@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	a9086af6ea24e264d389
+# tested	a36355bdde5796d9ef30
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	npsLeave	renderAdd	shadeRow
@@ -101,7 +102,7 @@ about.test.js	watch/suit.png	<loaded>
 about.test.js	watch/vest.png	<loaded>
 accounts.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 accounts.test.js	account.js	<loaded>	acctBase	acctCall	acctConnect	acctEsc	acctFailText	acctLinkDrawn	acctLocal	acctRole	acctStart	acctToast	acctUse	applyRole	connectFromLink	copyInvite	createInvite	dropInviteHash	hasInviteHash	inviteLink	inviteParts	iosDevice	iosInSafari	isTester	limitNote	loadAccount	rememberRole	renderAccountUI	revokeInvite
-accounts.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	tagSwInner	texSlot	typeCard	unreadNote	wbNote
+accounts.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	tagSwInner	texSlot	typeCard	unreadNote	wbNote
 accounts.test.js	analysis.js	<loaded>
 accounts.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 accounts.test.js	apple-touch-icon.png	<loaded>
@@ -159,7 +160,7 @@ accounts.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYP
 accounts.test.js	wrangler.toml	<any>
 addcards.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 addcards.test.js	account.js	<loaded>	acctBase	acctRetryLink	acctRole	acctStart	applyRole	hasInviteHash	isTester
-addcards.test.js	add.js	<loaded>	@document.addEventListenerclick	addBackOnline	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addRevive	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	errCard	errToHand	formCard	measureGuess	multiMsg	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderHint	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveAll	saveCard	savedTitle	setArrives	setq	shadeRow	sheetSwipe	shirtColFix	skipCard	tagSwInner	texGains	texSlot	typeCard	unreadNote	wbNote
+addcards.test.js	add.js	<loaded>	@document.addEventListenerclick	addBackOnline	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addRevive	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	errCard	errToHand	formCard	measureGuess	multiMsg	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderHint	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveAll	saveCard	savedTitle	setArrives	setq	shadeRow	sheetSwipe	shirtColFix	skipCard	tagSwInner	texGains	texSlot	typeCard	unreadNote	wbNote
 addcards.test.js	analysis.js	<loaded>
 addcards.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	del	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 addcards.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref
@@ -202,7 +203,7 @@ addcards.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnecte
 addcards.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@iftypeofwhenPulledfunctionwhenPulled	matMigrate	matRow	moreRow	setQField	wardFlush	wardPendingRestore	wardSaveFields
 addqty.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 addqty.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-addqty.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardOf	cardReading	cardReady	checkArrivals	confBtn	formCard	multiMsg	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	sheetSwipe	shirtColFix	stepQty	texSlot	unreadNote	wbNote
+addqty.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardOf	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	multiMsg	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	sheetSwipe	shirtColFix	stepQty	texSlot	unreadNote	wbNote
 addqty.test.js	analysis.js	<loaded>
 addqty.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	del	fitNav	fitNavSoon	generateSwatch	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 addqty.test.js	apple-touch-icon.png	<loaded>
@@ -254,7 +255,7 @@ addqty.test.js	watch/suit.png	<loaded>
 addqty.test.js	watch/vest.png	<loaded>
 addreadend.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 addreadend.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-addreadend.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
+addreadend.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
 addreadend.test.js	analysis.js	<loaded>
 addreadend.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addTombstones	afterDom	afterScripts	aiLabel	atomic	busyLabelFor	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matchLight	metaGet	metaPut	shrink	texSwatches	tx	txFail	txs	window.fetch
 addreadend.test.js	apple-touch-icon.png	<loaded>
@@ -308,7 +309,7 @@ addreadend.test.js	watch/suit.png	<loaded>
 addreadend.test.js	watch/vest.png	<loaded>
 addsheet.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 addsheet.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
-addsheet.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addWatch	cardOf	cardReading	cardReady	confBtn	formCard	multiMsg	needType	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	sheetSwipe	shirtColFix	skipCard	texSlot	unreadNote	wbNote
+addsheet.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addWatch	cardOf	cardReading	cardReady	cardSafe	confBtn	formCard	multiMsg	needType	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	sheetSwipe	shirtColFix	skipCard	texSlot	unreadNote	wbNote
 addsheet.test.js	analysis.js	<loaded>
 addsheet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	generateSwatch	metaGet	metaPut	tx	txFail	txs	window.fetch
 addsheet.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmPileKind	asmWtWants
@@ -353,7 +354,7 @@ addsheet.test.js	ui.js	<loaded>	addGate	askAnswer	askConfirm	askEls	closeupBtn	c
 addsheet.test.js	wardrobe.js	<loaded>	matRow	moreRow	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSaveFields	wardSort	wardView
 aiverdict.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 aiverdict.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-aiverdict.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	sheetSwipe	tagSwInner	texSlot	typeCard	unreadNote	wbNote
+aiverdict.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	sheetSwipe	tagSwInner	texSlot	typeCard	unreadNote	wbNote
 aiverdict.test.js	analysis.js	<loaded>
 aiverdict.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	busyLabelFor	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	shrink	texSwatches	tx	txFail	txs	window.fetch
 aiverdict.test.js	apple-touch-icon.png	<loaded>
@@ -1323,7 +1324,7 @@ assets.test.js	manifest.webmanifest	<any>
 assets.test.js	sw.js	<any>
 auditfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 auditfix.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
-auditfix.test.js	add.js	<loaded>	addCardRec	addKeep	addKeepSoon	addManual	addNoteText	addRestore	addShowCard	addWatch	applyWb	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	errToHand	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveAll	saveCard	shadeRow	sheetSwipe	texSlot	unreadNote	wbNote
+auditfix.test.js	add.js	<loaded>	addCardRec	addKeep	addKeepSoon	addManual	addNoteText	addRestore	addShowCard	addWatch	applyWb	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	errToHand	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveAll	saveCard	shadeRow	sheetSwipe	texSlot	unreadNote	wbNote
 auditfix.test.js	analysis.js	<loaded>
 auditfix.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fitNav	fitNavSoon	generateSwatch	metaGet	metaPut	shrink	texSwatches	tx	txFail	txs	window.fetch
 auditfix.test.js	apple-touch-icon.png	<loaded>
@@ -1376,7 +1377,7 @@ auditfix.test.js	watch/suit.png	<loaded>
 auditfix.test.js	watch/vest.png	<loaded>
 backgesture.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 backgesture.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
-backgesture.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	confBtn	errToHand	formCard	needType	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	sheetSwipe	shirtColFix	skipCard	tagSwInner	texSlot	unreadNote	wbNote
+backgesture.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	confBtn	errToHand	formCard	needType	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	sheetSwipe	shirtColFix	skipCard	tagSwInner	texSlot	unreadNote	wbNote
 backgesture.test.js	analysis.js	<loaded>	horizonKeys
 backgesture.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	busyStart	cap1	connKeep	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	fitNav	fitNavSoon	metaGet	metaPut	put	putRaw	renderBusy	shrink	tx	txFail	txs	window.fetch
 backgesture.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmGapNote
@@ -1577,6 +1578,60 @@ boxfold.test.js	watch/shirt-open.png	<loaded>
 boxfold.test.js	watch/shirt-tie.png	<loaded>
 boxfold.test.js	watch/suit.png	<loaded>
 boxfold.test.js	watch/vest.png	<loaded>
+canvasrefuse.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
+canvasrefuse.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
+canvasrefuse.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	errCard	formCard	needType	orderRow	photoPair	plainCard	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
+canvasrefuse.test.js	analysis.js	<loaded>
+canvasrefuse.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
+canvasrefuse.test.js	apple-touch-icon.png	<loaded>
+canvasrefuse.test.js	asm-color.js	<loaded>
+canvasrefuse.test.js	asm-gl.js	<loaded>
+canvasrefuse.test.js	asm-watch.js	<loaded>
+canvasrefuse.test.js	assemble.js	<loaded>	@
+canvasrefuse.test.js	care.js	<loaded>	careShow
+canvasrefuse.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff
+canvasrefuse.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	hexRgb	isWorkday	isoKey	itemName	key	keySettings	labHex	labOf	lum	mergeState	metalWord	mix	normCol	normColFor	normPat	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setHash	setKeys	shadeName	stampSettings	stateSig	takeSettings	thirdOf	todayDate	watchOpts
+canvasrefuse.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+canvasrefuse.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG	texTileSmooth	texTileUrl	texTones
+canvasrefuse.test.js	dress.js	<loaded>	dressNewItem	migrateVests
+canvasrefuse.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
+canvasrefuse.test.js	icon-192.png	<loaded>
+canvasrefuse.test.js	icon-512.png	<loaded>
+canvasrefuse.test.js	index.html	<loaded>
+canvasrefuse.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	noMotion	paperCloth	paperSteps	phSigOf	renderItem	smallPhotos
+canvasrefuse.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSaved	kitStartRow
+canvasrefuse.test.js	manifest.webmanifest	<loaded>
+canvasrefuse.test.js	mannequin.js	<loaded>	@{}
+canvasrefuse.test.js	month.js	<loaded>
+canvasrefuse.test.js	mq/shirt-open.js	<loaded>
+canvasrefuse.test.js	mq/shirt-tie.js	<loaded>
+canvasrefuse.test.js	mq/suit-open.js	<loaded>
+canvasrefuse.test.js	mq/suit.js	<loaded>
+canvasrefuse.test.js	mq/vest.js	<loaded>
+canvasrefuse.test.js	pack.js	<loaded>	packShow
+canvasrefuse.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders
+canvasrefuse.test.js	planner.js	<loaded>
+canvasrefuse.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
+canvasrefuse.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errWhere	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
+canvasrefuse.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	showCost	toast
+canvasrefuse.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
+canvasrefuse.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
+canvasrefuse.test.js	start.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@connRestored.then	appDrop	appPush	inviteInUrl	openAdd	pageIn	show	subOpen
+canvasrefuse.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
+canvasrefuse.test.js	styles.css	#add #queue .card	#add #queue .card .btns .pri	#add #queue .card>.btns:last-of-type	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select	#add #queue .card>label,#item-view .card>label,#nps-q .card>label	#add #queue .qcard	#add #queue .qcard>.qx	#add .addlong	#add .addlong .aic	#add .addmore	#add .addpick	#add .addpick .btn	#add .addpick .btn small	#add .addpick .btn span	#add .drop-hint	#add .morebtn	#add .nps-x	#add .paste-box	#add .paste-box .btn	#add .paste-box input	#add .qty	#add .qty output	#add .qtyb	#add .qtyb:disabled	#add .qtyl	#add .qtyl small	#add .qtyrow	#add .rdpair	#add .rdpair .rdgo	#add .rdpair>.btn	#add .texslot	#busy	#busy.on	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#multi-status	#multi-status:empty	#nps-backdrop	#nps-sheet	#nps-sheet .nps-head .aic	#nps-sheet .nps-ht h2	#nps-sheet .nps-ht small	#paste-status:empty	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast button	#toast button::after	#toast,body.iv-on #toast	#toast.act	#toast.on	#today	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.addlong .chev	.addlong-t	.addlong-t b	.addlong-t small	.addpick	.addpick .btn	.addpick .btn small	.addrow	.addrow .chev	.addrow small	.addrow span:first-child	.aic	.btn	.btns	.cap	.card label	.chipbtn	.colbtn	.colchev	.colchip	.colchip.none,.cpsw.none,.cpbig.none	.colnm	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.drop-hint	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi,.card	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn::after	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.morechev	.morefold	.msw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.nps-bar	.nps-body	.nps-grab	.nps-head	.nps-ht	.ordrow	.ordrow .rotbtn	.pair	.pair .tagsw .ph.thumb	.pair .tagsw .ph.thumb svg	.pair figcaption	.pair figcaption b	.pair figure	.pair img.ph,.rv .pair img.ph	.paste-box	.paste-box .btn	.paste-box input	.patchip svg,.cppat svg	.patchip,.cppat	.phead	.phead .pback	.phead h2	.pri	.psub	.rdcost	.rv .thumb	.rv img.ph	.shaderow	.shaderow .chipbtn	.shctl	.shctl .shbtn	.shctl .shval	.shlab	.slabel	.slide	.spin	.stage	.stage .empty	.stage .firstrun	.sw	.sw-box	.swsplit	.swsplit .swtex	.swsplit:has(.swtex)::after	.tagnote	.texslot	.texslot .btn	.texslot .btns	.texslot .rdcost	.texslot .wbsteps	.texslot.done	.thumb	.thumb svg	.vfile	.wbnote	.wbpic i	.wbpic::after	.wbpic::before	.wbstcard .arr	.wbstcard .cam	.wbstcard .eb	.wbstcard .hd	.wbstcard .li	.wbstcard .more	.wbstcard .n	.wbstcard .n b	.wbstcard .ol	.wbstcard .tap	.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i	.wbsteps	.wxc.wxlk	.wxl	:is(#item-view,#add) .wbstcard	:is(#item-view,#add) .wbstcard .wbpic	:is(#item-view,.wbsteps,#cu-sheet) .wbpic	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number])	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) select	:root	<loaded>	body	body.busy-on #toast	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	input[type="range"]	label:has(>.vfile)	main	nav	nav button	nav button.on	nav.tab-none::before	nav::before	select,input[type="text"],input[type="range"]
+canvasrefuse.test.js	sync.js	<loaded>	@connRestored.then	afterPull	applyMerged	endedAnswer	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	setSyncStatus	showSyncStatus	syncMark	syncNeedsPull	syncNow	syncOnce	syncShare	syncUrl	syncWaiting	synced
+canvasrefuse.test.js	tagging.js	<loaded>	MULTI_PATS	aiFields	aiFor	aiSignals	applyMeasured	calibLab	clamp01	claudeOnly	claudePattern	closeRead	closeTagImg	colRef	colourVerdicts	confTxt	customForTag	describeEstimate	fixBlackBackdrops	keepCloseImg	keepTagImg	linS	measConf	measEdgeCut	measHint	measKL	measureAndApply	measureCard	measureCloth	measureParts	missedPattern	motifPat	multiCol	nearestCols	readEstimate	readPatternWithClaude	readSett	readable	recolourSpecSetts	recordTagResult	refineApply	refineFromCloseup	sLin	settCanvas	settCheck	settNote	settSummary	settable	sharpness	specSett	specSett1	tagExtras	tagFixes	tagNotes	takeExtras	takeMaterial	texContrast	texFromSpec	texSig	upgradeCloseups	upgradePhotos	verdictMode	visTok	wbGains	wbRead
+canvasrefuse.test.js	tests/fixedplan.js	<any>
+canvasrefuse.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
+canvasrefuse.test.js	tests/fixtures/suit-pinstripe.jpg	<loaded>
+canvasrefuse.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	wornPill	wxFit	wxPreload	zoomTarget
+canvasrefuse.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerUp
+canvasrefuse.test.js	wardrobe.js	<loaded>	@iftypeofwhenPulledfunctionwhenPulled	matMigrate	matRow	moreRow	wardPendingRestore	wardSaveFields
+canvasrefuse.test.js	watch/leather.jpg	<loaded>
+canvasrefuse.test.js	watch/shirt-open.png	<loaded>
+canvasrefuse.test.js	watch/shirt-tie.png	<loaded>
+canvasrefuse.test.js	watch/suit.png	<loaded>
+canvasrefuse.test.js	watch/vest.png	<loaded>
 care.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 care.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 care.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addRestore	checkArrivals	fmtDay	shadeRow
@@ -1636,7 +1691,7 @@ care.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvM
 care.test.js	worker/records.js	<loaded>	getRender
 casual.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 casual.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-casual.test.js	add.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	sheetSwipe	shirtColFix	texSlot	unreadNote	wbNote
+casual.test.js	add.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	sheetSwipe	shirtColFix	texSlot	unreadNote	wbNote
 casual.test.js	analysis.js	<loaded>
 casual.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 casual.test.js	apple-touch-icon.png	<loaded>
@@ -1692,7 +1747,7 @@ casual.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
 casual.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	wbOf
 claude.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 claude.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
-claude.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	tagSwInner	texSlot	typeCard	unreadNote	wbNote
+claude.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	tagSwInner	texSlot	typeCard	unreadNote	wbNote
 claude.test.js	analysis.js	<loaded>
 claude.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 claude.test.js	apple-touch-icon.png	<loaded>
@@ -1749,7 +1804,7 @@ claude.test.js	worker/photostore.js	<loaded>	handleSync
 claude.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	tagWithWorkersAi	txt	wbOf
 claudepattern.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 claudepattern.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
-claudepattern.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
+claudepattern.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
 claudepattern.test.js	analysis.js	<loaded>
 claudepattern.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	stillCur	texSwatches	tx	txFail	txs	window.fetch
 claudepattern.test.js	apple-touch-icon.png	<loaded>
@@ -1860,7 +1915,7 @@ climate.test.js	watch/suit.png	<loaded>
 climate.test.js	watch/vest.png	<loaded>
 closeupread.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 closeupread.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
-closeupread.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	cardReading	cardReady	confBtn	formCard	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	sheetSwipe	tagSwInner	texGains	texSlot	unreadNote	wbNote
+closeupread.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	cardReading	cardReady	cardSafe	confBtn	formCard	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	sheetSwipe	tagSwInner	texGains	texSlot	unreadNote	wbNote
 closeupread.test.js	analysis.js	<loaded>
 closeupread.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	fitNav	fitNavSoon	generateSwatch	loadImg	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	renderBusy	shrink	tx	txFail	txs	window.fetch
 closeupread.test.js	asm-color.js	<loaded>	asmGapNote
@@ -1907,7 +1962,7 @@ closeupread.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	addGate	close
 closeupread.test.js	wardrobe.js	<loaded>	fldRow	ivOn	matRow	moreRow	notesRow	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSort	wardView
 closeupsheet.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 closeupsheet.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
-closeupsheet.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	cardReading	cardReady	confBtn	dropTexture	formCard	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	tagSwInner	texGains	texSlot	unreadNote	wbNote
+closeupsheet.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	cardReading	cardReady	cardSafe	confBtn	dropTexture	formCard	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	tagSwInner	texGains	texSlot	unreadNote	wbNote
 closeupsheet.test.js	analysis.js	<loaded>
 closeupsheet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	fitNav	fitNavSoon	generateSwatch	loadImg	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	shrink	tx	txFail	txs	window.fetch
 closeupsheet.test.js	asm-color.js	<loaded>	asmGapNote
@@ -2127,7 +2182,7 @@ colnew.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	advClose	closeupBt
 colnew.test.js	wardrobe.js	<loaded>	wardBack	wardBar	wardCount	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSort	wardView
 colouraudit.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 colouraudit.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-colouraudit.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	sheetSwipe	shirtColFix	texSlot	unreadNote	wbNote
+colouraudit.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	sheetSwipe	shirtColFix	texSlot	unreadNote	wbNote
 colouraudit.test.js	analysis.js	<loaded>
 colouraudit.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 colouraudit.test.js	apple-touch-icon.png	<loaded>
@@ -2184,7 +2239,7 @@ colouraudit.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	wh
 colouraudit.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	wbOf
 colours.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 colours.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-colours.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	skipCard	texSlot	unreadNote	wbNote
+colours.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	skipCard	texSlot	unreadNote	wbNote
 colours.test.js	analysis.js	<loaded>
 colours.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 colours.test.js	apple-touch-icon.png	<loaded>
@@ -2236,7 +2291,7 @@ colours.test.js	watch/suit.png	<loaded>
 colours.test.js	watch/vest.png	<loaded>
 colpick.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 colpick.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-colpick.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsLeave	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	tagSwInner	texSlot	unreadNote	wbNote
+colpick.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsLeave	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	tagSwInner	texSlot	unreadNote	wbNote
 colpick.test.js	analysis.js	<loaded>
 colpick.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addTombstones	afterDom	afterScripts	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	texSwatches	tx	txFail	txs	window.fetch
 colpick.test.js	apple-touch-icon.png	<loaded>
@@ -2587,7 +2642,7 @@ daysoff.test.js	worker/photostore.js	<loaded>	handleSync
 daysoff.test.js	worker/records.js	<loaded>	getRender
 dblost.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 dblost.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-dblost.test.js	add.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	cardOf	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	texSlot	unreadNote	wbNote
+dblost.test.js	add.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	cardOf	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	texSlot	unreadNote	wbNote
 dblost.test.js	analysis.js	<loaded>
 dblost.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	dbDrop	dbGone	dbLive	dbMark	dbOpen	dbRetry	fitNav	fitNavSoon	generateSwatch	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 dblost.test.js	apple-touch-icon.png	<loaded>
@@ -2835,7 +2890,7 @@ describe.test.js	worker/render.js	<loaded>	RenderHub	fetch	hubOf	sget	sput
 describe.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanMaterial	lightText	matCap	materialSchema	orNull	sleep	txt	wbOf
 display.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 display.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-display.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	texSlot	unreadNote	wbNote
+display.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	texSlot	unreadNote	wbNote
 display.test.js	analysis.js	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	listAnd	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	simFacts	smallCandidates	tClass
 display.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 display.test.js	apple-touch-icon.png	<loaded>
@@ -2958,7 +3013,7 @@ drawnonly.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhoto
 drawnonly.test.js	worker/records.js	<loaded>	getRender	handleBlob	putRender	renderId	renderTtl
 dress.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 dress.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
-dress.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	cardOf	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsLeave	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	texSlot	unreadNote	wbNote
+dress.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	cardOf	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsLeave	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	texSlot	unreadNote	wbNote
 dress.test.js	analysis.js	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	listAnd	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	several	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	simFacts	smallCandidates	tClass
 dress.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	generateSwatch	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 dress.test.js	apple-touch-icon.png	<loaded>
@@ -3364,7 +3419,7 @@ figure.test.js	watch/suit.png	<loaded>
 figure.test.js	watch/vest.png	<loaded>
 figuremotif.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 figuremotif.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
-figuremotif.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
+figuremotif.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
 figuremotif.test.js	analysis.js	<loaded>
 figuremotif.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 figuremotif.test.js	apple-touch-icon.png	<loaded>
@@ -4385,7 +4440,7 @@ khaki.test.js	worker/render.js	<any>	<loaded>
 khaki.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	orNull
 kit.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 kit.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-kit.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardOf	cardReading	cardReady	checkArrivals	confBtn	errToHand	fmtDay	formCard	multiMsg	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	sheetSwipe	texSlot	unreadNote	wbNote
+kit.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardOf	cardReading	cardReady	cardSafe	checkArrivals	confBtn	errToHand	fmtDay	formCard	multiMsg	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	sheetSwipe	texSlot	unreadNote	wbNote
 kit.test.js	analysis.js	<loaded>
 kit.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	del	fitNav	fitNavSoon	generateSwatch	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 kit.test.js	apple-touch-icon.png	<loaded>
@@ -4730,7 +4785,7 @@ masterspeed.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny
 masterspeed.test.js	worker/records.js	<loaded>	getRender	handleBlob	renderId
 materials.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 materials.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
-materials.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	texSlot	unreadNote	wbNote
+materials.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	texSlot	unreadNote	wbNote
 materials.test.js	analysis.js	<loaded>
 materials.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	busyStart	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	fixupRedraw	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	texSwatches	tx	txFail	txs	window.fetch
 materials.test.js	asm-color.js	<loaded>	asmCmMat	asmCmRoute	asmCmWeaveTag	asmCuDark	asmCuWants	asmGapNote	asmPileKind	asmPileTile
@@ -4773,7 +4828,7 @@ materials.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnect
 materials.test.js	wardrobe.js	<loaded>	@iftypeofwhenPulledfunctionwhenPulled	fldRow	ivOn	matMigrate	matRenameTo	matRow	matSyn	moreRow	notesRow	setItemField	setQField	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardHay	wardKeep	wardMatch	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
 measalt.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 measalt.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-measalt.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	checkArrivals	confBtn	formCard	measureGuess	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	sheetSwipe	shirtColFix	texSlot	unreadNote	wbNote
+measalt.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	measureGuess	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	sheetSwipe	shirtColFix	texSlot	unreadNote	wbNote
 measalt.test.js	analysis.js	<loaded>
 measalt.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 measalt.test.js	apple-touch-icon.png	<loaded>
@@ -4841,7 +4896,7 @@ measalt.test.js	worker/render.js	<any>	<loaded>
 measalt.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	wbOf
 measure.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 measure.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-measure.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardPics	cardReading	cardReady	checkArrivals	confBtn	errCard	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	tagSwInner	texSlot	typeCard	unreadNote	wbNote
+measure.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	errCard	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	tagSwInner	texSlot	typeCard	unreadNote	wbNote
 measure.test.js	analysis.js	<loaded>
 measure.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	busyLabelFor	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	metaGet	metaPut	shrink	texSwatches	tx	txFail	txs	window.fetch
 measure.test.js	apple-touch-icon.png	<loaded>
@@ -5058,7 +5113,7 @@ monthunfold.test.js	watch/suit.png	<loaded>
 monthunfold.test.js	watch/vest.png	<loaded>
 motif.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 motif.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
-motif.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
+motif.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
 motif.test.js	analysis.js	<loaded>
 motif.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 motif.test.js	apple-touch-icon.png	<loaded>
@@ -5229,7 +5284,7 @@ mqcloth.test.js	watch/suit.png	<loaded>
 mqcloth.test.js	watch/vest.png	<loaded>
 multi.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 multi.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
-multi.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addMulti	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	countWord	cropBox	formCard	multiAgain	multiErrCard	multiFail	multiMsg	multiNote	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveAll	saveCard	savedTitle	shadeRow	skipCard	tagSwInner	texSlot	unreadNote	wbNote
+multi.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addMulti	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	countWord	cropBox	formCard	multiAgain	multiErrCard	multiFail	multiMsg	multiNote	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveAll	saveCard	savedTitle	shadeRow	skipCard	tagSwInner	texSlot	unreadNote	wbNote
 multi.test.js	analysis.js	<loaded>
 multi.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 multi.test.js	apple-touch-icon.png	<loaded>
@@ -5441,7 +5496,7 @@ newuser.test.js	watch/suit.png	<loaded>
 newuser.test.js	watch/vest.png	<loaded>
 newuserplan.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 newuserplan.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
-newuserplan.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	texSlot	unreadNote	wbNote
+newuserplan.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	texSlot	unreadNote	wbNote
 newuserplan.test.js	analysis.js	<loaded>
 newuserplan.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 newuserplan.test.js	apple-touch-icon.png	<loaded>
@@ -5493,7 +5548,7 @@ newuserplan.test.js	watch/suit.png	<loaded>
 newuserplan.test.js	watch/vest.png	<loaded>
 nu2fix2.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 nu2fix2.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRetryLink	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
-nu2fix2.test.js	add.js	<loaded>	@document.addEventListenerclick	addBackOnline	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addMulti	addNoteText	addRestore	addRevive	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	countWord	cropBox	formCard	multiAgain	multiErrCard	multiFail	multiMsg	multiNote	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	oddWord	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	refineAgain	renderAdd	save	saveCard	savedTitle	setq	shadeRow	sheetSwipe	shirtColFix	skipCard	stepQty	stopRead	tagSwInner	texGains	texSlot	typeCard	unreadNote	wbNote
+nu2fix2.test.js	add.js	<loaded>	@document.addEventListenerclick	addBackOnline	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addMulti	addNoteText	addRestore	addRevive	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	countWord	cropBox	formCard	multiAgain	multiErrCard	multiFail	multiMsg	multiNote	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	oddWord	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	refineAgain	renderAdd	save	saveCard	savedTitle	setq	shadeRow	sheetSwipe	shirtColFix	skipCard	stepQty	stopRead	tagSwInner	texGains	texSlot	typeCard	unreadNote	wbNote
 nu2fix2.test.js	analysis.js	<loaded>
 nu2fix2.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 nu2fix2.test.js	asm-color.js	<loaded>
@@ -5949,7 +6004,7 @@ occasions.test.js	worker/records.js	<loaded>	getRender	renderId
 occasions.test.js	worker/render.js	<loaded>	DIAL_NOTE	RENDER_PROMPT	WATCH_KEY	dataUrlToBlob	handleRender	hasWatch	outfitPhoto	queueRender
 onorder.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 onorder.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-onorder.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardOf	cardReading	cardReady	checkArrivals	confBtn	fmtDay	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderHint	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setArrives	setOrder	setq	shadeRow	sheetSwipe	shirtColFix	texSlot	unreadNote	wbNote
+onorder.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardOf	cardReading	cardReady	cardSafe	checkArrivals	confBtn	fmtDay	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderHint	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setArrives	setOrder	setq	shadeRow	sheetSwipe	shirtColFix	texSlot	unreadNote	wbNote
 onorder.test.js	analysis.js	<loaded>
 onorder.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	generateSwatch	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 onorder.test.js	apple-touch-icon.png	<loaded>
@@ -6001,7 +6056,7 @@ onorder.test.js	watch/suit.png	<loaded>
 onorder.test.js	watch/vest.png	<loaded>
 ownnames.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 ownnames.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
-ownnames.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	skipCard	texSlot	unreadNote	wbNote
+ownnames.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	skipCard	texSlot	unreadNote	wbNote
 ownnames.test.js	analysis.js	<loaded>
 ownnames.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	loadImg	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 ownnames.test.js	apple-touch-icon.png	<loaded>
@@ -6201,7 +6256,7 @@ paperstatus.test.js	ui.js	<loaded>	closeupBtn	cuTouch	inviteOver	isConnected	lay
 paperstatus.test.js	wardrobe.js	<loaded>	fldRow	ivOn	matRow	notesRow	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSort	wardView
 paste.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 paste.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
-paste.test.js	add.js	<loaded>	@document.addEventListenerclick	@document.addEventListenerdrop	@document.addEventListenerpaste	addBlobs	addCardRec	addFiles	addFromUrl	addKeep	addKeepSoon	addKeepable	addLink	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	clipImages	confBtn	errCard	fetchPhoto	formCard	isLink	measureGuess	needType	orderRow	pasteFromClipboard	pasteMsg	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	shirtColFix	tagSwInner	texSlot	typeCard	unreadNote	wbNote
+paste.test.js	add.js	<loaded>	@document.addEventListenerclick	@document.addEventListenerdrop	@document.addEventListenerpaste	addBlobs	addCardRec	addFiles	addFromUrl	addKeep	addKeepSoon	addKeepable	addLink	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	clipImages	confBtn	errCard	fetchPhoto	formCard	isLink	measureGuess	needType	orderRow	pasteFromClipboard	pasteMsg	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	shirtColFix	tagSwInner	texSlot	typeCard	unreadNote	wbNote
 paste.test.js	analysis.js	<loaded>
 paste.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	metaGet	metaPut	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 paste.test.js	apple-touch-icon.png	<loaded>
@@ -7227,7 +7282,7 @@ rollback.test.js	mq/suit.js	<loaded>
 rollback.test.js	mq/vest.js	<loaded>
 rollback.test.js	pack.js	<loaded>	packShow
 rollback.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	picsDrawn	renderItemPicUI	workerBase
-rollback.test.js	planner.js	<loaded>
+rollback.test.js	planner.js	<loaded>	lockStale
 rollback.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 rollback.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errList	errReport	errSoon	pruneTagImgs	safetyStart
 rollback.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	isoToDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit	unitCC	weekFirst	yearDate
@@ -7455,7 +7510,7 @@ run.js: Cloudflare worker (mocked bindings)	worker/people.js	<loaded>	sameText	s
 run.js: Cloudflare worker (mocked bindings)	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	orNull	tagWithWorkersAi
 run.js: add an item without a photo; it persists	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 run.js: add an item without a photo; it persists	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-run.js: add an item without a photo; it persists	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardOf	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	sheetSwipe	shirtColFix	texSlot	unreadNote	wbNote
+run.js: add an item without a photo; it persists	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardOf	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	sheetSwipe	shirtColFix	texSlot	unreadNote	wbNote
 run.js: add an item without a photo; it persists	analysis.js	<loaded>
 run.js: add an item without a photo; it persists	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	generateSwatch	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 run.js: add an item without a photo; it persists	apple-touch-icon.png	<loaded>
@@ -7920,7 +7975,7 @@ run.js: swipe moves only the outfit, across viewports	watch/suit.png	<loaded>
 run.js: swipe moves only the outfit, across viewports	watch/vest.png	<loaded>
 safety.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 safety.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-safety.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addRevive	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	sheetSwipe	tagSwInner	texSlot	typeCard	unreadNote	wbNote
+safety.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addRevive	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	sheetSwipe	tagSwInner	texSlot	typeCard	unreadNote	wbNote
 safety.test.js	analysis.js	<loaded>
 safety.test.js	app.js	<loaded>	@.catch	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbGone	dbLive	dbMark	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 safety.test.js	apple-touch-icon.png	<loaded>
@@ -8129,7 +8184,7 @@ scorefix.test.js	watch/suit.png	<loaded>
 scorefix.test.js	watch/vest.png	<loaded>
 sett.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 sett.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
-sett.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsLeave	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texSlot	unreadNote	wbNote
+sett.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsLeave	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texSlot	unreadNote	wbNote
 sett.test.js	analysis.js	<loaded>
 sett.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 sett.test.js	apple-touch-icon.png	<loaded>
@@ -8491,7 +8546,7 @@ setupfix.test.js	watch/suit.png	<loaded>
 setupfix.test.js	watch/vest.png	<loaded>
 shade.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 shade.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-shade.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardOf	cardReading	cardReady	checkArrivals	confBtn	formCard	matchShadeE	matchShadeQ	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	sheetSwipe	stepShadeE	stepShadeQ	tagSwInner	texSlot	typeCard	unreadNote	wbNote
+shade.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardOf	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	matchShadeE	matchShadeQ	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	sheetSwipe	stepShadeE	stepShadeQ	tagSwInner	texSlot	typeCard	unreadNote	wbNote
 shade.test.js	analysis.js	<loaded>
 shade.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	deadCanvas	fitNav	fitNavSoon	generateSwatch	metaGet	metaPut	put	putRaw	shrink	texSwatches	tx	txFail	txs	window.fetch
 shade.test.js	apple-touch-icon.png	<loaded>
@@ -8659,7 +8714,7 @@ sharpclose.test.js	watch/suit.png	<loaded>
 sharpclose.test.js	watch/vest.png	<loaded>
 sheetswipe.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 sheetswipe.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-sheetswipe.test.js	add.js	<loaded>	@document.addEventListenerclick	@document.addEventListenerdragleave	@document.addEventListenerdragover	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	checkArrivals	confBtn	errCard	errToHand	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	skipCard	tagSwInner	texSlot	unreadNote	wbNote
+sheetswipe.test.js	add.js	<loaded>	@document.addEventListenerclick	@document.addEventListenerdragleave	@document.addEventListenerdragover	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	checkArrivals	confBtn	errCard	errToHand	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	skipCard	tagSwInner	texSlot	unreadNote	wbNote
 sheetswipe.test.js	analysis.js	<loaded>
 sheetswipe.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 sheetswipe.test.js	apple-touch-icon.png	<loaded>
@@ -8777,7 +8832,7 @@ shirts.test.js	worker/render.js	<any>	<loaded>
 shirts.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	orNull
 shirtweave.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 shirtweave.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-shirtweave.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsLeave	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
+shirtweave.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsLeave	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
 shirtweave.test.js	analysis.js	<loaded>
 shirtweave.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 shirtweave.test.js	apple-touch-icon.png	<loaded>
@@ -8985,7 +9040,7 @@ snapshots.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	o
 snapshots.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	nsOf	putPhotos	putWhole	pvMeta	pvResponse	pvText	readPv	refsIn	refsOf	scanPhotos	storePhotos
 socktoe.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 socktoe.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-socktoe.test.js	add.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	tagSwInner	texSlot	unreadNote	wbNote
+socktoe.test.js	add.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	tagSwInner	texSlot	unreadNote	wbNote
 socktoe.test.js	analysis.js	<loaded>
 socktoe.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	busyStart	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	renderBusy	texSwatches	tx	txFail	txs	window.fetch
 socktoe.test.js	apple-touch-icon.png	<loaded>
@@ -9473,7 +9528,7 @@ tabmove.test.js	watch/suit.png	<loaded>
 tabmove.test.js	watch/vest.png	<loaded>
 tagging.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 tagging.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
-tagging.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addRevive	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
+tagging.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addRevive	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
 tagging.test.js	analysis.js	<loaded>	listAnd
 tagging.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 tagging.test.js	apple-touch-icon.png	<loaded>
@@ -9535,7 +9590,7 @@ tagmaterial.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	wh
 tagmaterial.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanMaterial	cleanTag	correctionsText	customText	lightText	matCap	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	wbOf
 tagswatch.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 tagswatch.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-tagswatch.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	tagSwInner	texSlot	unreadNote	wbNote
+tagswatch.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	tagSwInner	texSlot	unreadNote	wbNote
 tagswatch.test.js	analysis.js	<loaded>
 tagswatch.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 tagswatch.test.js	apple-touch-icon.png	<loaded>
@@ -9734,7 +9789,7 @@ testerview.test.js	watch/suit.png	<loaded>
 testerview.test.js	watch/vest.png	<loaded>
 texswatch.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 texswatch.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-texswatch.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	dropTexture	formCard	measureGuess	needType	npsLeave	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	shirtColFix	tagSwInner	texGains	texSlot	typeCard	unreadNote	wbNote
+texswatch.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	dropTexture	formCard	measureGuess	needType	npsLeave	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	shirtColFix	tagSwInner	texGains	texSlot	typeCard	unreadNote	wbNote
 texswatch.test.js	analysis.js	<loaded>
 texswatch.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	shrink	stillCur	texSwatches	tx	txFail	txs	updateSwatchParam	window.fetch
 texswatch.test.js	apple-touch-icon.png	<loaded>
@@ -9789,7 +9844,7 @@ texswatch.test.js	watch/suit.png	<loaded>
 texswatch.test.js	watch/vest.png	<loaded>
 texture.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 texture.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-texture.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	measureGuess	needType	npsLeave	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	shirtColFix	tagSwInner	texGains	texSlot	toggleWb	typeCard	unreadNote	wbNote
+texture.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	measureGuess	needType	npsLeave	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	shirtColFix	tagSwInner	texGains	texSlot	toggleWb	typeCard	unreadNote	wbNote
 texture.test.js	analysis.js	<loaded>
 texture.test.js	app.js	<any>	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	shrink	texSwatches	tx	txFail	txs	window.fetch
 texture.test.js	apple-touch-icon.png	<loaded>
@@ -10377,7 +10432,7 @@ ui.test.js	watch/suit.png	<loaded>
 ui.test.js	watch/vest.png	<loaded>
 uipages.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 uipages.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
-uipages.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	sheetSwipe	shirtColFix	texSlot	unreadNote	wbNote
+uipages.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	setq	shadeRow	sheetSwipe	shirtColFix	texSlot	unreadNote	wbNote
 uipages.test.js	analysis.js	<loaded>	horizonKeys
 uipages.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 uipages.test.js	apple-touch-icon.png	<loaded>
@@ -10638,7 +10693,7 @@ wardpic.test.js	watch/suit.png	<loaded>
 wardpic.test.js	watch/vest.png	<loaded>
 wardrobe.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 wardrobe.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	rememberRole	renderAccountUI
-wardrobe.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardOf	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	sheetSwipe	shirtColFix	tagSwInner	texSlot	unreadNote	wbNote
+wardrobe.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardOf	cardReading	cardReady	cardSafe	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	sheetSwipe	shirtColFix	tagSwInner	texSlot	unreadNote	wbNote
 wardrobe.test.js	analysis.js	<loaded>
 wardrobe.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	del	fitNav	fitNavSoon	generateSwatch	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 wardrobe.test.js	apple-touch-icon.png	<loaded>
