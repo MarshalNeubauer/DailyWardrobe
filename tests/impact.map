@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	a0b87ef13956eb91839f
+# tested	d382f81180f4beb54d41
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	npsLeave	renderAdd	shadeRow
@@ -2647,7 +2647,7 @@ daysoff.test.js	mq/suit.js	<loaded>
 daysoff.test.js	mq/vest.js	<loaded>
 daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-daysoff.test.js	planner.js	<loaded>	lockStale
+daysoff.test.js	planner.js	<loaded>
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	pruneTagImgs	safetyStart
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	addDayOff	appLocale	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	holYears	isoDate	isoToDate	loadWeather	locCC	nagerKeep	openSettings	refreshHolidays	refreshToday	removeDaysOff	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	toggleHoliday	unit	unitCC	weekFirst	yearDate
@@ -4528,7 +4528,7 @@ kvlimit.test.js	asm-watch.js	<loaded>
 kvlimit.test.js	assemble.js	<loaded>	@	renderAsmUI
 kvlimit.test.js	care.js	<loaded>	careLimit	careShow	laundryDays	renderCareUI
 kvlimit.test.js	colpick.js	<loaded>
-kvlimit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	dayFields	dayFlat	dayStamp	dayWins	desc	di	fsOk	fsPack	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	lum	mergeItem	mergeSettings	mergeState	metalWord	mix	needsJacket	nm	occOf	offDays	offName	patBase	primaryCol	rgbHex	sameVal	sentence	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subHashes	subOk	takeSettings	thirdOf	titleCls	todayDate	tombWins	typeWord	wearsJacket	wearsTie
+kvlimit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	colName	colOf	colorDesc	dayClimate	dayFields	dayFlat	dayStamp	dayWins	desc	di	fieldStamp	fsOk	fsPack	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	lum	mergeItem	mergeSettings	mergeState	metalWord	mix	needsJacket	nm	occOf	offDays	offName	patBase	primaryCol	rgbHex	sameVal	sentence	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subHashes	subOk	takeSettings	thirdOf	titleCls	todayDate	tombWins	typeWord	wearsJacket	wearsTie
 kvlimit.test.js	detect.js	<loaded>	@	usableSett
 kvlimit.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figureSvg	swatchSVG
 kvlimit.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
@@ -4566,7 +4566,7 @@ kvlimit.test.js	watch/shirt-tie.png	<loaded>
 kvlimit.test.js	watch/suit.png	<loaded>
 kvlimit.test.js	watch/vest.png	<loaded>
 kvlimit.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	countWrites	dropParts	fetch	handleSync	isParted	isPhoto	isPv	keepSnapshots	kvFull	kvMeta	liteSig	loadAny	mergeLite	nextRevs	orNull	ownerAs	phCollect	putPhotos	putRender	putStored	putWhole	pvMeta	pvText	readPv	readText	refsIn	refsOf	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendEach	spendUpTo	splitPhotos	stampOf	storePhotos	storedVersion	syncLiteGet	syncLitePost	syncVersion	utcDay	whoIs	writeBudget
-kvlimit.test.js	worker/backup.js	<loaded>	arrOf	dropParts	isParted	isPhoto	keepSnapshots	kvMeta	listSnapshots	liteSig	mergeLite	nextRevs	phCollect	putStored	readText	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncVersion	writeBudget
+kvlimit.test.js	worker/backup.js	<loaded>	arrOf	dayFlat	dayStamp	dropParts	fieldStamp	fsOk	isParted	isPhoto	keepSnapshots	kvMeta	listSnapshots	liteSig	mergeDayLite	mergeLite	nextRevs	own	phCollect	putStored	readText	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncVersion	writeBudget
 kvlimit.test.js	worker/items.js	<loaded>	nextUtcDay	noteKvFull
 kvlimit.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	spendUpTo	usedOf	utcDay	whoIs
 kvlimit.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	putWhole	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
@@ -7093,7 +7093,7 @@ replan.test.js	asm-watch.js	<loaded>
 replan.test.js	assemble.js	<loaded>	@	renderAsmUI
 replan.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	laundryDays	renderCareUI
 replan.test.js	colpick.js	<loaded>
-replan.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	SLOT_TYPE	accentOf	applyCustom	colBase	colName	colOf	colorDesc	colourNameRe	dayClimate	dayFields	desc	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	keySplit	leatherWord	lum	lumCol	matSeason	metalWord	mix	nm	occLabel	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	seasonFit	sentence	setEntries	setHash	setKeys	setStampOf	shoeStyle	sockToe	subHashes	subOk	takeSettings	thirdOf	titleCls	todayDate	typeWord	wearsJacket	wearsTie
+replan.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	SLOT_TYPE	accentOf	applyCustom	colBase	colName	colOf	colorDesc	colourNameRe	dayClimate	dayFields	dayFlat	dayStamp	desc	di	fsOk	fsPack	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	keySplit	leatherWord	lum	lumCol	matSeason	metalWord	mix	nm	occLabel	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	sameVal	seasonFit	sentence	setEntries	setHash	setKeys	setStampOf	shoeStyle	sockToe	stamp	subHashes	subOk	takeSettings	thirdOf	titleCls	todayDate	typeWord	wearsJacket	wearsTie
 replan.test.js	detect.js	<loaded>	@	lookOf	ownSett	texPat	tieWeave	usableSett
 replan.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 replan.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
@@ -7263,7 +7263,7 @@ rollback.test.js	mq/suit.js	<loaded>
 rollback.test.js	mq/vest.js	<loaded>
 rollback.test.js	pack.js	<loaded>	packShow
 rollback.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	picsDrawn	renderItemPicUI	workerBase
-rollback.test.js	planner.js	<loaded>
+rollback.test.js	planner.js	<loaded>	lockStale
 rollback.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 rollback.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errList	errReport	pruneTagImgs	safetyStart
 rollback.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	isoToDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit	unitCC	weekFirst	yearDate
@@ -9516,10 +9516,10 @@ tagging.test.js	apple-touch-icon.png	<loaded>
 tagging.test.js	asm-color.js	<loaded>	asmCmKind	asmCmRoute	asmCuDark	asmCuPatch	asmCuTile	asmCuTile1	asmCuWants	asmCuWrap
 tagging.test.js	asm-gl.js	<loaded>
 tagging.test.js	asm-watch.js	<loaded>
-tagging.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave	renderAsmUI
+tagging.test.js	assemble.js	<loaded>	@	renderAsmUI
 tagging.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	laundryDays	renderCareUI
 tagging.test.js	colpick.js	<loaded>	closeColPick	cnAskBox	cnColBase	cnCost	cnDone	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnPatBase	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSheetSwipe	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
-tagging.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	applyCustom	avgText	colBase	colBaseFor	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	dayFields	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	lumCol	metalWord	mix	needsTie	nm	normCol	normColFor	normPat	occOf	offDays	offName	ownColKey	ownDescClean	ownNameBad	ownNameClean	ownNameTidy	ownPatKey	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	rgbLab	seasonFit	sentence	setEntries	setHash	setKeys	setStampOf	shadeName	stampSettings	subHashes	subOk	subStamp	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
+tagging.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	applyCustom	avgText	colBase	colBaseFor	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	dayFields	dayFlat	dayStamp	desc	di	dressOut	fitCol	fsOk	fsPack	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	lumCol	metalWord	mix	needsTie	nm	normCol	normColFor	normPat	occOf	offDays	offName	ownColKey	ownDescClean	ownNameBad	ownNameClean	ownNameTidy	ownPatKey	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	rgbLab	sameVal	seasonFit	sentence	setEntries	setHash	setKeys	setStampOf	shadeName	stamp	stampSettings	subHashes	subOk	subStamp	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
 tagging.test.js	detect.js	<loaded>	@	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 tagging.test.js	draw.js	<loaded>	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figFabric	figKind	figLiftK	figLin	figLum	figScale	figStripeLift	figWay	figY	figureSvg	itemThumb	swatchSVG
 tagging.test.js	dress.js	<loaded>	dressNewItem	dressOn	dressSummary	migrateVests	newSuitVest	renderDressUI
