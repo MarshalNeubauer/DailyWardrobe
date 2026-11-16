@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	ae5d6743101050efea70
-# tested	01b0c27ff0896608ac17
+# tested	8562261313d35585575e
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	npsLeave	renderAdd	shadeRow
@@ -104,8 +103,7 @@ accounts.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	about
 accounts.test.js	account.js	<loaded>	acctBase	acctCall	acctConnect	acctEsc	acctFailText	acctLinkDrawn	acctLocal	acctRole	acctStart	acctToast	acctUse	applyRole	connectFromLink	copyInvite	createInvite	dropInviteHash	hasInviteHash	inviteLink	inviteParts	iosDevice	iosInSafari	isTester	limitNote	loadAccount	rememberRole	renderAccountUI	revokeInvite
 accounts.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	tagSwInner	texSlot	typeCard	unreadNote	wbNote
 accounts.test.js	analysis.js	<loaded>
-accounts.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
-accounts.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
+accounts.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 accounts.test.js	apple-touch-icon.png	<loaded>
 accounts.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmPileKind
 accounts.test.js	asm-gl.js	<loaded>
@@ -163,8 +161,7 @@ addcards.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	about
 addcards.test.js	account.js	<loaded>	acctBase	acctRetryLink	acctRole	acctStart	applyRole	hasInviteHash	isTester
 addcards.test.js	add.js	<loaded>	@document.addEventListenerclick	addBackOnline	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addRevive	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	errCard	errToHand	formCard	measureGuess	multiMsg	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderHint	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveAll	saveCard	savedTitle	setArrives	setq	shadeRow	sheetSwipe	shirtColFix	skipCard	tagSwInner	texGains	texSlot	typeCard	unreadNote	wbNote
 addcards.test.js	analysis.js	<loaded>
-addcards.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	del	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
-addcards.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	del	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matchLight	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
+addcards.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	del	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 addcards.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref
 addcards.test.js	asm-gl.js	<loaded>
 addcards.test.js	asm-watch.js	<loaded>
@@ -304,8 +301,7 @@ aiverdict.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	abou
 aiverdict.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 aiverdict.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	sheetSwipe	tagSwInner	texSlot	typeCard	unreadNote	wbNote
 aiverdict.test.js	analysis.js	<loaded>
-aiverdict.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	busyLabelFor	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	shrink	texSwatches	tx	txFail	txs	window.fetch
-aiverdict.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	busyLabelFor	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	shrink	texSwatches	tx	txFail	txs	window.fetch
+aiverdict.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	busyLabelFor	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	shrink	texSwatches	tx	txFail	txs	window.fetch
 aiverdict.test.js	apple-touch-icon.png	<loaded>
 aiverdict.test.js	asm-color.js	<loaded>
 aiverdict.test.js	asm-gl.js	<loaded>
@@ -1731,8 +1727,7 @@ claude.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutRe
 claude.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
 claude.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	tagSwInner	texSlot	typeCard	unreadNote	wbNote
 claude.test.js	analysis.js	<loaded>
-claude.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
-claude.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
+claude.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 claude.test.js	apple-touch-icon.png	<loaded>
 claude.test.js	asm-color.js	<loaded>
 claude.test.js	asm-gl.js	<loaded>
@@ -1789,8 +1784,7 @@ claudepattern.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	
 claudepattern.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 claudepattern.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
 claudepattern.test.js	analysis.js	<loaded>
-claudepattern.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	stillCur	texSwatches	tx	txFail	txs	window.fetch
-claudepattern.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	stillCur	texSwatches	tx	txFail	txs	window.fetch
+claudepattern.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	stillCur	texSwatches	tx	txFail	txs	window.fetch
 claudepattern.test.js	apple-touch-icon.png	<loaded>
 claudepattern.test.js	asm-color.js	<loaded>
 claudepattern.test.js	asm-gl.js	<loaded>
@@ -2599,7 +2593,7 @@ daysoff.test.js	mq/suit.js	<loaded>
 daysoff.test.js	mq/vest.js	<loaded>
 daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-daysoff.test.js	planner.js	<loaded>
+daysoff.test.js	planner.js	<loaded>	lockStale
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	pruneTagImgs	safetyStart
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	addDayOff	appLocale	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	holYears	isoDate	isoToDate	loadWeather	locCC	nagerKeep	openSettings	refreshHolidays	refreshToday	removeDaysOff	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	toggleHoliday	unit	unitCC	weekFirst	yearDate
@@ -2722,7 +2716,7 @@ deadcanvas.test.js	tagging.js	<loaded>	claudeOnly	fixBlackBackdrops	motifPat	rec
 deadcanvas.test.js	tests/fixedplan.js	<any>
 deadcanvas.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	wornPill	wxFit	wxPreload	zoomTarget
 deadcanvas.test.js	ui.js	<loaded>	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerUp
-deadcanvas.test.js	wardrobe.js	<loaded>	fldRow	ivOn	matRow	notesRow	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
+deadcanvas.test.js	wardrobe.js	<loaded>	@iftypeofwhenPulledfunctionwhenPulled	fldRow	ivOn	matMigrate	matRow	notesRow	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
 deadcanvas.test.js	watch/leather.jpg	<loaded>
 deadcanvas.test.js	watch/shirt-open.png	<loaded>
 deadcanvas.test.js	watch/shirt-tie.png	<loaded>
@@ -2800,7 +2794,7 @@ deltasync.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addRes
 deltasync.test.js	analysis.js	<loaded>
 deltasync.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	connKeep	dbLive	dbOpen	dbRetry	del	fitNav	fitNavSoon	metaGet	metaPut	put	putRaw	refreshSwatch	stillCur	texSwatches	tx	txFail	txs	window.fetch
 deltasync.test.js	apple-touch-icon.png	<loaded>
-deltasync.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmCuDark	asmCuTile	asmCuTile1	asmCuWants
+deltasync.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmCuDark	asmCuTile	asmCuTile1	asmCuWants	asmPileKind
 deltasync.test.js	asm-gl.js	<loaded>
 deltasync.test.js	asm-watch.js	<loaded>
 deltasync.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	renderAsmUI
@@ -3256,8 +3250,7 @@ figuremotif.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	ab
 figuremotif.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 figuremotif.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
 figuremotif.test.js	analysis.js	<loaded>
-figuremotif.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
-figuremotif.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
+figuremotif.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 figuremotif.test.js	apple-touch-icon.png	<loaded>
 figuremotif.test.js	asm-color.js	<loaded>	asmCmGaps	asmCmRoute
 figuremotif.test.js	asm-gl.js	<loaded>
@@ -3744,10 +3737,8 @@ inlineswatch.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	a
 inlineswatch.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 inlineswatch.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals
 inlineswatch.test.js	analysis.js	<loaded>
-inlineswatch.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	stillCur	texSwatches	tx	txFail	txs	window.fetch
-inlineswatch.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmPileKind	asmWtWants
 inlineswatch.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fitNav	fitNavSoon	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	stillCur	texSwatches	tx	txFail	txs	window.fetch
-inlineswatch.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmWtWants
+inlineswatch.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmPileKind	asmWtWants
 inlineswatch.test.js	asm-gl.js	<loaded>
 inlineswatch.test.js	asm-watch.js	<loaded>
 inlineswatch.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
@@ -4901,8 +4892,7 @@ motif.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg
 motif.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 motif.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
 motif.test.js	analysis.js	<loaded>
-motif.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
-motif.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
+motif.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 motif.test.js	apple-touch-icon.png	<loaded>
 motif.test.js	asm-color.js	<loaded>
 motif.test.js	asm-gl.js	<loaded>
@@ -5073,8 +5063,7 @@ multi.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg
 multi.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 multi.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addMulti	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	countWord	cropBox	formCard	multiAgain	multiErrCard	multiFail	multiMsg	multiNote	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveAll	saveCard	savedTitle	shadeRow	skipCard	tagSwInner	texSlot	unreadNote	wbNote
 multi.test.js	analysis.js	<loaded>
-multi.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
-multi.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
+multi.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 multi.test.js	apple-touch-icon.png	<loaded>
 multi.test.js	asm-color.js	<loaded>
 multi.test.js	asm-gl.js	<loaded>
@@ -5338,8 +5327,7 @@ nu2fix2.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutR
 nu2fix2.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRetryLink	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 nu2fix2.test.js	add.js	<loaded>	@document.addEventListenerclick	addBackOnline	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addMulti	addNoteText	addRestore	addRevive	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	countWord	cropBox	formCard	multiAgain	multiErrCard	multiFail	multiMsg	multiNote	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	oddWord	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	refineAgain	renderAdd	save	saveCard	savedTitle	setq	shadeRow	sheetSwipe	shirtColFix	skipCard	stepQty	stopRead	tagSwInner	texGains	texSlot	typeCard	unreadNote	wbNote
 nu2fix2.test.js	analysis.js	<loaded>
-nu2fix2.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
-nu2fix2.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matchLight	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
+nu2fix2.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 nu2fix2.test.js	asm-color.js	<loaded>
 nu2fix2.test.js	asm-gl.js	<loaded>
 nu2fix2.test.js	asm-watch.js	<loaded>
@@ -7071,7 +7059,7 @@ rollback.test.js	mq/suit.js	<loaded>
 rollback.test.js	mq/vest.js	<loaded>
 rollback.test.js	pack.js	<loaded>	packShow
 rollback.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	picsDrawn	renderItemPicUI	workerBase
-rollback.test.js	planner.js	<loaded>	lockStale
+rollback.test.js	planner.js	<loaded>
 rollback.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 rollback.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errList	errReport	pruneTagImgs	safetyStart
 rollback.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	isoToDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit	unitCC	weekFirst	yearDate
@@ -7766,8 +7754,7 @@ safety.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutRe
 safety.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 safety.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addRevive	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	sheetSwipe	tagSwInner	texSlot	typeCard	unreadNote	wbNote
 safety.test.js	analysis.js	<loaded>
-safety.test.js	app.js	<loaded>	@.catch	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbGone	dbLive	dbMark	dbOpen	dbRetry	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
-safety.test.js	app.js	<loaded>	@.catch	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbGone	dbLive	dbMark	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
+safety.test.js	app.js	<loaded>	@.catch	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbGone	dbLive	dbMark	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 safety.test.js	apple-touch-icon.png	<loaded>
 safety.test.js	asm-color.js	<loaded>	asmCmKind	asmCmRoute	asmPileKind
 safety.test.js	asm-gl.js	<loaded>
@@ -7976,8 +7963,7 @@ sett.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	
 sett.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 sett.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsLeave	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texSlot	unreadNote	wbNote
 sett.test.js	analysis.js	<loaded>
-sett.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
-sett.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
+sett.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 sett.test.js	apple-touch-icon.png	<loaded>
 sett.test.js	asm-color.js	<loaded>	asmGapNote
 sett.test.js	asm-gl.js	<loaded>
@@ -8625,8 +8611,7 @@ shirtweave.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	abo
 shirtweave.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 shirtweave.test.js	add.js	<loaded>	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	npsLeave	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
 shirtweave.test.js	analysis.js	<loaded>
-shirtweave.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
-shirtweave.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
+shirtweave.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 shirtweave.test.js	apple-touch-icon.png	<loaded>
 shirtweave.test.js	asm-color.js	<loaded>	asmCmGaps	asmCmKind	asmCmPref	asmCmRoute	asmCmStatus	asmCmUI	asmGapUI	asmReadGaps
 shirtweave.test.js	asm-gl.js	<loaded>	asmGlPref	asmGlStatus	asmGlUI
@@ -9322,13 +9307,12 @@ tagging.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutR
 tagging.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 tagging.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addRevive	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	checkArrivals	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	setq	shadeRow	tagSwInner	texGains	texSlot	unreadNote	wbNote
 tagging.test.js	analysis.js	<loaded>	listAnd
-tagging.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
-tagging.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
+tagging.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	afterDom	afterScripts	aiLabel	ask	busyLabelFor	busyStart	cap1	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	generateSwatch	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	shrink	texSwatches	tx	txFail	txs	window.fetch
 tagging.test.js	apple-touch-icon.png	<loaded>
 tagging.test.js	asm-color.js	<loaded>	asmCmKind	asmCmRoute	asmCuDark	asmCuPatch	asmCuTile	asmCuTile1	asmCuWants	asmCuWrap
 tagging.test.js	asm-gl.js	<loaded>
 tagging.test.js	asm-watch.js	<loaded>
-tagging.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave	renderAsmUI
+tagging.test.js	assemble.js	<loaded>	@	renderAsmUI
 tagging.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	laundryDays	renderCareUI
 tagging.test.js	colpick.js	<loaded>	closeColPick	cnAskBox	cnColBase	cnCost	cnDone	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnPatBase	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colTarget	colTidy	cpFig	cpSeg	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
 tagging.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	applyCustom	avgText	colBase	colBaseFor	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	desc	di	dressOut	fitCol	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	labHex	labOf	lum	lumCol	metalWord	mix	needsTie	nm	normCol	normColFor	normPat	occOf	offDays	offName	ownColKey	ownDescClean	ownNameBad	ownNameClean	ownNameTidy	ownPatKey	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	rgbLab	seasonFit	sentence	setHash	setKeys	shadeName	stampSettings	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
