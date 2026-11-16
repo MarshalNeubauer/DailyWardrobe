@@ -63,7 +63,7 @@ const vestRow=o=>!(o.suitDay&&hasVest(o.top)&&o.tie)?'':`<div class="row vest-ro
 /* the outfit list: tapping a piece's swatch or name unfolds its photo inside the list (the actual item, so you can see
    exactly which shirt it is); one at a time; items without a photo show their product picture or drawing */
 let openRow=null;
-const rowPic=i=>i.photo?`<img class="rpic" src="${i.photo}" alt="Photo of ${esc(desc(i)||nm(i))}">`:itemPic(i)?`<img class="rpic" src="${itemPic(i).img}" alt="Picture of ${esc(desc(i)||nm(i))}">`:`<div class="rpic draw">${itemThumb(i,true)}</div>`;
+const rowPic=i=>i.photo?`<img class="rpic" src="${srcOk(i.photo)}" alt="Photo of ${esc(desc(i)||nm(i))}">`:itemPic(i)?`<img class="rpic" src="${srcOk(itemPic(i).img)}" alt="Picture of ${esc(desc(i)||nm(i))}">`:`<div class="rpic draw">${itemThumb(i,true)}</div>`;
 const rowPanel=i=>rowPic(i)+(i.photo?'':`<small class="mut rnote">No photo of this item yet${itemPic(i)?': a generated picture of it.':': this is how the app draws it.'}</small>`);
 /* taking a piece off for the day (the owner's ask, 2026-11-13): the jacket (with its waistcoat; a suit's trousers stay) or the tie (with
    its clip), on today and the coming days; − beside the piece takes it off, + on its "Taken off" row puts it back (setOff) */
@@ -79,8 +79,17 @@ async function setOff(slot,on){const k=key(sel),o=planFor()[k];if(!o||o.frozen||
     if(o.top)r.kind=o.suitDay?'suit':'blazer';r.force=force;off[slot]=true}
   else delete off[slot];
   if(off.top||off.tie)r.off=off;else delete r.off;delete r.lock;swapMsg='';await saveDay(r);renderToday()}
+/* a jacket worn again too soon (rest under COOL days): "Add more suits" only when the suits in rotation that day (not away at the cleaner,
+   not paused) are too few for a COOL-day rest; on a day the owner chose the jacket (a pick, a correction) it says only when it was last
+   worn; otherwise (the planner's trade-off with three or more suits: an occasion, the season, the week's lock) nothing (W2-17-06: "Add
+   more suits" with three suits owned) */
+function restWarn(o){if(!o||!o.top||!(o.top.rest<COOL))return '';const kind=o.top.type==='suit'?'suit':'blazer',n=o.top.rest,ago=`${n} day${n===1?'':'s'} ago`;
+  const have=items.filter(i=>i.type===o.top.type&&inRotation(i,di(sel))).length;
+  if(have<COOL)return `<p class="warn">This ${kind} was worn ${ago}. Add more ${kind}s to get a ${COOL}-day rest.</p>`;
+  const r=dayRecs[key(sel)],mine=o.frozen?!!(r&&r.edited):!!(r&&r.force&&r.force.top===o.top.id);
+  return mine?`<p class="warn">You wore this ${kind} ${ago} too.</p>`:''}
 const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&&!needsTie(o)&&!(o.off&&o.off.tie)&&!(o.frozen&&pastEdit===key(sel));const rows=([...(nj?[]:[[o.suitDay?'Suit':'Blazer',o.top,'top']]),...(o.suitDay?[]:[['Pants',o.bot,'bot']]),['Shirt',o.shirt,'shirt'],...(nt?[]:[['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip']]),...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
-  .filter(([l,i,s])=>!(s==='clip'&&!i&&!(o.frozen&&pastEdit===key(sel))))   // no tie clip that day: no row (kept while correcting a past day, to add the one worn)
+  .filter(([l,i,s])=>!(s==='clip'&&!i&&(o.vest||!(o.frozen&&pastEdit===key(sel)))))   // no tie clip that day: no row (kept while correcting a past day, to add the one worn, but not on a vest day: the vest holds the tie, W2-17-20)
 .filter(([l,i,s])=>!(s==='clip'&&o.off&&o.off.tie))
 .map(([l,i,s])=>{if((s==='top'||s==='tie')&&!i&&o.off&&o.off[s])return offRow(s,o);const open=!!i&&openRow===s;
   return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)&&!(s==='bot'&&o.suitBot)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}${offBtn(s,o)}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':`<button type="button" class="linkbtn addone" onclick="openAdd()" aria-label="${l}: none yet. Add one">Add one</button>`}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
@@ -175,8 +184,9 @@ const ovlDrawn=i=>{if(i.type==='tie')return false;if(i.type==='shirt')return tru
    over them, and the cloth's grain (ovlGrain: twill ribs, herringbone columns, linen slubs, else a fine plain weave) at OVL_GRAIN times
    the mockup's base strength; a suit with a stripe, check or figure but no band reading keeps the drawn tile. A PNG, cached. */
 const OVL_PX=260,OVL_GRAIN=2.2,OVL_CROSS=.06,OVL_CROSS_A=.75,OVL_SUITS=new Map();
-const ovlGrain=i=>{const t=((i.patternSpec&&i.patternSpec.description)||i.patternText||'')+' '+(i.material||'')+' '+(i.pattern||'');
-  return /linen/i.test(t)?'linen':/herringbone/i.test(t)?'herringbone':/twill|serge|gabardine/i.test(t)?'twill':'plain'};
+/* (2026-11-15, the materials audit) corduroy's wales, seersucker's puckered stripe and velvet's soft pile, from the material */
+const ovlGrain=i=>{const t=((i.patternSpec&&i.patternSpec.description)||i.patternText||'')+' '+(i.material||'')+' '+(i.pattern||''),m=String(i.material||'');
+  return /linen/i.test(t)?'linen':/corduroy/i.test(m)?'cord':/seersucker/i.test(m)?'sucker':/velvet/i.test(m)?'velvet':/herringbone/i.test(t)?'herringbone':/twill|serge|gabardine/i.test(t)?'twill':'plain'};
 function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlItem(i),s=usableSett(o),bands=s&&s.v===2&&s.bands&&s.bands.length>1?s.bands:null;
   if(!bands&&(s&&s.motif||[...STRIPE_PATS,...CHECK_PATS,...MOTIF_PATS].includes(patBase(i.pattern)||'')))return null;
   const kind=ovlGrain(i),cx=bands&&s.cross&&s.cross.bands&&Math.abs(Math.abs(s.cross.d)-90)<=20?s.cross:null,flip=bands&&Math.abs(Math.abs(s.a||0)-90)<20;
@@ -193,6 +203,9 @@ function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlI
     if(kind==='twill')g=1+m*(.055*Math.sin(2*Math.PI*(x+y)/7)+.03*(hash(x+y,(y-x)>>2)-.5));
     else if(kind==='herringbone'){const k=Math.floor(x/26),d=k%2?x+y:x-y;g=1+m*(.07*Math.sin(2*Math.PI*d/7)+.03*(hash(d,k)-.5))}
     else if(kind==='linen')g=1+m*(.05*(hash(x>>1,7)-.5)+.05*(hash(13,y>>1)-.5)+.03*(hash(x,y)-.5));
+    else if(kind==='cord'){const u=flip?y:x;g=1+m*(.09*Math.pow(Math.sin(Math.PI*u/10),2)-.045+.025*(hash(u,(flip?x:y)>>3)-.5))}   // the wales run with the stripes
+    else if(kind==='sucker'){const u=flip?y:x,pk=Math.floor(u/14)%2;g=1+m*(pk?.05*(hash(u>>2,(flip?x:y)>>2)-.5)+.03*Math.sin((flip?x:y)/2.5):.02*(hash(x,y)-.5)+.012)}
+    else if(kind==='velvet')g=1+m*(.04*(hash(x>>4,y>>4)-.5)+.03*(hash(x>>2,y>>2)-.5)+.012*(hash(x,y)-.5));
     else g=1+m*(.025*Math.sin(Math.PI*x/2)*Math.sin(Math.PI*y/2)+.035*(hash(x,y)-.5));
     const k=4*(y*S+x);for(let j=0;j<3;j++)D.data[k+j]=Math.max(0,Math.min(255,Math.round(px[j]*g)));D.data[k+3]=255}
   X.putImageData(D,0,0);const url=c.toDataURL('image/png');if(OVL_SUITS.size>12)OVL_SUITS.clear();OVL_SUITS.set(key,url);return url}
@@ -228,7 +241,7 @@ function ovlHbShirt(i){if(!i||i.type!=='shirt'||typeof document==='undefined'||t
 const OVL_CU=new Map();let ovlCuN=0;
 const ovlCuKey=i=>JSON.stringify([i.id,colOf(i),i.pattern,(i.texture||'').length,(i.texture||'').slice(-12),typeof ASM_CU!=='undefined'?ASM_CU.v:0]);
 const ovlCuWants=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&typeof document!=='undefined'&&typeof asmCuTile==='function'&&typeof asmCmRoute==='function'&&asmCmRoute(i,'jacket').how==='twill'&&asmCuWants(i,'twill');
-const ovlSuitOld=i=>{if(ovlCloseup(i)&&!ovlDrawn(i))return `<img src="${i.swatch}" alt="">`;const u=ovlSuitPng(i);return u?`<img src="${u}" alt="">`:ovlSvg(i)};
+const ovlSuitOld=i=>{if(ovlCloseup(i)&&!ovlDrawn(i))return `<img src="${srcOk(i.swatch)}" alt="">`;const u=ovlSuitPng(i);return u?`<img src="${u}" alt="">`:ovlSvg(i)};
 function ovlCuSuit(i){if(!ovlCuWants(i))return null;const k=ovlCuKey(i);let e=OVL_CU.get(k);
   if(!e){e={id:'cu'+(++ovlCuN),url:null,fail:false};OVL_CU.set(k,e);
     const put=h=>document.querySelectorAll(`[data-hb="${e.id}"]`).forEach(x=>{x.outerHTML=h});
@@ -242,7 +255,7 @@ function ovlCuSuit(i){if(!ovlCuWants(i))return null;const k=ovlCuKey(i);let e=OV
   return `<svg data-hb="${e.id}" viewBox="0 0 16 16" aria-hidden="true"><rect width="16" height="16" fill="${colOf(i)}"/></svg>`}
 const ovlPiece=i=>{if(i.type==='suit'||i.type==='blazer')return ovlCuSuit(i)||ovlSuitOld(i);
   if(i.type==='shirt'){const h=ovlHbShirt(i);if(h)return h}
-  return ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${i.swatch}" alt="">`:ovlSvg(i)};
+  return ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${srcOk(i.swatch)}" alt="">`:ovlSvg(i)};
 function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.tie]].filter(([,i])=>i);if(!ps.length)return '';
   // each swatch is a button: it opens that piece up close (swTap)
   return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" onclick="swTap('${s}')" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${ovlPiece(i)}</button>`).join('')}</div>`}
@@ -286,7 +299,7 @@ function figureStage(o){
   // Nothing paid is ever made from here (the drawn-figure photo was retired 2026-11-14)
   const marks=false;   // (the swatches no longer step up for the ✕ / ✓ circles, gone from the picture 2026-11-14)
   const cf=typeof careFrame==='function'?careFrame(o):null,cc=cf?cf.cls:'',ch=cf?cf.html:'';   // a suit or blazer coming due for cleaning (care.js)
-  return (photo?`<div class="fig photo${cc}" id="mannequin-container"><img onload="fitNavSoon()" src="${r.img}" alt="Photo of ${esc(figureLabel(o))}">${swatchStack(o,marks)}${wornMarks(o)}${ch}</div>`
+  return (photo?`<div class="fig photo${cc}" id="mannequin-container"><img onload="fitNavSoon()" src="${srcOk(r.img)}" alt="Photo of ${esc(figureLabel(o))}">${swatchStack(o,marks)}${wornMarks(o)}${ch}</div>`
     :`<div class="fig${cc}" id="mannequin-container">${figureSvg(o)}${wornMarks(o)}${ch}</div>`)+
     (tiles?`<div class="below" style="--n:${below.length}" aria-label="${o.coat?'Coat and below the waist':'Below the waist'}" role="group">${tiles}</div>`+belowBox(o,below):'');
 }
@@ -339,9 +352,9 @@ let listOpen=false;
 function piecesBox(o){
   const pcs=[['top',o.top],['vest',o.vest?o.top:null],['bot',o.suitDay?null:o.bot],['shirt',o.shirt],['tie',o.tie],['clip',o.clip],['links',o.links],['watch',o.watch],['belt',o.belt],['socks',o.socks],['shoes',o.shoes],['coat',o.coat]].filter(([,i])=>i);
   const chips=pcs.map(([s,i])=>`<span class="pchip${s==='vest'?' vest':''}" title="${slotLabel(s,o)}: ${esc(s==='vest'?'matching vest':desc(i)||nm(i))}">${swatchSVG(i,true)}</span>`).join('');
-  const sum=piecesLine(o);
+  const pp=piecesParts(o),sum=pp.map((t,k)=>nameHtml(k?t:sentence(t))).join(' · ');   // each name kept in its place in an English line (<bdi>, W2-16-10)
   return `<section class="mbox ibox${listOpen?' open instant':''}" id="ibox"><button class="month-link" onclick="toggleList()" aria-expanded="${listOpen}" aria-controls="ipanel" aria-label="Outfit pieces: ${pcs.length}. ${listOpen?'Fold away':'Show the list'}">
-    <span class="pstrip" aria-hidden="true" style="--pc:${pcs.length<=6?pcs.length:Math.ceil(pcs.length/2)}">${chips}</span><span class="mltxt"><b>${pcs.length} piece${pcs.length===1?'':'s'}</b><small class="cap">${esc(sentence(sum))||'Tap to see the list'}</small></span><span class="chev" aria-hidden="true">›</span></button>
+    <span class="pstrip" aria-hidden="true" style="--pc:${pcs.length<=6?pcs.length:Math.ceil(pcs.length/2)}">${chips}</span><span class="mltxt"><b>${pcs.length} piece${pcs.length===1?'':'s'}</b><small class="cap">${sum||'Tap to see the list'}</small></span><span class="chev" aria-hidden="true">›</span></button>
     <div class="mpanel" id="ipanel"><div class="mpanel-in" onclick="foldListTap(event)"><div class="list">${slots(o)}</div></div></div></section>`}
 /* a tap inside the open pieces list that is not on a button, a link or a photo (e.g. on the names on the left) folds the list */
 function foldListTap(e){if(!listOpen||e.target.closest('button,a,input,select,label,.rpanel'))return;toggleList()}
@@ -352,7 +365,10 @@ function toggleList(){const box=$('#ibox');if(!box)return;listOpen=!listOpen;
   if(listOpen)boxUnfold(box);else{revealRun++;boxFold(box,'#ipanel .list>*')}}
 function renderToday(){
   closeSettings();if(pastEdit&&pastEdit!==key(sel))pastEdit=null;if(picker)closePicker();dayShown={k:key(todayDate()),home:key(sel)===key(homeDay())};
-  const p=planFor();
+  const p=planFor(),snapped=!!(cache.snap&&p===cache[cache.snap]);
+  // the day records are written before the drawing (recordDays puts them in memory at once, then saves): the missed days it records count
+  // in this drawing's "last worn" and cleaning frame (fix round 3, W2-14-12: they changed a moment after opening)
+  if(!snapped&&items.length&&typeof pulledYet==='function'&&pulledYet())recordRun=recordDays(p).then(lockUpcoming).then(()=>{if(typeof planSnapSoon==='function')planSnapSoon()});
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
   const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc${settings.location?'':' wxlk'}">${settings.location?(wxChip(sel)||''):`<a href="#" class="wxl" onclick="openSettings('weather');return false">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
@@ -364,12 +380,10 @@ function renderToday(){
   else if(!items.length||(first&&!hasOutfit(o)))stage=first||`<p class="mut empty">Your wardrobe is empty. ${ADD_HINT} to get an outfit.</p>`;
   else{stage=first+figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
-    side=`${wardShort()?'':scoreCard(o)}${piecesBox(o)}${dayActions(o)}${goneNote(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${o.top&&o.top.rest<COOL?`<p class="warn">This ${o.suitDay?'suit':'blazer'} was worn ${o.top.rest} day${o.top.rest===1?'':'s'} ago. Add more ${o.suitDay?'suits':'blazers'} to get a ${COOL}-day rest.</p>`:''}${typeof careNote==='function'?careNote(o):''}`}
+    side=`${wardShort()?'':scoreCard(o)}${piecesBox(o)}${dayActions(o)}${goneNote(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${restWarn(o)}${typeof careNote==='function'?careNote(o):''}`}
   $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+missedCard()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);swApply(false);fitNavSoon();wxFit();
-  if(cache.snap&&p===cache[cache.snap]){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
-  else if(items.length){if(typeof pulledYet==='function'&&pulledYet())recordRun=recordDays(p).then(lockUpcoming).then(()=>{if(typeof planSnapSoon==='function')planSnapSoon()});
-    else if(!todayPullWait){todayPullWait=true;whenPulled(()=>{todayPullWait=false;if(!$('#today').hidden)refreshToday()})}   // (drawn again once the backup is merged, and recorded then)
-  }
+  if(snapped){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
+  else if(items.length&&!(typeof pulledYet==='function'&&pulledYet())&&!todayPullWait){todayPullWait=true;whenPulled(()=>{todayPullWait=false;if(!$('#today').hidden)refreshToday()})}   // (recorded above when pulled; else drawn again once the backup is merged, and recorded then)
 }
 
 /* a swipe to another day folds whatever is open (score, pieces list and its rows, a below-the-waist photo, the month) and zooms

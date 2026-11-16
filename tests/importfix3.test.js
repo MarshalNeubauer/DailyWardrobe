@@ -24,11 +24,16 @@ module.exports=async({ok,chromium,url})=>{
       const tie=items.find(i=>i.type==='tie'&&i.primaryColor==='navy');tie.name='Office';tie.updated=Date.now();
       kitImportOpen();kitImportText(b);const sum=document.querySelector('.kit-sum').textContent,btn=document.querySelector('#kit-imp').textContent,upd=document.querySelectorAll('.kit-rows li.upd').length,
         info=[...document.querySelectorAll('.kit-rows li.upd small')].map(x=>x.textContent);
-      await kitImportGo();const after=items.length,same=items.filter(i=>i.type!=='belt').map(i=>i.id).sort().join()===ids,pats=items.filter(i=>i.type==='tie').map(i=>i.pattern).sort().join(),named=(items.find(i=>i.name==='Office')||{}).pattern;
+      await kitImportGo();
+      const canon=v=>v&&typeof v==='object'&&!Array.isArray(v)?'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canon(v[k])).join(',')+'}':JSON.stringify(v);
+      const stored=await tx('readonly',s=>s.getAll()),clean=stored.every(i=>{const c=cleanRecord(i);return c&&canon(c)===canon(i)}),
+        fsOk=stored.filter(i=>i.type==='tie').every(i=>i.fs&&i.fs.u===i.updated&&i.fs.s.pattern===i.updated&&!('brand' in i.fs.s));
+      const after=items.length,same=items.filter(i=>i.type!=='belt').map(i=>i.id).sort().join()===ids,pats=items.filter(i=>i.type==='tie').map(i=>i.pattern).sort().join(),named=(items.find(i=>i.name==='Office')||{}).pattern;
       const t=document.querySelector('#toast').textContent;await document.querySelector('#toast button').click();await new Promise(r=>setTimeout(r,400));
-      return {sum,btn,upd,info,after,same,pats,named,t,undone:items.filter(i=>i.type==='tie').map(i=>i.pattern).sort().join(),n:items.length}},[first,second]);
+      return {sum,btn,upd,info,after,same,pats,named,t,clean,fsOk,undone:items.filter(i=>i.type==='tie').map(i=>i.pattern).sort().join(),n:items.length}},[first,second]);
     ok(u.upd===5&&u.btn==='Add 1, update 5'&&/5 match pieces you have with another pattern/.test(u.sum)&&u.info.some(x=>/updates your navy tie: pattern solid → (knit|polka dot)/.test(x)),`re-importing with a Pattern column offers to update the 5 re-patterned pieces, not add them (${u.btn}; ${u.sum})`);
     ok(u.after===7&&u.same&&u.pats==='knit,paisley,polka-dot'&&/Imported 1 item and updated 5 pieces/.test(u.t),`the pieces keep their ids (and so their history) and get the patterns; only the new belt is added (${JSON.stringify(u)})`);
+    ok(u.clean&&u.fsOk,`imported and updated pieces pass the record check unchanged, and an update stamps only the fields it changed, as an edit does (${u.clean}, ${u.fsOk})`);
     ok(u.undone==='solid,solid,solid'&&u.n===6,'Undo puts the updated pieces back as they were and takes the belt out: '+u.undone);
     const an=await p.evaluate(()=>{kitImportOpen();kitImportText('Type,Colour,Pattern\nTie,Navy,Paisley\n');const b0=document.querySelector('#kit-imp').textContent;document.querySelector('.kit-asnew').click();
       const b1=document.querySelector('#kit-imp').textContent;kitImportText('Type,Colour\nTie,Navy\nTie,Navy\nTie,Navy\n');const b2=document.querySelector('#kit-imp').textContent;kitImportText('Type,Colour,Name\nTie,Navy,Sheet tie\n');const b3=document.querySelector('#kit-imp').textContent;kitClose();return {b0,b1,b2,b3}});

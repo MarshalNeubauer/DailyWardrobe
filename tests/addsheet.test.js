@@ -21,7 +21,7 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
     return route.fulfill({status:503,headers:H,body:'{"error":"server"}'})});   // (no /sync, no reading: nothing paid)
   await ctx.addInitScript(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');localStorage.setItem('tour_seen','1')});
   const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
-  await p.goto(url);await p.waitForFunction(()=>window.appReady);
+  await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
   await p.evaluate(W=>{rememberRole({role:'owner'});const w=(0,eval)(W);items=w.realistic.map(i=>({...i}));settings.setupDone=1;cache={};queue.length=0;show('wardrobe');openAdd()},WARDROBES);
   await settle(p,400);
   const ev=(f,a)=>p.evaluate(f,a);
@@ -57,12 +57,12 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
     const c=document.querySelector('#nps-q .card');return {top:sr.top,w:sr.width,left:sr.left,bottom:sr.bottom,grab:!!s.querySelector('.nps-grab'),title:s.querySelector('#nps-title').textContent,icon:s.querySelectorAll('.nps-head svg.aic path').length,
       x:x&&{w:R(x).width,h:R(x).height,label:x.getAttribute('aria-label')},cardX:!!(c&&c.querySelector('.qx')),cardBtns:!!(c&&c.querySelector('.btns #qconf-0')),
       bar:[...document.querySelectorAll('#nps-bar button')].map(b=>b.textContent).join(','),barBottom:bar.bottom,
-      fields:!!(c&&c.querySelector('.rv svg,.rv .thumb'))&&!!c.querySelector('.shaderow')&&!!c.querySelector('.texslot')&&!!c.querySelector('select[onchange*="\'type\'"]'),
+      fields:!!(c&&c.querySelector('.rv svg,.rv .thumb'))&&!!c.querySelector('.shaderow')&&!!c.querySelector('[data-ck="tex"] .wbstcard')&&!!c.querySelector('select[onchange*="\'type\'"]'),
       inert:document.querySelector('body>header').inert&&document.querySelector('body>nav').inert&&document.querySelector('#add .addpick').inert&&!s.closest('[inert]'),dim:+getComputedStyle(document.querySelector('#nps-backdrop')).opacity,
       bg:getComputedStyle(s).backgroundColor}});
   ok(await npsUp()&&r.first>r.end+40&&Math.abs(r.end-e.top)<2,T+`tapping it slides the sheet up from below (top ${r.first} → ${r.end})`);
   ok(Math.abs(e.top-ivtop)<1&&e.grab&&e.title==='Add without a photo'&&e.icon===4&&e.x&&e.x.w>=44&&e.x.h>=44&&e.x.label==='Close'&&e.dim>.9,T+`it has the grabber, the title with the icon and a 44 px × (Close), the page dimmed behind (top ${Math.round(e.top)} = --ivtop ${ivtop}; ${JSON.stringify(e.x)})`);
-  ok(e.fields&&!e.cardX&&!e.cardBtns&&e.bar==='Confirm,Cancel'&&Math.abs(e.barBottom-h)<1.5,T+`today's no-photo card is inside (drawing, Shade, Step 2 close-up, Type), without its own ×; Confirm and Cancel are pinned at the bottom (${e.bar}, bar bottom ${Math.round(e.barBottom)} of ${h})`);
+  ok(e.fields&&!e.cardX&&!e.cardBtns&&e.bar==='Confirm,Cancel'&&Math.abs(e.barBottom-h)<1.5,T+`today's no-photo card is inside (drawing, Shade, Texture match with its close-up buttons, Type), without its own ×; Confirm and Cancel are pinned at the bottom (${e.bar}, bar bottom ${Math.round(e.barBottom)} of ${h})`);
   ok(e.inert,T+'the page behind (header, tab bar, the rest of Add) is out of reach while it is up');
   if(WIDE)ok(Math.round(e.w)===640&&Math.abs(e.left-(w-640)/2)<1.5,T+`on the wide layout it is 640 px wide and centered (${Math.round(e.w)} px at ${Math.round(e.left)})`);
   else ok(Math.round(e.w)===w,T+`on the phone it spans the width (${Math.round(e.w)} px)`);

@@ -13,7 +13,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   const browser=await chromium.launch();
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     const app=()=>p.evaluate(()=>!!window.appReady&&location.href);
     const back=async()=>{await p.goBack({timeout:3000}).catch(()=>{});await settle(p,300)};
     const stateApp=()=>p.evaluate(()=>history.state&&history.state.app||'');

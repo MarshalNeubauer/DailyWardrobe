@@ -48,9 +48,41 @@ const connRestored=db.then(async()=>{let n=0;
   connReady=true;await connKeep();if(n)console.warn(`put back ${n} connection setting(s) this browser's storage had lost`);return n}).catch(()=>{connReady=true;return 0});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')connKeep()});
 /* read-modify-write inside ONE transaction, so a sync finishing at the same moment can't overwrite it */
-const atomic=(store,key,fn)=>dbRetry('readwrite',d=>new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out;
-  const q=s.get(key);q.onsuccess=()=>{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)};t.oncomplete=()=>ok(out&&out.value);t.onerror=t.onabort=txFail(t,no)}));
+/* a put that throws at once (a full disk in some browsers, a value it can't store) aborts the transaction with that error, not WebKit's
+   "IDBTransaction will abort due to uncaught exception" (W1-11-05) */
+const atomic=(store,key,fn)=>dbRetry('readwrite',d=>new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out,thrown=null;
+  const q=s.get(key);q.onsuccess=()=>{try{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)}catch(x){thrown=x;try{t.abort()}catch{}}};t.oncomplete=()=>ok(out&&out.value);
+  const fail=txFail(t,no);t.onerror=t.onabort=ev=>{if(!thrown)return fail(ev);try{thrown.dwStore='write'}catch{}no(thrown)}}));
 const addTombstones=add=>atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})};for(const [id,t] of Object.entries(add))v[id]=Math.max(v[id]||0,t);return {put:{k:'tombstones',v},value:v}});
+/* the stored wardrobe at start-up through core.js cleanRecord/cleanDay (fix round 3, W2-13-02): a record stored before the entry check
+   (a crafted Restore file or sync) is shown cleaned, and stored cleaned with its stamp unchanged (nothing to back up; the other phones
+   clean their own copy), only where the check changed it; a record with no usable id or type is left out and taken out of storage.
+   Every original it changes or leaves out is first kept on this phone (meta rec_kept) and the person is told once (recKeptTell).
+   Once per phone (localStorage rec_clean, REC_CLEAN): every record stored since came through the check or was made by the app, and the
+   check reads every photo (a few hundred ms on a large wardrobe). -> {items, days} */
+const REC_CLEAN='1';
+const recSame=(a,b)=>{if(!b)return false;const ka=Object.keys(a),kb=Object.keys(b);if(ka.length!==kb.length)return false;
+  return ka.every(k=>a[k]===b[k]||(a[k]&&typeof a[k]==='object'&&JSON.stringify(a[k])===JSON.stringify(b[k])))};
+function cleanStored(its,days){its=its||[];days=days||[];
+  try{if(localStorage.getItem('rec_clean')===REC_CLEAN)return {items:its,days}}catch{}
+  const ci=its.map(cleanRecord),cd=days.map(cleanDay),same=(a,b)=>!!a&&typeof a==='object'&&recSame(a,b);
+  // nothing is changed in storage before every original the check would change is kept on this phone (meta rec_kept, added to, never
+  // replaced): the stored copy is written only after that, and the person is told once (recKeptTell)
+  const kept=[];its.forEach((it,k)=>{if(!same(it,ci[k]))kept.push({kind:'item',dropped:!ci[k],rec:it})});days.forEach((d,k)=>{if(!same(d,cd[k]))kept.push({kind:'day',dropped:!cd[k],rec:d})});
+  const flag=()=>{try{localStorage.setItem('rec_clean',REC_CLEAN)}catch{}};
+  if(!kept.length){flag();return {items:its,days}}
+  (async()=>{const prev=await metaGet('rec_kept').catch(()=>null);await metaPut('rec_kept',[...(Array.isArray(prev)?prev:[]),...kept.map(x=>({...x,at:Date.now()}))]);
+    const w=[];
+    its.forEach((it,k)=>{const c=ci[k];if(same(it,c))return;const id=it&&it.id;if(id==null||typeof id==='object')return;
+      w.push(atomic('items',id,cur=>cur&&stamp(cur)===stamp(it)?(c&&c.id===id?{put:c}:{del:true}):null))});
+    days.forEach((d,k)=>{const c=cd[k];if(same(d,c))return;const dt=d&&d.date;if(dt==null||typeof dt==='object')return;
+      w.push(atomic('days',dt,cur=>cur&&(cur.updated||0)===(d.updated||0)?(c&&c.date===dt?{put:c}:{del:true}):null))});
+    await Promise.all(w);flag();recKeptTell(kept)})().catch(e=>console.warn('stored records not cleaned',e));
+  return {items:ci.filter(Boolean),days:cd.filter(Boolean)}}
+/* said once, in plain words, whenever the start-up check set something aside (the originals stay in meta rec_kept on this phone) */
+function recKeptTell(kept){const n=kept.filter(x=>x.kind==='item'&&x.dropped).length,f=kept.filter(x=>x.kind==='item'&&!x.dropped).length;if(!n&&!f)return;
+  const t=(n?`${n} item${n===1?'':'s'} in this phone’s storage couldn’t be shown safely and ${n===1?'was':'were'} set aside. `:'')+(f?`Some details of ${f} item${f===1?'':'s'} couldn’t be shown safely and were set aside. `:'')+'Nothing was deleted: the originals are kept on this phone.';
+  const say=()=>typeof toast==='function'?toast(t,12000):setTimeout(say,500);setTimeout(say,1500)}
 // every local edit is timestamped and triggers a (debounced) backup; deletions leave a tombstone so they sync too
 const putRaw=i=>tx('readwrite',s=>s.put(i));
 /* a start-up fix-up saves an item only while it is still the copy on screen: an edit or a sync may have replaced it meanwhile, and saving the
@@ -59,9 +91,12 @@ const stillCur=it=>items.find(x=>x.id===it.id)===it;
 /* and redraws the Wardrobe only when it is on screen and Settings is not open (renderWardrobe closes Settings; these now run after the first
    pull, which can be while Settings is open); the Wardrobe is drawn afresh when it is opened */
 const fixupRedraw=()=>{if(typeof settingsOpen==='function'&&settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)renderWardrobe()};
-const put=i=>{i.updated=Date.now();if(typeof kitUserEdit==='function')kitUserEdit(i);   // (an edit in the item sheet makes a sample piece his: kit.js)
-const r=putRaw(i);r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
-const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
+const put=i=>{i.updated=nextStamp(stamp(i));if(typeof kitUserEdit==='function')kitUserEdit(i);   // (an edit in the item sheet makes a sample piece his: kit.js)
+// the fields changed since the stored copy get the edit's stamp, in the same transaction (core.js itemFields: two phones' changes to
+// different fields of one piece both stay, fix round 3; the stamp is nextStamp's, made one above the stored copy's only when it isn't)
+const r=atomic('items',i.id,cur=>{itemFields(i,cur);return {put:i}});r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
+// (the deletion's stamp is above the item's own, so it wins whatever the clocks say: core.js nextStamp; returned for an Undo)
+const del=async id=>{const was=typeof items!=='undefined'&&items.find(x=>x.id===id),t=nextStamp(stamp(was));await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:t});window.scheduleSync&&scheduleSync();return t};
 
 
 /* precision swatch: a 128 px square of the cloth, cut from the fabric close-up when the card has one (the cloth up close, white-
@@ -70,7 +105,8 @@ const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({
 function cropSwatch(canvas,zoom=1,cx=.5,cy=.5,light){
   const sampleSize=Math.min(canvas.width,canvas.height)*(0.5/(Number(zoom)||1)),o=document.createElement('canvas');o.width=o.height=128;
   const sx=Math.max(0,Math.min(canvas.width-sampleSize,(Number(cx)||.5)*canvas.width-sampleSize/2)),sy=Math.max(0,Math.min(canvas.height-sampleSize,(Number(cy)||.5)*canvas.height-sampleSize/2));
-  o.getContext('2d').drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);if(deadCanvas(o))return null;   // drawn black: no swatch (callers keep the one they had)
+  const g=o.getContext('2d');if(!g)return null;   // a phone out of picture memory gives no context: no swatch, the item still saves (2026-11-16)
+  g.drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);if(deadCanvas(o))return null;   // drawn black: no swatch (callers keep the one they had)
   if(light)matchLight(o,light);return o.toDataURL('image/jpeg',SW_Q)}
 /* a small JPEG (2026-11-15, the owner's option A for the server's writes): a 128 px PNG of cloth was about 38 KB, too big to keep in
    the backup's own text, so every new item cost one more server write for its swatch; as a JPEG it is a few KB, under sync.js PH_MIN,
@@ -193,6 +229,12 @@ async function ask(c,extra){
 /* an AI tag -> the fields the Add form uses (type-checked, colours and patterns normalised) */
 const ownColorsOf=o=>{const f=c=>c&&/^#[0-9a-f]{6}$/i.test(c.hex||'')&&/[a-z]{2}/i.test(c.name||'')?{name:String(c.name).toLowerCase().replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim().slice(0,24),hex:c.hex.toLowerCase()}:null;
   return o&&typeof o==='object'&&f(o.primary)?{primaryColor:f(o.primary),secondaryColor:f(o.secondary),tertiaryColor:f(o.tertiary)}:null};
+/* Claude's material -> {key, conf, why} (+ new:true for one on no list, 2026-11-16), or null. On the type's list or the person's own: any
+   confidence (low is shown as a guess, never filled in: tagging.js takeMaterial); a new one only at medium or high, with a valid name */
+const matTag=p=>{const m=p&&p.material,t=TYPES[p&&p.type]?p.type:'suit',k=m&&typeof m==='object'?String(m.key||'').toLowerCase().replace(/\s+/g,' ').trim():'';
+  if(!k||k==='none'||!MATERIALS_BY[t])return null;const conf=['high','medium','low'].includes(m.confidence)?m.confidence:'low',why=String(m.why||'').replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,160);
+  if(matsFor(t).includes(k))return {key:k,conf,why};
+  const n=ownMatName(k);return n&&m.new===true&&conf!=='low'?{key:n,conf,why,new:true}:null};
 function normTag(parsed,model){
     return {
       type:TYPES[parsed.type]?parsed.type:'suit',
@@ -201,10 +243,12 @@ function normTag(parsed,model){
       secondaryColor:normColFor(parsed.type,parsed.secondaryColor,true),
       tertiaryColor:normColFor(parsed.type,parsed.tertiaryColor,true),
       metal:METAL[parsed.metal]?parsed.metal:'silver',
-      leather:[...LEATHERS,...SHOE_TEXTILES].includes(String(parsed.leather||'').toLowerCase().replace(/\s+/g,'-'))?String(parsed.leather).toLowerCase().replace(/\s+/g,'-'):null,
+      leather:[...LEATHERS,...SHOE_TEXTILES,...SHOE_NAP,...BELT_MATS].includes(String(parsed.leather||'').toLowerCase().replace(/\s+/g,'-'))?String(parsed.leather).toLowerCase().replace(/\s+/g,'-'):null,
       trouserKind:['chinos','jeans','dress'].includes(parsed.trouserKind)?parsed.trouserKind:null,shoeStyle:SHOE_STYLES.some(([k])=>k===parsed.shoeStyle)?parsed.shoeStyle:null,
       model:model||'',
-      dial:normCol(parsed.dial),band:['bracelet','leather'].includes(parsed.band)?parsed.band:null,bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
+      dial:normCol(parsed.dial),band:['bracelet','leather','rubber','nato'].includes(parsed.band)?parsed.band:null,
+      // the material Claude suggests (2026-11-15, worker cleanMaterial): from the type's list or the person's own (low kept as a guess), or a new one (matTag)
+      material:matTag(parsed),bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
       // how sure it was, its runner-up, and what it would add when nothing listed fits (single-item tags)
       conf:parsed.confidence&&typeof parsed.confidence==='object'?parsed.confidence:null,
       altColor:normColFor(parsed.type,parsed.altColor),altPattern:parsed.altPattern&&parsed.altPattern!=='none'&&(PATS_BY[parsed.type]||[]).includes(parsed.altPattern)?parsed.altPattern:null,

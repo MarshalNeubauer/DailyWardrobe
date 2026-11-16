@@ -20,7 +20,7 @@ async function run(eng,browser,{ok,url,settle}){
       if(q.method()==='OPTIONS')return route.fulfill({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-headers':'content-type,x-app-token','access-control-allow-methods':'GET,POST,PUT,DELETE,OPTIONS'}});
       return route.fulfill({status:503,headers:{'content-type':'application/json','access-control-allow-origin':'*'},body:'{"error":"server"}'})});
     await ctx.addInitScript(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');localStorage.setItem('tour_seen','1')});
-    const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     const F=await p.evaluate(async()=>{const load=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
       const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
       const cv=(im,k,f)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);if(f)f(c,x);return c};
@@ -44,12 +44,13 @@ async function run(eng,browser,{ok,url,settle}){
         labelled:s.getAttribute('aria-labelledby'),focusIn:s.contains(ae),pic:!!s.querySelector('.wbpic.cu-pic'),
         hTake:h(take.closest('label')),hLib:h(lib.closest('label')),hRm:h(rm),hCancel:h(cancel),fit:s.getBoundingClientRect().right<=390}});
     const tex=id=>p.evaluate(id=>{const it=items.find(x=>x.id===id);return it&&it.texture?texSig(it.texture):null},id);
-    const btn=async text=>{const h=await p.evaluateHandle(t=>[...document.querySelectorAll('#item-view .phtools button,#item-view .phtools label')].find(x=>x.textContent.trim()===t)||null,text);return h.asElement()};
+    // the editor's tool row (Edit photos option B): the Close-up button reads "Close-up", named "Replace close-up" / "Add fabric close-up"
+    const btn=async text=>{const h=await p.evaluateHandle(t=>[...document.querySelectorAll('#item-view .phtools button,#item-view .phtools label,#toast button')].find(x=>(x.getAttribute('aria-label')||x.textContent.trim())===t)||null,text);return h.asElement()};
     const closed=async()=>{await p.waitForFunction(()=>!document.querySelector('#cu-sheet.on'));await settle(p,320)};
     // ---- the editor, an item with a close-up
-    await p.evaluate(()=>openItem('m1'));await settle(p,400);await p.click('#item-view .ivphbtn');await settle(p,300);
-    let e=await p.evaluate(()=>{const t=[...document.querySelectorAll('#item-view .phtools > *')].map(x=>x.tagName+':'+x.textContent.trim());return {t,file:!!document.querySelector('#item-view .phtools .vfile[onchange*=replaceTexture]')}});
-    ok(e.t.includes('BUTTON:Replace close-up')&&!e.t.some(x=>/Remove close-up/.test(x))&&!e.file,T+`the editor's close-up button is a plain button and there is no separate Remove close-up (${e.t.join(', ')})`);
+    await p.evaluate(()=>openItem('m1'));await settle(p,400);
+    let e=await p.evaluate(()=>{const t=[...document.querySelectorAll('#item-view .phtools > *')].map(x=>x.tagName+':'+(x.getAttribute('aria-label')||x.textContent.trim()));return {t,file:!!document.querySelector('#item-view .phtools .vfile[onchange*=replaceTexture]'),rm:!!document.querySelector('#item-view .ptmore,#item-view .ptrm')}});
+    ok(e.t.includes('BUTTON:Replace close-up')&&!e.t.some(x=>/Remove close-up/.test(x))&&!e.file&&!e.rm,T+`the editor's close-up button is a plain button and there is no separate Remove close-up (${e.t.join(', ')})`);
     const t0=await tex('m1');
     await (await btn('Replace close-up')).click();await p.waitForSelector('#cu-sheet.on');let s=await sheet();
     ok(s.title==='Replace close-up'&&s.sub==='The new close-up takes the place of the one you have.'&&s.tip==='Lay white paper along one edge, then tap the paper on screen.'&&s.takeLabel==='Take close-up'&&s.libLabel==='Choose from photos'&&s.rm==='Remove close-up'&&s.cancel==='Cancel'&&s.pic,
@@ -88,12 +89,12 @@ async function run(eng,browser,{ok,url,settle}){
     // Remove close-up from the sheet, and Undo
     const t3=await tex('m1');
     await (await btn('Replace close-up')).click();await p.waitForSelector('#cu-sheet.on');await p.click('#cu-rm');await closed();
-    e=await p.evaluate(()=>({tex:!!items.find(x=>x.id==='m1').texture,toast:(document.querySelector('#toast')||{}).textContent||'',btns:[...document.querySelectorAll('#item-view .phtools > *')].map(x=>x.textContent.trim())}));
-    ok(!e.tex&&/Close-up removed\./.test(e.toast)&&e.btns.includes('Add fabric close-up'),T+`"Remove close-up" in the sheet removes it ("Close-up removed."), and the button says Add fabric close-up (${e.btns.join(', ')})`);
+    e=await p.evaluate(()=>({tex:!!items.find(x=>x.id==='m1').texture,toast:(document.querySelector('#toast')||{}).textContent||'',btns:[...document.querySelectorAll('#item-view .phtools > *')].map(x=>x.getAttribute('aria-label')||x.textContent.trim())}));
+    ok(!e.tex&&/Close-up removed\./.test(e.toast)&&/Undo/.test(e.toast)&&e.btns.includes('Add fabric close-up'),T+`"Remove close-up" in the sheet removes it ("Close-up removed." with Undo), and the button is named Add fabric close-up (${e.btns.join(', ')})`);
     await (await btn('Undo')).click();await waitTex('m1','');
-    ok(await tex('m1')===t3,T+'Undo brings the close-up back');
+    ok(await tex('m1')===t3,T+'the toast’s Undo brings the close-up back');
     // the editor, an item without a close-up
-    await p.evaluate(()=>openItem('m2'));await settle(p,400);if(!await p.evaluate(()=>phEdit.open))await p.click('#item-view .ivphbtn');await settle(p,300);
+    await p.evaluate(()=>openItem('m2'));await settle(p,400);
     await (await btn('Add fabric close-up')).click();await p.waitForSelector('#cu-sheet.on');s=await sheet();
     ok(s.title==='Fabric close-up'&&s.sub==='Hold the camera close so the weave fills the frame.'&&!s.rm,T+'"Add fabric close-up" opens the sheet titled "Fabric close-up", without Remove');
     await (await p.$('#cu-lib')).setInputFiles(file('m2.jpg',F.paper));await waitTex('m2','');
@@ -125,47 +126,55 @@ async function run(eng,browser,{ok,url,settle}){
     // ---- the Add card
     await p.evaluate(()=>{openAdd();addManual();queue[0].type='suit';queue[0].primaryColor='deeptaupe';renderAdd()});await settle(p,300);
     for(const theme of ['light','dark']){await p.evaluate(t=>{document.documentElement.dataset.theme=t},theme);await settle(p,100);
-      e=await p.evaluate(()=>{const c=document.querySelector('#nps-q .texslot .wbstcard'),r=c&&c.getBoundingClientRect(),cs=c&&getComputedStyle(c);
+      e=await p.evaluate(()=>{const c=document.querySelector('#nps-q [data-ck="tex"] .wbstcard'),r=c&&c.getBoundingClientRect(),cs=c&&getComputedStyle(c);
         return c&&{h:Math.round(r.height),right:r.right,bg:cs.backgroundColor,ink:cs.color,text:c.textContent,old:!!document.querySelector('#nps-q .texguide,#nps-q .texpaper'),fit:document.documentElement.scrollWidth<=390}});
-      ok(e&&e.h>=44&&e.right<=390&&e.fit&&!e.old&&e.bg!==e.ink&&/True color in 3 steps/i.test(e.text),T+`${theme}: the Add card's Step 2 shows the 3-step card, not the old sentence and link (${JSON.stringify(e)})`)}
+      ok(e&&e.h>=44&&e.right<=390&&e.fit&&!e.old&&e.bg!==e.ink&&/True color in 3 steps/i.test(e.text),T+`${theme}: the Add card's Texture match shows the 3-step card, not the old sentence and link (${JSON.stringify(e)})`)}
     await p.evaluate(()=>{delete document.documentElement.dataset.theme});
     await p.click('#nps-q .wbstcard');await p.waitForSelector('#kitsheet.on');
     ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colors'),T+'the Add card\'s card opens the white-paper tip');
     await p.click('#kitsheet .kit-x');await settle(p,200);
-    e=await p.evaluate(()=>{const b=document.querySelector('#nps-q .texslot .cubtn');return {t:b&&b.textContent,file:!!document.querySelector('#nps-q .texslot input[type=file]')}});
+    e=await p.evaluate(()=>{const b=document.querySelector('#nps-q [data-ck="tex"] .cubtn');return {t:b&&b.textContent,file:!!document.querySelector('#nps-q [data-ck="tex"] input[type=file]')}});
     ok(e.t==='Add close-up'&&!e.file,T+'the Add card\'s "Add close-up" is a plain button');
-    await p.click('#nps-q .texslot .cubtn');await p.waitForSelector('#cu-sheet.on');s=await sheet();
+    await p.click('#nps-q [data-ck="tex"] .cubtn');await p.waitForSelector('#cu-sheet.on');s=await sheet();
     ok(s.title==='Fabric close-up'&&!s.rm&&s.cap==='environment',T+'it opens the sheet titled "Fabric close-up"');
     await p.click('#cu-cancel');await closed();
     ok(await p.evaluate(()=>!queue[0].texture),T+'Cancel adds nothing');
-    await p.click('#nps-q .texslot .cubtn');await p.waitForSelector('#cu-sheet.on');
+    await p.click('#nps-q [data-ck="tex"] .cubtn');await p.waitForSelector('#cu-sheet.on');
     await (await p.$('#cu-take')).setInputFiles(file('add.jpg',F.paper));
-    await p.waitForFunction(()=>queue[0]&&queue[0].texture&&!queue[0].refining&&!!document.querySelector('#nps-q .texslot.done'));await settle(p,200);
-    e=await p.evaluate(()=>{const s=document.querySelector('#nps-q .texslot.done');return {btns:[...s.querySelectorAll('button,label')].map(x=>x.textContent.trim())}});
-    ok(e.btns.includes('Replace close-up')&&!e.btns.includes('Remove'),T+`a photo taken there reaches addTexture; the card then offers Replace close-up, with no Remove button of its own (${e.btns.join(', ')})`);
-    await p.click('#nps-q .texslot.done .cubtn');await p.waitForSelector('#cu-sheet.on');s=await sheet();
+    await p.waitForFunction(()=>queue[0]&&queue[0].texture&&!queue[0].refining&&!!document.querySelector('#nps-q [data-ck="tex"].cktexon'));await settle(p,200);
+    e=await p.evaluate(()=>{const s=document.querySelector('#nps-q [data-ck="tex"].cktexon');return {btns:[...s.querySelectorAll('button,label')].map(x=>x.textContent.trim())}});
+    ok(e.btns.includes('Replace close-up')&&!e.btns.includes('Remove close-up'),T+`a photo taken there reaches addTexture; the card then offers Replace close-up, with no Remove button of its own (${e.btns.join(', ')})`);
+    await p.click('#nps-q [data-ck="tex"].cktexon .cubtn');await p.waitForSelector('#cu-sheet.on');s=await sheet();
     ok(s.title==='Replace close-up'&&s.rm==='Remove close-up',T+'the Add card\'s Replace close-up opens the sheet with Remove close-up');
     await p.click('#cu-rm');await closed();
-    ok(await p.evaluate(()=>!queue[0].texture&&!document.querySelector('#nps-q .texslot.done')),T+'Remove close-up there takes the close-up off the card (dropTexture)');
+    ok(await p.evaluate(()=>!queue[0].texture&&!document.querySelector('#nps-q [data-ck="tex"].cktexon')),T+'Remove close-up there takes the close-up off the card (dropTexture)');
     ok(!errs.length,T+'no page errors on the touch screen ('+errs.join(' | ')+')');
     await ctx.close()}
   // ================= no touch screen (a computer) =================
   {const {ctx,p,errs,F}=await open(false);
     ok(await p.evaluate(()=>!cuTouch()),T+'the desktop context reads as no touch screen');
-    await p.evaluate(()=>openItem('m1'));await settle(p,400);await p.click('#item-view .ivphbtn');await settle(p,300);
-    let e=await p.evaluate(()=>{const l=document.querySelector('#item-view .phtools label:has(.vfile[onchange*=replaceTexture])'),i=l&&l.querySelector('input');
-      return {label:l&&l.textContent.trim(),cap:i&&i.hasAttribute('capture'),rm:[...document.querySelectorAll('#item-view .phtools button')].some(b=>b.textContent==='Remove close-up'),cubtn:!!document.querySelector('.cubtn')}});
-    ok(e.label==='Replace close-up'&&!e.cap&&e.rm&&!e.cubtn,T+`without touch: the close-up button is the file window itself, and Remove close-up stays a button (${JSON.stringify(e)})`);
+    await p.evaluate(()=>openItem('m1'));await settle(p,400);
+    let e=await p.evaluate(()=>{const l=document.querySelector('#item-view .phtools label:has(.vfile[onchange*=replaceTexture])'),i=l&&l.querySelector('input'),rm=document.querySelector('#item-view .ptmore .ptrm');
+      return {label:l&&l.textContent.trim(),name:i&&i.getAttribute('aria-label'),cap:i&&i.hasAttribute('capture'),rm:rm&&rm.textContent,hRm:rm?Math.round(rm.getBoundingClientRect().height):0,cubtn:!!document.querySelector('.cubtn')}});
+    ok(e.label==='Close-up'&&e.name==='Replace close-up'&&!e.cap&&e.rm==='Remove close-up'&&e.hRm>=44&&!e.cubtn,T+`without touch: the Close-up button is the file window itself, and Remove close-up stays a button (44 px) under the row (${JSON.stringify(e)})`);
     const t0=await p.evaluate(()=>texSig(items[0].texture));
     await (await p.$('#item-view .phtools label:has(.vfile[onchange*=replaceTexture]) input')).setInputFiles(file('d.jpg',F.paper));
     await p.waitForFunction(t0=>texSig(items[0].texture)!==t0,t0);
     ok(await p.evaluate(()=>!document.querySelector('#cu-sheet.on')),T+'a file chosen there replaces the close-up with no sheet');
+    await p.waitForFunction(()=>/Close-up added/.test((document.querySelector('#toast.on')||{}).textContent||''));await settle(p,300);   // the replace's save has landed
+    const t1=await p.evaluate(()=>texSig(items[0].texture));
+    await p.click('#item-view .ptmore .ptrm');await p.waitForFunction(()=>!items[0].texture);
+    await p.waitForFunction(()=>/Close-up removed/.test((document.querySelector('#toast.on')||{}).textContent||''),null,{timeout:3000}).catch(()=>{});   // (the toast follows the save)
+    const tt=await p.evaluate(()=>(document.querySelector('#toast.on')||{}).textContent||'');
+    ok(/Close-up removed\..*Undo/.test(tt),T+`without touch: Remove close-up removes it, with Undo in the toast (${tt})`);
+    await p.click('#toast button');await p.waitForFunction(t1=>items[0].texture&&texSig(items[0].texture)===t1,t1);
+    ok(true,T+'…and the toast’s Undo brings it back');
     await p.evaluate(()=>closeItem&&closeItem());await settle(p,300);
     await p.evaluate(F=>{openAdd();addManual();queue[0].type='suit';queue[0].primaryColor='deeptaupe';renderAdd()},F);await settle(p,300);
-    await (await p.$('#nps-q .texslot label input[type=file]')).setInputFiles(file('a.jpg',F.paper));
-    await p.waitForFunction(()=>queue[0]&&queue[0].texture&&!queue[0].refining&&!!document.querySelector('#nps-q .texslot.done'));await settle(p,200);
-    e=await p.evaluate(()=>[...document.querySelectorAll('#nps-q .texslot.done button,#nps-q .texslot.done label')].map(x=>x.textContent.trim()));
-    ok(e.includes('Replace close-up')&&e.includes('Remove')&&!(await p.evaluate(()=>!!document.querySelector('#cu-sheet.on'))),T+`the Add card without touch: the file window directly, and Remove stays (${e.join(', ')})`);
+    await (await p.$('#nps-q [data-ck="tex"] label input[type=file]')).setInputFiles(file('a.jpg',F.paper));
+    await p.waitForFunction(()=>queue[0]&&queue[0].texture&&!queue[0].refining&&!!document.querySelector('#nps-q [data-ck="tex"].cktexon'));await settle(p,200);
+    e=await p.evaluate(()=>[...document.querySelectorAll('#nps-q [data-ck="tex"].cktexon button,#nps-q [data-ck="tex"].cktexon label')].map(x=>x.textContent.trim()));
+    ok(e.includes('Replace close-up')&&e.includes('Remove close-up')&&!(await p.evaluate(()=>!!document.querySelector('#cu-sheet.on'))),T+`the Add card without touch: the file window directly, and Remove stays (${e.join(', ')})`);
     ok(!errs.length,T+'no page errors without touch ('+errs.join(' | ')+')');
     await ctx.close()}
 }

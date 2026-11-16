@@ -40,8 +40,8 @@ function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)as
    photos (iPhone needs a tap; a click from code can be blocked). Cancel, a tap outside (not in the first ASK_SETTLE ms), Escape and the
    phone's Back close it with nothing changed. Without a touch screen (pointer: fine) capture does nothing, so the button stays today's file
    window, and Remove stays a button of its own.
-   closeupBtn({label, cls, mode:'add'|'replace'|'retake', file:'f=>…', remove:'…'|'', cloth}) -> the button's HTML (file and remove are
-   code, run when chosen, as the inline handlers around them) ---- */
+   closeupBtn({label, cls, mode:'add'|'replace'|'retake', file:'f=>…', remove:'…'|'', cloth, aria}) -> the button's HTML (file and remove are
+   code, run when chosen, as the inline handlers around them; label may hold markup, aria names the button or the file input when the label is short) ---- */
 const CU_COPY={add:['Fabric close-up','Hold the camera close so the weave fills the frame.'],
   replace:['Replace close-up','The new close-up takes the place of the one you have.'],
   read:['Close-up for Claude','Claude reads the color and the weave from it. Hold the camera close so the weave fills the frame.'],
@@ -50,9 +50,9 @@ const CU_CAM='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke
 const CU_LIB='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.7"/><path d="M20.5 16l-5-5L6 19.5"/></svg>';
 const cuTouch=()=>{try{return matchMedia('(pointer: coarse)').matches}catch{return false}};
 let cuOpen=null;   // the chooser on screen: {o, at, last (what had the focus), was (whose Back entry it borrowed)}
-function closeupBtn(o){
-  if(!cuTouch())return `<label class="${o.cls}">${o.label}<input type="file" accept="image/*" class="vfile" onchange="(${o.file})(this.files[0]);this.value=''"></label>`;
-  return `<button type="button" class="${o.cls} cubtn" aria-haspopup="dialog" onclick="closeupPick({mode:'${o.mode}',cloth:'${o.cloth||''}',file:${o.file}${o.remove?`,remove:()=>{${o.remove}}`:''}})">${o.label}</button>`}
+function closeupBtn(o){const ar=o.aria?` aria-label="${uiEsc(o.aria)}"`:'';
+  if(!cuTouch())return `<label class="${o.cls}">${o.label}<input type="file" accept="image/*" class="vfile"${ar} onchange="(${o.file})(this.files[0]);this.value=''"></label>`;
+  return `<button type="button" class="${o.cls} cubtn" aria-haspopup="dialog"${ar} onclick="closeupPick({mode:'${o.mode}',cloth:'${o.cloth||''}',file:${o.file}${o.remove?`,remove:()=>{${o.remove}}`:''}})">${o.label}</button>`}
 function cuEls(){let b=document.querySelector('#cu-backdrop'),s=document.querySelector('#cu-sheet');
   if(!s){b=document.createElement('div');b.id='cu-backdrop';b.onclick=e=>{if(e.isTrusted&&cuOpen&&performance.now()-cuOpen.at<ASK_SETTLE)return;closeupClose()};
     s=document.createElement('div');s.id='cu-sheet';s.setAttribute('role','dialog');s.setAttribute('aria-modal','true');s.setAttribute('aria-labelledby','cu-title');s.setAttribute('aria-describedby','cu-sub');s.tabIndex=-1;
@@ -150,7 +150,9 @@ let connMsg='',connBusy=false;
 function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)return;const typed=el.querySelector('#conn-link')?el.querySelector('#conn-link').value:'';
   const checking=typeof inviteChecking!=='undefined'&&inviteChecking,waiting=!checking&&typeof acctWhy!=='undefined'&&acctWhy==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash();
   el.innerHTML=checking?'<p class="shelp" id="conn-state" role="status">Checking your invitation…</p>'
-   :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>`
+   :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and ${typeof backedUpWords==='function'?backedUpWords():'your wardrobe is backed up'}.</p>`+
+     // (audit 2026-11-15, W1-7-02) the owner's phone moved to a tester's invitation keeps the owner's way back (account.js acctOwnerPhone)
+     (typeof isTester==='function'&&isTester()&&localStorage.getItem('acct_was_owner')==='1'?'<p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" onclick="connOwn()">I run the server: connect with its address and code</button></p>':'')
    :`<p class="shelp" id="conn-state">${inviteOver()?'Your invitation has ended, so photos aren’t read automatically and nothing is backed up. Your wardrobe stays on this phone, and the app keeps working without a connection. If you were given a new invitation link, paste it here.'
      :waiting?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you come back to the app or your connection returns, or tap Connect.'
      :'The app works without a connection: you add your items by hand. With an invite link, photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.'}</p>

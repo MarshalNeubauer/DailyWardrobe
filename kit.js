@@ -110,7 +110,7 @@ function kitTombs(t,ids,now){if(!ids.length)return;const m=t.objectStore('meta')
 /* a failed write is said, as Confirm says it (add.js save) */
 function kitFail(e){console.warn('save failed',e);if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000)}
 /* an item made from a card with no photo, as add.js saveCard makes one (a hand-added card: the fields it keeps for each type) */
-function kitItem(c){const f=FABRIC.includes(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:Date.now()};
+function kitItem(c){const f=FABRIC.includes(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:nowMs()};
   if(METAL_TYPES.includes(c.type))it.metal=c.metal||'silver';
   if(c.type==='shirt')it.cuff=c.cuff==='french'?'french':'button';
   if(c.type==='suit')it.vest=c.vest==='yes'?'yes':'no';
@@ -121,22 +121,25 @@ function kitItem(c){const f=FABRIC.includes(c.type),it={id:c.id||crypto.randomUU
   if(c.type==='watch'){const wo=watchOpts(c);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
   if(typeof wardSaveFields==='function')wardSaveFields(c,it);   // name, brand, material, notes (wardrobe.js)
   if(c.sample)it.sample=true;return it}
-/* store new items, and changed ones (upd: the import's updates) in the same transaction (false, said, when storage refused them: nothing was stored) */
-async function kitStore(list,prog,upd){upd=upd||[];if(!list.length&&!upd.length)return true;const now=Date.now();let k=0;
-  try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of list){it.updated=now;const r=s.put(it);if(prog)r.onsuccess=()=>prog(++k,list.length)}for(const it of upd){it.updated=now;s.put(it)}})}catch(e){kitFail(e);return false}
+/* store new items, and changed ones (upd: the import's updates) in the same transaction (false, said, when storage refused them: nothing was
+   stored); an updated piece is stamped as put() stamps an edit (core.js itemFields against the stored copy: only the fields the import changed
+   get the new stamp, so they merge field by field with another phone's edits) */
+async function kitStore(list,prog,upd){upd=upd||[];if(!list.length&&!upd.length)return true;const now=nowMs();let k=0;
+  try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of list){it.updated=now;const r=s.put(it);if(prog)r.onsuccess=()=>prog(++k,list.length)}
+    for(const it of upd){it.updated=nextStamp(stamp(it));const g=s.get(it.id);g.onsuccess=()=>{itemFields(it,g.result);s.put(it)}}})}catch(e){kitFail(e);return false}
   items.push(...list);for(const it of upd){const j=items.findIndex(x=>x.id===it.id);if(j>=0)items[j]=it}cache={};todayStale=true;if(list.length&&typeof dressNewItem==='function')dressNewItem();
   if(window.scheduleSync)scheduleSync();if(typeof askPersist==='function')askPersist();return true}
 /* delete items (each with a tombstone, as Delete does), with changed items (put) and day records (days) in the same transaction */
-async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=Date.now(),gone=new Set(ids);
+async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=nowMs(),gone=new Set(ids);
   await kitTx(['items','meta','days'],t=>{const s=t.objectStore('items');for(const id of ids)s.delete(id);for(const it of put){it.updated=now;s.put(it)}
-    const d=t.objectStore('days');for(const r of days){r.updated=now;delete r.lockOnly;delete r.base;d.put(r)}kitTombs(t,ids,now)});
+    const d=t.objectStore('days');for(const r of days){if(r.updated!==KIT_YIELD)r.updated=now;delete r.lockOnly;delete r.base;d.put(r)}kitTombs(t,ids,now)});   // (KIT_YIELD: a sample-only day keeps its stamp of 1, kitSampleRemove)
   items=items.filter(x=>!gone.has(x.id));for(const it of put){const k=items.findIndex(x=>x.id===it.id);if(k>=0)items[k]=it}
   for(const r of days)dayRecs[r.date]=r;cache={};todayStale=true;if(window.scheduleSync)scheduleSync()}
 
 /* ---- Duplicate (the item sheet): the same piece again, with a new id and no history, opened for any difference ---- */
 const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cleaned','sample','sampleMine'];
 async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;const c=JSON.parse(JSON.stringify(it));for(const k of KIT_NO_COPY)delete c[k];
-  c.id=crypto.randomUUID();c.added=Date.now();await put(c);items.push(c);cache={};todayStale=true;
+  c.id=crypto.randomUUID();c.added=nowMs();await put(c);items.push(c);cache={};todayStale=true;
   if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
   openItem(c.id);toast('Duplicated. Change anything that differs, like its name.',3500)}
 
@@ -215,14 +218,27 @@ const kitColList=type=>colsFor(type).filter(c=>!CUSTOM_COL[c]).map(c=>colName(c)
 function kitPattern(word,type){const w=kitNorm(word).replace(/-/g,' ');if(!w||w==='plain'||w==='none'||w==='solid')return 'solid';
   const list=(PATS_BY[type]||[]);const own=list.find(p=>CUSTOM_PAT[p]&&kitNorm(CUSTOM_PAT[p].name)===w);if(own)return own;   // the owner's own patterns offered for the type (core.js CUSTOM_PAT)
   const syn={striped:'stripe',stripes:'stripe',stripe:'stripe',checked:'check',checks:'check','pin stripe':'pinstripe','pinstripes':'pinstripe','chalkstripe':'chalk-stripe','chalk stripe':'chalk-stripe','glen plaid':'glen-check','glen check':'glen-check','prince of wales':'glen-check','polka dots':'polka-dot','polka dot':'polka-dot',dots:'polka-dot',
-    repp:'stripe','repp stripe':'stripe',rep:'stripe','rep stripe':'stripe',regimental:'stripe','regimental stripe':'stripe',bengal:'stripe','bengal stripe':'stripe','candy stripe':'stripe'};
+    repp:'stripe','repp stripe':'stripe',rep:'stripe','rep stripe':'stripe',regimental:'stripe','regimental stripe':'stripe',bengal:'stripe','bengal stripe':'stripe','candy stripe':'stripe',camo:'camouflage',camouflage:'camouflage',multicam:'camouflage',ocp:'camouflage',woodland:'camouflage','woodland camo':'camouflage'};
   const al=PAT_ALIAS[type==='blazer'||type==='pants'?'suit':type]||{},s=syn[w],h=w.replace(/ /g,'-');
   const k=list.find(p=>kitNorm(patLabel(p))===w||p===h)||(s&&(list.includes(s)?s:list.includes(al[s])?al[s]:null))||(list.includes(al[h])?al[h]:null);return k||undefined}
 /* what a row's Material says: one of the type's own materials (any case), the leather of shoes and belts; else left out, said */
-function kitMaterial(card,word){const m=kitNorm(word);if(!m)return null;const list=MATERIALS_BY[card.type];
-  if(list){card.material=list.find(x=>x===m)||String(word).trim();return null}   // (one not on the list shows as Other, as typed)
-  if(card.type==='shoes'||card.type==='belt'){const ls=leathersFor(card),k=ls.find(l=>m.includes(l))||(/leather|calf/.test(m)&&ls.includes('calf')?'calf':null);if(k){card.leather=k;return null}}
-  return `material “${String(word).trim()}” left out`}
+/* (2026-11-15, the materials audit) other words for a material are read as the listed one (core.js MAT_ALIAS: Merino, Fresco, Broadcloth,
+   Lisle, Wool-linen…, said as "read as"); a shirt's weave in the Material column (oxford, twill, end-on-end…) is its pattern when the row's
+   pattern is plain; anything else is kept as typed (Other) */
+function kitMaterial(card,word){const m=kitNorm(word),w=String(word).trim();if(!m)return null;const list=MATERIALS_BY[card.type];
+  const p=card.type==='shirt'&&(SHIRT_WEAVE_MAT[m]||SHIRT_WEAVE_MAT[m.replace(/-/g,' ')]);
+  if(list){if(p){
+      if((card.pattern||'solid')==='solid'&&(PATS_BY.shirt||[]).includes(p)){card.pattern=p;return `material “${w}” read as the ${patName(p)} pattern`}
+      return `material “${w}” left out (a weave: the pattern says it)`}
+    const a=matAlias(card.type,m);card.material=a||w;return a&&a!==m?`material “${w}” read as ${a}`:null}   // (one not on the list shows as Other, as typed)
+  if(card.type==='shoes'||card.type==='belt'){const k=kitLeather(card,m);if(k){card.leather=k.k;return k.read?`material “${w}” read as ${leatherWord(card,k.k)}`:null}}
+  return `material “${w}” left out`}
+/* a leather word for shoes or a belt -> {k, read}: the style's own leathers ("pebble grain" with a space is pebble-grain, not calf: the
+   audit's bug), nubuck (suede on a style that isn't made in it), braided, else "leather"/"calf" as calf; null when none */
+function kitLeather(card,m){const ls=leathersFor(card),d=m.replace(/\s+/g,'-');let k=ls.find(l=>d.includes(l));if(k)return {k};
+  if(/nubuck/.test(m))return ls.includes('nubuck')?{k:'nubuck'}:ls.includes('suede')?{k:'suede',read:true}:null;
+  if(/braid/.test(m)&&ls.includes('braided'))return {k:'braided'};
+  return /leather|calf/.test(m)&&ls.includes('calf')?{k:'calf'}:null}
 /* the words of a cell, for reading a description ("w/" is "with") */
 const kitWords=t=>kitNorm(String(t||'').replace(/\bw\//gi,' with ')).replace(/([\/&+])/g,' $1 ').replace(/[^\p{L}\p{N}&\/+'’-]+/gu,' ').split(' ').filter(Boolean);
 /* the first pattern named in some words (the longest phrase first): {p, s, l} (where it is), else null; "other" and plain don't count */
@@ -282,11 +298,11 @@ function kitRow(c,line){const probs=[],given=new Set();
   if(type==='pants'){const k=kitNorm(c.kind),s=k||txt;card.trouserKind=/jean|denim/.test(s)?'jeans':/chino|\bkhakis\b/.test(s)?'chinos':'dress';if(k||card.trouserKind!=='dress')given.add('trouserKind')}
   if(type==='shoes'){const k=kitNorm(c.style||c.kind),s=k||txt;card.shoeStyle=/derb|monk/.test(s)?'derby':/loaf|penny|moccasin/.test(s)?'loafer':/boot|chelsea|chukka/.test(s)?'boot':/sneak|train/.test(s)?'sneaker':'oxford';
     if(k||card.shoeStyle!=='oxford'||/oxford|brogue|wingtip/.test(s))given.add('shoeStyle')}
-  if(type==='shoes'||type==='belt'){const l=kitNorm(c.leather);if(l){const k=leathersFor(card).find(x=>l.includes(x));if(k){card.leather=k;given.add('leather')}}
+  if(type==='shoes'||type==='belt'){const l=kitNorm(c.leather);if(l){const k=kitLeather(card,l);if(k){card.leather=k.k;given.add('leather');if(k.read)probs.push(`leather “${c.leather}” read as ${leatherWord(card,k.k)}`)}}
     else if(!c.material){const ws=kitWords(txt),k=leathersFor(card).find(x=>x!=='calf'&&ws.includes(x));if(k){card.leather=k;given.add('leather')}}}
   if(SEASON_TYPES.includes(type)){const s=kitNorm(c.season);if(/^(summer|warm)/.test(s)){card.season='warm';given.add('season')}else if(/^(winter|cold)/.test(s)){card.season='cold';given.add('season')}}
   for(const k of ['name','brand','notes'])if(c[k]){card[k]=k==='name'?kitQtyOut(c[k])||c[k]:c[k];given.add(k)}
-  if(c.material&&!(c.leather&&(type==='shoes'||type==='belt'))){const p=kitMaterial(card,c.material);if(p)probs.push(p);else given.add(card.material?'material':'leather')}
+  if(c.material&&!(c.leather&&(type==='shoes'||type==='belt'))){const pat0=card.pattern,lt0=card.leather,p=kitMaterial(card,c.material);if(p)probs.push(p);if(card.material)given.add('material');if(card.leather!==lt0)given.add('leather');if(card.pattern!==pat0)given.add('pattern')}
   else if(!c.material&&MATERIALS_BY[type]){const s=' '+kitWords(txt).join(' ')+' ',mt=MATERIALS_BY[type].filter(x=>x!=='other').sort((a,b)=>b.length-a.length).find(x=>s.includes(' '+x+' '));if(mt){card.material=mt;given.add('material')}}
   // a description's other words: the name ("Penny loafers", "Brogues"), or the notes when the row has a name (W2-15-01: two navy ties alike)
   const left=kitLeft(dws,type,dpat);if(left.length){const d=kitQtyOut(c.descName||c.desc);if(!card.name){card.name=cap1(d);given.add('name')}else if(!c.descName){card.notes=card.notes?card.notes+' · '+d:d;given.add('notes')}}
@@ -457,7 +473,10 @@ async function kitFixOldImports(){const list=settings.custom&&Array.isArray(sett
     if(ch){await put(it);n++}}
   if(n){cache={};todayStale=true}return n}
 /* the last import taken out again, after its Undo has gone (from the import sheet) */
-async function kitUnimport(){const l=kitLastImp();if(!l)return;
+/* (fix round 3, W1-6-05: judged on this phone's copy alone, a piece renamed on another phone went too) a connected phone syncs first, so
+   "changed since" counts changes made anywhere; offline it goes on with what it has */
+async function kitUnimport(){if(typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')&&!(typeof inviteOver==='function'&&inviteOver()))try{await syncNow()}catch{}
+  const l=kitLastImp();if(!l){const r=$('#kit-last');if(r)r.remove();return}
   if(!await askConfirm(`Take out the ${l.ids.length} item${l.ids.length===1?'':'s'} of your last import?\n\nAnything you added another way stays${l.kept?`, and so ${l.kept===1?'does the imported piece':`do the ${l.kept} imported pieces`} you changed since`:''}.`,{ok:'Take them out',danger:true}))return;
   try{await kitDelMany(l.ids)}catch(e){kitFail(e);return}
   try{localStorage.removeItem(KIT_IMP_LAST)}catch{}const r=$('#kit-last');if(r)r.remove();if(kitImp){kitDupMark(kitImp.rows);kitPrevDraw()}
@@ -478,7 +497,7 @@ const KIT_SAMPLE=[
   ['belt','black',null,'solid',{}],['belt','brown',null,'solid',{}],['socks','navy',null,'solid',{}],['socks','charcoal',null,'solid',{}],['watch','silver',null,'solid',{metal:'silver'}]];
 const KIT_SAMPLE_NOJKT=[['pants','navy',null,'solid',{}],['pants','charcoal',null,'solid',{}]];   // without jackets: trousers enough to judge (shop.js SHOP_MIN)
 const KIT_EDIT_MS=3000;
-const kitHasSample=()=>items.some(i=>i.sample);
+const kitHasSample=()=>items.some(i=>i.sample&&!kitEdited(i));   // (pieces he made his alone are no sample wardrobe: a phone joining got the banner for them)
 /* a sample piece he changed is his now. Only an edit he makes in the item sheet makes it his: app.js put sets item.sampleMine while the item sheet is open on it (kitUserEdit);
    a new stamp alone doesn't (re-audit 2026-11-15: a roll back or a start-up fix-up such as migrateVests or checkArrivals restamped an
    untouched sample piece, which was then uploaded and kept on Remove the sample), nor does out of rotation (itemsheet.js togglePause sets
@@ -486,6 +505,28 @@ const kitHasSample=()=>items.some(i=>i.sample);
 let kitNoMine=false;
 const kitUserEdit=i=>{if(i&&i.sample&&!kitNoMine&&typeof editing!=='undefined'&&editing===i.id)i.sampleMine=1};
 const kitEdited=i=>!!i.sample&&!!i.sampleMine;
+/* the sample pieces the earlier rule counted as his (fix round 3, W1-3-01: an edit, a pause or a cleaning on 14-15 Nov builds made a piece
+   his, updated more than KIT_EDIT_MS after added; the rule above turned them back into sample, and Remove the sample took them with their
+   history). Once per device after the first pull, a sample piece added before the rule changed (KIT_MINE_CUT, when #454 was deployed)
+   and stamped by the old rule is made his (no longer a sample piece, as Keep it as mine does, with a new stamp, so it goes up and other phones take it) */
+const KIT_MINE_CUT=Date.UTC(2026,10,15,12);
+const kitOldMine=i=>!!i&&!!i.sample&&!i.sampleMine&&(i.added||0)<KIT_MINE_CUT&&(i.updated||0)-Math.max(i.added||0,i.sampleBase||0)>KIT_EDIT_MS;
+async function kitSampleMigrate(){try{if(localStorage.getItem('kit_mine'))return}catch{return}
+  const l=items.filter(kitOldMine).map(i=>{const c={...i};delete c.sample;delete c.sampleMine;delete c.sampleBase;return c});   // (his, as Keep it as mine makes it)
+  if(l.length){const now=Date.now();
+    try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of l){it.updated=now;s.put(it)}})}catch(e){console.warn('sample pieces not kept as his',e);return}
+    for(const it of l){const k=items.findIndex(x=>x.id===it.id);if(k>=0)items[k]=it}
+    cache={};todayStale=true;if(window.scheduleSync)scheduleSync();
+    toast(`${l.length===1?'The sample piece':`The ${l.length} sample pieces`} you changed ${l.length===1?'is':'are'} yours: Remove the sample keeps ${l.length===1?'it':'them'}.`,6000)}
+  try{localStorage.setItem('kit_mine','1')}catch{}}
+/* does a day's record, with the sample's pieces taken out (kitSampleDay), still hold anything of his? His own pieces, a pick, the week's
+   lock of his own pieces, an occasion, a kind, a skip, a piece taken off, a trip. A record that holds nothing else was made from the
+   sample: it never goes up (sync.js syncShare), and Remove the sample gives it the stamp KIT_YIELD, so the account's own record of that
+   day, made on another phone, wins over it (fix round 3, W1-6-04: Remove the sample on a phone that tried the sample before joining
+   stamped its sample days new and wiped the other phone's real days) */
+const KIT_YIELD=1;
+const KIT_OWN=['force','lock','occasion','formal','kind','skip','off','trip'];
+const kitDayOwn=c=>!!(c.ids&&Object.values(c.ids).some(Boolean))||KIT_OWN.some(k=>c[k]&&(typeof c[k]!=='object'||Object.keys(c[k]).length));
 const kitSampleSig=i=>[i.type,i.primaryColor,i.secondaryColor||'',FABRIC.includes(i.type)?i.pattern||'solid':'solid',i.cuff==='french'?'f':''].join('|');
 function kitSampleCards(){const l=KIT_SAMPLE.filter(x=>!dressOut(x[0]));if(!wearsJacket())l.push(...KIT_SAMPLE_NOJKT);
   return l.map(([type,c,c2,p,x])=>({id:crypto.randomUUID(),manual:true,type,primaryColor:c,secondaryColor:c2,tertiaryColor:null,pattern:FABRIC.includes(type)?p:'solid',metal:'silver',leather:'calf',sample:true,...x}))}
@@ -519,11 +560,29 @@ async function kitSampleRemove(quiet){if(kitSampling)return;   // quiet: already
   kitSampling=true;kitSampleBusy(true);if(!quiet)toast('Removing the sample…',8000);
   try{if(typeof recordRun!=='undefined'&&recordRun)await Promise.resolve(recordRun).catch(()=>{});   // (a recording of today from the plan with the sample, still running, would write its pieces back after)
     const ids=new Set(gone.map(i=>i.id)),mine=keep.map(i=>{const c={...i};delete c.sample;delete c.sampleMine;return c}),T=todayDate();
-    const days=Object.values(dayRecs).filter(r=>[...ids].some(id=>JSON.stringify(r).includes(id))).map(r=>kitSampleDay(r,ids,T));
-    await kitDelMany([...ids],mine,days);if(typeof clearLocks==='function')await clearLocks()}
+    const orig=Object.values(dayRecs).filter(r=>[...ids].some(id=>JSON.stringify(r).includes(id)));
+    // a day made only from the sample keeps the stamp KIT_YIELD: the account's own record of it (another phone's) wins (kitDayOwn)
+    const days=orig.map(r=>{const c=kitSampleDay(r,ids,T);if(!kitDayOwn(c))c.updated=KIT_YIELD;return c});
+    const undo={items:s.map(i=>JSON.parse(JSON.stringify(i))),days:orig.map(r=>JSON.parse(JSON.stringify(r)))};
+    await kitDelMany([...ids],mine,days);if(typeof clearLocks==='function')await clearLocks();
+    undo.wrote=Object.fromEntries(days.map(c=>[c.date,c.updated]));kitRmUndo=undo;
+    // connected: the account's records of those days come in before Today records anything from the plan (kitSampleUndo)
+    if(typeof isConnected==='function'&&isConnected()&&window.syncNow)await Promise.race([syncNow().catch(()=>{}),new Promise(r=>setTimeout(r,KIT_RM_SYNC))])}
   catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
   if(quiet){cache={};todayStale=true;if(typeof refreshToday==='function'&&!$('#today').hidden)refreshToday();return}
-  show(items.length?'today':'wardrobe');toast(kn?`The sample wardrobe is gone. The ${kn===1?'piece':`${kn} pieces`} you changed stayed.`:'The sample wardrobe is gone.',3500)}
+  show(items.length?'today':'wardrobe');toast(kn?`The sample wardrobe is gone. The ${kn===1?'piece':`${kn} pieces`} you changed stayed.`:'The sample wardrobe is gone.',8000,{label:'Undo',fn:kitSampleUndo})}
+/* Undo of Remove the sample (fix round 3): the pieces come back (a new stamp, newer than their deletion marks) as they were, and each day
+   record still as Remove left it is put back as it was before; a day the account's record replaced meanwhile (a sync) keeps that. A day
+   that went back to the sample keeps its old stamp when Remove had given it KIT_YIELD (it never went up), else takes a new one */
+let kitRmUndo=null;const KIT_RM_SYNC=8000;
+async function kitSampleUndo(){const u=kitRmUndo;if(!u||kitSampling)return;kitRmUndo=null;kitSampling=true;kitSampleBusy(true);
+  try{const now=Date.now(),its=u.items.map(i=>({...i,updated:now}));
+    const days=u.days.filter(r=>dayRecs[r.date]&&dayRecs[r.date].updated===u.wrote[r.date]).map(r=>({...r,updated:u.wrote[r.date]===KIT_YIELD?r.updated:now}));
+    await kitTx(['items','days'],t=>{const s=t.objectStore('items'),d=t.objectStore('days');for(const it of its)s.put(it);for(const r of days)d.put(r)});
+    const back=new Map(its.map(i=>[i.id,i]));items=items.filter(i=>!back.has(i.id)).concat(its);for(const r of days)dayRecs[r.date]=r;
+    cache={};todayStale=true;if(window.scheduleSync)scheduleSync()}
+  catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
+  show('today');toast('The sample wardrobe is back.',3000)}
 /* a day's record with the sample's pieces taken out (re-audit 2026-11-15, N2: the record was cut to its occasion, and history.js recordDays
    then filled the past day again from today's plan: "Didn't" days became worn, a suit bought later was worn before it came, real wears were
    replaced). Everything else the day recorded stays: worn or not, a corrected day, the occasion, the own pieces.
@@ -545,7 +604,7 @@ async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.s
   if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();toast('It’s yours now: Remove the sample keeps it.',3000)}
 /* marks: the Wardrobe grid's tag and the item sheet's note */
 const kitSampleTag=i=>i.sample&&!kitEdited(i)?'<span class="pausetag sampletag">Sample</span>':'';
-const kitSampleNote=i=>i.sample&&!kitEdited(i)?`<section class="card ivsec ivsample"><p class="shelp">A piece of the sample wardrobe: Remove the sample takes it away. Change anything on it, or keep it, and it stays as yours.</p><div class="btns"><button type="button" id="iv-keep" onclick="kitKeepSample('${i.id}')">Keep it as mine</button></div></section>`:'';
+const kitSampleNote=i=>i.sample&&!kitEdited(i)?`<section class="card ivsec ivsample"><p class="shelp">A piece of the sample wardrobe: Remove the sample takes it away. Change anything on it, or keep it, and it stays as yours.</p><div class="btns"><button type="button" id="iv-keep" onclick="kitKeepSample('${jsq(i.id)}')">Keep it as mine</button></div></section>`:'';
 /* Today, while sample pieces are there */
 function kitSampleBanner(){if(!kitHasSample())return '';const own=items.filter(i=>!i.sample||kitEdited(i)).length;
   return `<div class="kit-banner" id="kit-sample"><b>You're trying a sample wardrobe</b><small>${own?`Your ${own} own piece${own===1?' is':'s are'} mixed in. `:''}Swipe through the days, tap the score, try a swap. Add your own clothes whenever you like.</small>
@@ -574,6 +633,17 @@ async function homeInstall(){const e=homeEvt;if(!e)return homeSync();homeEvt=nul
   try{await e.prompt();const r=await e.userChoice;if(r&&r.outcome==='accepted'){if(typeof toast==='function')toast('Installing… open Daily Wardrobe from its new icon.')}}catch(_){}
   homeSync()}
 const homeIPad=()=>/iPad/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+/* which browser the app is open in on an iPhone or iPad (2026-11-16, a tester used Chrome and was shown Safari's steps): every iOS browser
+   draws with Safari's engine but has its own buttons, and a Home Screen app added from any of them keeps its own storage. window.DW_BROWSER: tests */
+const homeBrowser=()=>window.DW_BROWSER||(/CriOS/.test(navigator.userAgent)?'Chrome':/FxiOS/.test(navigator.userAgent)?'Firefox':/EdgiOS/.test(navigator.userAgent)?'Edge':'Safari');
+/* the first step, per browser: Chrome's Share is at the right end of its address bar (in its ⋯ menu when not); Firefox's and Edge's are in their menu */
+function homeShareStep(pad){const b=homeBrowser();
+  if(b==='Chrome')return '<li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' at the right end of Chrome\'s address bar.<small>Not there? Tap <b>⋯</b>, then <b>Share</b>.</small></span></li>';
+  if(b!=='Safari')return '<li><span class="home-n">1</span><span>Open '+b+'\'s menu and tap <b>Share</b> '+HOME_SHARE+'.</span></li>';
+  return pad?'<li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' at the top right of Safari.</span></li>'
+    :'<li><span class="home-n">1</span><span>Tap <b>⋯</b> at the bottom right of Safari, then <b>Share</b> '+HOME_SHARE+'.<small>If you see Share '+HOME_SHARE+' there instead, tap it.</small></span></li>'}
+/* the same in a few words, for a line elsewhere (Settings → reminders) */
+const homeShareShort=()=>{const b=homeBrowser();return b==='Chrome'?'tap Share in Chrome’s address bar, then “Add to Home Screen”':b==='Safari'?'tap ⋯, then Share, then “Add to Home Screen”':`open ${b}’s menu, tap Share, then “Add to Home Screen”`};
 const HOME_SHARE='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 10H5v11h14V10h-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
 const HOME_DL='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const HOME_ADD='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -596,19 +666,34 @@ const homeCopyBtn=()=>'<p class="home-cta"><button type="button" class="pri home
 async function homeCopy(){const l=typeof myInviteLink==='function'?myInviteLink():'';if(!l)return false;
   try{await navigator.clipboard.writeText(l);toast('Your invitation link is copied. Paste it in the Home Screen app.',4500);return true}
   catch{document.querySelectorAll('.home-mylink').forEach(f=>{f.hidden=false;f.value=l;f.select()});toast('Copy the link shown under the button.',5000);return false}}
-function homeNote(){const conn=typeof isConnected==='function'?isConnected():false;
-  if(homeTester())return '<p class="su-note home-note"><b>Safari is connected already.</b> The Home Screen app keeps its own storage, apart from Safari\'s, so it starts empty: paste your invitation link when it asks, and your wardrobe comes across.</p>';
-  if(conn)return '<p class="su-note home-note"><b>Safari is connected already.</b> The Home Screen app keeps its own storage, apart from Safari\'s: connect it too, in its Settings → Connection.</p>';
-  if(items.length)return '<p class="su-note home-note"><b>Your wardrobe stays here in Safari.</b> The Home Screen app keeps its own storage and starts empty. To take your wardrobe along, tap <b>Download backup</b> in Settings → Backup &amp; sync here, then <b>Restore file</b> in the Home Screen app.</p>';
-  return '<p class="su-note home-note"><b>The Home Screen app keeps its own storage</b>, apart from Safari\'s: if you add it now, set it up there rather than here.</p>'}
+function homeNote(){const conn=typeof isConnected==='function'?isConnected():false,b=homeBrowser();
+  if(homeTester())return '<p class="su-note home-note"><b>'+b+' is connected already.</b> The Home Screen app keeps its own storage, apart from '+b+'\'s, so it starts empty: paste your invitation link when it asks, and your wardrobe comes across.</p>';
+  if(conn)return '<p class="su-note home-note"><b>'+b+' is connected already.</b> The Home Screen app keeps its own storage, apart from '+b+'\'s: connect it too, in its Settings → Connection.</p>';
+  if(items.length)return '<p class="su-note home-note"><b>Your wardrobe stays here in '+b+'.</b> The Home Screen app keeps its own storage and starts empty. To take your wardrobe along, tap <b>Download backup</b> in Settings → Backup &amp; sync here, then <b>Restore file</b> in the Home Screen app.</p>';
+  return '<p class="su-note home-note"><b>The Home Screen app keeps its own storage</b>, apart from '+b+'\'s: if you add it now, set it up there rather than here.</p>'}
 function homeSteps(inSetup){if(homeAndroid())return homeStepsAndroid(inSetup);const pad=homeIPad(),t=homeTester();
   return '<div class="home-wrap">'+homePic()+'<p class="su-lead home-lead">Put Daily Wardrobe on your Home Screen: it opens full screen like an app, and it is the only way your '+(pad?'iPad':'iPhone')+' lets it send the morning reminder.</p>'+
-    '<ol class="home-steps">'+(pad?'<li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' at the top right of Safari.</span></li>'
-      :'<li><span class="home-n">1</span><span>Tap <b>⋯</b> at the bottom right of Safari, then <b>Share</b> '+HOME_SHARE+'.<small>If you see Share '+HOME_SHARE+' there instead, tap it.</small></span></li>')+
-    '<li><span class="home-n">2</span><span>Tap <b>Add to Home Screen</b> '+HOME_ADD+'.<small>Not in the list? Scroll down, or tap View More.</small></span></li>'+
+    '<ol class="home-steps">'+homeShareStep(pad)+
+    '<li><span class="home-n">2</span><span>Tap <b>Add to Home Screen</b> '+HOME_ADD+'.<small>Not in the list? Scroll down, or tap '+(homeBrowser()==='Safari'?'View More':'Edit Actions')+'.</small></span></li>'+
     '<li><span class="home-n">3</span><span>Leave <b>Open as Web App</b> on and tap <b>Add</b>.</span></li>'+
     '<li><span class="home-n">4</span><span>Open Daily Wardrobe from its new icon'+(t?' and paste your invitation link at the setup\'s Connection step.':'.')+'</span></li></ol>'+
-    (t?homeCopyBtn():'')+homeNote()+(inSetup?'<p class="su-help">Or tap Next to carry on here.</p>':'')+'</div>'}
+    (t?homeCopyBtn():'')+homeNote()+homeRisk(pad)+(inSetup?'<p class="su-help">Or tap Next to carry on here.</p>':'')+'</div>'}
+/* (2026-11-16, the owner's decision 2 for W1-11-04) someone using the app in a Safari tab with no connection is told once, here (the
+   setup's Home Screen step, also About's sheet), that Safari can clear it; Backup & sync says it under its status (sync.js safariWord), and
+   safariRemind reminds such a person once there are SAFARI_MIN items that were never backed up */
+function homeRisk(pad){if(typeof isConnected==='function'&&isConnected())return '';
+  return `<p class="su-help home-risk">In a ${homeBrowser()} tab, your ${pad?'iPad':'iPhone'} can clear the app’s data when it isn’t opened for about a week or runs short of space. The Home Screen app isn’t cleared that way, and <b>Download backup</b> in Settings → Backup &amp; sync keeps a copy in Files.</p>`}
+const SAFARI_MIN=10,SAFARI_EVERY=30*864e5;
+/* a Safari-only wardrobe (an iPhone or iPad tab, not connected) of SAFARI_MIN+ items never backed up (no backup ever, no backup file
+   downloaded): a reminder with Download backup, at start-up, at most once every SAFARI_EVERY (localStorage safari_remind) */
+function safariRemind(){try{if(!homeIOS()||homeStandalone()||(typeof isConnected==='function'&&isConnected()))return false;
+  if(items.filter(i=>!i.sample).length<SAFARI_MIN||localStorage.getItem('last_sync')||localStorage.getItem('backup_file_at'))return false;
+  if(Date.now()-(+localStorage.getItem('safari_remind')||0)<SAFARI_EVERY)return false;
+  if(typeof setupShown==='function'&&setupShown())return false;
+  const t=$('#toast');if(t&&t.classList.contains('on')){setTimeout(safariRemind,6000);return false}   // (not over another message)
+  localStorage.setItem('safari_remind',Date.now());
+  toast(`Your ${items.filter(i=>!i.sample).length} items are only in ${homeBrowser()} on this ${homeIPad()?'iPad':'iPhone'}, and ${homeBrowser()} can clear a website’s data. Download a backup to keep a copy in Files.`,12000,{label:'Download backup',fn:downloadBackup});return true}
+  catch{return false}}
 const homeLabel=()=>homeAndroid()?'Install the app':'Add to Home Screen';
 const HOME_CARD={key:'home',get title(){return homeLabel()},pic:()=>'',last:'Got it',get body(){return homeSteps(false)}};
 function homeOpen(){kitOpen([HOME_CARD])}

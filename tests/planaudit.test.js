@@ -53,7 +53,7 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     ok(r.tie2===0&&r.tie3===0,`a tie fixed two or three workdays ahead is not planned the day before (${r.tie2} and ${r.tie3} of 10; before 20 of 20 each)`);
     ok(r.nShirt>0&&r.shirt2===0,`with laundry 3, a shirt fixed two days ahead is kept for that day (${r.shirt2} of ${r.nShirt}; before 12 of 12)`);
     ok(r.unusedTies===0&&r.rep===0,`on a 40-tie wardrobe every tie comes round in a year (${r.unusedTies} never planned; before 9) and none within three workdays (${r.rep}), ${r.ms} ms`);
-    ok(r.avg>=99.5,`its average score stays (${r.avg.toFixed(2)}; before 99.57)`);
+    ok(r.avg>=99.4,`its average score stays (${r.avg.toFixed(2)}; before 99.57, about 99.50 since fix round 3 rotates the shoes: not yesterday's pair, formality with a suit)`);
     ok(r.notWhite===0,`formal days take a white shirt (${r.notWhite} of 20 did not; before 3)`);
     ok(!r.notWornPrev,'a day marked "Not worn" is not the previous workday for repeats');
     ok(r.goneLabel!=='Incomplete'&&!r.goneHard,`a past day whose tie was deleted since is rated without it (${r.goneLabel}${r.goneHard?', hard: '+r.goneHard:''})`);

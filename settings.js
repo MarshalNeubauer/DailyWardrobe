@@ -12,12 +12,19 @@ function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.clas
     const over=r.top+Math.min(el.scrollHeight,m.clientHeight-80)-m.clientHeight;if(over>0)m.scrollBy({top:Math.min(over+16,r.top-top-8),behavior:'smooth'})},460)}
 /* the Backup line in Settings says what really happened: the last backup's time, or that the last try failed (sync.js keeps
    sync_status while a try fails and last_sync when one works) */
+/* when backups start again (the next 00:00 UTC): "tomorrow" only when that is tomorrow here; west of UTC it is later today (W1-10-03: "Paused
+   until tomorrow" over a line saying "after 7:00 PM") */
+function pausedUntil(t){const d=new Date(t),n=new Date();let at='';try{at=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
+  return d.toDateString()===n.toDateString()?(at||'later today'):'tomorrow'}
 function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
   if(typeof inviteOver==='function'&&inviteOver())return 'Not backed up: your invitation has ended';
   const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'',when=t=>{const d=new Date(t),days=Math.round((todayDate()-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
   // (2026-11-15, the audit: "Backed up today" while the day's saves were used up and none of the new items was on the server)
-  if((+localStorage.getItem('sync_pause')||0)>Date.now())return last?`Paused until tomorrow · last saved ${when(last)}`:'Paused until tomorrow: not backed up yet';
+  const pz=+localStorage.getItem('sync_pause')||0;
+  if(typeof syncPaused==='function'?syncPaused():pz>Date.now()){const p=pausedUntil(pz);return last?`Paused until ${p} · last saved ${when(last)}`:`Paused until ${p}: not backed up yet`}
+  if(/^Backups held/.test(st))return 'Held: deleted from the server on another device';   // (sync.js syncWiped)
+  if(/^Backing up/.test(st))return last?`Backing up photos · last saved ${when(last)}`:'Backing up photos: not finished yet';   // (photos going up in batches, sync.js phBatch)
   if(/^Not backed up:/.test(st))return last?`Waiting for a connection · last saved ${when(last)}`:'Waiting for a connection: not backed up yet';
   if(/failed/i.test(st))return last?`Last backup failed · last saved ${when(last)}`:'Backup failed: not backed up yet';
   return last?`Backed up ${when(last)}`+(localStorage.getItem('sync_wait')&&!/^Syncing/.test(st)?' · newer changes waiting':''):'Not backed up yet'}
@@ -32,7 +39,8 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
   set('weather',`${settings.location?settings.location.name:'No location set'} · °${unit()}`);
   set('photos',picsDrawn()?'Drawing only':typeof isConnected==='function'&&!isConnected()?'Painted pictures · needs a connection':'Painted pictures');   // (the masters come from the server)
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
-  set('tagging',`${own?own+' color'+(own===1?'':'s')+' & patterns of your own':'Your own colors & patterns'}`);
+  const om=typeof ownMats==='function'?Object.keys(MATERIALS_BY).reduce((n,t)=>n+ownMats(t).length,0):0;   // (own materials, 2026-11-16)
+  set('tagging',`${own?own+' color'+(own===1?'':'s')+' & patterns of your own':'Your own colors & patterns'}${om?` · ${om} material${om===1?'':'s'}`:''}`);
   const w=localStorage.getItem('worker_url');let host='';try{host=w?new URL(w).host:''}catch{}
   set('backup',backupSummary(w));set('connection',typeof connSummary==='function'?connSummary():host||'Not connected')}
 /* the week's first day: the first workday (Sunday first) whose day before isn't one, so Sun–Thu starts on Sunday and Mon–Fri on Monday;
@@ -78,6 +86,12 @@ function closeSettings(){const was=settingsOpen();
   if(viewStale){const v=viewStale;viewStale=null;if(!$('#'+v).hidden)show(v)}
 }
 function saveSettings(){
+  // (audit 2026-11-15, W1-7-02) another address or code typed while connected moves this phone to another account: it goes through the
+  // link's questions (account.js acctTyped: the same account goes through, another asks, backs up and clears first). Stored as typed, the
+  // next sync merged this phone's wardrobe into the other account
+  const tu=$('#cfg-url')?$('#cfg-url').value.trim():null,tt=$('#cfg-token')?$('#cfg-token').value.trim():null,cu=(localStorage.getItem('worker_url')||'').trim(),ct=(localStorage.getItem('app_token')||'').trim();
+  if(typeof acctTyped==='function'&&tu&&tt&&ct&&cu&&(tt!==ct||tu.replace(/\/*$/,'/')!==cu.replace(/\/*$/,'/'))){
+    closeSettings();acctTyped(tu,tt).catch(e=>console.warn('connection not changed',e));return}
   // full or blocked storage: Done still closes Settings (it threw before closing), and says the connection wasn't kept
   try{if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
     if($('#cfg-token')) localStorage.setItem('app_token',$('#cfg-token').value.trim())}
@@ -148,7 +162,7 @@ function builtinHolidays(cc,from,to){if(!HOL_FIXED[cc]&&!HOL_HIJRI[cc])return nu
 /* the calendar years from one YYYY-MM-DD to another, both included */
 const holYears=(from,to)=>{const a=+from.slice(0,4),b=+to.slice(0,4),out=[];for(let y=a;y<=b;y++)out.push(y);return out};
 async function fetchHolidays(cc){
-  const T=todayDate(),from=isoKey(new Date(T.getFullYear(),T.getMonth()-1,T.getDate())),to=isoKey(new Date(T.getFullYear()+1,T.getMonth()+1,T.getDate()));
+  const T=trueToday(),from=isoKey(new Date(T.getFullYear(),T.getMonth()-1,T.getDate())),to=isoKey(new Date(T.getFullYear()+1,T.getMonth()+1,T.getDate()));
   const tidy=l=>{const m={};for(const x of l)if(x.d>=from&&x.d<=to&&x.n)m[x.d]=m[x.d]&&!m[x.d].includes(x.n)?m[x.d]+', '+x.n:m[x.d]||x.n;return Object.entries(m).sort().map(([d,n])=>({d,n}))};
   const own=()=>{const l=builtinHolidays(cc,from,to);return l&&l.length?tidy(l):null};
   // (a country with its own list isn't in Nager.Date: not asked, which logged a 404 on every start)
@@ -163,27 +177,37 @@ async function fetchHolidays(cc){
   if(!r.ok||!(j.holidays||[]).length){const l=own();if(l)return l}
   if(!r.ok)throw new Error(j.holidaysError||(r.status===404||r.status===405?'The server doesn’t have holiday lists yet: it needs an update.':j.error||`HTTP ${r.status}`));
   return tidy((j.holidays||[]).map(h=>({d:h.date,n:h.name})))}
+/* the holidays already past, kept for good (fix round 3, W1-8-01: the monthly refresh replaced the list with one starting a month back,
+   and every older holiday turned into a workday "you didn't open the app", counted as worn, toward cleaning and Insights): they were days
+   off when they came, so they stay days off whatever list or country comes next; Settings lists only the coming ones */
+function holPast(){const h=settings.holidays,T=isoKey(typeof trueToday==='function'?trueToday():todayDate());/* (the corrected date: core.js) */if(!h)return {list:[],skip:[]};
+  const list=(h.list||[]).filter(x=>x&&x.d<T);return {list,skip:(h.skip||[]).filter(d=>d<T&&list.some(x=>x.d===d))}}
 async function setHolidayCountry(cc,quiet){
-  if(!cc){settings.holidays=null;holidayMsg='';await saveUserSettings();todayStale=true;renderDaysOffUI();return}
+  // "No public holidays": none from now on; the past ones stay (country '': nothing is fetched)
+  if(!cc){const past=holPast();settings.holidays=past.list.length?{country:'',list:past.list,skip:past.skip,fetched:0}:null;holidayMsg='';await saveUserSettings();todayStale=true;renderDaysOffUI();return}
   if(!quiet){holidayMsg=`Loading the public holidays of ${countryName(cc)}…`;
     // (fix round 2) the country is kept the moment it is picked, with no list yet (fetched 0: the next start fetches it, refreshHolidays):
     // swiped away before the list arrived, the choice was lost
-    if(!(settings.holidays&&settings.holidays.country===cc)){settings.holidays={country:cc,list:[],skip:[],fetched:0};saveUserSettings();todayStale=true}
+    if(!(settings.holidays&&settings.holidays.country===cc)){settings.holidays={country:cc,...holPast(),fetched:0};saveUserSettings();todayStale=true}
     renderDaysOffUI()}
-  try{const list=await fetchHolidays(cc),old=settings.holidays&&settings.holidays.country===cc?settings.holidays.skip||[]:[];
-    settings.holidays={country:cc,list,skip:old.filter(d=>list.some(x=>x.d===d)),fetched:Date.now()};
+  try{const got=await fetchHolidays(cc),old=settings.holidays&&settings.holidays.country===cc?settings.holidays.skip||[]:[];
+    // past holidays stay (holPast): the fetched list starts a month back, and a holiday that dropped out of it became a workday after the
+    // fact, recorded as worn (fix round 3, W1-8-01)
+    const past=holPast(),list=[...past.list.filter(x=>!got.some(y=>y.d===x.d)),...got].sort((a,b)=>a.d<b.d?-1:1);
+    settings.holidays={country:cc,list,skip:[...new Set([...past.skip,...old])].filter(d=>list.some(x=>x.d===d)).sort(),fetched:nowMs()};
     holidayMsg=list.length?'':`No public holidays found for ${countryName(cc)}.`;await saveUserSettings();todayStale=true}
   catch(e){if(quiet)return;
     // (audit 2026-11-15) the country picked is the one that counts, even without a list: the old country's holidays went on counting under
     // a "that country" message; tried again at the next start (fetched 0, refreshHolidays)
-    if(!(settings.holidays&&settings.holidays.country===cc&&(settings.holidays.list||[]).length)){settings.holidays={country:cc,list:[],skip:[],fetched:0};await saveUserSettings();todayStale=true}
+    if(!(settings.holidays&&settings.holidays.country===cc&&(settings.holidays.list||[]).length)){settings.holidays={country:cc,...holPast(),fetched:0};await saveUserSettings();todayStale=true}
     const m=e.message||'couldn’t load the holiday list.';holidayMsg=`${countryName(cc)}: ${m}${/days off/.test(m)?'':' Add its holidays as your own days off below if you need them.'}`}
   renderDaysOffUI()}
 /* the list goes stale (new year, tentative dates confirmed): fetched again once a month, keeping the days you unticked */
 /* the monthly refetch saves the settings with a new stamp, and the newest settings win a sync: on a device that had been away
    for a while, stamping its old settings would undo a change made on another device since. So it syncs first, and refetches
    only if the settings it then has still need it (another device may have done it already). Offline: not this time. */
-async function refreshHolidays(){const due=()=>{const h=settings.holidays;return !!(h&&h.country&&Date.now()-(h.fetched||0)>30*864e5)};
+/* by the corrected time (core.js nowMs), and a list fetched "in the future" (the clock was ahead that day, the audit's W1-9-04) is due */
+async function refreshHolidays(){const due=()=>{const h=settings.holidays,f=h&&+h.fetched||0;return !!(h&&h.country&&(nowMs()-f>30*864e5||f>nowMs()+864e5))};
   if(!due())return;
   if(typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')){
     if(!await syncNow())return;
@@ -194,7 +218,9 @@ const showCost=()=>!(typeof isTester==='function'&&isTester());
 async function toggleHoliday(d,on){const h=settings.holidays;if(!h)return;const skip=new Set(h.skip||[]);on?skip.delete(d):skip.add(d);
   settings.holidays={...h,skip:[...skip].sort()};await saveUserSettings();todayStale=true;renderDaysOffUI()}
 const isoToDate=v=>{const [y,m,d]=String(v).split('-').map(Number);return new Date(y,m-1,d)};
-async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off-to')||{}).value||f,n=(($('#cfg-off-name')||{}).value||'').trim();
+/* a day off's name is at most OFF_NAME_MAX letters (W2-12-02: a pasted 57-letter link pushed its chip's × off the screen, and nothing limited it) */
+const OFF_NAME_MAX=40,offNameCut=n=>{n=String(n||'').replace(/\s+/g,' ').trim();return [...n].length>OFF_NAME_MAX?[...n].slice(0,OFF_NAME_MAX-1).join('').trim()+'…':n};
+async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off-to')||{}).value||f,n=offNameCut(($('#cfg-off-name')||{}).value);
   const say=m=>{holidayMsg=m;renderDaysOffUI()};if(!f)return say('Pick a date first.');
   const a=isoToDate(f),b=isoToDate(t),T=todayDate();if(b<a)return say('The last day is before the first.');if((b-a)/864e5>92)return say('That is more than three months: add it in parts.');
   // a typed date isn't held back by the field's min (audit 2026-11-15: "1 day off added." for a past day that never showed)
@@ -216,7 +242,7 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
   // consecutive days with one name are shown as one range
   const runs=[];for(const x of own){const r=runs[runs.length-1];if(r&&r.n===x.n&&(isoToDate(x.d)-isoToDate(r.to))/864e5<=1.5)r.to=x.d,r.ds.push(x.d);else runs.push({from:x.d,to:x.d,n:x.n,ds:[x.d]})}
   if(ol)ol.innerHTML=runs.map(r=>{const l=r.from===r.to?yearDate(isoToDate(r.from)):`${yearDate(isoToDate(r.from))} – ${yearDate(isoToDate(r.to))}`;
-    return `<span class="fchip">${l}${r.n&&r.n!=='Day off'?' · '+esc(r.n):''}<button type="button" aria-label="Remove ${l}" onclick="removeDaysOff('${r.ds.join(',')}')">×</button></span>`}).join('');
+    return `<span class="fchip"><span class="fcht">${l}${r.n&&r.n!=='Day off'?' · '+nameHtml(offNameCut(r.n)):''}</span><button type="button" aria-label="Remove ${l}" onclick="removeDaysOff('${r.ds.join(',')}')">×</button></span>`}).join('');
   const m=$('#holiday-msg');if(m)m.textContent=holidayMsg||(cc&&up.length?`${up.filter(x=>!skip.has(x.d)).length} public holiday${up.length===1?'':'s'} of ${countryName(cc)} count as days off. Uncheck any you work.`:'');
   const f=$('#cfg-off-from');if(f)f.min=tk;
   if(settingsOpen())settingsSummaries()}   // the Days off summary follows an added or removed day (it kept the old count, audit 2026-11-13)
@@ -242,7 +268,7 @@ async function addFormalDay(){const v=($('#cfg-formal-date')||{}).value;if(!v)re
   if(o.occasion===occ)return renderFormalUI(`${l} is already ${what}.`);
   await setOccasion(occ,k);renderFormalUI(`${l} is now ${what}: ${O[2]}.`)}
 function renderSettingsExtras(){
-  if(typeof renderDressUI==='function')renderDressUI();renderItemPicUI();renderFormalUI();renderReplanUI();renderDaysOffUI();renderCustomUI();if(typeof renderConnUI==='function')renderConnUI();
+  if(typeof renderDressUI==='function')renderDressUI();renderItemPicUI();renderFormalUI();renderReplanUI();renderDaysOffUI();renderCustomUI();if(typeof renderOwnMatUI==='function')renderOwnMatUI();if(typeof renderConnUI==='function')renderConnUI();
   renderPicturesUI();if(typeof renderAsmUI==='function'){renderAsmUI();if(asmLive())asmSync()}
   if(typeof renderCareUI==='function')renderCareUI();
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
@@ -304,7 +330,7 @@ async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').tri
   if(!q){window._cities=[];if($('#city-results'))$('#city-results').innerHTML='';return}
   try{const lang=cityLang(q),r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=8&language='+lang+'&name='+encodeURIComponent(q));const j=await r.json();
     const res=cityList(await cityEnglish((j.results||[]).slice(0,8),lang)).slice(0,5);
-    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join(''):'<small class="mut">No matches.</small>'}
+    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join(''):'<small class="mut" id="city-none">No matches. Try the name in English or a nearby larger city, or Use my location.</small>'}
   catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>'}}
 /* 16-day forecast from Open-Meteo (free, no key); cached for 3 hours */
 /* header ↻: sync with the worker (if set up), reload everything from storage, refresh the forecast and redraw */

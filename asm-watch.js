@@ -16,12 +16,15 @@ const ASM_WATCH_GEO={suit:{x:1129,y:1049,n:255,cx:1274,cy:1177,ax:[.312,-.9501]}
   'shirt-tie':{x:1164,y:630,n:193,cx:1276,cy:742,ax:[.3947,-.9188]},'shirt-open':{x:1171,y:682,n:189,cx:1279,cy:784,ax:[.4391,-.8984]}};
 const ASM_WATCH_MASTER={'suit-open':'suit','vest-open':'vest'};
 /* the masters' watch: silver, white dial, a metal bracelet. Any other is painted */
-const asmWatchPaints=w=>{if(!w||w.type!=='watch')return false;const o=watchOpts(w);return (w.metal||'silver')!=='silver'||o.dial!=='white'||o.band==='leather'};
-const asmWatchSig=w=>{const o=watchOpts(w);return ['w'+ASM_WATCHV,w.metal||'silver',o.dial,o.band,o.band==='leather'?colOf(w):''].join('/')};
+/* a strap rather than a bracelet: leather, and since 2026-11-15 rubber and a fabric NATO strap (the owner's options), painted in the
+   item's colour; the leather's key is as before, so its pictures keep their keys */
+const ASM_WATCH_STRAPS=['leather','rubber','nato'];
+const asmWatchPaints=w=>{if(!w||w.type!=='watch')return false;const o=watchOpts(w);return (w.metal||'silver')!=='silver'||o.dial!=='white'||ASM_WATCH_STRAPS.includes(o.band)};
+const asmWatchSig=w=>{const o=watchOpts(w);return ['w'+ASM_WATCHV,w.metal||'silver',o.dial,o.band,ASM_WATCH_STRAPS.includes(o.band)?colOf(w):''].join('/')};
 /* the case's tones per metal: [highlight, colour, shadow]. Gold is the approved mockup's; gunmetal ('other') METAL_TONES.other's, written
    out: the picture worker loads this file without core.js, so nothing of core.js may be read at load time (only inside asmWatchJob,
    asmWatchPaints and asmWatchSig, which run on the page) */
-const ASM_WATCH_TONES={gold:['#fff0b8','#c9a227','#5a4310'],rosegold:['#ffe1cf','#c98f78','#5e3426'],other:['#d2d4d7','#868a90','#45494e']};
+const ASM_WATCH_TONES={gold:['#fff0b8','#c9a227','#5a4310'],rosegold:['#ffe1cf','#c98f78','#5e3426'],other:['#d2d4d7','#868a90','#45494e'],'two-tone':['#fbf3d8','#c8b27e','#5c5236']};   // two-tone: steel warmed toward gold (2026-11-15)
 const asmWatchMetal=w=>{const m=w.metal||'silver';return m==='gold'&&w.primaryColor==='rosegold'?'rosegold':m};
 /* the job's part (assemble.js asmJob): what to paint, or null */
 function asmWatchJob(o,kind){const w=o&&o.watch;if(!kind||!asmWatchPaints(w))return null;const k=ASM_WATCH_MASTER[kind]||kind,g=ASM_WATCH_GEO[k];if(!g)return null;
@@ -57,14 +60,16 @@ function asmWatchDo(px,S,W,M,T){const L=ASM_LIN,f=S/2048,g=W.g,pad=Math.ceil(14*
     for(let q=0;q<N;q++){const a=mask[q];if(a<.004)continue;const s=Math.min(3,Y[q]/ref);for(let c=0;c<3;c++){const lo=LO[c]*.6,v=s<=1?lo+(G[c]-lo)*Math.pow(s,1.7):G[c]+(HI[c]-G[c])*Math.pow(Math.min(1,(s-1)/.9),.8);set(q,c,v,a)}}};
   const chg=new Uint8Array(N),put=(q,c,v,a)=>{out[3*q+c]=out[3*q+c]*(1-a)+v*a;chg[q]=1};
   // the strap first (it lies under the case), then the case, then the dial
-  if(W.band==='leather'&&T){
+  if((W.band==='leather'&&T)||W.band==='rubber'||W.band==='nato'){
+    // rubber and NATO have no scan: an even surface (rubber a soft satin sheen, no stitches; NATO a matte weave of fine ribs across it)
+    const rub=W.band==='rubber',nato=W.band==='nato';
     // a clean outline over the old bracelet's: smoothed from a lower cut, never inside the strap part, within the watch zone
     const z=new Float32Array(N);for(let q=0;q<N;q++)z[q]=D[q]+C[q]+SP[q]>.02?1:0;const zb=bl(z,1.5);
     let b=new Float32Array(N);for(let q=0;q<N;q++)b[q]=SP[q]>.3?1:0;b=bl(b,2.5);for(let q=0;q<N;q++)b[q]=b[q]>.42?1:0;let St=bl(b,.9);for(let q=0;q<N;q++)St[q]=zb[q]>.05?Math.max(St[q],SP[q]):0;
     const in5=bl(St,5),in16=bl(St,1.6),m=new Float32Array(N);for(let q=0;q<N;q++)m[q]=St[q]>.5?1:0;
     const num=bl(Float32Array.from(Y,(v,q)=>v*m[q]),14),den=bl(m,14),Ys=Float32Array.from(num,(v,q)=>v/Math.max(den[q],1e-3)),ref=asmWatchPct(Ys,m,.6);
-    const LC=hex(W.strap),SH=hex('#e9cfa8'),ST=hex('#cdb088'),tn=T.width,td=T.data,TS=1.5,ax=g.ax,pxv=[-ax[1],ax[0]];
-    const tx=(tu,tv,c)=>{tu=((tu%(tn-1))+(tn-1))%(tn-1);tv=((tv%(tn-1))+(tn-1))%(tn-1);const a=Math.floor(tu),b2=Math.floor(tv),fx=tu-a,fy=tv-b2,o=4*(b2*tn+a)+c,o2=o+4*tn;
+    const LC=hex(W.strap),SH=hex(rub?'#d8dadc':'#e9cfa8'),ST=hex('#cdb088'),tn=T?T.width:2,td=T?T.data:null,TS=1.5,ax=g.ax,pxv=[-ax[1],ax[0]];
+    const tx=(tu,tv,c)=>{if(!td)return nato&&c<2?128*(1+(c?.18:.1)*Math.sin(tv*2.1)):c===2?(rub?90:230):128;tu=((tu%(tn-1))+(tn-1))%(tn-1);tv=((tv%(tn-1))+(tn-1))%(tn-1);const a=Math.floor(tu),b2=Math.floor(tv),fx=tu-a,fy=tv-b2,o=4*(b2*tn+a)+c,o2=o+4*tn;
       return (td[o]*(1-fx)+td[o+4]*fx)*(1-fy)+(td[o2]*(1-fx)+td[o2+4]*fx)*fy};
     for(let j=0;j<h;j++)for(let i=0;i<w;i++){const q=j*w+i,a=St[q];if(a<.01)continue;
       const dx=(X0+i)/f-g.cx,dy=(Y0+j)/f-g.cy,u=dx*ax[0]+dy*ax[1],v=dx*pxv[0]+dy*pxv[1],tu=tn/2+v*TS,tv=tn/2+u*TS;
@@ -72,9 +77,9 @@ function asmWatchDo(px,S,W,M,T){const L=ASM_LIN,f=S/2048,g=W.g,pad=Math.ceil(14*
       const sh=Math.pow(Math.min(1.35,Math.max(.45,Ys[q]/ref)),1.2),edge=.5+.5*Math.min(1,Math.max(0,in5[q]*2-.45)),pe=Math.min(1,Math.max(0,(in16[q]-.5)*3));
       const k=sh*edge*Math.pow(Math.max(gr,1e-3),1.1)*Math.pow(Math.max(rl,1e-3),.7)*(.72+.28*pe);
       const lat=Math.min(1,Math.max(0,(in5[q]-.55)/.45)),sheen=Math.min(1,Math.max(0,Math.pow(lat,1.5)*Math.min(1,Math.max(0,sh-.8))*(1.25-ro)*Math.min(1.6,Math.max(.6,rl))))*.6;
-      const stitch=in5[q]>.24&&in5[q]<.34&&Math.floor(u/4.5)%2===0;
+      const stitch=!rub&&!nato&&in5[q]>.24&&in5[q]<.34&&Math.floor(u/4.5)%2===0;
       for(let c=0;c<3;c++){let vv=LC[c]*k;vv+=(SH[c]*.3-vv)*sheen;if(stitch)vv=vv*.45+ST[c]*.55;put(q,c,vv,a)}}}
-  else if(W.band!=='leather')metal(SP,put);   // a metal bracelet in the case's metal (silver: as the master)
+  else if(!ASM_WATCH_STRAPS.includes(W.band))metal(SP,put);   // a metal bracelet in the case's metal (silver: as the master)
   metal(C,put);
   if(!W.white){const DC=hex(W.dial),MK=hex('#d9d4c4'),m=new Uint8Array(N);for(let q=0;q<N;q++)m[q]=D[q]>.5;const ref=asmWatchPct(Y,m,.75),big=bl(Y,9),sm=bl(Y,2.5);
     for(let q=0;q<N;q++){const a=D[q];if(a<.004)continue;
