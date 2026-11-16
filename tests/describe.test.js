@@ -56,6 +56,12 @@ module.exports=async({ok,ROOT})=>{
     reply=()=>[200,{...COL,plansAs:'ownmoss',existing:'ownmoss',hex:'#5b6c3b'}];
     r=await J(await call({what:'colour',text:'moss',type:'tie',custom}));
     ok(r.existing==='ownmoss'&&r.dE<1&&r.plansAs!=='ownmoss','an own color can be the existing one, never plansAs');
+    // an own color made for another kind (2026-11-16, the owner's coyote brown T-shirt): the app offers it for this kind once used, so it can be the existing one
+    r=await J(await call({what:'colour',text:'moss',type:'tee',field:'accent',custom}));
+    ok(r.existing==='ownmoss'&&r.dE<1,'an own color for ties (no stripes) can be the existing one for a T-shirt\'s stripe');
+    reply=()=>[200,{...COL,existing:'none',hex:'#5b6c3b'}];r=await J(await call({what:'colour',text:'mossy',type:'tee',custom}));
+    ok(r.existing==='ownmoss','… and is the nearest one when Claude gives none');
+    reply=()=>[200,{...COL,plansAs:'ownmoss',existing:'ownmoss',hex:'#5b6c3b'}];
     reply=()=>[200,{...COL,hex:'#123456'}];
     r=await J(await call({what:'colour',text:'olive drab #4a5d23',type:'pants'}));
     ok(r.hex==='#4a5d23','a hex in the description wins over Claude\'s');
