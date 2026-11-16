@@ -366,13 +366,24 @@ function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?
   tertiaryColor:ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null,pattern:normPat(ai.type,ai.pattern)}}
 function takeExtras(q,ai,seen){q.tagAI=aiSignals(ai,seen);Object.assign(q,{conf:ai.conf||null,altColor:ai.altColor||null,altPattern:ai.altPattern||null,newColor:ai.newColor||null,newPattern:ai.newPattern||null,clothBox:ai.clothBox||q.clothBox||null,
     patternBox:ai.patternBox||q.patternBox||null,weave:ai.weave||q.weave||null});
-  q.aiTag={...aiFields(ai)};readSett(q)}
+  q.aiTag={...aiFields(ai)};takeMaterial(q,ai);readSett(q)}
+/* Claude's material (2026-11-15, app.js matTag: high or medium, on the type's list): it fills the card's Material only when that is empty, or
+   still holds Claude's own earlier suggestion (tagging again from the close-up), never one chosen by hand (q.matSet); the field shows it as
+   Claude's suggestion (q.matAI, wardrobe.js matRow) until the owner changes it */
+function takeMaterial(q,ai){const m=ai&&ai.material,l=MATERIALS_BY[q.type];if(!m||!l||!l.includes(m.key)||q.matSet)return;
+  if(q.material&&!(q.matAI&&q.material===q.matAI.key))return;
+  q.material=m.key;q.matAI={key:m.key,conf:m.conf,why:m.why||''}}
 async function closeTagImg(q){if(q.texDone)return q.raw.tex.toDataURL('image/jpeg',TAG_Q);   // a card brought back after a kill: its close-up is already corrected (add.js addRevive)
   const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;measureCard(q);
   if(!q.tagImg||!localStorage.getItem('worker_url')){renderAdd();if(typeof addKeep==='function')addKeep();return}
   q.refining=1;renderAdd();if(typeof addKeep==='function')addKeep();   // the close-up kept at once, as a reading under way (add.js keeps it as cut off: refineCut)
-  const hint=measHint(q.meas),ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff)});const k=queue.indexOf(q);q.refining=0;
+  /* whatever happens from here, the card is drawn again when the reading ends (2026-11-16, a tester: a step that threw after the flag was
+     cleared left Confirm switched off until something else redrew the card, so it took "Bought, on the way" to save) */
+  let ai=null,hint=null;try{hint=measHint(q.meas);ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff)})}catch(e){console.warn('close-up reading failed',e)}
+  const k=queue.indexOf(q);q.refining=0;
+  try{refineApply(q,ai,hint,k)}catch(e){console.warn('close-up answer not applied',e);q.refineNote='Tagging again from the close-up didn’t work; the first tags stay.';if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}}
+function refineApply(q,ai,hint,k){
   if(!ai||!ai.type){q.refineNote=aiError||'Tagging again from the close-up didn’t work; the first tags stay.';if(k>=0){renderAdd();if(typeof addKeep==='function')addKeep()}return}
   const f=aiFields(ai),changes=[],prev={};delete q.refineType;delete q.refineKept;
   // a close-up shows cloth, not what the item is: a new type is offered, never taken (a shirt became a suit); the colours and pattern
@@ -552,7 +563,10 @@ const claudeOnly=(t,p)=>motifPat(p)||texPat(t,p)||tieWeave(t,p);
 /* a card's pattern can be read: a band pattern, a weave Claude described, or a pattern only Claude can read (a motif, a shirt's weave) */
 const readable=(t,p,w)=>settable(t,p,w)||claudeOnly(t,p);
 /* Claude's reading drawn with the photo's colours: bands (stripes, checks, plaids) or a motif (small figures on a grid) */
-const specSett=(spec,args)=>spec&&(spec.texture?(args.type==='shirt'||args.type==='tie'?texFromSpec(spec,args):null):spec.motif?motifFromSpec(spec,args):spec.across?settFromSpec(spec,args):null);
+/* an answer of a shape it can't draw (2026-11-16: across without bands threw, and the Add card's Confirm stayed off) gives null: the
+   pixel reader takes over, as when Claude sent nothing */
+const specSett=(spec,args)=>{try{return specSett1(spec,args)}catch(e){console.warn('pattern answer not drawn',e);return null}};
+const specSett1=(spec,args)=>spec&&(spec.texture?(args.type==='shirt'||args.type==='tie'?texFromSpec(spec,args):null):spec.motif?motifFromSpec(spec,args):spec.across?settFromSpec(spec,args):null);
 function readSett(q){const ok=!q.settOff&&readable(q.type,q.pattern,q.weave)&&q.raw,args={full:q.raw&&q.raw.full,box:q.patternBox,tex:q.raw&&q.raw.tex,wb:q.wbOff?null:q.wb,type:q.type};q.settReject=null;
   let s=null;if(ok&&q.spec)s=specSett(q.spec,args);
   if(!s)s=ok&&!claudeOnly(q.type,q.pattern)?settFrom({full:q.raw.full,box:q.patternBox,tex:q.raw.tex,weave:q.weave,wb:q.wbOff?null:q.wb,type:q.type}):null;
@@ -667,10 +681,14 @@ function settFromSpec(spec,{tex,full,box,wb,type}){
   return {v:2,a,bands,cross:along&&along.some(b=>b[0])?{d:90,bands:along,r:+spec.paneAspect.toFixed(2)}:null,cr:+(+spec.repeatsInCloseup).toFixed(2),tr:+(+spec.repeatsAcrossItem).toFixed(2),src:'claude+pixels'}}
 /* ask Claude for a card's pattern once it has a close-up (the noise it strips is what the pixel reader can't) */
 async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.raw.tex||!q.tagImg||!readable(q.type,q.pattern,q.weave)||!localStorage.getItem('worker_url'))return;   // a card saved or skipped meanwhile: no paid call
-  q.patternReading=1;renderAdd();const closeup=await closeTagImg(q);if(!queue.includes(q)){q.patternReading=0;return}
-  const spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff)});q.patternReading=0;   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
-  if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
-  readSett(q);if(q.meas)measureAndApply(q);if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}
+  q.patternReading=1;renderAdd();let spec=null;
+  try{const closeup=await closeTagImg(q);if(!queue.includes(q)){q.patternReading=0;return}
+    spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff)})}catch(e){console.warn('pattern reading failed',e)}   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
+  q.patternReading=0;
+  // the card is drawn again however the answer goes (a step that threw here left Confirm switched off: refineFromCloseup)
+  try{if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
+    readSett(q);if(q.meas)measureAndApply(q)}catch(e){console.warn('pattern answer not applied',e);q.specFailed=1}
+  finally{if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}}
 
 /* ---- a motif (small figures on a grid: a neat or foulard, mini squares, dots) as Claude read it, each colour taken from its own
    pixels. A band reader can't draw these: it turns a checkerboard of mini squares into a diagonal plaid. Claude gives the grid,

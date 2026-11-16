@@ -188,10 +188,23 @@ function kitPattern(word,type){const w=kitNorm(word).replace(/-/g,' ');if(!w||w=
   const al=PAT_ALIAS[type==='blazer'||type==='pants'?'suit':type]||{},s=syn[w],h=w.replace(/ /g,'-');
   const k=list.find(p=>kitNorm(patLabel(p))===w||p===h)||(s&&(list.includes(s)?s:list.includes(al[s])?al[s]:null))||(list.includes(al[h])?al[h]:null);return k||undefined}
 /* what a row's Material says: one of the type's own materials (any case), the leather of shoes and belts; else left out, said */
-function kitMaterial(card,word){const m=kitNorm(word);if(!m)return null;const list=MATERIALS_BY[card.type];
-  if(list){card.material=list.find(x=>x===m)||String(word).trim();return null}   // (one not on the list shows as Other, as typed)
-  if(card.type==='shoes'||card.type==='belt'){const ls=leathersFor(card),k=ls.find(l=>m.includes(l))||(/leather|calf/.test(m)&&ls.includes('calf')?'calf':null);if(k){card.leather=k;return null}}
-  return `material “${String(word).trim()}” left out`}
+/* (2026-11-15, the materials audit) other words for a material are read as the listed one (core.js MAT_ALIAS: Merino, Fresco, Broadcloth,
+   Lisle, Wool-linen…, said as "read as"); a shirt's weave in the Material column (oxford, twill, end-on-end…) is its pattern when the row's
+   pattern is plain; anything else is kept as typed (Other) */
+function kitMaterial(card,word){const m=kitNorm(word),w=String(word).trim();if(!m)return null;const list=MATERIALS_BY[card.type];
+  const p=card.type==='shirt'&&(SHIRT_WEAVE_MAT[m]||SHIRT_WEAVE_MAT[m.replace(/-/g,' ')]);
+  if(list){if(p){
+      if((card.pattern||'solid')==='solid'&&(PATS_BY.shirt||[]).includes(p)){card.pattern=p;return `material “${w}” read as the ${patName(p)} pattern`}
+      return `material “${w}” left out (a weave: the pattern says it)`}
+    const a=matAlias(card.type,m);card.material=a||w;return a&&a!==m?`material “${w}” read as ${a}`:null}   // (one not on the list shows as Other, as typed)
+  if(card.type==='shoes'||card.type==='belt'){const k=kitLeather(card,m);if(k){card.leather=k.k;return k.read?`material “${w}” read as ${leatherWord(card,k.k)}`:null}}
+  return `material “${w}” left out`}
+/* a leather word for shoes or a belt -> {k, read}: the style's own leathers ("pebble grain" with a space is pebble-grain, not calf: the
+   audit's bug), nubuck (suede on a style that isn't made in it), braided, else "leather"/"calf" as calf; null when none */
+function kitLeather(card,m){const ls=leathersFor(card),d=m.replace(/\s+/g,'-');let k=ls.find(l=>d.includes(l));if(k)return {k};
+  if(/nubuck/.test(m))return ls.includes('nubuck')?{k:'nubuck'}:ls.includes('suede')?{k:'suede',read:true}:null;
+  if(/braid/.test(m)&&ls.includes('braided'))return {k:'braided'};
+  return /leather|calf/.test(m)&&ls.includes('calf')?{k:'calf'}:null}
 function kitRead(text){const rows=kitSplit(text);if(!rows.length)return {err:'Nothing to read.'};
   const head=rows[0].map(kitNorm),col={};for(const [k,names] of Object.entries(KIT_COLS)){const j=head.findIndex(h=>names.includes(h));if(j>=0)col[k]=j}
   if(col.type==null||col.primaryColor==null)return {err:'The first row must name the columns, with at least “Type” and “Color”. Download the template to see how.'};
@@ -223,7 +236,7 @@ function kitRead(text){const rows=kitSplit(text);if(!rows.length)return {err:'No
     if(type==='shirt')card.cuff=/french|double/i.test(v('cuff'))?'french':'button';
     if(type==='pants'){const k=kitNorm(v('kind')||tw);card.trouserKind=/jean|denim/.test(k)?'jeans':/chino/.test(k)?'chinos':'dress'}
     if(type==='shoes'){const s=kitNorm(v('style')||v('kind')||tw);card.shoeStyle=/derb/.test(s)?'derby':/loaf/.test(s)?'loafer':/boot/.test(s)?'boot':/sneak|train/.test(s)?'sneaker':'oxford'}
-    if(type==='shoes'||type==='belt'){const l=kitNorm(v('leather'));if(l){const k=leathersFor(card).find(x=>l.includes(x));if(k)card.leather=k}}
+    if(type==='shoes'||type==='belt'){const l=kitNorm(v('leather'));if(l){const k=kitLeather(card,l);if(k){card.leather=k.k;if(k.read)probs.push(`leather “${v('leather')}” read as ${leatherWord(card,k.k)}`)}}}
     if(SEASON_TYPES.includes(type)){const s=kitNorm(v('season'));if(/^(summer|warm)/.test(s))card.season='warm';else if(/^(winter|cold)/.test(s))card.season='cold'}
     for(const k of ['name','brand','notes'])if(v(k))card[k]=v(k);
     if(v('material')&&!(v('leather')&&(type==='shoes'||type==='belt'))){const p=kitMaterial(card,v('material'));if(p)probs.push(p)}
