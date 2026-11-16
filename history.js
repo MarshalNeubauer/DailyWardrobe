@@ -22,7 +22,7 @@ async function recordDays(p){
     // (noOutfit: a past day dressed only from the sample wardrobe, since removed, kept with no outfit: kit.js kitSampleDay)
     // (idsAhead, planner.js: pieces an earlier version wrote ahead of the day with a pick, the outfit from before it: recorded again)
     if(d<T&&!(r&&((r.ids&&!idsAhead(r))||r.noOutfit))){const n={...(r||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,auto:true},now=+d>first;n.updated=Date.now();if(now)dayRecs[k]=n;out.push({n,past:true,prev:r,now})}
-    else if(k===tk){const ids=idsOf(o);if(!r||JSON.stringify(r.ids)!==JSON.stringify(ids)||!!r.vestOn!==!!o.vest){const n={...(r||{date:k}),ids,suitDay:o.suitDay,vestOn:!!o.vest};n.updated=Date.now();dayRecs[k]=n;out.push({n,past:false,prev:r,now:true})}}
+    else if(k===tk){const ids=idsOf(o);if(!r||JSON.stringify(r.ids)!==JSON.stringify(ids)||!!r.vestOn!==!!o.vest){const n={...(r||{date:k}),ids,suitDay:o.suitDay,vestOn:!!o.vest};n.updated=Date.now();out.push({n,past:false,prev:r,now:false})}}   // (today's own record counts in no drawing: saved in turn)
   }
   if(!out.length)return;if(cache)delete cache.careW;   // the cleaning counts follow the days just recorded (care.js careCounts)
   await null;   // the saves start after the caller's drawing (saveDay puts a record in memory before it waits)
@@ -245,10 +245,16 @@ async function checkPlanRules(){if(!window.TEST_PLAN)return planRulesCheck()}   
    older version sent its lower number back with every settings save, and a roll-back brought one back. settings.planRules is read once,
    for a phone that has no number of its own yet (from before), and never written again */
 const PLAN_RULES_KEY='plan_rules';
-async function planRulesCheck(){let mine=null;try{mine=await metaGet(PLAN_RULES_KEY)}catch{}
-  const had=typeof mine==='number'?mine:(settings.planRules||0);
-  if(had>=PLAN_RULES){if(mine!==had)await metaPut(PLAN_RULES_KEY,had);return}
-  const n=await replanFuture(true);await metaPut(PLAN_RULES_KEY,PLAN_RULES);
+// (kept in localStorage too, read first so start-up waits for nothing on the usual path; the database's copy where it was lost)
+const planRulesLs=()=>{try{const v=+localStorage.getItem(PLAN_RULES_KEY);return v>0?v:null}catch{return null}};
+async function planRulesNote(v){try{localStorage.setItem(PLAN_RULES_KEY,String(v))}catch{}await metaPut(PLAN_RULES_KEY,v)}
+async function planRulesCheck(){let mine=planRulesLs();if(mine!==null&&mine>=PLAN_RULES)return;
+  // (nothing a re-plan would change, as on a new phone: no read, no re-plan, the number is noted)
+  const T=todayDate(),work=Object.values(dayRecs).some(r=>(r.lock||r.auto)&&r.worn!==true&&keyDate(r.date)>T);
+  if(mine===null&&work){try{const m=await metaGet(PLAN_RULES_KEY);if(typeof m==='number')mine=m}catch{}}
+  const had=mine!==null?mine:(settings.planRules||0);
+  if(had>=PLAN_RULES||!work){await planRulesNote(Math.max(had,PLAN_RULES));return}
+  const n=await replanFuture(true);await planRulesNote(PLAN_RULES);
   if(n)setTimeout(()=>toast('The planner was updated: upcoming days were planned again. Your own picks were kept.',4500),400)}
 const replanCount=()=>{const T=todayDate();return Object.values(dayRecs).filter(r=>{const d=keyDate(r.date);return d>=T&&r.worn!==true&&dayChanged(r,+d===+T)}).length};
 async function replanButton(){const T=todayDate(),n=replanCount();

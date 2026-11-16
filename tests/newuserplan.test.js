@@ -69,9 +69,11 @@ module.exports=async({ok,chromium,url})=>{
     // ---- a gap in use is said once, with a way to mark the days not worn
     const gap=await p.evaluate(async()=>{fresh('2026-11-19T12:00:00');const t=+new Date(2026,10,12,8);items=[I('suit','navy',{added:t}),I('suit','grey',{added:t}),I('shirt','white',{added:t}),I('tie','burgundy',{added:t}),I('shoes','black',{leather:'calf',added:t})];
       const o=planMonth(2026,10)['2026-11-12'];dayRecs['2026-11-12']={date:'2026-11-12',ids:idsOf(o),suitDay:true};cache={};
-      await recordDays(planMonth(2026,10));await new Promise(r=>setTimeout(r,700));return document.querySelector('#toast').textContent});
-    ok(/4 past workdays you didn’t open the app \(Sun, Nov 15 – Wed, Nov 18\) were counted as worn/.test(gap),`back after days away, the app says the missed workdays were counted as worn ("${gap}")`);
-    await p.click('#toast button');
+      await recordDays(planMonth(2026,10));await new Promise(r=>setTimeout(r,700));
+      // the toast, or the card when it is on screen (fix round 3: not both)
+      const c=document.querySelector('#missbox');return c&&!c.closest('[hidden]')?c.textContent:document.querySelector('#toast').textContent});
+    ok(/4 (past )?workdays you didn’t open the app \(Sun, Nov 15 – Wed, Nov 18\) (were counted|count) as worn/.test(gap),`back after days away, the app says the missed workdays were counted as worn ("${gap}")`);
+    await p.evaluate(()=>{const c=document.querySelector('#missbox');(c&&!c.closest('[hidden]')?[...c.querySelectorAll('button')].find(b=>/didn.t wear/i.test(b.textContent)):document.querySelector('#toast button')).click()});
     const gap2=await p.evaluate(async()=>{await new Promise(r=>setTimeout(r,300));return ['2026-11-15','2026-11-16','2026-11-17','2026-11-18'].map(k=>dayRecs[k].worn).concat(dayRecs['2026-11-12'].worn)});
     ok(gap2.slice(0,4).every(w=>w===false)&&gap2[4]!==false,'"I didn’t wear them" marks just those days not worn');
 

@@ -51,7 +51,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   // new planning rules on a device: noting them is not a change to the settings (it must not beat a newer change made elsewhere)
   await sync(B.p);await B.p.evaluate(async()=>{settings.daysOff=[];await saveUserSettings();await syncNow()});   // B's user removes the day off
   const before=await A.p.evaluate(async()=>(await metaGet('settings')).updated);
-  await A.p.evaluate(async()=>{await metaPut('plan_rules',1)});   // (the phone's own number, fix round 3: not in the synced settings)
+  await A.p.evaluate(async()=>{localStorage.setItem('plan_rules','1');await metaPut('plan_rules',1)});   // (the phone's own number, fix round 3: not in the synced settings)
   await A.p.reload();await A.p.waitForFunction(()=>window.appReady);
   await A.p.waitForFunction(async()=>(await metaGet('plan_rules'))===PLAN_RULES,null,{timeout:8000}).catch(()=>{});
   const after=await A.p.evaluate(async()=>{const s=await metaGet('settings');return {u:s.updated,r:(await metaGet('plan_rules'))===PLAN_RULES}});

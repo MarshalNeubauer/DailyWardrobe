@@ -40,9 +40,9 @@ module.exports=async({ok,chromium,url})=>{
     ok(sw.swap&&sw.reset,'"Suggest another" and Reset on a coming day keep no pieces ahead either');
 
     // ---- W1-1-01 = W1-4-01 = W1-2-06: the synced settings' old number doesn't re-plan this phone
-    const pr=await p.evaluate(async()=>{fresh();ward();at('2026-11-15T07:30:00');await lockUpcoming();await metaPut('plan_rules',PLAN_RULES);settings.planRules=PLAN_RULES-4;
+    const pr=await p.evaluate(async()=>{fresh();ward();at('2026-11-15T07:30:00');await lockUpcoming();await planRulesNote(PLAN_RULES);settings.planRules=PLAN_RULES-4;
       const locks=()=>Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length,a=locks();await checkPlanRules();const b=locks();
-      await metaPut('plan_rules',PLAN_RULES-1);await checkPlanRules();return {a,b,c:locks(),mine:await metaGet('plan_rules')}});
+      await planRulesNote(PLAN_RULES-1);await checkPlanRules();return {a,b,c:locks(),mine:await metaGet('plan_rules')}});
     ok(pr.a>0&&pr.b===pr.a,`a lower planner number in the synced settings (another phone, a roll-back, an old backup) re-plans nothing (${pr.a} locks kept)`);
     ok(pr.c===0&&pr.mine===await p.evaluate(()=>PLAN_RULES),'the phone\'s own older number still re-plans once, and is noted on the phone');
 
@@ -85,7 +85,7 @@ module.exports=async({ok,chromium,url})=>{
       await recordRun;await new Promise(r=>setTimeout(r,700));const card=()=>{const c=document.querySelector('#missbox');return c?c.innerText.replace(/\s+/g,' '):''};
       const first=card(),toastTxt=$('#toast').textContent;
       missedPickToggle();const days=[...document.querySelectorAll('#missbox .missone')].length;await missedOne('2026-11-23');const one=missedOpen().join();
-      const shown=[];for(const t of ['2026-11-27','2026-11-29','2026-11-30']){at(t+'T08:00:00');sel=homeDay();renderToday();shown.push(!!card())}
+      const shown=[];for(const t of ['2026-11-27','2026-11-29','2026-11-30']){at(t+'T08:00:00');sel=homeDay();renderToday();shown.push(!!card());await recordRun}
       return {sync,first,toastTxt,days,one,shown}});
     ok(mc.sync===4,`the days missed are recorded in memory before Today is drawn, so its "last worn" and cleaning frame count them at once (${mc.sync})`);
     ok(/4 workdays you didn’t open the app/.test(mc.first)&&!/didn’t open the app/.test(mc.toastTxt),`the card says it, and no toast says it again ("${mc.toastTxt}")`);

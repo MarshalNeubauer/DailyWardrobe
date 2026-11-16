@@ -16,7 +16,7 @@ module.exports=async({ok,chromium,url})=>{
         '2026-11-18':{date:'2026-11-18',force:{top:'suit0'}},
         '2026-11-23':{date:'2026-11-23',formal:true,force:{top:'suit0'},lock:{top:'suit0'}},
         '2026-12-6':{date:'2026-12-6',vest:false}}};
-    await p.evaluate(setup);await p.evaluate(()=>metaPut('plan_rules',1));   // (the phone's own number: fix round 3)
+    await p.evaluate(setup);await p.evaluate(()=>{localStorage.setItem('plan_rules','1');return metaPut('plan_rules',1)});   // (the phone's own number: fix round 3)
     const r=await p.evaluate(async()=>{await checkPlanRules();const R=k=>JSON.stringify(Object.keys(dayRecs[k]).filter(x=>x!=='updated').sort());
       return {rules:(await metaGet('plan_rules'))===PLAN_RULES,past:R('2026-11-5'),today:R('2026-11-9'),f10:R('2026-11-10'),f17:R('2026-11-17'),f18:R('2026-11-18'),formal:R('2026-11-23'),dec:R('2026-12-6'),
         n17:planFor()['2026-11-17'].top.id,toast:document.querySelector('#toast').textContent}});
