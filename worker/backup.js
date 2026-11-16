@@ -85,7 +85,9 @@ const SNAP_DAYS = 30, SNAP_MONTHS = 400, SNAP_DAY = /^\d{4}-\d{2}-\d{2}$/;
 /* oldPv: the version being replaced in its by-reference form, when it was stored with its photos inline (a backup converted at this
    save): its copies are kept small too, their photos already stored */
 async function keepSnapshots(env, m, body, ns = '', oldPv = null) {
-  const day = SNAP_DAY.test(body.day || '') ? body.day : new Date().toISOString().slice(0, 10), month = day.slice(0, 7);
+  // the app's own date, unless it is more than a day ahead of the server's (a phone clock a year ahead kept snap:2027-11, the audit's W1-9-07)
+  const today = new Date().toISOString().slice(0, 10), near = SNAP_DAY.test(body.day || '') && Date.parse(body.day) - Date.parse(today) <= 864e5;
+  const day = near ? body.day : today, month = day.slice(0, 7);
   const want = [[`${ns}snap:${day}`, SNAP_DAYS], [`${ns}snap:${month}`, SNAP_MONTHS]];
   // which of the two are already kept: asked for by a read each where KV can; else by one list, as before
   let have = new Set();
@@ -180,6 +182,31 @@ function nextRevs(prev, data, rev) {
   for (const x of arrOf(data && data.days)) d[x.date] = pdy.has(x.date) && pdy.get(x.date) === (x.updated || 0) && pr.d && pr.d[x.date] != null ? pr.d[x.date] : rev;
   const st = data && data.settings, ps = pd.settings ? pd.settings.updated || 0 : null;
   return { i, d, s: st && (st.updated || 0) === ps && pr.s != null ? pr.s : rev };
+}
+/* ---- stamps from wrong clocks (fix round 3, 2026-11-16, the audit's W1-9 and W2-13-03). The app stamps by the server's time now (core.js
+   nowMs, from the x-now header every answer carries), so a stamp more than CLOCK_AHEAD past the server's clock is a wrong clock or a
+   crafted request: in what a save sends (dropFuture) it is left out, so deletion marks dated years ahead can't wipe a wardrobe and a record
+   dated ahead can't freeze it, and the app, which puts its own such stamps back to now once it knows the gap (sync.js clockFix), sends them
+   again as ordinary changes. What the backup already holds from before is read with such stamps put back to the backup's own save time
+   (clampStamps, the same value on every read until the next save, which stores it so), by GET ?lite=1 and by a save alike ---- */
+const CLOCK_AHEAD = 10 * 6e4;
+const over = (v, lim) => (+v || 0) > lim;
+function clampStamps(d, to, lim) {
+  if (!d || !(to > 0)) return d;   // (no save time known: nothing to measure against)
+  const bad = arrOf(d.items).some(x => x && (over(x.updated, lim) || over(x.added, lim))) || arrOf(d.days).some(x => x && (over(x.updated, lim) || over(x.base, lim) || over(x.lockAt, lim)))
+    || Object.values(d.tombstones || {}).some(v => over(v, lim)) || !!(d.settings && (over(d.settings.updated, lim) || Object.values(d.settings.ks || {}).some(v => over(v, lim))));
+  if (!bad) return d;
+  const fix = (o, ks) => { const c = { ...o }; for (const k of ks) if (over(c[k], lim)) c[k] = to; return c; };
+  const out = { ...d, items: arrOf(d.items).map(x => x ? fix(x, ['updated', 'added']) : x), days: arrOf(d.days).map(x => x ? fix(x, ['updated', 'base', 'lockAt']) : x),
+    tombstones: Object.fromEntries(Object.entries(d.tombstones || {}).map(([id, t]) => [id, over(t, lim) ? to : t])) };
+  if (d.settings) { const s = fix(d.settings, ['updated']); if (s.ks) s.ks = Object.fromEntries(Object.entries(s.ks).map(([k, t]) => [k, over(t, lim) ? to : t])); out.settings = s; }
+  return out;
+}
+function dropFuture(d, lim) {
+  if (!d) return d;
+  const s = d.settings && !over(d.settings.updated, lim) && !Object.values(d.settings.ks || {}).some(v => over(v, lim)) ? d.settings : null;
+  return { ...d, items: arrOf(d.items).filter(x => !(x && (over(stampOf(x), lim) || over(x.added, lim)))), days: arrOf(d.days).filter(x => !(x && (over(x.updated, lim) || over(x.base, lim) || over(x.lockAt, lim)))),
+    tombstones: Object.fromEntries(Object.entries(d.tombstones || {}).filter(([, t]) => !over(t, lim))), settings: s };
 }
 /* core.js mergeState and stateSig, for the worker: the newer stamp wins, a deletion wins over any older edit, ties keep a's */
 function mergeLite(a, b) {
@@ -279,7 +306,7 @@ async function syncLiteGet(env, json, cors, ns, q) {
   if (!m && await env.WARDROBE.get(KEY)) return storedResponse(env, KEY, m, cors);   // saved by a worker that kept no version: as before
   const src = await loadAny(env, KEY, m, false);
   if (!src) return storedResponse(env, KEY, m, cors);                                 // too large to index here: the whole backup, as before
-  const rev = m ? m.rev : 0, saved = m ? m.saved : 0, D = src.lite.data || {}, R = src.lite.revs || {};
+  const rev = m ? m.rev : 0, saved = m ? m.saved : 0, D = clampStamps(src.lite.data || {}, saved, saved + CLOCK_AHEAD), R = src.lite.revs || {};
   const [sr, ss] = (q.get('since') || '').split(':').map(Number), all = !(sr > 0) || sr > rev || (sr === rev && ss !== saved);
   const newer = r => all || (r ?? rev) > sr;
   const body = { lite: 1, rev, saved, all, items: arrOf(D.items).filter(i => newer(R.i && R.i[i.id])), days: arrOf(D.days).filter(d => newer(R.d && R.d[d.date])), tombstones: D.tombstones || {},
@@ -325,7 +352,8 @@ async function syncLitePost(req, env, json, cors, who) {
     if (!PH_HEX.test(h) || !isPhotoOld(s) || await phHash(s) !== h) return give(json({ error: 'a photo does not match its name' }, 400));
     photos.set(h, s);
   }
-  const { refs: delta } = await splitPhotos(body.delta, photos), cur = src.lite.data || {}, next = mergeLite(cur, delta);
+  const sv = m ? m.saved || 0 : 0, { refs: sent } = await splitPhotos(body.delta, photos), delta = dropFuture(sent, Date.now() + CLOCK_AHEAD);
+  const cur = clampStamps(src.lite.data || {}, sv, sv + CLOCK_AHEAD), next = mergeLite(cur, delta);
   if (liteSig(cur) === liteSig(next) && m) return give(json({ rev, saved: m.saved }));   // nothing new: nothing written
   // every photo the new version refers to: kept by the backup now, or sent; the backup's own are already stored (or, inline, are stored now)
   const want = new Map(), missing = [];
@@ -363,4 +391,4 @@ function writeBudget(env, who) {
   return w;
 }
 
-export { BACKUP_MAX, PART_MAX, PH_HEX, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget };
+export { BACKUP_MAX, CLOCK_AHEAD, clampStamps, dropFuture, mergeLite, PART_MAX, PH_HEX, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget };

@@ -130,6 +130,8 @@ function corsFor(req, env) {
     'Access-Control-Allow-Headers': 'content-type,x-app-token',
     'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
     'Access-Control-Max-Age': '7200',
+    // the server's time on every answer (fix round 3): the app learns its clock's gap from it and stamps by the right time (sync.js clockLearn)
+    'x-now': String(Date.now()), 'Access-Control-Expose-Headers': 'x-now',
     ...(allowed.length > 1 ? { Vary: 'Origin' } : {}),
   } };
 }
