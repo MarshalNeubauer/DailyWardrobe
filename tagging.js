@@ -375,7 +375,8 @@ function takeMaterial(q,ai){const m=ai&&ai.material,l=MATERIALS_BY[q.type];if(!m
   q.material=m.key;q.matAI={key:m.key,conf:m.conf,why:m.why||''}}
 async function closeTagImg(q){if(q.texDone)return q.raw.tex.toDataURL('image/jpeg',TAG_Q);   // a card brought back after a kill: its close-up is already corrected (add.js addRevive)
   const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
-async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;measureCard(q);
+async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;
+  try{measureCard(q)}catch(e){console.warn('close-up not measured',e);if(typeof errNote==='function')errNote(e,'Close-up measuring')}   // (a phone out of picture memory: read anyway, unmeasured)
   if(!q.tagImg||!localStorage.getItem('worker_url')){renderAdd();if(typeof addKeep==='function')addKeep();return}
   q.refining=1;renderAdd();if(typeof addKeep==='function')addKeep();   // the close-up kept at once, as a reading under way (add.js keeps it as cut off: refineCut)
   /* whatever happens from here, the card is drawn again when the reading ends (2026-11-16, a tester: a step that threw after the flag was
