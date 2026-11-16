@@ -5,7 +5,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   const browser=await chromium.launch();
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};sel=new Date(2026,10,11);view={y:2026,m:10};flt='all'})()`);
     // ---- Settings
     await p.evaluate(()=>openSettings());
@@ -37,13 +37,16 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(wd.head==='Wardrobe'&&/^\d+ items$/.test(wd.count)&&!wd.phead&&wd.btns===0&&wd.tiles>10&&wd.type,'Wardrobe: no header row (its title and item count are for screen readers); each box is the item, with no Edit/Delete buttons on it');
     const id=await p.evaluate(()=>document.querySelector('#wardrobe .gi').id.slice(3));
     await p.click(`#gi-${id} .giopen`);await settle(p,600);
-    const op=await p.evaluate(()=>{const v=document.querySelector('#item-view'),r=v.getBoundingClientRect(),h=[...v.querySelectorAll('.ivsec h3')].map(x=>x.textContent),del=v.querySelector('.ivin > :last-child button');
+    // (the checklist redesign, 2026-11-16: the sheet's cards are now sections that fold, with a 62 px header; tests open them all)
+    const op=await p.evaluate(()=>{const v=document.querySelector('#item-view'),r=v.getBoundingClientRect(),h=[...v.querySelectorAll('.cks .ckt b')].map(x=>x.textContent),del=v.querySelector('.ivin > :last-child button');
       return {full:v.classList.contains('on')&&r.width>=389&&r.top>0&&r.top<=40&&r.bottom>=843,h,del:del.textContent+(del.classList.contains('danger')?'!':''),rot:v.querySelector('.ivrot .rotbtn').textContent,
         bar:[...v.querySelectorAll('.ivbar button')].map(b=>b.textContent.trim()||b.getAttribute('aria-label')).join('|'),
-        btn:[...new Set([...v.querySelectorAll('button:not(.shbtn):not(.chipbtn):not(.wbstcard):not(.ptbtn),.btn:not(.ptbtn)')].filter(b=>b.offsetParent).map(b=>Math.round(b.getBoundingClientRect().height)))],
+        btn:[...new Set([...v.querySelectorAll('button:not(.shbtn):not(.chipbtn):not(.wbstcard):not(.ptbtn):not(.ckh):not(.cmplv),.btn:not(.ptbtn)')].filter(b=>b.offsetParent).map(b=>Math.round(b.getBoundingClientRect().height)))],
+        ckh:[...new Set([...v.querySelectorAll('.ckh')].map(b=>Math.round(b.getBoundingClientRect().height)))],
         pt:[...new Set([...v.querySelectorAll('.ptbtn')].map(b=>Math.round(b.getBoundingClientRect().height)))],
         inp:[...new Set([...v.querySelectorAll('select,input[type=text],input[type=date]')].map(b=>Math.round(b.getBoundingClientRect().height)))],over:v.querySelector('#ivbody').scrollWidth-v.querySelector('#ivbody').clientWidth}});
-    ok(op.full&&/^(Color & texture\|)?Details\|Rotation(\|Care)?$/.test(op.h.join('|')),`an item opens in a sheet over the Wardrobe, the full width and nearly the full height, with a Details card and a Rotation card (a fabric's Color & texture card first) (${op.h.join('|')})`);
+    ok(op.full&&/^(Look & compare\|)?(Color\|)?(Pattern\|)?(Material\|)?Details\|Planning & care\|Name & notes\|Pictures$/.test(op.h.join('|')),`an item opens in a sheet over the Wardrobe, the full width and nearly the full height, with its sections (a fabric's Look & compare first) (${op.h.join('|')})`);
+    ok(op.ckh.length===1&&op.ckh[0]>=44,`the sections' headers are one size, 44 px or taller (${op.ckh})`);
     ok(op.rot==='Take out of rotation'&&op.del==='Delete item!','Take out of rotation in its card; Delete (marked as destructive) alone at the very end');
     ok(op.bar==='Previous item|Done|Next item','a bar at the bottom of the sheet has Done between previous and next');
     ok(op.btn.join()==='44'&&op.inp.join()==='44'&&op.over<=0,`the item sheet uses the same 44px buttons and dropdowns and doesn't scroll sideways (${op.btn} / ${op.inp})`);
@@ -54,11 +57,11 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       more:!!document.querySelector('#add .addmore #photo-url')&&!!document.querySelector('#add .addmore .addrow')}));
     ok(ad.head==='Add to wardrobe'&&ad.picks.join()==='One item,Several items'&&ad.more,'Add: a page header, the two ways in, and the other ways in one card');
     await p.evaluate(()=>{addManual();setq(0,'type','suit')});
-    const lab=await p.evaluate(()=>[...document.querySelectorAll('#nps-q .card>label')].map(l=>l.firstChild.textContent.trim()).slice(0,4).join(','));
+    const lab=await p.evaluate(()=>[...document.querySelectorAll('#nps-q .card .ckb>label')].map(l=>l.firstChild.textContent.trim()).slice(0,4).join(','));
     ok(lab==='Type,Color,Second color,Third color','the item card and the Wardrobe editor use the same labels');
     ok(await p.evaluate(()=>[...document.querySelectorAll('#nps-q select')].every(s=>[...s.options].every(o=>!/^[a-z]/.test(o.textContent)))),'dropdown choices start with a capital');
     // ---- one size for controls, one style for page titles
-    const sz=await p.evaluate(async()=>{const out={btn:new Set(),inp:new Set()},take=root=>{for(const b of root.querySelectorAll('button:not(.giopen):not(.chip):not(.chipbtn):not(.linkbtn):not(.dtog):not(.addrow):not(.addlong):not(.pback):not(.fchip button):not(.month-link):not(.slink):not(.adv-head):not(.wbstcard)'))if(b.offsetParent)out.btn.add(Math.round(b.getBoundingClientRect().height));
+    const sz=await p.evaluate(async()=>{const out={btn:new Set(),inp:new Set()},take=root=>{for(const b of root.querySelectorAll('button:not(.giopen):not(.chip):not(.chipbtn):not(.linkbtn):not(.dtog):not(.addrow):not(.addlong):not(.pback):not(.fchip button):not(.month-link):not(.slink):not(.adv-head):not(.wbstcard):not(.ckh):not(.ckpt):not(.ckreadadd):not(.cmplv)'))if(b.offsetParent)out.btn.add(Math.round(b.getBoundingClientRect().height));
         for(const i of root.querySelectorAll('select,input[type=text],input[type=url],input[type=date]'))if(i.offsetParent)out.inp.add(Math.round(i.getBoundingClientRect().height))};
       take(document.querySelector('#add'));openSettings();for(const k of SET_CATS)setCatOpen(k,true,true);take(document.querySelector('#settings-modal'));closeSettings();
       const titles=[];for(const s of ['add']){show(s);titles.push(getComputedStyle(document.querySelector(`#${s} .phead h2`)).fontSize)}openStats();titles.push(getComputedStyle(document.querySelector('#stats .phead h2')).fontSize);

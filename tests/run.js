@@ -173,10 +173,11 @@ suite('outfit score',async({page})=>{
 suite('add an item without a photo; it persists',async({page})=>{
   // Add is a page of the Wardrobe since the tabs became Today, Wardrobe, Insights (#225): Wardrobe → + Add
   // "Add without a photo" opens its card in a sheet over Add (#nps-sheet), Confirm pinned at its bottom (#nps-bar)
-  await page.click('#n-wardrobe');await page.click('#ward-add');await page.click('#add-manual');
+  // (the card is a checklist since 2026-11-16: its sections open, checklist.js CK_OPEN['*'])
+  await page.evaluate(()=>{CK_OPEN['*']=true});await page.click('#n-wardrobe');await page.click('#ward-add');await page.click('#add-manual');
   await page.selectOption('#nps-q .card >> nth=0 >> select[onchange*="\'type\'"]','belt');
   await page.selectOption('#nps-q .card >> nth=0 >> select[onchange*="\'leather\'"]','suede');
-  await page.click('#nps-bar >> text=Confirm');
+  await page.click('#nps-bar >> button:has-text("Confirm")');   // (the bar also says "… you can still confirm")
   await page.waitForFunction(()=>items.some(i=>i.type==='belt'));await page.waitForTimeout(200);
   await page.reload();await page.waitForFunction(()=>window.appReady);
   const it=await page.evaluate(()=>items.find(i=>i.type==='belt'));
