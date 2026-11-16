@@ -1,0 +1,7 @@
+{
+ "url": "https://geocoding-api.open-meteo.com/v1/get?language=en&id=12748714",
+ "status": 200,
+ "type": "application/json; charset=utf-8",
+ "body": "{\"id\":12748714,\"name\":\"Al Kuwaitat\",\"latitude\":24.21971,\"longitude\":55.7809,\"elevation\":296.0,\"feature_code\":\"PPLX\",\"country_code\":\"AE\",\"admin1_id\":292969,\"admin2_id\":12047240,\"admin3_id\":12748086,\"timezone\":\"Asia/Dubai\",\"country_id\":290557,\"country\":\"United Arab Emirates\",\"admin1\":\"Abu Dhabi Emirate\",\"admin2\":\"Al Ain\",\"admin3\":\"Central District\"}",
+ "recorded": "2026-11-16"
+}

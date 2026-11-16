@@ -46,7 +46,9 @@ const names = new Map(classic.map(f => [f, topNames(f) || new Set()]));
 /* names a script puts on the page from inside a function (`self.outfitMannequinSvg = …` in mannequin.js), and those the tests'
    page scripts add (tests/fixedplan.js: TEST_PLAN; helpers a test defines in one page.evaluate() and uses in the next) */
 const onWindow = files => new Set(files.flatMap(f => [...fs.readFileSync(path.join(ROOT, f), 'utf8').matchAll(/\b(?:window|self|globalThis)\.([A-Za-z_$][\w$]*)\s*=(?!=)/g)].map(m => m[1])));
-const tests = fs.readdirSync(path.join(ROOT, 'tests')).filter(f => f.endsWith('.js')).map(f => 'tests/' + f);
+// (tests/replay's scripts and helpers are in subfolders; .work holds old builds extracted from git: never read)
+const tests = fs.readdirSync(path.join(ROOT, 'tests'), {recursive: true}).map(f => f.split(path.sep).join('/'))
+  .filter(f => f.endsWith('.js') && !f.startsWith('fixtures/') && !f.startsWith('replay/.work/')).map(f => 'tests/' + f);
 const tools = fs.readdirSync(path.join(ROOT, 'tools')).filter(f => f.endsWith('.js')).map(f => 'tools/' + f);
 const pageExtra = onWindow([...classic, 'tests/fixedplan.js']);
 // (tools/atlas-measure.js is put into the page by tools/asm-atlas.js: its functions are page names too)
@@ -67,7 +69,7 @@ const rules = {
 const loose = {...rules, 'no-unused-vars': ['warn', {...unused, vars: 'all'}], 'no-redeclare': ['error', {builtinGlobals: false}]};
 
 export default [
-  {ignores: ['node_modules/**', 'atlas/**', 'tests/fixtures/**', '.claude/**', '.wrangler/**', '**/*.mjs']},
+  {ignores: ['node_modules/**', 'atlas/**', 'tests/fixtures/**', 'tests/replay/.work/**', '.claude/**', '.wrangler/**', '**/*.mjs']},
   {linterOptions: {reportUnusedDisableDirectives: 'off'}},
   // each classic script: the platform, and the top-level names of the other scripts it shares a scope with
   ...classic.map(f => {

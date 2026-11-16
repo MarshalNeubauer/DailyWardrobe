@@ -2117,6 +2117,18 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the pre-push hook runs ESLint on the scripts the branch changed (`--changed`, as committed, about 1 s) and refuses the push on an error; warnings show only on lines the branch touched; with ESLint not installed it says so and passes
 - `npm run gaps` (`tests/gaps.js`): the top-level functions and `styles.css` rules no test reaches, from the committed map
 
+#### Replay tests (the 2026-11-15 audit's scripts)
+
+- `npm run test:replay` (`tests/replay/run.js`): the audit's 84 bug replays (`tests/replay/scripts/W*.js`), each starting its own lab (`harness/lab.js`: the real worker.js on an in-memory KV, Claude and OpenAI mocked) and driving a WebKit iPhone 17 Pro (`harness/phone.js`); a script prints REPRODUCED (the bug is back) or NOT REPRODUCED (still fixed)
+- not part of `npm test`, the nightly run or any push check: it needs Playwright's WebKit and takes about 60 minutes of script time (W2-18-01 alone about 5), about 10 minutes with `--jobs 8` on the owner's PC; run it after a change near a fixed bug, or before a release
+- `--only W2-13-` (a prefix, or several comma-separated), `--jobs <n>` (script groups at once), `--app <dir>` (test another copy; default this checkout); a group's scripts share a lab port (verifier N: 9610+10×(N-1)) and run one after another, groups side by side
+- it exits 1 on any REPRODUCED or NO VERDICT; a script that didn't pass runs once more alone after the rest and the summary names it as flaky; logs, kv files, profiles and screenshots go to the git-ignored `tests/replay/.work/`
+- W2-19-09 (the text-size cap at 150%) is kept on purpose by the owner: its REPRODUCED is expected, and a NOT REPRODUCED fails the run as "kept behavior changed" (`KEPT` in run.js)
+- old builds the scripts replay ("the phone was still on the old app": 26cd8b1, c4a549b, 7a28f96) are made with `git archive` into `.work/builds/<sha>` (`RP.old` in `harness/paths.js`); without that history (a shallow clone) those scripts give NO VERDICT: `git fetch --unshallow origin`
+- no owner photos: `harness/make-photos.js` draws 18 photo-sized stand-ins into `.work/photos` (W2-18-01 counts how many photo items fit in one backup, so they are as large as phone photos)
+- nothing leaves the machine (`harness/net.js`): Open-Meteo and Nager.Date answers are replayed from `tests/replay/fixtures/net` (`--record-net` records missing ones), every other non-127.0.0.1 request from a page or the lab's worker is refused and listed in the summary, and a script's own Node `fetch` to another host throws
+- why the pages have two guards: with the app's service worker in control, WebKit sends a page's cross-origin fetch past Playwright's routes, so the browser's proxy is a local one that refuses every connection, and an init script points the page's fetch for the two data services at a local replay server
+
 #### Parallel runner
 
 - `tests/run.js` gives every `tests/*.test.js` file one shared Chromium (a file's `chromium.launch()`/`close()` open and close only its own contexts) and prints the slowest files at the end

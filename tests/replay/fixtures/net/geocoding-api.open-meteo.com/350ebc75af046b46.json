@@ -1,0 +1,7 @@
+{
+ "url": "https://geocoding-api.open-meteo.com/v1/get?language=en&id=8029394",
+ "status": 200,
+ "type": "application/json; charset=utf-8",
+ "body": "{\"id\":8029394,\"name\":\"Al Kuwayt\",\"latitude\":13.98785,\"longitude\":45.57569,\"elevation\":1994.0,\"feature_code\":\"PPLX\",\"country_code\":\"YE\",\"admin1_id\":79838,\"admin2_id\":6940677,\"timezone\":\"Asia/Aden\",\"population\":88,\"country_id\":69543,\"country\":\"Yemen\",\"admin1\":\"Al Bayda\",\"admin2\":\"Al Bayda City\"}",
+ "recorded": "2026-11-16"
+}
