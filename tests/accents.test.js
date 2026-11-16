@@ -56,7 +56,7 @@ module.exports=async({ok,chromium,url})=>{
       return {rules:PLAN_RULES,clash:enamelPref(red,tie),minor:enamelPref(red,{...tie,accents:['red']}),full:enamelPref(red,{...tie,secondaryColor:'red'}),
         t0:tieScore(top,sh,tie),ta:tieScore(top,sh,{...tie,accents:['red']}),t2:tieScore(top,sh,{...tie,secondaryColor:'red'}),
         back:tieScore(top,{...sh,secondaryColor:null,pattern:'solid',accents:['gold']},tie)-tieScore(top,{...sh,secondaryColor:null,pattern:'solid'},tie)}});
-    ok(s.rules===19,'PLAN_RULES is 19 (planned days re-plan once)');
+    ok(s.rules>=19,'PLAN_RULES is 19 or later (planned days re-plan once)');
     ok(s.clash===-5&&s.minor===4&&s.full===11,`red cufflinks with a navy paisley tie: clash ${s.clash}; with a red accent ${s.minor}; with red as its second colour ${s.full} (an accent counts, weaker)`);
     ok(s.ta-s.t0===1&&s.t2-s.t0===3&&s.back===1,`a tie whose red accent echoes the shirt's red stripe +${s.ta-s.t0} (a red second colour +${s.t2-s.t0}); a shirt's gold accent echoing the tie's gold +${s.back}`);
     // ---- sync: the field merge keeps accents changed on one phone and a name on another

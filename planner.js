@@ -89,8 +89,14 @@ function patInfo(i,role){
     :({pinstripe:1,windowpane:3,camouflage:3})[p]??2;
   return {type:PAT_TYPE[p],scale};
 }
+/* a uniform (the owner, 2026-11-16: "the military requires you to wear both together"): camouflage pieces worn together are one pattern,
+   not a clash (patsOf), and a camouflage shirt or pants with the other kind of piece, or a camouflage shirt under a jacket that isn't,
+   costs UNIFORM_SPLIT, so they are planned together */
+const UNIFORM_SPLIT=40,isCamo=i=>!!i&&patOf(i)==='camouflage';
+const camoUniform=(sh,b)=>isCamo(sh)&&isCamo(b),uniformSplit=(sh,b)=>!!sh&&!!b&&isCamo(sh)!==isCamo(b);
+function patsOf(parts){let c=false;return parts.map(([i,r])=>patInfo(i,r)).filter(p=>p&&(p.type!=='camo'||(!c&&(c=true))))}
 function patternScore(parts){
-  const P=parts.map(([i,r])=>patInfo(i,r)).filter(Boolean);let v=0;
+  const P=patsOf(parts);let v=0;
   if(P.length>=3)v-=60;
   for(let a=0;a<P.length;a++)for(let b=a+1;b<P.length;b++){
     if(P[a].type===P[b].type)v+=P[a].scale===P[b].scale?-30:-4;else v-=2;
@@ -142,9 +148,10 @@ function clothesScore(top,bot,shirt,tie,suitDay,day){
     const oc=OCC[day.occ];if(oc){if(shirt)v+=oc.shirt(shirt);if(tie)v+=oc.tie(tie);
       if(day.occ==='funeral'&&tie&&top&&pcol(tie)==='black'&&pcol(top)==='black')v+=15}   // black on black is right here (it is penalised on other days)
     // no jacket: the shirt is judged against the trousers instead: not the same colour, and a visible contrast
-    if((day.occ==='casual'||day.nojkt)&&shirt&&bot){if(pcol(shirt)===pcol(bot))v-=25;v+=Math.abs(LUM(shirt)-LUM(bot))<35?-8:3}
+    if((day.occ==='casual'||day.nojkt)&&shirt&&bot&&!camoUniform(shirt,bot)){if(pcol(shirt)===pcol(bot))v-=25;v+=Math.abs(LUM(shirt)-LUM(bot))<35?-8:3}
     if(shirt&&shirt.cuff==='french'&&!day.hasLinks)v-=12;}     // French cuffs need cufflinks
   if(!suitDay&&bot)v+=pairScore(top,bot);
+  if(uniformSplit(shirt,suitDay?null:bot)||(isCamo(shirt)&&top&&!isCamo(top)))v-=UNIFORM_SPLIT;   // (a camouflage shirt under a suit or blazer too)
   if(shirt)v+=shirtScore(top,shirt);
   if(tie)v+=tieScore(top,shirt,tie);
   v+=patternScore([[top,'top'],[suitDay?null:bot,'bot'],[shirt,'shirt'],[tie,'tie']]);
@@ -219,7 +226,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are released: the week's locks go, the owner's own picks (force, skip, the vest) stay, see replanFuture in app.js) */
-const PLAN_RULES=19;   // 19: accents (2026-11-16): an item's colours beyond its three count, weaker, where the tie and cufflinks are matched (ACC_ECHO, ENAMEL_MINOR); 18: fix round 3 (2026-11-16): shoes with a suit, formality wins (SUIT_SUEDE, SHOE_WATCH), not yesterday's pair (SHOE_AGAIN); 17: camouflage is a bold, large pattern of its own kind, kept off formal days, funerals and weddings (2026-11-16); 16: materials (2026-11-15): seasons from tropical wool, cashmere, moleskin, melton and wool ties; nubuck as suede; a canvas belt with suede; two-tone metal; silk-knot cufflinks; 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (clothesHard, jacketClean, shoes that don't suit lose to no belt), the day before's tie (TIE_NEXT); 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
+const PLAN_RULES=20;   // 20: a camouflage shirt and pants are a uniform, planned together, not a clash (2026-11-16); 19: accents (2026-11-16): an item's colours beyond its three count, weaker, where the tie and cufflinks are matched (ACC_ECHO, ENAMEL_MINOR); 18: fix round 3 (2026-11-16): shoes with a suit, formality wins (SUIT_SUEDE, SHOE_WATCH), not yesterday's pair (SHOE_AGAIN); 17: camouflage is a bold, large pattern of its own kind, kept off formal days, funerals and weddings (2026-11-16); 16: materials (2026-11-15): seasons from tropical wool, cashmere, moleskin, melton and wool ties; nubuck as suede; a canvas belt with suede; two-tone metal; silk-knot cufflinks; 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (clothesHard, jacketClean, shoes that don't suit lose to no belt), the day before's tie (TIE_NEXT); 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 const FORMAL_QWIN=3;   // a formal day or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
 const TIE_CREEP=.03,TIE_CREEP_MAX=9;   // a tie's rest keeps creeping after 30 days, capped well under TIE_GAP so a tie never repeats for it
@@ -324,7 +331,7 @@ const lookRepeat=(top,sh,x,prev)=>{if(!top||!prev)return 0;const jg=jacketGroup(
    contrast; a black tie on a black suit, except at a funeral; trousers the odd jacket's colour; jacket, shirt and tie one colour), and
    trousers with no shoes of the day that suit them (shoeOk from outfit). Keep in step with rateOutfit */
 function clothesHard(t,b,sh,x,sd,day,shoeOk){
-  const P=[[t,'top'],[sd?null:b,'bot'],[sh,'shirt'],[x,'tie']].map(([i,r])=>patInfo(i,r)).filter(Boolean);
+  const P=patsOf([[t,'top'],[sd?null:b,'bot'],[sh,'shirt'],[x,'tie']]);
   if(P.length>=3||(P.length===2&&P[0].type===P[1].type&&P[0].scale===P[1].scale))return true;
   if(t&&sh&&!darkUnderLight(t,sh)&&(pcol(sh)===pcol(t)||darkShirt(sh)))return true;
   if(sh&&x&&pcol(x)===pcol(sh)&&(darkShirt(sh)?tieLum(x)-LUM(sh)<25:LUM(sh)-LUM(x)<25))return true;
@@ -453,7 +460,7 @@ const notes=[];
 if(shirt&&tie&&darkShirt(shirt)&&tieLum(tie)-LUM(shirt)<25)notes.push(`The ${nm(tie)} isn't lighter than the ${nm(shirt)}; on a dark shirt a lighter tie reads better.`);
 if(shirt&&tie&&!darkShirt(shirt)&&LUM(shirt)-LUM(tie)<25)notes.push(`The ${nm(tie)} isn't darker than the ${nm(shirt)}; no darker tie suited this outfit. A darker tie would look sharper.`);
 if(top&&shirt&&!darkUnderLight(top,shirt)&&LUM(shirt)<LUM(top)+20)notes.push(`The ${nm(shirt)} is darker than the jacket. A lighter shirt would look more professional.`);
-if([[top,'top'],[suitDay?null:bot,'bot'],[shirt,'shirt'],[tie,'tie']].filter(([i,r])=>patInfo(i,r)).length>=3)notes.push('Three bold patterns today; there was no quieter combination. A solid shirt or tie would calm it down.');
+if(patsOf([[top,'top'],[suitDay?null:bot,'bot'],[shirt,'shirt'],[tie,'tie']]).length>=3)notes.push('Three bold patterns today; there was no quieter combination. A solid shirt or tie would calm it down.');
 if(shoes&&bot&&shoeScore(top,bot,shoes)<=-50)notes.push(`None of your shoes suit ${colName(spokenCol(bot))} pants.`);
 if(shoes&&finish(shoes.leather)==='patent')notes.push('Only patent shoes were available. Patent is for black tie.');
 if(shoes&&B.length&&!belt)notes.push(`None of your belts match the ${desc(shoes)} shoes. Add a ${leatherGroup(planCol(shoes))} ${finish(shoes.leather)==='suede'?'suede':'smooth leather'} belt.`);
@@ -533,7 +540,7 @@ function rateOutfit(o){
     else if(xc===tc){if(tc==='black'){v=0;why='black tie on a black suit reads as funeral wear';hard=true}else if(pw(tie)>0||LUM(tie)<LUM(top)-15)v=10;else{v=7;why='tonal tie blends into the jacket'}}
     else if(!HARM[tc]||HARM[tc].includes(xc))v=10;else{v=5;why=`${spokenCol(tie)} is not a classic partner for a ${spokenCol(top)} jacket`}
     add('Tie and jacket',v,10,why,hard)}
-  {const parts=[[top,'top'],[bot,'bot'],[shirt,'shirt'],[tie,'tie']],P=parts.map(([i,r])=>patInfo(i,r)).filter(Boolean);let v=10,why='',hard=false;
+  {const P=patsOf([[top,'top'],[bot,'bot'],[shirt,'shirt'],[tie,'tie']]);let v=10,why='',hard=false;
     if(P.length>=3){v=0;why='three bold patterns compete';hard=true}
     else if(P.length===2&&P[0].type===P[1].type){if(P[0].scale!==P[1].scale){v=8;why='two patterns of the same type (different scale)'}else{v=3;why='two patterns of the same type and scale';hard=true}}
     if(top||shirt||tie)add('Patterns',v,10,why,hard)}
@@ -570,7 +577,7 @@ function rateOutfit(o){
     if(tie&&formalTie(tie)>=0)v+=2;else why.push('a quieter tie is more formal');
     if(shoes&&leatherGroup(planCol(shoes))==='black'&&finish(shoes.leather)==='smooth')v+=2;else why.push('black smooth-leather shoes are the formal choice');
     add('Formality',v,10,why.join('; '))}
-  if(!top&&!needsJacket(o)&&shirt&&o.bot){let v=10,why=[];
+  if(!top&&!needsJacket(o)&&shirt&&o.bot&&!camoUniform(shirt,o.bot)){let v=10,why=[];
     if(pcol(shirt)===pcol(o.bot)){v-=6;why.push('shirt and pants are the same color')}
     if(Math.abs(LUM(shirt)-LUM(o.bot))<35){v-=3;why.push('shirt and pants lack contrast')}
     add('Shirt and pants',v,10,why.join('; '))}
