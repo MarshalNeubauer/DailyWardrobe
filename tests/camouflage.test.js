@@ -38,6 +38,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(e.look&&e.own&&!e.chk,'a camouflage with no reading is drawn in its own colors (the tagged colour as the ground); an own pattern named MultiCam too');
     ok(e.read.ground&&e.read.fromTags&&e.read.noPhoto&&e.read.seed===3&&e.read.shares&&!e.stripe,'a reading sets only the shares and the seed: the colours stay the tagged ones, the main colour the ground ('+JSON.stringify(e.read)+'); a camouflage reading on another pattern is not used');
     ok(/<pattern id="t1"[^>]*>.*<image href="data:image\/png/.test(e.fab)&&/<svg/.test(e.sw),'fabricDef draws a camouflage tile (an image of its blotches); the swatch draws');
+    ok(await p.evaluate(()=>asmCmRoute({id:'cs',type:'shirt',primaryColor:'khaki',secondaryColor:'brown',pattern:'camouflage'},'shirt').how)==='camo','a camouflage shirt is painted with the same blotches as camouflage pants (route camo)');
     ok(e.route==='camo'&&e.tex==='384,384,442368','the painter paints camouflage pants with its own tile ('+e.route+', '+e.tex+')');
     // v2: the tagged colours (a muted accent), soft edges and grain in the image the drawings and the painter share
     e=await p.evaluate(()=>{const it={id:'g1',type:'shirt',primaryColor:'brown',secondaryColor:'green',tertiaryColor:'none',pattern:'camouflage'},s=usableSett(it);
