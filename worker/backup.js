@@ -2,6 +2,7 @@
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
 import { PV, asText, isPv, loadAny, phKey, putWhole, pvMeta, pvResponse, pvText, refsOf, scanPhotos, storePhotos } from './photostore.js';
 import { countWrites, limitBody, sha256Hex, spend, spendUpTo, unspend, utcDay } from './people.js';
+import { PIC_RE, recCheck } from './records.js';
 
 const SYNC_KEY = 'wardrobe:v1', SYNC_NONE = '{"rev":0,"saved":0,"data":null}';
 /* the stored backup's version {rev, saved} without loading the backup (several MB of photos): KV keeps it as the key's
@@ -318,6 +319,8 @@ async function syncLitePost(req, env, json, cors, who) {
   if (buf.byteLength > BACKUP_MAX) return json({ error: 'backup too large (over 48 MB)' }, 413);
   let body; try { body = JSON.parse(new TextDecoder().decode(buf)); } catch { return json({ error: 'bad json' }, 400); }
   if (!body || !body.delta || typeof body.delta !== 'object') return json({ error: 'nothing to save' }, 400);
+  const wrong = recCheck(body.delta); if (wrong) return json(wrong, 400);   // records of the app's shape only (records.js), before anything is counted
+  for (const s of Object.values(body.photos || {})) if (typeof s !== 'string' || !PIC_RE.test(s)) return json({ error: 'bad photo', message: 'The backup was not saved: a photo in it is not a picture.' }, 400);
   const over = await spend(env, who, 'backup'); if (over) return json(over.body, over.status);
   const give = async r => { await unspend(env, who, 'backup'); return r; };
   const m = await syncVersion(env, ns), rev = m ? m.rev : 0;

@@ -72,7 +72,7 @@ async function serve(req, env, cors, allowed, origin) {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
   if (allowed.length && !allowed.includes(origin)) return json({ error: 'forbidden origin' }, 403);
   const path = new URL(req.url).pathname.replace(/\/+$/, ''); where = path;
-  const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}) }, a.status);
+  const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}), ...(a.replaced ? { replaced: true } : {}) }, a.status);   // (replaced: a link the owner made anew, people.js)
   const route = ROUTES[`${req.method} ${path}`] || ROUTES[`* ${path}`];
   if (route) {
     const a = await whoIs(env, req.headers.get('x-app-token') || '');
@@ -100,7 +100,9 @@ async function serve(req, env, cors, allowed, origin) {
   // The model wants the image as a data URI inside the user message.
   let image = String(body.image || '');
   if (image && !image.startsWith('data:')) image = `data:${body.media_type || 'image/jpeg'};base64,${image}`;
-  if (!/^data:image\/[\w.+-]+;base64,/.test(image)) return json({ error: 'no image' }, 400);
+  // the whole string a picture before anything is spent (fix round 3, W2-13-07: "javascript:alert(1)" became a Claude call)
+  if (!/^data:image\/(?:jpeg|png|webp|gif|heic|heif);base64,[A-Za-z0-9+/=]+$/.test(image)) return json({ error: 'no image', message: 'That photo couldn’t be read. Try another photo.' }, 400);
+  if (body.closeup != null && body.closeup !== '' && !/^data:image\/(?:jpeg|png|webp|gif|heic|heif);base64,[A-Za-z0-9+/=]+$/.test(String(body.closeup))) return json({ error: 'no image', message: 'That close-up couldn’t be read. Try another photo.' }, 400);
 
   if (!env.ANTHROPIC_API_KEY && !env.AI) return json({ error: 'ai', detail: 'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.' }, 501);
   const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
@@ -119,7 +121,7 @@ async function serve(req, env, cors, allowed, origin) {
   }
   // Workers AI: any answer that is not a tag gives the tester's count back
   const r = await tagWithWorkersAi(env, image);
-  if (r.status !== 200) await unspend(env, who, 'tag');
+  if (r.status !== 200) await unspend(env, who, 'tag'); else r.body = cleanTag(r.body);   // (cleaned as Claude's answer is: W2-13-05)
   return json(r.body, r.status);
 }
 

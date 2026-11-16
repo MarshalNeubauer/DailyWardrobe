@@ -113,7 +113,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(async([h,a])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',a);localStorage.setItem('last_sync',String(Date.now()-864e5));rememberRole({role:'tester'});
       const it={id:'mine1',type:'tie',primaryColor:'navy',pattern:'solid',added:1};await put(it);items.push(it)},[HOST,CA]);
     const lost=await p.evaluate(async()=>{const r=await syncNow();settingsSummaries();return {r,st:localStorage.getItem('sync_status'),line:(openSettings('backup'),$('#sync-status').textContent),sum:$('#sum-backup').textContent,toast:$('#toast').textContent,flag:localStorage.getItem('invite_lost'),tok:localStorage.getItem('app_token')}});
-    ok(!lost.r&&lost.st===ENDED_TXT&&lost.line===ENDED_TXT&&/invitation has ended/.test(lost.sum)&&lost.toast===ENDED_TXT&&lost.flag===lost.tok,`a code the server lost: the invitation-ended sentence everywhere, marked as lost so a new link can keep the wardrobe (${JSON.stringify(lost).slice(0,260)})`);
+    ok(!lost.r&&lost.st===ENDED_TXT&&lost.line===ENDED_TXT&&/invitation has ended/.test(lost.sum)&&/backup on the server was deleted/.test(lost.toast)&&lost.flag===lost.tok,`a code the server lost: the invitation-ended sentence everywhere, the one-time message saying the backup was deleted (W1-6-03), marked as lost so a new link can keep the wardrobe (${JSON.stringify(lost).slice(0,260)})`);
     await p.evaluate(()=>closeSettings());
     const res=p.evaluate(l=>connectFromLink(l),'#invite='+CB+'&w='+encodeURIComponent(HOST));
     await p.waitForSelector('#ask-ok',{state:'visible'});const ask=await p.textContent('#ask-sheet');await p.click('#ask-ok');const okc=await res;
