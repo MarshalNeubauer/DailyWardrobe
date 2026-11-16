@@ -52,7 +52,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const seed=(p,tok,n=3,m={role:'tester'})=>p.evaluate(async([h,t,n,m])=>{if(t){localStorage.setItem('worker_url',h);localStorage.setItem('app_token',t);rememberRole(m)}
     for(let k=0;k<n;k++){const it={id:'own'+k,type:'tie',primaryColor:'navy',pattern:'solid',added:1,updated:Date.now()};await put(it);items.push(it)}},[HOST,tok,n,m]);
   const ask=async p=>{try{await p.waitForSelector('#ask-ok',{state:'visible',timeout:6000})}catch{return null}return {t:await p.textContent('#ask-sheet'),ok:await p.textContent('#ask-ok')}};
-  const state=p=>p.evaluate(()=>({url:localStorage.getItem('worker_url'),tok:localStorage.getItem('app_token'),n:items.length,toast:(document.querySelector('#toast')||{}).textContent||''}));
+  const state=p=>p.evaluate(()=>({url:localStorage.getItem('worker_url'),tok:localStorage.getItem('app_token'),n:items.length,toast:(window.__toasts&&__toasts.length?__toasts[__toasts.length-1]:'')||(document.querySelector('#toast')||{}).textContent||''}));
+// each toast's words as shown (a faded toast is emptied, W2-19-06, and `ask` waits 6 s for a question that may not come)
+const noteToasts=p=>p.evaluate(()=>{if(window.__toasts)return;window.__toasts=[];const t0=toast;window.toast=function(t,...a){__toasts.push(String(t));return t0.call(this,t,...a)}});
   try{
     // W2-13-01: a link to a stranger's server on a phone that isn't connected: refused, nothing sent anywhere
     {const {p,st,errs}=await page();await seed(p,null,2);
@@ -79,7 +81,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       ok(s.tok===B&&s.n===3,`and keeps its 3 pieces with the new invitation (${JSON.stringify(s)})`)}
     // decision 1: the owner's new link for the same tester: no question, nothing cleared, the same backup
     {const {p,st}=await page();await seed(p,A,3,{role:'tester',id:'aaaaaaaaaa'});await p.evaluate(()=>localStorage.setItem('sync_mark',JSON.stringify({sig:'x'})));st.replaced.add(A);
-      const r=await p.evaluate(l=>connectFromLink(l,{address:true}),link(A2));const q=await ask(p);const s=await state(p);
+      await noteToasts(p);const r=await p.evaluate(l=>connectFromLink(l,{address:true}),link(A2));const q=await ask(p);const s=await state(p);
       ok(r===true&&!q&&s.tok===A2&&s.n===3&&/same wardrobe/.test(s.toast)&&(await p.evaluate(()=>!!localStorage.getItem('sync_mark'))),`a new link for the same account switches with no question and keeps the wardrobe and its backup marks (${JSON.stringify({r,q:!!q,s})})`)}
     // W1-6-03 and the replaced link: what the phone is told once
     {const {p,st}=await page();await seed(p,A,1);st.replaced.add(A);

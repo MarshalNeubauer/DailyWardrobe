@@ -257,10 +257,18 @@ const photoPair=(photo,i,id)=>`<div class="pair"><figure class="phfig"><img clas
 function addManual(){
   addWatch();
   if(npsId&&queue.some(q=>q.id===npsId)){npsOpen(npsId);return}
-  const wo=watchOpts({}),id=crypto.randomUUID();
-  queue.unshift({id,manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style});
+  const wo=watchOpts({}),id=crypto.randomUUID(),q={id,manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style};
+  if(addFor&&TYPES[addFor]){q.type=addFor;q.pattern=normPat(addFor,q.pattern);shirtColFix(q);addFor=null;renderAddFor()}   // Today's "Add one" beside a belt: a belt (W2-14-01)
+  queue.unshift(q);
   npsOpen(id);
 }
+/* ---- Today's "Add one" beside a missing piece (fix round 3, W2-14-01; start.js openAdd(type)): the item type asked for. Add's line under
+   its title says so ("Adding a belt: …") and the next card without a photo starts as that type; a photo's card takes the type Claude reads.
+   Cleared once used, or when Add is left. ---- */
+let addFor=null;
+function renderAddFor(){const n=$('#add-for');if(!n)return;const t=addFor&&TYPES[addFor];n.hidden=!t;
+  const pl=['pants','shoes','socks','cufflinks'].includes(addFor);
+  n.innerHTML=t?`Adding ${pl?'':/^[aeiou]/i.test(t)?'an ':'a '}<b>${esc(t.toLowerCase())}</b>: take a photo of ${pl?'them':'it'}, or tap “Add without a photo”.`:''}
 /* ---- the "Add without a photo" sheet (#nps-sheet, in #add so the card keeps Add's styles): grabber, the title with the hanger icon, ×
    in the header (the card's own × is left out), the card in the middle, Confirm and Cancel pinned at the bottom (#nps-bar). The card stays
    in `queue` (its place there is its index, as for every card); only its drawing moves (renderAdd → npsDraw).
@@ -282,7 +290,7 @@ function npsInert(on){for(const el of document.querySelectorAll('body>header,bod
   for(const el of a.children)if(el.id!=='nps-sheet'&&el.id!=='nps-backdrop')el.inert=on}
 /* the card and its bar; the card gone (saved, or taken away) closes the sheet */
 function npsDraw(){const q=npsCard(),s=$('#nps-sheet');if(!s)return;if(!q){npsClose();return}const i=queue.indexOf(q),body=$('#nps-q'),bar=$('#nps-bar');
-  if(body){const y=body.scrollTop;body.innerHTML=cardSafe(q,i,()=>formCard(q,i,true));body.scrollTop=y;if(typeof cmpMount==='function')cmpMount(body)}
+  if(body){const y=body.scrollTop;keepFocus(body,()=>{body.innerHTML=cardSafe(q,i,()=>formCard(q,i,true))});body.scrollTop=y;if(typeof cmpMount==='function')cmpMount(body)}
   if(bar)bar.innerHTML=`${cardSafe(q,i,()=>ckLeftLine(q))}${confBtn(q,i)}<button type="button" id="nps-cancel" onclick="npsCancel()">Cancel</button>`}
 /* fromBack: the phone's Back did it (its entry is gone already) */
 function npsClose(fromBack){if(!npsId&&npsWas===undefined)return;const s=$('#nps-sheet'),b=$('#nps-backdrop');npsId=null;npsAsking=false;
@@ -422,10 +430,12 @@ function addNoteText(){const workerSet=typeof isConnected==='function'?isConnect
    that open Add close it themselves, show() and saveSettings) */
 function renderAdd(){
   if($('#note')) $('#note').textContent = addNoteText();
+  renderAddFor();
   const ready=queue.filter(cardReady).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()"${reading||saveAllOn?` disabled title="${saveAllOn?'Saving…':'Claude is still reading a card'}"`:''}>${saveAllOn?'Saving…':`Save all ${ready} items`}</button>`:'';
   if(typeof addGate==='function')addGate();
   addKeepSoon();
-  if($('#queue')){$('#queue').innerHTML=queue.map((q,i)=>q.id===npsId?'':cardSafe(q,i,()=>q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):formCard(q,i))).join('');if(typeof cmpMount==='function')cmpMount($('#queue'))}
+  if($('#queue')){keepFocus($('#queue'),()=>{$('#queue').innerHTML=queue.map((q,i)=>q.id===npsId?'':cardSafe(q,i,()=>q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):formCard(q,i))).join('')});   // (the field changed keeps the keyboard: W2-19-01)
+    if(typeof cmpMount==='function')cmpMount($('#queue'))}
   if(npsId)npsDraw();
 }
 /* one card drawn on its own (2026-11-16, a tester's first item: her iPhone, out of picture memory, refused a canvas while the card's swatch

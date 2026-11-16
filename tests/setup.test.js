@@ -88,7 +88,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     /* a first-time person going on to Add gets the quick tour first (kit.js), its last button going on to Add */
     await p.waitForFunction(()=>!document.querySelector('#setup.on')&&!!document.querySelector('#kitsheet.on'));
     await p.waitForTimeout(400);   // (a tap at the same spot right after the setup closed is a double tap and is dropped: setupTapGuard)
-    for(let k=0;k<3;k++)await p.click('#kit-next');
+    for(let k=0;k<3;k++){await p.click('#kit-next');await p.waitForTimeout(400)}   // (kit.js KIT_TAP_MS: a quicker second tap is a double tap's)
     ok(/Add my first item/.test(await p.textContent('#kit-next')),'the tour comes between the setup and Add, its last button "Add my first item"');
     await p.click('#kit-next');
     await p.waitForFunction(()=>!document.querySelector('#kitsheet.on')&&!document.querySelector('#add').hidden);

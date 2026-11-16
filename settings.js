@@ -308,7 +308,7 @@ function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=
   if(k==='workdays'&&l.size===0){tell('At least one workday is needed: pick another day first.');return}settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
   cache={};todayStale=true;renderSettingsExtras();return saveUserSettings().then(clearLocks)}
 function setUnits(v){settings.units=v;saveUserSettings();todayStale=true;renderWxLoc();settingsSummaries()}
-function setLocation(loc){if(loc&&loc.alt!==undefined){loc={...loc};delete loc.alt}settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML=''}
+function setLocation(loc){const fromList=!!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#city-results'));if(loc&&loc.alt!==undefined){loc={...loc};delete loc.alt}settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML='';if(loc&&typeof announce==='function')announce('Location set to '+loc.name);if(fromList&&$('#cfg-city'))try{$('#cfg-city').focus({preventScroll:true})}catch{}}   // (the result pressed is gone: the field keeps the keyboard)
 function useMyLocation(){if(!navigator.geolocation){tell('Location is not available on this device.');return}
   navigator.geolocation.getCurrentPosition(p=>setLocation({lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),name:geoName(p.coords.latitude,p.coords.longitude)}),()=>tell('Location permission was denied. Search for your city instead.'))}
 /* "Use my location" has no place name (Open-Meteo can't look one up): the spot itself, so it doesn't read "your current location" after a trip */
@@ -330,17 +330,23 @@ async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').tri
   if(!q){window._cities=[];if($('#city-results'))$('#city-results').innerHTML='';return}
   try{const lang=cityLang(q),r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=8&language='+lang+'&name='+encodeURIComponent(q));const j=await r.json();
     const res=cityList(await cityEnglish((j.results||[]).slice(0,8),lang)).slice(0,5);
-    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join(''):'<small class="mut" id="city-none">No matches. Try the name in English or a nearby larger city, or Use my location.</small>'}
-  catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>'}}
+    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join(''):'<small class="mut" id="city-none">No matches. Try the name in English or a nearby larger city, or Use my location.</small>';
+    if(typeof announce==='function')announce(res.length?`${res.length} place${res.length===1?'':'s'} found`:'No matches.')}   // (said: W2-19-01)
+  catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>';if(typeof announce==='function')announce('City search is unavailable right now.')}}
 /* 16-day forecast from Open-Meteo (free, no key); cached for 3 hours */
 /* header ↻: sync with the worker (if set up), reload everything from storage, refresh the forecast and redraw */
 let toastTimer=null;
 const TOAST_ACT_MS=8000;   // a toast with Undo stays at least this long (audit 2026-11-14: gone after 5 s, and Delete has no question)
 function toast(t,ms=2500,act){const e=$('#toast');if(!e)return;e.textContent=t;e.classList.toggle('act',!!act);if(act)ms=Math.max(ms,TOAST_ACT_MS);
-  if(act){const b=document.createElement('button');b.type='button';b.textContent=act.label;b.onclick=()=>{e.classList.remove('on','act');clearTimeout(toastTimer);act.fn()};e.append(' ',b)}
-  e.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('on','act'),ms)}
+  if(act){const b=document.createElement('button');b.type='button';b.textContent=act.label;b.onclick=()=>{clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent='';act.fn()};e.append(' ',b)}
+  e.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastOff(e),ms)}
+/* a toast gone is gone for everyone (fix round 3, W2-19-06: faded to opacity 0, its words and its Undo stayed in the Tab order and
+   for VoiceOver, and the invisible Undo still worked 10 s later): once it has faded (styles.css also hides it, visibility) its words and
+   button are taken out. While the keyboard is on its button it stays up (2.2.1: time to reach it), going once the focus leaves. */
+function toastOff(e){if(e.contains(document.activeElement)&&e.querySelector('button')){toastTimer=setTimeout(()=>toastOff(e),1500);return}
+  e.classList.remove('on','act');setTimeout(()=>{if(!e.classList.contains('on'))e.textContent=''},250)}
 /* a toast with a button (Undo) taken away at once (start.js show(): leaving Add takes its "Saved … Undo" with it) */
-function toastDrop(){const e=$('#toast');if(!e||!e.classList.contains('act'))return;clearTimeout(toastTimer);e.classList.remove('on','act')}
+function toastDrop(){const e=$('#toast');if(!e||!e.classList.contains('act'))return;clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent=''}
 let refreshing=false;
 async function refreshAll(){
   if(refreshing)return;refreshing=true;const b=$('#refresh-btn');if(b)b.classList.add('spin');
@@ -394,11 +400,15 @@ function applyTheme(t){
   const b=$('#theme-btn');if(b){b.textContent=THEMES[t][0];b.setAttribute('aria-label','Theme: '+THEMES[t][1]);b.title='Theme: '+THEMES[t][1]+' (tap to change)'}
   if(window.appReady&&$('#today')&&!$('#today').hidden&&$('.fig'))renderToday();   // the figure fades into the page colour
 }
+/* the first tap always changes what is on screen: from automatic to the theme the phone is not showing, then the other, then automatic again;
+   each tap says where it is (fix round 3, W2-14-13: on a light phone the first tap chose "light", nothing changed and nothing said so) */
 function cycleTheme(){
   let cur='auto';try{cur=localStorage.getItem('theme')||'auto'}catch{}
-  const next={auto:'light',light:'dark',dark:'auto'}[cur]||'auto';
+  let dev='light';try{if(matchMedia('(prefers-color-scheme: dark)').matches)dev='dark'}catch{}
+  const opp=dev==='dark'?'light':'dark',next=cur==='auto'?opp:cur===opp?dev:'auto';
   try{next==='auto'?localStorage.removeItem('theme'):localStorage.setItem('theme',next)}catch{}
   applyTheme(next);
+  toast(next==='auto'?`The theme follows the phone again (${dev} now).`:`${cap1(next)} theme. Tap again for ${next===opp?dev:'the phone’s own'}.`,3500)
 }
 try{applyTheme(localStorage.getItem('theme')||'auto')}catch{applyTheme('auto')}
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(window.appReady&&!$('#today').hidden&&$('.fig'))renderToday()})}catch{}
