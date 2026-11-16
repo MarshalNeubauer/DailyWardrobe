@@ -62,6 +62,19 @@ module.exports=async({ok,ROOT})=>{
       ok(j.s===200&&JSON.stringify(j.colour.accents)==='["gold","rust","red","pink"]','the reader\'s colour half gives the accents, cleaned (the item\'s three and the main read dropped, at most 4: '+JSON.stringify(j.colour&&j.colour.accents)+')');
       ok(cs&&cs.output_config.format.schema.properties.accents&&/list the cloth's further colors/.test(cs.system[0].text)&&/second burgundy/.test(JSON.stringify(cs.messages)),'its schema and cached text ask for them, and the item\'s second and third colours are named');
       ok(ps&&!ps.output_config.format.schema.properties.accents&&!('accents' in j.pattern),'the pattern half doesn\'t')}
+    // (the reader's fix, 2026-11-16: "Claude couldn't read the color" on the owner's camouflage) no words: a cloth is always a colour answer
+    {const cs=sent.find(b=>b.output_config.format.schema.properties.fitsType);
+      ok(/When the owner wrote no words \(reading the close-up itself\), every cloth is a color answer/.test(cs.system[0].text)&&/Never\s+pattern, material or unclear for cloth/.test(cs.system[0].text),'the colour half\'s cached text: with no words every cloth is a colour answer (colour, or several with the main colour), never pattern, material or unclear')}
+    const camo={...colAns,kind:'several',existing:'khaki',name:'coyote tan',hex:'#b8a47e',plansAs:'khaki',ask:'The others are its second and third colors.',accents:['olive','brown','darknavy','cream']};
+    answer=b=>b.output_config.format.schema.properties.plansAs.enum.includes('paisley')?{...patAns,existing:'camouflage',plansAs:'camouflage'}:camo;sent=[];
+    j=await post('describe',{what:'both',type:'pants',colours:{main:'khaki',second:null,third:null},pattern:'camouflage',closeup:IMG});
+    ok(j.s===200&&j.colour.kind==='several'&&j.colour.existing==='khaki'&&JSON.stringify(j.colour.accents)==='["olive","brown","darknavy","cream"]','a camouflage close-up: kind several, the main colour (khaki) and its other tones as accents, in order ('+JSON.stringify(j.colour&&{kind:j.colour.kind,existing:j.colour.existing,accents:j.colour.accents})+')');
+    answer=b=>b.output_config.format.schema.properties.plansAs.enum.includes('paisley')?patAns:{...camo,kind:'pattern'};sent=[];
+    j=await post('describe',{what:'both',type:'pants',colours:{main:'khaki'},pattern:'camouflage',closeup:IMG});
+    ok(j.s===200&&j.colour.kind==='several'&&j.colour.hex==='#b8a47e'&&j.colour.accents.length===4,'with no words, a colour half that still says "pattern" but gives a real shade is read as several ('+(j.colour&&j.colour.kind)+')');
+    answer=b=>b.output_config.format.schema.properties.plansAs.enum.includes('paisley')?patAns:{...camo,kind:'pattern',hex:'#000000',name:''};sent=[];
+    j=await post('describe',{what:'both',type:'pants',colours:{main:'khaki'},pattern:'camouflage',closeup:IMG});
+    ok(j.s===200&&j.colour.kind==='pattern'&&j.colour.accents.length===4,'one with no shade (#000000) stays as it is, its colours still listed as accents');
     // a single colour lookup (the New color sheet) keeps its schema
     answer={...colAns,accents:undefined};sent=[];await post('describe',{what:'colour',type:'tie',text:'navy'});
     ok(!sent[0].output_config.format.schema.properties.accents,'a single colour lookup (New color) doesn\'t ask for accents');

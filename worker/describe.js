@@ -194,6 +194,9 @@ function descTables() {
 /* the close-up reader's colour half (what:'both') also lists the cloth's further colours (2026-11-16, accents: the photo tagger's rule) in
    its own cached text; a single colour lookup keeps its prefix and schema */
 const BOTH_ACCENTS = `This reading is the app's "Read color and texture from close-up": besides the main color, list the cloth's further colors.
+When the owner wrote no words (reading the close-up itself), every cloth is a color answer: kind colour for one color, or several when it
+has more (a camouflage, a plaid, a paisley, a stripe), answering with the MAIN color, the one covering the most cloth (the ground). Never
+pattern, material or unclear for cloth; its other colors go in accents (for several, the others in order, most visible first).
 ${ACCENT_READ_RULES}`;
 
 /* ---- the schemas (their enums change only with the owner's own keys, so the compiled grammar is reused) ---- */
@@ -451,9 +454,12 @@ async function describeBoth(req, env, json, who, b, cm) {
         schema: colour ? colourSchema(own.colors, true) : patternSchema(own.patterns, mats), effort: colour ? 'low' : 'medium', maxTokens: colour ? 4000 : 8000,
         signal: req.signal, what: 'described' });
       if (c.status !== 200) return { fail: true, status: c.status, body: c.body };
+      // (2026-11-16, the owner's camouflage: "Claude couldn't read the color") read from the close-up with no words, a cloth is always a
+      // colour answer: one that still came back pattern / material / unclear with a real shade is the several colours it has
+      if (colour && !typed && cm && ['pattern', 'material', 'unclear'].includes(c.body.kind) && HEX_RE.test(String(c.body.hex || '')) && String(c.body.hex).toLowerCase() !== '#000000') c.body.kind = 'several';
       const out = colour ? cleanDescribeColour(c.body, bb, own, desc) : cleanDescribePattern(c.body, bb, own);
       // the accents (2026-11-16): known keys (the owner's own included), none of the item's three colours or the main colour read, at most 4
-      if (colour && out.status === 200 && out.body.kind && 'existing' in out.body) { const cols = b.colours && typeof b.colours === 'object' ? b.colours : {};
+      if (colour && out.status === 200 && out.body.kind) { const cols = b.colours && typeof b.colours === 'object' ? b.colours : {};
         out.body.accents = cleanAccents(c.body.accents, [cols.main, cols.second, cols.third, out.body.existing, out.body.plansAs], own.colors.map(k => k.key)); }
       // the material: held to its tier, never the pattern again (the item's, or the one Claude read)
       if (mats && out.status === 200) { const m = cleanMaterial(c.body.material, b.type, [b.pattern, c.body.existing, c.body.plansAs], !!cm, ownMats); if (m) out.body.material = m; }
