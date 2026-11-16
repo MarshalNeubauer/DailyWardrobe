@@ -121,6 +121,15 @@ module.exports=async({ok,chromium,url})=>{
       return {clip:!!document.querySelector('#ri-clip'),vest:planFor()['2026-11-17'].vest}});
     ok(vc.vest&&!vc.clip,'correcting a vest day offers no tie clip');
 
+    // ---- W2-17-06 (part): "Add more suits" only when there aren't enough suits in rotation for the rest
+    const rw=await p.evaluate(()=>{fresh('2026-11-18T08:00:00');const s=[I('suit','navy'),I('suit','grey'),I('suit','charcoal',{paused:true,away:{why:'cleaner'}})];items=[...s];
+      const o=(r)=>({suitDay:true,top:{...s[0],rest:1},frozen:false});
+      const two=restWarn(o());items.push(I('suit','brown'));const three=restWarn(o());
+      dayRecs[key(sel)]={date:key(sel),force:{top:s[0].id}};const pick=restWarn(o());return {two,three,pick}});
+    ok(/Add more suits/.test(rw.two),`two suits in rotation (one at the cleaner): "Add more suits" (${rw.two.replace(/<[^>]+>/g,'')})`);
+    ok(rw.three==='','three suits in rotation and the planner chose it: no "Add more suits"');
+    ok(/You wore this suit 1 day ago too/.test(rw.pick)&&!/Add more/.test(rw.pick),`picked by hand: it says only when it was worn (${rw.pick.replace(/<[^>]+>/g,'')})`);
+
     // ---- W2-18-03: What to buy says about how long is left
     const lf=await p.evaluate(()=>{shopBusy={i:4,n:20,label:'Suits',t0:Date.now()-25000};const a=shopBusyText();shopBusy=null;return a});
     ok(/About 1 minute left|About \d+ seconds left/.test(lf),`What to buy's progress says how long is left ("${lf}")`);
