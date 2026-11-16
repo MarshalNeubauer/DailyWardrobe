@@ -41,7 +41,7 @@ module.exports=async({ok,chromium,url})=>{
     /* ---- W2-15-03, -04, -05, -06, -07, W2-12-05, W2-16-06, W2-18-04 ---- */
     const w=await p.evaluate(()=>{const R=t=>{const r=kitRead(t);return r.err?['ERR']:r.rows.map(x=>x.ok?[x.card.type,x.card.primaryColor,x.card.secondaryColor||'',x.qty,x.probs.join('/')].join(':'):'bad:'+x.line+':'+x.why)};
       return {lt:R('Type\tColour\nShirt\tlt. blue\nShirt\tlt blue\nTrousers\tdk grey\nTrousers\tmed grey\nSocks\theather grey\n'),
-        line:R('Type\tColour\nSuit\tnavy\nTie\tnavy\n\t\nPocket square\twhite\nBelt\tbrown'),
+        line:R('Type\tColour\nSuit\tnavy\nTie\tnavy\n\t\nScarf\twhite\nBelt\tbrown'),   // (a pocket square is a type since 2026-11-16: a scarf is the row left out)
         title:R('My clothes (updated Oct)\nType\tColour\nSuit\tnavy\nShirt\twhite'),list:R('Navy suit\nWhite shirt x3\nBurgundy tie\nCharcoal pinstripe suit\nNavy and white striped tie'),
         heads:[R('Item type\tColours\nSuit\tnavy'),R('Clothing\tColour\nSuit\tnavy'),R('Piece,Colour\nSuit,navy')],
         qty:R('Type\tColour\tQty\nShirt\tWhite\t3\nTie\tNavy\t0\nSocks\tBlack\t40\nShirt\tBlue\tsome\n'),

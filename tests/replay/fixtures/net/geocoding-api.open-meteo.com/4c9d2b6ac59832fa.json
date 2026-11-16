@@ -1,0 +1,7 @@
+{
+ "url": "https://geocoding-api.open-meteo.com/v1/search?count=8&language=en&name=Kuwait%20City",
+ "status": 200,
+ "type": "application/json; charset=utf-8",
+ "body": "{\"results\":[{\"id\":285787,\"name\":\"Kuwait City\",\"latitude\":29.367,\"longitude\":47.97429,\"elevation\":11.0,\"feature_code\":\"PPLC\",\"country_code\":\"KW\",\"admin1_id\":285788,\"timezone\":\"Asia/Kuwait\",\"population\":60064,\"country_id\":285570,\"country\":\"Kuwait\",\"admin1\":\"Al Asimah\"}],\"generationtime_ms\":0.094652176}",
+ "recorded": "2026-11-16"
+}

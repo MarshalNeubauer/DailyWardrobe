@@ -1,10 +1,10 @@
 /* Daily Wardrobe: shared constants and item helpers (no DOM access; also loaded by the analysis worker) */
-const TYPES={suit:'Suit',blazer:'Blazer',pants:'Pants',shirt:'Dress shirt',tie:'Tie',tieclip:'Tie clip',watch:'Watch',shoes:'Shoes',belt:'Belt',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Overcoat',raincoat:'Raincoat',
+const TYPES={suit:'Suit',blazer:'Blazer',pants:'Pants',shirt:'Dress shirt',tie:'Tie',tieclip:'Tie clip',pocketsquare:'Pocket square',watch:'Watch',shoes:'Shoes',belt:'Belt',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Overcoat',raincoat:'Raincoat',
   // the casual garments (2026-11-16, the owner's approved new types): worn only when picked by hand on Today (isHandPick)
   tee:'T-shirt',polo:'Polo',henley:'Henley',sweater:'Sweater',sweatshirt:'Sweatshirt',hoodie:'Hoodie',qzip:'Quarter-zip',cardigan:'Cardigan',chore:'Chore jacket'};
-/* the types and kinds the tagger offers only to an app that names them (the request's `types`; worker/tag.js knownTypes): an older app
+/* the types and kinds the tagger offers only to an app that names them (the request's `types`; worker/tag.js knownTypes; the pocket square too): an older app
    reads an unknown type as a suit, so the worker gives one only when told. 'cargo' is the pants kind (trouserKind) */
-const TAG_TYPES=['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','cargo'];
+const TAG_TYPES=['pocketsquare','tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','cargo'];
 /* ---- hand-pick only (2026-11-16, the owner: "Planner: hand-pick only"): the casual tops (worn in the shirt slot, in place of the shirt),
    the casual jackets (the jacket slot) and cargo pants are never planned or suggested ("Suggest another" too) and don't count in the
    rotation stats or What to buy; Today's picker offers them under "Casual · pick by hand". isHandPick is the one check the planner, the
@@ -24,10 +24,13 @@ Object.assign(COLORS,SHIRT_COLORS);
 const SHIRT_ONLY=Object.keys(SHIRT_COLORS),SHIRT_FALLBACK={mint:'green',paleyellow:'cream',ivory:'cream',beige:'tan',lavender:'purple',periwinkle:'blue'};
 const METAL={gold:'#c9a227',silver:'#c3c6cb',other:'#7d8187'},PATS_BY=(()=>{const suiting=['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill','camouflage','other'];
   return{suit:suiting,blazer:suiting,pants:suiting,shirt:['solid','stripe','pinstripe','fine-stripe','gingham','tattersall','check','houndstooth','herringbone','oxford','pinpoint','royal-oxford','twill','end-on-end','chambray','dobby','woven','textured','fine-texture','camouflage','other'],tie:['solid','woven','stripe','polka-dot','paisley','check','tonal-check','foulard','knit','other'],
+    // a pocket square (2026-11-16): the tie's prints, and 'border', a plain ground with a contrast edge or rolled hem (its colour: secondaryColor)
+    pocketsquare:['solid','border','polka-dot','paisley','stripe','check','foulard','woven','other'],
     // the casual garments (2026-11-16): heather (a marled mix of light and dark fibers of one color), cable (cable-knit ropes)
     tee:['solid','stripe','heather','other'],polo:['solid','stripe','heather','other'],henley:['solid','stripe','heather','other'],sweater:['solid','heather','cable','stripe','other'],
     sweatshirt:['solid','stripe','heather','other'],hoodie:['solid','stripe','heather','other'],qzip:['solid','heather','cable','stripe','other'],cardigan:['solid','heather','cable','stripe','other'],chore:['solid','other']}})(),
-PAT_ALIAS={suit:{stripe:'pinstripe',check:'glen-check',plaid:'glen-check',texture:'twill'},shirt:{texture:'textured',plaid:'check',hairline:'fine-stripe','hairline-stripe':'fine-stripe','fine-stripes':'fine-stripe','fil-a-fil':'end-on-end','end-to-end':'end-on-end',jacquard:'dobby','pin-point':'pinpoint','royal-oxford-weave':'royal-oxford',poplin:'solid',broadcloth:'solid','fine-textured':'fine-texture','micro-texture':'fine-texture',weave:'woven','basket-weave':'royal-oxford'},tie:{texture:'woven',textured:'woven',weave:'woven','basket-weave':'woven',basketweave:'woven',oxford:'woven','micro-check':'woven',grenadine:'woven',tonal:'tonal-check','tone-on-tone':'tonal-check','tonal-glen-check':'tonal-check','tone-on-tone-check':'tonal-check',dots:'polka-dot',plaid:'check'}},
+PAT_ALIAS={suit:{stripe:'pinstripe',check:'glen-check',plaid:'glen-check',texture:'twill'},shirt:{texture:'textured',plaid:'check',hairline:'fine-stripe','hairline-stripe':'fine-stripe','fine-stripes':'fine-stripe','fil-a-fil':'end-on-end','end-to-end':'end-on-end',jacquard:'dobby','pin-point':'pinpoint','royal-oxford-weave':'royal-oxford',poplin:'solid',broadcloth:'solid','fine-textured':'fine-texture','micro-texture':'fine-texture',weave:'woven','basket-weave':'royal-oxford'},tie:{texture:'woven',textured:'woven',weave:'woven','basket-weave':'woven',basketweave:'woven',oxford:'woven','micro-check':'woven',grenadine:'woven',tonal:'tonal-check','tone-on-tone':'tonal-check','tonal-glen-check':'tonal-check','tone-on-tone-check':'tonal-check',dots:'polka-dot',plaid:'check'},
+  pocketsquare:{dots:'polka-dot',dot:'polka-dot','contrast-border':'border',bordered:'border',edged:'border',edge:'border',piped:'border',piping:'border','rolled-edge':'border',hem:'border',plaid:'check',gingham:'check',stripes:'stripe',striped:'stripe',texture:'woven',textured:'woven',plain:'solid',motif:'foulard',geometric:'foulard'}},
 CASUAL_PAT_ALIAS={striped:'stripe',stripes:'stripe',breton:'stripe','breton-stripe':'stripe',marl:'heather',marled:'heather',melange:'heather',heathered:'heather',mottled:'heather',
   'cable-knit':'cable',cables:'cable',cabled:'cable',plain:'solid',knit:'solid',jersey:'solid',ribbed:'solid',rib:'solid'},
 normPat=(t,p)=>{const l=PATS_BY[t]||['solid'],g=PAT_ALIAS[t==='blazer'||t==='pants'?'suit':t]||(HANDPICK_TYPES.includes(t)?CASUAL_PAT_ALIAS:{});p=String(p||'').toLowerCase().trim().replace(/[\s_]+/g,'-');return l.includes(p)?p:l.includes(g[p])?g[p]:'solid'},
@@ -40,9 +43,9 @@ COL_ALIAS={gray:'grey',lightgray:'lightgrey',palegrey:'lightgrey',palegray:'ligh
   darkbrown:'brown',chocolate:'brown',cognac:'brown',maroon:'burgundy',winered:'wine',merlot:'wine',claret:'wine',cordovan:'oxblood',color8:'oxblood',darkred:'burgundy',
   yellow:'gold',mustard:'gold',violet:'purple',plum:'purple',rose:'pink',salmon:'pink',teal:'green',emerald:'green',forestgreen:'green',darkgreen:'green',olivegreen:'olive'},
 normColFor=(type,c,accent)=>fitCol(type,normCol(c),accent),
-/* a type with a pattern and pattern colours: FABRIC's cloth, and the casual garments' stripe, heather or cable (2026-11-16; they have no
-   close-up, swatch or reading) */
-hasPat=t=>FABRIC.includes(t)||HANDPICK_TYPES.includes(t),
+/* a type with a pattern and pattern colours: FABRIC's cloth, the pocket square's print and the casual garments' stripe, heather or
+   cable (2026-11-16; they have no close-up, swatch or reading) */
+hasPat=t=>FABRIC.includes(t)||t==='pocketsquare'||HANDPICK_TYPES.includes(t),
 normCol=c=>{if(!c)return null;const x=String(c).trim().toLowerCase();if(/^own[a-z0-9]+$/.test(x)&&COLORS[x])return x;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
 /* colours each item type really comes in: p = main colour, a = stripe / check / motif colours.
    The tagger is told the same lists (worker.js TYPE_COLORS); a colour outside the list is moved to the closest one in it. */
@@ -56,6 +59,9 @@ const COLS_BY={
   shirt:{p:['white','ivory','cream','paleyellow','beige','pink','lavender','periwinkle','mint','lightblue','blue','steelblue','lightgrey','midgrey','grey','slate','charcoal','navy','darknavy','black','burgundy'],
     a:['white','navy','darknavy','blue','lightblue','steelblue','red','burgundy','pink','lavender','purple','grey','lightgrey','charcoal','black','green','mint','brown','gold']},
   tie:{p:['navy','darknavy','deepblue','blue','steelblue','lightblue','slate','black','charcoal','grey','silver','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust','cream'],
+    a:['white','cream','silver','lightgrey','grey','charcoal','black','navy','deepblue','blue','lightblue','steelblue','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust']},
+  // a pocket square (2026-11-16): white first (linen or cotton, the safe default), the tie's colours and its motif colours
+  pocketsquare:{p:['white','cream','silver','lightgrey','grey','charcoal','black','navy','darknavy','deepblue','blue','steelblue','lightblue','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust'],
     a:['white','cream','silver','lightgrey','grey','charcoal','black','navy','deepblue','blue','lightblue','steelblue','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust']},
   tieclip:{p:['silver','gold','rosegold','gunmetal','grey','black','white','red','blue','navy'],a:['black','white','silver','gold','navy','red','blue']},   // a tie clip is its colour (no metal field): plated, polished or enamel, as clips are sold
   cufflinks:{p:['silver','gold','grey','black','white','navy','blue','lightblue','burgundy','red','green','purple'],a:['silver','gold','black','white','navy','blue','burgundy','red','green']},
@@ -177,14 +183,14 @@ const todayDate=()=>{const d=TODAY_OVERRIDE?new Date(TODAY_OVERRIDE):new Date();
    every day after that date, so the plan already includes it from then on. n is a day number (di); without one, today. */
 const arriveN=i=>{if(!i||!i.arrives)return null;const [y,m,d]=String(i.arrives).split('-').map(Number);return y&&m&&d?di(new Date(y,m-1,d)):null};
 const inRotation=(i,n)=>{if(!i)return false;if(!i.paused)return true;const a=arriveN(i);return a!=null&&(n??di(todayDate()))>a};
-const SLOTS=['top','bot','shirt','tie','shoes','belt','socks','watch','clip','links','coat'];
+const SLOTS=['top','bot','shirt','tie','shoes','belt','socks','watch','clip','links','coat','pocket'];   // (pocket: a pocket square, worn only with a jacket on, 2026-11-16)
 /* occasions a day can be given (Settings): each changes what the planner picks. 'formal' is stored as rec.formal (as
    before); the others as rec.occasion. 'casual' = no jacket and no tie: a shirt and trousers. */
 const OCCASIONS=[['formal','Formal','dark suit, white shirt, quiet tie'],['wedding','Wedding','a lighter suit, a light shirt and a lively tie, never black'],
   ['funeral','Funeral','the darkest suit, white shirt, black tie, black shoes'],['casual','No jacket or tie','a shirt and pants']];
 const occOf=r=>r?(OCCASIONS.some(o=>o[0]===r.occasion)?r.occasion:r.formal?'formal':null):null;
 const occLabel=o=>(OCCASIONS.find(x=>x[0]===o)||[])[1]||'';
-const SLOT_TYPE=(s,suitDay)=>({top:suitDay?'suit':'blazer',bot:'pants',clip:'tieclip',links:'cufflinks'})[s]||s;
+const SLOT_TYPE=(s,suitDay)=>({top:suitDay?'suit':'blazer',bot:'pants',clip:'tieclip',links:'cufflinks',pocket:'pocketsquare'})[s]||s;
 /* items that can carry a second photo: a close-up of the cloth (its weave and true colour), used for the realistic photos */
 const TEXTURE_TYPES=['suit','blazer','pants','shirt','tie'];
 const METAL_TYPES=['watch','belt','cufflinks'],SEASON_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];
@@ -199,6 +205,7 @@ const MATERIALS_BY={
   pants:['wool','wool blend','tropical wool','flannel','gabardine','cotton','cotton twill','denim','stretch denim','linen','linen blend','seersucker','moleskin','corduroy','tweed','polyester blend'],
   shirt:['cotton','poplin','linen','linen blend','flannel','cotton blend','performance stretch','seersucker','polyester','polyester blend','silk','rayon','modal','lyocell','bamboo','wool','jersey','denim','corduroy'],
   tie:['silk','grenadine','shantung','wool','wool blend','cashmere','linen','cotton','polyester'],
+  pocketsquare:['silk','linen','cotton','wool','silk blend','polyester'],
   socks:['cotton','mercerized cotton','merino wool','wool blend','cashmere blend','bamboo','silk blend','synthetic blend'],
   overcoat:['wool','wool blend','melton','cashmere','cashmere blend','tweed','camel hair','loden','alpaca','cotton'],
   raincoat:['cotton gabardine','waxed cotton','rubberized cotton','nylon','polyester','waterproof shell'],
@@ -269,7 +276,7 @@ const wearsTie=()=>!(settings.dress&&settings.dress.tie===false);
 const needsJacket=o=>o.occasion!=='casual'&&!(o.off&&o.off.top)&&wearsJacket();   // (o.off: taken off on Today, see takeOff in planner.js)
 const needsTie=o=>o.occasion!=='casual'&&!(o.off&&o.off.tie)&&wearsTie()&&!casualTop(o);   // (a T-shirt, sweater… in the shirt slot: no tie that day)
 /* an item type the dress code leaves out: never planned on an ordinary day, so not counted as unused and not suggested */
-const dressOut=t=>(!wearsTie()&&(t==='tie'||t==='tieclip'))||(!wearsJacket()&&(t==='suit'||t==='blazer'));
+const dressOut=t=>(!wearsTie()&&(t==='tie'||t==='tieclip'))||(!wearsJacket()&&(t==='suit'||t==='blazer'||t==='pocketsquare'));   // (a pocket square is worn only with a jacket)
 /* days off: the chosen country's public holidays (settings.holidays: {country, list:[{d:'2026-12-25',n:'Christmas Day'}],
    skip:[dates the user works anyway]}) and the user's own days off (settings.daysOff: [{d, n}]). A day off is planned like
    a weekend: no outfit, and it does not count as worn. offName(d) -> the day's name, or '' on an ordinary day. */

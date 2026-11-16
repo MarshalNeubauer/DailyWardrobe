@@ -22,7 +22,7 @@ const wardNorm=t=>String(t??'').toLowerCase().normalize('NFD').replace(/\p{M}/gu
    the chore jackets, "cargos" the cargo pants; "casual" finds every piece picked by hand only */
 const CASUAL_HAY={tee:'tee tees tshirt t-shirt casual',polo:'polo shirt casual',henley:'henley casual',sweater:'jumper pullover crewneck knit knitwear casual',
   sweatshirt:'sweat crewneck casual',hoodie:'hooded hoody casual',qzip:'quarter zip 1/4 zip half zip pullover knit casual',cardigan:'cardi knit knitwear casual',chore:'chore coat field jacket work jacket overshirt casual'};
-const wardHay=i=>{const h=wardNorm([i.name,i.brand,i.notes,i.material==='other'?'':i.material,TYPES[i.type],i.type,desc(i),colorDesc(i),hasPat(i.type)?patName(i.pattern||'solid'):'',CASUAL_HAY[i.type]||(isCargo(i)?'cargo cargos casual':''),matSyn(i),...accentsOf(i).map(colName)].join(' '));
+const wardHay=i=>{const h=wardNorm([i.name,i.brand,i.notes,i.material==='other'?'':i.material,TYPES[i.type],i.type,desc(i),colorDesc(i),hasPat(i.type)?patName(i.pattern||'solid'):'',CASUAL_HAY[i.type]||(isCargo(i)?'cargo cargos casual':''),matSyn(i),i.type==='pocketsquare'?'hank handkerchief pochette':'',...accentsOf(i).map(colName)].join(' '));   // (a pocket square's other names, 2026-11-16)
   return h+(h.includes('gray')?' grey':'')+(i.type==='pants'?' trousers':'')};
 /* (2026-11-15, the materials audit) a material's other words, from core.js MAT_ALIAS: "fresco" finds tropical wool, "lisle" mercerized
    cotton, "broadcloth" poplin, "nylon" a performance stretch shirt; a stored name off the list finds by the listed one it means ("Merino"

@@ -115,7 +115,7 @@ async function serve(req, env, cors, allowed, origin) {
     // the plain single tag also suggests the material (its rules cached with the others: MATERIAL_EXTRA); the picker's calls don't
     // the owner's own materials (ownMaterials {type: [name]}, 2026-11-16) join the lists for this call, in the owner's cached text
     const ownMats = free || freePat ? {} : cleanOwnMaterials(body.ownMaterials);
-    // the new garments only for an app that names them (body.types, 2026-11-16: an older app reads an unknown type as a suit)
+    // the new garments and the pocket square only for an app that names them (body.types, 2026-11-16: an older app reads an unknown type as a suit)
     const known = knownTypes(body);
     const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat, known), prompt: TAG_INTRO + tagRules(known) + SINGLE_EXTRA + (free || freePat ? '' : materialExtra(known)),
       owner: customText(custom) + ownMaterialsText(ownMats) + correctionsText(body.corrections), text: (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured),

@@ -27,7 +27,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(t.draws,'a tonal check draws as a tone-on-tone glen check in its two shades, unlike a plain check');
     ok(t.rule,'for outfit rules it is a small, subtle check (so it still avoids clashing checks)');
     ok(/tonal check/i.test(t.label),`it is named tonal check (${t.label})`);
-    ok(/tonal-check \(a check or glen check woven in two close shades/.test(src)&&/'tonal-check'\]/.test(src),'the tagger is told about tonal checks and accepts them');
+    ok(/tonal-check \(a check or glen check woven in two close shades/.test(src)&&/PATTERN_LIST = \[[^\]]*'tonal-check'/.test(src),'the tagger is told about tonal checks and accepts them');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };

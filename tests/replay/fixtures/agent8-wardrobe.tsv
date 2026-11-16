@@ -1,0 +1,35 @@
+Type	Colour	Second colour	Pattern	Name	Material
+Suit	Navy		Solid	Navy suit	Wool
+Suit	Charcoal		Solid	Charcoal suit	Wool
+Suit	Mid grey		Solid	Grey suit	Wool
+Suit	Navy	White	Pinstripe	Navy pinstripe	Wool
+Blazer	Navy		Solid	Navy blazer	Wool
+Blazer	Brown		Herringbone	Brown tweed	Tweed
+Blazer	Tan		Solid	Tan linen	Linen
+Trousers	Grey		Solid		Wool
+Trousers	Charcoal		Solid		Wool
+Chinos	Khaki		Solid		Cotton
+Chinos	Stone		Solid		Cotton
+Shirt	White		Solid	White 1	Cotton
+Shirt	White		Solid	White 2	Cotton
+Shirt	White		Solid	White 3	Cotton
+Shirt	Light blue		Solid	Blue 1	Cotton
+Shirt	Light blue		Solid	Blue 2	Cotton
+Shirt	Pink		Solid		Cotton
+Shirt	Light blue	White	Stripe		Cotton
+Tie	Navy		Solid		Silk
+Tie	Burgundy		Solid		Silk
+Tie	Green		Solid		Silk
+Tie	Grey		Solid		Silk
+Tie	Navy	Burgundy	Stripe		Silk
+Tie	Brown		Solid		Wool
+Shoes	Black
+Shoes	Brown
+Shoes	Dark brown
+Belt	Black
+Belt	Brown
+Belt	Dark brown
+Socks	Navy
+Socks	Charcoal
+Watch	Silver
+Overcoat	Camel				Wool

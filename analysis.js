@@ -69,7 +69,7 @@ const groupKind=t=>t==='tie'||t==='shirt'?t:t==='shoes'||t==='belt'?'leather':'j
 const groupLabel=(t,g)=>(GROUP_LABELS[groupKind(t)]||{})[g]||colName(g);
 const groupHex=(t,g)=>COLORS[t==='shirt'&&g==='green'?'mint':t==='shirt'&&g==='purple'?'lavender':GROUP_HEX[g]||g]||'#8b8f96';
 const TYPE_WORD={suit:['suit','suits'],blazer:['blazer','blazers'],pants:['pants','pants'],shirt:['shirt','shirts'],tie:['tie','ties'],shoes:['shoes','shoes'],belt:['belt','belts'],socks:['socks','socks'],
-  tieclip:['tie clip','tie clips'],cufflinks:['cufflinks','cufflinks'],overcoat:['overcoat','overcoats'],raincoat:['raincoat','raincoats'],
+  tieclip:['tie clip','tie clips'],pocketsquare:['pocket square','pocket squares'],cufflinks:['cufflinks','cufflinks'],overcoat:['overcoat','overcoats'],raincoat:['raincoat','raincoats'],
   tee:['T-shirt','T-shirts'],polo:['polo','polos'],henley:['henley','henleys'],sweater:['sweater','sweaters'],sweatshirt:['sweatshirt','sweatshirts'],hoodie:['hoodie','hoodies'],qzip:['quarter-zip','quarter-zips'],cardigan:['cardigan','cardigans'],chore:['chore jacket','chore jackets']};
 const several=(n,t)=>`${n} ${TYPE_WORD[t][n===1?0:1]}`;
 const listAnd=a=>(a=[...new Set(a)]).length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];

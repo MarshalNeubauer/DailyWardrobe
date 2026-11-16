@@ -1,0 +1,7 @@
+{
+ "url": "https://geocoding-api.open-meteo.com/v1/search?count=8&language=ar&name=%D8%A7%D9%84%D9%83%D9%88%D9%8A%D8%AA",
+ "status": 200,
+ "type": "application/json; charset=utf-8",
+ "body": "{\"results\":[{\"id\":285570,\"name\":\"الكويت\",\"latitude\":29.5,\"longitude\":47.75,\"elevation\":79.0,\"feature_code\":\"PCLI\",\"country_code\":\"KW\",\"timezone\":\"Asia/Kuwait\",\"population\":4865298,\"country_id\":285570,\"country\":\"الكويت\"},{\"id\":8029394,\"name\":\"الكويت\",\"latitude\":13.98785,\"longitude\":45.57569,\"elevation\":1994.0,\"feature_code\":\"PPLX\",\"country_code\":\"YE\",\"admin1_id\":79838,\"admin2_id\":6940677,\"timezone\":\"Asia/Aden\",\"population\":88,\"country_id\":69543,\"country\":\"اليمن\",\"admin1\":\"محافظة البيضاء\",\"admin2\":\"Al Bayda City\"},{\"id\":12120076,\"name\":\"الكويت\",\"latitude\":15.35914,\"longitude\":44.19671,\"elevation\":2257.0,\"feature_code\":\"PPLX\",\"country_code\":\"YE\",\"admin1_id\":6940571,\"timezone\":\"Asia/Aden\",\"country_id\":69543,\"country\":\"اليمن\",\"admin1\":\"امانه العاصمه\"},{\"id\":12748714,\"name\":\"الكويتات\",\"latitude\":24.21971,\"longitude\":55.7809,\"elevation\":296.0,\"feature_code\":\"PPLX\",\"country_code\":\"AE\",\"admin1_id\":292969,\"admin2_id\":12047240,\"admin3_id\":12748086,\"timezone\":\"Asia/Dubai\",\"country_id\":290557,\"country\":\"الإمارات العربية المتحدة\",\"admin1\":\"أبو ظبي\",\"admin2\":\"العين\",\"admin3\":\"وسط المدينة\"}],\"generationtime_ms\":0.23186207}",
+ "recorded": "2026-11-16"
+}

@@ -180,6 +180,7 @@ function kitMetal(word){const w=kitNorm(word).replace(/-/g,' ');if(!w)return nul
 const KIT_TYPE_WORDS={suit:['suit','suits','two-piece','three-piece','suit jacket','بدله','بدلات'],blazer:['blazer','sport coat','sports coat','sportcoat','jacket','sport jacket','بليزر','جاكيت','جاكت','ستره'],
   pants:['trousers','trouser','pants','slacks','chinos','jeans','dress trousers','dress pants','khakis','بنطلون','بنطال','سروال','بناطيل'],
   shirt:['shirt','dress shirt','shirts','oxford shirt','قميص','قمصان'],tie:['tie','necktie','ties','ربطه عنق','ربطه','كرافته','كرفته','كرافات'],tieclip:['tie clip','tie bar','tieclip','tie pin','مشبك ربطه','دبوس ربطه'],
+  pocketsquare:['pocket square','pocket squares','pocket-square','pocket-squares','pocketsquare','hank','hanks','hankie','hanky','handkerchief','handkerchiefs','pochette','pocket handkerchief','منديل','منديل جيب'],   // (2026-11-16)
   watch:['watch','wristwatch','ساعه','ساعه يد'],
   shoes:['shoes','shoe','oxfords','oxford','derbies','derby','loafers','loafer','boots','boot','sneakers','trainers','brogues','brogue','wingtips','monk','monks','monk straps','monkstraps','moccasins','dress shoes','حذاء','احذيه','جزمه'],
   belt:['belt','حزام'],socks:['socks','sock','جوارب','شراب'],cufflinks:['cufflinks','cuff links','cufflink','cuff link','ازرار اكمام','كبك'],overcoat:['overcoat','coat','topcoat','top coat','wool coat','معطف','بالطو'],
@@ -191,7 +192,7 @@ const KIT_TYPE_WORDS={suit:['suit','suits','two-piece','three-piece','suit jacke
   qzip:['quarter-zip','quarter zip','1/4 zip','1/4-zip','quarter zip pullover','quarter-zip pullover','half zip','half-zip','1/2 zip','zip neck','qzip'],cardigan:['cardigan','cardigans','cardi','كارديجان'],
   chore:['chore jacket','chore coat','chore','field jacket','work jacket','barn jacket','overshirt','shirt jacket','shacket']};
 KIT_TYPE_WORDS.pants.push('cargos','cargo pants','cargo trousers','cargo');   // (cargo pants: kind 'cargo', kitTrouserKind)
-const KIT_PLANS='suits, blazers, pants, shirts, ties, tie clips, shoes, belts, socks, watches, cufflinks and coats';
+const KIT_PLANS='suits, blazers, pants, shirts, ties, tie clips, pocket squares, shoes, belts, socks, watches, cufflinks and coats';
 const kitNorm=s=>String(s??'').normalize('NFKC').trim().toLowerCase().replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')
   .replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-0x660)).replace(/[_\s]+/g,' ').replace(/grey|gray/g,'grey');
 /* rows of cells; each row keeps its place in the text (r.ln, from 1, empty rows counted: "Row 23" is the 23rd row pasted, W2-15-04) */
@@ -204,7 +205,10 @@ function kitSplit(text){text=String(text||'').replace(/^﻿/,'').replace(/\r\n?/
 function kitTypeOne(w){const find=x=>Object.keys(KIT_TYPE_WORDS).find(t=>KIT_TYPE_WORDS[t].includes(x))||Object.keys(TYPES).find(t=>kitNorm(TYPES[t])===x);
   return find(w)||(/es$/.test(w)&&find(w.slice(0,-2)))||(/s$/.test(w)&&find(w.slice(0,-1)))||null}
 /* a type cell: the words as a whole, else a known word among others ("Shoes - Oxford", "Linen trouser"): the last word first (the noun) */
-function kitType(tw){const ws=tw.split(/[^\p{L}]+/u).filter(Boolean);return kitTypeOne(tw)||(ws.length>1?[...ws].reverse().map(kitTypeOne).find(Boolean):null)||null}
+function kitType(tw){const ws=tw.split(/[^\p{L}]+/u).filter(Boolean);
+  // (no single word: a two-word type among others, the last pair first: "White linen pocket square", 2026-11-16)
+  const pairs=()=>ws.length>2?ws.slice(1).map((w,k)=>ws[k]+' '+w).reverse().map(kitTypeOne).find(Boolean):null;
+  return kitTypeOne(tw)||(ws.length>1?[...ws].reverse().map(kitTypeOne).find(Boolean):null)||pairs()||null}
 /* two words one typo apart (a letter added, dropped, changed or two swapped: "Shrit") */
 function kitNear(a,b){if(a===b)return true;const la=a.length,lb=b.length;if(Math.abs(la-lb)>1)return false;let i=0;while(i<la&&i<lb&&a[i]===b[i])i++;
   if(la===lb)return a.slice(i+1)===b.slice(i+1)||(a[i]===b[i+1]&&a[i+1]===b[i]&&a.slice(i+2)===b.slice(i+2));return la>lb?a.slice(i+1)===b.slice(i):a.slice(i)===b.slice(i+1)}

@@ -16,6 +16,8 @@ const TYPE_COLORS = {
     ['white','navy','darknavy','blue','lightblue','steelblue','red','burgundy','pink','lavender','purple','grey','lightgrey','charcoal','black','green','mint','brown','gold']],
   tie: [['navy','darknavy','deepblue','blue','steelblue','lightblue','slate','black','charcoal','grey','silver','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust','cream'],
     ['white','cream','silver','lightgrey','grey','charcoal','black','navy','deepblue','blue','lightblue','steelblue','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust']],
+  pocketsquare: [['white','cream','silver','lightgrey','grey','charcoal','black','navy','darknavy','deepblue','blue','steelblue','lightblue','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust'],
+    ['white','cream','silver','lightgrey','grey','charcoal','black','navy','deepblue','blue','lightblue','steelblue','burgundy','wine','red','pink','purple','lavender','green','olive','brown','tan','gold','rust']],
   tieclip: [['silver','gold','rosegold','gunmetal','grey','black','white','red','blue','navy'], ['black','white','silver','gold','navy','red','blue']],
   cufflinks: [['silver','gold','grey','black','white','navy','blue','lightblue','burgundy','red','green','purple'], ['silver','gold','black','white','navy','blue','burgundy','red','green']],
   watch: [['black','brown','tan','oxblood','navy','grey','green','silver','gold'], ['black','brown','white','grey','navy']],
@@ -35,9 +37,15 @@ const TYPE_COLORS = {
    (The pocket-squares branch gates its type the same way with a flag, knowsPq(body): once both are on main it becomes
    knownTypes(body).includes('pocketsquare'), its type joins OPT_TYPES, and its PQ_MARK words join promptFor's pieces.) */
 const OPT_TYPES = ['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore'];
-const OPT_KINDS = ['cargo'];   // trouserKind values offered only on request
+const OPT_KINDS = ['cargo'];
+const PQ_TYPES = ['pocketsquare'];   // trouserKind values offered only on request
 /* the optional types and kinds the request names (body.types: an array), in this file's order */
-const knownTypes = body => { const t = body && Array.isArray(body.types) ? body.types : []; return [...OPT_TYPES, ...OPT_KINDS].filter(x => t.includes(x)); };
+const knownTypes = body => { const t = body && Array.isArray(body.types) ? body.types : []; return [...PQ_TYPES, ...OPT_TYPES, ...OPT_KINDS].filter(x => t.includes(x)); };
+/* (the pocket squares' branch, merged 2026-11-16) the pocket square is offered on request too (an older app reads it as a suit), but unlike the
+   new garments its colour, pattern and material rows are listed for every app, as main did; knowsPq is its flag */
+const knowsPq = body => knownTypes(body).includes('pocketsquare');
+/* a known list from a caller that still passes the pocket square's flag (true / false) */
+const knownOf = k => k === true ? ['pocketsquare'] : Array.isArray(k) ? k : [];
 const CAS_P = ['white','cream','lightgrey','midgrey','grey','charcoal','black','navy','darknavy','blue','lightblue','steelblue','slate','green','olive','khaki','tan','brown','burgundy','wine','red','rust','pink','purple','gold'],
   CAS_A = ['white','cream','lightgrey','grey','charcoal','black','navy','blue','lightblue','red','burgundy','green','olive','tan','brown','gold','rust','pink'],
   KNIT_P = ['cream','white','lightgrey','midgrey','grey','charcoal','black','navy','darknavy','blue','steelblue','slate','green','olive','khaki','tan','taupe','brown','burgundy','wine','rust','red','gold'];
@@ -58,9 +66,14 @@ const DIAL_COLS = ['white','cream','silver','lightgrey','grey','slate','charcoal
 const colorText = known => Object.entries(TYPE_COLORS).filter(([t]) => !OPT_TYPES.includes(t) || known.includes(t)).map(([t, [p, a]]) => `  ${t}: ${p.join(', ')} | ${a.join(', ')}`).join('\n')
   + `\n  watch dial: ${DIAL_COLS.join(', ')}`;
 /* the whole prompt for the request's known optional types (none: as it always was) */
-const promptFor = known => { const types = OPT_TYPES.filter(t => known.includes(t));
+const PQ_TYPE = 'pocketsquare (a handkerchief for the jacket\'s breast pocket, folded or laid flat), ';
+const PQ_PATTERNS = `  pocketsquare:
+    solid, border (a plain ground with a contrast edge, piping or rolled hem in another color: put the edge's color in secondaryColor),
+    polka-dot, paisley, stripe, check, foulard (small repeating motif), woven (a textured solid, e.g. a linen slub or a woven grid), other
+`;
+const promptFor = known => { known = knownOf(known); const types = OPT_TYPES.filter(t => known.includes(t)), pq = known.includes('pocketsquare');
   const pats = OPT_PAT_LINES.map(([ts, l]) => [ts.filter(t => known.includes(t)), l]).filter(([ts]) => ts.length).map(([ts, l]) => `  ${ts.join(', ')}:\n    ${l}\n`).join('');
-  return PROMPT_HEAD + (types.length ? ',\n  ' + types.map(t => OPT_WORDS[t]).join(',\n  ') : '') + PROMPT_COLORS + colorText(known) + PROMPT_PATS + pats + PROMPT_KINDS
+  return (pq ? PROMPT_HEAD.replace('tieclip, watch', 'tieclip, ' + PQ_TYPE + 'watch') : PROMPT_HEAD) + (types.length ? ',\n  ' + types.map(t => OPT_WORDS[t]).join(',\n  ') : '') + PROMPT_COLORS + colorText(known) + PROMPT_PATS + pats + (pq ? PQ_PATTERNS : '') + PROMPT_KINDS
     + (known.includes('cargo') ? ', cargo (pants with patch cargo pockets on the thighs)' : '') + PROMPT_TAIL; };
 const PROMPT_HEAD = `Identify the single clothing item in this photo. Reply with one JSON object only, no prose, no code fences:
 {"type":"...","primaryColor":"...","secondaryColor":"...","tertiaryColor":"...","pattern":"...","metal":"...","trouserKind":"...","shoeStyle":"...","leather":"...","dial":"...","band":"...","bezel":"..."}
@@ -146,7 +159,7 @@ dial, band, bezel — watches only, otherwise null:
   bezel: fluted (finely ridged ring around the crystal) or smooth.`;
 const PROMPT = promptFor([]), PROMPT_MEMO = new Map();
 /* the prompt for a request's known types (memoized by them; at most 2^10 variants, in practice the older app's and the current one's) */
-const promptOf = known => { const k = known.join(','); if (!k) return PROMPT; let p = PROMPT_MEMO.get(k); if (!p) { p = promptFor(known); PROMPT_MEMO.set(k, p); } return p; };
+const promptOf = known => { known = knownOf(known); const k = known.join(','); if (!k) return PROMPT; let p = PROMPT_MEMO.get(k); if (!p) { p = promptFor(known); PROMPT_MEMO.set(k, p); } return p; };
 
 const DEFAULT_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
 /* the field rules alone (from "type —"): Claude answers through structured output, so it gets no JSON template or "no code
@@ -169,14 +182,14 @@ const CLAUDE_DEFAULT = 'claude-opus-5-5';
 const COLOR_LIST = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','white','cream','lightblue','blue','steelblue','deepblue','navy','darknavy','slate',
   'brown','tan','khaki','taupe','deeptaupe','rust','olive','green','burgundy','wine','oxblood','red','purple','pink','gold','silver','rosegold','gunmetal',
   'paleyellow','ivory','beige','lavender','periwinkle','mint','stone','denim'];   // per-type lists: TYPE_COLORS
-const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoes','belt','socks','cufflinks','overcoat','raincoat',...OPT_TYPES];
+const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','pocketsquare','watch','shoes','belt','socks','cufflinks','overcoat','raincoat',...OPT_TYPES];
 /* the types a tag may answer: the optional ones only when the request names them (knownTypes) */
-const tagTypes = known => TYPE_LIST.filter(t => !OPT_TYPES.includes(t) || (known || []).includes(t));
+const tagTypes = known => { known = knownOf(known); return TYPE_LIST.filter(t => !(OPT_TYPES.includes(t) || PQ_TYPES.includes(t)) || known.includes(t)); };
 /* the tag's pattern enum (unchanged for an older app); the new garments' 'heather' and 'cable' join it when any of them is known.
    PATTERN_KEYS is every pattern key (/describe, the material cleaner) */
 const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
   'stripe','gingham','tattersall','check','oxford','polka-dot','paisley','foulard','knit','other',
-  'fine-stripe','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','camouflage','tonal-check'];
+  'fine-stripe','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','camouflage','tonal-check','border'];
 const OPT_PATTERNS = ['heather','cable'], PATTERN_KEYS = [...PATTERN_LIST, ...OPT_PATTERNS];
 const tagPatterns = known => (known || []).some(t => OPT_TYPES.includes(t)) ? PATTERN_KEYS : PATTERN_LIST;
 const tagKinds = known => ['dress','chinos','jeans', ...OPT_KINDS.filter(k => (known || []).includes(k))];
@@ -191,7 +204,8 @@ const COLOR_HEX = { black: '#16161a', charcoal: '#3b3f46', darkgrey: '#5e6269', 
 const SUIT_PATS = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill','camouflage','other'];
 const PATTERN_BY_TYPE = { suit: SUIT_PATS, blazer: SUIT_PATS, pants: SUIT_PATS,
   shirt: ['solid','stripe','pinstripe','fine-stripe','gingham','tattersall','check','houndstooth','herringbone','oxford','pinpoint','royal-oxford','twill','end-on-end','chambray','dobby','woven','textured','fine-texture','camouflage','other'],
-  tie: ['solid','woven','stripe','polka-dot','paisley','check','tonal-check','foulard','knit','other'] };
+  tie: ['solid','woven','stripe','polka-dot','paisley','check','tonal-check','foulard','knit','other'],
+  pocketsquare: ['solid','border','polka-dot','paisley','stripe','check','foulard','woven','other'] };
 { const top = ['solid','stripe','heather','other'], knit = ['solid','heather','cable','stripe','other'];
   Object.assign(PATTERN_BY_TYPE, { tee: top, polo: top, henley: top, sweater: knit, sweatshirt: top, hoodie: top, qzip: knit, cardigan: knit, chore: ['solid','other'] }); }
 /* what each item type is made of: must match MATERIALS_BY in core.js (tests/materials.test.js) */
@@ -201,6 +215,7 @@ const MATERIALS_BY = {
   pants: ['wool','wool blend','tropical wool','flannel','gabardine','cotton','cotton twill','denim','stretch denim','linen','linen blend','seersucker','moleskin','corduroy','tweed','polyester blend'],
   shirt: ['cotton','poplin','linen','linen blend','flannel','cotton blend','performance stretch','seersucker','polyester','polyester blend','silk','rayon','modal','lyocell','bamboo','wool','jersey','denim','corduroy'],
   tie: ['silk','grenadine','shantung','wool','wool blend','cashmere','linen','cotton','polyester'],
+  pocketsquare: ['silk','linen','cotton','wool','silk blend','polyester'],
   socks: ['cotton','mercerized cotton','merino wool','wool blend','cashmere blend','bamboo','silk blend','synthetic blend'],
   overcoat: ['wool','wool blend','melton','cashmere','cashmere blend','tweed','camel hair','loden','alpaca','cotton'],
   raincoat: ['cotton gabardine','waxed cotton','rubberized cotton','nylon','polyester','waterproof shell'],
@@ -221,7 +236,7 @@ const MAT_SEES = ['linen','seersucker','corduroy','velvet','tweed','flannel','de
   'fleece','waffle knit','piqué','canvas','duck canvas','french terry'];   // (the new garments' plain-to-see cloths, 2026-11-16)
 const MAT_LIKELY = ['tropical wool','gabardine','cotton gabardine','mohair blend','silk blend','camel hair','melton','moleskin','cotton','cotton twill','poplin','performance stretch','linen blend','shantung','rubberized cotton','loden',
   'slub cotton','loopback cotton','shetland wool'];
-const MAT_LIKELY_BY = { tie: ['silk','wool','cashmere','cotton'] };
+const MAT_LIKELY_BY = { tie: ['silk','wool','cashmere','cotton'], pocketsquare: ['silk','cotton','wool'] };
 const CONF_RANK = { low: 0, medium: 1, high: 2 }, CONF_NAME = ['low', 'medium', 'high'];
 const matCap = (key, type, closeup) => type === 'socks' ? 0 : MAT_SEES.includes(key) ? 2 : (MAT_LIKELY.includes(key) || (MAT_LIKELY_BY[type] || []).includes(key)) ? (closeup ? 1 : 0) : 0;
 /* ---- the owner's own materials (2026-11-16, the owner's approved design): a material Claude names that is on no list is passed on
@@ -389,7 +404,7 @@ ownPattern — the pattern or weave in your own precise words, NOT limited to th
   description: one sentence on how it looks (structure, scale, colors, how strong), for drawing it and for a photo generator;
   fits: true only when the listed pattern you put in "pattern" already names it fully, false when your name says more.`;
 /* known: the request's optional types and kinds (knownTypes; none = the schema as it always was) */
-function tagSchema(custom, single, free, freePat, known = []) {
+function tagSchema(custom, single, free, freePat, known = []) { known = knownOf(known);
   const cols = [...COLOR_LIST, ...custom.colors.map(c => c.key)], pats = [...tagPatterns(known), ...custom.patterns.map(p => p.key)];
   const props = { ...TAG_SCHEMA.properties, type: { type: 'string', enum: tagTypes(known) }, trouserKind: orNull(tagKinds(known)),
     primaryColor: { type: 'string', enum: cols }, secondaryColor: { type: 'string', enum: [...cols, 'none'] },
@@ -702,4 +717,4 @@ async function tagWithWorkersAi(env, image, known = []) {
   catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
 }
 
-export { OPT_TYPES, OPT_KINDS, PATTERN_KEYS, knownTypes, tagTypes, tagRules, tagPatterns, tagKinds, materialExtra, multiPrompt, ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
+export { knowsPq, OPT_TYPES, OPT_KINDS, PATTERN_KEYS, knownTypes, tagTypes, tagRules, tagPatterns, tagKinds, materialExtra, multiPrompt, ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };

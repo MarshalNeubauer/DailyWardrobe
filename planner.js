@@ -191,6 +191,34 @@ const clipAllowed=(c,watch,belt)=>{const m=metalOf(c);return !CLIP_OFF.includes(
 const ENAMEL_ACCENT=11,ENAMEL_TONE=8,ENAMEL_MINOR=4,ENAMEL_CLASH=-5,ENAMEL_NEAR={red:['burgundy'],burgundy:['red'],blue:['navy'],navy:['blue']};
 const enamelPref=(c,tie)=>{if(!tie)return 0;const f=fam(colBase(planCol(c))),t=colsOf(tie);if(!t.length)return 0;
   if(t.slice(1).includes(f))return ENAMEL_ACCENT;if(t[0]===f||(ENAMEL_NEAR[f]||[]).includes(t[0]))return ENAMEL_TONE;return accFams(tie).includes(f)?ENAMEL_MINOR:ENAMEL_CLASH};
+/* ---- pocket squares (2026-11-16, the owner's approved feature: "a square fold, a bit out of the pocket") ----
+   Worn only with a jacket on (a suit or a blazer; never on a day without one, and it comes off with the jacket: takeOff). The rules:
+   - never the tie's own colour and pattern (psSameTie: the classic rule, complement it, don't match it); a square in the tie's colour with
+     another pattern reads as a set, PS_TONE less than an echo
+   - a square that picks up a colour of the outfit: its colours (main, second, third, accents) against the tie's (accents too), the shirt's
+     and the jacket's (accents too), white left out (it would always echo a white shirt): PS_ECHO, PS_ECHO_ACC more when it picks up the
+     tie's second or third colour or an accent (the classic match)
+   - white (or cream) in a plain, bordered or woven square is the safe default that goes with everything: PS_WHITE, just under an echo
+   - anything else PS_CLASH; a square is planned only when its score is at least PS_MIN (a white one, or one that echoes), so with only
+     coloured squares that pick nothing up the day has none; with a white one owned every jacket day has one
+   - a formal day: white first (PS_FORMAL either way); a funeral: a plain white square or none (others are never planned there);
+     a wedding: as any day, white welcome
+   - rotation: rest (rb) and PS_AGAIN for yesterday's square, like the other accessories; a pick or a lock is worn whatever its score */
+const PS_ECHO=8,PS_ECHO_ACC=2,PS_TONE=3,PS_WHITE=6,PS_CLASH=-6,PS_MIN=0,PS_FORMAL=8,PS_AGAIN=4,PS_NEVER=-100;
+const psWhite=p=>!!p&&['white','cream'].includes(planCol(p))&&['solid','border','woven'].includes(patBase(p.pattern)||'solid');
+const psSameTie=(p,x)=>!!p&&!!x&&pcol(p)===pcol(x)&&(patOf(p)||'solid')===(patOf(x)||'solid');
+/* the outfit's colours a square can pick up (families, white left out): {all, tieAcc (the tie's second, third and accents)} */
+const psTargets=(top,shirt,tie)=>{const ok=c=>c&&c!=='white',tc=colsOf(tie),ta=[...tc.slice(1),...accFams(tie)].filter(ok);
+  return {all:new Set([...tc,...accFams(tie),...colsOf(shirt),...colsOf(top),...accFams(top)].filter(ok)),tieAcc:new Set(ta)}};
+const psEcho=(p,top,shirt,tie)=>{const T=psTargets(top,shirt,tie),mine=[...colsOf(p),...accFams(p)].filter(c=>c!=='white');
+  return {hit:mine.some(c=>T.all.has(c)),acc:mine.some(c=>T.tieAcc.has(c))}};
+function pocketScore(p,top,shirt,tie,day){const occ=day&&day.occ;
+  if(psSameTie(p,tie))return PS_NEVER;
+  if(occ==='funeral')return psWhite(p)&&(patBase(p.pattern)||'solid')!=='border'?PS_WHITE:PS_NEVER;
+  const e=psEcho(p,top,shirt,tie),white=psWhite(p);let v=e.hit?PS_ECHO+(e.acc?PS_ECHO_ACC:0)-(tie&&pcol(p)===pcol(tie)?PS_TONE:0):white?PS_WHITE:PS_CLASH;
+  if(white&&e.hit)v=Math.max(v,PS_WHITE);
+  if(day&&day.formal)v+=white?PS_FORMAL:-PS_FORMAL;
+  return v}
 function beltFit(shoe,belt){
   if(shoeStyle(shoe)==='sneaker')return 0;   // sneakers don't call for a matching belt: any belt will do
   if(leatherGroup(planCol(belt))!==leatherGroup(planCol(shoe)))return null;
@@ -226,7 +254,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
    after today are released: the week's locks go, the owner's own picks (force, skip, the vest) stay, see replanFuture in app.js) */
-const PLAN_RULES=20;   // 20: a camouflage shirt and pants are a uniform, planned together, not a clash (2026-11-16); 19: accents (2026-11-16): an item's colours beyond its three count, weaker, where the tie and cufflinks are matched (ACC_ECHO, ENAMEL_MINOR); 18: fix round 3 (2026-11-16): shoes with a suit, formality wins (SUIT_SUEDE, SHOE_WATCH), not yesterday's pair (SHOE_AGAIN); 17: camouflage is a bold, large pattern of its own kind, kept off formal days, funerals and weddings (2026-11-16); 16: materials (2026-11-15): seasons from tropical wool, cashmere, moleskin, melton and wool ties; nubuck as suede; a canvas belt with suede; two-tone metal; silk-knot cufflinks; 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (clothesHard, jacketClean, shoes that don't suit lose to no belt), the day before's tie (TIE_NEXT); 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
+const PLAN_RULES=21;   // 21: pocket squares (2026-11-16): a square with every jacket that has a good one (pocketScore: never the tie's own colour and pattern, an echo of the tie, shirt or jacket, else white; white at a funeral), off with the jacket; 20: a camouflage shirt and pants are a uniform, planned together, not a clash (2026-11-16); 19: accents (2026-11-16): an item's colours beyond its three count, weaker, where the tie and cufflinks are matched (ACC_ECHO, ENAMEL_MINOR); 18: fix round 3 (2026-11-16): shoes with a suit, formality wins (SUIT_SUEDE, SHOE_WATCH), not yesterday's pair (SHOE_AGAIN); 17: camouflage is a bold, large pattern of its own kind, kept off formal days, funerals and weddings (2026-11-16); 16: materials (2026-11-15): seasons from tropical wool, cashmere, moleskin, melton and wool ties; nubuck as suede; a canvas belt with suede; two-tone metal; silk-knot cufflinks; 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (clothesHard, jacketClean, shoes that don't suit lose to no belt), the day before's tie (TIE_NEXT); 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 const FORMAL_QWIN=3;   // a formal day or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
 const TIE_CREEP=.03,TIE_CREEP_MAX=9;   // a tie's rest keeps creeping after 30 days, capped well under TIE_GAP so a tie never repeats for it
@@ -364,7 +392,7 @@ const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
 // pick names it for its own slot and it is in rotation that day; a casual jacket makes the day a blazer day (odd pants)
 const hp=s=>{const id=force[s],x=id&&items.find(i=>i.id===id);return x&&handPickSlot(x)===s&&inRotation(x,n)?x:null};
 const hpTop=noJ?null:hp('top'),hpShirt=hp('shirt'),hpBotAny=hp('bot');if(hpTop)suitDay=false;const hpBot=suitDay?null:hpBotAny;
-const LT={top:suitDay?'suit':'blazer',bot:suitDay?null:'pants',shirt:'shirt',tie:'tie',shoes:'shoes',belt:'belt',socks:'socks',watch:'watch',clip:'tieclip',links:'cufflinks'};
+const LT={top:suitDay?'suit':'blazer',bot:suitDay?null:'pants',shirt:'shirt',tie:'tie',shoes:'shoes',belt:'belt',socks:'socks',watch:'watch',clip:'tieclip',links:'cufflinks',pocket:'pocketsquare'};
 let lock=rec&&rec.lock||null;
 // the washing cycle (settings.laundryDays, default 1): a shirt worn within that many days is in the wash, so it is left out of the
 // day's shirts unless there is no other; a lock holding such a shirt (it was worn on a day before, by hand) lets go. Not on a
@@ -458,6 +486,11 @@ const clipPool=pool('tieclip','clip').filter(c=>force.clip===c.id||clipAllowed(c
 const clip=vest||!tie?null:best(clipPool,metalPref);   // the vest holds the tie: no clip
 // cufflinks only (and always) with French cuffs
 const french=shirt&&shirt.cuff==='french',links=french?best(pool('cufflinks','links'),metalPref):null;
+// a pocket square only with a jacket (pocketScore): one whose score is at least PS_MIN, or the one picked or locked for the day
+const PQ=top&&!hpTop?pool('pocketsquare','pocket'):[],   // (none with a cardigan or chore jacket picked by hand, 2026-11-16)
+psPinned=p=>force.pocket===p.id||!!(lock&&lock.pocket===p.id);
+const psOk=PQ.filter(p=>psPinned(p)||pocketScore(p,top,shirt,tie,day)>=PS_MIN);
+const pocket=psOk.length?best(psOk,p=>pocketScore(p,top,shirt,tie,day)-(rest(p)<=1?PS_AGAIN:0)):null;
 // coat when the forecast (or the season) calls for one: raincoat for rain unless it's very cold, otherwise an overcoat
 const clim=day.clim,needCoat=clim.cold||clim.rain,prefer=clim.rain&&!clim.veryCold?'raincoat':'overcoat';
 const coat=needCoat?best([...pool('overcoat','coat'),...pool('raincoat','coat')],c=>(c.type===prefer?10:0)+seasonFit(c,clim.season)+(['navy','charcoal','tan','grey','black'].includes(pcol(c))?3:0)+(shoes&&pcol(c)==='black'&&leatherGroup(planCol(shoes))!=='black'?-4:0)):null;
@@ -482,7 +515,7 @@ if(noJ&&!bot)notes.push('No separate pants in your wardrobe for a day without a 
 if(top&&seasonFit(top,clim.season)<-10)notes.push(`The ${nm(top)} is a ${itemSeason(top)}-weather piece on a ${clim.season} day; no better suit was available.`);
 // no waistcoat without a tie (the owner, 2026-11-13: "No one should ever wear a vest and no tie"): a day planned without a tie (the dress
 // code, a casual day) has none, whatever the vest setting or the day's own choice
-const o={suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,vest:vest&&!!tie,vestOverride:vov!==null,notes:notes.map(prettyCols),clim,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null)};
+const o={suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,pocket,vest:vest&&!!tie,vestOverride:vov!==null,notes:notes.map(prettyCols),clim,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null)};
 // the suit jacket taken off and other pants picked for the day (force.bot, a pair of pants: Today's ⇄ on the suit's pants, the owner's
 // ask 2026-11-16): those pants are worn and the suit is not
 const sep=suitDay&&top&&rec&&rec.off&&rec.off.top&&force.bot&&(by('pants').find(i=>i.id===force.bot)||hpBotAny)||null;
@@ -495,7 +528,10 @@ return takeOff(o,rec&&rec.off,untake,sep&&take(sep))}
      unless other pants were picked for the day (sep, already counted as worn): then those are worn, the suit is not (untake), and
      o.suitBot stays false; o.offSuit is the suit either way, so Today's pants picker can offer its own pants back
    o.off says what came off (o.offKind 'suit' or 'blazer'), so Today can put it back; the score asks for neither (needsJacket/needsTie) */
-function takeOff(o,off,untake,sep){if(!off||!(off.top||off.tie))return o;const r={...o,off:{top:!!(off.top&&o.top),tie:!!(off.tie&&o.tie)}};
+/* (2026-11-16) the pocket square comes off with the jacket, and alone (rec.off.pocket: Today's − on it); either way it is not counted as
+   worn; o.off.pocket is set only when it was taken off by itself */
+function takeOff(o,off,untake,sep){if(!off||!(off.top||off.tie||off.pocket))return o;const r={...o,off:{top:!!(off.top&&o.top),tie:!!(off.tie&&o.tie),...(off.pocket&&o.pocket&&!(off.top&&o.top)?{pocket:true}:{})}};
+  if(o.pocket&&(r.off.top||r.off.pocket)){if(untake)untake(o.pocket);r.pocket=null}
   if(r.off.top){r.offKind=o.suitDay?'suit':'blazer';
     if(o.suitDay){r.offSuit=o.top;r.suitDay=false;if(sep){r.bot=sep;if(untake)untake(o.top)}else{r.bot=o.top;r.suitBot=true}}else if(untake)untake(o.top);r.top=null;r.vest=false;
     r.notes=r.notes.filter(t=>!/jacket|suit|blazer/i.test(t))}
@@ -567,6 +603,12 @@ function rateOutfit(o){
     add('Leather formality',v,5,why,f==='patent')}   // (suede with a suit 0, was 2: formality outweighs a matching strap and buckle, the owner's decision 2026-11-16)
   {const ms=[watch,belt,clip].filter(Boolean).map(metalOf).filter(Boolean);
     if(ms.length>=2)add('Metals',ms.every(a=>ms.every(b=>metalSame(a,b)))?5:2,5,metalsWhy(watch,belt,clip));}
+  // the pocket square (2026-11-16): only when one is worn with the jacket (pocketScore's rules)
+  if(o.pocket&&top){const p=o.pocket,e=psEcho(p,top,shirt,tie);let v=5,why='';
+    if(psSameTie(p,tie)){v=1;why='the pocket square repeats the tie: it should complement it, not match it'}
+    else if(o.occasion==='funeral'&&!psWhite(p)){v=2;why='a plain white pocket square, or none, is right at a funeral'}
+    else if(!e.hit&&!psWhite(p)){v=3;why='the pocket square picks up no color of the tie, shirt or jacket'}
+    add('Pocket square',v,5,why)}
   if(watch&&shoes&&watchOpts(watch).band==='leather'){const g=leatherGroup(planCol(watch)),sg=leatherGroup(planCol(shoes));
     add('Watch strap',g===sg?5:o.suitDay?4:2,5,`a ${spokenCol(watch)} leather strap with ${spokenCol(shoes)} shoes`)}
   if(socks&&trousers){const v0=sockScore(trousers,shoes,socks,sockEcho(shirt,tie))-(patOf(socks)==='solid'?2:0);let v,why='',hard=false;
@@ -627,7 +669,7 @@ function rateOutfit(o){
    fixes: up to 3 swaps, best first [{slot, item, gain, score}] (new shoes bring their best belt);
    best: the score reached by taking the best swap again and again (the wardrobe's best with this jacket);
    stuck: the labels of the checks that lost points and that no single swap improves (the wardrobe can't do better there). */
-const ADVICE_SLOTS=['shirt','tie','bot','shoes','belt','socks','watch','clip'];
+const ADVICE_SLOTS=['shirt','tie','bot','shoes','belt','socks','watch','clip','pocket'];
 function scoreAdvice(o,pool){
   const swap=(cur,slot,it)=>{const a={...cur,[slot]:it};
     if(slot==='shoes'){let bb=null,bf=-1;for(const b of pool('belt')){const f=beltFit(it,b);if(f!==null&&f>bf){bf=f;bb=b}}a.belt=bb}
@@ -648,7 +690,7 @@ function frozenOutfit(rec,n,last){
     if((id&&!it)||(rec.gone&&rec.gone[s]))(o.gone||(o.gone={}))[s]=true}   // a piece deleted since: the day is rated without it (rateOutfit), not as "Incomplete" (rec.gone: a removed sample piece's slot, kit.js kitSampleDay)
   o.vest=!!(rec.vestOn&&o.suitDay&&hasVest(o.top));
   // a piece taken off that day (rec.off, see takeOff): the record already holds the outfit without it
-  if(rec.off&&(rec.off.top||rec.off.tie)){o.off={top:!!rec.off.top&&!o.top,tie:!!rec.off.tie&&!o.tie};o.suitBot=!!(o.bot&&o.bot.type==='suit');if(o.off.top)o.offKind=o.suitBot||rec.kind==='suit'?'suit':'blazer'}   // (rec.kind: a suit taken off with other pants picked)
+  if(rec.off&&(rec.off.top||rec.off.tie||rec.off.pocket)){o.off={top:!!rec.off.top&&!o.top,tie:!!rec.off.tie&&!o.tie,...(rec.off.pocket&&!o.pocket&&o.top?{pocket:true}:{})};o.suitBot=!!(o.bot&&o.bot.type==='suit');if(o.off.top)o.offKind=o.suitBot||rec.kind==='suit'?'suit':'blazer'}   // (rec.kind: a suit taken off with other pants picked)
   if(rec.worn!==false)for(const s of SLOTS)if(o[s])last[o[s].id]=n;
   return o;
 }

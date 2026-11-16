@@ -14,7 +14,7 @@ module.exports=async({ok,ROOT})=>{
   const old=JSON.parse(fs.readFileSync(path.join(ROOT,'tests/fixtures/garmentworker-old.json'),'utf8')),now=await oldCalls(ROOT);
   for(const k of Object.keys(old))ok(JSON.stringify(now[k])===JSON.stringify(old[k]),`an older app's ${k} request (no types) is byte-identical to before the new garments`);
   // a malformed or foreign types list is no flag
-  const junk=await oldCalls(ROOT,{types:'tee'}),foreign=await oldCalls(ROOT,{types:['scarf','pocketsquare']});
+  const junk=await oldCalls(ROOT,{types:'tee'}),foreign=await oldCalls(ROOT,{types:['scarf','necktie']});
   ok(JSON.stringify(junk.single)===JSON.stringify(old.single)&&JSON.stringify(foreign.single)===JSON.stringify(old.single)&&JSON.stringify(foreign.many)===JSON.stringify(old.many),'types as a string, or naming none of them, changes nothing');
   // the lists (core.js keeps the same: tests/colouraudit and tests/materials compare them whole)
   const CAS_P=['white','cream','lightgrey','midgrey','grey','charcoal','black','navy','darknavy','blue','lightblue','steelblue','slate','green','olive','khaki','tan','brown','burgundy','wine','red','rust','pink','purple','gold'],

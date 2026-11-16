@@ -8,8 +8,8 @@
 const PACK_MAX=31;        // a trip is at most this many days
 const PACK_TRIPS=8;       // ticks are remembered for this many trips
 const PACK_TRIES=3;       // sets of jackets / of shoes tried for a lighter plan
-const PACK_NOUN={suit:['suit','suits'],blazer:['blazer','blazers'],pants:['pair of pants','pairs of pants'],shirt:['shirt','shirts'],tie:['tie','ties'],tieclip:['tie clip','tie clips'],watch:['watch','watches'],shoes:['pair of shoes','pairs of shoes'],belt:['belt','belts'],socks:['pair of socks','pairs of socks'],cufflinks:['pair of cufflinks','pairs of cufflinks'],overcoat:['overcoat','overcoats'],raincoat:['raincoat','raincoats']};
-const PACK_TITLE={suit:'Suits',blazer:'Blazers',pants:'Pants',shirt:'Shirts',tie:'Ties',tieclip:'Tie clips',watch:'Watch',shoes:'Shoes',belt:'Belts',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Coats',raincoat:'Coats'};
+const PACK_NOUN={suit:['suit','suits'],blazer:['blazer','blazers'],pants:['pair of pants','pairs of pants'],shirt:['shirt','shirts'],tie:['tie','ties'],tieclip:['tie clip','tie clips'],pocketsquare:['pocket square','pocket squares'],watch:['watch','watches'],shoes:['pair of shoes','pairs of shoes'],belt:['belt','belts'],socks:['pair of socks','pairs of socks'],cufflinks:['pair of cufflinks','pairs of cufflinks'],overcoat:['overcoat','overcoats'],raincoat:['raincoat','raincoats']};
+const PACK_TITLE={suit:'Suits',blazer:'Blazers',pants:'Pants',shirt:'Shirts',tie:'Ties',tieclip:'Tie clips',pocketsquare:'Pocket squares',watch:'Watch',shoes:'Shoes',belt:'Belts',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Coats',raincoat:'Coats'};
 // the casual garments (2026-11-16): packed when a trip day has one picked by hand (they are never planned); tops with the shirts' kin, jackets with the jackets
 Object.assign(PACK_NOUN,{tee:['T-shirt','T-shirts'],polo:['polo','polos'],henley:['henley','henleys'],sweater:['sweater','sweaters'],sweatshirt:['sweatshirt','sweatshirts'],hoodie:['hoodie','hoodies'],qzip:['quarter-zip','quarter-zips'],cardigan:['cardigan','cardigans'],chore:['chore jacket','chore jackets']});
 Object.assign(PACK_TITLE,{tee:'Casual tops',polo:'Casual tops',henley:'Casual tops',sweater:'Casual tops',sweatshirt:'Casual tops',hoodie:'Casual tops',qzip:'Casual tops',cardigan:'Casual jackets',chore:'Casual jackets'});
@@ -49,7 +49,7 @@ function packDays(t,plan){const out=[],a=keyDate(t.a),E=di(keyDate(t.b));
   return out}
 /* pieces that won't be here by the trip's first day (bought and on the way, or away being cleaned, with a date after it: inRotation in
    core.js): they can't go in the suitcase, so the trip is planned without them (a suit still in the post was packed, audit 2026-11-14) */
-const PACK_SLOT={suit:'top',blazer:'top',pants:'bot',tieclip:'clip',cufflinks:'links',overcoat:'coat',raincoat:'coat'};
+const PACK_SLOT={suit:'top',blazer:'top',pants:'bot',tieclip:'clip',pocketsquare:'pocket',cufflinks:'links',overcoat:'coat',raincoat:'coat'};
 const packLate=t=>{const n=di(keyDate(t.a));return items.filter(i=>i.paused&&arriveN(i)!=null&&!inRotation(i,n))};
 /* day records that leave those pieces out of the trip's days (rec.skip), on top of `src` */
 function packLateRecs(days,late,src){const recs={...src};

@@ -13,3 +13,6 @@ test-results/
 playwright-report/
 # Windows
 Thumbs.db
+
+# replay tests' scratch output (tests/replay/run.js)
+tests/replay/.work/
