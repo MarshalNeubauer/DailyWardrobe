@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	3acab56cba931cc9f1cd
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	npsLeave	renderAdd	shadeRow
@@ -278,7 +279,7 @@ addreadend.test.js	icon-192.png	<loaded>
 addreadend.test.js	icon-512.png	<loaded>
 addreadend.test.js	index.html	<loaded>
 addreadend.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	noMotion	paperCloth	paperSteps	phSigOf	phSm	renderItem	smallPhotos
-addreadend.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow
+addreadend.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow
 addreadend.test.js	manifest.webmanifest	<loaded>
 addreadend.test.js	mannequin.js	<loaded>	@{}
 addreadend.test.js	month.js	<loaded>
@@ -1021,7 +1022,7 @@ asmserverpic.test.js	dress.js	<loaded>	migrateVests
 asmserverpic.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 asmserverpic.test.js	index.html	<loaded>
 asmserverpic.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
-asmserverpic.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
+asmserverpic.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 asmserverpic.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern
 asmserverpic.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
 asmserverpic.test.js	mq/shirt-open.js	<loaded>
@@ -1627,7 +1628,7 @@ camouflage.test.js	icon-192.png	<loaded>
 camouflage.test.js	icon-512.png	<loaded>
 camouflage.test.js	index.html	<loaded>
 camouflage.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	histPush	imgOf	itemBody	itemShown	ivCareSum	ivDetailSum	ivSummary	noMotion	openItem	optLab	paperCloth	paperHint	paperLine	paperRetake	paperSteps	patSummary	photoTools	ptIcon	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
-camouflage.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
+camouflage.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 camouflage.test.js	manifest.webmanifest	<loaded>
 camouflage.test.js	mannequin.js	<loaded>	@{}
 camouflage.test.js	month.js	<loaded>
@@ -1684,7 +1685,7 @@ canvasrefuse.test.js	icon-192.png	<loaded>
 canvasrefuse.test.js	icon-512.png	<loaded>
 canvasrefuse.test.js	index.html	<loaded>
 canvasrefuse.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	imgOf	itemShown	makeSmall	noMotion	paperCloth	paperSteps	phSigOf	renderItem	smallPhotos
-canvasrefuse.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow
+canvasrefuse.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow
 canvasrefuse.test.js	manifest.webmanifest	<loaded>
 canvasrefuse.test.js	mannequin.js	<loaded>	@{}
 canvasrefuse.test.js	month.js	<loaded>
@@ -2022,7 +2023,7 @@ clock.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests
 clock.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedPut	missedSeen	missedSpan	missedTell	recordDays	resetCard	saveDay	whenPulled
 clock.test.js	index.html	<loaded>
 clock.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
-clock.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
+clock.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
 clock.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 clock.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	piecesParts	planOn	shortRest	shortTop	stackSVG
 clock.test.js	mq/shirt-open.js	<loaded>
@@ -2768,7 +2769,7 @@ daysoff.test.js	mq/suit.js	<loaded>
 daysoff.test.js	mq/vest.js	<loaded>
 daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-daysoff.test.js	planner.js	<loaded>
+daysoff.test.js	planner.js	<loaded>	idsAhead	lockStale
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storeFailure
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	addDayOff	appLocale	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	holPast	holYears	isoDate	isoToDate	loadWeather	locCC	nagerKeep	offNameCut	openSettings	refreshHolidays	refreshToday	removeDaysOff	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	toggleHoliday	unit	unitCC	weekFirst	yearDate
@@ -2802,7 +2803,7 @@ dblost.test.js	apple-touch-icon.png	<loaded>
 dblost.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmPileKind	asmWtWants
 dblost.test.js	asm-gl.js	<loaded>
 dblost.test.js	asm-watch.js	<loaded>
-dblost.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave
+dblost.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 dblost.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow
 dblost.test.js	checklist.js	<loaded>	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
 dblost.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
@@ -3000,9 +3001,9 @@ deltasync.test.js	mq/suit.js	<loaded>
 deltasync.test.js	mq/vest.js	<loaded>
 deltasync.test.js	pack.js	<loaded>	packShow
 deltasync.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-deltasync.test.js	planner.js	<loaded>	idsAhead	lockStale
+deltasync.test.js	planner.js	<loaded>	lockStale
 deltasync.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
-deltasync.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
+deltasync.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 deltasync.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit	unitCC	weekFirst
 deltasync.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 deltasync.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
@@ -3499,7 +3500,7 @@ errreport.test.js	icon-192.png	<loaded>
 errreport.test.js	icon-512.png	<loaded>
 errreport.test.js	index.html	<loaded>
 errreport.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	noMotion	renderItem	smallPhotos
-errreport.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
+errreport.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 errreport.test.js	manifest.webmanifest	<loaded>
 errreport.test.js	mannequin.js	<loaded>	@{}
 errreport.test.js	month.js	<loaded>
@@ -3553,7 +3554,7 @@ fieldmerge.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests
 fieldmerge.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	missedTell	recordDays	resetCard	saveDay	scoreCard	whenPulled
 fieldmerge.test.js	index.html	<loaded>
 fieldmerge.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	colBackFirst	histDrop	histPush	itemBody	itemGoneTell	itemShown	itemSynced	ivCareSum	ivDetailSum	ivSummary	noMotion	openItem	optLab	paperCloth	paperHint	paperLine	paperSteps	photoTools	ptIcon	renderItem	renderWardrobe	sheetSlides	smallPhotos	togglePause	wardList	wardPic
-fieldmerge.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDelMany	kitHasSample	kitLastImp	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitTombs	kitTx	kitUnimport	kitUserEdit
+fieldmerge.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDelMany	kitFixOldImports	kitHasSample	kitLastImp	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitTombs	kitTx	kitUnimport	kitUserEdit
 fieldmerge.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 fieldmerge.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
 fieldmerge.test.js	mq/shirt-open.js	<loaded>
@@ -3713,7 +3714,7 @@ fix8r3.test.js	icon-192.png	<loaded>
 fix8r3.test.js	icon-512.png	<loaded>
 fix8r3.test.js	index.html	<loaded>
 fix8r3.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	noMotion	renderItem	smallPhotos
-fix8r3.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
+fix8r3.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 fix8r3.test.js	manifest.webmanifest	<loaded>
 fix8r3.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern
 fix8r3.test.js	month.js	<loaded>	monthFillSoon	monthLink	piecesLine	piecesParts	planOn	shirtWords	stackSVG
@@ -4098,7 +4099,7 @@ homechrome.test.js	icon-192.png	<loaded>
 homechrome.test.js	icon-512.png	<loaded>
 homechrome.test.js	index.html	<loaded>
 homechrome.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	renderItem	smallPhotos
-homechrome.test.js	kit.js	<loaded>	get body	get title	homeAbout	homeAndroid	homeBrowser	homeCopyBtn	homeIOS	homeIPad	homeLabel	homeNeeded	homeNote	homeOpen	homePic	homeRisk	homeShareShort	homeShareStep	homeStandalone	homeSteps	homeTester	kitBs	kitClose	kitDraw	kitEl	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleMigrate	kitStartRow	pic
+homechrome.test.js	kit.js	<loaded>	get body	get title	homeAbout	homeAndroid	homeBrowser	homeCopyBtn	homeIOS	homeIPad	homeLabel	homeNeeded	homeNote	homeOpen	homePic	homeRisk	homeShareShort	homeShareStep	homeStandalone	homeSteps	homeTester	kitBs	kitClose	kitDraw	kitEl	kitFixOldImports	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleMigrate	kitStartRow	pic
 homechrome.test.js	manifest.webmanifest	<loaded>
 homechrome.test.js	mannequin.js	<loaded>	@{}
 homechrome.test.js	month.js	<loaded>
@@ -4322,7 +4323,7 @@ inlineswatch.test.js	mq/suit.js	<loaded>
 inlineswatch.test.js	mq/vest.js	<loaded>
 inlineswatch.test.js	pack.js	<loaded>	packShow
 inlineswatch.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchRemoteRender	fixItemBackdrops	fnv64	lastWorn	listPaused	loadRenders	lookSig	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-inlineswatch.test.js	planner.js	<loaded>	idsAhead	lockStale
+inlineswatch.test.js	planner.js	<loaded>	lockStale
 inlineswatch.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 inlineswatch.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 inlineswatch.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	weekFirst
@@ -4968,7 +4969,7 @@ kvlimit.test.js	mq/suit.js	<loaded>
 kvlimit.test.js	mq/vest.js	<loaded>
 kvlimit.test.js	pack.js	<loaded>	packShow
 kvlimit.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchRemoteRender	fixItemBackdrops	fnv64	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shareLocalPics	workerBase	workerList
-kvlimit.test.js	planner.js	<loaded>	idsAhead	lockStale
+kvlimit.test.js	planner.js	<loaded>	lockStale
 kvlimit.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 kvlimit.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 kvlimit.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	locCC	openSettings	pausedUntil	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	unit	unitCC	weekFirst
@@ -5026,7 +5027,7 @@ linkfix.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
 linkfix.test.js	history.js	<loaded>	checkPlanRules	dropLearn	firstReal	keyDate	lockPast	lockSpan	lockUpcoming	missedCard	missedOpen	recordDays	renderReplanUI	replanCount	resetCard	whenPulled
 linkfix.test.js	index.html	<loaded>
 linkfix.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	renderItem	smallPhotos
-linkfix.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
+linkfix.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
 linkfix.test.js	mannequin.js	<loaded>	@{}
 linkfix.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn
 linkfix.test.js	mq/shirt-open.js	<loaded>
@@ -5254,7 +5255,7 @@ materials.test.js	dress.js	<loaded>	migrateVests	newSuitVest
 materials.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 materials.test.js	index.html	<loaded>
 materials.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	colBackFirst	histDrop	histPush	itemBody	itemShown	ivCareSum	ivDetailSum	ivSummary	noMotion	openItem	optLab	paperCloth	paperHint	paperLine	paperSteps	photoTools	ptIcon	renderItem	renderWardrobe	sete	sheetSlides	smallPhotos	wardList	wardPic
-materials.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitColour	kitHasSample	kitLeather	kitMaterial	kitNorm	kitPattern	kitRead	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSplit	kitStartRow	kitType	kitUserEdit
+materials.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitColour	kitCols	kitFixOldImports	kitHasSample	kitHead	kitLeather	kitLeft	kitMaterial	kitNorm	kitPatWords	kitPattern	kitQtyIn	kitRead	kitRow	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSplit	kitStartRow	kitType	kitTypeOne	kitUserEdit	kitWords
 materials.test.js	mannequin.js	<loaded>	@{}
 materials.test.js	month.js	<loaded>
 materials.test.js	mq/shirt-open.js	<loaded>
@@ -6552,7 +6553,7 @@ ownmaterials.test.js	dress.js	<loaded>	dressNewItem	dressOn	migrateVests	newSuit
 ownmaterials.test.js	history.js	<loaded>	checkPlanRules	dropLearn	renderReplanUI	replanCount	whenPulled
 ownmaterials.test.js	index.html	<loaded>
 ownmaterials.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	colBackFirst	dropItem	histDrop	histPush	itemBody	itemShown	ivCareSum	ivDetailSum	ivSummary	noMotion	openItem	optLab	paperCloth	paperHint	paperSteps	photoTools	ptIcon	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
-ownmaterials.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
+ownmaterials.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 ownmaterials.test.js	mannequin.js	<loaded>	@{}
 ownmaterials.test.js	month.js	<loaded>	nextWorkday
 ownmaterials.test.js	mq/shirt-open.js	<loaded>
@@ -7453,7 +7454,7 @@ records.test.js	icon-192.png	<loaded>
 records.test.js	icon-512.png	<loaded>
 records.test.js	index.html	<loaded>
 records.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	closeItem	colBackFirst	cropSource	histDrop	histPush	imgOf	itemBody	itemShown	ivCareSum	ivDetailSum	ivSummary	makeSmall	noMotion	openItem	optLab	paperCloth	paperHint	paperLine	paperSteps	patSummary	phSigOf	phSm	photoTools	ptIcon	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
-records.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
+records.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 records.test.js	manifest.webmanifest	<loaded>
 records.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 records.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -8728,7 +8729,7 @@ samplesync.test.js	icon-192.png	<loaded>
 samplesync.test.js	icon-512.png	<loaded>
 samplesync.test.js	index.html	<loaded>
 samplesync.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	renderItem	smallPhotos
-samplesync.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAdopt	kitDayOwn	kitDelMany	kitEdited	kitHasSample	kitItem	kitOldMine	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleRemove	kitSampleSig	kitSampleUndo	kitStartRow	kitStore	kitTombs	kitTx
+samplesync.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAdopt	kitDayOwn	kitDelMany	kitEdited	kitFixOldImports	kitHasSample	kitItem	kitOldMine	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleRemove	kitSampleSig	kitSampleUndo	kitStartRow	kitStore	kitTombs	kitTx
 samplesync.test.js	manifest.webmanifest	<loaded>
 samplesync.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 samplesync.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -9890,7 +9891,7 @@ staledevice.test.js	mq/suit.js	<loaded>
 staledevice.test.js	mq/vest.js	<loaded>
 staledevice.test.js	pack.js	<loaded>	packShow
 staledevice.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
-staledevice.test.js	planner.js	<loaded>	idsAhead	lockStale
+staledevice.test.js	planner.js	<loaded>	lockStale
 staledevice.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 staledevice.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 staledevice.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	weekFirst
@@ -10273,7 +10274,7 @@ tagging.test.js	mq/suit.js	<loaded>
 tagging.test.js	mq/vest.js	<loaded>
 tagging.test.js	pack.js	<loaded>	packShow
 tagging.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchRemoteRender	fixItemBackdrops	fnv64	jsq	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	srcOk	workerBase	workerList
-tagging.test.js	planner.js	<loaded>
+tagging.test.js	planner.js	<loaded>	idsAhead	lockStale
 tagging.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 tagging.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errSoon	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 tagging.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	unit	unitCC	weekFirst
@@ -11288,7 +11289,7 @@ w3fix6.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
 w3fix6.test.js	history.js	<loaded>	checkPlanRules	dropLearn	renderReplanUI	replanCount	whenPulled
 w3fix6.test.js	index.html	<loaded>
 w3fix6.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	colBackFirst	itemShown	phSigOf	renderItem	smallPhotos
-w3fix6.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeBrowser	homeIOS	homeIPad	homeLabel	homeNeeded	homeNote	homePic	homeRisk	homeShareStep	homeStandalone	homeSteps	homeTester	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit	safariRemind
+w3fix6.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeBrowser	homeIOS	homeIPad	homeLabel	homeNeeded	homeNote	homePic	homeRisk	homeShareStep	homeStandalone	homeSteps	homeTester	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit	safariRemind
 w3fix6.test.js	mannequin.js	<loaded>	@{}
 w3fix6.test.js	month.js	<loaded>	nextWorkday
 w3fix6.test.js	mq/shirt-open.js	<loaded>
@@ -11343,7 +11344,7 @@ w3ownnames.test.js	icon-192.png	<loaded>
 w3ownnames.test.js	icon-512.png	<loaded>
 w3ownnames.test.js	index.html	<loaded>
 w3ownnames.test.js	itemsheet.js	<loaded>	@addEventListenerpopstate	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	colBackFirst	histPush	itemBody	itemShown	ivCareSum	ivDetailSum	ivSummary	noMotion	openItem	optLab	paperLine	photoTools	ptIcon	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
-w3ownnames.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
+w3ownnames.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 w3ownnames.test.js	manifest.webmanifest	<loaded>
 w3ownnames.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern
 w3ownnames.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -11398,7 +11399,7 @@ w3plan.test.js	icon-192.png	<loaded>
 w3plan.test.js	icon-512.png	<loaded>
 w3plan.test.js	index.html	<loaded>
 w3plan.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	noMotion	renderItem	renderWardrobe	smallPhotos	wardPic
-w3plan.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
+w3plan.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
 w3plan.test.js	manifest.webmanifest	<loaded>
 w3plan.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern
 w3plan.test.js	month.js	<loaded>	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
