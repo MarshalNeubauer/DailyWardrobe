@@ -17,12 +17,20 @@ const texPat=(t,p)=>t==='shirt'&&TEXTURE_PATS.includes(patBase(p)||'');
 /* a tie tagged woven or tonal check: read by Claude only (tagging.js claudeOnly), and it keeps whatever Claude finds: small figures (motif),
    stripes or checks (bands), or the weave itself (tex: a tonal tie's raised grid, drawn a little lighter or darker than the ground) */
 const TIE_WEAVES=['woven','tonal-check'],tieWeave=(t,p)=>t==='tie'&&TIE_WEAVES.includes(patBase(p)||'');
-const ownSett=i=>{const s=i&&i.sett,p=patBase(i&&i.pattern)||'';if(!s||(MOTIF_PATS.includes(p)&&!s.motif))return null;return tieWeave(i.type,i.pattern)?s:texPat(i.type,i.pattern)?(s.tex||s.motif?s:null):(s.tex?null:s)};   // a weave pattern takes a texture or a figure (motif) reading
+const ownSett=i=>{const s=i&&i.sett,p=patBase(i&&i.pattern)||'';if(!s||(MOTIF_PATS.includes(p)&&!s.motif))return null;if(s.camo||camoPat(i.pattern))return s.camo&&camoPat(i.pattern)?s:null;/* a camouflage reading only on a camouflage, and nothing else on one */return tieWeave(i.type,i.pattern)?s:texPat(i.type,i.pattern)?(s.tex||s.motif?s:null):(s.tex?null:s)};   // a weave pattern takes a texture or a figure (motif) reading
 /* the item's own reading; without one, its own pattern's look (an owner pattern added through "+ New pattern or texture" with Claude's
    drawing recipe, settings.custom.patterns[].look), on any kind of item: so the drawings, the swatches and the painted pictures all
    draw a new pattern as described, in the item's own colours (2026-11-15; the rule "texture readings only on shirts and ties" is for
    readings, not for an own pattern's look) */
-const usableSett=i=>settToTag(i,ownSett(i))||lookOf(i);
+const usableSett=i=>settToTag(i,ownSett(i))||lookOf(i)||camoLook(i);
+/* a camouflage with no reading of its own (tagged camouflage, no close-up read yet): blotches in the item's own colours, the main colour as
+   the ground, its second and third, and a step lighter and darker (as lookSett's roles), seeded by the item, so it is never drawn plain
+   (2026-11-16) */
+const CAMO_SHARES=[.38,.24,.16,.12,.1],CAMO_TR=3;
+function camoLook(i){if(!i||!camoPat(i.pattern))return null;const main=colOf(i),sec=i.secondaryColor&&COLORS[i.secondaryColor]||null,th=thirdOf(i),key=JSON.stringify(['camo',i.id,main,sec,th]);
+  if(lookMemo.has(key))return lookMemo.get(key);const lab=rgbLab(...hexRgb(main)),step=d=>labHex([Math.max(0,Math.min(100,lab[0]+d)),lab[1],lab[2]]);
+  const cols=[main,sec||step(-14),th||step(12),step(-26),step(22)];let h=5381;for(const ch of String(i.id||key))h=(Math.imul(h,33)+ch.charCodeAt(0))>>>0;
+  const s={v:5,camo:{cols,shares:CAMO_SHARES.slice(),seed:h%100000},tr:CAMO_TR,cr:1,look:'cm'+h.toString(36)};if(lookMemo.size>200)lookMemo.clear();lookMemo.set(key,s);return s}
 /* a jacket's or pants' band reading whose ground is far from the selected color is drawn in the selected color (2026-11-15, the owner's
    checkered blue pants: tagged Heathered navy #27344f, the reading's ground #616870 and lines #93a1b2 from a lifted close-up, drawn mean
    L* 50 against 22, ΔE00 26, "washed out"): when the widest band is over SETT_TAG_DE from colOf, it becomes colOf and every other band
@@ -59,7 +67,7 @@ function lookSett(i,look){const main=colOf(i),sec=i.secondaryColor&&COLORS[i.sec
   else if(look.motif&&Array.isArray(look.motif.figs))s={v:3,motif:{grid:look.motif.grid==='diagonal'?'diagonal':'straight',ground:main,figs:look.motif.figs.map(f=>({shape:f.shape,place:f.place,size:f.size,cols:[role(f.colour)],...(f.bmp?{bmp:f.bmp}:{})})),aspect:look.motif.aspect||1,off:!!look.motif.off},a:look.motif.grid==='diagonal'?45:0,cr,tr,look:sig};
   if(lookMemo.size>200)lookMemo.clear();lookMemo.set(key,s);return s}
 /* what a pattern reading looks like, for photo keys: the band colours, or the motif's ground, figures and colours */
-const settSig=s=>!s?'':s.tex?'t'+s.tex.grid.join('')+Math.round(s.tex.rel*100)+'/'+(s.tex.aspect||''):s.motif?'m'+[s.motif.grid,s.motif.ground,s.motif.aspect||1,s.motif.off||0,...s.motif.figs.map(f=>[f.shape,f.place,Math.round(f.size*100),...f.cols,f.centre||'',(f.bmp||[]).join('/')].join(','))].join(';'):(s.bands||[]).map(b=>b[0]).join('');
+const settSig=s=>!s?'':s.camo?'c'+s.camo.cols.join('')+s.camo.shares.map(v=>Math.round(v*100)).join('.')+'/'+s.camo.seed+'/'+(s.tr||''):s.tex?'t'+s.tex.grid.join('')+Math.round(s.tex.rel*100)+'/'+(s.tex.aspect||''):s.motif?'m'+[s.motif.grid,s.motif.ground,s.motif.aspect||1,s.motif.off||0,...s.motif.figs.map(f=>[f.shape,f.place,Math.round(f.size*100),...f.cols,f.centre||'',(f.bmp||[]).join('/')].join(','))].join(';'):(s.bands||[]).map(b=>b[0]).join('');
 
 /* region -> luminance grid (downscaled to at most 256px) */
 function lumGrid(src,sx,sy,size){
