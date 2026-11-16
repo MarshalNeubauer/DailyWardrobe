@@ -61,9 +61,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.click('#cn-add');await p.waitForFunction(()=>items.find(x=>x.id==='t1').primaryColor==='ownfadedburgundy');
     e=await p.evaluate(()=>{const c=settings.custom.colors.find(x=>x.key==='ownfadedburgundy');openColPick('e','t2','primaryColor');
       const r={c,own:[...document.querySelectorAll('#col-sheet .cnown .cptile[data-c="ownfadedburgundy"]')].length,fam:[...document.querySelectorAll('#col-sheet .cpgrid:not(.cnown):not(.cpai) .cptile[data-c="ownfadedburgundy"]')].length};
-      closeColPick();openColPick('e','s1','primaryColor');r.suit=!!document.querySelector('#col-sheet .cptile[data-c="ownfadedburgundy"]');closeColPick();return r});
-    ok(e.c&&e.c.base==='wine'&&e.c.hex==='#7a3b47'&&e.c.types.join()==='tie'&&!e.c.accent,'"Add … and use it" adds it to settings.custom with its base and exact shade, for ties ('+JSON.stringify(e.c)+')');
-    ok(e.own===1&&e.fam===1&&!e.suit,'it shows under "Your colors" and in its color family on another tie, and not on a suit');
+      closeColPick();openColPick('e','s1','primaryColor');const ts=[...document.querySelectorAll('#col-sheet .cptile[data-c="ownfadedburgundy"]')];r.suit=ts.some(b=>!b.closest('.cpother'));r.suitOther=ts.some(b=>b.closest('.cpother'));closeColPick();return r});
+    ok(e.c&&e.c.base==='wine'&&e.c.hex==='#7a3b47'&&e.c.types.join()==='tie,pocketsquare'&&!e.c.accent,'"Add … and use it" adds it to settings.custom with its base and exact shade, for ties and pocket squares ('+JSON.stringify(e.c)+')');
+    ok(e.own===1&&e.fam===1&&!e.suit&&e.suitOther,'it shows under "Your colors" and in its color family on another tie; on a suit only under "Your other colors"');
     // ΔE ≤ 3: "That's your …"
     reply=()=>[200,{...COL,name:'mushroom',hex:'#8f8273',existing:'taupe',dE:2.3,plansAs:'taupe',match:'existing'}];
     await p.evaluate(()=>{openColPick('e','s1','primaryColor')});await p.click('#cn-open');await p.fill('#cn-text','mushroom');await p.click('#cn-ask');await p.waitForSelector('#cn-res');

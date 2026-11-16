@@ -66,8 +66,8 @@ as a main color and as a stripe or motif color. The owner may also have colors o
           wine") and filler. Never a brand or trademark unless the owner wrote one.
 
 3. Reuse before inventing (existing, match):
-   existing - the key, from THIS item's list (main or stripe/motif, as asked) or the owner's own colors for this kind
-              of item, that is closest to your hex to the eye.
+   existing - the key, from THIS item's list (main or stripe/motif, as asked) or any of the owner's own colors (one
+              made for another kind of item can be used for this one too), that is closest to your hex to the eye.
    match    - "existing" when that color already IS what the owner described: the same color name or a usual
               synonym (navy blue = navy, sky blue = lightblue, ink, ink navy, ink blue and midnight navy = darknavy, not navy, mushroom = taupe, mustard = gold,
               butter = paleyellow, camel = tan, lilac = lavender, ivory = cream), or a shade a person would not tell
@@ -296,7 +296,7 @@ function ownLists(c) {
   return { colors, patterns };
 }
 function ownerText(what, own) {
-  if (what === 'colour') return own.colors.length ? 'The owner\'s own colors (answer with the key when one fits, like a listed color, for the kinds of item shown):\n'
+  if (what === 'colour') return own.colors.length ? 'The owner\'s own colors (answer with the key when one fits, like a listed color; one made for other kinds of item can be used for this one too):\n'
     + own.colors.map(c => `  ${c.key} = ${c.name} (${c.hex})${c.base ? `, behaves like ${c.base}` : ''}, for ${c.types.join(', ') || 'any type'}${c.accent ? ', also as a stripe or motif color' : ''}`).join('\n') : '';
   return own.patterns.length ? 'The owner\'s own patterns (answer with the key when one names it, for the kinds of item shown):\n'
     + own.patterns.map(p => `  ${p.key} = ${p.name}: ${p.desc || 'no description'}${p.base ? `, planned like ${p.base}` : ''} (${p.types.join(', ') || 'any type'})`).join('\n') : '';
@@ -340,7 +340,10 @@ function cleanDescribeColour(a, b, own, desc) {
   const typed = desc.match(/#[0-9a-f]{6}\b/i), hex = (typed ? typed[0] : String(a.hex || '')).toLowerCase();
   if (!HEX_RE.test(hex)) return { status: 422, body: { error: 'no colour', detail: 'Claude gave no usable shade. Try describing it another way.' } };
   const t = TYPE_LIST.includes(b.type) ? b.type : 'suit', accent = b.field === 'accent', list = (TYPE_COLORS[t] || [COLOR_LIST, COLOR_LIST])[accent ? 1 : 0];
-  const ownFor = own.colors.filter(c => (!c.types.length || c.types.includes(t)) && (!accent || c.accent));
+  // every own colour (2026-11-16, the owner's coyote brown T-shirt: made on pants, it was the "existing" one nowhere else, so the app's
+  // "There is already a color with that name" left no way to use it): the app offers one of another kind for this kind once it is used
+  // (ownColOffer), so an existing own colour can always be set
+  const ownFor = own.colors;
   const plansAs = list.includes(a.plansAs) ? a.plansAs : baseFor(hex, list);
   const lab = labHex(hex), hexOf = k => (own.colors.find(c => c.key === k) || {}).hex || COLOR_HEX[k];
   let existing = list.includes(a.existing) || ownFor.some(c => c.key === a.existing) ? a.existing : null;

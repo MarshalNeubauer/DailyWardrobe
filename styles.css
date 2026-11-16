@@ -1048,6 +1048,7 @@ body.nocon .conn-only,.connhide{display:none!important}
 .cpseg button.on{background:var(--ink);color:var(--bg)}
 .cphelp{margin:10px 0 2px;font-size:.8125rem;color:var(--mut)}
 .cph{margin:14px 0 6px;font-size:.8125rem;font-weight:700;color:var(--mut);text-transform:none}
+.cpothx{display:block;margin:-2px 0 6px;font-size:.75rem;color:var(--mut)}
 .cpgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 @media(min-width:520px){.cpgrid{grid-template-columns:repeat(6,1fr)}}
 .cptile{display:flex;flex-direction:column;gap:4px;align-items:stretch;margin:0;padding:5px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:inherit;font:inherit;text-align:center;cursor:pointer;min-width:0}

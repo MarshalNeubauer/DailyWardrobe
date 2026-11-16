@@ -109,7 +109,10 @@ async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick
   if(k==='accents'){if(!sel||!COLORS[sel]||!it)return;closeColPick();await accSet(src,ref,[...accentsOf(it),sel]);return}   // "Also has": added at the end
   if(sel===NEW_COL){try{v=k==='pattern'?await patAddNew(it,patNewFor(it)):await colAddNew(it,k,colNewFor(it,k))}catch(e){toast(e.message||'That could not be added.');return}}
   closeColPick();if(v===cur)return;
-  if(src==='q')setq(ref,k,v);else await sete(ref,k,v)}
+  // one of the owner's colours not offered for this kind yet ("Your other colors", or "Use …" from New color): offered for it from now on
+  const off=k!=='pattern'&&v&&CUSTOM_COL[v]&&it?await ownColOffer(v,it.type,k!=='primaryColor'):null;
+  if(src==='q')setq(ref,k,v);else await sete(ref,k,v);
+  if(off)toast(off.msg,4000,{label:'Undo',fn:off.undo})}
 function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==='pattern'?renderPatNew(keep):renderColNew(keep);
   if(colPick&&colPick.k==='pattern')return renderPatPick(keep);const el=$('#col-sheet'),it=colTarget();if(!el||!it)return;const {k,sel,cur,view}=colPick,y=el.scrollTop;
   const photo=it.photo||(typeof wardPic==='function'?wardPic(it):null),pic=view==='draw'?null:view==='tex'?it.texture:photo,vs=cpViews(it,photo);
@@ -123,6 +126,9 @@ function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==
   const mine=colChoices(it,k).filter(c=>CUSTOM_COL[c]),
     ownH=!COLS_BY[it.type]?'':mine.length?`<h4 class="cph">Your colors</h4><div class="cpgrid cnown">${mine.map(c=>tile(c)).join('')}<button type="button" class="cptile cpnewt" id="cn-open" onclick="openColNew()"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New color</span></button></div>`
       :`<h4 class="cph cpownh">Your colors</h4><div class="cpgrid cnown cnslim"><button type="button" class="cpnewl" id="cn-open" onclick="openColNew()"><span aria-hidden="true">+</span> New color</button></div>`;
+  // the owner's colours made for other kinds of item (2026-11-16, the owner's coyote brown T-shirt): picking one offers it for this kind too (useColPick)
+  const others=acc||!COLS_BY[it.type]?[]:Object.keys(CUSTOM_COL).filter(c=>COLORS[c]&&!colChoices(it,k).includes(c)),
+    otherH=others.length?`<h4 class="cph" id="cp-other-h">Your other colors</h4><small class="cpothx">Made for other kinds of item. Pick one and it is offered for ${esc(typePl(it.type))} too.</small><div class="cpgrid cnown cpother" aria-labelledby="cp-other-h">${others.map(c=>tile(c)).join('')}</div>`:'';
   // without a photo the drawing stands in, drawn in the colour being looked at (Claude's new colour isn't one yet: drawn as it is)
   const drawn=sel===NEW_COL||sel===cur?it:acc?{...it,accents:[...accentsOf(it),sel]}:{...it,[k]:sel==='none'?null:sel,...(k==='primaryColor'?{color:undefined}:{})};
   el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">${acc?'Add a color it also has':k==='secondaryColor'&&it.type==='socks'?'Toe cap color':k==='primaryColor'&&it.type!=='watch'?'Choose the color':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' color':'')}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
@@ -130,7 +136,7 @@ function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==
 ${cpSeg(vs,view)}</div>
 ${acc?'':colAskHtml(it,k,tile,name)}
 <p class="cphelp">${acc?`Pick a further color you can see in the pattern, beyond its main ${it.tertiaryColor?'three':'colors'}: a speck or a logo doesn’t count.`:pic?`Tap a color to see it right beside your ${view==='tex'?'close-up':'photo'}. Pick the one whose edge you can hardly see.`:cpFig(it)?`Tap a color to see your ${(TYPES[it.type]||'item').toLowerCase()} drawn in it.`:'Tap a color to see it right beside your item. Pick the one whose edge you can hardly see.'}</p>
-${acc?'':ownH}
+${acc?'':ownH}${otherH}
 ${near.length?`<h4 class="cph">Closest to your ${it.meas.src==='closeup'?'close-up':'photo'}</h4><div class="cpgrid cpnear">${near.map(x=>tile(x.c,`<small class="cpd">${dWord(x.d)}</small>`)).join('')}</div>`:''}
 ${k==='primaryColor'||acc?'':`<div class="cpgrid">${tile('none')}</div>`}${groups}
 <div class="cpbar">${acc?`<button type="button" class="pri" id="acc-use" onclick="useColPick()"${sel?'':' disabled'}>${sel?esc('Add '+name(sel)):'Pick a color'}</button>`:`<button type="button" class="pri" onclick="useColPick()">${esc(sel===NEW_COL?'Add '+name(sel)+' to your colors and use it':sel===cur?'Keep '+name(sel):'Use '+name(sel))}</button>`}</div>`;
@@ -189,9 +195,10 @@ async function colAskUseAll(){const it=colTarget(),a=it&&colAsk[it.id+'|c'];if(!
   try{for(const f of COL_FIELDS(it))if(w[f]&&w[f].nc)w[f]=await colAddNew(it,f,w[f].nc)}catch(e){toast(e.message||'That could not be added.');return}
   closeColPick();
   const ch=COL_FIELDS(it).filter(f=>w[f]!==((f==='primaryColor'?primaryCol(it):it[f])||null));if(!ch.length)return;
-  if(src==='q'){for(const f of ch)setq(ref,f,w[f]||'none');return}
+  const offs=[];for(const f of ch)if(w[f]&&CUSTOM_COL[w[f]]){const o=await ownColOffer(w[f],it.type,f!=='primaryColor');if(o)offs.push(o.msg)}   // an own colour of another kind: offered for this one too
+  if(src==='q'){for(const f of ch)setq(ref,f,w[f]||'none');if(offs.length)toast(offs.join(' '),4000);return}
   for(const f of ch)it[f]=w[f];delete it.color;
-  if(ch.includes('primaryColor')&&it.swSrc==='tex')await refreshSwatch(it);await put(it);cache={};renderWardrobe();toast('Saved Claude’s colors.')}
+  if(ch.includes('primaryColor')&&it.swSrc==='tex')await refreshSwatch(it);await put(it);cache={};renderWardrobe();toast(['Saved Claude’s colors.',...offs].join(' '),offs.length?4000:2500)}
 function colAskHtml(it,k,tile,name){const a=colAsk[it.id+'|c'];
   if(!it.texture&&!TEXTURE_TYPES.includes(it.type))return '';   // shoes, belts, watches, socks, coats, clips, links have no close-up: no dead-end hint (2026-11-15)
   if(!it.texture)return `<div class="cpask cpaskhint"><div class="cpasktx"><b>Not sure?</b> <small>Add a close-up${colPick.src==='e'?' (Close-up, under the photos)':''} and Claude can read the colors.</small></div></div>`;
@@ -203,7 +210,9 @@ function colAskHtml(it,k,tile,name){const a=colAsk[it.id+'|c'];
   // in Claude's own words where it gave them ("mushroom"), else the listed names
   const said=fs.map(f=>a.own&&a.own[f]?a.own[f].name:a[f]&&a[f]!=='none'?colName(a[f]):null).filter(Boolean).map(s=>`<b>${esc(cap1(s))}</b>`);
   const nc=colNewFor(it,k),pick=[a[k]].concat(k==='primaryColor'&&a.altColor&&a.altColor!==a[k]?[a.altColor]:[]).filter(c=>c==='none'||COLORS[c]);
-  const tiles=(nc?[tile(NEW_COL,`<small class="cpd cpaid">New · Claude’s exact</small>`)]:[]).concat(pick.map((c,j)=>tile(c,`<small class="cpd cpaid">${j?'Claude’s 2nd':nc?'Closest you have':'Claude’s pick'}</small>`)));
+  // Claude's own name is one of the owner's colours (made for another kind, say: its listed pick is then only the nearest built-in): that one first
+  const ow=a.own&&a.own[k]&&a.own[k].name?ownColFind(a.own[k].name):null,had=ow&&COLORS[ow]&&!pick.includes(ow)?ow:null;
+  const tiles=(nc?[tile(NEW_COL,`<small class="cpd cpaid">New · Claude’s exact</small>`)]:had?[tile(had,`<small class="cpd cpaid">Your color</small>`)]:[]).concat(pick.map((c,j)=>tile(c,`<small class="cpd cpaid">${j?'Claude’s 2nd':nc?'Closest you have':'Claude’s pick'}</small>`)));
   // more than one colour named: one tap takes them all (offered while any field would change, the one open included)
   const all=said.length>1&&colAllDiff(it,a).length>0;
   return `<div class="cpask done"><div class="cpasktx"><b>Claude reads it as ${said.length>1?said.slice(0,-1).join(', ')+' and '+said[said.length-1]:said[0]}</b>${cf&&k==='primaryColor'?`<small>${cap1(cf)} confidence on the main color.</small>`:''}${a.newColor?`<small>None of the listed colors quite fit: Claude calls it ${esc(a.newColor.name)}${a.newColor.why?`, ${esc(a.newColor.why)}`:''}.</small>`:''}</div>
@@ -423,6 +432,9 @@ ${fold}
 <div class="cpbar">${nc.err?`<p class="formerr cnbarerr" id="cn-error" role="alert">${esc(nc.err)}</p>`:''}${bar}</div>`;   /* the error sits in the sticky bar, over its button (W2-16-05: above the bar it was cut through by the bar's top edge) */
   if(keep)el.scrollTop=y}
 async function colNewAdd(){const nc=colPick&&colPick.newc,it=colTarget();if(!nc||!it)return;const name=cap1(String(nc.name||'').trim());let key;
+  // a colour of one's own by that name already (made for another kind, say): that one is used, and offered for this kind (useColPick),
+  // not refused as "There is already a color with that name" (2026-11-16, the owner's coyote brown T-shirt)
+  const had=nc.kind==='colour'&&colPick.src!=='s'?ownColFind(name):null;if(had){cnDone(had);return}
   try{key=nc.kind==='pattern'?await addCustomPattern({name,desc:(nc.res&&nc.res.description)||nc.desc||'',base:cnPatBase(it,nc),types:nc.types,look:nc.look||null})
     :await addCustomColor({name,hex:nc.hex,base:cnColBase(it,nc),types:nc.types,accent:nc.accent})}
   catch(e){nc.err=e.message||'That could not be added.';renderColPick(true);return}
@@ -675,6 +687,7 @@ async function rdUse(parts){const me=rd;if(!me||me.state!=='result'||me.applying
       if(h==='a'){v=x.list;name='also '+rdAccWords(x.list);await rdSetAcc(me.src,me.id,v)}
       else if(h==='m'){v=x.key;name=x.name;if(x.isNew){const had=matsFor(now.type).includes(v);if(!await addOwnMaterial(now.type,v))throw new Error('That material couldn’t be added.');added=!had}await rdSetMat(me.src,me.id,v)}
       else{if(how==='existing'){v=x.ex;name=h==='c'?cap1(colName(v)):cap1(patName(v))}else{const a=h==='c'?await rdAddCol(now,x):await rdAddPat(now,x);v=a.key;added=a.added;name=x.name}
+        if(h==='c'&&CUSTOM_COL[v])await ownColOffer(v,now.type,false);   // an own colour of another kind: offered for this one too
         await rdSet(me.src,me.id,h==='c'?'primaryColor':'pattern',v)}
       x.done='used';x.usedName=name;
       if(!rdLast||rdLast.run!==me.run)rdLast={src:me.src,id:me.id,run:me.run,c:null,p:null,m:null,a:null};rdLast[h]={prev,added:added?v:null,name,kind:h==='c'?'colors':h==='m'?'materials':h==='a'?'accents':'patterns',type:now.type}}}
