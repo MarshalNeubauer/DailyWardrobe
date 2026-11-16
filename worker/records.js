@@ -20,6 +20,10 @@ const strictOk = (v, d = 0) => typeof v === 'string' ? HEX_RE.test(v) || WORD_RE
   : Array.isArray(v) ? v.every(x => strictOk(x, d + 1)) : typeof v === 'object' ? Object.entries(v).every(([k, x]) => WORD_RE.test(k) && strictOk(x, d + 1)) : false;
 const freeOk = (v, d = 0) => typeof v === 'string' ? !BAD_CH.test(v) : typeof v === 'number' ? isFinite(v) : v == null || typeof v === 'boolean' ? true : d > 8 ? false
   : Array.isArray(v) ? v.every(x => freeOk(x, d + 1)) : typeof v === 'object' ? Object.entries(v).every(([k, x]) => WORD_RE.test(k) && freeOk(x, d + 1)) : false;
+// (core.js recProse: prose may hold quotes, nothing that opens a tag; a "hex" a hex colour)
+const PROSE = ['weave', 'patternSpec', 'tagAI', 'meas', 'away'];
+const proseOk = (v, d = 0, k = '') => typeof v === 'string' ? (/^hex$/i.test(k) ? HEX_RE.test(v) : !/[<>`]/.test(v)) : typeof v === 'number' ? isFinite(v) : v == null || typeof v === 'boolean' ? true : d > 8 ? false
+  : Array.isArray(v) ? v.every(x => proseOk(x, d + 1, k)) : typeof v === 'object' ? Object.entries(v).every(([kk, x]) => WORD_RE.test(kk) && proseOk(x, d + 1, kk)) : false;
 function itemWrong(it) {
   if (!it || typeof it !== 'object' || Array.isArray(it)) return 'an item that is not a record';
   if (typeof it.id !== 'string' || !ID_RE.test(it.id)) return 'an item id';
@@ -33,6 +37,7 @@ function itemWrong(it) {
     else if (NUMS.includes(k)) { if (v != null && !(typeof v === 'number' && isFinite(v))) return 'a number'; }
     else if (TEXT.includes(k)) { if (v != null && typeof v !== 'string' && typeof v !== 'number') return 'a text field'; }
     else if (k === 'sett') { if (!strictOk(v)) return 'a pattern reading'; }
+    else if (PROSE.includes(k)) { if (!proseOk(v)) return 'the field ' + k; }
     else if (!freeOk(v)) return 'the field ' + k;
   }
   return null;

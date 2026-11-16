@@ -393,6 +393,11 @@ const recFree=(v,d=0)=>typeof v==='string'?recClean(v):typeof v==='number'?(isFi
 /* a pattern reading (sett: bands, crossing lines, motif, texture): numbers, hex colours and plain words only */
 const recStrict=(v,d=0)=>typeof v==='string'?(REC_HEX.test(v)||REC_WORD.test(v)?v:null):typeof v==='number'?(isFinite(v)?v:null):v==null||typeof v==='boolean'?v:d>8?null:
   Array.isArray(v)?v.map(x=>recStrict(x,d+1)):typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>REC_WORD.test(k)).map(([k,x])=>[k,recStrict(x,d+1)])):null;
+/* Claude's and the app's own structured words (weave, patternSpec, tagAI, meas, away): prose may hold quotes ("a 1/2" stripe") and stays
+   as it is, but nothing that opens a tag; a colour under a "hex" key (patternSpec.across bands reach a fill) must be a hex colour */
+const REC_PROSE=['weave','patternSpec','tagAI','meas','away'];
+const recProse=(v,d=0,k='')=>typeof v==='string'?(/^hex$/i.test(k)?(REC_HEX.test(v)?v:null):v.replace(/[<>`]/g,'')):typeof v==='number'?(isFinite(v)?v:null):v==null||typeof v==='boolean'?v:d>8?null:
+  Array.isArray(v)?v.map(x=>recProse(x,d+1,k)):typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([kk])=>REC_WORD.test(kk)).map(([kk,x])=>[kk,recProse(x,d+1,kk)])):null;
 const recCol=c=>c==null||c===''?c:typeof c!=='string'?undefined:COLORS[c]||REC_KEY.test(c)&&/^own/.test(c)?c:normCol(c)||(REC_KEY.test(c)?c:undefined);
 const noBidi=s=>String(s==null?'':s).replace(BIDI_RE,'');
 function cleanRecord(it){
@@ -402,11 +407,12 @@ function cleanRecord(it){
     if(k==='id'||k==='type'){o[k]=v;continue}
     if(!REC_WORD.test(k)||k==='__proto__')continue;
     if(REC_COLS.includes(k)){const c=recCol(v);if(c!==undefined)o[k]=c}
-    else if(REC_PICS.includes(k)){if(typeof v==='string'&&REC_PHOTO.test(v))o[k]=v}
+    else if(REC_PICS.includes(k)){if(v==null||typeof v==='string'&&(REC_PHOTO.test(v)||/^dwph:[0-9a-f]{20}$/.test(v)))o[k]=v}   // (a backup's own photo reference too)
     else if(REC_KEYS.includes(k)){if(v==null||typeof v==='string'&&REC_KEY.test(v))o[k]=v}
     else if(REC_NUMS.includes(k)){if(v==null||typeof v==='number'&&isFinite(v))o[k]=v}
     else if(k in REC_TEXT){if(v==null)o[k]=v;else if(typeof v==='string'||typeof v==='number')o[k]=noBidi(v).slice(0,REC_TEXT[k])}
     else if(REC_STRICT.includes(k))o[k]=recStrict(v);
+    else if(REC_PROSE.includes(k))o[k]=recProse(v);
     else o[k]=recFree(v)}
   return o}
 function cleanDay(d){

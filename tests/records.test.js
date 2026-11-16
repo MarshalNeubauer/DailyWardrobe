@@ -67,8 +67,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // ---- records stored before the check: cleaned once at start-up, in memory and in storage, with their stamps unchanged
     await p.evaluate(async([PNG,B])=>{await putRaw({id:'old1',type:'shirt',primaryColor:'white',pattern:'solid',photo:PNG+B,added:1,updated:5});await putRaw({id:'old2'+B,type:'tie',primaryColor:'navy',pattern:'solid',added:1,updated:5});localStorage.removeItem('rec_clean')},[PNG,B('old')]);
     await p.reload();await p.waitForFunction(()=>window.appReady);await p.waitForTimeout(500);
-    const s3=await p.evaluate(async()=>{const st=await tx('readonly',s=>s.getAll()),o=st.find(i=>i.id==='old1');return {mem:items.some(i=>i.id==='old1'&&!i.photo),gone:!items.some(i=>/^old2/.test(i.id))&&!st.some(i=>/^old2/.test(i.id)),stored:!!o&&!o.photo&&o.updated===5,flag:localStorage.getItem('rec_clean')}});
+    await p.waitForTimeout(1500);
+    const s3=await p.evaluate(async()=>{const st=await tx('readonly',s=>s.getAll()),o=st.find(i=>i.id==='old1'),k=await metaGet('rec_kept')||[];return {mem:items.some(i=>i.id==='old1'&&!i.photo),gone:!items.some(i=>/^old2/.test(i.id))&&!st.some(i=>/^old2/.test(i.id)),stored:!!o&&!o.photo&&o.updated===5,flag:localStorage.getItem('rec_clean'),
+      kept:k.map(x=>x.rec.id.slice(0,4)+':'+x.dropped+':'+!!x.rec.photo).join(),toast:document.querySelector('#toast').textContent}});
     ok(s3.mem&&s3.gone&&s3.stored&&s3.flag==='1','a record stored before the check is cleaned at the next start, in memory and in storage, stamp unchanged; one with a crafted id is taken out; once per phone ('+JSON.stringify(s3)+')');
+    ok(s3.kept==='old1:false:true,old2:true:false'&&/1 item in this phone’s storage couldn’t be shown safely and was set aside\. Some details of 1 item .*Nothing was deleted: the originals are kept on this phone\./.test(s3.toast),'nothing is dropped silently: both originals are kept on the phone (meta rec_kept) and a plain message says so ('+s3.kept+' | '+s3.toast+')');
+    await p.reload();await p.waitForFunction(()=>window.appReady);await p.waitForTimeout(1500);
+    ok(await p.evaluate(()=>!/set aside/.test(document.querySelector('#toast').textContent)),'the message is said once, not at the next start');
 
     // ---- W2-13-05: the photo reader's confidence is shown only as high/medium/low
     const ct=await p.evaluate(()=>confTxt({type:'high<img src=x onerror=__rx(5)>',primaryColor:'low',pattern:'medium'}));
