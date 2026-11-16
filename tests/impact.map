@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	9e1843bbea7db3500926
+# tested	1e03be6e07381fde203a
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	npsLeave	renderAdd	shadeRow
@@ -2650,7 +2650,7 @@ dblost.test.js	mq/suit.js	<loaded>
 dblost.test.js	mq/vest.js	<loaded>
 dblost.test.js	pack.js	<loaded>	packShow
 dblost.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	renderFor	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
-dblost.test.js	planner.js	<loaded>	lockStale
+dblost.test.js	planner.js	<loaded>
 dblost.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 dblost.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	pruneTagImgs	safetyStart	saveFailed	storeErr	storeFailText	storeFailure	storeFull	tagFailNote
 dblost.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	toast
@@ -6851,7 +6851,7 @@ render.test.js	asm-watch.js	<loaded>
 render.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	renderAsmUI
 render.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	careState	careWashed	careWord	laundryDays	renderCareUI
 render.test.js	colpick.js	<loaded>
-render.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	colName	colOf	colorDesc	colourNameRe	dayClimate	desc	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	leatherWord	lum	metalWord	mix	needsTie	nm	occOf	offDays	offName	patBase	patLabel	patName	prettyCols	primaryCol	rgbHex	sentence	setHash	setKeys	shoeStyle	sockToe	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	watchText	wearsJacket	wearsTie
+render.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	colName	colOf	colorDesc	colourNameRe	dayClimate	desc	di	hasVest	hexRgb	inRotation	isWorkday	isoKey	itemName	itemTitle	key	keySettings	leatherWord	lum	metalWord	mix	needsJacket	needsTie	nm	occOf	offDays	offName	patBase	patLabel	patName	prettyCols	primaryCol	rgbHex	sentence	setHash	setKeys	shoeStyle	sockToe	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 render.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 render.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 render.test.js	dress.js	<loaded>	dressOn	dressSummary	legacyVest	migrateVests	renderDressUI
@@ -8204,7 +8204,7 @@ settingsstay.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalk
 settingsstay.test.js	detect.js	<loaded>	@	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 settingsstay.test.js	draw.js	<loaded>	drawBelt	drawOxfordSide	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	swatchSVG
 settingsstay.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-settingsstay.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	missedCard	missedNote	missedOpen	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
+settingsstay.test.js	history.js	<loaded>	adviceFor	checkPlanRules	dayActions	dropLearn	firstReal	idsOf	keyDate	lockIds	lockSpan	lockUpcoming	missedCard	missedNote	missedOpen	recordDays	renderReplanUI	replanCount	resetCard	saveDay	scoreCard	whenPulled
 settingsstay.test.js	icon-192.png	<loaded>
 settingsstay.test.js	icon-512.png	<loaded>
 settingsstay.test.js	index.html	<loaded>
@@ -8819,7 +8819,7 @@ snapshots.test.js	mq/suit.js	<loaded>
 snapshots.test.js	mq/vest.js	<loaded>
 snapshots.test.js	pack.js	<loaded>	packShow
 snapshots.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	picsDrawn	renderItemPicUI
-snapshots.test.js	planner.js	<loaded>	lockStale
+snapshots.test.js	planner.js	<loaded>
 snapshots.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 snapshots.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	pruneTagImgs	safetyStart
 snapshots.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	unit	unitCC	weekFirst
