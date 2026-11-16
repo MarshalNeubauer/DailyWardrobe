@@ -12,12 +12,18 @@ function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.clas
     const over=r.top+Math.min(el.scrollHeight,m.clientHeight-80)-m.clientHeight;if(over>0)m.scrollBy({top:Math.min(over+16,r.top-top-8),behavior:'smooth'})},460)}
 /* the Backup line in Settings says what really happened: the last backup's time, or that the last try failed (sync.js keeps
    sync_status while a try fails and last_sync when one works) */
+/* when backups start again (the next 00:00 UTC): "tomorrow" only when that is tomorrow here; west of UTC it is later today (W1-10-03: "Paused
+   until tomorrow" over a line saying "after 7:00 PM") */
+function pausedUntil(t){const d=new Date(t),n=new Date();let at='';try{at=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
+  return d.toDateString()===n.toDateString()?(at||'later today'):'tomorrow'}
 function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
   if(typeof inviteOver==='function'&&inviteOver())return 'Not backed up: your invitation has ended';
   const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'',when=t=>{const d=new Date(t),days=Math.round((todayDate()-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
   // (2026-11-15, the audit: "Backed up today" while the day's saves were used up and none of the new items was on the server)
-  if((+localStorage.getItem('sync_pause')||0)>Date.now())return last?`Paused until tomorrow · last saved ${when(last)}`:'Paused until tomorrow: not backed up yet';
+  const pz=+localStorage.getItem('sync_pause')||0;
+  if(pz>Date.now()){const p=pausedUntil(pz);return last?`Paused until ${p} · last saved ${when(last)}`:`Paused until ${p}: not backed up yet`}
+  if(/^Backing up/.test(st))return last?`Backing up photos · last saved ${when(last)}`:'Backing up photos: not finished yet';   // (photos going up in batches, sync.js phBatch)
   if(/^Not backed up:/.test(st))return last?`Waiting for a connection · last saved ${when(last)}`:'Waiting for a connection: not backed up yet';
   if(/failed/i.test(st))return last?`Last backup failed · last saved ${when(last)}`:'Backup failed: not backed up yet';
   return last?`Backed up ${when(last)}`+(localStorage.getItem('sync_wait')&&!/^Syncing/.test(st)?' · newer changes waiting':''):'Not backed up yet'}

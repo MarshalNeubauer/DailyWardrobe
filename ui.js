@@ -150,7 +150,7 @@ let connMsg='',connBusy=false;
 function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)return;const typed=el.querySelector('#conn-link')?el.querySelector('#conn-link').value:'';
   const checking=typeof inviteChecking!=='undefined'&&inviteChecking,waiting=!checking&&typeof acctWhy!=='undefined'&&acctWhy==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash();
   el.innerHTML=checking?'<p class="shelp" id="conn-state" role="status">Checking your invitation…</p>'
-   :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>`
+   :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and ${typeof backedUpWords==='function'?backedUpWords():'your wardrobe is backed up'}.</p>`
    :`<p class="shelp" id="conn-state">${inviteOver()?'Your invitation has ended, so photos aren’t read automatically and nothing is backed up. Your wardrobe stays on this phone, and the app keeps working without a connection. If you were given a new invitation link, paste it here.'
      :waiting?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you come back to the app or your connection returns, or tap Connect.'
      :'The app works without a connection: you add your items by hand. With an invite link, photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.'}</p>

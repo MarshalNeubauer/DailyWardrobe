@@ -16,7 +16,9 @@ async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.ph
   try{const im=await imgOf(it.photo);let sm=it.photo;if(Math.max(im.naturalWidth,im.naturalHeight)>PH_SM){const c=shrink(im,PH_SM);if(deadCanvas(c))return false;sm=c.toDataURL('image/jpeg',.82)}   // drawn black: keep the old copy
     it.photoSm=sm;it.phSig=sig;return true}catch{return false}}
 /* at start-up: items whose small copy is missing or old (added before it, or changed on a device with an older app) */
-async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)&&stillCur(it)){await put(it);n++}if(n)fixupRedraw();return n}
+/* (a connected phone makes at most the day's remakes, tagging.js remakeLeft: each small copy can be a new server value; the rest the next days) */
+async function smallPhotos(){let n=0;for(const it of items){if(!it.photo||(it.photoSm&&it.phSig===phSigOf(it.photo)))continue;if(typeof remakeLeft==='function'&&remakeLeft()<1)break;
+  if(await makeSmall(it)&&stillCur(it)){await put(it);if(typeof remakeSpend==='function')remakeSpend(1);n++}}if(n)fixupRedraw();return n}
 function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type);
   return `<div class="phtools"><label class="btn">${i.photo?'Replace photo':'Add photo'}<input type="file" accept="image/*" class="vfile" onchange="replacePhoto('${i.id}',this.files[0]);this.value=''"></label>`+
     (tex?closeupBtn({label:i.texture?'Replace close-up':'Add fabric close-up',cls:'btn',mode:i.texture?'replace':'add',file:`f=>replaceTexture('${i.id}',f)`,remove:i.texture?`setTexture('${i.id}',null,'Close-up removed.')`:'',cloth:paperCloth(i)}):'')+

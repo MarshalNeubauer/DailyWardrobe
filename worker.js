@@ -29,7 +29,7 @@ import { noteKvFull } from './worker/items.js';
 import { delRender, getRender, handleBlob, handleShared, putRender } from './worker/records.js';
 import { handleHolidays } from './worker/holidays.js';
 import { gcDue, handleSync, photoGc } from './worker/photostore.js';
-import { handleAccount, handleFeedback, handleInvites, handleMe, plainFor, runWipe, spend, unspend, whoIs } from './worker/people.js';
+import { handleAccount, handleFeedback, handleInvites, handleMe, plainFor, resetDelay, runWipe, spend, unspend, whoIs } from './worker/people.js';
 import { handlePush, sendReminders } from './worker/remind.js';
 export { RenderHub } from './worker/render.js';   // the Durable Object class must be exported by the entry (it counts testers' days)
 
@@ -140,6 +140,8 @@ const SERVER_DOWN = 'The server had a problem just now. Try again in a moment.';
    it up and every backup answered SERVER_DOWN): a 429 that says so. what 'backup' for a save of the wardrobe, so the app pauses its
    uploads until the next UTC day and says why (sync.js), as for a tester's own backup limit; tools/asm-prebuild.js stops uploading too */
 const KV_FULL = 'Today’s saves on the server are used up. Your changes are kept on this device and are saved after the daily reset (00:00 UTC).';
+/* any other route (a deletion, a revoke, a new invitation): nothing was kept to be saved later, so it says nothing was changed (W1-10-02) */
+const KV_FULL_OTHER = 'Today’s saves on the server are used up, so nothing was changed. Try again after the daily reset (00:00 UTC).';
 const kvFull = e => /limit exceeded/i.test(String(e && e.message || e));
 export default {
   async fetch(req, env) {
@@ -148,7 +150,7 @@ export default {
     catch (e) {
       console.log('uncaught error', req.method, new URL(req.url).pathname, e && (e.stack || e.message));
       if (kvFull(e)) noteKvFull(env);   // item pictures stop before paying for one that can't be kept (worker/items.js)
-      if (kvFull(e)) return new Response(JSON.stringify({ error: 'kv-limit', what: new URL(req.url).pathname.endsWith('/sync') ? 'backup' : 'write', message: KV_FULL }), { status: 429, headers: { ...cors, 'content-type': 'application/json' } });
+      if (kvFull(e)) { const sync = new URL(req.url).pathname.endsWith('/sync'); return new Response(JSON.stringify({ error: 'kv-limit', what: sync ? 'backup' : 'write', message: sync ? KV_FULL : KV_FULL_OTHER }), { status: 429, headers: { ...cors, 'content-type': 'application/json' } }); }
       return new Response(JSON.stringify({ error: 'server', message: SERVER_DOWN, detail: SERVER_DOWN }), { status: 503, headers: { ...cors, 'content-type': 'application/json' } });
     }
   },
@@ -158,7 +160,12 @@ export default {
     for (const msg of batch.messages) {
       if (!(msg.body && msg.body.wipe)) { msg.ack(); continue; }
       try { await runWipe(msg, env); }
-      catch (e) { console.log('account wipe error', e && e.message); msg.retry({ delaySeconds: 60 }); }
+      catch (e) {
+        console.log('account wipe error', e && e.message);
+        // the day's KV allowance used up: the wipe waits for the reset as a new message (retries are few and come a minute apart)
+        if (kvFull(e) && env.RENDER_QUEUE) { try { await env.RENDER_QUEUE.send(msg.body, { delaySeconds: resetDelay() }); msg.ack(); continue; } catch { } }
+        msg.retry({ delaySeconds: 60 });
+      }
     }
   },
   // Cron trigger (wrangler.toml [triggers], every 15 minutes): the morning reminders due now

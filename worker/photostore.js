@@ -270,7 +270,8 @@ async function putWhole(env, json, cors, who, body, pre = new Map()) {
   }
   const w = writeBudget(env, who), oldPv = await storePhotos(env, ns, m, src, want, w.allow);
   if (w.short) { await unspend(env, who, 'backup'); const x = await w.refuse(); const r = json(x.body, x.status); r.refunded = true; return r; }
-  await countWrites(env, who, await keepSnapshots(env, m, body, ns, oldPv));
+  const had = src && src.lite && src.lite.data;   // (the version copied: its item count goes on the copies)
+  await countWrites(env, who, await keepSnapshots(env, m, body, ns, oldPv, had && Array.isArray(had.items) ? had.items.length : null));
   const saved = Date.now();
   await putStored(env, KEY, { text: pvText(rev + 1, saved, nextRevs(src && src.lite, refs, rev + 1), refs), meta: pvMeta(rev + 1, saved) }, m);
   return json({ rev: rev + 1, saved });
