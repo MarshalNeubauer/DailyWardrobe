@@ -71,8 +71,9 @@ async function run(eng,browser,{ok,url,settle}){
   ok(/Color and texture updated\./.test(t1)&&/Undo/.test(t1),T+`the toast says so, with Undo (${t1})`);
   e=await p.evaluate(()=>{const d=document.querySelector('#item-view #rd-done');return d&&{t:d.textContent,h:Math.round(d.querySelector('#rd-undo').getBoundingClientRect().height),fig:!!d.querySelector('svg')}});
   ok(e&&/Mink brown and Steep fine twill set/.test(e.t)&&/Added to your colors and patterns/.test(e.t)&&e.h>=44&&e.fig,T+`a card under the button says what changed, with the new drawing and Undo (${e&&e.t})`);
-  await p.click('#rd-undo');await p.waitForFunction(()=>items.find(x=>x.id==='m1').primaryColor==='deeptaupe');await settle(p,200);
-  e=await item('m1');ok(e.c==='deeptaupe'&&e.p==='solid'&&!e.cols&&!e.pats&&!(await p.$('#rd-done')),T+'Undo puts the color and pattern back and takes out what the reading added');
+  // (each step of the Undo is a save of its own; on WebKit each save takes a while: wait for all of them)
+  await p.click('#rd-undo');await p.waitForFunction(()=>{const it=items.find(x=>x.id==='m1');return it.primaryColor==='deeptaupe'&&it.pattern==='solid'&&!(settings.custom.colors||[]).length&&!(settings.custom.patterns||[]).length&&!document.querySelector('#rd-done')},null,{timeout:5000}).catch(()=>{});await settle(p,200);
+  e=await item('m1');ok(e.c==='deeptaupe'&&e.p==='solid'&&!e.cols&&!e.pats&&!(await p.$('#rd-done')),T+'Undo puts the color and pattern back and takes out what the reading added '+JSON.stringify(e));
   // Use color only, Keep the pattern, Undo from the toast
   await p.click('#iv-read');await result();
   await p.click('#rd-cuse');await p.waitForSelector('#rd-col.done');

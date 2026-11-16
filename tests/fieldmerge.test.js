@@ -99,14 +99,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await A.evaluate(async()=>{for(const [id,n,t] of [['b1','Brown belt','belt'],['t1','Green tie','tie'],['s1','Pink shirt','shirt']]){const it={id,type:t,primaryColor:t==='belt'?'brown':t==='tie'?'green':'pink',pattern:'solid',name:n,added:Date.now(),updated:Date.now()};await put(it);items.push(it)}});
     await sync(A);const B=await device();await sync(B);
     ok(await B.evaluate(()=>items.length===3),'phone B takes the wardrobe');
-    // W1-5-01 through the worker
+    // W1-5-01 through the worker (on the Wardrobe: a sync that brings changes to Today records the day, one more backup that isn't the merge's)
+    for(const d of [A,B])await d.evaluate(()=>show('wardrobe'));await sync(A);await sync(B);
     await A.evaluate(async()=>{const it=items.find(i=>i.id==='s1');it.name='Pink oxford';await put(it)});
     await B.evaluate(async()=>{const it=items.find(i=>i.id==='s1');it.paused=true;await put(it)});
     puts=0;putKeys=[];await sync(A);await sync(B);await sync(A);const w1=putKeys.filter(k=>k==='wardrobe:v1').length;   // (the day's first save also keeps its daily copies)
     const s1=x=>x.evaluate(()=>{const i=items.find(i=>i.id==='s1');return [i.name,!!i.paused]});
     const srv=data().items.find(i=>i.id==='s1');
     ok(JSON.stringify([await s1(A),await s1(B),[srv.name,!!srv.paused]])==='[["Pink oxford",true],["Pink oxford",true],["Pink oxford",true]]','a rename on one phone and "Take out of rotation" on the other: both on both phones and the server');
-    ok(w1<=2,`and it took ${w1} server writes (one per phone's backup, as before)`);
+    ok(w1<=2,`and it took ${w1} backup writes (one per phone's backup, as before)`);
     // W1-5-04: the sheet open on A while B's change arrives
     await A.evaluate(()=>{show('wardrobe');openItem('b1')});
     await B.evaluate(async()=>{const it=items.find(i=>i.id==='b1');it.paused=true;await put(it)});await sync(B);await sync(A);
