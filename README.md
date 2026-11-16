@@ -63,7 +63,7 @@ Two parts, no build step.
 
 Secrets are set once in the Cloudflare dashboard (or `wrangler secret put NAME`) and never live in this repository. `.github/workflows/deploy-worker.yml` deploys the worker whenever a merge to `main` changes it; for that the repository needs the secret `CLOUDFLARE_API_TOKEN` and the variables `CLOUDFLARE_ACCOUNT_ID` and `WARDROBE_KV_ID`. Until they are set the workflow skips and the worker is deployed by hand (`npx wrangler deploy`).
 
-The owner connects their own device under Settings → Connection with the server's address and `APP_TOKEN`, and sends each tester an invite link.
+The owner connects their own device under Settings → Connection with the server's address and `APP_TOKEN`, and sends each tester an invite link. Invite links open only on the app's own server: if you host the worker yourself, put its address in `APP_SERVERS` in account.js, or links to it are refused. A tester who lost the link gets a new one from the owner's list (Settings → Connection → New link); it opens the same wardrobe.
 
 ## Pre-building the assembled outfit pictures
 

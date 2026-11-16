@@ -70,7 +70,7 @@ async function serve(req, env, cors, allowed, origin) {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
   if (allowed.length && !allowed.includes(origin)) return json({ error: 'forbidden origin' }, 403);
   const path = new URL(req.url).pathname.replace(/\/+$/, ''); where = path;
-  const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}) }, a.status);
+  const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}), ...(a.replaced ? { replaced: true } : {}) }, a.status);   // (replaced: a link the owner made anew, people.js)
   const route = ROUTES[`${req.method} ${path}`] || ROUTES[`* ${path}`];
   if (route) {
     const a = await whoIs(env, req.headers.get('x-app-token') || '');

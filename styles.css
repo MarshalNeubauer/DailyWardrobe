@@ -910,6 +910,7 @@ main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
 .acct-inv{padding:10px 0;border-top:1px solid var(--line)}
 .acct-inv-top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}.acct-inv-top b{font-size:.9375rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acct-inv.off b{color:var(--mut)}
+.acct-btns{display:flex;gap:8px;flex:none}   /* New link and Revoke (account.js) */
 .acct-tag{flex:none;font-size:.75rem;font-weight:600;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
 /* ---- ui ---- */
 /* the accent as text: a darker gold on the light theme (4.5:1 on --bg and --card); fills and the dark theme keep --acc */
@@ -963,7 +964,7 @@ main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
 /* the owner's tools: only for the owner; a tester never sees the server address and code; not connected, the parts that need the
    server are hidden and one line at the top of their section says what connecting turns on (.conn-off-note) */
 body:not(.owner) #adv-photos{display:none}
-body.tester #adv-connection{display:none}
+body.tester:not(.srv-open) #adv-connection{display:none}   /* a tester's phone that was the owner's shows it after "I run the server" (ui.js renderConnUI, W1-7-02) */
 body.nocon:not(.srv-open) #adv-connection{display:none}   /* not connected: only after "I run the server" (ui.js connOwn) */
 body.nocon .conn-only,.connhide{display:none!important}
 .conn-off-note:empty{display:none}
