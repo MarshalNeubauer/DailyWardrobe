@@ -248,6 +248,7 @@ function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof 
   const w=typeof asmSuitWeave==='function'?asmSuitWeave(i):'',canRead=typeof readable==='function'?readable(i.type,i.pattern,i.weave):false;
   const plain=(gap,why)=>({how:'plain',gap,why}),needs=()=>plain('reading',`its ${pn} is painted once its pattern is read (Read pattern from photo)`);
   if(z==='belt')return {how:'flat',gap:'',why:''};
+  if(z==='shirt'&&s&&s.camo)return {how:'camo',gap:'',why:''};   // a camouflage shirt: the same blotches as camouflage pants (the owner, 2026-11-16: "why do they look different")
   if(z==='jacket'||z==='waistcoat'||z==='trousers'){
     if(s&&s.camo)return {how:'camo',gap:'',why:''};   // camouflage: its blotches (asmCamoTex, 2026-11-16)
     if(s&&s.look&&(s.tex||s.motif))return {how:'look',gap:'',why:''};   // an own pattern's weave or figure (its look, detect.js lookSett): asmLookSuit
