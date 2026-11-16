@@ -22,15 +22,34 @@ const ownSett=i=>{const s=i&&i.sett,p=patBase(i&&i.pattern)||'';if(!s||(MOTIF_PA
    drawing recipe, settings.custom.patterns[].look), on any kind of item: so the drawings, the swatches and the painted pictures all
    draw a new pattern as described, in the item's own colours (2026-11-15; the rule "texture readings only on shirts and ties" is for
    readings, not for an own pattern's look) */
-const usableSett=i=>settToTag(i,ownSett(i))||lookOf(i)||camoLook(i);
-/* a camouflage with no reading of its own (tagged camouflage, no close-up read yet): blotches in the item's own colours, the main colour as
-   the ground, its second and third, and a step lighter and darker (as lookSett's roles), seeded by the item, so it is never drawn plain
-   (2026-11-16) */
-const CAMO_SHARES=[.38,.24,.16,.12,.1],CAMO_TR=3;
-function camoLook(i){if(!i||!camoPat(i.pattern))return null;const main=colOf(i),sec=i.secondaryColor&&COLORS[i.secondaryColor]||null,th=thirdOf(i),key=JSON.stringify(['camo',i.id,main,sec,th]);
-  if(lookMemo.has(key))return lookMemo.get(key);const lab=rgbLab(...hexRgb(main)),step=d=>labHex([Math.max(0,Math.min(100,lab[0]+d)),lab[1],lab[2]]);
-  const cols=[main,sec||step(-14),th||step(12),step(-26),step(22)];let h=5381;for(const ch of String(i.id||key))h=(Math.imul(h,33)+ch.charCodeAt(0))>>>0;
-  const s={v:5,camo:{cols,shares:CAMO_SHARES.slice(),seed:h%100000},tr:CAMO_TR,cr:1,look:'cm'+h.toString(36)};if(lookMemo.size>200)lookMemo.clear();lookMemo.set(key,s);return s}
+const usableSett=i=>{const o=ownSett(i);return o&&o.camo?camoTag(i,o):settToTag(i,o)||lookOf(i)||camoLook(i)};
+/* a camouflage is drawn in the item's tagged colours, never the photo's (2026-11-16: the owner's shirt close-up measured grey, and its
+   colours read from the pixels drew a coyote-brown shirt lavender; colours come from the tags everywhere else in the app too): the main
+   colour, its second and third, a step darker and a step lighter of the main (its cream and its deep brown). A reading of the close-up
+   (camoFromPixels, Claude's) says only how much of the cloth each lightness covers: the tag colours, lightest to darkest, take the
+   reading's shares by the same lightness ranks; without one CAMO_RANK. The lightest is held to CAMO_LIGHT_MAX and the darkest to
+   CAMO_DARK_MAX (the reading's lightest cluster was cream plus the cloth's highlights, 25%, and drew the pants washed out), the rest going
+   to the main colour, which is always the ground (the largest share). Seeded by the reading, else the item; kept per item, colours and
+   reading (lookMemo) */
+const CAMO_TR=2,CAMO_RANK=[.08,.32,.26,.2,.14],CAMO_LIGHT_MAX=.12,CAMO_DARK_MAX=.18,CAMO_MUTE=.3;
+function camoTag(i,rd){const main=colOf(i),sec=i.secondaryColor&&COLORS[i.secondaryColor]||null,th=thirdOf(i),key=JSON.stringify(['camo',CAMO_V,i.id,main,sec,th,rd&&rd.camo]);
+  if(lookMemo.has(key))return lookMemo.get(key);
+  const lab=rgbLab(...hexRgb(main)),step=d=>labHex([Math.max(0,Math.min(100,lab[0]+d)),lab[1],lab[2]]),L=h=>rgbLab(...hexRgb(h))[0];
+  // printed camouflage's colours sit on one cloth and read as related: each accent is taken CAMO_MUTE of the way toward the main colour's
+  // hue and chroma (a* b*), its lightness kept (the app's "green" #2f6b4a drew a bright teal where MultiCam has a dusty sage)
+  const mute=h=>{const c=rgbLab(...hexRgb(h));return labHex([c[0],c[1]+(lab[1]-c[1])*CAMO_MUTE,c[2]+(lab[2]-c[2])*CAMO_MUTE])};
+  const tags=[main,mute(sec||step(-14)),mute(th||step(12)),step(-24),step(20)].map((h,k)=>({h,k,L:L(h)})).sort((a,b)=>b.L-a.L),n=tags.length;   // lightest first
+  let sh=CAMO_RANK.slice();
+  if(rd&&rd.camo&&rd.camo.cols&&rd.camo.cols.length>1){const rc=rd.camo.cols.map((h,q)=>({L:L(h),s:+rd.camo.shares[q]||0})).sort((a,b)=>b.L-a.L),m=rc.length;
+    sh=new Array(n).fill(0);rc.forEach((c,q)=>{sh[Math.min(n-1,Math.floor(q*n/m))]+=c.s})}
+  const mi=tags.findIndex(t=>t.k===0),cap=(q,mx)=>{if(sh[q]>mx&&q!==mi){sh[mi]+=sh[q]-mx;sh[q]=mx}};cap(0,CAMO_LIGHT_MAX);cap(n-1,CAMO_DARK_MAX);
+  const top=sh.indexOf(Math.max(...sh));if(top!==mi)[sh[top],sh[mi]]=[sh[mi],sh[top]];   // the main colour is the ground
+  const t=sh.reduce((a,b)=>a+b,0)||1,pairs=tags.map((x,q)=>({h:x.h,s:sh[q]/t})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s);
+  let hh=5381;for(const ch of String(i.id||key))hh=(Math.imul(hh,33)+ch.charCodeAt(0))>>>0;
+  const s={v:5,camo:{cols:pairs.map(x=>x.h),shares:pairs.map(x=>+x.s.toFixed(3)),seed:rd&&rd.camo?rd.camo.seed:hh%100000},tr:rd&&rd.src&&/claude/.test(rd.src)?rd.tr:CAMO_TR,cr:1,look:'cm'+CAMO_V+hh.toString(36),...(rd&&rd.src?{src:rd.src}:{})};
+  if(lookMemo.size>200)lookMemo.clear();lookMemo.set(key,s);return s}
+/* a camouflage with no reading of its own: the same, with CAMO_RANK's shares (so it is never drawn plain) */
+const camoLook=i=>i&&camoPat(i.pattern)?camoTag(i,null):null;
 /* a jacket's or pants' band reading whose ground is far from the selected color is drawn in the selected color (2026-11-15, the owner's
    checkered blue pants: tagged Heathered navy #27344f, the reading's ground #616870 and lines #93a1b2 from a lifted close-up, drawn mean
    L* 50 against 22, ΔE00 26, "washed out"): when the widest band is over SETT_TAG_DE from colOf, it becomes colOf and every other band

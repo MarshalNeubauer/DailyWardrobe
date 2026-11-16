@@ -253,20 +253,38 @@ const SOUTH_CC=['AU','NZ','ZA','AR','CL','UY','PY','BR','BO','PE','NA','BW','ZW'
    share up each takes the pixels where its own field is highest until it covers its share, so the accents lie over the others and every
    colour covers what it should. The same arguments give the same map (seeded). No DOM: the drawings (draw.js camoTileUrl) and the painter
    (asm-color.js asmCamoTex) share it; kept per arguments (camoMemo) */
-const CAMO_RE=/camo|multicam|\bocp\b|woodland|flecktarn|realtree/i,camoMemo=new Map(),CAMO_OCT=[[3,1],[6,.5],[12,.24],[24,.09]];   // (a 48-cell layer made pixel-step edges; camouflage's are soft and rounded)
+/* (v2, 2026-11-16, the owner's "why does it look like trash": round flat cartoon blobs, three repeats across, washed out) each field is
+   domain-warped (looked up through a slow displacement field, CAMO_WARP of the tile: organic, irregular edges instead of round ones), on a
+   finer lattice (CAMO_OCT: smaller, more numerous blotches), and camoImage softens the edges and adds a faint cloth grain */
+const CAMO_RE=/camo|multicam|\bocp\b|woodland|flecktarn|realtree/i,camoMemo=new Map(),CAMO_OCT=[[5,1],[10,.45],[20,.18],[40,.05]],CAMO_WARP=.09,CAMO_SOFT=.005,CAMO_GRAIN=.035,CAMO_V=2;
 const camoPat=p=>{if(!p)return false;if(patBase(p)==='camouflage')return true;const c=typeof CUSTOM_PAT!=='undefined'&&CUSTOM_PAT[p];return !!c&&CAMO_RE.test((c.name||'')+' '+(c.desc||'')+' '+p)};
 function camoField(N,shares,seed=1){const key=N+'|'+shares.join(',')+'|'+seed;if(camoMemo.has(key))return camoMemo.get(key);
   let s=(Math.imul(seed|0,2654435761)>>>0)||1;const rnd=()=>(s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296;
-  const noise=()=>{const f=new Float32Array(N*N);for(const [G,w] of CAMO_OCT){const L=new Float32Array(G*G);for(let k=0;k<G*G;k++)L[k]=rnd();
+  const noise=oct=>{const f=new Float32Array(N*N);for(const [G,w] of oct){const L=new Float32Array(G*G);for(let k=0;k<G*G;k++)L[k]=rnd();
       for(let y=0;y<N;y++){const gy=y*G/N,y0=Math.floor(gy),ty=gy-y0,sy=ty*ty*(3-2*ty),r0=(y0%G)*G,r1=((y0+1)%G)*G;
         for(let x=0;x<N;x++){const gx=x*G/N,x0=Math.floor(gx),tx=gx-x0,sx=tx*tx*(3-2*tx),c0=x0%G,c1=(x0+1)%G;
           const a=L[r0+c0]+(L[r0+c1]-L[r0+c0])*sx,b=L[r1+c0]+(L[r1+c1]-L[r1+c0])*sx;f[y*N+x]+=w*(a+(b-a)*sy)}}}
     return f};
+  // the slow displacement every field is looked up through (wrapping, so the tile stays seamless)
+  const A=CAMO_WARP*N,wx=noise([[3,1],[6,.4]]),wy=noise([[3,1],[6,.4]]),mod=v=>((v%N)+N)%N;
+  const warped=f=>{const g=new Float32Array(N*N);for(let y=0;y<N;y++)for(let x=0;x<N;x++){const j=y*N+x,X=mod(x+A*(wx[j]-.7)*2),Y=mod(y+A*(wy[j]-.7)*2),x0=Math.floor(X),y0=Math.floor(Y),tx=X-x0,ty=Y-y0,x1=(x0+1)%N,y1=(y0+1)%N;
+      g[j]=(f[y0*N+x0]*(1-tx)+f[y0*N+x1]*tx)*(1-ty)+(f[y1*N+x0]*(1-tx)+f[y1*N+x1]*tx)*ty}return g};
   const n=N*N,idx=new Uint8Array(n),taken=new Uint8Array(n),tot=shares.reduce((a,b)=>a+Math.max(0,+b||0),0)||1;
   const order=shares.map((v,k)=>k).slice(1).sort((a,b)=>shares[a]-shares[b]);   // the smallest share first; the ground (index 0) is what is left
-  for(const k of order){const f=noise(),want=Math.round(n*Math.max(0,+shares[k]||0)/tot),ids=[];for(let j=0;j<n;j++)if(!taken[j])ids.push(j);
+  for(const k of order){const f=warped(noise(CAMO_OCT)),want=Math.round(n*Math.max(0,+shares[k]||0)/tot),ids=[];for(let j=0;j<n;j++)if(!taken[j])ids.push(j);
     ids.sort((a,b)=>f[b]-f[a]);for(let q=0;q<want&&q<ids.length;q++){idx[ids[q]]=k;taken[ids[q]]=1}}
   if(camoMemo.size>16)camoMemo.clear();camoMemo.set(key,idx);return idx}
+/* the camouflage as an N x N sRGB image (Uint8ClampedArray, 3 a pixel): camoField's map in its colours, the edges softened by two wrapping
+   box blurs of CAMO_SOFT of the tile (a blended edge, as printed camouflage has, not a cut-out), and a faint cloth grain (±CAMO_GRAIN,
+   seeded). Shared by the drawings (draw.js camoTileUrl) and the painter (asm-color.js asmCamoTex) */
+function camoImage(N,cols,shares,seed=1){const idx=camoField(N,shares,seed),rgb=cols.map(h=>hexRgb(h)),n=N*N;let a=new Float32Array(3*n),b=new Float32Array(3*n);
+  for(let j=0;j<n;j++){const c=rgb[idx[j]]||rgb[0];a[3*j]=c[0];a[3*j+1]=c[1];a[3*j+2]=c[2]}
+  const r=Math.max(1,Math.round(CAMO_SOFT*N)),blur=(src,dst,dx,dy)=>{const w=2*r+1;for(let y=0;y<N;y++)for(let x=0;x<N;x++){let s0=0,s1=0,s2=0;
+      for(let k=-r;k<=r;k++){const xx=((x+k*dx)%N+N)%N,yy=((y+k*dy)%N+N)%N,j=3*(yy*N+xx);s0+=src[j];s1+=src[j+1];s2+=src[j+2]}const o=3*(y*N+x);dst[o]=s0/w;dst[o+1]=s1/w;dst[o+2]=s2/w}};
+  for(let p=0;p<2;p++){blur(a,b,1,0);blur(b,a,0,1)}
+  let s=(Math.imul((seed|0)+7,2246822519)>>>0)||1;const rnd=()=>(s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296,out=new Uint8ClampedArray(3*n);
+  for(let j=0;j<n;j++){const g=1+CAMO_GRAIN*(rnd()-.5)*2;for(let q=0;q<3;q++)out[3*j+q]=Math.round(a[3*j+q]*g)}
+  return out}
 const MAT_SEASON={flannel:'cold',tweed:'cold',corduroy:'cold',velvet:'cold',cashmere:'cold','cashmere blend':'cold',moleskin:'cold',melton:'cold',
   linen:'warm','linen blend':'warm',seersucker:'warm','tropical wool':'warm'};
 const MAT_SEASON_BY={tie:{wool:'cold'}};
