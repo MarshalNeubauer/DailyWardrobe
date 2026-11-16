@@ -1403,3 +1403,40 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
 /* the setup's last step: the tour and sample links one under the other, as links (audit 2026-11-15: an orphan · and bordered buttons with underlined text) */
 #setup .kit-start{flex-direction:column;gap:0}#setup .kit-start>span{display:none}
 #setup .kit-start .linkbtn{border:0;background:none;min-height:44px;padding:0 8px;font-weight:600;font-size:.9375rem;color:var(--acc-ink,var(--acc))}
+/* ---- fix round 3 (2026-11-16): accessibility and the older user (W2-19, W2-14) ---- */
+/* a toast gone is gone for VoiceOver and the keyboard too (W2-19-06; settings.js toastOff also empties it) */
+#toast:not(.on){visibility:hidden;transition:opacity .2s,visibility 0s .2s}#toast.on{visibility:visible}
+/* the red button of a dangerous question keeps the deep red fill on the dark theme: white on the dark theme's lighter red was 3.3:1 (W2-19-07) */
+.ask-btns button.ask-danger{background:#c0473f;border-color:#c0473f}
+/* the edge of a text box, dropdown or note field at 3:1 or more against the card and the page (W2-19-08: --line was 1.3-1.5:1) */
+:root{--fline:#7a8288}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--fline:#6b7883}}
+:root[data-theme=dark]{--fline:#6b7883}
+:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea){border-color:var(--fline)!important}
+/* placeholders readable (W2-19-12: the browser's #a9a9a9 was 2.3:1) */
+::placeholder{color:var(--mut);opacity:1}
+/* the keyboard's focus ring: the accent as text on the light theme (W2-19-13: the gold ring was 1.9:1 on the page) */
+:focus-visible{outline-color:var(--acc-ink,var(--acc))!important}
+[role=button]:focus-visible,.cband:focus-visible{outline:2px solid var(--acc-ink,var(--acc));outline-offset:2px}
+/* small green words at 4.5:1 (W2-19-11): the picker's "Best match" / "Good match", the colors' "Very close", What to buy's "Better outfits" */
+:root{--ok-ink:#1b7043}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--ok-ink:#4fb07a}}
+:root[data-theme=dark]{--ok-ink:#4fb07a}
+.fit.best,.fit.good,.cpd{color:var(--ok-ink)}.shop-tag.better{background:#24704a}
+/* a holiday on a day off stays readable: its note says it, not a faded row (W2-19-14: 2.3:1) */
+.hrow.wk{opacity:1}.hrow.wk .hd,.hrow.wk .hn{color:var(--mut)}
+/* tap targets of 44 px (W2-19-15) */
+.kit-banner .btns button,#pick-next{min-height:44px}
+.hrow{min-height:44px;align-items:center}.hrow input{width:20px;height:20px}
+/* Settings' category titles are headings (W2-19-16), with the button's look unchanged */
+.scat-h{margin:0;font:inherit;color:inherit;letter-spacing:inherit;text-transform:none}
+/* the largest text sizes (index.html sets html.bigtext from 130%): names get a third line before "…" (W2-19-17) */
+html.bigtext :is(.gimeta b,.cpnm,.pick-nm,.shop-lead,#settings-modal .scat-head .mltxt small){-webkit-line-clamp:3}
+html.bigtext :is(.cpnm,.pick-nm){min-height:3.6em}
+/* Today: the pieces list says what ⇄ and − do (W2-14-10); the cleaning banner is tapped by its words (W2-14-05); the weather that couldn't be read (W2-14-14) */
+#today .plegend{margin:6px 0 2px;font-size:.8125rem;color:var(--mut)}#today .plegend span{font-weight:700;color:var(--ink)}
+.fig .cband .ctxt{pointer-events:auto;cursor:pointer}
+#today .wxretry{color:var(--acc-ink,var(--acc))}
+/* Add: what Today's "Add one" asked for (W2-14-01); the tour's first line after the setup (W2-14-07) */
+#add .addfor{margin-top:-4px;color:var(--ink)}#add .addfor[hidden]{display:none}
+.kit-lead{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:.9375rem;line-height:1.4}

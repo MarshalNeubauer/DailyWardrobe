@@ -14,7 +14,7 @@ module.exports=async({ok,chromium,url})=>{
       near:[...s.querySelectorAll('.cpnear .cpnm')].map(e=>e.textContent),heads:[...s.querySelectorAll('.cph')].map(e=>e.textContent),now:s.querySelector('.cpnow')&&s.querySelector('.cpnow').closest('.cptile').textContent,
       seg:s.querySelectorAll('.cpseg button').length,bar:s.querySelector('.cpbar button').textContent}});
     ok(b.on&&b.img&&b.big==='Black'&&b.seg===3,'the sheet shows the close-up beside the current color, with a switch to the whole photo and (a suit) the drawing');
-    ok(b.near[0]==='Deep taupe'&&b.heads[0]==='Your colors'&&/Closest to your close-up/.test(b.heads[1])&&b.heads.includes('Blues'),`the measured nearest colors come first, then the families (${b.near}; ${b.heads})`);
+    ok(b.near[0]==='Deep taupe'&&/Closest to your close-up/.test(b.heads[0])&&b.heads.includes('Blues')&&b.heads[b.heads.length-1]==='Your colors',`the measured nearest colors come first, then the families, "Your colors" (none yet) last (${b.near}; ${b.heads})`);
     ok(/^Now/.test(b.now)&&b.bar==='Keep Black','the current color is marked, and the button keeps it');
     await p.click('#col-sheet .cpnear .cptile >> nth=0');
     const c=await p.evaluate(()=>({big:document.querySelector('#col-sheet .cpbig figcaption').textContent,bar:document.querySelector('#col-sheet .cpbar button').textContent,saved:items[0].primaryColor}));

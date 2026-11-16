@@ -27,11 +27,16 @@ function kitClose(fromBack){if(kitImpBusy){if(fromBack&&typeof appPush==='functi
   if(k&&k.hist!==undefined&&typeof appGiveBack==='function'){if(!fromBack)appGiveBack('kit',k.hist);else if(k.hist)appPush(k.hist)}   // the entry goes, or back to Add; after Back, Add gets a new one
   if(k&&k.cards===TOUR_CARDS){try{localStorage.setItem(KIT_TOUR,'1')}catch{}}
   if(k&&k.then)k.then();else if(k&&k.from&&k.from.isConnected)try{k.from.focus({preventScroll:true})}catch{}}
-function kitGo(n){if(!kit)return;const at=kit.at+n;if(at>=kit.cards.length)return kitClose();if(at<0)return;kit.at=at;kitDraw();const t=$('#kit-next');if(t)t.focus({preventScroll:true})}
+/* a tap on Next or Back within KIT_TAP_MS of the last one is the second tap of a double tap (fix round 3, W2-14-06: a double tap skipped
+   the close-up card, a second one closed the tour); keys and taps from code are not held back */
+const KIT_TAP_MS=350;
+function kitGo(n){if(!kit)return;const ev=window.event,tap=!!(ev&&ev.isTrusted&&ev.type==='click'&&ev.detail>0),now=performance.now();
+  if(tap){if(now-(kit.tapAt||-1e9)<KIT_TAP_MS)return;kit.tapAt=now}
+  const at=kit.at+n;if(at>=kit.cards.length)return kitClose();if(at<0)return;kit.at=at;kitDraw();const t=$('#kit-next');if(t)t.focus({preventScroll:true})}
 function kitDraw(){if(!kit)return;const c=kit.cards[kit.at],n=kit.cards.length,last=kit.at===n-1;
   kitEl().innerHTML=`<div class="kit-head"><div><h2 id="kit-title">${c.title}</h2>${n>1?`<small>${kit.at+1} of ${n}</small>`:''}</div><button type="button" class="kit-x" onclick="kitClose()" aria-label="Close">✕</button></div>
 ${n>1?`<div class="su-prog kit-prog" aria-hidden="true">${kit.cards.map((x,i)=>`<i class="${i<=kit.at?'on':''}"></i>`).join('')}</div>`:''}
-<div class="kit-body" data-card="${c.key}"><div class="kit-pic" aria-hidden="true">${c.pic()}</div>${c.body}</div>
+<div class="kit-body" data-card="${c.key}">${kit.lead&&!kit.at?`<p class="kit-lead">${kit.lead}</p>`:''}<div class="kit-pic" aria-hidden="true">${c.pic()}</div>${c.body}</div>
 <div class="kit-bar">${kit.at?`<button type="button" id="kit-back" onclick="kitGo(-1)">Back</button>`:''}<button type="button" class="pri" id="kit-next" onclick="kitGo(1)">${last?(kit.lastLabel||c.last||'Got it'):'Next'}</button></div>`}
 // ← → step the cards only: not in the import (no cards: → closed it and lost the pasted rows) nor while typing in a field (re-audit 2026-11-15)
 addEventListener('keydown',e=>{if(!kit)return;if(e.key==='Escape'){e.preventDefault();kitClose();return}
@@ -60,7 +65,9 @@ const TOUR_CARDS=[
   {key:'shade',title:'Shade',pic:kitShadePic,body:`<p>If a piece is drawn lighter or darker than the real thing, Shade nudges it, up to six steps either way.</p><p><b>Match close-up</b> sets it from your close-up for you.</p><p class="kit-tip">Shade changes only the drawing. The color the planner matches stays the one you tagged.</p>`},
   {key:'patterns',title:'Patterns',pic:kitPatternPic,body:`<p>Stripes, checks and weaves are read too.</p><p>With a close-up the app measures the stripes' widths and colors, so the drawing and the outfit pictures show your cloth, not a generic one.</p><p class="kit-tip">If a reading looks wrong, tap <b>Use the simple pattern</b> on the card, or <b>Read pattern from photo</b> on the item later.</p>`}];
 /* then: what happens after the last card (the setup's "Add my first item" goes on to Add) */
-function tourOpen(then,lastLabel){kitOpen(TOUR_CARDS,then);if(lastLabel){kit.lastLabel=lastLabel;kitDraw()}}
+/* lastLabel: the setup's "Add my first item" opens the tour first; its first card says so (fix round 3, W2-14-07: the button promised Add
+   and a tour came up) */
+function tourOpen(then,lastLabel){kitOpen(TOUR_CARDS,then);if(lastLabel){kit.lastLabel=lastLabel;kit.lead=`First, four quick cards about how the app works. Then you add your first item (✕ skips straight there).`;kitDraw()}}
 /* Settings → About's "Take the tour" and "Add to Home Screen": closing the sheet goes back to About, not to Today (audit 2026-11-15) */
 function tourAgain(){closeSettings();tourOpen(()=>openSettings('about'))}
 function homeAgain(){closeSettings();kitOpen([HOME_CARD],()=>openSettings('about'))}

@@ -46,6 +46,10 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 ### `index.html`
 
 - markup and script tags
+- `#sr-live` (after `#toast`, `.vh`, `aria-live="polite"`): the one live region for what changed without a toast (ui.js `announce`; fix round 3, 2026-11-16)
+- the Settings categories' head buttons sit in `<h3 class="scat-h">` (VoiceOver's heading rotor; W2-19-16); `#cfg-workdays` / `#cfg-blazer` are `role="group"` named "Workdays" / "Blazer days" (W2-19-10)
+- the head script also sets `html.bigtext` when `--tscale` is 1.3 or more (styles.css gives the clamped names a third line, W2-19-17); the 150% cap stays (the owner, W2-19-09)
+- Add's `#add-for` (under `#note`, `role="status"`, hidden unless asked): "Adding a belt: …" after Today's "Add one" (add.js `renderAddFor`)
 - the tabs are Today, Wardrobe and Insights (`TABS` in start.js; `#n-stats` shows the `#stats` page, titled Insights, with no ‹)
 - Add is a page of the Wardrobe (`openAdd` in start.js: the Wardrobe's round + `#ward-add`, the setup's buttons, a pasted photo), with a ‹ back to where it was opened (`SUBS` has `add`; `subOpen`/`subBack`)
 - the Wardrobe's + (`#ward-add`, 2026-11-15, the owner's ask; it replaced the header row's small "+ Add"): a 56px ink circle with a drawn + (`aria-label` "Add to wardrobe"), in index.html's main after the pages (not inside `#wardrobe`, whose page-in animation transforms it), fixed `16px` above the tab bar (`--navh`) at the right edge of the content column (main's 560px, or 1080px from 600px, centered, less its 16px padding; the screen's right edge less 16px on a phone and the Duo unfolded); shown by `#wardrobe:not([hidden]) ~ #ward-add`, hidden under every layer (`main[inert]`: Settings, the sheets, the setup; `body.iv-on`: the item sheet); pops in only under `prefers-reduced-motion: no-preference`; `#wardrobe` has 76px bottom padding so the last row scrolls clear of it; bottom right, not top right: thumb reach; `tests/wardfab.test.js`
@@ -138,6 +142,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Today's card titles and second lines grow with Larger Text only as far as the width allows (`min(1rem, max(16px, 4.6vw))`, `min(.8125rem, max(13px, 3.75vw))`): never below the default size; "November wear plan" was cut at 150% text on a 402 px phone
 - the item sheet's title wraps onto two lines and the colour/pattern values (`.colnm`) wrap, instead of "Mid grey h…" / "Mid …"
 - a toast breaks a long unbroken name (`overflow-wrap:anywhere`, the button `flex:none`), so its Undo stays on the screen
+- the block `/* ---- fix round 3 (2026-11-16): accessibility and the older user … */` at the end: a faded `#toast` is `visibility:hidden`; `.ask-danger` keeps #c0473f on the dark theme (white on #e2695f was 3.3:1); `--fline` (#7a8288 light, #6b7883 dark) is every input's, select's and textarea's border (`!important`, 3:1 on card and page; `--line` was 1.3-1.5:1); placeholders `--mut`; the focus ring `--acc-ink`; `--ok-ink` (#1b7043 / #4fb07a) for "Best match", "Very close" and What to buy's "Better outfits" fill #24704a; `.hrow.wk` not faded; 44px for the sample card's buttons, Suggest another and a holiday row
+- `tests/a11yround3.test.js` covers fix round 3's accessibility and older-user fixes (focus, live region, sheets, names, states, toast, contrast, Add one, color sheet order, cleaning banner, tour double tap, theme, weather retry, headings)
 
 ### `core.js`
 
@@ -707,6 +713,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - "Read pattern from photo" is offered only with a photo or close-up; without one the sheet says "Add a photo above to read its pattern from it." (`.nopatpic`), and the Outfit pictures note (`asmGapNote`) says to add a photo first
 - a belt's metal is "Buckle" here as on the Add card; the metal 'other' reads "Gunmetal" in the dropdowns (`METAL_OPTS`, core.js)
 - adding a close-up toasts "Close-up added." (the realistic photos it promised are no longer made)
+- opening an item calls `layerOpen` (the focus goes into the sheet); closing focuses the item's box in the grid (`itemFocusBack`: the one shown last, or what opened it) (fix round 3, W2-19-02); the type chips have `aria-pressed` (W2-19-05)
 
 #### The Wardrobe grid
 
@@ -770,7 +777,13 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a Settings change that moves the home day (a workday or day off taken away) moves Today with it when Settings closes (`keepHome`, from `closeSettings` before the redraw)
 - a day before the wardrobe existed (`preWardrobe`: before `planStartDay()`, trimmed from the plan) says "No outfit: your wardrobe starts on …" (`#prewd`), with no score or figure (it showed a red "0 · Incomplete")
 - a past day whose piece was deleted since (`o.gone`) says so under the cards (`goneNote`, `.gonenote`): the drawing can't show it
-- a missing piece's row offers "Add one" (`.addone` → `openAdd()`); nothing says "Add tab" (there is none: `ADD_HINT` "Add one with the + in the Wardrobe")
+- a missing piece's row offers "Add one" (`.addone` → `openAdd(type)`, `addForSlot`: the jacket by the day, suit or blazer); nothing says "Add tab" (there is none: `ADD_HINT` "Add one with the + in the Wardrobe")
+- `openAdd(type)` sets add.js `addFor`: Add says "Adding a belt: …" (`#add-for`) and the next "Add without a photo" card starts as that type; cleared once used, by `openAdd()` with no type (the Wardrobe's +) and when Add is left (fix round 3, W2-14-01: "Belt: Add one" saved a suit)
+- `todaySay` (after each `renderToday`): another day is said by `#sr-live` ("Tuesday, November 17: Navy suit · …"), the same day with other pieces "Now: …"; nothing on the first drawing or when nothing changed (W2-19-01)
+- the Wore pill's name stays "Wore this outfit" with `aria-pressed`, and a tap toasts "Marked as not worn: …" / "Marked as worn." (W2-19-16, W2-14-09)
+- the date heading is named by the date alone (`aria-label`; the weather link and the pill inside it stay their own controls) (W2-19-16)
+- a location set and no forecast for a day within 16 days shows "No forecast yet: tap to try again" / "No forecast · retry" beside the pill (`wxMissing`, `.wxretry` → `loadWeather(true)`; W2-14-14)
+- the open pieces list ends with a line saying what ⇄ and − do (`.plegend`, `aria-hidden`: the buttons are named; W2-14-10)
 - quick swipes in a row each count (`fly` in today.js: a swipe during the last one's fly-out is added to it, and the day is drawn only when no finger is down: drawing removes the element a touch started on and its moves stop coming); `stepDay(n, from, times)`
 - the picture's pill says "This look last worn …" (`wornBar`): it is the jacket, shirt colour and tie together (`lastWorn`), not the suit's own last wear
 - while the checklist shows (`wardShort()`: a `setupNeeds` row not ticked), a half-outfit is drawn but gets no score card, no "This look last worn" and no outfit count on the month card ("pieces still missing"); after removing the sample a suit and a shirt showed a red "50 Incomplete" (re-audit 2026-11-15)
@@ -829,6 +842,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - why: the browser's smooth scroll kept its own pace (WebKit covered 1,000px in one frame), and a `scrollTo` on every frame from rAF ran out of step with the slide on an iPhone, and the calendar, pieces and score cards juddered; `tests/pagescroll.test.js` checks one scroll event per animation (the rAF version fired about 20)
 - a box that unfolds (score, pieces list, a piece row, month plan, a tile's photo) scrolls with `reveal(el, top)`: just far enough to show what opened (`revealNeed`), stopping when the tapped box's top reaches the top of the screen
 - `picfold`, `boxfold` and `monthunfold` also run on WebKit (`npm run test:webkit`): the layout count is Chromium's CDP, so there it is not counted
+- the selected day has `aria-current="date"`; the card's week letters are `aria-hidden` (W2-19-05, W2-19-16)
 
 ### `photos.js`
 
@@ -902,6 +916,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - (fix round 2) a country picked in Days off is stored at once with no list (`fetched` 0) before its list is fetched, so a swipe away keeps it and the next start fetches it; while loading the list area is empty under "Loading the public holidays of …"
 - (fix round 2) `toggleDay`, `setDarkShirts` (and setup.js `setupSetDress`, `setupCancel`) save the settings before releasing the week's locks (`clearLocks`), as dress.js `setDress`: tapped then swiped away within ~100 ms, the change was lost
 - (fix round 2) an empty city search clears the last results; a search in another language asks each result again by id in English (`cityEnglish`: Open-Meteo `/v1/get?id=&language=en`), so the stored name is English, with the name typed shown beside it on the button (`alt`, dropped by `setLocation`)
+- the theme button's first tap goes to the theme the phone isn't showing, then the phone's own, then automatic, each with a toast ("Dark theme. Tap again for light."; fix round 3, W2-14-13: on a light phone the first tap chose Light and nothing changed)
+- a city search says how many places it found, and picking one "Location set to …" (`announce`); the field keeps the keyboard after a pick (W2-19-01)
 
 ### `start.js`
 
@@ -921,6 +937,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the Back audit (2026-11-15): every layer checked in Chromium and WebKit with touch (`tests/backgesture.test.js`): Back closes it alone, × leaves no entry (no dead press), repeated open/close keeps `history.length`; in-page states (Today's folds, the picture's zoom and open swatch, Settings' categories) have no entries, so Back there leaves the app as on any tab
 - kind 'nps' (the "Add without a photo" sheet, add.js `npsOpen` → `appBorrow('nps')`): Back closes it as × (`npsBack`; a changed card asks first and its entry is made again), Add stays with its entry; `show()` leaving Add calls `npsLeave` first
 - `appTop`: the latest entry is start.js's, not the item sheet's (a question or the close-up guide opened over the item sheet); the item sheet's listener then leaves that Back alone, and ignores start.js's own step back (`appPend`); when it closes the item it marks the event (`e.dwItem`) so start.js's listener doesn't act on it too
+- the tab shown has `aria-current="page"` (`show`; W2-19-05)
 
 ### `ui.js`
 
@@ -946,6 +963,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `tests/a11yfix.test.js` covers dialogs, waiting redraws, storage failures, labels, contrast, motion, tap targets
 - a question takes a history entry (`appBorrow('ask')`, start.js) and the phone's Back answers it no (`askBack`), leaving the page under it open (fix round 2, 2026-11-15: Back closed Settings under "Roll back to …?" and left the question over Today)
 - a real tap outside a question within `ASK_SETTLE` (450 ms) of its opening doesn't cancel it: it is the second tap of a double tap on the button that asked (`isTrusted`, so a test's `.click()` still cancels at once)
+- `announce(text)` (in app.js, not ui.js: Today is drawn by the start-up chain, which can run before ui.js has loaded) writes `#sr-live` (emptied first, then written 60 ms later, so the same words are said again); `keepFocus(root, draw)` runs a redraw and, when the focused control inside `root` was replaced, focuses the one with the same id, or the same `onclick`/`onchange`/`oninput`/`data-k`/`data-c`/`data-s` (fix round 3, W2-19-01: focus fell to `<body>` after Next day, the pill, a pick, an Add card's Type); used by `renderToday`, `renderWardrobe`, `renderItem`'s body, `renderAdd`'s queue and sheet, `setupDraw`
+- `layerInert` also makes `#item-view` inert while a layer above it is up (the color sheet, the close-up chooser, the reading sheet, a question, Settings); `askConfirm`/`askAnswer` call it; the Tab trap covers `#col-sheet` too (its Escape stays colpick.js's) (W2-19-03)
+- a toast's words and button are taken out once it has faded (settings.js `toastOff`, 250 ms after `.on` goes), and it stays up while the keyboard is on its button (W2-19-06: an invisible Undo still worked 10 s later)
 
 ### `safety.js`
 
@@ -1084,6 +1104,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - (fix round 2) the first setup's finish stores the time zone's country (`setupHolCountry`: list empty, `fetched` 0) with `setupDone`, before `setupHolidays` fetches it; `setupHolidays` also fetches for a country kept with no list; swiped away right after finishing, the next start's `refreshHolidays` fetches it
 - (fix round 2) the setup's city search clears its results on an empty search and shows a non-English find's English name with the typed one beside it
 - an ended invitation: the Connection step says so ("Your invitation has ended, so the link you used no longer works…") and All set reads "invitation ended"
+- the setup's day rows and °C/°F are named groups (W2-19-10); a step change says "Step 3 of 7: …" (`announce`) and the keyboard stays on Next / Back (Next when Back is gone) (W2-19-01)
 
 ### `kit.js`
 
@@ -1093,6 +1114,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the import sheet's paste field scrolls into view under the header when it is focused (`kitPasteShow`, 350 ms later, for the keyboard)
 - the quick tour (`tourOpen(then, lastLabel)`, `TOUR_CARDS`): four cards with drawn pictures: the score, the close-up (white paper along one edge), Shade, patterns; marked seen on close (`localStorage.tour_seen`, `tourSeen`)
 - a first-time person who taps "Add my first item" at the setup's end gets the tour between the setup and Add, its last button "Add my first item" (`setupFinish`); Escape or ✕ also goes on to Add
+- the tour opened that way says so on its first card (`kit.lead`, `.kit-lead`: "First, four quick cards … ✕ skips straight there"; W2-14-07)
+- a tap on the tour's Next or Back within `KIT_TAP_MS` (350) of the last is dropped as a double tap's second (`kitGo`, real clicks only; W2-14-06: a double tap skipped the close-up card); tests wait past it
 - the tour is offered again by "Take the 1-minute tour" on the setup's last step and Today's first-outfit checklist (`kitStartRow`), and Settings → About → "Take the tour" (`#tour-again`)
 - the close-up guide (`kitCloseupGuide`, `GUIDE_CARD`): fill the screen with cloth, plain white paper along one edge out of the dashed middle (where the colour is measured), the same light on both, the paper white not blown out, tap the paper; opened from the Add card's close-up step ("Tips for a good close-up", `.texguide` in `texSlot`) and the tour's close-up card; its pictures draw the paper as a straight band
 - the Add card's close-up step itself says "Lay white paper along one edge and tap it on the screen to set the exposure." (`.texpaper` in add.js `texSlot`, the owner's ask), so a returning user sees it without opening the guide
@@ -1253,6 +1276,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - "Closest to your close-up" uses the measured parts (`item.meas.parts`) for a patterned cloth, and offers nothing for one without them
 - an item without a photo shows its drawing in the sheet, redrawn in the colour being looked at (`renderColPick`, the owner's ask); a New chip (Claude's own colour) keeps the item's colour there
 - a tap on a chip only previews it; the bottom button "Use <colour>" / "Keep <colour>" saves through `setq` (Add card) or `sete` (editor); Escape closes it without leaving the item (window keydown in the capture phase)
+- the colors to pick come first: "Your colors" (with "+ New color") and the "Not sure? Ask Claude" card stay above the list only when the person has colors of their own / Claude was asked, else they come after it (fix round 3, W2-14-02: at the largest text only "+ New color" showed above the Keep button); the pattern sheet the same way
+- the color and pattern buttons are named "Color: Mid gray", "Pattern: Herringbone" (`colBtn(src,ref,k,v,lab)`; inside their `<label>` the value went unsaid, W2-19-04); the current tile's "Now" is `aria-hidden` with ", now" read after the name
+- opening the sheet makes the item sheet behind it inert (`layerInert`), and closing gives the focus back to the button that opened it, or the same field's `.colbtn[data-k]` when it was drawn again (W2-19-03)
 - the pattern field is the same kind of button (`patBtn`, `EP` in the editor; a small drawn swatch, `swatchSVG(patVar(…),true)`) and opens the same sheet with k 'pattern' (`renderPatPick`): the close-up beside a large drawing of the item in the pattern looked at (`itemThumb(patVar(it,p),true)`: another pattern is drawn without the item's reading), then every pattern `PATS_BY` allows, drawn, grouped (`PAT_GROUPS`: plain, stripes, checks, weaves, figures, other)
 - without a photo the pattern sheet's left side is the item's shaped drawing (`itemThumb(patVar(it,drawAs(sel)))`: a tie, a jacket's panel) in the pattern being looked at, beside the large swatch (the owner's ask)
 - Ask Claude (`colAskRun`, `colAskHtml`): with a close-up, the sheet offers to have Claude read the colours again (cost from `benchEstimate(1)`); the request is the tagger's (`ask`) with the white-balanced close-up, the sharp photo (`tagImgOf`, else the photo) and the close-up's measurement, like `refineFromCloseup`
@@ -1319,6 +1345,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Today: `careNote(o)` adds one quiet line (`#carenote`) under the cards, on today only, when today's suit, blazer or odd trousers reaches its limit with this wear or is past it; nothing otherwise
 - Settings → Care (`#sc-care`, `renderCareUI` from `renderSettingsExtras`; `'care'` is in `SET_CATS` in settings.js, after weather): a dropdown per type in `CARE_TYPES` (`setCareLimit`: Never, After every wear, After 2–10 wears) and "A worn shirt waits" (`setLaundryDays`, which releases the coming week's locks like `setDarkShirts`); the summary `#sum-care` is written by `renderCareUI`
 - `tests/care.test.js` covers all of it, with two devices for `away` / `cleaned` / the settings and sizes at 320, 390 and 626px in both themes
+- the cleaning banner is a button (`role="button"`, named "Overdue: Suit – worn 6 of 5. Tap if it was cleaned"; its words take the tap, `.ctxt`): `careBandTap` asks "Was it cleaned since you last wore it?" with "Cleaned today" (`careCleaned`) / "Not yet", and names Settings → Laundry & cleaning (fix round 3, W2-14-05)
 
 ### `assemble.js`
 
