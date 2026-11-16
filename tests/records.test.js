@@ -140,8 +140,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // ---- W2-13-06: PUT /render keeps only a whole picture
     x=await J(await call('PUT','render',{key:'c0123456789abcdef',rec:{img:'data:image/png;base64,AAAA" onerror="alert(1)',t:1}}));
     ok(x.s===400&&!store.has('render:c0123456789abcdef'),'PUT /render with text after the base64 prefix is refused ('+x.s+')');
-    x=await J(await call('PUT','render',{key:'c0123456789abcdef',rec:{img:PNG,t:1,sig:'s'.repeat(5000)}}));
-    ok(x.s===200&&JSON.parse(store.get('render:c0123456789abcdef')).sig.length<=2000,'a picture is kept, with its signature cut to a sane length');
+    // (2026-11-16) the owner's signatures up to 16000 characters: the masters' manifest lives in one and was cut off at 2000
+    x=await J(await call('PUT','render',{key:'c0123456789abcdef',rec:{img:PNG,t:1,sig:'s'.repeat(20000)}}));
+    ok(x.s===200&&JSON.parse(store.get('render:c0123456789abcdef')).sig.length===16000,'a picture is kept, with the owner\'s signature cut to a sane length (16000)');
+    x=await J(await call('PUT','render',{key:'c0123456789abcdee',rec:{img:PNG,t:2,sig:'m'.repeat(9000)}}));
+    ok(x.s===200&&JSON.parse(store.get('render:c0123456789abcdee')).sig.length===9000,'a 9000-character signature (a long manifest) is kept whole for the owner');
 
     // ---- W2-13-07: POST / takes only a whole picture, and spends nothing on anything else
     claude=0;claudeAnswer={type:'tie',primaryColor:'navy',secondaryColor:'none',tertiaryColor:'none',pattern:'solid',metal:null,leather:null,dial:null,band:null,bezel:null,

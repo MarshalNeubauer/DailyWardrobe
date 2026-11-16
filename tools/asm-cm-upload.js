@@ -80,12 +80,20 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
   // of; it is written only when a date changed (one KV write)
   const mfKey=cmKey('all','manifest'),RE=/^asm\/cm-manifest (\{.*\})$/;
   const curMf=await api('render?key='+mfKey,{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);let old={};
-  try{const m=curMf&&RE.exec(String(curMf.sig||''));if(m)old=JSON.parse(m[1]).keys||{}}catch{}
+  // a manifest that is there but can't be read (cut off, 2026-11-16) is never replaced by this run's records alone: that dropped every
+  // other kind from it; stop instead (the records above are uploaded; rerun once the manifest reads)
+  let unreadable=!!(curMf&&curMf.sig);
+  try{const m=curMf&&RE.exec(String(curMf.sig||''));if(m){old=JSON.parse(m[1]).keys||{};unreadable=false}}catch{}
+  if(unreadable&&!process.argv.includes('--rebuild-manifest')){console.error('The manifest on the worker can\'t be read (cut off?), so it was not rewritten with this run\'s records alone. Run every kind with --rebuild-manifest to write it whole.');process.exit(5)}
   const keys={...old,...dates},changed=Object.keys(keys).some(k=>old[k]!==keys[k]);
   if(changed&&!todo.length&&!budget.take(1)){console.error(`The manifest needs writing, but ${budget.why()}.`);process.exit(4)}
   if(!changed&&todo.length)budget.give(1);   // the manifest's reserved write was not needed
   if(changed){const r=await api('render',{method:'PUT',body:JSON.stringify({key:mfKey,rec:{sig:'asm/cm-manifest '+JSON.stringify({keys}),img:MF_IMG,model:'manifest',t:Date.now()}})});
-    if(!r.ok){console.error(`manifest: upload refused ${r.status} ${await r.text().catch(()=>'')}`);process.exit(3)}console.log(`manifest written (${Object.keys(keys).length} records)`)}
+    if(!r.ok){console.error(`manifest: upload refused ${r.status} ${await r.text().catch(()=>'')}`);process.exit(3)}
+    // read it back: a manifest the worker cut off can't be read by phones (or by the next run)
+    const back=await api('render?key='+mfKey,{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null),bm=back&&RE.exec(String(back.sig||''));
+    let n=-1;try{n=bm?Object.keys(JSON.parse(bm[1]).keys||{}).length:-1}catch{}
+    if(n!==Object.keys(keys).length){console.error(`manifest: read back ${n<0?'unreadable':n+' records'}, expected ${Object.keys(keys).length}: the worker may have cut it off`);process.exit(5)}console.log(`manifest written (${Object.keys(keys).length} records)`)}
   // (2026-11-14) the shared list (worker/records.js cm:shared, owner-only PUT /cm-shared): exactly the render keys testers may read from the
   // owner's records: every record in the manifest, the manifest, the background and each master's 2048 copy for phones (asm-color.js
   // asmCmCopyKey, uploaded by the PC builder until it was removed on 2026-11-16; the copies already there stay listed). Written only when it changed (one KV write); the worker also skips an unchanged list

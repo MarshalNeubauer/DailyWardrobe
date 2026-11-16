@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	7beed5592bf74ac7ad99
+# tested	81e393952f823125e4e5
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	npsLeave	renderAdd	renderAddFor	shadeRow
@@ -2215,7 +2215,7 @@ clock.test.js	mq/suit.js	<loaded>
 clock.test.js	mq/vest.js	<loaded>
 clock.test.js	pack.js	<loaded>	packShow
 clock.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchRemoteRender	fixItemBackdrops	fnv64	listPaused	loadRenders	lookSig	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
-clock.test.js	planner.js	<loaded>	lockStale
+clock.test.js	planner.js	<loaded>	idsAhead	lockStale
 clock.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 clock.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 clock.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	shortDate	toast	weekFirst
@@ -2979,7 +2979,7 @@ daysoff.test.js	mq/suit.js	<loaded>
 daysoff.test.js	mq/vest.js	<loaded>
 daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-daysoff.test.js	planner.js	<loaded>
+daysoff.test.js	planner.js	<loaded>	idsAhead	lockStale
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storeFailure
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	addDayOff	appLocale	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	holPast	holYears	isoDate	isoToDate	loadWeather	locCC	nagerKeep	offNameCut	openSettings	refreshHolidays	refreshToday	removeDaysOff	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	toggleHoliday	unit	unitCC	weekFirst	yearDate
@@ -3802,7 +3802,7 @@ fieldmerge.test.js	mq/suit.js	<loaded>
 fieldmerge.test.js	mq/vest.js	<loaded>
 fieldmerge.test.js	pack.js	<loaded>	packShow
 fieldmerge.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	jsq	lastWorn	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
-fieldmerge.test.js	planner.js	<loaded>	idsAhead	lockStale
+fieldmerge.test.js	planner.js	<loaded>
 fieldmerge.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 fieldmerge.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 fieldmerge.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	showCost	toast	weekFirst
@@ -4884,7 +4884,7 @@ inlineswatch.test.js	mq/suit.js	<loaded>
 inlineswatch.test.js	mq/vest.js	<loaded>
 inlineswatch.test.js	pack.js	<loaded>	packShow
 inlineswatch.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchRemoteRender	fixItemBackdrops	fnv64	lastWorn	listPaused	loadRenders	lookSig	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-inlineswatch.test.js	planner.js	<loaded>	idsAhead	lockStale
+inlineswatch.test.js	planner.js	<loaded>	lockStale
 inlineswatch.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 inlineswatch.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 inlineswatch.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	weekFirst
@@ -8644,7 +8644,7 @@ rollback.test.js	mq/suit.js	<loaded>
 rollback.test.js	mq/vest.js	<loaded>
 rollback.test.js	pack.js	<loaded>	packShow
 rollback.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	picsDrawn	renderItemPicUI	workerBase
-rollback.test.js	planner.js	<loaded>
+rollback.test.js	planner.js	<loaded>	idsAhead	lockStale
 rollback.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 rollback.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errList	errReport	errSoon	pruneTagImgs	safetyStart	storeFailure
 rollback.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	isoToDate	loadWeather	locCC	offNameCut	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit	unitCC	weekFirst	yearDate
@@ -11095,7 +11095,7 @@ tagging.test.js	asm-gl.js	<loaded>
 tagging.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 tagging.test.js	asm-pocket.js	<loaded>
 tagging.test.js	asm-watch.js	<loaded>
-tagging.test.js	assemble.js	<loaded>	@	renderAsmUI
+tagging.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave	renderAsmUI
 tagging.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow	laundryDays	renderCareUI
 tagging.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
 tagging.test.js	colpick.js	<loaded>	closeColPick	cnAskBox	cnColBase	cnCost	cnDone	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnPatBase	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSheetSwipe	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
@@ -11119,7 +11119,7 @@ tagging.test.js	mq/suit.js	<loaded>
 tagging.test.js	mq/vest.js	<loaded>
 tagging.test.js	pack.js	<loaded>	packShow
 tagging.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchRemoteRender	fixItemBackdrops	fnv64	jsq	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	srcOk	workerBase	workerList
-tagging.test.js	planner.js	<loaded>
+tagging.test.js	planner.js	<loaded>	idsAhead	lockStale
 tagging.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 tagging.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errSoon	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 tagging.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	unit	unitCC	weekFirst

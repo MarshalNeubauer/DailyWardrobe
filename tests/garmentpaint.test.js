@@ -7,8 +7,11 @@ const fs=require('fs'),path=require('path'),{execSync,spawnSync}=require('child_
 const NEW=['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore'];
 module.exports=async({ok,chromium,url,ROOT})=>{
   const FIX=path.join(__dirname,'fixtures','cm'),HOST='https://w.test/';
-  let changed=[];try{changed=execSync('git diff --name-only origin/main',{cwd:ROOT,encoding:'utf8'}).split('\n').map(s=>s.trim()).filter(f=>/^[^/]+\.(js|html)$/.test(f))}catch(e){}
-  const mainSrc={};for(const f of changed){try{mainSrc[f]=execSync('git show origin/main:'+f,{cwd:ROOT,encoding:'utf8',maxBuffer:64e6})}catch(e){}}
+  // the app as it was just before the new garments merged (#511's first parent): comparing with origin/main found nothing to compare
+  // once the garments were on main
+  const BASE='0739984751a64d7a85444dc63a3e1f84326e7bb3';
+  let changed=[];try{changed=execSync('git diff --name-only '+BASE,{cwd:ROOT,encoding:'utf8'}).split('\n').map(s=>s.trim()).filter(f=>/^[^/]+\.(js|html)$/.test(f))}catch(e){}
+  const mainSrc={};for(const f of changed){try{mainSrc[f]=execSync('git show '+BASE+':'+f,{cwd:ROOT,encoding:'utf8',maxBuffer:64e6})}catch(e){}}
   const browser=await chromium.launch();
   try{
     // ---- the same looks keyed on main's files and on the branch's ----

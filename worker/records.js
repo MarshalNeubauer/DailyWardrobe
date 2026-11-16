@@ -85,7 +85,11 @@ async function putRender(req, env, json, who) {
   const cur = await env.WARDROBE.get(`${ns}render:${id}`, 'json');
   if (cur && (cur.t || 0) >= (rec.t || 0)) return json({ ok: true, kept: 'newer' });
   const over = await spendEach(env, who, [['upload', 1], ['write', 1]]); if (over) return json(over.body, over.status);   // every upload is a KV write
-  await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify({ sig: String(rec.sig || '').slice(0, 2000), img: rec.img, model: String(rec.model || '').slice(0, 80), t: +rec.t || Date.now() }), renderTtl(id));
+  // the signature is kept to 2000 characters, the owner's to 16000: the color-coded masters' manifest (tools/asm-cm-upload.js) lives in
+  // its signature and lists every master record's date; at 2000 a list of ~50 records was cut off mid-JSON (2026-11-16: the new garments'
+  // uploads), so phones could not read it and the next upload, reading nothing, wrote a list of only its own records
+  const sigMax = who && who.role === 'owner' ? 16000 : 2000;
+  await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify({ sig: String(rec.sig || '').slice(0, sigMax), img: rec.img, model: String(rec.model || '').slice(0, 80), t: +rec.t || Date.now() }), renderTtl(id));
   return json({ ok: true });
 }
 /* DELETE /render?key=c... -> the kept photo is removed (one that was made wrong; the app stops using its own copies by changing the key) */
