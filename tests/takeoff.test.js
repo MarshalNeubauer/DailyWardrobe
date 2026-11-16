@@ -22,7 +22,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     const b=await st();
     ok(!b.ids.top&&b.ids.bot===a.ids.top&&b.suitBot&&!b.suitDay&&!b.vest&&b.off&&b.off.top&&b.offKind==='suit',`the jacket and waistcoat come off and the suit's pants stay (${JSON.stringify(b.ids)})`);
     ok(['shirt','tie','shoes','belt','socks','watch'].every(s=>b.ids[s]===a.ids[s]),'the shirt, tie, shoes, belt, socks and watch stay as shown');
-    ok(b.rows.some(t=>/^SuitTaken off: the pants stay/.test(t))&&b.rows.some(t=>/^Pants\S/.test(t))&&b.btns.includes('Put the suit jacket back on')&&!b.btns.includes('Change pants'),`the list says the jacket is off, shows the suit's pants (not swappable) and offers + (${b.rows.slice(0,3).join(' | ')})`);
+    ok(b.rows.some(t=>/^SuitTaken off: the pants stay/.test(t))&&b.rows.some(t=>/^Pants\S/.test(t))&&b.btns.includes('Put the suit jacket back on')&&b.btns.includes('Change pants'),`the list says the jacket is off, shows the suit's pants (with ⇄ to change them, tests/todaypants.test.js) and offers + (${b.rows.slice(0,3).join(' | ')})`);
     ok(!b.hard.length,`no penalty for the missing jacket (${b.hard.join(', ')})`);
     ok(b.kind==='shirt-tie',`the picture moves to the shirt-and-tie master (${b.kind})`);
     // only the tie off, on a waistcoat day: the waistcoat goes with it (no one wears a waistcoat without a tie)
