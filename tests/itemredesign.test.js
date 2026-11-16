@@ -108,7 +108,7 @@ async function run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX}){
 
   // ---- the Add card: before a close-up
   await ev(([ph])=>{openAdd();queue.length=0;
-    queue.unshift({id:'q1',ai:true,type:'suit',primaryColor:'navy',secondaryColor:'white',tertiaryColor:null,pattern:'pinstripe',photo:ph,conf:{type:'high',primaryColor:'high',pattern:'medium'},altPattern:'chalk',aiTag:{pattern:'pinstripe'},material:'flannel',matAI:{key:'flannel',conf:'medium',why:'brushed nap'}});
+    queue.unshift({id:'q1',ai:true,type:'suit',primaryColor:'navy',secondaryColor:'white',tertiaryColor:null,pattern:'pinstripe',photo:ph,conf:{type:'high',primaryColor:'high',pattern:'medium'},altPattern:'chalk-stripe',aiTag:{pattern:'pinstripe'},material:'flannel',matAI:{key:'flannel',conf:'medium',why:'brushed nap'}});
     renderAdd()},[PH]);await settle(p,500);
   const card=()=>ev(()=>{const c=document.querySelector('#queue .qcard[data-q="q1"]');if(!c)return null;const secs=[...c.querySelectorAll('.cks')];
     return {ks:secs.map(s=>s.dataset.ck).join(','),titles:secs.map(s=>s.querySelector('.ckt b').textContent).join('|'),open:secs.filter(s=>s.classList.contains('open')).map(s=>s.dataset.ck).join(','),
@@ -125,6 +125,8 @@ async function run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX}){
       out:b&&cs(b).backgroundColor!==cs(a).backgroundColor&&cs(b).borderTopWidth!=='0px',btext:b&&b.textContent.trim(),steps:!!c.querySelector('.wbstcard'),h:[a,b].every(x=>x.getBoundingClientRect().height>=44)}});
   ok(e.order&&e.text==='Add close-up and read color, texture & material'&&/^About \d+¢$/.test(e.cost)&&e.btext==='Add close-up',T+`two buttons: "Add close-up and read color, texture & material · ${e.cost}" on top, "Add close-up" under it`);
   ok(e.pri&&e.out&&e.steps&&e.h,T+'the first in the primary style (as Confirm), the second outlined; True color in 3 steps above them; both 44 px or taller');
+  e=await ev(()=>[...document.querySelectorAll('#queue [data-ck="pattern"] .ckpt')].map(t=>t.querySelector('b').textContent+'/'+t.querySelector('small').textContent+'/'+t.getAttribute('aria-checked')+'/'+!!t.querySelector('svg')).join('|'));
+  ok(e==='Pinstripe/Claude’s pick/true/true|Chalk stripe/Claude’s 2nd/false/true',T+`Pattern shows Claude's pick and its second choice as drawn tiles (${e})`);
   ok((await card()).conf===false&&/^4 left to check · you can still confirm$/.test((await card()).left),T+'Confirm is not blocked by unchecked parts: "4 left to check · you can still confirm"');
   // Looks right: the section checked and folded, the next unchecked one opens; the count follows
   await tap('#queue [data-ck="pattern"] .cklr');e=await card();
