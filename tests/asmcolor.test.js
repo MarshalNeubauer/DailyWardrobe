@@ -119,7 +119,7 @@ module.exports=async({ok,chromium,url})=>{
       for(let i=0;i<100&&/^Looking|^$/.test(($('#cm-status')||{}).textContent||'');i++)await new Promise(res=>setTimeout(res,100));
       r.status=($('#cm-status')||{}).textContent||'';r.head=($('#cm-box .slabel')||{}).textContent;closeSettings&&closeSettings();return r});
     ok(!sw.there&&sw.stored===null&&sw.off===null&&sw.on==='shirt-tie',`Settings has no colour-coded masters switch; one left off on a phone is cleared at start-up (${JSON.stringify(sw)})`);
-    ok(sw.head==='Pictures ahead'&&/^(Next 60 days: \d+ of \d+ looks? built on the computer.*\d+ on this phone\. Checked (just now|a minute ago|\d+ minutes ago)\.|None of the workdays|The next 60 days have)/.test(sw.status),`Settings says how many of the next 60 days' looks the computer has built ("${sw.status}")`);
+    ok(sw.head==='Pictures ahead'&&/^(Next 60 days: \d+ of \d+ looks? painted on this phone.*\.|None of the workdays)/.test(sw.status)&&!/computer/.test(sw.status),`Settings says how many of the next 60 days' looks this phone has painted, and nothing about a computer ("${sw.status}")`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
   // a fresh phone with the worker's list (2026-11-13): a look the computer built is shown from its picture alone, without the master, its

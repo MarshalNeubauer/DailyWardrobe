@@ -1270,17 +1270,12 @@ async function asmCmWarm(looks){if(asmCmWarming||(self.ASM_CM_SIZE||ASM_SIZE)>AS
   catch(e){console.warn('warming stopped',e)}finally{asmCmWarming=false}return n}
 
 /* ---- Today: the colour-coded way of asmEnsure ---- */
-/* a look with no picture on the worker: when this phone first saw it missing, and whether that is long enough ago to paint it here
-   while building ahead (ASM_PC_WAIT: from when the PC builder, removed 2026-11-16, painted the coming looks; kept as it was) */
-const ASM_PC_WAIT=10*60e3,asmCmMissing=new Map();
-const asmCmLate=k=>{if(!asmCmMissing.has(k))asmCmMissing.set(k,Date.now());return Date.now()-asmCmMissing.get(k)>ASM_PC_WAIT};
 async function asmCmEnsure(o,ahead){const kind=asmCmKind(o);if(!kind)return;if(asmFullWins(o)||asmFor(o))return;const bk='cm|'+comboKey(o);if(asmBusy.has(bk))return;asmBusy.add(bk);
   try{const k=asmOutKey(o),L=await asmListGet(),showIf=()=>{const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow()};
     // (2026-11-13) the worker's picture first, before any of the master's photos: the master, its masks and parts (2.8 MB, about 7 s
     // on 4G) are only needed to paint here. The list says whether it has it; without a list, ask anyway
     if((!L||L.has(k))&&await asmGetPre(o,!!L)){showIf();return}
-    // not there: while building ahead, left for ASM_PC_WAIT after this phone first saw it missing; the day on screen is painted here at once
-    if(ahead&&L&&!asmCmLate(k))return;
+    // not there: painted here (a coming look waited 10 minutes for the PC builder until it was removed, 2026-11-16)
     if(!await asmCmGet(kind)||asmFullWins(o))return;
     const img=await asmPhoto(o,!ahead);if(!img)return;
     await asmKeepOut(k,img,{stamp:asmStamp(o),t:Date.now(),lid:asmLookId(o)});showIf()}
@@ -1291,23 +1286,20 @@ async function asmCmEnsure(o,ahead){const kind=asmCmKind(o);if(!kind)return;if(a
 function asmCmUI(){const grp=$('#asm-group');if(!grp)return;let b=$('#cm-box');if(!b){b=document.createElement('div');b.id='cm-box';b.className='sgroup';grp.appendChild(b)}
   b.innerHTML=`<div class="slabel">Pictures ahead</div><p class="shelp" id="cm-status" role="status"></p>`;
   asmGapUI();asmCmStatus();if(typeof asmGlUI==='function')asmGlUI(b)}
-/* the workdays of the next ASM_AHEAD days painted on a colour-coded master: how many looks, how many have a picture on the
-   worker (its list, asmListGet: the PC builder, removed 2026-11-16, uploaded them under their look's key; the line's wording "built on
-   the computer" is from then) and how many this phone holds; and when the list was read ("checked" is when this phone asked) */
+/* the workdays of the next ASM_AHEAD days painted on a colour-coded master: how many looks and how many this phone holds (it said how
+   many the computer had built until the PC builder was removed, 2026-11-16) */
 let asmCmStatusRun=0;
 async function asmCmStatus(){const el=$('#cm-status');if(!el)return;const run=++asmCmStatusRun;
   if(!workerBase()){el.textContent='';return}
   el.textContent='Looking at the coming days…';
-  const L=await asmListGet(),T=todayDate(),seen=new Map();
+  const T=todayDate(),seen=new Map();
   for(let i=0;i<ASM_AHEAD;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;
     if(i%10===9)await new Promise(r=>setTimeout(r,0));if(run!==asmCmStatusRun)return;
     const o=planOn(d);if(!o||!asmCmUse(o))continue;const k=asmOutKey(o);if(!seen.has(k))seen.set(k,o)}
   if(run!==asmCmStatusRun||!$('#cm-status'))return;
-  const n=seen.size,built=L?[...seen.keys()].filter(k=>L.has(k)).length:0,here=[...seen.values()].filter(o=>asmFor(o)).length;
-  const mins=Math.round((Date.now()-asmListAt)/6e4),ago=mins<1?'just now':mins===1?'a minute ago':mins+' minutes ago';
+  const n=seen.size,here=[...seen.values()].filter(o=>asmFor(o)).length;
   el.textContent=!n?`None of the workdays in the next ${ASM_AHEAD} days is painted on a color-coded master.`:
-    !L?`The next ${ASM_AHEAD} days have ${n} look${n===1?'':'s'} to paint; ${here} on this phone. The server couldn’t list its pictures just now, so how many the computer has built isn’t known.`:
-    `Next ${ASM_AHEAD} days: ${built} of ${n} look${n===1?'':'s'} built on the computer${built<n?` (the other ${n-built} are painted on this phone when needed)`:''}; ${here} on this phone. Checked ${ago}.`}
+    `Next ${ASM_AHEAD} days: ${here} of ${n} look${n===1?'':'s'} painted on this phone${here<n?` (the other ${n-here} are painted when needed)`:''}.`}
 /* "Painted plain": every garment in rotation whose pattern the pictures don't show yet, why, and one tap to read the readable ones
    (Claude, one call each: never by itself) */
 let asmGapRun=null;
