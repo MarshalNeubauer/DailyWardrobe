@@ -182,12 +182,21 @@ function asmCmMp(P,z,c,lin){const f=P.fold&&P.fold[z==='waistcoat'?'jacket':z],m
    melange are soft and matt; a worsted has a little sheen; chinos and denim are crisp and matt; an oxford or twill shirt is softer than
    poplin, a sateen shinier; a silk tie is crisp and shiny, a knitted, wool, grenadine or linen one soft and matt. Read from the item's
    material, pattern and description (few items have a material set, so the pattern's name counts) */
-const ASM_CM_MAT={linen:[1.15,.8],soft:[.96,.6],worsted:[1,1.15],chino:[1.05,.7],oxford:[.95,.8],sateen:[1,1.3],poplin:[1,1],silk:[1.1,1.3],knit:[.9,.4]};
-function asmCmMat(i,z){if(!i)return [1,1];const M=ASM_CM_MAT,t=((i.material||'')+' '+(typeof patName==='function'?patName(i.pattern):i.pattern||'')+' '+(i.patternText||'')).toLowerCase();
-  if(z==='tie')return /knit|wool|grenadine|linen|cashmere/.test(t)?M.knit:M.silk;
-  if(z==='shirt')return /linen/.test(t)?M.linen:/sateen|satin/.test(t)?M.sateen:/oxford|flannel|twill|chambray/.test(t)?M.oxford:M.poplin;
-  if(/linen/.test(t))return M.linen;if(/tweed|flannel|melange|donegal|cashmere/.test(t))return M.soft;
-  if(z==='trousers'&&(i.trouserKind||/cotton|chino|denim/.test(t)))return M.chino;return M.worsted}
+/* (2026-11-15, the materials audit) velvet: deep soft folds and a strong pile sheen; corduroy, moleskin, camel hair, melton, loden and alpaca
+   soft and matt; seersucker crisp and matt; jersey like a knit; mohair, silk blend and polyester blend a little more sheen (sheen),
+   tropical wool a little less (tropical); a cotton suit or blazer matt like chinos; a performance stretch shirt a little sheen; a cotton
+   tie matt, not silk-shiny. The new cloths are read from the item's material only (its description could name any of them) */
+const ASM_CM_MAT={linen:[1.15,.8],soft:[.96,.6],worsted:[1,1.15],chino:[1.05,.7],oxford:[.95,.8],sateen:[1,1.3],poplin:[1,1],silk:[1.1,1.3],knit:[.9,.4],
+  velvet:[1.2,1.45],sheen:[1,1.3],tropical:[1,1],stretch:[1,1.2]};
+function asmCmMat(i,z){if(!i)return [1,1];const M=ASM_CM_MAT,m=String(i.material||'').toLowerCase(),t=(m+' '+(typeof patName==='function'?patName(i.pattern):i.pattern||'')+' '+(i.patternText||'')).toLowerCase();
+  if(z==='tie')return /knit|wool|grenadine|linen|cashmere/.test(t)?M.knit:/cotton/.test(m)?M.chino:M.silk;
+  if(z==='shirt')return /linen/.test(t)?M.linen:/seersucker/.test(m)?M.chino:/stretch|nylon|spandex/.test(m)?M.stretch:/sateen|satin/.test(t)?M.sateen:/oxford|flannel|twill|chambray/.test(t)?M.oxford:M.poplin;
+  if(/linen/.test(t))return M.linen;if(/velvet/.test(m))return M.velvet;
+  if(/tweed|flannel|melange|donegal|cashmere/.test(t)||/corduroy|moleskin|camel|melton|loden|alpaca/.test(m))return M.soft;
+  if(/jersey/.test(m))return M.knit;if(/seersucker/.test(m))return M.chino;
+  if(z==='trousers'&&(i.trouserKind||/cotton|chino|denim/.test(t)))return M.chino;
+  if((z==='jacket'||z==='waistcoat')&&/^cotton/.test(m))return M.chino;
+  if(/mohair|silk blend|polyester/.test(m))return M.sheen;if(/tropical/.test(m))return M.tropical;return M.worsted}
 /* a tie's sheen lies where the tie itself is lit (its knot's dimple and its folds shape it): none below ASM_TIE_LIT[0] of its lit level,
    full ASM_TIE_LIT[1] above that, at most ASM_TIE_LIT[2] (it was one even band down the blade) */
 const ASM_TIE_LIT=[.7,.35,1.25];
@@ -222,6 +231,7 @@ const asmCmWeaveTag=(z,i)=>{if(z==='shirt'&&asmHbShirt(i))return '/hbs'+ASM_HB_S
   const how=asmCmRoute(i,z).how;
   // the painters added after the routing test (2026-11-13): small woven figures on jackets and trousers, knit and paisley ties
   if(ASM_MICRO[how])return '/m'+how+'-'+JSON.stringify(ASM_MICRO[how]).replace(/\W+/g,'');
+  if(how==='cord'||how==='sucker')return '/p'+how+'-'+JSON.stringify(ASM_PILE[how]).replace(/\W+/g,'');   // corduroy's wales, seersucker's pucker (asmPileTile)
   if(how==='knit')return '/knit'+ASM_KNIT_ACROSS;if(how==='paisley')return '/paisley'+ASM_PAISLEY_ACROSS;
   if(z==='trousers'){const h=asmCmRoute(i,z).how;return ['twill','herringbone','tweed'].includes(h)?'/t'+h+(h==='herringbone'?ASM_HB_MM+'-'+ASM_HB_AMP+'-'+ASM_HB_RIB+'-'+ASM_HB_FLECK+'-'+ASM_HB_YARN+'-'+ASM_HB_BREAK+'s'+ASM_HB_THIN+'m'+ASM_HB_MOTTLE+'f'+ASM_HB_FLOAT+'/'+ASM_HB_FLOATL+'o'+ASM_HB_SOFT+'g'+ASM_HB_GRAIN+'n'+ASM_HB_SNAP+'p'+ASM_HB_PBRK:''):''}
   if((z==='jacket'||z==='waistcoat')&&asmCmRoute(i,z).how==='tweed'&&!asmSuitTweed(i))return '/ttweed';   // an own pattern named tweed
@@ -247,7 +257,7 @@ function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof 
     if(w&&!(s&&s.bands))return {how:w,gap:'',why:''};
     if(b==='tweed'||(/^own/.test(i.pattern||'')&&/tweed/i.test(i.pattern)))return {how:'tweed',gap:'',why:''};
     const mk=typeof asmMicroKind==='function'?asmMicroKind(i):'';if(mk&&!(s&&s.bands))return {how:mk,gap:'',why:''};   // houndstooth, sharkskin, birdseye, nailhead
-    if(b==='solid')return {how:'flat',gap:'',why:''};
+    if(b==='solid'){const pk=asmPileKind(i);return {how:pk&&!asmCuWants(i,'flat')?pk:'flat',gap:'',why:''}}   // a plain corduroy or seersucker without a close-up: its generated cloth (asmPileTile)
     if([...STRIPE_PATS,...CHECK_PATS].includes(b))return needs();
     return plain('painter',`no painter for ${pn} ${z==='trousers'?'pants':'jackets'} yet`)}
   if(z==='shirt'){if(b==='solid'&&!s)return {how:'flat',gap:'',why:''};
@@ -602,6 +612,25 @@ function asmWorstedTile(i){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');r
   if(!t){t=new Float32Array(3*n);for(let k=0;k<n;k++){const g=1+ASM_WT.amp*det.d[k];for(let q=0;q<3;q++){const b=c2?base[q]+(c2[q]-base[q])*ASM_TWILL.mix*det.rib[k]:base[q];t[3*k+q]=Math.max(0,b*g)}}
     if(asmWtMem.size>24){asmWtMem.clear();asmWtMem.set('d',det)}asmWtMem.set(key,t)}
   return {t,c:new Float32Array(base),TW:T,TH:T,mm:ASM_WT.mm,linen:asmLinen(i),cloth:null}}
+/* corduroy and seersucker (2026-11-15, the materials audit: both were painted as a plain worsted): a plain corduroy or seersucker jacket,
+   waistcoat or trousers with no close-up to paint from (asmPileKind; a close-up's own patch is truer, asmCuWants) gets a generated tile
+   like asmWorstedTile's: corduroy rounded wales running down the garment (ASM_PILE.cord: k wales across mm of cloth, a soft groove, the
+   pile's streaks along each wale), seersucker its stripes in the one colour, a smooth flat stripe beside a puckered one (k repeats across
+   mm). Velvet keeps the plain cloth (its pile is the light, ASM_CM_MAT.velvet) */
+const ASM_PILE={T:256,cord:{k:12,mm:30,amp:1.4},sucker:{k:4,mm:24,amp:1}},asmPileMem=new Map();   // (amp: the light swing, as ASM_WT.amp: the painter tones detail down on dark cloth)
+const asmPileKind=i=>{const m=String(i&&i.material||'').toLowerCase();return /corduroy/.test(m)?'cord':/seersucker/.test(m)?'sucker':''};
+function asmPileTile(i,how){const P=ASM_PILE[how];if(!P)return null;const L=ASM_LIN,base=[0,2,4].map(k=>L[parseInt(String(colOf(i)).replace('#','').slice(k,k+2),16)||0]);
+  const T=ASM_PILE.T,n=T*T,key=how+JSON.stringify([base,P]);let t=asmPileMem.get(key);
+  if(!t){let s=777;const rnd=()=>(s=(Math.imul(s,1103515245)+12345)&0x7fffffff)/0x7fffffff,d=new Float32Array(n),col=[],row=[];for(let x=0;x<T;x++)col.push(rnd()-.5);for(let y=0;y<T;y++)row.push(rnd()-.5);
+    const cell=new Float32Array(64*64);for(let k=0;k<cell.length;k++)cell[k]=rnd()-.5;const cv=(x,y)=>cell[((y>>2)&63)*64+((x>>2)&63)];
+    for(let y=0;y<T;y++)for(let x=0;x<T;x++){const ph=P.k*x/T,r=ph-Math.floor(ph);let v;
+      if(how==='cord'){const ridge=Math.pow(Math.sin(Math.PI*r),.6);v=ridge-.6+.12*col[x]*ridge+.05*row[(y+7*Math.floor(ph))%T]+.04*(rnd()-.5)}   // a wale, its streaks along it
+      else{const puck=r>=.5;v=puck?.1*Math.sin(2*Math.PI*(y*P.k*3/T+.3*cv(x,y)))+.25*cv(x,y)+.12*cv(x+2,y+5)-.05:.06+.03*(rnd()-.5)}   // the puckered stripe beside the flat one
+      d[y*T+x]=v}
+    let m=0;for(let k=0;k<n;k++)m+=d[k];m/=n;const v=[];for(let k=0;k<n;k+=7)v.push(d[k]-m);v.sort((a,b)=>a-b);const sw=(v[Math.floor(v.length*.95)]-v[Math.floor(v.length*.05)])||1;
+    t=new Float32Array(3*n);for(let k=0;k<n;k++){const g=1+P.amp*(d[k]-m)/sw;for(let q=0;q<3;q++)t[3*k+q]=Math.max(0,base[q]*g)}
+    if(asmPileMem.size>12)asmPileMem.clear();asmPileMem.set(key,t)}
+  return {t,c:new Float32Array(base),TW:T,TH:T,mm:P.mm,linen:false,cloth:null}}
 /* the job for asmCmBuild, or null when the kind's master or masks are not on the device */
 async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)return null;const keys=asmCmAssets(kind);if(keys.some(k=>!renders[k]))return null;
   const masks={};for(const z of K.zones)masks[z]=renders[asmCmKey(kind,'mask/'+z)].img;
@@ -616,6 +645,7 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
       else if(how==='twill'&&asmWtWants(i,z))c.suit=asmWorstedTile(i);   // a worsted twill's ribs (asmWorstedTile)
       else if(how==='twill'||how==='herringbone')c.suit=asmTwillTex(i);   // the weave's ribs (jacket or trousers)
       else if(how==='tweed')c.suit=asmTweedTex(i);
+      else if(how==='cord'||how==='sucker')c.suit=asmPileTile(i,how);   // corduroy's wales, seersucker's pucker (asmPileTile)
       else if(ASM_MICRO[how])c.suit=asmMicroTex(i,how);   // houndstooth, sharkskin, birdseye, nailhead
       else if(how==='knit')c.tie=asmKnitTile(i);
       else if(how==='paisley')c.tie=await asmPaisleyTile(i);
@@ -893,7 +923,7 @@ const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt
    and asm-color.js) and the kept setup's key asmCmSrcSig (asmCmPrep and asmCmLightPrep with theirs). ASM_CM_PAINTV was bumped by hand
    and three changes shipped without it. tests/asmcode.test.js reads both files and fails when something these functions reach is
    missing from a list. Not in them: draw.js's drawings (fabricDef) that tiles are made from, and the cloth's own readings (in asmCmSig). */
-const asmCmCode=()=>[ASM_LOOK,asmLookSuit,asmLookTag,ASM_WT,asmWtMem,asmWtWants,asmWorstedTile,ASM_CR,asmCrWants,asmCrFind,asmCrTile,asmCrTile1,ASM_CU,asmCuDark,asmCuFine,asmCuWants,asmCuPatch,asmCuWrap,asmCuTile,asmCuTile1,ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
+const asmCmCode=()=>[ASM_LOOK,asmLookSuit,asmLookTag,ASM_WT,asmWtMem,asmWtWants,asmWorstedTile,ASM_PILE,asmPileMem,asmPileKind,asmPileTile,ASM_CR,asmCrWants,asmCrFind,asmCrTile,asmCrTile1,ASM_CU,asmCuDark,asmCuFine,asmCuWants,asmCuPatch,asmCuWrap,asmCuTile,asmCuTile1,ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
   ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CM_SOFT,ASM_CM_U16,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_COL_LIFT,ASM_HB_FLECK,ASM_HB_FLOAT,
   ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SHIRT_Y,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_KNIT_ACROSS,
   ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_PAISLEY_ACROSS,ASM_PX_MM,
