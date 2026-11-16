@@ -63,7 +63,7 @@ const vestRow=o=>!(o.suitDay&&hasVest(o.top)&&o.tie)?'':`<div class="row vest-ro
 /* the outfit list: tapping a piece's swatch or name unfolds its photo inside the list (the actual item, so you can see
    exactly which shirt it is); one at a time; items without a photo show their product picture or drawing */
 let openRow=null;
-const rowPic=i=>i.photo?`<img class="rpic" src="${i.photo}" alt="Photo of ${esc(desc(i)||nm(i))}">`:itemPic(i)?`<img class="rpic" src="${itemPic(i).img}" alt="Picture of ${esc(desc(i)||nm(i))}">`:`<div class="rpic draw">${itemThumb(i,true)}</div>`;
+const rowPic=i=>i.photo?`<img class="rpic" src="${srcOk(i.photo)}" alt="Photo of ${esc(desc(i)||nm(i))}">`:itemPic(i)?`<img class="rpic" src="${srcOk(itemPic(i).img)}" alt="Picture of ${esc(desc(i)||nm(i))}">`:`<div class="rpic draw">${itemThumb(i,true)}</div>`;
 const rowPanel=i=>rowPic(i)+(i.photo?'':`<small class="mut rnote">No photo of this item yet${itemPic(i)?': a generated picture of it.':': this is how the app draws it.'}</small>`);
 /* taking a piece off for the day (the owner's ask, 2026-11-13): the jacket (with its waistcoat; a suit's trousers stay) or the tie (with
    its clip), on today and the coming days; − beside the piece takes it off, + on its "Taken off" row puts it back (setOff) */
@@ -175,8 +175,9 @@ const ovlDrawn=i=>{if(i.type==='tie')return false;if(i.type==='shirt')return tru
    over them, and the cloth's grain (ovlGrain: twill ribs, herringbone columns, linen slubs, else a fine plain weave) at OVL_GRAIN times
    the mockup's base strength; a suit with a stripe, check or figure but no band reading keeps the drawn tile. A PNG, cached. */
 const OVL_PX=260,OVL_GRAIN=2.2,OVL_CROSS=.06,OVL_CROSS_A=.75,OVL_SUITS=new Map();
-const ovlGrain=i=>{const t=((i.patternSpec&&i.patternSpec.description)||i.patternText||'')+' '+(i.material||'')+' '+(i.pattern||'');
-  return /linen/i.test(t)?'linen':/herringbone/i.test(t)?'herringbone':/twill|serge|gabardine/i.test(t)?'twill':'plain'};
+/* (2026-11-15, the materials audit) corduroy's wales, seersucker's puckered stripe and velvet's soft pile, from the material */
+const ovlGrain=i=>{const t=((i.patternSpec&&i.patternSpec.description)||i.patternText||'')+' '+(i.material||'')+' '+(i.pattern||''),m=String(i.material||'');
+  return /linen/i.test(t)?'linen':/corduroy/i.test(m)?'cord':/seersucker/i.test(m)?'sucker':/velvet/i.test(m)?'velvet':/herringbone/i.test(t)?'herringbone':/twill|serge|gabardine/i.test(t)?'twill':'plain'};
 function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlItem(i),s=usableSett(o),bands=s&&s.v===2&&s.bands&&s.bands.length>1?s.bands:null;
   if(!bands&&(s&&s.motif||[...STRIPE_PATS,...CHECK_PATS,...MOTIF_PATS].includes(patBase(i.pattern)||'')))return null;
   const kind=ovlGrain(i),cx=bands&&s.cross&&s.cross.bands&&Math.abs(Math.abs(s.cross.d)-90)<=20?s.cross:null,flip=bands&&Math.abs(Math.abs(s.a||0)-90)<20;
@@ -193,6 +194,9 @@ function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlI
     if(kind==='twill')g=1+m*(.055*Math.sin(2*Math.PI*(x+y)/7)+.03*(hash(x+y,(y-x)>>2)-.5));
     else if(kind==='herringbone'){const k=Math.floor(x/26),d=k%2?x+y:x-y;g=1+m*(.07*Math.sin(2*Math.PI*d/7)+.03*(hash(d,k)-.5))}
     else if(kind==='linen')g=1+m*(.05*(hash(x>>1,7)-.5)+.05*(hash(13,y>>1)-.5)+.03*(hash(x,y)-.5));
+    else if(kind==='cord'){const u=flip?y:x;g=1+m*(.09*Math.pow(Math.sin(Math.PI*u/10),2)-.045+.025*(hash(u,(flip?x:y)>>3)-.5))}   // the wales run with the stripes
+    else if(kind==='sucker'){const u=flip?y:x,pk=Math.floor(u/14)%2;g=1+m*(pk?.05*(hash(u>>2,(flip?x:y)>>2)-.5)+.03*Math.sin((flip?x:y)/2.5):.02*(hash(x,y)-.5)+.012)}
+    else if(kind==='velvet')g=1+m*(.04*(hash(x>>4,y>>4)-.5)+.03*(hash(x>>2,y>>2)-.5)+.012*(hash(x,y)-.5));
     else g=1+m*(.025*Math.sin(Math.PI*x/2)*Math.sin(Math.PI*y/2)+.035*(hash(x,y)-.5));
     const k=4*(y*S+x);for(let j=0;j<3;j++)D.data[k+j]=Math.max(0,Math.min(255,Math.round(px[j]*g)));D.data[k+3]=255}
   X.putImageData(D,0,0);const url=c.toDataURL('image/png');if(OVL_SUITS.size>12)OVL_SUITS.clear();OVL_SUITS.set(key,url);return url}
@@ -228,7 +232,7 @@ function ovlHbShirt(i){if(!i||i.type!=='shirt'||typeof document==='undefined'||t
 const OVL_CU=new Map();let ovlCuN=0;
 const ovlCuKey=i=>JSON.stringify([i.id,colOf(i),i.pattern,(i.texture||'').length,(i.texture||'').slice(-12),typeof ASM_CU!=='undefined'?ASM_CU.v:0]);
 const ovlCuWants=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&typeof document!=='undefined'&&typeof asmCuTile==='function'&&typeof asmCmRoute==='function'&&asmCmRoute(i,'jacket').how==='twill'&&asmCuWants(i,'twill');
-const ovlSuitOld=i=>{if(ovlCloseup(i)&&!ovlDrawn(i))return `<img src="${i.swatch}" alt="">`;const u=ovlSuitPng(i);return u?`<img src="${u}" alt="">`:ovlSvg(i)};
+const ovlSuitOld=i=>{if(ovlCloseup(i)&&!ovlDrawn(i))return `<img src="${srcOk(i.swatch)}" alt="">`;const u=ovlSuitPng(i);return u?`<img src="${u}" alt="">`:ovlSvg(i)};
 function ovlCuSuit(i){if(!ovlCuWants(i))return null;const k=ovlCuKey(i);let e=OVL_CU.get(k);
   if(!e){e={id:'cu'+(++ovlCuN),url:null,fail:false};OVL_CU.set(k,e);
     const put=h=>document.querySelectorAll(`[data-hb="${e.id}"]`).forEach(x=>{x.outerHTML=h});
@@ -242,7 +246,7 @@ function ovlCuSuit(i){if(!ovlCuWants(i))return null;const k=ovlCuKey(i);let e=OV
   return `<svg data-hb="${e.id}" viewBox="0 0 16 16" aria-hidden="true"><rect width="16" height="16" fill="${colOf(i)}"/></svg>`}
 const ovlPiece=i=>{if(i.type==='suit'||i.type==='blazer')return ovlCuSuit(i)||ovlSuitOld(i);
   if(i.type==='shirt'){const h=ovlHbShirt(i);if(h)return h}
-  return ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${i.swatch}" alt="">`:ovlSvg(i)};
+  return ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${srcOk(i.swatch)}" alt="">`:ovlSvg(i)};
 function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.tie]].filter(([,i])=>i);if(!ps.length)return '';
   // each swatch is a button: it opens that piece up close (swTap)
   return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" onclick="swTap('${s}')" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${ovlPiece(i)}</button>`).join('')}</div>`}
@@ -286,7 +290,7 @@ function figureStage(o){
   // Nothing paid is ever made from here (the drawn-figure photo was retired 2026-11-14)
   const marks=false;   // (the swatches no longer step up for the ✕ / ✓ circles, gone from the picture 2026-11-14)
   const cf=typeof careFrame==='function'?careFrame(o):null,cc=cf?cf.cls:'',ch=cf?cf.html:'';   // a suit or blazer coming due for cleaning (care.js)
-  return (photo?`<div class="fig photo${cc}" id="mannequin-container"><img onload="fitNavSoon()" src="${r.img}" alt="Photo of ${esc(figureLabel(o))}">${swatchStack(o,marks)}${wornMarks(o)}${ch}</div>`
+  return (photo?`<div class="fig photo${cc}" id="mannequin-container"><img onload="fitNavSoon()" src="${srcOk(r.img)}" alt="Photo of ${esc(figureLabel(o))}">${swatchStack(o,marks)}${wornMarks(o)}${ch}</div>`
     :`<div class="fig${cc}" id="mannequin-container">${figureSvg(o)}${wornMarks(o)}${ch}</div>`)+
     (tiles?`<div class="below" style="--n:${below.length}" aria-label="${o.coat?'Coat and below the waist':'Below the waist'}" role="group">${tiles}</div>`+belowBox(o,below):'');
 }

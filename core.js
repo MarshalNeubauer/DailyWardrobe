@@ -136,16 +136,37 @@ const SLOT_TYPE=(s,suitDay)=>({top:suitDay?'suit':'blazer',bot:'pants',clip:'tie
 const TEXTURE_TYPES=['suit','blazer','pants','shirt','tie'];
 const METAL_TYPES=['watch','belt','cufflinks'],SEASON_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];
 /* what an item is made of (item.material): the common choices per type; the dropdown adds Other (typed in) and None. Shoes and
-   belts have their leather, watches their band and metal, so they have no list. */
+   belts have their leather, watches their band and metal, so they have no list. (2026-11-15, the materials audit and the owner's
+   decisions: warm-weather cloths added, shirts hold the fabric only (their weaves are patterns), "performance stretch" for stretch
+   shirts, "knitted silk" retired (the knit pattern says it). A name that leaves a list is never lost: it shows as Other with the
+   name, and search, season, the painter and import still read it. Must match worker/tag.js MATERIALS_BY) */
 const MATERIALS_BY={
-  suit:['wool','wool blend','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','mohair blend','corduroy','velvet','polyester blend'],
-  blazer:['wool','wool blend','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','hopsack','corduroy','velvet','polyester blend'],
-  pants:['wool','wool blend','flannel','cotton','cotton twill','denim','stretch denim','linen','linen blend','corduroy','tweed','polyester blend'],
-  shirt:['poplin','twill','oxford','pinpoint oxford','end-on-end','chambray','linen','linen blend','flannel','cotton blend','nylon'],
-  tie:['silk','knitted silk','grenadine','wool','wool blend','cashmere','linen','cotton','polyester'],
-  socks:['cotton','merino wool','wool blend','cashmere blend','bamboo','silk blend','synthetic blend'],
-  overcoat:['wool','wool blend','cashmere','cashmere blend','tweed','camel hair','cotton'],
-  raincoat:['cotton gabardine','waxed cotton','nylon','polyester','waterproof shell']};
+  suit:['wool','wool blend','tropical wool','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','mohair blend','silk blend','moleskin','corduroy','velvet','polyester blend'],
+  blazer:['wool','wool blend','tropical wool','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','camel hair','hopsack','silk blend','jersey','corduroy','velvet','polyester blend'],
+  pants:['wool','wool blend','tropical wool','flannel','gabardine','cotton','cotton twill','denim','stretch denim','linen','linen blend','seersucker','moleskin','corduroy','tweed','polyester blend'],
+  shirt:['cotton','poplin','linen','linen blend','flannel','cotton blend','performance stretch','seersucker','polyester','polyester blend','silk','rayon','modal','lyocell','bamboo','wool','jersey','denim','corduroy'],
+  tie:['silk','grenadine','shantung','wool','wool blend','cashmere','linen','cotton','polyester'],
+  socks:['cotton','mercerized cotton','merino wool','wool blend','cashmere blend','bamboo','silk blend','synthetic blend'],
+  overcoat:['wool','wool blend','melton','cashmere','cashmere blend','tweed','camel hair','loden','alpaca','cotton'],
+  raincoat:['cotton gabardine','waxed cotton','rubberized cotton','nylon','polyester','waterproof shell']};
+/* other words for a material (the spreadsheet import and the Wardrobe's search, 2026-11-15, the audit's alias table): word -> the listed
+   name, per type where it differs ('*' every type). "fresco" finds and imports as tropical wool, "lisle" as mercerized cotton */
+const MAT_ALIAS={'*':{fresco:'tropical wool',tropical:'tropical wool','tropical wool':'tropical wool','high-twist':'tropical wool','high twist':'tropical wool',worsted:'wool','worsted wool':'wool',
+    merino:'merino wool',lisle:'mercerized cotton','fil d\'ecosse':'mercerized cotton','fil d’ecosse':'mercerized cotton','fil decosse':'mercerized cotton',broadcloth:'poplin',
+    'wool-linen':'linen blend','wool linen':'linen blend','linen-wool':'linen blend','linen wool':'linen blend','linen-cotton':'linen blend','linen cotton':'linen blend','cotton-linen':'linen blend','silk-linen':'linen blend','silk linen':'linen blend',
+    'wool-silk':'silk blend','wool silk':'silk blend','silk-wool':'silk blend',camel:'camel hair','camelhair':'camel hair',mohair:'mohair blend','wool-mohair':'mohair blend','wool mohair':'mohair blend',
+    'nylon-spandex':'performance stretch','nylon/spandex':'performance stretch','nylon spandex':'performance stretch','poly-spandex':'performance stretch','polyester-spandex':'performance stretch','polyester/spandex':'performance stretch',stretch:'performance stretch',
+    'knitted silk':'silk','knit silk':'silk',cord:'corduroy',cords:'corduroy',mackintosh:'rubberized cotton',gaberdine:'gabardine'},
+  socks:{nylon:'synthetic blend',polyester:'synthetic blend',wool:'merino wool',stretch:'synthetic blend'},
+  raincoat:{gabardine:'cotton gabardine',waxed:'waxed cotton',wax:'waxed cotton'},
+  pants:{stretch:'stretch denim'},
+  // (polyester is a shirt material of its own since 2026-11-16, the owner's ask: no longer read as performance stretch; nylon still is)
+  shirt:{nylon:'performance stretch',viscose:'rayon',tencel:'lyocell',merino:'wool','merino wool':'wool','poly-cotton':'cotton blend',polycotton:'cotton blend','poly cotton':'cotton blend','cotton-polyester':'cotton blend','cotton polyester':'cotton blend',poly:'polyester','poly blend':'polyester blend'}};
+/* the listed name a word means for a type ('' when none): the type's own name, else an alias that is on the type's list */
+const matAlias=(type,w)=>{const l=MATERIALS_BY[type];if(!l)return '';w=String(w??'').toLowerCase().replace(/\s+/g,' ').trim();if(!w)return '';if(l.includes(w))return w;
+  const a=(MAT_ALIAS[type]||{})[w]||MAT_ALIAS['*'][w];return a&&l.includes(a)?a:''};
+/* the shirt weaves that left the Material list (they are patterns): on import a weave in the Material column becomes the pattern */
+const SHIRT_WEAVE_MAT={twill:'twill',oxford:'oxford','pinpoint oxford':'pinpoint',pinpoint:'pinpoint','royal oxford':'royal-oxford','end-on-end':'end-on-end','end on end':'end-on-end','fil-a-fil':'end-on-end',chambray:'chambray',dobby:'dobby',herringbone:'herringbone'};
 const SEASONS=[['all','All year'],['warm','Warm weather'],['cold','Cold weather']],CUFFS=[['button','Button cuffs'],['french','French cuffs']];
 
 /* user settings (stored in IndexedDB meta and synced): which days are workdays, which of those are blazer days,
@@ -206,8 +227,13 @@ const CC_TMAX={KW:[19,22,27,34,41,46,47,47,44,37,28,21],SA:[20,23,28,33,39,42,43
 const SOUTH_CC=['AU','NZ','ZA','AR','CL','UY','PY','BR','BO','PE','NA','BW','ZW','MZ','MG','LS','SZ','FJ'];
 /* an item's season: the one set on it, else from its pattern or material (2026-11-15, the audit: a flannel suit planned on a 29°C day
    with full Weather points); a season chosen in the item sheet ('all' too) wins */
-const MAT_SEASON={flannel:'cold',tweed:'cold',corduroy:'cold',velvet:'cold',linen:'warm','linen blend':'warm',seersucker:'warm'};
-const itemSeason=i=>i&&(i.season||(i.pattern==='tweed'?'cold':SEASON_TYPES.includes(i.type)&&MAT_SEASON[String(i.material||'').toLowerCase()]||'all'));
+/* (2026-11-15, the materials audit and the owner's decisions) tropical wool warm; cashmere, cashmere blend, moleskin and melton cold; a wool
+   tie cold (MAT_SEASON_BY: by type, so a wool suit stays all year); mohair blend and hopsack none */
+const MAT_SEASON={flannel:'cold',tweed:'cold',corduroy:'cold',velvet:'cold',cashmere:'cold','cashmere blend':'cold',moleskin:'cold',melton:'cold',
+  linen:'warm','linen blend':'warm',seersucker:'warm','tropical wool':'warm'};
+const MAT_SEASON_BY={tie:{wool:'cold'}};
+const matSeason=i=>{const m=String(i.material||'').toLowerCase().trim();return (MAT_SEASON_BY[i.type]||{})[m]||MAT_SEASON[m]||''};
+const itemSeason=i=>i&&(i.season||(i.pattern==='tweed'?'cold':SEASON_TYPES.includes(i.type)&&matSeason(i)||'all'));
 const seasonFit=(i,season)=>{const s=itemSeason(i);if(!i||!s||s==='all'||s===season)return 0;return season==='mild'?-4:-15};
 
 /* matching logic & helpers */
@@ -239,10 +265,11 @@ const colorDesc = i => {
 };
 /* (2026-11-15, the new-user audit) cufflinks are named by their colour and metal ("Light blue · silver"; plain silver links "Silver"), the metal
    'other' is "gunmetal" in words (it read "Other"), a sneaker's leather "leather" (not "calf"), and a season only for a type that has one */
-const metalWord=m=>m==='other'?'gunmetal':m;
+const metalWord=m=>m==='other'?'gunmetal':m==='silk'?'silk knot':m;
+METAL['two-tone']='#c8b27e';   // (2026-11-15, the owner's option) steel and gold together: planner metalSame lets it go with either
 const METAL_OPTS=Object.keys(METAL).map(c=>[c,metalWord(c)]);
 const linkFace=i=>{const c=i&&i.type==='cufflinks'&&primaryCol(i);return c&&COLORS[c]&&c!=='silver'&&c!=='gold'?c:null};   // an enamel or stone face (silver and gold links are all metal)
-const desc=i=>i?((i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))?'':' · ')+metalWord(i.metal):'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${colName(watchOpts(i).dial)} dial ·${({bracelet:'bracelet',integrated:'integrated bracelet',leather:'leather strap'})[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'&&SEASON_TYPES.includes(i.type)?` · ${i.season} weather`:''):'';
+const desc=i=>i?((i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i))?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i))?'':' · ')+metalWord(i.metal):'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${colName(watchOpts(i).dial)} dial ·${BAND_WORDS[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'&&SEASON_TYPES.includes(i.type)?` · ${i.season} weather`:''):'';
 const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patLabel(i.pattern):'')+' '+typeWord(i):'none';
 /* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
    (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
@@ -290,20 +317,30 @@ const LEATHERS=['calf','cordovan','suede','patent','pebble-grain','scotch-grain'
 /* the materials a pair of shoes (or a belt) can be in, by style: sneakers in leather, suede, canvas or knit; boots and loafers in the
    leathers they are made of; oxfords, derbies and belts in every leather. The field stays item.leather ("calf" reads "Leather"
    on a sneaker) */
-const leathersFor=i=>i&&i.type==='shoes'?({sneaker:['calf','suede','canvas','knit'],boot:['calf','suede','pebble-grain','scotch-grain','cordovan'],loafer:['calf','suede','patent','cordovan']})[shoeStyle(i)]||LEATHERS:LEATHERS;
-const leatherWord=(i,l)=>i&&i.type==='shoes'&&shoeStyle(i)==='sneaker'&&l==='calf'?'leather':patLabel(l);
-const leatherLabel=i=>i&&i.type==='shoes'?'Material':'Leather';   // shoes: "Material" (a sneaker can be canvas or knit); belts: "Leather"
+/* (2026-11-15, the owner's accessory options) nubuck (a fine nap, drawn and planned like suede) for derbies, boots and sneakers; a belt
+   also in braided leather or canvas (BELT_MATS), so its label is "Material" too */
+const SHOE_NAP=['nubuck'],BELT_MATS=['braided','canvas'];
+const leathersFor=i=>i&&i.type==='shoes'?({sneaker:['calf','suede','nubuck','canvas','knit'],boot:['calf','suede','nubuck','pebble-grain','scotch-grain','cordovan'],loafer:['calf','suede','patent','cordovan'],derby:[...LEATHERS,'nubuck']})[shoeStyle(i)]||LEATHERS:i&&i.type==='belt'?[...LEATHERS,...BELT_MATS]:LEATHERS;
+const leatherWord=(i,l)=>i&&i.type==='shoes'&&shoeStyle(i)==='sneaker'&&l==='calf'?'leather':l==='braided'?'braided leather':patLabel(l);
+const leatherLabel=i=>'Material';   // shoes and belts: "Material" (a sneaker can be canvas or knit, a belt canvas)
 const WATCH_STYLES=[['annual-calendar','Dual time + annual calendar'],['chronograph','Chronograph: three subdials + date'],['date','Three hands + date'],['no-date','Three hands']];
-const BANDS=[['bracelet','Metal bracelet'],['integrated','Integrated metal bracelet'],['leather','Leather strap']],BEZELS=[['fluted','Fluted'],['smooth','Smooth'],['engraved','Polished, engraved numerals']];
+/* a watch's band: a metal bracelet, or a strap in the item's colour (leather, rubber, a fabric NATO strap: 2026-11-15, the owner's options) */
+const BANDS=[['bracelet','Metal bracelet'],['integrated','Integrated metal bracelet'],['leather','Leather strap'],['rubber','Rubber strap'],['nato','Fabric (NATO) strap']],BEZELS=[['fluted','Fluted'],['smooth','Smooth'],['engraved','Polished, engraved numerals']];
+const STRAP_BANDS=['leather','rubber','nato'],BAND_WORDS={bracelet:'bracelet',integrated:'integrated bracelet',leather:'leather strap',rubber:'rubber strap',nato:'NATO strap'};
+const strapBand=w=>!!w&&STRAP_BANDS.includes(watchOpts(w).band);   // a strap: the watch has a colour (a bracelet is its metal)
+/* cufflinks may be silk knots (2026-11-15, the owner's option): no metal, a "metal" of 'silk' offered only to cufflinks (METAL keeps the
+   three metals and two-tone); planner metalOf reads it as none, so it goes with any metal */
+const LINK_METAL_OPTS=()=>[...METAL_OPTS,['silk','silk knot']];
+const metalOptsFor=t=>t==='cufflinks'?LINK_METAL_OPTS():METAL_OPTS;
 /* a watch in words, for picture prompts: the options plus the owner's own details. With details the style's stock layout is left out
    (the owner's chronograph tells the time in one large subdial; "three subdials and a date window" got a stock chronograph drawn) */
-const watchText=(w,cn=colName)=>{const o=watchOpts(w),metal=w.metal==='gold'?'gold':w.metal==='other'?'gunmetal':'stainless steel',det=w.details&&String(w.details).trim();
+const watchText=(w,cn=colName)=>{const o=watchOpts(w),metal=w.metal==='gold'?'gold':w.metal==='other'?'gunmetal':w.metal==='two-tone'?'two-tone steel and gold':'stainless steel',det=w.details&&String(w.details).trim();
   const style=(det?{'annual-calendar':'dual-time annual-calendar','chronograph':'chronograph','date':'three-hand date','no-date':'three-hand'}:{'annual-calendar':'dual-time annual-calendar','chronograph':'chronograph (three subdials and a date window)','date':'three-hand date','no-date':'three-hand'})[o.style]||'';
   const bezel={fluted:'a fluted bezel',smooth:'a smooth polished bezel',engraved:'a polished bezel engraved with numerals'}[o.bezel]||'';
-  const band=o.band==='leather'?`a ${cn(primaryCol(w))} leather strap`:o.band==='integrated'?`an integrated ${metal} bracelet that flows out of the case`:`a ${metal} link bracelet`;
+  const band=o.band==='leather'?`a ${cn(primaryCol(w))} leather strap`:o.band==='rubber'?`a ${cn(primaryCol(w))} rubber strap`:o.band==='nato'?`a ${cn(primaryCol(w))} woven fabric NATO strap`:o.band==='integrated'?`an integrated ${metal} bracelet that flows out of the case`:`a ${metal} link bracelet`;
   return `a ${metal} ${style} wristwatch with ${bezel}, a ${cn(o.dial)} dial and ${band}`+(det?` (${det})`:'')};
 const watchOpts=w=>({dial:w&&w.dial||'white',band:w&&w.band||'bracelet',bezel:w&&w.bezel||'fluted',style:w&&w.watchStyle||'annual-calendar'});
-const METAL_TONES={gold:['#fbefc4','#d4b04a','#8a6d12'],silver:['#f7f8f9','#c4c8cd','#767b82'],other:['#d2d4d7','#868a90','#45494e']};
+const METAL_TONES={gold:['#fbefc4','#d4b04a','#8a6d12'],silver:['#f7f8f9','#c4c8cd','#767b82'],other:['#d2d4d7','#868a90','#45494e'],'two-tone':['#f8f3e2','#c9b98a','#7d7350']};
 
 /* ---- backup / sync merge ----
    Merge two wardrobe snapshots {items, tombstones, days, settings}: the newest version of each item wins, and a deletion
@@ -385,3 +422,60 @@ function stateSig(s){
   s=s||{};const by=(arr,k,v)=>(arr||[]).map(x=>x[k]+':'+v(x)).sort().join(',');
   return [by(s.items,'id',stamp),Object.entries(s.tombstones||{}).map(e=>e.join(':')).sort().join(','),by(s.days,'date',d=>d.updated||0),s.settings?s.settings.updated||0:''].join('|');
 }
+/* ---- records coming in (fix round 3, 2026-11-16, the audit's W2-13-02 = W2-12-01: a crafted Restore file, a sync or a server answer put
+   an item's id, photo, colour key and sett band colour into the page as markup). cleanState runs where records enter: Restore file, every
+   sync pull and roll-back (sync.js), and the stored wardrobe at start-up (start.js). An item keeps only fields of the right shape:
+   an id of safe characters (ID_RE, else the item is left out), a known type, colour and option keys of letters, digits, - and _ (an own
+   key too; a colour word a known colour's alias, "light blue", becomes its key), photos only data:image/jpeg|png|webp;base64 (else
+   the photo is dropped), numbers as numbers, a pattern reading's colours as hex and its words plain; free text (name, brand, notes…)
+   is kept as typed (shown escaped) without bidi controls; any other field is kept with < > " ` taken out of its strings. Days keep a
+   date of the app's shape and item ids of ID_RE; tombstones numbers. Pure and idempotent: a clean record comes out equal.
+   worker/records.js recCheck refuses the same shapes on the server ---- */
+const ID_RE=/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/,REC_KEY=/^[\p{L}\p{M}\p{N}_-]{1,48}$/u,REC_PHOTO=/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]*$/,REC_HEX=/^#[0-9a-fA-F]{3,8}$/,
+  REC_DATE=/^\d{4}-\d{1,2}-\d{1,2}$/,REC_WORD=/^[\p{L}\p{M}\p{N} _+.,:;()\/#%’-]{0,120}$/u,BIDI_RE=/[‪-‮⁦-⁩]/g;   // embeddings, overrides and isolates (the marks LRM/RLM stay: an Arabic name may need them)
+const REC_COLS=['primaryColor','secondaryColor','tertiaryColor','dial'],REC_PICS=['photo','photoSm','texture','swatch'],
+  REC_KEYS=['pattern','swSrc','metal','leather','cuff','vest','season','shoeStyle','trouserKind','band','bezel','watchStyle'],
+  REC_NUMS=['added','updated','shade'],REC_TEXT={name:200,brand:200,material:200,notes:4000,details:4000,patternText:4000},REC_STRICT=['sett'];
+const recClean=s=>String(s).replace(/[<>"`]/g,'');   // a free field's string: nothing that opens a tag or ends an attribute
+const recFree=(v,d=0)=>typeof v==='string'?recClean(v):typeof v==='number'?(isFinite(v)?v:null):v==null||typeof v==='boolean'?v:d>8?null:
+  Array.isArray(v)?v.map(x=>recFree(x,d+1)):typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>REC_WORD.test(k)).map(([k,x])=>[k,recFree(x,d+1)])):null;
+/* a pattern reading (sett: bands, crossing lines, motif, texture): numbers, hex colours and plain words only */
+const recStrict=(v,d=0)=>typeof v==='string'?(REC_HEX.test(v)||REC_WORD.test(v)?v:null):typeof v==='number'?(isFinite(v)?v:null):v==null||typeof v==='boolean'?v:d>8?null:
+  Array.isArray(v)?v.map(x=>recStrict(x,d+1)):typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>REC_WORD.test(k)).map(([k,x])=>[k,recStrict(x,d+1)])):null;
+/* Claude's and the app's own structured words (weave, patternSpec, tagAI, meas, away): prose may hold quotes ("a 1/2" stripe") and stays
+   as it is, but nothing that opens a tag; a colour under a "hex" key (patternSpec.across bands reach a fill) must be a hex colour */
+const REC_PROSE=['weave','patternSpec','tagAI','meas','away'];
+const recProse=(v,d=0,k='')=>typeof v==='string'?(/^hex$/i.test(k)?(REC_HEX.test(v)?v:null):v.replace(/[<>`]/g,'')):typeof v==='number'?(isFinite(v)?v:null):v==null||typeof v==='boolean'?v:d>8?null:
+  Array.isArray(v)?v.map(x=>recProse(x,d+1,k)):typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([kk])=>REC_WORD.test(kk)).map(([kk,x])=>[kk,recProse(x,d+1,kk)])):null;
+const recCol=c=>c==null||c===''?c:typeof c!=='string'?undefined:COLORS[c]||REC_KEY.test(c)&&/^own/.test(c)?c:normCol(c)||(REC_KEY.test(c)?c:undefined);
+const noBidi=s=>String(s==null?'':s).replace(BIDI_RE,'');
+function cleanRecord(it){
+  if(!it||typeof it!=='object'||Array.isArray(it)||typeof it.id!=='string'||!ID_RE.test(it.id)||!TYPES[it.type])return null;
+  const o={};
+  for(const [k,v] of Object.entries(it)){
+    if(k==='id'||k==='type'){o[k]=v;continue}
+    if(!REC_WORD.test(k)||k==='__proto__')continue;
+    if(REC_COLS.includes(k)){const c=recCol(v);if(c!==undefined)o[k]=c}
+    else if(REC_PICS.includes(k)){if(v==null||typeof v==='string'&&(REC_PHOTO.test(v)||/^dwph:[0-9a-f]{20}$/.test(v)))o[k]=v}   // (a backup's own photo reference too)
+    else if(REC_KEYS.includes(k)){if(v==null||typeof v==='string'&&REC_KEY.test(v))o[k]=v}
+    else if(REC_NUMS.includes(k)){if(v==null||typeof v==='number'&&isFinite(v))o[k]=v}
+    else if(k in REC_TEXT){if(v==null)o[k]=v;else if(typeof v==='string'||typeof v==='number')o[k]=noBidi(v).slice(0,REC_TEXT[k])}
+    else if(REC_STRICT.includes(k))o[k]=recStrict(v);
+    else if(REC_PROSE.includes(k))o[k]=recProse(v);
+    else o[k]=recFree(v)}
+  return o}
+function cleanDay(d){
+  if(!d||typeof d!=='object'||Array.isArray(d)||typeof d.date!=='string'||!REC_DATE.test(d.date))return null;
+  const o={};
+  for(const [k,v] of Object.entries(d)){if(!REC_WORD.test(k)||k==='__proto__')continue;
+    // the pieces a day names (ids, lock, force: slot -> item id): an id of the wrong shape is left out
+    if((k==='ids'||k==='lock'||k==='force')&&v&&typeof v==='object'&&!Array.isArray(v))o[k]=Object.fromEntries(Object.entries(v).filter(([s,x])=>REC_KEY.test(s)&&(typeof x!=='string'||ID_RE.test(x))).map(([s,x])=>[s,recFree(x)]));
+    else if(k==='date')o[k]=v;else o[k]=recFree(v)}
+  return o}
+/* a snapshot from outside ({items, days, tombstones, settings}, a backup file's or the server's): its records cleaned, the rest as it came */
+function cleanState(st){
+  if(!st||typeof st!=='object')return st;const o={...st};
+  if(Array.isArray(st.items))o.items=st.items.map(cleanRecord).filter(Boolean);
+  if(Array.isArray(st.days))o.days=st.days.map(cleanDay).filter(Boolean);
+  if(st.tombstones&&typeof st.tombstones==='object')o.tombstones=Object.fromEntries(Object.entries(st.tombstones).filter(([id,t])=>ID_RE.test(id)&&typeof t==='number'&&isFinite(t)));
+  return o}

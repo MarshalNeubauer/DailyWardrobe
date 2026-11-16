@@ -1,5 +1,6 @@
-// Faster masters on a phone (2026-11-14, the owner's ask): the computer shares each master's setup at the phone's size (PUT /blob,
-// asm-color.js asmCmSetupBlob) and a 2048 copy of the master; a phone downloads the setup instead of working it out (asmCmSetupFetch) and
+// Faster masters on a phone (2026-11-14, the owner's ask): each master's setup at the phone's size on the worker (PUT /blob,
+// asm-color.js asmCmSetupBlob) and a 2048 copy of the master (uploaded by the PC builder until it was removed on 2026-11-16; this test
+// puts them there itself); a phone downloads the setup instead of working it out (asmCmSetupFetch) and
 // the copy instead of the 2880 master (asmCmMasterCopy); warming sets masters up in the background (asmCmWarm, a setup-only job).
 // The real worker.js with an in-memory KV holding the suit master's fixtures (tests/fixtures/cm/suit, 512 px).
 const fs=require('fs'),path=require('path'),{pathToFileURL}=require('url');
@@ -30,7 +31,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const nameOf=await A.p.evaluate(()=>{const o={};o[asmCmKey('suit','master')]='master.jpg';for(const z of ASM_CM_KINDS.suit.zones)o[asmCmKey('suit','mask/'+z)]='mask-'+z+'.png';for(const s of ['sleeveR','sleeveL','lapelR','lapelL'])o[asmCmKey('suit','part/'+s)]='part-'+s+'.png';return o});
     const mf={};for(const [k,f] of Object.entries(nameOf)){if(!files.includes(f))continue;put(k,`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,f)).toString('base64'),1000);mf[k]=1000}
     put(keys.mf,'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',1000,'manifest','asm/cm-manifest '+JSON.stringify({keys:mf}));
-    // the computer's side: the setup at this size and the master's copy, sent as the builder sends them
+    // the setup at this size and the master's copy, put on the worker as the PC builder did
     const share=await A.p.evaluate(async()=>{await asmCmGet('suit');const b=await asmCmSetupBlob('suit',512),c=await asmCmMasterCopyRec('suit');
       const back=asmCmBlobRead(b.bytes.buffer.slice(0),b.dk),same=back&&back.n&&back.gz.byteLength>1000;return {key:b.key,dk:b.dk,b64:asmB64(b.bytes),copy:c,same}});
     const up=await worker.fetch(new Request(HOST+'blob?key='+share.key+'&sig='+encodeURIComponent(share.dk),{method:'PUT',headers:{'x-app-token':'owner-code'},body:Buffer.from(share.b64,'base64')}),env);

@@ -78,6 +78,12 @@ function closeSettings(){const was=settingsOpen();
   if(viewStale){const v=viewStale;viewStale=null;if(!$('#'+v).hidden)show(v)}
 }
 function saveSettings(){
+  // (audit 2026-11-15, W1-7-02) another address or code typed while connected moves this phone to another account: it goes through the
+  // link's questions (account.js acctTyped: the same account goes through, another asks, backs up and clears first). Stored as typed, the
+  // next sync merged this phone's wardrobe into the other account
+  const tu=$('#cfg-url')?$('#cfg-url').value.trim():null,tt=$('#cfg-token')?$('#cfg-token').value.trim():null,cu=(localStorage.getItem('worker_url')||'').trim(),ct=(localStorage.getItem('app_token')||'').trim();
+  if(typeof acctTyped==='function'&&tu&&tt&&ct&&cu&&(tt!==ct||tu.replace(/\/*$/,'/')!==cu.replace(/\/*$/,'/'))){
+    closeSettings();acctTyped(tu,tt).catch(e=>console.warn('connection not changed',e));return}
   // full or blocked storage: Done still closes Settings (it threw before closing), and says the connection wasn't kept
   try{if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
     if($('#cfg-token')) localStorage.setItem('app_token',$('#cfg-token').value.trim())}

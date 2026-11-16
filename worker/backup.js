@@ -2,6 +2,7 @@
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
 import { PV, asText, isPv, loadAny, phKey, putWhole, pvMeta, pvResponse, pvText, refsOf, scanPhotos, storePhotos } from './photostore.js';
 import { countWrites, limitBody, sha256Hex, spend, spendUpTo, unspend, utcDay } from './people.js';
+import { PIC_RE, recCheck } from './records.js';
 
 const SYNC_KEY = 'wardrobe:v1', SYNC_NONE = '{"rev":0,"saved":0,"data":null}';
 /* the stored backup's version {rev, saved} without loading the backup (several MB of photos): KV keeps it as the key's
@@ -208,12 +209,16 @@ function dropFuture(d, lim) {
   return { ...d, items: arrOf(d.items).filter(x => !(x && (over(stampOf(x), lim) || over(x.added, lim)))), days: arrOf(d.days).filter(x => !(x && (over(x.updated, lim) || over(x.base, lim) || over(x.lockAt, lim)))),
     tombstones: Object.fromEntries(Object.entries(d.tombstones || {}).filter(([, t]) => !over(t, lim))), settings: s };
 }
+/* the sample wardrobe stays on the phone that loaded it (fix round 3, W1-3-04): a sample piece the person hasn't made his (sample without
+   sampleMine; kit.js kitEdited) is never kept or handed out. An app from before that rule (14-15 Nov) uploaded the whole sample, and a new
+   phone joining got it with "You're trying a sample wardrobe": GET ?lite leaves such pieces out, and the next save drops them */
+const sampleOnly = i => !!i && i.sample === true && !i.sampleMine;
 /* core.js mergeState and stateSig, for the worker: the newer stamp wins, a deletion wins over any older edit, ties keep a's */
 function mergeLite(a, b) {
   a = a || {}; b = b || {}; const items = {}, tomb = { ...(a.tombstones || {}) };
   for (const [id, t] of Object.entries(b.tombstones || {})) tomb[id] = Math.max(tomb[id] || 0, +t || 0);
   for (const it of [...arrOf(a.items), ...arrOf(b.items)]) { if (!it || it.id == null) continue; const cur = items[it.id]; if (!cur || stampOf(it) > stampOf(cur)) items[it.id] = it; }
-  for (const id of Object.keys(items)) if (tomb[id] && tomb[id] >= stampOf(items[id])) delete items[id];
+  for (const id of Object.keys(items)) if ((tomb[id] && tomb[id] >= stampOf(items[id])) || sampleOnly(items[id])) delete items[id];
   const cutoff = Date.now() - 180 * 864e5; for (const id of Object.keys(tomb)) if (tomb[id] < cutoff) delete tomb[id];
   // (a newer copy that is only the app's lock of the week loses to an older copy changed after the version the lock was built on:
   // core.js dayWins, 2026-11-14)
@@ -306,7 +311,8 @@ async function syncLiteGet(env, json, cors, ns, q) {
   if (!m && await env.WARDROBE.get(KEY)) return storedResponse(env, KEY, m, cors);   // saved by a worker that kept no version: as before
   const src = await loadAny(env, KEY, m, false);
   if (!src) return storedResponse(env, KEY, m, cors);                                 // too large to index here: the whole backup, as before
-  const rev = m ? m.rev : 0, saved = m ? m.saved : 0, D = clampStamps(src.lite.data || {}, saved, saved + CLOCK_AHEAD), R = src.lite.revs || {};
+  const rev = m ? m.rev : 0, saved = m ? m.saved : 0, D0 = clampStamps(src.lite.data || {}, saved, saved + CLOCK_AHEAD), R = src.lite.revs || {};
+  const D = arrOf(D0.items).some(sampleOnly) ? { ...D0, items: arrOf(D0.items).filter(i => !sampleOnly(i)) } : D0;   // (not the sample wardrobe)
   const [sr, ss] = (q.get('since') || '').split(':').map(Number), all = !(sr > 0) || sr > rev || (sr === rev && ss !== saved);
   const newer = r => all || (r ?? rev) > sr;
   const body = { lite: 1, rev, saved, all, items: arrOf(D.items).filter(i => newer(R.i && R.i[i.id])), days: arrOf(D.days).filter(d => newer(R.d && R.d[d.date])), tombstones: D.tombstones || {},
@@ -340,6 +346,8 @@ async function syncLitePost(req, env, json, cors, who) {
   if (buf.byteLength > BACKUP_MAX) return json({ error: 'backup too large (over 48 MB)' }, 413);
   let body; try { body = JSON.parse(new TextDecoder().decode(buf)); } catch { return json({ error: 'bad json' }, 400); }
   if (!body || !body.delta || typeof body.delta !== 'object') return json({ error: 'nothing to save' }, 400);
+  const wrong = recCheck(body.delta); if (wrong) return json(wrong, 400);   // records of the app's shape only (records.js), before anything is counted
+  for (const s of Object.values(body.photos || {})) if (typeof s !== 'string' || !PIC_RE.test(s)) return json({ error: 'bad photo', message: 'The backup was not saved: a photo in it is not a picture.' }, 400);
   const over = await spend(env, who, 'backup'); if (over) return json(over.body, over.status);
   const give = async r => { await unspend(env, who, 'backup'); return r; };
   const m = await syncVersion(env, ns), rev = m ? m.rev : 0;

@@ -39,9 +39,28 @@ const errMsg=e=>{const x=e&&e.error||e;return String(x&&x.message||x||'').trim()
 // noise that isn't a failure: the layout observer's loop warning, a stopped request, scripts of other sites
 const errNoise=e=>{const m=errMsg(e),n=e&&e.name;return !m||n==='AbortError'||/^ResizeObserver loop|^Script error\.?$/.test(m)};
 const errList=()=>{try{const L=JSON.parse(localStorage.getItem(ERR_KEY)||'[]');return Array.isArray(L)?L:[]}catch{return []}};
-function errNote(e){try{if(errNoise(e))return;const x=e&&e.error||e,at=String(x&&x.stack||'').split('\n').find(l=>/\.js/.test(l))||'';
-  const L=errList();L.push({t:Date.now(),m:errMsg(e),at:at.trim().slice(0,160),v:typeof appVersion==='function'?String(appVersion()):''});
-  localStorage.setItem(ERR_KEY,JSON.stringify(L.slice(-ERR_MAX)))}catch{}}
+/* ctx: what was going on, for a failure the app caught and handled ("Close-up reading": the card still works, but the owner should hear) */
+function errNote(e,ctx){try{if(errNoise(e))return;const x=e&&e.error||e,at=String(x&&x.stack||'').split('\n').find(l=>/\.js/.test(l))||'';
+  const L=errList();L.push({t:Date.now(),m:(ctx?ctx+': ':'')+errMsg(e),at:at.trim().slice(0,160),v:typeof appVersion==='function'?String(appVersion()):'',w:errWhere()});
+  localStorage.setItem(ERR_KEY,JSON.stringify(L.slice(-ERR_MAX)));errSoon()}catch{}}
+/* the page it happened on (Add, Today, …; Settings over it) */
+function errWhere(){try{const set=typeof settingsOpen==='function'&&settingsOpen()?'settings ':'';
+  for(const id of ['add','today','wardrobe','stats','pack','care']){const el=document.getElementById(id);if(el&&!el.hidden)return set+id}return set.trim()}catch{return ''}}
+/* ---- a tester's phone reports its errors by itself (2026-11-16, the owner: a tester's very first item failed and nothing showed why; the
+   log came only with feedback): the new entries of err_log go to the worker (POST /errors, worker/people.js handleErrors) 5 s after one is
+   noted and at start-up, at most ERR_SEND_N at a time and one report a minute (ERR_SEND_MS; the worker allows 20 a day): the message,
+   the line of code, the app version and the page, never photos or wardrobe data. Sent entries are marked (s) and kept for feedback.
+   Testers only: the owner's own phone keeps its log. Settings → About says so. ---- */
+const ERR_SEND_MS=60000,ERR_SEND_N=10;let errSendAt=0,errSendT=null;
+function errSoon(ms=5000){if(errSendT)return;errSendT=setTimeout(()=>{errSendT=null;errSend()},ms)}
+const errReporting=()=>typeof isTester==='function'&&isTester()&&typeof isConnected==='function'&&isConnected();
+async function errSend(){try{if(!errReporting()||navigator.onLine===false)return;
+  const wait=ERR_SEND_MS-(Date.now()-errSendAt);if(wait>0){errSoon(wait+500);return}
+  const un=errList().filter(x=>x&&!x.s&&x.t>Date.now()-7*86400000).slice(-ERR_SEND_N);if(!un.length)return;errSendAt=Date.now();
+  const w=localStorage.getItem('worker_url');if(!w)return;
+  const r=await fetch(new URL('errors',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
+    body:JSON.stringify({errs:un.map(x=>({t:x.t,m:x.m,at:x.at,v:x.v,w:x.w||''}))})});
+  if(!r.ok)return;const k=x=>x.t+'|'+x.m,sent=new Set(un.map(k));localStorage.setItem(ERR_KEY,JSON.stringify(errList().map(x=>x&&sent.has(k(x))?{...x,s:1}:x)))}catch{}}
 function errTell(e){if(errNoise(e))return;const now=Date.now();if(now-errTapAt>ERR_TAP_MS||now-errToldAt<5000)return;errToldAt=now;
   if(typeof toast==='function')toast('Something went wrong: '+errMsg(e).replace(/\.$/,'')+'. Try again; if it keeps happening, tell us in Settings → About → Feedback.',8000)}
 // the last week's problems as lines for the feedback (at most 8)
@@ -82,7 +101,7 @@ async function pruneTagImgs(){
     return n}
   catch(e){console.warn('kept tagging copies not checked',e);return 0}}
 /* once the wardrobe is loaded (from the start-up chain in app.js) */
-function safetyStart(){pruneTagImgs();if(items.length)askPersist();if(typeof wardPendingRestore==='function')whenPulled(wardPendingRestore);if(typeof addRestore==='function')addRestore()}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add.js)
+function safetyStart(){pruneTagImgs();errSoon(8000);if(items.length)askPersist();if(typeof wardPendingRestore==='function')whenPulled(wardPendingRestore);if(typeof addRestore==='function')addRestore()}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add.js)
 
 /* ---- tagging that failed: why, on the card, with Try again ---- */
 let tagWhy='',tagNetLast=false;
@@ -106,14 +125,16 @@ function tagFailText(status,j,e){tagNetLast=false;
 /* the Add note was about the connection (cleared once back online) */
 const tagNetText=t=>/offline|couldn’t be reached/.test(t||'');
 // (an ended invitation: no "Try again" that can't work; re-audit 2026-11-15)
-function tagFailed(q){if(localStorage.getItem('worker_url')&&!(typeof inviteOver==='function'&&inviteOver())){q.tagErr=tagWhy||'No answer came back.';if(tagNetLast)q.tagNet=1;else delete q.tagNet}}
+function tagFailed(q){if(localStorage.getItem('worker_url')&&!(typeof inviteOver==='function'&&inviteOver())){q.tagErr=tagWhy||'No answer came back.';if(tagNetLast)q.tagNet=1;else delete q.tagNet;
+  if(!tagNetLast)errNote(new Error(q.tagErr),'Photo not tagged')}}   // reported (a phone offline is not a failure to fix)
 /* the card says what to do once: not when the reason already does ("Try again later, or add the item by hand.") */
 const tagFailNote=(q,i)=>q.tagErr&&!(typeof inviteOver==='function'&&inviteOver())?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)}${/try again|by hand|yourself/i.test(q.tagErr)?'':' <span class="tagfail-do">Fill in the details yourself, or try again.</span>'}</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Try again</button></div>`:'';
 async function retryTag(i){const q=queue[i];if(!q||q.busy||!q.tagImg)return;
   const ac=typeof AbortController==='function'?new AbortController():null;q.abort=ac;   // Stop on the card (add.js stopRead)
   q.busy=1;renderAdd();let ai=null;try{ai=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),...(ac?{signal:ac.signal}:{})})}catch(e){console.warn(e)}
   q.busy=0;q.abort=null;if(q.stopped){delete q.stopped;delete q.tagNet;q.tagErr=typeof STOPPED==='string'?STOPPED:'You stopped the reading.'}
-  else if(ai){delete q.tagErr;delete q.tagNet;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}else tagFailed(q);
+  else if(ai){try{delete q.tagErr;delete q.tagNet;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}catch(e){console.warn('answer not applied',e);errNote(e,'Try again: answer not applied')}}else tagFailed(q);
+  // drawn again however it went (a step that threw left the card as it was, Confirm off: tagging.js refineFromCloseup, 2026-11-16)
   if(typeof addKeep==='function')addKeep();
   if(queue.includes(q))renderAdd()}
 
