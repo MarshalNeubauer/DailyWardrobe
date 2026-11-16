@@ -26,11 +26,17 @@ const usableSett=i=>settToTag(i,ownSett(i))||lookOf(i)||camoLook(i);
 /* a camouflage with no reading of its own (tagged camouflage, no close-up read yet): blotches in the item's own colours, the main colour as
    the ground, its second and third, and a step lighter and darker (as lookSett's roles), seeded by the item, so it is never drawn plain
    (2026-11-16) */
-const CAMO_SHARES=[.38,.24,.16,.12,.1],CAMO_TR=3;
-function camoLook(i){if(!i||!camoPat(i.pattern))return null;const main=colOf(i),sec=i.secondaryColor&&COLORS[i.secondaryColor]||null,th=thirdOf(i),key=JSON.stringify(['camo',i.id,main,sec,th]);
+/* (2026-11-16, the owner: a camouflage is drawn in ALL its colours) with accents (core.js accentsOf) the blotches take every colour the item
+   has: the main colour, its second and third, then the accents most visible first, the ground the largest share and each further colour a
+   smaller one (CAMO_SHARES_N by how many); fewer than five real colours are made up to five with the lighter and darker steps. An item
+   without accents is drawn exactly as before (the same colours, shares and seed, so its pictures' keys don't change) */
+const CAMO_SHARES=[.38,.24,.16,.12,.1],CAMO_TR=3,CAMO_SHARES_N={6:[.34,.22,.15,.12,.09,.08],7:[.32,.2,.14,.11,.09,.08,.06]};
+function camoLook(i){if(!i||!camoPat(i.pattern))return null;const main=colOf(i),sec=i.secondaryColor&&COLORS[i.secondaryColor]||null,th=thirdOf(i),acc=accentsOf(i).map(c=>COLORS[c]),key=JSON.stringify(['camo',i.id,main,sec,th,...(acc.length?[acc]:[])]);
   if(lookMemo.has(key))return lookMemo.get(key);const lab=rgbLab(...hexRgb(main)),step=d=>labHex([Math.max(0,Math.min(100,lab[0]+d)),lab[1],lab[2]]);
-  const cols=[main,sec||step(-14),th||step(12),step(-26),step(22)];let h=5381;for(const ch of String(i.id||key))h=(Math.imul(h,33)+ch.charCodeAt(0))>>>0;
-  const s={v:5,camo:{cols,shares:CAMO_SHARES.slice(),seed:h%100000},tr:CAMO_TR,cr:1,look:'cm'+h.toString(36)};if(lookMemo.size>200)lookMemo.clear();lookMemo.set(key,s);return s}
+  let cols=[main,sec||step(-14),th||step(12),step(-26),step(22)];
+  if(acc.length){cols=[main,sec,th,...acc].filter(Boolean);for(const d of [-14,12,-26,22])if(cols.length<5)cols.push(step(d))}
+  let h=5381;for(const ch of String(i.id||key))h=(Math.imul(h,33)+ch.charCodeAt(0))>>>0;
+  const s={v:5,camo:{cols,shares:(CAMO_SHARES_N[cols.length]||CAMO_SHARES).slice(),seed:h%100000},tr:CAMO_TR,cr:1,look:'cm'+h.toString(36)};if(lookMemo.size>200)lookMemo.clear();lookMemo.set(key,s);return s}
 /* a jacket's or pants' band reading whose ground is far from the selected color is drawn in the selected color (2026-11-15, the owner's
    checkered blue pants: tagged Heathered navy #27344f, the reading's ground #616870 and lines #93a1b2 from a lifted close-up, drawn mean
    L* 50 against 22, ΔE00 26, "washed out"): when the widest band is over SETT_TAG_DE from colOf, it becomes colOf and every other band

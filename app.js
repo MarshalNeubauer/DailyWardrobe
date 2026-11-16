@@ -248,7 +248,9 @@ function normTag(parsed,model){
       model:model||'',
       dial:normCol(parsed.dial),band:['bracelet','leather','rubber','nato'].includes(parsed.band)?parsed.band:null,
       // the material Claude suggests (2026-11-15, worker cleanMaterial): from the type's list or the person's own (low kept as a guess), or a new one (matTag)
-      material:matTag(parsed),bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
+      material:matTag(parsed),
+      // the colours beyond the three (2026-11-16, the worker's accents: cleaned there; made the card's own in fill / refineApply, core.js accentsFor); null from an older worker
+      accents:Array.isArray(parsed.accents)?parsed.accents.filter(c=>typeof c==='string').slice(0,8):null,bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
       // how sure it was, its runner-up, and what it would add when nothing listed fits (single-item tags)
       conf:parsed.confidence&&typeof parsed.confidence==='object'?parsed.confidence:null,
       altColor:normColFor(parsed.type,parsed.altColor),altPattern:parsed.altPattern&&parsed.altPattern!=='none'&&(PATS_BY[parsed.type]||[]).includes(parsed.altPattern)?parsed.altPattern:null,
@@ -284,6 +286,7 @@ async function fill(q,ai){
   q.secondaryColor=ai&&ai.secondaryColor&&ai.secondaryColor!=='none'?ai.secondaryColor:null;
   q.tertiaryColor=ai&&ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null;
   q.pattern=ai?normPat(q.type,ai.pattern):'solid';
+  {const a=ai&&ai.accents?accentsFor(q,ai.accents):[];if(a.length)q.accents=a;else delete q.accents}   // Claude's colours beyond the three
   q.metal=ai&&METAL[ai.metal]?ai.metal:'silver';
   q.leather=ai&&ai.leather||'calf';q.trouserKind=ai&&ai.trouserKind||'dress';q.shoeStyle=ai&&ai.shoeStyle||'oxford';
   const wo=watchOpts(ai||{});q.dial=wo.dial;q.band=wo.band;q.bezel=wo.bezel;q.watchStyle=wo.style;

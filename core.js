@@ -351,6 +351,15 @@ const shadeFor=(i,lab)=>i&&lab&&COLORS[primaryCol(i)]?Math.max(-SHADE_MAX,Math.m
 const shadeName=s=>!s?'As tagged':`${s<0?'Darker':'Lighter'} ${Math.abs(s)}`;
 const colOf=i=>{const h=COLORS[primaryCol(i)]||'#8b8f96';return i&&i.shade?shadeHex(h,i.shade):h};
 const thirdOf=i=>i&&i.tertiaryColor&&COLORS[i.tertiaryColor]||null;
+/* an item's accents (item.accents, 2026-11-16, the owner's approved job "keep an item's extra colors"): up to ACCENT_MAX colours beyond its
+   three (a five-colour paisley tie, a multi-colour plaid), most visible first, filled by Claude's tag or close-up reading or by hand. As
+   read: known colours only, none of the three main ones, no repeats (a main colour changed later hides an accent that became it). The
+   drawings and the painter keep three colours (a camouflage aside: detect.js camoLook); the planner weighs them less (planner.js) */
+const ACCENT_MAX=4;
+const accentsOf=i=>{if(!i||!Array.isArray(i.accents)||!i.accents.length)return [];const main=[primaryCol(i),i.secondaryColor,i.tertiaryColor],out=[];
+  for(const c of i.accents)if(typeof c==='string'&&COLORS[c]&&!main.includes(c)&&!out.includes(c)&&out.length<ACCENT_MAX)out.push(c);return out};
+/* a list of colours (Claude's, a spreadsheet's, the picker's) as an item's accents: known keys, none of its main three, no repeats, at most 4 */
+const accentsFor=(i,list)=>accentsOf({...i,accents:Array.isArray(list)?list.map(c=>typeof c==='string'?COLORS[c]?c:normCol(c):null).filter(Boolean):[]});
 const accentOf=i=>{const s=i&&i.secondaryColor&&COLORS[i.secondaryColor];if(s)return s;const b=colOf(i);return lum(b)>.55?mix(b,'#000',.35):mix(b,'#fff',.45)};
 
 /* accessory option lists */
@@ -623,6 +632,7 @@ function cleanRecord(it){
     if(k==='id'||k==='type'){o[k]=v;continue}
     if(!REC_WORD.test(k)||k==='__proto__')continue;
     if(REC_COLS.includes(k)){const c=recCol(v);if(c!==undefined)o[k]=c}
+    else if(k==='accents'){if(Array.isArray(v))o[k]=v.map(recCol).filter(c=>typeof c==='string'&&c).slice(0,8)}   // colour keys (accentsOf reads at most 4)
     else if(REC_PICS.includes(k)){if(v==null||typeof v==='string'&&(REC_PHOTO.test(v)||/^dwph:[0-9a-f]{20}$/.test(v)))o[k]=v}   // (a backup's own photo reference too)
     else if(REC_KEYS.includes(k)){if(v==null||typeof v==='string'&&REC_KEY.test(v))o[k]=v}
     else if(REC_NUMS.includes(k)){if(v==null||typeof v==='number'&&isFinite(v))o[k]=v}
