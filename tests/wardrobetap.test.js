@@ -14,7 +14,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     const view=()=>p.evaluate(()=>{const v=document.querySelector('#item-view'),r=v.getBoundingClientRect(),bar=v.querySelector('.ivbar').getBoundingClientRect(),b=v.querySelector('#ivbody');
       return {on:v.classList.contains('on'),shown:getComputedStyle(v).display!=='none',ed:editing,w:Math.round(r.width),h:Math.round(r.height),vt:Math.round(r.top),vb:Math.round(r.bottom),bd:getComputedStyle(document.querySelector('#item-backdrop')).display,title:v.querySelector('#iv-title').textContent,count:(v.querySelector('.pcount')||{}).textContent,
         barBottom:Math.round(bar.bottom),top:b.scrollTop,sy:Math.round(scrollY),inert:document.querySelector('main').inert,prev:v.querySelector('#iv-prev').disabled,next:v.querySelector('#iv-next').disabled}});
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     // ten shirts in a two-column grid, newest first: s9 s8 / s7 s6 / s5 s4 / ...; then a tie without a photo
     await p.evaluate(ph=>{items=[...Array(10)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:n%2?'white':'lightblue',pattern:'solid',photo:ph,added:n}));
       items.push({id:'t',type:'tie',primaryColor:'navy',pattern:'solid',added:0});flt='all';editing=null;show('wardrobe')},PH);
@@ -124,11 +124,11 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
     // a wide screen: a centred panel over a backdrop, which closes it
-    const c2=await browser.newContext({viewport:{width:1000,height:800}});const q=await c2.newPage();await q.goto(url);await q.waitForFunction(()=>window.appReady);
+    const c2=await browser.newContext({viewport:{width:1000,height:800}});const q=await c2.newPage();await q.goto(url);await q.waitForFunction(()=>window.appReady);await q.evaluate(()=>{CK_OPEN['*']=true});
     await q.evaluate(ph=>{items=[...Array(6)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:'white',pattern:'solid',photo:ph,added:n}));flt='all';editing=null;show('wardrobe')},PH);
     await q.click('#gi-s3 .giopen');await settle(q,500);
     const wide=await q.evaluate(()=>{const r=document.querySelector('#item-view').getBoundingClientRect();return {w:Math.round(r.width),mid:Math.round(r.left+r.width/2),h:Math.round(r.height),bd:getComputedStyle(document.querySelector('#item-backdrop')).display}});
-    ok(wide.w===600&&wide.mid===500&&wide.h<800&&wide.bd==='block',`from 600px wide the item opens as a centred panel over a backdrop (${wide.w}px wide)`);
+    ok(wide.w===900&&wide.mid===500&&wide.h<800&&wide.bd==='block',`from 600px wide the item opens as a centred panel over a backdrop, 900px wide for its two columns since the checklist redesign (${wide.w}px wide)`);
     await q.mouse.click(40,400);await settle(q,500);
     ok(await q.evaluate(()=>editing===null&&getComputedStyle(document.querySelector('#item-view')).display==='none'),'clicking the backdrop closes it');
     await c2.close();

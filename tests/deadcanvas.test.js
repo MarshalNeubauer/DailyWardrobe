@@ -5,7 +5,7 @@ module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   const mk=(w,h,draw)=>p.evaluate(([w,h,draw])=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');new Function('x','w','h',draw)(x,w,h);return c.toDataURL('image/png')},[w,h,draw]);
   try{
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     const photo=await mk(600,800,"x.fillStyle='#8a6';x.fillRect(0,0,w,h);x.fillStyle='#246';x.fillRect(0,0,w/2,h/2)");
     const tex=await mk(400,400,"for(let y=0;y<h;y+=4)for(let X=0;X<w;X+=4){x.fillStyle=((X+y)/4)%2?'#654':'#432';x.fillRect(X,y,4,4)}");
     // a dark but real picture: near-black cloth with texture up to about 20
