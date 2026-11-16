@@ -1564,4 +1564,7 @@ html.bigtext :is(.cpnm,.pick-nm){min-height:3.6em}
 #today .wxretry{color:var(--acc-ink,var(--acc))}
 /* Add: what Today's "Add one" asked for (W2-14-01); the tour's first line after the setup (W2-14-07) */
 #add .addfor{margin-top:-4px;color:var(--ink)}#add .addfor[hidden]{display:none}
+/* "Your colors" / "Your patterns" with none of one's own: the heading and a small "+ New" button on one line (W2-14-02) */
+#col-sheet .cpownh{display:inline-block;margin-right:10px}#col-sheet .cnown.cnslim{display:inline-flex;grid-template-columns:none;vertical-align:middle;margin:6px 0}
+#col-sheet .cpnewl{min-height:44px;margin:0;padding:0 14px;border:1px dashed var(--fline,var(--line));border-radius:12px;background:none;color:var(--ink);font:inherit;font-size:.875rem;font-weight:600;cursor:pointer}
 .kit-lead{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:.9375rem;line-height:1.4}

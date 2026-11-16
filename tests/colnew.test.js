@@ -26,7 +26,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     // ---- the picker's entry tile
     await p.evaluate(()=>openColPick('e','t1','primaryColor'));
     let e=await p.evaluate(()=>({heads:[...document.querySelectorAll('#col-sheet .cph')].map(h=>h.textContent),tile:!!document.querySelector('#col-sheet .cnown #cn-open'),first:document.querySelector('#col-sheet .cph').textContent}));
-    ok(e.heads[e.heads.length-1]==='Your colors'&&e.first!=='Your colors'&&e.tile,'the color picker has "Your colors" with a "+ New color" tile, after the colors to pick while there are none of your own ('+e.heads.slice(-2)+')');
+    ok(e.first==='Your colors'&&e.tile,'the color picker starts with "Your colors" and its "+ New color" (a slim line while there are none of your own) ('+e.heads.slice(0,3)+')');
     await p.click('#cn-open');
     let s=await sheet();
     ok(s.title==='New color'&&/Describe it to Claude/.test(s.text)&&/Or pick the shade/.test(s.text)&&s.disabled&&s.bar==='Add color','"+ New color" opens the sheet: describe box, the shade picker, the Add button off until it has a name');

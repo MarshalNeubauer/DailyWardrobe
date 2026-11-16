@@ -69,7 +69,7 @@ module.exports=async({ok,chromium,url})=>{
         const first=[...sh.querySelectorAll('.cpgrid:not(.cnown) .cptile')][0].getBoundingClientRect();
         const own=sh.querySelector('#cn-open').getBoundingClientRect().top,std=first.top;closeColPick();closeItem();await new Promise(r=>setTimeout(r,500));
         document.documentElement.style.removeProperty('--tscale');return {bar:Math.round(bar),std:Math.round(std),bottom:Math.round(first.bottom),own:Math.round(own)}},ts);
-      ok(m.bottom<=m.bar&&m.own>m.std,`text at ${ts}: the first color to pick is whole above the Keep button, "+ New color" after the list (${JSON.stringify(m)})`);
+      ok(m.bottom<=m.bar&&m.own<m.std,`text at ${ts}: the first color to pick is whole above the Keep button, under the slim "Your colors" line (${JSON.stringify(m)})`);
     }
 
     // W2-19-06: a faded toast is gone for the keyboard and VoiceOver

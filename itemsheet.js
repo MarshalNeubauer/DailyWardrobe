@@ -358,7 +358,7 @@ function closeItem(fromPop,dragged){
    what opened the sheet */
 function itemFocusBack(id){const v=$('#item-view'),f=typeof layerFrom!=='undefined'&&v?layerFrom.get(v):null;if(f!==null&&v)layerFrom.delete(v);
   const a=document.activeElement;if(a&&a!==document.body&&!(v&&v.contains(a)))return;
-  const g=document.querySelector('#gi-'+id+' .giopen'),to=g&&!g.closest('[inert]')?g:f&&f.isConnected&&!f.closest('[inert]')?f:null;
+  const gi=document.getElementById('gi-'+id),g=gi&&gi.querySelector('.giopen'),to=g&&!g.closest('[inert]')?g:f&&f.isConnected&&!f.closest('[inert]')?f:null;
   if(to)try{to.focus({preventScroll:true})}catch{}}
 /* closing with nothing to slide away from: the item was deleted, or another tab is shown */
 function dropItem(){editing=null;itemFrom=null;histDrop();if(typeof layerFrom!=='undefined')layerFrom.delete($('#item-view'));for(const el of [$('#item-view'),$('#item-backdrop')])if(el){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}itemShown(false)}
