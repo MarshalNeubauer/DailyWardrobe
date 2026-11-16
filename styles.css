@@ -1432,13 +1432,14 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
 .ckchip{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px;box-shadow:inset 0 0 0 1px var(--swatch-edge)}
 /* "Also has" (accents, 2026-11-16): the label left like a row's, the chips (each with ×) and "+ Add a color" wrapping on the right */
 .accrow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:7px 0;font-size:.875rem}
-.acclab{font-weight:600;padding-top:8px;white-space:nowrap}
+.acclab{font-weight:600;padding-top:13px;white-space:nowrap}
 .accchips{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;flex:1 1 auto;min-width:0}
-.accchip{display:inline-flex;align-items:center;gap:2px;min-height:32px;padding:0 2px 0 10px;border:1px solid var(--line);border-radius:16px;background:var(--field);font-size:.8125rem;font-weight:500;white-space:nowrap}
-.accchip .ckchip{margin-right:4px}
-:is(#item-view,#add,body) .accrow .accx{width:32px;min-width:32px;height:32px;min-height:0;margin:0;padding:0;border:0;box-shadow:none;background:none;color:var(--mut);font:inherit;font-size:1.05rem;line-height:1;cursor:pointer;border-radius:50%;flex:none}
-:is(#item-view,#add,body) .accrow .accadd{width:auto;min-height:32px;margin:0;padding:0 12px;border:1px dashed var(--line);border-radius:16px;background:none;color:inherit;font:inherit;font-size:.8125rem;font-weight:600;cursor:pointer;flex:none}
-.rdacc{justify-content:flex-start;margin:8px 0 2px}.rdacc .accchip{padding-right:10px}
+.accchip{display:inline-flex;align-items:center;gap:0;min-height:46px;padding:0 0 0 12px;border:1px solid var(--line);border-radius:23px;background:var(--field);font-size:.8125rem;font-weight:500;white-space:nowrap}
+.accchip .ckchip{margin-right:6px}
+/* (the app's 44px tap targets) */
+:is(#item-view,#add,body) .accrow .accx{width:44px;min-width:44px;height:44px;min-height:44px;margin:0;padding:0;border:0;box-shadow:none;background:none;color:var(--mut);font:inherit;font-size:1.05rem;line-height:1;cursor:pointer;border-radius:50%;flex:none}
+:is(#item-view,#add,body) .accrow .accadd{width:auto;min-height:44px;margin:0;padding:0 14px;border:1px dashed var(--line);border-radius:22px;background:none;color:inherit;font:inherit;font-size:.8125rem;font-weight:600;cursor:pointer;flex:none}
+.rdacc{justify-content:flex-start;margin:8px 0 2px}.rdacc .accchip{min-height:36px;padding-right:12px}
 .ckb>label{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0;padding:7px 0;font-size:.875rem;font-weight:600}
 .ckb>label select,.ckb>label>input[type=text]{--fw:max(58%,min(8.5rem,72%));flex:0 0 var(--fw);width:var(--fw);max-width:var(--fw)}
 .ckb .wbst,.ckb .wbstcard{background:var(--bg)}
