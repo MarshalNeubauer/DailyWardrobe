@@ -38,6 +38,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         lb:cs.items.find(i=>i.id==='set1').primaryColor,band:cs.items.find(i=>i.id==='set1').sett.bands[0][0],ph:'photo' in cs.items.find(i=>i.id==='ph1'),nm:cs.items.find(i=>i.id==='nm1').name,
         days:JSON.stringify(cs.days),tomb:JSON.stringify(cs.tombstones),
         own:(o=>o.primaryColor+','+o.secondaryColor+','+o.pattern)(cleanRecord({id:'o1',type:'tie',primaryColor:'ownrot1',secondaryColor:'ownbrun',pattern:'own-rot-2'}))}},[crafted(),PNG]);
+    // per-field stamps (Fixer 4's field merge: item.fs, day.fs) come through unchanged
+    const fs=await p.evaluate(()=>{const it={id:'f1',type:'suit',primaryColor:'navy',pattern:'solid',added:1,updated:9,fs:{primaryColor:5,pattern:7,name:9,sett:3}},d={date:'2026-11-16',updated:4,ids:{top:'f1'},fs:{top:4,shirt:2,occasion:3}};
+      return {it:JSON.stringify(cleanRecord(it))===JSON.stringify(it),d:JSON.stringify(cleanDay(d))===JSON.stringify(d),bad:JSON.stringify(cleanRecord({...it,fs:{primaryColor:'5" x="'}}).fs)}});
+    ok(fs.it&&fs.d&&fs.bad==='{"primaryColor":"5 x="}','per-field stamps (item.fs, day.fs) are kept as they are; a string in them loses its quotes ('+JSON.stringify(fs)+')');
     ok(u.own==='ownrot1,ownbrun,own-rot-2','own color and pattern keys with digits (and the older letters-only ones) are kept ('+u.own+')');
     ok(u.same&&u.again,'an item the app made comes through cleanRecord unchanged, and a cleaned record is unchanged by a second pass');
     ok(u.ids.join()==='ph1,ph2,col1,set1,nm1,ok1','items whose id isn\'t of the app\'s shape are left out ('+u.ids.join()+')');
@@ -69,7 +73,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.reload();await p.waitForFunction(()=>window.appReady);await p.waitForTimeout(500);
     await p.waitForTimeout(1500);
     const s3=await p.evaluate(async()=>{const st=await tx('readonly',s=>s.getAll()),o=st.find(i=>i.id==='old1'),k=await metaGet('rec_kept')||[];return {mem:items.some(i=>i.id==='old1'&&!i.photo),gone:!items.some(i=>/^old2/.test(i.id))&&!st.some(i=>/^old2/.test(i.id)),stored:!!o&&!o.photo&&o.updated===5,flag:localStorage.getItem('rec_clean'),
-      kept:k.map(x=>x.rec.id.slice(0,4)+':'+x.dropped+':'+!!x.rec.photo).join(),toast:document.querySelector('#toast').textContent}});
+      kept:k.filter(x=>x.kind==='item').map(x=>String(x.rec.id).slice(0,4)+':'+x.dropped+':'+!!x.rec.photo).join(),days:k.filter(x=>x.kind!=='item').map(x=>JSON.stringify(x.rec).slice(0,300)),toast:document.querySelector('#toast').textContent}});
     ok(s3.mem&&s3.gone&&s3.stored&&s3.flag==='1','a record stored before the check is cleaned at the next start, in memory and in storage, stamp unchanged; one with a crafted id is taken out; once per phone ('+JSON.stringify(s3)+')');
     ok(s3.kept==='old1:false:true,old2:true:false'&&/1 item in this phone’s storage couldn’t be shown safely and was set aside\. Some details of 1 item .*Nothing was deleted: the originals are kept on this phone\./.test(s3.toast),'nothing is dropped silently: both originals are kept on the phone (meta rec_kept) and a plain message says so ('+s3.kept+' | '+s3.toast+')');
     await p.reload();await p.waitForFunction(()=>window.appReady);await p.waitForTimeout(1500);
@@ -96,6 +100,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(x.s===400&&x.what==='a color','POST /sync with a crafted color key is refused ('+x.s+' '+x.what+')');
     x=await J(await call('POST','sync',{baseRev:1,day:'2026-11-16',delta:{items:[it({id:'c2',type:'tie',primaryColor:'navy',updated:Date.now()})],days:[{date:'2026-11-17',ids:{tie:'c2'},updated:Date.now()}],tombstones:{}},photos:{}}));
     ok(x.s===200&&x.rev===2,'POST /sync with the app\'s own records is saved ('+x.s+')');
+    x=await J(await call('POST','sync',{baseRev:2,day:'2026-11-16',delta:{items:[it({id:'c3',type:'tie',primaryColor:'navy',updated:Date.now(),fs:{primaryColor:Date.now(),name:1}})],days:[{date:'2026-11-18',ids:{tie:'c3'},updated:Date.now(),fs:{tie:Date.now()}}],tombstones:{}},photos:{}}));
+    ok(x.s===200&&x.rev===3,'POST /sync keeps records with per-field stamps (fs) ('+x.s+' '+(x.message||'')+')');
 
     // ---- a sync from a server that holds crafted records (stored by a worker before the check): the app cleans them, nothing runs, and the
     // next sync is the small one (no endless "ask for everything")
