@@ -107,7 +107,7 @@ module.exports=async({ok,chromium,url})=>{
 
     // ---- a tie swapped today releases the next days' locks holding it
     const sw=await p.evaluate(async()=>{fresh();items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','green'),I('tie','burgundy'),I('shoes','black',{leather:'calf'})];show('today');
-      await lockUpcoming();let was=week();const B=items.find(i=>i.type==='tie'&&i.id!==was[0].tie).id;
+      await recordRun;/* the past days the drawing records, saved in the background */await lockUpcoming();let was=week();const B=items.find(i=>i.type==='tie'&&i.id!==was[0].tie).id;
       for(const d of was.slice(1,3)){dayRecs[d.k].lock.tie=B}cache={};was=week();   // as in the audit: the next two days locked with the tie today is swapped to
       await swapSlot('tie');await recordRun;const now=week();return {was:was.map(d=>d.tie),now:now.map(d=>d.tie)}});
     ok(sw.now[0]!==sw.was[0]&&sw.now[1]!==sw.now[0],`after today's tie is swapped the next workday doesn't keep that tie (${sw.was.join(',')} -> ${sw.now.join(',')})`);

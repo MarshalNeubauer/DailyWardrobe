@@ -11,22 +11,24 @@ let todayPullWait=false;
 const whenPulled=f=>afterScripts(()=>typeof afterPull==='function'?afterPull(f):f());
 /* remember what each day showed: past days become fixed, and today's record follows the screen until the day ends */
 async function recordDays(p){
-  const T=todayDate(),tk=key(T),mine=dayRecs,out=[];
-  // every record is worked out and put in memory first, synchronously, so a drawing of Today that follows the call (renderToday) already
-  // counts the days recorded now: "This look last worn" and the cleaning frame changed a moment after opening (fix round 3, W2-14-12)
+  const T=todayDate(),tk=key(T),mine=dayRecs,out=[],first=firstReal();
+  // the days missed since the app was first used for real (and today) are worked out and put in memory first, synchronously, so a drawing
+  // of Today that follows the call (renderToday) already counts them: "This look last worn" and the cleaning frame changed a moment after
+  // opening (fix round 3, W2-14-12). The planner's first days before any real use are saved as before, after the drawing
   for(const [k,o] of Object.entries(p)){
     if(!SLOTS.some(s=>o[s])||o.frozen)continue;const d=keyDate(k),r=dayRecs[k];
     // a past day with no pieces recorded: none at all, or only the week's lock (lockUpcoming), as on a day the app was not opened;
     // recorded with what the record already has, else it never became history (no wear counts, an outfit that could still change)
     // (noOutfit: a past day dressed only from the sample wardrobe, since removed, kept with no outfit: kit.js kitSampleDay)
     // (idsAhead, planner.js: pieces an earlier version wrote ahead of the day with a pick, the outfit from before it: recorded again)
-    if(d<T&&!(r&&((r.ids&&!idsAhead(r))||r.noOutfit))){const n={...(r||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,auto:true};n.updated=Date.now();dayRecs[k]=n;out.push([n,true])}
-    else if(k===tk){const ids=idsOf(o);if(!r||JSON.stringify(r.ids)!==JSON.stringify(ids)||!!r.vestOn!==!!o.vest){const n={...(r||{date:k}),ids,suitDay:o.suitDay,vestOn:!!o.vest};n.updated=Date.now();dayRecs[k]=n;out.push([n,false])}}
+    if(d<T&&!(r&&((r.ids&&!idsAhead(r))||r.noOutfit))){const n={...(r||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,auto:true},now=+d>first;n.updated=Date.now();if(now)dayRecs[k]=n;out.push({n,past:true,prev:r,now})}
+    else if(k===tk){const ids=idsOf(o);if(!r||JSON.stringify(r.ids)!==JSON.stringify(ids)||!!r.vestOn!==!!o.vest){const n={...(r||{date:k}),ids,suitDay:o.suitDay,vestOn:!!o.vest};n.updated=Date.now();dayRecs[k]=n;out.push({n,past:false,prev:r,now:true})}}
   }
   if(!out.length)return;if(cache)delete cache.careW;   // the cleaning counts follow the days just recorded (care.js careCounts)
-  for(const [n,past] of out){
+  await null;   // the saves start after the caller's drawing (saveDay puts a record in memory before it waits)
+  for(const {n,past,prev,now} of out){
     if(dayRecs!==mine)break;   // the history was replaced meanwhile (sync, restore): this plan is stale, record nothing more
-    if(dayRecs[n.date]!==n)continue;   // changed again meanwhile (a pick, a mark): that record stands
+    if(dayRecs[n.date]!==(now?n:prev))continue;   // changed again meanwhile (a pick, a mark): that record stands
     await saveDay(n,true);if(past)missedNote(n.date)}
   if(window.scheduleSync)scheduleSync();
 }
