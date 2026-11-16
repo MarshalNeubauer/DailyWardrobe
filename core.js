@@ -5,8 +5,8 @@ const COLORS={stone:'#cbbfa3',denim:'#3e5c86',black:'#16161a',charcoal:'#3b3f46'
 const SHIRT_COLORS={mint:'#cfe6d4',paleyellow:'#f1e6ac',ivory:'#f4efde',beige:'#dccbb0',lavender:'#c9bfe2',periwinkle:'#9ea8d4'};
 Object.assign(COLORS,SHIRT_COLORS);
 const SHIRT_ONLY=Object.keys(SHIRT_COLORS),SHIRT_FALLBACK={mint:'green',paleyellow:'cream',ivory:'cream',beige:'tan',lavender:'purple',periwinkle:'blue'};
-const METAL={gold:'#c9a227',silver:'#c3c6cb',other:'#7d8187'},PATS_BY=(()=>{const suiting=['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill','other'];
-  return{suit:suiting,blazer:suiting,pants:suiting,shirt:['solid','stripe','pinstripe','fine-stripe','gingham','tattersall','check','houndstooth','herringbone','oxford','pinpoint','royal-oxford','twill','end-on-end','chambray','dobby','woven','textured','fine-texture','other'],tie:['solid','woven','stripe','polka-dot','paisley','check','tonal-check','foulard','knit','other']}})(),
+const METAL={gold:'#c9a227',silver:'#c3c6cb',other:'#7d8187'},PATS_BY=(()=>{const suiting=['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill','camouflage','other'];
+  return{suit:suiting,blazer:suiting,pants:suiting,shirt:['solid','stripe','pinstripe','fine-stripe','gingham','tattersall','check','houndstooth','herringbone','oxford','pinpoint','royal-oxford','twill','end-on-end','chambray','dobby','woven','textured','fine-texture','camouflage','other'],tie:['solid','woven','stripe','polka-dot','paisley','check','tonal-check','foulard','knit','other']}})(),
 PAT_ALIAS={suit:{stripe:'pinstripe',check:'glen-check',plaid:'glen-check',texture:'twill'},shirt:{texture:'textured',plaid:'check',hairline:'fine-stripe','hairline-stripe':'fine-stripe','fine-stripes':'fine-stripe','fil-a-fil':'end-on-end','end-to-end':'end-on-end',jacquard:'dobby','pin-point':'pinpoint','royal-oxford-weave':'royal-oxford',poplin:'solid',broadcloth:'solid','fine-textured':'fine-texture','micro-texture':'fine-texture',weave:'woven','basket-weave':'royal-oxford'},tie:{texture:'woven',textured:'woven',weave:'woven','basket-weave':'woven',basketweave:'woven',oxford:'woven','micro-check':'woven',grenadine:'woven',tonal:'tonal-check','tone-on-tone':'tonal-check','tonal-glen-check':'tonal-check','tone-on-tone-check':'tonal-check',dots:'polka-dot',plaid:'check'}},
 normPat=(t,p)=>{const l=PATS_BY[t]||['solid'],g=PAT_ALIAS[t==='blazer'||t==='pants'?'suit':t]||{};p=String(p||'').toLowerCase().trim().replace(/[\s_]+/g,'-');return l.includes(p)?p:l.includes(g[p])?g[p]:'solid'},
 patLabel=p=>String(p||'').replace(/-/g,' '),
@@ -229,6 +229,28 @@ const SOUTH_CC=['AU','NZ','ZA','AR','CL','UY','PY','BR','BO','PE','NA','BW','ZW'
    with full Weather points); a season chosen in the item sheet ('all' too) wins */
 /* (2026-11-15, the materials audit and the owner's decisions) tropical wool warm; cashmere, cashmere blend, moleskin and melton cold; a wool
    tie cold (MAT_SEASON_BY: by type, so a wool suit stays all year); mohair blend and hopsack none */
+/* camouflage (2026-11-16, the owner's MultiCam pants: drawn plain, since no band, motif or weave reading can hold irregular blotches with
+   no repeating grid). camoPat(p): the pattern 'camouflage', an own pattern based on it, or an own pattern named or described as camouflage
+   (one made before the pattern existed: his "Camouflage (OCP/MultiCam)" based on other).
+   camoField(N, shares, seed): a seamless N x N map of colour indexes for colours in share order (index 0, the largest, is the ground): each
+   other colour gets a smooth noise field summed over octaves on a wrapping lattice (the big blobs, then ragged edges), and from the smallest
+   share up each takes the pixels where its own field is highest until it covers its share, so the accents lie over the others and every
+   colour covers what it should. The same arguments give the same map (seeded). No DOM: the drawings (draw.js camoTileUrl) and the painter
+   (asm-color.js asmCamoTex) share it; kept per arguments (camoMemo) */
+const CAMO_RE=/camo|multicam|\bocp\b|woodland|flecktarn|realtree/i,camoMemo=new Map(),CAMO_OCT=[[3,1],[6,.5],[12,.24],[24,.09]];   // (a 48-cell layer made pixel-step edges; camouflage's are soft and rounded)
+const camoPat=p=>{if(!p)return false;if(patBase(p)==='camouflage')return true;const c=typeof CUSTOM_PAT!=='undefined'&&CUSTOM_PAT[p];return !!c&&CAMO_RE.test((c.name||'')+' '+(c.desc||'')+' '+p)};
+function camoField(N,shares,seed=1){const key=N+'|'+shares.join(',')+'|'+seed;if(camoMemo.has(key))return camoMemo.get(key);
+  let s=(Math.imul(seed|0,2654435761)>>>0)||1;const rnd=()=>(s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296;
+  const noise=()=>{const f=new Float32Array(N*N);for(const [G,w] of CAMO_OCT){const L=new Float32Array(G*G);for(let k=0;k<G*G;k++)L[k]=rnd();
+      for(let y=0;y<N;y++){const gy=y*G/N,y0=Math.floor(gy),ty=gy-y0,sy=ty*ty*(3-2*ty),r0=(y0%G)*G,r1=((y0+1)%G)*G;
+        for(let x=0;x<N;x++){const gx=x*G/N,x0=Math.floor(gx),tx=gx-x0,sx=tx*tx*(3-2*tx),c0=x0%G,c1=(x0+1)%G;
+          const a=L[r0+c0]+(L[r0+c1]-L[r0+c0])*sx,b=L[r1+c0]+(L[r1+c1]-L[r1+c0])*sx;f[y*N+x]+=w*(a+(b-a)*sy)}}}
+    return f};
+  const n=N*N,idx=new Uint8Array(n),taken=new Uint8Array(n),tot=shares.reduce((a,b)=>a+Math.max(0,+b||0),0)||1;
+  const order=shares.map((v,k)=>k).slice(1).sort((a,b)=>shares[a]-shares[b]);   // the smallest share first; the ground (index 0) is what is left
+  for(const k of order){const f=noise(),want=Math.round(n*Math.max(0,+shares[k]||0)/tot),ids=[];for(let j=0;j<n;j++)if(!taken[j])ids.push(j);
+    ids.sort((a,b)=>f[b]-f[a]);for(let q=0;q<want&&q<ids.length;q++){idx[ids[q]]=k;taken[ids[q]]=1}}
+  if(camoMemo.size>16)camoMemo.clear();camoMemo.set(key,idx);return idx}
 const MAT_SEASON={flannel:'cold',tweed:'cold',corduroy:'cold',velvet:'cold',cashmere:'cold','cashmere blend':'cold',moleskin:'cold',melton:'cold',
   linen:'warm','linen blend':'warm',seersucker:'warm','tropical wool':'warm'};
 const MAT_SEASON_BY={tie:{wool:'cold'}};
