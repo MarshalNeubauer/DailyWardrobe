@@ -14,7 +14,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     const view=()=>p.evaluate(()=>{const v=document.querySelector('#item-view'),r=v.getBoundingClientRect(),bar=v.querySelector('.ivbar').getBoundingClientRect(),b=v.querySelector('#ivbody');
       return {on:v.classList.contains('on'),shown:getComputedStyle(v).display!=='none',ed:editing,w:Math.round(r.width),h:Math.round(r.height),vt:Math.round(r.top),vb:Math.round(r.bottom),bd:getComputedStyle(document.querySelector('#item-backdrop')).display,title:v.querySelector('#iv-title').textContent,count:(v.querySelector('.pcount')||{}).textContent,
         barBottom:Math.round(bar.bottom),top:b.scrollTop,sy:Math.round(scrollY),inert:document.querySelector('main').inert,prev:v.querySelector('#iv-prev').disabled,next:v.querySelector('#iv-next').disabled}});
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     // ten shirts in a two-column grid, newest first: s9 s8 / s7 s6 / s5 s4 / ...; then a tie without a photo
     await p.evaluate(ph=>{items=[...Array(10)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:n%2?'white':'lightblue',pattern:'solid',photo:ph,added:n}));
       items.push({id:'t',type:'tie',primaryColor:'navy',pattern:'solid',added:0});flt='all';editing=null;show('wardrobe')},PH);
@@ -83,7 +83,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(v.prev&&!v.next&&v.count==='1 of 11','on the first item, previous is switched off');
     await p.tap('#iv-next');await settle(p,400);v=await view();ok(v.ed==='s8'&&v.count==='2 of 11'&&!v.prev,'› goes to the next item');
     const swipe=async(x0,x1,y=420)=>{await T('touchStart',x0,y);for(let k=1;k<=6;k++){await T('touchMove',x0+(x1-x0)*k/6,y+2);await p.waitForTimeout(16)}await T('touchEnd');await settle(p,450)};
-    const sy=await p.evaluate(()=>{const r=document.querySelector('#item-view select').getBoundingClientRect();return Math.round(r.top+r.height/2)});
+    // (the first dropdown brought on screen: the 3-step card under Read color and texture pushes the Details card down, 2026-11-15)
+    const sy=await p.evaluate(()=>{const s=document.querySelector('#item-view select');s.scrollIntoView({block:'center'});const r=s.getBoundingClientRect();return Math.round(r.top+r.height/2)});
     ok(await p.evaluate(y=>!!document.elementFromPoint(310,y).closest('select'),sy),'(the swipe below starts on a dropdown)');
     await swipe(310,90,sy);ok((await view()).ed==='s7','a swipe to the left goes to the next item, even when it starts on a dropdown');
     await swipe(90,310);ok((await view()).ed==='s8','a swipe to the right goes back');
@@ -101,9 +102,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok((await view()).ed==='s4','closing one item and opening another straight away keeps the second open');
     await p.goBack();await settle(p,500);ok((await view()).ed===null,'and Back still closes it');
     // editing keeps the page and its scroll position
-    await p.tap('#gi-s3 .giopen');await settle(p,500);await p.evaluate(()=>document.querySelector('#ivbody').scrollTo(0,160));
+    // (scrolled so the Color button is in view: since the Color & texture card it sits lower than 160 px; a click on it scrolled the page)
+    await p.tap('#gi-s3 .giopen');await settle(p,500);const yS=await p.evaluate(()=>{const b=document.querySelector('#ivbody'),c=document.querySelector('#item-view .colbtn[data-k="primaryColor"]');b.scrollTo(0,Math.max(160,Math.round(c.getBoundingClientRect().top-b.getBoundingClientRect().top+b.scrollTop-200)));return b.scrollTop});
     await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cptile[data-c="pink"] >> nth=-1');await p.click('#col-sheet .cpbar button');await p.waitForFunction(()=>items.find(i=>i.id==='s3').primaryColor==='pink'&&/pink/i.test(document.querySelector('#iv-title').textContent));v=await view();   // (the sheet is redrawn a moment after the item is saved)
-    ok(v.ed==='s3'&&v.on&&v.top===160&&/pink/i.test(v.title),`changing a tag redraws the sheet in place: still open, still scrolled, the header follows (${v.title})`);
+    ok(v.ed==='s3'&&v.on&&v.top===yS&&yS>=160&&/pink/i.test(v.title),`changing a tag redraws the sheet in place: still open, still scrolled, the header follows (${v.title}, ${v.top} of ${yS})`);
     ok(/pink/i.test(await p.textContent('#gi-s3')),'and the box in the grid behind is up to date');
     // while cropping, Esc leaves the crop first
     await p.evaluate(()=>startCrop('s3'));await p.waitForSelector('#item-view #cropbox');
@@ -122,11 +124,11 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
     // a wide screen: a centred panel over a backdrop, which closes it
-    const c2=await browser.newContext({viewport:{width:1000,height:800}});const q=await c2.newPage();await q.goto(url);await q.waitForFunction(()=>window.appReady);
+    const c2=await browser.newContext({viewport:{width:1000,height:800}});const q=await c2.newPage();await q.goto(url);await q.waitForFunction(()=>window.appReady);await q.evaluate(()=>{CK_OPEN['*']=true});
     await q.evaluate(ph=>{items=[...Array(6)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:'white',pattern:'solid',photo:ph,added:n}));flt='all';editing=null;show('wardrobe')},PH);
     await q.click('#gi-s3 .giopen');await settle(q,500);
     const wide=await q.evaluate(()=>{const r=document.querySelector('#item-view').getBoundingClientRect();return {w:Math.round(r.width),mid:Math.round(r.left+r.width/2),h:Math.round(r.height),bd:getComputedStyle(document.querySelector('#item-backdrop')).display}});
-    ok(wide.w===600&&wide.mid===500&&wide.h<800&&wide.bd==='block',`from 600px wide the item opens as a centred panel over a backdrop (${wide.w}px wide)`);
+    ok(wide.w===900&&wide.mid===500&&wide.h<800&&wide.bd==='block',`from 600px wide the item opens as a centred panel over a backdrop, 900px wide for its two columns since the checklist redesign (${wide.w}px wide)`);
     await q.mouse.click(40,400);await settle(q,500);
     ok(await q.evaluate(()=>editing===null&&getComputedStyle(document.querySelector('#item-view')).display==='none'),'clicking the backdrop closes it');
     await c2.close();

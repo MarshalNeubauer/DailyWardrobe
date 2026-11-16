@@ -17,7 +17,7 @@
 //   --parts   a folder of finer part pictures made with SAM (zone-lapelL-2048.png, zone-lapelR-…, zone-sleeveL-…, zone-sleeveR-…;
 //             white = the part): without it the jacket is one part
 //   --dry     accepted as before (nothing is uploaded either way)
-//   --origin  the app's address (default https://marshalneubauer.github.io/DailyWardrobe/), as for npm run assemble
+//   --origin  the app's address (default https://marshalneubauer.github.io/DailyWardrobe/)
 // Run it again whenever a master or a mask is made again. The token is read from the environment only.
 const fs=require('fs'),path=require('path'),zlib=require('zlib');
 const ROOT=path.join(__dirname,'..');
@@ -39,7 +39,7 @@ const writeUrl=(f,u)=>fs.writeFileSync(f,Buffer.from(u.split(',')[1],'base64'));
   await ctx.route(ORIGIN+'**',route=>{const u=new URL(route.request().url());let f=path.join(ROOT,decodeURIComponent(u.pathname.slice(new URL(ORIGIN).pathname.length))||'index.html');
     if(!f.startsWith(ROOT)||!fs.existsSync(f)||fs.statSync(f).isDirectory())f=path.join(ROOT,'index.html');
     route.fulfill({status:200,contentType:TYPES[f.split('.').pop()]||'application/octet-stream',body:fs.readFileSync(f)})});
-  // the worker through this script (as npm run assemble does); nothing the app tries to upload reaches it
+  // the worker through this script; nothing the app tries to upload reaches it
   const CORS={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,PUT,DELETE,OPTIONS'};
   await ctx.route(WORKER+'**',async route=>{const q=route.request();
     if(q.method()==='OPTIONS')return route.fulfill({status:204,headers:CORS});

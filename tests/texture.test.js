@@ -5,7 +5,7 @@ const path=require('path');
 module.exports=async({ok,chromium,url,ROOT,settle})=>{
   const browser=await chromium.launch();const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();
   const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
-  await p.goto(url);await p.waitForFunction(()=>window.appReady);
+  await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
   // ---- white balance
   const wb=await p.evaluate(()=>{const mk=(fn,w=200,h=150)=>{const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);return c};
     const px=(c,x,y)=>[...c.getContext('2d').getImageData(x,y,1,1).data].slice(0,3);
@@ -33,23 +33,23 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   await p.setInputFiles('#add-one input[type=file]',await file('suit.png',90,70,50,'rgb(240,212,170)'));
   await p.waitForFunction(()=>queue.length===1&&!queue[0].busy);
   await p.evaluate(()=>{setq(0,'type','suit');renderAdd()});
-  const c1=await p.evaluate(()=>({step:(document.querySelector('#queue .texslot')||{}).textContent||'',wb:(document.querySelector('#queue .wbnote')||{}).textContent||'',hasWb:!!queue[0].wb}));
-  ok(/Step 2 · Fabric close-up/.test(c1.step)&&/Optional/.test(c1.step),'a one-item card asks for the fabric close-up as step 2 (optional)');
+  const c1=await p.evaluate(()=>({step:(document.querySelector('#queue [data-ck="tex"]')||{}).textContent||'',wb:(document.querySelector('#queue .wbnote')||{}).textContent||'',hasWb:!!queue[0].wb}));
+  ok(/Texture match/.test(c1.step)&&/Not yet · add a close-up to compare/.test(c1.step)&&/Add close-up/.test(c1.step),'a one-item card offers the fabric close-up in Texture match (not counted until there is one)');   // (the checklist redesign, 2026-11-16: it was "Step 2 · Fabric close-up")
   ok(c1.hasWb&&/corrected for the light/.test(c1.wb)&&/Show original/.test(c1.wb),'the photo was color-corrected, and the card says so with a Show original switch');
   const before=await p.evaluate(()=>queue[0].photo);await p.click('#queue .wbnote .linkbtn');
   const after=await p.evaluate(()=>({photo:queue[0].photo,txt:document.querySelector('#queue .wbnote').textContent}));
   ok(after.photo!==before&&/Original colors/.test(after.txt),'Show original puts the uncorrected photo back');await p.click('#queue .wbnote .linkbtn');
-  await p.click('#queue .texslot .cubtn');await p.waitForSelector('#cu-sheet.on');   // a touch screen: the close-up chooser (ui.js)
+  await p.click('#queue [data-ck="tex"] .ckadd');await p.waitForSelector('#cu-sheet.on');   // a touch screen: the close-up chooser (ui.js)
   await p.setInputFiles('#cu-take',await file('tex.png',200,180,150));
   await p.waitForFunction(()=>queue[0].texture);
   const c2=await p.evaluate(async()=>{const q=queue[0],im=new Image();im.src=q.texture;await im.decode();const c=document.createElement('canvas');c.width=c.height=4;const x=c.getContext('2d');x.drawImage(im,0,0,4,4);
     const sw=document.querySelector('#queue .swsplit .swtex');
-    return {px:[...x.getImageData(1,1,1,1).data].slice(0,3),g:q.wb,split:!!sw&&getComputedStyle(sw).clipPath.includes('50%'),cap:document.querySelector('#queue .tagsw figcaption').textContent,done:!!document.querySelector('#queue .texslot.done')}});
+    return {px:[...x.getImageData(1,1,1,1).data].slice(0,3),g:q.wb,split:!!sw&&getComputedStyle(sw).clipPath.includes('50%'),cap:document.querySelector('#queue .tagsw figcaption').textContent,done:!!document.querySelector('#queue [data-ck="tex"].cktexon .ckcu .cubtn')}});
   ok(c2.split&&/As tagged · Close-up/.test(c2.cap),'the swatch splits: the color as tagged on the left half, the close-up on the right');
   ok(Math.abs(c2.px[2]-150*c2.g.b)<=8&&Math.abs(c2.px[0]-200*c2.g.r)<=8,`the close-up gets the same light correction as the item photo (${c2.px})`);
-  ok(c2.done,'once added, step 2 offers Replace and Remove');
+  ok(c2.done,'once added, Texture match offers Replace close-up (Remove is in its chooser)');
   await p.evaluate(()=>{setq(0,'type','shoes')});
-  ok(await p.evaluate(()=>!document.querySelector('#queue .texslot')&&!document.querySelector('#queue .swtex')),'shoes, belts and the like have no close-up step');
+  ok(await p.evaluate(()=>!document.querySelector('#queue [data-ck="tex"]')&&!document.querySelector('#queue .swtex')),'shoes, belts and the like have no close-up step');
   await p.evaluate(()=>setq(0,'type','suit'));
   await p.evaluate(()=>save(0));
   const saved=await p.evaluate(()=>({tex:!!items[0].texture,type:items[0].type,photo:!!items[0].photo}));
@@ -64,15 +64,14 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   await p.evaluate(id=>{show('wardrobe');openItem(id)},suitId);await settle(p,500);
   ok(await p.evaluate(id=>!!document.querySelector(`#item-view .swsplit .swtex`),suitId),'an opened item in the Wardrobe shows the split swatch');
   await p.evaluate(id=>openItem(id),tieId);await settle(p,500);
-  const lab=await p.evaluate(id=>[...document.querySelectorAll(`#item-view .phtools :is(label,button)`)].map(l=>l.textContent.trim()),tieId);
+  const lab=await p.evaluate(id=>[...document.querySelectorAll(`#item-view .phtools :is(label,button)`)].map(l=>l.getAttribute('aria-label')||l.textContent.trim()),tieId);
   ok(lab.includes('Add fabric close-up'),`the editor offers a close-up for a tie (${lab.join(', ')})`);
   // a touch screen: the close-up button opens the close-up chooser (ui.js closeupPick); Choose from photos takes the file
-  if(!await p.evaluate(()=>phEdit.open))await p.click('#item-view .ivphbtn');await settle(p,300);   // Edit photos
   await p.click('#item-view .phtools .cubtn');await p.waitForSelector('#cu-sheet.on');
   await p.setInputFiles('#cu-lib',await file('tt.png',130,40,50));
   await p.waitForFunction(id=>items.find(i=>i.id===id).texture&&!!document.querySelector(`#item-view .swtex`),tieId,{timeout:10000}).catch(()=>{});   // the save, then the redraw
   await settle(p,350);await p.click('#item-view .phtools .cubtn');await p.waitForSelector('#cu-sheet.on');
-  ok(await p.evaluate(id=>!!document.querySelector(`#item-view .swtex`)&&/Replace close-up/.test(document.querySelector(`#item-view .phtools`).textContent)&&!!document.querySelector('#cu-rm'),tieId),'adding one shows it in the swatch, with Remove close-up in the close-up chooser');
+  ok(await p.evaluate(id=>!!document.querySelector(`#item-view .swtex`)&&document.querySelector(`#item-view .phtools .cubtn`).getAttribute('aria-label')==='Replace close-up'&&!!document.querySelector('#cu-rm'),tieId),'adding one shows it in the swatch, with Remove close-up in the close-up chooser');
   await p.click('#cu-cancel');await settle(p,350);
   await p.evaluate(id=>undoPhoto(id),tieId);
   ok(await p.evaluate(id=>!items.find(i=>i.id===id).texture,tieId),'Undo takes the close-up back off');

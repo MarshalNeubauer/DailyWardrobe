@@ -10,6 +10,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const build=()=>p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       items=[I('suit','navy',{pattern:'herringbone'}),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('socks','navy')];
+      if(typeof CK_OPEN!=='undefined')CK_OPEN['*']=true;   // (the item sheet's checklist sections open: the color button is inside one)
       settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-16T09:00:00';sel=new Date(2026,10,16);view={y:2026,m:10};cache={};show('today')});
     await build();
     const live=()=>p.evaluate(()=>new Promise(r=>setTimeout(()=>r(document.querySelector('#sr-live').textContent),150)));

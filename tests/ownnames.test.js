@@ -8,7 +8,7 @@ module.exports=async({ok,chromium,url,settle})=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>{errs.push('dialog '+d.message());d.dismiss()});
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     // ---- a synced settings.custom carrying HTML in its names (as another device or an old copy could)
     await p.evaluate(()=>{window.__pwned=0;
       settings.custom={colors:[{key:'ownimgsrcxonerror',name:'<img src=x onerror=__pwned++>',hex:'#c06080',base:'pink',types:['tie'],accent:false}],

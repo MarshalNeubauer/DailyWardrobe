@@ -95,7 +95,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       syncNow=real;settings.holidays=st;await metaPut('settings',settings);return {a,b,n:st.list.length}});
     ok(stay.a===stay.n&&stay.b===1,`no refetch when the synced settings are fresh already, or when the sync fails (${JSON.stringify(stay)})`);
     // choosing "No public holidays" turns them off
-    await p.selectOption('#cfg-country','');await p.waitForFunction(()=>!settings.holidays&&!document.querySelector('#holiday-list .hrow'),null,{timeout:5000}).catch(()=>{});   // the list is redrawn after the setting clears
+    await p.selectOption('#cfg-country','');await p.waitForFunction(()=>!(settings.holidays&&settings.holidays.country)&&!document.querySelector('#holiday-list .hrow'),null,{timeout:5000}).catch(()=>{});   // the list is redrawn after the setting clears
     ok(await p.evaluate(()=>isWorkday(new Date(2027,1,25))&&document.querySelectorAll('#holiday-list .hrow').length===0),'"No public holidays" makes them workdays again');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}

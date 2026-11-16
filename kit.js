@@ -101,10 +101,11 @@ async function kitUnsave(b){if(!b)return;
   // lost the item from both (audit 2026-11-15 re-run); a kill between the two leaves the items, and the kept cards of saved items are dropped
   const back=[];for(const {q,i} of b.qs.slice().reverse()){if(!q||queue.includes(q))continue;delete q.busy;queue.splice(Math.min(i,queue.length),0,q);back.push(q)}
   if(back.length&&typeof addKeep==='function')await addKeep();
-  try{await kitDelMany(b.its)}catch(e){for(const q of back){const k=queue.indexOf(q);if(k>=0)queue.splice(k,1)}if(back.length&&typeof addKeep==='function')addKeep();throw e}
+  try{await kitDelMany(b.its,b.olds||[])}catch(e){for(const q of back){const k=queue.indexOf(q);if(k>=0)queue.splice(k,1)}if(back.length&&typeof addKeep==='function')addKeep();throw e}
   if(kitBatch===b)kitBatch=null;cache={};todayStale=true;if(b.qs.length&&typeof multiMsg==='function')multiMsg('');   // ("Saved 5 items to your wardrobe." stayed over the cards Undo brought back)
   if(b.qs.length&&$('#add')&&!$('#add').hidden)renderAdd();else if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
-  toast(b.its.length===1?'Undone: the item is back on Add.':`Undone: ${b.its.length} items taken out.`,3000)}
+  const ol=(b.olds||[]).length;   // (b.olds: pieces an import updated, put back as they were)
+  toast(ol?`Undone: ${b.its.length?`${b.its.length} item${b.its.length===1?'':'s'} taken out, `:''}${ol} piece${ol===1?'':'s'} as ${ol===1?'it was':'they were'}.`:b.its.length===1?'Undone: the item is back on Add.':`Undone: ${b.its.length} items taken out.`,3000)}
 
 /* ---- many items at once (the import, the sample, their Undo and removal), each in ONE transaction (2026-11-15, the new-user audit:
    saved or deleted one by one, a double tap ran the loop twice, iOS killing Safari part-way left part of an import or a sample, and
@@ -116,7 +117,7 @@ function kitTombs(t,ids,now){if(!ids.length)return;const m=t.objectStore('meta')
 /* a failed write is said, as Confirm says it (add.js save) */
 function kitFail(e){console.warn('save failed',e);if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000)}
 /* an item made from a card with no photo, as add.js saveCard makes one (a hand-added card: the fields it keeps for each type) */
-function kitItem(c){const f=FABRIC.includes(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:Date.now()};
+function kitItem(c){const f=FABRIC.includes(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:nowMs()};
   if(METAL_TYPES.includes(c.type))it.metal=c.metal||'silver';
   if(c.type==='shirt')it.cuff=c.cuff==='french'?'french':'button';
   if(c.type==='suit')it.vest=c.vest==='yes'?'yes':'no';
@@ -127,22 +128,25 @@ function kitItem(c){const f=FABRIC.includes(c.type),it={id:c.id||crypto.randomUU
   if(c.type==='watch'){const wo=watchOpts(c);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
   if(typeof wardSaveFields==='function')wardSaveFields(c,it);   // name, brand, material, notes (wardrobe.js)
   if(c.sample)it.sample=true;return it}
-/* store new items (false, said, when storage refused them: nothing was stored) */
-async function kitStore(list,prog){if(!list.length)return true;const now=Date.now();let k=0;
-  try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of list){it.updated=now;const r=s.put(it);if(prog)r.onsuccess=()=>prog(++k,list.length)}})}catch(e){kitFail(e);return false}
-  items.push(...list);cache={};todayStale=true;if(typeof dressNewItem==='function')dressNewItem();
+/* store new items, and changed ones (upd: the import's updates) in the same transaction (false, said, when storage refused them: nothing was
+   stored); an updated piece is stamped as put() stamps an edit (core.js itemFields against the stored copy: only the fields the import changed
+   get the new stamp, so they merge field by field with another phone's edits) */
+async function kitStore(list,prog,upd){upd=upd||[];if(!list.length&&!upd.length)return true;const now=nowMs();let k=0;
+  try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of list){it.updated=now;const r=s.put(it);if(prog)r.onsuccess=()=>prog(++k,list.length)}
+    for(const it of upd){it.updated=nextStamp(stamp(it));const g=s.get(it.id);g.onsuccess=()=>{itemFields(it,g.result);s.put(it)}}})}catch(e){kitFail(e);return false}
+  items.push(...list);for(const it of upd){const j=items.findIndex(x=>x.id===it.id);if(j>=0)items[j]=it}cache={};todayStale=true;if(list.length&&typeof dressNewItem==='function')dressNewItem();
   if(window.scheduleSync)scheduleSync();if(typeof askPersist==='function')askPersist();return true}
 /* delete items (each with a tombstone, as Delete does), with changed items (put) and day records (days) in the same transaction */
-async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=Date.now(),gone=new Set(ids);
+async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=nowMs(),gone=new Set(ids);
   await kitTx(['items','meta','days'],t=>{const s=t.objectStore('items');for(const id of ids)s.delete(id);for(const it of put){it.updated=now;s.put(it)}
-    const d=t.objectStore('days');for(const r of days){r.updated=now;delete r.lockOnly;delete r.base;d.put(r)}kitTombs(t,ids,now)});
+    const d=t.objectStore('days');for(const r of days){if(r.updated!==KIT_YIELD)r.updated=now;delete r.lockOnly;delete r.base;d.put(r)}kitTombs(t,ids,now)});   // (KIT_YIELD: a sample-only day keeps its stamp of 1, kitSampleRemove)
   items=items.filter(x=>!gone.has(x.id));for(const it of put){const k=items.findIndex(x=>x.id===it.id);if(k>=0)items[k]=it}
   for(const r of days)dayRecs[r.date]=r;cache={};todayStale=true;if(window.scheduleSync)scheduleSync()}
 
 /* ---- Duplicate (the item sheet): the same piece again, with a new id and no history, opened for any difference ---- */
 const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cleaned','sample','sampleMine'];
 async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;const c=JSON.parse(JSON.stringify(it));for(const k of KIT_NO_COPY)delete c[k];
-  c.id=crypto.randomUUID();c.added=Date.now();await put(c);items.push(c);cache={};todayStale=true;
+  c.id=crypto.randomUUID();c.added=nowMs();await put(c);items.push(c);cache={};todayStale=true;
   if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
   openItem(c.id);toast('Duplicated. Change anything that differs, like its name.',3500)}
 
@@ -152,90 +156,196 @@ async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;
    and common words for them (trousers, pants, slacks, chinos, jeans; necktie; tie bar; loafers; blazers…), colour names as the app shows
    them and everyday ones (sky blue, charcoal grey, maroon: core.js COL_ALIAS), the owner's own colours by name, pattern names. A colour a
    type isn't offered in moves to the nearest one it is (fitCol), and the preview says so. A row that can't be read is shown with why and
-   left out; a row matching a piece already in the wardrobe is shown unticked (2026-11-15, the new-user audit). */
-const KIT_COLS={type:['type','item','category','what','kind of item'],primaryColor:['colour','color','main colour','main color','primary colour','primary color'],
+   left out; a row matching a piece already in the wardrobe is shown unticked (2026-11-15, the new-user audit).
+   Fix round 3 (2026-11-16, the third audit: W2-15-01..07, W2-12-05, W2-16-06, W2-18-04): a Description / Details / Item column, Notes and
+   the name are read for the pattern, the trousers' kind, the shoes' style, a three-piece suit, French cuffs and the material when their own
+   columns don't say; words of a description left over become the name (or go to the notes when the row has a name); the preview names the
+   columns it didn't use; a Qty column or "x3" makes that many pieces; the column names may sit under a title row; a list with no column
+   names ("Navy suit", "White shirt x3") is read line by line; "lt."/"dk", "brn", "wht" and the like, small typos ("Shrit") and Arabic type
+   and color words are read; long fields are cut to what is kept, and the preview says so. */
+const KIT_COLS={type:['type','category','item type','type of item','kind of item','clothing type','clothing','clothes','garment','piece','article','what','item','النوع','الصنف','القطعه'],
+  primaryColor:['colour','color','colours','colors','main colour','main color','primary colour','primary color','colour 1','color 1','اللون','الالوان'],
   secondaryColor:['second colour','second color','secondary colour','secondary color','colour 2','color 2'],tertiaryColor:['third colour','third color','colour 3','color 3'],
-  pattern:['pattern'],name:['name','label','nickname'],brand:['brand','maker'],material:['material','fabric','cloth'],notes:['notes','note','comments'],
+  pattern:['pattern','patterns','print'],name:['name','label','nickname','الاسم'],brand:['brand','maker','make','الماركه'],material:['material','fabric','cloth'],notes:['notes','note','comments','comment','remarks','ملاحظات'],
+  desc:['description','desc','details','detail','item description','style description','item'],qty:['qty','quantity','count','how many','amount','pieces','units','no of pieces'],
   vest:['vest','waistcoat','three-piece','3-piece'],cuff:['cuffs','cuff'],kind:['kind','trouser kind','trousers kind','fit'],style:['style','shoe style'],leather:['leather'],season:['season'],metal:['metal','buckle','metal colour','metal color','case']};
 /* a metal word → {k: 'gold' | 'silver' | 'other' (gunmetal), read} (read: not one of the app's three by name), else null */
 function kitMetal(word){const w=kitNorm(word).replace(/-/g,' ');if(!w)return null;
   if(/^(gold|yellow gold|gold tone|gilt|brass)$/.test(w))return {k:'gold',read:w!=='gold'};if(/^(rose gold|pink gold|red gold)$/.test(w))return {k:'gold',read:true};
   if(/^(silver|steel|stainless|stainless steel|silver tone|chrome|platinum|white gold|sterling|sterling silver)$/.test(w))return {k:'silver',read:w!=='silver'};
   if(/^(gunmetal|gun metal|black metal|titanium|grey metal)$/.test(w))return {k:'other',read:w!=='gunmetal'&&w!=='gun metal'};return null}
-const KIT_TYPE_WORDS={suit:['suit','suits','two-piece','three-piece','suit jacket'],blazer:['blazer','sport coat','sports coat','sportcoat','jacket','sport jacket'],pants:['trousers','trouser','pants','slacks','chinos','jeans','dress trousers','dress pants'],
-  shirt:['shirt','dress shirt','shirts','oxford shirt'],tie:['tie','necktie','ties'],tieclip:['tie clip','tie bar','tieclip','tie pin'],watch:['watch','wristwatch'],shoes:['shoes','shoe','oxfords','oxford','derbies','derby','loafers','loafer','boots','boot','sneakers','trainers'],
-  belt:['belt'],socks:['socks','sock'],cufflinks:['cufflinks','cuff links','cufflink','cuff link'],overcoat:['overcoat','coat','topcoat','top coat','wool coat'],raincoat:['raincoat','trench','trench coat','mac']};
+/* type words (Arabic ones as kitNorm leaves them: ة → ه, the hamza on alif dropped) */
+const KIT_TYPE_WORDS={suit:['suit','suits','two-piece','three-piece','suit jacket','بدله','بدلات'],blazer:['blazer','sport coat','sports coat','sportcoat','jacket','sport jacket','بليزر','جاكيت','جاكت','ستره'],
+  pants:['trousers','trouser','pants','slacks','chinos','jeans','dress trousers','dress pants','khakis','بنطلون','بنطال','سروال','بناطيل'],
+  shirt:['shirt','dress shirt','shirts','oxford shirt','قميص','قمصان'],tie:['tie','necktie','ties','ربطه عنق','ربطه','كرافته','كرفته','كرافات'],tieclip:['tie clip','tie bar','tieclip','tie pin','مشبك ربطه','دبوس ربطه'],
+  watch:['watch','wristwatch','ساعه','ساعه يد'],
+  shoes:['shoes','shoe','oxfords','oxford','derbies','derby','loafers','loafer','boots','boot','sneakers','trainers','brogues','brogue','wingtips','monk','monks','monk straps','monkstraps','moccasins','dress shoes','حذاء','احذيه','جزمه'],
+  belt:['belt','حزام'],socks:['socks','sock','جوارب','شراب'],cufflinks:['cufflinks','cuff links','cufflink','cuff link','ازرار اكمام','كبك'],overcoat:['overcoat','coat','topcoat','top coat','wool coat','معطف','بالطو'],
+  raincoat:['raincoat','trench','trench coat','mac','معطف مطر','ترنش']};
 const KIT_PLANS='suits, blazers, pants, shirts, ties, tie clips, shoes, belts, socks, watches, cufflinks and coats';
-const kitNorm=s=>String(s??'').trim().toLowerCase().replace(/[_\s]+/g,' ').replace(/grey|gray/g,'grey');
-function kitSplit(text){text=String(text||'').replace(/^﻿/,'').replace(/\r\n?/g,'\n');const first=text.split('\n',1)[0];
+const kitNorm=s=>String(s??'').normalize('NFKC').trim().toLowerCase().replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')
+  .replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-0x660)).replace(/[_\s]+/g,' ').replace(/grey|gray/g,'grey');
+/* rows of cells; each row keeps its place in the text (r.ln, from 1, empty rows counted: "Row 23" is the 23rd row pasted, W2-15-04) */
+function kitSplit(text){text=String(text||'').replace(/^﻿/,'').replace(/\r\n?/g,'\n');const first=text.split('\n',6).join('\n');   // (the first lines: a title above the column names has no tab)
   const d=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');const rows=[];let row=[],f='',q=false;
   for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=c;continue}
     if(c==='"'&&f==='')q=true;else if(c===d){row.push(f);f=''}else if(c==='\n'){row.push(f);rows.push(row);row=[];f=''}else f+=c}
-  if(f!==''||row.length){row.push(f);rows.push(row)}return rows.filter(r=>r.some(v=>String(v).trim()))}
-/* a type word: the app's own words, then the word as a singular (Blazers, Watches, Dress shirts, Tie clips) */
-function kitType(tw){const find=w=>Object.keys(KIT_TYPE_WORDS).find(t=>KIT_TYPE_WORDS[t].includes(w))||Object.keys(TYPES).find(t=>kitNorm(TYPES[t])===w);
-  const one=w=>find(w)||(/es$/.test(w)&&find(w.slice(0,-2)))||(/s$/.test(w)&&find(w.slice(0,-1)))||null;
-  // else a known word among others ("Shoes - Oxford", "Linen trouser"): the last word first (the noun), then the others
-  const ws=tw.split(/[^a-z]+/).filter(Boolean);return one(tw)||(ws.length>1?[...ws].reverse().map(one).find(Boolean):null)||null}
-/* a colour word → {k, read} (read: matched to the nearest name rather than named exactly), null when empty, undefined when unknown */
-function kitColour(word){const w=kitNorm(word).replace(/-/g,' ').replace(/^navy blue$/,'navy').replace(/^off white$/,'ivory').replace(/^mauve$/,COLORS.lavender?'lavender':'purple').replace(/^(fuchsia|magenta)$/,'pink');if(!w||w==='none'||w==='-')return null;
+  if(f!==''||row.length){row.push(f);rows.push(row)}rows.forEach((r,i)=>{r.ln=i+1});return rows.filter(r=>r.some(v=>String(v).trim()))}
+/* one type word: the app's own words, then the word as a singular (Blazers, Watches, Dress shirts, Tie clips) */
+function kitTypeOne(w){const find=x=>Object.keys(KIT_TYPE_WORDS).find(t=>KIT_TYPE_WORDS[t].includes(x))||Object.keys(TYPES).find(t=>kitNorm(TYPES[t])===x);
+  return find(w)||(/es$/.test(w)&&find(w.slice(0,-2)))||(/s$/.test(w)&&find(w.slice(0,-1)))||null}
+/* a type cell: the words as a whole, else a known word among others ("Shoes - Oxford", "Linen trouser"): the last word first (the noun) */
+function kitType(tw){const ws=tw.split(/[^\p{L}]+/u).filter(Boolean);return kitTypeOne(tw)||(ws.length>1?[...ws].reverse().map(kitTypeOne).find(Boolean):null)||null}
+/* two words one typo apart (a letter added, dropped, changed or two swapped: "Shrit") */
+function kitNear(a,b){if(a===b)return true;const la=a.length,lb=b.length;if(Math.abs(la-lb)>1)return false;let i=0;while(i<la&&i<lb&&a[i]===b[i])i++;
+  if(la===lb)return a.slice(i+1)===b.slice(i+1)||(a[i]===b[i+1]&&a[i+1]===b[i]&&a.slice(i+2)===b.slice(i+2));return la>lb?a.slice(i+1)===b.slice(i):a.slice(i)===b.slice(i+1)}
+const kitTypeNear=tw=>tw.length<5?null:Object.keys(KIT_TYPE_WORDS).find(t=>KIT_TYPE_WORDS[t].some(w=>w.length>=5&&/^[a-z ]+$/.test(w)&&kitNear(tw,w)))||null;
+/* short forms and Arabic color words, word by word (W2-15-03, W2-15-07, W2-16-06) */
+const KIT_COL_ABBR={lt:'light',lite:'light',dk:'dark',drk:'dark',med:'mid',md:'mid',blk:'black',wht:'white',brn:'brown',brwn:'brown',nvy:'navy',gry:'grey',grn:'green',bge:'beige',burg:'burgundy',chrcl:'charcoal'};
+const KIT_AR_COL={'اسود':'black','سوداء':'black','ابيض':'white','بيضاء':'white','ازرق':'blue','زرقاء':'blue','كحلي':'navy','رمادي':'grey','بني':'brown','احمر':'red','حمراء':'red','اخضر':'green','خضراء':'green',
+  'بيج':'beige','زيتي':'olive','عنابي':'burgundy','خمري':'wine','وردي':'pink','زهري':'pink','بنفسجي':'purple','ذهبي':'gold','فضي':'silver','كريمي':'cream','سماوي':'light blue','فحمي':'charcoal','اصفر':'pale yellow','صفراء':'pale yellow'};
+const KIT_AR_MOD={'فاتح':'light','غامق':'dark','داكن':'dark'};
+/* a colour word → {k, read, part} (read: matched to the nearest name rather than named exactly; part: only that last word was understood),
+   null when empty, undefined when unknown. The app's own color names come before the owner's own colours: own colours named "Navy" or
+   "Gray" on an older version took "Suit, Navy" and "Suit, Grey" (W1-2-02). strict: no last-word guess and no typo match */
+function kitColour(word,strict){const raw=kitNorm(word);if(!raw||raw==='none'||raw==='-')return null;let ab=false;const mod=[],ws=[];
+  for(const x of raw.replace(/\./g,' ').split(/\s+/).filter(Boolean)){if(KIT_AR_MOD[x]){mod.push(KIT_AR_MOD[x]);ab=true;continue}const y=KIT_COL_ABBR[x]||KIT_AR_COL[x];if(y){ab=true;ws.push(y)}else ws.push(x)}
+  const w=[...mod,...ws].join(' ').replace(/-/g,' ').replace(/^sky$/,'sky blue').replace(/^navy blue$/,'navy').replace(/^off white$/,'ivory').replace(/^mauve$/,COLORS.lavender?'lavender':'purple').replace(/^(fuchsia|magenta)$/,'pink');
+  const nm=x=>kitNorm(x).replace(/-/g,' '),keys=Object.keys(COLORS).filter(c=>!CUSTOM_COL[c]),exact=x=>keys.find(c=>nm(colName(c))===x||kitNorm(c)===x||kitNorm(c)===x.replace(/ /g,''));
+  let k=exact(w);if(k)return ab?{k,read:true}:{k};
   // the owner's own colours by name (core.js CUSTOM_COL; settings.custom.colors is a list, and its index was taken as the colour: "0 isn't one of the tie colours")
-  const own=Object.values(CUSTOM_COL).find(c=>kitNorm(c&&c.name)===w);if(own)return {k:own.key};
-  const keys=Object.keys(COLORS),exact=x=>keys.find(c=>kitNorm(colName(c))===x||kitNorm(c)===x||kitNorm(c)===x.replace(/ /g,''));
-  let k=exact(w);if(k)return {k};
+  const own=Object.values(CUSTOM_COL).find(c=>c&&nm(c.name)===w);if(own)return {k:own.key};
   k=normCol(w);if(k)return {k,read:true};   // everyday names: sky blue, dark brown, maroon, midnight blue, cognac (core.js COL_ALIAS)
-  const ws=w.split(' ');if(ws.length>1){const a=ws.slice(0,-1).join(' ');if(ws[ws.length-1]==='grey'&&(k=exact(a)||normCol(a)))return {k,read:true};   // charcoal grey
-    k=exact(ws[ws.length-1])||normCol(ws[ws.length-1]);if(k)return {k,read:true}}   // heather grey, royal navy
+  if(strict)return undefined;
+  const p=w.split(' ');if(p.length>1){const a=p.slice(0,-1).join(' ');if(p[p.length-1]==='grey'&&(k=exact(a)||normCol(a)))return {k,read:true};   // charcoal grey
+    const l=p[p.length-1];k=exact(l)||normCol(l);if(k)return {k,read:true,part:l}}   // heather grey, royal navy: only the last word understood, said so
+  if(w.length>=5&&!w.includes(' ')&&(k=keys.find(c=>kitNear(w,nm(colName(c)))||kitNear(w,c))))return {k,read:true};   // a typo: "burgandy"
   return undefined}
 const kitColList=type=>colsFor(type).filter(c=>!CUSTOM_COL[c]).map(c=>colName(c).toLowerCase()).join(', ');
 function kitPattern(word,type){const w=kitNorm(word).replace(/-/g,' ');if(!w||w==='plain'||w==='none'||w==='solid')return 'solid';
   const list=(PATS_BY[type]||[]);const own=list.find(p=>CUSTOM_PAT[p]&&kitNorm(CUSTOM_PAT[p].name)===w);if(own)return own;   // the owner's own patterns offered for the type (core.js CUSTOM_PAT)
   const syn={striped:'stripe',stripes:'stripe',stripe:'stripe',checked:'check',checks:'check','pin stripe':'pinstripe','pinstripes':'pinstripe','chalkstripe':'chalk-stripe','chalk stripe':'chalk-stripe','glen plaid':'glen-check','glen check':'glen-check','prince of wales':'glen-check','polka dots':'polka-dot','polka dot':'polka-dot',dots:'polka-dot',
-    repp:'stripe','repp stripe':'stripe',rep:'stripe','rep stripe':'stripe',regimental:'stripe','regimental stripe':'stripe',bengal:'stripe','bengal stripe':'stripe','candy stripe':'stripe'};
+    repp:'stripe','repp stripe':'stripe',rep:'stripe','rep stripe':'stripe',regimental:'stripe','regimental stripe':'stripe',bengal:'stripe','bengal stripe':'stripe','candy stripe':'stripe',camo:'camouflage',camouflage:'camouflage',multicam:'camouflage',ocp:'camouflage',woodland:'camouflage','woodland camo':'camouflage'};
   const al=PAT_ALIAS[type==='blazer'||type==='pants'?'suit':type]||{},s=syn[w],h=w.replace(/ /g,'-');
   const k=list.find(p=>kitNorm(patLabel(p))===w||p===h)||(s&&(list.includes(s)?s:list.includes(al[s])?al[s]:null))||(list.includes(al[h])?al[h]:null);return k||undefined}
 /* what a row's Material says: one of the type's own materials (any case), the leather of shoes and belts; else left out, said */
-function kitMaterial(card,word){const m=kitNorm(word);if(!m)return null;const list=MATERIALS_BY[card.type];
-  if(list){card.material=list.find(x=>x===m)||String(word).trim();return null}   // (one not on the list shows as Other, as typed)
-  if(card.type==='shoes'||card.type==='belt'){const ls=leathersFor(card),k=ls.find(l=>m.includes(l))||(/leather|calf/.test(m)&&ls.includes('calf')?'calf':null);if(k){card.leather=k;return null}}
-  return `material “${String(word).trim()}” left out`}
+/* (2026-11-15, the materials audit) other words for a material are read as the listed one (core.js MAT_ALIAS: Merino, Fresco, Broadcloth,
+   Lisle, Wool-linen…, said as "read as"); a shirt's weave in the Material column (oxford, twill, end-on-end…) is its pattern when the row's
+   pattern is plain; anything else is kept as typed (Other) */
+function kitMaterial(card,word){const m=kitNorm(word),w=String(word).trim();if(!m)return null;const list=MATERIALS_BY[card.type];
+  const p=card.type==='shirt'&&(SHIRT_WEAVE_MAT[m]||SHIRT_WEAVE_MAT[m.replace(/-/g,' ')]);
+  if(list){if(p){
+      if((card.pattern||'solid')==='solid'&&(PATS_BY.shirt||[]).includes(p)){card.pattern=p;return `material “${w}” read as the ${patName(p)} pattern`}
+      return `material “${w}” left out (a weave: the pattern says it)`}
+    const a=matAlias(card.type,m);card.material=a||w;return a&&a!==m?`material “${w}” read as ${a}`:null}   // (one not on the list shows as Other, as typed)
+  if(card.type==='shoes'||card.type==='belt'){const k=kitLeather(card,m);if(k){card.leather=k.k;return k.read?`material “${w}” read as ${leatherWord(card,k.k)}`:null}}
+  return `material “${w}” left out`}
+/* a leather word for shoes or a belt -> {k, read}: the style's own leathers ("pebble grain" with a space is pebble-grain, not calf: the
+   audit's bug), nubuck (suede on a style that isn't made in it), braided, else "leather"/"calf" as calf; null when none */
+function kitLeather(card,m){const ls=leathersFor(card),d=m.replace(/\s+/g,'-');let k=ls.find(l=>d.includes(l));if(k)return {k};
+  if(/nubuck/.test(m))return ls.includes('nubuck')?{k:'nubuck'}:ls.includes('suede')?{k:'suede',read:true}:null;
+  if(/braid/.test(m)&&ls.includes('braided'))return {k:'braided'};
+  return /leather|calf/.test(m)&&ls.includes('calf')?{k:'calf'}:null}
+/* the words of a cell, for reading a description ("w/" is "with") */
+const kitWords=t=>kitNorm(String(t||'').replace(/\bw\//gi,' with ')).replace(/([\/&+])/g,' $1 ').replace(/[^\p{L}\p{N}&\/+'’-]+/gu,' ').split(' ').filter(Boolean);
+/* the first pattern named in some words (the longest phrase first): {p, s, l} (where it is), else null; "other" and plain don't count */
+function kitPatWords(ws,type){if(!FABRIC.includes(type))return null;for(let l=3;l>=1;l--)for(let s=0;s+l<=ws.length;s++){const p=kitPattern(ws.slice(s,s+l).join(' '),type);if(p&&p!=='solid'&&p!=='other')return {p,s,l}}return null}
+const KIT_FILL=new Set(['and','&','/','+','with','in','the','a','an','of','-','–','on','x','×','french','double','cuff','cuffs','piece']);
+const KIT_CONJ=new Set(['and','&','/','+','with']);
+const KIT_MORE_W=/^(brogues?|wingtips?|monks?|monkstraps?|moccasins?|straps?)$/;   // shoe words that say more than the type: kept in the name
+const KIT_KIND_W=/^(chinos?|jeans?|denims?|khakis)$/,KIT_STYLE_W=/^(derby|derbies|loafers?|boots?|sneakers?|trainers?|oxfords?)$/,KIT_MOD_W=/^(light|dark|mid|medium|pale|deep|bright|lt|dk)$/;
+/* the words of a description nothing was read from (the colour, type, pattern, kind, style, material and small words are read) */
+function kitLeft(ws,type,pat){const used=new Set();if(pat)for(let i=pat.s;i<pat.s+pat.l;i++)used.add(i);
+  const mats=(MATERIALS_BY[type]||[]).flatMap(m=>m.split(' ')).concat(type==='shoes'||type==='belt'?['leather','calf','suede','patent','cordovan']:[]);
+  ws.forEach((w,i)=>{if(KIT_FILL.has(w)||KIT_MOD_W.test(w)||/^[x×]?\d+$/.test(w)||KIT_KIND_W.test(w)||KIT_STYLE_W.test(w)||mats.includes(w)||(kitTypeOne(w)&&!KIT_MORE_W.test(w))||kitColour(w,true))used.add(i)});
+  return ws.filter((_,i)=>!used.has(i))}
+/* a quantity in some text: "x3", "3x" */
+const KIT_QTY_RE=/(?:^|[\s,(])[x×]\s?(\d{1,3})\b|\b(\d{1,3})\s?[x×](?=[\s,)]|$)/i,KIT_QTY_MAX=12;
+const kitQtyIn=s=>{const m=kitNorm(s).match(KIT_QTY_RE);return m?+(m[1]||m[2]):0},kitQtyOut=s=>String(s||'').replace(KIT_QTY_RE,' ').replace(/\s+/g,' ').trim();
+/* the cells of a sheet → {col: key → column, used: the columns read} (the first name of each list that is there; Type takes "Item" only when
+   no other column names the type, else "Item" is a description) */
+const kitHead=h=>kitNorm(h).replace(/\(s\)/g,'s').replace(/[:*?]+$/,'').trim();
+function kitCols(row){const head=row.map(kitHead),col={},used=new Set();
+  for(const [k,names] of Object.entries(KIT_COLS))for(const n of names){const j=head.findIndex((h,x)=>h===n&&!used.has(x));if(j>=0){col[k]=j;used.add(j);break}}
+  return {col,used}}
+const KIT_HEAD_ERR='Name the columns in the first row, with at least “Type” and “Color”, or paste a list with one piece per line, like “Navy suit”. Download the template to see how.';
+/* one row's cells (by KIT_COLS key) → {line, ok, card, probs, qty, given} or {line, ok:false, why}; given: the fields the row itself says
+   (an update changes only those) */
+function kitRow(c,line){const probs=[],given=new Set();
+  const tw=kitNorm(c.type);if(!tw)return {line,ok:false,raw:'(empty)',why:'Type is empty'};
+  let type=kitType(tw);const near=!type&&kitTypeNear(tw);if(near)type=near;
+  if(!type){const cu=c.primaryColor&&kitColour(c.primaryColor)===undefined,ar=/[؀-ۿ]/.test(c.type);
+    return {line,ok:false,raw:c.type,why:`“${c.type}” isn't a type the app plans. It plans ${KIT_PLANS}${ar?' (write the type in English if it isn’t found)':''}.${cu?` “${c.primaryColor}” isn't a color the app knows either.`:''}`}}   // both problems at once (W2-15-07)
+  if(near)probs.push(`“${c.type}” read as ${TYPES[type].toLowerCase()}`);
+  // several colours in one cell ("light blue, white", "Blue/white"): the first is the main colour, the others fill empty second and third
+  // colour columns (re-audit 2026-11-15: the second colour was lost and the row read as white)
+  let pw=c.primaryColor||'';const more={};{const parts=pw.split(/\s*(?:,|\/|&|\+|\band\b|\bw\/|\bwith\b)\s*/i).filter(Boolean);
+    if(parts.length>1&&parts.length<=3&&parts.every(x=>kitColour(x))){pw=parts[0];if(!c.secondaryColor)more.secondaryColor=parts[1];if(parts[2]&&!c.tertiaryColor)more.tertiaryColor=parts[2]}}
+  // a watch's or cufflinks' metal named as the colour ("Watch, Gold", "Cufflinks, Rose gold"): the metal (they imported as silver)
+  const mtl=(type==='watch'||type==='cufflinks')&&kitMetal(pw);
+  const m=mtl?{k:mtl.k==='gold'?'gold':'silver'}:kitColour(pw);
+  if(!m)return {line,ok:false,raw:c.type,why:m===null?'Color is empty':`“${c.primaryColor}” isn't a color the app knows. ${TYPES[type]} colors: ${kitColList(type)}.`};
+  const col=fitCol(type,m.k)||m.k;
+  if(mtl){given.add('metal');if(mtl.read)probs.push(`“${pw}” read as ${metalWord(mtl.k)}`)}
+  else if(col!==m.k)probs.push(`${colName(m.k).toLowerCase()} isn't one of the ${TYPES[type].toLowerCase()} colors: read as ${colName(col).toLowerCase()}`);
+  else if(m.part)probs.push(`only “${m.part}” of “${pw}” was understood: read as ${colName(col).toLowerCase()}`);
+  else if(m.read)probs.push(`“${pw}” read as ${colName(col).toLowerCase()}`);
+  const acc=k=>{const w=more[k]||c[k],x=kitColour(w);if(x===undefined){probs.push(`${k==='secondaryColor'?'second':'third'} color “${w}” left out`);return null}return x?fitCol(type,x.k,true)||x.k:null};
+  const c2=acc('secondaryColor'),c3=acc('tertiaryColor');if(c3)given.add('tertiaryColor');
+  // the words: a description, the notes, the name and the type cell say what their own columns don't (W2-15-01)
+  const srcs=[c.desc,c.notes,c.name,c.type].filter(Boolean),txt=srcs.map(kitNorm).join(' | '),dws=kitWords(c.desc),dpat=kitPatWords(dws,type);
+  let pattern='solid';if(FABRIC.includes(type)){if(c.pattern){const p=kitPattern(c.pattern,type);if(p===undefined)probs.push(`pattern “${c.pattern}” read as plain`);else{pattern=p;given.add('pattern')}}
+    else{const f=dpat||[c.notes,c.name,c.type].filter(Boolean).map(s=>kitPatWords(kitWords(s),type)).find(Boolean);if(f){pattern=f.p;given.add('pattern')}}}
+  const card={id:crypto.randomUUID(),manual:true,type,primaryColor:col,secondaryColor:c2||null,tertiaryColor:c3||null,pattern,metal:mtl?mtl.k:'silver',leather:'calf'};
+  // a Metal (or Buckle) column for watches, belts and cufflinks
+  if(METAL_TYPES.includes(type)&&c.metal){const x=kitMetal(c.metal);if(x){card.metal=x.k;given.add('metal');if(x.read)probs.push(`metal “${c.metal}” read as ${metalWord(x.k)}`)}else probs.push(`metal “${c.metal}” left out`)}
+  const yes=s=>/^(y|yes|true|1|x|matching|with)/i.test(String(s).trim());
+  if(type==='suit'){if(c.vest){card.vest=yes(c.vest)?'yes':'no';given.add('vest')}else if(/three[ -]?piece|3[ -]?piece|\bwith (a )?(vest|waistcoat)\b/.test(txt)){card.vest='yes';given.add('vest')}else card.vest='no'}
+  if(type==='shirt'){if(c.cuff){card.cuff=/french|double/i.test(c.cuff)?'french':'button';given.add('cuff')}else if(/\b(french|double) cuffs?\b/.test(txt)){card.cuff='french';given.add('cuff')}else card.cuff='button'}
+  if(type==='pants'){const k=kitNorm(c.kind),s=k||txt;card.trouserKind=/jean|denim/.test(s)?'jeans':/chino|\bkhakis\b/.test(s)?'chinos':'dress';if(k||card.trouserKind!=='dress')given.add('trouserKind')}
+  if(type==='shoes'){const k=kitNorm(c.style||c.kind),s=k||txt;card.shoeStyle=/derb|monk/.test(s)?'derby':/loaf|penny|moccasin/.test(s)?'loafer':/boot|chelsea|chukka/.test(s)?'boot':/sneak|train/.test(s)?'sneaker':'oxford';
+    if(k||card.shoeStyle!=='oxford'||/oxford|brogue|wingtip/.test(s))given.add('shoeStyle')}
+  if(type==='shoes'||type==='belt'){const l=kitNorm(c.leather);if(l){const k=kitLeather(card,l);if(k){card.leather=k.k;given.add('leather');if(k.read)probs.push(`leather “${c.leather}” read as ${leatherWord(card,k.k)}`)}}
+    else if(!c.material){const ws=kitWords(txt),k=leathersFor(card).find(x=>x!=='calf'&&ws.includes(x));if(k){card.leather=k;given.add('leather')}}}
+  if(SEASON_TYPES.includes(type)){const s=kitNorm(c.season);if(/^(summer|warm)/.test(s)){card.season='warm';given.add('season')}else if(/^(winter|cold)/.test(s)){card.season='cold';given.add('season')}}
+  for(const k of ['name','brand','notes'])if(c[k]){card[k]=k==='name'?kitQtyOut(c[k])||c[k]:c[k];given.add(k)}
+  if(c.material&&!(c.leather&&(type==='shoes'||type==='belt'))){const pat0=card.pattern,lt0=card.leather,p=kitMaterial(card,c.material);if(p)probs.push(p);if(card.material)given.add('material');if(card.leather!==lt0)given.add('leather');if(card.pattern!==pat0)given.add('pattern')}
+  else if(!c.material&&MATERIALS_BY[type]){const s=' '+kitWords(txt).join(' ')+' ',mt=MATERIALS_BY[type].filter(x=>x!=='other').sort((a,b)=>b.length-a.length).find(x=>s.includes(' '+x+' '));if(mt){card.material=mt;given.add('material')}}
+  // a description's other words: the name ("Penny loafers", "Brogues"), or the notes when the row has a name (W2-15-01: two navy ties alike)
+  const left=kitLeft(dws,type,dpat);if(left.length){const d=kitQtyOut(c.descName||c.desc);if(!card.name){card.name=cap1(d);given.add('name')}else if(!c.descName){card.notes=card.notes?card.notes+' · '+d:d;given.add('notes')}}
+  // how many (W2-15-06): a Qty column, or "x3" in the description, name or type
+  let qty=1;const qs=String(c.qty||'').trim();
+  if(qs){const n=parseInt(kitNorm(qs),10);if(n===0)return {line,ok:false,raw:c.type,why:'Quantity is 0'};if(n>0)qty=n;else probs.push(`quantity “${qs}” left out`)}
+  else{const n=[c.desc,c.name,c.type,c.notes].map(kitQtyIn).find(x=>x>0);if(n)qty=n}
+  if(qty>KIT_QTY_MAX){probs.push(`${qty} asked for: ${KIT_QTY_MAX} added at most`);qty=KIT_QTY_MAX}
+  // what is kept of long text (wardrobe.js WARD_MAX), said (W2-12-05)
+  const MX=typeof WARD_MAX==='object'?WARD_MAX:{name:60,brand:40,material:40,notes:500};
+  for(const k of ['name','brand','material','notes'])if(card[k]&&card[k].length>MX[k]){card[k]=card[k].slice(0,MX[k]).trim();probs.push(`${k} cut to ${MX[k]} characters`)}
+  return {line,ok:true,card,probs,qty,given}}
+/* a line of a list with no column names ("Navy suit", "White shirt x3", "Charcoal pinstripe suit") → {line, qty, type, col, col2, rest} */
+function kitFree(t){let s=String(t||'').trim();if(!s)return null;let qty=kitQtyIn(s);s=kitQtyOut(s);
+  const lead=s.match(/^(\d{1,3})\s+(?=\D)/);if(!qty&&lead){qty=+lead[1];s=s.slice(lead[0].length)}
+  const ws=kitWords(s);let ts=-1,tl=0;
+  for(let e=ws.length;e>0&&ts<0;e--)for(let l=Math.min(3,e);l>=1;l--)if(kitTypeOne(ws.slice(e-l,e).join(' '))){ts=e-l;tl=l;break}
+  if(ts<0)return {line:s,qty};
+  const type=ws.slice(ts,ts+tl).join(' '),rest=ws.filter((_,i)=>i<ts||i>=ts+tl);let cs=-1,cl=0;
+  for(let l=Math.min(3,rest.length);l>=1&&cs<0;l--)for(let a=0;a+l<=rest.length;a++)if(kitColour(rest.slice(a,a+l).join(' '),true)){cs=a;cl=l;break}
+  if(cs<0)return {line:s,qty,type};
+  const used=new Set();for(let i=cs;i<cs+cl;i++)used.add(i);let col2='';const j=cs+cl;
+  if(KIT_CONJ.has(rest[j]))for(let l=Math.min(3,rest.length-j-1);l>=1;l--){const w=rest.slice(j+1,j+1+l).join(' ');if(kitColour(w,true)){col2=w;for(let i=j;i<=j+l;i++)used.add(i);break}}
+  return {line:s,qty,type,col:rest.slice(cs,cs+cl).join(' '),col2,rest:rest.filter((_,i)=>!used.has(i)).join(' ')}}
+/* a list with no column names, one piece per line (W2-15-05): read when at least half its lines name a type and a colour */
+function kitReadList(rows){const out=rows.map(r=>{const t=r.map(v=>String(v).trim()).filter(Boolean).join(', '),f=kitFree(t);
+    if(!f||!f.type||!f.col)return {line:r.ln,ok:false,raw:t,why:`“${t}”: write the color and the type, like “Navy suit”`};
+    return kitRow({type:f.type,primaryColor:f.col,secondaryColor:f.col2,desc:f.rest,descName:f.line,qty:f.qty?String(f.qty):''},r.ln)});
+  const good=out.filter(x=>x.ok).length;if(!good||good*2<out.length)return {err:KIT_HEAD_ERR};return {rows:out,list:true,unused:[],descCols:[]}}
+/* the rows of a sheet: the column names in the first row, or in one of the first rows under a title (W2-15-05), else a list */
 function kitRead(text){const rows=kitSplit(text);if(!rows.length)return {err:'Nothing to read.'};
-  const head=rows[0].map(kitNorm),col={};for(const [k,names] of Object.entries(KIT_COLS)){const j=head.findIndex(h=>names.includes(h));if(j>=0)col[k]=j}
-  if(col.type==null||col.primaryColor==null)return {err:'The first row must name the columns, with at least “Type” and “Color”. Download the template to see how.'};
-  const out=[];
-  rows.slice(1).forEach((r,n)=>{const v=k=>col[k]==null?'':String(r[col[k]]??'').trim(),line=n+2,probs=[];
-    const tw=kitNorm(v('type'));if(!tw){out.push({line,ok:false,raw:'(empty)',why:'Type is empty'});return}
-    const type=kitType(tw);
-    if(!type){out.push({line,ok:false,raw:v('type'),why:`“${v('type')}” isn't a type the app plans. It plans ${KIT_PLANS}.`});return}
-    // several colours in one cell ("light blue, white", "Blue/white"): the first is the main colour, the others fill empty second and third
-    // colour columns (re-audit 2026-11-15: the second colour was lost and the row read as white)
-    let pw=v('primaryColor');const more={};{const parts=pw.split(/\s*(?:,|\/|&|\+|\band\b)\s*/i).filter(Boolean);
-      if(parts.length>1&&parts.length<=3&&parts.every(x=>kitColour(x))){pw=parts[0];if(!v('secondaryColor'))more.secondaryColor=parts[1];if(parts[2]&&!v('tertiaryColor'))more.tertiaryColor=parts[2]}}
-    // a watch's or cufflinks' metal named as the colour ("Watch, Gold", "Cufflinks, Rose gold"): the metal (they imported as silver)
-    const mtl=(type==='watch'||type==='cufflinks')&&kitMetal(pw);
-    const m=mtl?{k:mtl.k==='gold'?'gold':'silver'}:kitColour(pw);
-    if(!m){out.push({line,ok:false,raw:v('type'),why:m===null?'Color is empty':`“${v('primaryColor')}” isn't a color the app knows. ${TYPES[type]} colors: ${kitColList(type)}.`});return}
-    const c=fitCol(type,m.k)||m.k;
-    if(mtl){if(mtl.read)probs.push(`“${pw}” read as ${metalWord(mtl.k)}`)}
-    else if(c!==m.k)probs.push(`${colName(m.k).toLowerCase()} isn't one of the ${TYPES[type].toLowerCase()} colors: read as ${colName(c).toLowerCase()}`);
-    else if(m.read)probs.push(`“${pw}” read as ${colName(c).toLowerCase()}`);
-    const acc=k=>{const w=more[k]||v(k),x=kitColour(w);if(x===undefined){probs.push(`${k==='secondaryColor'?'second':'third'} color “${w}” left out`);return null}return x?fitCol(type,x.k,true)||x.k:null};
-    const c2=acc('secondaryColor'),c3=acc('tertiaryColor');
-    let pattern='solid';if(FABRIC.includes(type)){const p=kitPattern(v('pattern'),type);if(p===undefined)probs.push(`pattern “${v('pattern')}” read as plain`);else pattern=p}
-    const card={id:crypto.randomUUID(),manual:true,type,primaryColor:c,secondaryColor:c2||null,tertiaryColor:c3||null,pattern,metal:mtl?mtl.k:'silver',leather:'calf'};
-    // a Metal (or Buckle) column for watches, belts and cufflinks
-    if(METAL_TYPES.includes(type)&&v('metal')){const x=kitMetal(v('metal'));if(x){card.metal=x.k;if(x.read)probs.push(`metal “${v('metal')}” read as ${metalWord(x.k)}`)}else probs.push(`metal “${v('metal')}” left out`)}
-    const yes=s=>/^(y|yes|true|1|x|matching|with)/i.test(String(s).trim());
-    if(type==='suit')card.vest=yes(v('vest'))?'yes':'no';
-    if(type==='shirt')card.cuff=/french|double/i.test(v('cuff'))?'french':'button';
-    if(type==='pants'){const k=kitNorm(v('kind')||tw);card.trouserKind=/jean|denim/.test(k)?'jeans':/chino/.test(k)?'chinos':'dress'}
-    if(type==='shoes'){const s=kitNorm(v('style')||v('kind')||tw);card.shoeStyle=/derb/.test(s)?'derby':/loaf/.test(s)?'loafer':/boot/.test(s)?'boot':/sneak|train/.test(s)?'sneaker':'oxford'}
-    if(type==='shoes'||type==='belt'){const l=kitNorm(v('leather'));if(l){const k=leathersFor(card).find(x=>l.includes(x));if(k)card.leather=k}}
-    if(SEASON_TYPES.includes(type)){const s=kitNorm(v('season'));if(/^(summer|warm)/.test(s))card.season='warm';else if(/^(winter|cold)/.test(s))card.season='cold'}
-    for(const k of ['name','brand','notes'])if(v(k))card[k]=v(k);
-    if(v('material')&&!(v('leather')&&(type==='shoes'||type==='belt'))){const p=kitMaterial(card,v('material'));if(p)probs.push(p)}
-    out.push({line,ok:true,card,probs})});
-  return {rows:out}}
+  let hi=-1,map=null;for(let i=0;i<Math.min(rows.length,6);i++){const m=kitCols(rows[i]);if(m.col.type!=null&&m.col.primaryColor!=null){hi=i;map=m;break}}
+  if(hi<0)return kitReadList(rows);
+  const {col,used}=map,h=rows[hi],out=[];
+  for(const r of rows.slice(hi+1)){const c={};for(const k of Object.keys(col))c[k]=String(r[col[k]]??'').trim();out.push(kitRow(c,r.ln))}
+  return {rows:out,head:h.ln>1?h.ln:0,unused:h.map((x,j)=>used.has(j)?'':String(x).trim()).filter(Boolean),descCols:col.desc!=null?[String(h[col.desc]).trim()]:[]}}
 const KIT_TEMPLATE='Type,Color,Second color,Pattern,Name,Brand,Material,Notes,Vest\nSuit,Navy,,Pinstripe,Navy pinstripe,,Wool,,Yes\nDress shirt,Light blue,,Solid,,,Poplin,,\nTie,Burgundy,Navy,Stripe,,,Silk,Repp stripe,\nShoes,Black,,,Black oxfords,,Calf,,\nPants,Mid gray,,Solid,,,Flannel,,\n';
 /* the template as a data link: nothing to revoke (a blob link revoked a second after the tap can fail on an iPhone, where Safari first
    asks whether to download) */
@@ -269,7 +379,7 @@ function kitImportSwipe(){if(kitSwipeOn||typeof sheetSwipe!=='function')return;k
   sheetSwipe(e,{head:'.kit-head',body:()=>e.querySelector('.kit-body'),backdrop:()=>$('#kit-backdrop'),live:()=>!!kit&&e.classList.contains('kbs')&&!kitImpBusy,close:()=>kitClose()})}
 function kitImportOpen(){kitImp=null;const e=kitEl(),prev=kit?kit.hist:undefined;kit={cards:[],at:0,then:null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitBs(true);kitImportSwipe();
   e.innerHTML=`<div class="kit-head"><span class="kit-grab" aria-hidden="true"></span><div class="kit-ht">${KIT_TABLE}<h2 id="kit-title">Import from a spreadsheet</h2></div><button type="button" class="kit-x" onclick="kitClose()" aria-label="Close">✕</button></div>
-<div class="kit-body" data-card="import"><p>One row per piece. The first row names the columns; only <b>Type</b> and <b>Color</b> are needed. From Numbers, Excel or Google Sheets, export the sheet as CSV, or copy the rows and paste them below.</p>
+<div class="kit-body" data-card="import"><p>One row per piece. The first row names the columns; only <b>Type</b> and <b>Color</b> are needed (a Description column is read for patterns and styles, a Qty column for how many; a list with one piece per line, like “Navy suit”, works too). Importing the sheet again updates the pieces it changed. From Numbers, Excel or Google Sheets, export the sheet as CSV, or copy the rows and paste them below.</p>
 ${kitLastRow()}<div class="btns"><button type="button" onclick="kitTemplate()">Download a template</button><label class="btn">Choose a CSV file<input type="file" accept=".csv,.tsv,.txt,text/csv,text/plain" class="vfile" onchange="kitImportFile(this.files[0]);this.value=''"></label></div>
 <label class="kit-paste">Or paste the rows<textarea id="kit-paste" rows="5" onfocus="kitPasteShow(this)" placeholder="Type, Color, Pattern…" oninput="kitImportText(this.value)"></textarea></label>
 <div id="kit-prev" aria-live="polite"></div></div>
@@ -279,37 +389,101 @@ ${kitLastRow()}<div class="btns"><button type="button" onclick="kitTemplate()">D
    stayed under the header) */
 function kitPasteShow(t){setTimeout(()=>{if(!t.isConnected)return;const b=t.closest('.kit-body');if(!b)return;const r=t.getBoundingClientRect(),br=b.getBoundingClientRect(),vh=window.visualViewport?visualViewport.height:innerHeight;
   if(r.top<br.top+8||r.top>vh-60)b.scrollTop+=r.top-br.top-8},350)}
-async function kitImportFile(f){if(!f)return;let t='';try{t=kitDecode(await f.arrayBuffer())}catch{t=await f.text()}const ta=$('#kit-paste');if(ta)ta.value='';kitImportText(t,true)}
+/* a picked file's text; a file that can't be read (an iCloud file not downloaded, one moved after picking) is said, not thrown (W2-20-01) */
+async function kitImportFile(f){if(!f)return;let t='';
+  try{t=kitDecode(await f.arrayBuffer())}catch{try{t=await f.text()}catch(e){console.warn('file not read',e);kitImp=null;const el=$('#kit-prev');if(el)el.innerHTML='<p class="kit-err">This file couldn’t be read. Try again, or open it and paste the rows.</p>';kitImpBtn();return}}
+  const ta=$('#kit-paste');if(ta)ta.value='';kitImportText(t,true)}
 const kitDupKey=i=>[i.type,i.primaryColor,i.secondaryColor||'',FABRIC.includes(i.type)?i.pattern||'solid':'solid',kitNorm(i.name||'')].join('|');
-/* rows matching pieces already in the wardrobe (type, colours, pattern, name) start unticked: importing the same sheet again doubled it */
-/* the sample wardrobe's pieces aren't his: a row matching one stays ticked (re-audit 2026-11-15: his own white shirt, navy suit, belt and
-   socks were left unticked as "already in your wardrobe", and gone once he removed the sample) */
-function kitDupMark(rows){const have={};for(const i of items){if(i.sample&&!kitEdited(i))continue;const k=kitDupKey(i);have[k]=(have[k]||0)+1}
-  for(const x of rows)if(x.ok){const k=kitDupKey(x.card);if(have[k]>0){have[k]--;x.dup=true;x.on=false}else{x.dup=false;x.on=true}}}
+/* what a row would change on a piece he has (the fields the row says, kitRow's given), in KIT_UPD's order */
+const KIT_UPD=[['pattern','solid'],['name',''],['brand',''],['material',''],['notes',''],['vest','no'],['cuff','button'],['trouserKind','dress'],['shoeStyle','oxford'],['leather','calf'],['season','all'],['metal','silver'],['tertiaryColor','']];
+const KIT_TEXT=['name','brand','material','notes'];
+function kitDiff(it,x){const c=x.card,g=x.given||new Set();
+  return KIT_UPD.filter(([k,d])=>g.has(k)&&c[k]!=null&&c[k]!==''&&(k!=='pattern'||FABRIC.includes(it.type))&&(k!=='material'||MATERIALS_BY[it.type])&&
+    (KIT_TEXT.includes(k)?kitNorm(it[k]||'')!==kitNorm(c[k]):String(it[k]??d)!==String(c[k]))).map(([k])=>k)}
+const KIT_UPD_WORD={trouserKind:'kind',shoeStyle:'style',cuff:'cuffs',tertiaryColor:'third color'};
+function kitDiffText(it,x){const sh=s=>{s=String(s||'');return s.length>40?s.slice(0,39)+'…':s};
+  return x.diff.map(k=>{const o=it[k],n=x.card[k];if(k==='pattern')return `pattern ${patName(o||'solid')} → ${patName(n)}`;
+    if(KIT_TEXT.includes(k))return o?`${k} “${sh(o)}” → “${sh(n)}”`:`${k} “${sh(n)}”`;
+    if(k==='tertiaryColor')return `third color ${colName(n).toLowerCase()}`;return `${KIT_UPD_WORD[k]||k} ${o||KIT_UPD.find(u=>u[0]===k)[1]} → ${n}`})}
+/* the rows set against the wardrobe (sample pieces he hasn't made his don't count, re-audit 2026-11-15 N5):
+   1. a piece already there (type, colours, pattern, name: kitDupKey) starts unticked as "already in your wardrobe" (importing the same
+      sheet again doubled it); a row of 3 with 1 there adds 2;
+   2. a piece of the same type and colours whose row says another pattern, name or details is offered as an update of that piece, keeping
+      its history (the owner's decision 5, 2026-11-16, W2-15-02: re-importing the sheet with a Pattern column added doubled ten pieces); a row
+      that says nothing new about such a piece is that piece. Each piece is matched once. A piece with another name is another piece, and a
+      row whose only news is a name for an unnamed piece is a new piece ("Tie, Burgundy, Sheet tie" beside his burgundy tie is added). */
+function kitDupMark(rows){const mine=items.filter(i=>!(i.sample&&!kitEdited(i))),used=new Set(),by={};
+  for(const i of mine)(by[kitDupKey(i)]=by[kitDupKey(i)]||[]).push(i);
+  const good=rows.filter(x=>x.ok);
+  for(const x of good){const n=x.qty||1,l=(by[kitDupKey(x.card)]||[]).filter(i=>!used.has(i.id)).slice(0,n);for(const i of l)used.add(i.id);x.have=l.length;x.upd=null;x.diff=null;x.asNew=false}
+  const ck=i=>[i.type,i.primaryColor,i.secondaryColor||''].join('|');
+  for(const x of good){const n=x.qty||1;
+    while(x.have<n&&!x.upd){const c=x.card,score=i=>(c.name&&kitNorm(i.name)===kitNorm(c.name)?4:0)+(c.brand&&kitNorm(i.brand)===kitNorm(c.brand)?2:0)+(x.given&&x.given.has('pattern')&&(i.pattern||'solid')===c.pattern?1:0);
+      const cand=mine.filter(i=>!used.has(i.id)&&ck(i)===ck(c)&&!(c.name&&i.name&&kitNorm(i.name)!==kitNorm(c.name))).sort((a,b)=>score(b)-score(a));if(!cand.length)break;
+      const i=cand[0],d=kitDiff(i,x);if(d.length===1&&d[0]==='name')break;used.add(i.id);if(d.length){x.upd=i.id;x.diff=d}else x.have++}
+    x.add=n-x.have-(x.upd?1:0);x.dup=!x.upd&&x.have>=n;x.on=!x.dup}}
+/* what a row adds (new pieces) and updates, ticked */
+const kitAdds=x=>!x.ok||!x.on?0:x.dup?(x.qty||1):x.add+(x.upd&&x.asNew?1:0),kitUpds=x=>x.ok&&x.on&&x.upd&&!x.asNew?1:0;
 function kitImportText(t,file){const r=kitRead(t),el=$('#kit-prev');if(!el)return;
   if(file&&!String(t).trim()){kitImp=null;el.innerHTML='<p class="kit-err">The file is empty.</p>';kitImpBtn();return}
   if(r.err){kitImp=null;el.innerHTML=String(t).trim()?`<p class="kit-err">${esc(r.err)}</p>`:'';kitImpBtn();return}
   kitDupMark(r.rows);kitImp=r;kitPrevDraw()}
-/* the preview: the rows left out first, then each piece with a tick; a named piece shows its colour and pattern too */
-function kitPrevDraw(){const r=kitImp,el=$('#kit-prev');if(!r||!el)return;const good=r.rows.filter(x=>x.ok),bad=r.rows.filter(x=>!x.ok),dup=good.filter(x=>x.dup).length;
-  const row=(x,n)=>{const t=sentence(itemTitle(x.card)),info=[TYPES[x.card.type],x.card.name?sentence(desc(x.card)):'',x.dup?'already in your wardrobe':'',...x.probs].filter(Boolean).join(' · ');
-    return `<li class="ok${x.dup?' dup':''}"><label class="kit-row"><input type="checkbox" class="kit-tick" ${x.on?'checked':''} onchange="kitImpTick(${n},this.checked)"><span class="kit-dot">${swatchSVG(x.card,true)}</span><span><b>${esc(t)}</b><small>${esc(info)}</small></span></label></li>`};
-  el.innerHTML=`<p class="kit-sum"><b>${good.length} item${good.length===1?'':'s'} ready</b>${bad.length?`, ${bad.length} row${bad.length===1?'':'s'} left out`:''}${dup?`. ${dup===1?'One is':dup+' are'} already in your wardrobe: check ${dup===1?'it':'them'} to add another`:''}</p>
-<ul class="kit-rows">${bad.map(x=>`<li class="bad"><span class="kit-dot kit-no" aria-hidden="true">!</span><span><b>Row ${x.line}</b><small>${esc(x.why)}</small></span></li>`).join('')}${r.rows.map((x,n)=>x.ok?row(x,n):'').join('')}</ul>`;
+/* the preview: what was read and what wasn't (a description read, columns not used, a title row skipped, a list), the rows left out
+   first, then each piece with a tick; a named piece shows its colour and pattern too; an update says what changes on which piece */
+function kitPrevDraw(){const r=kitImp,el=$('#kit-prev');if(!r||!el)return;const good=r.rows.filter(x=>x.ok),bad=r.rows.filter(x=>!x.ok),dup=good.filter(x=>x.dup).length,upd=good.filter(x=>x.upd).length,n=good.reduce((s,x)=>s+(x.qty||1),0);
+  const row=(x,k)=>{const it=x.upd&&items.find(i=>i.id===x.upd),t=sentence(itemTitle(x.card));
+    const info=[TYPES[x.card.type],x.card.name?sentence(desc(x.card)):'',(x.qty||1)>1?`${x.qty} of them`:'',x.dup?'already in your wardrobe':x.have?`${x.have} already in your wardrobe`:'',
+      it?(x.asNew?'added as a new piece':`updates your ${itemName(it)?`“${itemName(it)}”`:desc(it)+' '+typeWord(it)}: ${kitDiffText(it,x).join(', ')}`):'',...x.probs].filter(Boolean).join(' · ');
+    return `<li class="ok${x.dup?' dup':''}${it&&!x.asNew?' upd':''}"><label class="kit-row"><input type="checkbox" class="kit-tick" ${x.on?'checked':''} onchange="kitImpTick(${k},this.checked)"><span class="kit-dot">${swatchSVG(x.card,true)}</span><span><b>${esc(t)}</b><small>${esc(info)}</small></span></label>${it?`<button type="button" class="linkbtn kit-asnew" onclick="kitAsNew(${k})">${x.asNew?'Update it instead':'Add as new'}</button>`:''}</li>`};
+  const pl=(k,a,b)=>k===1?a:b,read=[];
+  if(r.list)read.push('Read as a list, one piece per line.');
+  if(r.head)read.push(`The column names are in row ${r.head}; the rows above it were skipped.`);
+  if(r.descCols&&r.descCols.length)read.push(`${r.descCols.join(', ')}: read for patterns, kinds, styles and names.`);
+  if(r.unused&&r.unused.length)read.push(`Not used: ${r.unused.join(', ')}.`);
+  el.innerHTML=`<p class="kit-sum"><b>${n} item${n===1?'':'s'} ready</b>${bad.length?`, ${bad.length} row${bad.length===1?'':'s'} left out`:''}${dup?`. ${dup===1?'One is':dup+' are'} already in your wardrobe: check ${dup===1?'it':'them'} to add another`:''}${upd?`. ${upd===1?'One matches a piece':upd+' match pieces'} you have with another pattern, name or details: ${pl(upd,'it is','they are')} updated, keeping ${pl(upd,'its','their')} history`:''}</p>${read.length?`<p class="kit-cols">${esc(read.join(' '))}</p>`:''}
+<ul class="kit-rows">${bad.map(x=>`<li class="bad"><span class="kit-dot kit-no" aria-hidden="true">!</span><span><b>Row ${x.line}</b><small>${esc(x.why)}</small></span></li>`).join('')}${r.rows.map((x,k)=>x.ok?row(x,k):'').join('')}</ul>`;
   kitImpBtn()}
 function kitImpTick(n,on){const x=kitImp&&kitImp.rows[n];if(x)x.on=!!on;kitImpBtn()}
-function kitImpBtn(){const b=$('#kit-imp');if(!b)return;const n=kitImp?kitImp.rows.filter(x=>x.ok&&x.on).length:0;b.disabled=!n||kitImpBusy;b.textContent=n?`Add ${n} item${n===1?'':'s'}`:'Add items'}
+function kitAsNew(n){const x=kitImp&&kitImp.rows[n];if(!x||!x.upd)return;x.asNew=!x.asNew;x.on=true;kitPrevDraw()}
+function kitImpBtn(){const b=$('#kit-imp');if(!b)return;const rs=kitImp?kitImp.rows:[],a=rs.reduce((s,x)=>s+kitAdds(x),0),u=rs.reduce((s,x)=>s+kitUpds(x),0);b.disabled=!(a+u)||kitImpBusy;
+  b.textContent=a&&u?`Add ${a}, update ${u}`:u?`Update ${u} piece${u===1?'':'s'}`:a?`Add ${a} item${a===1?'':'s'}`:'Add items'}
+/* an update applied to a copy of the piece (the fields kitDiff found), as the item sheet would set them */
+function kitApply(it,x){const c=x.card;for(const k of x.diff){
+  if(k==='trouserKind'){if(c.trouserKind==='dress')delete it.trouserKind;else it.trouserKind=c.trouserKind}
+  else if(k==='shoeStyle'){if(c.shoeStyle==='oxford')delete it.shoeStyle;else it.shoeStyle=c.shoeStyle;if(!leathersFor(it).includes(it.leather))it.leather='calf'}
+  else if(k==='season'){if(c.season==='all')delete it.season;else it.season=c.season}
+  else it[k]=c[k]}return it}
 /* Add N items: written in one go (a second tap does nothing, a kill stores all or nothing), then one Undo; Cancel and ✕ wait for it */
-async function kitImportGo(){if(!kitImp||kitImpBusy)return;const cards=kitImp.rows.filter(x=>x.ok&&x.on).map(x=>x.card).filter(c=>!items.some(i=>i.id===c.id));if(!cards.length)return;
-  kitImpBusy=true;const b=$('#kit-imp'),cx=[$('#kit-cancel'),$('#kitsheet .kit-x')];if(b){b.disabled=true;b.textContent=`Adding ${cards.length} item${cards.length===1?'':'s'}…`}for(const x of cx)if(x)x.disabled=true;
+async function kitImportGo(){if(!kitImp||kitImpBusy)return;const rows=kitImp.rows.filter(x=>x.ok&&x.on&&!items.some(i=>i.id===x.card.id));
+  const cards=[],olds=[],news=[];
+  for(const x of rows){const n=kitAdds(x);for(let k=0;k<n;k++)cards.push(k?{...x.card,id:crypto.randomUUID()}:x.card);
+    const it=kitUpds(x)&&items.find(i=>i.id===x.upd);if(it){olds.push(JSON.parse(JSON.stringify(it)));news.push(kitApply(JSON.parse(JSON.stringify(it)),x))}}
+  if(!cards.length&&!news.length)return;
+  kitImpBusy=true;const b=$('#kit-imp'),cx=[$('#kit-cancel'),$('#kitsheet .kit-x')],all=cards.length+news.length;if(b){b.disabled=true;b.textContent=`Saving ${all} item${all===1?'':'s'}…`}for(const x of cx)if(x)x.disabled=true;
   const prog=(k,n)=>{if(b&&(k%20===0||k===n))b.textContent=`Adding ${k} of ${n}…`};   // (all of it is kept only once the last is written)
-  let ok=false,list=[];try{list=cards.map(kitItem);ok=await kitStore(list,cards.length>40?prog:null)}finally{kitImpBusy=false;for(const x of cx)if(x)x.disabled=false}
+  let ok=false,list=[];try{list=cards.map(kitItem);ok=await kitStore(list,cards.length>40?prog:null,news)}finally{kitImpBusy=false;for(const x of cx)if(x)x.disabled=false}
   if(!ok){kitImpBtn();return}
-  const ids=list.map(i=>i.id);kitImp=null;try{localStorage.setItem(KIT_IMP_LAST,JSON.stringify({ids,at:Date.now()}))}catch{}
+  const ids=list.map(i=>i.id);kitImp=null;if(ids.length)try{localStorage.setItem(KIT_IMP_LAST,JSON.stringify({ids,at:Date.now()}))}catch{}
   kitClose();if($('#add')&&!$('#add').hidden)renderAdd();else if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
-  toast(`Imported ${ids.length} item${ids.length===1?'':'s'}.`,KIT_IMP_UNDO_MS,{label:'Undo',fn:()=>kitUnsave({its:ids,qs:[]})})}
+  const said=[ids.length?`Imported ${ids.length} item${ids.length===1?'':'s'}`:'',news.length?`${ids.length?'updated':'Updated'} ${news.length} piece${news.length===1?'':'s'}`:''].filter(Boolean).join(' and ');
+  toast(`${said}.`,KIT_IMP_UNDO_MS,{label:'Undo',fn:()=>kitUnsave({its:ids,qs:[],olds})})}
+/* imports made on the 14 Nov version saved a row naming an own colour as its place in settings.custom.colors ("0", "1"), shown as "None",
+   drawn grey and planned as no colour (W1-2-01): such a colour becomes the one its own colour's name means today (kitColour: "Gray" and
+   "Navy" the app's gray and navy, W1-2-02; "Mocha" the own Mocha), fitted to the type. Run once the first sync is merged (start.js
+   whenPulled: a copy changed on another phone comes in first), stamped so it syncs; nothing to do afterwards (no colour is a number) */
+async function kitFixOldImports(){const list=settings.custom&&Array.isArray(settings.custom.colors)?settings.custom.colors:[],num=v=>typeof v==='string'&&/^\d+$/.test(v);
+  let all=[];try{all=await tx('readonly',s=>s.getAll())||[]}catch(e){return 0}
+  let n=0;for(const r of all){const ks=['primaryColor','secondaryColor','tertiaryColor'].filter(k=>num(r[k]));if(!ks.length)continue;
+    const it=items.find(x=>x.id===r.id)||r;let ch=false;
+    for(const k of ks){if(!num(it[k]))continue;const o=list[+it[k]];if(!o)continue;const own=CUSTOM_COL[o.key],m=kitColour(own?own.name:o.name);const c=m?m.k:own?o.key:null;
+      if(c){it[k]=fitCol(it.type,c,k!=='primaryColor')||c;ch=true}}
+    if(ch){await put(it);n++}}
+  if(n){cache={};todayStale=true}return n}
 /* the last import taken out again, after its Undo has gone (from the import sheet) */
-async function kitUnimport(){const l=kitLastImp();if(!l)return;
+/* (fix round 3, W1-6-05: judged on this phone's copy alone, a piece renamed on another phone went too) a connected phone syncs first, so
+   "changed since" counts changes made anywhere; offline it goes on with what it has */
+async function kitUnimport(){if(typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')&&!(typeof inviteOver==='function'&&inviteOver()))try{await syncNow()}catch{}
+  const l=kitLastImp();if(!l){const r=$('#kit-last');if(r)r.remove();return}
   if(!await askConfirm(`Take out the ${l.ids.length} item${l.ids.length===1?'':'s'} of your last import?\n\nAnything you added another way stays${l.kept?`, and so ${l.kept===1?'does the imported piece':`do the ${l.kept} imported pieces`} you changed since`:''}.`,{ok:'Take them out',danger:true}))return;
   try{await kitDelMany(l.ids)}catch(e){kitFail(e);return}
   try{localStorage.removeItem(KIT_IMP_LAST)}catch{}const r=$('#kit-last');if(r)r.remove();if(kitImp){kitDupMark(kitImp.rows);kitPrevDraw()}
@@ -330,7 +504,7 @@ const KIT_SAMPLE=[
   ['belt','black',null,'solid',{}],['belt','brown',null,'solid',{}],['socks','navy',null,'solid',{}],['socks','charcoal',null,'solid',{}],['watch','silver',null,'solid',{metal:'silver'}]];
 const KIT_SAMPLE_NOJKT=[['pants','navy',null,'solid',{}],['pants','charcoal',null,'solid',{}]];   // without jackets: trousers enough to judge (shop.js SHOP_MIN)
 const KIT_EDIT_MS=3000;
-const kitHasSample=()=>items.some(i=>i.sample);
+const kitHasSample=()=>items.some(i=>i.sample&&!kitEdited(i));   // (pieces he made his alone are no sample wardrobe: a phone joining got the banner for them)
 /* a sample piece he changed is his now. Only an edit he makes in the item sheet makes it his: app.js put sets item.sampleMine while the item sheet is open on it (kitUserEdit);
    a new stamp alone doesn't (re-audit 2026-11-15: a roll back or a start-up fix-up such as migrateVests or checkArrivals restamped an
    untouched sample piece, which was then uploaded and kept on Remove the sample), nor does out of rotation (itemsheet.js togglePause sets
@@ -338,6 +512,28 @@ const kitHasSample=()=>items.some(i=>i.sample);
 let kitNoMine=false;
 const kitUserEdit=i=>{if(i&&i.sample&&!kitNoMine&&typeof editing!=='undefined'&&editing===i.id)i.sampleMine=1};
 const kitEdited=i=>!!i.sample&&!!i.sampleMine;
+/* the sample pieces the earlier rule counted as his (fix round 3, W1-3-01: an edit, a pause or a cleaning on 14-15 Nov builds made a piece
+   his, updated more than KIT_EDIT_MS after added; the rule above turned them back into sample, and Remove the sample took them with their
+   history). Once per device after the first pull, a sample piece added before the rule changed (KIT_MINE_CUT, when #454 was deployed)
+   and stamped by the old rule is made his (no longer a sample piece, as Keep it as mine does, with a new stamp, so it goes up and other phones take it) */
+const KIT_MINE_CUT=Date.UTC(2026,10,15,12);
+const kitOldMine=i=>!!i&&!!i.sample&&!i.sampleMine&&(i.added||0)<KIT_MINE_CUT&&(i.updated||0)-Math.max(i.added||0,i.sampleBase||0)>KIT_EDIT_MS;
+async function kitSampleMigrate(){try{if(localStorage.getItem('kit_mine'))return}catch{return}
+  const l=items.filter(kitOldMine).map(i=>{const c={...i};delete c.sample;delete c.sampleMine;delete c.sampleBase;return c});   // (his, as Keep it as mine makes it)
+  if(l.length){const now=Date.now();
+    try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of l){it.updated=now;s.put(it)}})}catch(e){console.warn('sample pieces not kept as his',e);return}
+    for(const it of l){const k=items.findIndex(x=>x.id===it.id);if(k>=0)items[k]=it}
+    cache={};todayStale=true;if(window.scheduleSync)scheduleSync();
+    toast(`${l.length===1?'The sample piece':`The ${l.length} sample pieces`} you changed ${l.length===1?'is':'are'} yours: Remove the sample keeps ${l.length===1?'it':'them'}.`,6000)}
+  try{localStorage.setItem('kit_mine','1')}catch{}}
+/* does a day's record, with the sample's pieces taken out (kitSampleDay), still hold anything of his? His own pieces, a pick, the week's
+   lock of his own pieces, an occasion, a kind, a skip, a piece taken off, a trip. A record that holds nothing else was made from the
+   sample: it never goes up (sync.js syncShare), and Remove the sample gives it the stamp KIT_YIELD, so the account's own record of that
+   day, made on another phone, wins over it (fix round 3, W1-6-04: Remove the sample on a phone that tried the sample before joining
+   stamped its sample days new and wiped the other phone's real days) */
+const KIT_YIELD=1;
+const KIT_OWN=['force','lock','occasion','formal','kind','skip','off','trip'];
+const kitDayOwn=c=>!!(c.ids&&Object.values(c.ids).some(Boolean))||KIT_OWN.some(k=>c[k]&&(typeof c[k]!=='object'||Object.keys(c[k]).length));
 const kitSampleSig=i=>[i.type,i.primaryColor,i.secondaryColor||'',FABRIC.includes(i.type)?i.pattern||'solid':'solid',i.cuff==='french'?'f':''].join('|');
 function kitSampleCards(){const l=KIT_SAMPLE.filter(x=>!dressOut(x[0]));if(!wearsJacket())l.push(...KIT_SAMPLE_NOJKT);
   return l.map(([type,c,c2,p,x])=>({id:crypto.randomUUID(),manual:true,type,primaryColor:c,secondaryColor:c2,tertiaryColor:null,pattern:FABRIC.includes(type)?p:'solid',metal:'silver',leather:'calf',sample:true,...x}))}
@@ -371,11 +567,29 @@ async function kitSampleRemove(quiet){if(kitSampling)return;   // quiet: already
   kitSampling=true;kitSampleBusy(true);if(!quiet)toast('Removing the sample…',8000);
   try{if(typeof recordRun!=='undefined'&&recordRun)await Promise.resolve(recordRun).catch(()=>{});   // (a recording of today from the plan with the sample, still running, would write its pieces back after)
     const ids=new Set(gone.map(i=>i.id)),mine=keep.map(i=>{const c={...i};delete c.sample;delete c.sampleMine;return c}),T=todayDate();
-    const days=Object.values(dayRecs).filter(r=>[...ids].some(id=>JSON.stringify(r).includes(id))).map(r=>kitSampleDay(r,ids,T));
-    await kitDelMany([...ids],mine,days);if(typeof clearLocks==='function')await clearLocks()}
+    const orig=Object.values(dayRecs).filter(r=>[...ids].some(id=>JSON.stringify(r).includes(id)));
+    // a day made only from the sample keeps the stamp KIT_YIELD: the account's own record of it (another phone's) wins (kitDayOwn)
+    const days=orig.map(r=>{const c=kitSampleDay(r,ids,T);if(!kitDayOwn(c))c.updated=KIT_YIELD;return c});
+    const undo={items:s.map(i=>JSON.parse(JSON.stringify(i))),days:orig.map(r=>JSON.parse(JSON.stringify(r)))};
+    await kitDelMany([...ids],mine,days);if(typeof clearLocks==='function')await clearLocks();
+    undo.wrote=Object.fromEntries(days.map(c=>[c.date,c.updated]));kitRmUndo=undo;
+    // connected: the account's records of those days come in before Today records anything from the plan (kitSampleUndo)
+    if(typeof isConnected==='function'&&isConnected()&&window.syncNow)await Promise.race([syncNow().catch(()=>{}),new Promise(r=>setTimeout(r,KIT_RM_SYNC))])}
   catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
   if(quiet){cache={};todayStale=true;if(typeof refreshToday==='function'&&!$('#today').hidden)refreshToday();return}
-  show(items.length?'today':'wardrobe');toast(kn?`The sample wardrobe is gone. The ${kn===1?'piece':`${kn} pieces`} you changed stayed.`:'The sample wardrobe is gone.',3500)}
+  show(items.length?'today':'wardrobe');toast(kn?`The sample wardrobe is gone. The ${kn===1?'piece':`${kn} pieces`} you changed stayed.`:'The sample wardrobe is gone.',8000,{label:'Undo',fn:kitSampleUndo})}
+/* Undo of Remove the sample (fix round 3): the pieces come back (a new stamp, newer than their deletion marks) as they were, and each day
+   record still as Remove left it is put back as it was before; a day the account's record replaced meanwhile (a sync) keeps that. A day
+   that went back to the sample keeps its old stamp when Remove had given it KIT_YIELD (it never went up), else takes a new one */
+let kitRmUndo=null;const KIT_RM_SYNC=8000;
+async function kitSampleUndo(){const u=kitRmUndo;if(!u||kitSampling)return;kitRmUndo=null;kitSampling=true;kitSampleBusy(true);
+  try{const now=Date.now(),its=u.items.map(i=>({...i,updated:now}));
+    const days=u.days.filter(r=>dayRecs[r.date]&&dayRecs[r.date].updated===u.wrote[r.date]).map(r=>({...r,updated:u.wrote[r.date]===KIT_YIELD?r.updated:now}));
+    await kitTx(['items','days'],t=>{const s=t.objectStore('items'),d=t.objectStore('days');for(const it of its)s.put(it);for(const r of days)d.put(r)});
+    const back=new Map(its.map(i=>[i.id,i]));items=items.filter(i=>!back.has(i.id)).concat(its);for(const r of days)dayRecs[r.date]=r;
+    cache={};todayStale=true;if(window.scheduleSync)scheduleSync()}
+  catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
+  show('today');toast('The sample wardrobe is back.',3000)}
 /* a day's record with the sample's pieces taken out (re-audit 2026-11-15, N2: the record was cut to its occasion, and history.js recordDays
    then filled the past day again from today's plan: "Didn't" days became worn, a suit bought later was worn before it came, real wears were
    replaced). Everything else the day recorded stays: worn or not, a corrected day, the occasion, the own pieces.
@@ -397,7 +611,7 @@ async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.s
   if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();toast('It’s yours now: Remove the sample keeps it.',3000)}
 /* marks: the Wardrobe grid's tag and the item sheet's note */
 const kitSampleTag=i=>i.sample&&!kitEdited(i)?'<span class="pausetag sampletag">Sample</span>':'';
-const kitSampleNote=i=>i.sample&&!kitEdited(i)?`<section class="card ivsec ivsample"><p class="shelp">A piece of the sample wardrobe: Remove the sample takes it away. Change anything on it, or keep it, and it stays as yours.</p><div class="btns"><button type="button" id="iv-keep" onclick="kitKeepSample('${i.id}')">Keep it as mine</button></div></section>`:'';
+const kitSampleNote=i=>i.sample&&!kitEdited(i)?`<section class="card ivsec ivsample"><p class="shelp">A piece of the sample wardrobe: Remove the sample takes it away. Change anything on it, or keep it, and it stays as yours.</p><div class="btns"><button type="button" id="iv-keep" onclick="kitKeepSample('${jsq(i.id)}')">Keep it as mine</button></div></section>`:'';
 /* Today, while sample pieces are there */
 function kitSampleBanner(){if(!kitHasSample())return '';const own=items.filter(i=>!i.sample||kitEdited(i)).length;
   return `<div class="kit-banner" id="kit-sample"><b>You're trying a sample wardrobe</b><small>${own?`Your ${own} own piece${own===1?' is':'s are'} mixed in. `:''}Swipe through the days, tap the score, try a swap. Add your own clothes whenever you like.</small>
@@ -426,6 +640,17 @@ async function homeInstall(){const e=homeEvt;if(!e)return homeSync();homeEvt=nul
   try{await e.prompt();const r=await e.userChoice;if(r&&r.outcome==='accepted'){if(typeof toast==='function')toast('Installing… open Daily Wardrobe from its new icon.')}}catch(_){}
   homeSync()}
 const homeIPad=()=>/iPad/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+/* which browser the app is open in on an iPhone or iPad (2026-11-16, a tester used Chrome and was shown Safari's steps): every iOS browser
+   draws with Safari's engine but has its own buttons, and a Home Screen app added from any of them keeps its own storage. window.DW_BROWSER: tests */
+const homeBrowser=()=>window.DW_BROWSER||(/CriOS/.test(navigator.userAgent)?'Chrome':/FxiOS/.test(navigator.userAgent)?'Firefox':/EdgiOS/.test(navigator.userAgent)?'Edge':'Safari');
+/* the first step, per browser: Chrome's Share is at the right end of its address bar (in its ⋯ menu when not); Firefox's and Edge's are in their menu */
+function homeShareStep(pad){const b=homeBrowser();
+  if(b==='Chrome')return '<li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' at the right end of Chrome\'s address bar.<small>Not there? Tap <b>⋯</b>, then <b>Share</b>.</small></span></li>';
+  if(b!=='Safari')return '<li><span class="home-n">1</span><span>Open '+b+'\'s menu and tap <b>Share</b> '+HOME_SHARE+'.</span></li>';
+  return pad?'<li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' at the top right of Safari.</span></li>'
+    :'<li><span class="home-n">1</span><span>Tap <b>⋯</b> at the bottom right of Safari, then <b>Share</b> '+HOME_SHARE+'.<small>If you see Share '+HOME_SHARE+' there instead, tap it.</small></span></li>'}
+/* the same in a few words, for a line elsewhere (Settings → reminders) */
+const homeShareShort=()=>{const b=homeBrowser();return b==='Chrome'?'tap Share in Chrome’s address bar, then “Add to Home Screen”':b==='Safari'?'tap ⋯, then Share, then “Add to Home Screen”':`open ${b}’s menu, tap Share, then “Add to Home Screen”`};
 const HOME_SHARE='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 10H5v11h14V10h-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
 const HOME_DL='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const HOME_ADD='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -448,19 +673,34 @@ const homeCopyBtn=()=>'<p class="home-cta"><button type="button" class="pri home
 async function homeCopy(){const l=typeof myInviteLink==='function'?myInviteLink():'';if(!l)return false;
   try{await navigator.clipboard.writeText(l);toast('Your invitation link is copied. Paste it in the Home Screen app.',4500);return true}
   catch{document.querySelectorAll('.home-mylink').forEach(f=>{f.hidden=false;f.value=l;f.select()});toast('Copy the link shown under the button.',5000);return false}}
-function homeNote(){const conn=typeof isConnected==='function'?isConnected():false;
-  if(homeTester())return '<p class="su-note home-note"><b>Safari is connected already.</b> The Home Screen app keeps its own storage, apart from Safari\'s, so it starts empty: paste your invitation link when it asks, and your wardrobe comes across.</p>';
-  if(conn)return '<p class="su-note home-note"><b>Safari is connected already.</b> The Home Screen app keeps its own storage, apart from Safari\'s: connect it too, in its Settings → Connection.</p>';
-  if(items.length)return '<p class="su-note home-note"><b>Your wardrobe stays here in Safari.</b> The Home Screen app keeps its own storage and starts empty. To take your wardrobe along, tap <b>Download backup</b> in Settings → Backup &amp; sync here, then <b>Restore file</b> in the Home Screen app.</p>';
-  return '<p class="su-note home-note"><b>The Home Screen app keeps its own storage</b>, apart from Safari\'s: if you add it now, set it up there rather than here.</p>'}
+function homeNote(){const conn=typeof isConnected==='function'?isConnected():false,b=homeBrowser();
+  if(homeTester())return '<p class="su-note home-note"><b>'+b+' is connected already.</b> The Home Screen app keeps its own storage, apart from '+b+'\'s, so it starts empty: paste your invitation link when it asks, and your wardrobe comes across.</p>';
+  if(conn)return '<p class="su-note home-note"><b>'+b+' is connected already.</b> The Home Screen app keeps its own storage, apart from '+b+'\'s: connect it too, in its Settings → Connection.</p>';
+  if(items.length)return '<p class="su-note home-note"><b>Your wardrobe stays here in '+b+'.</b> The Home Screen app keeps its own storage and starts empty. To take your wardrobe along, tap <b>Download backup</b> in Settings → Backup &amp; sync here, then <b>Restore file</b> in the Home Screen app.</p>';
+  return '<p class="su-note home-note"><b>The Home Screen app keeps its own storage</b>, apart from '+b+'\'s: if you add it now, set it up there rather than here.</p>'}
 function homeSteps(inSetup){if(homeAndroid())return homeStepsAndroid(inSetup);const pad=homeIPad(),t=homeTester();
   return '<div class="home-wrap">'+homePic()+'<p class="su-lead home-lead">Put Daily Wardrobe on your Home Screen: it opens full screen like an app, and it is the only way your '+(pad?'iPad':'iPhone')+' lets it send the morning reminder.</p>'+
-    '<ol class="home-steps">'+(pad?'<li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' at the top right of Safari.</span></li>'
-      :'<li><span class="home-n">1</span><span>Tap <b>⋯</b> at the bottom right of Safari, then <b>Share</b> '+HOME_SHARE+'.<small>If you see Share '+HOME_SHARE+' there instead, tap it.</small></span></li>')+
-    '<li><span class="home-n">2</span><span>Tap <b>Add to Home Screen</b> '+HOME_ADD+'.<small>Not in the list? Scroll down, or tap View More.</small></span></li>'+
+    '<ol class="home-steps">'+homeShareStep(pad)+
+    '<li><span class="home-n">2</span><span>Tap <b>Add to Home Screen</b> '+HOME_ADD+'.<small>Not in the list? Scroll down, or tap '+(homeBrowser()==='Safari'?'View More':'Edit Actions')+'.</small></span></li>'+
     '<li><span class="home-n">3</span><span>Leave <b>Open as Web App</b> on and tap <b>Add</b>.</span></li>'+
     '<li><span class="home-n">4</span><span>Open Daily Wardrobe from its new icon'+(t?' and paste your invitation link at the setup\'s Connection step.':'.')+'</span></li></ol>'+
-    (t?homeCopyBtn():'')+homeNote()+(inSetup?'<p class="su-help">Or tap Next to carry on here.</p>':'')+'</div>'}
+    (t?homeCopyBtn():'')+homeNote()+homeRisk(pad)+(inSetup?'<p class="su-help">Or tap Next to carry on here.</p>':'')+'</div>'}
+/* (2026-11-16, the owner's decision 2 for W1-11-04) someone using the app in a Safari tab with no connection is told once, here (the
+   setup's Home Screen step, also About's sheet), that Safari can clear it; Backup & sync says it under its status (sync.js safariWord), and
+   safariRemind reminds such a person once there are SAFARI_MIN items that were never backed up */
+function homeRisk(pad){if(typeof isConnected==='function'&&isConnected())return '';
+  return `<p class="su-help home-risk">In a ${homeBrowser()} tab, your ${pad?'iPad':'iPhone'} can clear the app’s data when it isn’t opened for about a week or runs short of space. The Home Screen app isn’t cleared that way, and <b>Download backup</b> in Settings → Backup &amp; sync keeps a copy in Files.</p>`}
+const SAFARI_MIN=10,SAFARI_EVERY=30*864e5;
+/* a Safari-only wardrobe (an iPhone or iPad tab, not connected) of SAFARI_MIN+ items never backed up (no backup ever, no backup file
+   downloaded): a reminder with Download backup, at start-up, at most once every SAFARI_EVERY (localStorage safari_remind) */
+function safariRemind(){try{if(!homeIOS()||homeStandalone()||(typeof isConnected==='function'&&isConnected()))return false;
+  if(items.filter(i=>!i.sample).length<SAFARI_MIN||localStorage.getItem('last_sync')||localStorage.getItem('backup_file_at'))return false;
+  if(Date.now()-(+localStorage.getItem('safari_remind')||0)<SAFARI_EVERY)return false;
+  if(typeof setupShown==='function'&&setupShown())return false;
+  const t=$('#toast');if(t&&t.classList.contains('on')){setTimeout(safariRemind,6000);return false}   // (not over another message)
+  localStorage.setItem('safari_remind',Date.now());
+  toast(`Your ${items.filter(i=>!i.sample).length} items are only in ${homeBrowser()} on this ${homeIPad()?'iPad':'iPhone'}, and ${homeBrowser()} can clear a website’s data. Download a backup to keep a copy in Files.`,12000,{label:'Download backup',fn:downloadBackup});return true}
+  catch{return false}}
 const homeLabel=()=>homeAndroid()?'Install the app':'Add to Home Screen';
 const HOME_CARD={key:'home',get title(){return homeLabel()},pic:()=>'',last:'Got it',get body(){return homeSteps(false)}};
 function homeOpen(){kitOpen([HOME_CARD])}

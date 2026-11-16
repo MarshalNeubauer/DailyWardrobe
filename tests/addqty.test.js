@@ -4,7 +4,7 @@ module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844}}),p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(()=>{if(document.querySelector('#setup.on'))setupClose();openAdd();addManual();setq(0,'type','shirt');setq(0,'primaryColor','white')});
     const s0=await p.evaluate(()=>({row:!!document.querySelector('#nps-q .qtyrow'),n:document.querySelector('#qty-n-0').textContent,minus:document.querySelector('#qty-m-0').disabled,conf:document.querySelector('#qconf-0').textContent}));
     ok(s0.row&&s0.n==='1'&&s0.minus&&s0.conf==='Confirm','a shirt card has "How many": 1, minus off, Confirm');

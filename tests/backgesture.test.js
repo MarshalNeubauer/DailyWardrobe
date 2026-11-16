@@ -25,7 +25,7 @@ async function run(eng,browser,{ok,url,WARDROBES,settle}){
     return route.fulfill({status:503,headers:H,body:'{"error":"server"}'})});
   await ctx.addInitScript(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');localStorage.setItem('tour_seen','1')});
   const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
-  const seed=async()=>{await p.goto(url);await p.waitForFunction(()=>window.appReady);
+  const seed=async()=>{await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(async W=>{const load=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
       const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
       const cv=(im,k)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9)};
@@ -128,7 +128,7 @@ async function run(eng,browser,{ok,url,WARDROBES,settle}){
   await layer('the close-up chooser over the item sheet',{base:item,open:()=>ev(()=>closeupPick({mode:'replace',file:()=>{}})),on:()=>!!cuOpen,x:()=>tap('#cu-cancel'),under:itemUp});
   await layer('the white-paper tip over the item sheet',{base:item,open:()=>ev(()=>paperTip()),on:()=>!!kit,x:()=>tap('#kitsheet .kit-x'),under:itemUp});
   await layer('a question over the item sheet',{base:item,open:()=>ev(()=>{askConfirm('Delete it?',{ok:'Delete',danger:true})}),on:()=>!!asking,x:()=>tap('#ask-cancel'),under:itemUp});
-  await layer('zoom & crop in the item sheet',{base:item,open:async()=>{await ev(()=>startCrop('m1'));await p.waitForSelector('#cropbox')},on:()=>!!phEdit.crop,x:()=>p.evaluate(()=>[...document.querySelectorAll('#item-view .cropwrap button')].find(b=>b.textContent==='Cancel').click()),under:itemUp});
+  await layer('zoom & crop in the item sheet',{base:item,open:async()=>{await ev(()=>startCrop('m1'));await p.waitForSelector('#cropbox')},on:()=>!!phEdit.crop,x:()=>p.evaluate(()=>[...document.querySelectorAll('#item-view .cropwrap button')].find(b=>b.textContent==='Discard').click()),under:itemUp});
   // a name being typed, Back at once: kept (the field saves itself; a sheet closed by Back never tells it it was left)
   await step('a name being typed',async()=>{await home();await item();await p.click('#item-view .wf-name');await p.keyboard.type('Brown');await back();
     await p.waitForTimeout(900);
@@ -160,11 +160,20 @@ async function run(eng,browser,{ok,url,WARDROBES,settle}){
     e=await ev(()=>({rd:!!document.querySelector('#rd-sheet.on'),item:editing,aborted:!!window._aborted,c:items.find(x=>x.id==='m1').primaryColor}));
     ok(!e.rd&&e.item==='m1'&&e.aborted&&e.c==='deeptaupe',T+`Back while Claude is reading closes the sheet and calls the reading off, the item unchanged and still open (${JSON.stringify(e)})`);
     await ev(()=>{window.fetch=window._fetch})});
-  // crop, then Back: leaves the crop first, then closes the sheet
-  await step('crop then Back',async()=>{await home();await item();await ev(()=>startCrop('m1'));await p.waitForSelector('#cropbox');await back();
-    e=await ev(()=>({crop:!!phEdit.crop,item:editing,photo:!!document.querySelector('#item-view #cropbox')}));
+  // crop, then Back: leaves the crop first (a frame left as it opened changes nothing), then closes the sheet
+  await step('crop then Back',async()=>{await home();await item();await ev(()=>{window._ph0=items.find(x=>x.id==='m1').photo});await ev(()=>startCrop('m1'));await p.waitForSelector('#cropbox');await back();
+    e=await ev(()=>({crop:!!phEdit.crop,item:editing,frame:!!document.querySelector('#item-view #cropbox'),same:items.find(x=>x.id==='m1').photo===window._ph0}));
     await back();const e2=await ev(()=>({item:editing}));
-    ok(!e.crop&&e.item==='m1'&&!e.photo&&!e2.item,T+`Back in the crop frame leaves the crop (the photo unchanged), the next one closes the item sheet (${JSON.stringify([e,e2])})`)});
+    ok(!e.crop&&e.item==='m1'&&!e.frame&&e.same&&!e2.item,T+`Back in an untouched crop frame leaves the crop (the photo unchanged), the next one closes the item sheet (${JSON.stringify([e,e2])})`)});
+  // zoomed, then Back: the crop is kept and left (2026-11-15, the owner: closing the crop saves it), the sheet stays; Undo puts the photo back
+  await step('zoomed crop then Back',async()=>{await home();await item();await ev(()=>{window._ph0=items.find(x=>x.id==='m1').photo});await ev(()=>startCrop('m1'));await p.waitForSelector('#cropbox');
+    await ev(()=>{const r=document.querySelector('#item-view .cropzoom input');r.value='2';r.dispatchEvent(new Event('input',{bubbles:true}))});await back();
+    await p.waitForFunction(()=>items.find(x=>x.id==='m1').photo!==window._ph0);await settle(p,300);
+    e=await ev(()=>({crop:!!phEdit.crop,item:editing,frame:!!document.querySelector('#item-view #cropbox'),undo:phEdit.undo.length}));
+    ok(!e.crop&&e.item==='m1'&&!e.frame&&e.undo===1,T+`Back in a zoomed crop frame keeps the crop and leaves the frame; the item sheet stays open (${JSON.stringify(e)})`);
+    await ev(()=>[...document.querySelectorAll('#toast.on button')].find(b=>b.textContent==='Undo').click());await p.waitForFunction(()=>items.find(x=>x.id==='m1').photo===window._ph0,null,{timeout:4000}).catch(()=>{});await settle(p,200);
+    ok(await ev(()=>items.find(x=>x.id==='m1').photo===window._ph0&&!phEdit.undo.length),T+'…and the toast’s Undo ("Crop saved.") puts the photo back through the editor’s Undo');
+    await back();ok(!await ev(()=>editing),T+'…and the next Back closes the item sheet')});
 
   await home();
   ok(!errs.length,T+'no page errors ('+errs.join(' | ')+')');

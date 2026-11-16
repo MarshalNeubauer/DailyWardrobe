@@ -8,7 +8,8 @@
    point); the owner's own colours and patterns are the second; the description goes last, wrapped in <description> with < and >
    removed, never more than DESC_MAX characters. A tester's lookups count against the daily describe cap (worker/people.js).
    (An ES module of worker.js, the entry.) */
-import { COLOR_HEX, COLOR_LIST, HEX_RE, PATTERN_BY_TYPE, PATTERN_LIST, TYPE_COLORS, TYPE_LIST, claudeCall, lightText, txt, wbOf } from './tag.js';
+import { OWN_COL_RE, OWN_PAT_RE } from './ownkeys.js';
+import { COLOR_HEX, COLOR_LIST, HEX_RE, MATERIALS_BY, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, TYPE_COLORS, TYPE_LIST, claudeCall, cleanMaterial, cleanOwnMaterials, lightText, materialSchema, ownMaterialsText, ownTxt, txt, wbOf } from './tag.js';
 import { readCapped } from './links.js';
 import { plainFor, spend, unspend, utcDay } from './people.js';
 
@@ -169,6 +170,14 @@ pattern's STRUCTURE with color ROLES, never with fixed colors. Your job:
 7. confidence, why, ask - as for colors: why is one line for the owner (how it differs from "existing", or that it is
    the same); ask is null for a plain pattern answer.`;
 
+/* the close-up reader's pattern half (what:'both') also says what the cloth is made of (2026-11-15, the materials audit): the same
+   rules as the photo tagger's, in their own cached text (a single pattern lookup keeps its prefix and schema) */
+const BOTH_MATERIAL = `This reading is the app's "Read color and texture from close-up": besides the pattern, give the item's material.
+When the owner wrote no words, every cloth is a pattern answer (kind pattern): a plain cloth is solid or its listed weave, and what
+makes a corduroy, seersucker, velvet or linen what it is goes in material.
+
+${MATERIAL_RULES}`;
+
 /* the tables, built once from the constants (never a date, an item or a description: the cached prefix must not change) */
 let descTablesMemo = null;
 function descTables() {
@@ -179,6 +188,7 @@ function descTables() {
   const pattern = 'Pattern keys: ' + PATTERN_LIST.join(', ') + '\nOffered per kind of item:\n'
     + Object.entries(PATTERN_BY_TYPE).map(([t, l]) => `${t}: ${l.join(', ')}`).join('\n');
   descTablesMemo = { colour: DESCRIBE_SYSTEM + '\n\n' + COLOUR_RULES + '\n\n' + colour, pattern: DESCRIBE_SYSTEM + '\n\n' + PATTERN_RULES + '\n\n' + pattern };
+  descTablesMemo.both = descTablesMemo.pattern + '\n\n' + BOTH_MATERIAL;
   return descTablesMemo;
 }
 
@@ -209,7 +219,14 @@ const DFIG = { type: 'object', additionalProperties: false, required: ['shape', 
 const DMOTIF = { anyOf: [{ type: 'object', additionalProperties: false, required: ['grid', 'figures', 'cellAspect', 'rowOffset'],
   properties: { grid: { type: 'string', enum: ['straight', 'diagonal'] }, figures: { type: 'array', items: DFIG }, cellAspect: { type: 'number' },
     rowOffset: { type: 'string', enum: ['none', 'half'] } } }, { type: 'null' }] };
-function patternSchema(own) {
+/* mats: the item type's material list, for the reader's pattern half. The key is a plain string since 2026-11-16 (it was that type's
+   enum): Claude may name a material on no list (cupro), which the cleaner passes on with new:true; a plain string is the smaller grammar */
+function patternSchema(own, mats) {
+  const s = patternSchemaOf(own);
+  if (!mats) return s;
+  return { ...s, required: [...s.required, 'material'], properties: { ...s.properties, material: materialSchema(null) } };
+}
+function patternSchemaOf(own) {
   return { type: 'object', additionalProperties: false,
     required: ['kind', 'match', 'existing', 'name', 'description', 'plansAs', 'look', 'colourHint', 'confidence', 'why', 'ask'],
     properties: {
@@ -248,23 +265,24 @@ function baseFor(hex, list) {
   const hd = (a, b) => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; };
   const cand = list.filter(k => COLOR_HEX[k]).map(k => { const l = labHex(COLOR_HEX[k]), [c2, h2] = lch(l); return { k, l, c2, h2, d: dE00(lab, l) }; });
   if (!cand.length) return 'none';
-  let pool = C < 9 ? cand.filter(x => x.c2 < Math.max(5, C + 3)) : cand.filter(x => x.c2 >= 6 && hd(x.h2, h) <= 45);
-  if (!pool.length && C >= 9) pool = cand.filter(x => x.c2 >= 6 && hd(x.h2, h) <= 80);
-  if (!pool.length) pool = cand;
-  const near = pool.filter(x => Math.abs(x.l[0] - lab[0]) <= 25); if (near.length) pool = near;
-  return pool.sort((a, b) => a.d - b.d)[0].k;
+  // the nearest hue pool with a colour of about the same lightness, before one of the hue alone (fix round 3, W2-16-12: a dark petrol for a
+  // tie had only light blue within 45° and was planned as light blue; within 80° it finds steel blue)
+  const near = p => p.filter(x => Math.abs(x.l[0] - lab[0]) <= 25), best = p => p.sort((a, b) => a.d - b.d)[0].k;
+  const pools = C < 9 ? [cand.filter(x => x.c2 < Math.max(5, C + 3))] : [45, 80].map(w => cand.filter(x => x.c2 >= 6 && hd(x.h2, h) <= w));
+  for (const p of pools) if (near(p).length) return best(near(p));
+  const p = pools.find(x => x.length); return best(p || (near(cand).length ? near(cand) : cand));
 }
 
 /* ---- the request ---- */
-const KEY_RE = /^own[a-z]{1,28}$/, PKEY_RE = /^own-[a-z0-9-]{1,28}$/;
+const KEY_RE = OWN_COL_RE, PKEY_RE = OWN_PAT_RE;   // ownkeys.js
 /* the owner's colours and patterns with their bases (what the tagger's cleanCustom leaves out) */
 function ownLists(c) {
   c = c && typeof c === 'object' ? c : {};
   const types = t => (Array.isArray(t) ? t : []).filter(x => TYPE_LIST.includes(x));
   const colors = (Array.isArray(c.colors) ? c.colors : []).filter(x => x && KEY_RE.test(x.key) && HEX_RE.test(x.hex || '')).slice(0, 40)
-    .map(x => ({ key: x.key, name: txt(x.name, 30) || x.key.slice(3), hex: x.hex.toLowerCase(), base: COLOR_LIST.includes(x.base) ? x.base : '', types: types(x.types), accent: !!x.accent }));
+    .map(x => ({ key: x.key, name: ownTxt(x.name, 30) || x.key.slice(3), hex: x.hex.toLowerCase(), base: COLOR_LIST.includes(x.base) ? x.base : '', types: types(x.types), accent: !!x.accent }));
   const patterns = (Array.isArray(c.patterns) ? c.patterns : []).filter(x => x && PKEY_RE.test(x.key)).slice(0, 40)
-    .map(x => ({ key: x.key, name: txt(x.name, 30) || x.key.slice(4), base: PATTERN_LIST.includes(x.base) ? x.base : '', types: types(x.types), desc: txt(x.desc, 160) }));
+    .map(x => ({ key: x.key, name: ownTxt(x.name, 30) || x.key.slice(4), base: PATTERN_LIST.includes(x.base) ? x.base : '', types: types(x.types), desc: txt(x.desc, 160) }));
   return { colors, patterns };
 }
 function ownerText(what, own) {
@@ -418,14 +436,18 @@ async function describeBoth(req, env, json, who, b, cm) {
   }
   const T = descTables(), img = cm ? [{ type: 'image', source: { type: 'base64', media_type: cm[1], data: cm[2] } }] : [];
   const half = async what => {
-    const colour = what === 'colour', bb = { ...b, what, field: 'primary' };
+    const colour = what === 'colour', bb = { ...b, what, field: 'primary' }, mats = colour ? null : MATERIALS_BY[b.type] || null;
+    // the owner's own materials for this type (ownMaterials, 2026-11-16) join the list, in the owner's cached text
+    const ownMats = mats ? cleanOwnMaterials({ [b.type]: (b.ownMaterials && typeof b.ownMaterials === 'object' && b.ownMaterials[b.type]) || [] }) : {};
     try {
-      const c = await claudeCall(env, { model: env.CLAUDE_DESCRIBE_MODEL || DESCRIBE_MODEL, system: colour ? T.colour : T.pattern, owner: ownerText(what, own),
+      const c = await claudeCall(env, { model: env.CLAUDE_DESCRIBE_MODEL || DESCRIBE_MODEL, system: colour ? T.colour : mats ? T.both : T.pattern, owner: ownerText(what, own) + (mats ? ownMaterialsText(ownMats) : ''),
         content: [...img, { type: 'text', text: perCall(bb, own, desc, !!cm, !typed) }],
-        schema: colour ? colourSchema(own.colors) : patternSchema(own.patterns), effort: colour ? 'low' : 'medium', maxTokens: colour ? 4000 : 8000,
+        schema: colour ? colourSchema(own.colors) : patternSchema(own.patterns, mats), effort: colour ? 'low' : 'medium', maxTokens: colour ? 4000 : 8000,
         signal: req.signal, what: 'described' });
       if (c.status !== 200) return { fail: true, status: c.status, body: c.body };
       const out = colour ? cleanDescribeColour(c.body, bb, own, desc) : cleanDescribePattern(c.body, bb, own);
+      // the material: held to its tier, never the pattern again (the item's, or the one Claude read)
+      if (mats && out.status === 200) { const m = cleanMaterial(c.body.material, b.type, [b.pattern, c.body.existing, c.body.plansAs], !!cm, ownMats); if (m) out.body.material = m; }
       return out.status === 200 ? { body: out.body, model: c.body.model } : { fail: true, status: out.status, body: out.body };
     } catch (e) { return { fail: true, status: 502, body: { error: 'ai', detail: 'Claude did not answer: ' + String(e && e.message || e).slice(0, 120) } }; }
   };
@@ -439,4 +461,4 @@ async function describeBoth(req, env, json, who, b, cm) {
   return json({ colour: co.fail ? err(co) : co.body, pattern: pa.fail ? err(pa) : pa.body, model: (co.fail ? pa : co).model, lookups: who.caps ? 2 - failed : 0 });
 }
 
-export { DESCRIBE_MODEL, DESC_MAX, baseFor, cleanDescribeColour, cleanDescribePattern, cleanLook, descTables, handleDescribe };
+export { DESCRIBE_MODEL, DESC_MAX, baseFor, cleanDescribeColour, cleanDescribePattern, cleanLook, colourSchema, descTables, handleDescribe, patternSchema };

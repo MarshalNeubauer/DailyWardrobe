@@ -22,7 +22,9 @@ function texTones(b,t,k=1){const gl=rgbLab(...hexRgb(b)),g=t.grid.join(''),f1=[.
    stays seamless): threads read woven, not as a staircase of squares. Cached; null without a DOM. */
 const TEX_TILES=new Map();
 function texTileUrl(grid,lo,hi){if(typeof document==='undefined')return null;const key=grid.join('/')+lo+hi;if(TEX_TILES.has(key))return TEX_TILES.get(key);
-  const M=grid[0].length,N=grid.length,S=6,W=M*S,H=N*S,r=2,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),D=x.createImageData(W,H),A=hexRgb(lo),B=hexRgb(hi);
+  // (a phone out of picture memory gives no context: null as without a DOM, nothing cached, so the next drawing tries again;
+  // iOS refused one while an Add card was redrawn and Confirm stayed off, 2026-11-16)
+  const M=grid[0].length,N=grid.length,S=6,W=M*S,H=N*S,r=2,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');if(!x)return null;const D=x.createImageData(W,H),A=hexRgb(lo),B=hexRgb(hi);
   const on=(px,py)=>grid[((Math.floor(py/S)%N)+N)%N][((Math.floor(px/S)%M)+M)%M]==='1'?1:0;
   for(let y=0;y<H;y++)for(let q=0;q<W;q++){let s=0,n=0;for(let dy=-r;dy<=r;dy+=1)for(let dx=-r;dx<=r;dx+=1){s+=on(q+dx,y+dy);n++}const w=s/n,i=4*(y*W+q);
     for(let k=0;k<3;k++)D.data[i+k]=Math.round(A[k]+(B[k]-A[k])*w);D.data[i+3]=255}
@@ -38,10 +40,18 @@ function texTileSmooth(grid,lo,hi){if(typeof document==='undefined')return null;
   const sg=TEX_SMOOTH_SIG*S,R=Math.ceil(3*sg),k=[];for(let o=-R;o<=R;o++)k.push(Math.exp(-o*o/(2*sg*sg)));const ks=k.reduce((a,b)=>a+b);
   for(let y=0;y<H;y++)for(let q=0;q<W;q++){let s=0;for(let o=-R;o<=R;o++)s+=k[o+R]*f[y*W+((q+o)%W+W)%W];g[y*W+q]=s/ks}
   for(let y=0;y<H;y++)for(let q=0;q<W;q++){let s=0;for(let o=-R;o<=R;o++)s+=k[o+R]*g[(((y+o)%H+H)%H)*W+q];f[y*W+q]=s/ks}
-  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),D=x.createImageData(W,H),A=hexRgb(lo),B=hexRgb(hi),P=Math.round(S/3);
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');if(!x)return null;const D=x.createImageData(W,H),A=hexRgb(lo),B=hexRgb(hi),P=Math.round(S/3);   // (no context: as texTileUrl)
   for(let y=0;y<H;y++)for(let q=0;q<W;q++){const t=Math.min(1,Math.max(0,(f[y*W+q]-.42)/.16)),w=t*t*(3-2*t),gr=1+TEX_GRAIN*(((q+y)%P)/P<.5?1:-1),i=4*(y*W+q);
     for(let j=0;j<3;j++)D.data[i+j]=Math.max(0,Math.min(255,Math.round((A[j]+(B[j]-A[j])*w)*gr)));D.data[i+3]=255}
   x.putImageData(D,0,0);const url=c.toDataURL('image/png');if(TEX_TILES.size>40)TEX_TILES.clear();TEX_TILES.set(key,url);return url}
+/* a camouflage's tile as a small seamless image (core.js camoField: its blotches in its colours, CAMO_PX pixels a side), edges softened by a
+   one-pixel wrapping blend so they don't read as pixel steps when scaled up. Cached in TEX_TILES; null without a DOM or a canvas (a phone
+   out of picture memory, 2026-11-16) */
+const CAMO_PX=320;   // (v2: a larger tile holds more, smaller blotches at the same sharpness)
+function camoTileUrl(c){if(typeof document==='undefined'||!c||!Array.isArray(c.cols)||c.cols.length<2)return null;const key='c'+CAMO_V+c.cols.join('')+c.shares.join(',')+c.seed;if(TEX_TILES.has(key))return TEX_TILES.get(key);
+  const N=CAMO_PX,im=camoImage(N,c.cols,c.shares,c.seed),cv=document.createElement('canvas');cv.width=cv.height=N;const x=cv.getContext('2d');if(!x)return null;
+  const D=x.createImageData(N,N);for(let j=0;j<N*N;j++){D.data[4*j]=im[3*j];D.data[4*j+1]=im[3*j+1];D.data[4*j+2]=im[3*j+2];D.data[4*j+3]=255}   // (core.js camoImage: soft edges, cloth grain)
+  x.putImageData(D,0,0);const url=cv.toDataURL('image/png');if(TEX_TILES.size>40)TEX_TILES.clear();TEX_TILES.set(key,url);return url}
 /* Pattern tile per garment role. Scale differs by role so a pinstripe suit and a striped shirt read correctly. */
 function fabricDef(id,item,role,ctx){
   const b=colOf(item),a=accentOf(item),t3=thirdOf(item),c=t3||a,p=patBase(item.pattern)||'solid',wool=role==='top'||role==='bot';
@@ -77,6 +87,10 @@ function fabricDef(id,item,role,ctx){
      sized from what was seen: in a swatch at least one whole repeat shows; on the figure the repeat keeps its share of the
      item's width (sett.tw, or Claude's repeats across). */
   const se=usableSett(item);
+  /* camouflage (detect.js: its own reading, else camoLook): one tile of its blotches. In a small swatch about one tile, on the figure
+     se.tr tiles across the item, elsewhere a tile per close-up width (se.cr) */
+  if(se&&se.camo){const T=ctx==='dot'?16:ctx==='dia'?100:ctx==='fig'?Math.max(12,(role==='shirt'?180:200)/Math.max(.5,se.tr||CAMO_TR)):Math.max(30,Math.min(120,100/Math.max(.9,se.cr||1))),f2=v=>+v.toFixed(3),url=camoTileUrl(se.camo);
+    return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${f2(T)}" height="${f2(T)}"><rect width="${f2(T)}" height="${f2(T)}" fill="${se.camo.cols[0]||b}"/>${url?`<image href="${url}" width="${f2(T)}" height="${f2(T)}" preserveAspectRatio="none"/>`:''}</pattern>`}
   /* a motif read by Claude (tagging.js motifFromSpec): its figures on a grid two cells square (so two colours can alternate like a
      checkerboard), turned 45° for a diagonal grid. Scaled like a sett: in a swatch as many cells as the close-up shows, on the
      figure as many as fit across the item. */
@@ -249,8 +263,8 @@ const FINE_TWILL={fig:[1.25,.045],dot:[1.6,.05]};
 /* leather surface: base colour, grain texture and a highlight whose strength depends on the leather */
 function leatherLayers(P,item,d,toe){
   const L=item&&item.leather||'calf',base=item?colOf(item):'#2b2b2e';
-  const col=L==='suede'?mix(base,'#fff',.07):L==='cordovan'?mix(base,'#1e0808',.15):base;
-  const hi={calf:.32,cordovan:.42,patent:.9,suede:0,'pebble-grain':.12,'scotch-grain':.2,canvas:0,knit:0}[L]??.32;
+  const col=L==='suede'?mix(base,'#fff',.07):L==='nubuck'?mix(base,'#fff',.04):L==='cordovan'?mix(base,'#1e0808',.15):base;
+  const hi={calf:.32,cordovan:.42,patent:.9,suede:0,nubuck:.04,'pebble-grain':.12,'scotch-grain':.2,canvas:0,knit:0,braided:.18}[L]??.32;
   let defs=`<radialGradient id="${P}hl" gradientUnits="userSpaceOnUse" cx="${toe.x}" cy="${toe.y}" r="${toe.r*(L==='patent'?.7:1)}"><stop offset="0" stop-color="${L==='cordovan'?'#fff3ec':'#fff'}" stop-opacity="${hi}"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
   let tex='',extra='';
   if(L==='suede'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width="1.5" height="1.5"><circle cx=".4" cy=".5" r=".36" fill="#000" opacity=".18"/><circle cx="1.15" cy="1.1" r=".3" fill="#fff" opacity=".12"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
@@ -258,6 +272,9 @@ function leatherLayers(P,item,d,toe){
   if(L==='scotch-grain'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width="1.2" height="1.1"><circle cx=".35" cy=".3" r=".3" fill="none" stroke="#000" stroke-opacity=".28" stroke-width=".16"/><circle cx=".95" cy=".85" r=".26" fill="#fff" fill-opacity=".1"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
   // sneakers' textiles: canvas a fine plain weave, knit rows of small Vs; neither shines
   if(L==='canvas'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width="1.4" height="1.4"><path d="M0,.35 H1.4 M0,1.05 H1.4" stroke="#000" stroke-opacity=".16" stroke-width=".3"/><path d="M.35,0 V1.4 M1.05,0 V1.4" stroke="#fff" stroke-opacity=".1" stroke-width=".3"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
+  // (2026-11-15) nubuck: suede's nap, finer and closer; a braided belt: strands woven on the diagonal, each with a light and a dark edge
+  if(L==='nubuck'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width=".9" height=".9"><circle cx=".25" cy=".3" r=".2" fill="#000" opacity=".13"/><circle cx=".7" cy=".68" r=".18" fill="#fff" opacity=".08"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
+  if(L==='braided'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(45)"><path d="M0,0 H1.5 V1.5 H0 Z M1.5,1.5 H3 V3 H1.5 Z" fill="#000" opacity=".22"/><path d="M0,.15 H1.5 M1.5,1.65 H3" stroke="#fff" stroke-opacity=".22" stroke-width=".25"/><path d="M1.5,.15 V1.5 M0,1.65 V3" stroke="#fff" stroke-opacity=".14" stroke-width=".25"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
   if(L==='knit'){defs+=`<pattern id="${P}tx" patternUnits="userSpaceOnUse" width="2" height="1.6"><path d="M0,.2 L1,1.2 L2,.2" fill="none" stroke="#000" stroke-opacity=".22" stroke-width=".35"/><path d="M0,.7 L1,1.7 L2,.7" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width=".3"/></pattern>`;tex=`<path d="${d}" fill="url(#${P}tx)"/>`}
   const gl=toe.g??1;   // the glint's size (the traced oxford pair takes a smaller one)
   if(L==='patent')extra=`<ellipse cx="${toe.x}" cy="${toe.y-toe.r*.18}" rx="${toe.r*.55*gl}" ry="${toe.r*.09*gl}" transform="rotate(${toe.rot||0} ${toe.x} ${toe.y})" fill="#fff" opacity=".75"/>`;
@@ -328,7 +345,7 @@ function drawShoePair(item,P,st){
   const five=d=>d.split(' M').slice(0,5).join(' M');   // a derby has five pairs of eyelets
   const ribs=d=>{const n=d.match(/-?\d+(?:\.\d+)?/g).map(Number),xs=n.filter((_,i)=>i%2===0),ys=n.filter((_,i)=>i%2);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);let r='';
     for(let k=1;k<6;k++){const x=x0+(x1-x0)*k/6;r+=`M${x.toFixed(1)},${y0.toFixed(1)} L${x.toFixed(1)},${(y0+(y1-y0)*.75).toFixed(1)} `}return r};
-  const shine=L==='suede'||L==='canvas'||L==='knit'?0:L==='patent'?.3:.13;
+  const shine=L==='suede'||L==='nubuck'||L==='canvas'||L==='knit'?0:L==='patent'?.3:.13;
   // one shoe's parts after its leather, back (k 'b') or front ('f')
   const parts=k=>{const g=n=>S[k+n];let h='';
     h+=`<g clip-path="url(#${P}${k}c)"><path d="${g('sole')}" fill="${(k==='f'?f:b).sole}"/><path d="${g('stitch')}" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width=".3" stroke-dasharray=".6 .5"/></g>`;
@@ -551,7 +568,7 @@ function swatchSVG(i,drawn){
     body=`<defs>${fabricDef(P+'f',i,role,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/><rect width="16" height="16" fill="url(#${P}g)"/>`}
   else{// a bracelet watch and plain metal cufflinks show their metal; a tie clip is its colour (it has no metal field: it was always silver),
     // shiny when it is a metal colour; enamel cufflinks their face (2026-11-15)
-    const clip=i.type==='tieclip',metal=(i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))||(clip&&!!clipMetal(i));
+    const clip=i.type==='tieclip',metal=(i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i)&&i.metal!=='silk')||(clip&&!!clipMetal(i));
     const [mL,mM,mD]=METAL_TONES[i.metal]||METAL_TONES.silver,c=metal&&!clip?mM:colOf(i);
     body=`<defs><linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${metal?.45:.15}"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs><rect width="16" height="16" fill="${c}"/><rect width="16" height="16" fill="url(#${P}g)"/>`}
   return `<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${body}</svg>`;
@@ -832,7 +849,7 @@ const WATCH_D={out:'M36.03,89.59 C36.04,89.3 36.23,89.35 36.01,88.77 C35.79,88.1
   txt:'SEC.|40.32|42.63|0.93;MIN.|57.83|49.42|1.24;15|53.81|39.64|1.03;30|54.64|42.73|1.03;45|53.61|45.51|1.03',
   num:'12|47.12|50.14|1.96;6|47.12|61.68|1.96'};
 function drawWatchTraced(w,P){const S=WATCH_D,o=watchOpts(w),[mL,mM,mD]=METAL_TONES[w&&w.metal]||METAL_TONES.silver,dial=COLORS[o.dial]||'#f6f6f3',
-    ink=lum(dial)<.45?'#e9eaec':'#1d2125',navy='#1d2b4f',strap=o.band==='leather',chrono=o.style==='chronograph',
+    ink=lum(dial)<.45?'#e9eaec':'#1d2125',navy='#1d2b4f',strap=STRAP_BANDS.includes(o.band),chrono=o.style==='chronograph',
     el=(s,a)=>{const [cx,cy,rx,ry,an]=s.split(' ');return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${an} ${cx} ${cy})" ${a}/>`},
     // a point at screen angle t on an ellipse turned by an, at k of its size
     ep=(s,k,t)=>{const [cx,cy,rx,ry,an]=s.split(' ').map(Number),a=an*Math.PI/180,u=Math.atan2(rx*Math.sin(t-a),ry*Math.cos(t-a)),x=rx*k*Math.cos(u),y=ry*k*Math.sin(u);return [cx+x*Math.cos(a)-y*Math.sin(a),cy+x*Math.sin(a)+y*Math.cos(a)]},
@@ -848,8 +865,9 @@ function drawWatchTraced(w,P){const S=WATCH_D,o=watchOpts(w),[mL,mM,mD]=METAL_TO
   </defs>`;
   s+=`<path d="${S.out}" fill="url(#${P}br)" stroke="${mD}" stroke-width=".3"/><g clip-path="url(#${P}c)">`;
   if(strap){const sc=w?colOf(w):'#3a2414';
-    s+=`<g clip-path="url(#${P}bt)"><rect width="100" height="100" fill="${sc}"/><rect width="100" height="100" fill="url(#${P}br)" opacity=".18"/></g>`+ln(S.lugT,'#000',.35,.4)+ln(S.lugB,'#000',.35,.4)+
-      `<path d="${S.out}" fill="none" stroke="${mix(sc,'#fff',.4)}" stroke-width=".25" stroke-dasharray=".8 .55" clip-path="url(#${P}bt)" transform="translate(50 50) scale(.93) translate(-50 -50)"/>`}
+    // leather stitched; rubber plain; a NATO strap's fine woven ribs across it (2026-11-15)
+    s+=`<g clip-path="url(#${P}bt)"><rect width="100" height="100" fill="${sc}"/><rect width="100" height="100" fill="url(#${P}br)" opacity="${o.band==='rubber'?.1:.18}"/>${o.band==='nato'?`<path d="${Array.from({length:50},(_,k)=>`M0,${k*2} H100`).join(' ')}" stroke="#000" stroke-opacity=".14" stroke-width=".6"/>`:''}</g>`+ln(S.lugT,'#000',.35,.4)+ln(S.lugB,'#000',.35,.4)+
+      (o.band==='leather'?`<path d="${S.out}" fill="none" stroke="${mix(sc,'#fff',.4)}" stroke-width=".25" stroke-dasharray=".8 .55" clip-path="url(#${P}bt)" transform="translate(50 50) scale(.93) translate(-50 -50)"/>`:'')}
   else s+=`<path d="${S.colT}" fill="url(#${P}po)"/><path d="${S.colB}" fill="url(#${P}po)"/><path d="${S.darkT}" fill="#15171a"/><path d="${S.darkB}" fill="#15171a"/>`+ln(S.gaps,'#202327',.4,.7);
   s+=`<path d="${S.far}" fill="#000" opacity=".16"/></g>`;
   // crown and pushers on the right
@@ -1010,6 +1028,8 @@ function itemThumb(i,full){
   else if(i.type==='belt')g=`<g transform="translate(2 28)">${drawBelt(i,P)}</g>`;
   else if(i.type==='overcoat')g=coatMarks(i,P);   /* the traced topcoat with its model (COAT_D) */
   else if(i.type==='raincoat')g=rainMarks(i,P);   /* the traced raincoat with its model (RAIN_D) */
+  else if(i.type==='cufflinks'&&i.metal==='silk'){const c=colOf(i),d=mix(c,'#000',.35),l=mix(c,'#fff',.3);   // silk knots (2026-11-15): two knotted balls of cord in its colour, no metal
+    g=[32,68].map(x=>`<circle cx="${x}" cy="50" r="11" fill="${c}" stroke="${d}" stroke-width="1"/><path d="M${x-9},${46} Q${x},${54} ${x+9},${46} M${x-9},${54} Q${x},${46} ${x+9},${54} M${x-4},${41} Q${x+3},${50} ${x-4},${59} M${x+4},${41} Q${x-3},${50} ${x+4},${59}" fill="none" stroke="${d}" stroke-width="1.1" stroke-opacity=".7"/><ellipse cx="${x-3.5}" cy="45.5" rx="3.4" ry="2" fill="${l}" opacity=".6"/>`).join('')}
   else if(i.type==='cufflinks'){const [mL,mM,mD]=METAL_TONES[i.metal]||METAL_TONES.silver,f=linkFace(i)&&colOf(i);   // an enamel or stone face in the item's colour, in a metal rim (2026-11-15: the colour asked for was never drawn)
     g=[32,68].map(x=>`<circle cx="${x}" cy="50" r="12" fill="${mM}" stroke="${mD}" stroke-width="1.2"/>`+(f?`<circle class="link-face" cx="${x}" cy="50" r="8.6" fill="${f}" stroke="${mD}" stroke-width=".6"/><ellipse cx="${x-3}" cy="46.5" rx="3.6" ry="2.2" fill="#fff" opacity=".35"/>`:`<circle cx="${x-3}" cy="47" r="4" fill="${mL}"/><circle cx="${x}" cy="50" r="7.5" fill="none" stroke="${mD}" stroke-width=".6"/>`)).join('')}
   else if(i.type==='tieclip'){const m=colOf(i);   /* its colour: a tie clip has no metal field */g=`<rect x="12" y="45" width="76" height="9" rx="3" fill="${m}" stroke="#000" stroke-opacity=".3"/><rect x="14" y="47" width="72" height="2" rx="1" fill="#fff" opacity=".45"/>`}
