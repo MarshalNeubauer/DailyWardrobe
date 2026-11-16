@@ -31,13 +31,21 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const s=usableSett(it),s2=usableSett(own);
       return {pat:[camoPat('camouflage'),camoPat('own-multicam-ocp'),camoPat('own-micro-check'),camoPat('solid')].join(),look:!!(s&&s.camo&&s.camo.cols.length===5&&s.camo.cols[0]===colOf(it)),own:!!(s2&&s2.camo),chk:!!(usableSett(chk)&&usableSett(chk).camo),
         fab:fabricDef('t1',it,'bot','fig'),sw:swatchSVG(it,true),route:asmCmRoute(it,'trousers').how,tex:(t=>t&&[t.TW,t.TH,t.t.length].join())(asmCamoTex(it)),
-        read:(()=>{const r={...it,sett:{v:5,camo:{cols:['#111111','#eeeeee'],shares:[.6,.4],seed:3},tr:4,cr:1}};const x=usableSett(r);return x.camo.cols.join()})(),
+        read:(()=>{const r={...it,sett:{v:5,camo:{cols:['#111111','#eeeeee','#777777'],shares:[.5,.4,.1],seed:3},tr:4,cr:1,src:'pixels'}};const x=usableSett(r),tag=usableSett(it);
+          return {ground:x.camo.cols[0]===colOf(it),fromTags:x.camo.cols.every(h=>tag.camo.cols.includes(h)),noPhoto:!x.camo.cols.includes('#111111'),seed:x.camo.seed,shares:x.camo.shares.join()!==tag.camo.shares.join(),light:Math.min(...x.camo.shares)<=.12+1e-9}})(),
         stripe:(()=>{const r={...it,pattern:'pinstripe',sett:{v:5,camo:{cols:['#111111','#eeeeee'],shares:[.6,.4],seed:3},tr:4,cr:1}};const x=usableSett(r);return !!(x&&x.camo)})()}});
     ok(e.pat==='true,true,false,false','camoPat: the pattern and an own pattern named for camouflage; not another own pattern or solid');
     ok(e.look&&e.own&&!e.chk,'a camouflage with no reading is drawn in its own colors (the tagged colour as the ground); an own pattern named MultiCam too');
-    ok(e.read==='#111111,#eeeeee'&&!e.stripe,'its own reading wins; a camouflage reading on another pattern is not used');
+    ok(e.read.ground&&e.read.fromTags&&e.read.noPhoto&&e.read.seed===3&&e.read.shares&&!e.stripe,'a reading sets only the shares and the seed: the colours stay the tagged ones, the main colour the ground ('+JSON.stringify(e.read)+'); a camouflage reading on another pattern is not used');
     ok(/<pattern id="t1"[^>]*>.*<image href="data:image\/png/.test(e.fab)&&/<svg/.test(e.sw),'fabricDef draws a camouflage tile (an image of its blotches); the swatch draws');
-    ok(e.route==='camo'&&e.tex==='256,256,196608','the painter paints camouflage pants with its own tile ('+e.route+', '+e.tex+')');
+    ok(e.route==='camo'&&e.tex==='384,384,442368','the painter paints camouflage pants with its own tile ('+e.route+', '+e.tex+')');
+    // v2: the tagged colours (a muted accent), soft edges and grain in the image the drawings and the painter share
+    e=await p.evaluate(()=>{const it={id:'g1',type:'shirt',primaryColor:'brown',secondaryColor:'green',tertiaryColor:'none',pattern:'camouflage'},s=usableSett(it);
+      const L=h=>rgbLab(...hexRgb(h)),C=l=>Math.hypot(l[1],l[2]),g=s.camo.cols.find(h=>L(h)[0]>30&&L(h)[2]<L(COLORS.brown)[2]&&L(h)[1]<0);
+      const im=camoImage(64,['#000000','#ffffff'],[.5,.5],5);let mid=0;for(let j=0;j<im.length;j+=3)if(im[j]>40&&im[j]<215)mid++;
+      return {muted:!!g&&C(L(g))<C(L(COLORS.green)),ground:s.camo.cols[0]===colOf(it),soft:mid/(64*64),len:im.length}});
+    ok(e.ground&&e.muted,'a camouflage takes its tagged colours, the main as the ground, a bright accent muted toward it');
+    ok(e.len===64*64*3&&e.soft>.03&&e.soft<.4,'camoImage softens the blotches\' edges (a blended band, not a cut-out: '+(e.soft*100).toFixed(1)+'% in between)');
     // the close-up reader: three coloured regions in known shares
     e=await p.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=300;const x=c.getContext('2d');x.fillStyle='#c3b091';x.fillRect(0,0,300,300);
       x.fillStyle='#4f6b3a';x.fillRect(60,60,180,90);x.fillStyle='#3a2a24';x.fillRect(60,150,180,45);

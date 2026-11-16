@@ -1325,6 +1325,7 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
 .kit-paste textarea{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:10px 12px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--field,var(--card));color:var(--ink);font:.875rem/1.4 ui-monospace,Consolas,monospace}
 .kit-err{color:var(--danger)}
 .kit-sum{margin:4px 0 8px}
+.kit-cols{margin:0 0 8px;color:var(--mut);font-size:.8125rem}.kit-rows .kit-asnew{flex:none;align-self:center}
 .kit-rows{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:14px;background:var(--card)}
 .kit-rows li{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--line)}.kit-rows li:first-child{border-top:0}
 .kit-rows li>span:last-child{display:flex;flex-direction:column;min-width:0}.kit-rows small{color:var(--mut);font-size:.7813rem}
@@ -1518,3 +1519,11 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
   .ckcols>.ckcol:last-child>.cks:first-child{margin-top:0}
   #add #queue .qcard.ckcard{width:min(calc(100vw - 32px),880px);margin-left:calc(50% - min(50vw - 16px,440px));box-sizing:border-box}
 }
+
+/* ---- right-to-left names, long names (fix round 3, 2026-11-16, W2-16-10, W2-12-02, W2-16-05) ---- */
+/* a typed name keeps its own direction and place in an English line: an Arabic name reads right to left, and the text after it stays after it */
+.named{unicode-bidi:plaintext}
+/* a day off's chip wraps its name and keeps its × on the screen */
+.fchip{max-width:100%;min-width:0}.fchip .fcht{min-width:0;overflow-wrap:anywhere;padding:4px 0}.fchip button{flex:none}
+/* the new color / pattern sheet's error, in its sticky bar over the button */
+.cpbar .cnbarerr{margin:0 0 8px;font-size:.875rem;color:var(--danger,#c0473f)}
