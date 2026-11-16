@@ -188,10 +188,23 @@ function kitPattern(word,type){const w=kitNorm(word).replace(/-/g,' ');if(!w||w=
   const al=PAT_ALIAS[type==='blazer'||type==='pants'?'suit':type]||{},s=syn[w],h=w.replace(/ /g,'-');
   const k=list.find(p=>kitNorm(patLabel(p))===w||p===h)||(s&&(list.includes(s)?s:list.includes(al[s])?al[s]:null))||(list.includes(al[h])?al[h]:null);return k||undefined}
 /* what a row's Material says: one of the type's own materials (any case), the leather of shoes and belts; else left out, said */
-function kitMaterial(card,word){const m=kitNorm(word);if(!m)return null;const list=MATERIALS_BY[card.type];
-  if(list){card.material=list.find(x=>x===m)||String(word).trim();return null}   // (one not on the list shows as Other, as typed)
-  if(card.type==='shoes'||card.type==='belt'){const ls=leathersFor(card),k=ls.find(l=>m.includes(l))||(/leather|calf/.test(m)&&ls.includes('calf')?'calf':null);if(k){card.leather=k;return null}}
-  return `material “${String(word).trim()}” left out`}
+/* (2026-11-15, the materials audit) other words for a material are read as the listed one (core.js MAT_ALIAS: Merino, Fresco, Broadcloth,
+   Lisle, Wool-linen…, said as "read as"); a shirt's weave in the Material column (oxford, twill, end-on-end…) is its pattern when the row's
+   pattern is plain; anything else is kept as typed (Other) */
+function kitMaterial(card,word){const m=kitNorm(word),w=String(word).trim();if(!m)return null;const list=MATERIALS_BY[card.type];
+  const p=card.type==='shirt'&&(SHIRT_WEAVE_MAT[m]||SHIRT_WEAVE_MAT[m.replace(/-/g,' ')]);
+  if(list){if(p){
+      if((card.pattern||'solid')==='solid'&&(PATS_BY.shirt||[]).includes(p)){card.pattern=p;return `material “${w}” read as the ${patName(p)} pattern`}
+      return `material “${w}” left out (a weave: the pattern says it)`}
+    const a=matAlias(card.type,m);card.material=a||w;return a&&a!==m?`material “${w}” read as ${a}`:null}   // (one not on the list shows as Other, as typed)
+  if(card.type==='shoes'||card.type==='belt'){const k=kitLeather(card,m);if(k){card.leather=k.k;return k.read?`material “${w}” read as ${leatherWord(card,k.k)}`:null}}
+  return `material “${w}” left out`}
+/* a leather word for shoes or a belt -> {k, read}: the style's own leathers ("pebble grain" with a space is pebble-grain, not calf: the
+   audit's bug), nubuck (suede on a style that isn't made in it), braided, else "leather"/"calf" as calf; null when none */
+function kitLeather(card,m){const ls=leathersFor(card),d=m.replace(/\s+/g,'-');let k=ls.find(l=>d.includes(l));if(k)return {k};
+  if(/nubuck/.test(m))return ls.includes('nubuck')?{k:'nubuck'}:ls.includes('suede')?{k:'suede',read:true}:null;
+  if(/braid/.test(m)&&ls.includes('braided'))return {k:'braided'};
+  return /leather|calf/.test(m)&&ls.includes('calf')?{k:'calf'}:null}
 function kitRead(text){const rows=kitSplit(text);if(!rows.length)return {err:'Nothing to read.'};
   const head=rows[0].map(kitNorm),col={};for(const [k,names] of Object.entries(KIT_COLS)){const j=head.findIndex(h=>names.includes(h));if(j>=0)col[k]=j}
   if(col.type==null||col.primaryColor==null)return {err:'The first row must name the columns, with at least “Type” and “Color”. Download the template to see how.'};
@@ -223,7 +236,7 @@ function kitRead(text){const rows=kitSplit(text);if(!rows.length)return {err:'No
     if(type==='shirt')card.cuff=/french|double/i.test(v('cuff'))?'french':'button';
     if(type==='pants'){const k=kitNorm(v('kind')||tw);card.trouserKind=/jean|denim/.test(k)?'jeans':/chino/.test(k)?'chinos':'dress'}
     if(type==='shoes'){const s=kitNorm(v('style')||v('kind')||tw);card.shoeStyle=/derb/.test(s)?'derby':/loaf/.test(s)?'loafer':/boot/.test(s)?'boot':/sneak|train/.test(s)?'sneaker':'oxford'}
-    if(type==='shoes'||type==='belt'){const l=kitNorm(v('leather'));if(l){const k=leathersFor(card).find(x=>l.includes(x));if(k)card.leather=k}}
+    if(type==='shoes'||type==='belt'){const l=kitNorm(v('leather'));if(l){const k=kitLeather(card,l);if(k){card.leather=k.k;if(k.read)probs.push(`leather “${v('leather')}” read as ${leatherWord(card,k.k)}`)}}}
     if(SEASON_TYPES.includes(type)){const s=kitNorm(v('season'));if(/^(summer|warm)/.test(s))card.season='warm';else if(/^(winter|cold)/.test(s))card.season='cold'}
     for(const k of ['name','brand','notes'])if(v(k))card[k]=v(k);
     if(v('material')&&!(v('leather')&&(type==='shoes'||type==='belt'))){const p=kitMaterial(card,v('material'));if(p)probs.push(p)}
@@ -459,6 +472,17 @@ async function homeInstall(){const e=homeEvt;if(!e)return homeSync();homeEvt=nul
   try{await e.prompt();const r=await e.userChoice;if(r&&r.outcome==='accepted'){if(typeof toast==='function')toast('Installing… open Daily Wardrobe from its new icon.')}}catch(_){}
   homeSync()}
 const homeIPad=()=>/iPad/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+/* which browser the app is open in on an iPhone or iPad (2026-11-16, a tester used Chrome and was shown Safari's steps): every iOS browser
+   draws with Safari's engine but has its own buttons, and a Home Screen app added from any of them keeps its own storage. window.DW_BROWSER: tests */
+const homeBrowser=()=>window.DW_BROWSER||(/CriOS/.test(navigator.userAgent)?'Chrome':/FxiOS/.test(navigator.userAgent)?'Firefox':/EdgiOS/.test(navigator.userAgent)?'Edge':'Safari');
+/* the first step, per browser: Chrome's Share is at the right end of its address bar (in its ⋯ menu when not); Firefox's and Edge's are in their menu */
+function homeShareStep(pad){const b=homeBrowser();
+  if(b==='Chrome')return '<li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' at the right end of Chrome\'s address bar.<small>Not there? Tap <b>⋯</b>, then <b>Share</b>.</small></span></li>';
+  if(b!=='Safari')return '<li><span class="home-n">1</span><span>Open '+b+'\'s menu and tap <b>Share</b> '+HOME_SHARE+'.</span></li>';
+  return pad?'<li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' at the top right of Safari.</span></li>'
+    :'<li><span class="home-n">1</span><span>Tap <b>⋯</b> at the bottom right of Safari, then <b>Share</b> '+HOME_SHARE+'.<small>If you see Share '+HOME_SHARE+' there instead, tap it.</small></span></li>'}
+/* the same in a few words, for a line elsewhere (Settings → reminders) */
+const homeShareShort=()=>{const b=homeBrowser();return b==='Chrome'?'tap Share in Chrome’s address bar, then “Add to Home Screen”':b==='Safari'?'tap ⋯, then Share, then “Add to Home Screen”':`open ${b}’s menu, tap Share, then “Add to Home Screen”`};
 const HOME_SHARE='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 10H5v11h14V10h-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
 const HOME_DL='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const HOME_ADD='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -481,16 +505,15 @@ const homeCopyBtn=()=>'<p class="home-cta"><button type="button" class="pri home
 async function homeCopy(){const l=typeof myInviteLink==='function'?myInviteLink():'';if(!l)return false;
   try{await navigator.clipboard.writeText(l);toast('Your invitation link is copied. Paste it in the Home Screen app.',4500);return true}
   catch{document.querySelectorAll('.home-mylink').forEach(f=>{f.hidden=false;f.value=l;f.select()});toast('Copy the link shown under the button.',5000);return false}}
-function homeNote(){const conn=typeof isConnected==='function'?isConnected():false;
-  if(homeTester())return '<p class="su-note home-note"><b>Safari is connected already.</b> The Home Screen app keeps its own storage, apart from Safari\'s, so it starts empty: paste your invitation link when it asks, and your wardrobe comes across.</p>';
-  if(conn)return '<p class="su-note home-note"><b>Safari is connected already.</b> The Home Screen app keeps its own storage, apart from Safari\'s: connect it too, in its Settings → Connection.</p>';
-  if(items.length)return '<p class="su-note home-note"><b>Your wardrobe stays here in Safari.</b> The Home Screen app keeps its own storage and starts empty. To take your wardrobe along, tap <b>Download backup</b> in Settings → Backup &amp; sync here, then <b>Restore file</b> in the Home Screen app.</p>';
-  return '<p class="su-note home-note"><b>The Home Screen app keeps its own storage</b>, apart from Safari\'s: if you add it now, set it up there rather than here.</p>'}
+function homeNote(){const conn=typeof isConnected==='function'?isConnected():false,b=homeBrowser();
+  if(homeTester())return '<p class="su-note home-note"><b>'+b+' is connected already.</b> The Home Screen app keeps its own storage, apart from '+b+'\'s, so it starts empty: paste your invitation link when it asks, and your wardrobe comes across.</p>';
+  if(conn)return '<p class="su-note home-note"><b>'+b+' is connected already.</b> The Home Screen app keeps its own storage, apart from '+b+'\'s: connect it too, in its Settings → Connection.</p>';
+  if(items.length)return '<p class="su-note home-note"><b>Your wardrobe stays here in '+b+'.</b> The Home Screen app keeps its own storage and starts empty. To take your wardrobe along, tap <b>Download backup</b> in Settings → Backup &amp; sync here, then <b>Restore file</b> in the Home Screen app.</p>';
+  return '<p class="su-note home-note"><b>The Home Screen app keeps its own storage</b>, apart from '+b+'\'s: if you add it now, set it up there rather than here.</p>'}
 function homeSteps(inSetup){if(homeAndroid())return homeStepsAndroid(inSetup);const pad=homeIPad(),t=homeTester();
   return '<div class="home-wrap">'+homePic()+'<p class="su-lead home-lead">Put Daily Wardrobe on your Home Screen: it opens full screen like an app, and it is the only way your '+(pad?'iPad':'iPhone')+' lets it send the morning reminder.</p>'+
-    '<ol class="home-steps">'+(pad?'<li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' at the top right of Safari.</span></li>'
-      :'<li><span class="home-n">1</span><span>Tap <b>⋯</b> at the bottom right of Safari, then <b>Share</b> '+HOME_SHARE+'.<small>If you see Share '+HOME_SHARE+' there instead, tap it.</small></span></li>')+
-    '<li><span class="home-n">2</span><span>Tap <b>Add to Home Screen</b> '+HOME_ADD+'.<small>Not in the list? Scroll down, or tap View More.</small></span></li>'+
+    '<ol class="home-steps">'+homeShareStep(pad)+
+    '<li><span class="home-n">2</span><span>Tap <b>Add to Home Screen</b> '+HOME_ADD+'.<small>Not in the list? Scroll down, or tap '+(homeBrowser()==='Safari'?'View More':'Edit Actions')+'.</small></span></li>'+
     '<li><span class="home-n">3</span><span>Leave <b>Open as Web App</b> on and tap <b>Add</b>.</span></li>'+
     '<li><span class="home-n">4</span><span>Open Daily Wardrobe from its new icon'+(t?' and paste your invitation link at the setup\'s Connection step.':'.')+'</span></li></ol>'+
     (t?homeCopyBtn():'')+homeNote()+(inSetup?'<p class="su-help">Or tap Next to carry on here.</p>':'')+'</div>'}
