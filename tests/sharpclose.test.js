@@ -29,7 +29,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>sharpCloseOf(items[0]))===null,'a removed close-up sends nothing');
     await p.evaluate(()=>undoPhoto('b1'));
     ok(await p.evaluate(async()=>items[0].texture&&(await sharpCloseOf(items[0]))!==null),'undone, the close-up is back');
-    await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=300;c.height=300;c.getContext('2d').fillRect(0,0,300,300);await setTexture('b1',c.toDataURL('image/jpeg',.85),'')});
+    await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=300;c.height=300;const x=c.getContext('2d');x.fillStyle='#4a5a6a';x.fillRect(0,0,300,300);await setTexture('b1',c.toDataURL('image/jpeg',.85),'')});
     ok(await p.evaluate(async()=>(await sharpCloseOf(items[0]))===items[0].texture),'a different close-up (set without a sharp copy) sends itself, not the old sharp copy');
     // a close-up saved at 640 before, with its sharp copy on this device: made again from the sharp copy once, in the old one's colour
     const up=await p.evaluate(async()=>{const mk=(w,h,fill)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle=fill;x.fillRect(0,0,w,h);

@@ -70,7 +70,8 @@ const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({
 function cropSwatch(canvas,zoom=1,cx=.5,cy=.5,light){
   const sampleSize=Math.min(canvas.width,canvas.height)*(0.5/(Number(zoom)||1)),o=document.createElement('canvas');o.width=o.height=128;
   const sx=Math.max(0,Math.min(canvas.width-sampleSize,(Number(cx)||.5)*canvas.width-sampleSize/2)),sy=Math.max(0,Math.min(canvas.height-sampleSize,(Number(cy)||.5)*canvas.height-sampleSize/2));
-  o.getContext('2d').drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);if(light)matchLight(o,light);return o.toDataURL('image/jpeg',SW_Q)}
+  o.getContext('2d').drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);if(deadCanvas(o))return null;   // drawn black: no swatch (callers keep the one they had)
+  if(light)matchLight(o,light);return o.toDataURL('image/jpeg',SW_Q)}
 /* a small JPEG (2026-11-15, the owner's option A for the server's writes): a 128 px PNG of cloth was about 38 KB, too big to keep in
    the backup's own text, so every new item cost one more server write for its swatch; as a JPEG it is a few KB, under sync.js PH_MIN,
    and rides inside the backup. Swatches saved before as PNG stay as they are (still shown, still synced by reference) */
@@ -86,13 +87,15 @@ function matchLight(o,hex){const x=o.getContext('2d',{willReadFrequently:true}),
   x.putImageData(D,0,0)}
 function generateSwatch(q){
   const canvas=q.texCanvas||q.big;if(!canvas)return '';
-  q.swatch=cropSwatch(canvas,q.zoom,q.cx,q.cy,q.texCanvas&&q.primaryColor?colOf(q):null);q.swSrc=q.texCanvas?'tex':'photo';
+  const sw=cropSwatch(canvas,q.zoom,q.cx,q.cy,q.texCanvas&&q.primaryColor?colOf(q):null);if(!sw)return q.swatch||'';
+  q.swatch=sw;q.swSrc=q.texCanvas?'tex':'photo';
   return q.swatch;
 }
 /* a saved item's swatch, cut from the middle of its close-up (or, without one, its photo) */
 async function refreshSwatch(it){if(!FABRIC.includes(it.type))return;const src=it.texture&&TEXTURE_TYPES.includes(it.type)?it.texture:it.photo;if(!src){delete it.swatch;delete it.swSrc;return}
   try{const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);
-    const tex=src!==it.photo;it.swatch=cropSwatch(c,1,.5,.5,tex&&it.primaryColor?colOf(it):null);it.swSrc=tex?'tex':'photo'}catch(e){console.warn('swatch not cut',e)}}
+    const tex=src!==it.photo,sw=cropSwatch(c,1,.5,.5,tex&&it.primaryColor?colOf(it):null);if(!sw){console.warn('swatch not cut: drawn black');return}
+    it.swatch=sw;it.swSrc=tex?'tex':'photo'}catch(e){console.warn('swatch not cut',e)}}
 /* once: items that already have a close-up get their swatch cut from it, lightness set from the tagged colour (tex_swatch2) */
 async function texSwatches(){if(localStorage.getItem('tex_swatch2')==='1')return 0;let n=0;
   for(const it of items)if(it.texture&&TEXTURE_TYPES.includes(it.type)){await refreshSwatch(it);if(it.swSrc==='tex'&&stillCur(it)){await put(it);n++}}
@@ -219,6 +222,13 @@ function normTag(parsed,model){
 const loadImg=f=>new Promise((ok,no)=>{const i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=e=>{URL.revokeObjectURL(u);no(e)};i.src=u});
 // on white: a transparent picture (a product cut-out) is saved as a JPEG, which has no transparency, and its clear parts turned black
 // (2026-11-14, the owner's socks); white is what such a cut-out is meant to sit on, and reads as the white reference it is
+/* a canvas the browser drew as pure black (2026-11-15, the owner's desktop browser: once its graphics failed every picture drawn came out
+   black, and a crop and a swatch were saved that way): every pixel's channels at most DEAD_MAX, read at 16x16. A real photo of black cloth
+   still has texture and noise well above it (his Black suit's darkest swatch reads up to 26) */
+const DEAD_MAX=3,DEAD_MSG='Your browser stopped drawing pictures (its graphics failed), so nothing was saved. Reload the page and try again.';
+function deadCanvas(c){try{const N=16,t=document.createElement('canvas');t.width=t.height=N;const x=t.getContext('2d',{willReadFrequently:true});x.drawImage(c,0,0,N,N);
+  const d=x.getImageData(0,0,N,N).data;for(let k=0;k<d.length;k+=4)if(d[k]>DEAD_MAX||d[k+1]>DEAD_MAX||d[k+2]>DEAD_MAX)return false;return true}catch{return false}}
+async function deadPic(url){try{const im=await imgOf(url);return deadCanvas(im)}catch{return false}}
 function shrink(img,max){const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);return c}
 
 async function fill(q,ai){
