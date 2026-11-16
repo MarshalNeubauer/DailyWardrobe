@@ -134,7 +134,7 @@ function shopName(it){const c=colName(primaryCol(it)),p=patOf(it)||'solid';
   switch(it.type){
     case 'tie':return p==='solid'?`${c} tie`:p==='woven'?`${c} woven tie`:p==='knit'?`${c} knit tie`:p==='stripe'?`${c} striped tie`:p==='polka-dot'?`${c} dotted tie`:`${c} checked tie`;
     case 'shirt':return (p==='solid'?`${c} shirt`:p==='stripe'?`${c} striped shirt`:`${c} checked shirt`)+(it.cuff==='french'?', French cuffs':'');
-    case 'suit':case 'blazer':case 'pants':return p==='solid'?`plain ${c} ${TYPE_WORD[it.type][0]}`:`${c} ${patLabel(p)} ${TYPE_WORD[it.type][0]}`;
+    case 'suit':case 'blazer':case 'pants':return p==='solid'?`plain ${c} ${TYPE_WORD[it.type][0]}`:`${c} ${patName(p)} ${TYPE_WORD[it.type][0]}`;
     case 'shoes':return `${c} ${finish(it.leather)==='suede'?'suede':finish(it.leather)==='grain'?'grain-leather':'leather'} shoes`;
     case 'belt':return `${c} ${finish(it.leather)==='suede'?'suede ':''}belt`;
     case 'tieclip':return `${colName(it.primaryColor)} tie clip`;case 'cufflinks':return `${it.metal} cufflinks`;

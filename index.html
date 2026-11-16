@@ -74,7 +74,7 @@
 <p class="shelp" aria-live="polite" id="holiday-msg"></p>
 <div class="hlist" id="holiday-list"></div></div>
 <div class="sgroup"><div class="slabel">Your own days off</div><p class="shelp">Leave the second date empty for a single day.</p>
-<div class="sform offadd"><input type="date" id="cfg-off-from" aria-label="First day off"><span class="mut">to</span><input type="date" id="cfg-off-to" aria-label="Last day off"><input type="text" id="cfg-off-name" placeholder="Name (optional)" aria-label="Name of the days off"><button type="button" onclick="addDayOff()">Add</button></div>
+<div class="sform offadd"><input type="date" id="cfg-off-from" aria-label="First day off"><span class="mut">to</span><input type="date" id="cfg-off-to" aria-label="Last day off"><input type="text" id="cfg-off-name" maxlength="40" dir="auto" placeholder="Name (optional)" aria-label="Name of the days off"><button type="button" onclick="addDayOff()">Add</button></div>
 <div class="fchips" id="off-list"></div></div>
 <div class="sgroup"><div class="slabel">Occasions</div><p class="shelp">Give a date an occasion and its outfit is chosen for it: formal, a wedding, a funeral, or a day with no jacket or tie.</p>
 <div class="sform occadd"><input type="date" id="cfg-formal-date" aria-label="Date of the occasion"><select id="cfg-occasion" aria-label="Occasion"></select><button type="button" id="occ-add" onclick="addFormalDay()">Add</button></div>

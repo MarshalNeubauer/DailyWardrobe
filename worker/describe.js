@@ -8,7 +8,7 @@
    point); the owner's own colours and patterns are the second; the description goes last, wrapped in <description> with < and >
    removed, never more than DESC_MAX characters. A tester's lookups count against the daily describe cap (worker/people.js).
    (An ES module of worker.js, the entry.) */
-import { COLOR_HEX, COLOR_LIST, HEX_RE, PATTERN_BY_TYPE, PATTERN_LIST, TYPE_COLORS, TYPE_LIST, claudeCall, lightText, txt, wbOf } from './tag.js';
+import { COLOR_HEX, COLOR_LIST, HEX_RE, PATTERN_BY_TYPE, PATTERN_LIST, TYPE_COLORS, TYPE_LIST, claudeCall, lightText, ownTxt, txt, wbOf } from './tag.js';
 import { readCapped } from './links.js';
 import { plainFor, spend, unspend, utcDay } from './people.js';
 
@@ -248,23 +248,24 @@ function baseFor(hex, list) {
   const hd = (a, b) => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; };
   const cand = list.filter(k => COLOR_HEX[k]).map(k => { const l = labHex(COLOR_HEX[k]), [c2, h2] = lch(l); return { k, l, c2, h2, d: dE00(lab, l) }; });
   if (!cand.length) return 'none';
-  let pool = C < 9 ? cand.filter(x => x.c2 < Math.max(5, C + 3)) : cand.filter(x => x.c2 >= 6 && hd(x.h2, h) <= 45);
-  if (!pool.length && C >= 9) pool = cand.filter(x => x.c2 >= 6 && hd(x.h2, h) <= 80);
-  if (!pool.length) pool = cand;
-  const near = pool.filter(x => Math.abs(x.l[0] - lab[0]) <= 25); if (near.length) pool = near;
-  return pool.sort((a, b) => a.d - b.d)[0].k;
+  // the nearest hue pool with a colour of about the same lightness, before one of the hue alone (fix round 3, W2-16-12: a dark petrol for a
+  // tie had only light blue within 45° and was planned as light blue; within 80° it finds steel blue)
+  const near = p => p.filter(x => Math.abs(x.l[0] - lab[0]) <= 25), best = p => p.sort((a, b) => a.d - b.d)[0].k;
+  const pools = C < 9 ? [cand.filter(x => x.c2 < Math.max(5, C + 3))] : [45, 80].map(w => cand.filter(x => x.c2 >= 6 && hd(x.h2, h) <= w));
+  for (const p of pools) if (near(p).length) return best(near(p));
+  const p = pools.find(x => x.length); return best(p || (near(cand).length ? near(cand) : cand));
 }
 
 /* ---- the request ---- */
-const KEY_RE = /^own[a-z]{1,28}$/, PKEY_RE = /^own-[a-z0-9-]{1,28}$/;
+const KEY_RE = /^own[a-z0-9]{1,28}$/, PKEY_RE = /^own-[a-z0-9-]{1,28}$/;
 /* the owner's colours and patterns with their bases (what the tagger's cleanCustom leaves out) */
 function ownLists(c) {
   c = c && typeof c === 'object' ? c : {};
   const types = t => (Array.isArray(t) ? t : []).filter(x => TYPE_LIST.includes(x));
   const colors = (Array.isArray(c.colors) ? c.colors : []).filter(x => x && KEY_RE.test(x.key) && HEX_RE.test(x.hex || '')).slice(0, 40)
-    .map(x => ({ key: x.key, name: txt(x.name, 30) || x.key.slice(3), hex: x.hex.toLowerCase(), base: COLOR_LIST.includes(x.base) ? x.base : '', types: types(x.types), accent: !!x.accent }));
+    .map(x => ({ key: x.key, name: ownTxt(x.name, 30) || x.key.slice(3), hex: x.hex.toLowerCase(), base: COLOR_LIST.includes(x.base) ? x.base : '', types: types(x.types), accent: !!x.accent }));
   const patterns = (Array.isArray(c.patterns) ? c.patterns : []).filter(x => x && PKEY_RE.test(x.key)).slice(0, 40)
-    .map(x => ({ key: x.key, name: txt(x.name, 30) || x.key.slice(4), base: PATTERN_LIST.includes(x.base) ? x.base : '', types: types(x.types), desc: txt(x.desc, 160) }));
+    .map(x => ({ key: x.key, name: ownTxt(x.name, 30) || x.key.slice(4), base: PATTERN_LIST.includes(x.base) ? x.base : '', types: types(x.types), desc: txt(x.desc, 160) }));
   return { colors, patterns };
 }
 function ownerText(what, own) {

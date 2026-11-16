@@ -194,7 +194,9 @@ const showCost=()=>!(typeof isTester==='function'&&isTester());
 async function toggleHoliday(d,on){const h=settings.holidays;if(!h)return;const skip=new Set(h.skip||[]);on?skip.delete(d):skip.add(d);
   settings.holidays={...h,skip:[...skip].sort()};await saveUserSettings();todayStale=true;renderDaysOffUI()}
 const isoToDate=v=>{const [y,m,d]=String(v).split('-').map(Number);return new Date(y,m-1,d)};
-async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off-to')||{}).value||f,n=(($('#cfg-off-name')||{}).value||'').trim();
+/* a day off's name is at most OFF_NAME_MAX letters (W2-12-02: a pasted 57-letter link pushed its chip's × off the screen, and nothing limited it) */
+const OFF_NAME_MAX=40,offNameCut=n=>{n=String(n||'').replace(/\s+/g,' ').trim();return [...n].length>OFF_NAME_MAX?[...n].slice(0,OFF_NAME_MAX-1).join('').trim()+'…':n};
+async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off-to')||{}).value||f,n=offNameCut(($('#cfg-off-name')||{}).value);
   const say=m=>{holidayMsg=m;renderDaysOffUI()};if(!f)return say('Pick a date first.');
   const a=isoToDate(f),b=isoToDate(t),T=todayDate();if(b<a)return say('The last day is before the first.');if((b-a)/864e5>92)return say('That is more than three months: add it in parts.');
   // a typed date isn't held back by the field's min (audit 2026-11-15: "1 day off added." for a past day that never showed)
@@ -216,7 +218,7 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
   // consecutive days with one name are shown as one range
   const runs=[];for(const x of own){const r=runs[runs.length-1];if(r&&r.n===x.n&&(isoToDate(x.d)-isoToDate(r.to))/864e5<=1.5)r.to=x.d,r.ds.push(x.d);else runs.push({from:x.d,to:x.d,n:x.n,ds:[x.d]})}
   if(ol)ol.innerHTML=runs.map(r=>{const l=r.from===r.to?yearDate(isoToDate(r.from)):`${yearDate(isoToDate(r.from))} – ${yearDate(isoToDate(r.to))}`;
-    return `<span class="fchip">${l}${r.n&&r.n!=='Day off'?' · '+esc(r.n):''}<button type="button" aria-label="Remove ${l}" onclick="removeDaysOff('${r.ds.join(',')}')">×</button></span>`}).join('');
+    return `<span class="fchip"><span class="fcht">${l}${r.n&&r.n!=='Day off'?' · '+nameHtml(offNameCut(r.n)):''}</span><button type="button" aria-label="Remove ${l}" onclick="removeDaysOff('${r.ds.join(',')}')">×</button></span>`}).join('');
   const m=$('#holiday-msg');if(m)m.textContent=holidayMsg||(cc&&up.length?`${up.filter(x=>!skip.has(x.d)).length} public holiday${up.length===1?'':'s'} of ${countryName(cc)} count as days off. Uncheck any you work.`:'');
   const f=$('#cfg-off-from');if(f)f.min=tk;
   if(settingsOpen())settingsSummaries()}   // the Days off summary follows an added or removed day (it kept the old count, audit 2026-11-13)
@@ -304,7 +306,7 @@ async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').tri
   if(!q){window._cities=[];if($('#city-results'))$('#city-results').innerHTML='';return}
   try{const lang=cityLang(q),r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=8&language='+lang+'&name='+encodeURIComponent(q));const j=await r.json();
     const res=cityList(await cityEnglish((j.results||[]).slice(0,8),lang)).slice(0,5);
-    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join(''):'<small class="mut">No matches.</small>'}
+    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join(''):'<small class="mut" id="city-none">No matches. Try the name in English or a nearby larger city, or Use my location.</small>'}
   catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>'}}
 /* 16-day forecast from Open-Meteo (free, no key); cached for 3 hours */
 /* header ↻: sync with the worker (if set up), reload everything from storage, refresh the forecast and redraw */

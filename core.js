@@ -18,7 +18,7 @@ COL_ALIAS={gray:'grey',lightgray:'lightgrey',palegrey:'lightgrey',palegray:'ligh
   darkbrown:'brown',chocolate:'brown',cognac:'brown',maroon:'burgundy',winered:'wine',merlot:'wine',claret:'wine',cordovan:'oxblood',color8:'oxblood',darkred:'burgundy',
   yellow:'gold',mustard:'gold',violet:'purple',plum:'purple',rose:'pink',salmon:'pink',teal:'green',emerald:'green',forestgreen:'green',darkgreen:'green',olivegreen:'olive'},
 normColFor=(type,c,accent)=>fitCol(type,normCol(c),accent),
-normCol=c=>{if(!c)return null;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
+normCol=c=>{if(!c)return null;const x=String(c).trim().toLowerCase();if(/^own[a-z0-9]+$/.test(x)&&COLORS[x])return x;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
 /* colours each item type really comes in: p = main colour, a = stripe / check / motif colours.
    The tagger is told the same lists (worker.js TYPE_COLORS); a colour outside the list is moved to the closest one in it. */
 const SUITING=['black','charcoal','darkgrey','grey','midgrey','lightgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','deeptaupe','taupe','tan','khaki','olive','green'],
@@ -75,27 +75,48 @@ function dE00(a,b,kL=1){const [L1,a1,b1]=a,[L2,a2,b2]=b,rad=Math.PI/180,C1=Math.
 let CUSTOM_COL={},CUSTOM_PAT={};
 const colBase=c=>CUSTOM_COL[c]?CUSTOM_COL[c].base:c,patBase=p=>CUSTOM_PAT[p]?CUSTOM_PAT[p].base:p;
 const planCol=i=>colBase(primaryCol(i)),patOf=i=>i?patBase(i.pattern):undefined;
-const ownColKey=name=>'own'+String(name||'').toLowerCase().replace(/[^a-z]/g,'').slice(0,28);
-const ownPatKey=name=>'own-'+String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,28);
+/* an own colour's or pattern's key from its name (fix round 3, 2026-11-16, W2-12-03/W2-16-01: they kept only a-z, so an Arabic name gave the
+   key "own" and was refused as "at least two letters", and "Rot 1" / "Rot 2" both became ownrot): accents are dropped (Café → cafe), the
+   Latin letters and digits kept (Arabic-Indic digits as 0-9), and a name with letters outside a-z gets a short hash of the whole name
+   (FNV-1a, base 36) so any script has a key of its own; keys stay ASCII (own[a-z0-9] / own-[a-z0-9-], OWN_COL_RE / OWN_PAT_RE). A Latin
+   name without digits gets the key it always had; stored keys are never derived again (look a name up with ownColFind / ownPatFind) */
+const OWN_COL_RE=/^own[a-z0-9]{1,28}$/,OWN_PAT_RE=/^own-[a-z0-9-]{1,28}$/;
+const ownKeyNorm=s=>String(s==null?'':s).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[٠-٩]/g,d=>d.charCodeAt(0)-0x660).replace(/[۰-۹]/g,d=>d.charCodeAt(0)-0x6f0).replace(/ـ/g,'').replace(/\s+/g,' ').trim();
+const ownKeyHash=s=>{let h=0x811c9dc5;for(const ch of s){h^=ch.codePointAt(0);h=Math.imul(h,16777619)>>>0}return h.toString(36)};
+const ownKeyOther=n=>/[^\x00-\x7f]/.test(n.replace(/[^\p{L}\p{N}]/gu,''));   // letters (or digits) outside a-z 0-9 after accents are dropped
+const ownColKey=name=>{const n=ownKeyNorm(name),a=n.replace(/[^a-z0-9]/g,'');return 'own'+(ownKeyOther(n)?a.slice(0,20)+'x'+ownKeyHash(n):a).slice(0,28)};
+const ownPatKey=name=>{const n=ownKeyNorm(name),s=n.replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');return 'own-'+(ownKeyOther(n)?(s.slice(0,19).replace(/-$/,'')+'-'+ownKeyHash(n)).replace(/^-/,''):s).slice(0,28).replace(/-$/,'')};
+/* a name needs two letters or digits, in any script */
+const ownNameShort=name=>[...ownKeyNorm(name).replace(/[^\p{L}\p{N}]/gu,'')].length<2;
+/* the key of the owner's colour or pattern with this name (any case, accents and marks aside), else null */
+const ownColFind=name=>{const n=ownKeyNorm(ownNameClean(name));if(!n)return null;const c=Object.values(CUSTOM_COL).find(x=>ownKeyNorm(x.name)===n);return c?c.key:null};
+const ownPatFind=name=>{const n=ownKeyNorm(ownNameClean(name));if(!n)return null;const p=Object.values(CUSTOM_PAT).find(x=>ownKeyNorm(x.name)===n);return p?p.key:null};
+/* a free key: the name's own, or with 2, 3… after it when an older name took it ("Rot 1" saved before digits counted is ownrot) */
+const ownFreeKey=(key,taken,re)=>{if(!taken(key))return key;for(let k=2;k<100;k++){const x=key.slice(0,(key.startsWith('own-')?32:31)-String(k).length)+k;if(re.test(x)&&!taken(x))return x}return key};
+/* is a pattern name already a built-in pattern's ("Birdseye", "Glen check", "chalk stripe") or one of the owner's? (W1-3-05: the built-in
+   check compared the prefixed key own-birdseye with birdseye, so it never matched) */
+const patLetters=t=>ownKeyNorm(t).replace(/[^\p{L}\p{N}]/gu,'');
+const patNameTaken=name=>{const n=patLetters(name);if(!n)return false;
+  return Object.values(PATS_BY).some(l=>l.some(p=>!CUSTOM_PAT[p]&&patLetters(patLabel(p))===n))||Object.values(CUSTOM_PAT).some(p=>patLetters(p.name)===n)};
 /* what an own colour's or pattern's name may contain (2026-11-15, the re-audit's N4: a name like `<img src=x onerror=…>` went into the page
    as HTML, ran, and synced to every device): letters of any script, digits, spaces and - ’ . , ( ) / +; a straight apostrophe becomes ’ and
    & "and". ownNameBad refuses a typed name with anything else; ownNameClean is applied to every name shown (applyCustom: one arriving by
    sync or saved before this rule too), so no own name can carry < > " ' & or a backtick into the page */
-const OWN_NAME_OK=/^[\p{L}\p{M}\p{N} ’.,()\/+-]*$/u;
+const OWN_NAME_OK=/^[\p{L}\p{M}\p{N} ’.,،()\/+-]*$/u;   // ، the Arabic keyboard's comma (W2-16-02)
 const ownNameTidy=s=>String(s==null?'':s).normalize('NFC').replace(/['‘`´]/g,'’').replace(/\s*&\s*/g,' and ').replace(/\s+/g,' ').trim();
 const ownNameBad=s=>!OWN_NAME_OK.test(ownNameTidy(s));
-const ownNameClean=(s,max=28)=>ownNameTidy(s).replace(/[^\p{L}\p{M}\p{N} ’.,()\/+-]/gu,' ').replace(/\s+/g,' ').trim().slice(0,max);
+const ownNameClean=(s,max=28)=>ownNameTidy(s).replace(/[^\p{L}\p{M}\p{N} ’.,،()\/+-]/gu,' ').replace(/\s+/g,' ').trim().slice(0,max);
 const ownDescClean=s=>String(s==null?'':s).replace(/[<>"'`&]/g,' ').replace(/\s+/g,' ').trim().slice(0,150);
 function applyCustom(cu){
   for(const k of Object.keys(CUSTOM_COL)){delete COLORS[k];delete COLOR_NAMES[k];delete LUMS[k]}
   for(const t of Object.values(COLS_BY)){t.p=t.p.filter(c=>!CUSTOM_COL[c]);t.a=t.a.filter(c=>!CUSTOM_COL[c])}
   for(const t of Object.keys(PATS_BY))PATS_BY[t]=PATS_BY[t].filter(p=>!CUSTOM_PAT[p]);
   CUSTOM_COL={};CUSTOM_PAT={};cu=cu||{};
-  for(let c of cu.colors||[]){if(!/^own[a-z]{1,28}$/.test(c.key)||!/^#[0-9a-f]{6}$/i.test(c.hex||'')||!COLORS[c.base]||CUSTOM_COL[c.base])continue;
+  for(let c of cu.colors||[]){if(!OWN_COL_RE.test(c.key)||!/^#[0-9a-f]{6}$/i.test(c.hex||'')||!COLORS[c.base]||CUSTOM_COL[c.base])continue;
     const name=ownNameClean(c.name)||c.key.slice(3);c={...c,name};
     CUSTOM_COL[c.key]=c;COLORS[c.key]=c.hex.toLowerCase();COLOR_NAMES[c.key]=name.toLowerCase();
     for(const t of c.types||[])if(COLS_BY[t]){COLS_BY[t].p.push(c.key);if(c.accent)COLS_BY[t].a.push(c.key)}}
-  for(let p of cu.patterns||[]){if(!/^own-[a-z0-9-]{1,28}$/.test(p.key))continue;p={...p,name:ownNameClean(p.name)||p.key.slice(4).replace(/-/g,' '),desc:ownDescClean(p.desc)};
+  for(let p of cu.patterns||[]){if(!OWN_PAT_RE.test(p.key))continue;p={...p,name:ownNameClean(p.name)||p.key.slice(4).replace(/-/g,' '),desc:ownDescClean(p.desc)};
     for(const t of p.types||[])if(PATS_BY[t]&&PATS_BY[t].includes(p.base)){PATS_BY[t].push(p.key);CUSTOM_PAT[p.key]=p}}
   COLOR_NAME_RE=null}
 const patName=p=>CUSTOM_PAT[p]?String(CUSTOM_PAT[p].name).toLowerCase():patLabel(p);
@@ -109,11 +130,12 @@ function colBaseFor(hex,type,accent){const lab=rgbLab(...hexRgb(hex)),lch=l=>[Ma
   const hd=(a,b)=>{const d=Math.abs(a-b)%360;return d>180?360-d:d},typed=!!(type&&COLS_BY[type]);
   const cand=(typed?colsFor(type,accent):Object.keys(COLORS)).filter(c=>COLORS[c]&&!CUSTOM_COL[c]&&(typed||!SHIRT_ONLY.includes(c))).map(k=>{const l=labOf(k),[c2,h2]=lch(l);return {k,l,c2,h2,d:dE00(lab,l)}});
   if(!cand.length)return null;
-  let pool=C<BASE_GREY?cand.filter(x=>x.c2<Math.max(5,C+3)):cand.filter(x=>x.c2>=6&&hd(x.h2,h)<=BASE_HUE);
-  if(!pool.length&&C>=BASE_GREY)pool=cand.filter(x=>x.c2>=6&&hd(x.h2,h)<=BASE_HUE2);
-  if(!pool.length)pool=cand;
-  const near=pool.filter(x=>Math.abs(x.l[0]-lab[0])<=BASE_L);if(near.length)pool=near;
-  return pool.sort((a,b)=>a.d-b.d)[0].k}
+  // the nearest hue pool holding a colour within BASE_L of its lightness wins over a hue alone (fix round 3, W2-16-12: a dark petrol tie
+  // had only light blue within BASE_HUE and was planned as light blue; within BASE_HUE2 it takes steel blue)
+  const near=p=>p.filter(x=>Math.abs(x.l[0]-lab[0])<=BASE_L),best=p=>p.sort((a,b)=>a.d-b.d)[0].k;
+  const pools=C<BASE_GREY?[cand.filter(x=>x.c2<Math.max(5,C+3))]:[BASE_HUE,BASE_HUE2].map(w=>cand.filter(x=>x.c2>=6&&hd(x.h2,h)<=w));
+  for(const p of pools)if(near(p).length)return best(near(p));
+  const p=pools.find(x=>x.length);return best(p||(near(cand).length?near(cand):cand))}
 const $=s=>document.querySelector(s),key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),di=d=>Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
 let items=[];
 /* outfit history (one record per date, see planner.js) and the current date (overridable in tests) */
@@ -243,12 +265,18 @@ const metalWord=m=>m==='other'?'gunmetal':m;
 const METAL_OPTS=Object.keys(METAL).map(c=>[c,metalWord(c)]);
 const linkFace=i=>{const c=i&&i.type==='cufflinks'&&primaryCol(i);return c&&COLORS[c]&&c!=='silver'&&c!=='gold'?c:null};   // an enamel or stone face (silver and gold links are all metal)
 const desc=i=>i?((i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&watchOpts(i).band!=='leather')||(i.type==='cufflinks'&&!linkFace(i))?'':' · ')+metalWord(i.metal):'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${colName(watchOpts(i).dial)} dial ·${({bracelet:'bracelet',integrated:'integrated bracelet',leather:'leather strap'})[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'&&SEASON_TYPES.includes(i.type)?` · ${i.season} weather`:''):'';
-const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patLabel(i.pattern):'')+' '+typeWord(i):'none';
+const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patName(i.pattern):'')+' '+typeWord(i):'none';   // an own pattern by its name, not "own basketweave" (W1-1-04)
 /* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
    (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
 const itemName=i=>i&&typeof i.name==='string'?i.name.trim():'';
 const itemTitle=i=>itemName(i)||sentence(desc(i));
 const titleCls=i=>itemName(i)?'named':'cap';
+/* a right-to-left name (Arabic, Hebrew…) in a line of English keeps its place (fix round 3, W2-16-04/-10: "2 · بدلة كحلي رسمية days", the
+   count jumped to the name's other side): nameHtml escapes it and wraps it in <bdi>, nameIso puts it between the invisible isolates
+   U+2068/U+2069 for plain text (toasts, labels); a name with no right-to-left letter is returned as before */
+const RTL_RE=/[֐-ࣿיִ-﷿ﹰ-ﻼ]/;
+const nameHtml=t=>{t=String(t??'');return RTL_RE.test(t)?`<bdi>${esc(t)}</bdi>`:esc(t)};
+const nameIso=t=>{t=String(t??'');return RTL_RE.test(t)?'⁨'+t+'⁩':t};
 /* trousers come in three kinds and shoes in five styles; an item without one is dress trousers or oxfords, which the planner treats
    exactly as before there were kinds and styles (so a wardrobe from before plans the same) */
 const TROUSER_KINDS=[['dress','Dress pants'],['chinos','Chinos'],['jeans','Jeans']],SHOE_STYLES=[['oxford','Oxford'],['derby','Derby'],['loafer','Loafer'],['boot','Boot'],['sneaker','Sneaker']];
