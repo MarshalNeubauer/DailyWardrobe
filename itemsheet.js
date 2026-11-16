@@ -146,29 +146,69 @@ async function applyCrop(id,left){const it=items.find(x=>x.id===id),g=cropGeom()
 function toggleCompare(closeOnly){const el=$('#ivpair');if(!el||(closeOnly&&!phEdit.cmp))return;phEdit.cmp=!phEdit.cmp;el.classList.toggle('cmp',!!phEdit.cmp);el.querySelector('.tagsw').setAttribute('aria-pressed',!!phEdit.cmp)}
 function itemBody(i){
   if(phEdit.id!==i.id)phEdit={id:i.id,undo:[],crop:null};
-  const cols=COLOR_OPTS(i.type,primaryCol(i)),acc=c=>[['none','None'],...COLOR_OPTS(i.type,c,true)],pic=i.photo||wardPic(i);
+  const pic=i.photo||wardPic(i);
   // with a close-up, the split swatch is a button: tapped, the drawing slides over the photo and the close-up fills its square, to
   // compare the two whole; a tap on either square puts them back (toggleCompare; the choice lasts while the item stays open)
   const cmp=pic&&i.texture&&TEXTURE_TYPES.includes(i.type);
   const pair=!pic?`<div class="ivdraw">${itemThumb(i)}</div>`:!cmp?photoPair(pic,i,'tagsw-'+i.id):`<div class="pair cmpable${phEdit.cmp?' cmp':''}" id="ivpair"><figure class="phfig" onclick="toggleCompare(true)"><div class="cmpbox"><img class="ph" src="${pic}" alt="Photo"><div class="cmpdraw" aria-hidden="true">${itemThumb(i,true)}</div></div><figcaption><span class="c0">Photo</span><span class="c1">As tagged</span></figcaption></figure>`+
     `<figure class="tagsw" id="tagsw-${i.id}" role="button" tabindex="0" aria-pressed="${!!phEdit.cmp}" aria-label="Compare the drawing and the close-up side by side" onclick="toggleCompare()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCompare()}">${tagSwInner(i)}<figcaption class="c1">Close-up</figcaption></figure></div>`;
-  const hero=phEdit.crop?cropEditor(i):`<div class="ivhero">${pair}</div>`;
-  const tags=`<section class="card ivsec ivtags"><h3>Details</h3>${wardFieldsTop(i)}${COLORS[primaryCol(i)]&&colShows(i,'primaryColor')?shadeRow(i,`stepShadeE.bind(null,'${i.id}')`,`matchShadeE('${i.id}')`,!!(i.texture||(i.meas&&i.meas.src==='closeup'))):''}${E(i.id,'type',Object.entries(TYPES),i.type)}${colRows('e',i.id,i)}
-  ${FABRIC.includes(i.type)?EP(i.id,i):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',metalOptsFor(i.type),i.metal||'silver',i.type==='belt'?'Buckle':''):''}
-  ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,hasVest(i)?'yes':'no'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
-  ${i.type==='pants'?E(i.id,'trouserKind',TROUSER_KINDS,trouserKind(i)):''}${i.type==='shoes'?E(i.id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):''}${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):''}
-  ${i.type==='watch'?`<label class="wdetails">Details <input type="text" value="${esc(i.details||'')}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${i.id}','details',this.value.trim()||'none')"></label>`:''}${i.type==='watch'?E(i.id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
-  ${DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${i.id}')`:`redetect('${i.id}')`}">Read pattern from photo</button>`}${i.stripes||i.sett?`<button onclick="clearStripes('${i.id}')">Use generic</button>`:''}</div></div>`:''}${typeof asmGapNote==='function'?asmGapNote(i):''}${wardFieldsEnd(i)}</section>`;
-  // the photo tools right under the photos, always shown (option B: the "Edit photos" fold is gone)
-  const photos=phEdit.crop?'':photoTools(i);
-  // "Color & texture" (option B): the paper line after a close-up, then "True color in 3 steps" ABOVE Read color and texture and its cost
-  // (2026-11-15, the owner: "The user needs to see it before they tap the read color and texture button"; B's mockup had Read first), then
-  // the reading's done card (rdDoneHtml, inside rdEditorBtn)
-  const ct=phEdit.crop||!TEXTURE_TYPES.includes(i.type)?'':`<section class="card ivsec ivct" id="ivct" aria-labelledby="ivct-h"><h3 id="ivct-h">Color &amp; texture</h3><p class="shelp">Claude reads them from your close-up.</p>${paperLine(i)}${paperHint(i)}${rdEditorBtn(i)}</section>`;
-  const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${i.id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
-  ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${i.id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}</section>${typeof careCard==='function'?careCard(i):''}`;
-  return `<div class="ivin">${hero}${photos}${ct}${typeof kitSampleNote==='function'?kitSampleNote(i):''}${tags}${rot}<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${i.id}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${i.id}')">Delete item</button></div></div>`;
+  // the checklist (2026-11-16, the owner's approved redesign "2B Checklist", checklist.js): a summary line (photo, rotation and care pills),
+  // then sections that fold, each with a status mark and a one-line summary: Look & compare (fabrics: the close-up beside the drawing, the
+  // match bar, Match close-up, the paper line, True color in 3 steps, Read color and texture), Color, Pattern, Material, Details, Planning &
+  // care, Name & notes, Pictures (the photos and the row of photo tools, Edit photos option B), then Duplicate and Delete. While cropping
+  // the crop frame takes the summary's place at the top. From 600px two columns: the summary and Look & compare on the left.
+  const id=i.id,tex=TEXTURE_TYPES.includes(i.type),fab=FABRIC.includes(i.type),scope='e';
+  if(phEdit.crop)return `<div class="ivin ivck">${cropEditor(i)}</div>`;   // cropping: the frame alone, everything else steps aside
+  const top=ivSummary(i,pic);
+  let look='';
+  if(tex){const lab=i.texture?cmpLab('e',i):null,d=i.texture?cmpDiff(i,lab):null,p=i.texture?cmpPaper('e',i):null;
+    const mark=!i.texture?'opt':d===null?'todo':d===0?'good':'warn';
+    const sum=!i.texture?'Not yet · add a close-up to compare':d===null?'Close-up vs drawing':d===0?'Close-up vs drawing · they match':`Close-up vs drawing · ${cmpSteps(Math.abs(d))} off`;
+    const body=i.texture?cmpHtml(id,i.texture,cmpDrawn(i),!!(p&&p.ref))+cmpMatchHtml('e',id,i,lab)+(paperLine(i)||cmpPaperLine(p,paperRetake(id,'replaceTexture')))+paperHint(i)+rdEditorBtn(i)
+      :`<p class="shelp">Put a close-up of the cloth beside the drawing, and have Claude read its color and weave.</p>${paperHint(i)}${rdEditorBtn(i)}<div class="ckadds">${closeupBtn({label:'Add close-up',cls:'btn ckadd',mode:'add',aria:'Add fabric close-up',file:`f=>replaceTexture('${id}',f)`,cloth:paperCloth(i)})}</div>`;
+    look=ckSec(scope,'look',{mark,title:'Look &amp; compare',sum,body,open:true,id:'ivct',cls:'ivct'})}
+  const cr=colRows('e',id,i),shade=COLORS[primaryCol(i)]&&colShows(i,'primaryColor')?shadeRow(i,`stepShadeE.bind(null,'${id}')`,`matchShadeE('${id}')`,!tex&&!!(i.meas&&i.meas.src==='closeup')):'';
+  const color=cr||shade?ckSec(scope,'color',{mark:'good',title:'Color',sum:ckColSum(i,primaryCol(i))+(i.shade?` · drawn ${esc(shadeName(i.shade).toLowerCase())}`:''),body:cr+shade}):'';
+  const layout=DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${id}')`:`redetect('${id}')`}">Read pattern from photo</button>`}${i.stripes||i.sett?`<button onclick="clearStripes('${id}')">Use generic</button>`:''}</div></div>`:'';
+  const gap=typeof asmGapNote==='function'?asmGapNote(i):'';
+  const pattern=fab?ckSec(scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type,i.pattern))))+(usableSett(i)?' · layout read':''),body:EP(id,i)+layout+gap}):'';
+  const mat=MATERIALS_BY[i.type]?ckSec(scope,'material',{mark:i.material?'good':'opt',title:'Material',sum:i.material?esc(matLabel(i.material)):'Not set',body:matRow(i.type,i.material,`setItemField('${id}','material',`)}):'';
+  const det=E(id,'type',Object.entries(TYPES),i.type)+(METAL_TYPES.includes(i.type)?E(id,'metal',metalOptsFor(i.type),i.metal||'silver',i.type==='belt'?'Buckle':''):'')+
+    (i.type==='shirt'?E(id,'cuff',CUFFS,i.cuff||'button'):'')+(i.type==='suit'?E(id,'vest',VESTS,hasVest(i)?'yes':'no'):'')+(SEASON_TYPES.includes(i.type)?E(id,'season',SEASONS,i.season||'all'):'')+
+    (i.type==='pants'?E(id,'trouserKind',TROUSER_KINDS,trouserKind(i)):'')+(i.type==='shoes'?E(id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):'')+(i.type==='shoes'||i.type==='belt'?E(id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):'')+
+    (i.type==='watch'?`<label class="wdetails">Details <input type="text" value="${esc(i.details||'')}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${id}','details',this.value.trim()||'none')"></label>`+E(id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(id,'band',BANDS,watchOpts(i).band)+E(id,'bezel',BEZELS,watchOpts(i).bezel)+E(id,'watchStyle',WATCH_STYLES,watchOpts(i).style):'');
+  const details=ckSec(scope,'details',{mark:'good',title:'Details',sum:esc(ivDetailSum(i)),body:det+(fab?'':gap),cls:'ivtags'});
+  const cs=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null;
+  const rotIn=`${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${id}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
+  ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${id}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}${typeof careCard==='function'?careCard(i):''}`;
+  const care=ckSec(scope,'care',{mark:cs&&cs.due?'warn':'good',title:'Planning &amp; care',sum:esc(ivCareSum(i,cs)),body:rotIn,open:!!(cs&&cs.due),cls:'ivrot'});
+  const filled=['name','brand','notes'].filter(k=>String(i[k]||'').trim());
+  const names=ckSec(scope,'names',{mark:filled.length?'good':'opt',title:'Name &amp; notes',sum:filled.length?esc(cap1(filled.join(', ')))+' filled in'+(filled.length<3?` · no ${['name','brand','notes'].filter(k=>!filled.includes(k)).join(' or ')}`:''):'Name, brand, notes · optional',body:wardFieldsTop(i)+notesRow(i.notes,ivOn(id))});
+  const pics=ckSec(scope,'pics',{mark:'opt',title:'Pictures',sum:esc(cap1([i.photo?'photo':'no photo',tex&&i.texture?'close-up':''].filter(Boolean).join(', ')))+' · replace, rotate, crop',body:`<div class="ivhero">${pair}</div>${photoTools(i)}`,cls:'ivpics'});
+  const acts=`<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${id}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${id}')">Delete item</button></div>`;
+  const sample=typeof kitSampleNote==='function'?kitSampleNote(i):'';
+  return `<div class="ivin ivck"><div class="ivcols"><div class="ivcl">${top}${sample}${look||pics}</div><div class="ivcr">${color}${pattern}${mat}${details}${care}${names}${look?pics:''}</div></div>${acts}</div>`;
 }
+/* the summary line at the top of the item sheet: the photo (or the drawing), "In rotation" / "Out of rotation" / "On the way", how many
+   wears are left before cleaning (or "Due for cleaning"), the material and the season */
+const optLab=(list,v)=>{const o=list.find(x=>x[0]===v);return o?cap1(o[1]):''};
+function ivSummary(i,pic){const s=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null,left=s?s.limit-s.wears:0;
+  const rot=i.paused?`<span class="ivpill${i.order?'':' warn'}">${i.order?'On the way':i.away?(i.away.why==='laundry'?'In the laundry':'At the cleaner’s'):'Out of rotation'}</span>`:'<span class="ivpill good">In rotation</span>';
+  const care=s&&!i.away&&s.limit>1?(s.due?`<span class="ivpill warn">Due for ${careWord(i.type)}</span>`:`<span class="ivpill">${careWashed(i.type)?'Wash':'Clean'} in ${left} wear${left===1?'':'s'}</span>`):'';
+  const meta=[i.material?matLabel(i.material):'',SEASON_TYPES.includes(i.type)&&i.season&&i.season!=='all'?optLab(SEASONS,i.season):''].filter(Boolean).join(' · ');
+  const th=pic?`<img class="ivsumph" src="${i.photo?phSm(i):pic}" alt="">`:`<div class="ivsumph">${itemThumb(i)}</div>`;
+  return `<div class="ivsum">${th}<div class="ivsumt"><div class="ivpills">${rot}${care}</div>${meta?`<p class="ivmeta">${esc(meta)}</p>`:''}</div></div>`}
+/* the Details section's summary: "Suit · Cold weather · matching vest" */
+function ivDetailSum(i){const t=i.type,a=[TYPES[t]||'Item'];
+  if(SEASON_TYPES.includes(t))a.push(optLab(SEASONS,i.season||'all'));
+  if(t==='suit')a.push(hasVest(i)?'matching vest':'no vest');if(t==='shirt')a.push(optLab(CUFFS,i.cuff||'button').toLowerCase());
+  if(t==='pants')a.push(optLab(TROUSER_KINDS,trouserKind(i)).toLowerCase());if(t==='shoes')a.push(optLab(SHOE_STYLES,shoeStyle(i)).toLowerCase());
+  if(METAL_TYPES.includes(t))a.push(optLab(metalOptsFor(t),i.metal||'silver').toLowerCase());
+  return a.filter(Boolean).join(' · ')}
+/* Planning & care's summary: "In rotation · worn 3 of 5 since cleaning" */
+function ivCareSum(i,s){const r=i.paused?(i.order?'On the way':i.away?'Away being cleaned':'Out of rotation'):'In rotation';
+  if(!s||i.away)return r;if(s.due)return `${r} · due for ${careWord(i.type)}`;
+  return s.limit>1?`${r} · worn ${s.wears} of ${s.limit} since ${careWord(i.type)}`:s.wears?`${r} · worn ${careTimes(s.wears)}`:`${r} · not worn yet`}
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it)return;
   it[k]=v==='none'?null:v;
@@ -264,7 +304,7 @@ function renderItem(){
   if(!i){editing=null;itemShown(false);return}
   const l=wardList(),k=l.findIndex(x=>x.id===i.id);
   $('#ivhead').innerHTML=`<div class="ivt"><small class="gtype">${TYPES[i.type]||'Item'}</small><h2 id="iv-title" class="${titleCls(i)}">${esc(itemTitle(i)||TYPES[i.type]||'Item')}</h2></div>${k>=0?`<span class="pcount">${k+1} of ${l.length}</span>`:''}`;
-  $('#ivbody').innerHTML=itemBody(i);
+  $('#ivbody').innerHTML=itemBody(i);if(typeof cmpMount==='function')cmpMount($('#ivbody'));
   $('#iv-prev').disabled=k<=0;$('#iv-next').disabled=k<0||k>=l.length-1;
   itemShown(true)}
 const sheetSlides=()=>innerWidth<600;   // a phone: the sheet slides up from the bottom; wider, the panel fades in
