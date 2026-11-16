@@ -346,6 +346,18 @@ const METAL_TONES={gold:['#fbefc4','#d4b04a','#8a6d12'],silver:['#f7f8f9','#c4c8
    Merge two wardrobe snapshots {items, tombstones, days, settings}: the newest version of each item wins, and a deletion
    (tombstone) wins over any older edit. Days (outfit history) merge the same way by date; settings by their timestamp. */
 const stamp=i=>i&&(i.updated||i.added)||0;
+/* ---- the phone's clock against the server's (fix round 3, 2026-11-16, the audit's W1-9 and W1-5-07): every stamp came from the phone's
+   own clock, so a phone a year behind lost its edits and deletions to the backup, one a year ahead froze what it edited for a year, and a
+   phone a few minutes slow lost a later edit to another phone's earlier one. Each sync learns the gap from the server's time (sync.js
+   clockLearn, the x-now header); nowMs() is the phone's time corrected by it (the phone's own while no server has answered). A record's
+   new stamp is also always above the one it replaces (nextStamp), so an edit or a deletion wins over the copy it was made on whatever the
+   clocks say. In background workers (no localStorage) nowMs() is Date.now() */
+const CLOCK_MIN=3000,CLOCK_AHEAD=10*6e4;   // a gap under CLOCK_MIN is noise; a stamp over CLOCK_AHEAD past the corrected time is from a wrong clock
+let clockSkew=0;try{clockSkew=+localStorage.getItem('clock_skew')||0}catch{}
+const nowMs=()=>Date.now()+clockSkew;
+const nextStamp=prev=>Math.max(nowMs(),(+prev||0)+1);
+// the corrected date (local midnight): todayDate() itself while no gap is known (or a test sets the day, TODAY_OVERRIDE)
+const trueToday=()=>{if(!clockSkew||TODAY_OVERRIDE)return todayDate();const d=new Date(nowMs());return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
 /* ---- items field by field (fix round 3, 2026-11-16, the audit's W1-5-01: two phones changed different fields of one piece, a rename on
    one and "Take out of rotation" on the other, and the later save's whole item won: the rename was gone without a word). An item saved by
    put() (app.js) carries fs = {u, b, s}: u = the item's stamp when fs was worked out, b = the stamp of every field not in s, s = the stamp
@@ -389,7 +401,7 @@ function mergeState(a,b){
   for(const [id,t] of Object.entries(b.tombstones||{}))tomb[id]=Math.max(tomb[id]||0,t);
   for(const it of [...(a.items||[]),...(b.items||[])]){const cur=items[it.id];items[it.id]=cur?mergeItem(cur,it):it}
   for(const id of Object.keys(items))if(tombWins(tomb[id],items[id]))delete items[id];
-  const cutoff=Date.now()-180*864e5;for(const id of Object.keys(tomb))if(tomb[id]<cutoff)delete tomb[id];   // forget old deletions
+  const cutoff=nowMs()-180*864e5;for(const id of Object.keys(tomb))if(tomb[id]<cutoff)delete tomb[id];   // forget old deletions
   const days={};for(const d of [...(a.days||[]),...(b.days||[])]){const cur=days[d.date];days[d.date]=cur?mergeDay(cur,d):d}
   const settings=a.settings&&b.settings?mergeSettings(a.settings,b.settings):(a.settings||b.settings||null);
   return {items:Object.values(items),tombstones:tomb,days:Object.values(days),settings};
@@ -458,9 +470,9 @@ function mergeSplit(a,b,k,hi){const ma=setEntries(k,a[k]),mb=setEntries(k,b[k]);
 function keySettings(s){if(!s)return s;
   if(!s.ks||!s.kh){const was=s.updated||0;s.ks={};s.kh={};for(const k of setKeys(s)){s.ks[k]=was;s.kh[k]=setHash(s[k])}return keySplit(s)}
   for(const k of setKeys(s))if(!(k in s.kh)){s.kh[k]=setHash(s[k]);s.ks[k]=0}return keySplit(s)}
-function stampSettings(s,t){t=t||Date.now();if(!s)return s;
+function stampSettings(s,t){t=t||nowMs();if(!s)return s;
   if(!s.ks||!s.kh)keySettings(s);
-  for(const k of new Set([...setKeys(s),...Object.keys(s.kh)])){const h=k in s?setHash(s[k]):'-';if(s.kh[k]!==h){if(SET_SPLIT[k])subStamp(s,k,t,s.kh[k]==='-'?setHash(undefined):s.kh[k]);s.kh[k]=h;s.ks[k]=t}}
+  for(const k of new Set([...setKeys(s),...Object.keys(s.kh)])){const h=k in s?setHash(s[k]):'-';if(s.kh[k]!==h){const st=Math.max(t,(+s.ks[k]||0)+1);if(SET_SPLIT[k])subStamp(s,k,st,s.kh[k]==='-'?setHash(undefined):s.kh[k]);s.kh[k]=h;s.ks[k]=st}}   // (above its stamp before: the change wins whatever the clocks)
   s.updated=Math.max(t,(s.updated||0)+1);return s}
 /* stored or downloaded settings (st) taken over the ones in memory (cur) -> the new in-memory settings, keyed. Spread over them, except
    a setting st marks removed (kh '-': a roll-back to a copy without it, or a removal on another device): it goes from memory too, or, when
@@ -533,3 +545,60 @@ function stateSig(s){
   s=s||{};const by=(arr,k,v)=>(arr||[]).map(x=>x[k]+':'+v(x)).sort().join(',');
   return [by(s.items,'id',stamp),Object.entries(s.tombstones||{}).map(e=>e.join(':')).sort().join(','),by(s.days,'date',d=>d.updated||0),s.settings?s.settings.updated||0:''].join('|');
 }
+/* ---- records coming in (fix round 3, 2026-11-16, the audit's W2-13-02 = W2-12-01: a crafted Restore file, a sync or a server answer put
+   an item's id, photo, colour key and sett band colour into the page as markup). cleanState runs where records enter: Restore file, every
+   sync pull and roll-back (sync.js), and the stored wardrobe at start-up (start.js). An item keeps only fields of the right shape:
+   an id of safe characters (ID_RE, else the item is left out), a known type, colour and option keys of letters, digits, - and _ (an own
+   key too; a colour word a known colour's alias, "light blue", becomes its key), photos only data:image/jpeg|png|webp;base64 (else
+   the photo is dropped), numbers as numbers, a pattern reading's colours as hex and its words plain; free text (name, brand, notes…)
+   is kept as typed (shown escaped) without bidi controls; any other field is kept with < > " ` taken out of its strings. Days keep a
+   date of the app's shape and item ids of ID_RE; tombstones numbers. Pure and idempotent: a clean record comes out equal.
+   worker/records.js recCheck refuses the same shapes on the server ---- */
+const ID_RE=/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/,REC_KEY=/^[\p{L}\p{M}\p{N}_-]{1,48}$/u,REC_PHOTO=/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]*$/,REC_HEX=/^#[0-9a-fA-F]{3,8}$/,
+  REC_DATE=/^\d{4}-\d{1,2}-\d{1,2}$/,REC_WORD=/^[\p{L}\p{M}\p{N} _+.,:;()\/#%’-]{0,120}$/u,BIDI_RE=/[‪-‮⁦-⁩]/g;   // embeddings, overrides and isolates (the marks LRM/RLM stay: an Arabic name may need them)
+const REC_COLS=['primaryColor','secondaryColor','tertiaryColor','dial'],REC_PICS=['photo','photoSm','texture','swatch'],
+  REC_KEYS=['pattern','swSrc','metal','leather','cuff','vest','season','shoeStyle','trouserKind','band','bezel','watchStyle'],
+  REC_NUMS=['added','updated','shade'],REC_TEXT={name:200,brand:200,material:200,notes:4000,details:4000,patternText:4000},REC_STRICT=['sett'];
+const recClean=s=>String(s).replace(/[<>"`]/g,'');   // a free field's string: nothing that opens a tag or ends an attribute
+const recFree=(v,d=0)=>typeof v==='string'?recClean(v):typeof v==='number'?(isFinite(v)?v:null):v==null||typeof v==='boolean'?v:d>8?null:
+  Array.isArray(v)?v.map(x=>recFree(x,d+1)):typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>REC_WORD.test(k)).map(([k,x])=>[k,recFree(x,d+1)])):null;
+/* a pattern reading (sett: bands, crossing lines, motif, texture): numbers, hex colours and plain words only */
+const recStrict=(v,d=0)=>typeof v==='string'?(REC_HEX.test(v)||REC_WORD.test(v)?v:null):typeof v==='number'?(isFinite(v)?v:null):v==null||typeof v==='boolean'?v:d>8?null:
+  Array.isArray(v)?v.map(x=>recStrict(x,d+1)):typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>REC_WORD.test(k)).map(([k,x])=>[k,recStrict(x,d+1)])):null;
+/* Claude's and the app's own structured words (weave, patternSpec, tagAI, meas, away): prose may hold quotes ("a 1/2" stripe") and stays
+   as it is, but nothing that opens a tag; a colour under a "hex" key (patternSpec.across bands reach a fill) must be a hex colour */
+const REC_PROSE=['weave','patternSpec','tagAI','meas','away'];
+const recProse=(v,d=0,k='')=>typeof v==='string'?(/^hex$/i.test(k)?(REC_HEX.test(v)?v:null):v.replace(/[<>`]/g,'')):typeof v==='number'?(isFinite(v)?v:null):v==null||typeof v==='boolean'?v:d>8?null:
+  Array.isArray(v)?v.map(x=>recProse(x,d+1,k)):typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([kk])=>REC_WORD.test(kk)).map(([kk,x])=>[kk,recProse(x,d+1,kk)])):null;
+const recCol=c=>c==null||c===''?c:typeof c!=='string'?undefined:COLORS[c]||REC_KEY.test(c)&&/^own/.test(c)?c:normCol(c)||(REC_KEY.test(c)?c:undefined);
+const noBidi=s=>String(s==null?'':s).replace(BIDI_RE,'');
+function cleanRecord(it){
+  if(!it||typeof it!=='object'||Array.isArray(it)||typeof it.id!=='string'||!ID_RE.test(it.id)||!TYPES[it.type])return null;
+  const o={};
+  for(const [k,v] of Object.entries(it)){
+    if(k==='id'||k==='type'){o[k]=v;continue}
+    if(!REC_WORD.test(k)||k==='__proto__')continue;
+    if(REC_COLS.includes(k)){const c=recCol(v);if(c!==undefined)o[k]=c}
+    else if(REC_PICS.includes(k)){if(v==null||typeof v==='string'&&(REC_PHOTO.test(v)||/^dwph:[0-9a-f]{20}$/.test(v)))o[k]=v}   // (a backup's own photo reference too)
+    else if(REC_KEYS.includes(k)){if(v==null||typeof v==='string'&&REC_KEY.test(v))o[k]=v}
+    else if(REC_NUMS.includes(k)){if(v==null||typeof v==='number'&&isFinite(v))o[k]=v}
+    else if(k in REC_TEXT){if(v==null)o[k]=v;else if(typeof v==='string'||typeof v==='number')o[k]=noBidi(v).slice(0,REC_TEXT[k])}
+    else if(REC_STRICT.includes(k))o[k]=recStrict(v);
+    else if(REC_PROSE.includes(k))o[k]=recProse(v);
+    else o[k]=recFree(v)}
+  return o}
+function cleanDay(d){
+  if(!d||typeof d!=='object'||Array.isArray(d)||typeof d.date!=='string'||!REC_DATE.test(d.date))return null;
+  const o={};
+  for(const [k,v] of Object.entries(d)){if(!REC_WORD.test(k)||k==='__proto__')continue;
+    // the pieces a day names (ids, lock, force: slot -> item id): an id of the wrong shape is left out
+    if((k==='ids'||k==='lock'||k==='force')&&v&&typeof v==='object'&&!Array.isArray(v))o[k]=Object.fromEntries(Object.entries(v).filter(([s,x])=>REC_KEY.test(s)&&(typeof x!=='string'||ID_RE.test(x))).map(([s,x])=>[s,recFree(x)]));
+    else if(k==='date')o[k]=v;else o[k]=recFree(v)}
+  return o}
+/* a snapshot from outside ({items, days, tombstones, settings}, a backup file's or the server's): its records cleaned, the rest as it came */
+function cleanState(st){
+  if(!st||typeof st!=='object')return st;const o={...st};
+  if(Array.isArray(st.items))o.items=st.items.map(cleanRecord).filter(Boolean);
+  if(Array.isArray(st.days))o.days=st.days.map(cleanDay).filter(Boolean);
+  if(st.tombstones&&typeof st.tombstones==='object')o.tombstones=Object.fromEntries(Object.entries(st.tombstones).filter(([id,t])=>ID_RE.test(id)&&typeof t==='number'&&isFinite(t)));
+  return o}

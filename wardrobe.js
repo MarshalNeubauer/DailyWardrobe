@@ -67,7 +67,7 @@ function wardBar(){
 function wardGrid(list){
   if(list.length){const m=wardMemo&&wardMemo.list===list?wardMemo:null,w=m&&m.wear,
       wl=i=>!w?'':`<small class="wwear">${m.sort==='worn'?(w.n[i.id]?`Worn ${w.n[i.id]} time${w.n[i.id]===1?'':'s'}`:'Not worn yet'):w.last[i.id]?`Last worn ${w.last[i.id].toLocaleDateString(undefined,{month:'short',day:'numeric'})}`:'Not worn yet'}</small>`;
-    return `<div class="grid">${list.map(i=>{const tag=giTag(i);return `<div class="gi${i.paused?' paused':''}" id="gi-${i.id}"><button class="giopen" onclick="openItem('${i.id}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}${giNote(tag)}">${wardPic(i)?`<img class="ph" src="${wardPic(i)}" alt="">`:i.photo?`<img class="ph" src="${phSm(i)}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${i.type==='pants'&&trouserKind(i)!=='dress'?cap1(trouserKind(i)):TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${tag}</button></div>`}).join('')}</div>`}
+    return `<div class="grid">${list.map(i=>{const tag=giTag(i);return `<div class="gi${i.paused?' paused':''}" id="gi-${esc(i.id)}"><button class="giopen" onclick="openItem('${jsq(i.id)}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}${giNote(tag)}">${wardPic(i)?`<img class="ph" src="${srcOk(wardPic(i))}" alt="">`:i.photo?`<img class="ph" src="${srcOk(phSm(i))}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${i.type==='pants'&&trouserKind(i)!=='dress'?cap1(trouserKind(i)):TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${tag}</button></div>`}).join('')}</div>`}
 /* a box's tag: Sample, Out of rotation, On the way, away being cleaned, due for cleaning */
 function giTag(i){return i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:i.away&&typeof careTag==='function'?careTag(i):'Out of rotation'}</span>`:i.sample&&typeof kitSampleTag==='function'?kitSampleTag(i):typeof careBadge==='function'?careBadge(i):''}
 /* ...read out with the box's name: the aria-label took its place, so a sample piece sounded like one's own (re-audit 2026-11-15) */
@@ -120,12 +120,12 @@ async function wardPendingRestore(){let p=null;try{p=JSON.parse(localStorage.get
   const it=items.find(x=>x.id===p.id),cur=String(it&&it[p.k]||'');wardPendSet(null);
   if(!it||cur===String(p.v).trim()||cur!==String(p.was??''))return false;   // saved already, or changed since (on another device): left alone
   await setItemField(p.id,p.k,p.v);return true}
-const ivOn=id=>k=>`oninput="itemFieldSoon('${id}','${k}',this.value)" onchange="itemFieldNow('${id}','${k}',this.value)"`;
+const ivOn=id=>k=>`oninput="itemFieldSoon('${jsq(id)}','${k}',this.value)" onchange="itemFieldNow('${jsq(id)}','${k}',this.value)"`;
 function wardFieldsTop(i){return fldRow('name','Name',i.name,ivOn(i.id),'Optional')+fldRow('brand','Brand',i.brand,ivOn(i.id),'Optional')}
-function wardFieldsEnd(i){return matRow(i.type,i.material,`setItemField('${i.id}','material',`)+notesRow(i.notes,ivOn(i.id))}
+function wardFieldsEnd(i){return matRow(i.type,i.material,`setItemField('${jsq(i.id)}','material',`)+notesRow(i.notes,ivOn(i.id))}
 /* saving one of them. Text fields don't redraw the sheet (the next field tapped would lose its focus): only the title and the grid follow */
 async function setItemField(id,k,v){
-  const it=items.find(x=>x.id===id);if(!it&&typeof itemGoneTell==='function'&&itemGoneTell(id))return;if(!it||!WARD_FIELDS.includes(k))return;v=String(v??'').trim().slice(0,WARD_MAX[k]);if((it[k]||'')===v)return;
+  const it=items.find(x=>x.id===id);if(!it&&typeof itemGoneTell==='function'&&itemGoneTell(id))return;if(!it||!WARD_FIELDS.includes(k))return;v=noBidi(v).trim().slice(0,WARD_MAX[k]);if((it[k]||'')===v)return;   // (noBidi: no right-to-left overrides, W2-12-06, core.js)
   if(v)it[k]=v;else delete it[k];if(it.sample)it.sampleMine=1;   // his edit (also when typed text is saved after the sheet closed: kit.js kitEdited)
   await put(it);
   if(k==='material')return renderWardrobe();   // Other shows or hides its field
@@ -155,7 +155,7 @@ function moreRow(q,i){
   return `<div class="morefold${q.more?' open':''}"><button type="button" class="morebtn" aria-expanded="${!!q.more}" onclick="toggleMore(${i})"><span>More details${n?` <small class="mut">· ${n} filled in</small>`:''}</span><svg class="morechev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`+
     (q.more?`<div class="morein">${fldRow('name','Name',q.name,on,'Optional')}${fldRow('brand','Brand',q.brand,on,'Optional')}${notesRow(q.notes,on)}</div>`:'')+`</div>`}
 /* copies them from the Add card onto the item being saved */
-function wardSaveFields(q,it){for(const k of WARD_FIELDS){const v=String(q[k]??'').trim().slice(0,WARD_MAX[k]);if(v&&(k!=='material'||MATERIALS_BY[it.type]))it[k]=v}}
+function wardSaveFields(q,it){for(const k of WARD_FIELDS){const v=noBidi(q[k]).trim().slice(0,WARD_MAX[k]);if(v&&(k!=='material'||MATERIALS_BY[it.type]))it[k]=v}}
 
 /* ---- Delete, with Undo ----
    Delete removes the item at once (a tombstone, so it goes from every device) and offers Undo for WARD_UNDO_MS. Undo writes the
@@ -169,11 +169,11 @@ const wardDelete=id=>wardOnce('del:'+id,()=>wardDeleteNow(id));
 async function wardDeleteNow(id){
   const k=items.findIndex(i=>i.id===id);if(k<0)return;const it=items[k],snap=JSON.parse(JSON.stringify(it));
   const days=Object.values(dayRecs).filter(r=>JSON.stringify(r).includes(id)).map(r=>JSON.parse(JSON.stringify(r)));   // the days that refer to it, as they are now
-  await del(id);const at=Date.now();items=items.filter(i=>i.id!==id);cache={};if(editing===id)dropItem();renderWardrobe();
+  const at=await del(id);items=items.filter(i=>i.id!==id);cache={};if(editing===id)dropItem();renderWardrobe();
   toast(`Deleted ${itemName(it)||nm(it)}`,WARD_UNDO_MS,{label:'Undo',fn:()=>wardUndelete(snap,k,days,at)})}
 async function wardUndelete(it,k,days,at){
   if(items.some(i=>i.id===it.id))return;
-  it.updated=Math.max(Date.now(),at+1);await putRaw(it);   // newer than the tombstone: the item wins the merge (restamped whole: its field stamps no longer match, core.js fsOk)
+  it.updated=nextStamp(at);await putRaw(it);   // newer than the tombstone: the item wins the merge (restamped whole: its field stamps no longer match, core.js fsOk)
   items.splice(Math.min(k,items.length),0,it);
   for(const r of days){const cur=dayRecs[r.date];if(!cur||JSON.stringify(cur)!==JSON.stringify(r))await saveDay(r,true)}   // a day re-planned without it meanwhile
   cache={};if(window.scheduleSync)scheduleSync();

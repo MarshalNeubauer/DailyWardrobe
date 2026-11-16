@@ -70,7 +70,7 @@ function showSyncStatus(){const sum=$('#sum-backup');if(sum&&typeof backupSummar
   // backups paused (the day's saves used up): said, not hidden behind the last backup's time (2026-11-14: the owner saw only "Backed up 10:28"
   // and a Sync now that did nothing)
   const lastTxt=last?` Last backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}.`:'';
-  if((+localStorage.getItem('sync_pause')||0)>Date.now()){el.textContent=(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.')+lastTxt;return}
+  if(syncPaused()){el.textContent=(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.')+lastTxt;return}
   // offline or unreachable: said, with the last backup's time
   if(syncWaiting(st)||st===WIPED_SYNC){el.textContent=st+lastTxt;return}
   if(last&&!/failed|turn on/i.test(st))el.textContent=`Backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${items.length} item${items.length===1?'':'s'}${/^Syncing/.test(st)?' · syncing…':''}`;
@@ -137,8 +137,41 @@ function syncNetText(e){const m=String(e&&e.message||e||'');if(!(typeof netErr==
 const OFFLINE_SYNC='Not backed up: you’re offline. Your changes are kept on this phone and back up when you’re online again.';
 const UNREACHED_SYNC='Not backed up: the server couldn’t be reached. Your changes are kept on this phone and back up later.';
 const syncWaiting=st=>/^Not backed up:/.test(st||'');
-/* a tester's backups for the day are used up (the server's limit): no more uploads until the next UTC day */
-const nextUtcDay=()=>{const d=new Date();return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)};
+/* a tester's backups for the day are used up (the server's limit): no more uploads until the next UTC day, by the corrected time (core.js
+   nowMs); a pause further off than a day and a bit was set by a clock that was ahead (the audit's W1-9-06: a year-long pause) and is let go */
+const nextUtcDay=()=>{const d=new Date(nowMs());return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)};
+function syncPaused(){const p=+localStorage.getItem('sync_pause')||0;if(!p)return false;const t=nowMs();
+  if(p>t+26*3600e3){localStorage.removeItem('sync_pause');localStorage.removeItem('sync_pause_msg');return false}return p>t}
+/* ---- the phone's clock (fix round 3, the audit's W1-9; core.js nowMs): the server sends its time with every answer (x-now); the gap is
+   learned from each sync's request (the middle of the request taken as the server's moment) and kept (localStorage clock_skew) ---- */
+function clockLearn(r,t0,t1){const srv=+(r&&r.headers&&r.headers.get('x-now'))||0;if(!(srv>1e12)||t1-t0>15000)return false;
+  const s=Math.round(srv-(t0+t1)/2),v=Math.abs(s)<CLOCK_MIN?0:s;let had=null;try{had=localStorage.getItem('clock_skew')}catch{}
+  if(had==null||Math.abs(v-clockSkew)>1000){clockSkew=v;try{localStorage.setItem('clock_skew',String(v))}catch{}}
+  clockTell();return true}
+/* said once for each gap of an hour or more (localStorage clock_told: the gap last said), in words a person can act on */
+const CLOCK_TELL=3600e3;
+function clockTell(){if(Math.abs(clockSkew)<CLOCK_TELL)return;let told=null;try{told=localStorage.getItem('clock_told')}catch{}
+  if(told!=null&&Math.abs(+told-clockSkew)<CLOCK_TELL)return;try{localStorage.setItem('clock_told',String(clockSkew))}catch{}
+  if(typeof toast==='function')toast(clockText(clockSkew),12000)}
+function clockText(s){const a=Math.abs(s),h=a/3600e3,d=h/24,y=d/365.25,n=(v,w)=>`${v} ${w}${v===1?'':'s'}`;
+  const by=y>=.9?n(Math.round(y),'year'):d>=1.5?n(Math.round(d),'day'):n(Math.max(1,Math.round(h)),'hour');
+  return `Your phone’s clock is ${by} ${s>0?'behind':'ahead'}. Your changes are dated by the right time anyway. To fix the clock, turn on Set Automatically in Settings → General → Date & Time.`}
+/* stamps on this phone over CLOCK_AHEAD past the corrected time (saved while the clock was ahead, before a server had answered, or the
+   server's marks from before it checked them) are put back to now, once the gap is known: what was edited then is kept, and wins a merge
+   as an ordinary change made now. A holiday list fetched "in the future" is fetched again (fetched 0). -> whether anything changed */
+async function clockFix(){const t=nowMs(),lim=t+CLOCK_AHEAD,st=await localState();let n=0;
+  for(const it of st.items)if(stamp(it)>lim||(+it.added||0)>lim){const c={...it,updated:t};delete c.fs;if((+c.added||0)>lim)c.added=t;
+    await atomic('items',it.id,cur=>cur&&stamp(cur)===stamp(it)?{put:c}:null);n++}
+  for(const d of st.days)if([d.updated,d.base,d.lockAt].some(v=>(+v||0)>lim)){const c={...d,updated:t};delete c.fs;if((+c.base||0)>lim)c.base=t;if((+c.lockAt||0)>lim)c.lockAt=t;
+    await atomic('days',d.date,cur=>cur&&(cur.updated||0)===(d.updated||0)?{put:c}:null);n++}
+  if(Object.values(st.tombstones).some(v=>v>lim)){await atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})};for(const id in v)if(v[id]>lim)v[id]=t;return {put:{k:'tombstones',v},value:v}});n++}
+  const s=st.settings;if(s){const c=JSON.parse(JSON.stringify(s));let ch=false;
+    if(c.ks)for(const k in c.ks)if(c.ks[k]>lim){c.ks[k]=t;ch=true}
+    if(c.kse)for(const k in c.kse)for(const e in c.kse[k]||{})if(c.kse[k][e]>lim){c.kse[k][e]=t;ch=true}   // (an entry's stamp too: core.js SET_SPLIT)
+    if(c.holidays&&(+c.holidays.fetched||0)>lim){c.holidays.fetched=0;if(c.kh)c.kh.holidays=setHash(c.holidays);if(c.ks)c.ks.holidays=t;ch=true}
+    if((+c.updated||0)>lim||ch){c.updated=t;await metaPut('settings',c);n++}}
+  if(!n)return false;
+  const now=await localState();items=now.items;cache={};if(window.onSyncedData)onSyncedData(now);return true}
 /* why uploads pause until the next UTC day: a tester's own daily backups used up (the server's message), or the server's whole allowance of
    saves for the day (2026-11-14, error 'kv-limit': Cloudflare's 1,000 writes a day), said in words with the local time it resets */
 /* the server's room for new photos used up (pr.write): everyone's (pr.all) or this tester's own, said as such, without the server's
@@ -186,13 +219,57 @@ async function phOut(recs,have){const strs=[...phStrings(recs,isPh)],by=new Map(
    wardrobe and showed on his other phones): uploads leave out the sample pieces he hasn't made his (kit.js kitEdited) and the day records
    naming one; Remove the sample rewrites those records (kit.js kitSampleDay) with a new stamp, and they go up then. Applied to what is
    sent only: the merge and this phone's copy are unchanged */
+/* fix round 3 (W1-3-02, W1-6-04): a day naming a sample piece goes up with the sample's pieces taken out (kit.js kitSampleDay, today
+   counted as a past day so its own pieces stay), when that still holds anything of his (kitDayOwn): a "Didn't" or a swap on a day with one
+   sample piece was held back for good, and a phone joining was told he hadn't opened the app. A day made only from the sample, and one
+   Remove the sample left to yield (KIT_YIELD), never goes up: it would replace the account's own record of that day; except a "Didn't" /
+   "Wore" or a correction he made on it after this phone joined the account (syncJoinAt): it goes up with no outfit (noOutfit), so his
+   mark reaches his other phones (W1-3-02: a phone updated from 15 Nov with the sample in its backup), while a phone that tried the sample
+   before joining (W1-6-04) sends none of its sample days.
+   remote (the whole backup, PUT only): a day left out keeps the backup's copy, since a PUT replaces the whole backup */
+/* when this phone first synced with this account (sync_join: the code's last 6 characters and the time; set by syncOnce before its first
+   request, so nothing changed before it counts as made in the account) */
+function syncJoinAt(){try{const j=JSON.parse(localStorage.getItem('sync_join')||'null'),t=localStorage.getItem('app_token')||'';return j&&t&&j.k===t.slice(-6)?+j.at||0:0}catch{return 0}}
+function syncJoinMark(token){try{if(!syncJoinAt()&&token)localStorage.setItem('sync_join',JSON.stringify({k:token.slice(-6),at:syncMark()?1:Date.now()}))}catch{}}   // (a phone that synced with this server before this version: in the account all along)
+/* today and the coming days follow the plan, which differs between a phone with the sample and one without: each re-locked and recorded
+   the other's copy, a save at every sync (measured in the lab: a write every other background, 0 before). So such a day (sent without the
+   sample) goes up once per change of what he decided on it (syncSdSig: worn, a correction, his picks, the occasion, a piece off...), not
+   for the app's own locks and records; sync_sd keeps what was sent per date (syncSdDone after a save went through) */
+let syncSdNew={};
+const SYNC_SD=['worn','edited','noOutfit','force','occasion','formal','kind','skip','off','trip','vest'];
+const syncSdSig=c=>JSON.stringify(SYNC_SD.map(k=>c[k]===undefined?null:c[k]));
+function syncSdGet(){try{return JSON.parse(localStorage.getItem('sync_sd')||'{}')||{}}catch{return {}}}
+function syncSdDone(){const n=syncSdNew;syncSdNew={};if(!Object.keys(n).length)return;const T=todayDate(),m={...syncSdGet(),...n},old=new Date(T.getFullYear(),T.getMonth(),T.getDate()-SYNC_SD_DAYS);
+  for(const k of Object.keys(m))if(keyDate(k)<old)delete m[k];try{localStorage.setItem('sync_sd',JSON.stringify(m))}catch{}}
+/* W1-3-03: a day he opened the app on in the account (recorded after this phone joined, syncJoinAt) but dressed only from the sample went
+   nowhere, and a phone joining later recorded it from its own plan and said "you didn't open the app". It goes up with no outfit and the
+   stamp KIT_YIELD: the backup takes it only where it has no record of that day, or only the app's lock built on nothing (core.js dayWins,
+   base 0); any real record of the day, another phone's, wins. syncOrig: the record's own stamp, which decides whether it is sent */
+const SYNC_SD_DAYS=60,syncOrig=new WeakMap();
+const syncSentStamp=d=>syncOrig.has(d)?syncOrig.get(d):(d.updated||0);
 const syncOwn=i=>!(i&&i.sample)||(typeof kitEdited==='function'&&kitEdited(i));
-function syncShare(st){const off=new Set((st.items||[]).filter(i=>!syncOwn(i)).map(i=>i.id));if(!off.size)return st;
+function syncShare(st,remote){syncSdNew={};const off=new Set((st.items||[]).filter(i=>!syncOwn(i)).map(i=>i.id)),yd=d=>typeof KIT_YIELD!=='undefined'&&d.updated===KIT_YIELD;
+  if(!off.size&&!(st.days||[]).some(yd))return st;
   const names=r=>[r.ids,r.lock,r.force].some(o=>o&&Object.values(o).some(v=>off.has(v)));
-  return {...st,items:st.items.filter(i=>!off.has(i.id)),days:(st.days||[]).filter(d=>!names(d))}}
+  const T=todayDate(),T1=new Date(T.getFullYear(),T.getMonth(),T.getDate()+1),rd=new Map(((remote&&remote.days)||[]).map(d=>[d.date,d])),days=[];
+  const join=syncJoinAt(),said=(c,d)=>(c.worn!==undefined||!!c.edited)&&join>0&&(d.updated||0)>join,sd=syncSdGet();
+  for(const d of st.days||[]){let c=d,y=false;
+    if(yd(d))c=null;else if(names(d))c=typeof kitSampleDay==='function'?kitSampleDay(d,off,T1):null;
+    if(c&&c!==d&&!kitDayOwn(c)&&!said(c,d)){
+      // (a day he used the app on in the account, dressed only from the sample: a yielding copy, see syncOrig)
+      if(join>0&&(d.updated||0)>join&&keyDate(d.date)<T1){c={...c,updated:KIT_YIELD};y=true}else c=null}
+    if(c&&c!==d&&(y||keyDate(d.date)>=T)){const g=(y?'y':'')+syncSdSig(c);if(sd[d.date]===g)c=null;else{syncSdNew[d.date]=g;if(y)syncOrig.set(c,d.updated||0)}}   // (today, coming days, yielding copies: once per change of his)
+    if(c&&y&&rd.has(d.date))c=mergeState({days:[rd.get(d.date)]},{days:[c]}).days[0];   // (a PUT: the backup's copy unless it is only a lock built on nothing)
+    if(c)days.push(c);else if(rd.has(d.date))days.push(rd.get(d.date))}
+  return {...st,items:st.items.filter(i=>!off.has(i.id)),days}}
 /* one round of the small sync, after GET ?lite=1 answered remote: true/false as syncOnce, or {again:{since, all, legacy}} */
 async function syncLite(remote,local,url,token,inline){
-  const got=await phIn({items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token);
+  const raw=await phIn({items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token),got=cleanState(raw);   // (core.js cleanState: records from outside)
+  // records the check left out are not "lacking" here (else every sync asked for everything again): kept per backup in sync_off
+  const gi=new Set(got.items.map(i=>i.id)),gd=new Set(got.days.map(d=>d.date));let off={};try{off=JSON.parse(localStorage.getItem('sync_off')||'{}')||{}}catch{}
+  if(off.url!==url)off={url,i:[],d:[]};
+  const offI=new Set([...(off.i||[]),...raw.items.filter(i=>!(i&&gi.has(i.id))).map(i=>String(i&&i.id))]),offD=new Set([...(off.d||[]),...raw.days.filter(d=>!(d&&gd.has(d.date))).map(d=>String(d&&d.date))]);
+  if(offI.size>(off.i||[]).length||offD.size>(off.d||[]).length)try{localStorage.setItem('sync_off',JSON.stringify({url,i:[...offI].slice(-500),d:[...offD].slice(-500)}))}catch{}
   if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,got);   // a device's first contact with a backup (safety.js): its settings win
   const now=mergeState(await applyMerged(mergeState(local,got),local),got),ix=remote.idx||{i:{},d:{},s:-1},tomb=remote.tombstones||{};
   // everything the backup holds must be here now; when not (storage cleared, a marker from another backup), ask for all of it
@@ -202,27 +279,28 @@ async function syncLite(remote,local,url,token,inline){
   const gotD=new Set((got.days||[]).map(d=>d.date)),keptD=d=>gotD.has(d.date)&&d.date in ix.d&&(d.updated||0)<ix.d[d.date];
   // (an item the backup sent that a deletion here outweighs, core.js tombWins: an older worker keeps it, by the stamp alone. Not lacking)
   const dead=new Set((got.items||[]).filter(i=>tombWins(now.tombstones[i.id],i)).map(i=>i.id));
-  const lacks=Object.entries(ix.i).some(([id,s])=>!(id in has?has[id]>=s:(now.tombstones[id]||0)>=s||dead.has(id)))||Object.entries(ix.d).some(([d,u])=>!(d in hasD)||(hasD[d]<u&&!gotD.has(d)))||(ix.s>0&&!(now.settings&&(now.settings.updated||0)>=ix.s));
+  const lacks=Object.entries(ix.i).some(([id,s])=>!offI.has(id)&&!(id in has?has[id]>=s:(now.tombstones[id]||0)>=s||dead.has(id)))||Object.entries(ix.d).some(([d,u])=>!offD.has(d)&&!(d in hasD)||(hasD[d]<u&&!gotD.has(d)))||(ix.s>0&&!(now.settings&&(now.settings.updated||0)>=ix.s));
   if(lacks&&!remote.all)return {again:{all:true}};
   pullDone();   // this device now holds everything the backup does: start-up writers may run (before the upload: they save on a current copy)
   // what the backup lacks: records newer than its own, tombstones it doesn't have
   const share=syncShare(now);   // (not the sample wardrobe)
-  const up={items:share.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:share.days.filter(d=>!(d.date in ix.d)||(d.updated||0)>ix.d[d.date]||keptD(d)),
+  const up={items:share.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:share.days.filter(d=>!(d.date in ix.d)||syncSentStamp(d)>ix.d[d.date]||keptD(d)),
     tombstones:Object.fromEntries(Object.entries(now.tombstones).filter(([id,t])=>!(id in tomb)||tomb[id]<t))};
+  Object.assign(up,cleanState({items:up.items,days:up.days,tombstones:up.tombstones}));   // records as the server takes them (core.js cleanState)
   if(now.settings&&(now.settings.updated||0)>(ix.s??-1))up.settings=now.settings;
   if(!up.items.length&&!up.days.length&&!up.settings&&!Object.keys(up.tombstones).length){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
-  if((+localStorage.getItem('sync_pause')||0)>Date.now()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
+  if(syncPaused()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
   const have=new Set(remote.ph||[]);for(const h of inline)have.delete(h);
-  const {recs,photos}=await phOut(up,have);
-  const p=await fetch(url,{method:'POST',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,baseSaved:remote.saved||0,day:isoKey(new Date()),...(restoreWanted()?{reason:'restore'}:{}),delta:recs,photos})});
-  const pr=await p.json().catch(()=>({})),since=`${remote.rev||0}:${remote.saved||0}`;
+  const {recs,photos}=await phOut(up,have),t0=Date.now();
+  const p=await fetch(url,{method:'POST',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,baseSaved:remote.saved||0,day:isoKey(new Date(nowMs())),...(restoreWanted()?{reason:'restore'}:{}),delta:recs,photos})});
+  clockLearn(p,t0,Date.now());const pr=await p.json().catch(()=>({})),since=`${remote.rev||0}:${remote.saved||0}`;
   if(p.status===409)return {again:{since}};                                   // another device saved first: what it saved, then again
   if(p.status===400&&Array.isArray(pr.missing)){pr.missing.forEach(h=>inline.add(h));return {again:{since}}}
   if(p.status===422&&pr.error==='legacy')return {again:{legacy:true}};          // a backup the server can't index: the whole of it
   if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
   if(endedAnswer(p.status,pr)){inviteEnded(token,pr);setSyncStatus(ENDED);return false}
   if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
-  setSyncMark(pr.rev,pr.saved,stateSig(now));synced();restoreDone();
+  setSyncMark(pr.rev,pr.saved,stateSig(now));syncSdDone();synced();restoreDone();
   if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
   return true}
 async function syncOnce(){
@@ -230,7 +308,7 @@ async function syncOnce(){
   if(!url){setSyncStatus('Not connected.');return false}
   if(!token){setSyncStatus('Not connected: paste your invite link under Connection.');return false}
   if(localStorage.getItem('invite_ended')===token){setSyncStatus(ENDED);return false}
-  syncing=true;setSyncStatus('Syncing…');
+  syncing=true;setSyncStatus('Syncing…');syncJoinMark(token);
   try{
     let lite=SYNC_LITE&&!!(self.crypto&&crypto.subtle),since=null,all=false,full=0;const inline=new Set();
     for(let attempt=0;attempt<6;attempt++){
@@ -238,7 +316,8 @@ async function syncOnce(){
       const mark=attempt?null:syncMark(),local=await localState(),quick=!!mark&&stateSig(mergeState(local,{}))===mark.sig,last=syncMark();
       let q=quick?'?v='+encodeURIComponent(mark.v):'';
       if(lite){const s=all?null:since||(last&&last.v);q='?lite=1'+(s?'&since='+encodeURIComponent(s):'')+(quick?'&v='+encodeURIComponent(mark.v):'')}
-      const r=await fetch(url+q,{headers:{'x-app-token':token},cache:'no-store'});const remote=await r.json().catch(()=>({}));
+      const t0=Date.now(),r=await fetch(url+q,{headers:{'x-app-token':token},cache:'no-store'}),learned=clockLearn(r,t0,Date.now());const remote=await r.json().catch(()=>({}));
+      if(learned&&r.ok&&await clockFix())continue;   // stamps from a wrong clock put right first (then asked again, with this phone's copy as it now is)
       if(endedAnswer(r.status,remote)){inviteEnded(token,remote);setSyncStatus(ENDED);pullDone();return false}
       if(r.status===501)pullDone();   // the server keeps no backup (no KV): nothing this device could be behind
       if(r.ok)try{localStorage.removeItem('invite_lost')}catch{}
@@ -248,19 +327,20 @@ async function syncOnce(){
       if(remote.lite===1){const res=await syncLite(remote,local,url,token,inline);if(!res||res===true)return res;
         const a=res.again;if(a.all)all=true;if(a.since){since=a.since;all=false}if(a.legacy)lite=false;continue}
       if(++full>3)break;
+      if(remote.data)remote.data=cleanState(remote.data);   // records from outside (core.js)
       if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
       const merged=mergeState(local,remote.data||{});
       // upload what is actually stored now (it may include edits made during this sync)
-      const now=mergeState(await applyMerged(merged,local),remote.data||{}),out=syncShare(now);pullDone();   // (out: what is sent, without the sample wardrobe)
+      const now=mergeState(await applyMerged(merged,local),remote.data||{}),out=cleanState(syncShare(now,remote.data));pullDone();   // (out: what is sent, without the sample wardrobe)
       if(remote.data&&stateSig(out)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
-      if((+localStorage.getItem('sync_pause')||0)>Date.now()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
-      const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date()),...(restoreWanted()?{reason:'restore'}:{}),data:out})});   // data last: the server reads a large backup's few leading fields without parsing the whole
+      if(syncPaused()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
+      const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date(nowMs())),...(restoreWanted()?{reason:'restore'}:{}),data:out})});   // data last: the server reads a large backup's few leading fields without parsing the whole
       if(p.status===409)continue;                       // another device saved first: merge again
       const pr=await p.json().catch(()=>({}));
       if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
       if(endedAnswer(p.status,pr)){inviteEnded(token,pr);setSyncStatus(ENDED);return false}
       if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
-      setSyncMark(pr.rev,pr.saved,stateSig(now));synced();restoreDone();
+      setSyncMark(pr.rev,pr.saved,stateSig(now));syncSdDone();synced();restoreDone();
       if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
       return true;
     }
@@ -291,11 +371,14 @@ async function downloadBackup(){
 async function restoreBackup(file){
   if(!file)return;let data;
   try{data=JSON.parse(await file.text())}catch{tell('That file is not a Daily Wardrobe backup.');return}
-  if(data.app!=='daily-wardrobe'||!Array.isArray(data.items)){tell('That file is not a Daily Wardrobe backup.');return}
+  if(!data||data.app!=='daily-wardrobe'||!Array.isArray(data.items)){tell('That file is not a Daily Wardrobe backup.');return}
+  const n=data.items.length;data=cleanState(data);   // only records of the app's own shape come in (core.js); the rest is said
+  const left=n-data.items.length;
   // the file's settings win, every one, stamped now (fix round 3, W1-11-03: restored right after a wipe, the new setup's newer vest choice
   // and holiday country won the per-setting merge over the file's, under "Restored"); a setting only this phone has stays
-  const local=await localState();if(data.settings&&typeof data.settings==='object')data={...data,settings:stampAllSettings({...(local.settings||{}),...data.settings},Date.now())};
+  const local=await localState();if(data.settings&&typeof data.settings==='object')data={...data,settings:stampAllSettings({...(local.settings||{}),...data.settings},nowMs())};
   await applyMerged(mergeState(local,data),local);
+  if(left){tell(`Restored. Your wardrobe now has ${items.length} item${items.length===1?'':'s'}. ${left} item${left===1?' in the file wasn’t':'s in the file weren’t'} a Daily Wardrobe item and ${left===1?'was':'were'} left out.`);showSyncStatus();scheduleSync();return}
   tell(`Restored. Your wardrobe now has ${items.length} item${items.length===1?'':'s'}.`);showSyncStatus();scheduleSync();
 }
 /* ---- daily backups on the worker (snap:<day> / snap:<month> / snap:before-restore) ---- */
@@ -326,13 +409,17 @@ const errWords=e=>{const m=String(e&&e.message||e||'');return typeof plainErr===
 /* a copy from before the setup (a first day's backup: no setupDone, no items) brings back no settings: they were only the defaults, and taken
    they sent a new user back to Welcome with his workdays and location gone (re-audit 2026-11-15). The phone's settings stay */
 const snapPreSetup=(local,snap)=>!!(local&&local.settings&&local.settings.setupDone)&&!!snap&&!(snap.settings&&snap.settings.setupDone)&&!(snap.items||[]).length;
-function rollBackState(local,snap,now=Date.now()){
-  const items=(snap.items||[]).map(i=>({...i,updated:now})),keep=new Set(items.map(i=>i.id)),tombstones={...(snap.tombstones||{})};
+/* (fix round 3, the audit's W2-13-03) each restored item and day is stamped above this phone's deletion mark and copy of it, so marks dated
+   ahead (a wrong clock, or someone holding the code) can't keep a roll-back from bringing the pieces back */
+function rollBackState(local,snap,now=nowMs()){
+  const lt=local.tombstones||{},ld=Object.fromEntries((local.days||[]).map(d=>[d.date,d.updated||0])),li=Object.fromEntries((local.items||[]).map(i=>[i.id,stamp(i)]));
+  const items=(snap.items||[]).map(i=>({...i,updated:Math.max(now,(+lt[i.id]||0)+1,(li[i.id]||0)+1)})),keep=new Set(items.map(i=>i.id)),tombstones={...(snap.tombstones||{})};
   for(const id of Object.keys(tombstones))if(keep.has(id))delete tombstones[id];
-  for(const i of local.items||[])if(!keep.has(i.id))tombstones[i.id]=now;
+  for(const i of local.items||[])if(!keep.has(i.id))tombstones[i.id]=Math.max(now,stamp(i)+1);
   // settings: every one stamped now (core.js stampAllSettings), and one the snapshot lacks marked removed now, so it goes on every device too
-  let settings=null;if(snap.settings&&!snapPreSetup(local,snap)){settings=stampAllSettings({...snap.settings},now);for(const k of setKeys(local.settings))if(!(k in settings)){settings.ks[k]=now;settings.kh[k]='-'}}
-  return {items,tombstones,days:(snap.days||[]).map(d=>({...d,updated:now})),settings}}
+  let settings=null;if(snap.settings&&!snapPreSetup(local,snap)){const ls=local.settings||{},sn=Math.max(now,(+ls.updated||0)+1,...Object.values(ls.ks||{}).map(v=>(+v||0)+1));
+    settings=stampAllSettings({...snap.settings},sn);for(const k of setKeys(local.settings))if(!(k in settings)){settings.ks[k]=sn;settings.kh[k]='-'}}
+  return {items,tombstones,days:(snap.days||[]).map(d=>({...d,updated:Math.max(now,(ld[d.date]||0)+1)})),settings}}
 /* what a roll-back says goes to Settings' line and, when Settings isn't open (closed under its question, or the toast's Undo), to a
    toast as well: written only to the closed Settings page, the wardrobe vanished from Today with no word (re-audit 2026-11-15) */
 function rollSay(t,ms,act){const st=$('#snap-status');if(st)st.textContent=t;if(!(typeof settingsOpen==='function'&&settingsOpen())&&typeof toast==='function')toast(t,ms||6000,act)}
@@ -344,6 +431,7 @@ async function rollBack(pick){const sel=$('#snap-list'),id=pick&&pick.id||sel&&s
   try{rollSay('Rolling back…',2500);await syncNow();
     const r=await fetch(url+'?snap='+encodeURIComponent(id),{headers:{'x-app-token':token},cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||j.error||'HTTP '+r.status);
     if(!j.data||!Array.isArray(j.data.items))throw new Error('that backup is empty');
+    j.data=cleanState(j.data);   // records from outside (core.js)
     const local=await localState(),pre=snapPreSetup(local,j.data),next=rollBackState(local,j.data);
     restoring=true;localStorage.setItem('sync_restore',token);   // before the phone's copy changes: a kill from here on still uploads it as a restore
     await applyMerged(mergeState(local,next),local);

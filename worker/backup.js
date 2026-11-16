@@ -2,6 +2,7 @@
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
 import { PV, asText, isPv, loadAny, phKey, putWhole, pvMeta, pvResponse, pvText, refsOf, scanPhotos, storePhotos } from './photostore.js';
 import { WIPED_KEY, countWrites, limitBody, sha256Hex, spend, spendUpTo, unspend, utcDay } from './people.js';
+import { PIC_RE, recCheck } from './records.js';
 
 const SYNC_KEY = 'wardrobe:v1', SYNC_NONE = '{"rev":0,"saved":0,"data":null}';
 /* the stored backup's version {rev, saved} without loading the backup (several MB of photos): KV keeps it as the key's
@@ -85,7 +86,9 @@ const SNAP_DAYS = 30, SNAP_MONTHS = 400, SNAP_DAY = /^\d{4}-\d{2}-\d{2}$/;
 /* oldPv: the version being replaced in its by-reference form, when it was stored with its photos inline (a backup converted at this
    save): its copies are kept small too, their photos already stored */
 async function keepSnapshots(env, m, body, ns = '', oldPv = null) {
-  const day = SNAP_DAY.test(body.day || '') ? body.day : new Date().toISOString().slice(0, 10), month = day.slice(0, 7);
+  // the app's own date, unless it is more than a day ahead of the server's (a phone clock a year ahead kept snap:2027-11, the audit's W1-9-07)
+  const today = new Date().toISOString().slice(0, 10), near = SNAP_DAY.test(body.day || '') && Date.parse(body.day) - Date.parse(today) <= 864e5;
+  const day = near ? body.day : today, month = day.slice(0, 7);
   const want = [[`${ns}snap:${day}`, SNAP_DAYS], [`${ns}snap:${month}`, SNAP_MONTHS]];
   // which of the two are already kept: asked for by a read each where KV can; else by one list, as before
   let have = new Set();
@@ -181,6 +184,42 @@ function nextRevs(prev, data, rev) {
   const st = data && data.settings, ps = pd.settings ? pd.settings.updated || 0 : null;
   return { i, d, s: st && (st.updated || 0) === ps && pr.s != null ? pr.s : rev };
 }
+/* ---- stamps from wrong clocks (fix round 3, 2026-11-16, the audit's W1-9 and W2-13-03). The app stamps by the server's time now (core.js
+   nowMs, from the x-now header every answer carries), so a stamp more than CLOCK_AHEAD past the server's clock is a wrong clock or a
+   crafted request: in what a save sends (dropFuture) it is left out, so deletion marks dated years ahead can't wipe a wardrobe and a record
+   dated ahead can't freeze it, and the app, which puts its own such stamps back to now once it knows the gap (sync.js clockFix), sends them
+   again as ordinary changes. What the backup already holds from before is read with such stamps put back to the backup's own save time
+   (clampStamps, the same value on every read until the next save, which stores it so), by GET ?lite=1 and by a save alike ---- */
+const CLOCK_AHEAD = 10 * 6e4;
+const over = (v, lim) => (+v || 0) > lim;
+/* (fix round 3's field stamps: an item's or day's fs = {u, b, s} and the settings' entry stamps kse count like updated and ks: a field
+   stamped ahead would win that field for as long as the record's own stamp) */
+const fsOver = (x, lim) => !!(x && x.fs && typeof x.fs === 'object' && (over(x.fs.u, lim) || over(x.fs.b, lim) || Object.values(x.fs.s || {}).some(v => over(v, lim))));
+const kseOver = (s, lim) => !!(s && s.kse && typeof s.kse === 'object' && Object.values(s.kse).some(e => e && typeof e === 'object' && Object.values(e).some(v => over(v, lim))));
+const fsClamp = (c, x, to, lim) => { if (!x.fs || typeof x.fs !== 'object') return c; const f = x.fs, s = {};
+  for (const [k, v] of Object.entries(f.s || {})) s[k] = over(v, lim) ? to : v;
+  c.fs = { u: f.u === stampOf(x) ? stampOf(c) : f.u, b: over(f.b, lim) ? to : f.b, s }; return c; };
+function clampStamps(d, to, lim) {
+  if (!d || !(to > 0)) return d;   // (no save time known: nothing to measure against)
+  const bad = arrOf(d.items).some(x => x && (over(x.updated, lim) || over(x.added, lim) || fsOver(x, lim))) || arrOf(d.days).some(x => x && (over(x.updated, lim) || over(x.base, lim) || over(x.lockAt, lim) || fsOver(x, lim)))
+    || Object.values(d.tombstones || {}).some(v => over(v, lim)) || !!(d.settings && (over(d.settings.updated, lim) || Object.values(d.settings.ks || {}).some(v => over(v, lim)) || kseOver(d.settings, lim)));
+  if (!bad) return d;
+  const fix = (o, ks) => { const c = { ...o }; for (const k of ks) if (over(c[k], lim)) c[k] = to; return c; };
+  const out = { ...d, items: arrOf(d.items).map(x => x ? fsClamp(fix(x, ['updated', 'added']), x, to, lim) : x), days: arrOf(d.days).map(x => x ? fsClamp(fix(x, ['updated', 'base', 'lockAt']), x, to, lim) : x),
+    tombstones: Object.fromEntries(Object.entries(d.tombstones || {}).map(([id, t]) => [id, over(t, lim) ? to : t])) };
+  if (d.settings) { const s = fix(d.settings, ['updated']); if (s.ks) s.ks = Object.fromEntries(Object.entries(s.ks).map(([k, t]) => [k, over(t, lim) ? to : t])); if (kseOver(s, lim)) s.kse = Object.fromEntries(Object.entries(s.kse).map(([k, e]) => [k, e && typeof e === 'object' ? Object.fromEntries(Object.entries(e).map(([x, v]) => [x, over(v, lim) ? to : v])) : e])); out.settings = s; }
+  return out;
+}
+function dropFuture(d, lim) {
+  if (!d) return d;
+  const s = d.settings && !over(d.settings.updated, lim) && !Object.values(d.settings.ks || {}).some(v => over(v, lim)) && !kseOver(d.settings, lim) ? d.settings : null;
+  return { ...d, items: arrOf(d.items).filter(x => !(x && (over(stampOf(x), lim) || over(x.added, lim) || fsOver(x, lim)))), days: arrOf(d.days).filter(x => !(x && (over(x.updated, lim) || over(x.base, lim) || over(x.lockAt, lim) || fsOver(x, lim)))),
+    tombstones: Object.fromEntries(Object.entries(d.tombstones || {}).filter(([, t]) => !over(t, lim))), settings: s };
+}
+/* the sample wardrobe stays on the phone that loaded it (fix round 3, W1-3-04): a sample piece the person hasn't made his (sample without
+   sampleMine; kit.js kitEdited) is never kept or handed out. An app from before that rule (14-15 Nov) uploaded the whole sample, and a new
+   phone joining got it with "You're trying a sample wardrobe": GET ?lite leaves such pieces out, and the next save drops them */
+const sampleOnly = i => !!i && i.sample === true && !i.sampleMine;
 /* core.js mergeItem, for the worker (fix round 3, 2026-11-16): an item field by field by its field stamps (fs = {u, b, s}: the stamp of
    each field changed after b; a copy whose fs.u isn't its stamp counts its one stamp for every field), the result one above both when it
    took anything from the copy with the older stamp; a deletion wins over a copy whose oldest field is no newer than it (itemBase) */
@@ -239,7 +278,7 @@ function mergeLite(a, b) {
   a = a || {}; b = b || {}; const items = {}, tomb = { ...(a.tombstones || {}) };
   for (const [id, t] of Object.entries(b.tombstones || {})) tomb[id] = Math.max(tomb[id] || 0, +t || 0);
   for (const it of [...arrOf(a.items), ...arrOf(b.items)]) { if (!it || it.id == null) continue; const cur = items[it.id]; items[it.id] = cur ? mergeItemLite(cur, it) : it; }
-  for (const id of Object.keys(items)) if (tomb[id] && tomb[id] >= itemBase(items[id])) delete items[id];
+  for (const id of Object.keys(items)) if ((tomb[id] && tomb[id] >= itemBase(items[id])) || sampleOnly(items[id])) delete items[id];
   const cutoff = Date.now() - 180 * 864e5; for (const id of Object.keys(tomb)) if (tomb[id] < cutoff) delete tomb[id];
   // (a newer copy that is only the app's lock of the week loses to an older copy changed after the version the lock was built on:
   // core.js dayWins, 2026-11-14)
@@ -372,7 +411,8 @@ async function syncLiteGet(env, json, cors, ns, q) {
   if (!m && await env.WARDROBE.get(KEY)) return storedResponse(env, KEY, m, cors);   // saved by a worker that kept no version: as before
   const src = await loadAny(env, KEY, m, false);
   if (!src) return storedResponse(env, KEY, m, cors);                                 // too large to index here: the whole backup, as before
-  const rev = m ? m.rev : 0, saved = m ? m.saved : 0, D = src.lite.data || {}, R = src.lite.revs || {};
+  const rev = m ? m.rev : 0, saved = m ? m.saved : 0, D0 = clampStamps(src.lite.data || {}, saved, saved + CLOCK_AHEAD), R = src.lite.revs || {};
+  const D = arrOf(D0.items).some(sampleOnly) ? { ...D0, items: arrOf(D0.items).filter(i => !sampleOnly(i)) } : D0;   // (not the sample wardrobe)
   const [sr, ss] = (q.get('since') || '').split(':').map(Number), all = !(sr > 0) || sr > rev || (sr === rev && ss !== saved);
   const newer = r => all || (r ?? rev) > sr;
   const body = { lite: 1, rev, saved, all, items: arrOf(D.items).filter(i => newer(R.i && R.i[i.id])), days: arrOf(D.days).filter(d => newer(R.d && R.d[d.date])), tombstones: D.tombstones || {},
@@ -409,6 +449,8 @@ async function syncLitePost(req, env, json, cors, who) {
   if (buf.byteLength > BACKUP_MAX) return json({ error: 'backup too large (over 48 MB)' }, 413);
   let body; try { body = JSON.parse(new TextDecoder().decode(buf)); } catch { return json({ error: 'bad json' }, 400); }
   if (!body || !body.delta || typeof body.delta !== 'object') return json({ error: 'nothing to save' }, 400);
+  const wrong = recCheck(body.delta); if (wrong) return json(wrong, 400);   // records of the app's shape only (records.js), before anything is counted
+  for (const s of Object.values(body.photos || {})) if (typeof s !== 'string' || !PIC_RE.test(s)) return json({ error: 'bad photo', message: 'The backup was not saved: a photo in it is not a picture.' }, 400);
   const over = await spend(env, who, 'backup'); if (over) return json(over.body, over.status);
   const give = async r => { await unspend(env, who, 'backup'); return r; };
   const m = await syncVersion(env, ns), rev = m ? m.rev : 0;
@@ -421,7 +463,8 @@ async function syncLitePost(req, env, json, cors, who) {
     if (!PH_HEX.test(h) || !isPhotoOld(s) || await phHash(s) !== h) return give(json({ error: 'a photo does not match its name' }, 400));
     photos.set(h, s);
   }
-  const { refs: delta } = await splitPhotos(body.delta, photos), cur = src.lite.data || {}, next = mergeLite(cur, delta);
+  const sv = m ? m.saved || 0 : 0, { refs: sent } = await splitPhotos(body.delta, photos), delta = dropFuture(sent, Date.now() + CLOCK_AHEAD);
+  const cur = clampStamps(src.lite.data || {}, sv, sv + CLOCK_AHEAD), next = mergeLite(cur, delta);
   if (liteSig(cur) === liteSig(next) && m) return give(json({ rev, saved: m.saved }));   // nothing new: nothing written
   // every photo the new version refers to: kept by the backup now, or sent; the backup's own are already stored (or, inline, are stored now)
   const want = new Map(), missing = [];
@@ -459,4 +502,4 @@ function writeBudget(env, who) {
   return w;
 }
 
-export { BACKUP_MAX, PART_MAX, PH_HEX, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, mergeLite, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget };
+export { BACKUP_MAX, CLOCK_AHEAD, clampStamps, dropFuture, mergeLite, PART_MAX, PH_HEX, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget };
