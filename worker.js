@@ -118,7 +118,8 @@ async function serve(req, env, cors, allowed, origin) {
     const c = await tagWithClaude(env, image, { schema: tagSchema(custom, true, free, freePat), prompt: TAG_INTRO + TAG_RULES + SINGLE_EXTRA + (free || freePat ? '' : MATERIAL_EXTRA),
       owner: customText(custom) + ownMaterialsText(ownMats) + correctionsText(body.corrections), text: (free ? FREE_EXTRA : '') + (freePat ? FREE_PAT_EXTRA : '') + measuredText(body.measured),
       closeup: cm, wb: wbOf(body), effort: 'medium', maxTokens: 12000, signal: req.signal });
-    if (c.status === 200) c.body = cleanTag(c.body, { closeup: !!cm, ownMaterials: ownMats }); else await unspend(env, who, 'tag');
+    // (the accents, 2026-11-16: the owner's own colour keys count as known)
+    if (c.status === 200) c.body = cleanTag(c.body, { closeup: !!cm, ownMaterials: ownMats, ownColors: custom.colors.map(k => k.key) }); else await unspend(env, who, 'tag');
     return json(c.body, c.status);
   }
   // Workers AI: any answer that is not a tag gives the tester's count back

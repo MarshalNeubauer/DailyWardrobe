@@ -66,7 +66,9 @@ let openRow=null;
 const rowPic=i=>i.photo?`<img class="rpic" src="${srcOk(i.photo)}" alt="Photo of ${esc(desc(i)||nm(i))}">`:itemPic(i)?`<img class="rpic" src="${srcOk(itemPic(i).img)}" alt="Picture of ${esc(desc(i)||nm(i))}">`:`<div class="rpic draw">${itemThumb(i,true)}</div>`;
 const rowPanel=i=>rowPic(i)+(i.photo?'':`<small class="mut rnote">No photo of this item yet${itemPic(i)?': a generated picture of it.':': this is how the app draws it.'}</small>`);
 /* taking a piece off for the day (the owner's ask, 2026-11-13): the jacket (with its waistcoat; a suit's trousers stay) or the tie (with
-   its clip), on today and the coming days; − beside the piece takes it off, + on its "Taken off" row puts it back (setOff) */
+   its clip), on today and the coming days; − beside the piece takes it off, + on its "Taken off" row puts it back (setOff). With a suit's
+   jacket off its pants have ⇄ like any pants (the owner, 2026-11-16: "my pants are locked"): other pants are a pick (force.bot), the
+   picker offers the suit's own pants back, and the jacket back on brings the whole suit */
 const offOn=o=>!o.frozen&&o.occasion!=='casual';
 const offBtn=(s,o)=>offOn(o)&&o[s]&&(s==='top'||s==='tie')?`<button class="swap offb" onclick="setOff('${s}',true)" aria-label="Take off the ${s==='top'?(o.suitDay?'suit jacket':'blazer'):'tie'}" title="Take off for the day">−</button>`:'';
 const offRow=(s,o)=>{const l=s==='top'?(o.offKind==='suit'?'Suit':'Blazer'):'Tie',w=s==='top'?(o.offKind==='suit'?'suit jacket':'blazer'):'tie';
@@ -77,7 +79,8 @@ async function setOff(slot,on){const k=key(sel),o=planFor()[k];if(!o||o.frozen||
     // the rest of the outfit is pinned, so taking a piece off changes nothing else (and putting it back brings the same piece)
     const force={...(r.force||{})};for(const s of SLOTS)if(o[s]&&!(s==='bot'&&(o.suitDay||o.suitBot)))force[s]=o[s].id;
     if(o.top)r.kind=o.suitDay?'suit':'blazer';r.force=force;off[slot]=true}
-  else delete off[slot];
+  // the suit jacket back on is the whole suit again: other pants picked while it was off (⇄ on the pants) let go
+  else{delete off[slot];if(slot==='top'&&o.offKind==='suit'&&r.force&&r.force.bot){r.force={...r.force};delete r.force.bot}}
   if(off.top||off.tie)r.off=off;else delete r.off;delete r.lock;swapMsg='';await saveDay(r);renderToday()}
 /* a jacket worn again too soon (rest under COOL days): "Add more suits" only when the suits in rotation that day (not away at the cleaner,
    not paused) are too few for a COOL-day rest; on a day the owner chose the jacket (a pick, a correction) it says only when it was last
@@ -92,7 +95,7 @@ const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&
   .filter(([l,i,s])=>!(s==='clip'&&!i&&(o.vest||!(o.frozen&&pastEdit===key(sel)))))   // no tie clip that day: no row (kept while correcting a past day, to add the one worn, but not on a vest day: the vest holds the tie, W2-17-20)
 .filter(([l,i,s])=>!(s==='clip'&&o.off&&o.off.tie))
 .map(([l,i,s])=>{if((s==='top'||s==='tie')&&!i&&o.off&&o.off[s])return offRow(s,o);const open=!!i&&openRow===s;
-  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)&&!(s==='bot'&&o.suitBot)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}${offBtn(s,o)}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':`<button type="button" class="linkbtn addone" onclick="openAdd('${addForSlot(s,o.suitDay)||''}')" aria-label="${l}: none yet. Add one">Add one</button>`}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
+  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}${offBtn(s,o)}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':`<button type="button" class="linkbtn addone" onclick="openAdd('${addForSlot(s,o.suitDay)||''}')" aria-label="${l}: none yet. Add one">Add one</button>`}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
     (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in" onclick="toggleRow('${s}')">${open?rowPanel(i):''}</div></div>`:'')+`</div>`});
   rows.splice(nj?0:1,0,vestRow(o));return rows.join('')};
 function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[s])return;const opening=!el.classList.contains('open');
