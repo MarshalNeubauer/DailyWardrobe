@@ -25,7 +25,8 @@ function noteKind(n){
   for(const [m,label] of k)if(n.includes(m))return label;return 'other';
 }
 /* bought and on its way: owned, as far as the next purchase goes */
-const shopList=list=>list.map(i=>{if(!((i.order||i.away)&&i.paused))return i;const {paused,arrives,...r}=i;return r});
+// (a piece picked by hand only, core.js isHandPick, is left out: What to buy plans and counts the planned wardrobe, 2026-11-16)
+const shopList=list=>list.filter(i=>!isHandPick(i)).map(i=>{if(!((i.order||i.away)&&i.paused))return i;const {paused,arrives,...r}=i;return r});
 const CLOTHES=['suit','blazer','pants','shirt','tie'];
 
 /* plan the horizon with a given wardrobe and measure it */
@@ -49,7 +50,7 @@ function evalPlan(list,T,weeks){
         const tr=o.bot||o.top;if(o.shoes&&tr){const w=(SH[pcol(tr)]||['black','brown'])[0],x=want[w]||(want[w]={want:0,got:0});x.want++;if(pcol(o.shoes)===w){x.got++;first++}}
         for(const sl of SLOTS){const it=o[sl];if(!it||(sl==='bot'&&o.suitDay))continue;use[it.id]=(use[it.id]||0)+1;(when[it.id]||(when[it.id]=[])).push(k)}}
       if(s){prev2=prev;prev=s}if(o.shoes){pShoe=o.shoes.id;pN=dn}}
-    const idle=list.filter(i=>[...CLOTHES,'shoes'].includes(i.type)&&!dressOut(i.type)&&inRotation(i)&&!use[i.id]).map(i=>i.id);
+    const idle=list.filter(i=>[...CLOTHES,'shoes'].includes(i.type)&&!dressOut(i.type)&&!isHandPick(i)&&inRotation(i)&&!use[i.id]).map(i=>i.id);
     return {days:n,avg:n?sum/n:0,avgSuit:nS?sumS/nS:0,avgOdd:n-nS?(sum-sumS)/(n-nS):0,problems,rest,jrep,trep,lrep,b2b,first,looks:looks.size,idle,use,when,lost,marked,kinds,want,score,plans};
   }finally{items=keep}
 }
@@ -68,7 +69,8 @@ const groupKind=t=>t==='tie'||t==='shirt'?t:t==='shoes'||t==='belt'?'leather':'j
 const groupLabel=(t,g)=>(GROUP_LABELS[groupKind(t)]||{})[g]||colName(g);
 const groupHex=(t,g)=>COLORS[t==='shirt'&&g==='green'?'mint':t==='shirt'&&g==='purple'?'lavender':GROUP_HEX[g]||g]||'#8b8f96';
 const TYPE_WORD={suit:['suit','suits'],blazer:['blazer','blazers'],pants:['pants','pants'],shirt:['shirt','shirts'],tie:['tie','ties'],shoes:['shoes','shoes'],belt:['belt','belts'],socks:['socks','socks'],
-  tieclip:['tie clip','tie clips'],cufflinks:['cufflinks','cufflinks'],overcoat:['overcoat','overcoats'],raincoat:['raincoat','raincoats']};
+  tieclip:['tie clip','tie clips'],cufflinks:['cufflinks','cufflinks'],overcoat:['overcoat','overcoats'],raincoat:['raincoat','raincoats'],
+  tee:['T-shirt','T-shirts'],polo:['polo','polos'],henley:['henley','henleys'],sweater:['sweater','sweaters'],sweatshirt:['sweatshirt','sweatshirts'],hoodie:['hoodie','hoodies'],qzip:['quarter-zip','quarter-zips'],cardigan:['cardigan','cardigans'],chore:['chore jacket','chore jackets']};
 const several=(n,t)=>`${n} ${TYPE_WORD[t][n===1?0:1]}`;
 const listAnd=a=>(a=[...new Set(a)]).length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
 

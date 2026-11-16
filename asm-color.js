@@ -49,7 +49,11 @@ function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
   if(!o.bot||!o.belt)return null;   // the shirt masters show the trousers and the belt
   return o.tie?'shirt-tie':'shirt-open'}
 /* the outfit's kind when its master is on this device (downloaded) */
-const asmCmReady=o=>{const k=asmCmKind(o);return k&&renders[asmCmKey(k,'master')]?k:null};
+const asmCmReady=o=>{const k=asmKindOf(o);return k&&renders[asmCmKey(k,'master')]?k:null};
+/* (2026-11-16) the master a look is painted on, the new garments' kinds included (asm-kinds.js asmCmKindOf); asmCmKind (in the painter's
+   fingerprint) is unchanged. asmNkBaseOf: a new kind's base master (its cloth and trousers/jacket zones), else the kind itself */
+const asmKindOf=o=>typeof asmCmKindOf==='function'?asmCmKindOf(o):asmCmKind(o);
+const asmNkBaseOf=k=>typeof asmNkBase==='function'?asmNkBase(k):k;
 /* the cloth of each garment, as it goes into the picture's key: a new colour, reading or drawing makes a new picture */
 const ASM_CM_PAINTV=9;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points; 5: the sleeves reach the jacket's outer edge (ASM_CM_RIM); 6: the cloth look (#304, rolled back: its pictures are still on the worker under p6); 7: the cloth look and lighting as chosen (ASM_CM_LOOK, ASM_CM_LIGHT); 8: the same on trousers, the shirt's buttons drawn (ASM_CM_BTN), the tie's sheen dialled back (the owner: too glossy), the half-hidden button drawn as a button, no purple skin edge (the button smudge); 9: (2026-11-14 audit) the tie sheen, hand edge and trousers lighting shipped under 8 without a bump: repainted; since then the painter's code is hashed into every key (asmCmCodeSig), so a forgotten bump can't leave old pictures
 /* the cloth look (the owner's choice, 2026-11-13, after several rounds of mockups against an OpenAI picture of his black suit, which the
@@ -276,17 +280,20 @@ const asmCmGaps=()=>items.filter(i=>ASM_CM_ZONE[i.type]&&inRotation(i)&&!dressOu
    own scale since 2026-11-13 (they were at the jacket master's, about 1.5 times too large): marked in only those looks' keys */
 const asmCmTrSc=(z,i)=>{if(z!=='trousers')return '';const h=asmCmRoute(i,z).how;return h==='bands'||h==='look'||h==='twill'||h==='herringbone'||h==='tweed'||ASM_MICRO[h]?'/sc/lg'+ASM_LEGV:h==='tile'?'/lg'+ASM_LEGV:''};   // (/lg: the lines follow the legs, asmLegsPrep)
 const ASM_LEGV=1;
-function asmCmSig(o){const k=asmCmKind(o);if(!k)return '';const it=asmCmItems(o,k),s=[k,'p'+ASM_CM_PAINTV+'.'+asmCmCodeSig()],rev=asmCmRev(k);if(rev)s.push('mf:'+rev);   // the painter's code and the master's record dates (asmCmCode, asmCmRev)
+function asmCmSig(o){const k=asmKindOf(o);if(!k)return '';const b=asmNkBaseOf(k),it=asmCmItems(o,b),s=[k,'p'+ASM_CM_PAINTV+'.'+asmCmCodeSig()];
+  if(b!==k)s.push('nk'+asmNkSig());   // a new garment's master (asm-kinds.js): its own code too
+  const rev=asmCmRev(k);if(rev)s.push('mf:'+rev);   // the painter's code and the master's record dates (asmCmCode, asmCmRev)
   for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i)+asmCmTrSc(z,i)+asmCmTieTag(z,i)+asmCuTag(z,i)+asmCrTag(z,i)+asmWtTag(z,i)+asmLookTag(z,i))}
   if(o.clip&&k!=='vest'&&typeof asmBarSig==='function')s.push('bar:'+asmBarSig(o.clip));
   if(typeof asmWatchPaints==='function'&&asmWatchPaints(o.watch))s.push('watch:'+asmWatchSig(o.watch));   // another watch than the master's (asm-watch.js)
   if(ASM_CM_BTN[k])s.push('btn'+ASM_CM_BTNV);   // the masters whose shirt buttons are drawn: a new look of them paints those looks again
   const bg=renders[asmCmBgKey()];if(bg)s.push('bg:'+bg.t+'/'+ASM_CM_BG_SHADOW);
+  const jf=typeof asmJfWants==='function'?asmJfWants(o,k):null;if(jf)s.push('jf'+jf.t);   // jeans on the faded master (asm-kinds.js), once it is on the worker
   return s.join('|')}
 const ASM_CM_JACKET=new Set(['suit','vest','suit-open','vest-open']);
 const asmCmItems=(o,k)=>{const z={shirt:o.shirt};if(ASM_CM_JACKET.has(k)){z.jacket=o.top;if(k==='vest'||k==='vest-open')z.waistcoat=o.top}else{z.trousers=o.bot;z.belt=o.belt}if(o.tie&&ASM_CM_KINDS[k].zones.includes('tie'))z.tie=o.tie;return z};
 const asmCmOutKey=o=>asmKey('out/cm'+ASM_CMV+'/'+fnv64(asmCmSig(o)));
-const asmCmStamp=o=>{const k=asmCmKind(o);return k?asmCmAssets(k).reduce((t,key)=>Math.max(t,renders[key]&&renders[key].t||0),0):0};
+const asmCmStamp=o=>{const k=asmKindOf(o);return k?asmCmAssets(k).reduce((t,key)=>Math.max(t,renders[key]&&renders[key].t||0),0):0};
 /* bring the kind's master, masks and parts onto the device (true when all are here); the background too, when the worker has one */
 async function asmCmGet(kind){if(!asmCmAssets(kind).length)return false;await asmCmMfGet();const keys=asmCmAssets(kind);if(!renders[keys[0]])await asmCmMasterCopy(kind);if(!await asmGet(keys[0],true))return false;   // (keys after the manifest: it says whether the master has solved positions)
   await asmCmBgGet();const all=(await Promise.all(keys.slice(1).map(k=>asmGet(k)))).every(Boolean);if(all)await asmCmSetupFetch(asmCmBaseJob(kind));return all}
@@ -1275,19 +1282,19 @@ async function asmCmMasterCopyRec(kind){const mk=asmCmKey(kind,'master'),m=rende
 const asmCmWarmed=new Set();let asmCmWarming=false;
 async function asmCmWarm(looks){if(asmCmWarming||(self.ASM_CM_SIZE||ASM_SIZE)>ASM_SIZE||typeof indexedDB==='undefined')return 0;
   const cn=navigator.connection;if(cn&&(cn.saveData||/(^|-)2g$/.test(cn.effectiveType||'')))return 0;
-  const kinds=[...new Set((looks||[]).map(o=>asmCmKind(o)).filter(k=>k&&!asmCmWarmed.has(k)))];if(!kinds.length)return 0;asmCmWarming=true;let n=0;
+  const kinds=[...new Set((looks||[]).map(o=>asmKindOf(o)).filter(k=>k&&!asmCmWarmed.has(k)))];if(!kinds.length)return 0;asmCmWarming=true;let n=0;
   try{for(const kind of kinds){if(document.hidden)break;asmCmWarmed.add(kind);if(!await asmCmGet(kind))continue;const job=asmCmBaseJob(kind);if(!job)continue;
       if(await asmCmDiskGet(asmCmDiskKey(job)))continue;await asmRun({...job,setupOnly:true},false);n++}}
   catch(e){console.warn('warming stopped',e)}finally{asmCmWarming=false}return n}
 
 /* ---- Today: the colour-coded way of asmEnsure ---- */
-async function asmCmEnsure(o,ahead){const kind=asmCmKind(o);if(!kind)return;if(asmFullWins(o)||asmFor(o))return;const bk='cm|'+comboKey(o);if(asmBusy.has(bk))return;asmBusy.add(bk);
+async function asmCmEnsure(o,ahead){const kind=asmKindOf(o);if(!kind)return;if(asmFullWins(o)||asmFor(o))return;const bk='cm|'+comboKey(o);if(asmBusy.has(bk))return;asmBusy.add(bk);
   try{const k=asmOutKey(o),L=await asmListGet(),showIf=()=>{const cur=planFor()[key(sel)];if(cur&&comboKey(cur)===comboKey(o)&&!$('#today').hidden)asmShow()};
     // (2026-11-13) the worker's picture first, before any of the master's photos: the master, its masks and parts (2.8 MB, about 7 s
     // on 4G) are only needed to paint here. The list says whether it has it; without a list, ask anyway
     if((!L||L.has(k))&&await asmGetPre(o,!!L)){showIf();return}
     // not there: painted here (a coming look waited 10 minutes for the PC builder until it was removed, 2026-11-16)
-    if(!await asmCmGet(kind)||asmFullWins(o))return;
+    if(!await (typeof asmNkGet==='function'?asmNkGet(o,kind):asmCmGet(kind))||asmFullWins(o))return;   // (a new kind: its base master too; jeans: the faded master)
     const img=await asmPhoto(o,!ahead);if(!img)return;
     await asmKeepOut(k,img,{stamp:asmStamp(o),t:Date.now(),lid:asmLookId(o)});showIf()}
   catch(e){console.warn('could not paint',e)}finally{asmBusy.delete(bk)}}

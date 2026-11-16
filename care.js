@@ -10,14 +10,17 @@
    - the Care page (#care, from Settings), a quiet tag in the Wardrobe grid and one line on Today when today's wear reaches the limit.
    The shirt rule (settings.laundryDays) is in planner.js outfit(). */
 const CARE_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];   // the types with a wear limit in Settings
-const CARE_ABLE=['suit','blazer','pants','shirt','tie','overcoat','raincoat','socks'];   // what can be sent away
-const CARE_DEF={suit:5,blazer:6,pants:4,shirt:1};   // wears before cleaning; a type not listed is never due
-const CARE_PLURAL={suit:'Suits',blazer:'Blazers',pants:'Pants',shirt:'Shirts',tie:'Ties',overcoat:'Overcoats',raincoat:'Raincoats',socks:'Socks'};
+const CARE_ABLE=['suit','blazer','pants','shirt','tie','overcoat','raincoat','socks',...HANDPICK_TYPES];   // what can be sent away (the casual garments too, 2026-11-16)
+// wears before cleaning; a type not listed is never due. The casual garments (2026-11-16, not in Settings' limits): T-shirts, polos and
+// henleys washed after every wear, sweatshirts and hoodies after 3, knitwear after 4, a chore jacket after 6
+const CARE_DEF={suit:5,blazer:6,pants:4,shirt:1,tee:1,polo:1,henley:1,sweatshirt:3,hoodie:3,sweater:4,qzip:4,cardigan:4,chore:6};
+const CARE_PLURAL={suit:'Suits',blazer:'Blazers',pants:'Pants',shirt:'Shirts',tie:'Ties',overcoat:'Overcoats',raincoat:'Raincoats',socks:'Socks',
+  tee:'T-shirts',polo:'Polos',henley:'Henleys',sweater:'Sweaters',sweatshirt:'Sweatshirts',hoodie:'Hoodies',qzip:'Quarter-zips',cardigan:'Cardigans',chore:'Chore jackets'};
 const CARE_MAX=10;
 const LAUNDRY_OPTS=[0,1,2,3,5,7];
 const careLimit=t=>{const v=(settings.care||{})[t];return v==null?(CARE_DEF[t]||0):Math.max(0,Math.min(CARE_MAX,Math.round(+v)||0))};
 const laundryDays=()=>Math.max(0,+(settings.laundryDays??1)||0);
-const careWashed=t=>t==='shirt'||t==='socks';   // washed at home rather than cleaned: the wording, and which way "send" goes
+const careWashed=t=>t==='shirt'||t==='socks'||['tee','polo','henley','sweatshirt','hoodie'].includes(t);   // washed at home rather than cleaned: the wording, and which way "send" goes
 const careWord=t=>careWashed(t)?'washing':'cleaning';
 const careNoun=i=>i.type==='pants'?'pants':(TYPES[i.type]||'item').toLowerCase().replace('dress ','');
 const careTimes=n=>n===1?'once':n===2?'twice':n+' times';

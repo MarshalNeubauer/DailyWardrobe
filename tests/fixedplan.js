@@ -16,7 +16,7 @@
 window.TEST_PLAN={
   plan(y,m){
     const T=todayDate(),out={},start=new Date(y,m-2,1),end=new Date(y,m+1,0);
-    const pool=(type,n)=>items.filter(i=>i.type===type&&inRotation(i,n)).sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
+    const pool=(type,n)=>items.filter(i=>i.type===type&&inRotation(i,n)&&!(typeof isHandPick==='function'&&isHandPick(i))).sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
     const byId=id=>id&&items.find(i=>i.id===id)||null;
     for(const d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
       if(!isWorkday(d))continue;
@@ -34,11 +34,11 @@ window.TEST_PLAN={
         const ok=all.filter(i=>!s.includes(i.id));return ok.length?ok[(n+off)%ok.length]:null};
       let top=casual?null:pick('top',suitDay?'suit':'blazer',0);
       if(!top&&!casual)top=pick('top',suitDay?'blazer':'suit',0);
-      const sd=top?top.type==='suit':suitDay;
-      const tie=casual?null:pick('tie','tie',2);
+      const sd=top?top.type==='suit':suitDay,shirt=pick('shirt','shirt',1);
+      const tie=casual||(typeof casualTop==='function'&&casualTop({shirt}))?null:pick('tie','tie',2);   // (a T-shirt picked by hand: no tie)
       const vov=rec&&typeof rec.vest==='boolean'?rec.vest:null;
       const vest=!!(sd&&top&&hasVest(top)&&(vov!==null?vov:settings.vestMode==='always'));
-      out[k]={suitDay:sd,top,bot:sd&&top?top:pick('bot','pants',3),shirt:pick('shirt','shirt',1),tie,
+      out[k]={suitDay:sd,top,bot:sd&&top?top:pick('bot','pants',3),shirt,tie,
         shoes:pick('shoes','shoes',4),belt:pick('belt','belt',5),socks:pick('socks','socks',6),watch:pick('watch','watch',7),
         clip:vest||!tie?null:pick('clip','tieclip',8),links:null,coat:null,vest,vestOverride:vov!==null,notes:[],
         clim:dayClimate(d),formal:occ==='formal',occasion:occ&&occ!=='formal'?occ:occ==='formal'?'formal':null,

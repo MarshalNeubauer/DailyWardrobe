@@ -94,11 +94,12 @@ async function asmMaskFromImg(img,W){const d=(await asmData(img,W)).data,N=W*W,m
 let asmCmListed=null;
 const asmCmSeen=k=>{if(!asmCmListed){try{asmCmListed=new Set(JSON.parse(localStorage.getItem('asm_cm_listed')||'[]'))}catch{asmCmListed=new Set()}}return asmCmListed.has(k)};
 const asmCmHeld=k=>{const m=asmCmKey(k,'master');return !!(renders[m]||(asmList?asmList.has(m):asmCmSeen(m)))};
-const asmCmUse=o=>{if(!ASM_ON||typeof asmCmKind!=='function')return null;const k=asmCmKind(o);return k&&asmCmHeld(k)?k:null};
+/* (2026-11-16) a new garment's master (asm-kinds.js) is used only when it and its base master are there: until then the day shows the drawing */
+const asmCmUse=o=>{if(!ASM_ON||typeof asmCmKind!=='function')return null;const k=asmKindOf(o);return k&&asmCmHeld(k)&&asmCmHeld(asmNkBaseOf(k))?k:null};
 /* look for the outfit's colour-coded master on the worker, once a session: in the worker's list (one small request), else by downloading it */
-const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const k=asmCmKind(o);if(!k)return;
+const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const k=asmKindOf(o);if(!k)return;
   await asmCmMfGet();   // the masters' manifest first: it may outdate a photo held here, and its dates are in the look's key
-  if(!renders[asmCmKey(k,'master')]){const L=await asmListGet();if(!(L&&L.has(asmCmKey(k,'master')))&&!asmTried.has(asmCmKey(k,'master')))await asmCmGet(k)}
+  for(const m of new Set([asmNkBaseOf(k),k]))if(!renders[asmCmKey(m,'master')]){const L=await asmListGet();if(!(L&&L.has(asmCmKey(m,'master')))&&!asmTried.has(asmCmKey(m,'master')))await asmCmGet(m)}
   // the background (asm-color.js), once a session: its date is in every look's key, so a phone needs it to find the worker's pictures
   if(asmCmHeld(k))await asmCmBgGet()};
 const asmCmAny=()=>typeof asmCmKey==='function'&&Object.keys(ASM_CM_KINDS).some(asmCmHeld);
@@ -505,7 +506,9 @@ function asmShirtAngles(A,idx,W,H){const N=W*H,lab=new Int32Array(N).fill(-1),pa
    in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
    this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
 /* everything the painting needs, as plain data (photos as data URLs), or null: a look with no colour-coded master (asm-color.js asmCmJob) */
-async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const j=await asmCmJob(o);if(j&&typeof asmWatchJob==='function'){const w=asmWatchJob(o,k);if(w)j.watch=w}return j}   // (the day's watch painted after: asm-watch.js)
+async function asmJob(o){const k=asmCmUse(o);if(!k)return null;let j=await asmCmJob(o);
+  if(j&&typeof asmNkJob==='function')j=await asmNkJob(j,o,k);   // a new garment's master and cloth, the faded master for jeans (asm-kinds.js)
+  if(j&&typeof asmWatchJob==='function'){const w=asmWatchJob(o,asmNkBaseOf(k));if(w)j.watch=w}return j}   // (the day's watch painted after: asm-watch.js; a new kind's watch is its base master's)
 /* build one picture from a job (in either thread) -> {url (a JPEG data URL), gl, ms}; a warming job (setupOnly) only sets its master up */
 async function asmBuild(job){
   if(job.cm&&job.setupOnly){const hit=await asmCmSetup(job);if(job.diskCache!==false&&typeof indexedDB!=='undefined'&&!await asmCmDiskGet(asmCmDiskKey(job))){const x=await asmCmPack(hit.P);if(x)await asmCmDiskPut(asmCmDiskKey(job),x,job.cm+'|')}return {setup:true}}   // (warming, asm-color.js asmCmWarm)

@@ -9,7 +9,7 @@ const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length
 const tagFixes=skipId=>(settings.tagFixes||[]).filter(f=>f.id!==skipId).slice(-20).map(({field,type,from,to})=>({field,type,from,to}));
 /* the person's own materials, sent so Claude can name them (worker cleanOwnMaterials; 2026-11-16): {type: [name]}, or undefined when none */
 const ownMatsForTag=()=>{const o={};for(const t of Object.keys(MATERIALS_BY)){const l=ownMats(t);if(l.length)o[t]=l}return Object.keys(o).length?o:undefined};
-const tagExtras=(x={})=>({custom:customForTag(),ownMaterials:ownMatsForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{}),...(x.freeColors?{freeColors:true}:{}),...(x.freePattern?{freePattern:true}:{}),...(x.wb!=null?{wb:!!x.wb}:{})});
+const tagExtras=(x={})=>({...(x.freeColors||x.freePattern?{}:{types:TAG_TYPES}),custom:customForTag(),ownMaterials:ownMatsForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{}),...(x.freeColors?{freeColors:true}:{}),...(x.freePattern?{freePattern:true}:{}),...(x.wb!=null?{wb:!!x.wb}:{})});
 
 /* ---- tagging copies: the sharp photo sent to the tagger is kept on this device only (Cache Storage, not synced, not loaded
    at start-up), so the benchmark can re-tag an item from the same picture later ---- */
@@ -544,7 +544,7 @@ async function recordTagResult(q,it){if(!q.ai||!q.aiTag)return;const st={n:0,wro
   // taking Claude's own suggestion of a new color or pattern (newColor / newPattern, added as the owner's) is not a correction (W2-17-16)
   const claudes=(f,to)=>{const s=f==='primaryColor'?q.newColor:f==='pattern'?q.newPattern:null,nm=s&&String(s.name||'').trim().toLowerCase(),own=f==='pattern'?CUSTOM_PAT[to]:CUSTOM_COL[to];
     return !!(nm&&own&&String(own.name||'').trim().toLowerCase()===nm)};
-  for(const f of ['type','primaryColor','secondaryColor','pattern']){const from=q.aiTag[f]||'none',to=it[f]||'none';if(f==='pattern'&&!FABRIC.includes(it.type))continue;
+  for(const f of ['type','primaryColor','secondaryColor','pattern']){const from=q.aiTag[f]||'none',to=it[f]||'none';if(f==='pattern'&&!hasPat(it.type))continue;
     if(from!==to&&!claudes(f,to)){st.wrong[f]=(st.wrong[f]||0)+1;if(from!=='none'||to!=='none')fixes.push({field:f,type:it.type,from,to,id:it.id,t:Date.now()})}}
   settings.tagStats=st;settings.tagFixes=fixes.slice(-60);await saveUserSettings()}
 function tagStatsCard(){const st=settings.tagStats||{n:0,wrong:{}},fx=(settings.tagFixes||[]).slice(-8).reverse();
