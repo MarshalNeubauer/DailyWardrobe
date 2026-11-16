@@ -3504,7 +3504,7 @@ fieldmerge.test.js	mq/suit.js	<loaded>
 fieldmerge.test.js	mq/vest.js	<loaded>
 fieldmerge.test.js	pack.js	<loaded>	packShow
 fieldmerge.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	jsq	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
-fieldmerge.test.js	planner.js	<loaded>	lockStale
+fieldmerge.test.js	planner.js	<loaded>
 fieldmerge.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 fieldmerge.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 fieldmerge.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	showCost	toast	weekFirst
