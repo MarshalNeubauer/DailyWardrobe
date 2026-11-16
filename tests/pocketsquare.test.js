@@ -68,7 +68,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(!plan.twin.split(',').includes('tie10')||plan.twin==='',`a square that is the navy dot tie's twin is never planned with that tie (with: ${plan.twin||'none'})`);
     ok(plan.nj===0,'without jackets (the dress code) no square');
     ok(plan.fu&&plan.fu.c==='white'&&plan.fu.p==='solid'&&plan.fo==='white',`a funeral takes the plain white square (${JSON.stringify(plan.fu)}), a formal day white (${plan.fo})`);
-    ok(plan.rules===21,'PLAN_RULES bumped to 21');
+    ok(plan.rules>=21,`PLAN_RULES bumped to 21 or later (${plan.rules})`);
     // ---- Today: the row, its ⇄ − +, the picker, the jacket off ----
     await p.evaluate(()=>{settings.dress=undefined;dayRecs={};cache={};sel=new Date(2026,10,9);view={y:2026,m:10};listOpen=true;show('today');renderToday()});await settle(p,400);
     const tap=async s=>{const t0=await p.evaluate(()=>(dayRecs[key(sel)]||{}).updated||0);await p.click(s);await p.waitForFunction(t=>((dayRecs[key(sel)]||{}).updated||0)>t,t0,{timeout:5000}).catch(()=>{});await settle(p,400)};
