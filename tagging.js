@@ -380,9 +380,9 @@ async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)r
   q.refining=1;renderAdd();if(typeof addKeep==='function')addKeep();   // the close-up kept at once, as a reading under way (add.js keeps it as cut off: refineCut)
   /* whatever happens from here, the card is drawn again when the reading ends (2026-11-16, a tester: a step that threw after the flag was
      cleared left Confirm switched off until something else redrew the card, so it took "Bought, on the way" to save) */
-  let ai=null,hint=null;try{hint=measHint(q.meas);ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff)})}catch(e){console.warn('close-up reading failed',e)}
+  let ai=null,hint=null;try{hint=measHint(q.meas);ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff)})}catch(e){console.warn('close-up reading failed',e);if(typeof errNote==='function')errNote(e,'Close-up reading')}
   const k=queue.indexOf(q);q.refining=0;
-  try{refineApply(q,ai,hint,k)}catch(e){console.warn('close-up answer not applied',e);q.refineNote='Tagging again from the close-up didn’t work; the first tags stay.';if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}}
+  try{refineApply(q,ai,hint,k)}catch(e){console.warn('close-up answer not applied',e);if(typeof errNote==='function')errNote(e,'Close-up answer not applied ('+q.type+')');q.refineNote='Tagging again from the close-up didn’t work; the first tags stay.';if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}}
 function refineApply(q,ai,hint,k){
   if(!ai||!ai.type){q.refineNote=aiError||'Tagging again from the close-up didn’t work; the first tags stay.';if(k>=0){renderAdd();if(typeof addKeep==='function')addKeep()}return}
   const f=aiFields(ai),changes=[],prev={};delete q.refineType;delete q.refineKept;
@@ -565,7 +565,7 @@ const readable=(t,p,w)=>settable(t,p,w)||claudeOnly(t,p);
 /* Claude's reading drawn with the photo's colours: bands (stripes, checks, plaids) or a motif (small figures on a grid) */
 /* an answer of a shape it can't draw (2026-11-16: across without bands threw, and the Add card's Confirm stayed off) gives null: the
    pixel reader takes over, as when Claude sent nothing */
-const specSett=(spec,args)=>{try{return specSett1(spec,args)}catch(e){console.warn('pattern answer not drawn',e);return null}};
+const specSett=(spec,args)=>{try{return specSett1(spec,args)}catch(e){console.warn('pattern answer not drawn',e);if(typeof errNote==='function')errNote(e,'Pattern answer not drawn ('+(args&&args.type||'?')+', '+(spec&&(spec.texture?'texture':spec.motif?'motif':spec.across?'bands':spec.layout)||'?')+')');return null}};
 const specSett1=(spec,args)=>spec&&(spec.texture?(args.type==='shirt'||args.type==='tie'?texFromSpec(spec,args):null):spec.motif?motifFromSpec(spec,args):spec.across?settFromSpec(spec,args):null);
 function readSett(q){const ok=!q.settOff&&readable(q.type,q.pattern,q.weave)&&q.raw,args={full:q.raw&&q.raw.full,box:q.patternBox,tex:q.raw&&q.raw.tex,wb:q.wbOff?null:q.wb,type:q.type};q.settReject=null;
   let s=null;if(ok&&q.spec)s=specSett(q.spec,args);
@@ -683,11 +683,11 @@ function settFromSpec(spec,{tex,full,box,wb,type}){
 async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.raw.tex||!q.tagImg||!readable(q.type,q.pattern,q.weave)||!localStorage.getItem('worker_url'))return;   // a card saved or skipped meanwhile: no paid call
   q.patternReading=1;renderAdd();let spec=null;
   try{const closeup=await closeTagImg(q);if(!queue.includes(q)){q.patternReading=0;return}
-    spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff)})}catch(e){console.warn('pattern reading failed',e)}   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
+    spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff)})}catch(e){console.warn('pattern reading failed',e);if(typeof errNote==='function')errNote(e,'Pattern reading')}   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
   q.patternReading=0;
   // the card is drawn again however the answer goes (a step that threw here left Confirm switched off: refineFromCloseup)
   try{if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
-    readSett(q);if(q.meas)measureAndApply(q)}catch(e){console.warn('pattern answer not applied',e);q.specFailed=1}
+    readSett(q);if(q.meas)measureAndApply(q)}catch(e){console.warn('pattern answer not applied',e);q.specFailed=1;if(typeof errNote==='function')errNote(e,'Pattern answer not applied ('+q.type+')')}
   finally{if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}}
 
 /* ---- a motif (small figures on a grid: a neat or foulard, mini squares, dots) as Claude read it, each colour taken from its own
