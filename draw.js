@@ -567,7 +567,7 @@ function swatchSVG(i,drawn){
   else if(FABRIC.includes(i.type)){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
     body=`<defs>${fabricDef(P+'f',i,role,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/><rect width="16" height="16" fill="url(#${P}g)"/>`}
   else if(i.type==='pocketsquare'){const e=pocketEdge(i);   // its print, its contrast edge round it (2026-11-16)
-    body=`<defs>${pocketDef(P+'f',i,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/>${e?`<rect x="1.25" y="1.25" width="13.5" height="13.5" fill="none" stroke="${e}" stroke-width="2.5"/>`:''}<rect width="16" height="16" fill="url(#${P}g)"/>`}
+    body=`<defs>${pocketDef(P+'f',i,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/>${e?`<rect x="1.25" y="1.25" width="13.5" height="13.5" fill="none" stroke="${e}" stroke-width="2.5"/>`:''}<rect width="16" height="16" fill="url(#${P}g)"/><rect width="16" height=".9" fill="#fff" opacity=".35"/><rect y="1.4" width="16" height="1.1" fill="#000" opacity=".1"/><rect y="7.4" width="16" height=".8" fill="#000" opacity=".12"/><rect y="8.2" width="16" height=".5" fill="#fff" opacity=".2"/>`}   // (its folds: the lit top fold, the crease across)
   else{// a bracelet watch and plain metal cufflinks show their metal; a tie clip is its colour (it has no metal field: it was always silver),
     // shiny when it is a metal colour; enamel cufflinks their face (2026-11-15)
     const clip=i.type==='tieclip',metal=(i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i)&&i.metal!=='silk')||(clip&&!!clipMetal(i));
@@ -1016,15 +1016,28 @@ function coatMarks(i,P){const S=COAT_D,c=colOf(i),[r,g,b]=hexRgb(c),dark=(.299*r
    fold: a crisp straight top edge, the front fold across its lower part, the edge colour along its edges */
 function pocketDef(id,i,ctx){return fabricDef(id,{...i,stripes:null,sett:null},'tie',ctx)}
 const pocketEdge=i=>i&&(patBase(i.pattern)||'solid')==='border'?(i.secondaryColor&&COLORS[i.secondaryColor]?COLORS[i.secondaryColor]:lum(colOf(i))>.6?COLORS.navy:COLORS.white):null;
-function pocketMarks(i,P){const e=pocketEdge(i),c=colOf(i),ln=lum(c)>.55?'#000':'#fff',E=e?`<g fill="${e}"><rect x="16" y="22" width="68" height="4.5"/><rect x="16" y="22" width="4.5" height="58"/><rect x="79.5" y="22" width="4.5" height="58"/><rect x="16" y="75.5" width="68" height="4.5"/></g>`:'';
-  return `<defs>${pocketDef(P+'f',i,'dot')}<linearGradient id="${P}v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".16"/><stop offset=".25" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".06"/></linearGradient>`+
+/* (v2, 2026-11-16, the owner: "add more of a fold, it looks too cartoony") the square folded as cloth: a rounded fold along the top, very
+   slightly uneven, lit with the roll's shadow under it; the second layer's edge peeking out at the side and below; a soft crease across
+   where it was folded again; two faint relaxed creases; the bottom corners turned under (the tuck); the edge colour following the fold */
+const PS_TOP='M16,25.2 C27,23.6 38,24.6 50,23.9 S72,23.2 84,24.4',PS_FRONT=PS_TOP+' L84,76.5 L80.5,80 L19.5,80 L16,76.5 Z';
+function pocketMarks(i,P){const e=pocketEdge(i),c=colOf(i),ln=lum(c)>.55?'#000':'#fff',clip=`clip-path="url(#${P}c)"`;
+  return `<defs>${pocketDef(P+'f',i,'dot')}<clipPath id="${P}c"><path d="${PS_FRONT}"/></clipPath>`+
+    `<linearGradient id="${P}v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".08"/><stop offset=".35" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient>`+
     `<linearGradient id="${P}h" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs>`+
-    `<rect x="17.5" y="24" width="68" height="58" rx="1.2" fill="#000" opacity=".16"/>`+   // its soft shadow
-    `<rect class="ps-back" x="16" y="22" width="68" height="58" rx="1.2" fill="url(#${P}f)"/>${E}<rect x="16" y="22" width="68" height="58" rx="1.2" fill="url(#${P}h)"/>`+
-    // the fold: the front layer over the lower part, its crisp top edge lit, the crease's shadow above it
-    `<rect x="16" y="41" width="68" height="2" fill="#000" opacity=".14"/><rect class="ps-front" x="16" y="43" width="68" height="37" rx="1" fill="url(#${P}f)"/>${e?`<g fill="${e}"><rect x="16" y="43" width="4.5" height="37"/><rect x="79.5" y="43" width="4.5" height="37"/><rect x="16" y="75.5" width="68" height="4.5"/></g>`:''}`+
-    `<rect x="16" y="43" width="68" height="37" fill="url(#${P}v)"/><rect x="16" y="43" width="68" height="1.1" fill="#fff" opacity=".35"/><rect x="16" y="22" width="68" height="1" fill="#fff" opacity=".3"/>`+
-    `<rect x="16" y="22" width="68" height="58" rx="1.2" fill="none" stroke="${ln}" stroke-opacity=".18" stroke-width=".5"/>`}
+    `<path d="${PS_FRONT}" transform="translate(2.6 2.8)" fill="#000" opacity=".15"/>`+   // its soft shadow
+    // the second layer: the same square, a little to the right and below, in its shade
+    `<g class="ps-back" transform="translate(1.7 1.3)"><path d="${PS_FRONT}" fill="url(#${P}f)"/>${e?`<path d="${PS_FRONT}" fill="none" stroke="${e}" stroke-width="5"/>`:''}<path d="${PS_FRONT}" fill="#000" opacity=".2"/></g>`+
+    `<path class="ps-front" d="${PS_FRONT}" fill="url(#${P}f)"/>`+
+    (e?`<g ${clip} fill="none" stroke="${e}"><path d="${PS_TOP}" stroke-width="9.5"/><path d="M16,20 V82 M84,20 V82" stroke-width="9"/><path d="M14,80 H86" stroke-width="9"/></g>`:'')+
+    `<g ${clip}><path d="${PS_FRONT}" fill="url(#${P}v)"/><path d="${PS_FRONT}" fill="url(#${P}h)"/>`+
+    // the fold: a lit crease along the top, the roll's underside below it
+    `<path d="${PS_TOP}" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2.6"/><path d="${PS_TOP}" transform="translate(0 4.2)" fill="none" stroke="#000" stroke-opacity=".11" stroke-width="3.2"/>`+
+    // the crease where it was folded again, and two relaxed creases
+    `<path d="M16,45.2 C35,44.4 60,45.6 84,44.8" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="1.6"/><path d="M16,46.6 C35,45.8 60,47 84,46.2" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width=".9"/>`+
+    `<path d="M38.5,29 C39.5,42 38,56 39,72 M63,30 C62,44 63.5,58 62.5,70" fill="none" stroke="#fff" stroke-opacity=".07" stroke-width="3"/><path d="M40.5,31 C41.5,43 40,56 41,70 M65,32 C64,45 65.5,57 64.5,68" fill="none" stroke="#000" stroke-opacity=".045" stroke-width="2.6"/>`+
+    // the layers' edges at the sides, and the bottom corners turned under
+    `<path d="M18.4,27 V76 M81.4,26.5 V76.5" stroke="#000" stroke-opacity=".13" stroke-width=".7"/><path d="M16,69 L16,76.5 L19.5,80 L27,80 Z M84,69 L84,76.5 L80.5,80 L73,80 Z" fill="#000" opacity=".2"/></g>`+
+    `<path d="${PS_FRONT}" fill="none" stroke="${ln}" stroke-opacity=".2" stroke-width=".5"/>`}
 /* square thumbnail for items saved without a photo (also used as the live preview while adding one) */
 let thumbN=0;
 /* full: a fabric item drawn as a plain, edge-to-edge sample (no outline or shading), for comparing with its photo */

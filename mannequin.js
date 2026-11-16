@@ -42,19 +42,31 @@ const shirtButton = (x, y, r, c) => `<circle cx="${x + r * .25}" cy="${y + r * .
 /* the pocket square (2026-11-16, the owner's "square fold, a bit out of the pocket"): the strip above the breast pocket's welt where the
    painter puts it (asm-pocket.js asmPocketQuad, measured at 2048 on the masters), crisp and straight: the cloth (pocket.def, its print),
    its contrast edge along the top (pocket.edge), the fold's top edge lit, darker into the pocket's mouth, a slight shadow on the welt
-   under it; '' on a pose with no pocket (the shirt poses) or no square */
+   under it; '' on a pose with no pocket (the shirt poses) or no square.
+   (v2, 2026-11-16, the owner: "add more of a fold, it looks too cartoony") folded cloth in the drawing's style, as the painter does it: the
+   fold's top very slightly uneven and rounded off at the corners, a lit crease along it with the roll's soft shadow under it, the two
+   layers' edges at each end, two faint relaxed creases, and the cloth tucking into the opening at the bottom corners */
 function pocketSvg(pocket, kind, P) {
   const Q = pocket && typeof asmPocketQuad === 'function' ? asmPocketQuad(kind) : null; if (!Q) return '';
-  const s = VB / 2048, pt = p => `${(p[0] * s).toFixed(2)},${(p[1] * s).toFixed(2)}`, at = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-  const poly = (pts, fill, extra = '') => `<polygon points="${pts.map(pt).join(' ')}" fill="${fill}"${extra}/>`, dn = (p, d) => [p[0], p[1] + d];
+  const s = VB / 2048, f2 = v => (v * s).toFixed(2), Ww = Q.b1[0] - Q.b0[0], sl = (Q.b1[1] - Q.b0[1]) / Ww, H = Q.b0[1] - Q.t0[1];
+  // a point of the strip in 2048 px: uu along it from its left end, vv down from its top line
+  const S = (uu, vv) => [Q.t0[0] + uu, Q.t0[1] + uu * sl + vv], dv = uu => .38 * Math.sin(uu * .034 + .4) + .22 * Math.sin(uu * .093 + 2.1) + Math.exp(-uu / 3) + Math.exp(-(Ww - uu) / 3);
+  const pts = a => a.map(p => `${f2(p[0])},${f2(p[1])}`).join(' '), poly = (a, fill, extra = '') => `<polygon points="${pts(a)}" fill="${fill}"${extra}/>`;
+  const N = 24, topE = [...Array(N + 1)].map((_, k) => S(Ww * k / N, dv(Ww * k / N))), band = (v0, v1) => [...topE.map(([x, y]) => [x, y + v0]), ...topE.slice().reverse().map(([x, y]) => [x, y + v1])];
+  const shape = [...topE, Q.b1, Q.b0], strip = (x0, x1, v0, v1) => [S(x0, v0), S(x1, v0), S(x1, v1), S(x0, v1)];
   const fill = typeof pocket.def === 'function' ? `url(#${P}pq)` : hex(pocket.color, '#F4F4F2');
-  return `<g class="fig-pocket">${typeof pocket.def === 'function' ? `<defs>${pocket.def(P + 'pq')}<linearGradient id="${P}pqs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".1" stop-color="#fff" stop-opacity="0"/><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient></defs>` : ''}`
-    + poly([Q.b0, Q.b1, dn(Q.b1, 5), dn(Q.b0, 5)], '#000', ' fill-opacity=".22"')   // its shadow on the welt
-    + poly([Q.t0, Q.t1, Q.b1, Q.b0], fill)
-    + (pocket.edge ? poly([Q.t0, Q.t1, at(Q.t1, Q.b1, .3), at(Q.t0, Q.b0, .3)], hex(pocket.edge, '#1B2A4A')) : '')
-    + poly([Q.t0, Q.t1, Q.b1, Q.b0], `url(#${P}pqs)`)
-    + poly([Q.t0, Q.t1, at(Q.t1, Q.b1, .07), at(Q.t0, Q.b0, .07)], '#fff', ' fill-opacity=".25"')   // the fold's crisp top edge
-    + `<line x1="${(Q.b0[0] * s).toFixed(2)}" y1="${(Q.b0[1] * s).toFixed(2)}" x2="${(Q.b1[0] * s).toFixed(2)}" y2="${(Q.b1[1] * s).toFixed(2)}" stroke="#000" stroke-opacity=".35" stroke-width=".5"/></g>`;
+  return `<g class="fig-pocket">${typeof pocket.def === 'function' ? `<defs>${pocket.def(P + 'pq')}<linearGradient id="${P}pqs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".12" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".34"/></linearGradient>`
+      + `<linearGradient id="${P}pqh" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".07"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".08"/></linearGradient></defs>` : ''}`
+    + poly([Q.b0, Q.b1, [Q.b1[0], Q.b1[1] + 5], [Q.b0[0], Q.b0[1] + 5]], '#000', ' fill-opacity=".22"')   // its shadow on the welt
+    + poly(shape, fill)
+    + (pocket.edge ? poly(band(0, 7.6), hex(pocket.edge, '#1B2A4A')) : '')
+    + poly(shape, `url(#${P}pqs)`) + poly(shape, `url(#${P}pqh)`)
+    + poly(band(0, 2.2), '#fff', ' fill-opacity=".3"')   // the lit crease along the fold
+    + poly(band(3.6, 6.2), '#000', ' fill-opacity=".1"')   // the roll's underside
+    + [[.34, 1], [.71, .7]].map(([p, k]) => poly(strip(p * Ww - .6, p * Ww + .9, 5, H - 4), '#000', ` fill-opacity="${(.09 * k).toFixed(3)}"`) + poly(strip(p * Ww - 2.2, p * Ww - .6, 5, H - 4), '#fff', ` fill-opacity="${(.08 * k).toFixed(3)}"`)).join('')   // relaxed creases
+    + [0, 2.2, Ww - 3, Ww - .9].map((x, k) => poly(strip(x, x + .9, dv(x) + .5, H), '#000', ` fill-opacity="${k > 1 ? .2 : .15}"`)).join('')   // the two layers' edges at each end
+    + poly([Q.b0, S(7, H), S(0, H - 7)], '#000', ' fill-opacity=".2"') + poly([Q.b1, S(Ww - 7, H), S(Ww, H - 7)], '#000', ' fill-opacity=".26"')   // the corners tucking in
+    + `<line x1="${f2(Q.b0[0])}" y1="${f2(Q.b0[1])}" x2="${f2(Q.b1[0])}" y2="${f2(Q.b1[1])}" stroke="#000" stroke-opacity=".35" stroke-width=".5"/></g>`;
 }
 function outfitMannequinSvg({ kind = 'vest', suit, shirt, tie, bot = null, beltColor = null, vest = true, clip = null, shirtColor = '#EEEEEE', bg = '#F5F2EC', idPrefix = 'mq-',
   ariaLabel = "Torso wearing today's outfit", fab = { suit: 1, shirt: 1, tie: 1 }, office = true, pocket = null } = {}) {
