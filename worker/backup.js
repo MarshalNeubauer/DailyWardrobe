@@ -296,12 +296,13 @@ const setKeysLite = s => Object.keys(s || {}).filter(k => !SET_META.includes(k))
 const setStampLite = (s, k) => s.ks ? (+s.ks[k] || 0) : (s.updated || 0);
 /* core.js SET_SPLIT, setEntries, setJoin, subOk, subStampOf and mergeSplit (fix round 3): own colors and patterns, Care, the dress code,
    workdays, blazer days, hidden ideas and own days off merged entry by entry by their entry stamps (settings.kse / khe) */
-const SET_SPLIT = { custom: 'custom', care: 'obj', dress: 'obj', workdays: 'set', blazerDays: 'set', shopSkip: 'set', daysOff: 'list' };
+const SET_SPLIT = { custom: 'custom', care: 'obj', dress: 'obj', workdays: 'set', blazerDays: 'set', shopSkip: 'set', daysOff: 'list', ownMaterials: 'mats' };   // (own materials {type: [name]}, 2026-11-16)
 function setEntriesLite(k, v) {
   const t = SET_SPLIT[k], m = new Map(); if (v == null) return m;
   if (t === 'obj') { if (typeof v !== 'object' || Array.isArray(v)) return null; for (const e of Object.keys(v)) m.set(e, v[e]); }
   else if (t === 'set') { if (!Array.isArray(v)) return null; for (const x of v) if (x != null && typeof x !== 'object') m.set(String(x), x); else return null; }
   else if (t === 'list') { if (!Array.isArray(v)) return null; for (const x of v) { if (!x || typeof x !== 'object' || !x.d) return null; m.set(String(x.d), x); } }
+  else if (t === 'mats') { if (typeof v !== 'object' || Array.isArray(v)) return null; for (const g of Object.keys(v)) { const l = v[g]; if (!Array.isArray(l)) return null; for (const x of l) { if (typeof x !== 'string') return null; m.set(g + '/' + x, x); } } }
   else if (t === 'custom') {
     if (typeof v !== 'object' || Array.isArray(v)) return null;
     for (const g of Object.keys(v)) { const l = v[g]; if (g !== 'colors' && g !== 'patterns') { m.set('@' + g, l); continue; } if (!Array.isArray(l)) return null; for (const x of l) { if (!x || typeof x !== 'object' || !x.key) return null; m.set(g + '/' + x.key, x); } }
@@ -313,6 +314,7 @@ function setJoinLite(k, m) {
   if (t === 'obj') return Object.fromEntries(m);
   if (t === 'set') return v.every(x => typeof x === 'number') ? v.sort((a, b) => a - b) : v.sort();
   if (t === 'list') return v.sort((a, b) => String(a.d) < String(b.d) ? -1 : String(a.d) > String(b.d) ? 1 : 0);
+  if (t === 'mats') { const o = {}; for (const [e, x] of m) { const g = e.slice(0, e.indexOf('/')); (o[g] = o[g] || []).push(x); } for (const g of Object.keys(o)) o[g].sort(); return o; }
   const o = { colors: [], patterns: [] }; for (const [e, x] of m) { if (e[0] === '@') o[e.slice(1)] = x; else o[e.slice(0, e.indexOf('/'))].push(x); } return o;
 }
 const subOkLite = (s, k) => !!(s && s.kse && s.kse[k] && s.khe && s.khe[k] && s.khe[k]['#'] === setHashLite(s[k]));
