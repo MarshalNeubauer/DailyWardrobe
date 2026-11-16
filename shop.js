@@ -158,7 +158,7 @@ function shopGo(key){shopShown[key]=true;renderShop();const el=[...document.quer
   if(el&&sh){const top=el.getBoundingClientRect().top-sh.getBoundingClientRect().top+sh.scrollTop-64;sh.scrollTo({top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1200)}}
 /* bought: into the wardrobe as on its way, then check again */
 async function shopBought(key){
-  const rec=shopFind(key);if(!rec)return;const v=($('#shop-arr')||{}).value||'',arrives=/^\d{4}-\d{2}-\d{2}$/.test(v)?v:null,now=Date.now();
+  const rec=shopFind(key);if(!rec)return;const v=($('#shop-arr')||{}).value||'',arrives=/^\d{4}-\d{2}-\d{2}$/.test(v)?v:null,now=nowMs();
   if(typeof dressNewItem==='function')dressNewItem();
   for(const x of rec.items){const it={...x,...(x.type==='suit'?{vest:'no'}:{}),id:crypto.randomUUID(),added:now,paused:true,order:true,...(arrives?{arrives}:{})};await put(it);items.push(it)}
   cache={};shopForm=null;shopMsg=`Added to your wardrobe as on the way: ${rec.name}${arrives?`, arriving ${fmtDay(arrives)}`:''}.`;

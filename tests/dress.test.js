@@ -197,7 +197,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
 
     // a new wardrobe: marked when its first item is added, without stamping the settings
     {const c3=await browser.newContext({viewport:{width:390,height:900}}),q=await c3.newPage();await q.goto(url);await q.waitForFunction(()=>window.appReady);
-      await q.waitForFunction(()=>settings.planRules===PLAN_RULES);const u0=await q.evaluate(()=>settings.updated);
+      await q.waitForFunction(async()=>(await metaGet('plan_rules'))===PLAN_RULES);const u0=await q.evaluate(()=>settings.updated);
       await q.evaluate(()=>{queue=[{id:'f1',type:'suit',primaryColor:'navy',pattern:'solid',manual:true}];return save(0)});await q.waitForFunction(()=>items.some(i=>i.id==='f1'));
       const f=await q.evaluate(async u0=>{const st=await metaGet('settings');return {flag:settings.vestDef,stored:st&&st.vestDef,updated:st.updated!==u0,vest:items[0].vest,has:hasVest(items[0]),has2:hasVest({type:'suit'})}},u0);
       ok(f.flag===1&&f.stored===1&&!f.updated&&f.vest==='no'&&!f.has&&!f.has2,'a new wardrobe is marked when its first item is added (the settings get no new stamp for it), and its suits are two-piece');

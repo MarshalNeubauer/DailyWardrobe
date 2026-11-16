@@ -18,7 +18,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     sent=[];await post({mode:'item',item:'a pair of black shoes',key:'c2222222222222222'});
     ok(sent[0].url==='https://api.openai.com/v1/images/generations','without a photo it is generated from the description, as before');
     // app
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     const r=await p.evaluate(()=>{const w={id:'w1',type:'watch',primaryColor:'silver',pattern:'solid',metal:'silver',dial:'white',band:'integrated',bezel:'engraved',watchStyle:'chronograph',details:'small seconds at 10, 15/30/45 minute counter at 2'};
       // the date watch's window shows today's day: on the 12th it read as a 12 numeral, so the clock reads the 3rd while drawing
       const RD=Date;window.Date=class extends RD{constructor(...a){super(...(a.length?a:[2026,10,3,12]))}};let svg,plain;

@@ -26,6 +26,9 @@ async function whoIs(env, token) {
   if (sameText(h, await sha256Hex(env.APP_TOKEN))) return { who: OWNER };
   if (!CODE_RE.test(token) || !env.WARDROBE) return no;
   const rec = await env.WARDROBE.get(`invite:${h}`, 'json');
+  // a code the owner replaced with a new link for the same account (POST /invites {reissue}): refused everywhere, DELETE /account included
+  // (whoever still holds the old link can't delete the wardrobe the new one opens), with a sentence of its own
+  if (rec && rec.replaced) return { status: 403, error: 'invite off', replaced: true, message: INVITE_REPLACED };
   if (!rec || !UID_RE.test(String(rec.id || ''))) return no;
   const first = firstWeek(rec), caps = { ...DEFAULT_CAPS, ...cleanCaps(rec.caps) };
   if (first) for (const k of [...Object.keys(DEFAULT_CAPS), 'write', 'list']) caps[k] = (caps[k] ?? EXTRA_CAPS[k]) * FIRST_WEEK_X;   // a tester's first week: twice the daily limits
@@ -35,6 +38,7 @@ async function whoIs(env, token) {
   return { who };
 }
 const INVITE_OFF = 'This invitation has been switched off.';
+const INVITE_REPLACED = 'This invitation link was replaced by a new one. Ask the person who invited you for the new link: it opens the same wardrobe.';
 
 /* ---- a tester's errors in plain words. What the owner needs to fix the server (the API's own message, which secret or binding is
    missing, what to do in which dashboard) means nothing to a tester: their answers carry a plain sentence instead, chosen by the
@@ -65,7 +69,7 @@ function plainFor(body, p) {
    Counted in the person's RenderHub (a Durable Object's own storage: no KV write per AI call); without the RENDER_HUB binding in
    KV as use:<id>:<day>, kept 3 days. A call that fails gives its count back. ---- */
 const DEFAULT_CAPS = { tag: 40, pattern: 10, item: 20, describe: 40 };   // describe: POST /describe, a colour or pattern described in words (2026-11-15, the owner: 40 a day)
-const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200, list: 30 };
+const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200, list: 30, errors: 20 };
 /* write: every KV write a tester causes (each new photo a backup stores, the backup itself and its daily copies, uploads, deletes,
    feedback, reminders, item pictures), so no one tester can use up the free plan's 1,000 writes a day; a backup whose
    new photos pass it stores what fits and is refused (429, what 'backup': the app tries again tomorrow and the stored photos are not
@@ -74,8 +78,8 @@ const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200,
 /* the first 7 days after an invitation was made: every daily limit twice (adding a whole wardrobe is the first week's work) */
 const FIRST_WEEK_MS = 7 * 86400000, FIRST_WEEK_X = 2;
 const firstWeek = rec => !!(rec && rec.created && Date.now() - rec.created < FIRST_WEEK_MS);
-const CAP_WORDS = { describe: 'color and pattern lookups', tag: 'photo readings', pattern: 'pattern readings', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks' };
-const USE_RE = /^(tag|pattern|describe|item|upload|feedback|backup|push|write|list)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
+const CAP_WORDS = { describe: 'color and pattern lookups', tag: 'photo readings', pattern: 'pattern readings', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks', errors: 'error reports' };
+const USE_RE = /^(tag|pattern|describe|item|upload|feedback|backup|push|write|list|errors)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
 const utcDay = () => new Date(Date.now()).toISOString().slice(0, 10);
 function cleanCaps(c) {
   const out = {};
@@ -106,7 +110,7 @@ async function useCount(env, id, what, n, cap, day) {
    {"item":20}) changes any of them. */
 /* write: 450 of the free plan's 1,000 KV writes a day for every tester together, so the owner (backups, the PC's picture uploads,
    the reminders, the clean-up) always has more than half; list: 150 of its 1,000 lists */
-const ALL_CAPS = { tag: 150, pattern: 40, describe: 150, item: 60, upload: 300, feedback: 100, backup: 300, push: 200, write: 450, list: 150 }, ALL_ID = 'all';
+const ALL_CAPS = { tag: 150, pattern: 40, describe: 150, item: 60, upload: 300, feedback: 100, backup: 300, push: 200, write: 450, list: 150, errors: 100 }, ALL_ID = 'all';
 function allCaps(env) {
   let o = {}; try { o = JSON.parse(env.TESTER_DAILY_TOTAL || '{}') || {}; } catch { }
   const out = { ...ALL_CAPS };
@@ -191,6 +195,10 @@ const NO_KV = { error: 'Add a KV namespace binding named WARDROBE to the worker.
    bytes) is shown this once; KV keeps invite:<sha256 of the code> = {id, name, caps, created, off}. GET /invites -> {invites, day}
    with today's use, from one index document (invites:index) rather than a KV list. DELETE /invites?id= switches one off: its
    hub refuses AI calls at once, and KV shows the record as off to every other route within about a minute. ---- */
+/* an invitation code: 32 URL-safe characters from 24 random bytes */
+const newCode = () => btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+/* a re-issued tester's earlier codes (the list entry's prev): deleted with the tester */
+async function dropPrev(env, v) { for (const h of (v && Array.isArray(v.prev) ? v.prev : [])) if (/^[0-9a-f]{64}$/.test(String(h))) await env.WARDROBE.delete(`invite:${h}`); }
 async function handleInvites(req, env, json, who) {
   const no = ownerOnly(who, json); if (no) return no;
   if (!env.WARDROBE) return json(NO_KV, 501);
@@ -202,11 +210,28 @@ async function handleInvites(req, env, json, who) {
     return json({ invites, day });
   }
   if (req.method === 'POST') {
-    const b = await smallBody(req, 4000), name = String(b && b.name || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    const b = await smallBody(req, 4000);
+    // {reissue: id} (fix round 3, the owner's decision 1): a new code for the same account, for a tester who lost the link. The new code's
+    // record is the old one's (same id, so the same u:<id>: backup, caps and first week); the old code's record becomes {replaced}, refused
+    // with its own sentence; the list entry follows the new hash and keeps the old ones (prev) so deleting the tester removes them too.
+    // Codes are still stored only as fingerprints: the list's hash is the owner's way to the account. 3 KV writes, on the owner's tap only
+    if (b && b.reissue != null) {
+      const v = list.find(x => x.id === String(b.reissue));
+      if (!v) return json({ error: 'no such invitation', message: 'That invitation isn’t on the list any more.' }, 404);
+      if (v.off) return json({ error: 'off', message: 'That invitation is switched off. Make a new invitation instead.' }, 400);
+      const rec = (await env.WARDROBE.get(`invite:${v.hash}`, 'json')) || { id: v.id, name: v.name, caps: v.caps || null, created: v.created, off: false };
+      if (rec.off || rec.replaced || rec.id !== v.id) return json({ error: 'off', message: 'That invitation is switched off. Make a new invitation instead.' }, 400);
+      const code = newCode(), hash = await sha256Hex(code);
+      await env.WARDROBE.put(`invite:${hash}`, JSON.stringify({ ...rec, reissued: Date.now() }));
+      await env.WARDROBE.put(`invite:${v.hash}`, JSON.stringify({ replaced: true, at: Date.now() }));   // (no id or name: nothing to read from it)
+      await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: list.map(x => (x.id === v.id ? { ...x, hash, prev: [...(Array.isArray(x.prev) ? x.prev : []), v.hash].slice(-20) } : x)) }));
+      return json({ id: v.id, code, name: v.name, reissued: true });
+    }
+    const name =String(b && b.name || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
     if (!name) return json({ error: 'name', message: 'Give the tester a name.' }, 400);
     if (list.filter(v => !v.off).length >= MAX_INVITES) return json({ error: 'full', message: `There are already ${MAX_INVITES} invitations. Revoke one first.` }, 400);
     const id = [...crypto.getRandomValues(new Uint8Array(10))].map(x => 'abcdefghijklmnopqrstuvwxyz0123456789'[x % 36]).join('');
-    const code = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const code = newCode();
     const hash = await sha256Hex(code), caps = cleanCaps(b.caps), rec = { id, name, caps: Object.keys(caps).length ? caps : null, created: Date.now(), off: false };
     await env.WARDROBE.put(`invite:${hash}`, JSON.stringify(rec));
     await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: [...list, { ...rec, hash }] }));
@@ -218,12 +243,15 @@ async function handleInvites(req, env, json, who) {
     const q = new URL(req.url).searchParams, id = q.get('id') || '', v = list.find(x => x.id === id), purge = q.get('purge') === '1';
     if (!v) return json({ error: 'no such invitation' }, 404);
     v.off = true;
-    const hub = hubOf(env, `u:${v.id}:`);
-    if (hub) try { await hub.fetch(purge ? 'https://hub/wipe?off=1' : 'https://hub/off', { method: 'POST' }); } catch (e) { console.log('hub off failed', e && e.message); }
+    // the record first, the hub after it (W1-10-02: with the day's writes used up the hub was told "off" and the record's write then failed:
+    // readings refused, backups still taken, the owner's list still "active" for good); refused here, nothing has changed
     const rec = (await env.WARDROBE.get(`invite:${v.hash}`, 'json')) || { id: v.id, name: v.name, caps: v.caps || null, created: v.created };
     await env.WARDROBE.put(`invite:${v.hash}`, JSON.stringify({ ...rec, off: true }));
+    const hub = hubOf(env, `u:${v.id}:`);
+    if (hub) try { await hub.fetch(purge ? 'https://hub/wipe?off=1' : 'https://hub/off', { method: 'POST' }); } catch (e) { console.log('hub off failed', e && e.message); }
     await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: purge ? list.filter(x => x.id !== v.id) : list }));
     if (!purge) return json({ ok: true });
+    await dropPrev(env, v);
     await dropTesterExtras(env, v.id);
     const ns = `u:${v.id}:`, done = await wipeSome(env, ns, 30);
     if (!done && env.RENDER_QUEUE) { await env.RENDER_QUEUE.send({ wipe: ns, n: 1 }); return json({ ok: true, purged: true }); }
@@ -252,21 +280,45 @@ async function handleFeedback(req, env, json, who) {
   await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: items.slice(-FEEDBACK_MAX) }), { expirationTtl: FEEDBACK_MS / 1000 });
   return json({ ok: true });
 }
+/* ---- error reports (2026-11-16, the owner: a tester's very first item failed and nothing showed why; her phone's error log only came
+   with feedback). POST /errors {errs:[{t, m, at, v, w}]} from a tester's phone (safety.js errSend): what broke, where in the code, the
+   app version and the page; never photos or wardrobe data. At most ERR_BATCH a report, ERRORS a day per tester (EXTRA_CAPS.errors),
+   each report one KV write. GET /errors (owner) -> {items:[{t, name, m, at, v, w, got}]}, newest first. One document, errors:log: the last
+   ERR_DAYS days, ERR_KEEP reports at most. ---- */
+const ERRORS_KEY = 'errors:log', ERR_DAYS = 30, ERR_KEEP = 400, ERR_BATCH = 10;
+async function handleErrors(req, env, json, who) {
+  if (!env.WARDROBE) return json(NO_KV, 501);
+  const log = (await env.WARDROBE.get(ERRORS_KEY, 'json')) || { items: [] }, now = Date.now();
+  const items = (Array.isArray(log.items) ? log.items : []).filter(m => m && now - m.got < ERR_DAYS * 86400000);
+  if (req.method === 'GET') {
+    const no = ownerOnly(who, json); if (no) return no;
+    return json({ items: items.slice().sort((a, b) => b.t - a.t) });
+  }
+  const b = await smallBody(req, 20000), list = Array.isArray(b && b.errs) ? b.errs.slice(0, ERR_BATCH) : [];
+  const s = (v, n) => String(v ?? '').replace(/[\u0000-\u001f]+/g, ' ').trim().slice(0, n);
+  const clean = list.map(e => e && typeof e === 'object' ? { t: Math.min(now, Math.max(now - 7 * 86400000, +e.t || now)), m: s(e.m, 300), at: s(e.at, 200), v: s(e.v, 40), w: s(e.w, 40) } : null).filter(e => e && e.m);
+  if (!clean.length) return json({ error: 'empty' }, 400);
+  const over = await spendEach(env, who, [['errors', 1], ['write', 1]]); if (over) return json(over.body, over.status);
+  for (const e of clean) items.push({ ...e, id: who.id, name: who.name, got: now });
+  await env.WARDROBE.put(ERRORS_KEY, JSON.stringify({ items: items.slice(-ERR_KEEP) }), { expirationTtl: ERR_DAYS * 86400 });
+  return json({ ok: true, n: clean.length });
+}
 
 /* ---- DELETE /account {confirm:'delete'} -> {ok:true}: everything kept for the caller is deleted, and nothing of anyone else's.
    A tester: every key under u:<id>:, the day's count, the invitation (the code stops working at once) and their feedback.
    The owner: the owner's own key families only (the backup, snap:, render:, ph:, and job:, jobfail:, jobrun: left by the retired
    outfit-photo queue until they expire), never u:…, invite:… or the invitation list. A Worker may make only so many KV calls per request, so a first part goes now and the queue finishes
    the rest ({wipe}); without the queue the answer carries more:true and the same call deletes the next part. ---- */
+const WIPED_KEY = 'wiped';   // {at}: when the owner last deleted everything (handleAccount)
 const OWNER_FAMILIES = ['wardrobe:v1', 'snap:', 'render:', 'job:', 'jobfail:', 'jobrun:', 'ph:'];
-async function wipeSome(env, ns, budget) {   // -> true once nothing is left
+async function wipeSome(env, ns, budget, st = {}) {   // -> true once nothing is left (st.gone counts the deletions)
   for (const p of ns ? [ns] : OWNER_FAMILIES) {
     for (;;) {
       if (budget < 2) return false;
       const l = await env.WARDROBE.list({ prefix: p, limit: Math.max(1, budget - 1) }); budget--;
       const keys = (l.keys || []).map(k => k.name).filter(n => (ns ? n.startsWith(ns) : !/^(u:|invite|feedback:)/.test(n) && (p.endsWith(':') || n === p || n.startsWith(p + '~')))).slice(0, budget);   // (<key>~<rev>~<i>: a large backup's parts)
       if (!keys.length) break;
-      for (const k of keys) { await env.WARDROBE.delete(k); budget--; }
+      for (const k of keys) { await env.WARDROBE.delete(k); budget--; st.gone = (st.gone || 0) + 1; }
     }
   }
   return true;
@@ -281,25 +333,45 @@ async function dropTesterExtras(env, id) {
   await dropPush(env, `u:${id}:`);
   const log = await env.WARDROBE.get(FEEDBACK_KEY, 'json');
   if (log && Array.isArray(log.items) && log.items.some(m => m.id === id)) await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: log.items.filter(m => m.id !== id) }), { expirationTtl: FEEDBACK_MS / 1000 });
-  const use = `use:${id}:${utcDay()}`; if (await env.WARDROBE.get(use)) await env.WARDROBE.delete(use);
+  const er = await env.WARDROBE.get(ERRORS_KEY, 'json');   // their error reports go with the account too
+  if (er && Array.isArray(er.items) && er.items.some(m => m.id === id)) await env.WARDROBE.put(ERRORS_KEY, JSON.stringify({ items: er.items.filter(m => m.id !== id) }), { expirationTtl: ERR_DAYS * 86400 });
+  const use =`use:${id}:${utcDay()}`; if (await env.WARDROBE.get(use)) await env.WARDROBE.delete(use);
 }
 async function handleAccount(req, env, json, who) {
   if (!env.WARDROBE) return json(NO_KV, 501);
   const b = await smallBody(req, 2000);
   if (!b || b.confirm !== 'delete') return json({ error: 'confirm', message: 'Deleting needs {"confirm":"delete"}.' }, 400);
   const hub = hubOf(env, who.ns);
+  /* (2026-11-16, the audit's W1-10-01: with the day's writes used up the invite was deleted, then the list's write failed, so the app said
+     "nothing was deleted", and its retry, the code now unknown, "already deleted": the backup and photos stayed for good.) The list is
+     written first: refused, nothing has changed and the code still works. Once the code is gone, a failure in the rest goes to the queue,
+     which finishes the wipe later, and the answer is ok: the account is being deleted */
+  const st = { gone: 0 };
   if (who.role === 'tester') {
-    await env.WARDROBE.delete(`invite:${who.hash}`);   // first: the code stops working
     const index = await env.WARDROBE.get(INVITE_INDEX, 'json');
+    if (index && Array.isArray(index.list)) await dropPrev(env, index.list.find(v => v.id === who.id));
     if (index && Array.isArray(index.list) && index.list.some(v => v.id === who.id)) await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: index.list.filter(v => v.id !== who.id) }));
-    await dropTesterExtras(env, who.id);
+    await env.WARDROBE.delete(`invite:${who.hash}`); st.gone++;   // then: the code stops working
   }
-  if (!who.ns) await dropPush(env, '');
-  if (hub) try { await hub.fetch(`https://hub/wipe${who.ns ? '?off=1' : ''}`, { method: 'POST' }); } catch (e) { console.log('hub wipe failed', e && e.message); }
-  const done = await wipeSome(env, who.ns, 30);
-  if (!done && env.RENDER_QUEUE) { await env.RENDER_QUEUE.send({ wipe: who.ns || 'owner', n: 1 }); return json({ ok: true }); }
-  return json({ ok: true, ...(done ? {} : { more: true }) });
+  try {
+    if (who.role === 'tester') await dropTesterExtras(env, who.id);
+    if (!who.ns) await dropPush(env, '');
+    if (hub) try { await hub.fetch(`https://hub/wipe${who.ns ? '?off=1' : ''}`, { method: 'POST' }); } catch (e) { console.log('hub wipe failed', e && e.message); }
+    // the owner's: when his data was deleted, kept (one small value, never part of a family wipeSome deletes), so his other connected phones
+    // ask before putting their copy back (backup.js syncLiteGet's wiped, sync.js syncWiped; fix round 3, W1-6-01)
+    if (!who.ns) try { await env.WARDROBE.put(WIPED_KEY, JSON.stringify({ at: Date.now() })); } catch (e) { console.log('wipe mark not kept', e && e.message); }
+    const done = await wipeSome(env, who.ns, 30, st);
+    if (!done && env.RENDER_QUEUE) { await env.RENDER_QUEUE.send({ wipe: who.ns || 'owner', n: 1 }); return json({ ok: true }); }
+    return json({ ok: true, ...(done ? {} : { more: true }) });
+  } catch (e) {
+    if (!st.gone || !env.RENDER_QUEUE) throw e;   // nothing deleted yet: the refusal as it is
+    console.log('account wipe left to the queue', e && e.message);
+    await env.RENDER_QUEUE.send({ wipe: who.ns || 'owner', n: 1 }, { delaySeconds: resetDelay() });
+    return json({ ok: true, later: true });
+  }
 }
+/* seconds until a few minutes after the next 00:00 UTC, when KV's daily allowances start again (a queue delay is at most 12 hours) */
+const resetDelay = (now = Date.now()) => { const d = new Date(now); return Math.min(43200, Math.ceil((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1) - now) / 1000) + 300); };
 /* the queue finishing a deleted account: {wipe: 'owner' | 'u:<id>:', n}; a part per message until nothing is left */
 async function runWipe(msg, env) {
   const w = String(msg.body.wipe), ns = w === 'owner' ? '' : NS_RE.test(w) ? w : null, n = +msg.body.n || 1;
@@ -308,4 +380,4 @@ async function runWipe(msg, env) {
 }
 
 
-export { DAY_KEY, INVITE_INDEX, UID_RE, USE_RE, countWrites, handleAccount, handleFeedback, handleInvites, handleMe, limitBody, ownerOnly, plainFor, runWipe, sha256Hex, smallBody, spend, spendEach, spendUpTo, unspend, utcDay, whoIs };
+export { DAY_KEY, INVITE_INDEX, WIPED_KEY, UID_RE, USE_RE, countWrites, resetDelay, handleAccount, handleErrors, handleFeedback, handleInvites, handleMe, limitBody, ownerOnly, plainFor, runWipe, sha256Hex, smallBody, spend, spendEach, spendUpTo, unspend, utcDay, whoIs };

@@ -9,7 +9,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>{dialogs.push(d.message());d.dismiss()});
     await p.route(SRV+'**',r=>r.fulfill({status:503,headers:{'access-control-allow-origin':'*'},contentType:'application/json',body:'{}'}));   // a server that answers nothing: no sync merges the wardrobe away
     if(o.setup)await p.addInitScript(()=>{window.SETUP_AUTO=true});
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-11T12:00:00';sel=new Date(2026,10,11);view={y:2026,m:10};settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.setupDone=1;cache={}});
     return {p,ctx,errs,dialogs}};
   const fill=(p,which)=>p.evaluate(`(()=>{const W=${WARDROBES};items=${which};cache={};flt='all';show('today')})()`);

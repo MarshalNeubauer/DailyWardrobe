@@ -118,7 +118,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     }else ok(true,'(the worker from before this change is not in this clone: skipped)');
 
     ok([A,B,C].every(d=>!d.errs.length),'no page errors ('+[A,B,C].flatMap(d=>d.errs).join('; ')+')');
-    ok(!(await status(A))&&!(await status(B)),'no sync failure left on either device');
+    {const sa=await status(A),sb=await status(B);ok(!sa&&!sb,'no sync failure left on either device'+(sa||sb?` (${sa} | ${sb})`:''))}
   }finally{await browser.close()}
 
   // a tester's saves count against their daily backups, as the whole-backup saves do; a refused one is given back

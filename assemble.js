@@ -2,15 +2,15 @@
 // Every outfit picture is painted on a colour-coded master (asm-color.js: the masters, the painting; asm-gl.js: the same painting on the
 // graphics chip). This file holds what the painting shares (the cloth tiles and drawings: suit cloth, twill, tweed, linen, ties, shirt
 // weaves; the sleeves' tubes and the body's stripe flow; the drawn tie bar) and the plumbing around it: the Web Worker that paints off
-// the page, the pictures kept on the device, the computer's pre-built pictures, building ahead and Today's hook (asmFor / asmEnsure).
+// the page, the pictures kept on the device, looks' pictures already on the worker, building ahead and Today's hook (asmFor / asmEnsure).
 // (2026-11-14, the owner's order after the audit: the earlier photo-per-item assembler, its master, calibration photos, pieces, zones
 // and the atlas-painting trial were deleted; a look with no colour-coded master shows its own photo or the drawing.)
 const ASM_VER=3;   // in every key (asmKey): the colour-coded masters' keys too, so it never changes
-const ASM_SIZE=2048;   // a phone paints at 2048 (the computer's pre-build paints at ASM_CM_SIZE 2880 and scales to this)
+const ASM_SIZE=2048;   // a phone paints at 2048 (a larger ASM_CM_SIZE, as some tests set, paints larger and scales to this)
 /* ASM_ON: are assembled pictures in use? Off, Today shows each outfit's own photo or drawing and nothing is fetched or painted */
 let ASM_ON=!self.ASM_TEST_OFF;   // (tests switch assembled pictures off unless the test file says module.exports.assembled=true: tests/run.js)
 /* Settings → Outfit pictures → "Drawing only" (photos.js picsDrawn): nothing is painted or downloaded for Today (asmEnsure, asmAhead, asmSync,
-   renderAsmUI); the lower-level calls the PC's pre-build makes (asmCmLook, asmCmGet, asmPrebuildOne, asmJob) don't ask, so it keeps building */
+   renderAsmUI); the lower-level calls (asmCmLook, asmCmGet, asmJob) don't ask */
 const asmDrawn=()=>typeof picsDrawn==='function'&&picsDrawn();
 try{for(const k of ['asm_paint2','asm_none','asm_vest'])localStorage.removeItem(k)}catch{}   // the earlier assembler's settings on a phone (2026-11-14: deleted)
 const asmImg=u=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>no(new Error('could not read a photo'));im.src=u});
@@ -87,7 +87,7 @@ const ASM_ZONE_SLOTS=['jacket','shirt','tie','watch'],asmZoneKey=s=>asmKey('zone
 const asmZoneImgs=()=>{const o={};for(const s of ASM_ZONE_SLOTS){const r=renders[asmZoneKey(s)];if(!r)return null;o[s]=r.img}return o};
 async function asmMaskFromImg(img,W){const d=(await asmData(img,W)).data,N=W*W,m=new Uint8Array(N);for(let i=0;i<N;i++)if(d[4*i]>127)m[i]=1;return m}
 /* the outfit is painted on a colour-coded master (asm-color.js) when its kind has one on this device or in the worker's list (a phone
-   then needn't download a master and its masks just to learn it exists; it downloads them only to paint a look the computer hasn't built,
+   then needn't download a master and its masks just to learn it exists; it downloads them only to paint a look with no picture on the worker,
    asmCmEnsure); else null: the day shows its own photo or the drawing */
 /* (and the masters the last list showed are remembered, localStorage.asm_cm_listed: at start a phone holding no master would otherwise
    wait for the list before showing a picture it already keeps) */
@@ -99,11 +99,11 @@ const asmCmUse=o=>{if(!ASM_ON||typeof asmCmKind!=='function')return null;const k
 const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const k=asmCmKind(o);if(!k)return;
   await asmCmMfGet();   // the masters' manifest first: it may outdate a photo held here, and its dates are in the look's key
   if(!renders[asmCmKey(k,'master')]){const L=await asmListGet();if(!(L&&L.has(asmCmKey(k,'master')))&&!asmTried.has(asmCmKey(k,'master')))await asmCmGet(k)}
-  // the background (asm-color.js), once a session: its date is in every look's key, so a phone needs it to find the computer's pictures
+  // the background (asm-color.js), once a session: its date is in every look's key, so a phone needs it to find the worker's pictures
   if(asmCmHeld(k))await asmCmBgGet()};
 const asmCmAny=()=>typeof asmCmKey==='function'&&Object.keys(ASM_CM_KINDS).some(asmCmHeld);
-/* the worker's list of the photos it keeps (GET /render?list=1: keys only, a few KB): which looks the computer has built (npm run
-   assemble) and which colour-coded masters are there. It is photos.js's one shared list (workerList: one request for the outfit photos
+/* the worker's list of the photos it keeps (GET /render?list=1: keys only, a few KB): which looks have a picture there (uploaded
+   by the PC builder until it was removed, 2026-11-16) and which colour-coded masters are there. It is photos.js's one shared list (workerList: one request for the outfit photos
    and for these, kept LIST_MS, not asked again until the next UTC day once refused); null when the worker can't list: then a look is
    asked for by itself, as before */
 let asmList=null,asmListAt=0;
@@ -556,7 +556,7 @@ function asmFor(o){if(!asmWants(o)||asmFullWins(o))return null;
   const k=asmOutKey(o),a=asmOut[k];if(a&&!a.lid&&asmCmUse(o)){a.lid=asmLookId(o);metaPut('asm:out:'+k,a).catch(()=>{})}   // (a picture kept before it carried its outfit: marked as it is met, so it can stand in after the next change)
   return a&&asmFresh(o,a)?{img:asmImgOf(k,a),model:'assembled',t:a.t,sig:comboSig(o)}:null}
 /* the same outfit's last picture while its current one isn't here yet (2026-11-14, the owner: "I'm seeing it swap every time I swipe"):
-   a change to the painter, a master or the lighting gives every look a new key, and until the computer or the phone has painted it again
+   a change to the painter, a master or the lighting gives every look a new key, and until the phone has painted it again
    Today showed the drawing and then swapped in the picture. A kept picture carries its outfit (lid: the master and the outfit's own
    combination key, comboKey, which changes with any garment, colour or reading but not with the painter), so the newest picture of this
    very outfit and master is shown meanwhile, and the new one replaces it quietly when it is ready. Only for showing: building ahead and
@@ -566,13 +566,12 @@ function asmStale(o){if(!asmWants(o)||asmFullWins(o))return null;const id=asmLoo
   for(const [k,a] of Object.entries(asmOut))if(a&&a.lid===id&&(!best||(a.t||0)>(best.t||0))){best=a;bk=k}
   return best?{img:asmImgOf(bk,best),model:'assembled',t:best.t,sig:comboSig(o),stale:true}:null}
 const asmShown=o=>asmFor(o)||asmStale(o);
-/* ---- pictures built ahead on a computer (tools/asm-prebuild.js, npm run assemble) ----
-   The computer runs this very code on the owner's wardrobe and uploads each look's picture to the worker as an ordinary photo record
-   under its look key (render:<asmOutKey>), signed 'asm/out/cm<ASM_CMV>/<stamp>' (asmPreSig: the colour-coded masters' version and the
-   newest record date the look is painted from, asmCmStamp). A phone asks for that before it downloads a master (asmGetPre, once a
-   session per look; a look nobody built is a 404 and is painted here). */
+/* ---- looks' pictures already on the worker ----
+   Until 2026-11-16 a computer (the PC builder, since removed) painted the owner's coming looks with this very code and uploaded each
+   picture to the worker as an ordinary photo record under its look key (render:<asmOutKey>), signed 'asm/out/cm<ASM_CMV>/<stamp>' (the
+   colour-coded masters' version and the newest record date the look is painted from, asmCmStamp). Nothing uploads new ones now; a phone
+   still asks for one before it downloads a master (asmGetPre, once a session per look; a look not there is a 404 and is painted here). */
 const ASM_PRE_RE=/^asm\/out\/(z|cm)(\d+)\/(\d+)$/;   // ('z': the earlier assembler's pictures, still on the worker, never taken)
-const asmPreSig=o=>`asm/out/cm${ASM_CMV}/${asmStamp(o)}`;
 const asmPreSigOk=(o,m)=>!!m&&!!asmCmUse(o)&&m[1]==='cm'&&+m[2]===ASM_CMV;
 /* is a kept picture still right? A colour-coded look's key carries everything it is painted from (each garment's cloth, the painter's
    code, the master's record dates from the manifest, the background's date), so a picture under it is right whoever made it: a fresh
@@ -590,13 +589,10 @@ async function asmGetPre1(o,listed){const k=asmOutKey(o),W=workerBase();if(!W||(
   try{const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});
     if(!r.ok&&r.status!==404){asmRetryAt.set('pre:'+k,Date.now()+ASM_RETRY_MS);return false}
     asmTried.add('pre:'+k);const j=r.ok?await r.json().catch(()=>null):null;
-    const m=j&&j.img&&ASM_PRE_RE.exec(String(j.sig||''));if(!asmPreSigOk(o,m)){if(listed)asmPreNo.set(k,asmListAt);return false}
+    const m=j&&typeof j.img==='string'&&REC_PHOTO.test(j.img)&&ASM_PRE_RE.exec(String(j.sig||''));/* (only a picture: core.js REC_PHOTO) */if(!asmPreSigOk(o,m)){if(listed)asmPreNo.set(k,asmListAt);return false}
     const rec={img:j.img,stamp:+m[3],t:Date.now(),pre:true};if(!asmFresh(o,rec)){if(listed)asmPreNo.set(k,asmListAt);return false}
     await asmKeepOut(k,j.img,{stamp:rec.stamp,t:rec.t,pre:true,lid:asmLookId(o)});return true}
   catch(e){console.warn('no built picture',e);asmRetryAt.set('pre:'+k,Date.now()+ASM_RETRY_MS);return false}}
-/* for the computer: one look's picture painted exactly as a phone paints it -> {key, sig, img}, or null (no colour-coded master for it).
-   It downloads what the look needs like asmEnsure, but never takes a picture built earlier */
-async function asmPrebuildOne(o){await asmCmLook(o);return asmCmUse(o)?asmCmPrebuild(o):null}
 /* (2026-11-14 audit) kept pictures are read by their key range only (start-up read the whole meta store here and again in loadRenders),
    and kept as Blobs (rec.blob): IndexedDB hands back a Blob as a handle, so only stamps and dates are in memory and a picture's bytes are
    read when it is shown (asmImgOf: an object URL). 150 pictures of 0.4-1.4 MB used to sit in memory as base64. A record kept as base64
@@ -618,7 +614,7 @@ async function asmBlobUp(){for(const [k,a] of Object.entries(asmOut)){if(!a||a.b
   await new Promise(r=>setTimeout(r,50))}}
 /* one photo record from the worker onto the device (a master, a mask…: each asked for once a session). One download at a time per
    photo: a second ask while the first is on its way waits for it (it used to answer "missing" at once, because the key was already
-   marked as tried: the computer's build, tools/asm-prebuild.js, met Today's own download at start-up) */
+   marked as tried: the PC builder, since removed, met Today's own download at start-up) */
 const asmGetting=new Map();
 function asmGet(key,force){if(renders[key])return Promise.resolve(true);if(asmGetting.has(key))return asmGetting.get(key);
   const p=asmGetOnce(key,force).finally(()=>asmGetting.delete(key));asmGetting.set(key,p);return p}
@@ -631,7 +627,7 @@ async function asmGetOnce(key,force){if(renders[key])return true;const W=workerB
     if(j&&j.img){await keepRender(key,{sig:j.sig||'',img:j.img,model:j.model||'',t:j.t||Date.now()},false);return true}}
   catch(e){console.warn('photo unavailable',e);asmRetryAt.set(key,Date.now()+ASM_RETRY_MS)}
   return false}
-/* bring what this outfit needs onto the device, paint its picture, keep it and show it (asm-color.js asmCmEnsure: the computer's
+/* bring what this outfit needs onto the device, paint its picture, keep it and show it (asm-color.js asmCmEnsure: the worker's
    picture first). Not for an outfit whose own photo wins (asmFullWins): asmFor gives null for it, and taking that as "not made yet"
    painted it and redrew Today again and again after a Regenerate, which kept the phone busy and cut off every swipe and scroll */
 async function asmEnsure(o,ahead){if(asmDrawn())return;await asmCmLook(o);if(!asmCmUse(o))return;if(!ahead)asmAheadSoon();return asmCmEnsure(o,ahead)}
@@ -649,7 +645,7 @@ function asmShow(){asmTouchWatch();if(asmTouch){asmLate=true;return}refreshToday
    Today is drawn (asmAheadSoon, from asmEnsure) and starts over when the day on screen or the plan changes; a built look is skipped. */
 const ASM_AHEAD=60;
 const ASM_AHEAD_WAIT=1200;
-const ASM_AHEAD_N=3;   // pictures built on the computer downloaded at once while building ahead (one at a time took about 80 s for 40 on 4G)
+const ASM_AHEAD_N=3;   // pictures already on the worker downloaded at once while building ahead (one at a time took about 80 s for 40 on 4G)
 let asmAheadT=0,asmAheadOn=false,asmAheadAgain=false;
 function asmAheadSoon(){clearTimeout(asmAheadT);asmAheadT=setTimeout(asmAhead,ASM_AHEAD_WAIT)}
 /* the workdays from today to ASM_AHEAD days on, with the day on screen and its neighbours first: [[date, outfit]] (planned a day at a
@@ -662,7 +658,7 @@ async function asmAheadDays(){const T=todayDate(),c=+new Date(sel.getFullYear(),
 async function asmAhead(){if(!ASM_ON||asmDrawn()||!asmCmAny()||!asmOffPage()||document.hidden)return;if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;
   try{do{asmAheadAgain=false;const seen=new Set(),todo=[];
       for(const o of await asmAheadDays()){const k=asmOutKey(o);if(seen.has(k))continue;seen.add(k);if(!asmFullWins(o)&&!asmFor(o))todo.push(o)}
-      // (2026-11-13) the looks the computer built first, ASM_AHEAD_N at a time (only their pictures are downloaded); then the rest, one at
+      // (2026-11-13) the looks with a picture on the worker first, ASM_AHEAD_N at a time (only their pictures are downloaded); then the rest, one at
       // a time and grouped by master, so a master's setup is read once for all its looks (asmCmBuild keeps one in memory on a phone)
       const L=await asmListGet(),built=todo.filter(o=>asmCmUse(o)&&L&&L.has(asmOutKey(o))),rest=todo.filter(o=>!built.includes(o));
       const stop=()=>asmAheadAgain||document.hidden||!asmOffPage()||asmDrawn();let i=0;

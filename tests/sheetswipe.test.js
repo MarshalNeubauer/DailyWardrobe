@@ -30,7 +30,8 @@ module.exports=async({ok,chromium,url,settle})=>{
       await p.evaluate(s=>document.documentElement.style.setProperty('--sat',s+'px'),SAT);
       let g=await open();
       ok(g.top>=SAT+8&&g.top+7>=SAT+8,`${tag}: under a ${SAT}px status bar the sheet starts below it (top ${Math.round(g.top)}px, grabber at ${Math.round(g.top+7)}px)`);
-      if(w>=600)ok(Math.round(g.w)===Math.min(600,Math.round(w*.94))&&g.top+g.h<=h,`${tag}: still the centred panel, inside the screen (${Math.round(g.w)}px wide, bottom ${Math.round(g.top+g.h)})`);
+      // (the checklist redesign, 2026-11-16: from 600px the panel is up to 900px wide, for its two columns)
+      if(w>=600)ok(Math.round(g.w)===Math.min(900,Math.round(w*.96))&&Math.abs(g.left+g.w/2-w/2)<1.5&&g.top+g.h<=h,`${tag}: still the centred panel, inside the screen (${Math.round(g.w)}px wide, bottom ${Math.round(g.top+g.h)})`);
       if(SHOTS&&w===690)await p.screenshot({path:`${SHOTS}/panel-690-statusbar59-${WK?'webkit':'chromium'}.png`});
       await p.evaluate(()=>document.documentElement.style.removeProperty('--sat'));
       // touch: from the grabber, the title, and the content at the top; the sheet follows the finger and the Wardrobe brightens

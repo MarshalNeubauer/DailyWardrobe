@@ -124,7 +124,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         for(let g=1;!k&&g<20;g++){const x=new Date(T.getFullYear(),T.getMonth(),T.getDate()-g);if(isWorkday(x))k=key(x)}
         await saveDay({date:k,ids:{top:suit.id,tie:own.id},suitDay:true,worn:false});const ok1=await syncNow();return {ok1,k,own:own.id,st:localStorage.getItem('sync_status')}});
       const s1=await serverGet();
-      ok(up.ok1&&s1.items.length===1&&!s1.items.some(i=>i.sample)&&!(s1.days||[]).some(x=>x.date===up.k),`${old?'an older-style (whole backup) sync':'the small sync'}: the sample and the day naming it stay on the phone; his own tie is backed up (${s1.items.length} item(s) on the server)`);
+      const d1=(s1.days||[]).find(x=>x.date===up.k);   // (fix round 3, W1-3-02: the day goes up with the sample's pieces taken out)
+      ok(up.ok1&&s1.items.length===1&&!s1.items.some(i=>i.sample)&&d1&&d1.worn===false&&d1.ids.tie===up.own&&!d1.ids.top&&d1.gone&&d1.gone.top,`${old?'an older-style (whole backup) sync':'the small sync'}: the sample stays on the phone, the day naming it goes up without it, with his own tie and its "Didn't" (${s1.items.length} item(s) on the server, ${JSON.stringify(d1)})`);
       const rm=await d.evaluate(async()=>{await kitSampleRemove(true);return syncNow()});
       const s2=await serverGet(),day=(s2.days||[]).find(x=>x.date===up.k);
       ok(rm&&day&&day.worn===false&&day.ids&&day.ids.tie===up.own&&!day.ids.top&&s2.items.length===1,`once the sample is removed, that day goes up with his tie and its "Didn't" (${JSON.stringify(day)})`);
