@@ -11,7 +11,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.evaluate(ph=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:k,...x});
       items=[I('suit','navy',{photo:ph}),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[0,1,2,3,4];settings.planRules=PLAN_RULES;dayRecs={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};view={y:2026,m:10};flt='all';editing='suit0';show('wardrobe')},photo);
-    const before=await p.evaluate(()=>({plan:JSON.stringify(Object.values(planFor()).map(o=>o.top&&o.top.id)),tags:JSON.stringify(Object.entries({...items[0],photo:0,updated:0,photoSm:0,phSig:0}).sort())}));
+    const before=await p.evaluate(()=>({plan:JSON.stringify(Object.values(planFor()).map(o=>o.top&&o.top.id)),tags:JSON.stringify(Object.entries({...items[0],photo:0,updated:0,photoSm:0,phSig:0,fs:0}).sort())}));
     const dims=()=>p.evaluate(()=>new Promise(r=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);
       const px=(a,b)=>[...x.getImageData(Math.floor(a*im.width),Math.floor(b*im.height),1,1).data].slice(0,3).map(v=>v>128?1:0).join('');r({w:im.width,h:im.height,tl:px(.1,.1),tr:px(.9,.1),bl:px(.1,.9)})};im.src=items[0].photo}));
     ok(await p.evaluate(()=>{const t=document.querySelector('#item-view .phtools').textContent;return /Replace/.test(t)&&/Rotate/.test(t)&&/Crop/.test(t)}),'an opened item offers Replace, Rotate and Crop');
@@ -35,7 +35,7 @@ module.exports=async({ok,chromium,url})=>{
     const file=path.join(os.tmpdir(),'dw-green.png');fs.writeFileSync(file,Buffer.from(green.split(',')[1],'base64'));
     await p.setInputFiles('.phtools input[type=file]',file);await p.waitForFunction(()=>items[0].photo&&items[0].photo.length>0&&document.querySelector('#toast').textContent.includes('replaced'));
     d=await dims();ok(d.tl==='010'&&Math.max(d.w,d.h)===800,'Replace photo takes a new picture (kept whole up to 1536 px: PH_MAX, 2026-11-13; it was 720)');
-    const after=await p.evaluate(()=>{cache={};return {plan:JSON.stringify(Object.values(planFor()).map(o=>o.top&&o.top.id)),tags:JSON.stringify(Object.entries({...items[0],photo:0,updated:0,photoSm:0,phSig:0}).sort()),id:items[0].id,n:items.length}});
+    const after=await p.evaluate(()=>{cache={};return {plan:JSON.stringify(Object.values(planFor()).map(o=>o.top&&o.top.id)),tags:JSON.stringify(Object.entries({...items[0],photo:0,updated:0,photoSm:0,phSig:0,fs:0}).sort()),id:items[0].id,n:items.length}});
     ok(after.plan===before.plan&&after.tags===before.tags&&after.id==='suit0'&&after.n===7,'the item keeps its id and tags, and the plan does not change'+(after.tags===before.tags?'':' TAGS '+before.tags+' | '+after.tags)+(after.plan===before.plan?'':' PLAN'));
     ok(await p.evaluate(async()=>{const s=await tx('readonly',st=>st.get('suit0'));return s&&s.photo===items[0].photo}),'the new photo is saved (and syncs with the item)');
     // Add keeps an item's photo at 720px, as Replace does (it was 360px: a suit cropped later went to the photo generator at 270px)

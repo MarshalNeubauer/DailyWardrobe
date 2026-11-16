@@ -17,7 +17,7 @@ module.exports=async({ok,chromium,url})=>{
         '2026-11-23':{date:'2026-11-23',formal:true,force:{top:'suit0'},lock:{top:'suit0'}},
         '2026-12-6':{date:'2026-12-6',vest:false}}};
     await p.evaluate(setup);await p.evaluate(()=>{settings.planRules=1});
-    const r=await p.evaluate(async()=>{await checkPlanRules();const R=k=>JSON.stringify(Object.keys(dayRecs[k]).filter(x=>x!=='updated').sort());
+    const r=await p.evaluate(async()=>{await checkPlanRules();const R=k=>JSON.stringify(Object.keys(dayRecs[k]).filter(x=>x!=='updated'&&x!=='fs').sort());
       return {rules:settings.planRules===PLAN_RULES,past:R('2026-11-5'),today:R('2026-11-9'),f10:R('2026-11-10'),f17:R('2026-11-17'),f18:R('2026-11-18'),formal:R('2026-11-23'),dec:R('2026-12-6'),
         n17:planFor()['2026-11-17'].top.id,toast:document.querySelector('#toast').textContent}});
     // (2026-11-14, the audit: a bump used to clear the owner's picks on every upcoming day, so planning changes went without one)

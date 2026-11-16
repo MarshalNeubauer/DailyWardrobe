@@ -166,11 +166,11 @@ function itemBody(i){
   // the reading's done card (rdDoneHtml, inside rdEditorBtn)
   const ct=phEdit.crop||!TEXTURE_TYPES.includes(i.type)?'':`<section class="card ivsec ivct" id="ivct" aria-labelledby="ivct-h"><h3 id="ivct-h">Color &amp; texture</h3><p class="shelp">Claude reads them from your close-up.</p>${paperLine(i)}${paperHint(i)}${rdEditorBtn(i)}</section>`;
   const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${jsq(i.id)}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
-  ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${jsq(i.id)}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}</section>${typeof careCard==='function'?careCard(i):''}`;
+  ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${jsq(i.id)}',${!i.paused})" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}</section>${typeof careCard==='function'?careCard(i):''}`;
   return `<div class="ivin">${hero}${photos}${ct}${typeof kitSampleNote==='function'?kitSampleNote(i):''}${tags}${rot}<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${jsq(i.id)}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${jsq(i.id)}')">Delete item</button></div></div>`;
 }
 async function sete(id,k,v){
-  const it=items.find(x=>x.id===id);if(!it)return;
+  const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}
   it[k]=v==='none'?null:v;
   if(k==='shoeStyle'&&!leathersFor(it).includes(it.leather))it.leather='calf';   // a sneaker can't be cordovan: back to plain leather
   if(k==='type'){it.pattern=normPat(v,it.pattern);shirtColFix(it);if(METAL_TYPES.includes(v)&&!it.metal)it.metal='silver';if((v==='shoes'||v==='belt')&&!it.leather)it.leather='calf';typeTidy(it)}
@@ -209,7 +209,11 @@ async function redetect(id){
    hand pick), so those days are planned again without it; past days and days marked worn keep it. */
 async function setItemArrives(id,v){const it=items.find(x=>x.id===id);if(!it)return;if(/^\d{4}-\d{2}-\d{2}$/.test(v||''))it.arrives=v;else delete it.arrives;await put(it);cache={};
   if(await checkArrivals())return renderWardrobe();renderWardrobe()}
-async function togglePause(id){const it=items.find(x=>x.id===id);if(!it)return;it.paused=!it.paused;if(!it.paused){delete it.paused;delete it.order;delete it.arrives}
+/* want: what the button said when it was drawn (true = "Take out of rotation"): a sheet drawn before another phone's change arrived does
+   what it says, never the opposite (fix round 3, W1-5-04); nothing to do when the piece is already that way */
+async function togglePause(id,want){const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}
+  if(typeof want==='boolean'&&!!it.paused===want){renderWardrobe();toast(want?'It was already taken out of rotation on another phone.':'It was already back in rotation.');return}
+  it.paused=!it.paused;if(!it.paused){delete it.paused;delete it.order;delete it.arrives}
   let n=0;if(it.paused){const T=todayDate();
     for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<T||r.worn===true||!r.force)continue;const f={...r.force};let hit=false;
       for(const [s,v] of Object.entries(f))if(v===id){delete f[s];hit=true}
@@ -258,6 +262,23 @@ function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)retu
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
   if(typeof layerInert==='function')layerInert();else for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;   // (ui.js: counts Settings and the sheets too)
   if(was&&!on&&typeof syncLaterRun==='function')setTimeout(()=>syncLaterRun('wardrobe'),0)}   // a sync's redraw that waited for the sheet (sync.js)
+/* ---- a sync changed the piece open in the sheet (fix round 3, 2026-11-16) ----
+   The sync's redraw of the Wardrobe waits while the sheet is up (sync.js syncLater), so the sheet kept the old state and its buttons acted
+   on the new one: "Take out of rotation" put a piece taken out on the other phone back in (W1-5-04). Now the sheet is drawn again from the
+   new copy at once, or, while a field in it is being typed in, once that field is left. A piece deleted on another phone (W1-6-02) is
+   said in a toast and a line at the top of the sheet; the sheet stays until closed (redrawn it would vanish under the finger), and a
+   change made in it says it wasn't kept (itemGoneTell). was: the copy shown before the sync */
+let itemGone=null;
+function itemSynced(was){if(!editing)return;const id=editing,now=items.find(x=>x.id===id);
+  if(!now){if(itemGone===id)return;itemGone=id;const n=was&&(itemName(was)||nm(was));
+    tell(n?`“${n}” was deleted on another phone.`:'This piece was deleted on another phone.');
+    const b=$('#ivbody');if(b&&!b.querySelector('.ivgone'))b.insertAdjacentHTML('afterbegin','<p class="ivgone" role="status">This piece was deleted on another phone. Changes made here aren’t kept.</p>');return}
+  if(was&&stamp(was)===stamp(now))return;
+  const v=$('#item-view'),a=document.activeElement;
+  if(v&&a&&v.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!/^(button|checkbox|radio|range)$/.test(a.type||'')){a.addEventListener('blur',()=>setTimeout(()=>{if(editing===id&&!(v.contains(document.activeElement)&&/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)))renderItem()},0),{once:true});return}
+  if(!phEdit.crop)renderItem()}
+/* a change made to a piece no longer here (deleted on another phone while its sheet was open): said, once per tap -> true when said */
+function itemGoneTell(id){if(items.some(x=>x.id===id))return false;tell('This piece was deleted on another phone, so the change wasn’t kept.');return true}
 /* draws the open item (called by renderWardrobe, so every edit redraws it; the scroll position stays) */
 function renderItem(){
   const v=$('#item-view');if(!v)return;const i=editing&&items.find(x=>x.id===editing);
@@ -270,7 +291,7 @@ function renderItem(){
 const sheetSlides=()=>innerWidth<600;   // a phone: the sheet slides up from the bottom; wider, the panel fades in
 function openItem(id){
   if(!items.some(i=>i.id===id))return;const v=$('#item-view'),bd=$('#item-backdrop'),was=editing;
-  editing=id;if(!was)itemFrom=id;histPush();renderItem();$('#ivbody').scrollTop=0;
+  editing=id;itemGone=null;if(!was)itemFrom=id;histPush();renderItem();$('#ivbody').scrollTop=0;
   for(const el of [v,bd]){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}
   if(was||noMotion())return;const o={duration:WARD_MS,easing:WARD_EASE};
   v.animate(sheetSlides()?[{transform:'translateY(100%)'},{transform:'none'}]:[{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],o);
