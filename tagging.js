@@ -7,7 +7,9 @@ const TAG_MAX=2048,CLOSE_MAX=1536,TAG_Q=.92;
 const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length||(c.patterns||[]).length?{colors:c.colors||[],patterns:c.patterns||[]}:undefined};
 /* the latest corrections (another item's only: the benchmark must not hand an item its own answer) */
 const tagFixes=skipId=>(settings.tagFixes||[]).filter(f=>f.id!==skipId).slice(-20).map(({field,type,from,to})=>({field,type,from,to}));
-const tagExtras=(x={})=>({custom:customForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{}),...(x.freeColors?{freeColors:true}:{}),...(x.freePattern?{freePattern:true}:{}),...(x.wb!=null?{wb:!!x.wb}:{})});
+/* the person's own materials, sent so Claude can name them (worker cleanOwnMaterials; 2026-11-16): {type: [name]}, or undefined when none */
+const ownMatsForTag=()=>{const o={};for(const t of Object.keys(MATERIALS_BY)){const l=ownMats(t);if(l.length)o[t]=l}return Object.keys(o).length?o:undefined};
+const tagExtras=(x={})=>({custom:customForTag(),ownMaterials:ownMatsForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{}),...(x.freeColors?{freeColors:true}:{}),...(x.freePattern?{freePattern:true}:{}),...(x.wb!=null?{wb:!!x.wb}:{})});
 
 /* ---- tagging copies: the sharp photo sent to the tagger is kept on this device only (Cache Storage, not synced, not loaded
    at start-up), so the benchmark can re-tag an item from the same picture later ---- */
@@ -41,23 +43,33 @@ async function sharpCloseOf(it){if(!it||!it.texture)return null;
    matched, gains held to 0.6-1.6. The sharp copy is kept again under the new close-up's signature. Another device has nothing to do. */
 const TEX_UP_FLAG='tex_up',TEX_UP_V='1536';
 async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_UP_V||!self.caches||typeof TEX_MAX==='undefined')return 0}catch{return 0}
-  let n=0;const img=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
+  let n=0,more=false;const img=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
   const lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);
   const mean=im=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,m=[0,0,0];
     for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)m[q]+=lin(d[k+q]);return m.map(v=>v/4096)};
   for(const it of items){if(!it.texture)continue;
     try{const sharp=await sharpCloseOf(it);if(!sharp||sharp===it.texture)continue;
       const [a,b]=await Promise.all([img(it.texture),img(sharp)]);if(Math.max(a.width,a.height)>=TEX_MAX*.9||Math.max(b.width,b.height)<=Math.max(a.width,a.height)*1.2)continue;
+      if(remakeLeft()<1){more=true;break}
       const s=Math.min(1,TEX_MAX/Math.max(b.width,b.height)),W=Math.round(b.width*s),H=Math.round(b.height*s),c=document.createElement('canvas');c.width=W;c.height=H;
       const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(b,0,0,W,H);const ma=mean(a),mb=mean(b),g=ma.map((v,q)=>Math.min(1.6,Math.max(.6,mb[q]>1e-4?v/mb[q]:1)));
       const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(gam(Math.min(1,lin(v)*g[q])));return t});
       for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0);
-      if(!stillCur(it))continue;it.texture=c.toDataURL('image/jpeg',.85);if(typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);await keepCloseImg(it.id,sharp,it.texture);n++}
+      if(!stillCur(it))continue;it.texture=c.toDataURL('image/jpeg',.85);if(typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);await keepCloseImg(it.id,sharp,it.texture);remakeSpend(1);n++}
     catch(e){console.warn('close-up not upgraded',it.id,e)}}
-  try{localStorage.setItem(TEX_UP_FLAG,TEX_UP_V)}catch{}
-  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
+  if(!more)try{localStorage.setItem(TEX_UP_FLAG,TEX_UP_V)}catch{}
+  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).${more?' The rest follow over the next days.':''}`,3500)}
   return n}
 
+/* (2026-11-16, the audit's W1-1-02: an update that remade every photo cost a tester about 3 server writes an item on one morning, and ten
+   testers updating on the same day would use up everyone's allowance) every picture remade at start-up (a sharper photo or close-up, a small
+   copy) is a new server value: a connected phone remakes at most REMAKE_DAY a day (localStorage remake_day {d, n}), the rest on the next
+   days; a phone with no connection writes nothing to the server and has no limit */
+const REMAKE_DAY=10;
+const remakeOn=()=>typeof syncNeedsPull==='function'&&syncNeedsPull();
+const remakeRead=()=>{try{const r=JSON.parse(localStorage.getItem('remake_day')||'null');return r&&r.d===isoKey(new Date())?+r.n||0:0}catch{return 0}};
+const remakeLeft=()=>remakeOn()?Math.max(0,REMAKE_DAY-remakeRead()):Infinity;
+function remakeSpend(k){if(!remakeOn())return;try{localStorage.setItem('remake_day',JSON.stringify({d:isoKey(new Date()),n:remakeRead()+k}))}catch{}}
 /* item photos saved at 720 px before PH_MAX was raised (2026-11-13, the owner: "upgrade the main photo size stored as well"): on the device
    that read them, the sharp copy (TAG_MAX, kept by keepTagImg) is still there; when it shows the same picture as the photo (cropSource's
    test: same shape, alike at 24x24, turned to match; a photo cropped or replaced since doesn't match and is left), the photo is made again
@@ -65,21 +77,22 @@ async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_
    close-ups). Once (localStorage photo_up). */
 const PH_UP_FLAG='photo_up',PH_UP_V='1536';
 async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V||typeof PH_MAX==='undefined'||typeof cropSource!=='function')return 0}catch{return 0}
-  let n=0;const lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);
+  let n=0,more=false;const lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);
   const mean=im=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,m=[0,0,0];
     for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)m[q]+=lin(d[k+q]);return m.map(v=>v/4096)};
   for(const it of items){if(!it.photo)continue;
     try{const ph=await imgOf(it.photo);if(Math.max(ph.naturalWidth,ph.naturalHeight)>=PH_MAX*.9)continue;
       const src=await cropSource(it);if(!src||src===ph||!src.getContext)continue;   // no sharp copy of this very picture on this device
       const s=Math.min(1,PH_MAX/Math.max(src.width,src.height)),W=Math.round(src.width*s),H=Math.round(src.height*s);if(Math.max(W,H)<=Math.max(ph.naturalWidth,ph.naturalHeight)*1.2)continue;
+      if(remakeLeft()<2){more=true;break}   // (the day's remakes used up: the rest on the next days)
       const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(src,0,0,W,H);
       const ma=mean(ph),mb=mean(c),g=ma.map((v,q)=>Math.min(1.6,Math.max(.6,mb[q]>1e-4?v/mb[q]:1)));
       const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(gam(Math.min(1,lin(v)*g[q])));return t});
       for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0);
-      if(!stillCur(it))continue;it.photo=c.toDataURL('image/jpeg',.85);await resignTagImg(it.id,it.photo);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);n++}
+      if(!stillCur(it))continue;it.photo=c.toDataURL('image/jpeg',.85);await resignTagImg(it.id,it.photo);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);remakeSpend(2);n++}
     catch(e){console.warn('photo not upgraded',it.id,e)}}
-  try{localStorage.setItem(PH_UP_FLAG,PH_UP_V)}catch{}
-  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
+  if(!more)try{localStorage.setItem(PH_UP_FLAG,PH_UP_V)}catch{}
+  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).${more?' The rest follow over the next days.':''}`,3500)}
   return n}
 /* a transparent picture saved as an item photo before shrink() gave it a backdrop (2026-11-14, the owner's socks: a cut-out PNG whose
    photo showed on black, a JPEG having no transparency): a photo whose edge is nearly all pure black (BB_EDGE of it under BB_DARK) and
@@ -370,9 +383,40 @@ function takeExtras(q,ai,seen){q.tagAI=aiSignals(ai,seen);Object.assign(q,{conf:
 /* Claude's material (2026-11-15, app.js matTag: high or medium, on the type's list): it fills the card's Material only when that is empty, or
    still holds Claude's own earlier suggestion (tagging again from the close-up), never one chosen by hand (q.matSet); the field shows it as
    Claude's suggestion (q.matAI, wardrobe.js matRow) until the owner changes it */
-function takeMaterial(q,ai){const m=ai&&ai.material,l=MATERIALS_BY[q.type];if(!m||!l||!l.includes(m.key)||q.matSet)return;
+/* (2026-11-16, the owner's approved additions) a material on no list (m.new, medium or high) is offered, never filled: q.matNew, "Add cupro
+   as a material" under Material (matOffer); one on the list (or the person's own) at low confidence is Claude's guess: q.matGuess, shown
+   under Material with "Use wool" (matGuessUse), never filled in */
+function takeMaterial(q,ai){const m=ai&&ai.material,l=matsFor(q.type);delete q.matNew;delete q.matGuess;if(!m||!l)return;
+  if(!l.includes(m.key)){if(m.new&&m.conf!=='low'&&ownMatName(m.key))q.matNew={key:m.key,conf:m.conf,why:m.why||''};return}
+  if(m.conf!=='high'&&m.conf!=='medium'){q.matGuess={key:m.key,conf:'low',why:m.why||''};return}
+  if(q.matSet)return;
   if(q.material&&!(q.matAI&&q.material===q.matAI.key))return;
   q.material=m.key;q.matAI={key:m.key,conf:m.conf,why:m.why||''}}
+/* adding one of Claude's new materials to the person's own for a type (settings.ownMaterials, synced; core.js ownMats): -> the name, or ''.
+   The list is kept sorted, at most OWN_MAT_MAX a type */
+async function addOwnMaterial(type,name){const n=ownMatName(name);if(!n||!MATERIALS_BY[type])return '';if(matsFor(type).includes(n))return n;
+  const cur=ownMats(type);if(cur.length>=OWN_MAT_MAX){toast(`You have ${OWN_MAT_MAX} of your own ${matTypeWord(type)} materials: remove one in Settings first.`,5000);return ''}
+  const o=settings.ownMaterials&&typeof settings.ownMaterials==='object'?settings.ownMaterials:{};settings.ownMaterials={...o,[type]:[...cur,n].sort()};
+  await saveUserSettings();return n}
+async function removeOwnMaterial(type,name){const o=settings.ownMaterials&&typeof settings.ownMaterials==='object'?settings.ownMaterials:{},l=ownMats(type).filter(x=>x!==name),nx={...o};
+  if(l.length)nx[type]=l;else delete nx[type];if(Object.keys(nx).length)settings.ownMaterials=nx;else delete settings.ownMaterials;await saveUserSettings();renderOwnMatUI()}
+/* the Add card's "Add cupro as a material": added to the person's own for this type, chosen as this card's material (by hand: matSet,
+   Fabric & fit checked), a note under the field, and a toast with Undo (takes it off the card and out of the list again) */
+async function matOffer(i){const q=queue[i];if(!q||!q.matNew)return;const nm=q.matNew,was=q.material,had=matsFor(q.type).includes(nm.key);
+  const n=await addOwnMaterial(q.type,nm.key);if(!n)return;
+  const qq=queue.find(x=>x.id===q.id);if(!qq)return;delete qq.matNew;delete qq.matAI;qq.material=n;qq.matSet=1;qq.matAdded=n;qq.checked={...qq.checked,fabric:1};
+  if(typeof addKeepSoon==='function')addKeepSoon();renderAdd();
+  toast(`${cap1(n)} added to your ${matTypeWord(q.type)} materials.`,6000,{label:'Undo',fn:async()=>{const c=queue.find(x=>x.id===q.id);
+    if(c&&c.material===n){if(was)c.material=was;else delete c.material;delete c.matAdded;c.matNew=nm}if(!had)await removeOwnMaterial(q.type,n);renderAdd()}})}
+/* the Add card's "Use wool" on Claude's low-confidence guess: chosen by hand (matSet, Fabric & fit checked) */
+function matGuessUse(i){const q=queue[i];if(!q||!q.matGuess)return;const k=q.matGuess.key;delete q.matGuess;setQField(i,'material',k)}
+/* Settings → Your materials: the materials added from Claude's offers, per type; each can be removed (items already using it keep it: it
+   shows as Other with its name there; it is only no longer offered) */
+function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[];
+  for(const t of Object.keys(MATERIALS_BY))for(const m of ownMats(t)){const n=items.filter(i=>i.type===t&&i.material===m).length;
+    rows.push(`<div class="custrow ownmatrow" data-t="${esc(t)}" data-m="${esc(m)}"><span><b>${esc(cap1(m))}</b><br><small class="mut">${esc(TYPES[t]||t)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span><button type="button" aria-label="Remove ${esc(m)} from your ${esc(matTypeWord(t))} materials" onclick="removeOwnMaterial('${jsq(t)}','${jsq(m)}')">Remove</button></div>`)}
+  el.innerHTML=rows.length?rows.join('')+'<p class="mut"><small>Removing one leaves the items that use it as they are; it just stops being offered.</small></p>'
+    :'<p class="mut"><small>None yet. When Claude reads a material that is on no list (cupro, say), the Add card offers to add it here.</small></p>'}
 async function closeTagImg(q){if(q.texDone)return q.raw.tex.toDataURL('image/jpeg',TAG_Q);   // a card brought back after a kill: its close-up is already corrected (add.js addRevive)
   const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;
@@ -394,6 +438,9 @@ function refineApply(q,ai,hint,k){
   for(const key of TAG_FIELDS){if(key==='type'||(q.edited&&q.edited[key])||f[key]===q[key])continue;
     if(key==='primaryColor'&&refineContradicts(q,f[key])){q.refineKept={c:f[key]};continue}   // the close-up's own measurement says otherwise: kept, and said
     prev[key]=q[key];changes.push(`${fieldLabel[key]} ${valName(key,q[key])} → ${valName(key,f[key])}`);q[key]=f[key]}
+  // the colours beyond the three (accents, 2026-11-16): the close-up's reading replaces Claude's first, never ones set by hand
+  if(Array.isArray(ai.accents)&&!(q.edited&&q.edited.accents)){const a=accentsFor(q,ai.accents),was=accentsOf(q),w=l=>l.length?l.map(c=>colName(c).toLowerCase()).join(', '):'none';
+    if(a.join()!==was.join()){prev.accents=q.accents;changes.push(`also has ${w(was)} → ${w(a)}`);if(a.length)q.accents=a;else delete q.accents}}
   takeExtras(q,ai,!!hint);measureAndApply(q);q.model=ai.model||q.model;
   q.refineUndo=changes.length?prev:null;   // Undo puts the first tags back
   q.refineNote=changes.length?'Updated from the close-up: '+changes.join(', ')+'.':'The close-up confirmed the tags.';if(k>=0)renderAdd();
@@ -443,10 +490,16 @@ const groupOf=t=>COL_GROUPS.find(g=>g.includes(t))||[t];
 /* the Add card's offer of a new colour (Claude's newColor, or a close-up measured over FAR_DE from every listed colour) opens the
    "+ New colour" sheet (colpick.js openColNew) on the card's main colour, with Claude's name and the measured shade filled in; the inline
    forms (newColForm / newPatForm) were removed 2026-11-15: one way to add, the same everywhere */
-function openColForm(i){const q=queue[i];if(!q)return;openColPick('q',i,'primaryColor');openColNew({from:'add',name:q.newColor?q.newColor.name:'',hex:q.meas&&q.meas.hex||COLORS[q.primaryColor]})}
+/* the shade the sheet starts on (fix round 3, W2-17-05: Claude's "dusty pink" opened over the tagged cream): a close-up's measurement, else
+   the colour Claude's name says ("dusty pink" → pink, "sky blue" → light blue: the whole name, then its words from the last), else the
+   photo's measurement, else the tagged colour */
+const nameHex=n=>{const w=String(n||'').toLowerCase().split(/[^a-z]+/).filter(Boolean);for(const x of [w.join(''),...w.slice().reverse()]){const k=normCol(x);if(k&&!CUSTOM_COL[k])return COLORS[k]}return null};
+function newColHex(q){const m=q.meas&&q.meas.hex;return q.meas&&q.meas.src==='closeup'&&m||q.newColor&&nameHex(q.newColor.name)||m||COLORS[q.primaryColor]}
+function openColForm(i){const q=queue[i];if(!q)return;openColPick('q',i,'primaryColor');openColNew({from:'add',name:q.newColor?q.newColor.name:'',hex:newColHex(q)})}
 const OWN_NAME_MSG='Use only letters, numbers, spaces and - ’ . , ( ) / + in the name.';
-async function addCustomColor({name,hex,base,types,accent}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);const key=ownColKey(name);
-  if(key.length<5)throw new Error('Give it a name of at least two letters.');if(COLORS[key]||colNameTaken(name))throw new Error('There is already a color with that name.');
+async function addCustomColor({name,hex,base,types,accent}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);
+  if(ownNameShort(name))throw new Error('Give it a name of at least two letters.');if(ownColFind(name)||colNameTaken(name))throw new Error('There is already a color with that name.');
+  const key=ownFreeKey(ownColKey(name),k=>!!COLORS[k]||(settings.custom&&settings.custom.colors||[]).some(c=>c.key===k),OWN_COL_RE);
   if(!/^#[0-9a-f]{6}$/i.test(hex))throw new Error('Pick a shade.');if(!COLORS[base]||CUSTOM_COL[base])throw new Error('Choose what it behaves like.');
   if(!types||!types.length)throw new Error('Choose at least one kind of item.');
   const cu=settings.custom||{};settings.custom={...cu,colors:[...(cu.colors||[]),{key,name,hex:hex.toLowerCase(),base,types,accent:!!accent}]};
@@ -467,8 +520,9 @@ function openPatForm(i){const q=queue[i];if(!q)return;const name=q.newPattern?q.
 /* look: the drawing recipe from "+ New pattern" (worker /describe: {layout, tr, tex | across (+ along) | motif}, roles not colours),
    kept with the pattern (synced) and drawn by detect.js lookSett in each item's colours, the painter too */
 const cleanLookApp=l=>l&&typeof l==='object'&&['texture','stripes','check','windowpane','plaid','motif'].includes(l.layout)&&(Array.isArray(l.tex&&l.tex.grid)||Array.isArray(l.across)||l.motif&&Array.isArray(l.motif.figs))?JSON.parse(JSON.stringify(l)):null;
-async function addCustomPattern({name,desc,base,types,look}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);const key=ownPatKey(name);
-  if(key.length<6)throw new Error('Give it a name of at least two letters.');if(CUSTOM_PAT[key]||Object.values(PATS_BY).some(l=>l.includes(key)))throw new Error('There is already a pattern with that name.');
+async function addCustomPattern({name,desc,base,types,look}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);
+  if(ownNameShort(name))throw new Error('Give it a name of at least two letters.');if(patNameTaken(name))throw new Error('There is already a pattern with that name.');
+  const key=ownFreeKey(ownPatKey(name),k=>!!CUSTOM_PAT[k]||(settings.custom&&settings.custom.patterns||[]).some(p=>p.key===k)||Object.values(PATS_BY).some(l=>l.includes(k)),OWN_PAT_RE);
   types=(types||[]).filter(t=>PATS_BY[t]&&PATS_BY[t].includes(base));if(!types.length)throw new Error('Choose at least one kind of item that has the "drawn like" pattern.');
   const lk=cleanLookApp(look),cu=settings.custom||{};settings.custom={...cu,patterns:[...(cu.patterns||[]),{key,name,desc:ownDescClean(desc),base,types,...(lk?{look:lk}:{})}]};
   applyCustom(settings.custom);await saveUserSettings();return key}
@@ -487,8 +541,11 @@ async function removeCustom(kind,key){const cu=settings.custom||{};settings.cust
    and the latest 20 go with every tagging request; the counts give the accuracy on the stats page ---- */
 async function recordTagResult(q,it){if(!q.ai||!q.aiTag)return;const st={n:0,wrong:{},...(settings.tagStats||{})};st.wrong={...st.wrong};st.n++;
   const fixes=[...(settings.tagFixes||[])];
+  // taking Claude's own suggestion of a new color or pattern (newColor / newPattern, added as the owner's) is not a correction (W2-17-16)
+  const claudes=(f,to)=>{const s=f==='primaryColor'?q.newColor:f==='pattern'?q.newPattern:null,nm=s&&String(s.name||'').trim().toLowerCase(),own=f==='pattern'?CUSTOM_PAT[to]:CUSTOM_COL[to];
+    return !!(nm&&own&&String(own.name||'').trim().toLowerCase()===nm)};
   for(const f of ['type','primaryColor','secondaryColor','pattern']){const from=q.aiTag[f]||'none',to=it[f]||'none';if(f==='pattern'&&!FABRIC.includes(it.type))continue;
-    if(from!==to){st.wrong[f]=(st.wrong[f]||0)+1;if(from!=='none'||to!=='none')fixes.push({field:f,type:it.type,from,to,id:it.id,t:Date.now()})}}
+    if(from!==to&&!claudes(f,to)){st.wrong[f]=(st.wrong[f]||0)+1;if(from!=='none'||to!=='none')fixes.push({field:f,type:it.type,from,to,id:it.id,t:Date.now()})}}
   settings.tagStats=st;settings.tagFixes=fixes.slice(-60);await saveUserSettings()}
 function tagStatsCard(){const st=settings.tagStats||{n:0,wrong:{}},fx=(settings.tagFixes||[]).slice(-8).reverse();
   const pct=f=>st.n?Math.round(100*(1-(st.wrong[f]||0)/st.n)):null;
@@ -560,17 +617,18 @@ const motifPat=p=>MOTIF_PATS.includes(patBase(p)||'');
 /* patterns only Claude's reading can draw (the band reader would turn them into stripes) */
 /* a tie tagged woven or tonal check (2026-11-13): never read before, so painted plain; the owner's charcoal & grey woven tie is a grid of
    tiny light dots, which Claude reads as a motif (the tie painter draws motifs and bands; a pure weave, layout texture, stays plain) */
-const claudeOnly=(t,p)=>motifPat(p)||texPat(t,p)||tieWeave(t,p);
+const claudeOnly=(t,p)=>motifPat(p)||texPat(t,p)||tieWeave(t,p)||camoPat(p);   // (a camouflage: Claude's reading, else its colours clustered from the pixels, camoFromPixels; never the band reader)
 /* a card's pattern can be read: a band pattern, a weave Claude described, or a pattern only Claude can read (a motif, a shirt's weave) */
 const readable=(t,p,w)=>settable(t,p,w)||claudeOnly(t,p);
 /* Claude's reading drawn with the photo's colours: bands (stripes, checks, plaids) or a motif (small figures on a grid) */
 /* an answer of a shape it can't draw (2026-11-16: across without bands threw, and the Add card's Confirm stayed off) gives null: the
    pixel reader takes over, as when Claude sent nothing */
 const specSett=(spec,args)=>{try{return specSett1(spec,args)}catch(e){console.warn('pattern answer not drawn',e);if(typeof errNote==='function')errNote(e,'Pattern answer not drawn ('+(args&&args.type||'?')+', '+(spec&&(spec.texture?'texture':spec.motif?'motif':spec.across?'bands':spec.layout)||'?')+')');return null}};
-const specSett1=(spec,args)=>spec&&(spec.texture?(args.type==='shirt'||args.type==='tie'?texFromSpec(spec,args):null):spec.motif?motifFromSpec(spec,args):spec.across?settFromSpec(spec,args):null);
+const specSett1=(spec,args)=>spec&&(spec.camo?camoFromSpec(spec,args):spec.texture?(args.type==='shirt'||args.type==='tie'?texFromSpec(spec,args):null):spec.motif?motifFromSpec(spec,args):spec.across?settFromSpec(spec,args):null);
 function readSett(q){const ok=!q.settOff&&readable(q.type,q.pattern,q.weave)&&q.raw,args={full:q.raw&&q.raw.full,box:q.patternBox,tex:q.raw&&q.raw.tex,wb:q.wbOff?null:q.wb,type:q.type};q.settReject=null;
   let s=null;if(ok&&q.spec)s=specSett(q.spec,args);
   if(!s)s=ok&&!claudeOnly(q.type,q.pattern)?settFrom({full:q.raw.full,box:q.patternBox,tex:q.raw.tex,weave:q.weave,wb:q.wbOff?null:q.wb,type:q.type}):null;
+  if(!s&&ok&&camoPat(q.pattern))try{s=camoFromPixels(args)}catch(e){console.warn('camouflage not read',e)}   // no answer from Claude: its colours from the pixels
   const chk=settCheck(q.type,q.pattern,s);if(chk.reject){q.settReject=chk.reject;s=null}else s=chk.s;
   q.sett=s;return s}
 /* a band reading that contradicts the tag is not used (2026-11-14: the walkthrough's soft pinstripe close-up was read as level bands at
@@ -594,7 +652,7 @@ function missedPattern(q){if(!q||!q.raw||!q.raw.tex||(patBase(q.pattern)||'solid
       if(p&&!(PATS_BY[q.type]||[]).includes(p))p=null}}
   q.missed={c:q.raw.tex,p};return p}
 function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);if(q.meas)measureAndApply(q);renderAdd()}
-const settSummary=s=>s.tex?`a ${TEX_WORDS[s.tex.kind]||'woven texture'} (${s.tex.grid[0].length}×${s.tex.grid.length} repeat), read by Claude with the contrast from the close-up`:s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colors from the photo`:s.src==='claude+pixels'?`${s.bands.length} band${s.bands.length===1?'':'s'}${s.cross?' and lines the other way':''}, read by Claude with the colors from the photo`:`${s.bands.length} color band${s.bands.length===1?'':'s'}${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
+const settSummary=s=>!s?'generic':s.camo?`camouflage in its tagged colors${s.src==='claude+pixels'?', laid out as Claude and the photo read it':s.src==='pixels'?', laid out as the photo shows it':''}`:s.tex?`a ${TEX_WORDS[s.tex.kind]||'woven texture'} (${s.tex.grid[0].length}×${s.tex.grid.length} repeat), read by Claude with the contrast from the close-up`:s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colors from the photo`:s.src==='claude+pixels'?`${s.bands.length} band${s.bands.length===1?'':'s'}${s.cross?' and lines the other way':''}, read by Claude with the colors from the photo`:`${s.bands.length} color band${s.bands.length===1?'':'s'}${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
 function settNote(q,i){if(!readable(q.type,q.pattern,q.weave))return '';
   if(q.patternReading)return '<p class="tagnote mut"><small><span class="spin" aria-hidden="true"></span>Claude is reading the pattern…</small></p>';
   if(q.settOff)return `<p class="tagnote mut"><small>Drawn with the simple ${esc(patName(q.pattern))} pattern.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the pattern from the photo</button></p>`;
@@ -618,7 +676,7 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   const full=it.pbox?await toCanvas(await tagImgOf(it.id,it)):null,tex=await toCanvas(it.texture);
   let spec=null;const img=await tagImgOf(it.id,it)||it.photo;if(localStorage.getItem('worker_url')&&img){toast('Claude is reading the pattern…');spec=await claudePattern({image:img,closeup:await sharpCloseOf(it),type:it.type})}
   const full2=full||(it.photo?await toCanvas(it.photo):null);
-  const s=specSett(spec,{full:full2,box:it.pbox,tex,type:it.type})||(claudeOnly(it.type,it.pattern)?null:settFrom({full,box:it.pbox,tex,weave:it.weave,wb:null,type:it.type}));   // the kept copy is already white-balanced
+  const s=specSett(spec,{full:full2,box:it.pbox,tex,type:it.type})||(camoPat(it.pattern)?camoFromPixels({full:full2,box:it.pbox,tex}):claudeOnly(it.type,it.pattern)?null:settFrom({full,box:it.pbox,tex,weave:it.weave,wb:null,type:it.type}));   // the kept copy is already white-balanced
   if(spec){it.patternSpec=spec;if(spec.description)it.patternText=spec.description}
   const chk=settCheck(it.type,it.pattern,s);if(chk.reject){toast(`The reading showed ${chk.reject==='cross'?'lines crossing the stripes':'level bands'}, which isn't ${patName(it.pattern).toLowerCase()}: the pattern stays as it was.`);return}
   if(!chk.s){toast('No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.');return}
@@ -690,6 +748,49 @@ async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.ra
   try{if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
     readSett(q);if(q.meas)measureAndApply(q)}catch(e){console.warn('pattern answer not applied',e);q.specFailed=1;if(typeof errNote==='function')errNote(e,'Pattern answer not applied ('+q.type+')')}
   finally{if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}}
+
+/* ---- camouflage (2026-11-16, the owner's MultiCam pants): irregular blotches, no grid to read. Its colours come from the pixels: the
+   close-up (else the pattern's box in the photo, else the photo's middle) sampled at about CAMO_SAMPLE px and clustered in Lab (k-means,
+   seeded by the farthest-point rule, CAMO_K colours or as many as Claude named), clusters under CAMO_MIN of the cloth dropped (a seam, a
+   shadow), largest first, so the ground is the first. Claude's reading (POST /pattern layout camouflage) gives how many colours and how
+   big the blotches are (blobsAcrossItem: a camoField tile holds about CAMO_BLOBS across); without pixels, its own colours and shares.
+   -> {v:5, camo:{cols, shares, seed}, tr, cr, src} ---- */
+const CAMO_SAMPLE=110,CAMO_K=6,CAMO_FINE=10,CAMO_MIN=.03,CAMO_BLOBS=4,CAMO_MERGE=7,CAMO_AB=4;
+function camoFromPixels({tex,full,box},k=CAMO_K){
+  let src=tex||null;if(!src&&full){try{src=box?cropCanvas(full,box):full}catch{src=full}}
+  if(!src)return null;const W=src.width,H=src.height;
+  // the middle: a close-up's edges often hold the floor or a seam (the owner's MultiCam close-up had floor tiles down one side, read as a
+  // light grey "colour" of 27%), a whole photo's the room around the item
+  const m=box?.04:tex?.15:.2,cx=W*m,cy=H*m,cw=W-2*cx,ch=H-2*cy,S=Math.min(1,CAMO_SAMPLE/Math.max(cw,ch)),w=Math.max(8,Math.round(cw*S)),h=Math.max(8,Math.round(ch*S));
+  const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d',{willReadFrequently:true});if(!g)return null;g.drawImage(src,cx,cy,cw,ch,0,0,w,h);
+  const d=g.getImageData(0,0,w,h).data,px=[];for(let j=0;j<d.length;j+=4)px.push(rgbLab(d[j],d[j+1],d[j+2]));
+  // hue counts CAMO_AB times lightness: a muted sage green and a tan of the same lightness are different camouflage colours (with plain Lab
+  // distance the owner's greens joined the tan)
+  const dist=(a,b)=>(a[0]-b[0])**2+CAMO_AB*((a[1]-b[1])**2+(a[2]-b[2])**2);k=Math.max(2,Math.min(6,k|0));
+  // finely first (CAMO_FINE clusters), then down to k: a cluster holding sage green and a pinkish tan averages to grey (their hues cancel),
+  // which coarse clusters did on the owner's MultiCam
+  const kf=Math.max(k,CAMO_FINE);
+  const cen=[px[Math.floor(px.length/2)]];while(cen.length<kf){let far=null,fd=-1;for(let j=0;j<px.length;j+=3){const m=Math.min(...cen.map(c=>dist(px[j],c)));if(m>fd){fd=m;far=px[j]}}cen.push(far)}
+  let asg=new Int8Array(px.length);
+  for(let it=0;it<12;it++){const sum=cen.map(()=>[0,0,0,0]);for(let j=0;j<px.length;j++){let b=0,bd=1e9;for(let q=0;q<cen.length;q++){const dd=dist(px[j],cen[q]);if(dd<bd){bd=dd;b=q}}asg[j]=b;const S2=sum[b];S2[0]+=px[j][0];S2[1]+=px[j][1];S2[2]+=px[j][2];S2[3]++}
+    for(let q=0;q<cen.length;q++)if(sum[q][3])cen[q]=[sum[q][0]/sum[q][3],sum[q][1]/sum[q][3],sum[q][2]/sum[q][3]]}
+  const cnt=cen.map(()=>0);for(const a of asg)cnt[a]++;
+  // two clusters that came out nearly alike (within CAMO_MERGE ΔE00) are one colour, weighted by their pixels
+  let cs=cen.map((c,q)=>({lab:c,n:cnt[q]})).filter(x=>x.n);for(let merged=true;merged;){merged=false;
+    for(let a=0;a<cs.length&&!merged;a++)for(let b2=a+1;b2<cs.length&&!merged;b2++)if(dE00(cs[a].lab,cs[b2].lab)<CAMO_MERGE){const n=cs[a].n+cs[b2].n;cs[a]={lab:cs[a].lab.map((v,q)=>(v*cs[a].n+cs[b2].lab[q]*cs[b2].n)/n),n};cs.splice(b2,1);merged=true}}
+  // then the smallest into its nearest until k are left (the near ones are alike, so the hues it joins are close)
+  while(cs.length>k){cs.sort((a,b)=>a.n-b.n);const s0=cs.shift();let bi=0,bd=1e9;cs.forEach((x,q)=>{const dd=dist(x.lab,s0.lab);if(dd<bd){bd=dd;bi=q}});
+    const t2=cs[bi],n=t2.n+s0.n;cs[bi]={lab:t2.lab.map((v,q)=>(v*t2.n+s0.lab[q]*s0.n)/n),n}}
+  const cl=cs.map(x=>({hex:labHex(x.lab),share:x.n/px.length})).filter(x=>x.share>=CAMO_MIN).sort((a,b)=>b.share-a.share);
+  if(cl.length<2)return null;const t=cl.reduce((a,x)=>a+x.share,0);let h2=5381;for(const ch2 of cl.map(x=>x.hex).join(''))h2=(Math.imul(h2,33)+ch2.charCodeAt(0))>>>0;
+  return {v:5,camo:{cols:cl.map(x=>x.hex),shares:cl.map(x=>+(x.share/t).toFixed(3)),seed:h2%100000},tr:CAMO_TR,cr:1,src:'pixels'}}
+function camoFromSpec(spec,args){const m=spec&&spec.camo;if(!m||!Array.isArray(m.colours)||m.colours.length<2)return null;
+  const tr=Math.max(.5,Math.min(20,(+m.blobsAcrossItem||CAMO_TR*CAMO_BLOBS)/CAMO_BLOBS));
+  const fromPx=camoFromPixels(args,m.colours.length);
+  if(fromPx)return {...fromPx,tr,src:'claude+pixels'};
+  const cols=m.colours.filter(c=>/^#[0-9a-f]{6}$/i.test(c.hex||'')).sort((a,b)=>(+b.share||0)-(+a.share||0));if(cols.length<2)return null;
+  const t=cols.reduce((a,c)=>a+Math.max(.01,+c.share||0),0);let h=5381;for(const ch of cols.map(c=>c.hex).join(''))h=(Math.imul(h,33)+ch.charCodeAt(0))>>>0;
+  return {v:5,camo:{cols:cols.map(c=>c.hex.toLowerCase()),shares:cols.map(c=>+(Math.max(.01,+c.share||0)/t).toFixed(3)),seed:h%100000},tr,cr:1,src:'claude'}}
 
 /* ---- a motif (small figures on a grid: a neat or foulard, mini squares, dots) as Claude read it, each colour taken from its own
    pixels. A band reader can't draw these: it turns a checkerboard of mini squares into a diagonal plaid. Claude gives the grid,

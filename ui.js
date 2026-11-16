@@ -18,7 +18,7 @@ function askKey(e){if(!asking)return;
   if(e.key!=='Tab')return;const f=[...document.querySelectorAll('#ask-sheet button')];if(!f.length)return;
   const at=f.indexOf(document.activeElement),to=e.shiftKey?(at<=0?f.length-1:at-1):(at===f.length-1?0:at+1);e.preventDefault();f[to].focus()}
 /* fromBack: the phone's Back closed it (askBack): its history entry is gone already */
-function askAnswer(v,fromBack){const a=asking;if(!a)return;asking=null;const {b,s}=askEls();b.classList.remove('on');s.classList.remove('on');
+function askAnswer(v,fromBack){const a=asking;if(!a)return;asking=null;const {b,s}=askEls();b.classList.remove('on');s.classList.remove('on');{const iv=document.querySelector('#item-view');if(iv&&iv.inert&&typeof layerInert==='function')layerInert()}   // (the item sheet made inert under it by another layer's call: given back; a question itself doesn't toggle inert, which is slow on WebKit and has its own Tab trap)
   if(typeof appGiveBack==='function'){if(!fromBack)appGiveBack('ask',a.was);else if(a.was)appPush(a.was)}   // the entry goes, or goes back to the page under the question; after Back the page gets a new one
   try{if(a.last&&a.last.isConnected)a.last.focus({preventScroll:true})}catch{}
   const w=typeof appSettled==='function'&&appSettled();if(w)w.then(()=>a.done(!!v));else a.done(!!v)}   // (after the question's own step back has landed)
@@ -91,8 +91,11 @@ const layerFrom=new Map();   // dialog -> what had the focus when it opened
 const LAYER_Q='#ask-sheet.on,#cu-sheet.on,#rd-sheet.on,#col-sheet.on,#pick-sheet.on,#shop-sheet.on';
 function layerUp(){const l=[...document.querySelectorAll(LAYER_Q)];if(typeof settingsOpen==='function'&&settingsOpen())l.push(document.querySelector('#settings-modal'));
   const iv=document.querySelector('#item-view.on');if(iv)l.push(iv);return l}   // the top one first (by z-index: questions, colour sheet, sheets, Settings, item sheet)
-function layerInert(){const on=layerUp().length>0||!!document.querySelector('#setup.on,#nostore');
+function layerInert(){const up=layerUp(),on=up.length>0||!!document.querySelector('#setup.on,#nostore');
   for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;
+  // the item sheet under a sheet of its own (the color sheet, the close-up chooser, the reading sheet, a question, the picker): out of
+  // reach too (fix round 3, W2-19-03: 18 of 40 Tabs from the color sheet landed in the item sheet behind it)
+  const iv=document.querySelector('#item-view');if(iv)iv.inert=!!up.length&&up[0]!==iv&&iv.classList.contains('on');
   if(!on&&typeof npsId!=='undefined'&&npsId&&typeof npsInert==='function')npsInert(true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add.js)
 function layerOpen(el){if(!el)return;if(!layerFrom.has(el))layerFrom.set(el,document.activeElement);if(!el.hasAttribute('tabindex'))el.tabIndex=-1;layerInert();
   if(!el.contains(document.activeElement))try{el.focus({preventScroll:true})}catch{}}
@@ -102,7 +105,7 @@ function layerClose(el){layerInert();const f=el&&layerFrom.get(el);if(el)layerFr
 const LAYER_FOCUS='a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 const layerFocusables=el=>[...el.querySelectorAll(LAYER_FOCUS)].filter(x=>x.getClientRects().length&&getComputedStyle(x).visibility!=='hidden'&&!x.closest('[inert]'));
 window.addEventListener('keydown',e=>{if(e.key!=='Tab'&&e.key!=='Escape')return;
-  const top=layerUp()[0];if(!top||top.id==='ask-sheet'||top.id==='col-sheet')return;   // those two handle their own keys
+  const top=layerUp()[0];if(!top||top.id==='ask-sheet'||top.id==='col-sheet'&&e.key==='Escape')return;   // a question handles its own keys, the color sheet its Escape (its Tab stays inside it here)
   if(e.key==='Escape'){if(e.defaultPrevented)return;
     if(top.id==='settings-modal'){e.preventDefault();e.stopPropagation();closeSettings()}
     else if(top.id==='pick-sheet'&&typeof closePicker==='function'){e.preventDefault();e.stopPropagation();closePicker()}
@@ -150,7 +153,7 @@ let connMsg='',connBusy=false;
 function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)return;const typed=el.querySelector('#conn-link')?el.querySelector('#conn-link').value:'';
   const checking=typeof inviteChecking!=='undefined'&&inviteChecking,waiting=!checking&&typeof acctWhy!=='undefined'&&acctWhy==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash();
   el.innerHTML=checking?'<p class="shelp" id="conn-state" role="status">Checking your invitation…</p>'
-   :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.</p>`+
+   :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and ${typeof backedUpWords==='function'?backedUpWords():'your wardrobe is backed up'}.</p>`+
      // (audit 2026-11-15, W1-7-02) the owner's phone moved to a tester's invitation keeps the owner's way back (account.js acctOwnerPhone)
      (typeof isTester==='function'&&isTester()&&localStorage.getItem('acct_was_owner')==='1'?'<p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" onclick="connOwn()">I run the server: connect with its address and code</button></p>':'')
    :`<p class="shelp" id="conn-state">${inviteOver()?'Your invitation has ended, so photos aren’t read automatically and nothing is backed up. Your wardrobe stays on this phone, and the app keeps working without a connection. If you were given a new invitation link, paste it here.'

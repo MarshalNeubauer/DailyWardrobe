@@ -134,7 +134,7 @@ function shopName(it){const c=colName(primaryCol(it)),p=patOf(it)||'solid';
   switch(it.type){
     case 'tie':return p==='solid'?`${c} tie`:p==='woven'?`${c} woven tie`:p==='knit'?`${c} knit tie`:p==='stripe'?`${c} striped tie`:p==='polka-dot'?`${c} dotted tie`:`${c} checked tie`;
     case 'shirt':return (p==='solid'?`${c} shirt`:p==='stripe'?`${c} striped shirt`:`${c} checked shirt`)+(it.cuff==='french'?', French cuffs':'');
-    case 'suit':case 'blazer':case 'pants':return p==='solid'?`plain ${c} ${TYPE_WORD[it.type][0]}`:`${c} ${patLabel(p)} ${TYPE_WORD[it.type][0]}`;
+    case 'suit':case 'blazer':case 'pants':return p==='solid'?`plain ${c} ${TYPE_WORD[it.type][0]}`:`${c} ${patName(p)} ${TYPE_WORD[it.type][0]}`;
     case 'shoes':return `${c} ${finish(it.leather)==='suede'?'suede':finish(it.leather)==='grain'?'grain-leather':'leather'} shoes`;
     case 'belt':return `${c} ${finish(it.leather)==='suede'?'suede ':''}belt`;
     case 'tieclip':return `${colName(it.primaryColor)} tie clip`;case 'cufflinks':return `${it.metal} cufflinks`;
@@ -173,7 +173,10 @@ function rankClothes(L,B,C,cat,base,skip){
 }
 /* what the owner has in a category: colour groups and pattern classes, and the classes that are missing */
 function ownMix(cat,r){const t=cat,all=cat==='tie'?['plain','tex','knit','stripe','motif','check']:cat==='shoes'?['smooth','suede','grain']:['plain','stripe','check'];
-  return {n:r.own.length,groups:Object.entries(r.gc).sort((a,b)=>b[1]-a[1]).map(([g,n])=>[groupLabel(t,g),groupHex(t,g),n]),
+  // an owner's color is shown by its own name, not as the group of the color it behaves like ("tan / khaki 1" for a Dusty pink suit, W2-17-04)
+  const gc={};for(const i of r.own){const c=primaryCol(i),g=CUSTOM_COL[c]?'own:'+c:shopGroup(i);gc[g]=(gc[g]||0)+1}
+  const lab=g=>g.startsWith('own:')?[colName(g.slice(4)),COLORS[g.slice(4)]||'#8b8f96']:[groupLabel(t,g),groupHex(t,g)];
+  return {n:r.own.length,groups:Object.entries(r.own.length?gc:r.gc).sort((a,b)=>b[1]-a[1]).map(([g,n])=>[...lab(g),n]),
     classes:Object.entries(r.cc).sort((a,b)=>b[1]-a[1]).map(([k,n])=>[CLASS_NAMES[k]||k,n]),none:all.filter(k=>!r.cc[k]).map(k=>CLASS_NAMES[k]||k)}}
 
 /* ---- the facts of one candidate, from a simulation ---- */
@@ -257,7 +260,11 @@ function runAnalysis0(list,T,weeks,progress,onCat){
       else{
       if(!fix&&(f.worn<Math.max(2,D*.05)||need<2)&&!c.newFinish)continue;if(!fix&&f.worn<2)continue;
       if(c.newFinish)why.push(`Your first ${CLASS_NAMES[finish(it.leather)]} pair: a more relaxed shoe for blazer days.`);
-      else if(inRot('shoes').some(s=>shopGroup(s)===shopGroup(it)))why.push(`A second ${g} pair lets each rest between wears.`);else why.push(`A color you don't have: no ${g} shoes now.`);
+      else{const mine=inRot('shoes').filter(s=>shopGroup(s)===shopGroup(it)),u=mine.reduce((a,s)=>a+(base.use[s.id]||0),0);
+        // "lets each rest" only when the pairs of that color are worn a lot: it was said of an oxblood pair planned once in 125 days (W2-17-09)
+        if(!mine.length)why.push(`A color you don't have: no ${g} shoes now.`);
+        else if(u>=D/4)why.push(`A second ${g} pair lets each rest between wears.`);
+        else why.push(`Your ${g} ${mine.length===1?'pair is':'pairs are'} planned on ${u} of the next ${D} workdays; this one would be planned on ${f.worn}.`)}
       if(f.dFirst>0)why.push(`The first-choice shoe color on ${plural(f.dFirst,'more day')} (now ${base.first} of ${D}).`);
       if(f.dB2B>0)why.push(base.b2b-f.dB2B<=0?`No pair is worn two days running (${plural(base.b2b,'time')} now).`:`A pair is worn two days running ${plural(f.dB2B,'time')} less often.`);
       if(c.items[1])why.push('It needs its own belt: none of yours matches it.')}
@@ -343,8 +350,12 @@ function occasionCheck(L,season){
   try{const by=t=>L.filter(i=>i.type===t&&inRotation(i)).sort((a,b)=>a.id<b.id?-1:1),n=di(todayDate())+30,out=[];
     for(const [occ,label] of OCCASIONS){const casual=occ==='casual';
       const o=outfit(!casual,n,by,{},null,{formal:occ==='formal',occ:occ==='formal'?null:occ,clim:{season,rain:false,cold:false},hasLinks:by('cufflinks').length>0,prev:[]});
-      const r=rateOutfit(o),gaps=[...o.notes,...r.checks.filter(c=>c.pts<c.max&&c.why).map(c=>c.why.replace(/^./,x=>x.toUpperCase())+'.')];
-      out.push({occ,label,score:r.score,ready:r.score>=90&&!o.notes.length,pieces:[o.top,o.suitDay?null:o.bot,o.shirt,o.tie,o.shoes].filter(Boolean).map(i=>prettyCols(nm(i))),gaps:[...new Set(gaps)].map(prettyCols)})}
+      // (the metals point once: the planner's note says it already, W2-17-09; "Ready" only when the occasion's own check is full, not
+      // "Ready · 95" over "Smooth leather shoes suit a wedding")
+      const r=rateOutfit(o),metalNote=o.notes.some(t=>/different metals/.test(t)),own=r.checks.find(c=>c.label===({formal:'Formality',wedding:'Wedding',funeral:'Funeral'})[occ]);
+      const r2=r.checks.filter(c=>c.pts<c.max&&c.why&&!(metalNote&&c.label==='Metals'));
+      const gaps=[...o.notes,...r2.map(c=>c.why.replace(/^./,x=>x.toUpperCase())+'.')];
+      out.push({occ,label,score:r.score,ready:r.score>=90&&!o.notes.length&&!(own&&own.pts<own.max),pieces:[o.top,o.suitDay?null:o.bot,o.shirt,o.tie,o.shoes].filter(Boolean).map(i=>prettyCols(nm(i))),gaps:[...new Set(gaps)].map(prettyCols)})}
     return out}
   finally{items=keep}
 }

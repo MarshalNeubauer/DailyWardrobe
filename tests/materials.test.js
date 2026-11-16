@@ -4,7 +4,7 @@
 // wins); import aliases, a shirt weave as its pattern, "Pebble grain" with a space and Nubuck; search synonyms; the one-time rename of the
 // owner's stretch shirts; the accessory options (rubber and NATO bands, two-tone, silk knots, braided and canvas belts labeled Material,
 // nubuck); the painter's material light and corduroy / seersucker cloth; the close-up reader's material card (high/medium shown, low
-// hidden, a material set by hand not changed by Use all, "Yours · Claude" with Use to switch, Use all, Undo); the Add card's material from
+// shown as a guess (2026-11-16), a material set by hand not changed by Use all, "Yours · Claude" with Use to switch, Use all, Undo); the Add card's material from
 // photo tagging (empty field only, marked as Claude's, a hand choice kept). The worker is stubbed: nothing paid.
 const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,settle,ROOT})=>{
@@ -111,7 +111,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     e=await p.evaluate(()=>({t:(document.querySelector('#toast')||{}).textContent||'',season:itemSeason(items.find(i=>i.id==='r1'))}));
     ok(/Material updated/.test(e.t)&&e.season==='cold','Use sets it (flannel: cold weather) and the toast says so, with Undo');
     await p.evaluate(()=>rdUndoAll());await p.waitForFunction(()=>!('material' in items.find(i=>i.id==='r1')));ok(true,'Undo takes the material off again');
-    S.reply=reply({key:'cotton',confidence:'low',why:'maybe'});await read('r1');e=await sheet();ok(!e.mat,'low confidence: no material card');await p.evaluate(()=>rdClose());
+    S.reply=reply({key:'cotton',confidence:'low',why:'maybe'});await read('r1');e=await sheet();ok(e.mat&&/Claude’s guess: cotton/.test(e.mat)&&/Use cotton/.test(e.mat)&&e.both==='Keep as it is','low confidence (2026-11-16): shown as Claude\'s guess with its own Use; the bar never applies it ('+e.both+')');await p.evaluate(()=>rdClose());
     S.reply=reply({key:'none',confidence:'low',why:''});await read('r1');e=await sheet();ok(!e.mat,'"none": no card');await p.evaluate(()=>rdClose());
     S.reply=reply(null);await read('r1');e=await sheet();ok(!e.mat,'an older worker (no material): no card');await p.evaluate(()=>rdClose());
     // a material set by hand: "Yours · Claude", Use all leaves it
@@ -142,7 +142,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       return {r1,r2,r3,low:q2.material||'',hand:q3.material,off:q4.material||''}});
     ok(e.r1.m==='tweed'&&e.r1.sel==='tweed'&&/Material suggested by Claude \(high confidence\): Flecked, rough wool/.test(e.r1.note),'tagging fills an empty Material with Claude\'s high or medium answer, marked as Claude\'s suggestion and editable: '+e.r1.note);
     ok(e.r2==='flannel'&&e.r3.m==='hopsack'&&!e.r3.note,'tagging again replaces its own suggestion; one chosen by hand stays, and the mark goes');
-    ok(e.low===''&&e.hand==='wool'&&e.off==='','a low answer fills nothing; a material already there stays; a name off the type\'s list is ignored');
+    ok(e.low===''&&e.hand==='wool'&&e.off==='','a low answer fills nothing; a material already there stays; a name off the type\'s list (and not new) is ignored');
     await p.evaluate(()=>{queue.length=0;renderAdd()});
     ok(!errs.length,'no page errors: '+errs.join(' | '));
   }finally{await b.close()}

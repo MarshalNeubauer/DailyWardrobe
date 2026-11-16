@@ -44,6 +44,14 @@ function texTileSmooth(grid,lo,hi){if(typeof document==='undefined')return null;
   for(let y=0;y<H;y++)for(let q=0;q<W;q++){const t=Math.min(1,Math.max(0,(f[y*W+q]-.42)/.16)),w=t*t*(3-2*t),gr=1+TEX_GRAIN*(((q+y)%P)/P<.5?1:-1),i=4*(y*W+q);
     for(let j=0;j<3;j++)D.data[i+j]=Math.max(0,Math.min(255,Math.round((A[j]+(B[j]-A[j])*w)*gr)));D.data[i+3]=255}
   x.putImageData(D,0,0);const url=c.toDataURL('image/png');if(TEX_TILES.size>40)TEX_TILES.clear();TEX_TILES.set(key,url);return url}
+/* a camouflage's tile as a small seamless image (core.js camoField: its blotches in its colours, CAMO_PX pixels a side), edges softened by a
+   one-pixel wrapping blend so they don't read as pixel steps when scaled up. Cached in TEX_TILES; null without a DOM or a canvas (a phone
+   out of picture memory, 2026-11-16) */
+const CAMO_PX=320;   // (v2: a larger tile holds more, smaller blotches at the same sharpness)
+function camoTileUrl(c){if(typeof document==='undefined'||!c||!Array.isArray(c.cols)||c.cols.length<2)return null;const key='c'+CAMO_V+c.cols.join('')+c.shares.join(',')+c.seed;if(TEX_TILES.has(key))return TEX_TILES.get(key);
+  const N=CAMO_PX,im=camoImage(N,c.cols,c.shares,c.seed),cv=document.createElement('canvas');cv.width=cv.height=N;const x=cv.getContext('2d');if(!x)return null;
+  const D=x.createImageData(N,N);for(let j=0;j<N*N;j++){D.data[4*j]=im[3*j];D.data[4*j+1]=im[3*j+1];D.data[4*j+2]=im[3*j+2];D.data[4*j+3]=255}   // (core.js camoImage: soft edges, cloth grain)
+  x.putImageData(D,0,0);const url=cv.toDataURL('image/png');if(TEX_TILES.size>40)TEX_TILES.clear();TEX_TILES.set(key,url);return url}
 /* Pattern tile per garment role. Scale differs by role so a pinstripe suit and a striped shirt read correctly. */
 function fabricDef(id,item,role,ctx){
   const b=colOf(item),a=accentOf(item),t3=thirdOf(item),c=t3||a,p=patBase(item.pattern)||'solid',wool=role==='top'||role==='bot';
@@ -79,6 +87,10 @@ function fabricDef(id,item,role,ctx){
      sized from what was seen: in a swatch at least one whole repeat shows; on the figure the repeat keeps its share of the
      item's width (sett.tw, or Claude's repeats across). */
   const se=usableSett(item);
+  /* camouflage (detect.js: its own reading, else camoLook): one tile of its blotches. In a small swatch about one tile, on the figure
+     se.tr tiles across the item, elsewhere a tile per close-up width (se.cr) */
+  if(se&&se.camo){const T=ctx==='dot'?16:ctx==='dia'?100:ctx==='fig'?Math.max(12,(role==='shirt'?180:200)/Math.max(.5,se.tr||CAMO_TR)):Math.max(30,Math.min(120,100/Math.max(.9,se.cr||1))),f2=v=>+v.toFixed(3),url=camoTileUrl(se.camo);
+    return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${f2(T)}" height="${f2(T)}"><rect width="${f2(T)}" height="${f2(T)}" fill="${se.camo.cols[0]||b}"/>${url?`<image href="${url}" width="${f2(T)}" height="${f2(T)}" preserveAspectRatio="none"/>`:''}</pattern>`}
   /* a motif read by Claude (tagging.js motifFromSpec): its figures on a grid two cells square (so two colours can alternate like a
      checkerboard), turned 45° for a diagonal grid. Scaled like a sett: in a swatch as many cells as the close-up shows, on the
      figure as many as fit across the item. */

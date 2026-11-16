@@ -27,11 +27,15 @@ const TEXTURE_KINDS = ['diamond', 'herringbone', 'twill', 'oxford', 'royal-oxfor
 const PTEX = { type: 'object', additionalProperties: false, required: ['kind', 'grid', 'aspect', 'ground', 'raised', 'contrast'],
   properties: { kind: { type: 'string', enum: TEXTURE_KINDS }, grid: { type: 'array', items: { type: 'string' } }, aspect: { type: 'number' }, ground: PCOL, raised: PCOL,
     contrast: { type: 'string', enum: ['faint', 'subtle', 'clear'] } } };
+/* camouflage (2026-11-16): irregular blotches with no grid; its colours with their shares of the cloth, and how big the blotches are */
+const PCAMO = { type: 'object', additionalProperties: false, required: ['colours', 'blobsAcrossItem'],
+  properties: { colours: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['name', 'hex', 'sharePct'], properties: { name: { type: 'string' }, hex: { type: 'string' }, sharePct: { type: 'number' } } } },
+    blobsAcrossItem: { type: 'number' } } };
 const PATTERN_SCHEMA = { type: 'object', additionalProperties: false,
-  required: ['layout', 'across', 'along', 'motif', 'texture', 'stripeDirection', 'repeatsInCloseup', 'repeatsAcrossItem', 'paneAspect', 'ignored', 'description'],
+  required: ['layout', 'across', 'along', 'motif', 'texture', 'camo', 'stripeDirection', 'repeatsInCloseup', 'repeatsAcrossItem', 'paneAspect', 'ignored', 'description'],
   properties: {
-    layout: { type: 'string', enum: ['stripes', 'check', 'windowpane', 'plaid', 'motif', 'texture', 'none'] },
-    across: { anyOf: [PDIR, { type: 'null' }] }, along: { anyOf: [PDIR, { type: 'null' }] }, motif: { anyOf: [PMOTIF, { type: 'null' }] }, texture: { anyOf: [PTEX, { type: 'null' }] },
+    layout: { type: 'string', enum: ['stripes', 'check', 'windowpane', 'plaid', 'motif', 'texture', 'camouflage', 'none'] },
+    across: { anyOf: [PDIR, { type: 'null' }] }, along: { anyOf: [PDIR, { type: 'null' }] }, motif: { anyOf: [PMOTIF, { type: 'null' }] }, texture: { anyOf: [PTEX, { type: 'null' }] }, camo: { anyOf: [PCAMO, { type: 'null' }] },
     stripeDirection: { type: 'string', enum: ['vertical', 'horizontal', 'upper-left to lower-right', 'lower-left to upper-right'] },
     repeatsInCloseup: { type: 'number' }, repeatsAcrossItem: { type: 'number' }, paneAspect: { type: 'number' },
     ignored: { type: 'string' }, description: { type: 'string' },
@@ -45,7 +49,8 @@ layout — stripes (lines one way), check, windowpane (thin lines both ways on a
   colors both ways), motif (a small figure repeated on a regular grid: a neat or foulard, mini squares, dots, diamonds, and
   a shirt's figured dobby whose small figures are woven in a second, clearly different color, e.g. gray chevrons on white),
   texture (the cloth is one color, or nearly, and the pattern is in the weave itself: a dress shirt's dobby diamonds,
-  herringbone, twill, oxford, pinpoint, end-on-end, birdseye, honeycomb), or none. When the figures stand out in their own
+  herringbone, twill, oxford, pinpoint, end-on-end, birdseye, honeycomb), camouflage (irregular blotches of several colors with
+  no repeating grid: MultiCam/OCP, woodland, desert, hunting camo), or none. When the figures stand out in their own
   color at a glance, it is a motif, not a texture.
 across — one full repeat of the main lines, measured across them (for vertical lines from left to right, for a tie's diagonal
   stripes across the stripes): every band in order, the ground included, each with role (ground or line), a plain color name,
@@ -53,7 +58,10 @@ across — one full repeat of the main lines, measured across them (for vertical
   and widthPct, its share of the repeat in percent (the bands add up to 100). A line made of several close threads (a blue line
   with a thin white line each side) is listed thread by thread with the ground between them.
 along — the same for the lines running the other way (top to bottom for horizontal lines), or null if there are none.
-  For a motif or a texture, across and along are null.
+  For a motif, a texture or a camouflage, across and along are null.
+camo — for a camouflage only (null otherwise): colours, every color of the blotches, the ground included, each with a plain color
+  name, an sRGB hex as in "across" and sharePct, its share of the cloth in percent (they add up to 100), largest first;
+  blobsAcrossItem, about how many blotches of the main colors fit across the item's widest part in the first photo.
 motif — for a motif only (null otherwise), as woven, one grid cell being one repeat:
   grid: straight (rows and columns run with the item's edges) or diagonal (rows and columns run at 45°, squares stand on a point);
   ground: the color that shows between the figures (a plain color name and an sRGB hex as in "across");
@@ -121,8 +129,13 @@ function cleanPattern(p) {
     const w = Math.max(0, ...rows.map(r => r.length)), g = rows.map(r => r.padEnd(w, '0')), all = g.join('');
     if (g.length < 2 || w < 2 || !all.includes('1') || !all.includes('0')) return null;
     return { kind: TEXTURE_KINDS.includes(t.kind) ? t.kind : 'other', grid: g, aspect: num(t.aspect, .25, 4, g.length / w), ground: col(t.ground), raised: col(t.raised) || col(t.ground), contrast: ['faint', 'subtle', 'clear'].includes(t.contrast) ? t.contrast : 'subtle' }; };
-  const flat = p.layout === 'motif' || p.layout === 'texture';
-  return { layout: p.layout, across: flat ? null : dir(p.across), along: flat ? null : dir(p.along), motif: p.layout === 'motif' ? motif(p.motif) : null, texture: p.layout === 'texture' ? texture(p.texture) : null, stripeDirection: p.stripeDirection,
+  /* camouflage: 2 to 6 colours with their shares (as fractions, largest first) and the blotches across the item */
+  const camo = c => { if (!c || !Array.isArray(c.colours)) return null;
+    const l = c.colours.slice(0, 6).map(x => ({ name: txt(x && x.name, 30), hex: hex(x && x.hex), share: Math.max(0, +(x && x.sharePct) || 0) })).filter(x => x.hex && x.share > 0);
+    const t = l.reduce((a, x) => a + x.share, 0); if (l.length < 2 || !t) return null;
+    return { colours: l.map(x => ({ ...x, share: +(x.share / t).toFixed(3) })).sort((a, b) => b.share - a.share), blobsAcrossItem: num(c.blobsAcrossItem, 1, 60, 12) }; };
+  const flat = p.layout === 'motif' || p.layout === 'texture' || p.layout === 'camouflage';
+  return { layout: p.layout, across: flat ? null : dir(p.across), along: flat ? null : dir(p.along), motif: p.layout === 'motif' ? motif(p.motif) : null, texture: p.layout === 'texture' ? texture(p.texture) : null, camo: p.layout === 'camouflage' ? camo(p.camo) : null, stripeDirection: p.stripeDirection,
     repeatsInCloseup: num(p.repeatsInCloseup, .2, 60, 1), repeatsAcrossItem: num(p.repeatsAcrossItem, .2, 80, 1), paneAspect: num(p.paneAspect, .3, 3, 1),
     ignored: txt(p.ignored, 200), description: txt(p.description, 600) };
 }
@@ -137,7 +150,7 @@ async function handlePattern(req, env, json, who) {
   const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: PATTERN_PROMPT, text: kind, closeup: cm, wb: wbOf(body), effort: 'high', maxTokens: 16000, signal: req.signal });
   if (c.status !== 200) { await unspend(env, who, 'pattern'); return json(c.body, c.status); }
   const out = cleanPattern(c.body);
-  if (!out.across && !out.motif && !out.texture) return json({ error: 'no pattern', detail: 'Claude found no repeating pattern.', layout: out.layout }, 422);
+  if (!out.across && !out.motif && !out.texture && !out.camo) return json({ error: 'no pattern', detail: 'Claude found no repeating pattern.', layout: out.layout }, 422);
   return json({ ...out, model: c.body.model });
 }
 

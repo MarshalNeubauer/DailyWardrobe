@@ -35,7 +35,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(hard(S.stripes,'Patterns')&&hard(S.sameTr,'Pants')&&hard(S.belt,'Belt')&&hard(S.darkShirt,'Shirt')&&hard(S.whiteSocks,'Socks')&&hard(S.tweed,'Weather'),
       `so are three bold patterns (${S.stripes.s}), pants the jacket's color (${S.sameTr.s}), a belt that doesn't match the shoes (${S.belt.s}), a dark shirt under a dark suit (${S.darkShirt.s}), white socks (${S.whiteSocks.s}) and tweed on a hot day (${S.tweed.s})`);
     ok(S.only.l==='Incomplete'&&S.only.s<=69&&/no pants, no jacket, no tie, no shoes/.test(S.only.why)&&S.noTie.l==='Incomplete'&&S.casual.l!=='Incomplete',`a shirt alone reads Incomplete (${S.only.s}: ${S.only.why}), and so does a suit with no tie; a no-jacket day needs neither`);
-    ok(S.strap.lost['Watch strap']==='2/5'&&!S.strapOk.lost['Watch strap'],`a brown leather watch strap with black shoes loses points (${S.strap.lost['Watch strap']}), a black one doesn't`);
+    ok(S.strap.lost['Watch strap']==='4/5'&&!S.strapOk.lost['Watch strap'],`a brown leather watch strap with black shoes loses points (${S.strap.lost['Watch strap']}; 4/5 with a suit since fix round 3: formality wins), a black one doesn't`);
     ok(!S.var0.lost.Variety&&S.varTie.lost.Variety==='3/5'&&S.varLook.lost.Variety==='2/5'&&S.varShoes.lost.Variety==='4/5'&&!S.varShoesMon.lost.Variety,
       `variety: the same tie as the workday before ${S.varTie.lost.Variety}, the same look as two workdays ago ${S.varLook.lost.Variety}, yesterday's shoes ${S.varShoes.lost.Variety} (not after a weekend)`);
     // ---- advice

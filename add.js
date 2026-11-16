@@ -33,14 +33,7 @@ async function addTexture(i,f,read){const q=queue[i];if(!q||!f)return;
     refineFromCloseup(queue.indexOf(q))}   // tag again with both photos (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
-/* the second step of a card for suits, blazers, trousers, shirts and ties: the close-up photo */
-function texSlot(q,i){if(!TEXTURE_TYPES.includes(q.type))return '';
-  // the close-up chooser on a touch screen (ui.js closeupBtn): Take close-up, Choose from photos, Remove close-up (Remove a button of its own without touch)
-  const cloth=paperCloth(q),pick=(label,cls,mode)=>closeupBtn({label,cls,mode,file:`f=>addTexture(${i},f)`,remove:mode==='replace'?`dropTexture(${i})`:'',cloth});
-  // a card typed in by hand has no photo and so no split swatch, and no tagging notes (tagNotes): what the close-up did, and a blurry one, are said here
-  const blur=q.manual&&q.meas&&q.meas.src==='closeup'&&q.meas.sharp!=null&&q.meas.sharp<BLUR_SHARP?'<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>':'';
-  return q.texture?`<div class="texslot done"><small class="mut">${q.photo?'Fabric close-up added: the swatch shows it on the right half, next to the color as tagged.':'Fabric close-up added: it is saved with the item.'}</small>${blur}<div class="btns rdpair">${pick('Replace close-up','btn','replace')}${rdAddBtn(q,'Read color and texture')}${cuTouch()?'':`<button type="button" onclick="dropTexture(${i})">Remove</button>`}</div>${rdCostLine()}${rdDoneHtml('q',q.id,q)}</div>`
-    :`<div class="texslot"><b>Step 2 · Fabric close-up</b><small class="mut">Hold the camera close to the cloth so the weave and its true color fill the frame. It makes the pictures and colors match the cloth better. Optional.</small>${paperSteps(cloth)}<div class="rdpair">${pick('Add close-up','btn pri','add')}${rdAddBtn(q,'Add close-up and read texture/color')}</div>${rdCostLine()}</div>`}
+/* (the close-up step of a card, "Step 2 · Fabric close-up", is now the checklist's Texture match section: addCkSecs below) */
 const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colors.':'Colors corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`
   :q.wbWas&&q.photo?'<p class="wbnote mut"><small>Colors corrected for the light.</small></p>':'';   // a card brought back after a kill: still corrected, no original kept (addRevive)
 /* Add: "One item" (multi false; also paste and drag) makes one card per photo; "Several items" finds every item in it */
@@ -243,9 +236,9 @@ async function saveAll(){if(saveAllOn||queue.some(cardReading))return;saveAllOn=
   const left=queue.filter(needType).length;
   if(n||left)multiMsg(`${n?`Saved ${n} item${n===1?'':'s'} to your wardrobe.`:''}${left?`${n?' ':''}${left===1?'One card needs its type':`${left} cards need their type`} first.`:''}`);renderAdd()}
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
-const setq=(i,k,v)=>{const q=queue[i];if(!q)return;const asked=k==='type'&&needType(q);q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};queueMicrotask(addKeep);
+const setq=(i,k,v)=>{const q=queue[i];if(!q)return;const asked=k==='type'&&needType(q);q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};const ck=CK_FIELD[k]&&!(q.checked&&q.checked[CK_FIELD[k]]);if(ck)q.checked={...q.checked,[CK_FIELD[k]]:1};queueMicrotask(addKeep);
   if(asked){measureGuess(q);q.pattern=normPat(v,q.pattern);shirtColFix(q);renderAdd();return}   /* the type asked for (needType): the colour measured, the full card */
-if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'||k==='band'){renderAdd();return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};
+if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'||k==='band'){renderAdd();return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else if(ck)renderAdd();else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};   // (a section newly checked: its mark and the count follow)
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
 /* with a fabric close-up: the drawn swatch on the left half, the close-up on the right, to compare colour and weave */
 const tagSwInner=i=>`<div class="swsplit">${itemThumb(i,true)}${i.texture&&TEXTURE_TYPES.includes(i.type)?`<img class="swtex" src="${srcOk(i.texture)}" alt="Fabric close-up">`:''}</div><figcaption>${i.texture&&TEXTURE_TYPES.includes(i.type)?'As tagged · Close-up':'As tagged'}<br><b class="cap">${sentence(desc(i))||TYPES[i.type]||''}</b></figcaption>`;
@@ -264,10 +257,18 @@ const photoPair=(photo,i,id)=>`<div class="pair"><figure class="phfig"><img clas
 function addManual(){
   addWatch();
   if(npsId&&queue.some(q=>q.id===npsId)){npsOpen(npsId);return}
-  const wo=watchOpts({}),id=crypto.randomUUID();
-  queue.unshift({id,manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style});
+  const wo=watchOpts({}),id=crypto.randomUUID(),q={id,manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style};
+  if(addFor&&TYPES[addFor]){q.type=addFor;q.pattern=normPat(addFor,q.pattern);shirtColFix(q);addFor=null;renderAddFor()}   // Today's "Add one" beside a belt: a belt (W2-14-01)
+  queue.unshift(q);
   npsOpen(id);
 }
+/* ---- Today's "Add one" beside a missing piece (fix round 3, W2-14-01; start.js openAdd(type)): the item type asked for. Add's line under
+   its title says so ("Adding a belt: …") and the next card without a photo starts as that type; a photo's card takes the type Claude reads.
+   Cleared once used, or when Add is left. ---- */
+let addFor=null;
+function renderAddFor(){const n=$('#add-for');if(!n)return;const t=addFor&&TYPES[addFor];n.hidden=!t;
+  const pl=['pants','shoes','socks','cufflinks'].includes(addFor);
+  n.innerHTML=t?`Adding ${pl?'':/^[aeiou]/i.test(t)?'an ':'a '}<b>${esc(t.toLowerCase())}</b>: take a photo of ${pl?'them':'it'}, or tap “Add without a photo”.`:''}
 /* ---- the "Add without a photo" sheet (#nps-sheet, in #add so the card keeps Add's styles): grabber, the title with the hanger icon, ×
    in the header (the card's own × is left out), the card in the middle, Confirm and Cancel pinned at the bottom (#nps-bar). The card stays
    in `queue` (its place there is its index, as for every card); only its drawing moves (renderAdd → npsDraw).
@@ -276,7 +277,7 @@ function addManual(){
    Back: the sheet borrows Add's history entry (start.js appBorrow('nps'), kept in npsWas); closed by a tap it hands it back. ---- */
 let npsId=null,npsWas,npsSnap='',npsAsking=false,npsFrom=null,npsSwipeOn=false;
 /* what the card holds, to tell whether anything was changed (its form as kept, its close-up) */
-const npsSig=q=>{if(!q)return '';const o=addCardRec(q);delete o.swatch;delete o.swSrc;return JSON.stringify(o)+'|'+(q.texture?q.texture.length:0)};
+const npsSig=q=>{if(!q)return '';const o=addCardRec(q);delete o.swatch;delete o.swSrc;delete o.checked;return JSON.stringify(o)+'|'+(q.texture?q.texture.length:0)};
 const npsCard=()=>npsId?queue.find(q=>q.id===npsId):null;
 function npsOpen(id){const s=$('#nps-sheet'),b=$('#nps-backdrop');if(!s)return;const again=!!npsId;npsId=id;
   if(!again){npsFrom=document.activeElement;npsWas=typeof appBorrow==='function'?appBorrow('nps'):'';}
@@ -289,8 +290,8 @@ function npsInert(on){for(const el of document.querySelectorAll('body>header,bod
   for(const el of a.children)if(el.id!=='nps-sheet'&&el.id!=='nps-backdrop')el.inert=on}
 /* the card and its bar; the card gone (saved, or taken away) closes the sheet */
 function npsDraw(){const q=npsCard(),s=$('#nps-sheet');if(!s)return;if(!q){npsClose();return}const i=queue.indexOf(q),body=$('#nps-q'),bar=$('#nps-bar');
-  if(body){const y=body.scrollTop;body.innerHTML=cardSafe(q,i,()=>formCard(q,i,true));body.scrollTop=y}
-  if(bar)bar.innerHTML=`${confBtn(q,i)}<button type="button" id="nps-cancel" onclick="npsCancel()">Cancel</button>`}
+  if(body){const y=body.scrollTop;keepFocus(body,()=>{body.innerHTML=cardSafe(q,i,()=>formCard(q,i,true))});body.scrollTop=y;if(typeof cmpMount==='function')cmpMount(body)}
+  if(bar)bar.innerHTML=`${cardSafe(q,i,()=>ckLeftLine(q))}${confBtn(q,i)}<button type="button" id="nps-cancel" onclick="npsCancel()">Cancel</button>`}
 /* fromBack: the phone's Back did it (its entry is gone already) */
 function npsClose(fromBack){if(!npsId&&npsWas===undefined)return;const s=$('#nps-sheet'),b=$('#nps-backdrop');npsId=null;npsAsking=false;
   if(s)s.classList.remove('on');if(b)b.classList.remove('on');document.body.classList.remove('nps-on');npsInert(false);if(typeof layerInert==='function')layerInert();
@@ -354,12 +355,13 @@ function setArrives(i,v){const q=queue[i];if(!q)return;const ok=/^\d{4}-\d{2}-\d
   if(ok)q.arrives=v;else delete q.arrives;renderAdd()}
 async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.paused&&arriveN(i)!=null&&T>arriveN(i));
   const cb=done.filter(i=>i.away);   // back from the cleaner's or the laundry (care.js): cleaned on the day it was due back
+  if(cb.length&&typeof careUnlock==='function')await careUnlock(null,Math.min(...cb.map(i=>+keyDate(i.away.since||isoKey(todayDate())))));   // the locks made while away let go (history.js)
   for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
   if(done.length){cache={};toast(cb.length===done.length&&typeof careBackText==='function'?careBackText(cb):done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`,4000)}return done.length}
 /* Confirm (and the sample, the import, Save all): a failure is said and the card stays (a tester's Confirm did nothing at all, 2026-11-14) */
 /* what the Saved toast calls the item: its own name, else its colours with what it is ("Grey suit", "Navy tie", "Gold watch · white dial
    · bracelet"; it said "Saved: Grey." for a suit and "Saved: Navy." for a tie and for socks) */
-function savedTitle(it){const nm=itemName(it);if(nm)return nm;const d=String(desc(it)||'').trim(),t=(TYPES[it.type]||'item').toLowerCase();
+function savedTitle(it){const nm=itemName(it);if(nm)return nameIso(nm);const d=String(desc(it)||'').trim(),t=(TYPES[it.type]||'item').toLowerCase();
   if(!d)return sentence(t);const k=d.indexOf(' · ');return sentence(k<0?`${d} ${t}`:`${d.slice(0,k)} ${t}${d.slice(k)}`)}
 /* a card by its id (Confirm, Save all) or, as before, its place (the sample, the import, tests) */
 const cardOf=k=>typeof k==='string'?queue.find(q=>q.id===k):queue[k];
@@ -377,8 +379,9 @@ async function saveCard(q){
   if(!q||cardReading(q))return false;
   const f=FABRIC.includes(q.type);
   generateSwatch(q);
-  const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:Date.now()};
+  const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:nowMs()};
   if(f){it.swatch=q.swatch;it.swSrc=q.swSrc}
+  {const a=accentsOf(q);if(a.length)it.accents=a}   // its colours beyond the three (core.js accentsOf)
   if(q.order){it.paused=true;it.order=true;if(q.arrives)it.arrives=q.arrives}   // bought, on the way
   if(METAL_TYPES.includes(q.type))it.metal=q.metal||'silver';
   if(q.type==='shirt')it.cuff=q.cuff||'button';
@@ -404,7 +407,7 @@ async function saveCard(q){
   // the item and its copies (the same shirt or pair again, qtyRow) in one transaction: all of them or none (a kill right after
   // "Confirm 12" saved 3, and the card was gone)
   const copies=[];for(let k=1;k<qtyOf(q);k++){const c=JSON.parse(JSON.stringify(it));c.id=crypto.randomUUID();copies.push(c)}
-  const all=[it,...copies],at=Date.now();for(const x of all)x.updated=at;
+  const all=[it,...copies],at=nowMs();for(const x of all)x.updated=at;
   await txs('items','readwrite',s=>{for(const x of all)s.put(x)});if(window.scheduleSync)scheduleSync();
   items.push(...all);
   const i=queue.indexOf(q);cache={};if(i>=0)queue.splice(i,1);if(addCalm)addCalm.ok=1;renderAdd();   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
@@ -427,10 +430,12 @@ function addNoteText(){const workerSet=typeof isConnected==='function'?isConnect
    that open Add close it themselves, show() and saveSettings) */
 function renderAdd(){
   if($('#note')) $('#note').textContent = addNoteText();
+  renderAddFor();
   const ready=queue.filter(cardReady).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()"${reading||saveAllOn?` disabled title="${saveAllOn?'Saving…':'Claude is still reading a card'}"`:''}>${saveAllOn?'Saving…':`Save all ${ready} items`}</button>`:'';
   if(typeof addGate==='function')addGate();
   addKeepSoon();
-  if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.id===npsId?'':cardSafe(q,i,()=>q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):formCard(q,i))).join('');
+  if($('#queue')){keepFocus($('#queue'),()=>{$('#queue').innerHTML=queue.map((q,i)=>q.id===npsId?'':cardSafe(q,i,()=>q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):formCard(q,i))).join('')});   // (the field changed keeps the keyboard: W2-19-01)
+    if(typeof cmpMount==='function')cmpMount($('#queue'))}
   if(npsId)npsDraw();
 }
 /* one card drawn on its own (2026-11-16, a tester's first item: her iPhone, out of picture memory, refused a canvas while the card's swatch
@@ -442,25 +447,94 @@ function plainCard(q,i){return `<div class="card qcard" data-q="${esc(q.id)}"><b
   <div class="btns">${confBtn(q,i)}<button onclick="skipCard('${esc(q.id)}')">${q.manual?'Cancel':'Skip'}</button></div></div>`}
 /* an item card's form (a photo's card in the list, or the "Add without a photo" sheet's card: inSheet leaves out the card's own × and its
    Confirm / Cancel, which the sheet has in its header and its pinned bar) */
-function formCard(q,i,inSheet){return `<div class="card qcard" data-q="${esc(q.id)}">${inSheet?'':`<button type="button" class="qx" aria-label="Close" title="Close" onclick="skipCard('${esc(q.id)}')">×</button>`}${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}
-${tagFailNote(q,i)}${unreadNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${COLORS[q.primaryColor]&&colShows(q,'primaryColor')?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!!(q.meas&&q.meas.src==='closeup')):''}${wbNote(q,i)}${texSlot(q,i)}${tagNotes(q,i)}
-${FABRIC.includes(q.type)&&q.big?`
-<div class="sw-box">
-  <div id="swatch-img-${i}" class="sw" style="background-image:url(${q.swatch})"></div>
-  <div style="flex:1;font-size:13px">
-    <b>Fabric swatch</b><small class="mut" style="display:block">${q.texCanvas?'From the fabric close-up':'From the photo'}: zoom and move it to a clean patch of cloth</small>
-    <label>Zoom <input type="range" min="1" max="4" step="0.1" value="${q.zoom||1}" oninput="updateSwatchParam(${i}, 'zoom', this.value)"></label>
-    <label>Left–right <input type="range" min="0" max="1" step="0.05" value="${q.cx||0.5}" oninput="updateSwatchParam(${i}, 'cx', this.value)"></label>
-    <label>Up–down <input type="range" min="0" max="1" step="0.05" value="${q.cy||0.5}" oninput="updateSwatchParam(${i}, 'cy', this.value)"></label>
-  </div>
-</div>`:''}
-<label>Type ${S(Object.entries(TYPES),q.type,'type',i)}</label>
-${colRows('q',i,q)}
-${FABRIC.includes(q.type)?`<label class="colrow">Pattern ${patBtn('q',i,q)}</label>`:''}${METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(metalOptsFor(q.type),q.metal,'metal',i)}</label>`:''}
-${q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:''}${q.type==='suit'?`<label>Vest ${S(VESTS,(q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'yes':'no','vest',i)}</label>`:''}${SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:''}
-${q.type==='pants'?`<label>Kind ${S(TROUSER_KINDS,q.trouserKind||'dress','trouserKind',i)}</label>`:''}${q.type==='shoes'?`<label>Style ${S(SHOE_STYLES,q.shoeStyle||'oxford','shoeStyle',i)}</label>`:''}${q.type==='shoes'||q.type==='belt'?`<label>${leatherLabel(q)} ${S(leathersFor(q).map(c=>[c,cap1(leatherWord(q,c))]),q.leather||'calf','leather',i)}</label>`:''}
-${q.type==='watch'?`<label>Dial ${S(DIAL_OPTS(watchOpts(q).dial),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:''}
-${matRow(q.type,q.material,`setQField(${i},'material',`,q.matAI)}${moreRow(q,i)}${orderRow(q,i)}${qtyRow(q,i)}${inSheet?'':`<div class="btns">${confBtn(q,i)}<button onclick="skipCard('${esc(q.id)}')">${q.manual?'Cancel':'Skip'}</button></div>`}${q.manual?'':`<small>${aiLabel(q)}</small>`}</div>`}
+/* the card is a checklist (2026-11-16, the owner's approved redesign "2B Checklist", checklist.js): "N of M checked" pinned at the top of its
+   scroll area the whole way down (a direct child of the card, so not inside a column; from 600px over both columns), the photo, what
+   Claude's reading said (tagNotes), then sections filled from Claude's reading: Texture match (fabrics: the close-up and the drawing side by
+   side, or, before a close-up, "Add close-up and read color, texture & material" and "Add close-up"), Type, Colors, Pattern (Claude's pick
+   and its second choice drawn), Fabric & fit (or Details), More (name, brand, notes, Bought on the way, How many). Each counted section has
+   "Looks right" (Texture match "Fine as is"); a field changed by hand checks its section too. Sections Claude was unsure about get "!" and
+   open first. Confirm is never blocked by unchecked parts ("2 left to check · you can still confirm"), only while Claude reads (confBtn). */
+const CK_FIELD={type:'type',primaryColor:'colors',secondaryColor:'colors',tertiaryColor:'colors',pattern:'pattern',metal:'fabric',cuff:'fabric',vest:'fabric',season:'fabric',
+  trouserKind:'fabric',shoeStyle:'fabric',leather:'fabric',dial:'fabric',band:'fabric',bezel:'fabric',watchStyle:'fabric',material:'fabric',accents:'colors'};
+/* ---- the material's extras under the Add card's Material (2026-11-16, the owner's approved design): Claude's new material offered
+   ("Add cupro as a material": tagging.js matOffer), the note once added, and Claude's low-confidence guess with "Use wool" (matGuessUse).
+   MAT_ASK: the types whose material matters for planning; empty, Fabric & fit is "!" (worth a look; Confirm still works) */
+const MAT_ASK=['suit','blazer','pants'];
+const matNewOf=q=>q.matNew&&MATERIALS_BY[q.type]&&!q.material&&!matsFor(q.type).includes(q.matNew.key)&&q.matNew.conf!=='low'?q.matNew:null;
+const matGuessOf=q=>q.matGuess&&!q.material&&(matsFor(q.type)||[]).includes(q.matGuess.key)?q.matGuess:null;
+const matWhy=w=>{const s=String(w||'').replace(/[.\s]+$/,'');return /^[A-Z][a-z]/.test(s)?s[0].toLowerCase()+s.slice(1):s};   // (mid-sentence: "cupro, silky drape")
+function matExtras(q,i){if(!MATERIALS_BY[q.type])return '';let h='';const t=matTypeOne(q.type);
+  if(q.matAdded&&q.material===q.matAdded)h+=`<p class="tagnote matadded"><small>Now one of your materials: it’s in the list for every ${esc(t)} you add, on all your devices.</small></p>`;
+  const nm=matNewOf(q);
+  if(nm)h+=`<div class="offer matnew"><small>None of the materials fit: Claude calls it <b>${esc(nm.key)}</b>${matWhy(nm.why)?`, ${esc(matWhy(nm.why))}`:''} (${esc(nm.conf)} confidence).</small><button type="button" class="chipbtn" onclick="matOffer(${i})">Add ${esc(nm.key)} as a material</button></div>`;
+  const g=matGuessOf(q);
+  if(g){const w=String(g.why||'').replace(/[.\s]+$/,'');h+=`<p class="tagnote mut matguess"><small>Claude’s guess: <b>${esc(g.key)}</b> · ${w&&w.length<=60?esc(w):'can’t be sure from a photo'}</small><button type="button" class="chipbtn" onclick="matGuessUse(${i})">Use ${esc(g.key)}</button></p>`}
+  return h}
+const ckLr=(q,i,k)=>{const on=!!(q.checked&&q.checked[k]);return `<button type="button" class="cklr" aria-pressed="${on}" onclick="ckCheck(${i},'${k}')">${on?'<span aria-hidden="true">✓ </span>Checked':k==='tex'?'Fine as is':'Looks right'}</button>`};
+/* "Looks right": the section checked (or not again); checked, it folds and the next unchecked one opens */
+function ckCheck(i,k){const q=queue[i];if(!q)return;const on=!(q.checked&&q.checked[k]);q.checked={...q.checked,[k]:on?1:0};
+  if(on){const sc='q|'+q.id;CK_OPEN[sc+'|'+k]=false;const nx=addCkSecs(q,i).find(s=>s.n&&!q.checked[s.k]);if(nx)CK_OPEN[sc+'|'+nx.k]=true}
+  queueMicrotask(addKeep);renderAdd()}
+/* the card's sections: [{k, n (counted), mark, title, sum, body, warn}] */
+function addCkSecs(q,i){const man=!!q.manual||!q.ai,c=q.conf||{},chk=q.checked||{},tex=TEXTURE_TYPES.includes(q.type),fab=FABRIC.includes(q.type),hasCu=tex&&!!q.texture;
+  const unsure=v=>!man&&!!v&&v!=='high',out=[];
+  // Texture match: counted once there is a close-up
+  if(tex){const rd=cardReading(q),cloth=paperCloth(q),lab=hasCu?cmpLab('q',q):null,d=hasCu?cmpDiff(q,lab):null,p=hasCu?cmpPaper('q',q):null;
+    const blur=q.manual&&q.meas&&q.meas.src==='closeup'&&q.meas.sharp!=null&&q.meas.sharp<BLUR_SHARP?'<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>':'';
+    const pick=(label,cls,mode)=>closeupBtn({label,cls,mode,file:`f=>addTexture(${i},f)`,remove:mode==='replace'?`dropTexture(${i})`:'',cloth});
+    const body=hasCu?cmpHtml(q.id,q.texture,cmpDrawn(q),!!(p&&p.ref))+cmpMatchHtml('q',i,q,lab)+cmpPaperLine(p,pick('Retake close-up','linkbtn wbretake','retake'))+blur+
+        `<div class="btns ckcu">${pick('Replace close-up','btn','replace')}${cuTouch()?'':`<button type="button" class="ckrm" onclick="dropTexture(${i})">Remove close-up</button>`}</div>`+
+        `<div class="ckread">${rdAddBtn(q,'Read color and texture')}${rdCostLine()}</div>${rdDoneHtml('q',q.id,q)}${ckLr(q,i,'tex')}`
+      :`<p class="shelp">Texture match puts a close-up of the cloth beside the drawing and sets the true color from white paper.${q.photo?'':' The close-up is saved with the item.'}</p>${paperSteps(cloth)}`+
+        `<div class="ckadds"><button type="button" class="btn pri rdgo ckreadadd" onclick="rdStart('q','${jsq(q.id)}')"${rdOff()?' aria-disabled="true"':''}><span>Add close-up and read color, texture &amp; material</span><small class="rdcost">${esc(rdCost())}</small></button>${pick('Add close-up','btn ckadd','add')}</div>`+
+        '<p class="shelp ckcheap">Reading counts as 2 lookups for testers. Nothing changes until you choose.</p>';
+    out.push({k:'tex',cls:'cktex'+(hasCu?' cktexon':''),n:hasCu,warn:hasCu&&!chk.tex&&!!d,mark:rd?'ai':!hasCu?'opt':chk.tex?'good':d?'warn':'todo',title:'Texture match',
+      sum:rd?'Reading the close-up…':!hasCu?'Not yet · add a close-up to compare':cmpDiffText(d)||'Close-up added',body,open:true})}
+  // Type
+  const tw=unsure(c.type);
+  out.push({k:'type',n:true,warn:tw,mark:chk.type?'good':tw?'warn':'todo',title:'Type',sum:esc(TYPES[q.type]||'Item')+(ckSure(c.type)&&!man?' · '+ckSure(c.type):''),
+    body:`<label>Type ${S(Object.entries(TYPES),q.type,'type',i)}</label>`+ckLr(q,i,'type')});
+  // Colors
+  const rows=colRows('q',i,q),shade=COLORS[q.primaryColor]&&colShows(q,'primaryColor')?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!tex&&!!(q.meas&&q.meas.src==='closeup')):'';
+  if(rows||shade){const cw=unsure(c.primaryColor)||(!man&&(!!q.newColor||Object.keys(q.auto||{}).length>0||(q.measV||[]).some(v=>v.mode==='flag'&&!(q.edited&&q.edited[v.f]))));
+    out.push({k:'colors',n:!!rows,warn:cw,mark:chk.colors?'good':cw?'warn':'todo',title:'Colors',sum:ckColSum(q,q.primaryColor)+(ckSure(c.primaryColor)&&!man?' · '+ckSure(c.primaryColor):''),body:rows+accRow('q',i,q)+shade+(rows?ckLr(q,i,'colors'):'')})}
+  // Pattern: Claude's pick and its second choice drawn in the item's colors, then every pattern (the picker)
+  if(fab){const p=normPat(q.type,q.pattern),ai=q.aiTag&&q.aiTag.pattern,alt=q.altPattern&&(PATS_BY[q.type]||[]).includes(q.altPattern)?q.altPattern:null,pw=unsure(c.pattern)||(!man&&!!q.newPattern);
+    const tiles=[];if(!man){const first=ai&&(PATS_BY[q.type]||[]).includes(ai)?ai:p;tiles.push([first,'Claude’s pick']);if(alt&&alt!==first)tiles.push([alt,'Claude’s 2nd']);if(!tiles.some(t=>t[0]===p))tiles.push([p,'Your choice'])}
+    const tile=([v,lab])=>`<button type="button" class="ckpt" role="radio" aria-checked="${v===p}" onclick="setq(${i},'pattern','${v}')"><span class="ckptsw">${swatchSVG(patVar(q,v),true)}</span><b>${esc(cap1(patName(v)))}</b><small>${lab}</small></button>`;
+    out.push({k:'pattern',n:true,warn:pw,mark:chk.pattern?'good':pw?'warn':'todo',title:'Pattern',sum:esc(cap1(patName(p)))+(pw&&!chk.pattern?'?':'')+(ckSure(c.pattern)&&!man?' · '+ckSure(c.pattern):''),
+      body:(tiles.length?`<div class="ckpts" role="radiogroup" aria-label="Claude’s patterns">${tiles.map(tile).join('')}</div>`:'')+`<label class="colrow">${tiles.length?'All patterns':'Pattern'} ${patBtn('q',i,q)}</label>`+ckLr(q,i,'pattern')})}
+  // Fabric & fit (Details for the rest): the per-type fields, the material (with Claude's suggestion) and the swatch's patch of cloth
+  const f=(METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(metalOptsFor(q.type),q.metal,'metal',i)}</label>`:'')+
+    (q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:'')+(q.type==='suit'?`<label>Vest ${S(VESTS,(q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'yes':'no','vest',i)}</label>`:'')+(SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:'')+
+    (q.type==='pants'?`<label>Kind ${S(TROUSER_KINDS,q.trouserKind||'dress','trouserKind',i)}</label>`:'')+(q.type==='shoes'?`<label>Style ${S(SHOE_STYLES,q.shoeStyle||'oxford','shoeStyle',i)}</label>`:'')+(q.type==='shoes'||q.type==='belt'?`<label>${leatherLabel(q)} ${S(leathersFor(q).map(c=>[c,cap1(leatherWord(q,c))]),q.leather||'calf','leather',i)}</label>`:'')+
+    (q.type==='watch'?`<label>Dial ${S(DIAL_OPTS(watchOpts(q).dial),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:'')+
+    matRow(q.type,q.material,`setQField(${i},'material',`,q.matAI)+matExtras(q,i);
+  const swb=fab&&q.big?`<div class="sw-box"><div id="swatch-img-${i}" class="sw" style="background-image:url(${q.swatch})"></div><div style="flex:1;font-size:13px"><b>Fabric swatch</b><small class="mut" style="display:block">${q.texCanvas?'From the fabric close-up':'From the photo'}: zoom and move it to a clean patch of cloth</small>
+    <label>Zoom <input type="range" min="1" max="4" step="0.1" value="${q.zoom||1}" oninput="updateSwatchParam(${i}, 'zoom', this.value)"></label><label>Left–right <input type="range" min="0" max="1" step="0.05" value="${q.cx||0.5}" oninput="updateSwatchParam(${i}, 'cx', this.value)"></label><label>Up–down <input type="range" min="0" max="1" step="0.05" value="${q.cy||0.5}" oninput="updateSwatchParam(${i}, 'cy', this.value)"></label></div></div>`:'';
+  if(f||swb){const sug=!!(q.matAI&&q.matAI.key&&q.material===q.matAI.key),bits=[q.material?cap1(matLabel(q.material)):'',SEASON_TYPES.includes(q.type)&&q.season&&q.season!=='all'?optLab(SEASONS,q.season):'',q.type==='suit'?((q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'matching vest':'no vest'):''].filter(Boolean);
+    // (2026-11-16) suits, blazers and pants ask for their material: empty, the section is "!" (worth a look; never blocks Confirm), with Claude's guess in the summary
+    const ask=MAT_ASK.includes(q.type)&&!q.material&&!chk.fabric,g=matGuessOf(q),nm=matNewOf(q);
+    const sum=ask?`Material not set${g?` · Claude’s guess: ${g.key}`:nm?` · Claude calls it ${nm.key}`:''}`:sug&&!chk.fabric?`${bits.join(' · ')} · suggested by Claude`:bits.join(' · ')||'Optional';
+    out.push({k:'fabric',n:!!f,warn:false,mark:chk.fabric?'good':ask?'warn':sug?'ai':'todo',title:fab?'Fabric &amp; fit':'Details',sum:esc(sum),body:f+swb+(f?ckLr(q,i,'fabric'):'')})}
+  // More: name, brand, notes, bought and on the way, how many (not counted)
+  const on=k=>`oninput="setQField(${i},'${k}',this.value)"`,named=['name','brand','notes'].filter(k=>q[k]&&String(q[k]).trim()),n=qtyOf(q);
+  out.push({k:'more',n:false,warn:false,mark:'opt',title:'More',sum:esc((named.length?cap1(named.join(', '))+' filled in':'Name, brand, notes')+(q.order?' · on the way':' · on the way?')+(n>1?` · ${n} of them`:'')),
+    body:`<div class="morein">${fldRow('name','Name',q.name,on,'Optional')}${fldRow('brand','Brand',q.brand,on,'Optional')}${notesRow(q.notes,on)}</div>${orderRow(q,i)}${qtyRow(q,i)}`});
+  // open first: Texture match, and whatever Claude was unsure about; with nothing unsure, the first part not checked yet
+  const anyWarn=out.some(s=>s.warn&&!chk[s.k]);for(const s of out)if(s.k!=='tex')s.open=s.warn&&!chk[s.k];
+  if(!anyWarn){const first=out.find(s=>s.n&&s.k!=='tex'&&!chk[s.k]);if(first)first.open=true}
+  return out}
+const addCkCount=(q,secs)=>{const c=secs.filter(s=>s.n),n=c.filter(s=>q.checked&&q.checked[s.k]).length;return {n,M:c.length}};
+const ckLeftLine=(q,secs)=>{const {n,M}=addCkCount(q,secs||addCkSecs(q,queue.indexOf(q))),left=M-n;return `<p class="ckleft" role="status">${left?`${left} left to check · you can still confirm`:`All ${M} checked · ready to confirm`}</p>`};
+/* (a section's first open-or-folded is kept for the card: a section doesn't fold under the finger when a change moves the default) */
+function formCard(q,i,inSheet){const secs=addCkSecs(q,i),{n,M}=addCkCount(q,secs),sc='q|'+q.id,sec=k=>{const s=secs.find(x=>x.k===k);if(!s)return '';if(CK_OPEN[sc+'|'+k]===undefined)CK_OPEN[sc+'|'+k]=ckIsOpen(sc,k,s.open);return ckSec(sc,k,s)};
+  return `<div class="card qcard ckcard" data-q="${esc(q.id)}">${inSheet?'':`<button type="button" class="qx" aria-label="Close" title="Close" onclick="skipCard('${esc(q.id)}')">×</button><div class="ckhd"><small>New item · check and confirm</small><b>${esc(savedTitle(q))}</b></div>`}`+
+    `<div class="ckprog"><b>${n} of ${M} checked</b><span class="cktrack" aria-hidden="true"><i style="width:${M?Math.round(n/M*100):0}%"></i></span></div>`+
+    `<div class="ckcols"><div class="ckcol">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}${tagFailNote(q,i)}${unreadNote(q,i)}`+
+    `<div class="ckintro"><div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${wbNote(q,i)}<p class="shelp ckhelp">${q.manual||!q.ai?'Pick the type and the colors, then confirm.':'Claude filled these in. Check each part, or fix it.'}</p></div>${tagNotes(q,i)}${sec('tex')}</div>`+
+    `<div class="ckcol">${sec('type')}${sec('colors')}${sec('pattern')}${sec('fabric')}${sec('more')}</div></div>`+
+    `${inSheet?'':`<div class="ckfoot">${ckLeftLine(q,secs)}<div class="btns">${confBtn(q,i)}<button onclick="skipCard('${esc(q.id)}')">${q.manual?'Cancel':'Skip'}</button></div></div>`}${q.manual?'':`<small class="ckai">${aiLabel(q)}</small>`}</div>`}
 const confBtn=(q,i)=>`<button class="pri" id="qconf-${i}" onclick="save('${esc(q.id)}')"${cardReading(q)?' disabled title="Claude is still reading this item"':q.saving||saveAllOn?' disabled':''}>${qtyLabel(q)}</button>`;
 /* the cards that are not (yet) a form: being read, a "Several items" photo that couldn't be read, a file that couldn't be opened,
    and a photo nobody read, which asks for its type first */

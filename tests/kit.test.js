@@ -4,7 +4,7 @@
 module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();
   const open=async(w=390)=>{const ctx=await browser.newContext({viewport:{width:w,height:844}});const p=await ctx.newPage();p.errs=[];
-    p.on('pageerror',e=>p.errs.push(e.message));p.on('dialog',d=>d.accept());await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    p.on('pageerror',e=>p.errs.push(e.message));p.on('dialog',d=>d.accept());await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(()=>{if(typeof setupClose==='function'&&document.querySelector('#setup.on'))setupClose()});return p};
   const fits=p=>p.evaluate(()=>{const s=document.querySelector('#kitsheet'),out=[...s.querySelectorAll('button,label,textarea,li,svg')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&(r.left<-0.5||r.right>innerWidth+0.5)});
     return document.documentElement.scrollWidth<=innerWidth&&!out.length});
@@ -14,21 +14,21 @@ module.exports=async({ok,chromium,url})=>{
     await p.evaluate(()=>{localStorage.removeItem('tour_seen');tourOpen()});
     const t=await p.evaluate(()=>({on:!!document.querySelector('#kitsheet.on'),inert:['main'].every(s=>document.querySelector(s).inert),title:document.querySelector('#kit-title').textContent,n:document.querySelectorAll('.kit-prog i').length,seen:tourSeen()}));
     ok(t.on&&t.inert&&t.title==='The score'&&t.n===4&&!t.seen,'the tour opens full screen on "The score", four cards, the page behind inert');
-    const titles=[t.title];for(let k=0;k<3;k++){await p.click('#kit-next');titles.push(await p.textContent('#kit-title'))}
+    const titles=[t.title];for(let k=0;k<3;k++){await p.waitForTimeout(400);await p.click('#kit-next');titles.push(await p.textContent('#kit-title'))}   // (a tap within 350 ms of the last is a double tap's second: kit.js KIT_TAP_MS)
     ok(titles.join('|')==='The score|The close-up|Shade|Patterns','its cards: the score, the close-up, Shade, patterns ('+titles.join(', ')+')');
     ok(await fits(p),'each card fits the phone');
-    await p.click('#kit-back');ok(await p.textContent('#kit-title')==='Shade','Back goes to the card before');
+    await p.waitForTimeout(400);await p.click('#kit-back');ok(await p.textContent('#kit-title')==='Shade','Back goes to the card before');
     await p.keyboard.press('Escape');
     ok(await p.evaluate(()=>!document.querySelector('#kitsheet.on')&&!document.querySelector('main').inert&&tourSeen()),'Escape closes it, the page usable again, and it is marked seen');
     /* ---- the close-up guide, from the Add card's close-up step ---- */
     await p.evaluate(()=>{openAdd();addManual()});
-    ok(await p.evaluate(()=>{const c=document.querySelector('#nps-q .texslot .wbstcard');return !!c&&/True color in 3 steps/i.test(c.textContent)&&/Paper on an edge/.test(c.textContent)&&/Tap the paper/.test(c.textContent)&&/Take the photo/.test(c.textContent)&&!document.querySelector('#nps-q .texguide')}),'the close-up step shows "True color in 3 steps": paper on an edge, tap the paper, take the photo');
+    ok(await p.evaluate(()=>{const c=document.querySelector('#nps-q [data-ck="tex"] .wbstcard');return !!c&&/True color in 3 steps/i.test(c.textContent)&&/Paper on an edge/.test(c.textContent)&&/Tap the paper/.test(c.textContent)&&/Take the photo/.test(c.textContent)&&!document.querySelector('#nps-q .texguide')}),'the close-up step shows "True color in 3 steps": paper on an edge, tap the paper, take the photo');
     await p.click('#nps-q .wbstcard');
     ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colors'),'the card opens the short white-paper tip');
     await p.click('#kitsheet .kit-body .linkbtn');await p.waitForFunction(()=>document.querySelector('#kit-title').textContent==='A good close-up');
     const g=await p.evaluate(()=>({title:document.querySelector('#kit-title').textContent,txt:document.querySelector('.kit-body').textContent,prog:!!document.querySelector('.kit-prog')}));
     ok(g.title==='A good close-up'&&/white paper along one edge/i.test(g.txt)&&/middle/.test(g.txt)&&/no flash/i.test(g.txt)&&/tap the paper on the camera screen/i.test(g.txt)&&/exposure/.test(g.txt)&&!g.prog,'it opens the guide: paper along one edge, out of the middle, no flash, tap the paper to set the exposure');
-    await p.click('#kit-next');ok(await p.evaluate(()=>!document.querySelector('#kitsheet.on')),'"Got it" closes it');
+    await p.waitForTimeout(400);await p.click('#kit-next');ok(await p.evaluate(()=>!document.querySelector('#kitsheet.on')),'"Got it" closes it');
     /* ---- Undo after Confirm ---- */
     const u=await p.evaluate(async()=>{const n0=items.length,q=queue[0];q.type='tie';q.primaryColor='burgundy';q.name='Undo me';await save(0);
       const saved=items.length===n0+1&&!queue.length,t=document.querySelector('#toast'),btn=t.querySelector('button');

@@ -21,7 +21,7 @@ const careWashed=t=>t==='shirt'||t==='socks';   // washed at home rather than cl
 const careWord=t=>careWashed(t)?'washing':'cleaning';
 const careNoun=i=>i.type==='pants'?'pants':(TYPES[i.type]||'item').toLowerCase().replace('dress ','');
 const careTimes=n=>n===1?'once':n===2?'twice':n+' times';
-const careName=i=>`${TYPES[i.type]||'Item'}: ${typeof esc==='function'&&String(i.name||'').trim()?esc(String(i.name).trim()):sentence(desc(i)||careNoun(i))}`;
+const careName=i=>`${TYPES[i.type]||'Item'}: ${typeof esc==='function'&&String(i.name||'').trim()?nameHtml(String(i.name).trim()):sentence(desc(i)||careNoun(i))}`;
 /* wears since cleaning for every item: {id: count}. Kept on the plan cache, which is dropped whenever items, days or settings change */
 function careCounts(){if(cache.careW)return cache.careW;const w={},by=Object.fromEntries(items.map(i=>[i.id,i]));
   for(const r of wornDays()){const k=isoKey(r.d);
@@ -58,7 +58,7 @@ async function careRelease(id){const T=todayDate();let n=0;
 async function careSend(id,why,back){const it=items.find(x=>x.id===id);if(!it||it.away||it.paused||!CARE_ABLE.includes(it.type))return;
   const ok=/^\d{4}-\d{2}-\d{2}$/.test(back||'');
   it.away={why:why==='laundry'?'laundry':'cleaner',since:isoKey(todayDate()),back:ok?back:null};it.paused=true;if(ok)it.arrives=back;else delete it.arrives;
-  await careRelease(id);await put(it);cache={};careRedraw();
+  await careRelease(id);if(typeof careUnlock==='function')await careUnlock(id);await put(it);cache={};careRedraw();   // (the week planned again around it: history.js)
   toast(it.away.why==='laundry'?'In the laundry.':'At the cleaner\'s.',5000,{label:'Undo',fn:()=>careUnsend(id)})}
 async function careUnsend(id){const it=items.find(x=>x.id===id);if(!it||!it.away)return;delete it.away;delete it.paused;delete it.arrives;await put(it);cache={};careRedraw()}
 /* the day it is back (empty = no date: it waits for "It's back") */
@@ -66,6 +66,7 @@ async function careSetBack(id,v){const it=items.find(x=>x.id===id);if(!it||!it.a
   it.away={...it.away,back:ok?v:null};if(ok)it.arrives=v;else delete it.arrives;await put(it);cache={};await checkArrivals();careRedraw()}
 /* it is back: in rotation again, cleaned today */
 async function careBack(id){const it=items.find(x=>x.id===id);if(!it||!it.away)return;
+  if(typeof careUnlock==='function')await careUnlock(null,+keyDate(it.away.since||isoKey(todayDate())));   // the locks made while it was away let go (history.js)
   it.cleaned=isoKey(todayDate());delete it.away;delete it.paused;delete it.arrives;await put(it);cache={};careRedraw();toast('Back in rotation, freshly cleaned.')}
 /* cleaned without being sent away: the count starts again */
 async function careCleaned(id){const it=items.find(x=>x.id===id);if(!it)return;const was=it.cleaned;
@@ -127,7 +128,11 @@ function careDayState(o,d){const p=o&&o.top;if(!p||!CARE_FRAME.includes(p.type)|
 /* what figureStage (today.js) puts in the picture's frame: {cls, html}, or null */
 function careFrame(o){const s=typeof sel!=='undefined'&&careDayState(o,sel);if(!s)return null;
   const dots=Array.from({length:s.limit},(_,i)=>`<i${i<s.n?' class="on"':''}></i>`).join('')+(s.n>s.limit?`<em>+${s.n-s.limit}</em>`:'');
-  return {cls:` cb care-${s.k}`,html:`<div class="cframe" aria-hidden="true"></div><div class="cband" id="cband" role="note"><svg aria-hidden="true"><path/></svg><div class="crow"><span class="cdots" aria-hidden="true">${dots}</span><span class="ctxt"><b>${s.bold}</b> · ${esc(s.rest)}</span></div></div>`,s}}
+  return {cls:` cb care-${s.k}`,html:`<div class="cframe" aria-hidden="true"></div><div class="cband" id="cband" role="button" tabindex="0" aria-label="${esc(s.bold+': '+s.rest)}. Tap if it was cleaned" onclick="careBandTap()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();careBandTap()}"><svg aria-hidden="true"><path/></svg><div class="crow"><span class="cdots" aria-hidden="true">${dots}</span><span class="ctxt"><b>${s.bold}</b> · ${esc(s.rest)}</span></div></div>`,s}}
+/* a tap on the banner (fix round 3, W2-14-05: the red "Overdue" came back every morning and a tap did nothing; the way to clear it was
+   Settings → Laundry & cleaning, which nothing on Today pointed to): asks whether it was cleaned, and "Cleaned today" starts its count again */
+function careBandTap(){const o=planFor()[key(sel)],s=o&&careDayState(o,sel);if(!s||!o.top)return;const p=o.top,w=careWashed(p.type)?'Washed':'Cleaned';
+  askConfirm(`${s.bold}: ${s.rest}.\n\nWas it cleaned since you last wore it? “${w} today” starts its count again. To send it away or see everything that is due, open ⚙ Settings → Laundry & cleaning.`,{ok:`${w} today`,cancel:'Not yet'}).then(y=>{if(y)careCleaned(p.id)})}
 /* lay the banner out: its shape (the cut round the tie swatch when the swatch reaches into it) and its words (13 px, smaller down to 11,
    then the bold words on a line of their own) */
 let careRO=null,careObs=[];

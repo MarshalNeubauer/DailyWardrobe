@@ -249,6 +249,7 @@ function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof 
   const plain=(gap,why)=>({how:'plain',gap,why}),needs=()=>plain('reading',`its ${pn} is painted once its pattern is read (Read pattern from photo)`);
   if(z==='belt')return {how:'flat',gap:'',why:''};
   if(z==='jacket'||z==='waistcoat'||z==='trousers'){
+    if(s&&s.camo)return {how:'camo',gap:'',why:''};   // camouflage: its blotches (asmCamoTex, 2026-11-16)
     if(s&&s.look&&(s.tex||s.motif))return {how:'look',gap:'',why:''};   // an own pattern's weave or figure (its look, detect.js lookSett): asmLookSuit
     if(z!=='trousers'&&asmSuitBands(i))return {how:'bands',gap:'',why:''};
     // a suit's own trousers (its jacket taken off on Today, 2026-11-13): the jacket's cloth, so a pinstripe or check reads as on the jacket
@@ -631,6 +632,14 @@ function asmPileTile(i,how){const P=ASM_PILE[how];if(!P)return null;const L=ASM_
     t=new Float32Array(3*n);for(let k=0;k<n;k++){const g=1+P.amp*(d[k]-m)/sw;for(let q=0;q<3;q++)t[3*k+q]=Math.max(0,base[q]*g)}
     if(asmPileMem.size>12)asmPileMem.clear();asmPileMem.set(key,t)}
   return {t,c:new Float32Array(base),TW:T,TH:T,mm:P.mm,linen:false,cloth:null}}
+/* camouflage on a jacket, waistcoat or trousers (2026-11-16, the owner's MultiCam pants): the blotches of its reading (core.js camoField,
+   the same map the drawings use) as a suit tile in linear light, ASM_CAMO.T a side; the tile is the garment's width over its repeats across
+   (ASM_SHIRT_MM / tr), so a reading's blob size carries over; the ground colour is its colour (c) */
+const ASM_CAMO={T:384,v:2};   // (v2: soft edges, grain, more and smaller blotches; the key's code hash covers it)
+function asmCamoTex(i){const s=typeof usableSett==='function'?usableSett(i):null;if(!s||!s.camo)return null;const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])};
+  const T=ASM_CAMO.T,n=T*T,im=camoImage(T,s.camo.cols,s.camo.shares,s.camo.seed),cols=s.camo.cols.map(lin),t=new Float32Array(3*n);   // (core.js camoImage: soft edges, cloth grain)
+  for(let k=0;k<3*n;k++)t[k]=L[im[k]]
+  return {t,c:new Float32Array(cols[0]),TW:T,TH:T,mm:ASM_SHIRT_MM/Math.max(.5,+s.tr||CAMO_TR),linen:false,cloth:null}}
 /* the job for asmCmBuild, or null when the kind's master or masks are not on the device */
 async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)return null;const keys=asmCmAssets(kind);if(keys.some(k=>!renders[k]))return null;
   const masks={};for(const z of K.zones)masks[z]=renders[asmCmKey(kind,'mask/'+z)].img;
@@ -641,6 +650,7 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
     try{
       if(how==='tie'){const T=await asmTieFor(i);if(T&&T.c)c.tie={c:T.c,TW:T.TW,TH:T.TH,motif:T.motif,across:T.across,ang:T.ang}}
       else if(how==='bands')c.suit=await asmSuitTex(i);
+      else if(how==='camo')c.suit=asmCamoTex(i);   // camouflage's blotches
       else if(how==='look')c.suit=await asmLookSuit(i);   // an own pattern's weave or figure on a jacket, waistcoat or trousers   // a jacket's read stripes or checks: the app's suit cloth
       else if(how==='twill'&&asmWtWants(i,z))c.suit=asmWorstedTile(i);   // a worsted twill's ribs (asmWorstedTile)
       else if(how==='twill'||how==='herringbone')c.suit=asmTwillTex(i);   // the weave's ribs (jacket or trousers)
@@ -922,7 +932,7 @@ const asmCmHash=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt
    and asm-color.js) and the kept setup's key asmCmSrcSig (asmCmPrep and asmCmLightPrep with theirs). ASM_CM_PAINTV was bumped by hand
    and three changes shipped without it. tests/asmcode.test.js reads both files and fails when something these functions reach is
    missing from a list. Not in them: draw.js's drawings (fabricDef) that tiles are made from, and the cloth's own readings (in asmCmSig). */
-const asmCmCode=()=>[ASM_LOOK,asmLookSuit,asmLookTag,ASM_WT,asmWtMem,asmWtWants,asmWorstedTile,ASM_PILE,asmPileMem,asmPileKind,asmPileTile,ASM_CR,asmCrWants,asmCrFind,asmCrTile,asmCrTile1,ASM_CU,asmCuDark,asmCuFine,asmCuWants,asmCuPatch,asmCuWrap,asmCuTile,asmCuTile1,ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
+const asmCmCode=()=>[ASM_CAMO,asmCamoTex,ASM_LOOK,asmLookSuit,asmLookTag,ASM_WT,asmWtMem,asmWtWants,asmWorstedTile,ASM_PILE,asmPileMem,asmPileKind,asmPileTile,ASM_CR,asmCrWants,asmCrFind,asmCrTile,asmCrTile1,ASM_CU,asmCuDark,asmCuFine,asmCuWants,asmCuPatch,asmCuWrap,asmCuTile,asmCuTile1,ASM_CM_FOLD_MAX,ASM_CM_FOLD_Y,asmCmFoldW,asmCmMp,ASM_CM_MIPS,ASM_CM_LOD0,asmCmMips,asmCmRead,ASM_CM_MAT,asmCmMat,ASM_TIE_LIT,asmTieLit,ASM_CM_FOLD_KEEP,asmCmFinish,asmCmFinPrep,ASM_CM_FIN,asmCmWk,ASM_CM_WLIGHT,ASM_CM_COLLAR,ASM_CM_GLOW,ASM_CM_WINK,ASM_CM_FOLD,ASM_CM_CUFF_STEP,ASM_CM_CUFF_PX,ASM_CELL_FADE,asmH32,asmCellV,asmCmSetup,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,asmAaK,asmCellT,asmTubePartQ,asmTq,asmTqn,asmTqr,ASM_GEO_PX,asmGeoPrep,asmUvAt,ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CM_BG_SHADOW,ASM_CM_BTN,ASM_CM_BTN_MIX,ASM_CM_BTN_PEARL,ASM_CM_HAND_R,ASM_CM_HAND_STRAY,ASM_CM_HAND_LIT,ASM_CM_JACKET,
   ASM_CM_KINDS,ASM_CM_LIGHT,ASM_CM_LOOK,ASM_CM_RIM,ASM_CM_SOFT,ASM_CM_U16,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_COL_LIFT,ASM_HB_FLECK,ASM_HB_FLOAT,
   ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SHIRT_Y,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_KNIT_ACROSS,
   ASM_LEG_BLEND,ASM_LEG_FOLD,ASM_LEG_FOLD_MAX,ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_PAISLEY_ACROSS,ASM_PX_MM,

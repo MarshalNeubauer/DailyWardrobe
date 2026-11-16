@@ -17,7 +17,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     W(10,2,'char','sh2');W(10,3,'navy','sh1');W(10,4,'char','sh2');W(10,5,'navy','sh1');W(10,6,'bz','sh3');W(10,9,'navy','sh1');W(10,10,'grey','sh3');
     cache={};sel=new Date(2026,10,11);view={y:2026,m:10}})()`;
   const open=async(vp={width:390,height:844})=>{const p=await (await browser.newContext({viewport:vp})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(SETUP);return {p,errs}};
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});await p.evaluate(SETUP);return {p,errs}};
   try{
     const {p,errs}=await open();
     // ---- wears since cleaning, from the history
@@ -226,7 +226,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
         const res=await worker.fetch(new Request(r.url(),{method:r.method(),headers:r.headers(),body:['GET','HEAD'].includes(r.method())?undefined:r.postData()}),env);
         await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
       const p=await ctx.newPage();await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
-      await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-11T12:00:00'});return p};
+      await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-11T12:00:00'});return p};
     const sync=p=>p.evaluate(()=>syncNow()),get=p=>p.evaluate(()=>{const i=items.find(x=>x.id==='s1');return i?{away:i.away||null,paused:!!i.paused,arrives:i.arrives||null,cleaned:i.cleaned||null}:null});
     const A=await device(),B=await device();
     await A.evaluate(async()=>{for(const it of [{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',vest:'no',added:1},{id:'s2',type:'suit',primaryColor:'grey',pattern:'solid',vest:'no',added:1}]){await put(it);items.push(it)}});

@@ -1,6 +1,7 @@
 /* Daily Wardrobe worker: tagging a photo: the prompt and the JSON schema Claude answers in, the per-request additions (custom colours, corrections,
    the measurement), POST / (tagWithClaude), POST /tag-many, and the Workers AI fallback.
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
+import { OWN_COL_RE, OWN_PAT_RE } from './ownkeys.js';
 import { spend, unspend } from './people.js';
 
 /* colours each item type really comes in: [main colours, stripe / motif colours]. Must match COLS_BY in core.js. */
@@ -70,6 +71,7 @@ pattern — pick the closest value from the list for the item's type:
     windowpane   thin lines forming large squares on a plain ground
     tweed        rough, flecked, multi-tone wool
     twill        plain color with a visible diagonal rib
+    camouflage   military or hunting camo: irregular blotches of several colors with no grid (MultiCam/OCP, woodland, desert)
     other
   shirt:
     solid (smooth poplin or broadcloth), stripe (bold or bengal stripe), pinstripe (thin lines), fine-stripe (hairline stripes, very
@@ -78,7 +80,7 @@ pattern — pick the closest value from the list for the item's type:
     pinpoint (very fine oxford weave), royal-oxford (pronounced, shiny basket weave), twill (fine diagonal rib), end-on-end
     (fil-a-fil: white and colored threads alternate, a fine heathered two-tone look), chambray (colored warp with white weft,
     slightly faded look), dobby (small repeating woven motif, tone on tone), woven (visible small cross-weave), textured (uneven,
-    slubbed surface), fine-texture (barely visible texture up close), other
+    slubbed surface), fine-texture (barely visible texture up close), camouflage (military or hunting camo blotches), other
   tie:
     solid, woven (a textured solid: a fine basket/oxford weave or micro-check that reads as one color from a step away, often two-tone
     threads; put the second thread color in secondaryColor), stripe (diagonal/regimental), polka-dot, paisley, check (a visible check),
@@ -129,7 +131,7 @@ const COLOR_LIST = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','
 const TYPE_LIST = ['suit','blazer','pants','shirt','tie','tieclip','watch','shoes','belt','socks','cufflinks','overcoat','raincoat'];
 const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
   'stripe','gingham','tattersall','check','oxford','polka-dot','paisley','foulard','knit','other',
-  'fine-stripe','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','tonal-check'];
+  'fine-stripe','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','camouflage','tonal-check'];
 /* each colour key's sRGB hex: must match COLORS in core.js (tests/colouraudit.test.js); worker/describe.js tells Claude the shades */
 const COLOR_HEX = { black: '#16161a', charcoal: '#3b3f46', darkgrey: '#5e6269', grey: '#8b8f96', midgrey: '#a2a4a8', lightgrey: '#babdc2', white: '#f6f6f3',
   cream: '#efe4c8', lightblue: '#a9c7e4', blue: '#3f6fb5', steelblue: '#56657f', deepblue: '#26326a', navy: '#1b2a4a', darknavy: '#1c1f2b', slate: '#3a3f4c',
@@ -138,9 +140,9 @@ const COLOR_HEX = { black: '#16161a', charcoal: '#3b3f46', darkgrey: '#5e6269', 
   rosegold: '#c98f7a', gunmetal: '#55595f', paleyellow: '#f1e6ac', ivory: '#f4efde', beige: '#dccbb0', lavender: '#c9bfe2', periwinkle: '#9ea8d4',
   mint: '#cfe6d4', stone: '#cbbfa3', denim: '#3e5c86' };
 /* the patterns each item type offers: must match PATS_BY in core.js (tests/colouraudit.test.js) */
-const SUIT_PATS = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill','other'];
+const SUIT_PATS = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill','camouflage','other'];
 const PATTERN_BY_TYPE = { suit: SUIT_PATS, blazer: SUIT_PATS, pants: SUIT_PATS,
-  shirt: ['solid','stripe','pinstripe','fine-stripe','gingham','tattersall','check','houndstooth','herringbone','oxford','pinpoint','royal-oxford','twill','end-on-end','chambray','dobby','woven','textured','fine-texture','other'],
+  shirt: ['solid','stripe','pinstripe','fine-stripe','gingham','tattersall','check','houndstooth','herringbone','oxford','pinpoint','royal-oxford','twill','end-on-end','chambray','dobby','woven','textured','fine-texture','camouflage','other'],
   tie: ['solid','woven','stripe','polka-dot','paisley','check','tonal-check','foulard','knit','other'] };
 /* what each item type is made of: must match MATERIALS_BY in core.js (tests/materials.test.js) */
 const MATERIALS_BY = {
@@ -160,23 +162,69 @@ const MAT_LIKELY = ['tropical wool','gabardine','cotton gabardine','mohair blend
 const MAT_LIKELY_BY = { tie: ['silk','wool','cashmere','cotton'] };
 const CONF_RANK = { low: 0, medium: 1, high: 2 }, CONF_NAME = ['low', 'medium', 'high'];
 const matCap = (key, type, closeup) => type === 'socks' ? 0 : MAT_SEES.includes(key) ? 2 : (MAT_LIKELY.includes(key) || (MAT_LIKELY_BY[type] || []).includes(key)) ? (closeup ? 1 : 0) : 0;
-/* Claude's material answer -> {key, confidence, why} (key one of the type's materials or 'none'), or null when the type has no list or
-   there is no answer. A key off the list, or one that only repeats the pattern (an end-on-end shirt "made of" end-on-end), is 'none' */
-function cleanMaterial(m, type, pats, closeup) {
+/* ---- the owner's own materials (2026-11-16, the owner's approved design): a material Claude names that is on no list is passed on
+   with new:true (the app offers to add it); the owner's own, sent with each tag and reading as ownMaterials {type: [name]}, join the
+   type's list for that call. A name is lower-case letters, spaces and hyphens, 2-24 characters, at most 3 words; never a pattern or
+   weave word, a leather, a color or a non-answer (those stay "none", as before) */
+const MAT_NAME_RE = /^[a-z][a-z -]{0,22}[a-z]$/;
+const LEATHERS = ['leather', 'calf', 'calfskin', 'cordovan', 'shell cordovan', 'suede', 'nubuck', 'patent', 'patent leather', 'pebble grain', 'scotch grain', 'shearling', 'lambskin', 'goatskin', 'deerskin', 'pigskin', 'ostrich', 'alligator', 'crocodile', 'snakeskin', 'faux leather', 'vegan leather', 'pleather', 'bonded leather', 'suede leather'];
+const NOT_MAT_WORDS = /\b(weave|woven|pattern|patterned|stripes?|striped|checks?|checked|plaid|tartan|leather|skin|unknown|unsure|unclear|none|other|n a|na|color|colour)\b/;
+/* words no material name has, so an instruction can never ride in as one ("ignore the rules") */
+const NOT_MAT_PROSE = /\b(the|a|an|and|or|to|is|are|be|you|your|i|me|my|it|this|that|ignore|disregard|forget|instructions?|rules?|system|prompt|assistant|user|answer|respond|reply|always|never|say|says|json|key|output|previous|above|below|now|please|must|should|tell)\b/;
+function notMaterial(key) {
+  if (!key || key === 'none') return true;
+  if (LEATHERS.includes(key) || NOT_MAT_WORDS.test(key) || NOT_MAT_PROSE.test(key)) return true;
+  if (PATTERN_LIST.some(p => p.replace(/-/g, ' ') === key) || COLOR_LIST.includes(key.replace(/[ -]/g, ''))) return true;
+  return ['royal oxford', 'oxford cloth', 'herringbone twill', 'basketweave', 'basket weave', 'pin point', 'end on end', 'fil a fil', 'satin', 'twill', 'jacquard', 'brocade', 'pique', 'piqué'].includes(key);
+}
+/* one name tidied to the material form, or '' when it is not one: lower case, hyphens and spaces only, never markup or prompt text */
+function matName(v) {
+  const s = String(v ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
+  if (!MAT_NAME_RE.test(s) || /  |--/.test(s) || s.split(' ').length > 3 || notMaterial(s.replace(/-/g, ' '))) return '';
+  return s;
+}
+/* the app's ownMaterials -> {type: [name]} (types with a list only, at most 20 names each, none already on the standard list) */
+function cleanOwnMaterials(o) {
+  const out = {};
+  if (!o || typeof o !== 'object' || Array.isArray(o)) return out;
+  for (const [t, l] of Object.entries(o)) {
+    if (!MATERIALS_BY[t] || !Array.isArray(l)) continue;
+    const names = [];
+    for (const v of l) { const n = matName(v); if (n && !MATERIALS_BY[t].includes(n) && !names.includes(n)) names.push(n); if (names.length >= 20) break; }
+    if (names.length) out[t] = names;
+  }
+  return out;
+}
+/* the owner's materials for Claude (in the owner's cached text: the same from call to call) */
+function ownMaterialsText(own) {
+  const e = Object.entries(own || {}).filter(([, l]) => l.length);
+  return e.length ? '\n\nMaterials the owner added (answer with the name, like a listed material, for the item types shown):\n' + e.map(([t, l]) => `  ${t}: ${l.join(', ')}`).join('\n') : '';
+}
+/* Claude's material answer -> {key, confidence, why} (key one of the type's materials, one of the owner's, a new name with new:true, or
+   'none'), or null when the type has no list or there is no answer. A key that only repeats the pattern (an end-on-end shirt "made of"
+   end-on-end), a weave, a leather or a color is 'none'. An owner's or a new material is medium at most (and Claude is told a fiber
+   without a close-up is low) */
+function cleanMaterial(m, type, pats, closeup, own) {
   const list = MATERIALS_BY[type];
   if (!list || !m || typeof m !== 'object') return null;
   const why = String(m.why ?? '').replace(/[<>\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
   let key = String(m.key ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
   const same = (Array.isArray(pats) ? pats : [pats]).filter(Boolean).map(p => String(p).toLowerCase().replace(/-/g, ' '));
-  if (!list.includes(key) || same.includes(key)) key = 'none';
-  if (key === 'none') return { key, confidence: 'low', why };
+  if (same.includes(key) || same.includes(key.replace(/-/g, ' '))) key = 'none';
   const asked = CONF_RANK[m.confidence] ?? 0;
-  return { key, confidence: CONF_NAME[Math.min(asked, matCap(key, type, !!closeup))], why };
+  if (key !== 'none' && list.includes(key)) return { key, confidence: CONF_NAME[Math.min(asked, matCap(key, type, !!closeup))], why };
+  const name = key === 'none' ? '' : matName(key), mine = name && ((own && own[type]) || []).includes(name);
+  if (!name) return { key: 'none', confidence: 'low', why };
+  const cap = type === 'socks' ? 0 : 1;
+  return { key: name, confidence: CONF_NAME[Math.min(asked, cap)], why, ...(mine ? {} : { new: true }) };
 }
 /* the material's rules for Claude (the photo tagger's single item and the close-up reader's pattern half) */
-const MATERIAL_RULES = `material — what the item is made of, from its type's material list below, or "none":
+const MATERIAL_RULES = `material — what the item is made of, from its type's material list below (the owner's own included), or "none":
   key: one material from the list for the item's type, or "none". "none" is always allowed, and it is the right answer when no listed
     material clearly fits or you cannot tell: never force the nearest one.
+    Only when you can clearly tell the cloth is a material that is on no list (for example cupro on a shirt), give its plain name
+    instead: lower-case, one to three words, letters only (the app offers to add it). Never a brand, a pattern or weave, a leather or
+    a color; when unsure, "none".
   confidence:
     high only for a cloth that is plain to see: linen (slubs, sharp creases), seersucker (puckered stripes), corduroy (wale ribs),
       velvet (pile sheen), tweed, flannel (fuzzy nap, blurred weave), denim, jersey (knit loops), grenadine (open gauze), waxed cotton,
@@ -219,15 +267,18 @@ const TAG_SCHEMA = {
    custom: colours and patterns the owner added in the app ({colors:[{key,name,hex,base,types,accent}], patterns:[{key,name,types,base,desc}]})
    extend the enums and the prompt; a single-item tag also asks for confidence, a runner-up, a suggested new colour or pattern
    when nothing listed fits, and a box on plain cloth (the app measures the colour there). */
-const KEY_RE = /^own[a-z]{1,28}$/, PKEY_RE = /^own-[a-z0-9-]{1,28}$/, HEX_RE = /^#[0-9a-f]{6}$/i;
+// own colour and pattern keys: ownkeys.js, the one rule (app core.js OWN_COL_RE / OWN_PAT_RE)
+const KEY_RE = OWN_COL_RE, PKEY_RE = OWN_PAT_RE, HEX_RE = /^#[0-9a-f]{6}$/i;
 const txt = (v, n) => String(v ?? '').replace(/[^\w ,.;:'()\/&-]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
+// an own colour's or pattern's name: letters and digits of any script (an Arabic name was emptied by txt), the app's own punctuation
+const ownTxt = (v, n) => String(v ?? '').replace(/[^\p{L}\p{M}\p{N} ,.،'’()\/+-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, n);
 function cleanCustom(c) {
   c = c && typeof c === 'object' ? c : {};
   const types = t => (Array.isArray(t) ? t : []).filter(x => TYPE_LIST.includes(x));
   const colors = (Array.isArray(c.colors) ? c.colors : []).filter(x => x && KEY_RE.test(x.key) && HEX_RE.test(x.hex)).slice(0, 40)
-    .map(x => ({ key: x.key, name: txt(x.name, 30) || x.key.slice(3), hex: x.hex.toLowerCase(), types: types(x.types), accent: !!x.accent }));
+    .map(x => ({ key: x.key, name: ownTxt(x.name, 30) || x.key.slice(3), hex: x.hex.toLowerCase(), types: types(x.types), accent: !!x.accent }));
   const patterns = (Array.isArray(c.patterns) ? c.patterns : []).filter(x => x && PKEY_RE.test(x.key)).slice(0, 40)
-    .map(x => ({ key: x.key, name: txt(x.name, 30) || x.key.slice(4), types: types(x.types), desc: txt(x.desc, 160) }));
+    .map(x => ({ key: x.key, name: ownTxt(x.name, 30) || x.key.slice(4), types: types(x.types), desc: txt(x.desc, 160) }));
   return { colors, patterns };
 }
 const CONF = { type: 'string', enum: ['high', 'medium', 'low'] };
@@ -281,14 +332,44 @@ function tagSchema(custom, single, free, freePat) {
   if (freePat) props.ownPattern = OWN_PATTERN;
   // the material (2026-11-15, the Add card's suggestion): only on the plain single tag, never with the picker's extras (the schema
   // with ownColors is near what the API compiles)
+  // the accents too (2026-11-16), on the same plain tag only
   const mat = !free && !freePat;
-  if (mat) props.material = materialSchema(null);
-  return { ...TAG_SCHEMA, properties: props, required: [...TAG_SCHEMA.required, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox', 'patternBox', 'weave', ...(free ? ['ownColors'] : []), ...(freePat ? ['ownPattern'] : []), ...(mat ? ['material'] : [])] };
+  if (mat) { props.material = materialSchema(null); props.accents = ACCENT_SCHEMA; }
+  return { ...TAG_SCHEMA, properties: props, required: [...TAG_SCHEMA.required, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox', 'patternBox', 'weave', ...(free ? ['ownColors'] : []), ...(freePat ? ['ownPattern'] : []), ...(mat ? ['material', 'accents'] : [])] };
+}
+/* ---- accents (2026-11-16, the owner's approved job "keep an item's extra colors"): up to ACCENT_MAX colors beyond the three main ones
+   (a five-color paisley tie, a multi-color plaid), most visible first, as color keys (the list's, or the owner's own). Asked on the plain
+   single tag, the multi-item tag and the close-up reader's color half; never with the picker's extras (freeColors / freePattern: that
+   schema is near what the API compiles). The items are a plain string, not an enum: an enum of every color made the plain tag's schema
+   larger than the freeColors one the API compiles (tests/tagaccents.test.js); the cleaner keeps only known keys. An app from before the
+   field ignores it. ---- */
+const ACCENT_MAX = 4;
+const ACCENT_SCHEMA = { type: 'array', items: { type: 'string' } };
+const ACCENT_TAIL = `most visible first, each a color key from this full list (not only the type's list) or one of the owner's own color keys:
+  ${COLOR_LIST.join(', ')}.
+  Small specks, logos, labels, shadows and the white paper don't count; never repeat those three; [] when none (a plain cloth, or one of
+  three colors or fewer).`;
+const ACCENT_RULES = `accents — up to ${ACCENT_MAX} further distinct colors visible in the pattern beyond the three above (primaryColor, secondaryColor and
+  tertiaryColor; e.g. the gold and red of a five-color paisley tie, the extra lines of a multi-color plaid), ${ACCENT_TAIL}`;
+const ACCENT_READ_RULES = `accents — up to ${ACCENT_MAX} further distinct colors visible in the pattern beyond the item's main, second and third colors (given
+  with the item below) and the main color you read, ${ACCENT_TAIL}`;
+/* Claude's accents -> up to ACCENT_MAX known keys (letters only, lower case, "light blue" = lightblue, gray = grey), none of main (the three
+   main colors, and any other key to leave out), no repeats; [] for anything else */
+function cleanAccents(list, main, own) {
+  if (!Array.isArray(list)) return [];
+  const ok = new Set([...COLOR_LIST, ...(Array.isArray(own) ? own : [])]), skip = new Set((main || []).filter(Boolean)), out = [];
+  for (const v of list.slice(0, 20)) {
+    const raw = String(v ?? '').toLowerCase().trim(), k = ok.has(raw) ? raw : raw.replace(/gray/g, 'grey').replace(/[^a-z0-9]/g, '');   // (own keys may hold digits: ownkeys.js)
+    if (!ok.has(k) || skip.has(k) || out.includes(k)) continue;
+    out.push(k); if (out.length >= ACCENT_MAX) break;
+  }
+  return out;
 }
 /* the single tag's material rules, in the cached prompt after SINGLE_EXTRA (a tag with the picker's extras has no material) */
 const MATERIAL_EXTRA = `
 ${MATERIAL_RULES}
-  (For shoes, belts, watches, cufflinks and tie clips the material is always "none": their leather, band and metal have their own fields.)`;
+  (For shoes, belts, watches, cufflinks and tie clips the material is always "none": their leather, band and metal have their own fields.)
+${ACCENT_RULES}`;   // (the accents' rule rides with the material's: both are asked on exactly the plain single tag)
 function customText(custom) {
   let t = '';
   if (custom.colors.length) t += `\n\nColors the owner added (answer with the key, like any listed color, for the item types shown):\n`
@@ -449,8 +530,10 @@ function cleanTag(t, opts = {}) {
   const conf = c => c && typeof c === 'object' ? { type: lvl(c.type), primaryColor: lvl(c.primaryColor), pattern: lvl(c.pattern) } : typeof c === 'string' ? lvl(c) : undefined;
   const plain = v => typeof v === 'string' ? v.replace(/[<>"`]/g, '') : Array.isArray(v) ? v.map(plain) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, plain(x)])) : v;
   // the material held to its tier (cleanMaterial: a fiber is low, and low without a close-up), never only the pattern again
-  const material = 'material' in t ? cleanMaterial(t.material, t.type, [t.pattern], !!opts.closeup) || undefined : undefined;
-  return { ...plain(t), confidence: conf(t.confidence), ...(t.conf !== undefined ? { conf: conf(t.conf) } : {}), newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern, material };
+  const material = 'material' in t ? cleanMaterial(t.material, t.type, [t.pattern], !!opts.closeup, opts.ownMaterials) || undefined : undefined;
+  // the accents: known keys only (the owner's own sent with the tag: opts.ownColors), none of the three main colors, no repeats, at most 4
+  const accents = 'accents' in t ? cleanAccents(t.accents, [t.primaryColor, t.secondaryColor, t.tertiaryColor], opts.ownColors) : undefined;
+  return { ...plain(t), confidence: conf(t.confidence), ...(t.conf !== undefined ? { conf: conf(t.conf) } : {}), newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern, material, accents };
 }
 /* POST /tag-many {image} -> {items: [tag + confidence + box], model}
    One photo with several items (a closet rail of shirts, suits on hangers, folded trousers): every item is listed,
@@ -459,10 +542,11 @@ const MULTI_SCHEMA = {
   type: 'object', additionalProperties: false, required: ['items'],
   properties: { items: { type: 'array', items: {
     type: 'object', additionalProperties: false,
-    required: [...TAG_SCHEMA.required, 'confidence', 'box'],
+    required: [...TAG_SCHEMA.required, 'confidence', 'box', 'accents'],
     properties: {
       ...TAG_SCHEMA.properties,
       confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+      accents: ACCENT_SCHEMA,
       box: { type: 'object', additionalProperties: false, required: ['x', 'y', 'w', 'h'],
         properties: { x: { type: 'integer' }, y: { type: 'integer' }, w: { type: 'integer' }, h: { type: 'integer' } } },
     },
@@ -484,7 +568,7 @@ Rules:
   top-left corner (0-1000 from the left and top edges), w and h the width and height (0-1000).
 
 For each item give these fields:
-` + PROMPT.slice(PROMPT.indexOf('type —'));
+` + PROMPT.slice(PROMPT.indexOf('type —')) + '\n\n' + ACCENT_RULES;
 async function handleTagMany(req, env, json, who) {
   if (!env.ANTHROPIC_API_KEY) return json({ error: 'ai', detail: 'Several items in one photo needs Claude: add an ANTHROPIC_API_KEY secret to the worker.' }, 501);
   const text = await req.text();
@@ -497,9 +581,11 @@ async function handleTagMany(req, env, json, who) {
   const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: MULTI_PROMPT, owner: customText(custom) + correctionsText(body.corrections), wb: wbOf(body), maxTokens: 16000, effort: 'medium', signal: req.signal });
   if (c.status !== 200) { await unspend(env, who, 'tag'); return json(c.body, c.status); }
   const clamp = v => Math.max(0, Math.min(1000, Math.round(+v || 0)));
+  const ownKeys = custom.colors.map(k => k.key);
   const items = (Array.isArray(c.body.items) ? c.body.items : []).slice(0, 40).map(it => {
     const b = it.box || {}, x = clamp(b.x), y = clamp(b.y);
-    return { ...it, box: { x, y, w: Math.max(1, Math.min(1000 - x, clamp(b.w))), h: Math.max(1, Math.min(1000 - y, clamp(b.h))) } };
+    return { ...it, ...('accents' in it ? { accents: cleanAccents(it.accents, [it.primaryColor, it.secondaryColor, it.tertiaryColor], ownKeys) } : {}),
+      box: { x, y, w: Math.max(1, Math.min(1000 - x, clamp(b.w))), h: Math.max(1, Math.min(1000 - y, clamp(b.h))) } };
   }).sort((a, b) => a.box.x + a.box.w / 2 - (b.box.x + b.box.w / 2));
   console.log(`tagged ${items.length} items in one photo`);
   return json({ items, model: c.body.model });
@@ -539,4 +625,4 @@ async function tagWithWorkersAi(env, image) {
   catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
 }
 
-export { COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, materialSchema, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
+export { ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };

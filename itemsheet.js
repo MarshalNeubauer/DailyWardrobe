@@ -16,7 +16,9 @@ async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.ph
   try{const im=await imgOf(it.photo);let sm=it.photo;if(Math.max(im.naturalWidth,im.naturalHeight)>PH_SM){const c=shrink(im,PH_SM);if(deadCanvas(c))return false;sm=c.toDataURL('image/jpeg',.82)}   // drawn black: keep the old copy
     it.photoSm=sm;it.phSig=sig;return true}catch{return false}}
 /* at start-up: items whose small copy is missing or old (added before it, or changed on a device with an older app) */
-async function smallPhotos(){let n=0;for(const it of items)if(it.photo&&!(it.photoSm&&it.phSig===phSigOf(it.photo))&&await makeSmall(it)&&stillCur(it)){await put(it);n++}if(n)fixupRedraw();return n}
+/* (a connected phone makes at most the day's remakes, tagging.js remakeLeft: each small copy can be a new server value; the rest the next days) */
+async function smallPhotos(){let n=0;for(const it of items){if(!it.photo||(it.photoSm&&it.phSig===phSigOf(it.photo)))continue;if(typeof remakeLeft==='function'&&remakeLeft()<1)break;
+  if(await makeSmall(it)&&stillCur(it)){await put(it);if(typeof remakeSpend==='function')remakeSpend(1);n++}}if(n)fixupRedraw();return n}
 /* ---- the photo tools (2026-11-15, edit-photos-mockups option B, the owner's choice; they were folded under "Edit photos"): one row of
    icon-and-label buttons right under the pictures, Replace (the photo's file window), Rotate, Crop (zoom & crop) and Close-up (on a touch
    screen the close-up chooser: Take / Choose / Remove / Cancel; without touch the file window itself, with Remove close-up under the row).
@@ -143,34 +145,71 @@ async function applyCrop(id,left){const it=items.find(x=>x.id===id),g=cropGeom()
   if(typeof resignTagImg==='function')await resignTagImg(id,it.photo)}   // the same picture, cropped: the sharp copy (and the pattern's box on it) still holds
 /* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with the row of photo tools under it, the
    "Color & texture" card (fabrics), then a card for the tags, one for rotation, and Delete on its own at the very end */
-function toggleCompare(closeOnly){const el=$('#ivpair');if(!el||(closeOnly&&!phEdit.cmp))return;phEdit.cmp=!phEdit.cmp;el.classList.toggle('cmp',!!phEdit.cmp);el.querySelector('.tagsw').setAttribute('aria-pressed',!!phEdit.cmp)}
 function itemBody(i){
   if(phEdit.id!==i.id)phEdit={id:i.id,undo:[],crop:null};
-  const cols=COLOR_OPTS(i.type,primaryCol(i)),acc=c=>[['none','None'],...COLOR_OPTS(i.type,c,true)],pic=i.photo||wardPic(i);
-  // with a close-up, the split swatch is a button: tapped, the drawing slides over the photo and the close-up fills its square, to
-  // compare the two whole; a tap on either square puts them back (toggleCompare; the choice lasts while the item stays open)
-  const cmp=pic&&i.texture&&TEXTURE_TYPES.includes(i.type);
-  const pair=!pic?`<div class="ivdraw">${itemThumb(i)}</div>`:!cmp?photoPair(pic,i,'tagsw-'+i.id):`<div class="pair cmpable${phEdit.cmp?' cmp':''}" id="ivpair"><figure class="phfig" onclick="toggleCompare(true)"><div class="cmpbox"><img class="ph" src="${srcOk(pic)}" alt="Photo"><div class="cmpdraw" aria-hidden="true">${itemThumb(i,true)}</div></div><figcaption><span class="c0">Photo</span><span class="c1">As tagged</span></figcaption></figure>`+
-    `<figure class="tagsw" id="tagsw-${esc(i.id)}" role="button" tabindex="0" aria-pressed="${!!phEdit.cmp}" aria-label="Compare the drawing and the close-up side by side" onclick="toggleCompare()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCompare()}">${tagSwInner(i)}<figcaption class="c1">Close-up</figcaption></figure></div>`;
-  const hero=phEdit.crop?cropEditor(i):`<div class="ivhero">${pair}</div>`;
-  const tags=`<section class="card ivsec ivtags"><h3>Details</h3>${wardFieldsTop(i)}${COLORS[primaryCol(i)]&&colShows(i,'primaryColor')?shadeRow(i,`stepShadeE.bind(null,'${jsq(i.id)}')`,`matchShadeE('${jsq(i.id)}')`,!!(i.texture||(i.meas&&i.meas.src==='closeup'))):''}${E(i.id,'type',Object.entries(TYPES),i.type)}${colRows('e',i.id,i)}
-  ${FABRIC.includes(i.type)?EP(i.id,i):''}${METAL_TYPES.includes(i.type)?E(i.id,'metal',metalOptsFor(i.type),i.metal||'silver',i.type==='belt'?'Buckle':''):''}
-  ${i.type==='shirt'?E(i.id,'cuff',CUFFS,i.cuff||'button'):''}${i.type==='suit'?E(i.id,'vest',VESTS,hasVest(i)?'yes':'no'):''}${SEASON_TYPES.includes(i.type)?E(i.id,'season',SEASONS,i.season||'all'):''}
-  ${i.type==='pants'?E(i.id,'trouserKind',TROUSER_KINDS,trouserKind(i)):''}${i.type==='shoes'?E(i.id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):''}${i.type==='shoes'||i.type==='belt'?E(i.id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):''}
-  ${i.type==='watch'?`<label class="wdetails">Details <input type="text" value="${esc(i.details||'')}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${jsq(i.id)}','details',this.value.trim()||'none')"></label>`:''}${i.type==='watch'?E(i.id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(i.id,'band',BANDS,watchOpts(i).band)+E(i.id,'bezel',BEZELS,watchOpts(i).bezel)+E(i.id,'watchStyle',WATCH_STYLES,watchOpts(i).style):''}
-  ${DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${jsq(i.id)}')`:`redetect('${jsq(i.id)}')`}">Read pattern from photo</button>`}${i.stripes||i.sett?`<button onclick="clearStripes('${jsq(i.id)}')">Use generic</button>`:''}</div></div>`:''}${typeof asmGapNote==='function'?asmGapNote(i):''}${wardFieldsEnd(i)}</section>`;
-  // the photo tools right under the photos, always shown (option B: the "Edit photos" fold is gone)
-  const photos=phEdit.crop?'':photoTools(i);
-  // "Color & texture" (option B): the paper line after a close-up, then "True color in 3 steps" ABOVE Read color and texture and its cost
-  // (2026-11-15, the owner: "The user needs to see it before they tap the read color and texture button"; B's mockup had Read first), then
-  // the reading's done card (rdDoneHtml, inside rdEditorBtn)
-  const ct=phEdit.crop||!TEXTURE_TYPES.includes(i.type)?'':`<section class="card ivsec ivct" id="ivct" aria-labelledby="ivct-h"><h3 id="ivct-h">Color &amp; texture</h3><p class="shelp">Claude reads them from your close-up.</p>${paperLine(i)}${paperHint(i)}${rdEditorBtn(i)}</section>`;
-  const rot=`<section class="card ivsec ivrot"><h3>Rotation</h3>${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${jsq(i.id)}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
-  ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${jsq(i.id)}')" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}</section>${typeof careCard==='function'?careCard(i):''}`;
-  return `<div class="ivin">${hero}${photos}${ct}${typeof kitSampleNote==='function'?kitSampleNote(i):''}${tags}${rot}<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${jsq(i.id)}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${jsq(i.id)}')">Delete item</button></div></div>`;
+  const pic=i.photo||wardPic(i);
+  // the photo beside the split swatch (drawing | close-up), plain pictures: the comparison lives in Look & compare (2026-11-16, the
+  // owner took the old tap-to-compare out of Pictures)
+  const pair=!pic?`<div class="ivdraw">${itemThumb(i)}</div>`:photoPair(pic,i,'tagsw-'+i.id);
+  // the checklist (2026-11-16, the owner's approved redesign "2B Checklist", checklist.js): a summary line (photo, rotation and care pills),
+  // then sections that fold, each with a status mark and a one-line summary: Look & compare (fabrics: the close-up beside the drawing, the
+  // match bar, Match close-up, the paper line, True color in 3 steps, Read color and texture), Color, Pattern, Material, Details, Planning &
+  // care, Name & notes, Pictures (the photos and the row of photo tools, Edit photos option B), then Duplicate and Delete. While cropping
+  // the crop frame takes the summary's place at the top. From 600px two columns: the summary and Look & compare on the left.
+  const id=i.id,tex=TEXTURE_TYPES.includes(i.type),fab=FABRIC.includes(i.type),scope='e';
+  if(phEdit.crop)return `<div class="ivin ivck">${cropEditor(i)}</div>`;   // cropping: the frame alone, everything else steps aside
+  const top=ivSummary(i,pic);
+  let look='';
+  if(tex){const lab=i.texture?cmpLab('e',i):null,d=i.texture?cmpDiff(i,lab):null,p=i.texture?cmpPaper('e',i):null;
+    const mark=!i.texture?'opt':d===null?'todo':d===0?'good':'warn';
+    const sum=!i.texture?'Not yet · add a close-up to compare':d===null?'Close-up vs drawing':d===0?'Close-up vs drawing · they match':`Close-up vs drawing · ${cmpSteps(Math.abs(d))} off`;
+    const body=i.texture?cmpHtml(id,i.texture,cmpDrawn(i),!!(p&&p.ref))+cmpMatchHtml('e',id,i,lab)+(paperLine(i)||cmpPaperLine(p,paperRetake(id,'replaceTexture')))+paperHint(i)+rdEditorBtn(i)
+      :`<p class="shelp">Put a close-up of the cloth beside the drawing, and have Claude read its color and weave.</p>${paperHint(i)}${rdEditorBtn(i)}<div class="ckadds">${closeupBtn({label:'Add close-up',cls:'btn ckadd',mode:'add',aria:'Add fabric close-up',file:`f=>replaceTexture('${jsq(id)}',f)`,cloth:paperCloth(i)})}</div>`;
+    look=ckSec(scope,'look',{mark,title:'Look &amp; compare',sum,body,open:true,id:'ivct',cls:'ivct'})}
+  const cr=colRows('e',id,i),shade=COLORS[primaryCol(i)]&&colShows(i,'primaryColor')?shadeRow(i,`stepShadeE.bind(null,'${jsq(id)}')`,`matchShadeE('${jsq(id)}')`,!tex&&!!(i.meas&&i.meas.src==='closeup')):'';
+  const color=cr||shade?ckSec(scope,'color',{mark:'good',title:'Color',sum:ckColSum(i,primaryCol(i))+(i.shade?` · drawn ${esc(shadeName(i.shade).toLowerCase())}`:''),body:cr+accRow('e',id,i)+shade}):'';
+  const layout=DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${jsq(id)}')`:`redetect('${jsq(id)}')`}">Read pattern from photo</button>`}${i.stripes||i.sett?`<button onclick="clearStripes('${jsq(id)}')">Use generic</button>`:''}</div></div>`:'';
+  const gap=typeof asmGapNote==='function'?asmGapNote(i):'';
+  const pattern=fab?ckSec(scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type,i.pattern))))+(usableSett(i)?' · layout read':''),body:EP(id,i)+layout+gap}):'';
+  const mat=MATERIALS_BY[i.type]?ckSec(scope,'material',{mark:i.material?'good':'opt',title:'Material',sum:i.material?esc(matLabel(i.material)):'Not set',body:matRow(i.type,i.material,`setItemField('${jsq(id)}','material',`)}):'';
+  const det=E(id,'type',Object.entries(TYPES),i.type)+(METAL_TYPES.includes(i.type)?E(id,'metal',metalOptsFor(i.type),i.metal||'silver',i.type==='belt'?'Buckle':''):'')+
+    (i.type==='shirt'?E(id,'cuff',CUFFS,i.cuff||'button'):'')+(i.type==='suit'?E(id,'vest',VESTS,hasVest(i)?'yes':'no'):'')+(SEASON_TYPES.includes(i.type)?E(id,'season',SEASONS,i.season||'all'):'')+
+    (i.type==='pants'?E(id,'trouserKind',TROUSER_KINDS,trouserKind(i)):'')+(i.type==='shoes'?E(id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):'')+(i.type==='shoes'||i.type==='belt'?E(id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):'')+
+    (i.type==='watch'?`<label class="wdetails">Details <input type="text" maxlength="${WATCH_DETAILS_MAX}" dir="auto" value="${esc(String(i.details||'').slice(0,WATCH_DETAILS_MAX))}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${jsq(id)}','details',this.value.trim().slice(0,WATCH_DETAILS_MAX)||'none')"></label>`+E(id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(id,'band',BANDS,watchOpts(i).band)+E(id,'bezel',BEZELS,watchOpts(i).bezel)+E(id,'watchStyle',WATCH_STYLES,watchOpts(i).style):'');
+  const details=ckSec(scope,'details',{mark:'good',title:'Details',sum:esc(ivDetailSum(i)),body:det+(fab?'':gap),cls:'ivtags'});
+  const cs=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null;
+  const rotIn=`${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${jsq(id)}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
+  ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${jsq(id)}',${!i.paused})" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}${typeof careCard==='function'?careCard(i):''}`;
+  const care=ckSec(scope,'care',{mark:cs&&cs.due?'warn':'good',title:'Planning &amp; care',sum:esc(ivCareSum(i,cs)),body:rotIn,open:!!(cs&&cs.due),cls:'ivrot'});
+  const filled=['name','brand','notes'].filter(k=>String(i[k]||'').trim());
+  const names=ckSec(scope,'names',{mark:filled.length?'good':'opt',title:'Name &amp; notes',sum:filled.length?esc(cap1(filled.join(', ')))+' filled in'+(filled.length<3?` · no ${['name','brand','notes'].filter(k=>!filled.includes(k)).join(' or ')}`:''):'Name, brand, notes · optional',body:wardFieldsTop(i)+notesRow(i.notes,ivOn(id))});
+  const pics=ckSec(scope,'pics',{mark:'opt',title:'Pictures',sum:esc(cap1([i.photo?'photo':'no photo',tex&&i.texture?'close-up':''].filter(Boolean).join(', ')))+' · replace, rotate, crop',body:`<div class="ivhero">${pair}</div>${photoTools(i)}`,cls:'ivpics'});
+  const acts=`<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${jsq(id)}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${jsq(id)}')">Delete item</button></div>`;
+  const sample=typeof kitSampleNote==='function'?kitSampleNote(i):'';
+  return `<div class="ivin ivck"><div class="ivcols"><div class="ivcl">${top}${sample}${look||pics}</div><div class="ivcr">${color}${pattern}${mat}${details}${care}${names}${look?pics:''}</div></div>${acts}</div>`;
 }
+/* the summary line at the top of the item sheet: the photo (or the drawing), "In rotation" / "Out of rotation" / "On the way", how many
+   wears are left before cleaning (or "Due for cleaning"), the material and the season */
+const optLab=(list,v)=>{const o=list.find(x=>x[0]===v);return o?cap1(o[1]):''};
+function ivSummary(i,pic){const s=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null,left=s?s.limit-s.wears:0;
+  const rot=i.paused?`<span class="ivpill${i.order?'':' warn'}">${i.order?'On the way':i.away?(i.away.why==='laundry'?'In the laundry':'At the cleaner’s'):'Out of rotation'}</span>`:'<span class="ivpill good">In rotation</span>';
+  const care=s&&!i.away&&s.limit>1?(s.due?`<span class="ivpill warn">Due for ${careWord(i.type)}</span>`:`<span class="ivpill">${careWashed(i.type)?'Wash':'Clean'} in ${left} wear${left===1?'':'s'}</span>`):'';
+  const meta=[i.material?matLabel(i.material):'',SEASON_TYPES.includes(i.type)&&i.season&&i.season!=='all'?optLab(SEASONS,i.season):''].filter(Boolean).join(' · ');
+  const th=pic?`<img class="ivsumph" src="${srcOk(i.photo?phSm(i):pic)}" alt="">`:`<div class="ivsumph">${itemThumb(i)}</div>`;
+  return `<div class="ivsum">${th}<div class="ivsumt"><div class="ivpills">${rot}${care}</div>${meta?`<p class="ivmeta">${esc(meta)}</p>`:''}</div></div>`}
+/* the Details section's summary: "Suit · Cold weather · matching vest" */
+function ivDetailSum(i){const t=i.type,a=[TYPES[t]||'Item'];
+  if(SEASON_TYPES.includes(t))a.push(optLab(SEASONS,i.season||'all'));
+  if(t==='suit')a.push(hasVest(i)?'matching vest':'no vest');if(t==='shirt')a.push(optLab(CUFFS,i.cuff||'button').toLowerCase());
+  if(t==='pants')a.push(optLab(TROUSER_KINDS,trouserKind(i)).toLowerCase());if(t==='shoes')a.push(optLab(SHOE_STYLES,shoeStyle(i)).toLowerCase());
+  if(METAL_TYPES.includes(t))a.push(optLab(metalOptsFor(t),i.metal||'silver').toLowerCase());
+  return a.filter(Boolean).join(' · ')}
+/* Planning & care's summary: "In rotation · worn 3 of 5 since cleaning" */
+function ivCareSum(i,s){const r=i.paused?(i.order?'On the way':i.away?'Away being cleaned':'Out of rotation'):'In rotation';
+  if(!s||i.away)return r;if(s.due)return `${r} · due for ${careWord(i.type)}`;
+  return s.limit>1?`${r} · worn ${s.wears} of ${s.limit} since ${careWord(i.type)}`:s.wears?`${r} · worn ${careTimes(s.wears)}`:`${r} · not worn yet`}
 async function sete(id,k,v){
-  const it=items.find(x=>x.id===id);if(!it)return;
+  const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}
   it[k]=v==='none'?null:v;
   if(k==='shoeStyle'&&!leathersFor(it).includes(it.leather))it.leather='calf';   // a sneaker can't be cordovan: back to plain leather
   if(k==='type'){it.pattern=normPat(v,it.pattern);shirtColFix(it);if(METAL_TYPES.includes(v)&&!it.metal)it.metal='silver';if((v==='shoes'||v==='belt')&&!it.leather)it.leather='calf';typeTidy(it)}
@@ -184,12 +223,16 @@ async function sete(id,k,v){
 const TYPE_FIELDS={season:t=>SEASON_TYPES.includes(t),metal:t=>METAL_TYPES.includes(t),leather:t=>t==='shoes'||t==='belt',cuff:t=>t==='shirt',vest:t=>t==='suit',
   trouserKind:t=>t==='pants',shoeStyle:t=>t==='shoes',dial:t=>t==='watch',band:t=>t==='watch',bezel:t=>t==='watch',watchStyle:t=>t==='watch',details:t=>t==='watch'};
 function typeTidy(it){const t=it.type;for(const [f,ok] of Object.entries(TYPE_FIELDS))if(f in it&&!ok(t))delete it[f];
-  const ml=MATERIALS_BY[t];if(it.material&&!(ml&&(ml.includes(it.material)||!Object.values(MATERIALS_BY).some(l=>l.includes(it.material)))))delete it.material;   // a typed "Other" material stays where the type has a list
+  const ml=matsFor(t);if(it.material&&!(ml&&(ml.includes(it.material)||!Object.keys(MATERIALS_BY).some(x=>matsFor(x).includes(it.material)))))delete it.material;   // a typed "Other" material stays where the type has a list (an own material of another type goes, like a listed one)
   if(t==='shoes'&&it.leather&&!leathersFor(it).includes(it.leather))it.leather='calf';
   if(!FABRIC.includes(t))for(const f of ['sett','stripes','patternSpec','weave','patternText','pbox'])delete it[f];
   return colTidy(it)}
-function patSummary(i){
-  if(usableSett(i))return settSummary(i.sett);
+/* (2026-11-16, the owner's camouflage shirt: the sheet wouldn't open, so it couldn't be deleted either: a pattern drawn from a fallback
+   (a camouflage with no reading of its own, camoLook; an own pattern's look) has no i.sett, and this described i.sett. It describes what is
+   drawn, and a camouflage drawn in its own colors says how to get its real ones) */
+function patSummary(i){const u=usableSett(i);
+  if(u&&u.camo&&!(i.sett&&i.sett.camo))return 'camouflage drawn in its own colors (Read pattern from photo takes the real colors from the close-up)';
+  if(u)return settSummary(u);
   if(i.sett&&i.sett.tex)return `generic (the weave texture read earlier is for a ${TEX_WORDS[i.sett.tex.kind]||'woven'} pattern)`;
   if(i.sett)return `generic (an older reading drew these ${patName(i.pattern).toLowerCase()} figures as stripes; Read pattern from photo reads them as figures)`;
   const st=i.stripes;if(!st)return 'generic';
@@ -209,7 +252,11 @@ async function redetect(id){
    hand pick), so those days are planned again without it; past days and days marked worn keep it. */
 async function setItemArrives(id,v){const it=items.find(x=>x.id===id);if(!it)return;if(/^\d{4}-\d{2}-\d{2}$/.test(v||''))it.arrives=v;else delete it.arrives;await put(it);cache={};
   if(await checkArrivals())return renderWardrobe();renderWardrobe()}
-async function togglePause(id){const it=items.find(x=>x.id===id);if(!it)return;it.paused=!it.paused;if(!it.paused){delete it.paused;delete it.order;delete it.arrives}
+/* want: what the button said when it was drawn (true = "Take out of rotation"): a sheet drawn before another phone's change arrived does
+   what it says, never the opposite (fix round 3, W1-5-04); nothing to do when the piece is already that way */
+async function togglePause(id,want){const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}
+  if(typeof want==='boolean'&&!!it.paused===want){renderWardrobe();toast(want?'It was already taken out of rotation on another phone.':'It was already back in rotation.');return}
+  it.paused=!it.paused;if(!it.paused){delete it.paused;delete it.order;delete it.arrives}
   let n=0;if(it.paused){const T=todayDate();
     for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<T||r.worn===true||!r.force)continue;const f={...r.force};let hit=false;
       for(const [s,v] of Object.entries(f))if(v===id){delete f[s];hit=true}
@@ -258,19 +305,37 @@ function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)retu
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
   if(typeof layerInert==='function')layerInert();else for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;   // (ui.js: counts Settings and the sheets too)
   if(was&&!on&&typeof syncLaterRun==='function')setTimeout(()=>syncLaterRun('wardrobe'),0)}   // a sync's redraw that waited for the sheet (sync.js)
+/* ---- a sync changed the piece open in the sheet (fix round 3, 2026-11-16) ----
+   The sync's redraw of the Wardrobe waits while the sheet is up (sync.js syncLater), so the sheet kept the old state and its buttons acted
+   on the new one: "Take out of rotation" put a piece taken out on the other phone back in (W1-5-04). Now the sheet is drawn again from the
+   new copy at once, or, while a field in it is being typed in, once that field is left. A piece deleted on another phone (W1-6-02) is
+   said in a toast and a line at the top of the sheet; the sheet stays until closed (redrawn it would vanish under the finger), and a
+   change made in it says it wasn't kept (itemGoneTell). was: the copy shown before the sync */
+let itemGone=null;
+function itemSynced(was){if(!editing)return;const id=editing,now=items.find(x=>x.id===id);
+  if(!now){if(itemGone===id)return;itemGone=id;const n=was&&(itemName(was)||nm(was));
+    tell(n?`“${n}” was deleted on another phone.`:'This piece was deleted on another phone.');
+    const b=$('#ivbody');if(b&&!b.querySelector('.ivgone'))b.insertAdjacentHTML('afterbegin','<p class="ivgone" role="status">This piece was deleted on another phone. Changes made here aren’t kept.</p>');return}
+  if(was&&stamp(was)===stamp(now))return;
+  const v=$('#item-view'),a=document.activeElement;
+  if(v&&a&&v.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!/^(button|checkbox|radio|range)$/.test(a.type||'')){a.addEventListener('blur',()=>setTimeout(()=>{if(editing===id&&!(v.contains(document.activeElement)&&/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)))renderItem()},0),{once:true});return}
+  if(!phEdit.crop)renderItem()}
+/* a change made to a piece no longer here (deleted on another phone while its sheet was open): said, once per tap -> true when said */
+function itemGoneTell(id){if(items.some(x=>x.id===id))return false;tell('This piece was deleted on another phone, so the change wasn’t kept.');return true}
 /* draws the open item (called by renderWardrobe, so every edit redraws it; the scroll position stays) */
 function renderItem(){
   const v=$('#item-view');if(!v)return;const i=editing&&items.find(x=>x.id===editing);
   if(!i){editing=null;itemShown(false);return}
   const l=wardList(),k=l.findIndex(x=>x.id===i.id);
   $('#ivhead').innerHTML=`<div class="ivt"><small class="gtype">${TYPES[i.type]||'Item'}</small><h2 id="iv-title" class="${titleCls(i)}">${esc(itemTitle(i)||TYPES[i.type]||'Item')}</h2></div>${k>=0?`<span class="pcount">${k+1} of ${l.length}</span>`:''}`;
-  $('#ivbody').innerHTML=itemBody(i);
+  keepFocus($('#ivbody'),()=>{$('#ivbody').innerHTML=itemBody(i)});   // every edit redraws it: the field or button used keeps the focus (W2-19-01)
+  if(typeof cmpMount==='function')cmpMount($('#ivbody'));
   $('#iv-prev').disabled=k<=0;$('#iv-next').disabled=k<0||k>=l.length-1;
   itemShown(true)}
 const sheetSlides=()=>innerWidth<600;   // a phone: the sheet slides up from the bottom; wider, the panel fades in
 function openItem(id){
   if(!items.some(i=>i.id===id))return;const v=$('#item-view'),bd=$('#item-backdrop'),was=editing;
-  editing=id;if(!was)itemFrom=id;histPush();renderItem();$('#ivbody').scrollTop=0;
+  editing=id;itemGone=null;if(!was)itemFrom=id;histPush();renderItem();$('#ivbody').scrollTop=0;if(!was&&typeof layerOpen==='function')layerOpen(v);   // the focus goes into the sheet and comes back on closing (W2-19-02)
   for(const el of [v,bd]){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}
   if(was||noMotion())return;const o={duration:WARD_MS,easing:WARD_EASE};
   v.animate(sheetSlides()?[{transform:'translateY(100%)'},{transform:'none'}]:[{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],o);
@@ -281,15 +346,22 @@ function closeItem(fromPop,dragged){
   if(phEdit.crop)cropKeep();   // closed in the crop frame: a moved or zoomed frame is kept (the owner: closing should save it)
   editing=null;itemFrom=null;if(!fromPop)histDrop();
   const y=dragged||0,op=+bd.style.opacity||1;v.style.transform=bd.style.opacity='';
-  if(noMotion()){renderItem();return}
-  v.classList.add('closing');bd.classList.add('closing');renderItem();   // the sheet stays up, drawn as it was, while it slides away
+  if(noMotion()){renderItem();itemFocusBack(id);return}
+  v.classList.add('closing');bd.classList.add('closing');renderItem();itemFocusBack(id);   // the sheet stays up, drawn as it was, while it slides away
   const t=document.getElementById('gi-'+id);if(t&&moved)t.scrollIntoView({block:'center'});   // it was reached with ‹ ›: show where it lives
   const o={duration:WARD_MS-60,easing:dragged?'ease-out':'cubic-bezier(.4,0,.8,.4)',fill:'forwards'};
   const an=v.animate(sheetSlides()?[{transform:`translateY(${y}px)`},{transform:'translateY(100%)'}]:[{opacity:1,transform:`translateY(${y}px)`},{opacity:0,transform:`translateY(${y+24}px)`}],o);
   bd.animate([{opacity:op},{opacity:0}],{duration:WARD_MS-60,fill:'forwards'});
   an.finished.catch(()=>{}).then(()=>{if(editing)return;for(const el of [v,bd]){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing')}})}
+/* the focus back after closing (fix round 3, W2-19-02: it stayed on <body>, at the top of the Wardrobe): on the item's own box in the
+   grid (the one shown last, when ‹ › moved on; the grid is drawn again on every edit, so the box that opened it may be gone), else on
+   what opened the sheet */
+function itemFocusBack(id){const v=$('#item-view'),f=typeof layerFrom!=='undefined'&&v?layerFrom.get(v):null;if(f!==null&&v)layerFrom.delete(v);
+  const a=document.activeElement;if(a&&a!==document.body&&!(v&&v.contains(a)))return;
+  const gi=document.getElementById('gi-'+id),g=gi&&gi.querySelector('.giopen'),to=g&&!g.closest('[inert]')?g:f&&f.isConnected&&!f.closest('[inert]')?f:null;
+  if(to)try{to.focus({preventScroll:true})}catch{}}
 /* closing with nothing to slide away from: the item was deleted, or another tab is shown */
-function dropItem(){editing=null;itemFrom=null;histDrop();for(const el of [$('#item-view'),$('#item-backdrop')])if(el){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}itemShown(false)}
+function dropItem(){editing=null;itemFrom=null;histDrop();if(typeof layerFrom!=='undefined')layerFrom.delete($('#item-view'));for(const el of [$('#item-view'),$('#item-backdrop')])if(el){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}itemShown(false)}
 /* swiping the sheet down closes it. The header is a handle at any time; the content is one only while it is scrolled to the
    top (further down, a downward swipe scrolls it back up, as it must). The choice is made on the first move of a touch, before
    the browser starts scrolling. The sheet follows the finger and the Wardrobe behind brightens; let go past a quarter of the
@@ -391,9 +463,9 @@ function renderWardrobe(){
   closeSettings();if(editing!==phEdit.id)phEdit={id:null,undo:[],crop:null};   // undo lasts while the item stays open
   const wf=wardKeep();
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
-  const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
+  const chips=['all',...Object.keys(TYPES)].map(t=>`<button class="chip ${flt===t?'on':''}" aria-pressed="${flt===t}" onclick="flt='${t}';renderWardrobe()">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`).join('');
   const list=wardFresh();
-  $('#wardrobe').innerHTML=`<h2 class="vh">Wardrobe</h2><span class="vh" id="wcount" role="status">${wardCount(list)}</span>${items.length?wardBar()+`<div class="chips">${chips}</div>`:''}<div class="wslide" id="wslide">`+wardGrid(list)+'</div>';
+  keepFocus($('#wardrobe'),()=>{$('#wardrobe').innerHTML=`<h2 class="vh">Wardrobe</h2><span class="vh" id="wcount" role="status">${wardCount(list)}</span>${items.length?wardBar()+`<div class="chips">${chips}</div>`:''}<div class="wslide" id="wslide">`+wardGrid(list)+'</div>'});   // (the chip or field pressed keeps the focus: W2-19-01)
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
   renderItem();wardBack(wf);
 }

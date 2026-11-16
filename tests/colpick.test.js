@@ -5,7 +5,7 @@ module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:375,height:812}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   const PH='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
   try{
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(ph=>{items=[{id:'s1',type:'suit',primaryColor:'black',pattern:'solid',photo:ph,texture:ph,added:1,meas:{src:'closeup',lab:labOf('deeptaupe'),ref:false}}];flt='all';editing='s1';show('wardrobe')},PH);
     const a=await p.evaluate(()=>{const b=document.querySelector('#item-view .colbtn[data-k="primaryColor"]');return {txt:b&&b.textContent,chip:b&&b.querySelector('.colchip').style.background,sel:!!document.querySelector('#item-view select[onchange*="primaryColor"]')}});
     ok(a.txt==='Black'&&/22, 26|#16161a/i.test(a.chip)&&!a.sel,`the editor's color is a chip and a name, not a dropdown (${a.txt}, ${a.chip})`);
@@ -14,7 +14,7 @@ module.exports=async({ok,chromium,url})=>{
       near:[...s.querySelectorAll('.cpnear .cpnm')].map(e=>e.textContent),heads:[...s.querySelectorAll('.cph')].map(e=>e.textContent),now:s.querySelector('.cpnow')&&s.querySelector('.cpnow').closest('.cptile').textContent,
       seg:s.querySelectorAll('.cpseg button').length,bar:s.querySelector('.cpbar button').textContent}});
     ok(b.on&&b.img&&b.big==='Black'&&b.seg===3,'the sheet shows the close-up beside the current color, with a switch to the whole photo and (a suit) the drawing');
-    ok(b.near[0]==='Deep taupe'&&b.heads[0]==='Your colors'&&/Closest to your close-up/.test(b.heads[1])&&b.heads.includes('Blues'),`the measured nearest colors come first, then the families (${b.near}; ${b.heads})`);
+    ok(b.near[0]==='Deep taupe'&&b.heads[0]==='Your colors'&&/Closest to your close-up/.test(b.heads[1])&&b.heads.includes('Blues'),`the measured nearest colors come first after "Your colors", then the families (${b.near}; ${b.heads})`);
     ok(/^Now/.test(b.now)&&b.bar==='Keep Black','the current color is marked, and the button keeps it');
     await p.click('#col-sheet .cpnear .cptile >> nth=0');
     const c=await p.evaluate(()=>({big:document.querySelector('#col-sheet .cpbig figcaption').textContent,bar:document.querySelector('#col-sheet .cpbar button').textContent,saved:items[0].primaryColor}));

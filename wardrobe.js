@@ -5,15 +5,20 @@
 /* ---- an item's own name ---- */
 const WARD_FIELDS=['name','brand','material','notes'];
 const WARD_MAX={name:60,brand:40,material:40,notes:500};
+const WATCH_DETAILS_MAX=120;   // a watch's Details (itemsheet.js; W2-12-04: 5,036 letters were kept and synced)
 /* itemName / itemTitle / titleCls are in core.js: Today is drawn at start-up, which can be before this file has loaded */
 
 /* ---- search ---- */
 let wardQ='';        // what is typed in the search field
 let wardMemo=null;   // the list on screen, kept until the next redraw (the sheet's swipe asks for it on every touch move)
-const wardNorm=t=>String(t??'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
+/* (fix round 3, W2-16-07) every combining mark goes (Arabic hamza and short vowels too: ابيض finds أبيض, إ آ ؤ ئ their plain letters),
+   ة finds ه and ى ي, tatweel goes, and Arabic-Indic and Persian digits are 0-9 (2 finds ٢) */
+const wardNorm=t=>String(t??'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/ـ/g,'')
+  .replace(/[٠-٩]/g,d=>d.charCodeAt(0)-0x660).replace(/[۰-۹]/g,d=>d.charCodeAt(0)-0x6f0).replace(/\s+/g,' ').trim();
 /* everything a search looks through: name, brand, notes, material, the type, the colours' names and the pattern */
 /* (2026-11-15, American English) the British words still find what they used to: "grey" finds the gray pieces, "trousers" the pants */
-const wardHay=i=>{const h=wardNorm([i.name,i.brand,i.notes,i.material==='other'?'':i.material,TYPES[i.type],i.type,desc(i),colorDesc(i),FABRIC.includes(i.type)?patName(i.pattern||'solid'):'',matSyn(i)].join(' '));
+/* (2026-11-16) its accents too: a paisley tie with a red accent is found by "red" (core.js accentsOf) */
+const wardHay=i=>{const h=wardNorm([i.name,i.brand,i.notes,i.material==='other'?'':i.material,TYPES[i.type],i.type,desc(i),colorDesc(i),FABRIC.includes(i.type)?patName(i.pattern||'solid'):'',matSyn(i),...accentsOf(i).map(colName)].join(' '));
   return h+(h.includes('gray')?' grey':'')+(i.type==='pants'?' trousers':'')};
 /* (2026-11-15, the materials audit) a material's other words, from core.js MAT_ALIAS: "fresco" finds tropical wool, "lisle" mercerized
    cotton, "broadcloth" poplin, "nylon" a performance stretch shirt; a stored name off the list finds by the listed one it means ("Merino"
@@ -60,7 +65,7 @@ const wardCount=list=>list.length===items.length?`${items.length} item${items.le
 function wardBar(){
   const s=wardSort();
   return `<div class="wfind"><div class="wsearch"><svg class="wsicon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>`+
-    `<input type="text" id="wsearch" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Search your wardrobe" placeholder="Search" value="${esc(wardQ)}" oninput="wardSearch(this.value)" onkeydown="if(event.key==='Escape'&&this.value){event.stopPropagation();wardClear()}">`+
+    `<input type="text" id="wsearch" dir="auto" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Search your wardrobe" placeholder="Search" value="${esc(wardQ)}" oninput="wardSearch(this.value)" onkeydown="if(event.key==='Escape'&&this.value){event.stopPropagation();wardClear()}">`+
     `<button type="button" class="wclear" id="wclear" aria-label="Clear search" onclick="wardClear()"${wardQ?'':' hidden'}>×</button></div>`+
     `<select class="wsort" id="wsort" aria-label="Sort the wardrobe" onchange="setWardSort(this.value)">${WARD_SORTS.map(([k,l])=>`<option value="${k}"${k===s?' selected':''}>${l}</option>`).join('')}</select></div>`}
 /* the grid, or what to say when there is nothing to show */
@@ -92,13 +97,14 @@ function wardBack(f){if(!f)return;const el=$('#wsearch');if(!el)return;el.focus(
 const matLabel=m=>m==='other'?'Other':cap1(m);
 /* the Material dropdown for a type (none for types without a list): its own materials, then Other (with a field to say which) and None */
 /* ai: Claude's suggestion on an Add card (tagging.js takeMaterial: {key, conf, why}), said under the field while the field still holds it */
+// (2026-11-16) the list is the type's own plus the person's own materials (core.js matsFor); one removed from those shows as Other with its name
 function matRow(type,cur,call,ai){
-  const l=MATERIALS_BY[type];if(!l)return '';const m=String(cur||'').trim(),other=!!m&&!l.includes(m),sug=ai&&ai.key&&ai.key===m;
+  const l=matsFor(type);if(!l)return '';const m=String(cur||'').trim(),other=!!m&&!l.includes(m),sug=ai&&ai.key&&ai.key===m;
   return `<label>Material <select class="wmat" onchange="${call}this.value)">${[['','None'],...l.map(x=>[x,x]),['other','Other']].map(([v,t])=>`<option value="${v}"${v===(other?'other':m)?' selected':''}>${cap1(t)}</option>`).join('')}</select></label>`+
     (sug?`<p class="tagnote matai"><small>Material suggested by Claude (${esc(ai.conf||'medium')} confidence)${ai.why?`: ${esc(String(ai.why).replace(/[.\s]+$/,''))}`:''}. Change it if it’s wrong.</small></p>`:'')+
-    (other?`<label class="wmat-o">Which material? <input type="text" class="wfld wmat-t" maxlength="${WARD_MAX.material}" value="${esc(m==='other'?'':m)}" placeholder="e.g. alpaca" onchange="${call}this.value.trim()||'other')"></label>`:'')}
-const fldRow=(k,lab,v,on,ph)=>`<label>${lab} <input type="text" class="wfld wf-${k}" maxlength="${WARD_MAX[k]}" value="${esc(v||'')}" placeholder="${ph}" autocomplete="off" ${on(k)}></label>`;
-const notesRow=(v,on)=>`<label class="wnotes">Notes <textarea class="wf-notes" rows="2" maxlength="${WARD_MAX.notes}" placeholder="Size, where it came from, how it fits…" ${on('notes')}>${esc(v||'').replace(/>/g,'&gt;')}</textarea></label>`;
+    (other?`<label class="wmat-o">Which material? <input type="text" class="wfld wmat-t" dir="auto" maxlength="${WARD_MAX.material}" value="${esc(m==='other'?'':m)}" placeholder="e.g. alpaca" onchange="${call}this.value.trim()||'other')"></label>`:'')}
+const fldRow=(k,lab,v,on,ph)=>`<label>${lab} <input type="text" class="wfld wf-${k}" dir="auto" maxlength="${WARD_MAX[k]}" value="${esc(v||'')}" placeholder="${ph}" autocomplete="off" ${on(k)}></label>`;
+const notesRow=(v,on)=>`<label class="wnotes">Notes <textarea class="wf-notes" dir="auto" rows="2" maxlength="${WARD_MAX.notes}" placeholder="Size, where it came from, how it fits…" ${on('notes')}>${esc(v||'').replace(/>/g,'&gt;')}</textarea></label>`;
 /* the item sheet's Details card: name and brand at its top, material and notes at its end. A text field saves when it is left,
    and a moment after the last keystroke too (a sheet swiped away never tells a field it was left) */
 /* what is typed is also kept at once in localStorage (ward_pending {id,k,v,at}) until it is saved, and saved straight away when the page goes
@@ -125,7 +131,7 @@ function wardFieldsTop(i){return fldRow('name','Name',i.name,ivOn(i.id),'Optiona
 function wardFieldsEnd(i){return matRow(i.type,i.material,`setItemField('${jsq(i.id)}','material',`)+notesRow(i.notes,ivOn(i.id))}
 /* saving one of them. Text fields don't redraw the sheet (the next field tapped would lose its focus): only the title and the grid follow */
 async function setItemField(id,k,v){
-  const it=items.find(x=>x.id===id);if(!it||!WARD_FIELDS.includes(k))return;v=noBidi(v).trim().slice(0,WARD_MAX[k]);if((it[k]||'')===v)return;   // (noBidi: no right-to-left overrides, W2-12-06, core.js)
+  const it=items.find(x=>x.id===id);if(!it&&typeof itemGoneTell==='function'&&itemGoneTell(id))return;if(!it||!WARD_FIELDS.includes(k))return;v=noBidi(v).trim().slice(0,WARD_MAX[k]);if((it[k]||'')===v)return;   // (noBidi: no right-to-left overrides, W2-12-06, core.js)
   if(v)it[k]=v;else delete it[k];if(it.sample)it.sampleMine=1;   // his edit (also when typed text is saved after the sheet closed: kit.js kitEdited)
   await put(it);
   if(k==='material')return renderWardrobe();   // Other shows or hides its field
@@ -133,7 +139,7 @@ async function setItemField(id,k,v){
 /* the Add card: name, brand and notes behind "More details", folded until asked for (the Material is out with the other fields, above it); each keystroke is kept on the card (nothing is redrawn) */
 function toggleMore(i){const q=queue[i];if(!q)return;q.more=!q.more;renderAdd()}
 function setQField(i,k,v){const q=queue[i];if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];
-  if(k==='material'){delete q.matAI;q.matSet=1}   // chosen by hand: no longer Claude's suggestion, and a later reading leaves it (tagging.js takeMaterial)
+  if(k==='material'){delete q.matAI;q.matSet=1;q.checked={...q.checked,fabric:1}}   // chosen by hand (and so its checklist section is checked, add.js addCkSecs): no longer Claude's suggestion, and a later reading leaves it (tagging.js takeMaterial)
   if(typeof addKeepSoon==='function')addKeepSoon();if(k==='material')renderAdd()}
 
 /* ---- one-time rename of the owner's stretch shirts (2026-11-15, his decision on the materials audit) ----
@@ -169,13 +175,13 @@ const wardDelete=id=>wardOnce('del:'+id,()=>wardDeleteNow(id));
 async function wardDeleteNow(id){
   const k=items.findIndex(i=>i.id===id);if(k<0)return;const it=items[k],snap=JSON.parse(JSON.stringify(it));
   const days=Object.values(dayRecs).filter(r=>JSON.stringify(r).includes(id)).map(r=>JSON.parse(JSON.stringify(r)));   // the days that refer to it, as they are now
-  await del(id);const at=Date.now();items=items.filter(i=>i.id!==id);cache={};if(editing===id)dropItem();renderWardrobe();
-  toast(`Deleted ${itemName(it)||nm(it)}`,WARD_UNDO_MS,{label:'Undo',fn:()=>wardUndelete(snap,k,days,at)})}
+  const at=await del(id);items=items.filter(i=>i.id!==id);cache={};if(editing===id)dropItem();renderWardrobe();
+  toast(`Deleted ${nameIso(itemName(it)||nm(it))}`,WARD_UNDO_MS,{label:'Undo',fn:()=>wardUndelete(snap,k,days,at)})}
 async function wardUndelete(it,k,days,at){
   if(items.some(i=>i.id===it.id))return;
-  it.updated=Math.max(Date.now(),at+1);await putRaw(it);   // newer than the tombstone: the item wins the merge
+  it.updated=nextStamp(at);await putRaw(it);   // newer than the tombstone: the item wins the merge (restamped whole: its field stamps no longer match, core.js fsOk)
   items.splice(Math.min(k,items.length),0,it);
   for(const r of days){const cur=dayRecs[r.date];if(!cur||JSON.stringify(cur)!==JSON.stringify(r))await saveDay(r,true)}   // a day re-planned without it meanwhile
   cache={};if(window.scheduleSync)scheduleSync();
   const v=['today','wardrobe','stats'].find(t=>$('#'+t)&&!$('#'+t).hidden);if(v)show(v);
-  toast(`${cap1(itemName(it)||nm(it))} is back`)}
+  toast(`${nameIso(cap1(itemName(it)||nm(it)))} is back`)}

@@ -48,8 +48,11 @@ const connRestored=db.then(async()=>{let n=0;
   connReady=true;await connKeep();if(n)console.warn(`put back ${n} connection setting(s) this browser's storage had lost`);return n}).catch(()=>{connReady=true;return 0});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')connKeep()});
 /* read-modify-write inside ONE transaction, so a sync finishing at the same moment can't overwrite it */
-const atomic=(store,key,fn)=>dbRetry('readwrite',d=>new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out;
-  const q=s.get(key);q.onsuccess=()=>{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)};t.oncomplete=()=>ok(out&&out.value);t.onerror=t.onabort=txFail(t,no)}));
+/* a put that throws at once (a full disk in some browsers, a value it can't store) aborts the transaction with that error, not WebKit's
+   "IDBTransaction will abort due to uncaught exception" (W1-11-05) */
+const atomic=(store,key,fn)=>dbRetry('readwrite',d=>new Promise((ok,no)=>{const t=d.transaction(store,'readwrite'),s=t.objectStore(store);let out,thrown=null;
+  const q=s.get(key);q.onsuccess=()=>{try{out=fn(q.result);if(out&&out.put)s.put(out.put);if(out&&out.del)s.delete(key)}catch(x){thrown=x;try{t.abort()}catch{}}};t.oncomplete=()=>ok(out&&out.value);
+  const fail=txFail(t,no);t.onerror=t.onabort=ev=>{if(!thrown)return fail(ev);try{thrown.dwStore='write'}catch{}no(thrown)}}));
 const addTombstones=add=>atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})};for(const [id,t] of Object.entries(add))v[id]=Math.max(v[id]||0,t);return {put:{k:'tombstones',v},value:v}});
 /* the stored wardrobe at start-up through core.js cleanRecord/cleanDay (fix round 3, W2-13-02): a record stored before the entry check
    (a crafted Restore file or sync) is shown cleaned, and stored cleaned with its stamp unchanged (nothing to back up; the other phones
@@ -88,9 +91,12 @@ const stillCur=it=>items.find(x=>x.id===it.id)===it;
 /* and redraws the Wardrobe only when it is on screen and Settings is not open (renderWardrobe closes Settings; these now run after the first
    pull, which can be while Settings is open); the Wardrobe is drawn afresh when it is opened */
 const fixupRedraw=()=>{if(typeof settingsOpen==='function'&&settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)renderWardrobe()};
-const put=i=>{i.updated=Date.now();if(typeof kitUserEdit==='function')kitUserEdit(i);   // (an edit in the item sheet makes a sample piece his: kit.js)
-const r=putRaw(i);r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
-const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
+const put=i=>{i.updated=nextStamp(stamp(i));if(typeof kitUserEdit==='function')kitUserEdit(i);   // (an edit in the item sheet makes a sample piece his: kit.js)
+// the fields changed since the stored copy get the edit's stamp, in the same transaction (core.js itemFields: two phones' changes to
+// different fields of one piece both stay, fix round 3; the stamp is nextStamp's, made one above the stored copy's only when it isn't)
+const r=atomic('items',i.id,cur=>{itemFields(i,cur);return {put:i}});r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
+// (the deletion's stamp is above the item's own, so it wins whatever the clocks say: core.js nextStamp; returned for an Undo)
+const del=async id=>{const was=typeof items!=='undefined'&&items.find(x=>x.id===id),t=nextStamp(stamp(was));await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:t});window.scheduleSync&&scheduleSync();return t};
 
 
 /* precision swatch: a 128 px square of the cloth, cut from the fabric close-up when the card has one (the cloth up close, white-
@@ -223,8 +229,12 @@ async function ask(c,extra){
 /* an AI tag -> the fields the Add form uses (type-checked, colours and patterns normalised) */
 const ownColorsOf=o=>{const f=c=>c&&/^#[0-9a-f]{6}$/i.test(c.hex||'')&&/[a-z]{2}/i.test(c.name||'')?{name:String(c.name).toLowerCase().replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim().slice(0,24),hex:c.hex.toLowerCase()}:null;
   return o&&typeof o==='object'&&f(o.primary)?{primaryColor:f(o.primary),secondaryColor:f(o.secondary),tertiaryColor:f(o.tertiary)}:null};
-const matTag=p=>{const m=p&&p.material,t=TYPES[p&&p.type]?p.type:'suit',k=m&&typeof m==='object'?String(m.key||'').toLowerCase().trim():'';
-  return k&&k!=='none'&&(MATERIALS_BY[t]||[]).includes(k)&&(m.confidence==='high'||m.confidence==='medium')?{key:k,conf:m.confidence,why:String(m.why||'').replace(/\s+/g,' ').trim().slice(0,160)}:null};
+/* Claude's material -> {key, conf, why} (+ new:true for one on no list, 2026-11-16), or null. On the type's list or the person's own: any
+   confidence (low is shown as a guess, never filled in: tagging.js takeMaterial); a new one only at medium or high, with a valid name */
+const matTag=p=>{const m=p&&p.material,t=TYPES[p&&p.type]?p.type:'suit',k=m&&typeof m==='object'?String(m.key||'').toLowerCase().replace(/\s+/g,' ').trim():'';
+  if(!k||k==='none'||!MATERIALS_BY[t])return null;const conf=['high','medium','low'].includes(m.confidence)?m.confidence:'low',why=String(m.why||'').replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,160);
+  if(matsFor(t).includes(k))return {key:k,conf,why};
+  const n=ownMatName(k);return n&&m.new===true&&conf!=='low'?{key:n,conf,why,new:true}:null};
 function normTag(parsed,model){
     return {
       type:TYPES[parsed.type]?parsed.type:'suit',
@@ -237,8 +247,10 @@ function normTag(parsed,model){
       trouserKind:['chinos','jeans','dress'].includes(parsed.trouserKind)?parsed.trouserKind:null,shoeStyle:SHOE_STYLES.some(([k])=>k===parsed.shoeStyle)?parsed.shoeStyle:null,
       model:model||'',
       dial:normCol(parsed.dial),band:['bracelet','leather','rubber','nato'].includes(parsed.band)?parsed.band:null,
-      // the material Claude suggests (2026-11-15, worker cleanMaterial): only one from the type's list, and only when sure enough (high or medium)
-      material:matTag(parsed),bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
+      // the material Claude suggests (2026-11-15, worker cleanMaterial): from the type's list or the person's own (low kept as a guess), or a new one (matTag)
+      material:matTag(parsed),
+      // the colours beyond the three (2026-11-16, the worker's accents: cleaned there; made the card's own in fill / refineApply, core.js accentsFor); null from an older worker
+      accents:Array.isArray(parsed.accents)?parsed.accents.filter(c=>typeof c==='string').slice(0,8):null,bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
       // how sure it was, its runner-up, and what it would add when nothing listed fits (single-item tags)
       conf:parsed.confidence&&typeof parsed.confidence==='object'?parsed.confidence:null,
       altColor:normColFor(parsed.type,parsed.altColor),altPattern:parsed.altPattern&&parsed.altPattern!=='none'&&(PATS_BY[parsed.type]||[]).includes(parsed.altPattern)?parsed.altPattern:null,
@@ -274,6 +286,7 @@ async function fill(q,ai){
   q.secondaryColor=ai&&ai.secondaryColor&&ai.secondaryColor!=='none'?ai.secondaryColor:null;
   q.tertiaryColor=ai&&ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null;
   q.pattern=ai?normPat(q.type,ai.pattern):'solid';
+  {const a=ai&&ai.accents?accentsFor(q,ai.accents):[];if(a.length)q.accents=a;else delete q.accents}   // Claude's colours beyond the three
   q.metal=ai&&METAL[ai.metal]?ai.metal:'silver';
   q.leather=ai&&ai.leather||'calf';q.trouserKind=ai&&ai.trouserKind||'dress';q.shoeStyle=ai&&ai.shoeStyle||'oxford';
   const wo=watchOpts(ai||{});q.dial=wo.dial;q.band=wo.band;q.bezel=wo.bezel;q.watchStyle=wo.style;
@@ -283,3 +296,27 @@ async function fill(q,ai){
 const cap1=t=>{t=String(t??'');return t&&t[0].toUpperCase()+t.slice(1)};   // option labels start with a capital ("Grey", "Solid"); values stay as they are
 const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select>`;
 
+
+/* ---- what a screen reader hears, and where the keyboard stays, when part of the page is drawn again (fix round 3, W2-19-01: after
+   Next day, the Wore pill or a pick, the control pressed was replaced by the redraw, focus fell to <body>, and nothing said the outfit
+   had changed) ----
+   announce(text): said once by the polite live region #sr-live (index.html; out of sight). Emptied first, then written in the next
+   frame, so the same words are said again.
+   keepFocus(root, draw): runs draw(); when the focus was on a control inside root that the redraw replaced, the control with the same
+   id, or else the same handler (onclick / onchange / oninput) and data-k / data-c, gets it back (the same words first when there are
+   several). Here, not in ui.js: Today is drawn by the start-up chain, which can run before ui.js has loaded. */
+let srLiveT=0;
+function announce(text){const el=document.querySelector('#sr-live');if(!el)return;const t=String(text||'').replace(/\s+/g,' ').trim();clearTimeout(srLiveT);el.textContent='';
+  if(t)srLiveT=setTimeout(()=>{el.textContent=t},60)}
+const FOCUS_ATTRS=['onclick','onchange','oninput','data-k','data-c','data-s'];
+function focusKey(el){if(!el||el===document.body||!el.tagName)return null;
+  return {el,id:el.id||'',tag:el.tagName,at:FOCUS_ATTRS.map(a=>el.getAttribute(a)||''),label:el.getAttribute('aria-label')||'',text:(el.textContent||'').trim().slice(0,60)}}
+function focusFind(root,k){if(!k||!root)return null;
+  if(k.id){const e=document.getElementById(k.id);if(e&&root.contains(e))return e}
+  if(!k.at.some(Boolean))return null;
+  const same=[...root.querySelectorAll(k.tag)].filter(e=>FOCUS_ATTRS.every((a,j)=>(e.getAttribute(a)||'')===k.at[j]));
+  return same.find(e=>(e.getAttribute('aria-label')||'')===k.label&&(e.textContent||'').trim().slice(0,60)===k.text)||same.find(e=>(e.getAttribute('aria-label')||'')===k.label)||same[0]||null}
+function keepFocus(root,draw){const a=document.activeElement,k=root&&a&&a!==document.body&&root.contains(a)?focusKey(a):null;
+  const r=draw();
+  if(k&&!(k.el.isConnected&&root.contains(k.el))){const e=focusFind(root,k);if(e&&!e.closest('[inert]'))try{e.focus({preventScroll:true})}catch{}}
+  return r}
