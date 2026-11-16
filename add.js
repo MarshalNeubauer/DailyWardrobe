@@ -241,7 +241,7 @@ const setq=(i,k,v)=>{const q=queue[i];if(!q)return;const asked=k==='type'&&needT
 if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'||k==='band'){renderAdd();return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else if(ck)renderAdd();else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};   // (a section newly checked: its mark and the count follow)
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
 /* with a fabric close-up: the drawn swatch on the left half, the close-up on the right, to compare colour and weave */
-const tagSwInner=i=>`<div class="swsplit">${itemThumb(i,true)}${i.texture&&TEXTURE_TYPES.includes(i.type)?`<img class="swtex" src="${i.texture}" alt="Fabric close-up">`:''}</div><figcaption>${i.texture&&TEXTURE_TYPES.includes(i.type)?'As tagged · Close-up':'As tagged'}<br><b class="cap">${sentence(desc(i))||TYPES[i.type]||''}</b></figcaption>`;
+const tagSwInner=i=>`<div class="swsplit">${itemThumb(i,true)}${i.texture&&TEXTURE_TYPES.includes(i.type)?`<img class="swtex" src="${srcOk(i.texture)}" alt="Fabric close-up">`:''}</div><figcaption>${i.texture&&TEXTURE_TYPES.includes(i.type)?'As tagged · Close-up':'As tagged'}<br><b class="cap">${sentence(desc(i))||TYPES[i.type]||''}</b></figcaption>`;
 /* Shade: darker or lighter than the tagged colour's swatch, to match the close-up; "Match close-up" sets it from the measurement */
 const shadeRow=(o,onStep,onMatch,canMatch)=>`<div class="shaderow"><span class="shlab">Shade</span><div class="shctl"><button type="button" class="shbtn" aria-label="Darker" onclick="${onStep}(-1)"${(o.shade||0)<=-SHADE_MAX?' disabled':''}>−</button><span class="shval">${shadeName(o.shade||0)}</span><button type="button" class="shbtn" aria-label="Lighter" onclick="${onStep}(1)"${(o.shade||0)>=SHADE_MAX?' disabled':''}>+</button></div>${canMatch?`<button type="button" class="chipbtn" onclick="${onMatch}">Match close-up</button>`:''}</div>`;
 function stepShadeQ(i,d){const q=queue[i];if(!q)return;q.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(q.shade||0)+d));if(!q.shade)delete q.shade;renderAdd()}
@@ -250,7 +250,7 @@ async function stepShadeE(id,d){const it=items.find(x=>x.id===id);if(!it)return;
 async function matchShadeE(id){const it=items.find(x=>x.id===id);if(!it)return;let lab=it.meas&&it.meas.src==='closeup'?it.meas.lab:null;
   if(!lab&&it.texture)try{const im=await imgOf(it.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);lab=measureCloth(c,null,{}).lab}catch{}
   if(!lab)return;it.shade=shadeFor(it,lab);if(!it.shade)delete it.shade;await put(it);cache={};renderWardrobe();toast(it.shade?`Swatch set ${shadeName(it.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
-const photoPair=(photo,i,id)=>`<div class="pair"><figure class="phfig"><img class="ph" src="${photo}" alt="Photo"><figcaption>Photo</figcaption></figure>${needType(i)?'':`<figure class="tagsw" id="${id}" aria-live="polite">${tagSwInner(i)}</figure>`}</div>`;
+const photoPair=(photo,i,id)=>`<div class="pair"><figure class="phfig"><img class="ph" src="${srcOk(photo)}" alt="Photo"><figcaption>Photo</figcaption></figure>${needType(i)?'':`<figure class="tagsw" id="${esc(id)}" aria-live="polite">${tagSwInner(i)}</figure>`}</div>`;
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */
 /* "Add without a photo" (2026-11-15, the owner's choice: variant A of add-page-mockups) opens the card in a sheet from the bottom over Add,
    not in the list; a second call while the sheet holds a card shows that card again */
@@ -370,7 +370,7 @@ async function saveCard(q){
   if(!q||cardReading(q))return false;
   const f=FABRIC.includes(q.type);
   generateSwatch(q);
-  const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:Date.now()};
+  const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:nowMs()};
   if(f){it.swatch=q.swatch;it.swSrc=q.swSrc}
   if(q.order){it.paused=true;it.order=true;if(q.arrives)it.arrives=q.arrives}   // bought, on the way
   if(METAL_TYPES.includes(q.type))it.metal=q.metal||'silver';
@@ -397,7 +397,7 @@ async function saveCard(q){
   // the item and its copies (the same shirt or pair again, qtyRow) in one transaction: all of them or none (a kill right after
   // "Confirm 12" saved 3, and the card was gone)
   const copies=[];for(let k=1;k<qtyOf(q);k++){const c=JSON.parse(JSON.stringify(it));c.id=crypto.randomUUID();copies.push(c)}
-  const all=[it,...copies],at=Date.now();for(const x of all)x.updated=at;
+  const all=[it,...copies],at=nowMs();for(const x of all)x.updated=at;
   await txs('items','readwrite',s=>{for(const x of all)s.put(x)});if(window.scheduleSync)scheduleSync();
   items.push(...all);
   const i=queue.indexOf(q);cache={};if(i>=0)queue.splice(i,1);if(addCalm)addCalm.ok=1;renderAdd();   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
@@ -431,7 +431,7 @@ function renderAdd(){
    saves, says what happened, and is reported (safety.js errNote) */
 function cardSafe(q,i,draw){try{return draw()}catch(e){console.warn('Add card not drawn',e);if(typeof errNote==='function')errNote(e,'Add card drawn ('+(q.type||'?')+')');return plainCard(q,i)}}
 function plainCard(q,i){return `<div class="card qcard" data-q="${esc(q.id)}"><button type="button" class="qx" aria-label="Close" title="Close" onclick="skipCard('${esc(q.id)}')">×</button>
-  ${q.photo?`<img class="ph" src="${q.photo}" alt="Photo" style="max-width:160px;border-radius:12px">`:''}<p class="tagnote"><small>Part of this card couldn’t be drawn: your phone may be short of memory for pictures. It still saves as it is${q.type?` (${esc(TYPES[q.type]||q.type)})`:''}; you can change it afterwards in the Wardrobe.</small></p>
+  ${q.photo?`<img class="ph" src="${srcOk(q.photo)}" alt="Photo" style="max-width:160px;border-radius:12px">`:''}<p class="tagnote"><small>Part of this card couldn’t be drawn: your phone may be short of memory for pictures. It still saves as it is${q.type?` (${esc(TYPES[q.type]||q.type)})`:''}; you can change it afterwards in the Wardrobe.</small></p>
   <div class="btns">${confBtn(q,i)}<button onclick="skipCard('${esc(q.id)}')">${q.manual?'Cancel':'Skip'}</button></div></div>`}
 /* an item card's form (a photo's card in the list, or the "Add without a photo" sheet's card: inSheet leaves out the card's own × and its
    Confirm / Cancel, which the sheet has in its header and its pinned bar) */
@@ -460,7 +460,7 @@ function addCkSecs(q,i){const man=!!q.manual||!q.ai,c=q.conf||{},chk=q.checked||
         `<div class="btns ckcu">${pick('Replace close-up','btn','replace')}${cuTouch()?'':`<button type="button" class="ckrm" onclick="dropTexture(${i})">Remove close-up</button>`}</div>`+
         `<div class="ckread">${rdAddBtn(q,'Read color and texture')}${rdCostLine()}</div>${rdDoneHtml('q',q.id,q)}${ckLr(q,i,'tex')}`
       :`<p class="shelp">Texture match puts a close-up of the cloth beside the drawing and sets the true color from white paper.${q.photo?'':' The close-up is saved with the item.'}</p>${paperSteps(cloth)}`+
-        `<div class="ckadds"><button type="button" class="btn pri rdgo ckreadadd" onclick="rdStart('q','${esc(q.id)}')"${rdOff()?' aria-disabled="true"':''}><span>Add close-up and read color, texture &amp; material</span><small class="rdcost">${esc(rdCost())}</small></button>${pick('Add close-up','btn ckadd','add')}</div>`+
+        `<div class="ckadds"><button type="button" class="btn pri rdgo ckreadadd" onclick="rdStart('q','${jsq(q.id)}')"${rdOff()?' aria-disabled="true"':''}><span>Add close-up and read color, texture &amp; material</span><small class="rdcost">${esc(rdCost())}</small></button>${pick('Add close-up','btn ckadd','add')}</div>`+
         '<p class="shelp ckcheap">Reading counts as 2 lookups for testers. Nothing changes until you choose.</p>';
     out.push({k:'tex',cls:'cktex'+(hasCu?' cktexon':''),n:hasCu,warn:hasCu&&!chk.tex&&!!d,mark:rd?'ai':!hasCu?'opt':chk.tex?'good':d?'warn':'todo',title:'Texture match',
       sum:rd?'Reading the close-up…':!hasCu?'Not yet · add a close-up to compare':cmpDiffText(d)||'Close-up added',body,open:true})}

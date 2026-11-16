@@ -17,7 +17,7 @@ function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
   const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'',when=t=>{const d=new Date(t),days=Math.round((todayDate()-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
   // (2026-11-15, the audit: "Backed up today" while the day's saves were used up and none of the new items was on the server)
-  if((+localStorage.getItem('sync_pause')||0)>Date.now())return last?`Paused until tomorrow · last saved ${when(last)}`:'Paused until tomorrow: not backed up yet';
+  if(typeof syncPaused==='function'&&syncPaused())return last?`Paused until tomorrow · last saved ${when(last)}`:'Paused until tomorrow: not backed up yet';
   if(/^Not backed up:/.test(st))return last?`Waiting for a connection · last saved ${when(last)}`:'Waiting for a connection: not backed up yet';
   if(/failed/i.test(st))return last?`Last backup failed · last saved ${when(last)}`:'Backup failed: not backed up yet';
   return last?`Backed up ${when(last)}`+(localStorage.getItem('sync_wait')&&!/^Syncing/.test(st)?' · newer changes waiting':''):'Not backed up yet'}
@@ -154,7 +154,7 @@ function builtinHolidays(cc,from,to){if(!HOL_FIXED[cc]&&!HOL_HIJRI[cc])return nu
 /* the calendar years from one YYYY-MM-DD to another, both included */
 const holYears=(from,to)=>{const a=+from.slice(0,4),b=+to.slice(0,4),out=[];for(let y=a;y<=b;y++)out.push(y);return out};
 async function fetchHolidays(cc){
-  const T=todayDate(),from=isoKey(new Date(T.getFullYear(),T.getMonth()-1,T.getDate())),to=isoKey(new Date(T.getFullYear()+1,T.getMonth()+1,T.getDate()));
+  const T=trueToday(),from=isoKey(new Date(T.getFullYear(),T.getMonth()-1,T.getDate())),to=isoKey(new Date(T.getFullYear()+1,T.getMonth()+1,T.getDate()));
   const tidy=l=>{const m={};for(const x of l)if(x.d>=from&&x.d<=to&&x.n)m[x.d]=m[x.d]&&!m[x.d].includes(x.n)?m[x.d]+', '+x.n:m[x.d]||x.n;return Object.entries(m).sort().map(([d,n])=>({d,n}))};
   const own=()=>{const l=builtinHolidays(cc,from,to);return l&&l.length?tidy(l):null};
   // (a country with its own list isn't in Nager.Date: not asked, which logged a 404 on every start)
@@ -177,7 +177,7 @@ async function setHolidayCountry(cc,quiet){
     if(!(settings.holidays&&settings.holidays.country===cc)){settings.holidays={country:cc,list:[],skip:[],fetched:0};saveUserSettings();todayStale=true}
     renderDaysOffUI()}
   try{const list=await fetchHolidays(cc),old=settings.holidays&&settings.holidays.country===cc?settings.holidays.skip||[]:[];
-    settings.holidays={country:cc,list,skip:old.filter(d=>list.some(x=>x.d===d)),fetched:Date.now()};
+    settings.holidays={country:cc,list,skip:old.filter(d=>list.some(x=>x.d===d)),fetched:nowMs()};
     holidayMsg=list.length?'':`No public holidays found for ${countryName(cc)}.`;await saveUserSettings();todayStale=true}
   catch(e){if(quiet)return;
     // (audit 2026-11-15) the country picked is the one that counts, even without a list: the old country's holidays went on counting under
@@ -189,7 +189,8 @@ async function setHolidayCountry(cc,quiet){
 /* the monthly refetch saves the settings with a new stamp, and the newest settings win a sync: on a device that had been away
    for a while, stamping its old settings would undo a change made on another device since. So it syncs first, and refetches
    only if the settings it then has still need it (another device may have done it already). Offline: not this time. */
-async function refreshHolidays(){const due=()=>{const h=settings.holidays;return !!(h&&h.country&&Date.now()-(h.fetched||0)>30*864e5)};
+/* by the corrected time (core.js nowMs), and a list fetched "in the future" (the clock was ahead that day, the audit's W1-9-04) is due */
+async function refreshHolidays(){const due=()=>{const h=settings.holidays,f=h&&+h.fetched||0;return !!(h&&h.country&&(nowMs()-f>30*864e5||f>nowMs()+864e5))};
   if(!due())return;
   if(typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')){
     if(!await syncNow())return;

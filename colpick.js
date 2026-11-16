@@ -105,7 +105,7 @@ function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==
   // without a photo the drawing stands in, drawn in the colour being looked at (Claude's new colour isn't one yet: drawn as it is)
   const drawn=sel===NEW_COL||sel===cur?it:{...it,[k]:sel==='none'?null:sel,...(k==='primaryColor'?{color:undefined}:{})};
   el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">${k==='secondaryColor'&&it.type==='socks'?'Toe cap color':k==='primaryColor'&&it.type!=='watch'?'Choose the color':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' color':'')}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
-<div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${pic}" alt="${what}">`:`<div class="cpdraw">${itemThumb(drawn)}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig${sel==='none'?' none':''}"${sel==='none'?'':` style="background:${hex(sel)}"`}><figcaption>${esc(name(sel))}</figcaption></figure></div>
+<div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${srcOk(pic)}" alt="${what}">`:`<div class="cpdraw">${itemThumb(drawn)}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig${sel==='none'?' none':''}"${sel==='none'?'':` style="background:${hex(sel)}"`}><figcaption>${esc(name(sel))}</figcaption></figure></div>
 ${cpSeg(vs,view)}</div>
 ${colAskHtml(it,k,tile,name)}
 <p class="cphelp">${pic?`Tap a color to see it right beside your ${view==='tex'?'close-up':'photo'}. Pick the one whose edge you can hardly see.`:cpFig(it)?`Tap a color to see your ${(TYPES[it.type]||'item').toLowerCase()} drawn in it.`:'Tap a color to see it right beside your item. Pick the one whose edge you can hardly see.'}</p>
@@ -222,7 +222,7 @@ function renderPatPick(keep){const el=$('#col-sheet'),it=colTarget();if(!el||!it
   const groups=gs.map((l,g)=>l.length?`<h4 class="cph">${g<PAT_GROUPS.length?PAT_GROUPS[g][1]:'Other'}</h4><div class="cpgrid">${l.map(p=>tile(p)).join('')}</div>`:'').join('');
   const what=view==='tex'?'Your close-up':'Your photo';
   el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">Choose the pattern</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
-<div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${pic}" alt="${what}">`:`<div class="cpdraw">${itemThumb(patVar(it,drawAs(sel)))}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig cppatbig"><div class="cpdraw">${itemThumb(patVar(it,drawAs(sel)),true)}</div><figcaption>${esc(name(sel))}</figcaption></figure></div>
+<div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${srcOk(pic)}" alt="${what}">`:`<div class="cpdraw">${itemThumb(patVar(it,drawAs(sel)))}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig cppatbig"><div class="cpdraw">${itemThumb(patVar(it,drawAs(sel)),true)}</div><figcaption>${esc(name(sel))}</figcaption></figure></div>
 ${cpSeg(vs,view)}</div>
 ${patAskHtml(it,tile,name,np)}
 <p class="cphelp">Tap a pattern to see it drawn in your item’s colors beside your ${pic?view==='tex'?'close-up':'photo':'item'}.</p>
@@ -368,7 +368,7 @@ function renderColNew(keep){const el=$('#col-sheet'),it=colTarget(),nc=colPick&&
   const ex=r&&r.existing&&COLORS[r.existing]?r.existing:null,exName=ex?cap1(colName(ex)):'',name=cap1(String(nc.name||'').trim());
   const prefer=ex&&(nc.state==='dup'||(nc.state==='result'&&+r.dE<=6&&r.match==='existing'))?'existing':'new',base=cnColBase(it,nc);
   const pic=src!=='s'&&colPick.k==='primaryColor'&&it.texture?it.texture:null;
-  const fig=pic?`<img src="${pic}" alt="Your close-up">`:`<div class="cpdraw">${cnDrawn(it,hex,src==='s'?'primaryColor':colPick.k)}</div>`;
+  const fig=pic?`<img src="${srcOk(pic)}" alt="Your close-up">`:`<div class="cpdraw">${cnDrawn(it,hex,src==='s'?'primaryColor':colPick.k)}</div>`;
   let res='';
   if((nc.state==='result'||nc.state==='dup')&&r){const d=+r.dE||0;
     res=nc.state==='dup'?`<div class="cnres" id="cn-res"><div class="cnreshd"><span class="cnresw" style="background:${COLORS[ex]}"></span><span><span class="cneyebrow">You already have it</span><b>That’s your ${esc(colName(ex))}</b><small>${esc(cap1(r.name||'It'))} is ${d.toFixed(1)} ΔE from ${esc(colName(ex))}: ${cnDWord(d)}.</small></span></div>${cnLightNote(nc)}
@@ -433,7 +433,7 @@ ${ex&&patChoices(it).includes(ex)?`<div class="cnbtns">${nc.state==='reuse'?`<bu
   const bar=nc.state==='reuse'&&r?`<button type="button" class="pri" id="cn-add" data-use="1" onclick="cnUseExisting()">Use ${esc(cap1(patName(r.existing)))}</button>`
     :`<button type="button" class="pri" id="cn-add" onclick="colNewAdd()"${name?'':' disabled'}>${name?`Add ${esc(name)}${src==='s'?'':' and use it'}`:'Add pattern'}</button>`;
   el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><button type="button" class="cnback" onclick="colNewBack()" aria-label="${nc.from==='pick'?'Back to patterns':'Close'}">‹</button><b id="col-title">New pattern or texture</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
-<div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${pic}" alt="Your close-up">`:`<div class="cpdraw">${draw(false)}</div>`}<figcaption>${pic?'Your close-up':`Your ${esc((TYPES[it.type]||'item').toLowerCase())}, drawn`}</figcaption></figure><figure class="cpbig cppatbig"><div class="cpdraw">${draw(true)}</div><figcaption>${esc(name||'Not set yet')}</figcaption></figure></div></div>
+<div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${srcOk(pic)}" alt="Your close-up">`:`<div class="cpdraw">${draw(false)}</div>`}<figcaption>${pic?'Your close-up':`Your ${esc((TYPES[it.type]||'item').toLowerCase())}, drawn`}</figcaption></figure><figure class="cpbig cppatbig"><div class="cpdraw">${draw(true)}</div><figcaption>${esc(name||'Not set yet')}</figcaption></figure></div></div>
 ${src==='s'?`<label class="cnfld cnfor">For<select id="cn-for" onchange="cnSetType(this.value)">${Object.keys(PATS_BY).map(t=>`<option value="${t}"${t===it.type?' selected':''}>${esc(TYPES[t])}</option>`).join('')}</select></label>`:''}
 ${cnAskBox(nc,'pattern','The weave or pattern in your words. Claude names it, picks how the app plans it, and maps the weave so it can be drawn.','e.g. a small basketweave like a hopsack')}
 ${res}
@@ -470,7 +470,7 @@ const rdCostLine=()=>`<small class="rdcost">${esc(rdCost())}</small>`;
 /* the item editor's button: under Edit photos, the same full-width button, its label and no icon (the owner's ask) */
 /* (after: what goes right under it, before the done card: the editor's "True color in 3 steps", paperHint) */
 function rdEditorBtn(i,after=''){if(!TEXTURE_TYPES.includes(i.type))return '';const off=rdOff();
-  return `<div class="ivrd"><button type="button" class="ivrdbtn" id="iv-read" onclick="rdStart('e','${i.id}')"${off?' aria-disabled="true"':''}>Read color and texture from close-up</button>${rdCostLine()}</div>${after}${rdDoneHtml('e',i.id,i)}`}
+  return `<div class="ivrd"><button type="button" class="ivrdbtn" id="iv-read" onclick="rdStart('e','${jsq(i.id)}')"${off?' aria-disabled="true"':''}>Read color and texture from close-up</button>${rdCostLine()}</div>${after}${rdDoneHtml('e',i.id,i)}`}
 /* the Add card's second button, beside Add close-up / Replace close-up (same shape, the plain weight beside the filled Add close-up) */
 const rdAddBtn=(q,label)=>`<button type="button" class="btn rdgo" onclick="rdStart('q','${esc(q.id)}')"${rdOff()?' aria-disabled="true"':''}>${label}</button>`;
 /* a tap: with no close-up the close-up chooser first (mode 'read'; the file window without touch), then the reading */
@@ -558,7 +558,7 @@ function rdNaCard(it,h,x){const what=h==='c'?'color':'weave';
   return `<div class="rdcard na" id="${h==='c'?'rd-col':'rd-pat'}"><span class="cneyebrow">${h==='c'?'Color':'Pattern &amp; texture'}</span><p class="cnwhy">${x.na==='cloth'?`That doesn’t look like a close-up of cloth. ${rdRetakeHtml(it)}`:`Claude couldn’t read the ${what} this time.`}</p></div>`}
 function rdDoneCard(it,h,x){const id=h==='c'?'rd-col':'rd-pat',cur=h==='c'?cap1(colName(primaryCol(it))):cap1(patName(normPat(it.type,it.pattern)));
   const sw=h==='c'?`<span class="cnresw rdsm" style="background:${COLORS[primaryCol(it)]||'transparent'}"></span>`:`<span class="cnresw cnresp rdsm">${swatchSVG(it,true)}</span>`;
-  return `<div class="rdcard done" id="${id}">${sw}<span class="rddtx"><span class="cneyebrow">${h==='c'?'Color':'Pattern &amp; texture'}</span><b>${x.done==='keep'?`Kept ${esc(cur)}`:`${esc(x.usedName||cur)} set`}</b></span>${x.done==='keep'?`<button type="button" class="rdlink" onclick="rdChange('${h}')">Change</button>`:`<button type="button" class="rdlink" id="${id}-undo" onclick="rdUndo('${h}')">Undo</button>`}</div>`}
+  return `<div class="rdcard done" id="${esc(id)}">${sw}<span class="rddtx"><span class="cneyebrow">${h==='c'?'Color':'Pattern &amp; texture'}</span><b>${x.done==='keep'?`Kept ${esc(cur)}`:`${esc(x.usedName||cur)} set`}</b></span>${x.done==='keep'?`<button type="button" class="rdlink" onclick="rdChange('${h}')">Change</button>`:`<button type="button" class="rdlink" id="${id}-undo" onclick="rdUndo('${h}')">Undo</button>`}</div>`}
 function rdColCard(it,me){const x=me.c;if(x.na)return rdNaCard(it,'c',x);if(x.done)return rdDoneCard(it,'c',x);
   const cur=primaryCol(it),curN=cap1(colName(cur)),ex=x.ex,exN=ex?cap1(colName(ex)):'',d=x.d,word=cnDWord(d),r=x.r,why=r.why?`<p class="cnwhy">“${esc(r.why)}”</p>`:'';
   const keep=`<button type="button" class="cpaskbtn ghost" id="rd-ckeep" onclick="rdKeep('c')">Keep ${esc(curN)}</button>`;
@@ -600,7 +600,7 @@ function rdBar(it,me){const left=RD_HALVES.filter(h=>me[h]&&!me[h].na&&!me[h].do
 function rdRender(top){const me=rd;if(!me)return;const {s}=rdEls(),it=rdItem(me.src,me.id);if(!it){rdClose();return}
   const y=s.scrollTop,pr=paperNow(it),res=me.state==='result';
   const head=`<div class="rdtop"><span class="rdgrab" aria-hidden="true"></span><div class="rdhead"><b id="rd-title">Claude’s reading</b><button type="button" class="rdx" onclick="rdClose()" aria-label="Close">×</button></div>
-<div class="rdsrc"><figure><img src="${it.texture}" alt="Your close-up"><figcaption>Close-up</figcaption></figure><figure><div class="rddraw">${rdDraw(it,res?rdPreview(it,me):{})}</div><figcaption>${res?'With both':'Now'}</figcaption></figure>
+<div class="rdsrc"><figure><img src="${srcOk(it.texture)}" alt="Your close-up"><figcaption>Close-up</figcaption></figure><figure><div class="rddraw">${rdDraw(it,res?rdPreview(it,me):{})}</div><figcaption>${res?'With both':'Now'}</figcaption></figure>
 <div class="rdmeta"><b>${me.state==='busy'?'Reading your close-up':'Read from your close-up'}</b>${me.state==='busy'?'Two lookups side by side: the color and the weave.':me.m?'Claude gives a color, a weave and the material. Pick any of them.':'Claude gives a color and a weave. Pick either, or both.'}<br>${rdPaperHtml(pr)}</div></div></div>`;
   let body='';
   if(me.state==='busy')body=`<div class="rdbusy" role="status"><span class="spin" aria-hidden="true"></span><span><b>Claude is reading the color and the weave…</b><small>About 15 seconds. Nothing changes until you choose.</small></span></div>

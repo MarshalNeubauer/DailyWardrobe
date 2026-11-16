@@ -127,7 +127,7 @@ function cmpLab(src,it){const m=it.meas;if(m&&m.src==='closeup'&&m.lab)return m.
 const cmpDiff=(it,lab)=>lab&&COLORS[primaryCol(it)]?(it.shade||0)-shadeFor(it,lab):null;
 const cmpSteps=n=>`${n} step${n===1?'':'s'}`;
 const cmpDiffText=d=>d===null?'':d===0?'The drawing matches the cloth':`Drawn ${cmpSteps(Math.abs(d))} ${d>0?'lighter':'darker'} than the cloth`;
-function cmpMatchHtml(src,ref,it,lab){const d=cmpDiff(it,lab),key=src==='q'?it.id:ref,r=src==='q'?ref:`'${ref}'`;
+function cmpMatchHtml(src,ref,it,lab){const d=cmpDiff(it,lab),key=src==='q'?it.id:ref,r=src==='q'?ref:`'${jsq(ref)}'`;
   if(d===null)return COLORS[primaryCol(it)]?'<p class="cmpmt mut cmpwait">Measuring the close-up…</p>':'';
   const pos=50+Math.max(-SHADE_MAX,Math.min(SHADE_MAX,d))/SHADE_MAX*46,undo=CMP_UNDO[key]!==undefined&&CMP_UNDO[key]!==(it.shade||0);
   return `<div class="cmpmatch"><div class="cmpbar" role="img" aria-label="${cmpDiffText(d)}"><i style="left:${pos}%"></i></div><div class="cmplab" aria-hidden="true"><span>Darker</span><span>Same</span><span>Lighter</span></div>`+
