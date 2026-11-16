@@ -128,7 +128,11 @@ function careDayState(o,d){const p=o&&o.top;if(!p||!CARE_FRAME.includes(p.type)|
 /* what figureStage (today.js) puts in the picture's frame: {cls, html}, or null */
 function careFrame(o){const s=typeof sel!=='undefined'&&careDayState(o,sel);if(!s)return null;
   const dots=Array.from({length:s.limit},(_,i)=>`<i${i<s.n?' class="on"':''}></i>`).join('')+(s.n>s.limit?`<em>+${s.n-s.limit}</em>`:'');
-  return {cls:` cb care-${s.k}`,html:`<div class="cframe" aria-hidden="true"></div><div class="cband" id="cband" role="note"><svg aria-hidden="true"><path/></svg><div class="crow"><span class="cdots" aria-hidden="true">${dots}</span><span class="ctxt"><b>${s.bold}</b> · ${esc(s.rest)}</span></div></div>`,s}}
+  return {cls:` cb care-${s.k}`,html:`<div class="cframe" aria-hidden="true"></div><div class="cband" id="cband" role="button" tabindex="0" aria-label="${esc(s.bold+': '+s.rest)}. Tap if it was cleaned" onclick="careBandTap()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();careBandTap()}"><svg aria-hidden="true"><path/></svg><div class="crow"><span class="cdots" aria-hidden="true">${dots}</span><span class="ctxt"><b>${s.bold}</b> · ${esc(s.rest)}</span></div></div>`,s}}
+/* a tap on the banner (fix round 3, W2-14-05: the red "Overdue" came back every morning and a tap did nothing; the way to clear it was
+   Settings → Laundry & cleaning, which nothing on Today pointed to): asks whether it was cleaned, and "Cleaned today" starts its count again */
+function careBandTap(){const o=planFor()[key(sel)],s=o&&careDayState(o,sel);if(!s||!o.top)return;const p=o.top,w=careWashed(p.type)?'Washed':'Cleaned';
+  askConfirm(`${s.bold}: ${s.rest}.\n\nWas it cleaned since you last wore it? “${w} today” starts its count again. To send it away or see everything that is due, open ⚙ Settings → Laundry & cleaning.`,{ok:`${w} today`,cancel:'Not yet'}).then(y=>{if(y)careCleaned(p.id)})}
 /* lay the banner out: its shape (the cut round the tie swatch when the swatch reaches into it) and its words (13 px, smaller down to 11,
    then the bold words on a line of their own) */
 let careRO=null,careObs=[];

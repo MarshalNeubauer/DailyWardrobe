@@ -125,12 +125,16 @@ function setupGo(n,e){if(setupGoDouble(e))return;
     setupDraw();const f=$('#su-city');if(f)f.focus({preventScroll:true});return}
   const at=setup.at+n;if(at<0)return;if(at>=SETUP_STEPS.length){setupFinish(true,e);return}
   if(setup.watch){clearInterval(setup.watch);setup.watch=null}
+  const had=!!setupEl().contains(document.activeElement)&&document.activeElement!==setupEl();
   setup.at=at;setup.msg='';setupDraw();setupSave();const b=$('#setup .su-body');if(b)b.scrollTop=0;
+  // the new step is said, and the keyboard stays on Next / Back (Back is gone on the first step: Next) (fix round 3, W2-19-01: focus fell to <body>, nothing said)
+  if(had&&!setupEl().contains(document.activeElement)){const nb=$('#su-next');if(nb)nb.focus({preventScroll:true})}
+  if(typeof announce==='function'){const t=$('#su-title');announce(`Step ${at+1} of ${SETUP_STEPS.length}: ${t?t.textContent:''}`)}
   if(typeof appPush==='function')appPush('setup')}   // (again after a tap: an entry made at start-up without one may be skipped by Back)
 
 /* ---- the steps ---- */
 const setupSwitch=(k,on,title,sub)=>`<button type="button" class="su-sw" id="su-sw-${k}" role="switch" aria-checked="${on}" onclick="setupSetDress('${k}')"><span class="su-swt"><b>${title}</b><small>${sub}</small></span><i class="su-knob" aria-hidden="true"></i></button>`;
-const setupDays=(kind,list,shown)=>`<div class="su-days" id="su-${kind}">${DAY_NAMES.map((n,i)=>shown.includes(i)?`<button type="button" class="su-day${list.includes(i)?' on':''}" aria-pressed="${list.includes(i)}" onclick="setupDay('${kind}',${i})">${n.slice(0,3)}</button>`:'').join('')}</div>`;
+const setupDays=(kind,list,shown)=>`<div class="su-days" id="su-${kind}" role="group" aria-label="${kind==='workdays'?'Workdays':'Blazer days'}">${DAY_NAMES.map((n,i)=>shown.includes(i)?`<button type="button" class="su-day${list.includes(i)?' on':''}" aria-pressed="${list.includes(i)}" onclick="setupDay('${kind}',${i})">${n.slice(0,3)}</button>`:'').join('')}</div>`;
 function setupStep(k){const d=setupDress();
   if(k==='welcome')return `<p class="su-lead">Daily Wardrobe picks what you wear each workday from the clothes you own.</p><p class="su-lead">It rotates your pieces so nothing is worn out or forgotten, and keeps the colors and patterns working together.</p><p class="su-help">A few short questions first. You can change every answer later in Settings.</p>${setupConnected()?'':'<p class="su-help" id="su-before">Used the app before with an invitation link? Open that link again: your wardrobe, day history and settings come back from your backup. Do that before adding anything here.</p>'}`;   // (audit 2026-11-15, W1-11-01: after Safari cleared the site, nothing said the wardrobe was safe)
   if(k==='home')return typeof homeSteps==='function'?homeSteps(true):'';
@@ -145,7 +149,7 @@ function setupStep(k){const d=setupDress();
 <div class="su-acts"><button type="button" id="su-geo" onclick="setupLocate()">Use my location</button></div>
 <div class="su-form"><input type="text" id="su-city" placeholder="Search a city" aria-label="City" value="${esc(setup.q)}" oninput="setup.q=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();setupSearch()}"><button type="button" id="su-find" onclick="setupSearch()">Search</button></div>
 <div class="su-acts" id="su-cities">${(setup.cities||[]).map((c,i)=>`<button type="button" onclick="setupPick(${i})">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join('')}</div>${setup.cityMsg?`<p class="su-help" role="status">${esc(setup.cityMsg)}</p>`:''}</div>
-<div class="su-group"><div class="su-label">Temperatures in</div><div class="su-days" id="su-units">${['C','F'].map(x=>`<button type="button" class="su-day${u===x?' on':''}" aria-pressed="${u===x}" onclick="setupUnits('${x}')">°${x}</button>`).join('')}</div></div>`}
+<div class="su-group"><div class="su-label">Temperatures in</div><div class="su-days" id="su-units" role="group" aria-label="Temperatures in">${['C','F'].map(x=>`<button type="button" class="su-day${u===x?' on':''}" aria-pressed="${u===x}" onclick="setupUnits('${x}')">°${x}</button>`).join('')}</div></div>`}
   if(k==='connect')return setupConnected()?`<p class="su-ok" id="su-conn"><span class="su-tick" aria-hidden="true">✓</span> Connected</p><p class="su-help">Photos of your clothes are read automatically, item pictures can be made, and ${typeof backedUpWords==='function'?backedUpWords():'your wardrobe is backed up'}.</p>${setup.joined&&items.length?`<p class="su-help" id="su-came">Your wardrobe came across: ${items.length} item${items.length===1?'':'s'}. The answers are your account’s.</p>`:''}${setupHomeLink()}`
     :setupLinkChecking()?'<p class="su-ok" id="su-conn" role="status"><span class="spin" aria-hidden="true"></span> Checking your invitation…</p><p class="su-help">This can take a moment on a slow connection. You can carry on with Next meanwhile.</p>'
     :`<p class="su-help">${typeof inviteOver==='function'&&inviteOver()?'Your invitation has ended, so the link you used no longer works: nothing is read or backed up. If you were given a new invitation link, paste it here.':setupLinkWaiting()?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you come back to the app or your connection returns, or tap Connect.':'If you were given an invite link, paste it here. It turns on automatic reading of your photos, item pictures and a backup. Used the app before? The same link brings your backed-up wardrobe back.'}</p>
@@ -170,6 +174,8 @@ const setupHomeLink=()=>setup.joined&&typeof homeIOS==='function'&&homeIOS()&&ho
    audit 2026-11-15); finished first, a kill before the sample was stored left the setup done and no sample (re-audit 2026-11-15) */
 function setupSample(e){setupTapGuard(e);if(typeof kitSampleLoad==='function')kitSampleLoad();else setupFinish(false,e)}
 function setupDraw(){if(!setupShown())return;const k=SETUP_STEPS[setup.at],n=SETUP_STEPS.length,last=setup.at===n-1;
+  keepFocus(setupEl(),()=>setupHtml(k,n,last))}
+function setupHtml(k,n,last){
   setupEl().innerHTML=`<div class="su-head"><div class="su-ttl"><h2 id="su-title">${SETUP_TITLES[k]}</h2><small id="su-count">Step ${setup.at+1} of ${n}</small></div>${!setup.first?`<button type="button" class="su-skip" id="su-cancel" onclick="setupCancel(event)">Cancel</button>`:last?'':`<button type="button" class="su-skip" id="su-skip" onclick="setupFinish(false,event)">Skip</button>`}</div>
 <div class="su-prog" aria-hidden="true">${SETUP_STEPS.map((s,i)=>`<i class="${i<=setup.at?'on':''}"></i>`).join('')}</div>
 <div class="su-body"><div class="su-in" id="su-step" data-step="${k}">${setupStep(k)}</div></div>
@@ -186,7 +192,7 @@ function setupUnits(v){setUnits(v);setupDraw()}
 async function setupSearch(){const q=(setup.q||'').trim();if(!q&&(setup.cities||setup.cityMsg)){setup.cities=null;setup.cityMsg='';setupDraw();return}if(!q||!$('#cfg-city'))return;
   $('#cfg-city').value=q;window._cities=null;setup.cities=null;setup.cityMsg='Searching…';setupDraw();
   await findCity();if($('#city-results'))$('#city-results').innerHTML='';$('#cfg-city').value='';
-  const res=window._cities;setup.cities=res||null;setup.cityMsg=!res?'City search is unavailable right now.':res.length?'':'No matches. Try the name in English or a nearby larger city, or Use my location.';setupDraw()}
+  const res=window._cities;setup.cities=res||null;setup.cityMsg=!res?'City search is unavailable right now.':res.length?'':'No matches. Try the name in English or a nearby larger city, or Use my location.';setupDraw();if(typeof announce==='function')announce(setup.cityMsg||`${res.length} place${res.length===1?'':'s'} found`)}
 function setupPick(i){const c=(setup.cities||[])[i];if(!c)return;setup.cities=null;setup.cityMsg='';setup.q='';setLocation(c);setupDraw()}
 /* useMyLocation answers later (the permission prompt): the step is drawn again once the location has changed */
 function setupLocate(){const was=JSON.stringify(settings.location);useMyLocation();

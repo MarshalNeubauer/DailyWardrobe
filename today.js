@@ -95,7 +95,7 @@ const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&
   .filter(([l,i,s])=>!(s==='clip'&&!i&&(o.vest||!(o.frozen&&pastEdit===key(sel)))))   // no tie clip that day: no row (kept while correcting a past day, to add the one worn, but not on a vest day: the vest holds the tie, W2-17-20)
 .filter(([l,i,s])=>!(s==='clip'&&o.off&&o.off.tie))
 .map(([l,i,s])=>{if((s==='top'||s==='tie')&&!i&&o.off&&o.off[s])return offRow(s,o);const open=!!i&&openRow===s;
-  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}${offBtn(s,o)}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':`<button type="button" class="linkbtn addone" onclick="openAdd()" aria-label="${l}: none yet. Add one">Add one</button>`}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
+  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}${offBtn(s,o)}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':`<button type="button" class="linkbtn addone" onclick="openAdd('${addForSlot(s,o.suitDay)||''}')" aria-label="${l}: none yet. Add one">Add one</button>`}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
     (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in" onclick="toggleRow('${s}')">${open?rowPanel(i):''}</div></div>`:'')+`</div>`});
   rows.splice(nj?0:1,0,vestRow(o));return rows.join('')};
 function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[s])return;const opening=!el.classList.contains('open');
@@ -278,7 +278,7 @@ function wornBar(o){if(wardShort())return '';
    the default (no mark), not rec.worn true, which would freeze today's outfit as worn */
 function wornPill(o){const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate());if(+d>+T||!isWorkday(sel)||!hasOutfit(o))return '';
   const no=o.worn===false;
-  return `<button type="button" class="wpill ${no?'no':'yes'}" id="wpill" aria-pressed="${!no}" onclick="toggleWorn()" aria-label="${no?"Didn't wear this outfit. Tap if you wore it":"Wore this outfit. Tap if you didn't"}">${no?'✕ Didn\'t':'✓ Wore'}</button>`}
+  return `<button type="button" class="wpill ${no?'no':'yes'}" id="wpill" aria-pressed="${!no}" onclick="toggleWorn()" aria-label="Wore this outfit">${no?'✕ Didn\'t':'✓ Wore'}</button>`}
 /* the date bar's weather line with the pill: the weather (or "Set location") sits centred between two pill-wide sides, unless that cuts
    it (Larger Text, page zoom: "Set loc…", then nothing; re-audit 2026-11-15); then it takes the line alone and the pill goes under it
    (.wxwrap). Measured after each drawing and when Today's size changes (the text size or the zoom changed) */
@@ -290,7 +290,9 @@ function wxFit(){const w=document.querySelector('#today .day h2 .wx.haspill');
     if(x===wxFitW)return;wxFitW=x;cancelAnimationFrame(wxFitRaf);wxFitRaf=requestAnimationFrame(wxFit)}).observe($('#today'))}
   if(!w||!w.offsetWidth)return;const s=w.querySelector('.wxc'),c=s&&(s.querySelector('.wxl')||s);w.classList.remove('wxwrap');
   const cut=!!c&&c.textContent.trim()!==''&&(c.scrollWidth>c.clientWidth+1||c.clientWidth<1);if(cut)w.classList.add('wxwrap')}
-function toggleWorn(){const o=planFor()[key(sel)];if(!o)return;setWorn(o.worn===false?undefined:false)}
+function toggleWorn(){const o=planFor()[key(sel)];if(!o)return;const no=o.worn!==false;
+  // a line says what changed (W2-14-09: the pill turned gray with no word; W2-19-01: nothing was said); the toast is a status region, so it is read out too
+  return setWorn(no?false:undefined).then(()=>toast(no?'Marked as not worn: this day won’t count as a wear. Tap again if you wore it.':'Marked as worn.',no?5000:2500))}
 function figureStage(o){
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
   const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}" data-type="${i.type}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-expanded="${belowOpen===s}" aria-controls="bpanel" aria-label="${slotLabel(s,o)}: ${desc(i)}. ${belowOpen===s?'Hide':'Show'} the photo">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
@@ -342,7 +344,14 @@ const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)};
 /* (2026-11-14, the owner) no "↩ Today" / "↩ Next outfit" button in the date bar on other days: the Today tab does it (goToday) */
 const todayBtn=()=>'';
 /* where to add a piece (there is no Add tab: Add is the round + on the Wardrobe) */
+/* a location is set but the day within the forecast's 16 days has no weather (it couldn't be fetched): say so, with a way to try again
+   (fix round 3, W2-14-14: "Set location" went and the line stayed blank) */
+function wxMissing(d,pill){const T=todayDate(),n=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-T)/864e5);if(n<0||n>15)return '';
+  return `<a href="#" class="wxl wxretry" onclick="loadWeather(true);return false">${pill?'No forecast · retry':'No forecast yet: tap to try again'}</a>`}
 const ADD_HINT='Add one with the + in the Wardrobe';
+/* a missing piece's "Add one" opens Add for that type (openAdd(type), add.js addFor; W2-14-01): the jacket's by the day, a suit or a blazer */
+const ADD_FOR_SLOT={bot:'pants',shirt:'shirt',tie:'tie',clip:'tieclip',links:'cufflinks',watch:'watch',belt:'belt',socks:'socks',shoes:'shoes',coat:'overcoat'};
+const addForSlot=(s,suitDay)=>s==='top'?(suitDay?'suit':'blazer'):ADD_FOR_SLOT[s]||null;
 /* a day before the wardrobe existed (planTrim leaves it out of the month): no outfit, and the page says why */
 const preWardrobe=d=>{const s=planStartDay();return !!s&&d<s&&d<todayDate()};
 /* a past day whose piece was deleted since (planner.js frozenOutfit, o.gone): the drawing can't show it, so the page says so */
@@ -358,7 +367,7 @@ function piecesBox(o){
   const pp=piecesParts(o),sum=pp.map((t,k)=>nameHtml(k?t:sentence(t))).join(' · ');   // each name kept in its place in an English line (<bdi>, W2-16-10)
   return `<section class="mbox ibox${listOpen?' open instant':''}" id="ibox"><button class="month-link" onclick="toggleList()" aria-expanded="${listOpen}" aria-controls="ipanel" aria-label="Outfit pieces: ${pcs.length}. ${listOpen?'Fold away':'Show the list'}">
     <span class="pstrip" aria-hidden="true" style="--pc:${pcs.length<=6?pcs.length:Math.ceil(pcs.length/2)}">${chips}</span><span class="mltxt"><b>${pcs.length} piece${pcs.length===1?'':'s'}</b><small class="cap">${sum||'Tap to see the list'}</small></span><span class="chev" aria-hidden="true">›</span></button>
-    <div class="mpanel" id="ipanel"><div class="mpanel-in" onclick="foldListTap(event)"><div class="list">${slots(o)}</div></div></div></section>`}
+    <div class="mpanel" id="ipanel"><div class="mpanel-in" onclick="foldListTap(event)"><div class="list">${slots(o)}</div>${canPick(o)&&!o.frozen?`<p class="plegend" aria-hidden="true"><span>⇄</span> choose another${offOn(o)&&(o.top||o.tie)?' · <span>−</span> take off for today':''}</p>`:''}</div></div></section>`}   // (the icons in words, W2-14-10; the buttons have their names already)
 /* a tap inside the open pieces list that is not on a button, a link or a photo (e.g. on the names on the left) folds the list */
 function foldListTap(e){if(!listOpen||e.target.closest('button,a,input,select,label,.rpanel'))return;toggleList()}
 /* folding a box whose top is above the screen (folded from its bottom): bring the card back into view */
@@ -373,7 +382,7 @@ function renderToday(){
   // in this drawing's "last worn" and cleaning frame (fix round 3, W2-14-12: they changed a moment after opening)
   if(!snapped&&items.length&&typeof pulledYet==='function'&&pulledYet())recordRun=recordDays(p).then(lockUpcoming).then(()=>{if(typeof planSnapSoon==='function')planSnapSoon()});
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
-  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc${settings.location?'':' wxlk'}">${settings.location?(wxChip(sel)||''):`<a href="#" class="wxl" onclick="openSettings('weather');return false">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
+  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2 aria-label="${esc(sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))}"><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc${settings.location?'':' wxlk'}">${settings.location?(wxChip(sel)||wxMissing(sel,wp)):`<a href="#" class="wxl" onclick="openSettings('weather');return false">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
   let stage='',side='';const first=(typeof setupToday==='function'?setupToday():'')+(typeof kitSampleBanner==='function'?kitSampleBanner():'');   // what is still needed for a first outfit (setup.js)
   if(!isWorkday(sel))stage=first+(offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
@@ -384,11 +393,20 @@ function renderToday(){
   else{stage=first+figureStage(o);
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${wardShort()?'':scoreCard(o)}${piecesBox(o)}${dayActions(o)}${goneNote(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${restWarn(o)}${typeof careNote==='function'?careNote(o):''}`}
-  $('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+missedCard()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;applyZoom(false);swApply(false);fitNavSoon();wxFit();
+  keepFocus($('#today'),()=>{$('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+missedCard()+resetCard(isWorkday(sel)?o:null):''}</div></div>`});applyZoom(false);swApply(false);fitNavSoon();wxFit();
+  todaySay(o);
   if(snapped){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
   else if(items.length&&!(typeof pulledYet==='function'&&pulledYet())&&!todayPullWait){todayPullWait=true;whenPulled(()=>{todayPullWait=false;if(!$('#today').hidden)refreshToday()})}   // (recorded above when pulled; else drawn again once the backup is merged, and recorded then)
 }
 
+/* what a screen reader hears after Today is drawn again (fix round 3, W2-19-01): another day, its date and outfit ("Tuesday, November 17:
+   Navy suit, white shirt…"); the same day with other pieces (a pick, Suggest another, Reset, a piece taken off, a sync), the new pieces.
+   Nothing on the first drawing, nor when nothing changed (a tab switch). */
+let todaySaid=null;
+function todaySay(o){const k=key(sel),h=$('#today .day h2 .dlong'),e=$('#slide .empty');
+  const s=items.length&&isWorkday(sel)&&hasOutfit(o)&&typeof piecesLine==='function'?sentence(piecesLine(o)||''):e?e.textContent:'';
+  const was=todaySaid;todaySaid={k,s};if(!was||!$('#today')||$('#today').hidden)return;
+  if(was.k!==k)announce(`${h?h.textContent:''}: ${s}`);else if(was.s!==s&&s)announce('Now: '+s)}
 /* a swipe to another day folds whatever is open (score, pieces list and its rows, a below-the-waist photo, the month) and zooms
    the picture back out: it starts as soon as the drag is known to be sideways, so the boxes fold while the day slides */
 let foldQuiet=false;

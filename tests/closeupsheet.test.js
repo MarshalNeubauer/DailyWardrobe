@@ -73,7 +73,7 @@ async function run(eng,browser,{ok,url,settle}){
     await (await p.$('#cu-lib')).setInputFiles(file('paper.jpg',F.paper));await waitTex('m1',t0);await p.waitForSelector('#ivwb');
     e=await p.evaluate(()=>({on:!!document.querySelector('#cu-sheet.on'),line:document.querySelector('#ivwb').textContent}));
     ok(!e.on&&/White paper found/.test(e.line),T+`a photo chosen through "Choose from photos" replaces the close-up, the sheet closes, and the paper line follows (${e.line})`);
-    const t1=await tex('m1');
+    const t1=await tex('m1');await p.waitForTimeout(400);   // (WebKit draws the item sheet once more just after the new close-up lands: a button found before it is gone)
     await (await btn('Replace close-up')).click();await p.waitForSelector('#cu-sheet.on');
     await (await p.$('#cu-take')).setInputFiles(file('plain.jpg',F.plain));await waitTex('m1',t1);
     await p.waitForFunction(()=>/No white paper/.test((document.querySelector('#ivwb')||{}).textContent||''));

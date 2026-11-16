@@ -296,3 +296,27 @@ async function fill(q,ai){
 const cap1=t=>{t=String(t??'');return t&&t[0].toUpperCase()+t.slice(1)};   // option labels start with a capital ("Grey", "Solid"); values stay as they are
 const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select>`;
 
+
+/* ---- what a screen reader hears, and where the keyboard stays, when part of the page is drawn again (fix round 3, W2-19-01: after
+   Next day, the Wore pill or a pick, the control pressed was replaced by the redraw, focus fell to <body>, and nothing said the outfit
+   had changed) ----
+   announce(text): said once by the polite live region #sr-live (index.html; out of sight). Emptied first, then written in the next
+   frame, so the same words are said again.
+   keepFocus(root, draw): runs draw(); when the focus was on a control inside root that the redraw replaced, the control with the same
+   id, or else the same handler (onclick / onchange / oninput) and data-k / data-c, gets it back (the same words first when there are
+   several). Here, not in ui.js: Today is drawn by the start-up chain, which can run before ui.js has loaded. */
+let srLiveT=0;
+function announce(text){const el=document.querySelector('#sr-live');if(!el)return;const t=String(text||'').replace(/\s+/g,' ').trim();clearTimeout(srLiveT);el.textContent='';
+  if(t)srLiveT=setTimeout(()=>{el.textContent=t},60)}
+const FOCUS_ATTRS=['onclick','onchange','oninput','data-k','data-c','data-s'];
+function focusKey(el){if(!el||el===document.body||!el.tagName)return null;
+  return {el,id:el.id||'',tag:el.tagName,at:FOCUS_ATTRS.map(a=>el.getAttribute(a)||''),label:el.getAttribute('aria-label')||'',text:(el.textContent||'').trim().slice(0,60)}}
+function focusFind(root,k){if(!k||!root)return null;
+  if(k.id){const e=document.getElementById(k.id);if(e&&root.contains(e))return e}
+  if(!k.at.some(Boolean))return null;
+  const same=[...root.querySelectorAll(k.tag)].filter(e=>FOCUS_ATTRS.every((a,j)=>(e.getAttribute(a)||'')===k.at[j]));
+  return same.find(e=>(e.getAttribute('aria-label')||'')===k.label&&(e.textContent||'').trim().slice(0,60)===k.text)||same.find(e=>(e.getAttribute('aria-label')||'')===k.label)||same[0]||null}
+function keepFocus(root,draw){const a=document.activeElement,k=root&&a&&a!==document.body&&root.contains(a)?focusKey(a):null;
+  const r=draw();
+  if(k&&!(k.el.isConnected&&root.contains(k.el))){const e=focusFind(root,k);if(e&&!e.closest('[inert]'))try{e.focus({preventScroll:true})}catch{}}
+  return r}
