@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	a505401704b1948e48e1
+# tested	ad485d1115a46c05cb04
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	npsLeave	renderAdd	shadeRow
@@ -158,7 +159,7 @@ accounts.test.js	worker/people.js	<loaded>	allCaps	capOf	cleanCaps	countWrites	d
 accounts.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	nsOf	putPhotos	putWhole	pvMeta	pvResponse	pvText	readPv	refsIn	refsOf	storePhotos
 accounts.test.js	worker/records.js	<loaded>	delRender	getRender	itemWrong	putRender	recCheck	renderId	renderTtl	sharedKeys
 accounts.test.js	worker/render.js	<loaded>	DIAL_NOTE	RENDER_PROMPT	RenderHub	SWAP_PROMPT	dataUrlToBlob	dropFail	failJob	fetch	handleRender	hasWatch	hubOf	jobClaim	jobMsg	jobOp	keepMade	outfitPhoto	prune	queueRender	queueStatus	runRenderJob	sget	sput	tellHub	waitForRenders
-accounts.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanMaterial	cleanTag	correctionsText	customText	handleTagMany	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	txt	wbOf
+accounts.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	correctionsText	customText	handleTagMany	lightText	materialSchema	measuredText	orNull	ownMaterialsText	tagSchema	tagWithClaude	txt	wbOf
 accounts.test.js	wrangler.toml	<any>
 addcards.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 addcards.test.js	account.js	<loaded>	acctBase	acctRetryLink	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -1608,27 +1609,27 @@ boxfold.test.js	watch/suit.png	<loaded>
 boxfold.test.js	watch/vest.png	<loaded>
 camouflage.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 camouflage.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-camouflage.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals
+camouflage.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals	shadeRow
 camouflage.test.js	analysis.js	<loaded>
-camouflage.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	afterDom	afterScripts	busyLabelFor	cleanStored	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
+camouflage.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	afterDom	afterScripts	atomic	busyLabelFor	cap1	cleanStored	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	put	texSwatches	tx	txFail	txs	window.fetch
 camouflage.test.js	apple-touch-icon.png	<loaded>
-camouflage.test.js	asm-color.js	<loaded>	asmCamoTex	asmCmRoute
+camouflage.test.js	asm-color.js	<loaded>	asmCamoTex	asmCmRoute	asmGapNote
 camouflage.test.js	asm-gl.js	<loaded>
 camouflage.test.js	asm-watch.js	<loaded>
 camouflage.test.js	assemble.js	<loaded>	@	asmSuitWeave
-camouflage.test.js	care.js	<loaded>	careShow
-camouflage.test.js	checklist.js	<loaded>
-camouflage.test.js	colpick.js	<loaded>
-camouflage.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	camoField	camoPat	colBase	colOf	dE00	dayClimate	di	hexRgb	isWorkday	isoKey	key	keySettings	keySplit	labHex	lum	metalWord	occOf	offDays	offName	ownDescClean	ownNameClean	ownNameTidy	patBase	patLabel	patName	patOf	planCol	primaryCol	rgbLab	setEntries	setHash	setKeys	setStampOf	subHashes	subOk	takeSettings	thirdOf	todayDate
+camouflage.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
+camouflage.test.js	checklist.js	<loaded>	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
+camouflage.test.js	colpick.js	<loaded>	EP	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
+camouflage.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	camoField	camoPat	colBase	colName	colOf	colorDesc	dE00	dayClimate	desc	di	hexRgb	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	metalWord	mix	nextStamp	normPat	nowMs	occOf	offDays	offName	ownDescClean	ownNameClean	ownNameTidy	patBase	patLabel	patName	patOf	planCol	primaryCol	rgbHex	rgbLab	sentence	setEntries	setHash	setKeys	setStampOf	shadeFor	shadeName	stamp	styleWord	subHashes	subOk	takeSettings	thirdOf	titleCls	todayDate
 camouflage.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
-camouflage.test.js	draw.js	<loaded>	camoTileUrl	fabricDef	swatchSVG
+camouflage.test.js	draw.js	<loaded>	camoTileUrl	fabricDef	itemThumb	shirtFabric	shirtMarks	swatchSVG
 camouflage.test.js	dress.js	<loaded>	migrateVests
 camouflage.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 camouflage.test.js	icon-192.png	<loaded>
 camouflage.test.js	icon-512.png	<loaded>
 camouflage.test.js	index.html	<loaded>
-camouflage.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
-camouflage.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
+camouflage.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	histPush	imgOf	itemBody	itemShown	ivCareSum	ivDetailSum	ivSummary	noMotion	openItem	optLab	paperCloth	paperHint	paperLine	paperRetake	paperSteps	patSummary	photoTools	ptIcon	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
+camouflage.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 camouflage.test.js	manifest.webmanifest	<loaded>
 camouflage.test.js	mannequin.js	<loaded>	@{}
 camouflage.test.js	month.js	<loaded>
@@ -1638,7 +1639,7 @@ camouflage.test.js	mq/suit-open.js	<loaded>
 camouflage.test.js	mq/suit.js	<loaded>
 camouflage.test.js	mq/vest.js	<loaded>
 camouflage.test.js	pack.js	<loaded>	packShow
-camouflage.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	loadRenders
+camouflage.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	jsq	loadRenders
 camouflage.test.js	planner.js	<loaded>	fam	formalTop	patInfo	pcol
 camouflage.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
 camouflage.test.js	safety.js	<loaded>	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
@@ -1646,14 +1647,14 @@ camouflage.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	
 camouflage.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 camouflage.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 camouflage.test.js	start.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@connRestored.then	appDrop	pageIn	show
-camouflage.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
-camouflage.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn::after	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .firstrun	.wxc.wxlk	.wxl	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
-camouflage.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncPaused	syncUrl	syncWaiting
-camouflage.test.js	tagging.js	<loaded>	camoFromPixels	claudeOnly	fixBlackBackdrops	motifPat	readable	recolourSpecSetts	settable	upgradeCloseups	upgradePhotos
+camouflage.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts	wornDays
+camouflage.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-backdrop.on,#item-backdrop.closing	#item-view	#item-view .ivct .ivrd	#item-view .ivct .wbst	#item-view .ivct .wbstcard	#item-view .ivct .wbsteps	#item-view.on,#item-view.closing	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#ward-add	#ward-add svg	#wardrobe	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chip::after	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .wclear	#wardrobe .wclear[hidden]	#wardrobe .wsearch input	#wardrobe .wsort	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	#wardrobe:not([hidden]) ~ #ward-add	*	.cap	.chip	.chip.on	.chips	.ck-good	.ck-opt,.ck-todo	.ck-warn	.ckb	.ckb .wbst,.ckb .wbstcard	.ckb .wbsteps	.ckchev	.ckchip	.ckcn	.ckm	.ckm b	.ckm svg	.cks	.cks.open>.ckb	.cks.open>.ckh .ckchev	.ckt	.ckt b	.ckt small	.cmp-cu	.cmp-dw	.cmpbar	.cmpbar i	.cmpl	.cmpl.br	.cmpl.tl	.cmpl.tr	.cmpl[hidden]	.cmplab	.cmplv canvas	.cmpmb	.cmpmt	.cmpop	.cmpsp	.cmpsp[hidden],.cmpop[hidden]	.cmptools	.cmpv	.cmpv.cmpnow .cmplv	.cmpw	.cmpwait	.cmpzm	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.hbtns	.hgear	.ivbar	.ivbar .ivdone	.ivbar .ivnav	.ivbody	.ivchev	.ivcl,.ivcr	.ivcols	.ivdel	.ivdel button	.ivdup	.ivdup button	.ivdup+.ivdel	.ivhead	.ivhead .pcount	.ivhead::before	.ivin	.ivpill	.ivpill.good	.ivpills	.ivrd	.ivrd .ivrdbtn	.ivrdbtn[aria-disabled=true],.rdgo[aria-disabled=true]	.ivsum	.ivsumph	.ivsumph .ph.thumb	.ivsumph svg	.ivsumt	.ivt	.ivt .gtype	.ivt h2	.kit-start	.linkbtn	.linkbtn::after	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.rdcost	.slide	.stage	.stage .firstrun	.thumb	.thumb svg	.vfile	.vh	.wbpic i	.wbpic::after	.wbpic::before	.wbretake	.wbretake::after	.wbst	.wbst .ic	.wbst .tx	.wbst .tx small	.wbst .wbretake	.wbst.no .ic	.wbstcard .arr	.wbstcard .cam	.wbstcard .eb	.wbstcard .hd	.wbstcard .li	.wbstcard .more	.wbstcard .n	.wbstcard .n b	.wbstcard .ol	.wbstcard .tap	.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i	.wbsteps	.wfind	.wsearch	.wsicon	.wslide	.wxc.wxlk	.wxl	:is(#item-view,#add) .ckh	:is(#item-view,#add) .cmpgo	:is(#item-view,#add) .cmplv	:is(#item-view,#add) .cmpzm button	:is(#item-view,#add) .cmpzm button+button	:is(#item-view,#add) .wbst.cmpwb	:is(#item-view,#add) .wbstcard	:is(#item-view,#add) .wbstcard .wbpic	:is(#item-view,.wbsteps,#cu-sheet) .wbpic	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number])	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) select	:root	<loaded>	body	body.iv-on #toast,body.iv-on #busy	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	label:has(>.vfile)	main	main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add	nav	nav button	nav button.on	nav::before	select,input[type="text"],input[type="range"]
+camouflage.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncPaused	syncUrl	syncWaiting
+camouflage.test.js	tagging.js	<loaded>	camoFromPixels	claudeOnly	closeRead	fixBlackBackdrops	linS	measEdgeCut	measureCloth	motifPat	paperKey	paperNow	paperOf	readable	recolourSpecSetts	sLin	settSummary	settable	texSig	upgradeCloseups	upgradePhotos	urlCanvas	wbRead
 camouflage.test.js	tests/fixedplan.js	<any>
 camouflage.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	wornPill	wxFit	wxPreload	zoomTarget
-camouflage.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
-camouflage.test.js	wardrobe.js	<loaded>	@iftypeofwhenPulledfunctionwhenPulled	matMigrate	wardPendingRestore
+camouflage.test.js	ui.js	<loaded>	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerUp	uiEsc
+camouflage.test.js	wardrobe.js	<loaded>	@iftypeofwhenPulledfunctionwhenPulled	fldRow	ivOn	matMigrate	matRow	notesRow	wardBack	wardBar	wardCount	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
 camouflage.test.js	watch/leather.jpg	<loaded>
 camouflage.test.js	watch/shirt-open.png	<loaded>
 camouflage.test.js	watch/shirt-tie.png	<loaded>
@@ -1832,7 +1833,7 @@ casual.test.js	watch/vest.png	<loaded>
 casual.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanCustom	cleanTag	correctionsText	corsFor	customText	fetch	lightText	measuredText	orNull	readCapped	sameText	serve	sha256Hex	spend	tagSchema	tagWithClaude	utcDay	wbOf	whoIs
 casual.test.js	worker/links.js	<loaded>	readCapped
 casual.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
-casual.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	wbOf
+casual.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	ownMaterialsText	tagSchema	tagWithClaude	wbOf
 claude.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 claude.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
 claude.test.js	add.js	<loaded>	addCardRec	addCkCount	addCkSecs	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardPics	cardReading	cardReady	cardSafe	checkArrivals	ckLeftLine	ckLr	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	savedTitle	shadeRow	tagSwInner	typeCard	unreadNote	wbNote
@@ -1890,7 +1891,7 @@ claude.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.
 claude.test.js	worker/links.js	<loaded>	readCapped
 claude.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	unspend	utcDay	whoIs
 claude.test.js	worker/photostore.js	<loaded>	handleSync
-claude.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	tagWithWorkersAi	txt	wbOf
+claude.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	ownMaterialsText	tagSchema	tagWithClaude	tagWithWorkersAi	txt	wbOf
 claudepattern.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 claudepattern.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 claudepattern.test.js	add.js	<loaded>	addCardRec	addCkCount	addCkSecs	addFiles	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	addShowCard	addTexture	addWatch	applyWb	busyCard	cardOf	cardPics	cardReading	cardReady	cardSafe	checkArrivals	ckLeftLine	ckLr	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	save	saveCard	savedTitle	shadeRow	tagSwInner	texGains	unreadNote	wbNote
@@ -2382,7 +2383,7 @@ colouraudit.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_CO
 colouraudit.test.js	worker/describe.js	<loaded>	descTables
 colouraudit.test.js	worker/links.js	<loaded>	readCapped
 colouraudit.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
-colouraudit.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	wbOf
+colouraudit.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	ownMaterialsText	tagSchema	tagWithClaude	wbOf
 colours.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 colours.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 colours.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addCkCount	addCkSecs	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	checkArrivals	ckLeftLine	ckLr	confBtn	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	skipCard	unreadNote	wbNote
@@ -2769,7 +2770,7 @@ daysoff.test.js	mq/suit.js	<loaded>
 daysoff.test.js	mq/vest.js	<loaded>
 daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-daysoff.test.js	planner.js	<loaded>
+daysoff.test.js	planner.js	<loaded>	lockStale
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storeFailure
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	addDayOff	appLocale	applyTheme	backupSummary	closeSettings	countryName	fetchHolidays	holPast	holYears	isoDate	isoToDate	loadWeather	locCC	nagerKeep	offNameCut	openSettings	refreshHolidays	refreshToday	removeDaysOff	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setHolidayCountry	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	toggleHoliday	unit	unitCC	weekFirst	yearDate
@@ -3049,6 +3050,7 @@ describe.test.js	worker/links.js	<loaded>	readCapped
 describe.test.js	worker/people.js	<loaded>	allCaps	capOf	cleanCaps	firstWeek	handleInvites	handleMe	limitBody	newCode	ownerOnly	plainFor	plainKind	sameText	sha256Hex	smallBody	spend	unspend	useCount	usedOf	utcDay	whoIs
 describe.test.js	worker/render.js	<loaded>	RenderHub	fetch	hubOf	sget	sput
 describe.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanMaterial	lightText	matCap	materialSchema	orNull	ownTxt	sleep	txt	wbOf
+describe.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanMaterial	cleanOwnMaterials	lightText	matCap	matName	materialSchema	notMaterial	orNull	ownMaterialsText	sleep	txt	wbOf
 display.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 display.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 display.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addCkCount	addCkSecs	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	cardReading	cardReady	cardSafe	checkArrivals	ckLeftLine	ckLr	confBtn	formCard	needType	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	unreadNote	wbNote
@@ -3564,7 +3566,7 @@ fieldmerge.test.js	mq/suit.js	<loaded>
 fieldmerge.test.js	mq/vest.js	<loaded>
 fieldmerge.test.js	pack.js	<loaded>	packShow
 fieldmerge.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	jsq	lastWorn	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
-fieldmerge.test.js	planner.js	<loaded>	idsAhead	lockStale
+fieldmerge.test.js	planner.js	<loaded>
 fieldmerge.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 fieldmerge.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 fieldmerge.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	showCost	toast	weekFirst
@@ -5296,7 +5298,7 @@ measalt.test.js	worker/photostore.js	<any>	<loaded>
 measalt.test.js	worker/records.js	<any>	<loaded>
 measalt.test.js	worker/remind.js	<any>	<loaded>
 measalt.test.js	worker/render.js	<any>	<loaded>
-measalt.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	wbOf
+measalt.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	ownMaterialsText	tagSchema	tagWithClaude	wbOf
 measure.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 measure.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 measure.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addCkCount	addCkSecs	addFiles	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addShowCard	addWatch	applyWb	busyCard	cardPics	cardReading	cardReady	cardSafe	checkArrivals	ckLeftLine	ckLr	confBtn	errCard	formCard	needType	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	shadeRow	sheetSwipe	tagSwInner	typeCard	unreadNote	wbNote
@@ -6375,7 +6377,7 @@ nuserver.test.js	worker/links.js	<loaded>	readCapped
 nuserver.test.js	worker/people.js	<loaded>	allCaps	capOf	cleanCaps	firstWeek	handleInvites	handleMe	newCode	ownerOnly	plainFor	sameText	sha256Hex	smallBody	spend	spendEach	unspend	useCount	usedOf	utcDay	whoIs
 nuserver.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 nuserver.test.js	worker/render.js	<loaded>	RenderHub	dataUrlToBlob	fetch	handleRender	hubOf	sget	sput
-nuserver.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	correctionsText	customText	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	wbOf
+nuserver.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanOwnMaterials	correctionsText	customText	lightText	materialSchema	measuredText	orNull	ownMaterialsText	tagSchema	tagWithClaude	wbOf
 occasions.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 occasions.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 occasions.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addRestore	checkArrivals
@@ -7394,7 +7396,7 @@ records.test.js	worker/links.js	<loaded>	readCapped
 records.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	spendEach	spendUpTo	unspend	utcDay	whoIs
 records.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	putWhole	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 records.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	itemWrong	putRender	recCheck	renderId	renderTtl	strictOk
-records.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	wbOf
+records.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	ownMaterialsText	tagSchema	tagWithClaude	wbOf
 refresh.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 refresh.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	rememberRole	renderAccountUI
 refresh.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals
@@ -8825,7 +8827,7 @@ sett.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventLi
 sett.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanCustom	cleanTag	correctionsText	corsFor	customText	fetch	lightText	measuredText	orNull	readCapped	sameText	serve	sha256Hex	spend	tagSchema	tagWithClaude	txt	utcDay	wbOf	whoIs
 sett.test.js	worker/links.js	<loaded>	readCapped
 sett.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
-sett.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	txt	wbOf
+sett.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	correctionsText	customText	lightText	materialSchema	measuredText	orNull	ownMaterialsText	tagSchema	tagWithClaude	txt	wbOf
 settag.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 settag.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash
 settag.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals
@@ -9627,6 +9629,7 @@ snapshots.test.js	mq/vest.js	<loaded>
 snapshots.test.js	pack.js	<loaded>	packShow
 snapshots.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	loadRenders	missingItemPics	picsDrawn	renderItemPicUI
 snapshots.test.js	planner.js	<loaded>	idsAhead	lockStale
+snapshots.test.js	planner.js	<loaded>
 snapshots.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 snapshots.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 snapshots.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	unit	unitCC	weekFirst
@@ -10177,7 +10180,7 @@ tagging.test.js	mq/suit.js	<loaded>
 tagging.test.js	mq/vest.js	<loaded>
 tagging.test.js	pack.js	<loaded>	packShow
 tagging.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchRemoteRender	fixItemBackdrops	fnv64	jsq	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	srcOk	workerBase	workerList
-tagging.test.js	planner.js	<loaded>
+tagging.test.js	planner.js	<loaded>	idsAhead	lockStale
 tagging.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 tagging.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errSoon	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 tagging.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	unit	unitCC	weekFirst
@@ -10203,10 +10206,11 @@ tagging.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameT
 tagging.test.js	worker/photostore.js	<loaded>	handleSync
 tagging.test.js	worker/records.js	<loaded>	getRender
 tagging.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	handleTagMany	lightText	materialSchema	measuredText	orNull	ownTxt	tagSchema	tagWithClaude	txt	wbOf
+tagging.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	correctionsText	customText	handleTagMany	lightText	materialSchema	measuredText	orNull	ownMaterialsText	tagSchema	tagWithClaude	txt	wbOf
 tagmaterial.test.js	worker.js	<loaded>	corsFor	fetch	serve
 tagmaterial.test.js	worker/links.js	<loaded>	readCapped
 tagmaterial.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
-tagmaterial.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanMaterial	cleanTag	correctionsText	customText	lightText	matCap	materialSchema	measuredText	orNull	tagSchema	tagWithClaude	wbOf
+tagmaterial.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	correctionsText	customText	lightText	matCap	matName	materialSchema	measuredText	notMaterial	orNull	ownMaterialsText	tagSchema	tagWithClaude	wbOf
 tagswatch.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 tagswatch.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 tagswatch.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addCkCount	addCkSecs	addKeep	addKeepSoon	addKeepable	addNoteText	addRestore	cardReading	cardReady	cardSafe	checkArrivals	ckLeftLine	ckLr	confBtn	formCard	needType	orderRow	photoPair	qtyLabel	qtyOf	qtyRow	renderAdd	savedTitle	setq	shadeRow	tagSwInner	unreadNote	wbNote
@@ -11524,7 +11528,7 @@ wardrobe.test.js	mq/suit.js	<loaded>
 wardrobe.test.js	mq/vest.js	<loaded>
 wardrobe.test.js	pack.js	<loaded>	packShow
 wardrobe.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	jsq	lastWorn	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	srcOk	workerBase	workerList
-wardrobe.test.js	planner.js	<loaded>	beltFit	clothesScore	colsOf	colsOf0	darkShirt	darkUnderLight	fam	finish	idsAhead	leatherGroup	lockStale	metalOf	metalSame	metalsWhy	outfitScore	patInfo	patternScore	pcol	rateOutfit	shirtGroup	shirtScore	shoeCtx	shoeScore	sockEcho	sockScore	spokenCol	tieGroup	tieScore
+wardrobe.test.js	planner.js	<loaded>	beltFit	clothesScore	colsOf	colsOf0	darkShirt	darkUnderLight	fam	finish	leatherGroup	lockStale	metalOf	metalSame	metalsWhy	outfitScore	patInfo	patternScore	pcol	rateOutfit	shirtGroup	shirtScore	shoeCtx	shoeScore	sockEcho	sockScore	spokenCol	tieGroup	tieScore
 wardrobe.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 wardrobe.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 wardrobe.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	saveUserSettings	setLock	settingsOpen	shortDate	showCost	toast	toastDrop	weekFirst
@@ -11877,6 +11881,7 @@ workerfix.test.js	worker/records.js	<loaded>	delRender	getRender	itemWrong	putRe
 workerfix.test.js	worker/remind.js	<loaded>	b64u	dueDay	handlePush	localNow	pushReady	pushTo	sendReminders	subId	unb64u	vapidAuth
 workerfix.test.js	worker/render.js	<loaded>	DIAL_NOTE	RENDER_PROMPT	RenderHub	dataUrlToBlob	dropFail	failJob	fetch	handleRender	hasWatch	hubOf	jobClaim	jobMsg	jobOp	keepMade	outfitPhoto	prune	queueRender	runRenderJob	sget	sput	tellHub	waitForRenders
 workerfix.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanTag	correctionsText	customText	handleTagMany	lightText	materialSchema	measuredText	orNull	ownTxt	sleep	tagSchema	tagWithClaude	tagWithWorkersAi	txt	wbOf
+workerfix.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	correctionsText	customText	handleTagMany	lightText	materialSchema	measuredText	orNull	ownMaterialsText	sleep	tagSchema	tagWithClaude	tagWithWorkersAi	txt	wbOf
 workersweep.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 workersweep.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 workersweep.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals

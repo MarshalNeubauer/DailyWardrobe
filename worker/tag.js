@@ -162,23 +162,69 @@ const MAT_LIKELY = ['tropical wool','gabardine','cotton gabardine','mohair blend
 const MAT_LIKELY_BY = { tie: ['silk','wool','cashmere','cotton'] };
 const CONF_RANK = { low: 0, medium: 1, high: 2 }, CONF_NAME = ['low', 'medium', 'high'];
 const matCap = (key, type, closeup) => type === 'socks' ? 0 : MAT_SEES.includes(key) ? 2 : (MAT_LIKELY.includes(key) || (MAT_LIKELY_BY[type] || []).includes(key)) ? (closeup ? 1 : 0) : 0;
-/* Claude's material answer -> {key, confidence, why} (key one of the type's materials or 'none'), or null when the type has no list or
-   there is no answer. A key off the list, or one that only repeats the pattern (an end-on-end shirt "made of" end-on-end), is 'none' */
-function cleanMaterial(m, type, pats, closeup) {
+/* ---- the owner's own materials (2026-11-16, the owner's approved design): a material Claude names that is on no list is passed on
+   with new:true (the app offers to add it); the owner's own, sent with each tag and reading as ownMaterials {type: [name]}, join the
+   type's list for that call. A name is lower-case letters, spaces and hyphens, 2-24 characters, at most 3 words; never a pattern or
+   weave word, a leather, a color or a non-answer (those stay "none", as before) */
+const MAT_NAME_RE = /^[a-z][a-z -]{0,22}[a-z]$/;
+const LEATHERS = ['leather', 'calf', 'calfskin', 'cordovan', 'shell cordovan', 'suede', 'nubuck', 'patent', 'patent leather', 'pebble grain', 'scotch grain', 'shearling', 'lambskin', 'goatskin', 'deerskin', 'pigskin', 'ostrich', 'alligator', 'crocodile', 'snakeskin', 'faux leather', 'vegan leather', 'pleather', 'bonded leather', 'suede leather'];
+const NOT_MAT_WORDS = /\b(weave|woven|pattern|patterned|stripes?|striped|checks?|checked|plaid|tartan|leather|skin|unknown|unsure|unclear|none|other|n a|na|color|colour)\b/;
+/* words no material name has, so an instruction can never ride in as one ("ignore the rules") */
+const NOT_MAT_PROSE = /\b(the|a|an|and|or|to|is|are|be|you|your|i|me|my|it|this|that|ignore|disregard|forget|instructions?|rules?|system|prompt|assistant|user|answer|respond|reply|always|never|say|says|json|key|output|previous|above|below|now|please|must|should|tell)\b/;
+function notMaterial(key) {
+  if (!key || key === 'none') return true;
+  if (LEATHERS.includes(key) || NOT_MAT_WORDS.test(key) || NOT_MAT_PROSE.test(key)) return true;
+  if (PATTERN_LIST.some(p => p.replace(/-/g, ' ') === key) || COLOR_LIST.includes(key.replace(/[ -]/g, ''))) return true;
+  return ['royal oxford', 'oxford cloth', 'herringbone twill', 'basketweave', 'basket weave', 'pin point', 'end on end', 'fil a fil', 'satin', 'twill', 'jacquard', 'brocade', 'pique', 'piqué'].includes(key);
+}
+/* one name tidied to the material form, or '' when it is not one: lower case, hyphens and spaces only, never markup or prompt text */
+function matName(v) {
+  const s = String(v ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
+  if (!MAT_NAME_RE.test(s) || /  |--/.test(s) || s.split(' ').length > 3 || notMaterial(s.replace(/-/g, ' '))) return '';
+  return s;
+}
+/* the app's ownMaterials -> {type: [name]} (types with a list only, at most 20 names each, none already on the standard list) */
+function cleanOwnMaterials(o) {
+  const out = {};
+  if (!o || typeof o !== 'object' || Array.isArray(o)) return out;
+  for (const [t, l] of Object.entries(o)) {
+    if (!MATERIALS_BY[t] || !Array.isArray(l)) continue;
+    const names = [];
+    for (const v of l) { const n = matName(v); if (n && !MATERIALS_BY[t].includes(n) && !names.includes(n)) names.push(n); if (names.length >= 20) break; }
+    if (names.length) out[t] = names;
+  }
+  return out;
+}
+/* the owner's materials for Claude (in the owner's cached text: the same from call to call) */
+function ownMaterialsText(own) {
+  const e = Object.entries(own || {}).filter(([, l]) => l.length);
+  return e.length ? '\n\nMaterials the owner added (answer with the name, like a listed material, for the item types shown):\n' + e.map(([t, l]) => `  ${t}: ${l.join(', ')}`).join('\n') : '';
+}
+/* Claude's material answer -> {key, confidence, why} (key one of the type's materials, one of the owner's, a new name with new:true, or
+   'none'), or null when the type has no list or there is no answer. A key that only repeats the pattern (an end-on-end shirt "made of"
+   end-on-end), a weave, a leather or a color is 'none'. An owner's or a new material is medium at most (and Claude is told a fiber
+   without a close-up is low) */
+function cleanMaterial(m, type, pats, closeup, own) {
   const list = MATERIALS_BY[type];
   if (!list || !m || typeof m !== 'object') return null;
   const why = String(m.why ?? '').replace(/[<>\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
   let key = String(m.key ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
   const same = (Array.isArray(pats) ? pats : [pats]).filter(Boolean).map(p => String(p).toLowerCase().replace(/-/g, ' '));
-  if (!list.includes(key) || same.includes(key)) key = 'none';
-  if (key === 'none') return { key, confidence: 'low', why };
+  if (same.includes(key) || same.includes(key.replace(/-/g, ' '))) key = 'none';
   const asked = CONF_RANK[m.confidence] ?? 0;
-  return { key, confidence: CONF_NAME[Math.min(asked, matCap(key, type, !!closeup))], why };
+  if (key !== 'none' && list.includes(key)) return { key, confidence: CONF_NAME[Math.min(asked, matCap(key, type, !!closeup))], why };
+  const name = key === 'none' ? '' : matName(key), mine = name && ((own && own[type]) || []).includes(name);
+  if (!name) return { key: 'none', confidence: 'low', why };
+  const cap = type === 'socks' ? 0 : 1;
+  return { key: name, confidence: CONF_NAME[Math.min(asked, cap)], why, ...(mine ? {} : { new: true }) };
 }
 /* the material's rules for Claude (the photo tagger's single item and the close-up reader's pattern half) */
-const MATERIAL_RULES = `material — what the item is made of, from its type's material list below, or "none":
+const MATERIAL_RULES = `material — what the item is made of, from its type's material list below (the owner's own included), or "none":
   key: one material from the list for the item's type, or "none". "none" is always allowed, and it is the right answer when no listed
     material clearly fits or you cannot tell: never force the nearest one.
+    Only when you can clearly tell the cloth is a material that is on no list (for example cupro on a shirt), give its plain name
+    instead: lower-case, one to three words, letters only (the app offers to add it). Never a brand, a pattern or weave, a leather or
+    a color; when unsure, "none".
   confidence:
     high only for a cloth that is plain to see: linen (slubs, sharp creases), seersucker (puckered stripes), corduroy (wale ribs),
       velvet (pile sheen), tweed, flannel (fuzzy nap, blurred weave), denim, jersey (knit loops), grenadine (open gauze), waxed cotton,
@@ -454,7 +500,7 @@ function cleanTag(t, opts = {}) {
   const conf = c => c && typeof c === 'object' ? { type: lvl(c.type), primaryColor: lvl(c.primaryColor), pattern: lvl(c.pattern) } : typeof c === 'string' ? lvl(c) : undefined;
   const plain = v => typeof v === 'string' ? v.replace(/[<>"`]/g, '') : Array.isArray(v) ? v.map(plain) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, plain(x)])) : v;
   // the material held to its tier (cleanMaterial: a fiber is low, and low without a close-up), never only the pattern again
-  const material = 'material' in t ? cleanMaterial(t.material, t.type, [t.pattern], !!opts.closeup) || undefined : undefined;
+  const material = 'material' in t ? cleanMaterial(t.material, t.type, [t.pattern], !!opts.closeup, opts.ownMaterials) || undefined : undefined;
   return { ...plain(t), confidence: conf(t.confidence), ...(t.conf !== undefined ? { conf: conf(t.conf) } : {}), newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern, material };
 }
 /* POST /tag-many {image} -> {items: [tag + confidence + box], model}
@@ -544,4 +590,4 @@ async function tagWithWorkersAi(env, image) {
   catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
 }
 
-export { COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, materialSchema, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
+export { COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };

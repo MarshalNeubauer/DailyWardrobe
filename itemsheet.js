@@ -230,8 +230,12 @@ function typeTidy(it){const t=it.type;for(const [f,ok] of Object.entries(TYPE_FI
   if(t==='shoes'&&it.leather&&!leathersFor(it).includes(it.leather))it.leather='calf';
   if(!FABRIC.includes(t))for(const f of ['sett','stripes','patternSpec','weave','patternText','pbox'])delete it[f];
   return colTidy(it)}
-function patSummary(i){
-  if(usableSett(i))return settSummary(i.sett);
+/* (2026-11-16, the owner's camouflage shirt: the sheet wouldn't open, so it couldn't be deleted either: a pattern drawn from a fallback
+   (a camouflage with no reading of its own, camoLook; an own pattern's look) has no i.sett, and this described i.sett. It describes what is
+   drawn, and a camouflage drawn in its own colors says how to get its real ones) */
+function patSummary(i){const u=usableSett(i);
+  if(u&&u.camo&&!(i.sett&&i.sett.camo))return 'camouflage drawn in its own colors (Read pattern from photo takes the real colors from the close-up)';
+  if(u)return settSummary(u);
   if(i.sett&&i.sett.tex)return `generic (the weave texture read earlier is for a ${TEX_WORDS[i.sett.tex.kind]||'woven'} pattern)`;
   if(i.sett)return `generic (an older reading drew these ${patName(i.pattern).toLowerCase()} figures as stripes; Read pattern from photo reads them as figures)`;
   const st=i.stripes;if(!st)return 'generic';

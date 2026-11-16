@@ -9,7 +9,7 @@
    removed, never more than DESC_MAX characters. A tester's lookups count against the daily describe cap (worker/people.js).
    (An ES module of worker.js, the entry.) */
 import { OWN_COL_RE, OWN_PAT_RE } from './ownkeys.js';
-import { COLOR_HEX, COLOR_LIST, HEX_RE, MATERIALS_BY, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, TYPE_COLORS, TYPE_LIST, claudeCall, cleanMaterial, lightText, materialSchema, ownTxt, txt, wbOf } from './tag.js';
+import { COLOR_HEX, COLOR_LIST, HEX_RE, MATERIALS_BY, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, TYPE_COLORS, TYPE_LIST, claudeCall, cleanMaterial, cleanOwnMaterials, lightText, materialSchema, ownMaterialsText, ownTxt, txt, wbOf } from './tag.js';
 import { readCapped } from './links.js';
 import { plainFor, spend, unspend, utcDay } from './people.js';
 
@@ -219,12 +219,12 @@ const DFIG = { type: 'object', additionalProperties: false, required: ['shape', 
 const DMOTIF = { anyOf: [{ type: 'object', additionalProperties: false, required: ['grid', 'figures', 'cellAspect', 'rowOffset'],
   properties: { grid: { type: 'string', enum: ['straight', 'diagonal'] }, figures: { type: 'array', items: DFIG }, cellAspect: { type: 'number' },
     rowOffset: { type: 'string', enum: ['none', 'half'] } } }, { type: 'null' }] };
-/* mats: the item type's material list, for the reader's pattern half (the enum is that one type's, at most 17 names, so the grammar stays
-   small: the colour and pattern schemas together once passed what the API compiles) */
+/* mats: the item type's material list, for the reader's pattern half. The key is a plain string since 2026-11-16 (it was that type's
+   enum): Claude may name a material on no list (cupro), which the cleaner passes on with new:true; a plain string is the smaller grammar */
 function patternSchema(own, mats) {
   const s = patternSchemaOf(own);
   if (!mats) return s;
-  return { ...s, required: [...s.required, 'material'], properties: { ...s.properties, material: materialSchema(mats) } };
+  return { ...s, required: [...s.required, 'material'], properties: { ...s.properties, material: materialSchema(null) } };
 }
 function patternSchemaOf(own) {
   return { type: 'object', additionalProperties: false,
@@ -437,15 +437,17 @@ async function describeBoth(req, env, json, who, b, cm) {
   const T = descTables(), img = cm ? [{ type: 'image', source: { type: 'base64', media_type: cm[1], data: cm[2] } }] : [];
   const half = async what => {
     const colour = what === 'colour', bb = { ...b, what, field: 'primary' }, mats = colour ? null : MATERIALS_BY[b.type] || null;
+    // the owner's own materials for this type (ownMaterials, 2026-11-16) join the list, in the owner's cached text
+    const ownMats = mats ? cleanOwnMaterials({ [b.type]: (b.ownMaterials && typeof b.ownMaterials === 'object' && b.ownMaterials[b.type]) || [] }) : {};
     try {
-      const c = await claudeCall(env, { model: env.CLAUDE_DESCRIBE_MODEL || DESCRIBE_MODEL, system: colour ? T.colour : mats ? T.both : T.pattern, owner: ownerText(what, own),
+      const c = await claudeCall(env, { model: env.CLAUDE_DESCRIBE_MODEL || DESCRIBE_MODEL, system: colour ? T.colour : mats ? T.both : T.pattern, owner: ownerText(what, own) + (mats ? ownMaterialsText(ownMats) : ''),
         content: [...img, { type: 'text', text: perCall(bb, own, desc, !!cm, !typed) }],
         schema: colour ? colourSchema(own.colors) : patternSchema(own.patterns, mats), effort: colour ? 'low' : 'medium', maxTokens: colour ? 4000 : 8000,
         signal: req.signal, what: 'described' });
       if (c.status !== 200) return { fail: true, status: c.status, body: c.body };
       const out = colour ? cleanDescribeColour(c.body, bb, own, desc) : cleanDescribePattern(c.body, bb, own);
       // the material: held to its tier, never the pattern again (the item's, or the one Claude read)
-      if (mats && out.status === 200) { const m = cleanMaterial(c.body.material, b.type, [b.pattern, c.body.existing, c.body.plansAs], !!cm); if (m) out.body.material = m; }
+      if (mats && out.status === 200) { const m = cleanMaterial(c.body.material, b.type, [b.pattern, c.body.existing, c.body.plansAs], !!cm, ownMats); if (m) out.body.material = m; }
       return out.status === 200 ? { body: out.body, model: c.body.model } : { fail: true, status: out.status, body: out.body };
     } catch (e) { return { fail: true, status: 502, body: { error: 'ai', detail: 'Claude did not answer: ' + String(e && e.message || e).slice(0, 120) } }; }
   };
