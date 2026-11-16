@@ -145,15 +145,12 @@ async function applyCrop(id,left){const it=items.find(x=>x.id===id),g=cropGeom()
   if(typeof resignTagImg==='function')await resignTagImg(id,it.photo)}   // the same picture, cropped: the sharp copy (and the pattern's box on it) still holds
 /* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with the row of photo tools under it, the
    "Color & texture" card (fabrics), then a card for the tags, one for rotation, and Delete on its own at the very end */
-function toggleCompare(closeOnly){const el=$('#ivpair');if(!el||(closeOnly&&!phEdit.cmp))return;phEdit.cmp=!phEdit.cmp;el.classList.toggle('cmp',!!phEdit.cmp);el.querySelector('.tagsw').setAttribute('aria-pressed',!!phEdit.cmp)}
 function itemBody(i){
   if(phEdit.id!==i.id)phEdit={id:i.id,undo:[],crop:null};
   const pic=i.photo||wardPic(i);
-  // with a close-up, the split swatch is a button: tapped, the drawing slides over the photo and the close-up fills its square, to
-  // compare the two whole; a tap on either square puts them back (toggleCompare; the choice lasts while the item stays open)
-  const cmp=pic&&i.texture&&TEXTURE_TYPES.includes(i.type);
-  const pair=!pic?`<div class="ivdraw">${itemThumb(i)}</div>`:!cmp?photoPair(pic,i,'tagsw-'+i.id):`<div class="pair cmpable${phEdit.cmp?' cmp':''}" id="ivpair"><figure class="phfig" onclick="toggleCompare(true)"><div class="cmpbox"><img class="ph" src="${srcOk(pic)}" alt="Photo"><div class="cmpdraw" aria-hidden="true">${itemThumb(i,true)}</div></div><figcaption><span class="c0">Photo</span><span class="c1">As tagged</span></figcaption></figure>`+
-    `<figure class="tagsw" id="tagsw-${esc(i.id)}" role="button" tabindex="0" aria-pressed="${!!phEdit.cmp}" aria-label="Compare the drawing and the close-up side by side" onclick="toggleCompare()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCompare()}">${tagSwInner(i)}<figcaption class="c1">Close-up</figcaption></figure></div>`;
+  // the photo beside the split swatch (drawing | close-up), plain pictures: the comparison lives in Look & compare (2026-11-16, the
+  // owner took the old tap-to-compare out of Pictures)
+  const pair=!pic?`<div class="ivdraw">${itemThumb(i)}</div>`:photoPair(pic,i,'tagsw-'+i.id);
   // the checklist (2026-11-16, the owner's approved redesign "2B Checklist", checklist.js): a summary line (photo, rotation and care pills),
   // then sections that fold, each with a status mark and a one-line summary: Look & compare (fabrics: the close-up beside the drawing, the
   // match bar, Match close-up, the paper line, True color in 3 steps, Read color and texture), Color, Pattern, Material, Details, Planning &
