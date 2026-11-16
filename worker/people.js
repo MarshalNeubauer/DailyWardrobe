@@ -307,6 +307,7 @@ async function handleErrors(req, env, json, who) {
    The owner: the owner's own key families only (the backup, snap:, render:, ph:, and job:, jobfail:, jobrun: left by the retired
    outfit-photo queue until they expire), never u:…, invite:… or the invitation list. A Worker may make only so many KV calls per request, so a first part goes now and the queue finishes
    the rest ({wipe}); without the queue the answer carries more:true and the same call deletes the next part. ---- */
+const WIPED_KEY = 'wiped';   // {at}: when the owner last deleted everything (handleAccount)
 const OWNER_FAMILIES = ['wardrobe:v1', 'snap:', 'render:', 'job:', 'jobfail:', 'jobrun:', 'ph:'];
 async function wipeSome(env, ns, budget) {   // -> true once nothing is left
   for (const p of ns ? [ns] : OWNER_FAMILIES) {
@@ -348,6 +349,10 @@ async function handleAccount(req, env, json, who) {
   }
   if (!who.ns) await dropPush(env, '');
   if (hub) try { await hub.fetch(`https://hub/wipe${who.ns ? '?off=1' : ''}`, { method: 'POST' }); } catch (e) { console.log('hub wipe failed', e && e.message); }
+  // the owner's: when his data was deleted, kept (one small value, never part of a family wipeSome deletes), so his other connected phones
+  // ask before putting their copy back (backup.js syncLiteGet's wiped, sync.js syncWiped; fix round 3, W1-6-01: the other owner phone's
+  // next sync wrote the whole wardrobe back within a minute). A tester's other phones stop at once: the invitation is gone
+  if (!who.ns) try { await env.WARDROBE.put(WIPED_KEY, JSON.stringify({ at: Date.now() })); } catch (e) { console.log('wipe mark not kept', e && e.message); }
   const done = await wipeSome(env, who.ns, 30);
   if (!done && env.RENDER_QUEUE) { await env.RENDER_QUEUE.send({ wipe: who.ns || 'owner', n: 1 }); return json({ ok: true }); }
   return json({ ok: true, ...(done ? {} : { more: true }) });
@@ -360,4 +365,4 @@ async function runWipe(msg, env) {
 }
 
 
-export { DAY_KEY, INVITE_INDEX, UID_RE, USE_RE, countWrites, handleAccount, handleErrors, handleFeedback, handleInvites, handleMe, limitBody, ownerOnly, plainFor, runWipe, sha256Hex, smallBody, spend, spendEach, spendUpTo, unspend, utcDay, whoIs };
+export { DAY_KEY, INVITE_INDEX, WIPED_KEY, UID_RE, USE_RE, countWrites, handleAccount, handleErrors, handleFeedback, handleInvites, handleMe, limitBody, ownerOnly, plainFor, runWipe, sha256Hex, smallBody, spend, spendEach, spendUpTo, unspend, utcDay, whoIs };

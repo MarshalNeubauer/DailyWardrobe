@@ -5,7 +5,8 @@
 const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
 const keyDate=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
 let swapMsg='';
-async function saveDay(rec,quiet,auto){rec.updated=nextStamp(rec.updated);if(!auto){delete rec.lockOnly;delete rec.base}dayRecs[rec.date]=rec;await txs('days','readwrite',s=>s.put(rec));cache={};if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
+async function saveDay(rec,quiet,auto){rec.updated=nextStamp(rec.updated);if(!auto){delete rec.lockOnly;delete rec.base}const was=dayRecs[rec.date];dayRecs[rec.date]=rec;   /* (core.js dayFields: the fields changed since the copy before get this save's stamp; the one in memory, or, changed in place, the stored one) */
+  if(was!==rec){dayFields(rec,was);await txs('days','readwrite',s=>s.put(rec))}else await atomic('days',rec.date,cur=>{dayFields(rec,cur);return {put:rec}});cache={};if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
 /* start-up writers wait for the first pull (sync.js afterPull; sync.js loads after this file, so through afterScripts) */
 let todayPullWait=false;
 const whenPulled=f=>afterScripts(()=>typeof afterPull==='function'?afterPull(f):f());
@@ -83,7 +84,7 @@ async function lockUpcoming(){
     const r=dayRecs[k],l=lockIds(o);if(r&&r.lock&&JSON.stringify(r.lock)===JSON.stringify(l)&&!lockStale(r,t=>items.filter(i=>i.type===t&&inRotation(i,di(d)))))continue;
     // (lockAt: when it was made, so a lock made while the wardrobe had too few of a type lets go once more come in: planner.js lockStale)
     const rec={...(r||{date:k}),lock:l,lockAt:nowMs(),updated:nextStamp(r&&r.updated),lockOnly:1,base:(r&&(r.lockOnly?r.base:r.updated))||0};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
-    await txs('days','readwrite',s=>s.put(rec))}
+    dayFields(rec,r);await txs('days','readwrite',s=>s.put(rec))}   // (only the lock's fields get its stamp: core.js dayFields)
   n+=await lockPast(di(T)+span-1,mine);
   if(n&&window.scheduleSync)scheduleSync()}
 /* the week's locks on days after the window (end: its last day number) let go: those made when the lock ran seven days, or by a phone

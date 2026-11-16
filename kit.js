@@ -315,7 +315,10 @@ async function kitImportGo(){if(!kitImp||kitImpBusy)return;const cards=kitImp.ro
   kitClose();if($('#add')&&!$('#add').hidden)renderAdd();else if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
   toast(`Imported ${ids.length} item${ids.length===1?'':'s'}.`,KIT_IMP_UNDO_MS,{label:'Undo',fn:()=>kitUnsave({its:ids,qs:[]})})}
 /* the last import taken out again, after its Undo has gone (from the import sheet) */
-async function kitUnimport(){const l=kitLastImp();if(!l)return;
+/* (fix round 3, W1-6-05: judged on this phone's copy alone, a piece renamed on another phone went too) a connected phone syncs first, so
+   "changed since" counts changes made anywhere; offline it goes on with what it has */
+async function kitUnimport(){if(typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')&&!(typeof inviteOver==='function'&&inviteOver()))try{await syncNow()}catch{}
+  const l=kitLastImp();if(!l){const r=$('#kit-last');if(r)r.remove();return}
   if(!await askConfirm(`Take out the ${l.ids.length} item${l.ids.length===1?'':'s'} of your last import?\n\nAnything you added another way stays${l.kept?`, and so ${l.kept===1?'does the imported piece':`do the ${l.kept} imported pieces`} you changed since`:''}.`,{ok:'Take them out',danger:true}))return;
   try{await kitDelMany(l.ids)}catch(e){kitFail(e);return}
   try{localStorage.removeItem(KIT_IMP_LAST)}catch{}const r=$('#kit-last');if(r)r.remove();if(kitImp){kitDupMark(kitImp.rows);kitPrevDraw()}
