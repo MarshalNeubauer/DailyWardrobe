@@ -181,12 +181,16 @@ function nextRevs(prev, data, rev) {
   const st = data && data.settings, ps = pd.settings ? pd.settings.updated || 0 : null;
   return { i, d, s: st && (st.updated || 0) === ps && pr.s != null ? pr.s : rev };
 }
+/* the sample wardrobe stays on the phone that loaded it (fix round 3, W1-3-04): a sample piece the person hasn't made his (sample without
+   sampleMine; kit.js kitEdited) is never kept or handed out. An app from before that rule (14-15 Nov) uploaded the whole sample, and a new
+   phone joining got it with "You're trying a sample wardrobe": GET ?lite leaves such pieces out, and the next save drops them */
+const sampleOnly = i => !!i && i.sample === true && !i.sampleMine;
 /* core.js mergeState and stateSig, for the worker: the newer stamp wins, a deletion wins over any older edit, ties keep a's */
 function mergeLite(a, b) {
   a = a || {}; b = b || {}; const items = {}, tomb = { ...(a.tombstones || {}) };
   for (const [id, t] of Object.entries(b.tombstones || {})) tomb[id] = Math.max(tomb[id] || 0, +t || 0);
   for (const it of [...arrOf(a.items), ...arrOf(b.items)]) { if (!it || it.id == null) continue; const cur = items[it.id]; if (!cur || stampOf(it) > stampOf(cur)) items[it.id] = it; }
-  for (const id of Object.keys(items)) if (tomb[id] && tomb[id] >= stampOf(items[id])) delete items[id];
+  for (const id of Object.keys(items)) if ((tomb[id] && tomb[id] >= stampOf(items[id])) || sampleOnly(items[id])) delete items[id];
   const cutoff = Date.now() - 180 * 864e5; for (const id of Object.keys(tomb)) if (tomb[id] < cutoff) delete tomb[id];
   // (a newer copy that is only the app's lock of the week loses to an older copy changed after the version the lock was built on:
   // core.js dayWins, 2026-11-14)
@@ -279,7 +283,8 @@ async function syncLiteGet(env, json, cors, ns, q) {
   if (!m && await env.WARDROBE.get(KEY)) return storedResponse(env, KEY, m, cors);   // saved by a worker that kept no version: as before
   const src = await loadAny(env, KEY, m, false);
   if (!src) return storedResponse(env, KEY, m, cors);                                 // too large to index here: the whole backup, as before
-  const rev = m ? m.rev : 0, saved = m ? m.saved : 0, D = src.lite.data || {}, R = src.lite.revs || {};
+  const rev = m ? m.rev : 0, saved = m ? m.saved : 0, D0 = src.lite.data || {}, R = src.lite.revs || {};
+  const D = arrOf(D0.items).some(sampleOnly) ? { ...D0, items: arrOf(D0.items).filter(i => !sampleOnly(i)) } : D0;   // (not the sample wardrobe)
   const [sr, ss] = (q.get('since') || '').split(':').map(Number), all = !(sr > 0) || sr > rev || (sr === rev && ss !== saved);
   const newer = r => all || (r ?? rev) > sr;
   const body = { lite: 1, rev, saved, all, items: arrOf(D.items).filter(i => newer(R.i && R.i[i.id])), days: arrOf(D.days).filter(d => newer(R.d && R.d[d.date])), tombstones: D.tombstones || {},

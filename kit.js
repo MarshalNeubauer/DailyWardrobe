@@ -128,7 +128,7 @@ async function kitStore(list,prog){if(!list.length)return true;const now=Date.no
 /* delete items (each with a tombstone, as Delete does), with changed items (put) and day records (days) in the same transaction */
 async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=Date.now(),gone=new Set(ids);
   await kitTx(['items','meta','days'],t=>{const s=t.objectStore('items');for(const id of ids)s.delete(id);for(const it of put){it.updated=now;s.put(it)}
-    const d=t.objectStore('days');for(const r of days){r.updated=now;delete r.lockOnly;delete r.base;d.put(r)}kitTombs(t,ids,now)});
+    const d=t.objectStore('days');for(const r of days){if(r.updated!==KIT_YIELD)r.updated=now;delete r.lockOnly;delete r.base;d.put(r)}kitTombs(t,ids,now)});   // (KIT_YIELD: a sample-only day keeps its stamp of 1, kitSampleRemove)
   items=items.filter(x=>!gone.has(x.id));for(const it of put){const k=items.findIndex(x=>x.id===it.id);if(k>=0)items[k]=it}
   for(const r of days)dayRecs[r.date]=r;cache={};todayStale=true;if(window.scheduleSync)scheduleSync()}
 
@@ -323,7 +323,7 @@ const KIT_SAMPLE=[
   ['belt','black',null,'solid',{}],['belt','brown',null,'solid',{}],['socks','navy',null,'solid',{}],['socks','charcoal',null,'solid',{}],['watch','silver',null,'solid',{metal:'silver'}]];
 const KIT_SAMPLE_NOJKT=[['pants','navy',null,'solid',{}],['pants','charcoal',null,'solid',{}]];   // without jackets: trousers enough to judge (shop.js SHOP_MIN)
 const KIT_EDIT_MS=3000;
-const kitHasSample=()=>items.some(i=>i.sample);
+const kitHasSample=()=>items.some(i=>i.sample&&!kitEdited(i));   // (pieces he made his alone are no sample wardrobe: a phone joining got the banner for them)
 /* a sample piece he changed is his now. Only an edit he makes in the item sheet makes it his: app.js put sets item.sampleMine while the item sheet is open on it (kitUserEdit);
    a new stamp alone doesn't (re-audit 2026-11-15: a roll back or a start-up fix-up such as migrateVests or checkArrivals restamped an
    untouched sample piece, which was then uploaded and kept on Remove the sample), nor does out of rotation (itemsheet.js togglePause sets
@@ -331,6 +331,28 @@ const kitHasSample=()=>items.some(i=>i.sample);
 let kitNoMine=false;
 const kitUserEdit=i=>{if(i&&i.sample&&!kitNoMine&&typeof editing!=='undefined'&&editing===i.id)i.sampleMine=1};
 const kitEdited=i=>!!i.sample&&!!i.sampleMine;
+/* the sample pieces the earlier rule counted as his (fix round 3, W1-3-01: an edit, a pause or a cleaning on 14-15 Nov builds made a piece
+   his, updated more than KIT_EDIT_MS after added; the rule above turned them back into sample, and Remove the sample took them with their
+   history). Once per device after the first pull, a sample piece added before the rule changed (KIT_MINE_CUT, when #454 was deployed)
+   and stamped by the old rule is made his (no longer a sample piece, as Keep it as mine does, with a new stamp, so it goes up and other phones take it) */
+const KIT_MINE_CUT=Date.UTC(2026,10,15,12);
+const kitOldMine=i=>!!i&&!!i.sample&&!i.sampleMine&&(i.added||0)<KIT_MINE_CUT&&(i.updated||0)-Math.max(i.added||0,i.sampleBase||0)>KIT_EDIT_MS;
+async function kitSampleMigrate(){try{if(localStorage.getItem('kit_mine'))return}catch{return}
+  const l=items.filter(kitOldMine).map(i=>{const c={...i};delete c.sample;delete c.sampleMine;delete c.sampleBase;return c});   // (his, as Keep it as mine makes it)
+  if(l.length){const now=Date.now();
+    try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of l){it.updated=now;s.put(it)}})}catch(e){console.warn('sample pieces not kept as his',e);return}
+    for(const it of l){const k=items.findIndex(x=>x.id===it.id);if(k>=0)items[k]=it}
+    cache={};todayStale=true;if(window.scheduleSync)scheduleSync();
+    toast(`${l.length===1?'The sample piece':`The ${l.length} sample pieces`} you changed ${l.length===1?'is':'are'} yours: Remove the sample keeps ${l.length===1?'it':'them'}.`,6000)}
+  try{localStorage.setItem('kit_mine','1')}catch{}}
+/* does a day's record, with the sample's pieces taken out (kitSampleDay), still hold anything of his? His own pieces, a pick, the week's
+   lock of his own pieces, an occasion, a kind, a skip, a piece taken off, a trip. A record that holds nothing else was made from the
+   sample: it never goes up (sync.js syncShare), and Remove the sample gives it the stamp KIT_YIELD, so the account's own record of that
+   day, made on another phone, wins over it (fix round 3, W1-6-04: Remove the sample on a phone that tried the sample before joining
+   stamped its sample days new and wiped the other phone's real days) */
+const KIT_YIELD=1;
+const KIT_OWN=['force','lock','occasion','formal','kind','skip','off','trip'];
+const kitDayOwn=c=>!!(c.ids&&Object.values(c.ids).some(Boolean))||KIT_OWN.some(k=>c[k]&&(typeof c[k]!=='object'||Object.keys(c[k]).length));
 const kitSampleSig=i=>[i.type,i.primaryColor,i.secondaryColor||'',FABRIC.includes(i.type)?i.pattern||'solid':'solid',i.cuff==='french'?'f':''].join('|');
 function kitSampleCards(){const l=KIT_SAMPLE.filter(x=>!dressOut(x[0]));if(!wearsJacket())l.push(...KIT_SAMPLE_NOJKT);
   return l.map(([type,c,c2,p,x])=>({id:crypto.randomUUID(),manual:true,type,primaryColor:c,secondaryColor:c2,tertiaryColor:null,pattern:FABRIC.includes(type)?p:'solid',metal:'silver',leather:'calf',sample:true,...x}))}
@@ -364,11 +386,29 @@ async function kitSampleRemove(quiet){if(kitSampling)return;   // quiet: already
   kitSampling=true;kitSampleBusy(true);if(!quiet)toast('Removing the sample…',8000);
   try{if(typeof recordRun!=='undefined'&&recordRun)await Promise.resolve(recordRun).catch(()=>{});   // (a recording of today from the plan with the sample, still running, would write its pieces back after)
     const ids=new Set(gone.map(i=>i.id)),mine=keep.map(i=>{const c={...i};delete c.sample;delete c.sampleMine;return c}),T=todayDate();
-    const days=Object.values(dayRecs).filter(r=>[...ids].some(id=>JSON.stringify(r).includes(id))).map(r=>kitSampleDay(r,ids,T));
-    await kitDelMany([...ids],mine,days);if(typeof clearLocks==='function')await clearLocks()}
+    const orig=Object.values(dayRecs).filter(r=>[...ids].some(id=>JSON.stringify(r).includes(id)));
+    // a day made only from the sample keeps the stamp KIT_YIELD: the account's own record of it (another phone's) wins (kitDayOwn)
+    const days=orig.map(r=>{const c=kitSampleDay(r,ids,T);if(!kitDayOwn(c))c.updated=KIT_YIELD;return c});
+    const undo={items:s.map(i=>JSON.parse(JSON.stringify(i))),days:orig.map(r=>JSON.parse(JSON.stringify(r)))};
+    await kitDelMany([...ids],mine,days);if(typeof clearLocks==='function')await clearLocks();
+    undo.wrote=Object.fromEntries(days.map(c=>[c.date,c.updated]));kitRmUndo=undo;
+    // connected: the account's records of those days come in before Today records anything from the plan (kitSampleUndo)
+    if(typeof isConnected==='function'&&isConnected()&&window.syncNow)await Promise.race([syncNow().catch(()=>{}),new Promise(r=>setTimeout(r,KIT_RM_SYNC))])}
   catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
   if(quiet){cache={};todayStale=true;if(typeof refreshToday==='function'&&!$('#today').hidden)refreshToday();return}
-  show(items.length?'today':'wardrobe');toast(kn?`The sample wardrobe is gone. The ${kn===1?'piece':`${kn} pieces`} you changed stayed.`:'The sample wardrobe is gone.',3500)}
+  show(items.length?'today':'wardrobe');toast(kn?`The sample wardrobe is gone. The ${kn===1?'piece':`${kn} pieces`} you changed stayed.`:'The sample wardrobe is gone.',8000,{label:'Undo',fn:kitSampleUndo})}
+/* Undo of Remove the sample (fix round 3): the pieces come back (a new stamp, newer than their deletion marks) as they were, and each day
+   record still as Remove left it is put back as it was before; a day the account's record replaced meanwhile (a sync) keeps that. A day
+   that went back to the sample keeps its old stamp when Remove had given it KIT_YIELD (it never went up), else takes a new one */
+let kitRmUndo=null;const KIT_RM_SYNC=8000;
+async function kitSampleUndo(){const u=kitRmUndo;if(!u||kitSampling)return;kitRmUndo=null;kitSampling=true;kitSampleBusy(true);
+  try{const now=Date.now(),its=u.items.map(i=>({...i,updated:now}));
+    const days=u.days.filter(r=>dayRecs[r.date]&&dayRecs[r.date].updated===u.wrote[r.date]).map(r=>({...r,updated:u.wrote[r.date]===KIT_YIELD?r.updated:now}));
+    await kitTx(['items','days'],t=>{const s=t.objectStore('items'),d=t.objectStore('days');for(const it of its)s.put(it);for(const r of days)d.put(r)});
+    const back=new Map(its.map(i=>[i.id,i]));items=items.filter(i=>!back.has(i.id)).concat(its);for(const r of days)dayRecs[r.date]=r;
+    cache={};todayStale=true;if(window.scheduleSync)scheduleSync()}
+  catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
+  show('today');toast('The sample wardrobe is back.',3000)}
 /* a day's record with the sample's pieces taken out (re-audit 2026-11-15, N2: the record was cut to its occasion, and history.js recordDays
    then filled the past day again from today's plan: "Didn't" days became worn, a suit bought later was worn before it came, real wears were
    replaced). Everything else the day recorded stays: worn or not, a corrected day, the occasion, the own pieces.

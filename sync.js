@@ -160,10 +160,49 @@ async function phOut(recs,have){const strs=[...phStrings(recs,isPh)],by=new Map(
    wardrobe and showed on his other phones): uploads leave out the sample pieces he hasn't made his (kit.js kitEdited) and the day records
    naming one; Remove the sample rewrites those records (kit.js kitSampleDay) with a new stamp, and they go up then. Applied to what is
    sent only: the merge and this phone's copy are unchanged */
+/* fix round 3 (W1-3-02, W1-6-04): a day naming a sample piece goes up with the sample's pieces taken out (kit.js kitSampleDay, today
+   counted as a past day so its own pieces stay), when that still holds anything of his (kitDayOwn): a "Didn't" or a swap on a day with one
+   sample piece was held back for good, and a phone joining was told he hadn't opened the app. A day made only from the sample, and one
+   Remove the sample left to yield (KIT_YIELD), never goes up: it would replace the account's own record of that day; except a "Didn't" /
+   "Wore" or a correction he made on it after this phone joined the account (syncJoinAt): it goes up with no outfit (noOutfit), so his
+   mark reaches his other phones (W1-3-02: a phone updated from 15 Nov with the sample in its backup), while a phone that tried the sample
+   before joining (W1-6-04) sends none of its sample days.
+   remote (the whole backup, PUT only): a day left out keeps the backup's copy, since a PUT replaces the whole backup */
+/* when this phone first synced with this account (sync_join: the code's last 6 characters and the time; set by syncOnce before its first
+   request, so nothing changed before it counts as made in the account) */
+function syncJoinAt(){try{const j=JSON.parse(localStorage.getItem('sync_join')||'null'),t=localStorage.getItem('app_token')||'';return j&&t&&j.k===t.slice(-6)?+j.at||0:0}catch{return 0}}
+function syncJoinMark(token){try{if(!syncJoinAt()&&token)localStorage.setItem('sync_join',JSON.stringify({k:token.slice(-6),at:syncMark()?1:Date.now()}))}catch{}}   // (a phone that synced with this server before this version: in the account all along)
+/* today and the coming days follow the plan, which differs between a phone with the sample and one without: each re-locked and recorded
+   the other's copy, a save at every sync (measured in the lab: a write every other background, 0 before). So such a day (sent without the
+   sample) goes up once per change of what he decided on it (syncSdSig: worn, a correction, his picks, the occasion, a piece off...), not
+   for the app's own locks and records; sync_sd keeps what was sent per date (syncSdDone after a save went through) */
+let syncSdNew={};
+const SYNC_SD=['worn','edited','noOutfit','force','occasion','formal','kind','skip','off','trip','vest'];
+const syncSdSig=c=>JSON.stringify(SYNC_SD.map(k=>c[k]===undefined?null:c[k]));
+function syncSdGet(){try{return JSON.parse(localStorage.getItem('sync_sd')||'{}')||{}}catch{return {}}}
+function syncSdDone(){const n=syncSdNew;syncSdNew={};if(!Object.keys(n).length)return;const T=todayDate(),m={...syncSdGet(),...n},old=new Date(T.getFullYear(),T.getMonth(),T.getDate()-SYNC_SD_DAYS);
+  for(const k of Object.keys(m))if(keyDate(k)<old)delete m[k];try{localStorage.setItem('sync_sd',JSON.stringify(m))}catch{}}
+/* W1-3-03: a day he opened the app on in the account (recorded after this phone joined, syncJoinAt) but dressed only from the sample went
+   nowhere, and a phone joining later recorded it from its own plan and said "you didn't open the app". It goes up with no outfit and the
+   stamp KIT_YIELD: the backup takes it only where it has no record of that day, or only the app's lock built on nothing (core.js dayWins,
+   base 0); any real record of the day, another phone's, wins. syncOrig: the record's own stamp, which decides whether it is sent */
+const SYNC_SD_DAYS=60,syncOrig=new WeakMap();
+const syncSentStamp=d=>syncOrig.has(d)?syncOrig.get(d):(d.updated||0);
 const syncOwn=i=>!(i&&i.sample)||(typeof kitEdited==='function'&&kitEdited(i));
-function syncShare(st){const off=new Set((st.items||[]).filter(i=>!syncOwn(i)).map(i=>i.id));if(!off.size)return st;
+function syncShare(st,remote){syncSdNew={};const off=new Set((st.items||[]).filter(i=>!syncOwn(i)).map(i=>i.id)),yd=d=>typeof KIT_YIELD!=='undefined'&&d.updated===KIT_YIELD;
+  if(!off.size&&!(st.days||[]).some(yd))return st;
   const names=r=>[r.ids,r.lock,r.force].some(o=>o&&Object.values(o).some(v=>off.has(v)));
-  return {...st,items:st.items.filter(i=>!off.has(i.id)),days:(st.days||[]).filter(d=>!names(d))}}
+  const T=todayDate(),T1=new Date(T.getFullYear(),T.getMonth(),T.getDate()+1),rd=new Map(((remote&&remote.days)||[]).map(d=>[d.date,d])),days=[];
+  const join=syncJoinAt(),said=(c,d)=>(c.worn!==undefined||!!c.edited)&&join>0&&(d.updated||0)>join,sd=syncSdGet();
+  for(const d of st.days||[]){let c=d,y=false;
+    if(yd(d))c=null;else if(names(d))c=typeof kitSampleDay==='function'?kitSampleDay(d,off,T1):null;
+    if(c&&c!==d&&!kitDayOwn(c)&&!said(c,d)){
+      // (a day he used the app on in the account, dressed only from the sample: a yielding copy, see syncOrig)
+      if(join>0&&(d.updated||0)>join&&keyDate(d.date)<T1){c={...c,updated:KIT_YIELD};y=true}else c=null}
+    if(c&&c!==d&&(y||keyDate(d.date)>=T)){const g=(y?'y':'')+syncSdSig(c);if(sd[d.date]===g)c=null;else{syncSdNew[d.date]=g;if(y)syncOrig.set(c,d.updated||0)}}   // (today, coming days, yielding copies: once per change of his)
+    if(c&&y&&rd.has(d.date))c=mergeState({days:[rd.get(d.date)]},{days:[c]}).days[0];   // (a PUT: the backup's copy unless it is only a lock built on nothing)
+    if(c)days.push(c);else if(rd.has(d.date))days.push(rd.get(d.date))}
+  return {...st,items:st.items.filter(i=>!off.has(i.id)),days}}
 /* one round of the small sync, after GET ?lite=1 answered remote: true/false as syncOnce, or {again:{since, all, legacy}} */
 async function syncLite(remote,local,url,token,inline){
   const got=await phIn({items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token);
@@ -179,7 +218,7 @@ async function syncLite(remote,local,url,token,inline){
   pullDone();   // this device now holds everything the backup does: start-up writers may run (before the upload: they save on a current copy)
   // what the backup lacks: records newer than its own, tombstones it doesn't have
   const share=syncShare(now);   // (not the sample wardrobe)
-  const up={items:share.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:share.days.filter(d=>!(d.date in ix.d)||(d.updated||0)>ix.d[d.date]||keptD(d)),
+  const up={items:share.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:share.days.filter(d=>!(d.date in ix.d)||syncSentStamp(d)>ix.d[d.date]||keptD(d)),
     tombstones:Object.fromEntries(Object.entries(now.tombstones).filter(([id,t])=>!(id in tomb)||tomb[id]<t))};
   if(now.settings&&(now.settings.updated||0)>(ix.s??-1))up.settings=now.settings;
   if(!up.items.length&&!up.days.length&&!up.settings&&!Object.keys(up.tombstones).length){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
@@ -194,7 +233,7 @@ async function syncLite(remote,local,url,token,inline){
   if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
   if(endedAnswer(p.status,pr)){inviteEnded(token,pr);setSyncStatus(ENDED);return false}
   if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
-  setSyncMark(pr.rev,pr.saved,stateSig(now));synced();restoreDone();
+  setSyncMark(pr.rev,pr.saved,stateSig(now));syncSdDone();synced();restoreDone();
   if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
   return true}
 async function syncOnce(){
@@ -202,7 +241,7 @@ async function syncOnce(){
   if(!url){setSyncStatus('Not connected.');return false}
   if(!token){setSyncStatus('Not connected: paste your invite link under Connection.');return false}
   if(localStorage.getItem('invite_ended')===token){setSyncStatus(ENDED);return false}
-  syncing=true;setSyncStatus('Syncing…');
+  syncing=true;setSyncStatus('Syncing…');syncJoinMark(token);
   try{
     let lite=SYNC_LITE&&!!(self.crypto&&crypto.subtle),since=null,all=false,full=0;const inline=new Set();
     for(let attempt=0;attempt<6;attempt++){
@@ -222,7 +261,7 @@ async function syncOnce(){
       if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
       const merged=mergeState(local,remote.data||{});
       // upload what is actually stored now (it may include edits made during this sync)
-      const now=mergeState(await applyMerged(merged,local),remote.data||{}),out=syncShare(now);pullDone();   // (out: what is sent, without the sample wardrobe)
+      const now=mergeState(await applyMerged(merged,local),remote.data||{}),out=syncShare(now,remote.data);pullDone();   // (out: what is sent, without the sample wardrobe)
       if(remote.data&&stateSig(out)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
       if((+localStorage.getItem('sync_pause')||0)>Date.now()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
       const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date()),...(restoreWanted()?{reason:'restore'}:{}),data:out})});   // data last: the server reads a large backup's few leading fields without parsing the whole
@@ -231,7 +270,7 @@ async function syncOnce(){
       if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
       if(endedAnswer(p.status,pr)){inviteEnded(token,pr);setSyncStatus(ENDED);return false}
       if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
-      setSyncMark(pr.rev,pr.saved,stateSig(now));synced();restoreDone();
+      setSyncMark(pr.rev,pr.saved,stateSig(now));syncSdDone();synced();restoreDone();
       if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
       return true;
     }
