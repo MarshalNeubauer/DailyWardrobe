@@ -5,24 +5,28 @@
 const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
 const keyDate=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
 let swapMsg='';
-async function saveDay(rec,quiet,auto){rec.updated=Date.now();if(!auto){delete rec.lockOnly;delete rec.base}dayRecs[rec.date]=rec;await txs('days','readwrite',s=>s.put(rec));cache={};if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
+async function saveDay(rec,quiet,auto){rec.updated=nextStamp(rec.updated);if(!auto){delete rec.lockOnly;delete rec.base}const was=dayRecs[rec.date];dayRecs[rec.date]=rec;   /* (core.js dayFields: the fields changed since the copy before get this save's stamp; the one in memory, or, changed in place, the stored one) */
+  if(was!==rec){dayFields(rec,was);await txs('days','readwrite',s=>s.put(rec))}else await atomic('days',rec.date,cur=>{dayFields(rec,cur);return {put:rec}});cache={};if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
 /* start-up writers wait for the first pull (sync.js afterPull; sync.js loads after this file, so through afterScripts) */
 let todayPullWait=false;
 const whenPulled=f=>afterScripts(()=>typeof afterPull==='function'?afterPull(f):f());
 /* remember what each day showed: past days become fixed, and today's record follows the screen until the day ends */
 async function recordDays(p){
   const T=todayDate(),tk=key(T),mine=dayRecs,out=[],first=firstReal();
-  // the days missed since the app was first used for real (and today) are worked out and put in memory first, synchronously, so a drawing
-  // of Today that follows the call (renderToday) already counts them: "This look last worn" and the cleaning frame changed a moment after
-  // opening (fix round 3, W2-14-12). The planner's first days before any real use are saved as before, after the drawing
+  // the days missed since the app was first used for real are worked out and put in memory first, synchronously, so a drawing of Today
+  // that follows the call (renderToday) already counts them: "This look last worn" and the cleaning frame changed a moment after opening
+  // (fix round 3, W2-14-12). The planner's first days before any real use, and today, are saved as before, after the drawing
+  // past days are recorded only up to the corrected date (core.js trueToday): a phone whose clock was a year ahead recorded 64 workdays that
+  // hadn't happened as worn and backed them up (the audit's W1-9-03)
+  const P=Math.min(+T,+trueToday());
   for(const [k,o] of Object.entries(p)){
     if(!SLOTS.some(s=>o[s])||o.frozen)continue;const d=keyDate(k),r=dayRecs[k];
     // a past day with no pieces recorded: none at all, or only the week's lock (lockUpcoming), as on a day the app was not opened;
     // recorded with what the record already has, else it never became history (no wear counts, an outfit that could still change)
     // (noOutfit: a past day dressed only from the sample wardrobe, since removed, kept with no outfit: kit.js kitSampleDay)
     // (idsAhead, planner.js: pieces an earlier version wrote ahead of the day with a pick, the outfit from before it: recorded again)
-    if(d<T&&!(r&&((r.ids&&!idsAhead(r))||r.noOutfit))){const n={...(r||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,auto:true},now=+d>first;n.updated=Date.now();if(now)dayRecs[k]=n;out.push({n,past:true,prev:r,now})}
-    else if(k===tk){const ids=idsOf(o);if(!r||JSON.stringify(r.ids)!==JSON.stringify(ids)||!!r.vestOn!==!!o.vest){const n={...(r||{date:k}),ids,suitDay:o.suitDay,vestOn:!!o.vest};n.updated=Date.now();out.push({n,past:false,prev:r,now:false})}}   // (today's own record counts in no drawing: saved in turn)
+    if(+d<P&&!(r&&((r.ids&&!idsAhead(r))||r.noOutfit))){const n={...(r||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,auto:true},now=+d>first;if(now)dayRecs[k]=n;out.push({n,past:true,prev:r,now})}
+    else if(k===tk&&+T===P){const ids=idsOf(o);if(!r||JSON.stringify(r.ids)!==JSON.stringify(ids)||!!r.vestOn!==!!o.vest){const n={...(r||{date:k}),ids,suitDay:o.suitDay,vestOn:!!o.vest};out.push({n,past:false,prev:r,now:false})}}   // (today's own record counts in no drawing: saved in turn)
   }
   if(!out.length)return;if(cache)delete cache.careW;   // the cleaning counts follow the days just recorded (care.js careCounts)
   await null;   // the saves start after the caller's drawing (saveDay puts a record in memory before it waits)
@@ -93,6 +97,8 @@ const LOCK_LAST=5;   // Friday (getDay)
 const lockSpan=T=>(LOCK_LAST-T.getDay()+7)%7+1;   // the days from today through the coming Friday, today counted
 async function lockUpcoming(){
   if(!items.length)return;const T=todayDate(),mine=dayRecs,span=lockSpan(T);let n=0;
+  if(+T>+trueToday())return;   // the phone's date is ahead of the right one (core.js): no week of days that haven't come is locked and backed up
+
   for(let g=0;g<span;g++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+g);if(!isWorkday(d))continue;
     if(dayRecs!==mine)break;   // the history was replaced meanwhile (sync, restore)
     // the plan is read afresh for each day (it is cached; a change made while an earlier lock was being saved has reset it), and the lock
@@ -100,8 +106,8 @@ async function lockUpcoming(){
     const k=key(d),o=planMonth(d.getFullYear(),d.getMonth())[k];if(!o||o.frozen||!SLOTS.some(s=>o[s]))continue;
     const r=dayRecs[k],l=lockIds(o);if(r&&r.lock&&JSON.stringify(r.lock)===JSON.stringify(l)&&!lockStale(r,t=>items.filter(i=>i.type===t&&inRotation(i,di(d)))))continue;
     // (lockAt: when it was made, so a lock made while the wardrobe had too few of a type lets go once more come in: planner.js lockStale)
-    const rec={...(r||{date:k}),lock:l,lockAt:Date.now(),updated:Date.now(),lockOnly:1,base:(r&&(r.lockOnly?r.base:r.updated))||0};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
-    await txs('days','readwrite',s=>s.put(rec))}
+    const rec={...(r||{date:k}),lock:l,lockAt:nowMs(),updated:nextStamp(r&&r.updated),lockOnly:1,base:(r&&(r.lockOnly?r.base:r.updated))||0};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
+    dayFields(rec,r);await txs('days','readwrite',s=>s.put(rec))}   // (only the lock's fields get its stamp: core.js dayFields)
   n+=await lockPast(di(T)+span-1,mine);
   if(n&&window.scheduleSync)scheduleSync()}
 /* the week's locks on days after the window (end: its last day number) let go: those made when the lock ran seven days, or by a phone
@@ -175,12 +181,12 @@ function fitOf(slot,o,c){
     case 'clip':case 'links':return o.watch&&metalOf(c)!==null?(metalOf(c)===metalOf(o.watch)?6:-4):0}
   return 0}
 const fitTag=gap=>gap<=.5?['best','Best match']:gap<=QWIN?['good','Good match']:gap<=18?['ok','Works']:['weak','Weak match'];
-const pickPic=i=>i.photo?`<img src="${phSm(i)}" alt="">`:itemPic(i)?`<img src="${itemPic(i).img}" alt="">`:itemThumb(i,true);
+const pickPic=i=>i.photo?`<img src="${srcOk(phSm(i))}" alt="">`:itemPic(i)?`<img src="${srcOk(itemPic(i).img)}" alt="">`:itemThumb(i,true);
 function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;const pool=slotPool(slot,o),cur=o[slot]&&o[slot].id,label=slotLabel(slot,o).toLowerCase();
   if(!o.frozen&&pool.length<2){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to choose from.`;renderToday();return}
   const scored=pool.map(i=>[fitOf(slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1)),best=scored.length?scored[0][0]:0;
   const card=([f,i])=>{const [cls,txt]=fitTag(best-f),on=i.id===cur;
-    return `<button class="pick-it${on?' cur':''}" onclick="pickItem('${slot}','${i.id}')" aria-label="${esc(itemTitle(i)||nm(i))}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span><small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
+    return `<button class="pick-it${on?' cur':''}" onclick="pickItem('${slot}','${jsq(i.id)}')" aria-label="${esc(itemTitle(i)||nm(i))}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span><small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
   const none=o.frozen&&slot!=='top'&&cur?`<button type="button" onclick="pickItem('${slot}','')">None: I didn't wear one</button>`:'';
   $('#pick-sheet').innerHTML=`<div class="pick-head"><b id="pick-title">${o.frozen?`What ${label} did you wear?`:`Choose ${aAn(label)}`}</b><button class="pick-x" onclick="closePicker()" aria-label="Close">×</button></div>
     <p class="mut"><small>${o.frozen?'Pick what you really wore on '+shortDate(sel)+'.':`Every ${label} you own, the best match for the rest of the outfit first.`}</small></p>

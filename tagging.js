@@ -41,23 +41,33 @@ async function sharpCloseOf(it){if(!it||!it.texture)return null;
    matched, gains held to 0.6-1.6. The sharp copy is kept again under the new close-up's signature. Another device has nothing to do. */
 const TEX_UP_FLAG='tex_up',TEX_UP_V='1536';
 async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_UP_V||!self.caches||typeof TEX_MAX==='undefined')return 0}catch{return 0}
-  let n=0;const img=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
+  let n=0,more=false;const img=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
   const lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);
   const mean=im=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,m=[0,0,0];
     for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)m[q]+=lin(d[k+q]);return m.map(v=>v/4096)};
   for(const it of items){if(!it.texture)continue;
     try{const sharp=await sharpCloseOf(it);if(!sharp||sharp===it.texture)continue;
       const [a,b]=await Promise.all([img(it.texture),img(sharp)]);if(Math.max(a.width,a.height)>=TEX_MAX*.9||Math.max(b.width,b.height)<=Math.max(a.width,a.height)*1.2)continue;
+      if(remakeLeft()<1){more=true;break}
       const s=Math.min(1,TEX_MAX/Math.max(b.width,b.height)),W=Math.round(b.width*s),H=Math.round(b.height*s),c=document.createElement('canvas');c.width=W;c.height=H;
       const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(b,0,0,W,H);const ma=mean(a),mb=mean(b),g=ma.map((v,q)=>Math.min(1.6,Math.max(.6,mb[q]>1e-4?v/mb[q]:1)));
       const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(gam(Math.min(1,lin(v)*g[q])));return t});
       for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0);
-      if(!stillCur(it))continue;it.texture=c.toDataURL('image/jpeg',.85);if(typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);await keepCloseImg(it.id,sharp,it.texture);n++}
+      if(!stillCur(it))continue;it.texture=c.toDataURL('image/jpeg',.85);if(typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);await keepCloseImg(it.id,sharp,it.texture);remakeSpend(1);n++}
     catch(e){console.warn('close-up not upgraded',it.id,e)}}
-  try{localStorage.setItem(TEX_UP_FLAG,TEX_UP_V)}catch{}
-  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
+  if(!more)try{localStorage.setItem(TEX_UP_FLAG,TEX_UP_V)}catch{}
+  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).${more?' The rest follow over the next days.':''}`,3500)}
   return n}
 
+/* (2026-11-16, the audit's W1-1-02: an update that remade every photo cost a tester about 3 server writes an item on one morning, and ten
+   testers updating on the same day would use up everyone's allowance) every picture remade at start-up (a sharper photo or close-up, a small
+   copy) is a new server value: a connected phone remakes at most REMAKE_DAY a day (localStorage remake_day {d, n}), the rest on the next
+   days; a phone with no connection writes nothing to the server and has no limit */
+const REMAKE_DAY=10;
+const remakeOn=()=>typeof syncNeedsPull==='function'&&syncNeedsPull();
+const remakeRead=()=>{try{const r=JSON.parse(localStorage.getItem('remake_day')||'null');return r&&r.d===isoKey(new Date())?+r.n||0:0}catch{return 0}};
+const remakeLeft=()=>remakeOn()?Math.max(0,REMAKE_DAY-remakeRead()):Infinity;
+function remakeSpend(k){if(!remakeOn())return;try{localStorage.setItem('remake_day',JSON.stringify({d:isoKey(new Date()),n:remakeRead()+k}))}catch{}}
 /* item photos saved at 720 px before PH_MAX was raised (2026-11-13, the owner: "upgrade the main photo size stored as well"): on the device
    that read them, the sharp copy (TAG_MAX, kept by keepTagImg) is still there; when it shows the same picture as the photo (cropSource's
    test: same shape, alike at 24x24, turned to match; a photo cropped or replaced since doesn't match and is left), the photo is made again
@@ -65,21 +75,22 @@ async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_
    close-ups). Once (localStorage photo_up). */
 const PH_UP_FLAG='photo_up',PH_UP_V='1536';
 async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V||typeof PH_MAX==='undefined'||typeof cropSource!=='function')return 0}catch{return 0}
-  let n=0;const lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);
+  let n=0,more=false;const lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);
   const mean=im=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,m=[0,0,0];
     for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)m[q]+=lin(d[k+q]);return m.map(v=>v/4096)};
   for(const it of items){if(!it.photo)continue;
     try{const ph=await imgOf(it.photo);if(Math.max(ph.naturalWidth,ph.naturalHeight)>=PH_MAX*.9)continue;
       const src=await cropSource(it);if(!src||src===ph||!src.getContext)continue;   // no sharp copy of this very picture on this device
       const s=Math.min(1,PH_MAX/Math.max(src.width,src.height)),W=Math.round(src.width*s),H=Math.round(src.height*s);if(Math.max(W,H)<=Math.max(ph.naturalWidth,ph.naturalHeight)*1.2)continue;
+      if(remakeLeft()<2){more=true;break}   // (the day's remakes used up: the rest on the next days)
       const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(src,0,0,W,H);
       const ma=mean(ph),mb=mean(c),g=ma.map((v,q)=>Math.min(1.6,Math.max(.6,mb[q]>1e-4?v/mb[q]:1)));
       const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(gam(Math.min(1,lin(v)*g[q])));return t});
       for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0);
-      if(!stillCur(it))continue;it.photo=c.toDataURL('image/jpeg',.85);await resignTagImg(it.id,it.photo);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);n++}
+      if(!stillCur(it))continue;it.photo=c.toDataURL('image/jpeg',.85);await resignTagImg(it.id,it.photo);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);remakeSpend(2);n++}
     catch(e){console.warn('photo not upgraded',it.id,e)}}
-  try{localStorage.setItem(PH_UP_FLAG,PH_UP_V)}catch{}
-  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).`,3500)}
+  if(!more)try{localStorage.setItem(PH_UP_FLAG,PH_UP_V)}catch{}
+  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).${more?' The rest follow over the next days.':''}`,3500)}
   return n}
 /* a transparent picture saved as an item photo before shrink() gave it a backdrop (2026-11-14, the owner's socks: a cut-out PNG whose
    photo showed on black, a JPEG having no transparency): a photo whose edge is nearly all pure black (BB_EDGE of it under BB_DARK) and
@@ -408,7 +419,7 @@ function undoRefine(i){const q=queue[i];if(!q||!q.refineUndo)return;for(const [k
 
 /* ---- the card's tagging notes: how sure Claude was, its runner-up (one tap to take it), the measured colour, and an offer to
    add a colour or pattern when none of the listed ones fits ---- */
-const confTxt=c=>c?['type','primaryColor','pattern'].filter(k=>c[k]&&c[k]!=='high').map(k=>`${fieldLabel[k]}: ${c[k]} confidence`).join(' · '):'';
+const confTxt=c=>c?['type','primaryColor','pattern'].filter(k=>c[k]==='medium'||c[k]==='low').map(k=>`${fieldLabel[k]}: ${c[k]} confidence`).join(' · '):'';   // (only the two words: W2-13-05)
 const tagLive=()=>typeof isConnected==='function'?isConnected():!!localStorage.getItem('worker_url');   // (an ended invitation: no button to read again)
 function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colourVerdicts(q);   // against the tags as they are now
   if(q.refining)out.push('<p class="tagnote mut"><small>Tagging again with the close-up…</small></p>');

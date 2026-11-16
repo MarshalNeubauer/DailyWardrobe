@@ -6,7 +6,7 @@ module.exports=async({ok,chromium,url})=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844}});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     // colour fields by type, on the item sheet and the Add card
     const f=await p.evaluate(()=>{const rows=it=>[...new DOMParser().parseFromString(colRows('e',it.id,it),'text/html').querySelectorAll('label')].map(l=>l.textContent.trim());
       const card=it=>[...new DOMParser().parseFromString(colRows('q',0,it),'text/html').querySelectorAll('label')].map(l=>l.textContent.trim());
@@ -69,7 +69,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.evaluate(async()=>{const s={id:'nm1',type:'suit',primaryColor:'grey',pattern:'solid',added:1};items=[s];await put(s);show('wardrobe');openItem('nm1')});
     await p.fill('#ivbody .wf-name','My lucky suit');
     const kept=await p.evaluate(()=>localStorage.getItem('ward_pending'));
-    await p.reload();await p.waitForFunction(()=>window.appReady);
+    await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     const nm=await p.evaluate(async()=>{const s=()=>items.find(i=>i.id==='nm1');for(let k=0;k<60&&!(s()&&s().name&&!localStorage.getItem('ward_pending'));k++)await new Promise(r=>setTimeout(r,50));return {n:s()&&s().name,ids:items.map(i=>i.id).join(','),left:localStorage.getItem('ward_pending')}});
     ok(/My lucky suit/.test(kept||''),`each keystroke is kept at once (${kept})`);
     ok(nm.n==='My lucky suit'&&!nm.left,`a name typed just before a reload is kept (${JSON.stringify(nm)})`);

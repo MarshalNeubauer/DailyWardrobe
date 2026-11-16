@@ -29,7 +29,7 @@ import { noteKvFull } from './worker/items.js';
 import { delRender, getRender, handleBlob, handleShared, putRender } from './worker/records.js';
 import { handleHolidays } from './worker/holidays.js';
 import { gcDue, handleSync, photoGc } from './worker/photostore.js';
-import { handleAccount, handleErrors, handleFeedback, handleInvites, handleMe, plainFor, runWipe, spend, unspend, whoIs } from './worker/people.js';
+import { handleAccount, handleErrors, handleFeedback, handleInvites, handleMe, plainFor, resetDelay, runWipe, spend, unspend, whoIs } from './worker/people.js';
 import { handlePush, sendReminders } from './worker/remind.js';
 export { RenderHub } from './worker/render.js';   // the Durable Object class must be exported by the entry (it counts testers' days)
 
@@ -72,7 +72,7 @@ async function serve(req, env, cors, allowed, origin) {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
   if (allowed.length && !allowed.includes(origin)) return json({ error: 'forbidden origin' }, 403);
   const path = new URL(req.url).pathname.replace(/\/+$/, ''); where = path;
-  const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}) }, a.status);
+  const deny = (a, unset) => json({ error: a.unset && unset || a.error, ...(a.message ? { message: a.message } : {}), ...(a.replaced ? { replaced: true } : {}) }, a.status);   // (replaced: a link the owner made anew, people.js)
   const route = ROUTES[`${req.method} ${path}`] || ROUTES[`* ${path}`];
   if (route) {
     const a = await whoIs(env, req.headers.get('x-app-token') || '');
@@ -100,7 +100,9 @@ async function serve(req, env, cors, allowed, origin) {
   // The model wants the image as a data URI inside the user message.
   let image = String(body.image || '');
   if (image && !image.startsWith('data:')) image = `data:${body.media_type || 'image/jpeg'};base64,${image}`;
-  if (!/^data:image\/[\w.+-]+;base64,/.test(image)) return json({ error: 'no image' }, 400);
+  // the whole string a picture before anything is spent (fix round 3, W2-13-07: "javascript:alert(1)" became a Claude call)
+  if (!/^data:image\/(?:jpeg|png|webp|gif|heic|heif);base64,[A-Za-z0-9+/=]+$/.test(image)) return json({ error: 'no image', message: 'That photo couldn’t be read. Try another photo.' }, 400);
+  if (body.closeup != null && body.closeup !== '' && !/^data:image\/(?:jpeg|png|webp|gif|heic|heif);base64,[A-Za-z0-9+/=]+$/.test(String(body.closeup))) return json({ error: 'no image', message: 'That close-up couldn’t be read. Try another photo.' }, 400);
 
   if (!env.ANTHROPIC_API_KEY && !env.AI) return json({ error: 'ai', detail: 'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.' }, 501);
   const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
@@ -119,7 +121,7 @@ async function serve(req, env, cors, allowed, origin) {
   }
   // Workers AI: any answer that is not a tag gives the tester's count back
   const r = await tagWithWorkersAi(env, image);
-  if (r.status !== 200) await unspend(env, who, 'tag');
+  if (r.status !== 200) await unspend(env, who, 'tag'); else r.body = cleanTag(r.body);   // (cleaned as Claude's answer is: W2-13-05)
   return json(r.body, r.status);
 }
 
@@ -133,6 +135,8 @@ function corsFor(req, env) {
     'Access-Control-Allow-Headers': 'content-type,x-app-token',
     'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
     'Access-Control-Max-Age': '7200',
+    // the server's time on every answer (fix round 3): the app learns its clock's gap from it and stamps by the right time (sync.js clockLearn)
+    'x-now': String(Date.now()), 'Access-Control-Expose-Headers': 'x-now',
     ...(allowed.length > 1 ? { Vary: 'Origin' } : {}),
   } };
 }
@@ -143,6 +147,8 @@ const SERVER_DOWN = 'The server had a problem just now. Try again in a moment.';
    it up and every backup answered SERVER_DOWN): a 429 that says so. what 'backup' for a save of the wardrobe, so the app pauses its
    uploads until the next UTC day and says why (sync.js), as for a tester's own backup limit; tools/asm-prebuild.js stops uploading too */
 const KV_FULL = 'Today’s saves on the server are used up. Your changes are kept on this device and are saved after the daily reset (00:00 UTC).';
+/* any other route (a deletion, a revoke, a new invitation): nothing was kept to be saved later, so it says nothing was changed (W1-10-02) */
+const KV_FULL_OTHER = 'Today’s saves on the server are used up, so nothing was changed. Try again after the daily reset (00:00 UTC).';
 const kvFull = e => /limit exceeded/i.test(String(e && e.message || e));
 export default {
   async fetch(req, env) {
@@ -151,7 +157,7 @@ export default {
     catch (e) {
       console.log('uncaught error', req.method, new URL(req.url).pathname, e && (e.stack || e.message));
       if (kvFull(e)) noteKvFull(env);   // item pictures stop before paying for one that can't be kept (worker/items.js)
-      if (kvFull(e)) return new Response(JSON.stringify({ error: 'kv-limit', what: new URL(req.url).pathname.endsWith('/sync') ? 'backup' : 'write', message: KV_FULL }), { status: 429, headers: { ...cors, 'content-type': 'application/json' } });
+      if (kvFull(e)) { const sync = new URL(req.url).pathname.endsWith('/sync'); return new Response(JSON.stringify({ error: 'kv-limit', what: sync ? 'backup' : 'write', message: sync ? KV_FULL : KV_FULL_OTHER }), { status: 429, headers: { ...cors, 'content-type': 'application/json' } }); }
       return new Response(JSON.stringify({ error: 'server', message: SERVER_DOWN, detail: SERVER_DOWN }), { status: 503, headers: { ...cors, 'content-type': 'application/json' } });
     }
   },
@@ -161,7 +167,12 @@ export default {
     for (const msg of batch.messages) {
       if (!(msg.body && msg.body.wipe)) { msg.ack(); continue; }
       try { await runWipe(msg, env); }
-      catch (e) { console.log('account wipe error', e && e.message); msg.retry({ delaySeconds: 60 }); }
+      catch (e) {
+        console.log('account wipe error', e && e.message);
+        // the day's KV allowance used up: the wipe waits for the reset as a new message (retries are few and come a minute apart)
+        if (kvFull(e) && env.RENDER_QUEUE) { try { await env.RENDER_QUEUE.send(msg.body, { delaySeconds: resetDelay() }); msg.ack(); continue; } catch { } }
+        msg.retry({ delaySeconds: 60 });
+      }
     }
   },
   // Cron trigger (wrangler.toml [triggers], every 15 minutes): the morning reminders due now

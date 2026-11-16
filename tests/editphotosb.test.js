@@ -19,7 +19,7 @@ async function run(eng,browser,{ok,url,settle}){
       return route.fulfill({status:503,headers:{'content-type':'application/json','access-control-allow-origin':'*'},body:'{"error":"server"}'})});
     await ctx.addInitScript(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');localStorage.setItem('tour_seen','1')});
     const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     const F=await p.evaluate(async()=>{const load=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
       const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
       const cv=(im,k)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9)};
@@ -49,14 +49,14 @@ async function run(eng,browser,{ok,url,settle}){
       const c=await ev(()=>({ct:getComputedStyle(document.querySelector('#ivct')).backgroundColor,tags:getComputedStyle(document.querySelector('#item-view .ivtags')).backgroundColor}));
       ok(r.bg.every((b,k)=>b!==r.ink[k])&&c.ct===c.tags,T+`${theme}: the buttons' text stands off their background, the Color & texture card is a card like Details (${JSON.stringify({bg:r.bg[0],ink:r.ink[0],...c})})`)}
     await ev(()=>{delete document.documentElement.dataset.theme});
-    // ---- the Color & texture card: the 3 steps before Read
-    const cd=await ev(()=>{const c=document.querySelector('#ivct'),row=document.querySelector('#item-view .phtools'),kids=c?[...c.children]:[],k=s=>kids.findIndex(x=>x.matches(s));
-      const st=c.querySelector('.wbsteps').getBoundingClientRect(),rd=c.querySelector('#iv-read').getBoundingClientRect(),bar=document.querySelector('.ivbar').getBoundingClientRect(),cr=c.getBoundingClientRect(),rr=row.getBoundingClientRect();
-      return {h:c.querySelector('h3').textContent,line:c.querySelector('.shelp').textContent,order:[k('h3'),k('.shelp'),k('.wbsteps'),k('.ivrd')],afterRow:row.nextElementSibling===c,
-        above:st.bottom<=rd.top,stepsSeen:st.bottom<=bar.top,cost:(c.querySelector('.rdcost')||{}).textContent,w:[Math.round(cr.left),Math.round(cr.right),Math.round(rr.left),Math.round(rr.right)]}});
-    ok(cd.h==='Color & texture'&&cd.line==='Claude reads them from your close-up.'&&cd.afterRow&&cd.order.join()==='0,1,2,3'&&cd.above&&/^About \d+¢$/.test(cd.cost),T+`the Color & texture card under the row: its title and line, then "True color in 3 steps", then Read color and texture and its cost (${JSON.stringify(cd)})`);
-    ok(cd.w[0]===cd.w[2]&&cd.w[1]===cd.w[3],T+`the row and the card share the same width (${cd.w.join(',')})`);
-    if(phone)ok(cd.stepsSeen,T+'the 3 steps are on the first screen, above the bottom bar, before any scroll or tap');
+    // ---- Look & compare (the checklist redesign, 2026-11-16: the first section, where the Color & texture card's content went): the
+    // comparison, then "True color in 3 steps" right above Read color and texture and its cost
+    const cd=await ev(()=>{const c=document.querySelector('#ivct'),b=c.querySelector('.ckb'),kids=[...b.children],k=s=>kids.findIndex(x=>x.matches(s));
+      const st=c.querySelector('.wbsteps').getBoundingClientRect(),rd=c.querySelector('#iv-read').getBoundingClientRect(),bar=document.querySelector('.ivbar').getBoundingClientRect();
+      return {h:c.querySelector('.ckt b').textContent,first:document.querySelector('#ivbody .cks')===c,order:[k('.cmpw'),k('.wbsteps'),k('.ivrd')],
+        above:st.bottom<=rd.top,stepsSeen:st.top+40<=bar.top,cost:(c.querySelector('.rdcost')||{}).textContent}});
+    ok(cd.h==='Look & compare'&&cd.first&&cd.order[0]===0&&cd.order[2]===cd.order[1]+1&&cd.above&&/^About \d+¢$/.test(cd.cost),T+`Look & compare is the first section: the comparison, then "True color in 3 steps" right above Read color and texture and its cost (${JSON.stringify(cd)})`);
+    if(phone)ok(cd.stepsSeen,T+'the 3 steps start on the first screen, above the bottom bar, before any scroll or tap (under the comparison, as in the approved mockup)');
     ok(await ev(()=>{openItem('k1');const none=!document.querySelector('#ivct')&&!document.querySelector('#item-view .pt-closeup')&&document.querySelectorAll('#item-view .phtools>*').length===3;openItem('m1');return none}),T+'shoes: no Color & texture card and no Close-up button (Replace · Rotate · Crop)');
     await settle(p,300);
     if(phone){
@@ -69,7 +69,7 @@ async function run(eng,browser,{ok,url,settle}){
       await undo();await p.waitForFunction(ph0=>items.find(x=>x.id==='m1').photo===ph0,ph0);
       ok(await ev(()=>!phEdit.undo.length),T+'the toast’s Undo puts the photo back, through the editor’s Undo (phEdit.undo emptied)');
       await settle(p,200);await p.click('#item-view .pt-crop');await p.waitForSelector('#cropbox');
-      ok(await ev(()=>!!phEdit.crop&&!document.querySelector('#item-view .phtools')&&!document.querySelector('#ivct')),T+'Crop opens the zoom & crop frame (the row and the card step aside)');
+      ok(await ev(()=>!!phEdit.crop&&!document.querySelector('#item-view .phtools')&&!document.querySelector('#ivct')),T+'Crop opens the zoom & crop frame (the row and the sections step aside)');
       await p.click('#item-view .cropdiscard');await settle(p,300);
       const green=await ev(()=>{const c=document.createElement('canvas');c.width=600;c.height=400;const x=c.getContext('2d');x.fillStyle='#3a6';x.fillRect(0,0,600,400);return c.toDataURL('image/jpeg',.9)});
       await (await p.$('#item-view .pt-replace input[type=file]')).setInputFiles(file('green.jpg',green));

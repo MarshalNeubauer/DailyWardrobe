@@ -443,9 +443,14 @@ function cleanTag(t, opts = {}) {
   const op = t.ownPattern;
   const ownPattern = op && typeof op === 'object' && /[a-z]{2}/i.test(txt(op.name, 60))
     ? { name: txt(op.name, 60).toLowerCase(), description: txt(op.description, 300), fits: op.fits === true } : undefined;
+  // (fix round 3, W2-13-05) confidence only high/medium/low (it was passed on as given, and markup in it ran on the Add card), and every
+  // other field's text without < > " `
+  const lvl = v => ['high', 'medium', 'low'].includes(v) ? v : 'low';
+  const conf = c => c && typeof c === 'object' ? { type: lvl(c.type), primaryColor: lvl(c.primaryColor), pattern: lvl(c.pattern) } : typeof c === 'string' ? lvl(c) : undefined;
+  const plain = v => typeof v === 'string' ? v.replace(/[<>"`]/g, '') : Array.isArray(v) ? v.map(plain) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, plain(x)])) : v;
   // the material held to its tier (cleanMaterial: a fiber is low, and low without a close-up), never only the pattern again
   const material = 'material' in t ? cleanMaterial(t.material, t.type, [t.pattern], !!opts.closeup) || undefined : undefined;
-  return { ...t, newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern, material };
+  return { ...plain(t), confidence: conf(t.confidence), ...(t.conf !== undefined ? { conf: conf(t.conf) } : {}), newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern, material };
 }
 /* POST /tag-many {image} -> {items: [tag + confidence + box], model}
    One photo with several items (a closet rail of shirts, suits on hangers, folded trousers): every item is listed,

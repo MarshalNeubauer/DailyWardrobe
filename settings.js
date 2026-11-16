@@ -12,12 +12,19 @@ function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.clas
     const over=r.top+Math.min(el.scrollHeight,m.clientHeight-80)-m.clientHeight;if(over>0)m.scrollBy({top:Math.min(over+16,r.top-top-8),behavior:'smooth'})},460)}
 /* the Backup line in Settings says what really happened: the last backup's time, or that the last try failed (sync.js keeps
    sync_status while a try fails and last_sync when one works) */
+/* when backups start again (the next 00:00 UTC): "tomorrow" only when that is tomorrow here; west of UTC it is later today (W1-10-03: "Paused
+   until tomorrow" over a line saying "after 7:00 PM") */
+function pausedUntil(t){const d=new Date(t),n=new Date();let at='';try{at=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
+  return d.toDateString()===n.toDateString()?(at||'later today'):'tomorrow'}
 function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
   if(typeof inviteOver==='function'&&inviteOver())return 'Not backed up: your invitation has ended';
   const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'',when=t=>{const d=new Date(t),days=Math.round((todayDate()-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
   // (2026-11-15, the audit: "Backed up today" while the day's saves were used up and none of the new items was on the server)
-  if((+localStorage.getItem('sync_pause')||0)>Date.now())return last?`Paused until tomorrow · last saved ${when(last)}`:'Paused until tomorrow: not backed up yet';
+  const pz=+localStorage.getItem('sync_pause')||0;
+  if(typeof syncPaused==='function'?syncPaused():pz>Date.now()){const p=pausedUntil(pz);return last?`Paused until ${p} · last saved ${when(last)}`:`Paused until ${p}: not backed up yet`}
+  if(/^Backups held/.test(st))return 'Held: deleted from the server on another device';   // (sync.js syncWiped)
+  if(/^Backing up/.test(st))return last?`Backing up photos · last saved ${when(last)}`:'Backing up photos: not finished yet';   // (photos going up in batches, sync.js phBatch)
   if(/^Not backed up:/.test(st))return last?`Waiting for a connection · last saved ${when(last)}`:'Waiting for a connection: not backed up yet';
   if(/failed/i.test(st))return last?`Last backup failed · last saved ${when(last)}`:'Backup failed: not backed up yet';
   return last?`Backed up ${when(last)}`+(localStorage.getItem('sync_wait')&&!/^Syncing/.test(st)?' · newer changes waiting':''):'Not backed up yet'}
@@ -78,6 +85,12 @@ function closeSettings(){const was=settingsOpen();
   if(viewStale){const v=viewStale;viewStale=null;if(!$('#'+v).hidden)show(v)}
 }
 function saveSettings(){
+  // (audit 2026-11-15, W1-7-02) another address or code typed while connected moves this phone to another account: it goes through the
+  // link's questions (account.js acctTyped: the same account goes through, another asks, backs up and clears first). Stored as typed, the
+  // next sync merged this phone's wardrobe into the other account
+  const tu=$('#cfg-url')?$('#cfg-url').value.trim():null,tt=$('#cfg-token')?$('#cfg-token').value.trim():null,cu=(localStorage.getItem('worker_url')||'').trim(),ct=(localStorage.getItem('app_token')||'').trim();
+  if(typeof acctTyped==='function'&&tu&&tt&&ct&&cu&&(tt!==ct||tu.replace(/\/*$/,'/')!==cu.replace(/\/*$/,'/'))){
+    closeSettings();acctTyped(tu,tt).catch(e=>console.warn('connection not changed',e));return}
   // full or blocked storage: Done still closes Settings (it threw before closing), and says the connection wasn't kept
   try{if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
     if($('#cfg-token')) localStorage.setItem('app_token',$('#cfg-token').value.trim())}
@@ -148,7 +161,7 @@ function builtinHolidays(cc,from,to){if(!HOL_FIXED[cc]&&!HOL_HIJRI[cc])return nu
 /* the calendar years from one YYYY-MM-DD to another, both included */
 const holYears=(from,to)=>{const a=+from.slice(0,4),b=+to.slice(0,4),out=[];for(let y=a;y<=b;y++)out.push(y);return out};
 async function fetchHolidays(cc){
-  const T=todayDate(),from=isoKey(new Date(T.getFullYear(),T.getMonth()-1,T.getDate())),to=isoKey(new Date(T.getFullYear()+1,T.getMonth()+1,T.getDate()));
+  const T=trueToday(),from=isoKey(new Date(T.getFullYear(),T.getMonth()-1,T.getDate())),to=isoKey(new Date(T.getFullYear()+1,T.getMonth()+1,T.getDate()));
   const tidy=l=>{const m={};for(const x of l)if(x.d>=from&&x.d<=to&&x.n)m[x.d]=m[x.d]&&!m[x.d].includes(x.n)?m[x.d]+', '+x.n:m[x.d]||x.n;return Object.entries(m).sort().map(([d,n])=>({d,n}))};
   const own=()=>{const l=builtinHolidays(cc,from,to);return l&&l.length?tidy(l):null};
   // (a country with its own list isn't in Nager.Date: not asked, which logged a 404 on every start)
@@ -166,7 +179,7 @@ async function fetchHolidays(cc){
 /* the holidays already past, kept for good (fix round 3, W1-8-01: the monthly refresh replaced the list with one starting a month back,
    and every older holiday turned into a workday "you didn't open the app", counted as worn, toward cleaning and Insights): they were days
    off when they came, so they stay days off whatever list or country comes next; Settings lists only the coming ones */
-function holPast(){const h=settings.holidays,T=isoKey(todayDate());if(!h)return {list:[],skip:[]};
+function holPast(){const h=settings.holidays,T=isoKey(typeof trueToday==='function'?trueToday():todayDate());   // (the corrected date: core.js)if(!h)return {list:[],skip:[]};
   const list=(h.list||[]).filter(x=>x&&x.d<T);return {list,skip:(h.skip||[]).filter(d=>d<T&&list.some(x=>x.d===d))}}
 async function setHolidayCountry(cc,quiet){
   // "No public holidays": none from now on; the past ones stay (country '': nothing is fetched)
@@ -180,7 +193,7 @@ async function setHolidayCountry(cc,quiet){
     // past holidays stay (holPast): the fetched list starts a month back, and a holiday that dropped out of it became a workday after the
     // fact, recorded as worn (fix round 3, W1-8-01)
     const past=holPast(),list=[...past.list.filter(x=>!got.some(y=>y.d===x.d)),...got].sort((a,b)=>a.d<b.d?-1:1);
-    settings.holidays={country:cc,list,skip:[...new Set([...past.skip,...old])].filter(d=>list.some(x=>x.d===d)).sort(),fetched:Date.now()};
+    settings.holidays={country:cc,list,skip:[...new Set([...past.skip,...old])].filter(d=>list.some(x=>x.d===d)).sort(),fetched:nowMs()};
     holidayMsg=list.length?'':`No public holidays found for ${countryName(cc)}.`;await saveUserSettings();todayStale=true}
   catch(e){if(quiet)return;
     // (audit 2026-11-15) the country picked is the one that counts, even without a list: the old country's holidays went on counting under
@@ -192,7 +205,8 @@ async function setHolidayCountry(cc,quiet){
 /* the monthly refetch saves the settings with a new stamp, and the newest settings win a sync: on a device that had been away
    for a while, stamping its old settings would undo a change made on another device since. So it syncs first, and refetches
    only if the settings it then has still need it (another device may have done it already). Offline: not this time. */
-async function refreshHolidays(){const due=()=>{const h=settings.holidays;return !!(h&&h.country&&Date.now()-(h.fetched||0)>30*864e5)};
+/* by the corrected time (core.js nowMs), and a list fetched "in the future" (the clock was ahead that day, the audit's W1-9-04) is due */
+async function refreshHolidays(){const due=()=>{const h=settings.holidays,f=h&&+h.fetched||0;return !!(h&&h.country&&(nowMs()-f>30*864e5||f>nowMs()+864e5))};
   if(!due())return;
   if(typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')){
     if(!await syncNow())return;
