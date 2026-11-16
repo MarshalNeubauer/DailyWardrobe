@@ -4,6 +4,12 @@
    day that wears the same pieces shows the photo; the worker keeps a copy (KV) so every device can show it. ---- */
 let renders={};   // kept pictures by key: outfit photos made before 2026-11-14 (renderFor shows them), item pictures, assembled pictures
 const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');   // ' too: some go into onclick='…'
+/* (fix round 3, W2-13-02) a value inside a quoted JS string inside an inline handler, onclick="f('…')": the browser decodes the attribute
+   first, so esc alone gives the JS string its ' back; jsq escapes for JS, then for the attribute */
+const jsq=t=>esc(String(t??'').replace(/[\\'"\n\r\u2028\u2029<>&]/g,c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')));
+/* a picture's src: only a data:image base64 picture, a blob: or http(s) address or a file path, with nothing that ends the attribute,
+   else nothing (records are checked where they come in, core.js cleanRecord; this is the second lock) */
+const srcOk=s=>{s=String(s??'');return /^(?:data:image\/[\w.+-]+;base64,[A-Za-z0-9+/=]*|(?:blob:|https?:\/\/)[^\s"'<>`\\]+|[\w./-]+)$/.test(s)?s:''};
 const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=>nm(i)).join(', ');
 /* the combination a photo shows: which pieces, and everything about them that changes how they look */
 /* Which look a photo shows. The shirt counts only by its base colour (any white shirt shares the photo made with another
@@ -22,7 +28,9 @@ const comboSigV1=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map
 const comboKeyV1=o=>'c'+fnv64(comboSigV1(o));
 /* photos saved before combinations were used were keyed by date with this signature; they are moved over on first use */
 const legacySig=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];return i?[i.id,i.primaryColor,i.secondaryColor,i.tertiaryColor,i.pattern,i.metal,i.updated||0].join('/'):'-'}).join('|');
-async function keepRender(ck,rec,share){renders[ck]=rec;await metaPut('render:'+ck,rec);if(share)shareRender(ck,rec)}
+/* a picture record whose img isn't a data:image/jpeg|png|webp;base64 picture is not kept (fix round 3, W2-13-06: the server took any text
+   after the prefix, and the img went into src) */
+async function keepRender(ck,rec,share){if(!rec||typeof rec.img!=='string'||!REC_PHOTO.test(rec.img))return;renders[ck]=rec;await metaPut('render:'+ck,rec);if(share)shareRender(ck,rec)}
 // (an ended invitation: null, so nothing is asked with the dead code: the photo list, item and outfit pictures, the masters, holiday lists.
 // Every open sent 12-45 refused requests; re-audit 2026-11-15)
 const workerBase=()=>{const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');return w&&tok&&!(typeof inviteOver==='function'&&inviteOver())?{url:new URL('render',w.replace(/\/*$/,'/')).href,tok}:null};
@@ -191,7 +199,7 @@ async function fixItemBackdrops(){let n=0;for(const [k,r] of Object.entries(rend
     await keepRender(k,{...r,...(g?{img:g}:{}),grey:1},false);if(g){n++;delete picBgs[k]}}return n}
 function picBg(img,k){if(picBgs[k]!==undefined)return;picBgs[k]=null;
   readPicBg(img.src).then(c=>{if(!c)return;picBgs[k]=c;document.querySelectorAll(`img.item-pic[data-k="${k}"]`).forEach(i=>{const t=i.closest('.tile');if(t)t.style.background=c})})}
-const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${p.img}" alt="" data-k="${itemKey(i)}" onload="picBg(this,'${itemKey(i)}')">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
+const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${srcOk(p.img)}" alt="" data-k="${itemKey(i)}" onload="picBg(this,'${itemKey(i)}')">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
 /* sure: asked before paying for a new picture (startItemPics), so without a list the key is asked for even while lists are paused */
 async function fetchItemPic(i,sure){const W=workerBase(),k=itemKey(i);if(!W||renderTried.has(k)||renders[k])return;renderTried.add(k);
   try{await remoteList();if(remoteListed&&!remoteKeys.has(k)||!sure&&remoteHold())return;   // not on the worker: no 404 to ask for

@@ -4,6 +4,64 @@ import { ownerOnly, spend, spendEach } from './people.js';
 
 /* photos are stored per outfit combination ("c" + 16 hex digits, kept until replaced); older ones were per date (90 days) */
 const COMBO_RE = /^c[0-9a-f]{16}$/, DAY_RE = /^\d{4}-\d{1,2}-\d{1,2}$/;
+/* ---- records coming in (fix round 3, the audit's W2-13-02 / W2-13-06): the same shapes as the app's core.js cleanRecord. A picture is a
+   whole data:image/jpeg|png|webp;base64 string; a backup's item has an id of safe characters, a type key (or none), colour and option keys of
+   letters, digits, - and _, pictures as above (or the backup's own dwph: reference), numbers as numbers and a pattern reading of hex
+   colours and plain words; a day a date of the app's shape and item ids of the id shape. recCheck -> null, or what is wrong (the
+   server refuses the save with a plain message; the app checks the same before anything is sent, so its own records always pass) ---- */
+const PIC_RE = /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]*={0,2}$/, REF_RE = /^dwph:[0-9a-f]{20}$/;
+const ID_RE = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/, KEY_RE = /^[\p{L}\p{M}\p{N}_-]{1,48}$/u, HEX_RE = /^#[0-9a-fA-F]{3,8}$/, DATE_RE = DAY_RE;
+const WORD_RE = /^[\p{L}\p{M}\p{N} _+.,:;()\/#%’-]{0,120}$/u, BAD_CH = /[<>"`]/;
+const COLS = ['primaryColor', 'secondaryColor', 'tertiaryColor', 'dial'], PICS = ['photo', 'photoSm', 'texture', 'swatch'],
+  KEYS = ['pattern', 'swSrc', 'metal', 'leather', 'cuff', 'vest', 'season', 'shoeStyle', 'trouserKind', 'band', 'bezel', 'watchStyle'],
+  NUMS = ['added', 'updated', 'shade'], TEXT = ['name', 'brand', 'material', 'notes', 'details', 'patternText'];
+const colOk = c => c == null || c === '' || typeof c === 'string' && (KEY_RE.test(c) || /^[a-z ]{1,30}$/i.test(c));   // (a colour word, "light blue": the app makes it a key)
+const strictOk = (v, d = 0) => typeof v === 'string' ? HEX_RE.test(v) || WORD_RE.test(v) : typeof v === 'number' ? isFinite(v) : v == null || typeof v === 'boolean' ? true : d > 8 ? false
+  : Array.isArray(v) ? v.every(x => strictOk(x, d + 1)) : typeof v === 'object' ? Object.entries(v).every(([k, x]) => WORD_RE.test(k) && strictOk(x, d + 1)) : false;
+const freeOk = (v, d = 0) => typeof v === 'string' ? !BAD_CH.test(v) : typeof v === 'number' ? isFinite(v) : v == null || typeof v === 'boolean' ? true : d > 8 ? false
+  : Array.isArray(v) ? v.every(x => freeOk(x, d + 1)) : typeof v === 'object' ? Object.entries(v).every(([k, x]) => WORD_RE.test(k) && freeOk(x, d + 1)) : false;
+function itemWrong(it) {
+  if (!it || typeof it !== 'object' || Array.isArray(it)) return 'an item that is not a record';
+  if (typeof it.id !== 'string' || !ID_RE.test(it.id)) return 'an item id';
+  if (it.type != null && !(typeof it.type === 'string' && KEY_RE.test(it.type))) return 'an item type';   // (an unknown type the app leaves out when it reads it)
+  for (const [k, v] of Object.entries(it)) {
+    if (k === 'id' || k === 'type') continue;
+    if (!WORD_RE.test(k) || k === '__proto__') return 'a field name';
+    if (COLS.includes(k)) { if (!colOk(v)) return 'a color'; }
+    else if (PICS.includes(k)) { if (v != null && !(typeof v === 'string' && (PIC_RE.test(v) || REF_RE.test(v)))) return 'a photo'; }
+    else if (KEYS.includes(k)) { if (v != null && !(typeof v === 'string' && KEY_RE.test(v))) return 'a ' + k; }
+    else if (NUMS.includes(k)) { if (v != null && !(typeof v === 'number' && isFinite(v))) return 'a number'; }
+    else if (TEXT.includes(k)) { if (v != null && typeof v !== 'string' && typeof v !== 'number') return 'a text field'; }
+    else if (k === 'sett') { if (!strictOk(v)) return 'a pattern reading'; }
+    else if (!freeOk(v)) return 'the field ' + k;
+  }
+  return null;
+}
+function dayWrong(d) {
+  if (!d || typeof d !== 'object' || Array.isArray(d) || typeof d.date !== 'string' || !DATE_RE.test(d.date)) return 'a day';
+  for (const [k, v] of Object.entries(d)) {
+    if (k === 'date') continue;
+    if (!WORD_RE.test(k) || k === '__proto__') return 'a field name';
+    if ((k === 'ids' || k === 'lock' || k === 'force') && v && typeof v === 'object') { if (Object.entries(v).some(([s, x]) => !KEY_RE.test(s) || typeof x === 'string' && !ID_RE.test(x) || !freeOk(x))) return 'a day’s pieces'; }
+    else if (!freeOk(v)) return 'a day';
+  }
+  return null;
+}
+/* a backup (or part of one: {items, days, tombstones}) -> null when every record is of the app's shape, else a plain refusal body */
+function recCheck(data) {
+  if (!data || typeof data !== 'object') return null;
+  let w = null;
+  for (const it of Array.isArray(data.items) ? data.items : []) if ((w = itemWrong(it))) break;
+  if (!w) for (const d of Array.isArray(data.days) ? data.days : []) if ((w = dayWrong(d))) break;
+  if (!w && data.tombstones && typeof data.tombstones === 'object') for (const [id, t] of Object.entries(data.tombstones)) if (!ID_RE.test(id) || typeof t !== 'number' || !isFinite(t)) { w = 'a deletion mark'; break; }
+  return w ? { error: 'bad record', what: w, message: 'The backup was not saved: it holds a record the app doesn’t make (' + w + '). Update the app and try again.' } : null;
+}
+/* a picture sent with a backup (its JSON string's bytes, quotes included, or the string): the whole of it a picture */
+function picBytesOk(b) {
+  const s = typeof b === 'string' ? b : new TextDecoder().decode(b);
+  const t = s.length > 1 && s[0] === '"' && s[s.length - 1] === '"' ? s.slice(1, -1) : s;
+  return PIC_RE.test(t);
+}
 const renderId = o => { const k = String(o && o.key || ''), d = String(o && o.day || ''); return COMBO_RE.test(k) ? k : DAY_RE.test(d) ? d : null; };
 /* dated copies go after 90 days; test photos (keys starting c7e57, made to compare models or methods) after 7 */
 const renderTtl = id => (DAY_RE.test(id) ? { expirationTtl: 90 * 86400 } : /^c7e57/.test(id) ? { expirationTtl: 7 * 86400 } : undefined);
@@ -16,11 +74,12 @@ async function putRender(req, env, json, who) {
   let b; try { b = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
   const rec = b && b.rec;
   const id = renderId(b);
-  if (!id || !rec || !/^data:image\/(jpeg|png|webp);base64,/.test(String(rec.img || ''))) return json({ error: 'bad photo' }, 400);
+  // the whole string a picture (fix round 3, W2-13-06: any text after the prefix was kept, and the app put it into src)
+  if (!id || !rec || typeof rec.img !== 'string' || !PIC_RE.test(rec.img)) return json({ error: 'bad photo', message: 'That is not a picture the app can keep.' }, 400);
   const cur = await env.WARDROBE.get(`${ns}render:${id}`, 'json');
   if (cur && (cur.t || 0) >= (rec.t || 0)) return json({ ok: true, kept: 'newer' });
   const over = await spendEach(env, who, [['upload', 1], ['write', 1]]); if (over) return json(over.body, over.status);   // every upload is a KV write
-  await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify({ sig: String(rec.sig || ''), img: rec.img, model: String(rec.model || ''), t: +rec.t || Date.now() }), renderTtl(id));
+  await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify({ sig: String(rec.sig || '').slice(0, 2000), img: rec.img, model: String(rec.model || '').slice(0, 80), t: +rec.t || Date.now() }), renderTtl(id));
   return json({ ok: true });
 }
 /* DELETE /render?key=c... -> the kept photo is removed (one that was made wrong; the app stops using its own copies by changing the key) */
@@ -114,4 +173,4 @@ async function handleShared(req, env, json, who) {
   return json({ ok: true, n: keys.length });
 }
 
-export { COMBO_RE, SHARED_KEY, delRender, getRender, handleBlob, handleShared, putRender, renderId, renderTtl };
+export { COMBO_RE, PIC_RE, SHARED_KEY, delRender, getRender, handleBlob, handleShared, picBytesOk, putRender, recCheck, renderId, renderTtl };

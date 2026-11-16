@@ -590,7 +590,7 @@ async function asmGetPre1(o,listed){const k=asmOutKey(o),W=workerBase();if(!W||(
   try{const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});
     if(!r.ok&&r.status!==404){asmRetryAt.set('pre:'+k,Date.now()+ASM_RETRY_MS);return false}
     asmTried.add('pre:'+k);const j=r.ok?await r.json().catch(()=>null):null;
-    const m=j&&j.img&&ASM_PRE_RE.exec(String(j.sig||''));if(!asmPreSigOk(o,m)){if(listed)asmPreNo.set(k,asmListAt);return false}
+    const m=j&&typeof j.img==='string'&&REC_PHOTO.test(j.img)&&ASM_PRE_RE.exec(String(j.sig||''));/* (only a picture: core.js REC_PHOTO) */if(!asmPreSigOk(o,m)){if(listed)asmPreNo.set(k,asmListAt);return false}
     const rec={img:j.img,stamp:+m[3],t:Date.now(),pre:true};if(!asmFresh(o,rec)){if(listed)asmPreNo.set(k,asmListAt);return false}
     await asmKeepOut(k,j.img,{stamp:rec.stamp,t:rec.t,pre:true,lid:asmLookId(o)});return true}
   catch(e){console.warn('no built picture',e);asmRetryAt.set('pre:'+k,Date.now()+ASM_RETRY_MS);return false}}

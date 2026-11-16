@@ -131,7 +131,7 @@ async function loadFeedback(){
     const r=await fetch(c.at('feedback'),{headers:c.head,cache:'no-store'}),j=r.ok?await r.json().catch(()=>null):null;
     if(!j||!Array.isArray(j.items)){box.hidden=true;box.innerHTML='';return}
     const list=j.items.filter(x=>x&&x.text).sort((a,b)=>fbTime(b.t)-fbTime(a.t));
-    box.innerHTML=`<div class="slabel">Feedback received</div>`+(list.length?list.map(x=>`<div class="fb-item"><small>${aboutEsc([x.name||'Someone',fbWhen(x.t),x.version?'version '+x.version:''].filter(Boolean).join(' · '))}</small><p>${aboutEsc(x.text)}</p></div>`).join(''):'<p class="shelp">Nothing yet.</p>');
+    box.innerHTML=`<div class="slabel">Feedback received</div>`+(list.length?list.map(x=>`<div class="fb-item"><small>${aboutEsc(noBidi([x.name||'Someone',fbWhen(x.t),x.version?'version '+x.version:''].filter(Boolean).join(' · ')))}</small><p>${aboutEsc(noBidi(x.text))}</p></div>`).join(''):'<p class="shelp">Nothing yet.</p>');
     box.hidden=false;
   }catch{box.hidden=true}}
 
@@ -140,7 +140,7 @@ async function loadFeedback(){
    what-to-buy result…), Cache Storage (dw-keep-*: the sharp tagging copies; dw-v*: the app's own files) and the
    localStorage keys below. A key added elsewhere must be added here too (tests/about.test.js reads the sources and checks). */
 const ABOUT_DB='wardrobe';
-const ABOUT_KEYS=['worker_url','app_token','theme','wx','wx_norm','sync_mark','sync_status','list_pause','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','invite_ended','sync_pause','sync_pause_msg','invite_lost','sync_wait','sync_restore','remind','remind_sent','care_told','black_bd','err_log','setup_at','tour_seen','home_told','tex_up','photo_up','asm_gl','del_pending','kit_import_last','ward_pending','missed_ok'];
+const ABOUT_KEYS=['worker_url','app_token','theme','wx','wx_norm','sync_mark','sync_status','list_pause','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','invite_ended','sync_pause','sync_pause_msg','invite_lost','sync_wait','sync_restore','sync_off','rec_clean','remind','remind_sent','care_told','black_bd','err_log','setup_at','tour_seen','home_told','tex_up','photo_up','asm_gl','del_pending','kit_import_last','ward_pending','missed_ok'];
 const ABOUT_KEY_PREFIXES=['nav_fit'];
 const ABOUT_NOTE='about_note';   // sessionStorage: what to say after the restart
 const aboutOwnKey=k=>ABOUT_KEYS.includes(k)||ABOUT_KEY_PREFIXES.some(p=>k.startsWith(p));

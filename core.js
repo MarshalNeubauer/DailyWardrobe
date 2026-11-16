@@ -373,3 +373,54 @@ function stateSig(s){
   s=s||{};const by=(arr,k,v)=>(arr||[]).map(x=>x[k]+':'+v(x)).sort().join(',');
   return [by(s.items,'id',stamp),Object.entries(s.tombstones||{}).map(e=>e.join(':')).sort().join(','),by(s.days,'date',d=>d.updated||0),s.settings?s.settings.updated||0:''].join('|');
 }
+/* ---- records coming in (fix round 3, 2026-11-16, the audit's W2-13-02 = W2-12-01: a crafted Restore file, a sync or a server answer put
+   an item's id, photo, colour key and sett band colour into the page as markup). cleanState runs where records enter: Restore file, every
+   sync pull and roll-back (sync.js), and the stored wardrobe at start-up (start.js). An item keeps only fields of the right shape:
+   an id of safe characters (ID_RE, else the item is left out), a known type, colour and option keys of letters, digits, - and _ (an own
+   key too; a colour word a known colour's alias, "light blue", becomes its key), photos only data:image/jpeg|png|webp;base64 (else
+   the photo is dropped), numbers as numbers, a pattern reading's colours as hex and its words plain; free text (name, brand, notes…)
+   is kept as typed (shown escaped) without bidi controls; any other field is kept with < > " ` taken out of its strings. Days keep a
+   date of the app's shape and item ids of ID_RE; tombstones numbers. Pure and idempotent: a clean record comes out equal.
+   worker/records.js recCheck refuses the same shapes on the server ---- */
+const ID_RE=/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/,REC_KEY=/^[\p{L}\p{M}\p{N}_-]{1,48}$/u,REC_PHOTO=/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]*={0,2}$/,REC_HEX=/^#[0-9a-fA-F]{3,8}$/,
+  REC_DATE=/^\d{4}-\d{1,2}-\d{1,2}$/,REC_WORD=/^[\p{L}\p{M}\p{N} _+.,:;()\/#%’-]{0,120}$/u,BIDI_RE=/[‪-‮⁦-⁩]/g;   // embeddings, overrides and isolates (the marks LRM/RLM stay: an Arabic name may need them)
+const REC_COLS=['primaryColor','secondaryColor','tertiaryColor','dial'],REC_PICS=['photo','photoSm','texture','swatch'],
+  REC_KEYS=['pattern','swSrc','metal','leather','cuff','vest','season','shoeStyle','trouserKind','band','bezel','watchStyle'],
+  REC_NUMS=['added','updated','shade'],REC_TEXT={name:200,brand:200,material:200,notes:4000,details:4000,patternText:4000},REC_STRICT=['sett'];
+const recClean=s=>String(s).replace(/[<>"`]/g,'');   // a free field's string: nothing that opens a tag or ends an attribute
+const recFree=(v,d=0)=>typeof v==='string'?recClean(v):typeof v==='number'?(isFinite(v)?v:null):v==null||typeof v==='boolean'?v:d>8?null:
+  Array.isArray(v)?v.map(x=>recFree(x,d+1)):typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>REC_WORD.test(k)).map(([k,x])=>[k,recFree(x,d+1)])):null;
+/* a pattern reading (sett: bands, crossing lines, motif, texture): numbers, hex colours and plain words only */
+const recStrict=(v,d=0)=>typeof v==='string'?(REC_HEX.test(v)||REC_WORD.test(v)?v:null):typeof v==='number'?(isFinite(v)?v:null):v==null||typeof v==='boolean'?v:d>8?null:
+  Array.isArray(v)?v.map(x=>recStrict(x,d+1)):typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>REC_WORD.test(k)).map(([k,x])=>[k,recStrict(x,d+1)])):null;
+const recCol=c=>c==null||c===''?c:typeof c!=='string'?undefined:COLORS[c]||REC_KEY.test(c)&&/^own/.test(c)?c:normCol(c)||(REC_KEY.test(c)?c:undefined);
+const noBidi=s=>String(s==null?'':s).replace(BIDI_RE,'');
+function cleanRecord(it){
+  if(!it||typeof it!=='object'||Array.isArray(it)||typeof it.id!=='string'||!ID_RE.test(it.id)||!TYPES[it.type])return null;
+  const o={};
+  for(const [k,v] of Object.entries(it)){
+    if(k==='id'||k==='type'){o[k]=v;continue}
+    if(!REC_WORD.test(k)||k==='__proto__')continue;
+    if(REC_COLS.includes(k)){const c=recCol(v);if(c!==undefined)o[k]=c}
+    else if(REC_PICS.includes(k)){if(typeof v==='string'&&REC_PHOTO.test(v))o[k]=v}
+    else if(REC_KEYS.includes(k)){if(v==null||typeof v==='string'&&REC_KEY.test(v))o[k]=v}
+    else if(REC_NUMS.includes(k)){if(v==null||typeof v==='number'&&isFinite(v))o[k]=v}
+    else if(k in REC_TEXT){if(v==null)o[k]=v;else if(typeof v==='string'||typeof v==='number')o[k]=noBidi(v).slice(0,REC_TEXT[k])}
+    else if(REC_STRICT.includes(k))o[k]=recStrict(v);
+    else o[k]=recFree(v)}
+  return o}
+function cleanDay(d){
+  if(!d||typeof d!=='object'||Array.isArray(d)||typeof d.date!=='string'||!REC_DATE.test(d.date))return null;
+  const o={};
+  for(const [k,v] of Object.entries(d)){if(!REC_WORD.test(k)||k==='__proto__')continue;
+    // the pieces a day names (ids, lock, force: slot -> item id): an id of the wrong shape is left out
+    if((k==='ids'||k==='lock'||k==='force')&&v&&typeof v==='object'&&!Array.isArray(v))o[k]=Object.fromEntries(Object.entries(v).filter(([s,x])=>REC_KEY.test(s)&&(typeof x!=='string'||ID_RE.test(x))).map(([s,x])=>[s,recFree(x)]));
+    else if(k==='date')o[k]=v;else o[k]=recFree(v)}
+  return o}
+/* a snapshot from outside ({items, days, tombstones, settings}, a backup file's or the server's): its records cleaned, the rest as it came */
+function cleanState(st){
+  if(!st||typeof st!=='object')return st;const o={...st};
+  if(Array.isArray(st.items))o.items=st.items.map(cleanRecord).filter(Boolean);
+  if(Array.isArray(st.days))o.days=st.days.map(cleanDay).filter(Boolean);
+  if(st.tombstones&&typeof st.tombstones==='object')o.tombstones=Object.fromEntries(Object.entries(st.tombstones).filter(([id,t])=>ID_RE.test(id)&&typeof t==='number'&&isFinite(t)));
+  return o}

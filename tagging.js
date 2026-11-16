@@ -396,7 +396,7 @@ function undoRefine(i){const q=queue[i];if(!q||!q.refineUndo)return;for(const [k
 
 /* ---- the card's tagging notes: how sure Claude was, its runner-up (one tap to take it), the measured colour, and an offer to
    add a colour or pattern when none of the listed ones fits ---- */
-const confTxt=c=>c?['type','primaryColor','pattern'].filter(k=>c[k]&&c[k]!=='high').map(k=>`${fieldLabel[k]}: ${c[k]} confidence`).join(' · '):'';
+const confTxt=c=>c?['type','primaryColor','pattern'].filter(k=>c[k]==='medium'||c[k]==='low').map(k=>`${fieldLabel[k]}: ${c[k]} confidence`).join(' · '):'';   // (only the two words: W2-13-05)
 const tagLive=()=>typeof isConnected==='function'?isConnected():!!localStorage.getItem('worker_url');   // (an ended invitation: no button to read again)
 function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colourVerdicts(q);   // against the tags as they are now
   if(q.refining)out.push('<p class="tagnote mut"><small>Tagging again with the close-up…</small></p>');
