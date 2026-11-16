@@ -328,14 +328,44 @@ function tagSchema(custom, single, free, freePat) {
   if (freePat) props.ownPattern = OWN_PATTERN;
   // the material (2026-11-15, the Add card's suggestion): only on the plain single tag, never with the picker's extras (the schema
   // with ownColors is near what the API compiles)
+  // the accents too (2026-11-16), on the same plain tag only
   const mat = !free && !freePat;
-  if (mat) props.material = materialSchema(null);
-  return { ...TAG_SCHEMA, properties: props, required: [...TAG_SCHEMA.required, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox', 'patternBox', 'weave', ...(free ? ['ownColors'] : []), ...(freePat ? ['ownPattern'] : []), ...(mat ? ['material'] : [])] };
+  if (mat) { props.material = materialSchema(null); props.accents = ACCENT_SCHEMA; }
+  return { ...TAG_SCHEMA, properties: props, required: [...TAG_SCHEMA.required, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox', 'patternBox', 'weave', ...(free ? ['ownColors'] : []), ...(freePat ? ['ownPattern'] : []), ...(mat ? ['material', 'accents'] : [])] };
+}
+/* ---- accents (2026-11-16, the owner's approved job "keep an item's extra colors"): up to ACCENT_MAX colors beyond the three main ones
+   (a five-color paisley tie, a multi-color plaid), most visible first, as color keys (the list's, or the owner's own). Asked on the plain
+   single tag, the multi-item tag and the close-up reader's color half; never with the picker's extras (freeColors / freePattern: that
+   schema is near what the API compiles). The items are a plain string, not an enum: an enum of every color made the plain tag's schema
+   larger than the freeColors one the API compiles (tests/tagaccents.test.js); the cleaner keeps only known keys. An app from before the
+   field ignores it. ---- */
+const ACCENT_MAX = 4;
+const ACCENT_SCHEMA = { type: 'array', items: { type: 'string' } };
+const ACCENT_TAIL = `most visible first, each a color key from this full list (not only the type's list) or one of the owner's own color keys:
+  ${COLOR_LIST.join(', ')}.
+  Small specks, logos, labels, shadows and the white paper don't count; never repeat those three; [] when none (a plain cloth, or one of
+  three colors or fewer).`;
+const ACCENT_RULES = `accents — up to ${ACCENT_MAX} further distinct colors visible in the pattern beyond the three above (primaryColor, secondaryColor and
+  tertiaryColor; e.g. the gold and red of a five-color paisley tie, the extra lines of a multi-color plaid), ${ACCENT_TAIL}`;
+const ACCENT_READ_RULES = `accents — up to ${ACCENT_MAX} further distinct colors visible in the pattern beyond the item's main, second and third colors (given
+  with the item below) and the main color you read, ${ACCENT_TAIL}`;
+/* Claude's accents -> up to ACCENT_MAX known keys (letters only, lower case, "light blue" = lightblue, gray = grey), none of main (the three
+   main colors, and any other key to leave out), no repeats; [] for anything else */
+function cleanAccents(list, main, own) {
+  if (!Array.isArray(list)) return [];
+  const ok = new Set([...COLOR_LIST, ...(Array.isArray(own) ? own : [])]), skip = new Set((main || []).filter(Boolean)), out = [];
+  for (const v of list.slice(0, 20)) {
+    const k = String(v ?? '').toLowerCase().replace(/gray/g, 'grey').replace(/[^a-z]/g, '');
+    if (!ok.has(k) || skip.has(k) || out.includes(k)) continue;
+    out.push(k); if (out.length >= ACCENT_MAX) break;
+  }
+  return out;
 }
 /* the single tag's material rules, in the cached prompt after SINGLE_EXTRA (a tag with the picker's extras has no material) */
 const MATERIAL_EXTRA = `
 ${MATERIAL_RULES}
-  (For shoes, belts, watches, cufflinks and tie clips the material is always "none": their leather, band and metal have their own fields.)`;
+  (For shoes, belts, watches, cufflinks and tie clips the material is always "none": their leather, band and metal have their own fields.)
+${ACCENT_RULES}`;   // (the accents' rule rides with the material's: both are asked on exactly the plain single tag)
 function customText(custom) {
   let t = '';
   if (custom.colors.length) t += `\n\nColors the owner added (answer with the key, like any listed color, for the item types shown):\n`
@@ -497,7 +527,9 @@ function cleanTag(t, opts = {}) {
   const plain = v => typeof v === 'string' ? v.replace(/[<>"`]/g, '') : Array.isArray(v) ? v.map(plain) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, plain(x)])) : v;
   // the material held to its tier (cleanMaterial: a fiber is low, and low without a close-up), never only the pattern again
   const material = 'material' in t ? cleanMaterial(t.material, t.type, [t.pattern], !!opts.closeup, opts.ownMaterials) || undefined : undefined;
-  return { ...plain(t), confidence: conf(t.confidence), ...(t.conf !== undefined ? { conf: conf(t.conf) } : {}), newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern, material };
+  // the accents: known keys only (the owner's own sent with the tag: opts.ownColors), none of the three main colors, no repeats, at most 4
+  const accents = 'accents' in t ? cleanAccents(t.accents, [t.primaryColor, t.secondaryColor, t.tertiaryColor], opts.ownColors) : undefined;
+  return { ...plain(t), confidence: conf(t.confidence), ...(t.conf !== undefined ? { conf: conf(t.conf) } : {}), newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern, material, accents };
 }
 /* POST /tag-many {image} -> {items: [tag + confidence + box], model}
    One photo with several items (a closet rail of shirts, suits on hangers, folded trousers): every item is listed,
@@ -506,10 +538,11 @@ const MULTI_SCHEMA = {
   type: 'object', additionalProperties: false, required: ['items'],
   properties: { items: { type: 'array', items: {
     type: 'object', additionalProperties: false,
-    required: [...TAG_SCHEMA.required, 'confidence', 'box'],
+    required: [...TAG_SCHEMA.required, 'confidence', 'box', 'accents'],
     properties: {
       ...TAG_SCHEMA.properties,
       confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+      accents: ACCENT_SCHEMA,
       box: { type: 'object', additionalProperties: false, required: ['x', 'y', 'w', 'h'],
         properties: { x: { type: 'integer' }, y: { type: 'integer' }, w: { type: 'integer' }, h: { type: 'integer' } } },
     },
@@ -531,7 +564,7 @@ Rules:
   top-left corner (0-1000 from the left and top edges), w and h the width and height (0-1000).
 
 For each item give these fields:
-` + PROMPT.slice(PROMPT.indexOf('type —'));
+` + PROMPT.slice(PROMPT.indexOf('type —')) + '\n\n' + ACCENT_RULES;
 async function handleTagMany(req, env, json, who) {
   if (!env.ANTHROPIC_API_KEY) return json({ error: 'ai', detail: 'Several items in one photo needs Claude: add an ANTHROPIC_API_KEY secret to the worker.' }, 501);
   const text = await req.text();
@@ -544,9 +577,11 @@ async function handleTagMany(req, env, json, who) {
   const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: MULTI_PROMPT, owner: customText(custom) + correctionsText(body.corrections), wb: wbOf(body), maxTokens: 16000, effort: 'medium', signal: req.signal });
   if (c.status !== 200) { await unspend(env, who, 'tag'); return json(c.body, c.status); }
   const clamp = v => Math.max(0, Math.min(1000, Math.round(+v || 0)));
+  const ownKeys = custom.colors.map(k => k.key);
   const items = (Array.isArray(c.body.items) ? c.body.items : []).slice(0, 40).map(it => {
     const b = it.box || {}, x = clamp(b.x), y = clamp(b.y);
-    return { ...it, box: { x, y, w: Math.max(1, Math.min(1000 - x, clamp(b.w))), h: Math.max(1, Math.min(1000 - y, clamp(b.h))) } };
+    return { ...it, ...('accents' in it ? { accents: cleanAccents(it.accents, [it.primaryColor, it.secondaryColor, it.tertiaryColor], ownKeys) } : {}),
+      box: { x, y, w: Math.max(1, Math.min(1000 - x, clamp(b.w))), h: Math.max(1, Math.min(1000 - y, clamp(b.h))) } };
   }).sort((a, b) => a.box.x + a.box.w / 2 - (b.box.x + b.box.w / 2));
   console.log(`tagged ${items.length} items in one photo`);
   return json({ items, model: c.body.model });
@@ -586,4 +621,4 @@ async function tagWithWorkersAi(env, image) {
   catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
 }
 
-export { COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
+export { ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST,FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
