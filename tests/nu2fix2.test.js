@@ -24,12 +24,12 @@ module.exports=async({ok,chromium,url})=>{
     return r.fulfill({status:503,contentType:'application/json',headers:cors,body:'{"error":"off"}'})};
   const pic=(w,h,col)=>`(async()=>{const c=document.createElement('canvas');c.width=${w};c.height=${h};const x=c.getContext('2d');x.fillStyle='${col||'#203050'}';x.fillRect(0,0,${w},${h});return new File([await new Promise(r=>c.toBlob(r,'image/jpeg',.9))],'p.jpg',{type:'image/jpeg'})})()`;
   const kept=async(p,fn)=>{for(let t=0;t<50;t++){if(await p.evaluate(fn))return true;await p.waitForTimeout(100)}return false};
-  const restart=async p=>{await p.reload();await p.waitForFunction(()=>window.appReady);await p.waitForFunction(()=>addRestoreState==='done',null,{timeout:20000}).catch(()=>{});
+  const restart=async p=>{await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});await p.waitForFunction(()=>addRestoreState==='done',null,{timeout:20000}).catch(()=>{});
     await p.evaluate(()=>{if(document.querySelector('#setup.on'))setupClose();openAdd()});await p.waitForTimeout(100)};
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844}});await ctx.route(HOST+'**',route);
     const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t');if(document.querySelector('#setup.on'))setupClose();openAdd()},HOST);
 
     // ---- N3: killed while the close-up is read
@@ -59,7 +59,7 @@ module.exports=async({ok,chromium,url})=>{
     // ---- Undo of "Saved", then a kill at once: the item is in the wardrobe or back on Add, never lost
     await p.evaluate(()=>{queue=[];addManual();setq(0,'type','tie');setQField(0,'name','Undo kill')});
     const uid=await p.evaluate(async()=>{const id=queue[0].id;await save(id);return id});
-    await p.click('#toast button');await p.reload();await p.waitForFunction(()=>window.appReady);await p.waitForFunction(()=>addRestoreState==='done',null,{timeout:8000}).catch(()=>{});
+    await p.click('#toast button');await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});await p.waitForFunction(()=>addRestoreState==='done',null,{timeout:8000}).catch(()=>{});
     s=await p.evaluate(id=>({item:items.some(i=>i.id===id),card:queue.some(q=>q.id===id)}),uid);
     ok(s.item!==s.card,`Undo then a kill: the item stays or its card is back, exactly one (${JSON.stringify(s)})`);
     await p.evaluate(()=>{if(document.querySelector('#setup.on'))setupClose();openAdd();queue=[];renderAdd()});

@@ -8,7 +8,7 @@ module.exports=async({ok,chromium,url})=>{
     const ctx=await browser.newContext({viewport:{width:390,height:844}});
     await ctx.route('https://geocoding-api.open-meteo.com/**',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({results:[{latitude:1,longitude:2,name:'<img src=x onerror=window.__x=1>Town',country_code:'TT'}]})}));
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';sel=new Date(2026,10,16);view={y:2026,m:10};cache={};show('today')});

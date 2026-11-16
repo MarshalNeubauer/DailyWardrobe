@@ -4,7 +4,7 @@ module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   const PH='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
   try{
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(ph=>{items=[{id:'p1',type:'pants',primaryColor:'darkgrey',pattern:'nailhead',photo:ph,added:1},{id:'p2',type:'pants',primaryColor:'navy',pattern:'solid',added:2}];flt='all';editing=null;show('wardrobe')},PH);
     ok(await p.evaluate(()=>!document.querySelector('#wardrobe .pair')&&!document.querySelector('#item-view.on')),'closed items show just the photo');
     await p.evaluate(()=>{editing='p1';renderWardrobe()});
