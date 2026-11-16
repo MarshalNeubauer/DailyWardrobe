@@ -64,7 +64,7 @@ async function addFiles(files,multi){
       const aiResult=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),...(ac?{signal:ac.signal}:{})});q.abort=null;   // wb: whether the photo was white-balanced (the tagger is told)
       if(q.stopped){delete q.stopped;fill(q,null);q.unread=1;q.tagErr=STOPPED}
       else{fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureAndApply(q)}else{q.unread=1;tagFailed(q)}}
-    }catch(e){console.warn('photo card',e);if(!q.photo){q.err='open'}else{if(!q.type)fill(q,null);if(!q.ai)q.unread=1;q.tagErr=q.tagErr||'Something went wrong while reading it.'}}
+    }catch(e){console.warn('photo card',e);if(typeof errNote==='function')errNote(e,'Photo card'+(q.type?' ('+q.type+')':''));if(!q.photo){q.err='open'}else{if(!q.type)fill(q,null);if(!q.ai)q.unread=1;q.tagErr=q.tagErr||'Something went wrong while reading it.'}}
     q.busy=0;q.abort=null;
     addKeep();   // the reading kept at once: a kill in the next moment brought the card back as "closed before it was read", and Try again paid again
     renderAdd();if(q===cards[0][0])addShowCard(q.id);   // (the small "Reading" card fitted; the full one grows below the screen)
@@ -289,7 +289,7 @@ function npsInert(on){for(const el of document.querySelectorAll('body>header,bod
   for(const el of a.children)if(el.id!=='nps-sheet'&&el.id!=='nps-backdrop')el.inert=on}
 /* the card and its bar; the card gone (saved, or taken away) closes the sheet */
 function npsDraw(){const q=npsCard(),s=$('#nps-sheet');if(!s)return;if(!q){npsClose();return}const i=queue.indexOf(q),body=$('#nps-q'),bar=$('#nps-bar');
-  if(body){const y=body.scrollTop;body.innerHTML=formCard(q,i,true);body.scrollTop=y}
+  if(body){const y=body.scrollTop;body.innerHTML=cardSafe(q,i,()=>formCard(q,i,true));body.scrollTop=y}
   if(bar)bar.innerHTML=`${confBtn(q,i)}<button type="button" id="nps-cancel" onclick="npsCancel()">Cancel</button>`}
 /* fromBack: the phone's Back did it (its entry is gone already) */
 function npsClose(fromBack){if(!npsId&&npsWas===undefined)return;const s=$('#nps-sheet'),b=$('#nps-backdrop');npsId=null;npsAsking=false;
@@ -370,7 +370,7 @@ async function save(k){const q=cardOf(k);if(!q||q.saving||cardReading(q))return 
   if(needType(q)){toast('Choose what it is first: pick its Type.',4000);return false}
   q.saving=1;const b=$('#qconf-'+queue.indexOf(q));if(b)b.disabled=true;
   if(!saveAllOn)await addKeep();   // the card as it is now (a kill right after Confirm brought back How many one lower: the last + waited for the timer)
-  try{return await saveCard(q)}catch(e){console.warn('save failed',e);
+  try{return await saveCard(q)}catch(e){console.warn('save failed',e);if(typeof errNote==='function')errNote(e,'Confirm on Add ('+q.type+')');
     if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}
   finally{delete q.saving;if(queue.includes(q)&&$('#add')&&!$('#add').hidden)renderAdd()}}
 async function saveCard(q){
@@ -430,9 +430,16 @@ function renderAdd(){
   const ready=queue.filter(cardReady).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()"${reading||saveAllOn?` disabled title="${saveAllOn?'Saving…':'Claude is still reading a card'}"`:''}>${saveAllOn?'Saving…':`Save all ${ready} items`}</button>`:'';
   if(typeof addGate==='function')addGate();
   addKeepSoon();
-  if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.id===npsId?'':q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):formCard(q,i)).join('');
+  if($('#queue')) $('#queue').innerHTML=queue.map((q,i)=>q.id===npsId?'':cardSafe(q,i,()=>q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):formCard(q,i))).join('');
   if(npsId)npsDraw();
 }
+/* one card drawn on its own (2026-11-16, a tester's first item: her iPhone, out of picture memory, refused a canvas while the card's swatch
+   was drawn, so the whole redraw stopped and Confirm stayed switched off): a card that can't be drawn becomes a plain one that still
+   saves, says what happened, and is reported (safety.js errNote) */
+function cardSafe(q,i,draw){try{return draw()}catch(e){console.warn('Add card not drawn',e);if(typeof errNote==='function')errNote(e,'Add card drawn ('+(q.type||'?')+')');return plainCard(q,i)}}
+function plainCard(q,i){return `<div class="card qcard" data-q="${esc(q.id)}"><button type="button" class="qx" aria-label="Close" title="Close" onclick="skipCard('${esc(q.id)}')">×</button>
+  ${q.photo?`<img class="ph" src="${q.photo}" alt="Photo" style="max-width:160px;border-radius:12px">`:''}<p class="tagnote"><small>Part of this card couldn’t be drawn: your phone may be short of memory for pictures. It still saves as it is${q.type?` (${esc(TYPES[q.type]||q.type)})`:''}; you can change it afterwards in the Wardrobe.</small></p>
+  <div class="btns">${confBtn(q,i)}<button onclick="skipCard('${esc(q.id)}')">${q.manual?'Cancel':'Skip'}</button></div></div>`}
 /* an item card's form (a photo's card in the list, or the "Add without a photo" sheet's card: inSheet leaves out the card's own × and its
    Confirm / Cancel, which the sheet has in its header and its pinned bar) */
 function formCard(q,i,inSheet){return `<div class="card qcard" data-q="${esc(q.id)}">${inSheet?'':`<button type="button" class="qx" aria-label="Close" title="Close" onclick="skipCard('${esc(q.id)}')">×</button>`}${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}

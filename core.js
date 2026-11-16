@@ -144,7 +144,7 @@ const MATERIALS_BY={
   suit:['wool','wool blend','tropical wool','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','mohair blend','silk blend','moleskin','corduroy','velvet','polyester blend'],
   blazer:['wool','wool blend','tropical wool','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','camel hair','hopsack','silk blend','jersey','corduroy','velvet','polyester blend'],
   pants:['wool','wool blend','tropical wool','flannel','gabardine','cotton','cotton twill','denim','stretch denim','linen','linen blend','seersucker','moleskin','corduroy','tweed','polyester blend'],
-  shirt:['cotton','poplin','linen','linen blend','flannel','cotton blend','performance stretch','seersucker'],
+  shirt:['cotton','poplin','linen','linen blend','flannel','cotton blend','performance stretch','seersucker','polyester','polyester blend','silk','rayon','modal','lyocell','bamboo','wool','jersey','denim','corduroy'],
   tie:['silk','grenadine','shantung','wool','wool blend','cashmere','linen','cotton','polyester'],
   socks:['cotton','mercerized cotton','merino wool','wool blend','cashmere blend','bamboo','silk blend','synthetic blend'],
   overcoat:['wool','wool blend','melton','cashmere','cashmere blend','tweed','camel hair','loden','alpaca','cotton'],
@@ -160,7 +160,8 @@ const MAT_ALIAS={'*':{fresco:'tropical wool',tropical:'tropical wool','tropical 
   socks:{nylon:'synthetic blend',polyester:'synthetic blend',wool:'merino wool',stretch:'synthetic blend'},
   raincoat:{gabardine:'cotton gabardine',waxed:'waxed cotton',wax:'waxed cotton'},
   pants:{stretch:'stretch denim'},
-  shirt:{nylon:'performance stretch',polyester:'performance stretch'}};
+  // (polyester is a shirt material of its own since 2026-11-16, the owner's ask: no longer read as performance stretch; nylon still is)
+  shirt:{nylon:'performance stretch',viscose:'rayon',tencel:'lyocell',merino:'wool','merino wool':'wool','poly-cotton':'cotton blend',polycotton:'cotton blend','poly cotton':'cotton blend','cotton-polyester':'cotton blend','cotton polyester':'cotton blend',poly:'polyester','poly blend':'polyester blend'}};
 /* the listed name a word means for a type ('' when none): the type's own name, else an alias that is on the type's list */
 const matAlias=(type,w)=>{const l=MATERIALS_BY[type];if(!l)return '';w=String(w??'').toLowerCase().replace(/\s+/g,' ').trim();if(!w)return '';if(l.includes(w))return w;
   const a=(MAT_ALIAS[type]||{})[w]||MAT_ALIAS['*'][w];return a&&l.includes(a)?a:''};
