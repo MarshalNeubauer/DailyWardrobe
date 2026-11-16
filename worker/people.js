@@ -26,6 +26,9 @@ async function whoIs(env, token) {
   if (sameText(h, await sha256Hex(env.APP_TOKEN))) return { who: OWNER };
   if (!CODE_RE.test(token) || !env.WARDROBE) return no;
   const rec = await env.WARDROBE.get(`invite:${h}`, 'json');
+  // a code the owner replaced with a new link for the same account (POST /invites {reissue}): refused everywhere, DELETE /account included
+  // (whoever still holds the old link can't delete the wardrobe the new one opens), with a sentence of its own
+  if (rec && rec.replaced) return { status: 403, error: 'invite off', replaced: true, message: INVITE_REPLACED };
   if (!rec || !UID_RE.test(String(rec.id || ''))) return no;
   const first = firstWeek(rec), caps = { ...DEFAULT_CAPS, ...cleanCaps(rec.caps) };
   if (first) for (const k of [...Object.keys(DEFAULT_CAPS), 'write', 'list']) caps[k] = (caps[k] ?? EXTRA_CAPS[k]) * FIRST_WEEK_X;   // a tester's first week: twice the daily limits
@@ -35,6 +38,7 @@ async function whoIs(env, token) {
   return { who };
 }
 const INVITE_OFF = 'This invitation has been switched off.';
+const INVITE_REPLACED = 'This invitation link was replaced by a new one. Ask the person who invited you for the new link: it opens the same wardrobe.';
 
 /* ---- a tester's errors in plain words. What the owner needs to fix the server (the API's own message, which secret or binding is
    missing, what to do in which dashboard) means nothing to a tester: their answers carry a plain sentence instead, chosen by the
@@ -191,6 +195,10 @@ const NO_KV = { error: 'Add a KV namespace binding named WARDROBE to the worker.
    bytes) is shown this once; KV keeps invite:<sha256 of the code> = {id, name, caps, created, off}. GET /invites -> {invites, day}
    with today's use, from one index document (invites:index) rather than a KV list. DELETE /invites?id= switches one off: its
    hub refuses AI calls at once, and KV shows the record as off to every other route within about a minute. ---- */
+/* an invitation code: 32 URL-safe characters from 24 random bytes */
+const newCode = () => btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+/* a re-issued tester's earlier codes (the list entry's prev): deleted with the tester */
+async function dropPrev(env, v) { for (const h of (v && Array.isArray(v.prev) ? v.prev : [])) if (/^[0-9a-f]{64}$/.test(String(h))) await env.WARDROBE.delete(`invite:${h}`); }
 async function handleInvites(req, env, json, who) {
   const no = ownerOnly(who, json); if (no) return no;
   if (!env.WARDROBE) return json(NO_KV, 501);
@@ -202,11 +210,28 @@ async function handleInvites(req, env, json, who) {
     return json({ invites, day });
   }
   if (req.method === 'POST') {
-    const b = await smallBody(req, 4000), name = String(b && b.name || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    const b = await smallBody(req, 4000);
+    // {reissue: id} (fix round 3, the owner's decision 1): a new code for the same account, for a tester who lost the link. The new code's
+    // record is the old one's (same id, so the same u:<id>: backup, caps and first week); the old code's record becomes {replaced}, refused
+    // with its own sentence; the list entry follows the new hash and keeps the old ones (prev) so deleting the tester removes them too.
+    // Codes are still stored only as fingerprints: the list's hash is the owner's way to the account. 3 KV writes, on the owner's tap only
+    if (b && b.reissue != null) {
+      const v = list.find(x => x.id === String(b.reissue));
+      if (!v) return json({ error: 'no such invitation', message: 'That invitation isn’t on the list any more.' }, 404);
+      if (v.off) return json({ error: 'off', message: 'That invitation is switched off. Make a new invitation instead.' }, 400);
+      const rec = (await env.WARDROBE.get(`invite:${v.hash}`, 'json')) || { id: v.id, name: v.name, caps: v.caps || null, created: v.created, off: false };
+      if (rec.off || rec.replaced || rec.id !== v.id) return json({ error: 'off', message: 'That invitation is switched off. Make a new invitation instead.' }, 400);
+      const code = newCode(), hash = await sha256Hex(code);
+      await env.WARDROBE.put(`invite:${hash}`, JSON.stringify({ ...rec, reissued: Date.now() }));
+      await env.WARDROBE.put(`invite:${v.hash}`, JSON.stringify({ replaced: true, at: Date.now() }));   // (no id or name: nothing to read from it)
+      await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: list.map(x => (x.id === v.id ? { ...x, hash, prev: [...(Array.isArray(x.prev) ? x.prev : []), v.hash].slice(-20) } : x)) }));
+      return json({ id: v.id, code, name: v.name, reissued: true });
+    }
+    const name =String(b && b.name || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
     if (!name) return json({ error: 'name', message: 'Give the tester a name.' }, 400);
     if (list.filter(v => !v.off).length >= MAX_INVITES) return json({ error: 'full', message: `There are already ${MAX_INVITES} invitations. Revoke one first.` }, 400);
     const id = [...crypto.getRandomValues(new Uint8Array(10))].map(x => 'abcdefghijklmnopqrstuvwxyz0123456789'[x % 36]).join('');
-    const code = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const code = newCode();
     const hash = await sha256Hex(code), caps = cleanCaps(b.caps), rec = { id, name, caps: Object.keys(caps).length ? caps : null, created: Date.now(), off: false };
     await env.WARDROBE.put(`invite:${hash}`, JSON.stringify(rec));
     await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: [...list, { ...rec, hash }] }));
@@ -224,6 +249,7 @@ async function handleInvites(req, env, json, who) {
     await env.WARDROBE.put(`invite:${v.hash}`, JSON.stringify({ ...rec, off: true }));
     await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: purge ? list.filter(x => x.id !== v.id) : list }));
     if (!purge) return json({ ok: true });
+    await dropPrev(env, v);
     await dropTesterExtras(env, v.id);
     const ns = `u:${v.id}:`, done = await wipeSome(env, ns, 30);
     if (!done && env.RENDER_QUEUE) { await env.RENDER_QUEUE.send({ wipe: ns, n: 1 }); return json({ ok: true, purged: true }); }
@@ -317,6 +343,7 @@ async function handleAccount(req, env, json, who) {
   if (who.role === 'tester') {
     await env.WARDROBE.delete(`invite:${who.hash}`);   // first: the code stops working
     const index = await env.WARDROBE.get(INVITE_INDEX, 'json');
+    if (index && Array.isArray(index.list)) await dropPrev(env, index.list.find(v => v.id === who.id));
     if (index && Array.isArray(index.list) && index.list.some(v => v.id === who.id)) await env.WARDROBE.put(INVITE_INDEX, JSON.stringify({ list: index.list.filter(v => v.id !== who.id) }));
     await dropTesterExtras(env, who.id);
   }

@@ -17,9 +17,26 @@ async function acctCall(path,opt={},base=acctBase()){if(!base)return {status:0,j
    a mail or chat app put right after the link is not part of it */
 function inviteParts(text){const s=String(text||'').trim().replace(/[.,;:!?)\]>'"”’]+$/,''),h=s.includes('#')?s.slice(s.indexOf('#')+1):s,p=new URLSearchParams(h),code=(p.get('invite')||'').trim().replace(/[.,;:!?)\]>'"”’]+$/,''),w=(p.get('w')||'').trim();
   if(!/^[A-Za-z0-9_-]{24,80}$/.test(code))return null;
+  // (audit 2026-11-15, W2-13-11) a server part of 200,000 characters, or one carrying a name and password, is not a link anyone was sent
+  if(w.length>INVITE_W_MAX)return null;
   let u;try{u=new URL(w)}catch{return null}
-  if(!/^https?:$/.test(u.protocol))return null;
+  if(!/^https?:$/.test(u.protocol)||u.username||u.password)return null;
   return {code,url:u.href}}
+const INVITE_W_MAX=300;
+/* ---- the app's own server (audit 2026-11-15, W2-13-01/W2-13-04): an invitation link names its server in w=, and anyone can write a
+   link. One that pointed at a stranger's server connected the phone there with no question, sent it the wardrobe and the code, and
+   took back whatever it answered. A link is followed only to a server on this list, or to the one this phone is already connected to
+   (stored by the owner under Advanced, or by an earlier link). Someone hosting the app on another server adds its address here. ---- */
+const APP_SERVERS=['https://wardrobevision.n654t4phfm.workers.dev'];
+const acctLoopback=h=>/^(127\.0\.0\.1|localhost|\[::1\])$/.test(h);
+function acctOwnServer(url){let u;try{u=new URL(url)}catch{return false}
+  if(APP_SERVERS.includes(u.origin))return true;
+  const cur=acctBase();try{if(cur&&new URL(cur.url).origin===u.origin)return true}catch{}
+  // a copy served from this computer (the tests, the audit's lab): their stand-in servers, *.test (a name the internet never gives
+  // out) and the lab's own, on the next port. The published app is never on this computer, so these never apply there
+  if(acctLoopback(location.hostname))return /\.test$/.test(u.hostname)||acctLoopback(u.hostname)&&+u.port===+location.port+1;
+  return false}
+const INVITE_STRANGER='That invitation link points to a server this app doesn’t use, so it wasn’t opened and nothing was sent. Only open invitation links from the person who invited you.';
 const inviteLink=code=>{const b=acctBase();return location.origin+location.pathname+'#invite='+code+'&w='+encodeURIComponent(b?b.url:'')};
 function dropInviteHash(){try{if(/(^#|&)invite=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search)}catch{}if(typeof appWanted==='function')appWanted()}   // (a Back entry that waited for the address to lose the invitation: start.js)
 const hasInviteHash=()=>/(^#|&)invite=/.test(location.hash);
@@ -46,49 +63,86 @@ async function connectFromLink(text,opt={}){
 async function acctConnect(text,opt){const say=t=>{if(opt.address&&t)acctToast(t,5000)};acctWhy='';acctWhyMsg='';
   const p=inviteParts(text);
   if(!p){acctWhy='bad';dropInviteHash();say(INVITE_BAD);return false}   // (a mangled link opened from mail used to do nothing and say nothing)
+  // another server than the app's own: refused before anything is asked or sent (the code included)
+  if(!acctOwnServer(p.url)){acctWhy='refused';acctWhyMsg=INVITE_STRANGER;dropInviteHash();say(INVITE_STRANGER);acctLinkDrawn();return false}
+  return acctJoin(p,opt)}
+/* the account behind a code -> its id as remembered on this phone (rememberRole), or '' */
+function acctIdFor(tok){try{const r=JSON.parse(localStorage.getItem('acct_role')||'null');return r&&r.tok===tok&&r.id?String(r.id):''}catch{return ''}}
+function acctRoleFor(tok){try{const r=JSON.parse(localStorage.getItem('acct_role')||'null');return r&&r.tok===tok?r.role:null}catch{return null}}
+/* p = {code, url}: a link's (acctConnect), or the address and code the owner typed under Advanced (acctTyped, opt.typed) */
+async function acctJoin(p,opt){const say=t=>{if((opt.address||opt.typed)&&t)acctToast(t,5000)};
   if(opt.address){inviteChecking=true;acctLinkDrawn()}
   let r;try{r=await acctCall('me',{},{url:p.url.replace(/\/*$/,'/'),tok:p.code})}finally{inviteChecking=false}
-  if(r.status===0){acctWhy='offline';say('Couldn’t reach the server just now. Your invitation is tried again when you come back to the app or your connection returns.');acctLinkDrawn();return false}
+  if(r.status===0){acctWhy='offline';say(opt.typed?'Couldn’t reach the server, so the connection wasn’t changed. Try again when you’re back online.':'Couldn’t reach the server just now. Your invitation is tried again when you come back to the app or your connection returns.');acctLinkDrawn();return false}
   dropInviteHash();
-  if(r.status!==200||!r.j||!r.j.id){acctWhy='refused';acctWhyMsg=r.j&&r.j.message||'';say(acctFailText());acctLinkDrawn();return false}
+  if(r.status!==200||!r.j||!r.j.id){acctWhy='refused';acctWhyMsg=r.j&&r.j.message||'';say(opt.typed?'The server didn’t accept that address and code, so the connection wasn’t changed.':acctFailText());acctLinkDrawn();return false}
   // what this phone holds decides what happens next, so its storage is read first: the connection put back where the browser lost
   // it, and the wardrobe counted in the database. At start-up the link is checked before the wardrobe is read into memory; counted
   // from memory the phone looked empty, it switched without asking and the next sync copied its wardrobe into the other account
   if(typeof connRestored!=='undefined')await connRestored.catch(()=>{});
-  const cur=acctBase(),local=await acctLocal();
+  const cur=acctBase(),local=await acctLocal(),name=r.j.name||'a tester';let toldSame=false;
+  const kept=t=>{acctWhy='kept';acctToast(t);acctLinkDrawn();return false};
   if(cur&&cur.tok&&cur.tok!==p.code){
-    // the old code is over: the server no longer knew it (sync.js inviteEnded marks invite_lost on 403 'forbidden token': its storage
-    // was lost, or the account deleted), or it was switched off (invite_ended, 403 'invite off'), after which the app stops syncing and
-    // never hears of a later deletion either. Either way the person can't reach that backup any more, and what changed since the switch-off
-    // is nowhere else: the wardrobe on this phone stays and is backed up with the new invitation instead of being cleared (2026-11-15, the
-    // re-audit's N1: a re-invited tester was offered only "Clear and switch", which wiped 25 pieces)
-    const lost=localStorage.getItem('invite_lost')===cur.tok||localStorage.getItem('invite_ended')===cur.tok;
-    if(lost&&local.any&&!await askConfirm(`Back up this phone’s wardrobe with ${r.j.name?r.j.name+'’s':'the new'} invitation?\n\nYour old invitation has ended, so its backup on the server can’t be reached any more. Your wardrobe, day history and settings stay on this phone as they are, changes since the invitation ended included, and are backed up with the new invitation.`,{ok:'Keep it and back it up'})){acctWhy='kept';acctToast('Nothing changed: your wardrobe stays on this phone.');acctLinkDrawn();return false}
-    if(lost)localStorage.removeItem('invite_lost');
-    // already connected with another code: the wardrobe on this phone belongs to that account. Merging it into the new one (what
-    // a sync would do) copied the owner's whole wardrobe into a tester's account when the owner tried the tester's link.
-    else if(local.any){
-      // what no backup has taken yet is backed up first; what still can't be is said plainly before anything is cleared (2026-11-15, the
-      // re-audit: a tie added while the day's backups were used up was wiped under "its backup on the server stays as it is")
-      let pend=await acctPending();
-      if(pend&&typeof syncNow==='function'){acctToast('Backing up this phone’s changes first…',4000);pend=await acctBackUpFirst()}
-      if(!await askConfirm(acctSwitchText(r.j.name,pend),{ok:pend?'Clear, losing those changes':'Clear and switch',danger:true})){acctWhy='kept';acctToast('Kept the current connection.');acctLinkDrawn();return false}
-      if(typeof wipeDevice==='function')await wipeDevice();
-      localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);rememberRole(r.j);
-      try{sessionStorage.setItem(typeof ABOUT_NOTE==='string'?ABOUT_NOTE:'about_note','Connected as '+(r.j.name||'a tester'))}catch{}
-      location.reload();return true}
-    for(const k of ['sync_mark','last_sync','sync_status'])localStorage.removeItem(k);   // what the old account's syncs left
+    // (audit 2026-11-15, W1-7-01) the server is asked about the old code first: what this phone remembered was not enough. A phone that
+    // hadn't asked anything since its invitation was switched off was offered "Clear and switch" and lost the whole wardrobe
+    const old=await acctCall('me',{},cur),oldOk=old.status===200&&old.j&&!!old.j.id;
+    const oldId=oldOk?String(old.j.id):acctIdFor(cur.tok),oldRole=oldOk?old.j.role:acctRoleFor(cur.tok);
+    if(oldId&&oldId===String(r.j.id)){
+      // (fix round 3, the owner's decision 1) the same account under a new code: the owner made a new link for this tester (the old one
+      // stops working), or the owner's own code changed. Nothing is cleared or asked: it is the same wardrobe and the same backup
+      toldSame=true}
+    else{
+      // the old code is over: any refusal now (switched off, replaced, the account deleted or its storage lost), or one heard before
+      // (sync.js inviteEnded: invite_ended, invite_lost). The person can't reach that backup any more, and what changed since is nowhere
+      // else: the wardrobe on this phone stays and is backed up with the new invitation instead of being cleared (the re-audit's N1)
+      const lost=!oldOk&&old.status!==0&&old.status!==404&&old.status!==405||localStorage.getItem('invite_lost')===cur.tok||localStorage.getItem('invite_ended')===cur.tok;
+      if(lost){
+        if(local.any&&!await askConfirm(`Back up this phone’s wardrobe with ${r.j.name?r.j.name+'’s':'the new'} invitation?\n\nYour old invitation has ended, so its backup on the server can’t be reached any more. Your wardrobe, day history and settings stay on this phone as they are, changes since the invitation ended included, and are backed up with the new invitation.`,{ok:'Keep it and back it up'}))return kept('Nothing changed: your wardrobe stays on this phone.');
+        localStorage.removeItem('invite_lost')}
+      // already connected with another code: the wardrobe on this phone belongs to that account. Merging it into the new one (what
+      // a sync would do) copied the owner's whole wardrobe into a tester's account when the owner tried the tester's link.
+      else if(local.any){
+        // what no backup has taken yet is backed up first; what still can't be is said plainly before anything is cleared (2026-11-15, the
+        // re-audit: a tie added while the day's backups were used up was wiped under "its backup on the server stays as it is")
+        let pend=await acctPending();
+        if(pend&&typeof syncNow==='function'){acctToast('Backing up this phone’s changes first…',4000);pend=await acctBackUpFirst()}
+        if(!await askConfirm(acctSwitchText(r.j,pend,oldRole==='owner'),{ok:pend?'Clear, losing those changes':'Clear and switch',danger:true}))return kept('Kept the current connection.');
+        if(typeof wipeDevice==='function')await wipeDevice();
+        localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);rememberRole(r.j);
+        acctOwnerPhone(oldRole,r.j);
+        try{sessionStorage.setItem(typeof ABOUT_NOTE==='string'?ABOUT_NOTE:'about_note',r.j.role==='owner'?'Connected as the owner':'Connected as '+name)}catch{}
+        location.reload();return true}
+      // (audit 2026-11-15, W2-13-04) an empty phone switched with no word: the connection it had is said, and how to come back to it
+      else if(!await askConfirm(acctSwitchEmptyText(r.j,oldOk?old.j:null,oldRole==='owner'),{ok:'Switch'}))return kept('Kept the current connection.');
+      acctOwnerPhone(oldRole,r.j);
+      for(const k of ['sync_mark','last_sync','sync_status'])localStorage.removeItem(k)}   // what the old account's syncs left
   }   // (the sample wardrobe needs no question: it stays on this phone and is never backed up, sync.js syncShare; re-audit 2026-11-15)
-  localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);for(const k of ['sync_pause','sync_pause_msg','invite_ended','list_pause'])localStorage.removeItem(k);if(typeof connKeep==='function')connKeep();
+  else if(!cur&&local.items-local.sample>0){
+    // (audit 2026-11-15, W1-7-03, W1-11-01) pieces of this phone's own go into the account: said and asked first. After Safari cleared the
+    // site, pieces added again before the link was found were merged into the restored wardrobe with no word, as doubles
+    const n=local.items-local.sample,pcs=n===1?'1 piece':n+' pieces';
+    if(!await askConfirm(`Add this phone’s ${pcs} to ${r.j.role==='owner'?'your':r.j.name?r.j.name+'’s':'the invitation’s'} wardrobe?\n\nThis phone has ${pcs} of its own. Connecting adds ${n===1?'it':'them'} to the wardrobe backed up with this ${r.j.role==='owner'?'server':'invitation'}, next to anything already there. If ${n===1?'it is a piece':'they are pieces'} the backup already has, tap Cancel, delete ${n===1?'it':'them'} on this phone, then open the link again.`,{ok:'Add and connect'}))return kept('Not connected: nothing was sent, and this phone’s wardrobe stays as it is.');
+  }
+  localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);for(const k of ['sync_pause','sync_pause_msg','invite_ended','invite_lost','list_pause'])localStorage.removeItem(k);if(typeof connKeep==='function')connKeep();
   acct={...acct,me:r.j,state:'ok',invites:null,link:null,msg:''};rememberRole(r.j);
   if(document.querySelector('#cfg-url'))document.querySelector('#cfg-url').value=p.url;
   if(document.querySelector('#cfg-token'))document.querySelector('#cfg-token').value=p.code;
-  acctToast('Connected as '+(r.j.name||'a tester'));
+  acctToast(r.j.role==='owner'?'Connected as the owner':'Connected as '+name+(toldSame?': the same wardrobe as before':''));
   renderAccountUI();acctLinkDrawn();
   if(window.syncNow)syncNow();
   // once per phone, not when it was already connected with this code (fix round 2: it covered the app every time a tester tapped his link)
-  if(r.j.role==='tester'&&iosInSafari()&&!(cur&&cur.tok===p.code)&&!homeTold())setTimeout(homeScreenGuide,1200);
+  if(r.j.role==='tester'&&iosInSafari()&&!(cur&&cur.tok===p.code)&&!toldSame&&!homeTold())setTimeout(homeScreenGuide,1200);
   return true}
+/* (audit 2026-11-15, W1-7-02) the owner's phone moved to a tester's invitation: Connection keeps "I run the server" (ui.js renderConnUI),
+   the owner's way back; back on the owner's code the mark goes */
+function acctOwnerPhone(oldRole,to){try{if(to&&to.role==='owner')localStorage.removeItem('acct_was_owner');else if(oldRole==='owner')localStorage.setItem('acct_was_owner','1')}catch{}}
+/* the owner typed another address or code under Advanced while connected (settings.js saveSettings): the same questions as a link, since
+   a typed code that differs moves this phone to another account just the same */
+async function acctTyped(url,code){
+  while(acctLinkRun)await acctLinkRun.catch(()=>{});
+  acctWhy='';acctWhyMsg='';
+  let u;try{u=new URL(url)}catch{acctToast('That server address isn’t a web address, so the connection wasn’t changed.',5000);return false}
+  const run=acctJoin({code,url:u.href},{typed:true});acctLinkRun=run;try{return await run}finally{if(acctLinkRun===run)acctLinkRun=null}}
 /* changes on this phone that no backup has taken (sync.js: the wardrobe's fingerprint differs from the one the last backup agreed on,
    or there was none) -> true/false */
 async function acctPending(){try{if(typeof syncMark!=='function'||typeof stateSig!=='function'||typeof localState!=='function')return false;
@@ -105,10 +159,20 @@ async function acctBackUpFirst(){const t0=Date.now();let pend=true;
   return pend}
 /* the "Clear and switch" question: what is cleared (the setup's answers too, since the new account starts afresh), where the old
    wardrobe stays, and, with changes no backup has taken (pend), that they would be lost */
-function acctSwitchText(name,pend){const last=+localStorage.getItem('last_sync')||0;
+/* to: the new account's /me; fromOwner: this phone is the owner's now, who has no invitation link to come back with (W1-7-02) */
+const acctSwitchHead=to=>to&&to.role==='owner'?'Switch this phone back to your own wardrobe?':`Switch this phone to ${to&&to.name?to.name+'’s':'the new'} invitation?`;
+const acctComeBack=fromOwner=>fromOwner?'Your own wardrobe stays in your server’s backup. To come back to it, open Settings → Connection on this phone, tap “I run the server” and type the server’s address and your code.'
+  :'The wardrobe of the invitation this phone uses now stays in its backup on the server: open that invitation’s link again to get it back.';
+function acctSwitchText(to,pend,fromOwner){const last=+localStorage.getItem('last_sync')||0;
+  if(typeof to==='string'||to==null)to={name:to||''};
   const when=last?` (the last backup was ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})})`:'';
-  return `Switch this phone to ${name?name+'’s':'the new'} invitation?\n\nTo switch, everything on this phone is cleared first: the wardrobe, its day history and the settings (workdays, what you wear, holidays). The setup then starts again for the new invitation. The wardrobe of the invitation this phone uses now stays in its backup on the server: open that invitation’s link again to get it back.`+
+  // (W1-7-04) the setup starts again only when the other account has no wardrobe yet
+  return `${acctSwitchHead(to)}\n\nTo switch, everything on this phone is cleared first: the wardrobe, its day history and the settings (workdays, what you wear, holidays). If the ${to.role==='owner'?'account':'new invitation'} has no wardrobe yet, the setup starts again. ${acctComeBack(fromOwner)}`+
     (pend?`\n\nSome changes on this phone aren’t backed up yet${when}, so clearing it loses them. Cancel keeps them here; switch once they are backed up.`:'')}
+/* an empty phone connected with another code (W2-13-04): nothing to clear, but the connection it has goes */
+function acctSwitchEmptyText(to,from,fromOwner){
+  const now=fromOwner?'This phone is connected as the owner now.':from&&from.name?`This phone is connected as ${from.name} now.`:'This phone is connected with another invitation now.';
+  return `${acctSwitchHead(to)}\n\n${now} Nothing is stored on it yet, so nothing is cleared. ${acctComeBack(fromOwner)}`}
 /* what this phone holds, read from the database (and memory: an item saved a moment ago) -> {items, days, sample, any} */
 async function acctLocal(){let n=0,d=0,s=0;
   try{const all=await tx('readonly',st=>st.getAll());n=all.length;s=all.filter(i=>i&&i.sample).length;d=await txs('days','readonly',st=>st.count())}catch(e){console.warn('wardrobe not counted',e)}
@@ -132,7 +196,7 @@ function homeScreenGuide(){if(typeof setupShown==='function'&&setupShown())retur
 function homeTold(set){try{if(set)localStorage.setItem('home_told','1');return localStorage.getItem('home_told')==='1'}catch{return false}}
 /* who this device is connected as, remembered for the connection's code ({tok, role} in localStorage.acct_role), so the app
    knows it at start-up without asking the server: testers see no costs (showCost in app.js) */
-function rememberRole(m){try{const b=acctBase();if(b&&m&&m.role)localStorage.setItem('acct_role',JSON.stringify({tok:b.tok,role:m.role}))}catch{}if(typeof applyRole==='function')applyRole()}
+function rememberRole(m){try{const b=acctBase();if(b&&m&&m.role)localStorage.setItem('acct_role',JSON.stringify({tok:b.tok,role:m.role,...(m.id?{id:String(m.id)}:{})}))}catch{}if(typeof applyRole==='function')applyRole()}   // (id: a new link for the same account is known as such, acctJoin)
 function acctRole(){if(acct.me&&acct.me.role)return acct.me.role;
   try{const r=JSON.parse(localStorage.getItem('acct_role')||'null'),b=acctBase();return r&&b&&r.tok===b.tok?r.role:null}catch{return null}}
 const isTester=()=>acctRole()==='tester';
@@ -168,16 +232,16 @@ function renderAccountUI(){const el=document.querySelector('#acct-box');if(!el)r
     <div class="acct-uses" id="acct-uses">${acctUse(m.used,m.caps)}</div><p class="shelp">These limits start again at midnight UTC.${m.firstUntil&&m.firstUntil>Date.now()?` Your first week has twice the usual limits, until ${new Date(m.firstUntil).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}.`:''}</p>
     ${iosInSafari()?(b=>`<p class="shelp acct-ios">You’re using the app in ${b}. Add it to your Home Screen, open it there and paste your invitation link: iPhone keeps the two apart, and can clear ${b}’s copy after a week.</p>`)(typeof homeBrowser==='function'?homeBrowser():'Safari'):''}
     <div class="sactions"><button type="button" onclick="copyInviteLink()">Copy my invitation link</button></div>
-    <p class="shelp">To connect the app on your Home Screen or another phone. Keep it to yourself: it opens your wardrobe.</p>
+    <p class="shelp">To connect the app on your Home Screen or another phone. Keep it somewhere safe, such as a note or your mail: if this phone’s data is ever cleared, the link brings your wardrobe back. Keep it to yourself: it opens your wardrobe.</p>
     <input type="text" id="acct-mylink" class="acct-mylink" readonly hidden aria-label="Your invitation link">`;
   else if(m){
-    const list=(acct.invites||[]).map(v=>`<div class="acct-inv${v.off?' off':''}" data-id="${acctEsc(v.id)}"><div class="acct-inv-top"><b>${acctEsc(v.name)}</b>${v.off?`<span class="acct-tag">Switched off</span><button type="button" class="danger" onclick="purgeInvite('${acctEsc(v.id)}')">Delete their data</button>`:`<button type="button" class="danger" onclick="revokeInvite('${acctEsc(v.id)}')">Revoke</button>`}</div>
+    const list=(acct.invites||[]).map(v=>`<div class="acct-inv${v.off?' off':''}" data-id="${acctEsc(v.id)}"><div class="acct-inv-top"><b>${acctEsc(v.name)}</b>${v.off?`<span class="acct-tag">Switched off</span><button type="button" class="danger" onclick="purgeInvite('${acctEsc(v.id)}')">Delete their data</button>`:`<span class="acct-btns"><button type="button" class="acct-new" onclick="reissueInvite('${acctEsc(v.id)}')"${acct.busy?' disabled':''}>New link</button><button type="button" class="danger" onclick="revokeInvite('${acctEsc(v.id)}')">Revoke</button></span>`}</div>
       ${v.off?'':`<div class="acct-uses">${acctUse(v.used,v.caps)}</div>`}</div>`).join('');
     h=`<div class="slabel">Connected as the owner</div>
     <div class="slabel acct-h">Invite testers</div><p class="shelp">Each tester gets a wardrobe of their own on your server and a daily limit on photos and readings. Send them the link; it is shown only once.</p>
     <div class="sform"><input type="text" id="acct-name" placeholder="Tester’s name" maxlength="40" autocomplete="off" aria-label="Tester’s name"><button type="button" class="pri" id="acct-create" onclick="createInvite()"${acct.busy?' disabled':''}>Create</button></div>
     <p class="shelp" id="acct-msg">${acctEsc(acct.msg)}</p>
-    ${acct.link?`<div class="acct-link" id="acct-link"><div class="slabel">Link for ${acctEsc(acct.link.name)}</div><input type="text" readonly id="acct-link-url" value="${acctEsc(acct.link.url)}" aria-label="Invitation link" onfocus="this.select()"><div class="sactions"><button type="button" id="acct-copy" onclick="copyInvite()">Copy</button></div><p class="shelp">Copy it now: it can’t be shown again.</p></div>`:''}
+    ${acct.link?`<div class="acct-link" id="acct-link"><div class="slabel">${acct.link.again?'New link':'Link'} for ${acctEsc(acct.link.name)}</div><input type="text" readonly id="acct-link-url" value="${acctEsc(acct.link.url)}" aria-label="Invitation link" onfocus="this.select()"><div class="sactions"><button type="button" id="acct-copy" onclick="copyInvite()">Copy</button></div><p class="shelp">${acct.link.again?'It opens the same wardrobe as before; their old link no longer works. ':''}Copy it now: it can’t be shown again.</p></div>`:''}
     <div class="acct-list" id="acct-list">${list||(acct.invites?'<p class="shelp">No testers invited yet.</p>':'')}</div>`}
   el.hidden=!h;el.innerHTML=h;if(typed&&el.querySelector('#acct-name')&&!acct.link)el.querySelector('#acct-name').value=typed}   // a redraw keeps the name being typed
 async function createInvite(){const inp=document.querySelector('#acct-name'),name=(inp&&inp.value||'').trim();
@@ -195,6 +259,16 @@ async function revokeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if
   const r=await acctCall('invites?id='+encodeURIComponent(id),{method:'DELETE'});
   if(r.status===200){v.off=true;acctToast(v.name+'’s invitation is switched off')}else acct.msg=r.j.message||'Couldn’t revoke it. Try again.';
   renderAccountUI()}
+/* (fix round 3, the owner's decision 1; audit W1-11-02) a tester who lost the link: a new link that opens the same wardrobe, the old code
+   stops working. The server keeps only each code's fingerprint, so the old link can't be shown again; it makes a new code for the same
+   account (POST /invites {reissue: id}, worker/people.js) */
+async function reissueInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if(!v||acct.busy)return;
+  if(!await askConfirm(`Make a new link for ${v.name}?\n\nThe new link opens ${v.name}’s same wardrobe, with everything backed up so far. Their current link stops working on every phone: send them the new one and they open it on each phone they use.`,{ok:'Make a new link'}))return;
+  acct.busy=true;acct.msg='';acct.link=null;renderAccountUI();
+  const r=await acctCall('invites',{method:'POST',body:JSON.stringify({reissue:id})});acct.busy=false;
+  if(r.status===200&&r.j.code){acct.link={name:r.j.name||v.name,url:inviteLink(r.j.code),again:true};const l=await acctCall('invites');if(l.status===200&&Array.isArray(l.j.invites))acct.invites=l.j.invites}
+  else acct.msg=r.j.message||(r.status===0?'Couldn’t reach the server.':'Couldn’t make a new link. Try again.');
+  renderAccountUI();const f=document.querySelector('#acct-link');if(f&&f.scrollIntoView)f.scrollIntoView({block:'nearest'})}
 /* a switched-off invitation: delete everything the tester stored on the server (backup, photos, feedback) and take it off the list */
 async function purgeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if(!v)return;
   if(!await askConfirm(`Delete ${v.name}’s data?\n\nTheir wardrobe backup, photos and feedback are deleted from your server. This can’t be undone.`,{ok:'Delete',danger:true}))return;
