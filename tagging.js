@@ -7,7 +7,9 @@ const TAG_MAX=2048,CLOSE_MAX=1536,TAG_Q=.92;
 const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length||(c.patterns||[]).length?{colors:c.colors||[],patterns:c.patterns||[]}:undefined};
 /* the latest corrections (another item's only: the benchmark must not hand an item its own answer) */
 const tagFixes=skipId=>(settings.tagFixes||[]).filter(f=>f.id!==skipId).slice(-20).map(({field,type,from,to})=>({field,type,from,to}));
-const tagExtras=(x={})=>({custom:customForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{}),...(x.freeColors?{freeColors:true}:{}),...(x.freePattern?{freePattern:true}:{}),...(x.wb!=null?{wb:!!x.wb}:{})});
+/* the person's own materials, sent so Claude can name them (worker cleanOwnMaterials; 2026-11-16): {type: [name]}, or undefined when none */
+const ownMatsForTag=()=>{const o={};for(const t of Object.keys(MATERIALS_BY)){const l=ownMats(t);if(l.length)o[t]=l}return Object.keys(o).length?o:undefined};
+const tagExtras=(x={})=>({custom:customForTag(),ownMaterials:ownMatsForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{}),...(x.freeColors?{freeColors:true}:{}),...(x.freePattern?{freePattern:true}:{}),...(x.wb!=null?{wb:!!x.wb}:{})});
 
 /* ---- tagging copies: the sharp photo sent to the tagger is kept on this device only (Cache Storage, not synced, not loaded
    at start-up), so the benchmark can re-tag an item from the same picture later ---- */
@@ -381,9 +383,40 @@ function takeExtras(q,ai,seen){q.tagAI=aiSignals(ai,seen);Object.assign(q,{conf:
 /* Claude's material (2026-11-15, app.js matTag: high or medium, on the type's list): it fills the card's Material only when that is empty, or
    still holds Claude's own earlier suggestion (tagging again from the close-up), never one chosen by hand (q.matSet); the field shows it as
    Claude's suggestion (q.matAI, wardrobe.js matRow) until the owner changes it */
-function takeMaterial(q,ai){const m=ai&&ai.material,l=MATERIALS_BY[q.type];if(!m||!l||!l.includes(m.key)||q.matSet)return;
+/* (2026-11-16, the owner's approved additions) a material on no list (m.new, medium or high) is offered, never filled: q.matNew, "Add cupro
+   as a material" under Material (matOffer); one on the list (or the person's own) at low confidence is Claude's guess: q.matGuess, shown
+   under Material with "Use wool" (matGuessUse), never filled in */
+function takeMaterial(q,ai){const m=ai&&ai.material,l=matsFor(q.type);delete q.matNew;delete q.matGuess;if(!m||!l)return;
+  if(!l.includes(m.key)){if(m.new&&m.conf!=='low'&&ownMatName(m.key))q.matNew={key:m.key,conf:m.conf,why:m.why||''};return}
+  if(m.conf!=='high'&&m.conf!=='medium'){q.matGuess={key:m.key,conf:'low',why:m.why||''};return}
+  if(q.matSet)return;
   if(q.material&&!(q.matAI&&q.material===q.matAI.key))return;
   q.material=m.key;q.matAI={key:m.key,conf:m.conf,why:m.why||''}}
+/* adding one of Claude's new materials to the person's own for a type (settings.ownMaterials, synced; core.js ownMats): -> the name, or ''.
+   The list is kept sorted, at most OWN_MAT_MAX a type */
+async function addOwnMaterial(type,name){const n=ownMatName(name);if(!n||!MATERIALS_BY[type])return '';if(matsFor(type).includes(n))return n;
+  const cur=ownMats(type);if(cur.length>=OWN_MAT_MAX){toast(`You have ${OWN_MAT_MAX} of your own ${matTypeWord(type)} materials: remove one in Settings first.`,5000);return ''}
+  const o=settings.ownMaterials&&typeof settings.ownMaterials==='object'?settings.ownMaterials:{};settings.ownMaterials={...o,[type]:[...cur,n].sort()};
+  await saveUserSettings();return n}
+async function removeOwnMaterial(type,name){const o=settings.ownMaterials&&typeof settings.ownMaterials==='object'?settings.ownMaterials:{},l=ownMats(type).filter(x=>x!==name),nx={...o};
+  if(l.length)nx[type]=l;else delete nx[type];if(Object.keys(nx).length)settings.ownMaterials=nx;else delete settings.ownMaterials;await saveUserSettings();renderOwnMatUI()}
+/* the Add card's "Add cupro as a material": added to the person's own for this type, chosen as this card's material (by hand: matSet,
+   Fabric & fit checked), a note under the field, and a toast with Undo (takes it off the card and out of the list again) */
+async function matOffer(i){const q=queue[i];if(!q||!q.matNew)return;const nm=q.matNew,was=q.material,had=matsFor(q.type).includes(nm.key);
+  const n=await addOwnMaterial(q.type,nm.key);if(!n)return;
+  const qq=queue.find(x=>x.id===q.id);if(!qq)return;delete qq.matNew;delete qq.matAI;qq.material=n;qq.matSet=1;qq.matAdded=n;qq.checked={...qq.checked,fabric:1};
+  if(typeof addKeepSoon==='function')addKeepSoon();renderAdd();
+  toast(`${cap1(n)} added to your ${matTypeWord(q.type)} materials.`,6000,{label:'Undo',fn:async()=>{const c=queue.find(x=>x.id===q.id);
+    if(c&&c.material===n){if(was)c.material=was;else delete c.material;delete c.matAdded;c.matNew=nm}if(!had)await removeOwnMaterial(q.type,n);renderAdd()}})}
+/* the Add card's "Use wool" on Claude's low-confidence guess: chosen by hand (matSet, Fabric & fit checked) */
+function matGuessUse(i){const q=queue[i];if(!q||!q.matGuess)return;const k=q.matGuess.key;delete q.matGuess;setQField(i,'material',k)}
+/* Settings → Your materials: the materials added from Claude's offers, per type; each can be removed (items already using it keep it: it
+   shows as Other with its name there; it is only no longer offered) */
+function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[];
+  for(const t of Object.keys(MATERIALS_BY))for(const m of ownMats(t)){const n=items.filter(i=>i.type===t&&i.material===m).length;
+    rows.push(`<div class="custrow ownmatrow" data-t="${esc(t)}" data-m="${esc(m)}"><span><b>${esc(cap1(m))}</b><br><small class="mut">${esc(TYPES[t]||t)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span><button type="button" aria-label="Remove ${esc(m)} from your ${esc(matTypeWord(t))} materials" onclick="removeOwnMaterial('${jsq(t)}','${jsq(m)}')">Remove</button></div>`)}
+  el.innerHTML=rows.length?rows.join('')+'<p class="mut"><small>Removing one leaves the items that use it as they are; it just stops being offered.</small></p>'
+    :'<p class="mut"><small>None yet. When Claude reads a material that is on no list (cupro, say), the Add card offers to add it here.</small></p>'}
 async function closeTagImg(q){if(q.texDone)return q.raw.tex.toDataURL('image/jpeg',TAG_Q);   // a card brought back after a kill: its close-up is already corrected (add.js addRevive)
   const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;

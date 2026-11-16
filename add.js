@@ -445,6 +445,20 @@ function plainCard(q,i){return `<div class="card qcard" data-q="${esc(q.id)}"><b
    open first. Confirm is never blocked by unchecked parts ("2 left to check · you can still confirm"), only while Claude reads (confBtn). */
 const CK_FIELD={type:'type',primaryColor:'colors',secondaryColor:'colors',tertiaryColor:'colors',pattern:'pattern',metal:'fabric',cuff:'fabric',vest:'fabric',season:'fabric',
   trouserKind:'fabric',shoeStyle:'fabric',leather:'fabric',dial:'fabric',band:'fabric',bezel:'fabric',watchStyle:'fabric',material:'fabric'};
+/* ---- the material's extras under the Add card's Material (2026-11-16, the owner's approved design): Claude's new material offered
+   ("Add cupro as a material": tagging.js matOffer), the note once added, and Claude's low-confidence guess with "Use wool" (matGuessUse).
+   MAT_ASK: the types whose material matters for planning; empty, Fabric & fit is "!" (worth a look; Confirm still works) */
+const MAT_ASK=['suit','blazer','pants'];
+const matNewOf=q=>q.matNew&&MATERIALS_BY[q.type]&&!q.material&&!matsFor(q.type).includes(q.matNew.key)&&q.matNew.conf!=='low'?q.matNew:null;
+const matGuessOf=q=>q.matGuess&&!q.material&&(matsFor(q.type)||[]).includes(q.matGuess.key)?q.matGuess:null;
+const matWhy=w=>{const s=String(w||'').replace(/[.\s]+$/,'');return /^[A-Z][a-z]/.test(s)?s[0].toLowerCase()+s.slice(1):s};   // (mid-sentence: "cupro, silky drape")
+function matExtras(q,i){if(!MATERIALS_BY[q.type])return '';let h='';const t=matTypeOne(q.type);
+  if(q.matAdded&&q.material===q.matAdded)h+=`<p class="tagnote matadded"><small>Now one of your materials: it’s in the list for every ${esc(t)} you add, on all your devices.</small></p>`;
+  const nm=matNewOf(q);
+  if(nm)h+=`<div class="offer matnew"><small>None of the materials fit: Claude calls it <b>${esc(nm.key)}</b>${matWhy(nm.why)?`, ${esc(matWhy(nm.why))}`:''} (${esc(nm.conf)} confidence).</small><button type="button" class="chipbtn" onclick="matOffer(${i})">Add ${esc(nm.key)} as a material</button></div>`;
+  const g=matGuessOf(q);
+  if(g){const w=String(g.why||'').replace(/[.\s]+$/,'');h+=`<p class="tagnote mut matguess"><small>Claude’s guess: <b>${esc(g.key)}</b> · ${w&&w.length<=60?esc(w):'can’t be sure from a photo'}</small><button type="button" class="chipbtn" onclick="matGuessUse(${i})">Use ${esc(g.key)}</button></p>`}
+  return h}
 const ckLr=(q,i,k)=>{const on=!!(q.checked&&q.checked[k]);return `<button type="button" class="cklr" aria-pressed="${on}" onclick="ckCheck(${i},'${k}')">${on?'<span aria-hidden="true">✓ </span>Checked':k==='tex'?'Fine as is':'Looks right'}</button>`};
 /* "Looks right": the section checked (or not again); checked, it folds and the next unchecked one opens */
 function ckCheck(i,k){const q=queue[i];if(!q)return;const on=!(q.checked&&q.checked[k]);q.checked={...q.checked,[k]:on?1:0};
@@ -484,11 +498,14 @@ function addCkSecs(q,i){const man=!!q.manual||!q.ai,c=q.conf||{},chk=q.checked||
     (q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:'')+(q.type==='suit'?`<label>Vest ${S(VESTS,(q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'yes':'no','vest',i)}</label>`:'')+(SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:'')+
     (q.type==='pants'?`<label>Kind ${S(TROUSER_KINDS,q.trouserKind||'dress','trouserKind',i)}</label>`:'')+(q.type==='shoes'?`<label>Style ${S(SHOE_STYLES,q.shoeStyle||'oxford','shoeStyle',i)}</label>`:'')+(q.type==='shoes'||q.type==='belt'?`<label>${leatherLabel(q)} ${S(leathersFor(q).map(c=>[c,cap1(leatherWord(q,c))]),q.leather||'calf','leather',i)}</label>`:'')+
     (q.type==='watch'?`<label>Dial ${S(DIAL_OPTS(watchOpts(q).dial),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:'')+
-    matRow(q.type,q.material,`setQField(${i},'material',`,q.matAI);
+    matRow(q.type,q.material,`setQField(${i},'material',`,q.matAI)+matExtras(q,i);
   const swb=fab&&q.big?`<div class="sw-box"><div id="swatch-img-${i}" class="sw" style="background-image:url(${q.swatch})"></div><div style="flex:1;font-size:13px"><b>Fabric swatch</b><small class="mut" style="display:block">${q.texCanvas?'From the fabric close-up':'From the photo'}: zoom and move it to a clean patch of cloth</small>
     <label>Zoom <input type="range" min="1" max="4" step="0.1" value="${q.zoom||1}" oninput="updateSwatchParam(${i}, 'zoom', this.value)"></label><label>Left–right <input type="range" min="0" max="1" step="0.05" value="${q.cx||0.5}" oninput="updateSwatchParam(${i}, 'cx', this.value)"></label><label>Up–down <input type="range" min="0" max="1" step="0.05" value="${q.cy||0.5}" oninput="updateSwatchParam(${i}, 'cy', this.value)"></label></div></div>`:'';
   if(f||swb){const sug=!!(q.matAI&&q.matAI.key&&q.material===q.matAI.key),bits=[q.material?cap1(matLabel(q.material)):'',SEASON_TYPES.includes(q.type)&&q.season&&q.season!=='all'?optLab(SEASONS,q.season):'',q.type==='suit'?((q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'matching vest':'no vest'):''].filter(Boolean);
-    out.push({k:'fabric',n:!!f,warn:false,mark:chk.fabric?'good':sug?'ai':'todo',title:fab?'Fabric &amp; fit':'Details',sum:esc(sug&&!chk.fabric?`${bits.join(' · ')} · suggested by Claude`:bits.join(' · ')||'Optional'),body:f+swb+(f?ckLr(q,i,'fabric'):'')})}
+    // (2026-11-16) suits, blazers and pants ask for their material: empty, the section is "!" (worth a look; never blocks Confirm), with Claude's guess in the summary
+    const ask=MAT_ASK.includes(q.type)&&!q.material&&!chk.fabric,g=matGuessOf(q),nm=matNewOf(q);
+    const sum=ask?`Material not set${g?` · Claude’s guess: ${g.key}`:nm?` · Claude calls it ${nm.key}`:''}`:sug&&!chk.fabric?`${bits.join(' · ')} · suggested by Claude`:bits.join(' · ')||'Optional';
+    out.push({k:'fabric',n:!!f,warn:false,mark:chk.fabric?'good':ask?'warn':sug?'ai':'todo',title:fab?'Fabric &amp; fit':'Details',sum:esc(sum),body:f+swb+(f?ckLr(q,i,'fabric'):'')})}
   // More: name, brand, notes, bought and on the way, how many (not counted)
   const on=k=>`oninput="setQField(${i},'${k}',this.value)"`,named=['name','brand','notes'].filter(k=>q[k]&&String(q[k]).trim()),n=qtyOf(q);
   out.push({k:'more',n:false,warn:false,mark:'opt',title:'More',sum:esc((named.length?cap1(named.join(', '))+' filled in':'Name, brand, notes')+(q.order?' · on the way':' · on the way?')+(n>1?` · ${n} of them`:'')),
