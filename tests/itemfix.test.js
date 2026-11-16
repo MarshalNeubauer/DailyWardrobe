@@ -51,7 +51,7 @@ module.exports=async({ok,chromium,url})=>{
     const err=await p.textContent('#cn-error');ok(/already a color/.test(err),`the new-colour sheet says so too (${err})`);
     await p.fill('#cn-name','Sage');await p.dispatchEvent('#cn-name','change');await p.fill('#cn-hex','#9caf88');await p.dispatchEvent('#cn-hex','change');await p.click('#cn-add');await p.waitForFunction(()=>!document.querySelector('#col-sheet').classList.contains('on'),null,{timeout:3000}).catch(()=>{});
     const sg=await p.evaluate(()=>({col:items[0].primaryColor,custom:(settings.custom.colors||[]).map(c=>c.name+':'+c.hex+':'+c.types.join('/')),open:document.querySelector('#col-sheet').classList.contains('on')}));
-    ok(sg.col==='ownsage'&&sg.custom.includes('Sage:#9caf88:tie')&&!sg.open,`"+ New color" by hand adds Sage for ties and uses it (${JSON.stringify(sg)})`);
+    ok(sg.col==='ownsage'&&sg.custom.includes('Sage:#9caf88:tie/pocketsquare')&&!sg.open,`"+ New color" by hand adds Sage for ties (and pocket squares) and uses it (${JSON.stringify(sg)})`);
     // no "add a close-up" advice where there is no close-up; no Read pattern from photo without a photo
     const adv=await p.evaluate(async()=>{const sh={id:'sh1',type:'shoes',primaryColor:'black',leather:'calf',pattern:'solid',added:1},tt={id:'tt1',type:'shirt',primaryColor:'white',pattern:'tattersall',added:1};items=[sh,tt];await put(sh);await put(tt);
       openItem('sh1');openColPick('e','sh1','primaryColor');const a=$('#col-sheet').textContent;closeColPick();openItem('tt1');const b=$('#ivbody').innerHTML;

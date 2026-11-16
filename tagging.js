@@ -485,8 +485,24 @@ function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colo
   return out.join('')}
 
 /* ---- adding a colour or a pattern (settings.custom, synced; see applyCustom in core.js) ---- */
-const COL_GROUPS=[['suit','blazer','pants'],['overcoat','raincoat'],['shirt'],['tie'],['socks'],['shoes','belt']];
-const groupOf=t=>COL_GROUPS.find(g=>g.includes(t))||[t];
+/* the kinds a new colour is offered for at first ("Offer it for"): the casual tops together and the casual jackets together (2026-11-16,
+   the owner's coyote brown T-shirt), the pocket square with the tie (the same silk and print colours) */
+const COL_GROUPS=[['suit','blazer','pants'],['overcoat','raincoat'],['shirt'],['tie','pocketsquare'],['socks'],['shoes','belt'],CASUAL_TOPS,CASUAL_JACKETS];
+const groupOf=t=>(COL_GROUPS.find(g=>g.includes(t))||[t]).slice();
+/* "T-shirts", "dress shirts", "watches", "pants" */
+const typePl=t=>{const n=TYPES[t]||t,p=/s$/.test(n)?n:/(ch|sh)$/.test(n)?n+'es':n+'s';return t==='tee'?p:p.toLowerCase()};
+/* an own colour used for a kind of item it isn't offered for yet (2026-11-16, the owner: "I want it to be coyote brown … the color picker
+   doesn't let me pick my added colors": made on pants, Coyote brown was in no T-shirt list, and adding it again was refused, "There is
+   already a color with that name"): that kind joins its "Offer it for", and stripes and motifs when it was picked for one; saved and synced
+   as any settings change (saveUserSettings: the colour's entry gets a new stamp). Returns {msg, undo} or null when nothing changed */
+async function ownColOffer(key,type,accent){const cu=settings.custom||{},l=cu.colors||[],c=l.find(x=>x&&x.key===key);
+  if(!c||!CUSTOM_COL[key]||!COLS_BY[type]||colsFor(type,accent).includes(key))return null;
+  const had={types:c.types,accent:c.accent},newAcc=!!accent&&!c.accent;
+  settings.custom={...cu,colors:l.map(x=>x===c?{...c,types:[...new Set([...(c.types||[]),type])],accent:!!c.accent||!!accent}:x)};
+  applyCustom(settings.custom);cache={};await saveUserSettings();
+  const undo=async()=>{const u=settings.custom||{};settings.custom={...u,colors:(u.colors||[]).map(x=>x&&x.key===key?{...x,types:had.types,accent:had.accent}:x)};
+    applyCustom(settings.custom);cache={};await saveUserSettings();if(typeof renderCustomUI==='function')renderCustomUI()};
+  return {msg:`${cap1(colName(key))} is now offered for ${typePl(type)}${newAcc?' and their stripes and motifs':''} too.`,undo}}
 /* the Add card's offer of a new colour (Claude's newColor, or a close-up measured over FAR_DE from every listed colour) opens the
    "+ New colour" sheet (colpick.js openColNew) on the card's main colour, with Claude's name and the measured shade filled in; the inline
    forms (newColForm / newPatForm) were removed 2026-11-15: one way to add, the same everywhere */
