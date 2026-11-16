@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	a590888d92af87deab8c
+# tested	ad485d1115a46c05cb04
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	npsLeave	renderAdd	shadeRow
@@ -1607,27 +1608,27 @@ boxfold.test.js	watch/suit.png	<loaded>
 boxfold.test.js	watch/vest.png	<loaded>
 camouflage.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 camouflage.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-camouflage.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals
+camouflage.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals	shadeRow
 camouflage.test.js	analysis.js	<loaded>
-camouflage.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	afterDom	afterScripts	busyLabelFor	cleanStored	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
+camouflage.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	afterDom	afterScripts	atomic	busyLabelFor	cap1	cleanStored	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	metaGet	metaPut	put	texSwatches	tx	txFail	txs	window.fetch
 camouflage.test.js	apple-touch-icon.png	<loaded>
-camouflage.test.js	asm-color.js	<loaded>	asmCamoTex	asmCmRoute
+camouflage.test.js	asm-color.js	<loaded>	asmCamoTex	asmCmRoute	asmGapNote
 camouflage.test.js	asm-gl.js	<loaded>
 camouflage.test.js	asm-watch.js	<loaded>
 camouflage.test.js	assemble.js	<loaded>	@	asmSuitWeave
-camouflage.test.js	care.js	<loaded>	careShow
-camouflage.test.js	checklist.js	<loaded>
-camouflage.test.js	colpick.js	<loaded>
-camouflage.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	camoField	camoPat	colBase	colOf	dE00	dayClimate	di	hexRgb	isWorkday	isoKey	key	keySettings	keySplit	labHex	lum	metalWord	occOf	offDays	offName	ownDescClean	ownNameClean	ownNameTidy	patBase	patLabel	patName	patOf	planCol	primaryCol	rgbLab	setEntries	setHash	setKeys	setStampOf	subHashes	subOk	takeSettings	thirdOf	todayDate
+camouflage.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careShow	careState	careWashed	careWord	careWornLine
+camouflage.test.js	checklist.js	<loaded>	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
+camouflage.test.js	colpick.js	<loaded>	EP	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
+camouflage.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	camoField	camoPat	colBase	colName	colOf	colorDesc	dE00	dayClimate	desc	di	hexRgb	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	metalWord	mix	nextStamp	normPat	nowMs	occOf	offDays	offName	ownDescClean	ownNameClean	ownNameTidy	patBase	patLabel	patName	patOf	planCol	primaryCol	rgbHex	rgbLab	sentence	setEntries	setHash	setKeys	setStampOf	shadeFor	shadeName	stamp	styleWord	subHashes	subOk	takeSettings	thirdOf	titleCls	todayDate
 camouflage.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
-camouflage.test.js	draw.js	<loaded>	camoTileUrl	fabricDef	swatchSVG
+camouflage.test.js	draw.js	<loaded>	camoTileUrl	fabricDef	itemThumb	shirtFabric	shirtMarks	swatchSVG
 camouflage.test.js	dress.js	<loaded>	migrateVests
 camouflage.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 camouflage.test.js	icon-192.png	<loaded>
 camouflage.test.js	icon-512.png	<loaded>
 camouflage.test.js	index.html	<loaded>
-camouflage.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	itemShown	renderItem	smallPhotos
-camouflage.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
+camouflage.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	@{constv$itemviewb$ivbodybd$itemba}	E	histPush	imgOf	itemBody	itemShown	ivCareSum	ivDetailSum	ivSummary	noMotion	openItem	optLab	paperCloth	paperHint	paperLine	paperRetake	paperSteps	patSummary	photoTools	ptIcon	renderItem	renderWardrobe	sheetSlides	smallPhotos	wardList	wardPic
+camouflage.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 camouflage.test.js	manifest.webmanifest	<loaded>
 camouflage.test.js	mannequin.js	<loaded>	@{}
 camouflage.test.js	month.js	<loaded>
@@ -1637,7 +1638,7 @@ camouflage.test.js	mq/suit-open.js	<loaded>
 camouflage.test.js	mq/suit.js	<loaded>
 camouflage.test.js	mq/vest.js	<loaded>
 camouflage.test.js	pack.js	<loaded>	packShow
-camouflage.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	loadRenders
+camouflage.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	jsq	loadRenders
 camouflage.test.js	planner.js	<loaded>	fam	formalTop	patInfo	pcol
 camouflage.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
 camouflage.test.js	safety.js	<loaded>	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
@@ -1645,14 +1646,14 @@ camouflage.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	
 camouflage.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 camouflage.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 camouflage.test.js	start.js	<loaded>	@aGetsettingsmetaGetPLAN_SNAP.catchnull.then	@connRestored.then	appDrop	pageIn	show
-camouflage.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts
-camouflage.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn::after	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .firstrun	.wxc.wxlk	.wxl	:root	<loaded>	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
-camouflage.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncPaused	syncUrl	syncWaiting
-camouflage.test.js	tagging.js	<loaded>	camoFromPixels	claudeOnly	fixBlackBackdrops	motifPat	readable	recolourSpecSetts	settable	upgradeCloseups	upgradePhotos
+camouflage.test.js	stats.js	<loaded>	@iftypeofafterScriptsfunctionafterScripts	wornDays
+camouflage.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-backdrop.on,#item-backdrop.closing	#item-view	#item-view .ivct .ivrd	#item-view .ivct .wbst	#item-view .ivct .wbstcard	#item-view .ivct .wbsteps	#item-view.on,#item-view.closing	#modal-backdrop	#modal-backdrop,#settings-modal	#pick-backdrop	#pick-sheet	#refresh-btn	#refresh-btn[hidden]	#settings-modal	#shop-backdrop	#shop-sheet	#toast	#toast,body.iv-on #toast	#today	#ward-add	#ward-add svg	#wardrobe	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chip::after	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .wclear	#wardrobe .wclear[hidden]	#wardrobe .wsearch input	#wardrobe .wsort	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	#wardrobe:not([hidden]) ~ #ward-add	*	.cap	.chip	.chip.on	.chips	.ck-good	.ck-opt,.ck-todo	.ck-warn	.ckb	.ckb .wbst,.ckb .wbstcard	.ckb .wbsteps	.ckchev	.ckchip	.ckcn	.ckm	.ckm b	.ckm svg	.cks	.cks.open>.ckb	.cks.open>.ckh .ckchev	.ckt	.ckt b	.ckt small	.cmp-cu	.cmp-dw	.cmpbar	.cmpbar i	.cmpl	.cmpl.br	.cmpl.tl	.cmpl.tr	.cmpl[hidden]	.cmplab	.cmplv canvas	.cmpmb	.cmpmt	.cmpop	.cmpsp	.cmpsp[hidden],.cmpop[hidden]	.cmptools	.cmpv	.cmpv.cmpnow .cmplv	.cmpw	.cmpwait	.cmpzm	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.hbtns	.hgear	.ivbar	.ivbar .ivdone	.ivbar .ivnav	.ivbody	.ivchev	.ivcl,.ivcr	.ivcols	.ivdel	.ivdel button	.ivdup	.ivdup button	.ivdup+.ivdel	.ivhead	.ivhead .pcount	.ivhead::before	.ivin	.ivpill	.ivpill.good	.ivpills	.ivrd	.ivrd .ivrdbtn	.ivrdbtn[aria-disabled=true],.rdgo[aria-disabled=true]	.ivsum	.ivsumph	.ivsumph .ph.thumb	.ivsumph svg	.ivsumt	.ivt	.ivt .gtype	.ivt h2	.kit-start	.linkbtn	.linkbtn::after	.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.rdcost	.slide	.stage	.stage .firstrun	.thumb	.thumb svg	.vfile	.vh	.wbpic i	.wbpic::after	.wbpic::before	.wbretake	.wbretake::after	.wbst	.wbst .ic	.wbst .tx	.wbst .tx small	.wbst .wbretake	.wbst.no .ic	.wbstcard .arr	.wbstcard .cam	.wbstcard .eb	.wbstcard .hd	.wbstcard .li	.wbstcard .more	.wbstcard .n	.wbstcard .n b	.wbstcard .ol	.wbstcard .tap	.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i	.wbsteps	.wfind	.wsearch	.wsicon	.wslide	.wxc.wxlk	.wxl	:is(#item-view,#add) .ckh	:is(#item-view,#add) .cmpgo	:is(#item-view,#add) .cmplv	:is(#item-view,#add) .cmpzm button	:is(#item-view,#add) .cmpzm button+button	:is(#item-view,#add) .wbst.cmpwb	:is(#item-view,#add) .wbstcard	:is(#item-view,#add) .wbstcard .wbpic	:is(#item-view,.wbsteps,#cu-sheet) .wbpic	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number])	:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) select	:root	<loaded>	body	body.iv-on #toast,body.iv-on #busy	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	label:has(>.vfile)	main	main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add	nav	nav button	nav button.on	nav::before	select,input[type="text"],input[type="range"]
+camouflage.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	setSyncStatus	showSyncStatus	syncNeedsPull	syncNow	syncOnce	syncPaused	syncUrl	syncWaiting
+camouflage.test.js	tagging.js	<loaded>	camoFromPixels	claudeOnly	closeRead	fixBlackBackdrops	linS	measEdgeCut	measureCloth	motifPat	paperKey	paperNow	paperOf	readable	recolourSpecSetts	sLin	settSummary	settable	texSig	upgradeCloseups	upgradePhotos	urlCanvas	wbRead
 camouflage.test.js	tests/fixedplan.js	<any>
 camouflage.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapUse	renderToday	swApply	wornPill	wxFit	wxPreload	zoomTarget
-camouflage.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
-camouflage.test.js	wardrobe.js	<loaded>	@iftypeofwhenPulledfunctionwhenPulled	matMigrate	wardPendingRestore
+camouflage.test.js	ui.js	<loaded>	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerUp	uiEsc
+camouflage.test.js	wardrobe.js	<loaded>	@iftypeofwhenPulledfunctionwhenPulled	fldRow	ivOn	matMigrate	matRow	notesRow	wardBack	wardBar	wardCount	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
 camouflage.test.js	watch/leather.jpg	<loaded>
 camouflage.test.js	watch/shirt-open.png	<loaded>
 camouflage.test.js	watch/shirt-tie.png	<loaded>
