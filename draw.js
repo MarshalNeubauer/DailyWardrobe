@@ -47,12 +47,10 @@ function texTileSmooth(grid,lo,hi){if(typeof document==='undefined')return null;
 /* a camouflage's tile as a small seamless image (core.js camoField: its blotches in its colours, CAMO_PX pixels a side), edges softened by a
    one-pixel wrapping blend so they don't read as pixel steps when scaled up. Cached in TEX_TILES; null without a DOM or a canvas (a phone
    out of picture memory, 2026-11-16) */
-const CAMO_PX=224;
-function camoTileUrl(c){if(typeof document==='undefined'||!c||!Array.isArray(c.cols)||c.cols.length<2)return null;const key='c'+c.cols.join('')+c.shares.join(',')+c.seed;if(TEX_TILES.has(key))return TEX_TILES.get(key);
-  const N=CAMO_PX,idx=camoField(N,c.shares,c.seed),rgb=c.cols.map(h=>hexRgb(h)),cv=document.createElement('canvas');cv.width=cv.height=N;const x=cv.getContext('2d');if(!x)return null;
-  const D=x.createImageData(N,N),at=(px,py)=>idx[(((py%N)+N)%N)*N+(((px%N)+N)%N)];
-  for(let y=0;y<N;y++)for(let q=0;q<N;q++){const s=[0,0,0];for(const [dx,dy,w] of [[0,0,4],[1,0,1],[-1,0,1],[0,1,1],[0,-1,1]]){const r=rgb[at(q+dx,y+dy)];for(let k=0;k<3;k++)s[k]+=w*r[k]}
-    const i=4*(y*N+q);for(let k=0;k<3;k++)D.data[i+k]=Math.round(s[k]/8);D.data[i+3]=255}
+const CAMO_PX=320;   // (v2: a larger tile holds more, smaller blotches at the same sharpness)
+function camoTileUrl(c){if(typeof document==='undefined'||!c||!Array.isArray(c.cols)||c.cols.length<2)return null;const key='c'+CAMO_V+c.cols.join('')+c.shares.join(',')+c.seed;if(TEX_TILES.has(key))return TEX_TILES.get(key);
+  const N=CAMO_PX,im=camoImage(N,c.cols,c.shares,c.seed),cv=document.createElement('canvas');cv.width=cv.height=N;const x=cv.getContext('2d');if(!x)return null;
+  const D=x.createImageData(N,N);for(let j=0;j<N*N;j++){D.data[4*j]=im[3*j];D.data[4*j+1]=im[3*j+1];D.data[4*j+2]=im[3*j+2];D.data[4*j+3]=255}   // (core.js camoImage: soft edges, cloth grain)
   x.putImageData(D,0,0);const url=cv.toDataURL('image/png');if(TEX_TILES.size>40)TEX_TILES.clear();TEX_TILES.set(key,url);return url}
 /* Pattern tile per garment role. Scale differs by role so a pinstripe suit and a striped shirt read correctly. */
 function fabricDef(id,item,role,ctx){

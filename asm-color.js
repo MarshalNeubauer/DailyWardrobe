@@ -635,10 +635,10 @@ function asmPileTile(i,how){const P=ASM_PILE[how];if(!P)return null;const L=ASM_
 /* camouflage on a jacket, waistcoat or trousers (2026-11-16, the owner's MultiCam pants): the blotches of its reading (core.js camoField,
    the same map the drawings use) as a suit tile in linear light, ASM_CAMO.T a side; the tile is the garment's width over its repeats across
    (ASM_SHIRT_MM / tr), so a reading's blob size carries over; the ground colour is its colour (c) */
-const ASM_CAMO={T:256};
+const ASM_CAMO={T:384,v:2};   // (v2: soft edges, grain, more and smaller blotches; the key's code hash covers it)
 function asmCamoTex(i){const s=typeof usableSett==='function'?usableSett(i):null;if(!s||!s.camo)return null;const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])};
-  const T=ASM_CAMO.T,n=T*T,idx=camoField(T,s.camo.shares,s.camo.seed),cols=s.camo.cols.map(lin),t=new Float32Array(3*n);
-  for(let k=0;k<n;k++){const c=cols[idx[k]]||cols[0];t[3*k]=c[0];t[3*k+1]=c[1];t[3*k+2]=c[2]}
+  const T=ASM_CAMO.T,n=T*T,im=camoImage(T,s.camo.cols,s.camo.shares,s.camo.seed),cols=s.camo.cols.map(lin),t=new Float32Array(3*n);   // (core.js camoImage: soft edges, cloth grain)
+  for(let k=0;k<3*n;k++)t[k]=L[im[k]]
   return {t,c:new Float32Array(cols[0]),TW:T,TH:T,mm:ASM_SHIRT_MM/Math.max(.5,+s.tr||CAMO_TR),linen:false,cloth:null}}
 /* the job for asmCmBuild, or null when the kind's master or masks are not on the device */
 async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)return null;const keys=asmCmAssets(kind);if(keys.some(k=>!renders[k]))return null;
