@@ -9,7 +9,7 @@ const COMBO_RE = /^c[0-9a-f]{16}$/, DAY_RE = /^\d{4}-\d{1,2}-\d{1,2}$/;
    letters, digits, - and _, pictures as above (or the backup's own dwph: reference), numbers as numbers and a pattern reading of hex
    colours and plain words; a day a date of the app's shape and item ids of the id shape. recCheck -> null, or what is wrong (the
    server refuses the save with a plain message; the app checks the same before anything is sent, so its own records always pass) ---- */
-const PIC_RE = /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]*={0,2}$/, REF_RE = /^dwph:[0-9a-f]{20}$/;
+const PIC_RE = /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]*$/, REF_RE = /^dwph:[0-9a-f]{20}$/;
 const ID_RE = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/, KEY_RE = /^[\p{L}\p{M}\p{N}_-]{1,48}$/u, HEX_RE = /^#[0-9a-fA-F]{3,8}$/, DATE_RE = DAY_RE;
 const WORD_RE = /^[\p{L}\p{M}\p{N} _+.,:;()\/#%’-]{0,120}$/u, BAD_CH = /[<>"`]/;
 const COLS = ['primaryColor', 'secondaryColor', 'tertiaryColor', 'dial'], PICS = ['photo', 'photoSm', 'texture', 'swatch'],

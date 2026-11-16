@@ -36,7 +36,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {same:JSON.stringify(x)===JSON.stringify(own),again:JSON.stringify(cleanRecord(x))===JSON.stringify(x),ids:cs.items.map(i=>i.id),
         markup:cs.items.flatMap(i=>Object.entries(i).filter(([k,v])=>{if(['name','notes','brand','material','details'].includes(k))return false;let bad=false;JSON.stringify(v,(kk,x)=>{if(typeof x==='string'&&/[<>"`]/.test(x))bad=true;return x});return bad})).map(([k])=>k),
         lb:cs.items.find(i=>i.id==='set1').primaryColor,band:cs.items.find(i=>i.id==='set1').sett.bands[0][0],ph:'photo' in cs.items.find(i=>i.id==='ph1'),nm:cs.items.find(i=>i.id==='nm1').name,
-        days:JSON.stringify(cs.days),tomb:JSON.stringify(cs.tombstones)}},[crafted(),PNG]);
+        days:JSON.stringify(cs.days),tomb:JSON.stringify(cs.tombstones),
+        own:(o=>o.primaryColor+','+o.secondaryColor+','+o.pattern)(cleanRecord({id:'o1',type:'tie',primaryColor:'ownrot1',secondaryColor:'ownbrun',pattern:'own-rot-2'}))}},[crafted(),PNG]);
+    ok(u.own==='ownrot1,ownbrun,own-rot-2','own color and pattern keys with digits (and the older letters-only ones) are kept ('+u.own+')');
     ok(u.same&&u.again,'an item the app made comes through cleanRecord unchanged, and a cleaned record is unchanged by a second pass');
     ok(u.ids.join()==='ph1,ph2,col1,set1,nm1,ok1','items whose id isn\'t of the app\'s shape are left out ('+u.ids.join()+')');
     ok(!u.markup.length&&!u.ph&&u.band===null,'no field but the free text keeps markup: the photo, the color and the sett band are dropped ('+u.markup.join()+')');
