@@ -346,12 +346,24 @@ const METAL_TONES={gold:['#fbefc4','#d4b04a','#8a6d12'],silver:['#f7f8f9','#c4c8
    Merge two wardrobe snapshots {items, tombstones, days, settings}: the newest version of each item wins, and a deletion
    (tombstone) wins over any older edit. Days (outfit history) merge the same way by date; settings by their timestamp. */
 const stamp=i=>i&&(i.updated||i.added)||0;
+/* ---- the phone's clock against the server's (fix round 3, 2026-11-16, the audit's W1-9 and W1-5-07): every stamp came from the phone's
+   own clock, so a phone a year behind lost its edits and deletions to the backup, one a year ahead froze what it edited for a year, and a
+   phone a few minutes slow lost a later edit to another phone's earlier one. Each sync learns the gap from the server's time (sync.js
+   clockLearn, the x-now header); nowMs() is the phone's time corrected by it (the phone's own while no server has answered). A record's
+   new stamp is also always above the one it replaces (nextStamp), so an edit or a deletion wins over the copy it was made on whatever the
+   clocks say. In background workers (no localStorage) nowMs() is Date.now() */
+const CLOCK_MIN=3000,CLOCK_AHEAD=10*6e4;   // a gap under CLOCK_MIN is noise; a stamp over CLOCK_AHEAD past the corrected time is from a wrong clock
+let clockSkew=0;try{clockSkew=+localStorage.getItem('clock_skew')||0}catch{}
+const nowMs=()=>Date.now()+clockSkew;
+const nextStamp=prev=>Math.max(nowMs(),(+prev||0)+1);
+// the corrected date (local midnight): todayDate() itself while no gap is known (or a test sets the day, TODAY_OVERRIDE)
+const trueToday=()=>{if(!clockSkew||TODAY_OVERRIDE)return todayDate();const d=new Date(nowMs());return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
 function mergeState(a,b){
   a=a||{};b=b||{};const items={},tomb={...(a.tombstones||{})};
   for(const [id,t] of Object.entries(b.tombstones||{}))tomb[id]=Math.max(tomb[id]||0,t);
   for(const it of [...(a.items||[]),...(b.items||[])]){const cur=items[it.id];if(!cur||stamp(it)>stamp(cur))items[it.id]=it}
   for(const id of Object.keys(items))if(tomb[id]&&tomb[id]>=stamp(items[id]))delete items[id];
-  const cutoff=Date.now()-180*864e5;for(const id of Object.keys(tomb))if(tomb[id]<cutoff)delete tomb[id];   // forget old deletions
+  const cutoff=nowMs()-180*864e5;for(const id of Object.keys(tomb))if(tomb[id]<cutoff)delete tomb[id];   // forget old deletions
   const days={};for(const d of [...(a.days||[]),...(b.days||[])]){const cur=days[d.date];if(!cur||(d.updated||0)>(cur.updated||0))days[d.date]=dayWins(cur,d);else days[d.date]=dayWins(d,cur)}
   const settings=a.settings&&b.settings?mergeSettings(a.settings,b.settings):(a.settings||b.settings||null);
   return {items:Object.values(items),tombstones:tomb,days:Object.values(days),settings};
@@ -372,9 +384,9 @@ const setKeys=s=>Object.keys(s||{}).filter(k=>!SET_META.includes(k));
 function keySettings(s){if(!s)return s;
   if(!s.ks||!s.kh){const was=s.updated||0;s.ks={};s.kh={};for(const k of setKeys(s)){s.ks[k]=was;s.kh[k]=setHash(s[k])}return s}
   for(const k of setKeys(s))if(!(k in s.kh)){s.kh[k]=setHash(s[k]);s.ks[k]=0}return s}
-function stampSettings(s,t){t=t||Date.now();if(!s)return s;
+function stampSettings(s,t){t=t||nowMs();if(!s)return s;
   if(!s.ks||!s.kh)keySettings(s);
-  for(const k of new Set([...setKeys(s),...Object.keys(s.kh)])){const h=k in s?setHash(s[k]):'-';if(s.kh[k]!==h){s.kh[k]=h;s.ks[k]=t}}
+  for(const k of new Set([...setKeys(s),...Object.keys(s.kh)])){const h=k in s?setHash(s[k]):'-';if(s.kh[k]!==h){s.kh[k]=h;s.ks[k]=Math.max(t,(+s.ks[k]||0)+1)}}   // (above its stamp before: the change wins whatever the clocks)
   s.updated=Math.max(t,(s.updated||0)+1);return s}
 /* stored or downloaded settings (st) taken over the ones in memory (cur) -> the new in-memory settings, keyed. Spread over them, except
    a setting st marks removed (kh '-': a roll-back to a copy without it, or a removal on another device): it goes from memory too, or, when

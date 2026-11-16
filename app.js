@@ -88,9 +88,10 @@ const stillCur=it=>items.find(x=>x.id===it.id)===it;
 /* and redraws the Wardrobe only when it is on screen and Settings is not open (renderWardrobe closes Settings; these now run after the first
    pull, which can be while Settings is open); the Wardrobe is drawn afresh when it is opened */
 const fixupRedraw=()=>{if(typeof settingsOpen==='function'&&settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)renderWardrobe()};
-const put=i=>{i.updated=Date.now();if(typeof kitUserEdit==='function')kitUserEdit(i);   // (an edit in the item sheet makes a sample piece his: kit.js)
+const put=i=>{i.updated=nextStamp(stamp(i));if(typeof kitUserEdit==='function')kitUserEdit(i);   // (an edit in the item sheet makes a sample piece his: kit.js)
 const r=putRaw(i);r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
-const del=async id=>{await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:Date.now()});window.scheduleSync&&scheduleSync()};
+// (the deletion's stamp is above the item's own, so it wins whatever the clocks say: core.js nextStamp; returned for an Undo)
+const del=async id=>{const was=typeof items!=='undefined'&&items.find(x=>x.id===id),t=nextStamp(stamp(was));await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:t});window.scheduleSync&&scheduleSync();return t};
 
 
 /* precision swatch: a 128 px square of the cloth, cut from the fabric close-up when the card has one (the cloth up close, white-

@@ -1023,6 +1023,16 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `endedAnswer(status, j)`: 403 'invite off', or 403 'forbidden token' on a tester's phone (the account was deleted on another phone or by the owner), is an ended invitation for the sync, the daily backups list, Feedback and `loadAccount`; it said "Backups aren’t available on this server yet" and kept trying (2026-11-15)
 - sync errors show the server's `message` before its `error`
 
+#### The phone's clock (fix round 3, 2026-11-16, the audit's W1-9-01..08, W1-5-07, W2-13-03)
+- every answer of the worker carries its time (`x-now`, exposed by CORS); each sync's GET and save learns the gap (`clockLearn`: the server's time less the request's middle; under `CLOCK_MIN` 3 s it is 0) into `localStorage.clock_skew` and core.js `clockSkew`
+- `nowMs()` (core.js) is the phone's time corrected by that gap; every stamp uses it: items' `updated`/`added` (app.js `put`/`del`, add.js, kit.js, shop.js), days (history.js `saveDay`, the week's locks and `lockAt`), settings (`stampSettings`), holidays' `fetched`, the roll-back, the tombstone cutoff
+- a new stamp is always above the one it replaces (`nextStamp(prev)`): an item's edit, its deletion mark (`del` returns it, the Wardrobe's Undo goes one above), a day, a setting's key; so an edit or a deletion made on a copy wins over that copy whatever the clocks say, also before any server has answered
+- a gap of an hour or more is said once (`clockTell`, `clock_told`): "Your phone’s clock is 1 year ahead. Your changes are dated by the right time anyway. To fix the clock, turn on Set Automatically…"
+- once a sync has learned the gap, stamps on the phone over `CLOCK_AHEAD` (10 min) past the corrected time are put back to now (`clockFix`, before the merge; the sync then asks again): items, days (`updated`, `base`, `lockAt`), tombstones, settings' `ks`/`updated`; a holiday list `fetched` ahead is fetched again (0)
+- dates by the corrected time: past days are recorded only before `trueToday()` (history.js `recordDays`), no day is recorded for today and no week locked while the phone's date is ahead of it (`lockUpcoming`), the holiday window (`fetchHolidays`), a list fetched ahead is due (`refreshHolidays`), the backup pause (`nextUtcDay`, `syncPaused`: a pause over 26 h away is let go), the daily copy's `day`
+- a roll-back stamps each restored item above this phone's deletion mark and copy of it, each day above its copy, and the settings above every key (`rollBackState`)
+- measured KV writes (lab, a tester phone; before → after): setup day 4 → 4, a light day 2 → 2, an Add day (3 pieces) 2 → 2; `tests/clock.test.js`
+
 #### Daily backups
 - before the first PUT of each day the worker keeps the backup as `snap:<YYYY-MM-DD>` (30 days) and `snap:<YYYY-MM>` (400 days); `GET /sync?snaps=1` lists, `?snap=<id>` returns one
 - "Roll back" (`loadSnapshots`/`rollBack`/`rollBackState`) restamps the snapshot's records and tombstones the rest, so it wins on every device; the PUT carries `reason:'restore'` and the worker keeps `snap:before-restore`
@@ -1829,6 +1839,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a PUT over 20 MiB is never parsed whole (`putParted`, `BIG_HEAD`): sync.js sends `data` last so the worker reads `baseRev`, `day` and `reason` from the first bytes; an older app (data first) is answered 413 "update the app"; `tests/snapshots.test.js` checks 30, 46 and 51 MB backups
 - a backup stored inline (the whole data, or with #284's index `{"rev","saved","index","data"}`, read by `readHead`/`loadSync`) is still read and is converted to the photos-stored-once form at its next save (worker/photostore.js); an older app's `PUT /sync` has its photos hashed out by `splitPhotos`
 - a tester's backups: 30 a day (`EXTRA_CAPS.backup`; 300 for all testers together), counted on each save and given back on a conflict; over it, 429 `{what:'backup'}` "Today’s 30 backups are used up. Your changes are kept on this phone and backed up tomorrow."
+- stamps from wrong clocks (fix round 3, 2026-11-16): a save's records, days, settings and deletion marks dated more than `CLOCK_AHEAD` (10 min) past the server's clock are left out (`dropFuture`), so crafted marks dated years ahead delete nothing (W2-13-03); what the backup holds from before is read with such stamps at its own save time (`clampStamps(data, saved, saved+CLOCK_AHEAD)`), the same in `syncLiteGet` and `syncLitePost`, stored so at the next save
+- the daily copy's day is the app's `day` unless it is more than a day ahead of the server's UTC date, then the server's (`keepSnapshots`; a clock a year ahead kept `snap:2027-11`)
 - a backup whose new photos pass the day's writes stores the photos that fit and is refused 429 `{what:'backup', write:true}` ("…N of M new photos are saved…", `writeBudget`), so sync.js pauses until the next UTC day; the stored photos are skipped next time (`phThere`), and the save finishes then
 
 #### worker/photostore.js

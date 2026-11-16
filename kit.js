@@ -109,7 +109,7 @@ function kitTombs(t,ids,now){if(!ids.length)return;const m=t.objectStore('meta')
 /* a failed write is said, as Confirm says it (add.js save) */
 function kitFail(e){console.warn('save failed',e);if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000)}
 /* an item made from a card with no photo, as add.js saveCard makes one (a hand-added card: the fields it keeps for each type) */
-function kitItem(c){const f=FABRIC.includes(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:Date.now()};
+function kitItem(c){const f=FABRIC.includes(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:nowMs()};
   if(METAL_TYPES.includes(c.type))it.metal=c.metal||'silver';
   if(c.type==='shirt')it.cuff=c.cuff==='french'?'french':'button';
   if(c.type==='suit')it.vest=c.vest==='yes'?'yes':'no';
@@ -121,12 +121,12 @@ function kitItem(c){const f=FABRIC.includes(c.type),it={id:c.id||crypto.randomUU
   if(typeof wardSaveFields==='function')wardSaveFields(c,it);   // name, brand, material, notes (wardrobe.js)
   if(c.sample)it.sample=true;return it}
 /* store new items (false, said, when storage refused them: nothing was stored) */
-async function kitStore(list,prog){if(!list.length)return true;const now=Date.now();let k=0;
+async function kitStore(list,prog){if(!list.length)return true;const now=nowMs();let k=0;
   try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of list){it.updated=now;const r=s.put(it);if(prog)r.onsuccess=()=>prog(++k,list.length)}})}catch(e){kitFail(e);return false}
   items.push(...list);cache={};todayStale=true;if(typeof dressNewItem==='function')dressNewItem();
   if(window.scheduleSync)scheduleSync();if(typeof askPersist==='function')askPersist();return true}
 /* delete items (each with a tombstone, as Delete does), with changed items (put) and day records (days) in the same transaction */
-async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=Date.now(),gone=new Set(ids);
+async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=nowMs(),gone=new Set(ids);
   await kitTx(['items','meta','days'],t=>{const s=t.objectStore('items');for(const id of ids)s.delete(id);for(const it of put){it.updated=now;s.put(it)}
     const d=t.objectStore('days');for(const r of days){if(r.updated!==KIT_YIELD)r.updated=now;delete r.lockOnly;delete r.base;d.put(r)}kitTombs(t,ids,now)});   // (KIT_YIELD: a sample-only day keeps its stamp of 1, kitSampleRemove)
   items=items.filter(x=>!gone.has(x.id));for(const it of put){const k=items.findIndex(x=>x.id===it.id);if(k>=0)items[k]=it}
@@ -135,7 +135,7 @@ async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=Da
 /* ---- Duplicate (the item sheet): the same piece again, with a new id and no history, opened for any difference ---- */
 const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cleaned','sample','sampleMine'];
 async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;const c=JSON.parse(JSON.stringify(it));for(const k of KIT_NO_COPY)delete c[k];
-  c.id=crypto.randomUUID();c.added=Date.now();await put(c);items.push(c);cache={};todayStale=true;
+  c.id=crypto.randomUUID();c.added=nowMs();await put(c);items.push(c);cache={};todayStale=true;
   if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
   openItem(c.id);toast('Duplicated. Change anything that differs, like its name.',3500)}
 
