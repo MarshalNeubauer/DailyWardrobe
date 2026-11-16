@@ -229,7 +229,9 @@ function dayClimate(d){
   if(n&&typeof n.tmax==='number'){const t=n.tmax;return {wx:null,norm:n,season:t>=24?'warm':t<=12?'cold':'mild',rain:false,cold:t<10,veryCold:t<4}}
   // no location: the holiday country (chosen from the phone's time zone at setup) gives a hot climate's usual highs and the hemisphere
   // (2026-11-15, the audit: a Kuwait phone with no location was told in December to get an overcoat, Sydney's January was winter)
-  const cc=!settings.location&&settings.holidays&&settings.holidays.country,ht=cc&&CC_TMAX[cc];
+  // with a location but no usual weather yet (its climate history failed to load: offline at setup, the service busy), the location's
+  // country is used the same way (fix round 3, W1-1-05 = W2-16-03: a Kuwait December was planned as winter, with an overcoat)
+  const L=settings.location,hc=settings.holidays&&settings.holidays.country,cc=L?(L.cc?String(L.cc).toUpperCase():hc):hc,ht=cc&&CC_TMAX[cc];
   if(ht){const t=ht[d.getMonth()];return {wx:null,season:t>=24?'warm':t<=12?'cold':'mild',rain:false,cold:t<10,veryCold:t<4}}
   const south=settings.location?settings.location.lat<0:SOUTH_CC.includes(cc),m=(d.getMonth()+(south?6:0))%12;
   const season=[11,0,1].includes(m)?'cold':[5,6,7].includes(m)?'warm':'mild';
@@ -310,7 +312,10 @@ const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?
 /* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
    (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
 const itemName=i=>i&&typeof i.name==='string'?i.name.trim():'';
-const itemTitle=i=>itemName(i)||sentence(desc(i));
+const itemTitle=i=>itemName(i)||sentence(desc(i)+styleWord(i));
+/* a shoe's style and a trouser's kind in a described title ("Oxblood calf loafers", "Stone chinos"): they were "Oxblood calf" and "Stone"
+   (W2-17-15); oxfords and dress pants, and items from before styles existed, read as before */
+const styleWord=i=>!i?'':i.type==='shoes'&&i.shoeStyle&&i.shoeStyle!=='oxford'?' '+(({derby:'derbies',loafer:'loafers',boot:'boots',sneaker:'sneakers'})[i.shoeStyle]||''):i.type==='pants'&&(i.trouserKind==='chinos'||i.trouserKind==='jeans')?' '+i.trouserKind:'';
 const titleCls=i=>itemName(i)?'named':'cap';
 /* trousers come in three kinds and shoes in five styles; an item without one is dress trousers or oxfords, which the planner treats
    exactly as before there were kinds and styles (so a wardrobe from before plans the same) */

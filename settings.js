@@ -177,20 +177,29 @@ async function fetchHolidays(cc){
   if(!r.ok||!(j.holidays||[]).length){const l=own();if(l)return l}
   if(!r.ok)throw new Error(j.holidaysError||(r.status===404||r.status===405?'The server doesn’t have holiday lists yet: it needs an update.':j.error||`HTTP ${r.status}`));
   return tidy((j.holidays||[]).map(h=>({d:h.date,n:h.name})))}
+/* the holidays already past, kept for good (fix round 3, W1-8-01: the monthly refresh replaced the list with one starting a month back,
+   and every older holiday turned into a workday "you didn't open the app", counted as worn, toward cleaning and Insights): they were days
+   off when they came, so they stay days off whatever list or country comes next; Settings lists only the coming ones */
+function holPast(){const h=settings.holidays,T=isoKey(typeof trueToday==='function'?trueToday():todayDate());/* (the corrected date: core.js) */if(!h)return {list:[],skip:[]};
+  const list=(h.list||[]).filter(x=>x&&x.d<T);return {list,skip:(h.skip||[]).filter(d=>d<T&&list.some(x=>x.d===d))}}
 async function setHolidayCountry(cc,quiet){
-  if(!cc){settings.holidays=null;holidayMsg='';await saveUserSettings();todayStale=true;renderDaysOffUI();return}
+  // "No public holidays": none from now on; the past ones stay (country '': nothing is fetched)
+  if(!cc){const past=holPast();settings.holidays=past.list.length?{country:'',list:past.list,skip:past.skip,fetched:0}:null;holidayMsg='';await saveUserSettings();todayStale=true;renderDaysOffUI();return}
   if(!quiet){holidayMsg=`Loading the public holidays of ${countryName(cc)}…`;
     // (fix round 2) the country is kept the moment it is picked, with no list yet (fetched 0: the next start fetches it, refreshHolidays):
     // swiped away before the list arrived, the choice was lost
-    if(!(settings.holidays&&settings.holidays.country===cc)){settings.holidays={country:cc,list:[],skip:[],fetched:0};saveUserSettings();todayStale=true}
+    if(!(settings.holidays&&settings.holidays.country===cc)){settings.holidays={country:cc,...holPast(),fetched:0};saveUserSettings();todayStale=true}
     renderDaysOffUI()}
-  try{const list=await fetchHolidays(cc),old=settings.holidays&&settings.holidays.country===cc?settings.holidays.skip||[]:[];
-    settings.holidays={country:cc,list,skip:old.filter(d=>list.some(x=>x.d===d)),fetched:nowMs()};
+  try{const got=await fetchHolidays(cc),old=settings.holidays&&settings.holidays.country===cc?settings.holidays.skip||[]:[];
+    // past holidays stay (holPast): the fetched list starts a month back, and a holiday that dropped out of it became a workday after the
+    // fact, recorded as worn (fix round 3, W1-8-01)
+    const past=holPast(),list=[...past.list.filter(x=>!got.some(y=>y.d===x.d)),...got].sort((a,b)=>a.d<b.d?-1:1);
+    settings.holidays={country:cc,list,skip:[...new Set([...past.skip,...old])].filter(d=>list.some(x=>x.d===d)).sort(),fetched:nowMs()};
     holidayMsg=list.length?'':`No public holidays found for ${countryName(cc)}.`;await saveUserSettings();todayStale=true}
   catch(e){if(quiet)return;
     // (audit 2026-11-15) the country picked is the one that counts, even without a list: the old country's holidays went on counting under
     // a "that country" message; tried again at the next start (fetched 0, refreshHolidays)
-    if(!(settings.holidays&&settings.holidays.country===cc&&(settings.holidays.list||[]).length)){settings.holidays={country:cc,list:[],skip:[],fetched:0};await saveUserSettings();todayStale=true}
+    if(!(settings.holidays&&settings.holidays.country===cc&&(settings.holidays.list||[]).length)){settings.holidays={country:cc,...holPast(),fetched:0};await saveUserSettings();todayStale=true}
     const m=e.message||'couldn’t load the holiday list.';holidayMsg=`${countryName(cc)}: ${m}${/days off/.test(m)?'':' Add its holidays as your own days off below if you need them.'}`}
   renderDaysOffUI()}
 /* the list goes stale (new year, tentative dates confirmed): fetched again once a month, keeping the days you unticked */
