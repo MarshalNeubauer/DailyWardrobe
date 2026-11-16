@@ -29,15 +29,14 @@ import { noteKvFull } from './worker/items.js';
 import { delRender, getRender, handleBlob, handleShared, putRender } from './worker/records.js';
 import { handleHolidays } from './worker/holidays.js';
 import { gcDue, handleSync, photoGc } from './worker/photostore.js';
-import { UID_RE, handleAccount, handleFeedback, handleInvites, handleMe, plainFor, runWipe, spend, unspend, whoIs } from './worker/people.js';
+import { handleAccount, handleFeedback, handleInvites, handleMe, plainFor, runWipe, spend, unspend, whoIs } from './worker/people.js';
 import { handlePush, sendReminders } from './worker/remind.js';
 export { RenderHub } from './worker/render.js';   // the Durable Object class must be exported by the entry (it counts testers' days)
 
 /* every route but the root (POST / tags one photo, below): [handler(req, env, json, who, cors), what to say when APP_TOKEN is not set] */
 const TAG_LIMIT = 15e6, UNSET = 'Set an APP_TOKEN secret on the worker: nothing runs without it.';
 const ROUTES = {
-  '* /sync': [(req, env, json, who, cors) => { const as = ownerAs(req, who); return as.error ? json({ error: as.error }, as.status) : handleSync(req, env, json, cors, as.who); },
-    'Set an APP_TOKEN secret on the worker to enable backups.'],
+  '* /sync': [(req, env, json, who, cors) => handleSync(req, env, json, cors, who), 'Set an APP_TOKEN secret on the worker to enable backups.'],
   'GET /fetch': [(req, env, json, who, cors) => handleFetchImage(req, env, json, cors), 'Set an APP_TOKEN secret on the worker to fetch photo links.'],
   'GET /holidays': [handleHolidays, 'Set an APP_TOKEN secret on the worker to load holiday lists.'],
   'POST /tag-many': [handleTagMany, UNSET],
@@ -61,18 +60,6 @@ const ROUTES = {
   'POST /feedback': [handleFeedback, UNSET],
   'DELETE /account': [handleAccount, UNSET],
 };
-
-/* GET /sync?as=<tester id>[&lite=1 | &ph=… | &snaps=1 | &snap=…]: the owner reads one tester's backup and photos, to see what went
-   wrong for them (2026-11-16, the owner's one-time look at a tester's shirt). Owner only, GET only: a tester's own code, or any
-   PUT/POST with as=, is refused, so nothing of theirs can be changed this way. Without as= nothing changes. */
-function ownerAs(req, who) {
-  const as = new URL(req.url).searchParams.get('as');
-  if (as == null) return { who };
-  if (who.role !== 'owner') return { error: 'owner only', status: 403 };
-  if (req.method !== 'GET') return { error: 'read only', status: 405 };
-  if (!UID_RE.test(as)) return { error: 'bad tester id', status: 400 };
-  return { who: { ...who, id: as, ns: `u:${as}:` } };
-}
 
 /* one request, routed (fetch() catches what it throws) */
 async function serve(req, env, cors, allowed, origin) {
