@@ -223,7 +223,8 @@ async function aboutResumeDelete(){let keep=null;try{keep=JSON.parse(localStorag
 /* ---- the page ---- */
 function renderAbout(){aboutShow();if(typeof homeAbout==='function')homeAbout();   // "Add to Home Screen", on an iPhone or iPad in a browser tab (kit.js)
   // the owner reads the feedback (below it) rather than sending it to someone: no "goes to the person who invited you"
-  if($('#fb-help'))$('#fb-help').textContent='What works, what doesn’t, what is missing'+(typeof acctRole==='function'&&acctRole()==='owner'?'.':': it goes to the person who invited you.');
+  // (a tester's phone also reports its errors by itself: safety.js errSend, 2026-11-16)
+  if($('#fb-help'))$('#fb-help').textContent='What works, what doesn’t, what is missing'+(typeof acctRole==='function'&&acctRole()==='owner'?'.':': it goes to the person who invited you. When something goes wrong in the app, this phone also tells them what broke and where, so it can be fixed: never your photos or your wardrobe.');
   if($('#fb-send'))$('#fb-send').disabled=!aboutLive();   // no connection: the button is off, with the reason under it
   if(!aboutLive()&&$('#fb-status')&&!$('#fb-status').textContent)aboutSay('#fb-status',aboutConn()?'Feedback needs a connection: your invitation has ended. Paste a new invite link under Connection, above.':'Feedback needs a connection: paste your invite link under Connection, above.');
   loadFeedback()}

@@ -166,7 +166,7 @@ function renderAccountUI(){const el=document.querySelector('#acct-box');if(!el)r
   else if(acct.state==='off')h='<p class="shelp">Couldn’t reach the server just now.</p>';
   else if(m&&m.role==='tester')h=`<div class="slabel">Connected as ${acctEsc(m.name||'a tester')}</div>
     <div class="acct-uses" id="acct-uses">${acctUse(m.used,m.caps)}</div><p class="shelp">These limits start again at midnight UTC.${m.firstUntil&&m.firstUntil>Date.now()?` Your first week has twice the usual limits, until ${new Date(m.firstUntil).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}.`:''}</p>
-    ${iosInSafari()?'<p class="shelp acct-ios">You’re using the app in Safari. Add it to your Home Screen, open it there and paste your invitation link: iPhone keeps the two apart, and can clear Safari’s copy after a week.</p>':''}
+    ${iosInSafari()?(b=>`<p class="shelp acct-ios">You’re using the app in ${b}. Add it to your Home Screen, open it there and paste your invitation link: iPhone keeps the two apart, and can clear ${b}’s copy after a week.</p>`)(typeof homeBrowser==='function'?homeBrowser():'Safari'):''}
     <div class="sactions"><button type="button" onclick="copyInviteLink()">Copy my invitation link</button></div>
     <p class="shelp">To connect the app on your Home Screen or another phone. Keep it to yourself: it opens your wardrobe.</p>
     <input type="text" id="acct-mylink" class="acct-mylink" readonly hidden aria-label="Your invitation link">`;

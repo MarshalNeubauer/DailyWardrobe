@@ -29,7 +29,7 @@ import { noteKvFull } from './worker/items.js';
 import { delRender, getRender, handleBlob, handleShared, putRender } from './worker/records.js';
 import { handleHolidays } from './worker/holidays.js';
 import { gcDue, handleSync, photoGc } from './worker/photostore.js';
-import { handleAccount, handleFeedback, handleInvites, handleMe, plainFor, runWipe, spend, unspend, whoIs } from './worker/people.js';
+import { handleAccount, handleErrors, handleFeedback, handleInvites, handleMe, plainFor, runWipe, spend, unspend, whoIs } from './worker/people.js';
 import { handlePush, sendReminders } from './worker/remind.js';
 export { RenderHub } from './worker/render.js';   // the Durable Object class must be exported by the entry (it counts testers' days)
 
@@ -58,6 +58,8 @@ const ROUTES = {
   'GET /push': [handlePush, UNSET],
   'POST /push': [handlePush, UNSET],
   'POST /feedback': [handleFeedback, UNSET],
+  'GET /errors': [handleErrors, UNSET],
+  'POST /errors': [handleErrors, UNSET],
   'DELETE /account': [handleAccount, UNSET],
 };
 

@@ -22,7 +22,9 @@ function texTones(b,t,k=1){const gl=rgbLab(...hexRgb(b)),g=t.grid.join(''),f1=[.
    stays seamless): threads read woven, not as a staircase of squares. Cached; null without a DOM. */
 const TEX_TILES=new Map();
 function texTileUrl(grid,lo,hi){if(typeof document==='undefined')return null;const key=grid.join('/')+lo+hi;if(TEX_TILES.has(key))return TEX_TILES.get(key);
-  const M=grid[0].length,N=grid.length,S=6,W=M*S,H=N*S,r=2,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),D=x.createImageData(W,H),A=hexRgb(lo),B=hexRgb(hi);
+  // (a phone out of picture memory gives no context: null as without a DOM, nothing cached, so the next drawing tries again;
+  // iOS refused one while an Add card was redrawn and Confirm stayed off, 2026-11-16)
+  const M=grid[0].length,N=grid.length,S=6,W=M*S,H=N*S,r=2,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');if(!x)return null;const D=x.createImageData(W,H),A=hexRgb(lo),B=hexRgb(hi);
   const on=(px,py)=>grid[((Math.floor(py/S)%N)+N)%N][((Math.floor(px/S)%M)+M)%M]==='1'?1:0;
   for(let y=0;y<H;y++)for(let q=0;q<W;q++){let s=0,n=0;for(let dy=-r;dy<=r;dy+=1)for(let dx=-r;dx<=r;dx+=1){s+=on(q+dx,y+dy);n++}const w=s/n,i=4*(y*W+q);
     for(let k=0;k<3;k++)D.data[i+k]=Math.round(A[k]+(B[k]-A[k])*w);D.data[i+3]=255}
@@ -38,7 +40,7 @@ function texTileSmooth(grid,lo,hi){if(typeof document==='undefined')return null;
   const sg=TEX_SMOOTH_SIG*S,R=Math.ceil(3*sg),k=[];for(let o=-R;o<=R;o++)k.push(Math.exp(-o*o/(2*sg*sg)));const ks=k.reduce((a,b)=>a+b);
   for(let y=0;y<H;y++)for(let q=0;q<W;q++){let s=0;for(let o=-R;o<=R;o++)s+=k[o+R]*f[y*W+((q+o)%W+W)%W];g[y*W+q]=s/ks}
   for(let y=0;y<H;y++)for(let q=0;q<W;q++){let s=0;for(let o=-R;o<=R;o++)s+=k[o+R]*g[(((y+o)%H+H)%H)*W+q];f[y*W+q]=s/ks}
-  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),D=x.createImageData(W,H),A=hexRgb(lo),B=hexRgb(hi),P=Math.round(S/3);
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');if(!x)return null;const D=x.createImageData(W,H),A=hexRgb(lo),B=hexRgb(hi),P=Math.round(S/3);   // (no context: as texTileUrl)
   for(let y=0;y<H;y++)for(let q=0;q<W;q++){const t=Math.min(1,Math.max(0,(f[y*W+q]-.42)/.16)),w=t*t*(3-2*t),gr=1+TEX_GRAIN*(((q+y)%P)/P<.5?1:-1),i=4*(y*W+q);
     for(let j=0;j<3;j++)D.data[i+j]=Math.max(0,Math.min(255,Math.round((A[j]+(B[j]-A[j])*w)*gr)));D.data[i+3]=255}
   x.putImageData(D,0,0);const url=c.toDataURL('image/png');if(TEX_TILES.size>40)TEX_TILES.clear();TEX_TILES.set(key,url);return url}
