@@ -69,11 +69,18 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(s2.marks===0&&!s2.hits.length&&s2.sheet,`ids in inline handlers and photo sources are escaped even for a record that skipped the check, and the item still opens (marks ${s2.marks}, calls ${s2.hits.join()}, opened ${s2.sheet})`);
 
     // ---- records stored before the check: cleaned once at start-up, in memory and in storage, with their stamps unchanged
+    // (the step above put a crafted item straight into memory, skipping the check; the app's week lock can write its id into day records,
+    // which the start-up check then rightly sets aside: found by looping this test on WebKit, 1 run in 24. Those days are cleared first,
+    // so what follows sees only the records planted here; a real phone never holds an item that skipped the check)
+    await p.evaluate(async()=>{items=[];cache={};await new Promise(r=>setTimeout(r,800));await txs('days','readwrite',s=>s.clear());dayRecs={}});
     await p.evaluate(async([PNG,B])=>{await putRaw({id:'old1',type:'shirt',primaryColor:'white',pattern:'solid',photo:PNG+B,added:1,updated:5});await putRaw({id:'old2'+B,type:'tie',primaryColor:'navy',pattern:'solid',added:1,updated:5});localStorage.removeItem('rec_clean')},[PNG,B('old')]);
     await p.reload();await p.waitForFunction(()=>window.appReady);await p.waitForTimeout(500);
     await p.waitForTimeout(1500);
     const s3=await p.evaluate(async()=>{const st=await tx('readonly',s=>s.getAll()),o=st.find(i=>i.id==='old1'),k=await metaGet('rec_kept')||[];return {mem:items.some(i=>i.id==='old1'&&!i.photo),gone:!items.some(i=>/^old2/.test(i.id))&&!st.some(i=>/^old2/.test(i.id)),stored:!!o&&!o.photo&&o.updated===5,flag:localStorage.getItem('rec_clean'),
-      kept:k.filter(x=>x.kind==='item').map(x=>String(x.rec.id).slice(0,4)+':'+x.dropped+':'+!!x.rec.photo).join(),days:k.filter(x=>x.kind!=='item').map(x=>JSON.stringify(x.rec).slice(0,300)),toast:document.querySelector('#toast').textContent}});
+      kept:k.filter(x=>x.kind==='item').map(x=>String(x.rec.id).slice(0,4)+':'+x.dropped+':'+!!x.rec.photo).join(),days:k.filter(x=>x.kind!=='item').map(x=>{const c=cleanDay(x.rec);if(!c)return 'DROPPED '+JSON.stringify(x.rec).slice(0,400);
+        return Object.keys({...x.rec,...c}).filter(f=>JSON.stringify(x.rec[f])!==JSON.stringify(c[f])||!(f in c)||!(f in x.rec)).map(f=>`${x.rec.date} ${f}: ${JSON.stringify(x.rec[f])} -> ${JSON.stringify(c[f])}`).join('; ')}),toast:document.querySelector('#toast').textContent}});
+    if(s3.days.length)console.log('DAY SET ASIDE: '+s3.days.join(' | '));
+    ok(!s3.days.length,'no day record the app wrote is set aside by the start-up check ('+s3.days.join(' | ')+')');
     ok(s3.mem&&s3.gone&&s3.stored&&s3.flag==='1','a record stored before the check is cleaned at the next start, in memory and in storage, stamp unchanged; one with a crafted id is taken out; once per phone ('+JSON.stringify(s3)+')');
     ok(s3.kept==='old1:false:true,old2:true:false'&&/1 item in this phone’s storage couldn’t be shown safely and was set aside\. Some details of 1 item .*Nothing was deleted: the originals are kept on this phone\./.test(s3.toast),'nothing is dropped silently: both originals are kept on the phone (meta rec_kept) and a plain message says so ('+s3.kept+' | '+s3.toast+')');
     await p.reload();await p.waitForFunction(()=>window.appReady);await p.waitForTimeout(1500);
@@ -115,7 +122,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const plant=s=>{const o=JSON.parse(s);const add=crafted().filter(i=>i.id!=='ok1');o.data.items.push(...add);
       if(o.revs&&o.revs.i)for(const i of add)o.revs.i[i.id]=o.rev;return JSON.stringify(o)};
     const planted=plant(store.get('wardrobe:v1'));store.set('wardrobe:v1',planted);
-    const q=await ctx.newPage();const qerr=[];q.on('pageerror',e=>qerr.push(e.message));
+    const q=await ctx.newPage();const qerr=[];q.on('pageerror',e=>{if(!/sw\.js\?check=.*access control/.test(e.message))qerr.push(e.message)});   // (WebKit's update check of the service worker under the routed test origin: a harness artefact, on main's deltasync too)
     await q.goto(url);await q.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
     await q.addInitScript(()=>{window.__rx=n=>(window.__rxs=window.__rxs||[]).push(n)});
     await q.reload();await q.waitForFunction(()=>window.appReady);
