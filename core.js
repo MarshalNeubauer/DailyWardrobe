@@ -162,8 +162,22 @@ const MAT_ALIAS={'*':{fresco:'tropical wool',tropical:'tropical wool','tropical 
   pants:{stretch:'stretch denim'},
   // (polyester is a shirt material of its own since 2026-11-16, the owner's ask: no longer read as performance stretch; nylon still is)
   shirt:{nylon:'performance stretch',viscose:'rayon',tencel:'lyocell',merino:'wool','merino wool':'wool','poly-cotton':'cotton blend',polycotton:'cotton blend','poly cotton':'cotton blend','cotton-polyester':'cotton blend','cotton polyester':'cotton blend',poly:'polyester','poly blend':'polyester blend'}};
-/* the listed name a word means for a type ('' when none): the type's own name, else an alias that is on the type's list */
-const matAlias=(type,w)=>{const l=MATERIALS_BY[type];if(!l)return '';w=String(w??'').toLowerCase().replace(/\s+/g,' ').trim();if(!w)return '';if(l.includes(w))return w;
+/* ---- the person's own materials (2026-11-16, the owner's approved design): settings.ownMaterials = {type: [name]}, added from Claude's
+   offer when nothing on the list fits ("Add cupro as a material"), synced like own colors (entry by entry: SET_SPLIT 'mats'), removed in
+   Settings → Your materials. A name is lower-case letters, spaces and hyphens, 2-24 characters, at most 3 words (the worker's matName
+   rule; it also turns away weaves, leathers and prose). They join the type's dropdown, import and search; the planner and the painter
+   know nothing of them, so an own material has no season and is painted plain */
+const OWN_MAT_MAX=20;
+const ownMatName=v=>{const s=String(v??'').toLowerCase().replace(/\s+/g,' ').trim();return /^[a-z][a-z -]{0,22}[a-z]$/.test(s)&&!/--/.test(s)&&s.split(' ').length<=3?s:''};
+const ownMats=type=>{const o=typeof settings!=='undefined'&&settings&&settings.ownMaterials,l=o&&typeof o==='object'&&Array.isArray(o[type])?o[type]:[],std=MATERIALS_BY[type]||[],out=[];
+  if(!MATERIALS_BY[type])return out;for(const v of l){const n=ownMatName(v);if(n&&!std.includes(n)&&!out.includes(n))out.push(n);if(out.length>=OWN_MAT_MAX)break}return out};
+/* the type in a material sentence: "your shirt materials" (matTypeWord), "every shirt / pair of pants you add" (matTypeOne) */
+const matTypeWord=t=>t==='shirt'?'shirt':(TYPES[t]||t).toLowerCase();
+const matTypeOne=t=>t==='pants'||t==='socks'?'pair of '+t:matTypeWord(t);
+/* the type's materials: the standard list, then the person's own (null for a type without a list) */
+const matsFor=type=>MATERIALS_BY[type]?[...MATERIALS_BY[type],...ownMats(type)]:null;
+/* the listed name a word means for a type ('' when none): the type's own name (an own one too), else an alias that is on the type's list */
+const matAlias=(type,w)=>{const l=matsFor(type);if(!l)return '';w=String(w??'').toLowerCase().replace(/\s+/g,' ').trim();if(!w)return '';if(l.includes(w))return w;
   const a=(MAT_ALIAS[type]||{})[w]||MAT_ALIAS['*'][w];return a&&l.includes(a)?a:''};
 /* the shirt weaves that left the Material list (they are patterns): on import a weave in the Material column becomes the pattern */
 const SHIRT_WEAVE_MAT={twill:'twill',oxford:'oxford','pinpoint oxford':'pinpoint',pinpoint:'pinpoint','royal oxford':'royal-oxford','end-on-end':'end-on-end','end on end':'end-on-end','fil-a-fil':'end-on-end',chambray:'chambray',dobby:'dobby',herringbone:'herringbone'};
@@ -424,12 +438,14 @@ const setKeys=s=>Object.keys(s||{}).filter(k=>!SET_META.includes(k));
    ('-' = removed; '#' = the whole value's, so a copy changed by an older app, which doesn't know them, is seen and counted whole).
    stampSettings stamps the entries that changed; mergeSettings merges such a setting entry by entry when the two copies differ on it.
    A copy without them counts the setting's one stamp for every entry, as before. worker/backup.js has the same rule. */
-const SET_SPLIT={custom:'custom',care:'obj',dress:'obj',workdays:'set',blazerDays:'set',shopSkip:'set',daysOff:'list'};
+// (own materials, 2026-11-16: ownMaterials {type: [name]}, entry by entry as 'type/name')
+const SET_SPLIT={custom:'custom',care:'obj',dress:'obj',workdays:'set',blazerDays:'set',shopSkip:'set',daysOff:'list',ownMaterials:'mats'};
 /* the entries of setting k's value v (a Map), or null for a value of another shape (then it is merged whole) */
 function setEntries(k,v){const t=SET_SPLIT[k],m=new Map();if(v==null)return m;
   if(t==='obj'){if(typeof v!=='object'||Array.isArray(v))return null;for(const e of Object.keys(v))m.set(e,v[e])}
   else if(t==='set'){if(!Array.isArray(v))return null;for(const x of v)if(x!=null&&typeof x!=='object')m.set(String(x),x);else return null}
   else if(t==='list'){if(!Array.isArray(v))return null;for(const x of v){if(!x||typeof x!=='object'||!x.d)return null;m.set(String(x.d),x)}}
+  else if(t==='mats'){if(typeof v!=='object'||Array.isArray(v))return null;for(const g of Object.keys(v)){const l=v[g];if(!Array.isArray(l))return null;for(const x of l){if(typeof x!=='string')return null;m.set(g+'/'+x,x)}}}
   else if(t==='custom'){if(typeof v!=='object'||Array.isArray(v))return null;
     for(const g of Object.keys(v)){const l=v[g];if(g!=='colors'&&g!=='patterns'){m.set('@'+g,l);continue}if(!Array.isArray(l))return null;for(const x of l){if(!x||typeof x!=='object'||!x.key)return null;m.set(g+'/'+x.key,x)}}}
   else return null;
@@ -438,6 +454,7 @@ function setJoin(k,m){const t=SET_SPLIT[k],v=[...m.values()];
   if(t==='obj')return Object.fromEntries(m);
   if(t==='set')return v.every(x=>typeof x==='number')?v.sort((a,b)=>a-b):v.sort();
   if(t==='list')return v.sort((a,b)=>String(a.d)<String(b.d)?-1:String(a.d)>String(b.d)?1:0);
+  if(t==='mats'){const o={};for(const [e,x] of m){const g=e.slice(0,e.indexOf('/'));(o[g]=o[g]||[]).push(x)}for(const g of Object.keys(o))o[g].sort();return o}
   const o={colors:[],patterns:[]};for(const [e,x] of m){if(e[0]==='@')o[e.slice(1)]=x;else o[e.slice(0,e.indexOf('/'))].push(x)}return o}
 const subOk=(s,k)=>!!(s&&s.kse&&s.kse[k]&&s.khe&&s.khe[k]&&s.khe[k]['#']===setHash(s[k]));
 const subStampOf=(s,k,e)=>subOk(s,k)?(Object.prototype.hasOwnProperty.call(s.kse[k],e)?+s.kse[k][e]||0:+s.kse[k]['']||0):setStampOf(s,k);

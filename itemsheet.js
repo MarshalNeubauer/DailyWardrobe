@@ -223,7 +223,7 @@ async function sete(id,k,v){
 const TYPE_FIELDS={season:t=>SEASON_TYPES.includes(t),metal:t=>METAL_TYPES.includes(t),leather:t=>t==='shoes'||t==='belt',cuff:t=>t==='shirt',vest:t=>t==='suit',
   trouserKind:t=>t==='pants',shoeStyle:t=>t==='shoes',dial:t=>t==='watch',band:t=>t==='watch',bezel:t=>t==='watch',watchStyle:t=>t==='watch',details:t=>t==='watch'};
 function typeTidy(it){const t=it.type;for(const [f,ok] of Object.entries(TYPE_FIELDS))if(f in it&&!ok(t))delete it[f];
-  const ml=MATERIALS_BY[t];if(it.material&&!(ml&&(ml.includes(it.material)||!Object.values(MATERIALS_BY).some(l=>l.includes(it.material)))))delete it.material;   // a typed "Other" material stays where the type has a list
+  const ml=matsFor(t);if(it.material&&!(ml&&(ml.includes(it.material)||!Object.keys(MATERIALS_BY).some(x=>matsFor(x).includes(it.material)))))delete it.material;   // a typed "Other" material stays where the type has a list (an own material of another type goes, like a listed one)
   if(t==='shoes'&&it.leather&&!leathersFor(it).includes(it.leather))it.leather='calf';
   if(!FABRIC.includes(t))for(const f of ['sett','stripes','patternSpec','weave','patternText','pbox'])delete it[f];
   return colTidy(it)}

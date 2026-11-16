@@ -92,8 +92,9 @@ function wardBack(f){if(!f)return;const el=$('#wsearch');if(!el)return;el.focus(
 const matLabel=m=>m==='other'?'Other':cap1(m);
 /* the Material dropdown for a type (none for types without a list): its own materials, then Other (with a field to say which) and None */
 /* ai: Claude's suggestion on an Add card (tagging.js takeMaterial: {key, conf, why}), said under the field while the field still holds it */
+// (2026-11-16) the list is the type's own plus the person's own materials (core.js matsFor); one removed from those shows as Other with its name
 function matRow(type,cur,call,ai){
-  const l=MATERIALS_BY[type];if(!l)return '';const m=String(cur||'').trim(),other=!!m&&!l.includes(m),sug=ai&&ai.key&&ai.key===m;
+  const l=matsFor(type);if(!l)return '';const m=String(cur||'').trim(),other=!!m&&!l.includes(m),sug=ai&&ai.key&&ai.key===m;
   return `<label>Material <select class="wmat" onchange="${call}this.value)">${[['','None'],...l.map(x=>[x,x]),['other','Other']].map(([v,t])=>`<option value="${v}"${v===(other?'other':m)?' selected':''}>${cap1(t)}</option>`).join('')}</select></label>`+
     (sug?`<p class="tagnote matai"><small>Material suggested by Claude (${esc(ai.conf||'medium')} confidence)${ai.why?`: ${esc(String(ai.why).replace(/[.\s]+$/,''))}`:''}. Change it if it’s wrong.</small></p>`:'')+
     (other?`<label class="wmat-o">Which material? <input type="text" class="wfld wmat-t" maxlength="${WARD_MAX.material}" value="${esc(m==='other'?'':m)}" placeholder="e.g. alpaca" onchange="${call}this.value.trim()||'other')"></label>`:'')}
