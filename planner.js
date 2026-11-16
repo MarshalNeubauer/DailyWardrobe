@@ -463,15 +463,21 @@ if(top&&seasonFit(top,clim.season)<-10)notes.push(`The ${nm(top)} is a ${itemSea
 // no waistcoat without a tie (the owner, 2026-11-13: "No one should ever wear a vest and no tie"): a day planned without a tie (the dress
 // code, a casual day) has none, whatever the vest setting or the day's own choice
 const o={suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,vest:vest&&!!tie,vestOverride:vov!==null,notes:notes.map(prettyCols),clim,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null)};
-return takeOff(o,rec&&rec.off,untake)}
+// the suit jacket taken off and other pants picked for the day (force.bot, a pair of pants: Today's ⇄ on the suit's pants, the owner's
+// ask 2026-11-16): those pants are worn and the suit is not
+const sep=suitDay&&top&&rec&&rec.off&&rec.off.top&&force.bot&&by('pants').find(i=>i.id===force.bot)||null;
+return takeOff(o,rec&&rec.off,untake,sep&&take(sep))}
 /* Pieces taken off for the day (the owner's ask, 2026-11-13: Today's "Take off" on the jacket or the tie; rec.off = {top, tie}). The
    outfit is planned as usual (the day's other pieces are pinned by force when it is set) and then the piece comes off:
    - the jacket: on a suit day the suit's trousers stay (o.bot is the suit, o.suitDay false, o.suitBot true) and the waistcoat goes with
      the jacket (no picture has a waistcoat without its jacket); a blazer is not counted as worn
    - the tie: the tie clip and the waistcoat go with it (no waistcoat without a tie, the owner's rule); neither is counted as worn
+     unless other pants were picked for the day (sep, already counted as worn): then those are worn, the suit is not (untake), and
+     o.suitBot stays false; o.offSuit is the suit either way, so Today's pants picker can offer its own pants back
    o.off says what came off (o.offKind 'suit' or 'blazer'), so Today can put it back; the score asks for neither (needsJacket/needsTie) */
-function takeOff(o,off,untake){if(!off||!(off.top||off.tie))return o;const r={...o,off:{top:!!(off.top&&o.top),tie:!!(off.tie&&o.tie)}};
-  if(r.off.top){r.offKind=o.suitDay?'suit':'blazer';if(o.suitDay){r.bot=o.top;r.suitDay=false;r.suitBot=true}else if(untake)untake(o.top);r.top=null;r.vest=false;
+function takeOff(o,off,untake,sep){if(!off||!(off.top||off.tie))return o;const r={...o,off:{top:!!(off.top&&o.top),tie:!!(off.tie&&o.tie)}};
+  if(r.off.top){r.offKind=o.suitDay?'suit':'blazer';
+    if(o.suitDay){r.offSuit=o.top;r.suitDay=false;if(sep){r.bot=sep;if(untake)untake(o.top)}else{r.bot=o.top;r.suitBot=true}}else if(untake)untake(o.top);r.top=null;r.vest=false;
     r.notes=r.notes.filter(t=>!/jacket|suit|blazer/i.test(t))}
   if(r.off.tie){if(untake){untake(o.tie);if(o.clip)untake(o.clip)}r.tie=null;r.clip=null;r.vest=false;r.notes=r.notes.filter(t=>!/\btie\b/i.test(t))}
   return r}
@@ -622,7 +628,7 @@ function frozenOutfit(rec,n,last){
     if((id&&!it)||(rec.gone&&rec.gone[s]))(o.gone||(o.gone={}))[s]=true}   // a piece deleted since: the day is rated without it (rateOutfit), not as "Incomplete" (rec.gone: a removed sample piece's slot, kit.js kitSampleDay)
   o.vest=!!(rec.vestOn&&o.suitDay&&hasVest(o.top));
   // a piece taken off that day (rec.off, see takeOff): the record already holds the outfit without it
-  if(rec.off&&(rec.off.top||rec.off.tie)){o.off={top:!!rec.off.top&&!o.top,tie:!!rec.off.tie&&!o.tie};o.suitBot=!!(o.bot&&o.bot.type==='suit');if(o.off.top)o.offKind=o.suitBot?'suit':'blazer'}
+  if(rec.off&&(rec.off.top||rec.off.tie)){o.off={top:!!rec.off.top&&!o.top,tie:!!rec.off.tie&&!o.tie};o.suitBot=!!(o.bot&&o.bot.type==='suit');if(o.off.top)o.offKind=o.suitBot||rec.kind==='suit'?'suit':'blazer'}   // (rec.kind: a suit taken off with other pants picked)
   if(rec.worn!==false)for(const s of SLOTS)if(o[s])last[o[s].id]=n;
   return o;
 }
