@@ -53,6 +53,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await call('sync',{method:'POST',body:JSON.stringify({baseRev:L2.rev,baseSaved:L2.saved,day:'2026-11-16',delta:{items:[{id:'o3',type:'tie',primaryColor:'red',pattern:'solid',updated:2}],days:[],tombstones:{}},photos:{}})});
   const sn=(await (await call('sync?snaps=1')).json()).snaps,s16=sn.find(s=>s.id==='2026-11-16');
   ok(s16&&s16.n===2,`the copy for Nov 16 says it holds 2 items (${JSON.stringify(sn)})`);
+  // (the lead's check on final main) a phone whose date is already tomorrow (east of UTC, late evening) still gets that day's copy, listed
+  const tmr=new Date(Date.now()+864e5).toISOString().slice(0,10),L3=await (await call('sync?lite=1')).json();
+  await call('sync',{method:'POST',body:JSON.stringify({baseRev:L3.rev,baseSaved:L3.saved,day:tmr,delta:{items:[{id:'o4',type:'tie',primaryColor:'green',pattern:'solid',updated:3}],days:[],tombstones:{}},photos:{}})});
+  const sn2=(await (await call('sync?snaps=1')).json()).snaps,st=sn2.find(s=>s.id===tmr);
+  ok(st&&st.n===3,`a save dated tomorrow (${tmr}) keeps and lists that day's copy, with its 3 items (${JSON.stringify(sn2.map(s=>s.id+':'+s.n))})`);
   for(const k of [...store.keys()])if(!k.startsWith('invite'))store.delete(k);
 
   // ---- the app against that worker
@@ -118,7 +123,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // W1-11-05: storage full while a sync brings the wardrobe: the plain sentence in a toast and the status
     const B=await open({});
     const fullR=await B.evaluate(async()=>{const P=IDBObjectStore.prototype,o=P.put;P.put=function(){throw new DOMException('The quota has been exceeded.','QuotaExceededError')};
-      let e1=null;try{await addTombstones({zz:1})}catch(e){e1=e}const ok=await syncNow();P.put=o;
+      // (the lead's re-run on final main: a start-up write had failed a moment before, its toast already replaced by "Connected as …",
+      // and saveFailed's once-in-1.5 s skipped the sync's: the sync's own toast is said every time)
+      let e1=null;try{await addTombstones({zz:1})}catch(e){e1=e}storeToldAt=Date.now();toast('Connected as Fay');const ok=await syncNow();P.put=o;
       return {name:e1&&e1.name,store:!!(e1&&e1.dwStore),ok,st:localStorage.getItem('sync_status'),toast:document.querySelector('#toast').textContent}});
     ok(fullR.name==='QuotaExceededError'&&fullR.store,`a put that throws aborts with its own error (${fullR.name})`);
     ok(!fullR.ok&&/storage is full/.test(fullR.st)&&/^Backup failed/.test(fullR.st)&&/storage is full/.test(fullR.toast),`the sync says the phone's storage is full, in a toast too (“${fullR.st}”)`);

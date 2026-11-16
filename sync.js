@@ -338,6 +338,9 @@ async function syncLite(remote,local,url,token,inline){
   setSyncMark(pr.rev,pr.saved,stateSig(now));syncSdDone();synced();restoreDone();
   if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
   return true}
+/* this phone's storage failed during a sync: said in a toast every time (safety.js storeFailText), unless the full-page message already says it */
+function syncStoreTell(e){console.warn('storage failure during sync',e);if(typeof dbDown!=='undefined'&&dbDown)return;
+  try{storeToldAt=Date.now()}catch{}if(typeof toast==='function')toast(storeFailText(e),9000)}
 async function syncOnce(){
   const url=syncUrl(),token=localStorage.getItem('app_token')||'';
   if(!url){setSyncStatus('Not connected.');return false}
@@ -385,7 +388,9 @@ async function syncOnce(){
   }catch(e){
     // this phone's own storage refused (full, closed): said where it is seen, in the app's words (W1-11-05: a phone joining with full storage
     // showed an empty Welcome, and only Settings said "Backup failed: IDBTransaction will abort…")
-    if(typeof storeFailure==='function'&&storeFailure(e)){if(typeof saveFailed==='function')saveFailed(e);setSyncStatus('Backup failed: '+storeFailText(e).replace(/^Couldn’t save: /,''));return false}
+    // (always toasted, not through saveFailed's 1.5 s once-only: on joining, a start-up write had failed a moment before and its toast was
+    // already replaced by "Connected as …", so this one was skipped and the phone showed an empty Welcome with no word: the lead's re-run)
+    if(typeof storeFailure==='function'&&storeFailure(e)){syncStoreTell(e);setSyncStatus('Backup failed: '+storeFailText(e).replace(/^Couldn’t save: /,''));return false}
     const n=syncNetText(e);setSyncStatus(n||'Backup failed: '+(e.message||e));return false}
   finally{syncing=false}
 }
