@@ -43,7 +43,7 @@ const asmLive=()=>typeof ASM_ON!=='undefined'&&ASM_ON;
    shows the traced mannequin (no painted picture, no kept outfit photo) and nothing is painted or downloaded for the pictures: no masters,
    no built pictures, no list, no outfit photos (asmEnsure, asmAhead, asmSync, fetchRemoteRender, prefetchRenders all return). Item
    pictures (the product photos on the tiles under the figure, made on a tap) are their own feature and are not affected. What is already
-   kept stays on the device, so switching back shows it at once. The PC's pre-build (tools/asm-prebuild.js) ignores it */
+   kept stays on the device, so switching back shows it at once. */
 const picsDrawn=()=>typeof settings!=='undefined'&&!!settings&&settings.pictures==='drawn';
 const renderFor=o=>{if(picsDrawn())return null;const a=asmLive()&&asmShown(o);if(a)return a;   // (or the same outfit's last picture while its current one is made: asmStale)   // put together on the device from item photos (assemble.js)
   const ck=comboKey(o);if(renders[ck])return renders[ck];

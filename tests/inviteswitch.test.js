@@ -52,7 +52,7 @@ module.exports=async({ok,chromium,url})=>{
       await seed(p,A,2);
       const res=p.evaluate(l=>connectFromLink(l),link(B));const a=await askText(p);
       const sentA=(st.puts[A]&&st.puts[A].items||[]).length;
-      ok(sentA===2&&/everything on this phone is cleared first/.test(a.t)&&/workdays, what you wear, holidays/.test(a.t)&&/setup then starts again/.test(a.t)&&!/aren’t backed up/.test(a.t)&&a.ok==='Clear and switch',`a switch backs up the waiting changes first (old backup holds ${sentA}), and the question says the settings and setup go too ("${a.ok}")`);
+      ok(sentA===2&&/everything on this phone is cleared first/.test(a.t)&&/workdays, what you wear, holidays/.test(a.t)&&/has no wardrobe yet, the setup starts again/.test(a.t)&&!/aren’t backed up/.test(a.t)&&a.ok==='Clear and switch',`a switch backs up the waiting changes first (old backup holds ${sentA}), and the question says the settings and setup go too ("${a.ok}")`);
       await p.click('#ask-cancel');await res}
     // ---- a live switch while backups are refused (the day's saves used up): it says the changes would be lost; Cancel keeps them
     {const {p,st}=await page();

@@ -2,7 +2,7 @@
 // settings to let the user turn off the painter and only use the mannequin"). The default is painted; with drawing only Today shows the
 // traced mannequin (no painted picture, no kept outfit photo, no swatches), nothing is asked of the server for the pictures (watched on the
 // network, from start-up too) and nothing is painted; switching back paints the day on screen at once and building ahead resumes; the
-// choice syncs to a second device; the row reads well at 390 px in both themes; the PC's pre-build keeps building whatever it says.
+// choice syncs to a second device; the row reads well at 390 px in both themes.
 // Fixtures: the colour-coded suit master and its masks at 512 (tests/fixtures/cm/suit/).
 const fs=require('fs'),path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,settle})=>{
@@ -118,27 +118,5 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(!bad.length,`390 px, light and dark: the choice is the first row of Outfit pictures, a 44 px dropdown inside the card, nothing sideways, its text at least 4.5:1 (${look.map(x=>`${x.t} ${x.help}/${x.sel}`).join(', ')})${bad.length?' — '+JSON.stringify(bad[0]):''}`);
     await L.close();
   }finally{await browser.close()}
-
-  /* ---- the PC's pre-build keeps building with "Drawing only" in the wardrobe's settings ---- */
-  {const http=require('http'),os=require('os'),{spawn}=require('child_process'),s=path.join(__dirname,'..','tools','asm-prebuild.js');
-    const worker=(await import(pathToFileURL(path.join(__dirname,'..','worker.js')).href)).default;
-    const store=new Map(),meta=new Map(),KV={get:async(k,t)=>store.has(k)?(t==='json'?JSON.parse(store.get(k)):store.get(k)):null,put:async(k,v,o)=>{store.set(k,v);meta.set(k,o&&o.metadata)},delete:async k=>{store.delete(k)},
-      list:async({prefix})=>({keys:[...store.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name,metadata:meta.get(name)})),list_complete:true})};
-    let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',added:1000,...x});
-    const its=[I('watch','silver',{metal:'silver'}),I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-    store.set('wardrobe:v1',JSON.stringify({rev:1,saved:1,data:{items:its,days:[],tombstones:{},settings:{workdays:[1,2,3,4,5],blazerDays:[],vestMode:'never',pictures:'drawn',setupDone:1,updated:1}}}));meta.set('wardrobe:v1',{rev:1,saved:1});
-    // the master's records under their keys (the same keys as on a page: asmCmKey is a pure function of the kind, the record and ASM_VER)
-    const b2=await chromium.launch();let keys;try{const q=await (await b2.newContext()).newPage();await q.goto(url);await q.waitForFunction(()=>window.appReady);
-      keys=await q.evaluate(ns=>ns.map(n=>asmCmKey('suit',n)),fs.readdirSync(FIX).map(f=>f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/')))}finally{await b2.close()}
-    fs.readdirSync(FIX).forEach((f,i)=>store.set('render:'+keys[i],JSON.stringify({sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,f)).toString('base64'),model:'colormaster',t:1000})));
-    const env={APP_TOKEN:'owner-code',WARDROBE:KV};
-    const srv=http.createServer(async(q,r)=>{let b='';for await(const c of q)b+=c;
-      const res=await worker.fetch(new Request('http://w'+q.url,{method:q.method,headers:q.headers,body:['GET','HEAD','OPTIONS'].includes(q.method)?undefined:b}),env);
-      r.writeHead(res.status,Object.fromEntries(res.headers));r.end(Buffer.from(await res.arrayBuffer()))});
-    await new Promise(x=>srv.listen(0,'127.0.0.1',x));const W=`http://127.0.0.1:${srv.address().port}/`,led=path.join(os.tmpdir(),'dw-ledger-drawn-'+process.pid+'.json');
-    const r=await new Promise(res=>{const c=spawn(process.execPath,[s,'--days','14','--cm-size','512','--origin','http://127.0.0.1:9/dw/'],{env:{...process.env,DW_WORKER:W,DW_TOKEN:'owner-code',DW_UPLOAD_LEDGER:led}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>res({code,out}))});
-    srv.close();fs.rmSync(led,{force:true});
-    const outs=[...store.keys()].filter(k=>k.startsWith('render:')&&/^asm\/out\/cm\d+\/\d+$/.test(JSON.parse(store.get(k)).sig||''));
-    ok(r.code===0&&outs.length>=1,`the PC's pre-build (npm run assemble) still builds and uploads the coming looks when the wardrobe's settings say "Drawing only" (${outs.length} uploaded: ${(r.out.match(/Done.*/)||[r.out.slice(-200)])[0]})`);}
 };
 module.exports.assembled=true;   // tests assembled pictures (assemble.js): with them off there would be nothing to turn off

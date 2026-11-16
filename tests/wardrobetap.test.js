@@ -83,7 +83,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(v.prev&&!v.next&&v.count==='1 of 11','on the first item, previous is switched off');
     await p.tap('#iv-next');await settle(p,400);v=await view();ok(v.ed==='s8'&&v.count==='2 of 11'&&!v.prev,'› goes to the next item');
     const swipe=async(x0,x1,y=420)=>{await T('touchStart',x0,y);for(let k=1;k<=6;k++){await T('touchMove',x0+(x1-x0)*k/6,y+2);await p.waitForTimeout(16)}await T('touchEnd');await settle(p,450)};
-    const sy=await p.evaluate(()=>{const r=document.querySelector('#item-view select').getBoundingClientRect();return Math.round(r.top+r.height/2)});
+    // (the first dropdown brought on screen: the 3-step card under Read color and texture pushes the Details card down, 2026-11-15)
+    const sy=await p.evaluate(()=>{const s=document.querySelector('#item-view select');s.scrollIntoView({block:'center'});const r=s.getBoundingClientRect();return Math.round(r.top+r.height/2)});
     ok(await p.evaluate(y=>!!document.elementFromPoint(310,y).closest('select'),sy),'(the swipe below starts on a dropdown)');
     await swipe(310,90,sy);ok((await view()).ed==='s7','a swipe to the left goes to the next item, even when it starts on a dropdown');
     await swipe(90,310);ok((await view()).ed==='s8','a swipe to the right goes back');
@@ -101,9 +102,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok((await view()).ed==='s4','closing one item and opening another straight away keeps the second open');
     await p.goBack();await settle(p,500);ok((await view()).ed===null,'and Back still closes it');
     // editing keeps the page and its scroll position
-    await p.tap('#gi-s3 .giopen');await settle(p,500);await p.evaluate(()=>document.querySelector('#ivbody').scrollTo(0,160));
+    // (scrolled so the Color button is in view: since the Color & texture card it sits lower than 160 px; a click on it scrolled the page)
+    await p.tap('#gi-s3 .giopen');await settle(p,500);const yS=await p.evaluate(()=>{const b=document.querySelector('#ivbody'),c=document.querySelector('#item-view .colbtn[data-k="primaryColor"]');b.scrollTo(0,Math.max(160,Math.round(c.getBoundingClientRect().top-b.getBoundingClientRect().top+b.scrollTop-200)));return b.scrollTop});
     await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cptile[data-c="pink"] >> nth=-1');await p.click('#col-sheet .cpbar button');await p.waitForFunction(()=>items.find(i=>i.id==='s3').primaryColor==='pink'&&/pink/i.test(document.querySelector('#iv-title').textContent));v=await view();   // (the sheet is redrawn a moment after the item is saved)
-    ok(v.ed==='s3'&&v.on&&v.top===160&&/pink/i.test(v.title),`changing a tag redraws the sheet in place: still open, still scrolled, the header follows (${v.title})`);
+    ok(v.ed==='s3'&&v.on&&v.top===yS&&yS>=160&&/pink/i.test(v.title),`changing a tag redraws the sheet in place: still open, still scrolled, the header follows (${v.title}, ${v.top} of ${yS})`);
     ok(/pink/i.test(await p.textContent('#gi-s3')),'and the box in the grid behind is up to date');
     // while cropping, Esc leaves the crop first
     await p.evaluate(()=>startCrop('s3'));await p.waitForSelector('#item-view #cropbox');

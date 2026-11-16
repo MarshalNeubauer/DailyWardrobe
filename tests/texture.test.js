@@ -64,15 +64,14 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   await p.evaluate(id=>{show('wardrobe');openItem(id)},suitId);await settle(p,500);
   ok(await p.evaluate(id=>!!document.querySelector(`#item-view .swsplit .swtex`),suitId),'an opened item in the Wardrobe shows the split swatch');
   await p.evaluate(id=>openItem(id),tieId);await settle(p,500);
-  const lab=await p.evaluate(id=>[...document.querySelectorAll(`#item-view .phtools :is(label,button)`)].map(l=>l.textContent.trim()),tieId);
+  const lab=await p.evaluate(id=>[...document.querySelectorAll(`#item-view .phtools :is(label,button)`)].map(l=>l.getAttribute('aria-label')||l.textContent.trim()),tieId);
   ok(lab.includes('Add fabric close-up'),`the editor offers a close-up for a tie (${lab.join(', ')})`);
   // a touch screen: the close-up button opens the close-up chooser (ui.js closeupPick); Choose from photos takes the file
-  if(!await p.evaluate(()=>phEdit.open))await p.click('#item-view .ivphbtn');await settle(p,300);   // Edit photos
   await p.click('#item-view .phtools .cubtn');await p.waitForSelector('#cu-sheet.on');
   await p.setInputFiles('#cu-lib',await file('tt.png',130,40,50));
   await p.waitForFunction(id=>items.find(i=>i.id===id).texture&&!!document.querySelector(`#item-view .swtex`),tieId,{timeout:10000}).catch(()=>{});   // the save, then the redraw
   await settle(p,350);await p.click('#item-view .phtools .cubtn');await p.waitForSelector('#cu-sheet.on');
-  ok(await p.evaluate(id=>!!document.querySelector(`#item-view .swtex`)&&/Replace close-up/.test(document.querySelector(`#item-view .phtools`).textContent)&&!!document.querySelector('#cu-rm'),tieId),'adding one shows it in the swatch, with Remove close-up in the close-up chooser');
+  ok(await p.evaluate(id=>!!document.querySelector(`#item-view .swtex`)&&document.querySelector(`#item-view .phtools .cubtn`).getAttribute('aria-label')==='Replace close-up'&&!!document.querySelector('#cu-rm'),tieId),'adding one shows it in the swatch, with Remove close-up in the close-up chooser');
   await p.click('#cu-cancel');await settle(p,350);
   await p.evaluate(id=>undoPhoto(id),tieId);
   ok(await p.evaluate(id=>!items.find(i=>i.id===id).texture,tieId),'Undo takes the close-up back off');

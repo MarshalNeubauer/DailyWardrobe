@@ -41,6 +41,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     const after=await fig();
     ok(!e.mark&&e.hex===last&&e.field===last.toUpperCase()&&e.s===55&&after.fills.includes(last)&&e.saved==='grey','the lift draws the sheet again in the last shade, as before, still unsaved until Add');
     // the hue bar: three moves, no lift
+    await p.evaluate(()=>document.querySelector('#cn-hue').scrollIntoView({block:'center'}));await frame();   // (on screen, not under the bottom bar: the sheet's grabber moved it down, 2026-11-15)
     const hb=await p.locator('#cn-hue').boundingBox(),hues=[];
     await p.mouse.move(hb.x+hb.width*.1,hb.y+hb.height/2);await p.mouse.down();await frame();hues.push(await fig());
     for(const x of [.35,.6,.85]){await p.mouse.move(hb.x+hb.width*x,hb.y+hb.height/2,{steps:3});await frame();hues.push(await fig())}
