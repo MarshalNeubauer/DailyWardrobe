@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	3acab56cba931cc9f1cd
-# tested	592ac99563b2e5ed1ab6
+# tested	7e15e4d53c11ca5c7286
 a11yfix.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 a11yfix.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11yfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	npsLeave	renderAdd	shadeRow
@@ -1752,7 +1751,7 @@ care.test.js	mq/suit.js	<loaded>
 care.test.js	mq/vest.js	<loaded>
 care.test.js	pack.js	<loaded>	packShow
 care.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	figureLabel	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	jsq	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	srcOk	workerBase	workerList
-care.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	buildPlan	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	groupsNear	jacketGroup	leatherGroup	lockStale	lookRepeat	metalOf	metalSame	nearCost	outfit	outfitScore	pairScore	patInfo	patternScore	pcol	planSim	planStart	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	topGw	wardStart	watchFit	withColRun
+care.test.js	planner.js	<loaded>	aheadShirt	aheadTie	beltFit	buildPlan	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	darkJkt	darkShirt	darkUnderLight	fam	finish	groupsNear	idsAhead	jacketGroup	leatherGroup	lockStale	lookRepeat	metalOf	metalSame	nearCost	outfit	outfitScore	pairScore	patInfo	patternScore	pcol	planSim	planStart	shirtGroup	shirtLook	shirtRepeat	shirtScore	shoeCtx	shoeFormality	shoeScore	sockEcho	sockScore	takeOff	tieGroup	tieLook	tieRepeat	tieScore	topGw	wardStart	watchFit	withColRun
 care.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 care.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 care.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	showCost	toast	unit	unitCC	weekFirst
@@ -2804,7 +2803,7 @@ dblost.test.js	apple-touch-icon.png	<loaded>
 dblost.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmPileKind	asmWtWants
 dblost.test.js	asm-gl.js	<loaded>
 dblost.test.js	asm-watch.js	<loaded>
-dblost.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave
+dblost.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
 dblost.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careShow
 dblost.test.js	checklist.js	<loaded>	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
 dblost.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
@@ -3002,7 +3001,7 @@ deltasync.test.js	mq/suit.js	<loaded>
 deltasync.test.js	mq/vest.js	<loaded>
 deltasync.test.js	pack.js	<loaded>	packShow
 deltasync.test.js	photos.js	<loaded>	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
-deltasync.test.js	planner.js	<loaded>	lockStale
+deltasync.test.js	planner.js	<loaded>	idsAhead	lockStale
 deltasync.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindStart{}>renderSettingsExtras	renderRemindUI
 deltasync.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 deltasync.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	countryName	isoDate	loadWeather	locCC	openSettings	refreshHolidays	refreshToday	renderDaysOffUI	renderFormalUI	renderPicturesUI	renderSettingsExtras	renderWxLoc	saveUserSettings	scheduleWear	setCatOpen	setLock	settingsOpen	settingsSummaries	shortDate	toast	unit	unitCC	weekFirst
@@ -9892,7 +9891,7 @@ staledevice.test.js	mq/suit.js	<loaded>
 staledevice.test.js	mq/vest.js	<loaded>
 staledevice.test.js	pack.js	<loaded>	packShow
 staledevice.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboKeyV1	comboSig	comboSigV1	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
-staledevice.test.js	planner.js	<loaded>	lockStale
+staledevice.test.js	planner.js	<loaded>	idsAhead	lockStale
 staledevice.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 staledevice.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 staledevice.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	weekFirst
