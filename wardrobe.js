@@ -133,7 +133,7 @@ async function setItemField(id,k,v){
 /* the Add card: name, brand and notes behind "More details", folded until asked for (the Material is out with the other fields, above it); each keystroke is kept on the card (nothing is redrawn) */
 function toggleMore(i){const q=queue[i];if(!q)return;q.more=!q.more;renderAdd()}
 function setQField(i,k,v){const q=queue[i];if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];
-  if(k==='material'){delete q.matAI;q.matSet=1}   // chosen by hand: no longer Claude's suggestion, and a later reading leaves it (tagging.js takeMaterial)
+  if(k==='material'){delete q.matAI;q.matSet=1;q.checked={...q.checked,fabric:1}}   // chosen by hand (and so its checklist section is checked, add.js addCkSecs): no longer Claude's suggestion, and a later reading leaves it (tagging.js takeMaterial)
   if(typeof addKeepSoon==='function')addKeepSoon();if(k==='material')renderAdd()}
 
 /* ---- one-time rename of the owner's stretch shirts (2026-11-15, his decision on the materials audit) ----
