@@ -199,7 +199,7 @@ async function addMulti(f,agg,again){
   if(!holder.multiPic)try{holder.multiPic=raw.toDataURL('image/jpeg',.9);holder.file=holder.multiPic}catch(e){console.warn('photo not kept',e)}
   addKeep();
   let r,j;try{r=await fetch(new URL('tag-many',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},
-      body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),custom:customForTag(),corrections:tagFixes(),wb:!!wb}),...(ac?{signal:ac.signal}:{})});
+      body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),types:TAG_TYPES,custom:customForTag(),corrections:tagFixes(),wb:!!wb}),...(ac?{signal:ac.signal}:{})});
     j=await r.json().catch(()=>({}))}
   catch(e){if(!queue.includes(holder))return;console.warn('several items',e);fail(multiFail(0,null,e),navigator.onLine===false||e instanceof TypeError);return}   // (Cancel took it off Add: nothing more to say)
   if(!queue.includes(holder))return;   // cancelled while the answer came
@@ -379,7 +379,7 @@ async function saveCard(q){
   if(!q||cardReading(q))return false;
   const f=FABRIC.includes(q.type);
   generateSwatch(q);
-  const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:f?q.pattern:'solid',photo:q.photo,added:nowMs()};
+  const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:hasPat(q.type)?q.pattern:'solid',photo:q.photo,added:nowMs()};
   if(f){it.swatch=q.swatch;it.swSrc=q.swSrc}
   {const a=accentsOf(q);if(a.length)it.accents=a}   // its colours beyond the three (core.js accentsOf)
   if(q.order){it.paused=true;it.order=true;if(q.arrives)it.arrives=q.arrives}   // bought, on the way
@@ -499,7 +499,7 @@ function addCkSecs(q,i){const man=!!q.manual||!q.ai,c=q.conf||{},chk=q.checked||
   if(rows||shade){const cw=unsure(c.primaryColor)||(!man&&(!!q.newColor||Object.keys(q.auto||{}).length>0||(q.measV||[]).some(v=>v.mode==='flag'&&!(q.edited&&q.edited[v.f]))));
     out.push({k:'colors',n:!!rows,warn:cw,mark:chk.colors?'good':cw?'warn':'todo',title:'Colors',sum:ckColSum(q,q.primaryColor)+(ckSure(c.primaryColor)&&!man?' · '+ckSure(c.primaryColor):''),body:rows+accRow('q',i,q)+shade+(rows?ckLr(q,i,'colors'):'')})}
   // Pattern: Claude's pick and its second choice drawn in the item's colors, then every pattern (the picker)
-  if(fab){const p=normPat(q.type,q.pattern),ai=q.aiTag&&q.aiTag.pattern,alt=q.altPattern&&(PATS_BY[q.type]||[]).includes(q.altPattern)?q.altPattern:null,pw=unsure(c.pattern)||(!man&&!!q.newPattern);
+  if(hasPat(q.type)){const p=normPat(q.type,q.pattern),ai=q.aiTag&&q.aiTag.pattern,alt=q.altPattern&&(PATS_BY[q.type]||[]).includes(q.altPattern)?q.altPattern:null,pw=unsure(c.pattern)||(!man&&!!q.newPattern);
     const tiles=[];if(!man){const first=ai&&(PATS_BY[q.type]||[]).includes(ai)?ai:p;tiles.push([first,'Claude’s pick']);if(alt&&alt!==first)tiles.push([alt,'Claude’s 2nd']);if(!tiles.some(t=>t[0]===p))tiles.push([p,'Your choice'])}
     const tile=([v,lab])=>`<button type="button" class="ckpt" role="radio" aria-checked="${v===p}" onclick="setq(${i},'pattern','${v}')"><span class="ckptsw">${swatchSVG(patVar(q,v),true)}</span><b>${esc(cap1(patName(v)))}</b><small>${lab}</small></button>`;
     out.push({k:'pattern',n:true,warn:pw,mark:chk.pattern?'good':pw?'warn':'todo',title:'Pattern',sum:esc(cap1(patName(p)))+(pw&&!chk.pattern?'?':'')+(ckSure(c.pattern)&&!man?' · '+ckSure(c.pattern):''),

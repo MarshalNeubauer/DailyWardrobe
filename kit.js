@@ -117,7 +117,7 @@ function kitTombs(t,ids,now){if(!ids.length)return;const m=t.objectStore('meta')
 /* a failed write is said, as Confirm says it (add.js save) */
 function kitFail(e){console.warn('save failed',e);if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000)}
 /* an item made from a card with no photo, as add.js saveCard makes one (a hand-added card: the fields it keeps for each type) */
-function kitItem(c){const f=FABRIC.includes(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:nowMs()};
+function kitItem(c){const f=hasPat(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:nowMs()};
   {const a=accentsOf(c);if(a.length)it.accents=a}   // an import's "Also has" colours
   if(METAL_TYPES.includes(c.type))it.metal=c.metal||'silver';
   if(c.type==='shirt')it.cuff=c.cuff==='french'?'french':'button';
@@ -180,11 +180,12 @@ function kitMetal(word){const w=kitNorm(word).replace(/-/g,' ');if(!w)return nul
 const KIT_TYPE_WORDS={suit:['suit','suits','two-piece','three-piece','suit jacket','بدله','بدلات'],blazer:['blazer','sport coat','sports coat','sportcoat','jacket','sport jacket','بليزر','جاكيت','جاكت','ستره'],
   pants:['trousers','trouser','pants','slacks','chinos','jeans','dress trousers','dress pants','khakis','بنطلون','بنطال','سروال','بناطيل'],
   shirt:['shirt','dress shirt','shirts','oxford shirt','قميص','قمصان'],tie:['tie','necktie','ties','ربطه عنق','ربطه','كرافته','كرفته','كرافات'],tieclip:['tie clip','tie bar','tieclip','tie pin','مشبك ربطه','دبوس ربطه'],
+  pocketsquare:['pocket square','pocket squares','pocket-square','pocket-squares','pocketsquare','hank','hanks','hankie','hanky','handkerchief','handkerchiefs','pochette','pocket handkerchief','منديل','منديل جيب'],   // (2026-11-16)
   watch:['watch','wristwatch','ساعه','ساعه يد'],
   shoes:['shoes','shoe','oxfords','oxford','derbies','derby','loafers','loafer','boots','boot','sneakers','trainers','brogues','brogue','wingtips','monk','monks','monk straps','monkstraps','moccasins','dress shoes','حذاء','احذيه','جزمه'],
   belt:['belt','حزام'],socks:['socks','sock','جوارب','شراب'],cufflinks:['cufflinks','cuff links','cufflink','cuff link','ازرار اكمام','كبك'],overcoat:['overcoat','coat','topcoat','top coat','wool coat','معطف','بالطو'],
   raincoat:['raincoat','trench','trench coat','mac','معطف مطر','ترنش']};
-const KIT_PLANS='suits, blazers, pants, shirts, ties, tie clips, shoes, belts, socks, watches, cufflinks and coats';
+const KIT_PLANS='suits, blazers, pants, shirts, ties, tie clips, pocket squares, shoes, belts, socks, watches, cufflinks and coats';
 const kitNorm=s=>String(s??'').normalize('NFKC').trim().toLowerCase().replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')
   .replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-0x660)).replace(/[_\s]+/g,' ').replace(/grey|gray/g,'grey');
 /* rows of cells; each row keeps its place in the text (r.ln, from 1, empty rows counted: "Row 23" is the 23rd row pasted, W2-15-04) */
@@ -197,7 +198,10 @@ function kitSplit(text){text=String(text||'').replace(/^﻿/,'').replace(/\r\n?/
 function kitTypeOne(w){const find=x=>Object.keys(KIT_TYPE_WORDS).find(t=>KIT_TYPE_WORDS[t].includes(x))||Object.keys(TYPES).find(t=>kitNorm(TYPES[t])===x);
   return find(w)||(/es$/.test(w)&&find(w.slice(0,-2)))||(/s$/.test(w)&&find(w.slice(0,-1)))||null}
 /* a type cell: the words as a whole, else a known word among others ("Shoes - Oxford", "Linen trouser"): the last word first (the noun) */
-function kitType(tw){const ws=tw.split(/[^\p{L}]+/u).filter(Boolean);return kitTypeOne(tw)||(ws.length>1?[...ws].reverse().map(kitTypeOne).find(Boolean):null)||null}
+function kitType(tw){const ws=tw.split(/[^\p{L}]+/u).filter(Boolean);
+  // (no single word: a two-word type among others, the last pair first: "White linen pocket square", 2026-11-16)
+  const pairs=()=>ws.length>2?ws.slice(1).map((w,k)=>ws[k]+' '+w).reverse().map(kitTypeOne).find(Boolean):null;
+  return kitTypeOne(tw)||(ws.length>1?[...ws].reverse().map(kitTypeOne).find(Boolean):null)||pairs()||null}
 /* two words one typo apart (a letter added, dropped, changed or two swapped: "Shrit") */
 function kitNear(a,b){if(a===b)return true;const la=a.length,lb=b.length;if(Math.abs(la-lb)>1)return false;let i=0;while(i<la&&i<lb&&a[i]===b[i])i++;
   if(la===lb)return a.slice(i+1)===b.slice(i+1)||(a[i]===b[i+1]&&a[i+1]===b[i]&&a.slice(i+2)===b.slice(i+2));return la>lb?a.slice(i+1)===b.slice(i):a.slice(i)===b.slice(i+1)}
@@ -251,7 +255,7 @@ function kitLeather(card,m){const ls=leathersFor(card),d=m.replace(/\s+/g,'-');l
 /* the words of a cell, for reading a description ("w/" is "with") */
 const kitWords=t=>kitNorm(String(t||'').replace(/\bw\//gi,' with ')).replace(/([\/&+])/g,' $1 ').replace(/[^\p{L}\p{N}&\/+'’-]+/gu,' ').split(' ').filter(Boolean);
 /* the first pattern named in some words (the longest phrase first): {p, s, l} (where it is), else null; "other" and plain don't count */
-function kitPatWords(ws,type){if(!FABRIC.includes(type))return null;for(let l=3;l>=1;l--)for(let s=0;s+l<=ws.length;s++){const p=kitPattern(ws.slice(s,s+l).join(' '),type);if(p&&p!=='solid'&&p!=='other')return {p,s,l}}return null}
+function kitPatWords(ws,type){if(!hasPat(type))return null;for(let l=3;l>=1;l--)for(let s=0;s+l<=ws.length;s++){const p=kitPattern(ws.slice(s,s+l).join(' '),type);if(p&&p!=='solid'&&p!=='other')return {p,s,l}}return null}
 const KIT_FILL=new Set(['and','&','/','+','with','in','the','a','an','of','-','–','on','x','×','french','double','cuff','cuffs','piece']);
 const KIT_CONJ=new Set(['and','&','/','+','with']);
 const KIT_MORE_W=/^(brogues?|wingtips?|monks?|monkstraps?|moccasins?|straps?)$/;   // shoe words that say more than the type: kept in the name
@@ -296,7 +300,7 @@ function kitRow(c,line){const probs=[],given=new Set();
   const c2=acc('secondaryColor'),c3=acc('tertiaryColor');if(c3)given.add('tertiaryColor');
   // the words: a description, the notes, the name and the type cell say what their own columns don't (W2-15-01)
   const srcs=[c.desc,c.notes,c.name,c.type].filter(Boolean),txt=srcs.map(kitNorm).join(' | '),dws=kitWords(c.desc),dpat=kitPatWords(dws,type);
-  let pattern='solid';if(FABRIC.includes(type)){if(c.pattern){const p=kitPattern(c.pattern,type);if(p===undefined)probs.push(`pattern “${c.pattern}” read as plain`);else{pattern=p;given.add('pattern')}}
+  let pattern='solid';if(hasPat(type)){if(c.pattern){const p=kitPattern(c.pattern,type);if(p===undefined)probs.push(`pattern “${c.pattern}” read as plain`);else{pattern=p;given.add('pattern')}}
     else{const f=dpat||[c.notes,c.name,c.type].filter(Boolean).map(s=>kitPatWords(kitWords(s),type)).find(Boolean);if(f){pattern=f.p;given.add('pattern')}}}
   const card={id:crypto.randomUUID(),manual:true,type,primaryColor:col,secondaryColor:c2||null,tertiaryColor:c3||null,pattern,metal:mtl?mtl.k:'silver',leather:'calf'};
   // an "Also has" column (accents, 2026-11-16): its colours in one cell ("red, gold"), the item's own three left out, at most 4 (a new
@@ -399,12 +403,12 @@ function kitPasteShow(t){setTimeout(()=>{if(!t.isConnected)return;const b=t.clos
 async function kitImportFile(f){if(!f)return;let t='';
   try{t=kitDecode(await f.arrayBuffer())}catch{try{t=await f.text()}catch(e){console.warn('file not read',e);kitImp=null;const el=$('#kit-prev');if(el)el.innerHTML='<p class="kit-err">This file couldn’t be read. Try again, or open it and paste the rows.</p>';kitImpBtn();return}}
   const ta=$('#kit-paste');if(ta)ta.value='';kitImportText(t,true)}
-const kitDupKey=i=>[i.type,i.primaryColor,i.secondaryColor||'',FABRIC.includes(i.type)?i.pattern||'solid':'solid',kitNorm(i.name||'')].join('|');
+const kitDupKey=i=>[i.type,i.primaryColor,i.secondaryColor||'',hasPat(i.type)?i.pattern||'solid':'solid',kitNorm(i.name||'')].join('|');
 /* what a row would change on a piece he has (the fields the row says, kitRow's given), in KIT_UPD's order */
 const KIT_UPD=[['pattern','solid'],['name',''],['brand',''],['material',''],['notes',''],['vest','no'],['cuff','button'],['trouserKind','dress'],['shoeStyle','oxford'],['leather','calf'],['season','all'],['metal','silver'],['tertiaryColor','']];
 const KIT_TEXT=['name','brand','material','notes'];
 function kitDiff(it,x){const c=x.card,g=x.given||new Set();
-  return KIT_UPD.filter(([k,d])=>g.has(k)&&c[k]!=null&&c[k]!==''&&(k!=='pattern'||FABRIC.includes(it.type))&&(k!=='material'||MATERIALS_BY[it.type])&&
+  return KIT_UPD.filter(([k,d])=>g.has(k)&&c[k]!=null&&c[k]!==''&&(k!=='pattern'||hasPat(it.type))&&(k!=='material'||MATERIALS_BY[it.type])&&
     (KIT_TEXT.includes(k)?kitNorm(it[k]||'')!==kitNorm(c[k]):String(it[k]??d)!==String(c[k]))).map(([k])=>k)}
 const KIT_UPD_WORD={trouserKind:'kind',shoeStyle:'style',cuff:'cuffs',tertiaryColor:'third color'};
 function kitDiffText(it,x){const sh=s=>{s=String(s||'');return s.length>40?s.slice(0,39)+'…':s};
@@ -540,9 +544,9 @@ async function kitSampleMigrate(){try{if(localStorage.getItem('kit_mine'))return
 const KIT_YIELD=1;
 const KIT_OWN=['force','lock','occasion','formal','kind','skip','off','trip'];
 const kitDayOwn=c=>!!(c.ids&&Object.values(c.ids).some(Boolean))||KIT_OWN.some(k=>c[k]&&(typeof c[k]!=='object'||Object.keys(c[k]).length));
-const kitSampleSig=i=>[i.type,i.primaryColor,i.secondaryColor||'',FABRIC.includes(i.type)?i.pattern||'solid':'solid',i.cuff==='french'?'f':''].join('|');
+const kitSampleSig=i=>[i.type,i.primaryColor,i.secondaryColor||'',hasPat(i.type)?i.pattern||'solid':'solid',i.cuff==='french'?'f':''].join('|');
 function kitSampleCards(){const l=KIT_SAMPLE.filter(x=>!dressOut(x[0]));if(!wearsJacket())l.push(...KIT_SAMPLE_NOJKT);
-  return l.map(([type,c,c2,p,x])=>({id:crypto.randomUUID(),manual:true,type,primaryColor:c,secondaryColor:c2,tertiaryColor:null,pattern:FABRIC.includes(type)?p:'solid',metal:'silver',leather:'calf',sample:true,...x}))}
+  return l.map(([type,c,c2,p,x])=>({id:crypto.randomUUID(),manual:true,type,primaryColor:c,secondaryColor:c2,tertiaryColor:null,pattern:hasPat(type)?p:'solid',metal:'silver',leather:'calf',sample:true,...x}))}
 let kitSampling=false;
 /* items another tab stored that this one doesn't hold yet (each tab keeps its own `items`): taken in before the sample is counted */
 async function kitAdopt(){let all=[];try{all=await tx('readonly',s=>s.getAll())||[]}catch(e){console.warn('wardrobe not read',e);return}

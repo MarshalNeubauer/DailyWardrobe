@@ -56,6 +56,7 @@ function whyUnused(i){
     case 'belt':return by('shoes').some(s=>beltFit(s,i)!==null)?'Another belt matches the shoes better each time.':'None of your shoes match it in color and finish.';
     case 'socks':return 'Your other socks match your pants better every day.';
     case 'cufflinks':return by('shirt').some(s=>s.cuff==='french')?'Another pair matches your watch and buckle better.':'You have no French-cuff shirt to wear them with.';
+    case 'pocketsquare':return !jackets.length?'A pocket square is worn only with a jacket, and none is planned.':'It is worn only with a jacket on: another square picks up the tie, shirt or jacket better, or its colors and pattern repeat the tie\'s.';
     case 'tieclip':return (settings.vestMode||'auto')==='always'&&!blazerDays?'With a vest on every suit day there is never a tie clip.':'Another clip matches your watch better, or a vest holds the tie.';
     case 'overcoat':case 'raincoat':return i.type==='raincoat'?'No rain in the forecast, and days beyond it are planned without rain.':'No day in the next six months is cold enough for a coat.';
     case 'watch':return 'Another watch matches the shoes and buckle better every day.'}

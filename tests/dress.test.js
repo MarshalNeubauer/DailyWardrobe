@@ -23,7 +23,7 @@ const PLAN_SIG=`(W,n)=>{items=W[n];settings={...settings,workdays:[0,1,2,3,4],bl
   TODAY_OVERRIDE='2026-11-08T12:00:00';dayRecs={'2026-11-12':{date:'2026-11-12',formal:true},'2026-11-18':{date:'2026-11-18',occasion:'casual'},'2026-11-24':{date:'2026-11-24',occasion:'wedding'},'2026-12-2':{date:'2026-12-2',occasion:'funeral'},
     '2026-11-16':{date:'2026-11-16',force:{tie:items.find(i=>i.type==='tie').id}},'2026-11-17':{date:'2026-11-17',vest:false}};cache={};
   const lines=[];for(const [y,m] of [[2026,10],[2026,11],[2027,0]]){const P=buildPlan(y,m);for(const k of Object.keys(P).sort()){if(!k.startsWith(y+'-'+(m+1)+'-'))continue;const o=P[k],r=rateOutfit(o);
-    lines.push(k+' '+(o.suitDay?'S':'B')+(o.vest?'V':'')+' '+SLOTS.map(s=>o[s]?o[s].id:'-').join(',')+' '+r.score+r.label+' '+r.checks.map(c=>(c.label==='Pants'?'T':c.label[0])+c.pts).join('')+' '+o.notes.length)}}
+    lines.push(k+' '+(o.suitDay?'S':'B')+(o.vest?'V':'')+' '+SLOTS.filter(s=>s!=='pocket').map(s=>o[s]?o[s].id:'-').join(',')+' '+r.score+r.label+' '+r.checks.map(c=>(c.label==='Pants'?'T':c.label[0])+c.pts).join('')+' '+o.notes.length)}}
   let h=0x811c9dc5;for(const c of lines.join('\\n'))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return {n:lines.length,h:h.toString(16),first:lines[0]}}`;
 /* recorded from the app before the dress code (commit 671db36), with the same two strings (the check "Pants" was "Trousers" then: PLAN_SIG
    counts it as T, so the American wording, 2026-11-15, keeps the signatures) */
