@@ -1,6 +1,5 @@
-// Wardrobe item sheet: with a fabric close-up, the split swatch (drawing | close-up) is a button. Tapped, the two split up: the
-// drawing slides over the photo's square on the left and the close-up fills its own square on the right, to compare them
-// whole. A tap on either square puts them back. The choice lasts while the item stays open (an edit redraws it still split up).
+// Wardrobe item sheet, Pictures: the photo and the split swatch (drawing | close-up) are plain pictures. The old tap-to-compare
+// there was taken out at the owner's ask (2026-11-16); the comparison lives in Look & compare. The photo tool row stays.
 module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();
   const PH='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
@@ -8,37 +7,20 @@ module.exports=async({ok,chromium,url,settle})=>{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(ph=>{items=[{id:'a',type:'blazer',primaryColor:'tan',secondaryColor:'lightblue',pattern:'windowpane',photo:ph,texture:ph,added:3},
-      {id:'b',type:'pants',primaryColor:'navy',pattern:'solid',photo:ph,added:2},{id:'c',type:'tie',primaryColor:'navy',pattern:'solid',photo:ph,texture:ph,added:1}];flt='all';editing=null;show('wardrobe')},PH);
-    const look=()=>p.evaluate(()=>{const q=s=>document.querySelector(s),r=s=>{const b=q(s).getBoundingClientRect();return [b.left,b.top,b.width,b.height].map(Math.round).join()},pair=q('#ivpair');if(!pair)return null;
-      const cs=getComputedStyle(q('#ivpair .cmpdraw'));
-      return {cmp:pair.classList.contains('cmp'),pressed:q('#ivpair .tagsw').getAttribute('aria-pressed'),draw:r('#ivpair .cmpdraw'),photo:r('#ivpair .phfig img.ph'),sw:r('#ivpair .tagsw .ph.thumb'),tex:r('#ivpair .swtex'),
-        vis:cs.visibility,dclip:cs.clipPath,tclip:getComputedStyle(q('#ivpair .swtex')).clipPath,line:getComputedStyle(q('#ivpair .swsplit'),'::after').opacity,
-        caps:[...pair.querySelectorAll('figcaption')].filter(e=>getComputedStyle(e).display!=='none').map(e=>e.innerText.trim().split('\n')[0]).join('|'),svg:!!q('#ivpair .cmpdraw svg pattern')}});
+      {id:'b',type:'pants',primaryColor:'navy',pattern:'solid',photo:ph,added:2}];flt='all';editing=null;show('wardrobe')},PH);
     await p.tap('#gi-a .giopen');await settle(p,500);
+    const look=()=>p.evaluate(()=>{const pics=document.querySelector('#item-view .ivpics'),pair=pics&&pics.querySelector('.ivhero .pair');if(!pair)return null;
+      return {old:!!document.querySelector('#ivpair,.cmpable,.cmpdraw,.cmpbox'),tap:[...pair.querySelectorAll('*')].some(e=>e.hasAttribute('onclick')||e.getAttribute('role')==='button'||e.hasAttribute('tabindex')),
+        photo:!!pair.querySelector('.phfig img.ph'),sw:!!pair.querySelector('.tagsw .swsplit'),tex:!!pair.querySelector('.tagsw .swtex'),fn:typeof window.toggleCompare,
+        tools:(pics.querySelector('.phtools')||{innerText:''}).innerText.replace(/\s+/g,'|')}});
     let v=await look();
-    ok(v&&!v.cmp&&v.vis==='hidden'&&v.tclip==='inset(0px 0px 0px 50%)'&&v.caps==='Photo|As tagged · Close-up',`opened, the photo is on the left and the swatch on the right is split: drawing | close-up (${v&&v.caps})`);
-    ok(v.sw===v.tex&&v.draw!==v.photo,'the hidden copy of the drawing lies on the swatch, not on the photo');
-    // tap the split swatch: they split up
-    await p.tap('#ivpair .tagsw');const moving=await p.evaluate(()=>document.querySelector('#ivpair .cmpdraw').getAnimations().length);await settle(p,600);v=await look();
-    ok(v.cmp&&v.pressed==='true'&&v.vis==='visible'&&v.draw===v.photo&&v.svg,`a tap splits them up: the drawing covers the photo's square on the left (${v.draw})`);
-    ok(/^inset\(0px/.test(v.tclip)&&!/50%/.test(v.tclip)&&v.tex===v.sw&&v.line==='0','the close-up fills the whole square on the right; the dividing line is gone');
-    ok(v.caps==='As tagged|Close-up',`the captions follow (${v.caps})`);
-    ok(moving>0,`the drawing slides across instead of jumping (${moving} transitions)`);
-    // an edit redraws the sheet still split up
-    await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cptile[data-c="navy"] >> nth=-1');await p.click('#col-sheet .cpbar button');await p.waitForFunction(()=>items.find(i=>i.id==='a').primaryColor==='navy');await p.waitForFunction(()=>(document.querySelector('#ivpair .cmpdraw')||{innerHTML:''}).innerHTML.toLowerCase().includes(COLORS.navy),null,{timeout:3000}).catch(()=>{});v=await look();
-    ok(v.cmp&&v.draw===v.photo&&await p.evaluate(()=>document.querySelector('#ivpair .cmpdraw').innerHTML.toLowerCase().includes(COLORS.navy)),'changing the colour keeps them split up, the drawing redrawn in the new colour');
-    // tap again (either square) puts them back
-    await p.tap('#ivpair .phfig');await settle(p,600);v=await look();
-    ok(!v.cmp&&v.pressed==='false'&&v.vis==='hidden'&&v.tclip==='inset(0px 0px 0px 50%)'&&v.line==='1'&&v.caps==='Photo|As tagged · Close-up','a tap on the left square puts them back: photo on the left, the split swatch on the right');
-    await p.tap('#ivpair .phfig');await settle(p,300);ok(!(await look()).cmp,'a tap on the photo does not split them (only the swatch does)');
-    await p.tap('#ivpair .tagsw');await settle(p,600);await p.tap('#ivpair .tagsw');await settle(p,600);ok(!(await look()).cmp,'a second tap on the right square puts them back too');
-    ok(await p.evaluate(()=>editing==='a'),'none of these taps closes the sheet');
-    // an item without a close-up has nothing to compare; another item starts closed
-    await p.tap('#ivpair .tagsw');await settle(p,600);
-    await p.tap('#iv-next');await settle(p,400);
-    ok(await p.evaluate(()=>editing==='b'&&!document.querySelector('#ivpair')&&!!document.querySelector('#item-view .pair .tagsw')),'an item without a close-up keeps the plain pair, with nothing to tap');
+    ok(v&&v.photo&&v.sw&&v.tex,'Pictures still shows the photo and the split swatch with the close-up');
+    ok(v&&!v.old&&!v.tap&&v.fn==='undefined',`nothing in the pair is tappable; the old compare is gone (${JSON.stringify(v)})`);
+    ok(v&&/Replace/.test(v.tools)&&/Rotate/.test(v.tools)&&/Crop/.test(v.tools)&&/Close-up/.test(v.tools),`the Replace · Rotate · Crop · Close-up row stays (${v&&v.tools})`);
+    await p.tap('#item-view .ivpics .tagsw');await settle(p,300);
+    ok(await p.evaluate(()=>editing==='a'&&!document.querySelector('.pair.cmp')),'a tap on the swatch does nothing and keeps the sheet open');
     await p.tap('#iv-next');await settle(p,400);v=await look();
-    ok(await p.evaluate(()=>editing==='c')&&v&&!v.cmp,'the next item with a close-up starts with them together');
+    ok(await p.evaluate(()=>editing==='b')&&v&&v.photo&&!v.tex,'an item without a close-up keeps the plain pair');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
   }finally{await browser.close()}

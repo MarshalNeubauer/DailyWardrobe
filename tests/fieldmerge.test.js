@@ -64,6 +64,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   ok(K.mergeSettings(tieA,tieB).care.tie===3&&K.mergeSettings(tieB,tieA).care.tie===3,'the same entry on both: the later change wins');
   const stale={...J(sa),care:{suit:1},updated:8000};stale.ks.care=8000;stale.kh.care='x';   // an older app changed Care (no entry stamps for it)
   ok(JSON.stringify(K.mergeSettings(stale,sb).care)==='{"suit":1}','a setting an older app changed counts whole, as before');
+  // own materials (2026-11-16): settings.ownMaterials {type: [name]} entry by entry, app and worker
+  {const om=(f,t,start)=>{const s=K.keySettings(J(start||sbase));f(s);return K.stampSettings(s,t)};
+    const ma=om(s=>{s.ownMaterials={shirt:['cupro']}},5000),mb=om(s=>{s.ownMaterials={shirt:['ramie'],tie:['tussah silk']}},6000);
+    const mr=both({settings:ma},{settings:mb},m=>JSON.stringify(m.settings.ownMaterials));
+    ok(same(mr)&&mr[0]==='{"shirt":["cupro","ramie"],"tie":["tussah silk"]}','own materials added on two phones (none before): both kept, app and worker '+JSON.stringify(mr[0]));
+    const both0=K.mergeSettings(ma,mb),gone=om(s=>{s.ownMaterials={...s.ownMaterials,shirt:['ramie']}},7000,both0),later=om(s=>{s.ownMaterials={shirt:['cupro','ramie','tencel blend'],tie:['tussah silk']}},8000,both0);
+    const gr=both({settings:gone},{settings:later},m=>JSON.stringify(m.settings.ownMaterials));
+    ok(same(gr)&&gr[0]==='{"shirt":["ramie","tencel blend"],"tie":["tussah silk"]}','one removed on one phone goes, one added later on another stays '+JSON.stringify(gr[0]));
+    ok(K.mergeSettings(ma,mb).ownMaterials&&JSON.stringify(K.mergeSettings(K.mergeSettings(ma,mb),mb).ownMaterials)===JSON.stringify(K.mergeSettings(ma,mb).ownMaterials),'merging again keeps the same list')}
 
   /* ---- days slot by slot (W1-5-02) ---- */
   const D='2026-11-16',dbase={date:D,ids:{top:'s1',shirt:'w',tie:'red',belt:'bb'},updated:2000};

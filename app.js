@@ -229,8 +229,12 @@ async function ask(c,extra){
 /* an AI tag -> the fields the Add form uses (type-checked, colours and patterns normalised) */
 const ownColorsOf=o=>{const f=c=>c&&/^#[0-9a-f]{6}$/i.test(c.hex||'')&&/[a-z]{2}/i.test(c.name||'')?{name:String(c.name).toLowerCase().replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim().slice(0,24),hex:c.hex.toLowerCase()}:null;
   return o&&typeof o==='object'&&f(o.primary)?{primaryColor:f(o.primary),secondaryColor:f(o.secondary),tertiaryColor:f(o.tertiary)}:null};
-const matTag=p=>{const m=p&&p.material,t=TYPES[p&&p.type]?p.type:'suit',k=m&&typeof m==='object'?String(m.key||'').toLowerCase().trim():'';
-  return k&&k!=='none'&&(MATERIALS_BY[t]||[]).includes(k)&&(m.confidence==='high'||m.confidence==='medium')?{key:k,conf:m.confidence,why:String(m.why||'').replace(/\s+/g,' ').trim().slice(0,160)}:null};
+/* Claude's material -> {key, conf, why} (+ new:true for one on no list, 2026-11-16), or null. On the type's list or the person's own: any
+   confidence (low is shown as a guess, never filled in: tagging.js takeMaterial); a new one only at medium or high, with a valid name */
+const matTag=p=>{const m=p&&p.material,t=TYPES[p&&p.type]?p.type:'suit',k=m&&typeof m==='object'?String(m.key||'').toLowerCase().replace(/\s+/g,' ').trim():'';
+  if(!k||k==='none'||!MATERIALS_BY[t])return null;const conf=['high','medium','low'].includes(m.confidence)?m.confidence:'low',why=String(m.why||'').replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,160);
+  if(matsFor(t).includes(k))return {key:k,conf,why};
+  const n=ownMatName(k);return n&&m.new===true&&conf!=='low'?{key:n,conf,why,new:true}:null};
 function normTag(parsed,model){
     return {
       type:TYPES[parsed.type]?parsed.type:'suit',
@@ -243,7 +247,7 @@ function normTag(parsed,model){
       trouserKind:['chinos','jeans','dress'].includes(parsed.trouserKind)?parsed.trouserKind:null,shoeStyle:SHOE_STYLES.some(([k])=>k===parsed.shoeStyle)?parsed.shoeStyle:null,
       model:model||'',
       dial:normCol(parsed.dial),band:['bracelet','leather','rubber','nato'].includes(parsed.band)?parsed.band:null,
-      // the material Claude suggests (2026-11-15, worker cleanMaterial): only one from the type's list, and only when sure enough (high or medium)
+      // the material Claude suggests (2026-11-15, worker cleanMaterial): from the type's list or the person's own (low kept as a guess), or a new one (matTag)
       material:matTag(parsed),bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
       // how sure it was, its runner-up, and what it would add when nothing listed fits (single-item tags)
       conf:parsed.confidence&&typeof parsed.confidence==='object'?parsed.confidence:null,

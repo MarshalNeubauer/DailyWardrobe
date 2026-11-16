@@ -487,6 +487,7 @@ async function rdRun(src,id){const it=rdItem(src,id);if(!it||!it.texture)return;
   const me=rd={src,id,run:Date.now()+Math.random(),state:'busy',c:null,p:null,sent:null,ac:typeof AbortController==='function'?new AbortController():null};
   rdOpen();rdRender();
   const body={what:'both',type:it.type,colours:{main:primaryCol(it),second:it.secondaryColor||null,third:it.tertiaryColor||null},pattern:normPat(it.type,it.pattern),custom:settings.custom||{}};
+  const om=ownMats(it.type);if(om.length)body.ownMaterials={[it.type]:om};   // the person's own materials for this type (2026-11-16): Claude may name them
   await paperOf(it);const cp=await paperCopy(it),pr=paperNow(it);body.closeup=cp.closeup;body.wb=cp.wb;me.sent={wb:cp.wb,warm:!cp.wb&&!!(pr&&pr.warm)};
   if(rd!==me)return;
   const w=localStorage.getItem('worker_url')||'';let r=null,j={};
@@ -499,10 +500,15 @@ async function rdRun(src,id){const it=rdItem(src,id);if(!it||!it.texture)return;
   rdRender(true);rdRefresh(src,id)}
 /* the material (2026-11-15, the materials audit; the worker's pattern half gives it, held to its tier): a third card only when Claude is
    high or medium on one of the type's materials that the item doesn't already have; null otherwise (low, "none", an older worker) */
-function rdMatOf(it,m){const l=MATERIALS_BY[it.type];if(!m||m.error||!l||!l.includes(m.key)||(m.confidence!=='high'&&m.confidence!=='medium'))return null;
-  const cur=String(it.material||'').trim();if(cur.toLowerCase()===m.key)return null;return {r:m,key:m.key,name:cap1(m.key),cur:cur==='other'?'':cur,done:null}}
-/* its action for "Use all": set it when the item has no material; one the owner set is never changed by Use all (the card's own Use does) */
-const rdMatMain=(it,x)=>x.cur?null:'use';
+/* (2026-11-16, the owner's approved additions) one of the person's own materials counts as listed; a material on no list (m.new, medium or
+   high) is offered to add ("Add cupro as a material", isNew); a listed one at low confidence is Claude's guess (guess) with its own Use */
+function rdMatOf(it,m){const l=matsFor(it.type);if(!m||m.error||!l||!m.key||m.key==='none')return null;const key=String(m.key).toLowerCase().trim(),hi=m.confidence==='high'||m.confidence==='medium';
+  const cur=String(it.material||'').trim();if(cur.toLowerCase()===key)return null;const base={r:m,key,name:cap1(key),cur:cur==='other'?'':cur,done:null};
+  if(l.includes(key))return hi?base:{...base,guess:true};
+  return m.new===true&&hi&&ownMatName(key)===key?{...base,isNew:true}:null}
+/* its action for "Use all": set it when the item has no material; one the owner set is never changed by Use all (the card's own Use does);
+   a guess or a new material never (adding or a guess is always its own tap) */
+const rdMatMain=(it,x)=>x.cur||x.guess||x.isNew?null:'use';
 /* the halves, as the New color / New pattern sheets read them: {na} when it failed or isn't cloth */
 function rdColOf(c){if(!c||c.error)return {na:'fail'};if(c.kind!=='colour'&&c.kind!=='several')return {na:c.kind==='not-clothing'?'cloth':'fail'};
   const hex=cnHex(c.hex);if(!hex)return {na:'fail'};const ex=c.existing&&COLORS[c.existing]?c.existing:null,d=+c.dE||0;
@@ -588,6 +594,11 @@ ${me.sent&&me.sent.wb===false?'<p class="cnwhy">No white paper needed for this: 
 function rdMatCard(it,me){const x=me.m;if(!x)return '';
   if(x.done){const cur=String(it.material||'').trim();return `<div class="rdcard done" id="rd-mat"><span class="rddtx"><span class="cneyebrow">Material</span><b>${x.done==='keep'?(cur?`Kept ${esc(cap1(cur))}`:'Left blank'):`${esc(x.name)} set`}</b></span>${x.done==='keep'?`<button type="button" class="rdlink" onclick="rdChange('m')">Change</button>`:`<button type="button" class="rdlink" id="rd-mat-undo" onclick="rdUndo('m')">Undo</button>`}</div>`}
   const why=x.r.why?`<p class="cnwhy">“${esc(x.r.why)}”</p>`:'',yours=x.cur?cap1(x.cur):'';
+  const keepB=`<button type="button" class="cpaskbtn ghost" id="rd-mkeep" onclick="rdKeep('m')">${yours?`Keep ${esc(yours)}`:'Keep blank'}</button>`;
+  if(x.isNew)return `<div class="rdcard rdmatnew" id="rd-mat"><div class="cnreshd"><span><span class="cneyebrow">Material <span class="rdtag">New</span> <span class="rdtag">${esc(x.r.confidence)} confidence</span></span><b>Claude calls it ${esc(x.key)}</b><small>None of the ${esc(matTypeWord(it.type))} materials fit${yours?`; yours is ${esc(yours)}`:''}.</small></span></div>${why}
+<div class="rdbtns">${keepB}<button type="button" class="cpaskbtn" id="rd-muse" onclick="rdUse([['m','add']])">Add ${esc(x.key)} as a material</button></div><p class="rdfoot">Adding puts it in the list for every ${esc(matTypeOne(it.type))} you add, on all your devices. Use all leaves it.</p></div>`;
+  if(x.guess)return `<div class="rdcard rdmatguess" id="rd-mat"><div class="cnreshd"><span><span class="cneyebrow">Material <span class="rdtag">Guess</span></span><b>Claude’s guess: ${esc(x.key)}</b><small>${x.r.why&&String(x.r.why).length<=60?esc(String(x.r.why).replace(/[.\s]+$/,'')):'Can’t be sure from a photo'}. Use all leaves it.</small></span></div>
+<div class="rdbtns">${keepB}<button type="button" class="cpaskbtn" id="rd-muse" onclick="rdUse([['m','use']])">Use ${esc(x.key)}</button></div></div>`;
   return `<div class="rdcard" id="rd-mat"><div class="cnreshd"><span><span class="cneyebrow">Material <span class="rdtag">${esc(x.r.confidence)} confidence</span></span><b>${yours?`Yours: ${esc(yours)} · Claude: ${esc(x.name)}`:`Material: ${esc(x.name)}`}</b>${yours?'<small>Use switches it to Claude’s; Use all keeps yours.</small>':''}</span></div>${why}
 <div class="rdbtns"><button type="button" class="cpaskbtn ghost" id="rd-mkeep" onclick="rdKeep('m')">${yours?`Keep ${esc(yours)}`:'Keep blank'}</button><button type="button" class="cpaskbtn" id="rd-muse" onclick="rdUse([['m','use']])">Use ${esc(x.name)}</button></div></div>`}
 const RD_HALVES=['c','p','m'];
@@ -622,11 +633,11 @@ const rdPick=(it,fields)=>Object.fromEntries(fields.map(k=>[k,it[k]==null?it[k]:
 async function rdSet(src,id,k,v){if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i<0)return;const q=queue[i];if(k==='primaryColor')q.newColor=null;else q.newPattern=null;setq(i,k,v)}else await sete(id,k,v)}
 async function rdUse(parts){const me=rd;if(!me||me.state!=='result'||me.applying)return;const it=rdItem(me.src,me.id);if(!it)return;me.applying=true;
   try{for(const [h,how] of parts){const x=me[h];if(!x||x.na||x.done)continue;const now=rdItem(me.src,me.id)||it,prev=rdPick(now,h==='c'?RD_COLF:h==='m'?['material']:RD_PATF);let v,added=false,name;
-      if(h==='m'){v=x.key;name=x.name;await rdSetMat(me.src,me.id,v)}
+      if(h==='m'){v=x.key;name=x.name;if(x.isNew){const had=matsFor(now.type).includes(v);if(!await addOwnMaterial(now.type,v))throw new Error('That material couldn’t be added.');added=!had}await rdSetMat(me.src,me.id,v)}
       else{if(how==='existing'){v=x.ex;name=h==='c'?cap1(colName(v)):cap1(patName(v))}else{const a=h==='c'?await rdAddCol(now,x):await rdAddPat(now,x);v=a.key;added=a.added;name=x.name}
         await rdSet(me.src,me.id,h==='c'?'primaryColor':'pattern',v)}
       x.done='used';x.usedName=name;
-      if(!rdLast||rdLast.run!==me.run)rdLast={src:me.src,id:me.id,run:me.run,c:null,p:null,m:null};rdLast[h]={prev,added:added?v:null,name,kind:h==='c'?'colors':'patterns'}}}
+      if(!rdLast||rdLast.run!==me.run)rdLast={src:me.src,id:me.id,run:me.run,c:null,p:null,m:null};rdLast[h]={prev,added:added?v:null,name,kind:h==='c'?'colors':h==='m'?'materials':'patterns',type:now.type}}}
   catch(e){me.applying=false;toast(e.message||'That could not be set.');rdRender();return}
   me.applying=false;rdAfter()}
 /* the material set by the reading: the Add card's field (setQField: it then counts as chosen) or the item's (setItemField) */
@@ -645,11 +656,12 @@ function rdAfter(){const me=rd;if(!me)return;const left=RD_HALVES.filter(h=>me[h
 async function rdRestore(src,id,half){const it=rdItem(src,id);
   if(it){for(const [k,v] of Object.entries(half.prev)){if(v===undefined)delete it[k];else it[k]=v}
     if(src==='q'){if(it.texCanvas)generateSwatch(it);if(typeof addKeep==='function')queueMicrotask(addKeep)}else{if(it.swSrc==='tex')await refreshSwatch(it);await put(it);cache={}}}
+  if(half.kind==='materials'){if(half.added&&![...items,...queue].some(x=>x&&x.type===half.type&&x.material===half.added))await removeOwnMaterial(half.type,half.added);return}   // (an own material this reading added)
   if(half.added&&![...items,...queue].some(x=>x&&[x.primaryColor,x.secondaryColor,x.tertiaryColor,x.pattern].includes(half.added)))await removeCustom(half.kind,half.added)}
 async function rdUndo(h){const L=rdLast;if(!L||!L[h])return;const half=L[h];L[h]=null;await rdRestore(L.src,L.id,half);
   if(rd&&rd.run===L.run&&rd[h])rd[h].done=null;if(!L.c&&!L.p&&!L.m&&rdLast===L)rdLast=null;rdRefresh(L.src,L.id);if(rd)rdRender()}
 async function rdUndoAll(){const L=rdLast;if(!L)return;for(const h of ['m','p','c'])if(L[h])await rdUndo(h);toast('Put back as it was.')}
 /* the card left on the page after a reading set something: the new drawing, what changed, Undo */
 function rdDoneHtml(src,id,it){const L=rdLast;if(!L||L.src!==src||L.id!==id||(!L.c&&!L.p&&!L.m)||(rd&&rd.run===L.run))return '';it=it||rdItem(src,id);if(!it)return '';
-  const names=[L.c&&L.c.name,L.p&&L.p.name,L.m&&L.m.name].filter(Boolean),add=[L.c&&L.c.added&&'colors',L.p&&L.p.added&&'patterns'].filter(Boolean);
+  const names=[L.c&&L.c.name,L.p&&L.p.name,L.m&&L.m.name].filter(Boolean),add=[L.c&&L.c.added&&'colors',L.p&&L.p.added&&'patterns',L.m&&L.m.added&&'materials'].filter(Boolean);
   return `<div class="rddone" id="rd-done" role="status"><span class="rddraw" aria-hidden="true">${itemThumb({...it,photo:undefined})}</span><span class="rddtx"><b>${esc(names.join(' and '))} set</b>${add.length?`<small>Added to your ${add.join(' and ')}.</small>`:''}</span><button type="button" class="rdlink" id="rd-undo" onclick="rdUndoAll()">Undo</button></div>`}
