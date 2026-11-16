@@ -203,7 +203,7 @@ const patBtn=(src,ref,it)=>{const p=normPat(it.type,it.pattern),r=src==='q'?ref:
   return `<button type="button" class="colbtn patbtn" data-k="pattern" onclick="openColPick('${src}',${r},'pattern')" aria-haspopup="dialog"><span class="colchip patchip">${swatchSVG(patVar(it,p),true)}</span><span class="colnm">${esc(patTitle(p))}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
 const EP=(id,it)=>`<label class="colrow">Pattern ${patBtn('e',id,it)}</label>`;
 const PAT_GROUPS=[[['solid'],'Plain'],[['pinstripe','chalk-stripe','stripe','fine-stripe'],'Stripes'],[['glen-check','windowpane','check','gingham','tattersall','tonal-check','houndstooth'],'Checks'],
-  [['herringbone','birdseye','nailhead','sharkskin','twill','tweed','oxford','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','knit'],'Weaves'],[['polka-dot','paisley','foulard'],'Figures']];
+  [['herringbone','birdseye','nailhead','sharkskin','twill','tweed','oxford','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','knit'],'Weaves'],[['polka-dot','paisley','foulard','camouflage'],'Figures']];
 const patGroupOf=p=>{const b=patBase(p);const g=PAT_GROUPS.findIndex(([l])=>l.includes(b));return g<0?PAT_GROUPS.length:g};
 function patNewFor(it){const a=it&&colAsk[it.id+'|p'],o=a&&a.ownPattern;if(!o||o.fits||!o.name)return null;const key=ownPatKey(o.name);if(key.length<6)return null;
   if(CUSTOM_PAT[key]||Object.values(PATS_BY).some(l=>l.includes(key))||Object.values(PATS_BY).some(l=>l.some(p=>patName(p).toLowerCase()===o.name)))return null;

@@ -571,17 +571,18 @@ const motifPat=p=>MOTIF_PATS.includes(patBase(p)||'');
 /* patterns only Claude's reading can draw (the band reader would turn them into stripes) */
 /* a tie tagged woven or tonal check (2026-11-13): never read before, so painted plain; the owner's charcoal & grey woven tie is a grid of
    tiny light dots, which Claude reads as a motif (the tie painter draws motifs and bands; a pure weave, layout texture, stays plain) */
-const claudeOnly=(t,p)=>motifPat(p)||texPat(t,p)||tieWeave(t,p);
+const claudeOnly=(t,p)=>motifPat(p)||texPat(t,p)||tieWeave(t,p)||camoPat(p);   // (a camouflage: Claude's reading, else its colours clustered from the pixels, camoFromPixels; never the band reader)
 /* a card's pattern can be read: a band pattern, a weave Claude described, or a pattern only Claude can read (a motif, a shirt's weave) */
 const readable=(t,p,w)=>settable(t,p,w)||claudeOnly(t,p);
 /* Claude's reading drawn with the photo's colours: bands (stripes, checks, plaids) or a motif (small figures on a grid) */
 /* an answer of a shape it can't draw (2026-11-16: across without bands threw, and the Add card's Confirm stayed off) gives null: the
    pixel reader takes over, as when Claude sent nothing */
 const specSett=(spec,args)=>{try{return specSett1(spec,args)}catch(e){console.warn('pattern answer not drawn',e);if(typeof errNote==='function')errNote(e,'Pattern answer not drawn ('+(args&&args.type||'?')+', '+(spec&&(spec.texture?'texture':spec.motif?'motif':spec.across?'bands':spec.layout)||'?')+')');return null}};
-const specSett1=(spec,args)=>spec&&(spec.texture?(args.type==='shirt'||args.type==='tie'?texFromSpec(spec,args):null):spec.motif?motifFromSpec(spec,args):spec.across?settFromSpec(spec,args):null);
+const specSett1=(spec,args)=>spec&&(spec.camo?camoFromSpec(spec,args):spec.texture?(args.type==='shirt'||args.type==='tie'?texFromSpec(spec,args):null):spec.motif?motifFromSpec(spec,args):spec.across?settFromSpec(spec,args):null);
 function readSett(q){const ok=!q.settOff&&readable(q.type,q.pattern,q.weave)&&q.raw,args={full:q.raw&&q.raw.full,box:q.patternBox,tex:q.raw&&q.raw.tex,wb:q.wbOff?null:q.wb,type:q.type};q.settReject=null;
   let s=null;if(ok&&q.spec)s=specSett(q.spec,args);
   if(!s)s=ok&&!claudeOnly(q.type,q.pattern)?settFrom({full:q.raw.full,box:q.patternBox,tex:q.raw.tex,weave:q.weave,wb:q.wbOff?null:q.wb,type:q.type}):null;
+  if(!s&&ok&&camoPat(q.pattern))try{s=camoFromPixels(args)}catch(e){console.warn('camouflage not read',e)}   // no answer from Claude: its colours from the pixels
   const chk=settCheck(q.type,q.pattern,s);if(chk.reject){q.settReject=chk.reject;s=null}else s=chk.s;
   q.sett=s;return s}
 /* a band reading that contradicts the tag is not used (2026-11-14: the walkthrough's soft pinstripe close-up was read as level bands at
@@ -605,7 +606,7 @@ function missedPattern(q){if(!q||!q.raw||!q.raw.tex||(patBase(q.pattern)||'solid
       if(p&&!(PATS_BY[q.type]||[]).includes(p))p=null}}
   q.missed={c:q.raw.tex,p};return p}
 function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);if(q.meas)measureAndApply(q);renderAdd()}
-const settSummary=s=>s.tex?`a ${TEX_WORDS[s.tex.kind]||'woven texture'} (${s.tex.grid[0].length}×${s.tex.grid.length} repeat), read by Claude with the contrast from the close-up`:s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colors from the photo`:s.src==='claude+pixels'?`${s.bands.length} band${s.bands.length===1?'':'s'}${s.cross?' and lines the other way':''}, read by Claude with the colors from the photo`:`${s.bands.length} color band${s.bands.length===1?'':'s'}${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
+const settSummary=s=>s.camo?`camouflage in ${s.camo.cols.length} colors${s.src==='claude+pixels'?', read by Claude with the colors from the photo':s.src==='pixels'?', its colors from the photo':''}`:s.tex?`a ${TEX_WORDS[s.tex.kind]||'woven texture'} (${s.tex.grid[0].length}×${s.tex.grid.length} repeat), read by Claude with the contrast from the close-up`:s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colors from the photo`:s.src==='claude+pixels'?`${s.bands.length} band${s.bands.length===1?'':'s'}${s.cross?' and lines the other way':''}, read by Claude with the colors from the photo`:`${s.bands.length} color band${s.bands.length===1?'':'s'}${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
 function settNote(q,i){if(!readable(q.type,q.pattern,q.weave))return '';
   if(q.patternReading)return '<p class="tagnote mut"><small><span class="spin" aria-hidden="true"></span>Claude is reading the pattern…</small></p>';
   if(q.settOff)return `<p class="tagnote mut"><small>Drawn with the simple ${esc(patName(q.pattern))} pattern.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the pattern from the photo</button></p>`;
@@ -629,7 +630,7 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   const full=it.pbox?await toCanvas(await tagImgOf(it.id,it)):null,tex=await toCanvas(it.texture);
   let spec=null;const img=await tagImgOf(it.id,it)||it.photo;if(localStorage.getItem('worker_url')&&img){toast('Claude is reading the pattern…');spec=await claudePattern({image:img,closeup:await sharpCloseOf(it),type:it.type})}
   const full2=full||(it.photo?await toCanvas(it.photo):null);
-  const s=specSett(spec,{full:full2,box:it.pbox,tex,type:it.type})||(claudeOnly(it.type,it.pattern)?null:settFrom({full,box:it.pbox,tex,weave:it.weave,wb:null,type:it.type}));   // the kept copy is already white-balanced
+  const s=specSett(spec,{full:full2,box:it.pbox,tex,type:it.type})||(camoPat(it.pattern)?camoFromPixels({full:full2,box:it.pbox,tex}):claudeOnly(it.type,it.pattern)?null:settFrom({full,box:it.pbox,tex,weave:it.weave,wb:null,type:it.type}));   // the kept copy is already white-balanced
   if(spec){it.patternSpec=spec;if(spec.description)it.patternText=spec.description}
   const chk=settCheck(it.type,it.pattern,s);if(chk.reject){toast(`The reading showed ${chk.reject==='cross'?'lines crossing the stripes':'level bands'}, which isn't ${patName(it.pattern).toLowerCase()}: the pattern stays as it was.`);return}
   if(!chk.s){toast('No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.');return}
@@ -701,6 +702,49 @@ async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.ra
   try{if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
     readSett(q);if(q.meas)measureAndApply(q)}catch(e){console.warn('pattern answer not applied',e);q.specFailed=1;if(typeof errNote==='function')errNote(e,'Pattern answer not applied ('+q.type+')')}
   finally{if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}}
+
+/* ---- camouflage (2026-11-16, the owner's MultiCam pants): irregular blotches, no grid to read. Its colours come from the pixels: the
+   close-up (else the pattern's box in the photo, else the photo's middle) sampled at about CAMO_SAMPLE px and clustered in Lab (k-means,
+   seeded by the farthest-point rule, CAMO_K colours or as many as Claude named), clusters under CAMO_MIN of the cloth dropped (a seam, a
+   shadow), largest first, so the ground is the first. Claude's reading (POST /pattern layout camouflage) gives how many colours and how
+   big the blotches are (blobsAcrossItem: a camoField tile holds about CAMO_BLOBS across); without pixels, its own colours and shares.
+   -> {v:5, camo:{cols, shares, seed}, tr, cr, src} ---- */
+const CAMO_SAMPLE=110,CAMO_K=6,CAMO_FINE=10,CAMO_MIN=.03,CAMO_BLOBS=4,CAMO_MERGE=7,CAMO_AB=4;
+function camoFromPixels({tex,full,box},k=CAMO_K){
+  let src=tex||null;if(!src&&full){try{src=box?cropCanvas(full,box):full}catch{src=full}}
+  if(!src)return null;const W=src.width,H=src.height;
+  // the middle: a close-up's edges often hold the floor or a seam (the owner's MultiCam close-up had floor tiles down one side, read as a
+  // light grey "colour" of 27%), a whole photo's the room around the item
+  const m=box?.04:tex?.15:.2,cx=W*m,cy=H*m,cw=W-2*cx,ch=H-2*cy,S=Math.min(1,CAMO_SAMPLE/Math.max(cw,ch)),w=Math.max(8,Math.round(cw*S)),h=Math.max(8,Math.round(ch*S));
+  const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d',{willReadFrequently:true});if(!g)return null;g.drawImage(src,cx,cy,cw,ch,0,0,w,h);
+  const d=g.getImageData(0,0,w,h).data,px=[];for(let j=0;j<d.length;j+=4)px.push(rgbLab(d[j],d[j+1],d[j+2]));
+  // hue counts CAMO_AB times lightness: a muted sage green and a tan of the same lightness are different camouflage colours (with plain Lab
+  // distance the owner's greens joined the tan)
+  const dist=(a,b)=>(a[0]-b[0])**2+CAMO_AB*((a[1]-b[1])**2+(a[2]-b[2])**2);k=Math.max(2,Math.min(6,k|0));
+  // finely first (CAMO_FINE clusters), then down to k: a cluster holding sage green and a pinkish tan averages to grey (their hues cancel),
+  // which coarse clusters did on the owner's MultiCam
+  const kf=Math.max(k,CAMO_FINE);
+  const cen=[px[Math.floor(px.length/2)]];while(cen.length<kf){let far=null,fd=-1;for(let j=0;j<px.length;j+=3){const m=Math.min(...cen.map(c=>dist(px[j],c)));if(m>fd){fd=m;far=px[j]}}cen.push(far)}
+  let asg=new Int8Array(px.length);
+  for(let it=0;it<12;it++){const sum=cen.map(()=>[0,0,0,0]);for(let j=0;j<px.length;j++){let b=0,bd=1e9;for(let q=0;q<cen.length;q++){const dd=dist(px[j],cen[q]);if(dd<bd){bd=dd;b=q}}asg[j]=b;const S2=sum[b];S2[0]+=px[j][0];S2[1]+=px[j][1];S2[2]+=px[j][2];S2[3]++}
+    for(let q=0;q<cen.length;q++)if(sum[q][3])cen[q]=[sum[q][0]/sum[q][3],sum[q][1]/sum[q][3],sum[q][2]/sum[q][3]]}
+  const cnt=cen.map(()=>0);for(const a of asg)cnt[a]++;
+  // two clusters that came out nearly alike (within CAMO_MERGE ΔE00) are one colour, weighted by their pixels
+  let cs=cen.map((c,q)=>({lab:c,n:cnt[q]})).filter(x=>x.n);for(let merged=true;merged;){merged=false;
+    for(let a=0;a<cs.length&&!merged;a++)for(let b2=a+1;b2<cs.length&&!merged;b2++)if(dE00(cs[a].lab,cs[b2].lab)<CAMO_MERGE){const n=cs[a].n+cs[b2].n;cs[a]={lab:cs[a].lab.map((v,q)=>(v*cs[a].n+cs[b2].lab[q]*cs[b2].n)/n),n};cs.splice(b2,1);merged=true}}
+  // then the smallest into its nearest until k are left (the near ones are alike, so the hues it joins are close)
+  while(cs.length>k){cs.sort((a,b)=>a.n-b.n);const s0=cs.shift();let bi=0,bd=1e9;cs.forEach((x,q)=>{const dd=dist(x.lab,s0.lab);if(dd<bd){bd=dd;bi=q}});
+    const t2=cs[bi],n=t2.n+s0.n;cs[bi]={lab:t2.lab.map((v,q)=>(v*t2.n+s0.lab[q]*s0.n)/n),n}}
+  const cl=cs.map(x=>({hex:labHex(x.lab),share:x.n/px.length})).filter(x=>x.share>=CAMO_MIN).sort((a,b)=>b.share-a.share);
+  if(cl.length<2)return null;const t=cl.reduce((a,x)=>a+x.share,0);let h2=5381;for(const ch2 of cl.map(x=>x.hex).join(''))h2=(Math.imul(h2,33)+ch2.charCodeAt(0))>>>0;
+  return {v:5,camo:{cols:cl.map(x=>x.hex),shares:cl.map(x=>+(x.share/t).toFixed(3)),seed:h2%100000},tr:CAMO_TR,cr:1,src:'pixels'}}
+function camoFromSpec(spec,args){const m=spec&&spec.camo;if(!m||!Array.isArray(m.colours)||m.colours.length<2)return null;
+  const tr=Math.max(.5,Math.min(20,(+m.blobsAcrossItem||CAMO_TR*CAMO_BLOBS)/CAMO_BLOBS));
+  const fromPx=camoFromPixels(args,m.colours.length);
+  if(fromPx)return {...fromPx,tr,src:'claude+pixels'};
+  const cols=m.colours.filter(c=>/^#[0-9a-f]{6}$/i.test(c.hex||'')).sort((a,b)=>(+b.share||0)-(+a.share||0));if(cols.length<2)return null;
+  const t=cols.reduce((a,c)=>a+Math.max(.01,+c.share||0),0);let h=5381;for(const ch of cols.map(c=>c.hex).join(''))h=(Math.imul(h,33)+ch.charCodeAt(0))>>>0;
+  return {v:5,camo:{cols:cols.map(c=>c.hex.toLowerCase()),shares:cols.map(c=>+(Math.max(.01,+c.share||0)/t).toFixed(3)),seed:h%100000},tr,cr:1,src:'claude'}}
 
 /* ---- a motif (small figures on a grid: a neat or foulard, mini squares, dots) as Claude read it, each colour taken from its own
    pixels. A band reader can't draw these: it turns a checkerboard of mini squares into a diagonal plaid. Claude gives the grid,
