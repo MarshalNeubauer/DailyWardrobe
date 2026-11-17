@@ -241,8 +241,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - trousers have a kind (`item.trouserKind`: chinos or jeans; none = dress trousers) and shoes a style (`item.shoeStyle`: derby, loafer, boot, sneaker; none = oxford): `trouserKind(i)`, `shoeStyle(i)`, `TROUSER_KINDS`, `SHOE_STYLES`; `typeWord(i)` names them in `nm()` ("denim jeans", "brown loafers")
 - items from before have neither kind nor style and plan exactly as before (`tests/dress.test.js` GOLD unchanged)
 - `hasVest(i)`: a suit has a waistcoat only with `vest:'yes'`; while the wardrobe has no `settings.vestDef` (it is from before that rule) a suit with no value still has one, so nothing changes until its suits were given their value (dress.js)
-- swapping the belt brings shoes that match it, as swapping the shoes brings a belt (`FOLLOW.belt` in history.js: shoes and socks; the owner: with one belt per pair of shoes a belt swap took the belt off and said "None of your belts match")
-- when the other belts' shoes don't suit the outfit (a black suit wants black shoes), the swap or pick changes nothing and Today says why (`beltless` in history.js: the day planned with the record in memory only); `tests/picker.test.js`
+- swapping the belt brings shoes that match it, as swapping the shoes brings a belt (`FOLLOW.belt` in pickscore.js: shoes and socks; the owner: with one belt per pair of shoes a belt swap took the belt off and said "None of your belts match")
+- when the other belts' shoes don't suit the outfit (a black suit wants black shoes), the swap or pick changes nothing and Today says why (`beltless` in pickscore.js: the day planned with the record in memory only); `tests/picker.test.js`
 - the type `pants` is "Trousers" on screen (`TYPES`, packing list, Care); photo prompts still say "dress trousers"
 - colours always come from the item's tagged colours, matched by brightness rank, never from the photo, except an item's `sett`: it is read from the white-balanced sharp photo or close-up at the user's request, so its bands keep their measured colours
 - `PATS_BY` must stay in sync with the worker's prompt (worker/tag.js), and so must the per-type colour lists (`COLS_BY` / `DIAL_COLS` here = `TYPE_COLORS` / `DIAL_COLS` in worker/tag.js; `tests/colors.test.js` checks it)
@@ -329,7 +329,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the steps share the day through the object `dayPools` returns (`c`); each step copies what it needs into locals first (`const {day,suitDay,…}=c`), so the hot loops read locals as before
 - the step order is the planner's: each step `take`s its pieces, so rest counts the earlier steps' pieces as worn; don't reorder them
 - each real mistake is one test in planner.js, read by the planner, the score and the notes: `patsHard`, `shirtJacketHard`, `tieFlat` / `tieAsShirt` / `tieShirtHard`, `blackOnBlack`, `pantsAsJacket`, `oneColor`, and `shoeSuits` (`shoeScore` above `SHOE_LINE`, -50); `clothesHard` is built from them, and `rateOutfit`'s checks take their `hard` flag from them (their points and words stay in the check)
-- `accMetal(c, tie, watch, belt)`: a clip's or cufflinks' metal against the watch and buckle (enamel by the tie), used by `outfit()` and by the tests' fixed plan (history.js `fitRule`, which used `===` and no enamel rule before)
+- `accMetal(c, tie, watch, belt)`: a clip's or cufflinks' metal against the watch and buckle (enamel by the tie), used by `outfit()` and by the tests' fixed plan (pickscore.js `fitRule`, which used `===` and no enamel rule before)
 - `occTop(oc, j, season)`: a jacket's fit for an occasion (`formalTop` or `OCC[oc].top`), used by `jscore` and `fixedAhead`
 - stats.js `shoesWhyUnused` is the never-worn shoes sentence for `whyUnused` and dress.js `dressWhyUnused`
 - measured on the benchmark wardrobes (Chromium, a year planned, median of runs): planning time unchanged within noise; 63 plan-and-score hashes (9 wardrobes x 7 settings) identical before and after
@@ -477,7 +477,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `analysis.js`
 
-- analysis-worker.js also ranks the score card's day (a message with `rank`: the pools' items, the outfit's ids, the settings and the day; answers `{rank: id, res}` from `rankLooks`); history.js keeps that worker alive, What to buy starts its own
+- analysis-worker.js also ranks the score card's day (a message with `rank`: the pools' items, the outfit's ids, the settings and the day; answers `{rank: id, res}` from `rankLooks`); scorecard.js keeps that worker alive, What to buy starts its own
 - "what to buy" analysis (no DOM; runs in `analysis-worker.js`, a Web Worker): `runAnalysis(list, T, weeks, progress, onCat)` → `{v:2, base, cats:[{key, title, verdict, own, notes, recs}], top, occasions}`
 - `horizonKeys(T,weeks)`: the workdays from tomorrow to `weeks`×7 days ahead (today is left out, as on Insights, which counts the same days: stats.js `plannedDays`)
 - `evalPlan(list,T,weeks)` plans the next `SHOP_WEEKS` (26) with the real `dayRecs` (history, occasions) and measures it: score, problem notes, jacket rest, colour/tie/look repeats, shoes worn two days running, first-choice shoe days, pieces never planned, points lost per check
@@ -1015,6 +1015,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `history.js`
 
+- which file holds what (Round C, 2026-11-17: history.js split by job, every line moved verbatim, only the headers new; loaded in this order right after history.js, in index.html and sw.js `ASSETS`): history.js (saving a day `saveDay`, `recordDays`, Suggest another `swapSlot`, the piece picker sheet `openPicker`/`pickItem`, correcting a past day, occasions, Reset, the vest, `notAhead`, `dropLearn`, Start the plan over `replanFuture`/`replanButton`, the planning rules' check, `dayActions`/`resetCard`; every writer of `swapMsg`, `picker` and `pastEdit`), missed.js (the missed-days toast and card), locks.js (`lockUpcoming`, `releaseLocks`, `clearLocks`, `careUnlock`, `unlockClash`), pickscore.js (`keepOff`, `FOLLOW`, `beltless`, the picker's ranking `slotPool`/`handPool`/`pickScores`/`fitOf`/`fitRule`/`fitTag`/`pickSub`, `suggestClean`), scorecard.js (the dials, the rank worker, Why, swaps, the week's variety, `scoreCard`, `toggleScore`), boxfold.js (`boxUnfold`, `boxFold`, `foldEdge`, also used by month.js and today.js)
+- a top-level `let` stays in the file of every function that assigns it (`tests/globals.test.js` counts writes by file and its list only shrinks); none of these files runs code at load but `backOn('pick', …)` (history.js) and literal initializers
+
 #### The score card
 
 - the score card is five dials (2026-11-17, the owner's approved design, `C:\code\audit-2026-11-13\score-ideas\score-dials.html`; `scoreCard`, `dialHtml`): Harmony, Texture, Freshness, Variety, Occasion, 0-100 each, a ring with the number inside and the name under it, in a `#sbox` fold box like `#ibox`/`#mbox` (`toggleScore`, `scoreOpen`); no rank tile, no badge
@@ -1055,7 +1058,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Settings' Re-plan upcoming days (`replanFuture()`) clears the locks and the picks too, without counting them as days reset
 - the planning rules a phone last planned by are its own (fix round 3, W1-1-01 = W1-4-01 = W1-2-06): localStorage and meta `plan_rules` (`PLAN_RULES_KEY`, never synced; `planRulesNote` writes both; localStorage is read first, and the database only when there is something to re-plan (a lock or a recorded piece after today), so start-up waits for nothing extra: an extra database read moved start-up's `refreshToday` into tests' animations on WebKit; with nothing to re-plan the number is just noted); `planRulesCheck` reads `settings.planRules` only when the phone has no number of its own yet (from before) and never writes it: in the synced settings a joining phone took the backup's old number and re-planned on its second start, a phone on an older version sent its lower number back with every settings save, and a roll-back brought one back; tests set `planRulesNote(n)` (or both stores); `tests/weeklock.test.js`
 - a swap or pick whose new piece is held by a lock on the next workdays (its tie on any of the next three, its shirt or jacket on the next) lets go of every lock after that day (`unlockClash`, 2026-11-15): two ties, today's swapped, and the next two locked days kept that tie; no clash, nothing changes
-- every lock release but a rules bump's goes through `releaseLocks(which, mine)` (history.js; `clearLocks`, `lockPast`, `unlockClash`, and `careUnlock` through `clearLocks`): only `rec.lock` goes, saved lock-only; a kept trip and a day marked worn keep theirs (the code review CR-3-05: `unlockClash` lacked the trip guard, so a pick today unlocked a kept trip); `replanFuture(true)` keeps its own loop, since it also drops the app's recorded pieces
+- every lock release but a rules bump's goes through `releaseLocks(which, mine)` (locks.js; `clearLocks`, `lockPast`, `unlockClash`, and `careUnlock` through `clearLocks`): only `rec.lock` goes, saved lock-only; a kept trip and a day marked worn keep theirs (the code review CR-3-05: `unlockClash` lacked the trip guard, so a pick today unlocked a kept trip); `replanFuture(true)` keeps its own loop, since it also drops the app's recorded pieces
 - `lockUpcoming`'s stale-lock check uses the planner's pool (no hand-pick pieces, in rotation that day), as `planSim` does: adding cargo pants no longer re-wrote the week's locks (CR-3-14)
 - past workdays recorded because the app wasn't opened on them (after the first day used for real) are said once in a toast with "I didn't wear them" (`missedNote`/`missedTell`/`missedNotWorn`, 2026-11-15, the audit's week away); `tests/planner-rules.test.js`
 - they also stay on Today as a card under the month on the home day (`missedCard`/`missedOpen`, `#missbox`, fix round 2: the toast was the only way): the `rec.auto` days of the last `MISSED_KEEP` (30) days after the first real use, still worn and not corrected; "I didn't wear them" marks them, "Keep as worn" hides them on this phone (localStorage `missed_ok`, the last day covered); `missedTell` puts the card in at once without drawing Today again (`missedPut`: a redraw cut off unfolding boxes, `tests/folds.test.js` on WebKit); `tests/planner-rules.test.js`
@@ -1088,6 +1091,14 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a past day can be corrected to what was really worn (`togglePastEdit`/`correctPast`: the record gets `edited`, `worn:true` and the real ids)
 
 ### `today.js`
+
+- Today is five files (Round C, 2026-11-17: split by job, no behavior change), loaded in this order after history.js in index.html and listed in sw.js `ASSETS`; the code moved line for line, nothing renamed; the facts below and under "Today (today.js)" stay where they are
+- today-plan.js: the month's plan and its cache (`cache`, `planDirty`, `planMonth`, `planFor`, `planRuns`), the days before the wardrobe (`planStartDay`, `planTrim`) and the kept month (`PLAN_SNAP`, `planSig`, `snapOut`/`snapIn`, `planSnapUse`, `planSnapSoon`)
+- today.js: `recordRun` and `planSnapCheck`, `wxPreload`, the pieces list (`slots`, `toggleRow`, `setOff`, `restWarn`, `piecesBox`, `toggleList`), the figure and its tiles (`figureStage`, `pickPiece`, `swatchStack`, `wornBar`, `wornPill`, `wxFit`), a new day (`newDayCheck`, `keepHome`, `homeDay`, `goToday`), `renderToday`, `todaySay`, `foldAll`, `stepDay` and `planWith`
+- today-photofold.js: a piece's photo opening and shutting (`picOpen`, `picShut`, `picSnap`, `picOpenReady`)
+- today-picture.js: the cloth swatches' makers (`ovlPiece`, `ovlSuitPng`, `ovlHbShirt`, `ovlCuSuit`), the double-tap zoom (`zoom`, `toggleZoom`, `applyZoom`) and a swatch up close (`swOpen`, `swApply`, `swTap`, `swClose`), with their listeners on `#today`
+- today-gestures.js: swiping days (`fly`, `flyGo`, `todayBusy`, `todayFree`, `todayCovered`, the swipe listeners) and moving an outfit in the month (`outfitMove`, `moveRecs`, `showPlan`, the hold-and-drag listeners)
+- what writes another file's state (`sel`, `view`, `monthOpen`, `scoreOpen`, `dayRecs`, `weather`, `climate`) and the state its writers share (`openRow`, `belowOpen`, `listOpen`, `foldQuiet`, `recordRun`) stayed in today.js, so `tests/globals.test.js` needed no new allowance; the listeners are added in the same order as before
 
 #### Layout
 

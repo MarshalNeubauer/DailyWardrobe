@@ -436,12 +436,15 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
   ok(userKeys()===0,'the queue deletes the rest');
 
   // ---- W2-14-03: the daily copies carry their item counts
+  // (yesterday and today by the server's UTC date: the server takes a phone's day only within a day of its own, so the fixed Nov 15 and
+  // Nov 16 of before failed from Nov 18 00:00 UTC on)
+  const utcDay=k=>new Date(Date.now()+k*864e5).toISOString().slice(0,10),dY=utcDay(-1),dT=utcDay(0);
   const L1=await (await call('sync?lite=1')).json();
-  await call('sync',{method:'POST',body:JSON.stringify({baseRev:L1.rev,baseSaved:L1.saved,day:'2026-11-15',delta:{items:[{id:'o1',type:'tie',primaryColor:'navy',pattern:'solid',updated:1},{id:'o2',type:'tie',primaryColor:'green',pattern:'solid',updated:1}],days:[],tombstones:{}},photos:{}})});
+  await call('sync',{method:'POST',body:JSON.stringify({baseRev:L1.rev,baseSaved:L1.saved,day:dY,delta:{items:[{id:'o1',type:'tie',primaryColor:'navy',pattern:'solid',updated:1},{id:'o2',type:'tie',primaryColor:'green',pattern:'solid',updated:1}],days:[],tombstones:{}},photos:{}})});
   const L2=await (await call('sync?lite=1')).json();
-  await call('sync',{method:'POST',body:JSON.stringify({baseRev:L2.rev,baseSaved:L2.saved,day:'2026-11-16',delta:{items:[{id:'o3',type:'tie',primaryColor:'red',pattern:'solid',updated:2}],days:[],tombstones:{}},photos:{}})});
-  const sn=(await (await call('sync?snaps=1')).json()).snaps,s16=sn.find(s=>s.id==='2026-11-16');
-  ok(s16&&s16.n===2,`the copy for Nov 16 says it holds 2 items (${JSON.stringify(sn)})`);
+  await call('sync',{method:'POST',body:JSON.stringify({baseRev:L2.rev,baseSaved:L2.saved,day:dT,delta:{items:[{id:'o3',type:'tie',primaryColor:'red',pattern:'solid',updated:2}],days:[],tombstones:{}},photos:{}})});
+  const sn=(await (await call('sync?snaps=1')).json()).snaps,s16=sn.find(s=>s.id===dT);
+  ok(s16&&s16.n===2,`the copy for ${dT} (today, UTC) says it holds 2 items (${JSON.stringify(sn)})`);
   // (the lead's check on final main) a phone whose date is already tomorrow (east of UTC, late evening) still gets that day's copy, listed
   const tmr=new Date(Date.now()+864e5).toISOString().slice(0,10),L3=await (await call('sync?lite=1')).json();
   await call('sync',{method:'POST',body:JSON.stringify({baseRev:L3.rev,baseSaved:L3.saved,day:tmr,delta:{items:[{id:'o4',type:'tie',primaryColor:'green',pattern:'solid',updated:3}],days:[],tombstones:{}},photos:{}})});
@@ -486,9 +489,11 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
     ok(!r3.ok1&&!r3.ok2&&r3.pause>Date.now()&&/too large for the server/.test(r3.st)&&!/HTTP|413/.test(r3.st)&&A.ctx.posts.length===1,`one item too large: paused with plain words, sent once only (${A.ctx.posts.length} POST; “${r3.st}”)`);
     // W1-10-03 / W1-10-04: the pause's end in local time; Connection doesn't say "backed up" while paused
     // a pause ending later today, whatever the hour the test runs: 30 minutes from now, or 23:59 when that would be tomorrow (it was
-    // 23:00 today, already past between 23:00 and midnight, so the check failed then); its words are the same minute as the US clock reads it
+    // 23:00 today, already past between 23:00 and midnight, so the check failed then); its words are the same minute as the US clock reads it.
+    // The pause "tomorrow" is 00:30 tomorrow: at most 24.5 hours off (25.5 over a clock change), as a real pause (next UTC day) never is more
+    // than a day; it was 03:00 tomorrow, over 26 hours off between 00:00 and 01:00, which syncPaused lets go as set by a wrong clock
     const pz=await A.evaluate(()=>{const now=new Date(),later=new Date(+now+30*60e3);if(later.getDate()!==now.getDate()){later.setTime(+now);later.setHours(23,59,59,0)}
-      const at=later.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});const tom=new Date(Date.now()+864e5);tom.setHours(3,0,0,0);
+      const at=later.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});const tom=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,0,30);
       localStorage.setItem('sync_pause',+later);const a=backupSummary('x');localStorage.setItem('sync_pause',+tom);const b=backupSummary('x');const w=backedUpWords();localStorage.removeItem('sync_pause');return {a,b,w,at,w2:backedUpWords()}});
     const atRe=new RegExp('^Paused until '+pz.at.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s/g,'\\s?'));
     ok(atRe.test(pz.a)&&/^Paused until tomorrow/.test(pz.b),`"Paused until" says the real time when it is today (“${pz.a}” / “${pz.b}”, ${pz.at} expected)`);
