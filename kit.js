@@ -93,15 +93,15 @@ let kitBatch=null,kitQuiet=false;
 const KIT_UNDO_MS=8000;
 function kitSaved(it,q,i,copies){if(kitQuiet)return;const now=Date.now(),more=(copies||[]).map(c=>c.id);
   if(!kitBatch||now-kitBatch.at>1500)kitBatch={its:[],qs:[],at:now};kitBatch.its.push(it.id,...more);kitBatch.qs.push({q,i});kitBatch.at=now;const b=kitBatch,n=b.its.length;
-  // one card with copies (add.js qtyRow): "Saved 3: White."
-  const t=savedTitle(it);   // "Saved: Grey suit." (it said "Saved: Grey.": add.js)
+  // one card with copies (add-more.js qtyRow): "Saved 3: White."
+  const t=savedTitle(it);   // "Saved: Grey suit." (it said "Saved: Grey.": add-save.js)
   toast(n===1?`Saved: ${t}.`:b.qs.length===1?`Saved ${n}: ${t}.`:`Saved ${n} items.`,KIT_UNDO_MS,{label:'Undo',fn:()=>kitUnsave(b)})}
 async function kitUnsave(b){if(!b)return;
   if(b.its.length>30)toast(`Taking out ${b.its.length} items…`,15000);   // (an import's Undo: said at once, done in one go)
-  // the cards go back on Add and are kept (add.js addKeep) BEFORE the items are deleted: deleted first, a kill within the keep's timer
+  // the cards go back on Add and are kept (add-keep.js addKeep) BEFORE the items are deleted: deleted first, a kill within the keep's timer
   // lost the item from both (audit 2026-11-15 re-run); a kill between the two leaves the items, and the kept cards of saved items are dropped
   const back=[];for(const {q,i} of b.qs.slice().reverse()){if(!q||queue.includes(q))continue;delete q.busy;queue.splice(Math.min(i,queue.length),0,q);back.push(q)}
-  for(const q of back)if(!q.raw)await addRevive(q);   // its canvases, let go when it was saved (add.js saveCard): the swatch box and the close-up's reading come back (CR-1-03)
+  for(const q of back)if(!q.raw)await addRevive(q);   // its canvases, let go when it was saved (add-save.js saveCard): the swatch box and the close-up's reading come back (CR-1-03)
   if(back.length)await addKeep();
   try{await kitDelMany(b.its,b.olds||[])}catch(e){for(const q of back){const k=queue.indexOf(q);if(k>=0)queue.splice(k,1)}if(back.length)addKeep();throw e}
   if(kitBatch===b)kitBatch=null;planDirty();todayDirty();if(b.qs.length)multiMsg('');   // ("Saved 5 items to your wardrobe." stayed over the cards Undo brought back)
@@ -116,9 +116,9 @@ const kitTx=(stores,f)=>dbRetry('readwrite',d=>new Promise((ok,no)=>{const t=d.t
   try{f(t)}catch(e){try{t.abort()}catch{}no(dbMark(e,'readwrite'));return}t.oncomplete=()=>ok()}));   // (a write that throws part-way stores none of it)
 function kitTombs(t,ids,now){if(!ids.length)return;const m=t.objectStore('meta'),q=m.get('tombstones');
   q.onsuccess=()=>{const v={...(q.result&&q.result.v||{})};for(const id of ids)v[id]=Math.max(v[id]||0,now);m.put({k:'tombstones',v})}}
-/* a failed write is said, as Confirm says it (add.js save) */
+/* a failed write is said, as Confirm says it (add-save.js save) */
 function kitFail(e){console.warn('save failed',e);if(storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000)}
-/* an item made from a card with no photo, as add.js saveCard makes one (a hand-added card: the fields it keeps for each type) */
+/* an item made from a card with no photo, as add-save.js saveCard makes one (a hand-added card: the fields it keeps for each type) */
 function kitItem(c){const f=hasPat(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:nowMs()};
   {const a=accentsOf(c);if(a.length)it.accents=a}   // an import's "Also has" colours
   // socks (2026-11-17): a plain sock's second colour is its toe cap, as a spreadsheet and the sample have always meant it; a patterned
@@ -390,7 +390,7 @@ function kitLastImp(){try{const l=JSON.parse(localStorage.getItem(KIT_IMP_LAST)|
 function kitLastRow(){const l=kitLastImp();if(!l)return '';const when=new Date(l.at).toLocaleDateString(undefined,{month:'short',day:'numeric'});
   return `<p class="kit-last" id="kit-last">Your last import (${when}): ${l.ids.length} item${l.ids.length===1?'':'s'} in your wardrobe${l.kept?` you haven't changed since`:''}. <button type="button" class="linkbtn" onclick="kitUnimport()">Take ${l.ids.length===1?'it':'them'} out</button></p>`}
 /* the import is a bottom sheet over Add (2026-11-15, the owner's choice from add-page-mockups): grabber, the table icon, the backdrop,
-   a swipe down closes it as ✕ (add.js sheetSwipe), at most 640 px wide; its content is as before */
+   a swipe down closes it as ✕ (sheet-swipe.js sheetSwipe), at most 640 px wide; its content is as before */
 const KIT_TABLE='<svg class="kit-hic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 4.5v15"/></svg>';
 let kitBsT=0,kitSwipeOn=false;
 function kitBd(){let b=$('#kit-backdrop');if(!b){b=document.createElement('div');b.id='kit-backdrop';b.onclick=()=>{if(kit&&!kitImpBusy)kitClose()};document.body.appendChild(b)}return b}

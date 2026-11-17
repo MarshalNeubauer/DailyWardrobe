@@ -1180,7 +1180,7 @@ main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add{display:none}
 }
 #ward-add svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;pointer-events:none}
 /* the Wardrobe's Undo (2026-11-17, the owner's pick from mockups): a round button like the +, 18px above it, a glowing gold ring running
-   down its seconds (--ud, set by settings.js undoFab); only while the Wardrobe shows, hidden under the item sheet, Settings and the sheets */
+   down its seconds (--ud, set by toast.js undoFab); only while the Wardrobe shows, hidden under the item sheet, Settings and the sheets */
 #undo-fab{display:none;position:fixed;z-index:var(--z-fab);bottom:calc(var(--navh) + 90px);right:max(calc(16px + env(safe-area-inset-right)), calc((100vw - 560px) / 2 + 16px));width:56px;height:56px;padding:0;border:0;border-radius:50%;background:var(--ink);color:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:.6875rem;font-weight:700;line-height:1;box-shadow:var(--fab-shadow);-webkit-tap-highlight-color:transparent}
 #wardrobe:not([hidden])~#undo-fab.on{display:flex}
 main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab{display:none}
