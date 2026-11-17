@@ -11,6 +11,7 @@ const fs=require('fs'),path=require('path');
 const TIMES_FILE=path.join(__dirname,'shard-times.json');
 const WK_HALF=' · WebKit';
 const JOBS=3;   // tests at once on one runner (GitHub's runner has 4 processors; tests/run.js runs one fewer)
+const WK_SETUP=40;   // seconds a runner spends installing WebKit's system packages (measured 39–43 s, 2026-11-18)
 
 const readTimes=(f=TIMES_FILE)=>{try{const t=JSON.parse(fs.readFileSync(f,'utf8'));return t&&typeof t==='object'?(t.times||t):{}}catch(e){return {}}};
 const median=a=>{if(!a.length)return 30;const s=a.slice().sort((x,y)=>x-y);return s[s.length>>1]};
@@ -21,14 +22,18 @@ function plan(keys,n,times=readTimes(),w=0){
   n=Math.max(1,n|0);w=Math.max(0,Math.min(n-1,w|0));
   const known=keys.map(k=>times[k]).filter(v=>typeof v==='number'&&v>0),dflt=median(known);
   const sec=k=>typeof times[k]==='number'&&times[k]>0?times[k]:dflt;
-  const shards=Array.from({length:n},()=>({keys:[],sum:0,max:0}));
-  const est=s=>Math.max(s.sum/JOBS,s.max);
+  const shards=Array.from({length:n},()=>({keys:[],sum:0,max:0,wk:false}));
+  // a runner with a WebKit half first installs WebKit's system packages (apt, about 40 s): that counts against it, so the WebKit
+  // halves gather on a few shards
+  const cost=(sum,max,wk)=>Math.max(sum/JOBS,max)+(wk?WK_SETUP:0);
+  const est=s=>cost(s.sum,s.max,s.wk);
   const groups=w?[[keys.filter(k=>!k.endsWith(WK_HALF)),shards.slice(0,n-w)],[keys.filter(k=>k.endsWith(WK_HALF)),shards.slice(n-w)]]:[[keys,shards]];
   for(const [list,pool] of groups){
     const order=list.slice().sort((a,b)=>sec(b)-sec(a)||(a<b?-1:a>b?1:0));
-    for(const k of order){const t=sec(k);let best=null,bc=0;
-      for(const s of pool){const c=Math.max((s.sum+t)/JOBS,Math.max(s.max,t));if(!best||c<bc-1e-9||(Math.abs(c-bc)<=1e-9&&s.sum<best.sum)){best=s;bc=c}}
-      best.keys.push(k);best.sum+=t;best.max=Math.max(best.max,t)}}
+    for(const k of order){const t=sec(k),w=k.endsWith(WK_HALF);let best=null,bc=0;
+      // the shard whose estimate ends lowest; a tie goes to the one with less in it, then the first
+      for(const s of pool){const c=cost(s.sum+t,Math.max(s.max,t),s.wk||w);if(!best||c<bc-1e-9||(Math.abs(c-bc)<=1e-9&&s.sum<best.sum)){best=s;bc=c}}
+      best.keys.push(k);best.sum+=t;best.max=Math.max(best.max,t);best.wk=best.wk||w}}
   // each shard keeps the run order of the full list
   const pos=new Map(keys.map((k,i)=>[k,i]));
   return shards.map(s=>({keys:s.keys.sort((a,b)=>pos.get(a)-pos.get(b)),sum:s.sum,est:est(s)}));
