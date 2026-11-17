@@ -14,7 +14,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const {stampSettings,stampAllSettings,keySettings,takeSettings,setKeys}=cx.K,J=o=>JSON.parse(JSON.stringify(o));
   const mem=keySettings({workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,vestMode:'always',laundryDays:2,holidays:{country:'DE',list:[]},updated:5});
   const snap=stampAllSettings({workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,updated:1},9000);
-  for(const k of setKeys(mem))if(!(k in snap)){snap.ks[k]=9000;snap.kh[k]='-'}   // as sync.js rollBackState marks them
+  for(const k of setKeys(mem))if(!(k in snap)){snap.ks[k]=9000;snap.kh[k]='-'}   // as snapshots.js rollBackState marks them
   const t=takeSettings(mem,J(snap));
   ok(!('holidays' in t)&&!('laundryDays' in t)&&t.vestMode==='auto'&&t.ks.vestMode===0,`a setting the stored copy marks removed leaves memory, or goes back to the app's default with stamp 0 (${JSON.stringify([t.holidays,t.laundryDays,t.vestMode,t.ks.vestMode])})`);
   const t2=stampSettings(J(t),9500);

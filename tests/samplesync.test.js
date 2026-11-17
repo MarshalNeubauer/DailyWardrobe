@@ -1,5 +1,5 @@
 // Fix round 3 (2026-11-16), the sample: pieces the earlier rule counted as his stay his after the update (W1-3-01, kitSampleMigrate),
-// days naming a sample piece go up with the sample taken out (W1-3-02, W1-3-03, sync.js syncShare), Remove the sample never replaces
+// days naming a sample piece go up with the sample taken out (W1-3-02, W1-3-03, kit.js kitShareFilter), Remove the sample never replaces
 // another phone's real record of a day (W1-6-04, KIT_YIELD) and has an Undo, and the server hands out and keeps no sample piece (W1-3-04,
 // worker/backup.js sampleOnly). The two-phone parts run the real worker.js in Node.
 const path=require('path'),{pathToFileURL}=require('url');
@@ -28,16 +28,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(!again,'it runs once per phone (kit_mine)');
     await p.evaluate(async()=>{await kitDelMany(items.map(i=>i.id))});
     /* ---- W1-3-02: what goes up ---- */
-    const sh=await p.evaluate(async(pd)=>{const past=eval(pd),T=todayDate(),tk=key(T),fut=new Date(T.getFullYear(),T.getMonth(),T.getDate()+3);
+    const sh=await p.evaluate(async(pd)=>{const share=(s,r)=>kitShareFilter(s,r||null,syncJoinAt()),past=eval(pd),T=todayDate(),tk=key(T),fut=new Date(T.getFullYear(),T.getMonth(),T.getDate()+3);
       const S=kitItem({type:'suit',primaryColor:'navy',pattern:'solid',sample:true}),M=kitItem({type:'tie',primaryColor:'green',pattern:'solid',sample:true}),O=kitItem({type:'shirt',primaryColor:'white',pattern:'solid'});M.sampleMine=1;
       const days=[{date:past[0],ids:{top:S.id,shirt:O.id,tie:M.id},worn:false,updated:5},{date:past[1],ids:{top:S.id},updated:6},{date:tk,ids:{top:S.id,shirt:O.id},updated:7},
         {date:key(fut),lock:{top:S.id,shirt:O.id},lockOnly:1,base:0,updated:8},{date:past[2],noOutfit:1,updated:KIT_YIELD},{date:past[3],ids:{top:O.id},updated:9},
         {date:past[4],ids:{top:S.id},worn:false,updated:20},{date:past[5],ids:{top:S.id},worn:false,updated:4},{date:past[6],ids:{top:S.id},updated:25}];
-      const st={items:[S,M,O],days,tombstones:{},settings:null},a=syncShare(st),b=syncShare(st,{days:[{date:past[1],ids:{top:'theirs'},updated:3},{date:past[2],ids:{top:'theirs2'},updated:2}]});
-      localStorage.setItem('app_token','tok123456');localStorage.setItem('sync_join',JSON.stringify({k:'123456',at:10}));const c=syncShare(st);
+      const st={items:[S,M,O],days,tombstones:{},settings:null},a=share(st),b=share(st,{days:[{date:past[1],ids:{top:'theirs'},updated:3},{date:past[2],ids:{top:'theirs2'},updated:2}]});
+      localStorage.setItem('app_token','tok123456');localStorage.setItem('sync_join',JSON.stringify({k:'123456',at:10}));const c=share(st);
       localStorage.removeItem('app_token');localStorage.removeItem('sync_join');
-      syncShare(st);syncSdDone();const again1=!!syncShare(st).days.find(d=>d.date===tk);days[2]={...days[2],ids:{...days[2].ids,shoes:S.id},updated:30};const again2=!!syncShare(st).days.find(d=>d.date===tk);
-      days[2]={...days[2],worn:false,updated:31};const again3=!!syncShare(st).days.find(d=>d.date===tk);localStorage.removeItem('sync_sd');syncSdNew={};
+      share(st);kitShareDone();const again1=!!share(st).days.find(d=>d.date===tk);days[2]={...days[2],ids:{...days[2].ids,shoes:S.id},updated:30};const again2=!!share(st).days.find(d=>d.date===tk);
+      days[2]={...days[2],worn:false,updated:31};const again3=!!share(st).days.find(d=>d.date===tk);localStorage.removeItem('sync_sd');kitSdNew={};
       const D=(s,k)=>s.days.find(d=>d.date===k);
       return {items:a.items.map(i=>i.type).sort().join(),d0:D(a,past[0]),d1:!!D(a,past[1]),today:D(a,tk),fut:!!D(a,key(fut)),y:!!D(a,past[2]),own:D(a,past[3])===days[5],
         said:D(c,past[4]),yc:D(c,past[6]),ya:!!D(a,past[6]),before:!!D(c,past[5]),saidA:!!D(a,past[4]),again:[again1,again2,again3],
