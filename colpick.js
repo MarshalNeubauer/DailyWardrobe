@@ -182,9 +182,16 @@ async function colAskUseAll(){const it=colTarget(),a=it&&colAsk[it.id+'|c'];if(!
   if(src==='q'){for(const f of ch)setq(ref,f,w[f]||'none');if(offs.length)toast(offs.join(' '),4000);return}
   for(const f of ch)it[f]=w[f];delete it.color;
   if(ch.includes('primaryColor')&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();renderWardrobe();toast(['Saved Claude’s colors.',...offs].join(' '),offs.length?4000:2500)}
+/* "Not sure? Add a close-up": in the item sheet the close-up is added from Pictures, the last section (folded; the checklist redesign
+   moved the photos there, so "under the photos" pointed nowhere: picker audit 2026-11-17 #3); the link closes the picker, opens
+   Pictures and brings its Close-up button into view. On the Add card the close-up button is on the card itself. */
+function cpAskHint(what){const e=colPick&&colPick.src==='e'&&$('#item-view.on .ivpics .pt-closeup');
+  return `<div class="cpask cpaskhint"><div class="cpasktx"><b>Not sure?</b> <small>${e?`Add a close-up in <button type="button" class="linkbtn cpgopics" onclick="cpGoPics()">Pictures, at the bottom</button>`:'Add a close-up'} and Claude can ${what}.</small></div></div>`}
+function cpGoPics(){closeColPick();const s=$('#item-view.on .ivpics');if(!s)return;const h=s.querySelector('.ckh');if(h&&!s.classList.contains('open'))ckToggle(h,true);
+  const b=s.querySelector('.pt-closeup')||s;try{b.scrollIntoView({block:'center',behavior:'smooth'})}catch{b.scrollIntoView()}try{(s.querySelector('button.pt-closeup')||s.querySelector('.pt-closeup input')||h).focus({preventScroll:true})}catch{}}
 function colAskHtml(it,k,tile,name){const a=colAsk[it.id+'|c'];
   if(!it.texture&&!TEXTURE_TYPES.includes(it.type))return '';   // shoes, belts, watches, socks, coats, clips, links have no close-up: no dead-end hint (2026-11-15)
-  if(!it.texture)return `<div class="cpask cpaskhint"><div class="cpasktx"><b>Not sure?</b> <small>Add a close-up${colPick.src==='e'?' (Close-up, under the photos)':''} and Claude can read the colors.</small></div></div>`;
+  if(!it.texture)return cpAskHint('read the colors');
   if(!a){const cents=Math.max(1,Math.round(benchEstimate(1)*100)),on=isConnected();
     return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up again and says which colors it is. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()"${on?'':' disabled'}>Ask Claude</button></div>`}
   if(a.busy)return `<div class="cpask"><span class="spin" aria-hidden="true"></span><div class="cpasktx"><b>Claude is looking at the close-up…</b><small>This takes a few seconds.</small></div></div>`;
@@ -246,7 +253,8 @@ ${ownH}${groups}
 <div class="cpbar"><button type="button" class="pri" onclick="useColPick()">${sel===NEW_COL?'Add '+esc(name(sel))+' to your patterns and use it':sel===cur?'Keep '+esc(name(sel)):'Use '+esc(name(sel))}</button></div>`;
   if(keep)el.scrollTop=y}
 function patAskHtml(it,tile,name,np){const a=colAsk[it.id+'|p'];
-  if(!it.texture)return `<div class="cpask cpaskhint"><div class="cpasktx"><b>Not sure?</b> <small>Add a close-up${colPick.src==='e'?' (Close-up, under the photos)':''} and Claude can name the pattern.</small></div></div>`;
+  if(!it.texture&&!TEXTURE_TYPES.includes(it.type))return '';   // socks, pocket squares and the casual types have no close-up: no dead-end hint (as the colors, picker audit 2026-11-17 #2)
+  if(!it.texture)return cpAskHint('name the pattern');
   if(!a){const cents=Math.max(1,Math.round(benchEstimate(1)*100)),on=isConnected();
     return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up and names the pattern, even one the app doesn’t have yet. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()"${on?'':' disabled'}>Ask Claude</button></div>`}
   if(a.busy)return `<div class="cpask"><span class="spin" aria-hidden="true"></span><div class="cpasktx"><b>Claude is looking at the close-up…</b><small>This takes a few seconds.</small></div></div>`;
@@ -331,7 +339,8 @@ function cnLive(){const nc=colPick&&colPick.newc;if(!nc)return;const hx=nc.hex,q
   if(hi&&document.activeElement!==hi)hi.value=hx.toUpperCase();document.querySelectorAll('#col-sheet [data-cnsw]').forEach(e=>{e.style.background=hx});
   if(big){big.style.background=hx;const c=big.querySelector('figcaption');if(c&&!nc.name.trim())c.textContent=hx.toUpperCase()}cnFigLive()}
 function cnSetHsv(h,s,v,redraw){const nc=colPick&&colPick.newc;if(!nc)return;nc.h=Math.max(0,Math.min(359.9,h));nc.s=Math.max(0,Math.min(100,s));nc.v=Math.max(0,Math.min(100,v));nc.hex=cnFromHsv(nc.h,nc.s,nc.v);cnLive();if(redraw){cancelAnimationFrame(cnFigRaf);cnFigRaf=0;renderColPick(true)}}
-function cnDrag(e,el,at){e.preventDefault();try{el.setPointerCapture(e.pointerId)}catch(x){}const r=el.getBoundingClientRect(),mv=ev=>at((ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height,false);mv(e);
+function cnDrag(e,el,at){e.preventDefault();const a=document.activeElement;if(a&&a.id==='cn-hex')a.blur();   // (preventDefault keeps the focus where it was: a hex being typed is left, so it follows the finger)
+try{el.setPointerCapture(e.pointerId)}catch(x){}const r=el.getBoundingClientRect(),mv=ev=>at((ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height,false);mv(e);
   const up=ev=>{el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);at((ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height,true)};
   el.addEventListener('pointermove',mv);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up)}
 function cnSqDown(e){const nc=colPick&&colPick.newc;if(!nc)return;cnDrag(e,e.currentTarget,(x,y,end)=>cnSetHsv(nc.h,Math.max(0,Math.min(1,x))*100,(1-Math.max(0,Math.min(1,y)))*100,end))}
@@ -339,9 +348,23 @@ function cnHueDown(e){const nc=colPick&&colPick.newc;if(!nc)return;cnDrag(e,e.cu
 function cnSqKey(e){const nc=colPick&&colPick.newc,d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[e.key];if(!nc||!d)return;e.preventDefault();e.stopPropagation();cnSetHsv(nc.h,nc.s+d[0],nc.v+d[1],false)}
 function cnHueKey(e){const nc=colPick&&colPick.newc,d={ArrowLeft:-1,ArrowRight:1,ArrowDown:-1,ArrowUp:1}[e.key];if(!nc||!d)return;e.preventDefault();e.stopPropagation();cnSetHsv(nc.h+d,nc.s,nc.v,false)}
 function cnKeyUp(e,id){if(!/^Arrow/.test(e.key))return;renderColPick(true);const el=document.getElementById(id);if(el)el.focus({preventScroll:true})}
-function cnHexIn(v,done){const nc=colPick&&colPick.newc,h=cnHex(v.startsWith('#')?v:'#'+v);if(!nc||!h)return;nc.hex=h;[nc.h,nc.s,nc.v]=cnHsv(h);if(done)renderColPick(true);else cnLive()}
-function cnName(v){const nc=colPick&&colPick.newc;if(!nc)return;nc.name=v;const b=$('#cn-add');if(b&&!b.dataset.use){const n=cap1(v.trim());b.disabled=!n;b.textContent=n?`Add ${n}${colPick.src==='s'?'':' and use it'}`:nc.kind==='pattern'?'Add pattern':'Add color'}
-  const c=document.querySelector('#col-sheet .cpbig figcaption');if(c)c.textContent=v.trim()?cap1(v.trim()):nc.kind==='pattern'?'Not set yet':nc.hex.toUpperCase()}
+/* done 'blur' (the hex field's change, when it loses the focus): updated in place, never by drawing the sheet again. The Name and hex fields
+   redrew the whole sheet on change, i.e. on the blur a tap elsewhere causes, between the finger going down and the click: the button under
+   the finger ("Add … and use it") was replaced and the first tap did nothing (picker audit 2026-11-17 #1) */
+/* (on 'blur' the shade itself was already taken as it was typed, oninput: a change that arrives later, after the square was dragged
+   with the field still focused, mustn't put the typed shade back) */
+function cnHexIn(v,done){const nc=colPick&&colPick.newc;if(!nc)return;
+  if(done==='blur'){const f=$('#cn-hex');if(f)f.value=nc.hex.toUpperCase();cnLive();cnBaseLive();return}
+  const h=cnHex(v.startsWith('#')?v:'#'+v);if(!h)return;nc.hex=h;[nc.h,nc.s,nc.v]=cnHsv(h);if(done)renderColPick(true);else cnLive()}
+/* "Behaves like" follows the shade (cnColBase) while the owner hasn't chosen it */
+function cnBaseLive(){const nc=colPick&&colPick.newc,it=colTarget(),s=$('#cn-base');if(!nc||!it||!s||nc.kind!=='colour')return;const b=cnColBase(it,nc);
+  if(![...s.options].some(o=>o.value===b)){const o=document.createElement('option');o.value=b;o.textContent=cap1(colName(b));s.append(o)}s.value=b}
+/* the name as it is typed: the button, the big swatch's caption, "Add … anyway" and (a color) "How the app uses it", all in place:
+   nothing redraws the sheet, so a tap on Add straight from the field works the first time */
+function cnName(v){const nc=colPick&&colPick.newc;if(!nc)return;nc.name=v;const n=cap1(v.trim()),b=$('#cn-add');if(b&&!b.dataset.use){b.disabled=!n;b.textContent=n?`Add ${n}${colPick.src==='s'?'':' and use it'}`:nc.kind==='pattern'?'Add pattern':'Add color'}
+  const c=document.querySelector('#col-sheet .cpbig figcaption');if(c)c.textContent=n||(nc.kind==='pattern'?'Not set yet':nc.hex.toUpperCase());
+  if(nc.kind!=='colour')return;const a=$('#cn-anyway');if(a){a.disabled=!n;a.textContent=`Add ${n||'it'} anyway`}
+  const how=$('#cn-how');if(how)how.hidden=!(nc.res||n||colPick.src==='s')}
 function cnToggleType(t){const nc=colPick&&colPick.newc;if(!nc)return;nc.types=nc.types.includes(t)?nc.types.filter(x=>x!==t):[...nc.types,t];renderColPick(true)}
 /* ask Claude (POST /describe): the words, the item's kind and colours, the owner's own colours and patterns, the close-up when asked */
 async function describeAsk(){const nc=colPick&&colPick.newc,it=colTarget();if(!nc||!it||nc.state==='busy')return;if(!isConnected()){tell(NEED_CONN);return}
@@ -395,11 +418,12 @@ ${r.fitsType===false?`<p class="cnwhy">Unusual for ${esc((TYPES[it.type]||'this 
 ${ex?`<div class="cnbtns">${prefer==='existing'?`<button type="button" class="cpaskbtn ghost" id="cn-anyway" onclick="colNewAdd()"${name?'':' disabled'}>Add ${esc(name||'it')} anyway</button>`:`<button type="button" class="cpaskbtn ghost" id="cn-use" onclick="cnUseExisting()">Use ${esc(exName)} instead</button>`}</div>`:''}</div>`}
   if(nc.state==='err')res=cnErrCard(nc,'colour');if(nc.state==='kind')res=cnKindCard(nc);
   const bases=[...new Set([...(src==='s'||COLS_BY[it.type]?colsFor(it.type,nc.accent):Object.keys(COLORS)).filter(c=>COLORS[c]&&!CUSTOM_COL[c]),base])];
-  const fold=r||name||src==='s'?`<div class="cnsec" id="cn-how"><b>How the app uses it</b>
+  // (always drawn, hidden until there is a name: cnName shows it as one is typed, so the field's blur needn't redraw the sheet, 2026-11-17)
+  const fold=`<div class="cnsec" id="cn-how"${r||name||src==='s'?'':' hidden'}><b>How the app uses it</b>
 <label class="cnfld">Behaves like (for the outfit rules)<select id="cn-base" onchange="colPick.newc.base=this.value;renderColPick(true)">${bases.map(c=>`<option value="${c}"${c===base?' selected':''}>${esc(cap1(colName(c)))}</option>`).join('')}</select></label>
 <span class="cnnote">Outfits treat it like this color; drawings and pictures use its own shade.</span>
 <div class="cnfld cnoffer">Offer it for<div class="cnchips">${groupOf(it.type).map(t=>`<button type="button" class="cnchip${nc.types.includes(t)?' on':''}" aria-pressed="${nc.types.includes(t)}" onclick="cnToggleType('${t}')">${esc(TYPES[t])}</button>`).join('')}</div></div>
-<button type="button" class="cnsw" id="cn-accent" role="switch" aria-checked="${!!nc.accent}" onclick="colPick.newc.accent=!colPick.newc.accent;renderColPick(true)"><span>Also for stripes and motifs</span><i class="${nc.accent?'on':''}" aria-hidden="true"></i></button></div>`:'';
+<button type="button" class="cnsw" id="cn-accent" role="switch" aria-checked="${!!nc.accent}" onclick="colPick.newc.accent=!colPick.newc.accent;renderColPick(true)"><span>Also for stripes and motifs</span><i class="${nc.accent?'on':''}" aria-hidden="true"></i></button></div>`;
   const bar=prefer==='existing'?`<button type="button" class="pri" id="cn-add" data-use="1" onclick="cnUseExisting()">Use ${esc(exName)}</button>`
     :`<button type="button" class="pri" id="cn-add" onclick="colNewAdd()"${name?'':' disabled'}>${name?`Add ${esc(name)}${src==='s'?'':' and use it'}`:'Add color'}</button>`;
   el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><button type="button" class="cnback" onclick="colNewBack()" aria-label="${nc.from==='pick'?'Back to colors':'Close'}">‹</button><b id="col-title">New color</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
@@ -410,7 +434,7 @@ ${res}
 <div class="cnsec"><b>${r?'Fine-tune the shade':'Or pick the shade'}</b>
 <div class="cnsq" id="cn-sq" style="--h:${Math.round(nc.h)}" tabindex="0" role="slider" aria-label="Shade: saturation across, brightness down" aria-valuetext="${hex.toUpperCase()}" onpointerdown="cnSqDown(event)" onkeydown="cnSqKey(event)" onkeyup="cnKeyUp(event,'cn-sq')"><i class="cnthumb" style="left:${nc.s.toFixed(1)}%;top:${(100-nc.v).toFixed(1)}%;background:${hex}"></i></div>
 <div class="cnhue" id="cn-hue" tabindex="0" role="slider" aria-label="Hue" aria-valuemin="0" aria-valuemax="359" aria-valuenow="${Math.round(nc.h)}" onpointerdown="cnHueDown(event)" onkeydown="cnHueKey(event)" onkeyup="cnKeyUp(event,'cn-hue')"><i style="left:${(nc.h/360*100).toFixed(1)}%;background:hsl(${Math.round(nc.h)},100%,50%)"></i></div>
-<div class="cnrow"><label class="cnfld cnhex">Hex<input id="cn-hex" value="${hex.toUpperCase()}" maxlength="7" autocomplete="off" spellcheck="false" oninput="cnHexIn(this.value,false)" onchange="cnHexIn(this.value,true)"><i data-cnsw style="background:${hex}"></i></label><label class="cnfld">Name<input id="cn-name" dir="auto" maxlength="24" value="${esc(nc.name||'')}" placeholder="e.g. Faded burgundy" oninput="cnName(this.value)" onchange="renderColPick(true)"></label></div></div>
+<div class="cnrow"><label class="cnfld cnhex">Hex<input id="cn-hex" value="${hex.toUpperCase()}" maxlength="7" autocomplete="off" spellcheck="false" oninput="cnHexIn(this.value,false)" onchange="cnHexIn(this.value,'blur')"><i data-cnsw style="background:${hex}"></i></label><label class="cnfld">Name<input id="cn-name" dir="auto" maxlength="24" value="${esc(nc.name||'')}" placeholder="e.g. Faded burgundy" oninput="cnName(this.value)"></label></div></div>
 ${fold}
 <div class="cpbar">${nc.err?`<p class="formerr cnbarerr" id="cn-error" role="alert">${esc(nc.err)}</p>`:''}${bar}</div>`;   /* the error sits in the sticky bar, over its button (W2-16-05: above the bar it was cut through by the bar's top edge) */
   if(keep)el.scrollTop=y}
@@ -444,7 +468,7 @@ ${ex&&patChoices(it).includes(ex)?`<div class="cnbtns">${nc.state==='reuse'?`<bu
   if(nc.state==='err')res=cnErrCard(nc,'pattern');if(nc.state==='kind')res=cnKindCard(nc);
   const bases=(PATS_BY[it.type]||['solid']).filter(p=>!CUSTOM_PAT[p]),offer=CN_SUITING.includes(it.type)?CN_SUITING:[it.type];
   const details=nc.state==='reuse'?'':`<div class="cnsec" id="pn-details"><b>${r?'Check the details':'Or set it yourself'}</b>
-<label class="cnfld">Name<input id="cn-name" dir="auto" maxlength="24" value="${esc(nc.name||'')}" placeholder="e.g. Hopsack" oninput="cnName(this.value)" onchange="renderColPick(true)"></label>
+<label class="cnfld">Name<input id="cn-name" dir="auto" maxlength="24" value="${esc(nc.name||'')}" placeholder="e.g. Hopsack" oninput="cnName(this.value)"></label>
 <label class="cnfld">Planned and drawn like<select id="cn-base" onchange="colPick.newc.base=this.value;renderColPick(true)">${bases.map(p=>`<option value="${p}"${p===base?' selected':''}>${esc(cap1(patName(p)))}</option>`).join('')}</select></label>
 <div class="cnfld cnoffer">Offer it for<div class="cnchips">${offer.map(t=>`<button type="button" class="cnchip${nc.types.includes(t)?' on':''}" aria-pressed="${nc.types.includes(t)}" onclick="cnToggleType('${t}')">${esc(TYPES[t])}</button>`).join('')}</div></div></div>`;
   const bar=nc.state==='reuse'&&r?`<button type="button" class="pri" id="cn-add" data-use="1" onclick="cnUseExisting()">Use ${esc(cap1(patName(r.existing)))}</button>`
