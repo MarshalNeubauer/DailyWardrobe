@@ -41,6 +41,14 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       const fo=await p.evaluate(()=>{const b=document.querySelector('#ward-add'),cs=getComputedStyle(b);return {act:document.activeElement===b,ring:cs.outlineStyle+' '+cs.outlineWidth}});
       ok(fo.act&&/solid 3px/.test(fo.ring),`  it takes the keyboard focus, with a ring (${fo.ring})`);
       await p.evaluate(()=>document.activeElement.blur());
+      // a toast with Undo sits above the button, not over it (2026-11-17); on Today it stays at its place above the tab bar
+      const tst=()=>p.evaluate(()=>{toast('Deleted Navy suit.',8000,{label:'Undo',fn:()=>{}});const t=document.querySelector('#toast').getBoundingClientRect(),b=document.querySelector('#ward-add').getBoundingClientRect(),nav=document.querySelector('body>nav').getBoundingClientRect();
+        return {tb:t.bottom,tr:t.right,tl:t.left,ft:b.top,fl:b.left,navTop:nav.top}});
+      let ts=await tst();
+      ok(ts.tb<=ts.ft-8,`  a toast with Undo sits above the button (toast bottom ${Math.round(ts.tb)}, button top ${Math.round(ts.ft)})`);
+      await p.click('#n-today');await settle(p,400);ts=await tst();
+      ok(ts.tb>=ts.navTop-20,`  on Today it is just above the tab bar as before (${Math.round(ts.navTop-ts.tb)}px above)`);
+      await p.click('#n-wardrobe');await settle(p,400);await p.evaluate(()=>{const t=document.querySelector('#toast');t.classList.remove('on')});
       // hidden under the item sheet, Settings and What to buy
       await p.evaluate(()=>openItem(items[3].id));await settle(p,600);
       ok(!(await fab()).shown,'  hidden while the item sheet is open');
