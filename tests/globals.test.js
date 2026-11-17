@@ -13,7 +13,7 @@ const ALLOW={
   aiModel:{'add.js':1},
   aiError:{'add.js':2},
   kitNoMine:{'itemsheet.js':2},
-  flt:{'ward-grid.js':1},
+  flt:{'itemsheet.js':1},
   listOpen:{'history.js':1},
   climate:{'settings.js':4,'today.js':1},
   weather:{'settings.js':3,'today.js':1},

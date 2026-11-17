@@ -1,5 +1,6 @@
 /* Daily Wardrobe: the item sheet itself: open, close, swipe down, ‹ › and the sideways swipe, the phone's Back, the focus back, and a
    sync's change to the piece open. (A classic script sharing one global scope; split out of itemsheet.js on 2026-11-17, no behavior change.) */
+let editing=null;
 /* ---- Wardrobe item sheet ----
    Tapping an item opens it in a sheet that slides up over the Wardrobe: the full width of a phone, to just under the top of the
    screen (a centred panel from 600px). The grid behind never moves, so closing puts you back exactly where you were. Ways out:
