@@ -53,7 +53,7 @@ function scheduleWear(days){const j=wearsJacket(),t=wearsTie();
   if(!j)return typeof dressSummary==='function'?dressSummary():'no jackets';const bl=settings.blazerDays.filter(d=>settings.workdays.includes(d));
   return [bl.length?'blazers '+days(bl):'suits every day',t?'vest '+({auto:'on cooler suit days',always:'every suit day',never:'never'})[settings.vestMode||'auto']:'no ties'].join(' · ')}
 function openSettings(section){
-  const already=settingsOpen(),subUnder=!already&&appHist&&appKind==='sub'&&SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden});
+  const already=settingsOpen(),subUnder=!already&&backKind()==='sub'&&subShown();
   const cat=section==='wx'?'weather':section;
   for(const k of SET_CATS)setCatOpen(k,k===cat,true);
   if(typeof advClose==='function')advClose();   // the Advanced folds start closed every time
@@ -66,10 +66,10 @@ function openSettings(section){
   try{settingsSummaries()}catch(e){console.warn('Settings summaries not drawn',e)}
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
-  // the phone's Back closes it (appPush, by show()); over Add, the Packing list or Laundry (the gear, Add's "Connect") Settings borrows
-  // that page's entry and hands it back on closing, so the page's Back still works after (CR-7-04: Settings took the entry, and the next
-  // Back left the app)
-  setLock(true);if(!already)setOver=subUnder?'sub':'';if(setOver&&appHist)appKind='set';else appPush('set');
+  // the phone's Back closes it (back.js, kind 'set'); over Add, the Packing list or Laundry (the gear, Add's "Connect") Settings takes
+  // over that page's entry and hands it back on closing, so the page's Back still works after (CR-7-04: Settings took the entry, and the
+  // next Back left the app)
+  setLock(true);if(!already)setOver=subUnder?'sub':'';backPush('set');
   if(typeof layerOpen==='function')layerOpen($('#settings-modal'));   // the page behind is inert, the focus moves in (ui.js)
 }
 /* while Settings is up the page behind it can't scroll (html.set-lock): on an iPhone a scroll in Settings near its top or bottom was handed
@@ -91,7 +91,7 @@ function closeSettings(){const was=settingsOpen();
   // closed by Done or anything else: its Back entry goes; one borrowed from the page under it goes back to that page (taken by Back, the
   // page gets a new one: CR-7-04)
   const over=setOver;setOver='';
-  if(was&&over){if(appHist&&appKind==='set')appKind=over;else if(!appHist&&SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden}))appPush(over)}else appDrop('set');
+  if(was&&over){const k=backKind();if(k==='set'||!k&&subShown())backPush(over)}else backDrop('set');
   setLock(false);
   if(was&&typeof layerClose==='function')layerClose($('#settings-modal'));
   if(todayStale){todayStale=false;keepHome();renderToday()}   // (Today on the home day follows a workday taken away)

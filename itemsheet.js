@@ -288,28 +288,11 @@ const wardList=()=>{const l=wardView();if(!editing||l.some(x=>x.id===editing))re
   const c=l.slice();c.splice(Math.min(ivAt,c.length),0,it);return c};
 const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate;
 let itemFrom=null;   // the item the sheet was opened on: closing on another one brings that one's box into view first
-/* the phone's Back closes the page: one history entry while it is open (itemBack: a history.back() of ours is on its way) */
-let itemHist=false,itemBack=false;
-try{history.scrollRestoration='manual'}catch{}   // stepping back must not move the Wardrobe (the page scrolls it to the item it closes on)
-function histPush(){if(itemHist||itemBack||appPend)return;   // (appPend: a step back that drops Settings' or a stats/packing/care page's entry is on its way; the item gets its entry once it lands)
-try{history.pushState({item:1},'');itemHist=true;if(typeof appTop!=='undefined')appTop=false}catch{}}
-function histDrop(){if(!itemHist)return;itemHist=false;itemBack=true;try{history.back()}catch{itemBack=false}}
-/* the phone's Back with the colour or pattern sheet up (colpick.js) closes the sheet only (2026-11-15, the re-audit: Back closed the Add page
-   or the item sheet underneath and left the sheet up, and "Use" then changed an item no longer on screen). The step back took the entry of
-   the page under it (the item sheet's itemHist, Settings' or Add's appHist, start.js); this listener is registered before theirs (here, ahead
-   of the item sheet's and start.js's: a capturing one on window still ran after them in Chromium), stops them, closes the sheet (‹ first on
-   a "New" sheet opened from the list, as its own ‹ does) and puts that entry back, so their flags still hold and the next Back closes the
-   page. A step back of the app's own (itemBack, appPend) passes untouched. */
-function colBackFirst(e){if(typeof colPick==='undefined'||!colPick||itemBack||(typeof asking!=='undefined'&&asking)||(typeof cuOpen!=='undefined'&&cuOpen)||(typeof rdHist!=='undefined'&&rdHist!==undefined)||(typeof appPend!=='undefined'&&appPend))return;
-  e.stopImmediatePropagation();const had=itemHist||(typeof appHist!=='undefined'&&appHist);
-  if(colPick.newc&&colPick.newc.from==='pick')colNewBack();else closeColPick();
-  if(had)try{history.pushState({cp:1},'')}catch{}}
-addEventListener('popstate',colBackFirst);
-addEventListener('popstate',e=>{
-  if(itemBack){itemBack=false;if(editing)histPush();return}   // our own step back; an item opened meanwhile gets its entry now
-  if(appPend||appHist&&appTop)return;   // a step back of start.js's own, or its entry over the sheet (a question, the close-up guide): start.js's listener takes it
-  if(itemHist&&editing&&phEdit.crop){e.dwItem=true;cropKeep();renderWardrobe();try{history.pushState({item:1},'')}catch{itemHist=false}return}   // Back in the crop frame keeps the crop (cropKeep: when moved or zoomed) and leaves it, and the sheet keeps its entry (the Back audit, 2026-11-15: it closed the sheet)
-  if(itemHist){itemHist=false;e.dwItem=true;if(editing)closeItem(true)}});
+/* the phone's Back closes the sheet: it has its own history entry while it is open (back.js histPush/histDrop, kind 'item'); one asked for
+   while a step back of ours was on its way is made once it lands. Back in the crop frame keeps the crop (cropKeep: when moved or zoomed)
+   and leaves it, and the sheet keeps its entry (the Back audit, 2026-11-15: it closed the sheet) */
+backLand(()=>{if(editing)histPush()});
+backOn('item',()=>{if(editing&&phEdit.crop){cropKeep();renderWardrobe();histPush()}else if(editing)closeItem(true)});
 /* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
 function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;const was=v.classList.contains('on');
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);

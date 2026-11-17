@@ -274,13 +274,13 @@ function renderAddFor(){const n=$('#add-for');if(!n)return;const t=addFor&&TYPES
    in `queue` (its place there is its index, as for every card); only its drawing moves (renderAdd → npsDraw).
    Closing without saving (×, Cancel, a swipe down, the backdrop, Escape, the phone's Back) drops the card; once anything on it was
    changed it asks "Discard this item?" first. Confirm saves it, and the sheet closes when the card leaves the queue (npsDraw).
-   Back: the sheet borrows Add's history entry (start.js appBorrow('nps'), kept in npsWas); closed by a tap it hands it back. ---- */
+   Back: the sheet borrows Add's history entry (back.js backBorrow('nps'), kept in npsWas); closed by a tap it hands it back. ---- */
 let npsId=null,npsWas,npsSnap='',npsAsking=false,npsFrom=null,npsSwipeOn=false;
 /* what the card holds, to tell whether anything was changed (its form as kept, its close-up) */
 const npsSig=q=>{if(!q)return '';const o=addCardRec(q);delete o.swatch;delete o.swSrc;delete o.checked;return JSON.stringify(o)+'|'+(q.texture?q.texture.length:0)};
 const npsCard=()=>npsId?queue.find(q=>q.id===npsId):null;
 function npsOpen(id){const s=$('#nps-sheet'),b=$('#nps-backdrop');if(!s)return;const again=!!npsId;npsId=id;
-  if(!again){npsFrom=document.activeElement;npsWas=typeof appBorrow==='function'?appBorrow('nps'):'';}
+  if(!again){npsFrom=document.activeElement;npsWas=backBorrow('nps')}
   renderAdd();npsSnap=npsSig(npsCard());npsSwipe();
   s.classList.add('on');b.classList.add('on');document.body.classList.add('nps-on');npsInert(true);
   const body=$('#nps-q');if(body&&!again)body.scrollTop=0;
@@ -295,18 +295,19 @@ function npsDraw(){const q=npsCard(),s=$('#nps-sheet');if(!s)return;if(!q){npsCl
 /* fromBack: the phone's Back did it (its entry is gone already) */
 function npsClose(fromBack){if(!npsId&&npsWas===undefined)return;const s=$('#nps-sheet'),b=$('#nps-backdrop');npsId=null;npsAsking=false;
   if(s)s.classList.remove('on');if(b)b.classList.remove('on');document.body.classList.remove('nps-on');npsInert(false);if(typeof layerInert==='function')layerInert();
-  const was=npsWas;npsWas=undefined;if(typeof appGiveBack==='function'){if(!fromBack)appGiveBack('nps',was);else if(was)appPush(was)}
+  const was=npsWas;npsWas=undefined;backReturn('nps',was,fromBack);
   const f=npsFrom;npsFrom=null;const to=f&&f.isConnected&&!f.closest('[inert]')&&f!==document.body?f:$('#add-manual');
   if(to&&$('#add')&&!$('#add').hidden)try{to.focus({preventScroll:true})}catch{}
   setTimeout(()=>{if(!npsId){const body=$('#nps-q'),bar=$('#nps-bar');if(body)body.innerHTML='';if(bar)bar.innerHTML=''}},320)}   // (emptied once it has slid away)
 /* ×, Cancel, a swipe, the backdrop, Escape, Back: asks first when the card was changed; -> whether it closed */
 async function npsCancel(fromBack){const q=npsCard();if(!npsId||npsAsking)return false;
-  if(q&&(q.saving||cardReading(q))){if(fromBack&&typeof appPush==='function')appPush('nps');return false}   // (being saved or read: it stays, and Back's entry is made again)
-  if(q&&npsSig(q)!==npsSnap){if(fromBack&&typeof appPush==='function')appPush('nps');   // the sheet stays while it asks: its entry again, for the question to borrow
+  if(q&&(q.saving||cardReading(q))){if(fromBack)backPush('nps');return false}   // (being saved or read: it stays, and Back's entry is made again)
+  if(q&&npsSig(q)!==npsSnap){if(fromBack)backPush('nps');   // the sheet stays while it asks: its entry again, for the question to borrow
     npsAsking=true;const go=await askConfirm('Discard this item?\n\nWhat you picked on it is not saved.',{ok:'Discard',cancel:'Keep editing',danger:true});npsAsking=false;
     if(!go||npsCard()!==q)return false;npsClose();skipCard(q.id);return true}
   const id=npsId;npsClose(fromBack);if(q)skipCard(id);return true}
 function npsBack(){if(npsId)npsCancel(true)}
+backOn('nps',()=>npsBack());
 /* Add left while the sheet is up (start.js show): the sheet closes; a card with changes stays on Add as a card of the list, an
    untouched one goes */
 function npsLeave(){if(!npsId)return;const q=npsCard(),changed=!!q&&npsSig(q)!==npsSnap;if(npsAsking&&typeof asking!=='undefined'&&asking)askAnswer(false);
