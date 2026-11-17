@@ -51,8 +51,7 @@ function whyUnused(i){
     case 'tie':{const g=gap('tie',i.id);return g<=QWIN?'It works, but other ties suit your outfits a little better or have rested longer, so it isn\'t in the next six months\' plan.':`With every jacket and shirt it is at least ${pts(g)} behind your other ties.`}
     case 'suit':return !suitDays?'Every workday is a blazer day, so suits are never planned.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other suits take every suit day first: it has the lowest priority for color variety.';
     case 'blazer':return !blazerDays?'You have no blazer days set in Settings.':itemSeason(i)!=='all'?`It is tagged for ${itemSeason(i)} weather, which the next six months don't bring.`:'Your other blazers take every blazer day first.';
-    case 'shoes':{const ok=jackets.some(j=>(j.type==='suit'?[j]:by('pants')).some(b=>shoeScore(j,b,i)>-50));
-      return !ok?`${colName(primaryCol(i))} shoes don't suit any of your suits or pants.`:finish(i.leather)==='patent'?'Patent shoes are for black tie only.':beltWait(i)?`None of your belts match them, so the planner keeps them back: add a ${beltWait(i)} and they come into your outfits.`:finish(i.leather)==='suede'&&!blazerDays?'Suede is kept for blazer days, and you have none.':'Another pair always suits the outfit better.'}
+    case 'shoes':return shoesWhyUnused(i,jackets.some(j=>(j.type==='suit'?[j]:by('pants')).some(b=>shoeSuits(j,b,i))),'suits or pants',finish(i.leather)==='suede'&&!blazerDays);
     case 'belt':return by('shoes').some(s=>beltFit(s,i)!==null)?'Another belt matches the shoes better each time.':'None of your shoes match it in color and finish.';
     case 'socks':return 'Your other socks match your pants better every day.';
     case 'cufflinks':return by('shirt').some(s=>s.cuff==='french')?'Another pair matches your watch and buckle better.':'You have no French-cuff shirt to wear them with.';
@@ -61,6 +60,10 @@ function whyUnused(i){
     case 'overcoat':case 'raincoat':return i.type==='raincoat'?'No rain in the forecast, and days beyond it are planned without rain.':'No day in the next six months is cold enough for a coat.';
     case 'watch':return 'Another watch matches the shoes and buckle better every day.'}
   return 'The planner never needs it.'}
+/* never-worn shoes, in a sentence: whyUnused, and dress.js dressWhyUnused for a wardrobe without jackets (ok: they suit some of the
+   suits or pants named by `what`; suedeKept: suede waits for blazer days and there are none) */
+const shoesWhyUnused=(i,ok,what,suedeKept)=>!ok?`${colName(primaryCol(i))} shoes don't suit any of your ${what}.`:finish(i.leather)==='patent'?'Patent shoes are for black tie only.'
+  :beltWait(i)?`None of your belts match them, so the planner keeps them back: add a ${beltWait(i)} and they come into your outfits.`:suedeKept?'Suede is kept for blazer days, and you have none.':'Another pair always suits the outfit better.';
 const FIT_PANTS=3,FIT_SHIRTS=8;
 let fitMemo=null;
 const fitMemoFor=()=>fitMemo&&fitMemo.c===cache&&fitMemo.n===items.length&&fitMemo.s===fitSettingsSig()?fitMemo:(fitMemo={c:cache,n:items.length,s:fitSettingsSig(),legs:{},all:{},w:{}});

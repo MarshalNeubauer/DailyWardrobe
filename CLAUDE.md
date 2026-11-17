@@ -269,6 +269,32 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - **Planner rules:** whenever a change alters how outfits are chosen (planner.js scoring, groups, rotation), bump `PLAN_RULES` in planner.js
 - on the next start a bump releases only the week's locks and the app's own recorded pieces on days after today (`checkPlanRules()` → `replanFuture(true)` in history.js); the owner's swaps, skips and vest choices stay, so there is no reason to skip a bump; Settings' "Re-plan upcoming days" also clears them, on demand
 
+#### PLAN_RULES history
+- (moved here from the 2 KB one-line comment on `PLAN_RULES` in planner.js, Round B 2026-11-17, CR-3-15; add the next number here, not there)
+- 24: the code review's fixes (fix round A, 2026-11-17): rain wins (no suede on a rainy day while another pair is left, `RAIN_SUEDE`), a jacket-off day counts for repeats, `comboRepeat` capped (`COMBO_CAP`), black shoes under a warm jacket a real mistake (`SHOE_CLASH`), a kept trip's lock kept
+- 23: the same tie with the same shirt color within 10 workdays, under any jacket, costs `PAIR_GAP` (`pairRepeat`, 2026-11-16: a pink shirt and tie on 15 and 24 Nov)
+- 22: a piece never worn yet creeps only from the day it was added (`fresh`, 2026-11-16: two new brown suits ran back to back)
+- 21: pocket squares (2026-11-16): a square with every jacket that has a good one (`pocketScore`: never the tie's own color and pattern, an echo of the tie, shirt or jacket, else white; white at a funeral), off with the jacket
+- 20: a camouflage shirt and pants are a uniform, planned together, not a clash (2026-11-16)
+- 19: accents (2026-11-16): an item's colors beyond its three count, weaker, where the tie and cufflinks are matched (`ACC_ECHO`, `ENAMEL_MINOR`)
+- 18: fix round 3 (2026-11-16): shoes with a suit, formality wins (`SUIT_SUEDE`, `SHOE_WATCH`), not yesterday's pair (`SHOE_AGAIN`)
+- 17: camouflage is a bold, large pattern of its own kind, kept off formal days, funerals and weddings (2026-11-16)
+- 16: materials (2026-11-15): seasons from tropical wool, cashmere, moleskin, melton and wool ties; nubuck as suede; a canvas belt with suede; two-tone metal; silk-knot cufflinks
+- 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (`clothesHard`, `jacketClean`, shoes that don't suit lose to no belt), the day before's tie (`TIE_NEXT`)
+- 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (`NO_SHOES`), the jacket worn the workday before (`JKT_AGAIN`), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material
+- 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14)
+- 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
+
+#### How `outfit()` is built (Round B, 2026-11-17, CR-3-13 / CR-3-15; code moved only: plans identical)
+- `outfit()` runs six steps in order: `dayPools` (dress code, occasion, rest, picks, skips, lock, wash, each slot's `pool`, `take`), `chooseJacket`, the waistcoat (in `outfit()`), `chooseClothes` (pants, shirt, tie), `chooseLeather` (shoes, belt, watch), `chooseAccessories` (socks, clip, cufflinks, pocket square, coat), then `outfitNotes`
+- the steps share the day through the object `dayPools` returns (`c`); each step copies what it needs into locals first (`const {day,suitDay,…}=c`), so the hot loops read locals as before
+- the step order is the planner's: each step `take`s its pieces, so rest counts the earlier steps' pieces as worn; don't reorder them
+- each real mistake is one test in planner.js, read by the planner, the score and the notes: `patsHard`, `shirtJacketHard`, `tieFlat` / `tieAsShirt` / `tieShirtHard`, `blackOnBlack`, `pantsAsJacket`, `oneColor`, and `shoeSuits` (`shoeScore` above `SHOE_LINE`, -50); `clothesHard` is built from them, and `rateOutfit`'s checks take their `hard` flag from them (their points and words stay in the check)
+- `accMetal(c, tie, watch, belt)`: a clip's or cufflinks' metal against the watch and buckle (enamel by the tie), used by `outfit()` and by the tests' fixed plan (history.js `fitRule`, which used `===` and no enamel rule before)
+- `occTop(oc, j, season)`: a jacket's fit for an occasion (`formalTop` or `OCC[oc].top`), used by `jscore` and `fixedAhead`
+- stats.js `shoesWhyUnused` is the never-worn shoes sentence for `whyUnused` and dress.js `dressWhyUnused`
+- measured on the benchmark wardrobes (Chromium, a year planned, median of runs): planning time unchanged within noise; 63 plan-and-score hashes (9 wardrobes x 7 settings) identical before and after
+
 #### Simulation
 - every month from two months back is simulated from one shared start so months agree
 - the simulation is resumable (`planSim(start).upTo(day)`; `buildPlan(y,m)` runs one from `planStart`)
@@ -366,7 +392,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 #### Score (`rateOutfit`)
 - `rateOutfit` returns `{score, label, checks:[{label, pts, max, why, hard}], raw, hard:[labels]}`
 - the score takes points only for things that can be put right, not for taste: every quiet shirt colour scores 10 (`QUIET_SHIRTS`), a dark shirt under a light jacket too, any listed shoe or trouser colour 10, socks in the shoes' colour 5
-- a real mistake in the clothes is not planned while another choice avoids it (H7, fix round 2): `clothesHard` (planner.js, keep in step with `rateOutfit`) is the hard checks the jacket, trousers, shirt and tie decide, plus trousers with no suiting shoes (`shoeOk`); the jacket rotation picks takes its turn only when the day's trousers, shirts and ties make a clean outfit with it (`jacketClean`, stopping at the first), and when the clothes window's best is hard the best clean combination is taken however far down; `tests/nu2plan.test.js`
+- a real mistake in the clothes is not planned while another choice avoids it (H7, fix round 2): `clothesHard` (planner.js, built from the same rule tests as `rateOutfit`'s hard checks) is the hard checks the jacket, trousers, shirt and tie decide, plus trousers with no suiting shoes (`shoeOk`); the jacket rotation picks takes its turn only when the day's trousers, shirts and ties make a clean outfit with it (`jacketClean`, stopping at the first), and when the clothes window's best is hard the best clean combination is taken however far down; `tests/nu2plan.test.js`
 - black shoes under a brown, tan or olive jacket, or other shoes with a black suit (`shoeClash`), cost `SHOE_CLASH` (60, was 50) in `shoeScore`, so they always reach the -50 line of the score's Shoes check (hard), `shoeOk`, `clothesHard` and `NO_SHOES` (the code review CR-3-08: the trousers' own points left them at -44 to -48, full marks in the score); the Shoes reason names the jacket's clash first ("a black suit needs black shoes", "black shoes don't suit a tan jacket"), then the pants', then the style ("boots don't go with a suit")
 - a casual top picked by hand is judged only by "the same color as the jacket" (`shirtJacketHard`, rateOutfit's Shirt check; the code review CR-3-09: a navy sweater under a charcoal blazer scored 69)
 - `tests/planreview.test.js` (realPlanner) holds the code review's planner findings, with a hand-written verdict table for shoes against the jacket rather than the planner's own functions
