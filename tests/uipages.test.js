@@ -18,7 +18,7 @@ const uipages=async({ok,chromium,url,WARDROBES,settle})=>{
         stats:!document.querySelector('#settings-modal #stats-btn')&&!!document.querySelector('#settings-modal #pack-btn'),done:(document.querySelector('.shead .sdone')||{}).textContent,
         panel:document.querySelector('#sp-schedule').getBoundingClientRect().height}});
     ok(s0.full,'Settings fills the phone screen');
-    ok(s0.cats.join()==='sc-laundry,sc-schedule,sc-daysoff,sc-weather,sc-care,sc-photos,sc-tagging,sc-backup,sc-connection,sc-about'&&s0.open===0&&s0.panel<1,'ten categories (Laundry & cleaning first), all folded when Settings opens');
+    ok(s0.cats.join()==='sc-laundry,sc-schedule,sc-daysoff,sc-calendar,sc-weather,sc-care,sc-photos,sc-tagging,sc-backup,sc-connection,sc-about'&&s0.open===0&&s0.panel<1,'eleven categories (Laundry & cleaning first, Calendar after Days off), all folded when Settings opens');
     ok(s0.sums.every(t=>t.length>4)&&/Mon–Fri · blazers Thu/.test(s0.sums[1]),`each category shows a one-line summary (${s0.sums[1]})`);
     ok(s0.stats&&s0.done==='Done','the page links at the top (Insights is a tab now), and Done in the header');
     await p.click('#sc-schedule .scat-head');await settle(p,600);

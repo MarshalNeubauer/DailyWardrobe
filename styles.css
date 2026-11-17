@@ -1913,6 +1913,31 @@ html.bigtext :is(.cpnm,.pick-nm){min-height:3.6em}
 .kit-lead{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:var(--fs-m);line-height:1.4}
 .kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar{padding-left:max(16px,var(--sal));padding-right:max(16px,var(--sar))}
 .nostore{padding-left:max(20px,var(--sal));padding-right:max(20px,var(--sar))}
+
+/* ---- calendar import (calendar.js, 2026-11-17): Settings → Calendar, its review list, Today's banner and trip note, the walkthrough's drawn screens ---- */
+.cal-form input[type=url]{flex:1 1 180px}
+.cal-conn{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin:2px 0 4px}
+.cal-conn .mut{overflow-wrap:anywhere}
+.cal-list{list-style:none;margin:6px 0 10px;padding:0;display:flex;flex-direction:column;gap:8px}
+.cal-row{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:8px 8px 8px 12px;background:var(--card)}
+.cal-row.gone .cal-ev,.cal-row.cant .cal-ev{opacity:.7}
+.cal-ev{flex:1 1 auto;min-width:0}
+.cal-ev b{display:block;overflow-wrap:anywhere;font-size:var(--fs-b)}
+.cal-ev small{display:block;color:var(--mut);overflow-wrap:anywhere;line-height:1.35}
+.cal-to{display:block;font-size:var(--fs-b);color:var(--acc-ink);font-weight:600;margin-top:2px}
+.cal-btns{flex:none;display:flex;gap:6px;align-items:center}
+#settings-modal .cal-btns .cal-ok,#settings-modal .cal-btns .cal-no{min-width:44px;padding:0;font-size:var(--fs-l)}
+#settings-modal .cal-btns .cal-ok{color:var(--ok-ink);border-color:color-mix(in srgb,var(--ok-ink) 45%,var(--line))}
+.cal-howh{margin-top:14px}
+.cal-guides button{flex:1 1 auto}
+.cal-priv{margin-top:10px}
+.cal-banner{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:6px 6px 6px 14px;border-radius:14px;border:1px solid var(--acc);background:color-mix(in srgb,var(--acc) 9%,var(--card));font-size:var(--fs-b);font-weight:600}
+.cal-banner .linkbtn{min-height:44px;padding:0 10px}
+.cal-trip{margin:0 0 10px;font-size:var(--fs-b);color:var(--mut)}
+.kp-on{fill:#2f8a57}
+.kp-knob{fill:#fff}
+.kp-ring{fill:none;stroke:var(--acc);stroke-width:1.6}
+.kp-i{fill:var(--acc-ink);font:700 11px system-ui,sans-serif}
 /* ---- cost per wear (cost.js) ---- */
 .cpwf{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:10px 0 6px}
 .cpwf label{display:flex;align-items:center;gap:8px;margin:0;font-size:var(--fs-m);font-weight:600}

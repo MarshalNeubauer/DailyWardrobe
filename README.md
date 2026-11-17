@@ -32,6 +32,7 @@ The wardrobe is kept on the device and in the person's own backup on the server 
 - **OpenAI**: an item's photo and description, only when the person taps Generate item pictures (product pictures of shoes, belts, socks, pants, coats and watches). Outfit pictures are painted on the device and never go to OpenAI.
 - **Open-Meteo**: the place set for the weather (the name typed in its search, then its coordinates), for the forecast and the usual weather by month. Sent from the device, with no account.
 - **Nager.Date**: the country chosen for public holidays, sent from the device; for countries it doesn't cover the server asks **Google**'s public holiday calendar for that country instead.
+- **A calendar's provider (Apple iCloud, Google, Microsoft…)**: with a calendar connected (Settings → Calendar), the server fetches its subscription link from the provider when the app asks; the link is kept in the person's settings and backup, never logged, and only the next 60 days' dates, titles and places go back to the phone.
 - **Apple or Google push services**: with the morning reminder on, the phone's push address goes to the server, which sends an empty push through the phone maker's service (Apple's for an iPhone, Google's for Chrome on Android); the outfit lines stay on the phone.
 - **Cloudflare**: as the server's host, it sees each request to the server (address, time, size) in its usual logs.
 
