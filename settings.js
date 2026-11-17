@@ -163,7 +163,9 @@ function builtinHolidays(cc,from,to){if(!HOL_FIXED[cc]&&!HOL_HIJRI[cc])return nu
 const holYears=(from,to)=>{const a=+from.slice(0,4),b=+to.slice(0,4),out=[];for(let y=a;y<=b;y++)out.push(y);return out};
 async function fetchHolidays(cc){
   const T=trueToday(),from=isoKey(new Date(T.getFullYear(),T.getMonth()-1,T.getDate())),to=isoKey(new Date(T.getFullYear()+1,T.getMonth()+1,T.getDate()));
-  const tidy=l=>{const m={};for(const x of l)if(x.d>=from&&x.d<=to&&x.n)m[x.d]=m[x.d]&&!m[x.d].includes(x.n)?m[x.d]+', '+x.n:m[x.d]||x.n;return Object.entries(m).sort().map(([d,n])=>({d,n}))};
+  // only a dated, named holiday (fix round A, CR-7-02: the string compare let `2026-12-01" onclick="…` through); names as core.js cleanSettings keeps them
+  const tidy=l=>{const m={};for(let x of l){if(!x||typeof x.d!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(x.d)||typeof x.n!=='string')continue;x={d:x.d,n:setStr(x.n,120).trim()};
+    if(x.d>=from&&x.d<=to&&x.n)m[x.d]=m[x.d]&&!m[x.d].includes(x.n)?m[x.d]+', '+x.n:m[x.d]||x.n}return Object.entries(m).sort().map(([d,n])=>({d,n}))};
   const own=()=>{const l=builtinHolidays(cc,from,to);return l&&l.length?tidy(l):null};
   // (a country with its own list isn't in Nager.Date: not asked, which logged a 404 on every start)
   // every calendar year the window touches (fix round 2, N6): in December and January it spans three, and asking only the first and last
@@ -229,20 +231,25 @@ async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off
   settings.daysOff=[...cur.values()].sort((x,y)=>x.d<y.d?-1:1);holidayMsg=`${k} day${k===1?'':'s'} off added.`;
   for(const id of ['#cfg-off-from','#cfg-off-to','#cfg-off-name'])if($(id))$(id).value='';
   await saveUserSettings();todayStale=true;renderDaysOffUI()}
-function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');if(!box||!list)return;
+/* a holiday's checkbox and a day off's × carry their dates in data-* attributes, read by one listener on each list (fix round A, CR-7-02:
+   a date from a Restore file, a sync or a holiday list went into an inline handler and ran as script) */
+function daysOffListen(list,ol){
+  if(!list.dataset.on){list.dataset.on='1';list.addEventListener('change',e=>{const c=e.target.closest('input[data-d]');if(c&&list.contains(c))toggleHoliday(c.dataset.d,c.checked)})}
+  if(ol&&!ol.dataset.on){ol.dataset.on='1';ol.addEventListener('click',e=>{const b=e.target.closest('button[data-ds]');if(b&&ol.contains(b))removeDaysOff(b.dataset.ds)})}}
+function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');if(!box||!list)return;daysOffListen(list,$('#off-list'));
   const h=settings.holidays,cc=h&&h.country||'';
   if(box.options.length<2)box.innerHTML='<option value="">No public holidays</option>'+COUNTRY_CODES.map(c=>[countryName(c),c]).sort((a,b)=>a[0].localeCompare(b[0])).map(([n,c])=>`<option value="${c}">${esc(n)}</option>`).join('');
   box.value=cc;
   const tk=isoKey(todayDate()),skip=new Set(h&&h.skip||[]),up=(h&&h.list||[]).filter(x=>x.d>=tk);
   list.innerHTML=!cc||/^Loading /.test(holidayMsg)?'':up.length?up.map(x=>{const d=isoToDate(x.d),wk=!settings.workdays.includes(d.getDay());
-    return `<label class="hrow${wk?' wk':''}"><input type="checkbox" ${skip.has(x.d)?'':'checked'} onchange="toggleHoliday('${x.d}',this.checked)"><span class="hd">${yearDate(d)}</span><span class="hn">${esc(x.n)}${wk?' <small class="mut">(not a workday anyway)</small>':''}</span></label>`}).join('')
+    return `<label class="hrow${wk?' wk':''}"><input type="checkbox" ${skip.has(x.d)?'':'checked'} data-d="${esc(x.d)}"><span class="hd">${yearDate(d)}</span><span class="hn">${esc(x.n)}${wk?' <small class="mut">(not a workday anyway)</small>':''}</span></label>`}).join('')
     :h&&!h.fetched?`<small class="mut">${workerBase()?`No public holiday list for ${esc(countryName(cc))} yet: the app tries again at its next start.`:`The public holidays of ${esc(countryName(cc))} are loaded once the app is connected.`}</small>`   // (setup.js setupHolidays)
     :'<small class="mut">No public holidays in the next year.</small>';
   const own=(settings.daysOff||[]).filter(x=>x.d>=tk),ol=$('#off-list');
   // consecutive days with one name are shown as one range
   const runs=[];for(const x of own){const r=runs[runs.length-1];if(r&&r.n===x.n&&(isoToDate(x.d)-isoToDate(r.to))/864e5<=1.5)r.to=x.d,r.ds.push(x.d);else runs.push({from:x.d,to:x.d,n:x.n,ds:[x.d]})}
   if(ol)ol.innerHTML=runs.map(r=>{const l=r.from===r.to?yearDate(isoToDate(r.from)):`${yearDate(isoToDate(r.from))} – ${yearDate(isoToDate(r.to))}`;
-    return `<span class="fchip"><span class="fcht">${l}${r.n&&r.n!=='Day off'?' · '+nameHtml(offNameCut(r.n)):''}</span><button type="button" aria-label="Remove ${l}" onclick="removeDaysOff('${r.ds.join(',')}')">×</button></span>`}).join('');
+    return `<span class="fchip"><span class="fcht">${l}${r.n&&r.n!=='Day off'?' · '+nameHtml(offNameCut(r.n)):''}</span><button type="button" aria-label="Remove ${l}" data-ds="${esc(r.ds.join(','))}">×</button></span>`}).join('');
   const m=$('#holiday-msg');if(m)m.textContent=holidayMsg||(cc&&up.length?`${up.filter(x=>!skip.has(x.d)).length} public holiday${up.length===1?'':'s'} of ${countryName(cc)} count as days off. Uncheck any you work.`:'');
   const f=$('#cfg-off-from');if(f)f.min=tk;
   if(settingsOpen())settingsSummaries()}   // the Days off summary follows an added or removed day (it kept the old count, audit 2026-11-13)
