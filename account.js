@@ -107,7 +107,8 @@ async function acctJoin(p,opt){const say=t=>{if((opt.address||opt.typed)&&t)acct
         let pend=await acctPending();
         if(pend&&typeof syncNow==='function'){acctToast('Backing up this phone’s changes first…',4000);pend=await acctBackUpFirst()}
         if(!await askConfirm(acctSwitchText(r.j,pend,oldRole==='owner'),{ok:pend?'Clear, losing those changes':'Clear and switch',danger:true}))return kept('Kept the current connection.');
-        if(typeof wipeDevice==='function')await wipeDevice();
+        // (a clear that didn't happen switches nothing: the old wardrobe would go into the new account, CR-7-01)
+        if(typeof wipeDevice==='function'&&!await wipeDevice())return kept('This phone couldn’t be cleared, so it stays connected as before. Close the app fully (swipe it away), open it again and use the link again.');
         localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);rememberRole(r.j);
         acctOwnerPhone(oldRole,r.j);
         try{sessionStorage.setItem(typeof ABOUT_NOTE==='string'?ABOUT_NOTE:'about_note',r.j.role==='owner'?'Connected as the owner':'Connected as '+name)}catch{}

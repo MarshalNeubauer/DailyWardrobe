@@ -148,13 +148,13 @@ function applyCustom(cu){
   for(const k of Object.keys(CUSTOM_COL)){delete COLORS[k];delete COLOR_NAMES[k];delete LUMS[k]}
   for(const t of Object.values(COLS_BY)){t.p=t.p.filter(c=>!CUSTOM_COL[c]);t.a=t.a.filter(c=>!CUSTOM_COL[c])}
   for(const t of Object.keys(PATS_BY))PATS_BY[t]=PATS_BY[t].filter(p=>!CUSTOM_PAT[p]);
-  CUSTOM_COL={};CUSTOM_PAT={};cu=cu||{};
-  for(let c of cu.colors||[]){if(!OWN_COL_RE.test(c.key)||!/^#[0-9a-f]{6}$/i.test(c.hex||'')||!COLORS[c.base]||CUSTOM_COL[c.base])continue;
+  CUSTOM_COL={};CUSTOM_PAT={};cu=cu&&typeof cu==='object'?cu:{};const arr=v=>Array.isArray(v)?v:[];   // (a list that isn't one counts as empty: it stopped the start-up, CR-7-03)
+  for(let c of arr(cu.colors)){if(!c||typeof c!=='object'||!OWN_COL_RE.test(c.key)||!/^#[0-9a-f]{6}$/i.test(c.hex||'')||!COLORS[c.base]||CUSTOM_COL[c.base])continue;
     const name=ownNameClean(c.name)||c.key.slice(3);c={...c,name};
     CUSTOM_COL[c.key]=c;COLORS[c.key]=c.hex.toLowerCase();COLOR_NAMES[c.key]=name.toLowerCase();
-    for(const t of c.types||[])if(COLS_BY[t]){COLS_BY[t].p.push(c.key);if(c.accent)COLS_BY[t].a.push(c.key)}}
-  for(let p of cu.patterns||[]){if(!OWN_PAT_RE.test(p.key))continue;p={...p,name:ownNameClean(p.name)||p.key.slice(4).replace(/-/g,' '),desc:ownDescClean(p.desc)};
-    for(const t of p.types||[])if(PATS_BY[t]&&PATS_BY[t].includes(p.base)){PATS_BY[t].push(p.key);CUSTOM_PAT[p.key]=p}}
+    for(const t of arr(c.types))if(COLS_BY[t]){COLS_BY[t].p.push(c.key);if(c.accent)COLS_BY[t].a.push(c.key)}}
+  for(let p of arr(cu.patterns)){if(!p||typeof p!=='object'||!OWN_PAT_RE.test(p.key))continue;p={...p,name:ownNameClean(p.name)||p.key.slice(4).replace(/-/g,' '),desc:ownDescClean(p.desc)};
+    for(const t of arr(p.types))if(PATS_BY[t]&&PATS_BY[t].includes(p.base)){PATS_BY[t].push(p.key);CUSTOM_PAT[p.key]=p}}
   COLOR_NAME_RE=null}
 const patName=p=>CUSTOM_PAT[p]?String(CUSTOM_PAT[p].name).toLowerCase():patLabel(p);
 /* the built-in colour an own shade behaves like (its base), when Claude didn't give one: from the item type's own list (main or
@@ -264,7 +264,7 @@ let settings={workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,vestM
 const SET_DEFAULTS=JSON.parse(JSON.stringify(settings));   // the app's own defaults, for a setting a synced copy marks removed (takeSettings)
 /* three-piece suits: a suit may have a matching vest (hasVest). vestMode: 'auto' (suit days that aren't hot, and
    formal days), 'always' (every suit day) or 'never'; a day can override it. A vest means no tie clip. */
-const VESTS=[['yes','Matching vest'],['no','No vest']],VEST_MODES=[['auto','Suit days, except hot ones'],['always','Every suit day'],['never','Never']];
+const VESTS=[['yes','Matching vest'],['no','No vest']];
 /* a suit has a waistcoat only when it says so (vest:'yes'). A wardrobe from before that rule (no settings.vestDef yet: dress.js,
    migrateVests) keeps the old reading, where a suit with no value had one, until its suits have been given their value */
 const hasVest=i=>!!i&&i.type==='suit'&&(i.vest==='yes'||(i.vest==null&&!settings.vestDef));

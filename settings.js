@@ -5,7 +5,8 @@
 const SET_CATS=['schedule','daysoff','weather','care','photos','tagging','backup','connection','about'];
 function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.classList.toggle('instant',!!instant);if(!instant){el.classList.remove('instant');void el.offsetHeight}
   el.classList.toggle('open',open);const b=el.querySelector('.scat-head');if(b)b.setAttribute('aria-expanded',open);
-  if(open&&key==='backup'&&typeof loadSnapshots==='function')loadSnapshots()}   // the daily backups list is read as Backup opens (sync.js)
+  if(open&&key==='backup'&&typeof loadSnapshots==='function')loadSnapshots();   // the daily backups list is read as Backup opens (sync.js)
+  if(open&&key==='about'&&typeof renderAbout==='function')renderAbout()}   // only as About opens (its header ran it on closing too, and asked the server each time: CR-7-06)
 function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);settingsSummaries();const t0=Date.now();
   // the scroll to show what opened gives way to a finger or wheel that moved since the tap: on an iPhone it fought a scroll already under way
   if(open)setTimeout(()=>{const m=$('#settings-modal');if((m._touch||0)>t0)return;const r=el.getBoundingClientRect(),top=m.querySelector('.shead').getBoundingClientRect().bottom;
@@ -14,7 +15,7 @@ function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.clas
    sync_status while a try fails and last_sync when one works) */
 /* when backups start again (the next 00:00 UTC): "tomorrow" only when that is tomorrow here; west of UTC it is later today (W1-10-03: "Paused
    until tomorrow" over a line saying "after 7:00 PM") */
-function pausedUntil(t){const d=new Date(t),n=new Date();let at='';try{at=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
+function pausedUntil(t){const d=new Date(t),n=new Date();let at='';try{at=d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}catch{}
   return d.toDateString()===n.toDateString()?(at||'later today'):'tomorrow'}
 function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
   if(typeof inviteOver==='function'&&inviteOver())return 'Not backed up: your invitation has ended';
@@ -52,6 +53,7 @@ function scheduleWear(days){const j=typeof wearsJacket!=='function'||wearsJacket
   if(!j)return typeof dressSummary==='function'?dressSummary():'no jackets';const bl=settings.blazerDays.filter(d=>settings.workdays.includes(d));
   return [bl.length?'blazers '+days(bl):'suits every day',t?'vest '+({auto:'on cooler suit days',always:'every suit day',never:'never'})[settings.vestMode||'auto']:'no ties'].join(' · ')}
 function openSettings(section){
+  const already=settingsOpen(),subUnder=!already&&appHist&&appKind==='sub'&&SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden});
   const cat=section==='wx'?'weather':section;
   for(const k of SET_CATS)setCatOpen(k,k===cat,true);
   if(typeof advClose==='function')advClose();   // the Advanced folds start closed every time
@@ -64,13 +66,17 @@ function openSettings(section){
   try{settingsSummaries()}catch(e){console.warn('Settings summaries not drawn',e)}
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
-  setLock(true);appPush('set');   // the phone's Back closes it (appPush, by show())
+  // the phone's Back closes it (appPush, by show()); over Add, the Packing list or Laundry (the gear, Add's "Connect") Settings borrows
+  // that page's entry and hands it back on closing, so the page's Back still works after (CR-7-04: Settings took the entry, and the next
+  // Back left the app)
+  setLock(true);if(!already)setOver=subUnder?'sub':'';if(setOver&&appHist)appKind='set';else appPush('set');
   if(typeof layerOpen==='function')layerOpen($('#settings-modal'));   // the page behind is inert, the focus moves in (ui.js)
 }
 /* while Settings is up the page behind it can't scroll (html.set-lock): on an iPhone a scroll in Settings near its top or bottom was handed
    to Today underneath, and Settings stood still under the finger until that scroll ended; also notes the last touch for toggleCat */
 function setLock(on){document.documentElement.classList.toggle('set-lock',on);const m=$('#settings-modal');
   if(on&&m&&!m._tw){m._tw=true;const mark=()=>{m._touch=Date.now()};m.addEventListener('touchstart',mark,{passive:true});m.addEventListener('wheel',mark,{passive:true})}}
+let setOver='';   // the kind of entry Settings borrowed from the page under it ('sub': Add, Packing list, Laundry), handed back on closing
 let todayStale=false;   // a change made in Settings that Today should show once Settings closes
 let viewStale=null;   // the Wardrobe or stats page, when a sync brought changes while Settings was open (syncRedraw): redrawn once it closes
 const settingsOpen=()=>!!$('#settings-modal')&&$('#settings-modal').style.display==='block';
@@ -80,7 +86,11 @@ function refreshToday(){if(settingsOpen()){todayStale=true;return}renderToday()}
 function closeSettings(){const was=settingsOpen();
   if($('#settings-modal')){ $('#settings-modal').style.display='none'; $('#settings-modal').style.pointerEvents='none'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='none'; $('#modal-backdrop').style.pointerEvents='none'; }
-  setLock(false);appDrop('set');   // closed by Done or anything else: its Back entry goes
+  // closed by Done or anything else: its Back entry goes; one borrowed from the page under it goes back to that page (taken by Back, the
+  // page gets a new one: CR-7-04)
+  const over=setOver;setOver='';
+  if(was&&over){if(appHist&&appKind==='set')appKind=over;else if(!appHist&&SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden}))appPush(over)}else appDrop('set');
+  setLock(false);
   if(was&&typeof layerClose==='function')layerClose($('#settings-modal'));
   if(todayStale){todayStale=false;if(typeof keepHome==='function')keepHome();renderToday()}   // (Today on the home day follows a workday taken away)
   if(viewStale){const v=viewStale;viewStale=null;if(!$('#'+v).hidden)show(v)}
@@ -107,7 +117,7 @@ function saveSettings(){
    toLocale…String(undefined, …) uses the phone's language when it is English, else American English (the app's language; Latin digits) */
 const APP_LOC=/^en\b/i.test(navigator.language||'en')?navigator.language:'en-US';
 function appLocale(){if(Date.prototype._dwLoc)return;for(const m of ['toLocaleDateString','toLocaleString','toLocaleTimeString']){const f=Date.prototype[m];
-  Date.prototype[m]=function(loc,o){return f.call(this,loc===undefined?APP_LOC:loc,o)}}Object.defineProperty(Date.prototype,'_dwLoc',{value:true})}
+  Date.prototype[m]=function(loc,o){return f.call(this,loc===undefined||(Array.isArray(loc)&&!loc.length)?APP_LOC:loc,o)}}Object.defineProperty(Date.prototype,'_dwLoc',{value:true})}   // ([] too, "the browser's language", as sync.js's backup-pause times pass: CR-7-05)
 appLocale();
 /* ---- settings: schedule, weather location, units ---- */
 /* °F where the country uses it (audit 2026-11-15: a Kuwait user on an English (US) iPhone got °F): the chosen location's country, else the
@@ -347,24 +357,6 @@ function toastOff(e){if(e.contains(document.activeElement)&&e.querySelector('but
   e.classList.remove('on','act');setTimeout(()=>{if(!e.classList.contains('on'))e.textContent=''},250)}
 /* a toast with a button (Undo) taken away at once (start.js show(): leaving Add takes its "Saved … Undo" with it) */
 function toastDrop(){const e=$('#toast');if(!e||!e.classList.contains('act'))return;clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent=''}
-let refreshing=false;
-async function refreshAll(){
-  if(refreshing)return;refreshing=true;const b=$('#refresh-btn');if(b)b.classList.add('spin');
-  let msg='';
-  try{
-    const n0=items.length;
-    if(window.syncNow&&localStorage.getItem('worker_url')&&localStorage.getItem('app_token')){
-      const ok=await syncNow();if(!ok)msg=localStorage.getItem('sync_status')||'Sync failed.'}
-    const [r,d,st]=await Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')]);
-    items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings=takeSettings(settings,st);cache={};
-    await loadWeather(true);
-    if(typeof renderTried!=='undefined')renderTried.clear();remoteKeys=null;
-    const v=['today','wardrobe','add','stats','pack','care'].find(t=>$('#'+t)&&!$('#'+t).hidden)||'today';show(v);
-    if(!msg){const diff=items.length-n0;msg=`Refreshed · ${items.length} item${items.length===1?'':'s'}${diff>0?` (${diff} new)`:diff<0?` (${-diff} removed)`:''}`}
-    if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(g=>g&&g.update()).catch(()=>{});
-  }catch(e){msg='Refresh failed: '+(e.message||e)}
-  finally{refreshing=false;if(b)b.classList.remove('spin');toast(msg)}
-}
 /* the location's usual weather by month, from Open-Meteo's archive (free, no key): the last two full years' daily highs,
    lows and rain, averaged per month. Kept for four months per location; days beyond the 16-day forecast are planned from it. */
 async function loadClimate(){
