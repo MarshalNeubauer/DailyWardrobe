@@ -1532,6 +1532,7 @@ asmgl.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmgl.test.js	tests/webkit.js	<any>
 asmgl.test.js	theme.js	<loaded>	applyTheme
 asmgl.test.js	toast.js	<loaded>
 asmgl.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2209,11 +2210,6 @@ asmweave.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 asmweave.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 asmweave.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmweave.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-asmweave.test.js	watch/leather.jpg	<loaded>
-asmweave.test.js	watch/shirt-open.png	<loaded>
-asmweave.test.js	watch/shirt-tie.png	<loaded>
-asmweave.test.js	watch/suit.png	<loaded>
-asmweave.test.js	watch/vest.png	<loaded>
 asmweave.test.js	weather.js	<loaded>	loadWeather
 assemble.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 assemble.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
@@ -2679,7 +2675,11 @@ calendar.test.js	tests/fixtures/calendar/outlook.ics	<any>
 calendar.test.js	tests/fixtures/calendar/personal.ics	<any>
 calendar.test.js	theme.js	<loaded>	@apreferscolorschemedark.addEventListenerchange	applyTheme
 calendar.test.js	toast.js	<loaded>	toast
-calendar.test.js	today.js	<loaded>	@$today.addEventListenerclick	@document.addEventListenervisibilitychange	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	applyZoom	hasOutfit	homeDay	keepHome	planDirty	planFor	planMonth	planSnapUse	renderToday	swApply	todaySay	wornPill	wxFit	wxMissing	wxPreload	zoomTarget
+calendar.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold
+calendar.test.js	today-photofold.js	<loaded>
+calendar.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
+calendar.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapUse
+calendar.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	hasOutfit	homeDay	keepHome	renderToday	todaySay	wornPill	wxFit	wxMissing	wxPreload
 calendar.test.js	ui.js	<loaded>	advClose	askAnswer	askConfirm	askEls	connSummary	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	netErr	renderConnUI	uiEsc
 calendar.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	wardFlush
 calendar.test.js	weather.js	<loaded>	loadClimate	loadWeather	locCC	renderWxLoc	temp	unit	unitCC	wxChip	wxIcon
@@ -7214,11 +7214,6 @@ lookplan.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 lookplan.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 lookplan.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 lookplan.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-lookplan.test.js	watch/leather.jpg	<loaded>
-lookplan.test.js	watch/shirt-open.png	<loaded>
-lookplan.test.js	watch/shirt-tie.png	<loaded>
-lookplan.test.js	watch/suit.png	<loaded>
-lookplan.test.js	watch/vest.png	<loaded>
 lookplan.test.js	weather.js	<loaded>	loadWeather
 mannequin.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 mannequin.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -7400,7 +7395,6 @@ masterspeed.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 masterspeed.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 masterspeed.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 masterspeed.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-masterspeed.test.js	tests/webkit.js	<any>
 masterspeed.test.js	theme.js	<loaded>	applyTheme
 masterspeed.test.js	toast.js	<loaded>
 masterspeed.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -12392,10 +12386,8 @@ setup.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@doc
 setup.test.js	tag-request.js	<loaded>
 setup.test.js	tagging.js	<loaded>
 setup.test.js	tests/fixedplan.js	<any>
-setup.test.js	tests/webkit.js	<any>
 setup.test.js	theme.js	<loaded>	applyTheme
 setup.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoOff
-setup.test.js	today.js	<loaded>	@$today.addEventListenerclick	@document.addEventListenervisibilitychange	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	addForSlot	applyZoom	belowBox	canPick	figureStage	goToday	goneNote	hasOutfit	homeDay	keepHome	mvSig	offBtn	offOn	piecesBox	planDirty	planFor	planMonth	planSnapSoon	planSnapUse	pocketRow	renderToday	restWarn	slotLabel	slots	swApply	todayBusy	todayCovered	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxMissing	wxPreload	zoomTarget
 setup.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	mvSig	todayCovered
 setup.test.js	today-photofold.js	<loaded>
 setup.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
@@ -13485,7 +13477,6 @@ speed.test.js	sync-status.js	<loaded>	setSyncStatus	showSyncStatus	syncPaused	sy
 speed.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	pulledYet	scheduleSync	syncNeedsPull	syncNow	syncOnce	syncUrl
 speed.test.js	tag-request.js	<loaded>
 speed.test.js	tagging.js	<loaded>
-speed.test.js	tests/webkit.js	<any>
 speed.test.js	theme.js	<loaded>	applyTheme
 speed.test.js	toast.js	<loaded>
 speed.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}	mvSig
