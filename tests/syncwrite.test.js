@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         const res=await worker.fetch(new Request(r.url(),{method:r.method(),headers:r.headers(),body:['GET','HEAD'].includes(r.method())?undefined:r.postData()}),env);
         const h=Object.fromEntries(res.headers);if(o.ahead&&h['x-now'])h['x-now']=String(+h['x-now']+o.ahead);
         await route.fulfill({status:res.status,headers:h,body:await res.text()})}finally{if(get)o.flight--}});
-    const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+    const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>{if(!/access control checks/.test(e.message))errs.push(e.message)});   // (WebKit's harness: the update check's sw.js, CLAUDE.md "expected WebKit harness failures")
     await p.goto(url);if(o.connect!==false)await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
     await p.reload();await p.waitForFunction(()=>window.appReady);o.p=p;o.errs=errs;return o};
   const sync=d=>d.p.evaluate(()=>{clearTimeout(syncTimer);return syncNow()});
