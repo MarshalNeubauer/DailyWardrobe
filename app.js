@@ -14,13 +14,15 @@ let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.
    transaction retried once (dbLive, txs, atomic); a failure that remains is a storage failure and is said. `db` stays the first opening
    (start-up and safety.js wait on it). */
 let dbCur=null,dbConn=null;
-/* set by "Delete my data" (about.js wipeDevice) while it deletes the database: nothing may open it again and fill it (CR-7-01) */
-let dbWiping=false;
-function dbOpen(){const p=new Promise((ok,no)=>{if(dbWiping){no(new DOMException('the data on this device is being deleted','InvalidStateError'));return}
-  const r=indexedDB.open('wardrobe',2);
+/* set by "Delete my data" (about.js wipeDevice) while it deletes the database: nothing may open it again and fill it (CR-7-01). A save
+   asked for meanwhile waits (dbHeld): the page reloads once the database is gone, and a delete that fails lets it go on (dbUnhold). */
+let dbWiping=false;const dbHeld=[];
+function dbUnhold(){const h=dbHeld.splice(0);dbCur=null;if(h.length){const p=dbOpen();for(const [ok,no] of h)p.then(ok,no)}}
+function dbOpen(){if(dbWiping){const p=new Promise((ok,no)=>dbHeld.push([ok,no]));dbCur=p;return p}
+  const p=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',2);
   r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('items'))d.createObjectStore('items',{keyPath:'id'});
     if(!d.objectStoreNames.contains('days'))d.createObjectStore('days',{keyPath:'date'});if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'k'})};
-  r.onsuccess=()=>{const d=r.result;if(dbWiping){try{d.close()}catch{}no(new DOMException('the data on this device is being deleted','InvalidStateError'));return}dbConn=d;d.onclose=()=>dbDrop(d);d.onversionchange=()=>{try{d.close()}catch{}dbDrop(d)};ok(d)};r.onerror=()=>no(r.error)});
+  r.onsuccess=()=>{const d=r.result;if(dbWiping){try{d.close()}catch{}dbHeld.push([ok,no]);return}dbConn=d;d.onclose=()=>dbDrop(d);d.onversionchange=()=>{try{d.close()}catch{}dbDrop(d)};ok(d)};r.onerror=()=>no(r.error)});
   dbCur=p;p.catch(()=>{if(dbCur===p)dbCur=null});return p}
 function dbDrop(d){if(dbConn===d){dbConn=null;dbCur=null}}
 const db=dbOpen();

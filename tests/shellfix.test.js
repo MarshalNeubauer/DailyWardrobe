@@ -41,7 +41,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(await stored(p)===0&&/deleted/.test(await p.textContent('#toast')),'and it finishes, the wardrobe deleted, once that tab lets go');await ctx.close()}
     /* CR-7-01: a delete the browser refuses: no "deleted", the wardrobe stays and the app keeps saving */
     {const {p,ctx}=await open();await seed(p);
-      await p.evaluate(()=>{indexedDB.deleteDatabase=()=>{const q={};setTimeout(()=>q.onerror&&q.onerror(),50);return q}});
+      await p.evaluate(()=>{Object.defineProperty(IDBFactory.prototype,'deleteDatabase',{configurable:true,writable:true,value:()=>{const q={};setTimeout(()=>q.onerror&&q.onerror(),50);return q}})});   // (on the prototype: WebKit ignores an own property)
       await toAbout(p);await p.click('#del-open');await p.waitForSelector('#del-device');await p.click('#del-device');
       await p.waitForFunction(()=>/couldn’t be deleted/.test($('#del-status').textContent),null,{timeout:15000});
       const s=await p.evaluate(async()=>{const it=items.find(x=>x.id==='t1');it.name='After';let w='ok';try{await put(it)}catch(e){w=e.name}

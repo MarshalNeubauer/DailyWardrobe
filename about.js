@@ -190,7 +190,7 @@ async function wipeDevice(){
   dbConn=null;dbCur=null;
   let gone=false;
   try{gone=await aboutDbDelete(()=>aboutSay('#del-status',ABOUT_WIPE_WAIT))&&await aboutDbLeft()===0}catch(e){console.warn('database not deleted',e)}
-  if(!gone){console.warn('database not deleted');dbWiping=false;connReady=true;return false}   // the app keeps working with what it has (app.js reopens it)
+  if(!gone){console.warn('database not deleted');dbWiping=false;connReady=true;dbUnhold();return false}   // the app keeps working with what it has (app.js reopens it)
   const online=navigator.onLine!==false;   // offline, the app's own files stay, or the restart would find nothing
   try{if(self.caches)for(const k of await caches.keys())if(k.startsWith('dw-keep-')||(online&&k.startsWith('dw-')))await caches.delete(k)}catch{}
   try{if(online){const reg=await aboutReg();if(reg)await reg.unregister()}}catch{}
