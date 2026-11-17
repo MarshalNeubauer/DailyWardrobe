@@ -16,9 +16,9 @@ async function ownColOffer(key,type,accent){const cu=settings.custom||{},l=cu.co
   if(!c||!CUSTOM_COL[key]||!COLS_BY[type]||colsFor(type,accent).includes(key))return null;
   const had={types:c.types,accent:c.accent},newAcc=!!accent&&!c.accent;
   settings.custom={...cu,colors:l.map(x=>x===c?{...c,types:[...new Set([...(c.types||[]),type])],accent:!!c.accent||!!accent}:x)};
-  applyCustom(settings.custom);cache={};await saveUserSettings();
+  applyCustom(settings.custom);planDirty();await saveUserSettings();
   const undo=async()=>{const u=settings.custom||{};settings.custom={...u,colors:(u.colors||[]).map(x=>x&&x.key===key?{...x,types:had.types,accent:had.accent}:x)};
-    applyCustom(settings.custom);cache={};await saveUserSettings();if(typeof renderCustomUI==='function')renderCustomUI()};
+    applyCustom(settings.custom);planDirty();await saveUserSettings();if(typeof renderCustomUI==='function')renderCustomUI()};
   return {msg:`${cap1(colName(key))} is now offered for ${typePl(type)}${newAcc?' and their stripes and motifs':''} too.`,undo}}
 /* the Add card's offer of a new colour (Claude's newColor, or a close-up measured over FAR_DE from every listed colour) opens the
    "+ New colour" sheet (colpick.js openColNew) on the card's main colour, with Claude's name and the measured shade filled in; the inline
@@ -73,7 +73,7 @@ function renderCustomUI(){const el=$('#custom-list');if(!el)return;const cu=sett
     [...cols.map(c=>{const n=used(c.key,(i,k)=>[i.primaryColor,i.secondaryColor,i.tertiaryColor].includes(k));return `<div class="custrow"><span class="msw" style="background:${esc(c.hex)}"></span><span><b>${esc(c.name)}</b><br><small class="mut">behaves like ${esc(colName(c.base))} · ${kinds(c)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':rm('colors',c.key)}</div>`}),
      ...pats.map(p=>{const n=used(p.key,(i,k)=>i.pattern===k);return `<div class="custrow"><span class="msw pat">${patSw(p)}</span><span><b>${esc(p.name)}</b><br><small class="mut">${p.look?'drawn from its own look, planned':'drawn'} like ${esc(patLabel(p.base))} · ${kinds(p)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':rm('patterns',p.key)}</div>`})].join(''))
     +`<div class="custadd"><button type="button" id="cust-newcol" onclick="openCustomNew('colour')">+ New color</button><button type="button" id="cust-newpat" onclick="openCustomNew('pattern')">+ New pattern</button></div>`}
-async function removeCustom(kind,key){if(kind!=='colors'&&kind!=='patterns')return;const cu=settings.custom||{};settings.custom={...cu,[kind]:(cu[kind]||[]).filter(x=>x.key!==key)};applyCustom(settings.custom);cache={};await saveUserSettings();renderCustomUI()}
+async function removeCustom(kind,key){if(kind!=='colors'&&kind!=='patterns')return;const cu=settings.custom||{};settings.custom={...cu,[kind]:(cu[kind]||[]).filter(x=>x.key!==key)};applyCustom(settings.custom);planDirty();await saveUserSettings();renderCustomUI()}
 
 /* adding one of Claude's new materials to the person's own for a type (settings.ownMaterials, synced; core.js ownMats): -> the name, or ''.
    The list is kept sorted, at most OWN_MAT_MAX a type */

@@ -103,7 +103,7 @@ async function kitUnsave(b){if(!b)return;
   for(const q of back)if(!q.raw&&typeof addRevive==='function')await addRevive(q);   // its canvases, let go when it was saved (add.js saveCard): the swatch box and the close-up's reading come back (CR-1-03)
   if(back.length&&typeof addKeep==='function')await addKeep();
   try{await kitDelMany(b.its,b.olds||[])}catch(e){for(const q of back){const k=queue.indexOf(q);if(k>=0)queue.splice(k,1)}if(back.length&&typeof addKeep==='function')addKeep();throw e}
-  if(kitBatch===b)kitBatch=null;cache={};todayStale=true;if(b.qs.length&&typeof multiMsg==='function')multiMsg('');   // ("Saved 5 items to your wardrobe." stayed over the cards Undo brought back)
+  if(kitBatch===b)kitBatch=null;planDirty();todayDirty();if(b.qs.length&&typeof multiMsg==='function')multiMsg('');   // ("Saved 5 items to your wardrobe." stayed over the cards Undo brought back)
   if(b.qs.length&&$('#add')&&!$('#add').hidden)renderAdd();else if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
   const ol=(b.olds||[]).length;   // (b.olds: pieces an import updated, put back as they were)
   toast(ol?`Undone: ${b.its.length?`${b.its.length} item${b.its.length===1?'':'s'} taken out, `:''}${ol} piece${ol===1?'':'s'} as ${ol===1?'it was':'they were'}.`:b.its.length===1?'Undone: the item is back on Add.':`Undone: ${b.its.length} items taken out.`,3000)}
@@ -136,19 +136,19 @@ function kitItem(c){const f=hasPat(c.type),it={id:c.id||crypto.randomUUID(),type
 async function kitStore(list,prog,upd){upd=upd||[];if(!list.length&&!upd.length)return true;const now=nowMs();let k=0;
   try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of list){it.updated=now;const r=s.put(it);if(prog)r.onsuccess=()=>prog(++k,list.length)}
     for(const it of upd){it.updated=nextStamp(stamp(it));const g=s.get(it.id);g.onsuccess=()=>{itemFields(it,g.result);s.put(it)}}})}catch(e){kitFail(e);return false}
-  items.push(...list);for(const it of upd){const j=items.findIndex(x=>x.id===it.id);if(j>=0)items[j]=it}cache={};todayStale=true;if(list.length&&typeof dressNewItem==='function')dressNewItem();
+  items.push(...list);for(const it of upd){const j=items.findIndex(x=>x.id===it.id);if(j>=0)items[j]=it}planDirty();todayDirty();if(list.length&&typeof dressNewItem==='function')dressNewItem();
   if(window.scheduleSync)scheduleSync();if(typeof askPersist==='function')askPersist();return true}
 /* delete items (each with a tombstone, as Delete does), with changed items (put) and day records (days) in the same transaction */
 async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=nowMs(),gone=new Set(ids);
   await kitTx(['items','meta','days'],t=>{const s=t.objectStore('items');for(const id of ids)s.delete(id);for(const it of put){it.updated=now;s.put(it)}
     const d=t.objectStore('days');for(const r of days){if(r.updated!==KIT_YIELD)r.updated=now;delete r.lockOnly;delete r.base;d.put(r)}kitTombs(t,ids,now)});   // (KIT_YIELD: a sample-only day keeps its stamp of 1, kitSampleRemove)
-  items=items.filter(x=>!gone.has(x.id));for(const it of put){const k=items.findIndex(x=>x.id===it.id);if(k>=0)items[k]=it}
-  for(const r of days)dayRecs[r.date]=r;cache={};todayStale=true;if(window.scheduleSync)scheduleSync()}
+  setWardrobe({items:items.filter(x=>!gone.has(x.id))});for(const it of put){const k=items.findIndex(x=>x.id===it.id);if(k>=0)items[k]=it}
+  for(const r of days)dayRecs[r.date]=r;planDirty();todayDirty();if(window.scheduleSync)scheduleSync()}
 
 /* ---- Duplicate (the item sheet): the same piece again, with a new id and no history, opened for any difference ---- */
 const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cleaned','sample','sampleMine'];
 async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;const c=JSON.parse(JSON.stringify(it));for(const k of KIT_NO_COPY)delete c[k];
-  c.id=crypto.randomUUID();c.added=nowMs();await put(c);items.push(c);cache={};todayStale=true;
+  c.id=crypto.randomUUID();c.added=nowMs();await put(c);items.push(c);planDirty();todayDirty();
   if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
   openItem(c.id);toast('Duplicated. Change anything that differs, like its name.',3500)}
 
@@ -496,7 +496,7 @@ async function kitFixOldImports(){const list=settings.custom&&Array.isArray(sett
     for(const k of ks){if(!num(it[k]))continue;const o=list[+it[k]];if(!o)continue;const own=CUSTOM_COL[o.key],m=kitColour(own?own.name:o.name);const c=m?m.k:own?o.key:null;
       if(c){it[k]=fitCol(it.type,c,k!=='primaryColor')||c;ch=true}}
     if(ch){await put(it);n++}}
-  if(n){cache={};todayStale=true}return n}
+  if(n){planDirty();todayDirty()}return n}
 /* the last import taken out again, after its Undo has gone (from the import sheet) */
 /* (fix round 3, W1-6-05: judged on this phone's copy alone, a piece renamed on another phone went too) a connected phone syncs first, so
    "changed since" counts changes made anywhere; offline it goes on with what it has */
@@ -541,7 +541,7 @@ async function kitSampleMigrate(){try{if(localStorage.getItem('kit_mine'))return
   if(l.length){const now=Date.now();
     try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of l){it.updated=now;s.put(it)}})}catch(e){console.warn('sample pieces not kept as his',e);return}
     for(const it of l){const k=items.findIndex(x=>x.id===it.id);if(k>=0)items[k]=it}
-    cache={};todayStale=true;if(window.scheduleSync)scheduleSync();
+    planDirty();todayDirty();if(window.scheduleSync)scheduleSync();
     toast(`${l.length===1?'The sample piece':`The ${l.length} sample pieces`} you changed ${l.length===1?'is':'are'} yours: Remove the sample keeps ${l.length===1?'it':'them'}.`,6000)}
   try{localStorage.setItem('kit_mine','1')}catch{}}
 /* does a day's record, with the sample's pieces taken out (kitSampleDay), still hold anything of his? His own pieces, a pick, the week's
@@ -560,7 +560,7 @@ let kitSampling=false;
 async function kitAdopt(){let all=[];try{all=await tx('readonly',s=>s.getAll())||[]}catch(e){console.warn('wardrobe not read',e);return}
   const have=new Set(items.map(i=>i.id)),add=all.filter(i=>i&&i.id&&!have.has(i.id));if(!add.length)return;
   let tomb={};try{tomb=await metaGet('tombstones')||{}}catch{}
-  const live=add.filter(i=>!(tomb[i.id]>=(i.updated||0)));if(live.length){items.push(...live);cache={};todayStale=true}}
+  const live=add.filter(i=>!(tomb[i.id]>=(i.updated||0)));if(live.length){items.push(...live);planDirty();todayDirty()}}
 function kitSampleBusy(on){for(const b of document.querySelectorAll('#kit-sample-link,[onclick^="kitSampleLoad"],#kit-sample button')){b.disabled=on;if(on)b.setAttribute('aria-busy','true');else b.removeAttribute('aria-busy')}}
 async function kitSampleLoad(){if(kitSampling)return;kitSampling=true;kitSampleBusy(true);
   try{await kitAdopt();   // what another tab of the app stored meanwhile (re-audit 2026-11-15: a stale second tab loaded a second sample, 48 pieces)
@@ -574,7 +574,7 @@ async function kitSampleLoad(){if(kitSampling)return;kitSampling=true;kitSampleB
   finally{kitSampling=false;kitSampleBusy(false)}}
 /* then Today on the next workday; from the setup's last step the setup finishes first, as Skip and "Add my first item" finish it */
 function kitSampleDone(){if(typeof setupShown==='function'&&setupShown()&&typeof setupFinish==='function')setupFinish(false);
-  cache={};todayStale=true;show('today');if(typeof goToday==='function')goToday()}   // on a weekend, the next workday's outfit
+  planDirty();todayDirty();show('today');if(typeof goToday==='function')goToday()}   // on a weekend, the next workday's outfit
 /* Remove the sample: every sample piece the owner didn't change goes, with what the days recorded of them (worn days, locks, picks;
    occasions stay), in one transaction; a changed one stays as his */
 async function kitSampleRemove(quiet){if(kitSampling)return;   // quiet: already asked (account.js, connecting with the sample loaded)
@@ -594,7 +594,7 @@ async function kitSampleRemove(quiet){if(kitSampling)return;   // quiet: already
     // connected: the account's records of those days come in before Today records anything from the plan (kitSampleUndo)
     if(typeof isConnected==='function'&&isConnected()&&window.syncNow)await Promise.race([syncNow().catch(()=>{}),new Promise(r=>setTimeout(r,KIT_RM_SYNC))])}
   catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
-  if(quiet){cache={};todayStale=true;if(typeof refreshToday==='function'&&!$('#today').hidden)refreshToday();return}
+  if(quiet){planDirty();todayDirty();if(typeof refreshToday==='function'&&!$('#today').hidden)refreshToday();return}
   show(items.length?'today':'wardrobe');toast(kn?`The sample wardrobe is gone. The ${kn===1?'piece':`${kn} pieces`} you changed stayed.`:'The sample wardrobe is gone.',8000,{label:'Undo',fn:kitSampleUndo})}
 /* Undo of Remove the sample (fix round 3): the pieces come back (a new stamp, newer than their deletion marks) as they were, and each day
    record still as Remove left it is put back as it was before; a day the account's record replaced meanwhile (a sync) keeps that. A day
@@ -604,8 +604,8 @@ async function kitSampleUndo(){const u=kitRmUndo;if(!u||kitSampling)return;kitRm
   try{const now=Date.now(),its=u.items.map(i=>({...i,updated:now}));
     const days=u.days.filter(r=>dayRecs[r.date]&&dayRecs[r.date].updated===u.wrote[r.date]).map(r=>({...r,updated:u.wrote[r.date]===KIT_YIELD?r.updated:now}));
     await kitTx(['items','days'],t=>{const s=t.objectStore('items'),d=t.objectStore('days');for(const it of its)s.put(it);for(const r of days)d.put(r)});
-    const back=new Map(its.map(i=>[i.id,i]));items=items.filter(i=>!back.has(i.id)).concat(its);for(const r of days)dayRecs[r.date]=r;
-    cache={};todayStale=true;if(window.scheduleSync)scheduleSync()}
+    const back=new Map(its.map(i=>[i.id,i]));setWardrobe({items:items.filter(i=>!back.has(i.id)).concat(its)});for(const r of days)dayRecs[r.date]=r;
+    planDirty();todayDirty();if(window.scheduleSync)scheduleSync()}
   catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
   show('today');toast('The sample wardrobe is back.',3000)}
 /* a day's record with the sample's pieces taken out (re-audit 2026-11-15, N2: the record was cut to its occasion, and history.js recordDays
@@ -673,7 +673,7 @@ function kitShareFilter(st,remote,join){kitSdNew={};const off=new Set((st.items|
     if(c)days.push(c);else if(rd.has(d.date))days.push(rd.get(d.date))}
   return {...st,items:st.items.filter(i=>!off.has(i.id)),days}}
 /* a sample piece kept as the owner's own (the item sheet) */
-async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.sample)return;delete it.sample;delete it.sampleMine;await put(it);cache={};todayStale=true;
+async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.sample)return;delete it.sample;delete it.sampleMine;await put(it);planDirty();todayDirty();
   if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();toast('It’s yours now: Remove the sample keeps it.',3000)}
 /* marks: the Wardrobe grid's tag and the item sheet's note */
 const kitSampleTag=i=>i.sample&&!kitEdited(i)?'<span class="pausetag sampletag">Sample</span>':'';

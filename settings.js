@@ -78,11 +78,13 @@ function setLock(on){document.documentElement.classList.toggle('set-lock',on);co
   if(on&&m&&!m._tw){m._tw=true;const mark=()=>{m._touch=Date.now()};m.addEventListener('touchstart',mark,{passive:true});m.addEventListener('wheel',mark,{passive:true})}}
 let setOver='';   // the kind of entry Settings borrowed from the page under it ('sub': Add, Packing list, Laundry), handed back on closing
 let todayStale=false;   // a change made in Settings that Today should show once Settings closes
+/* the one writer of todayStale (Round B, CR-7-07: it was set from 8 files); todayDirty(false) when Today was just drawn (the setup) */
+function todayDirty(stale=true){todayStale=stale}
 let viewStale=null;   // the Wardrobe or stats page, when a sync brought changes while Settings was open (syncRedraw): redrawn once it closes
 const settingsOpen=()=>!!$('#settings-modal')&&$('#settings-modal').style.display==='block';
 /* a redraw from work done in the background (photos arriving, the weather, the plan rules check at start-up): while Settings is open
    it waits for Settings to close (todayStale), since drawing Today closes Settings, which snapped shut when opened right after launch */
-function refreshToday(){if(settingsOpen()){todayStale=true;return}renderToday()}
+function refreshToday(){if(settingsOpen()){todayDirty();return}renderToday()}
 function closeSettings(){const was=settingsOpen();
   if($('#settings-modal')){ $('#settings-modal').style.display='none'; $('#settings-modal').style.pointerEvents='none'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='none'; $('#modal-backdrop').style.pointerEvents='none'; }
@@ -137,13 +139,13 @@ function wxChip(d){const w=weather[key(d)];if(!w)return '';return `${wxIcon(w.co
    is written at once, as before (a read first delayed the write, and a reload right after a tap lost it) */
 let setSeen=0,setOther=false;
 const setChan=(()=>{try{const c=new BroadcastChannel('dw-settings');c.onmessage=e=>{if(e.data&&+e.data.u>setSeen)setOther=true};return c}catch{return null}})();
-async function saveUserSettings(){stampSettings(settings);cache={};   // only the settings whose value changed get the new stamp (core.js)   // the settings have changed already: the cached plan is stale now, not only once they are stored
+async function saveUserSettings(){stampSettings(settings);planDirty();   // only the settings whose value changed get the new stamp (core.js)   // the settings have changed already: the cached plan is stale now, not only once they are stored
   if(setOther){setOther=false;
     try{const st=await metaGet('settings');
-      if(st&&st.ks&&settings.ks&&(st.updated||0)>setSeen){settings=mergeSettings(st,settings);keySettings(settings);applyCustom(settings.custom);todayStale=true}}
+      if(st&&st.ks&&settings.ks&&(st.updated||0)>setSeen){setWardrobe({settings:mergeSettings(st,settings)});keySettings(settings);applyCustom(settings.custom);todayDirty()}}
     catch(e){console.warn('stored settings not read',e)}}
   setSeen=settings.updated||0;
-  await metaPut('settings',settings);cache={};try{if(setChan)setChan.postMessage({u:setSeen})}catch{}if(window.scheduleSync)scheduleSync()}
+  await metaPut('settings',settings);planDirty();try{if(setChan)setChan.postMessage({u:setSeen})}catch{}if(window.scheduleSync)scheduleSync()}
 /* ---- Settings: days off. A country's public holidays (each can be unticked if you work that day) and your own days
    off (a single day or a range, e.g. a holiday trip). They are planned like weekends: no outfit, nothing counted as worn. ---- */
 const COUNTRY_CODES='AD AE AF AG AI AL AM AO AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BW BY BZ CA CD CF CG CH CI CK CL CM CN CO CR CU CV CW CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GT GU GW GY HK HN HR HT HU ID IE IL IM IN IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VG VI VN VU WS YE YT ZA ZM ZW'.split(' ');
@@ -197,22 +199,22 @@ function holPast(){const h=settings.holidays,T=isoKey(typeof trueToday==='functi
   const list=(h.list||[]).filter(x=>x&&x.d<T);return {list,skip:(h.skip||[]).filter(d=>d<T&&list.some(x=>x.d===d))}}
 async function setHolidayCountry(cc,quiet){
   // "No public holidays": none from now on; the past ones stay (country '': nothing is fetched)
-  if(!cc){const past=holPast();settings.holidays=past.list.length?{country:'',list:past.list,skip:past.skip,fetched:0}:null;holidayMsg='';await saveUserSettings();todayStale=true;renderDaysOffUI();return}
+  if(!cc){const past=holPast();settings.holidays=past.list.length?{country:'',list:past.list,skip:past.skip,fetched:0}:null;holidayMsg='';await saveUserSettings();todayDirty();renderDaysOffUI();return}
   if(!quiet){holidayMsg=`Loading the public holidays of ${countryName(cc)}…`;
     // (fix round 2) the country is kept the moment it is picked, with no list yet (fetched 0: the next start fetches it, refreshHolidays):
     // swiped away before the list arrived, the choice was lost
-    if(!(settings.holidays&&settings.holidays.country===cc)){settings.holidays={country:cc,...holPast(),fetched:0};saveUserSettings();todayStale=true}
+    if(!(settings.holidays&&settings.holidays.country===cc)){settings.holidays={country:cc,...holPast(),fetched:0};saveUserSettings();todayDirty()}
     renderDaysOffUI()}
   try{const got=await fetchHolidays(cc),old=settings.holidays&&settings.holidays.country===cc?settings.holidays.skip||[]:[];
     // past holidays stay (holPast): the fetched list starts a month back, and a holiday that dropped out of it became a workday after the
     // fact, recorded as worn (fix round 3, W1-8-01)
     const past=holPast(),list=[...past.list.filter(x=>!got.some(y=>y.d===x.d)),...got].sort((a,b)=>a.d<b.d?-1:1);
     settings.holidays={country:cc,list,skip:[...new Set([...past.skip,...old])].filter(d=>list.some(x=>x.d===d)).sort(),fetched:nowMs()};
-    holidayMsg=list.length?'':`No public holidays found for ${countryName(cc)}.`;await saveUserSettings();todayStale=true}
+    holidayMsg=list.length?'':`No public holidays found for ${countryName(cc)}.`;await saveUserSettings();todayDirty()}
   catch(e){if(quiet)return;
     // (audit 2026-11-15) the country picked is the one that counts, even without a list: the old country's holidays went on counting under
     // a "that country" message; tried again at the next start (fetched 0, refreshHolidays)
-    if(!(settings.holidays&&settings.holidays.country===cc&&(settings.holidays.list||[]).length)){settings.holidays={country:cc,...holPast(),fetched:0};await saveUserSettings();todayStale=true}
+    if(!(settings.holidays&&settings.holidays.country===cc&&(settings.holidays.list||[]).length)){settings.holidays={country:cc,...holPast(),fetched:0};await saveUserSettings();todayDirty()}
     const m=e.message||'couldn’t load the holiday list.';holidayMsg=`${countryName(cc)}: ${m}${/days off/.test(m)?'':' Add its holidays as your own days off below if you need them.'}`}
   renderDaysOffUI()}
 /* the list goes stale (new year, tentative dates confirmed): fetched again once a month, keeping the days you unticked */
@@ -224,12 +226,12 @@ async function refreshHolidays(){const due=()=>{const h=settings.holidays,f=h&&+
   if(!due())return;
   if(typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')){
     if(!await syncNow())return;
-    const st=await metaGet('settings');if(st)settings=takeSettings(settings,st);if(!due())return}
+    const st=await metaGet('settings');if(st)setWardrobe({settings:takeSettings(settings,st)});if(!due())return}
   return setHolidayCountry(settings.holidays.country,true)}
 /* testers have daily limits instead of costs: no "about 7¢" for them (account.js knows who is connected) */
 const showCost=()=>!(typeof isTester==='function'&&isTester());
 async function toggleHoliday(d,on){const h=settings.holidays;if(!h)return;const skip=new Set(h.skip||[]);on?skip.delete(d):skip.add(d);
-  settings.holidays={...h,skip:[...skip].sort()};await saveUserSettings();todayStale=true;renderDaysOffUI()}
+  settings.holidays={...h,skip:[...skip].sort()};await saveUserSettings();todayDirty();renderDaysOffUI()}
 const isoToDate=v=>{const [y,m,d]=String(v).split('-').map(Number);return new Date(y,m-1,d)};
 /* a day off's name is at most OFF_NAME_MAX letters (W2-12-02: a pasted 57-letter link pushed its chip's × off the screen, and nothing limited it) */
 const OFF_NAME_MAX=40,offNameCut=n=>{n=String(n||'').replace(/\s+/g,' ').trim();return [...n].length>OFF_NAME_MAX?[...n].slice(0,OFF_NAME_MAX-1).join('').trim()+'…':n};
@@ -241,7 +243,7 @@ async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off
   const cur=new Map((settings.daysOff||[]).map(x=>[x.d,x]));let k=0;for(const d=new Date(a<T?T:a);d<=b;d.setDate(d.getDate()+1)){cur.set(isoKey(d),{d:isoKey(d),n:n||'Day off'});k++}
   settings.daysOff=[...cur.values()].sort((x,y)=>x.d<y.d?-1:1);holidayMsg=`${k} day${k===1?'':'s'} off added.`;
   for(const id of ['#cfg-off-from','#cfg-off-to','#cfg-off-name'])if($(id))$(id).value='';
-  await saveUserSettings();todayStale=true;renderDaysOffUI()}
+  await saveUserSettings();todayDirty();renderDaysOffUI()}
 /* a holiday's checkbox and a day off's × carry their dates in data-* attributes, read by one listener on each list (fix round A, CR-7-02:
    a date from a Restore file, a sync or a holiday list went into an inline handler and ran as script) */
 function daysOffListen(list,ol){
@@ -264,7 +266,7 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
   const m=$('#holiday-msg');if(m)m.textContent=holidayMsg||(cc&&up.length?`${up.filter(x=>!skip.has(x.d)).length} public holiday${up.length===1?'':'s'} of ${countryName(cc)} count as days off. Uncheck any you work.`:'');
   const f=$('#cfg-off-from');if(f)f.min=tk;
   if(settingsOpen())settingsSummaries()}   // the Days off summary follows an added or removed day (it kept the old count, audit 2026-11-13)
-async function removeDaysOff(csv){const ds=new Set(csv.split(','));settings.daysOff=(settings.daysOff||[]).filter(x=>!ds.has(x.d));holidayMsg='';await saveUserSettings();todayStale=true;renderDaysOffUI()}
+async function removeDaysOff(csv){const ds=new Set(csv.split(','));settings.daysOff=(settings.daysOff||[]).filter(x=>!ds.has(x.d));holidayMsg='';await saveUserSettings();todayDirty();renderDaysOffUI()}
 /* ---- Settings: formal days (any upcoming workday) ---- */
 const shortDate=d=>d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
 /* with the year when it isn't this year's (the holiday list showed two "Thu, Nov 26 Thanksgiving Day" a year apart) */
@@ -318,14 +320,14 @@ async function setPictures(v){const d=v==='drawn';if(d===picsDrawn())return;sett
 function picsSwitched(){refreshToday();if(picsDrawn()||!asmLive())return;
   asmSync();const o=planFor()[key(sel)];if(o&&hasOutfit(o))asmEnsure(o);schedulePrefetch()}
 /* (vest, workdays, blazer days and units are drawn on Today too: todayStale redraws it when Settings closes; it stayed stale until a restart, audit 2026-11-14) */
-function setVestMode(v){settings.vestMode=v;saveUserSettings();todayStale=true;settingsSummaries()}
+function setVestMode(v){settings.vestMode=v;saveUserSettings();todayDirty();settingsSummaries()}
 /* how often dark shirts are planned (planner.js, darkMode): the coming week is planned again with the new choice */
 /* (fix round 2) saved before the week's locks are released, as setDress (dress.js): tapped then swiped away within ~100 ms, the change was lost */
-async function setDarkShirts(v){settings.darkShirts=v;todayStale=true;settingsSummaries();await saveUserSettings();await clearLocks()}
+async function setDarkShirts(v){settings.darkShirts=v;todayDirty();settingsSummaries();await saveUserSettings();await clearLocks()}
 function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=new Set(settings[k]);l.has(i)?l.delete(i):l.add(i);
   if(k==='workdays'&&l.size===0){tell('At least one workday is needed: pick another day first.');return}settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
-  cache={};todayStale=true;renderSettingsExtras();return saveUserSettings().then(clearLocks)}
-function setUnits(v){settings.units=v;saveUserSettings();todayStale=true;renderWxLoc();settingsSummaries()}
+  planDirty();todayDirty();renderSettingsExtras();return saveUserSettings().then(clearLocks)}
+function setUnits(v){settings.units=v;saveUserSettings();todayDirty();renderWxLoc();settingsSummaries()}
 function setLocation(loc){const fromList=!!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#city-results'));if(loc&&loc.alt!==undefined){loc={...loc};delete loc.alt}settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML='';if(loc&&typeof announce==='function')announce('Location set to '+loc.name);if(fromList&&$('#cfg-city'))try{$('#cfg-city').focus({preventScroll:true})}catch{}}   // (the result pressed is gone: the field keeps the keyboard)
 function useMyLocation(){if(!navigator.geolocation){tell('Location is not available on this device.');return}
   navigator.geolocation.getCurrentPosition(p=>setLocation({lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),name:geoName(p.coords.latitude,p.coords.longitude)}),()=>tell('Location permission was denied. Search for your city instead.'))}
@@ -370,7 +372,7 @@ function toastDrop(){const e=$('#toast');if(!e||!e.classList.contains('act'))ret
 async function loadClimate(){
   const L=settings.location;if(!L){climate=null;return}
   try{const c=JSON.parse(localStorage.getItem('wx_norm')||'null');
-    if(c&&c.lat===L.lat&&c.lon===L.lon&&Array.isArray(c.months)){const fresh=Date.now()-c.t<120*864e5;if(JSON.stringify(climate)!==JSON.stringify(c.months)){climate=c.months;cache={};if(!$('#today').hidden)refreshToday()}if(fresh)return}}catch{}
+    if(c&&c.lat===L.lat&&c.lon===L.lon&&Array.isArray(c.months)){const fresh=Date.now()-c.t<120*864e5;if(JSON.stringify(climate)!==JSON.stringify(c.months)){climate=c.months;planDirty();if(!$('#today').hidden)refreshToday()}if(fresh)return}}catch{}
   try{const y=new Date().getFullYear(),r=await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${L.lat}&longitude=${L.lon}&start_date=${y-2}-01-01&end_date=${y-1}-12-31&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`);
     const d=r.ok&&(await r.json()).daily;if(!d||!d.time||!d.temperature_2m_max)return;
     const m=[...Array(12)].map(()=>({n:0,tx:0,tn:0,r:0}));
@@ -378,18 +380,18 @@ async function loadClimate(){
     if(m.some(x=>x.n<20))return;   // a month with hardly any readings: keep what we had
     const months=m.map(x=>({tmax:+(x.tx/x.n).toFixed(1),tmin:+(x.tn/x.n).toFixed(1),rainDays:+(x.r/x.n*30).toFixed(1)}));
     const N=settings.location;if(!N||N.lat!==L.lat||N.lon!==L.lon)return;   // the location changed meanwhile
-    climate=months;localStorage.setItem('wx_norm',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),months}));cache={};if(!$('#today').hidden)refreshToday();if(settingsOpen())renderSettingsExtras()}
+    climate=months;localStorage.setItem('wx_norm',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),months}));planDirty();if(!$('#today').hidden)refreshToday();if(settingsOpen())renderSettingsExtras()}
   catch(e){console.warn('climate history unavailable',e)}
 }
 async function loadWeather(force){
   const L=settings.location;if(!L)return;loadClimate();
   try{const c=JSON.parse(localStorage.getItem('wx')||'null');
     if(!force&&c&&c.lat===L.lat&&c.lon===L.lon&&Date.now()-c.t<3*3600e3){if(JSON.stringify(weather)===JSON.stringify(c.days))return;   // already read (wxPreload): the plan stands
-      weather=c.days;cache={};if(!$('#today').hidden)refreshToday();return}}catch{}
+      weather=c.days;planDirty();if(!$('#today').hidden)refreshToday();return}}catch{}
   try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${L.lat}&longitude=${L.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,weather_code&timezone=auto&forecast_days=16`);
     const d=(await r.json()).daily;if(!d||!d.time)return;const days={};
     d.time.forEach((t,i)=>{const [y,m,dd]=t.split('-').map(Number);days[key(new Date(y,m-1,dd))]={tmax:d.temperature_2m_max[i],tmin:d.temperature_2m_min[i],pop:d.precipitation_probability_max[i]??0,rain:d.precipitation_sum[i]??0,code:d.weather_code[i]??0}});
-    weather=days;localStorage.setItem('wx',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),days}));cache={};if(!$('#today').hidden)refreshToday()}
+    weather=days;localStorage.setItem('wx',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),days}));planDirty();if(!$('#today').hidden)refreshToday()}
   catch(e){console.warn('weather unavailable',e)}
 }
 

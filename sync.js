@@ -41,7 +41,7 @@ async function applyMerged(local,incoming){const m=mergeState(local,incoming);
   if(m.settings){const cs=await metaGet('settings');if(!cs||(cs.updated||0)<=(m.settings.updated||0))await metaPut('settings',m.settings)}
   const now=await localState();
   if(stateSig(now)!==stateSig(local)){const open=typeof editing!=='undefined'&&editing&&items.find(i=>i.id===editing);
-    items=now.items;cache={};if(window.onSyncedData)onSyncedData(now);syncRedraw(['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden));syncSettingsRedraw();
+    setWardrobe({items:now.items});planDirty();if(window.onSyncedData)onSyncedData(now);syncRedraw(['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden));syncSettingsRedraw();
     if(open&&typeof itemSynced==='function')itemSynced(open)}   // the item sheet follows the new copy (itemsheet.js)
   return now;
 }
@@ -60,7 +60,7 @@ function syncSettingsRedraw(){if(typeof settingsOpen!=='function'||!settingsOpen
    piece picker is (the redraw closed it): the redraw waits for it to close (syncLater, run by syncLaterRun from itemShown / closePicker) */
 let syncLater=null;
 function syncRedraw(v){if(!v||v==='add')return;
-  if(settingsOpen()){if(v==='today')todayStale=true;else viewStale=v;return}
+  if(settingsOpen()){if(v==='today')todayDirty();else viewStale=v;return}
   if((v==='wardrobe'&&editing)||(v==='today'&&(picker||(typeof todayBusy==='function'&&todayBusy())))){syncLater=v;return}   // (a finger on Today: today.js todayFree runs it when the gesture ends)
   return show(v)}
 function syncLaterRun(v){if(syncLater!==v)return;syncLater=null;if($('#'+v).hidden)return;
@@ -136,7 +136,7 @@ async function clockFix(){const t=nowMs(),lim=t+CLOCK_AHEAD,st=await localState(
     if(c.holidays&&(+c.holidays.fetched||0)>lim){c.holidays.fetched=0;if(c.kh)c.kh.holidays=setHash(c.holidays);if(c.ks)c.ks.holidays=t;ch=true}
     if((+c.updated||0)>lim||ch){c.updated=t;await metaPut('settings',c);n++}}
   if(!n)return false;
-  const now=await localState();items=now.items;cache={};if(window.onSyncedData)onSyncedData(now);return true}
+  const now=await localState();setWardrobe({items:now.items});planDirty();if(window.onSyncedData)onSyncedData(now);return true}
 /* ---- the small sync (worker.js syncLiteGet / syncLitePost). A newer worker answers GET /sync?lite=1&since=<the version last agreed
    on> with only the records changed since, with photos as references (dwph:<hash>), every tombstone, and what it holds of each record
    (idx: its stamp); this device fetches only the photos it lacks (?ph=), merges, and POSTs only the records newer than the backup's,

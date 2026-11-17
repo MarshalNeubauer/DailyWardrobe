@@ -78,7 +78,7 @@ function setupCancel(e){setupTapGuard(e);const b=setup.before||{},changed=SETUP_
   setupClose();if(!changed.length)return;
   for(const k of changed){if(k==='location')continue;if(b[k]===null||b[k]===undefined)delete settings[k];else settings[k]=b[k]}
   if(changed.includes('location'))setLocation(b.location||null);
-  saveUserSettings().then(clearLocks);todayStale=false;renderToday();tell('Setup canceled: your answers are as they were.')}
+  saveUserSettings().then(clearLocks);todayDirty(false);renderToday();tell('Setup canceled: your answers are as they were.')}
 /* Skip (stay on Today) and Done (go and add the first item) both finish it for good.
    A new person who didn't choose gets no vest: the stored default is the three-piece suit on cooler days. */
 function setupFinish(toAdd,e){setupTapGuard(e);

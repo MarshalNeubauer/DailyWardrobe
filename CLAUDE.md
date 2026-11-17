@@ -181,6 +181,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 ### `core.js`
 
 - colours, types, item helpers (no DOM; also loaded by background workers)
+- `setWardrobe({items, days, settings})` is the one writer of `items`, `dayRecs` and `settings` in memory (Round B, CR-7-07): it sets only what it is given, so each caller keeps its own `applyCustom`/`planDirty` in its own order; only the planner's brief swaps put them back themselves (analysis.js `items`, pack.js `packPlanOf` and today.js `planWith` `dayRecs`)
 - the casual garments (2026-11-16, the owner's approved new types): `tee` T-shirt, `polo`, `henley`, `sweater`, `sweatshirt`, `hoodie`, `qzip` Quarter-zip (`CASUAL_TOPS`, worn in the shirt slot in place of the shirt), `cardigan`, `chore` Chore jacket (`CASUAL_JACKETS`, the jacket slot), at the end of `TYPES`; their colours (`COLS_BY`, a block after it), patterns (`PATS_BY`: solid, stripe, heather, cable on the knits, other; `CASUAL_PAT_ALIAS`), materials (`MATERIALS_BY`, polo 'piqué'; `MAT_ALIAS` per type), all equal to worker/tag.js's lists
 - cargo pants: `trouserKind` 'cargo' (`TROUSER_KINDS`, `isCargo`; `trouserKind(i)` reads them as chinos for the rules that ever see them; "Khaki cargo pants")
 - hand-pick only (the owner's decision): `isHandPick(i)` = a casual type or cargo pants (`HANDPICK_TYPES`), `handPickSlot(i)` its Today slot; the one check the planner (`planSim`'s `by`), Suggest another (`swapSlot`), the picker's scored grid (`slotPool`), the rotation stats (`buildStats` rows), What to buy (`shopList`, `evalPlan`'s idle), `shopGate` and `setupNeeds` ask; a later Uniform flag can extend it
@@ -1058,7 +1059,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 #### The plan and its snapshot
 
-- `planMonth(y,m)` / `planFor()` keep one shared `planSim` in `cache` (anything that changes the wardrobe, history, settings or weather must reset `cache={}`)
+- `planMonth(y,m)` / `planFor()` keep one shared `planSim` in `cache` (anything that changes the wardrobe, history, settings or weather must call `planDirty()`)
+- `planDirty()` (today.js) is the one way to throw the plan cache away (Round B, CR-7-07: `cache={}` was written at 65 places in 17 files); no other file assigns `cache` (`tests/globals.test.js`); tests may still set `cache={}` in the page
 - no outfit is shown for a day before the wardrobe existed (`planTrim` in `planMonth`: days before `planStartDay()`, the day the first item was `added`, and before today, without a record with pieces, are left out of the month's plan; the planner still plans them for rest and variety; items without `added` set no start): a new user saw two weeks of planned past days with ✕/✓ and "22 outfits"; `tests/newuser.test.js` covers it with plain errors, the list instead of 404s, captions, Several items, the setup's city search and holidays
 - `hasOutfit(o)` is true for a no-jacket day too
 - Today's month is kept in IndexedDB (meta `PLAN_SNAP`, `planSnapSoon` after the week is locked): pieces as `{$i: id, $x: what the planner added (rest)}` (`snapOut`/`snapIn`), about 60 KB
@@ -1136,6 +1138,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `toggleCat`'s scroll to show an opened category (460 ms after the tap) doesn't run when a finger or the wheel touched Settings since the tap (`m._touch`, set by `setLock`'s listeners): it fought a scroll already under way
 - background redraws of Today (photos arriving, weather, the start-up plan check, the queue) go through `refreshToday()`: while Settings is open they set `todayStale` and wait for it to close, since `renderToday` closes Settings (it snapped shut when opened right after launch)
 - a sync that brings changes redraws the tab on screen through `syncRedraw` (sync.js): while Settings is open it only marks it (`todayStale`, `viewStale` for the Wardrobe or stats page) and `closeSettings` redraws it
+- `todayDirty()` is the one writer of `todayStale` (Round B, CR-7-07: it was set from 8 files); `todayDirty(false)` when Today was just drawn (the setup's Done)
 - only `saveUserSettings()` stamps the settings, and only something the user did should call it
 - `saveUserSettings` announces each save to the app's other tabs (BroadcastChannel `dw-settings`, `setChan`); a tab that heard of a newer save (`setOther`) merges the stored copy in first (`setSeen`: the stamp it last read or wrote, set at start-up and in `onSyncedData`; `mergeSettings` setting by setting): a second tab (an invitation link tapped twice) wrote its stale copy whole over the other tab's setup choices (2026-11-15)
 - without word from another tab the save is written at once: a read before every write delayed it, and on WebKit a reload right after Skip lost it (`tests/setup.test.js`)
@@ -1738,7 +1741,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - away: `item.away = {why:'laundry'|'cleaner', since, back|null}` is stored together with `item.paused` and `item.arrives = back`, the mechanism of a piece on the way: `inRotation(i, n)`, `planSim`'s `byOn(n)`, the picker, "Suggest another" and the locked week need no code of their own, and the plan takes the piece back from the day after its date
 - `careSend(id, why, back)` sends a piece away (not one already out of rotation) and releases the upcoming days pinned to it (`careRelease`, as `togglePause` does); its toast has Undo (`careUnsend`, which doesn't count as cleaned); `careSetBack(id, date)` sets or clears the date
 - coming back sets `item.cleaned` (YYYY-MM-DD) and deletes `away`, `paused`, `arrives`: by itself in `checkArrivals()` (add.js) the day after `away.back`, with `cleaned` = that date on every device, or with "It's back" (`careBack`), cleaned today
-- wears since cleaning: `careCounts()` counts, per item, the days of `wornDays()` (stats.js) dated after `item.cleaned`; kept on the plan cache (`cache.careW`), so anything that resets `cache={}` recounts
+- wears since cleaning: `careCounts()` counts, per item, the days of `wornDays()` (stats.js) dated after `item.cleaned`; kept on the plan cache (`cache.careW`), so anything that calls `planDirty()` recounts
 - a suit worn with its jacket off (`o.suitBot`) is counted and framed like a suit day (`careTop` in `careDayState`; the code review CR-3-10); the planner knows nothing of cleaning limits on purpose: an "Overdue" piece keeps its normal turns (the owner, 2026-11-17)
 - a wear on the day of `item.cleaned` itself is not counted (the piece was cleaned after it), so a piece marked back in the morning and worn that day loses that one wear
 - limits: `careLimit(type)` = `settings.care[type]`, else `CARE_DEF` (suit 5, blazer 6, pants 4, shirt 1), else 0 = never; `careState(i)` → `{wears, limit, each, due, near, over}`: due at the limit, near one wear short (limits of 3 and more)
@@ -2364,6 +2367,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - WebKit's Linux build is not iOS Safari: no safe areas, URL-bar resizing, momentum scrolling, ITP or 7-day storage eviction; the phone stays the last check for those
 - ESLint 10 (`npm run lint`, `eslint.config.mjs`, `tests/lint.js`): `no-undef`, `no-redeclare` (errors) and `no-unused-vars` (a warning); each classic script is given the top-level names of the scripts it shares a scope with (index.html's scripts; each Web Worker and what it `importScripts`), read from their sources when the config loads, plus names put on `window` from inside functions and by the tests
 - the pre-push hook runs ESLint on the scripts the branch changed (`--changed`, as committed, about 1 s) and refuses the push on an error; warnings show only on lines the branch touched; with ESLint not installed it says so and passes
+- `tests/globals.test.js` (Node only, about a second; Round B, CR-7-07): every assignment to another script's top-level `let`/`var`/function is in its `ALLOW` list with its exact count, so a new cross-file write fails and a write that went away must be taken off the list (it only shrinks); call the state's owner instead (`planDirty`, `todayDirty`, `setWardrobe`)
 - `npm run gaps` (`tests/gaps.js`): the top-level functions and `styles.css` rules no test reaches, from the committed map
 
 #### Replay tests (the 2026-11-15 audit's scripts)

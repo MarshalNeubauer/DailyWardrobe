@@ -25,7 +25,7 @@ async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_
       if(!stillCur(it))continue;it.texture=c.toDataURL('image/jpeg',.85);if(typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);await keepCloseImg(it.id,sharp,it.texture);remakeSpend(1);n++}
     catch(e){console.warn('close-up not upgraded',it.id,e)}}
   if(!more)try{localStorage.setItem(TEX_UP_FLAG,TEX_UP_V)}catch{}
-  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).${more?' The rest follow over the next days.':''}`,3500)}
+  if(n){planDirty();if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).${more?' The rest follow over the next days.':''}`,3500)}
   return n}
 
 /* (2026-11-16, the audit's W1-1-02: an update that remade every photo cost a tester about 3 server writes an item on one morning, and ten
@@ -55,7 +55,7 @@ async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V
       if(!stillCur(it))continue;it.photo=c.toDataURL('image/jpeg',.85);await resignTagImg(it.id,it.photo);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);remakeSpend(2);n++}
     catch(e){console.warn('photo not upgraded',it.id,e)}}
   if(!more)try{localStorage.setItem(PH_UP_FLAG,PH_UP_V)}catch{}
-  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).${more?' The rest follow over the next days.':''}`,3500)}
+  if(n){planDirty();if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).${more?' The rest follow over the next days.':''}`,3500)}
   return n}
 /* a transparent picture saved as an item photo before shrink() gave it a backdrop (2026-11-14, the owner's socks: a cut-out PNG whose
    photo showed on black, a JPEG having no transparency): a photo whose edge is nearly all pure black (BB_EDGE of it under BB_DARK) and
@@ -83,7 +83,7 @@ async function fixBlackBackdrops(){try{if(localStorage.getItem(BB_FLAG)===BB_V)r
       it.photo=c.toDataURL('image/jpeg',.85);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);remakeSpend(2);n++}
     catch(e){more=true;console.warn('backdrop not fixed',it.id,e)}}
   if(!more)try{localStorage.setItem(BB_FLAG,BB_V)}catch{}
-  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw()}
+  if(n){planDirty();if(typeof fixupRedraw==='function')fixupRedraw()}
   return n}
 
 /* once: Claude-read patterns saved without a pattern box were exposure-matched to the whole item photo (wall and all, a navy
@@ -97,4 +97,4 @@ async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='3
     const c=await canvasOf(it.texture),full=it.pbox?await canvasOf(await tagImgOf(it.id,it)||it.photo):null;
     const s=settFromSpec(it.patternSpec,it.pbox&&full?{tex:c,full,box:it.pbox,type:it.type}:{tex:c,type:it.type});
     if(s&&stillCur(it)&&(JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)||JSON.stringify(s.cross)!==JSON.stringify(it.sett.cross))){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
-  localStorage.setItem('spec_recolour','3');if(n)cache={};return n}
+  localStorage.setItem('spec_recolour','3');if(n)planDirty();return n}

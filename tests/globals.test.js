@@ -9,15 +9,13 @@ const acorn=require('acorn'),escope=require('eslint-scope');
 
 /* name -> {writing file: number of writes}: the writes on main when this test came (2026-11-17), lowered as owners take them over */
 const ALLOW={
-  items:{'analysis.js':4,'kit.js':2,'start.js':3,'sync.js':2,'wardrobe.js':1},
-  cache:{'add.js':4,'app.js':1,'care.js':7,'checklist.js':1,'colpick.js':3,'dress.js':1,'history.js':4,'itemsheet.js':8,'kit.js':11,'migrate.js':4,'own-lists.js':3,'pattern-read.js':1,'safety.js':1,'settings.js':7,'shop.js':1,'sync.js':2,'wardrobe.js':2},
+  items:{'analysis.js':4},
   aiModel:{'add.js':1},
   aiError:{'add.js':2},
   kitNoMine:{'itemsheet.js':2},
   appTop:{'itemsheet.js':1},
   flt:{'itemsheet.js':1},
   listOpen:{'history.js':1},
-  todayStale:{'care.js':2,'dress.js':1,'history.js':2,'kit.js':11,'setup.js':1,'sync.js':1,'today.js':1},
   climate:{'settings.js':4,'today.js':1},
   weather:{'settings.js':3,'today.js':1},
   swapMsg:{'today.js':1},
@@ -28,9 +26,8 @@ const ALLOW={
   pastEdit:{'today.js':1},
   todayPullWait:{'today.js':2},
   scoreOpen:{'today.js':1},
-  dayRecs:{'pack.js':2,'start.js':3,'today.js':2},
+  dayRecs:{'pack.js':2,'today.js':2},
   appKind:{'settings.js':2},
-  settings:{'safety.js':1,'settings.js':2,'start.js':2},
   addFor:{'start.js':2},
   setSeen:{'start.js':2},
   asmOut:{'asm-color.js':2},
@@ -80,4 +77,6 @@ module.exports=async({ok,ROOT})=>{
   ok(!fresh.length,'no file writes another file\'s shared state outside the allow-list'+(fresh.length?': '+fresh.join('; ')+' (call the owner\'s function instead: planDirty(), todayDirty(), setWardrobe())':''));
   ok(!over.length,'no allowed writer writes more often than it did'+(over.length?': '+over.join('; '):''));
   ok(!under.length,'the allow-list only shrinks: every allowance is still used'+(under.length?' (lower or remove in tests/globals.test.js: '+under.join('; ')+')':''));
+  ok(!seen.cache&&!seen.todayStale,'the plan cache and "redraw Today later" are written only by their owners (today.js planDirty, settings.js todayDirty)');
+  ok(!seen.settings&&Object.keys(seen.items||{}).join()==='analysis.js'&&Object.keys(seen.dayRecs||{}).sort().join()==='pack.js,today.js','the wardrobe, history and settings are set through core.js setWardrobe (only the planner\'s brief swaps in analysis.js, pack.js packPlanOf and today.js planWith remain)');
 };

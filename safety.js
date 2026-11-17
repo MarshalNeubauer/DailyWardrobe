@@ -153,5 +153,5 @@ async function adoptBackupSettings(local,data){
   if(localStorage.getItem('last_sync')||!data||!data.settings||!local||!local.settings)return false;
   if((local.settings.updated||0)<=(data.settings.updated||0))return false;   // the merge takes the backup's by itself
   const kept={...local.settings,...data.settings};await metaPut('settings',kept);local.settings=kept;
-  settings=takeSettings(settings,data.settings);applyCustom(settings.custom);cache={};loadWeather();
+  setWardrobe({settings:takeSettings(settings,data.settings)});applyCustom(settings.custom);planDirty();loadWeather();
   if(typeof refreshToday==='function'&&!$('#today').hidden)refreshToday();return true}
