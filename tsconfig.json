@@ -1,0 +1,15 @@
+// TypeScript's checker over the plain JavaScript (`npm run typecheck`, tests/typecheck.js). Nothing is built or emitted.
+// tests/typecheck.js gives each scope its own files and lib (the page, each Web Worker, sw.js, the server), read from index.html
+// and the workers' importScripts, so this file lists none.
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": false,
+    "target": "ES2023",
+    "skipLibCheck": true,
+    "types": []
+  },
+  "files": []
+}
