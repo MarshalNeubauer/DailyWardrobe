@@ -49,7 +49,7 @@ await new Promise(r=>setTimeout(r,50));a.cc=settings.holidays&&settings.holidays
     ok(su.at==='weather'&&/haven’t picked a city/.test(su.msg)&&su.after==='connect',`Next on an unfinished city search says so first, and a second Next goes on (${su.at} → ${su.after})`);
     ok(su.tz==='KW'&&su.cc==='KW',`the setup picks the holidays of the time zone's country (${su.cc})`);
     const ho=await p.evaluate(()=>{openSettings('daysoff');const t=document.querySelector('#holiday-list').textContent;closeSettings();return t});
-    ok(/National Day/.test(ho)&&/Eid al-Fitr/.test(ho),`not connected, Kuwait's holidays are worked out on the phone (settings.js builtinHolidays: ${ho.trim().slice(0,80)})`);
+    ok(/National Day/.test(ho)&&/Eid al-Fitr/.test(ho),`not connected, Kuwait's holidays are worked out on the phone (daysoff.js builtinHolidays: ${ho.trim().slice(0,80)})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
