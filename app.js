@@ -79,6 +79,22 @@ function cleanStored(its,days){its=its||[];days=days||[];
       w.push(atomic('days',dt,cur=>cur&&(cur.updated||0)===(d.updated||0)?(c&&c.date===dt?{put:c}:{del:true}):null))});
     await Promise.all(w);flag();recKeptTell(kept)})().catch(e=>console.warn('stored records not cleaned',e));
   return {items:ci.filter(Boolean),days:cd.filter(Boolean)}}
+/* the stored settings, once per phone (localStorage set_clean, SET_CLEAN_V; fix round A, 2026-11-17, C1: a copy taken before settings were
+   checked came back through takeSettings at every start): cleaned by core.js cleanSettings; in one transaction the original is added to
+   meta set_kept ([{rec, at}], appended, never replaced) and the stored copy replaced with its stamps unchanged, only while it is still the
+   one read (no upload of its own; the next change stamps the cleaned settings and syncs them); the person is told once.
+   -> the cleaned copy for start-up */
+const SET_CLEAN_V='1';
+function cleanStoredSettings(st){if(!st||typeof st!=='object')return st;const c=cleanSettings(st);
+  try{if(localStorage.getItem('set_clean')===SET_CLEAN_V)return c}catch{}
+  const flag=()=>{try{localStorage.setItem('set_clean',SET_CLEAN_V)}catch{}};
+  if(c===st){flag();return c}
+  (async()=>{await txs('meta','readwrite',s=>{const r=s.get('settings'),k=s.get('set_kept');
+      k.onsuccess=()=>{const prev=k.result&&k.result.v;s.put({k:'set_kept',v:[...(Array.isArray(prev)?prev:[]),{rec:st,at:Date.now()}]})};
+      r.onsuccess=()=>{const cur=r.result&&r.result.v;if(cur&&(cur.updated||0)===(st.updated||0))s.put({k:'settings',v:cleanSettings(cur)})}});
+    flag();const say=()=>typeof toast==='function'?toast('Some of this phone’s settings couldn’t be shown safely and were set aside. Nothing was deleted: the originals are kept on this phone.',12000):setTimeout(say,500);setTimeout(say,1500)})()
+    .catch(e=>console.warn('stored settings not cleaned',e));
+  return c}
 /* said once, in plain words, whenever the start-up check set something aside (the originals stay in meta rec_kept on this phone) */
 function recKeptTell(kept){const n=kept.filter(x=>x.kind==='item'&&x.dropped).length,f=kept.filter(x=>x.kind==='item'&&!x.dropped).length;if(!n&&!f)return;
   const t=(n?`${n} item${n===1?'':'s'} in this phone’s storage couldn’t be shown safely and ${n===1?'was':'were'} set aside. `:'')+(f?`Some details of ${f} item${f===1?'':'s'} couldn’t be shown safely and were set aside. `:'')+'Nothing was deleted: the originals are kept on this phone.';
