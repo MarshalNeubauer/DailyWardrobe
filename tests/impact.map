@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	fe637f41759879019202
+# tested	52a98b3265b32ab7d8ea
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	shadeRow	shirtColFix	unreadNote
@@ -451,7 +451,6 @@ addcards.test.js	tagging.js	<loaded>	aiFields	closeTagImg	confTxt	readAbort	read
 addcards.test.js	tests/fixedplan.js	<any>
 addcards.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 addcards.test.js	tests/fixtures/suit-pinstripe.jpg	<loaded>
-addcards.test.js	tests/webkit.js	<any>
 addcards.test.js	theme.js	<loaded>	applyTheme
 addcards.test.js	toast.js	<loaded>	toast	undoHere
 addcards.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -729,11 +728,6 @@ aiverdict.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapUse
 aiverdict.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 aiverdict.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerUp
 aiverdict.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	matMigrate	matRow	notesRow	sockToeMigrate	wardPendingRestore	wardSaveFields
-aiverdict.test.js	watch/leather.jpg	<loaded>
-aiverdict.test.js	watch/shirt-open.png	<loaded>
-aiverdict.test.js	watch/shirt-tie.png	<loaded>
-aiverdict.test.js	watch/suit.png	<loaded>
-aiverdict.test.js	watch/vest.png	<loaded>
 aiverdict.test.js	weather.js	<loaded>	loadWeather
 asmahead.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmahead.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -937,6 +931,7 @@ asmatlas.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmatlas.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmatlas.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmatlas.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmatlas.test.js	tests/safeport.js	<any>
 asmatlas.test.js	theme.js	<loaded>	applyTheme
 asmatlas.test.js	toast.js	<loaded>
 asmatlas.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -1242,6 +1237,7 @@ asmcolor.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmcolor.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmcolor.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmcolor.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmcolor.test.js	tests/safeport.js	<any>
 asmcolor.test.js	theme.js	<loaded>	applyTheme
 asmcolor.test.js	toast.js	<loaded>
 asmcolor.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2323,7 +2319,6 @@ assets.test.js	asm-worker.js	<any>
 assets.test.js	index.html	<any>
 assets.test.js	manifest.webmanifest	<any>
 assets.test.js	sw.js	<any>
-assets.test.js	tests/webkit.js	<any>
 back.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 back.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	dropInviteHash	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 back.test.js	add-card.js	<loaded>	shadeRow
@@ -2581,7 +2576,6 @@ backup-storage.test.js	tests/fixedplan.js	<any>
 backup-storage.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 backup-storage.test.js	tests/fixtures/old-worker/worker-036c1d6.js	<any>
 backup-storage.test.js	tests/fixtures/old-worker/worker-ef18d06.js	<any>
-backup-storage.test.js	tests/webkit.js	<any>
 backup-storage.test.js	theme.js	<loaded>	applyTheme
 backup-storage.test.js	toast.js	<loaded>	toast
 backup-storage.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>todayTouch	@{constroot$today}	mvSig	todayBusy
@@ -3166,6 +3160,11 @@ casual.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 casual.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 casual.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerOpen	layerUp
 casual.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMigrate	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
+casual.test.js	watch/leather.jpg	<loaded>
+casual.test.js	watch/shirt-open.png	<loaded>
+casual.test.js	watch/shirt-tie.png	<loaded>
+casual.test.js	watch/suit.png	<loaded>
+casual.test.js	watch/vest.png	<loaded>
 casual.test.js	weather.js	<loaded>	loadWeather
 casual.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanCustom	cleanTag	correctionsText	corsFor	customText	fetch	lightText	measuredText	orNull	readCapped	sameText	serve	sha256Hex	spend	tagSchema	tagWithClaude	utcDay	wbOf	whoIs
 casual.test.js	worker/links.js	<loaded>	readCapped
@@ -4739,6 +4738,7 @@ errnet.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 errnet.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 errnet.test.js	locale.js	<loaded>	appLocale
 errnet.test.js	locks.js	<loaded>
+errnet.test.js	manifest.webmanifest	<loaded>
 errnet.test.js	mannequin.js	<loaded>	@{}
 errnet.test.js	measure.js	<loaded>
 errnet.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -5067,6 +5067,7 @@ figure.test.js	watch/shirt-tie.png	<loaded>
 figure.test.js	watch/suit.png	<loaded>
 figure.test.js	watch/vest.png	<loaded>
 figure.test.js	weather.js	<loaded>	loadWeather
+fillmaterial.test.js	tests/safeport.js	<any>
 fillmaterial.test.js	tools/fill-material.js	<any>
 folds.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 folds.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -5723,7 +5724,6 @@ globals.test.js	sync-status.js	<any>
 globals.test.js	sync.js	<any>
 globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
-globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -6004,11 +6004,6 @@ hbswatch.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 hbswatch.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 hbswatch.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 hbswatch.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-hbswatch.test.js	watch/leather.jpg	<loaded>
-hbswatch.test.js	watch/shirt-open.png	<loaded>
-hbswatch.test.js	watch/shirt-tie.png	<loaded>
-hbswatch.test.js	watch/suit.png	<loaded>
-hbswatch.test.js	watch/vest.png	<loaded>
 hbswatch.test.js	weather.js	<loaded>	loadWeather
 herringbone.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 herringbone.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -6471,7 +6466,6 @@ inlinehandlers.test.js	sync-status.js	<any>
 inlinehandlers.test.js	sync.js	<any>
 inlinehandlers.test.js	tag-request.js	<any>
 inlinehandlers.test.js	tagging.js	<any>
-inlinehandlers.test.js	tests/webkit.js	<any>
 inlinehandlers.test.js	theme.js	<any>
 inlinehandlers.test.js	toast.js	<any>
 inlinehandlers.test.js	today-gestures.js	<any>
@@ -7030,7 +7024,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
+keptphotos.test.js	worker/photostore.js	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
@@ -7310,7 +7304,6 @@ mannequin.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedu
 mannequin.test.js	tag-request.js	<loaded>
 mannequin.test.js	tagging.js	<loaded>
 mannequin.test.js	tests/pace.js	<any>
-mannequin.test.js	tests/webkit.js	<any>
 mannequin.test.js	theme.js	<loaded>	applyTheme
 mannequin.test.js	toast.js	<loaded>
 mannequin.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}	mvSig
@@ -9983,6 +9976,10 @@ pocketsquare.test.js	today.js	<loaded>	belowBox	canPick	figureStage	foldListTap	
 pocketsquare.test.js	ui.js	<loaded>	addGate	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp
 pocketsquare.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	matMigrate	matRow	matSyn	notesRow	sockToeMigrate	wardHay	wardMatch	wardNorm	wardPendingRestore
 pocketsquare.test.js	watch/leather.jpg	<loaded>
+pocketsquare.test.js	watch/shirt-open.png	<loaded>
+pocketsquare.test.js	watch/shirt-tie.png	<loaded>
+pocketsquare.test.js	watch/suit.png	<loaded>
+pocketsquare.test.js	watch/vest.png	<loaded>
 pocketsquare.test.js	weather.js	<loaded>	loadWeather
 records.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 records.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -10539,6 +10536,7 @@ run.js: figure draws the tie, and the shirt when there is no jacket	wardrobe.js	
 run.js: figure draws the tie, and the shirt when there is no jacket	watch/leather.jpg	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	watch/shirt-open.png	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	watch/shirt-tie.png	<loaded>
+run.js: figure draws the tie, and the shirt when there is no jacket	watch/suit.png	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	watch/vest.png	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	weather.js	<loaded>	loadWeather
 run.js: outfit score	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -11183,6 +11181,415 @@ run.js: swipe moves only the outfit, across viewports	watch/shirt-tie.png	<loade
 run.js: swipe moves only the outfit, across viewports	watch/suit.png	<loaded>
 run.js: swipe moves only the outfit, across viewports	watch/vest.png	<loaded>
 run.js: swipe moves only the outfit, across viewports	weather.js	<loaded>	loadWeather
+safeport.test.js	about.js	<loaded>	aboutLatest	aboutReadVersion	aboutShow	aboutStart	checkForUpdate	swVersionOf
+safeport.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash
+safeport.test.js	add-card.js	<loaded>
+safeport.test.js	add-keep.js	<loaded>
+safeport.test.js	add-more.js	<loaded>	checkArrivals
+safeport.test.js	add-paste.js	<loaded>
+safeport.test.js	add-save.js	<loaded>
+safeport.test.js	add-sheet.js	<loaded>
+safeport.test.js	add.js	<loaded>
+safeport.test.js	analysis.js	<loaded>
+safeport.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	afterScripts	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	tx	txFail	txs	window.fetch
+safeport.test.js	apple-touch-icon.png	<loaded>
+safeport.test.js	asm-color.js	<loaded>
+safeport.test.js	asm-gl.js	<loaded>
+safeport.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
+safeport.test.js	asm-pocket.js	<loaded>
+safeport.test.js	asm-watch.js	<loaded>
+safeport.test.js	assemble.js	<loaded>	@
+safeport.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
+safeport.test.js	backupfile.js	<loaded>
+safeport.test.js	boxfold.js	<loaded>
+safeport.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
+safeport.test.js	care.js	<loaded>
+safeport.test.js	checklist.js	<loaded>
+safeport.test.js	colpick.js	<loaded>
+safeport.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	applyCustom	casualTop	dayClimate	di	isWorkday	isoKey	key	keySettings	keySplit	metalWord	occOf	offDays	offName	setWardrobe	subHashes	takeSettings	todayDate
+safeport.test.js	cost.js	<loaded>
+safeport.test.js	daysoff.js	<loaded>	refreshHolidays
+safeport.test.js	detect.js	<loaded>	@
+safeport.test.js	draw.js	<loaded>
+safeport.test.js	dress.js	<loaded>	migrateVests
+safeport.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
+safeport.test.js	icon-192.png	<loaded>
+safeport.test.js	icon-512.png	<loaded>
+safeport.test.js	index.html	<loaded>
+safeport.test.js	item-photo.js	<loaded>
+safeport.test.js	item-view.js	<loaded>	@{constb$ivbody}	itemShown	renderItem
+safeport.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
+safeport.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
+safeport.test.js	locale.js	<loaded>	appLocale
+safeport.test.js	locks.js	<loaded>
+safeport.test.js	manifest.webmanifest	<loaded>
+safeport.test.js	mannequin.js	<loaded>	@{}
+safeport.test.js	measure.js	<loaded>
+safeport.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
+safeport.test.js	migrate.js	<loaded>
+safeport.test.js	missed.js	<loaded>
+safeport.test.js	month.js	<loaded>	dayOnly
+safeport.test.js	mq/shirt-open.js	<loaded>
+safeport.test.js	mq/shirt-tie.js	<loaded>
+safeport.test.js	mq/suit-open.js	<loaded>
+safeport.test.js	mq/suit.js	<loaded>
+safeport.test.js	mq/vest.js	<loaded>
+safeport.test.js	own-lists.js	<loaded>
+safeport.test.js	pack.js	<loaded>	packShow
+safeport.test.js	pattern-read.js	<loaded>
+safeport.test.js	photos.js	<loaded>	esc	loadRenders
+safeport.test.js	pickscore.js	<loaded>
+safeport.test.js	planner.js	<loaded>
+safeport.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
+safeport.test.js	safety.js	<loaded>	db.then.dbDown
+safeport.test.js	scorecard.js	<loaded>
+safeport.test.js	settings.js	<loaded>	@constsetChan{try}	closeSettings	refreshToday	setLock	settingsOpen	settingsPart
+safeport.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
+safeport.test.js	sheet-swipe.js	<loaded>
+safeport.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then
+safeport.test.js	snapshots.js	<loaded>
+safeport.test.js	srgb.js	<loaded>
+safeport.test.js	start.js	<loaded>	applyStored	loadStored	pageIn	show	startChecks	startJobs	startUp
+safeport.test.js	stats.js	<loaded>	@afterScripts
+safeport.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .firstrun	.vh	.wxc.wxlk	.wxl	:root	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
+safeport.test.js	sync-photos.js	<loaded>
+safeport.test.js	sync-status.js	<loaded>
+safeport.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	syncNeedsPull	syncUrl
+safeport.test.js	tag-request.js	<loaded>
+safeport.test.js	tagging.js	<loaded>
+safeport.test.js	tests/a11y.test.js	<any>
+safeport.test.js	tests/about.test.js	<any>
+safeport.test.js	tests/accents.test.js	<any>
+safeport.test.js	tests/accounts.test.js	<any>
+safeport.test.js	tests/addcards.test.js	<any>
+safeport.test.js	tests/addsheet.test.js	<any>
+safeport.test.js	tests/advicefresh.test.js	<any>
+safeport.test.js	tests/aiverdict.test.js	<any>
+safeport.test.js	tests/asmahead.test.js	<any>
+safeport.test.js	tests/asmatlas.test.js	<any>
+safeport.test.js	tests/asmcloth.test.js	<any>
+safeport.test.js	tests/asmcode.test.js	<any>
+safeport.test.js	tests/asmcolor.test.js	<any>
+safeport.test.js	tests/asmcr.test.js	<any>
+safeport.test.js	tests/asmcu.test.js	<any>
+safeport.test.js	tests/asmgl.test.js	<any>
+safeport.test.js	tests/asmrelease.test.js	<any>
+safeport.test.js	tests/asmroute.test.js	<any>
+safeport.test.js	tests/asmserverpic.test.js	<any>
+safeport.test.js	tests/asmstuck.test.js	<any>
+safeport.test.js	tests/asmtwill.test.js	<any>
+safeport.test.js	tests/asmwatch.test.js	<any>
+safeport.test.js	tests/asmweave.test.js	<any>
+safeport.test.js	tests/assemble.test.js	<any>
+safeport.test.js	tests/assets.test.js	<any>
+safeport.test.js	tests/back.test.js	<any>
+safeport.test.js	tests/backgesture.test.js	<any>
+safeport.test.js	tests/backup-storage.test.js	<any>
+safeport.test.js	tests/calendar.test.js	<any>
+safeport.test.js	tests/camouflage.test.js	<any>
+safeport.test.js	tests/canvasrefuse.test.js	<any>
+safeport.test.js	tests/cardid.test.js	<any>
+safeport.test.js	tests/care.test.js	<any>
+safeport.test.js	tests/casual.test.js	<any>
+safeport.test.js	tests/childrec.js	<any>
+safeport.test.js	tests/claudepattern.test.js	<any>
+safeport.test.js	tests/clock.test.js	<any>
+safeport.test.js	tests/closeupread.test.js	<any>
+safeport.test.js	tests/closeupsheet.test.js	<any>
+safeport.test.js	tests/cmhandedge.test.js	<any>
+safeport.test.js	tests/cmpmeasure.test.js	<any>
+safeport.test.js	tests/colnew.test.js	<any>
+safeport.test.js	tests/colormath.test.js	<any>
+safeport.test.js	tests/colors.test.js	<any>
+safeport.test.js	tests/colpick.test.js	<any>
+safeport.test.js	tests/connkeep.test.js	<any>
+safeport.test.js	tests/costwear.test.js	<any>
+safeport.test.js	tests/daysoff.test.js	<any>
+safeport.test.js	tests/deploy.test.js	<any>
+safeport.test.js	tests/describe.test.js	<any>
+safeport.test.js	tests/drawnonly.test.js	<any>
+safeport.test.js	tests/dress.test.js	<any>
+safeport.test.js	tests/editorrework.test.js	<any>
+safeport.test.js	tests/editphotosb.test.js	<any>
+safeport.test.js	tests/errnet.test.js	<any>
+safeport.test.js	tests/errreport.test.js	<any>
+safeport.test.js	tests/fieldmerge.test.js	<any>
+safeport.test.js	tests/figure.test.js	<any>
+safeport.test.js	tests/fillmaterial.test.js	<any>
+safeport.test.js	tests/fixedplan.js	<any>
+safeport.test.js	tests/folds.test.js	<any>
+safeport.test.js	tests/freshrest.test.js	<any>
+safeport.test.js	tests/gaps.js	<any>
+safeport.test.js	tests/garmentdraw.test.js	<any>
+safeport.test.js	tests/garmentpaint.test.js	<any>
+safeport.test.js	tests/garmentworker-calls.js	<any>
+safeport.test.js	tests/geomaps.test.js	<any>
+safeport.test.js	tests/globals.test.js	<any>
+safeport.test.js	tests/handpick.test.js	<any>
+safeport.test.js	tests/hbshirt.test.js	<any>
+safeport.test.js	tests/hbswatch.test.js	<any>
+safeport.test.js	tests/herringbone.test.js	<any>
+safeport.test.js	tests/history.test.js	<any>
+safeport.test.js	tests/homescreen.test.js	<any>
+safeport.test.js	tests/impact.js	<any>
+safeport.test.js	tests/impact.test.js	<any>
+safeport.test.js	tests/inlinehandlers.test.js	<any>
+safeport.test.js	tests/invite.test.js	<any>
+safeport.test.js	tests/itempics.test.js	<any>
+safeport.test.js	tests/itemredesign.test.js	<any>
+safeport.test.js	tests/itemsheet.test.js	<any>
+safeport.test.js	tests/jacketcolour.test.js	<any>
+safeport.test.js	tests/keptphotos.test.js	<any>
+safeport.test.js	tests/kit.test.js	<any>
+safeport.test.js	tests/labbench.test.js	<any>
+safeport.test.js	tests/lint.js	<any>
+safeport.test.js	tests/lookplan.test.js	<any>
+safeport.test.js	tests/mannequin.test.js	<any>
+safeport.test.js	tests/masterspeed.test.js	<any>
+safeport.test.js	tests/materials.test.js	<any>
+safeport.test.js	tests/measure.test.js	<any>
+safeport.test.js	tests/mergeshared.test.js	<any>
+safeport.test.js	tests/month.test.js	<any>
+safeport.test.js	tests/motif.test.js	<any>
+safeport.test.js	tests/moveoutfit.test.js	<any>
+safeport.test.js	tests/mqcloth.test.js	<any>
+safeport.test.js	tests/multi.test.js	<any>
+safeport.test.js	tests/navfit.test.js	<any>
+safeport.test.js	tests/newuser.test.js	<any>
+safeport.test.js	tests/occasions.test.js	<any>
+safeport.test.js	tests/onorder.test.js	<any>
+safeport.test.js	tests/owncolany.test.js	<any>
+safeport.test.js	tests/ownmaterials.test.js	<any>
+safeport.test.js	tests/ownnames.test.js	<any>
+safeport.test.js	tests/pace.js	<any>
+safeport.test.js	tests/pack.test.js	<any>
+safeport.test.js	tests/pairrepeat.test.js	<any>
+safeport.test.js	tests/paperstatus.test.js	<any>
+safeport.test.js	tests/paste.test.js	<any>
+safeport.test.js	tests/photoedit.test.js	<any>
+safeport.test.js	tests/pickbugs.test.js	<any>
+safeport.test.js	tests/picker.test.js	<any>
+safeport.test.js	tests/pickerfocus.test.js	<any>
+safeport.test.js	tests/pieces.test.js	<any>
+safeport.test.js	tests/planner-pairs.test.js	<any>
+safeport.test.js	tests/planner-repeats.test.js	<any>
+safeport.test.js	tests/planner-rules.test.js	<any>
+safeport.test.js	tests/planreview.test.js	<any>
+safeport.test.js	tests/pocketsquare.test.js	<any>
+safeport.test.js	tests/records.test.js	<any>
+safeport.test.js	tests/remind.test.js	<any>
+safeport.test.js	tests/replay/harness/lab.js	<any>
+safeport.test.js	tests/replay/harness/make-photos.js	<any>
+safeport.test.js	tests/replay/harness/net.js	<any>
+safeport.test.js	tests/replay/harness/paths.js	<any>
+safeport.test.js	tests/replay/harness/phone.js	<any>
+safeport.test.js	tests/replay/run.js	<any>
+safeport.test.js	tests/replay/scripts/CR-6-12.js	<any>
+safeport.test.js	tests/replay/scripts/W1-1-01.js	<any>
+safeport.test.js	tests/replay/scripts/W1-1-02.js	<any>
+safeport.test.js	tests/replay/scripts/W1-10-01.js	<any>
+safeport.test.js	tests/replay/scripts/W1-10-02.js	<any>
+safeport.test.js	tests/replay/scripts/W1-11-01.js	<any>
+safeport.test.js	tests/replay/scripts/W1-11-02.js	<any>
+safeport.test.js	tests/replay/scripts/W1-11-03.js	<any>
+safeport.test.js	tests/replay/scripts/W1-11-04.js	<any>
+safeport.test.js	tests/replay/scripts/W1-11-05.js	<any>
+safeport.test.js	tests/replay/scripts/W1-2-01.js	<any>
+safeport.test.js	tests/replay/scripts/W1-2-02.js	<any>
+safeport.test.js	tests/replay/scripts/W1-2-04.js	<any>
+safeport.test.js	tests/replay/scripts/W1-3-01.js	<any>
+safeport.test.js	tests/replay/scripts/W1-3-02-today.js	<any>
+safeport.test.js	tests/replay/scripts/W1-3-02.js	<any>
+safeport.test.js	tests/replay/scripts/W1-3-03.js	<any>
+safeport.test.js	tests/replay/scripts/W1-3-04.js	<any>
+safeport.test.js	tests/replay/scripts/W1-3-05.js	<any>
+safeport.test.js	tests/replay/scripts/W1-4-01.js	<any>
+safeport.test.js	tests/replay/scripts/W1-5-01.js	<any>
+safeport.test.js	tests/replay/scripts/W1-5-02.js	<any>
+safeport.test.js	tests/replay/scripts/W1-5-03.js	<any>
+safeport.test.js	tests/replay/scripts/W1-5-04.js	<any>
+safeport.test.js	tests/replay/scripts/W1-5-06.js	<any>
+safeport.test.js	tests/replay/scripts/W1-5-07.js	<any>
+safeport.test.js	tests/replay/scripts/W1-6-01.js	<any>
+safeport.test.js	tests/replay/scripts/W1-6-02.js	<any>
+safeport.test.js	tests/replay/scripts/W1-6-04.js	<any>
+safeport.test.js	tests/replay/scripts/W1-6-05.js	<any>
+safeport.test.js	tests/replay/scripts/W1-6-06.js	<any>
+safeport.test.js	tests/replay/scripts/W1-7-01.js	<any>
+safeport.test.js	tests/replay/scripts/W1-7-02.js	<any>
+safeport.test.js	tests/replay/scripts/W1-8-01.js	<any>
+safeport.test.js	tests/replay/scripts/W1-8-02.js	<any>
+safeport.test.js	tests/replay/scripts/W1-8-05.js	<any>
+safeport.test.js	tests/replay/scripts/W1-9-01.js	<any>
+safeport.test.js	tests/replay/scripts/W1-9-02.js	<any>
+safeport.test.js	tests/replay/scripts/W1-9-03.js	<any>
+safeport.test.js	tests/replay/scripts/W1-9-04.js	<any>
+safeport.test.js	tests/replay/scripts/W1-9-05.js	<any>
+safeport.test.js	tests/replay/scripts/W1-9-06.js	<any>
+safeport.test.js	tests/replay/scripts/W1-9-08.js	<any>
+safeport.test.js	tests/replay/scripts/W2-12-01.js	<any>
+safeport.test.js	tests/replay/scripts/W2-12-02.js	<any>
+safeport.test.js	tests/replay/scripts/W2-12-03.js	<any>
+safeport.test.js	tests/replay/scripts/W2-13-01.js	<any>
+safeport.test.js	tests/replay/scripts/W2-13-02.js	<any>
+safeport.test.js	tests/replay/scripts/W2-13-03.js	<any>
+safeport.test.js	tests/replay/scripts/W2-13-04.js	<any>
+safeport.test.js	tests/replay/scripts/W2-14-01.js	<any>
+safeport.test.js	tests/replay/scripts/W2-14-02.js	<any>
+safeport.test.js	tests/replay/scripts/W2-14-03.js	<any>
+safeport.test.js	tests/replay/scripts/W2-14-04.js	<any>
+safeport.test.js	tests/replay/scripts/W2-14-05.js	<any>
+safeport.test.js	tests/replay/scripts/W2-15-01.js	<any>
+safeport.test.js	tests/replay/scripts/W2-15-02.js	<any>
+safeport.test.js	tests/replay/scripts/W2-15-03.js	<any>
+safeport.test.js	tests/replay/scripts/W2-15-04.js	<any>
+safeport.test.js	tests/replay/scripts/W2-15-05.js	<any>
+safeport.test.js	tests/replay/scripts/W2-15-06.js	<any>
+safeport.test.js	tests/replay/scripts/W2-16-01.js	<any>
+safeport.test.js	tests/replay/scripts/W2-16-02.js	<any>
+safeport.test.js	tests/replay/scripts/W2-16-03.js	<any>
+safeport.test.js	tests/replay/scripts/W2-16-04.js	<any>
+safeport.test.js	tests/replay/scripts/W2-17-01.js	<any>
+safeport.test.js	tests/replay/scripts/W2-17-02.js	<any>
+safeport.test.js	tests/replay/scripts/W2-17-03.js	<any>
+safeport.test.js	tests/replay/scripts/W2-17-04.js	<any>
+safeport.test.js	tests/replay/scripts/W2-17-05.js	<any>
+safeport.test.js	tests/replay/scripts/W2-17-06.js	<any>
+safeport.test.js	tests/replay/scripts/W2-17-07.js	<any>
+safeport.test.js	tests/replay/scripts/W2-17-08.js	<any>
+safeport.test.js	tests/replay/scripts/W2-17-09.js	<any>
+safeport.test.js	tests/replay/scripts/W2-18-01.js	<any>
+safeport.test.js	tests/replay/scripts/W2-18-02.js	<any>
+safeport.test.js	tests/replay/scripts/W2-19-01.js	<any>
+safeport.test.js	tests/replay/scripts/W2-19-02.js	<any>
+safeport.test.js	tests/replay/scripts/W2-19-03.js	<any>
+safeport.test.js	tests/replay/scripts/W2-19-04.js	<any>
+safeport.test.js	tests/replay/scripts/W2-19-05.js	<any>
+safeport.test.js	tests/replay/scripts/W2-19-06.js	<any>
+safeport.test.js	tests/replay/scripts/W2-19-07.js	<any>
+safeport.test.js	tests/replay/scripts/W2-19-08.js	<any>
+safeport.test.js	tests/replay/scripts/W2-19-09.js	<any>
+safeport.test.js	tests/replay/scripts/_v9lib.js	<any>
+safeport.test.js	tests/replay/scripts/_verify10-lib.js	<any>
+safeport.test.js	tests/replay/scripts/_verify11-lib.js	<any>
+safeport.test.js	tests/replay/scripts/_verify12-lib.js	<any>
+safeport.test.js	tests/replay/scripts/_verify19-lib.js	<any>
+safeport.test.js	tests/replay/scripts/_verify2-lib.js	<any>
+safeport.test.js	tests/replay/scripts/_verify3-lib.js	<any>
+safeport.test.js	tests/replay/scripts/_verify6-lib.js	<any>
+safeport.test.js	tests/replay/scripts/_verify7-lib.js	<any>
+safeport.test.js	tests/replay/scripts/_verify8-lib.js	<any>
+safeport.test.js	tests/replay/scripts/lib-verify1.js	<any>
+safeport.test.js	tests/replay/scripts/lib-verify13.js	<any>
+safeport.test.js	tests/replay/scripts/lib-verify14.js	<any>
+safeport.test.js	tests/replay/scripts/lib-verify15.js	<any>
+safeport.test.js	tests/replay/scripts/lib-verify16.js	<any>
+safeport.test.js	tests/replay/scripts/lib-verify17.js	<any>
+safeport.test.js	tests/replay/scripts/lib-verify18.js	<any>
+safeport.test.js	tests/replay/scripts/lib-verify5.js	<any>
+safeport.test.js	tests/rollback.test.js	<any>
+safeport.test.js	tests/rotation-pause.test.js	<any>
+safeport.test.js	tests/run.js	<any>
+safeport.test.js	tests/safeport.js	<any>
+safeport.test.js	tests/safety.test.js	<any>
+safeport.test.js	tests/safetysync.test.js	<any>
+safeport.test.js	tests/sample.test.js	<any>
+safeport.test.js	tests/savelock.test.js	<any>
+safeport.test.js	tests/scoreanim.test.js	<any>
+safeport.test.js	tests/scoredials.test.js	<any>
+safeport.test.js	tests/scorefix.test.js	<any>
+safeport.test.js	tests/server-limits.test.js	<any>
+safeport.test.js	tests/serverchecks.test.js	<any>
+safeport.test.js	tests/sett.test.js	<any>
+safeport.test.js	tests/settag.test.js	<any>
+safeport.test.js	tests/settingsin.test.js	<any>
+safeport.test.js	tests/settingsmerge.test.js	<any>
+safeport.test.js	tests/settingsui.test.js	<any>
+safeport.test.js	tests/setup.test.js	<any>
+safeport.test.js	tests/shade.test.js	<any>
+safeport.test.js	tests/shard.js	<any>
+safeport.test.js	tests/shard.test.js	<any>
+safeport.test.js	tests/sharedmasters.test.js	<any>
+safeport.test.js	tests/sharpclose.test.js	<any>
+safeport.test.js	tests/shellfix.test.js	<any>
+safeport.test.js	tests/shirtweave.test.js	<any>
+safeport.test.js	tests/shop.test.js	<any>
+safeport.test.js	tests/shopstay.test.js	<any>
+safeport.test.js	tests/shopswipe.test.js	<any>
+safeport.test.js	tests/sockpatterns.test.js	<any>
+safeport.test.js	tests/socktoe.test.js	<any>
+safeport.test.js	tests/sockworker.test.js	<any>
+safeport.test.js	tests/sourcerules.test.js	<any>
+safeport.test.js	tests/speed.test.js	<any>
+safeport.test.js	tests/staledevice.test.js	<any>
+safeport.test.js	tests/stats.test.js	<any>
+safeport.test.js	tests/stylea11y.test.js	<any>
+safeport.test.js	tests/sw.test.js	<any>
+safeport.test.js	tests/swatchzoom.test.js	<any>
+safeport.test.js	tests/sync.test.js	<any>
+safeport.test.js	tests/syncwrite.test.js	<any>
+safeport.test.js	tests/tabmove.test.js	<any>
+safeport.test.js	tests/tagger.test.js	<any>
+safeport.test.js	tests/tagging.test.js	<any>
+safeport.test.js	tests/tagreads.test.js	<any>
+safeport.test.js	tests/tagroutes.test.js	<any>
+safeport.test.js	tests/tagswatch.test.js	<any>
+safeport.test.js	tests/takeoff.test.js	<any>
+safeport.test.js	tests/testlock.js	<any>
+safeport.test.js	tests/texswatch.test.js	<any>
+safeport.test.js	tests/texture.test.js	<any>
+safeport.test.js	tests/theme.test.js	<any>
+safeport.test.js	tests/tieweave.test.js	<any>
+safeport.test.js	tests/titles.test.js	<any>
+safeport.test.js	tests/today.test.js	<any>
+safeport.test.js	tests/todayedges.test.js	<any>
+safeport.test.js	tests/todayswatch.test.js	<any>
+safeport.test.js	tests/todayzoom.test.js	<any>
+safeport.test.js	tests/twillswatch.test.js	<any>
+safeport.test.js	tests/typecheck.js	<any>
+safeport.test.js	tests/typecheck.test.js	<any>
+safeport.test.js	tests/ui.test.js	<any>
+safeport.test.js	tests/uipages.test.js	<any>
+safeport.test.js	tests/uploadbudget.test.js	<any>
+safeport.test.js	tests/vest.test.js	<any>
+safeport.test.js	tests/wardfab.test.js	<any>
+safeport.test.js	tests/wardrobe.test.js	<any>
+safeport.test.js	tests/wardrobetap.test.js	<any>
+safeport.test.js	tests/wardswipe.test.js	<any>
+safeport.test.js	tests/watchmatch.test.js	<any>
+safeport.test.js	tests/weather.test.js	<any>
+safeport.test.js	tests/webkit.js	<any>
+safeport.test.js	tests/weeklock.test.js	<any>
+safeport.test.js	tests/weeklockdays.test.js	<any>
+safeport.test.js	tests/workerfix.test.js	<any>
+safeport.test.js	tests/workersrc.js	<any>
+safeport.test.js	tests/workersweep.test.js	<any>
+safeport.test.js	theme.js	<loaded>	applyTheme
+safeport.test.js	toast.js	<loaded>
+safeport.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
+safeport.test.js	today-photofold.js	<loaded>
+safeport.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
+safeport.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
+safeport.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
+safeport.test.js	tools/asm-atlas.js	<any>
+safeport.test.js	tools/asm-cm-upload.js	<any>
+safeport.test.js	tools/atlas-measure.js	<any>
+safeport.test.js	tools/atlas.js	<any>
+safeport.test.js	tools/cloud-tests.js	<any>
+safeport.test.js	tools/cssdiff.js	<any>
+safeport.test.js	tools/describe-eval.js	<any>
+safeport.test.js	tools/fill-material.js	<any>
+safeport.test.js	tools/read-errors.js	<any>
+safeport.test.js	tools/upload-budget.js	<any>
+safeport.test.js	tools/visit-measure.js	<any>
+safeport.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
+safeport.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate
+safeport.test.js	watch/leather.jpg	<loaded>
+safeport.test.js	watch/shirt-open.png	<loaded>
+safeport.test.js	watch/shirt-tie.png	<loaded>
+safeport.test.js	watch/suit.png	<loaded>
+safeport.test.js	watch/vest.png	<loaded>
+safeport.test.js	weather.js	<loaded>	loadWeather
 safety.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 safety.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 safety.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	typeCard	unreadNote
@@ -11955,11 +12362,6 @@ sett.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapUse
 sett.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 sett.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerOpen	layerUp	needConn	netErr	uiEsc
 sett.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	fldRow	giNote	giTag	itemFieldNow	ivOn	matMigrate	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlush	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
-sett.test.js	watch/leather.jpg	<loaded>
-sett.test.js	watch/shirt-open.png	<loaded>
-sett.test.js	watch/shirt-tie.png	<loaded>
-sett.test.js	watch/suit.png	<loaded>
-sett.test.js	watch/vest.png	<loaded>
 sett.test.js	weather.js	<loaded>	loadWeather
 sett.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanCustom	cleanTag	correctionsText	corsFor	customText	fetch	lightText	measuredText	orNull	readCapped	sameText	serve	sha256Hex	spend	tagSchema	tagWithClaude	txt	utcDay	wbOf	whoIs
 sett.test.js	worker/links.js	<loaded>	readCapped
@@ -12627,6 +13029,7 @@ shard.test.js	tests/remind.test.js	<any>
 shard.test.js	tests/rollback.test.js	<any>
 shard.test.js	tests/rotation-pause.test.js	<any>
 shard.test.js	tests/run.js	<any>
+shard.test.js	tests/safeport.test.js	<any>
 shard.test.js	tests/safety.test.js	<any>
 shard.test.js	tests/safetysync.test.js	<any>
 shard.test.js	tests/sample.test.js	<any>
@@ -12770,6 +13173,7 @@ sharedmasters.test.js	sync.js	<loaded>	@connRestored.then	afterPull	clockLearn	l
 sharedmasters.test.js	tag-request.js	<loaded>
 sharedmasters.test.js	tagging.js	<loaded>
 sharedmasters.test.js	tests/fixedplan.js	<any>
+sharedmasters.test.js	tests/safeport.js	<any>
 sharedmasters.test.js	theme.js	<loaded>	applyTheme
 sharedmasters.test.js	toast.js	<loaded>
 sharedmasters.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -13330,8 +13734,6 @@ shopswipe.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	war
 shopswipe.test.js	watch/leather.jpg	<loaded>
 shopswipe.test.js	watch/shirt-open.png	<loaded>
 shopswipe.test.js	watch/shirt-tie.png	<loaded>
-shopswipe.test.js	watch/suit.png	<loaded>
-shopswipe.test.js	watch/vest.png	<loaded>
 shopswipe.test.js	weather.js	<loaded>	loadWeather
 sockpatterns.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 sockpatterns.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
@@ -13590,7 +13992,6 @@ sourcerules.test.js	sync-status.js	<any>
 sourcerules.test.js	sync.js	<any>
 sourcerules.test.js	tag-request.js	<any>
 sourcerules.test.js	tagging.js	<any>
-sourcerules.test.js	tests/webkit.js	<any>
 sourcerules.test.js	theme.js	<any>
 sourcerules.test.js	toast.js	<any>
 sourcerules.test.js	today-gestures.js	<any>
@@ -13780,6 +14181,11 @@ staledevice.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapS
 staledevice.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	addForSlot	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 staledevice.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp	netErr
 staledevice.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	itemFieldNow	matMigrate	matRenameTo	sockLegacy	sockToeMigrate	wardBack	wardBar	wardCount	wardFlush	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
+staledevice.test.js	watch/leather.jpg	<loaded>
+staledevice.test.js	watch/shirt-open.png	<loaded>
+staledevice.test.js	watch/shirt-tie.png	<loaded>
+staledevice.test.js	watch/suit.png	<loaded>
+staledevice.test.js	watch/vest.png	<loaded>
 staledevice.test.js	weather.js	<loaded>	loadWeather
 staledevice.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	asText	corsFor	countWrites	dropParts	fetch	gcKey	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	keepSnapshots	kvMeta	liteSig	loadAny	loadSync	mergeLite	nextRevs	orNull	ownerAs	ownerOnly	phCollect	phHash	phKey	phThere	putPhotos	putStored	pvMeta	pvText	readPv	readText	refsIn	refsOf	renderId	sameText	serve	sha256Hex	spend	spendUpTo	splitPhotos	stampOf	storePhotos	storedVersion	syncLiteGet	syncLitePost	syncPhotos	syncVersion	unspend	usedOf	utcDay	whoIs	writeBudget
 staledevice.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayUnflat	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	fsPack	give	isParted	isPhoto	isPhotoOld	itemBase	keepSnapshots	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	phHash	putStored	readText	sameVal	sampleOnly	saveLock	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncPhotos	syncVersion	writeBudget
@@ -13959,7 +14365,6 @@ stylea11y.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	
 stylea11y.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 stylea11y.test.js	tagging.js	<any>	<loaded>	readAbort	tagNotes
 stylea11y.test.js	tests/fixedplan.js	<any>
-stylea11y.test.js	tests/webkit.js	<any>
 stylea11y.test.js	theme.js	<any>	<loaded>	@apreferscolorschemedark.addEventListenerchange	applyTheme
 stylea11y.test.js	toast.js	<any>	<loaded>	toastDrop	undoOff
 stylea11y.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constroot$today}	@{constroot$today}>@root.addEventListenerclick	mvSig	todayCovered
@@ -13969,6 +14374,11 @@ stylea11y.test.js	today-plan.js	<any>	<loaded>	planDirty	planFor	planMonth	planS
 stylea11y.test.js	today.js	<any>	<loaded>	addForSlot	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	slotLabel	slots	todaySay	toggleList	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 stylea11y.test.js	ui.js	<any>	<loaded>	@window.addEventListenerkeydown	addGate	advClose	closeupBtn	connSummary	cuTouch	inviteOver	isConnected	layerClose	layerFocusables	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 stylea11y.test.js	wardrobe.js	<any>	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMigrate	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
+stylea11y.test.js	watch/leather.jpg	<loaded>
+stylea11y.test.js	watch/shirt-open.png	<loaded>
+stylea11y.test.js	watch/shirt-tie.png	<loaded>
+stylea11y.test.js	watch/suit.png	<loaded>
+stylea11y.test.js	watch/vest.png	<loaded>
 stylea11y.test.js	weather.js	<any>	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 stylea11y.test.js	worker.js	<any>	<loaded>
 sw.test.js	about.js	<any>	<loaded>	aboutAdopt	aboutAsk	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
@@ -14051,7 +14461,7 @@ sw.test.js	sync.js	<any>	<loaded>	@addEventListenerpagehide	@connRestored.then	@
 sw.test.js	tag-request.js	<any>	<loaded>
 sw.test.js	tagging.js	<any>	<loaded>
 sw.test.js	tests/fixedplan.js	<any>
-sw.test.js	tests/webkit.js	<any>
+sw.test.js	tests/safeport.js	<any>
 sw.test.js	theme.js	<any>	<loaded>	applyTheme
 sw.test.js	toast.js	<any>	<loaded>	toast
 sw.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constroot$today}
@@ -14537,7 +14947,7 @@ tagger.test.js	worker/colormath.js	<loaded>	dE00	hexLab	hexRgb	rgbLab
 tagger.test.js	worker/describe.js	<loaded>	askOf	cleanDesc	cleanDescribeColour	cleanDescribePattern	cleanLook	colWord	colourSchema	descTables	describeBoth	guessBase	handleDescribe	num	ownLists	ownerText	patternSchema	patternSchemaOf	perCall	say
 tagger.test.js	worker/links.js	<loaded>	readCapped
 tagger.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	unspend	utcDay	whoIs
-tagger.test.js	worker/photostore.js	<loaded>	handleSync
+tagger.test.js	worker/photostore.js	handleSync
 tagger.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanAccents	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsSock	lightText	matCap	matName	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	notMaterial	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	tagWithWorkersAi	txt	wbOf
 tagging.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 tagging.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
@@ -16586,6 +16996,11 @@ watchmatch.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapUs
 watchmatch.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 watchmatch.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	inviteOver	isConnected	layerFocusables	layerInert	layerUp
 watchmatch.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMigrate	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
+watchmatch.test.js	watch/leather.jpg	<loaded>
+watchmatch.test.js	watch/shirt-open.png	<loaded>
+watchmatch.test.js	watch/shirt-tie.png	<loaded>
+watchmatch.test.js	watch/suit.png	<loaded>
+watchmatch.test.js	watch/vest.png	<loaded>
 watchmatch.test.js	weather.js	<loaded>	loadWeather
 watchmatch.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	ITEM_BG	ITEM_PROMPT	ITEM_REF_PROMPT	RENDER_PROMPT	WATCH_KEY	corsFor	dataUrlToBlob	dropFail	fetch	handleRender	hasWatch	hubOf	itemPhoto	jobClaim	jobMsg	keepMade	msgNs	orNull	outfitPhoto	photoCap	queue	renderId	renderItem	renderTtl	runRenderJob	sameText	serve	sha256Hex	spend	spendEach	tellHub	utcDay	whoIs
 watchmatch.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_PROMPT	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem

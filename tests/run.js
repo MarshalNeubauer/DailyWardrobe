@@ -261,7 +261,7 @@ const FIXED_PLAN=path.join(__dirname,'fixedplan.js');
 const ASM_OFF={content:'window.ASM_TEST_OFF=true'};   // assembled pictures off in a test page (assemble.js ASM_ON)
 const REAL_SUITES=new Set(['renders the outfit without errors','planner: independent outfit checklist','planner: shoes, belts, leather and metals','outfit score']);
 const bench=async(eager=true)=>{
-  await new Promise(r=>server.listen(0,'127.0.0.1',r));const url=`http://127.0.0.1:${server.address().port}/index.html`;
+  const url=`http://127.0.0.1:${await require('./safeport').listenSafe(server,'127.0.0.1')}/index.html`;   // (never a port Chromium refuses: tests/safeport.js)
   // the process's browser starts while the recorder loads the worker (`prepare`), not when the first test asks for it: the two took
   // one after the other about 1–2 s of every worker's start-up. (A promise is kept, so two asking at once get one browser)
   let shared=null,sharedP=null;const browserOf=()=>sharedP||(sharedP=(async()=>shared=WEBKIT?require('./webkit').wrapBrowser(await require('playwright').webkit.launch()):await chromium.launch())().catch(e=>{sharedP=null;throw e}));
