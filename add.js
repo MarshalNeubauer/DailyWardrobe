@@ -386,7 +386,7 @@ function setArrives(i,v){const q=cardOf(i);if(!q)return;const a=arriveVal(v);
 async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.paused&&arriveN(i)!=null&&T>arriveN(i));
   const cb=done.filter(i=>i.away);   // back from the cleaner's or the laundry (care.js): cleaned on the day it was due back
   if(cb.length&&typeof careUnlock==='function')await careUnlock(null,Math.min(...cb.map(i=>+keyDate(i.away.since||isoKey(todayDate())))));   // the locks made while away let go (history.js)
-  for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
+  for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());if(typeof careLog==='function')careLog(it,it.cleaned);delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
   if(done.length){planDirty();toast(cb.length===done.length&&typeof careBackText==='function'?careBackText(cb):done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`,4000)}return done.length}
 /* Confirm (and the sample, the import, Save all): a failure is said and the card stays (a tester's Confirm did nothing at all, 2026-11-14) */
 /* (2026-11-17, the title audit) the short title, shortDesc: "Saved: Navy argyle socks." */
@@ -434,7 +434,7 @@ async function saveCard(q){
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;
   if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src,...(q.meas.parts?{parts:q.meas.parts.map(p=>({role:p.role,lab:p.lab,hex:p.hex,share:p.share}))}:{})};   // a patterned cloth's ground and stripe too (colpick.js)
   if(q.tagAI&&!q.manual)it.tagAI=q.tagAI;   // Claude's colour it gave, how sure it was, its runner-ups (measure.js aiSignals): to calibrate the verdict later
-  wardSaveFields(q,it);matTidy(it);   // name, brand, material, notes (wardrobe.js); no material the type can't have (CR-1-06)
+  wardSaveFields(q,it);matTidy(it);if(typeof cpwSaveFields==='function')cpwSaveFields(q,it);   // (cost.js: the price and the day bought)   // name, brand, material, notes (wardrobe.js); no material the type can't have (CR-1-06)
   if(q.shade)it.shade=q.shade;   // drawn darker or lighter than the swatch, to match the close-up   // the owner's own colour samples (calibLab)
   if(q.sett&&!q.settOff&&readable(it.type,it.pattern,q.weave)){it.sett=q.sett;if(q.patternBox)it.pbox=q.patternBox}   // the full pattern (pattern-read.js)
   if(q.weave&&FABRIC.includes(it.type)&&it.pattern!=='solid'){it.weave=q.weave;if(q.weave.description)it.patternText=q.weave.description}
@@ -562,7 +562,7 @@ function addCkSecs(q,i){const man=!!q.manual||!q.ai,c=q.conf||{},chk=q.checked||
   // More: name, brand, notes, bought and on the way, how many (not counted)
   const on=k=>`oninput="setQField(${qh(q)},'${k}',this.value)"`,named=['name','brand','notes'].filter(k=>q[k]&&String(q[k]).trim()),n=qtyOf(q);
   out.push({k:'more',n:false,warn:false,mark:'opt',title:'More',sum:esc((named.length?cap1(named.join(', '))+' filled in':'Name, brand, notes')+(q.order?' · on the way':' · on the way?')+(n>1?` · ${n} of them`:'')),
-    body:`<div class="morein">${fldRow('name','Name',q.name,on,'Optional')}${fldRow('brand','Brand',q.brand,on,'Optional')}${notesRow(q.notes,on)}</div>${orderRow(q,i)}${qtyRow(q,i)}`});
+    body:`<div class="morein">${fldRow('name','Name',q.name,on,'Optional')}${fldRow('brand','Brand',q.brand,on,'Optional')}${notesRow(q.notes,on)}</div>${orderRow(q,i)}${typeof cpwQRow==='function'?cpwQRow(q):''}${qtyRow(q,i)}`});
   // open first: Texture match, and whatever Claude was unsure about; with nothing unsure, the first part not checked yet
   const anyWarn=out.some(s=>s.warn&&!chk[s.k]);for(const s of out)if(s.k!=='tex')s.open=s.warn&&!chk[s.k];
   if(!anyWarn){const first=out.find(s=>s.n&&s.k!=='tex'&&!chk[s.k]);if(first)first.open=true}
