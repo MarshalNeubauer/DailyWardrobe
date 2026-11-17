@@ -56,6 +56,11 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
   // a deep link offline: index.html, with its styles and scripts (asked for under the deep path) from this version's files
   {const q=await ctx.newPage();await q.goto(url+'some/deep/link').catch(()=>{});const st=await q.waitForFunction(()=>window.appReady,null,{timeout:15000}).then(()=>q.evaluate(()=>getComputedStyle(document.querySelector('nav')).position)).catch(e=>'failed: '+e.message.slice(0,60));await q.close();
     ok(st==='fixed',`offline, a deep link comes up styled and running (${st})`)}
+  // (CR-5-05) the files in sub-folders too: the figure's poses (mq/*.js) and the watch pictures under a deep path
+  {const q=await ctx.newPage();await q.goto(url+'some/deep/link').catch(()=>{});await q.waitForFunction(()=>window.appReady,null,{timeout:15000}).catch(()=>{});
+    const sub=await q.evaluate(async()=>{const r=[];for(const f of ['mq/vest.js','mq/suit.js','mq/suit-open.js','mq/shirt-tie.js','mq/shirt-open.js','watch/suit.png'])r.push(await fetch(f).then(x=>x.ok?'':f+' '+x.status,e=>f+' failed'));
+      return {bad:r.filter(Boolean),poses:typeof MQ_RAW!=='undefined'&&!!MQ_RAW&&Object.keys(MQ_RAW).length}}).catch(e=>({bad:['failed: '+e.message.slice(0,60)]}));await q.close();
+    ok(!sub.bad.length&&sub.poses>=5,`offline, a deep link gets the files in sub-folders too: the figure's five poses and the watch (${JSON.stringify(sub)})`)}
   await ctx.setOffline(false);
   // cross-origin requests are not intercepted
   const sw=await page.evaluate(()=>fetch('https://example.invalid/x').then(()=>'ok',e=>'network error'));

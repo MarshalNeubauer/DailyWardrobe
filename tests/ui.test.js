@@ -78,7 +78,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.evaluate(()=>{openSettings('photos');document.querySelector('#photos-conn button').click()});await settle(p,600);
     ok(await p.evaluate(()=>document.querySelector('#sc-connection').classList.contains('open')&&document.activeElement===document.querySelector('#conn-link')),'Connect opens Connection with the cursor in the invite-link field');
     await p.evaluate(()=>{closeSettings();show('today')});
-    const g0=await p.evaluate(()=>({btn:!!document.querySelector('.render-btn'),msg:!!document.querySelector('#render-msg'),refresh:!!document.querySelector('#refresh-btn').offsetParent}));
+    const g0=await p.evaluate(()=>({btn:!!document.querySelector('.render-btn'),msg:!!document.querySelector('#render-msg'),refresh:!!document.querySelector('#refresh-btn')}));
     ok(!g0.btn&&!g0.msg&&!g0.refresh,'Today: no Generate button and no "needs a connection" under the figure; no Refresh in the header');
     await p.evaluate(()=>openAdd());
     ok(await p.evaluate(()=>!document.querySelector('#add-group').offsetParent&&!!document.querySelector('#add-one').offsetParent),'Add: "Several items" is not shown; "One item" is');
@@ -119,10 +119,6 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.evaluate(()=>{items=[];cache={};show('wardrobe')});
     ok(await p.evaluate(()=>!!document.querySelector('#wempty')&&!document.querySelector('#wardrobe .wfind')&&!document.querySelector('#wardrobe .chips')),'an empty Wardrobe shows its empty card without the search field and the type chips');
 
-    /* ---- Refresh stays on the Laundry page ---- */
-    await fill(p,'W.realistic');await p.evaluate(()=>openCare());
-    await p.evaluate(()=>refreshAll());
-    ok(await p.evaluate(()=>!document.querySelector('#care').hidden&&document.querySelector('#today').hidden&&document.querySelector('#care h2').textContent==='Laundry & cleaning'),'Refresh on Laundry & cleaning stays there');
     ok(!errs.length&&!dialogs.length,`no page errors and no browser dialog (${errs.concat(dialogs).slice(0,2).join(' | ')})`);
     await ctx.close();
 

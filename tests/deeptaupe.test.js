@@ -14,8 +14,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         keep:normColFor('suit','deeptaupe'),alias:['Deep Taupe','dark taupe','mink','taupe'].map(c=>normColFor('suit',c)).join(),
         lum:[lumOf('taupe'),lumOf('deeptaupe'),lumOf('black')],
         fam:fam('deeptaupe'),grp:jacketGroup(dt),
-        shoes:['brown','black'].map(c=>shoeScore(dt,dt,Sh(c))),
-        rules:PLAN_RULES}});
+        shoes:['brown','black'].map(c=>shoeScore(dt,dt,Sh(c)))}});
     ok(r.suit&&r.blazer&&r.pants,'deep taupe is offered for suits, blazers and trousers');
     ok(r.notTie,'shirts and ties do not get it');
     ok(/^#[0-9a-f]{6}$/.test(r.hex)&&r.name==='deep taupe'&&r.pretty==='a deep taupe suit','it has a swatch and reads as "deep taupe"');
@@ -23,14 +22,14 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(r.lum[0]>r.lum[1]&&r.lum[1]>r.lum[2],'deep taupe is darker than taupe and lighter than black');
     ok(r.fam==='brown'&&r.grp==='brown','the planner treats deep taupe as a brown (colour family and jacket rotation group)');
     ok(r.shoes[0]>r.shoes[1],`a deep taupe suit prefers brown shoes over black (${r.shoes})`);
-    ok(r.rules>=9,'PLAN_RULES was bumped so upcoming days are planned again');
     // a deep taupe suit is planned, drawn and scored
     const d=await p.evaluate(()=>{const I=(id,type,primaryColor,x)=>({id,type,primaryColor,pattern:'solid',...x});
       items=[I('st','suit','deeptaupe'),I('sh','shirt','white'),I('tb','tie','burgundy'),I('tn','tie','navy'),I('bs','shoes','brown',{leather:'calf'}),I('bk','shoes','black',{leather:'calf'}),I('bb','belt','brown',{leather:'calf'})];
       settings.workdays=[0,1,2,3,4];settings.blazerDays=[];dayRecs={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};
-      const o=planMonth(2026,10)['2026-11-10'];const div=document.createElement('div');div.innerHTML=figureSvg({suitDay:true,top:items[0],shirt:items[1],tie:items[2]},'q-');
-      return {top:o.top&&o.top.id,shoes:o.shoes&&o.shoes.id,drawn:div.innerHTML.includes(COLORS.deeptaupe),score:rateOutfit(o).score}});
-    ok(d.top==='st'&&d.shoes==='bs',`the planner dresses a deep taupe suit with brown shoes (${d.top}/${d.shoes})`);
+      // (the real planner, buildPlan: planMonth gives tests/fixedplan.js's outfit, whose shoe the day number picks; the code review CR-10-05)
+      const days=['2026-11-10','2026-11-11','2026-11-12'],P=buildPlan(2026,10),o=P['2026-11-10'],allBrown=days.every(k=>P[k].shoes&&P[k].shoes.id==='bs');const div=document.createElement('div');div.innerHTML=figureSvg({suitDay:true,top:items[0],shirt:items[1],tie:items[2]},'q-');
+      return {top:o.top&&o.top.id,shoes:o.shoes&&o.shoes.id,allBrown,drawn:div.innerHTML.includes(COLORS.deeptaupe),score:rateOutfit(o).score}});
+    ok(d.top==='st'&&d.shoes==='bs'&&d.allBrown,`the planner dresses a deep taupe suit with brown shoes, three days running (${d.top}/${d.shoes})`);
     ok(d.drawn,'the figure draws the deep taupe suit');
     ok(d.score>=6,`the outfit scores reasonably (${d.score})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

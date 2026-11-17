@@ -155,7 +155,8 @@ const matRenameTo=i=>!!i&&(MAT_RENAME[i.type]||{})[String(i.material||'').toLowe
 let matMigrating=false;
 async function matMigrate(){if(matMigrating)return 0;matMigrating=true;let n=0;
   try{const stored=((await tx('readonly',s=>s.getAll()))||[]).filter(matRenameTo);
-    for(const r of stored){const i=items.find(x=>x.id===r.id)||r,to=matRenameTo(i);if(!to)continue;i.material=to;i.updated=Date.now();await putRaw(i);n++}
+    for(const r of stored){const i=items.find(x=>x.id===r.id)||r,to=matRenameTo(i);if(!to)continue;i.material=to;i.updated=nextStamp(stamp(i));
+      await atomic('items',i.id,cur=>{itemFields(i,cur);return {put:i}});n++}   // (CR-5-08: the material alone stamped, by the corrected clock, as app.js put does; it was the whole item at Date.now())
     if(n){if(window.scheduleSync)scheduleSync();wardMemo=null;if(typeof fixupRedraw==='function')fixupRedraw()}}
   catch(e){console.warn('material rename',e)}finally{matMigrating=false}
   return n}

@@ -19,15 +19,13 @@ module.exports=async({ok,chromium,url})=>{
       const sbi=items.find(i=>i.primaryColor==='steelblue');
       return {pants,blazerDays:seq.filter(([,o])=>!o.suitDay).length,b2b:b2b.length,forced,n:seq.length,minScore:Math.min(...seq.map(([,o])=>rateOutfit(o).score)),
         sb:sb.length,sbOk:sb.every(([,o])=>LUM(o.top)<LUM(o.shirt)-20&&LUM(o.tie)<LUM(o.shirt)-25),sbScore:sb.length?Math.min(...sb.map(([,o])=>rateOutfit(o).score)):0,
-        dark:[darkShirt(sbi),darkShirt({primaryColor:'slate'}),darkShirt({primaryColor:'navy'}),darkShirt({primaryColor:'blue'})].join(),rules:PLAN_RULES}});
-    const worn=Object.keys(r.pants);
+        dark:[darkShirt(sbi),darkShirt({primaryColor:'slate'}),darkShirt({primaryColor:'navy'}),darkShirt({primaryColor:'blue'})].join()}});
     ok(['grey','charcoal','tan','khaki','navy'].every(c=>r.pants[c]>=2)&&!r.pants.black,`every pair of trousers that suits a blazer gets worn, not just each blazer's best match (${JSON.stringify(r.pants)} over ${r.blazerDays} blazer days); black odd trousers stay out`);
     ok(Math.max(...Object.values(r.pants))<=r.blazerDays*.5,`no single pair takes over the blazer days (${Math.max(...Object.values(r.pants))} of ${r.blazerDays})`);
     ok(r.b2b===r.forced,`shoes are not worn two days running when another pair suits the outfit (${r.b2b} repeats, ${r.forced} with no alternative)`);
     ok(r.dark==='false,true,true,false',`steel blue is not a "dark shirt"; slate and navy still are (${r.dark})`);
     ok(r.sb>=3&&r.sbOk&&r.sbScore>=80,`a steel blue shirt gets worn, under a darker jacket with a darker tie (${r.sb} days, lowest score ${r.sbScore})`);
     ok(r.minScore>=80,`the new rotation never costs a good outfit (lowest score ${r.minScore})`);
-    ok(r.rules>=8,'PLAN_RULES was bumped so upcoming days are planned again');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };

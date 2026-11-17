@@ -1,5 +1,5 @@
 /* Daily Wardrobe: first-run setup (a full-screen flow in the style of Settings) and the empty states of Today and the Wardrobe.
-   Loaded after app.js and sync.js; everything it stores goes through the existing settings functions. */
+   Loaded after account.js (near the end of index.html's list); everything it stores goes through the existing settings functions. */
 /* (2026-11-14, the owner) on an iPhone or iPad in a browser tab, a "Home Screen" step right after Welcome: the Home Screen app keeps its
    own storage, apart from Safari's, so what is set up in Safari stays there; it is shown before anything is set up. Not in the app opened
    from the Home Screen, not on other devices (the steps are then as before). SETUP_STEPS is worked out when the setup opens. */
@@ -199,14 +199,9 @@ function setupLocate(){const was=JSON.stringify(settings.location);useMyLocation
   if(setup.watch)clearInterval(setup.watch);let n=0;
   setup.watch=setInterval(()=>{if(!setupShown()||++n>400){clearInterval(setup.watch);setup.watch=null;return}
     if(JSON.stringify(settings.location)!==was){clearInterval(setup.watch);setup.watch=null;setup.cities=null;setup.cityMsg='';setupDraw()}},150)}
-/* an invite link is <app url>#invite=<code>&w=<the server's address, URL-encoded> */
-function setupParseLink(t){const c=/[#&?]invite=([^&#\s]+)/.exec(t),w=/[#&?]w=([^&#\s]+)/.exec(t);if(!c||!w)return false;
-  try{const url=decodeURIComponent(w[1]),code=decodeURIComponent(c[1]);if(!/^https?:$/.test(new URL(url).protocol)||!code)return false;
-    if(typeof acctOwnServer==='function'&&!acctOwnServer(url))return false;   // only the app's own server (account.js, W2-13-01)
-    localStorage.setItem('worker_url',url);localStorage.setItem('app_token',code);if(typeof connKeep==='function')connKeep();return true}catch{return false}}
 async function setupConnect(){const el=$('#su-link'),t=(el&&el.value||'').trim();if(!t||setup.busy)return;
   setup.busy=true;setup.msg='';setupDraw();if($('#su-link'))$('#su-link').value=t;let ok=false;
-  try{ok=typeof connectFromLink==='function'?!!(await connectFromLink(t)):setupParseLink(t)}catch(e){ok=false}
+  try{ok=!!(await connectFromLink(t))}catch(e){ok=false}
   // why, in the setup's words: offline is not a wrong link (it said "check that you copied all of it" while offline)
   const why=typeof acctWhy!=='undefined'?acctWhy:'';
   setup.busy=false;if(ok)setup.joined=true;setup.msg=ok||why==='kept'?'':why==='offline'?'Couldn’t reach the server: you may be offline. Connect when you’re back online, or tap Next and connect later in Settings.':why==='refused'&&typeof acctFailText==='function'?acctFailText()+' Or carry on without it.':'That link didn’t work. Check that you copied all of it, or carry on without it.';

@@ -9,7 +9,7 @@ let statsOpen={};   // which item-type sections are unfolded
 function wornDays(){const T=todayDate(),out=[];
   for(const r of Object.values(dayRecs)){if(!r.ids||r.worn===false)continue;const d=keyDate(r.date);if(d>T)continue;
     const pcs=Object.values(r.ids).map(id=>id&&items.find(i=>i.id===id)).filter(Boolean);
-    if(!pcs.length||pcs.some(i=>(i.added||0)>+d+864e5))continue;   // dated before a piece was in the wardrobe: a planner warm-up day
+    if(!pcs.length||(!r.edited&&r.worn!==true&&pcs.some(i=>(i.added||0)>+d+864e5)))continue;   // dated before a piece was in the wardrobe: a planner warm-up day (one recorded by the app; a day corrected or marked worn by hand counts, CR-3-11)
     if(+d===+T&&r.worn!==true)continue;                            // today counts once it is marked worn
     out.push({date:r.date,d,ids:r.ids,suitDay:!!r.suitDay,vestOn:!!r.vestOn})}
   return out.sort((a,b)=>a.d-b.d)}
