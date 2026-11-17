@@ -891,9 +891,12 @@ function dialOccasion(o,fast){const {top,shirt,tie,shoes,belt}=o,legs=o.bot||top
 const lowFirstD=t=>t?t[0].toLowerCase()+t.slice(1):t;
 /* Freshness: each piece's rest (o[slot].rest, days since it was last worn, as the planner counts it, at most 60) against how often its
    type comes round (cyc(type): the calendar days a piece of that type usually waits, from how many are in rotation) */
+const FRESH_FULL={shirt:14,tie:14,suit:14,blazer:14,pants:14,shoes:7,other:14};   // calendar days of rest that count as fully fresh
 function dialFreshness(o,cyc){const P=[[o.top,30],[o.suitDay?null:o.bot,10],[o.shirt,25],[o.tie,25],[o.shoes,10]].filter(([i])=>i&&typeof i.rest==='number');
   if(!P.length)return {v:100,why:'Every piece is fresh.'};
-  const r=P.map(([i,w])=>{const c=Math.max(1,cyc?cyc(i.type):7);return {i,w,q:Math.min(1,i.rest/c),c}});
+  // a piece that rested FRESH_FULL days is fully fresh however many of its type are owned (2026-11-17, the owner: a shirt worn 12 days ago
+  // scored a quarter fresh with 35 shirts, a 49-day turn); fewer pieces than that still count against their own shorter turn
+  const r=P.map(([i,w])=>{const c=Math.max(1,Math.min(cyc?cyc(i.type):7,FRESH_FULL[i.type]||FRESH_FULL.other));return {i,w,q:Math.min(1,i.rest/c),c}});
   const v=dStretch(100*r.reduce((a,x)=>a+x.w*x.q,0)/r.reduce((a,x)=>a+x.w,0),DIAL_K.f);
   const days=n=>n>=60?'60+ days':n===1?'1 day':n+' days',clothes=r.filter(x=>x.i.type!=='shoes'),sh=r.find(x=>x.i.type==='shoes');
   const why=clothes.map((x,k)=>k?`${dPiece(x.i,o)} ${days(x.i.rest)}`:`${sentence(dPiece(x.i,o))} rested ${days(x.i.rest)}`).join(', ')+'.'+(sh?` Shoes ${days(sh.i.rest)}.`:'');
