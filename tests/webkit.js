@@ -36,7 +36,7 @@ const touchSession=page=>{let start=null,last=null;
       const ev=new Event(type,{bubbles:true,cancelable:true,composed:true});
       for(const [k,v] of [['touches',live],['targetTouches',live],['changedTouches',[t]]])Object.defineProperty(ev,k,{value:list(v)});
       el.dispatchEvent(ev);
-      if(type==='touchend'&&Math.hypot(x-sx,y-sy)<10){const c=document.elementFromPoint(x,y);if(c)c.click()}
+      if(type==='touchend'&&Math.hypot(x-sx,y-sy)<10){const c=document.elementFromPoint(x,y);if(c){if(typeof c.click==='function')c.click();else c.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:x,clientY:y}))}}   // (an SVG element has no click())
     },[type,x,y,start?start.x:x,start?start.y:y]);
   return {async send(method,p={}){
       if(method!=='Input.dispatchTouchEvent')throw new Error('CDP '+method+' is Chromium only (WebKit run)');
@@ -57,4 +57,11 @@ const wrapBrowser=b=>{const newContext=b.newContext.bind(b);
   b.newContext=async o=>wrapContext(await newContext(process.env.WK_SW?o:{serviceWorkers:'block',...(o||{})}));
   b.newPage=async o=>{const c=await b.newContext(o);return c.newPage()};
   return b};
-module.exports={wrapBrowser,wrapContext};
+/* the engines a test file that checks both runs on (CR-10-01/02, 2026-11-17): [[name, launch]], given to every test file by run.js as
+   `engines`. Each launch gives run.js's view of one shared browser per process, with the fixed plan, the painter off and the file's
+   flags (realPlanner, assembled) on every context, as Chromium's has: launching WebKit from playwright directly skipped all three, so
+   its half ran the real planner and painted at every load, and set the suite's pace. Under --webkit (TEST_BROWSER=webkit) the
+   "Chromium" browser is WebKit already, so only one half runs, named WebKit. The nightly run installs WebKit
+   (.github/workflows/nightly-tests.yml); without it the WebKit half fails with "WebKit: the browser starts (…)" */
+const engines=(chromium,webkit)=>process.env.TEST_BROWSER==='webkit'?[['WebKit',()=>chromium.launch()]]:[['Chromium',()=>chromium.launch()],['WebKit',()=>webkit.launch()]];
+module.exports={wrapBrowser,wrapContext,engines};

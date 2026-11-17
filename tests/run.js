@@ -28,10 +28,13 @@ const ok=(cond,msg)=>{if(cond){passes++;console.log('  ✓ '+msg)}else{failures+
    for 4 frames, instead of a fixed pause. `max` is the pause it replaced; it may wait up to twice that on a busy machine, so a
    check never runs in the middle of an animation (DEBUG_SETTLE=1 logs each wait and what was still moving) */
 const settle=async(page,max=1000)=>{const t0=Date.now();
-  const r=await page.evaluate(max=>new Promise(res=>{let last=scrollY,still=0,why='';const t0=performance.now();
+  // (on WebKit also two still frames 100 ms or more apart: Playwright's WebKit runs a page's frames far apart at times, and its waits ran
+  // to their limit with nothing moving, 140 of backgesture's 255 s of waiting; CR-10-02. Chromium's rule is as it was)
+  let wk=false;try{const b=page.context().browser();wk=!!b&&b.browserType().name()==='webkit'}catch(e){}
+  const r=await page.evaluate(([max,wk])=>new Promise(res=>{let last=scrollY,still=0,why='',t1=0;const t0=performance.now();
     const live=()=>document.getAnimations().filter(a=>(a.playState==='running'||a.pending)&&a.effect&&a.effect.getComputedTiming().endTime!==Infinity);
-    const f=()=>{const L=live();if(scrollY===last&&!L.length)still++;else{still=0;why=L.map(a=>(a.animationName||a.transitionProperty)+'@'+(a.effect.target.id||String(a.effect.target.className).slice(0,20))).join(',')+(scrollY!==last?' scroll':'')}
-      last=scrollY;if(still>=4||performance.now()-t0>2*max)res(why);else requestAnimationFrame(f)};requestAnimationFrame(f)}),max).catch(()=>'');
+    const f=()=>{const L=live(),now=performance.now();if(scrollY===last&&!L.length){if(!still++)t1=now}else{still=0;why=L.map(a=>(a.animationName||a.transitionProperty)+'@'+(a.effect.target.id||String(a.effect.target.className).slice(0,20))).join(',')+(scrollY!==last?' scroll':'')}
+      last=scrollY;if(still>=4||(wk&&still>=2&&now-t1>=100)||now-t0>2*max)res(why);else requestAnimationFrame(f)};requestAnimationFrame(f)}),[max,wk]).catch(()=>'');
   if(process.env.DEBUG_SETTLE)console.log(`    settle ${Date.now()-t0}/${max} ${r}`)};
 const suites=[];const suite=(name,fn)=>suites.push([name,fn]);
 
@@ -217,7 +220,16 @@ async function workerTests(){
 /* ---------- running ---------- */
 // every test has a name: a built-in suite is 'run.js: <its title>', a file its file name
 const FILES=fs.readdirSync(__dirname).filter(f=>f.endsWith('.test.js')).sort();
-const ALL=[...suites.map(([n])=>'run.js: '+n),'run.js: '+WORKER,...FILES];
+/* A file that checks both engines (it takes `engines`: tests/webkit.js) runs as two tests, its Chromium half under its own name and its
+   WebKit half as '<file> · WebKit', handed out separately, so the two run side by side in two worker processes (CR-10-02: backgesture's
+   two halves one after the other, 390 s, were the whole suite's critical path). The WebKit half isn't recorded (CDP is Chromium's) and
+   has no line in tests/impact.map: it runs whenever its file's Chromium half is chosen. Under --webkit a file is one test again */
+const WK_HALF=' · WebKit';
+const DUAL=WEBKIT?[]:FILES.filter(f=>/module\.exports\s*=\s*async\s*\(\s*\{[^}]*\bengines\b/.test(fs.readFileSync(path.join(__dirname,f),'utf8')));
+const halfOf=key=>key.endsWith(WK_HALF)?key.slice(0,-WK_HALF.length):null;
+const ALL=[...suites.map(([n])=>'run.js: '+n),'run.js: '+WORKER,...FILES];   // (what the map and the selection know)
+const RUNS=[...ALL,...DUAL.map(f=>f+WK_HALF)];   // (what can run)
+const withHalves=keys=>{const s=new Set(keys);for(const f of DUAL)if(s.has(f))s.add(f+WK_HALF);return s};
 const label=key=>key.startsWith('run.js: ')?key.slice(8):key;
 
 /* What one process needs to run tests one after another: the local server, one Chromium for every test (a file's
@@ -231,6 +243,9 @@ const bench=async()=>{
   await new Promise(r=>server.listen(0,'127.0.0.1',r));const url=`http://127.0.0.1:${server.address().port}/index.html`;
   if(!process.env.NO_IMPACT){rec=impact.recorder(ROOT);await rec.prepare()}
   let shared=null;const browserOf=async()=>shared||(shared=WEBKIT?require('./webkit').wrapBrowser(await require('playwright').webkit.launch()):await chromium.launch());
+  // the WebKit half of the files that check both engines (tests/webkit.js engines): one WebKit per process too, shared like Chromium
+  // (under --webkit it is the same browser); launched only when a file asks for it
+  let sharedWk=null;const webkitOf=async()=>WEBKIT?browserOf():sharedWk||(sharedWk=require('./webkit').wrapBrowser(await require('playwright').webkit.launch()));
   // the built-in suites get the fixed plan too, except those about the planner and the start-up check, which keeps the real
   // planner so a planner change that breaks start-up is caught by it
   const builtin=async name=>{const browser=await browserOf(),fn=suites.find(([n])=>n===name)[1],fixed=!REAL_SUITES.has(name);
@@ -244,25 +259,30 @@ const bench=async()=>{
     await ctx.close()};
   // the fixed plan (fixedplan.js) goes into every page of a test file unless the file says module.exports.realPlanner=true: a
   // test that doesn't need the planner's choices then doesn't run the planner, and a planner change doesn't select it
-  const file=async f=>{const browser=await browserOf(),mine=new Set(),mod=require(path.join(__dirname,f)),fixed=!mod.realPlanner;
+  const file=async key=>{const f=halfOf(key)||key,half=halfOf(key)?'WebKit':DUAL.includes(f)?'Chromium':null;
+    const browser=await browserOf(),mine=new Set(),mod=require(path.join(__dirname,f)),fixed=!mod.realPlanner;
     // assembled pictures (assemble.js) are switched off too unless the file says module.exports.assembled=true (ASM_TEST_OFF)
     const asmOff=!mod.assembled;
-    const track=async c=>{c=await c;if(fixed)await c.addInitScript({path:FIXED_PLAN});if(asmOff)await c.addInitScript(ASM_OFF);if(rec)rec.context(c);mine.add(c);return c};
-    const b=new Proxy(browser,{get:(t,k)=>k==='close'?async()=>{for(const c of mine)await c.close().catch(()=>{});mine.clear()}
-      :k==='newContext'?o=>track(t.newContext(o)):k==='newPage'?async o=>{const c=await track(t.newContext(o));return c.newPage()}
+    // (the recorder is Chromium's: CDP coverage; a WebKit context gets the fixed plan and the painter off, as Chromium's does: CR-10-02)
+    const track=async(c,wk)=>{c=await c;if(fixed)await c.addInitScript({path:FIXED_PLAN});if(asmOff)await c.addInitScript(ASM_OFF);if(rec&&!wk&&!WEBKIT)rec.context(c);mine.add(c);return c};
+    const view=(t,wk)=>new Proxy(t,{get:(t,k)=>k==='close'?async()=>{for(const c of mine)await c.close().catch(()=>{});mine.clear()}
+      :k==='newContext'?o=>track(t.newContext(o),wk):k==='newPage'?async o=>{const c=await track(t.newContext(o),wk);return c.newPage()}
       :typeof t[k]==='function'?t[k].bind(t):t[k]});
+    const b=view(browser,false);let wb=null;
     const chr=new Proxy(chromium,{get:(t,k)=>k==='launch'?async()=>b:t[k]});
-    try{await mod({ok,url,chromium:chr,devices,WARDROBES,ROOT,settle,impactRec:rec})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
+    const wk={launch:async()=>wb||(wb=view(await webkitOf(),true))};
+    const engines=require('./webkit').engines(chr,wk).filter(([n])=>!half||n===half);
+    try{await mod({ok,url,chromium:chr,engines,devices,WARDROBES,ROOT,settle,impactRec:rec})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
     finally{await b.close()}};
   return {
     /* one test, noting what it uses → {ms, res: {m, bad} or null} */
-    async run(key){const t0=Date.now();let res=null;
-      if(rec)await rec.begin(key,key.startsWith('run.js: ')?null:'tests/'+key);
+    async run(key){const t0=Date.now();let res=null;const r=rec&&!halfOf(key);   // (a WebKit half isn't recorded)
+      if(r)await rec.begin(key,key.startsWith('run.js: ')?null:'tests/'+key);
       try{if(key==='run.js: '+WORKER){try{await workerTests()}catch(e){failures++;console.log('  ✗ worker tests threw: '+e.message)}}
         else if(key.startsWith('run.js: '))await builtin(key.slice(8));else await file(key)}
-      finally{if(rec)res=await rec.end().catch(()=>({m:new Map(),bad:true}))}
+      finally{if(r)res=await rec.end().catch(()=>({m:new Map(),bad:true}))}
       return {ms:Date.now()-t0,res}},
-    async close(){if(shared)await shared.close().catch(()=>{});server.close()}}};
+    async close(){if(shared)await shared.close().catch(()=>{});if(sharedWk)await sharedWk.close().catch(()=>{});server.close()}}};
 
 /* how long each test took last time (kept beside node_modules, never committed): the slow ones start first */
 const TIMES=path.join(ROOT,'node_modules','.cache','dw-test-times.json');
@@ -307,13 +327,13 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
   if(process.argv.includes('--worker')){await worker();return}
   const args=process.argv.slice(2),flag=f=>args.includes(f),ONLY=process.env.TEST_ONLY||args.find(a=>!a.startsWith('--'));
   let want=null;   // null: everything
-  if(ONLY)want=new Set(FILES.filter(f=>f.includes(ONLY)));
-  else if(flag('--changed')){const s=await impact.select(ROOT,ALL);console.log(s.report);if(!s.all)want=new Set(s.tests)}
+  if(ONLY)want=withHalves(FILES.filter(f=>f.includes(ONLY)));
+  else if(flag('--changed')){const s=await impact.select(ROOT,ALL);console.log(s.report);if(!s.all)want=withHalves(s.tests)}
   if(flag('--list'))return;
   impact.installHook(ROOT);   // from now on a push is refused while tests/impact.map has uncommitted changes
-  const keys=ALL.filter(k=>!want||want.has(k)),results=new Map(),times=[],T0=Date.now(),jobs=Math.min(jobsWanted(),keys.length);
+  const keys=RUNS.filter(k=>!want||want.has(k)),results=new Map(),times=[],T0=Date.now(),jobs=Math.min(jobsWanted(),keys.length);
   const alone=[];   // tests that only passed on a second run by themselves
-  if(jobs>1){const again=[],count=(key,out,p,f,ms,res)=>{process.stdout.write(out);passes+=p;failures+=f;times.push([key,ms]);if(res)results.set(key,res)};
+  if(jobs>1){const again=[],count=(key,out,p,f,ms,res)=>{process.stdout.write(out);passes+=p;failures+=f;times.push([key,ms]);if(res)results.set(key,{...res,ok:!f})};
     await together(keys,jobs,(key,out,p,f,ms,res)=>{if(f)again.push([key,out,p,f,ms,res]);else{console.log('\n• '+label(key));count(key,out,p,f,ms,res)}});
     /* The tests were written to run one at a time, and a few checks are sensitive to a busy machine. A test that failed
        while others were running is therefore run once more by itself, which is how it always ran before; only that run
@@ -326,7 +346,7 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
     else for(const a of again){console.log('\n• '+label(a[0]));count(...a)}
   }else if(keys.length){const B=await bench();let cur=null;
     process.on('unhandledRejection',e=>{failures++;console.log('  ✗ a promise failed with nothing waiting for it'+(cur?'':' (between tests)')+': '+String(e&&e.stack||e).split('\n').slice(0,6).join('\n    '))});
-    for(const key of keys){console.log('\n• '+label(key));cur=key;const r=await B.run(key);cur=null;times.push([key,r.ms]);if(r.res)results.set(key,r.res)}
+    for(const key of keys){console.log('\n• '+label(key));cur=key;const f0=failures,r=await B.run(key);cur=null;times.push([key,r.ms]);if(r.res)results.set(key,{...r.res,ok:failures===f0})}
     await B.close()}
   keepTimes(times);
   // what each test used is added to tests/impact.map; when `npm test` or the whole suite passed, so is the fingerprint of the files it passed on

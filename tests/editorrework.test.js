@@ -7,9 +7,7 @@
 // 3. Ask Claude comes right under the Close-up / Whole photo / Drawing buttons, then Your colors / Your patterns.
 // 4. Zoom & crop left without Apply keeps a moved or zoomed frame: Done, swiping the item sheet down, Back, Esc and ‹ ›, with "Crop
 //    saved." and Undo; Discard drops it; a frame left as it opened changes nothing; the editor's Undo still works.
-const {wrapBrowser}=require('./webkit');
-module.exports=async({ok,chromium,url,settle})=>{
-  const engines=[['Chromium',()=>chromium.launch()],['WebKit',async()=>{const pw=require('playwright');return wrapBrowser(await pw.webkit.launch())}]];
+module.exports=async({ok,chromium,engines,url,settle})=>{
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{await run(eng,browser,{ok,url,settle})}finally{await browser.close()}}

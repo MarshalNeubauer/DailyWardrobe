@@ -82,7 +82,8 @@ function cmpBind(w){const key=w.dataset.cmp,s=cmpSt(key),v=w.querySelector('.cmp
   const op=w.querySelector('.cmpop input');if(op)op.addEventListener('input',()=>{s.op=op.value/100;cmpPaint(w)});
   w.querySelector('.cmpzi').addEventListener('click',()=>cmpZoom(w,s.z*1.5));w.querySelector('.cmpzo').addEventListener('click',()=>cmpZoom(w,s.z/1.5));
   const fit=()=>{if(!w.isConnected||!v.clientWidth)return;cmpSize(w);cmpSlide(w,true);cmpPaint(w)};
-  if(window.ResizeObserver)new ResizeObserver(fit).observe(v);
+  // (one observer per drawing, let go once the drawing has left the page: each redraw made another that watched forever, CR-4-14)
+  if(window.ResizeObserver){const ro=new ResizeObserver(()=>{if(!w.isConnected){ro.disconnect();return}fit()});ro.observe(v)}
   fit();cmpLoad(key).then(()=>{if(w.isConnected)cmpPaint(w)})}
 const cmpClamp=s=>{const h=.5/s.z;s.cu=Math.min(1-h,Math.max(h,s.cu));s.cv=Math.min(1-h,Math.max(h,s.cv))};
 function cmpZoom(w,z){const s=cmpSt(w.dataset.cmp);s.z=Math.min(4,Math.max(1,z));cmpClamp(s);
@@ -127,15 +128,18 @@ function cmpPaint(w){const key=w.dataset.cmp,s=cmpSt(key),P=CMP_PIC[key];if(!P)r
    once from the close-up here (then the sheet is drawn again) */
 function cmpLab(src,it){const m=it.meas;if(m&&m.src==='closeup'&&m.lab)return m.lab;if(!it.texture)return null;
   const k=texSig(it.texture);if(CMP_LAB[k]!==undefined)return CMP_LAB[k];CMP_LAB[k]=null;const id=it.id;
-  imgOf(it.texture).then(im=>{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');if(!x)return;x.drawImage(im,0,0);
-    CMP_LAB[k]=measureCloth(c,null,{}).lab||null;if(!CMP_LAB[k])return;if(src==='q'){if(queue.some(q=>q.id===id))renderAdd()}else if(editing===id)renderItem()}).catch(()=>{});
+  const redraw=()=>{if(src==='q'){if(queue.some(q=>q.id===id))renderAdd()}else if(editing===id)renderItem()};
+  // false: it couldn't be measured (the picture didn't load, the phone refused a canvas, no color came out); the line then says so
+  // instead of "Measuring the close-up…" for good (CR-4-13)
+  imgOf(it.texture).then(im=>{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');if(!x)throw new Error('no canvas');x.drawImage(im,0,0);
+    CMP_LAB[k]=measureCloth(c,null,{}).lab||false}).catch(()=>{CMP_LAB[k]=false}).then(redraw);
   return null}
 /* drawn steps lighter (+) or darker (−) than the cloth; null when it can't be told */
 const cmpDiff=(it,lab)=>lab&&COLORS[primaryCol(it)]?(it.shade||0)-shadeFor(it,lab):null;
 const cmpSteps=n=>`${n} step${n===1?'':'s'}`;
 const cmpDiffText=d=>d===null?'':d===0?'The drawing matches the cloth':`Drawn ${cmpSteps(Math.abs(d))} ${d>0?'lighter':'darker'} than the cloth`;
 function cmpMatchHtml(src,ref,it,lab){const d=cmpDiff(it,lab),key=src==='q'?it.id:ref,r=src==='q'?ref:`'${jsq(ref)}'`;
-  if(d===null)return COLORS[primaryCol(it)]?'<p class="cmpmt mut cmpwait">Measuring the close-up…</p>':'';
+  if(d===null)return !COLORS[primaryCol(it)]?'':lab===false?'<p class="cmpmt mut cmpwait cmpfail">Couldn’t measure the close-up.</p>':'<p class="cmpmt mut cmpwait">Measuring the close-up…</p>';
   const pos=50+Math.max(-SHADE_MAX,Math.min(SHADE_MAX,d))/SHADE_MAX*46,undo=CMP_UNDO[key]!==undefined&&CMP_UNDO[key]!==(it.shade||0);
   return `<div class="cmpmatch"><div class="cmpbar" role="img" aria-label="${cmpDiffText(d)}"><i style="left:${pos}%"></i></div><div class="cmplab" aria-hidden="true"><span>Darker</span><span>Same</span><span>Lighter</span></div>`+
     `<p class="cmpmt" role="status">${cmpDiffText(d)}</p><div class="cmpmb"><button type="button" class="cmpgo" onclick="cmpMatchGo('${src}',${r})">Match close-up</button>${undo?`<button type="button" class="cmpundo" onclick="cmpMatchUndo('${src}',${r})">Undo</button>`:''}</div></div>`}

@@ -8,6 +8,7 @@
    Needs the connection, a phone that can receive Web Push (on an iPhone: the app on the Home Screen, iOS 16.4 or later) and the
    VAPID keys on the server. The choice is this phone's own (localStorage.remind {on, care, time}); each phone subscribes for itself. */
 const REMIND_CACHE='dw-keep-remind',REMIND_URL='remind.json',CARE_URL='care.json',REMIND_DAYS=14,REMIND_POST_MS=20*3600000;
+const REMIND_CHECK_MS=12*3600000;   // how often a phone already told asks the server whether it still has its subscription
 let remindMsg='',remindBusy=false,remindTimer=null;
 function remindPrefs(){try{const p=JSON.parse(localStorage.getItem('remind')||'null');return {on:!!(p&&p.on),care:p&&typeof p.care==='boolean'?p.care:undefined,time:p&&/^\d\d:\d\d$/.test(p.time)?p.time:'07:00'}}catch{return {on:false,care:undefined,time:'07:00'}}}
 const remindCareOn=p=>p.care===undefined?p.on:p.care,remindAny=p=>p.on||remindCareOn(p);
@@ -41,7 +42,7 @@ async function remindPost(sub,p){const dates=await remindKeep(p);await remindCal
    subscription off when neither kind is left */
 async function remindSwitch(which,on){
   if(remindBusy)return;remindBusy=true;remindMsg='';renderRemindUI();
-  try{const p={...remindPrefs()};if(which==='care')p.care=!!on;else{p.on=!!on;if(p.care===undefined)p.care=undefined}
+  try{const p={...remindPrefs()};if(which==='care')p.care=!!on;else p.on=!!on;
     if(on){const sub=await remindSub();remindSave(p);await remindPost(sub,p);
       remindMsg=which==='care'?`On: a notification at ${p.time} when a suit or blazer is due for the cleaner.`:`On: a notification at ${p.time} on your workdays.`}
     else{remindSave(p);const reg=remindCan()&&await navigator.serviceWorker.getRegistration(),sub=reg&&await reg.pushManager.getSubscription();
@@ -56,10 +57,18 @@ const careRemindOn=()=>remindSwitch('care',true),careRemindOff=()=>remindSwitch(
 function remindSoon(){if(!remindAny(remindPrefs()))return;clearTimeout(remindTimer);remindTimer=setTimeout(remindRefresh,3000)}
 async function remindRefresh(){const p=remindPrefs();if(!remindAny(p)||!remindCan()||!acctBase())return;
   const dates=await remindKeep(p);let last=null;try{last=JSON.parse(localStorage.getItem('remind_sent')||'null')}catch{}
-  const sig=remindSig(dates,p);if(last&&last.sig===sig&&Date.now()-last.at<REMIND_POST_MS)return;
-  try{const reg=await navigator.serviceWorker.getRegistration(),sub=reg&&await reg.pushManager.getSubscription();if(!sub)return;
+  const sig=remindSig(dates,p);
+  try{const reg=await navigator.serviceWorker.getRegistration();if(!reg)return;const sub=await reg.pushManager.getSubscription();
+    if(!sub){remindLost(p);return}   // (the switch read On while nothing could arrive, CR-4-10)
+    if(last&&last.sig===sig&&Date.now()-last.at<REMIND_POST_MS){
+      // told already: about once a day ask whether the server still has this phone (one read; it can lose one, CR-4-03 / CR-4-10), and tell it again if not
+      if(Date.now()-(last.chk||last.at)<REMIND_CHECK_MS)return;const r=await acctCall('push?endpoint='+encodeURIComponent(sub.endpoint));if(r.status!==200)return;
+      localStorage.setItem('remind_sent',JSON.stringify({...last,chk:Date.now()}));if(r.j&&r.j.on)return}
     await remindCall({endpoint:sub.endpoint,time:p.time,tz:remindTz(),dates});
-    localStorage.setItem('remind_sent',JSON.stringify({sig,at:Date.now()}))}catch(e){console.warn('reminder update',e)}}
+    localStorage.setItem('remind_sent',JSON.stringify({sig,at:Date.now(),chk:Date.now()}))}catch(e){console.warn('reminder update',e)}}
+/* the phone has no push subscription any more (the Home Screen app removed and added again, notifications switched off): the switches
+   go off and the reminder box says so, instead of reading On while nothing arrives */
+function remindLost(p){remindSave({...p,on:false,care:false});localStorage.removeItem('remind_sent');remindMsg='Reminders stopped on this phone. Switch them on again to get them.';renderRemindUI()}
 /* Settings → Schedule */
 function renderRemindUI(){const el=document.querySelector('#remind-box');if(!el)return;const p=remindPrefs(),ios=typeof iosInSafari==='function'&&iosInSafari(),care=remindCareOn(p);
   let body;
@@ -74,4 +83,8 @@ async function remindTime(v){if(!/^\d\d:\d\d$/.test(v))return;const p={...remind
 (function remindStart(){
   if(typeof renderSettingsExtras==='function'&&!renderSettingsExtras.remind){const draw=renderSettingsExtras;renderSettingsExtras=function(){draw();renderRemindUI()};renderSettingsExtras.remind=1}
   const go=()=>setTimeout(remindRefresh,4000);document.readyState==='complete'?go():addEventListener('load',go,{once:true});
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')remindSoon()})})();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')remindSoon();else remindHidden()})})();
+/* the app goes to the background: the kept lines are written at once (on the phone, no request; the server is told on the next start).
+   iOS suspends a page within seconds, so a swap, a rename or a deletion just before closing never reached the 3 s refresh and the
+   morning's notification named the old outfit or a deleted piece (CR-4-09) */
+function remindHidden(){const p=remindPrefs();if(!remindAny(p))return;remindKeep(p).catch(()=>{})}
