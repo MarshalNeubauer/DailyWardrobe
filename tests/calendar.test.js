@@ -133,6 +133,14 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
     ok(want.every(w=>s1.rows.includes(w)),`the review list says what each event would set (${s1.rows.slice(0,8).join(' | ')})`);
     ok(!s1.rows.some(r=>/Stand-up|meeting/.test(r)),'events that don\'t change what is worn are not listed');
     ok(await p.evaluate(()=>{const r=[...document.querySelectorAll('#cal-new-list .cal-row')].find(x=>/Sam & Alex/.test(x.textContent));return !!r&&!r.querySelector('.cal-ok')&&!!r.querySelector('.cal-no')}),'an occasion on a day that isn\'t a workday can only be dismissed');
+    // a workday of the week that is a day off gives the real reason: a made-up holiday by its name, the person's own day off as theirs
+    const offw=await p.evaluate(()=>{const h=settings.holidays,o=settings.daysOff;
+      try{settings.holidays={country:'ZZ',list:[{d:'2026-11-25',n:'Made-up Founders Day'}],skip:[]};settings.daysOff=[{d:'2026-12-01',n:'Dentist'}];
+        const w=(d,k)=>calPlan({...CAL_X,ev:{id:'t'+d,title:'T',start:d,end:d,days:1},k,label:'Wedding day'});
+        const a=w('2026-11-25','wedding'),b=w('2026-12-01','funeral'),c=w('2026-11-28','wedding');
+        return {a:a.what,b:b.what,c:c.what,can:a.can||b.can||c.can}}finally{settings.holidays=h;settings.daysOff=o}});
+    ok(offw.a==='a day off (Made-up Founders Day): no outfit to plan'&&offw.b==='a day off (your day off): no outfit to plan'&&offw.c==='Saturday isn’t a workday: no outfit to plan'&&!offw.can,
+      `an occasion on a weekday that is a day off says why: the holiday's name, or "your day off"; a Saturday still says it isn't a workday (${JSON.stringify(offw)})`);
     // Today's banner, before anything is kept
     await p.evaluate(()=>{closeSettings();sel=new Date(2026,10,22);renderToday()});
     const ban=await p.evaluate(()=>($('#cal-new')||{}).textContent||'');
