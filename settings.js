@@ -7,10 +7,8 @@ function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.cl
   el.classList.toggle('open',open);const b=el.querySelector('.scat-head');if(b)b.setAttribute('aria-expanded',open);
   if(open&&key==='backup'&&typeof loadSnapshots==='function')loadSnapshots();   // the daily backups list is read as Backup opens (sync.js)
   if(open&&key==='about'&&typeof renderAbout==='function')renderAbout()}   // only as About opens (its header ran it on closing too, and asked the server each time: CR-7-06)
-function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);settingsSummaries();const t0=Date.now();
-  // the scroll to show what opened gives way to a finger or wheel that moved since the tap: on an iPhone it fought a scroll already under way
-  if(open)setTimeout(()=>{const m=$('#settings-modal');if((m._touch||0)>t0)return;const r=el.getBoundingClientRect(),top=m.querySelector('.shead').getBoundingClientRect().bottom;
-    const over=r.top+Math.min(el.scrollHeight,m.clientHeight-80)-m.clientHeight;if(over>0)m.scrollBy({top:Math.min(over+16,r.top-top-8),behavior:'smooth'})},460)}
+// a category unfolds where it is: no scroll to show what opened (the owner, 2026-11-17: "I want it to unfold and not scroll automatically at all")
+function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);settingsSummaries()}
 /* the Backup line in Settings says what really happened: the last backup's time, or that the last try failed (sync.js keeps
    sync_status while a try fails and last_sync when one works) */
 /* when backups start again (the next 00:00 UTC): "tomorrow" only when that is tomorrow here; west of UTC it is later today (W1-10-03: "Paused
