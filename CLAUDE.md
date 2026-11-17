@@ -229,8 +229,13 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 - records coming in are checked (`cleanRecord`/`cleanDay`/`cleanState`, fix round 3 2026-11-16, the audit's Critical W2-13-02 = W2-12-01: a crafted Restore file, sync or server answer put an item's id, photo, color key and sett band color into the page as markup): only an item with an id of `ID_RE` (letters, digits, `_ . : -`, 80 at most) and a known type comes in
 - `cleanRecord` keeps color and option keys only of letters, digits, `-` and `_` (`REC_KEY`; an own key whatever its script; a known color's word, "light blue", becomes its key), photos/photoSm/texture/swatch only as whole `data:image/jpeg|png|webp;base64` strings (`REC_PHOTO`, else dropped), `added`/`updated`/`shade` only as numbers, a `sett` only of numbers, hex colors and plain words (`recStrict`), free text (name, brand, material, notes, details, patternText) as typed but without bidi controls (`noBidi`), and every other field with `< > " \`` taken out of its strings (`recFree`); a clean record comes out equal (idempotent)
-- `cleanDay`: a date of `REC_DATE`, and a day's `ids`/`lock`/`force` keep only item ids of `ID_RE`; `cleanState` also keeps only numeric tombstones of `ID_RE` ids; settings pass as they are (own color/pattern names are cleaned by `applyCustom`, other setting text is shown escaped)
+- `cleanDay`: a date of `REC_DATE`, and a day's `ids`/`lock`/`force` keep only item ids of `ID_RE`; `cleanState` also keeps only numeric tombstones of `ID_RE` ids, and cleans a snapshot's settings with `cleanSettings`
 - where it runs: Restore file, every sync pull (lite and whole) and roll-back copy (sync.js), what each sync sends (so the server's check never refuses the app's own records), and the stored wardrobe once per phone at start-up (app.js `cleanStored`, localStorage `rec_clean`); `tests/records.test.js`
+- settings coming in are checked too (`cleanSettings`, fix round A 2026-11-17, the code review's Critical C1 = CR-2-02 + CR-4-01 + CR-7-02: a crafted Restore file, sync or holiday list put an own color's key and hex, a holiday's or day off's date and a hidden What to buy key into the page as script): each setting is kept only in its own shape (`SET_CLEAN`), an entry of the wrong shape left out
+- `SET_CLEAN`: workdays and blazer days 0-6; holidays' country two capital letters (else ''), dates of `REC_DATE`; days off a `REC_DATE` date; names (`n`) without bidi controls or `< > " \``; `shopSkip` keys `SHOP_SKIP_RE` (type|group|class of letters, digits, - and _); own colors and patterns only with a key of `OWN_COL_RE` / `OWN_PAT_RE`, a color also a 6-digit hex, base and kinds plain keys (kinds always a list), a look through `recStrict`; own materials as `ownMatName` gives them; `tagStats` counts as numbers; every other setting through `recFree`
+- `cleanSettings` never touches the stamps (`updated`, `ks`, `kh`, `kse`, `khe`) and returns a clean copy as the same object, so the app's own settings are never restamped; a cleaned setting differs from its `kh`, so the next save stamps and syncs the clean value
+- where it runs: `cleanState` (Restore file, every sync pull, roll-back), `takeSettings` (start-up, after a sync, the safety restore, the holiday refresh: a setting of the wrong shape leaves the phone's own), and the stored copy once per phone at start-up (app.js `cleanStoredSettings`, localStorage `set_clean`); `tests/settingsin.test.js`
+- `cleanStoredSettings` keeps the original in meta `set_kept` ([{rec, at}], appended) and replaces the stored copy in the same transaction, stamps unchanged, only while it is still the copy read; a one-time toast says "Some of this phone’s settings couldn’t be shown safely and were set aside. Nothing was deleted: the originals are kept on this phone."
 - the connection is kept in the database too (`connKeep`/`connRestored` in app.js; 2026-11-14: on the owner's iPhone the Home Screen app's localStorage lost the server address and code after a forced close during an update, while the database kept the wardrobe and Safari kept both): `worker_url`, `app_token` and `remind` are copied to meta `conn` (after the start-up restore, when Settings closes, on connecting, whenever the app goes to the background) and put back at start-up where localStorage lost them; start.js and sync.js wait for `connRestored`; cleared on purpose in Settings, the copy is cleared too; `tests/connkeep.test.js`
 
 ### `planner.js`
@@ -664,6 +669,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 ### `app.js`
 
 - app.js was split on 2026-11-14 (the audit's recommendation) into classic scripts loaded in its place, in this order: `app.js` (state, IndexedDB, the busy pill, the tab bar's fit, `ask`, colour helpers, photo loading, the precision swatch), `add.js` (the Add page), `itemsheet.js` (the item sheet, its photo editor, the Wardrobe grid), `history.js` (past days, locks, the piece picker, occasions, the score card), `today.js` (the month's plan and snapshot, Today's rows, figure and overlays, the pieces box, zoom, swatches, swiping, `renderToday`), `month.js`, `photos.js` (photo keys, kept photos, the realistic photo, item pictures, the queue), `settings.js` (Settings and its categories, toasts, `refreshAll`, weather, the theme), `start.js` (`show`, the page moves, the start-up chain, the service worker)
+- `dbWiping` (CR-7-01): set by about.js `wipeDevice` while it deletes the database; a connection asked for then waits (`dbHeld`; a connection that opens meanwhile is closed at once): the page reloads once the database is gone, and a delete that fails lets them open (`dbUnhold`); a refusal instead was an unhandled rejection in WebKit
 - the start-up chain must stay in the last of them (`start.js`): its callbacks can run before the scripts after it (ui.js…) have loaded, so whatever Today draws at start-up lives in these files or earlier (see `itemTitle` in core.js); a new file goes into index.html and sw.js `ASSETS` in load order
 - nothing a script runs at load may reach a name declared in a later script (function declarations are hoisted only within their own file); the split was checked mechanically for that (only `applyTheme` → `renderToday`, guarded by `window.appReady`, crosses)
 - IndexedDB storage: items, day history, settings; generated photos in `meta` as `render:<combination key>`
@@ -1035,10 +1041,13 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the Schedule summary lists the days from the week's first one (the first day, Sunday first, whose day before isn't a workday): "Sun–Thu"
 - weather: a 16-day forecast; beyond it `loadClimate()` fills `climate` in core.js with the location's usual monthly highs from Open-Meteo's archive, kept in localStorage `wx_norm`, so `dayClimate()` does not fall back to a temperate calendar
 - the city search's results (`findCity`) are escaped (names from Open-Meteo went into the page as HTML)
-- `refreshAll`'s list of pages includes `pack` and `'care'`, so Refresh stays on the Packing list and Laundry & cleaning
 - a toast with an action (Undo) stays at least `TOAST_ACT_MS` (8 s) whatever its caller asks (new-user audit 2026-11-14: 5–6 s, and Delete item has no question)
 - (audit 2026-11-15) dates are in the app's language: `appLocale()` makes every `Date#toLocale…String(undefined, …)` use `APP_LOC` (the phone's language when English, else `en-GB`): an Arabic-language iPhone showed Arabic dates and digits; pass a locale to opt out
 - units without a choice follow the country (`unit`, `unitCC`, `F_CC`): the location's `cc` (kept by the city search) or the `, XX` at the end of its name, else `tzCountry()`, else the phone's language; a Kuwait phone in English (US) got °F
+- (code review fix round A, CR-7-05) `appLocale()` also gives `APP_LOC` to a `[]` locale ("the browser's language"): the backup-pause times (`pausedUntil`, sync.js `backupFullMsg`) and About's reset time were in Arabic words and digits on an Arabic phone
+- (CR-7-04) Settings opened over Add, the Packing list or Laundry (the gear, Add's "Connect") borrows that page's Back entry (`setOver='sub'`) and hands it back on closing (`closeSettings`); closed by Back, the page gets a new entry: the next Back left the app
+- (CR-7-06) `renderAbout` runs from `setCatOpen` only as About opens (its header ran it on closing too, each time asking the server `/me`)
+- (CR-7-14) the hidden header Refresh (`refreshAll`, `#refresh-btn`, `tests/refresh.test.js`) is gone: it was the one load path that skipped the settings checks
 - `weekFirst()`: the work week's first day (Sun–Thu → Sunday, Mon–Fri → Monday); the Schedule summary and the month grid (month.js) start there
 - the Schedule summary's dress part is `scheduleWear`: blazer days whenever jackets are worn, the vest only with ties
 - the last workday can't be unticked and toasts why (`toggleDay`)
@@ -1074,10 +1083,16 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - kind 'nps' (the "Add without a photo" sheet, add.js `npsOpen` → `appBorrow('nps')`): Back closes it as × (`npsBack`; a changed card asks first and its entry is made again), Add stays with its entry; `show()` leaving Add calls `npsLeave` first
 - `appTop`: the latest entry is start.js's, not the item sheet's (a question or the close-up guide opened over the item sheet); the item sheet's listener then leaves that Back alone, and ignores start.js's own step back (`appPend`); when it closes the item it marks the event (`e.dwItem`) so start.js's listener doesn't act on it too
 - the tab shown has `aria-current="page"` (`show`; W2-19-05)
+- (CR-7-03) a start-up error after the stores were read keeps that wardrobe (`startFailed`; `startRead`, `startTook`), says in a toast that it is safe on this phone and nothing was deleted, notes the error (`errNote(e,'Start-up')`, sent by a tester's phone) and still runs `safetyStart`; only stores that can't be read leave it empty (`storageDown`)
+- the stored-record check failing as a whole (`cleanStored`) puts each record through `cleanRecord`/`cleanDay` alone, leaving out only the ones that fail
+- Today that can't be drawn at start-up is a plain card (`startPlain`): "Today couldn't be shown", the wardrobe is safe, Try again (a reload)
+- `show()` drops a 'sub' entry again after `closeSettings()`, since Settings over Add hands Add's entry back as it closes (CR-7-04)
+- `tests/shellfix.test.js`: the shell's code-review fixes (CR-7-01, 03, 04, 05, 06) as a person meets them
 
 ### `ui.js`
 
 - shared interface pieces (after app.js; nothing runs at load)
+- `connNote` (unused) is gone (CR-7-14)
 - `askConfirm(message, {ok, cancel, danger})` → `Promise<boolean>`: a bottom sheet (`#ask-sheet`/`#ask-backdrop`) above everything; first paragraph = question; Cancel, Escape, outside tap or a second question → false (`askAnswer`); `danger` = red button, focus on Cancel
 - `tell(message)`: a toast up 4–9 s by length
 - the close-up chooser's mode 'read' (`CU_COPY.read`, colpick.js `rdStart`): "Close-up for Claude" / "Claude reads the color and the weave from it. …", with the paper line
@@ -1221,6 +1236,10 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - photos.js `keepRender` keeps a picture record only when its `img` is a whole `REC_PHOTO` string (W2-13-06); assemble.js `asmPre` takes a server picture only of that shape
 - tagging.js `confTxt` shows only the words medium and low (W2-13-05); item names typed or imported lose bidi override and isolate characters on save (wardrobe.js `setItemField`, `wardSaveFields`), and the owner's Feedback received shows feedback without them (about.js) (W2-12-06)
 - checked for backup data reaching markup (2026-11-16): Today (pieces, tiles, swatches, the picture), the Wardrobe grid and item sheet, the piece picker, Insights, What to buy, the month, packing, Laundry, Settings' lists and the pictures; names and other free text were already escaped everywhere, the planner's words (`desc`, `nm`) are built from keys only
+- settings at the markup (fix round A, 2026-11-17): Settings' own colors and patterns (tagging.js `renderCustomUI`: Remove's `data-rm-kind`/`data-rm-key`, only entries of the own-key rule listed, the hex escaped), Days off (settings.js `daysOffListen`: a holiday's checkbox `data-d`, a day off's × `data-ds`) and What to buy's "Show again" (shop.js `data-unhide`) carry their values in data-* attributes read by one listener each, not in inline handlers (`esc` inside one is decoded back before it runs)
+- `tests/inlinehandlers.test.js` (a lint) fails on a quoted `${…}` inside an inline handler that isn't `jsq(…)` and isn't on its list of values checked to be app-made (ids, slot names, the app's own keys); a new one goes into data-* or `jsq`, or is checked and listed
+- checked for settings reaching markup (fix round A): the location name (escaped or `textContent`), holiday and day-off names (`esc`, `nameHtml`), Today's and the month's day-off line (`esc`), the packing list (`nameHtml`), Care's limits and laundry days (numbers), the dress code and picture switches (fixed values), own materials (`ownMats`, `jsq`), the tagging card (counts now numbers, corrections escaped), workdays (looked up in `DAY_NAMES`), the color and pattern pickers (`CUSTOM_COL`/`CUSTOM_PAT` keys of the own-key rule)
+- settings.js `fetchHolidays`' `tidy` keeps only a holiday with a `YYYY-MM-DD` date and a name, the name cleaned like `cleanSettings`' (`setStr`, 120 letters): its string compare let `2026-12-01" onclick="…` through from Nager.Date, the server or the built-in lists
 
 ### `account.js`
 
@@ -1271,7 +1290,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - leaving the Weather step with an unfinished city search warns once (`setupCityOpen`, `cityWarned`)
 - What you wear: `settings.dress = {jacket, tie}` (`setupSetDress`, `setupDress`; missing = true), releasing the week's locks (`clearLocks`)
 - a new person who doesn't choose gets `vestMode='never'` (`setupFinish`, self-opened setup only); the stored default stays `auto`
-- Connection: `setupConnected`, else an invite link field (`connectFromLink`, or `setupParseLink`)
+- Connection: `setupConnected`, else an invite link field (`connectFromLink`; the fallback `setupParseLink` is gone, CR-7-14)
 - (fix round 3, W1-11-01) not connected, the Welcome (`#su-before`) and the Connection step say an invitation link opened again brings the backed-up wardrobe back
 - `setupFinish` stores `setupDone` via `saveUserSettings`; the last step lists workdays Sunday first and asks for trousers only with jackets on and no suit
 - picks the time zone country's holidays (`setupHolidays`, `tzCountry`, `TZ_CC`); without a list yet the country is kept with `fetched` 0 and `refreshHolidays` retries
@@ -1401,6 +1420,11 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - feedback (`sendFeedback`): `POST /feedback` with `x-app-token` (`aboutConn`); `loadFeedback` lists it in `#fb-list` for the owner only
 - delete my data: `askDelete` (`#del-confirm`), `deleteMyData(server)` → `wipeDevice()` → reload
 - `wipeDevice()`: deletes the IndexedDB database (`ABOUT_DB`), the `dw-keep-*` caches, online also the service worker and its caches, and the app's own localStorage keys (`ABOUT_KEYS`, `ABOUT_KEY_PREFIXES`); never `localStorage.clear()`, as GitHub Pages sites of one account share an origin
+- (CR-7-01) `wipeDevice()` returns whether the database is gone: it first stops the backup (`syncTimer`, waits for `syncRun`) and the connection copy (`connReady`), sets app.js `dbWiping` (no connection may open meanwhile), closes both connections (`db`, the first, and `dbConn`, the reopened one), then deletes the database alone (`aboutDbDelete`) and checks nothing is left (`aboutDbLeft`); it cleared the stores through `db`, closed by iOS, and that error skipped the delete while it said "deleted"
+- a delete held up by the app open in another tab can't be called off: it is waited for, `#del-status` says so (`ABOUT_WIPE_WAIT`), and it finishes once that tab lets go
+- a delete that fails clears nothing else (no keys, no caches), says so (`ABOUT_WIPE_FAIL`, or `ABOUT_WIPE_FAIL_SERVER` when the server's copy is gone: `del_pending` stays, so the next start finishes) and the app keeps working
+- account.js's switch to another account (`wipeDevice` before the new code is stored) keeps the old connection when the clear fails, or the old wardrobe would go into the new account
+- (CR-7-06) `loadFeedback` asks `/me` only when account.js doesn't know the role yet (`acctRole()`)
 - a new localStorage key must be added to `ABOUT_KEYS`: `tests/about.test.js` fails otherwise
 - "Delete everything" sends `DELETE /account` first with the connection removed and sync stopped; a 404 clears the device and says the server copy remains; any other failure restores the connection and deletes nothing
 - deleting on the device only also removes the connection, or the next sync would bring the wardrobe back
