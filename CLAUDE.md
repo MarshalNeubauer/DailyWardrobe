@@ -1145,6 +1145,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `saveUserSettings` announces each save to the app's other tabs (BroadcastChannel `dw-settings`, `setChan`); a tab that heard of a newer save (`setOther`) merges the stored copy in first (`setSeen`: the stamp it last read or wrote, set at start-up and in `onSyncedData`; `mergeSettings` setting by setting): a second tab (an invitation link tapped twice) wrote its stale copy whole over the other tab's setup choices (2026-11-15)
 - without word from another tab the save is written at once: a read before every write delayed it, and on WebKit a reload right after Skip lost it (`tests/setup.test.js`)
 - workdays, blazer days, the vest and units set `todayStale` too (`toggleDay`, `setVestMode`, `setUnits`), so Today follows when Settings closes; `setUnits` redraws the location line at once (`renderWxLoc`; it kept °F under °C)
+- later scripts draw their parts of Settings by registering once with `settingsPart(fn)` (`SETTINGS_PARTS`; Round B, CR-7-11: account.js and remind.js replaced `renderSettingsExtras` with a wrapper at load): `renderSettingsExtras` runs them last, after `settingsSummaries`, in script order (account.js `acctSettingsPart`, then remind.js `renderRemindUI`); no script may assign another's function (`tests/globals.test.js`)
 - `toastDrop()` takes away a toast with a button; leaving Add (start.js `show`) drops its "Saved … Undo" (it lay over Today's month card)
 - occasions (`setOccasion` in history.js, `addFormalDay`, `renderFormalUI`)
 - days off (`setHolidayCountry`, `toggleHoliday`, `addDayOff`, `renderDaysOffUI`; the holiday list is refetched monthly, `refreshHolidays`); the Days off summary is redrawn by `renderDaysOffUI` and `renderFormalUI` while Settings is open
@@ -1372,7 +1373,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a refused link changes nothing; `#invite` is dropped from the address unless the server was unreachable
 - a link on a phone connected with another code: with a local wardrobe (`acctLocal`, read from the database) it asks, wipes (`wipeDevice`) and reloads; else it switches and drops `sync_mark`, `last_sync`, `sync_status` (a sync once merged the owner's wardrobe into a tester's)
 - Connection's `#acct-box`: `renderAccountUI`, `loadAccount` (at most once in 3 s); testers see use against caps (`ACCT_CAPS`: item pictures, photo readings, pattern readings; `acctUse`), the owner invites (`createInvite`, `copyInvite`, `revokeInvite`, `purgeInvite`)
-- `acctStart()` wraps `renderSettingsExtras` (settings.js); an old server (404/405 on `/me`) leaves the box empty
+- `acctStart()` registers `acctSettingsPart` (the account box, `loadAccount`) with settings.js `settingsPart`, so every Settings redraw draws it (Round B, CR-7-11: it wrapped `renderSettingsExtras`); an old server (404/405 on `/me`) leaves the box empty
 - the role is remembered per code (`rememberRole`, `acct_role`, `acctRole()`, `isTester()`)
 - iPhone: a Home Screen app has its own storage; a tester connecting in Safari (`iosInSafari`) gets `homeScreenGuide()` and "Copy my invitation link" (`copyInviteLink`, `myInviteLink`; testers only)
 - a daily limit shows the server's `message`: through `detail` on Add, thrown by `renderItemPic`, toasted for pattern reading via `limitNote`

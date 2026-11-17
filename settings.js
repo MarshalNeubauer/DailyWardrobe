@@ -287,6 +287,11 @@ async function addFormalDay(){const v=($('#cfg-formal-date')||{}).value;if(!v)re
   const occ=($('#cfg-occasion')||{}).value||'formal',O=OCCASIONS.find(x=>x[0]===occ)||OCCASIONS[0],what=occ==='casual'?'a day without a jacket or tie':`${aAn(O[1].toLowerCase())} day`;
   if(o.occasion===occ)return renderFormalUI(`${l} is already ${what}.`);
   await setOccasion(occ,k);renderFormalUI(`${l} is now ${what}: ${O[2]}.`)}
+/* the parts of Settings drawn by later scripts (Round B, CR-7-11: account.js and remind.js replaced renderSettingsExtras with a wrapper
+   at load, so a reader of this file couldn't see that every redraw also draws the account box, asks /me and draws the reminder):
+   each registers once with settingsPart(fn), and renderSettingsExtras runs them last, in the order they registered (script order) */
+const SETTINGS_PARTS=[];
+function settingsPart(fn){if(!SETTINGS_PARTS.includes(fn))SETTINGS_PARTS.push(fn)}
 function renderSettingsExtras(){
   if(typeof renderDressUI==='function')renderDressUI();renderItemPicUI();renderFormalUI();renderReplanUI();renderDaysOffUI();renderCustomUI();if(typeof renderOwnMatUI==='function')renderOwnMatUI();if(typeof renderConnUI==='function')renderConnUI();
   renderPicturesUI();if(typeof renderAsmUI==='function'){renderAsmUI();if(asmLive())asmSync()}
@@ -297,6 +302,7 @@ function renderSettingsExtras(){
   if($('#cfg-units'))$('#cfg-units').value=unit();
   if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';if($('#cfg-dark'))$('#cfg-dark').value=settings.darkShirts||'some';
   settingsSummaries();
+  for(const part of SETTINGS_PARTS)part();   // account.js acctSettingsPart, remind.js renderRemindUI
 }
 /* the weather location's line, its temperatures in the units chosen (setUnits redraws it: it kept °F under a °C setting) */
 function renderWxLoc(){

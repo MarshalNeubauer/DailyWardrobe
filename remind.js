@@ -81,7 +81,7 @@ function renderRemindUI(){const el=document.querySelector('#remind-box');if(!el)
 async function remindTime(v){if(!/^\d\d:\d\d$/.test(v))return;const p={...remindPrefs(),time:v};remindSave(p);if(remindAny(p)){localStorage.removeItem('remind_sent');await remindRefresh();remindMsg=`Notifications at ${v}.`;renderRemindUI()}}
 /* start-up: draw with Settings' extras, and refresh once the app is up */
 (function remindStart(){
-  if(!renderSettingsExtras.remind){const draw=renderSettingsExtras;renderSettingsExtras=function(){draw();renderRemindUI()};renderSettingsExtras.remind=1}
+  settingsPart(renderRemindUI);   // drawn with the rest of Settings (settings.js)
   const go=()=>setTimeout(remindRefresh,4000);document.readyState==='complete'?go():addEventListener('load',go,{once:true});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')remindSoon();else remindHidden()})})();
 /* the app goes to the background: the kept lines are written at once (on the phone, no request; the server is told on the next start).

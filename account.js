@@ -282,9 +282,11 @@ async function purgeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if(
   renderAccountUI()}
 /* start-up: Settings draws the box whenever it opens (its extras are redrawn there), and an invitation link in the address
    connects the app once the page's scripts are in */
+/* Settings' account box, drawn with the rest of Settings (settings.js settingsPart) */
+function acctSettingsPart(){if(!settingsOpen())acct.link=null;   // a new link is shown once: gone when Settings is opened again
+  renderAccountUI();loadAccount()}
 function acctStart(){applyRole();
-  if(!renderSettingsExtras.acct){const draw=renderSettingsExtras;renderSettingsExtras=function(){draw();if(!settingsOpen())acct.link=null;   // a new link is shown once: gone when Settings is opened again
-      renderAccountUI();loadAccount()};renderSettingsExtras.acct=1}
+  settingsPart(acctSettingsPart);
   if(hasInviteHash()){const go=()=>connectFromLink(location.href,{address:true});document.readyState==='complete'?go():addEventListener('load',go,{once:true})}
   else if(acctBase()&&!acctRole())setTimeout(()=>{if(!acctRole())loadAccount()},4000);   // connected before roles were remembered: ask once
   // a link opened or pasted in the tab that already shows the app changes only the # part: no new page load, so nothing read it

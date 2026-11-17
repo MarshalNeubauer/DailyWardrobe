@@ -35,7 +35,6 @@ const ALLOW={
   clockSkew:{'sync.js':1},
   storeToldAt:{'sync.js':1},
   restoring:{'snapshots.js':1},
-  renderSettingsExtras:{'account.js':1,'remind.js':1},
   dbWiping:{'about.js':2},
   connReady:{'about.js':2},
   dbConn:{'about.js':1},
@@ -79,4 +78,5 @@ module.exports=async({ok,ROOT})=>{
   ok(!under.length,'the allow-list only shrinks: every allowance is still used'+(under.length?' (lower or remove in tests/globals.test.js: '+under.join('; ')+')':''));
   ok(!seen.cache&&!seen.todayStale,'the plan cache and "redraw Today later" are written only by their owners (today.js planDirty, settings.js todayDirty)');
   ok(!seen.settings&&Object.keys(seen.items||{}).join()==='analysis.js'&&Object.keys(seen.dayRecs||{}).sort().join()==='pack.js,today.js','the wardrobe, history and settings are set through core.js setWardrobe (only the planner\'s brief swaps in analysis.js, pack.js packPlanOf and today.js planWith remain)');
+  ok(!seen.renderSettingsExtras,'no script replaces another\'s function (account.js and remind.js register their parts of Settings with settingsPart)');
 };
