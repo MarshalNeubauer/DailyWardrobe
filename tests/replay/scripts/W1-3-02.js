@@ -9,7 +9,7 @@ L.main(async()=>{
   await L.today(A);const k=await L.todayKey(A);
   const srv0=L.dayOf(await L.serverBackup(),k);
   await A.tap('#wpill');await L.sleep(1000);const aPill=await L.pill(A);
-  const rec=await A.page.evaluate(k=>{const r=dayRecs[k];const off=new Set(items.filter(i=>!syncOwn(i)).map(i=>i.id));
+  const rec=await A.page.evaluate(k=>{const r=dayRecs[k];const off=new Set(items.filter(i=>!kitSends(i)).map(i=>i.id));
     return {worn:r&&r.worn,updated:r&&r.updated,namesSample:!!r&&[r.ids,r.lock,r.force].some(o=>o&&Object.values(o).some(v=>off.has(v)))}},k);
   await L.backup(A);await L.later(A);await L.sleep(1500);
   const srv1=L.dayOf(await L.serverBackup(),k);

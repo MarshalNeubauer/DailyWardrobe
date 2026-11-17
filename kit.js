@@ -546,7 +546,7 @@ async function kitSampleMigrate(){try{if(localStorage.getItem('kit_mine'))return
   try{localStorage.setItem('kit_mine','1')}catch{}}
 /* does a day's record, with the sample's pieces taken out (kitSampleDay), still hold anything of his? His own pieces, a pick, the week's
    lock of his own pieces, an occasion, a kind, a skip, a piece taken off, a trip. A record that holds nothing else was made from the
-   sample: it never goes up (sync.js syncShare), and Remove the sample gives it the stamp KIT_YIELD, so the account's own record of that
+   sample: it never goes up (kitShareFilter below), and Remove the sample gives it the stamp KIT_YIELD, so the account's own record of that
    day, made on another phone, wins over it (fix round 3, W1-6-04: Remove the sample on a phone that tried the sample before joining
    stamped its sample days new and wiped the other phone's real days) */
 const KIT_YIELD=1;
@@ -567,7 +567,7 @@ async function kitSampleLoad(){if(kitSampling)return;kitSampling=true;kitSampleB
     const have=new Set(items.filter(i=>i.sample).map(kitSampleSig)),missing=kitSampleCards().filter(c=>!have.has(kitSampleSig(c)));
     if(!missing.length){kitSampleDone();toast('The sample wardrobe is already here: swipe through the days to see outfits.',4000);return}
     if(!have.size&&items.length&&!await askConfirm('Add the sample wardrobe next to your own clothes?',{ok:'Add the sample'}))return;
-    // (connected: the sample stays on this phone, never backed up, sync.js syncShare)
+    // (connected: the sample stays on this phone, never backed up, kitShareFilter)
     if(!await kitStore(missing.map(kitItem)))return;   // (said why; nothing stored)
     kitSampleDone();
     toast(have.size?`The rest of the sample wardrobe is here: ${missing.length} more piece${missing.length===1?'':'s'}.`:`A sample wardrobe of ${missing.length} pieces: swipe through the days to see outfits.`,4500)}
@@ -624,6 +624,54 @@ function kitSampleDay(r,ids,T){const c=JSON.parse(JSON.stringify(r)),hit=o=>!!o&
       else{for(const k of ['ids','suitDay','vestOn','gone','auto'])delete c[k];c.noOutfit=1}}
     else for(const k of ['ids','suitDay','vestOn','auto'])delete c[k]}
   return c}
+/* ---- what of the sample goes up with a backup (moved here from sync.js, the code review's CR-5-10: sync.js reached into this file's
+   rules; it now calls kitShareFilter as it calls cleanState, kitSentStamp for a day's stamp and kitShareDone after a save went through) ---- */
+/* the sample wardrobe stays on this phone (re-audit 2026-11-15, N7: loaded while connected, it was backed up into the person's real
+   wardrobe and showed on his other phones): uploads leave out the sample pieces he hasn't made his (kitEdited) and the day records
+   naming one; Remove the sample rewrites those records (kitSampleDay) with a new stamp, and they go up then. Applied to what is
+   sent only: the merge and this phone's copy are unchanged */
+/* fix round 3 (W1-3-02, W1-6-04): a day naming a sample piece goes up with the sample's pieces taken out (kitSampleDay, today
+   counted as a past day so its own pieces stay), when that still holds anything of his (kitDayOwn): a "Didn't" or a swap on a day with one
+   sample piece was held back for good, and a phone joining was told he hadn't opened the app. A day made only from the sample, and one
+   Remove the sample left to yield (KIT_YIELD), never goes up: it would replace the account's own record of that day; except a "Didn't" /
+   "Wore" or a correction he made on it after this phone joined the account (join: sync.js syncJoinAt): it goes up with no outfit (noOutfit), so his
+   mark reaches his other phones (W1-3-02: a phone updated from 15 Nov with the sample in its backup), while a phone that tried the sample
+   before joining (W1-6-04) sends none of its sample days.
+   remote (the whole backup, PUT only): a day left out keeps the backup's copy, since a PUT replaces the whole backup */
+/* today and the coming days follow the plan, which differs between a phone with the sample and one without: each re-locked and recorded
+   the other's copy, a save at every sync (measured in the lab: a write every other background, 0 before). So such a day (sent without the
+   sample) goes up once per change of what he decided on it (kitSdSig: worn, a correction, his picks, the occasion, a piece off...), not
+   for the app's own locks and records; localStorage sync_sd keeps what was sent per date (kitShareDone after a save went through) */
+let kitSdNew={};
+const KIT_SD=['worn','edited','noOutfit','force','occasion','formal','kind','skip','off','trip','vest'];
+const kitSdSig=c=>JSON.stringify(KIT_SD.map(k=>c[k]===undefined?null:c[k]));
+function kitSdGet(){try{return JSON.parse(localStorage.getItem('sync_sd')||'{}')||{}}catch{return {}}}
+function kitShareDone(){const n=kitSdNew;kitSdNew={};if(!Object.keys(n).length)return;const T=todayDate(),m={...kitSdGet(),...n},old=new Date(T.getFullYear(),T.getMonth(),T.getDate()-KIT_SD_DAYS);
+  for(const k of Object.keys(m))if(keyDate(k)<old)delete m[k];try{localStorage.setItem('sync_sd',JSON.stringify(m))}catch{}}
+/* W1-3-03: a day he opened the app on in the account (recorded after this phone joined) but dressed only from the sample went
+   nowhere, and a phone joining later recorded it from its own plan and said "you didn't open the app". It goes up with no outfit and the
+   stamp KIT_YIELD: the backup takes it only where it has no record of that day, or only the app's lock built on nothing (core.js dayWins,
+   base 0); any real record of the day, another phone's, wins. kitOrig: the record's own stamp, which decides whether it is sent */
+const KIT_SD_DAYS=60,kitOrig=new WeakMap();
+const kitSentStamp=d=>kitOrig.has(d)?kitOrig.get(d):(d.updated||0);
+/* a piece that goes up: his own, or a sample piece he made his */
+const kitSends=i=>!(i&&i.sample)||kitEdited(i);
+/* st as sent (the merge and this phone's copy are unchanged); remote: the whole backup (PUT only), else null; join: when this phone joined
+   the account (sync.js syncJoinAt), 0 if not known */
+function kitShareFilter(st,remote,join){kitSdNew={};const off=new Set((st.items||[]).filter(i=>!kitSends(i)).map(i=>i.id)),yd=d=>d.updated===KIT_YIELD;
+  if(!off.size&&!(st.days||[]).some(yd))return st;
+  const names=r=>[r.ids,r.lock,r.force].some(o=>o&&Object.values(o).some(v=>off.has(v)));
+  const T=todayDate(),T1=new Date(T.getFullYear(),T.getMonth(),T.getDate()+1),rd=new Map(((remote&&remote.days)||[]).map(d=>[d.date,d])),days=[];
+  const said=(c,d)=>(c.worn!==undefined||!!c.edited)&&join>0&&(d.updated||0)>join,sd=kitSdGet();
+  for(const d of st.days||[]){let c=d,y=false;
+    if(yd(d))c=null;else if(names(d))c=kitSampleDay(d,off,T1);
+    if(c&&c!==d&&!kitDayOwn(c)&&!said(c,d)){
+      // (a day he used the app on in the account, dressed only from the sample: a yielding copy, see kitOrig)
+      if(join>0&&(d.updated||0)>join&&keyDate(d.date)<T1){c={...c,updated:KIT_YIELD};y=true}else c=null}
+    if(c&&c!==d&&(y||keyDate(d.date)>=T)){const g=(y?'y':'')+kitSdSig(c);if(sd[d.date]===g)c=null;else{kitSdNew[d.date]=g;if(y)kitOrig.set(c,d.updated||0)}}   // (today, coming days, yielding copies: once per change of his)
+    if(c&&y&&rd.has(d.date))c=mergeState({days:[rd.get(d.date)]},{days:[c]}).days[0];   // (a PUT: the backup's copy unless it is only a lock built on nothing)
+    if(c)days.push(c);else if(rd.has(d.date))days.push(rd.get(d.date))}
+  return {...st,items:st.items.filter(i=>!off.has(i.id)),days}}
 /* a sample piece kept as the owner's own (the item sheet) */
 async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.sample)return;delete it.sample;delete it.sampleMine;await put(it);cache={};todayStale=true;
   if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();toast('It’s yours now: Remove the sample keeps it.',3000)}
@@ -704,7 +752,7 @@ function homeSteps(inSetup){if(homeAndroid())return homeStepsAndroid(inSetup);co
     '<li><span class="home-n">4</span><span>Open Daily Wardrobe from its new icon'+(t?' and paste your invitation link at the setup\'s Connection step.':'.')+'</span></li></ol>'+
     (t?homeCopyBtn():'')+homeNote()+homeRisk(pad)+(inSetup?'<p class="su-help">Or tap Next to carry on here.</p>':'')+'</div>'}
 /* (2026-11-16, the owner's decision 2 for W1-11-04) someone using the app in a Safari tab with no connection is told once, here (the
-   setup's Home Screen step, also About's sheet), that Safari can clear it; Backup & sync says it under its status (sync.js safariWord), and
+   setup's Home Screen step, also About's sheet), that Safari can clear it; Backup & sync says it under its status (sync-status.js safariWord), and
    safariRemind reminds such a person once there are SAFARI_MIN items that were never backed up */
 function homeRisk(pad){if(typeof isConnected==='function'&&isConnected())return '';
   return `<p class="su-help home-risk">In a ${homeBrowser()} tab, your ${pad?'iPad':'iPhone'} can clear the app’s data when it isn’t opened for about a week or runs short of space. The Home Screen app isn’t cleared that way, and <b>Download backup</b> in Settings → Backup &amp; sync keeps a copy in Files.</p>`}
