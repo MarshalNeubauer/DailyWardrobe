@@ -95,9 +95,9 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
     let n=-1;try{n=bm?Object.keys(JSON.parse(bm[1]).keys||{}).length:-1}catch{}
     if(n!==Object.keys(keys).length){console.error(`manifest: read back ${n<0?'unreadable':n+' records'}, expected ${Object.keys(keys).length}: the worker may have cut it off`);process.exit(5)}console.log(`manifest written (${Object.keys(keys).length} records)`)}
   // (2026-11-14) the shared list (worker/records.js cm:shared, owner-only PUT /cm-shared): exactly the render keys testers may read from the
-  // owner's records: every record in the manifest, the manifest, the background and each master's 2048 copy for phones (asm-color.js
-  // asmCmCopyKey, uploaded by the PC builder until it was removed on 2026-11-16; the copies already there stay listed). Written only when it changed (one KV write); the worker also skips an unchanged list
-  const shared=[...new Set([...Object.keys(keys),mfKey,cmKey('all','background'),...Object.keys(ZONES).filter(k=>keys[cmKey(k,'master')]).map(k=>cmKey(k,'master2048'))])].sort();
+  // owner's records: every record in the manifest, the manifest and the background (CR-8-06, 2026-11-17: the masters' 2048 copies, which
+  // the PC builder uploaded until 2026-11-16, are no longer listed: phones don't ask for them). Written only when it changed (one KV write); the worker also skips an unchanged list
+  const shared=[...new Set([...Object.keys(keys),mfKey,cmKey('all','background')])].sort();
   const curSh=await api('cm-shared',{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);
   if(!(curSh&&Array.isArray(curSh.keys)&&[...curSh.keys].sort().join()===shared.join())){
     if(!budget.take(1)){console.error(`The shared list for testers needs writing, but ${budget.why()}.`);process.exit(4)}

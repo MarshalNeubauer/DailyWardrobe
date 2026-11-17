@@ -88,6 +88,29 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       ok(/when a suit or blazer is due for the cleaner/.test(c1.msg),`it says what it does ("${c1.msg}")`);
       await p.click('#care-rem-sw');await p.waitForFunction(()=>!remindCareOn(remindPrefs())&&!remindBusy);
       ok(posted.at(-1).off===true,'switched off with nothing else on: the subscription is switched off')}
+    // fix round A (2026-11-17; the code review's CR-4-09 and CR-4-10): a change just before the app is closed reaches the kept lines at
+    // once (iOS suspends a page within seconds, before the 3 s refresh); a phone the server no longer has is told again; a phone that
+    // lost its push subscription says so and its switches go off, instead of reading On
+    {await p.click('#remind-sw');await p.waitForFunction(()=>remindPrefs().on&&!remindBusy);await p.evaluate(()=>closeSettings());
+      const kept=iso=>p.evaluate(async iso=>{const c=await caches.open('dw-keep-remind');return (await (await c.match('remind.json')).json())[iso]||''},iso);
+      const nx=await p.evaluate(()=>{const T=todayDate();for(let i=1;i<10;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(isWorkday(d)){sel=d;view={y:d.getFullYear(),m:d.getMonth()};listOpen=false;show('today');return isoKey(d)}}});
+      const line0=await kept(nx);
+      await p.click('#ibox .month-link');await p.click('#ibox .row button[aria-label="Change tie"]');await p.click('#pick-next');await p.waitForFunction(()=>planFor()[key(sel)].overrides);
+      const want=await p.evaluate(()=>outfitLine(planFor()[key(sel)]));
+      await p.evaluate(()=>{Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});document.dispatchEvent(new Event('visibilitychange'))});
+      const t0=Date.now();let line1='';while(Date.now()-t0<1500){line1=await kept(nx);if(line1===want)break;await p.waitForTimeout(50)}
+      await p.evaluate(()=>{delete document.visibilityState});
+      ok(line0&&want!==line0&&line1===want,`a swap just before the app goes to the background is in the kept line at once ("${line0}" → "${line1}")`);
+      // told already, but the server has lost this phone (its GET /push says on:false): about twice a day it asks, and tells it again
+      const n0=posted.length;
+      await p.evaluate(async()=>{const p=remindPrefs(),dates=await remindKeep(p);localStorage.setItem('remind_sent',JSON.stringify({sig:remindSig(dates,p),at:Date.now()-13*3600e3}));await remindRefresh()});
+      ok(posted.length===n0+1&&posted.at(-1).endpoint==='https://web.push.apple.com/me','a phone the server no longer has (GET /push says off) is told again');
+      await p.evaluate(async()=>{await remindRefresh()});
+      ok(posted.length===n0+1,'…and then not again: it was asked and told just now');
+      // the subscription is gone (the Home Screen app removed and added again, notifications switched off)
+      await p.evaluate(async()=>{navigator.serviceWorker.getRegistration=async()=>({pushManager:{getSubscription:async()=>null}});await remindRefresh();openSettings('schedule')});
+      const lost=await p.evaluate(()=>({on:remindPrefs().on,sw:document.querySelector('#remind-sw').getAttribute('aria-checked'),msg:document.querySelector('.remind-msg').textContent}));
+      ok(!lost.on&&lost.sw==='false'&&/Reminders stopped on this phone/.test(lost.msg),`with no push subscription any more the switch goes off and says so ("${lost.msg}")`)}
     // not connected: not shown
     await p.evaluate(()=>{closeSettings();localStorage.removeItem('worker_url');localStorage.removeItem('app_token');openSettings('schedule')});
     ok(!(await p.isVisible('#remind-box')),'not connected: no reminder switch');

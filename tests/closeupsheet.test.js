@@ -7,9 +7,7 @@
 // with Undo; without a touch screen the buttons stay the direct file window and Remove stays a button. The 3-step card shows in the
 // editor and on the Add card in both themes at 390 px and opens the tip. The close-ups are the mink suit's test pictures
 // (tests/fixtures/suit-mink*), plain or with a band of white paper drawn on. Nothing goes to the server (it is stubbed).
-const {wrapBrowser}=require('./webkit');
-module.exports=async({ok,chromium,url,settle})=>{
-  const engines=[['Chromium',()=>chromium.launch()],['WebKit',async()=>{const pw=require('playwright');return wrapBrowser(await pw.webkit.launch())}]];
+module.exports=async({ok,chromium,engines,url,settle})=>{
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{await run(eng,browser,{ok,url,settle})}finally{await browser.close()}}

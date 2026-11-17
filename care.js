@@ -118,13 +118,15 @@ function careNote(o){if(!o||!isWorkday(sel)||key(sel)!==key(todayDate()))return 
    banner over its bottom, cut out round the tie swatch when the swatches reach down into it; careBandFit measures the swatch, so the cut
    follows it when the swatches shrink (a swatch tapped). On today and past days the ✕/✓ row and the swatches sit above the banner. */
 const CARE_FRAME=['suit','blazer'],CARE_BH=40;
-function careDayState(o,d){const p=o&&o.top;if(!p||!CARE_FRAME.includes(p.type)||o.frozen||p.away||!d)return null;
+// (a suit worn with its jacket off, o.suitBot: its pants are the suit, so it is counted and framed too, CR-3-10)
+const careTop=q=>q&&(q.top||(q.suitBot&&q.bot&&q.bot.type==='suit'?q.bot:null));
+function careDayState(o,d){const p=careTop(o);if(!p||!CARE_FRAME.includes(p.type)||o.frozen||p.away||!d)return null;
   const limit=careLimit(p.type);if(limit<2)return null;
   const T=todayDate(),day=new Date(d.getFullYear(),d.getMonth(),d.getDate());if(+day<+T)return null;
   let n=careCounts()[p.id]||0;   // the days really worn since cleaning (today only once marked worn)
   for(const x=new Date(T);+x<=+day;x.setDate(x.getDate()+1)){const k=key(x),r=dayRecs[k];
     if(r&&(r.worn===false||(+x===+T&&r.worn===true)))continue;   // marked not worn; today marked worn is counted already
-    const q=+x===+day?o:planMonth(x.getFullYear(),x.getMonth())[k];if(q&&q.top&&q.top.id===p.id)n++}
+    const q=+x===+day?o:planMonth(x.getFullYear(),x.getMonth())[k];if(careTop(q)&&careTop(q).id===p.id)n++}
   if(n<limit-1)return null;const what=p.type==='suit'?'Suit':'Blazer';
   return n===limit-1?{k:'near',n,limit,bold:'1 wear left',rest:`${what} – wear ${n} of ${limit}`}
     :n===limit?{k:'last',n,limit,bold:'Last wear',rest:`${what} – to the cleaner today`}:{k:'over',n,limit,bold:'Overdue',rest:`${what} – worn ${n} of ${limit}`}}

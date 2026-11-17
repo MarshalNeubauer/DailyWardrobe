@@ -9,10 +9,8 @@ function colFamily(c){const [,a,b]=labOf(c),C=Math.hypot(a,b);let h=Math.atan2(b
   return C<9?0:h>=45&&h<100?1:h>=100&&h<200?2:h>=200&&h<298?3:4}   // deep blue (hue 293) is a blue; lavender (302) and purple stay with the purples (W2-16-11)
 const colLabel=k=>k==='primaryColor'?'Color':k==='secondaryColor'?'Second color':'Third color';
 /* lab: the field's name; the button is named "Color: Mid gray" (W2-19-04: inside its <label> it was named only "Color", the value unsaid) */
-const colBtn=(src,ref,k,v,lab)=>{const c=v&&COLORS[v]?v:null,r=src==='q'?ref:`'${ref}'`;
+const colBtn=(src,ref,k,v,lab)=>{const c=v&&COLORS[v]?v:null,r=`'${jsq(String(ref))}'`;
   return `<button type="button" class="colbtn" data-k="${k}" onclick="openColPick('${src}',${r},'${k}')" aria-haspopup="dialog" aria-label="${esc(lab||colLabel(k))}: ${c?esc(cap1(colName(c))):'None'}"><span class="colchip${c?'':' none'}"${c?` style="background:${COLORS[c]}"`:''}></span><span class="colnm">${c?esc(cap1(colName(c))):'None'}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
-/* the editor's colour row, labelled as E() labels it */
-const EC=(id,k,v,lab)=>`<label class="colrow">${lab||colLabel(k)} ${colBtn('e',id,k,v,lab||colLabel(k))}</label>`;
 /* which colour fields an item shows (2026-11-15, the new-user audit: cufflinks asked for three colours, a bracelet watch's Colour did
    nothing, coats saved "Tan & brown"): only what something draws or names. The main colour always, but not on a watch on a metal bracelet
    (on a leather strap it is the strap's: "Strap colour"); a second colour for patterned cloth (its stripe), socks (the toe cap) and
@@ -27,16 +25,17 @@ const colFieldLabel=(it,k)=>k==='primaryColor'?(it&&it.type==='watch'?'Strap col
 /* a second or third colour the item can't show is dropped where the item is made (saveCard) or its type changed (sete): an Add card
    shows only the fields its type uses, a saved item keeps one already set until it is cleared or its type changes */
 function colTidy(it){for(const k of ['secondaryColor','tertiaryColor'])if(colHas(it[k])&&!colShows({...it,[k]:null},k))delete it[k];return it}
-/* the colour rows of the Add card (src 'q', ref its index) and the item sheet (src 'e', ref the item's id) */
+/* the colour rows of the Add card (src 'q', ref the card's id) and the item sheet (src 'e', ref the item's id); a card is never found by its
+   place in the list (CR-1-02: a "Several items" answer landing while the sheet was up moved the list, and "Use" colored another card) */
 const colRows=(src,ref,it)=>['primaryColor','secondaryColor','tertiaryColor'].filter(k=>src==='q'?colShows({...it,[k]:k==='primaryColor'?it[k]:null},k):colShows(it,k)).map(k=>`<label class="colrow">${colFieldLabel(it,k)} ${colBtn(src,ref,k,k==='primaryColor'?(src==='e'?primaryCol(it):it.primaryColor):it[k]||'none',colFieldLabel(it,k))}</label>`).join('');
-const colTarget=()=>!colPick?null:colPick.src==='s'?colPick.fake:colPick.src==='q'?queue[colPick.ref]:items.find(x=>x.id===colPick.ref);
+const colTarget=()=>!colPick?null:colPick.src==='s'?colPick.fake:colPick.src==='q'?cardOf(colPick.ref):items.find(x=>x.id===colPick.ref);
 function colChoices(it,k){if(k==='accents')return accChoices(it);const cur=k==='primaryColor'?primaryCol(it):it[k];
   return COLOR_OPTS(it.type,cur,k!=='primaryColor').map(x=>x[0]).filter(c=>COLORS[c])}
 /* ---- "Also has" (2026-11-16, accents: core.js accentsOf): "Add a color" opens this sheet with k 'accents' (no current colour, no None,
    no Ask Claude, no New color: a new shade is added from a main colour's sheet first); "Add …" puts the colour picked at the end of the
    item's accents (accSet: Add card or item). Every colour is offered, the owner's own included, but the item's three and its accents ---- */
 const accChoices=it=>{const main=[primaryCol(it),it.secondaryColor,it.tertiaryColor],have=accentsOf(it);return Object.keys(COLORS).filter(c=>!main.includes(c)&&!have.includes(c)&&c!=='cnprev')};   // (cnprev: a preview's stand-in, never a colour)
-const accItem=(src,ref)=>src==='q'?queue[ref]:items.find(x=>x.id===ref);
+const accItem=(src,ref)=>src==='q'?cardOf(ref):items.find(x=>x.id===ref);
 async function accSet(src,ref,list){const it=accItem(src,ref);if(!it)return;const a=accentsFor(it,list);if(a.length)it.accents=a;else delete it.accents;
   if(src==='q'){it.edited={...it.edited,accents:true};it.checked={...it.checked,colors:1};queueMicrotask(addKeep);renderAdd();return}
   await put(it);cache={};renderWardrobe()}
@@ -48,7 +47,8 @@ function colNear(it,k){const m=it.meas;if(!m||!m.lab||!['primaryColor','secondar
   const parts=m.parts&&m.parts.length>1?m.parts:null;if(!parts&&(k!=='primaryColor'||multiCol(it)))return [];
   const lab=parts?parts[k==='primaryColor'?0:1].lab:m.lab;
   try{return nearestCols(it.type,lab,m.ref,{kL:measKL(m),skip:it.id,accent:k!=='primaryColor'}).filter(x=>COLORS[x.c])}catch(e){return []}}
-function openColPick(src,ref,k){colPick={src,ref,k,from:document.activeElement};const it=colTarget();if(!it){colPick=null;return}
+function openColPick(src,ref,k){if(src==='q'&&typeof ref==='number'){const q=queue[ref];ref=q?q.id:''}   // (a place, from tagging.js and tests: its card's id from now on)
+  colPick={src,ref,k,from:document.activeElement};const it=colTarget();if(!it){colPick=null;return}
   colPick.cur=k==='accents'?'':k==='pattern'?normPat(it.type,it.pattern):(k==='primaryColor'?primaryCol(it):it[k])||'none';colPick.sel=colPick.cur;   // (accents: nothing picked yet)
   colPick.view=it.texture&&(k==='primaryColor'||k==='pattern'||k==='accents'||!it.photo)?'tex':'photo';
   renderColPick();$('#col-sheet').classList.add('on');$('#col-backdrop').classList.add('on');$('#col-sheet').scrollTop=0;colSwipe();if(typeof layerInert==='function')layerInert();   // the item sheet under it out of reach (W2-19-03)
@@ -67,45 +67,15 @@ function closeColPick(){const c=colPick;colPick=null;const s=$('#col-sheet'),b=$
   const f=c.from&&c.from.isConnected?c.from:document.querySelector(`#item-view.on .colbtn[data-k="${c.k}"],#nps-sheet.on .colbtn[data-k="${c.k}"],#add .colbtn[data-k="${c.k}"]`)||null;
   if(f&&!f.closest('[inert]'))try{f.focus({preventScroll:true})}catch{}}
 /* ---- swiping a sheet down closes it (2026-11-15, the owner: "When I click on color or texture, the sheet comes up, but I can't swipe it
-   down"): the color / pattern sheet with its New color / New pattern states, and the reading sheet. The item sheet's gesture (itemsheet.js,
-   ivDrag) for a sheet that scrolls itself: its sticky top (grabber, title, the photos) is a handle at any time, the rest only while the sheet
-   is scrolled to the top (further down a downward swipe scrolls it back up); decided on the first move of a touch, before the browser
-   scrolls; the sheet follows the finger and the backdrop lightens; let go past a quarter of its height or with a flick and it closes as its
-   × does, sliding away from where it was let go, else it springs back. A mouse, trackpad or Pencil drags it by its top (Pointer Events, a
-   4px dead zone, captured only once it moves so a click on × or a switch still lands); a finger's pointer events are left to the touch
-   listeners. Never from a field, a slider (the New color square and hue bar) or the bottom bar.
-   o: {head: the top's selector, backdrop: its selector, skip: more selectors to leave alone, on(): the sheet is up, close()} ---- */
+   down"): the color / pattern sheet with its New color / New pattern states, and the reading sheet, by add.js sheetSwipe (the gesture of
+   every sheet): the sheet scrolls itself, its sticky top (grabber, title, the photos) is the handle; let go past the line it closes as its
+   × does and slides away from where it was let go. Never from a dropdown, a slider (the New color square and hue bar) or its bottom bar. ---- */
 const SW_GRAB='<span class="cpgrab" aria-hidden="true"></span>';
-function cpSheetSwipe(s,o){if(!s||s.dataset.swipe)return;s.dataset.swipe='1';let st=null;
-  const bd=()=>document.querySelector(o.backdrop),dim=d=>String(Math.max(.15,1-d/s.offsetHeight));
-  const put=d=>{s.style.transform=d?`translateY(${d}px)`:'';const b=bd();if(b)b.style.opacity=d?dim(d):''};
-  const can=(el,head)=>o.on()&&!s.classList.contains('cpgoing')&&!el.closest('input,textarea,select,[role=slider],.cpbar,.rdbar'+(o.skip?','+o.skip:''))&&(head||s.scrollTop<=0);
-  const begin=(x,y,ts)=>({x,y,on:false,d:0,ly:y,lt:ts,vy:0});
-  const move=(x,y,ts)=>{const dx=x-st.x,dy=y-st.y;
-    if(!st.on&&st.pid!==undefined&&Math.abs(dx)<4&&Math.abs(dy)<4)return false;
-    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=true;s.style.transition='none';if(st.pid!==undefined)try{s.setPointerCapture(st.pid)}catch{}}else{st=null;return false}}
-    if(ts>st.lt){st.vy=(y-st.ly)/(ts-st.lt);st.ly=y;st.lt=ts}   // the speed from when each move happened (e.timeStamp), as the item sheet
-    st.d=Math.max(0,dy);put(st.d);return true};
-  // closed: the sheet's own close (its state goes at once), then the sheet slides on from where it was let go
-  const gone=d=>{const b=bd(),op=b&&b.style.opacity?+b.style.opacity:1;s.style.transform='';if(b)b.style.opacity='';s.style.transition='';o.close();
-    if(noMotion())return;s.classList.add('cpgoing');if(b)b.classList.add('cpgoing');
-    const a=s.animate([{transform:`translateY(${d}px)`},{transform:'translateY(102%)'}],{duration:200,easing:'ease-out'});if(b)b.animate([{opacity:op},{opacity:0}],{duration:200});
-    a.finished.catch(()=>{}).then(()=>{s.classList.remove('cpgoing');if(b)b.classList.remove('cpgoing')})};
-  const end=()=>{if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;
-    if(d>s.offsetHeight*.25||(vy>.5&&d>30)){gone(d);return}
-    const b=bd();s.style.transition='';put(0);if(b&&!noMotion())b.animate([{opacity:dim(d)},{opacity:1}],{duration:220})};   // springs back on the sheet's own transition
-  s.addEventListener('touchstart',e=>{const t=e.touches[0];st=e.touches.length>1||!can(e.target,!!e.target.closest(o.head))?null:begin(t.clientX,t.clientY,e.timeStamp)},{passive:true});
-  s.addEventListener('touchmove',e=>{if(!st||st.pid!==undefined)return;const t=e.touches[0];if(move(t.clientX,t.clientY,e.timeStamp))e.preventDefault()},{passive:false});
-  s.addEventListener('touchend',()=>{if(st&&st.pid===undefined)end()},{passive:true});s.addEventListener('touchcancel',()=>{if(st&&st.pid===undefined)end()},{passive:true});
-  if(!window.PointerEvent)return;
-  s.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||e.button!==0||st||!e.target.closest(o.head)||e.target.closest('button,a,label')||!can(e.target,true))return;st=begin(e.clientX,e.clientY,e.timeStamp);st.pid=e.pointerId});
-  s.addEventListener('pointermove',e=>{if(!st||st.pid!==e.pointerId)return;if(move(e.clientX,e.clientY,e.timeStamp))e.preventDefault()});
-  const pend=e=>{if(!st||st.pid!==e.pointerId)return;try{s.releasePointerCapture(e.pointerId)}catch{}end()};
-  s.addEventListener('pointerup',pend);s.addEventListener('pointercancel',pend);s.addEventListener('dragstart',e=>{if(st&&st.pid!==undefined)e.preventDefault()})}   // (a photo in the top would be dragged off as a picture)
-function colSwipe(){const s=$('#col-sheet');cpSheetSwipe(s,{head:'.cptop',backdrop:'#col-backdrop',on:()=>!!colPick&&s.classList.contains('on'),close:closeColPick})}
+function cpSwipe(s,head,backdrop,on,close){if(s)sheetSwipe(s,{head,backdrop:()=>document.querySelector(backdrop),live:()=>on(),skip:'select,[role=slider],.cpbar,.rdbar',close,slide:true,fadeBack:true})}
+function colSwipe(){const s=$('#col-sheet');cpSwipe(s,'.cptop','#col-backdrop',()=>!!colPick&&s.classList.contains('on'),closeColPick)}
 function colPickSel(c){if(!colPick)return;colPick.sel=c;renderColPick(true)}
 function colPickView(v){if(!colPick)return;colPick.view=v;renderColPick(true)}
-async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick,it=colTarget();let v=sel;
+async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick,it=colTarget();let v=sel;if(!it){closeColPick();return}   // (its card is gone)
   if(k==='accents'){if(!sel||!COLORS[sel]||!it)return;closeColPick();await accSet(src,ref,[...accentsOf(it),sel]);return}   // "Also has": added at the end
   if(sel===NEW_COL){try{v=k==='pattern'?await patAddNew(it,patNewFor(it)):await colAddNew(it,k,colNewFor(it,k))}catch(e){toast(e.message||'That could not be added.');return}}
   closeColPick();if(v===cur)return;
@@ -229,7 +199,7 @@ const patChoices=it=>{const l=(PATS_BY[it.type]||['solid']).slice(),c=normPat(it
 /* the item as it would be drawn in pattern p: a reading belongs to its own pattern, so another pattern is drawn without it */
 const patVar=(it,p)=>p===it.pattern?it:{...it,pattern:p,sett:undefined,stripes:undefined,patternSpec:undefined,weave:undefined,swatch:undefined,swSrc:undefined,texture:undefined};
 const patTitle=p=>cap1(patName(p));
-const patBtn=(src,ref,it)=>{const p=normPat(it.type,it.pattern),r=src==='q'?ref:`'${ref}'`;
+const patBtn=(src,ref,it)=>{const p=normPat(it.type,it.pattern),r=`'${jsq(String(ref))}'`;
   return `<button type="button" class="colbtn patbtn" data-k="pattern" onclick="openColPick('${src}',${r},'pattern')" aria-haspopup="dialog" aria-label="Pattern: ${esc(patTitle(p))}"><span class="colchip patchip">${swatchSVG(patVar(it,p),true)}</span><span class="colnm">${esc(patTitle(p))}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
 const EP=(id,it)=>`<label class="colrow">Pattern ${patBtn('e',id,it)}</label>`;
 const PAT_GROUPS=[[['solid'],'Plain'],[['pinstripe','chalk-stripe','stripe','fine-stripe'],'Stripes'],[['glen-check','windowpane','check','gingham','tattersall','tonal-check','houndstooth'],'Checks'],
@@ -443,7 +413,7 @@ function cnUseExisting(){const nc=colPick&&colPick.newc;if(!nc||!nc.res)return;c
   if(colPick.src==='s'){toast(`You already have ${nc.kind==='pattern'?patName(ex):colName(ex)}.`);closeColPick();return}cnDone(ex)}
 /* the new colour or pattern (or the one already had) set in the field, as a pick is */
 function cnDone(v){const nc=colPick.newc;if(colPick.src==='s'){closeColPick();if(typeof renderCustomUI==='function')renderCustomUI();return}
-  if(colPick.src==='q'){const q=queue[colPick.ref];if(q){if(nc.kind==='pattern')q.newPattern=null;else if(colPick.k==='primaryColor')q.newColor=null}}
+  if(colPick.src==='q'){const q=cardOf(colPick.ref);if(q){if(nc.kind==='pattern')q.newPattern=null;else if(colPick.k==='primaryColor')q.newColor=null}}
   colPick.newc=null;colPick.sel=v;useColPick()}
 function renderPatNew(keep){const el=$('#col-sheet'),it=colTarget(),nc=colPick&&colPick.newc;if(!el||!it||!nc)return;const y=el.scrollTop,src=colPick.src,r=nc.res,name=cap1(String(nc.name||'').trim()),base=cnPatBase(it,nc);
   const pic=src!=='s'&&it.texture?it.texture:null,draw=(big)=>cnWithPat(it,nc,x=>itemThumb(x,big)),sw=()=>cnWithPat(it,nc,x=>swatchSVG(x,true));
@@ -576,7 +546,7 @@ function rdEls(){let b=document.querySelector('#rd-backdrop'),s=document.querySe
     s=document.createElement('div');s.id='rd-sheet';s.setAttribute('role','dialog');s.setAttribute('aria-modal','true');s.setAttribute('aria-labelledby','rd-title');s.tabIndex=-1;document.body.append(b,s);
     window.addEventListener('keydown',e=>{if(!rd||cuOpen||!document.querySelector('#rd-sheet.on'))return;   // Escape closes it (ahead of the item sheet's)
       if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();rdClose()}else if(e.key==='ArrowLeft'||e.key==='ArrowRight')e.stopImmediatePropagation()},true);
-    cpSheetSwipe(s,{head:'.rdtop',backdrop:'#rd-backdrop',on:()=>!!rd&&s.classList.contains('on'),close:()=>rdClose()})}   // swiped down it closes as × does
+    cpSwipe(s,'.rdtop','#rd-backdrop',()=>!!rd&&s.classList.contains('on'),()=>rdClose())}   // swiped down it closes as × does
   return {b,s}}
 /* the phone's Back closes it as × does (the Back audit, 2026-11-15: Back closed the item sheet or Add under it and left the sheet up):
    it borrows the Back entry of the page under it, or makes its own (start.js appBorrow 'rd', kept in rdHist while it is up; a reading

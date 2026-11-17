@@ -2,7 +2,7 @@
    - askConfirm(message, {ok, cancel, danger}) -> Promise<boolean>: the app's own question, a sheet from the bottom like the piece picker
    - tell(message): a plain notice (a toast that stays long enough to read)
    - isConnected(), needConn(): what the buttons that need the server show while the app is not connected
-   - advFold(): the "Advanced" folds in Settings */
+   - advToggle(button), advClose(): the "Advanced" folds in Settings */
 const ASK_NONE={ok:'OK',cancel:'Cancel',danger:false};
 const ASK_SETTLE=450;   // ms after a question opens in which a real tap outside it doesn't cancel it: it is the double tap's second tap (re-audit 2026-11-15)
 let asking=null;   // the question on screen: {done(answer), last (what had the focus)}
@@ -88,18 +88,24 @@ function tell(message,ms){if(typeof toast==='function')toast(String(message),ms|
    Shift+Tab go round inside the top one; Escape closes Settings and the picker (What to buy, the item sheet, the colour sheet and a
    question have their own) ---- */
 const layerFrom=new Map();   // dialog -> what had the focus when it opened
-const LAYER_Q='#ask-sheet.on,#cu-sheet.on,#rd-sheet.on,#col-sheet.on,#pick-sheet.on,#shop-sheet.on';
-function layerUp(){const l=[...document.querySelectorAll(LAYER_Q)];if(typeof settingsOpen==='function'&&settingsOpen())l.push(document.querySelector('#settings-modal'));
-  const iv=document.querySelector('#item-view.on');if(iv)l.push(iv);return l}   // the top one first (by z-index: questions, colour sheet, sheets, Settings, item sheet)
-function layerInert(){const up=layerUp(),on=up.length>0||!!document.querySelector('#setup.on,#nostore');
-  for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;
+const layerFromId=new Map();   // dialog -> that control's id: a redraw while the dialog was up (What to buy redraws Insights) replaces it, and closing finds the new one
+/* the open layers, top one first: listed by z-index (a question, the close-up chooser, the tour and import sheet, the reading sheet, the
+   color sheet, "Add without a photo", the picker, What to buy), then Settings, then the item sheet; read in this order, not the page's */
+const LAYER_Q=['#ask-sheet.on','#cu-sheet.on','#kitsheet.on','#rd-sheet.on','#col-sheet.on','#nps-sheet.on','#pick-sheet.on','#shop-sheet.on'];
+function layerUp(){const l=LAYER_Q.map(q=>document.querySelector(q)).filter(Boolean);if(typeof settingsOpen==='function'&&settingsOpen())l.push(document.querySelector('#settings-modal'));
+  const iv=document.querySelector('#item-view.on');if(iv)l.push(iv);return l}
+function layerInert(){const up=layerUp(),on=up.length>0||!!document.querySelector('#setup.on,#nostore'),npsTop=!!up[0]&&up[0].id==='nps-sheet';
+  // "Add without a photo" is inside main: on top, main stays reachable and npsInert closes off the rest of Add around it
+  for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on&&!(npsTop&&el.tagName==='MAIN');
   // the item sheet under a sheet of its own (the color sheet, the close-up chooser, the reading sheet, a question, the picker): out of
   // reach too (fix round 3, W2-19-03: 18 of 40 Tabs from the color sheet landed in the item sheet behind it)
   const iv=document.querySelector('#item-view');if(iv)iv.inert=!!up.length&&up[0]!==iv&&iv.classList.contains('on');
-  if(!on&&typeof npsId!=='undefined'&&npsId&&typeof npsInert==='function')npsInert(true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add.js)
-function layerOpen(el){if(!el)return;if(!layerFrom.has(el))layerFrom.set(el,document.activeElement);if(!el.hasAttribute('tabindex'))el.tabIndex=-1;layerInert();
+  if((!on||npsTop)&&typeof npsId!=='undefined'&&npsId&&typeof npsInert==='function')npsInert(true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add.js)
+function layerOpen(el){if(!el)return;if(!layerFrom.has(el)){const a=document.activeElement;layerFrom.set(el,a);if(a&&a.id)layerFromId.set(el,a.id);else layerFromId.delete(el)}
+  if(!el.hasAttribute('tabindex'))el.tabIndex=-1;layerInert();
   if(!el.contains(document.activeElement))try{el.focus({preventScroll:true})}catch{}}
-function layerClose(el){layerInert();const f=el&&layerFrom.get(el);if(el)layerFrom.delete(el);
+function layerClose(el){layerInert();let f=el&&layerFrom.get(el);const fid=el&&layerFromId.get(el);if(el){layerFrom.delete(el);layerFromId.delete(el)}
+  if(f&&!f.isConnected&&fid)f=document.getElementById(fid);   // the opener was drawn again while the dialog was up
   const lost=!document.activeElement||document.activeElement===document.body||(el&&el.contains(document.activeElement));
   if(f&&lost&&f.isConnected&&!f.closest('[inert]'))try{f.focus({preventScroll:true})}catch{}}
 const LAYER_FOCUS='a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
@@ -109,7 +115,8 @@ window.addEventListener('keydown',e=>{if(e.key!=='Tab'&&e.key!=='Escape')return;
   if(e.key==='Escape'){if(e.defaultPrevented)return;
     if(top.id==='settings-modal'){e.preventDefault();e.stopPropagation();closeSettings()}
     else if(top.id==='pick-sheet'&&typeof closePicker==='function'){e.preventDefault();e.stopPropagation();closePicker()}
-    return}   // What to buy and the item sheet close on their own listeners
+    else if(top.id==='nps-sheet'&&typeof npsCancel==='function'){e.preventDefault();e.stopPropagation();if(!npsAsking)npsCancel()}   // (here, not on the sheet: with the focus on <body> the sheet's own listener never heard it)
+    return}   // What to buy, the item sheet and the tour close on their own listeners
   const f=layerFocusables(top);if(!f.length){e.preventDefault();return}
   const at=f.indexOf(document.activeElement);
   if(e.shiftKey?(at<=0):(at===f.length-1||at<0&&!top.contains(document.activeElement))){e.preventDefault();(e.shiftKey?f[f.length-1]:f[0]).focus()}},true);
@@ -144,7 +151,6 @@ function needConn(btn){if(!btn)return false;const off=!isConnected(),box=btn.clo
   if(btn.classList.contains('needconn')){btn.classList.remove('needconn');btn.removeAttribute('title')}
   return off}
 /* the reason as a line of text ('' when connected) */
-const connNote=()=>isConnected()?'':`<p class="connnote">${NEED_CONN}</p>`;
 /* Settings → Connection: its one-line summary, and the box at its top. Not connected: what a connection adds, and a field for the
    invite link (the address and the code themselves are under Advanced). Who is connected is the account box under it (account.js). */
 function connSummary(){if(typeof inviteChecking!=='undefined'&&inviteChecking)return 'Checking your invitation…';if(inviteOver())return 'Invitation ended';if(!isConnected())return 'Not connected';const m=typeof acct!=='undefined'&&acct&&acct.me;

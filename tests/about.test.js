@@ -1,10 +1,12 @@
 // Settings → About (about.js): the version and the new-version prompt, feedback, deleting one's data, the privacy note.
 // The server's /me, /feedback and /account are mocked here.
-const fs=require('fs'),path=require('path');
+const fs=require('fs');
 module.exports=async({ok,chromium,url,settle,ROOT})=>{
   const browser=await chromium.launch();
   const SRV='https://wardrobe-server.test/';
-  const swVer=+/CACHE='dw-v(\d+)'/.exec(fs.readFileSync(path.join(ROOT,'sw.js'),'utf8'))[1];
+  // the version in sw.js as the page is served it (read in the page, not with fs: a file read as text puts the test in the map for
+  // every change to it, and every app change bumps CACHE; CR-10-07)
+  let swVer=null;
   const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,PUT,DELETE,OPTIONS'};
   /* a page whose server answers from `h` (path → (request) → {status, body}); every call is recorded */
   const open=async(h={},o={})=>{const ctx=await browser.newContext({viewport:{width:390,height:844}}),p=await ctx.newPage(),calls=[],errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -22,6 +24,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
   try{
     /* version */
     {const {p,ctx,errs}=await open({},{connect:false});
+      swVer=await p.evaluate(async()=>+/CACHE='dw-v(\d+)'/.exec(await (await fetch('sw.js',{cache:'no-store'})).text())[1]);
       ok(await p.evaluate(()=>appVersion())===swVer,`appVersion() is the number in sw.js (${swVer})`);
       await about(p);
       ok(await text(p,'#about-ver')==='Version '+swVer&&(await text(p,'#sum-about')).startsWith('Version '+swVer),'About shows "Version '+swVer+'", in its summary too');
@@ -122,15 +125,10 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     {const {p,ctx}=await open({},{connect:false});await about(p);await p.click('#del-open');
       ok(await p.evaluate(()=>!$('#del-all')&&!!$('#del-device'))&&!/on the server<\/li>/.test(await p.innerHTML('#del-confirm')),'not connected: only the device is offered');await ctx.close()}
 
-    /* every localStorage key the app uses is one Delete removes */
-    {const {p,ctx}=await open({},{connect:false});const keys=new Set();
-      for(const f of fs.readdirSync(ROOT).filter(f=>/\.js$/.test(f)&&!['worker.js','sw.js'].includes(f))){const src=fs.readFileSync(path.join(ROOT,f),'utf8');
-        for(const m of src.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*(['"`])([^'"`]+)\1/g))keys.add(m[2]);
-        for(const m of src.matchAll(/localStorage\.(?!getItem|setItem|removeItem|clear|key\b|length)([A-Za-z_]\w*)/g))keys.add(m[1]);
-        for(const m of src.matchAll(/localStorage\[\s*(['"`])([^'"`]+)\1/g))keys.add(m[2])}
-      const miss=await p.evaluate(ks=>ks.filter(k=>!aboutOwnKey(k)),[...keys]);
-      ok(keys.size>10&&miss.length===0,'every localStorage key named in the app’s scripts is in ABOUT_KEYS / ABOUT_KEY_PREFIXES (missing: '+miss.join(', ')+')');
-      ok(await p.evaluate(()=>aboutOwnKey('render_queue')&&aboutOwnKey('nav_fit2:1x1')&&aboutOwnKey('nav_fit:1x1')&&!aboutOwnKey('someone_elses_key')),'the photo queue and the per-screen keys too, and nothing else');await ctx.close()}
+    /* (every localStorage key the app uses is one Delete removes: read from the scripts as text in tests/sourcerules.test.js, CR-10-07) */
     ok(!fs.readdirSync(ROOT).some(f=>/^wa\d\.png$/.test(f)),'the stray screenshots are gone');
   }finally{await browser.close()}
 };
+// (CACHE is read from sw.js as the page is served it, and compared with appVersion(): a CACHE bump, which every app change makes, can't
+// turn this file; without this every app change selected it, CR-10-07)
+module.exports.ignoreNames=['CACHE'];

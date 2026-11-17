@@ -100,6 +100,7 @@ async function kitUnsave(b){if(!b)return;
   // the cards go back on Add and are kept (add.js addKeep) BEFORE the items are deleted: deleted first, a kill within the keep's timer
   // lost the item from both (audit 2026-11-15 re-run); a kill between the two leaves the items, and the kept cards of saved items are dropped
   const back=[];for(const {q,i} of b.qs.slice().reverse()){if(!q||queue.includes(q))continue;delete q.busy;queue.splice(Math.min(i,queue.length),0,q);back.push(q)}
+  for(const q of back)if(!q.raw&&typeof addRevive==='function')await addRevive(q);   // its canvases, let go when it was saved (add.js saveCard): the swatch box and the close-up's reading come back (CR-1-03)
   if(back.length&&typeof addKeep==='function')await addKeep();
   try{await kitDelMany(b.its,b.olds||[])}catch(e){for(const q of back){const k=queue.indexOf(q);if(k>=0)queue.splice(k,1)}if(back.length&&typeof addKeep==='function')addKeep();throw e}
   if(kitBatch===b)kitBatch=null;cache={};todayStale=true;if(b.qs.length&&typeof multiMsg==='function')multiMsg('');   // ("Saved 5 items to your wardrobe." stayed over the cards Undo brought back)
@@ -401,7 +402,7 @@ ${kitLastRow()}<div class="btns"><button type="button" onclick="kitTemplate()">D
 <label class="kit-paste">Or paste the rows<textarea id="kit-paste" rows="5" onfocus="kitPasteShow(this)" placeholder="Type, Color, Pattern…" oninput="kitImportText(this.value)"></textarea></label>
 <div id="kit-prev" aria-live="polite"></div></div>
 <div class="kit-bar"><button type="button" id="kit-cancel" onclick="kitClose()">Cancel</button><button type="button" class="pri" id="kit-imp" disabled onclick="kitImportGo()">Add items</button></div>`;
-  e.classList.add('on');kitInert(true);kitHist()}
+  e.classList.add('on');kitInert(true);kitHist();e.tabIndex=-1;try{e.focus({preventScroll:true})}catch{}}   // the focus goes into the sheet (it stayed on <body>, outside the dialog)
 /* the paste field comes into view below the sheet's header once the keyboard is up (re-audit 2026-11-15: with the preview scrolled it
    stayed under the header) */
 function kitPasteShow(t){setTimeout(()=>{if(!t.isConnected)return;const b=t.closest('.kit-body');if(!b)return;const r=t.getBoundingClientRect(),br=b.getBoundingClientRect(),vh=window.visualViewport?visualViewport.height:innerHeight;

@@ -558,16 +558,21 @@ async function addCustomPattern({name,desc,base,types,look}){if(ownNameBad(name)
   types=(types||[]).filter(t=>PATS_BY[t]&&PATS_BY[t].includes(base));if(!types.length)throw new Error('Choose at least one kind of item that has the "drawn like" pattern.');
   const lk=cleanLookApp(look),cu=settings.custom||{};settings.custom={...cu,patterns:[...(cu.patterns||[]),{key,name,desc:ownDescClean(desc),base,types,...(lk?{look:lk}:{})}]};
   applyCustom(settings.custom);await saveUserSettings();return key}
-/* Settings: the colours and patterns you added; one no item uses can be removed */
-function renderCustomUI(){const el=$('#custom-list');if(!el)return;const cu=settings.custom||{},cols=cu.colors||[],pats=cu.patterns||[];
-  const used=(k,f)=>items.filter(i=>f(i,k)).length;
+/* Settings: the colours and patterns you added; one no item uses can be removed. Only entries of the own-key rule are listed (a color
+   with a 6-digit hex), every value escaped, and Remove carries its key in data-* attributes read by one listener (fix round A, CR-2-02:
+   the raw settings.custom key and hex went into an inline handler and a style attribute) */
+function renderCustomUI(){const el=$('#custom-list');if(!el)return;const cu=settings.custom||{},arr=v=>Array.isArray(v)?v:[];
+  const cols=arr(cu.colors).filter(c=>c&&OWN_COL_RE.test(c.key)&&/^#[0-9a-f]{6}$/i.test(c.hex||'')),pats=arr(cu.patterns).filter(p=>p&&OWN_PAT_RE.test(p.key));
+  const used=(k,f)=>items.filter(i=>f(i,k)).length,kinds=x=>esc(arr(x.types).map(t=>TYPES[t]).filter(t=>typeof t==='string').join(', '));
+  if(!el.dataset.rm){el.dataset.rm='1';el.addEventListener('click',e=>{const b=e.target.closest('button[data-rm-kind]');if(b&&el.contains(b))removeCustom(b.dataset.rmKind,b.dataset.rmKey)})}
+  const rm=(kind,k)=>`<button type="button" data-rm-kind="${kind}" data-rm-key="${esc(k)}">Remove</button>`;
   // a pattern's swatch is drawn with its look, on a sample item of its first kind (navy, a white shirt)
-  const patSw=p=>{const t=(p.types||[])[0]||'suit';try{return swatchSVG({type:t,primaryColor:t==='shirt'?'white':'navy',pattern:p.key},true)}catch(e){return ''}};
+  const patSw=p=>{const t=arr(p.types)[0]||'suit';try{return swatchSVG({type:t,primaryColor:t==='shirt'?'white':'navy',pattern:p.key},true)}catch(e){return ''}};
   el.innerHTML=(!cols.length&&!pats.length?'<p class="mut"><small>None yet. Add one below, or from any color or pattern list (“+ New”); the Add card offers one when a photo shows a color or pattern the lists lack.</small></p>':
-    [...cols.map(c=>{const n=used(c.key,(i,k)=>[i.primaryColor,i.secondaryColor,i.tertiaryColor].includes(k));return `<div class="custrow"><span class="msw" style="background:${c.hex}"></span><span><b>${esc(c.name)}</b><br><small class="mut">behaves like ${esc(colName(c.base))} · ${c.types.map(t=>TYPES[t]).join(', ')}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':`<button type="button" onclick="removeCustom('colors','${c.key}')">Remove</button>`}</div>`}),
-     ...pats.map(p=>{const n=used(p.key,(i,k)=>i.pattern===k);return `<div class="custrow"><span class="msw pat">${patSw(p)}</span><span><b>${esc(p.name)}</b><br><small class="mut">${p.look?'drawn from its own look, planned':'drawn'} like ${esc(patLabel(p.base))} · ${p.types.map(t=>TYPES[t]).join(', ')}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':`<button type="button" onclick="removeCustom('patterns','${p.key}')">Remove</button>`}</div>`})].join(''))
+    [...cols.map(c=>{const n=used(c.key,(i,k)=>[i.primaryColor,i.secondaryColor,i.tertiaryColor].includes(k));return `<div class="custrow"><span class="msw" style="background:${esc(c.hex)}"></span><span><b>${esc(c.name)}</b><br><small class="mut">behaves like ${esc(colName(c.base))} · ${kinds(c)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':rm('colors',c.key)}</div>`}),
+     ...pats.map(p=>{const n=used(p.key,(i,k)=>i.pattern===k);return `<div class="custrow"><span class="msw pat">${patSw(p)}</span><span><b>${esc(p.name)}</b><br><small class="mut">${p.look?'drawn from its own look, planned':'drawn'} like ${esc(patLabel(p.base))} · ${kinds(p)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':rm('patterns',p.key)}</div>`})].join(''))
     +`<div class="custadd"><button type="button" id="cust-newcol" onclick="openCustomNew('colour')">+ New color</button><button type="button" id="cust-newpat" onclick="openCustomNew('pattern')">+ New pattern</button></div>`}
-async function removeCustom(kind,key){const cu=settings.custom||{};settings.custom={...cu,[kind]:(cu[kind]||[]).filter(x=>x.key!==key)};applyCustom(settings.custom);cache={};await saveUserSettings();renderCustomUI()}
+async function removeCustom(kind,key){if(kind!=='colors'&&kind!=='patterns')return;const cu=settings.custom||{};settings.custom={...cu,[kind]:(cu[kind]||[]).filter(x=>x.key!==key)};applyCustom(settings.custom);cache={};await saveUserSettings();renderCustomUI()}
 
 /* ---- what the tagger learns from: when an AI-tagged card is saved with a field changed, the change is kept (the latest 60)
    and the latest 20 go with every tagging request; the counts give the accuracy on the stats page ---- */

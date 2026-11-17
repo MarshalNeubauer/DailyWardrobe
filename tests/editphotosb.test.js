@@ -4,9 +4,7 @@
 // Undo button). Then the "Color & texture" card: its title and line, "True color in 3 steps" ABOVE Read color and texture (seen on a
 // phone's first screen, before the Read tap), the cost. Touch screen, Chromium and WebKit, the worker stubbed (no paid call), the mink suit
 // from tests/fixtures.
-const {wrapBrowser}=require('./webkit');
-module.exports=async({ok,chromium,url,settle})=>{
-  const engines=[['Chromium',()=>chromium.launch()],['WebKit',async()=>{const pw=require('playwright');return wrapBrowser(await pw.webkit.launch())}]];
+module.exports=async({ok,chromium,engines,url,settle})=>{
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{await run(eng,browser,{ok,url,settle})}finally{await browser.close()}}
@@ -85,6 +83,8 @@ async function run(eng,browser,{ok,url,settle}){
       const tx0=await ev(()=>texSig(items.find(x=>x.id==='m1').texture));
       await p.click('#item-view .pt-closeup');await p.waitForSelector('#cu-sheet.on');await (await p.$('#cu-lib')).setInputFiles(file('c.jpg',F.close));
       await p.waitForFunction(tx0=>{const it=items.find(x=>x.id==='m1');return it.texture&&texSig(it.texture)!==tx0},tx0).catch(()=>{});await settle(p,300);
+      // (the toast comes once the close-up is saved: waited for, not read after settle, CR-10-03)
+      await p.waitForFunction(()=>{const t=document.querySelector('#toast.on');return !!t&&/Close-up added/.test(t.textContent)},null,{timeout:8000}).catch(()=>{});
       const t2=await toastNow();
       if(await ev(tx0=>texSig(items.find(x=>x.id==='m1').texture)!==tx0,tx0)){
         ok(/Close-up added\..*Undo$/.test(t2),T+`a close-up chosen there: "Close-up added." with Undo (${t2})`);

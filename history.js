@@ -104,7 +104,7 @@ async function lockUpcoming(){
     // the plan is read afresh for each day (it is cached; a change made while an earlier lock was being saved has reset it), and the lock
     // is put on the record before the write is awaited, so a lock never comes from a plan that is no longer the one on screen
     const k=key(d),o=planMonth(d.getFullYear(),d.getMonth())[k];if(!o||o.frozen||!SLOTS.some(s=>o[s]))continue;
-    const r=dayRecs[k],l=lockIds(o);if(r&&r.lock&&JSON.stringify(r.lock)===JSON.stringify(l)&&!lockStale(r,t=>items.filter(i=>i.type===t&&inRotation(i,di(d)))))continue;
+    const r=dayRecs[k],l=lockIds(o);if(r&&r.lock&&JSON.stringify(r.lock)===JSON.stringify(l)&&!lockStale(r,t=>items.filter(i=>i.type===t&&!isHandPick(i)&&inRotation(i,di(d)))))continue;   // (the planner's pool, planSim's byOn: a hand-pick piece added, cargo pants, re-wrote the week's locks for nothing, CR-3-14)
     // (lockAt: when it was made, so a lock made while the wardrobe had too few of a type lets go once more come in: planner.js lockStale)
     const rec={...(r||{date:k}),lock:l,lockAt:nowMs(),updated:nextStamp(r&&r.updated),lockOnly:1,base:(r&&(r.lockOnly?r.base:r.updated))||0};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
     dayFields(rec,r);await txs('days','readwrite',s=>s.put(rec))}   // (only the lock's fields get its stamp: core.js dayFields)
@@ -113,13 +113,17 @@ async function lockUpcoming(){
 /* the week's locks on days after the window (end: its last day number) let go: those made when the lock ran seven days, or by a phone
    still on that version. Only rec.lock goes: the owner's own picks (force, skip, the vest, kind, off), a kept trip's lock (pack.js
    rec.trip) and a day marked worn stay. Done after the window is locked, so its days keep what was shown; day numbers, not dates */
-async function lockPast(end,mine){let n=0;
-  for(const r of Object.values(dayRecs)){if(dayRecs!==mine)break;
-    if(r.lock&&!r.trip&&r.worn!==true&&di(keyDate(r.date))>end){const c={...r,lockOnly:1,base:r.lockOnly?r.base||0:r.updated||0};delete c.lock;await saveDay(c,true,true);n++}}
+async function lockPast(end,mine){return releaseLocks(r=>di(keyDate(r.date))>end,mine)}
+/* the one way the week's locks let go (the code review, CR-3-05/CR-3-14: five copies, and unlockClash's lacked the trip guard, so a pick
+   today unlocked a kept trip): only rec.lock goes, saved as the lock's own change (lockOnly: core.js dayWins); a kept trip (pack.js
+   rec.trip: its suitcase may be packed, audit 2026-11-14) and a day marked worn keep theirs. which(r): the days to release; mine: stop when
+   the history was replaced meanwhile (sync, restore) */
+async function releaseLocks(which,mine){let n=0;
+  for(const r of Object.values(dayRecs)){if(mine&&dayRecs!==mine)break;
+    if(!r.lock||r.trip||r.worn===true||!which(r))continue;const c={...r,lockOnly:1,base:r.lockOnly?r.base||0:r.updated||0};delete c.lock;await saveDay(c,true,true);n++}
   return n}
 /* let the planner choose the days after today again (a setting that changes the plan, Re-plan, new planning rules) */
-async function clearLocks(){const T=todayDate();let n=0;
-  for(const r of Object.values(dayRecs))if(r.lock&&!r.trip&&keyDate(r.date)>T&&r.worn!==true){const c={...r,lockOnly:1,base:r.lockOnly?r.base||0:r.updated||0};delete c.lock;await saveDay(c,true,true);n++}   // (lockOnly: core.js dayWins; a kept trip, pack.js rec.trip, stays: its suitcase may be packed, audit 2026-11-14)
+async function clearLocks(){const T=todayDate(),n=await releaseLocks(r=>keyDate(r.date)>T);
   if(n&&window.scheduleSync)scheduleSync();return n}
 /* a piece away being cleaned (care.js): the week's locks after today let go when it leaves while a lock holds it, so the days are planned
    again around each other (two suits left, and the one still locked for Tuesday was held back on Sunday and Monday: the other suit on
@@ -155,8 +159,7 @@ async function unlockClash(k,past){const o=planFor()[k];if(!o||(o.frozen&&!past)
   for(let g=0;g<10&&w<3&&!clash;g++){x.setDate(x.getDate()+1);if(!isWorkday(x))continue;const r=dayRecs[key(x)],l=r&&r.lock;
     if(l&&r.worn!==true&&((o.tie&&l.tie===o.tie.id)||(!w&&o.shirt&&l.shirt===o.shirt.id)||(!w&&o.top&&l.top===o.top.id)))clash=true;
     w++}
-  if(!clash)return 0;const from=keyDate(k);let n=0;
-  for(const r of Object.values(dayRecs))if(r.lock&&keyDate(r.date)>from&&keyDate(r.date)>=T&&r.worn!==true){const c={...r,lockOnly:1,base:r.lockOnly?r.base||0:r.updated||0};delete c.lock;await saveDay(c,true,true);n++}
+  if(!clash)return 0;const from=keyDate(k),n=await releaseLocks(r=>keyDate(r.date)>from&&keyDate(r.date)>=T);   // (a kept trip stays locked: CR-3-05)
   if(n&&window.scheduleSync)scheduleSync();return n}
 /* a piece taken off (rec.off) stays pinned through a swap or a pick of another piece, so putting it back brings the same one */
 const keepOff=(force,k,slot)=>{const r=dayRecs[k];if(!r||!r.off||!r.force)return;for(const s of ['top','tie','clip','pocket'])if(s!==slot&&r.off[s==='clip'?'tie':s]&&r.force[s])force[s]=r.force[s]};
@@ -281,7 +284,7 @@ const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
 /* give a day an occasion (or none): its swaps are dropped, since the outfit is chosen afresh for the occasion, and the coming days are
    released so they are planned around it (the suit that is right for the occasion may be locked on the day before) */
 async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
-async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;notAhead(n,k);swapMsg='';await saveDay(n);renderToday()}
+async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;delete n.kind;notAhead(n,k);swapMsg='';await saveDay(n);renderToday()}   // (kind too: a piece taken off or a moved outfit pinned the suit or blazer, CR-4-07)
 /* a coming day's record holds no pieces (ids): they are written when the day is shown (recordDays, today) or once it is past. A pick or
    swap ahead used to write the outfit from before it, which then stood as worn in place of the pick when the app wasn't opened that day
    (fix round 3, W2-17-01); today's record is rewritten from the screen right after (recordDays) */
@@ -337,7 +340,7 @@ async function setVest(v){const k=key(sel),o=planFor()[k];if(!o)return;
    planned outfit back */
 function resetCard(o){return o&&!o.frozen&&(o.overrides||o.vestOverride)?`<section class="mbox resetbox" id="rbox"><button class="month-link resetlink" onclick="resetDay()" aria-label="Reset changes" title="Undo your changes to this day"><span class="rsicon" aria-hidden="true">↺</span><b>Reset</b></button></section>`:''}
 function dayActions(o){
-  const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),past=d<T,isToday=+d===+T;
+  const T=todayDate(),d=dayOnly(sel),past=d<T;
   let h='';
   // whether it was worn is marked on the picture (wornMarks)
   if(o.occasion)h+=`<span class="ftag" title="Set in Settings, Occasions" aria-label="${o.occasion==='formal'?'Formal day':'Occasion: '+occLabel(o.occasion)}">${o.occasion==='casual'?'No jacket':occLabel(o.occasion)}${o.occasion==='formal'?'<span class="fx"> day</span>':''}</span>`;
@@ -352,10 +355,11 @@ function dayActions(o){
 /* outfit score card with an expandable breakdown */
 let scoreOpen=false;
 /* the score's advice for a day (planner.js, scoreAdvice): swaps that would raise it, the wardrobe's best with this jacket, and the
-   checks nothing owned improves. Worked out once per outfit (kept until the day's pieces change); not for past or worn days */
-let adviceMemo={k:'',v:null};
+   checks nothing owned improves. Worked out once per outfit and plan (kept until the day's pieces change or the plan cache is cleared, as
+   pickMemo: every edit, sync and setting clears it; CR-4-05: a piece taken out of rotation was still offered); not for past or worn days */
+let adviceMemo={c:null,k:'',v:null};
 function adviceFor(o){if(!o||o.frozen||!hasOutfit(o))return null;const k=key(sel)+JSON.stringify(idsOf(o))+!!o.vest+items.length;
-  if(adviceMemo.k!==k)adviceMemo={k,v:window.TEST_PLAN?TEST_PLAN.advice(o):scoreAdvice(o,slot=>slotPool(slot,o))};return adviceMemo.v}
+  if(adviceMemo.c!==cache||adviceMemo.k!==k)adviceMemo={c:cache,k,v:window.TEST_PLAN?TEST_PLAN.advice(o):scoreAdvice(o,slot=>slotPool(slot,o))};return adviceMemo.v}
 function applyFix(slot,id){return pickItem(slot,id)}
 function scoreCard(o){
   const r=window.TEST_PLAN?TEST_PLAN.rate(o):rateOutfit(o),tone=r.hard.length?'low':r.score>=80?'good':r.score>=65?'ok':'low',A=adviceFor(o);
@@ -414,4 +418,4 @@ function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;
   const b=box.querySelector('.month-link');b.setAttribute('aria-expanded',scoreOpen);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show why/,scoreOpen?'Fold away':'Show why'));
   const sm=box.querySelector('.lbl small');if(sm)sm.textContent='Outfit score · '+(scoreOpen?'tap to fold away':'tap for why');
-  if(scoreOpen)boxUnfold(box);else{revealRun++;boxFold(box,'#spanel .sfix, #spanel li, #spanel .scap')}}
+  if(scoreOpen)boxUnfold(box);else boxFold(box,'#spanel .sfix, #spanel li, #spanel .scap')}

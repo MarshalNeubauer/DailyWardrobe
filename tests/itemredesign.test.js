@@ -6,11 +6,9 @@
 // "Add close-up and read color, texture & material" with its cost over the outlined "Add close-up"); Confirm never blocked by unchecked
 // parts; Back and a swipe closing one layer at a time. Chromium and WebKit, with touch; 390 light and 690 dark; the worker stubbed.
 const fs=require('fs'),path=require('path');
-const {wrapBrowser}=require('./webkit');
 const pic=f=>'data:image/jpeg;base64,'+fs.readFileSync(path.join(__dirname,'fixtures',f)).toString('base64');
-module.exports=async({ok,chromium,url,settle})=>{
+module.exports=async({ok,chromium,engines,url,settle})=>{
   const PH=pic('suit-pinstripe.jpg'),TX=pic('walk-suit-pinstripe-closeup.jpg');
-  const engines=[['Chromium',()=>chromium.launch()],['WebKit',async()=>{const pw=require('playwright');return wrapBrowser(await pw.webkit.launch())}]];
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{for(const [w,h,scheme] of [[390,844,'light'],[690,960,'dark']])await run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX})}finally{await browser.close()}}

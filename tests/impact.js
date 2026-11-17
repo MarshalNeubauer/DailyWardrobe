@@ -289,9 +289,9 @@ const prePush=(root,opts)=>{const dirty=(git(root,'status','--porcelain','--',MA
 /* tests/run.js calls this: from then on git runs .githooks/pre-push in this clone (left alone if hooks are set up otherwise) */
 const installHook=root=>{try{if(fs.existsSync(path.join(root,'.githooks','pre-push'))&&!(git(root,'config','--get','core.hooksPath')||'').trim())git(root,'config','core.hooksPath','.githooks')}catch(e){}};
 
-/* results: Map(test → {m, bad}). What a test used is added to what it used before: a timer that fires in one run and not
+/* results: Map(test → {m, bad, ok}). What a test used is added to what it used before: a timer that fires in one run and not
    the next, or a path only taken on a weekend, stays known. Names that no longer exist in the sources are dropped, and so
-   are tests that no longer exist */
+   are tests that no longer exist. A test that passed (ok) has its whole-file entries replaced by this run's */
 // passed: `npm test` (or the whole suite) ran and nothing failed: the map then says which files it stands for
 // fixedOf(test): the files the test ran with switched off (true = ['planner.js']: the fixed plan, tests/fixedplan.js; 'assemble.js':
 // assembled pictures off), so nothing in them runs by a timer: what it used of them is replaced, not added to, and what an earlier run with the real planner left there (or a branch whose map is
@@ -301,7 +301,12 @@ const save=async(root,results,all,passed,fixedOf)=>{const out=load(root)||new Ma
       if(t!=null){k=true;if(/^[^/]+\.js$/.test(f)||workerFile(f)){const u=await scan(t);if(u)k=new Set(flat(u).map(x=>x.n))}else if(/\.css$/.test(f)){const c=cssScan(t);if(c)k=new Set(c.rules.map(r=>r.key))}}
       alive.set(f,k)}return alive.get(f)};
   for(const [k,r] of results){if(r.bad){out.set(k,new Map([[ANY,new Set([ANY])]]));continue}
-    const e=out.has(k)&&!out.get(k).has(ANY)?out.get(k):new Map();{const r=fixedOf&&fixedOf(k);for(const f of r===true?['planner.js']:r||[])e.delete(f)}for(const [f,S] of r.m){if(!e.has(f))e.set(f,new Set());for(const x of S)e.get(f).add(x)}out.set(k,e)}
+    const e=out.has(k)&&!out.get(k).has(ANY)?out.get(k):new Map();{const r=fixedOf&&fixedOf(k);for(const f of r===true?['planner.js']:r||[])e.delete(f)}
+    // a test that passed: its files read whole (<any>) and pages' files (<loaded>) are what this run saw, not every file an older version
+    // of the test ever read (CR-10-06: about.test.js kept README.md for good). Function and CSS names still add up: a timer fires in one
+    // run and not the next. (After CR-10-08, so the helpers a test requires are seen on every run.)
+    if(r.ok)for(const [f,S] of [...e]){S.delete(ANY);S.delete(LOADED);if(!S.size)e.delete(f)}
+    for(const [f,S] of r.m){if(!e.has(f))e.set(f,new Set());for(const x of S)e.get(f).add(x)}out.set(k,e)}
   for(const k of [...out.keys()])if(!all.includes(k))out.delete(k);
   for(const e of out.values())for(const [f,S] of [...e]){if(f===ANY)continue;const ok=await names(f);if(!ok){e.delete(f);continue}
     if(ok!==true)for(const x of [...S])if(x!==ANY&&x!==LOADED&&!ok.has(x))S.delete(x);if(!S.size)e.delete(f)}
@@ -310,7 +315,7 @@ const save=async(root,results,all,passed,fixedOf)=>{const out=load(root)||new Ma
   if(text!==was)fs.writeFileSync(path.join(root,MAP),text)};
 
 /* ---------- choosing ---------- */
-const FULL=/^(?:tests\/run\.js|tests\/impact\.js|tests\/fixedplan\.js|tests\/childrec\.js|package(?:-lock)?\.json)$/;   // (fixedplan.js is put into the pages of most tests, not served: nothing records it; childrec.js records what child processes read)
+const FULL=/^(?:tests\/run\.js|tests\/impact\.js|tests\/fixedplan\.js|tests\/childrec\.js|tests\/webkit\.js|package(?:-lock)?\.json)$/;   // (fixedplan.js is put into the pages of most tests, not served: nothing records it; childrec.js records what child processes read; webkit.js is run.js's own: the engines every file gets, and every test under --webkit)
 const servedFile=f=>!f.includes('/')&&/\.(?:js|html|css|webmanifest|png|svg|ico)$/.test(f)&&f!=='worker.js';
 /* the worker: worker.js (the entry) and its ES modules in worker/ (2026-11-14): one world of its own, run in Node, recorded function by function */
 const workerFile=f=>f==='worker.js'||/^worker\/[^/]+\.js$/.test(f);
@@ -394,9 +399,17 @@ const select=async(root,all)=>{const base=baseOf(root),map=load(root);
   return {all:false,tests:[...tests.keys()],report:head+note+(tests.size?'Running '+tests.size+' of '+all.length+' test files and built-in suites:\n'+list:prev&&mine.tests.size?'Nothing more needs to run.':'No check can be affected by this change.')}};
 
 /* ---------- recording what a test uses ---------- */
+/* the helper modules a test file requires from tests/ (`require('./webkit')` → tests/webkit.js), and theirs in turn: Node reads a module
+   once per process, so the patched fs saw a helper only for the first test in each worker process that required it, and an edit to
+   tests/webkit.js didn't select the others (CR-10-08). Named from the source instead, every time */
+const helpersOf=(root,self,seen=new Set())=>{let t;try{t=realRead(path.join(root,self),'utf8')}catch(e){return seen}
+  for(const m of t.matchAll(/require\(\s*['"`]\.\/([\w.\/-]+?)(?:\.js)?['"`]\s*\)/g)){const f='tests/'+m[1].replace(/^\.\//,'')+'.js';
+    if(seen.has(f)||f===self||!fs.existsSync(path.join(root,f)))continue;seen.add(f);helpersOf(root,f,seen)}
+  return seen};
 const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new Map(),canon=new Map(),atLoad=new Map();
+  // (separators first, then the filter: on Windows the relative path is node_modules\playwright\…, which the filter never matched, CR-10-09)
   const relOf=p=>{if(p instanceof URL)p=fileURLToPath(p);if(Buffer.isBuffer(p))p=p.toString();if(typeof p!=='string')return null;
-    const r=path.relative(root,path.resolve(p));return !r||r.startsWith('..')||path.isAbsolute(r)||/^(?:node_modules|\.git)(?:\/|$)/.test(r)||r===MAP?null:r.split(path.sep).join('/')};
+    const r=path.relative(root,path.resolve(p)).split(path.sep).join('/');return !r||r.startsWith('..')||path.isAbsolute(r)||/^(?:node_modules|\.git)(?:\/|$)/.test(r)||r===MAP?null:r};
   const srcOf=f=>{if(!srcs.has(f)){let s=null;try{s=realRead(path.join(root,f),'utf8')}catch(e){}srcs.set(f,s)}return srcs.get(f)};
   const urlRel=u=>{try{const x=new URL(u);if(x.protocol==='file:')return relOf(fileURLToPath(u.split(/[?#]/)[0]));
     if(!/^(?:127\.0\.0\.1|localhost)$/.test(x.hostname))return null;const r=relOf(path.join(root,decodeURIComponent(x.pathname)));return r&&srcOf(r)!=null?r:null}catch(e){return null}};
@@ -461,7 +474,7 @@ const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new
     served(f){if(cur&&f&&!/\.js$/.test(f))cur.add(f,LOADED)},
     /* what the running test has used so far (for tests/impact.test.js) */
     async peek(){for(const p of [...live.keys()])await take(p,false);if(cur)kids(cur);return cur&&{m:cur.m,odd:cur.odd}},
-    async begin(key,self){await nodeCov();await post('Profiler.takePreciseCoverage');childReads();cur=mk(key);cur.self=self||null},
+    async begin(key,self){await nodeCov();await post('Profiler.takePreciseCoverage');childReads();cur=mk(key);cur.self=self||null;if(self)for(const h of helpersOf(root,self))cur.add(h,ANY)},
     async end(){const c=cur;for(const p of [...live.keys()])await take(p,true);kids(c);
       try{addJs(c,(await post('Profiler.takePreciseCoverage')).result,true)}catch(e){c.bad=true}
       for(const [f,S] of atLoad)if(c.m.has(f))for(const k of S)c.add(f,k);

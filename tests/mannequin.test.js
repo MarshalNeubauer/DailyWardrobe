@@ -3,6 +3,7 @@
 // watch; a striped jacket's lines get the painter's lift; no tie clip on a waistcoat day; WebKit-safe; about as quick to draw as the
 // earlier figure; shipped in the app's cache (sw.js ASSETS), nothing fetched.
 const fs=require('fs'),path=require('path'),zlib=require('zlib');
+const {pace}=require('./pace');
 const KINDS=['vest','suit','suit-open','shirt-tie','shirt-open'];   // the poses whose mannequin has shipped
 module.exports=async({ok,chromium,url,ROOT})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -79,12 +80,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // quick to draw: decoded and drawn on a 1170-pixel canvas (390 css px at 3x), median of 5, against the earlier figure's 25 ms here
     // (measured 2026-11-14 on this machine: the mannequin 24 ms; on a 4x-throttled phone 95-101 ms against the earlier figure's 107-124 ms)
     // (the office is in the pose's data, so the SVG drawn as an image has it: its decode is part of the time)
+    // (the 150 ms is this machine's when quiet; times how much slower the machine running it is right now, tests/pace.js: GitHub's 4-core
+    // runner took 217 ms against a flat 150, CR-10-03)
+    const k=await pace(p);
     const sp=await p.evaluate(async()=>{const o=planFor()[key(sel)],neu=figureSvg(o,'s-');
       const t=async s=>{const c=document.createElement('canvas');c.width=1170;c.height=1200;const g=c.getContext('2d');const r=[];
         for(let i=0;i<5;i++){const x=s.replace('width="100%"','width="1170"').replace(/(id="|url\(#|href="#)([a-z]+-)/g,(m,a,b)=>a+'r'+i+b),t0=performance.now(),im=new Image();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(x);await im.decode();g.drawImage(im,0,0);g.getImageData(0,0,1,1);r.push(performance.now()-t0)}
         return r.sort((a,b)=>a-b)[2]};
       const b0=performance.now(),built=figureSvg(o,'z-'),bms=performance.now()-b0;return {neu:await t(neu),bms}});
-    ok(sp.neu<150&&sp.bms<20,`it draws within its budget (${sp.neu.toFixed(0)} ms, 150 allowed; its SVG built in ${sp.bms.toFixed(1)} ms)`);
+    ok(sp.neu<150*k&&sp.bms<20*k,`it draws within its budget (${sp.neu.toFixed(0)} ms, ${(150*k).toFixed(0)} allowed: 150 at this machine's pace ×${k.toFixed(2)}; its SVG built in ${sp.bms.toFixed(1)} ms)`);
     // the office behind the figure, as in the painted pictures (the owner, 2026-11-14): a small copy of the painter's background with the
     // pose's own soft wall shadow baked in, and nothing of the mannequin's own on the wall (its shading used to tint it); both themes
     const bg=await p.evaluate(async kinds=>{const out={},px={};

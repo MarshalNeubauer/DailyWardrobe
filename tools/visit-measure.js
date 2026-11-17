@@ -1,5 +1,5 @@
 // End-to-end measure of Today's outfit picture on a phone (2026-11-14, the owner: "measure what shows and how long it takes to get the
-// outfit picture"): a fresh device connected to the real worker (the owner's wardrobe, the pictures the PC builder uploaded), on
+// outfit picture"): a fresh device connected to the real worker (the owner's wardrobe, and the pictures the PC builder uploaded before it was removed on 2026-11-16), on
 // phone-like network and CPU (an iPhone's screen, 4G: 9 Mbit/s, 60 ms; CPU 4x slower), records frame by frame whether the drawing or
 // the picture shows, for the first open, for swipes to the next workdays, and for a second open (the app reopened, as every day).
 // Read-only on the server: every write to the worker is answered here with the server's own version, so the device keeps the mark a real
@@ -8,8 +8,8 @@
 // --pages: load the app from GitHub Pages as deployed; otherwise from --root (default: this checkout), served under the same address.
 // Writes <out>/visit-<net>.json (every frame change, a trace of the plan, what the worker keeps for each day) and prints a summary.
 // The recorder reads the plan only once the app is ready: reading it before the wardrobe loaded cached an empty month (a false failure).
-// A brand-new device re-reads saved pattern colours once (recolourSpecSetts) and can land one shade off the PC's reading, so a look with
-// such a piece can show "not on server" on the first open only; the owner's phone did that long ago and matches the PC.
+// (CR-8-06, 2026-11-17) Nothing uploads looks' pictures any more: a look not among the PC builder's old ones is painted on the phone, and the
+// report says "painted on the phone" for it (it said "not on server", which read like a failure).
 const fs=require('fs'),path=require('path'),os=require('os');
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i<0?d:(process.argv[i+1]&&!process.argv[i+1].startsWith('--')?process.argv[i+1]:d)},has=n=>process.argv.includes('--'+n);
 const ROOT=path.resolve(arg('root',path.join(__dirname,'..'))),OUT=arg('out','.'),NET=arg('net','4g'),CPU=+arg('cpu',4),SWIPES=+arg('swipes',8),PAGES=has('pages');
@@ -58,9 +58,9 @@ async function open(ctx,label){
         queue:typeof asmQ!=='undefined'?asmQ.length:null,ahead:asmAheadOn,shown:!!renderFor(o),pre:ok?asmPreGetting.has(ok):null,tried:ok?asmTried.has('pre:'+ok):null,retry:ok?asmRetryAt.get('pre:'+ok)||0:null}}catch(e){st={err:String(e)}}
       return {d,firstState:(L[0]||{}).s,drew:L.some(x=>x.s==='drawing'),ms:shown?shown.t:null,how:shown?shown.m:'',log:L,st}},null);
     swipes.push(r);await page.waitForTimeout(1200)}
-  // what the worker keeps for the days measured: built on the PC and listed?
+  // what the worker keeps for the days measured: one of the PC builder's old pictures, or painted on the phone?
   const built=await page.evaluate(async days=>{try{await asmListGet(true)}catch{}const L=asmList;const out={};
-    for(const d of days){const [y,m,dd]=d.split('-').map(Number),o=planOn(new Date(y,m-1,dd));if(!o){out[d]='no outfit';continue}await asmCmLook(o);const k=asmOutKey(o);out[d]=!k?'no master':L&&L.has(k)?'on server':'not on server'}return out},[first.day,...swipes.map(s=>s.d)].filter(Boolean));
+    for(const d of days){const [y,m,dd]=d.split('-').map(Number),o=planOn(new Date(y,m-1,dd));if(!o){out[d]='no outfit';continue}await asmCmLook(o);const k=asmOutKey(o);out[d]=!k?'no master':L&&L.has(k)?'on server':'painted on the phone'}return out},[first.day,...swipes.map(s=>s.d)].filter(Boolean));
   const trace=await page.evaluate(()=>window.__pl||[]);
   return {label,first,swipes,built,trace,worker:{asks,mb:+(bytes/1048576).toFixed(1)},errs:errs.slice(0,5)}}
 (async()=>{
