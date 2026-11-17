@@ -10,7 +10,7 @@ const path=require('path'),fs=require('fs'),vm=require('vm'),{pathToFileURL}=req
 module.exports=async({ok,chromium,url,ROOT})=>{
   /* ---- the rule, in Node ---- */
   const cx={console,localStorage:{getItem(){return null},setItem(){}},document:{querySelector(){return null}}};vm.createContext(cx);
-  vm.runInContext(fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={stampSettings,stampAllSettings,keySettings,takeSettings,setKeys}',cx);
+  vm.runInContext(fs.readFileSync(path.join(ROOT,'merge.js'),'utf8')+fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={stampSettings,stampAllSettings,keySettings,takeSettings,setKeys}',cx);
   const {stampSettings,stampAllSettings,keySettings,takeSettings,setKeys}=cx.K,J=o=>JSON.parse(JSON.stringify(o));
   const mem=keySettings({workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,vestMode:'always',laundryDays:2,holidays:{country:'DE',list:[]},updated:5});
   const snap=stampAllSettings({workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,updated:1},9000);

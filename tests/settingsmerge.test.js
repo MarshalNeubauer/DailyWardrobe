@@ -1,11 +1,11 @@
 // Settings merge setting by setting (2026-11-14, the audit: phone A changed the workdays, phone B the city, and the later save dropped
-// the other's change). core.js stampSettings/mergeSettings and the worker's port (worker/backup.js mergeSettingsLite): the rule in Node,
+// the other's change). core.js stampSettings/mergeSettings and the worker's (worker/backup.js mergeLite, the same merge.js rules): the rule in Node,
 // then two browser devices syncing through the real worker with an in-memory KV, as sync.test.js does.
 const path=require('path'),fs=require('fs'),vm=require('vm'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   /* ---- the rule ---- */
   const ctx={console,localStorage:{getItem(){return null},setItem(){}},document:{querySelector(){return null}}};vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={stampSettings,mergeSettings,stampAllSettings,mergeState,keySettings}',ctx);
+  vm.runInContext(fs.readFileSync(path.join(ROOT,'merge.js'),'utf8')+fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={stampSettings,mergeSettings,stampAllSettings,mergeState,keySettings}',ctx);
   const {stampSettings,mergeSettings,stampAllSettings,mergeState,keySettings}=ctx.K,J=o=>JSON.parse(JSON.stringify(o));
   const base={workdays:[0,1,2,3,4],location:null,units:'C',updated:1000};
   // as the app does: the copy is keyed when it is read, then changed, then saved

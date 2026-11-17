@@ -10,6 +10,8 @@ module.exports=async({ok,ROOT})=>{
   ok(/env\.WARDROBE/.test(src)&&/env\.AI\b/.test(src),'(the worker does read env.WARDROBE and env.AI)');
   ok(!/[0-9a-f]{32}/.test(toml),'no account or namespace IDs are committed (they come from GitHub variables)');
   ok(/paths:[^\n]*worker\.js/.test(wf)&&/paths:[^\n]*'worker\/\*\*'/.test(wf)&&/branches: \[main\]/.test(wf),'the deploy workflow runs when worker.js or one of its modules (worker/) changes on main');
+  {const up=[...new Set([...src.matchAll(/^import (?:[^'\n]* from )?'\.\.\/([^'\/]+\.js)';$/gm)].map(m=>m[1]))],paths=(/paths: \[([^\]]*)\]/.exec(wf)||[])[1]||'';   // (merge.js, shared with the app: Round B)
+    ok(up.includes('merge.js')&&up.every(f=>paths.split(',').map(s=>s.trim()).includes(f)),'the deploy workflow also runs when an app file the worker imports changes ('+up.join(', ')+')');}
   {const ent=fs.readFileSync(path.join(ROOT,'worker.js'),'utf8'),mods=fs.readdirSync(path.join(ROOT,'worker')).filter(f=>/\.js$/.test(f));
     ok(/export \{ RenderHub \} from '\.\/worker\/render\.js'/.test(ent)&&/^export default \{/m.test(ent)&&mods.length>5&&mods.every(f=>new RegExp("from '\\./(?:worker/)?"+f.replace('.','\\.')+"'").test(src)),
       `worker.js is the entry: it exports the handlers and the Durable Object class, and every module in worker/ is imported (${mods.length} modules)`);}

@@ -4,6 +4,8 @@ import { PV, asText, isPv, loadAny, phKey, putWhole, pvMeta, pvResponse, pvText,
 import { WIPED_KEY, countWrites, limitBody, sha256Hex, spend, spendUpTo, unspend, utcDay } from './people.js';
 import { PIC_RE, recCheck } from './records.js';
 import { hubOf } from './render.js';
+/* the merge rules: merge.js, the app's own file (a classic script there), shared so app and server merge alike (CR-6-12, Round B) */
+import '../merge.js';
 
 const SYNC_KEY = 'wardrobe:v1', SYNC_NONE = '{"rev":0,"saved":0,"data":null}';
 /* the stored backup's version {rev, saved} without loading the backup (several MB of photos): KV keeps it as the key's
@@ -191,7 +193,7 @@ const isPhoto = s => typeof s === 'string' && s.length >= PH_MIN && s.startsWith
 const isPhotoOld = s => typeof s === 'string' && s.length >= PH_OLD && s.startsWith('data:');
 const phHash = async s => (await sha256Hex(s)).slice(0, 20);
 const arrOf = a => Array.isArray(a) ? a : [];
-const stampOf = i => i && (i.updated || i.added) || 0;
+const { stamp: stampOf, mergeStateBy, stateSig } = globalThis.DW_MERGE;
 function phCollect(x, test, out = new Set()) {
   if (typeof x === 'string') { if (test(x)) out.add(x); }
   else if (Array.isArray(x)) for (const v of x) phCollect(v, test, out);
@@ -255,136 +257,11 @@ function dropFuture(d, lim) {
    sampleMine; kit.js kitEdited) is never kept or handed out. An app from before that rule (14-15 Nov) uploaded the whole sample, and a new
    phone joining got it with "You're trying a sample wardrobe": GET ?lite leaves such pieces out, and the next save drops them */
 const sampleOnly = i => !!i && i.sample === true && !i.sampleMine;
-/* core.js mergeItem, for the worker (fix round 3, 2026-11-16): an item field by field by its field stamps (fs = {u, b, s}: the stamp of
-   each field changed after b; a copy whose fs.u isn't its stamp counts its one stamp for every field), the result one above both when it
-   took anything from the copy with the older stamp; a deletion wins over a copy whose oldest field is no newer than it (itemBase) */
-const ITEM_META = ['id', 'added', 'updated', 'fs'];
-const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
-const fsOk = i => !!(i && i.fs && typeof i.fs === 'object' && i.fs.u === stampOf(i) && i.fs.s && typeof i.fs.s === 'object');
-const fieldStamp = (i, k) => fsOk(i) ? (own(i.fs.s, k) ? +i.fs.s[k] || 0 : +i.fs.b || 0) : stampOf(i);
-const itemBase = i => fsOk(i) ? +i.fs.b || 0 : stampOf(i);
-const sameVal = (x, y) => x === y || (x != null && y != null && typeof x === 'object' && typeof y === 'object' && JSON.stringify(x) === JSON.stringify(y));
-const fsPack = (u, s) => { const v = Object.values(s), b = v.length ? Math.min(...v) : u, o = {}; for (const [k, t] of Object.entries(s)) if (t > b) o[k] = t; return { u, b, s: o }; };
-function mergeItemLite(a, b) {
-  const ua = stampOf(a), ub = stampOf(b), hi = ua >= ub ? a : b;
-  if (a === b || (!fsOk(a) && !fsOk(b))) return hi;
-  const out = {}, s = {}; let mixed = false;
-  for (const k of new Set([...Object.keys(a), ...Object.keys(b), ...(fsOk(a) ? Object.keys(a.fs.s) : []), ...(fsOk(b) ? Object.keys(b.fs.s) : [])])) {
-    if (ITEM_META.includes(k)) continue;
-    const sa = fieldStamp(a, k), sb = fieldStamp(b, k), w = sa === sb ? hi : sa > sb ? a : b;
-    if (w !== hi && !sameVal(w[k], hi[k])) mixed = true;
-    if (w[k] !== undefined) out[k] = w[k]; s[k] = Math.max(sa, sb);
-  }
-  if (!mixed) return hi;
-  const u = Math.max(ua, ub) + 1, added = hi.added ?? (hi === a ? b : a).added;
-  return { id: hi.id, ...(added != null ? { added } : {}), ...out, updated: u, fs: fsPack(u, s) };
-}
-/* core.js dayWins and mergeDay, for the worker (fix round 3): a day field by field, the picks, skips, pieces taken off and recorded slot by
-   slot; a copy without fs counts its one stamp for every field, except the week's lock (lockOnly: its other fields are its base) */
-const dayWins = (o, n) => !o || o === n || !n.lockOnly ? n : ((o.lockOnly ? o.base : o.updated) || 0) > (n.base || 0) ? o : n;
-const DAY_META = ['date', 'updated', 'fs', 'lockOnly', 'base', 'lockAt'], DAY_SUB = ['force', 'skip', 'off', 'ids'];
-function dayFlat(d) {
-  const o = {};
-  for (const k of Object.keys(d || {})) { if (DAY_META.includes(k)) continue; const v = d[k]; if (DAY_SUB.includes(k) && v && typeof v === 'object' && !Array.isArray(v)) { for (const s of Object.keys(v)) o[k + '.' + s] = v[s]; } else o[k] = v; }
-  return o;
-}
-function dayUnflat(o) {
-  const r = {};
-  for (const [k, v] of Object.entries(o)) { const i = k.indexOf('.'), g = i > 0 ? k.slice(0, i) : ''; if (g && DAY_SUB.includes(g)) { if (!r[g] || typeof r[g] !== 'object') r[g] = {}; r[g][k.slice(i + 1)] = v; } else if (!(k in r)) r[k] = v; }
-  return r;
-}
-const dayStamp = (d, k) => fsOk(d) ? fieldStamp(d, k) : d.lockOnly ? (k === 'lock' ? stampOf(d) : +d.base || 0) : stampOf(d);
-function mergeDayLite(a, b) {
-  if (a === b) return a; const ua = a.updated || 0, ub = b.updated || 0;
-  if (!fsOk(a) && !fsOk(b)) return ub > ua ? dayWins(a, b) : dayWins(b, a);
-  const hi = ua >= ub ? a : b, fa = dayFlat(a), fb = dayFlat(b), fh = hi === a ? fa : fb, out = {}, s = {}; let mixed = false, lockW = null;
-  for (const k of new Set([...Object.keys(fa), ...Object.keys(fb), ...(fsOk(a) ? Object.keys(a.fs.s) : []), ...(fsOk(b) ? Object.keys(b.fs.s) : [])])) {
-    const sa = dayStamp(a, k), sb = dayStamp(b, k); let w = sa === sb ? hi : sa > sb ? a : b;
-    if (k === 'lock') { const o = w === a ? b : a; if (w.lockOnly && dayWins(o, w) === o) w = o; lockW = w; }
-    const fw = w === a ? fa : fb; if (w !== hi && !sameVal(fw[k], fh[k])) mixed = true;
-    if (fw[k] !== undefined) out[k] = fw[k]; s[k] = Math.max(sa, sb);
-  }
-  if (!mixed) return hi;
-  const u = Math.max(ua, ub) + 1, r = { date: hi.date, ...dayUnflat(out), updated: u };
-  if (r.lock && lockW && lockW.lockAt != null) r.lockAt = lockW.lockAt; r.fs = fsPack(u, s); return r;
-}
-/* core.js mergeState and stateSig, for the worker: each item field by field (mergeItemLite), a deletion wins over any older edit, ties keep a's */
-function mergeLite(a, b) {
-  a = a || {}; b = b || {}; const items = {}, tomb = { ...(a.tombstones || {}) };
-  for (const [id, t] of Object.entries(b.tombstones || {})) tomb[id] = Math.max(tomb[id] || 0, +t || 0);
-  for (const it of [...arrOf(a.items), ...arrOf(b.items)]) { if (!it || it.id == null) continue; const cur = items[it.id]; items[it.id] = cur ? mergeItemLite(cur, it) : it; }
-  for (const id of Object.keys(items)) if ((tomb[id] && tomb[id] >= itemBase(items[id])) || sampleOnly(items[id])) delete items[id];
-  const cutoff = Date.now() - 180 * 864e5; for (const id of Object.keys(tomb)) if (tomb[id] < cutoff) delete tomb[id];
-  // (a newer copy that is only the app's lock of the week loses to an older copy changed after the version the lock was built on:
-  // core.js dayWins, 2026-11-14)
-  const days = {}; for (const d of [...arrOf(a.days), ...arrOf(b.days)]) { if (!d || !d.date) continue; const cur = days[d.date]; days[d.date] = cur ? mergeDayLite(cur, d) : d; }
-  const settings = a.settings && b.settings ? mergeSettingsLite(a.settings, b.settings) : (a.settings || b.settings || null);
-  return { items: Object.values(items), tombstones: tomb, days: Object.values(days), settings };
-}
-/* core.js mergeSettings, for the worker (2026-11-14): setting by setting by each one's stamp (settings.ks; a copy without it counts its
-   one stamp for all), the result one above both when it took anything from the copy with the older overall stamp */
-const SET_META = ['updated', 'ks', 'kh', 'kse', 'khe'];
-const setHashLite = v => { const s = JSON.stringify(v === undefined ? null : v); let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
-const setKeysLite = s => Object.keys(s || {}).filter(k => !SET_META.includes(k));
-const setStampLite = (s, k) => s.ks ? (+s.ks[k] || 0) : (s.updated || 0);
-/* core.js SET_SPLIT, setEntries, setJoin, subOk, subStampOf and mergeSplit (fix round 3): own colors and patterns, Care, the dress code,
-   workdays, blazer days, hidden ideas and own days off merged entry by entry by their entry stamps (settings.kse / khe) */
-const SET_SPLIT = { custom: 'custom', care: 'obj', dress: 'obj', workdays: 'set', blazerDays: 'set', shopSkip: 'set', daysOff: 'list', ownMaterials: 'mats' };   // (own materials {type: [name]}, 2026-11-16)
-function setEntriesLite(k, v) {
-  const t = SET_SPLIT[k], m = new Map(); if (v == null) return m;
-  if (t === 'obj') { if (typeof v !== 'object' || Array.isArray(v)) return null; for (const e of Object.keys(v)) m.set(e, v[e]); }
-  else if (t === 'set') { if (!Array.isArray(v)) return null; for (const x of v) if (x != null && typeof x !== 'object') m.set(String(x), x); else return null; }
-  else if (t === 'list') { if (!Array.isArray(v)) return null; for (const x of v) { if (!x || typeof x !== 'object' || !x.d) return null; m.set(String(x.d), x); } }
-  else if (t === 'mats') { if (typeof v !== 'object' || Array.isArray(v)) return null; for (const g of Object.keys(v)) { const l = v[g]; if (!Array.isArray(l)) return null; for (const x of l) { if (typeof x !== 'string') return null; m.set(g + '/' + x, x); } } }
-  else if (t === 'custom') {
-    if (typeof v !== 'object' || Array.isArray(v)) return null;
-    for (const g of Object.keys(v)) { const l = v[g]; if (g !== 'colors' && g !== 'patterns') { m.set('@' + g, l); continue; } if (!Array.isArray(l)) return null; for (const x of l) { if (!x || typeof x !== 'object' || !x.key) return null; m.set(g + '/' + x.key, x); } }
-  } else return null;
-  return m;
-}
-function setJoinLite(k, m) {
-  const t = SET_SPLIT[k], v = [...m.values()];
-  if (t === 'obj') return Object.fromEntries(m);
-  if (t === 'set') return v.every(x => typeof x === 'number') ? v.sort((a, b) => a - b) : v.sort();
-  if (t === 'list') return v.sort((a, b) => String(a.d) < String(b.d) ? -1 : String(a.d) > String(b.d) ? 1 : 0);
-  if (t === 'mats') { const o = {}; for (const [e, x] of m) { const g = e.slice(0, e.indexOf('/')); (o[g] = o[g] || []).push(x); } for (const g of Object.keys(o)) o[g].sort(); return o; }
-  const o = { colors: [], patterns: [] }; for (const [e, x] of m) { if (e[0] === '@') o[e.slice(1)] = x; else o[e.slice(0, e.indexOf('/'))].push(x); } return o;
-}
-const subOkLite = (s, k) => !!(s && s.kse && s.kse[k] && s.khe && s.khe[k] && s.khe[k]['#'] === setHashLite(s[k]));
-const subStampLite = (s, k, e) => subOkLite(s, k) ? (own(s.kse[k], e) ? +s.kse[k][e] || 0 : +s.kse[k][''] || 0) : setStampLite(s, k);
-function mergeSplitLite(a, b, k, hi) {
-  const ma = setEntriesLite(k, a[k]), mb = setEntriesLite(k, b[k]); if (!ma || !mb) return null;
-  const mh = hi === a ? ma : mb, lo = hi === a ? b : a, ml = hi === a ? mb : ma, m = new Map(), se = {}, he = {}; let mixed = false;
-  const keys = new Set([...mh.keys(), ...ml.keys(), ...Object.keys(subOkLite(a, k) ? a.khe[k] : {}), ...Object.keys(subOkLite(b, k) ? b.khe[k] : {})]); keys.delete('#'); keys.delete('');
-  for (const e of keys) {
-    const xh = subStampLite(hi, k, e), xl = subStampLite(lo, k, e), mw = xl > xh ? ml : mh;
-    if (mw !== mh && (mw.has(e) !== mh.has(e) || (mw.has(e) && setHashLite(mw.get(e)) !== setHashLite(mh.get(e))))) mixed = true;
-    if (mw.has(e)) { m.set(e, mw.get(e)); he[e] = setHashLite(mw.get(e)); } else he[e] = '-';
-    se[e] = Math.max(xh, xl);
-  }
-  const v = mixed ? setJoinLite(k, m) : hi[k], st = Object.values(se), base = st.length ? Math.min(...st) : Math.max(setStampLite(a, k), setStampLite(b, k)), cs = { '': base };
-  for (const [e, x] of Object.entries(se)) if (x > base) cs[e] = x;
-  return { v, mixed, se: cs, he: { ...he, '#': setHashLite(v) } };
-}
-function mergeSettingsLite(a, b) {
-  const ua = a.updated || 0, ub = b.updated || 0, hi = ua >= ub ? a : b; if (!a.ks && !b.ks) return hi;
-  const out = {}, ks = {}, kh = {}, kse = {}, khe = {}; let mixed = false;
-  for (const k of new Set([...setKeysLite(a), ...setKeysLite(b), ...Object.keys(a.ks || {}), ...Object.keys(b.ks || {})])) {
-    const sa = setStampLite(a, k), sb = setStampLite(b, k);
-    const r = SET_SPLIT[k] && (subOkLite(a, k) || subOkLite(b, k)) && setHashLite(a[k]) !== setHashLite(b[k]) ? mergeSplitLite(a, b, k, hi) : null;
-    if (r) { if (r.mixed) mixed = true; if (r.v !== undefined) out[k] = r.v; ks[k] = Math.max(sa, sb); kh[k] = r.v === undefined ? '-' : setHashLite(r.v); kse[k] = r.se; khe[k] = r.he; continue; }
-    const w = sa === sb ? hi : sa > sb ? a : b;
-    if (w !== hi && setHashLite(w[k]) !== setHashLite(hi[k])) mixed = true;
-    if (k in w) out[k] = w[k]; ks[k] = Math.max(sa, sb); kh[k] = (w.kh && w.kh[k]) || setHashLite(w[k]);
-    if (SET_SPLIT[k] && subOkLite(w, k)) { kse[k] = w.kse[k]; khe[k] = w.khe[k]; }
-  }
-  out.ks = ks; out.kh = kh; if (Object.keys(kse).length) { out.kse = kse; out.khe = khe; } out.updated = mixed ? Math.max(ua, ub) + 1 : Math.max(ua, ub);
-  return mixed ? out : (hi.ks ? hi : Object.assign(out, { updated: hi.updated || 0 }));
-}
-function liteSig(s) {
-  s = s || {}; const by = (arr, k, v) => arrOf(arr).map(x => x[k] + ':' + v(x)).sort().join(',');
-  return [by(s.items, 'id', stampOf), Object.entries(s.tombstones || {}).map(e => e.join(':')).sort().join(','), by(s.days, 'date', d => d.updated || 0), s.settings ? s.settings.updated || 0 : ''].join('|');
-}
+/* the app's merge (merge.js mergeStateBy), the server's way: what a save sends comes from anywhere, so a record that isn't one is passed
+   over and a stamp read as a number (lax, num); deletions forgotten by the server's own clock; never a sample piece (sampleOnly) */
+const MERGE_SERVER = { num: true, lax: true, now: () => Date.now(), drop: sampleOnly };
+const mergeLite = (a, b) => mergeStateBy(a, b, MERGE_SERVER);
+const liteSig = s => stateSig(s, true);
 /* the first n characters of a stored value (the index, ASCII, comes first): read as a stream and cancelled there */
 async function readHead(env, key, n) {
   let v; try { v = await env.WARDROBE.get(key, { type: 'stream' }); } catch { v = null; }

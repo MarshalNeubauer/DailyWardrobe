@@ -5,7 +5,7 @@
 const path=require('path'),fs=require('fs'),vm=require('vm'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const ctx={console,localStorage:{getItem(){return null},setItem(){}},document:{querySelector(){return null}}};vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={itemFields,mergeItem,mergeState,dayFields,mergeDay,keySettings,stampSettings,mergeSettings,stateSig}',ctx);
+  vm.runInContext(fs.readFileSync(path.join(ROOT,'merge.js'),'utf8')+fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={itemFields,mergeItem,mergeState,dayFields,mergeDay,keySettings,stampSettings,mergeSettings,stateSig}',ctx);
   const K=ctx.K,J=o=>JSON.parse(JSON.stringify(o));
   const {mergeLite,dropFuture,clampStamps}=await import(pathToFileURL(path.join(ROOT,'worker','backup.js')).href);
   {// field stamps from a wrong clock (#485's rule): a save carrying one ahead is left out, a stored one is read back at the save time
