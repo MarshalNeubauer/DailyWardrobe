@@ -150,7 +150,7 @@ async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=no
   for(const r of days)dayRecs[r.date]=r;planDirty();todayDirty();if(window.scheduleSync)scheduleSync()}
 
 /* ---- Duplicate (the item sheet): the same piece again, with a new id and no history, opened for any difference ---- */
-const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cleaned','sample','sampleMine'];
+const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cleaned','cleans','sample','sampleMine'];
 async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;const c=JSON.parse(JSON.stringify(it));for(const k of KIT_NO_COPY)delete c[k];
   c.id=crypto.randomUUID();c.added=nowMs();await put(c);items.push(c);planDirty();todayDirty();
   if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
