@@ -110,11 +110,12 @@ async function run(eng,browser,{ok,url,settle}){
         if(z)await ev(z=>{const r=document.querySelector('#item-view .cropzoom input');r.value=z;r.dispatchEvent(new Event('input',{bubbles:true}))},z)};
       const saved=()=>p.waitForFunction(()=>items.find(x=>x.id==='m1').photo!==PH0,null,{timeout:6000}).then(()=>true,()=>false);
       const sq1=()=>ev(async()=>{const im=await imgOf(items.find(x=>x.id==='m1').photo);return im.naturalWidth===im.naturalHeight});
-      const toastNow=()=>ev(()=>{const t=document.querySelector('#toast.on');return t?t.textContent:''});
+      // (on the Wardrobe, with the sheet closed, an Undo is the round button above the +, its label "Undo: …": 2026-11-17)
+      const toastNow=()=>ev(()=>{const t=document.querySelector('#toast.on'),u=document.querySelector('#undo-fab.on');return (t?t.textContent:'')+(u?' '+u.getAttribute('aria-label'):'')});
       // Done
       await crop();await p.click('#item-view .ivdone');let sv=await saved();await settle(p,300);
       ok(sv&&await sq1()&&!await ev(()=>editing)&&/Crop saved\./.test(await toastNow())&&/Undo/.test(await toastNow()),T+`zoomed, then Done: the crop is saved (a square photo), the sheet closes, "Crop saved." with Undo (${await toastNow()})`);
-      await ev(()=>[...document.querySelectorAll('#toast button')].find(b=>b.textContent==='Undo').click());await p.waitForFunction(()=>items.find(x=>x.id==='m1').photo===PH0,null,{timeout:4000}).catch(()=>{});
+      await ev(()=>(document.querySelector('#undo-fab.on')||[...document.querySelectorAll('#toast button')].find(b=>b.textContent==='Undo')).click());await p.waitForFunction(()=>items.find(x=>x.id==='m1').photo===PH0,null,{timeout:4000}).catch(()=>{});
       ok(await photo()===await ev(()=>PH0),T+'…and the toast’s Undo puts the photo back');
       // swiping the item sheet down by its header while cropping
       await crop();g=await ev(()=>{const r=document.querySelector('#ivhead').getBoundingClientRect(),v=document.querySelector('#item-view').getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+9,h:v.height}});
