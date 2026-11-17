@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	e7157a09ea4c5a4d9a4c
+# tested	378bcc5563df3926517f
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	shadeRow	shirtColFix	unreadNote
@@ -395,7 +396,7 @@ addcards.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPul
 addcards.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop	careWashed	laundryDays	renderCareUI
 addcards.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
 addcards.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdItem	rdOff	rdStart
-addcards.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	DIAL_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	mergeState	metalOptsFor	metalWord	mix	nameHtml	nameIso	needsJacket	nm	noBidi	normCol	normColFor	normPat	now	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	patOf	planCol	primaryCol	recClean	recCol	recFree	recProse	rgbHex	rgbLab	sentence	setDays	setFields	setList	setWardrobe	shadeFor	shadeName	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	sockToeWord	stampSettings	strapBand	styleWord	subHashes	subStamp	tagStats	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
+addcards.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	DIAL_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	mergeSettings	mergeState	metalOptsFor	metalWord	mix	nameHtml	nameIso	needsJacket	nm	noBidi	normCol	normColFor	normPat	now	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	patOf	planCol	primaryCol	recClean	recCol	recFree	recProse	rgbHex	rgbLab	sentence	setDays	setFields	setList	setWardrobe	shadeFor	shadeName	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	sockToeWord	stampSettings	strapBand	styleWord	subHashes	subStamp	tagStats	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts	wearsJacket	wearsTie
 addcards.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwQRow	cpwRegion	cpwSaveFields	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed
 addcards.test.js	daysoff.js	<loaded>	addDayOff	countryName	dayOffAdd	daysOffListen	isoDate	isoToDate	offNameCut	refreshHolidays	renderDaysOffUI	renderFormalUI	shortDate	yearDate
 addcards.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	camoLook	detectQueued	detrend	foldBins	labGrid	lineModel	linePeaks	lookOf	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
@@ -414,7 +415,7 @@ addcards.test.js	locks.js	<loaded>
 addcards.test.js	manifest.webmanifest	<loaded>
 addcards.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 addcards.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	aiSignals	applyMeasured	calibLab	clamp01	closeRead	colRef	colourVerdicts	measConf	measEdgeCut	measHint	measKL	measSplit	measureAndApply	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	plainCloth	sharpness	urlCanvas	verdictMode	wbGains	wbRead
-addcards.test.js	merge.js	<loaded>	mergeList	mergeStateBy	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
+addcards.test.js	merge.js	<loaded>	mergeList	mergeSettingsBy	mergeStateBy	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
 addcards.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 addcards.test.js	missed.js	<loaded>	firstReal	missedCard	missedOpen
 addcards.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -1533,6 +1534,7 @@ asmgl.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmgl.test.js	tests/webkit.js	<any>
 asmgl.test.js	theme.js	<loaded>	applyTheme
 asmgl.test.js	toast.js	<loaded>
 asmgl.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2027,8 +2029,6 @@ asmtwill.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	ward
 asmtwill.test.js	watch/leather.jpg	<loaded>
 asmtwill.test.js	watch/shirt-open.png	<loaded>
 asmtwill.test.js	watch/shirt-tie.png	<loaded>
-asmtwill.test.js	watch/suit.png	<loaded>
-asmtwill.test.js	watch/vest.png	<loaded>
 asmtwill.test.js	weather.js	<loaded>	loadWeather
 asmwatch.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmwatch.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -2523,7 +2523,7 @@ backup-storage.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@w
 backup-storage.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop	careWashed	laundryDays	renderCareUI
 backup-storage.test.js	checklist.js	<loaded>
 backup-storage.test.js	colpick.js	<loaded>
-backup-storage.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	camoPat	casualTop	cleanDay	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colorDesc	dayClimate	dayFields	desc	di	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	lum	mergeState	metalWord	mix	nameHtml	needsTie	nextStamp	nm	now	nowMs	occOf	offDays	offName	old	ownMats	patBase	patLabel	patName	planCol	primaryCol	recClean	recCol	recFree	rgbHex	rgbLab	sentence	setDays	setList	setWardrobe	shortCol	shortDesc	stampAllSettings	stampSettings	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	wearsJacket	wearsTie
+backup-storage.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	camoPat	casualTop	cleanDay	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colorDesc	dayClimate	dayFields	desc	di	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	lum	mergeSettings	mergeState	metalWord	mix	nameHtml	needsTie	nextStamp	nm	now	nowMs	occOf	offDays	offName	old	ownMats	patBase	patLabel	patName	planCol	primaryCol	recClean	recCol	recFree	rgbHex	rgbLab	sentence	setDays	setList	setWardrobe	shortCol	shortDesc	stampAllSettings	stampSettings	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	wearsJacket	wearsTie
 backup-storage.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed
 backup-storage.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	shortDate
 backup-storage.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
@@ -5909,9 +5909,6 @@ hbshirt.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 hbshirt.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 hbshirt.test.js	watch/leather.jpg	<loaded>
 hbshirt.test.js	watch/shirt-open.png	<loaded>
-hbshirt.test.js	watch/shirt-tie.png	<loaded>
-hbshirt.test.js	watch/suit.png	<loaded>
-hbshirt.test.js	watch/vest.png	<loaded>
 hbshirt.test.js	weather.js	<loaded>	loadWeather
 hbswatch.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 hbswatch.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -10005,7 +10002,7 @@ records.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPull
 records.test.js	care.js	<loaded>	careBadge	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTimes	careTop	careWashed	careWord	careWornLine
 records.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	cmpMount
 records.test.js	colpick.js	<loaded>	EP	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
-records.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	cleanDay	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colorDesc	colsFor	dayClimate	dayFields	desc	di	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	leatherLabel	leatherWord	leathersFor	lum	matsFor	mergeState	metalWord	mix	nameHtml	needsJacket	nextStamp	nm	noBidi	normCol	normPat	now	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	planCol	primaryCol	recClean	recCol	recFree	recProse	recStrict	rgbHex	sentence	setDays	setList	setWardrobe	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trouserKindShown	trueToday	typeWord	wearsJacket
+records.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	cleanDay	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colorDesc	colsFor	dayClimate	dayFields	desc	di	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	leatherLabel	leatherWord	leathersFor	lum	matsFor	mergeSettings	mergeState	metalWord	mix	nameHtml	needsJacket	nextStamp	nm	noBidi	normCol	normPat	now	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	planCol	primaryCol	recClean	recCol	recFree	recProse	recStrict	rgbHex	sentence	setDays	setList	setWardrobe	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trouserKindShown	trueToday	typeWord	wearsJacket
 records.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym
 records.test.js	daysoff.js	<loaded>	refreshHolidays
 records.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
@@ -10024,7 +10021,7 @@ records.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	release
 records.test.js	manifest.webmanifest	<loaded>
 records.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 records.test.js	measure.js	<loaded>
-records.test.js	merge.js	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
+records.test.js	merge.js	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
 records.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	remakeLeft	remakeOn	remakeRead	remakeSpend	upgradeCloseups	upgradePhotos
 records.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
 records.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
@@ -11385,7 +11382,7 @@ sample.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulle
 sample.test.js	care.js	<loaded>	careBadge	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTop	careWashed	careWord	careWornLine
 sample.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	cmpMount
 sample.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar
-sample.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	SLOT_TYPE	accentOf	accentsOf	applyCustom	arriveN	camoPat	casualTop	cleanDay	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dayClimate	dayFields	desc	di	dressOut	fitCol	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keySettings	keySplit	leatherLabel	leatherWord	leathersFor	lum	lumCol	matSeason	matsFor	mergeState	metalOptsFor	metalWord	mix	nameHtml	needsJacket	needsTie	nextStamp	nm	noBidi	normPat	now	nowMs	occOf	offDays	offName	ownMats	ownNameClean	ownNameTidy	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	recClean	recCol	recFree	rgbHex	seasonFit	sentence	setDays	setList	setStr	setWardrobe	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	stampAllSettings	stampSettings	strapBand	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
+sample.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	SLOT_TYPE	accentOf	accentsOf	applyCustom	arriveN	camoPat	casualTop	cleanDay	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dayClimate	dayFields	desc	di	dressOut	fitCol	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keySettings	keySplit	leatherLabel	leatherWord	leathersFor	lum	lumCol	matSeason	matsFor	mergeSettings	mergeState	metalOptsFor	metalWord	mix	nameHtml	needsJacket	needsTie	nextStamp	nm	noBidi	normPat	now	nowMs	occOf	offDays	offName	ownMats	ownNameClean	ownNameTidy	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	recClean	recCol	recFree	rgbHex	seasonFit	sentence	setDays	setList	setStr	setWardrobe	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	stampAllSettings	stampSettings	strapBand	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
 sample.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym
 sample.test.js	daysoff.js	<loaded>	builtinHolidays	countryName	daysOffListen	fetchHolidays	holPast	isoToDate	refreshHolidays	renderDaysOffUI	setHolidayCountry	shortDate	yearDate
 sample.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
@@ -11767,7 +11764,7 @@ server-limits.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@wh
 server-limits.test.js	care.js	<loaded>	careLimit	careName	careWashed	laundryDays	renderCareUI
 server-limits.test.js	checklist.js	<loaded>
 server-limits.test.js	colpick.js	<loaded>
-server-limits.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	applyCustom	avgText	camoPat	casualTop	cleanDay	cleanRecord	cleanSettings	cleanState	colName	colorDesc	dayClimate	dayFields	desc	di	inRotation	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	mergeState	metalWord	nameHtml	nextStamp	now	nowMs	occOf	offDays	offName	old	ownMats	patBase	patLabel	patName	patOf	primaryCol	recClean	recCol	recFree	sentence	setWardrobe	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	styleWord	subHashes	takeSettings	todayDate	trueToday	wearsJacket	wearsTie
+server-limits.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	applyCustom	avgText	camoPat	casualTop	cleanDay	cleanRecord	cleanSettings	cleanState	colName	colorDesc	dayClimate	dayFields	desc	di	inRotation	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	mergeSettings	mergeState	metalWord	nameHtml	nextStamp	now	nowMs	occOf	offDays	offName	old	ownMats	patBase	patLabel	patName	patOf	primaryCol	recClean	recCol	recFree	sentence	setWardrobe	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	styleWord	subHashes	takeSettings	todayDate	trueToday	wearsJacket	wearsTie
 server-limits.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed
 server-limits.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI
 server-limits.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	usableSett
@@ -11887,7 +11884,7 @@ sett.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	
 sett.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 sett.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
 sett.test.js	colpick.js	<loaded>	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
-sett.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	cleanRecord	cleanSettings	cleanState	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	desc	di	fitCol	hasPat	hasVest	hexRgb	inRotation	isCargo	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	mergeState	metalWord	mix	nextStamp	nm	noBidi	normCol	normColFor	normPat	now	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	prettyCols	primaryCol	recClean	recCol	recFree	recProse	recStrict	rgbHex	rgbLab	sentence	setDays	setFields	setList	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	tagStats	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts
+sett.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	cleanRecord	cleanSettings	cleanState	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	desc	di	fitCol	hasPat	hasVest	hexRgb	inRotation	isCargo	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	mergeSettings	mergeState	metalWord	mix	nextStamp	nm	noBidi	normCol	normColFor	normPat	now	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	prettyCols	primaryCol	recClean	recCol	recFree	recProse	recStrict	rgbHex	rgbLab	sentence	setDays	setFields	setList	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	tagStats	takeSettings	thirdOf	titleCls	todayDate	typeWord	watchOpts
 sett.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSum	cpwSym
 sett.test.js	daysoff.js	<loaded>	refreshHolidays
 sett.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	camoLook	corrAt	detrend	foldBins	labGrid	lineModel	linePeaks	lookOf	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
@@ -11906,7 +11903,7 @@ sett.test.js	locks.js	<loaded>
 sett.test.js	manifest.webmanifest	<loaded>
 sett.test.js	mannequin.js	<loaded>	@{}
 sett.test.js	measure.js	<loaded>	aiSignals	applyMeasured	closeRead	measureAndApply	measureCard	wbGains	wbRead	wbSolidOk	wbSolidStats
-sett.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
+sett.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
 sett.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 sett.test.js	missed.js	<loaded>
 sett.test.js	month.js	<loaded>	dayOnly	nextWorkday
@@ -12717,7 +12714,7 @@ sharedmasters.test.js	calendar.js	<loaded>	calBanner	calLink
 sharedmasters.test.js	care.js	<loaded>
 sharedmasters.test.js	checklist.js	<loaded>
 sharedmasters.test.js	colpick.js	<loaded>
-sharedmasters.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	applyCustom	camoPat	casualTop	colOf	dayClimate	di	dressOut	hasVest	inRotation	isHandPick	isWorkday	isoKey	key	keySettings	keySplit	metalWord	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	setWardrobe	subHashes	takeSettings	todayDate	watchOpts	wearsJacket	wearsTie
+sharedmasters.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	applyCustom	camoPat	casualTop	colOf	dayClimate	di	dressOut	hasVest	inRotation	isHandPick	isWorkday	isoKey	key	keySettings	keySplit	metalWord	nowMs	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	setWardrobe	subHashes	takeSettings	todayDate	watchOpts	wearsJacket	wearsTie
 sharedmasters.test.js	cost.js	<loaded>
 sharedmasters.test.js	daysoff.js	<loaded>	refreshHolidays
 sharedmasters.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
@@ -14466,7 +14463,7 @@ tagger.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulle
 tagger.test.js	care.js	<loaded>
 tagger.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
 tagger.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdCost	rdOff
-tagger.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	hasPat	hexRgb	isWorkday	isoKey	itemName	key	keySettings	keySplit	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	normCol	normColFor	normPat	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	styleWord	subHashes	takeSettings	thirdOf	todayDate	watchOpts
+tagger.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	hasPat	hexRgb	isWorkday	isoKey	itemName	key	keySettings	keySplit	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	styleWord	subHashes	takeSettings	thirdOf	todayDate	watchOpts
 tagger.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwQRow	cpwRegion	cpwSym
 tagger.test.js	daysoff.js	<loaded>	refreshHolidays
 tagger.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
@@ -15696,7 +15693,7 @@ todayzoom.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPu
 todayzoom.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careTimes	careTop
 todayzoom.test.js	checklist.js	<loaded>
 todayzoom.test.js	colpick.js	<loaded>
-todayzoom.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	camoPat	casualTop	colBase	colName	colOf	colorDesc	colourNameRe	dayClimate	desc	di	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labHex	leatherWord	lum	metalWord	mix	nameHtml	nm	occOf	offDays	offName	ownMats	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	sockToeWord	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	typeWord
+todayzoom.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	camoPat	casualTop	colBase	colName	colOf	colorDesc	colourNameRe	dayClimate	desc	di	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labHex	leatherWord	lum	metalWord	mix	nameHtml	nm	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	sockToeWord	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	typeWord
 todayzoom.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush
 todayzoom.test.js	daysoff.js	<loaded>	refreshHolidays
 todayzoom.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
@@ -16120,11 +16117,6 @@ vest.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapSoon	pla
 vest.test.js	today.js	<loaded>	belowBox	canPick	figureStage	foldListTap	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 vest.test.js	ui.js	<loaded>	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerUp	uiEsc
 vest.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMigrate	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
-vest.test.js	watch/leather.jpg	<loaded>
-vest.test.js	watch/shirt-open.png	<loaded>
-vest.test.js	watch/shirt-tie.png	<loaded>
-vest.test.js	watch/suit.png	<loaded>
-vest.test.js	watch/vest.png	<loaded>
 vest.test.js	weather.js	<loaded>	loadWeather
 vest.test.js	worker.js	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	fetch	orNull	waitForRenders
 wardfab.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -16204,6 +16196,7 @@ wardfab.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedule
 wardfab.test.js	tag-request.js	<loaded>	tagStatsCard
 wardfab.test.js	tagging.js	<loaded>
 wardfab.test.js	tests/fixedplan.js	<any>
+wardfab.test.js	tests/webkit.js	<any>
 wardfab.test.js	theme.js	<loaded>	applyTheme
 wardfab.test.js	toast.js	<loaded>	toast	toastDrop	undoFab	undoHere	undoOff
 wardfab.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
