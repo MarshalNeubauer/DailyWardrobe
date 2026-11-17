@@ -36,10 +36,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const HOST='https://w.test/',EVIL='https://evil.example.com/',A='a'.repeat(32),A2='c'.repeat(32),B='b'.repeat(32),OW='o'.repeat(32);
   const browser=await chromium.launch();
   const page=async()=>{const ctx=await browser.newContext({viewport:{width:390,height:844}});
-    const st={who:{[A]:{id:'aaaaaaaaaa',name:'Ann',role:'tester'},[A2]:{id:'aaaaaaaaaa',name:'Ann',role:'tester'},[B]:{id:'bbbbbbbbbb',name:'Bea',role:'tester'},[OW]:{id:'owner',name:'Owner',role:'owner'}},off:new Set(),replaced:new Set(),log:[],evil:[],puts:{}};
+    const st={who:{[A]:{id:'aaaaaaaaaa',name:'Ann',role:'tester'},[A2]:{id:'aaaaaaaaaa',name:'Ann',role:'tester'},[B]:{id:'bbbbbbbbbb',name:'Bea',role:'tester'},[OW]:{id:'owner',name:'Owner',role:'owner'}},off:new Set(),replaced:new Set(),log:[],evil:[],puts:{},meErr:{}};
     await ctx.route(EVIL+'**',route=>{st.evil.push(route.request().method()+' '+new URL(route.request().url()).pathname);route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:'x',name:'Daily Wardrobe support',role:'tester'})})});
     await ctx.route(HOST+'**',async route=>{const q=route.request(),u=new URL(q.url()),tok=q.headers()['x-app-token'],me=st.who[tok];st.log.push(q.method()+' '+u.pathname+' '+(tok||'').slice(0,1));
       const j=(b,s=200)=>route.fulfill({status:s,contentType:'application/json',body:JSON.stringify(b)});
+      if(u.pathname==='/me'&&st.meErr[tok]){const s=st.meErr[tok];delete st.meErr[tok];return j({error:s===429?'rate':'server',message:'The server had a problem just now.'},s)}   // (one passing error)
       if(st.replaced.has(tok))return j({error:'invite off',replaced:true,message:'This invitation link was replaced by a new one.'},403);
       if(st.off.has(tok))return j({error:'invite off',message:'This invitation has been switched off.'},403);
       if(!me)return j({error:'forbidden token'},403);
@@ -79,6 +80,24 @@ const noteToasts=p=>p.evaluate(()=>{if(window.__toasts)return;window.__toasts=[]
       ok(q&&/Back up this phone’s wardrobe with Bea’s invitation/.test(q.t)&&!/Clear/.test(q.ok),`W1-7-01: a phone that hadn't heard of the switch-off is offered to keep its wardrobe, not "Clear and switch" (${q&&q.t.slice(0,90)} / ${q&&q.ok})`);
       await p.click('#ask-ok');await res;const s=await state(p);
       ok(s.tok===B&&s.n===3,`and keeps its 3 pieces with the new invitation (${JSON.stringify(s)})`)}
+    // CR-5-02: a passing server error on the old code (503, 429) is not "ended": nothing is asked or changed, the link can be tried again,
+    // and then the old code's real answer decides (still on: "Clear and switch")
+    for(const code of [503,429]){const {p,st}=await page();await seed(p,A,3);st.meErr[A]=code;
+      await noteToasts(p);const r=await p.evaluate(l=>connectFromLink(l,{address:true}),link(B));const q=await ask(p);const s=await state(p);
+      ok(r===false&&!q&&s.tok===A&&s.n===3&&/Couldn’t check the invitation this phone uses now/.test(s.toast)&&!st.puts.bbbbbbbbbb,`CR-5-02: a ${code} on the old code changes nothing and asks nothing (${JSON.stringify({r,q:q&&q.ok,s})})`);
+      if(code===503){const res=p.evaluate(l=>connectFromLink(l),link(B));const q2=await ask(p);
+        ok(q2&&/Clear/.test(q2.ok)&&!/Keep it/.test(q2.ok),`tried again with the server well, the old code still on: "Clear and switch", not "Keep it and back it up" (${q2&&q2.ok})`);
+        await p.click('#ask-cancel');await res}}
+    // CR-5-07: a first connection typed under Advanced goes through the same check and question as a link
+    {const {p,st}=await page();await seed(p,null,2);
+      await p.evaluate(h=>{openSettings('connection');document.querySelector('#cfg-url').value=h;document.querySelector('#cfg-token').value='z'.repeat(32);saveSettings()},HOST);
+      await p.waitForFunction(()=>!acctLinkRun,null,{timeout:6000});const s0=await state(p);
+      ok(!s0.tok&&!s0.url&&!st.log.some(l=>/\/sync/.test(l)),`CR-5-07: a mistyped code typed on a phone not connected is checked and not stored (${JSON.stringify(s0)})`);
+      await p.evaluate(([h,a])=>{openSettings('connection');document.querySelector('#cfg-url').value=h;document.querySelector('#cfg-token').value=a;saveSettings()},[HOST,A]);
+      const q=await ask(p);
+      ok(q&&/Add this phone’s 2 pieces to Ann’s wardrobe/.test(q.t),`and a right one asks "Add this phone’s 2 pieces…?" first (${q&&q.t.slice(0,80)})`);
+      await p.click('#ask-ok');await p.waitForFunction(a=>localStorage.getItem('app_token')===a,A,{timeout:6000}).catch(()=>{});
+      const s1=await state(p);ok(s1.tok===A&&s1.url===HOST&&s1.n===2&&(await p.evaluate(()=>acctRole())==='tester'),`Add and connect: connected, the role known (${JSON.stringify(s1)})`)}
     // decision 1: the owner's new link for the same tester: no question, nothing cleared, the same backup
     {const {p,st}=await page();await seed(p,A,3,{role:'tester',id:'aaaaaaaaaa'});await p.evaluate(()=>localStorage.setItem('sync_mark',JSON.stringify({sig:'x'})));st.replaced.add(A);
       await noteToasts(p);const r=await p.evaluate(l=>connectFromLink(l,{address:true}),link(A2));const q=await ask(p);const s=await state(p);

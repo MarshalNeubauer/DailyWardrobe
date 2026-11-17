@@ -5,7 +5,8 @@
 const SET_CATS=['schedule','daysoff','weather','care','photos','tagging','backup','connection','about'];
 function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.classList.toggle('instant',!!instant);if(!instant){el.classList.remove('instant');void el.offsetHeight}
   el.classList.toggle('open',open);const b=el.querySelector('.scat-head');if(b)b.setAttribute('aria-expanded',open);
-  if(open&&key==='backup'&&typeof loadSnapshots==='function')loadSnapshots()}   // the daily backups list is read as Backup opens (sync.js)
+  if(open&&key==='backup'&&typeof loadSnapshots==='function')loadSnapshots();   // the daily backups list is read as Backup opens (sync.js)
+  if(open&&key==='about'&&typeof renderAbout==='function')renderAbout()}   // only as About opens (its header ran it on closing too, and asked the server each time: CR-7-06)
 function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);settingsSummaries();const t0=Date.now();
   // the scroll to show what opened gives way to a finger or wheel that moved since the tap: on an iPhone it fought a scroll already under way
   if(open)setTimeout(()=>{const m=$('#settings-modal');if((m._touch||0)>t0)return;const r=el.getBoundingClientRect(),top=m.querySelector('.shead').getBoundingClientRect().bottom;
@@ -14,7 +15,7 @@ function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.clas
    sync_status while a try fails and last_sync when one works) */
 /* when backups start again (the next 00:00 UTC): "tomorrow" only when that is tomorrow here; west of UTC it is later today (W1-10-03: "Paused
    until tomorrow" over a line saying "after 7:00 PM") */
-function pausedUntil(t){const d=new Date(t),n=new Date();let at='';try{at=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
+function pausedUntil(t){const d=new Date(t),n=new Date();let at='';try{at=d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}catch{}
   return d.toDateString()===n.toDateString()?(at||'later today'):'tomorrow'}
 function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
   if(typeof inviteOver==='function'&&inviteOver())return 'Not backed up: your invitation has ended';
@@ -22,7 +23,7 @@ function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
   // (2026-11-15, the audit: "Backed up today" while the day's saves were used up and none of the new items was on the server)
   const pz=+localStorage.getItem('sync_pause')||0;
-  if(typeof syncPaused==='function'?syncPaused():pz>Date.now()){const p=pausedUntil(pz);return last?`Paused until ${p} · last saved ${when(last)}`:`Paused until ${p}: not backed up yet`}
+  if(typeof syncPaused==='function'?syncPaused():pz>nowMs()){const p=pausedUntil(pz);return last?`Paused until ${p} · last saved ${when(last)}`:`Paused until ${p}: not backed up yet`}
   if(/^Backups held/.test(st))return 'Held: deleted from the server on another device';   // (sync.js syncWiped)
   if(/^Backing up/.test(st))return last?`Backing up photos · last saved ${when(last)}`:'Backing up photos: not finished yet';   // (photos going up in batches, sync.js phBatch)
   if(/^Not backed up:/.test(st))return last?`Waiting for a connection · last saved ${when(last)}`:'Waiting for a connection: not backed up yet';
@@ -52,6 +53,7 @@ function scheduleWear(days){const j=typeof wearsJacket!=='function'||wearsJacket
   if(!j)return typeof dressSummary==='function'?dressSummary():'no jackets';const bl=settings.blazerDays.filter(d=>settings.workdays.includes(d));
   return [bl.length?'blazers '+days(bl):'suits every day',t?'vest '+({auto:'on cooler suit days',always:'every suit day',never:'never'})[settings.vestMode||'auto']:'no ties'].join(' · ')}
 function openSettings(section){
+  const already=settingsOpen(),subUnder=!already&&appHist&&appKind==='sub'&&SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden});
   const cat=section==='wx'?'weather':section;
   for(const k of SET_CATS)setCatOpen(k,k===cat,true);
   if(typeof advClose==='function')advClose();   // the Advanced folds start closed every time
@@ -64,13 +66,17 @@ function openSettings(section){
   try{settingsSummaries()}catch(e){console.warn('Settings summaries not drawn',e)}
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
-  setLock(true);appPush('set');   // the phone's Back closes it (appPush, by show())
+  // the phone's Back closes it (appPush, by show()); over Add, the Packing list or Laundry (the gear, Add's "Connect") Settings borrows
+  // that page's entry and hands it back on closing, so the page's Back still works after (CR-7-04: Settings took the entry, and the next
+  // Back left the app)
+  setLock(true);if(!already)setOver=subUnder?'sub':'';if(setOver&&appHist)appKind='set';else appPush('set');
   if(typeof layerOpen==='function')layerOpen($('#settings-modal'));   // the page behind is inert, the focus moves in (ui.js)
 }
 /* while Settings is up the page behind it can't scroll (html.set-lock): on an iPhone a scroll in Settings near its top or bottom was handed
    to Today underneath, and Settings stood still under the finger until that scroll ended; also notes the last touch for toggleCat */
 function setLock(on){document.documentElement.classList.toggle('set-lock',on);const m=$('#settings-modal');
   if(on&&m&&!m._tw){m._tw=true;const mark=()=>{m._touch=Date.now()};m.addEventListener('touchstart',mark,{passive:true});m.addEventListener('wheel',mark,{passive:true})}}
+let setOver='';   // the kind of entry Settings borrowed from the page under it ('sub': Add, Packing list, Laundry), handed back on closing
 let todayStale=false;   // a change made in Settings that Today should show once Settings closes
 let viewStale=null;   // the Wardrobe or stats page, when a sync brought changes while Settings was open (syncRedraw): redrawn once it closes
 const settingsOpen=()=>!!$('#settings-modal')&&$('#settings-modal').style.display==='block';
@@ -80,7 +86,11 @@ function refreshToday(){if(settingsOpen()){todayStale=true;return}renderToday()}
 function closeSettings(){const was=settingsOpen();
   if($('#settings-modal')){ $('#settings-modal').style.display='none'; $('#settings-modal').style.pointerEvents='none'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='none'; $('#modal-backdrop').style.pointerEvents='none'; }
-  setLock(false);appDrop('set');   // closed by Done or anything else: its Back entry goes
+  // closed by Done or anything else: its Back entry goes; one borrowed from the page under it goes back to that page (taken by Back, the
+  // page gets a new one: CR-7-04)
+  const over=setOver;setOver='';
+  if(was&&over){if(appHist&&appKind==='set')appKind=over;else if(!appHist&&SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden}))appPush(over)}else appDrop('set');
+  setLock(false);
   if(was&&typeof layerClose==='function')layerClose($('#settings-modal'));
   if(todayStale){todayStale=false;if(typeof keepHome==='function')keepHome();renderToday()}   // (Today on the home day follows a workday taken away)
   if(viewStale){const v=viewStale;viewStale=null;if(!$('#'+v).hidden)show(v)}
@@ -90,7 +100,8 @@ function saveSettings(){
   // link's questions (account.js acctTyped: the same account goes through, another asks, backs up and clears first). Stored as typed, the
   // next sync merged this phone's wardrobe into the other account
   const tu=$('#cfg-url')?$('#cfg-url').value.trim():null,tt=$('#cfg-token')?$('#cfg-token').value.trim():null,cu=(localStorage.getItem('worker_url')||'').trim(),ct=(localStorage.getItem('app_token')||'').trim();
-  if(typeof acctTyped==='function'&&tu&&tt&&ct&&cu&&(tt!==ct||tu.replace(/\/*$/,'/')!==cu.replace(/\/*$/,'/'))){
+  // (CR-5-07, 2026-11-17) a first connection typed here too: it skipped the server's check of the code and "Add this phone's N pieces…?"
+  if(typeof acctTyped==='function'&&tu&&tt&&(!ct||!cu||tt!==ct||tu.replace(/\/*$/,'/')!==cu.replace(/\/*$/,'/'))){
     closeSettings();acctTyped(tu,tt).catch(e=>console.warn('connection not changed',e));return}
   // full or blocked storage: Done still closes Settings (it threw before closing), and says the connection wasn't kept
   try{if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
@@ -107,7 +118,7 @@ function saveSettings(){
    toLocale…String(undefined, …) uses the phone's language when it is English, else American English (the app's language; Latin digits) */
 const APP_LOC=/^en\b/i.test(navigator.language||'en')?navigator.language:'en-US';
 function appLocale(){if(Date.prototype._dwLoc)return;for(const m of ['toLocaleDateString','toLocaleString','toLocaleTimeString']){const f=Date.prototype[m];
-  Date.prototype[m]=function(loc,o){return f.call(this,loc===undefined?APP_LOC:loc,o)}}Object.defineProperty(Date.prototype,'_dwLoc',{value:true})}
+  Date.prototype[m]=function(loc,o){return f.call(this,loc===undefined||(Array.isArray(loc)&&!loc.length)?APP_LOC:loc,o)}}Object.defineProperty(Date.prototype,'_dwLoc',{value:true})}   // ([] too, "the browser's language", as sync.js's backup-pause times pass: CR-7-05)
 appLocale();
 /* ---- settings: schedule, weather location, units ---- */
 /* °F where the country uses it (audit 2026-11-15: a Kuwait user on an English (US) iPhone got °F): the chosen location's country, else the
@@ -163,7 +174,9 @@ function builtinHolidays(cc,from,to){if(!HOL_FIXED[cc]&&!HOL_HIJRI[cc])return nu
 const holYears=(from,to)=>{const a=+from.slice(0,4),b=+to.slice(0,4),out=[];for(let y=a;y<=b;y++)out.push(y);return out};
 async function fetchHolidays(cc){
   const T=trueToday(),from=isoKey(new Date(T.getFullYear(),T.getMonth()-1,T.getDate())),to=isoKey(new Date(T.getFullYear()+1,T.getMonth()+1,T.getDate()));
-  const tidy=l=>{const m={};for(const x of l)if(x.d>=from&&x.d<=to&&x.n)m[x.d]=m[x.d]&&!m[x.d].includes(x.n)?m[x.d]+', '+x.n:m[x.d]||x.n;return Object.entries(m).sort().map(([d,n])=>({d,n}))};
+  // only a dated, named holiday (fix round A, CR-7-02: the string compare let `2026-12-01" onclick="…` through); names as core.js cleanSettings keeps them
+  const tidy=l=>{const m={};for(let x of l){if(!x||typeof x.d!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(x.d)||typeof x.n!=='string')continue;x={d:x.d,n:setStr(x.n,120).trim()};
+    if(x.d>=from&&x.d<=to&&x.n)m[x.d]=m[x.d]&&!m[x.d].includes(x.n)?m[x.d]+', '+x.n:m[x.d]||x.n}return Object.entries(m).sort().map(([d,n])=>({d,n}))};
   const own=()=>{const l=builtinHolidays(cc,from,to);return l&&l.length?tidy(l):null};
   // (a country with its own list isn't in Nager.Date: not asked, which logged a 404 on every start)
   // every calendar year the window touches (fix round 2, N6): in December and January it spans three, and asking only the first and last
@@ -229,20 +242,25 @@ async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off
   settings.daysOff=[...cur.values()].sort((x,y)=>x.d<y.d?-1:1);holidayMsg=`${k} day${k===1?'':'s'} off added.`;
   for(const id of ['#cfg-off-from','#cfg-off-to','#cfg-off-name'])if($(id))$(id).value='';
   await saveUserSettings();todayStale=true;renderDaysOffUI()}
-function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');if(!box||!list)return;
+/* a holiday's checkbox and a day off's × carry their dates in data-* attributes, read by one listener on each list (fix round A, CR-7-02:
+   a date from a Restore file, a sync or a holiday list went into an inline handler and ran as script) */
+function daysOffListen(list,ol){
+  if(!list.dataset.on){list.dataset.on='1';list.addEventListener('change',e=>{const c=e.target.closest('input[data-d]');if(c&&list.contains(c))toggleHoliday(c.dataset.d,c.checked)})}
+  if(ol&&!ol.dataset.on){ol.dataset.on='1';ol.addEventListener('click',e=>{const b=e.target.closest('button[data-ds]');if(b&&ol.contains(b))removeDaysOff(b.dataset.ds)})}}
+function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');if(!box||!list)return;daysOffListen(list,$('#off-list'));
   const h=settings.holidays,cc=h&&h.country||'';
   if(box.options.length<2)box.innerHTML='<option value="">No public holidays</option>'+COUNTRY_CODES.map(c=>[countryName(c),c]).sort((a,b)=>a[0].localeCompare(b[0])).map(([n,c])=>`<option value="${c}">${esc(n)}</option>`).join('');
   box.value=cc;
   const tk=isoKey(todayDate()),skip=new Set(h&&h.skip||[]),up=(h&&h.list||[]).filter(x=>x.d>=tk);
   list.innerHTML=!cc||/^Loading /.test(holidayMsg)?'':up.length?up.map(x=>{const d=isoToDate(x.d),wk=!settings.workdays.includes(d.getDay());
-    return `<label class="hrow${wk?' wk':''}"><input type="checkbox" ${skip.has(x.d)?'':'checked'} onchange="toggleHoliday('${x.d}',this.checked)"><span class="hd">${yearDate(d)}</span><span class="hn">${esc(x.n)}${wk?' <small class="mut">(not a workday anyway)</small>':''}</span></label>`}).join('')
+    return `<label class="hrow${wk?' wk':''}"><input type="checkbox" ${skip.has(x.d)?'':'checked'} data-d="${esc(x.d)}"><span class="hd">${yearDate(d)}</span><span class="hn">${esc(x.n)}${wk?' <small class="mut">(not a workday anyway)</small>':''}</span></label>`}).join('')
     :h&&!h.fetched?`<small class="mut">${workerBase()?`No public holiday list for ${esc(countryName(cc))} yet: the app tries again at its next start.`:`The public holidays of ${esc(countryName(cc))} are loaded once the app is connected.`}</small>`   // (setup.js setupHolidays)
     :'<small class="mut">No public holidays in the next year.</small>';
   const own=(settings.daysOff||[]).filter(x=>x.d>=tk),ol=$('#off-list');
   // consecutive days with one name are shown as one range
   const runs=[];for(const x of own){const r=runs[runs.length-1];if(r&&r.n===x.n&&(isoToDate(x.d)-isoToDate(r.to))/864e5<=1.5)r.to=x.d,r.ds.push(x.d);else runs.push({from:x.d,to:x.d,n:x.n,ds:[x.d]})}
   if(ol)ol.innerHTML=runs.map(r=>{const l=r.from===r.to?yearDate(isoToDate(r.from)):`${yearDate(isoToDate(r.from))} – ${yearDate(isoToDate(r.to))}`;
-    return `<span class="fchip"><span class="fcht">${l}${r.n&&r.n!=='Day off'?' · '+nameHtml(offNameCut(r.n)):''}</span><button type="button" aria-label="Remove ${l}" onclick="removeDaysOff('${r.ds.join(',')}')">×</button></span>`}).join('');
+    return `<span class="fchip"><span class="fcht">${l}${r.n&&r.n!=='Day off'?' · '+nameHtml(offNameCut(r.n)):''}</span><button type="button" aria-label="Remove ${l}" data-ds="${esc(r.ds.join(','))}">×</button></span>`}).join('');
   const m=$('#holiday-msg');if(m)m.textContent=holidayMsg||(cc&&up.length?`${up.filter(x=>!skip.has(x.d)).length} public holiday${up.length===1?'':'s'} of ${countryName(cc)} count as days off. Uncheck any you work.`:'');
   const f=$('#cfg-off-from');if(f)f.min=tk;
   if(settingsOpen())settingsSummaries()}   // the Days off summary follows an added or removed day (it kept the old count, audit 2026-11-13)
@@ -347,24 +365,6 @@ function toastOff(e){if(e.contains(document.activeElement)&&e.querySelector('but
   e.classList.remove('on','act');setTimeout(()=>{if(!e.classList.contains('on'))e.textContent=''},250)}
 /* a toast with a button (Undo) taken away at once (start.js show(): leaving Add takes its "Saved … Undo" with it) */
 function toastDrop(){const e=$('#toast');if(!e||!e.classList.contains('act'))return;clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent=''}
-let refreshing=false;
-async function refreshAll(){
-  if(refreshing)return;refreshing=true;const b=$('#refresh-btn');if(b)b.classList.add('spin');
-  let msg='';
-  try{
-    const n0=items.length;
-    if(window.syncNow&&localStorage.getItem('worker_url')&&localStorage.getItem('app_token')){
-      const ok=await syncNow();if(!ok)msg=localStorage.getItem('sync_status')||'Sync failed.'}
-    const [r,d,st]=await Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings')]);
-    items=r||[];dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));if(st)settings=takeSettings(settings,st);cache={};
-    await loadWeather(true);
-    if(typeof renderTried!=='undefined')renderTried.clear();remoteKeys=null;
-    const v=['today','wardrobe','add','stats','pack','care'].find(t=>$('#'+t)&&!$('#'+t).hidden)||'today';show(v);
-    if(!msg){const diff=items.length-n0;msg=`Refreshed · ${items.length} item${items.length===1?'':'s'}${diff>0?` (${diff} new)`:diff<0?` (${-diff} removed)`:''}`}
-    if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(g=>g&&g.update()).catch(()=>{});
-  }catch(e){msg='Refresh failed: '+(e.message||e)}
-  finally{refreshing=false;if(b)b.classList.remove('spin');toast(msg)}
-}
 /* the location's usual weather by month, from Open-Meteo's archive (free, no key): the last two full years' daily highs,
    lows and rain, averaged per month. Kept for four months per location; days beyond the 16-day forecast are planned from it. */
 async function loadClimate(){
