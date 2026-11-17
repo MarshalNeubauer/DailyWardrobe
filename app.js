@@ -338,7 +338,19 @@ function focusFind(root,k){if(!k||!root)return null;
   if(!k.at.some(Boolean))return null;
   const same=[...root.querySelectorAll(k.tag)].filter(e=>FOCUS_ATTRS.every((a,j)=>(e.getAttribute(a)||'')===k.at[j]));
   return same.find(e=>(e.getAttribute('aria-label')||'')===k.label&&(e.textContent||'').trim().slice(0,60)===k.text)||same.find(e=>(e.getAttribute('aria-label')||'')===k.label)||same[0]||null}
-function keepFocus(root,draw){const a=document.activeElement,k=root&&a&&a!==document.body&&root.contains(a)?focusKey(a):null;
+/* a control whose focus opens the phone's own picker (a select's list, a date wheel) is never focused by code after a touch: iOS opened
+   the picker again right after each choice (the owner's bug, CR-1-01: every dropdown on Add without a photo and in the item sheet).
+   After a touch the focus goes to its section's head button (.ckh, which reads the new value), else its label; after a key press
+   (a keyboard, where focus opens nothing) the new control itself keeps it, as before. focusVia: how the last input came. */
+let focusVia='pointer',focusWatchOn=false;
+function focusWatch(){if(focusWatchOn)return;focusWatchOn=true;const tap=()=>{focusVia='pointer'};
+  for(const t of ['pointerdown','touchstart','mousedown'])document.addEventListener(t,tap,{capture:true,passive:true});
+  document.addEventListener('keydown',()=>{focusVia='key'},true)}
+const focusOpens=e=>e.tagName==='SELECT'||e.tagName==='INPUT'&&/^(date|time|month|week|datetime-local|color|file)$/i.test(e.getAttribute('type')||'');   // (the type written: a browser without date fields reports 'text')
+function focusSafe(e){if(!focusOpens(e)||focusVia==='key')return e;
+  const sec=e.closest('section'),h=sec&&sec.querySelector('.ckh');if(h)return h;
+  const lab=e.closest('label');if(lab){lab.tabIndex=-1;return lab}return null}
+function keepFocus(root,draw){focusWatch();const a=document.activeElement,k=root&&a&&a!==document.body&&root.contains(a)?focusKey(a):null;
   const r=draw();
-  if(k&&!(k.el.isConnected&&root.contains(k.el))){const e=focusFind(root,k);if(e&&!e.closest('[inert]'))try{e.focus({preventScroll:true})}catch{}}
+  if(k&&!(k.el.isConnected&&root.contains(k.el))){const f=focusFind(root,k),e=f&&focusSafe(f);if(e&&!e.closest('[inert]'))try{e.focus({preventScroll:true})}catch{}}
   return r}

@@ -50,35 +50,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(share.tex,'another shirt of the same colour (different texture, cuffs, item) shares the photo');
     ok(share.col,'a shirt of a different colour does not');
     ok(share.twin&&share.pin,'an identical suit shares the photo; a different pattern does not');
-    // photos saved under the earlier key (which included the shirt item) are moved over
-    const v1=await A.p.evaluate(async()=>{const o=planFor()['2026-11-16'],ck=comboKey(o),old=comboKeyV1(o),rec=renders[ck];
-      delete renders[ck];await txs('meta','readwrite',s=>s.delete('render:'+ck));renders[old]={...rec,t:7};const got=!!renderFor(o);
-      await new Promise(r=>setTimeout(r,300));return got&&!!(await metaGet('render:'+ck))});
-    ok(v1,'a photo saved under the earlier combination key is found and moved to the new one');
+    // (the moves of photos kept under older builds' keys are gone with the retired outfit photos: CR-1-12)
     // the phone gets it from the worker for any day with that combination
     const B=await device();await B.p.evaluate(setup);
     await B.p.waitForFunction(()=>!!document.querySelector('.fig.photo img'),null,{timeout:8000}).catch(()=>{});
     ok(await photoShown(B.p)&&calls===0,'the phone shows the desktop\'s photo without generating another');
-    // photos saved per date before this change: a local one is moved and shared; a worker one is picked up
-    store.clear();
-    const mig=await A.p.evaluate(async()=>{const o=planFor()['2026-11-16'],ck=comboKey(o);delete renders[ck];delete renders[comboKeyV1(o)];await txs('meta','readwrite',s=>s.delete('render:'+ck));
-      renders['2026-11-16']={sig:legacySig(o),img:'data:image/jpeg;base64,/9j/',model:'gpt-image-2',t:5};renderTried.clear();sel=new Date(2026,10,16);renderToday();
-      await new Promise(r=>setTimeout(r,600));return {shown:!!document.querySelector('.fig.photo img'),local:!!(await metaGet('render:'+ck)),ck}});
-    for(let w=0;w<30&&!store.has('render:'+mig.ck);w++)await new Promise(r=>setTimeout(r,100));
-    ok(mig.shown&&mig.local&&store.has('render:'+mig.ck),'an old date-keyed photo on the device is moved to its combination and shared');
-    const C=await device();store.delete('render:'+mig.ck);
-    const legacy=await C.p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',updated:1,...x});
-      items=[I('suit','navy'),I('shirt','lightblue'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('suit','charcoal')];
-      settings.workdays=[0,1,2,3,4];settings.vestMode='auto';dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};const o=planFor()['2026-11-16'];return {sig:legacySig(o),ck:comboKey(o)}});
-    store.set('render:2026-11-16',JSON.stringify({sig:legacy.sig,img:'data:image/jpeg;base64,'+JPG,model:'gpt-image-2',t:3}));
-    await C.p.evaluate(()=>{sel=new Date(2026,10,16);view={y:2026,m:10};show('today')});
-    await C.p.waitForFunction(()=>!!document.querySelector('.fig.photo img'),null,{timeout:8000}).catch(()=>{});
-    for(let w=0;w<30&&!store.has('render:'+legacy.ck);w++)await new Promise(r=>setTimeout(r,100));
-    ok(await photoShown(C.p)&&store.has('render:'+legacy.ck),'an old date-keyed photo on the worker is picked up and re-saved under its combination');
     const bad=await worker.fetch(new Request(HOST+'render',{method:'PUT',headers:{'x-app-token':'t'},body:JSON.stringify({key:'c0123456789abcdef',rec:{img:'javascript:alert(1)'}})}),env);
     ok(bad.status===400,'the worker only accepts image data');
     ok((await worker.fetch(new Request(HOST+'render?key=nope',{headers:{'x-app-token':'t'}}),env)).status===400,'the worker rejects malformed keys');
     ok((await worker.fetch(new Request(HOST+'render?key='+ck),env)).status===403,'GET /render needs the app token');
-    ok(A.errs.length===0&&B.errs.length===0&&C.errs.length===0,'no page errors');
+    ok(A.errs.length===0&&B.errs.length===0,'no page errors');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

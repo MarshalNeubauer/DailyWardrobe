@@ -222,13 +222,13 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(e.over<=0&&e.btn==='44,44',`${w}px ${scheme}: the "nothing matches" state fits, its buttons 44px (${e.btn})`);
       await q.evaluate(()=>{wardClear();openItem('su1')});await settle(q,500);
       const iv=await q.evaluate(()=>{const v=document.querySelector('#item-view'),b=v.querySelector('#ivbody'),h=s=>[...v.querySelectorAll(s)].map(x=>Math.round(x.getBoundingClientRect().height));
-        const ta=v.querySelector('.wf-notes'),tr=ta.getBoundingClientRect(),card=v.querySelector('.ivtags').getBoundingClientRect(),t=v.querySelector('#iv-title').getBoundingClientRect();
+        const ta=v.querySelector('.wf-notes'),tr=ta.getBoundingClientRect(),card=ta.closest('.cks').getBoundingClientRect(),t=v.querySelector('#iv-title').getBoundingClientRect();
         return {inp:[...new Set(h('select,input[type=text]'))].join(),over:b.scrollWidth-b.clientWidth,ta:tr.height>=60&&tr.left>=card.left&&tr.right<=card.right,title:t.right<=innerWidth,del:h('.ivdel button').join(),
           grid:[...document.querySelectorAll('#wardrobe .gi')].every(g=>g.getBoundingClientRect().right<=innerWidth+.5)}});
       ok(iv.inp==='44'&&iv.over<=0&&iv.ta&&iv.title&&iv.del==='44'&&iv.grid,`${w}px ${scheme}: the sheet's new fields are 44px, the notes box fits its card, a long name doesn't push anything sideways (${JSON.stringify(iv)})`);
-      await q.evaluate(()=>{closeItem();show('add');addManual();setq(0,'type','suit');toggleMore(0)});
-      const ad=await q.evaluate(()=>({over:document.documentElement.scrollWidth-innerWidth,h:[...new Set([...document.querySelectorAll('#nps-q .morefold button,#nps-q .morein select,#nps-q .morein input')].map(x=>Math.round(x.getBoundingClientRect().height)))].join()}));
-      ok(ad.over<=0&&ad.h==='44',`${w}px ${scheme}: the Add card's More details fits, controls 44px (${ad.h})`);
+      await q.evaluate(()=>{closeItem();show('add');addManual();const s=document.querySelector('#nps-q section[data-ck="more"]');if(s&&!s.classList.contains('open'))s.querySelector('.ckh').click()});
+      const ad=await q.evaluate(()=>({n:document.querySelectorAll('#nps-q section[data-ck="more"].open .morein input').length,over:document.documentElement.scrollWidth-innerWidth,h:[...new Set([...document.querySelectorAll('#nps-q section[data-ck="more"] .morein input')].map(x=>Math.round(x.getBoundingClientRect().height)))].join()}));
+      ok(ad.n===2&&ad.over<=0&&ad.h==='44',`${w}px ${scheme}: the Add card's More section (name, brand) fits, its fields 44px (${JSON.stringify(ad)})`);
       await c.close()}
 
     // ---- sync between two devices, and backup / restore
