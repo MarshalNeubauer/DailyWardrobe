@@ -50,7 +50,7 @@ function careCard(i){if(!CARE_ABLE.includes(i.type)||i.order)return '';
     :`<div class="btns">${i.paused?'':first.map(w=>`<button type="button" class="caresend" data-why="${w}" onclick="careSend('${jsq(id)}','${w}')">${lab[w]}</button>`).join('')}${s.wears?`<button type="button" class="caredone" onclick="careCleaned('${jsq(id)}')">${careWashed(i.type)?'Washed':'Cleaned'} today</button>`:''}</div>`;
   return `<section class="card ivsec ivcare" id="ivcare"><h3>Care</h3><p class="shelp carecount${s.due?' due':''}">${careWornLine(i)}${s.due?' · due now':''}</p>${body}</section>`}
 /* redraw whichever page the change was made on */
-function careRedraw(){if(typeof remindSoon==='function')remindSoon();/* the cleaning reminders follow a piece sent away or cleaned */const c=$('#care');if(c&&!c.hidden)renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();else if($('#today')&&!$('#today').hidden)refreshToday()}
+function careRedraw(){if(typeof remindSoon==='function')remindSoon();/* the cleaning reminders follow a piece sent away or cleaned */careSum();const c=$('#sc-laundry');if(c&&c.classList.contains('open'))renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();else if($('#today')&&!$('#today').hidden)refreshToday()}
 /* upcoming days the piece was pinned to (a swap, a hand pick) let go of it, as when it is taken out of rotation: they are planned again */
 async function careRelease(id){const T=todayDate();let n=0;
   for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<T||r.worn===true||!r.force)continue;const f={...r.force};let hit=false;
@@ -84,25 +84,26 @@ function careLists(){const st=items.filter(i=>!i.order).map(i=>({i,s:careState(i
   return {due:st.filter(x=>x.s.due).sort(ord),near:st.filter(x=>x.s.near).sort(ord),
     each:CARE_ABLE.filter(t=>careLimit(t)===1).map(t=>({t,list:st.filter(x=>x.i.type===t&&x.s.wears>0&&!x.i.away).map(x=>x.i)})).filter(g=>g.list.length),
     away:items.filter(i=>i.away).sort((a,b)=>(a.away.back||'9')<(b.away.back||'9')?-1:1)}}
-/* the Care page */
-function renderCare(){const el=$('#care');if(!el)return;
-  const head=`<div class="phead nav"><button class="pback" onclick="subBack()" aria-label="Back">‹</button><h2>Laundry &amp; cleaning</h2></div>`;
-  if(!items.length){el.innerHTML=head+'<p class="mut empty">Your wardrobe is empty.</p>'+emptyAdd();return}
+/* Laundry & cleaning: a fold of Settings (#sc-laundry, its panel #care-in; 2026-11-17, the owner: "make laundry and cleaning a fold out
+   menu like most of the others"; it was a page of its own, #care), drawn as it opens and when a piece is sent away or cleaned */
+function careSum(){const s=$('#sum-laundry');if(!s)return;if(!items.length){s.textContent='What is due, and what is away';return}
+  const L=careLists(),p=[L.due.length?`${L.due.length} due`:'',L.near.length?`${L.near.length} nearly due`:'',L.away.length?`${L.away.length} away`:''].filter(Boolean);
+  s.textContent=p.length?cap1(p.join(' · ')):'Nothing is due'}
+function renderCare(){const el=$('#care-in');if(!el)return;careSum();const head='';
+  if(!items.length){el.innerHTML='<p class="mut empty">Your wardrobe is empty.</p>';return}
   const L=careLists(),pic=i=>statPic(i);
   const row=(x,btns)=>`<div class="care-row" id="care-${x.id}">${pic(x)}<div class="care-main"><span class="cap care-nm">${careName(x)}</span><small class="mut">${x.away?careTag(x)+' · since '+fmtDay(x.away.since):careWornLine(x)}</small></div><div class="care-acts">${btns}</div></div>`;
   const acts=x=>{const w=careWashed(x.type)?'laundry':'cleaner';return `<button type="button" class="caresend" onclick="careSend('${jsq(x.id)}','${w}')">${w==='laundry'?'In the laundry':'Send to the cleaner'}</button><button type="button" class="caredone" onclick="careCleaned('${jsq(x.id)}')">${careWashed(x.type)?'Washed':'Cleaned'} today</button>`};
   const card=(id,title,sub,rows)=>`<section class="card care-card" id="${esc(id)}"><h3>${title}</h3>${sub?`<p class="shelp">${sub}</p>`:''}${rows}</section>`;
   const quiet=!L.due.length&&!L.near.length;
-  el.innerHTML=head+`<p class="psub">What is due for cleaning, counted from the days you wore each piece. Nothing to log: tap only when something goes out or comes back.</p>`+
+  el.innerHTML=head+`<p class="shelp">What is due for cleaning, counted from the days you wore each piece. Nothing to log: tap only when something goes out or comes back.</p>`+
     (L.due.length?card('care-due','Due for cleaning',`${L.due.length} piece${L.due.length===1?' has':'s have'} reached ${L.due.length===1?'its':'their'} number of wears.`,L.due.map(x=>row(x.i,acts(x.i))).join('')):'')+
     (L.near.length?card('care-near','Nearly due','One more wear and these are due.',L.near.map(x=>row(x.i,acts(x.i))).join('')):'')+
     (quiet?card('care-none','Nothing is due','No suit, blazer or pair of pants has reached its number of wears yet.',''):'')+
     (L.each.length?card('care-each','Washed after every wear','',L.each.map(g=>`<div class="care-row care-group" id="care-each-${g.t}"><div class="care-main"><span class="care-nm">${g.list.length} ${g.list.length===1?careNoun(g.list[0]):(CARE_PLURAL[g.t]||'pieces').toLowerCase()} worn since washing</span><small class="mut">${laundryDays()&&g.t==='shirt'?`A worn shirt is not planned again for ${laundryDays()} day${laundryDays()===1?'':'s'}.`:'Tap when the wash is done, or leave it: nothing depends on it.'}</small></div><div class="care-acts"><button type="button" class="caredone" onclick="careCleanedType('${g.t}')">All washed today</button></div></div>`).join('')):'')+
     (L.away.length?card('care-away','Away now','Out of your outfits until they are back.',L.away.map(x=>row(x,`<button type="button" class="pri careitsback" onclick="careBack('${jsq(x.id)}')">It's back</button>`)).join('')):'')+
     `<p class="care-foot"><button type="button" class="linkbtn" onclick="openSettings('care')">Change how many wears each piece takes</button></p>`}
-function openCare(){subOpen();closeSettings();show('care');scrollTo({top:0})}
-/* called by show() in app.js for every page: the Care page is a section of its own beside the others */
-function careShow(t){const el=$('#care');if(!el)return;el.hidden=t!=='care';if(t==='care')renderCare()}
+function openCare(){openSettings('laundry')}   // (Today's "See what is due")
 /* Today: one quiet line when today's suit, blazer or odd trousers reaches its limit with this wear (or is past it) */
 function careNote(o){if(!o||!isWorkday(sel)||key(sel)!==key(todayDate()))return '';
   const r=dayRecs[key(sel)],counted=!!(r&&r.worn===true),w=careCounts(),out=[];

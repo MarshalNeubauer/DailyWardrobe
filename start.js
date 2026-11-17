@@ -3,7 +3,7 @@
 /* moving between pages: the page arriving eases in from the side its tab is on (Today, Wardrobe, Add left to right), a short slide and a
    fade on the cards' curve; a page opened from Settings (stats, packing, care) rises in instead. The tab bar's marker slides to the tab
    (styles.css nav::before, --ti). Only the page arriving moves: the one leaving goes at once, so nothing is laid out twice. */
-const PAGES=['today','wardrobe','add','stats','pack','care'],TABS=['today','wardrobe','stats'],PAGE_MS=320;
+const PAGES=['today','wardrobe','add','stats','pack'],TABS=['today','wardrobe','stats'],PAGE_MS=320;
 function pageIn(t,from){const el=$('#'+t),nav=document.querySelector('body>nav'),ti=TABS.indexOf(t);
   if(nav){nav.style.setProperty('--ti',Math.max(0,ti));nav.classList.toggle('tab-none',ti<0)}
   if(!el||!from||from===t||noMotion())return;
@@ -20,7 +20,7 @@ let subFrom=null;
    hands Settings' entry on to the page ('set' → 'sub') and its ‹ hands it back, so Back never needs two presses. Left any other way
    (Done, a tab, the ‹ to Today) the entry is taken away with a history.back() of our own (appPend) that the popstate below lets pass;
    appKeep holds it while subBack moves from the page to Settings. (The item sheet keeps its own entry the same way: histPush.) */
-const SUBS=['add','pack','care'];let appHist=false,appKind='',appPend=false,appKeep=false;
+const SUBS=['add','pack'];let appHist=false,appKind='',appPend=false,appKeep=false;
 /* the setup, the piece picker and What to buy take the entry too (kinds 'setup', 'pick', 'shop'; audit 2026-11-14: Back left the app
    from all three): Back steps the setup back one step (on its first step it stays), and closes the picker or What to buy.
    An entry asked for while a step back of ours is on its way, or while the address still holds an invitation (#invite: the entry
@@ -86,7 +86,6 @@ function show(t){
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>typeof statsShow==='function'?statsShow():renderStats()};if(f[t])f[t]();
   if(typeof packShow==='function')packShow(t);   // the packing list page (pack.js)
   if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
-  if(typeof careShow==='function')careShow(t);   // the Care page (care.js)
   pageIn(t,from);
 }
 

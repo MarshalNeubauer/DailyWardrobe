@@ -84,12 +84,12 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.evaluate(()=>{flt='all';editing=null;show('wardrobe')});
     const g=await p.evaluate(()=>({navy:(document.querySelector('#gi-navy .caretag')||{}).textContent||'',n:document.querySelectorAll('#wardrobe .caretag').length}));
     ok(g.navy==='Due for cleaning'&&g.n===1,'the grid marks the one due piece "Due for cleaning" (shirts, washed after every wear, are not marked)');
-    // ---- the Care page: from Settings, lists and buttons
-    await p.evaluate(()=>openSettings());await p.click('#care-btn');await p.waitForFunction(()=>!document.querySelector('#care').hidden&&document.querySelector('#care-due'));
+    // ---- Laundry & cleaning: a fold of Settings (2026-11-17), lists and buttons
+    await p.evaluate(()=>openSettings());await p.click('#care-btn');await p.waitForFunction(()=>document.querySelector('#sc-laundry').classList.contains('open')&&document.querySelector('#care-in #care-due'));
     const pg=await p.evaluate(()=>({due:[...document.querySelectorAll('#care-due .care-row')].map(r=>r.id),near:[...document.querySelectorAll('#care-near .care-row')].map(r=>r.id),
       dueText:document.querySelector('#care-navy').textContent,each:(document.querySelector('#care-each-shirt')||{}).textContent||'',away:!!document.querySelector('#care-away'),
-      hidden:['today','wardrobe','add','stats'].every(s=>document.querySelector('#'+s).hidden),settings:document.querySelector('#settings-modal').style.display}));
-    ok(pg.hidden&&pg.settings==='none','Settings → Care opens the Care page');
+      settings:document.querySelector('#settings-modal').style.display,exp:document.querySelector('#care-btn').getAttribute('aria-expanded'),sum:document.querySelector('#sum-laundry').textContent}));
+    ok(pg.settings==='block'&&pg.exp==='true'&&/1 due · 2 nearly due/.test(pg.sum),'Laundry & cleaning unfolds in Settings, its line saying what is due ("'+pg.sum+'")');
     ok(pg.due.join()==='care-navy'&&/Worn 5 times · due after 5/.test(pg.dueText),'due: the navy suit, "Worn 5 times · due after 5"');
     ok(pg.near.join()==='care-char,care-p1','nearly due: the charcoal suit (4 of 5) and the trousers (3 of 4), most worn first');
     ok(/3 shirts worn since washing/.test(pg.each)&&!pg.away,'the shirts are one line, not one each; nothing is away yet');
@@ -107,7 +107,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     ok(bk.cleaned==='2026-11-11'&&!bk.paused&&!bk.arr&&!bk.away,'"It\'s back" puts it in rotation again, cleaned today');
     await p.click('#care-each-shirt .caredone');await p.waitForFunction(()=>!document.querySelector('#care-each-shirt'));
     ok(await p.evaluate(()=>['sh1','sh2','sh3'].every(id=>items.find(i=>i.id===id).cleaned==='2026-11-11')),'"All washed today" resets every worn shirt');
-    await p.click('#care .pback');ok(await p.evaluate(()=>document.querySelector('#care').hidden&&settingsOpen()),'the back button leaves the Care page for Settings, where it was opened');
+    await p.click('#care-btn');ok(await p.evaluate(()=>!document.querySelector('#sc-laundry').classList.contains('open')&&settingsOpen()),'a second tap folds it, Settings stays open');
     await p.evaluate(()=>closeSettings());
 
     // ---- away from the item sheet: the plan, the locked week, the picker, the grid, the stats
@@ -192,13 +192,13 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       await q.evaluate(async th=>{document.documentElement.dataset.theme=th;await careSend('char','cleaner','2026-11-20');openCare()},th);await q.waitForFunction(()=>document.querySelector('#care-away'));await settle(q,300);
       const m=await q.evaluate(()=>{const h=s=>[...document.querySelectorAll(s)].map(b=>Math.round(b.getBoundingClientRect().height)),cs=e=>getComputedStyle(e);
         const lum=c=>{const [r,g,b]=c.match(/[\d.]+/g).map(Number);return .2126*r+.7152*g+.0722*b};
-        const card=document.querySelector('#care .care-card'),row=document.querySelector('#care .care-nm');
-        return {btn:h('#care button:not(.linkbtn)'),side:document.documentElement.scrollWidth-innerWidth,title:cs(document.querySelector('#care .phead h2')).fontSize,radius:cs(card).borderRadius,
-          over:[...document.querySelectorAll('#care *')].filter(x=>x.getBoundingClientRect().right>innerWidth+.5).length,contrast:Math.abs(lum(cs(row).color)-lum(cs(card).backgroundColor)),bg:lum(cs(document.body).backgroundColor)}});
-      ok(m.btn.length>=4&&m.btn.every(x=>x>=44)&&m.title==='22px'&&m.radius==='14px',`Care page at ${w}px, ${th}: 44px buttons, a 22px title, 14px cards (${[...new Set(m.btn)].join('/')})`);
-      ok(m.side<=0&&m.over===0,`Care page at ${w}px, ${th}: no sideways scroll, nothing past the edge`);
-      ok(m.contrast>90&&(th==='dark'?m.bg<80:m.bg>170),`Care page at ${w}px, ${th}: text stands out from its card (${Math.round(m.contrast)})`);
-      await q.evaluate(()=>{flt='all';show('wardrobe');openItem('char')});await q.waitForFunction(()=>document.querySelector('#ivcare'));await settle(q,500);
+        const card=document.querySelector('#care-in .care-card'),row=document.querySelector('#care-in .care-nm'),mr=document.querySelector('#settings-modal').getBoundingClientRect(),M=document.querySelector('#settings-modal');
+        return {btn:h('#care-in button:not(.linkbtn)'),side:M.scrollWidth-M.clientWidth,radius:cs(card).borderRadius,
+          over:[...document.querySelectorAll('#care-in *')].filter(x=>{const r=x.getBoundingClientRect();return r.width&&r.right>mr.right+.5}).length,contrast:Math.abs(lum(cs(row).color)-lum(cs(card).backgroundColor)),bg:lum(cs(document.body).backgroundColor)}});
+      ok(m.btn.length>=4&&m.btn.every(x=>x>=44)&&m.radius==='14px',`Laundry & cleaning at ${w}px, ${th}: 44px buttons, 14px cards (${[...new Set(m.btn)].join('/')})`);
+      ok(m.side<=0&&m.over===0,`Laundry & cleaning at ${w}px, ${th}: no sideways scroll, nothing past the edge`);
+      ok(m.contrast>90&&(th==='dark'?m.bg<80:m.bg>170),`Laundry & cleaning at ${w}px, ${th}: text stands out from its card (${Math.round(m.contrast)})`);
+      await q.evaluate(()=>{closeSettings();flt='all';show('wardrobe');openItem('char')});await q.waitForFunction(()=>document.querySelector('#ivcare'));await settle(q,500);
       const iv=await q.evaluate(()=>{const v=document.querySelector('#ivbody')||document.querySelector('#item-view'),c=document.querySelector('#ivcare'),r=c.getBoundingClientRect(),vr=document.querySelector('#item-view').getBoundingClientRect();
         const tag=document.querySelector('#gi-navy .caretag'),tg=tag?tag.getBoundingClientRect():null,gi=document.querySelector('#gi-navy').getBoundingClientRect();
         return {btn:[...c.querySelectorAll('button')].map(b=>Math.round(b.getBoundingClientRect().height)),inp:Math.round(c.querySelector('input[type=date]').getBoundingClientRect().height),

@@ -74,7 +74,6 @@ async function run(eng,browser,{ok,url,WARDROBES,settle}){
   // ---- pages and sheets with nothing of ours under them
   await layer('Settings',{base:()=>ev(()=>show('today')),open:()=>ev(()=>openSettings()),on:setUp,x:()=>tap('#settings-modal .sdone'),under:today});
   await layer('Settings → Packing list',{base:()=>ev(()=>{show('today');openSettings()}),open:()=>ev(()=>document.querySelector('#pack-btn').click()),on:()=>!document.querySelector('#pack').hidden,x:()=>tap('#pack .pback'),under:setUp});
-  await layer('Settings → Laundry & cleaning',{base:()=>ev(()=>{show('today');openSettings()}),open:()=>ev(()=>document.querySelector('#care-btn').click()),on:()=>!document.querySelector('#care').hidden,x:()=>tap('#care .pback'),under:setUp});
   await layer('Add',{base:()=>ev(()=>show('wardrobe')),open:()=>ev(()=>openAdd()),on:()=>!document.querySelector('#add').hidden,x:()=>tap('#add .pback'),under:()=>!document.querySelector('#wardrobe').hidden});
   await layer('the item sheet',{base:()=>ev(()=>show('wardrobe')),open:()=>ev(()=>openItem('m1')),on:()=>!!editing,x:()=>tap('#item-view .ivdone'),under:()=>!document.querySelector('#wardrobe').hidden});
   await layer('the piece picker',{base:()=>ev(()=>show('today')),open:()=>ev(()=>openPicker('shirt')),on:()=>!!picker,x:()=>tap('#pick-sheet .pick-x'),under:today});
