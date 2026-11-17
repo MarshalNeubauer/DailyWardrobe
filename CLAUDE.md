@@ -2475,6 +2475,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a check that a text fits measures the app's own fonts: Linux has no "Avenir Next" or "Segoe UI" and fell back to DejaVu Sans, about a fifth wider, so `nufix9`'s 268 px header and item-title checks failed there every night (2026-11-16, 17)
 - `widthFont(page)` (tests/back.test.js) gives "Segoe UI" Liberation Sans (Arial's widths, within 1% of Segoe UI Bold) by `@font-face` `local()` when neither font is there, and the checks name the font measured and the sizes
 - at 150% text and 268 px the header title has 4 px to spare in Segoe UI (135 px of about 139); the iPhone's Avenir Next Bold is not measured anywhere but on the phone
+- the item sheet's title is at most 8vw at 340 px and under (`.ivt h2`, 2026-11-17): at 150% text and 268 px its 27 px left "herringbone" a pixel or two from its 156-161 px line in every font measured (Segoe UI, Arial), and Liberation Sans on Linux broke it onto a third, cut line; at 21.4 px it is about 120 px in Segoe UI and about 150 px even in DejaVu Sans Bold (by that font's widths)
 - touch gestures take their speed from `e.timeStamp`, not `Date.now()` when handled (the shop sheet's swipe); `tests/shopswipe.test.js` gives every CDP touch its own `timestamp`, so its gestures have the same speed however busy the machine is
 
 #### The impact map and selection

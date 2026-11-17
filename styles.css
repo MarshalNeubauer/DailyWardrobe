@@ -1613,6 +1613,7 @@ header button::after{inset:-2px}
 @media (max-width:340px){
   nav button{font-size:min(.9375rem,max(15px,5.6vw))}
   header h1{font-size:min(1.3125rem,7vw)}
+  .ivt h2{font-size:min(var(--fs-xl),8vw)}
   :where(#today) .month-link{height:auto;min-height:76px}
   .mlstrip,.pstrip{width:84px}
   :where(#today) .mltxt b{white-space:normal;overflow-wrap:anywhere}
