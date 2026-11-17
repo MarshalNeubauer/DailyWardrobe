@@ -30,14 +30,13 @@ module.exports=async({ok,chromium,url,settle})=>{
     s=await p.evaluate(()=>({lock:document.documentElement.classList.contains('set-lock'),open:settingsOpen(),y:scrollY,ov:getComputedStyle(document.body).overflowY}));
     ok(!s.open&&!s.lock&&s.ov!=='hidden'&&s.y===y0,`Done closes Settings and gives the page back where it was (${s.y}px)`);
     await p.mouse.wheel(0,300);await settle(p,300);ok(await p.evaluate(y=>scrollY>y,y0),'and the page scrolls again');
-    // the scroll that shows a category just opened: it still runs when nothing touched the screen...
+    // a category opened near the bottom unfolds where it is: Settings never scrolls by itself (the owner, 2026-11-17)
     const toggle=async(touch)=>p.evaluate(async touch=>{openSettings();const m=document.querySelector('#settings-modal');await new Promise(r=>setTimeout(r,50));
       const el=document.querySelector('#sc-backup');m.scrollTop=Math.max(0,el.offsetTop-m.clientHeight+90);const before=m.scrollTop;   // its head near the bottom
       toggleCat('backup');if(touch){await new Promise(r=>setTimeout(r,150));m.dispatchEvent(new Event('touchstart'))}
       await new Promise(r=>setTimeout(r,1100));const after=m.scrollTop;toggleCat('backup');closeSettings();return {before,after}},touch);
-    let t=await toggle(false);ok(t.after>t.before+40,`an opened category near the bottom is scrolled into view (${t.before} → ${t.after}px)`);
-    // ...and gives way to a finger that touched the screen after the tap
-    t=await toggle(true);ok(t.after===t.before,`but not when a finger touched Settings since the tap (${t.before} → ${t.after}px)`);
+    let t=await toggle(false);ok(t.before>0&&t.after===t.before,`an opened category near the bottom unfolds without Settings scrolling (${t.before} → ${t.after}px)`);
+    t=await toggle(true);ok(t.after===t.before,`nor after a finger touched Settings (${t.before} → ${t.after}px)`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
