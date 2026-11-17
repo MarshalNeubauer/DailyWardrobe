@@ -2471,6 +2471,10 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `window.appReady` is set once the kept photos are loaded (`loadRenders`, which starts `renders` afresh) and every script has run (`afterDom`, DOMContentLoaded, not the load event, which also waits for pictures): tests put photos into `renders` right after it, and read notes later scripts show
 - a test that depends on today's date fixes the clock (`watchmatch` failed on the 12th of every month: the date watch's window read as a 12 numeral)
 - a test's "short drag" must be slow enough not to be a flick (2026-11-17): `monthswipe` paces its 40 px drag at 30 ms a move, since `monthRelease` turns the month for over 30 px at more than 0.5 px/ms and WebKit's touch stand-in ran it in under 80 ms on a quiet machine (it passed only under load)
+- a check that counts one device's sync traffic first makes every device quiet (`backup-storage`'s `quiet`, as `sync`'s) and counts only that device's requests: on the runner the older app's scheduled whole-backup sync landed in B's count ("still takes the small sync (10425.2 KB up …)", 2026-11-17)
+- a check that a text fits measures the app's own fonts: Linux has no "Avenir Next" or "Segoe UI" and fell back to DejaVu Sans, about a fifth wider, so `nufix9`'s 268 px header and item-title checks failed there every night (2026-11-16, 17)
+- `widthFont(page)` (tests/back.test.js) gives "Segoe UI" Liberation Sans (Arial's widths, within 1% of Segoe UI Bold) by `@font-face` `local()` when neither font is there, and the checks name the font measured and the sizes
+- at 150% text and 268 px the header title has 4 px to spare in Segoe UI (135 px of about 139); the iPhone's Avenir Next Bold is not measured anywhere but on the phone
 - touch gestures take their speed from `e.timeStamp`, not `Date.now()` when handled (the shop sheet's swipe); `tests/shopswipe.test.js` gives every CDP touch its own `timestamp`, so its gestures have the same speed however busy the machine is
 
 #### The impact map and selection

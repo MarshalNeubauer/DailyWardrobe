@@ -1,6 +1,16 @@
 // The phone's Back on Chromium (backgesture.test.js has both engines): layers, Settings coming back, questions, setup steps, text size.
 // Joined by feature from 3 files (Round B, 2026-11-17: the code review's CR-10-14); each part below is one old file, its checks unchanged.
 const fs=require('fs'),path=require('path'),{holds}=require('./pace');
+// the font a width check measures: the first of the app's "Avenir Next" and "Segoe UI" this machine has; with neither (Linux), "Segoe UI"
+// is given Liberation Sans (Arial's widths) by @font-face local(); says which, or what the page fell back to
+const widthFont=p=>p.evaluate(async()=>{const c=document.createElement('canvas').getContext('2d'),w=f=>{c.font=f;return c.measureText('Daily Wardrobe mwi').width};
+  const has=f=>['monospace','serif'].some(g=>w(`700 40px ${g}`)!==w(`700 40px "${f}",${g}`));
+  for(const f of ['Avenir Next','Segoe UI'])if(has(f))return f;
+  const s=document.createElement('style');s.id='font-stand-in';
+  s.textContent='@font-face{font-family:"Segoe UI";font-weight:100 500;src:local("Liberation Sans"),local("LiberationSans")}@font-face{font-family:"Segoe UI";font-weight:600 900;src:local("Liberation Sans Bold"),local("LiberationSans-Bold")}';
+  document.head.appendChild(s);
+  for(const f of ['400 20px "Segoe UI"','700 20px "Segoe UI"'])await document.fonts.load(f).catch(()=>{});
+  return [...document.fonts].filter(f=>f.family.replace(/"/g,'')==='Segoe UI'&&f.status==='loaded').length===2?'Liberation Sans standing in for Segoe UI':'no Avenir Next, Segoe UI or Liberation Sans here: the fallback font, wider'});
 
 /* ---- was tests/subback.test.js ---- */
 // The ‹ on a page opened from Settings (stats, packing, care) goes back to Settings as it was: the same categories open, scrolled the same,
@@ -147,16 +157,23 @@ const nufix9=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(/, Out of rotation$/.test(await p.evaluate(()=>document.querySelector('#gi-'+items[1].id+' .giopen').getAttribute('aria-label'))),'…and so does one out of rotation');
     await p.evaluate(()=>{delete items[1].paused});
     // ---- the largest text with page zoom (150% text, 150% zoom: 268 px)
+    // the widths are those of the font the app asks for: "Avenir Next" (the iPhone) or "Segoe UI" (Windows, a near match). A Linux
+    // machine has neither and falls back to DejaVu Sans, about a fifth wider (the header title 163 px against 135), so the titles were
+    // cut there only (the nightly run, 2026-11-16 and 17). There "Segoe UI" is stood in for by Liberation Sans, Arial's widths
+    // (Arial Bold within 1% of Segoe UI Bold); which font was measured is said in the checks
+    const font=await widthFont(p);
     await p.setViewportSize({width:268,height:454});await p.evaluate(()=>{document.documentElement.style.setProperty('--tscale','1.5');show('today')});await settle(p,400);
     const nav=await p.evaluate(()=>[...document.querySelectorAll('nav button')].map(b=>{const r=document.createRange();r.selectNodeContents(b);const t=r.getBoundingClientRect(),o=b.getBoundingClientRect();return t.left>=o.left-1&&t.right<=o.right+1&&b.scrollWidth<=b.clientWidth+1}));
     ok(nav.length===3&&nav.every(Boolean),'150% text at 268 px: each tab name fits its own button (they ran together)');
     // (each read once the layout holds it, within 4 s: after the zoom the sizes settle a moment later on a busy machine, CR-10-03)
-    ok(await holds(p,()=>{const h=document.querySelector('header h1');return h.scrollWidth<=h.clientWidth+1}),'…the header title isn’t cut');
+    const hdOk=await holds(p,()=>{const h=document.querySelector('header h1');return h.scrollWidth<=h.clientWidth+1});
+    ok(hdOk,`…the header title isn’t cut (${font}; ${await p.evaluate(()=>{const h=document.querySelector('header h1');return h.scrollWidth+' px in '+h.clientWidth})})`);
     ok(await p.evaluate(()=>[...document.querySelectorAll('#today .score .lbl b,#today .mltxt b')].every(b=>b.scrollWidth<=b.clientWidth+1)),'…nor the cards’ titles ("7 p…")');
     await p.evaluate(()=>{show('wardrobe');const it=items.find(i=>i.type==='suit');it.name='Mid grey herringbone';openItem(it.id)});await settle(p,500);
     await holds(p,()=>{const h=document.querySelector('#iv-title');return !!h&&h.scrollWidth<=h.clientWidth+1&&h.scrollHeight<=h.clientHeight+2});
-    const iv=await p.evaluate(()=>{const h=document.querySelector('#iv-title'),c=[...document.querySelectorAll('#item-view .colnm')];return {t:h.scrollWidth<=h.clientWidth+1&&h.scrollHeight<=h.clientHeight+2,c:c.length>0&&c.every(x=>x.scrollWidth<=x.clientWidth+1)}});
-    ok(iv.t,'…the item sheet’s title wraps instead of "Mid grey h…"');
+    const iv=await p.evaluate(()=>{const h=document.querySelector('#iv-title'),c=[...document.querySelectorAll('#item-view .colnm')];return {t:h.scrollWidth<=h.clientWidth+1&&h.scrollHeight<=h.clientHeight+2,c:c.length>0&&c.every(x=>x.scrollWidth<=x.clientWidth+1),
+      sz:`${h.scrollWidth}×${h.scrollHeight} px in ${h.clientWidth}×${h.clientHeight}`}});
+    ok(iv.t,`…the item sheet’s title wraps instead of "Mid grey h…" (${font}; ${iv.sz})`);
     ok(iv.c,'…and its colour and pattern values aren’t cut ("Mid …")');
     await p.evaluate(()=>{closeItem();document.documentElement.style.removeProperty('--tscale')});await settle(p,300);
     // ---- a toast with a long unbroken name
