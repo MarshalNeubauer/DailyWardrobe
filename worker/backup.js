@@ -3,6 +3,7 @@
 import { PV, asText, isPv, loadAny, phKey, putWhole, pvMeta, pvResponse, pvText, refsOf, scanPhotos, storePhotos } from './photostore.js';
 import { WIPED_KEY, countWrites, limitBody, sha256Hex, spend, spendUpTo, unspend, utcDay } from './people.js';
 import { PIC_RE, recCheck } from './records.js';
+import { hubOf } from './render.js';
 
 const SYNC_KEY = 'wardrobe:v1', SYNC_NONE = '{"rev":0,"saved":0,"data":null}';
 /* the stored backup's version {rev, saved} without loading the backup (several MB of photos): KV keeps it as the key's
@@ -33,7 +34,7 @@ async function storedVersion(env, key) {
 /* ---- large backups. KV keeps at most 25 MiB in one value, so a backup over PART_MAX is stored in parts: the first under the
    key itself, whose metadata says {rev, saved, parts: n}, the others as <key>~<rev>~<i>. The parts are written before the key,
    and carry the rev, so a reader never mixes two versions. Each part is one KV write, so a 48 MB backup costs 3 writes a save
-   instead of 1 (and 2 deletes of the version before). Up to PART_MAX nothing changes: one value, as before. The stored text is the same either way: {"rev":â€¦,"saved":â€¦,"data":â€¦}. ---- */
+   instead of 1 (and 2 deletes of the version before). Up to PART_MAX nothing changes: one value, as before. The stored text is the same either way: {"rev":…,"saved":…,"data":…}. ---- */
 const BACKUP_MAX = 48 * 1024 * 1024, PART_MAX = 20 * 1024 * 1024;
 const partKey = (key, rev, i) => `${key}~${rev}~${i}`;
 const isParted = m => !!(m && Number.isInteger(m.parts) && m.parts > 1);
@@ -66,7 +67,7 @@ async function dropParts(env, key, old) {
   for (let i = 1; i < old.parts; i++) try { await env.WARDROBE.delete(partKey(key, old.rev, i)); } catch { }
 }
 /* a stored value as a response: passed through as stored (a parted one streamed), with lead in front of it instead of its
-   opening brace when given ({"error":"conflict", â€¦}) */
+   opening brace when given ({"error":"conflict", …}) */
 async function storedResponse(env, key, m, cors, lead, status = 200) {
   const headers = { ...cors, 'content-type': 'application/json' };
   if (isPv(m)) return pvResponse(env, key, m, cors, lead, status);   // photos by reference: rebuilt whole, as it always was sent
@@ -88,8 +89,9 @@ const SNAP_DAYS = 30, SNAP_MONTHS = 400, SNAP_DAY = /^\d{4}-\d{2}-\d{2}$/;
 /* n: how many items the copied version holds (the app's backups list says it, W2-14-03); kept in the copy's metadata, no extra write */
 async function keepSnapshots(env, m, body, ns = '', oldPv = null, n = null) {
   const cnt = Number.isInteger(n) ? { n } : {};
-  // the app's own date, unless it is more than a day ahead of the server's (a phone clock a year ahead kept snap:2027-11, the audit's W1-9-07)
-  const today = new Date().toISOString().slice(0, 10), near = SNAP_DAY.test(body.day || '') && Date.parse(body.day) - Date.parse(today) <= 864e5;
+  // the app's own date, unless it is more than a day away from the server's (a phone clock a year ahead kept snap:2027-11, the audit's
+  // W1-9-07; one behind kept copies under 2020-01-01, two writes for each date it sent: CR-6-08)
+  const today = new Date().toISOString().slice(0, 10), near = SNAP_DAY.test(body.day || '') && Math.abs(Date.parse(body.day) - Date.parse(today)) <= 864e5;
   const day = near ? body.day : today, month = day.slice(0, 7);
   const want = [[`${ns}snap:${day}`, SNAP_DAYS], [`${ns}snap:${month}`, SNAP_MONTHS]];
   // which of the two are already kept: asked for by a read each where KV can; else by one list, as before
@@ -117,36 +119,67 @@ async function listSnapshots(env, ns = '') {
     .sort((a, b) => b.saved - a.saved || b.id.localeCompare(a.id));   // same moment: the later date first
 }
 /* PUT /sync over PART_MAX: the body is never parsed whole (that took more memory than a Worker has). The app sends
-   {"baseRev":n,"day":"â€¦"[,"reason":"restore"],"data":â€¦} with data last (sync.js), so the leading fields are read from the first
-   bytes, and what follows "data": up to the closing brace is stored as it came, behind {"rev":â€¦,"saved":â€¦,"data":. */
+   {"baseRev":n,"day":"…"[,"reason":"restore"],"data":…} with data last (sync.js), so the leading fields are read from the first
+   bytes; its photos are cut out unparsed (scanPhotos) and what is left is saved like any other backup (putWhole: the record check, the
+   write budget). A body whose photos can't be cut out, or whose rest still isn't a small backup, is refused (CR-6-02: it was stored in
+   parts as it came, without the record check or the write cap, and left a backup with no index; the app never sends one: its photos
+   are plain base64). lk: the save lock (saveLock) */
 const BIG_HEAD = /^\{"baseRev":(-?\d+),"day":("(?:[^"\\]|\\.)*")(?:,"reason":"(restore)")?,"data":/;
-async function putParted(env, json, cors, who, all) {
+const TOO_BIG_OLD = 'backup too large for this version of the app: update the app (Settings → About)', TOO_BIG_TEXT = 'backup too large: over 20 MB without its photos';
+async function putParted(env, json, cors, who, all, lk = NO_LOCK) {
   const ns = who.ns, KEY = ns + SYNC_KEY, h = BIG_HEAD.exec(new TextDecoder().decode(all.subarray(0, 300)));
-  if (!h || all[all.length - 1] !== 0x7d) return json({ error: 'backup too large for this version of the app: update the app (Settings â†’ About)' }, 413);
-  const body = { baseRev: +h[1], day: JSON.parse(h[2]), ...(h[3] ? { reason: h[3] } : {}) };
+  if (!h || all[all.length - 1] !== 0x7d) return json({ error: TOO_BIG_OLD }, 413);
+  const body = { baseRev: +h[1] };
   const m = await syncVersion(env, ns), rev = m ? m.rev : 0;
+  if (lockStale(lk, m)) return json(conflictBody(m, true), 409);
   if (body.baseRev !== rev) return m ? storedResponse(env, KEY, m, cors, '{"error":"conflict",', 409) : json({ error: 'conflict', rev: 0, saved: 0, data: null }, 409);
   // its photos cut out unparsed and stored by hash: what is left is small, and saved like any other backup
   const sc = await scanPhotos(all);
-  if (sc) { let b = null; try { b = JSON.parse(sc.text); } catch { } if (b) return putWhole(env, json, cors, who, b, sc.pre); }
-  const snaps = await keepSnapshots(env, m, body, ns);
-  const saved = Date.now(), lead = new TextEncoder().encode(`{"rev":${rev + 1},"saved":${saved},"data":`);
-  const rest = all.subarray(new TextEncoder().encode(h[0]).length), total = lead.length + rest.length, parts = Math.ceil(total / PART_MAX);
-  // part i holds bytes [i*PART_MAX, (i+1)*PART_MAX) of lead+rest; the later parts first, the key (part 0) last
-  for (let i = 1; i < parts; i++) await env.WARDROBE.put(partKey(KEY, rev + 1, i), rest.slice(i * PART_MAX - lead.length, (i + 1) * PART_MAX - lead.length).buffer);
-  const first = new Uint8Array(Math.min(PART_MAX, total)); first.set(lead); first.set(rest.subarray(0, first.length - lead.length), lead.length);
-  await env.WARDROBE.put(KEY, first.buffer, { metadata: { rev: rev + 1, saved, parts } });
-  await dropParts(env, KEY, m);
-  await countWrites(env, who, snaps + parts);   // (an old app's backup kept in parts: counted, never cut off half way)
-  return json({ rev: rev + 1, saved });
+  let b = null; if (sc) try { b = JSON.parse(sc.text); } catch { }
+  if (!b) return json({ error: TOO_BIG_TEXT }, 413);
+  return putWhole(env, json, cors, who, b, sc.pre, lk);
 }
+/* ---- one save at a time per person (CR-6-01, the 2026-11-16 code review). KV has no compare-and-swap: two saves read the same version,
+   both passed the baseRev check, both were answered {rev: N+1}, and the later write replaced the earlier one's change. The person's
+   RenderHub (a Durable Object: one request at a time, strongly consistent) holds a lock around the version check and the write
+   (POST /lock, render.js), and the version the last save committed, which KV may still show older in another location for about a
+   minute: then the save is answered 409 and the app asks again. A save waits up to about 3 s for the lock (LOCK_WAIT), then 409 too
+   (every app since 2026-11-07 answers a 409 by asking again; none reads its body). No KV read or write is added: the version check is
+   the save's own read. Without the binding, or when the hub can't be asked, the save goes ahead unlocked, as before (backups never stop
+   because of the hub). ---- */
+const LOCK_WAIT = [60, 120, 200, 300, 400, 500, 600, 700];
+const NO_LOCK = { ok: true, last: null, ver: null, give: async () => { } };
+const nap = ms => new Promise(r => setTimeout(r, ms));
+async function saveLock(env, ns) {
+  const hub = hubOf(env, ns);
+  if (!hub) return { ...NO_LOCK };
+  const call = b => hub.fetch('https://hub/lock', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) }).then(r => r.json());
+  let t;
+  try {
+    for (let i = 0; ; i++) {
+      t = await call({ op: 'take' });
+      if (t && t.ok && t.tok) break;
+      if (!(t && t.busy)) return { ...NO_LOCK };   // (an answer this worker doesn't know: unlocked, as before)
+      if (i >= LOCK_WAIT.length) return { busy: true };
+      await nap(LOCK_WAIT[i]);
+    }
+  } catch (e) { console.log('save lock not taken', ns, e && e.message); return { ...NO_LOCK }; }
+  const lk = { ok: true, last: t.last || null, ver: null, give: async () => { try { await call({ op: 'give', tok: t.tok, ver: lk.ver }); } catch (e) { console.log('save lock not given back', ns, e && e.message); } } };
+  return lk;
+}
+/* KV shows an older version than the last save committed (a stale read in another location) */
+const lockStale = (lk, m) => !!(lk && lk.last && (!m || m.rev < lk.last.rev || (m.rev === lk.last.rev && m.saved !== lk.last.saved)));
+const conflictBody = (m, busy) => ({ error: 'conflict', rev: m ? m.rev : 0, saved: m ? m.saved || 0 : 0, ...(busy ? { busy: true } : {}) });
+/* a new version's save time: never the same as the version before (two saves in one millisecond gave two forks one {rev, saved}, and
+   the losing phone's quick check then said "nothing new") */
+const nextSaved = m => Math.max(Date.now(), (m && +m.saved || 0) + 1);
 /* ---- the small sync (sync.js syncLite). The stored backup keeps its form ({"rev","saved","data"}: older apps, the daily copies and
    Roll back read it as before) with one field more before data: "index", the same data with every photo (a "data:" string of PH_MIN
    characters or more, anywhere in it) replaced by a reference dwph:<the first 20 hex of its SHA-256>, each record's revision (revs: the
    rev that last changed it) and where each photo's JSON string lies in the data that follows (ph: hash -> [offset, length], characters
    from data's first). The metadata says where the index is (ls, ll; it is written in ASCII, so characters are bytes) and where data
    starts (ds). A newer app asks GET /sync?lite=1&since=<rev>:<saved> for the records changed since that version, without photos, gets
-   the photos it lacks from GET /sync?ph=<hash>,â€¦, and sends only what changed with POST /sync {baseRev, day, reason?, delta, photos}
+   the photos it lacks from GET /sync?ph=<hash>,…, and sends only what changed with POST /sync {baseRev, day, reason?, delta, photos}
    (an older worker answers POST 405, so it is never sent one). The worker builds the new backup from the index, the stored photos'
    text and the new photos, without parsing the photos: one KV write a save, as before. ---- */
 /* (2026-11-15, the owner's option A for KV writes) PH_MIN was 256: every data string, the 128 px swatch too, became its own ph: value, a
@@ -428,7 +461,7 @@ async function syncLiteGet(env, json, cors, ns, q) {
   if (!ns) { const w = await env.WARDROBE.get(WIPED_KEY, 'json').catch(() => null); if (w && +w.at > 0) body.wiped = +w.at; }
   return json(body);
 }
-/* GET /sync?ph=<hash>,<hash>,â€¦ (60 at most): {photos: {hash: photo}} for those the backup holds, cut from its text unparsed */
+/* GET /sync?ph=<hash>,<hash>,… (60 at most): {photos: {hash: photo}} for those the backup holds, cut from its text unparsed */
 async function syncPhotos(env, json, cors, ns, q) {
   const hs = [...new Set((q.get('ph') || '').split(','))].filter(h => PH_HEX.test(h)).slice(0, 60);
   if (!hs.length) return json({ error: 'no photos asked for' }, 400);
@@ -447,7 +480,7 @@ async function syncPhotos(env, json, cors, ns, q) {
    {rev, saved} when baseRev is not the stored rev (the app asks again since what it had); 400 {missing} for a referenced photo nobody
    sent; 422 legacy for a backup this can't index (the app sends the whole backup instead). A tester's save counts as a backup. */
 async function syncLitePost(req, env, json, cors, who) {
-  const ns = who.ns, KEY = ns + SYNC_KEY;
+  const ns = who.ns;
   if (+(req.headers.get('content-length') || 0) > BACKUP_MAX) return json({ error: 'backup too large (over 48 MB)' }, 413);
   const buf = await req.arrayBuffer();
   if (buf.byteLength > BACKUP_MAX) return json({ error: 'backup too large (over 48 MB)' }, 413);
@@ -457,9 +490,22 @@ async function syncLitePost(req, env, json, cors, who) {
   for (const s of Object.values(body.photos || {})) if (typeof s !== 'string' || !PIC_RE.test(s)) return json({ error: 'bad photo', message: 'The backup was not saved: a photo in it is not a picture.' }, 400);
   const over = await spend(env, who, 'backup'); if (over) return json(over.body, over.status);
   const give = async r => { await unspend(env, who, 'backup'); return r; };
+  // the version check and the write, one save at a time for this person (saveLock)
+  const lk = await saveLock(env, ns);
+  if (lk.busy) return give(json(conflictBody(null, true), 409));
+  try { return await syncLiteSave(env, json, who, body, lk, give); }
+  catch (e) { await unspend(env, who, 'backup'); throw e; }
+  finally { await lk.give(); }
+}
+async function syncLiteSave(env, json, who, body, lk, give) {
+  const ns = who.ns, KEY = ns + SYNC_KEY;
   const m = await syncVersion(env, ns), rev = m ? m.rev : 0;
+  if (lockStale(lk, m)) return give(json(conflictBody(m, true), 409));
   if (!m && await env.WARDROBE.get(KEY)) return give(json({ error: 'legacy' }, 422));
   if ((body.baseRev ?? -1) !== rev) return give(json({ error: 'conflict', rev, saved: m ? m.saved : 0 }, 409));
+  // the same rev with another save time: a fork from before the lock (two saves answered the same rev). The app asks again since its
+  // version, gets everything (syncLiteGet's all) and sends what the backup lacks
+  if (m && +body.baseSaved > 0 && +m.saved > 0 && +body.baseSaved !== +m.saved) return give(json({ error: 'conflict', rev, saved: m.saved }, 409));
   const src = m ? await loadAny(env, KEY, m, true) : { pv: true, refs: new Set(), lite: { data: null, revs: {}, ph: {} } };
   if (!src) return give(json({ error: 'legacy' }, 422));
   const photos = new Map();
@@ -482,8 +528,9 @@ async function syncLitePost(req, env, json, cors, who) {
   const w = writeBudget(env, who), oldPv = await storePhotos(env, ns, m, src, want, w.allow);
   if (w.short) { const x = await w.refuse(); return give(json(x.body, x.status)); }
   await countWrites(env, who, await keepSnapshots(env, m, body, ns, oldPv, m ? arrOf(cur.items).length : null));
-  const saved = Date.now();
+  const saved = nextSaved(m);
   await putStored(env, KEY, { text: pvText(rev + 1, saved, nextRevs(src.lite, next, rev + 1), next), meta: pvMeta(rev + 1, saved) }, m);
+  lk.ver = { rev: rev + 1, saved };
   return json({ rev: rev + 1, saved });
 }
 /* a save's KV writes against a tester's daily cap: putPhotos asks (allow) for its new photos and the backup itself, and stores as many
@@ -500,10 +547,10 @@ function writeBudget(env, who) {
   w.refuse = async () => {
     await unspend(env, who, 'write', utcDay(), w.got - w.used);
     if (w.short.status !== 429) return w.short;
-    const message = `Todayâ€™s room on the server for your backups is used up (${w.used} of ${w.need} new photos are saved). Your changes are kept on this phone and backed up tomorrow.`;
+    const message = `Today’s room on the server for your backups is used up (${w.used} of ${w.need} new photos are saved). Your changes are kept on this phone and backed up tomorrow.`;
     return { status: 429, body: { error: 'limit', what: 'backup', write: true, ...(w.short.body.all ? { all: true } : {}), message, detail: message } };
   };
   return w;
 }
 
-export { BACKUP_MAX, CLOCK_AHEAD, clampStamps, dropFuture, mergeLite, PART_MAX, PH_HEX, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget };
+export { BACKUP_MAX, CLOCK_AHEAD, NO_LOCK, clampStamps, conflictBody, dropFuture, lockStale, mergeLite, nextSaved, saveLock, PART_MAX, PH_HEX, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget };

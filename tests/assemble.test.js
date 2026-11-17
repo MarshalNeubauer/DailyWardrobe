@@ -56,8 +56,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       ok(q.status===410&&!store.size,'an edit-a-kept-photo job is refused (410) and nothing is stored');
       store.set('render:'+TK,JSON.stringify({sig:'x',img:PNG,model:'m',t:1}));
       const del=(key,tok='t')=>worker.fetch(new Request(HOST+'render?key='+key,{method:'DELETE',headers:{'x-app-token':tok}}),env);
-      const d0=store.has('render:'+TK),d1=await del(TK,'wrong'),d2=await del('not-a-key'),d3=await del(TK);
-      ok(d0&&d1.status===403&&d2.status===400&&d3.status===200&&!store.has('render:'+TK),'DELETE /render?key= removes a kept photo, with the app token and a photo key only');}
+      const d1=await del(TK,'wrong'),d3=await del(TK);
+      ok(d1.status===405&&d3.status===405&&store.has('render:'+TK),'DELETE /render is gone (405 with or without the app token, CR-6-14: nothing asked for it): a kept photo stays');}
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };
 

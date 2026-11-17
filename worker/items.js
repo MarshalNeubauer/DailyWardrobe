@@ -30,14 +30,18 @@ async function renderItem(body, env, json, who) {
   const ns = who.ns;
   const item = String(body.item || '').replace(/\s+/g, ' ').trim().slice(0, 1500);
   if (!item) return json({ error: 'no item description' }, 400);
+  // the key it is kept under and the item's own photo checked before anything is counted or paid (CR-6-06: a bad photo threw after the
+  // counts were taken; a missing key made a picture that was never stored)
+  const id = renderId(body);
+  if (!id) return json({ error: 'bad key', message: 'That item picture has no place to be kept. Update the app and try again.' }, 400);
+  let ref; try { ref = dataUrlToBlob(body.ref); } catch { return json({ error: 'bad photo', message: 'The item’s photo couldn’t be read. Try another photo.' }, 400); }
   if (kvIsFull(env)) return json({ error: 'kv-limit', what: 'write', message: ITEM_FULL }, 429);   // before paying
   const over = await spendEach(env, who, [['item', 1], ['write', 1]]); if (over) return json(over.body, over.status);
-  const r = await itemPhoto({ item, ref: body.ref }, env);
+  const r = await itemPhoto({ item, ref }, env);
   if (!r.ok) { await unspend(env, who, 'item'); await unspend(env, who, 'write'); return json({ error: r.error }, r.status); }
-  const id = renderId(body);
   // the picture is paid for now: if the server can't keep it, the phone gets it anyway (stored:false) and keeps it, and nothing was
   // written, so the write count goes back; the item count stays (the picture exists, on that phone)
-  if (env.WARDROBE && id) {
+  if (env.WARDROBE) {
     try { await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify(r.rec), renderTtl(id)); }
     catch (e) {
       if (!kvLimit(e)) throw e;
@@ -48,9 +52,10 @@ async function renderItem(body, env, json, who) {
   }
   return json({ image: r.rec.img, model: r.rec.model });
 }
-/* one product picture: from the item's own photo by image edit when there is one, otherwise from the description */
-async function itemPhoto({ item, ref: refUrl }, env) {
-  const ref = dataUrlToBlob(refUrl), model = env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
+/* one product picture: from the item's own photo (ref, a Blob, already decoded) by image edit when there is one, otherwise from the
+   description */
+async function itemPhoto({ item, ref }, env) {
+  const model = env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
   let r;
   try {
     if (ref) {
@@ -73,4 +78,4 @@ async function itemPhoto({ item, ref: refUrl }, env) {
   return { ok: true, rec: { sig: 'item|' + item, img: `data:image/jpeg;base64,${b64}`, model, t: Date.now() } };
 }
 
-export { itemPhoto, renderItem, noteKvFull };
+export { itemPhoto, kvLimit, renderItem, noteKvFull };

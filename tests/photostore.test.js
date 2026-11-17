@@ -22,10 +22,12 @@ module.exports=async({ok,ROOT})=>{
   const hashOf=s=>crypto.createHash('sha256').update(s).digest('hex').slice(0,20);
   const phKeys=(ns='')=>[...store.keys()].filter(k=>k.startsWith(ns+'ph:')&&/^[0-9a-f]{20}$/.test(k.slice(ns.length+3)));
   const wrote=(from,re)=>writes.slice(from).filter(w=>re.test(w.k));
-  const sum=a=>a.reduce((s,w)=>s+w.n,0);
   const kb=n=>(n/1e3).toFixed(1)+' KB';
   const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
   const T0=Date.now()-86400000;
+  // the save days: a save's day is the app's only within a day of the server's (CR-6-08), so three days around today, the first two
+  // in one month (DA the first day, DB the next, DC one with no copy yet)
+  const iso=t=>new Date(t).toISOString().slice(0,10),TD=iso(Date.now()),[DA,DB,DC]=TD.endsWith('-01')?[TD,iso(Date.now()+864e5),iso(Date.now()-864e5)]:[iso(Date.now()-864e5),TD,iso(Date.now()+864e5)],MA=DA.slice(0,7);
   const seed=()=>({items:Array.from({length:24},(_,i)=>({id:'it'+i,type:['suit','shirt','tie','pants'][i%4],primaryColor:'navy',pattern:'solid',added:T0+i,photo:pic(60e3),texture:pic(60e3),swatch:pic(38e3),swSrc:'tex'})),   // (a PNG swatch from before 2026-11-15, over PH_MIN; a JPEG one stays inline: inlineswatch.test.js)
     days:Array.from({length:20},(_,i)=>({date:`2026-10-${String(i+1).padStart(2,'0')}`,ids:['it0','it1','it2'],worn:true,updated:T0})),tombstones:{},settings:{workdays:[1,2,3,4,5],setupDone:1,updated:T0}});
   const S=seed();S.items[23].photo=S.items[22].photo;   // two items with one photo
@@ -35,49 +37,49 @@ module.exports=async({ok,ROOT})=>{
   // ---- a backup stored inline (by the worker before #284) is converted at its next save
   store.set('wardrobe:v1',JSON.stringify({rev:5,saved:T0,data:S}));meta.set('wardrobe:v1',{rev:5,saved:T0});
   let w0=writes.length;
-  const r1=await post({days:[{date:'2026-11-02',ids:['it0','it1','it2'],worn:true,updated:Date.now()}]},{day:'2026-11-02'});
+  const r1=await post({days:[{date:'2026-11-02',ids:['it0','it1','it2'],worn:true,updated:Date.now()}]},{day:DA});
   const v1=store.get('wardrobe:v1'),f1=await full();
   ok(r1.status===200&&meta.get('wardrobe:v1').pv===1&&!v1.includes('base64')&&v1.length<30e3,`a backup stored inline (${inlineMB.toFixed(1)} MB) is converted at its next save: the stored value is ${kb(v1.length)}, photos by reference`);
   ok(phKeys().length===photoCount&&wrote(w0,/^ph:/).length===photoCount&&phKeys().every(k=>{const v=store.get(k);return typeof v==='string'&&hashOf(JSON.parse(v))===k.slice(3)}),`every photo is stored once under ph:<its hash> (${photoCount} photos for ${S.items.length*3} places: two items share one)`);
   ok(same(f1.data.items,S.items)&&f1.data.days.length===21&&f1.rev===6&&!('pv' in f1)&&!('revs' in f1),'the whole backup, rebuilt for an older app, has every photo exactly as it was, and only {rev, saved, data}');
-  const snapDay=store.get('snap:2026-11-02');
-  ok(snapDay&&meta.get('snap:2026-11-02').pv===1&&snapDay.length<30e3&&same((await full('?snap=2026-11-02')).data,S)&&store.get('snap:2026-11')===snapDay,`the day's copy of the version it replaced is small too (${kb(snapDay.length)}) and comes back whole, photos inline, for Roll back`);
+  const snapDay=store.get('snap:'+DA);
+  ok(snapDay&&meta.get('snap:'+DA).pv===1&&snapDay.length<30e3&&same((await full('?snap='+DA)).data,S)&&store.get('snap:'+MA)===snapDay,`the day's copy of the version it replaced is small too (${kb(snapDay.length)}) and comes back whole, photos inline, for Roll back`);
 
   // ---- an ordinary save writes the small value only
   w0=writes.length;
-  const r2=await post({days:[{date:'2026-11-03',ids:['it0','it1','it2'],worn:true,updated:Date.now()}]},{day:'2026-11-02'});
+  const r2=await post({days:[{date:'2026-11-03',ids:['it0','it1','it2'],worn:true,updated:Date.now()}]},{day:DA});
   const ws2=writes.slice(w0);
   ok(r2.status===200&&ws2.length===1&&ws2[0].k==='wardrobe:v1'&&ws2[0].n<30e3,`a day marked worn writes one small value (${ws2.map(w=>w.k+' '+kb(w.n)).join(', ')}), no photo`);
   // a new photo: written once; the same photo on a second item: not again
   const np=pic(70e3),nh=hashOf(np);w0=writes.length;
-  const r3=await post({items:[{...S.items[5],photo:'dwph:'+nh,updated:Date.now()}]},{day:'2026-11-02',photos:{[nh]:np}});
-  const r3b=await post({items:[{...S.items[6],photo:'dwph:'+nh,updated:Date.now()+1}]},{day:'2026-11-02'});
+  const r3=await post({items:[{...S.items[5],photo:'dwph:'+nh,updated:Date.now()}]},{day:DA,photos:{[nh]:np}});
+  const r3b=await post({items:[{...S.items[6],photo:'dwph:'+nh,updated:Date.now()+1}]},{day:DA});
   ok(r3.status===200&&r3b.status===200&&wrote(w0,/^ph:/).length===1&&store.has('ph:'+nh)&&(await full()).data.items.find(i=>i.id==='it6').photo===np,'a new photo is written once; a second item with the same photo refers to the same one');
-  const r3c=await post({items:[{...S.items[7],photo:'dwph:'+'f'.repeat(20),updated:Date.now()}]},{day:'2026-11-02'});
+  const r3c=await post({items:[{...S.items[7],photo:'dwph:'+'f'.repeat(20),updated:Date.now()}]},{day:DA});
   ok(r3c.status===400&&(await r3c.json()).missing[0]==='f'.repeat(20),'a reference to a photo nobody sent is refused (400 missing), as before');
-  const r3d=await call('POST','',{baseRev:1,day:'2026-11-02',delta:{items:[]}});
+  const r3d=await call('POST','',{baseRev:1,day:DA,delta:{items:[]}});
   ok(r3d.status===409&&(await r3d.json()).rev===meta.get('wardrobe:v1').rev,'a save based on an old version is refused (409) with the current version, as before');
   // a deletion: the tombstone is kept
-  await post({tombstones:{it4:Date.now()}},{day:'2026-11-02'});
+  await post({tombstones:{it4:Date.now()}},{day:DA});
   ok(!(await full()).data.items.some(i=>i.id==='it4')&&JSON.parse(store.get('wardrobe:v1')).data.tombstones.it4,'a deletion leaves a tombstone in the backup, as before');
 
   // ---- the next day's copy: small, sharing the photos
   w0=writes.length;
-  await post({days:[{date:'2026-11-04',ids:['it0','it1','it2'],worn:true,updated:Date.now()}]},{day:'2026-11-03'});
+  await post({days:[{date:'2026-11-04',ids:['it0','it1','it2'],worn:true,updated:Date.now()}]},{day:DB});
   const ws4=writes.slice(w0);
-  ok(store.has('snap:2026-11-03')&&ws4.length===2&&!wrote(w0,/^ph:/).length&&ws4.every(w=>w.n<30e3),`the next day's first save keeps its copy (${ws4.map(w=>w.k+' '+kb(w.n)).join(', ')}), no photo written again`);
+  ok(store.has('snap:'+DB)&&ws4.length===2&&!wrote(w0,/^ph:/).length&&ws4.every(w=>w.n<30e3),`the next day's first save keeps its copy (${ws4.map(w=>w.k+' '+kb(w.n)).join(', ')}), no photo written again`);
   const lst=await (await call('GET','?snaps=1')).json();
-  ok(['2026-11-03','2026-11-02','2026-11'].every(id=>lst.snaps.some(s=>s.id===id)),'the copies are listed as before ('+lst.snaps.map(s=>s.id).join(', ')+')');
-  const s3=await full('?snap=2026-11-03');
+  ok([DB,DA,MA].every(id=>lst.snaps.some(s=>s.id===id)),'the copies are listed as before ('+lst.snaps.map(s=>s.id).join(', ')+')');
+  const s3=await full('?snap='+DB);
   ok(s3.data.items.find(i=>i.id==='it6').photo===np&&s3.data.items.find(i=>i.id==='it0').photo===S.items[0].photo,'a copy comes back with the photos it had that day');
 
   // ---- an older app: GET whole, PUT whole (a photo changed), its 409
   const old=await full();
   const np2=pic(65e3);old.data.items.find(i=>i.id==='it8').photo=np2;old.data.items.find(i=>i.id==='it8').updated=Date.now();
   w0=writes.length;
-  const r5=await call('PUT','',{baseRev:old.rev,day:'2026-11-03',data:old.data});
+  const r5=await call('PUT','',{baseRev:old.rev,day:DB,data:old.data});
   ok(r5.status===200&&wrote(w0,/^ph:/).length===1&&store.has('ph:'+hashOf(np2))&&meta.get('wardrobe:v1').pv&&store.get('wardrobe:v1').length<30e3,`an older app's whole backup (${kb(JSON.stringify(old).length*1)}) is stored by reference, writing only its one new photo`);
-  const r5b=await call('PUT','',{baseRev:1,day:'2026-11-03',data:{items:[]}}),c5=JSON.parse(await r5b.text());
+  const r5b=await call('PUT','',{baseRev:1,day:DB,data:{items:[]}}),c5=JSON.parse(await r5b.text());
   ok(r5b.status===409&&c5.error==='conflict'&&c5.rev===meta.get('wardrobe:v1').rev&&c5.data.items.find(i=>i.id==='it8').photo===np2&&!('pv' in c5),'its conflict answer is the whole backup, photos inline, as before');
   const lite=await (await call('GET','?lite=1')).json();
   ok(lite.lite===1&&lite.ph.includes(hashOf(np2))&&lite.items.find(i=>i.id==='it8').photo==='dwph:'+hashOf(np2),'this app\'s small sync reads it as before (photos as references, the hashes listed)');
@@ -85,18 +87,18 @@ module.exports=async({ok,ROOT})=>{
   ok(phr.photos[hashOf(np2)]===np2&&phr.photos[nh]===np,'and downloads photos by hash from their own keys');
 
   // ---- Roll back: the copy downloaded whole, saved back the way the app does (reason restore), the replaced version kept small
-  const before=await full(),back=await full('?snap=2026-11-02');
-  const r6=await call('PUT','',{baseRev:before.rev,day:'2026-11-03',reason:'restore',data:{...back.data,settings:{...back.data.settings,updated:Date.now()}}});
+  const before=await full(),back=await full('?snap='+DA);
+  const r6=await call('PUT','',{baseRev:before.rev,day:DB,reason:'restore',data:{...back.data,settings:{...back.data.settings,updated:Date.now()}}});
   const br=await full('?snap=before-restore');
   ok(r6.status===200&&meta.get('snap:before-restore').pv&&same(br.data,before.data)&&(await full()).data.items.find(i=>i.id==='it6').photo===S.items[6].photo,'Roll back: the copy comes back whole, is saved back, and the version it replaced is kept (small) as before-restore');
 
   // ---- a whole backup over 20 MB (an older app's large PUT, data last) is stored by reference without being parsed whole
   {const big=await full(),many=Array.from({length:110},(_,i)=>({id:'big'+i,type:'shirt',added:T0+100+i,photo:pic(200e3)}));
-    big.data.items.push(...many);const txt=`{"baseRev":${big.rev},"day":"2026-11-03","data":${JSON.stringify(big.data)}}`;
+    big.data.items.push(...many);const txt=`{"baseRev":${big.rev},"day":"${DB}","data":${JSON.stringify(big.data)}}`;
     w0=writes.length;const r7=await call('PUT','',txt);
     ok(txt.length>20*1024*1024&&r7.status===200&&meta.get('wardrobe:v1').pv&&!meta.get('wardrobe:v1').parts&&store.get('wardrobe:v1').length<60e3&&wrote(w0,/^ph:/).length===110,`a ${(txt.length/1e6).toFixed(1)} MB backup is stored as ${kb(store.get('wardrobe:v1').length)} plus its 110 new photos`);
     const g=await full();ok(g.data.items.find(i=>i.id==='big77').photo===many[77].photo&&g.data.items.length===big.data.items.length,'and comes back whole');
-    const r7b=await call('PUT','',JSON.stringify({baseRev:meta.get('wardrobe:v1').rev,day:'2026-11-03',data:{...g.data,items:g.data.items.filter(i=>!i.id.startsWith('big'))}}));
+    const r7b=await call('PUT','',JSON.stringify({baseRev:meta.get('wardrobe:v1').rev,day:DB,data:{...g.data,items:g.data.items.filter(i=>!i.id.startsWith('big'))}}));
     ok(r7b.status===200,'(the large items taken out again)');}
 
   // ---- the daily clean-up
@@ -105,7 +107,7 @@ module.exports=async({ok,ROOT})=>{
   const gcDoc=()=>store.has('ph:gc')?JSON.parse(store.get('ph:gc')):null;
   // a photo replaced: the old one stays referred to by the day's copy
   const oldPh=S.items[9].photo,oh=hashOf(oldPh),np3=pic(60e3),h3=hashOf(np3);
-  await post({items:[{...(await full()).data.items.find(i=>i.id==='it9'),photo:'dwph:'+h3,updated:Date.now()}]},{day:'2026-11-05',photos:{[h3]:np3}});
+  await post({items:[{...(await full()).data.items.find(i=>i.id==='it9'),photo:'dwph:'+h3,updated:Date.now()}]},{day:DB,photos:{[h3]:np3}});
   const bigKeys=phKeys().filter(k=>!JSON.stringify([...store.entries()].filter(([k2])=>!k2.startsWith('ph:'))).includes(k.slice(3)));
   const n0=phKeys().length;
   await gc(nextGc-3600000);   // not its hour: nothing
@@ -124,7 +126,7 @@ module.exports=async({ok,ROOT})=>{
   await gc(nextGc+2*day);
   ok(store.has('ph:'+oh)&&gcDoc().cand[oh],'once no copy refers to it, the first run only notes it');
   // a save that brings it back meanwhile (sent again by a phone): written again, and kept
-  await post({items:[{...(await full()).data.items.find(i=>i.id==='it10'),photo:'dwph:'+oh,updated:Date.now()}]},{day:'2026-11-06',photos:{[oh]:oldPh}});
+  await post({items:[{...(await full()).data.items.find(i=>i.id==='it10'),photo:'dwph:'+oh,updated:Date.now()}]},{day:DB,photos:{[oh]:oldPh}});
   await gc(nextGc+3*day);
   ok(store.has('ph:'+oh)&&!(gcDoc()&&gcDoc().cand&&gcDoc().cand[oh]),'a noted photo that a save refers to again is kept (and written again: the clean-up had it in view)');
   // a race: a save refers to a photo just as it is deleted: the clean-up reads the backup again and puts it back
@@ -155,15 +157,15 @@ module.exports=async({ok,ROOT})=>{
       ok(m2.get('wardrobe:v1').ll>0&&st2.get('wardrobe:v1').includes('"index"'),'(a backup stored by the worker before this change, with its index)');
       const keep=[store.get('wardrobe:v1'),meta.get('wardrobe:v1')];store.set('wardrobe:v1',st2.get('wardrobe:v1'));meta.set('wardrobe:v1',m2.get('wardrobe:v1'));
       const lb=await (await call('GET','?lite=1')).json();
-      const r8=await post({days:[{date:'2026-11-07',ids:['it0'],worn:true,updated:Date.now()}]},{day:'2026-11-07'});
-      ok(lb.lite===1&&r8.status===200&&meta.get('wardrobe:v1').pv&&same((await full()).data.items,s2.items)&&same((await full('?snap=2026-11-07')).data,s2),'a backup stored with #284\'s index is converted at its next save, every photo kept, its copy small and whole');
+      const r8=await post({days:[{date:'2026-11-07',ids:['it0'],worn:true,updated:Date.now()}]},{day:DC});
+      ok(lb.lite===1&&r8.status===200&&meta.get('wardrobe:v1').pv&&same((await full()).data.items,s2.items)&&same((await full('?snap='+DC)).data,s2),'a backup stored with #284\'s index is converted at its next save, every photo kept, its copy small and whole');
       store.set('wardrobe:v1',keep[0]);meta.set('wardrobe:v1',keep[1]);
-    }else ok(true,'(the worker before this change is not in this clone: skipped)');}
+    }}
 
   // ---- a tester: own photos under their prefix; deleting the account deletes them, and nobody else's
   {const inv=await (await worker.fetch(new Request(HOST+'invites',{method:'POST',headers:{'x-app-token':'secret','content-type':'application/json'},body:JSON.stringify({name:'Tess'})}),env)).json();
     const tp=pic(40e3),th=hashOf(tp),shared=S.items[0].photo;
-    const t1=await call('POST','',{baseRev:0,day:'2026-11-03',delta:{items:[{id:'t1',type:'tie',added:1,photo:'dwph:'+th},{id:'t2',type:'tie',added:2,photo:shared}]},photos:{[th]:tp}},inv.code);
+    const t1=await call('POST','',{baseRev:0,day:DB,delta:{items:[{id:'t1',type:'tie',added:1,photo:'dwph:'+th},{id:'t2',type:'tie',added:2,photo:shared}]},photos:{[th]:tp}},inv.code);
     const tns=`u:${inv.id}:`;
     ok(t1.status===200&&store.has(tns+'ph:'+th)&&store.has(tns+'ph:'+hashOf(shared))&&(await full('',inv.code)).data.items.find(i=>i.id==='t2').photo===shared,'a tester\'s photos are stored under their own prefix (even one the owner also has)');
     await gc(nextGc+9*day);await gc(nextGc+10*day);const ownerPh=phKeys().length;

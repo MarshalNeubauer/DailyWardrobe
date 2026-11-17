@@ -1,12 +1,12 @@
-// Faster masters on a phone (2026-11-14, the owner's ask): each master's setup at the phone's size on the worker (PUT /blob,
-// asm-color.js asmCmSetupBlob) and a 2048 copy of the master (uploaded by the PC builder until it was removed on 2026-11-16; this test
+// Faster masters on a phone (2026-11-14, the owner's ask): each master's setup at the phone's size on the worker (blob:<key>, read with
+// GET /blob; packed by asm-color.js asmCmSetupBlob and uploaded with PUT /blob until the route went, 2026-11-17) and a 2048 copy of the master (uploaded by the PC builder until it was removed on 2026-11-16; this test
 // puts them there itself); a phone downloads the setup instead of working it out (asmCmSetupFetch) and
 // the copy instead of the 2880 master (asmCmMasterCopy); warming sets masters up in the background (asmCmWarm, a setup-only job).
 // The real worker.js with an in-memory KV holding the suit master's fixtures (tests/fixtures/cm/suit, 512 px).
 const fs=require('fs'),path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
-  const store=new Map(),meta=new Map();let blobPuts=0,blobGets=0,renderGets=[];
+  const store=new Map(),meta=new Map();let blobGets=0,renderGets=[];
   const KV={get:async(k,t)=>{if(!store.has(k))return null;const v=store.get(k);return t==='json'?JSON.parse(v):t==='arrayBuffer'?(v instanceof ArrayBuffer?v:new TextEncoder().encode(v).buffer):v},
     getWithMetadata:async(k)=>({value:store.has(k)?{cancel:async()=>{}}:null,metadata:meta.get(k)||null}),
     put:async(k,v,o)=>{store.set(k,v);meta.set(k,o&&o.metadata)},delete:async k=>{store.delete(k);meta.delete(k)},
@@ -15,7 +15,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const FIX=path.join(ROOT,'tests','fixtures','cm','suit');
   const browser=await chromium.launch();
   const device=async()=>{const ctx=await browser.newContext({viewport:{width:390,height:844}});
-    await ctx.route(HOST+'**',async route=>{const q=route.request(),u=new URL(q.url());if(u.pathname==='/blob'&&q.method()==='PUT')blobPuts++;if(u.pathname==='/blob'&&q.method()==='GET')blobGets++;if(u.pathname==='/render'&&q.method()==='GET'&&u.searchParams.get('key'))renderGets.push(u.searchParams.get('key'));
+    await ctx.route(HOST+'**',async route=>{const q=route.request(),u=new URL(q.url());if(u.pathname==='/blob'&&q.method()==='GET')blobGets++;if(u.pathname==='/render'&&q.method()==='GET'&&u.searchParams.get('key'))renderGets.push(u.searchParams.get('key'));
       const body=['GET','HEAD'].includes(q.method())?undefined:q.postDataBuffer();
       const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body}),env);
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
@@ -34,10 +34,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // the setup at this size and the master's copy, put on the worker as the PC builder did
     const share=await A.p.evaluate(async()=>{await asmCmGet('suit');const b=await asmCmSetupBlob('suit',512),c=await asmCmMasterCopyRec('suit');
       const back=asmCmBlobRead(b.bytes.buffer.slice(0),b.dk),same=back&&back.n&&back.gz.byteLength>1000;return {key:b.key,dk:b.dk,b64:asmB64(b.bytes),copy:c,same}});
-    const up=await worker.fetch(new Request(HOST+'blob?key='+share.key+'&sig='+encodeURIComponent(share.dk),{method:'PUT',headers:{'x-app-token':'owner-code'},body:Buffer.from(share.b64,'base64')}),env);
-    const up2=await worker.fetch(new Request(HOST+'blob?key='+share.key+'&sig='+encodeURIComponent(share.dk),{method:'PUT',headers:{'x-app-token':'owner-code'},body:Buffer.from(share.b64,'base64')}),env);
+    // (kept as blob:<key> the way PUT /blob kept it until the route went with the PC builder, CR-6-14)
+    {const b=Buffer.from(share.b64,'base64');store.set('blob:'+share.key,b.buffer.slice(b.byteOffset,b.byteOffset+b.length));meta.set('blob:'+share.key,{sig:share.dk,t:1000,size:b.length})}
     put(share.copy.key,share.copy.rec.img,share.copy.rec.t,'copy',share.copy.rec.sig);
-    ok(share.same&&up.status===200&&(await up2.json()).kept==='same',`the computer packs a master's setup as bytes that read back, uploads it once (${Math.round(share.b64.length*3/4/1024)} KB), and the same setup again writes nothing`);
+    ok(share.same,`the computer packs a master's setup as bytes that read back (${Math.round(share.b64.length*3/4/1024)} KB)`);
     const bad=await worker.fetch(new Request(HOST+'blob?key=nope',{headers:{'x-app-token':'owner-code'}}),env);
     ok(bad.status===400,'a blob key must be a picture-style key');
     // a phone: the copy instead of the master, the setup downloaded instead of worked out

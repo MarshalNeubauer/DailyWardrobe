@@ -1,10 +1,16 @@
 /* Daily Wardrobe worker: kept photo records (render:<key>) and blobs: GET/PUT/DELETE /render, GET/PUT /blob.
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
 import { OWN_COL_RE, OWN_PAT_RE } from './ownkeys.js';
+import { readCapped } from './links.js';
 import { ownerOnly, spend, spendEach } from './people.js';
 
-/* photos are stored per outfit combination ("c" + 16 hex digits, kept until replaced); older ones were per date (90 days) */
+/* photos are stored per outfit combination ("c" + 16 hex digits, kept until replaced). The copies per date (render:<YYYY-M-D>, from
+   2026-11-07/08, kept 90 days) are only read now: GET /render?day= (photos.js fetchRemoteRender still asks, and moves one it finds to its
+   combination); nothing writes them since 2026-11-17 */
 const COMBO_RE = /^c[0-9a-f]{16}$/, DAY_RE = /^\d{4}-\d{1,2}-\d{1,2}$/;
+/* a kept photo's stamp is the phone's; one more than this ahead of the server's clock is taken as now (CR-6-07: a record stamped years
+   ahead by a wrong clock could never be replaced) */
+const RENDER_AHEAD = 10 * 6e4, RENDER_MAX = 4e6;
 /* ---- records coming in (fix round 3, the audit's W2-13-02 / W2-13-06): the same shapes as the app's core.js cleanRecord. A picture is a
    whole data:image/jpeg|png|webp;base64 string; a backup's item has an id of safe characters, a type key (or none), colour and option keys of
    letters, digits, - and _, pictures as above (or the backup's own dwph: reference), numbers as numbers and a pattern reading of hex
@@ -68,67 +74,46 @@ function picBytesOk(b) {
   const t = s.length > 1 && s[0] === '"' && s[s.length - 1] === '"' ? s.slice(1, -1) : s;
   return PIC_RE.test(t);
 }
-const renderId = o => { const k = String(o && o.key || ''), d = String(o && o.day || ''); return COMBO_RE.test(k) ? k : DAY_RE.test(d) ? d : null; };
-/* dated copies go after 90 days; test photos (keys starting c7e57, made to compare models or methods) after 7 */
-const renderTtl = id => (DAY_RE.test(id) ? { expirationTtl: 90 * 86400 } : /^c7e57/.test(id) ? { expirationTtl: 7 * 86400 } : undefined);
+const renderId = (o, dated = false) => { const k = String(o && o.key || ''), d = String(o && o.day || ''); return COMBO_RE.test(k) ? k : dated && DAY_RE.test(d) ? d : null; };
+/* test photos (keys starting c7e57, made to compare models or methods) go after 7 days */
+const renderTtl = id => (/^c7e57/.test(id) ? { expirationTtl: 7 * 86400 } : undefined);
 /* PUT /render {key, rec}: a device uploads a photo the worker doesn't have yet */
 async function putRender(req, env, json, who) {
   const ns = who.ns;
   if (!env.WARDROBE) return json({ error: 'no KV binding' }, 501);
-  const text = await req.text();
-  if (text.length > 4e6) return json({ error: 'photo too large' }, 413);
-  let b; try { b = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
+  const got = await readCapped(req.body, RENDER_MAX);   // (read no further than the cap: CR-6-07)
+  if (got.over) return json({ error: 'photo too large' }, 413);
+  let b; try { b = JSON.parse(new TextDecoder().decode(got.bytes)); } catch { return json({ error: 'bad json' }, 400); }
   const rec = b && b.rec;
   const id = renderId(b);
   // the whole string a picture (fix round 3, W2-13-06: any text after the prefix was kept, and the app put it into src)
   if (!id || !rec || typeof rec.img !== 'string' || !PIC_RE.test(rec.img)) return json({ error: 'bad photo', message: 'That is not a picture the app can keep.' }, 400);
-  const cur = await env.WARDROBE.get(`${ns}render:${id}`, 'json');
-  if (cur && (cur.t || 0) >= (rec.t || 0)) return json({ ok: true, kept: 'newer' });
+  // (a stamp from a clock ahead: one sent now is kept as the server's limit; one kept from before loses to any upload)
+  const lim = Date.now() + RENDER_AHEAD, sent = Math.min(+rec.t || 0, lim), t = sent || Date.now();
+  const cur = await env.WARDROBE.get(`${ns}render:${id}`, 'json'), curT = cur ? +cur.t || 0 : 0;
+  if (cur && curT <= lim && curT >= sent) return json({ ok: true, kept: 'newer' });
   const over = await spendEach(env, who, [['upload', 1], ['write', 1]]); if (over) return json(over.body, over.status);   // every upload is a KV write
   // the signature is kept to 2000 characters, the owner's to 16000: the color-coded masters' manifest (tools/asm-cm-upload.js) lives in
   // its signature and lists every master record's date; at 2000 a list of ~50 records was cut off mid-JSON (2026-11-16: the new garments'
   // uploads), so phones could not read it and the next upload, reading nothing, wrote a list of only its own records
   const sigMax = who && who.role === 'owner' ? 16000 : 2000;
-  await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify({ sig: String(rec.sig || '').slice(0, sigMax), img: rec.img, model: String(rec.model || '').slice(0, 80), t: +rec.t || Date.now() }), renderTtl(id));
+  await env.WARDROBE.put(`${ns}render:${id}`, JSON.stringify({ sig: String(rec.sig || '').slice(0, sigMax), img: rec.img, model: String(rec.model || '').slice(0, 80), t }), renderTtl(id));
   return json({ ok: true });
 }
-/* DELETE /render?key=c... -> the kept photo is removed (one that was made wrong; the app stops using its own copies by changing the key) */
-async function delRender(req, env, json, who) {
+/* (DELETE /render?key= went on 2026-11-17, CR-6-14: no app or tool asked for it; the app stops using a wrong photo by changing its key) */
+/* GET /blob?key=<c + 16 hex>: the stored bytes (application/octet-stream), 404 when none: a colour-coded master's setup packed for phones
+   (asm-color.js asmCmSetupFetch). They were written by the PC picture builder with PUT /blob, which went with it (2026-11-16; the route
+   on 2026-11-17, CR-6-14): the ones kept are still read, and a changed master has a new key, so they are simply not asked for again.
+   Every blob is the owner's, and every one is a master's setup for phones: a tester reads the owner's (their own prefix never held one).
+   If a blob ever holds anything private, this must change */
+async function getBlob(req, env, json, who, cors) {
   if (!env.WARDROBE) return json({ error: 'no KV binding' }, 501);
-  const k = new URL(req.url).searchParams.get('key') || '';
-  if (!COMBO_RE.test(k)) return json({ error: 'bad key' }, 400);
-  // a delete is one of the day's KV writes even when there is nothing to delete: a tester's count (1,200 went through unrefused)
-  const over = await spend(env, who, 'write'); if (over) return json(over.body, over.status);
-  await env.WARDROBE.delete(`${who.ns}render:${k}`);
-  return json({ ok: true });
-}
-/* GET /render?key=c... (or the older ?day=) -> the stored photo, or 404 */
-/* GET /blob?key=<c + 16 hex>: the stored bytes (application/octet-stream), 404 when none. PUT /blob?key=…&sig=…, the bytes as the body
-   (owner only, at most BLOB_MAX): a colour-coded master's setup packed by the computer for phones (asm-color.js asmCmSetupBlob, 2026-11-14),
-   about 5 MB. Raw bytes, nothing parsed: a JSON body of that size is more than a request's CPU on the free plan. The same signature
-   already stored is not written again (one KV write a master each time its setup changes) */
-const BLOB_MAX = 20e6;
-async function handleBlob(req, env, json, who, cors) {
-  if (!env.WARDROBE) return json({ error: 'no KV binding' }, 501);
-  const q = new URL(req.url).searchParams, key = q.get('key') || '';
+  const key = new URL(req.url).searchParams.get('key') || '';
   if (!COMBO_RE.test(key)) return json({ error: 'bad key' }, 400);
-  const kk = `${who.ns}blob:${key}`;
-  if (req.method === 'GET') {
-    // every blob is the owner's (writes are owner only), and every one is a master's setup for phones: a tester reads the owner's
-    // (their own prefix can never hold one). If a blob ever holds anything private, this must change
-    const v = await env.WARDROBE.get(`blob:${key}`, 'arrayBuffer');
-    return v ? new Response(v, { headers: { ...cors, 'content-type': 'application/octet-stream', 'cache-control': 'no-store' } }) : json({ error: 'none' }, 404);
-  }
-  const no = ownerOnly(who, json); if (no) return no;
-  const sig = String(q.get('sig') || '').slice(0, 300), body = await req.arrayBuffer();
-  if (!body.byteLength) return json({ error: 'empty' }, 400);
-  if (body.byteLength > BLOB_MAX) return json({ error: 'too large' }, 413);
-  const cur = typeof env.WARDROBE.getWithMetadata === 'function' ? await env.WARDROBE.getWithMetadata(kk, 'stream').catch(() => null) : null;
-  if (cur && cur.value && cur.value.cancel) cur.value.cancel().catch(() => { });
-  if (cur && cur.metadata && cur.metadata.sig === sig && sig) return json({ ok: true, kept: 'same' });
-  await env.WARDROBE.put(kk, body, { metadata: { sig, t: Date.now(), size: body.byteLength } });
-  return json({ ok: true, size: body.byteLength });
+  const v = await env.WARDROBE.get(`blob:${key}`, 'arrayBuffer');
+  return v ? new Response(v, { headers: { ...cors, 'content-type': 'application/octet-stream', 'cache-control': 'no-store' } }) : json({ error: 'none' }, 404);
 }
+/* GET /render?key=c... (or ?day=) -> the stored photo, or 404; ?list=1 -> every key kept */
 async function getRender(req, env, json, who) {
   const ns = who.ns;
   if (!env.WARDROBE) return json({ error: 'no KV binding' }, 404);
@@ -146,7 +131,7 @@ async function getRender(req, env, json, who) {
     const mine = new Set(own); for (const k of await sharedKeys(env)) if (!mine.has(k)) own.push(k);
     return json({ keys: own });
   }
-  const id = renderId({ key: q.get('key'), day: q.get('day') });
+  const id = renderId({ key: q.get('key'), day: q.get('day') }, true);   // (?day=: a copy kept per date, read only)
   if (!id) return json({ error: 'bad key' }, 400);
   let rec = await env.WARDROBE.get(`${ns}render:${id}`, 'json');
   // a tester reads the owner's colour-coded master records (only the keys in cm:shared) when they have no copy of their own
@@ -173,7 +158,8 @@ async function handleShared(req, env, json, who) {
   const no = ownerOnly(who, json); if (no) return no;
   if (!env.WARDROBE) return json({ error: 'no KV binding' }, 501);
   if (req.method === 'GET') { const v = await env.WARDROBE.get(SHARED_KEY, 'json'); return v ? json(v) : json({ error: 'none' }, 404); }
-  let b; try { b = JSON.parse(await req.text()); } catch { return json({ error: 'bad json' }, 400); }
+  const got = await readCapped(req.body, 200000); if (got.over) return json({ error: 'too large' }, 413);   // (2,000 keys of 17 characters)
+  let b; try { b = JSON.parse(new TextDecoder().decode(got.bytes)); } catch { return json({ error: 'bad json' }, 400); }
   const keys = Array.isArray(b && b.keys) ? [...new Set(b.keys.map(String))].sort() : null;
   if (!keys || keys.length > SHARED_MAX || !keys.every(k => COMBO_RE.test(k))) return json({ error: 'bad keys' }, 400);
   const cur = await env.WARDROBE.get(SHARED_KEY, 'json');
@@ -183,4 +169,4 @@ async function handleShared(req, env, json, who) {
   return json({ ok: true, n: keys.length });
 }
 
-export { COMBO_RE, PIC_RE, SHARED_KEY, delRender, getRender, handleBlob, handleShared, picBytesOk, putRender, recCheck, renderId, renderTtl };
+export { COMBO_RE, PIC_RE, SHARED_KEY, getBlob, getRender, handleShared, picBytesOk, putRender, recCheck, renderId, renderTtl };

@@ -1,7 +1,7 @@
 /* Daily Wardrobe worker: people: who is calling (the owner, testers), plain error words, daily caps, invitations, feedback, deleting an account.
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
 import { readCapped } from './links.js';
-import { hubOf } from './render.js';
+import { hubOf, logHub } from './render.js';
 import { PUSH_KEY } from './remind.js';
 
 /* ================= people: the owner and invited beta testers =================
@@ -69,17 +69,18 @@ function plainFor(body, p) {
    Counted in the person's RenderHub (a Durable Object's own storage: no KV write per AI call); without the RENDER_HUB binding in
    KV as use:<id>:<day>, kept 3 days. A call that fails gives its count back. ---- */
 const DEFAULT_CAPS = { tag: 40, pattern: 10, item: 20, describe: 40 };   // describe: POST /describe, a colour or pattern described in words (2026-11-15, the owner: 40 a day)
-const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200, list: 30, errors: 20 };
+// fetch: GET /fetch, photo links the server downloads (CR-6-11, 2026-11-17: it was the only route reaching out to the web uncounted)
+const EXTRA_CAPS = { upload: 60, feedback: 20, backup: 30, push: 20, write: 200, list: 30, errors: 20, fetch: 100 };
 /* write: every KV write a tester causes (each new photo a backup stores, the backup itself and its daily copies, uploads, deletes,
    feedback, reminders, item pictures), so no one tester can use up the free plan's 1,000 writes a day; a backup whose
    new photos pass it stores what fits and is refused (429, what 'backup': the app tries again tomorrow and the stored photos are not
    sent twice). list: KV lists (GET /render?list=1, /sync?snaps=1), also 1,000 a day for everyone. Twice in the first week, like
-   the AI caps */
-/* the first 7 days after an invitation was made: every daily limit twice (adding a whole wardrobe is the first week's work) */
+   the AI caps (the others, uploads, feedback, backups, reminders, error reports and links, are not doubled) */
+/* the first 7 days after an invitation was made: the AI limits, writes and lists twice (adding a whole wardrobe is the first week's work) */
 const FIRST_WEEK_MS = 7 * 86400000, FIRST_WEEK_X = 2;
 const firstWeek = rec => !!(rec && rec.created && Date.now() - rec.created < FIRST_WEEK_MS);
-const CAP_WORDS = { describe: 'color and pattern lookups', tag: 'photo readings', pattern: 'pattern readings', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks', errors: 'error reports' };
-const USE_RE = /^(tag|pattern|describe|item|upload|feedback|backup|push|write|list|errors)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
+const CAP_WORDS = { describe: 'color and pattern lookups', tag: 'photo readings', pattern: 'pattern readings', item: 'item pictures', upload: 'photo uploads', feedback: 'messages', backup: 'backups', push: 'reminder changes', write: 'saves to the server', list: 'photo list checks', errors: 'error reports', fetch: 'photo links' };
+const USE_RE = /^(tag|pattern|describe|item|upload|feedback|backup|push|write|list|errors|fetch)$/, DAY_KEY = /^\d{4}-\d{2}-\d{2}$/, USE_TTL = { expirationTtl: 3 * 86400 };
 const utcDay = () => new Date(Date.now()).toISOString().slice(0, 10);
 function cleanCaps(c) {
   const out = {};
@@ -110,7 +111,7 @@ async function useCount(env, id, what, n, cap, day) {
    {"item":20}) changes any of them. */
 /* write: 450 of the free plan's 1,000 KV writes a day for every tester together, so the owner (backups, the PC's picture uploads,
    the reminders, the clean-up) always has more than half; list: 150 of its 1,000 lists */
-const ALL_CAPS = { tag: 150, pattern: 40, describe: 150, item: 60, upload: 300, feedback: 100, backup: 300, push: 200, write: 450, list: 150, errors: 100 }, ALL_ID = 'all';
+const ALL_CAPS = { tag: 150, pattern: 40, describe: 150, item: 60, upload: 300, feedback: 100, backup: 300, push: 200, write: 450, list: 150, errors: 100, fetch: 300 }, ALL_ID = 'all';
 function allCaps(env) {
   let o = {}; try { o = JSON.parse(env.TESTER_DAILY_TOTAL || '{}') || {}; } catch { }
   const out = { ...ALL_CAPS };
@@ -253,64 +254,88 @@ async function handleInvites(req, env, json, who) {
     if (!purge) return json({ ok: true });
     await dropPrev(env, v);
     await dropTesterExtras(env, v.id);
-    const ns = `u:${v.id}:`, done = await wipeSome(env, ns, 30);
+    const ns = `u:${v.id}:`, done = await wipeSome(env, ns, WIPE_NOW);
     if (!done && env.RENDER_QUEUE) { await env.RENDER_QUEUE.send({ wipe: ns, n: 1 }); return json({ ok: true, purged: true }); }
     return json({ ok: true, purged: done, ...(done ? {} : { more: true }) });
   }
   return json({ error: 'method not allowed' }, 405);
 }
 
+/* ---- the owner's two logs, feedback and error reports (CR-6-03, the 2026-11-16 code review: each was one KV document read, added to
+   and written back, so two testers sending at once were both told {ok:true} and one message was gone). Kept in the logs object
+   (render.js logHub, a RenderHub: one request at a time, a list per UTC day), so adding one is no KV write. What the KV documents
+   (feedback:log, errors:log) hold from before is still read and shown with it until it expires; nothing writes them now but a tester's
+   deletion, which takes their messages out. Without the RENDER_HUB binding (the tests' plain mocks) the KV document as before. ---- */
+const hubLog = async (env, m) => { const r = await logHub(env).fetch('https://hub/log', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(m) }); const j = await r.json(); if (!j || j.bad) throw new Error('log not kept'); return j; };
+/* the log's items: the KV document's from before and the hub's, those older than `ms` left out */
+async function logItems(env, key, kind, ms, stamp) {
+  const now = Date.now(), old = (await env.WARDROBE.get(key, 'json')) || { items: [] };
+  const got = logHub(env) ? (await hubLog(env, { op: 'get', kind, days: Math.ceil(ms / 864e5) })).items || [] : [];
+  return [...(Array.isArray(old.items) ? old.items : []), ...got].filter(m => m && now - stamp(m) < ms);
+}
+/* entries added to a log -> through the hub, or (no hub) the KV document rewritten, one KV write */
+async function logAdd(env, key, kind, ms, max, entries) {
+  if (logHub(env)) return hubLog(env, { op: 'add', kind, days: Math.ceil(ms / 864e5), max, items: entries });
+  const now = Date.now(), log = (await env.WARDROBE.get(key, 'json')) || { items: [] };
+  const items = (Array.isArray(log.items) ? log.items : []).filter(m => m && now - (m.got || m.t) < ms);
+  await env.WARDROBE.put(key, JSON.stringify({ items: [...items, ...entries].slice(-max) }), { expirationTtl: ms / 1000 });
+}
 /* ---- feedback. POST /feedback {text, version, where} -> {ok:true} from anyone connected (text up to 4,000 characters);
-   GET /feedback (owner) -> {items:[{t, name, text, version, where}]}, newest first. One document, feedback:log, holding the last
-   180 days (500 messages at most): one KV write per message and one read to show them, no list. ---- */
+   GET /feedback (owner) -> {items:[{t, name, text, version, where}]}, newest first, the last 180 days (500 messages at most). ---- */
 const FEEDBACK_MS = 180 * 86400000, FEEDBACK_MAX = 500;
 async function handleFeedback(req, env, json, who) {
   if (!env.WARDROBE) return json(NO_KV, 501);
-  const log = (await env.WARDROBE.get(FEEDBACK_KEY, 'json')) || { items: [] }, now = Date.now();
-  const items = (Array.isArray(log.items) ? log.items : []).filter(m => m && now - m.t < FEEDBACK_MS);
   if (req.method === 'GET') {
     const no = ownerOnly(who, json); if (no) return no;
-    return json({ items: items.map(({ t, name, text, version, where }) => ({ t, name, text, version, where })).sort((a, b) => b.t - a.t) });
+    const items = await logItems(env, FEEDBACK_KEY, 'fb', FEEDBACK_MS, m => m.t);
+    return json({ items: items.map(({ t, name, text, version, where }) => ({ t, name, text, version, where })).sort((a, b) => b.t - a.t).slice(0, FEEDBACK_MAX) });
   }
   const b = await smallBody(req, 40000), text = String(b && b.text || '').trim();
   if (!text) return json({ error: 'empty', message: 'Write a few words first.' }, 400);
   if (text.length > 4000) return json({ error: 'too long', message: 'That is over 4,000 characters. Shorten it a little.' }, 400);
-  const over = await spendEach(env, who, [['feedback', 1], ['write', 1]]); if (over) return json(over.body, over.status);
-  items.push({ t: now, id: who.id, name: who.name, text, version: String(b.version ?? '').slice(0, 40), where: String(b.where ?? '').slice(0, 80) });
-  await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: items.slice(-FEEDBACK_MAX) }), { expirationTtl: FEEDBACK_MS / 1000 });
+  const over = await spendEach(env, who, logHub(env) ? [['feedback', 1]] : [['feedback', 1], ['write', 1]]); if (over) return json(over.body, over.status);
+  try { await logAdd(env, FEEDBACK_KEY, 'fb', FEEDBACK_MS, FEEDBACK_MAX, [{ t: Date.now(), id: who.id, name: who.name, text, version: String(b.version ?? '').slice(0, 40), where: String(b.where ?? '').slice(0, 80) }]); }
+  catch (e) { await unspend(env, who, 'feedback'); throw e; }
   return json({ ok: true });
 }
 /* ---- error reports (2026-11-16, the owner: a tester's very first item failed and nothing showed why; her phone's error log only came
    with feedback). POST /errors {errs:[{t, m, at, v, w}]} from a tester's phone (safety.js errSend): what broke, where in the code, the
    app version and the page; never photos or wardrobe data. At most ERR_BATCH a report, ERRORS a day per tester (EXTRA_CAPS.errors),
-   each report one KV write. GET /errors (owner) -> {items:[{t, name, m, at, v, w, got}]}, newest first. One document, errors:log: the last
-   ERR_DAYS days, ERR_KEEP reports at most. ---- */
+   no KV write (the logs object, above). GET /errors (owner) -> {items:[{t, name, m, at, v, w, got}]}, newest first: the last ERR_DAYS
+   days, ERR_KEEP reports at most. ---- */
 const ERRORS_KEY = 'errors:log', ERR_DAYS = 30, ERR_KEEP = 400, ERR_BATCH = 10;
 async function handleErrors(req, env, json, who) {
   if (!env.WARDROBE) return json(NO_KV, 501);
-  const log = (await env.WARDROBE.get(ERRORS_KEY, 'json')) || { items: [] }, now = Date.now();
-  const items = (Array.isArray(log.items) ? log.items : []).filter(m => m && now - m.got < ERR_DAYS * 86400000);
+  const now = Date.now();
   if (req.method === 'GET') {
     const no = ownerOnly(who, json); if (no) return no;
-    return json({ items: items.slice().sort((a, b) => b.t - a.t) });
+    const items = await logItems(env, ERRORS_KEY, 'er', ERR_DAYS * 864e5, m => m.got);
+    return json({ items: items.sort((a, b) => b.t - a.t).slice(0, ERR_KEEP) });
   }
   const b = await smallBody(req, 20000), list = Array.isArray(b && b.errs) ? b.errs.slice(0, ERR_BATCH) : [];
   const s = (v, n) => String(v ?? '').replace(/[\u0000-\u001f]+/g, ' ').trim().slice(0, n);
   const clean = list.map(e => e && typeof e === 'object' ? { t: Math.min(now, Math.max(now - 7 * 86400000, +e.t || now)), m: s(e.m, 300), at: s(e.at, 200), v: s(e.v, 40), w: s(e.w, 40) } : null).filter(e => e && e.m);
   if (!clean.length) return json({ error: 'empty' }, 400);
-  const over = await spendEach(env, who, [['errors', 1], ['write', 1]]); if (over) return json(over.body, over.status);
-  for (const e of clean) items.push({ ...e, id: who.id, name: who.name, got: now });
-  await env.WARDROBE.put(ERRORS_KEY, JSON.stringify({ items: items.slice(-ERR_KEEP) }), { expirationTtl: ERR_DAYS * 86400 });
+  const over = await spendEach(env, who, logHub(env) ? [['errors', 1]] : [['errors', 1], ['write', 1]]); if (over) return json(over.body, over.status);
+  try { await logAdd(env, ERRORS_KEY, 'er', ERR_DAYS * 864e5, ERR_KEEP, clean.map(e => ({ ...e, id: who.id, name: who.name, got: now }))); }
+  catch (e) { await unspend(env, who, 'errors'); throw e; }
   return json({ ok: true, n: clean.length });
 }
 
 /* ---- DELETE /account {confirm:'delete'} -> {ok:true}: everything kept for the caller is deleted, and nothing of anyone else's.
    A tester: every key under u:<id>:, the day's count, the invitation (the code stops working at once) and their feedback.
-   The owner: the owner's own key families only (the backup, snap:, render:, ph:, and job:, jobfail:, jobrun: left by the retired
-   outfit-photo queue until they expire), never u:…, invite:… or the invitation list. A Worker may make only so many KV calls per request, so a first part goes now and the queue finishes
-   the rest ({wipe}); without the queue the answer carries more:true and the same call deletes the next part. ---- */
+   The owner: the owner's own key families only (the backup, snap:, render:, ph:, the masters' packed setups blob: and their list
+   cm:shared, and job:, jobfail:, jobrun: left by the retired outfit-photo queue until they expire), never u:…, invite:… or the invitation
+   list. A Worker may make only so many KV calls per request (1,000 on the free plan: WIPE_NOW, WIPE_PART keep well under it), so a first
+   part goes now and the queue finishes the rest ({wipe}); without the queue the answer carries more:true and the same call deletes the
+   next part. ---- */
 const WIPED_KEY = 'wiped';   // {at}: when the owner last deleted everything (handleAccount)
-const OWNER_FAMILIES = ['wardrobe:v1', 'snap:', 'render:', 'job:', 'jobfail:', 'jobrun:', 'ph:'];
+// (blob: and cm:shared since 2026-11-17, CR-6-10: they stayed behind, and cm:shared then listed render: keys that were gone)
+const OWNER_FAMILIES = ['wardrobe:v1', 'snap:', 'render:', 'job:', 'jobfail:', 'jobrun:', 'ph:', 'blob:', 'cm:shared'];
+/* KV calls a part of a wipe may make: in the request that asks for it (which also reads the caller and the invitation list) and in one
+   queue message. They were 30 and 40, from a belief that a request may make about 50 (that is the cap on outside fetches; KV and the other
+   Cloudflare services have 1,000 a request on the free plan, CR-6-04) */
+const WIPE_NOW = 300, WIPE_PART = 500;
 async function wipeSome(env, ns, budget, st = {}) {   // -> true once nothing is left (st.gone counts the deletions)
   for (const p of ns ? [ns] : OWNER_FAMILIES) {
     for (;;) {
@@ -335,6 +360,7 @@ async function dropTesterExtras(env, id) {
   if (log && Array.isArray(log.items) && log.items.some(m => m.id === id)) await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: log.items.filter(m => m.id !== id) }), { expirationTtl: FEEDBACK_MS / 1000 });
   const er = await env.WARDROBE.get(ERRORS_KEY, 'json');   // their error reports go with the account too
   if (er && Array.isArray(er.items) && er.items.some(m => m.id === id)) await env.WARDROBE.put(ERRORS_KEY, JSON.stringify({ items: er.items.filter(m => m.id !== id) }), { expirationTtl: ERR_DAYS * 86400 });
+  if (logHub(env)) for (const [kind, ms] of [['fb', FEEDBACK_MS], ['er', ERR_DAYS * 864e5]]) await hubLog(env, { op: 'drop', kind, id, days: Math.ceil(ms / 864e5) });   // (and from the logs object)
   const use =`use:${id}:${utcDay()}`; if (await env.WARDROBE.get(use)) await env.WARDROBE.delete(use);
 }
 async function handleAccount(req, env, json, who) {
@@ -360,7 +386,7 @@ async function handleAccount(req, env, json, who) {
     // the owner's: when his data was deleted, kept (one small value, never part of a family wipeSome deletes), so his other connected phones
     // ask before putting their copy back (backup.js syncLiteGet's wiped, sync.js syncWiped; fix round 3, W1-6-01)
     if (!who.ns) try { await env.WARDROBE.put(WIPED_KEY, JSON.stringify({ at: Date.now() })); } catch (e) { console.log('wipe mark not kept', e && e.message); }
-    const done = await wipeSome(env, who.ns, 30, st);
+    const done = await wipeSome(env, who.ns, WIPE_NOW, st);
     if (!done && env.RENDER_QUEUE) { await env.RENDER_QUEUE.send({ wipe: who.ns || 'owner', n: 1 }); return json({ ok: true }); }
     return json({ ok: true, ...(done ? {} : { more: true }) });
   } catch (e) {
@@ -375,7 +401,7 @@ const resetDelay = (now = Date.now()) => { const d = new Date(now); return Math.
 /* the queue finishing a deleted account: {wipe: 'owner' | 'u:<id>:', n}; a part per message until nothing is left */
 async function runWipe(msg, env) {
   const w = String(msg.body.wipe), ns = w === 'owner' ? '' : NS_RE.test(w) ? w : null, n = +msg.body.n || 1;
-  if (ns !== null && !(await wipeSome(env, ns, 40)) && n < 400) await env.RENDER_QUEUE.send({ wipe: w, n: n + 1 });
+  if (ns !== null && !(await wipeSome(env, ns, WIPE_PART)) && n < 400) await env.RENDER_QUEUE.send({ wipe: w, n: n + 1 });
   msg.ack();
 }
 

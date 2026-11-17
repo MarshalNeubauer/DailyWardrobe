@@ -5,7 +5,10 @@
    A link to a web page (e.g. a shop's product page) returns the page's share image (og:image / twitter:image).
    Requires APP_TOKEN; only http(s); images only; 15 MB cap. Only public web addresses: an IP address, localhost or an internal
    name is refused, for the link itself, every redirect on the way and the page's share image. Nothing is read past the caps. */
+import { spend } from './people.js';
+
 const IMG_LIMIT = 15e6, HTML_LIMIT = 600000;
+const IMG_TYPE = /^image\/(jpeg|jpg|pjpeg|png|webp|gif|heic|heif|avif)\s*(;|$)/i;
 /* a host on the public web: a name with a dot, not an IP address (the URL parser has already turned 0x7f.1 or 2130706433 into
    dotted form), not localhost and not a name that only resolves inside a network */
 function publicHost(h) {
@@ -25,12 +28,14 @@ async function readCapped(stream, limit) {
   const bytes = new Uint8Array(n); let o = 0; for (const p of parts) { bytes.set(p, o); o += p.byteLength; }
   return { bytes, over };
 }
-async function handleFetchImage(req, env, json, cors) {
+async function handleFetchImage(req, env, json, who, cors) {
   let u;
   try { u = new URL(new URL(req.url).searchParams.get('url') || ''); } catch { return json({ error: 'That is not a valid link.' }, 400); }
   if (!/^https?:$/.test(u.protocol)) return json({ error: 'Only http and https links are supported.' }, 400);
   const NOT_PUBLIC = 'That link is not on the public web.';
   if (!publicHost(u.hostname)) return json({ error: NOT_PUBLIC }, 400);
+  // a tester's links a day are counted (CR-6-11: the only route that reached out to the web with no daily count); the app shows `error`
+  const over = await spend(env, who, 'fetch'); if (over) return json({ ...over.body, error: over.body.message || over.body.error }, over.status);
   // redirects are followed by hand (5 at most), so each stop is checked too; null: one of them left the public web
   const get = async href => {
     for (let hop = 0; hop < 6; hop++) {
@@ -64,7 +69,8 @@ async function fetchLinked(u, get, json, cors) {
     if (!r.ok) return json({ error: `The page's photo returned an error (${r.status}).` }, 502);
     type = r.headers.get('content-type') || '';
   }
-  if (!type.startsWith('image/')) return json({ error: 'That link is not a photo.' }, 415);
+  // photo types only: an SVG is a page that can run script, not a photo (CR-6-11)
+  if (!IMG_TYPE.test(type)) return json({ error: 'That link is not a photo.' }, 415);
   if (+(r.headers.get('content-length') || 0) > IMG_LIMIT) return json({ error: 'That photo is too large (over 15 MB).' }, 413);
   const got = await readCapped(r.body, IMG_LIMIT);
   if (got.over) return json({ error: 'That photo is too large (over 15 MB).' }, 413);
