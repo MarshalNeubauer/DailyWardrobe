@@ -31,8 +31,7 @@ function dressSummary(){const j=wearsJacket(),t=wearsTie();return j&&t?'':j?'no 
 function dressWhyUnused(i){
   if(i.type==='pants')return 'Your other pants go better with your shirts, or have rested longer.';
   if(i.type==='shirt')return 'Your other shirts go better with your pants, or have rested longer.';
-  if(i.type==='shoes'){const ok=items.some(b=>b.type==='pants'&&shoeScore(null,b,i)>-50);
-    return !ok?`${colName(primaryCol(i))} shoes don't suit any of your pants.`:finish(i.leather)==='patent'?'Patent shoes are for black tie only.':beltWait(i)?`None of your belts match them, so the planner keeps them back: add a ${beltWait(i)} and they come into your outfits.`:'Another pair always suits the outfit better.'}
+  if(i.type==='shoes')return shoesWhyUnused(i,items.some(b=>b.type==='pants'&&shoeSuits(null,b,i)),'pants',false);   // (stats.js)
   return null}
 
 /* ---- waistcoats: a suit has one only when it says so ----
