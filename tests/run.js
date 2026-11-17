@@ -6,6 +6,8 @@
 //   node tests/run.js --webkit    on WebKit instead of Chromium (`npm run test:webkit`)
 //   TEST_JOBS=<n>                 how many tests run at once (default: the processor cores less one, at most 16, fewer when the machine
 //                                 is busy); TEST_JOBS=1 runs them one after another in this process, printing as it goes
+//   node tests/run.js --shard i/N shard i of N of the tests (or TEST_SHARD=i/N), balanced by tests/shard-times.json: the cloud run
+//                                 (`npm run test:cloud`, .github/workflows/full-tests.yml; tests/shard.js)
 //   TEST_LOCK=0                   don't wait for another worktree's test run (one run at a time on this machine: tests/testlock.js)
 //   TEST_WEBKIT=1 / 0             with --changed, run the WebKit halves of the files that check both engines / don't (default: only
 //                                 when the change touches a page file, `webkitWanted`); TEST_WEBKIT=0 also leaves them out of a run by name
@@ -347,7 +349,8 @@ const RETRY_MAX=5;
    and its worker process is ended (its browsers with it) and replaced (2026-11-17: on a machine crowded by other sessions' runs, single
    workers sat at no CPU for 20–30 minutes and the run never ended). The slowest test took 477 s on that crowded machine */
 const FILE_LIMIT=(n=>Number.isFinite(n)&&n>=0?n:900)(parseFloat(process.env.TEST_FILE_TIMEOUT))*1000;
-const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue=keys.slice().sort((a,b)=>(last[b]||0)-(last[a]||0)),live=new Set();
+// (a machine with no times of its own, a cloud runner, orders them by the committed tests/shard-times.json, in seconds)
+const together=(keys,n,done)=>new Promise(resolve=>{const last={...Object.fromEntries(Object.entries(require('./shard').readTimes()).map(([k,s])=>[k,s*1000])),...lastTimes()},queue=keys.slice().sort((a,b)=>(last[b]||0)-(last[a]||0)),live=new Set();
   const spawn=()=>{const c=fork(__filename,['--worker'],{env:process.env});let job=null,t0=0,timer=null,timedOut=false,partial='';live.add(c);
     const next=()=>{clearTimeout(timer);job=queue.shift();if(job){t0=Date.now();c.send({run:job});
         if(FILE_LIMIT)timer=setTimeout(()=>{timedOut=true;try{c.send({abort:true})}catch(e){}setTimeout(()=>{try{c.kill()}catch(e){}},10e3).unref()},FILE_LIMIT)}
@@ -362,7 +365,14 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
 
 (async()=>{
   if(process.argv.includes('--worker')){await worker();return}
-  const args=process.argv.slice(2),flag=f=>args.includes(f),ONLY=process.env.TEST_ONLY||args.find(a=>!a.startsWith('--'));
+  if(process.argv.includes('--keys')){console.log(JSON.stringify(RUNS));return}   // every test, in run order (tests/shard.js)
+  const args=process.argv.slice(2),flag=f=>args.includes(f);
+  // --shard i/N (or TEST_SHARD=i/N): only shard i of N of the tests chosen (tests/shard.js; the cloud run, full-tests.yml)
+  const shardArg=(()=>{const j=args.findIndex(a=>a==='--shard'||a.startsWith('--shard='));if(j<0)return process.env.TEST_SHARD||null;
+    const v=args[j].includes('=')?args[j].split('=')[1]:args[j+1];if(!args[j].includes('='))args.splice(j+1,1);return v})();
+  const SHARD=shardArg?require('./shard').parse(shardArg):null;
+  if(shardArg&&!SHARD){console.log(`--shard ${shardArg}: give it as i/N, 1 ≤ i ≤ N (e.g. --shard 2/8)`);process.exit(2)}
+  const ONLY=process.env.TEST_ONLY||args.find(a=>!a.startsWith('--'));
   let want=null;   // null: everything
   if(ONLY)want=withHalves(FILES.filter(f=>f.includes(ONLY)),()=>process.env.TEST_WEBKIT!=='0');
   else if(flag('--changed')){const s=await impact.select(ROOT,ALL);console.log(s.report);
@@ -373,7 +383,9 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
     else if(!s.all)want=withHalves(s.tests)}
   if(flag('--list'))return;
   impact.installHook(ROOT);   // from now on a push is refused while tests/impact.map has uncommitted changes
-  const keys=RUNS.filter(k=>!want||want.has(k)),results=new Map(),times=[];
+  let keys=RUNS.filter(k=>!want||want.has(k));const results=new Map(),times=[];
+  if(SHARD){const S=require('./shard'),mine=S.plan(keys,SHARD.n,S.readTimes(),S.wkShards())[SHARD.i-1];keys=mine.keys;
+    console.log(`\nshard ${SHARD.i}/${SHARD.n}: ${keys.length} of ${RUNS.filter(k=>!want||want.has(k)).length} tests (about ${Math.round(mine.est)} s by tests/shard-times.json)`)}
   // one test run at a time on this machine (tests/testlock.js): wait for another worktree's run, or go ahead with fewer at once
   let jobs=Math.min(jobsWanted(),keys.length);
   if(keys.length){const L=require('./testlock'),g=await L.acquire(ROOT);if(g.note)console.log('\n'+g.note);
@@ -397,8 +409,11 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
     for(const key of keys){console.log('\n• '+label(key));cur=key;const f0=failures,r=await B.run(key);cur=null;times.push([key,r.ms]);if(r.res)results.set(key,{...r.res,ok:failures===f0})}
     await B.close()}
   keepTimes(times);
+  // TEST_TIMES_OUT=<file>: each test's seconds and the run's, for the cloud run's summary (tests/shard.js, tests/shard-times.json)
+  if(process.env.TEST_TIMES_OUT)try{fs.writeFileSync(process.env.TEST_TIMES_OUT,JSON.stringify({times:Object.fromEntries(times.map(([k,ms])=>[k,Math.round(ms/100)/10])),wall:Math.round((Date.now()-T0)/1000)}))}catch(e){console.log('could not write '+process.env.TEST_TIMES_OUT+': '+e.message)}
   // what each test used is added to tests/impact.map; when `npm test` or the whole suite passed, so is the fingerprint of the files it passed on
-  const passed=!failures&&!ONLY;
+  // (not for one shard: it passed only part of the suite)
+  const passed=!failures&&!ONLY&&!SHARD;
   // which tests ran with the fixed plan (their planner.js entries are replaced in the map, not added to)
   // the files a test ran with switched off (the fixed plan: planner.js; assembled pictures off: assemble.js): their entries are replaced
   const fixedOf=key=>{if(key.startsWith('run.js: '))return REAL_SUITES.has(key.slice(8))?['assemble.js']:['planner.js','assemble.js'];
@@ -408,5 +423,5 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
   // the slowest files, so the suite can be kept quick
   if(times.length)console.log('\nslowest: '+times.sort((a,b)=>b[1]-a[1]).slice(0,10).map(([f,ms])=>`${label(f)} ${(ms/1000).toFixed(1)}s`).join(', ')+` · total ${((Date.now()-T0)/1000).toFixed(0)}s`+(jobs>1?` (${jobs} at a time; one after another ${(times.reduce((a,t)=>a+t[1],0)/1000).toFixed(0)}s)`:''));
   if(alone.length)console.log('\nfailed with other tests running, passed by '+(alone.length>1?'themselves':'itself')+' (a check there depends on timing: make it wait for its condition): '+alone.map(label).join(', '));
-  console.log(`\n${passes} passed, ${failures} failed`+(alone.length?`, ${alone.length} flaky (passed on retry)`:'')+(want?` (${keys.length} of ${ALL.length} test files and built-in suites)`:''));process.exit(failures?1:0);
+  console.log(`\n${passes} passed, ${failures} failed`+(alone.length?`, ${alone.length} flaky (passed on retry)`:'')+(want?` (${keys.length} of ${ALL.length} test files and built-in suites)`:'')+(SHARD?` (shard ${SHARD.i}/${SHARD.n}: ${keys.length} tests)`:''));process.exit(failures?1:0);
 })();

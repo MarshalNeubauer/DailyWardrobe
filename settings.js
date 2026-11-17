@@ -4,7 +4,7 @@
    days off, weather, toasts, dates and the theme are in daysoff.js, weather.js, toast.js, locale.js and theme.js since 2026-11-17.) */
 /* settings management */
 /* Settings: a full-screen page of categories that unfold like Today's cards; openSettings('weather') opens one directly */
-const SET_CATS=['laundry','schedule','daysoff','weather','care','photos','tagging','backup','connection','about'];
+const SET_CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.classList.toggle('instant',!!instant);if(!instant){el.classList.remove('instant');void el.offsetHeight}
   el.classList.toggle('open',open);const b=el.querySelector('.scat-head');if(b)b.setAttribute('aria-expanded',open);
   if(open&&key==='backup'&&typeof loadSnapshots==='function')loadSnapshots();   // the daily backups list is read as Backup opens (sync.js)
@@ -40,6 +40,7 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
   set('schedule',`${days(settings.workdays)} · ${scheduleWear(days)}`);
   const T=isoKey(todayDate()),h=settings.holidays,offs=(settings.daysOff||[]).filter(x=>x.d>=T).length,occ=Object.values(dayRecs).filter(r=>r.date&&keyDate(r.date)>=todayDate()&&occOf(r)).length;
   set('daysoff',[h&&h.country?((h.list||[]).length?`${h.country} holidays`:`${typeof countryName==='function'?countryName(h.country):h.country}: no holiday list`):'No holidays',`${offs} day${offs===1?'':'s'} off`,`${occ} occasion${occ===1?'':'s'}`].join(' · '));
+  if(typeof calSummary==='function')set('calendar',calSummary());   // (calendar.js)
   set('weather',`${settings.location?settings.location.name:'No location set'} · °${unit()}`);
   set('photos',picsDrawn()?'Drawing only':typeof isConnected==='function'&&!isConnected()?'Painted pictures · needs a connection':'Painted pictures');   // (the masters come from the server)
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
