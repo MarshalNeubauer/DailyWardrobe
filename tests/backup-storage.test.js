@@ -203,8 +203,8 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
   store.set('wardrobe:v1',JSON.stringify({rev:5,saved:T0,data:seed}));meta.set('wardrobe:v1',{rev:5,saved:T0});
   const MB=store.get('wardrobe:v1').length/1e6;
   const browser=await chromium.launch();
-  const traffic=[];
-  const device=async(old)=>{const ctx=await browser.newContext();if(old)await ctx.addInitScript(()=>{window.SYNC_OLD=true});
+  const traffic=[],devs=[];
+  const device=async(old)=>{const ctx=await browser.newContext();ctx.__n=devs.length;if(old)await ctx.addInitScript(()=>{window.SYNC_OLD=true});
     await ctx.route(HOST+'**',async route=>{const r=route.request(),u=new URL(r.url());
       if(u.pathname!=='/sync')return route.fulfill({status:404,body:'{}'});
       const res=await W.fetch(new Request(r.url(),{method:r.method(),headers:r.headers(),body:['GET','HEAD'].includes(r.method())?undefined:r.postData()}),env);
@@ -212,14 +212,27 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
-    await p.reload();await p.waitForFunction(()=>window.appReady);return {ctx,p,errs}};
+    await p.reload();await p.waitForFunction(()=>window.appReady);const d={ctx,p,errs,n:ctx.__n};devs.push(d);return d};
   const sync=d=>d.p.evaluate(()=>syncNow());
-  // one sync on d, with what it sent and received
-  const measured=async d=>{traffic.length=0;const r=await sync(d);const t=[...traffic];return {ok:r,up:t.reduce((a,x)=>a+x.up,0),down:t.reduce((a,x)=>a+x.down,0),n:t.length,t,big:t.some(x=>x.up>1e6||x.down>1e6)}};
+  // every device still first: no sync or day recording running, the stored wardrobe the same over three checks 120 ms apart (at most
+  // 6 s), and the backup an edit or a redraw scheduled (scheduleSync, 2.5 s on) called off, as tests/sync.test.js's quiet. On a busy
+  // machine the older app's scheduled sync (C: the whole backup, down and up) came due during B's count on the new worker:
+  // "still takes the small sync (10425.2 KB up, 20886.1 KB down, 5 requests)", the nightly run of 2026-11-17
+  const quiet=d=>d.p.evaluate(async()=>{let last='',same=0;const end=Date.now()+6000;
+    while(Date.now()<end){await recordRun;const sig=stateSig(await localState());same=!syncing&&sig===last?same+1:0;last=sig;if(same>=3)break;await new Promise(r=>setTimeout(r,120))}
+    clearTimeout(syncTimer)});
+  // one sync on d, with what it sent and received (d's own requests: each is noted with its device)
+  const counted=(d,r)=>{const t=traffic.filter(x=>x.who===d.n);return {ok:r,up:t.reduce((a,x)=>a+x.up,0),down:t.reduce((a,x)=>a+x.down,0),n:t.length,t,big:t.some(x=>x.up>1e6||x.down>1e6)}};
+  // (d's own scheduled backup is called off before the wait, so the change it holds goes up in the count, not during the quiet:
+  // "a day marked worn goes up without the backup (0.0 KB up …)" on the branch's nightly run)
+  const measured=async d=>{await d.p.evaluate(()=>clearTimeout(syncTimer));await Promise.all(devs.map(quiet));traffic.length=0;return counted(d,await sync(d))};
   const kb=x=>`${(x.up/1e3).toFixed(1)} KB up, ${(x.down/1e3).toFixed(1)} KB down, ${x.n} requests`;
   const status=d=>d.p.evaluate(()=>localStorage.getItem('sync_status'));
   const itemOf=(d,id)=>d.p.evaluate(id=>items.find(i=>i.id===id)||null,id);
-  const edit=(d,id,f)=>d.p.evaluate(async([id,f])=>{const it={...items.find(i=>i.id===id),...f,updated:Date.now()};await put(it);items=items.map(i=>i.id===id?it:i)},[id,f]);
+  // an edit is made on a quiet device: made while the device's own background sync ran (the older app's, just started), that sync
+  // took the edit into its mark without sending it, and the counted sync then saw nothing to send ("and still saves the whole backup
+  // … 0.0 KB up, 1 requests", after main's #554 changed the timing)
+  const edit=async(d,id,f)=>{await quiet(d);return d.p.evaluate(async([id,f])=>{const it={...items.find(i=>i.id===id),...f,updated:Date.now()};await put(it);items=items.map(i=>i.id===id?it:i)},[id,f])};
   const stored=()=>JSON.parse(store.get('wardrobe:v1'));
   // the backup whole, photos inline, as an older app downloads it (since 2026-11-13 the stored value keeps its photos by reference)
   const full=async()=>JSON.parse(await (await W.fetch(new Request(HOST+'sync',{headers:{'x-app-token':'secret'}}),env)).text());
@@ -266,8 +279,9 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
     ok((await B.p.evaluate(()=>items.length))===(await A.p.evaluate(()=>items.length))&&(await itemOf(B,'it7')).photo===seed.items[7].photo&&stored().data.items.length>30,'a device that lost its wardrobe gets it back, photos and all, and the backup is not emptied');
 
     // an older app (the whole backup each time) on the same worker
-    const C=await device(true);
-    const cs=await measured(C);
+    // (counted from its start: its start-up sync is the first download; a quiet before the count would let it finish uncounted)
+    await Promise.all(devs.map(quiet));traffic.length=0;const C=await device(true);
+    const cs=counted(C,await sync(C));
     ok(cs.ok&&cs.t[0].q===''&&(await itemOf(C,'it9')).photo===np&&(await C.p.evaluate(()=>items.length))===(await A.p.evaluate(()=>items.length)),`an older app still downloads the whole backup and reads it (${kb(cs)})`);
     await edit(C,'it13',{primaryColor:'black'});const cu=await measured(C);
     ok(cu.ok&&cu.t.some(x=>x.m==='PUT'&&x.up>1e6)&&stored().data.items.find(i=>i.id==='it13').primaryColor==='black'&&meta.get('wardrobe:v1').pv,`and still saves the whole backup, which the worker stores by reference (${kb(cu)})`);
