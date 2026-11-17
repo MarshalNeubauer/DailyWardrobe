@@ -1612,8 +1612,7 @@ header button::after{inset:-2px}
 :where(#today) .mltxt small{font-size:min(.8125rem,max(13px,3.75vw))}
 @media (max-width:340px){
   nav button{font-size:min(.9375rem,max(15px,5.6vw))}
-  header h1{font-size:min(1.3125rem,7vw)}
-  .ivt h2{font-size:min(var(--fs-xl),8vw)}
+  header h1{font-size:min(1.3125rem,7vw);white-space:normal}
   :where(#today) .month-link{height:auto;min-height:76px}
   .mlstrip,.pstrip{width:84px}
   :where(#today) .mltxt b{white-space:normal;overflow-wrap:anywhere}
@@ -1898,7 +1897,7 @@ header button::after{inset:-2px}
 .hrow{min-height:44px;align-items:center}
 .hrow input{width:20px;height:20px}
 .scat-h{margin:0;font:inherit;color:inherit;letter-spacing:inherit;text-transform:none}
-html.bigtext :is(.gimeta b,.cpnm,.pick-nm,.shop-lead,#settings-modal .scat-head .mltxt small){-webkit-line-clamp:3}
+html.bigtext :is(.gimeta b,.cpnm,.pick-nm,.shop-lead,#settings-modal .scat-head .mltxt small,.ivt h2){-webkit-line-clamp:3}
 html.bigtext :is(.cpnm,.pick-nm){min-height:3.6em}
 #today .plegend{margin:6px 0 2px;font-size:var(--fs-s);color:var(--mut)}
 #today .plegend span{font-weight:700;color:var(--ink)}

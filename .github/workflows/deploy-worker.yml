@@ -16,9 +16,13 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
+      # the whole history: tests compare the app with older commits (garmentpaint.test.js reads #511's first parent with `git show`),
+      # which a shallow checkout lacks ("fatal: bad object", the failed deploy of #557, 2026-11-17)
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Check configuration
         id: cfg
         env:
@@ -55,14 +59,27 @@ jobs:
           node tests/run.js --changed --list | tee "$RUNNER_TEMP/selection.txt"
           # these two sentences are tests/impact.js saying that nothing runs; anything else (or no answer) installs the browser
           if grep -Eq 'No check can be affected by this change\.|Nothing more needs to run\.' "$RUNNER_TEMP/selection.txt"; then echo "browser=no"; else echo "browser=yes"; fi >> "$GITHUB_OUTPUT"
-      - name: Install Chromium (only when tests will run)
+          # the WebKit halves (tests/run.js webkitWanted, #551): its "WebKit: …" line says whether any run; a line that is not
+          # "… do not run" installs WebKit too, so the deploy runs every check its `npm test` selected
+          if grep -q '^WebKit: ' "$RUNNER_TEMP/selection.txt" && ! grep -Eq '^WebKit: .*do not run' "$RUNNER_TEMP/selection.txt"; then echo "webkit=yes"; else echo "webkit=no"; fi >> "$GITHUB_OUTPUT"
+          echo "pw=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+      # the downloaded browsers are kept between runs (Playwright's version and the browsers in the key); apt's packages are not
+      - uses: actions/cache@v4
+        if: steps.sel.outputs.browser == 'yes'
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ steps.sel.outputs.pw }}-${{ steps.sel.outputs.webkit == 'yes' && 'chromium-webkit' || 'chromium' }}
+      - name: Install the browsers (only when tests will run)
         if: steps.sel.outputs.browser == 'yes'
         run: |
-          # system packages through apt, for at most two minutes and without failing the deploy: the runner image already
-          # has Chromium's libraries, apt adds fonts only
-          timeout -k 10 120 npx playwright install-deps chromium || echo "::warning::Chromium's system packages could not be installed (apt); the tests run with what the runner image has."
-          # the browser itself, tried three times
-          for i in 1 2 3; do npx playwright install chromium && exit 0; sleep $((i * 15)); done
+          B=chromium; T=120
+          if [ "${{ steps.sel.outputs.webkit }}" = yes ]; then B="chromium webkit"; T=300; fi
+          # system packages through apt, for a limited time and without failing here: the runner image already has Chromium's
+          # libraries (apt adds fonts only); WebKit needs its own, and without them its halves fail to start in npm test, which
+          # then stops the deploy with the reason
+          timeout -k 10 $T npx playwright install-deps $B || echo "::warning::The browsers' system packages could not be installed (apt); the tests run with what the runner image has."
+          # the browsers themselves, tried three times (a cached browser is not downloaded again)
+          for i in 1 2 3; do npx playwright install $B && exit 0; sleep $((i * 15)); done
           exit 1
       - run: npm test
         if: steps.cfg.outputs.ready == 'yes'
