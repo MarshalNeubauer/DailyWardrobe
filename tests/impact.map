@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	75d9aa8764d0c0da3ba3
-# tested	8615ad90951f4de26d6b
+# tested	b8e5885a369f1e421375
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	shadeRow	shirtColFix	unreadNote
@@ -4612,6 +4611,11 @@ freshrest.test.js	toast.js	<loaded>
 freshrest.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	applyZoom	hasOutfit	homeDay	planFor	planMonth	planSnapUse	planStartDay	planTrim	renderToday	swApply	todaySay	wornPill	wxFit	wxPreload	zoomTarget
 freshrest.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 freshrest.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+freshrest.test.js	watch/leather.jpg	<loaded>
+freshrest.test.js	watch/shirt-open.png	<loaded>
+freshrest.test.js	watch/shirt-tie.png	<loaded>
+freshrest.test.js	watch/suit.png	<loaded>
+freshrest.test.js	watch/vest.png	<loaded>
 freshrest.test.js	weather.js	<loaded>	loadWeather
 garmentdraw.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 garmentdraw.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -5470,6 +5474,7 @@ history.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 history.test.js	tag-request.js	<loaded>
 history.test.js	tagging.js	<loaded>
 history.test.js	tests/fixedplan.js	<any>
+history.test.js	tests/webkit.js	<any>
 history.test.js	theme.js	<loaded>	applyTheme
 history.test.js	toast.js	<loaded>
 history.test.js	today.js	<loaded>	@$today.addEventListenerclick	@document.addEventListenervisibilitychange	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	applyZoom	belowBox	canPick	figureStage	foldListTap	goneNote	hasOutfit	homeDay	mvSig	offBtn	offOn	piecesBox	planDirty	planFor	planMonth	planSnapSoon	planSnapUse	pocketRow	renderToday	restWarn	slotLabel	slots	swApply	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload	zoomTarget
@@ -6339,7 +6344,9 @@ lookplan.test.js	history.js	<loaded>	checkPlanRules	dropLearn	keyDate	whenPulled
 lookplan.test.js	icon-192.png	<loaded>
 lookplan.test.js	icon-512.png	<loaded>
 lookplan.test.js	index.html	<loaded>
-lookplan.test.js	itemsheet.js	<loaded>	@{constb$ivbody}	@{constel$wardrobe}	itemShown	renderItem	smallPhotos
+lookplan.test.js	item-photo.js	<loaded>	smallPhotos
+lookplan.test.js	item-view.js	<loaded>	@{constb$ivbody}	itemShown	renderItem
+lookplan.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 lookplan.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 lookplan.test.js	locale.js	<loaded>	appLocale
 lookplan.test.js	manifest.webmanifest	<loaded>
@@ -8837,6 +8844,7 @@ pocketsquare.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	matMigrate	matRow	m
 pocketsquare.test.js	watch/leather.jpg	<loaded>
 pocketsquare.test.js	watch/shirt-open.png	<loaded>
 pocketsquare.test.js	watch/shirt-tie.png	<loaded>
+pocketsquare.test.js	watch/suit.png	<loaded>
 pocketsquare.test.js	watch/vest.png	<loaded>
 pocketsquare.test.js	weather.js	<loaded>	loadWeather
 records.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -12221,7 +12229,6 @@ stylea11y.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	
 stylea11y.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 stylea11y.test.js	tagging.js	<any>	<loaded>	readAbort	tagNotes
 stylea11y.test.js	tests/fixedplan.js	<any>
-stylea11y.test.js	tests/webkit.js	<any>
 stylea11y.test.js	theme.js	<any>	<loaded>	@apreferscolorschemedark.addEventListenerchange	applyTheme
 stylea11y.test.js	toast.js	<any>	<loaded>	toastDrop	undoOff
 stylea11y.test.js	today.js	<any>	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	@{constel$today}	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constroot$today}	@{constroot$today}>@root.addEventListenerclick	addForSlot	applyZoom	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	mvSig	offBtn	offOn	piecesBox	planDirty	planFor	planMonth	planSnapSoon	planSnapUse	planStartDay	pocketRow	renderToday	restWarn	slotLabel	slots	strHash	swApply	todayCovered	todaySay	toggleList	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload	zoomTarget
