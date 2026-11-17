@@ -180,7 +180,7 @@ const testersync=async({ok,chromium,url})=>{
     await change(1);await p.waitForTimeout(3500);const p1=puts;
     await hide();await p.waitForFunction(()=>!syncing&&!syncDue,null,{timeout:8000});
     ok(p1===0&&puts===1,`a tester's change waits: nothing uploaded 3.5 s later, uploaded once the app goes to the background (${p1} then ${puts})`);
-    ok(await p.evaluate(()=>{scheduleSync();const due=syncDue;return due>0&&due<=Date.now()&&TESTER_SYNC_MS===15*60000}),'without closing the app it goes up 15 minutes after the first change still waiting');
+    ok(await p.evaluate(()=>{scheduleSync();const due=syncDue;return due>0&&due<=nowMs()&&TESTER_SYNC_MS===15*60000}),'without closing the app it goes up 15 minutes after the first change still waiting');
     await p.evaluate(()=>{clearTimeout(syncTimer);syncDue=0});
     // the daily limit
     mode='limit';await change(2);await hide();await p.waitForFunction(()=>!syncing&&!!localStorage.getItem('sync_pause'),null,{timeout:8000});
