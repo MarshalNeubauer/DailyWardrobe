@@ -73,8 +73,8 @@ const OPT_PAT_LINES = [
   [['sweater','qzip','cardigan'], 'solid, heather (a mottled, marled mix of light and dark fibers of one color), cable (raised cable-knit ropes), stripe (horizontal stripes), other'],
   [['chore'], 'solid, other']];
 const DIAL_COLS = ['white','cream','silver','lightgrey','grey','slate','charcoal','black','navy','deepblue','blue','lightblue','green','olive','brown','burgundy','gold'];
-const colorText = known => { const cb = knowsCombat(known), l = x => cb ? x : x.filter(c => !CB_COLS.includes(c)); return Object.entries(TYPE_COLORS).filter(([t]) => !OPT_TYPES.includes(t) || known.includes(t)).map(([t, [p, a]]) => `  ${t}: ${l(p).join(', ')} | ${l(a).join(', ')}`).join('\n') }
-  + `\n  watch dial: ${DIAL_COLS.join(', ')}`;
+const colorText = known => { const cb = knowsCombat(known), l = x => cb ? x : x.filter(c => !CB_COLS.includes(c)); return Object.entries(TYPE_COLORS).filter(([t]) => !OPT_TYPES.includes(t) || known.includes(t)).map(([t, [p, a]]) => `  ${t}: ${l(p).join(', ')} | ${l(a).join(', ')}`).join('\n')
+  + `\n  watch dial: ${DIAL_COLS.join(', ')}`; };
 /* the whole prompt for the request's known optional types (none: as it always was) */
 const PQ_TYPE = 'pocketsquare (a handkerchief for the jacket\'s breast pocket, folded or laid flat), ';
 const PQ_PATTERNS = `  pocketsquare:
