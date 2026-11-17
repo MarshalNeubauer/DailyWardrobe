@@ -62,13 +62,13 @@ const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im)
    come through here (2026-11-15) */
 async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;if(url&&await deadPic(url)){toast(DEAD_MSG,8000);return false}
   const prev=it[k]||null;if(phEdit.id===id||!phEdit.id){phEdit.undo.push({k,v:prev});if(phEdit.undo.length>10)phEdit.undo.shift()}
-  if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe();
+  if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);planDirty();renderWardrobe();
   if(msg)Array.isArray(msg)?toast(...msg):toast(msg,4000,{label:'Undo',fn:()=>picUndo(id,k,prev)})}
 /* a toast's Undo: the editor's own Undo while the sheet is still on this item and that change is the last one, else the picture as it was
    (the sheet may be closed or on another item by then) */
 async function picUndo(id,k,prev){const it=items.find(x=>x.id===id);if(!it)return;const top=phEdit.undo[phEdit.undo.length-1];
   if(editing===id&&phEdit.id===id&&top&&top.k===k&&top.v===(prev||null)){await undoPhoto(id);return}
-  if(prev)it[k]=prev;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe()}
+  if(prev)it[k]=prev;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);planDirty();renderWardrobe()}
 const setPhoto=(id,url,msg)=>setPic(id,'photo',url,msg),setTexture=(id,url,msg)=>setPic(id,'texture',url,msg);
 /* a close-up added later stays as taken: the item photo's light reading may not hold for another moment */
 /* a close-up under TEX_MIN_PX on its short side is refused, as on the Add card (2026-11-15, the re-audit: the editor took a 40×40 one) */
@@ -95,7 +95,7 @@ async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.pho
   if(await setPhoto(id,c.toDataURL('image/jpeg',.9),['Photo rotated.',4000,photoUndoAct(id,prev,sharp,b)])===false){it.pbox=b;return}   // drawn black: the box stays as it was
   if(sharp)try{const si=await imgOf(sharp),sc=document.createElement('canvas');sc.width=si.naturalHeight;sc.height=si.naturalWidth;const sx=sc.getContext('2d');sx.translate(sc.width,0);sx.rotate(Math.PI/2);sx.drawImage(si,0,0);await keepTagImg(id,sc.toDataURL('image/jpeg',TAG_Q),it.photo)}catch(e){console.warn('sharp copy not turned',e)}}
 async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.undo.length)return;const {k,v}=phEdit.undo.pop();
-  if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);cache={};renderWardrobe()}
+  if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);planDirty();renderWardrobe()}
 /* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
 async function startCrop(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo);
   phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};renderWardrobe();const b=$('#ivbody');if(b)b.scrollTop=0;requestAnimationFrame(layoutCrop)}
@@ -216,7 +216,7 @@ async function sete(id,k,v){
   if(k==='type'){it.pattern=normPat(v,it.pattern);shirtColFix(it);if(METAL_TYPES.includes(v)&&!it.metal)it.metal='silver';if((v==='shoes'||v==='belt')&&!it.leather)it.leather='calf';typeTidy(it)}
   if(k==='primaryColor')delete it.color;
   if((k==='primaryColor'||k==='type')&&it.swSrc==='tex')await refreshSwatch(it);   // the close-up swatch takes its lightness from the colour
-  await put(it);cache={};renderWardrobe();
+  await put(it);planDirty();renderWardrobe();
 }
 /* a type change drops what the new type has no field for (2026-11-15, the new-user audit: a raincoat made cufflinks was "· warm weather",
    as socks "Green, white toe · warm weather" in waxed cotton): season, material not in its list, metal, leather, cuffs, vest, kind, style,
@@ -250,13 +250,13 @@ async function redetect(id){
   const sw=await load(it.swatch);if(sw)st=detectPattern(it,sw,0,0,sw.width);
   if(!st){const ph=await load(it.photo);if(ph){const mn=Math.min(ph.width,ph.height)*.7;st=detectPattern(it,ph,(ph.width-mn)/2,(ph.height-mn)/2,mn)}}
   if(!st){tell('Could not find a clear repeating pattern in the photo. Adding it again with the fabric in the middle of the picture usually works.');return}
-  it.stripes=st;await put(it);cache={};renderWardrobe();
+  it.stripes=st;await put(it);planDirty();renderWardrobe();
 }
 /* take an item out of rotation, or put it back. Taking it out also lets go of the upcoming days it was pinned to (a swap or a
    hand pick), so those days are planned again without it; past days and days marked worn keep it. */
 async function setItemArrives(id,v){const it=items.find(x=>x.id===id);if(!it)return;const a=arriveVal(v);
   if(a==='past'){renderWardrobe();toast(ARRIVE_PAST,4500);return}   // (the date it had stays)
-  if(a)it.arrives=a;else delete it.arrives;await put(it);cache={};
+  if(a)it.arrives=a;else delete it.arrives;await put(it);planDirty();
   if(await checkArrivals())return renderWardrobe();renderWardrobe()}
 /* want: what the button said when it was drawn (true = "Take out of rotation"): a sheet drawn before another phone's change arrived does
    what it says, never the opposite (fix round 3, W1-5-04); nothing to do when the piece is already that way */
@@ -268,9 +268,9 @@ async function togglePause(id,want){const it=items.find(x=>x.id===id);if(!it){it
       for(const [s,v] of Object.entries(f))if(v===id){delete f[s];hit=true}
       if(hit){const nr={...r,force:f};if(!Object.keys(f).length)delete nr.force;delete nr.ids;await saveDay(nr,true);n++}}}
   // out of rotation doesn't make a sample piece his (kit.js kitNoMine; put reads it at once)
-  const kn=typeof kitNoMine!=='undefined';if(kn)kitNoMine=true;const pw=put(it);if(kn)kitNoMine=false;await pw;cache={};renderWardrobe();
+  const kn=typeof kitNoMine!=='undefined';if(kn)kitNoMine=true;const pw=put(it);if(kn)kitNoMine=false;await pw;planDirty();renderWardrobe();
   toast(it.paused?`Out of rotation: the planner won't pick it${n?`, and ${n} upcoming day${n===1?' was':'s were'} planned again without it`:''}.`:'Back in rotation.')}
-async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);cache={};renderWardrobe()}
+async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);planDirty();renderWardrobe()}
 async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast (wardrobe.js)
 
 

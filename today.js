@@ -4,6 +4,9 @@
 /* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
 let cache={};
+/* the one way to throw the plan away (Round B, CR-7-07: `cache={}` was written from 16 files): anything that changes what the planner
+   sees (the wardrobe, the history, the settings, the weather) calls it */
+function planDirty(){cache={}}
 const planRuns=[];   // the months worked out (not from the cache) since start-up (tests/speed.test.js)
 function planMonth(y,m){const k=y+'-'+m;if(cache[k])return cache[k];if(planRuns.length<200)planRuns.push(k);
   if(window.TEST_PLAN)return cache[k]=TEST_PLAN.plan(y,m);   // tests that don't need the planner (tests/fixedplan.js)
@@ -314,7 +317,7 @@ function figureStage(o){
 /* the painter's cloth for an item's mannequin is ready (draw.js figCuGet): Today's figure is drawn again with it, only while the day shown
    still wears that item as its jacket (or trousers with no jacket) and shows the mannequin; with Settings open, once it closes (todayStale) */
 function figCuDone(id){const o=planFor()[key(sel)];if(!o||!((o.top&&o.top.id===id)||(!o.top&&o.bot&&o.bot.id===id)))return;
-  if(settingsOpen()){todayStale=true;return}
+  if(settingsOpen()){todayDirty();return}
   const t=$('#today'),c=$('#mannequin-container'),svg=c&&c.querySelector(':scope > svg');if(!t||t.hidden||!svg||c.classList.contains('photo'))return;
   svg.outerHTML=figureSvg(o);applyZoom(false)}
 
@@ -324,7 +327,7 @@ let dayShown=null;   // the calendar day the app last drew, and whether it was s
    and a weekend or day off shown as the calendar day never counted: opened on Friday, it still showed Friday on Sunday morning (audit
    2026-11-14, H8). A coming day the user stepped to stays. */
 function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:tk,home:true};return}
-  if(dayShown.k===tk)return;const home=dayShown.home;dayShown={k:tk,home:true};cache={};checkArrivals().then(n=>{if(n&&!$('#today').hidden)refreshToday()});
+  if(dayShown.k===tk)return;const home=dayShown.home;dayShown={k:tk,home:true};planDirty();checkArrivals().then(n=>{if(n&&!$('#today').hidden)refreshToday()});
   const h=homeDay();if(home||isoKey(sel)<=isoKey(h)){sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()};monthOpen=false}
   if(!$('#today').hidden)refreshToday()}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;
@@ -586,9 +589,9 @@ function showPlan(p){const grid=document.querySelector('#mpanel-in .mgrid:not(.m
     if(!m.recs||!m.over){showPlan(m.base);return}
     const before={src:dayRecs[m.src]?{...dayRecs[m.src]}:null,dst:dayRecs[m.over]?{...dayRecs[m.over]}:null},src=m.src,dst=m.over;
     await saveDay(m.recs[dst]);if(m.recs[src])await saveDay(m.recs[src]);else if(dayRecs[src])await saveDay({date:src});
-    cache={};renderToday();
+    planDirty();renderToday();
     const nm=k=>keyDate(k).toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
-    toast(`${nm(src)}'s outfit moved to ${nm(dst)}.`,6000,{label:'Undo',fn:async()=>{await saveDay(before.dst||{date:dst});await saveDay(before.src||{date:src});cache={};renderToday()}})}
+    toast(`${nm(src)}'s outfit moved to ${nm(dst)}.`,6000,{label:'Undo',fn:async()=>{await saveDay(before.dst||{date:dst});await saveDay(before.src||{date:src});planDirty();renderToday()}})}
   // touch: hold still, then drag; scrolling first (moving before the hold ends) cancels
   root.addEventListener('touchstart',e=>{const c=e.touches.length===1&&e.target.closest('#mpanel-in .mc[data-mv]');if(c){const t=e.touches[0];start(c,t.clientX,t.clientY)}},{passive:true});
   root.addEventListener('touchmove',e=>{const t=e.touches[0];if(hold&&Math.hypot(t.clientX-hold.x,t.clientY-hold.y)>MOVE_SLOP)cancelHold();if(mv){e.preventDefault();place(t.clientX,t.clientY)}},{passive:false});

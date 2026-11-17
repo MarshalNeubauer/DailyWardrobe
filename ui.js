@@ -19,9 +19,9 @@ function askKey(e){if(!asking)return;
   const at=f.indexOf(document.activeElement),to=e.shiftKey?(at<=0?f.length-1:at-1):(at===f.length-1?0:at+1);e.preventDefault();f[to].focus()}
 /* fromBack: the phone's Back closed it (askBack): its history entry is gone already */
 function askAnswer(v,fromBack){const a=asking;if(!a)return;asking=null;const {b,s}=askEls();b.classList.remove('on');s.classList.remove('on');{const iv=document.querySelector('#item-view');if(iv&&iv.inert&&typeof layerInert==='function')layerInert()}   // (the item sheet made inert under it by another layer's call: given back; a question itself doesn't toggle inert, which is slow on WebKit and has its own Tab trap)
-  if(typeof appGiveBack==='function'){if(!fromBack)appGiveBack('ask',a.was);else if(a.was)appPush(a.was)}   // the entry goes, or goes back to the page under the question; after Back the page gets a new one
+  {if(!fromBack)appGiveBack('ask',a.was);else if(a.was)appPush(a.was)}   // the entry goes, or goes back to the page under the question; after Back the page gets a new one
   try{if(a.last&&a.last.isConnected)a.last.focus({preventScroll:true})}catch{}
-  const w=typeof appSettled==='function'&&appSettled();if(w)w.then(()=>a.done(!!v));else a.done(!!v)}   // (after the question's own step back has landed)
+  const w=appSettled();if(w)w.then(()=>a.done(!!v));else a.done(!!v)}   // (after the question's own step back has landed)
 /* the phone's Back with a question up answers it no, as Cancel, Escape and a tap outside do (fix round 2, 2026-11-15: Back closed
    Settings under "Roll back to …?", the question stayed over Today, and "Roll back" then emptied the wardrobe with no message; with
    nothing under it Back left the app). The question takes a history entry (start.js appBorrow: its own, or the page's under it). */
@@ -31,7 +31,7 @@ function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)as
   const parts=String(message).split(/\n\s*\n/),{b,s}=askEls();
   s.innerHTML=`<p class="ask-q" id="ask-title">${uiEsc(parts[0])}</p>${parts.slice(1).map(t=>`<p class="ask-more">${uiEsc(t)}</p>`).join('')}
 <div class="ask-btns">${o.cancel?`<button type="button" id="ask-cancel" onclick="askAnswer(false)">${uiEsc(o.cancel)}</button>`:''}<button type="button" id="ask-ok" class="${o.danger?'ask-danger':'pri'}" onclick="askAnswer(true)">${uiEsc(o.ok)}</button></div>`;
-  return new Promise(done=>{asking={done,last:document.activeElement,at:performance.now(),was:typeof appBorrow==='function'?appBorrow('ask'):''};b.classList.add('on');s.classList.add('on');
+  return new Promise(done=>{asking={done,last:document.activeElement,at:performance.now(),was:appBorrow('ask')};b.classList.add('on');s.classList.add('on');
     const f=s.querySelector(o.danger&&o.cancel?'#ask-cancel':'#ask-ok');if(f)f.focus({preventScroll:true})})}
 /* ---- the close-up chooser (2026-11-15, closeup-chooser-mockups variant A, the owner's choice): a close-up button went straight to the
    phone's own picture picker, with no clear way back out. On a touch screen it now opens a sheet from the bottom in the questions' style:
@@ -66,11 +66,11 @@ ${o.remove?'<button type="button" class="cu-rm" id="cu-rm">Remove close-up</butt
   for(const inp of s.querySelectorAll('input[type=file]'))inp.onchange=()=>{const f=inp.files&&inp.files[0];inp.value='';closeupClose();if(f&&o.file)o.file(f)};   // the same handler the button had (addTexture, replaceTexture, cnRetake)
   const rm=s.querySelector('#cu-rm');if(rm)rm.onclick=()=>{closeupClose();o.remove()};
   s.querySelector('#cu-cancel').onclick=()=>closeupClose();
-  cuOpen={o,at:performance.now(),last:document.activeElement,was:typeof appBorrow==='function'?appBorrow('cu'):''};b.classList.add('on');s.classList.add('on');layerInert();
+  cuOpen={o,at:performance.now(),last:document.activeElement,was:appBorrow('cu')};b.classList.add('on');s.classList.add('on');layerInert();
   try{s.querySelector('#cu-take').focus({preventScroll:true})}catch{}}
 /* fromBack: the phone's Back closed it: its history entry is gone already (as askAnswer) */
 function closeupClose(fromBack){const a=cuOpen;if(!a)return;cuOpen=null;const {b,s}=cuEls();b.classList.remove('on');s.classList.remove('on');layerInert();
-  if(typeof appGiveBack==='function'){if(!fromBack)appGiveBack('cu',a.was);else if(a.was)appPush(a.was)}
+  {if(!fromBack)appGiveBack('cu',a.was);else if(a.was)appPush(a.was)}
   try{if(a.last&&a.last.isConnected&&!a.last.closest('[inert]'))a.last.focus({preventScroll:true})}catch{}}
 function closeupBack(){if(cuOpen)closeupClose(true)}
 /* Escape closes it; Tab stays inside it (ahead of the item sheet's and the colour sheet's own keys) */
@@ -80,7 +80,7 @@ window.addEventListener('keydown',e=>{if(!cuOpen||(e.key!=='Escape'&&e.key!=='Ta
   f[e.shiftKey?(at<=0?f.length-1:at-1):(at<0||at===f.length-1?0:at+1)].focus()},true);
 
 /* a notice: nothing to answer, so a toast, kept up long enough to read (about 15 characters a second, 4 to 9 seconds) */
-function tell(message,ms){if(typeof toast==='function')toast(String(message),ms||Math.min(9000,Math.max(4000,String(message).length*70)))}
+function tell(message,ms){toast(String(message),ms||Math.min(9000,Math.max(4000,String(message).length*70)))}
 
 /* ---- Settings, the piece picker, What to buy and the item sheet are dialogs (audit 2026-11-13: Tab wandered to the page behind
    Settings, the picker and What to buy, and Escape didn't close Settings or the picker): while one is up the page behind it (header,
@@ -92,7 +92,7 @@ const layerFromId=new Map();   // dialog -> that control's id: a redraw while th
 /* the open layers, top one first: listed by z-index (a question, the close-up chooser, the tour and import sheet, the reading sheet, the
    color sheet, "Add without a photo", the picker, What to buy), then Settings, then the item sheet; read in this order, not the page's */
 const LAYER_Q=['#ask-sheet.on','#cu-sheet.on','#kitsheet.on','#rd-sheet.on','#col-sheet.on','#nps-sheet.on','#pick-sheet.on','#shop-sheet.on'];
-function layerUp(){const l=LAYER_Q.map(q=>document.querySelector(q)).filter(Boolean);if(typeof settingsOpen==='function'&&settingsOpen())l.push(document.querySelector('#settings-modal'));
+function layerUp(){const l=LAYER_Q.map(q=>document.querySelector(q)).filter(Boolean);if(settingsOpen())l.push(document.querySelector('#settings-modal'));
   const iv=document.querySelector('#item-view.on');if(iv)l.push(iv);return l}
 function layerInert(){const up=layerUp(),on=up.length>0||!!document.querySelector('#setup.on,#nostore'),npsTop=!!up[0]&&up[0].id==='nps-sheet';
   // "Add without a photo" is inside main: on top, main stays reachable and npsInert closes off the rest of Add around it
@@ -100,7 +100,7 @@ function layerInert(){const up=layerUp(),on=up.length>0||!!document.querySelecto
   // the item sheet under a sheet of its own (the color sheet, the close-up chooser, the reading sheet, a question, the picker): out of
   // reach too (fix round 3, W2-19-03: 18 of 40 Tabs from the color sheet landed in the item sheet behind it)
   const iv=document.querySelector('#item-view');if(iv)iv.inert=!!up.length&&up[0]!==iv&&iv.classList.contains('on');
-  if((!on||npsTop)&&typeof npsId!=='undefined'&&npsId&&typeof npsInert==='function')npsInert(true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add.js)
+  if((!on||npsTop)&&typeof npsId!=='undefined'&&npsId)npsInert(true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add.js)
 function layerOpen(el){if(!el)return;if(!layerFrom.has(el)){const a=document.activeElement;layerFrom.set(el,a);if(a&&a.id)layerFromId.set(el,a.id);else layerFromId.delete(el)}
   if(!el.hasAttribute('tabindex'))el.tabIndex=-1;layerInert();
   if(!el.contains(document.activeElement))try{el.focus({preventScroll:true})}catch{}}
@@ -114,8 +114,8 @@ window.addEventListener('keydown',e=>{if(e.key!=='Tab'&&e.key!=='Escape')return;
   const top=layerUp()[0];if(!top||top.id==='ask-sheet'||top.id==='col-sheet'&&e.key==='Escape')return;   // a question handles its own keys, the color sheet its Escape (its Tab stays inside it here)
   if(e.key==='Escape'){if(e.defaultPrevented)return;
     if(top.id==='settings-modal'){e.preventDefault();e.stopPropagation();closeSettings()}
-    else if(top.id==='pick-sheet'&&typeof closePicker==='function'){e.preventDefault();e.stopPropagation();closePicker()}
-    else if(top.id==='nps-sheet'&&typeof npsCancel==='function'){e.preventDefault();e.stopPropagation();if(!npsAsking)npsCancel()}   // (here, not on the sheet: with the focus on <body> the sheet's own listener never heard it)
+    else if(top.id==='pick-sheet'){e.preventDefault();e.stopPropagation();closePicker()}
+    else if(top.id==='nps-sheet'){e.preventDefault();e.stopPropagation();if(!npsAsking)npsCancel()}   // (here, not on the sheet: with the focus on <body> the sheet's own listener never heard it)
     return}   // What to buy, the item sheet and the tour close on their own listeners
   const f=layerFocusables(top);if(!f.length){e.preventDefault();return}
   const at=f.indexOf(document.activeElement);
@@ -176,7 +176,7 @@ function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)retu
 function connOwn(){document.body.classList.add('srv-open');const f=document.querySelector('#adv-connection');if(f&&!f.classList.contains('open')){const b=f.querySelector('.adv-head');if(b)advToggle(b)}
   const o=document.querySelector('#conn-own');if(o)o.hidden=true}
 /* from a section that needs the server: open Connection and put the cursor in the invite-link field */
-function goConnect(){if(typeof toggleCat!=='function')return;const c=document.querySelector('#sc-connection');if(c&&!c.classList.contains('open'))toggleCat('connection');
+function goConnect(){const c=document.querySelector('#sc-connection');if(c&&!c.classList.contains('open'))toggleCat('connection');
   setTimeout(()=>{const f=document.querySelector('#conn-link');if(f){f.scrollIntoView({block:'center',behavior:'smooth'});f.focus({preventScroll:true})}},350)}
 /* the Add tab: "Several items" finds the items in one photo on the server, so it is switched off (with the reason) while not connected */
 const ADD_GROUP_SUB='One photo of a rail, a pile or a few on hangers';
@@ -190,7 +190,7 @@ async function connPaste(){const inp=document.querySelector('#conn-link'),t=(inp
   try{ok=typeof connectFromLink==='function'&&!!(await connectFromLink(t))}catch(e){ok=false}
   // why it didn't connect, in this line (offline isn't a wrong link; a kept connection was said by its toast)
   connBusy=false;connMsg=ok?'':typeof acctFailText==='function'?acctFailText():'That link didn’t work. Check that you copied all of it.';renderConnUI();
-  if(ok&&typeof renderSettingsExtras==='function')renderSettingsExtras()}
+  if(ok)renderSettingsExtras()}
 
 /* ---- Settings: what only the owner needs sits in an "Advanced" fold inside its category, closed until tapped ---- */
 function advToggle(btn){const f=btn.closest('.adv');if(!f)return;const open=!f.classList.contains('open');f.classList.toggle('open',open);btn.setAttribute('aria-expanded',open)}

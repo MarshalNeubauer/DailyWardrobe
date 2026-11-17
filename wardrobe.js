@@ -40,10 +40,10 @@ const WARD_FAMS=['neutral','blue','brown','green','red','purple','metal'];
 const WARD_FAM={white:'neutral',silver:'neutral',grey:'neutral',charcoal:'neutral',black:'neutral',lightblue:'blue',blue:'blue',navy:'blue',cream:'brown',tan:'brown',brown:'brown',gold:'brown',
   green:'green',olive:'green',pink:'red',red:'red',burgundy:'red',purple:'purple'};
 const wardNoCol=i=>(i.type==='watch'&&!strapBand(i))||i.type==='cufflinks'||i.type==='tieclip';   // shown by their metal, not a colour
-const wardFam=i=>{if(wardNoCol(i))return WARD_FAMS.indexOf('metal');const c=planCol(i),k=WARD_FAMS.indexOf(WARD_FAM[typeof fam==='function'?fam(c):c]||WARD_FAM[c]);return k<0?WARD_FAMS.length:k};
+const wardFam=i=>{if(wardNoCol(i))return WARD_FAMS.indexOf('metal');const c=planCol(i),k=WARD_FAMS.indexOf(WARD_FAM[fam(c)]||WARD_FAM[c]);return k<0?WARD_FAMS.length:k};
 /* how often and when each item was really worn: {n:{id:count}, last:{id:Date}} */
 function wardWear(){const n={},last={};
-  for(const d of typeof wornDays==='function'?wornDays():[])for(const id of Object.values(d.ids||{})){if(!id||typeof id!=='string')continue;n[id]=(n[id]||0)+1;last[id]=d.d}
+  for(const d of wornDays())for(const id of Object.values(d.ids||{})){if(!id||typeof id!=='string')continue;n[id]=(n[id]||0)+1;last[id]=d.d}
   return {n,last}}
 function wardOrder(list,sort,wear){
   const T=Object.keys(TYPES),ti=i=>{const k=T.indexOf(i.type);return k<0?T.length:k},nw=(a,b)=>(b.added||0)-(a.added||0),byType=(a,b)=>ti(a)-ti(b)||nw(a,b);
@@ -135,7 +135,7 @@ function wardFieldsTop(i){return fldRow('name','Name',i.name,ivOn(i.id),'Optiona
 function wardFieldsEnd(i){return matRow(i.type,i.material,`setItemField('${jsq(i.id)}','material',`)+notesRow(i.notes,ivOn(i.id))}
 /* saving one of them. Text fields don't redraw the sheet (the next field tapped would lose its focus): only the title and the grid follow */
 async function setItemField(id,k,v){
-  const it=items.find(x=>x.id===id);if(!it&&typeof itemGoneTell==='function'&&itemGoneTell(id))return;if(!it||!WARD_FIELDS.includes(k))return;v=noBidi(v).trim().slice(0,WARD_MAX[k]);if((it[k]||'')===v)return;   // (noBidi: no right-to-left overrides, W2-12-06, core.js)
+  const it=items.find(x=>x.id===id);if((!it)&&itemGoneTell(id))return;if(!it||!WARD_FIELDS.includes(k))return;v=noBidi(v).trim().slice(0,WARD_MAX[k]);if((it[k]||'')===v)return;   // (noBidi: no right-to-left overrides, W2-12-06, core.js)
   if(v)it[k]=v;else delete it[k];if(it.sample)it.sampleMine=1;   // his edit (also when typed text is saved after the sheet closed: kit.js kitEdited)
   await put(it);
   if(k==='material')return renderWardrobe();   // Other shows or hides its field
@@ -143,7 +143,7 @@ async function setItemField(id,k,v){
 /* the Add card's name, brand and notes (its More section) and Material: each keystroke is kept on the card (nothing is redrawn); i: the card's id or place */
 function setQField(i,k,v){const q=cardOf(i);if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];
   if(k==='material'){delete q.matAI;q.matSet=1;q.checked={...q.checked,fabric:1}}   // chosen by hand (and so its checklist section is checked, add.js addCkSecs): no longer Claude's suggestion, and a later reading leaves it (tagging.js takeMaterial)
-  if(typeof addKeepSoon==='function')addKeepSoon();if(k==='material')renderAdd()}
+  addKeepSoon();if(k==='material')renderAdd()}
 
 /* ---- one-time rename of the owner's stretch shirts (2026-11-15, his decision on the materials audit) ----
    He typed his 10 stretch shirts (74% nylon, 26% spandex) as "nylon/spandex", and they were then moved to "nylon"; the list's entry is now
@@ -156,10 +156,10 @@ async function matMigrate(){if(matMigrating)return 0;matMigrating=true;let n=0;
   try{const stored=((await tx('readonly',s=>s.getAll()))||[]).filter(matRenameTo);
     for(const r of stored){const i=items.find(x=>x.id===r.id)||r,to=matRenameTo(i);if(!to)continue;i.material=to;i.updated=nextStamp(stamp(i));
       await atomic('items',i.id,cur=>{itemFields(i,cur);return {put:i}});n++}   // (CR-5-08: the material alone stamped, by the corrected clock, as app.js put does; it was the whole item at Date.now())
-    if(n){if(window.scheduleSync)scheduleSync();wardMemo=null;if(typeof fixupRedraw==='function')fixupRedraw()}}
+    if(n){if(window.scheduleSync)scheduleSync();wardMemo=null;fixupRedraw()}}
   catch(e){console.warn('material rename',e)}finally{matMigrating=false}
   return n}
-if(typeof whenPulled==='function')whenPulled(()=>matMigrate());
+whenPulled(()=>matMigrate());
 /* copies them from the Add card onto the item being saved */
 function wardSaveFields(q,it){for(const k of WARD_FIELDS){const v=noBidi(q[k]).trim().slice(0,WARD_MAX[k]);if(v&&(k!=='material'||MATERIALS_BY[it.type]))it[k]=v}}
 
@@ -175,13 +175,13 @@ const wardDelete=id=>wardOnce('del:'+id,()=>wardDeleteNow(id));
 async function wardDeleteNow(id){
   const k=items.findIndex(i=>i.id===id);if(k<0)return;const it=items[k],snap=JSON.parse(JSON.stringify(it));
   const days=Object.values(dayRecs).filter(r=>JSON.stringify(r).includes(id)).map(r=>JSON.parse(JSON.stringify(r)));   // the days that refer to it, as they are now
-  const at=await del(id);items=items.filter(i=>i.id!==id);cache={};if(editing===id)dropItem();renderWardrobe();
+  const at=await del(id);setWardrobe({items:items.filter(i=>i.id!==id)});planDirty();if(editing===id)dropItem();renderWardrobe();
   toast(`Deleted ${nameIso(itemName(it)||nm(it))}`,WARD_UNDO_MS,{label:'Undo',fn:()=>wardUndelete(snap,k,days,at)})}
 async function wardUndelete(it,k,days,at){
   if(items.some(i=>i.id===it.id))return;
   it.updated=nextStamp(at);await putRaw(it);   // newer than the tombstone: the item wins the merge (restamped whole: its field stamps no longer match, core.js fsOk)
   items.splice(Math.min(k,items.length),0,it);
   for(const r of days){const cur=dayRecs[r.date];if(!cur||JSON.stringify(cur)!==JSON.stringify(r))await saveDay(r,true)}   // a day re-planned without it meanwhile
-  cache={};if(window.scheduleSync)scheduleSync();
+  planDirty();if(window.scheduleSync)scheduleSync();
   const v=['today','wardrobe','stats'].find(t=>$('#'+t)&&!$('#'+t).hidden);if(v)show(v);
   toast(`${nameIso(cap1(itemName(it)||nm(it)))} is back`)}

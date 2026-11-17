@@ -1,12 +1,12 @@
 /* Daily Wardrobe: what Backup & sync says (split from sync.js, 2026-11-17): the status line, the pause until the next UTC day,
    an invitation that has ended, and the backup words for Connection and the setup. Loaded right before sync.js. */
 // a tester reads a server set-up error in plain words (plainErr, ui.js); the owner, or a connection whose role isn't known yet, the server's sentence
-function setSyncStatus(t){if(typeof isTester==='function'&&isTester()&&typeof plainErr==='function'){const p=plainErr(t);if(p!==t)t='Backup failed: '+p}localStorage.setItem('sync_status',t);showSyncStatus()}
+function setSyncStatus(t){if(typeof isTester==='function'&&isTester()){const p=plainErr(t);if(p!==t)t='Backup failed: '+p}localStorage.setItem('sync_status',t);showSyncStatus()}
 /* a backup already made is said while the next one runs: synced() clears sync_status while `syncing` is still true, and this line read
    "Not backed up yet." under a summary saying "Backed up today" (audit 2026-11-13) */
-function showSyncStatus(){const sum=$('#sum-backup');if(sum&&typeof backupSummary==='function')try{sum.textContent=backupSummary(localStorage.getItem('worker_url'))}catch{}   // the Backup category's summary follows (it read "Backed up today" while offline)
+function showSyncStatus(){const sum=$('#sum-backup');if(sum)try{sum.textContent=backupSummary(localStorage.getItem('worker_url'))}catch{}   // the Backup category's summary follows (it read "Backed up today" while offline)
   const el=$('#sync-status');if(!el)return;const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'';
-  if(typeof inviteOver==='function'&&inviteOver()){el.textContent=ENDED;return}   // not "Backed up …": nothing backs up any more
+  if(inviteOver()){el.textContent=ENDED;return}   // not "Backed up …": nothing backs up any more
   // backups paused (the day's saves used up): said, not hidden behind the last backup's time (2026-11-14: the owner saw only "Backed up 10:28"
   // and a Sync now that did nothing)
   const lastTxt=last?` Last backed up ${new Date(last).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}.`:'';
@@ -24,7 +24,7 @@ const ENDED='Your invitation has ended. Your wardrobe stays on this phone, and t
    deleted) is also marked invite_lost: the server holds no copy of this phone's wardrobe, so a new invitation link keeps the wardrobe and
    backs it up there instead of clearing it (account.js connectFromLink; 2026-11-15, the audit: nothing said how to recover) */
 function inviteEnded(token,j){if(j&&j.error==='forbidden token')try{localStorage.setItem('invite_lost',token)}catch{}
-  if(localStorage.getItem('invite_ended')===token)return;localStorage.setItem('invite_ended',token);if(typeof tell==='function')tell(endedTold(j));
+  if(localStorage.getItem('invite_ended')===token)return;localStorage.setItem('invite_ended',token);tell(endedTold(j));
   showSyncStatus();if(typeof acctEndedUI==='function')acctEndedUI()}   // what said "Connected" and "backed up" says so too (account.js)
 /* what the one-time message says (fix round 3): a link the owner replaced with a new one (worker/people.js, 'invite off' with replaced) says the
    new link opens the same wardrobe; an account deleted (W1-6-03: after Delete everything on another phone this phone only heard "Your
@@ -38,7 +38,7 @@ const endedTold=j=>j&&j.replaced?ENDED_NEW:j&&j.error==='forbidden token'?ENDED_
 const endedAnswer=(status,j)=>status===403&&!!j&&(j.error==='invite off'||j.error==='forbidden token'&&typeof isTester==='function'&&isTester());
 /* a backup that couldn't reach the server (Safari's "Load failed", Chrome's "Failed to fetch"): plain words, not the browser's -> text or null.
    (2026-11-15, the audit: "Backup failed: Load failed") */
-function syncNetText(e){const m=String(e&&e.message||e||'');if(!(typeof netErr==='function'?netErr(m):/^(Load failed|Failed to fetch|NetworkError)/i.test(m)))return null;
+function syncNetText(e){const m=String(e&&e.message||e||'');if(!netErr(m))return null;
   return navigator.onLine===false?OFFLINE_SYNC:UNREACHED_SYNC}
 const OFFLINE_SYNC='Not backed up: you’re offline. Your changes are kept on this phone and back up when you’re online again.';
 const UNREACHED_SYNC='Not backed up: the server couldn’t be reached. Your changes are kept on this phone and back up later.';

@@ -38,7 +38,7 @@ function pattern(id, spec, rot, k = 1) {
    up to 12 levels darker than the painted buttons) */
 const btnCol = (c) => { const ok = /^#[0-9a-fA-F]{6}$/.test(String(c)), s = ok ? [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)) : [235, 235, 235];
   const hex = v => '#' + v.map(x => Math.round(x).toString(16).padStart(2, '0')).join('');
-  if (typeof asmCmBtnCol === 'function' && typeof srgbLin8 === 'function') return hex(asmCmBtnCol(s.map(srgbLin8)).map(v => 255 * linSrgb(v)));
+  if (typeof asmCmBtnCol === 'function') return hex(asmCmBtnCol(s.map(srgbLin8)).map(v => 255 * linSrgb(v)));
   return hex([239, 236, 231].map((v, i) => v * .45 + s[i] * .55)); };
 const shirtButton = (x, y, r, c) => `<circle cx="${x + r * .25}" cy="${y + r * .35}" r="${r * 1.05}" fill="#000" fill-opacity=".18"/><circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/>`
   + `<circle cx="${x}" cy="${y}" r="${(r * .8).toFixed(2)}" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="${(r * .18).toFixed(2)}"/>`

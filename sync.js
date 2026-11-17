@@ -34,21 +34,21 @@ async function applyMerged(local,incoming){const m=mergeState(local,incoming);
     // an edit made here after the piece was deleted on another phone isn't kept (core.js tombWins): said, not silently dropped (W1-5-05)
     if(tomb[it.id]&&stamp(it)>tomb[it.id])dropped.push(itemName(it)||nm(it));
     await atomic('items',it.id,cur=>cur&&stamp(cur)<=stamp(it)?{del:true}:null)}
-  if(dropped.length&&typeof tell==='function')tell(dropped.length===1?`“${dropped[0]}” was deleted on another phone, so your change to it wasn’t kept.`:`${dropped.length} pieces were deleted on another phone, so your changes to them weren’t kept.`);
+  if(dropped.length)tell(dropped.length===1?`“${dropped[0]}” was deleted on another phone, so your change to it wasn’t kept.`:`${dropped.length} pieces were deleted on another phone, so your changes to them weren’t kept.`);
   const haveDays=Object.fromEntries(local.days.map(d=>[d.date,d]));
   for(const d of m.days)if(!haveDays[d.date]||(haveDays[d.date].updated||0)!==(d.updated||0)){
     await atomic('days',d.date,cur=>{const w=cur?mergeDay(cur,d):d;return w===cur?null:{put:w}})}
   if(m.settings){const cs=await metaGet('settings');if(!cs||(cs.updated||0)<=(m.settings.updated||0))await metaPut('settings',m.settings)}
   const now=await localState();
   if(stateSig(now)!==stateSig(local)){const open=typeof editing!=='undefined'&&editing&&items.find(i=>i.id===editing);
-    items=now.items;cache={};if(window.onSyncedData)onSyncedData(now);syncRedraw(['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden));syncSettingsRedraw();
-    if(open&&typeof itemSynced==='function')itemSynced(open)}   // the item sheet follows the new copy (itemsheet.js)
+    setWardrobe({items:now.items});planDirty();if(window.onSyncedData)onSyncedData(now);syncRedraw(['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden));syncSettingsRedraw();
+    if(open)itemSynced(open)}   // the item sheet follows the new copy (itemsheet.js)
   return now;
 }
 /* Settings open while a sync brought changes: its controls are drawn again from the merged settings (2026-11-15, the audit: the Suit vest
    and Dark shirts dropdowns kept the old value until Settings was closed and opened again, and a user could "fix" it back). Not while a
    field in it is being typed in: then once the field is left */
-function syncSettingsRedraw(){if(typeof settingsOpen!=='function'||!settingsOpen())return;
+function syncSettingsRedraw(){if(!settingsOpen())return;
   const a=document.activeElement,m=$('#settings-modal');
   if(a&&m&&m.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!/^(button|checkbox|radio)$/.test(a.type||'')){a.addEventListener('blur',()=>setTimeout(syncSettingsRedraw,0),{once:true});return}
   try{renderSettingsExtras()}catch(e){console.warn('Settings not redrawn',e)}
@@ -60,8 +60,8 @@ function syncSettingsRedraw(){if(typeof settingsOpen!=='function'||!settingsOpen
    piece picker is (the redraw closed it): the redraw waits for it to close (syncLater, run by syncLaterRun from itemShown / closePicker) */
 let syncLater=null;
 function syncRedraw(v){if(!v||v==='add')return;
-  if(settingsOpen()){if(v==='today')todayStale=true;else viewStale=v;return}
-  if((v==='wardrobe'&&editing)||(v==='today'&&(picker||(typeof todayBusy==='function'&&todayBusy())))){syncLater=v;return}   // (a finger on Today: today.js todayFree runs it when the gesture ends)
+  if(settingsOpen()){if(v==='today')todayDirty();else viewStale=v;return}
+  if((v==='wardrobe'&&editing)||(v==='today'&&(picker||todayBusy()))){syncLater=v;return}   // (a finger on Today: today.js todayFree runs it when the gesture ends)
   return show(v)}
 function syncLaterRun(v){if(syncLater!==v)return;syncLater=null;if($('#'+v).hidden)return;
   if(v==='today')refreshToday();else if(v==='wardrobe'&&!editing)renderWardrobe()}
@@ -88,7 +88,7 @@ let wipeAsk=null,wipeLater=0;
 const WIPED_SYNC='Backups held: your wardrobe was deleted from the server on another device. This phone still has its copy. Tap Sync now to back it up again.';
 function syncWiped(at){const last=+localStorage.getItem('last_sync')||0;
   if(!(at>0)||!last||last>=at||localStorage.getItem('wipe_seen')===String(at))return false;
-  setSyncStatus(WIPED_SYNC);if(wipeAsk||wipeLater===at||typeof askConfirm!=='function')return true;
+  setSyncStatus(WIPED_SYNC);if(wipeAsk||wipeLater===at)return true;
   const when=new Date(at).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
   wipeAsk=askConfirm(`Your wardrobe was deleted from the server on another device (${when}).\n\nThis phone still has its own copy. Back it up to the server again?\n\nIf not, nothing is sent. You can delete it from this phone too in Settings → About → Delete my data.`,{ok:'Back it up again',cancel:'Not now'})
     .then(yes=>{wipeAsk=null;if(yes){try{localStorage.setItem('wipe_seen',String(at))}catch{}syncNow()}else wipeLater=at},()=>{wipeAsk=null});
@@ -117,7 +117,7 @@ function clockLearn(r,t0,t1){const srv=+(r&&r.headers&&r.headers.get('x-now'))||
 const CLOCK_TELL=3600e3;
 function clockTell(){if(Math.abs(clockSkew)<CLOCK_TELL)return;let told=null;try{told=localStorage.getItem('clock_told')}catch{}
   if(told!=null&&Math.abs(+told-clockSkew)<CLOCK_TELL)return;try{localStorage.setItem('clock_told',String(clockSkew))}catch{}
-  if(typeof toast==='function')toast(clockText(clockSkew),12000)}
+  toast(clockText(clockSkew),12000)}
 function clockText(s){const a=Math.abs(s),h=a/3600e3,d=h/24,y=d/365.25,n=(v,w)=>`${v} ${w}${v===1?'':'s'}`;
   const by=y>=.9?n(Math.round(y),'year'):d>=1.5?n(Math.round(d),'day'):n(Math.max(1,Math.round(h)),'hour');
   return `Your phone’s clock is ${by} ${s>0?'behind':'ahead'}. Your changes are dated by the right time anyway. To fix the clock, turn on Set Automatically in Settings → General → Date & Time.`}
@@ -136,7 +136,7 @@ async function clockFix(){const t=nowMs(),lim=t+CLOCK_AHEAD,st=await localState(
     if(c.holidays&&(+c.holidays.fetched||0)>lim){c.holidays.fetched=0;if(c.kh)c.kh.holidays=setHash(c.holidays);if(c.ks)c.ks.holidays=t;ch=true}
     if((+c.updated||0)>lim||ch){c.updated=t;await metaPut('settings',c);n++}}
   if(!n)return false;
-  const now=await localState();items=now.items;cache={};if(window.onSyncedData)onSyncedData(now);return true}
+  const now=await localState();setWardrobe({items:now.items});planDirty();if(window.onSyncedData)onSyncedData(now);return true}
 /* ---- the small sync (worker.js syncLiteGet / syncLitePost). A newer worker answers GET /sync?lite=1&since=<the version last agreed
    on> with only the records changed since, with photos as references (dwph:<hash>), every tombstone, and what it holds of each record
    (idx: its stamp); this device fetches only the photos it lacks (?ph=), merges, and POSTs only the records newer than the backup's,
@@ -159,7 +159,7 @@ async function syncLite(remote,local,url,token,inline){
   if(off.url!==url)off={url,i:[],d:[]};
   const offI=new Set([...(off.i||[]),...raw.items.filter(i=>!(i&&gi.has(i.id))).map(i=>String(i&&i.id))]),offD=new Set([...(off.d||[]),...raw.days.filter(d=>!(d&&gd.has(d.date))).map(d=>String(d&&d.date))]);
   if(offI.size>(off.i||[]).length||offD.size>(off.d||[]).length)try{localStorage.setItem('sync_off',JSON.stringify({url,i:[...offI].slice(-500),d:[...offD].slice(-500)}))}catch{}
-  if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,got);   // a device's first contact with a backup (safety.js): its settings win
+  await adoptBackupSettings(local,got);   // a device's first contact with a backup (safety.js): its settings win
   const now=mergeState(await applyMerged(local,got),got),ix=remote.idx||{i:{},d:{},s:-1},tomb=remote.tombstones||{};
   // everything the backup holds must be here now; when not (storage cleared, a marker from another backup), ask for all of it
   const has=Object.fromEntries(now.items.map(i=>[i.id,stamp(i)])),hasD=Object.fromEntries(now.days.map(d=>[d.date,d.updated||0]));
@@ -207,7 +207,7 @@ async function syncSaved(p,pr,token,now){
   return true}
 /* this phone's storage failed during a sync: said in a toast every time (safety.js storeFailText), unless the full-page message already says it */
 function syncStoreTell(e){console.warn('storage failure during sync',e);if(typeof dbDown!=='undefined'&&dbDown)return;
-  try{storeToldAt=Date.now()}catch{}if(typeof toast==='function')toast(storeFailText(e),9000)}
+  try{storeToldAt=Date.now()}catch{}toast(storeFailText(e),9000)}
 async function syncOnce(){
   const url=syncUrl(),token=localStorage.getItem('app_token')||'';
   if(!url){setSyncStatus('Not connected.');return false}
@@ -234,7 +234,7 @@ async function syncOnce(){
         const a=res.again;if(a.all)all=true;if(a.since){since=a.since;all=false}if(a.legacy)lite=false;if(a.batch&&extra<SYNC_BATCH_MAX)extra++;continue}
       if(++full>3)break;
       if(remote.data)remote.data=cleanState(remote.data);   // records from outside (core.js)
-      if(typeof adoptBackupSettings==='function')await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
+      await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
       // upload what is actually stored now (it may include edits made during this sync)
       const now=mergeState(await applyMerged(local,remote.data||{}),remote.data||{}),out=cleanState(kitShareFilter(now,remote.data,syncJoinAt()));pullDone();   // (out: what is sent, without the sample wardrobe)
       if(remote.data&&stateSig(out)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
@@ -251,7 +251,7 @@ async function syncOnce(){
     // showed an empty Welcome, and only Settings said "Backup failed: IDBTransaction will abort…")
     // (always toasted, not through saveFailed's 1.5 s once-only: on joining, a start-up write had failed a moment before and its toast was
     // already replaced by "Connected as …", so this one was skipped and the phone showed an empty Welcome with no word: the lead's re-run)
-    if(typeof storeFailure==='function'&&storeFailure(e)){syncStoreTell(e);setSyncStatus('Backup failed: '+storeFailText(e).replace(/^Couldn’t save: /,''));return false}
+    if(storeFailure(e)){syncStoreTell(e);setSyncStatus('Backup failed: '+storeFailText(e).replace(/^Couldn’t save: /,''));return false}
     const n=syncNetText(e);setSyncStatus(n||'Backup failed: '+(e.message||e));return false}
   finally{syncing=false}
 }

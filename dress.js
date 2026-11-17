@@ -21,7 +21,7 @@ function renderDressUI(){const el=$('#cfg-dress');if(!el)return;const j=wearsJac
    first, then the locks let go (one write per locked day): the other way round a tap followed at once by a swipe away lost it, and
    the switch looked unchanged meanwhile (the audit) */
 async function setDress(k,on){settings.dress={jacket:wearsJacket(),tie:wearsTie(),...(settings.dress&&settings.dress.jeans?{jeans:true}:{}),[k]:!!on};if(!settings.dress.jeans)delete settings.dress.jeans;
-  todayStale=true;renderDressUI();settingsSummaries();await saveUserSettings();await clearLocks();cache={}}
+  todayDirty();renderDressUI();settingsSummaries();await saveUserSettings();await clearLocks();planDirty()}
 /* a new suit's Vest row: "With vest" when the waistcoat is worn every suit day (Settings or the setup's "Every suit day") and ties
    are worn; else none, as before (the audit: every suit added after choosing "Every suit day" was saved without one) */
 const newSuitVest=()=>settings.vestMode==='always'&&wearsJacket()&&wearsTie()?'yes':'no';

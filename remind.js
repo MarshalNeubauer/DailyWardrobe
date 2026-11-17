@@ -23,7 +23,7 @@ function remindLines(){const out={},T=todayDate();
     const o=planMonth(d.getFullYear(),d.getMonth())[key(d)];if(o&&(o.top||o.shirt))out[isoKey(d)]=outfitLine(o)}
   return out}
 /* keep both kinds where the service worker reads them (only the kinds switched on) -> the dates a push is wanted on */
-async function remindKeep(p=remindPrefs()){const lines=p.on?remindLines():{},care=remindCareOn(p)&&typeof careReminders==='function'?careReminders(REMIND_DAYS,p.time):{};
+async function remindKeep(p=remindPrefs()){const lines=p.on?remindLines():{},care=remindCareOn(p)?careReminders(REMIND_DAYS,p.time):{};
   try{if(self.caches){const c=await caches.open(REMIND_CACHE),put=(u,o)=>c.put(u,new Response(JSON.stringify(o),{headers:{'content-type':'application/json'}}));await put(REMIND_URL,lines);await put(CARE_URL,care)}}catch(e){console.warn('reminder lines',e)}
   return [...new Set([...Object.keys(lines),...Object.keys(care)])].sort()}
 async function remindCall(body){const r=await acctCall('push',{method:'POST',body:JSON.stringify(body)});if(r.status!==200)throw new Error(r.j&&r.j.message||'The reminder couldn’t be set. Try again.');return r.j}
@@ -70,9 +70,9 @@ async function remindRefresh(){const p=remindPrefs();if(!remindAny(p)||!remindCa
    go off and the reminder box says so, instead of reading On while nothing arrives */
 function remindLost(p){remindSave({...p,on:false,care:false});localStorage.removeItem('remind_sent');remindMsg='Reminders stopped on this phone. Switch them on again to get them.';renderRemindUI()}
 /* Settings → Schedule */
-function renderRemindUI(){const el=document.querySelector('#remind-box');if(!el)return;const p=remindPrefs(),ios=typeof iosInSafari==='function'&&iosInSafari(),care=remindCareOn(p);
+function renderRemindUI(){const el=document.querySelector('#remind-box');if(!el)return;const p=remindPrefs(),ios=iosInSafari(),care=remindCareOn(p);
   let body;
-  if(ios)body=`<p class="shelp">On an iPhone, reminders come to the app on your Home Screen: add it there (${typeof homeShareShort==='function'?homeShareShort():'tap ⋯, then Share, then “Add to Home Screen”'}), open it and switch this on.</p>`;
+  if(ios)body=`<p class="shelp">On an iPhone, reminders come to the app on your Home Screen: add it there (${homeShareShort()}), open it and switch this on.</p>`;
   else if(!remindCan())body='<p class="shelp">This browser can’t show reminders from the app.</p>';
   else body=`<div class="dress-row"><span class="dress-txt"><b id="remind-l">Remind me</b><small id="remind-h">A notification with the day’s outfit, on workdays</small></span><button type="button" class="dress-sw${p.on?' on':''}" id="remind-sw" role="switch" aria-checked="${p.on}" aria-labelledby="remind-l" aria-describedby="remind-h"${remindBusy?' disabled':''} onclick="${p.on?'remindOff()':'remindOn()'}"><i></i></button></div>
     <div class="dress-row"><span class="dress-txt"><b id="care-rem-l">Cleaning reminders</b><small id="care-rem-h">A notification when a suit or blazer is on its last wear or due for the cleaner</small></span><button type="button" class="dress-sw${care?' on':''}" id="care-rem-sw" role="switch" aria-checked="${care}" aria-labelledby="care-rem-l" aria-describedby="care-rem-h"${remindBusy?' disabled':''} onclick="${care?'careRemindOff()':'careRemindOn()'}"><i></i></button></div>
@@ -81,7 +81,7 @@ function renderRemindUI(){const el=document.querySelector('#remind-box');if(!el)
 async function remindTime(v){if(!/^\d\d:\d\d$/.test(v))return;const p={...remindPrefs(),time:v};remindSave(p);if(remindAny(p)){localStorage.removeItem('remind_sent');await remindRefresh();remindMsg=`Notifications at ${v}.`;renderRemindUI()}}
 /* start-up: draw with Settings' extras, and refresh once the app is up */
 (function remindStart(){
-  if(typeof renderSettingsExtras==='function'&&!renderSettingsExtras.remind){const draw=renderSettingsExtras;renderSettingsExtras=function(){draw();renderRemindUI()};renderSettingsExtras.remind=1}
+  settingsPart(renderRemindUI);   // drawn with the rest of Settings (settings.js)
   const go=()=>setTimeout(remindRefresh,4000);document.readyState==='complete'?go():addEventListener('load',go,{once:true});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')remindSoon();else remindHidden()})})();
 /* the app goes to the background: the kept lines are written at once (on the phone, no request; the server is told on the next start).

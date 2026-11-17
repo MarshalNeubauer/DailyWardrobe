@@ -6,7 +6,7 @@ const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
 const keyDate=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
 let swapMsg='';
 async function saveDay(rec,quiet,auto){rec.updated=nextStamp(rec.updated);if(!auto){delete rec.lockOnly;delete rec.base}const was=dayRecs[rec.date];dayRecs[rec.date]=rec;   /* (core.js dayFields: the fields changed since the copy before get this save's stamp; the one in memory, or, changed in place, the stored one) */
-  if(was!==rec){dayFields(rec,was);await txs('days','readwrite',s=>s.put(rec))}else await atomic('days',rec.date,cur=>{dayFields(rec,cur);return {put:rec}});cache={};if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
+  if(was!==rec){dayFields(rec,was);await txs('days','readwrite',s=>s.put(rec))}else await atomic('days',rec.date,cur=>{dayFields(rec,cur);return {put:rec}});planDirty();if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
 /* start-up writers wait for the first pull (sync.js afterPull; sync.js loads after this file, so through afterScripts) */
 let todayPullWait=false;
 const whenPulled=f=>afterScripts(()=>typeof afterPull==='function'?afterPull(f):f());
@@ -167,7 +167,7 @@ const keepOff=(force,k,slot)=>{const r=dayRecs[k];if(!r||!r.off||!r.force)return
 const FOLLOW={top:['bot','shirt','tie','shoes','belt','socks','watch','clip','pocket'],shoes:['belt','socks'],belt:['shoes','socks'],tie:['pocket'],shirt:['pocket']};   // (a belt swap brings shoes that match it, as a shoe swap brings a belt: the owner's ask, 2026-11-14)
 /* would this record leave the day with no belt? (planned with the record in memory only, nothing saved): a belt swap or pick whose
    only matching shoes don't suit the outfit (a black suit wants black shoes, and only the black belt matches them) changes nothing */
-const beltless=(k,rec)=>{const prev=dayRecs[k];dayRecs[k]=rec;cache={};let n=null;try{n=planFor()[k]}finally{if(prev)dayRecs[k]=prev;else delete dayRecs[k];cache={}}return !(n&&n.belt)};
+const beltless=(k,rec)=>{const prev=dayRecs[k];dayRecs[k]=rec;planDirty();let n=null;try{n=planFor()[k]}finally{if(prev)dayRecs[k]=prev;else delete dayRecs[k];planDirty()}return !(n&&n.belt)};
 const BELT_STUCK='Your other belts need shoes that don’t suit this outfit, so the belt stays.';
 /* the planner no longer learns from swaps and picks (removed 2026-11-15, the owner's ask): the votes earlier versions kept in the settings
    (settings.learn) are dropped at start-up, after the first pull, so they stop syncing as dead weight. The removal is stamped like any
@@ -283,7 +283,7 @@ async function correctPast(slot,it){const k=key(sel),r=dayRecs[k],o=planFor()[k]
 const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
 /* give a day an occasion (or none): its swaps are dropped, since the outfit is chosen afresh for the occasion, and the coming days are
    released so they are planned around it (the suit that is right for the occasion may be locked on the day before) */
-async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
+async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){todayDirty();renderFormalUI()}else renderToday()}
 async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;delete n.kind;notAhead(n,k);swapMsg='';await saveDay(n);renderToday()}   // (kind too: a piece taken off or a moved outfit pinned the suit or blazer, CR-4-07)
 /* a coming day's record holds no pieces (ids): they are written when the day is shown (recordDays, today) or once it is past. A pick or
    swap ahead used to write the outfit from before it, which then stood as worn in place of the pick when the app wasn't opened that day
@@ -304,7 +304,7 @@ async function replanFuture(rules){const T=todayDate();let n=0;
     if(rules){if((!r.lock||r.trip)&&!r.auto)continue;const keep={...r};if(!r.trip)delete keep.lock;if(keep.auto){delete keep.auto;delete keep.ids;delete keep.suitDay;delete keep.vestOn}await saveDay(keep,true);n++;continue}   // (a kept trip's lock stays)
     const mine=dayChanged(r,+d===+T);if(!mine&&!r.lock&&!(+d===+T&&r.ids))continue;
     const keep={date:r.date};if(r.formal)keep.formal=true;if(r.occasion)keep.occasion=r.occasion;await saveDay(keep,true);if(mine)n++}
-  cache={};swapMsg='';if(window.scheduleSync)scheduleSync();return n}
+  planDirty();swapMsg='';if(window.scheduleSync)scheduleSync();return n}
 /* the planning rules changed since this wardrobe was last planned: re-plan the future once */
 async function checkPlanRules(){if(!window.TEST_PLAN)return planRulesCheck()}   // (PLAN_RULES is read in planRulesCheck only: a bump selects only the tests that plan for real)
 /* the rules this phone last planned by are the phone's own (meta PLAN_RULES_KEY, never synced; fix round 3, W1-1-01 = W1-4-01 = W1-2-06):
@@ -330,7 +330,7 @@ async function replanButton(){const T=todayDate(),n=replanCount();
   // (fix round 3, W2-17-19: today's outfit changed although its pill read "✓ Wore": the question now says so plainly)
   const tw=isWorkday(T)&&!(dayRecs[key(T)]&&dayRecs[key(T)].worn===false)?' Today’s outfit may change too, even though it shows ✓ Wore: if you are already wearing it, tap Cancel.':'';
   if(!await askConfirm(`Start the plan over?\n\nToday and every coming day are planned afresh: the week's locks and ${n?`your changes on ${n} day${n===1?'':'s'} (swaps, picks, the vest, pieces taken off)`:'any changes'} are thrown out.${tw} Occasions, days off, days marked worn and the past stay as they are.`,{ok:'Start over'}))return;
-  const m=await replanFuture();renderReplanUI(m?`Started over: ${m} day${m===1?'':'s'} with changes planned afresh, and the week unlocked.`:'Started over: the week was unlocked and planned afresh.');todayStale=true}
+  const m=await replanFuture();renderReplanUI(m?`Started over: ${m} day${m===1?'':'s'} with changes planned afresh, and the week unlocked.`:'Started over: the week was unlocked and planned afresh.');todayDirty()}
 function renderReplanUI(msg){const el=$('#replan-status');if(!el)return;const n=replanCount();
   el.textContent=msg||((n?`${n} day${n===1?' has':'s have'} your changes (swaps, picks, the vest, pieces taken off).`:'Today and the coming days follow the planner.')+' Plans afresh from today, throwing out the week\'s locks and your changes; occasions, days off and days marked worn stay.')}
 async function setVest(v){const k=key(sel),o=planFor()[k];if(!o)return;

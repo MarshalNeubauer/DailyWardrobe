@@ -14,7 +14,7 @@ function matchMean(x,W,H,want,has){const g=want.map((v,q)=>Math.min(1.6,Math.max
   const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(linSrgb8(Math.min(1,srgbLin8(v)*g[q])));return t});
   for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0)}
 const TEX_UP_FLAG='tex_up',TEX_UP_V='1536';
-async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_UP_V||!self.caches||typeof TEX_MAX==='undefined')return 0}catch{return 0}
+async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_UP_V||!self.caches)return 0}catch{return 0}
   let n=0,more=false;const img=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
   for(const it of items){if(!it.texture)continue;
     try{const sharp=await sharpCloseOf(it);if(!sharp||sharp===it.texture)continue;
@@ -22,10 +22,10 @@ async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_
       if(remakeLeft()<1){more=true;break}
       const s=Math.min(1,TEX_MAX/Math.max(b.width,b.height)),W=Math.round(b.width*s),H=Math.round(b.height*s),c=document.createElement('canvas');c.width=W;c.height=H;
       const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(b,0,0,W,H);matchMean(x,W,H,linMean64(a),linMean64(b));
-      if(!stillCur(it))continue;it.texture=c.toDataURL('image/jpeg',.85);if(typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);await keepCloseImg(it.id,sharp,it.texture);remakeSpend(1);n++}
+      if(!stillCur(it))continue;it.texture=c.toDataURL('image/jpeg',.85);await refreshSwatch(it);await put(it);await keepCloseImg(it.id,sharp,it.texture);remakeSpend(1);n++}
     catch(e){console.warn('close-up not upgraded',it.id,e)}}
   if(!more)try{localStorage.setItem(TEX_UP_FLAG,TEX_UP_V)}catch{}
-  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).${more?' The rest follow over the next days.':''}`,3500)}
+  if(n){planDirty();fixupRedraw();toast(`${n} close-up${n===1?'':'s'} saved sharper (from this phone's copies).${more?' The rest follow over the next days.':''}`,3500)}
   return n}
 
 /* (2026-11-16, the audit's W1-1-02: an update that remade every photo cost a tester about 3 server writes an item on one morning, and ten
@@ -43,7 +43,7 @@ function remakeSpend(k){if(!remakeOn())return;try{localStorage.setItem('remake_d
    at PH_MAX from it, in the old photo's colour (the old one was white-balanced on the Add card: each channel's mean matched, as for the
    close-ups). Once (localStorage photo_up). */
 const PH_UP_FLAG='photo_up',PH_UP_V='1536';
-async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V||typeof PH_MAX==='undefined'||typeof cropSource!=='function')return 0}catch{return 0}
+async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V)return 0}catch{return 0}
   let n=0,more=false;
   for(const it of items){if(!it.photo)continue;
     try{const ph=await imgOf(it.photo);if(Math.max(ph.naturalWidth,ph.naturalHeight)>=PH_MAX*.9)continue;
@@ -52,10 +52,10 @@ async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V
       if(remakeLeft()<2){more=true;break}   // (the day's remakes used up: the rest on the next days)
       const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(src,0,0,W,H);
       matchMean(x,W,H,linMean64(ph),linMean64(c));
-      if(!stillCur(it))continue;it.photo=c.toDataURL('image/jpeg',.85);await resignTagImg(it.id,it.photo);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);remakeSpend(2);n++}
+      if(!stillCur(it))continue;it.photo=c.toDataURL('image/jpeg',.85);await resignTagImg(it.id,it.photo);await makeSmall(it);if(!it.texture)await refreshSwatch(it);await put(it);remakeSpend(2);n++}
     catch(e){console.warn('photo not upgraded',it.id,e)}}
   if(!more)try{localStorage.setItem(PH_UP_FLAG,PH_UP_V)}catch{}
-  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).${more?' The rest follow over the next days.':''}`,3500)}
+  if(n){planDirty();fixupRedraw();toast(`${n} item photo${n===1?'':'s'} saved sharper (from this phone's copies).${more?' The rest follow over the next days.':''}`,3500)}
   return n}
 /* a transparent picture saved as an item photo before shrink() gave it a backdrop (2026-11-14, the owner's socks: a cut-out PNG whose
    photo showed on black, a JPEG having no transparency): a photo whose edge is nearly all pure black (BB_EDGE of it under BB_DARK) and
@@ -80,10 +80,10 @@ async function fixBlackBackdrops(){try{if(localStorage.getItem(BB_FLAG)===BB_V)r
       const ph=await imgOf(it.photo),c=document.createElement('canvas');c.width=ph.naturalWidth;c.height=ph.naturalHeight;c.getContext('2d').drawImage(ph,0,0);
       if(!blackBackdrop(c)||!stillCur(it))continue;
       if(remakeLeft()<2){more=true;break}   // (a photo and its small copy: the rest on the next days)
-      it.photo=c.toDataURL('image/jpeg',.85);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);remakeSpend(2);n++}
+      it.photo=c.toDataURL('image/jpeg',.85);await makeSmall(it);if(!it.texture)await refreshSwatch(it);await put(it);remakeSpend(2);n++}
     catch(e){more=true;console.warn('backdrop not fixed',it.id,e)}}
   if(!more)try{localStorage.setItem(BB_FLAG,BB_V)}catch{}
-  if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw()}
+  if(n){planDirty();fixupRedraw()}
   return n}
 
 /* once: Claude-read patterns saved without a pattern box were exposure-matched to the whole item photo (wall and all, a navy
@@ -97,4 +97,4 @@ async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='3
     const c=await canvasOf(it.texture),full=it.pbox?await canvasOf(await tagImgOf(it.id,it)||it.photo):null;
     const s=settFromSpec(it.patternSpec,it.pbox&&full?{tex:c,full,box:it.pbox,type:it.type}:{tex:c,type:it.type});
     if(s&&stillCur(it)&&(JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)||JSON.stringify(s.cross)!==JSON.stringify(it.sett.cross))){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
-  localStorage.setItem('spec_recolour','3');if(n)cache={};return n}
+  localStorage.setItem('spec_recolour','3');if(n)planDirty();return n}

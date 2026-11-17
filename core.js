@@ -259,6 +259,10 @@ const SEASONS=[['all','All year'],['warm','Warm weather'],['cold','Cold weather'
 
 /* user settings (stored in IndexedDB meta and synced): which days are workdays, which of those are blazer days,
    temperature units and the weather location */
+/* the one writer of the wardrobe, the outfit history and the settings in memory (Round B, CR-7-07: start, sync, kit, wardrobe,
+   settings and safety assigned them themselves); it only sets what it is given, so each caller keeps its own applyCustom/planDirty,
+   in its own order. (planWith and packPlanOf swap dayRecs for a moment, and analysis.js swaps items: they put them back.) */
+function setWardrobe(w){if('items' in w)items=w.items;if('days' in w)dayRecs=w.days;if('settings' in w)settings=w.settings}
 let settings={workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,vestMode:'auto',updated:0};
 const SET_DEFAULTS=JSON.parse(JSON.stringify(settings));   // the app's own defaults, for a setting a synced copy marks removed (takeSettings)
 /* three-piece suits: a suit may have a matching vest (hasVest). vestMode: 'auto' (suit days that aren't hot, and

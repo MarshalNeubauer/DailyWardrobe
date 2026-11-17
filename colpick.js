@@ -38,12 +38,12 @@ const accChoices=it=>{const main=[primaryCol(it),it.secondaryColor,it.tertiaryCo
 const accItem=(src,ref)=>src==='q'?cardOf(ref):items.find(x=>x.id===ref);
 async function accSet(src,ref,list){const it=accItem(src,ref);if(!it)return;const a=accentsFor(it,list);if(a.length)it.accents=a;else delete it.accents;
   if(src==='q'){it.edited={...it.edited,accents:true};it.checked={...it.checked,colors:1};queueMicrotask(addKeep);renderAdd();return}
-  await put(it);cache={};renderWardrobe()}
+  await put(it);planDirty();renderWardrobe()}
 function accDel(src,ref,c){const it=accItem(src,ref);if(it)return accSet(src,ref,accentsOf(it).filter(x=>x!==c))}
 /* the three colours nearest the measured cloth (main colour only) */
 /* (2026-11-14) a patterned cloth's colours one by one: its ground for the main colour, its stripe for the second (measureParts); with no
    such reading a patterned cloth offers none (the whole picture's median of a white/blue stripe is grey: "Use grey" made it worse) */
-function colNear(it,k){const m=it.meas;if(!m||!m.lab||!['primaryColor','secondaryColor'].includes(k)||typeof nearestCols!=='function')return [];
+function colNear(it,k){const m=it.meas;if(!m||!m.lab||!['primaryColor','secondaryColor'].includes(k))return [];
   const parts=m.parts&&m.parts.length>1?m.parts:null;if(!parts&&(k!=='primaryColor'||multiCol(it)))return [];
   const lab=parts?parts[k==='primaryColor'?0:1].lab:m.lab;
   try{return nearestCols(it.type,lab,m.ref,{kL:measKL(m),skip:it.id,accent:k!=='primaryColor'}).filter(x=>COLORS[x.c])}catch(e){return []}}
@@ -51,7 +51,7 @@ function openColPick(src,ref,k){if(src==='q'&&typeof ref==='number'){const q=que
   colPick={src,ref,k,from:document.activeElement};const it=colTarget();if(!it){colPick=null;return}
   colPick.cur=k==='accents'?'':k==='pattern'?normPat(it.type,it.pattern):(k==='primaryColor'?primaryCol(it):it[k])||'none';colPick.sel=colPick.cur;   // (accents: nothing picked yet)
   colPick.view=it.texture&&(k==='primaryColor'||k==='pattern'||k==='accents'||!it.photo)?'tex':'photo';
-  renderColPick();$('#col-sheet').classList.add('on');$('#col-backdrop').classList.add('on');$('#col-sheet').scrollTop=0;colSwipe();if(typeof layerInert==='function')layerInert();   // the item sheet under it out of reach (W2-19-03)
+  renderColPick();$('#col-sheet').classList.add('on');$('#col-backdrop').classList.add('on');$('#col-sheet').scrollTop=0;colSwipe();layerInert();   // the item sheet under it out of reach (W2-19-03)
   const x=$('#col-sheet .pick-x');if(x)x.focus({preventScroll:true})}
 /* suits and blazers are shown as their traced figure (SUIT_D, BLAZER_D) in the colour or pattern being looked at, redrawn on every
    tap: in place of the flat swatch without a photo, and as a third view ("Drawing", view 'draw') beside the close-up and the photo */
@@ -63,7 +63,7 @@ const cpSeg=(vs,view)=>vs.length>1?`<div class="cpseg" role="group" aria-label="
 /* closing gives the focus back to the button that opened it (W2-19-03: it fell to <body>); when that button was drawn again meanwhile,
    to the same field's button (data-k) in the item sheet or on Add */
 function closeColPick(){const c=colPick;colPick=null;const s=$('#col-sheet'),b=$('#col-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');
-  if(typeof layerInert==='function')layerInert();if(!c)return;const a=document.activeElement;if(a&&a!==document.body&&!(s&&s.contains(a)))return;
+  layerInert();if(!c)return;const a=document.activeElement;if(a&&a!==document.body&&!(s&&s.contains(a)))return;
   const f=c.from&&c.from.isConnected?c.from:document.querySelector(`#item-view.on .colbtn[data-k="${c.k}"],#nps-sheet.on .colbtn[data-k="${c.k}"],#add .colbtn[data-k="${c.k}"]`)||null;
   if(f&&!f.closest('[inert]'))try{f.focus({preventScroll:true})}catch{}}
 /* ---- swiping a sheet down closes it (2026-11-15, the owner: "When I click on color or texture, the sheet comes up, but I can't swipe it
@@ -85,7 +85,7 @@ async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick
   if(off)toast(off.msg,4000,{label:'Undo',fn:off.undo})}
 function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==='pattern'?renderPatNew(keep):renderColNew(keep);
   if(colPick&&colPick.k==='pattern')return renderPatPick(keep);const el=$('#col-sheet'),it=colTarget();if(!el||!it)return;const {k,sel,cur,view}=colPick,y=el.scrollTop;
-  const photo=it.photo||(typeof wardPic==='function'?wardPic(it):null),pic=view==='draw'?null:view==='tex'?it.texture:photo,vs=cpViews(it,photo);
+  const photo=it.photo||wardPic(it),pic=view==='draw'?null:view==='tex'?it.texture:photo,vs=cpViews(it,photo);
   const acc=k==='accents',nc=acc?null:colNewFor(it,k),name=c=>!c?'':c==='none'?'None':c===NEW_COL?cap1(nc?nc.name:''):cap1(colName(c)),hex=c=>c===NEW_COL?(nc?nc.hex:'transparent'):COLORS[c]||'transparent';  const near=colNear(it,k),dWord=d=>d<=4?'Very close':d<=8?'Close':'Nearest';
   const tile=(c,extra='')=>`<button type="button" class="cptile${c===sel?' sel':''}" data-c="${c}" onclick="colPickSel('${c}')" aria-pressed="${c===sel}"><span class="cpsw${c==='none'?' none':''}"${c==='none'?'':` style="background:${hex(c)}"`}>${c===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(name(c))}</span>${c===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
   const fams=COL_FAMS.map(()=>[]);for(const c of colChoices(it,k))fams[colFamily(c)].push(c);
@@ -123,8 +123,8 @@ async function colAskImgs(it,src){
   let measured;try{const c=await imgOf(it.texture),cv=document.createElement('canvas');cv.width=c.naturalWidth;cv.height=c.naturalHeight;cv.getContext('2d').drawImage(c,0,0);
     const r=closeRead(cv),m=Object.assign(measureCloth(cv,null,r.ref?{gains:r.gains,refLum:r.refLum}:{}),{src:'closeup'});m.near=nearestCols(it.type,m.lab,m.ref,{kL:measKL(m),skip:it.id});
     m.parts=measureParts(it,m);if(m.parts)m.groundNear=nearestCols(it.type,m.parts[0].lab,m.ref,{kL:measKL(m),skip:it.id});measured=measHint(m)}catch(e){}
-  const sharp=src==='e'&&typeof tagImgOf==='function'?await tagImgOf(it.id,it):null;
-  return {img:sharp||it.tagImg||it.photo||it.texture,closeup:typeof sharpCloseOf==='function'?await sharpCloseOf(it):it.texture,measured}}
+  const sharp=src==='e'?await tagImgOf(it.id,it):null;
+  return {img:sharp||it.tagImg||it.photo||it.texture,closeup:await sharpCloseOf(it),measured}}
 async function colAskRun(){const it=colTarget();if(!it||!it.texture)return;if(!isConnected()){tell(NEED_CONN);return}
   // one of Claude's own readings per request: asked for both, the answer's schema is more than the API compiles ("compiled grammar
   // is too large", found on the live worker 2026-11-13), so a colour sheet asks for its colours and the pattern sheet for its pattern
@@ -168,11 +168,11 @@ async function colAskUseAll(){const it=colTarget(),a=it&&colAsk[it.id+'|c'];if(!
   const offs=[];for(const f of ch)if(w[f]&&CUSTOM_COL[w[f]]){const o=await ownColOffer(w[f],it.type,f!=='primaryColor');if(o)offs.push(o.msg)}   // an own colour of another kind: offered for this one too
   if(src==='q'){for(const f of ch)setq(ref,f,w[f]||'none');if(offs.length)toast(offs.join(' '),4000);return}
   for(const f of ch)it[f]=w[f];delete it.color;
-  if(ch.includes('primaryColor')&&it.swSrc==='tex')await refreshSwatch(it);await put(it);cache={};renderWardrobe();toast(['Saved Claude’s colors.',...offs].join(' '),offs.length?4000:2500)}
+  if(ch.includes('primaryColor')&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();renderWardrobe();toast(['Saved Claude’s colors.',...offs].join(' '),offs.length?4000:2500)}
 function colAskHtml(it,k,tile,name){const a=colAsk[it.id+'|c'];
   if(!it.texture&&!TEXTURE_TYPES.includes(it.type))return '';   // shoes, belts, watches, socks, coats, clips, links have no close-up: no dead-end hint (2026-11-15)
   if(!it.texture)return `<div class="cpask cpaskhint"><div class="cpasktx"><b>Not sure?</b> <small>Add a close-up${colPick.src==='e'?' (Close-up, under the photos)':''} and Claude can read the colors.</small></div></div>`;
-  if(!a){const cents=typeof benchEstimate==='function'?Math.max(1,Math.round(benchEstimate(1)*100)):1,on=isConnected();
+  if(!a){const cents=Math.max(1,Math.round(benchEstimate(1)*100)),on=isConnected();
     return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up again and says which colors it is. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()"${on?'':' disabled'}>Ask Claude</button></div>`}
   if(a.busy)return `<div class="cpask"><span class="spin" aria-hidden="true"></span><div class="cpasktx"><b>Claude is looking at the close-up…</b><small>This takes a few seconds.</small></div></div>`;
   if(a.err)return `<div class="cpask"><div class="cpasktx"><b>Claude couldn’t answer</b><small>${esc(a.err)}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()">Try again</button></div>`;
@@ -215,7 +215,7 @@ async function patAddNew(it,o){if(!o)throw new Error('Ask Claude again: its patt
   return key}
 /* without a photo the left side is the item drawn in the pattern being looked at (its shape: a tie, a jacket's panel), beside the large swatch */
 function renderPatPick(keep){const el=$('#col-sheet'),it=colTarget();if(!el||!it)return;const {sel,cur,view}=colPick,y=el.scrollTop;
-  const photo=it.photo||(typeof wardPic==='function'?wardPic(it):null),pic=view==='draw'?null:view==='tex'?it.texture:photo,vs=cpViews(it,photo);
+  const photo=it.photo||wardPic(it),pic=view==='draw'?null:view==='tex'?it.texture:photo,vs=cpViews(it,photo);
   const np=patNewFor(it),drawAs=p=>p===NEW_COL?patNewBase(it):p,name=p=>p===NEW_COL?cap1(np?np.name:''):patTitle(p);
   const tile=(p,extra='')=>`<button type="button" class="cptile${p===sel?' sel':''}" data-c="${p}" onclick="colPickSel('${p}')" aria-pressed="${p===sel}"><span class="cpsw cppat">${swatchSVG(patVar(it,drawAs(p)),true)}${p===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(name(p))}</span>${p===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
   const gs=[...PAT_GROUPS.map(()=>[]),[]];for(const p of patChoices(it))gs[patGroupOf(p)].push(p);
@@ -234,7 +234,7 @@ ${ownH}${groups}
   if(keep)el.scrollTop=y}
 function patAskHtml(it,tile,name,np){const a=colAsk[it.id+'|p'];
   if(!it.texture)return `<div class="cpask cpaskhint"><div class="cpasktx"><b>Not sure?</b> <small>Add a close-up${colPick.src==='e'?' (Close-up, under the photos)':''} and Claude can name the pattern.</small></div></div>`;
-  if(!a){const cents=typeof benchEstimate==='function'?Math.max(1,Math.round(benchEstimate(1)*100)):1,on=isConnected();
+  if(!a){const cents=Math.max(1,Math.round(benchEstimate(1)*100)),on=isConnected();
     return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up and names the pattern, even one the app doesn’t have yet. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()"${on?'':' disabled'}>Ask Claude</button></div>`}
   if(a.busy)return `<div class="cpask"><span class="spin" aria-hidden="true"></span><div class="cpasktx"><b>Claude is looking at the close-up…</b><small>This takes a few seconds.</small></div></div>`;
   if(a.err)return `<div class="cpask"><div class="cpasktx"><b>Claude couldn’t answer</b><small>${esc(a.err)}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()">Try again</button></div>`;
@@ -412,7 +412,7 @@ async function colNewAdd(){const nc=colPick&&colPick.newc,it=colTarget();if(!nc|
 function cnUseExisting(){const nc=colPick&&colPick.newc;if(!nc||!nc.res)return;const ex=nc.res.existing;
   if(colPick.src==='s'){toast(`You already have ${nc.kind==='pattern'?patName(ex):colName(ex)}.`);closeColPick();return}cnDone(ex)}
 /* the new colour or pattern (or the one already had) set in the field, as a pick is */
-function cnDone(v){const nc=colPick.newc;if(colPick.src==='s'){closeColPick();if(typeof renderCustomUI==='function')renderCustomUI();return}
+function cnDone(v){const nc=colPick.newc;if(colPick.src==='s'){closeColPick();renderCustomUI();return}
   if(colPick.src==='q'){const q=cardOf(colPick.ref);if(q){if(nc.kind==='pattern')q.newPattern=null;else if(colPick.k==='primaryColor')q.newColor=null}}
   colPick.newc=null;colPick.sel=v;useColPick()}
 function renderPatNew(keep){const el=$('#col-sheet'),it=colTarget(),nc=colPick&&colPick.newc;if(!el||!it||!nc)return;const y=el.scrollTop,src=colPick.src,r=nc.res,name=cap1(String(nc.name||'').trim()),base=cnPatBase(it,nc);
@@ -553,14 +553,14 @@ function rdEls(){let b=document.querySelector('#rd-backdrop'),s=document.querySe
    run again in the open sheet keeps it); × gives it back, and closed by Back the page under it gets its entry again (as the chooser) */
 let rdHist;
 function rdOpen(){const {b,s}=rdEls();b.classList.add('on');s.classList.add('on');s.scrollTop=0;layerOpen(s);
-  if(rdHist===undefined)rdHist=typeof appBorrow==='function'?appBorrow('rd'):''}
+  if(rdHist===undefined)rdHist=appBorrow('rd')}
 function rdClose(fromBack){const me=rd;rd=null;if(me&&me.state==='busy'&&me.ac)try{me.ac.abort()}catch{}
   const {b,s}=rdEls();b.classList.remove('on');s.classList.remove('on');layerClose(s);
-  const h=rdHist;rdHist=undefined;if(h!==undefined&&typeof appGiveBack==='function'){if(!fromBack)appGiveBack('rd',h);else if(h)appPush(h)}
+  const h=rdHist;rdHist=undefined;if(h!==undefined){if(!fromBack)appGiveBack('rd',h);else if(h)appPush(h)}
   if(me)rdRefresh(me.src,me.id)}
 function rdBack(){if(rdHist!==undefined||rd)rdClose(true)}
 /* the page under it, redrawn (the done card, the cost line) */
-function rdRefresh(src,id){if(src==='q'){if(typeof renderAdd==='function')renderAdd()}else if(typeof editing!=='undefined'&&editing===id)renderWardrobe()}
+function rdRefresh(src,id){if(src==='q'){renderAdd()}else if(typeof editing!=='undefined'&&editing===id)renderWardrobe()}
 const rdPaperHtml=pr=>!pr?'':pr.ref?'<span class="rdpaper ok" id="rd-paper">✓ White paper found: true color</span>':`<span class="rdpaper no" id="rd-paper">! No white paper${pr.warm?', warm light':''}</span>`;
 const rdRetakeHtml=it=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',file:'f=>rdRetake(f)',cloth:paperCloth(it)});
 function rdLightNote(it,me){const s=me.sent;if(!s||s.wb!==false)return '';
@@ -678,7 +678,7 @@ function rdAfter(){const me=rd;if(!me)return;const left=RD_HALVES.filter(h=>me[h
 /* Undo: the fields as they were, and a color or pattern this reading added taken out again when nothing else uses it */
 async function rdRestore(src,id,half){const it=rdItem(src,id);
   if(it){for(const [k,v] of Object.entries(half.prev)){if(v===undefined)delete it[k];else it[k]=v}
-    if(src==='q'){if(it.texCanvas)generateSwatch(it);if(typeof addKeep==='function')queueMicrotask(addKeep)}else{if(it.swSrc==='tex')await refreshSwatch(it);await put(it);cache={}}}
+    if(src==='q'){if(it.texCanvas)generateSwatch(it);queueMicrotask(addKeep)}else{if(it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty()}}
   if(half.kind==='accents')return;
   if(half.kind==='materials'){if(half.added&&![...items,...queue].some(x=>x&&x.type===half.type&&x.material===half.added))await removeOwnMaterial(half.type,half.added);return}   // (an own material this reading added)
   if(half.added&&![...items,...queue].some(x=>x&&[x.primaryColor,x.secondaryColor,x.tertiaryColor,x.pattern].includes(half.added)))await removeCustom(half.kind,half.added)}

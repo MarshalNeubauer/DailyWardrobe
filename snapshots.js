@@ -16,7 +16,7 @@ let snapLoading=null;
 function loadSnapshots(){const sel=$('#snap-list');if(!sel||sel.dataset.loaded)return Promise.resolve();if(snapLoading)return snapLoading;const p=snapsRead().catch(e=>console.warn('daily backups not listed',e)).finally(()=>{if(snapLoading===p)snapLoading=null});snapLoading=p;return p}
 async function snapsRead(){const sel=$('#snap-list'),st=$('#snap-status'),url=syncUrl(),token=localStorage.getItem('app_token')||'';if(!sel||sel.dataset.loaded)return;
   if(!url||!token){st.textContent=NEED_CONN;return}
-  if(typeof inviteOver==='function'&&inviteOver()){st.textContent=ENDED;return}
+  if(inviteOver()){st.textContent=ENDED;return}
   try{const r=await fetch(url+'?snaps=1',{headers:{'x-app-token':token},cache:'no-store'}),j=await r.json().catch(()=>({}));
     if(endedAnswer(r.status,j)){inviteEnded(token,j);st.textContent=ENDED;return}   // not "Could not list the daily backups: invite off"
     if(r.status===429&&j.what==='list'){st.textContent=SNAP_CAP;return}   // the server's words name "photo list checks", which a tester can't connect with this list
@@ -28,7 +28,7 @@ async function snapsRead(){const sel=$('#snap-list'),st=$('#snap-status'),url=sy
   catch(e){st.textContent='Could not list the daily backups: '+errWords(e)}}
 const SNAP_CAP='The daily backups can’t be listed again today: today’s limit of lists on the server is used up. They are still kept. Try again tomorrow.';
 /* an error's text for the backup lines: the browser's network words and server set-up words made plain (ui.js plainErr) */
-const errWords=e=>{const m=String(e&&e.message||e||'');return typeof plainErr==='function'?plainErr(m):m};
+const errWords=e=>{const m=String(e&&e.message||e||'');return plainErr(m)};
 /* the wardrobe exactly as in snapshot s, made to win the merge everywhere: its items, days and settings get a new stamp, and
    anything not in it gets a tombstone (days after it are kept: they hold no wardrobe, and there is no deleting a day) */
 /* a copy from before the setup (a first day's backup: no setupDone, no items) brings back no settings: they were only the defaults, and taken
@@ -47,7 +47,7 @@ function rollBackState(local,snap,now=nowMs()){
   return {items,tombstones,days:(snap.days||[]).map(d=>({...d,updated:Math.max(now,(ld[d.date]||0)+1)})),settings}}
 /* what a roll-back says goes to Settings' line and, when Settings isn't open (closed under its question, or the toast's Undo), to a
    toast as well: written only to the closed Settings page, the wardrobe vanished from Today with no word (re-audit 2026-11-15) */
-function rollSay(t,ms,act){const st=$('#snap-status');if(st)st.textContent=t;if(!(typeof settingsOpen==='function'&&settingsOpen())&&typeof toast==='function')toast(t,ms||6000,act)}
+function rollSay(t,ms,act){const st=$('#snap-status');if(st)st.textContent=t;if(!settingsOpen())toast(t,ms||6000,act)}
 /* pick: {id, label} rolls back to that copy (the toast's Undo: "Before the last roll-back"); else the day chosen in the list */
 async function rollBack(pick){const sel=$('#snap-list'),id=pick&&pick.id||sel&&sel.value,url=syncUrl(),token=localStorage.getItem('app_token')||'';
   if(!id){rollSay('Choose a day first.');return}

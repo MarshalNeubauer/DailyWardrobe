@@ -157,7 +157,7 @@ async function refreshSwatch(it){if(!FABRIC.includes(it.type))return;const src=i
 /* once: items that already have a close-up get their swatch cut from it, lightness set from the tagged colour (tex_swatch2) */
 async function texSwatches(){if(localStorage.getItem('tex_swatch2')==='1')return 0;let n=0;
   for(const it of items)if(it.texture&&TEXTURE_TYPES.includes(it.type)){await refreshSwatch(it);if(it.swSrc==='tex'&&stillCur(it)){await put(it);n++}}
-  localStorage.setItem('tex_swatch2','1');if(n)cache={};return n}
+  localStorage.setItem('tex_swatch2','1');if(n)planDirty();return n}
 
 function updateSwatchParam(i, param, val){
   queue[i][param]=Number(val);

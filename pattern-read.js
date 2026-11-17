@@ -52,7 +52,7 @@ const readable=(t,p,w)=>settable(t,p,w)||claudeOnly(t,p);
 /* Claude's reading drawn with the photo's colours: bands (stripes, checks, plaids) or a motif (small figures on a grid) */
 /* an answer of a shape it can't draw (2026-11-16: across without bands threw, and the Add card's Confirm stayed off) gives null: the
    pixel reader takes over, as when Claude sent nothing */
-const specSett=(spec,args)=>{try{return specSett1(spec,args)}catch(e){console.warn('pattern answer not drawn',e);if(typeof errNote==='function')errNote(e,'Pattern answer not drawn ('+(args&&args.type||'?')+', '+(spec&&(spec.texture?'texture':spec.motif?'motif':spec.across?'bands':spec.layout)||'?')+')');return null}};
+const specSett=(spec,args)=>{try{return specSett1(spec,args)}catch(e){console.warn('pattern answer not drawn',e);errNote(e,'Pattern answer not drawn ('+(args&&args.type||'?')+', '+(spec&&(spec.texture?'texture':spec.motif?'motif':spec.across?'bands':spec.layout)||'?')+')');return null}};
 const specSett1=(spec,args)=>spec&&(spec.camo?camoFromSpec(spec,args):spec.texture?(args.type==='shirt'||args.type==='tie'?texFromSpec(spec,args):null):spec.motif?motifFromSpec(spec,args):spec.across?settFromSpec(spec,args):null);
 function readSett(q){const ok=!q.settOff&&readable(q.type,q.pattern,q.weave)&&q.raw,args={full:q.raw&&q.raw.full,box:q.patternBox,tex:q.raw&&q.raw.tex,wb:q.wbOff?null:q.wb,type:q.type};q.settReject=null;
   let s=null;if(ok&&q.spec)s=specSett(q.spec,args);
@@ -97,7 +97,7 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   if(spec){it.patternSpec=spec;if(spec.description)it.patternText=spec.description}
   const chk=settCheck(it.type,it.pattern,s);if(chk.reject){toast(`The reading showed ${chk.reject==='cross'?'lines crossing the stripes':'level bands'}, which isn't ${patName(it.pattern).toLowerCase()}: the pattern stays as it was.`);return}
   if(!chk.s){toast('No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.');return}
-  it.sett=chk.s;delete it.stripes;await put(it);cache={};renderWardrobe();toast(`Pattern read: ${settSummary(s)}.`)}
+  it.sett=chk.s;delete it.stripes;await put(it);planDirty();renderWardrobe();toast(`Pattern read: ${settSummary(s)}.`)}
 
 /* ---- the pattern read by Claude (worker POST /pattern) and coloured from the pixels. The pixel reader alone is thrown by the
    noise in a photo (a seam, moire, panes made uneven by drape); Claude reports the pattern as woven: every band of a repeat each
@@ -105,7 +105,7 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
    close-up's exposure is matched to the item photo's (which has a white wall to set it), and where a thread's pixels read grey
    though Claude sees a colour (a light-blue line woven into khaki linen), the pixels keep the lightness and Claude the hue.
    Without the worker, or when Claude finds no pattern, the pixel reader (settFrom) is used. ---- */
-async function claudePattern({image,closeup,type,wb,signal}){const w=localStorage.getItem('worker_url');if(!w||!image||(typeof inviteOver==='function'&&inviteOver()))return null;
+async function claudePattern({image,closeup,type,wb,signal}){const w=localStorage.getItem('worker_url');if(!w||!image||inviteOver())return null;
   try{const r=await fetch(new URL('pattern',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
       body:JSON.stringify({image,...(closeup?{closeup}:{}),type,...(typeof wb==='boolean'?{wb}:{})}),...(signal?{signal}:{})});   // wb: both pictures white-balanced (worker.js); signal: Skip or a newer close-up calls it off (readBegin)
     const j=await r.json().catch(()=>({}));if(r.status===429&&j.message&&typeof limitNote==='function')limitNote(j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
@@ -160,13 +160,13 @@ function settFromSpec(spec,{tex,full,box,wb,type}){
 async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.raw.tex||!q.tagImg||!readable(q.type,q.pattern,q.weave)||!localStorage.getItem('worker_url'))return;   // a card saved or skipped meanwhile: no paid call
   const me=readBegin(q,'pattern');q.patternReading=1;renderAdd();let spec=null;
   try{const closeup=await closeTagImg(q);if(!queue.includes(q)){readEnd(q,'pattern',me);q.patternReading=0;return}
-    spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff),...(me.ac?{signal:me.ac.signal}:{})})}catch(e){console.warn('pattern reading failed',e);if(typeof errNote==='function')errNote(e,'Pattern reading')}   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
+    spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff),...(me.ac?{signal:me.ac.signal}:{})})}catch(e){console.warn('pattern reading failed',e);errNote(e,'Pattern reading')}   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
   if(!readEnd(q,'pattern',me))return;   // called off (a newer close-up, Skip): its answer is not used
   q.patternReading=0;
   // the card is drawn again however the answer goes (a step that threw here left Confirm switched off: refineFromCloseup)
   try{if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
-    readSett(q);if(q.meas)measureAndApply(q)}catch(e){console.warn('pattern answer not applied',e);q.specFailed=1;if(typeof errNote==='function')errNote(e,'Pattern answer not applied ('+q.type+')')}
-  finally{if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}}
+    readSett(q);if(q.meas)measureAndApply(q)}catch(e){console.warn('pattern answer not applied',e);q.specFailed=1;errNote(e,'Pattern answer not applied ('+q.type+')')}
+  finally{if(queue.includes(q)){renderAdd();addKeep()}}}
 
 /* ---- camouflage (2026-11-16, the owner's MultiCam pants): irregular blotches, no grid to read. Its colours come from the pixels: the
    close-up (else the pattern's box in the photo, else the photo's middle) sampled at about CAMO_SAMPLE px and clustered in Lab (k-means,
