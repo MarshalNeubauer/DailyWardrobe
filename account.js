@@ -69,6 +69,8 @@ async function acctConnect(text,opt){const say=t=>{if(opt.address&&t)acctToast(t
 /* the account behind a code -> its id as remembered on this phone (rememberRole), or '' */
 function acctIdFor(tok){try{const r=JSON.parse(localStorage.getItem('acct_role')||'null');return r&&r.tok===tok&&r.id?String(r.id):''}catch{return ''}}
 function acctRoleFor(tok){try{const r=JSON.parse(localStorage.getItem('acct_role')||'null');return r&&r.tok===tok?r.role:null}catch{return null}}
+/* the server couldn't say whether the invitation this phone uses now is still on (an error of its own): nothing is changed (CR-5-02) */
+const ACCT_OLD_UNSURE='Couldn’t check the invitation this phone uses now: the server had a problem. Nothing was changed. Try the link again in a few minutes.';
 /* p = {code, url}: a link's (acctConnect), or the address and code the owner typed under Advanced (acctTyped, opt.typed) */
 async function acctJoin(p,opt){const say=t=>{if((opt.address||opt.typed)&&t)acctToast(t,5000)};
   if(opt.address){inviteChecking=true;acctLinkDrawn()}
@@ -95,7 +97,11 @@ async function acctJoin(p,opt){const say=t=>{if((opt.address||opt.typed)&&t)acct
       // the old code is over: any refusal now (switched off, replaced, the account deleted or its storage lost), or one heard before
       // (sync.js inviteEnded: invite_ended, invite_lost). The person can't reach that backup any more, and what changed since is nowhere
       // else: the wardrobe on this phone stays and is backed up with the new invitation instead of being cleared (the re-audit's N1)
-      const lost=!oldOk&&old.status!==0&&old.status!==404&&old.status!==405||localStorage.getItem('invite_lost')===cur.tok||localStorage.getItem('invite_ended')===cur.tok;
+      // (CR-5-02, 2026-11-17) only a real "ended" answer counts: switched off or replaced (403 'invite off'), or a code the server doesn't
+      // know (403 'forbidden token'). A passing server error (5xx, 429, another refusal) counted as ended too, and "Keep it and back it up"
+      // copied the whole wardrobe of an account still in use into the new one: now nothing changes and the link can be tried again
+      const lost=old.status===403&&!!old.j&&(old.j.error==='invite off'||old.j.error==='forbidden token')||localStorage.getItem('invite_lost')===cur.tok||localStorage.getItem('invite_ended')===cur.tok;
+      if(!lost&&!oldOk&&old.status!==0&&old.status!==404&&old.status!==405){acctWhy='refused';acctWhyMsg=ACCT_OLD_UNSURE;say(ACCT_OLD_UNSURE);acctLinkDrawn();return false}
       if(lost){
         if(local.any&&!await askConfirm(`Back up this phone’s wardrobe with ${r.j.name?r.j.name+'’s':'the new'} invitation?\n\nYour old invitation has ended, so its backup on the server can’t be reached any more. Your wardrobe, day history and settings stay on this phone as they are, changes since the invitation ended included, and are backed up with the new invitation.`,{ok:'Keep it and back it up'}))return kept('Nothing changed: your wardrobe stays on this phone.');
         localStorage.removeItem('invite_lost')}
@@ -179,8 +185,6 @@ async function acctLocal(){let n=0,d=0,s=0;
   try{const all=await tx('readonly',st=>st.getAll());n=all.length;s=all.filter(i=>i&&i.sample).length;d=await txs('days','readonly',st=>st.count())}catch(e){console.warn('wardrobe not counted',e)}
   try{n=Math.max(n,items.length);s=Math.max(s,items.filter(i=>i.sample).length);d=Math.max(d,Object.keys(dayRecs).length)}catch{}
   return {items:n,days:d,sample:s,any:n>0||d>0}}
-/* the start-up chain has read the wardrobe into memory (removing the sample works on `items`) */
-const acctStarted=()=>new Promise(res=>{const t0=Date.now(),go=()=>window.appReady||Date.now()-t0>20000?res():setTimeout(go,100);go()});
 /* ---- iPhone: an invitation opens in Safari, but a Home Screen app keeps storage of its own, so it starts unconnected. Testers are
    told to add the app to the Home Screen and paste their link there; the link can be copied from Connection any time. ---- */
 const iosDevice=()=>/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);

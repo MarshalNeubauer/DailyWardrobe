@@ -247,10 +247,9 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
         await p.waitForFunction(()=>/limit of 1 photo readings is used up/.test(document.querySelector('#note').textContent),null,{timeout:15000});
         ok(await p.evaluate(()=>document.querySelector('#note').textContent.includes('Today’s limit of 1 photo readings is used up. It starts again at midnight UTC.')&&/limit of 1 photo readings/.test(document.querySelector('#queue').textContent)),'the Add card says a reading limit in the server\'s words');
         await p.evaluate(u=>{document.querySelector('#toast').textContent='';claudePattern({image:u,type:'tie'})},PNG);
-        await p.waitForFunction(()=>/limit of 0 pattern readings is used up/.test(document.querySelector('#toast').textContent)&&document.querySelector('#toast').classList.contains('on'));
-        ok(true,'a pattern reading over the cap says so in a toast');
-        await p.evaluate(()=>openSettings('connection'));await p.waitForFunction(()=>/Photo readings today: 1 of 1/.test(document.querySelector('#acct-box').innerText.replace(/\s+/g,' ')));
-        ok(true,'and Settings shows the day\'s use going up')}
+        ok(await p.waitForFunction(()=>/limit of 0 pattern readings is used up/.test(document.querySelector('#toast').textContent)&&document.querySelector('#toast').classList.contains('on'),null,{timeout:10000}).then(()=>true,()=>false),'a pattern reading over the cap says so in a toast');
+        await p.evaluate(()=>openSettings('connection'));
+        ok(await p.waitForFunction(()=>/Photo readings today: 1 of 1/.test(document.querySelector('#acct-box').innerText.replace(/\s+/g,' ')),null,{timeout:10000}).then(()=>true,()=>false),'and Settings shows the day\'s use going up')}
       // the owner: invite, copy, revoke
       await p.evaluate(()=>{closeSettings();localStorage.setItem('app_token','owner-secret')});await p.evaluate(()=>openSettings('connection'));
       await p.waitForFunction(()=>document.querySelector('#acct-create')&&document.querySelector('#acct-list .acct-inv'));
@@ -264,8 +263,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(link.h.every(h=>h>=44)&&link.w,`its controls are 44px and nothing scrolls sideways (${link.h.join()})`);
       ok((await J(await call('GET','me',lp.get('invite')))).name==='Sam','the code in the link is the new tester\'s');
       await ctx.grantPermissions(['clipboard-read','clipboard-write']).catch(()=>{});await p.click('#acct-copy');
-      await p.waitForFunction(()=>/copied|copy it/i.test(document.querySelector('#toast').textContent));
-      ok(true,'Copy copies it (or says to select it)');
+      ok(await p.waitForFunction(()=>/copied|copy it/i.test(document.querySelector('#toast').textContent),null,{timeout:10000}).then(()=>true,()=>false),'Copy copies it (or says to select it)');
       await p.click('#acct-list .acct-inv:last-child button.danger');await p.click('#ask-ok');await p.waitForFunction(()=>/Switched off/.test(document.querySelector('#acct-list .acct-inv:last-child').textContent));
       ok((await call('GET','me',lp.get('invite'))).status===403&&(await call('GET','me',T)).status===200,'Revoke switches that tester off, and only that one');
       await p.evaluate(()=>{closeSettings()});await p.evaluate(()=>openSettings('connection'));await p.waitForFunction(()=>document.querySelector('#acct-create'));

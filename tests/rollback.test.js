@@ -49,7 +49,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const B=await device();await sync(B);
     ok(await B.evaluate(()=>!!settings.daysOff&&settings.daysOff.length===1&&settings.holidays.country==='DE'),'phone B has the day off and the holidays');
     const day=await A.evaluate(()=>isoKey(new Date()));
-    const rb=async(p,id)=>p.evaluate(async id=>{openSettings('backup');delete $('#snap-list').dataset.loaded;await loadSnapshots();$('#snap-list').value=id;const r=rollBack();await new Promise(r=>setTimeout(r,50));$('#ask-ok').click();await r;return $('#snap-status').textContent},id);
+    const rb=async(p,id,hush)=>p.evaluate(async([id,hush])=>{openSettings('backup');delete $('#snap-list').dataset.loaded;await loadSnapshots();$('#snap-list').value=id;const r=rollBack();await new Promise(r=>setTimeout(r,50));$('#ask-ok').click();await r;
+      if(hush){clearTimeout(syncTimer);window.__rbMid={flag:localStorage.getItem('sync_restore'),n:items.length,st:localStorage.getItem('sync_status')}}return $('#snap-status').textContent},[id,!!hush]);
     const said=await rb(A,day);
     const memA=()=>A.evaluate(()=>({off:settings.daysOff||null,hol:settings.holidays||null,lau:settings.laundryDays??null,vest:settings.vestMode,n:items.length,sum:document.querySelector('#sum-daysoff').textContent}));
     const a1=await memA();
@@ -61,14 +62,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await B.evaluate(async()=>{settings.units='C';await saveUserSettings()});await sync(B);await sync(A);
     const s=backup(),a2=await memA();
     ok(!s.daysOff&&!s.holidays&&!('laundryDays' in s)&&s.units==='C',`an unrelated change on B afterwards doesn't bring them back on the server (${JSON.stringify([s.daysOff,s.holidays,s.laundryDays,s.units])})`);
+    ok(!a2.off&&!a2.hol&&a2.lau===null,`nor in A's memory after it took B's change (${JSON.stringify(a2)})`);
     await A.reload();await A.waitForFunction(()=>window.appReady);await sync(A);
     const a3=await memA();ok(!a3.off&&!a3.hol&&a3.lau===null,`nor on A after a restart (${JSON.stringify(a3)})`);
 
     // ---- H2: the roll-back's upload never arrives (Safari killed): the next start uploads it as a restore, so the copy is kept
     await A.evaluate(async()=>{const it={id:'k2',type:'tie',primaryColor:'green',pattern:'solid',added:Date.now()};await put(it);items.push(it)});await sync(A);
     store.delete('snap:before-restore');dropRestore=1;
-    const said2=await rb(A,day);
-    const mid=await A.evaluate(()=>({flag:localStorage.getItem('sync_restore'),n:items.length,st:localStorage.getItem('sync_status')}));
+    // (read as the roll-back ends, its scheduled backup called off: under load the backup the redraw scheduled, 2.5 s later, went through first)
+    const said2=await rb(A,day,true);
+    const mid=await A.evaluate(()=>window.__rbMid);
     ok(/could not be updated yet/.test(said2)&&mid.flag==='secret'&&mid.n===0&&!store.has('snap:before-restore'),`the roll-back is on the phone, its upload marked as still to go (${said2} ${JSON.stringify(mid)})`);
     ok(/^Not backed up: the server couldn’t be reached/.test(mid.st||''),`the failed upload is said in words, not "Failed to fetch" ("${mid.st}")`);
     await A.reload();await A.waitForFunction(()=>window.appReady);
