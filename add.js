@@ -17,7 +17,7 @@ function cardPics(q){const g=q.wbOff?null:q.wb;q.big=applyWb(q.raw.big,g);const 
   if(q.raw.tex){q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85)}generateSwatch(q)}
 /* a close-up with its own white reference (a corner of white paper) is corrected from that; otherwise like its item photo */
 function texGains(q){if(q.texDone)return null;const r=closeRead(q.raw.tex);return r.ref?r.gains:(q.wbOff?null:q.wb)}   // (texDone: a card brought back after a kill, its close-up already corrected)
-function toggleWb(i){const q=queue[i];if(!q||!q.raw)return;q.wbOff=!q.wbOff;cardPics(q);renderAdd()}
+function toggleWb(i){const q=cardOf(i);if(!q||!q.raw)return;q.wbOff=!q.wbOff;cardPics(q);renderAdd()}
 /* a picture too small to read (an 8×8 thumbnail was sent to Claude and became the item's photo: audit 2026-11-15): refused before any reading */
 const ADD_MIN_PX=32;
 const TEX_MIN_PX=200;
@@ -25,16 +25,16 @@ const TEX_MAX=1536;   // the synced close-up (2026-11-13, the owner: "the zoom-i
 /* the fabric close-up for an Add card: corrected with the same light reading as the card's item photo (taken together) */
 /* read: the close-up came through "Add close-up and read texture/color" (colpick.js rdStart), whose reading replaces the automatic
    re-tag (the owner: no second paid call); the color is still measured from it (measureCard) */
-async function addTexture(i,f,read){const q=queue[i];if(!q||!f)return;
+async function addTexture(i,f,read){const q=cardOf(i);if(!q||!f)return;
   try{const img=await loadImg(f);
     if(Math.min(img.width,img.height)<TEX_MIN_PX){toast(`That close-up is too small to show the weave (${img.width}×${img.height} pixels). Take it close to the cloth, at full size.`,6000);return}
     q.raw=q.raw||{};delete q.texDone;delete q.refineCut;delete q.patternCut;q.raw.tex=shrink(img,Math.max(TEX_MAX,CLOSE_MAX));q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
     if(read){measureCard(q);renderAdd();if(typeof addKeep==='function')addKeep();return}
     refineFromCloseup(queue.indexOf(q))}   // tag again with both photos (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
-function dropTexture(i){const q=queue[i];if(!q)return;delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
+function dropTexture(i){const q=cardOf(i);if(!q)return;delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
 /* (the close-up step of a card, "Step 2 · Fabric close-up", is now the checklist's Texture match section: addCkSecs below) */
-const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colors.':'Colors corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${i})">${q.wbOff?'Correct them':'Show original'}</button></p>`
+const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colors.':'Colors corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${qh(q)})">${q.wbOff?'Correct them':'Show original'}</button></p>`
   :q.wbWas&&q.photo?'<p class="wbnote mut"><small>Colors corrected for the light.</small></p>':'';   // a card brought back after a kill: still corrected, no original kept (addRevive)
 /* Add: "One item" (multi false; also paste and drag) makes one card per photo; "Several items" finds every item in it */
 async function addFiles(files,multi){
@@ -69,9 +69,9 @@ const STOPPED='You stopped the reading.';
 /* Stop on a card being read (one item, or Try again): the request is called off and the card keeps its photo */
 function stopRead(id){const q=queue.find(x=>x.id===id);if(!q||!q.abort||q.multiBusy)return;q.stopped=1;try{q.abort.abort()}catch{}}
 /* a reading cut off by a kill (addRevive: refineCut, patternCut), read again on a tap */
-function refineAgain(i){const q=queue[i];if(!q)return;if(!(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))){toast('Connect in ⚙ Settings first.',4000);return}
-  delete q.refineCut;delete q.patternCut;refineFromCloseup(i)}
-function patternAgain(i){const q=queue[i];if(!q)return;if(!(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))){toast('Connect in ⚙ Settings first.',4000);return}
+function refineAgain(i){const q=cardOf(i);if(!q)return;if(!(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))){toast('Connect in ⚙ Settings first.',4000);return}
+  delete q.refineCut;delete q.patternCut;refineFromCloseup(queue.indexOf(q))}
+function patternAgain(i){const q=cardOf(i);if(!q)return;if(!(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))){toast('Connect in ⚙ Settings first.',4000);return}
   delete q.patternCut;readPatternWithClaude(q)}
 /* a double tap on Confirm: the card saves once, then the list closes up under the finger and the second tap landed on what moved
    there (the last card's: "Import from a spreadsheet", whose sheet then covered Add). A tap within ADD_CALM ms of a Confirm and near
@@ -236,7 +236,7 @@ async function saveAll(){if(saveAllOn||queue.some(cardReading))return;saveAllOn=
   const left=queue.filter(needType).length;
   if(n||left)multiMsg(`${n?`Saved ${n} item${n===1?'':'s'} to your wardrobe.`:''}${left?`${n?' ':''}${left===1?'One card needs its type':`${left} cards need their type`} first.`:''}`);renderAdd()}
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
-const setq=(i,k,v)=>{const q=queue[i];if(!q)return;const asked=k==='type'&&needType(q);q[k]=v==='none'?null:v;q.edited={...q.edited,[k]:true};const ck=CK_FIELD[k]&&!(q.checked&&q.checked[CK_FIELD[k]]);if(ck)q.checked={...q.checked,[CK_FIELD[k]]:1};queueMicrotask(addKeep);
+const setq=(i,k,v)=>{const q=cardOf(i);if(!q)return;i=queue.indexOf(q);const asked=k==='type'&&needType(q);q[k]=v==='none'?null:v;if(k==='type')matTidy(q);q.edited={...q.edited,[k]:true};const ck=CK_FIELD[k]&&!(q.checked&&q.checked[CK_FIELD[k]]);if(ck)q.checked={...q.checked,[CK_FIELD[k]]:1};queueMicrotask(addKeep);
   if(asked){measureGuess(q);q.pattern=normPat(v,q.pattern);shirtColFix(q);renderAdd();return}   /* the type asked for (needType): the colour measured, the full card */
 if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'||k==='band'){renderAdd();return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else if(ck)renderAdd();else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};   // (a section newly checked: its mark and the count follow)
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
@@ -244,8 +244,8 @@ if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k===
 const tagSwInner=i=>`<div class="swsplit">${itemThumb(i,true)}${i.texture&&TEXTURE_TYPES.includes(i.type)?`<img class="swtex" src="${srcOk(i.texture)}" alt="Fabric close-up">`:''}</div><figcaption>${i.texture&&TEXTURE_TYPES.includes(i.type)?'As tagged · Close-up':'As tagged'}<br><b class="cap">${sentence(desc(i))||TYPES[i.type]||''}</b></figcaption>`;
 /* Shade: darker or lighter than the tagged colour's swatch, to match the close-up; "Match close-up" sets it from the measurement */
 const shadeRow=(o,onStep,onMatch,canMatch)=>`<div class="shaderow"><span class="shlab">Shade</span><div class="shctl"><button type="button" class="shbtn" aria-label="Darker" onclick="${onStep}(-1)"${(o.shade||0)<=-SHADE_MAX?' disabled':''}>−</button><span class="shval">${shadeName(o.shade||0)}</span><button type="button" class="shbtn" aria-label="Lighter" onclick="${onStep}(1)"${(o.shade||0)>=SHADE_MAX?' disabled':''}>+</button></div>${canMatch?`<button type="button" class="chipbtn" onclick="${onMatch}">Match close-up</button>`:''}</div>`;
-function stepShadeQ(i,d){const q=queue[i];if(!q)return;q.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(q.shade||0)+d));if(!q.shade)delete q.shade;renderAdd()}
-function matchShadeQ(i){const q=queue[i];if(!q||!q.meas)return;q.shade=shadeFor(q,q.meas.lab);if(!q.shade)delete q.shade;renderAdd();toast(q.shade?`Swatch set ${shadeName(q.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
+function stepShadeQ(i,d){const q=cardOf(i);if(!q)return;q.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(q.shade||0)+d));if(!q.shade)delete q.shade;renderAdd()}
+function matchShadeQ(i){const q=cardOf(i);if(!q||!q.meas)return;q.shade=shadeFor(q,q.meas.lab);if(!q.shade)delete q.shade;renderAdd();toast(q.shade?`Swatch set ${shadeName(q.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
 async function stepShadeE(id,d){const it=items.find(x=>x.id===id);if(!it)return;it.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(it.shade||0)+d));if(!it.shade)delete it.shade;await put(it);cache={};renderWardrobe()}
 async function matchShadeE(id){const it=items.find(x=>x.id===id);if(!it)return;let lab=it.meas&&it.meas.src==='closeup'?it.meas.lab:null;
   if(!lab&&it.texture)try{const im=await imgOf(it.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);lab=measureCloth(c,null,{}).lab}catch{}
@@ -267,7 +267,7 @@ function addManual(){
    Cleared once used, or when Add is left. ---- */
 let addFor=null;
 function renderAddFor(){const n=$('#add-for');if(!n)return;const t=addFor&&TYPES[addFor];n.hidden=!t;
-  const pl=['pants','shoes','socks','cufflinks'].includes(addFor);
+  const pl=PAIR_TYPES.includes(addFor);
   n.innerHTML=t?`Adding ${pl?'':/^[aeiou]/i.test(t)?'an ':'a '}<b>${esc(t.toLowerCase())}</b>: take a photo of ${pl?'them':'it'}, or tap “Add without a photo”.`:''}
 /* ---- the "Add without a photo" sheet (#nps-sheet, in #add so the card keeps Add's styles): grabber, the title with the hanger icon, ×
    in the header (the card's own × is left out), the card in the middle, Confirm and Cancel pinned at the bottom (#nps-bar). The card stays
@@ -316,21 +316,46 @@ function npsLeave(){if(!npsId)return;const q=npsCard(),changed=!!q&&npsSig(q)!==
 function npsSwipe(){if(npsSwipeOn)return;const s=$('#nps-sheet');if(!s)return;npsSwipeOn=true;
   sheetSwipe(s,{head:'.nps-head',body:()=>$('#nps-q'),backdrop:()=>$('#nps-backdrop'),live:()=>!!npsId&&!npsAsking,close:()=>npsCancel()});
   s.addEventListener('keydown',e=>{if(e.key==='Escape'&&npsId&&!npsAsking){e.preventDefault();e.stopPropagation();npsCancel()}})}
-/* the swipe-down of a bottom sheet (the no-photo sheet, the import sheet): o.head is the handle's selector, o.body() the scrolling part,
-   o.live() whether it may start, o.close() what letting go past the line does; the sheet follows the finger by its own transform */
-function sheetSwipe(v,o){let st=null;
-  const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';const bd=o.backdrop&&o.backdrop();if(bd)bd.style.opacity=d?String(Math.max(.15,1-d/v.offsetHeight)):''};
-  const held=on=>{const bd=o.backdrop&&o.backdrop();for(const el of [v,bd])if(el)el.style.transition=on?'none':''};
-  v.addEventListener('touchstart',e=>{const t=e.touches[0],head=!!e.target.closest(o.head),b=o.body();
-    st=!o.live()||e.touches.length>1||e.target.closest('input,textarea')||(!head&&b&&b.scrollTop>0)||(!head&&!(b&&b.contains(e.target)))?null:{x:t.clientX,y:t.clientY,on:false,d:0,ly:t.clientY,lt:e.timeStamp,vy:0}},{passive:true});
-  v.addEventListener('touchmove',e=>{if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
-    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=true;held(true)}else{st=null;return}}
-    e.preventDefault();const now=e.timeStamp;if(now>st.lt){st.vy=(t.clientY-st.ly)/(now-st.lt);st.ly=t.clientY;st.lt=now}
-    st.d=Math.max(0,dy);put(st.d)},{passive:false});
-  const end=()=>{if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;held(false);
-    if(d>v.offsetHeight*.25||(vy>.5&&d>30))o.close();
-    put(0)};
-  v.addEventListener('touchend',end,{passive:true});v.addEventListener('touchcancel',end,{passive:true})}
+/* ---- swiping a sheet down closes it: the one gesture of every sheet but What to buy's (CR-1-09: there were four copies): the no-photo and
+   import sheets, the color, pattern and reading sheets (colpick.js) and the item sheet (itemsheet.js). Its handle (o.head, a selector) at
+   any time, the rest only while its scrolling part (o.body(), else the sheet) is at the top (further down a downward swipe scrolls it back
+   up); decided on the first move of a touch, before the browser scrolls; the sheet follows the finger by its own transform and the backdrop
+   lightens; let go past a quarter of its height or with a flick and it closes (o.close(d), d: how far down it was let go), else it springs
+   back. A mouse, trackpad or Pencil drags it by its handle (Pointer Events, a 4px dead zone, captured only once it moves, so a click on a
+   button there still lands); a finger's pointer events are left to the touch listeners. Never from a text field or o.skip.
+   o: {head, body(), backdrop(), live(target, onHead): it may start, skip, close(d), slide: it slides away from where it was let go after
+   close (the sheet's state goes at once), spring: an animation back (else the sheet's own transition), fadeBack: the backdrop fades back
+   in by an animation (else by its own transition, held while the sheet follows), drag(on): told when the sheet starts and stops following} ---- */
+function sheetSwipe(v,o){if(!v||v.dataset.swipe)return;v.dataset.swipe='1';let st=null;
+  const bd=()=>o.backdrop?o.backdrop():null,dim=d=>String(Math.max(.15,1-d/v.offsetHeight));
+  const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';const b=bd();if(b)b.style.opacity=d?dim(d):''};
+  const held=on=>{v.style.transition=on?'none':'';const b=!o.fadeBack&&bd();if(b)b.style.transition=on?'none':''};
+  const can=(el,head)=>{if(!o.live(el,head)||v.classList.contains('cpgoing')||el.closest('input,textarea'+(o.skip?','+o.skip:'')))return false;
+    if(head)return true;const b=o.body?o.body():v;return !!b&&b.contains(el)&&b.scrollTop<=0};
+  const begin=(x,y,ts)=>({x,y,on:false,d:0,ly:y,lt:ts,vy:0});
+  // false: not a pull (upward or sideways), let go of it; true: the sheet follows
+  const move=(x,y,ts)=>{const dx=x-st.x,dy=y-st.y;
+    if(!st.on&&st.pid!==undefined&&Math.abs(dx)<4&&Math.abs(dy)<4)return false;   // a mouse reports every pixel: decided after a few
+    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=true;held(true);if(o.drag)o.drag(true);if(st.pid!==undefined)try{v.setPointerCapture(st.pid)}catch{}}else{st=null;return false}}
+    if(ts>st.lt){st.vy=(y-st.ly)/(ts-st.lt);st.ly=y;st.lt=ts}   // the speed from when each move happened (e.timeStamp), not when it was handled: on a busy phone a flick handled late read as a slow pull
+    st.d=Math.max(0,dy);put(st.d);return true};
+  const slide=d=>{const b=bd(),op=b&&b.style.opacity?+b.style.opacity:1;held(false);put(0);o.close(d);
+    if(typeof noMotion==='function'&&noMotion())return;v.classList.add('cpgoing');if(b)b.classList.add('cpgoing');
+    const a=v.animate([{transform:`translateY(${d}px)`},{transform:'translateY(102%)'}],{duration:200,easing:'ease-out'});if(b)b.animate([{opacity:op},{opacity:0}],{duration:200});
+    a.finished.catch(()=>{}).then(()=>{v.classList.remove('cpgoing');if(b)b.classList.remove('cpgoing')})};
+  const end=()=>{if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;if(o.drag)o.drag(false);
+    if(d>v.offsetHeight*.25||(vy>.5&&d>30)){if(o.slide){slide(d);return}held(false);o.close(d);put(0);return}
+    held(false);put(0);if(typeof noMotion==='function'&&noMotion())return;
+    if(o.spring)v.animate([{transform:`translateY(${d}px)`},{transform:'none'}],{duration:220,easing:'cubic-bezier(.2,.8,.2,1)'});
+    const b=o.fadeBack&&bd();if(b)b.animate([{opacity:dim(d)},{opacity:1}],{duration:220})};
+  v.addEventListener('touchstart',e=>{const t=e.touches[0];st=e.touches.length>1||!can(e.target,!!e.target.closest(o.head))?null:begin(t.clientX,t.clientY,e.timeStamp)},{passive:true});
+  v.addEventListener('touchmove',e=>{if(!st||st.pid!==undefined)return;const t=e.touches[0];if(move(t.clientX,t.clientY,e.timeStamp))e.preventDefault()},{passive:false});
+  v.addEventListener('touchend',()=>{if(st&&st.pid===undefined)end()},{passive:true});v.addEventListener('touchcancel',()=>{if(st&&st.pid===undefined)end()},{passive:true});
+  if(!window.PointerEvent)return;
+  v.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||e.button!==0||st||!e.target.closest(o.head)||e.target.closest('button,a,label')||!can(e.target,true))return;st=begin(e.clientX,e.clientY,e.timeStamp);st.pid=e.pointerId});
+  v.addEventListener('pointermove',e=>{if(!st||st.pid!==e.pointerId)return;if(move(e.clientX,e.clientY,e.timeStamp))e.preventDefault()});
+  const pend=e=>{if(!st||st.pid!==e.pointerId)return;try{v.releasePointerCapture(e.pointerId)}catch{}end()};
+  v.addEventListener('pointerup',pend);v.addEventListener('pointercancel',pend);v.addEventListener('dragstart',e=>{if(st&&st.pid!==undefined)e.preventDefault()})}   // (a photo in the handle would be dragged off as a picture)
 /* bought but not here yet: the item goes into the wardrobe out of rotation; with an arrival date it joins the outfits from the day
    after (inRotation in core.js), and once that day comes it is put back in rotation for good (checkArrivals) */
 const fmtDay=s=>{const [y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString(undefined,{month:'short',day:'numeric'})};
@@ -342,17 +367,21 @@ const QTY_TYPES=['shirt','socks'],QTY_MAX=12;
 const qtyOf=q=>QTY_TYPES.includes(q.type)?Math.min(QTY_MAX,Math.max(1,+q.qty||1)):1;
 const qtyLabel=q=>{const n=qtyOf(q);return n>1?'Confirm '+n:'Confirm'};
 function qtyRow(q,i){if(!QTY_TYPES.includes(q.type))return '';const n=qtyOf(q);
-  return `<div class="qtyrow" role="group" aria-label="How many to add"><span class="qtyl">How many<small class="mut">${q.type==='socks'?'Identical pairs':'Identical shirts'}, each its own item</small></span><span class="qty"><button type="button" class="qtyb" id="qty-m-${i}" aria-label="One fewer" onclick="stepQty(${i},-1)"${n<=1?' disabled':''}>−</button><output id="qty-n-${i}" aria-live="polite">${n}</output><button type="button" class="qtyb" id="qty-p-${i}" aria-label="One more" onclick="stepQty(${i},1)"${n>=QTY_MAX?' disabled':''}>+</button></span></div>`}
+  return `<div class="qtyrow" role="group" aria-label="How many to add"><span class="qtyl">How many<small class="mut">${q.type==='socks'?'Identical pairs':'Identical shirts'}, each its own item</small></span><span class="qty"><button type="button" class="qtyb" id="qty-m-${i}" aria-label="One fewer" onclick="stepQty(${qh(q)},-1)"${n<=1?' disabled':''}>−</button><output id="qty-n-${i}" aria-live="polite">${n}</output><button type="button" class="qtyb" id="qty-p-${i}" aria-label="One more" onclick="stepQty(${qh(q)},1)"${n>=QTY_MAX?' disabled':''}>+</button></span></div>`}
 /* the number, its buttons and Confirm change in place (no redraw: the card would jump) */
-function stepQty(i,d){const q=queue[i];if(!q)return;q.qty=Math.min(QTY_MAX,Math.max(1,qtyOf(q)+d));const n=q.qty;queueMicrotask(addKeep);
+function stepQty(i,d){const q=cardOf(i);if(!q)return;i=queue.indexOf(q);q.qty=Math.min(QTY_MAX,Math.max(1,qtyOf(q)+d));const n=q.qty;queueMicrotask(addKeep);
   const o=$('#qty-n-'+i),m=$('#qty-m-'+i),p=$('#qty-p-'+i),c=$('#qconf-'+i);if(o)o.textContent=n;if(m)m.disabled=n<=1;if(p)p.disabled=n>=QTY_MAX;if(c)c.textContent=qtyLabel(q)}
-function orderRow(q,i){return `<div class="ordrow"><button type="button" class="rotbtn${q.order?' on':''}" aria-pressed="${!!q.order}" onclick="setOrder(${i},${!q.order})">${q.order?'✓ ':''}Bought, on the way</button>${q.order?`<label class="ordate">Arrives (optional) <input type="date" value="${q.arrives||''}" min="${isoKey(todayDate())}" onchange="setArrives(${i},this.value)"></label><small class="mut ordhint">${orderHint(q.arrives)}</small>`:''}</div>`}
-function setOrder(i,on){const q=queue[i];if(!q)return;q.order=!!on;if(!on)delete q.arrives;renderAdd()}
+function orderRow(q,i){return `<div class="ordrow"><button type="button" class="rotbtn${q.order?' on':''}" aria-pressed="${!!q.order}" onclick="setOrder(${qh(q)},${!q.order})">${q.order?'✓ ':''}Bought, on the way</button>${q.order?`<label class="ordate">Arrives (optional) <input type="date" value="${q.arrives||''}" min="${isoKey(todayDate())}" onchange="setArrives(${qh(q)},this.value)"></label><small class="mut ordhint">${orderHint(q.arrives)}</small>`:''}</div>`}
+function setOrder(i,on){const q=cardOf(i);if(!q)return;q.order=!!on;if(!on)delete q.arrives;renderAdd()}
 /* a day already gone isn't an arrival date (the date field's min only limits its picker: 2020-01-01 typed in read "joins your outfits
    from the day after Jan 1") */
-function setArrives(i,v){const q=queue[i];if(!q)return;const ok=/^\d{4}-\d{2}-\d{2}$/.test(v||'');
-  if(ok&&v<isoKey(todayDate())){delete q.arrives;renderAdd();toast('That day has passed. Pick today or a later day, or leave it empty.',4500);return}
-  if(ok)q.arrives=v;else delete q.arrives;renderAdd()}
+/* one rule for the Add card and the item sheet (CR-1-07: the sheet took a past day and put the piece in rotation at once): '' (no date),
+   'past', or the date */
+const arriveVal=v=>!/^\d{4}-\d{2}-\d{2}$/.test(v||'')?'':v<isoKey(todayDate())?'past':v;
+const ARRIVE_PAST='That day has passed. Pick today or a later day, or leave it empty.';
+function setArrives(i,v){const q=cardOf(i);if(!q)return;const a=arriveVal(v);
+  if(a==='past'){delete q.arrives;renderAdd();toast(ARRIVE_PAST,4500);return}
+  if(a)q.arrives=a;else delete q.arrives;renderAdd()}
 async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.paused&&arriveN(i)!=null&&T>arriveN(i));
   const cb=done.filter(i=>i.away);   // back from the cleaner's or the laundry (care.js): cleaned on the day it was due back
   if(cb.length&&typeof careUnlock==='function')await careUnlock(null,Math.min(...cb.map(i=>+keyDate(i.away.since||isoKey(todayDate())))));   // the locks made while away let go (history.js)
@@ -365,6 +394,10 @@ function savedTitle(it){const nm=itemName(it);if(nm)return nameIso(nm);const d=S
   if(!d)return sentence(t);const k=d.indexOf(' · ');return sentence(k<0?`${d} ${t}`:`${d.slice(0,k)} ${t}${d.slice(k)}`)}
 /* a card by its id (Confirm, Save all) or, as before, its place (the sample, the import, tests) */
 const cardOf=k=>typeof k==='string'?queue.find(q=>q.id===k):queue[k];
+/* every handler drawn on a card finds it by its id when tapped (CR-1-08): qAt(id) is the card's place in the list at that moment (-1 once
+   gone), qh(q) writes that call into the markup; a place written in when the card was drawn pointed at another card once the list moved */
+const qAt=id=>queue.findIndex(q=>q.id===id);
+const qh=q=>`qAt('${jsq(q.id)}')`;
 /* one save per card (audit 2026-11-15, C2: a double tap on Confirm saved the card twice and, the list having moved up, threw away the
    next card unsaved): the card is found by its id, marked while it saves (a second tap does nothing) and its Confirm switched off;
    -> true once saved, false when it couldn't be */
@@ -395,7 +428,7 @@ async function saveCard(q){
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;
   if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src,...(q.meas.parts?{parts:q.meas.parts.map(p=>({role:p.role,lab:p.lab,hex:p.hex,share:p.share}))}:{})};   // a patterned cloth's ground and stripe too (colpick.js)
   if(q.tagAI&&!q.manual)it.tagAI=q.tagAI;   // Claude's colour it gave, how sure it was, its runner-ups (tagging.js aiSignals): to calibrate the verdict later
-  wardSaveFields(q,it);   // name, brand, material, notes (wardrobe.js)
+  wardSaveFields(q,it);matTidy(it);   // name, brand, material, notes (wardrobe.js); no material the type can't have (CR-1-06)
   if(q.shade)it.shade=q.shade;   // drawn darker or lighter than the swatch, to match the close-up   // the owner's own colour samples (calibLab)
   if(q.sett&&!q.settOff&&readable(it.type,it.pattern,q.weave)){it.sett=q.sett;if(q.patternBox)it.pbox=q.patternBox}   // the full pattern (tagging.js)
   if(q.weave&&FABRIC.includes(it.type)&&it.pattern!=='solid'){it.weave=q.weave;if(q.weave.description)it.patternText=q.weave.description}
@@ -412,8 +445,8 @@ async function saveCard(q){
   items.push(...all);
   const i=queue.indexOf(q);cache={};if(i>=0)queue.splice(i,1);if(addCalm)addCalm.ok=1;renderAdd();   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
   if(typeof kitSaved==='function')kitSaved(it,q,Math.max(0,i),copies);   // Saved, with Undo for all of them (kit.js)
-  if(q.tagImg)keepTagImg(it.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tagging.js: the sharp copy (signed with the photo); what the tagger got wrong
-  if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>keepCloseImg(it.id,u,it.texture)).catch(()=>{});   // the sharp close-up for later readings (tagging.js)
+  if(q.tagImg)for(const x of all)keepTagImg(x.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tagging.js: the sharp copy (signed with the photo), for every copy too (CR-1-04); what the tagger got wrong
+  if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>{for(const x of all)keepCloseImg(x.id,u,it.texture)}).catch(()=>{});   // the sharp close-up for later readings (tagging.js)
   q.raw=null;q.big=null;q.texCanvas=null;   // the card's canvases (a 2048 px photo, its 800 px copy, the close-up) go now, not when the last reply about the card comes back
   return true;
 }
@@ -437,6 +470,7 @@ function renderAdd(){
   if($('#queue')){keepFocus($('#queue'),()=>{$('#queue').innerHTML=queue.map((q,i)=>q.id===npsId?'':cardSafe(q,i,()=>q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):formCard(q,i))).join('')});   // (the field changed keeps the keyboard: W2-19-01)
     if(typeof cmpMount==='function')cmpMount($('#queue'))}
   if(npsId)npsDraw();
+  if(typeof colPick!=='undefined'&&colPick&&colPick.src==='q'&&!cardOf(colPick.ref))closeColPick();   // the color or pattern sheet of a card that went (CR-1-02)
 }
 /* one card drawn on its own (2026-11-16, a tester's first item: her iPhone, out of picture memory, refused a canvas while the card's swatch
    was drawn, so the whole redraw stopped and Confirm stayed switched off): a card that can't be drawn becomes a plain one that still
@@ -466,13 +500,13 @@ const matWhy=w=>{const s=String(w||'').replace(/[.\s]+$/,'');return /^[A-Z][a-z]
 function matExtras(q,i){if(!MATERIALS_BY[q.type])return '';let h='';const t=matTypeOne(q.type);
   if(q.matAdded&&q.material===q.matAdded)h+=`<p class="tagnote matadded"><small>Now one of your materials: it’s in the list for every ${esc(t)} you add, on all your devices.</small></p>`;
   const nm=matNewOf(q);
-  if(nm)h+=`<div class="offer matnew"><small>None of the materials fit: Claude calls it <b>${esc(nm.key)}</b>${matWhy(nm.why)?`, ${esc(matWhy(nm.why))}`:''} (${esc(nm.conf)} confidence).</small><button type="button" class="chipbtn" onclick="matOffer(${i})">Add ${esc(nm.key)} as a material</button></div>`;
+  if(nm)h+=`<div class="offer matnew"><small>None of the materials fit: Claude calls it <b>${esc(nm.key)}</b>${matWhy(nm.why)?`, ${esc(matWhy(nm.why))}`:''} (${esc(nm.conf)} confidence).</small><button type="button" class="chipbtn" onclick="matOffer(${qh(q)})">Add ${esc(nm.key)} as a material</button></div>`;
   const g=matGuessOf(q);
-  if(g){const w=String(g.why||'').replace(/[.\s]+$/,'');h+=`<p class="tagnote mut matguess"><small>Claude’s guess: <b>${esc(g.key)}</b> · ${w&&w.length<=60?esc(w):'can’t be sure from a photo'}</small><button type="button" class="chipbtn" onclick="matGuessUse(${i})">Use ${esc(g.key)}</button></p>`}
+  if(g){const w=String(g.why||'').replace(/[.\s]+$/,'');h+=`<p class="tagnote mut matguess"><small>Claude’s guess: <b>${esc(g.key)}</b> · ${w&&w.length<=60?esc(w):'can’t be sure from a photo'}</small><button type="button" class="chipbtn" onclick="matGuessUse(${qh(q)})">Use ${esc(g.key)}</button></p>`}
   return h}
-const ckLr=(q,i,k)=>{const on=!!(q.checked&&q.checked[k]);return `<button type="button" class="cklr" aria-pressed="${on}" onclick="ckCheck(${i},'${k}')">${on?'<span aria-hidden="true">✓ </span>Checked':k==='tex'?'Fine as is':'Looks right'}</button>`};
+const ckLr=(q,i,k)=>{const on=!!(q.checked&&q.checked[k]);return `<button type="button" class="cklr" aria-pressed="${on}" onclick="ckCheck(${qh(q)},'${k}')">${on?'<span aria-hidden="true">✓ </span>Checked':k==='tex'?'Fine as is':'Looks right'}</button>`};
 /* "Looks right": the section checked (or not again); checked, it folds and the next unchecked one opens */
-function ckCheck(i,k){const q=queue[i];if(!q)return;const on=!(q.checked&&q.checked[k]);q.checked={...q.checked,[k]:on?1:0};
+function ckCheck(i,k){const q=cardOf(i);if(!q)return;i=queue.indexOf(q);const on=!(q.checked&&q.checked[k]);q.checked={...q.checked,[k]:on?1:0};
   if(on){const sc='q|'+q.id;CK_OPEN[sc+'|'+k]=false;const nx=addCkSecs(q,i).find(s=>s.n&&!q.checked[s.k]);if(nx)CK_OPEN[sc+'|'+nx.k]=true}
   queueMicrotask(addKeep);renderAdd()}
 /* the card's sections: [{k, n (counted), mark, title, sum, body, warn}] */
@@ -481,9 +515,9 @@ function addCkSecs(q,i){const man=!!q.manual||!q.ai,c=q.conf||{},chk=q.checked||
   // Texture match: counted once there is a close-up
   if(tex){const rd=cardReading(q),cloth=paperCloth(q),lab=hasCu?cmpLab('q',q):null,d=hasCu?cmpDiff(q,lab):null,p=hasCu?cmpPaper('q',q):null;
     const blur=q.manual&&q.meas&&q.meas.src==='closeup'&&q.meas.sharp!=null&&q.meas.sharp<BLUR_SHARP?'<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>':'';
-    const pick=(label,cls,mode)=>closeupBtn({label,cls,mode,file:`f=>addTexture(${i},f)`,remove:mode==='replace'?`dropTexture(${i})`:'',cloth});
-    const body=hasCu?cmpHtml(q.id,q.texture,cmpDrawn(q),!!(p&&p.ref))+cmpMatchHtml('q',i,q,lab)+cmpPaperLine(p,pick('Retake close-up','linkbtn wbretake','retake'))+blur+
-        `<div class="btns ckcu">${pick('Replace close-up','btn','replace')}${cuTouch()?'':`<button type="button" class="ckrm" onclick="dropTexture(${i})">Remove close-up</button>`}</div>`+
+    const pick=(label,cls,mode)=>closeupBtn({label,cls,mode,file:`f=>addTexture(${qh(q)},f)`,remove:mode==='replace'?`dropTexture(${qh(q)})`:'',cloth});
+    const body=hasCu?cmpHtml(q.id,q.texture,cmpDrawn(q),!!(p&&p.ref))+cmpMatchHtml('q',q.id,q,lab)+cmpPaperLine(p,pick('Retake close-up','linkbtn wbretake','retake'))+blur+
+        `<div class="btns ckcu">${pick('Replace close-up','btn','replace')}${cuTouch()?'':`<button type="button" class="ckrm" onclick="dropTexture(${qh(q)})">Remove close-up</button>`}</div>`+
         `<div class="ckread">${rdAddBtn(q,'Read color and texture')}${rdCostLine()}</div>${rdDoneHtml('q',q.id,q)}${ckLr(q,i,'tex')}`
       :`<p class="shelp">Texture match puts a close-up of the cloth beside the drawing and sets the true color from white paper.${q.photo?'':' The close-up is saved with the item.'}</p>${paperSteps(cloth)}`+
         `<div class="ckadds"><button type="button" class="btn pri rdgo ckreadadd" onclick="rdStart('q','${jsq(q.id)}')"${rdOff()?' aria-disabled="true"':''}><span>Add close-up and read color, texture &amp; material</span><small class="rdcost">${esc(rdCost())}</small></button>${pick('Add close-up','btn ckadd','add')}</div>`+
@@ -493,32 +527,32 @@ function addCkSecs(q,i){const man=!!q.manual||!q.ai,c=q.conf||{},chk=q.checked||
   // Type
   const tw=unsure(c.type);
   out.push({k:'type',n:true,warn:tw,mark:chk.type?'good':tw?'warn':'todo',title:'Type',sum:esc(TYPES[q.type]||'Item')+(ckSure(c.type)&&!man?' · '+ckSure(c.type):''),
-    body:`<label>Type ${S(Object.entries(TYPES),q.type,'type',i)}</label>`+ckLr(q,i,'type')});
+    body:`<label>Type ${S(Object.entries(TYPES),q.type,'type',qh(q))}</label>`+ckLr(q,i,'type')});
   // Colors
-  const rows=colRows('q',i,q),shade=COLORS[q.primaryColor]&&colShows(q,'primaryColor')?shadeRow(q,`stepShadeQ.bind(null,${i})`,`matchShadeQ(${i})`,!tex&&!!(q.meas&&q.meas.src==='closeup')):'';
+  const rows=colRows('q',q.id,q),shade=COLORS[q.primaryColor]&&colShows(q,'primaryColor')?shadeRow(q,`stepShadeQ.bind(null,${qh(q)})`,`matchShadeQ(${qh(q)})`,!tex&&!!(q.meas&&q.meas.src==='closeup')):'';
   if(rows||shade){const cw=unsure(c.primaryColor)||(!man&&(!!q.newColor||Object.keys(q.auto||{}).length>0||(q.measV||[]).some(v=>v.mode==='flag'&&!(q.edited&&q.edited[v.f]))));
-    out.push({k:'colors',n:!!rows,warn:cw,mark:chk.colors?'good':cw?'warn':'todo',title:'Colors',sum:ckColSum(q,q.primaryColor)+(ckSure(c.primaryColor)&&!man?' · '+ckSure(c.primaryColor):''),body:rows+accRow('q',i,q)+shade+(rows?ckLr(q,i,'colors'):'')})}
+    out.push({k:'colors',n:!!rows,warn:cw,mark:chk.colors?'good':cw?'warn':'todo',title:'Colors',sum:ckColSum(q,q.primaryColor)+(ckSure(c.primaryColor)&&!man?' · '+ckSure(c.primaryColor):''),body:rows+accRow('q',q.id,q)+shade+(rows?ckLr(q,i,'colors'):'')})}
   // Pattern: Claude's pick and its second choice drawn in the item's colors, then every pattern (the picker)
   if(hasPat(q.type)){const p=normPat(q.type,q.pattern),ai=q.aiTag&&q.aiTag.pattern,alt=q.altPattern&&(PATS_BY[q.type]||[]).includes(q.altPattern)?q.altPattern:null,pw=unsure(c.pattern)||(!man&&!!q.newPattern);
     const tiles=[];if(!man){const first=ai&&(PATS_BY[q.type]||[]).includes(ai)?ai:p;tiles.push([first,'Claude’s pick']);if(alt&&alt!==first)tiles.push([alt,'Claude’s 2nd']);if(!tiles.some(t=>t[0]===p))tiles.push([p,'Your choice'])}
-    const tile=([v,lab])=>`<button type="button" class="ckpt" role="radio" aria-checked="${v===p}" onclick="setq(${i},'pattern','${v}')"><span class="ckptsw">${swatchSVG(patVar(q,v),true)}</span><b>${esc(cap1(patName(v)))}</b><small>${lab}</small></button>`;
+    const tile=([v,lab])=>`<button type="button" class="ckpt" role="radio" aria-checked="${v===p}" onclick="setq(${qh(q)},'pattern','${v}')"><span class="ckptsw">${swatchSVG(patVar(q,v),true)}</span><b>${esc(cap1(patName(v)))}</b><small>${lab}</small></button>`;
     out.push({k:'pattern',n:true,warn:pw,mark:chk.pattern?'good':pw?'warn':'todo',title:'Pattern',sum:esc(cap1(patName(p)))+(pw&&!chk.pattern?'?':'')+(ckSure(c.pattern)&&!man?' · '+ckSure(c.pattern):''),
-      body:(tiles.length?`<div class="ckpts" role="radiogroup" aria-label="Claude’s patterns">${tiles.map(tile).join('')}</div>`:'')+`<label class="colrow">${tiles.length?'All patterns':'Pattern'} ${patBtn('q',i,q)}</label>`+ckLr(q,i,'pattern')})}
+      body:(tiles.length?`<div class="ckpts" role="radiogroup" aria-label="Claude’s patterns">${tiles.map(tile).join('')}</div>`:'')+`<label class="colrow">${tiles.length?'All patterns':'Pattern'} ${patBtn('q',q.id,q)}</label>`+ckLr(q,i,'pattern')})}
   // Fabric & fit (Details for the rest): the per-type fields, the material (with Claude's suggestion) and the swatch's patch of cloth
-  const f=(METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(metalOptsFor(q.type),q.metal,'metal',i)}</label>`:'')+
-    (q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',i)}</label>`:'')+(q.type==='suit'?`<label>Vest ${S(VESTS,(q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'yes':'no','vest',i)}</label>`:'')+(SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',i)}</label>`:'')+
-    (q.type==='pants'?`<label>Kind ${S(TROUSER_KINDS,q.trouserKind||'dress','trouserKind',i)}</label>`:'')+(q.type==='shoes'?`<label>Style ${S(SHOE_STYLES,q.shoeStyle||'oxford','shoeStyle',i)}</label>`:'')+(q.type==='shoes'||q.type==='belt'?`<label>${leatherLabel(q)} ${S(leathersFor(q).map(c=>[c,cap1(leatherWord(q,c))]),q.leather||'calf','leather',i)}</label>`:'')+
-    (q.type==='watch'?`<label>Dial ${S(DIAL_OPTS(watchOpts(q).dial),watchOpts(q).dial,'dial',i)}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',i)}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',i)}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',i)}</label>`:'')+
-    matRow(q.type,q.material,`setQField(${i},'material',`,q.matAI)+matExtras(q,i);
+  const f=(METAL_TYPES.includes(q.type)?`<label>${q.type==='belt'?'Buckle':'Metal'} ${S(metalOptsFor(q.type),q.metal,'metal',qh(q))}</label>`:'')+
+    (q.type==='shirt'?`<label>Cuffs ${S(CUFFS,q.cuff||'button','cuff',qh(q))}</label>`:'')+(q.type==='suit'?`<label>Vest ${S(VESTS,(q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'yes':'no','vest',qh(q))}</label>`:'')+(SEASON_TYPES.includes(q.type)?`<label>Season ${S(SEASONS,q.season||'all','season',qh(q))}</label>`:'')+
+    (q.type==='pants'?`<label>Kind ${S(TROUSER_KINDS,q.trouserKind||'dress','trouserKind',qh(q))}</label>`:'')+(q.type==='shoes'?`<label>Style ${S(SHOE_STYLES,q.shoeStyle||'oxford','shoeStyle',qh(q))}</label>`:'')+(q.type==='shoes'||q.type==='belt'?`<label>${leatherLabel(q)} ${S(leathersFor(q).map(c=>[c,cap1(leatherWord(q,c))]),q.leather||'calf','leather',qh(q))}</label>`:'')+
+    (q.type==='watch'?`<label>Dial ${S(DIAL_OPTS(watchOpts(q).dial),watchOpts(q).dial,'dial',qh(q))}</label><label>Band ${S(BANDS,watchOpts(q).band,'band',qh(q))}</label><label>Bezel ${S(BEZELS,watchOpts(q).bezel,'bezel',qh(q))}</label><label>Style ${S(WATCH_STYLES,watchOpts(q).style,'watchStyle',qh(q))}</label>`:'')+
+    matRow(q.type,q.material,`setQField(${qh(q)},'material',`,q.matAI)+matExtras(q,i);
   const swb=fab&&q.big?`<div class="sw-box"><div id="swatch-img-${i}" class="sw" style="background-image:url(${q.swatch})"></div><div style="flex:1;font-size:13px"><b>Fabric swatch</b><small class="mut" style="display:block">${q.texCanvas?'From the fabric close-up':'From the photo'}: zoom and move it to a clean patch of cloth</small>
-    <label>Zoom <input type="range" min="1" max="4" step="0.1" value="${q.zoom||1}" oninput="updateSwatchParam(${i}, 'zoom', this.value)"></label><label>Left–right <input type="range" min="0" max="1" step="0.05" value="${q.cx||0.5}" oninput="updateSwatchParam(${i}, 'cx', this.value)"></label><label>Up–down <input type="range" min="0" max="1" step="0.05" value="${q.cy||0.5}" oninput="updateSwatchParam(${i}, 'cy', this.value)"></label></div></div>`:'';
+    <label>Zoom <input type="range" min="1" max="4" step="0.1" value="${q.zoom||1}" oninput="updateSwatchParam(${qh(q)}, 'zoom', this.value)"></label><label>Left–right <input type="range" min="0" max="1" step="0.05" value="${q.cx||0.5}" oninput="updateSwatchParam(${qh(q)}, 'cx', this.value)"></label><label>Up–down <input type="range" min="0" max="1" step="0.05" value="${q.cy||0.5}" oninput="updateSwatchParam(${qh(q)}, 'cy', this.value)"></label></div></div>`:'';
   if(f||swb){const sug=!!(q.matAI&&q.matAI.key&&q.material===q.matAI.key),bits=[q.material?cap1(matLabel(q.material)):'',SEASON_TYPES.includes(q.type)&&q.season&&q.season!=='all'?optLab(SEASONS,q.season):'',q.type==='suit'?((q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'matching vest':'no vest'):''].filter(Boolean);
     // (2026-11-16) suits, blazers and pants ask for their material: empty, the section is "!" (worth a look; never blocks Confirm), with Claude's guess in the summary
     const ask=MAT_ASK.includes(q.type)&&!q.material&&!chk.fabric,g=matGuessOf(q),nm=matNewOf(q);
     const sum=ask?`Material not set${g?` · Claude’s guess: ${g.key}`:nm?` · Claude calls it ${nm.key}`:''}`:sug&&!chk.fabric?`${bits.join(' · ')} · suggested by Claude`:bits.join(' · ')||'Optional';
     out.push({k:'fabric',n:!!f,warn:false,mark:chk.fabric?'good':ask?'warn':sug?'ai':'todo',title:fab?'Fabric &amp; fit':'Details',sum:esc(sum),body:f+swb+(f?ckLr(q,i,'fabric'):'')})}
   // More: name, brand, notes, bought and on the way, how many (not counted)
-  const on=k=>`oninput="setQField(${i},'${k}',this.value)"`,named=['name','brand','notes'].filter(k=>q[k]&&String(q[k]).trim()),n=qtyOf(q);
+  const on=k=>`oninput="setQField(${qh(q)},'${k}',this.value)"`,named=['name','brand','notes'].filter(k=>q[k]&&String(q[k]).trim()),n=qtyOf(q);
   out.push({k:'more',n:false,warn:false,mark:'opt',title:'More',sum:esc((named.length?cap1(named.join(', '))+' filled in':'Name, brand, notes')+(q.order?' · on the way':' · on the way?')+(n>1?` · ${n} of them`:'')),
     body:`<div class="morein">${fldRow('name','Name',q.name,on,'Optional')}${fldRow('brand','Brand',q.brand,on,'Optional')}${notesRow(q.notes,on)}</div>${orderRow(q,i)}${qtyRow(q,i)}`});
   // open first: Texture match, and whatever Claude was unsure about; with nothing unsure, the first part not checked yet
@@ -531,8 +565,8 @@ const ckLeftLine=(q,secs)=>{const {n,M}=addCkCount(q,secs||addCkSecs(q,queue.ind
 function formCard(q,i,inSheet){const secs=addCkSecs(q,i),{n,M}=addCkCount(q,secs),sc='q|'+q.id,sec=k=>{const s=secs.find(x=>x.k===k);if(!s)return '';if(CK_OPEN[sc+'|'+k]===undefined)CK_OPEN[sc+'|'+k]=ckIsOpen(sc,k,s.open);return ckSec(sc,k,s)};
   return `<div class="card qcard ckcard" data-q="${esc(q.id)}">${inSheet?'':`<button type="button" class="qx" aria-label="Close" title="Close" onclick="skipCard('${esc(q.id)}')">×</button><div class="ckhd"><small>New item · check and confirm</small><b>${esc(savedTitle(q))}</b></div>`}`+
     `<div class="ckprog"><b>${n} of ${M} checked</b><span class="cktrack" aria-hidden="true"><i style="width:${M?Math.round(n/M*100):0}%"></i></span></div>`+
-    `<div class="ckcols"><div class="ckcol">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}${tagFailNote(q,i)}${unreadNote(q,i)}`+
-    `<div class="ckintro"><div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${wbNote(q,i)}<p class="shelp ckhelp">${q.manual||!q.ai?'Pick the type and the colors, then confirm.':'Claude filled these in. Check each part, or fix it.'}</p></div>${tagNotes(q,i)}${sec('tex')}</div>`+
+    `<div class="ckcols"><div class="ckcol">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}${tagFailNote(q,qh(q))}${unreadNote(q,qh(q))}`+
+    `<div class="ckintro"><div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${wbNote(q,i)}<p class="shelp ckhelp">${q.manual||!q.ai?'Pick the type and the colors, then confirm.':'Claude filled these in. Check each part, or fix it.'}</p></div>${tagNotes(q,qh(q))}${sec('tex')}</div>`+
     `<div class="ckcol">${sec('type')}${sec('colors')}${sec('pattern')}${sec('fabric')}${sec('more')}</div></div>`+
     `${inSheet?'':`<div class="ckfoot">${ckLeftLine(q,secs)}<div class="btns">${confBtn(q,i)}<button onclick="skipCard('${esc(q.id)}')">${q.manual?'Cancel':'Skip'}</button></div></div>`}${q.manual?'':`<small class="ckai">${aiLabel(q)}</small>`}</div>`}
 const confBtn=(q,i)=>`<button class="pri" id="qconf-${i}" onclick="save('${esc(q.id)}')"${cardReading(q)?' disabled title="Claude is still reading this item"':q.saving||saveAllOn?' disabled':''}>${qtyLabel(q)}</button>`;
@@ -542,12 +576,12 @@ const busyCard=q=>`<div class="card" data-q="${esc(q.id)}"><span class="spin" ar
 const multiErrCard=q=>`<div class="card" data-q="${esc(q.id)}"><div class="tagfail" role="alert"><p><b>${q.multiCut?'This photo wasn’t read.':'The items in this photo weren’t found.'}</b> ${esc(q.multiErr)}</p></div><div class="btns">${typeof inviteOver==='function'&&inviteOver()?'':`<button type="button" class="pri" onclick="multiAgain('${esc(q.id)}')">Try again</button>`}<button type="button" onclick="skipCard('${esc(q.id)}')">Dismiss</button></div></div>`;
 const errCard=q=>`<div class="card" data-q="${esc(q.id)}" role="alert"><p>${q.err==='small'?`This picture is too small to read (${(q.errWh||[]).join('×')} pixels). Use a larger photo of the item.`:'That photo couldn’t be opened. Try a JPEG or PNG, or fill the item in by hand.'}</p><div class="btns"><button type="button" onclick="errToHand('${esc(q.id)}')">Fill it in by hand</button><button type="button" onclick="skipCard('${esc(q.id)}')">Dismiss</button></div></div>`;
 function typeCard(q,i){const none=typeof isConnected==='function'?!isConnected():!localStorage.getItem('worker_url');   // (an ended invitation reads nothing either)
-  return `<div class="card typeask" data-q="${esc(q.id)}">${tagFailNote(q,i)}${unreadNote(q,i)}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):''}</div>
+  return `<div class="card typeask" data-q="${esc(q.id)}">${tagFailNote(q,qh(q))}${unreadNote(q,qh(q))}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):''}</div>
 <p class="typeq">${none&&!q.tagErr?'<b>What is it?</b> Photos aren’t read automatically here: pick the type and the color is measured from the photo.':'<b>What is it?</b> Pick the type, then check the colors.'}</p>
-<label>Type <select onchange="setq(${i},'type',this.value)" aria-label="Type"><option value="" selected disabled>Choose…</option>${Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
+<label>Type <select onchange="setq(${qh(q)},'type',this.value)" aria-label="Type"><option value="" selected disabled>Choose…</option>${Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
 <div class="btns"><button onclick="skipCard('${esc(q.id)}')">Skip</button></div></div>`}
 /* a photo added while the app wasn't connected yet (an invitation still being checked): once it is, the card offers the reading */
-const unreadNote=(q,i)=>!q.ai&&!q.manual&&!q.tagErr&&!q.busy&&q.tagImg&&(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))?`<div class="tagfail"><p>This photo was added before the app was connected, so it wasn’t read.</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Read it now</button></div>`:'';
+const unreadNote=(q,i)=>!q.ai&&!q.manual&&!q.tagErr&&!q.busy&&q.tagImg&&(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))?`<div class="tagfail"><p>This photo was added before the app was connected, so it wasn’t read.</p><button type="button" class="tagfail-btn" onclick="retryTag(${qh(q)})">Read it now</button></div>`:'';
 
 /* ---- waiting cards survive iOS closing Safari (audit 2026-11-15, H1: they lived only in memory, beforeunload never fires on an iPhone,
    and reading them again was paid again). Every card on Add is kept in the database's meta store, never synced: the form as `addq`, each

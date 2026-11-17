@@ -72,15 +72,15 @@ function wardBar(){
     `<input type="text" id="wsearch" dir="auto" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Search your wardrobe" placeholder="Search" value="${esc(wardQ)}" oninput="wardSearch(this.value)" onkeydown="if(event.key==='Escape'&&this.value){event.stopPropagation();wardClear()}">`+
     `<button type="button" class="wclear" id="wclear" aria-label="Clear search" onclick="wardClear()"${wardQ?'':' hidden'}>×</button></div>`+
     `<select class="wsort" id="wsort" aria-label="Sort the wardrobe" onchange="setWardSort(this.value)">${WARD_SORTS.map(([k,l])=>`<option value="${k}"${k===s?' selected':''}>${l}</option>`).join('')}</select></div>`}
-/* the grid, or what to say when there is nothing to show */
-function wardGrid(list){
-  if(list.length){const m=wardMemo&&wardMemo.list===list?wardMemo:null,w=m&&m.wear,
-      wl=i=>!w?'':`<small class="wwear">${m.sort==='worn'?(w.n[i.id]?`Worn ${w.n[i.id]} time${w.n[i.id]===1?'':'s'}`:'Not worn yet'):w.last[i.id]?`Last worn ${w.last[i.id].toLocaleDateString(undefined,{month:'short',day:'numeric'})}`:'Not worn yet'}</small>`;
-    return `<div class="grid">${list.map(i=>{const tag=giTag(i);return `<div class="gi${i.paused?' paused':''}" id="gi-${esc(i.id)}"><button class="giopen" onclick="openItem('${jsq(i.id)}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}${giNote(tag)}">${wardPic(i)?`<img class="ph" src="${srcOk(wardPic(i))}" alt="">`:i.photo?`<img class="ph" src="${srcOk(phSm(i))}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${i.type==='pants'&&trouserKind(i)!=='dress'?cap1(trouserKind(i)):TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${tag}</button></div>`}).join('')}</div>`}
 /* a box's tag: Sample, Out of rotation, On the way, away being cleaned, due for cleaning */
 function giTag(i){return i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:i.away&&typeof careTag==='function'?careTag(i):'Out of rotation'}</span>`:i.sample&&typeof kitSampleTag==='function'?kitSampleTag(i):typeof careBadge==='function'?careBadge(i):''}
 /* ...read out with the box's name: the aria-label took its place, so a sample piece sounded like one's own (re-audit 2026-11-15) */
 function giNote(tag){const t=String(tag||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();return t?', '+t:''}
+/* the grid, or what to say when there is nothing to show */
+function wardGrid(list){
+  if(list.length){const m=wardMemo&&wardMemo.list===list?wardMemo:null,w=m&&m.wear,
+      wl=i=>!w?'':`<small class="wwear">${m.sort==='worn'?(w.n[i.id]?`Worn ${w.n[i.id]} time${w.n[i.id]===1?'':'s'}`:'Not worn yet'):w.last[i.id]?`Last worn ${w.last[i.id].toLocaleDateString(undefined,{month:'short',day:'numeric'})}`:'Not worn yet'}</small>`;
+    return `<div class="grid">${list.map(i=>{const tag=giTag(i),wp=wardPic(i);return `<div class="gi${i.paused?' paused':''}" id="gi-${esc(i.id)}"><button class="giopen" onclick="openItem('${jsq(i.id)}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}${giNote(tag)}">${wp?`<img class="ph" src="${srcOk(wp)}" alt="">`:i.photo?`<img class="ph" src="${srcOk(phSm(i))}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${i.type==='pants'&&trouserKind(i)!=='dress'?cap1(trouserKind(i)):TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${tag}</button></div>`}).join('')}</div>`}   // (wardPic once a box: each call schedules the picture's download)
   const q=wardNorm(wardQ);
   if(!items.length&&typeof setupWardEmpty==='function')return setupWardEmpty();   // setup.js: the empty Wardrobe's card
   if(!q||!items.length)return '<p class="mut">Nothing here yet. Add one with the + button.</p>';
@@ -140,9 +140,8 @@ async function setItemField(id,k,v){
   await put(it);
   if(k==='material')return renderWardrobe();   // Other shows or hides its field
   wardRefresh();const h=$('#iv-title');if(h&&editing===id){h.textContent=itemTitle(it)||TYPES[it.type]||'Item';h.className=titleCls(it)}}
-/* the Add card: name, brand and notes behind "More details", folded until asked for (the Material is out with the other fields, above it); each keystroke is kept on the card (nothing is redrawn) */
-function toggleMore(i){const q=queue[i];if(!q)return;q.more=!q.more;renderAdd()}
-function setQField(i,k,v){const q=queue[i];if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];
+/* the Add card's name, brand and notes (its More section) and Material: each keystroke is kept on the card (nothing is redrawn); i: the card's id or place */
+function setQField(i,k,v){const q=cardOf(i);if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];
   if(k==='material'){delete q.matAI;q.matSet=1;q.checked={...q.checked,fabric:1}}   // chosen by hand (and so its checklist section is checked, add.js addCkSecs): no longer Claude's suggestion, and a later reading leaves it (tagging.js takeMaterial)
   if(typeof addKeepSoon==='function')addKeepSoon();if(k==='material')renderAdd()}
 
@@ -160,10 +159,6 @@ async function matMigrate(){if(matMigrating)return 0;matMigrating=true;let n=0;
   catch(e){console.warn('material rename',e)}finally{matMigrating=false}
   return n}
 if(typeof whenPulled==='function')whenPulled(()=>matMigrate());
-function moreRow(q,i){
-  const n=WARD_FIELDS.filter(k=>k!=='material'&&q[k]&&String(q[k]).trim()).length,on=k=>`oninput="setQField(${i},'${k}',this.value)"`;
-  return `<div class="morefold${q.more?' open':''}"><button type="button" class="morebtn" aria-expanded="${!!q.more}" onclick="toggleMore(${i})"><span>More details${n?` <small class="mut">· ${n} filled in</small>`:''}</span><svg class="morechev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`+
-    (q.more?`<div class="morein">${fldRow('name','Name',q.name,on,'Optional')}${fldRow('brand','Brand',q.brand,on,'Optional')}${notesRow(q.notes,on)}</div>`:'')+`</div>`}
 /* copies them from the Add card onto the item being saved */
 function wardSaveFields(q,it){for(const k of WARD_FIELDS){const v=noBidi(q[k]).trim().slice(0,WARD_MAX[k]);if(v&&(k!=='material'||MATERIALS_BY[it.type]))it[k]=v}}
 

@@ -25,8 +25,8 @@ function ckColSum(it,main){const a=[main,it.secondaryColor,it.tertiaryColor].fil
   return a.map((c,k)=>`<span class="ckcn">${ckChip(c)}${esc(k?colName(c).toLowerCase():cap1(colName(c)))}</span>`).join(' · ')+(x.length?`<span class="ckcn ckalso"> · also ${esc(x.map(c=>colName(c).toLowerCase()).join(', '))}</span>`:'')}
 /* "Also has" under the colour rows (2026-11-16, accents: core.js accentsOf): a chip for each with × to take it off, and "Add a color" (the
    colour sheet, colpick.js accChoices) while there are fewer than ACCENT_MAX. On patterned cloth, or any item that has some. src 'q' (the
-   Add card, ref its index) or 'e' (the item sheet, ref its id) */
-function accRow(src,ref,it){const a=accentsOf(it);if(!a.length&&!hasPat(it.type))return '';const r=src==='q'?ref:`'${jsq(ref)}'`;
+   Add card, ref its id) or 'e' (the item sheet, ref its id) */
+function accRow(src,ref,it){const a=accentsOf(it);if(!a.length&&!hasPat(it.type))return '';const r=`'${jsq(String(ref))}'`;
   const chip=c=>`<span class="accchip" data-c="${esc(c)}">${ckChip(c)}<span>${esc(cap1(colName(c)))}</span><button type="button" class="accx" aria-label="Remove ${esc(colName(c).toLowerCase())}" onclick="accDel('${src}',${r},'${jsq(c)}')">×</button></span>`;
   return `<div class="accrow" role="group" aria-label="Also has"><span class="acclab">Also has</span><span class="accchips">${a.map(chip).join('')}`+
     `${a.length<ACCENT_MAX?`<button type="button" class="accadd" onclick="openColPick('${src}',${r},'accents')" aria-haspopup="dialog">+ Add a color</button>`:''}</span></div>`}
@@ -134,15 +134,15 @@ function cmpLab(src,it){const m=it.meas;if(m&&m.src==='closeup'&&m.lab)return m.
 const cmpDiff=(it,lab)=>lab&&COLORS[primaryCol(it)]?(it.shade||0)-shadeFor(it,lab):null;
 const cmpSteps=n=>`${n} step${n===1?'':'s'}`;
 const cmpDiffText=d=>d===null?'':d===0?'The drawing matches the cloth':`Drawn ${cmpSteps(Math.abs(d))} ${d>0?'lighter':'darker'} than the cloth`;
-function cmpMatchHtml(src,ref,it,lab){const d=cmpDiff(it,lab),key=src==='q'?it.id:ref,r=src==='q'?ref:`'${jsq(ref)}'`;
+function cmpMatchHtml(src,ref,it,lab){const d=cmpDiff(it,lab),key=src==='q'?it.id:ref,r=`'${jsq(String(ref))}'`;
   if(d===null)return COLORS[primaryCol(it)]?'<p class="cmpmt mut cmpwait">Measuring the close-up…</p>':'';
   const pos=50+Math.max(-SHADE_MAX,Math.min(SHADE_MAX,d))/SHADE_MAX*46,undo=CMP_UNDO[key]!==undefined&&CMP_UNDO[key]!==(it.shade||0);
   return `<div class="cmpmatch"><div class="cmpbar" role="img" aria-label="${cmpDiffText(d)}"><i style="left:${pos}%"></i></div><div class="cmplab" aria-hidden="true"><span>Darker</span><span>Same</span><span>Lighter</span></div>`+
     `<p class="cmpmt" role="status">${cmpDiffText(d)}</p><div class="cmpmb"><button type="button" class="cmpgo" onclick="cmpMatchGo('${src}',${r})">Match close-up</button>${undo?`<button type="button" class="cmpundo" onclick="cmpMatchUndo('${src}',${r})">Undo</button>`:''}</div></div>`}
 /* Match close-up: the shade from the close-up's measurement (add.js matchShadeQ / matchShadeE), the shade before kept for Undo */
-function cmpMatchGo(src,ref){const it=src==='q'?queue[ref]:items.find(x=>x.id===ref);if(!it)return;CMP_UNDO[src==='q'?it.id:ref]=it.shade||0;
+function cmpMatchGo(src,ref){const it=src==='q'?cardOf(ref):items.find(x=>x.id===ref);if(!it)return;CMP_UNDO[src==='q'?it.id:ref]=it.shade||0;
   if(src==='q'){it.checked={...it.checked,tex:1};matchShadeQ(ref)}else matchShadeE(ref)}
-async function cmpMatchUndo(src,ref){const it=src==='q'?queue[ref]:items.find(x=>x.id===ref);if(!it)return;const key=src==='q'?it.id:ref,v=CMP_UNDO[key];if(v===undefined)return;delete CMP_UNDO[key];
+async function cmpMatchUndo(src,ref){const it=src==='q'?cardOf(ref):items.find(x=>x.id===ref);if(!it)return;const key=src==='q'?it.id:ref,v=CMP_UNDO[key];if(v===undefined)return;delete CMP_UNDO[key];
   if(v)it.shade=v;else delete it.shade;if(src==='q'){renderAdd();return}await put(it);cache={};renderWardrobe()}
 /* whether the close-up has white paper: {ref, warm} (tagging.js paperOf, kept in memory by the pictures' signatures), worked out once and
    then drawn again; an Add card's measurement says it at once */
