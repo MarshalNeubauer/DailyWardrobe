@@ -3,12 +3,20 @@
 /* ---- month view (wear plan): a calendar of fabric stacks, from the design concept ---- */
 /* stacked bands for one outfit: jacket, trousers on blazer days, shirt, tie (drawn from the tagged fabrics) */
 let stkN=0;
-function stackSVG(o,cls=''){
+/* rep: the shirt and tie bands get a gold border on the band's edge (the color stays visible): that shirt color and tie were together within
+   the PAIR_DAYS workdays before (dayMarks) */
+function stackSVG(o,cls='',rep=false){
   const P='st'+(stkN++)+'-',parts=[[o.top,'top',22],...(!o.suitDay&&o.bot?[[o.bot,'bot',9]]:[]),[o.shirt,'shirt',9],[o.tie,'tie',9]].filter(x=>x[0]);
   const H=parts.reduce((h,x)=>h+x[2],0)+(parts.length-1)*2;let y=0;
-  const body=parts.map(([i,role,h],k)=>{const id=P+k,r=`<rect y="${y}" width="40" height="${h}" rx="2.5" fill="url(#${id})"/><rect y="${y}" width="40" height="${h}" rx="2.5" fill="none" stroke="#000" stroke-opacity=".12" stroke-width=".6"/>`;y+=h+2;return `<defs>${fabricDef(id,i,role)}</defs>${r}`}).join('');
+  const body=parts.map(([i,role,h],k)=>{const id=P+k,gold=rep&&(role==='shirt'||role==='tie'),r=`<rect y="${y}" width="40" height="${h}" rx="2.5" fill="url(#${id})"/>`+(gold?`<rect class="strep" x="-.6" y="${y-.6}" width="41.2" height="${h+1.2}" rx="3" fill="none" vector-effect="non-scaling-stroke"/>`:`<rect y="${y}" width="40" height="${h}" rx="2.5" fill="none" stroke="#000" stroke-opacity=".12" stroke-width=".6"/>`);y+=h+2;return `<defs>${fabricDef(id,i,role)}</defs>${r}`}).join('');
   return `<svg class="stack ${cls}" viewBox="0 0 40 ${H}" preserveAspectRatio="none" aria-hidden="true">${body}</svg>`;
 }
+/* the calendar's marks for a workday (2026-11-17, the score dials; the owner's approved design): rep, the same shirt color and tie as one of
+   the PAIR_DAYS workdays before (planner.js pairSeen, the planner's pairRepeat rule; gold on the shirt and tie bands), bad, a broken rule
+   (a hard check of rateOutfit; a red ring on the day). A day marked not worn has neither. Kept per day until the plan changes (cache.marks) */
+function dayMarks(d,o){const k=key(d),m=cache.marks||(cache.marks={});if(m[k])return m[k];const r=dayRecs[k];let v={rep:false,bad:false};
+  if(o&&hasOutfit(o)&&!(r&&r.worn===false))v={rep:pairSeen(o,recentWork(d))>=0,bad:(window.TEST_PLAN?TEST_PLAN.rate(o):rateOutfit(o)).hard.length>0};
+  return m[k]=v}
 const planOn=d=>planMonth(d.getFullYear(),d.getMonth())[key(d)];
 /* the next workday after d (dir -1: the one before), at most NEXT_CAP days away; null when there is none (no workdays at all). The one
    step rule for the home day, ‹ and › and the formal-day form (CR-4-06: it gave up after 7 days, so a vacation or a long Eid break of
@@ -44,7 +52,8 @@ function monthGridHtml(){
     const skip=past&&work&&dayRecs[k]&&dayRecs[k].worn===false;
     const label=`${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}: ${work?`${skip?'not worn: ':''}${shortTop(o)}, ${shortRest(o)}`:wd?'no outfit recorded':off?'day off: '+off:'day off'}`;
     const mv=work&&!past&&!o.frozen&&!occOf(dayRecs[k]);   // a day whose outfit can be picked up and moved, or a day it can be dropped on
-    cells.push(`<button class="mc ${!wd?'rest':skip?'skip':past&&work?'worn':past?'past':'planned'}${off&&!wd?' hol':''}${isT?' today':''}${k===key(sel)?' sel':''}" style="--i:${n++}" data-k="${k}"${work?` data-sig="${mvSig(o)}"`:''}${mv?' data-mv="1"':''} aria-label="${esc(label)}"${k===key(sel)?' aria-current="date"':''} onclick="openDay(${d.getTime()})"><span class="dn">${d.getDate()}</span>${work?stackSVG(o):wd?'<span class="stack none"></span>':'<span class="stack rest"></span>'}</button>`)}
+    const mk=work?dayMarks(d,o):{},mark=(mk.bad?', a rule broken':'')+(mk.rep?', the same shirt and tie within 10 workdays':'');
+    cells.push(`<button class="mc ${!wd?'rest':skip?'skip':past&&work?'worn':past?'past':'planned'}${off&&!wd?' hol':''}${isT?' today':''}${k===key(sel)?' sel':''}${mk.bad?' bad':''}${mk.rep?' rep':''}" style="--i:${n++}" data-k="${k}"${work?` data-sig="${mvSig(o)}"`:''}${mv?' data-mv="1"':''} aria-label="${esc(label+mark)}"${k===key(sel)?' aria-current="date"':''} onclick="openDay(${d.getTime()})"><span class="dn">${d.getDate()}</span>${work?stackSVG(o,'',mk.rep):wd?'<span class="stack none"></span>':'<span class="stack rest"></span>'}</button>`)}
   // no arrows, hint or legend: a swipe (or a mouse drag) inside the box moves between months (monthDrag); the title is centred; the cells still
   // show worn / today / planned / rest by their own look
   return `<div class="mswipe" id="mswipe"><div class="mhead"><h3>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h3></div>
@@ -140,7 +149,7 @@ function monthLink(){
   const f=new Date(view.y,view.m,1),n=Object.keys(planFor()).filter(k=>{const d=keyDate(k);return d.getMonth()===view.m&&d.getFullYear()===view.y}).length;
   if(monthOpen&&!monthPanel)monthPanel={y:view.y,m:view.m};
   if(!monthOpen)monthFillSoon();
-  return `<section class="mbox${monthOpen?' open instant':''}" id="mbox"><button class="month-link" onclick="toggleMonth()" aria-expanded="${monthOpen}" aria-controls="mpanel"><span class="mlstrip" aria-hidden="true">${days.map(([d,o])=>`<span class="mli"><small>${d.toLocaleDateString(undefined,{weekday:'narrow'})}</small>${stackSVG(o)}</span>`).join('')}</span>
+  return `<section class="mbox${monthOpen?' open instant':''}" id="mbox"><button class="month-link" onclick="toggleMonth()" aria-expanded="${monthOpen}" aria-controls="mpanel"><span class="mlstrip" aria-hidden="true">${days.map(([d,o])=>{const mk=dayMarks(d,o);return `<span class="mli${mk.bad?' bad':''}${mk.rep?' rep':''}"><small>${d.toLocaleDateString(undefined,{weekday:'narrow'})}</small>${stackSVG(o,'',mk.rep)}</span>`}).join('')}</span>
     <span class="mltxt"><b>${f.toLocaleDateString(undefined,{month:'long'})} wear plan</b><small>${wardShort()?'pieces still missing':`${n} outfit${n===1?'':'s'}`} · ${monthOpen?'tap to fold away':'tap to see the month'}</small></span><span class="chev" aria-hidden="true">›</span></button>
     <div class="mpanel" id="mpanel"><div class="mpanel-in" id="mpanel-in"${monthOpen?` data-fill="${monthPanel.y+'-'+monthPanel.m+'|'+key(sel)}">${monthGridHtml()}`:' inert>'}</div></div></section>`;
 }

@@ -56,7 +56,7 @@ module.exports=async({ok,chromium,url})=>{
     // the score's points, folded and in both themes
     const sc=await p.evaluate(()=>{show('today');const box=document.querySelector('#sbox');if(!box)return null;const pin=box.querySelector('#spanel .mpanel-in');const folded=getComputedStyle(pin).visibility;
       const cv=document.createElement('canvas').getContext('2d',{willReadFrequently:true}),P=s=>{cv.clearRect(0,0,1,1);cv.fillStyle='#000';cv.fillStyle=s;cv.fillRect(0,0,1,1);return [...cv.getImageData(0,0,1,1).data].slice(0,3)},L=c=>{const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2])};
-      const ratio=()=>{const e=box.querySelector('.pts');let bg=null;for(let x=e;x&&!bg;x=x.parentElement){const c=getComputedStyle(x).backgroundColor;if(!/rgba\(.*, 0\)|transparent/.test(c))bg=c}const a=L(P(getComputedStyle(e).color)),b=L(P(bg));return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
+      const ratio=()=>{const e=box.querySelector('.sdl small');let bg=null;for(let x=e;x&&!bg;x=x.parentElement){const c=getComputedStyle(x).backgroundColor;if(!/rgba\(.*, 0\)|transparent/.test(c))bg=c}const a=L(P(getComputedStyle(e).color)),b=L(P(bg));return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
       const r={folded};for(const t of ['light','dark']){document.documentElement.dataset.theme=t;r[t]=+ratio().toFixed(2)}delete document.documentElement.dataset.theme;return r});
     ok(sc&&sc.folded==='hidden','the folded score list is hidden from screen readers and Tab');
     ok(sc&&sc.light>=4.5&&sc.dark>=4.5,`the score's points are at least 4.5:1 in both themes (${sc&&sc.light}, ${sc&&sc.dark})`);

@@ -30,7 +30,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(b1&&!(await open('#bbox'))&&await p.evaluate(()=>belowOpen===null),'a tile\'s photo folds when the photo is tapped');
     // score: a tap on the breakdown folds it
     await setup();await into('#sbox');await p.tap('#sbox .month-link');await settle(p,900);const s1=await open('#sbox');
-    await p.tap('#sbox li >> nth=1');await settle(p,700);
+    await p.tap('#sbox .sdl >> nth=1');await settle(p,700);
     ok(s1&&!(await open('#sbox'))&&await p.evaluate(()=>!scoreOpen&&document.querySelector('#sbox .month-link').getAttribute('aria-expanded')==='false'),'tapping the open score breakdown folds it');
     // month: a full-width fold bar along its bottom
     await setup({month:true});await into('#mbox');
