@@ -835,6 +835,17 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `add.js`
 
+- the Add page is eight files (Round C, 2026-11-17: add.js held every job), loaded in this order right after back.js in index.html and listed in sw.js `ASSETS`; the code moved line for line, nothing renamed; the facts below stay under this heading
+- add.js: white balance and the card's pictures (`applyWb`, `cardPics`, `toggleWb`), close-ups (`addTexture`, `dropTexture`), One item (`addFiles`, `stopRead`, `refineAgain`, `patternAgain`), the double-tap guard (`ADD_CALM`), `needType`/`errToHand`/`skipCard`, Several items (`addMulti`, `multiFail`, `multiAgain`), `addNoteText`, `renderAdd` and `addBackOnline`
+- add-paste.js: a pasted image or link, photo links (`fetchPhoto`, `addFromUrl`, `addLink`, `pasteFromClipboard`) and drag & drop
+- add-card.js: a field changed (`setq`, `shirtColFix`), `tagSwInner`, `photoPair`, the shade rows (`shadeRow`, `stepShadeQ`/`matchShadeQ`, `stepShadeE`/`matchShadeE`), `cardSafe`/`plainCard`, the checklist (`CK_FIELD`, `matExtras`, `ckLr`, `ckCheck`, `addCkSecs`, `ckLeftLine`), `formCard`, `confBtn`, `busyCard`/`multiErrCard`/`errCard`/`typeCard`, `unreadNote`
+- add-more.js: How many (`qtyRow`, `stepQty`), Bought on the way (`orderRow`, `setOrder`), the Arrives date (`arriveVal`, `setArrives`) and `checkArrivals`
+- add-sheet.js: `addManual`, Today's "Add one" type (`addFor`, `renderAddFor`) and the "Add without a photo" sheet (`npsOpen` … `npsSwipe`, `backOn('nps')`)
+- sheet-swipe.js: `sheetSwipe`, the swipe down of every sheet but What to buy's
+- add-save.js: `cardReading`/`cardReady`, `saveAll`, `savedTitle`, `cardOf`/`qAt`/`qh`, `save`, `saveCard`
+- add-keep.js: the cards kept when the app is closed (`ADDQ_*`, `addCardRec`, `addKeep`, `addKeepSoon`, `addRevive`, `addRestore`, `addWatch`)
+- the eight are plain scripts in one global scope: only declarations at the top, besides the document listeners (the double-tap guard's click in add.js; paste and drag & drop in add-paste.js), added in their old order, and add-sheet.js's `backOn('nps')`; no top-level initializer reads a name from a later file, and each top-level `let` is written only in its own file (`tests/globals.test.js`)
+
 - Add asks "One item" (`#add-one`, `addFiles(files)`; paste and drag too) or "Several items" (`#add-group`, `addFiles(files,true)` → `addMulti`)
 - several photos as "One item" each get their card at once and are tagged `ADD_PAR` (3) at a time (`addFiles`)
 - fabric close-ups: `TEXTURE_TYPES` (core.js: suit, blazer, pants, shirt, tie) can have a second photo `item.texture` (a close-up of the cloth, `TEX_MAX` 1536px); a card for those types shows "Step 2 · Fabric close-up" (`texSlot`/`addTexture`), optional
