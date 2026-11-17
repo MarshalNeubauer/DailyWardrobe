@@ -1,6 +1,7 @@
 /* Daily Wardrobe: the app's state and storage (IndexedDB), and helpers every page uses: the busy pill, the tab bar's fit, questions,
-   colour names, photo loading and the precision swatch. Load order of the app's own scripts: app.js, add.js, itemsheet.js, history.js,
-   today.js, month.js, photos.js, settings.js, start.js (the start-up chain last).
+   colour names, photo loading and the precision swatch. The load order is index.html's <script> list: core.js and
+   the drawing scripts, then app.js, add.js, itemsheet.js, history.js, today.js, month.js, photos.js, settings.js, start.js (the start-up
+   chain), ui.js and the rest, about.js last.
    (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
 let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 
@@ -13,10 +14,15 @@ let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.
    transaction retried once (dbLive, txs, atomic); a failure that remains is a storage failure and is said. `db` stays the first opening
    (start-up and safety.js wait on it). */
 let dbCur=null,dbConn=null;
-function dbOpen(){const p=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',2);
+/* set by "Delete my data" (about.js wipeDevice) while it deletes the database: nothing may open it again and fill it (CR-7-01). A save
+   asked for meanwhile waits (dbHeld): the page reloads once the database is gone, and a delete that fails lets it go on (dbUnhold). */
+let dbWiping=false;const dbHeld=[];
+function dbUnhold(){const h=dbHeld.splice(0);dbCur=null;if(h.length){const p=dbOpen();for(const [ok,no] of h)p.then(ok,no)}}
+function dbOpen(){if(dbWiping){const p=new Promise((ok,no)=>dbHeld.push([ok,no]));dbCur=p;return p}
+  const p=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',2);
   r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('items'))d.createObjectStore('items',{keyPath:'id'});
     if(!d.objectStoreNames.contains('days'))d.createObjectStore('days',{keyPath:'date'});if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'k'})};
-  r.onsuccess=()=>{const d=r.result;dbConn=d;d.onclose=()=>dbDrop(d);d.onversionchange=()=>{try{d.close()}catch{}dbDrop(d)};ok(d)};r.onerror=()=>no(r.error)});
+  r.onsuccess=()=>{const d=r.result;if(dbWiping){try{d.close()}catch{}dbHeld.push([ok,no]);return}dbConn=d;d.onclose=()=>dbDrop(d);d.onversionchange=()=>{try{d.close()}catch{}dbDrop(d)};ok(d)};r.onerror=()=>no(r.error)});
   dbCur=p;p.catch(()=>{if(dbCur===p)dbCur=null});return p}
 function dbDrop(d){if(dbConn===d){dbConn=null;dbCur=null}}
 const db=dbOpen();
@@ -79,6 +85,22 @@ function cleanStored(its,days){its=its||[];days=days||[];
       w.push(atomic('days',dt,cur=>cur&&(cur.updated||0)===(d.updated||0)?(c&&c.date===dt?{put:c}:{del:true}):null))});
     await Promise.all(w);flag();recKeptTell(kept)})().catch(e=>console.warn('stored records not cleaned',e));
   return {items:ci.filter(Boolean),days:cd.filter(Boolean)}}
+/* the stored settings, once per phone (localStorage set_clean, SET_CLEAN_V; fix round A, 2026-11-17, C1: a copy taken before settings were
+   checked came back through takeSettings at every start): cleaned by core.js cleanSettings; in one transaction the original is added to
+   meta set_kept ([{rec, at}], appended, never replaced) and the stored copy replaced with its stamps unchanged, only while it is still the
+   one read (no upload of its own; the next change stamps the cleaned settings and syncs them); the person is told once.
+   -> the cleaned copy for start-up */
+const SET_CLEAN_V='1';
+function cleanStoredSettings(st){if(!st||typeof st!=='object')return st;const c=cleanSettings(st);
+  try{if(localStorage.getItem('set_clean')===SET_CLEAN_V)return c}catch{}
+  const flag=()=>{try{localStorage.setItem('set_clean',SET_CLEAN_V)}catch{}};
+  if(c===st){flag();return c}
+  (async()=>{await txs('meta','readwrite',s=>{const r=s.get('settings'),k=s.get('set_kept');
+      k.onsuccess=()=>{const prev=k.result&&k.result.v;s.put({k:'set_kept',v:[...(Array.isArray(prev)?prev:[]),{rec:st,at:Date.now()}]})};
+      r.onsuccess=()=>{const cur=r.result&&r.result.v;if(cur&&(cur.updated||0)===(st.updated||0))s.put({k:'settings',v:cleanSettings(cur)})}});
+    flag();const say=()=>typeof toast==='function'?toast('Some of this phone’s settings couldn’t be shown safely and were set aside. Nothing was deleted: the originals are kept on this phone.',12000):setTimeout(say,500);setTimeout(say,1500)})()
+    .catch(e=>console.warn('stored settings not cleaned',e));
+  return c}
 /* said once, in plain words, whenever the start-up check set something aside (the originals stay in meta rec_kept on this phone) */
 function recKeptTell(kept){const n=kept.filter(x=>x.kind==='item'&&x.dropped).length,f=kept.filter(x=>x.kind==='item'&&!x.dropped).length;if(!n&&!f)return;
   const t=(n?`${n} item${n===1?'':'s'} in this phone’s storage couldn’t be shown safely and ${n===1?'was':'were'} set aside. `:'')+(f?`Some details of ${f} item${f===1?'':'s'} couldn’t be shown safely and were set aside. `:'')+'Nothing was deleted: the originals are kept on this phone.';
@@ -96,7 +118,7 @@ const put=i=>{i.updated=nextStamp(stamp(i));if(typeof kitUserEdit==='function')k
 // different fields of one piece both stay, fix round 3; the stamp is nextStamp's, made one above the stored copy's only when it isn't)
 const r=atomic('items',i.id,cur=>{itemFields(i,cur);return {put:i}});r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
 // (the deletion's stamp is above the item's own, so it wins whatever the clocks say: core.js nextStamp; returned for an Undo)
-const del=async id=>{const was=typeof items!=='undefined'&&items.find(x=>x.id===id),t=nextStamp(stamp(was));await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:t});window.scheduleSync&&scheduleSync();return t};
+const del=async id=>{const was=items.find(x=>x.id===id),t=nextStamp(stamp(was));await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:t});window.scheduleSync&&scheduleSync();return t};
 
 
 /* precision swatch: a 128 px square of the cloth, cut from the fabric close-up when the card has one (the cloth up close, white-
@@ -154,7 +176,7 @@ function busyLabelFor(u,o){if(!o||String(o.method||'GET').toUpperCase()!=='POST'
   let a,b;try{a=new URL(u,location.href);b=new URL(w.replace(/\/*$/,'/'))}catch{return null}if(a.origin!==b.origin)return null;
   const p=a.pathname.replace(b.pathname,'/').replace(/\/+$/,'')||'/',body=typeof o.body==='string'?o.body.slice(0,4000):'';
   if(p==='/')return 'Claude is tagging the photo…';if(p==='/tag-many')return 'Claude is finding the items…';if(p==='/pattern')return 'Claude is reading the pattern…';
-  if(p==='/describe')return /"what":"pattern"/.test(body)?'Claude is working out the weave…':'Claude is finding the shade…';
+  if(p==='/describe')return /"what":"both"/.test(body)?'Claude is reading the color and texture…':/"what":"pattern"/.test(body)?'Claude is working out the weave…':'Claude is finding the shade…';   // (both: Read color and texture, CR-2-09)
   if(p==='/render')return /"mode":"item"/.test(body)?'Making the item picture…':null;   // (item pictures: the only thing POST /render makes now)
   return null}
 if(typeof window!=='undefined'&&window.fetch&&!window.fetch.busy){const f0=window.fetch.bind(window);
@@ -194,9 +216,13 @@ const afterScripts=f=>document.readyState==='complete'?f():addEventListener('loa
 // once every script of the page has run (DOMContentLoaded comes after the last one, and unlike load it doesn't wait for pictures)
 const afterDom=f=>document.readyState!=='loading'?f():addEventListener('DOMContentLoaded',()=>f(),{once:true});
 const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':/^claude/.test(q.model||'')?'Tagged by Claude.':'Tagged by AI.';   // (no model name: a tester read "Tagged by Claude (claude-mock)")
-/* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tagging.js) */
+/* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tagging.js).
+   forType: fit the colours and pattern to this type (the card's own, when tagging again or Ask Claude) instead of the one Claude answers
+   (CR-2-04). out: an object that gets this call's own failure, out.err = {note, why, net} (CR-2-07: several readings run at once, and the
+   shared aiError / tagWhy / tagNetLast, still set for the Add page's note, could hold another card's reason by the time it was read) */
 async function ask(c,extra){
-  const {signal,...ex}=extra||{};   // signal: Stop on an Add card calls the reading off (add.js stopRead)
+  const {signal,forType,out,...ex}=extra||{};   // signal: Stop on an Add card calls the reading off (add.js stopRead)
+  const fail=note=>{aiError=note;if(out)out.err={note,why:typeof tagWhy==='string'?tagWhy:'',net:typeof tagNetLast!=='undefined'&&!!tagNetLast};return null};
   try {
     const workerUrl=localStorage.getItem('worker_url');
     if(!workerUrl) return null;
@@ -204,26 +230,19 @@ async function ask(c,extra){
     const dataUrl=typeof c==='string'?c:c.toDataURL('image/jpeg',TAG_Q);
     const res=await fetch(workerUrl,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
-      body:JSON.stringify({image:dataUrl,appToken:localStorage.getItem('app_token')||'',...tagExtras(ex)}),
+      headers:{'Content-Type':'application/json','x-app-token':localStorage.getItem('app_token')||''},   // (the code goes in the header only: the worker hasn't read a body appToken since 2026-11-12)
+      body:JSON.stringify({image:dataUrl,...tagExtras(ex)}),
       ...(signal?{signal}:{})
     });
     if(!res.ok){let e='',j={};try{j=await res.json();e=j.detail||j.error||''}catch{}
       if(typeof endedAnswer==='function'&&endedAnswer(res.status,j)){inviteEnded(localStorage.getItem('app_token')||'',j);aiError='';return null}   // found out here: said as ended (sync.js), the card has no Try again
-      aiError=tagFailText(res.status,j,e);return null}
+      return fail(tagFailText(res.status,j,e))}
     aiError='';
     const result=await res.json();aiModel=result.model||'';
-    let parsed;
-    try {
-      const cleanText=(result.response||'').replace(/```json/g,'').replace(/```/g, '').trim();
-      parsed=JSON.parse(cleanText);
-    } catch(e) {
-      parsed=result;
-    }
-    return normTag(parsed,result.model);
+    return normTag(result,result.model,forType);   // (the worker parses Claude's answer itself: the old Workers AI text shape is gone)
   } catch(e) {
     if(e&&e.name==='AbortError')return null;   // stopped on purpose: no failure to report
-    aiError=tagFailText(0,null,e);return null;
+    return fail(tagFailText(0,null,e));
   }
 }
 /* an AI tag -> the fields the Add form uses (type-checked, colours and patterns normalised) */
@@ -235,25 +254,26 @@ const matTag=p=>{const m=p&&p.material,t=TYPES[p&&p.type]?p.type:'suit',k=m&&typ
   if(!k||k==='none'||!MATERIALS_BY[t])return null;const conf=['high','medium','low'].includes(m.confidence)?m.confidence:'low',why=String(m.why||'').replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,160);
   if(matsFor(t).includes(k))return {key:k,conf,why};
   const n=ownMatName(k);return n&&m.new===true&&conf!=='low'?{key:n,conf,why,new:true}:null};
-function normTag(parsed,model){
+/* forType (ask's, CR-2-04): the type the colours, pattern and material are fitted to; `type` stays Claude's answer (tagging again offers it) */
+function normTag(parsed,model,forType){const ft=TYPES[forType]?forType:parsed.type;
     return {
       type:TYPES[parsed.type]?parsed.type:'suit',
-      pattern:normPat(TYPES[parsed.type]?parsed.type:'suit',parsed.pattern),
-      primaryColor:normColFor(parsed.type,parsed.primaryColor||parsed.color)||'grey',
-      secondaryColor:normColFor(parsed.type,parsed.secondaryColor,true),
-      tertiaryColor:normColFor(parsed.type,parsed.tertiaryColor,true),
+      pattern:normPat(TYPES[ft]?ft:'suit',parsed.pattern),
+      primaryColor:normColFor(ft,parsed.primaryColor||parsed.color)||'grey',
+      secondaryColor:normColFor(ft,parsed.secondaryColor,true),
+      tertiaryColor:normColFor(ft,parsed.tertiaryColor,true),
       metal:METAL[parsed.metal]?parsed.metal:'silver',
       leather:[...LEATHERS,...SHOE_TEXTILES,...SHOE_NAP,...BELT_MATS].includes(String(parsed.leather||'').toLowerCase().replace(/\s+/g,'-'))?String(parsed.leather).toLowerCase().replace(/\s+/g,'-'):null,
       trouserKind:['chinos','jeans','dress','cargo'].includes(parsed.trouserKind)?parsed.trouserKind:null,shoeStyle:SHOE_STYLES.some(([k])=>k===parsed.shoeStyle)?parsed.shoeStyle:null,
       model:model||'',
       dial:normCol(parsed.dial),band:['bracelet','leather','rubber','nato'].includes(parsed.band)?parsed.band:null,
       // the material Claude suggests (2026-11-15, worker cleanMaterial): from the type's list or the person's own (low kept as a guess), or a new one (matTag)
-      material:matTag(parsed),
+      material:matTag(TYPES[forType]?{...parsed,type:forType}:parsed),
       // the colours beyond the three (2026-11-16, the worker's accents: cleaned there; made the card's own in fill / refineApply, core.js accentsFor); null from an older worker
-      accents:Array.isArray(parsed.accents)?parsed.accents.filter(c=>typeof c==='string').slice(0,8):null,bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
+      accents:Array.isArray(parsed.accents)?parsed.accents.filter(c=>typeof c==='string').slice(0,ACCENT_MAX):null,bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
       // how sure it was, its runner-up, and what it would add when nothing listed fits (single-item tags)
       conf:parsed.confidence&&typeof parsed.confidence==='object'?parsed.confidence:null,
-      altColor:normColFor(parsed.type,parsed.altColor),altPattern:parsed.altPattern&&parsed.altPattern!=='none'&&(PATS_BY[parsed.type]||[]).includes(parsed.altPattern)?parsed.altPattern:null,
+      altColor:normColFor(ft,parsed.altColor),altPattern:parsed.altPattern&&parsed.altPattern!=='none'&&(PATS_BY[ft]||[]).includes(parsed.altPattern)?parsed.altPattern:null,
       newColor:parsed.newColor&&parsed.newColor.name?parsed.newColor:null,newPattern:parsed.newPattern&&parsed.newPattern.name?parsed.newPattern:null,
       clothBox:parsed.clothBox&&typeof parsed.clothBox==='object'?parsed.clothBox:null,
       patternBox:parsed.patternBox&&typeof parsed.patternBox==='object'?parsed.patternBox:null,weave:parsed.weave&&typeof parsed.weave==='object'?parsed.weave:null,
@@ -316,7 +336,19 @@ function focusFind(root,k){if(!k||!root)return null;
   if(!k.at.some(Boolean))return null;
   const same=[...root.querySelectorAll(k.tag)].filter(e=>FOCUS_ATTRS.every((a,j)=>(e.getAttribute(a)||'')===k.at[j]));
   return same.find(e=>(e.getAttribute('aria-label')||'')===k.label&&(e.textContent||'').trim().slice(0,60)===k.text)||same.find(e=>(e.getAttribute('aria-label')||'')===k.label)||same[0]||null}
-function keepFocus(root,draw){const a=document.activeElement,k=root&&a&&a!==document.body&&root.contains(a)?focusKey(a):null;
+/* a control whose focus opens the phone's own picker (a select's list, a date wheel) is never focused by code after a touch: iOS opened
+   the picker again right after each choice (the owner's bug, CR-1-01: every dropdown on Add without a photo and in the item sheet).
+   After a touch the focus goes to its section's head button (.ckh, which reads the new value), else its label; after a key press
+   (a keyboard, where focus opens nothing) the new control itself keeps it, as before. focusVia: how the last input came. */
+let focusVia='pointer',focusWatchOn=false;
+function focusWatch(){if(focusWatchOn)return;focusWatchOn=true;const tap=()=>{focusVia='pointer'};
+  for(const t of ['pointerdown','touchstart','mousedown'])document.addEventListener(t,tap,{capture:true,passive:true});
+  document.addEventListener('keydown',()=>{focusVia='key'},true)}
+const focusOpens=e=>e.tagName==='SELECT'||e.tagName==='INPUT'&&/^(date|time|month|week|datetime-local|color|file)$/i.test(e.getAttribute('type')||'');   // (the type written: a browser without date fields reports 'text')
+function focusSafe(e){if(!focusOpens(e)||focusVia==='key')return e;
+  const sec=e.closest('section'),h=sec&&sec.querySelector('.ckh');if(h)return h;
+  const lab=e.closest('label');if(lab){lab.tabIndex=-1;return lab}return null}
+function keepFocus(root,draw){focusWatch();const a=document.activeElement,k=root&&a&&a!==document.body&&root.contains(a)?focusKey(a):null;
   const r=draw();
-  if(k&&!(k.el.isConnected&&root.contains(k.el))){const e=focusFind(root,k);if(e&&!e.closest('[inert]'))try{e.focus({preventScroll:true})}catch{}}
+  if(k&&!(k.el.isConnected&&root.contains(k.el))){const f=focusFind(root,k),e=f&&focusSafe(f);if(e&&!e.closest('[inert]'))try{e.focus({preventScroll:true})}catch{}}
   return r}

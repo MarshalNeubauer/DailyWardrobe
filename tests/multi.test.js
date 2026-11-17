@@ -99,10 +99,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/Found 2 items \(1 tie, 1 pair of shoes\)/.test(await p.textContent('#multi-status')),`Try again reads the same photo, no picking again (${await p.textContent('#multi-status')})`);
     // Cancel while it is being read
     await p.evaluate(()=>{queue=[];renderAdd()});
-    await ctx.unroute(HOST+'**');await ctx.route(HOST+'**',async r=>{await new Promise(z=>setTimeout(z,1500));r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:'{"items":[]}'}).catch(()=>{})});
+    // (the answer waits until Cancel was tapped, not 1.5 s: on a busy machine the reading ended first and Cancel was gone, CR-10-03)
+    let answer;const tapped=new Promise(z=>answer=z);
+    await ctx.unroute(HOST+'**');await ctx.route(HOST+'**',async r=>{await tapped;r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:'{"items":[]}'}).catch(()=>{})});
     await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=50;const b=await new Promise(r=>c.toBlob(r,'image/png'));window._m=addFiles([new File([b],'x.png',{type:'image/png'})],true)});
     await p.waitForFunction(()=>queue[0]&&queue[0].multiBusy&&/Cancel/.test(document.querySelector('#queue').textContent));
-    await p.click('#queue .card button');await p.evaluate(()=>window._m);
+    await p.click('#queue .card button');answer();await p.evaluate(()=>window._m);
     ok(await p.evaluate(()=>queue.length===0),'"Finding every item" has Cancel, which takes the photo off Add');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}

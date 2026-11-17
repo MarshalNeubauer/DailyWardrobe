@@ -19,7 +19,8 @@ module.exports=async({ok,chromium,url})=>{
     // rotate: 300x200 red|blue becomes 200x300 red on top
     await p.click('#item-view .pt-rotate');await p.waitForFunction(()=>!/^data:image\/png/.test(items[0].photo));
     let d=await dims();ok(d.w===200&&d.h===300&&d.tl==='100'&&d.bl==='001','Rotate turns the photo a quarter clockwise');
-    ok(await p.evaluate(()=>/Photo rotated\./.test(document.querySelector('#toast.on').textContent)),'"Photo rotated." in a toast');
+    // (the toast comes once the rotated photo is saved, a moment after the photo changes in memory: wait for it, CR-10-03)
+    ok(await p.waitForFunction(()=>{const t=document.querySelector('#toast.on');return !!t&&/Photo rotated\./.test(t.textContent)},null,{timeout:8000}).then(()=>true,()=>false),'"Photo rotated." in a toast');
     // undo: in the toast
     await p.click('#toast button >> text=Undo');await p.waitForFunction(()=>/^data:image\/png/.test(items[0].photo));
     d=await dims();ok(d.w===300&&d.h===200,'the toast’s Undo brings the previous photo back');

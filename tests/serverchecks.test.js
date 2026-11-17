@@ -100,7 +100,7 @@ module.exports=async({ok,ROOT})=>{
       globalThis.fetch=realFetch;
       ok(svg.s===415&&/not a photo/.test(svg.j.error),`an SVG is not taken as a photo (${svg.s} ${svg.j.error})`);
       ok(st===429&&n===101&&/limit of 100 photo links is used up/.test(last.j.error)&&own.s===200,`a tester's photo links are counted, 100 a day, refused in words the app shows (${n}: ${last.j.error}); the owner's are not`);}
-    // ---- CR-6-14: the routes nothing asks for are gone; GET /blob and GET /render?day= (still read by photos.js) stay
+    // ---- CR-6-14: the routes nothing asks for are gone; GET /blob and GET /render?day= (older apps in the field still ask) stay
     {const w=world();w.store.set('blob:c0000000000000004',new Uint8Array([1,2]).buffer);w.store.set('render:2026-11-08',JSON.stringify({sig:'d',img:JPG,t:1}));
       const pb=await w.call('blob?key=c0000000000000004',{method:'PUT',body:'x'}),dr=await w.call('render?key=c0000000000000004',{method:'DELETE'});
       const gb=await w.call('blob?key=c0000000000000004'),gd=await w.call('render?day=2026-11-08'),pd=await w.call('render',{method:'PUT',body:JSON.stringify({day:'2026-11-09',rec:{img:JPG,t:1}})});

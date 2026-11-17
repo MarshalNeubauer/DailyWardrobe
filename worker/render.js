@@ -4,15 +4,14 @@
    push to an open app (GET /render-wait) were removed on 2026-11-14, after the app stopped asking for them (#415-#420). Outfit photos
    kept from before are still read and written with GET/PUT /render (records.js). */
 import { renderItem } from './items.js';
+import { readAiBody } from './tag.js';
 import { DAY_KEY, USE_RE } from './people.js';
 
 /* POST /render {mode:'item', item, key, ref?} -> {image: data URL, model}: a product picture of one accessory (worker/items.js).
    Anything else is an outfit photo, which is no longer made: 410 */
 async function handleRender(req, env, json, who) {
-  const text = await req.text();
-  if (text.length > 20e6) return json({ error: 'request too large' }, 413);
-  let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
-  if (!body || body.mode !== 'item') return json({ error: 'gone', message: 'Outfit photos are no longer made: the app paints every outfit itself.' }, 410);
+  const got = await readAiBody(req, json); if (got.res) return got.res; const body = got.body;   // (read like POST /: CR-2-08)
+  if (body.mode !== 'item') return json({ error: 'gone', message: 'Outfit photos are no longer made: the app paints every outfit itself.' }, 410);
   if (!env.OPENAI_API_KEY) return json({ error: 'Add an OPENAI_API_KEY secret to the worker to generate item pictures.' }, 501);
   return renderItem(body, env, json, who);
 }

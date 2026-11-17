@@ -114,7 +114,17 @@ function asmGlContext(S){
   // a lost context (the system took the graphics chip back, a phone under memory pressure): the CPU paints until the retry
   if(cv.addEventListener)cv.addEventListener('webglcontextlost',e=>{e.preventDefault();asmGlLost(gl)},false);
   return gl}
-function asmGlLost(gl){if(asmGlState&&(!gl||asmGlState.gl===gl)){asmGlState=null;asmGlRetry=Date.now()+ASM_GL_RETRY_MS;console.warn('asm-gl: graphics context lost; painting on the processor for now')}}
+function asmGlLost(gl){if(asmGlState&&(!gl||asmGlState.gl===gl)){asmGlRelease(asmGlState);asmGlState=null;asmGlRetry=Date.now()+ASM_GL_RETRY_MS;console.warn('asm-gl: graphics context lost; painting on the processor for now')}}
+/* (CR-8-03, 2026-11-17) let a GL state go for good: its textures, framebuffer and programs deleted and the context given back
+   (WEBGL_lose_context), so its 176-230 MB at 2048 don't wait for garbage collection and a retry doesn't stack contexts. Used for a lost
+   context, a repeated graphics error, a size change and the idle release (asmGlFree, assemble.js asmIdleEnd) */
+function asmGlRelease(G){if(!G||!G.gl||G.freed)return;G.freed=true;const gl=G.gl;
+  try{if(!gl.isContextLost()){for(const t of [...(G.tex||[]),...(G.gtex||[]),G.ttex,G.bgt,G.lint,G.out])if(t)gl.deleteTexture(t);if(G.fbo)gl.deleteFramebuffer(G.fbo);
+      for(const p of new Set([G.prog,...Object.values(G.progs||{})]))if(p)gl.deleteProgram(p);const x=gl.getExtension('WEBGL_lose_context');if(x)x.loseContext()}}
+  catch(e){console.warn('asm-gl: release',e)}
+  G.tex=G.gtex=null;G.ttex=G.bgt=G.lint=G.out=G.fbo=G.prog=null;G.progs=null;G.key=G.gk=G.bgk=G.clothK=null}
+/* (CR-8-01) the idle release on the page: its GL state (made only where the worker has no WebGL2, asmRunPage) */
+function asmGlFree(){if(asmGlState){asmGlRelease(asmGlState);asmGlState=null}}
 /* whether WebGL2 works here (the worker's ready message; the page's own when the worker has none) */
 function asmGlProbe(){try{const cv=typeof OffscreenCanvas!=='undefined'?new OffscreenCanvas(1,1):typeof document!=='undefined'?document.createElement('canvas'):null;const gl=cv&&cv.getContext('webgl2');
   if(!gl)return false;const x=gl.getExtension('WEBGL_lose_context');if(x)x.loseContext();return true}catch{return false}}
@@ -124,6 +134,7 @@ function asmGlOnPage(job,st){if(!job||!job.cm||!st||!st.ok||st.gl!==false||job.g
 /* the GL state for a size (made once; null without WebGL2, after a lost context until the retry, or when the program won't build) */
 function asmGlInit(S){const G=asmGlState;if(G&&G.S===S&&!G.gl.isContextLost())return G;if(asmGlNone||Date.now()<asmGlRetry)return null;
   if(G&&G.gl.isContextLost()){asmGlLost(G.gl);return null}   // (lost before its event arrived)
+  if(G){asmGlRelease(G);asmGlState=null}   // (CR-8-03) another size: the old state is let go, not left to garbage collection
   const gl=asmGlContext(S);if(!gl){if(asmGlEver)asmGlRetry=Date.now()+ASM_GL_RETRY_MS;else asmGlNone=true;return null}
   try{asmGlState={gl,S,prog:asmGlProgram(gl),renderer:asmGlRenderer(gl)};asmGlEver=true}catch(e){console.warn('asm-gl',e);asmGlState=null;asmGlNone=true;return null}return asmGlState}
 /* (tests) forget what was found out about WebGL2 here */
@@ -469,41 +480,51 @@ function asmGlTex(gl,unit,w,h,ifmt,fmt,type,data){const t=gl.createTexture();gl.
   gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);gl.texStorage2D(gl.TEXTURE_2D,1,ifmt,w,h);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,w,h,fmt,type,data);return t}
 /* the master's textures (once per master): 16+32+32+32+32 MB at 2048 (the kept zones' colours half floats since stage 2: 64 -> 32 MB,
    within a tenth of a level), plus the background and the output, 16 MB each */
-function asmGlUpload(G,pk){asmGlUse(G,asmGlVar(pk));const gl=G.gl,S=pk.S,u=n=>gl.getUniformLocation(G.prog,n);gl.useProgram(G.prog);
-  for(const t of G.tex||[])gl.deleteTexture(t);
-  // (stage 5) the output is only attached to the framebuffer (bound to no sampler unit), so unit 15 is free for the tables
-  if(!G.fbo){G.out=gl.createTexture();gl.activeTexture(gl.TEXTURE15);gl.bindTexture(gl.TEXTURE_2D,G.out);gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA8,S,S);
-    G.fbo=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,G.fbo);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,G.out,0);gl.bindTexture(gl.TEXTURE_2D,null)}
-  G.tex=[asmGlTex(gl,0,S,S,gl.RGBA8UI,gl.RGBA_INTEGER,gl.UNSIGNED_BYTE,pk.a),asmGlTex(gl,1,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.s4),
-    asmGlTex(gl,2,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.l1),asmGlTex(gl,3,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.l2),
-    asmGlTex(gl,5,S,S,gl.RGBA16F,gl.RGBA,gl.FLOAT,pk.keep),
-    // (stage 5) the waistcoat on unit 6 (a 1x1 stand-in without one; ASM_LIN moved into the tables), the tables on unit 15
-    pk.W?asmGlTex(gl,6,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.W):asmGlTex(gl,6,1,1,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,new Uint16Array(4)),
-    asmGlTex(gl,7,pk.tw,pk.th,gl.RG32F,gl.RG,gl.FLOAT,pk.tube),
-    asmGlTex(gl,8,ASM_FLOW.nu,ASM_FLOW.nv,gl.RG32F,gl.RG,gl.FLOAT,pk.flow),asmGlTex(gl,9,S,1,gl.RG32I,gl.RG_INTEGER,gl.INT,pk.row),
-    asmGlTex(gl,15,pk.TWb,pk.THb,gl.RGBA32F,gl.RGBA,gl.FLOAT,pk.tab)];
+function asmGlUpload(G,pk){for(const f of asmGlUploadSteps(G,pk))f();G.gl.finish()}
+/* (CR-8-02) the same upload in steps with a pause between (the page's, asmGlPage: one block of about 270 ms at phone speed became
+   pieces of at most about 130) */
+async function asmGlUploadSlow(G,pk){for(const f of asmGlUploadSteps(G,pk)){f();await new Promise(r=>setTimeout(r,0))}}
+function asmGlUploadSteps(G,pk){const gl=G.gl,S=pk.S,T=[];
+  T.push(()=>{asmGlUse(G,asmGlVar(pk));gl.useProgram(G.prog);
+    for(const t of G.tex||[])gl.deleteTexture(t);G.tex=[];
+    // (stage 5) the output is only attached to the framebuffer (bound to no sampler unit), so unit 15 is free for the tables
+    if(!G.fbo){G.out=gl.createTexture();gl.activeTexture(gl.TEXTURE15);gl.bindTexture(gl.TEXTURE_2D,G.out);gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA8,S,S);
+      G.fbo=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,G.fbo);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,G.out,0);gl.bindTexture(gl.TEXTURE_2D,null)}});
+  const tx=(...a)=>T.push(()=>{G.tex.push(asmGlTex(gl,...a))});
+  tx(0,S,S,gl.RGBA8UI,gl.RGBA_INTEGER,gl.UNSIGNED_BYTE,pk.a);tx(1,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.s4);
+  tx(2,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.l1);tx(3,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.l2);
+  tx(5,S,S,gl.RGBA16F,gl.RGBA,gl.FLOAT,pk.keep);
+  // (stage 5) the waistcoat on unit 6 (a 1x1 stand-in without one; ASM_LIN moved into the tables), the tables on unit 15
+  if(pk.W)tx(6,S,S,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,pk.W);else tx(6,1,1,gl.RGBA16UI,gl.RGBA_INTEGER,gl.UNSIGNED_SHORT,new Uint16Array(4));
+  tx(7,pk.tw,pk.th,gl.RG32F,gl.RG,gl.FLOAT,pk.tube);
+  tx(8,ASM_FLOW.nu,ASM_FLOW.nv,gl.RG32F,gl.RG,gl.FLOAT,pk.flow);tx(9,S,1,gl.RG32I,gl.RG_INTEGER,gl.INT,pk.row);
+  tx(15,pk.TWb,pk.THb,gl.RGBA32F,gl.RGBA,gl.FLOAT,pk.tab);
+  T.push(()=>{const u=n=>gl.getUniformLocation(G.prog,n);gl.useProgram(G.prog);asmGlUniforms(G,pk,u)});return T}
+function asmGlUniforms(G,pk,u){const gl=G.gl,S=pk.S;
   [['uA',0],['uSh',1],['uL1',2],['uL2',3],['uBG',4],['uKeep',5],['uW',6],['uTube',7],['uFlow',8],['uRow',9],['uGeo',10],['uGR',11],['uTile',12],['uGeoI',13],['uLinT',14],['uTab',15]].forEach(([n,i])=>gl.uniform1i(u(n),i));
   gl.uniform1i(u('uS'),S);gl.uniform4fv(u('uG'),pk.G);gl.uniform4iv(u('uQ'),pk.Q);gl.uniform4fv(u('uFl'),pk.fl);gl.uniform2fv(u('uSm'),pk.sm);
   gl.uniform4fv(u('uCu'),pk.cuCs);G.cuff=pk.cuff;   // (stage 4) the turned shirt parts' cos/sin; whether the master has its shirt's parts
   gl.uniform2iv(u('uLy'),pk.ly);gl.uniform1f(u('uSmW'),pk.smW);   // (stage 5: the outer garment, waistcoat, shirt sleeves, legs and polylines are the program's constants, asmGlVar)
   // the master's texture memory (bytes), for the tests' report: these, the background and the output
   G.masterBytes=S*S*(4+8+8+8+8+(pk.W?8:0)+4+4)+8*pk.tw*pk.th+8*ASM_FLOW.nu*ASM_FLOW.nv+8*S+16*pk.TWb*pk.THb;
-  G.bgk=null;gl.finish()}
+  G.bgk=null}
 /* (tests, the report) the textures held now, in bytes: the master's, its solved positions, the look's tiles and cloth texture */
 const asmGlBytes=G=>G?{master:G.masterBytes||0,geo:G.geoBytes||0,tiles:G.tileBytes||0,cloth:G.clothBytes||0,all:(G.masterBytes||0)+(G.geoBytes||0)+(G.tileBytes||0)+(G.clothBytes||0)}:null;
 /* the master's solved cloth positions (asmGeoPrep's {U, V, R} at the painting's size), or none (1x1 stand-ins, uHasGeo 0) */
 /* (stage 2) at the maps' own size (a phone's 2048) every position is a whole number of 1/16 px from -1024: kept as the maps' 16-bit values
    (RG16UI, 16 MB at 2048 against 32 MB of floats), read back exactly; at any other size (resampled) as floats */
-function asmGlUploadGeo(G,uv){const gl=G.gl,S=G.S;gl.useProgram(G.prog);for(const t of G.gtex||[])gl.deleteTexture(t);
-  const z32=()=>asmGlTex(gl,10,1,1,gl.RG32F,gl.RG,gl.FLOAT,new Float32Array(2)),z16=()=>asmGlTex(gl,13,1,1,gl.RG16UI,gl.RG_INTEGER,gl.UNSIGNED_SHORT,new Uint16Array(2));let g16=0;
-  if(uv&&uv.U.length===S*S){const N=S*S,h=new Uint16Array(2*N);let ok=true;
-    for(let k=0;k<N&&ok;k++){const a=uv.U[k]*16+16384,b=uv.V[k]*16+16384;if(a!==Math.round(a)||b!==Math.round(b)||a<0||b<0||a>65535||b>65535)ok=false;else{h[2*k]=a;h[2*k+1]=b}}
-    if(ok){g16=1;G.gtex=[z32(),asmGlTex(gl,13,S,S,gl.RG16UI,gl.RG_INTEGER,gl.UNSIGNED_SHORT,h)]}
-    else{const f=new Float32Array(2*N);for(let k=0;k<N;k++){f[2*k]=uv.U[k];f[2*k+1]=uv.V[k]}G.gtex=[asmGlTex(gl,10,S,S,gl.RG32F,gl.RG,gl.FLOAT,f),z16()]}
-    G.gtex.push(asmGlTex(gl,11,S,S,gl.R8UI,gl.RED_INTEGER,gl.UNSIGNED_BYTE,uv.R))}
+/* (CR-8-02) packed on the CPU first (asmGlGeoPack: {g16, h or f, R}, or null without positions at this size), so a worker without WebGL2
+   can pack them for the page */
+function asmGlGeoPack(uv,S){if(!uv||uv.U.length!==S*S)return null;const N=S*S,h=new Uint16Array(2*N);let ok=true;
+  for(let k=0;k<N&&ok;k++){const a=uv.U[k]*16+16384,b=uv.V[k]*16+16384;if(a!==Math.round(a)||b!==Math.round(b)||a<0||b<0||a>65535||b>65535)ok=false;else{h[2*k]=a;h[2*k+1]=b}}
+  if(ok)return {g16:1,h,R:uv.R};const f=new Float32Array(2*N);for(let k=0;k<N;k++){f[2*k]=uv.U[k];f[2*k+1]=uv.V[k]}return {g16:0,f,R:uv.R}}
+function asmGlUploadGeo(G,g){const gl=G.gl,S=G.S;gl.useProgram(G.prog);for(const t of G.gtex||[])gl.deleteTexture(t);
+  const z32=()=>asmGlTex(gl,10,1,1,gl.RG32F,gl.RG,gl.FLOAT,new Float32Array(2)),z16=()=>asmGlTex(gl,13,1,1,gl.RG16UI,gl.RG_INTEGER,gl.UNSIGNED_SHORT,new Uint16Array(2));
+  if(g){G.gtex=g.g16?[z32(),asmGlTex(gl,13,S,S,gl.RG16UI,gl.RG_INTEGER,gl.UNSIGNED_SHORT,g.h)]:[asmGlTex(gl,10,S,S,gl.RG32F,gl.RG,gl.FLOAT,g.f),z16()];
+    G.gtex.push(asmGlTex(gl,11,S,S,gl.R8UI,gl.RED_INTEGER,gl.UNSIGNED_BYTE,g.R))}
   else G.gtex=[z32(),z16(),asmGlTex(gl,11,1,1,gl.R8UI,gl.RED_INTEGER,gl.UNSIGNED_BYTE,new Uint8Array(1))];
-  G.geoBytes=uv&&uv.U.length===S*S?S*S*(g16?4:8)+S*S:0;
-  gl.uniform1i(gl.getUniformLocation(G.prog,'uHasGeo'),uv&&uv.U.length===S*S?1:0);gl.uniform1i(gl.getUniformLocation(G.prog,'uGeo16'),g16)}
+  G.geoBytes=g?S*S*(g.g16?4:8)+S*S:0;
+  gl.uniform1i(gl.getUniformLocation(G.prog,'uHasGeo'),g?1:0);gl.uniform1i(gl.getUniformLocation(G.prog,'uGeo16'),g&&g.g16?1:0)}
 /* (stage 4) the look's tiles, [jacket, tie, shirt] (each {c: linear RGB, TW, TH} or null), stacked in one RGBA32F texture on unit 12 (the
    sampler units 0..14 were all taken): each one's place and size in uTO; about 1 MB a tile */
 function asmGlAtlas(G,ts){const gl=G.gl;let W0=1,W1=1,H=0;const ms=ts.map(t=>t?asmCmMips(t):null),bh=m=>Math.max(m[0].TH,m.slice(1).reduce((a,l)=>a+l.TH,0));
@@ -569,7 +590,20 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
   if(SH){const rep=SH.mm*P.pxmm;gl.uniform1i(u('uShT'),1);gl.uniform4f(u('uShR'),rep,rep*SH.TH/SH.TW,SH.fine?1:0,G.cuff?1:0)}else gl.uniform1i(u('uShT'),0);
   asmGlAtlas(G,[tile?{c:tc,TW:T.TW,TH:T.TH}:TT?{c:TT.t||TT.c,TW:TT.TW,TH:TT.TH}:null,TI?{c:TI.c,TW:TI.TW,TH:TI.TH}:null,SH?{c:SH.t||SH.c,TW:SH.TW,TH:SH.TH}:null]);
   gl.bindFramebuffer(gl.FRAMEBUFFER,G.fbo);gl.viewport(0,0,S,S);gl.drawArrays(gl.TRIANGLES,0,3);
-  const o=new Uint8Array(4*S*S);gl.readPixels(0,0,S,S,gl.RGBA,gl.UNSIGNED_BYTE,o);return new Uint8ClampedArray(o.buffer)}
+  return asmGlRead(gl,S)}
+/* (CR-8-02, 2026-11-17) the drawn pixels read back without holding the thread: into a pixel buffer, a fence, polled with short timers
+   until the chip is done, then copied out. A plain readPixels waits for the whole draw (and, the first time, the program's build): on the
+   page that was one block of 1.5-4 s on a slow chip. The same bytes either way; where fences are missing, the plain read */
+const ASM_GL_WAIT_MS=60e3;
+async function asmGlRead(gl,S){const n=4*S*S,o=new Uint8Array(n);
+  if(typeof gl.fenceSync!=='function'||typeof gl.getBufferSubData!=='function'){gl.readPixels(0,0,S,S,gl.RGBA,gl.UNSIGNED_BYTE,o);return new Uint8ClampedArray(o.buffer)}
+  const b=gl.createBuffer();gl.bindBuffer(gl.PIXEL_PACK_BUFFER,b);gl.bufferData(gl.PIXEL_PACK_BUFFER,n,gl.STREAM_READ);
+  gl.readPixels(0,0,S,S,gl.RGBA,gl.UNSIGNED_BYTE,0);const f=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);gl.flush();
+  try{const t0=Date.now();for(let w=1;;w=Math.min(2*w,32)){const s=gl.clientWaitSync(f,0,0);if(s===gl.ALREADY_SIGNALED||s===gl.CONDITION_SATISFIED)break;
+      if(s===gl.WAIT_FAILED||gl.isContextLost()||Date.now()-t0>ASM_GL_WAIT_MS)throw new Error('graphics chip did not finish');await new Promise(r=>setTimeout(r,w))}
+    gl.getBufferSubData(gl.PIXEL_PACK_BUFFER,0,o)}
+  finally{if(!gl.isContextLost()){gl.deleteSync(f);gl.bindBuffer(gl.PIXEL_PACK_BUFFER,null);gl.deleteBuffer(b)}}
+  return new Uint8ClampedArray(o.buffer)}
 /* asmCmBuild's first step: the look on the graphics chip -> {url, gl:true, ms}, or null (not covered, no WebGL2, a lost context: the CPU
    paints it). hit is asmCmSetup's (the master's setup and solved positions) */
 /* the finished pixels (S x S, RGBA) -> the picture's JPEG: over a phone's size (2880) scaled to 2048 exactly as asmCmBuild scales
@@ -581,17 +615,49 @@ async function asmGlEncode(o,S){let img=new ImageData(o,S,S);
 async function asmGlTry(job,hit){const P=hit.P;if(!P.lx&&hit.lx)P.lx=hit.lx;const why=asmGlWhy(job,P);asmGlNot=why;if(why)return null;
   const G=asmGlInit(P.S);if(!G){asmGlNot='no WebGL2 context at '+P.S;return null}
   try{const t0=performance.now();
-    if(G.key!==hit.key){G.key=null;asmGlUpload(G,asmGlPack(P));G.key=hit.key;G.gk=null}   // (the packed arrays are let go once uploaded)
-    const gk=hit.key+'|'+(hit.gk||'');if(G.gk!==gk){asmGlUploadGeo(G,hit.uv);G.gk=gk}
-    const o=await asmGlPaint(G,job,P);if(G.gl.isContextLost())throw new Error('graphics context lost while painting');
-    const ms=Math.round(performance.now()-t0),S=P.S,L=ASM_LIN,N=P.N;
-    const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)},hx=String(job.cloth.shirt.hex).replace('#','');
-    if(P.A.shirt)asmCmButtons(o,P,[0,2,4].map(k=>L[parseInt(hx.slice(k,k+2),16)||0]),L,gam);   // the shirt's buttons, drawn (ASM_CM_BTN), as on the CPU
-    if(job.bar&&P.A.tie){const tm=new Uint8Array(N);for(let k=0;k<N;k++)tm[k]=P.A.tie[k]>127?1:0;asmBarDraw(o,tm,S,job.bar,null)}
-    asmCmFinish(o,hit);   // the figure seated in the room (asm-color.js ASM_CM_FIN), as on the CPU
-    // (stage 6) over a phone's size (2880) scaled to 2048 exactly as asmCmBuild scales the CPU's picture
-    return {url:await asmGlEncode(o,S),gl:true,ms,renderer:G.renderer}}
-  catch(e){console.warn('asm-gl: painting on the processor instead',e);asmGlNot='graphics error: '+String(e&&e.message||e).slice(0,200);asmGlLost(G.gl);return null}}
+    const o=await asmGlDraw(G,job,P,hit.key,()=>asmGlPack(P),hit.key+'|'+(hit.gk||''),()=>asmGlGeoPack(hit.uv,P.S));
+    const ms=Math.round(performance.now()-t0);asmGlErr=null;
+    return {url:await asmGlTail(o,job,hit),gl:true,ms,renderer:G.renderer}}
+  catch(e){asmGlFail(G,e);return null}}
+/* the look's pixels on the chip; the master's textures (pk) and solved positions (geo) are uploaded first when the state holds another
+   master's: both are given as functions, so they are only packed then (the packed arrays are let go once uploaded) */
+async function asmGlDraw(G,job,P,key,pk,gk,geo,slow){
+  if(G.key!==key){G.key=null;const x=pk();if(!x)throw Object.assign(new Error('the master\'s textures were not sent'),{again:true});if(slow)await asmGlUploadSlow(G,x);else asmGlUpload(G,x);G.key=key;G.gk=null}
+  if(G.gk!==gk){G.gk=null;asmGlUploadGeo(G,geo());G.gk=gk}
+  const o=await asmGlPaint(G,job,P);if(G.gl.isContextLost())throw new Error('graphics context lost while painting');return o}
+/* after read-back, as on the CPU: the shirt's buttons (ASM_CM_BTN), the tie clip, the figure seated in the room (ASM_CM_FIN), then the
+   JPEG (stage 6: over a phone's size, 2880, scaled to 2048 exactly as asmCmBuild scales the CPU's picture) */
+async function asmGlTail(o,job,hit){const P=hit.P,S=P.S,L=ASM_LIN,N=P.N;
+  const hx=String(job.cloth.shirt.hex).replace('#','');
+  if(P.A.shirt)asmCmButtons(o,P,[0,2,4].map(k=>L[parseInt(hx.slice(k,k+2),16)||0]),L,linSrgb8);   // (srgb.js)
+  if(job.bar&&P.A.tie){const tm=new Uint8Array(N);for(let k=0;k<N;k++)tm[k]=P.A.tie[k]>127?1:0;asmBarDraw(o,tm,S,job.bar,null)}
+  asmCmFinish(o,hit);
+  return asmGlEncode(o,S)}
+/* (CR-8-03, 2026-11-17) a painting that failed on the chip: that look is painted on the CPU. Only a lost context (or the same error again
+   within ASM_GL_RETRY_MS, with no picture made between) lets the state go (asmGlLost: released, the chip retried after ASM_GL_RETRY_MS); one ordinary error (a bad tile,
+   a bug in one look's cloth) keeps the context, and what may have been half uploaded is uploaded again with the next look */
+let asmGlErr=null;
+function asmGlFail(G,e){const m=String(e&&e.message||e).slice(0,200),now=Date.now();asmGlNot='graphics error: '+m;
+  if(G.gl.isContextLost()||(asmGlErr&&asmGlErr.m===m&&now-asmGlErr.t<ASM_GL_RETRY_MS)){asmGlErr=null;console.warn('asm-gl: painting on the processor instead',e);asmGlLost(G.gl);return}
+  asmGlErr={m,t:now};G.key=G.gk=G.bgk=G.clothK=null;console.warn('asm-gl: this look on the processor; the graphics chip is kept',e)}
+/* ---- (CR-8-02, 2026-11-17) a worker without WebGL2 (an iPhone on iOS 16.4-16.x: OffscreenCanvas but no WebGL in a worker): the page
+   painted these looks itself, and its first look of a master worked the setup out on the page (about 25 s with the app frozen at phone
+   speed) and kept a second copy of it there. Now the worker does every CPU part and the page only uploads and draws (assemble.js
+   asmRunPage): 1. the worker sets the master up (its CPU, or the copy on disk) and packs its textures (asmGlPrepOff), sent to the page
+   (transferred, not copied) only when the page's state holds another master; 2. the page uploads them and draws the look (asmGlPage) with a
+   small part of the setup (lite: its size, folds and tie geometry); 3. the worker finishes the read-back pixels as asmGlTail does
+   (asmGlFinOff). The setup lives only in the worker */
+async function asmGlPrepOff(job,have){const hit=await asmCmSetup(job),P=hit.P;if(!P.lx&&hit.lx)P.lx=hit.lx;const why=asmGlWhy(job,P);if(why)return {res:{why},tr:[]};
+  const gk=hit.key+'|'+(hit.gk||''),res={key:hit.key,gk,lite:{kind:P.kind,S:P.S,N:P.N,pxmm:P.pxmm,tieGeo:P.tieGeo,fold:P.fold}},tr=[];have=have||{};
+  if(have.key!==hit.key){res.pk=asmGlPack(P);for(const v of Object.values(res.pk))if(ArrayBuffer.isView(v))tr.push(v.buffer)}
+  if(have.key!==hit.key||have.gk!==gk){const g=asmGlGeoPack(hit.uv,P.S);res.geo=g&&{g16:g.g16,h:g.h,f:g.f,R:g.R.slice()};if(g)tr.push((g.h||g.f).buffer)}   // (R is the worker's own: copied)
+  return {res,tr}}
+async function asmGlPage(job,prep){const G=asmGlInit(prep.lite.S);if(!G){asmGlNot='no WebGL2 context at '+prep.lite.S;return null}
+  try{const t0=performance.now();
+    const o=await asmGlDraw(G,job,prep.lite,prep.key,()=>prep.pk,prep.gk,()=>{if(!('geo' in prep))throw Object.assign(new Error('the solved positions were not sent'),{again:true});return prep.geo},true);
+    prep.pk=prep.geo=null;asmGlErr=null;return {o,ms:Math.round(performance.now()-t0),renderer:G.renderer}}
+  catch(e){if(e&&e.again)return {again:true};asmGlFail(G,e);return null}}
+async function asmGlFinOff(job,fin){const hit=await asmCmSetup(job);return asmBuildAfter({url:await asmGlTail(fin.o,job,hit),gl:true,ms:fin.ms,renderer:fin.renderer},job)}
 /* ---- Settings → Outfit pictures → Advanced (owner only): "Graphics-chip painting", this phone's switch, and how the last picture
    painted here was made */
 function asmGlUI(b){if(!b)return;let g=document.getElementById('gl-box');if(!g){g=document.createElement('div');g.id='gl-box';b.appendChild(g)}

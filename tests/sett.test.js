@@ -1,5 +1,5 @@
 // The full pattern of a striped, checked or plaid cloth (detect.js analyzeSett): every band's colour and width, the lines
-// crossing the other way, the direction and the scale; drawn in the swatch and on the figure; described to the photo generator.
+// crossing the other way, the direction and the scale; drawn in the swatch and on the figure; its description in the words the painter reads.
 const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT,settle})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
@@ -19,7 +19,8 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     const r=await (await worker.fetch(new Request('https://w.test/',{method:'POST',headers:{'content-type':'application/json','x-app-token':'t'},body:JSON.stringify({image:IMG})}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'})).json();
     const sch=sent.output_config.format.schema,t=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n');
     ok(sch.required.includes('weave')&&sch.required.includes('patternBox')&&sch.properties.weave.anyOf[0].properties.colours,'Claude is asked for the weave (layout, direction, repeats, colors, crossing lines, description) and a box on the patterned cloth');
-    ok(/description: one or two sentences describing the pattern for a photo-realistic image generator/.test(t)&&/patternBox/.test(t),'the prompt explains both');
+    // (CR-2-13: the retired photo generator is not asked for; the description names the weave and finish the painter's words look for)
+    ok(/description:/.test(t)&&!/generator/i.test(t)&&/worsted/.test(t)&&/patternBox/.test(t)&&sch.properties.weave.anyOf[0].required.includes('description'),'the prompt explains both, the description for the owner and the painter (no photo generator)');
     ok(r.weave.colours.length===3&&r.weave.colours[0].hex==='#6e655a'&&!/</.test(r.weave.description)&&r.patternBox.w===339,'the answer is tidied (bad colors dropped, text cleaned)');
 
     const ctx=await browser.newContext({viewport:{width:390,height:844}});

@@ -5,7 +5,7 @@ import { readCapped } from './links.js';
 import { ownerOnly, spend, spendEach } from './people.js';
 
 /* photos are stored per outfit combination ("c" + 16 hex digits, kept until replaced). The copies per date (render:<YYYY-M-D>, from
-   2026-11-07/08, kept 90 days) are only read now: GET /render?day= (photos.js fetchRemoteRender still asks, and moves one it finds to its
+   2026-11-07/08, kept 90 days) are only read now: GET /render?day= (apps before #523, 2026-11-17, still ask, and move one they find to its
    combination); nothing writes them since 2026-11-17 */
 const COMBO_RE = /^c[0-9a-f]{16}$/, DAY_RE = /^\d{4}-\d{1,2}-\d{1,2}$/;
 /* a kept photo's stamp is the phone's; one more than this ahead of the server's clock is taken as now (CR-6-07: a record stamped years
@@ -102,7 +102,7 @@ async function putRender(req, env, json, who) {
 }
 /* (DELETE /render?key= went on 2026-11-17, CR-6-14: no app or tool asked for it; the app stops using a wrong photo by changing its key) */
 /* GET /blob?key=<c + 16 hex>: the stored bytes (application/octet-stream), 404 when none: a colour-coded master's setup packed for phones
-   (asm-color.js asmCmSetupFetch). They were written by the PC picture builder with PUT /blob, which went with it (2026-11-16; the route
+   (asked by apps before 2026-11-17's CR-8-06, asm-color.js asmCmSetupFetch; today's app no longer asks). They were written by the PC picture builder with PUT /blob, which went with it (2026-11-16; the route
    on 2026-11-17, CR-6-14): the ones kept are still read, and a changed master has a new key, so they are simply not asked for again.
    Every blob is the owner's, and every one is a master's setup for phones: a tester reads the owner's (their own prefix never held one).
    If a blob ever holds anything private, this must change */

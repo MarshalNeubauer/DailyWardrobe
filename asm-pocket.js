@@ -37,8 +37,8 @@ async function asmPocketPaint(res,J){if(!res||!J)return res;let img=null,px,S;
   if(res.px){px=res.px;S=res.S}else if(res.url){img=await asmData(res.url);px=img.data;S=img.width}else return res;
   asmPocketDo(px,S,J);
   if(img)res.url=await asmJpeg(img);return res}
-function asmPocketDo(px,S,J){const Q=asmPocketQuad(J.kind);if(!Q)return;const f=S/2048,L=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)};
-  const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)};
+function asmPocketDo(px,S,J){const Q=asmPocketQuad(J.kind);if(!Q)return;const f=S/2048,L=srgbLin8;
+  const gam=linSrgb8;   // (srgb.js)
   const hex=h=>[1,3,5].map(i=>L(parseInt(String(h).slice(i,i+2),16)||0));
   const P=k=>[Q[k][0]*f,Q[k][1]*f],b0=P('b0'),b1=P('b1'),t0=P('t0'),t1=P('t1'),H=ASM_POCKET_SHAPE.h*f,W=b1[0]-b0[0],slope=(b1[1]-b0[1])/W;
   const Y=(i)=>.2126*L(px[i])+.7152*L(px[i+1])+.0722*L(px[i+2]);

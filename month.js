@@ -10,7 +10,13 @@ function stackSVG(o,cls=''){
   return `<svg class="stack ${cls}" viewBox="0 0 40 ${H}" preserveAspectRatio="none" aria-hidden="true">${body}</svg>`;
 }
 const planOn=d=>planMonth(d.getFullYear(),d.getMonth())[key(d)];
-const nextWorkday=d=>{const x=new Date(d);let g=0;do x.setDate(x.getDate()+1);while(!isWorkday(x)&&++g<7);return x};
+/* the next workday after d (dir -1: the one before), at most NEXT_CAP days away; null when there is none (no workdays at all). The one
+   step rule for the home day, ‹ and › and the formal-day form (CR-4-06: it gave up after 7 days, so a vacation or a long Eid break of
+   own days off opened Today on a day off and stopped › inside it) */
+const NEXT_CAP=400;
+const nextWorkday=(d,dir=1)=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());for(let g=0;g<NEXT_CAP;g++){x.setDate(x.getDate()+dir);if(isWorkday(x))return x}return null};
+/* a date's calendar day, at midnight */
+const dayOnly=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
 const shortTop=o=>{const t=o.top;if(!t)return o.bot?(wearsJacket()?`No jacket: ${colName(primaryCol(o.bot))} pants`:`${colName(primaryCol(o.bot))} pants`.replace(/^./,c=>c.toUpperCase())):'No jacket';const p=t.pattern&&t.pattern!=='solid'&&t.pattern!=='other'?' '+patName(t.pattern):'',n=colName(primaryCol(t))+p;
   const s=n.charAt(0).toUpperCase()+n.slice(1);return o.suitDay?s:`${s} blazer${o.bot?' + '+colName(primaryCol(o.bot))+' pants':''}`};
 const tieWord=p=>({'polka-dot':'dot',stripe:'stripe',paisley:'paisley',check:'check',foulard:'foulard',knit:'knit'})[p]||'';
@@ -46,29 +52,15 @@ function monthGridHtml(){
     <div class="mgrid">${cells.join('')}</div></div>
     <button class="foldbar" onclick="toggleMonth()" aria-label="Fold away the month"><span class="fchev" aria-hidden="true">›</span>Fold away</button>`;
 }
-/* after a box unfolds: scroll down just far enough to show what opened, but never past the point where the tapped box
-   (top: the tapped element, e.g. the tile row for a tile's photo) reaches the top of the screen. Follows the box while it
-   grows, so the page moves with the unfolding; a touch or wheel by the user stops it. */
-let revealRun=0;
 /* how far to scroll so el shows above the tab bar, without the top of `top` going past the top of the screen (sat: the notch's inset) */
 function revealNeed(el,top,sat){if(sat===undefined){const probe=document.createElement('div');probe.style.cssText='position:fixed;top:0;height:0;padding-top:env(safe-area-inset-top);visibility:hidden';document.body.appendChild(probe);sat=parseFloat(getComputedStyle(probe).paddingTop)||0;probe.remove()}
   const nav=document.querySelector('body>nav'),bottom=(nav?nav.getBoundingClientRect().top:innerHeight)-12,need=el.getBoundingClientRect().bottom-bottom,cap=(top||el).getBoundingClientRect().top-(sat+8);return Math.max(0,Math.min(need,cap))}
-function reveal(el,top){top=top||el;const run=++revealRun,t0=performance.now(),reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const probe=document.createElement('div');probe.style.cssText='position:fixed;top:0;height:0;padding-top:env(safe-area-inset-top);visibility:hidden';document.body.appendChild(probe);
-  const sat=parseFloat(getComputedStyle(probe).paddingTop)||0;probe.remove();
-  const stop=()=>{revealRun++;off()},off=()=>{removeEventListener('touchstart',stop);removeEventListener('wheel',stop)};
-  addEventListener('touchstart',stop,{passive:true,once:true});addEventListener('wheel',stop,{passive:true,once:true});
-  const want=()=>revealNeed(el,top,sat);
-  const step=now=>{if(run!==revealRun)return;const d=want(),done=now-t0>(reduce?0:700);
-    if(reduce||done){if(d>.5)scrollBy(0,d);off();return}
-    if(d>.5)scrollBy(0,Math.max(1,d*.2));requestAnimationFrame(step)};
-  requestAnimationFrame(step)}
 function toggleMonth(){const box=$('#mbox');if(!box)return;monthOpen=!monthOpen;const pin=$('#mpanel-in');
   if(monthOpen){monthPanel={y:sel.getFullYear(),m:sel.getMonth()};monthFill();box.classList.remove('instant')}
   if(pin)pin.inert=!monthOpen;
   $('#mbox .month-link').setAttribute('aria-expanded',monthOpen);
   const sm=$('#mbox .mltxt small');if(sm)sm.textContent=sm.textContent.replace(/tap to .*/,monthOpen?'tap to fold away':'tap to see the month');
-  if(monthOpen)monthUnfold(box);else{revealRun++;monthFold(box)}}
+  if(monthOpen)monthUnfold(box);else monthFold(box)}
 /* the page's scroll during an unfold or a fold, on the animations' own curve (MONTH_EASE), duration and delay, so the page and the clip
    move together. The page is scrolled once, at the start, and Today is slid back by the same amount and eased to rest with the cards:
    one more animation the browser runs with the others, no script on any frame. (The browser's own smooth scroll kept its own pace, and

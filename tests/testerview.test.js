@@ -23,7 +23,9 @@ module.exports=async({ok,chromium,url})=>{
     ok(vt===''&&/^(photos,)?connection$/.test(vo)&&vn===''&&await p.evaluate(()=>!document.querySelector('#adv-tagging')),`Advanced sections: none for a tester, all of them for the owner (Schedule has none since 2026-11-14; Outfit pictures' only while item photos are on; Photo tagging has none since 2026-11-13), none before connecting either, until "I run the server" (ui.js connOwn) (tester "${vt}", owner "${vo}", not connected "${vn}")`);
     await p.evaluate(()=>{closeSettings();localStorage.setItem('worker_url','https://w.test/')});
     // Backup line
-    const line=s=>p.evaluate(s=>{localStorage.setItem('app_token','x');for(const [k,v] of Object.entries(s))v==null?localStorage.removeItem(k):localStorage.setItem(k,v);settingsSummaries();return document.querySelector('#sum-backup').textContent},s);
+    // (the app's own sync to the made-up server may run meanwhile and write its status, "Syncing…" or a failure, which outranks the line
+    // being checked: on a busy machine it did, CR-10-03. Each line waits for it to end, and states the status unless it names one)
+    const line=async s=>{await p.waitForFunction(()=>!syncing,null,{timeout:15000}).catch(()=>{});return p.evaluate(s=>{s={sync_status:null,...s};localStorage.setItem('app_token','x');for(const [k,v] of Object.entries(s))v==null?localStorage.removeItem(k):localStorage.setItem(k,v);settingsSummaries();return document.querySelector('#sum-backup').textContent},s)};
     const now=Date.now(),old=new Date(2026,2,3,12).getTime();
     ok(/^Backed up today$/.test(await line({last_sync:String(now),sync_status:null,sync_wait:null,sync_pause:null})),'a backup today says so');
     // (2026-11-15, the audit) not "Backed up today" while changes wait, the day's saves are used up, or the phone is offline

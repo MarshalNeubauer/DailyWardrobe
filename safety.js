@@ -125,15 +125,17 @@ function tagFailText(status,j,e){tagNetLast=false;
 /* the Add note was about the connection (cleared once back online) */
 const tagNetText=t=>/offline|couldn’t be reached/.test(t||'');
 // (an ended invitation: no "Try again" that can't work; re-audit 2026-11-15)
-function tagFailed(q){if(localStorage.getItem('worker_url')&&!(typeof inviteOver==='function'&&inviteOver())){q.tagErr=tagWhy||'No answer came back.';if(tagNetLast)q.tagNet=1;else delete q.tagNet;
-  if(!tagNetLast)errNote(new Error(q.tagErr),'Photo not tagged')}}   // reported (a phone offline is not a failure to fix)
+/* err: the card's own reading's failure (ask's out.err, CR-2-07: three cards read at once, and the shared tagWhy / tagNetLast could be
+   another card's by now); without it, the last one */
+function tagFailed(q,err){if(localStorage.getItem('worker_url')&&!(typeof inviteOver==='function'&&inviteOver())){const why=err?err.why:tagWhy,net=err?err.net:tagNetLast;q.tagErr=why||'No answer came back.';if(net)q.tagNet=1;else delete q.tagNet;
+  if(!net)errNote(new Error(q.tagErr),'Photo not tagged')}}   // reported (a phone offline is not a failure to fix)
 /* the card says what to do once: not when the reason already does ("Try again later, or add the item by hand.") */
 const tagFailNote=(q,i)=>q.tagErr&&!(typeof inviteOver==='function'&&inviteOver())?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)}${/try again|by hand|yourself/i.test(q.tagErr)?'':' <span class="tagfail-do">Fill in the details yourself, or try again.</span>'}</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Try again</button></div>`:'';
 async function retryTag(i){const q=queue[i];if(!q||q.busy||!q.tagImg)return;
   const ac=typeof AbortController==='function'?new AbortController():null;q.abort=ac;   // Stop on the card (add.js stopRead)
-  q.busy=1;renderAdd();let ai=null;try{ai=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),...(ac?{signal:ac.signal}:{})})}catch(e){console.warn(e)}
+  q.busy=1;renderAdd();let ai=null;const out={};try{ai=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),out,...(ac?{signal:ac.signal}:{})})}catch(e){console.warn(e)}
   q.busy=0;q.abort=null;if(q.stopped){delete q.stopped;delete q.tagNet;q.tagErr=typeof STOPPED==='string'?STOPPED:'You stopped the reading.'}
-  else if(ai){try{delete q.tagErr;delete q.tagNet;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}catch(e){console.warn('answer not applied',e);errNote(e,'Try again: answer not applied')}}else tagFailed(q);
+  else if(ai){try{delete q.tagErr;delete q.tagNet;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}catch(e){console.warn('answer not applied',e);errNote(e,'Try again: answer not applied')}}else tagFailed(q,out.err);
   // drawn again however it went (a step that threw left the card as it was, Confirm off: tagging.js refineFromCloseup, 2026-11-16)
   if(typeof addKeep==='function')addKeep();
   if(queue.includes(q))renderAdd()}

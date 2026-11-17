@@ -41,20 +41,22 @@ async function sharpCloseOf(it){if(!it||!it.texture)return null;
    so the synced close-up is made again from it, once (localStorage tex_up). The sharp copy is the camera's light, the synced one may have
    been white-balanced from the item photo, so the new one keeps the old one's colour: each channel's mean (linear, on 64x64 copies) is
    matched, gains held to 0.6-1.6. The sharp copy is kept again under the new close-up's signature. Another device has nothing to do. */
+/* a picture's mean colour in linear light (on a 64x64 copy), and a canvas's colours scaled so its mean matches another's, each channel's
+   gain held to 0.6-1.6: the two remakes below (one copy: CR-2-15) */
+function linMean64(im){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,m=[0,0,0];
+  for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)m[q]+=sLin(d[k+q]);return m.map(v=>v/4096)}
+function matchMean(x,W,H,want,has){const g=want.map((v,q)=>Math.min(1.6,Math.max(.6,has[q]>1e-4?v/has[q]:1)));
+  const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(linS(Math.min(1,sLin(v)*g[q])));return t});
+  for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0)}
 const TEX_UP_FLAG='tex_up',TEX_UP_V='1536';
 async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_UP_V||!self.caches||typeof TEX_MAX==='undefined')return 0}catch{return 0}
   let n=0,more=false;const img=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
-  const lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);
-  const mean=im=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,m=[0,0,0];
-    for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)m[q]+=lin(d[k+q]);return m.map(v=>v/4096)};
   for(const it of items){if(!it.texture)continue;
     try{const sharp=await sharpCloseOf(it);if(!sharp||sharp===it.texture)continue;
       const [a,b]=await Promise.all([img(it.texture),img(sharp)]);if(Math.max(a.width,a.height)>=TEX_MAX*.9||Math.max(b.width,b.height)<=Math.max(a.width,a.height)*1.2)continue;
       if(remakeLeft()<1){more=true;break}
       const s=Math.min(1,TEX_MAX/Math.max(b.width,b.height)),W=Math.round(b.width*s),H=Math.round(b.height*s),c=document.createElement('canvas');c.width=W;c.height=H;
-      const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(b,0,0,W,H);const ma=mean(a),mb=mean(b),g=ma.map((v,q)=>Math.min(1.6,Math.max(.6,mb[q]>1e-4?v/mb[q]:1)));
-      const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(gam(Math.min(1,lin(v)*g[q])));return t});
-      for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0);
+      const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(b,0,0,W,H);matchMean(x,W,H,linMean64(a),linMean64(b));
       if(!stillCur(it))continue;it.texture=c.toDataURL('image/jpeg',.85);if(typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);await keepCloseImg(it.id,sharp,it.texture);remakeSpend(1);n++}
     catch(e){console.warn('close-up not upgraded',it.id,e)}}
   if(!more)try{localStorage.setItem(TEX_UP_FLAG,TEX_UP_V)}catch{}
@@ -77,18 +79,14 @@ function remakeSpend(k){if(!remakeOn())return;try{localStorage.setItem('remake_d
    close-ups). Once (localStorage photo_up). */
 const PH_UP_FLAG='photo_up',PH_UP_V='1536';
 async function upgradePhotos(){try{if(localStorage.getItem(PH_UP_FLAG)===PH_UP_V||typeof PH_MAX==='undefined'||typeof cropSource!=='function')return 0}catch{return 0}
-  let n=0,more=false;const lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);
-  const mean=im=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,m=[0,0,0];
-    for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)m[q]+=lin(d[k+q]);return m.map(v=>v/4096)};
+  let n=0,more=false;
   for(const it of items){if(!it.photo)continue;
     try{const ph=await imgOf(it.photo);if(Math.max(ph.naturalWidth,ph.naturalHeight)>=PH_MAX*.9)continue;
       const src=await cropSource(it);if(!src||src===ph||!src.getContext)continue;   // no sharp copy of this very picture on this device
       const s=Math.min(1,PH_MAX/Math.max(src.width,src.height)),W=Math.round(src.width*s),H=Math.round(src.height*s);if(Math.max(W,H)<=Math.max(ph.naturalWidth,ph.naturalHeight)*1.2)continue;
       if(remakeLeft()<2){more=true;break}   // (the day's remakes used up: the rest on the next days)
       const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(src,0,0,W,H);
-      const ma=mean(ph),mb=mean(c),g=ma.map((v,q)=>Math.min(1.6,Math.max(.6,mb[q]>1e-4?v/mb[q]:1)));
-      const d=x.getImageData(0,0,W,H),p=d.data,T=[0,1,2].map(q=>{const t=new Uint8ClampedArray(256);for(let v=0;v<256;v++)t[v]=Math.round(gam(Math.min(1,lin(v)*g[q])));return t});
-      for(let k=0;k<p.length;k+=4){p[k]=T[0][p[k]];p[k+1]=T[1][p[k+1]];p[k+2]=T[2][p[k+2]]}x.putImageData(d,0,0);
+      matchMean(x,W,H,linMean64(ph),linMean64(c));
       if(!stillCur(it))continue;it.photo=c.toDataURL('image/jpeg',.85);await resignTagImg(it.id,it.photo);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);remakeSpend(2);n++}
     catch(e){console.warn('photo not upgraded',it.id,e)}}
   if(!more)try{localStorage.setItem(PH_UP_FLAG,PH_UP_V)}catch{}
@@ -108,15 +106,18 @@ function blackBackdrop(c){const W=c.width,H=c.height,x=c.getContext('2d',{willRe
   for(let k=0;k<W*H;k++){if(bg[k]){p[4*k]=p[4*k+1]=p[4*k+2]=255;continue}const X=k%W;
     if((X>0&&bg[k-1])||(X<W-1&&bg[k+1])||(k>=W&&bg[k-W])||(k+W<W*H&&bg[k+W]))for(let q=0;q<3;q++)p[4*k+q]=Math.round((p[4*k+q]+255)/2)}
   x.putImageData(D,0,0);return true}
+/* within the day's remakes like the other start-up remakes (CR-2-12: a wardrobe of cut-out PNGs was written all at once), and done only
+   once nothing is left: a photo that failed, or waits for the next day, is tried again at the next start */
 async function fixBlackBackdrops(){try{if(localStorage.getItem(BB_FLAG)===BB_V)return 0}catch{return 0}
-  let n=0;
+  let n=0,more=false;
   for(const it of items){if(!it.photo)continue;
     try{const h=String(colOf(it)).replace('#',''),lum=.3*parseInt(h.slice(0,2),16)+.59*parseInt(h.slice(2,4),16)+.11*parseInt(h.slice(4,6),16);if(!(lum>=70))continue;   // a dark item's own black can't be told from the backdrop
       const ph=await imgOf(it.photo),c=document.createElement('canvas');c.width=ph.naturalWidth;c.height=ph.naturalHeight;c.getContext('2d').drawImage(ph,0,0);
       if(!blackBackdrop(c)||!stillCur(it))continue;
-      it.photo=c.toDataURL('image/jpeg',.85);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);n++}
-    catch(e){console.warn('backdrop not fixed',it.id,e)}}
-  try{localStorage.setItem(BB_FLAG,BB_V)}catch{}
+      if(remakeLeft()<2){more=true;break}   // (a photo and its small copy: the rest on the next days)
+      it.photo=c.toDataURL('image/jpeg',.85);if(typeof makeSmall==='function')await makeSmall(it);if(!it.texture&&typeof refreshSwatch==='function')await refreshSwatch(it);await put(it);remakeSpend(2);n++}
+    catch(e){more=true;console.warn('backdrop not fixed',it.id,e)}}
+  if(!more)try{localStorage.setItem(BB_FLAG,BB_V)}catch{}
   if(n){cache={};if(typeof fixupRedraw==='function')fixupRedraw()}
   return n}
 
@@ -254,7 +255,7 @@ function measureCard(q){
   if(m){m.near=nearestCols(q.type,m.lab,m.ref,{kL:measKL(m),skip:q.id});m.parts=measureParts(q,m);if(m.parts)m.groundNear=nearestCols(q.type,m.parts[0].lab,m.ref,{kL:measKL(m),skip:q.id})}
   q.meas=m;q.measV=m?colourVerdicts(q):[];return m}
 /* what the tagger is told: for a patterned cloth its ground (the whole picture's median of a white/blue stripe is a grey nobody wears) */
-const measHint=m=>m&&{lab:m.parts?m.parts[0].lab:m.lab,hex:m.parts?m.parts[0].hex:m.hex,ref:m.ref,src:m.src,near:m.parts&&m.groundNear?m.groundNear:m.near,...(m.parts?{parts:m.parts.map(p=>({role:p.role,hex:p.hex,share:p.share}))}:{})};
+const measHint=m=>m&&{lab:m.parts?m.parts[0].lab:m.lab,hex:m.parts?m.parts[0].hex:m.hex,ref:m.ref,src:m.src,near:m.parts&&m.groundNear?m.groundNear:m.near};   // (the ground's; the parts are no longer sent: the worker never read them, CR-2-05)
 
 /* ---- a patterned cloth's colours, measured one by one (2026-11-14, the owner's design): a white/blue stripe must read white and blue,
    not the grey in between. With a band reading (detect.js analyzeSett, or Claude's reading coloured from the pixels) the widest band
@@ -419,17 +420,32 @@ function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[]
     :'<p class="mut"><small>None yet. When Claude reads a material that is on no list (cupro, say), the Add card offers to add it here.</small></p>'}
 async function closeTagImg(q){if(q.texDone)return q.raw.tex.toDataURL('image/jpeg',TAG_Q);   // a card brought back after a kill: its close-up is already corrected (add.js addRevive)
   const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
+/* one reading of each kind per Add card (CR-2-03, CR-2-10): a newer close-up, Skip or Remove calls the earlier one off (its request is
+   aborted: the worker gives a tester's count back), and only the latest may apply its answer or clear q.refining / q.patternReading.
+   Kept beside the card, not on it (an AbortController is not saved with the card: add.js addKeep) */
+const READS=new WeakMap();
+function readBegin(q,kind){const r=READS.get(q)||{};if(kind==='refine')readAbort(q);else if(r[kind])try{r[kind].ac&&r[kind].ac.abort()}catch{}
+  const me={ac:typeof AbortController==='function'?new AbortController():null};r[kind]=me;READS.set(q,r);return me}
+/* the reading is still the card's own (true), and is now over; false: it was called off or replaced, so its answer is dropped */
+function readEnd(q,kind,me){const r=READS.get(q);if(!r||r[kind]!==me)return false;delete r[kind];return true}
+/* Skip (add.js skipCard), Remove close-up and a newer close-up: the readings in flight are called off, their flags cleared */
+function readAbort(q){const r=READS.get(q);if(!r)return;for(const k of ['refine','pattern'])if(r[k]){try{r[k].ac&&r[k].ac.abort()}catch{}delete r[k];q[k==='refine'?'refining':'patternReading']=0}}
+const REFINE_FAIL='Tagging again from the close-up didn’t work; the first tags stay.';
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;
   try{measureCard(q)}catch(e){console.warn('close-up not measured',e);if(typeof errNote==='function')errNote(e,'Close-up measuring')}   // (a phone out of picture memory: read anyway, unmeasured)
-  if(!q.tagImg||!localStorage.getItem('worker_url')){renderAdd();if(typeof addKeep==='function')addKeep();return}
-  q.refining=1;renderAdd();if(typeof addKeep==='function')addKeep();   // the close-up kept at once, as a reading under way (add.js keeps it as cut off: refineCut)
+  if(!q.tagImg||!localStorage.getItem('worker_url')){readAbort(q);renderAdd();if(typeof addKeep==='function')addKeep();return}
+  const me=readBegin(q,'refine');q.refining=1;renderAdd();if(typeof addKeep==='function')addKeep();   // the close-up kept at once, as a reading under way (add.js keeps it as cut off: refineCut)
   /* whatever happens from here, the card is drawn again when the reading ends (2026-11-16, a tester: a step that threw after the flag was
      cleared left Confirm switched off until something else redrew the card, so it took "Bought, on the way" to save) */
-  let ai=null,hint=null;try{hint=measHint(q.meas);ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff)})}catch(e){console.warn('close-up reading failed',e);if(typeof errNote==='function')errNote(e,'Close-up reading')}
+  // forType: Claude's colours are fitted to the card's own type, not to the type Claude guessed from the close-up (CR-2-04: a burgundy
+  // blazer Claude called a suit came back brown); out: this reading's own reason when it fails (CR-2-07: not another card's)
+  let ai=null,hint=null;const out={};try{hint=measHint(q.meas);ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff),forType:q.type,out,...(me.ac?{signal:me.ac.signal}:{})})}catch(e){console.warn('close-up reading failed',e);if(typeof errNote==='function')errNote(e,'Close-up reading')}
+  if(!readEnd(q,'refine',me))return;   // a newer close-up, Skip or Remove took over: this answer is not used, and the flag is theirs
   const k=queue.indexOf(q);q.refining=0;
-  try{refineApply(q,ai,hint,k)}catch(e){console.warn('close-up answer not applied',e);if(typeof errNote==='function')errNote(e,'Close-up answer not applied ('+q.type+')');q.refineNote='Tagging again from the close-up didn’t work; the first tags stay.';if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}}
-function refineApply(q,ai,hint,k){
-  if(!ai||!ai.type){q.refineNote=aiError||'Tagging again from the close-up didn’t work; the first tags stay.';if(k>=0){renderAdd();if(typeof addKeep==='function')addKeep()}return}
+  try{refineApply(q,ai,hint,k,out.err)}catch(e){console.warn('close-up answer not applied',e);if(typeof errNote==='function')errNote(e,'Close-up answer not applied ('+q.type+')');q.refineNote=REFINE_FAIL;if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}}
+function refineApply(q,ai,hint,k,err){
+  // the card is already filled in: its own wording, not the first tag's "Photo tagging failed: … Fill in the details below." (CR-2-07)
+  if(!ai||!ai.type){q.refineNote=err&&err.why?`Tagging again from the close-up didn’t work: ${oneStop(err.why)}. The first tags stay.`:REFINE_FAIL;if(k>=0){renderAdd();if(typeof addKeep==='function')addKeep()}return}
   const f=aiFields(ai),changes=[],prev={};delete q.refineType;delete q.refineKept;
   // a close-up shows cloth, not what the item is: a new type is offered, never taken (a shirt became a suit); the colours and pattern
   // are read for the card's own type
@@ -542,16 +558,21 @@ async function addCustomPattern({name,desc,base,types,look}){if(ownNameBad(name)
   types=(types||[]).filter(t=>PATS_BY[t]&&PATS_BY[t].includes(base));if(!types.length)throw new Error('Choose at least one kind of item that has the "drawn like" pattern.');
   const lk=cleanLookApp(look),cu=settings.custom||{};settings.custom={...cu,patterns:[...(cu.patterns||[]),{key,name,desc:ownDescClean(desc),base,types,...(lk?{look:lk}:{})}]};
   applyCustom(settings.custom);await saveUserSettings();return key}
-/* Settings: the colours and patterns you added; one no item uses can be removed */
-function renderCustomUI(){const el=$('#custom-list');if(!el)return;const cu=settings.custom||{},cols=cu.colors||[],pats=cu.patterns||[];
-  const used=(k,f)=>items.filter(i=>f(i,k)).length;
+/* Settings: the colours and patterns you added; one no item uses can be removed. Only entries of the own-key rule are listed (a color
+   with a 6-digit hex), every value escaped, and Remove carries its key in data-* attributes read by one listener (fix round A, CR-2-02:
+   the raw settings.custom key and hex went into an inline handler and a style attribute) */
+function renderCustomUI(){const el=$('#custom-list');if(!el)return;const cu=settings.custom||{},arr=v=>Array.isArray(v)?v:[];
+  const cols=arr(cu.colors).filter(c=>c&&OWN_COL_RE.test(c.key)&&/^#[0-9a-f]{6}$/i.test(c.hex||'')),pats=arr(cu.patterns).filter(p=>p&&OWN_PAT_RE.test(p.key));
+  const used=(k,f)=>items.filter(i=>f(i,k)).length,kinds=x=>esc(arr(x.types).map(t=>TYPES[t]).filter(t=>typeof t==='string').join(', '));
+  if(!el.dataset.rm){el.dataset.rm='1';el.addEventListener('click',e=>{const b=e.target.closest('button[data-rm-kind]');if(b&&el.contains(b))removeCustom(b.dataset.rmKind,b.dataset.rmKey)})}
+  const rm=(kind,k)=>`<button type="button" data-rm-kind="${kind}" data-rm-key="${esc(k)}">Remove</button>`;
   // a pattern's swatch is drawn with its look, on a sample item of its first kind (navy, a white shirt)
-  const patSw=p=>{const t=(p.types||[])[0]||'suit';try{return swatchSVG({type:t,primaryColor:t==='shirt'?'white':'navy',pattern:p.key},true)}catch(e){return ''}};
+  const patSw=p=>{const t=arr(p.types)[0]||'suit';try{return swatchSVG({type:t,primaryColor:t==='shirt'?'white':'navy',pattern:p.key},true)}catch(e){return ''}};
   el.innerHTML=(!cols.length&&!pats.length?'<p class="mut"><small>None yet. Add one below, or from any color or pattern list (“+ New”); the Add card offers one when a photo shows a color or pattern the lists lack.</small></p>':
-    [...cols.map(c=>{const n=used(c.key,(i,k)=>[i.primaryColor,i.secondaryColor,i.tertiaryColor].includes(k));return `<div class="custrow"><span class="msw" style="background:${c.hex}"></span><span><b>${esc(c.name)}</b><br><small class="mut">behaves like ${esc(colName(c.base))} · ${c.types.map(t=>TYPES[t]).join(', ')}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':`<button type="button" onclick="removeCustom('colors','${c.key}')">Remove</button>`}</div>`}),
-     ...pats.map(p=>{const n=used(p.key,(i,k)=>i.pattern===k);return `<div class="custrow"><span class="msw pat">${patSw(p)}</span><span><b>${esc(p.name)}</b><br><small class="mut">${p.look?'drawn from its own look, planned':'drawn'} like ${esc(patLabel(p.base))} · ${p.types.map(t=>TYPES[t]).join(', ')}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':`<button type="button" onclick="removeCustom('patterns','${p.key}')">Remove</button>`}</div>`})].join(''))
+    [...cols.map(c=>{const n=used(c.key,(i,k)=>[i.primaryColor,i.secondaryColor,i.tertiaryColor].includes(k));return `<div class="custrow"><span class="msw" style="background:${esc(c.hex)}"></span><span><b>${esc(c.name)}</b><br><small class="mut">behaves like ${esc(colName(c.base))} · ${kinds(c)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':rm('colors',c.key)}</div>`}),
+     ...pats.map(p=>{const n=used(p.key,(i,k)=>i.pattern===k);return `<div class="custrow"><span class="msw pat">${patSw(p)}</span><span><b>${esc(p.name)}</b><br><small class="mut">${p.look?'drawn from its own look, planned':'drawn'} like ${esc(patLabel(p.base))} · ${kinds(p)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':rm('patterns',p.key)}</div>`})].join(''))
     +`<div class="custadd"><button type="button" id="cust-newcol" onclick="openCustomNew('colour')">+ New color</button><button type="button" id="cust-newpat" onclick="openCustomNew('pattern')">+ New pattern</button></div>`}
-async function removeCustom(kind,key){const cu=settings.custom||{};settings.custom={...cu,[kind]:(cu[kind]||[]).filter(x=>x.key!==key)};applyCustom(settings.custom);cache={};await saveUserSettings();renderCustomUI()}
+async function removeCustom(kind,key){if(kind!=='colors'&&kind!=='patterns')return;const cu=settings.custom||{};settings.custom={...cu,[kind]:(cu[kind]||[]).filter(x=>x.key!==key)};applyCustom(settings.custom);cache={};await saveUserSettings();renderCustomUI()}
 
 /* ---- what the tagger learns from: when an AI-tagged card is saved with a field changed, the change is kept (the latest 60)
    and the latest 20 go with every tagging request; the counts give the accuracy on the stats page ---- */
@@ -704,11 +725,12 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
    close-up's exposure is matched to the item photo's (which has a white wall to set it), and where a thread's pixels read grey
    though Claude sees a colour (a light-blue line woven into khaki linen), the pixels keep the lightness and Claude the hue.
    Without the worker, or when Claude finds no pattern, the pixel reader (settFrom) is used. ---- */
-async function claudePattern({image,closeup,type,wb}){const w=localStorage.getItem('worker_url');if(!w||!image||(typeof inviteOver==='function'&&inviteOver()))return null;
+async function claudePattern({image,closeup,type,wb,signal}){const w=localStorage.getItem('worker_url');if(!w||!image||(typeof inviteOver==='function'&&inviteOver()))return null;
   try{const r=await fetch(new URL('pattern',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
-      body:JSON.stringify({image,...(closeup?{closeup}:{}),type,...(typeof wb==='boolean'?{wb}:{})})});   // wb: both pictures white-balanced (worker.js)
+      body:JSON.stringify({image,...(closeup?{closeup}:{}),type,...(typeof wb==='boolean'?{wb}:{})}),...(signal?{signal}:{})});   // wb: both pictures white-balanced (worker.js); signal: Skip or a newer close-up calls it off (readBegin)
     const j=await r.json().catch(()=>({}));if(r.status===429&&j.message&&typeof limitNote==='function')limitNote(j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
-    return r.ok&&(j.across||j.motif||j.texture)&&j.layout!=='none'?j:null}catch{return null}}
+    // any of the four answers (a camouflage has only camo: CR-2-01, it was paid for and dropped)
+    return r.ok&&(j.across||j.motif||j.texture||j.camo)&&j.layout!=='none'?j:null}catch{return null}}
 function sampleLabs(c){const x=c.getContext('2d',{willReadFrequently:true}),d=x.getImageData(0,0,c.width,c.height).data,st=Math.max(1,Math.round(c.width*c.height/120000)),out=[];
   for(let i=0;i<d.length;i+=4*st)out.push(rgbLab(d[i],d[i+1],d[i+2]));return out}
 const medLab=ls=>[0,1,2].map(k=>{const v=ls.map(l=>l[k]).sort((a,b)=>a-b);return v[v.length>>1]});
@@ -756,9 +778,10 @@ function settFromSpec(spec,{tex,full,box,wb,type}){
   return {v:2,a,bands,cross:along&&along.some(b=>b[0])?{d:90,bands:along,r:+spec.paneAspect.toFixed(2)}:null,cr:+(+spec.repeatsInCloseup).toFixed(2),tr:+(+spec.repeatsAcrossItem).toFixed(2),src:'claude+pixels'}}
 /* ask Claude for a card's pattern once it has a close-up (the noise it strips is what the pixel reader can't) */
 async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.raw.tex||!q.tagImg||!readable(q.type,q.pattern,q.weave)||!localStorage.getItem('worker_url'))return;   // a card saved or skipped meanwhile: no paid call
-  q.patternReading=1;renderAdd();let spec=null;
-  try{const closeup=await closeTagImg(q);if(!queue.includes(q)){q.patternReading=0;return}
-    spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff)})}catch(e){console.warn('pattern reading failed',e);if(typeof errNote==='function')errNote(e,'Pattern reading')}   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
+  const me=readBegin(q,'pattern');q.patternReading=1;renderAdd();let spec=null;
+  try{const closeup=await closeTagImg(q);if(!queue.includes(q)){readEnd(q,'pattern',me);q.patternReading=0;return}
+    spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff),...(me.ac?{signal:me.ac.signal}:{})})}catch(e){console.warn('pattern reading failed',e);if(typeof errNote==='function')errNote(e,'Pattern reading')}   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
+  if(!readEnd(q,'pattern',me))return;   // called off (a newer close-up, Skip): its answer is not used
   q.patternReading=0;
   // the card is drawn again however the answer goes (a step that threw here left Confirm switched off: refineFromCloseup)
   try{if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;

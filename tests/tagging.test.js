@@ -1,5 +1,5 @@
 // Photo tagging: sharper photos, the close-up sent along and a second tag from it, the measured cloth colour (with a white
-// paper reference), the owner's own colours and patterns, corrections the tagger learns from, and the benchmark.
+// paper reference), the owner's own colours and patterns, corrections the tagger learns from, and the kept sharp copy.
 const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT,settle})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
@@ -85,7 +85,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     const sv=await p.evaluate(async()=>{const it=items[0];return {meas:it.meas,fixes:settings.tagFixes,st:settings.tagStats,copy:await (async()=>{for(let k=0;k<100;k++){if(await tagImgOf(it.id))return true;await new Promise(r=>setTimeout(r,50))}return false})(),desc:desc(it)}});   // (the copy is written after the save returns)
     ok(sv.meas&&sv.meas.ref&&sv.meas.src==='closeup','the item keeps its measured color (it calibrates later measurements)');
     ok(sv.fixes.some(f=>f.field==='primaryColor'&&f.from==='taupe'&&f.to==='ownmushroom')&&sv.fixes.some(f=>f.field==='pattern'&&f.from==='birdseye'&&f.to==='own-seersucker')&&sv.st.wrong.primaryColor===1,'what you changed from the tagger\'s answer is recorded');
-    ok(sv.copy,'the sharp copy is kept on this device for the benchmark');
+    ok(sv.copy,'the sharp copy is kept on this device (to tag it again from the same picture)');
     ok(/mushroom/.test(sv.desc)&&/seersucker/.test(sv.desc),`the item reads with your names (${sv.desc})`);
     // the planner and the drawings
     const pl=await p.evaluate(()=>{const it=items[0];return {pc:planCol(it),pat:patOf(it),lum:Math.round(LUM(it)),own:Math.round(lumCol('ownmushroom')),fill:colOf(it)}});

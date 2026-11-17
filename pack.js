@@ -105,7 +105,7 @@ function packLightRecs(days,AJ,AS,src=dayRecs){const recs={...src},kinds=AJ?new 
     if(AS&&x.o.shoes&&!f.shoes)skip.shoes=[...new Set([...(skip.shoes||[]),...out('shoes',AS)])];
     r.skip=skip;recs[x.k]=r}
   return recs}
-const packComplete=o=>!!(o&&o.shirt&&o.shoes&&(o.suitDay?o.top:o.bot)&&(o.top||o.occasion==='casual'));
+const packComplete=o=>!!(o&&o.shirt&&o.shoes&&(o.suitDay?o.top:o.bot)&&(o.top||!needsJacket(o)));   // (a day that needs no jacket, the dress code's or one taken off, is complete without one: CR-3-12)
 /* how good a set of days is: the outfits' scores, a real mistake and a missing piece counted heavily, and going over the limit most */
 function packRate(days,J,S){let v=0;for(const x of days){if(!x.o)continue;if(!packComplete(x.o)){v-=1000;continue}const r=rateOutfit(x.o);v+=r.score-(r.hard&&r.hard.length?50:0)}
   if(J)v-=3000*Math.max(0,packUses(days,'top')-J);if(S)v-=3000*Math.max(0,packUses(days,'shoes')-S);return v}

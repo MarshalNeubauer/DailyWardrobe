@@ -1,7 +1,6 @@
 // The final UI pass (ui.js): the app's own question sheet instead of browser dialogs, Settings wording and its Advanced folds,
 // the accent's contrast as text, buttons that need a connection, the first-outfit checklist above the figure, Refresh on the
 // Laundry page, and the new pages' sizes at 320/390/626px in both themes.
-const fs=require('fs'),path=require('path');
 module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
   const browser=await chromium.launch();
   const SRV='https://wardrobe-server.test/';
@@ -14,11 +13,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     return {p,ctx,errs,dialogs}};
   const fill=(p,which)=>p.evaluate(`(()=>{const W=${WARDROBES};items=${which};cache={};flt='all';show('today')})()`);
   try{
-    /* ---- no browser dialogs left in the app's scripts ---- */
-    {const files=fs.readdirSync(ROOT).filter(f=>/\.js$/.test(f)&&f!=='worker.js').concat('index.html'),hits=[];
-      for(const f of files){const t=fs.readFileSync(path.join(ROOT,f),'utf8');for(const m of t.matchAll(/(^|[^.\w$])(confirm|alert|prompt)\s*\(/g))hits.push(f+': '+t.slice(m.index,m.index+50).replace(/\s+/g,' '))}
-      ok(!hits.length,`no confirm(), alert() or prompt() in the app's scripts${hits.length?' ('+hits.slice(0,3).join(' | ')+')':''}`);
-      ok(/'ui\.js'/.test(fs.readFileSync(path.join(ROOT,'sw.js'),'utf8'))&&/<script src="ui\.js">/.test(fs.readFileSync(path.join(ROOT,'index.html'),'utf8')),'ui.js is loaded by the page and kept by the service worker')}
+    /* ---- (no browser dialogs left in the app's scripts, and ui.js loaded and kept: tests/sourcerules.test.js, CR-10-07) ---- */
 
     const {p,ctx,errs,dialogs}=await open();
     await fill(p,'W.realistic');
@@ -78,7 +73,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.evaluate(()=>{openSettings('photos');document.querySelector('#photos-conn button').click()});await settle(p,600);
     ok(await p.evaluate(()=>document.querySelector('#sc-connection').classList.contains('open')&&document.activeElement===document.querySelector('#conn-link')),'Connect opens Connection with the cursor in the invite-link field');
     await p.evaluate(()=>{closeSettings();show('today')});
-    const g0=await p.evaluate(()=>({btn:!!document.querySelector('.render-btn'),msg:!!document.querySelector('#render-msg'),refresh:!!document.querySelector('#refresh-btn').offsetParent}));
+    const g0=await p.evaluate(()=>({btn:!!document.querySelector('.render-btn'),msg:!!document.querySelector('#render-msg'),refresh:!!document.querySelector('#refresh-btn')}));
     ok(!g0.btn&&!g0.msg&&!g0.refresh,'Today: no Generate button and no "needs a connection" under the figure; no Refresh in the header');
     await p.evaluate(()=>openAdd());
     ok(await p.evaluate(()=>!document.querySelector('#add-group').offsetParent&&!!document.querySelector('#add-one').offsetParent),'Add: "Several items" is not shown; "One item" is');
@@ -119,10 +114,6 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.evaluate(()=>{items=[];cache={};show('wardrobe')});
     ok(await p.evaluate(()=>!!document.querySelector('#wempty')&&!document.querySelector('#wardrobe .wfind')&&!document.querySelector('#wardrobe .chips')),'an empty Wardrobe shows its empty card without the search field and the type chips');
 
-    /* ---- Refresh stays on the Laundry page ---- */
-    await fill(p,'W.realistic');await p.evaluate(()=>openCare());
-    await p.evaluate(()=>refreshAll());
-    ok(await p.evaluate(()=>!document.querySelector('#care').hidden&&document.querySelector('#today').hidden&&document.querySelector('#care h2').textContent==='Laundry & cleaning'),'Refresh on Laundry & cleaning stays there');
     ok(!errs.length&&!dialogs.length,`no page errors and no browser dialog (${errs.concat(dialogs).slice(0,2).join(' | ')})`);
     await ctx.close();
 

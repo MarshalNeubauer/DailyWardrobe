@@ -1,9 +1,8 @@
 /* Daily Wardrobe worker: POST /pattern: Claude reads a woven pattern from the photo and the close-up as clean data.
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
-import { HEX_RE, TYPE_LIST, tagWithClaude, txt, wbOf } from './tag.js';
-// the new garments' keys in words (2026-11-16): "The item is a quarter-zip pullover", not "a qzip"
-const PATTERN_KIND_WORD = { tee: 'T-shirt', qzip: 'quarter-zip pullover', chore: 'chore jacket' };
+import { HEX_RE, TYPE_LIST, badPics, readAiBody, tagWithClaude, txt, wbOf } from './tag.js';
 import { spend, unspend } from './people.js';
+import { MOTIF_SHAPES, TEXTURE_KINDS, bitmapOf } from './patternbits.js';   // (one copy with describe.js: CR-2-15)
 
 /* POST /pattern {image, closeup, type} -> the woven pattern as clean data, for the app to draw. The pixels of a photo carry noise
    (seams, folds, moire, slubs, panes made uneven by drape or perspective) that defeats measuring the pattern from them alone;
@@ -15,7 +14,6 @@ const PDIR = { type: 'object', additionalProperties: false, required: ['bands'],
 /* a small figure repeated on a grid (a neat / foulard, mini squares, dots): the grid, the ground between the figures, and each
    figure's shape, place in the grid, colours (two alternate like a checkerboard) and size */
 const PCOL = { type: 'object', additionalProperties: false, required: ['name', 'hex'], properties: { name: { type: 'string' }, hex: { type: 'string' } } };
-const MOTIF_SHAPES = ['square', 'square-with-dot', 'diamond', 'dot', 'ring', 'cross', 'flower', 'figure', 'other'];
 const PFIG = { type: 'object', additionalProperties: false, required: ['shape', 'placement', 'colours', 'centre', 'sizePct', 'bitmap', 'name'],
   properties: { shape: { type: 'string', enum: MOTIF_SHAPES }, placement: { type: 'string', enum: ['cell', 'corner', 'alternate-cells'] },
     colours: { type: 'array', items: PCOL }, centre: { anyOf: [PCOL, { type: 'null' }] }, sizePct: { type: 'number' },
@@ -25,7 +23,6 @@ const PMOTIF = { type: 'object', additionalProperties: false, required: ['grid',
     cellAspect: { type: 'number' }, rowOffset: { type: 'string', enum: ['none', 'half'] } } };
 /* a weave texture (a dress shirt's dobby diamonds, herringbone, oxford): the cloth is one colour and the pattern is in how the
    threads float, so it is read as a small bitmap of one repeat (1 = reads raised / catches the light) */
-const TEXTURE_KINDS = ['diamond', 'herringbone', 'twill', 'oxford', 'royal-oxford', 'pinpoint', 'end-on-end', 'birdseye', 'honeycomb', 'dobby-dot', 'basket', 'other'];
 const PTEX = { type: 'object', additionalProperties: false, required: ['kind', 'grid', 'aspect', 'ground', 'raised', 'contrast'],
   properties: { kind: { type: 'string', enum: TEXTURE_KINDS }, grid: { type: 'array', items: { type: 'string' } }, aspect: { type: 'number' }, ground: PCOL, raised: PCOL,
     contrast: { type: 'string', enum: ['faint', 'subtle', 'clear'] } } };
@@ -105,8 +102,11 @@ repeatsInCloseup — how many repeats of "across" fit across the close-up's widt
 repeatsAcrossItem — how many repeats of "across" fit across the item's widest part in the first photo.
 paneAspect — for checks: a pane's height divided by its width as woven (1 for square panes); 1 otherwise.
 ignored — a few words on what you left out as noise (e.g. "a seam down the middle, moire").
-description — one or two sentences describing the pattern for a photo-realistic image generator: the ground, the lines in
-  order, their colors and widths, the size of the panes, and the cloth's texture. Leave out the direction.`;
+description — one sentence on the pattern for the owner and the app's painter: the ground, the lines in order with their colors,
+  the size of the panes, and the cloth's weave and finish in a tailor's words (fine worsted, flannel, linen, twill, herringbone,
+  seersucker, corduroy). Leave out the direction.`;
+/* (the description is saved as item.patternSpec.description, whose words the painter and the swatches read: assemble.js asmClothOf,
+   asmLinen and the micro-weaves, asm-color.js asmCuFine, today.js ovlGrain; reword it knowing that, CR-2-13) */
 function cleanPattern(p) {
   const hex = h => (HEX_RE.test(h || '') ? h.toLowerCase() : null);
   const dir = d => { if (!d || !Array.isArray(d.bands)) return null;
@@ -114,22 +114,17 @@ function cleanPattern(p) {
     const t = b.reduce((a, x) => a + x.w, 0); return b.length >= 2 && t > 0 ? { bands: b.map(x => ({ ...x, w: +(x.w / t).toFixed(4) })) } : null; };
   const num = (v, lo, hi, d) => Math.max(lo, Math.min(hi, +v || d));
   const col = c => c && hex(c.hex) ? { name: txt(c.name, 30), hex: hex(c.hex) } : null;
-  /* a figure's bitmap: rows of 1/0 (also #/. and x/-), the same length, 3-16 each way, with some of the figure in it */
-  const bitmap = b => { if (!Array.isArray(b)) return null;
-    const rows = b.slice(0, 16).map(r => String(r).replace(/[^01#.xX-]/g, '').replace(/[#xX]/g, '1').replace(/[.-]/g, '0').slice(0, 16)).filter(Boolean);
-    const w = Math.max(0, ...rows.map(r => r.length)), g = rows.map(r => r.padEnd(w, '0'));
-    return g.length >= 2 && w >= 2 && g.join('').includes('1') ? g : null; };
+  /* a figure's bitmap: 2-16 cells each way, with some of the figure in it (patternbits.js) */
+  const bitmap = b => bitmapOf(b, 2, 16, false);
   const motif = m => { if (!m || !col(m.ground) || !Array.isArray(m.figures)) return null;
     const f = m.figures.slice(0, 3).map(x => { const bm = x.shape === 'figure' ? bitmap(x.bitmap) : null;
       return { shape: MOTIF_SHAPES.includes(x.shape) && (x.shape !== 'figure' || bm) ? x.shape : 'other', placement: ['cell', 'corner', 'alternate-cells'].includes(x.placement) ? x.placement : 'cell',
         colours: (x.colours || []).map(col).filter(Boolean).slice(0, 2), centre: x.shape === 'square-with-dot' ? col(x.centre) : null, size: num(x.sizePct, 5, 100, 50) / 100,
         ...(bm ? { bitmap: bm } : {}), name: txt(x.name, 40) }; }).filter(x => x.colours.length);
     return f.length ? { grid: m.grid === 'diagonal' ? 'diagonal' : 'straight', ground: col(m.ground), figures: f, cellAspect: num(m.cellAspect, .25, 4, 1), rowOffset: m.rowOffset === 'half' ? 'half' : 'none' } : null; };
-  /* the texture's bitmap: rows of 1/0 (also #/. and x/-), the same length, 2-24 each way, with both tones in it */
-  const texture = t => { if (!t || !Array.isArray(t.grid) || !col(t.ground)) return null;
-    const rows = t.grid.slice(0, 24).map(r => String(r).replace(/[^01#.xX-]/g, '').replace(/[#xX]/g, '1').replace(/[.-]/g, '0').slice(0, 24)).filter(Boolean);
-    const w = Math.max(0, ...rows.map(r => r.length)), g = rows.map(r => r.padEnd(w, '0')), all = g.join('');
-    if (g.length < 2 || w < 2 || !all.includes('1') || !all.includes('0')) return null;
+  /* the texture's bitmap: 2-24 cells each way, with both tones in it (patternbits.js) */
+  const texture = t => { if (!t || !col(t.ground)) return null;
+    const g = bitmapOf(t.grid, 2, 24, true); if (!g) return null; const w = g[0].length;
     return { kind: TEXTURE_KINDS.includes(t.kind) ? t.kind : 'other', grid: g, aspect: num(t.aspect, .25, 4, g.length / w), ground: col(t.ground), raised: col(t.raised) || col(t.ground), contrast: ['faint', 'subtle', 'clear'].includes(t.contrast) ? t.contrast : 'subtle' }; };
   /* camouflage: 2 to 6 colours with their shares (as fractions, largest first) and the blotches across the item */
   const camo = c => { if (!c || !Array.isArray(c.colours)) return null;
@@ -143,13 +138,12 @@ function cleanPattern(p) {
 }
 async function handlePattern(req, env, json, who) {
   if (!env.ANTHROPIC_API_KEY) return json({ error: 'ai', detail: 'Reading a pattern needs Claude: add an ANTHROPIC_API_KEY secret to the worker.' }, 501);
-  const text = await req.text();
-  if (text.length > 20e6) return json({ error: 'photos too large' }, 413);
-  let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
+  const got = await readAiBody(req, json); if (got.res) return got.res; const body = got.body;   // (read like POST /: CR-2-08)
+  const bad = badPics(body, json); if (bad) return bad;
   const cm = String(body.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
-  const kind = TYPE_LIST.includes(body.type) ? `The item is a ${body.type === 'pants' ? 'pair of dress trousers' : PATTERN_KIND_WORD[body.type] || body.type}. ` : '';
+  const kind = TYPE_LIST.includes(body.type) ? `The item is a ${body.type === 'pants' ? 'pair of dress trousers' : body.type}. ` : '';
   const over = await spend(env, who, 'pattern'); if (over) return json(over.body, over.status);
-  const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: PATTERN_PROMPT, text: kind, closeup: cm, wb: wbOf(body), effort: 'high', maxTokens: 16000, signal: req.signal });
+  const c = await tagWithClaude(env, String(body.image || ''), { schema: PATTERN_SCHEMA, prompt: PATTERN_PROMPT, text: kind, closeup: cm, wb: wbOf(body), effort: 'high', maxTokens: 16000, signal: req.signal, what: 'pattern read' });   // (what: the log says so, not "tagged")
   if (c.status !== 200) { await unspend(env, who, 'pattern'); return json(c.body, c.status); }
   const out = cleanPattern(c.body);
   if (!out.across && !out.motif && !out.texture && !out.camo) return json({ error: 'no pattern', detail: 'Claude found no repeating pattern.', layout: out.layout }, 422);
