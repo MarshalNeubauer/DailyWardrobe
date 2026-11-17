@@ -463,7 +463,16 @@ const o={suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,pocket
 // the suit jacket taken off and other pants picked for the day (force.bot, a pair of pants: Today's ⇄ on the suit's pants, the owner's
 // ask 2026-11-16): those pants are worn and the suit is not
 const sep=suitDay&&top&&rec&&rec.off&&rec.off.top&&force.bot&&(by('pants').find(i=>i.id===force.bot)||c.hpBotAny)||null;
-return takeOff(o,rec&&rec.off,c.untake,sep&&c.take(sep))}
+const r=takeOff(o,rec&&rec.off,c.untake,sep&&c.take(sep));
+// those pants worn: the day's notes are made again for what is worn (no jacket, those pants, the same shirt, tie, shoes and belt), so
+// none speaks of the suit's trousers (the owner, 2026-11-17: "None of your shoes suit mid gray worsted pants." under multicam pants)
+if(sep&&r.offSuit&&r.bot!==top)r.notes=sepNotes(c,r,top,{links,coat,french,needCoat,B});
+return r}
+/* the notes of a suit day worn with other pants (takeOff's sep): outfitNotes for the pieces worn, as a day without the suit; a packed
+   suit's own note goes with it */
+function sepNotes(c,r,suit,{links,coat,french,needCoat,B}){
+  const {notes}=outfitNotes({...c,suitDay:false,tripOff:c.tripOff.filter(x=>x.id!==suit.id)},{top:null,bot:r.bot,shirt:r.shirt,tie:r.tie,shoes:r.shoes,belt:r.belt,watch:r.watch,links,coat,french,needCoat,B});
+  return notes.map(prettyCols)}
 /* the day as the steps see it: the dress code and occasion, rest, the day's picks, skips and lock, the wash, and each slot's pool */
 function dayPools(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false};
 const casual=day.occ==='casual',occ=OCC[day.occ];if(casual)suitDay=false;   // no jacket and no tie: trousers and a shirt
@@ -629,7 +638,7 @@ if(patsOf([[top,'top'],[suitDay?null:bot,'bot'],[shirt,'shirt'],[tie,'tie']]).le
 if(shoes&&bot&&!shoeSuits(top,bot,shoes)){if(shoeSuits(null,bot,shoes))jnote(`None of your shoes suit the ${colName(spokenCol(top))} ${top.type==='suit'?'suit':'jacket'}.`);else notes.push(`None of your shoes suit ${colName(spokenCol(bot))} pants.`)}
 if(shoes&&finish(shoes.leather)==='patent')notes.push('Only patent shoes were available. Patent is for black tie.');
 if(shoes&&B.length&&!belt)notes.push(`None of your belts match the ${desc(shoes)} shoes. Add a ${leatherGroup(planCol(shoes))} ${finish(shoes.leather)==='suede'?'suede':'smooth leather'} belt.`);
-if(watch&&belt&&!metalSame(metalOf(watch),metalOf(belt)))notes.push(`The watch (${metalOf(watch)}) and belt buckle (${metalOf(belt)}) are different metals.`);
+if(watch&&belt&&!metalSame(metalOf(watch),metalOf(belt)))notes.push(`The ${metalWord(metalOf(watch))} watch and the ${metalWord(metalOf(belt))} belt buckle are different metals.`);   // ("other" is gunmetal: core.js metalWord; "The watch (silver) and belt buckle (other)" read badly, the owner 2026-11-17)
 if(french&&!links)notes.push('French-cuff shirt, but no cufflinks in your wardrobe. Add a pair.');
 // suede in the rain, said from the real reason (the code review, CR-3-02): picked by hand, packed, or the only shoes left (RAIN_SUEDE keeps
 // it off otherwise)
