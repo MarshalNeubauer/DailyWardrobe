@@ -334,7 +334,7 @@ const colourRepeat=(i,prev,next,gw)=>{const me={g:jacketGroup(i),c:planCol(i)},w
 /* how avoidable a repeat of group g is among the jackets the day can take (topGw): the other jackets over the group's own, at most 1. A
    wardrobe with three grey suits and one brown one can't avoid a grey after a grey without brown every other day: there a grey repeat
    costs (1/3)³ of JKT_SAME, about 2, and the four suits rotate evenly (2026-11-14, the audit's walkthrough: brown 35 of 94 suit days, the
-   greys 19-20; now 23-24 each). Measured with a suit every workday (tests/jacketshare.test.js): a third (20) left brown on 40% of the suit
+   greys 19-20; now 23-24 each). Measured with a suit every workday (tests/jacketcolour.test.js): a third (20) left brown on 40% of the suit
    days, squared (7) 31%, cubed 25%, each suit 31 of 124, a grey after a grey on 61 of 124 days, the fewest even rotation allows. Cubed
    leaves the full cost to a balanced wardrobe (no group bigger than the rest together: the owner's, unchanged) */
 /* the very jacket worn on the workday before costs JKT_AGAIN more (2026-11-15, the audit: a wedding's suit deleted, the wedding took the

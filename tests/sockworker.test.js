@@ -2,7 +2,7 @@
 // (PATS_BY.socks); an app that names 'sockpat' in its types is offered them (the pattern enum, the prompt's socks line), told that a sock's
 // second and third colours are its pattern's and that its toe cap goes in its own field (toeColor, required, cleaned to a known key or
 // 'none'), on the single tag and on /tag-many; an older app's request is exactly as before (its toe cap still in secondaryColor; the
-// byte-for-byte check is tests/garmentworker.test.js); the picker's calls never carry it; the schema stays under the freeColors one; the
+// byte-for-byte check is tests/tagger.test.js); the picker's calls never carry it; the schema stays under the freeColors one; the
 // server takes an item's toeColor as a colour key (records.js).
 const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,ROOT})=>{

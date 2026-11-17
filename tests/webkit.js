@@ -45,7 +45,18 @@ const touchSession=page=>{let start=null,last=null;
       if(p.type==='touchMove'){last={x:pt.x,y:pt.y};return fire('touchmove',pt.x,pt.y)}
       if(p.type==='touchEnd'||p.type==='touchCancel'){const l=last||{x:0,y:0};await fire(p.type==='touchEnd'?'touchend':'touchcancel',l.x,l.y);start=last=null}},
     async detach(){},on(){},off(){}}};
-const wrapPage=page=>{if(page.__wk)return page;const route=page.route.bind(page);page.route=(u,fn,o)=>route(u,wrapRoute(fn),o);page.__wk=true;return page};
+/* about.js reads the version from the page's own sw.js (at start-up, and `?check=<time>` when Settings opens); a reload or a page
+   load cutting that fetch off is reported by Playwright's WebKit, in a context with routes, as a page error
+   "/127.0.0.1:<port>/sw.js[?check=<n>] due to access control checks." (about.js catches the failed fetch; Chromium reports
+   nothing). Exactly that error, on the test server's own sw.js, is left out of the page's
+   'pageerror' and console-error listeners; every other error, and any other access-control error, still reaches the test */
+const SW_CUT=/^\/127\.0\.0\.1:\d+\/sw\.js(?:\?check=\d+)? due to access control checks\.$/;   // (WebKit's whole message, as it comes)
+const swCut=(ev,a)=>{try{return ev==='pageerror'?SW_CUT.test(a&&a.message):ev==='console'&&a.type()==='error'&&SW_CUT.test(a.text())}catch(e){return false}};
+const quietSwCut=page=>{const wrapped=new WeakMap();
+  const pass=(ev,fn)=>{if((ev!=='pageerror'&&ev!=='console')||typeof fn!=='function')return fn;if(!wrapped.has(fn))wrapped.set(fn,function(a){if(!swCut(ev,a))return fn.apply(this,arguments)});return wrapped.get(fn)};
+  for(const k of ['on','addListener','once','prependListener']){const o=page[k].bind(page);page[k]=(ev,fn)=>o(ev,pass(ev,fn))}
+  for(const k of ['off','removeListener']){const o=page[k].bind(page);page[k]=(ev,fn)=>o(ev,wrapped.get(fn)||fn)}};
+const wrapPage=page=>{if(page.__wk)return page;const route=page.route.bind(page);page.route=(u,fn,o)=>route(u,wrapRoute(fn),o);quietSwCut(page);page.__wk=true;return page};
 const wrapContext=ctx=>{if(ctx.__wk)return ctx;
   const route=ctx.route.bind(ctx),newPage=ctx.newPage.bind(ctx);
   ctx.route=(u,fn,o)=>route(u,wrapRoute(fn),o);
