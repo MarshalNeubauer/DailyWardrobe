@@ -22,13 +22,13 @@ const cpwCurOk=c=>{if(!/^[A-Z]{3}$/.test(c||''))return false;try{new Intl.Number
 function cpwCur(){const s=settings.currency;if(cpwCurOk(s))return s;const r=cpwRegion();return CPW_REGION[r]||(CPW_EURO.includes(r)?'EUR':'USD')}
 const cpwFmts={};
 function cpwFmt(whole){const c=cpwCur(),k=c+(whole?'|w':'');if(cpwFmts[k])return cpwFmts[k];
-  const o={style:'currency',currency:c,currencyDisplay:'narrowSymbol'};if(whole){o.minimumFractionDigits=0;o.maximumFractionDigits=0}
+  const o=/** @type {Intl.NumberFormatOptions} */({style:'currency',currency:c,currencyDisplay:'narrowSymbol'});if(whole){o.minimumFractionDigits=0;o.maximumFractionDigits=0}
   try{return cpwFmts[k]=new Intl.NumberFormat(typeof APP_LOC==='string'?APP_LOC:'en-US',o)}catch{return cpwFmts[k]=new Intl.NumberFormat('en-US',{...o,currency:'USD'})}}
 /* an amount: "$12.40"; whole: a total of 10 or more without cents ("$186") */
 const cpwMoney=(v,whole)=>cpwFmt(!!whole&&Math.abs(v)>=10).format(v);
 function cpwSym(){try{const p=cpwFmt(false).formatToParts(0).find(x=>x.type==='currency');return p?p.value:cpwCur()}catch{return cpwCur()}}
 /* a typed amount -> a number (null: not one). "1,234.50", "1.234,50", "89,90", "$120" */
-function cpwParse(s){s=String(s??'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d.,]/g,'');if(!/\d/.test(s))return null;
+function cpwParse(s){s=String(s??'').replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[^\d.,]/g,'');if(!/\d/.test(s))return null;
   const lc=s.lastIndexOf(','),ld=s.lastIndexOf('.');
   if(lc>=0&&ld>=0)s=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'');
   else if(lc>=0)s=/^\d*,\d{1,2}$/.test(s)?s.replace(',','.'):s.replace(/,/g,'');
@@ -79,7 +79,7 @@ function cpwHint(c){if(!c||c.wears>=10||!(c.total>0))return '';const per=c.per??
   return `${c.wears?`Wear it ${more} more time${more===1?'':'s'}`:`Wear it ${more} time${more===1?'':'s'}`} to get under ${cpwMoney(t,true)} a wear.`}
 /* how it's worked out, in a few lines */
 function cpwHow(c){const i=c.i,t=i.type,cl=c.cl,L=[],each=c.each,w=cpwWashed(t);
-  if(i.bought)L.push(`Bought ${new Date(...i.bought.split('-').map((v,k)=>+v-(k===1?1:0))).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} for ${cpwMoney(c.price)}.`);else L.push(`Price ${cpwMoney(c.price)}.`);
+  if(i.bought)L.push(`Bought ${(([y,m,d])=>new Date(y,m-1,d))(i.bought.split('-').map(Number)).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} for ${cpwMoney(c.price)}.`);else L.push(`Price ${cpwMoney(c.price)}.`);
   L.push(`Wears: the days you wore it, as Insights counts them (${c.wears}).`);
   const cost=each?` at ${cpwMoney(each)} each`:'';
   if(cl.how==='each')L.push(`${w?'Washed':'Cleaned'} after every wear: ${cpwClean(cl,cl.n)}${cost}.`);
