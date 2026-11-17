@@ -1,6 +1,7 @@
 /* Fill in item.material for wardrobe items that have none, by asking Claude to look at each item's photo and close-up.
-   Uses the Message Batches API (half price). Read-only on the server: it downloads the backup and writes a report; nothing is
-   saved to the wardrobe. Saving the approved suggestions is a separate, later step.
+   Uses the Message Batches API (half price). Without --apply it only reads the server: it downloads the backup and writes a report,
+   and nothing is saved to the wardrobe. --apply SAVES to the wardrobe: it posts the approved materials to the worker (CR-8-12, the
+   header said nothing was ever saved).
 
    Usage (PowerShell, in the repo):
      $env:DW_WORKER='https://<worker>.workers.dev/'; $env:DW_TOKEN=<owner code>; $env:ANTHROPIC_API_KEY=<key>
@@ -26,6 +27,9 @@ if (OUT) fs.mkdirSync(OUT, { recursive: true });
 /* the app's list of materials per type (core.js MATERIALS_BY): read from the file so the two never drift apart */
 const core = fs.readFileSync(path.join(__dirname, '..', 'core.js'), 'utf8');
 const MATERIALS_BY = Function('return ' + core.match(/const MATERIALS_BY=(\{[\s\S]*?\});/)[1])();
+/* the app's own field stamps (core.js itemFields, fix round 3): read from the file too, so a saved item carries fs as a phone's save would */
+const itemFields = Function(core.match(/^const (?:stamp|ITEM_META|fsOk|fieldStamp|sameVal|fsPack)=.*$/gm).join('\n') + '\n'
+  + core.match(/^function itemFields\([\s\S]*?i\.fs=fsPack\(t,s\);return i\}$/m)[0] + '\nreturn itemFields;')();
 const TYPE_WORD = { suit: 'suit', blazer: 'blazer (sport coat)', pants: 'trousers', shirt: 'dress shirt', tie: 'tie', socks: 'pair of socks', overcoat: 'overcoat', raincoat: 'raincoat' };
 
 const api = p => fetch(new URL(p, WORKER).href, { headers: { 'x-app-token': TOKEN, origin: new URL(ORIGIN).origin } });
@@ -77,7 +81,9 @@ function request(it, ph) {
 /* --apply <file>: save approved materials, a JSON list [{id, material, other?, replace?}]. Downloads a fresh copy, changes only `material`
    on those items (an item that already has a material is left alone unless it is exactly `replace`; one that is gone is skipped; `other`
    allows a typed material outside the type's list), stamps `updated`, and POSTs just those items as the app's small
-   sync does (the worker merges by stamp), then reads them back. Settings → Roll back undoes it. */
+   sync does (the worker merges by stamp), then reads them back. Settings → Roll back undoes it. (CR-8-12) Each item's field stamps (fs)
+   are worked out by the app's own itemFields: only `material` takes the new stamp, so an edit to another field on a phone, not yet
+   synced, still wins that field (the old fs, kept as it was, made this copy win whole) */
 async function apply(file) {
   const want = JSON.parse(fs.readFileSync(file, 'utf8'));
   const r = await api('sync?lite=1');
@@ -90,7 +96,7 @@ async function apply(file) {
     if (it.material && !(w.replace && it.material === w.replace)) { skipped.push([w.id, 'already has ' + it.material]); continue; }
     // w.other: a material typed in, as the app's "Other" does (at most 40 characters, wardrobe.js WARD_MAX)
     if (!list || !(list.includes(w.material) || (w.other && typeof w.material === 'string' && w.material.trim() && w.material.length <= 40))) { skipped.push([w.id, w.material + ' is not offered for ' + it.type]); continue; }
-    changed.push({ ...it, material: w.material, updated: now });
+    changed.push(itemFields({ ...it, material: w.material, updated: now }, it));
   }
   console.log(`${changed.length} to save, ${skipped.length} left alone`); for (const s of skipped) console.log('  skipped', s.join(': '));
   if (!changed.length || DRY) return;
