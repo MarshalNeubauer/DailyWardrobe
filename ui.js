@@ -138,7 +138,7 @@ function plainErr(m){m=String(m==null?'':m);const n=netErr(m);if(n)return n;
 
 /* ---- connection ---- */
 const NEED_CONN='Needs a connection (Settings → Connection).';
-/* the stored code's invitation has ended (switched off, or the account deleted: sync.js inviteEnded keeps that code in invite_ended).
+/* the stored code's invitation has ended (switched off, or the account deleted: sync-status.js inviteEnded keeps that code in invite_ended).
    The address and code stay stored (a new link replaces them), but the app is not connected: it said "Connected", "backed up" and
    "Photos are read automatically" while nothing worked (audit 2026-11-14) */
 const inviteOver=()=>{const t=(localStorage.getItem('app_token')||'').trim();return !!t&&localStorage.getItem('invite_ended')===t};

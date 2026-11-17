@@ -61,13 +61,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const fix=S('tie')[0];fix.added=Date.now()-60000;await put(fix);   // a start-up fix-up's save (migrateVests, texSwatches): a new stamp, no item sheet
       const arr=S('shoes')[0];arr.paused=true;arr.order=true;arr.arrives=isoKey(new Date(Date.now()-3*864e5));arr.added=Date.now()-60000;await put(arr);await checkArrivals();
       const local=await localState(),snap={items:local.items.map(i=>({...i})),days:local.days,tombstones:local.tombstones,settings:local.settings};
-      await applyMerged(mergeState(local,rollBackState(local,snap,Date.now()+60000)),local);   // a roll back restamps every piece
+      await applyMerged(local,rollBackState(local,snap,Date.now()+60000));   // a roll back restamps every piece
       const after=items.filter(i=>i.sample),mine0=after.filter(kitEdited).length;
       const pz=S('belt')[0];openItem(pz.id);await togglePause(pz.id);const paused=kitEdited(items.find(i=>i.id===pz.id));
       const ed=S('socks')[0];openItem(ed.id);await sete(ed.id,'primaryColor','charcoal');const edited=kitEdited(items.find(i=>i.id===ed.id));closeItem();
       const nm=S('suit')[0];await setItemField(nm.id,'name','My suit');   // (typed text saved after the sheet closed)
       return {n:after.length,mine:mine0,arrived:!items.find(i=>i.id===arr.id).paused,fixUp:kitEdited(items.find(i=>i.id===fix.id)),
-        share:syncShare({items,days:[]}).items.filter(i=>i.sample).map(i=>i.type).sort().join(),paused,edited,named:kitEdited(items.find(i=>i.id===nm.id))}});
+        share:kitShareFilter({items,days:[]},null,syncJoinAt()).items.filter(i=>i.sample).map(i=>i.type).sort().join(),paused,edited,named:kitEdited(items.find(i=>i.id===nm.id))}});
     ok(mine.n===24&&mine.mine===0&&!mine.fixUp&&mine.arrived,`a start-up fix-up, an arrival and a roll back restamp sample pieces without making them his (${JSON.stringify(mine)})`);
     ok(!mine.paused&&mine.edited&&mine.named&&mine.share==='socks,suit','out of rotation in the item sheet doesn\'t make one his; a colour or name changed there does, and only those are backed up: '+mine.share);
     /* the arrow keys in the import sheet */

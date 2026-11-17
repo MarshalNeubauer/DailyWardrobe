@@ -25,7 +25,7 @@ function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
   const pz=+localStorage.getItem('sync_pause')||0;
   if(typeof syncPaused==='function'?syncPaused():pz>nowMs()){const p=pausedUntil(pz);return last?`Paused until ${p} · last saved ${when(last)}`:`Paused until ${p}: not backed up yet`}
   if(/^Backups held/.test(st))return 'Held: deleted from the server on another device';   // (sync.js syncWiped)
-  if(/^Backing up/.test(st))return last?`Backing up photos · last saved ${when(last)}`:'Backing up photos: not finished yet';   // (photos going up in batches, sync.js phBatch)
+  if(/^Backing up/.test(st))return last?`Backing up photos · last saved ${when(last)}`:'Backing up photos: not finished yet';   // (photos going up in batches, sync-photos.js phBatch)
   if(/^Not backed up:/.test(st))return last?`Waiting for a connection · last saved ${when(last)}`:'Waiting for a connection: not backed up yet';
   if(/failed/i.test(st))return last?`Last backup failed · last saved ${when(last)}`:'Backup failed: not backed up yet';
   return last?`Backed up ${when(last)}`+(localStorage.getItem('sync_wait')&&!/^Syncing/.test(st)?' · newer changes waiting':''):'Not backed up yet'}
@@ -118,7 +118,7 @@ function saveSettings(){
    toLocale…String(undefined, …) uses the phone's language when it is English, else American English (the app's language; Latin digits) */
 const APP_LOC=/^en\b/i.test(navigator.language||'en')?navigator.language:'en-US';
 function appLocale(){if(Date.prototype._dwLoc)return;for(const m of ['toLocaleDateString','toLocaleString','toLocaleTimeString']){const f=Date.prototype[m];
-  Date.prototype[m]=function(loc,o){return f.call(this,loc===undefined||(Array.isArray(loc)&&!loc.length)?APP_LOC:loc,o)}}Object.defineProperty(Date.prototype,'_dwLoc',{value:true})}   // ([] too, "the browser's language", as sync.js's backup-pause times pass: CR-7-05)
+  Date.prototype[m]=function(loc,o){return f.call(this,loc===undefined||(Array.isArray(loc)&&!loc.length)?APP_LOC:loc,o)}}Object.defineProperty(Date.prototype,'_dwLoc',{value:true})}   // ([] too, "the browser's language", as sync-status.js's backup-pause times pass: CR-7-05)
 appLocale();
 /* ---- settings: schedule, weather location, units ---- */
 /* °F where the country uses it (audit 2026-11-15: a Kuwait user on an English (US) iPhone got °F): the chosen location's country, else the

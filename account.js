@@ -95,7 +95,7 @@ async function acctJoin(p,opt){const say=t=>{if((opt.address||opt.typed)&&t)acct
       toldSame=true}
     else{
       // the old code is over: any refusal now (switched off, replaced, the account deleted or its storage lost), or one heard before
-      // (sync.js inviteEnded: invite_ended, invite_lost). The person can't reach that backup any more, and what changed since is nowhere
+      // (sync-status.js inviteEnded: invite_ended, invite_lost). The person can't reach that backup any more, and what changed since is nowhere
       // else: the wardrobe on this phone stays and is backed up with the new invitation instead of being cleared (the re-audit's N1)
       // (CR-5-02, 2026-11-17) only a real "ended" answer counts: switched off or replaced (403 'invite off'), or a code the server doesn't
       // know (403 'forbidden token'). A passing server error (5xx, 429, another refusal) counted as ended too, and "Keep it and back it up"
@@ -123,7 +123,7 @@ async function acctJoin(p,opt){const say=t=>{if((opt.address||opt.typed)&&t)acct
       else if(!await askConfirm(acctSwitchEmptyText(r.j,oldOk?old.j:null,oldRole==='owner'),{ok:'Switch'}))return kept('Kept the current connection.');
       acctOwnerPhone(oldRole,r.j);
       for(const k of ['sync_mark','last_sync','sync_status'])localStorage.removeItem(k)}   // what the old account's syncs left
-  }   // (the sample wardrobe needs no question: it stays on this phone and is never backed up, sync.js syncShare; re-audit 2026-11-15)
+  }   // (the sample wardrobe needs no question: it stays on this phone and is never backed up, kit.js kitShareFilter; re-audit 2026-11-15)
   else if(!cur&&local.items-local.sample>0){
     // (audit 2026-11-15, W1-7-03, W1-11-01) pieces of this phone's own go into the account: said and asked first. After Safari cleared the
     // site, pieces added again before the link was found were merged into the restored wardrobe with no word, as doubles
@@ -293,6 +293,6 @@ function acctStart(){applyRole();
   addEventListener('online',acctRetryLink);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')acctRetryLink()})}
 function acctRetryLink(){if(acctWhy==='offline'&&hasInviteHash()&&!acctLinkRun)connectFromLink(location.href,{address:true})}
-/* the invitation has ended (switched off, or the account deleted; sync.js inviteEnded): what said "Connected" is drawn again */
+/* the invitation has ended (switched off, or the account deleted; sync-status.js inviteEnded): what said "Connected" is drawn again */
 function acctEndedUI(){acct={...acct,me:null,state:'',invites:null};try{applyRole();renderAccountUI();acctLinkDrawn();if(typeof addGate==='function')addGate()}catch(e){console.warn(e)}}
 acctStart();
