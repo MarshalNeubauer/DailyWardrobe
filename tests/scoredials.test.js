@@ -21,6 +21,19 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
     const span=k=>Math.max(...M.out[k])-Math.min(...M.out[k]);
     ok(span('h')>=30&&Math.min(...M.out.h)<70&&span('o')>=20&&span('t')>=30,`${eng}: they spread (Harmony ${Math.min(...M.out.h)}-${Math.max(...M.out.h)}, Texture ${Math.min(...M.out.t)}-${Math.max(...M.out.t)}, Occasion ${Math.min(...M.out.o)}-${Math.max(...M.out.o)}), not 99-100 every day`);
     ok(M.ranks.some(r=>r>1)&&M.gains.length>0&&M.gains.every(g=>g>0),`${eng}: the planned outfit is not always 1st (ranks ${M.ranks.slice(0,8).join(', ')}…), and each swap gains places (${M.gains.slice(0,5).join(', ')}…)`);
+    // ---- Freshness: two weeks of rest is fully fresh however many shirts there are (2026-11-17, the owner: a shirt worn 12 days ago
+    // with 35 shirts read a quarter fresh); a type with few pieces still counts against its own shorter turn
+    const F=await p.evaluate(()=>{const P=(type,rest)=>({id:type+rest,type,primaryColor:'navy',pattern:'solid',rest}),o=r=>({top:P('suit',60),shirt:P('shirt',r),tie:P('tie',60),shoes:P('shoes',7),suitDay:true});
+      const many=t=>t==='shirt'?49:t==='shoes'?4.2:t==='tie'?14:15.75,few=t=>t==='shirt'?3:7;
+      return {s14:dialFreshness(o(14),many).v,s12:dialFreshness(o(12),many).v,s3:dialFreshness(o(3),many).v,few:dialFreshness(o(3),few).v,cap:FRESH_FULL.shirt}});
+    ok(F.cap===14&&F.s14===100&&F.s12>=90&&F.s3<F.s12,`${eng}: a shirt rested 14 days is fully fresh with 35 shirts (${F.s14}); 12 days ${F.s12}, 3 days ${F.s3}`);
+    ok(F.few===100,`${eng}: with 3 shirts, a shirt rested 3 days is a full turn (${F.few})`);
+    // ---- Occasion on an ordinary suit day: a taupe or brown suit suits it (2026-11-17, the owner); a formal day keeps the dark-suit scale
+    const Oc=await p.evaluate(()=>{const P=(type,c,x={})=>({id:type+c,type,primaryColor:c,pattern:'solid',...x}),o=(top,f,sc='black')=>({top,shirt:P('shirt','white'),tie:P('tie','navy'),shoes:P('shoes',sc,{leather:'calf'}),belt:P('belt',sc,{leather:'calf'}),suitDay:true,formal:f,clim:{season:'mild'}});
+      const v=(t,f)=>dialOccasion(o(t,f,t.primaryColor==='navy'?'black':'brown')),tp=P('suit','taupe'),nv=P('suit','navy'),cm=P('suit','olive',{pattern:'camouflage'});
+      return {taupe:v(tp,false).v,navy:v(nv,false).v,camo:v(cm,false).v,taupeF:v(tp,true).v,navyF:v(nv,true).v,why:v(tp,false).why}});
+    ok(Oc.taupe>=Oc.navy-8&&!/less formal/.test(Oc.why),`${eng}: on an ordinary suit day a taupe suit suits the day (${Oc.taupe} against navy ${Oc.navy}: "${Oc.why}")`);
+    ok(Oc.camo<Oc.taupe&&Oc.taupeF<Oc.navyF-10,`${eng}: camouflage doesn't (${Oc.camo}); on a formal day the dark suit still leads (taupe ${Oc.taupeF}, navy ${Oc.navyF})`);
     // ---- a broken rule rings its own dial
     const B=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:'z'+type+(k++),type,primaryColor,pattern:'solid',...x});
       const navy=I('suit','navy'),wh=I('shirt','white'),bu=I('tie','burgundy'),bl=I('shoes','black',{leather:'calf'}),bb=I('belt','black',{leather:'calf',metal:'silver'}),br=I('belt','brown',{leather:'calf',metal:'silver'});

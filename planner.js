@@ -463,7 +463,16 @@ const o={suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,pocket
 // the suit jacket taken off and other pants picked for the day (force.bot, a pair of pants: Today's ⇄ on the suit's pants, the owner's
 // ask 2026-11-16): those pants are worn and the suit is not
 const sep=suitDay&&top&&rec&&rec.off&&rec.off.top&&force.bot&&(by('pants').find(i=>i.id===force.bot)||c.hpBotAny)||null;
-return takeOff(o,rec&&rec.off,c.untake,sep&&c.take(sep))}
+const r=takeOff(o,rec&&rec.off,c.untake,sep&&c.take(sep));
+// those pants worn: the day's notes are made again for what is worn (no jacket, those pants, the same shirt, tie, shoes and belt), so
+// none speaks of the suit's trousers (the owner, 2026-11-17: "None of your shoes suit mid gray worsted pants." under multicam pants)
+if(sep&&r.offSuit&&r.bot!==top)r.notes=sepNotes(c,r,top,{links,coat,french,needCoat,B});
+return r}
+/* the notes of a suit day worn with other pants (takeOff's sep): outfitNotes for the pieces worn, as a day without the suit; a packed
+   suit's own note goes with it */
+function sepNotes(c,r,suit,{links,coat,french,needCoat,B}){
+  const {notes}=outfitNotes({...c,suitDay:false,tripOff:c.tripOff.filter(x=>x.id!==suit.id)},{top:null,bot:r.bot,shirt:r.shirt,tie:r.tie,shoes:r.shoes,belt:r.belt,watch:r.watch,links,coat,french,needCoat,B});
+  return notes.map(prettyCols)}
 /* the day as the steps see it: the dress code and occasion, rest, the day's picks, skips and lock, the wash, and each slot's pool */
 function dayPools(suitDay,n,by,last,rec,day){day=day||{formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false};
 const casual=day.occ==='casual',occ=OCC[day.occ];if(casual)suitDay=false;   // no jacket and no tie: trousers and a shirt
@@ -629,7 +638,7 @@ if(patsOf([[top,'top'],[suitDay?null:bot,'bot'],[shirt,'shirt'],[tie,'tie']]).le
 if(shoes&&bot&&!shoeSuits(top,bot,shoes)){if(shoeSuits(null,bot,shoes))jnote(`None of your shoes suit the ${colName(spokenCol(top))} ${top.type==='suit'?'suit':'jacket'}.`);else notes.push(`None of your shoes suit ${colName(spokenCol(bot))} pants.`)}
 if(shoes&&finish(shoes.leather)==='patent')notes.push('Only patent shoes were available. Patent is for black tie.');
 if(shoes&&B.length&&!belt)notes.push(`None of your belts match the ${desc(shoes)} shoes. Add a ${leatherGroup(planCol(shoes))} ${finish(shoes.leather)==='suede'?'suede':'smooth leather'} belt.`);
-if(watch&&belt&&!metalSame(metalOf(watch),metalOf(belt)))notes.push(`The watch (${metalOf(watch)}) and belt buckle (${metalOf(belt)}) are different metals.`);
+if(watch&&belt&&!metalSame(metalOf(watch),metalOf(belt)))notes.push(`The ${metalWord(metalOf(watch))} watch and the ${metalWord(metalOf(belt))} belt buckle are different metals.`);   // ("other" is gunmetal: core.js metalWord; "The watch (silver) and belt buckle (other)" read badly, the owner 2026-11-17)
 if(french&&!links)notes.push('French-cuff shirt, but no cufflinks in your wardrobe. Add a pair.');
 // suede in the rain, said from the real reason (the code review, CR-3-02): picked by hand, packed, or the only shoes left (RAIN_SUEDE keeps
 // it off otherwise)
@@ -881,7 +890,7 @@ function dialOccasion(o,fast){const {top,shirt,tie,shoes,belt}=o,legs=o.bot||top
     if(legs){const k=(SH[pcol(legs)]||['black','brown']).indexOf(pcol(shoes));P.push([18,shoeClash(top,shoes)||!shoeSuits(top,legs,shoes)?0:k<0?.4:[1,.85,.7,.55][k]??.5,()=>`${dCol(shoes)} shoes suit the ${dCol(legs)} ${sd?'suit':'pants'}`,()=>`${dCol(shoes)} shoes don't suit the ${dCol(legs)} ${sd?'suit':'pants'}`])}}
   if(shoes&&belt&&shoeStyle(shoes)!=='sneaker'){const f=beltFit(shoes,belt);P.push([10,f===null?0:f>0?1:.65,()=>'the belt matches the shoes',()=>`a ${dCol(belt)} belt with ${dCol(shoes)} shoes`])}
   if(tie){const v=formal?dLin(formalTie(tie),-15,3):occ?dLin(OCC[occ].tie(tie),-25,10):dLin(formalTie(tie),-12,3);P.push([14,v,()=>`the ${dCol(tie)} tie suits the day`,()=>`the ${dCol(tie)} tie is a touch casual for the day`])}
-  if(top){const v=formal?dLin(formalTop(top),-25,30):occ?dLin(occTop(occ,top,s),-30,30):sd?dLin(formalTop(top),-25,30):.85;P.push([14,v,()=>`the ${dCol(top)} ${dJacket(o)} suits the day`,()=>`the ${dCol(top)} ${dJacket(o)} is less formal than ${sd?'a suit day':'the day'} wants`])}
+  if(top){const v=formal?dLin(formalTop(top),-25,30):occ?dLin(occTop(occ,top,s),-30,30):sd?(isCamo(top)?0:Math.max(.85,dLin(formalTop(top),-25,30))):.85;/* (an ordinary suit day: any suit suits it, a dark one fully; only camouflage, the uniform, doesn't; the strict dark-suit scale is for formal days and occasions: the owner, 2026-11-17, "a warm taupe suit isn't formal as a suit?") */P.push([14,v,()=>`the ${dCol(top)} ${dJacket(o)} suits the day`,()=>`the ${dCol(top)} ${dJacket(o)} is less formal than ${sd?'a suit day':'the day'} wants`])}
   if(shirt&&(formal||occ)){const v=formal?dLin(formalShirt(shirt),-14,10):dLin(OCC[occ].shirt(shirt),-20,10);P.push([10,v,()=>`the ${dCol(shirt)} shirt suits the day`,()=>`the ${dCol(shirt)} shirt is not the shirt for the day`])}
   if(s){let f=0,bad=null;for(const i of [top,sd?null:o.bot,shirt,tie]){if(!i)continue;const x=seasonFit(i,s);if(x<f){f=x;bad=i}}
     P.push([16,f<=-15?0:f<0?.65:1,()=>`the cloth suits a ${s} day`,()=>bad?`the ${dCol(bad)} ${dPiece(bad,o)} is ${itemSeason(bad)}-weather cloth on a ${s} day`:''])}
@@ -891,9 +900,12 @@ function dialOccasion(o,fast){const {top,shirt,tie,shoes,belt}=o,legs=o.bot||top
 const lowFirstD=t=>t?t[0].toLowerCase()+t.slice(1):t;
 /* Freshness: each piece's rest (o[slot].rest, days since it was last worn, as the planner counts it, at most 60) against how often its
    type comes round (cyc(type): the calendar days a piece of that type usually waits, from how many are in rotation) */
+const FRESH_FULL={shirt:14,tie:14,suit:14,blazer:14,pants:14,shoes:7,other:14};   // calendar days of rest that count as fully fresh
 function dialFreshness(o,cyc){const P=[[o.top,30],[o.suitDay?null:o.bot,10],[o.shirt,25],[o.tie,25],[o.shoes,10]].filter(([i])=>i&&typeof i.rest==='number');
   if(!P.length)return {v:100,why:'Every piece is fresh.'};
-  const r=P.map(([i,w])=>{const c=Math.max(1,cyc?cyc(i.type):7);return {i,w,q:Math.min(1,i.rest/c),c}});
+  // a piece that rested FRESH_FULL days is fully fresh however many of its type are owned (2026-11-17, the owner: a shirt worn 12 days ago
+  // scored a quarter fresh with 35 shirts, a 49-day turn); fewer pieces than that still count against their own shorter turn
+  const r=P.map(([i,w])=>{const c=Math.max(1,Math.min(cyc?cyc(i.type):7,FRESH_FULL[i.type]||FRESH_FULL.other));return {i,w,q:Math.min(1,i.rest/c),c}});
   const v=dStretch(100*r.reduce((a,x)=>a+x.w*x.q,0)/r.reduce((a,x)=>a+x.w,0),DIAL_K.f);
   const days=n=>n>=60?'60+ days':n===1?'1 day':n+' days',clothes=r.filter(x=>x.i.type!=='shoes'),sh=r.find(x=>x.i.type==='shoes');
   const why=clothes.map((x,k)=>k?`${dPiece(x.i,o)} ${days(x.i.rest)}`:`${sentence(dPiece(x.i,o))} rested ${days(x.i.rest)}`).join(', ')+'.'+(sh?` Shoes ${days(sh.i.rest)}.`:'');

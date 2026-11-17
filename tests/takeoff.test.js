@@ -184,7 +184,52 @@ const todaypants=async({ok,chromium,url,settle})=>{
 // (realPlanner) the planner keeps the pick (outfit/takeOff in planner.js); other tests get tests/fixedplan.js
 // (assembled) it asks which painted master a day takes (asm-color.js)
 
+/* ---- other pants on a suit day: the notes and the dials (the owner, 2026-11-17) ---- */
+// His mid gray worsted suit, the jacket off, his multicam tan cargo pants, a tan T-shirt and tan suede boots picked by hand: Today said
+// "None of your shoes suit mid gray worsted pants." (written for the suit before the pants were swapped in), Harmony read 0 with a stray red
+// dot at the top of its ring, and the metal note read "The watch (silver) and belt buckle (other) are different metals."
+const sepnotes=async({ok,chromium,url,settle})=>{
+  const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  try{
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    const r=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
+      items=[I('suit','midgrey',{material:'worsted'}),I('suit','navy'),I('blazer','navy'),I('pants','tan',{pattern:'camouflage',secondaryColor:'olive',trouserKind:'cargo'}),I('pants','grey'),
+        I('shirt','white'),I('shirt','navy'),I('tee','tan'),I('tie','burgundy'),I('watch','grey',{metal:'silver'}),I('shoes','black',{leather:'calf'}),I('shoes','tan',{leather:'suede',shoeStyle:'boot'}),
+        I('belt','black',{leather:'calf',metal:'silver'}),I('belt','tan',{leather:'suede',metal:'other'}),I('socks','navy')];
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[3];settings.vestMode='auto';weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';sel=new Date(2026,10,9);view={y:2026,m:10};listOpen=true;
+      const d=key(sel),SUIT='suit0',CAMO='pants3',TEE='tee7',BOOTS='shoes11';
+      const day=(off,bot)=>{dayRecs={[d]:{date:d,force:{top:SUIT,shirt:TEE,shoes:BOOTS,...(bot?{bot}:{})},...(off?{off:{top:true}}:{})}};cache={};return planFor()[d]};
+      const on=day(false),own=day(true),o=day(true,CAMO);show('today');
+      const D=dialsFor(o),hard=rateOutfit(o).hard,dials=[...document.querySelectorAll('#sbox .dial')].map(e=>({txt:e.querySelector('text').textContent,arc:!!e.querySelector('.darc'),bad:!!e.querySelector('.dbad'),name:e.querySelector('small').textContent}));
+      // a broken Harmony rule: the navy shirt under the navy blazer (the shirt the jacket's color)
+      const box=document.createElement('div');box.innerHTML=scoreCard({...o,top:items.find(i=>i.id==='blazer2'),shirt:items.find(i=>i.id==='shirt6'),off:null});
+      const hb=box.querySelector('.dial'),hbad={name:hb.querySelector('small').textContent,txt:hb.querySelector('text').textContent,ring:!!hb.querySelector('.dbad')};
+      const h0=document.createElement('div');h0.innerHTML=dialHtml('h',{v:0},false)+dialHtml('h',{v:0},true)+dialHtml('h',{v:3},false);
+      const z=[...h0.querySelectorAll('.dial')].map(e=>({txt:e.querySelector('text').textContent,arc:!!e.querySelector('.darc'),bad:!!e.querySelector('.dbad')}));
+      const shown=[...document.querySelectorAll('#today p.warn')].map(e=>e.textContent).join(' | ');
+      return {on:{suitDay:!!on.suitDay,bot:on.bot&&on.bot.id,notes:on.notes},own:{bot:own.bot&&own.bot.id,notes:own.notes},o:{bot:o.bot&&o.bot.id,top:!!o.top,shoes:o.shoes&&o.shoes.id,belt:o.belt&&o.belt.id,notes:o.notes},
+        hard,dials,hbad,z,shown,unmapped:DIAL_RULES.map(([l])=>l).filter(l=>!DIAL_OF_CHECK[l]),bad:D.bad}});
+    // the suit worn whole: its own notes (tan suede boots with a mid gray suit), as before
+    ok(r.on.suitDay&&r.on.bot==='suit0'&&r.on.notes.some(t=>/shoes suit/.test(t)),`the suit worn whole keeps its own shoe note (${r.on.notes.join(' / ')})`);
+    // the jacket off with the suit's own pants: a note about those pants is still true
+    ok(r.own.bot==='suit0'&&r.own.notes.some(t=>/None of your shoes suit mid gray/.test(t)),`the suit's own pants: the note about them stays (${r.own.notes.join(' / ')})`);
+    // other pants picked: the notes are those of the outfit worn
+    ok(r.o.bot==='pants3'&&!r.o.top&&r.o.shoes==='shoes11'&&r.o.belt==='belt13',`the multicam pants are worn with the boots and the tan belt, as picked (${JSON.stringify({bot:r.o.bot,shoes:r.o.shoes,belt:r.o.belt})})`);
+    ok(!r.o.notes.some(t=>/mid gray|suit\b|worsted/i.test(t)),`no note speaks of the suit or its pants (${r.o.notes.join(' / ')})`);
+    ok(/gunmetal/.test(r.shown)&&!/mid gray/i.test(r.shown),`Today shows the outfit's notes, none of the suit's (${r.shown})`);
+    // the metal note in plain words ("other" is gunmetal)
+    ok(r.o.notes.includes('The silver watch and the gunmetal belt buckle are different metals.'),`the metal note reads naturally (${r.o.notes.filter(t=>/metal/.test(t)).join(' / ')})`);
+    // the dials: "!" with the red ring exactly on the dials with a broken rule; a 0 draws no arc
+    ok(r.dials.length===5&&r.dials.every(d=>(d.txt==='!')===d.bad&&(d.txt!=='0'||!d.arc)),`each dial: "!" with its red ring for a broken rule, no stray dot at 0 (${r.dials.map(d=>d.name+' '+d.txt+(d.arc?'':' no arc')+(d.bad?' ring':'')).join(', ')}; broken ${r.hard.join(', ')||'none'})`);
+    ok(r.hard.every(l=>r.dials.some(d=>d.txt==='!'&&d.name===({h:'Harmony',t:'Texture',f:'Freshness',v:'Variety',o:'Occasion'})[r.bad&&Object.keys(r.bad).find(k=>r.bad[k]===l)])),`every broken rule rings its dial (${r.hard.join(', ')||'none'})`);
+    ok(!r.unmapped.length,`every rule the card lists belongs to a dial (${r.unmapped.join(', ')})`);
+    ok(r.hbad.name==='Harmony'&&r.hbad.txt==='!'&&r.hbad.ring,`a broken Harmony rule (the shirt the jacket's color) shows "!" ringed in red on Harmony (${JSON.stringify(r.hbad)})`);
+    ok(r.z[0].txt==='0'&&!r.z[0].arc&&!r.z[0].bad&&r.z[1].txt==='!'&&r.z[1].bad&&!r.z[1].arc&&r.z[2].arc,`dialHtml: 0 draws no arc, a broken rule "!" with its ring, 3 an arc (${JSON.stringify(r.z)})`);
+    ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
+  }finally{await browser.close()}
+};
+
 // the parts run one after another; one that throws is reported and the rest still run (each was its own file)
-module.exports=async t=>{for(const [name,part] of [['takeoff',takeoff],['todaypants',todaypants]]){try{await part(t)}catch(e){t.ok(false,`threw (${name}): ${e.message}`)}}};
+module.exports=async t=>{for(const [name,part] of [['takeoff',takeoff],['todaypants',todaypants],['sepnotes',sepnotes]]){try{await part(t)}catch(e){t.ok(false,`threw (${name}): ${e.message}`)}}};
 module.exports.realPlanner=true;   // runs the real planner (every part checks the planner's choices); other tests get tests/fixedplan.js
 module.exports.assembled=true;   // assembled pictures on, as every part had them
