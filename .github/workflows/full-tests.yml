@@ -1,0 +1,134 @@
+name: Full test run
+# Every check (`npm run test:all`: Chromium and the WebKit halves), split over several runners at once so the whole suite takes a few
+# minutes (tests/shard.js). Every night on main (the audit of 2026-11-13: a merge is a deploy, and each branch runs only the tests its
+# change can affect, so this is the safety net for what a selection missed), and on demand for any branch:
+#   npm run test:cloud            (tools/cloud-tests.js: starts it on the current branch, waits, prints the failures)
+#   gh workflow run full-tests.yml --ref <branch>      or GitHub > Actions > Full test run > Run workflow
+# It deploys nothing, changes nothing and is never a pull request check. A failed run makes GitHub email the repository's owner; the
+# failures, each with its shard, are in the run's summary, and the logs are kept 14 days (`test-log`, and each shard's `shard-<i>`).
+on:
+  schedule:
+    - cron: '0 1 * * *'   # 01:00 UTC = 04:00 in Kuwait, after the day's merges and before the morning
+  push:   # TEMPORARY while building it: workflow_dispatch needs the file on main
+    branches: [claude/split-ci]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag or commit to test (empty: the branch the run was started on)'
+        required: false
+        default: ''
+      tag:
+        description: 'A label for the run name (npm run test:cloud uses it to find its run)'
+        required: false
+        default: ''
+run-name: ${{ github.event_name == 'schedule' && 'Nightly full test run' || format('Full tests {0} {1}', inputs.ref || github.ref_name, inputs.tag) }}
+permissions:
+  contents: read
+concurrency:
+  group: full-tests-${{ inputs.ref || github.ref }}-${{ inputs.tag }}
+  cancel-in-progress: false
+env:
+  # how many runners, and how many of them (the last ones) take the WebKit halves (only those install WebKit); the split is balanced by
+  # tests/shard-times.json. Change SHARDS together with the matrix below
+  SHARDS: 10
+  SHARD_WEBKIT: 2
+jobs:
+  shard:
+    name: shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      # no package-lock.json in the repo (see deploy-worker.yml): node_modules is kept by package.json's contents
+      - id: nm
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: nm-${{ runner.os }}-node22-${{ hashFiles('package.json') }}
+      - if: steps.nm.outputs.cache-hit != 'true'
+        run: npm install --no-package-lock
+      - id: plan
+        name: This shard's tests
+        run: |
+          echo "webkit=$(node tests/shard.js --needs-webkit ${{ matrix.shard }}/$SHARDS)" >> "$GITHUB_OUTPUT"
+          echo "pw=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+      - id: pw
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ steps.plan.outputs.pw }}-${{ steps.plan.outputs.webkit == 'true' && 'chromium-webkit' || 'chromium' }}
+      - name: Install the browsers
+        if: steps.pw.outputs.cache-hit != 'true'
+        run: |
+          B=chromium; [ "${{ steps.plan.outputs.webkit }}" = true ] && B="chromium webkit"
+          for i in 1 2 3; do npx playwright install $B && exit 0; sleep $((i * 15)); done
+          exit 1
+      - name: WebKit's system packages
+        if: steps.plan.outputs.webkit == 'true'
+        # (the runner image has Chromium's libraries, not all of WebKit's): through apt for at most five minutes
+        run: timeout -k 10 300 npx playwright install-deps webkit || echo "::warning::WebKit's system packages could not be installed (apt); the tests run with what the runner image has."
+      - name: Tests
+        env:
+          TEST_SHARD: ${{ matrix.shard }}/${{ env.SHARDS }}
+          TEST_JOBS: 3
+          TEST_LOCK: 0
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          TEST_TIMES_OUT="$RUNNER_TEMP/out/times.json" npm run test:all 2>&1 | tee "$RUNNER_TEMP/out/tests.log"; exit ${PIPESTATUS[0]}
+      - name: Failures in the summary
+        if: failure()
+        run: |
+          { echo '### Failed checks (shard ${{ matrix.shard }})'; echo '```'; grep -E '✗|^• |failed' "$RUNNER_TEMP/out/tests.log" | tail -n 80; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shard-${{ matrix.shard }}
+          path: ${{ runner.temp }}/out/
+          retention-days: 14
+
+  summary:
+    name: summary
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+          sparse-checkout: tests/shard.js
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: shard-*
+          path: ${{ runner.temp }}/shards
+      - name: One summary
+        run: |
+          set +e
+          node tests/shard.js --summary "$RUNNER_TEMP/shards" "$SHARDS" > "$RUNNER_TEMP/summary.md"; code=$?
+          cat "$RUNNER_TEMP/summary.md" | tee -a "$GITHUB_STEP_SUMMARY"
+          mkdir -p "$RUNNER_TEMP/keep"; cp "$RUNNER_TEMP/summary.md" "$RUNNER_TEMP/shards/shard-times.json" "$RUNNER_TEMP/keep/"
+          for i in $(seq 1 "$SHARDS"); do echo "===== shard $i/$SHARDS ====="; cat "$RUNNER_TEMP/shards/shard-$i/tests.log" 2>/dev/null || echo '(no log)'; done > "$RUNNER_TEMP/tests.log"
+          exit $code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-summary
+          path: ${{ runner.temp }}/keep/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-log
+          path: ${{ runner.temp }}/tests.log
+          retention-days: 14
