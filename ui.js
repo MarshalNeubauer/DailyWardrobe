@@ -1,4 +1,4 @@
-/* Daily Wardrobe: small pieces of interface every page shares (loaded after app.js; everything here runs when called, not at load).
+/* Daily Wardrobe: small pieces of interface every page shares (loaded after app.js; everything here runs when called, not at load, but the Back registrations: back.js backOn).
    - askConfirm(message, {ok, cancel, danger}) -> Promise<boolean>: the app's own question, a sheet from the bottom like the piece picker
    - tell(message): a plain notice (a toast that stays long enough to read)
    - isConnected(), needConn(): what the buttons that need the server show while the app is not connected
@@ -19,19 +19,20 @@ function askKey(e){if(!asking)return;
   const at=f.indexOf(document.activeElement),to=e.shiftKey?(at<=0?f.length-1:at-1):(at===f.length-1?0:at+1);e.preventDefault();f[to].focus()}
 /* fromBack: the phone's Back closed it (askBack): its history entry is gone already */
 function askAnswer(v,fromBack){const a=asking;if(!a)return;asking=null;const {b,s}=askEls();b.classList.remove('on');s.classList.remove('on');{const iv=document.querySelector('#item-view');if(iv&&iv.inert&&typeof layerInert==='function')layerInert()}   // (the item sheet made inert under it by another layer's call: given back; a question itself doesn't toggle inert, which is slow on WebKit and has its own Tab trap)
-  {if(!fromBack)appGiveBack('ask',a.was);else if(a.was)appPush(a.was)}   // the entry goes, or goes back to the page under the question; after Back the page gets a new one
+  backReturn('ask',a.was,fromBack);   // the entry goes, or goes back to the page under the question; after Back the page gets a new one
   try{if(a.last&&a.last.isConnected)a.last.focus({preventScroll:true})}catch{}
-  const w=appSettled();if(w)w.then(()=>a.done(!!v));else a.done(!!v)}   // (after the question's own step back has landed)
+  const w=backSettled();if(w)w.then(()=>a.done(!!v));else a.done(!!v)}   // (after the question's own step back has landed)
 /* the phone's Back with a question up answers it no, as Cancel, Escape and a tap outside do (fix round 2, 2026-11-15: Back closed
    Settings under "Roll back to …?", the question stayed over Today, and "Roll back" then emptied the wardrobe with no message; with
-   nothing under it Back left the app). The question takes a history entry (start.js appBorrow: its own, or the page's under it). */
+   nothing under it Back left the app). The question takes a history entry (back.js backBorrow: its own, or the page's under it). */
 function askBack(){if(asking)askAnswer(false,true)}
+backOn('ask',()=>askBack());
 /* the first paragraph of the message is the question (bold), the rest the explanation; a question asked while another is up answers that one no */
 function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)askAnswer(false);
   const parts=String(message).split(/\n\s*\n/),{b,s}=askEls();
   s.innerHTML=`<p class="ask-q" id="ask-title">${uiEsc(parts[0])}</p>${parts.slice(1).map(t=>`<p class="ask-more">${uiEsc(t)}</p>`).join('')}
 <div class="ask-btns">${o.cancel?`<button type="button" id="ask-cancel" onclick="askAnswer(false)">${uiEsc(o.cancel)}</button>`:''}<button type="button" id="ask-ok" class="${o.danger?'ask-danger':'pri'}" onclick="askAnswer(true)">${uiEsc(o.ok)}</button></div>`;
-  return new Promise(done=>{asking={done,last:document.activeElement,at:performance.now(),was:appBorrow('ask')};b.classList.add('on');s.classList.add('on');
+  return new Promise(done=>{asking={done,last:document.activeElement,at:performance.now(),was:backBorrow('ask')};b.classList.add('on');s.classList.add('on');
     const f=s.querySelector(o.danger&&o.cancel?'#ask-cancel':'#ask-ok');if(f)f.focus({preventScroll:true})})}
 /* ---- the close-up chooser (2026-11-15, closeup-chooser-mockups variant A, the owner's choice): a close-up button went straight to the
    phone's own picture picker, with no clear way back out. On a touch screen it now opens a sheet from the bottom in the questions' style:
@@ -66,13 +67,14 @@ ${o.remove?'<button type="button" class="cu-rm" id="cu-rm">Remove close-up</butt
   for(const inp of s.querySelectorAll('input[type=file]'))inp.onchange=()=>{const f=inp.files&&inp.files[0];inp.value='';closeupClose();if(f&&o.file)o.file(f)};   // the same handler the button had (addTexture, replaceTexture, cnRetake)
   const rm=s.querySelector('#cu-rm');if(rm)rm.onclick=()=>{closeupClose();o.remove()};
   s.querySelector('#cu-cancel').onclick=()=>closeupClose();
-  cuOpen={o,at:performance.now(),last:document.activeElement,was:appBorrow('cu')};b.classList.add('on');s.classList.add('on');layerInert();
+  cuOpen={o,at:performance.now(),last:document.activeElement,was:backBorrow('cu')};b.classList.add('on');s.classList.add('on');layerInert();
   try{s.querySelector('#cu-take').focus({preventScroll:true})}catch{}}
 /* fromBack: the phone's Back closed it: its history entry is gone already (as askAnswer) */
 function closeupClose(fromBack){const a=cuOpen;if(!a)return;cuOpen=null;const {b,s}=cuEls();b.classList.remove('on');s.classList.remove('on');layerInert();
-  {if(!fromBack)appGiveBack('cu',a.was);else if(a.was)appPush(a.was)}
+  backReturn('cu',a.was,fromBack);
   try{if(a.last&&a.last.isConnected&&!a.last.closest('[inert]'))a.last.focus({preventScroll:true})}catch{}}
 function closeupBack(){if(cuOpen)closeupClose(true)}
+backOn('cu',()=>closeupBack());
 /* Escape closes it; Tab stays inside it (ahead of the item sheet's and the colour sheet's own keys) */
 window.addEventListener('keydown',e=>{if(!cuOpen||(e.key!=='Escape'&&e.key!=='Tab'))return;e.preventDefault();e.stopImmediatePropagation();
   if(e.key==='Escape'){closeupClose();return}

@@ -185,10 +185,10 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await settle(p,500);dialogs=0;
     await p.click('#item-view .ivdel button');await p.waitForFunction(()=>!items.some(i=>i.id==='su1'));
     const gone=await p.evaluate(async()=>({sheet:document.querySelector('#item-view').classList.contains('on'),grid:!!document.querySelector('#gi-su1'),db:!!(await tx('readonly',s=>s.get('su1'))),tomb:!!((await metaGet('tombstones'))||{}).su1,
-      toast:document.querySelector('#toast').textContent,on:document.querySelector('#toast').classList.contains('on'),btn:(document.querySelector('#toast button')||{}).textContent}));
+      toast:document.querySelector('#undo-fab').getAttribute('aria-label'),on:document.querySelector('#undo-fab').classList.contains('on'),btn:document.querySelector('#undo-fab').textContent.trim(),dur:getComputedStyle(document.querySelector('#undo-fab .ufc')).animationDuration}));
     ok(dialogs===0&&!gone.sheet&&!gone.grid&&!gone.db&&gone.tomb,'Delete removes the item at once, without asking, and closes the sheet');
-    ok(gone.on&&/^Deleted Wedding suit/.test(gone.toast)&&gone.btn==='Undo'&&await p.evaluate(()=>WARD_UNDO_MS===8000),`a toast says "Deleted Wedding suit" with Undo, for 8 seconds (${gone.toast})`);
-    await p.click('#toast button');await p.waitForFunction(()=>items.some(i=>i.id==='su1'));
+    ok(gone.on&&/^Undo: Deleted Wedding suit/.test(gone.toast)&&gone.btn==='Undo'&&gone.dur==='8s'&&await p.evaluate(()=>WARD_UNDO_MS===8000),`the round Undo above the + comes up for 8 seconds, "Deleted Wedding suit" in its label (${gone.toast})`);
+    await p.waitForTimeout(300);await p.click('#undo-fab');await p.waitForFunction(()=>items.some(i=>i.id==='su1'));
     const back=await p.evaluate(async()=>{const strip=o=>{const c={...o};delete c.updated;return JSON.stringify(c)},it=items.find(i=>i.id==='su1'),db=await tx('readonly',s=>s.get('su1')),tomb=(await metaGet('tombstones')).su1;
       return {same:strip(it)===strip(JSON.parse(window.__before)),db:strip(db)===strip(JSON.parse(window.__before)),newer:it.updated>tomb,order:items.map(i=>i.id).join()===window.__order,grid:!!document.querySelector('#gi-su1'),
         paused:document.querySelector('#gi-su1').classList.contains('paused'),days:JSON.stringify([dayRecs['2026-11-3'],dayRecs['2026-11-17']])===window.__days,past:(planMonth(2026,10)['2026-11-3'].top||{}).id}});
@@ -198,7 +198,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     // a day changed while it was gone is put back too
     await p.evaluate(()=>{openItem('su1')});await settle(p,400);await p.click('#item-view .ivdel button');await p.waitForFunction(()=>!items.some(i=>i.id==='su1'));
     await p.evaluate(async()=>{const r={...dayRecs['2026-11-17']};delete r.force;await saveDay(r,true)});
-    await p.click('#toast button');await p.waitForFunction(()=>items.some(i=>i.id==='su1'));
+    await p.waitForTimeout(300);await p.click('#undo-fab');await p.waitForFunction(()=>items.some(i=>i.id==='su1'));
     await p.waitForFunction(()=>dayRecs['2026-11-17'].force&&dayRecs['2026-11-17'].force.top==='su1');
     ok(true,'a day re-planned without it meanwhile gets it back on Undo');
     ok(errs.length===0,'no page errors'+(errs.length?': '+errs.join('; '):''));
@@ -263,13 +263,13 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await C.c.close();
     // delete then Undo: the item survives a sync, on both devices
     const del=async pg=>{await pg.evaluate(()=>{show('wardrobe');openItem('s-tie')});await pg.click('#item-view .ivdel button');await pg.waitForFunction(()=>!items.some(i=>i.id==='s-tie'))};
-    await del(A.p);await A.p.click('#toast button');await A.p.waitForFunction(()=>items.some(i=>i.id==='s-tie'));
+    await del(A.p);await A.p.waitForTimeout(300);await A.p.click('#undo-fab.on,#toast button');await A.p.waitForFunction(()=>items.some(i=>i.id==='s-tie'));
     await sync(A.p);await sync(B.p);await sync(A.p);
     ok((await fields(A.p,'s-tie'))==='Club tie|Marlowe|grenadine|A gift, 2024'&&(await fields(B.p,'s-tie'))==='Club tie|Marlowe|grenadine|A gift, 2024','deleted and undone before a sync: the item is on both devices afterwards');
     // the deletion had already reached the other device when it was undone
     await del(A.p);await sync(A.p);await sync(B.p);
     ok((await fields(B.p,'s-tie'))===null,'a deletion reaches the other device');
-    await A.p.click('#toast button');await A.p.waitForFunction(()=>items.some(i=>i.id==='s-tie'));await sync(A.p);await sync(B.p);await sync(A.p);
+    await A.p.waitForTimeout(300);await A.p.click('#undo-fab.on,#toast button');await A.p.waitForFunction(()=>items.some(i=>i.id==='s-tie'));await sync(A.p);await sync(B.p);await sync(A.p);
     const both=[await fields(A.p,'s-tie'),await fields(B.p,'s-tie')];
     ok(both[0]==='Club tie|Marlowe|grenadine|A gift, 2024'&&both[1]===both[0],'Undo after the deletion had synced: the item comes back on the other device too, and stays');
     ok(await B.p.evaluate(()=>dayRecs['2026-11-3'].ids.tie==='s-tie'&&items.some(i=>i.id==='s-tie')),'and the day it was worn on still refers to it there');

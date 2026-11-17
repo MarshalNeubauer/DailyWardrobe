@@ -73,7 +73,7 @@ module.exports=async({ok,chromium,url})=>{
     }
 
     // W2-19-06: a faded toast is gone for the keyboard and VoiceOver
-    const tt=await p.evaluate(async()=>{toast('Saved: test.',300,{label:'Undo',fn:()=>{window.__undone=1}});await new Promise(r=>setTimeout(r,TOAST_ACT_MS+800));const t=document.querySelector('#toast');
+    const tt=await p.evaluate(async()=>{show('today');toast('Saved: test.',300,{label:'Undo',fn:()=>{window.__undone=1}});await new Promise(r=>setTimeout(r,TOAST_ACT_MS+800));const t=document.querySelector('#toast');
       return {text:t.textContent,btn:!!t.querySelector('button'),vis:getComputedStyle(t).visibility}});
     ok(tt.text===''&&!tt.btn&&tt.vis==='hidden',`a toast that has faded holds no words or Undo, and is hidden (${JSON.stringify(tt)})`);
     const tk=await p.evaluate(async()=>{toast('Saved: kept.',300,{label:'Undo',fn:()=>{}});document.querySelector('#toast button').focus();await new Promise(r=>setTimeout(r,TOAST_ACT_MS+800));

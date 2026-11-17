@@ -59,12 +59,16 @@ function setupOpen(again,resume){
   setup={at:0,first:!again,vestSet:!!(resume&&resume.vestSet),q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null,before:again?(resume&&resume.before)||setupBefore():null};SETUP_STEPS=setupStepsNow();
   if(resume){const i=SETUP_STEPS.indexOf(resume.k);if(i>0)setup.at=i}
   setupInert(true);setupEl().classList.add('on');setupDraw();setupSave();setupEl().focus({preventScroll:true});
-  appPush('setup');   // the phone's Back steps back through the setup instead of leaving the app (start.js)
+  backPush('setup');   // the phone's Back steps back through the setup instead of leaving the app (setupBack)
 }
+/* the phone's Back is its ‹ Back; on the first step a first setup stays open, "Run setup again" closes as its Cancel (the Back audit,
+   2026-11-15: Back did nothing there) */
+function setupBack(){if(!setupShown())return;if(setup.at>0){setupGo(-1);backPush('setup')}else if(!setup.first)setupCancel();else backPush('setup')}
+backOn('setup',()=>setupBack());
 function setupClose(){
   if(setup.watch)clearInterval(setup.watch);setup.watch=null;setup.at=-1;setupKeep(null);
   const e=$('#setup');if(e){e.classList.remove('on');e.innerHTML=''}setupInert(false);
-  appDrop('setup');
+  backDrop('setup');
 }
 /* a double tap on Skip or "Add my first item": the second tap landed on what the setup uncovered (Settings' ⚙ under Skip, the tour's Next
    under "Add my first item"; audit 2026-11-15). A tap at the same spot within SETUP_TAP_MS of the one that closed the setup is dropped */
@@ -130,7 +134,7 @@ function setupGo(n,e){if(setupGoDouble(e))return;
   // the new step is said, and the keyboard stays on Next / Back (Back is gone on the first step: Next) (fix round 3, W2-19-01: focus fell to <body>, nothing said)
   if(had&&!setupEl().contains(document.activeElement)){const nb=$('#su-next');if(nb)nb.focus({preventScroll:true})}
   {const t=$('#su-title');announce(`Step ${at+1} of ${SETUP_STEPS.length}: ${t?t.textContent:''}`)}
-  appPush('setup')}   // (again after a tap: an entry made at start-up without one may be skipped by Back)
+  backPush('setup')}   // (again after a tap: an entry made at start-up without one may be skipped by Back)
 
 /* ---- the steps ---- */
 const setupSwitch=(k,on,title,sub)=>`<button type="button" class="su-sw" id="su-sw-${k}" role="switch" aria-checked="${on}" onclick="setupSetDress('${k}')"><span class="su-swt"><b>${title}</b><small>${sub}</small></span><i class="su-knob" aria-hidden="true"></i></button>`;

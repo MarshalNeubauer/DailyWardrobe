@@ -38,7 +38,7 @@ function acctOwnServer(url){let u;try{u=new URL(url)}catch{return false}
   return false}
 const INVITE_STRANGER='That invitation link points to a server this app doesn’t use, so it wasn’t opened and nothing was sent. Only open invitation links from the person who invited you.';
 const inviteLink=code=>{const b=acctBase();return location.origin+location.pathname+'#invite='+code+'&w='+encodeURIComponent(b?b.url:'')};
-function dropInviteHash(){try{if(/(^#|&)invite=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search)}catch{}appWanted()}   // (a Back entry that waited for the address to lose the invitation: start.js)
+function dropInviteHash(){try{if(/(^#|&)invite=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search)}catch{}backWanted()}   // (a Back entry that waited for the address to lose the invitation: back.js)
 const hasInviteHash=()=>/(^#|&)invite=/.test(location.hash);
 /* why the last connectFromLink didn't connect, for the place that asked (Settings' and the setup's paste fields say it in a line of
    their own): 'bad' a link that can't be read (cut short, no server part), 'refused' the server said no (acctWhyMsg: its sentence),

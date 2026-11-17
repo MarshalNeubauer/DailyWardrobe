@@ -54,7 +54,7 @@ function scheduleWear(days){const j=wearsJacket(),t=wearsTie();
   if(!j)return typeof dressSummary==='function'?dressSummary():'no jackets';const bl=settings.blazerDays.filter(d=>settings.workdays.includes(d));
   return [bl.length?'blazers '+days(bl):'suits every day',t?'vest '+({auto:'on cooler suit days',always:'every suit day',never:'never'})[settings.vestMode||'auto']:'no ties'].join(' · ')}
 function openSettings(section){
-  const already=settingsOpen(),subUnder=!already&&appHist&&appKind==='sub'&&SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden});
+  const already=settingsOpen(),subUnder=!already&&backKind()==='sub'&&subShown();
   const cat=section==='wx'?'weather':section;
   for(const k of SET_CATS)setCatOpen(k,k===cat,true);
   if(typeof advClose==='function')advClose();   // the Advanced folds start closed every time
@@ -67,10 +67,10 @@ function openSettings(section){
   try{settingsSummaries()}catch(e){console.warn('Settings summaries not drawn',e)}
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
-  // the phone's Back closes it (appPush, by show()); over Add, the Packing list or Laundry (the gear, Add's "Connect") Settings borrows
-  // that page's entry and hands it back on closing, so the page's Back still works after (CR-7-04: Settings took the entry, and the next
-  // Back left the app)
-  setLock(true);if(!already)setOver=subUnder?'sub':'';if(setOver&&appHist)appKind='set';else appPush('set');
+  // the phone's Back closes it (back.js, kind 'set'); over Add or the Packing list (the gear, Add's "Connect") Settings takes
+  // over that page's entry and hands it back on closing, so the page's Back still works after (CR-7-04: Settings took the entry, and the
+  // next Back left the app)
+  setLock(true);if(!already)setOver=subUnder?'sub':'';backPush('set');
   if(typeof layerOpen==='function')layerOpen($('#settings-modal'));   // the page behind is inert, the focus moves in (ui.js)
 }
 /* while Settings is up the page behind it can't scroll (html.set-lock): on an iPhone a scroll in Settings near its top or bottom was handed
@@ -92,7 +92,7 @@ function closeSettings(){const was=settingsOpen();
   // closed by Done or anything else: its Back entry goes; one borrowed from the page under it goes back to that page (taken by Back, the
   // page gets a new one: CR-7-04)
   const over=setOver;setOver='';
-  if(was&&over){if(appHist&&appKind==='set')appKind=over;else if(!appHist&&SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden}))appPush(over)}else appDrop('set');
+  if(was&&over){const k=backKind();if(k==='set'||!k&&subShown())backPush(over)}else backDrop('set');
   setLock(false);
   if(was&&typeof layerClose==='function')layerClose($('#settings-modal'));
   if(todayStale){todayStale=false;keepHome();renderToday()}   // (Today on the home day follows a workday taken away)
@@ -364,7 +364,18 @@ async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').tri
 /* header ↻: sync with the worker (if set up), reload everything from storage, refresh the forecast and redraw */
 let toastTimer=null;
 const TOAST_ACT_MS=8000;   // a toast with Undo stays at least this long (audit 2026-11-14: gone after 5 s, and Delete has no question)
-function toast(t,ms=2500,act){const e=$('#toast');if(!e)return;e.textContent=t;e.classList.toggle('act',!!act);if(act)ms=Math.max(ms,TOAST_ACT_MS);
+/* on the Wardrobe, where the + is, an Undo is a round button above it, a glowing ring running down its seconds, instead of the toast
+   (2026-11-17, the owner's pick "A with the glowing countdown", no line saying what it undoes): its words are read out (announce) and
+   are its label ("Undo: Deleted …"); another Undo replaces it; it goes with the toast's rules (toastDrop, the keyboard on it keeps it up) */
+let undoTimer=null;
+const undoHere=()=>{const w=$('#wardrobe'),m=document.querySelector('main');return !!w&&!w.hidden&&!(m&&m.inert)&&!(typeof editing!=='undefined'&&editing)&&!!$('#undo-fab')};   // (not while the item sheet is open: an Undo made there is the toast over it)
+function undoFab(t,ms,act){const b=$('#undo-fab'),e=$('#toast');if(e&&e.classList.contains('act')){clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent=''}
+  if(typeof announce==='function')announce(t+'. Undo is above the add button.');
+  b.setAttribute('aria-label','Undo: '+t);b.tabIndex=0;b.style.setProperty('--ud',ms+'ms');b.classList.remove('on');void b.offsetWidth;b.classList.add('on');
+  b.onclick=()=>{undoOff(true);act.fn()};clearTimeout(undoTimer);undoTimer=setTimeout(function off(){if(b.contains(document.activeElement)){undoTimer=setTimeout(off,1500);return}undoOff()},ms)}
+function undoOff(now){const b=$('#undo-fab');if(!b)return;clearTimeout(undoTimer);if(document.activeElement===b)b.blur();b.classList.remove('on');b.tabIndex=-1;b.onclick=null}
+function toast(t,ms=2500,act){if(act&&act.label==='Undo'&&undoHere())return undoFab(t,Math.max(ms,TOAST_ACT_MS),act);
+  const e=$('#toast');if(!e)return;e.textContent=t;e.classList.toggle('act',!!act);if(act)ms=Math.max(ms,TOAST_ACT_MS);
   if(act){const b=document.createElement('button');b.type='button';b.textContent=act.label;b.onclick=()=>{clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent='';act.fn()};e.append(' ',b)}
   e.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastOff(e),ms)}
 /* a toast gone is gone for everyone (fix round 3, W2-19-06: faded to opacity 0, its words and its Undo stayed in the Tab order and
@@ -373,7 +384,7 @@ function toast(t,ms=2500,act){const e=$('#toast');if(!e)return;e.textContent=t;e
 function toastOff(e){if(e.contains(document.activeElement)&&e.querySelector('button')){toastTimer=setTimeout(()=>toastOff(e),1500);return}
   e.classList.remove('on','act');setTimeout(()=>{if(!e.classList.contains('on'))e.textContent=''},250)}
 /* a toast with a button (Undo) taken away at once (start.js show(): leaving Add takes its "Saved … Undo" with it) */
-function toastDrop(){const e=$('#toast');if(!e||!e.classList.contains('act'))return;clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent=''}
+function toastDrop(){undoOff();const e=$('#toast');if(!e||!e.classList.contains('act'))return;clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent=''}
 /* the location's usual weather by month, from Open-Meteo's archive (free, no key): the last two full years' daily highs,
    lows and rain, averaged per month. Kept for four months per location; days beyond the 16-day forecast are planned from it. */
 async function loadClimate(){

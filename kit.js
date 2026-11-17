@@ -17,14 +17,15 @@ const tourSeen=()=>{try{return localStorage.getItem(KIT_TOUR)==='1'}catch{return
 function kitEl(){let e=$('#kitsheet');if(!e){e=document.createElement('div');e.id='kitsheet';e.setAttribute('role','dialog');e.setAttribute('aria-modal','true');e.setAttribute('aria-labelledby','kit-title');document.body.appendChild(e)}return e}
 function kitInert(on){for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;if(!on)layerInert()}
 /* the phone's Back closes the sheet (fix round 2, 2026-11-15: it left the app from the tour and the Home Screen sheet, and closed Add
-   under the import sheet): the sheet takes a history entry (start.js kind 'kit'), or borrows Add's (kitHist keeps whose it was) */
-function kitHist(){if(kit&&kit.hist===undefined)kit.hist=appBorrow('kit')}
+   under the import sheet): the sheet takes a history entry (back.js kind 'kit'), or borrows Add's (kitHist keeps whose it was) */
+function kitHist(){if(kit&&kit.hist===undefined)kit.hist=backBorrow('kit')}
+backOn('kit',()=>{if(kit)kitClose(true)});
 function kitOpen(cards,then){const prev=kit?kit.hist:undefined;kit={cards,at:0,then:then||null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitBs(false);kitDraw();kitEl().classList.add('on');kitInert(true);kitHist();
   const t=$('#kit-next');if(t)t.focus({preventScroll:true})}
 /* fromBack: the phone's Back did it (its entry is gone already) */
-function kitClose(fromBack){if(kitImpBusy){if(fromBack)appPush('kit');return}   // (the import is being written: a moment, then the sheet closes itself; Back keeps it, with its entry made again)
+function kitClose(fromBack){if(kitImpBusy){if(fromBack)backPush('kit');return}   // (the import is being written: a moment, then the sheet closes itself; Back keeps it, with its entry made again)
   const e=$('#kitsheet');if(e){const bs=e.classList.contains('kbs');e.classList.remove('on');if(bs)kitBsAway(e);else e.innerHTML=''}const k=kit;kit=null;kitInert(false);
-  if(k&&k.hist!==undefined){if(!fromBack)appGiveBack('kit',k.hist);else if(k.hist)appPush(k.hist)}   // the entry goes, or back to Add; after Back, Add gets a new one
+  if(k&&k.hist!==undefined)backReturn('kit',k.hist,fromBack);   // the entry goes, or back to Add; after Back, Add gets a new one
   if(k&&k.cards===TOUR_CARDS){try{localStorage.setItem(KIT_TOUR,'1')}catch{}}
   if(k&&k.then)k.then();else if(k&&k.from&&k.from.isConnected)try{k.from.focus({preventScroll:true})}catch{}}
 /* a tap on Next or Back within KIT_TAP_MS of the last one is the second tap of a double tap (fix round 3, W2-14-06: a double tap skipped
