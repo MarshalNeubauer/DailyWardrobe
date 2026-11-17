@@ -66,6 +66,13 @@ function closeColPick(){const c=colPick;colPick=null;const s=$('#col-sheet'),b=$
   layerInert();if(!c)return;const a=document.activeElement;if(a&&a!==document.body&&!(s&&s.contains(a)))return;
   const f=c.from&&c.from.isConnected?c.from:document.querySelector(`#item-view.on .colbtn[data-k="${c.k}"],#nps-sheet.on .colbtn[data-k="${c.k}"],#add .colbtn[data-k="${c.k}"]`)||null;
   if(f&&!f.closest('[inert]'))try{f.focus({preventScroll:true})}catch{}}
+/* the phone's Back with the color or pattern sheet up closes the sheet only (2026-11-15, the re-audit: Back closed the Add page or the item
+   sheet underneath and left the sheet up, and "Use" then changed an item no longer on screen). The sheet has no entry of its own: Back took
+   the page's, so it is asked first (back.js backOver), closes (‹ first on a "New" sheet opened from the list, as its own ‹ does) and back.js
+   puts that entry back, so the next Back closes the page. A sheet that borrowed the entry over it (a question, the close-up chooser, the
+   reading sheet) takes its own Back. */
+backOver(top=>{if(!colPick||top==='ask'||top==='cu'||top==='rd')return false;
+  if(colPick.newc&&colPick.newc.from==='pick')colNewBack();else closeColPick();return true});
 /* ---- swiping a sheet down closes it (2026-11-15, the owner: "When I click on color or texture, the sheet comes up, but I can't swipe it
    down"): the color / pattern sheet with its New color / New pattern states, and the reading sheet, by add.js sheetSwipe (the gesture of
    every sheet): the sheet scrolls itself, its sticky top (grabber, title, the photos) is the handle; let go past the line it closes as its
@@ -444,7 +451,7 @@ ${res}
 ${details}
 <div class="cpbar">${nc.err?`<p class="formerr cnbarerr" id="cn-error" role="alert">${esc(nc.err)}</p>`:''}${bar}</div>`;   /* the error sits in the sticky bar, over its button (W2-16-05: above the bar it was cut through by the bar's top edge) */
   if(keep)el.scrollTop=y}
-/* (the phone's Back with this sheet up closes only the sheet: colBackFirst in itemsheet.js, registered before the pages' own listeners) */
+/* (the phone's Back with this sheet up closes only the sheet: its backOver, near closeColPick, asked before the pages' own Back) */
 window.addEventListener('keydown',e=>{if(!colPick)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(colPick.newc)colNewBack();else closeColPick()}
   else if(e.key==='ArrowLeft'||e.key==='ArrowRight')e.stopImmediatePropagation()},true);
 
@@ -549,14 +556,15 @@ function rdEls(){let b=document.querySelector('#rd-backdrop'),s=document.querySe
     cpSwipe(s,'.rdtop','#rd-backdrop',()=>!!rd&&s.classList.contains('on'),()=>rdClose())}   // swiped down it closes as × does
   return {b,s}}
 /* the phone's Back closes it as × does (the Back audit, 2026-11-15: Back closed the item sheet or Add under it and left the sheet up):
-   it borrows the Back entry of the page under it, or makes its own (start.js appBorrow 'rd', kept in rdHist while it is up; a reading
+   it borrows the Back entry of the page under it, or makes its own (back.js backBorrow 'rd', kept in rdHist while it is up; a reading
    run again in the open sheet keeps it); × gives it back, and closed by Back the page under it gets its entry again (as the chooser) */
 let rdHist;
+backOn('rd',()=>rdBack());
 function rdOpen(){const {b,s}=rdEls();b.classList.add('on');s.classList.add('on');s.scrollTop=0;layerOpen(s);
-  if(rdHist===undefined)rdHist=appBorrow('rd')}
+  if(rdHist===undefined)rdHist=backBorrow('rd')}
 function rdClose(fromBack){const me=rd;rd=null;if(me&&me.state==='busy'&&me.ac)try{me.ac.abort()}catch{}
   const {b,s}=rdEls();b.classList.remove('on');s.classList.remove('on');layerClose(s);
-  const h=rdHist;rdHist=undefined;if(h!==undefined){if(!fromBack)appGiveBack('rd',h);else if(h)appPush(h)}
+  const h=rdHist;rdHist=undefined;if(h!==undefined)backReturn('rd',h,fromBack);
   if(me)rdRefresh(me.src,me.id)}
 function rdBack(){if(rdHist!==undefined||rd)rdClose(true)}
 /* the page under it, redrawn (the done card, the cost line) */

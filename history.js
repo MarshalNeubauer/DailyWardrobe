@@ -247,7 +247,7 @@ function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;
     ${!o.frozen||none?`<div class="btns">${o.frozen?none:`<button type="button" id="pick-next" onclick="pickNext()">Suggest another <span aria-hidden="true">↻</span></button>`}</div>`:''}
     <div class="pick-grid">${scored.map(card).join('')}</div>${handGroup(slot,o,hand,cur)}`;
   picker={slot};$('#pick-sheet').classList.add('on');$('#pick-backdrop').classList.add('on');$('#pick-sheet').scrollTop=0;
-  if(typeof layerOpen==='function')layerOpen($('#pick-sheet'));if(typeof appPush==='function')appPush('pick')}   // the phone's Back closes it (start.js)
+  if(typeof layerOpen==='function')layerOpen($('#pick-sheet'));backPush('pick')}   // the phone's Back closes it (back.js)
 /* the picker's "Casual · pick by hand" group (handPool): the casual pieces for the slot, under the usual ones, not scored; a casual top is
    worn instead of the shirt and the tie comes off that day (core.js needsTie, planner.js outfit) */
 const HAND_NOTE={shirt:'Worn instead of the shirt: no tie that day.',top:'Worn instead of the jacket.',bot:'Worn instead of the pants.'};
@@ -256,8 +256,9 @@ function handGroup(slot,o,hand,cur){if(!hand.length)return '';
     return `<button class="pick-it hand-it${on?' cur':''}" onclick="pickItem('${slot}','${jsq(i.id)}')" aria-label="${esc(itemTitle(i)||nm(i))}, ${esc(sub.toLowerCase())}: ${on?'wearing, ':''}picked by hand"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span><small class="mut pick-sub">${esc(sub)}</small><small class="fit hand">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}By hand</small></button>`};
   return `<div class="pick-hand" role="group" aria-labelledby="pick-hand-h"><b id="pick-hand-h" class="pick-hand-h">Casual · pick by hand</b><p class="mut"><small>${HAND_NOTE[slot]||''} Never planned or suggested.</small></p><div class="pick-grid">${hand.map(card).join('')}</div></div>`}
 function closePicker(){const was=!!picker;picker=null;const s=$('#pick-sheet'),b=$('#pick-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');
-  if(was&&typeof layerClose==='function')layerClose(s);if(was&&typeof appDrop==='function')appDrop('pick');
+  if(was&&typeof layerClose==='function')layerClose(s);if(was)backDrop('pick');
   if(typeof syncLaterRun==='function')syncLaterRun('today')}   // a sync's redraw that waited for the picker (sync.js)
+backOn('pick',()=>closePicker());
 function pickNext(){const s=picker&&picker.slot;closePicker();if(s)swapSlot(s)}
 async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;closePicker();
   const it=id?items.find(i=>i.id===id)||null:null;

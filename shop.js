@@ -49,10 +49,11 @@ function openShop(){
   shopOpen=true;shopForm=null;shopMsg='';shopSwipe();renderShop();
   $('#shop-sheet').classList.add('on');$('#shop-backdrop').classList.add('on');$('#shop-sheet').scrollTop=0;
   layerOpen($('#shop-sheet'));   // the page behind is inert, the focus moves in (ui.js)
-  appPush('shop');   // the phone's Back closes it (start.js)
+  backPush('shop');   // the phone's Back closes it (back.js)
   if(!shopBusy&&!shopFresh())analyzeWardrobe();
 }
-function closeShop(){if(!shopOpen)return;shopOpen=false;const s=$('#shop-sheet'),b=$('#shop-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');layerClose(s);appDrop('shop')}
+function closeShop(){if(!shopOpen)return;shopOpen=false;const s=$('#shop-sheet'),b=$('#shop-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');layerClose(s);backDrop('shop')}
+backOn('shop',()=>closeShop());
 document.addEventListener('keydown',e=>{if(shopOpen&&e.key==='Escape')closeShop()});
 /* swiping the sheet down closes it, as on the Wardrobe's item sheet: the header (with the grabber) is a handle at any time, the
    content only while it is scrolled to the top (further down, a downward swipe scrolls it back up, as it must). The choice is
