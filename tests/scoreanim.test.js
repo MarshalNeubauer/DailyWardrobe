@@ -16,20 +16,20 @@ module.exports=async({ok,chromium,url,settle})=>{
     // sample the height while it opens: it grows over several frames
     const s=await p.evaluate(async()=>{const vis=b=>{const e=b.querySelector('.fedge>i');return Math.round(e?e.getBoundingClientRect().top+parseFloat(e.style.getPropertyValue('--fr'))-b.getBoundingClientRect().top+1:b.getBoundingClientRect().height)};toggleScore();const box=document.querySelector('#sbox'),hs=[];const t0=performance.now();
       while(performance.now()-t0<700){hs.push(vis(box));await new Promise(r=>requestAnimationFrame(r))}
-      const li=[...box.querySelectorAll('li')],delays=li.map(l=>parseFloat(getComputedStyle(l).animationDelay)),bars=li.map(l=>getComputedStyle(l.querySelector('.sbar i')).animationName);
+      const li=[...box.querySelectorAll('.sdl')],delays=li.map(l=>parseFloat(getComputedStyle(l).animationDelay)),bars=li.map(l=>getComputedStyle(l.querySelector('.sdb i')).animationName);
       return {hs,distinct:new Set(hs).size,final:hs[hs.length-1],first:hs[0],delays,bars,expanded:box.querySelector('.month-link').getAttribute('aria-expanded'),chev:getComputedStyle(box.querySelector('.chev')).transform}});
     ok(s.distinct>=6&&s.final>s.first+80,`opening grows smoothly over many frames (${s.distinct} heights, ${s.first} → ${s.final}px)`);
     ok(s.delays.length>3&&s.delays.every((d,i)=>!i||d>s.delays[i-1]),`the checks slide in one after another (${s.delays.map(d=>d.toFixed(2)).join(', ')}s)`);
     ok(s.bars.every(b=>b==='barIn')&&s.expanded==='true'&&s.chev!=='none','each check has a bar that fills; the chevron turns; the button says it is open');
-    await settle(p,1000);const bars=await p.evaluate(()=>{const li=[...document.querySelectorAll('#sbox li')],r=rateOutfit(planFor()[key(sel)]);
-      return li.map((l,i)=>{const w=l.querySelector('.sbar').getBoundingClientRect().width,f=l.querySelector('.sbar i').getBoundingClientRect().width,c=r.checks[i];return Math.abs(f/w-Math.max(0,c.pts)/c.max)<.02}).every(Boolean)});
-    ok(bars,'each bar ends at the share of the points that check scored');
+    await settle(p,1000);const bars=await p.evaluate(()=>{const li=[...document.querySelectorAll('#sbox .sdl')],v=[...document.querySelectorAll('#sbox .sdl .sdh b')].map(b=>+b.textContent);
+      return li.length>=5&&li.map((l,i)=>{const w=l.querySelector('.sdb').getBoundingClientRect().width,f=l.querySelector('.sdb i').getBoundingClientRect().width;return Math.abs(f/w-v[i]/100)<.02}).every(Boolean)});
+    ok(bars,'each bar ends at its dial\'s value');
     // a re-render keeps it open without replaying
-    const keep=await p.evaluate(()=>{renderToday();const b=document.querySelector('#sbox');return {open:b.classList.contains('open'),instant:b.classList.contains('instant'),anim:getComputedStyle(b.querySelector('li')).animationName}});
+    const keep=await p.evaluate(()=>{renderToday();const b=document.querySelector('#sbox');return {open:b.classList.contains('open'),instant:b.classList.contains('instant'),anim:getComputedStyle(b.querySelector('.sdl')).animationName}});
     ok(keep.open&&keep.instant&&keep.anim==='none','it stays open across a re-render, without replaying the animation');
     // folding: shrinks over several frames back to the card size
     const f=await p.evaluate(async()=>{const vis=b=>{const e=b.querySelector('.fedge>i');return Math.round(e?e.getBoundingClientRect().top+parseFloat(e.style.getPropertyValue('--fr'))-b.getBoundingClientRect().top+1:b.getBoundingClientRect().height)};toggleScore();const box=document.querySelector('#sbox'),hs=[];const t0=performance.now();
-      const li=[...box.querySelectorAll('li')],lift={name:getComputedStyle(li[0]).animationName,d0:parseFloat(getComputedStyle(li[0]).animationDelay),dn:parseFloat(getComputedStyle(li[li.length-1]).animationDelay)};
+      const li=[...box.querySelectorAll('#spanel .sli')],lift={name:getComputedStyle(li[0]).animationName,d0:parseFloat(getComputedStyle(li[0]).animationDelay),dn:parseFloat(getComputedStyle(li[li.length-1]).animationDelay)};
       while(performance.now()-t0<1100){hs.push(vis(box));await new Promise(r=>requestAnimationFrame(r))}return {lift,distinct:new Set(hs).size,last:hs[hs.length-1],ib:Math.round(document.querySelector('#ibox').getBoundingClientRect().height)}});
     ok(f.lift.name==='mcLift'&&f.lift.dn===0&&f.lift.d0>0.1,`folding plays the checks backwards: the last lifts out first, the first ${Math.round(f.lift.d0*1000)} ms later`);
     ok(f.distinct>=6&&f.last===f.ib,`folding shrinks smoothly back to the card size (${f.distinct} heights, ends at ${f.last}px)`);

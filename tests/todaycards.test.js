@@ -15,8 +15,8 @@ module.exports=async({ok,chromium,url})=>{
         show('today');for(let n=0;n<40;n++){const o=planFor()[key(sel)];if(!renders[comboKey(o)]){renderTried.add(comboKey(o));renders[comboKey(o)]={sig:'x',img,model:'x',t:1};renderToday()}
           await new Promise(r=>setTimeout(r,100));if(document.querySelector('.fig.photo img')&&n>=3)break}
         const R=s=>document.querySelector(s).getBoundingClientRect(),seq=['#mannequin-container','.below','.score','#ibox','#mbox'].map(R);
-        const cards=['.score','#ibox','#mbox'].map(R),text=[...document.querySelectorAll('.score .lbl,#ibox .mltxt,#mbox .mltxt')].map(e=>Math.round(e.getBoundingClientRect().left));
-        const slots=['.score .num','#ibox .pstrip','#mbox .mlstrip'].map(s=>Math.round(R(s).width)),tile=R('.below .tile');
+        const cards=['.score','#ibox','#mbox'].map(R),text=[...document.querySelectorAll('#ibox .mltxt,#mbox .mltxt')].map(e=>Math.round(e.getBoundingClientRect().left));
+        const slots=['#ibox .pstrip','#mbox .mlstrip'].map(s=>Math.round(R(s).width)),tile=R('.below .tile');
         return {gaps:seq.slice(1).map((b,i)=>Math.round(b.top-seq[i].bottom)),hs:cards.map(c=>Math.round(c.height)),ws:cards.map(c=>Math.round(c.width)),text,slots,tileH:tile.height,tileW:tile.width}});
       ok(new Set(r.hs).size===1&&new Set(r.ws).size===1&&r.hs[0]<=80,`${name}: score, pieces and month cards are the same size (${r.hs.join('/')}px tall)`);
       ok(new Set(r.text).size===1&&new Set(r.slots).size===1,`${name}: their pictures share one width and their text starts in one column (${r.slots}; ${r.text})`);

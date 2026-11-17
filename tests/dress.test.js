@@ -87,13 +87,13 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
 
     // ---- 4. Today, the drawing and the photo ----
     const today=async(dress,d)=>p.evaluate(`(async()=>{(${PLAN_SIG})(${WARD},'full');settings.dress=${JSON.stringify(dress)};if(!settings.dress)delete settings.dress;cache={};sel=new Date(2026,10,${d});view={y:2026,m:10};listOpen=true;scoreOpen=true;show('today');
-      const o=planFor()[key(sel)],fig=document.querySelector('#mannequin-container'),a=adviceFor(o);monthOpen=false;toggleMonth();
+      const o=planFor()[key(sel)],fig=document.querySelector('#mannequin-container'),a=rankLooks(rankPools(o),o);monthOpen=false;toggleMonth();
       const cell=[...document.querySelectorAll('#mpanel .mc')].find(x=>x.getAttribute('aria-label')&&new RegExp('November ${d}\\\\b').test(x.getAttribute('aria-label')));
       const r={rows:[...document.querySelectorAll('#ibox .row > .mut:first-child')].map(e=>e.textContent).join(),none:[...document.querySelectorAll('#ibox .none')].map(e=>e.textContent).join(),sum:document.querySelector('#ibox .mltxt small').textContent,
         open:!!fig.querySelector('.fig-open'),blade:/href="#[^"]*bladeP"/.test(fig.innerHTML),clip:!!fig.querySelector('.fig-clip'),lapels:/href="#[^"]*lapL"/.test(fig.innerHTML),label:fig.querySelector('svg').getAttribute('aria-label'),
         ids:['suitB','suitL','suitR','shirt','tie'].every(x=>!!fig.querySelector('pattern[id$="'+x+'"]')),use:/<clipPath[^>]*>\\s*<use/.test(fig.innerHTML),
         chips:[...document.querySelectorAll('#ibox .pchip')].map(e=>e.title.split(':')[0]).join(),notes:[...document.querySelectorAll('#today .note, #today .notes li')].map(e=>e.textContent).join('|'),
-        text:document.querySelector('#today').textContent,fixes:a?a.fixes.map(f=>f.slot).join():'',stuck:a?a.stuck.join():'',cell:cell?cell.getAttribute('aria-label'):'',stackRects:cell?cell.querySelectorAll('svg.stack defs').length:-1,
+        text:document.querySelector('#today').textContent,fixes:a?a.swaps.map(f=>f.slot).join():'',stuck:[...document.querySelectorAll('#sbox .srl li')].map(e=>e.textContent).join(),cell:cell?cell.getAttribute('aria-label'):'',stackRects:cell?cell.querySelectorAll('svg.stack defs').length:-1,
         key:comboKey(o),sig:comboSig(o),nojacket:!o.top,keyTie:comboKey({...o,tie:items.find(i=>i.type==='tie')})};
       toggleMonth();return r})()`);
     const tJ=await today({jacket:true,tie:false},10),tD=await today(null,10),tN=await today({jacket:false,tie:false},10),tT=await today({jacket:false,tie:true},10);

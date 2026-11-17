@@ -14,7 +14,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     let cdp=null;try{cdp=await ctx.newCDPSession(p);await cdp.send('Performance.enable')}catch{cdp=null}   // the layout count is Chromium's (CDP); on WebKit (npm run test:webkit) it isn't counted
     const lay=async()=>cdp?(await cdp.send('Performance.getMetrics')).metrics.find(m=>m.name==='LayoutCount').value:0;
     const laid=n=>cdp?`${n} times`:'(not counted on WebKit)';
-    for(const [name,id,toggle,items] of [['score','#sbox','toggleScore','#spanel li'],['pieces list','#ibox','toggleList','#ipanel .list>*']]){
+    for(const [name,id,toggle,items] of [['score','#sbox','toggleScore','#spanel .sli'],['pieces list','#ibox','toggleList','#ipanel .list>*']]){
       await p.evaluate(()=>scrollTo(0,0));await settle(p,300);
       const l0=await lay();
       const u=await p.evaluate(([id,toggle])=>{window[toggle]();const b=$(id);return {clip:b.getAnimations({subtree:true}).some(a=>a.effect.target.closest('.fedge'))&&!b.getAnimations().some(a=>a.effect.getKeyframes()[0].clipPath),trans:getComputedStyle(b.querySelector('.mpanel')).transitionDuration}},[id,toggle]);
