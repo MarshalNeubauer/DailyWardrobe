@@ -671,7 +671,7 @@ function cleanState(st){
    strings (recFree). An entry of the wrong shape is left out. The stamps (updated, ks, kh, kse, khe) are never touched, and a setting
    that is already clean comes out as the same object (a clean copy is returned as it is): nothing is restamped. It runs in cleanState
    (Restore file, every sync pull, roll-back), in takeSettings (start-up, after a sync, the safety restore) and once over the stored copy
-   (app.js cleanStoredSettings); fetchHolidays' tidy keeps only dated, named holidays (settings.js) ---- */
+   (app.js cleanStoredSettings); fetchHolidays' tidy keeps only dated, named holidays (daysoff.js) ---- */
 const setStr=(v,max)=>typeof v==='string'?noBidi(v).replace(/[<>"`]/g,'').slice(0,max):undefined;
 const setFields=(v,f)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).filter(([k])=>k!=='__proto__'&&REC_WORD.test(k)).map(([k,x])=>[k,f[k]?f[k](x):recFree(x)]).filter(([,x])=>x!==undefined)):undefined;
 const setList=(v,f)=>Array.isArray(v)?v.map(f).filter(x=>x!==undefined):undefined;

@@ -29,5 +29,5 @@ function setArrives(i,v){const q=cardOf(i);if(!q)return;const a=arriveVal(v);
 async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.paused&&arriveN(i)!=null&&T>arriveN(i));
   const cb=done.filter(i=>i.away);   // back from the cleaner's or the laundry (care.js): cleaned on the day it was due back
   if(cb.length&&typeof careUnlock==='function')await careUnlock(null,Math.min(...cb.map(i=>+keyDate(i.away.since||isoKey(todayDate())))));   // the locks made while away let go (history.js)
-  for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
+  for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());if(typeof careLog==='function')careLog(it,it.cleaned);delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
   if(done.length){planDirty();toast(cb.length===done.length&&typeof careBackText==='function'?careBackText(cb):done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`,4000)}return done.length}
