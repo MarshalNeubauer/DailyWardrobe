@@ -208,7 +208,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       await q.evaluate(()=>{closeItem();show('today');openSettings('care')});await q.waitForFunction(()=>document.querySelector('#sc-care').classList.contains('open')&&document.querySelector('#care-lim-suit'));await settle(q,300);
       const st=await q.evaluate(()=>{const m=document.querySelector('#settings-modal'),mr=m.getBoundingClientRect();return {sel:[...document.querySelectorAll('#sc-care select')].map(s=>Math.round(s.getBoundingClientRect().height)),side:m.scrollWidth-m.clientWidth,
         out:[...document.querySelectorAll('#sc-care *, #care-btn')].filter(x=>{const r=x.getBoundingClientRect();return r.width&&(r.right>mr.right+.5||r.left<mr.left-.5)}).length,link:Math.round(document.querySelector('#care-btn').getBoundingClientRect().height)}});
-      ok(st.sel.length===8&&st.sel.every(x=>x===44)&&st.link>=44&&st.side<=0&&st.out===0,`Settings → Care at ${w}px, ${th}: 44px dropdowns, nothing past the edge`);
+      ok(st.sel.length===9&&st.sel.every(x=>x===44)&&st.link>=44&&st.side<=0&&st.out===0,`Settings → Care at ${w}px, ${th}: 44px dropdowns, nothing past the edge`);
       ok(e2.length===0,`no page errors at ${w}px, ${th} (${e2.join('; ')})`);
       await q.context().close()}
   }finally{await browser.close()}
