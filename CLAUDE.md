@@ -1084,6 +1084,14 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `today.js`
 
+- Today is five files (Round C, 2026-11-17: split by job, no behavior change), loaded in this order after history.js in index.html and listed in sw.js `ASSETS`; the code moved line for line, nothing renamed; the facts below and under "Today (today.js)" stay where they are
+- today-plan.js: the month's plan and its cache (`cache`, `planDirty`, `planMonth`, `planFor`, `planRuns`), the days before the wardrobe (`planStartDay`, `planTrim`) and the kept month (`PLAN_SNAP`, `planSig`, `snapOut`/`snapIn`, `planSnapUse`, `planSnapSoon`)
+- today.js: `recordRun` and `planSnapCheck`, `wxPreload`, the pieces list (`slots`, `toggleRow`, `setOff`, `restWarn`, `piecesBox`, `toggleList`), the figure and its tiles (`figureStage`, `pickPiece`, `swatchStack`, `wornBar`, `wornPill`, `wxFit`), a new day (`newDayCheck`, `keepHome`, `homeDay`, `goToday`), `renderToday`, `todaySay`, `foldAll`, `stepDay` and `planWith`
+- today-photofold.js: a piece's photo opening and shutting (`picOpen`, `picShut`, `picSnap`, `picOpenReady`)
+- today-picture.js: the cloth swatches' makers (`ovlPiece`, `ovlSuitPng`, `ovlHbShirt`, `ovlCuSuit`), the double-tap zoom (`zoom`, `toggleZoom`, `applyZoom`) and a swatch up close (`swOpen`, `swApply`, `swTap`, `swClose`), with their listeners on `#today`
+- today-gestures.js: swiping days (`fly`, `flyGo`, `todayBusy`, `todayFree`, `todayCovered`, the swipe listeners) and moving an outfit in the month (`outfitMove`, `moveRecs`, `showPlan`, the hold-and-drag listeners)
+- what writes another file's state (`sel`, `view`, `monthOpen`, `scoreOpen`, `dayRecs`, `weather`, `climate`) and the state its writers share (`openRow`, `belowOpen`, `listOpen`, `foldQuiet`, `recordRun`) stayed in today.js, so `tests/globals.test.js` needed no new allowance; the listeners are added in the same order as before
+
 #### Layout
 
 - tiles show a short 4:3 picture; no "Below the waist" heading
