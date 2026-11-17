@@ -41,6 +41,10 @@ const careTag=i=>i.away?(i.away.why==='laundry'?'In the laundry':'At the cleaner
 const careBadge=i=>careState(i).due?`<span class="caretag">Due for ${careWord(i.type)}</span>`:'';
 const careBackHint=b=>b?`It joins your outfits again from the day after ${fmtDay(b)}.`:'It stays out of your outfits until you tap "It\'s back". Add a date to have that happen by itself.';
 const careBackText=l=>l.length===1?`Your ${careNoun(l[0])} is back: it's in rotation again.`:`${l.length} pieces are back: they're in rotation again.`;
+/* the cleanings recorded (item.cleans, YYYY-MM-DD, oldest first, the last CARE_LOG): the days a piece came back from the cleaner or the
+   laundry or was marked cleaned; cost per wear counts them (cost.js) */
+const CARE_LOG=100;
+function careLog(it,d){if(!it||!/^\d{4}-\d{2}-\d{2}$/.test(d||''))return;it.cleans=[...new Set([...(Array.isArray(it.cleans)?it.cleans:[]),d])].sort().slice(-CARE_LOG)}
 /* the item sheet's Care card (after the Rotation card) */
 function careCard(i){if(!CARE_ABLE.includes(i.type)||i.order)return '';
   const id=i.id,a=i.away,first=careWashed(i.type)?['laundry','cleaner']:['cleaner','laundry'],lab={cleaner:'Send to the dry cleaner',laundry:'In the laundry'},s=careState(i);
@@ -70,14 +74,14 @@ async function careSetBack(id,v){const it=items.find(x=>x.id===id);if(!it||!it.a
 /* it is back: in rotation again, cleaned today */
 async function careBack(id){const it=items.find(x=>x.id===id);if(!it||!it.away)return;
   await careUnlock(null,+keyDate(it.away.since||isoKey(todayDate())));   // the locks made while it was away let go (history.js)
-  it.cleaned=isoKey(todayDate());delete it.away;delete it.paused;delete it.arrives;await put(it);planDirty();careRedraw();toast('Back in rotation, freshly cleaned.')}
+  it.cleaned=isoKey(todayDate());careLog(it,it.cleaned);delete it.away;delete it.paused;delete it.arrives;await put(it);planDirty();careRedraw();toast('Back in rotation, freshly cleaned.')}
 /* cleaned without being sent away: the count starts again */
-async function careCleaned(id){const it=items.find(x=>x.id===id);if(!it)return;const was=it.cleaned;
-  it.cleaned=isoKey(todayDate());await put(it);planDirty();careRedraw();
-  toast(`${careWashed(it.type)?'Washed':'Cleaned'} today.`,5000,{label:'Undo',fn:async()=>{const x=items.find(y=>y.id===id);if(!x)return;if(was)x.cleaned=was;else delete x.cleaned;await put(x);planDirty();careRedraw()}})}
+async function careCleaned(id){const it=items.find(x=>x.id===id);if(!it)return;const was=it.cleaned,log=it.cleans;
+  it.cleaned=isoKey(todayDate());careLog(it,it.cleaned);await put(it);planDirty();careRedraw();
+  toast(`${careWashed(it.type)?'Washed':'Cleaned'} today.`,5000,{label:'Undo',fn:async()=>{const x=items.find(y=>y.id===id);if(!x)return;if(was)x.cleaned=was;else delete x.cleaned;if(log)x.cleans=log;else delete x.cleans;await put(x);planDirty();careRedraw()}})}
 /* every worn piece of a type washed after every wear (the shirts) in one tap */
 async function careCleanedType(t){const day=isoKey(todayDate()),w=careCounts(),l=items.filter(i=>i.type===t&&w[i.id]&&!i.away);
-  for(const it of l){it.cleaned=day;await put(it)}planDirty();careRedraw();if(l.length)toast(`${l.length} ${l.length===1?careNoun(l[0]):(CARE_PLURAL[t]||'pieces').toLowerCase()} washed today.`)}
+  for(const it of l){it.cleaned=day;careLog(it,day);await put(it)}planDirty();careRedraw();if(l.length)toast(`${l.length} ${l.length===1?careNoun(l[0]):(CARE_PLURAL[t]||'pieces').toLowerCase()} washed today.`)}
 /* what the Care page lists */
 function careLists(){const st=items.filter(i=>!i.order).map(i=>({i,s:careState(i)}));
   const ord=(a,b)=>b.s.over-a.s.over||b.s.wears-a.s.wears||(a.i.id<b.i.id?-1:1);
@@ -197,7 +201,8 @@ function renderCareUI(){const el=$('#care-limits');
   const s=$('#cfg-laundry');if(s){const d=laundryDays(),opts=[...new Set([...LAUNDRY_OPTS,d])].sort((a,b)=>a-b);
     s.innerHTML=opts.map(n=>`<option value="${n}"${n===d?' selected':''}>${n?`${n} day${n===1?'':'s'}`:'Not at all'}</option>`).join('')}
   const sum=$('#sum-care');if(sum){const lim=t=>{const v=careLimit(t);return v?`${CARE_PLURAL[t].toLowerCase()} after ${v} wear${v===1?'':'s'}`:''},parts=[lim('suit'),lim('blazer')].filter(Boolean);
-    const d=laundryDays();sum.textContent=cap1((parts.length?parts.join(', '):'no wear limits')+` · ${d?'a worn shirt waits '+d+' day'+(d===1?'':'s'):'worn shirts aren’t held back'}`)}}
+    const d=laundryDays();sum.textContent=cap1((parts.length?parts.join(', '):'no wear limits')+` · ${d?'a worn shirt waits '+d+' day'+(d===1?'':'s'):'worn shirts aren’t held back'}`)}
+  if(typeof cpwSettingsUI==='function')cpwSettingsUI()}   // the currency and what a cleaning costs (cost.js)
 async function setCareLimit(t,v){if(!CARE_TYPES.includes(t))return;settings.care={...(settings.care||{}),[t]:Math.max(0,Math.min(CARE_MAX,Math.round(+v)||0))};await saveUserSettings();todayDirty();renderCareUI()}
 /* the shirt rule changes the plan: the days shown for the coming week are planned again with it */
 async function setLaundryDays(v){settings.laundryDays=Math.max(0,Math.min(14,Math.round(+v)||0));await clearLocks();await saveUserSettings();todayDirty();renderCareUI()}
