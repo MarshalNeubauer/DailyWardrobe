@@ -121,7 +121,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const plant=s=>{const o=JSON.parse(s);const add=crafted().filter(i=>i.id!=='ok1');o.data.items.push(...add);
       if(o.revs&&o.revs.i)for(const i of add)o.revs.i[i.id]=o.rev;return JSON.stringify(o)};
     const planted=plant(store.get('wardrobe:v1'));store.set('wardrobe:v1',planted);
-    const q=await ctx.newPage();const qerr=[];q.on('pageerror',e=>{if(!/sw\.js\?check=.*access control/.test(e.message))qerr.push(e.message)});   // (WebKit's update check of the service worker under the routed test origin: a harness artefact, on main's deltasync too)
+    const q=await ctx.newPage();const qerr=[];q.on('pageerror',e=>qerr.push(e.message));   // (WebKit's cut-off version check of sw.js is left out by tests/webkit.js)
     await q.goto(url);await q.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
     await q.addInitScript(()=>{window.__rx=n=>(window.__rxs=window.__rxs||[]).push(n)});
     await q.reload();await q.waitForFunction(()=>window.appReady);

@@ -89,6 +89,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.reload();await p.waitForFunction(()=>window.appReady);return {p,errs}};
   const A=await device(),B=await device();
   const sig=p=>p.evaluate(()=>items.map(i=>i.id+':'+i.primaryColor).sort().join(','));
+  // a device's background syncs finished first (tests/sync.test.js's quiet/hush): a sync that brought changes redraws Today, which
+  // records the day and locks the week and schedules another backup; one landing after the roll-back sent the damaged copy's settings
+  // up again (the flaky "roll back restores …" and "the other device follows …")
+  const quiet=p=>p.evaluate(async()=>{let last='',same=0;const end=Date.now()+6000;
+    while(Date.now()<end){await recordRun;const s=stateSig(await localState());same=!syncing&&s===last?same+1:0;last=s;if(same>=3)return true;await new Promise(r=>setTimeout(r,120))}return false});
+  const hush=async(...ps)=>{for(const p of ps){await quiet(p);await p.evaluate(()=>clearTimeout(syncTimer))}};
+  const why=async()=>` [A ${await sig(A.p)}; good ${good}; A's workdays ${JSON.stringify(await A.p.evaluate(()=>settings.workdays))}; B ${await sig(B.p)}]`;
   await A.p.evaluate(async()=>{for(const [id,c] of [['t1','navy'],['t2','burgundy'],['t3','green']]){const it={id,type:'tie',primaryColor:c,pattern:'solid',added:Date.now()};await put(it);items.push(it)}
     const s={...settings,workdays:[1,2,3,4,5],updated:Date.now()};settings=s;await metaPut('settings',s);await syncNow()});
   await B.p.evaluate(()=>syncNow());
@@ -105,11 +112,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await A.p.evaluate(()=>loadSnapshots());
   const opts=await A.p.evaluate(()=>[...document.querySelectorAll('#snap-list option')].map(o=>o.value).filter(Boolean));
   ok(opts.includes('2026-11-09'),`Settings lists the daily backups (${opts.join(', ')})`);
+  await hush(A.p,B.p);
   await A.p.evaluate(async()=>{$('#snap-list').value='2026-11-09';const r=rollBack();$('#ask-ok').click();await r});   // the app's own question: answered yes
   const a=await A.p.evaluate(()=>({st:$('#snap-status').textContent,wd:settings.workdays.length}));
-  ok(await sig(A.p)===good&&a.wd===5,`roll back restores the deleted tie, the old colour, drops the junk and the settings (${a.st})`);
+  const back=await sig(A.p)===good&&a.wd===5;
+  ok(back,`roll back restores the deleted tie, the old colour, drops the junk and the settings (${a.st})`+(back?'':await why()));
+  await hush(A.p,B.p);
   await B.p.evaluate(()=>syncNow());
-  ok(await sig(B.p)===good&&await B.p.evaluate(()=>settings.workdays.length===5),'the other device follows the roll-back on its next sync');
+  const follows=await sig(B.p)===good&&await B.p.evaluate(()=>settings.workdays.length===5);
+  ok(follows,'the other device follows the roll-back on its next sync'+(follows?'':await why()));
   ok(store.has('snap:before-restore')&&JSON.parse(store.get('snap:before-restore')).data.items.some(i=>i.id==='junk'),'the damaged state is kept as "before the last roll-back", so the roll-back can be undone');
   // and undo it
   await A.p.evaluate(async()=>{delete $('#snap-list').dataset.loaded;await loadSnapshots();$('#snap-list').value='before-restore';const r=rollBack();$('#ask-ok').click();await r});

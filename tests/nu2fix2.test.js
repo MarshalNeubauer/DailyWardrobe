@@ -24,7 +24,10 @@ module.exports=async({ok,chromium,url})=>{
     return r.fulfill({status:503,contentType:'application/json',headers:cors,body:'{"error":"off"}'})};
   const pic=(w,h,col)=>`(async()=>{const c=document.createElement('canvas');c.width=${w};c.height=${h};const x=c.getContext('2d');x.fillStyle='${col||'#203050'}';x.fillRect(0,0,${w},${h});return new File([await new Promise(r=>c.toBlob(r,'image/jpeg',.9))],'p.jpg',{type:'image/jpeg'})})()`;
   const kept=async(p,fn)=>{for(let t=0;t<50;t++){if(await p.evaluate(fn))return true;await p.waitForTimeout(100)}return false};
-  const restart=async p=>{await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});await p.waitForFunction(()=>addRestoreState==='done',null,{timeout:20000}).catch(()=>{});
+  // a kill: nothing the page does from here on is kept (addKeep keeps only once restored). A reload alone is not a kill: the page going
+  // away cut the slow reading off, and on a busy WebKit its error handler still ran and kept the card without refineCut (the full
+  // --webkit run of 2026-11-17: "it comes back saying the reading was cut off" failed with "Tagging again…" and no button)
+  const restart=async p=>{await p.evaluate(()=>{clearTimeout(addKeepT);addRestoreState='killed'});await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});await p.waitForFunction(()=>addRestoreState==='done',null,{timeout:20000}).catch(()=>{});
     await p.evaluate(()=>{if(document.querySelector('#setup.on'))setupClose();openAdd()});await p.waitForTimeout(100)};
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844}});await ctx.route(HOST+'**',route);
@@ -38,7 +41,7 @@ module.exports=async({ok,chromium,url})=>{
     mode='slow';await p.evaluate(`(async()=>{const f=await ${pic(600,600,'#1d2b4b')};addTexture(0,f)})()`);
     await p.waitForFunction(()=>queue[0].refining);
     ok(await kept(p,async()=>{const r=await metaGet('addq');return !!(r&&r[0]&&r[0].refineCut&&!('refining' in r[0]))}),'a close-up being read is kept as cut off, not as still reading');
-    await restart(p);mode='ok';await p.waitForFunction(()=>queue.length>0,null,{timeout:20000}).catch(()=>{});   // (slow under load)
+    await restart(p);mode='ok';await p.waitForFunction(()=>queue.length>0&&!!document.querySelector('#qconf-0'),null,{timeout:20000}).catch(()=>{});   // (slow under load)
     let s=await p.evaluate(()=>({n:queue.length,reading:queue.some(cardReading),tex:!!queue[0].texture,cut:!!document.querySelector('#queue .refcut'),stuck:/Tagging again/.test(document.querySelector('#queue').textContent),conf:!document.querySelector('#qconf-0').disabled}));
     ok(s.n===1&&!s.reading&&s.tex&&s.cut&&!s.stuck&&s.conf,`it comes back saying the reading was cut off, Confirm on (${JSON.stringify(s)})`);
     await p.evaluate(()=>{addManual();setq(0,'type','tie')});

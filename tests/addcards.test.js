@@ -111,8 +111,12 @@ module.exports=async({ok,chromium,url})=>{
     await p.waitForFunction(()=>queue.length===3&&queue[0].busy&&queue[0].photo);
     for(let t=0;t<50;t++){if(await p.evaluate(async()=>{const r=await metaGet('addq');return !!(r&&r.length===3&&r.some(c=>c.cut))}))break;await p.waitForTimeout(100)}   // (kept a moment after the change)
     const posts0=posts;
+    // the kill: nothing the page does from here on is kept (addKeep keeps only once restored). A reload is not a kill: the page going
+    // away cut the slow reading off, and on a busy WebKit its error handler still ran and kept "The server couldn't be reached" over
+    // the cut card (the full --webkit run of 2026-11-17)
+    await p.evaluate(()=>{clearTimeout(addKeepT);addRestoreState='killed'});
     await p.reload();await p.waitForFunction(()=>window.appReady);mode='ok';
-    await p.waitForFunction(()=>queue.length===3&&addRestoreState==='done',null,{timeout:8000}).catch(()=>{});
+    await p.waitForFunction(()=>addRestoreState==='done'&&queue.length===3&&queue.some(q=>!q.ai&&!q.manual&&q.tagErr),null,{timeout:20000}).catch(()=>{});
     s=await p.evaluate(()=>({n:queue.length,name:(queue.find(q=>q.manual)||{}).name,read:(queue.find(q=>q.ai)||{}).type,cut:(queue.find(q=>!q.ai&&!q.manual)||{}).tagErr,photo:queue.filter(q=>q.photo).length,toast:document.querySelector('#toast').textContent}));
     ok(s.n===3&&s.name==='My red tie'&&s.read==='shirt'&&s.photo===2,`after a kill the cards are back: the typed name, the reading and both photos (${JSON.stringify(s)})`);
     ok(/closed before this photo was read/.test(s.cut||''),`the card whose reading was cut off says so, with Try again (${s.cut})`);
