@@ -60,7 +60,7 @@ function colNear(it,k){const m=it.meas;if(!m||!m.lab||!['primaryColor','secondar
 function openColPick(src,ref,k){if(src==='q'&&typeof ref==='number'){const q=queue[ref];ref=q?q.id:''}   // (a place, from tagging.js and tests: its card's id from now on)
   colPick={src,ref,k,from:document.activeElement};const it=colTarget();if(!it){colPick=null;return}
   colPick.cur=k==='accents'?'':k==='pattern'?normPat(it.type,it.pattern):LOOK_KS.includes(k)?lookCur(it,k):(k==='primaryColor'?primaryCol(it):k==='toeColor'?sockToeKey(it):it[k])||'none';colPick.sel=colPick.cur;   // (accents: nothing picked yet; the Look beta's own fields: look.js lookCur)
-  if(k==='primaryColor'&&lookOn())colPick.shade=it.shade||0;   // (the beta's Shade is in the colour sheet)
+  if(k==='primaryColor'&&lookOn())Object.assign(colPick,{shade:it.shade||0});   // (the beta's Shade is in the colour sheet)
   colPick.view=it.texture&&(k==='primaryColor'||k==='pattern'||k==='accents'||!it.photo)?'tex':'photo';
   renderColPick();$('#col-sheet').classList.add('on');$('#col-backdrop').classList.add('on');$('#col-sheet').scrollTop=0;colSwipe();layerInert();   // the item sheet under it out of reach (W2-19-03)
   const x=$('#col-sheet .pick-x');if(x)x.focus({preventScroll:true})}

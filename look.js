@@ -249,7 +249,7 @@ const LOOK_KS=[...LOOK_PK,'enamel','dial'];
 function lookPick(src,id,k){openColPick(src,id,k)}
 function lookMatGroups(it,k){const t=it.type,l=lookBuiltins(it,k);
   if(k==='material')return t==='shirt'?[['Fibers',LOOK_SHIRT_FIBERS],['Cotton cloths',LOOK_SHIRT_CLOTHS]]:[['Materials',l]];
-  if(k==='leather')return LOOK_LEATHER_G.map(([g,ks])=>[g,ks.filter(x=>l.includes(x))]).filter(([,ks])=>ks.length);
+  if(k==='leather')return LOOK_LEATHER_G.map(g=>[g[0],(/** @type {string[]} */(g[1])).filter(x=>l.includes(x))]).filter(g=>g[1].length);
   return t==='cufflinks'&&k==='metal'?[['Metals',l.filter(x=>x!=='silk')],['Not metal',['silk']]]:[['Metals',l]]}
 function lookPickTitle(it,k){return k==='material'?(it.type==='shirt'?'Choose the fiber':'Choose the material'):k==='leather'?'Choose the leather':k==='buckle'?'Choose the buckle':'Choose the metal'}
 function lookSugMat(it,k){const out=[],src=colPick?colPick.src:'e';
@@ -388,7 +388,7 @@ async function lookRead(src,id){const it=lookItem(src,id);if(!it)return;const ke
   if(src==='q'&&typeof cardReading==='function'&&cardReading(it)){tell('Claude is still reading this card.');return}
   const off=rdOff();if(off){tell(off);return}
   const pats=!LOOK_NOPAT.includes(it.type)&&!!PATS_BY[it.type];
-  const me=LOOK_RD[key]={busy:true,by:(LOOK_RD[key]||{}).by,ac:typeof AbortController==='function'?new AbortController():null};lookRedraw(src,id);
+  const me=LOOK_RD[key]={busy:true,err:'',by:(LOOK_RD[key]||{}).by,ac:typeof AbortController==='function'?new AbortController():null};lookRedraw(src,id);
   let img=null,wb,from='photo';
   try{if(it.texture){await paperOf(it);const cp=await paperCopy(it);img=cp.closeup;wb=cp.wb;from='closeup'}else img=src==='q'?(it.tagImg||it.photo):((await tagImgOf(id,it))||it.photo)}catch{img=it.texture||it.photo||null}
   if(LOOK_RD[key]!==me)return;
