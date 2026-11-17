@@ -7,14 +7,14 @@
    Colours always come from the item's tagged colours, matched by brightness rank, so photo colour casts don't leak in. */
 const STRIPE_PATS=['stripe','pinstripe','fine-stripe','chalk-stripe'],CHECK_PATS=['check','gingham','tattersall','windowpane','glen-check'];
 const DETECT_PATS=[...STRIPE_PATS,...CHECK_PATS];
-/* small figures on a grid (a neat / foulard, dots): no band reader can draw them, only Claude's motif reading (tagging.js) */
+/* small figures on a grid (a neat / foulard, dots): no band reader can draw them, only Claude's motif reading (pattern-read.js) */
 const MOTIF_PATS=['foulard','polka-dot'];
 /* a dress shirt whose pattern is in the weave (dobby diamonds, herringbone, oxford): only Claude's texture reading draws it */
 const TEXTURE_PATS=['dobby','woven','textured','fine-texture','oxford','pinpoint','royal-oxford','twill','end-on-end','herringbone','chambray'];
 const texPat=(t,p)=>t==='shirt'&&TEXTURE_PATS.includes(patBase(p)||'');
 /* an item's pattern reading, unless it is a band reading of a motif pattern (an older reading turned a neat into a plaid), or
    a texture reading on a pattern that is no longer a weave texture (or the reverse) */
-/* a tie tagged woven or tonal check: read by Claude only (tagging.js claudeOnly), and it keeps whatever Claude finds: small figures (motif),
+/* a tie tagged woven or tonal check: read by Claude only (pattern-read.js claudeOnly), and it keeps whatever Claude finds: small figures (motif),
    stripes or checks (bands), or the weave itself (tex: a tonal tie's raised grid, drawn a little lighter or darker than the ground) */
 const TIE_WEAVES=['woven','tonal-check'],tieWeave=(t,p)=>t==='tie'&&TIE_WEAVES.includes(patBase(p)||'');
 const ownSett=i=>{const s=i&&i.sett,p=patBase(i&&i.pattern)||'';if(!s||(MOTIF_PATS.includes(p)&&!s.motif))return null;if(s.camo||camoPat(i.pattern))return s.camo&&camoPat(i.pattern)?s:null;/* a camouflage reading only on a camouflage, and nothing else on one */return tieWeave(i.type,i.pattern)?s:texPat(i.type,i.pattern)?(s.tex||s.motif?s:null):(s.tex?null:s)};   // a weave pattern takes a texture or a figure (motif) reading

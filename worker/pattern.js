@@ -2,12 +2,12 @@
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
 import { HEX_RE, TYPE_LIST, badPics, readAiBody, tagWithClaude, txt, wbOf } from './tag.js';
 import { spend, unspend } from './people.js';
-import { MOTIF_SHAPES, TEXTURE_KINDS, bitmapOf } from './patternbits.js';   // (one copy with describe.js: CR-2-15)
+import { MOTIF_PLACES, MOTIF_SHAPES, TEX_CONTRASTS, TEXTURE_KINDS, bitmapOf } from './patternbits.js';   // (one copy with describe.js: CR-2-15)
 
 /* POST /pattern {image, closeup, type} -> the woven pattern as clean data, for the app to draw. The pixels of a photo carry noise
    (seams, folds, moire, slubs, panes made uneven by drape or perspective) that defeats measuring the pattern from them alone;
    Claude reads the pattern as it was woven: each direction's bands in order with their width share, and how many repeats the
-   close-up and the item show. The app takes the exact colours from the pixels (tagging.js). */
+   close-up and the item show. The app takes the exact colours from the pixels (pattern-read.js). */
 const PBAND = { type: 'object', additionalProperties: false, required: ['role', 'name', 'hex', 'widthPct'],
   properties: { role: { type: 'string', enum: ['ground', 'line'] }, name: { type: 'string' }, hex: { type: 'string' }, widthPct: { type: 'number' } } };
 const PDIR = { type: 'object', additionalProperties: false, required: ['bands'], properties: { bands: { type: 'array', items: PBAND } } };
@@ -15,7 +15,7 @@ const PDIR = { type: 'object', additionalProperties: false, required: ['bands'],
    figure's shape, place in the grid, colours (two alternate like a checkerboard) and size */
 const PCOL = { type: 'object', additionalProperties: false, required: ['name', 'hex'], properties: { name: { type: 'string' }, hex: { type: 'string' } } };
 const PFIG = { type: 'object', additionalProperties: false, required: ['shape', 'placement', 'colours', 'centre', 'sizePct', 'bitmap', 'name'],
-  properties: { shape: { type: 'string', enum: MOTIF_SHAPES }, placement: { type: 'string', enum: ['cell', 'corner', 'alternate-cells'] },
+  properties: { shape: { type: 'string', enum: MOTIF_SHAPES }, placement: { type: 'string', enum: MOTIF_PLACES },
     colours: { type: 'array', items: PCOL }, centre: { anyOf: [PCOL, { type: 'null' }] }, sizePct: { type: 'number' },
     bitmap: { anyOf: [{ type: 'array', items: { type: 'string' } }, { type: 'null' }] }, name: { type: 'string' } } };
 const PMOTIF = { type: 'object', additionalProperties: false, required: ['grid', 'ground', 'figures', 'cellAspect', 'rowOffset'],
@@ -25,7 +25,7 @@ const PMOTIF = { type: 'object', additionalProperties: false, required: ['grid',
    threads float, so it is read as a small bitmap of one repeat (1 = reads raised / catches the light) */
 const PTEX = { type: 'object', additionalProperties: false, required: ['kind', 'grid', 'aspect', 'ground', 'raised', 'contrast'],
   properties: { kind: { type: 'string', enum: TEXTURE_KINDS }, grid: { type: 'array', items: { type: 'string' } }, aspect: { type: 'number' }, ground: PCOL, raised: PCOL,
-    contrast: { type: 'string', enum: ['faint', 'subtle', 'clear'] } } };
+    contrast: { type: 'string', enum: TEX_CONTRASTS } } };
 /* camouflage (2026-11-16): irregular blotches with no grid; its colours with their shares of the cloth, and how big the blotches are */
 const PCAMO = { type: 'object', additionalProperties: false, required: ['colours', 'blobsAcrossItem'],
   properties: { colours: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['name', 'hex', 'sharePct'], properties: { name: { type: 'string' }, hex: { type: 'string' }, sharePct: { type: 'number' } } } },
@@ -118,14 +118,14 @@ function cleanPattern(p) {
   const bitmap = b => bitmapOf(b, 2, 16, false);
   const motif = m => { if (!m || !col(m.ground) || !Array.isArray(m.figures)) return null;
     const f = m.figures.slice(0, 3).map(x => { const bm = x.shape === 'figure' ? bitmap(x.bitmap) : null;
-      return { shape: MOTIF_SHAPES.includes(x.shape) && (x.shape !== 'figure' || bm) ? x.shape : 'other', placement: ['cell', 'corner', 'alternate-cells'].includes(x.placement) ? x.placement : 'cell',
+      return { shape: MOTIF_SHAPES.includes(x.shape) && (x.shape !== 'figure' || bm) ? x.shape : 'other', placement: MOTIF_PLACES.includes(x.placement) ? x.placement : 'cell',
         colours: (x.colours || []).map(col).filter(Boolean).slice(0, 2), centre: x.shape === 'square-with-dot' ? col(x.centre) : null, size: num(x.sizePct, 5, 100, 50) / 100,
         ...(bm ? { bitmap: bm } : {}), name: txt(x.name, 40) }; }).filter(x => x.colours.length);
     return f.length ? { grid: m.grid === 'diagonal' ? 'diagonal' : 'straight', ground: col(m.ground), figures: f, cellAspect: num(m.cellAspect, .25, 4, 1), rowOffset: m.rowOffset === 'half' ? 'half' : 'none' } : null; };
   /* the texture's bitmap: 2-24 cells each way, with both tones in it (patternbits.js) */
   const texture = t => { if (!t || !col(t.ground)) return null;
     const g = bitmapOf(t.grid, 2, 24, true); if (!g) return null; const w = g[0].length;
-    return { kind: TEXTURE_KINDS.includes(t.kind) ? t.kind : 'other', grid: g, aspect: num(t.aspect, .25, 4, g.length / w), ground: col(t.ground), raised: col(t.raised) || col(t.ground), contrast: ['faint', 'subtle', 'clear'].includes(t.contrast) ? t.contrast : 'subtle' }; };
+    return { kind: TEXTURE_KINDS.includes(t.kind) ? t.kind : 'other', grid: g, aspect: num(t.aspect, .25, 4, g.length / w), ground: col(t.ground), raised: col(t.raised) || col(t.ground), contrast: TEX_CONTRASTS.includes(t.contrast) ? t.contrast : 'subtle' }; };
   /* camouflage: 2 to 6 colours with their shares (as fractions, largest first) and the blotches across the item */
   const camo = c => { if (!c || !Array.isArray(c.colours)) return null;
     const l = c.colours.slice(0, 6).map(x => ({ name: txt(x && x.name, 30), hex: hex(x && x.hex), share: Math.max(0, +(x && x.sharePct) || 0) })).filter(x => x.hex && x.share > 0);
