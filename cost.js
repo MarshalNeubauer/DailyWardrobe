@@ -94,9 +94,9 @@ function cpwHow(c){const i=c.i,t=i.type,cl=c.cl,L=[],each=c.each,w=cpwWashed(t);
 const cpwSum=i=>{const c=cpwOf(i);return c&&c.wears?` · ${cpwMoney(c.per)} a wear`:''};
 const cpwOut=c=>c?`<p class="cpwline" id="cpw-line">${esc(cpwText(c))}</p>${cpwHint(c)?`<p class="shelp cpwhint">${esc(cpwHint(c))}</p>`:''}${cpwHow(c)}`:'';
 /* the item sheet's block (in Planning & care): Price, Bought, and the cost per wear once priced */
-function cpwBlock(i){const id=jsq(i.id),T=isoKey(todayDate());
-  return `<div class="cpw" id="ivcpw"><div class="cpwf"><label class="cpwprice">Price <span class="cpwin"><span class="cpwsym" aria-hidden="true">${esc(cpwSym())}</span><input type="text" inputmode="decimal" id="iv-price" autocomplete="off" maxlength="14" aria-label="Price (${esc(cpwCur())})" value="${cpwPriced(i)?esc(String(i.price)):''}" placeholder="Optional" oninput="cpwPriceSoon('${id}',this.value)" onchange="cpwSetPrice('${id}',this.value,true)"></span></label>`+
-    `<label class="cpwbought">Bought <input type="date" id="iv-bought" value="${esc(i.bought||'')}" max="${T}" onchange="cpwSetBought('${id}',this.value)"></label></div><div class="cpwout" aria-live="polite">${cpwOut(cpwOf(i))}</div></div>`}
+function cpwBlock(i){const T=isoKey(todayDate());
+  return `<div class="cpw" id="ivcpw"><div class="cpwf"><label class="cpwprice">Price <span class="cpwin"><span class="cpwsym" aria-hidden="true">${esc(cpwSym())}</span><input type="text" inputmode="decimal" id="iv-price" autocomplete="off" maxlength="14" aria-label="Price (${esc(cpwCur())})" value="${cpwPriced(i)?esc(String(i.price)):''}" placeholder="Optional" oninput="cpwPriceSoon('${jsq(i.id)}',this.value)" onchange="cpwSetPrice('${jsq(i.id)}',this.value,true)"></span></label>`+
+    `<label class="cpwbought">Bought <input type="date" id="iv-bought" value="${esc(i.bought||'')}" max="${T}" onchange="cpwSetBought('${jsq(i.id)}',this.value)"></label></div><div class="cpwout" aria-live="polite">${cpwOut(cpwOf(i))}</div></div>`}
 let cpwT=null,cpwPend=null;
 function cpwPriceSoon(id,v){clearTimeout(cpwT);cpwPend={id,v};cpwT=setTimeout(()=>cpwFlush(),700)}
 function cpwFlush(){clearTimeout(cpwT);cpwT=null;const p=cpwPend;cpwPend=null;if(p)return cpwSetPrice(p.id,p.v,false)}
@@ -121,7 +121,7 @@ function cpwQSet(i,k,v){const q=cardOf(i);if(!q||(k!=='price'&&k!=='bought'))ret
 function cpwSaveFields(q,it){const n=q.price!=null&&String(q.price).trim()?cpwParse(q.price):null;if(n!=null)it.price=n;
   if(/^\d{4}-\d{2}-\d{2}$/.test(q.bought||'')&&q.bought<=isoKey(todayDate()))it.bought=q.bought}
 /* ---- Insights: the Cost per wear card, once at least CPW_MIN pieces have a price ---- */
-function cpwOpenItem(id){if(!items.some(i=>i.id===id))return;flt='all';show('wardrobe');openItem(id)}
+function cpwOpenItem(id){if(!items.some(i=>i.id===id))return;show('wardrobe');openItem(id)}   // (the Wardrobe's type filter is left as it is: app.js owns it)
 function cpwStats(){const all=items.map(cpwOf).filter(Boolean);if(all.length<CPW_MIN)return null;
   const worn=all.filter(c=>c.wears).sort((a,b)=>a.per-b.per||(a.i.id<b.i.id?-1:1));
   const spent=all.reduce((a,c)=>a+c.price,0),year=items.filter(cpwPriced).reduce((a,i)=>a+cpwCleanYear(i),0);
@@ -140,7 +140,7 @@ function cpwStatsCard(){const S=cpwStats();if(!S)return '';
 function cpwSettingsUI(){const el=$('#cpw-set');if(!el)return;const c=settings.cleanCost||{},cur=cpwCur(),sym=esc(cpwSym());
   let dn=null;try{dn=new Intl.DisplayNames([typeof APP_LOC==='string'?APP_LOC:'en-US'],{type:'currency'})}catch{}
   const curs=[...new Set([...CPW_CURS,cur])];
-  const money=(k,lab,v)=>`<label class="srow cpwset">${lab}<span class="cpwin"><span class="cpwsym" aria-hidden="true">${sym}</span><input type="text" inputmode="decimal" id="cpw-${k}" autocomplete="off" maxlength="12" aria-label="${esc(lab)} (${esc(cur)})" value="${v>0?esc(String(v)):''}" placeholder="Not set" onchange="cpwSetCost('${k}',this.value)"></span></label>`;
+  const money=(k,lab,v)=>`<label class="srow cpwset">${lab}<span class="cpwin"><span class="cpwsym" aria-hidden="true">${sym}</span><input type="text" inputmode="decimal" id="cpw-${k}" autocomplete="off" maxlength="12" aria-label="${esc(lab)} (${esc(cur)})" value="${v>0?esc(String(v)):''}" placeholder="Not set" onchange="cpwSetCost('${jsq(k)}',this.value)"></span></label>`;
   const dry=(typeof CARE_ABLE!=='undefined'?CARE_ABLE:[]).filter(t=>!cpwWashed(t)&&(CPW_DRY_SHOW.includes(t)||items.some(i=>i.type===t)));
   el.innerHTML=`<div class="slabel">Cost per wear</div><p class="shelp">Add a price to an item (its Planning &amp; care) and it shows what each wear has cost, with its cleaning. Leave a cost empty if you don’t know it.</p>
     <label class="srow">Currency <select id="cpw-cur" onchange="cpwSetCurrency(this.value)">${curs.map(k=>`<option value="${k}"${k===cur?' selected':''}>${k}${dn?' · '+esc(dn.of(k)||''):''}</option>`).join('')}</select></label>
