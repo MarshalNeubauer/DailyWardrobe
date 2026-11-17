@@ -112,7 +112,6 @@ module.exports=async({ok,chromium,url,ROOT})=>{
 
     // ---- a sync from a server that holds crafted records (stored by a worker before the check): the app cleans them, nothing runs, and the
     // next sync is the small one (no endless "ask for everything")
-    const cur=JSON.parse(store.get('wardrobe:v1'));
     const ctx=await browser.newContext();let gets=0;
     await ctx.route(HOST+'**',async route=>{const q=route.request(),uu=new URL(q.url());if(uu.pathname!=='/sync')return route.fulfill({status:404,body:'{}'});
       if(q.method()==='GET'&&/all|lite/.test(uu.search))gets++;
@@ -130,10 +129,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       for(const i of items){openItem(i.id);await new Promise(r=>setTimeout(r,100));closeItem()}
       return {a,ids:items.map(i=>i.id).sort().join(),marks:document.querySelectorAll('[data-rx],[data-q]').length,hits:window.__rxs||[],st:localStorage.getItem('sync_status')}});
     gets=0;const again=await q.evaluate(()=>syncNow());
-    const planted2=JSON.stringify(cur).length>0;
     ok(sy.a===true&&sy.marks===0&&!sy.hits.length,`a sync that brings crafted records puts nothing into the page (ok ${sy.a}, marks ${sy.marks}, calls ${sy.hits.join()}, ${sy.st})`);
     ok(/c2/.test(sy.ids)&&/g1/.test(sy.ids)&&!/[<"']/.test(sy.ids),'the backup\'s good records arrive and no crafted id does ('+sy.ids+')');
-    ok(again===true&&gets<=1&&planted2,'the next sync is one small request, not a loop asking for the whole backup ('+gets+' GETs)');
+    ok(again===true&&gets<=1,'the next sync is one small request, not a loop asking for the whole backup ('+gets+' GETs)');
     ok(qerr.length===0,'no page errors on the syncing phone ('+qerr.join('; ')+')');
     await ctx.close();
 

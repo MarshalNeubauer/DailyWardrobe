@@ -10,8 +10,8 @@ import { sha256Hex, smallBody, spendEach, unspend } from './people.js';
    outfit line the app kept for that date (sw.js, Cache Storage dw-keep-remind), so no outfit text passes through here and
    nothing needs encrypting. The push is signed with the VAPID key pair (secrets VAPID_PUBLIC_KEY, base64url of the 65-byte
    public point, and VAPID_PRIVATE_KEY, base64url of the 32-byte private scalar; VAPID_SUBJECT, the app's https address or a
-   mailto:). One KV document, push:subs, holds every subscription: one read a quarter of an hour, a write only when something
-   was sent or changed. A subscription the push service says is gone (404, 410) is dropped. ---- */
+   mailto:). One KV document, push:subs, holds every subscription: one read a quarter of an hour, and a second read and a write only
+   when something was sent or a subscription is gone. A subscription the push service says is gone (404, 410) is dropped. ---- */
 const PUSH_KEY = 'push:subs', PUSH_MAX = 200, PUSH_STEP = 15;
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64u = s => Uint8Array.from(atob(String(s).replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((String(s).length + 3) % 4)), c => c.charCodeAt(0));
@@ -53,19 +53,30 @@ function dueDay(prev, cur, at) {
 async function sendReminders(env, now = new Date()) {
   if (!pushReady(env)) return { sent: 0 };
   const doc = (await env.WARDROBE.get(PUSH_KEY, 'json')) || { list: [] }, list = Array.isArray(doc.list) ? doc.list : [];
-  let changed = false, sent = 0;
+  let sent = 0;
+  const done = new Map(), gone = new Set(), who = s => `${s.ns || ''}|${s.id}`;   // (what this run changes: `last` of those sent to, and the dropped)
   const before = new Date(now.getTime() - PUSH_STEP * 60000), l0 = tz => localNow(before, tz);
-  for (const s of [...list]) {
+  for (const s of list) {
     const l = localNow(now, s.tz), [h, m] = String(s.time || '').split(':').map(Number);
     if (!l || !Number.isFinite(h) || !Number.isFinite(m)) continue;
     const at = h * 60 + m;
     const day = dueDay(l0(s.tz), l, at);   // the local date whose reminder falls since the last run, if any
     if (!day || s.last === day || !(s.dates || []).includes(day)) continue;
     const st = await pushTo(env, s.endpoint);
-    if (st === 404 || st === 410) { list.splice(list.indexOf(s), 1); changed = true; continue; }
-    if (st >= 200 && st < 300) { s.last = day; sent++; changed = true; }
+    if (st === 404 || st === 410) { gone.add(who(s) + '|' + s.endpoint); continue; }
+    if (st >= 200 && st < 300) { done.set(who(s), { day, time: s.time, endpoint: s.endpoint }); sent++; }
   }
-  if (changed) await env.WARDROBE.put(PUSH_KEY, JSON.stringify({ list }));
+  if (!done.size && !gone.size) return { sent };
+  // the list read again just before it is written, and only this run's changes made to it (CR-4-03, the 2026-11-16 code review: the pushes
+  // take seconds, and a phone that switched on or changed its time meanwhile was overwritten by the list read at the start). One KV read
+  // more on a run that sent something; a phone's change that lands within the few milliseconds between this read and the write can
+  // still be lost (KV has no compare-and-swap); it posts again when its dates change or after REMIND_POST_MS (the app's remind.js)
+  const fresh = (await env.WARDROBE.get(PUSH_KEY, 'json')) || { list: [] };
+  const out = (Array.isArray(fresh.list) ? fresh.list : []).filter(x => !gone.has(who(x) + '|' + x.endpoint)).map(x => {
+    const d = done.get(who(x));
+    return d && x.endpoint === d.endpoint && x.time === d.time ? { ...x, last: d.day } : x;   // (a phone that changed its time meanwhile keeps its own last)
+  });
+  await env.WARDROBE.put(PUSH_KEY, JSON.stringify({ list: out }));
   return { sent };
 }
 /* GET /push -> {key, on, time}: the public key a phone subscribes with (null: reminders not set up on this server), and whether

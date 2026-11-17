@@ -18,7 +18,7 @@ module.exports=async({ok,ROOT})=>{
     // ---- an uncaught error (KV over its daily writes) answers a readable 503 with the CORS headers, not Cloudflare's error 1101
     {const env={APP_TOKEN:'t',WARDROBE:kv({failPut:()=>true}),ALLOWED_ORIGIN:'https://a.github.io'};
       let r,threw=null;try{r=await J(await call(env,'PUT','render',{key:'c0123456789abcdef',rec:{img:'data:image/jpeg;base64,AAAA',t:1}},{'x-app-token':'t',Origin:'https://a.github.io'}))}catch(e){threw=e}
-      // (2026-11-14) the day's writes used up is said as such: 429 kv-limit (the app pauses its backups until the reset, the PC's builder stops)
+      // (2026-11-14) the day's writes used up is said as such: 429 kv-limit (the app pauses its backups until the reset)
       ok(!threw&&r.s===429&&r.error==='kv-limit'&&r.h.get('access-control-allow-origin')==='https://a.github.io'&&/used up/.test(r.message)&&r.h.get('content-type')==='application/json','KV over its daily writes answers JSON 429 kv-limit with CORS headers, saying the saves are used up');
       const env2={APP_TOKEN:'t',WARDROBE:kv({failPut:()=>true,failErr:'KV storage is restarting'}),ALLOWED_ORIGIN:'https://a.github.io'};let r2,threw2=null;
       try{r2=await J(await call(env2,'PUT','render',{key:'c0123456789abcdef',rec:{img:'data:image/jpeg;base64,AAAA',t:1}},{'x-app-token':'t',Origin:'https://a.github.io'}))}catch(e){threw2=e}
@@ -91,11 +91,15 @@ module.exports=async({ok,ROOT})=>{
       const store=kv(),env={APP_TOKEN:'own',WARDROBE:store,RENDER_HUB:HUB,TESTER_DAILY_TOTAL:JSON.stringify({write:40})};hubs.clear();
       const O={'x-app-token':'own'},mkT=async name=>{const r=await J(await call(env,'POST','invites',{name},O));const k='invite:'+crypto.createHash('sha256').update(r.code).digest('hex'),rec=JSON.parse(store.store.get(k));rec.created-=8*86400000;store.store.set(k,JSON.stringify(rec));return {id:r.id,ns:`u:${r.id}:`,h:{'x-app-token':r.code}}};
       const A=await mkT('Tess'),B=await mkT('Bo');
-      // deletes: each one counted (1,200 went through before)
-      let n=0,st=200;for(;n<60&&st===200;n++)st=(await call(env,'DELETE','render?key=c'+n.toString(16).padStart(16,'0'),undefined,A.h)).status;
-      ok(st===429&&n===41,`a tester's DELETE /render is counted as a write and refused past everyone's daily total (refused at ${n})`);
-      env.TESTER_DAILY_TOTAL=JSON.stringify({write:450});let d=0;st=200;for(;d<260&&st===200;d++)st=(await call(env,'DELETE','render?key=c'+d.toString(16).padStart(16,'0'),undefined,B.h)).status;
-      ok(st===429&&d===201,`and past the tester's own 200 writes a day (refused at ${d})`);
+      // photo uploads: each one counted (DELETE /render, counted the same way, went on 2026-11-17)
+      const up=(i,h)=>call(env,'PUT','render',{key:'c'+i.toString(16).padStart(16,'0'),rec:{img:PNG,sig:'s',model:'m',t:5}},h);
+      let n=0,st=200;for(;n<60&&st===200;n++)st=(await up(n,A.h)).status;
+      ok(st===429&&n===41,`a tester's PUT /render is counted as a write and refused past everyone's daily total (refused at ${n})`);
+      // a backup of 250 new photos: the tester's own 200 writes a day store 200 of them, and the save waits for tomorrow
+      env.TESTER_DAILY_TOTAL=JSON.stringify({write:450});
+      {const photos={},items=[];for(let i=0;i<250;i++){const ph='data:image/jpeg;base64,'+crypto.randomBytes(300).toString('base64');const h=crypto.createHash('sha256').update(ph).digest('hex').slice(0,20);photos[h]=ph;items.push({id:'b'+i,added:1,photo:'dwph:'+h})}
+        const r=await J(await call(env,'POST','sync',{baseRev:0,day:'2026-11-20',delta:{items,days:[],tombstones:{}},photos},B.h)),got=[...store.store.keys()].filter(k=>k.startsWith(B.ns+'ph:')&&k!==B.ns+'ph:gc').length;
+        ok(r.s===429&&/200 of 250 new photos/.test(r.message)&&got===200,`and past the tester's own 200 writes a day (${r.s}, ${got} photos stored: ${r.message})`);}
       // a first backup larger than what is left today: what fits is stored, the save waits for tomorrow, and finishes then
       Date.now=()=>realNow()+86400000;env.TESTER_DAILY_TOTAL=JSON.stringify({write:30});
       const photos={},items=[];for(let i=0;i<50;i++){const ph='data:image/jpeg;base64,'+crypto.randomBytes(300).toString('base64');const h=crypto.createHash('sha256').update(ph).digest('hex').slice(0,20);photos[h]=ph;items.push({id:'i'+i,added:1,photo:'dwph:'+h})}
@@ -108,7 +112,7 @@ module.exports=async({ok,ROOT})=>{
       let l=0;st=200;for(;l<40&&st===200;l++)st=(await call(env,'GET','render?list=1',undefined,B.h)).status;
       ok(st===429&&l===31,`a tester's photo list (a KV list) is capped too (refused at ${l})`);
       // the owner is never counted
-      let ow=0;for(let i=0;i<50;i++)if((await call(env,'DELETE','render?key=c'+i.toString(16).padStart(16,'0'),undefined,O)).status===200)ow++;
+      let ow=0;for(let i=0;i<50;i++)if((await up(i,O)).status===200)ow++;
       ok(ow===50,'the owner\'s writes are never counted');
       // reminders: a tester who knows the owner's push address can neither switch it off nor take it over
       const env2={...env,VAPID_PUBLIC_KEY:'x',VAPID_PRIVATE_KEY:'y'},EP='https://fcm.googleapis.com/fcm/send/owner-device';

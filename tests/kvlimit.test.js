@@ -15,7 +15,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const r1=await call('sync',{method:'POST',body:JSON.stringify({baseRev:L.rev,baseSaved:L.saved,day:'2026-11-14',delta:{items:[{id:'b',type:'tie',primaryColor:'green',pattern:'solid',updated:2}],days:[],tombstones:{}},photos:{}})}),j1=await r1.json();
   const r2=await call('render',{method:'PUT',body:JSON.stringify({key:'c0123456789abcdef',rec:{sig:'x',img:'data:image/jpeg;base64,AA',model:'assembled',t:1}})}),j2=await r2.json().catch(()=>({}));
   ok(r1.status===429&&j1.error==='kv-limit'&&j1.what==='backup'&&/used up/.test(j1.message),`a backup save answers 429 kv-limit, "backup" (${r1.status} ${JSON.stringify(j1).slice(0,90)})`);
-  ok(r2.status===429&&j2.error==='kv-limit'&&j2.what==='write','a picture upload answers 429 kv-limit too (the PC\'s builder stops on it)');
+  ok(r2.status===429&&j2.error==='kv-limit'&&j2.what==='write','a picture upload answers 429 kv-limit too');
   // the app, against that worker
   const browser=await chromium.launch();
   try{const ctx=await browser.newContext({timezoneId:'Asia/Kuwait'});

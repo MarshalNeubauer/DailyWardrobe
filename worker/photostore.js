@@ -1,6 +1,6 @@
 /* Daily Wardrobe worker: photos stored once (ph:<hash>), their clean-up, and POST/GET /sync.
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
-import { BACKUP_MAX, PART_MAX, PH_HEX, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget } from './backup.js';
+import { BACKUP_MAX, NO_LOCK, PART_MAX, PH_HEX, conflictBody, lockStale, nextSaved, saveLock, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget } from './backup.js';
 import { INVITE_INDEX, UID_RE, countWrites, spend, unspend } from './people.js';
 import { picBytesOk, recCheck } from './records.js';
 
@@ -216,7 +216,7 @@ async function photoGc(env, now = Date.now()) {
   for (const ns of spaces) try { out[ns || 'owner'] = await gcSpace(env, ns, now); } catch (e) { console.log('photo clean-up failed', ns, e && e.message); out[ns || 'owner'] = { error: true }; }
   return out;
 }
-async function handleSync(req, env, json, cors, who) {
+async function handleSync(req, env, json, who, cors) {
   const ns = who.ns, KEY = ns + SYNC_KEY;
   if (!env.WARDROBE) return json({ error: 'Add a KV namespace binding named WARDROBE to the worker to enable backups.' }, 501);
   if (req.method === 'POST') return syncLitePost(req, env, json, cors, who);
@@ -243,22 +243,31 @@ async function handleSync(req, env, json, cors, who) {
     if (+(req.headers.get('content-length') || 0) > BACKUP_MAX) return json({ error: 'backup too large (over 48 MB)' }, 413);
     const buf = await req.arrayBuffer();
     if (buf.byteLength > BACKUP_MAX) return json({ error: 'backup too large (over 48 MB)' }, 413);
-    // a tester's backups a day are capped (each is a KV write, and the whole team shares 1,000 a day); a conflict gives it back
+    const big = buf.byteLength > PART_MAX;
+    let body = null;
+    if (!big) { try { body = JSON.parse(new TextDecoder().decode(buf)); } catch { return json({ error: 'bad json' }, 400); } }   // (before anything is counted: CR-6-05)
+    // a tester's backups a day are capped (each is a KV write, and the whole team shares 1,000 a day); every answer that saved nothing
+    // gives it back (a conflict, a bad record, the 413s, the day's writes: CR-6-05, a cut-off upload kept the count)
     const over = await spend(env, who, 'backup'); if (over) return json(over.body, over.status);
-    if (buf.byteLength > PART_MAX) { const r = await putParted(env, json, cors, who, new Uint8Array(buf)); if (r.status === 409 && !r.refunded) await unspend(env, who, 'backup'); return r; }
-    let body;
-    try { body = JSON.parse(new TextDecoder().decode(buf)); } catch { return json({ error: 'bad json' }, 400); }
-    return putWhole(env, json, cors, who, body);
+    const lk = await saveLock(env, ns);   // one save at a time for this person (backup.js saveLock)
+    if (lk.busy) { await unspend(env, who, 'backup'); return json(conflictBody(null, true), 409); }
+    let r;
+    try { r = big ? await putParted(env, json, cors, who, new Uint8Array(buf), lk) : await putWhole(env, json, cors, who, body, new Map(), lk); }
+    catch (e) { await unspend(env, who, 'backup'); throw e; }
+    finally { await lk.give(); }
+    if (!r.ok && !r.refunded) await unspend(env, who, 'backup');
+    return r;
   }
   return json({ error: 'method not allowed' }, 405);
 }
 /* an older app's whole backup (PUT /sync {baseRev, day, reason?, data}), its photos inline: stored by reference like any other save.
    pre: photos already cut out of the body (putParted), hash -> a function giving the photo's JSON string as bytes */
-async function putWhole(env, json, cors, who, body, pre = new Map()) {
+async function putWhole(env, json, cors, who, body, pre = new Map(), lk = NO_LOCK) {
   // records and photos of the app's shape only (records.js; fix round 3, W2-13-02): refused, with the backup count given back
   const wrong = recCheck(body && body.data) || ([...pre.values()].some(f => !picBytesOk(f())) ? { error: 'bad photo', message: 'The backup was not saved: a photo in it is not a picture.' } : null);
   if (wrong) { await unspend(env, who, 'backup'); const r = json(wrong, 400); r.refunded = true; return r; }
   const ns = who.ns, KEY = ns + SYNC_KEY, none = { rev: 0, saved: 0, data: null }, m = await syncVersion(env, ns);
+  if (lockStale(lk, m)) { await unspend(env, who, 'backup'); const r = json(conflictBody(m, true), 409); r.refunded = true; return r; }
   const rev = m ? m.rev : ((await env.WARDROBE.get(KEY, 'json')) || none).rev;
   if ((body.baseRev ?? -1) !== rev) {
     await unspend(env, who, 'backup');
@@ -276,8 +285,9 @@ async function putWhole(env, json, cors, who, body, pre = new Map()) {
   if (w.short) { await unspend(env, who, 'backup'); const x = await w.refuse(); const r = json(x.body, x.status); r.refunded = true; return r; }
   const had = src && src.lite && src.lite.data;   // (the version copied: its item count goes on the copies)
   await countWrites(env, who, await keepSnapshots(env, m, body, ns, oldPv, had && Array.isArray(had.items) ? had.items.length : null));
-  const saved = Date.now();
+  const saved = nextSaved(m);
   await putStored(env, KEY, { text: pvText(rev + 1, saved, nextRevs(src && src.lite, refs, rev + 1), refs), meta: pvMeta(rev + 1, saved) }, m);
+  lk.ver = { rev: rev + 1, saved };
   return json({ rev: rev + 1, saved });
 }
 

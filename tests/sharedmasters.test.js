@@ -2,7 +2,8 @@
 // master records (owner-only PUT /cm-shared, once, nothing when unchanged); a tester's GET /render?key= of a listed key falls back to the
 // owner's record and their GET /render?list=1 names them; nothing else of the owner's is ever readable. Then, end to end, a page connected
 // with a tester's code against the real worker (mocked KV and Durable Objects) holding the owner's masters paints a colour-coded look.
-// Fixtures: the suit master and its masks at 512 (tests/fixtures/cm/suit/).
+// Fixtures: the suit master and its masks at 512 (tests/fixtures/cm/suit/). (The blobs, the masters' packed setups, are read only: their
+// writer went with the PC picture builder and PUT /blob with it.)
 const path=require('path'),fs=require('fs'),os=require('os'),http=require('http'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const mod=await import(pathToFileURL(path.join(ROOT,'worker.js')).href),worker=mod.default,realNow=Date.now;
@@ -43,8 +44,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await c('PUT','render',A.code,rec(M1,'tess'));
     ok(JSON.parse(store.get('render:'+M1)).sig==='owner '+M1&&JSON.parse(store.get(An+'render:'+M1)).sig==='tess'&&(await g(M1,A.code)).sig==='tess'&&(await g(M1,B.code)).sig==='owner '+M1&&(await g(M1,O)).sig==='owner '+M1,
       'a tester\'s PUT of a master key lands in their own records: the owner\'s is untouched, the tester reads their own copy, everyone else the owner\'s');
-    await c('DELETE','render?key='+M1,A.code);
-    ok(store.has('render:'+M1)&&!store.has(An+'render:'+M1)&&(await g(M1,A.code)).sig==='owner '+M1,'a tester\'s DELETE removes only their own copy; the owner\'s master stays');
+    // (DELETE /render went on 2026-11-17, CR-6-14: nothing asked for it)
+    ok((await c('DELETE','render?key='+M1,A.code)).status===405&&store.has('render:'+M1)&&store.has(An+'render:'+M1),'DELETE /render is gone (405): the tester\'s copy and the owner\'s master both stay');
+    store.delete(An+'render:'+M1);
+    ok((await g(M1,A.code)).sig==='owner '+M1,'with the tester\'s own copy gone, they read the owner\'s master again');
     // the list
     const day=new Date(realNow()).toISOString().slice(0,10),listUsed=async ns=>(await (await HUB.get('renders:'+ns).fetch('https://hub/used?day='+day)).json()).used.list||0;
     const l0=await listUsed(An);
@@ -55,12 +58,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(la.keys.includes(M1)&&la.keys.includes(M2)&&la.keys.includes('c3000000000000001')&&!la.keys.includes(P)&&!la.keys.includes(I)&&new Set(la.keys).size===la.keys.length,`a tester's list names their own photos and the shared master records, not the owner's other photos (${la.keys.length} keys)`);
     ok(lo.keys.join()===[M1,M2,P,I].sort().join(),'the owner\'s list is as before');
     ok(l1-l0===1,`a tester's list call counts once against their list cap; the shared reads count nothing (${l1-l0})`);
-    // the setups packed for phones (PUT /blob, owner only): a tester reads the owner's
+    // the setups packed for phones (blob:<key>, written by the PC builder with PUT /blob until 2026-11-16): a tester reads the owner's
     const S='c4000000000000001',bytes=new Uint8Array([68,87,83,49,0,0,0,2,123,125]);
-    await c('PUT','blob?key='+S+'&sig=dk1',O,bytes,{'content-type':'application/octet-stream'});
+    store.set('blob:'+S,bytes.buffer.slice(0));
     const bt=await c('GET','blob?key='+S,A.code),bb=new Uint8Array(await bt.arrayBuffer());
     ok(bt.status===200&&bb.length===bytes.length&&bb.every((x,i)=>x===bytes[i]),'a tester reads a master\'s packed setup (GET /blob) from the owner\'s');
-    ok((await c('PUT','blob?key='+S+'&sig=x',A.code,new Uint8Array([1,2,3]),{'content-type':'application/octet-stream'})).status===403,'a tester cannot write a blob: 403');
+    ok((await c('PUT','blob?key='+S+'&sig=x',A.code,new Uint8Array([1,2,3]),{'content-type':'application/octet-stream'})).status===405&&(await c('PUT','blob?key='+S+'&sig=x',O,new Uint8Array([1,2,3]),{'content-type':'application/octet-stream'})).status===405&&store.get('blob:'+S).byteLength===bytes.length,'nobody can write a blob: PUT /blob is gone (405, CR-6-14)');
     // taking a key off the list stops the fallback at once; a list written elsewhere is seen within a minute (kept per isolate 60 s)
     await c('PUT','cm-shared',O,{keys:[M2]});
     ok((await g(M1,A.code)).s===404&&(await g(M2,A.code)).s===200,'a key taken off the list is no longer readable by a tester');

@@ -25,8 +25,8 @@ import { handlePattern } from './worker/pattern.js';
 import { handleDescribe } from './worker/describe.js';
 import { handleFetchImage, readCapped } from './worker/links.js';
 import { handleRender } from './worker/render.js';
-import { noteKvFull } from './worker/items.js';
-import { delRender, getRender, handleBlob, handleShared, putRender } from './worker/records.js';
+import { kvLimit, noteKvFull } from './worker/items.js';
+import { getBlob, getRender, handleShared, putRender } from './worker/records.js';
 import { handleHolidays } from './worker/holidays.js';
 import { gcDue, handleSync, photoGc } from './worker/photostore.js';
 import { handleAccount, handleErrors, handleFeedback, handleInvites, handleMe, plainFor, resetDelay, runWipe, spend, unspend, whoIs } from './worker/people.js';
@@ -36,8 +36,8 @@ export { RenderHub } from './worker/render.js';   // the Durable Object class mu
 /* every route but the root (POST / tags one photo, below): [handler(req, env, json, who, cors), what to say when APP_TOKEN is not set] */
 const TAG_LIMIT = 15e6, UNSET = 'Set an APP_TOKEN secret on the worker: nothing runs without it.';
 const ROUTES = {
-  '* /sync': [(req, env, json, who, cors) => handleSync(req, env, json, cors, who), 'Set an APP_TOKEN secret on the worker to enable backups.'],
-  'GET /fetch': [(req, env, json, who, cors) => handleFetchImage(req, env, json, cors), 'Set an APP_TOKEN secret on the worker to fetch photo links.'],
+  '* /sync': [handleSync, 'Set an APP_TOKEN secret on the worker to enable backups.'],
+  'GET /fetch': [handleFetchImage, 'Set an APP_TOKEN secret on the worker to fetch photo links.'],
   'GET /holidays': [handleHolidays, 'Set an APP_TOKEN secret on the worker to load holiday lists.'],
   'POST /tag-many': [handleTagMany, UNSET],
   'POST /pattern': [handlePattern, UNSET],
@@ -45,9 +45,7 @@ const ROUTES = {
   'POST /render': [handleRender, 'Set an APP_TOKEN secret on the worker to generate item pictures.'],
   'GET /render': [getRender],
   'PUT /render': [putRender],
-  'DELETE /render': [delRender],
-  'GET /blob': [handleBlob],
-  'PUT /blob': [handleBlob],
+  'GET /blob': [getBlob],
   'GET /cm-shared': [handleShared],
   'PUT /cm-shared': [handleShared],
   'GET /me': [handleMe, UNSET],
@@ -154,7 +152,7 @@ const SERVER_DOWN = 'The server had a problem just now. Try again in a moment.';
 const KV_FULL = 'Today’s saves on the server are used up. Your changes are kept on this device and are saved after the daily reset (00:00 UTC).';
 /* any other route (a deletion, a revoke, a new invitation): nothing was kept to be saved later, so it says nothing was changed (W1-10-02) */
 const KV_FULL_OTHER = 'Today’s saves on the server are used up, so nothing was changed. Try again after the daily reset (00:00 UTC).';
-const kvFull = e => /limit exceeded/i.test(String(e && e.message || e));
+const kvFull = kvLimit;   // (one test for "the day's KV writes are used up", worker/items.js)
 export default {
   async fetch(req, env) {
     const { cors, allowed, origin } = corsFor(req, env);

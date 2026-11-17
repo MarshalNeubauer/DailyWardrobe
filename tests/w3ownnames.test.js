@@ -43,10 +43,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(e.col===String(ok2.OWN_COL_RE)&&e.pat===String(ok2.OWN_PAT_RE),`the app and the server have one own-key rule (${e.col} ${e.pat})`);
     ok(e.keep.primaryColor&&e.keep.secondaryColor==='ownrot1'&&/^own-/.test(e.keep.pattern)&&e.drop.primaryColor===undefined&&e.drop.secondaryColor===undefined&&e.drop.pattern===undefined,
       `cleanRecord keeps own keys of the rule and drops others (${JSON.stringify(e.keep)} | ${JSON.stringify(e.drop)})`);
-    {const rec=await import(pathToFileURL(path.join(__dirname,'..','worker','records.js')).href);const chk=rec.recCheck||rec.itemWrong;
-      if(typeof chk==='function'){const good=chk({items:[{id:'r1',type:'tie',primaryColor:'ownrot1',pattern:'own-1abcd'}]}),bad=chk({items:[{id:'r2',type:'tie',primaryColor:'ownبني'}]});
-        ok(!good&&!!bad,`the server's record check takes keys of the rule and refuses others (${good} | ${bad})`)}
-      else ok(true,'(records.js exports no check to call: '+Object.keys(rec).join(',')+')')}
+    {const rec=await import(pathToFileURL(path.join(__dirname,'..','worker','records.js')).href),chk=rec.recCheck;
+      // (a renamed check fails here instead of passing silently: CR-10-11)
+      const good=typeof chk==='function'?chk({items:[{id:'r1',type:'tie',primaryColor:'ownrot1',pattern:'own-1abcd'}]}):'no recCheck',bad=typeof chk==='function'?chk({items:[{id:'r2',type:'tie',primaryColor:'ownبني'}]}):null;
+      ok(!good&&!!bad,`the server's record check (records.js recCheck) takes keys of the rule and refuses others (${good} | ${bad})`)}
     // ---- an own pattern by its name in the lines the planner writes (W1-1-04)
     e=await p.evaluate(()=>{settings.custom.patterns.push({key:'own-basketweave',name:'Basketweave',desc:'',base:'woven',types:['tie']});applyCustom(settings.custom);
       const t={id:'tw',type:'tie',primaryColor:'taupe',pattern:'own-basketweave'};return {nm:nm(t),line:piecesLine({top:{type:'suit',primaryColor:'navy',pattern:'solid'},suitDay:true,tie:t})}});
