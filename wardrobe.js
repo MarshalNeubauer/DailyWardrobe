@@ -142,7 +142,7 @@ async function setItemField(id,k,v){
   wardRefresh();const h=$('#iv-title');if(h&&editing===id){h.textContent=itemTitle(it)||TYPES[it.type]||'Item';h.className=titleCls(it)}}
 /* the Add card's name, brand and notes (its More section) and Material: each keystroke is kept on the card (nothing is redrawn); i: the card's id or place */
 function setQField(i,k,v){const q=cardOf(i);if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];
-  if(k==='material'){delete q.matAI;q.matSet=1;q.checked={...q.checked,fabric:1}}   // chosen by hand (and so its checklist section is checked, add.js addCkSecs): no longer Claude's suggestion, and a later reading leaves it (tagging.js takeMaterial)
+  if(k==='material'){delete q.matAI;q.matSet=1;q.checked={...q.checked,fabric:1}}   // chosen by hand (and so its checklist section is checked, add-card.js addCkSecs): no longer Claude's suggestion, and a later reading leaves it (tagging.js takeMaterial)
   addKeepSoon();if(k==='material')renderAdd()}
 
 /* ---- one-time rename of the owner's stretch shirts (2026-11-15, his decision on the materials audit) ----

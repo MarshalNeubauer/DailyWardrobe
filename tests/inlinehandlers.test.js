@@ -9,7 +9,7 @@ const fs=require('fs'),path=require('path');
 module.exports=async({ok,ROOT})=>{
   const CHECKED=new Set([
     // ids of the app's own shape (core.js ID_RE, cleanRecord) and keys from the app's own lists
-    'account.js|acctEsc(v.id)','add.js|esc(q.id)','add.js|k','add.js|v','app.js|k','care.js|w','care.js|g.t','care.js|t','checklist.js|src',
+    'account.js|acctEsc(v.id)','add-card.js|esc(q.id)','add-card.js|k','add-card.js|v','app.js|k','care.js|w','care.js|g.t','care.js|t','checklist.js|src',
     'colpick.js|src','colpick.js|k','colpick.js|v','colpick.js|c','colpick.js|p','colpick.js|t','colpick.js|esc(q.id)','colpick.js|h',
     "colpick.js|have?'existing':'new'",'dress.js|k','history.js|k','history.js|slot','history.js|f.slot','history.js|f.item.id','itemsheet.js|k',
     'itemsheet.js|t','pack.js|which','pack.js|first.k','photos.js|itemKey(i)','settings.js|r.date','settings.js|id','setup.js|k','setup.js|kind',
