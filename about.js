@@ -61,7 +61,7 @@ function checkForUpdate(manual){
    page reloads once that worker controls it, so the reload gets one whole version. */
 async function updateNow(){
   if(aboutUpdating)return;
-  // the cards waiting on Add come back after the restart (add.js addKeep / addRestore), so they need no question; only a photo still
+  // the cards waiting on Add come back after the restart (add-keep.js addKeep / addRestore), so they need no question; only a photo still
   // being read is stopped by it (re-audit 2026-11-15: "they will be lost" put people off a safe update)
   const n=typeof queue!=='undefined'&&queue?queue.filter(q=>q&&(q.busy||q.multiBusy)).length:0;
   if(n&&!await askConfirm(`Update now?\n\n${n===1?'A photo on the Add page is':`${n} photos on the Add page are`} still being read. Updating restarts the app and stops ${n===1?'that reading':'those readings'}, so ${n===1?'it has':'they have'} to be read again. Your other cards on Add come back as they are.`,{ok:'Update'}))return;

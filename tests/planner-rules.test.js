@@ -328,7 +328,10 @@ const fix8r3=async({ok,chromium,url})=>{
     ok(sc.black>sc.suede,`the score agrees: black calf with a suit ${sc.black}, brown suede loafers ${sc.suede}`);
 
     // ---- W2-17-03: the picker's Best match is what the score says; picking it gives the score shown
-    const pk=await p.evaluate(async()=>{fresh('2026-11-15T08:00:00');items=w17();show('today');const out=[];
+    // (the days before today recorded as shown, as an app in use has them: unrecorded, they were planned again after the pick, which fixed
+    // today's shirt and tie ahead of them (fixedAhead), and recorded only then, so the day's Variety could differ from the picker's peek,
+    // which plans the day alone: with the look in the plan, PLAN_RULES 26, 95 shown and 93 after the pick)
+    const pk=await p.evaluate(async()=>{fresh('2026-11-15T08:00:00');items=w17();{const P=planFor(),T=todayDate();for(const k of Object.keys(P))if(keyDate(k)<T&&P[k].shirt)dayRecs[k]={date:k,ids:idsOf(P[k]),suitDay:P[k].suitDay,vestOn:!!P[k].vest,auto:true};cache={}}show('today');const out=[];
       for(const slot of ['shoes','top','tie']){const o=planFor()[key(sel)],cur=rateOutfit(o).score,pool=slotPool(slot,o),sc=pool.map(i=>[fitOf(slot,o,i),i]).sort((a,b)=>b[0]-a[0]),best=sc[0][0];
         const tags=sc.map(([f,i])=>[fitTag(best-f)[1],f,i.id===(o[slot]&&o[slot].id)]);
         out.push({slot,cur,bad:tags.filter(([t,f,c])=>!c&&t==='Best match'&&f<cur).length+tags.filter(([t,f,c])=>!c&&t!=='Best match'&&f>best).length})}
