@@ -223,7 +223,9 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
     clearTimeout(syncTimer)});
   // one sync on d, with what it sent and received (d's own requests: each is noted with its device)
   const counted=(d,r)=>{const t=traffic.filter(x=>x.who===d.n);return {ok:r,up:t.reduce((a,x)=>a+x.up,0),down:t.reduce((a,x)=>a+x.down,0),n:t.length,t,big:t.some(x=>x.up>1e6||x.down>1e6)}};
-  const measured=async d=>{await Promise.all(devs.map(quiet));traffic.length=0;return counted(d,await sync(d))};
+  // (d's own scheduled backup is called off before the wait, so the change it holds goes up in the count, not during the quiet:
+  // "a day marked worn goes up without the backup (0.0 KB up …)" on the branch's nightly run)
+  const measured=async d=>{await d.p.evaluate(()=>clearTimeout(syncTimer));await Promise.all(devs.map(quiet));traffic.length=0;return counted(d,await sync(d))};
   const kb=x=>`${(x.up/1e3).toFixed(1)} KB up, ${(x.down/1e3).toFixed(1)} KB down, ${x.n} requests`;
   const status=d=>d.p.evaluate(()=>localStorage.getItem('sync_status'));
   const itemOf=(d,id)=>d.p.evaluate(id=>items.find(i=>i.id===id)||null,id);
