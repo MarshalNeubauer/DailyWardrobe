@@ -27,8 +27,9 @@ if (OUT) fs.mkdirSync(OUT, { recursive: true });
 /* the app's list of materials per type (core.js MATERIALS_BY): read from the file so the two never drift apart */
 const core = fs.readFileSync(path.join(__dirname, '..', 'core.js'), 'utf8');
 const MATERIALS_BY = Function('return ' + core.match(/const MATERIALS_BY=(\{[\s\S]*?\});/)[1])();
-/* the app's own field stamps (core.js itemFields, fix round 3): read from the file too, so a saved item carries fs as a phone's save would */
-const itemFields = Function(core.match(/^const (?:stamp|ITEM_META|fsOk|fieldStamp|sameVal|fsPack)=.*$/gm).join('\n') + '\n'
+/* the app's own field stamps (core.js itemFields, fix round 3; its helpers in merge.js): read from the files too, so a saved item carries fs as a phone's save would */
+const merge = fs.readFileSync(path.join(__dirname, '..', 'merge.js'), 'utf8');
+const itemFields = Function(merge.match(/^const (?:stamp|ITEM_META|fsOk|fieldStamp|sameVal|fsPack)=.*$/gm).join('\n') + '\n'
   + core.match(/^function itemFields\([\s\S]*?i\.fs=fsPack\(t,s\);return i\}$/m)[0] + '\nreturn itemFields;')();
 const TYPE_WORD = { suit: 'suit', blazer: 'blazer (sport coat)', pants: 'trousers', shirt: 'dress shirt', tie: 'tie', socks: 'pair of socks', overcoat: 'overcoat', raincoat: 'raincoat' };
 
