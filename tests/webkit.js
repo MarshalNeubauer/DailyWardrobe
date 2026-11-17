@@ -72,7 +72,7 @@ const wrapBrowser=b=>{const newContext=b.newContext.bind(b);
    `engines`. Each launch gives run.js's view of one shared browser per process, with the fixed plan, the painter off and the file's
    flags (realPlanner, assembled) on every context, as Chromium's has: launching WebKit from playwright directly skipped all three, so
    its half ran the real planner and painted at every load, and set the suite's pace. Under --webkit (TEST_BROWSER=webkit) the
-   "Chromium" browser is WebKit already, so only one half runs, named WebKit. The nightly run installs WebKit
-   (.github/workflows/nightly-tests.yml); without it the WebKit half fails with "WebKit: the browser starts (…)" */
+   "Chromium" browser is WebKit already, so only one half runs, named WebKit. The nightly cloud run installs WebKit on
+   the shards that run WebKit halves (.github/workflows/full-tests.yml); without it the WebKit half fails with "WebKit: the browser starts (…)" */
 const engines=(chromium,webkit)=>process.env.TEST_BROWSER==='webkit'?[['WebKit',()=>chromium.launch()]]:[['Chromium',()=>chromium.launch()],['WebKit',()=>webkit.launch()]];
 module.exports={wrapBrowser,wrapContext,engines};
