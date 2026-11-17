@@ -5,7 +5,9 @@
   "page": {
    "about.js": 3,
    "account.js": 13,
-   "add.js": 9,
+   "add-paste.js": 4,
+   "add-sheet.js": 1,
+   "add.js": 4,
    "analysis.js": 4,
    "app.js": 5,
    "asm-color.js": 13,
