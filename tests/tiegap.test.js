@@ -28,6 +28,14 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     ok(r.few<=4&&r.fewDays>30,`with only four ties a tie comes back within three workdays at most a few times (${r.few} in ${r.fewDays} days; 16 before)`);
     ok(r.ties>=r.owned-2,`the ties still rotate (${r.ties} of ${r.owned} worn)`);
     ok(/three workdays ago/.test(r.why||'')&&r.pts<5,`the score names a tie worn three workdays back (${r.why})`);
+    // two suits, two shirts, two ties (the code review, CR-3-03): each jacket's memory of its last tie (comboRepeat) outweighed TIE_NEXT
+    // and the plan settled into A A B B, yesterday's tie again on 41 of 103 workdays
+    const two=await p.evaluate(()=>{let k=0;const I=(type,c,x={})=>({id:type+(k++),type,primaryColor:c,pattern:'solid',...x});
+      items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','green'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'})];
+      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];TODAY_OVERRIDE='2026-11-09T12:00:00';dayRecs={};weather={};cache={};
+      const P=planSim(planStart(2026,10)).upTo(new Date(2027,2,31)),ks=Object.keys(P).filter(k=>keyDate(k)>=new Date(2026,10,9)).sort((a,b)=>keyDate(a)-keyDate(b));
+      let rep=0;for(let i=1;i<ks.length;i++)if(P[ks[i]].tie.id===P[ks[i-1]].tie.id)rep++;return {rep,days:ks.length}});
+    ok(two.days>90&&two.rep===0,`with two suits and two ties yesterday's tie never comes back the next workday (${two.rep} of ${two.days}; 41 before)`);
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}
 };
