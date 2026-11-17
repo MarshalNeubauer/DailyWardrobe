@@ -50,7 +50,10 @@ const weather=async({ok,chromium,url})=>{
   ok(f.formality&&f.formality.pts===10,'Formality check scores 10/10');
   ok(await p.evaluate(()=>(document.querySelector('#today .dayact .ftag')||{}).textContent==='Formal day'),'Today marks the formal day (a small tag, not a button)');
   await p.evaluate(()=>openSettings('daysoff'));await p.click('#formal-list .fchip button');await p.waitForFunction(()=>!planFor()['2026-11-19'].formal);
-  ok(await p.evaluate(()=>!document.querySelector('#formal-list .fchip')),'the × on a formal day in Settings makes it regular again');
+  /* the plan reads dayRecs, which saveDay sets before its database write; setOccasion redraws the list only after that write
+     (WebKit's IndexedDB: about 80 ms later), so wait for the list too, as the add above does, then check both */
+  await p.waitForFunction(()=>!document.querySelector('#formal-list .fchip'),null,{timeout:5000}).catch(()=>{});
+  ok(await p.evaluate(()=>!planFor()['2026-11-19'].formal&&!document.querySelector('#formal-list .fchip')&&/No occasions coming up/.test($('#formal-list').textContent)),'the × on a formal day in Settings makes it regular again');
   await p.evaluate(()=>{closeSettings();setFormal(true,'2026-11-19')});await p.waitForFunction(()=>planFor()['2026-11-19'].formal);
   // French cuffs with no cufflinks owned
   const nl=await p.evaluate(()=>{const keep=items;items=items.filter(i=>i.type!=='cufflinks');cache={};const o=planFor()['2026-11-19'];const n=o.notes.join(' ');items=keep;cache={};return {cuff:o.shirt.cuff,n}});

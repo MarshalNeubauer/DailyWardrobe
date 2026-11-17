@@ -175,7 +175,7 @@ scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type
   const mat=MATERIALS_BY[i.type]?ckSec(scope,'material',{mark:i.material?'good':'opt',title:'Material',sum:i.material?esc(matLabel(i.material)):'Not set',body:matRow(i.type,i.material,`setItemField('${jsq(id)}','material',`)}):'';
   const det=E(id,'type',Object.entries(TYPES),i.type)+(METAL_TYPES.includes(i.type)?E(id,'metal',metalOptsFor(i.type),i.metal||'silver',i.type==='belt'?'Buckle':''):'')+
     (i.type==='shirt'?E(id,'cuff',CUFFS,i.cuff||'button'):'')+(i.type==='suit'?E(id,'vest',VESTS,hasVest(i)?'yes':'no'):'')+(SEASON_TYPES.includes(i.type)?E(id,'season',SEASONS,i.season||'all'):'')+
-    (i.type==='pants'?E(id,'trouserKind',TROUSER_KINDS,trouserKind(i)):'')+(i.type==='shoes'?E(id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):'')+(i.type==='shoes'||i.type==='belt'?E(id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):'')+
+    (i.type==='pants'?E(id,'trouserKind',TROUSER_KINDS,trouserKindShown(i)):'')+(i.type==='shoes'?E(id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):'')+(i.type==='shoes'||i.type==='belt'?E(id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):'')+
     (i.type==='watch'?`<label class="wdetails">Details <input type="text" maxlength="${WATCH_DETAILS_MAX}" dir="auto" value="${esc(String(i.details||'').slice(0,WATCH_DETAILS_MAX))}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${jsq(id)}','details',this.value.trim().slice(0,WATCH_DETAILS_MAX)||'none')"></label>`+E(id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(id,'band',BANDS,watchOpts(i).band)+E(id,'bezel',BEZELS,watchOpts(i).bezel)+E(id,'watchStyle',WATCH_STYLES,watchOpts(i).style):'');
   const details=ckSec(scope,'details',{mark:'good',title:'Details',sum:esc(ivDetailSum(i)),body:det+(fab?'':gap),cls:'ivtags'});
   const cs=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null;
@@ -202,7 +202,7 @@ function ivSummary(i,pic){const s=CARE_ABLE.includes(i.type)&&!i.order&&typeof c
 function ivDetailSum(i){const t=i.type,a=[TYPES[t]||'Item'];
   if(SEASON_TYPES.includes(t))a.push(optLab(SEASONS,i.season||'all'));
   if(t==='suit')a.push(hasVest(i)?'matching vest':'no vest');if(t==='shirt')a.push(optLab(CUFFS,i.cuff||'button').toLowerCase());
-  if(t==='pants')a.push(optLab(TROUSER_KINDS,trouserKind(i)).toLowerCase());if(t==='shoes')a.push(optLab(SHOE_STYLES,shoeStyle(i)).toLowerCase());
+  if(t==='pants')a.push(optLab(TROUSER_KINDS,trouserKindShown(i)).toLowerCase());if(t==='shoes')a.push(optLab(SHOE_STYLES,shoeStyle(i)).toLowerCase());
   if(METAL_TYPES.includes(t))a.push(optLab(metalOptsFor(t),i.metal||'silver').toLowerCase());
   return a.filter(Boolean).join(' · ')}
 /* Planning & care's summary: "In rotation · worn 3 of 5 since cleaning" */

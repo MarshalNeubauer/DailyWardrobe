@@ -452,6 +452,8 @@ const nameIso=t=>{t=String(t??'');return RTL_RE.test(t)?'⁨'+t+'⁩':t};
 const TROUSER_KINDS=[['dress','Dress pants'],['chinos','Chinos'],['jeans','Jeans'],['cargo','Cargo pants']],SHOE_STYLES=[['oxford','Oxford'],['derby','Derby'],['loafer','Loafer'],['boot','Boot'],['sneaker','Sneaker']];
 const trouserKind=i=>i&&i.type==='pants'&&(i.trouserKind==='chinos'||i.trouserKind==='jeans')?i.trouserKind:i&&i.type==='pants'&&i.trouserKind==='cargo'?'chinos':'dress';
 const isCargo=i=>!!i&&i.type==='pants'&&i.trouserKind==='cargo';
+/* the kind as shown to the owner (the item sheet's Kind and Details, the grid's label): cargo stays cargo there; the planner keeps trouserKind */
+const trouserKindShown=i=>isCargo(i)?'cargo':trouserKind(i);
 const shoeStyle=i=>i&&i.type==='shoes'&&SHOE_STYLES.some(([k])=>k===i.shoeStyle)?i.shoeStyle:'oxford';
 /* the word for the item in descriptions: chinos, jeans, loafers, boots, sneakers, derby shoes; else the type's own */
 const typeWord=i=>isCargo(i)?'cargo pants':i&&i.type==='pants'&&trouserKind(i)!=='dress'?trouserKind(i):i&&i.type==='shoes'&&shoeStyle(i)!=='oxford'?({derby:'derby shoes',loafer:'loafers',boot:'boots',sneaker:'sneakers'})[shoeStyle(i)]:(TYPES[i&&i.type]||'item').toLowerCase();
