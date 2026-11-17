@@ -49,14 +49,16 @@ function calKind(ev){const t=String(ev.title||'');
   const loc=String(ev.location||'').toLowerCase(),home=calHome();
   if(ev.days>=2&&loc&&home&&!loc.includes(home)&&!/\b(online|teams|zoom|meet|webex|call|office|room)\b/i.test(loc))return {k:'trip',label:'Trip'};
   return null}
+/* a found event's fields before calPlan fills them */
+const CAL_X={ev:null,k:'',label:'',what:'',can:false,done:false,days:[]};
 /* the events found, each with its meaning and what keeping it would do: [{ev, k, label, act, what, can}]
    flights pair up: an outbound flight and the next one within 3 weeks make one trip from the first to the second */
 function calFound(list){list=list||((calRead()||{}).events)||[];const T=isoKey(todayDate()),out=[],used=new Set();
   const fl=list.filter(e=>e.end>=T&&CAL_FLIGHT.test(e.title||'')&&calKind(e)&&calKind(e).k==='trip').sort((a,b)=>a.start<b.start?-1:1);
-  for(let i=0;i<fl.length;i++){const a=fl[i];if(used.has(a.id))continue;const b=fl.slice(i+1).find(x=>!used.has(x.id)&&x.start>a.start&&(calDay(x.start)-calDay(a.start))/864e5<=21);
-    if(b){used.add(b.id);out.push({ev:{...a,end:b.start,days:Math.round((calDay(b.start)-calDay(a.start))/864e5)+1,pair:b.id},k:'trip',label:'Trip'})}
-    else out.push({ev:a,k:'trip',label:'Trip'});used.add(a.id)}
-  for(const e of list){if(e.end<T||used.has(e.id))continue;const m=calKind(e);if(m)out.push({ev:e,...m})}
+  for(let i=0;i<fl.length;i++){const a=fl[i];if(used.has(a.id))continue;const b=fl.slice(i+1).find(x=>!used.has(x.id)&&x.start>a.start&&(+calDay(x.start)-+calDay(a.start))/864e5<=21);
+    if(b){used.add(b.id);out.push({...CAL_X,ev:{...a,end:b.start,days:Math.round((+calDay(b.start)-+calDay(a.start))/864e5)+1,pair:b.id},k:'trip',label:'Trip'})}
+    else out.push({...CAL_X,ev:a,k:'trip',label:'Trip'});used.add(a.id)}
+  for(const e of list){if(e.end<T||used.has(e.id))continue;const m=calKind(e);if(m)out.push({...CAL_X,ev:e,...m})}
   for(const x of out)calPlan(x);
   return out.sort((a,b)=>a.ev.start<b.ev.start?-1:a.ev.start>b.ev.start?1:0)}
 /* what keeping it does, and whether it can be kept: an occasion needs a workday (no outfit is planned on another day) */
