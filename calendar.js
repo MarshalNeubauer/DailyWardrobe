@@ -61,13 +61,15 @@ function calFound(list){list=list||((calRead()||{}).events)||[];const T=isoKey(t
   for(const e of list){if(e.end<T||used.has(e.id))continue;const m=calKind(e);if(m)out.push({...CAL_X,ev:e,...m})}
   for(const x of out)calPlan(x);
   return out.sort((a,b)=>a.ev.start<b.ev.start?-1:a.ev.start>b.ev.start?1:0)}
+/* why a weekday is off: the user's own day off (it wins in offDays) says "your day off", else the holiday's name */
+const calOffWhy=d=>(settings.daysOff||[]).some(o=>o&&o.d===isoKey(d))?'your day off':offName(d);
 /* what keeping it does, and whether it can be kept: an occasion needs a workday (no outfit is planned on another day) */
 function calPlan(x){const e=x.ev,T=todayDate(),days=[];
   for(let d=calDay(e.start<isoKey(T)?isoKey(T):e.start),b=calDay(e.end),g=0;d<=b&&g<92;d.setDate(d.getDate()+1),g++)days.push(new Date(d));
   if(CAL_OCC[x.k]){const wd=days.filter(d=>isWorkday(d)).slice(0,7);x.days=wd;x.can=wd.length>0;
     const done=wd.length&&wd.every(d=>{const r=dayRecs[key(d)];return r&&occOf(r)===CAL_OCC[x.k]});if(done)x.done=true;
     const d0=calDay(e.start),off=offName(d0)&&settings.workdays.includes(d0.getDay());   // (a day off says so, not "Thursday isn’t a workday")
-    x.what=x.can?(x.k==='casual'?'Casual day: no jacket or tie':x.label):off?'A day off: no outfit to plan':`${DAY_NAMES[d0.getDay()]} isn’t a workday: no outfit to plan`}
+    x.what=x.can?(x.k==='casual'?'Casual day: no jacket or tie':x.label):off?`a day off (${calOffWhy(d0)}): no outfit to plan`:`${DAY_NAMES[d0.getDay()]} isn’t a workday: no outfit to plan`}
   else if(x.k==='off'){const wd=days.filter(d=>isWorkday(d));x.days=days;x.can=wd.length>0;x.done=!x.can&&days.some(d=>(settings.daysOff||[]).some(o=>o.d===isoKey(d)));
     x.what=x.can?(days.length>1?`Days off (${wd.length} workday${wd.length===1?'':'s'})`:'Day off'):x.done?'Day off':'No workdays to take off'}
   else {x.can=true;x.what='Trip: a packing list for those days'}

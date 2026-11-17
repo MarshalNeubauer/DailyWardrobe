@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	3e012bc579d00897a86a
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	shadeRow	shirtColFix	unreadNote
@@ -2627,11 +2626,11 @@ calendar.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibil
 calendar.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backWanted	inviteInUrl
 calendar.test.js	backupfile.js	<loaded>
 calendar.test.js	boxfold.js	<loaded>
-calendar.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	calBanner	calById	calConnect	calDateTxt	calDay	calDisconnect	calDismiss	calFetch	calFound	calGuide	calHome	calKeep	calKind	calLink	calMask	calNew	calPastePic	calPlan	calRead	calRow	calScreen	calSeen	calSetSeen	calStatus	calSummary	calTime	calTz	calWrite	pic	renderCalUI
+calendar.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	calBanner	calById	calConnect	calDateTxt	calDay	calDisconnect	calDismiss	calFetch	calFound	calGuide	calHome	calKeep	calKind	calLink	calMask	calNew	calOffWhy	calPastePic	calPlan	calRead	calRow	calScreen	calSeen	calSetSeen	calStatus	calSummary	calTime	calTz	calWrite	pic	renderCalUI
 calendar.test.js	care.js	<loaded>	careLimit	careWashed	laundryDays	renderCareUI
 calendar.test.js	checklist.js	<loaded>
 calendar.test.js	colpick.js	<loaded>
-calendar.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	applyCustom	calSeen	calendar	casualTop	cleanSettings	dayClimate	dayFields	daysOff	di	isWorkday	isoKey	key	keySettings	keySplit	mergeSettings	metalWord	nameHtml	nextStamp	noBidi	nowMs	occLabel	occOf	offDays	offName	ownMats	recClean	recFree	setDate	setDay	setDays	setFields	setList	setStr	setWardrobe	stampSettings	subHashes	subStamp	takeSettings	todayDate	wearsJacket	wearsTie
+calendar.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	applyCustom	calSeen	calendar	casualTop	cleanSettings	dayClimate	dayFields	daysOff	di	holidays	isWorkday	isoKey	key	keySettings	keySplit	mergeSettings	metalWord	nameHtml	nextStamp	noBidi	nowMs	occLabel	occOf	offDays	offName	ownMats	recClean	recFree	setDate	setDay	setDays	setFields	setList	setStr	setWardrobe	stampSettings	subHashes	subStamp	takeSettings	todayDate	wearsJacket	wearsTie
 calendar.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed
 calendar.test.js	daysoff.js	<loaded>	countryName	dayOffAdd	daysOffListen	isoDate	isoToDate	offNameCut	refreshHolidays	renderDaysOffUI	renderFormalUI	shortDate	yearDate
 calendar.test.js	detect.js	<loaded>	@
@@ -2684,7 +2683,7 @@ calendar.test.js	tests/fixtures/calendar/outlook.ics	<any>
 calendar.test.js	tests/fixtures/calendar/personal.ics	<any>
 calendar.test.js	tests/webkit.js	<any>
 calendar.test.js	theme.js	<loaded>	@apreferscolorschemedark.addEventListenerchange	applyTheme
-calendar.test.js	toast.js	<loaded>	toast
+calendar.test.js	toast.js	<loaded>	toast	toastOff
 calendar.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold
 calendar.test.js	today-photofold.js	<loaded>
 calendar.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
