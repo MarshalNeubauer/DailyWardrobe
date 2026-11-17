@@ -131,7 +131,7 @@ function cropSwatch(canvas,zoom=1,cx=.5,cy=.5,light){
   g.drawImage(canvas,sx,sy,sampleSize,sampleSize,0,0,128,128);if(deadCanvas(o))return null;   // drawn black: no swatch (callers keep the one they had)
   if(light)matchLight(o,light);return o.toDataURL('image/jpeg',SW_Q)}
 /* a small JPEG (2026-11-15, the owner's option A for the server's writes): a 128 px PNG of cloth was about 38 KB, too big to keep in
-   the backup's own text, so every new item cost one more server write for its swatch; as a JPEG it is a few KB, under sync.js PH_MIN,
+   the backup's own text, so every new item cost one more server write for its swatch; as a JPEG it is a few KB, under sync-photos.js PH_MIN,
    and rides inside the backup. Swatches saved before as PNG stay as they are (still shown, still synced by reference) */
 const SW_Q=.8;
 /* a close-up's exposure says little (a white shirt shot in dim light reads grey): the swatch's lightness is set from the tagged colour,
