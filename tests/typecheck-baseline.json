@@ -40,7 +40,9 @@
    "stats.js": 7,
    "sync-status.js": 1,
    "sync.js": 3,
-   "today.js": 16,
+   "today-gestures.js": 8,
+   "today-picture.js": 2,
+   "today.js": 6,
    "ui.js": 24,
    "wardrobe.js": 4,
    "weather.js": 1
