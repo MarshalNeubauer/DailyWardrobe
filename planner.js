@@ -302,9 +302,10 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans the days after today (the week's locks and
    the app's own recorded pieces go; the owner's swaps and picks (force, skip, the vest) and a kept trip stay: replanFuture(true) in history.js) */
-const PLAN_RULES=25;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
+const PLAN_RULES=26;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
-const FORMAL_QWIN=3;   // a formal day or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
+const LOOK_PAIR=3,LOOK_K=2,LOOK_FREE=3,LOOK_RESTED=.75;   // the look in the clothes choice (chooseClothes): points per point of dialLook short of each piece's own best outfit, and of the best rested one's
+const FORMAL_QWIN=3;   // a formal day, a wedding or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
 const TIE_CREEP=.03,TIE_CREEP_MAX=9;   // a tie's rest keeps creeping after 30 days, capped well under TIE_GAP so a tie never repeats for it
 /* jacket colour groups, as the eye reads them: every grey from light grey to charcoal is one look, two navies are one look. A jacket in the same
    group as the previous workday's (weekends and days off skipped) loses about 8 days of rest; a near group or the workday
@@ -582,8 +583,37 @@ for(const P of PP)for(const S of SS)for(const X of XX){const {pt}=P,{sh}=S,{x}=X
   cands.push({q,pt,sh,x,P,S,X});
 }
 const rOf=({pt,sh,x,P,S,X})=>1.5*(P.rb+X.r10)+P.pr+X.r30+S.rs-S.rep-X.rep-(day.ahead?S.ah+X.ah:0)-lookRepeat(top,sh,x,day.prev)-comboCost(sh,x)-pairRepeat(sh,x,day.pairs);
+/* the look (2026-11-17, the owner: a planned outfit ranked 457th of 507 on the score card, "picked because the pink tie had rested 25 days"):
+   dialLook (Harmony + Texture + Occasion, the rank's own value: planLook) counts among the outfits inside the window that repeat nothing
+   (realRep), in two parts, beyond LOOK_FREE points:
+   - each piece's own best (LOOK_PAIR per point): an outfit costs what it falls short of the best outfit any one of its pieces makes, so
+     the pieces rest brings round are worn the best way they can be (the pink tie with the shirt it suits), and no piece is held back for
+     looking plainer than another: with the whole look's shortfall alone, a white woven shirt took 12 of 40 workdays (tests/rotation-pause)
+   - the best rested outfit (LOOK_K per point): the best look among the outfits whose tie, shirt and pants have all rested LOOK_RESTED of
+     their type's turn (pieces in rotation x 7 / workdays a week: 8 shirts at five a week, 11 days), so the piece just worn doesn't set
+     the bar and come straight back; the cost fades for an outfit with a piece rested over its turn, to nothing at two turns (due), so
+     every piece still comes round
+   rest and the softer repeats then choose as before. When every outfit in the window repeats something, and on a formal day, a wedding or a
+   funeral (the occasion's own rules: a navy tie was taken to a wedding for its contrast), the window is chosen as before, without the
+   look; a wedding's window is FORMAL_QWIN now, as a formal day's (a well-rested navy tie still won it within QWIN) */
+const realRep=(()=>{const w=Ss.length>3?2:1,sids=[...(day.prev||[]).slice(0,w),...(day.ahead&&day.ahead.fx||[]).filter(f=>f.w<w)].map(p=>p&&p.sid).filter(Boolean);
+  // the same tie within three workdays or its color the workday before (tieRepeat 15 and more), the shirt of the workday before or after
+  // (the two before and after with more than three shirts), a tie or shirt fixed on the next workdays, the same tie with that shirt color
+  // within PAIR_DAYS, the whole look of the last two workdays, this jacket's last tie with that shirt color (comboRepeat)
+  return ({sh,x,S,X})=>X.rep>=15||(!!sh&&sids.includes(sh.id))||(!!day.ahead&&(X.ah>=TIE_GAP||S.ah>=NEXT_SHIRT))||pairRepeat(sh,x,day.pairs)>0||lookRepeat(top,sh,x,day.prev)>=20||comboRepeat(sh,x,hk)>=15})();
+const wk=Math.max(1,settings.workdays.length),bzWk=Math.max(1,settings.blazerDays.filter(d=>settings.workdays.includes(d)).length);
+const turn={x:Math.max(7,c.by('tie').length*7/wk),sh:Math.max(7,c.by('shirt').length*7/wk),pt:Math.max(7,c.by('pants').length*7/(c.by('suit').length&&!c.noJ?bzWk:wk))};
+const fade=(i,t)=>i?1-Math.min(1,Math.max(0,c.over(i,0)-t)/t):1,due=({pt,sh,x})=>Math.min(fade(x,turn.x),fade(sh,turn.sh),suitDay?1:fade(pt,turn.pt));
+const look=planLook(day,suitDay,c.by('shoes'),c.by('belt'),c.by('watch')),lookC=k=>k.L??(k.L=look(top,suitDay?top:k.pt,k.sh,k.x));
+const rested=({pt,sh,x})=>[[x,turn.x],[sh,turn.sh],[suitDay?null:pt,turn.pt]].every(([i,t])=>!i||c.over(i,0)>=LOOK_RESTED*t);
+const lookCost=win=>{let lm=-Infinity;const best=new Map(),up=(p,v)=>{if(p&&!(best.get(p)>=v))best.set(p,v)};
+  let lr=-Infinity;for(const c of win){lm=Math.max(lm,lookC(c));up(c.sh,c.L);up(c.x,c.L);up(c.pt,c.L);if(rested(c))lr=Math.max(lr,c.L)}if(lr>-Infinity)lm=lr;
+  return c=>{let own=Infinity;for(const p of [c.sh,c.x,c.pt])if(p)own=Math.min(own,best.get(p));if(own===Infinity)own=c.L;
+    return LOOK_PAIR*Math.max(0,own-LOOK_FREE-c.L)+LOOK_K*Math.max(0,lm-LOOK_FREE-c.L)*due(c)}};
 const choose=cs=>{let qmax=-Infinity;for(const c of cs)if(c.q>qmax)qmax=c.q;
-  const win=cs.filter(c=>c.q>=qmax-(day.formal||day.occ==='funeral'?FORMAL_QWIN:QWIN));for(const c of win)c.r=rOf(c);
+  let win=cs.filter(c=>c.q>=qmax-(day.formal||day.occ==='funeral'||day.occ==='wedding'?FORMAL_QWIN:QWIN));
+  const fresh=occ||day.formal?[]:win.filter(c=>!realRep(c));   // (a formal day, a wedding or a funeral: its own rules choose, as before)
+  if(fresh.length){win=fresh;const lc=lookCost(win);for(const c of win)c.r=rOf(c)-lc(c)}else for(const c of win)c.r=rOf(c);
   return win.sort((a,b)=>(b.q+b.r)-(a.q+a.r))[0]};
 const hardC=c=>clothesHard(top,suitDay?top:c.pt,c.sh,c.x,suitDay,day,shoeOk);
 let pick1=choose(cands);
@@ -940,15 +970,28 @@ const dialLook=o=>dialHarmony(o,true).v+dialTexture(o,true).v+dialOccasion(o,tru
    tie, shoes, belt, watch} item lists; cur: the day's outfit (with suitDay, clim, formal, occasion). Returns {n, rank, swaps: [{slot, id,
    rank, fix}]}: single swaps (shirt, tie, pants, shoes, belt) that rank higher, or with a broken rule those that mend it. Runs in
    analysis-worker.js (history.js rankFor) */
+/* the shoes, belt and watch a look is judged with: for each jacket and pants the best of the day's pairs as chooseLeather picks them,
+   without rest (S, B, W: the day's shoes, belts and watches; sd: a suit day). Used by rankLooks and the planner's look term (planLook) */
+function lookLeather(S,B,W,sd,rain){const lmemo=new Map();return (t,b)=>{const k=(t?t.id:'-')+'|'+(b?b.id:'-');let r=lmemo.get(k);if(r)return r;let pick=null;
+    for(const x of S.length?S:[null])for(const be of [...B,null])for(const w of W.length?W:[null]){let v=0;
+      if(x){const ss=shoeScore(t,b,x);v+=ss-(ss<=SHOE_LINE?NO_SHOES:0)+shoeFormality(x,sd);if(rain&&finish(x.leather)==='suede')v-=RAIN_SUEDE}
+      if(be){if(!x)continue;const f=beltFit(x,be);if(f===null)continue;v+=12+f}else if(B.length&&x)v-=30;
+      if(w)v+=watchFit(w,x,be)*SHOE_WATCH;if(!pick||v>pick.v)pick={v,shoes:x,belt:be,watch:w}}
+    r=pick||{shoes:null,belt:null,watch:null};lmemo.set(k,r);return r}}
+/* the planner's look term (chooseClothes): a function giving dialLook, the rank's own value, of a jacket, pants, shirt and tie on the day,
+   with the shoes, belt and watch lookLeather gives them from the day's pools (S, B, W: all in rotation, as the rank counts them). Both are
+   kept for the planning run (colRun.lw by the pools, colRun.look by the outfit and the day's season and occasion): an outfit comes back on
+   many days, and a look is worked out once (the 149-item test wardrobe: 8 months plan in about 1.3x the time) */
+function planLook(day,sd,S,B,W){const rain=!!(day.clim&&day.clim.rain),occ=day.occ||(day.formal?'formal':null),base={suitDay:sd,clim:day.clim,formal:!!day.formal,occasion:occ};
+  const val=(lw,top,bot,shirt,tie)=>{const L=lw(top,bot);return dialLook({...base,top,bot,shirt,tie,shoes:L.shoes,belt:L.belt,watch:L.watch})};
+  if(!colRun){const lw=lookLeather(S,B,W,sd,rain);return (top,bot,shirt,tie)=>val(lw,top,bot,shirt,tie)}
+  const R=colRun.lw||(colRun.lw=new Map()),memo=colRun.look||(colRun.look=new Map()),sig=(sd?'S':'B')+(rain?'r':'')+'|'+S.map(i=>i.id).join()+'|'+B.map(i=>i.id).join()+'|'+W.map(i=>i.id).join();
+  let e=R.get(sig);if(!e){e={lw:lookLeather(S,B,W,sd,rain),n:R.size};R.set(sig,e)}const pre=e.n+'|'+(day.clim&&day.clim.season)+'|'+occ+'|';
+  return (top,bot,shirt,tie)=>{const k=pre+(top?top.id:'-')+'|'+(bot?bot.id:'-')+'|'+(shirt?shirt.id:'-')+'|'+(tie?tie.id:'-');let v=memo.get(k);if(v===undefined){v=val(e.lw,top,bot,shirt,tie);memo.set(k,v)}return v}}
 function rankLooks(pools,cur){return withColRun(()=>{const t0=Date.now(),sd=!!cur.suitDay,day={formal:!!cur.formal,occ:cur.occasion&&cur.occasion!=='formal'?cur.occasion:null,clim:cur.clim||{season:'mild'}};
   const base={suitDay:sd,clim:cur.clim,formal:cur.formal,occasion:cur.occasion},S=pools.shoes||[],B=pools.belt||[],W=pools.watch||[],s=day.clim.season;
   const shoeOk=(t,b)=>!S.length||S.some(x=>finish(x.leather)!=='patent'&&shoeSuits(t,b,x));
-  const lmemo=new Map(),leather=(t,b)=>{const k=(t?t.id:'-')+'|'+(b?b.id:'-');let r=lmemo.get(k);if(r)return r;let pick=null;
-    for(const x of S.length?S:[null])for(const be of [...B,null])for(const w of W.length?W:[null]){let v=0;
-      if(x){const ss=shoeScore(t,b,x);v+=ss-(ss<=SHOE_LINE?NO_SHOES:0)+shoeFormality(x,sd);if(day.clim.rain&&finish(x.leather)==='suede')v-=RAIN_SUEDE}
-      if(be){if(!x)continue;const f=beltFit(x,be);if(f===null)continue;v+=12+f}else if(B.length&&x)v-=30;
-      if(w)v+=watchFit(w,x,be)*SHOE_WATCH;if(!pick||v>pick.v)pick={v,shoes:x,belt:be,watch:w}}
-    r=pick||{shoes:null,belt:null,watch:null};lmemo.set(k,r);return r};
+  const leather=lookLeather(S,B,W,sd,day.clim.rain);
   const seasonBad=o=>!!s&&[o.top,o.suitDay?null:o.bot,o.shirt,o.tie].some(i=>i&&seasonFit(i,s)<-10);
   const hard=o=>clothesHard(o.top,sd?o.top:o.bot,o.shirt,o.tie,sd,day,shoeOk)||(o.shoes&&(o.bot||o.top)&&!shoeSuits(o.top,o.bot||o.top,o.shoes))||(o.shoes&&finish(o.shoes.leather)==='patent')||(o.shoes&&o.belt&&beltFit(o.shoes,o.belt)===null)||seasonBad(o);
   const tops=cur.top?(pools.top&&pools.top.length?pools.top:[cur.top]):[null],ties=cur.tie?(pools.tie&&pools.tie.length?pools.tie:[cur.tie]):[null],shirts=cur.shirt?(pools.shirt&&pools.shirt.length?pools.shirt:[cur.shirt]):[null];
