@@ -117,6 +117,9 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await p.selectOption('#item-view .wmat','flannel');await p.waitForFunction(()=>items.find(i=>i.id==='su1').material==='flannel');
     await p.fill('#item-view .wf-notes','Trousers taken in <2cm> & "let out" again');await p.locator('#item-view .wf-notes').blur();
     await p.waitForFunction(()=>{const i=items.find(x=>x.id==='su1');return i.name==='Wedding suit'&&i.brand==='Halden'&&/let out/.test(i.notes||'')});
+    // (items[] takes the name at once, the header and the grid follow once the item is stored: wardrobe.js setItemField after put;
+    // 30-60 ms later on the replay lab's WebKit iPhone, and the check read the header before that on WebKit: "Navy / Navy")
+    await p.waitForFunction(()=>{const h=document.querySelector('#iv-title'),g=document.querySelector('#gi-su1 .gimeta b');return !!h&&!!g&&h.textContent==='Wedding suit'&&g.textContent==='Wedding suit'},null,{timeout:5000}).catch(()=>{});
     const hd=await p.evaluate(()=>({t:document.querySelector('#iv-title').textContent,g:document.querySelector('#gi-su1 .gimeta b').textContent,gt:document.querySelector('#gi-su1 .gtype').textContent,cap:getComputedStyle(document.querySelector('#iv-title')).textTransform}));
     ok(hd.t==='Wedding suit'&&hd.g==='Wedding suit'&&hd.gt==='Suit'&&hd.cap==='none',`the name is the title in the sheet's header and in the grid, shown as typed (${hd.t} / ${hd.g})`);
     const stored=await p.evaluate(async()=>{const r=await tx('readonly',s=>s.get('su1'));return r&&[r.name,r.brand,r.material,r.notes].join('|')});
