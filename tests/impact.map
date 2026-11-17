@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	bb47564deb9846ffff96
+# tested	3ac48c449ff650d752a1
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	shadeRow	shirtColFix	unreadNote
@@ -13112,6 +13112,8 @@ shard.test.js	tests/asmweave.test.js	<any>
 shard.test.js	tests/assemble.test.js	<any>
 shard.test.js	tests/assets.test.js	<any>
 shard.test.js	tests/back.test.js	<any>
+shard.test.js	tests/backgesture-item.test.js	<any>
+shard.test.js	tests/backgesture-over.test.js	<any>
 shard.test.js	tests/backgesture.test.js	<any>
 shard.test.js	tests/backup-storage.test.js	<any>
 shard.test.js	tests/calendar.test.js	<any>
@@ -13270,6 +13272,7 @@ shard.test.js	tests/wardrobetap.test.js	<any>
 shard.test.js	tests/wardswipe.test.js	<any>
 shard.test.js	tests/watchmatch.test.js	<any>
 shard.test.js	tests/weather.test.js	<any>
+shard.test.js	tests/webkit.js	<any>
 shard.test.js	tests/weeklock.test.js	<any>
 shard.test.js	tests/weeklockdays.test.js	<any>
 shard.test.js	tests/workerfix.test.js	<any>
