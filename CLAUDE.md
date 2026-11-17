@@ -1311,7 +1311,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - sync.js keeps its old place in the load order, so start-up finds `afterPull`/`pulledYet` exactly as before; sync-status.js before it, since `syncOnce` sets the status first thing; the other three hold only functions called during a sync or by a tap
 - `applyMerged(local, incoming)` merges (`mergeState`) and writes; callers no longer pass a pre-merged copy
 - what of the sample wardrobe goes up is kit.js `kitShareFilter(st, remote, join)` (CR-5-10), with `join` = sync.js `syncJoinAt()`; sync.js reads no kit.js rule
-- not done in Round B (each would change behavior): settings written by a stamp compare in `applyMerged` instead of `mergeSettings` with the stored copy (the rest of CR-5-09), the `Date.now()` left in `syncJoinMark` (compared with `nowMs()` stamps) and `scheduleSync`'s `sync_wait`/`syncDue` (CR-5-15), the old-server path (CR-5-11, the owner's choice)
+- not done in Round B or C: the old-server path (CR-5-11, the owner's choice; it needs the server's logs)
 
 #### Sync paths
 - backup/sync through the worker's `/sync` (KV); backup file download/restore
@@ -1400,6 +1400,10 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `last_sync` is stamped with `nowMs()`, and the backup pause is compared with `nowMs()` (`backedUpWords`, `backupSummary`, the foreground sync's 60 s): a phone whose clock was behind had its backups held by `syncWiped` (CR-5-06, CR-5-15)
 - measured KV writes for these sync changes (lab, a tester phone; main → this change): setup day 1 → 1, a light day 3 → 3, an Add day (3 pieces) 2 → 2
 - a save's refusals are handled once for the POST and the PUT (`syncSaved`; `pauseTillTomorrow(msg)` for every pause)
+- `applyMerged` writes the settings as `mergeSettings(cur, merged)` with the stored copy inside one `atomic('meta','settings',…)`, only when the result is not `cur` (Round C, the rest of CR-5-09, the owner's approval): by stamps alone a setting changed here during a sync kept the stored copy whole, and the other phone's setting was missing on this phone until a later sync; `tests/syncwrite.test.js`
+- with nothing changed during the sync the write is what it was (checked on 20,000 random setting pairs, split settings included: the same values and stamps, or the stored copy kept when it already equals them)
+- `syncJoinMark`'s `sync_join.at`, `scheduleSync`'s `sync_wait` and a tester's `syncDue` (15 minutes) are by `nowMs()` (Round C, CR-5-15): kit.js `kitShareFilter` compares the join time with days' `nowMs()` stamps; `tests/syncwrite.test.js` checks them on a phone an hour behind
+- measured KV writes for these (lab, a tester's phones; main → this change, the same in two runs each): setup day 7 → 7, a light day with a setting changed 3 → 3, an Add day (3 pieces) 8 → 8, a day two phones each changed a different setting 3 → 3
 #### Records from outside (fix round 3)
 - `restoreBackup`, `syncLite` (after `phIn`), the whole sync and `rollBack` run core.js `cleanState` on what came in; `syncLite` and the whole sync run it on what they send (the delta only, in the small sync)
 - Restore file says how many items it left out ("Restored. Your wardrobe now has 6 items. 2 items in the file weren’t a Daily Wardrobe item and were left out.")
