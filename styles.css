@@ -1127,6 +1127,9 @@ span.pk-tick{cursor:default}
 #ward-add:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
 #ward-add:active{transform:scale(.94)}
 #wardrobe:not([hidden])~#ward-add{display:grid}
+/* while the Wardrobe's + shows, a toast sits above it, not over it (2026-11-17, the owner: the Undo message floated over the +): the +'s
+   16px gap, its 56px and 12px more */
+body:not(.iv-on):has(main:not([inert]) #wardrobe:not([hidden])) #toast{bottom:calc(var(--navh) + 84px)}
 main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add{display:none}
 @media (min-width:600px){
   #ward-add{right:max(calc(16px + env(safe-area-inset-right)), calc((100vw - 1080px) / 2 + 16px))}
