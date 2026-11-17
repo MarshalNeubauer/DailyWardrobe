@@ -69,13 +69,13 @@ module.exports=async({ok,chromium,url})=>{
       await p.evaluate(()=>openSettings('connection'));const c=await p.evaluate(()=>({box:document.querySelector('#conn-state').textContent,sum:document.querySelector('#sum-connection').textContent}));
       free();st.hold=null;await p.waitForFunction(a=>localStorage.getItem('app_token')===a,A,{timeout:8000});
       ok(/Checking your invitation/.test(c.box)&&/Checking/.test(c.sum),`while the link is checked, Connection says so (${c.box})`)}
-    // ---- the sample: connecting keeps it on the phone, never backed up (sync.js syncShare; re-audit 2026-11-15)
+    // ---- the sample: connecting keeps it on the phone, never backed up (kit.js kitShareFilter; re-audit 2026-11-15)
     {const {p}=await page();
       await p.evaluate(async()=>{for(const [id,s] of [['s1',true],['s2',true],['mine',false]]){const it={id,type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now(),updated:Date.now(),...(s?{sample:true}:{})};await put(it);items.push(it)}});
       // (fix round 3, W1-7-03) his own piece is asked about, the sample pieces aren't counted
       const run=p.evaluate(l=>connectFromLink(l),link(A));await p.waitForSelector('#ask-ok',{state:'visible',timeout:8000});const q=await p.textContent('#ask-sheet');await p.click('#ask-ok');const res=await run;
       ok(/Add this phone’s 1 piece to/.test(q),'connecting with the sample and one piece of his own asks about that one piece only ('+q.slice(0,60)+')');
-      const s=await p.evaluate(async()=>({ask:!!document.querySelector('#ask-sheet.on'),ids:items.map(i=>i.id).sort().join(),stored:(await tx('readonly',x=>x.getAll())).map(i=>i.id).sort().join(),tok:localStorage.getItem('app_token'),share:syncShare({items,days:[]}).items.map(i=>i.id).join()}));
+      const s=await p.evaluate(async()=>({ask:!!document.querySelector('#ask-sheet.on'),ids:items.map(i=>i.id).sort().join(),stored:(await tx('readonly',x=>x.getAll())).map(i=>i.id).sort().join(),tok:localStorage.getItem('app_token'),share:kitShareFilter({items,days:[]},null,syncJoinAt()).items.map(i=>i.id).join()}));
       ok(!s.ask&&res===true&&s.ids==='mine,s1,s2'&&s.stored==='mine,s1,s2'&&s.tok===A&&s.share==='mine',`connecting with the sample loaded keeps it on the phone; only his own pieces are ever backed up (${JSON.stringify(s)})`)}
     // ---- an ended invitation: nothing says Connected or backed up; a deleted account (forbidden token) counts as ended for a tester
     {const {p,st,errs}=await page();
