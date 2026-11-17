@@ -14,7 +14,8 @@ module.exports=async({ok,chromium,url,settle})=>{
       dayRecs={'2026-11-9':{date:'2026-11-9',ids:{top:'navy',shirt:'sh1',tie:'t1',shoes:'bs',belt:'bb',socks:'so'},suitDay:true,worn:true},
         '2026-11-16':{date:'2026-11-16',force:{top:'navy'}}};
       sel=new Date(2026,10,11);view={y:2026,m:10};editing=null;flt='all';show('wardrobe')});
-    const tops=()=>p.evaluate(()=>{const out=[];for(const m of [10,11])for(const [k,o] of Object.entries(planMonth(2026,m)))if(keyDate(k)>=todayDate()&&o.top)out.push(o.top.id);return out});
+    // (the real planner, buildPlan: planMonth gives tests/fixedplan.js's outfits, which only shows that file filters inRotation; CR-10-05)
+    const tops=()=>p.evaluate(()=>{const out=[];for(const [k,o] of Object.entries(buildPlan(2026,11)))if(keyDate(k)>=todayDate()&&o.top)out.push(o.top.id);return out});
     const before=await tops();
     ok(before.includes('navy'),`before: the navy suit is in the upcoming plan (${before.filter(x=>x==='navy').length} days)`);
     // the button in the item's details

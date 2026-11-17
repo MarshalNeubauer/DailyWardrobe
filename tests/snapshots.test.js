@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await put(st(2),'2026-11-10');
   ok(store.get('snap:2026-11-10')===v1&&store.get('snap:2026-11')===v1,'the first change of a day keeps the backup as it was, as that day and as that month');
   ok(ttl.get('snap:2026-11-10')===30*86400&&ttl.get('snap:2026-11')===400*86400,'daily copies last 30 days, monthly ones about a year');
-  const v2=store.get('wardrobe:v1');await put(st(3),'2026-11-10');
+  await put(st(3),'2026-11-10');
   ok(store.get('snap:2026-11-10')===v1,'later changes the same day leave that day\'s copy alone');
   await put(st(4),'2026-11-11');
   ok(store.get('snap:2026-11-11')!==v1&&JSON.parse(store.get('snap:2026-11-11')).data.items[0].id==='i3'&&store.get('snap:2026-11')===v1,'the next day keeps the state it started with; the month keeps its first');

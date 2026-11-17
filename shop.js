@@ -144,9 +144,12 @@ function renderShop(){
   if(full){
     body+=`<section class="shop-cat" id="shop-c-occ"><h3>Occasions</h3><p class="mut"><small>One day of each kind, dressed from your wardrobe.</small></p>${full.occasions.map(o=>`<div class="shop-occ"><b>${esc(o.label)}</b><span class="shop-v ${o.ready?'covered':'needed'}">${o.ready?'Ready':'Gaps'} · ${o.score}</span><small class="mut">${esc(o.pieces.join(', '))}</small>${o.gaps.length?`<ul class="shop-why">${o.gaps.map(g=>`<li>${esc(g)}</li>`).join('')}</ul>`:''}</div>`).join('')}</section>`;
     const hid=settings.shopSkip||[];
-    if(hid.length)body+=`<section class="shop-cat" id="shop-c-hidden"><h3>Hidden ideas</h3><p class="mut"><small>Marked "Not for me": never suggested again.</small></p>${hid.map(k=>`<div class="shop-hid"><span class="cap">${esc(sentence(shopKeyName(k)))}</span><button type="button" onclick="shopUnhide('${esc(k)}')">Show again</button></div>`).join('')}</section>`;
+    if(hid.length)body+=`<section class="shop-cat" id="shop-c-hidden"><h3>Hidden ideas</h3><p class="mut"><small>Marked "Not for me": never suggested again.</small></p>${hid.map(k=>`<div class="shop-hid"><span class="cap">${esc(sentence(shopKeyName(k)))}</span><button type="button" data-unhide="${esc(k)}">Show again</button></div>`).join('')}</section>`;
     body+=`<p class="mut shop-foot"><small>${full.checked} possible purchases compared with what you own; the best ${full.sims-1} planned day by day.</small></p>`}
   else if(!shopBusy&&!r)body+='<p class="mut"><small>Plans your next six months with what you own, then checks what each possible purchase would change.</small></p>';
+  // "Show again" carries its key in data-unhide, read by one listener (fix round A, CR-4-01: esc inside an inline handler is decoded back,
+  // so a quote in a synced settings.shopSkip key ran as script)
+  if(!el.dataset.unhide){el.dataset.unhide='1';el.addEventListener('click',e=>{const b=e.target.closest('button[data-unhide]');if(b&&el.contains(b))shopUnhide(b.dataset.unhide)})}
   el.innerHTML=`<div class="pick-head shop-top-head"><i class="shop-grab" aria-hidden="true"></i><b id="shop-title">What to buy</b><button class="pick-x" onclick="closeShop()" aria-label="Close">×</button></div><div class="shop-body">${body}</div>`;
   el.scrollTop=y;
 }

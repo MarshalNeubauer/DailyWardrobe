@@ -98,7 +98,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const KV={get:async(k,t)=>store.has(k)?(t==='json'?JSON.parse(store.get(k)):store.get(k)):null,put:async(k,v,o)=>{store.set(k,v);meta.set(k,o&&o.metadata)},delete:async k=>{store.delete(k);meta.delete(k)},
     list:async({prefix})=>({keys:[...store.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name,metadata:meta.get(name)})),list_complete:true})};
   const env={APP_TOKEN:'secret',WARDROBE:KV},HOST='https://wardrobevision.test/';
-  let puts=0,putKeys=[];const kvPut=KV.put;KV.put=async(...x)=>{puts++;putKeys.push(x[0]);return kvPut(...x)};
+  let putKeys=[];const kvPut=KV.put;KV.put=async(...x)=>{putKeys.push(x[0]);return kvPut(...x)};
   const browser=await chromium.launch();
   try{
     const device=async()=>{const c=await browser.newContext();
@@ -118,7 +118,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     for(const d of [A,B])await d.evaluate(()=>show('wardrobe'));await sync(A);await sync(B);
     await A.evaluate(async()=>{const it=items.find(i=>i.id==='s1');it.name='Pink oxford';await put(it)});
     await B.evaluate(async()=>{const it=items.find(i=>i.id==='s1');it.paused=true;await put(it)});
-    puts=0;putKeys=[];await sync(A);await sync(B);await sync(A);const w1=putKeys.filter(k=>k==='wardrobe:v1').length;   // (the day's first save also keeps its daily copies)
+    putKeys=[];await sync(A);await sync(B);await sync(A);const w1=putKeys.filter(k=>k==='wardrobe:v1').length;   // (the day's first save also keeps its daily copies)
     const s1=x=>x.evaluate(()=>{const i=items.find(i=>i.id==='s1');return [i.name,!!i.paused]});
     const srv=data().items.find(i=>i.id==='s1');
     ok(JSON.stringify([await s1(A),await s1(B),[srv.name,!!srv.paused]])==='[["Pink oxford",true],["Pink oxford",true],["Pink oxford",true]]','a rename on one phone and "Take out of rotation" on the other: both on both phones and the server');

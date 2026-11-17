@@ -18,8 +18,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','khaki'),I('pants','black'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),
         I('shoes','brown',{leather:'calf'}),I('shoes','black',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};view={y:2026,m:10};
-      const o=planFor()['2026-11-12'];return o&&o.bot&&o.bot.primaryColor});
-    ok(bot==='khaki','a navy blazer is paired with the khaki trousers ('+bot+')');
+      // (the real planner, buildPlan, on three blazer days: planFor gives tests/fixedplan.js's outfit, whose pants the day number picks; CR-10-05)
+      const P=buildPlan(2026,10);return ['2026-11-12','2026-11-19','2026-11-26'].map(k=>P[k]&&P[k].bot&&P[k].bot.primaryColor).join()});
+    ok(bot==='khaki,khaki,khaki','a navy blazer is paired with the khaki trousers on every blazer day ('+bot+')');
     const w=require('./workersrc.js')();
     ok(/pants: \[\[\.\.\.SUITING/.test(w)&&/'tan','khaki'/.test(w)&&/khaki is the light sandy beige/.test(w),'the tagging prompt lists and explains khaki');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

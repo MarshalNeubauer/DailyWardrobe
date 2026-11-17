@@ -115,7 +115,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       ok(o2.ok&&(await itemOf(B,'it14')).primaryColor==='pink',`and the other device takes it (${kb(o2)})`);
       W=worker;await edit(B,'it15',{primaryColor:'olive'});const o3=await measured(B),o4=await measured(A);
       ok(o3.ok&&o4.ok&&o3.up+o3.down<100e3&&(await itemOf(A,'it15')).primaryColor==='olive',`back on this worker, a backup the old one stored (no index) still takes the small sync (${kb(o3)}; ${kb(o4)})`);
-    }else ok(true,'(the worker from before this change is not in this clone: skipped)');
+    }   // (a fixture that didn't load has already failed the check above)
 
     ok([A,B,C].every(d=>!d.errs.length),'no page errors ('+[A,B,C].flatMap(d=>d.errs).join('; ')+')');
     {const sa=await status(A),sb=await status(B);ok(!sa&&!sb,'no sync failure left on either device'+(sa||sb?` (${sa} | ${sb})`:''))}
