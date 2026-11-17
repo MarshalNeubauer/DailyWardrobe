@@ -229,7 +229,10 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
   const kb=x=>`${(x.up/1e3).toFixed(1)} KB up, ${(x.down/1e3).toFixed(1)} KB down, ${x.n} requests`;
   const status=d=>d.p.evaluate(()=>localStorage.getItem('sync_status'));
   const itemOf=(d,id)=>d.p.evaluate(id=>items.find(i=>i.id===id)||null,id);
-  const edit=(d,id,f)=>d.p.evaluate(async([id,f])=>{const it={...items.find(i=>i.id===id),...f,updated:Date.now()};await put(it);items=items.map(i=>i.id===id?it:i)},[id,f]);
+  // an edit is made on a quiet device: made while the device's own background sync ran (the older app's, just started), that sync
+  // took the edit into its mark without sending it, and the counted sync then saw nothing to send ("and still saves the whole backup
+  // … 0.0 KB up, 1 requests", after main's #554 changed the timing)
+  const edit=async(d,id,f)=>{await quiet(d);return d.p.evaluate(async([id,f])=>{const it={...items.find(i=>i.id===id),...f,updated:Date.now()};await put(it);items=items.map(i=>i.id===id?it:i)},[id,f])};
   const stored=()=>JSON.parse(store.get('wardrobe:v1'));
   // the backup whole, photos inline, as an older app downloads it (since 2026-11-13 the stored value keeps its photos by reference)
   const full=async()=>JSON.parse(await (await W.fetch(new Request(HOST+'sync',{headers:{'x-app-token':'secret'}}),env)).text());
