@@ -12,7 +12,7 @@ const sh=(cmd,a,o={})=>execFileSync(cmd,a,{cwd:ROOT,encoding:'utf8',stdio:['igno
 const gh=a=>sh('gh',a);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const secs=(a,b)=>(new Date(b)-new Date(a))/1000;
-const mmss=s=>`${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,'0')}`;
+const mmss=s=>{s=Math.round(s);return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`};
 
 (async()=>{
   try{gh(['--version'])}catch(e){console.log('`gh` (GitHub CLI) is needed: https://cli.github.com, then `gh auth login`.');process.exit(2)}
