@@ -4,8 +4,11 @@
 //   node tests/run.js --changed --list   say which those are, and run nothing
 //   node tests/run.js <name>      the tests/*.test.js files whose name contains <name> (or TEST_ONLY=<name>)
 //   node tests/run.js --webkit    on WebKit instead of Chromium (`npm run test:webkit`)
-//   TEST_JOBS=<n>                 how many tests run at once (default: the processor cores less one, at most 16); TEST_JOBS=1 runs
-//                                 them one after another in this process, printing as it goes
+//   TEST_JOBS=<n>                 how many tests run at once (default: the processor cores less one, at most 16, fewer when the machine
+//                                 is busy); TEST_JOBS=1 runs them one after another in this process, printing as it goes
+//   TEST_LOCK=0                   don't wait for another worktree's test run (one run at a time on this machine: tests/testlock.js)
+//   TEST_WEBKIT=1 / 0             with --changed, run the WebKit halves of the files that check both engines / don't (default: only
+//                                 when the change touches a page file, `webkitWanted`); TEST_WEBKIT=0 also leaves them out of a run by name
 // Serves the repo over HTTP, drives the app in headless Chromium and checks rendering, gestures, layout,
 // the outfit rules (with an independent checklist), pattern detection and the Cloudflare worker.
 const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),{fork}=require('child_process'),{chromium,devices}=require('playwright'),impact=require('./impact');
@@ -229,7 +232,23 @@ const DUAL=WEBKIT?[]:FILES.filter(f=>/module\.exports\s*=\s*async\s*\(\s*\{[^}]*
 const halfOf=key=>key.endsWith(WK_HALF)?key.slice(0,-WK_HALF.length):null;
 const ALL=[...suites.map(([n])=>'run.js: '+n),'run.js: '+WORKER,...FILES];   // (what the map and the selection know)
 const RUNS=[...ALL,...DUAL.map(f=>f+WK_HALF)];   // (what can run)
-const withHalves=keys=>{const s=new Set(keys);for(const f of DUAL)if(s.has(f))s.add(f+WK_HALF);return s};
+const withHalves=(keys,wk=()=>true)=>{const s=new Set(keys);for(const f of DUAL)if(s.has(f)&&wk(f))s.add(f+WK_HALF);return s};
+/* `npm test` runs a dual file's WebKit half only when the change can show on a page (the owner's choice, 2026-11-17): when it touches
+   a file the phone gets that draws or styles the page (sw.js ASSETS: index.html, styles.css, the page scripts, the figure's pictures),
+   the runner, tests/webkit.js, tests/fixedplan.js or package.json, or the test file itself. The scripts that only compute (the planner,
+   the color and pattern math, the merge rules, the Web Workers' entries, sw.js) don't. Unknown changes (`files` null) run it.
+   `npm run test:all`, `npm run test:webkit` and a run by name always run it. → {wk: file → bool, why} */
+const PURE=new Set(['planner.js','core.js','analysis.js','analysis-worker.js','detect.js','srgb.js','merge.js','migrate.js','asm-worker.js','sw.js']);
+const WK_HARNESS=new Set(['tests/run.js','tests/webkit.js','tests/fixedplan.js','package.json']);
+const pageFiles=()=>{try{const m=/const ASSETS=\[([^\]]*)\]/.exec(fs.readFileSync(path.join(ROOT,'sw.js'),'utf8'));return new Set([...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1]).filter(f=>f!=='./'&&!PURE.has(f)))}catch(e){return null}};
+const webkitWanted=files=>{
+  if(process.env.TEST_WEBKIT==='1')return {wk:()=>true,why:'TEST_WEBKIT=1'};
+  if(process.env.TEST_WEBKIT==='0')return {wk:()=>false,why:'TEST_WEBKIT=0'};
+  if(!files)return {wk:()=>true,why:'what changed is not known'};
+  const P=pageFiles(),ui=files.filter(f=>WK_HARNESS.has(f)||(P?P.has(f):/^[^/]+\.(?:html|css|js)$/.test(f)&&!PURE.has(f)));
+  if(ui.length)return {wk:()=>true,why:'the change touches '+ui.slice(0,6).join(', ')+(ui.length>6?' and '+(ui.length-6)+' more':'')};
+  const own=new Set(files.filter(f=>/^tests\/[^/]+\.test\.js$/.test(f)).map(f=>f.slice(6)));
+  return {wk:f=>own.has(f),why:'the change touches no page file'+(own.size?' (only an edited test file\'s own WebKit half runs)':'')+': `npm run test:webkit` or `npm run test:all` runs WebKit',own}};
 const label=key=>key.startsWith('run.js: ')?key.slice(8):key;
 
 /* What one process needs to run tests one after another: the local server, one Chromium for every test (a file's
@@ -239,13 +258,16 @@ const label=key=>key.startsWith('run.js: ')?key.slice(8):key;
 const FIXED_PLAN=path.join(__dirname,'fixedplan.js');
 const ASM_OFF={content:'window.ASM_TEST_OFF=true'};   // assembled pictures off in a test page (assemble.js ASM_ON)
 const REAL_SUITES=new Set(['renders the outfit without errors','planner: independent outfit checklist','planner: shoes, belts, leather and metals','outfit score']);
-const bench=async()=>{
+const bench=async(eager=true)=>{
   await new Promise(r=>server.listen(0,'127.0.0.1',r));const url=`http://127.0.0.1:${server.address().port}/index.html`;
+  // the process's browser starts while the recorder loads the worker (`prepare`), not when the first test asks for it: the two took
+  // one after the other about 1–2 s of every worker's start-up. (A promise is kept, so two asking at once get one browser)
+  let shared=null,sharedP=null;const browserOf=()=>sharedP||(sharedP=(async()=>shared=WEBKIT?require('./webkit').wrapBrowser(await require('playwright').webkit.launch()):await chromium.launch())().catch(e=>{sharedP=null;throw e}));
+  if(eager)browserOf().catch(()=>{});
   if(!process.env.NO_IMPACT){rec=impact.recorder(ROOT);await rec.prepare()}
-  let shared=null;const browserOf=async()=>shared||(shared=WEBKIT?require('./webkit').wrapBrowser(await require('playwright').webkit.launch()):await chromium.launch());
   // the WebKit half of the files that check both engines (tests/webkit.js engines): one WebKit per process too, shared like Chromium
   // (under --webkit it is the same browser); launched only when a file asks for it
-  let sharedWk=null;const webkitOf=async()=>WEBKIT?browserOf():sharedWk||(sharedWk=require('./webkit').wrapBrowser(await require('playwright').webkit.launch()));
+  let sharedWk=null,sharedWkP=null;const webkitOf=()=>WEBKIT?browserOf():sharedWkP||(sharedWkP=(async()=>sharedWk=require('./webkit').wrapBrowser(await require('playwright').webkit.launch()))().catch(e=>{sharedWkP=null;throw e}));
   // the built-in suites get the fixed plan too, except those about the planner and the start-up check, which keeps the real
   // planner so a planner change that breaks start-up is caught by it
   const builtin=async name=>{const browser=await browserOf(),fn=suites.find(([n])=>n===name)[1],fixed=!REAL_SUITES.has(name);
@@ -282,7 +304,7 @@ const bench=async()=>{
         else if(key.startsWith('run.js: '))await builtin(key.slice(8));else await file(key)}
       finally{if(r)res=await rec.end().catch(()=>({m:new Map(),bad:true}))}
       return {ms:Date.now()-t0,res}},
-    async close(){if(shared)await shared.close().catch(()=>{});if(sharedWk)await sharedWk.close().catch(()=>{});server.close()}}};
+    async close(){if(sharedP)await sharedP.catch(()=>{});if(shared)await shared.close().catch(()=>{});if(sharedWk)await sharedWk.close().catch(()=>{});server.close()}}};
 
 /* how long each test took last time (kept beside node_modules, never committed): the slow ones start first */
 const TIMES=path.join(ROOT,'node_modules','.cache','dw-test-times.json');
@@ -294,7 +316,11 @@ const jobsWanted=()=>{const n=parseInt(process.env.TEST_JOBS,10);return n>=1?n:M
 
 /* a worker process (`node tests/run.js --worker`, started by the parent below): it runs the tests it is handed, one at a
    time, keeps what each prints and sends it back whole with the counts and what the test used */
-const worker=async()=>{const B=await bench();let out=null;   // null between tests: anything printed then goes straight out
+const worker=async()=>{
+  // the parent gone (Ctrl+C, killed, crashed): leave too, which closes this process's browsers (Playwright kills them on exit),
+  // instead of running on without anyone to report to and holding the machine
+  process.on('disconnect',()=>process.exit(1));
+  const B=await bench();let out=null;   // null between tests: anything printed then goes straight out
   for(const k of ['stdout','stderr']){const w=process[k].write.bind(process[k]);process[k].write=(d,...a)=>{if(out==null)return w(d,...a);out+=typeof d==='string'?d:Buffer.from(d).toString();const cb=a[a.length-1];if(typeof cb==='function')cb();return true}}
   let chain=Promise.resolve(),cur=null,last=null;
   /* a promise that fails with nobody waiting for it used to stop the whole process ("the test process stopped"), which named
@@ -302,7 +328,11 @@ const worker=async()=>{const B=await bench();let out=null;   // null between tes
   process.on('unhandledRejection',e=>{const why=String(e&&e.stack||e).split('\n').slice(0,6).join('\n    ');
     if(cur){failures++;console.log('  ✗ a promise failed with nothing waiting for it: '+why);return}
     process.send({late:true,out:'\n  ✗ a promise failed with nothing waiting for it, after '+(last?label(last):'start-up')+' had finished: '+why+'\n'})});
-  process.on('message',m=>{chain=chain.then(async()=>{
+  process.on('message',m=>{
+    // the parent's per-test time limit ran out (`together`): hand back what the test printed so far and leave, which closes this
+    // process's browsers (not queued behind the test: that is what hangs)
+    if(m.abort){const text=out||'';out=null;try{process.send({partial:text},()=>process.exit(1))}catch(e){process.exit(1)}setTimeout(()=>process.exit(1),3000).unref();return}
+    chain=chain.then(async()=>{
     if(m.exit){out=null;await B.close();process.exit(0)}
     out='';passes=0;failures=0;cur=m.run;const r=await B.run(m.run);
     // (a rejection is reported on the next turn of the event loop: give one that the test's last step caused that turn)
@@ -313,13 +343,20 @@ const worker=async()=>{const B=await bench();let out=null;   // null between tes
 const RETRY_MAX=5;
 /* several tests at once: `n` worker processes take the tests from one queue, slowest first. Each test's lines are printed
    together when it finishes */
+/* A test that runs longer than TEST_FILE_TIMEOUT seconds (900; 0 = no limit) fails "timed out after N s" with what it printed so far,
+   and its worker process is ended (its browsers with it) and replaced (2026-11-17: on a machine crowded by other sessions' runs, single
+   workers sat at no CPU for 20–30 minutes and the run never ended). The slowest test took 477 s on that crowded machine */
+const FILE_LIMIT=(n=>Number.isFinite(n)&&n>=0?n:900)(parseFloat(process.env.TEST_FILE_TIMEOUT))*1000;
 const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue=keys.slice().sort((a,b)=>(last[b]||0)-(last[a]||0)),live=new Set();
-  const spawn=()=>{const c=fork(__filename,['--worker'],{env:process.env});let job=null;live.add(c);
-    const next=()=>{job=queue.shift();if(job)c.send({run:job});else{c.send({exit:true})}};
-    c.on('message',m=>{if(m.ready){next();return}if(m.late){process.stdout.write(m.out);failures++;return}
+  const spawn=()=>{const c=fork(__filename,['--worker'],{env:process.env});let job=null,t0=0,timer=null,timedOut=false,partial='';live.add(c);
+    const next=()=>{clearTimeout(timer);job=queue.shift();if(job){t0=Date.now();c.send({run:job});
+        if(FILE_LIMIT)timer=setTimeout(()=>{timedOut=true;try{c.send({abort:true})}catch(e){}setTimeout(()=>{try{c.kill()}catch(e){}},10e3).unref()},FILE_LIMIT)}
+      else{c.send({exit:true})}};
+    c.on('message',m=>{if(m.ready){next();return}if(m.late){process.stdout.write(m.out);failures++;return}if('partial' in m){partial=m.partial;return}
+      if(timedOut)return;
       job=null;done(m.key,m.out,m.passes,m.failures,m.ms,m.res&&{bad:m.res.bad,m:new Map(m.res.m.map(([f,L])=>[f,new Set(L)]))});next()});
     // a worker that dies takes its test with it: that test has failed, and another worker takes its place
-    c.on('exit',code=>{live.delete(c);if(job){done(job,'  ✗ the test process stopped (exit code '+code+')\n',0,1,0,{m:new Map(),bad:true});if(queue.length)spawn()}
+    c.on('exit',code=>{clearTimeout(timer);live.delete(c);if(job){done(job,partial+(timedOut?'  ✗ timed out after '+Math.round((Date.now()-t0)/1000)+' s (TEST_FILE_TIMEOUT='+FILE_LIMIT/1000+'): its worker process and browsers were ended\n':'  ✗ the test process stopped (exit code '+code+')\n'),0,1,Date.now()-t0,{m:new Map(),bad:true});if(queue.length)spawn()}
       if(!live.size)resolve()})};
   for(let i=0;i<Math.min(n,queue.length);i++)spawn()});
 
@@ -327,11 +364,22 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
   if(process.argv.includes('--worker')){await worker();return}
   const args=process.argv.slice(2),flag=f=>args.includes(f),ONLY=process.env.TEST_ONLY||args.find(a=>!a.startsWith('--'));
   let want=null;   // null: everything
-  if(ONLY)want=withHalves(FILES.filter(f=>f.includes(ONLY)));
-  else if(flag('--changed')){const s=await impact.select(ROOT,ALL);console.log(s.report);if(!s.all)want=withHalves(s.tests)}
+  if(ONLY)want=withHalves(FILES.filter(f=>f.includes(ONLY)),()=>process.env.TEST_WEBKIT!=='0');
+  else if(flag('--changed')){const s=await impact.select(ROOT,ALL);console.log(s.report);
+    if(DUAL.length){const W=webkitWanted(s.files||null),sel=s.all?DUAL:DUAL.filter(f=>s.tests.includes(f)),on=sel.filter(W.wk);
+      if(sel.length)console.log(on.length===sel.length?`WebKit: the WebKit halves of ${on.length} file${on.length>1?'s':''} run (${W.why}).`
+        :`WebKit: ${on.length?'only '+on.join(', ')+' runs its WebKit half':'the WebKit halves of '+sel.join(', ')+' do not run'} (${W.why}).`);
+      want=withHalves(s.all?ALL:s.tests,W.wk)}
+    else if(!s.all)want=withHalves(s.tests)}
   if(flag('--list'))return;
   impact.installHook(ROOT);   // from now on a push is refused while tests/impact.map has uncommitted changes
-  const keys=RUNS.filter(k=>!want||want.has(k)),results=new Map(),times=[],T0=Date.now(),jobs=Math.min(jobsWanted(),keys.length);
+  const keys=RUNS.filter(k=>!want||want.has(k)),results=new Map(),times=[];
+  // one test run at a time on this machine (tests/testlock.js): wait for another worktree's run, or go ahead with fewer at once
+  let jobs=Math.min(jobsWanted(),keys.length);
+  if(keys.length){const L=require('./testlock'),g=await L.acquire(ROOT);if(g.note)console.log('\n'+g.note);
+    if(!(parseInt(process.env.TEST_JOBS,10)>=1)&&jobs>1){if(g.cap&&g.cap<jobs)jobs=g.cap;
+      if(g.how!=='off'&&jobs>2){const b=await L.busyCap(jobs);if(b){console.log(`\nthe machine is already busy (${Math.round(b.busy*100)}% of the processors in use): ${b.cap} at a time instead of ${jobs} (TEST_JOBS=<n> sets it)`);jobs=b.cap}}}}
+  const T0=Date.now();
   const alone=[];   // tests that only passed on a second run by themselves
   if(jobs>1){const again=[],count=(key,out,p,f,ms,res)=>{process.stdout.write(out);passes+=p;failures+=f;times.push([key,ms]);if(res)results.set(key,{...res,ok:!f})};
     await together(keys,jobs,(key,out,p,f,ms,res)=>{if(f)again.push([key,out,p,f,ms,res]);else{console.log('\n• '+label(key));count(key,out,p,f,ms,res)}});
