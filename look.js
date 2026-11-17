@@ -99,12 +99,12 @@ const lookName=(it,k,v)=>v==='none'?(k==='enamel'?'None':'Not set'):v===LOOK_OTH
 let lookSwN=0;
 const LOOK_ROSE=['#f6dcd2','#c98f7a','#8a5644'];
 function lookMatSw(kind,v,hex){const n='lk'+(++lookSwN),k=String(v||'');hex=hex||'#8b8f96';
-  if(k==='none')return `<svg viewBox="0 0 40 40" aria-hidden="true"><defs><pattern id="${n}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--bg)"/><rect width="1.4" height="6" fill="var(--line)"/></pattern></defs><rect width="40" height="40" fill="url(#${n})"/></svg>`;
-  if(k===LOOK_OTHER)return `<svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" fill="var(--bg)"/><text x="20" y="27" text-anchor="middle" font-size="20" font-weight="700" fill="var(--mut)">?</text></svg>`;
+  if(k==='none')return `<svg viewBox="0 0 40 40" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><pattern id="${n}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--bg)"/><rect width="1.4" height="6" fill="var(--line)"/></pattern></defs><rect width="40" height="40" fill="url(#${n})"/></svg>`;
+  if(k===LOOK_OTHER)return `<svg viewBox="0 0 40 40" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="40" height="40" fill="var(--bg)"/><text x="20" y="27" text-anchor="middle" font-size="20" font-weight="700" fill="var(--mut)">?</text></svg>`;
   const w=k.replace(/^own:/,'').toLowerCase();
-  if(kind==='metal'){if(w==='silk')return `<svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" fill="${hex}"/><circle cx="14" cy="20" r="8" fill="${hex}" stroke="rgba(0,0,0,.35)"/><circle cx="27" cy="20" r="8" fill="${hex}" stroke="rgba(0,0,0,.35)"/><path d="M8 17q6 4 12 0M21 17q6 4 12 0" stroke="rgba(255,255,255,.35)" fill="none"/></svg>`;
+  if(kind==='metal'){if(w==='silk')return `<svg viewBox="0 0 40 40" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="40" height="40" fill="${hex}"/><circle cx="14" cy="20" r="8" fill="${hex}" stroke="rgba(0,0,0,.35)"/><circle cx="27" cy="20" r="8" fill="${hex}" stroke="rgba(0,0,0,.35)"/><path d="M8 17q6 4 12 0M21 17q6 4 12 0" stroke="rgba(255,255,255,.35)" fill="none"/></svg>`;
     const T=w==='rosegold'?LOOK_ROSE:w==='gunmetal'?METAL_TONES.other:METAL_TONES[w]||METAL_TONES.silver,two=w==='two-tone';
-    return `<svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="${n}" x2="1" y2="1"><stop stop-color="${T[0]}"/><stop offset=".55" stop-color="${T[1]}"/><stop offset="1" stop-color="${T[2]}"/></linearGradient></defs><rect width="40" height="40" fill="url(#${n})"/>${two?`<rect x="15" width="10" height="40" fill="${METAL_TONES.gold[1]}" opacity=".85"/>`:''}<path d="M4 34L34 4" stroke="rgba(255,255,255,.45)" stroke-width="2"/></svg>`}
+    return `<svg viewBox="0 0 40 40" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="${n}" x2="1" y2="1"><stop stop-color="${T[0]}"/><stop offset=".55" stop-color="${T[1]}"/><stop offset="1" stop-color="${T[2]}"/></linearGradient></defs><rect width="40" height="40" fill="url(#${n})"/>${two?`<rect x="15" width="10" height="40" fill="${METAL_TONES.gold[1]}" opacity=".85"/>`:''}<path d="M4 34L34 4" stroke="rgba(255,255,255,.45)" stroke-width="2"/></svg>`}
   let over='';
   if(kind==='leather'){
     over=/suede|nubuck/.test(w)?`<defs><filter id="${n}"><feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .35 0"/></filter></defs><rect width="40" height="40" filter="url(#${n})"/>`
@@ -121,7 +121,7 @@ function lookMatSw(kind,v,hex){const n='lk'+(++lookSwN),k=String(v||'');hex=hex|
       :/tweed|loden|shetland|alpaca|mohair/.test(w)?Array.from({length:36},(_,j)=>`<rect x="${(j*17)%40}" y="${(j*11)%40}" width="2" height="1.2" fill="${j%2?'rgba(255,255,255,.25)':'rgba(0,0,0,.22)'}"/>`).join('')
       :/wool|flannel|melton|cashmere|camel|gabardine|twill|denim|hopsack|serge/.test(w)?Array.from({length:14},(_,j)=>`<path d="M${j*4-20} 40L${j*4+20} 0" stroke="rgba(0,0,0,${/denim|twill|gabardine/.test(w)?'.2':'.12'})" stroke-width="1.2"/>`).join('')
       :Array.from({length:14},(_,j)=>`<path d="M0 ${j*3}H40M${j*3} 0V40" stroke="rgba(0,0,0,.07)"/>`).join('')}
-  return `<svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" fill="${hex}"/>${over}</svg>`}
+  return `<svg viewBox="0 0 40 40" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="40" height="40" fill="${hex}"/>${over}</svg>`}
 
 /* ---- Claude's and the measurement's suggestions, on the row they change ---- */
 /* the Add card's (q) come from the card's own reading (tagging.js / measure.js: altColor, the verdicts, newColor, altPattern, missed,
