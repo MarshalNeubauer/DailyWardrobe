@@ -326,7 +326,7 @@ function kitRow(c,line){const probs=[],given=new Set();
   if(type==='suit'){if(c.vest){card.vest=yes(c.vest)?'yes':'no';given.add('vest')}else if(/three[ -]?piece|3[ -]?piece|\bwith (a )?(vest|waistcoat)\b/.test(txt)){card.vest='yes';given.add('vest')}else card.vest='no'}
   if(type==='shirt'){if(c.cuff){card.cuff=/french|double/i.test(c.cuff)?'french':'button';given.add('cuff')}else if(/\b(french|double) cuffs?\b/.test(txt)){card.cuff='french';given.add('cuff')}else card.cuff='button'}
   if(type==='pants'){const k=kitNorm(c.kind),s=k||txt;card.trouserKind=/cargo/.test(s)?'cargo':/jean|denim/.test(s)?'jeans':/chino|\bkhakis\b/.test(s)?'chinos':'dress';if(k||card.trouserKind!=='dress')given.add('trouserKind')}
-  if(type==='shoes'){const k=kitNorm(c.style||c.kind),s=k||txt;card.shoeStyle=/derb|monk/.test(s)?'derby':/loaf|penny|moccasin/.test(s)?'loafer':/boot|chelsea|chukka/.test(s)?'boot':/sneak|train/.test(s)?'sneaker':'oxford';
+  if(type==='shoes'){const k=kitNorm(c.style||c.kind),s=k||txt;card.shoeStyle=/derb|monk/.test(s)?'derby':/loaf|penny|moccasin/.test(s)?'loafer':/combat|tactical|jungle/.test(s)?'combat':/boot|chelsea|chukka/.test(s)?'boot':/sneak|train/.test(s)?'sneaker':'oxford';
     if(k||card.shoeStyle!=='oxford'||/oxford|brogue|wingtip/.test(s))given.add('shoeStyle')}
   if(type==='shoes'||type==='belt'){const l=kitNorm(c.leather);if(l){const k=kitLeather(card,l);if(k){card.leather=k.k;given.add('leather');if(k.read)probs.push(`leather “${c.leather}” read as ${leatherWord(card,k.k)}`)}}
     else if(!c.material){const ws=kitWords(txt),k=leathersFor(card).find(x=>x!=='calf'&&ws.includes(x));if(k){card.leather=k;given.add('leather')}}}

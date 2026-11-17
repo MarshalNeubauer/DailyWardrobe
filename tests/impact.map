@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	c63dfc95173178de2922
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addCkCount	addCkSecs	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addWatch	cardReading	cardReady	cardSafe	checkArrivals	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qh	qtyLabel	qtyOf	qtyRow	renderAdd	renderAddFor	shadeRow	sheetSwipe	shirtColFix	unreadNote	wbNote
@@ -2893,6 +2892,75 @@ colpick.test.js	watch/shirt-open.png	<loaded>
 colpick.test.js	watch/shirt-tie.png	<loaded>
 colpick.test.js	watch/suit.png	<loaded>
 colpick.test.js	watch/vest.png	<loaded>
+combatboot.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+combatboot.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
+combatboot.test.js	add.js	<loaded>	addKeep	addRestore	checkArrivals
+combatboot.test.js	analysis-worker.js	<any>
+combatboot.test.js	analysis.js	<any>	<loaded>
+combatboot.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	afterDom	afterScripts	announce	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
+combatboot.test.js	apple-touch-icon.png	<loaded>
+combatboot.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmPileKind	asmWtWants
+combatboot.test.js	asm-gl.js	<loaded>
+combatboot.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
+combatboot.test.js	asm-pocket.js	<loaded>
+combatboot.test.js	asm-watch.js	<loaded>
+combatboot.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
+combatboot.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
+combatboot.test.js	backupfile.js	<loaded>
+combatboot.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop
+combatboot.test.js	checklist.js	<loaded>
+combatboot.test.js	colpick.js	<loaded>	colFieldLabel	colHas	colShows
+combatboot.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	SLOT_TYPE	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPants	camoPat	colBase	colName	colOf	colorDesc	colourNameRe	dayClimate	dayFields	desc	di	handPickSlot	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	keySplit	labHex	leatherWord	leathersFor	lum	lumCol	matSeason	metalWord	mix	nameHtml	nextStamp	nm	nowMs	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	rgbLab	seasonFit	sentence	setWardrobe	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	soleStyle	strapBand	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
+combatboot.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+combatboot.test.js	draw.js	<loaded>	camoTileUrl	cargoPockets	drawBelt	drawCombatPair	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
+combatboot.test.js	dress.js	<loaded>	migrateVests
+combatboot.test.js	history.js	<loaded>	bootsOff	cardLabel	checkPlanRules	closePicker	combatAway	dayActions	dayWord	dialCycle	dialHtml	dialTone	dialsFor	dropLearn	failText	firstReal	fitOf	fitTag	handGroup	handPool	idsOf	itemWord	keepOff	keyDate	lockIds	lockPast	lockSpan	lockUpcoming	lowFirst	missedCard	missedNote	missedOpen	missedTell	notAhead	openPicker	ordinal	outfitKey	pickItem	pickPic	pickRec	pickScores	pickSim	pickSub	planRulesCheck	planRulesLs	planRulesNote	pluralWord	pocketOn	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	recordDays	releaseLocks	resetCard	saveDay	scoreCard	slotPool	suitPants	swapsHtml	unlockClash	weekOf	weekVariety	weeksHtml	whenPulled	whyText	wxLine
+combatboot.test.js	icon-192.png	<loaded>
+combatboot.test.js	icon-512.png	<loaded>
+combatboot.test.js	index.html	<loaded>
+combatboot.test.js	itemsheet.js	<loaded>	@backLand	@{constb$ivbody}	@{constel$wardrobe}	itemShown	renderItem	smallPhotos
+combatboot.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
+combatboot.test.js	manifest.webmanifest	<loaded>
+combatboot.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
+combatboot.test.js	measure.js	<loaded>
+combatboot.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
+combatboot.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
+combatboot.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFillSoon	monthLink	piecesLine	piecesParts	planOn	shirtWords	stackSVG
+combatboot.test.js	mq/shirt-open.js	<loaded>
+combatboot.test.js	mq/shirt-tie.js	<loaded>
+combatboot.test.js	mq/suit-open.js	<loaded>
+combatboot.test.js	mq/suit.js	<loaded>
+combatboot.test.js	mq/vest.js	<loaded>
+combatboot.test.js	own-lists.js	<loaded>
+combatboot.test.js	pack.js	<loaded>	packShow
+combatboot.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
+combatboot.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	jsq	lastWorn	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	renderFor	schedulePrefetch	shirtPatterned	shirtTextured	workerBase
+combatboot.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	beltWait	blackOnBlack	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkJkt	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialOccasion	dialSum	dialTexture	dialVariety	fam	finish	formalTie	formalTop	frozenOutfit	groupsNear	idsAhead	isCamo	jacketGroup	leatherGroup	lockStale	lookRepeat	metalOf	metalSame	metalsWhy	nearCost	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairScore	pairSeen	pantsAsJacket	patInfo	patsHard	patsOf	patternScore	pcol	planSim	planStart	rateOutfit	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	takeOff	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	topGw	uniformSplit	wardStart	watchFit	withColRun
+combatboot.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
+combatboot.test.js	safety.js	<loaded>	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
+combatboot.test.js	settings.js	<loaded>	@constsetChan{try}	appLocale	applyTheme	backupSummary	closeSettings	loadWeather	refreshHolidays	refreshToday	setLock	settingsOpen	settingsPart	weekFirst
+combatboot.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
+combatboot.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then
+combatboot.test.js	snapshots.js	<loaded>
+combatboot.test.js	srgb.js	<loaded>	linSrgb	srgbLin	srgbLin8
+combatboot.test.js	start.js	<loaded>	applyStored	loadStored	pageIn	show	startChecks	startJobs	startUp
+combatboot.test.js	stats.js	<loaded>	@afterScripts	wornDays
+combatboot.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#mannequin-container	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-backdrop.on	#pick-sheet	#pick-sheet .btns	#pick-sheet p	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#pick-sheet.on	#sbox .month-link	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#spanel .mpanel-in	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#today .plegend	#today .plegend span	#today .row	#today .row .dot	#today .row>.mut:first-child	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.b-good	.b-low,.b-bad	.b-ok	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btns	.c-good	.c-low,.c-bad	.c-ok	.cap	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.day h2 .wx.haspill	.day h2 .wx.haspill .wxc	.dial	.dial .darc	.dial .dbad	.dial .dtrack	.dial small	.dial svg	.dial text	.dial.d-bad small	.dial.d-bad text	.dial.d-good	.dial.d-low,.dial.d-bad	.dial.d-ok	.dialrow	.dot	.dot svg	.dot,.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb,.st-pic,.pick-pic	.fig	.fig .cband	.fig .cband .cdots	.fig .cband .cdots em	.fig .cband .cdots i	.fig .cband .cdots i.on	.fig .cband .crow	.fig .cband .ctxt	.fig .cband .ctxt b	.fig .cband path	.fig .cband svg	.fig .cframe	.fig .lastworn	.fig .wornbar	.fig .wornbar .lastworn:only-child	.fig .wornbar>*	.fig.cb	.fig.cb .wornbar	.fig.cb.care-last,.fig.cb.care-over	.fig>svg	.firstrun	.firstrun h3	.fit.best,.fit.good	.fit.best,.fit.good,.cpd	.fit.hand	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-banner .btns button,#pick-next	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mli	.mli .stack	.mli small	.mli.bad .stack	.mlstrip	.mlstrip,.pstrip	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pchip	.pchip svg	.pick-grid	.pick-hand	.pick-hand p	.pick-hand-h	.pick-head	.pick-head b	.pick-it	.pick-it .fit	.pick-it.cur	.pick-nm	.pick-pic	.pick-pic .ph.thumb,.st-pic .ph.thumb	.pick-pic svg	.pick-x	.pri	.pstrip	.resetbox .month-link	.resetbox .rsicon	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.row:last-child	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.score	.score .srank	.score .srules	.score .ssec	.score .ssec b	.score .swhy	.score .swx	.sdb	.sdb i	.sdh	.sdh b	.sdl	.sdl small	.sfixbtn	.sfixbtn .dot	.sfixbtn .dot>*	.sfixbtn .sfixnm	.sfixbtn b	.sfixbtn b small	.sfixbtn.fix b	.side>.mbox:last-child	.side>.score,.side>.mbox,.side>.dayact,.side>p	.slide	.snone	.srl	.srl li	.srl li.f	.srl li.f::before	.srl li::before	.srules.bad	.srules.ok	.ssec+.sdl	.sswaps	.sswaps .ssec	.stack	.stack .strep	.stage	.stage .firstrun	.sweeks	.sweeks .wn	.sweeks li	.sweeks li.cur	.sweeks li:first-child	.sweeks li>span:last-child	.sweeks small	.swhy::before	.thumb	.thumb svg	.vh	.warn	.wpill	.wpill.yes	.wpill::after	.wxc.wxlk	.wxl	:focus-visible	:root	:where(#today) .mbox	:where(#today) .mbox.open .mpanel-in	:where(#today) .mltxt b	:where(#today) .mltxt small	:where(#today) .month-link	:where(#today) .mpanel-in	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav::before
+combatboot.test.js	sync-photos.js	<loaded>
+combatboot.test.js	sync-status.js	<loaded>	setSyncStatus	showSyncStatus	syncPaused	syncWaiting
+combatboot.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	syncLaterRun	syncNeedsPull	syncNow	syncOnce	syncUrl
+combatboot.test.js	tag-request.js	<loaded>
+combatboot.test.js	tagging.js	<loaded>
+combatboot.test.js	tests/webkit.js	<any>
+combatboot.test.js	today.js	<loaded>	@{constel$todayinPice}	@{constel$today}	@{constroot$today}	addForSlot	applyZoom	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	planDirty	planFor	planMonth	planSnapSoon	planSnapUse	planStartDay	planTrim	pocketRow	renderToday	restWarn	slotLabel	slots	swApply	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload	zoomTarget
+combatboot.test.js	ui.js	<loaded>	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp
+combatboot.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+combatboot.test.js	watch/leather.jpg	<loaded>
+combatboot.test.js	watch/shirt-open.png	<loaded>
+combatboot.test.js	watch/shirt-tie.png	<loaded>
+combatboot.test.js	watch/suit.png	<loaded>
+combatboot.test.js	watch/vest.png	<loaded>
+combatboot.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	materialSchema	multiPrompt	orNull	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes
 connkeep.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 connkeep.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctJoin	acctLinkDrawn	acctLocal	acctRole	acctSettingsPart	acctStart	acctToast	acctTyped	applyRole	dropInviteHash	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 connkeep.test.js	add.js	<loaded>	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	renderAdd	renderAddFor
