@@ -42,8 +42,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     await ev(()=>{queue.unshift({id:'cT',err:'open'});errToHand('cT');setQField('cT','material','tweed')});await settle(p,200);
     await p.locator('#queue [data-q="cT"] section[data-ck="type"] select').selectOption('tie');await settle(p,200);
     ok(await ev(()=>!cardOf('cT').material),'a type change on the Add card drops a material the new type has no place for');
-    await tap('#queue [data-q="cT"] [id^="qconf-"]');
-    ok(await ev(()=>{const i=items.find(x=>x.id==='cT');return !!i&&i.type==='tie'&&!i.material}),'the tie is saved without the suit\'s tweed');
+    await tap('#queue [data-q="cT"] [id^="qconf-"]');await p.waitForFunction(()=>items.some(x=>x.id==='cT'),null,{timeout:4000}).catch(()=>{});
+    const tie=await ev(()=>{const i=items.find(x=>x.id==='cT');return i?{type:i.type,material:i.material||''}:{left:queue.map(q=>q.id).join(),toast:document.querySelector('#toast').textContent}});
+    ok(tie.type==='tie'&&!tie.material,`the tie is saved without the suit's tweed (${JSON.stringify(tie)})`);
 
     // CR-1-03 / CR-1-04: a photo card (not read: no connection), its type picked, How many 3, Confirm, then Undo
     await ev(async()=>{const c=document.createElement('canvas');c.width=c.height=600;const x=c.getContext('2d');x.fillStyle='#f2f2f2';x.fillRect(0,0,600,600);x.fillStyle='#3a5a8a';x.fillRect(150,100,300,420);
