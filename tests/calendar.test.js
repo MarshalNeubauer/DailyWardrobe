@@ -193,9 +193,9 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
     // Disconnect: asks, then forgets the link and the last read; what was set stays
     await p.setViewportSize({width:390,height:860});await p.emulateMedia({colorScheme:'light'});
     await p.evaluate(()=>openSettings('calendar'));await settle(p,200);await p.click('#cal-off');await p.waitForSelector('#ask-ok');await p.click('#ask-ok');
-    await p.waitForFunction(()=>!settings.calendar,null,{timeout:5000});
+    await p.waitForFunction(()=>!settings.calendar&&!!$('#cal-link'),null,{timeout:5000});
     const d=await p.evaluate(()=>({ls:localStorage.getItem('cal_last'),field:!!$('#cal-link'),sum:$('#sum-calendar').textContent,off:(settings.daysOff||[]).some(x=>x.d==='2026-12-13'),occ:dayRecs['2026-11-24']&&dayRecs['2026-11-24'].occasion}));
-    ok(d.ls===null&&d.field&&d.sum==='Not connected'&&d.off&&d.occ==='funeral','Disconnect asks first, forgets the link and the last read, and leaves the days it set');
+    ok(d.ls===null&&d.field&&d.sum==='Not connected'&&d.off&&d.occ==='funeral',`Disconnect asks first, forgets the link and the last read, and leaves the days it set (${JSON.stringify(d)})`);
     // not connected to the server: Connect can't be used, and says why
     await p.evaluate(()=>{localStorage.removeItem('app_token');renderCalUI()});
     ok(await p.evaluate(()=>$('#cal-connect').disabled&&/needs a connection/.test($('#cal-box').textContent)),'without a connection Connect is off and the section says what is needed');

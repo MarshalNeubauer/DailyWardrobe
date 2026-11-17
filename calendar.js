@@ -112,7 +112,7 @@ async function calConnect(){const inp=$('#cal-link'),v=(inp&&inp.value||'').trim
   finally{calBusy=false}
   renderCalUI();if(typeof refreshToday==='function')refreshToday()}
 async function calDisconnect(){if(!await askConfirm('Disconnect the calendar?\n\nThe app stops reading it. Days off, occasions and trips already set stay as they are.',{ok:'Disconnect',danger:true}))return;
-  delete settings.calendar;await saveUserSettings();calWrite(null);calMsg='Disconnected.';renderCalUI();if(typeof refreshToday==='function')refreshToday()}
+  delete settings.calendar;calWrite(null);calMsg='Disconnected.';renderCalUI();await saveUserSettings();if(typeof refreshToday==='function')refreshToday()}
 async function calRefresh(){if(calBusy)return;calMsg='Reading your calendar…';renderCalUI();const n=await calSync(true);
   const last=calRead()||{};calMsg=last.err||(n?(n.length?`${n.length} new event${n.length===1?'':'s'} to check below.`:'Up to date: nothing new.'):'');renderCalUI();if(calMsg)announce(calMsg)}
 function calSummary(){if(!calLink())return 'Not connected';const last=calRead();if(!last||!last.t)return 'Connected';
