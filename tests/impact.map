@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	abdccbf044d28f5a208c
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	add.js	<loaded>	@document.addEventListenerclick	addCardRec	addCkCount	addCkSecs	addKeep	addKeepSoon	addKeepable	addManual	addNoteText	addRestore	addWatch	cardReading	cardReady	cardSafe	checkArrivals	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	needType	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	orderRow	qh	qtyLabel	qtyOf	qtyRow	renderAdd	renderAddFor	shadeRow	sheetSwipe	shirtColFix	unreadNote	wbNote
@@ -11265,6 +11264,8 @@ twillswatch.test.js	watch/shirt-open.png	<loaded>
 twillswatch.test.js	watch/shirt-tie.png	<loaded>
 twillswatch.test.js	watch/suit.png	<loaded>
 twillswatch.test.js	watch/vest.png	<loaded>
+typecheck.test.js	tests/typecheck.js	<any>
+typecheck.test.js	tests/webkit.js	<any>
 ui.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 ui.test.js	account.js	<loaded>	acctBase	acctCall	acctConnect	acctEsc	acctFailText	acctRole	acctSettingsPart	acctStart	applyRole	connectFromLink	dropInviteHash	hasInviteHash	inviteParts	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 ui.test.js	add.js	<loaded>	@document.addEventListenerclick	addKeep	addKeepSoon	addNoteText	addRestore	checkArrivals	fmtDay	npsLeave	renderAdd	renderAddFor	shadeRow	sheetSwipe

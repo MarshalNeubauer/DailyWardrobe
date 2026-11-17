@@ -4,6 +4,8 @@
 #    app files without a CACHE in sw.js above origin/main's (fetched first, for a few seconds); says so when the commit's files
 #    were not passed by `npm test`;
 #  - tests/lint.js --changed: ESLint over the scripts the branch changed (about a second); a name that doesn't exist or is
-#    declared twice refuses it. Skipped, with a note, where ESLint isn't installed yet (`npm install`).
+#    declared twice refuses it. Skipped, with a note, where ESLint isn't installed yet (`npm install`). Then, when the branch
+#    changed a script, the type check (tests/typecheck.js, about 4 s): a file with more type errors than
+#    tests/typecheck-baseline.json allows, a stale types/globals.d.ts, or a baseline total above origin/main's refuses it.
 node tests/impact.js pre-push || exit 1
 exec node tests/lint.js --changed
