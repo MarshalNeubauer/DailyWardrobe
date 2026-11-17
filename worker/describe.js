@@ -11,12 +11,11 @@
 import { OWN_COL_RE, OWN_PAT_RE } from './ownkeys.js';
 import { ACCENT_READ_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, HEX_RE, MATERIALS_BY, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_KEYS, TYPE_COLORS, TYPE_LIST, claudeCall, cleanMaterial, cleanOwnMaterials, lightText, materialSchema, ownMaterialsText, ownTxt, txt, wbOf } from './tag.js';
 import { readCapped } from './links.js';
+import { MOTIF_SHAPES, TEXTURE_KINDS, bitmapOf } from './patternbits.js';   // (one copy with pattern.js: CR-2-15)
 import { plainFor, spend, unspend, utcDay } from './people.js';
 
 const DESCRIBE_MODEL = 'claude-sonnet-5-5';
 const DESC_MAX = 120, DESC_BODY_MAX = 16e6;   // the description's characters; the body (an optional close-up up to 15 MB)
-const TEXTURE_KINDS = ['diamond', 'herringbone', 'twill', 'oxford', 'royal-oxford', 'pinpoint', 'end-on-end', 'birdseye', 'honeycomb', 'dobby-dot', 'basket', 'other'];
-const MOTIF_SHAPES = ['square', 'square-with-dot', 'diamond', 'dot', 'ring', 'cross', 'flower', 'figure', 'other'];
 const ROLES = ['main', 'second', 'third', 'lighter', 'darker'];
 const LAYOUTS = ['texture', 'stripes', 'check', 'windowpane', 'plaid', 'motif', 'none'];
 /* a weave answered "solid" (drawn flat) moves to the type's first weave here, so it keeps its texture */
@@ -352,14 +351,6 @@ function cleanDescribeColour(a, b, own, desc) {
   return { status: 200, body: { kind, match: a.match === 'existing' ? 'existing' : 'new', existing, dE, name: txt(a.name, 24).toLowerCase(), hex, plansAs,
     fitsType: a.fitsType !== false, confidence: ['high', 'medium', 'low'].includes(a.confidence) ? a.confidence : 'medium', why: say(a.why, 200),
     ask: kind === 'several' ? askOf(a.ask, ASK_DEFAULT.several) : null } };
-}
-/* a bitmap: rows of 1/0 (also #/. and x/-), the same length, lo..hi cells each way; both tones present when both is set */
-function bitmapOf(g, lo, hi, both) {
-  if (!Array.isArray(g)) return null;
-  const rows = g.slice(0, hi).map(r => String(r).replace(/[^01#.xX-]/g, '').replace(/[#xX]/g, '1').replace(/[.-]/g, '0').slice(0, hi)).filter(Boolean);
-  const w = Math.max(0, ...rows.map(r => r.length)), out = rows.map(r => r.padEnd(w, '0')), all = out.join('');
-  if (out.length < lo || w < lo || !all.includes('1') || (both && !all.includes('0'))) return null;
-  return out;
 }
 const bandsOf = d => { if (!d || !Array.isArray(d.bands)) return null;
   const b = d.bands.slice(0, 24).map(x => ({ c: ROLES.includes(x && x.colour) ? x.colour : 'main', w: Math.max(0, +(x && x.widthPct) || 0) })).filter(x => x.w > 0);

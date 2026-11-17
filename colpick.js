@@ -158,11 +158,11 @@ async function colAskImgs(it,src){
 async function colAskRun(){const it=colTarget();if(!it||!it.texture)return;if(!isConnected()){tell(NEED_CONN);return}
   // one of Claude's own readings per request: asked for both, the answer's schema is more than the API compiles ("compiled grammar
   // is too large", found on the live worker 2026-11-13), so a colour sheet asks for its colours and the pattern sheet for its pattern
-  const src=colPick.src,pat=colPick.k==='pattern',key=it.id+(pat?'|p':'|c');colAsk[key]={busy:true};renderColPick(true);let ai=null;
-  try{const x=await colAskImgs(it,src);ai=await ask(x.img,{closeup:x.closeup,measured:x.measured,skipId:it.id,freeColors:!pat,freePattern:pat})}catch(e){console.warn('color ask failed',e)}
+  const src=colPick.src,pat=colPick.k==='pattern',key=it.id+(pat?'|p':'|c');colAsk[key]={busy:true};renderColPick(true);let ai=null;const out={};
+  try{const x=await colAskImgs(it,src);ai=await ask(x.img,{closeup:x.closeup,measured:x.measured,skipId:it.id,freeColors:!pat,freePattern:pat,forType:it.type,out})}catch(e){console.warn('color ask failed',e)}   // forType: fitted to this item's type (CR-2-04); out: this call's own reason (CR-2-07)
   colAsk[key]=ai&&ai.type?{primaryColor:ai.primaryColor,secondaryColor:ai.secondaryColor||'none',tertiaryColor:ai.tertiaryColor||'none',altColor:ai.altColor,conf:ai.conf,newColor:ai.newColor,own:ai.ownColors||null,
       pattern:normPat(it.type,ai.pattern),altPattern:ai.altPattern?normPat(it.type,ai.altPattern):null,newPattern:ai.newPattern,ownPattern:ai.ownPattern||null}
-    :{err:aiError||(pat?'Claude couldn’t read the pattern this time.':'Claude couldn’t read the colors this time.')};
+    :{err:(out.err&&out.err.note)||(pat?'Claude couldn’t read the pattern this time.':'Claude couldn’t read the colors this time.')};
   if(!colPick||colTarget()!==it)return;   // closed meanwhile: the answer shows when it is opened again
   const v=colAsk[key][colPick.k];if(colPick.k==='pattern'?v&&patChoices(it).includes(v):v&&(v==='none'||COLORS[v]))colPick.sel=v;renderColPick(true)}
 /* a colour Claude named that the app doesn't have (ownColors, asked with freeColors): offered as a "New" chip in the shade Claude

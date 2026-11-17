@@ -3,6 +3,7 @@
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
 import { OWN_COL_RE, OWN_PAT_RE } from './ownkeys.js';
 import { spend, unspend } from './people.js';
+import { readCapped } from './links.js';
 
 /* colours each item type really comes in: [main colours, stripe / motif colours]. Must match COLS_BY in core.js. */
 const SUITING = ['black','charcoal','darkgrey','grey','midgrey','lightgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','deeptaupe','taupe','tan','khaki','olive','green'],
@@ -73,8 +74,18 @@ const PQ_PATTERNS = `  pocketsquare:
 `;
 const promptFor = known => { known = knownOf(known); const types = OPT_TYPES.filter(t => known.includes(t)), pq = known.includes('pocketsquare');
   const pats = OPT_PAT_LINES.map(([ts, l]) => [ts.filter(t => known.includes(t)), l]).filter(([ts]) => ts.length).map(([ts, l]) => `  ${ts.join(', ')}:\n    ${l}\n`).join('');
-  return (pq ? PROMPT_HEAD.replace('tieclip, watch', 'tieclip, ' + PQ_TYPE + 'watch') : PROMPT_HEAD) + (types.length ? ',\n  ' + types.map(t => OPT_WORDS[t]).join(',\n  ') : '') + PROMPT_COLORS + colorText(known) + PROMPT_PATS + pats + (pq ? PQ_PATTERNS : '') + PROMPT_KINDS
-    + (known.includes('cargo') ? ', cargo (pants with patch cargo pockets on the thighs)' : '') + PROMPT_TAIL; };
+  const acc = accOpts(known);
+  return (pq ? PROMPT_HEAD.replace('tieclip, watch', 'tieclip, ' + PQ_TYPE + 'watch') : PROMPT_HEAD) + (types.length ? ',\n  ' + types.map(t => OPT_WORDS[t]).join(',\n  ') : '') + PROMPT_COLORS + colorText(known) + PROMPT_PATS + pats + (pq ? PQ_PATTERNS : '') + (acc ? PROMPT_KINDS.replace(ACC_METAL[0], ACC_METAL[1]) : PROMPT_KINDS)
+    + (known.includes('cargo') ? ', cargo (pants with patch cargo pockets on the thighs)' : '') + (acc ? PROMPT_TAIL.replace(ACC_LEATHER[0], ACC_LEATHER[1]).replace(ACC_BAND[0], ACC_BAND[1]) : PROMPT_TAIL); };
+/* the accessory values the app has had since 2026-11-15 (CR-2-06: core.js BANDS, SHOE_NAP, BELT_MATS, METAL_TONES; a rubber or NATO strap was
+   tagged leather, and the planner matched it to the shoes): offered, like the new garments' heather and cable, only to an app that names
+   any new garment in its types (tagPatterns' rule), so an older app's request stays byte-identical; the picker's calls name none (their
+   schema is near what the API compiles) */
+const accOpts = known => (known || []).some(t => OPT_TYPES.includes(t));
+const ACC_METAL = ['gold, silver or other (the case', 'gold, silver, two-tone (steel and gold together) or other (the case'];
+const ACC_LEATHER = ['a smooth leather sneaker is calf.', 'a smooth leather sneaker is calf; shoes may also be nubuck (a fine, short nap, less shaggy than suede); a belt may be braided (woven leather strips) or canvas.'];
+const ACC_BAND = ['band: bracelet (metal links) or leather (strap).', 'band: bracelet (metal links), leather (a leather strap), rubber (a rubber or silicone strap) or nato (a woven fabric strap).'];
+const ACC_ENUMS = { metal: ['two-tone'], leather: ['nubuck', 'braided'], band: ['rubber', 'nato'] };
 const PROMPT_HEAD = `Identify the single clothing item in this photo. Reply with one JSON object only, no prose, no code fences:
 {"type":"...","primaryColor":"...","secondaryColor":"...","tertiaryColor":"...","pattern":"...","metal":"...","trouserKind":"...","shoeStyle":"...","leather":"...","dial":"...","band":"...","bezel":"..."}
 
@@ -244,13 +255,13 @@ const matCap = (key, type, closeup) => type === 'socks' ? 0 : MAT_SEES.includes(
    type's list for that call. A name is lower-case letters, spaces and hyphens, 2-24 characters, at most 3 words; never a pattern or
    weave word, a leather, a color or a non-answer (those stay "none", as before) */
 const MAT_NAME_RE = /^[a-z][a-z -]{0,22}[a-z]$/;
-const LEATHERS = ['leather', 'calf', 'calfskin', 'cordovan', 'shell cordovan', 'suede', 'nubuck', 'patent', 'patent leather', 'pebble grain', 'scotch grain', 'shearling', 'lambskin', 'goatskin', 'deerskin', 'pigskin', 'ostrich', 'alligator', 'crocodile', 'snakeskin', 'faux leather', 'vegan leather', 'pleather', 'bonded leather', 'suede leather'];
+const NOT_MAT_LEATHERS = ['leather', 'calf', 'calfskin', 'cordovan', 'shell cordovan', 'suede', 'nubuck', 'patent', 'patent leather', 'pebble grain', 'scotch grain', 'shearling', 'lambskin', 'goatskin', 'deerskin', 'pigskin', 'ostrich', 'alligator', 'crocodile', 'snakeskin', 'faux leather', 'vegan leather', 'pleather', 'bonded leather', 'suede leather'];
 const NOT_MAT_WORDS = /\b(weave|woven|pattern|patterned|stripes?|striped|checks?|checked|plaid|tartan|leather|skin|unknown|unsure|unclear|none|other|n a|na|color|colour)\b/;
 /* words no material name has, so an instruction can never ride in as one ("ignore the rules") */
 const NOT_MAT_PROSE = /\b(the|a|an|and|or|to|is|are|be|you|your|i|me|my|it|this|that|ignore|disregard|forget|instructions?|rules?|system|prompt|assistant|user|answer|respond|reply|always|never|say|says|json|key|output|previous|above|below|now|please|must|should|tell)\b/;
 function notMaterial(key) {
   if (!key || key === 'none') return true;
-  if (LEATHERS.includes(key) || NOT_MAT_WORDS.test(key) || NOT_MAT_PROSE.test(key)) return true;
+  if (NOT_MAT_LEATHERS.includes(key) || NOT_MAT_WORDS.test(key) || NOT_MAT_PROSE.test(key)) return true;
   if (PATTERN_KEYS.some(p => p.replace(/-/g, ' ') === key) || COLOR_LIST.includes(key.replace(/[ -]/g, ''))) return true;
   return ['royal oxford', 'oxford cloth', 'herringbone twill', 'basketweave', 'basket weave', 'pin point', 'end on end', 'fil a fil', 'satin', 'twill', 'jacquard', 'brocade', 'pique', 'piqué'].includes(key);
 }
@@ -373,7 +384,8 @@ const SUGGEST = { anyOf: [{ type: 'object', additionalProperties: false, require
   properties: { name: { type: 'string' }, why: { type: 'string' } } }, { type: 'null' }] };
 const BOX = { type: 'object', additionalProperties: false, required: ['x', 'y', 'w', 'h'],
   properties: { x: { type: 'integer' }, y: { type: 'integer' }, w: { type: 'integer' }, h: { type: 'integer' } } };
-/* a striped, checked or plaid cloth in words and colours: for the photo generator, the drawing's scale and direction, and as
+/* a striped, checked or plaid cloth in words and colours: its description is saved as item.patternText, whose words the painter and the
+   swatches read (assemble.js asmClothOf / asmLinen, asm-color.js asmCuFine / asmCmMat, today.js ovlGrain) and photos.js lookSig keys; then the drawing's scale and direction, and as
    the drawing's colours when the app can't read them from the photo */
 const WEAVE = { type: 'object', additionalProperties: false, required: ['layout', 'direction', 'repeatsAcross', 'colours', 'crossing', 'description'],
   properties: {
@@ -401,12 +413,14 @@ const FREE_PAT_EXTRA = `
 ownPattern — the pattern or weave in your own precise words, NOT limited to the list above, judged mainly from the close-up:
   name: what a tailor or cloth merchant would call it, short and lower-case (e.g. "broken twill", "shepherd's check",
   "prince of wales check with overcheck", "basketweave", "micro houndstooth", "twill with a faint windowpane");
-  description: one sentence on how it looks (structure, scale, colors, how strong), for drawing it and for a photo generator;
+  description: one sentence on how it looks (structure, scale, colors, how strong), for the owner and for drawing it;
   fits: true only when the listed pattern you put in "pattern" already names it fully, false when your name says more.`;
 /* known: the request's optional types and kinds (knownTypes; none = the schema as it always was) */
 function tagSchema(custom, single, free, freePat, known = []) { known = knownOf(known);
   const cols = [...COLOR_LIST, ...custom.colors.map(c => c.key)], pats = [...tagPatterns(known), ...custom.patterns.map(p => p.key)];
-  const props = { ...TAG_SCHEMA.properties, type: { type: 'string', enum: tagTypes(known) }, trouserKind: orNull(tagKinds(known)),
+  // (not on the picker's calls, free / freePat: their schema is near what the API compiles)
+  const acc = accOpts(known) && !free && !freePat ? Object.fromEntries(Object.entries(ACC_ENUMS).map(([k, v]) => [k, orNull([...TAG_SCHEMA.properties[k].anyOf[0].enum, ...v])])) : {};
+  const props = { ...TAG_SCHEMA.properties, ...acc, type: { type: 'string', enum: tagTypes(known) }, trouserKind: orNull(tagKinds(known)),
     primaryColor: { type: 'string', enum: cols }, secondaryColor: { type: 'string', enum: [...cols, 'none'] },
     tertiaryColor: { type: 'string', enum: [...cols, 'none'] }, pattern: { type: 'string', enum: pats } };
   if (!single) return { ...TAG_SCHEMA, properties: props };
@@ -493,14 +507,15 @@ weave — for a striped, checked or plaid item (null for solids and fine weaves)
   colours: one full repeat of the stripe sequence in order, each band with a plain name, an sRGB hex as seen, and its width
     (a pinstripe suit: the ground, then the stripe as a hairline; a gingham: the two colors);
   crossing: the lines that run the other way (colors, how fine, how far apart), or "" if none;
-  description: one or two sentences describing the pattern for a photo-realistic image generator: the order and colors of the
-  bands, which color dominates, their widths, the crossing lines, and the cloth's sheen or weave. Leave out the direction (the app
-  measures it).`;
+  description: one sentence on the pattern for the owner and the app's painter: the order and colors of the bands, which color
+  dominates, the crossing lines, and the cloth's weave and finish in a tailor's words (fine worsted, flannel, linen, twill,
+  herringbone, seersucker, corduroy). Leave out the direction (the app measures it).`;
 /* what the app measured (Lab after white balance), to weigh against what is seen */
 function measuredText(m) {
   if (!m || !Array.isArray(m.lab) || m.lab.length !== 3) return '';
+  // near: a listed key or an own one (own keys may hold digits since fix round 3: ownrot1; CR-2-05)
   const lab = m.lab.map(v => Math.round(+v || 0)), near = (Array.isArray(m.near) ? m.near : []).slice(0, 3)
-    .filter(n => n && /^[a-z]{2,32}$/.test(n.c)).map(n => `${n.c} (ΔE ${(+n.d || 0).toFixed(1)})`);
+    .filter(n => n && (COLOR_LIST.includes(n.c) || KEY_RE.test(n.c))).map(n => `${n.c} (ΔE ${(+n.d || 0).toFixed(1)})`);
   return `\n\nThe app measured the cloth's color ${m.src === 'closeup' ? 'in the close-up' : 'in the photo'} after white balance: CIELAB L*${lab[0]} a*${lab[1]} b*${lab[2]}`
     + (HEX_RE.test(m.hex || '') ? ` (${m.hex})` : '') + (near.length ? `; nearest of the owner's colors: ${near.join(', ')}` : '') + '. '
     + (m.ref ? 'A white reference was in the frame, so its lightness is reliable.' : 'There was no white reference, so its lightness may be off by the camera\'s exposure; hue and saturation are more reliable.')
@@ -553,8 +568,9 @@ async function claudeCall(env, opts) {
   if (/opus|fable|sonnet-5-5/.test(model)) { body.fallbacks = 'default'; headers['anthropic-beta'] = 'server-side-fallback-2026-07-01'; }
   const sent = JSON.stringify(body), pause = env.CLAUDE_RETRY_MS != null ? +env.CLAUDE_RETRY_MS || 0 : CLAUDE_RETRY_MS;   // (tests set it to 0)
   let r, out;
-  // one automatic retry on an overloaded or failing API (429, 529, 5xx, a dropped connection), after its retry-after or a short
-  // pause; every attempt has a time limit (CLAUDE_MS)
+  // one automatic retry on an overloaded or failing API (429, 529, 5xx: refused, so not billed), after its retry-after or a short
+  // pause; every attempt has a time limit (CLAUDE_MS). A dropped connection is not retried (CR-2-11): the API may already have taken
+  // the request and billed it, and a retry would pay a second time; the app's Try again is a tap
   // opts.signal: the app's request (req.signal). An app closed mid-reading drops its connection: the reading stops there, and the
   // handler, seeing a status other than 200, gives the count back (the audit of 2026-11-14: a reading killed mid-way was still counted)
   const gone = () => !!(opts.signal && opts.signal.aborted);
@@ -565,7 +581,7 @@ async function claudeCall(env, opts) {
     catch (e) {
       if (gone()) return CLIENT_GONE;
       if (e && e.name === 'TimeoutError') return { status: 504, body: { error: 'ai', detail: `Claude took over ${CLAUDE_MS / 60000} minutes to answer. Try again.` } };
-      if (attempt < 2) { await sleep(pause); continue; }
+      console.log(`Claude API: the connection dropped (${String(e && e.message)}); not retried`);
       return { status: 502, body: { error: 'ai', detail: 'Could not reach the Claude API: ' + String(e && e.message) } };
     }
     if (attempt < 2 && (r.status === 429 || r.status >= 500)) {
@@ -624,6 +640,25 @@ function cleanTag(t, opts = {}) {
   const accents = 'accents' in t ? cleanAccents(t.accents, [t.primaryColor, t.secondaryColor, t.tertiaryColor], opts.ownColors) : undefined;
   return { ...plain(t), confidence: conf(t.confidence), ...(t.conf !== undefined ? { conf: conf(t.conf) } : {}), newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern, material, accents };
 }
+/* the body of an AI route (/tag-many, /pattern, /render; CR-2-08), read as POST / reads it (worker.js): a content-length over the limit
+   refused before reading, at most AI_BODY_MAX bytes read (readCapped, the rest never read), JSON, an object -> {body} or {res} (the
+   answer to give). Before anything is spent */
+const AI_BODY_MAX = 15e6;
+async function readAiBody(req, json, limit = AI_BODY_MAX) {
+  const big = () => ({ res: json({ error: 'photo too large', detail: `That photo is too large (over ${Math.round(limit / 1e6)} MB).` }, 413) });
+  if (+(req.headers.get('content-length') || 0) > limit) return big();
+  const got = await readCapped(req.body, limit); if (got.over) return big();
+  let body; try { body = JSON.parse(new TextDecoder().decode(got.bytes)); } catch { return { res: json({ error: 'bad json' }, 400) }; }
+  return body && typeof body === 'object' ? { body } : { res: json({ error: 'bad json' }, 400) };
+}
+/* the photo (and the close-up, when sent) must each be a whole data:image string before a call is counted (POST /'s rule, fix round 3
+   W2-13-07): a malformed one reached Claude, a 400 there and a 502 here -> the 400 answer, or null */
+const PIC_RE = /^data:image\/(?:jpeg|png|webp|gif|heic|heif);base64,[A-Za-z0-9+/=]+$/;
+function badPics(body, json) {
+  if (!PIC_RE.test(String(body.image || ''))) return json({ error: 'no image', message: 'That photo couldn’t be read. Try another photo.' }, 400);
+  if (body.closeup != null && body.closeup !== '' && !PIC_RE.test(String(body.closeup))) return json({ error: 'no image', message: 'That close-up couldn’t be read. Try another photo.' }, 400);
+  return null;
+}
 /* POST /tag-many {image} -> {items: [tag + confidence + box], model}
    One photo with several items (a closet rail of shirts, suits on hangers, folded trousers): every item is listed,
    left to right, each with the same fields as a single tag, a confidence, and a rough box (thousandths of the image). */
@@ -663,9 +698,8 @@ const multiPrompt = known => MULTI_HEAD + tagRules(known) + '\n\n' + ACCENT_RULE
 const MULTI_PROMPT = multiPrompt([]);
 async function handleTagMany(req, env, json, who) {
   if (!env.ANTHROPIC_API_KEY) return json({ error: 'ai', detail: 'Several items in one photo needs Claude: add an ANTHROPIC_API_KEY secret to the worker.' }, 501);
-  const text = await req.text();
-  if (text.length > 15e6) return json({ error: 'photo too large' }, 413);
-  let body; try { body = JSON.parse(text); } catch { return json({ error: 'bad json' }, 400); }
+  const got = await readAiBody(req, json); if (got.res) return got.res; const body = got.body;
+  const bad = badPics(body, json); if (bad) return bad;
   const known = knownTypes(body), custom = cleanCustom(body.custom), base = tagSchema(custom, false, false, false, known);
   const schema = { ...MULTI_SCHEMA, properties: { items: { ...MULTI_SCHEMA.properties.items, items: { ...MULTI_SCHEMA.properties.items.items,
     properties: { ...MULTI_SCHEMA.properties.items.items.properties, ...base.properties } } } } };
@@ -717,4 +751,4 @@ async function tagWithWorkersAi(env, image, known = []) {
   catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
 }
 
-export { knowsPq, OPT_TYPES, OPT_KINDS, PATTERN_KEYS, knownTypes, tagTypes, tagRules, tagPatterns, tagKinds, materialExtra, multiPrompt, ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
+export { readAiBody, badPics, AI_BODY_MAX, knowsPq, OPT_TYPES, OPT_KINDS, PATTERN_KEYS, knownTypes, tagTypes, tagRules, tagPatterns, tagKinds, materialExtra, multiPrompt, ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };

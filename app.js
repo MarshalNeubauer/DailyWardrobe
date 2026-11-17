@@ -154,7 +154,7 @@ function busyLabelFor(u,o){if(!o||String(o.method||'GET').toUpperCase()!=='POST'
   let a,b;try{a=new URL(u,location.href);b=new URL(w.replace(/\/*$/,'/'))}catch{return null}if(a.origin!==b.origin)return null;
   const p=a.pathname.replace(b.pathname,'/').replace(/\/+$/,'')||'/',body=typeof o.body==='string'?o.body.slice(0,4000):'';
   if(p==='/')return 'Claude is tagging the photo…';if(p==='/tag-many')return 'Claude is finding the items…';if(p==='/pattern')return 'Claude is reading the pattern…';
-  if(p==='/describe')return /"what":"pattern"/.test(body)?'Claude is working out the weave…':'Claude is finding the shade…';
+  if(p==='/describe')return /"what":"both"/.test(body)?'Claude is reading the color and texture…':/"what":"pattern"/.test(body)?'Claude is working out the weave…':'Claude is finding the shade…';   // (both: Read color and texture, CR-2-09)
   if(p==='/render')return /"mode":"item"/.test(body)?'Making the item picture…':null;   // (item pictures: the only thing POST /render makes now)
   return null}
 if(typeof window!=='undefined'&&window.fetch&&!window.fetch.busy){const f0=window.fetch.bind(window);
@@ -194,9 +194,13 @@ const afterScripts=f=>document.readyState==='complete'?f():addEventListener('loa
 // once every script of the page has run (DOMContentLoaded comes after the last one, and unlike load it doesn't wait for pictures)
 const afterDom=f=>document.readyState!=='loading'?f():addEventListener('DOMContentLoaded',()=>f(),{once:true});
 const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':/^claude/.test(q.model||'')?'Tagged by Claude.':'Tagged by AI.';   // (no model name: a tester read "Tagged by Claude (claude-mock)")
-/* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tagging.js) */
+/* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tagging.js).
+   forType: fit the colours and pattern to this type (the card's own, when tagging again or Ask Claude) instead of the one Claude answers
+   (CR-2-04). out: an object that gets this call's own failure, out.err = {note, why, net} (CR-2-07: several readings run at once, and the
+   shared aiError / tagWhy / tagNetLast, still set for the Add page's note, could hold another card's reason by the time it was read) */
 async function ask(c,extra){
-  const {signal,...ex}=extra||{};   // signal: Stop on an Add card calls the reading off (add.js stopRead)
+  const {signal,forType,out,...ex}=extra||{};   // signal: Stop on an Add card calls the reading off (add.js stopRead)
+  const fail=note=>{aiError=note;if(out)out.err={note,why:typeof tagWhy==='string'?tagWhy:'',net:typeof tagNetLast!=='undefined'&&!!tagNetLast};return null};
   try {
     const workerUrl=localStorage.getItem('worker_url');
     if(!workerUrl) return null;
@@ -204,26 +208,19 @@ async function ask(c,extra){
     const dataUrl=typeof c==='string'?c:c.toDataURL('image/jpeg',TAG_Q);
     const res=await fetch(workerUrl,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
-      body:JSON.stringify({image:dataUrl,appToken:localStorage.getItem('app_token')||'',...tagExtras(ex)}),
+      headers:{'Content-Type':'application/json','x-app-token':localStorage.getItem('app_token')||''},   // (the code goes in the header only: the worker hasn't read a body appToken since 2026-11-12)
+      body:JSON.stringify({image:dataUrl,...tagExtras(ex)}),
       ...(signal?{signal}:{})
     });
     if(!res.ok){let e='',j={};try{j=await res.json();e=j.detail||j.error||''}catch{}
       if(typeof endedAnswer==='function'&&endedAnswer(res.status,j)){inviteEnded(localStorage.getItem('app_token')||'',j);aiError='';return null}   // found out here: said as ended (sync.js), the card has no Try again
-      aiError=tagFailText(res.status,j,e);return null}
+      return fail(tagFailText(res.status,j,e))}
     aiError='';
     const result=await res.json();aiModel=result.model||'';
-    let parsed;
-    try {
-      const cleanText=(result.response||'').replace(/```json/g,'').replace(/```/g, '').trim();
-      parsed=JSON.parse(cleanText);
-    } catch(e) {
-      parsed=result;
-    }
-    return normTag(parsed,result.model);
+    return normTag(result,result.model,forType);   // (the worker parses Claude's answer itself: the old Workers AI text shape is gone)
   } catch(e) {
     if(e&&e.name==='AbortError')return null;   // stopped on purpose: no failure to report
-    aiError=tagFailText(0,null,e);return null;
+    return fail(tagFailText(0,null,e));
   }
 }
 /* an AI tag -> the fields the Add form uses (type-checked, colours and patterns normalised) */
@@ -235,25 +232,26 @@ const matTag=p=>{const m=p&&p.material,t=TYPES[p&&p.type]?p.type:'suit',k=m&&typ
   if(!k||k==='none'||!MATERIALS_BY[t])return null;const conf=['high','medium','low'].includes(m.confidence)?m.confidence:'low',why=String(m.why||'').replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,160);
   if(matsFor(t).includes(k))return {key:k,conf,why};
   const n=ownMatName(k);return n&&m.new===true&&conf!=='low'?{key:n,conf,why,new:true}:null};
-function normTag(parsed,model){
+/* forType (ask's, CR-2-04): the type the colours, pattern and material are fitted to; `type` stays Claude's answer (tagging again offers it) */
+function normTag(parsed,model,forType){const ft=TYPES[forType]?forType:parsed.type;
     return {
       type:TYPES[parsed.type]?parsed.type:'suit',
-      pattern:normPat(TYPES[parsed.type]?parsed.type:'suit',parsed.pattern),
-      primaryColor:normColFor(parsed.type,parsed.primaryColor||parsed.color)||'grey',
-      secondaryColor:normColFor(parsed.type,parsed.secondaryColor,true),
-      tertiaryColor:normColFor(parsed.type,parsed.tertiaryColor,true),
+      pattern:normPat(TYPES[ft]?ft:'suit',parsed.pattern),
+      primaryColor:normColFor(ft,parsed.primaryColor||parsed.color)||'grey',
+      secondaryColor:normColFor(ft,parsed.secondaryColor,true),
+      tertiaryColor:normColFor(ft,parsed.tertiaryColor,true),
       metal:METAL[parsed.metal]?parsed.metal:'silver',
       leather:[...LEATHERS,...SHOE_TEXTILES,...SHOE_NAP,...BELT_MATS].includes(String(parsed.leather||'').toLowerCase().replace(/\s+/g,'-'))?String(parsed.leather).toLowerCase().replace(/\s+/g,'-'):null,
       trouserKind:['chinos','jeans','dress','cargo'].includes(parsed.trouserKind)?parsed.trouserKind:null,shoeStyle:SHOE_STYLES.some(([k])=>k===parsed.shoeStyle)?parsed.shoeStyle:null,
       model:model||'',
       dial:normCol(parsed.dial),band:['bracelet','leather','rubber','nato'].includes(parsed.band)?parsed.band:null,
       // the material Claude suggests (2026-11-15, worker cleanMaterial): from the type's list or the person's own (low kept as a guess), or a new one (matTag)
-      material:matTag(parsed),
+      material:matTag(TYPES[forType]?{...parsed,type:forType}:parsed),
       // the colours beyond the three (2026-11-16, the worker's accents: cleaned there; made the card's own in fill / refineApply, core.js accentsFor); null from an older worker
-      accents:Array.isArray(parsed.accents)?parsed.accents.filter(c=>typeof c==='string').slice(0,8):null,bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
+      accents:Array.isArray(parsed.accents)?parsed.accents.filter(c=>typeof c==='string').slice(0,ACCENT_MAX):null,bezel:['fluted','smooth'].includes(parsed.bezel)?parsed.bezel:null,
       // how sure it was, its runner-up, and what it would add when nothing listed fits (single-item tags)
       conf:parsed.confidence&&typeof parsed.confidence==='object'?parsed.confidence:null,
-      altColor:normColFor(parsed.type,parsed.altColor),altPattern:parsed.altPattern&&parsed.altPattern!=='none'&&(PATS_BY[parsed.type]||[]).includes(parsed.altPattern)?parsed.altPattern:null,
+      altColor:normColFor(ft,parsed.altColor),altPattern:parsed.altPattern&&parsed.altPattern!=='none'&&(PATS_BY[ft]||[]).includes(parsed.altPattern)?parsed.altPattern:null,
       newColor:parsed.newColor&&parsed.newColor.name?parsed.newColor:null,newPattern:parsed.newPattern&&parsed.newPattern.name?parsed.newPattern:null,
       clothBox:parsed.clothBox&&typeof parsed.clothBox==='object'?parsed.clothBox:null,
       patternBox:parsed.patternBox&&typeof parsed.patternBox==='object'?parsed.patternBox:null,weave:parsed.weave&&typeof parsed.weave==='object'?parsed.weave:null,
