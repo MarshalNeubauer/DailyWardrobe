@@ -101,15 +101,38 @@ function startFailed(e){console.warn(e);
     setWardrobe({items:(startRead.r||[]).map(x=>one(cleanRecord,x)).filter(Boolean)});
     setWardrobe({days:Object.fromEntries((startRead.d||[]).map(x=>one(cleanDay,x)).filter(Boolean).map(x=>[x.date,x]))})}
   if(!startRead)setWardrobe({items:[]});
-  else{afterScripts(()=>{if(typeof errNote==='function')errNote(e,'Start-up')});
+  else{afterScripts(()=>errNote(e,'Start-up'));
     setTimeout(()=>toast('Something went wrong while the app was starting. Your wardrobe is safe on this phone: nothing was deleted. Close the app fully and open it again; if this keeps happening, tell us in Settings → About → Feedback.',15000),0)}
-  try{show('today')}catch(e2){console.warn(e2);if(startRead)afterScripts(()=>{if(typeof errNote==='function')errNote(e2,'Start-up: Today')});startPlain()}
+  try{show('today')}catch(e2){console.warn(e2);if(startRead)afterScripts(()=>errNote(e2,'Start-up: Today'));startPlain()}
   window.appReady=true;afterScripts(()=>storageDown(e));
   if(startRead)afterScripts(()=>{try{safetyStart()}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
 /* Today couldn't be drawn: a plain card says so, with Try again */
 function startPlain(){const t=$('#today');if(!t)return;for(const s of PAGES){const el=$('#'+s);if(el)el.hidden=s!=='today'}
   t.innerHTML='<div class="mbox"><p><b>Today couldn’t be shown.</b></p><p class="shelp">Your wardrobe is safe on this phone: nothing was deleted.</p><div class="sactions"><button type="button" onclick="location.reload()">Try again</button></div></div>'}
-connRestored.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings'),metaGet(PLAN_SNAP).catch(()=>null)])).then(([r,d,st,sn])=>{startRead={r,d};const kept=cleanStored(r,d);setWardrobe({items:kept.items});d=kept.days;startTook=true;setWardrobe({days:Object.fromEntries((d||[]).map(x=>[x.date,x]))});setWardrobe({settings:takeSettings(settings,cleanStoredSettings(st))});setSeen=st&&st.updated||0;applyCustom(settings.custom);wxPreload();if(key(sel)===key(todayDate())){const h=homeDay();sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()}}planSnapUse(sn);checkPlanRules().then(()=>whenPulled(checkArrivals)).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});whenPulled(dropLearn);whenPulled(()=>afterScripts(()=>{if(typeof kitFixOldImports==='function')kitFixOldImports().then(n=>{if(n&&!$('#today').hidden)refreshToday()})}));whenPulled(()=>typeof kitSampleMigrate==='function'&&kitSampleMigrate());show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});whenPulled(()=>texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));whenPulled(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>fixBlackBackdrops()).then(()=>smallPhotos()));afterScripts(()=>safetyStart())})}).catch(startFailed);
+/* start-up (Round B, CR-7-09: it was one 2,000-character line): index.html's last script calls startUp() once every script has run, so
+   nothing here can come before a later script (the rule "whatever Today draws at start-up lives in start.js or earlier" is gone). The steps
+   run in the order the line had them; a throw in any of them, or stores that can't be read, goes to startFailed as before. What is
+   started in the background (the plan rules check, the photo fix-ups) keeps its own promise chain, as before: its errors don't reach
+   startFailed. afterScripts still waits for the load event and whenPulled for the first pull, as they did. */
+async function startUp(){try{const [r,d,st,sn]=await loadStored();applyStored(r,d,st,sn);startChecks();show('today');startJobs()}catch(e){startFailed(e)}}
+/* the four reads: items, days, settings and the plan snapshot */
+const loadStored=()=>connRestored.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings'),metaGet(PLAN_SNAP).catch(()=>null)]));
+/* what was read goes into memory (startRead/startTook tell startFailed how far it got), then the day Today opens on and the plan snapshot */
+function applyStored(r,d,st,sn){startRead={r,d};const kept=cleanStored(r,d);setWardrobe({items:kept.items});d=kept.days;startTook=true;setWardrobe({days:Object.fromEntries((d||[]).map(x=>[x.date,x]))});setWardrobe({settings:takeSettings(settings,cleanStoredSettings(st))});setSeen=st&&st.updated||0;applyCustom(settings.custom);wxPreload();
+  if(key(sel)===key(todayDate())){const h=homeDay();sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()}}
+  planSnapUse(sn)}
+/* started before Today is first drawn: the plan rules check and the one-time fix-ups of old records */
+function startChecks(){checkPlanRules().then(()=>whenPulled(checkArrivals)).then(()=>{if(!$('#today').hidden)refreshToday()});
+  afterScripts(()=>migrateVests());whenPulled(dropLearn);
+  whenPulled(()=>afterScripts(()=>kitFixOldImports().then(n=>{if(n&&!$('#today').hidden)refreshToday()})));
+  whenPulled(()=>kitSampleMigrate())}
+/* after Today is drawn: the setup, the weather and holidays, the kept photos (then appReady) and the photo fix-ups, the safety checks */
+function startJobs(){afterScripts(()=>setupStart());loadWeather();afterScripts(()=>refreshHolidays());
+  loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();
+    fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});
+    whenPulled(()=>texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));
+    whenPulled(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>fixBlackBackdrops()).then(()=>smallPhotos()));
+    afterScripts(()=>safetyStart())})}
 
 /* (Today opens on the home day once the settings are read: today, or the next workday when today is a weekend or a day off; it opened on the
    calendar day, an empty "Saturday isn't a workday" page, while the Today tab went to Sunday's outfit (audit 2026-11-14))
