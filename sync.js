@@ -42,7 +42,7 @@ async function applyMerged(local,incoming){const m=mergeState(local,incoming);
   const now=await localState();
   if(stateSig(now)!==stateSig(local)){const open=typeof editing!=='undefined'&&editing&&items.find(i=>i.id===editing);
     setWardrobe({items:now.items});planDirty();if(window.onSyncedData)onSyncedData(now);syncRedraw(['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden));syncSettingsRedraw();
-    if(open)itemSynced(open)}   // the item sheet follows the new copy (itemsheet.js)
+    if(open)itemSynced(open)}   // the item sheet follows the new copy (item-view.js)
   return now;
 }
 /* Settings open while a sync brought changes: its controls are drawn again from the merged settings (2026-11-15, the audit: the Suit vest
