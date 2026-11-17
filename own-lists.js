@@ -88,7 +88,7 @@ async function removeOwnMaterial(type,name){const o=settings.ownMaterials&&typeo
 async function matOffer(i){const q=queue[i];if(!q||!q.matNew)return;const nm=q.matNew,was=q.material,had=matsFor(q.type).includes(nm.key);
   const n=await addOwnMaterial(q.type,nm.key);if(!n)return;
   const qq=queue.find(x=>x.id===q.id);if(!qq)return;delete qq.matNew;delete qq.matAI;qq.material=n;qq.matSet=1;qq.matAdded=n;qq.checked={...qq.checked,fabric:1};
-  if(typeof addKeepSoon==='function')addKeepSoon();renderAdd();
+  addKeepSoon();renderAdd();
   toast(`${cap1(n)} added to your ${matTypeWord(q.type)} materials.`,6000,{label:'Undo',fn:async()=>{const c=queue.find(x=>x.id===q.id);
     if(c&&c.material===n){if(was)c.material=was;else delete c.material;delete c.matAdded;c.matNew=nm}if(!had)await removeOwnMaterial(q.type,n);renderAdd()}})}
 /* the Add card's "Use wool" on Claude's low-confidence guess: chosen by hand (matSet, Fabric & fit checked) */

@@ -156,7 +156,7 @@ function fabricDef(id,item,role,ctx){
     const T=role==='tie'?8:role==='shirt'?6:14,Tv=T*(st.r||1);
     return tile(T,Tv,(wool?twill:'')+bandRects(st.v,Tv,T,false,false)+bandRects(st.b,T,Tv,true,true),rot(st.a));
   }
-  if(typeof HANDPICK_TYPES!=='undefined'&&HANDPICK_TYPES.includes(item.type))return casualTile(tile,item,p,ctx,b);   // the casual garments' own cloth (2026-11-16)
+  if(HANDPICK_TYPES.includes(item.type))return casualTile(tile,item,p,ctx,b);   // the casual garments' own cloth (2026-11-16)
   switch(p){
     /* --- stripes --- */
     case 'pinstripe':
@@ -503,7 +503,7 @@ let swN=0;
 function swatchSVG(i,drawn){
   const P='sw'+(swN++)+'-';let body;
   if(!drawn&&FABRIC.includes(i.type)&&i.swatch&&i.swSrc==='tex'&&i.texture&&TEXTURE_TYPES.includes(i.type))body=`<image href="${i.swatch}" width="16" height="16" preserveAspectRatio="xMidYMid slice"/>`;
-  else if(FABRIC.includes(i.type)||(typeof HANDPICK_TYPES!=='undefined'&&HANDPICK_TYPES.includes(i.type))){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';   // (the casual garments' stripe, heather or cable too, 2026-11-16)
+  else if(FABRIC.includes(i.type)||HANDPICK_TYPES.includes(i.type)){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';   // (the casual garments' stripe, heather or cable too, 2026-11-16)
     body=`<defs>${fabricDef(P+'f',i,role,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/><rect width="16" height="16" fill="url(#${P}g)"/>`}
   else if(i.type==='pocketsquare'){const e=pocketEdge(i);   // its print, its contrast edge round it (2026-11-16)
     body=`<defs>${pocketDef(P+'f',i,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/>${e?`<rect x="1.25" y="1.25" width="13.5" height="13.5" fill="none" stroke="${e}" stroke-width="2.5"/>`:''}<rect width="16" height="16" fill="url(#${P}g)"/><rect width="16" height=".9" fill="#fff" opacity=".35"/><rect y="1.4" width="16" height="1.1" fill="#000" opacity=".1"/><rect y="7.4" width="16" height=".8" fill="#000" opacity=".12"/><rect y="8.2" width="16" height=".5" fill="#fff" opacity=".2"/>`}   // (its folds: the lit top fold, the crease across)
@@ -517,7 +517,7 @@ function swatchSVG(i,drawn){
 
 /* what tells chinos and jeans from dress trousers on the fabric square (box 10..90): jeans a denim twill, gold double
    topstitching along a seam and a copper rivet; chinos a fine cotton twill and a slanted pocket's seam. Dress trousers: nothing */
-function trouserMarks(i,P){const k=typeof trouserKind==='function'?trouserKind(i):'dress';if(k==='dress')return '';
+function trouserMarks(i,P){const k=trouserKind(i);if(k==='dress')return '';
   const tw=`<pattern id="${P}tw" patternUnits="userSpaceOnUse" width="${k==='jeans'?2.4:1.8}" height="${k==='jeans'?2.4:1.8}" patternTransform="rotate(-35)"><rect width="${k==='jeans'?1:.7}" height="${k==='jeans'?2.4:1.8}" fill="#fff" opacity="${k==='jeans'?.16:.08}"/></pattern>`;
   const twill=`<defs>${tw}</defs><rect x="10" y="10" width="80" height="80" fill="url(#${P}tw)"/>`;
   if(k==='jeans')return twill+`<path d="M62,10 C60,40 61,66 66,90" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="1.2"/>`+
@@ -711,7 +711,7 @@ const PANTS_D={out:'M32.3,3.2 C32.3,3.2 39.5,3.2 43,3.1 C46.4,3.1 50,3.1 53,3.1 
 const PANTS_FAB=.22;
 function pantsFabric(id,i){const p=fabricDef(id,i,'bot'),m=p.match(/ patternTransform="([^"]*)"/),tf=m?m[1]:'';
   return (m?p.replace(m[0],''):p).replace('patternUnits="userSpaceOnUse"',`patternUnits="userSpaceOnUse" patternTransform="scale(${PANTS_FAB})${tf?' '+tf:''}"`)}
-function pantsMarks(i,P){const S=PANTS_D,c=colOf(i),e=mix(c,'#000',.42),hi=mix(c,'#fff',.22),k=typeof trouserKind==='function'?trouserKind(i):'dress';
+function pantsMarks(i,P){const S=PANTS_D,c=colOf(i),e=mix(c,'#000',.42),hi=mix(c,'#fff',.22),k=trouserKind(i);
   const ln=(d,w=.4,o=1,col=e)=>`<path d="${d}" fill="none" stroke="${col}" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round"/>`;
   // jeans and chinos: their twill over the cloth (trouserMarks' weave, clipped to the trousers; its seams belong to the square)
   const tw=k==='dress'?'':(()=>{const t=trouserMarks(i,P),m=t.match(/^<defs>[\s\S]*?<\/defs>/);return m?m[0]+`<g clip-path="url(#${P}pc)"><rect x="0" y="0" width="100" height="100" fill="url(#${P}tw)"/></g>`:''})();
@@ -719,7 +719,7 @@ function pantsMarks(i,P){const S=PANTS_D,c=colOf(i),e=mix(c,'#000',.42),hi=mix(c
     `<circle cx="${S.button.split(',')[0]}" cy="${S.button.split(',')[1]}" r=".6" fill="${mix(c,'#000',.6)}" stroke="${hi}" stroke-width=".12"/>`+
     ln(S.fly,.45)+ln(S.pockl,.4)+ln(S.pockr,.4)+ln(S.creasel,.35,.8,hi)+ln(S.creaser,.3,.6,hi)+ln(S.knee,.3,.5)+ln(S.hemr,.3,.5)+
     (k==='jeans'?`<path d="${S.pockl}" fill="none" stroke="#d9a441" stroke-width=".35" stroke-dasharray="1 .7" transform="translate(.7 0)"/><path d="${S.pockr}" fill="none" stroke="#d9a441" stroke-width=".35" stroke-dasharray="1 .7" transform="translate(-.7 0)"/>`+[[35.9,18.2],[64.5,18.4]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r=".75" fill="#b87333" stroke="#6e4220" stroke-width=".2"/>`).join(''):'')+
-    (typeof isCargo==='function'&&isCargo(i)?cargoPockets(c,[[33.6,46,8,13],[55.2,46,8.6,13]]):'')}
+    (isCargo(i)?cargoPockets(c,[[33.6,46,8,13],[55.2,46,8.6,13]]):'')}
 /* cargo pants (2026-11-16): a bellows pocket on each thigh, its flap with a snap, the pocket's pleat and a stitched edge, in the drawing's
    own line colour (the prototype's marks, C:\code\audit-2026-11-13\new-types-trace\tools\drawings.js); [x, y, w, h] each */
 function cargoPockets(c,boxes){const e=mix(c,'#000',.42),d=mix(c,'#000',.12),hi=mix(c,'#fff',.2);
@@ -1049,7 +1049,7 @@ function itemThumb(i,full){
   else if(i.type==='belt')g=`<g transform="translate(2 28)">${drawBelt(i,P)}</g>`;
   else if(i.type==='overcoat')g=coatMarks(i,P);   /* the traced topcoat with its model (COAT_D) */
   else if(i.type==='raincoat')g=rainMarks(i,P);   /* the traced raincoat with its model (RAIN_D) */
-  else if(typeof HANDPICK_TYPES!=='undefined'&&HANDPICK_TYPES.includes(i.type))g=casualMarks(i,P);   /* the casual garments laid flat (CASUAL_D) */
+  else if(HANDPICK_TYPES.includes(i.type))g=casualMarks(i,P);   /* the casual garments laid flat (CASUAL_D) */
   else if(i.type==='cufflinks'&&i.metal==='silk'){const c=colOf(i),d=mix(c,'#000',.35),l=mix(c,'#fff',.3);   // silk knots (2026-11-15): two knotted balls of cord in its colour, no metal
     g=[32,68].map(x=>`<circle cx="${x}" cy="50" r="11" fill="${c}" stroke="${d}" stroke-width="1"/><path d="M${x-9},${46} Q${x},${54} ${x+9},${46} M${x-9},${54} Q${x},${46} ${x+9},${54} M${x-4},${41} Q${x+3},${50} ${x-4},${59} M${x+4},${41} Q${x-3},${50} ${x+4},${59}" fill="none" stroke="${d}" stroke-width="1.1" stroke-opacity=".7"/><ellipse cx="${x-3.5}" cy="45.5" rx="3.4" ry="2" fill="${l}" opacity=".6"/>`).join('')}
   else if(i.type==='cufflinks'){const [mL,mM,mD]=METAL_TONES[i.metal]||METAL_TONES.silver,f=linkFace(i)&&colOf(i);   // an enamel or stone face in the item's colour, in a metal rim (2026-11-15: the colour asked for was never drawn)

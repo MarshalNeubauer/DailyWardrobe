@@ -41,20 +41,20 @@ function readEnd(q,kind,me){const r=READS.get(q);if(!r||r[kind]!==me)return fals
 function readAbort(q){const r=READS.get(q);if(!r)return;for(const k of ['refine','pattern'])if(r[k]){try{r[k].ac&&r[k].ac.abort()}catch{}delete r[k];q[k==='refine'?'refining':'patternReading']=0}}
 const REFINE_FAIL='Tagging again from the close-up didn’t work; the first tags stay.';
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;
-  try{measureCard(q)}catch(e){console.warn('close-up not measured',e);if(typeof errNote==='function')errNote(e,'Close-up measuring')}   // (a phone out of picture memory: read anyway, unmeasured)
-  if(!q.tagImg||!localStorage.getItem('worker_url')){readAbort(q);renderAdd();if(typeof addKeep==='function')addKeep();return}
-  const me=readBegin(q,'refine');q.refining=1;renderAdd();if(typeof addKeep==='function')addKeep();   // the close-up kept at once, as a reading under way (add.js keeps it as cut off: refineCut)
+  try{measureCard(q)}catch(e){console.warn('close-up not measured',e);errNote(e,'Close-up measuring')}   // (a phone out of picture memory: read anyway, unmeasured)
+  if(!q.tagImg||!localStorage.getItem('worker_url')){readAbort(q);renderAdd();addKeep();return}
+  const me=readBegin(q,'refine');q.refining=1;renderAdd();addKeep();   // the close-up kept at once, as a reading under way (add.js keeps it as cut off: refineCut)
   /* whatever happens from here, the card is drawn again when the reading ends (2026-11-16, a tester: a step that threw after the flag was
      cleared left Confirm switched off until something else redrew the card, so it took "Bought, on the way" to save) */
   // forType: Claude's colours are fitted to the card's own type, not to the type Claude guessed from the close-up (CR-2-04: a burgundy
   // blazer Claude called a suit came back brown); out: this reading's own reason when it fails (CR-2-07: not another card's)
-  let ai=null,hint=null;const out={};try{hint=measHint(q.meas);ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff),forType:q.type,out,...(me.ac?{signal:me.ac.signal}:{})})}catch(e){console.warn('close-up reading failed',e);if(typeof errNote==='function')errNote(e,'Close-up reading')}
+  let ai=null,hint=null;const out={};try{hint=measHint(q.meas);ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff),forType:q.type,out,...(me.ac?{signal:me.ac.signal}:{})})}catch(e){console.warn('close-up reading failed',e);errNote(e,'Close-up reading')}
   if(!readEnd(q,'refine',me))return;   // a newer close-up, Skip or Remove took over: this answer is not used, and the flag is theirs
   const k=queue.indexOf(q);q.refining=0;
-  try{refineApply(q,ai,hint,k,out.err)}catch(e){console.warn('close-up answer not applied',e);if(typeof errNote==='function')errNote(e,'Close-up answer not applied ('+q.type+')');q.refineNote=REFINE_FAIL;if(queue.includes(q)){renderAdd();if(typeof addKeep==='function')addKeep()}}}
+  try{refineApply(q,ai,hint,k,out.err)}catch(e){console.warn('close-up answer not applied',e);errNote(e,'Close-up answer not applied ('+q.type+')');q.refineNote=REFINE_FAIL;if(queue.includes(q)){renderAdd();addKeep()}}}
 function refineApply(q,ai,hint,k,err){
   // the card is already filled in: its own wording, not the first tag's "Photo tagging failed: … Fill in the details below." (CR-2-07)
-  if(!ai||!ai.type){q.refineNote=err&&err.why?`Tagging again from the close-up didn’t work: ${oneStop(err.why)}. The first tags stay.`:REFINE_FAIL;if(k>=0){renderAdd();if(typeof addKeep==='function')addKeep()}return}
+  if(!ai||!ai.type){q.refineNote=err&&err.why?`Tagging again from the close-up didn’t work: ${oneStop(err.why)}. The first tags stay.`:REFINE_FAIL;if(k>=0){renderAdd();addKeep()}return}
   const f=aiFields(ai),changes=[],prev={};delete q.refineType;delete q.refineKept;
   // a close-up shows cloth, not what the item is: a new type is offered, never taken (a shirt became a suit); the colours and pattern
   // are read for the card's own type
@@ -69,19 +69,19 @@ function refineApply(q,ai,hint,k,err){
   takeExtras(q,ai,!!hint);measureAndApply(q);q.model=ai.model||q.model;
   q.refineUndo=changes.length?prev:null;   // Undo puts the first tags back
   q.refineNote=changes.length?'Updated from the close-up: '+changes.join(', ')+'.':'The close-up confirmed the tags.';if(k>=0)renderAdd();
-  if(typeof addKeep==='function')addKeep();   // kept at once (add.js): a kill in the next moment lost the paid reading
+  addKeep();   // kept at once (add.js): a kill in the next moment lost the paid reading
   readPatternWithClaude(q)}
 /* Claude's new colour against the close-up's measurement: the measured colour is clearly nearer the colour the card has (a white shirt
    whose close-up measured cream was turned navy) */
 function refineContradicts(q,to){const m=q.meas;if(!m||!m.lab||m.src!=='closeup'||!COLORS[to]||!COLORS[q.primaryColor])return false;const kL=measKL(m);
   const dOld=dE00(m.lab,colRef(q.primaryColor,q.type,q.id),kL),dNew=dE00(m.lab,colRef(to,q.type,q.id),kL);return dOld<=FAR_DE&&dNew-dOld>=2*MEAS_GAP}
 function undoRefine(i){const q=queue[i];if(!q||!q.refineUndo)return;for(const [k,v] of Object.entries(q.refineUndo)){q[k]=v;q.edited={...q.edited,[k]:true}}
-  q.refineUndo=null;q.refineNote='The first tags are back.';if(q.texCanvas&&typeof generateSwatch==='function')generateSwatch(q);if(q.meas)measureAndApply(q);renderAdd()}
+  q.refineUndo=null;q.refineNote='The first tags are back.';if(q.texCanvas)generateSwatch(q);if(q.meas)measureAndApply(q);renderAdd()}
 
 /* ---- the card's tagging notes: how sure Claude was, its runner-up (one tap to take it), the measured colour, and an offer to
    add a colour or pattern when none of the listed ones fits ---- */
 const confTxt=c=>c?['type','primaryColor','pattern'].filter(k=>c[k]==='medium'||c[k]==='low').map(k=>`${fieldLabel[k]}: ${c[k]} confidence`).join(' · '):'';   // (only the two words: W2-13-05)
-const tagLive=()=>typeof isConnected==='function'?isConnected():!!localStorage.getItem('worker_url');   // (an ended invitation: no button to read again)
+const tagLive=()=>isConnected();   // (an ended invitation: no button to read again)
 function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colourVerdicts(q);   // against the tags as they are now
   if(q.refining)out.push('<p class="tagnote mut"><small>Tagging again with the close-up…</small></p>');
   // a reading cut off when the app was closed (add.js addRevive): said, with a tap to read it again; nothing is read by itself

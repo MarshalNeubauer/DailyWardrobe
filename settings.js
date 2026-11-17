@@ -40,7 +40,7 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
   set('weather',`${settings.location?settings.location.name:'No location set'} · °${unit()}`);
   set('photos',picsDrawn()?'Drawing only':typeof isConnected==='function'&&!isConnected()?'Painted pictures · needs a connection':'Painted pictures');   // (the masters come from the server)
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
-  const om=typeof ownMats==='function'?Object.keys(MATERIALS_BY).reduce((n,t)=>n+ownMats(t).length,0):0;   // (own materials, 2026-11-16)
+  const om=Object.keys(MATERIALS_BY).reduce((n,t)=>n+ownMats(t).length,0);   // (own materials, 2026-11-16)
   set('tagging',`${own?own+' color'+(own===1?'':'s')+' & patterns of your own':'Your own colors & patterns'}${om?` · ${om} material${om===1?'':'s'}`:''}`);
   const w=localStorage.getItem('worker_url');let host='';try{host=w?new URL(w).host:''}catch{}
   set('backup',backupSummary(w));set('connection',typeof connSummary==='function'?connSummary():host||'Not connected')}
@@ -49,7 +49,7 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
 const weekFirst=(l=settings.workdays)=>{const has=new Set(l||[]);return [0,1,2,3,4,5,6].find(d=>has.has(d)&&!has.has((d+6)%7))||0};
 /* the Schedule summary's dress part (audit 2026-11-15: with ties off it dropped the blazer days): blazer days whenever jackets are worn,
    the vest only with ties, as Settings shows them */
-function scheduleWear(days){const j=typeof wearsJacket!=='function'||wearsJacket(),t=typeof wearsTie!=='function'||wearsTie();
+function scheduleWear(days){const j=wearsJacket(),t=wearsTie();
   if(!j)return typeof dressSummary==='function'?dressSummary():'no jackets';const bl=settings.blazerDays.filter(d=>settings.workdays.includes(d));
   return [bl.length?'blazers '+days(bl):'suits every day',t?'vest '+({auto:'on cooler suit days',always:'every suit day',never:'never'})[settings.vestMode||'auto']:'no ties'].join(' · ')}
 function openSettings(section){
@@ -94,7 +94,7 @@ function closeSettings(){const was=settingsOpen();
   if(was&&over){if(appHist&&appKind==='set')appKind=over;else if(!appHist&&SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden}))appPush(over)}else appDrop('set');
   setLock(false);
   if(was&&typeof layerClose==='function')layerClose($('#settings-modal'));
-  if(todayStale){todayStale=false;if(typeof keepHome==='function')keepHome();renderToday()}   // (Today on the home day follows a workday taken away)
+  if(todayStale){todayStale=false;keepHome();renderToday()}   // (Today on the home day follows a workday taken away)
   if(viewStale){const v=viewStale;viewStale=null;if(!$('#'+v).hidden)show(v)}
 }
 function saveSettings(){
@@ -109,7 +109,7 @@ function saveSettings(){
   try{if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
     if($('#cfg-token')) localStorage.setItem('app_token',$('#cfg-token').value.trim())}
   catch(e){console.warn('connection not saved',e);setTimeout(()=>toast('Couldn’t save the server address: this browser’s storage is full or blocked.',5000),0)}
-  if(typeof connKeep==='function')connKeep();   // the database's copy of the connection follows (app.js)
+  connKeep();   // the database's copy of the connection follows (app.js)
   closeSettings();
   try{renderAdd()}catch(e){console.warn('Add page not drawn',e)}
   if(window.syncNow)syncNow().catch(e=>console.warn('sync not started',e));
@@ -195,7 +195,7 @@ async function fetchHolidays(cc){
 /* the holidays already past, kept for good (fix round 3, W1-8-01: the monthly refresh replaced the list with one starting a month back,
    and every older holiday turned into a workday "you didn't open the app", counted as worn, toward cleaning and Insights): they were days
    off when they came, so they stay days off whatever list or country comes next; Settings lists only the coming ones */
-function holPast(){const h=settings.holidays,T=isoKey(typeof trueToday==='function'?trueToday():todayDate());/* (the corrected date: core.js) */if(!h)return {list:[],skip:[]};
+function holPast(){const h=settings.holidays,T=isoKey(trueToday());/* (the corrected date: core.js) */if(!h)return {list:[],skip:[]};
   const list=(h.list||[]).filter(x=>x&&x.d<T);return {list,skip:(h.skip||[]).filter(d=>d<T&&list.some(x=>x.d===d))}}
 async function setHolidayCountry(cc,quiet){
   // "No public holidays": none from now on; the past ones stay (country '': nothing is fetched)
@@ -328,7 +328,7 @@ function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=
   if(k==='workdays'&&l.size===0){tell('At least one workday is needed: pick another day first.');return}settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
   planDirty();todayDirty();renderSettingsExtras();return saveUserSettings().then(clearLocks)}
 function setUnits(v){settings.units=v;saveUserSettings();todayDirty();renderWxLoc();settingsSummaries()}
-function setLocation(loc){const fromList=!!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#city-results'));if(loc&&loc.alt!==undefined){loc={...loc};delete loc.alt}settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML='';if(loc&&typeof announce==='function')announce('Location set to '+loc.name);if(fromList&&$('#cfg-city'))try{$('#cfg-city').focus({preventScroll:true})}catch{}}   // (the result pressed is gone: the field keeps the keyboard)
+function setLocation(loc){const fromList=!!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#city-results'));if(loc&&loc.alt!==undefined){loc={...loc};delete loc.alt}settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML='';if(loc)announce('Location set to '+loc.name);if(fromList&&$('#cfg-city'))try{$('#cfg-city').focus({preventScroll:true})}catch{}}   // (the result pressed is gone: the field keeps the keyboard)
 function useMyLocation(){if(!navigator.geolocation){tell('Location is not available on this device.');return}
   navigator.geolocation.getCurrentPosition(p=>setLocation({lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),name:geoName(p.coords.latitude,p.coords.longitude)}),()=>tell('Location permission was denied. Search for your city instead.'))}
 /* "Use my location" has no place name (Open-Meteo can't look one up): the spot itself, so it doesn't read "your current location" after a trip */
@@ -351,8 +351,8 @@ async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').tri
   try{const lang=cityLang(q),r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=8&language='+lang+'&name='+encodeURIComponent(q));const j=await r.json();
     const res=cityList(await cityEnglish((j.results||[]).slice(0,8),lang)).slice(0,5);
     window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join(''):'<small class="mut" id="city-none">No matches. Try the name in English or a nearby larger city, or Use my location.</small>';
-    if(typeof announce==='function')announce(res.length?`${res.length} place${res.length===1?'':'s'} found`:'No matches.')}   // (said: W2-19-01)
-  catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>';if(typeof announce==='function')announce('City search is unavailable right now.')}}
+    announce(res.length?`${res.length} place${res.length===1?'':'s'} found`:'No matches.')}   // (said: W2-19-01)
+  catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>';announce('City search is unavailable right now.')}}
 /* 16-day forecast from Open-Meteo (free, no key); cached for 3 hours */
 /* header ↻: sync with the worker (if set up), reload everything from storage, refresh the forecast and redraw */
 let toastTimer=null;

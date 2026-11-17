@@ -58,7 +58,7 @@ async function urlCanvas(u){const im=await new Promise((ok,no)=>{const i=new Ima
   const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c}
 async function paperOf(it){const k=paperKey(it);if(!k)return null;if(PAPER[k])return PAPER[k].then?await PAPER[k]:PAPER[k];
   const job=(async()=>{try{const r=closeRead(await urlCanvas(it.texture));let warm=false;
-    if(!r.ref&&it.photo)try{const g=wbRead(await urlCanvas(typeof phSm==='function'?phSm(it):it.photo)).gains;warm=!!g&&g.b>=PAPER_WARM*g.r}catch{}
+    if(!r.ref&&it.photo)try{const g=wbRead(await urlCanvas(phSm(it))).gains;warm=!!g&&g.b>=PAPER_WARM*g.r}catch{}
     return {ref:!!r.ref,warm}}catch{return null}})();
   PAPER[k]=job;const v=await job;if(v)PAPER[k]=v;else delete PAPER[k];return v}
 const paperNow=it=>{const v=PAPER[paperKey(it)];return v&&!v.then?v:null};
@@ -66,7 +66,7 @@ const paperNow=it=>{const v=PAPER[paperKey(it)];return v&&!v.then?v:null};
    never corrected, so with paper in it the copy is white-balanced from the paper here (applyWb, closeRead's gains) and goes with wb:true
    ("already corrected, don't adjust"); without paper it goes as taken with wb:false (worker/tag.js wbOf, lightText). Correcting an
    already corrected picture changes nothing (no gains under a 2% cast). */
-async function paperCopy(it){const u=(typeof sharpCloseOf==='function'?await sharpCloseOf(it):null)||it.texture;
+async function paperCopy(it){const u=(await sharpCloseOf(it))||it.texture;
   try{const cv=await urlCanvas(u),r=closeRead(cv);if(!r.ref)return {closeup:u,wb:false};
     return {closeup:r.gains?applyWb(cv,r.gains).toDataURL('image/jpeg',TAG_Q):u,wb:true}}catch{return {closeup:u,wb:false}}}
 
@@ -243,9 +243,9 @@ function applyMeasured(q){if(!q||q.manual)return [];const done=[];q.auto=q.auto|
   for(const f of Object.keys(q.auto))if(q[f]!==q.auto[f].to)delete q.auto[f];   // Claude's answer (tagging again) or the owner changed it since
   for(const v of q.measV||[]){if(v.mode!=='auto'||(q.edited&&q.edited[v.f])||(q.autoUndo&&q.autoUndo[v.f]===v.to)||q[v.f]===v.to)continue;
     q.auto[v.f]={from:q[v.f],to:v.to,src:q.meas.src,conf:v.conf,...(v.ai?{ai:v.ai}:{})};q[v.f]=v.to;done.push(v.f)}
-  if(done.length){if(q.texCanvas&&typeof generateSwatch==='function')generateSwatch(q);q.measV=colourVerdicts(q)}
+  if(done.length){if(q.texCanvas)generateSwatch(q);q.measV=colourVerdicts(q)}
   return done}
 function undoMeasured(i,f){const q=queue[i];if(!q||!q.auto||!q.auto[f])return;const a=q.auto[f];q[f]=a.from;delete q.auto[f];q.autoUndo={...q.autoUndo,[f]:a.to};q.edited={...q.edited,[f]:true};
-  if(q.texCanvas&&typeof generateSwatch==='function')generateSwatch(q);q.measV=colourVerdicts(q);renderAdd()}
+  if(q.texCanvas)generateSwatch(q);q.measV=colourVerdicts(q);renderAdd()}
 /* measure the card and take what is sure (the first tag, tagging again from the close-up, Try again) */
 function measureAndApply(q){measureCard(q);missedPattern(q);return applyMeasured(q)}

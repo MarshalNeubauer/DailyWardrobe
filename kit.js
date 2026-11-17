@@ -15,16 +15,16 @@ let kitImpBusy=false;   // an import being written (kitImportGo)
 const KIT_TOUR='tour_seen';
 const tourSeen=()=>{try{return localStorage.getItem(KIT_TOUR)==='1'}catch{return false}};
 function kitEl(){let e=$('#kitsheet');if(!e){e=document.createElement('div');e.id='kitsheet';e.setAttribute('role','dialog');e.setAttribute('aria-modal','true');e.setAttribute('aria-labelledby','kit-title');document.body.appendChild(e)}return e}
-function kitInert(on){for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;if(!on&&typeof layerInert==='function')layerInert()}
+function kitInert(on){for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;if(!on)layerInert()}
 /* the phone's Back closes the sheet (fix round 2, 2026-11-15: it left the app from the tour and the Home Screen sheet, and closed Add
    under the import sheet): the sheet takes a history entry (start.js kind 'kit'), or borrows Add's (kitHist keeps whose it was) */
-function kitHist(){if(kit&&kit.hist===undefined&&typeof appBorrow==='function')kit.hist=appBorrow('kit')}
+function kitHist(){if(kit&&kit.hist===undefined)kit.hist=appBorrow('kit')}
 function kitOpen(cards,then){const prev=kit?kit.hist:undefined;kit={cards,at:0,then:then||null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitBs(false);kitDraw();kitEl().classList.add('on');kitInert(true);kitHist();
   const t=$('#kit-next');if(t)t.focus({preventScroll:true})}
 /* fromBack: the phone's Back did it (its entry is gone already) */
-function kitClose(fromBack){if(kitImpBusy){if(fromBack&&typeof appPush==='function')appPush('kit');return}   // (the import is being written: a moment, then the sheet closes itself; Back keeps it, with its entry made again)
+function kitClose(fromBack){if(kitImpBusy){if(fromBack)appPush('kit');return}   // (the import is being written: a moment, then the sheet closes itself; Back keeps it, with its entry made again)
   const e=$('#kitsheet');if(e){const bs=e.classList.contains('kbs');e.classList.remove('on');if(bs)kitBsAway(e);else e.innerHTML=''}const k=kit;kit=null;kitInert(false);
-  if(k&&k.hist!==undefined&&typeof appGiveBack==='function'){if(!fromBack)appGiveBack('kit',k.hist);else if(k.hist)appPush(k.hist)}   // the entry goes, or back to Add; after Back, Add gets a new one
+  if(k&&k.hist!==undefined){if(!fromBack)appGiveBack('kit',k.hist);else if(k.hist)appPush(k.hist)}   // the entry goes, or back to Add; after Back, Add gets a new one
   if(k&&k.cards===TOUR_CARDS){try{localStorage.setItem(KIT_TOUR,'1')}catch{}}
   if(k&&k.then)k.then();else if(k&&k.from&&k.from.isConnected)try{k.from.focus({preventScroll:true})}catch{}}
 /* a tap on Next or Back within KIT_TAP_MS of the last one is the second tap of a double tap (fix round 3, W2-14-06: a double tap skipped
@@ -45,7 +45,7 @@ addEventListener('keydown',e=>{if(!kit)return;if(e.key==='Escape'){e.preventDefa
 
 /* the pictures: drawn, in the app's own colours (no photos to download) */
 /* the tour speaks of what this person wears (audit 2026-11-15: ties and suits to someone who wears neither) */
-const kitWears=k=>k==='tie'?typeof wearsTie!=='function'||wearsTie():typeof wearsJacket!=='function'||wearsJacket();
+const kitWears=k=>k==='tie'?wearsTie():wearsJacket();
 const kitScorePic=()=>`<svg viewBox="0 0 300 150"><rect x="20" y="22" width="260" height="62" rx="14" class="kp-card"/><rect x="34" y="34" width="70" height="38" rx="10" class="kp-good"/><text x="69" y="60" class="kp-num">96</text><text x="118" y="50" class="kp-t">Excellent</text><text x="118" y="70" class="kp-s">Outfit score · tap for why</text>
 <rect x="20" y="96" width="260" height="38" rx="10" class="kp-card"/><text x="34" y="120" class="kp-s">−2</text><text x="62" y="120" class="kp-t2">The same ${kitWears('tie')?'tie':'shirt'} color as yesterday</text></svg>`;
 const kitClothPic=(paper=true,box=true)=>`<svg viewBox="0 0 200 260"><defs><pattern id="kp-weave" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#3b4256"/><path d="M0 8L8 0M-2 2L2 -2M6 10L10 6" stroke="#4b5370" stroke-width="1.6"/></pattern></defs>
@@ -93,18 +93,18 @@ const KIT_UNDO_MS=8000;
 function kitSaved(it,q,i,copies){if(kitQuiet)return;const now=Date.now(),more=(copies||[]).map(c=>c.id);
   if(!kitBatch||now-kitBatch.at>1500)kitBatch={its:[],qs:[],at:now};kitBatch.its.push(it.id,...more);kitBatch.qs.push({q,i});kitBatch.at=now;const b=kitBatch,n=b.its.length;
   // one card with copies (add.js qtyRow): "Saved 3: White."
-  const t=typeof savedTitle==='function'?savedTitle(it):sentence(itemTitle(it));   // "Saved: Grey suit." (it said "Saved: Grey.": add.js)
+  const t=savedTitle(it);   // "Saved: Grey suit." (it said "Saved: Grey.": add.js)
   toast(n===1?`Saved: ${t}.`:b.qs.length===1?`Saved ${n}: ${t}.`:`Saved ${n} items.`,KIT_UNDO_MS,{label:'Undo',fn:()=>kitUnsave(b)})}
 async function kitUnsave(b){if(!b)return;
   if(b.its.length>30)toast(`Taking out ${b.its.length} items…`,15000);   // (an import's Undo: said at once, done in one go)
   // the cards go back on Add and are kept (add.js addKeep) BEFORE the items are deleted: deleted first, a kill within the keep's timer
   // lost the item from both (audit 2026-11-15 re-run); a kill between the two leaves the items, and the kept cards of saved items are dropped
   const back=[];for(const {q,i} of b.qs.slice().reverse()){if(!q||queue.includes(q))continue;delete q.busy;queue.splice(Math.min(i,queue.length),0,q);back.push(q)}
-  for(const q of back)if(!q.raw&&typeof addRevive==='function')await addRevive(q);   // its canvases, let go when it was saved (add.js saveCard): the swatch box and the close-up's reading come back (CR-1-03)
-  if(back.length&&typeof addKeep==='function')await addKeep();
-  try{await kitDelMany(b.its,b.olds||[])}catch(e){for(const q of back){const k=queue.indexOf(q);if(k>=0)queue.splice(k,1)}if(back.length&&typeof addKeep==='function')addKeep();throw e}
-  if(kitBatch===b)kitBatch=null;planDirty();todayDirty();if(b.qs.length&&typeof multiMsg==='function')multiMsg('');   // ("Saved 5 items to your wardrobe." stayed over the cards Undo brought back)
-  if(b.qs.length&&$('#add')&&!$('#add').hidden)renderAdd();else if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
+  for(const q of back)if(!q.raw)await addRevive(q);   // its canvases, let go when it was saved (add.js saveCard): the swatch box and the close-up's reading come back (CR-1-03)
+  if(back.length)await addKeep();
+  try{await kitDelMany(b.its,b.olds||[])}catch(e){for(const q of back){const k=queue.indexOf(q);if(k>=0)queue.splice(k,1)}if(back.length)addKeep();throw e}
+  if(kitBatch===b)kitBatch=null;planDirty();todayDirty();if(b.qs.length)multiMsg('');   // ("Saved 5 items to your wardrobe." stayed over the cards Undo brought back)
+  if(b.qs.length&&$('#add')&&!$('#add').hidden)renderAdd();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
   const ol=(b.olds||[]).length;   // (b.olds: pieces an import updated, put back as they were)
   toast(ol?`Undone: ${b.its.length?`${b.its.length} item${b.its.length===1?'':'s'} taken out, `:''}${ol} piece${ol===1?'':'s'} as ${ol===1?'it was':'they were'}.`:b.its.length===1?'Undone: the item is back on Add.':`Undone: ${b.its.length} items taken out.`,3000)}
 
@@ -116,7 +116,7 @@ const kitTx=(stores,f)=>dbRetry('readwrite',d=>new Promise((ok,no)=>{const t=d.t
 function kitTombs(t,ids,now){if(!ids.length)return;const m=t.objectStore('meta'),q=m.get('tombstones');
   q.onsuccess=()=>{const v={...(q.result&&q.result.v||{})};for(const id of ids)v[id]=Math.max(v[id]||0,now);m.put({k:'tombstones',v})}}
 /* a failed write is said, as Confirm says it (add.js save) */
-function kitFail(e){console.warn('save failed',e);if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000)}
+function kitFail(e){console.warn('save failed',e);if(storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000)}
 /* an item made from a card with no photo, as add.js saveCard makes one (a hand-added card: the fields it keeps for each type) */
 function kitItem(c){const f=hasPat(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:nowMs()};
   {const a=accentsOf(c);if(a.length)it.accents=a}   // an import's "Also has" colours
@@ -128,7 +128,7 @@ function kitItem(c){const f=hasPat(c.type),it={id:c.id||crypto.randomUUID(),type
   if(c.type==='pants'&&(c.trouserKind==='chinos'||c.trouserKind==='jeans'||c.trouserKind==='cargo'))it.trouserKind=c.trouserKind;
   if(c.type==='shoes'&&c.shoeStyle&&c.shoeStyle!=='oxford')it.shoeStyle=c.shoeStyle;
   if(c.type==='watch'){const wo=watchOpts(c);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
-  if(typeof wardSaveFields==='function')wardSaveFields(c,it);   // name, brand, material, notes (wardrobe.js)
+  wardSaveFields(c,it);   // name, brand, material, notes (wardrobe.js)
   if(c.sample)it.sample=true;return it}
 /* store new items, and changed ones (upd: the import's updates) in the same transaction (false, said, when storage refused them: nothing was
    stored); an updated piece is stamped as put() stamps an edit (core.js itemFields against the stored copy: only the fields the import changed
@@ -136,8 +136,8 @@ function kitItem(c){const f=hasPat(c.type),it={id:c.id||crypto.randomUUID(),type
 async function kitStore(list,prog,upd){upd=upd||[];if(!list.length&&!upd.length)return true;const now=nowMs();let k=0;
   try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of list){it.updated=now;const r=s.put(it);if(prog)r.onsuccess=()=>prog(++k,list.length)}
     for(const it of upd){it.updated=nextStamp(stamp(it));const g=s.get(it.id);g.onsuccess=()=>{itemFields(it,g.result);s.put(it)}}})}catch(e){kitFail(e);return false}
-  items.push(...list);for(const it of upd){const j=items.findIndex(x=>x.id===it.id);if(j>=0)items[j]=it}planDirty();todayDirty();if(list.length&&typeof dressNewItem==='function')dressNewItem();
-  if(window.scheduleSync)scheduleSync();if(typeof askPersist==='function')askPersist();return true}
+  items.push(...list);for(const it of upd){const j=items.findIndex(x=>x.id===it.id);if(j>=0)items[j]=it}planDirty();todayDirty();if(list.length)dressNewItem();
+  if(window.scheduleSync)scheduleSync();askPersist();return true}
 /* delete items (each with a tombstone, as Delete does), with changed items (put) and day records (days) in the same transaction */
 async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=nowMs(),gone=new Set(ids);
   await kitTx(['items','meta','days'],t=>{const s=t.objectStore('items');for(const id of ids)s.delete(id);for(const it of put){it.updated=now;s.put(it)}
@@ -149,7 +149,7 @@ async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=no
 const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cleaned','sample','sampleMine'];
 async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;const c=JSON.parse(JSON.stringify(it));for(const k of KIT_NO_COPY)delete c[k];
   c.id=crypto.randomUUID();c.added=nowMs();await put(c);items.push(c);planDirty();todayDirty();
-  if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
+  if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
   openItem(c.id);toast('Duplicated. Change anything that differs, like its name.',3500)}
 
 /* ---- import from a spreadsheet ----
@@ -392,8 +392,8 @@ function kitBd(){let b=$('#kit-backdrop');if(!b){b=document.createElement('div')
 function kitBs(on){const e=kitEl();clearTimeout(kitBsT);e.classList.remove('going');e.inert=false;e.style.transform='';e.classList.toggle('kbs',!!on);const b=$('#kit-backdrop');if(on)kitBd().classList.add('on');else if(b)b.classList.remove('on')}
 /* the import sheet slides away, then is emptied */
 function kitBsAway(e){const b=$('#kit-backdrop');if(b)b.classList.remove('on');e.inert=true;e.classList.add('going');clearTimeout(kitBsT);
-  kitBsT=setTimeout(()=>{if(e.classList.contains('on'))return;e.classList.remove('going','kbs');e.inert=false;e.innerHTML=''},typeof noMotion==='function'&&noMotion()?0:320)}
-function kitImportSwipe(){if(kitSwipeOn||typeof sheetSwipe!=='function')return;kitSwipeOn=true;const e=kitEl();
+  kitBsT=setTimeout(()=>{if(e.classList.contains('on'))return;e.classList.remove('going','kbs');e.inert=false;e.innerHTML=''},noMotion()?0:320)}
+function kitImportSwipe(){if(kitSwipeOn)return;kitSwipeOn=true;const e=kitEl();
   sheetSwipe(e,{head:'.kit-head',body:()=>e.querySelector('.kit-body'),backdrop:()=>$('#kit-backdrop'),live:()=>!!kit&&e.classList.contains('kbs')&&!kitImpBusy,close:()=>kitClose()})}
 function kitImportOpen(){kitImp=null;const e=kitEl(),prev=kit?kit.hist:undefined;kit={cards:[],at:0,then:null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitBs(true);kitImportSwipe();
   e.innerHTML=`<div class="kit-head"><span class="kit-grab" aria-hidden="true"></span><div class="kit-ht">${KIT_TABLE}<h2 id="kit-title">Import from a spreadsheet</h2></div><button type="button" class="kit-x" onclick="kitClose()" aria-label="Close">✕</button></div>
@@ -482,7 +482,7 @@ async function kitImportGo(){if(!kitImp||kitImpBusy)return;const rows=kitImp.row
   let ok=false,list=[];try{list=cards.map(kitItem);ok=await kitStore(list,cards.length>40?prog:null,news)}finally{kitImpBusy=false;for(const x of cx)if(x)x.disabled=false}
   if(!ok){kitImpBtn();return}
   const ids=list.map(i=>i.id);kitImp=null;if(ids.length)try{localStorage.setItem(KIT_IMP_LAST,JSON.stringify({ids,at:Date.now()}))}catch{}
-  kitClose();if($('#add')&&!$('#add').hidden)renderAdd();else if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
+  kitClose();if($('#add')&&!$('#add').hidden)renderAdd();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
   const said=[ids.length?`Imported ${ids.length} item${ids.length===1?'':'s'}`:'',news.length?`${ids.length?'updated':'Updated'} ${news.length} piece${news.length===1?'':'s'}`:''].filter(Boolean).join(' and ');
   toast(`${said}.`,KIT_IMP_UNDO_MS,{label:'Undo',fn:()=>kitUnsave({its:ids,qs:[],olds})})}
 /* imports made on the 14 Nov version saved a row naming an own colour as its place in settings.custom.colors ("0", "1"), shown as "None",
@@ -500,7 +500,7 @@ async function kitFixOldImports(){const list=settings.custom&&Array.isArray(sett
 /* the last import taken out again, after its Undo has gone (from the import sheet) */
 /* (fix round 3, W1-6-05: judged on this phone's copy alone, a piece renamed on another phone went too) a connected phone syncs first, so
    "changed since" counts changes made anywhere; offline it goes on with what it has */
-async function kitUnimport(){if(typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')&&!(typeof inviteOver==='function'&&inviteOver()))try{await syncNow()}catch{}
+async function kitUnimport(){if(syncUrl()&&localStorage.getItem('app_token')&&!inviteOver())try{await syncNow()}catch{}
   const l=kitLastImp();if(!l){const r=$('#kit-last');if(r)r.remove();return}
   if(!await askConfirm(`Take out the ${l.ids.length} item${l.ids.length===1?'':'s'} of your last import?\n\nAnything you added another way stays${l.kept?`, and so ${l.kept===1?'does the imported piece':`do the ${l.kept} imported pieces`} you changed since`:''}.`,{ok:'Take them out',danger:true}))return;
   try{await kitDelMany(l.ids)}catch(e){kitFail(e);return}
@@ -573,8 +573,8 @@ async function kitSampleLoad(){if(kitSampling)return;kitSampling=true;kitSampleB
     toast(have.size?`The rest of the sample wardrobe is here: ${missing.length} more piece${missing.length===1?'':'s'}.`:`A sample wardrobe of ${missing.length} pieces: swipe through the days to see outfits.`,4500)}
   finally{kitSampling=false;kitSampleBusy(false)}}
 /* then Today on the next workday; from the setup's last step the setup finishes first, as Skip and "Add my first item" finish it */
-function kitSampleDone(){if(typeof setupShown==='function'&&setupShown()&&typeof setupFinish==='function')setupFinish(false);
-  planDirty();todayDirty();show('today');if(typeof goToday==='function')goToday()}   // on a weekend, the next workday's outfit
+function kitSampleDone(){if(setupShown())setupFinish(false);
+  planDirty();todayDirty();show('today');goToday()}   // on a weekend, the next workday's outfit
 /* Remove the sample: every sample piece the owner didn't change goes, with what the days recorded of them (worn days, locks, picks;
    occasions stay), in one transaction; a changed one stays as his */
 async function kitSampleRemove(quiet){if(kitSampling)return;   // quiet: already asked (account.js, connecting with the sample loaded)
@@ -589,12 +589,12 @@ async function kitSampleRemove(quiet){if(kitSampling)return;   // quiet: already
     // a day made only from the sample keeps the stamp KIT_YIELD: the account's own record of it (another phone's) wins (kitDayOwn)
     const days=orig.map(r=>{const c=kitSampleDay(r,ids,T);if(!kitDayOwn(c))c.updated=KIT_YIELD;return c});
     const undo={items:s.map(i=>JSON.parse(JSON.stringify(i))),days:orig.map(r=>JSON.parse(JSON.stringify(r)))};
-    await kitDelMany([...ids],mine,days);if(typeof clearLocks==='function')await clearLocks();
+    await kitDelMany([...ids],mine,days);await clearLocks();
     undo.wrote=Object.fromEntries(days.map(c=>[c.date,c.updated]));kitRmUndo=undo;
     // connected: the account's records of those days come in before Today records anything from the plan (kitSampleUndo)
-    if(typeof isConnected==='function'&&isConnected()&&window.syncNow)await Promise.race([syncNow().catch(()=>{}),new Promise(r=>setTimeout(r,KIT_RM_SYNC))])}
+    if(isConnected()&&window.syncNow)await Promise.race([syncNow().catch(()=>{}),new Promise(r=>setTimeout(r,KIT_RM_SYNC))])}
   catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
-  if(quiet){planDirty();todayDirty();if(typeof refreshToday==='function'&&!$('#today').hidden)refreshToday();return}
+  if(quiet){planDirty();todayDirty();if(!$('#today').hidden)refreshToday();return}
   show(items.length?'today':'wardrobe');toast(kn?`The sample wardrobe is gone. The ${kn===1?'piece':`${kn} pieces`} you changed stayed.`:'The sample wardrobe is gone.',8000,{label:'Undo',fn:kitSampleUndo})}
 /* Undo of Remove the sample (fix round 3): the pieces come back (a new stamp, newer than their deletion marks) as they were, and each day
    record still as Remove left it is put back as it was before; a day the account's record replaced meanwhile (a sync) keeps that. A day
@@ -674,7 +674,7 @@ function kitShareFilter(st,remote,join){kitSdNew={};const off=new Set((st.items|
   return {...st,items:st.items.filter(i=>!off.has(i.id)),days}}
 /* a sample piece kept as the owner's own (the item sheet) */
 async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.sample)return;delete it.sample;delete it.sampleMine;await put(it);planDirty();todayDirty();
-  if(typeof renderWardrobe==='function'&&$('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();toast('It’s yours now: Remove the sample keeps it.',3000)}
+  if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();toast('It’s yours now: Remove the sample keeps it.',3000)}
 /* marks: the Wardrobe grid's tag and the item sheet's note */
 const kitSampleTag=i=>i.sample&&!kitEdited(i)?'<span class="pausetag sampletag">Sample</span>':'';
 const kitSampleNote=i=>i.sample&&!kitEdited(i)?`<section class="card ivsec ivsample"><p class="shelp">A piece of the sample wardrobe: Remove the sample takes it away. Change anything on it, or keep it, and it stays as yours.</p><div class="btns"><button type="button" id="iv-keep" onclick="kitKeepSample('${jsq(i.id)}')">Keep it as mine</button></div></section>`:'';
@@ -699,11 +699,11 @@ const homeAndroid=()=>window.DW_ANDROID===true||(!homeIOS()&&/Android/i.test(nav
 const homeNeeded=()=>(homeIOS()||homeAndroid())&&!homeStandalone();
 let homeEvt=null;
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();homeEvt=e;homeSync()});
-addEventListener('appinstalled',()=>{homeEvt=null;homeSync();if(typeof toast==='function')toast('Installed. Open Daily Wardrobe from its new icon.')});
+addEventListener('appinstalled',()=>{homeEvt=null;homeSync();toast('Installed. Open Daily Wardrobe from its new icon.')});
 /* the Install button where the browser offers it, the menu steps where it doesn't (updated in place: the offer can come after the step is drawn) */
 function homeSync(){const can=!!homeEvt;document.querySelectorAll('.home-install').forEach(b=>b.hidden=!can);document.querySelectorAll('.home-manual').forEach(m=>m.hidden=can)}
 async function homeInstall(){const e=homeEvt;if(!e)return homeSync();homeEvt=null;   // (the browser's offer can be used once)
-  try{await e.prompt();const r=await e.userChoice;if(r&&r.outcome==='accepted'){if(typeof toast==='function')toast('Installing… open Daily Wardrobe from its new icon.')}}catch(_){}
+  try{await e.prompt();const r=await e.userChoice;if(r&&r.outcome==='accepted'){toast('Installing… open Daily Wardrobe from its new icon.')}}catch(_){}
   homeSync()}
 const homeIPad=()=>/iPad/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 /* which browser the app is open in on an iPhone or iPad (2026-11-16, a tester used Chrome and was shown Safari's steps): every iOS browser
@@ -734,12 +734,12 @@ function homeStepsAndroid(inSetup){
 /* (audit 2026-11-15, H12) the one explanation of the Home Screen app on an iPhone: the setup's step, About's button and the sheet a tester
    gets after connecting from a link (account.js homeScreenGuide) all show this. iOS 26's Safari shows ⋯ at the bottom (Share is in its
    menu); the Home Screen app keeps its own storage and starts unconnected, so a tester copies the invitation link here to paste there */
-const homeTester=()=>typeof isTester==='function'&&isTester()&&typeof myInviteLink==='function'&&!!myInviteLink();
+const homeTester=()=>isTester()&&!!myInviteLink();
 const homeCopyBtn=()=>'<p class="home-cta"><button type="button" class="pri home-copy" onclick="homeCopy()">Copy my invitation link</button></p><input type="text" class="home-mylink" readonly hidden aria-label="Your invitation link">';
-async function homeCopy(){const l=typeof myInviteLink==='function'?myInviteLink():'';if(!l)return false;
+async function homeCopy(){const l=myInviteLink();if(!l)return false;
   try{await navigator.clipboard.writeText(l);toast('Your invitation link is copied. Paste it in the Home Screen app.',4500);return true}
   catch{document.querySelectorAll('.home-mylink').forEach(f=>{f.hidden=false;f.value=l;f.select()});toast('Copy the link shown under the button.',5000);return false}}
-function homeNote(){const conn=typeof isConnected==='function'?isConnected():false,b=homeBrowser();
+function homeNote(){const conn=isConnected(),b=homeBrowser();
   if(homeTester())return '<p class="su-note home-note"><b>'+b+' is connected already.</b> The Home Screen app keeps its own storage, apart from '+b+'\'s, so it starts empty: paste your invitation link when it asks, and your wardrobe comes across.</p>';
   if(conn)return '<p class="su-note home-note"><b>'+b+' is connected already.</b> The Home Screen app keeps its own storage, apart from '+b+'\'s: connect it too, in its Settings → Connection.</p>';
   if(items.length)return '<p class="su-note home-note"><b>Your wardrobe stays here in '+b+'.</b> The Home Screen app keeps its own storage and starts empty. To take your wardrobe along, tap <b>Download backup</b> in Settings → Backup &amp; sync here, then <b>Restore file</b> in the Home Screen app.</p>';
@@ -754,15 +754,15 @@ function homeSteps(inSetup){if(homeAndroid())return homeStepsAndroid(inSetup);co
 /* (2026-11-16, the owner's decision 2 for W1-11-04) someone using the app in a Safari tab with no connection is told once, here (the
    setup's Home Screen step, also About's sheet), that Safari can clear it; Backup & sync says it under its status (sync-status.js safariWord), and
    safariRemind reminds such a person once there are SAFARI_MIN items that were never backed up */
-function homeRisk(pad){if(typeof isConnected==='function'&&isConnected())return '';
+function homeRisk(pad){if(isConnected())return '';
   return `<p class="su-help home-risk">In a ${homeBrowser()} tab, your ${pad?'iPad':'iPhone'} can clear the app’s data when it isn’t opened for about a week or runs short of space. The Home Screen app isn’t cleared that way, and <b>Download backup</b> in Settings → Backup &amp; sync keeps a copy in Files.</p>`}
 const SAFARI_MIN=10,SAFARI_EVERY=30*864e5;
 /* a Safari-only wardrobe (an iPhone or iPad tab, not connected) of SAFARI_MIN+ items never backed up (no backup ever, no backup file
    downloaded): a reminder with Download backup, at start-up, at most once every SAFARI_EVERY (localStorage safari_remind) */
-function safariRemind(){try{if(!homeIOS()||homeStandalone()||(typeof isConnected==='function'&&isConnected()))return false;
+function safariRemind(){try{if(!homeIOS()||homeStandalone()||isConnected())return false;
   if(items.filter(i=>!i.sample).length<SAFARI_MIN||localStorage.getItem('last_sync')||localStorage.getItem('backup_file_at'))return false;
   if(Date.now()-(+localStorage.getItem('safari_remind')||0)<SAFARI_EVERY)return false;
-  if(typeof setupShown==='function'&&setupShown())return false;
+  if(setupShown())return false;
   const t=$('#toast');if(t&&t.classList.contains('on')){setTimeout(safariRemind,6000);return false}   // (not over another message)
   localStorage.setItem('safari_remind',Date.now());
   toast(`Your ${items.filter(i=>!i.sample).length} items are only in ${homeBrowser()} on this ${homeIPad()?'iPad':'iPhone'}, and ${homeBrowser()} can clear a website’s data. Download a backup to keep a copy in Files.`,12000,{label:'Download backup',fn:downloadBackup});return true}

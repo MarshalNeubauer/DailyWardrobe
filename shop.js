@@ -48,11 +48,11 @@ function openShop(){
   if(shopGate().length)return;
   shopOpen=true;shopForm=null;shopMsg='';shopSwipe();renderShop();
   $('#shop-sheet').classList.add('on');$('#shop-backdrop').classList.add('on');$('#shop-sheet').scrollTop=0;
-  if(typeof layerOpen==='function')layerOpen($('#shop-sheet'));   // the page behind is inert, the focus moves in (ui.js)
-  if(typeof appPush==='function')appPush('shop');   // the phone's Back closes it (start.js)
+  layerOpen($('#shop-sheet'));   // the page behind is inert, the focus moves in (ui.js)
+  appPush('shop');   // the phone's Back closes it (start.js)
   if(!shopBusy&&!shopFresh())analyzeWardrobe();
 }
-function closeShop(){if(!shopOpen)return;shopOpen=false;const s=$('#shop-sheet'),b=$('#shop-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');if(typeof layerClose==='function')layerClose(s);if(typeof appDrop==='function')appDrop('shop')}
+function closeShop(){if(!shopOpen)return;shopOpen=false;const s=$('#shop-sheet'),b=$('#shop-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');layerClose(s);appDrop('shop')}
 document.addEventListener('keydown',e=>{if(shopOpen&&e.key==='Escape')closeShop()});
 /* swiping the sheet down closes it, as on the Wardrobe's item sheet: the header (with the grabber) is a handle at any time, the
    content only while it is scrolled to the top (further down, a downward swipe scrolls it back up, as it must). The choice is
@@ -82,7 +82,7 @@ function shopSwipe(){if(shopSwipeOn)return;const v=$('#shop-sheet'),bd=$('#shop-
 }
 
 /* the sheet drawn again as the check goes on, the focus kept where it was inside it (it fell to <body>: CR-9-04) */
-const shopKeep=()=>typeof keepFocus==='function'?keepFocus($('#shop-sheet'),renderShop):renderShop();
+const shopKeep=()=>keepFocus($('#shop-sheet'),renderShop);
 /* run the analysis in the background; the sheet fills in section by section */
 function analyzeWardrobe(){
   if(shopWorker){shopWorker.terminate();shopWorker=null}
@@ -167,7 +167,7 @@ function shopGo(key){shopShown[key]=true;renderShop();const el=[...document.quer
 /* bought: into the wardrobe as on its way, then check again */
 async function shopBought(key){
   const rec=shopFind(key);if(!rec)return;const v=($('#shop-arr')||{}).value||'',arrives=/^\d{4}-\d{2}-\d{2}$/.test(v)?v:null,now=nowMs();
-  if(typeof dressNewItem==='function')dressNewItem();
+  dressNewItem();
   for(const x of rec.items){const it={...x,...(x.type==='suit'?{vest:'no'}:{}),id:crypto.randomUUID(),added:now,paused:true,order:true,...(arrives?{arrives}:{})};await put(it);items.push(it)}
   planDirty();shopForm=null;shopMsg=`Added to your wardrobe as on the way: ${rec.name}${arrives?`, arriving ${fmtDay(arrives)}`:''}.`;
   if(!$('#wardrobe').hidden&&!editing)renderWardrobe();

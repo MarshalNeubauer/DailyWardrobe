@@ -28,7 +28,7 @@ function whyUnused(i){
   if(i.paused&&i.order)return i.arrives?`It's on the way: it joins your outfits after ${fmtDay(i.arrives)}.`:'It\'s on the way: put it back in rotation once it arrives.';
   if(i.paused)return 'You took it out of rotation, so the planner leaves it out.';
   if(dressOut(i.type))return `Your dress code leaves out ${i.type==='tie'||i.type==='tieclip'?'ties':'jackets'} (Settings, Schedule), so it is planned only for a formal day, a wedding or a funeral.`;
-  if(!wearsJacket()&&typeof dressWhyUnused==='function'){const w=dressWhyUnused(i);if(w)return w}
+  if(!wearsJacket()){const w=dressWhyUnused(i);if(w)return w}
   const by=t=>items.filter(x=>x.type===t),suitDays=settings.workdays.some(d=>!settings.blazerDays.includes(d)),blazerDays=settings.workdays.some(d=>settings.blazerDays.includes(d));
   const day={formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:by('cufflinks').length>0},jackets=[...(suitDays||!by('blazer').length?by('suit'):[]),...(blazerDays||!by('suit').length?by('blazer'):[])];
   // each jacket's best outfit, and its best with the one shirt or tie asked about, worked out only for the pieces that need a reason and
@@ -108,7 +108,7 @@ const statName=i=>itemName(i)||sentence(desc(i)||nm(i)),statName1=i=>itemName(i)
 /* an empty wardrobe's pages (Insights, Packing list, Laundry & cleaning): the way to start, as on the empty Wardrobe */
 const emptyAdd=()=>`<div class="btns emptyadd"><button type="button" class="pri" onclick="openAdd()">Add your first item</button>${typeof kitSampleLoad==='function'?'<button type="button" onclick="kitSampleLoad()">Try a sample wardrobe</button>':''}</div>`;
 const statDate=d=>d?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
-const statPic=i=>`<span class="st-pic">${i.photo?`<img src="${typeof phSm==='function'?phSm(i):i.photo}" alt="">`:typeof itemPic==='function'&&itemPic(i)?`<img src="${srcOk(itemPic(i).img)}" alt="">`:itemThumb(i,true)}</span>`;
+const statPic=i=>`<span class="st-pic">${i.photo?`<img src="${phSm(i)}" alt="">`:itemPic(i)?`<img src="${srcOk(itemPic(i).img)}" alt="">`:itemThumb(i,true)}</span>`;
 const GROUP_NAMES={grey:'Gray',navy:'Navy',blue:'Blue',brown:'Brown',tan:'Tan',black:'Black',green:'Green',red:'Burgundy / red',white:'White',lightblue:'Light blue',pink:'Pink',purple:'Purple',yellow:'Yellow',beige:'Beige',gold:'Gold',cream:'Cream',charcoal:'Charcoal'};
 const groupName=g=>GROUP_NAMES[g]||colName(g).replace(/^./,c=>c.toUpperCase());
 const groupCol=g=>COLORS[({red:'burgundy',yellow:'paleyellow',beige:'beige',purple:'purple',green:'green'})[g]||g]||'#8b8f96';
@@ -121,7 +121,7 @@ function statRowsHtml(S,t){const rs=statTypeRows(S,t),max=Math.max(1,...rs.map(r
         <small class="mut">${r.worn?`worn ${r.worn}×${r.last?' · last '+statDate(r.last):''}`:'not worn yet'} · ${r.planned?`planned ${r.planned}×${r.next?' · next '+statDate(r.next):''}`:'not planned'}</small></div></div>`).join('')}
 let statsLast=null;   // the numbers the page was last drawn from, with the plan they came from (a fold fills its rows from them)
 /* Insights drawn again keeps the focus where it was (What to buy's button lost it to <body> when a redraw came after its sheet closed: CR-9-04) */
-function renderStats(){const el=$('#stats');if(!el)return;if(typeof keepFocus==='function')keepFocus(el,statsDraw);else statsDraw()}
+function renderStats(){const el=$('#stats');if(!el)return;keepFocus(el,statsDraw);}
 function statsDraw(){
   const el=$('#stats');if(!el)return;
   if(!items.length){el.innerHTML=`<div class="phead"><h2>Insights</h2></div><p class="mut empty">Your wardrobe is empty.</p>${emptyAdd()}`;return}
@@ -169,7 +169,7 @@ ${S.short.length?'':`
   ${S.pairs.length?`<p class="mut"><small>The jacket and tie pairings planned most often.</small></p>${S.pairs.map(p=>`<div class="st-pair"><span class="dot">${swatchSVG(p.a)}</span><span class="dot">${swatchSVG(p.b)}</span><span class="st-nm">${nameHtml(statName1(p.a))} · ${nameHtml(statName2(p.b))}</span><b>${p.n}×</b></div>`).join('')}`:''}
   <p class="mut" style="margin-top:10px"><small>${S.minRest!=null?`A jacket rests at least ${S.minRest} workday${S.minRest===1?'':'s'} before it is worn again. `:''}${S.b2b?`The same shoes are worn two days running ${S.b2b} time${S.b2b===1?'':'s'}: ${(w=>w?`your ${esc(nm(w))} would give them a rest with a ${beltWait(w)} to match.`:'another pair in that color would give them a rest.')(items.find(x=>x.type==='shoes'&&beltWait(x)))}`:'Shoes always get a day off between wears.'}</small></p></section>`}
 
-  ${typeof tagStatsCard==='function'?tagStatsCard():''}`;
+  ${tagStatsCard()}`;
 }
 /* unfolding a section fills in only its rows, from the numbers the page was drawn from while the plan is the same (it re-drew the whole
    page, W2-18-02); after a change it draws the page again */
@@ -201,4 +201,4 @@ function statsShow(){const el=$('#stats');if(!el)return;
   el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${typeof shopButton==='function'?shopButton():''}<p class="mut st-wait" role="status"><span class="spin" aria-hidden="true"></span> Planning your next ${STATS_MONTHS} months…</p>`;
   statsPlan().then(()=>{if(!el.hidden&&el.querySelector('.st-wait'))renderStats()})}
 // a few seconds after start-up, while nothing else is going on
-if(typeof afterScripts==='function')afterScripts(()=>setTimeout(()=>{if(items.length&&!document.hidden)statsPlan()},4000));
+afterScripts(()=>setTimeout(()=>{if(items.length&&!document.hidden)statsPlan()},4000));

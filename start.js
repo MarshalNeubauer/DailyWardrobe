@@ -47,13 +47,13 @@ const appSettled=()=>appPend?new Promise(r=>{appLand.push(r);setTimeout(r,400)})
 function appWanted(){const k=appWant;appWant='';if(k)appPush(k)}
 function appSheetBack(kind){
   if(kind==='setup'){if(typeof setupShown==='function'&&setupShown()){if(setup.at>0){setupGo(-1);appPush('setup')}else if(!setup.first&&typeof setupCancel==='function')setupCancel();else appPush('setup')}return true}   // Back is its ‹ Back; on the first step a first setup stays open, "Run setup again" closes as its Cancel (the Back audit, 2026-11-15: Back did nothing there)
-  if(kind==='pick'){if(typeof closePicker==='function')closePicker();return true}
+  if(kind==='pick'){closePicker();return true}
   if(kind==='shop'){if(typeof closeShop==='function')closeShop();return true}
   if(kind==='ask'){if(typeof askBack==='function')askBack();return true}   // a question closes as Cancel (ui.js), the page under it stays
   if(kind==='cu'){if(typeof closeupBack==='function')closeupBack();return true}   // the close-up chooser closes as Cancel (ui.js)
   if(kind==='rd'){if(typeof rdBack==='function')rdBack();return true}   // the reading sheet closes as its × (colpick.js; a reading under way is called off, as Stop)
   if(kind==='kit'){if(typeof kit!=='undefined'&&kit)kitClose(true);return true}   // the tour, the guides, the Home Screen sheet, the import sheet (kit.js)
-  if(kind==='nps'){if(typeof npsBack==='function')npsBack();return true}   // the "Add without a photo" sheet closes as its × (add.js; asks first when the card was changed), Add stays
+  if(kind==='nps'){npsBack();return true}   // the "Add without a photo" sheet closes as its × (add.js; asks first when the card was changed), Add stays
   return false}
 addEventListener('popstate',e=>{if(appPend){appPend=false;if(editing)histPush();appWanted();for(const f of appLand.splice(0))f();return}   // our own step back; an item opened meanwhile gets its entry now
   if(!appHist){if(appWant&&!itemBack)appWanted();return}
@@ -74,10 +74,10 @@ function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;
 function openAdd(type){if(typeof addFor!=='undefined')addFor=typeof type==='string'&&TYPES[type]?type:null;subOpen();show('add');scrollTo({top:0})}
 function show(t){
   const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
-  if(from==='add'&&t!=='add'&&typeof npsLeave==='function')npsLeave();   // the "Add without a photo" sheet goes with the page, its entry handed back first (add.js)
+  if(from==='add'&&t!=='add')npsLeave();   // the "Add without a photo" sheet goes with the page, its entry handed back first (add.js)
   if(!SUBS.includes(t))appDrop('sub');   // a page left by the ‹ (to Today) or a tab: its Back entry goes
   if(from==='add'&&t!=='add'&&typeof addFor!=='undefined')addFor=null;   // (what Today's "Add one" asked for goes with the page)
-  if(from==='add'&&t!=='add'&&typeof toastDrop==='function')toastDrop();   // Add's "Saved … Undo" goes with the page: it lay over Today's month card for 8 s
+  if(from==='add'&&t!=='add')toastDrop();   // Add's "Saved … Undo" goes with the page: it lay over Today's month card for 8 s
   if(typeof setupYield==='function')setupYield(t);
   closeSettings();if(!SUBS.includes(t))appDrop('sub');   // (again: Settings over Add hands Add's entry back as it closes, CR-7-04)
   if(from!==t&&typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();   // (What to buy stays open over its own tab redrawn by a sync, CR-4-04)
@@ -120,5 +120,5 @@ connRestored.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','read
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
 /* sync brought new data: refresh the in-memory outfit history too */
 function onSyncedData(m){setWardrobe({days:Object.fromEntries((m.days||[]).map(d=>[d.date,d]))});const drawn=picsDrawn();if(m.settings){setWardrobe({settings:takeSettings(settings,m.settings)});setSeen=m.settings.updated||0;applyCustom(settings.custom)}if(typeof dressSynced==='function')dressSynced(m);loadWeather();if(typeof remindSoon==='function')remindSoon();   // (another device may have changed the coming outfits: the reminder lines follow, CR-4-09)
-  if(picsDrawn()!==drawn&&typeof picsSwitched==='function'){picsSwitched();if(settingsOpen()){renderPicturesUI();if(typeof renderAsmUI==='function')renderAsmUI()}}}   // "Drawing only" chosen on another device
+  if(picsDrawn()!==drawn){picsSwitched();if(settingsOpen()){renderPicturesUI();if(typeof renderAsmUI==='function')renderAsmUI()}}}   // "Drawing only" chosen on another device
 

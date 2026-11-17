@@ -12,7 +12,7 @@ const storeFull=e=>{const x=storeErr(e);return x.name==='QuotaExceededError'||/q
 // the sentence a person reads
 function storeFailText(e){const x=storeErr(e),why=String(x.message||'').trim().replace(/\.$/,'');
   if(storeFull(e))return 'Couldn’t save: your phone’s storage is full. Free some space, then try again.';
-  if(typeof dbGone==='function'&&dbGone(x))return 'Couldn’t save: your phone closed the app’s storage. Close the app fully and open it again.';
+  if(dbGone(x))return 'Couldn’t save: your phone closed the app’s storage. Close the app fully and open it again.';
   if(e&&e.dwStore==='read')return `Couldn’t read your wardrobe${why?': '+why:''}. Close the app and open it again.`;
   return `Couldn’t save: ${why||'the browser stopped it'}. Try again.`}
 let storeToldAt=0;
@@ -44,7 +44,7 @@ function errNote(e,ctx){try{if(errNoise(e))return;const x=e&&e.error||e,at=Strin
   const L=errList();L.push({t:Date.now(),m:(ctx?ctx+': ':'')+errMsg(e),at:at.trim().slice(0,160),v:typeof appVersion==='function'?String(appVersion()):'',w:errWhere()});
   localStorage.setItem(ERR_KEY,JSON.stringify(L.slice(-ERR_MAX)));errSoon()}catch{}}
 /* the page it happened on (Add, Today, …; Settings over it) */
-function errWhere(){try{const set=typeof settingsOpen==='function'&&settingsOpen()?'settings ':'';
+function errWhere(){try{const set=settingsOpen()?'settings ':'';
   for(const id of ['add','today','wardrobe','stats','pack','care']){const el=document.getElementById(id);if(el&&!el.hidden)return set+id}return set.trim()}catch{return ''}}
 /* ---- a tester's phone reports its errors by itself (2026-11-16, the owner: a tester's very first item failed and nothing showed why; the
    log came only with feedback): the new entries of err_log go to the worker (POST /errors, worker/people.js handleErrors) 5 s after one is
@@ -53,7 +53,7 @@ function errWhere(){try{const set=typeof settingsOpen==='function'&&settingsOpen
    Testers only: the owner's own phone keeps its log. Settings → About says so. ---- */
 const ERR_SEND_MS=60000,ERR_SEND_N=10;let errSendAt=0,errSendT=null;
 function errSoon(ms=5000){if(errSendT)return;errSendT=setTimeout(()=>{errSendT=null;errSend()},ms)}
-const errReporting=()=>typeof isTester==='function'&&isTester()&&typeof isConnected==='function'&&isConnected();
+const errReporting=()=>(typeof isTester==='function'&&isTester())&&isConnected();
 async function errSend(){try{if(!errReporting()||navigator.onLine===false)return;
   const wait=ERR_SEND_MS-(Date.now()-errSendAt);if(wait>0){errSoon(wait+500);return}
   const un=errList().filter(x=>x&&!x.s&&x.t>Date.now()-7*86400000).slice(-ERR_SEND_N);if(!un.length)return;errSendAt=Date.now();
@@ -62,7 +62,7 @@ async function errSend(){try{if(!errReporting()||navigator.onLine===false)return
     body:JSON.stringify({errs:un.map(x=>({t:x.t,m:x.m,at:x.at,v:x.v,w:x.w||''}))})});
   if(!r.ok)return;const k=x=>x.t+'|'+x.m,sent=new Set(un.map(k));localStorage.setItem(ERR_KEY,JSON.stringify(errList().map(x=>x&&sent.has(k(x))?{...x,s:1}:x)))}catch{}}
 function errTell(e){if(errNoise(e))return;const now=Date.now();if(now-errTapAt>ERR_TAP_MS||now-errToldAt<5000)return;errToldAt=now;
-  if(typeof toast==='function')toast('Something went wrong: '+errMsg(e).replace(/\.$/,'')+'. Try again; if it keeps happening, tell us in Settings → About → Feedback.',8000)}
+  toast('Something went wrong: '+errMsg(e).replace(/\.$/,'')+'. Try again; if it keeps happening, tell us in Settings → About → Feedback.',8000)}
 // the last week's problems as lines for the feedback (at most 8)
 const errReport=()=>errList().filter(x=>x&&x.t>Date.now()-7*86400000).slice(-8).map(x=>new Date(x.t).toISOString().slice(0,16).replace('T',' ')+' v'+(x.v||'?')+' '+x.m+(x.at?' @ '+x.at:'')).join('\n');
 
@@ -101,7 +101,7 @@ async function pruneTagImgs(){
     return n}
   catch(e){console.warn('kept tagging copies not checked',e);return 0}}
 /* once the wardrobe is loaded (from the start-up chain in app.js) */
-function safetyStart(){pruneTagImgs();errSoon(8000);if(items.length)askPersist();if(items.length&&typeof safariRemind==='function')setTimeout(safariRemind,5000);if(typeof wardPendingRestore==='function')whenPulled(wardPendingRestore);if(typeof addRestore==='function')addRestore()}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add.js)
+function safetyStart(){pruneTagImgs();errSoon(8000);if(items.length)askPersist();if(items.length&&typeof safariRemind==='function')setTimeout(safariRemind,5000);if(typeof wardPendingRestore==='function')whenPulled(wardPendingRestore);addRestore()}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add.js)
 
 /* ---- tagging that failed: why, on the card, with Try again ---- */
 let tagWhy='',tagNetLast=false;
@@ -110,7 +110,7 @@ const oneStop=t=>String(t??'').trim().replace(/[\s.]+$/,'');
 /* the server's reason in words a tester can read: its own sentence (`message`, then `detail`), a set-up error in plain words (ui.js
    plainErr), and never a bare code ("mock", "busy") or a status number */
 function tagReason(status,j,e){const m=j&&typeof j.message==='string'&&j.message.trim()?j.message:(j&&j.detail)||e||'';
-  const pe=m&&typeof plainErr==='function'?plainErr(m):m;
+  const pe=m?plainErr(m):m;
   // its own "Try again later, or add the item by hand." is left out: the card has Try again and is filled in by hand right there
   const t=pe&&/\s/.test(String(pe).trim())?oneStop(String(pe).replace(/\s*Try again later\b[^.]*\.?\s*$/i,'')):'';
   return t||'The photo couldn’t be read just now'}
@@ -127,17 +127,17 @@ const tagNetText=t=>/offline|couldn’t be reached/.test(t||'');
 // (an ended invitation: no "Try again" that can't work; re-audit 2026-11-15)
 /* err: the card's own reading's failure (ask's out.err, CR-2-07: three cards read at once, and the shared tagWhy / tagNetLast could be
    another card's by now); without it, the last one */
-function tagFailed(q,err){if(localStorage.getItem('worker_url')&&!(typeof inviteOver==='function'&&inviteOver())){const why=err?err.why:tagWhy,net=err?err.net:tagNetLast;q.tagErr=why||'No answer came back.';if(net)q.tagNet=1;else delete q.tagNet;
+function tagFailed(q,err){if(localStorage.getItem('worker_url')&&!inviteOver()){const why=err?err.why:tagWhy,net=err?err.net:tagNetLast;q.tagErr=why||'No answer came back.';if(net)q.tagNet=1;else delete q.tagNet;
   if(!net)errNote(new Error(q.tagErr),'Photo not tagged')}}   // reported (a phone offline is not a failure to fix)
 /* the card says what to do once: not when the reason already does ("Try again later, or add the item by hand.") */
-const tagFailNote=(q,i)=>q.tagErr&&!(typeof inviteOver==='function'&&inviteOver())?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)}${/try again|by hand|yourself/i.test(q.tagErr)?'':' <span class="tagfail-do">Fill in the details yourself, or try again.</span>'}</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Try again</button></div>`:'';
+const tagFailNote=(q,i)=>q.tagErr&&!inviteOver()?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)}${/try again|by hand|yourself/i.test(q.tagErr)?'':' <span class="tagfail-do">Fill in the details yourself, or try again.</span>'}</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Try again</button></div>`:'';
 async function retryTag(i){const q=queue[i];if(!q||q.busy||!q.tagImg)return;
   const ac=typeof AbortController==='function'?new AbortController():null;q.abort=ac;   // Stop on the card (add.js stopRead)
   q.busy=1;renderAdd();let ai=null;const out={};try{ai=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),out,...(ac?{signal:ac.signal}:{})})}catch(e){console.warn(e)}
   q.busy=0;q.abort=null;if(q.stopped){delete q.stopped;delete q.tagNet;q.tagErr=typeof STOPPED==='string'?STOPPED:'You stopped the reading.'}
   else if(ai){try{delete q.tagErr;delete q.tagNet;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}catch(e){console.warn('answer not applied',e);errNote(e,'Try again: answer not applied')}}else tagFailed(q,out.err);
   // drawn again however it went (a step that threw left the card as it was, Confirm off: tagging.js refineFromCloseup, 2026-11-16)
-  if(typeof addKeep==='function')addKeep();
+  addKeep();
   if(queue.includes(q))renderAdd()}
 
 /* ---- unsaved Add cards: closing or reloading the page asks first. Installed with the first card. ---- */
@@ -154,4 +154,4 @@ async function adoptBackupSettings(local,data){
   if((local.settings.updated||0)<=(data.settings.updated||0))return false;   // the merge takes the backup's by itself
   const kept={...local.settings,...data.settings};await metaPut('settings',kept);local.settings=kept;
   setWardrobe({settings:takeSettings(settings,data.settings)});applyCustom(settings.custom);planDirty();loadWeather();
-  if(typeof refreshToday==='function'&&!$('#today').hidden)refreshToday();return true}
+  if(!$('#today').hidden)refreshToday();return true}

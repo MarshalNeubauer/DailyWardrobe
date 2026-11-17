@@ -13,10 +13,10 @@ let setupNo=false;   // the app was already driven somewhere before start-up loo
 
 /* the dress code (the planner reads the same object): a missing object or key means yes */
 const setupDress=()=>({jacket:!(settings.dress&&settings.dress.jacket===false),tie:!(settings.dress&&settings.dress.tie===false)});
-const setupConnected=()=>typeof isConnected==='function'?isConnected():!!(localStorage.getItem('worker_url')&&localStorage.getItem('app_token'));
+const setupConnected=()=>isConnected();
 /* an invitation link from the address being checked (account.js), or one the server couldn't be reached for (it stays in the address) */
 const setupLinkChecking=()=>typeof inviteChecking!=='undefined'&&inviteChecking;
-const setupLinkWaiting=()=>typeof acctWhy!=='undefined'&&acctWhy==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash();
+const setupLinkWaiting=()=>(typeof acctWhy!=='undefined'&&acctWhy==='offline')&&hasInviteHash();
 const setupShown=()=>setup.at>=0;
 
 /* start-up, once the wardrobe, history and settings are read: a new install (nothing in the wardrobe, no day ever recorded,
@@ -44,14 +44,14 @@ const SETUP_UNDO=['workdays','blazerDays','dress','vestMode','units','location']
 const setupBefore=()=>JSON.parse(JSON.stringify(Object.fromEntries(SETUP_UNDO.map(k=>[k,settings[k]===undefined?null:settings[k]]))));
 /* a person who never chose a vest: no stamp on it (core.js setStampOf; a choice made before iOS cut the setup off, or the account's from
    another phone, has one) */
-const setupVestChosen=()=>setup.vestSet||(typeof setStampOf==='function'&&setStampOf(settings,'vestMode')>0);
+const setupVestChosen=()=>setup.vestSet||(setStampOf(settings,'vestMode')>0);
 /* a browser driven by a test program (navigator.webdriver) starts like a new install every time, and nearly every test then
    works on the page straight away: there the setup opens by itself only when the test asks (window.SETUP_AUTO, set before load) */
 const setupAuto=()=>!navigator.webdriver||window.SETUP_AUTO===true;
 function setupEl(){let e=$('#setup');
   if(!e){e=document.createElement('div');e.id='setup';e.setAttribute('role','dialog');e.setAttribute('aria-modal','true');e.setAttribute('aria-labelledby','su-title');e.tabIndex=-1;document.body.appendChild(e)}
   return e}
-function setupInert(on){if(!on&&typeof layerInert==='function')return layerInert();   // closing: the page stays inert while Settings or a sheet is up (ui.js)
+function setupInert(on){if(!on)return layerInert();   // closing: the page stays inert while Settings or a sheet is up (ui.js)
   for(const s of['header','main','nav']){const el=$(s);if(el)el.inert=on}}
 function setupOpen(again,resume){
   closeSettings();
@@ -59,12 +59,12 @@ function setupOpen(again,resume){
   setup={at:0,first:!again,vestSet:!!(resume&&resume.vestSet),q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null,before:again?(resume&&resume.before)||setupBefore():null};SETUP_STEPS=setupStepsNow();
   if(resume){const i=SETUP_STEPS.indexOf(resume.k);if(i>0)setup.at=i}
   setupInert(true);setupEl().classList.add('on');setupDraw();setupSave();setupEl().focus({preventScroll:true});
-  if(typeof appPush==='function')appPush('setup');   // the phone's Back steps back through the setup instead of leaving the app (start.js)
+  appPush('setup');   // the phone's Back steps back through the setup instead of leaving the app (start.js)
 }
 function setupClose(){
   if(setup.watch)clearInterval(setup.watch);setup.watch=null;setup.at=-1;setupKeep(null);
   const e=$('#setup');if(e){e.classList.remove('on');e.innerHTML=''}setupInert(false);
-  if(typeof appDrop==='function')appDrop('setup');
+  appDrop('setup');
 }
 /* a double tap on Skip or "Add my first item": the second tap landed on what the setup uncovered (Settings' ⚙ under Skip, the tour's Next
    under "Add my first item"; audit 2026-11-15). A tap at the same spot within SETUP_TAP_MS of the one that closed the setup is dropped */
@@ -95,7 +95,7 @@ const TZ_CC={'Asia/Kuwait':'KW','Asia/Riyadh':'SA','Asia/Dubai':'AE','Asia/Qatar
   'Europe/London':'GB','Europe/Dublin':'IE','Europe/Paris':'FR','Europe/Berlin':'DE','Europe/Madrid':'ES','Europe/Rome':'IT','Europe/Amsterdam':'NL','Europe/Brussels':'BE','Europe/Zurich':'CH','Europe/Vienna':'AT','Europe/Stockholm':'SE','Europe/Oslo':'NO','Europe/Copenhagen':'DK','Europe/Helsinki':'FI','Europe/Warsaw':'PL','Europe/Lisbon':'PT','Europe/Athens':'GR','Europe/Istanbul':'TR','Europe/Moscow':'RU',
   'America/New_York':'US','America/Chicago':'US','America/Denver':'US','America/Phoenix':'US','America/Los_Angeles':'US','America/Anchorage':'US','Pacific/Honolulu':'US','America/Toronto':'CA','America/Vancouver':'CA','America/Mexico_City':'MX','America/Sao_Paulo':'BR','America/Argentina/Buenos_Aires':'AR','Africa/Johannesburg':'ZA','Africa/Lagos':'NG','Africa/Nairobi':'KE'};
 function tzCountry(){let tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||''}catch{}
-  if(TZ_CC[tz])return TZ_CC[tz];const m=/-([A-Z]{2})$/.exec(navigator.language||'');return m&&typeof COUNTRY_CODES!=='undefined'&&COUNTRY_CODES.includes(m[1])?m[1]:null}
+  if(TZ_CC[tz])return TZ_CC[tz];const m=/-([A-Z]{2})$/.exec(navigator.language||'');return m&&COUNTRY_CODES.includes(m[1])?m[1]:null}
 function setupHolCountry(){if(settings.holidays&&settings.holidays.country)return;const cc=tzCountry();if(cc)settings.holidays={country:cc,list:[],skip:[],fetched:0}}
 async function setupHolidays(){const h=settings.holidays;if(h&&h.country&&(h.fetched||(h.list||[]).length))return;const cc=h&&h.country||tzCountry();if(!cc)return;
   try{await setHolidayCountry(cc,true)}catch(e){console.warn('holidays not loaded',e)}
@@ -129,8 +129,8 @@ function setupGo(n,e){if(setupGoDouble(e))return;
   setup.at=at;setup.msg='';setupDraw();setupSave();const b=$('#setup .su-body');if(b)b.scrollTop=0;
   // the new step is said, and the keyboard stays on Next / Back (Back is gone on the first step: Next) (fix round 3, W2-19-01: focus fell to <body>, nothing said)
   if(had&&!setupEl().contains(document.activeElement)){const nb=$('#su-next');if(nb)nb.focus({preventScroll:true})}
-  if(typeof announce==='function'){const t=$('#su-title');announce(`Step ${at+1} of ${SETUP_STEPS.length}: ${t?t.textContent:''}`)}
-  if(typeof appPush==='function')appPush('setup')}   // (again after a tap: an entry made at start-up without one may be skipped by Back)
+  {const t=$('#su-title');announce(`Step ${at+1} of ${SETUP_STEPS.length}: ${t?t.textContent:''}`)}
+  appPush('setup')}   // (again after a tap: an entry made at start-up without one may be skipped by Back)
 
 /* ---- the steps ---- */
 const setupSwitch=(k,on,title,sub)=>`<button type="button" class="su-sw" id="su-sw-${k}" role="switch" aria-checked="${on}" onclick="setupSetDress('${k}')"><span class="su-swt"><b>${title}</b><small>${sub}</small></span><i class="su-knob" aria-hidden="true"></i></button>`;
@@ -150,9 +150,9 @@ function setupStep(k){const d=setupDress();
 <div class="su-form"><input type="text" id="su-city" placeholder="Search a city" aria-label="City" value="${esc(setup.q)}" oninput="setup.q=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();setupSearch()}"><button type="button" id="su-find" onclick="setupSearch()">Search</button></div>
 <div class="su-acts" id="su-cities">${(setup.cities||[]).map((c,i)=>`<button type="button" onclick="setupPick(${i})">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join('')}</div>${setup.cityMsg?`<p class="su-help" role="status">${esc(setup.cityMsg)}</p>`:''}</div>
 <div class="su-group"><div class="su-label">Temperatures in</div><div class="su-days" id="su-units" role="group" aria-label="Temperatures in">${['C','F'].map(x=>`<button type="button" class="su-day${u===x?' on':''}" aria-pressed="${u===x}" onclick="setupUnits('${x}')">°${x}</button>`).join('')}</div></div>`}
-  if(k==='connect')return setupConnected()?`<p class="su-ok" id="su-conn"><span class="su-tick" aria-hidden="true">✓</span> Connected</p><p class="su-help">Photos of your clothes are read automatically, item pictures can be made, and ${typeof backedUpWords==='function'?backedUpWords():'your wardrobe is backed up'}.</p>${setup.joined&&items.length?`<p class="su-help" id="su-came">Your wardrobe came across: ${items.length} item${items.length===1?'':'s'}. The answers are your account’s.</p>`:''}${setupHomeLink()}`
+  if(k==='connect')return setupConnected()?`<p class="su-ok" id="su-conn"><span class="su-tick" aria-hidden="true">✓</span> Connected</p><p class="su-help">Photos of your clothes are read automatically, item pictures can be made, and ${backedUpWords()}.</p>${setup.joined&&items.length?`<p class="su-help" id="su-came">Your wardrobe came across: ${items.length} item${items.length===1?'':'s'}. The answers are your account’s.</p>`:''}${setupHomeLink()}`
     :setupLinkChecking()?'<p class="su-ok" id="su-conn" role="status"><span class="spin" aria-hidden="true"></span> Checking your invitation…</p><p class="su-help">This can take a moment on a slow connection. You can carry on with Next meanwhile.</p>'
-    :`<p class="su-help">${typeof inviteOver==='function'&&inviteOver()?'Your invitation has ended, so the link you used no longer works: nothing is read or backed up. If you were given a new invitation link, paste it here.':setupLinkWaiting()?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you come back to the app or your connection returns, or tap Connect.':'If you were given an invite link, paste it here. It turns on automatic reading of your photos, item pictures and a backup. Used the app before? The same link brings your backed-up wardrobe back.'}</p>
+    :`<p class="su-help">${inviteOver()?'Your invitation has ended, so the link you used no longer works: nothing is read or backed up. If you were given a new invitation link, paste it here.':setupLinkWaiting()?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you come back to the app or your connection returns, or tap Connect.':'If you were given an invite link, paste it here. It turns on automatic reading of your photos, item pictures and a backup. Used the app before? The same link brings your backed-up wardrobe back.'}</p>
 <div class="su-form"><input type="text" id="su-link" placeholder="Paste your invite link" aria-label="Invite link"${setupLinkWaiting()?` value="${esc(location.href)}"`:''} autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();setupConnect()}"><button type="button" id="su-connect" onclick="setupConnect()"${setup.busy?' disabled':''}>${setup.busy?'Connecting…':'Connect'}</button></div>
 ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
 <p class="su-note" id="su-without"><b>No link? The app works without one.</b> You then add your items by hand, picking the type and colors yourself: no automatic photo reading and no item pictures. You can connect later in Settings.</p>`;
@@ -165,7 +165,7 @@ ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
   const wear=[d.jacket?'jackets':'no jackets',d.tie?'ties':'no ties',...(d.jacket&&d.tie?[vest]:[])].join(', ');
   const bl=settings.blazerDays.filter(x=>settings.workdays.includes(x));
   return `<p class="su-lead">${items.length?'That’s everything.':'That’s everything. Now add your clothes.'}</p>
-<ul class="su-sum"><li><span>Workdays</span><b>${days(settings.workdays)}</b></li>${d.jacket?`<li><span>Blazer days</span><b>${bl.length?days(bl):'none: a suit every day'}</b></li>`:''}<li><span>You wear</span><b>${wear}</b></li><li><span>Weather</span><b>${settings.location?esc(settings.location.name):'by the calendar'} · °${unit()}</b></li><li><span>Connection</span><b>${setupConnected()?'connected':setupLinkChecking()?'checking your invitation…':typeof inviteOver==='function'&&inviteOver()?'invitation ended':'not connected'}</b></li></ul>
+<ul class="su-sum"><li><span>Workdays</span><b>${days(settings.workdays)}</b></li>${d.jacket?`<li><span>Blazer days</span><b>${bl.length?days(bl):'none: a suit every day'}</b></li>`:''}<li><span>You wear</span><b>${wear}</b></li><li><span>Weather</span><b>${settings.location?esc(settings.location.name):'by the calendar'} · °${unit()}</b></li><li><span>Connection</span><b>${setupConnected()?'connected':setupLinkChecking()?'checking your invitation…':inviteOver()?'invitation ended':'not connected'}</b></li></ul>
 ${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus pants if you wear a blazer rather than a suit':''}.</p>${typeof kitStartRow==='function'?kitStartRow(true):''}`}`;
 }
 /* connected at the Connection step in Safari on an iPhone: the Home Screen app needs the link too (kit.js homeCopy) */
@@ -192,7 +192,7 @@ function setupUnits(v){setUnits(v);setupDraw()}
 async function setupSearch(){const q=(setup.q||'').trim();if(!q&&(setup.cities||setup.cityMsg)){setup.cities=null;setup.cityMsg='';setupDraw();return}if(!q||!$('#cfg-city'))return;
   $('#cfg-city').value=q;window._cities=null;setup.cities=null;setup.cityMsg='Searching…';setupDraw();
   await findCity();if($('#city-results'))$('#city-results').innerHTML='';$('#cfg-city').value='';
-  const res=window._cities;setup.cities=res||null;setup.cityMsg=!res?'City search is unavailable right now.':res.length?'':'No matches. Try the name in English or a nearby larger city, or Use my location.';setupDraw();if(typeof announce==='function')announce(setup.cityMsg||`${res.length} place${res.length===1?'':'s'} found`)}
+  const res=window._cities;setup.cities=res||null;setup.cityMsg=!res?'City search is unavailable right now.':res.length?'':'No matches. Try the name in English or a nearby larger city, or Use my location.';setupDraw();announce(setup.cityMsg||`${res.length} place${res.length===1?'':'s'} found`)}
 function setupPick(i){const c=(setup.cities||[])[i];if(!c)return;setup.cities=null;setup.cityMsg='';setup.q='';setLocation(c);setupDraw()}
 /* useMyLocation answers later (the permission prompt): the step is drawn again once the location has changed */
 function setupLocate(){const was=JSON.stringify(settings.location);useMyLocation();
@@ -204,7 +204,7 @@ async function setupConnect(){const el=$('#su-link'),t=(el&&el.value||'').trim()
   try{ok=!!(await connectFromLink(t))}catch(e){ok=false}
   // why, in the setup's words: offline is not a wrong link (it said "check that you copied all of it" while offline)
   const why=typeof acctWhy!=='undefined'?acctWhy:'';
-  setup.busy=false;if(ok)setup.joined=true;setup.msg=ok||why==='kept'?'':why==='offline'?'Couldn’t reach the server: you may be offline. Connect when you’re back online, or tap Next and connect later in Settings.':why==='refused'&&typeof acctFailText==='function'?acctFailText()+' Or carry on without it.':'That link didn’t work. Check that you copied all of it, or carry on without it.';
+  setup.busy=false;if(ok)setup.joined=true;setup.msg=ok||why==='kept'?'':why==='offline'?'Couldn’t reach the server: you may be offline. Connect when you’re back online, or tap Next and connect later in Settings.':why==='refused'?acctFailText()+' Or carry on without it.':'That link didn’t work. Check that you copied all of it, or carry on without it.';
   if(!setupShown())return;setupDraw();if(!ok&&$('#su-link'))$('#su-link').value=t}
 
 /* ---- Today with an empty or too-small wardrobe: what is still needed for a first outfit ---- */

@@ -24,7 +24,7 @@ const careWashed=t=>t==='shirt'||t==='socks'||t==='pocketsquare'||['tee','polo',
 const careWord=t=>careWashed(t)?'washing':'cleaning';
 const careNoun=i=>i.type==='pants'?'pants':(TYPES[i.type]||'item').toLowerCase().replace('dress ','');
 const careTimes=n=>n===1?'once':n===2?'twice':n+' times';
-const careName=i=>`${TYPES[i.type]||'Item'}: ${typeof esc==='function'&&String(i.name||'').trim()?nameHtml(String(i.name).trim()):sentence(desc(i)||careNoun(i))}`;
+const careName=i=>`${TYPES[i.type]||'Item'}: ${String(i.name||'').trim()?nameHtml(String(i.name).trim()):sentence(desc(i)||careNoun(i))}`;
 /* wears since cleaning for every item: {id: count}. Kept on the plan cache, which is dropped whenever items, days or settings change */
 function careCounts(){if(cache.careW)return cache.careW;const w={},by=Object.fromEntries(items.map(i=>[i.id,i]));
   for(const r of wornDays()){const k=isoKey(r.d);
@@ -61,7 +61,7 @@ async function careRelease(id){const T=todayDate();let n=0;
 async function careSend(id,why,back){const it=items.find(x=>x.id===id);if(!it||it.away||it.paused||!CARE_ABLE.includes(it.type))return;
   const ok=/^\d{4}-\d{2}-\d{2}$/.test(back||'');
   it.away={why:why==='laundry'?'laundry':'cleaner',since:isoKey(todayDate()),back:ok?back:null};it.paused=true;if(ok)it.arrives=back;else delete it.arrives;
-  await careRelease(id);if(typeof careUnlock==='function')await careUnlock(id);await put(it);planDirty();careRedraw();   // (the week planned again around it: history.js)
+  await careRelease(id);await careUnlock(id);await put(it);planDirty();careRedraw();   // (the week planned again around it: history.js)
   toast(it.away.why==='laundry'?'In the laundry.':'At the cleaner\'s.',5000,{label:'Undo',fn:()=>careUnsend(id)})}
 async function careUnsend(id){const it=items.find(x=>x.id===id);if(!it||!it.away)return;delete it.away;delete it.paused;delete it.arrives;await put(it);planDirty();careRedraw()}
 /* the day it is back (empty = no date: it waits for "It's back") */
@@ -69,7 +69,7 @@ async function careSetBack(id,v){const it=items.find(x=>x.id===id);if(!it||!it.a
   it.away={...it.away,back:ok?v:null};if(ok)it.arrives=v;else delete it.arrives;await put(it);planDirty();await checkArrivals();careRedraw()}
 /* it is back: in rotation again, cleaned today */
 async function careBack(id){const it=items.find(x=>x.id===id);if(!it||!it.away)return;
-  if(typeof careUnlock==='function')await careUnlock(null,+keyDate(it.away.since||isoKey(todayDate())));   // the locks made while it was away let go (history.js)
+  await careUnlock(null,+keyDate(it.away.since||isoKey(todayDate())));   // the locks made while it was away let go (history.js)
   it.cleaned=isoKey(todayDate());delete it.away;delete it.paused;delete it.arrives;await put(it);planDirty();careRedraw();toast('Back in rotation, freshly cleaned.')}
 /* cleaned without being sent away: the count starts again */
 async function careCleaned(id){const it=items.find(x=>x.id===id);if(!it)return;const was=it.cleaned;
@@ -88,7 +88,7 @@ function careLists(){const st=items.filter(i=>!i.order).map(i=>({i,s:careState(i
 function renderCare(){const el=$('#care');if(!el)return;
   const head=`<div class="phead nav"><button class="pback" onclick="subBack()" aria-label="Back">‹</button><h2>Laundry &amp; cleaning</h2></div>`;
   if(!items.length){el.innerHTML=head+'<p class="mut empty">Your wardrobe is empty.</p>'+emptyAdd();return}
-  const L=careLists(),pic=i=>typeof statPic==='function'?statPic(i):'';
+  const L=careLists(),pic=i=>statPic(i);
   const row=(x,btns)=>`<div class="care-row" id="care-${x.id}">${pic(x)}<div class="care-main"><span class="cap care-nm">${careName(x)}</span><small class="mut">${x.away?careTag(x)+' · since '+fmtDay(x.away.since):careWornLine(x)}</small></div><div class="care-acts">${btns}</div></div>`;
   const acts=x=>{const w=careWashed(x.type)?'laundry':'cleaner';return `<button type="button" class="caresend" onclick="careSend('${jsq(x.id)}','${w}')">${w==='laundry'?'In the laundry':'Send to the cleaner'}</button><button type="button" class="caredone" onclick="careCleaned('${jsq(x.id)}')">${careWashed(x.type)?'Washed':'Cleaned'} today</button>`};
   const card=(id,title,sub,rows)=>`<section class="card care-card" id="${esc(id)}"><h3>${title}</h3>${sub?`<p class="shelp">${sub}</p>`:''}${rows}</section>`;
