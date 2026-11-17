@@ -97,6 +97,7 @@
 <div class="sgroup"><div class="slabel">Due for cleaning</div><p class="shelp">How many times a piece is worn before the app says it is due. It counts the days you wore it; Laundry &amp; cleaning, at the top of Settings, lists what is due.</p><div id="care-limits"></div></div>
 <div class="sgroup"><div class="slabel">Shirts in the wash</div><p class="shelp">A shirt you wore is not planned again for this long, unless you have no other shirt.</p>
 <label class="srow">A worn shirt waits <select id="cfg-laundry" onchange="setLaundryDays(this.value)" aria-label="How long a worn shirt waits before it is planned again"></select></label></div>
+<div class="sgroup" id="cpw-set"></div>
 </div></div></section>
 <p class="sgh">Photos &amp; tagging</p>
 <section class="mbox scat" id="sc-photos"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('photos')" aria-expanded="false" aria-controls="sp-photos"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg></span><span class="mltxt"><b>Outfit pictures</b><small id="sum-photos"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
@@ -198,6 +199,7 @@
 <script src="colpick.js"></script>
 <script src="checklist.js"></script>
 <script src="care.js"></script>
+<script src="cost.js"></script>
 <script src="shop.js"></script>
 <script src="sync-status.js"></script>
 <script src="sync.js"></script>
