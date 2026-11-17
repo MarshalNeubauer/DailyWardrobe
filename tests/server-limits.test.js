@@ -211,7 +211,11 @@ const testersync=async({ok,chromium,url})=>{
 const testerview=async({ok,chromium,url})=>{
   const browser=await chromium.launch();
   try{
-    const p=await browser.newPage({viewport:{width:390,height:900}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
+    /* this part points the app at the made-up host w.test with nothing answering it, so the app's own requests there (/me, /feedback,
+       /sync) fail; WebKit reports each as the page error "/w.test/<path> due to access control checks." (Chromium reports nothing).
+       Exactly that error, on that host, is left out, as tests/webkit.js does for sw.js; every other error still counts */
+    const FAKE_CUT=/^\/w\.test\/[\w\/?=&%.-]* due to access control checks\.$/;
+    const p=await browser.newPage({viewport:{width:390,height:900}});const errs=[];p.on('pageerror',e=>{if(!FAKE_CUT.test(e.message))errs.push(e.message)});
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // the role is remembered for the connection's code
     const as=role=>p.evaluate(r=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','code-'+r);acct.me=null;rememberRole({role:r})},role);
