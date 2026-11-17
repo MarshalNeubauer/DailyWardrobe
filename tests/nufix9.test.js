@@ -3,7 +3,7 @@
 // leaves Add open) instead of leaving the app (start.js appBorrow/appGiveBack, kinds 'ask' and 'kit'); the second tap of a double tap
 // doesn't cancel the question it opened; the Wardrobe box reads its Sample tag out; the largest text with page zoom keeps the tab names
 // apart and the item sheet's title and values whole; a long name in a toast leaves its Undo on screen; Advanced wording.
-const fs=require('fs'),path=require('path');
+const fs=require('fs'),path=require('path'),{holds}=require('./pace');
 module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
   ok(!/realistic photos/.test(html),'Settings → Connection → Advanced no longer says the server makes the realistic photos');
@@ -38,52 +38,21 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.evaluate(()=>openSettings('schedule'));await settle(p,300);await ask();await settle(p,200);await p.click('#ask-cancel');await settle(p,300);
     ok(await st()==='set'&&await p.evaluate(()=>appKind==='set'&&settingsOpen()),'Cancel over Settings hands the entry back to Settings');
     await back();ok(await p.evaluate(()=>!settingsOpen())&&await inApp()===url,'…and Back then closes Settings');
-    // ---- a question over the item sheet
-    await p.evaluate(()=>{show('wardrobe');openItem(items[0].id)});await settle(p,400);
-    await ask();await settle(p,200);
-    await back();
-    ok(await inApp()===url&&!await asked()&&await p.evaluate(()=>!!editing&&window._ans===false),'Back over the item sheet closes only the question');
-    await back();
-    ok(await inApp()===url&&await p.evaluate(()=>!editing),'the next Back closes the item sheet');
-    // ---- with the colour sheet (colpick.js, colBackFirst in itemsheet.js): Back closes it first; a question over it closes before it
-    await p.evaluate(()=>{show('wardrobe');openItem(items[0].id)});await settle(p,400);
-    await p.evaluate(id=>openColPick('e',id,'primaryColor'),await p.evaluate(()=>items[0].id));await settle(p,300);
-    await ask();await settle(p,200);
-    await back();
-    ok(await inApp()===url&&!await asked()&&await p.evaluate(()=>!!colPick&&!!editing),'Back with a question over the colour sheet closes only the question');
-    await back();
-    ok(await inApp()===url&&await p.evaluate(()=>!colPick&&!!editing),'the next Back closes the colour sheet, the item sheet stays');
-    await back();
-    ok(await inApp()===url&&await p.evaluate(()=>!editing),'and the next one the item sheet');
+    // (Back over the item sheet, over the color sheet over it, the tour, Add to Home Screen from Settings and the import sheet over Add
+    // are checked on Chromium and WebKit in tests/backgesture.test.js: layer() and the nested steps; their copies here went, CR-10-14 / v4)
     // ---- the double tap's second tap doesn't cancel; a later tap outside does
     await p.evaluate(()=>show('today'));await settle(p,300);
     await ask();await p.mouse.click(195,120);await settle(p,100);
     ok(await asked(),'a tap outside the question right after it opened (a double tap’s second tap) leaves it open (it cancelled it)');
     await p.waitForTimeout(600);await p.mouse.click(195,120);await settle(p,300);
     ok(!await asked()&&await p.evaluate(()=>window._ans===false),'a tap outside half a second later still cancels it');
-    // ---- the tour, the Home Screen sheet, the import sheet
-    await p.evaluate(()=>tourOpen());await settle(p,300);await p.evaluate(()=>kitGo(1));
-    ok(await st()==='kit','the tour takes a Back entry');
-    await back();
-    ok(await inApp()===url&&await p.evaluate(()=>!kit&&!document.querySelector('#kitsheet.on')),'Back closes the tour, in the app (it left the app)');
+    // ---- the tour from Settings
     await p.evaluate(()=>openSettings('about'));await settle(p,300);await p.evaluate(()=>tourAgain());await settle(p,400);
     ok(await st()==='kit'&&await p.evaluate(()=>!!kit&&!settingsOpen()),'Take the tour from Settings: the tour has the entry');
     await back();
     ok(await inApp()===url&&await p.evaluate(()=>!kit&&settingsOpen()&&appKind==='set')&&await st()==='set','Back on it goes back to Settings → About, with Settings’ entry');
     await back();ok(await p.evaluate(()=>!settingsOpen()),'…and Back again closes Settings');
-    await p.evaluate(()=>openSettings('about'));await settle(p,300);await p.evaluate(()=>homeAgain());await settle(p,400);
-    await back();
-    ok(await inApp()===url&&await p.evaluate(()=>!kit&&settingsOpen()),'Back on Add to Home Screen goes back to Settings');
     await p.evaluate(()=>closeSettings());await settle(p,300);
-    await p.evaluate(()=>{show('wardrobe');openAdd()});await settle(p,300);await p.evaluate(()=>kitImportOpen());await settle(p,200);
-    ok(await st()==='sub'&&await p.evaluate(()=>appKind==='kit'),'the import sheet over Add borrows Add’s entry');
-    await back();
-    ok(await inApp()===url&&await p.evaluate(()=>!kit&&!document.querySelector('#add').hidden&&appKind==='sub')&&await st()==='sub','Back closes the import sheet and Add stays, with its entry (Add closed under the sheet)');
-    await back();
-    ok(await inApp()===url&&await p.evaluate(()=>document.querySelector('#add').hidden),'the next Back leaves Add, in the app');
-    await p.evaluate(()=>openAdd());await settle(p,300);await p.evaluate(()=>kitImportOpen());await settle(p,200);await p.click('#kit-cancel');await settle(p,300);
-    ok(await st()==='sub'&&await p.evaluate(()=>appKind==='sub'&&!document.querySelector('#add').hidden),'Cancel on the import sheet hands the entry back to Add');
-    await back();ok(await p.evaluate(()=>document.querySelector('#add').hidden),'…and Back then leaves Add');
     // ---- the Sample tag in the box's name
     await p.evaluate(()=>{items[0].sample=1;show('wardrobe')});await settle(p,300);
     const lab=await p.evaluate(()=>document.querySelector('#gi-'+items[0].id+' .giopen').getAttribute('aria-label'));
@@ -95,9 +64,11 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.setViewportSize({width:268,height:454});await p.evaluate(()=>{document.documentElement.style.setProperty('--tscale','1.5');show('today')});await settle(p,400);
     const nav=await p.evaluate(()=>[...document.querySelectorAll('nav button')].map(b=>{const r=document.createRange();r.selectNodeContents(b);const t=r.getBoundingClientRect(),o=b.getBoundingClientRect();return t.left>=o.left-1&&t.right<=o.right+1&&b.scrollWidth<=b.clientWidth+1}));
     ok(nav.length===3&&nav.every(Boolean),'150% text at 268 px: each tab name fits its own button (they ran together)');
-    ok(await p.evaluate(()=>{const h=document.querySelector('header h1');return h.scrollWidth<=h.clientWidth+1}),'…the header title isn’t cut');
+    // (each read once the layout holds it, within 4 s: after the zoom the sizes settle a moment later on a busy machine, CR-10-03)
+    ok(await holds(p,()=>{const h=document.querySelector('header h1');return h.scrollWidth<=h.clientWidth+1}),'…the header title isn’t cut');
     ok(await p.evaluate(()=>[...document.querySelectorAll('#today .score .lbl b,#today .mltxt b')].every(b=>b.scrollWidth<=b.clientWidth+1)),'…nor the cards’ titles ("7 p…")');
     await p.evaluate(()=>{show('wardrobe');const it=items.find(i=>i.type==='suit');it.name='Mid grey herringbone';openItem(it.id)});await settle(p,500);
+    await holds(p,()=>{const h=document.querySelector('#iv-title');return !!h&&h.scrollWidth<=h.clientWidth+1&&h.scrollHeight<=h.clientHeight+2});
     const iv=await p.evaluate(()=>{const h=document.querySelector('#iv-title'),c=[...document.querySelectorAll('#item-view .colnm')];return {t:h.scrollWidth<=h.clientWidth+1&&h.scrollHeight<=h.clientHeight+2,c:c.length>0&&c.every(x=>x.scrollWidth<=x.clientWidth+1)}});
     ok(iv.t,'…the item sheet’s title wraps instead of "Mid grey h…"');
     ok(iv.c,'…and its colour and pattern values aren’t cut ("Mid …")');

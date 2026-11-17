@@ -57,7 +57,7 @@ function syncSettingsRedraw(){if(typeof settingsOpen!=='function'||!settingsOpen
 let syncLater=null;
 function syncRedraw(v){if(!v||v==='add')return;
   if(settingsOpen()){if(v==='today')todayStale=true;else viewStale=v;return}
-  if((v==='wardrobe'&&editing)||(v==='today'&&picker)){syncLater=v;return}
+  if((v==='wardrobe'&&editing)||(v==='today'&&(picker||(typeof todayBusy==='function'&&todayBusy())))){syncLater=v;return}   // (a finger on Today: today.js todayFree runs it when the gesture ends)
   return show(v)}
 function syncLaterRun(v){if(syncLater!==v)return;syncLater=null;if($('#'+v).hidden)return;
   if(v==='today')refreshToday();else if(v==='wardrobe'&&!editing)renderWardrobe()}

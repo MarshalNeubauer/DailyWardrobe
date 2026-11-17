@@ -284,7 +284,7 @@ const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
 /* give a day an occasion (or none): its swaps are dropped, since the outfit is chosen afresh for the occasion, and the coming days are
    released so they are planned around it (the suit that is right for the occasion may be locked on the day before) */
 async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){todayStale=true;renderFormalUI()}else renderToday()}
-async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;notAhead(n,k);swapMsg='';await saveDay(n);renderToday()}
+async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;delete n.kind;notAhead(n,k);swapMsg='';await saveDay(n);renderToday()}   // (kind too: a piece taken off or a moved outfit pinned the suit or blazer, CR-4-07)
 /* a coming day's record holds no pieces (ids): they are written when the day is shown (recordDays, today) or once it is past. A pick or
    swap ahead used to write the outfit from before it, which then stood as worn in place of the pick when the app wasn't opened that day
    (fix round 3, W2-17-01); today's record is rewritten from the screen right after (recordDays) */
@@ -340,7 +340,7 @@ async function setVest(v){const k=key(sel),o=planFor()[k];if(!o)return;
    planned outfit back */
 function resetCard(o){return o&&!o.frozen&&(o.overrides||o.vestOverride)?`<section class="mbox resetbox" id="rbox"><button class="month-link resetlink" onclick="resetDay()" aria-label="Reset changes" title="Undo your changes to this day"><span class="rsicon" aria-hidden="true">↺</span><b>Reset</b></button></section>`:''}
 function dayActions(o){
-  const T=todayDate(),d=new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),past=d<T,isToday=+d===+T;
+  const T=todayDate(),d=dayOnly(sel),past=d<T;
   let h='';
   // whether it was worn is marked on the picture (wornMarks)
   if(o.occasion)h+=`<span class="ftag" title="Set in Settings, Occasions" aria-label="${o.occasion==='formal'?'Formal day':'Occasion: '+occLabel(o.occasion)}">${o.occasion==='casual'?'No jacket':occLabel(o.occasion)}${o.occasion==='formal'?'<span class="fx"> day</span>':''}</span>`;
@@ -355,10 +355,11 @@ function dayActions(o){
 /* outfit score card with an expandable breakdown */
 let scoreOpen=false;
 /* the score's advice for a day (planner.js, scoreAdvice): swaps that would raise it, the wardrobe's best with this jacket, and the
-   checks nothing owned improves. Worked out once per outfit (kept until the day's pieces change); not for past or worn days */
-let adviceMemo={k:'',v:null};
+   checks nothing owned improves. Worked out once per outfit and plan (kept until the day's pieces change or the plan cache is cleared, as
+   pickMemo: every edit, sync and setting clears it; CR-4-05: a piece taken out of rotation was still offered); not for past or worn days */
+let adviceMemo={c:null,k:'',v:null};
 function adviceFor(o){if(!o||o.frozen||!hasOutfit(o))return null;const k=key(sel)+JSON.stringify(idsOf(o))+!!o.vest+items.length;
-  if(adviceMemo.k!==k)adviceMemo={k,v:window.TEST_PLAN?TEST_PLAN.advice(o):scoreAdvice(o,slot=>slotPool(slot,o))};return adviceMemo.v}
+  if(adviceMemo.c!==cache||adviceMemo.k!==k)adviceMemo={c:cache,k,v:window.TEST_PLAN?TEST_PLAN.advice(o):scoreAdvice(o,slot=>slotPool(slot,o))};return adviceMemo.v}
 function applyFix(slot,id){return pickItem(slot,id)}
 function scoreCard(o){
   const r=window.TEST_PLAN?TEST_PLAN.rate(o):rateOutfit(o),tone=r.hard.length?'low':r.score>=80?'good':r.score>=65?'ok':'low',A=adviceFor(o);
@@ -417,4 +418,4 @@ function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;
   const b=box.querySelector('.month-link');b.setAttribute('aria-expanded',scoreOpen);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show why/,scoreOpen?'Fold away':'Show why'));
   const sm=box.querySelector('.lbl small');if(sm)sm.textContent='Outfit score · '+(scoreOpen?'tap to fold away':'tap for why');
-  if(scoreOpen)boxUnfold(box);else{revealRun++;boxFold(box,'#spanel .sfix, #spanel li, #spanel .scap')}}
+  if(scoreOpen)boxUnfold(box);else boxFold(box,'#spanel .sfix, #spanel li, #spanel .scap')}

@@ -11,9 +11,12 @@ let shop=null,shopBusy=null,shopPart=null,shopWorker=null,shopOpen=false,shopSho
 const SHOP_STALE=7*864e5;
 // (also every setting the planner reads: laundry days, dark shirts, jeans with a blazer, holidays, days off, and
 // the occasions marked on coming days; any of them changes the plan the check measures)
+// Only what the planner reads (CR-4-12): each item's tags (shopPlanned: no pictures, readings, names, notes or stamps; a new photo or a
+// rename checked a large wardrobe again for 40-60 s) and the dates of the days off (not the holiday list's monthly `fetched` stamp)
+const shopPlanned=({photo,photoSm,swatch,stripes,texture,sett,patternText,weave,pbox,patternSpec,meas,tagAI,name,brand,notes,details,updated,fs,...i})=>i;
 const shopSig=()=>{const T=todayDate(),occ=Object.values(dayRecs).filter(r=>(r.formal||r.occasion)&&keyDate(r.date)>=T).map(r=>r.date+':'+(r.formal?'formal':r.occasion)).sort();
-  return items.map(i=>i.id+':'+stamp(i)).sort().join(',')+'|'+JSON.stringify([settings.workdays,settings.blazerDays,settings.vestMode||'auto'])
-    +'|'+JSON.stringify([settings.laundryDays??1,darkMode(),!!(settings.dress&&settings.dress.jeans),settings.holidays||null,settings.daysOff||[],occ])
+  return strHash(items.map(i=>JSON.stringify(shopPlanned(i))).sort().join(','))+'|'+JSON.stringify([settings.workdays,settings.blazerDays,settings.vestMode||'auto'])
+    +'|'+JSON.stringify([settings.laundryDays??1,darkMode(),!!(settings.dress&&settings.dress.jeans),Object.keys(offDays()).sort(),occ])
     +(wearsJacket()?'':'|nojacket')+(wearsTie()?'':'|notie')};
 const shopFresh=()=>!!shop&&shop.sig===shopSig()&&Date.now()-(shop.at||0)<SHOP_STALE;
 const shopHid=x=>(settings.shopSkip||[]).includes(x.key);

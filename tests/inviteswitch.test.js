@@ -88,10 +88,16 @@ module.exports=async({ok,chromium,url})=>{
     {const {p}=await page();
       await p.evaluate(()=>{queue.push({id:'r1',busy:1})});const u=p.evaluate(()=>updateNow());const a=await askText(p);await p.click('#ask-cancel');await u;
       ok(/still being read/.test(a.t)&&!/will be lost/.test(a.t),`Update asks only about a photo still being read ("${a.t.replace(/\s+/g,' ')}")`);
-      await p.evaluate(()=>{queue.length=0;queue.push({id:'k1',manual:true,type:'tie'});aboutUpdating=false});
-      const nav=p.waitForNavigation({timeout:8000}).catch(()=>null);await p.evaluate(()=>{updateNow()});await p.waitForTimeout(300);
-      const asked=await p.evaluate(()=>!!(document.querySelector('#ask-ok')&&document.querySelector('#ask-ok').offsetParent));await nav;
-      ok(!asked,'a card that comes back after the restart is not a reason to ask')}
+      // (the question just canceled must be gone first: on a busy machine it was still fading out 300 ms later and was read as a new
+      // one, CR-10-03; then either the restart or a question comes, whichever is first, instead of a look after a fixed pause)
+      // (Update's own question; on a busy machine another one, from the page's start-up, was up at times and was taken for it)
+      // (a question is up while #ask-sheet has .on: a canceled one keeps its text and stays laid out while it fades)
+      const seen=()=>{const s=document.querySelector('#ask-sheet.on');return !!(s&&/Update now/.test(s.textContent))};
+      await p.waitForFunction(()=>!document.querySelector('#ask-sheet.on'),null,{timeout:5000}).catch(()=>{});
+      // (the cards are set in the same step as the tap: on a busy machine the page's own start-up could change them in between)
+      const nav=p.waitForNavigation({timeout:8000}).catch(()=>null);const q0=await p.evaluate(()=>{queue.length=0;queue.push({id:'k1',manual:true,type:'tie'});aboutUpdating=false;const q=JSON.stringify(queue.map(q=>[q.id,!!q.busy,!!q.multiBusy]));updateNow();return q});
+      const asked=await Promise.race([nav.then(()=>false),p.waitForFunction(seen,null,{timeout:8000}).then(()=>true,()=>false)]);await nav;
+      ok(!asked,'a card that comes back after the restart is not a reason to ask'+(asked?` (asked, with the cards ${q0} at the tap)`:''))}
     // ---- "Delete everything" cut off by a kill on a slow server: the server deleted it; the next start finishes the job and says so
     {const {p,st}=await page();
       await seed(p,A,1);delete st.who[A];   // the server already deleted the account before the phone was killed

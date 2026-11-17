@@ -80,7 +80,7 @@ function show(t){
   if(from==='add'&&t!=='add'&&typeof toastDrop==='function')toastDrop();   // Add's "Saved … Undo" goes with the page: it lay over Today's month card for 8 s
   if(typeof setupYield==='function')setupYield(t);
   closeSettings();if(!SUBS.includes(t))appDrop('sub');   // (again: Settings over Add hands Add's entry back as it closes, CR-7-04)
-  if(typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();
+  if(from!==t&&typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();   // (What to buy stays open over its own tab redrawn by a sync, CR-4-04)
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn){btn.classList.toggle('on',s===t);if(s===t)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current')}}   // (spoken, not only shown: W2-19-05)
   if(from==='wardrobe'&&t!=='wardrobe'&&!editing){const w=$('#wardrobe');if(w)w.textContent=''}   // the grid (about 4,900 elements at 107 items) is drawn again on coming back: kept, it stayed in memory and in every style recalculation (audit 2026-11-13)
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>typeof statsShow==='function'?statsShow():renderStats()};if(f[t])f[t]();
@@ -119,6 +119,6 @@ connRestored.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','read
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
 /* sync brought new data: refresh the in-memory outfit history too */
-function onSyncedData(m){dayRecs=Object.fromEntries((m.days||[]).map(d=>[d.date,d]));const drawn=picsDrawn();if(m.settings){settings=takeSettings(settings,m.settings);setSeen=m.settings.updated||0;applyCustom(settings.custom)}if(typeof dressSynced==='function')dressSynced(m);loadWeather();
+function onSyncedData(m){dayRecs=Object.fromEntries((m.days||[]).map(d=>[d.date,d]));const drawn=picsDrawn();if(m.settings){settings=takeSettings(settings,m.settings);setSeen=m.settings.updated||0;applyCustom(settings.custom)}if(typeof dressSynced==='function')dressSynced(m);loadWeather();if(typeof remindSoon==='function')remindSoon();   // (another device may have changed the coming outfits: the reminder lines follow, CR-4-09)
   if(picsDrawn()!==drawn&&typeof picsSwitched==='function'){picsSwitched();if(settingsOpen()){renderPicturesUI();if(typeof renderAsmUI==='function')renderAsmUI()}}}   // "Drawing only" chosen on another device
 

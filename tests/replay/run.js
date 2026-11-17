@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* The audit's replay scripts (tests/replay/scripts/W*.js) as one command: `npm run test:replay`.
+/* The audit's replay scripts (tests/replay/scripts/W*.js) and the code review's (CR-*.js) as one command: `npm run test:replay`.
    Each script starts its own lab (the real worker.js on an in-memory KV, AI services mocked), drives a WebKit iPhone and
    prints REPRODUCED (the bug is back) or NOT REPRODUCED (still fixed).
 
@@ -27,10 +27,12 @@ const KEPT = { 'W2-19-09': 'the text-size cap at 150% (kept on purpose by the ow
 
 const DIR = RP.SCRIPTS, LOGS = path.join(RP.SCRATCH, 'logs');
 const only = (arg('only') || '').split(',').map(s => s.trim()).filter(Boolean);
-const ids = fs.readdirSync(DIR).filter(f => /^W\d-\d+-\d+(-[a-z]+)?\.js$/.test(f)).map(f => f.slice(0, -3))
+// the audit's W<n>-<verifier>-<n>.js, and the code review's fix-round replays CR-<reviewer>-<nn>.js (2026-11-17): a CR- script has a
+// port group no other script uses (its own lab port, chosen in the script), so each is a group of its own and runs beside the others
+const ids = fs.readdirSync(DIR).filter(f => /^(?:W\d-\d+-\d+(-[a-z]+)?|CR-\d+-\d+[a-z]?)\.js$/.test(f)).map(f => f.slice(0, -3))
   .filter(id => !only.length || only.some(p => id.startsWith(p)))
   .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
-const groupOf = id => +id.match(/^W\d-(\d+)-/)[1];
+const groupOf = id => /^CR-/.test(id) ? id : +id.match(/^W\d-(\d+)-/)[1];
 const groups = new Map(); for (const id of ids) { const g = groupOf(id); if (!groups.has(g)) groups.set(g, []); groups.get(g).push(id) }
 const TIMES = path.join(LOGS, 'times.json');
 let times = {}; try { times = JSON.parse(fs.readFileSync(TIMES, 'utf8')) } catch {}
@@ -41,7 +43,7 @@ const JOBS = Math.max(1, +(arg('jobs') || Math.min(8, Math.max(2, Math.floor(thr
 const TIMEOUT = 15 * 60e3;
 
 if (flag('list')) {
-  for (const o of order) console.log(`group ${o.g} (port ${9610 + 10 * (o.g - 1)}, about ${Math.round(o.t)} s): ${o.list.join(' ')}`);
+  for (const o of order) console.log(`group ${o.g} (${typeof o.g === 'number' ? 'port ' + (9610 + 10 * (o.g - 1)) : 'its own port'}, about ${Math.round(o.t)} s): ${o.list.join(' ')}`);
   process.exit(0);
 }
 if (!ids.length) { console.log('No replay script matches ' + only.join(', ')); process.exit(1) }

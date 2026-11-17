@@ -4,9 +4,7 @@
 // select or date field is focused by code and the focus is on the section's head button; after a key press (a keyboard) the new control
 // keeps the focus, as fix round 3 (W2-19-01) wanted. Also CR-1-07: the item sheet's Arrives refuses a day gone, as the Add card does.
 // Chromium and WebKit (Safari's engine), with touch; the worker stubbed (nothing paid).
-const {wrapBrowser}=require('./webkit');
-module.exports=async({ok,chromium,url,settle})=>{
-  const engines=[['Chromium',()=>chromium.launch()],['WebKit',async()=>{const pw=require('playwright');return wrapBrowser(await pw.webkit.launch())}]];
+module.exports=async({ok,chromium,engines,url,settle})=>{
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{await run(eng,browser,{ok,url,settle})}finally{await browser.close()}}
