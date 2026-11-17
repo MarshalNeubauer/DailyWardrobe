@@ -174,7 +174,47 @@ const shoeScore=(t,b,s)=>{if(!b)return 0;const sc=pcol(s),bc=pcol(b);const k=(SH
 /* socks: the trousers' colour first, then the shoes', then a sock that picks up the shirt's or the tie's colour (echo: their colour groups,
    from sockEcho), then a quiet neutral */
 const sockEcho=(shirt,tie)=>[shirt&&shirtGroup(shirt),tie&&tieGroup(tie)].filter(g=>g&&!['white','black','grey','navy','brown'].includes(g));
-const sockScore=(bot,sh,s,echo)=>{const sc=pcol(s),botc=bot?pcol(bot):'',shc=sh?pcol(sh):'';let v=patOf(s)==='solid'?2:0;if(bot&&sc===botc)v+=8;else if(sh&&sc===shc)v+=4;else if(bot&&echo&&echo.includes(TIE_GROUP[planCol(s)]||sc))v+=4;else if(bot)v+=(WARM.includes(botc)?['brown','tan','olive']:['black','navy','charcoal','grey']).includes(sc)?3:-8;if(bot&&['white','cream','pink','lightblue'].includes(planCol(s)))v-=10;return v};
+/* (2026-11-17) ctx: the outfit around the socks ({top, bot, shirt, tie, formal, occasion}: sockPatScore's patterned-sock rules); a plain sock
+   scores exactly as before */
+const sockScore=(bot,sh,s,echo,ctx)=>{const sc=pcol(s),botc=bot?pcol(bot):'',shc=sh?pcol(sh):'';let v=patOf(s)==='solid'?2:0;if(bot&&sc===botc)v+=8;else if(sh&&sc===shc)v+=4;else if(bot&&echo&&echo.includes(TIE_GROUP[planCol(s)]||sc))v+=4;else if(bot)v+=(WARM.includes(botc)?['brown','tan','olive']:['black','navy','charcoal','grey']).includes(sc)?3:-8;if(bot&&['white','cream','pink','lightblue'].includes(planCol(s)))v-=10;return v+(ctx?(sockPatterned(s)?sockPatScore(s,ctx).v:0)+sockDayScore(s,ctx):0)};
+/* (2026-11-17, the owner's answers on the sock review) a bright sock that is not a bold pattern (a plain or quiet-knit red, pink, purple,
+   gold, a vivid blue or rust, a light tan or khaki: sockBright) is marked down on a formal day, a wedding or a funeral like a bold pattern
+   (SOCK_FORMAL); burgundy, wine, navy, the grays, browns, olive and green are dark enough. And a sock's material follows the season
+   (SOCK_MAT: merino, wool and cashmere blends in the cold, cotton, bamboo and silk blends in the heat, +-SOCK_MAT_PTS; a sock with no
+   material, or another, is neutral; mild days neither) */
+const SOCK_BRIGHT_FAM=['red','pink','purple','gold'],SOCK_QUIET_FAM=['burgundy','black','charcoal','grey','navy','brown','olive','green'];
+const sockBright=s=>{const c=planCol(s),f=fam(c);if(SOCK_BRIGHT_FAM.includes(f))return true;const [L,a,b]=labOf(c),C=Math.hypot(a,b);
+  if(f!=='burgundy'&&C>40)return true;if(SOCK_QUIET_FAM.includes(f))return false;return L>62&&C>12};   // (a vivid rust or blue by its chroma; wine is a burgundy)
+const SOCK_MAT={cold:['merino wool','wool blend','cashmere blend'],warm:['cotton','mercerized cotton','bamboo','silk blend']},SOCK_MAT_PTS=2;
+const sockMatFit=(s,season)=>{const m=String(s&&s.material||'').toLowerCase().trim();if(!m||!SOCK_MAT[season])return 0;
+  return SOCK_MAT[season].includes(m)?SOCK_MAT_PTS:SOCK_MAT[season==='cold'?'warm':'cold'].includes(m)?-SOCK_MAT_PTS:0};
+const sockDayScore=(s,c)=>(sockFormalDay(c)&&!sockBold(s)&&sockBright(s)?-SOCK_FORMAL:0)+sockMatFit(s,c.season);
+/* ---- patterned socks (2026-11-17, the owner's sock patterns) ----
+   A bold sock (argyle, stripes, dots, another design: SOCK_BOLD) is one more pattern in the outfit: with two bold patterns above it already
+   (a patterned shirt and a busy tie) it costs SOCK_BUSY, and beside one of its own type it costs SOCK_SAME (same scale) or SOCK_NEAR. Its
+   second and third colours may pick up the tie (SOCK_ECHO_TIE: an argyle whose diamonds are the tie's burgundy) or the shirt's colour
+   (SOCK_ECHO_SHIRT; white and black left out). It is for casual days: chinos, jeans or a casual day SOCK_CASUAL, a suit SOCK_SUIT less; a
+   formal day, a wedding or a funeral takes plain dark socks (SOCK_FORMAL less for a bold one; the quiet knits are fine there). A quiet knit
+   (ribbed, birdseye, nailhead, herringbone, clock) reads plain from a step away: no pattern, no echo, no rule. Light socks with dark pants
+   stay the hard mistake they were (by the sock's ground colour). A plain sock is untouched: the plan of a wardrobe with only plain socks is
+   byte for byte the same (tests/dress.test.js GOLD) */
+const SOCK_BOLD={argyle:{type:'argyle',scale:2},stripe:{type:'stripe',scale:2},'polka-dot':{type:'motif',scale:1},other:{type:'motif',scale:2}};
+const SOCK_BUSY=14,SOCK_SAME=10,SOCK_NEAR=3,SOCK_ECHO_TIE=5,SOCK_ECHO_SHIRT=3,SOCK_CASUAL=4,SOCK_SUIT=3,SOCK_FORMAL=25;
+const sockBold=s=>sockPatterned(s)?SOCK_BOLD[patOf(s)]||null:null;
+const sockFormalDay=c=>!!c&&(c.formal||c.occasion==='formal'||c.occasion==='wedding'||c.occasion==='funeral');
+/* the patterned sock against its outfit: {v: points, why: [reasons], echo: 'tie'|'shirt'|'', clash: true when it makes a third pattern or
+   repeats one} */
+function sockPatScore(s,c){const b=sockBold(s),out={v:0,why:[],echo:'',clash:false};if(!b)return out;
+  const parts=[[c.top,'top'],[c.bot&&c.bot.type!=='suit'?c.bot:null,'bot'],[c.shirt,'shirt'],[c.tie,'tie']],P=patsOf(parts);
+  if(P.length>=2){out.v-=SOCK_BUSY;out.clash=true;out.why.push('patterned socks with two patterns above them')}
+  for(const [i,role] of parts){const p=patInfo(i,role);if(!p||p.type!==b.type)continue;
+    if(p.scale===b.scale){out.v-=SOCK_SAME;out.clash=true;out.why.push(`socks in the same kind of pattern as the ${({top:'jacket',bot:'pants'})[role]||role}`)}else out.v-=SOCK_NEAR}
+  const mine=[...colsOf(s).slice(1),...accFams(s)].filter(x=>x!=='white'&&x!=='black'),tieC=c.tie?[...colsOf(c.tie),...accFams(c.tie)]:[],shC=c.shirt?colsOf(c.shirt).filter(x=>x!=='white'):[];
+  if(mine.some(x=>tieC.includes(x))){out.v+=SOCK_ECHO_TIE;out.echo='tie'}else if(mine.some(x=>shC.includes(x))){out.v+=SOCK_ECHO_SHIRT;out.echo='shirt'}
+  if(sockFormalDay(c)){out.v-=SOCK_FORMAL;out.why.push(c.occasion==='funeral'?'a funeral calls for plain dark socks':c.occasion==='wedding'?'plain dark socks suit a wedding':'a formal day calls for plain dark socks')}
+  else if(c.occasion==='casual'||(c.bot&&c.bot.type==='pants'&&['chinos','jeans'].includes(trouserKind(c.bot))))out.v+=SOCK_CASUAL;
+  else if(c.bot&&c.bot.type==='suit')out.v-=SOCK_SUIT;
+  return out}
 
 /* ---- leather goods ----
    Belt and shoes must be the same colour group (black / brown / tan / burgundy-oxblood) and a compatible finish:
@@ -262,7 +302,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans the days after today (the week's locks and
    the app's own recorded pieces go; the owner's swaps and picks (force, skip, the vest) and a kept trip stay: replanFuture(true) in history.js) */
-const PLAN_RULES=24;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
+const PLAN_RULES=25;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 const FORMAL_QWIN=3;   // a formal day or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
 const TIE_CREEP=.03,TIE_CREEP_MAX=9;   // a tie's rest keeps creeping after 30 days, capped well under TIE_GAP so a tie never repeats for it
@@ -561,7 +601,8 @@ const shoes=take(pick&&pick.s),belt=take(pick&&pick.b),watch=take(pick&&pick.w);
 return {shoes,belt,watch,B}}
 /* socks, tie clip, cufflinks, pocket square and coat */
 function chooseAccessories(c,{top,bot,shirt,tie,shoes,belt,watch,vest}){const {day,force,lock,hpTop,rest,pool,best}=c;
-const socks=best(pool('socks','socks'),s=>sockScore(bot,shoes,s,sockEcho(shirt,tie)));
+const sctx={top,bot,shirt,tie,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null),season:day.clim&&day.clim.season};   // (a patterned sock's outfit: sockPatScore)
+const socks=best(pool('socks','socks'),s=>sockScore(bot,shoes,s,sockEcho(shirt,tie),sctx));
 const metalPref=c=>accMetal(c,tie,watch,belt);
 const clipPool=pool('tieclip','clip').filter(c=>force.clip===c.id||clipAllowed(c,watch,belt));
 const clip=vest||!tie?null:best(clipPool,metalPref);   // the vest holds the tie: no clip
@@ -672,6 +713,9 @@ function rateOutfit(o){
   {const P=patsOf([[top,'top'],[bot,'bot'],[shirt,'shirt'],[tie,'tie']]),hard=patsHard(P);let v=10,why='';
     if(P.length>=3){v=0;why='three bold patterns compete'}
     else if(P.length===2&&P[0].type===P[1].type){if(P[0].scale!==P[1].scale){v=8;why='two patterns of the same type (different scale)'}else{v=3;why='two patterns of the same type and scale'}}
+    // a bold patterned sock (2026-11-17) is one more pattern: a third one, or one repeating a pattern of the outfit, takes points, but is
+    // never a real mistake (socks show only when seated; the planner keeps them apart: sockPatScore)
+    if(v===10&&socks&&sockBold(socks)&&trousers){const sp=sockPatScore(socks,{top,bot:o.bot,shirt,tie});if(sp.clash){v=P.length>=2?4:5;why=sp.why[0]}}
     if(top||shirt||tie)add('Patterns',v,10,why,hard)}
   if(bot&&top){const list=BLAZER_TROUSERS[pcol(top)],hard=pantsAsJacket(top,bot);let v=10,why='';const k=list?list.indexOf(pcol(bot)):-1;
     if(hard){v=0;why='jacket and pants are the same color: neither a suit nor a contrast'}
@@ -704,6 +748,12 @@ function rateOutfit(o){
     else if(v0>=8||(shoes&&pcol(socks)===pcol(shoes)))v=5;
     else if(v0>=3){v=4;why=v0>=4?'socks pick up the shirt or tie rather than the pants':'socks are a neutral, not the pants\' color'}
     else{v=2;why='socks don\'t match the pants'}
+    // a bold patterned sock (2026-11-17): plain dark socks on a formal day, a wedding or a funeral; one whose pattern picks up the tie or
+    // the shirt is matched to the outfit, not the pants
+    if(!hard&&sockBold(socks)){const sp=sockPatScore(socks,{top,bot:o.bot,shirt,tie,formal:o.formal,occasion:o.occasion});
+      if(sockFormalDay(o)){v=Math.min(v,2);why=sp.why[sp.why.length-1]}else if(sp.echo&&v<5){v=5;why=''}}
+    // a bright plain sock (or quiet knit) on a formal day, a wedding or a funeral (the owner, 2026-11-17)
+    else if(!hard&&sockFormalDay(o)&&sockBright(socks)){v=Math.min(v,2);why=o.occasion==='funeral'?'a funeral calls for plain dark socks':o.occasion==='wedding'?'dark socks suit a wedding':'a formal day calls for plain dark socks'}
     add('Socks',v,5,why,hard)}
   {const main=[top,bot,shirt,tie].filter(Boolean).map(pcol),n=new Set(main).size,hard=!!(top&&shirt&&tie&&oneColor(top,shirt,tie));let v=5,why='';
     if(hard){v=0;why='jacket, shirt and tie are all one color'}else if(n>4){v=2;why='more than four main colors'}
@@ -752,24 +802,159 @@ function rateOutfit(o){
   const label=C.some(c=>c.label==='Complete outfit')?'Incomplete':score>=90?'Excellent':score>=80?'Very good':score>=70?'Good':score>=55?'Fair':'Needs work';
   return {score,label,checks:C,raw,hard:hard.map(c=>c.label)};
 }
-/* What the wardrobe could do better on this day, keeping the jacket: single swaps that raise the score.
-   pool(slot) -> the items that could be worn in that slot (app.js: slotPool). Returns
-   fixes: up to 3 swaps, best first [{slot, item, gain, score}] (new shoes bring their best belt);
-   best: the score reached by taking the best swap again and again (the wardrobe's best with this jacket);
-   stuck: the labels of the checks that lost points and that no single swap improves (the wardrobe can't do better there). */
-const ADVICE_SLOTS=['shirt','tie','bot','shoes','belt','socks','watch','clip','pocket'];
-function scoreAdvice(o,pool){
-  const swap=(cur,slot,it)=>{const a={...cur,[slot]:it};
-    if(slot==='shoes'){let bb=null,bf=-1;for(const b of pool('belt')){const f=beltFit(it,b);if(f!==null&&f>bf){bf=f;bb=b}}a.belt=bb}
-    return a};
-  const tries=cur=>{const out=[];for(const slot of ADVICE_SLOTS){if((slot==='bot'&&(cur.suitDay||cur.suitBot))||(slot==='clip'&&(cur.vest||!cur.tie))||(slot!=='clip'&&slot!=='belt'&&!cur[slot]))continue;
-    for(const it of pool(slot)){if(cur[slot]&&cur[slot].id===it.id)continue;const a=swap(cur,slot,it);out.push({slot,item:it,o:a,r:rateOutfit(a)})}}return out};
-  const base=rateOutfit(o),T=tries(o),seen={},fixes=[];
-  for(const t of T.filter(t=>t.r.score>base.score).sort((a,b)=>b.r.score-a.r.score||(a.item.id<b.item.id?-1:1))){if(seen[t.slot])continue;seen[t.slot]=1;fixes.push({slot:t.slot,item:t.item,gain:t.r.score-base.score,score:t.r.score})}
-  const stuck=base.checks.filter(c=>c.pts<c.max&&!T.some(t=>{const d=t.r.checks.find(x=>x.label===c.label);return d?d.pts>c.pts:false})).map(c=>c.label);
-  let cur=o,best=base.score;for(let n=0;n<6;n++){const b=(n?tries(cur):T).reduce((m,t)=>t.r.score>(m?m.r.score:best)?t:m,null);if(!b)break;cur=b.o;best=b.r.score}
-  return {score:base.score,fixes:fixes.slice(0,3),best,stuck};
-}
+/* ---- the score dials (2026-11-17, the owner's approved design: C:\code\audit-2026-11-13\score-ideas\score-dials.html) ----
+   Today's score card reads an outfit on five dials, 0-100 each: Harmony (the colors together), Texture (cloth surfaces and pattern
+   scales), Freshness (each piece's rest against how often its type comes round), Variety (the look against the last PAIR_DAYS workdays)
+   and Occasion (the right polish for the day). rateOutfit's pass/fail checks were nearly always 99-100 on a planned day (the planner
+   optimizes them); the dials read continuous values (lightness gaps, rest ratios) instead. Display only: the planner never reads them.
+   Each returns {v, why}: the value and one sentence. A broken rule (a hard check of rateOutfit) rings the dial it belongs to
+   (DIAL_OF_CHECK). dialLook (Harmony + Texture + Occasion) ranks the outfits a day allows (rankLooks, run in analysis-worker.js) */
+const dLin=(x,a,b)=>Math.max(0,Math.min(1,(x-a)/(b-a)));
+const DIAL_KEYS=['h','t','f','v','o'],DIAL_NAMES={h:'Harmony',t:'Texture',f:'Freshness',v:'Variety',o:'Occasion'};
+const DIAL_OF_CHECK={'Complete outfit':'o',Shirt:'h','Tie and shirt':'h','Tie and jacket':'h',Patterns:'t',Pants:'h',Shoes:'o',Belt:'o','Leather formality':'o',Socks:'h','Overall harmony':'h',Weather:'o',Variety:'v','Shirt and pants':'h'};
+/* the rules: rateOutfit's checks that can be broken, as the card names them ('Complete outfit' always counts; the others when the check applies) */
+const DIAL_RULES=[['Complete outfit','Complete outfit'],['Shirt','Shirt lighter than the jacket'],['Tie and shirt','Tie stands out from the shirt'],['Tie and jacket','Not a black tie on a black suit'],
+  ['Patterns','No clashing patterns'],['Pants','Pants unlike the jacket'],['Shoes','Shoes suit the pants'],['Belt','Belt matches the shoes'],['Leather formality','No patent leather by day'],
+  ['Socks','Socks not lighter than the pants'],['Overall harmony','Not all one color'],['Weather','Clothes suit the season']];
+const dCol=i=>i?colName(spokenCol(i)):'';
+const dJacket=o=>o.top&&o.top.type==='suit'?'suit':'jacket';
+const dPiece=(i,o)=>!i?'':i===o.top?dJacket(o):i.type==='pants'||(o.bot===i&&i.type==='suit')?'pants':i.type==='tie'?'tie':i.type==='shirt'?'shirt':(TYPES[i.type]||i.type).toLowerCase();
+/* how much an item's surface catches the light (0 smooth worsted, poplin or silk; 1 a knit or grenadine tie, tweed): its weave pattern or
+   its material, whichever is rougher. Items with no material count as smooth */
+const SURF_PAT={knit:1,tweed:1,woven:.7,'royal-oxford':.55,oxford:.5,textured:.5,'fine-texture':.4,chambray:.4,'end-on-end':.4,herringbone:.45,birdseye:.4,nailhead:.4,sharkskin:.35,dobby:.35,pinpoint:.3,twill:.2};
+const SURF_MAT={tweed:1,corduroy:.9,seersucker:.8,velvet:.8,flannel:.7,linen:.7,'linen blend':.6,denim:.6,'stretch denim':.6,hopsack:.5,'camel hair':.5,moleskin:.5,cashmere:.35,'mohair blend':.35,'tropical wool':.15};
+const SURF_TIE={grenadine:1,wool:.8,'wool blend':.7,cashmere:.8,linen:.8,cotton:.5,shantung:.6};
+const surfOf=i=>{if(!i)return 0;const m=String(i.material||'').toLowerCase().trim();return Math.max(SURF_PAT[patOf(i)]||0,(i.type==='tie'&&SURF_TIE[m])||SURF_MAT[m]||0)};
+const surfWord=i=>{const m=String(i.material||'').toLowerCase().trim(),p=patOf(i);return (i.type==='tie'&&SURF_TIE[m])||SURF_MAT[m]?m:SURF_PAT[p]?patName(p):''};
+/* Harmony: shirt against the jacket, tie against shirt and jacket, and the rest (pants, pocket square, socks, metals, how many colors).
+   core: leave out the pieces the rank doesn't choose (pocket square, socks, tie clip) */
+/* calibration: a dial's raw share is stretched down from the top (100 - (100 - raw) * k), so a planned month on a realistic wardrobe spreads
+   over about 40-100 instead of 80-100 (measured on tests/run.js's realistic and awkward wardrobes, November 2026: DIAL_K) */
+const DIAL_K={h:2,o:1.8,f:1.4};
+const dStretch=(raw,k)=>Math.round(Math.max(0,Math.min(100,100-(100-raw)*k)));
+/* a dial's parts: [weight, 0-1, good words, weak words] (the words are functions, made only for the card, never in a rank run: fast);
+   its value and its reasons (the weakest part under .6, else the strongest) */
+function dialSum(P,k,fast){if(!P.length)return {v:0,why:''};let W=0,S=0;for(const p of P){W+=p[0];S+=p[0]*p[1]}const v=dStretch(100*S/W,k);if(fast)return {v};
+  let lo=P[0],hi=P[0];for(const p of P){if(p[1]<lo[1])lo=p;if(p[0]*p[1]>hi[0]*hi[1])hi=p}
+  const weak=lo[1]<.6?lo[3]():'',good=hi[2]();return {v,why:sentence((weak||good)+'.'),good:sentence(good),weak}}
+function dialHarmony(o,core){const {top,shirt,tie}=o,bot=o.suitDay?null:o.bot,P=[],jw=top&&dJacket(o);
+  if(shirt&&top){const dk=darkUnderLight(top,shirt),g=dk?dLin(LUM(top)-LUM(shirt),20,110):dLin(LUM(shirt)-LUM(top),0,150);let v=.65*g+.35*dLin(shirtScore(top,shirt),-15,5);
+    if(shirtJacketHard(top,shirt))v=Math.min(v,.1);P.push([25,v,()=>`the ${dCol(shirt)} shirt stands clear of the ${dCol(top)} ${jw}`,()=>`the ${dCol(shirt)} shirt sits close to the ${dCol(top)} ${jw}`])}
+  else if(shirt&&o.bot&&!top){const v=pcol(shirt)===pcol(o.bot)?.1:dLin(Math.abs(LUM(shirt)-LUM(o.bot)),10,120);P.push([25,v,()=>`the ${dCol(shirt)} shirt stands clear of the ${dCol(o.bot)} pants`,()=>`the ${dCol(shirt)} shirt sits close to the ${dCol(o.bot)} pants`])}
+  if(shirt&&tie){const d=darkShirt(shirt)?tieLum(tie)-LUM(shirt):LUM(shirt)-tieLum(tie),raw=planCol(shirt),ts=TIE_ON_SHIRT[raw]||TIE_ON_SHIRT[pcol(shirt)];
+    let fit=raw==='white'?.85:darkShirt(shirt)?.7:ts?(ts.includes(pcol(tie))?1:.35):.7;if(raw==='pink'&&['red','pink'].includes(pcol(tie)))fit=.1;
+    const c=dLin(d,10,120);let v=.65*c+.35*fit;if(tieShirtHard(shirt,tie))v=Math.min(v,.1);
+    P.push([25,v,()=>`the ${dCol(tie)} tie stands out well on the ${dCol(shirt)} shirt`,()=>c<=fit?`the ${dCol(tie)} tie is close in lightness to the ${dCol(shirt)} shirt`:`${dCol(tie)} is an unusual tie color on a ${dCol(shirt)} shirt`])}
+  if(tie&&top){const tc=pcol(top),xc=pcol(tie),acc=colsOf(tie).slice(1),echo=acc.length>0&&acc.some(c=>colsOf(shirt).includes(c)||colsOf(top).includes(c));
+    const base=xc===tc?(blackOnBlack(top,tie,o.occasion)?0:pw(tie)>0||LUM(tie)<LUM(top)-15?.6:.3):!HARM[tc]?.75:HARM[tc].includes(xc)?1:.4;
+    const v=Math.min(1,.6*base+.25*dLin(Math.abs(LUM(tie)-LUM(top)),5,90)+(echo?.25:.1));
+    P.push([22,v,()=>echo?`the ${dCol(tie)} tie picks up a color of the ${xc===tc?'shirt':jw}`:`${dCol(tie)} is a good partner for the ${dCol(top)} ${jw}`,()=>xc===tc?`the ${dCol(tie)} tie sits close to the ${dCol(top)} ${jw} and fades into it`:`${dCol(tie)} is not a classic partner for a ${dCol(top)} ${jw}`])}
+  if(bot&&top)P.push([12,dLin(pairScore(top,bot),-20,14),()=>`the ${dCol(bot)} pants suit the ${dCol(top)} jacket`,()=>`the ${dCol(bot)} pants are a weak match for the ${dCol(top)} jacket`]);
+  if(!core&&o.pocket&&top){const p=o.pocket,e=psEcho(p,top,shirt,tie);P.push([6,psSameTie(p,tie)?.1:e.hit?1:psWhite(p)?.85:.4,()=>'the pocket square picks up the outfit',()=>'the pocket square picks up no color of the outfit'])}
+  // socks: the planner's sockScore (the pants' color, a patterned pair's rules), and a patterned pair's second or third color picking up the
+  // shirt, tie or jacket (2026-11-17, with the sock patterns: colsOf(s).slice(1))
+  if(!core&&o.socks&&(o.bot||top)){const s=o.socks,acc=colsOf(s).slice(1),echo=acc.length>0&&acc.some(c=>colsOf(shirt).includes(c)||colsOf(tie).includes(c)||colsOf(top).includes(c));
+    P.push([5,Math.min(1,dLin(sockScore(o.bot||top,o.shoes,s,sockEcho(shirt,tie),{top,bot:o.bot||top,shirt,tie,formal:!!o.formal,occasion:o.occasion,season:o.clim&&o.clim.season}),-10,10)+(echo?.25:0)),()=>echo?'the socks pick up a color of the outfit':'the socks continue the pants',()=>'the socks don\'t continue the pants'])}
+  {const a=o.watch&&metalOf(o.watch),b=o.belt&&metalOf(o.belt),c=!core&&o.clip&&metalOf(o.clip),ms=[a,b,c].filter(Boolean);if(ms.length>=2)P.push([5,ms.every(x=>ms.every(y=>metalSame(x,y)))?1:.3,()=>'the metals agree',()=>'the metals differ'])}
+  {const main=[top,bot,shirt,tie].filter(Boolean).map(pcol),n=new Set(main).size;if(main.length)P.push([8,top&&shirt&&tie&&oneColor(top,shirt,tie)?0:n<=3?1:n===4?.8:.4,()=>'the colors are few and clear',()=>'too many colors compete'])}
+  return dialSum(P,DIAL_K.h,core)}
+/* Texture: how the cloth surfaces differ (a knit tie on smooth worsted high, all smooth low) and how the patterns sit together (two of one
+   kind at the same scale low, patternScore's rule); fast: the value only (a rank run) */
+function dialTexture(o,fast){const parts=[[o.top,'top'],[o.suitDay?null:o.bot,'bot'],[o.shirt,'shirt'],[o.tie,'tie']].filter(p=>p[0]);if(!parts.length)return {v:0,why:''};
+  let hi=null,lo=null,hs=-1,ls=2;for(const [i] of parts){const s=surfOf(i);if(s>hs){hs=s;hi=i}if(s<ls){ls=s;lo=i}}
+  let camo=false;const B=[];for(const [i,r] of parts){const p=patInfo(i,r);if(!p)continue;if(p.type==='camo'){if(camo)continue;camo=true}B.push({i,p})}
+  // a bold pair of socks (argyle, stripes, dots: sockBold) is one more pattern; the quiet knits (ribbed, birdseye, herringbone…) count as plain
+  {const sb=o.socks&&sockBold(o.socks);if(sb)B.push({i:o.socks,p:sb})}
+  const n=B.length,a=n&&B[0].p,b=n>1&&B[1].p,pat=n>=3?-40:n===2?(a.type===b.type?(a.scale===b.scale?-30:6):(a.scale===b.scale?16:24)):n===1?18:0;
+  const v=Math.round(Math.max(0,Math.min(100,42+40*(hs-ls)+20*hs+pat)));if(fast)return {v};
+  const nmP=x=>`${patName(patOf(x.i))} ${dPiece(x.i,o)}`;
+  const pw2=n>=3?'Three bold patterns compete.':n===2?(a.type===b.type?(a.scale===b.scale?`The ${nmP(B[0])} and the ${nmP(B[1])} are the same kind of pattern at the same scale: they compete.`:`The ${nmP(B[0])} and the ${nmP(B[1])} share a kind of pattern at different scales.`)
+    :`The ${nmP(B[0])} and the ${nmP(B[1])} differ in kind${a.scale===b.scale?'':' and scale'}, so they sit well together.`):n===1?`The ${nmP(B[0])} ${B[0].i.type==='socks'||dPiece(B[0].i,o)==='pants'?'are':'is'} the one pattern, against plain cloth.`:'';
+  let why;if(pat<0)why=pw2;else if(hs>=.4&&hs-ls>=.3)why=`The ${surfWord(hi)} ${dPiece(hi,o)} catches the light against the smooth ${dPiece(lo,o)}.`+(pw2?' '+pw2:'');
+  else if(!n&&hs<.3)why='Smooth cloth throughout and no pattern: nothing catches the light differently.';else why=pw2+(hs<.3?' A textured tie or shirt would add depth.':'');
+  return {v,why:why.trim()}}
+/* Occasion: the right polish for the day: the shoes (finish, style, color for the pants), the belt, the tie and jacket (an occasion's own
+   rules on a formal day, a wedding or a funeral), and the season of what is worn; fast: the value only */
+function dialOccasion(o,fast){const {top,shirt,tie,shoes,belt}=o,legs=o.bot||top,P=[],s=o.clim&&o.clim.season,occ=OCC[o.occasion]?o.occasion:null,formal=!!o.formal||o.occasion==='formal',sd=!!o.suitDay;
+  if(shoes){const st=shoeStyle(shoes),fit=legs?SHOE_FIT[st][shoeCtx(legs)]:0,f=finish(shoes.leather),w=()=>`${dCol(shoes)} ${f==='suede'?'suede ':f==='grain'?'grain ':''}${st==='oxford'?'oxfords':typeWord(shoes)}`;
+    P.push([20,dLin(shoeFormality(shoes,sd)+fit,-30,2),()=>`${w()} have the right polish`,()=>`${w()} are a step down for ${sd?'a suit':'the outfit'}`]);
+    if(legs){const k=(SH[pcol(legs)]||['black','brown']).indexOf(pcol(shoes));P.push([18,shoeClash(top,shoes)||!shoeSuits(top,legs,shoes)?0:k<0?.4:[1,.85,.7,.55][k]??.5,()=>`${dCol(shoes)} shoes suit the ${dCol(legs)} ${sd?'suit':'pants'}`,()=>`${dCol(shoes)} shoes don't suit the ${dCol(legs)} ${sd?'suit':'pants'}`])}}
+  if(shoes&&belt&&shoeStyle(shoes)!=='sneaker'){const f=beltFit(shoes,belt);P.push([10,f===null?0:f>0?1:.65,()=>'the belt matches the shoes',()=>`a ${dCol(belt)} belt with ${dCol(shoes)} shoes`])}
+  if(tie){const v=formal?dLin(formalTie(tie),-15,3):occ?dLin(OCC[occ].tie(tie),-25,10):dLin(formalTie(tie),-12,3);P.push([14,v,()=>`the ${dCol(tie)} tie suits the day`,()=>`the ${dCol(tie)} tie is a touch casual for the day`])}
+  if(top){const v=formal?dLin(formalTop(top),-25,30):occ?dLin(occTop(occ,top,s),-30,30):sd?dLin(formalTop(top),-25,30):.85;P.push([14,v,()=>`the ${dCol(top)} ${dJacket(o)} suits the day`,()=>`the ${dCol(top)} ${dJacket(o)} is less formal than ${sd?'a suit day':'the day'} wants`])}
+  if(shirt&&(formal||occ)){const v=formal?dLin(formalShirt(shirt),-14,10):dLin(OCC[occ].shirt(shirt),-20,10);P.push([10,v,()=>`the ${dCol(shirt)} shirt suits the day`,()=>`the ${dCol(shirt)} shirt is not the shirt for the day`])}
+  if(s){let f=0,bad=null;for(const i of [top,sd?null:o.bot,shirt,tie]){if(!i)continue;const x=seasonFit(i,s);if(x<f){f=x;bad=i}}
+    P.push([16,f<=-15?0:f<0?.65:1,()=>`the cloth suits a ${s} day`,()=>bad?`the ${dCol(bad)} ${dPiece(bad,o)} is ${itemSeason(bad)}-weather cloth on a ${s} day`:''])}
+  const r=dialSum(P,DIAL_K.o,fast);if(fast||!r.why)return r;
+  const lead=formal?'A formal day: ':occ==='funeral'?'A funeral: ':occ==='wedding'?'A wedding: ':o.occasion==='casual'?'A day without a jacket: ':'';
+  return lead?{...r,why:lead+lowFirstD(r.why)}:r}
+const lowFirstD=t=>t?t[0].toLowerCase()+t.slice(1):t;
+/* Freshness: each piece's rest (o[slot].rest, days since it was last worn, as the planner counts it, at most 60) against how often its
+   type comes round (cyc(type): the calendar days a piece of that type usually waits, from how many are in rotation) */
+function dialFreshness(o,cyc){const P=[[o.top,30],[o.suitDay?null:o.bot,10],[o.shirt,25],[o.tie,25],[o.shoes,10]].filter(([i])=>i&&typeof i.rest==='number');
+  if(!P.length)return {v:100,why:'Every piece is fresh.'};
+  const r=P.map(([i,w])=>{const c=Math.max(1,cyc?cyc(i.type):7);return {i,w,q:Math.min(1,i.rest/c),c}});
+  const v=dStretch(100*r.reduce((a,x)=>a+x.w*x.q,0)/r.reduce((a,x)=>a+x.w,0),DIAL_K.f);
+  const days=n=>n>=60?'60+ days':n===1?'1 day':n+' days',clothes=r.filter(x=>x.i.type!=='shoes'),sh=r.find(x=>x.i.type==='shoes');
+  const why=clothes.map((x,k)=>k?`${dPiece(x.i,o)} ${days(x.i.rest)}`:`${sentence(dPiece(x.i,o))} rested ${days(x.i.rest)}`).join(', ')+'.'+(sh?` Shoes ${days(sh.i.rest)}.`:'');
+  const most=r.filter(x=>x.i.type!=='shoes').reduce((m,x)=>!m||x.i.rest/x.c>m.i.rest/m.c?x:m,null);
+  return {v,why,most:most&&{piece:`${dCol(most.i)} ${dPiece(most.i,o)}`,rest:most.i.rest}}}
+/* Variety: the look against the latest workdays before it (recent: [{d, o}], latest first, at most PAIR_DAYS): the same shirt color with
+   the same tie (the planner's pairRepeat), the same jacket, tie or look soon after, a run of one shirt color; each costs less the further back */
+const dWhen=(d,i)=>`${i===0?'the workday before':i===1?'two workdays ago':`${i+1} workdays ago`}`+(d?` (${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})})`:'');
+function dialVariety(o,recent){const {top,shirt,tie}=o;recent=(recent||[]).slice(0,PAIR_DAYS);let v=100,worst={p:0,why:''};
+  const hit=(p,why)=>{v-=p;if(p>worst.p)worst={p,why}};
+  const sg=shirt&&shirtGroup(shirt),jg=top&&jacketGroup(top),staple=sg==='white'||sg==='lightblue',sl=shirtLook(shirt),tl=tieLook(tie);
+  recent.forEach(({d,o:p},i)=>{if(!p)return;const fade=1-i/(PAIR_DAYS*1.6);
+    if(tie&&shirt&&p.tie&&p.shirt&&p.tie.id===tie.id&&shirtGroup(p.shirt)===sg)hit(34*fade,`You wore a ${dCol(shirt)} shirt with this ${dCol(tie)} tie ${dWhen(d,i)}.`);
+    else if(tie&&p.tie&&p.tie.id===tie.id&&i<3)hit(i?12:18,`The same tie as ${dWhen(d,i)}.`);
+    else if(tie&&p.tie&&tieGroup(p.tie)===tieGroup(tie))hit(i?2*fade:8,`${sentence(dCol(tie))} was the tie color ${dWhen(d,i)} too.`);
+    if(top&&p.top&&p.top.id===top.id&&i<5)hit((i?14:24)*(1-i/6),`The same ${dJacket(o)} as ${dWhen(d,i)}.`);
+    else if(top&&p.top&&jacketGroup(p.top)===jg&&i<2)hit(i?4:9,`A ${dCol(top)} ${dJacket(o)} ${dWhen(d,i)} too.`);
+    if(top&&p.top&&i<4&&jacketGroup(p.top)===jg&&shirtLook(p.shirt)===sl&&tieLook(p.tie)===tl)hit(20*(1-i/5),`The same look as ${dWhen(d,i)}: jacket color, shirt and tie.`);
+    if(shirt&&p.shirt&&shirtGroup(p.shirt)===sg)hit(staple?(i?.6:3):(i?2*fade:8),`A ${dCol(shirt)} shirt ${dWhen(d,i)} too.`)});
+  let run=0;for(const {o:p} of recent){if(p&&p.shirt&&shirt&&shirtGroup(p.shirt)===sg)run++;else break}
+  if(run>=2)hit((staple?4:7)*run,`A ${dCol(shirt)} shirt ${run+1} workdays running.`);
+  v=Math.round(Math.max(0,Math.min(100,v)));
+  return {v,why:worst.p>=3?worst.why:recent.length?`Nothing repeats from the last ${recent.length} workday${recent.length===1?'':'s'}.`:'Nothing to compare with yet.'}}
+/* the same shirt color and tie as one of the recent workdays (the calendar's gold border; the planner's pairRepeat rule, PAIR_DAYS window):
+   the index of that day in recent, or -1 */
+const pairSeen=(o,recent)=>{if(!o||!o.shirt||!o.tie)return -1;const sg=shirtGroup(o.shirt);return (recent||[]).slice(0,PAIR_DAYS).findIndex(x=>x&&x.o&&x.o.tie&&x.o.shirt&&x.o.tie.id===o.tie.id&&shirtGroup(x.o.shirt)===sg)};
+/* the look's rank value: Harmony + Texture + Occasion (Freshness and Variety stay out, or the planned outfit would always be first) */
+const dialLook=o=>dialHarmony(o,true).v+dialTexture(o,true).v+dialOccasion(o,true).v;
+/* Rank the outfits a day allows (the score card's "38th best of 296 outfits today"): every jacket of the day's kind in rotation x pants
+   (the suit's own on a suit day) x shirt x tie, the shoes, belt and watch chosen for each jacket and pants as the planner's chooseLeather
+   does (without rest); only the combinations that break no rule count (clothesHard, shoes that suit, the season). pools: {top, bot, shirt,
+   tie, shoes, belt, watch} item lists; cur: the day's outfit (with suitDay, clim, formal, occasion). Returns {n, rank, swaps: [{slot, id,
+   rank, fix}]}: single swaps (shirt, tie, pants, shoes, belt) that rank higher, or with a broken rule those that mend it. Runs in
+   analysis-worker.js (history.js rankFor) */
+function rankLooks(pools,cur){return withColRun(()=>{const t0=Date.now(),sd=!!cur.suitDay,day={formal:!!cur.formal,occ:cur.occasion&&cur.occasion!=='formal'?cur.occasion:null,clim:cur.clim||{season:'mild'}};
+  const base={suitDay:sd,clim:cur.clim,formal:cur.formal,occasion:cur.occasion},S=pools.shoes||[],B=pools.belt||[],W=pools.watch||[],s=day.clim.season;
+  const shoeOk=(t,b)=>!S.length||S.some(x=>finish(x.leather)!=='patent'&&shoeSuits(t,b,x));
+  const lmemo=new Map(),leather=(t,b)=>{const k=(t?t.id:'-')+'|'+(b?b.id:'-');let r=lmemo.get(k);if(r)return r;let pick=null;
+    for(const x of S.length?S:[null])for(const be of [...B,null])for(const w of W.length?W:[null]){let v=0;
+      if(x){const ss=shoeScore(t,b,x);v+=ss-(ss<=SHOE_LINE?NO_SHOES:0)+shoeFormality(x,sd);if(day.clim.rain&&finish(x.leather)==='suede')v-=RAIN_SUEDE}
+      if(be){if(!x)continue;const f=beltFit(x,be);if(f===null)continue;v+=12+f}else if(B.length&&x)v-=30;
+      if(w)v+=watchFit(w,x,be)*SHOE_WATCH;if(!pick||v>pick.v)pick={v,shoes:x,belt:be,watch:w}}
+    r=pick||{shoes:null,belt:null,watch:null};lmemo.set(k,r);return r};
+  const seasonBad=o=>!!s&&[o.top,o.suitDay?null:o.bot,o.shirt,o.tie].some(i=>i&&seasonFit(i,s)<-10);
+  const hard=o=>clothesHard(o.top,sd?o.top:o.bot,o.shirt,o.tie,sd,day,shoeOk)||(o.shoes&&(o.bot||o.top)&&!shoeSuits(o.top,o.bot||o.top,o.shoes))||(o.shoes&&finish(o.shoes.leather)==='patent')||(o.shoes&&o.belt&&beltFit(o.shoes,o.belt)===null)||seasonBad(o);
+  const tops=cur.top?(pools.top&&pools.top.length?pools.top:[cur.top]):[null],ties=cur.tie?(pools.tie&&pools.tie.length?pools.tie:[cur.tie]):[null],shirts=cur.shirt?(pools.shirt&&pools.shirt.length?pools.shirt:[cur.shirt]):[null];
+  const bots=t=>sd?[t]:cur.bot?(pools.bot&&pools.bot.length?pools.bot:[cur.bot]):[null];
+  const scores=[];
+  for(const t of tops)for(const b of bots(t)){const L=leather(t,b);for(const sh of shirts)for(const x of ties){const o={...base,top:t,bot:b,shirt:sh,tie:x,shoes:L.shoes,belt:L.belt,watch:L.watch};
+    if(hard(o))continue;scores.push(dialLook(o))}}
+  scores.sort((a,b)=>b-a);const above=v=>{let lo=0,hi=scores.length;while(lo<hi){const m=(lo+hi)>>1;if(scores[m]>v+1e-9)lo=m+1;else hi=m}return lo};
+  const strip=o=>({...base,top:o.top,bot:o.bot,shirt:o.shirt,tie:o.tie,shoes:o.shoes,belt:o.belt,watch:o.watch});
+  const me=strip(cur),meV=dialLook(me),rank=above(meV)+1,broken=typeof rateOutfit==='function'?rateOutfit(cur).hard:[],swaps=[];
+  const trySwap=(slot,it)=>{const a={...cur,[slot]:it};if(slot==='shoes'){let bb=null,bf=-1;for(const be of B){const f=beltFit(it,be);if(f!==null&&f>bf){bf=f;bb=be}}a.belt=bb}
+    const fixes=broken.length>0&&!rateOutfit(a).hard.length,okA=!hard(strip(a));if(!okA&&!fixes)return;const r=above(dialLook(strip(a)))+1;
+    if(broken.length?fixes:r<rank)swaps.push({slot,id:it.id,rank:r,fix:broken.length>0})};
+  for(const slot of ['shirt','tie','bot','shoes','belt','socks']){if(slot==='bot'&&(sd||cur.suitBot))continue;if(slot!=='belt'&&slot!=='socks'&&!cur[slot])continue;if((slot==='belt'||slot==='socks')&&!broken.length)continue;
+    for(const it of pools[slot]||[]){if(cur[slot]&&cur[slot].id===it.id)continue;trySwap(slot,it)}}
+  const seen={},best=[];for(const w of swaps.sort((a,b)=>a.rank-b.rank||(a.id<b.id?-1:1))){if(seen[w.slot])continue;seen[w.slot]=1;best.push(w)}
+  // (the day's own outfit counts among them when it breaks no rule: its shoes or belt may differ from those chosen above)
+  return {n:broken.length?scores.length:Math.max(scores.length,rank),rank,look:meV,broken,swaps:best.slice(0,3),ms:Date.now()-t0}})}
 /* A saved day: past days (and any day marked worn) are frozen to what was shown, so wardrobe changes never rewrite history.
    Rotation counts frozen days unless they're marked "didn't wear". */
 function frozenOutfit(rec,n,last){

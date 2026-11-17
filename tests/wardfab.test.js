@@ -41,14 +41,25 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       const fo=await p.evaluate(()=>{const b=document.querySelector('#ward-add'),cs=getComputedStyle(b);return {act:document.activeElement===b,ring:cs.outlineStyle+' '+cs.outlineWidth}});
       ok(fo.act&&/solid 3px/.test(fo.ring),`  it takes the keyboard focus, with a ring (${fo.ring})`);
       await p.evaluate(()=>document.activeElement.blur());
-      // a toast with Undo sits above the button, not over it (2026-11-17); on Today it stays at its place above the tab bar
-      const tst=()=>p.evaluate(()=>{toast('Deleted Navy suit.',8000,{label:'Undo',fn:()=>{}});const t=document.querySelector('#toast').getBoundingClientRect(),b=document.querySelector('#ward-add').getBoundingClientRect(),nav=document.querySelector('body>nav').getBoundingClientRect();
-        return {tb:t.bottom,tr:t.right,tl:t.left,ft:b.top,fl:b.left,navTop:nav.top}});
-      let ts=await tst();
-      ok(ts.tb<=ts.ft-8,`  a toast with Undo sits above the button (toast bottom ${Math.round(ts.tb)}, button top ${Math.round(ts.ft)})`);
-      await p.click('#n-today');await settle(p,400);ts=await tst();
-      ok(ts.tb>=ts.navTop-20,`  on Today it is just above the tab bar as before (${Math.round(ts.navTop-ts.tb)}px above)`);
-      await p.click('#n-wardrobe');await settle(p,400);await p.evaluate(()=>{const t=document.querySelector('#toast');t.classList.remove('on')});
+      // an Undo on the Wardrobe is a round button above the + with a gold ring running down (2026-11-17, the owner's pick); a plain toast
+      // sits above the + too; on Today an Undo stays the toast above the tab bar
+      const und=()=>p.evaluate(async()=>{window.__u=0;toast('Deleted Navy suit',8000,{label:'Undo',fn:()=>{window.__u++}});await new Promise(r=>setTimeout(r,350));const u=document.querySelector('#undo-fab'),r=u.getBoundingClientRect(),b=document.querySelector('#ward-add').getBoundingClientRect(),cs=getComputedStyle(u),ring=getComputedStyle(u.querySelector('.ufc'));
+        return {shown:cs.display!=='none'&&r.width>0,w:r.width,h:r.height,rad:cs.borderRadius,ub:r.bottom,ux:r.left+r.width/2,bx:b.left+b.width/2,bt:b.top,label:u.getAttribute('aria-label'),toastOn:document.querySelector('#toast').classList.contains('on'),anim:ring.animationName,dur:ring.animationDuration,txt:u.textContent.trim()}});
+      let u=await und();
+      ok(u.shown&&u.w===56&&u.h===56&&u.rad==='50%'&&u.txt==='Undo'&&!u.toastOn,`  an Undo is a round 56px "Undo" button, not the toast (${u.w}×${u.h}, toast ${u.toastOn?'on':'off'})`);
+      ok(u.ub<=u.bt-14&&Math.abs(u.ux-u.bx)<=1,`  it floats above the +, centered on it (${Math.round(u.bt-u.ub)}px above)`);
+      ok(u.anim==='ufRun'&&u.dur==='8s'&&u.label==='Undo: Deleted Navy suit',`  its ring runs down the 8 seconds; its label says what it undoes (${u.anim} ${u.dur}, "${u.label}")`);
+      if(WK)await p.click('#undo-fab');else{const c=await ctx.newCDPSession(p);await c.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:u.ux,y:u.ub-28}]});await c.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]})}
+      await settle(p,300);
+      ok(await p.evaluate(()=>window.__u===1&&getComputedStyle(document.querySelector('#undo-fab')).display==='none'),'  a tap undoes once and the button goes');
+      await p.evaluate(()=>{toast('Deleted Navy suit',300,{label:'Undo',fn:()=>{}})});await p.waitForTimeout(8400);
+      ok(await p.evaluate(()=>getComputedStyle(document.querySelector('#undo-fab')).display==='none'),'  left alone, it goes after 8 seconds, leaving the +');
+      const ts=await p.evaluate(()=>{toast('Saved.');const t=document.querySelector('#toast').getBoundingClientRect(),b=document.querySelector('#ward-add').getBoundingClientRect();return {tb:t.bottom,ft:b.top}});
+      ok(ts.tb<=ts.ft-8,`  a plain toast sits above the + (toast bottom ${Math.round(ts.tb)}, button top ${Math.round(ts.ft)})`);
+      await p.click('#n-today');await settle(p,400);
+      const td=await p.evaluate(()=>{toast('Deleted Navy suit',8000,{label:'Undo',fn:()=>{}});const t=document.querySelector('#toast'),nav=document.querySelector('body>nav').getBoundingClientRect();return {on:t.classList.contains('on'),btn:!!t.querySelector('button'),gap:nav.top-t.getBoundingClientRect().bottom,fab:getComputedStyle(document.querySelector('#undo-fab')).display}});
+      ok(td.on&&td.btn&&td.gap<=20&&td.fab==='none',`  on Today an Undo is the toast above the tab bar, as before (${Math.round(td.gap)}px above)`);
+      await p.evaluate(()=>{toastDrop();document.querySelector('#toast').classList.remove('on')});await p.click('#n-wardrobe');await settle(p,400);
       // hidden under the item sheet, Settings and What to buy
       await p.evaluate(()=>openItem(items[3].id));await settle(p,600);
       ok(!(await fab()).shown,'  hidden while the item sheet is open');

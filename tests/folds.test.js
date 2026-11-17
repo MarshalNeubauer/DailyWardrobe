@@ -18,7 +18,7 @@ const boxfold=async({ok,chromium,url,settle})=>{
     let cdp=null;try{cdp=await ctx.newCDPSession(p);await cdp.send('Performance.enable')}catch{cdp=null}   // the layout count is Chromium's (CDP); on WebKit (npm run test:webkit) it isn't counted
     const lay=async()=>cdp?(await cdp.send('Performance.getMetrics')).metrics.find(m=>m.name==='LayoutCount').value:0;
     const laid=n=>cdp?`${n} times`:'(not counted on WebKit)';
-    for(const [name,id,toggle,items] of [['score','#sbox','toggleScore','#spanel li'],['pieces list','#ibox','toggleList','#ipanel .list>*']]){
+    for(const [name,id,toggle,items] of [['score','#sbox','toggleScore','#spanel .sli'],['pieces list','#ibox','toggleList','#ipanel .list>*']]){
       await p.evaluate(()=>scrollTo(0,0));await settle(p,300);
       const l0=await lay();
       const u=await p.evaluate(([id,toggle])=>{window[toggle]();const b=$(id);return {clip:b.getAnimations({subtree:true}).some(a=>a.effect.target.closest('.fedge'))&&!b.getAnimations().some(a=>a.effect.getKeyframes()[0].clipPath),trans:getComputedStyle(b.querySelector('.mpanel')).transitionDuration}},[id,toggle]);
@@ -140,7 +140,7 @@ const foldtap=async({ok,chromium,url,settle})=>{
     ok(b1&&!(await open('#bbox'))&&await p.evaluate(()=>belowOpen===null),'a tile\'s photo folds when the photo is tapped');
     // score: a tap on the breakdown folds it
     await setup();await into('#sbox');await p.tap('#sbox .month-link');await settle(p,900);const s1=await open('#sbox');
-    await p.tap('#sbox li >> nth=1');await settle(p,700);
+    await p.tap('#sbox .sdl >> nth=1');await settle(p,700);
     ok(s1&&!(await open('#sbox'))&&await p.evaluate(()=>!scoreOpen&&document.querySelector('#sbox .month-link').getAttribute('aria-expanded')==='false'),'tapping the open score breakdown folds it');
     // month: a full-width fold bar along its bottom
     await setup({month:true});await into('#mbox');
@@ -200,7 +200,7 @@ const reveal=async({ok,chromium,url,settle})=>{
     ok(t.top>=6&&(bb.bottom<=nt-11||Math.abs(t.top-8)<=2),`a tile's photo: scrolls to show it, the tile row stops at the top at most (tiles top ${t.top}px, photo bottom ${bb.bottom}px)`);
     // already visible after unfolding: no scroll; folding never scrolls
     // (on a tall screen, where the open score box fits where it is; judged from where it would end with no scroll)
-    await p.setViewportSize({width:390,height:1600});await setup();
+    await p.setViewportSize({width:390,height:2600});await setup();
     const y0=await scrollY();await p.tap('#sbox .month-link');await settle(p,900);const s=await at('#sbox'),y2=await scrollY();
     const fits=s.bottom+(y2-y0)<=(await navTop())-12;
     ok(fits&&y2===y0,`a box that fits on screen once open does not scroll (fits: ${fits}, scrolled ${y2-y0}px)`);

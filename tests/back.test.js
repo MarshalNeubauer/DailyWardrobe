@@ -161,7 +161,7 @@ const nufix9=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.evaluate(()=>{closeItem();document.documentElement.style.removeProperty('--tscale')});await settle(p,300);
     // ---- a toast with a long unbroken name
     await p.setViewportSize({width:402,height:874});await settle(p,200);
-    const tb=await p.evaluate(()=>{toast('Deleted 🦚🦚🦚🦚🦚 '+'x'.repeat(60)+'.',8000,{label:'Undo',fn:()=>{}});const b=document.querySelector('#toast button').getBoundingClientRect();return b.left>=0&&b.right<=innerWidth});
+    const tb=await p.evaluate(()=>{show('today');toast('Deleted 🦚🦚🦚🦚🦚 '+'x'.repeat(60)+'.',8000,{label:'Undo',fn:()=>{}});const b=document.querySelector('#toast button').getBoundingClientRect();return b.left>=0&&b.right<=innerWidth});
     ok(tb,'a long unbroken name in a toast wraps and its Undo stays on the screen (half was off the edge)');
     ok(errs.length===0,'no page errors'+(errs.length?': '+errs[0]:''));
   }finally{await browser.close()}

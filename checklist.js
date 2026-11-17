@@ -21,8 +21,8 @@ function ckToggle(b,on){const s=b&&b.closest('.cks');if(!s)return;if(on===undefi
   s.classList.toggle('open',on);b.setAttribute('aria-expanded',String(on));CK_OPEN[s.dataset.scope+'|'+s.dataset.ck]=on;if(on)cmpMount(s)}
 /* the colors as a summary: a small chip of each and its name ("● Navy · ● white stripes") */
 const ckChip=c=>COLORS[c]?`<span class="ckchip" style="background:${COLORS[c]}"></span>`:'';
-function ckColSum(it,main){const a=[main,it.secondaryColor,it.tertiaryColor].filter(c=>c&&COLORS[c]),x=accentsOf(it);
-  return a.map((c,k)=>`<span class="ckcn">${ckChip(c)}${esc(k?colName(c).toLowerCase():cap1(colName(c)))}</span>`).join(' · ')+(x.length?`<span class="ckcn ckalso"> · also ${esc(x.map(c=>colName(c).toLowerCase()).join(', '))}</span>`:'')}
+function ckColSum(it,main){const sk=it&&it.type==='socks',a=(sk&&!sockPatterned(it)?[main]:[main,it.secondaryColor,it.tertiaryColor]).filter(c=>c&&COLORS[c]),x=accentsOf(it),toe=sk&&sockToeKey(it);   // (a sock's toe cap said as such, 2026-11-17)
+  return a.map((c,k)=>`<span class="ckcn">${ckChip(c)}${esc(k?colName(c).toLowerCase():cap1(colName(c)))}</span>`).join(' · ')+(toe?` · <span class="ckcn">${ckChip(toe)}${esc(colName(toe).toLowerCase())} toe</span>`:'')+(x.length?`<span class="ckcn ckalso"> · also ${esc(x.map(c=>colName(c).toLowerCase()).join(', '))}</span>`:'')}
 /* "Also has" under the colour rows (2026-11-16, accents: core.js accentsOf): a chip for each with × to take it off, and "Add a color" (the
    colour sheet, colpick.js accChoices) while there are fewer than ACCENT_MAX. On patterned cloth, or any item that has some. src 'q' (the
    Add card, ref its id) or 'e' (the item sheet, ref its id) */

@@ -200,7 +200,8 @@ const nufix7=async({ok,chromium,url,settle})=>{
     await quiet();
     ok(/\bskip\b/.test(m.skip)&&!/\bworn\b/.test(m.skip)&&/not worn/.test(m.skipLabel),`a day marked "Didn't" is not shown as worn in the month (${m.skip}; ${m.skipLabel})`);
     ok(!/\bworn\b/.test(m.pre)&&/\bworn\b/.test(m.worn),`a past workday before the wardrobe is not marked worn; a worn one is (${m.pre} / ${m.worn})`);
-    ok(/white & blue stripe shirt/i.test(m.line)&&/white & blue stripe shirt/i.test(m.rest),`a striped shirt is named with its pattern (${m.line} | ${m.rest})`);
+    // (its main colour and pattern since the title audit, 2026-11-17: it was "white & blue stripe shirt")
+    ok(/white stripe shirt/i.test(m.line)&&/white stripe shirt/i.test(m.rest),`a striped shirt is named with its pattern (${m.line} | ${m.rest})`);
     // ---- the month's drag preview keeps the days before the wardrobe empty
     ok(await p.evaluate(()=>{const pl=planWith({},2026,10);return !pl['2026-11-3']&&!!pl['2026-11-22']}),'the drag preview (planWith) has no outfits before the wardrobe existed');
     // ---- Insights

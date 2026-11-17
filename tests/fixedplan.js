@@ -1,10 +1,10 @@
 /* The fixed plan for tests (tests/run.js installs it in every test page unless the test file says `realPlanner`).
 
    Today, the month, the pieces list and the score card normally get their outfits from the planner (planner.js: planSim,
-   outfit, rateOutfit, scoreAdvice). A test of a swipe, a sheet or a layout doesn't need the planner's choices, only outfits
-   to show; but running the planner at start-up tied every such test to planner.js, so any planner change selected almost
-   the whole suite. With this, those tests get simple outfits made here, and app.js's seams (planMonth, scoreCard,
-   adviceFor, checkPlanRules) don't call the planner at all.
+   outfit, rateOutfit, the score dials and rankLooks). A test of a swipe, a sheet or a layout doesn't need the planner's choices,
+   only outfits to show; but running the planner at start-up tied every such test to planner.js, so any planner change selected
+   almost the whole suite. With this, those tests get simple outfits made here, and the app's seams (planMonth, the score card's
+   dialsFor and rankFor, the calendar's dayMarks, checkPlanRules) don't call the planner's scoring at all.
 
    The outfits: every workday gets a jacket, trousers, shirt, tie, shoes, belt, socks and watch, taken in turn from the
    pieces in rotation (sorted by id, the day number picking the piece), so the days differ. A day's record is honoured the
@@ -47,5 +47,8 @@ window.TEST_PLAN={
   // a score with a few checks, so the score card can be opened, tapped and folded like a real one (one check not at full marks)
   rate(){return {score:94,label:'Excellent',raw:94,hard:[],checks:[{label:'Colours',pts:10,max:10,why:'The colours work together.'},
     {label:'Patterns',pts:10,max:10,why:'One bold pattern at most.'},{label:'Shoes',pts:9,max:10,why:'These shoes suit the outfit.'},{label:'Belt',pts:5,max:5,why:'The belt matches the shoes.'}]}},
-  advice(){return {score:94,fixes:[],best:94,stuck:['Shoes']}}
+  // the score card's five dials (history.js dialsFor) and the day's rank (rankFor), fixed: no planner, no Web Worker
+  dials(){return {h:{v:88,why:'The colors work together.'},t:{v:64,why:'One pattern, against plain cloth.'},f:{v:91,why:'Every piece has rested.'},
+    v:{v:72,why:'Nothing repeats from the last 10 workdays.'},o:{v:83,why:'The right polish for the day.'},r:this.rate()}},
+  rank(){return {n:120,rank:3,swaps:[],look:240}}
 };

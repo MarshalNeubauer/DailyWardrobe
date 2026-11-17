@@ -1,8 +1,8 @@
 // The rebuilt outfit score. Points are lost for things that can be put right, not for taste; a real mistake (a check marked hard)
 // caps the score at 69 however well the rest matches; a missing piece reads "Incomplete"; new checks cover variety against the
-// last two workdays, a leather watch strap against the shoes and the weather. scoreAdvice() finds the single swaps that would
-// score higher, the wardrobe's best with the day's jacket, and the checks nothing owned improves; the score card shows them,
-// and a tap on a swap wears it. Stats: the score of what was really worn, week by week.
+// last two workdays, a leather watch strap against the shoes and the weather. The score card (five dials since 2026-11-17) rings
+// the dial a broken rule belongs to and offers the swap that mends it; a tap on it wears it. Stats: the score of what was really
+// worn, week by week.
 module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   const browser=await chromium.launch();
   try{
@@ -38,30 +38,23 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(S.strap.lost['Watch strap']==='4/5'&&!S.strapOk.lost['Watch strap'],`a brown leather watch strap with black shoes loses points (${S.strap.lost['Watch strap']}; 4/5 with a suit since fix round 3: formality wins), a black one doesn't`);
     ok(!S.var0.lost.Variety&&S.varTie.lost.Variety==='3/5'&&S.varLook.lost.Variety==='2/5'&&S.varShoes.lost.Variety==='4/5'&&!S.varShoesMon.lost.Variety,
       `variety: the same tie as the workday before ${S.varTie.lost.Variety}, the same look as two workdays ago ${S.varLook.lost.Variety}, yesterday's shoes ${S.varShoes.lost.Variety} (not after a weekend)`);
-    // ---- advice
-    const A=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      const br=I('suit','brown'),wh=I('shirt','white'),gr=I('tie','green'),bl=I('shoes','black',{leather:'calf'}),bn=I('shoes','brown',{leather:'calf'}),bb=I('belt','black',{leather:'calf',metal:'silver'}),bnb=I('belt','brown',{leather:'calf',metal:'silver'}),
-        so=I('socks','brown'),w=I('watch','silver',{metal:'silver'}),clip=I('tieclip','gold',{metal:'gold'});items=[br,wh,gr,bl,bn,bb,bnb,so,w,clip];
-      const o={suitDay:true,top:br,bot:br,shirt:wh,tie:gr,shoes:bl,belt:bb,socks:so,watch:w,clip,notes:[]},a=scoreAdvice(o,s=>items.filter(i=>i.type===SLOT_TYPE(s,true)));
-      return {score:a.score,best:a.best,fix:a.fixes.map(f=>f.slot+':'+f.item.primaryColor+':+'+f.gain),stuck:a.stuck.join()}});
-    ok(A.score<=69&&A.fix[0]&&/^shoes:brown:\+\d+/.test(A.fix[0])&&A.best>=90,`advice for a brown suit with black shoes: the brown pair first (${A.fix.join(', ')}), best ${A.best}`);
-    ok(A.stuck==='Metals','a check nothing owned improves is told apart (the only tie clip is gold, the watch silver)');
-    // ---- the card
+    // ---- the score card (five dials since 2026-11-17; tests/scoredials.test.js has the rest)
     await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};view={y:2026,m:10};const pl=planMonth(2026,10),k=Object.keys(pl).find(k=>keyDate(k)>=todayDate()&&pl[k].top&&items.some(s=>s.type==='shoes'&&shoeScore(pl[k].top,pl[k].bot||pl[k].top,s)<=-50));sel=keyDate(k);show('today')})()`);await settle(p,400);
-    const c0=await p.evaluate(()=>{const o=planFor()[key(sel)],r=rateOutfit(o);return {s:r.score,hard:r.hard.length,num:document.querySelector('#sbox .num').textContent,sub:document.querySelector('#sbox .lbl small').textContent,variety:r.checks.some(c=>c.label==='Variety')}});
-    ok(c0.hard===0&&c0.s>=90&&c0.num===String(c0.s)&&c0.variety,`the planned day scores ${c0.s} with no real mistake, and is checked for variety (${c0.sub})`);
-    // wear the wrong shoes by hand: the card says so and offers the way back
+    const c0=await p.evaluate(()=>{const o=planFor()[key(sel)],r=rateOutfit(o);return {s:r.score,hard:r.hard.length,dials:document.querySelectorAll('#sbox .dial').length,bad:document.querySelectorAll('#sbox .dial.d-bad').length,variety:r.checks.some(c=>c.label==='Variety')}});
+    ok(c0.hard===0&&c0.s>=90&&c0.dials===5&&!c0.bad&&c0.variety,`the planned day scores ${c0.s} with no real mistake (five dials, none ringed), and is checked for variety`);
+    // wear the wrong shoes by hand: the Occasion dial says so and the card offers the way back
     await p.evaluate(()=>{const o=planFor()[key(sel)],bad=items.filter(i=>i.type==='shoes').find(s=>shoeScore(o.top,o.bot||o.top,s)<=-50)||null;window.badShoes=bad&&bad.id;return bad&&pickItem('shoes',bad.id)});await settle(p,400);
-    const c1=await p.evaluate(()=>({has:!!window.badShoes,num:+document.querySelector('#sbox .num').textContent,low:document.querySelector('#sbox').classList.contains('low'),sub:document.querySelector('#sbox .lbl small').textContent,label:document.querySelector('#sbox .lbl b').textContent}));
-    ok(c1.has&&c1.num<=69&&c1.low&&/1 thing to put right/.test(c1.sub),`shoes that don't suit the suit, picked by hand: ${c1.num}, ${c1.label}, in red, "${c1.sub}"`);
+    const c1=await p.evaluate(()=>{const d=document.querySelector('#sbox .dial.d-bad');return {has:!!window.badShoes,bad:d?d.textContent:'',label:document.querySelector('#sbox .month-link').getAttribute('aria-label')}});
+    ok(c1.has&&/!Occasion/.test(c1.bad)&&/Occasion broken rule/.test(c1.label)&&/1 thing to fix/.test(c1.label),`shoes that don't suit the suit, picked by hand: the Occasion dial is ringed with "!" (${c1.label})`);
+    await p.waitForFunction(()=>document.querySelector('#sbox.ranked'),null,{timeout:10000}).catch(()=>{});
     await p.click('#sbox .month-link');await settle(p,900);
-    const c2=await p.evaluate(()=>({fix:[...document.querySelectorAll('#sbox .sfixbtn')].map(b=>b.textContent.trim()),h:[...document.querySelectorAll('#sbox .sfixbtn')].map(b=>Math.round(b.getBoundingClientRect().height)),hard:[...document.querySelectorAll('#sbox li.hard')].map(l=>l.textContent),cap:(document.querySelector('#sbox .scap')||{}).textContent||'',head:(document.querySelector('#sbox .sfix small')||{}).textContent||''}));
-    ok(c2.fix.length>=1&&/shoes/.test(c2.fix[0])&&/\+\d+/.test(c2.fix[0])&&c2.h.every(h=>h>=44)&&/put it right/.test(c2.head),`unfolded, it offers the swap that puts it right as a 44px row (${c2.fix[0]})`);
-    ok(c2.hard.length===1&&/Shoes/.test(c2.hard[0])&&/69 or below/.test(c2.cap),'the mistake is marked, and the card says why the score is held down');
-    await p.click('#sbox .sfixbtn');await p.waitForFunction(()=>+document.querySelector('#sbox .num').textContent>=90,null,{timeout:5000}).catch(()=>{});
-    const c3=await p.evaluate(()=>{const o=planFor()[key(sel)];return {num:+document.querySelector('#sbox .num').textContent,shoes:o.shoes.id!==window.badShoes,belt:!o.belt||beltFit(o.shoes,o.belt)!==null,open:document.querySelector('#sbox').classList.contains('open')}});
-    ok(c3.num>=90&&c3.shoes&&c3.belt&&c3.open,`a tap on it wears those shoes (the belt follows) and the score is back at ${c3.num}; the card stays open`);
-    // a tap on the breakdown still folds it; a tap on the advice row area doesn't
+    const c2=await p.evaluate(()=>({fix:[...document.querySelectorAll('#sbox .sfixbtn')].map(b=>b.textContent.trim()),h:[...document.querySelectorAll('#sbox .sfixbtn')].map(b=>Math.round(b.getBoundingClientRect().height)),rules:(document.querySelector('#sbox .srules')||{}).textContent||'',failed:[...document.querySelectorAll('#sbox .srl li.f')].map(l=>l.textContent)}));
+    ok(c2.fix.length>=1&&/^Fix it/.test(c2.fix[0])&&/shoes/i.test(c2.fix.join())&&c2.h.every(h=>h>=44),`unfolded, it offers the swap that puts it right as a 44px row (${c2.fix.join(' | ')})`);
+    ok(/1 thing to fix/.test(c2.rules)&&c2.failed.length===1,`the broken rule is said and marked in the rules (${c2.rules})`);
+    await p.evaluate(()=>{const b=[...document.querySelectorAll('#sbox .sfixbtn')].find(b=>/shoes/i.test(b.textContent));b.click()});
+    await p.waitForFunction(()=>!document.querySelector('#sbox .dial.d-bad'),null,{timeout:5000}).catch(()=>{});
+    const c3=await p.evaluate(()=>{const o=planFor()[key(sel)];return {bad:!!document.querySelector('#sbox .dial.d-bad'),shoes:o.shoes.id!==window.badShoes,belt:!o.belt||beltFit(o.shoes,o.belt)!==null,open:document.querySelector('#sbox').classList.contains('open'),hard:rateOutfit(o).hard.length}});
+    ok(!c3.bad&&c3.shoes&&c3.belt&&c3.open&&!c3.hard,'a tap on it wears those shoes (the belt follows), the rule is met again; the card stays open');
     await p.evaluate(()=>toggleScore());await settle(p,500);
     // ---- stats: what was really worn, week by week
     await p.evaluate(()=>{const T=todayDate();dayRecs={};cache={};const pl={...planMonth(2026,8),...planMonth(2026,9),...planMonth(2026,10)};

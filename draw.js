@@ -447,15 +447,50 @@ const SOCK_D={out:'M19.2,79 C19.1,78.9 20.2,78.3 20.8,77.8 C21.3,77.3 21.8,76.7 
   toe:'M14.1,77.9 L13.2,81.3 L12.9,82.9 L12.6,84.8 L12.3,87.8 L12.1,90.5 L1.7,90.5 L1.7,77.9 Z M41.9,87.8 L43.5,89.3 L48.6,89.8 L53.2,90.8 L57.8,92.1 L62.4,93.7 L65.1,99 L37.1,99 L37.1,87.8 Z',
   toel:'M14.1,77.9 C13.9,78.5 13.3,80.5 13.2,81.3 C13,82.2 13,82.4 12.9,82.9 C12.8,83.5 12.7,84 12.6,84.8 C12.5,85.6 12.4,87.3 12.3,87.8 M43.5,89.3 C44.4,89.3 47,89.6 48.6,89.8 C50.2,90.1 51.6,90.4 53.2,90.8 C54.7,91.2 56.2,91.7 57.8,92.1 C59.3,92.6 61.3,92.9 62.4,93.7 C63.5,94.5 64.1,96.4 64.4,97',
   soles:'M4,85.5 L16.4,88 L30.2,88.5 L38.5,87.8 L38.5,91.5 L4,91.5 Z M37.5,93.8 L53.2,96.5 L71.6,96.5 L85.4,93.3 L85.4,99.7 L37.5,99.7 Z'};
-function drawSock(color,P,toe){
+/* ---- sock patterns (2026-11-17, the owner's sock patterns): knitted on the traced pair in the item's own colours. The pattern runs with
+   the leg (SOCK_TILT: the traced legs lean 20° from upright, so stripes ring the leg parallel to the cuff and argyle diamonds stand up the
+   leg), under the knit's ribs, the heel's and sole's shade, the cuff and the toe cap, so it reads as knitted in, not printed on. Sizes are
+   a dress sock's: two argyle diamonds across the leg, stripes about a fifth of the leg's length, a clock a slim motif up the ankle's side.
+   c2: the pattern's colour (the second colour, else a quiet tone of the ground); c3: argyle's crossing lines, a stripe's third band. The
+   back sock is 12% darker, its pattern too. A plain sock is drawn exactly as before (no pattern argument) ---- */
+const SOCK_TILT=-20;
+/* the pattern's colours for a sock: [ground, pattern, third] (hex) */
+function sockCols(i){const b=colOf(i),c2=i.secondaryColor&&COLORS[i.secondaryColor]?COLORS[i.secondaryColor]:lum(b)>.55?mix(b,'#000',.3):mix(b,'#fff',.38),
+  c3=i.tertiaryColor&&COLORS[i.tertiaryColor]?COLORS[i.tertiaryColor]:lum(b)>.5?mix(b,'#000',.5):mix(b,'#fff',.6);return [b,c2,c3]}
+/* the pattern tile: id, its pattern key, the ground, pattern and third colour, k: scale (1 on the drawn pair, smaller in a 16-unit swatch),
+   rot: the tilt. Ribbed, herringbone and the clock's ground are tone on tone; the clock's motif itself is sockClock */
+function sockPatDef(id,p,b,c2,c3,k=1,rot=SOCK_TILT){
+  const ink=lum(b)>.55?'#000':'#fff',f=n=>+(n*k).toFixed(3),tile=(w,h,body)=>`<pattern id="${id}" patternUnits="userSpaceOnUse" width="${f(w)}" height="${f(h)}"${rot?` patternTransform="rotate(${rot})"`:''}><rect width="${f(w)}" height="${f(h)}" fill="${b}"/>${body}</pattern>`;
+  switch(p){
+    case 'argyle':{const W=17,H=25;   // a diamond in the pattern colour, the ground's diamonds between, the thin lines crossing both
+      return tile(W,H,`<path d="M${f(W/2)},0 L${f(W)},${f(H/2)} L${f(W/2)},${f(H)} L0,${f(H/2)} Z" fill="${c2}"/><path d="M0,0 L${f(W)},${f(H)} M${f(W)},0 L0,${f(H)}" stroke="${c3}" stroke-width="${f(.42)}" stroke-dasharray="${f(.9)} ${f(.35)}"/>`)}
+    case 'stripe':{const H=11;   // bands round the leg: the pattern colour, and a narrow third one when there is a third colour
+      return tile(4,H,`<rect y="0" width="${f(4)}" height="${f(3.8)}" fill="${c2}"/>`+(c3&&c3!==b?`<rect y="${f(5.6)}" width="${f(4)}" height="${f(1.2)}" fill="${c3}"/>`:''))}
+    case 'polka-dot':return tile(4.6,4.6,`<circle cx="${f(1.15)}" cy="${f(1.15)}" r="${f(.72)}" fill="${c2}"/><circle cx="${f(3.45)}" cy="${f(3.45)}" r="${f(.72)}" fill="${c2}"/>`);
+    case 'ribbed':return tile(1.5,1,`<rect width="${f(.55)}" height="${f(1)}" fill="#000" opacity=".16"/><rect x="${f(.8)}" width="${f(.35)}" height="${f(1)}" fill="#fff" opacity=".07"/>`);
+    case 'birdseye':return tile(1.8,1.8,`<circle cx="${f(.45)}" cy="${f(.45)}" r="${f(.3)}" fill="${c2}" opacity=".85"/><circle cx="${f(1.35)}" cy="${f(1.35)}" r="${f(.3)}" fill="${c2}" opacity=".85"/>`);
+    case 'nailhead':return tile(2.1,2.1,`<rect x="${f(.8)}" y="${f(.8)}" width="${f(.5)}" height="${f(.5)}" fill="${c2}" opacity=".9"/>`);
+    case 'herringbone':return tile(2.6,2.2,`<path d="M0,${f(2.2)} L${f(1.3)},0 M${f(1.3)},0 L${f(2.6)},${f(2.2)} M0,${f(1.1)} L${f(.65)},0 M${f(1.95)},0 L${f(2.6)},${f(1.1)} M${f(.65)},${f(2.2)} L${f(1.3)},${f(1.1)} M${f(1.3)},${f(1.1)} L${f(1.95)},${f(2.2)}" stroke="${ink}" stroke-opacity=".2" stroke-width="${f(.3)}" fill="none"/>`);
+    case 'other':{const H=6;   // an unnamed design (a novelty print, fair isle): small scattered marks in its colours, so it reads as patterned, not plain
+      return tile(6,H,`<path d="M${f(1)},${f(1.4)} l${f(.9)},-${f(.9)} l${f(.9)},${f(.9)} l-${f(.9)},${f(.9)} Z" fill="${c2}"/><circle cx="${f(4.4)}" cy="${f(4.4)}" r="${f(.6)}" fill="${c3}"/><path d="M${f(4)},${f(1.2)} h${f(1.2)} M${f(1.2)},${f(4.8)} h${f(1.2)}" stroke="${c2}" stroke-width="${f(.35)}"/>`)}
+    default:return ''}}
+/* a clock: a slim motif up the side of the ankle (a stem, two pairs of small chevrons, a diamond at its top), on each sock's ankle */
+const SOCK_CLOCK_AT=[[43,50],[73,50]];   // the back sock's and the front sock's ankle, in SOCK_D's box (before the mirror)
+const sockClock=(x,y,c)=>`<g transform="translate(${x} ${y}) rotate(${SOCK_TILT})" fill="none" stroke="${c}" stroke-width=".45" stroke-linecap="round"><path d="M0,0 V-15.5 M-1.3,-6 L0,-7.5 L1.3,-6 M-1.3,-10 L0,-11.5 L1.3,-10"/><path d="M0,-19.6 L1.3,-17.6 L0,-15.6 L-1.3,-17.6 Z" fill="${c}"/><circle cx="0" cy=".7" r=".55" fill="${c}"/></g>`;
+/* the pattern spec drawSock takes for an item: null for a plain sock (drawn as before) */
+const sockPat=i=>{if(!sockPatterned(i))return null;const p=patBase(i.pattern);if(!['argyle','stripe','polka-dot','ribbed','birdseye','nailhead','clock','herringbone','other'].includes(p))return null;const [,c2,c3]=sockCols(i);return {p,c2,c3}};
+function drawSock(color,P,toe,pat){
   const S=SOCK_D,ink=lum(color)>.55?'#000':'#fff',welt=mix(color,'#fff',lum(color)>.55?.12:.42),back=mix(color,'#000',.12);
-  const one=(o,c,k)=>`<clipPath id="${P}c${k}"><path d="${o}"/></clipPath><path d="${o}" fill="${c}"/><g clip-path="url(#${P}c${k})">`+
+  const dk=c=>mix(c,'#000',.12),patFill=(k)=>pat&&pat.p!=='clock'?`<path d="M0,0 H100 V100 H0 Z" fill="url(#${P}p${k})"/>`:'';
+  const clock=k=>pat&&pat.p==='clock'?sockClock(...SOCK_CLOCK_AT[k==='b'?0:1],k==='b'?dk(pat.c2):pat.c2):'';
+  const pdefs=pat&&pat.p!=='clock'?sockPatDef(P+'pb',pat.p,back,dk(pat.c2),dk(pat.c3))+sockPatDef(P+'pf',pat.p,color,pat.c2,pat.c3):'';
+  const one=(o,c,k)=>`<clipPath id="${P}c${k}"><path d="${o}"/></clipPath><path d="${o}" fill="${c}"/><g clip-path="url(#${P}c${k})">`+patFill(k)+clock(k)+
       `<path d="${S.ribs}" stroke="${ink}" stroke-opacity=".09" stroke-width=".22"/><path d="${S.heels}" fill="#000" opacity=".05"/><path d="${S.soles}" fill="#000" opacity=".08"/>`+
       `<path d="${S.cuff}" fill="${toe||welt}"/><path d="${S.cuff}" fill="#000" opacity=".12"/><path d="${S.lips}" fill="none" stroke="${ink}" stroke-opacity=".18" stroke-width=".3"/>`+
       `<path d="${S.heelRows}" fill="none" stroke="${ink}" stroke-opacity=".2" stroke-width=".3" stroke-dasharray=".5 .35"/>`+
       (toe?`<path class="sock-toe" d="${S.toe}" fill="${toe}"/><path d="${S.toel}" fill="none" stroke="#000" stroke-opacity=".25" stroke-width=".3"/>`:`<path d="${S.toel}" fill="none" stroke="${ink}" stroke-opacity=".14" stroke-width=".3"/>`)+
       `<path d="M0,0 H100 V100 H0 Z" fill="url(#${P}sh)"/></g><path d="${o}" fill="none" stroke="#000" stroke-opacity=".3" stroke-width=".4"/>`;
-  return `<defs><linearGradient id="${P}sh" x1="0" y1="0" x2="1" y2=".2"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".35" stop-color="#fff" stop-opacity=".08"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient>`+
+  return `<defs><linearGradient id="${P}sh" x1="0" y1="0" x2="1" y2=".2"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".35" stop-color="#fff" stop-opacity=".08"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient>${pdefs}`+
     // mirrored so the toes point right, as the shoes do (the owner, 2026-11-13; the photo's socks point left)
     `</defs><g transform="matrix(-1 0 0 1 100 0)">`+one(S.back,back,'b')+one(S.front,color,'f')+`</g>`;
 }
@@ -505,6 +540,9 @@ function swatchSVG(i,drawn){
   if(!drawn&&FABRIC.includes(i.type)&&i.swatch&&i.swSrc==='tex'&&i.texture&&TEXTURE_TYPES.includes(i.type))body=`<image href="${i.swatch}" width="16" height="16" preserveAspectRatio="xMidYMid slice"/>`;
   else if(FABRIC.includes(i.type)||HANDPICK_TYPES.includes(i.type)){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';   // (the casual garments' stripe, heather or cable too, 2026-11-16)
     body=`<defs>${fabricDef(P+'f',i,role,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/><rect width="16" height="16" fill="url(#${P}g)"/>`}
+  else if(sockPat(i)){const sp=sockPat(i),[b]=sockCols(i);   // a patterned sock (2026-11-17): its knit flat, upright, two argyle diamonds across; a clock's motif in the middle
+    body=`<defs>${sp.p==='clock'?'':sockPatDef(P+'f',sp.p,b,sp.c2,sp.c3,.62,0)}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".14"/></linearGradient></defs><rect width="16" height="16" fill="${sp.p==='clock'?b:`url(#${P}f)`}"/>`+
+      (sp.p==='clock'?`<g transform="translate(8 14.5) scale(.62) rotate(${-SOCK_TILT})">${sockClock(0,0,sp.c2)}</g>`:'')+`<rect width="16" height="16" fill="url(#${P}g)"/>`}
   else if(i.type==='pocketsquare'){const e=pocketEdge(i);   // its print, its contrast edge round it (2026-11-16)
     body=`<defs>${pocketDef(P+'f',i,'dot')}<linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity=".1"/></linearGradient></defs><rect width="16" height="16" fill="url(#${P}f)"/>${e?`<rect x="1.25" y="1.25" width="13.5" height="13.5" fill="none" stroke="${e}" stroke-width="2.5"/>`:''}<rect width="16" height="16" fill="url(#${P}g)"/><rect width="16" height=".9" fill="#fff" opacity=".35"/><rect y="1.4" width="16" height="1.1" fill="#000" opacity=".1"/><rect y="7.4" width="16" height=".8" fill="#000" opacity=".12"/><rect y="8.2" width="16" height=".5" fill="#fff" opacity=".2"/>`}   // (its folds: the lit top fold, the crease across)
   else{// a bracelet watch and plain metal cufflinks show their metal; a tie clip is its colour (it has no metal field: it was always silver),
@@ -1045,7 +1083,7 @@ function itemThumb(i,full){
     g=`<defs>${jk?suitFabric(P+'f',i):pk?pantsFabric(P+'f',i):fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs>${jk?`<clipPath id="${P}so"><path d="${shape}" clip-rule="evenodd"/></clipPath>`:pk?`<clipPath id="${P}pc"><path d="${shape}"/></clipPath>`:''}<path d="${shape}" fill-rule="evenodd" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width="${jk||pk?.3:.6}"/><path d="${shape}" fill-rule="evenodd" fill="url(#${P}s)"/>`+(jk?suitMarks(i,P):pk?pantsMarks(i,P):trouserMarks(i,P));
   }else if(i.type==='watch')g=drawWatchTraced(i,P);   /* the traced watch (WATCH_D); the old top view (drawWatch) was removed with the review's cleanup, CR-8-08 */
   else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawShoeSide(i,P)}</g>`;
-  else if(i.type==='socks')g=drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)]);   /* the traced pair (SOCK_D), in the full 100 box */
+  else if(i.type==='socks')g=drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)],sockPat(i));   /* the traced pair (SOCK_D), in the full 100 box; its pattern (sockPat; none on a plain sock) */
   else if(i.type==='belt')g=`<g transform="translate(2 28)">${drawBelt(i,P)}</g>`;
   else if(i.type==='overcoat')g=coatMarks(i,P);   /* the traced topcoat with its model (COAT_D) */
   else if(i.type==='raincoat')g=rainMarks(i,P);   /* the traced raincoat with its model (RAIN_D) */
