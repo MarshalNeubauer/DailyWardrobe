@@ -128,7 +128,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `/* ---- safety ---- */`: `.nostore` (the full-page message), `.tagfail` (the Add card's tagging failure)
 - `/* ---- "Read color and texture from close-up" ---- */`: `.ivrd`, `.rdcost`, `.rdgo`, `#rd-sheet` and its `.rd*` classes (cards `.rdcard`, `.rdtag`, `.rdbtns`, `.rdalt`, `.rdbar`, `.rdbusy`), `.rddone`, `.rdlink`; `--rd-ok` is the sheet's green, lighter on the dark theme
 - `/* ---- "+ New colour" / "+ New pattern or texture" ---- */`: the new sheets' `.cn*` classes (44 px controls, radius 12/14, bordered cards, `--acc-ink` text, `--field` inputs; only the thumbs' white ring is a fixed colour), `.cpnewt` (the dashed + tile), `.custadd` (Settings' two buttons)
-- `/* ---- wardrobe ---- */`: `.wfind` (search field and sort on one row), `.wsearch`, `.wclear`, `.wsort`, `.wwear`, `.wnone`, `.named`, `.wfld`, `.wnotes`, `.morefold` / `.morebtn` / `.morein`
+- `/* ---- wardrobe ---- */`: `.wfind` (search field and sort on one row), `.wsearch`, `.wclear`, `.wsort`, `.wwear`, `.wnone`, `.named`, `.wfld`, `.wnotes`, `.morein`
 - text fields: `--field`, the card colour (white) on the light theme and the page colour (grey) on the dark one, for every input, select and textarea of the pages, Settings, the setup and the sheets (the owner's choice)
 - swatches and item thumbnails in lists have a thin `--swatch-edge` border (dark on light, light on dark): navy and charcoal disappeared on the dark card
 - every dropdown in Settings is on its own line under its label, full width (`#settings-modal .srow select{flex:1 1 100%}`)

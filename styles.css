@@ -817,9 +817,6 @@ main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
 :is(#item-view,#add) .wfld{flex:0 0 58%;width:58%;max-width:58%}
 :is(#item-view,#add) label.wnotes{display:block;padding:7px 0;font-size:.875rem;font-weight:600}
 :is(#item-view,#add) .wnotes textarea{display:block;width:100%;min-height:64px;margin:6px 0 0;padding:10px 12px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:.9375rem;font-weight:400;line-height:1.4;resize:vertical}
-.morefold{margin:8px 0 4px}
-#add .morebtn{width:100%;justify-content:space-between;padding:0 12px}
-.morechev{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.morefold.open .morechev{transform:rotate(180deg)}
 .morein{padding:6px 0 0}
 .morein>label{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0;padding:7px 0;font-size:.875rem;font-weight:600}
 .morein>label select{flex:0 0 58%;width:58%;max-width:58%}
@@ -899,7 +896,6 @@ main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
 .adv-in>.sgroup:first-child{border-top:0;padding-top:0}
 #adv-photos:has(#asm-group[hidden]){display:none}
 /* a button that needs the server while the app is not connected: the reason under it */
-.connnote{margin:6px 0 0;font-size:.8125rem;line-height:1.4;color:var(--mut)}
 .conn-tick{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:10px;background:#24704a;color:#fff;font-size:.8125rem;font-weight:700;vertical-align:-3px;margin-right:4px}
 .conn-msg{color:var(--danger)}
 /* the danger red on the dark theme: #c0473f on the dark card is 3.5:1 */
@@ -908,7 +904,7 @@ main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
 /* a Settings row whose dropdown doesn't fit beside its label puts it on a line of its own (it was cut off: "Sometimes, under a light jac") */
 #settings-modal .srow{flex-wrap:wrap}#settings-modal .srow select{max-width:100%}
 /* Realistic photos while not connected: the reason once, at the top, not under every button */
-#sp-photos .sgroup .connnote{display:none}#photos-conn{margin:4px 0 10px}#photos-conn:empty{display:none}
+#photos-conn{margin:4px 0 10px}#photos-conn:empty{display:none}
 /* the setup's switches look like the dress-code switches in Settings (on = ink, not gold) */
 .su-sw[aria-checked=true] .su-knob{background:var(--ink)}.su-sw[aria-checked=true] .su-knob::after{background:var(--bg)}
 /* "Several items" while not connected */
