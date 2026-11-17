@@ -58,7 +58,9 @@ async function openItem(ph,name){for(let k=0;k<4;k++){await ph.tap('#n-wardrobe'
   await ph.page.evaluate(()=>{if(typeof CK_OPEN!=='undefined')CK_OPEN['*']=true});   // #497: the sheet's fields are in folded sections; open them all (no-op before)
   const id=await ph.page.evaluate(n=>{const i=items.find(x=>x.name===n);if(!i)return null;const e=document.querySelector(`#gi-${i.id} .giopen`);if(e)e.scrollIntoView({block:'center'});return i.id},name);
   if(!id)throw new Error('no item '+name);await sleep(300);const b=await ph.page.locator(`#gi-${id} .giopen`).boundingBox();await ph.tapAt(b.x+b.width/2,b.y+b.height/3);await sleep(900);return id}
-const nameInput=ph=>ph.page.locator('#item-view input[type=text]:visible').first();
+// the sheet's Name field by its class (wardrobe.js fldRow, .wf-name since before 6f78b02): "the first text field" became the Price
+// field when #554 (cost.js) put it in Planning & care above Name & notes, so W1-6-06 typed "Blazer copy" into the price
+const nameInput=ph=>ph.page.locator('#item-view input.wf-name:visible').first();
 async function rename(ph,from,to){await openItem(ph,from);const i=nameInput(ph);await i.fill(to);await i.press('Tab');await done(ph)}
 async function done(ph){const d=ph.page.locator('#item-view button:visible',{hasText:/^Done$/}).first();const b=await d.boundingBox();await ph.tapAt(b.x+b.width/2,b.y+b.height/2);await sleep(700)}
 const kv=()=>P.mock(PORT,'kv-dump');
