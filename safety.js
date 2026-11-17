@@ -90,7 +90,7 @@ async function askPersist(){
     localStorage.setItem('persist_ok',kept?'1':'0');return kept}
   catch(e){console.warn('storage not made persistent',e);return null}}
 
-/* ---- the sharp tagging copies and sharp close-ups (tagging.js keeps them in Cache Storage as tagimg/<id>, closeimg/<id>) of items that no longer exist are
+/* ---- the sharp tagging copies and sharp close-ups (tag-request.js keeps them in Cache Storage as tagimg/<id>, closeimg/<id>) of items that no longer exist are
    removed at start-up, not when an item is deleted: a deletion can be undone for a few seconds. Never with an empty
    wardrobe (one that was lost comes back from the backup). ---- */
 async function pruneTagImgs(){

@@ -16,7 +16,7 @@ async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.ph
   try{const im=await imgOf(it.photo);let sm=it.photo;if(Math.max(im.naturalWidth,im.naturalHeight)>PH_SM){const c=shrink(im,PH_SM);if(deadCanvas(c))return false;sm=c.toDataURL('image/jpeg',.82)}   // drawn black: keep the old copy
     it.photoSm=sm;it.phSig=sig;return true}catch{return false}}
 /* at start-up: items whose small copy is missing or old (added before it, or changed on a device with an older app) */
-/* (a connected phone makes at most the day's remakes, tagging.js remakeLeft: each small copy can be a new server value; the rest the next days) */
+/* (a connected phone makes at most the day's remakes, migrate.js remakeLeft: each small copy can be a new server value; the rest the next days) */
 async function smallPhotos(){let n=0;for(const it of items){if(!it.photo||(it.photoSm&&it.phSig===phSigOf(it.photo)))continue;if(typeof remakeLeft==='function'&&remakeLeft()<1)break;
   if(await makeSmall(it)&&stillCur(it)){await put(it);if(typeof remakeSpend==='function')remakeSpend(1);n++}}if(n)fixupRedraw();return n}
 /* ---- the photo tools (2026-11-15, edit-photos-mockups option B, the owner's choice; they were folded under "Edit photos"): one row of
@@ -37,7 +37,7 @@ function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes
 /* ---- white paper in the close-up (2026-11-15, the owner's choice: option A "juiced up" + screens 04-06, photo-wb-mockups): one line of help
    under the close-up buttons with a small drawing beside it (the item's cloth with a strip of white paper along one edge and the
    tap on it, drawn in CSS: no picture to download, both themes); the drawing opens the short tip (PAPER_CARD in kit.js). After a close-up
-   is added or replaced here, a line under the photos says whether paper was found (paperOf in tagging.js), with Retake close-up. ---- */
+   is added or replaced here, a line under the photos says whether paper was found (paperOf in measure.js), with Retake close-up. ---- */
 /* the hint as "3 tiny steps" (2026-11-15, paper-hint-proposals A, the owner's choice; it was a sentence and a "Tips for a good close-up"
    link): "True color in 3 steps", Paper on an edge › Tap the paper › Take the photo, each with a small drawing (the owner's, at 40 px).
    The whole card is one button that opens the short tip (paperTip; its last line opens the full guide). Also in the Add card's Step 2. */
@@ -77,7 +77,7 @@ async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f);
   const sharp=shrink(img,CLOSE_MAX).toDataURL('image/jpeg',TAG_Q),tex=shrink(img,TEX_MAX).toDataURL('image/jpeg',.85),cur=items.find(x=>x.id===id);
   if(cur){await paperOf({texture:tex,photo:cur.photo,photoSm:cur.photoSm,phSig:cur.phSig});if(phEdit.id===id)phEdit.paper=texSig(tex)}   // the paper line under the photos (paperLine)
   if(await setTexture(id,tex,'Close-up added.')===false)return;   // drawn black (setPic): nothing saved, no sharp copy kept. (outfit photos are no longer made: "the realistic photos use it" promised nothing, 2026-11-15)
-  const it=items.find(x=>x.id===id);if(it&&it.texture)await keepCloseImg(id,sharp,it.texture)}   // the sharp copy for pattern and colour readings (tagging.js)
+  const it=items.find(x=>x.id===id);if(it&&it.texture)await keepCloseImg(id,sharp,it.texture)}   // the sharp copy for pattern and colour readings (tag-request.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 /* the toast's Undo after Replace or Rotate: the photo back, with the sharp copy and the pattern's box it had (when Undo put the photo back) */
 const photoUndoAct=(id,prev,sharp,pbox)=>({label:'Undo',fn:async()=>{await picUndo(id,'photo',prev);const it=items.find(x=>x.id===id);if(!it||!prev||it.photo!==prev)return;
@@ -85,7 +85,7 @@ const photoUndoAct=(id,prev,sharp,pbox)=>({label:'Undo',fn:async()=>{await picUn
 async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f),sharp=shrink(img,TAG_MAX).toDataURL('image/jpeg',TAG_Q),it=items.find(x=>x.id===id);
   const prev=it&&it.photo||null,pbox=it&&it.pbox,old=prev&&typeof tagImgOf==='function'?await tagImgOf(id,it):null;if(it)delete it.pbox;   // the pattern's box was on the old picture
   if(await setPhoto(id,shrink(img,PH_MAX).toDataURL('image/jpeg',.85),['Photo replaced. The item’s tags and your plan are unchanged.',4000,photoUndoAct(id,prev,old,pbox)])===false){if(it&&pbox)it.pbox=pbox;return}   // drawn black: nothing saved, the box stays
-  const now=items.find(x=>x.id===id);if(now&&now.photo)await keepTagImg(id,sharp,now.photo)}   // the new sharp copy (tagging.js), signed with the new photo
+  const now=items.find(x=>x.id===id);if(now&&now.photo)await keepTagImg(id,sharp,now.photo)}   // the new sharp copy (tag-request.js), signed with the new photo
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const prev=it.photo,im=await imgOf(it.photo),c=document.createElement('canvas');
   c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);
@@ -99,7 +99,7 @@ async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.u
 /* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
 async function startCrop(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo);
   phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};renderWardrobe();const b=$('#ivbody');if(b)b.scrollTop=0;requestAnimationFrame(layoutCrop)}
-/* the best copy to crop from: the sharp copy kept on this device when the photo was read (tagging.js, up to 2048px), turned as the
+/* the best copy to crop from: the sharp copy kept on this device when the photo was read (tag-request.js, up to 2048px), turned as the
    photo is now, when it shows the same picture (same shape, and alike at 24x24); else the photo itself. A crop from the kept photo
    alone came out at the size of its piece of a 360px picture (a suit at 270px). A photo replaced, or already cropped, no longer
    matches the sharp copy, so it is cropped from itself */

@@ -148,7 +148,7 @@ function cmpMatchGo(src,ref){const it=src==='q'?cardOf(ref):items.find(x=>x.id==
   if(src==='q'){it.checked={...it.checked,tex:1};matchShadeQ(ref)}else matchShadeE(ref)}
 async function cmpMatchUndo(src,ref){const it=src==='q'?cardOf(ref):items.find(x=>x.id===ref);if(!it)return;const key=src==='q'?it.id:ref,v=CMP_UNDO[key];if(v===undefined)return;delete CMP_UNDO[key];
   if(v)it.shade=v;else delete it.shade;if(src==='q'){renderAdd();return}await put(it);cache={};renderWardrobe()}
-/* whether the close-up has white paper: {ref, warm} (tagging.js paperOf, kept in memory by the pictures' signatures), worked out once and
+/* whether the close-up has white paper: {ref, warm} (measure.js paperOf, kept in memory by the pictures' signatures), worked out once and
    then drawn again; an Add card's measurement says it at once */
 function cmpPaper(src,it){const n=paperNow(it);if(n)return n;if(src==='q'&&it.meas&&it.meas.src==='closeup')return {ref:!!it.meas.ref,warm:false};
   const k=paperKey(it);if(k&&!CMP_ASKED[k]){CMP_ASKED[k]=1;const id=it.id;paperOf(it).then(r=>{if(!r)return;if(src==='q'){if(queue.some(x=>x.id===id))renderAdd()}else if(editing===id)renderItem()}).catch(()=>{})}

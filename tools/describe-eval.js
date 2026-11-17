@@ -31,14 +31,11 @@ const arg=(k,d)=>{const i=process.argv.indexOf('--'+k);return i<0?d:process.argv
 const ROOT=path.join(__dirname,'..'),DIRECT=has('direct'),RUNS=Math.max(1,+arg('runs',2)||2),ONLY=(arg('only','')||'').split(',').filter(Boolean);
 const CASES_FILE=arg('cases',''),SET=arg('set','core'),DRY=has('dry'),REPORT=arg('report','');
 
-// ΔE00 and hexes for "hex within ΔE 8" (the app's core.js formula)
-const hexRgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
-function lab(h){const v=hexRgb(h).map(u=>{u/=255;return u>.04045?((u+.055)/1.055)**2.4:u/12.92});const f=t=>t>.008856?Math.cbrt(t):7.787*t+16/116,X=f((v[0]*.4124+v[1]*.3576+v[2]*.1805)/.95047),Y=f(v[0]*.2126+v[1]*.7152+v[2]*.0722),Z=f((v[0]*.0193+v[1]*.1192+v[2]*.9505)/1.08883);return [116*Y-16,500*(X-Y),200*(Y-Z)]}
-function dE(h1,h2){const [L1,a1,b1]=lab(h1),[L2,a2,b2]=lab(h2),rad=Math.PI/180,C1=Math.hypot(a1,b1),C2=Math.hypot(a2,b2),Cm=(C1+C2)/2,G=.5*(1-Math.sqrt(Cm**7/(Cm**7+25**7))),A1=a1*(1+G),A2=a2*(1+G),c1=Math.hypot(A1,b1),c2=Math.hypot(A2,b2),
-  hh=(y,x)=>{const t=Math.atan2(y,x)/rad;return t<0?t+360:t},H1=hh(b1,A1),H2=hh(b2,A2),dL=L2-L1,dC=c2-c1;let dh=c1*c2===0?0:H2-H1;if(dh>180)dh-=360;else if(dh<-180)dh+=360;const dH=2*Math.sqrt(c1*c2)*Math.sin(dh*rad/2);
-  const Lm=(L1+L2)/2,cm=(c1+c2)/2;let hm=H1+H2;if(c1*c2!==0){if(Math.abs(H1-H2)>180)hm+=hm<360?360:-360;hm/=2}
-  const T=1-.17*Math.cos((hm-30)*rad)+.24*Math.cos(2*hm*rad)+.32*Math.cos((3*hm+6)*rad)-.2*Math.cos((4*hm-63)*rad),SL=1+.015*(Lm-50)**2/Math.sqrt(20+(Lm-50)**2),SC=1+.045*cm,SH=1+.015*cm*T,RT=-2*Math.sqrt(cm**7/(cm**7+25**7))*Math.sin(60*Math.exp(-(((hm-275)/25)**2))*rad);
-  return Math.sqrt((dL/SL)**2+(dC/SC)**2+(dH/SH)**2+RT*(dC/SC)*(dH/SH))}
+// ΔE00 for "hex within ΔE 8": the worker's colour arithmetic (worker/colormath.js, core.js's formula: one copy, CR-2-15), loaded by main()
+let CM=null;
+const dE=(h1,h2)=>CM.dE00(CM.hexLab(h1),CM.hexLab(h2));
+async function loadColormath(){const ew=process.emitWarning;process.emitWarning=(w,...r)=>{if(!/Module type of file/.test(String(w&&w.message||w)))ew.call(process,w,...r)};   // the worker's ES modules sit in a CommonJS package
+  try{return await import(pathToFileURL(path.join(ROOT,'worker','colormath.js')).href)}finally{process.emitWarning=ew}}
 const near=(a,hex,d=8)=>!!a.hex&&dE(a.hex,hex)<=d;
 const inSet=(v,l)=>l.includes(v);
 
@@ -108,6 +105,7 @@ async function makeSender(){
 const capNote=(done,total,a)=>`\nStopped: the worker answered 429 (a daily cap reached: ${(a&&(a.detail||a.message||a.error))||'no detail'}). ${done} of ${total} case runs were done; the rest are not counted as failures.`;
 
 async function main(){
+  CM=await loadColormath();
   if(CASES_FILE)return runFile();
   if(SET!=='core'){console.error(`Unknown --set ${SET} (only "core", the built-in cases; use --cases <file.json> for a case file).`);process.exit(2)}
   const list=CASES.filter(c=>!ONLY.length||ONLY.includes(c.id));
