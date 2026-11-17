@@ -496,8 +496,12 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
     const r3=await A.evaluate(async()=>{const ok1=await syncNow();const st=localStorage.getItem('sync_status');const ok2=await syncNow();return {ok1,ok2,st,pause:+localStorage.getItem('sync_pause')||0}});
     ok(!r3.ok1&&!r3.ok2&&r3.pause>Date.now()&&/too large for the server/.test(r3.st)&&!/HTTP|413/.test(r3.st)&&A.ctx.posts.length===1,`one item too large: paused with plain words, sent once only (${A.ctx.posts.length} POST; “${r3.st}”)`);
     // W1-10-03 / W1-10-04: the pause's end in local time; Connection doesn't say "backed up" while paused
-    const pz=await A.evaluate(()=>{const later=new Date();later.setHours(23,0,0,0);const tom=new Date(Date.now()+864e5);tom.setHours(3,0,0,0);
-      localStorage.setItem('sync_pause',+later);const a=backupSummary('x');localStorage.setItem('sync_pause',+tom);const b=backupSummary('x');const w=backedUpWords();localStorage.removeItem('sync_pause');return {a,b,w,w2:backedUpWords()}});
+    // (the page's clock is held at noon today for these lines: run after 11 PM, 11 PM today was already past and the check failed)
+    const pz=await A.evaluate(()=>{const RD=Date,noon=new RD();noon.setHours(12,0,0,0);const N=+noon;
+      window.Date=class extends RD{constructor(...a){super(...(a.length?a:[N]))}static now(){return N}};
+      try{const later=new Date();later.setHours(23,0,0,0);const tom=new Date(Date.now()+864e5);tom.setHours(3,0,0,0);
+        localStorage.setItem('sync_pause',+later);const a=backupSummary('x');localStorage.setItem('sync_pause',+tom);const b=backupSummary('x');const w=backedUpWords();localStorage.removeItem('sync_pause');return {a,b,w,w2:backedUpWords()}}
+      finally{window.Date=RD}});
     ok(/^Paused until 11:00\s?PM/.test(pz.a)&&/^Paused until tomorrow/.test(pz.b),`"Paused until" says the real time when it is today (“${pz.a}” / “${pz.b}”)`);
     ok(/paused until/.test(pz.w)&&/only on this phone/.test(pz.w)&&pz.w2==='your wardrobe is backed up',`while paused, Connection's words say so (“${pz.w}”)`);
     // W2-14-03: the labels
