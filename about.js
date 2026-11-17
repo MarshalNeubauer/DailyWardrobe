@@ -1,5 +1,5 @@
 /* Daily Wardrobe: Settings → About. The app's version and updates, feedback, deleting one's data, the privacy note.
-   Loaded last (after sync.js); shares the global scope with the other scripts. */
+   Loaded last (index.html's final script); shares the global scope with the other scripts. */
 
 /* ---- version ----
    The version is the number in the service worker's cache name (sw.js: const CACHE='dw-v<n>'), bumped with every release.
@@ -119,15 +119,17 @@ async function sendFeedback(){
     else{el.value='';fbSentAt=Date.now();try{localStorage.removeItem('err_log')}catch{}aboutSay('#fb-status','Thank you. Your feedback was sent.');loadFeedback()}
   }finally{fbSending=false;if(b)b.disabled=false}}
 /* the local time of the next 00:00 UTC, when the server's daily allowances start again */
-function aboutResetAt(){const d=new Date();try{return new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{return 'midnight UTC'}}
+function aboutResetAt(){const d=new Date();try{return new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}catch{return 'midnight UTC'}}
 /* the owner also sees what was sent in (GET /me says who this is; anything but a clear "owner" shows nothing) */
 const fbWhen=t=>{const n=typeof t==='number'&&t<1e12?t*1000:t,d=new Date(n);return isNaN(d)?'':d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})};
 const fbTime=t=>{const n=typeof t==='number'&&t<1e12?t*1000:t,x=+new Date(n);return isNaN(x)?0:x};
+/* (who this is comes from account.js, which already asked /me for Settings; /me is asked here only when it doesn't know yet: CR-7-06) */
 async function loadFeedback(){
   const box=$('#fb-list');if(!box)return;const c=aboutConn();if(!c){box.hidden=true;box.innerHTML='';return}
   try{
-    const m=await fetch(c.at('me'),{headers:c.head,cache:'no-store'}),me=m.ok?await m.json().catch(()=>null):null;
-    if(!me||me.role!=='owner'){box.hidden=true;box.innerHTML='';return}
+    let role=typeof acctRole==='function'?acctRole():null;
+    if(!role){const m=await fetch(c.at('me'),{headers:c.head,cache:'no-store'}),me=m.ok?await m.json().catch(()=>null):null;role=me&&me.role}
+    if(role!=='owner'){box.hidden=true;box.innerHTML='';return}
     const r=await fetch(c.at('feedback'),{headers:c.head,cache:'no-store'}),j=r.ok?await r.json().catch(()=>null):null;
     if(!j||!Array.isArray(j.items)){box.hidden=true;box.innerHTML='';return}
     const list=j.items.filter(x=>x&&x.text).sort((a,b)=>fbTime(b.t)-fbTime(a.t));
@@ -161,18 +163,42 @@ function askDelete(){
     `<div class="sactions">${c?'<button type="button" class="danger" id="del-all" onclick="deleteMyData(true)">Delete everything</button>':''}<button type="button" class="danger" id="del-device" onclick="deleteMyData(false)">Delete from this device only</button><button type="button" id="del-cancel" onclick="cancelDelete()">Cancel</button></div>`;
   box.hidden=false;if(box.scrollIntoView)box.scrollIntoView({block:'nearest'})}
 function cancelDelete(){const box=$('#del-confirm');if(box){box.hidden=true;box.innerHTML=''}}
+/* -> true once the database is gone (checked), false when it couldn't be deleted: then nothing else is cleared and the app works on.
+   (CR-7-01, the code review 2026-11-16: after iOS had closed and the app reopened the connection, `db` was a closed connection, its
+   store-clearing transaction threw, the same try skipped deleteDatabase, and the page said "deleted" with the whole wardrobe still there.)
+   Every connection the page holds is closed (the first one, `db`, and the reopened one, dbConn), nothing may open the database again
+   meanwhile (app.js dbWiping), and the backup and the connection copy stop first, so neither reopens and fills it. */
+const ABOUT_WIPE_MS=8000;   // how long the delete waits for a backup under way, and for the check afterwards
+const aboutTimeout=(p,ms,v)=>Promise.race([p,new Promise(r=>setTimeout(()=>r(v),ms))]);
+/* a delete held up by a connection elsewhere (the app open in another tab) can't be called off: it goes through once that one closes,
+   so it is waited for, and the person is told what holds it up */
+const ABOUT_WIPE_WAIT='Still deleting: the app is open in another tab or window. Close it there to finish.';
+function aboutDbDelete(onBlocked){
+  return new Promise(res=>{try{const q=indexedDB.deleteDatabase(ABOUT_DB);q.onsuccess=()=>res(true);q.onerror=()=>res(false);q.onblocked=()=>{if(onBlocked)onBlocked()}}catch{res(false)}})}
+/* is anything of the wardrobe left? (opened without a version it makes no stores, and an empty database is deleted again) */
+async function aboutDbLeft(){
+  const n=await aboutTimeout(new Promise(res=>{try{const q=indexedDB.open(ABOUT_DB);q.onerror=()=>res(-1);q.onblocked=()=>res(-1);
+    q.onsuccess=()=>{const d=q.result,names=[...d.objectStoreNames];if(!names.length){d.close();res(0);return}
+      try{const t=d.transaction(names,'readonly');let c=0;for(const s of names){const r=t.objectStore(s).count();r.onsuccess=()=>{c+=r.result}}
+        t.oncomplete=()=>{d.close();res(c)};t.onerror=t.onabort=()=>{d.close();res(-1)}}catch{d.close();res(-1)}}}catch{res(-1)}}),ABOUT_WIPE_MS,-1);
+  if(n===0)await aboutTimeout(aboutDbDelete(),ABOUT_WIPE_MS);return n}
 async function wipeDevice(){
+  dbWiping=true;connReady=false;   // (app.js: no new connection, no connection copy written)
   if(typeof syncTimer!=='undefined')clearTimeout(syncTimer);
-  try{const d=await db,names=[...d.objectStoreNames];
-    if(names.length)await new Promise(res=>{const t=d.transaction(names,'readwrite');for(const n of names)t.objectStore(n).clear();t.oncomplete=t.onerror=t.onabort=()=>res()});
-    d.close();   // nothing writes after this; and the database can go
-    await new Promise(res=>{const q=indexedDB.deleteDatabase(ABOUT_DB);q.onsuccess=q.onerror=q.onblocked=()=>res();setTimeout(res,2000)})
-  }catch(e){console.warn('database not cleared',e)}
+  if(typeof syncRun!=='undefined'&&syncRun)await aboutTimeout(syncRun.catch(()=>{}),ABOUT_WIPE_MS);   // a backup under way finishes (or fails) first
+  for(const d of [await db.catch(()=>null),dbConn])try{if(d)d.close()}catch{}
+  dbConn=null;dbCur=null;
+  let gone=false;
+  try{gone=await aboutDbDelete(()=>aboutSay('#del-status',ABOUT_WIPE_WAIT))&&await aboutDbLeft()===0}catch(e){console.warn('database not deleted',e)}
+  if(!gone){console.warn('database not deleted');dbWiping=false;connReady=true;dbUnhold();return false}   // the app keeps working with what it has (app.js reopens it)
   const online=navigator.onLine!==false;   // offline, the app's own files stay, or the restart would find nothing
   try{if(self.caches)for(const k of await caches.keys())if(k.startsWith('dw-keep-')||(online&&k.startsWith('dw-')))await caches.delete(k)}catch{}
   try{if(online){const reg=await aboutReg();if(reg)await reg.unregister()}}catch{}
   try{for(const k of Object.keys(localStorage))if(aboutOwnKey(k))localStorage.removeItem(k)}catch{}
-}
+  return true}
+/* said when the database couldn't be deleted (the server's copy, if asked, is gone already; del_pending stays, so the next start finishes) */
+const ABOUT_WIPE_FAIL='The data on this device couldn’t be deleted. Close the app fully (swipe it away), open it again and try again.';
+const ABOUT_WIPE_FAIL_SERVER='Your data was deleted from the server, but this device couldn’t be cleared yet. Close the app fully (swipe it away) and open it again: it finishes then.';
 /* server=true also deletes the account on the server; the device is cleared only once the server said yes (or said it can't) */
 async function deleteMyData(server){
   if(aboutDeleting)return;aboutDeleting=true;
@@ -192,7 +218,7 @@ async function deleteMyData(server){
     if(res.fail){stop(res.fail);return}
     note=res.note;
   }else if(c&&!(typeof inviteOver==='function'&&inviteOver()))note='This device was cleared. Your backup on the server was kept.';
-  await wipeDevice();
+  if(!await wipeDevice()){stop(server&&c&&/from the server|already been deleted/.test(note)?ABOUT_WIPE_FAIL_SERVER:ABOUT_WIPE_FAIL);if(typeof errNote==='function')errNote(new Error('the database could not be deleted'),'Delete my data');return}
   try{sessionStorage.setItem(ABOUT_NOTE,note)}catch{}
   location.reload()}
 /* DELETE /account with the kept connection -> {note} (the device is to be cleared) or {fail} (the connection was put back, nothing deleted) */
@@ -221,7 +247,8 @@ async function aboutResumeDelete(){let keep=null;try{keep=JSON.parse(localStorag
   aboutDeleting=true;if(typeof syncTimer!=='undefined')clearTimeout(syncTimer);
   const res=await aboutDeleteAccount(keep,true);
   if(res.fail){aboutDeleting=false;if(typeof toast==='function')toast('“Delete everything” didn’t finish. '+res.fail.replace(/delete from this device only\./,'delete from this device only, in Settings → About.'),9000);if(window.syncNow)syncNow();return}
-  await wipeDevice();try{sessionStorage.setItem(ABOUT_NOTE,res.note)}catch{}location.reload()}
+  if(!await wipeDevice()){aboutDeleting=false;if(typeof toast==='function')toast(ABOUT_WIPE_FAIL_SERVER,9000);return}
+  try{sessionStorage.setItem(ABOUT_NOTE,res.note)}catch{}location.reload()}
 
 /* ---- the page ---- */
 function renderAbout(){aboutShow();if(typeof homeAbout==='function')homeAbout();   // "Add to Home Screen", on an iPhone or iPad in a browser tab (kit.js)

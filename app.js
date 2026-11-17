@@ -1,6 +1,7 @@
 /* Daily Wardrobe: the app's state and storage (IndexedDB), and helpers every page uses: the busy pill, the tab bar's fit, questions,
-   colour names, photo loading and the precision swatch. Load order of the app's own scripts: app.js, add.js, itemsheet.js, history.js,
-   today.js, month.js, photos.js, settings.js, start.js (the start-up chain last).
+   colour names, photo loading and the precision swatch. The load order is index.html's <script> list: core.js and
+   the drawing scripts, then app.js, add.js, itemsheet.js, history.js, today.js, month.js, photos.js, settings.js, start.js (the start-up
+   chain), ui.js and the rest, about.js last.
    (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
 let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 
@@ -13,10 +14,15 @@ let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.
    transaction retried once (dbLive, txs, atomic); a failure that remains is a storage failure and is said. `db` stays the first opening
    (start-up and safety.js wait on it). */
 let dbCur=null,dbConn=null;
-function dbOpen(){const p=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',2);
+/* set by "Delete my data" (about.js wipeDevice) while it deletes the database: nothing may open it again and fill it (CR-7-01). A save
+   asked for meanwhile waits (dbHeld): the page reloads once the database is gone, and a delete that fails lets it go on (dbUnhold). */
+let dbWiping=false;const dbHeld=[];
+function dbUnhold(){const h=dbHeld.splice(0);dbCur=null;if(h.length){const p=dbOpen();for(const [ok,no] of h)p.then(ok,no)}}
+function dbOpen(){if(dbWiping){const p=new Promise((ok,no)=>dbHeld.push([ok,no]));dbCur=p;return p}
+  const p=new Promise((ok,no)=>{const r=indexedDB.open('wardrobe',2);
   r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('items'))d.createObjectStore('items',{keyPath:'id'});
     if(!d.objectStoreNames.contains('days'))d.createObjectStore('days',{keyPath:'date'});if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta',{keyPath:'k'})};
-  r.onsuccess=()=>{const d=r.result;dbConn=d;d.onclose=()=>dbDrop(d);d.onversionchange=()=>{try{d.close()}catch{}dbDrop(d)};ok(d)};r.onerror=()=>no(r.error)});
+  r.onsuccess=()=>{const d=r.result;if(dbWiping){try{d.close()}catch{}dbHeld.push([ok,no]);return}dbConn=d;d.onclose=()=>dbDrop(d);d.onversionchange=()=>{try{d.close()}catch{}dbDrop(d)};ok(d)};r.onerror=()=>no(r.error)});
   dbCur=p;p.catch(()=>{if(dbCur===p)dbCur=null});return p}
 function dbDrop(d){if(dbConn===d){dbConn=null;dbCur=null}}
 const db=dbOpen();
@@ -112,7 +118,7 @@ const put=i=>{i.updated=nextStamp(stamp(i));if(typeof kitUserEdit==='function')k
 // different fields of one piece both stay, fix round 3; the stamp is nextStamp's, made one above the stored copy's only when it isn't)
 const r=atomic('items',i.id,cur=>{itemFields(i,cur);return {put:i}});r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
 // (the deletion's stamp is above the item's own, so it wins whatever the clocks say: core.js nextStamp; returned for an Undo)
-const del=async id=>{const was=typeof items!=='undefined'&&items.find(x=>x.id===id),t=nextStamp(stamp(was));await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:t});window.scheduleSync&&scheduleSync();return t};
+const del=async id=>{const was=items.find(x=>x.id===id),t=nextStamp(stamp(was));await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:t});window.scheduleSync&&scheduleSync();return t};
 
 
 /* precision swatch: a 128 px square of the cloth, cut from the fabric close-up when the card has one (the cloth up close, white-
