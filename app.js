@@ -211,12 +211,12 @@ try{for(const k of Object.keys(localStorage))if(k.startsWith('nav_fit:'))localSt
 let fitNavRaf=0;const fitNavSoon=()=>{cancelAnimationFrame(fitNavRaf);fitNavRaf=requestAnimationFrame(fitNav)};
 if(typeof ResizeObserver!=='undefined')addEventListener('DOMContentLoaded',()=>{const t=document.querySelector('#today');if(t)new ResizeObserver(fitNavSoon).observe(t)});
 addEventListener('resize',fitNavSoon);
-/* run once every script has loaded: the start-up chain can resolve before tagging.js (loaded after app.js) has run */
+/* run once every script has loaded: the start-up chain can resolve before the photo tagging files (tag-request.js … pattern-read.js, loaded after app.js) have run */
 const afterScripts=f=>document.readyState==='complete'?f():addEventListener('load',()=>f(),{once:true});
 // once every script of the page has run (DOMContentLoaded comes after the last one, and unlike load it doesn't wait for pictures)
 const afterDom=f=>document.readyState!=='loading'?f():addEventListener('DOMContentLoaded',()=>f(),{once:true});
 const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':/^claude/.test(q.model||'')?'Tagged by Claude.':'Tagged by AI.';   // (no model name: a tester read "Tagged by Claude (claude-mock)")
-/* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tagging.js).
+/* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tag-request.js).
    forType: fit the colours and pattern to this type (the card's own, when tagging again or Ask Claude) instead of the one Claude answers
    (CR-2-04). out: an object that gets this call's own failure, out.err = {note, why, net} (CR-2-07: several readings run at once, and the
    shared aiError / tagWhy / tagNetLast, still set for the Add page's note, could hold another card's reason by the time it was read) */

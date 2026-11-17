@@ -11,7 +11,8 @@
 import { OWN_COL_RE, OWN_PAT_RE } from './ownkeys.js';
 import { ACCENT_READ_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, HEX_RE, MATERIALS_BY, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_KEYS, TYPE_COLORS, TYPE_LIST, claudeCall, cleanMaterial, cleanOwnMaterials, lightText, materialSchema, ownMaterialsText, ownTxt, txt, wbOf } from './tag.js';
 import { readCapped } from './links.js';
-import { MOTIF_SHAPES, TEXTURE_KINDS, bitmapOf } from './patternbits.js';   // (one copy with pattern.js: CR-2-15)
+import { dE00, hexLab as labHex } from './colormath.js';   // (one copy with tools/describe-eval.js; core.js's checked equal: CR-2-15)
+import { MOTIF_PLACES, MOTIF_SHAPES, TEX_CONTRASTS, TEXTURE_KINDS, bitmapOf } from './patternbits.js';   // (one copy with pattern.js: CR-2-15)
 import { plainFor, spend, unspend, utcDay } from './people.js';
 
 const DESCRIBE_MODEL = 'claude-sonnet-5-5';
@@ -221,9 +222,9 @@ const DBAND = { type: 'object', additionalProperties: false, required: ['colour'
 const DDIR = { anyOf: [{ type: 'object', additionalProperties: false, required: ['bands'], properties: { bands: { type: 'array', items: DBAND } } }, { type: 'null' }] };
 const DTEX = { anyOf: [{ type: 'object', additionalProperties: false, required: ['kind', 'grid', 'aspect', 'lighter', 'contrast'],
   properties: { kind: { type: 'string', enum: TEXTURE_KINDS }, grid: { type: 'array', items: { type: 'string' } }, aspect: { type: 'number' },
-    lighter: { type: 'boolean' }, contrast: { type: 'string', enum: ['faint', 'subtle', 'clear'] } } }, { type: 'null' }] };
+    lighter: { type: 'boolean' }, contrast: { type: 'string', enum: TEX_CONTRASTS } } }, { type: 'null' }] };
 const DFIG = { type: 'object', additionalProperties: false, required: ['shape', 'placement', 'colour', 'sizePct', 'bitmap'],
-  properties: { shape: { type: 'string', enum: MOTIF_SHAPES }, placement: { type: 'string', enum: ['cell', 'corner', 'alternate-cells'] }, colour: ROLE,
+  properties: { shape: { type: 'string', enum: MOTIF_SHAPES }, placement: { type: 'string', enum: MOTIF_PLACES }, colour: ROLE,
     sizePct: { type: 'number' }, bitmap: { anyOf: [{ type: 'array', items: { type: 'string' } }, { type: 'null' }] } } };
 const DMOTIF = { anyOf: [{ type: 'object', additionalProperties: false, required: ['grid', 'figures', 'cellAspect', 'rowOffset'],
   properties: { grid: { type: 'string', enum: ['straight', 'diagonal'] }, figures: { type: 'array', items: DFIG }, cellAspect: { type: 'number' },
@@ -250,24 +251,7 @@ function patternSchemaOf(own) {
     } };
 }
 
-/* ---- colour arithmetic (the app's core.js: labOf, dE00, colBaseFor) ---- */
-const hexRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
-function rgbLab(r, g, b) {
-  const v = [r, g, b].map(u => { u /= 255; return u > .04045 ? ((u + .055) / 1.055) ** 2.4 : u / 12.92; });
-  const f = t => t > .008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116, X = f((v[0] * .4124 + v[1] * .3576 + v[2] * .1805) / .95047), Y = f(v[0] * .2126 + v[1] * .7152 + v[2] * .0722), Z = f((v[0] * .0193 + v[1] * .1192 + v[2] * .9505) / 1.08883);
-  return [116 * Y - 16, 500 * (X - Y), 200 * (Y - Z)];
-}
-const labHex = h => rgbLab(...hexRgb(h));
-function dE00(a, b) {
-  const [L1, a1, b1] = a, [L2, a2, b2] = b, rad = Math.PI / 180, C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2), Cm = (C1 + C2) / 2,
-    G = .5 * (1 - Math.sqrt(Cm ** 7 / (Cm ** 7 + 25 ** 7))), A1 = a1 * (1 + G), A2 = a2 * (1 + G), c1 = Math.hypot(A1, b1), c2 = Math.hypot(A2, b2),
-    h = (y, x) => { const t = Math.atan2(y, x) / rad; return t < 0 ? t + 360 : t; }, h1 = h(b1, A1), h2 = h(b2, A2), dL = L2 - L1, dC = c2 - c1;
-  let dh = c1 * c2 === 0 ? 0 : h2 - h1; if (dh > 180) dh -= 360; else if (dh < -180) dh += 360; const dH = 2 * Math.sqrt(c1 * c2) * Math.sin(dh * rad / 2);
-  const Lm = (L1 + L2) / 2, cm = (c1 + c2) / 2; let hm = h1 + h2; if (c1 * c2 !== 0) { if (Math.abs(h1 - h2) > 180) hm += hm < 360 ? 360 : -360; hm /= 2; }
-  const T = 1 - .17 * Math.cos((hm - 30) * rad) + .24 * Math.cos(2 * hm * rad) + .32 * Math.cos((3 * hm + 6) * rad) - .2 * Math.cos((4 * hm - 63) * rad),
-    SL = 1 + .015 * (Lm - 50) ** 2 / Math.sqrt(20 + (Lm - 50) ** 2), SC = 1 + .045 * cm, SH = 1 + .015 * cm * T, RT = -2 * Math.sqrt(cm ** 7 / (cm ** 7 + 25 ** 7)) * Math.sin(60 * Math.exp(-(((hm - 275) / 25) ** 2)) * rad);
-  return Math.sqrt((dL / SL) ** 2 + (dC / SC) ** 2 + (dH / SH) ** 2 + RT * (dC / SC) * (dH / SH));
-}
+/* ---- colour arithmetic: worker/colormath.js (the app's core.js: labOf, dE00; colBaseFor below) ---- */
 /* the built-in colour of the list a shade behaves like: by colour family first, then lightness, then distance (core.js colBaseFor) */
 function baseFor(hex, list) {
   const lab = labHex(hex), lch = l => [Math.hypot(l[1], l[2]), (Math.atan2(l[2], l[1]) * 180 / Math.PI + 360) % 360], [C, h] = lch(lab);
@@ -361,12 +345,12 @@ function cleanLook(l) {
   const layout = LAYOUTS.includes(l.layout) ? l.layout : 'none', tr = +num(l.repeatsAcrossItem, .2, 80, 10).toFixed(2);
   if (layout === 'texture') { const x = l.texture || {}, grid = bitmapOf(x.grid, 2, 16, true);
     if (grid) return { layout, tr, tex: { kind: TEXTURE_KINDS.includes(x.kind) ? x.kind : 'other', grid, aspect: +num(x.aspect, .25, 4, grid.length / grid[0].length).toFixed(3),
-      lighter: x.lighter !== false, contrast: ['faint', 'subtle', 'clear'].includes(x.contrast) ? x.contrast : 'subtle' } }; }
+      lighter: x.lighter !== false, contrast: TEX_CONTRASTS.includes(x.contrast) ? x.contrast : 'subtle' } }; }
   if (['stripes', 'check', 'windowpane', 'plaid'].includes(layout)) { const across = bandsOf(l.across), along = layout === 'stripes' ? null : bandsOf(l.along);
     if (across) return { layout, tr, across, ...(along ? { along } : {}) }; }
   if (layout === 'motif' && l.motif && Array.isArray(l.motif.figures)) { const m = l.motif;
     const figs = m.figures.slice(0, 3).map(f => { const bmp = f && f.shape === 'figure' ? bitmapOf(f.bitmap, 3, 16, false) : null;
-      return { shape: f && MOTIF_SHAPES.includes(f.shape) && (f.shape !== 'figure' || bmp) ? f.shape : 'dot', place: ['cell', 'corner', 'alternate-cells'].includes(f && f.placement) ? f.placement : 'cell',
+      return { shape: f && MOTIF_SHAPES.includes(f.shape) && (f.shape !== 'figure' || bmp) ? f.shape : 'dot', place: MOTIF_PLACES.includes(f && f.placement) ? f.placement : 'cell',
         colour: ROLES.includes(f && f.colour) ? f.colour : 'second', size: +(num(f && f.sizePct, 5, 100, 40) / 100).toFixed(3), ...(bmp ? { bmp } : {}) }; });
     if (figs.length) return { layout, tr, motif: { grid: m.grid === 'diagonal' ? 'diagonal' : 'straight', figs, aspect: +num(m.cellAspect, .25, 4, 1).toFixed(3), off: m.rowOffset === 'half' } }; }
   return { layout: 'none', tr };

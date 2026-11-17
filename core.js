@@ -86,10 +86,9 @@ function fitCol(type,k,accent){if(!k)return null;const l=colsFor(type,accent);if
   const f=SHIRT_FALLBACK[k]||{green:'mint',olive:'mint'}[k];if(f&&l.includes(f))return f;
   const x=labOf(k);let best=l[0],bd=1e9;for(const c of l){const y=labOf(c),d=(x[0]-y[0])**2+1.5*((x[1]-y[1])**2+(x[2]-y[2])**2);if(d<bd){bd=d;best=c}}return best}
 /* CIE L*a*b* of a named colour (perceptual distance, so a neutral never lands on a tint) */
-function labOf(c){const v=hexRgb(COLORS[c]).map(u=>{u/=255;return u>.04045?((u+.055)/1.055)**2.4:u/12.92});
-  const f=t=>t>.008856?Math.cbrt(t):7.787*t+16/116,X=f((v[0]*.4124+v[1]*.3576+v[2]*.1805)/.95047),Y=f(v[0]*.2126+v[1]*.7152+v[2]*.0722),Z=f((v[0]*.0193+v[1]*.1192+v[2]*.9505)/1.08883);
-  return [116*Y-16,500*(X-Y),200*(Y-Z)]}
-/* CIE L*a*b* of an sRGB colour (0-255), and back to a hex for display */
+function labOf(c){return rgbLab(...hexRgb(COLORS[c]))}
+/* CIE L*a*b* of an sRGB colour (0-255), and back to a hex for display (the worker's copy, worker/colormath.js, is checked equal by
+   tests/colormath.test.js) */
 function rgbLab(r,g,b){const v=[r,g,b].map(u=>{u/=255;return u>.04045?((u+.055)/1.055)**2.4:u/12.92});
   const f=t=>t>.008856?Math.cbrt(t):7.787*t+16/116,X=f((v[0]*.4124+v[1]*.3576+v[2]*.1805)/.95047),Y=f(v[0]*.2126+v[1]*.7152+v[2]*.0722),Z=f((v[0]*.0193+v[1]*.1192+v[2]*.9505)/1.08883);
   return [116*Y-16,500*(X-Y),200*(Y-Z)]}

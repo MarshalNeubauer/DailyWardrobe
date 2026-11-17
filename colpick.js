@@ -252,7 +252,7 @@ ${np?`<small class="cpnewtx">${esc(cap1(np.name))} isn’t one of your patterns 
    "Pick the shade" is a square and a hue bar with a hex field (all three in step); "Add … and use it" adds it to the owner's colours or
    patterns (addCustomColor / addCustomPattern: settings.custom, synced; testers' own too) and sets the field as a pick does. Opened from
    the "Your colours" / "Your patterns" tile of the picker, from the Add card's offer (Claude's newColor / newPattern, a colour measured
-   far from every listed one: openColForm / openPatForm, tagging.js) and from Settings (openCustomNew: no item, a "For" choice). ---- */
+   far from every listed one: openColForm / openPatForm, own-lists.js) and from Settings (openCustomNew: no item, a "For" choice). ---- */
 const CN_SAMPLE={suit:'navy',blazer:'navy',pants:'charcoal',shirt:'white',tie:'navy',socks:'navy',shoes:'brown',belt:'brown',overcoat:'charcoal',raincoat:'khaki',pocketsquare:'white',tee:'white',polo:'navy',henley:'cream',sweater:'navy',sweatshirt:'grey',hoodie:'grey',qzip:'navy',cardigan:'charcoal',chore:'navy',tieclip:'silver',cufflinks:'silver',watch:'brown'};
 const CN_DESC_MAX=120,CN_SUITING=['suit','blazer','pants'];
 const cnHex=h=>/^#[0-9a-f]{6}$/i.test(String(h||'').trim())?String(h).trim().toLowerCase():null;
@@ -337,7 +337,7 @@ async function describeAsk(){const nc=colPick&&colPick.newc,it=colTarget();if(!n
   const pat=nc.kind==='pattern',body={what:pat?'pattern':'colour',text,type:it.type,field:!pat&&nc.accent?'accent':'primary',
     colours:{main:primaryCol(it),second:it.secondaryColor||null,third:it.tertiaryColor||null},pattern:normPat(it.type,it.pattern),custom:settings.custom||{}};
   nc.state='busy';nc.err='';renderColPick(true);
-  // the close-up when ticked, white-balanced from its paper (wb true) or as taken (wb false); no close-up, no wb (paperCopy, tagging.js)
+  // the close-up when ticked, white-balanced from its paper (wb true) or as taken (wb false); no close-up, no wb (paperCopy, measure.js)
   let sent=null;if(nc.closeOn&&cnHasClose(it)){const c=await paperCopy(it),r=paperNow(it);body.closeup=c.closeup;body.wb=c.wb;sent={wb:c.wb,warm:!c.wb&&!!(r&&r.warm)}}
   if(!colPick||colPick.newc!==nc)return;
   const w=localStorage.getItem('worker_url')||'';let r=null,j={};
@@ -465,7 +465,7 @@ const rdItem=(src,id)=>src==='q'?queue.find(x=>x&&x.id===id):items.find(x=>x.id=
 /* why the button can't read now ('' when it can): no connection, or a tester with fewer than 2 lookups left */
 function rdOff(){if(!isConnected())return NEED_CONN;const l=!showCost()?cnLeft():null;if(!l||l.left>=RD_LOOKUPS)return '';
   return l.left?'Reading color and texture takes 2 lookups and you have 1 left today. They start again at midnight UTC.':`Today’s ${l.cap} color and pattern lookups are used up. They start again at midnight UTC.`}
-/* the cost: the owner the cents (readEstimate, tagging.js), a tester "2 lookups · N of M left today" (no cents for testers) */
+/* the cost: the owner the cents (readEstimate, tag-request.js), a tester "2 lookups · N of M left today" (no cents for testers) */
 function rdCost(){if(!isConnected())return 'Connect in ⚙ Settings first.';
   if(!showCost()){const l=cnLeft();return l?`2 lookups · ${l.left} of ${l.cap} left today`:'2 lookups'}
   return `About ${Math.max(1,Math.round(readEstimate()*100))}¢`}

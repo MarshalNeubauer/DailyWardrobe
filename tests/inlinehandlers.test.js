@@ -24,7 +24,7 @@ module.exports=async({ok,ROOT})=>{
   ok(!fresh.length,'no quoted value in an inline handler that isn\'t jsq() or checked to be app-made'+(fresh.length?': '+fresh.join(', '):''));
   // the three sinks of C1 hold no handler at all now: their values are in data-* attributes
   const src=f=>fs.readFileSync(path.join(ROOT,f),'utf8');
-  ok(/function renderCustomUI\(/.test(src('tagging.js'))&&!/onclick="removeCustom/.test(src('tagging.js')),'Settings\' own colors and patterns: Remove has no inline handler (CR-2-02)');
+  ok(/function renderCustomUI\(/.test(src('own-lists.js'))&&!/onclick="removeCustom/.test(src('own-lists.js')),'Settings\' own colors and patterns: Remove has no inline handler (CR-2-02)');
   ok(!/on(change|click)="(toggleHoliday|removeDaysOff)/.test(src('settings.js')),'Days off: a holiday\'s checkbox and a day off\'s × have no inline handler (CR-7-02)');
   ok(!/onclick="shopUnhide/.test(src('shop.js')),'What to buy: "Show again" has no inline handler (CR-4-01)');
   // the lint itself catches the old code
