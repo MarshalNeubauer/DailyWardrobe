@@ -256,7 +256,7 @@ const matTag=p=>{const m=p&&p.material,t=TYPES[p&&p.type]?p.type:'suit',k=m&&typ
   const n=ownMatName(k);return n&&m.new===true&&conf!=='low'?{key:n,conf,why,new:true}:null};
 /* forType (ask's, CR-2-04): the type the colours, pattern and material are fitted to; `type` stays Claude's answer (tagging again offers it) */
 function normTag(parsed,model,forType){const ft=TYPES[forType]?forType:parsed.type;
-    return {
+    return sockTag(ft,parsed,{
       type:TYPES[parsed.type]?parsed.type:'suit',
       pattern:normPat(TYPES[ft]?ft:'suit',parsed.pattern),
       primaryColor:normColFor(ft,parsed.primaryColor||parsed.color)||'grey',
@@ -281,8 +281,13 @@ function normTag(parsed,model,forType){const ft=TYPES[forType]?forType:parsed.ty
       ownColors:ownColorsOf(parsed.ownColors),
       // Claude's own name and description of the pattern, and whether the listed one fits it (only with freePattern)
       ownPattern:parsed.ownPattern&&typeof parsed.ownPattern==='object'&&/[a-z]{2}/i.test(parsed.ownPattern.name||'')?{name:String(parsed.ownPattern.name).toLowerCase().replace(/[^a-z0-9 '&-]/g,'').replace(/\s+/g,' ').trim().slice(0,60),description:String(parsed.ownPattern.description||'').slice(0,300),fits:parsed.ownPattern.fits===true}:null
-    };
+    });
 }
+/* a sock's toe cap (2026-11-17, sock patterns): the worker's toeColor; a worker from before (no toeColor in the answer) still put the toe cap
+   in secondaryColor, and had no sock patterns, so there the second colour is the toe cap and the sock has no pattern colours */
+function sockTag(ft,parsed,t){if(ft!=='socks')return t;
+  if('toeColor' in parsed)return {...t,toeColor:normColFor('socks',parsed.toeColor,true)};
+  return {...t,toeColor:t.secondaryColor,secondaryColor:null,tertiaryColor:null}}
 
 /* the picture of a file; its object URL is let go once it has loaded (each one held the file's bytes until the page closed) */
 const loadImg=f=>new Promise((ok,no)=>{const i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=e=>{URL.revokeObjectURL(u);no(e)};i.src=u});
@@ -306,6 +311,7 @@ async function fill(q,ai){
   q.secondaryColor=ai&&ai.secondaryColor&&ai.secondaryColor!=='none'?ai.secondaryColor:null;
   q.tertiaryColor=ai&&ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null;
   q.pattern=ai?normPat(q.type,ai.pattern):'solid';
+  q.toeColor=ai&&ai.toeColor||null;   // a sock's toe cap (normTag's sockTag)
   {const a=ai&&ai.accents?accentsFor(q,ai.accents):[];if(a.length)q.accents=a;else delete q.accents}   // Claude's colours beyond the three
   q.metal=ai&&METAL[ai.metal]?ai.metal:'silver';
   q.leather=ai&&ai.leather||'calf';q.trouserKind=ai&&ai.trouserKind||'dress';q.shoeStyle=ai&&ai.shoeStyle||'oxford';

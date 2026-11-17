@@ -211,7 +211,7 @@ function ivCareSum(i,s){const r=i.paused?(i.order?'On the way':i.away?'Away bein
   return s.limit>1?`${r} · worn ${s.wears} of ${s.limit} since ${careWord(i.type)}`:s.wears?`${r} · worn ${careTimes(s.wears)}`:`${r} · not worn yet`}
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}
-  it[k]=v==='none'?null:v;
+  it[k]=v==='none'&&k!=='toeColor'?null:v;   // (a sock's toe cap keeps 'none': a sock with no toeColor at all is from before, core.js sockToe)
   if(k==='shoeStyle'&&!leathersFor(it).includes(it.leather))it.leather='calf';   // a sneaker can't be cordovan: back to plain leather
   if(k==='type'){it.pattern=normPat(v,it.pattern);shirtColFix(it);if(METAL_TYPES.includes(v)&&!it.metal)it.metal='silver';if((v==='shoes'||v==='belt')&&!it.leather)it.leather='calf';typeTidy(it)}
   if(k==='primaryColor')delete it.color;
@@ -222,7 +222,7 @@ async function sete(id,k,v){
    as socks "Green, white toe · warm weather" in waxed cotton): season, material not in its list, metal, leather, cuffs, vest, kind, style,
    the watch's options, and a second or third colour it can't show; the photos stay */
 const TYPE_FIELDS={season:t=>SEASON_TYPES.includes(t),metal:t=>METAL_TYPES.includes(t),leather:t=>t==='shoes'||t==='belt',cuff:t=>t==='shirt',vest:t=>t==='suit',
-  trouserKind:t=>t==='pants',shoeStyle:t=>t==='shoes',dial:t=>t==='watch',band:t=>t==='watch',bezel:t=>t==='watch',watchStyle:t=>t==='watch',details:t=>t==='watch'};
+  trouserKind:t=>t==='pants',shoeStyle:t=>t==='shoes',dial:t=>t==='watch',band:t=>t==='watch',bezel:t=>t==='watch',watchStyle:t=>t==='watch',details:t=>t==='watch',toeColor:t=>t==='socks'};
 /* a material its type can't have goes; a typed "Other" material stays where the type has a list (an own material of another type goes, like a
    listed one). Also the Add card's type change and save (CR-1-06: a jacket read as tweed and changed to a tie was saved "Other · tweed") */
 function matTidy(it){const ml=matsFor(it.type);if(it.material&&!(ml&&(ml.includes(it.material)||!Object.keys(MATERIALS_BY).some(x=>matsFor(x).includes(it.material)))))delete it.material;return it}
@@ -230,6 +230,7 @@ function typeTidy(it){const t=it.type;for(const [f,ok] of Object.entries(TYPE_FI
   matTidy(it);
   if(t==='shoes'&&it.leather&&!leathersFor(it).includes(it.leather))it.leather='calf';
   if(!FABRIC.includes(t))for(const f of ['sett','stripes','patternSpec','weave','patternText','pbox'])delete it[f];
+  if(t==='socks'&&it.toeColor===undefined)it.toeColor='none';   // made socks now: a second colour is the pattern's, never read as a toe cap
   return colTidy(it)}
 /* (2026-11-16, the owner's camouflage shirt: the sheet wouldn't open, so it couldn't be deleted either: a pattern drawn from a fallback
    (a camouflage with no reading of its own, camoLook; an own pattern's look) has no i.sett, and this described i.sett. It describes what is

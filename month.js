@@ -30,7 +30,7 @@ const shortTop=o=>{const t=o.top;if(!t)return o.bot?(wearsJacket()?`No jacket: $
 const tieWord=p=>({'polka-dot':'dot',stripe:'stripe',paisley:'paisley',check:'check',foulard:'foulard',knit:'knit'})[p]||'';
 /* a shirt in a few words: a striped or checked one with its colours and pattern ("white & blue stripe shirt"; "white shirt" under a picture
    of blue stripes read as a mistake, audit 2026-11-14), a plain one by its colour */
-const shirtWords=s=>s.pattern&&!['solid','other'].includes(s.pattern)?`${colorDesc(s)} ${patName(s.pattern)}`:colName(primaryCol(s));
+const shirtWords=s=>s.pattern&&!['solid','other'].includes(s.pattern)?`${shortCol(s)} ${patName(s.pattern)}`:colName(primaryCol(s));
 const shortRest=o=>[o.shirt&&shirtWords(o.shirt)+' shirt',o.tie&&[colName(primaryCol(o.tie)),tieWord(o.tie.pattern),'tie'].filter(Boolean).join(' ')].filter(Boolean).join(' · ').replace(/^./,c=>c.toUpperCase());
 /* the outfit in a few words, the same everywhere it is named in one line (Today's pieces card, sharing, the morning reminder):
    "navy suit · white shirt · burgundy stripe tie" (sentence() capitalises it where it starts a line) */

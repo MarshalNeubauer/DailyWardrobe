@@ -221,7 +221,7 @@ function fitRule(slot,o,c){
     case 'top':case 'bot':case 'shirt':case 'tie':return clothesScore(top,bot,slot==='shirt'?c:o.shirt,slot==='tie'?c:o.tie,suit,day)+(slot==='top'?seasonFit(c,day.clim.season)*2+(day.formal?formalTop(c)*2:0):0);
     case 'shoes':return legs?shoeScore(top,legs,c)+shoeFormality(c,suit):0;
     case 'belt':{const f=o.shoes?beltFit(o.shoes,c):0;return f===null?-60:f}
-    case 'socks':return sockScore(legs,o.shoes,c,sockEcho(o.shirt,o.tie));
+    case 'socks':return sockScore(legs,o.shoes,c,sockEcho(o.shirt,o.tie),{top:o.top,bot:legs,shirt:o.shirt,tie:o.tie,formal:!!o.formal,occasion:o.occasion,season:day.clim.season});   // (a patterned sock's rules, a bright sock on a formal day, the material by season, 2026-11-17)
     case 'watch':return watchFit(c,o.shoes,o.belt);
     case 'clip':case 'links':return accMetal(c,o.tie,o.watch,o.belt);   // the planner's own metal rule (planner.js), enamel and two-tone included
     case 'pocket':return pocketScore(c,o.top,o.shirt,o.tie,{formal:!!o.formal,occ:o.occasion==='formal'?null:o.occasion})}
@@ -415,7 +415,7 @@ function rankLine(R,D){if(!R)return `<span class="mut">Ranking ${dayWord()==='to
 /* a broken rule in words ("Brown belt with black shoes") */
 function failText(o,c){if(c.label==='Belt'&&o.belt&&o.shoes)return `${sentence(dCol(o.belt))} belt with ${dCol(o.shoes)} shoes`;return sentence(c.why||c.label)}
 const lowFirst=t=>t?t[0].toLowerCase()+t.slice(1):t;
-const itemWord=(i,slot,o)=>`${desc(i)||nm(i)} ${slotLabel(slot,o).toLowerCase()}`;
+const itemWord=(i,slot,o)=>`${shortDesc(i)||nm(i)} ${slotLabel(slot,o).toLowerCase()}`;   // (the short titles, as the picker's swaps had them)
 /* the Why sentence: a broken rule and what mends it; the pieces' rest when it beat a better-ranked look; else the strongest dial's reason and
    the weakest's */
 function whyText(o,D,R){const w=dayWord(),hard=D.r.checks.filter(c=>c.hard);

@@ -27,8 +27,9 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
       const base={suitDay:true,top:navy,bot:navy,shirt:wh,tie:bu,shoes:bl,belt:bb,notes:[]},keep=items;items=[...keep,navy,wh,bu,bl,bb,br];
       const ring=o=>{const r=rateOutfit(o);return [...new Set(r.hard.map(c=>DIAL_OF_CHECK[c]))].join()};
       const out={belt:ring({...base,belt:br}),shoes:ring({...base,top:I('suit','brown'),bot:null}),pats:ring({...base,top:I('suit','navy',{pattern:'pinstripe'}),shirt:I('shirt','white',{pattern:'stripe',secondaryColor:'blue'}),tie:I('tie','burgundy',{pattern:'stripe',secondaryColor:'navy'})}),
-        shirt:ring({...base,shirt:I('shirt','navy')}),clean:ring(base)};out.shoes=ring({...base,top:out.br=I('suit','brown'),bot:out.br});delete out.br;items=keep;return out});
-    ok(B.belt==='o'&&B.shoes==='o'&&B.pats==='t'&&/h/.test(B.shirt)&&B.clean==='',`${eng}: a belt that doesn't match and shoes that don't suit ring Occasion, clashing patterns Texture, a shirt the jacket's color Harmony (${JSON.stringify(B)})`);
+        shirt:ring({...base,shirt:I('shirt','navy')}),clean:ring(base),lightSocks:ring({...base,socks:I('socks','white')}),
+        argyle:dialTexture({...base,socks:I('socks','navy',{pattern:'argyle',secondaryColor:'burgundy'})}).why,ribbed:dialTexture({...base,socks:I('socks','navy',{pattern:'ribbed'})}).why};out.shoes=ring({...base,top:out.br=I('suit','brown'),bot:out.br});delete out.br;items=keep;return out});
+    ok(B.belt==='o'&&B.shoes==='o'&&B.pats==='t'&&/h/.test(B.shirt)&&B.clean===''&&B.lightSocks==='h'&&/argyle socks/.test(B.argyle)&&!/socks/.test(B.ribbed),`${eng}: light socks with dark pants ring Harmony, argyle socks are a pattern for Texture and ribbed ones are not;`+` ${eng}: a belt that doesn't match and shoes that don't suit ring Occasion, clashing patterns Texture, a shirt the jacket's color Harmony (${JSON.stringify(B)})`);
     // the same on the card: a brown belt picked with black shoes
     await setup(18);
     const pick=await p.evaluate(async()=>{const o=planFor()[key(sel)],b=items.find(i=>i.type==='belt'&&o.shoes&&beltFit(o.shoes,i)===null);if(!b)return null;await pickItem('belt',b.id);

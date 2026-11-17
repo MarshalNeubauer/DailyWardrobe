@@ -104,7 +104,7 @@ function buildStats(){
   return {short,worn,plan,rows,miss,avg,lowest,trend,wornAvg,wornHard,trendDays:tn,planHard,jackets,shirts,ties,pairs,minRest,b2b,looks,unused:rows.filter(r=>!r.worn&&!r.planned&&!dressOut(r.i.type))}}
 /* a piece as Insights names it: its own name exactly as typed, else its description (Insights showed "Charcoal pinstripe" for the owner's
    "My charcoal pinstripe", audit 2026-11-14) */
-const statName=i=>itemName(i)||sentence(desc(i)||nm(i)),statName1=i=>itemName(i)||sentence(nm(i)),statName2=i=>itemName(i)||nm(i);   // (statName1/2: with the type, "Navy suit"; statName2 later in a line, not capitalised)
+const statName=i=>itemName(i)||sentence(shortDesc(i)||nm(i)),statName1=i=>itemName(i)||sentence(nm(i)),statName2=i=>itemName(i)||nm(i);   // (statName1/2: with the type, "Navy suit"; statName2 later in a line, not capitalised)
 /* an empty wardrobe's pages (Insights, Packing list, Laundry & cleaning): the way to start, as on the empty Wardrobe */
 const emptyAdd=()=>`<div class="btns emptyadd"><button type="button" class="pri" onclick="openAdd()">Add your first item</button>${typeof kitSampleLoad==='function'?'<button type="button" onclick="kitSampleLoad()">Try a sample wardrobe</button>':''}</div>`;
 const statDate=d=>d?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';

@@ -160,6 +160,24 @@ async function matMigrate(){if(matMigrating)return 0;matMigrating=true;let n=0;
   catch(e){console.warn('material rename',e)}finally{matMigrating=false}
   return n}
 whenPulled(()=>matMigrate());
+/* ---- a sock's toe cap moves to its own field (2026-11-17, sock patterns) ----
+   Until now a sock's secondaryColor was its toe cap; now the second and third colours are the pattern's (an argyle's diamonds and lines) and
+   the toe cap is item.toeColor. Each sock with no toeColor (from before, or from an older app by sync) gets it from its secondaryColor, or
+   'none', and a plain sock's secondaryColor and tertiaryColor go; only those fields are stamped, by the corrected clock (as matMigrate), so
+   the move syncs and merges field by field. Idempotent (a migrated sock has toeColor), run after the first pull and again when a sync
+   brings in a sock from an older app (dress.js dressSynced). Until it has run, core.js sockToe reads such a sock the old way, so the
+   drawing and the words never change */
+const sockLegacy=i=>!!i&&i.type==='socks'&&i.toeColor===undefined;
+let sockMigrating=false;
+async function sockToeMigrate(){if(sockMigrating)return 0;sockMigrating=true;let n=0;
+  try{const stored=((await tx('readonly',s=>s.getAll()))||[]).filter(sockLegacy);
+    for(const r of stored){const i=items.find(x=>x.id===r.id)||r;if(!sockLegacy(i))continue;
+      i.toeColor=sockToeKey(i)||'none';if(!sockPatterned(i)){delete i.secondaryColor;delete i.tertiaryColor}i.updated=nextStamp(stamp(i));
+      await atomic('items',i.id,cur=>{itemFields(i,cur);return {put:i}});n++}
+    if(n){if(window.scheduleSync)scheduleSync();wardMemo=null;fixupRedraw()}}
+  catch(e){console.warn('sock toe move',e)}finally{sockMigrating=false}
+  return n}
+whenPulled(()=>sockToeMigrate());
 /* copies them from the Add card onto the item being saved */
 function wardSaveFields(q,it){for(const k of WARD_FIELDS){const v=noBidi(q[k]).trim().slice(0,WARD_MAX[k]);if(v&&(k!=='material'||MATERIALS_BY[it.type]))it[k]=v}}
 

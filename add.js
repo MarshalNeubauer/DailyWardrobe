@@ -389,9 +389,10 @@ async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.pa
   for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
   if(done.length){planDirty();toast(cb.length===done.length&&typeof careBackText==='function'?careBackText(cb):done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`,4000)}return done.length}
 /* Confirm (and the sample, the import, Save all): a failure is said and the card stays (a tester's Confirm did nothing at all, 2026-11-14) */
+/* (2026-11-17, the title audit) the short title, shortDesc: "Saved: Navy argyle socks." */
 /* what the Saved toast calls the item: its own name, else its colours with what it is ("Grey suit", "Navy tie", "Gold watch · white dial
    · bracelet"; it said "Saved: Grey." for a suit and "Saved: Navy." for a tie and for socks) */
-function savedTitle(it){const nm=itemName(it);if(nm)return nameIso(nm);const d=String(desc(it)||'').trim(),t=(TYPES[it.type]||'item').toLowerCase();
+function savedTitle(it){const nm=itemName(it);if(nm)return nameIso(nm);const sw=styleWord(it).trim(),d=String(shortDesc(it)||'').trim(),t=sw||(TYPES[it.type]||'item').toLowerCase();   // (a shoe's style or a trouser's kind as the noun: "Oxblood scotch grain loafers", not "… shoes")
   if(!d)return sentence(t);const k=d.indexOf(' · ');return sentence(k<0?`${d} ${t}`:`${d.slice(0,k)} ${t}${d.slice(k)}`)}
 /* a card by its id (Confirm, Save all) or, as before, its place (the sample, the import, tests) */
 const cardOf=k=>typeof k==='string'?queue.find(q=>q.id===k):queue[k];
@@ -416,6 +417,10 @@ async function saveCard(q){
   const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:hasPat(q.type)?q.pattern:'solid',photo:q.photo,added:nowMs()};
   if(f){it.swatch=q.swatch;it.swSrc=q.swSrc}
   {const a=accentsOf(q);if(a.length)it.accents=a}   // its colours beyond the three (core.js accentsOf)
+  // a sock's toe cap: its own field, always set (a sock without it is from before: core.js sockToe). A card that never had the field (an
+  // import's row: kit.js) keeps a plain sock's second colour as its toe cap, as a spreadsheet means it
+  if(q.type==='socks'){const plain=(patBase(it.pattern)||'solid')==='solid',old=q.toeColor===undefined&&plain&&it.secondaryColor&&COLORS[it.secondaryColor]?it.secondaryColor:null;
+    it.toeColor=q.toeColor&&COLORS[q.toeColor]?q.toeColor:old||'none';if(old)it.secondaryColor=null}
   if(q.order){it.paused=true;it.order=true;if(q.arrives)it.arrives=q.arrives}   // bought, on the way
   if(METAL_TYPES.includes(q.type))it.metal=q.metal||'silver';
   if(q.type==='shirt')it.cuff=q.cuff||'button';

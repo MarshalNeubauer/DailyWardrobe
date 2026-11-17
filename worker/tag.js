@@ -40,8 +40,13 @@ const TYPE_COLORS = {
 const OPT_TYPES = ['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore'];
 const OPT_KINDS = ['cargo'];
 const PQ_TYPES = ['pocketsquare'];   // trouserKind values offered only on request
+/* sock patterns (2026-11-17): an app that knows them names 'sockpat' in its types. Only then are socks given their patterns (argyle, stripe,
+   dots, ribbed, birdseye, nailhead, clock, herringbone), their second and third colours as the pattern's, and the toe cap its own field
+   (toeColor). An older app reads a sock's secondaryColor as its toe cap and has no sock patterns, so its request is exactly as before */
+const OPT_FLAGS = ['sockpat'];
 /* the optional types and kinds the request names (body.types: an array), in this file's order */
-const knownTypes = body => { const t = body && Array.isArray(body.types) ? body.types : []; return [...PQ_TYPES, ...OPT_TYPES, ...OPT_KINDS].filter(x => t.includes(x)); };
+const knownTypes = body => { const t = body && Array.isArray(body.types) ? body.types : []; return [...PQ_TYPES, ...OPT_TYPES, ...OPT_KINDS, ...OPT_FLAGS].filter(x => t.includes(x)); };
+const knowsSock = known => (known || []).includes('sockpat');
 /* (the pocket squares' branch, merged 2026-11-16) the pocket square is offered on request too (an older app reads it as a suit), but unlike the
    new garments its colour, pattern and material rows are listed for every app, as main did; knowsPq is its flag */
 const knowsPq = body => knownTypes(body).includes('pocketsquare');
@@ -72,11 +77,32 @@ const PQ_PATTERNS = `  pocketsquare:
     solid, border (a plain ground with a contrast edge, piping or rolled hem in another color: put the edge's color in secondaryColor),
     polka-dot, paisley, stripe, check, foulard (small repeating motif), woven (a textured solid, e.g. a linen slub or a woven grid), other
 `;
-const promptFor = known => { known = knownOf(known); const types = OPT_TYPES.filter(t => known.includes(t)), pq = known.includes('pocketsquare');
+const promptFor = known => { known = knownOf(known); const types = OPT_TYPES.filter(t => known.includes(t)), pq = known.includes('pocketsquare'), sock = knowsSock(known);
   const pats = OPT_PAT_LINES.map(([ts, l]) => [ts.filter(t => known.includes(t)), l]).filter(([ts]) => ts.length).map(([ts, l]) => `  ${ts.join(', ')}:\n    ${l}\n`).join('');
   const acc = accOpts(known);
-  return (pq ? PROMPT_HEAD.replace('tieclip, watch', 'tieclip, ' + PQ_TYPE + 'watch') : PROMPT_HEAD) + (types.length ? ',\n  ' + types.map(t => OPT_WORDS[t]).join(',\n  ') : '') + PROMPT_COLORS + colorText(known) + PROMPT_PATS + pats + (pq ? PQ_PATTERNS : '') + (acc ? PROMPT_KINDS.replace(ACC_METAL[0], ACC_METAL[1]) : PROMPT_KINDS)
-    + (known.includes('cargo') ? ', cargo (pants with patch cargo pockets on the thighs)' : '') + (acc ? PROMPT_TAIL.replace(ACC_LEATHER[0], ACC_LEATHER[1]).replace(ACC_BAND[0], ACC_BAND[1]) : PROMPT_TAIL); };
+  let kinds = acc ? PROMPT_KINDS.replace(ACC_METAL[0], ACC_METAL[1]) : PROMPT_KINDS, head = pq ? PROMPT_HEAD.replace('tieclip, watch', 'tieclip, ' + PQ_TYPE + 'watch') : PROMPT_HEAD, ps = PROMPT_PATS;
+  if (sock) { kinds = kinds.replace(SOCK_KINDS[0], SOCK_KINDS[1]); head = head.replace(SOCK_JSON[0], SOCK_JSON[1]); ps = ps.replace(SOCK_SECOND[0], SOCK_SECOND[1]).replace(SOCK_THIRD[0], SOCK_THIRD[1]); }
+  return head + (types.length ? ',\n  ' + types.map(t => OPT_WORDS[t]).join(',\n  ') : '') + PROMPT_COLORS + colorText(known) + ps + pats + (pq ? PQ_PATTERNS : '') + (sock ? SOCK_PATTERNS : '') + kinds
+    + (known.includes('cargo') ? ', cargo (pants with patch cargo pockets on the thighs)' : '') + (acc ? PROMPT_TAIL.replace(ACC_LEATHER[0], ACC_LEATHER[1]).replace(ACC_BAND[0], ACC_BAND[1]) : PROMPT_TAIL) + (sock ? SOCK_TOE : ''); };
+/* the sock pieces of the prompt (sockpat known): the patterns, the pattern's colours, the toe cap's own field */
+const SOCK_KINDS = ['shoes, belt, socks, cufflinks', 'shoes, belt, cufflinks'];
+const SOCK_JSON = ['"bezel":"..."}', '"bezel":"...","toeColor":"..."}'];
+const SOCK_SECOND = [`  Socks: the color of a contrasting toe cap (the knitted tip over the toes, often a light heather gray on a dark sock), or "none"
+  if the toe is the same color as the rest of the sock. A small logo or a heel in the same color as the sock does not count.`,
+`  Socks: the pattern's second color (an argyle's diamonds, the stripes, the dots, the clock motif), or "none" for a plain or ribbed sock
+  in one color. A contrasting toe cap or heel is not a pattern color: the toe cap goes in toeColor.`];
+const SOCK_THIRD = ['(e.g. the second line color of a tattersall)', '(e.g. the second line color of a tattersall; on argyle socks the thin crossing lines; a third stripe color)'];
+const SOCK_PATTERNS = `  socks:
+    solid (one color, smooth), argyle (diamonds in two or more colors, often crossed by thin diagonal lines), stripe (bands around the
+    leg, any width), polka-dot (small dots), ribbed (vertical knit ribs in one color), birdseye (a fine all-over knit of tiny light dots),
+    nailhead (tiny pinpoint dots in an even grid), clock (a slim embroidered motif running up the side of the ankle on a plain sock),
+    herringbone (small zigzag columns knitted tone on tone), other (any other design: a novelty print, a logo all over, fair isle, camo)
+`;
+const SOCK_TOE = `
+
+toeColor — socks only: the color of a contrasting toe cap (the knitted tip over the toes, often a light heather gray on a dark sock),
+  from the socks' line colors, or "none" if the toe is the same color as the rest of the sock. A small logo or a heel in the sock's own
+  color does not count. "none" for every other type.`;
 /* the accessory values the app has had since 2026-11-15 (CR-2-06: core.js BANDS, SHOE_NAP, BELT_MATS, METAL_TONES; a rubber or NATO strap was
    tagged leather, and the planner matched it to the shoes): offered, like the new garments' heather and cable, only to an app that names
    any new garment in its types (tagPatterns' rule), so an older app's request stays byte-identical; the picker's calls name none (their
@@ -201,8 +227,9 @@ const tagTypes = known => { known = knownOf(known); return TYPE_LIST.filter(t =>
 const PATTERN_LIST = ['solid','pinstripe','chalk-stripe','herringbone','birdseye','nailhead','sharkskin','houndstooth','glen-check','windowpane','tweed','twill',
   'stripe','gingham','tattersall','check','oxford','polka-dot','paisley','foulard','knit','other',
   'fine-stripe','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','camouflage','tonal-check','border'];
-const OPT_PATTERNS = ['heather','cable'], PATTERN_KEYS = [...PATTERN_LIST, ...OPT_PATTERNS];
-const tagPatterns = known => (known || []).some(t => OPT_TYPES.includes(t)) ? PATTERN_KEYS : PATTERN_LIST;
+const OPT_PATTERNS = ['heather','cable'], SOCK_NEW_PATTERNS = ['argyle','ribbed','clock'], PATTERN_KEYS = [...PATTERN_LIST, ...OPT_PATTERNS, ...SOCK_NEW_PATTERNS];
+// (the socks' own patterns join only for an app that knows them: knowsSock)
+const tagPatterns = known => [...((known || []).some(t => OPT_TYPES.includes(t)) ? [...PATTERN_LIST, ...OPT_PATTERNS] : PATTERN_LIST), ...(knowsSock(known) ? SOCK_NEW_PATTERNS : [])];
 const tagKinds = known => ['dress','chinos','jeans', ...OPT_KINDS.filter(k => (known || []).includes(k))];
 /* each colour key's sRGB hex: must match COLORS in core.js (tests/colouraudit.test.js); worker/describe.js tells Claude the shades */
 const COLOR_HEX = { black: '#16161a', charcoal: '#3b3f46', darkgrey: '#5e6269', grey: '#8b8f96', midgrey: '#a2a4a8', lightgrey: '#babdc2', white: '#f6f6f3',
@@ -219,6 +246,8 @@ const PATTERN_BY_TYPE = { suit: SUIT_PATS, blazer: SUIT_PATS, pants: SUIT_PATS,
   pocketsquare: ['solid','border','polka-dot','paisley','stripe','check','foulard','woven','other'] };
 { const top = ['solid','stripe','heather','other'], knit = ['solid','heather','cable','stripe','other'];
   Object.assign(PATTERN_BY_TYPE, { tee: top, polo: top, henley: top, sweater: knit, sweatshirt: top, hoodie: top, qzip: knit, cardigan: knit, chore: ['solid','other'] }); }
+// socks (2026-11-17, = core.js PATS_BY.socks; offered in the tag only to an app that knows them: knowsSock)
+PATTERN_BY_TYPE.socks = ['solid','argyle','stripe','polka-dot','ribbed','birdseye','nailhead','clock','herringbone','other'];
 /* what each item type is made of: must match MATERIALS_BY in core.js (tests/materials.test.js) */
 const MATERIALS_BY = {
   suit: ['wool','wool blend','tropical wool','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','mohair blend','silk blend','moleskin','corduroy','velvet','polyester blend'],
@@ -423,7 +452,11 @@ function tagSchema(custom, single, free, freePat, known = []) { known = knownOf(
   const props = { ...TAG_SCHEMA.properties, ...acc, type: { type: 'string', enum: tagTypes(known) }, trouserKind: orNull(tagKinds(known)),
     primaryColor: { type: 'string', enum: cols }, secondaryColor: { type: 'string', enum: [...cols, 'none'] },
     tertiaryColor: { type: 'string', enum: [...cols, 'none'] }, pattern: { type: 'string', enum: pats } };
-  if (!single) return { ...TAG_SCHEMA, properties: props };
+  // a sock's toe cap (sockpat known; never on the picker's calls, which don't name it): a plain string, not another enum of every colour
+  // (the accents' reason: the schema stays well under what the API compiles); cleanTag keeps a known key or 'none'
+  const sock = knowsSock(known) && !free && !freePat, req = sock ? [...TAG_SCHEMA.required, 'toeColor'] : TAG_SCHEMA.required;
+  if (sock) props.toeColor = { type: 'string' };
+  if (!single) return { ...TAG_SCHEMA, properties: props, required: req };
   Object.assign(props, {
     confidence: { type: 'object', additionalProperties: false, required: ['type', 'primaryColor', 'pattern'], properties: { type: CONF, primaryColor: CONF, pattern: CONF } },
     altColor: { type: 'string', enum: [...cols, 'none'] }, altPattern: { type: 'string', enum: [...pats, 'none'] },
@@ -437,7 +470,7 @@ function tagSchema(custom, single, free, freePat, known = []) { known = knownOf(
   // the accents too (2026-11-16), on the same plain tag only
   const mat = !free && !freePat;
   if (mat) { props.material = materialSchema(null); props.accents = ACCENT_SCHEMA; }
-  return { ...TAG_SCHEMA, properties: props, required: [...TAG_SCHEMA.required, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox', 'patternBox', 'weave', ...(free ? ['ownColors'] : []), ...(freePat ? ['ownPattern'] : []), ...(mat ? ['material', 'accents'] : [])] };
+  return { ...TAG_SCHEMA, properties: props, required: [...req, 'confidence', 'altColor', 'altPattern', 'newColor', 'newPattern', 'clothBox', 'patternBox', 'weave', ...(free ? ['ownColors'] : []), ...(freePat ? ['ownPattern'] : []), ...(mat ? ['material', 'accents'] : [])] };
 }
 /* ---- accents (2026-11-16, the owner's approved job "keep an item's extra colors"): up to ACCENT_MAX colors beyond the three main ones
    (a five-color paisley tie, a multi-color plaid), most visible first, as color keys (the list's, or the owner's own). Asked on the plain
@@ -455,6 +488,8 @@ const ACCENT_RULES = `accents — up to ${ACCENT_MAX} further distinct colors vi
   tertiaryColor; e.g. the gold and red of a five-color paisley tie, the extra lines of a multi-color plaid), ${ACCENT_TAIL}`;
 const ACCENT_READ_RULES = `accents — up to ${ACCENT_MAX} further distinct colors visible in the pattern beyond the item's main, second and third colors (given
   with the item below) and the main color you read, ${ACCENT_TAIL}`;
+/* a sock's toe cap (2026-11-17): a known colour key (the owner's own too; "light gray" = lightgrey) or 'none' */
+function cleanToe(v, own) { const k = cleanAccents([v], [], own)[0]; return k || 'none'; }
 /* Claude's accents -> up to ACCENT_MAX known keys (letters only, lower case, "light blue" = lightblue, gray = grey), none of main (the three
    main colors, and any other key to leave out), no repeats; [] for anything else */
 function cleanAccents(list, main, own) {
@@ -637,8 +672,9 @@ function cleanTag(t, opts = {}) {
   // the material held to its tier (cleanMaterial: a fiber is low, and low without a close-up), never only the pattern again
   const material = 'material' in t ? cleanMaterial(t.material, t.type, [t.pattern], !!opts.closeup, opts.ownMaterials) || undefined : undefined;
   // the accents: known keys only (the owner's own sent with the tag: opts.ownColors), none of the three main colors, no repeats, at most 4
-  const accents = 'accents' in t ? cleanAccents(t.accents, [t.primaryColor, t.secondaryColor, t.tertiaryColor], opts.ownColors) : undefined;
-  return { ...plain(t), confidence: conf(t.confidence), ...(t.conf !== undefined ? { conf: conf(t.conf) } : {}), newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern, material, accents };
+  const toe = 'toeColor' in t ? cleanToe(t.toeColor, opts.ownColors) : undefined;
+  const accents = 'accents' in t ? cleanAccents(t.accents, [t.primaryColor, t.secondaryColor, t.tertiaryColor, toe], opts.ownColors) : undefined;   // (a sock's toe cap is no accent)
+  return { ...plain(t), ...(toe !== undefined ? { toeColor: toe } : {}), confidence: conf(t.confidence), ...(t.conf !== undefined ? { conf: conf(t.conf) } : {}), newColor: sug(t.newColor), newPattern: sug(t.newPattern), clothBox: box, patternBox: boxOf(t.patternBox), weave, ownColors, ownPattern, material, accents };
 }
 /* the body of an AI route (/tag-many, /pattern, /render; CR-2-08), read as POST / reads it (worker.js): a content-length over the limit
    refused before reading, at most AI_BODY_MAX bytes read (readCapped, the rest never read), JSON, an object -> {body} or {res} (the
@@ -702,7 +738,8 @@ async function handleTagMany(req, env, json, who) {
   const bad = badPics(body, json); if (bad) return bad;
   const known = knownTypes(body), custom = cleanCustom(body.custom), base = tagSchema(custom, false, false, false, known);
   const schema = { ...MULTI_SCHEMA, properties: { items: { ...MULTI_SCHEMA.properties.items, items: { ...MULTI_SCHEMA.properties.items.items,
-    properties: { ...MULTI_SCHEMA.properties.items.items.properties, ...base.properties } } } } };
+    properties: { ...MULTI_SCHEMA.properties.items.items.properties, ...base.properties },
+    ...(base.properties.toeColor ? { required: [...MULTI_SCHEMA.properties.items.items.required, 'toeColor'] } : {}) } } } };   // (a sock's toe cap: sockpat known)
   const over = await spend(env, who, 'tag'); if (over) return json(over.body, over.status);
   const c = await tagWithClaude(env, String(body.image || ''), { schema, prompt: known.length ? multiPrompt(known) : MULTI_PROMPT, owner: customText(custom) + correctionsText(body.corrections), wb: wbOf(body), maxTokens: 16000, effort: 'medium', signal: req.signal });
   if (c.status !== 200) { await unspend(env, who, 'tag'); return json(c.body, c.status); }
@@ -710,7 +747,8 @@ async function handleTagMany(req, env, json, who) {
   const ownKeys = custom.colors.map(k => k.key);
   const items = (Array.isArray(c.body.items) ? c.body.items : []).slice(0, 40).map(it => {
     const b = it.box || {}, x = clamp(b.x), y = clamp(b.y);
-    return { ...it, ...('accents' in it ? { accents: cleanAccents(it.accents, [it.primaryColor, it.secondaryColor, it.tertiaryColor], ownKeys) } : {}),
+    const toe = 'toeColor' in it ? cleanToe(it.toeColor, ownKeys) : undefined;
+    return { ...it, ...(toe !== undefined ? { toeColor: toe } : {}), ...('accents' in it ? { accents: cleanAccents(it.accents, [it.primaryColor, it.secondaryColor, it.tertiaryColor, toe], ownKeys) } : {}),
       box: { x, y, w: Math.max(1, Math.min(1000 - x, clamp(b.w))), h: Math.max(1, Math.min(1000 - y, clamp(b.h))) } };
   }).sort((a, b) => a.box.x + a.box.w / 2 - (b.box.x + b.box.w / 2));
   console.log(`tagged ${items.length} items in one photo`);

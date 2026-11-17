@@ -16,18 +16,24 @@ const colBtn=(src,ref,k,v,lab)=>{const c=v&&COLORS[v]?v:null,r=`'${jsq(String(re
    (on a leather strap it is the strap's: "Strap colour"); a second colour for patterned cloth (its stripe), socks (the toe cap) and
    sneakers (the sole); a third only for patterned cloth. A field that already holds a colour stays, so it can be cleared. */
 const colHas=v=>!!v&&v!=='none';
+/* socks (2026-11-17, sock patterns): the toe cap is its own field (toeColor, always shown); a patterned sock's second colour (and a third
+   for argyle, stripes and other designs) is the pattern's; a plain or one-colour knit (ribbed, herringbone) has none */
+const SOCK_THIRD=['argyle','stripe','other'];
 const colShows=(it,k)=>{const t=it&&it.type;if(!t)return true;
   if(k==='primaryColor')return t!=='watch'||strapBand(it);
+  if(k==='toeColor')return t==='socks';
+  if(t==='socks'&&it.toeColor===undefined&&!sockPatterned(it))return false;   // a sock from before: its second colour is its toe cap (shown as Toe cap)
   if(colHas(it[k]))return true;
-  if(k==='secondaryColor')return hasPat(t)||t==='socks'||(t==='shoes'&&shoeStyle(it)==='sneaker');
+  if(t==='socks'){const p=patOf(it)||'solid';return k==='secondaryColor'?p!=='solid':SOCK_THIRD.includes(p)}
+  if(k==='secondaryColor')return hasPat(t)||(t==='shoes'&&shoeStyle(it)==='sneaker');
   return hasPat(t)};   // (hasPat: patterned cloth, a pocket square's print or border, a casual garment's stripe, heather or cable)
-const colFieldLabel=(it,k)=>k==='primaryColor'?(it&&it.type==='watch'?'Strap color':'Color'):k==='secondaryColor'?(it&&it.type==='socks'?'Toe cap':it&&it.type==='shoes'&&shoeStyle(it)==='sneaker'?'Sole':'Second color'):'Third color';
+const colFieldLabel=(it,k)=>k==='primaryColor'?(it&&it.type==='watch'?'Strap color':'Color'):k==='toeColor'?'Toe cap':k==='secondaryColor'?(it&&it.type==='shoes'&&shoeStyle(it)==='sneaker'?'Sole':'Second color'):'Third color';
 /* a second or third colour the item can't show is dropped where the item is made (saveCard) or its type changed (sete): an Add card
    shows only the fields its type uses, a saved item keeps one already set until it is cleared or its type changes */
 function colTidy(it){for(const k of ['secondaryColor','tertiaryColor'])if(colHas(it[k])&&!colShows({...it,[k]:null},k))delete it[k];return it}
 /* the colour rows of the Add card (src 'q', ref the card's id) and the item sheet (src 'e', ref the item's id); a card is never found by its
    place in the list (CR-1-02: a "Several items" answer landing while the sheet was up moved the list, and "Use" colored another card) */
-const colRows=(src,ref,it)=>['primaryColor','secondaryColor','tertiaryColor'].filter(k=>src==='q'?colShows({...it,[k]:k==='primaryColor'?it[k]:null},k):colShows(it,k)).map(k=>`<label class="colrow">${colFieldLabel(it,k)} ${colBtn(src,ref,k,k==='primaryColor'?(src==='e'?primaryCol(it):it.primaryColor):it[k]||'none',colFieldLabel(it,k))}</label>`).join('');
+const colRows=(src,ref,it)=>['primaryColor','secondaryColor','tertiaryColor','toeColor'].filter(k=>src==='q'?colShows({...it,[k]:k==='primaryColor'?it[k]:null},k):colShows(it,k)).map(k=>`<label class="colrow">${colFieldLabel(it,k)} ${colBtn(src,ref,k,k==='primaryColor'?(src==='e'?primaryCol(it):it.primaryColor):k==='toeColor'?(src==='e'?sockToeKey(it):it.toeColor)||'none':it[k]||'none',colFieldLabel(it,k))}</label>`).join('');
 const colTarget=()=>!colPick?null:colPick.src==='s'?colPick.fake:colPick.src==='q'?cardOf(colPick.ref):items.find(x=>x.id===colPick.ref);
 function colChoices(it,k){if(k==='accents')return accChoices(it);const cur=k==='primaryColor'?primaryCol(it):it[k];
   return COLOR_OPTS(it.type,cur,k!=='primaryColor').map(x=>x[0]).filter(c=>COLORS[c])}
@@ -49,7 +55,7 @@ function colNear(it,k){const m=it.meas;if(!m||!m.lab||!['primaryColor','secondar
   try{return nearestCols(it.type,lab,m.ref,{kL:measKL(m),skip:it.id,accent:k!=='primaryColor'}).filter(x=>COLORS[x.c])}catch(e){return []}}
 function openColPick(src,ref,k){if(src==='q'&&typeof ref==='number'){const q=queue[ref];ref=q?q.id:''}   // (a place, from tagging.js and tests: its card's id from now on)
   colPick={src,ref,k,from:document.activeElement};const it=colTarget();if(!it){colPick=null;return}
-  colPick.cur=k==='accents'?'':k==='pattern'?normPat(it.type,it.pattern):(k==='primaryColor'?primaryCol(it):it[k])||'none';colPick.sel=colPick.cur;   // (accents: nothing picked yet)
+  colPick.cur=k==='accents'?'':k==='pattern'?normPat(it.type,it.pattern):(k==='primaryColor'?primaryCol(it):k==='toeColor'?sockToeKey(it):it[k])||'none';colPick.sel=colPick.cur;   // (accents: nothing picked yet)
   colPick.view=it.texture&&(k==='primaryColor'||k==='pattern'||k==='accents'||!it.photo)?'tex':'photo';
   renderColPick();$('#col-sheet').classList.add('on');$('#col-backdrop').classList.add('on');$('#col-sheet').scrollTop=0;colSwipe();layerInert();   // the item sheet under it out of reach (W2-19-03)
   const x=$('#col-sheet .pick-x');if(x)x.focus({preventScroll:true})}
@@ -108,7 +114,7 @@ function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==
     otherH=others.length?`<h4 class="cph" id="cp-other-h">Your other colors</h4><small class="cpothx">Made for other kinds of item. Pick one and it is offered for ${esc(typePl(it.type))} too.</small><div class="cpgrid cnown cpother" aria-labelledby="cp-other-h">${others.map(c=>tile(c)).join('')}</div>`:'';
   // without a photo the drawing stands in, drawn in the colour being looked at (Claude's new colour isn't one yet: drawn as it is)
   const drawn=sel===NEW_COL||sel===cur?it:acc?{...it,accents:[...accentsOf(it),sel]}:{...it,[k]:sel==='none'?null:sel,...(k==='primaryColor'?{color:undefined}:{})};
-  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">${acc?'Add a color it also has':k==='secondaryColor'&&it.type==='socks'?'Toe cap color':k==='primaryColor'&&it.type!=='watch'?'Choose the color':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' color':'')}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">${acc?'Add a color it also has':k==='toeColor'?'Toe cap color':k==='primaryColor'&&it.type!=='watch'?'Choose the color':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' color':'')}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${srcOk(pic)}" alt="${what}">`:`<div class="cpdraw">${itemThumb(drawn)}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig${sel==='none'?' none':''}"${sel==='none'?'':` style="background:${hex(sel)}"`}><figcaption>${esc(name(sel))}</figcaption></figure></div>
 ${cpSeg(vs,view)}</div>
 ${acc?'':colAskHtml(it,k,tile,name)}
@@ -124,7 +130,7 @@ ${k==='primaryColor'||acc?'':`<div class="cpgrid">${tile('none')}</div>`}${group
    in memory per item (colAsk, not saved or synced), so the other colour fields show it without asking again; Claude's pick for
    the field being edited is selected at once, so it lies beside the close-up. ---- */
 const colAsk={};
-const COL_FIELDS=it=>it.type==='socks'?['primaryColor','secondaryColor']:['primaryColor','secondaryColor','tertiaryColor'];
+const COL_FIELDS=it=>['primaryColor','secondaryColor','tertiaryColor'];   // (a sock's second and third are its pattern's since 2026-11-17; the toe cap is toeColor)
 async function colAskImgs(it,src){
   if(src==='q'&&it.raw&&it.raw.tex){measureCard(it);return {img:it.tagImg||it.photo||it.texture,closeup:await closeTagImg(it),measured:measHint(it.meas)}}
   let measured;try{const c=await imgOf(it.texture),cv=document.createElement('canvas');cv.width=c.naturalWidth;cv.height=c.naturalHeight;cv.getContext('2d').drawImage(c,0,0);
@@ -210,7 +216,7 @@ const patBtn=(src,ref,it)=>{const p=normPat(it.type,it.pattern),r=`'${jsq(String
   return `<button type="button" class="colbtn patbtn" data-k="pattern" onclick="openColPick('${src}',${r},'pattern')" aria-haspopup="dialog" aria-label="Pattern: ${esc(patTitle(p))}"><span class="colchip patchip">${swatchSVG(patVar(it,p),true)}</span><span class="colnm">${esc(patTitle(p))}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
 const EP=(id,it)=>`<label class="colrow">Pattern ${patBtn('e',id,it)}</label>`;
 const PAT_GROUPS=[[['solid'],'Plain'],[['pinstripe','chalk-stripe','stripe','fine-stripe'],'Stripes'],[['glen-check','windowpane','check','gingham','tattersall','tonal-check','houndstooth'],'Checks'],
-  [['herringbone','birdseye','nailhead','sharkskin','twill','tweed','oxford','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','knit'],'Weaves'],[['polka-dot','paisley','foulard','camouflage'],'Figures']];
+  [['herringbone','birdseye','nailhead','sharkskin','twill','tweed','oxford','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','knit','ribbed'],'Weaves'],[['polka-dot','paisley','foulard','camouflage','argyle','clock'],'Figures']];   // (a sock's ribbed knit, argyle and clock, 2026-11-17)
 const patGroupOf=p=>{const b=patBase(p);const g=PAT_GROUPS.findIndex(([l])=>l.includes(b));return g<0?PAT_GROUPS.length:g};
 function patNewFor(it){const a=it&&colAsk[it.id+'|p'],o=a&&a.ownPattern;if(!o||o.fits||!o.name||ownNameShort(o.name))return null;
   if(ownPatFind(o.name)||patNameTaken(o.name)||Object.values(PATS_BY).some(l=>l.some(p=>patName(p).toLowerCase()===o.name)))return null;
