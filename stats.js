@@ -117,7 +117,9 @@ function statRowsHtml(S,t){const rs=statTypeRows(S,t),max=Math.max(1,...rs.map(r
         <span class="st-bars">${bar(r.worn,max,'w')}${bar(r.planned,max,'p')}</span>
         <small class="mut">${r.worn?`worn ${r.worn}×${r.last?' · last '+statDate(r.last):''}`:'not worn yet'} · ${r.planned?`planned ${r.planned}×${r.next?' · next '+statDate(r.next):''}`:'not planned'}</small></div></div>`).join('')}
 let statsLast=null;   // the numbers the page was last drawn from, with the plan they came from (a fold fills its rows from them)
-function renderStats(){
+/* Insights drawn again keeps the focus where it was (What to buy's button lost it to <body> when a redraw came after its sheet closed: CR-9-04) */
+function renderStats(){const el=$('#stats');if(!el)return;if(typeof keepFocus==='function')keepFocus(el,statsDraw);else statsDraw()}
+function statsDraw(){
   const el=$('#stats');if(!el)return;
   if(!items.length){el.innerHTML=`<div class="phead"><h2>Insights</h2></div><p class="mut empty">Your wardrobe is empty.</p>${emptyAdd()}`;return}
   const S=buildStats(),nPlan=S.plan.length,bar=statBar;statsLast={S,c:cache,n:items.length};

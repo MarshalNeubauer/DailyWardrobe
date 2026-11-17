@@ -402,7 +402,7 @@ ${kitLastRow()}<div class="btns"><button type="button" onclick="kitTemplate()">D
 <label class="kit-paste">Or paste the rows<textarea id="kit-paste" rows="5" onfocus="kitPasteShow(this)" placeholder="Type, Color, Pattern…" oninput="kitImportText(this.value)"></textarea></label>
 <div id="kit-prev" aria-live="polite"></div></div>
 <div class="kit-bar"><button type="button" id="kit-cancel" onclick="kitClose()">Cancel</button><button type="button" class="pri" id="kit-imp" disabled onclick="kitImportGo()">Add items</button></div>`;
-  e.classList.add('on');kitInert(true);kitHist()}
+  e.classList.add('on');kitInert(true);kitHist();e.tabIndex=-1;try{e.focus({preventScroll:true})}catch{}}   // the focus goes into the sheet (it stayed on <body>, outside the dialog)
 /* the paste field comes into view below the sheet's header once the keyboard is up (re-audit 2026-11-15: with the preview scrolled it
    stayed under the header) */
 function kitPasteShow(t){setTimeout(()=>{if(!t.isConnected)return;const b=t.closest('.kit-body');if(!b)return;const r=t.getBoundingClientRect(),br=b.getBoundingClientRect(),vh=window.visualViewport?visualViewport.height:innerHeight;
