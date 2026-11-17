@@ -129,3 +129,6 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(!fs.readdirSync(ROOT).some(f=>/^wa\d\.png$/.test(f)),'the stray screenshots are gone');
   }finally{await browser.close()}
 };
+// (CACHE is read from sw.js as the page is served it, and compared with appVersion(): a CACHE bump, which every app change makes, can't
+// turn this file; without this every app change selected it, CR-10-07)
+module.exports.ignoreNames=['CACHE'];
