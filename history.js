@@ -223,7 +223,7 @@ function fitRule(slot,o,c){
     case 'belt':{const f=o.shoes?beltFit(o.shoes,c):0;return f===null?-60:f}
     case 'socks':return sockScore(legs,o.shoes,c,sockEcho(o.shirt,o.tie));
     case 'watch':return watchFit(c,o.shoes,o.belt);
-    case 'clip':case 'links':return o.watch&&metalOf(c)!==null?(metalOf(c)===metalOf(o.watch)?6:-4):0;
+    case 'clip':case 'links':return accMetal(c,o.tie,o.watch,o.belt);   // the planner's own metal rule (planner.js), enamel and two-tone included
     case 'pocket':return pocketScore(c,o.top,o.shirt,o.tie,{formal:!!o.formal,occ:o.occasion==='formal'?null:o.occasion})}
   return 0}
 // gaps in score points (the fixed test plan's rule-of-thumb fit used the same bands)
