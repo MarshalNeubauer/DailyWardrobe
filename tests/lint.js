@@ -3,6 +3,7 @@
 //   node tests/lint.js --changed   the scripts the commits since origin/main changed, as committed (.githooks/pre-push): an error
 //                                  anywhere in them refuses the push; an unused variable is shown only on a line the change touched
 // Without ESLint installed (a checkout from before it was added: run `npm install`) it says so and passes.
+// Both ways end with the type check's baseline (tests/typecheck.js; --changed: only when the branch changed a script).
 const path=require('path'),{execFileSync}=require('child_process');
 const ROOT=path.resolve(__dirname,'..');
 const git=(...a)=>{try{return execFileSync('git',a,{cwd:ROOT,maxBuffer:1<<28,stdio:['ignore','pipe','ignore']}).toString('utf8')}catch(e){return null}};
@@ -35,4 +36,6 @@ const LINTED=f=>/\.js$/.test(f)&&!f.startsWith('tests/fixtures/')&&!f.startsWith
   if(out.length)console.log(out.join('\n'));
   if(errors||warnings||!touched.size)console.log(`lint: ${errors} error${errors===1?'':'s'}, ${warnings} warning${warnings===1?'':'s'}`+(hidden?` (and ${hidden} on lines this change didn't touch)`:'')+` in ${results.length} file${results.length===1?'':'s'}`);
   if(errors){console.log('A name that doesn\'t exist, or one declared twice, breaks the script when that line runs: fix it, commit, and push again.');process.exitCode=1}
-})().catch(e=>{console.log('lint could not run: '+(e&&e.message||e));});
+})().catch(e=>{console.log('lint could not run: '+(e&&e.message||e));})
+  // then the type check's baseline (tests/typecheck.js): every script, or with --changed only when the branch changed a script
+  .then(()=>{if(require('./typecheck').main(process.argv.includes('--changed')?['--changed']:[]))process.exitCode=1});
