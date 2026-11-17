@@ -79,7 +79,8 @@ function show(t){
   if(from==='add'&&t!=='add'&&typeof addFor!=='undefined')addFor=null;   // (what Today's "Add one" asked for goes with the page)
   if(from==='add'&&t!=='add'&&typeof toastDrop==='function')toastDrop();   // Add's "Saved … Undo" goes with the page: it lay over Today's month card for 8 s
   if(typeof setupYield==='function')setupYield(t);
-  closeSettings();if(from!==t&&typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();   // (What to buy stays open over its own tab redrawn by a sync, CR-4-04)
+  closeSettings();if(!SUBS.includes(t))appDrop('sub');   // (again: Settings over Add hands Add's entry back as it closes, CR-7-04)
+  if(from!==t&&typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();   // (What to buy stays open over its own tab redrawn by a sync, CR-4-04)
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn){btn.classList.toggle('on',s===t);if(s===t)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current')}}   // (spoken, not only shown: W2-19-05)
   if(from==='wardrobe'&&t!=='wardrobe'&&!editing){const w=$('#wardrobe');if(w)w.textContent=''}   // the grid (about 4,900 elements at 107 items) is drawn again on coming back: kept, it stayed in memory and in every style recalculation (audit 2026-11-13)
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>typeof statsShow==='function'?statsShow():renderStats()};if(f[t])f[t]();
@@ -89,7 +90,26 @@ function show(t){
   pageIn(t,from);
 }
 
-connRestored.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings'),metaGet(PLAN_SNAP).catch(()=>null)])).then(([r,d,st,sn])=>{({items,days:d}=cleanStored(r,d));dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));settings=takeSettings(settings,st);setSeen=st&&st.updated||0;applyCustom(settings.custom);wxPreload();if(key(sel)===key(todayDate())){const h=homeDay();sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()}}planSnapUse(sn);checkPlanRules().then(()=>whenPulled(checkArrivals)).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});whenPulled(dropLearn);whenPulled(()=>afterScripts(()=>{if(typeof kitFixOldImports==='function')kitFixOldImports().then(n=>{if(n&&!$('#today').hidden)refreshToday()})}));whenPulled(()=>typeof kitSampleMigrate==='function'&&kitSampleMigrate());show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});whenPulled(()=>texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));whenPulled(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>fixBlackBackdrops()).then(()=>smallPhotos()));afterScripts(()=>safetyStart())})}).catch(e=>{console.warn(e);items=[];show('today');window.appReady=true;afterScripts(()=>storageDown(e))});
+/* a start-up that fails (CR-7-03, the code review 2026-11-16: any error in the chain below emptied the wardrobe in memory and drew
+   "Get your first outfit", with no word and no error note, so a person re-added pieces and got duplicates). Only stores that couldn't be
+   read leave the wardrobe empty (storageDown says so); after they were read, the wardrobe that was read stays, the person is told in plain
+   words that nothing is lost, and the error is noted (safety.js errNote, which a tester's phone reports by itself). */
+let startRead=null,startTook=false;
+function startFailed(e){console.warn(e);
+  if(startRead&&!startTook){   // the stored-record check itself failed: each record goes through it alone, and one that fails it stays out
+    const one=(f,x)=>{try{return f(x)}catch{return null}};
+    items=(startRead.r||[]).map(x=>one(cleanRecord,x)).filter(Boolean);
+    dayRecs=Object.fromEntries((startRead.d||[]).map(x=>one(cleanDay,x)).filter(Boolean).map(x=>[x.date,x]))}
+  if(!startRead)items=[];
+  else{afterScripts(()=>{if(typeof errNote==='function')errNote(e,'Start-up')});
+    setTimeout(()=>toast('Something went wrong while the app was starting. Your wardrobe is safe on this phone: nothing was deleted. Close the app fully and open it again; if this keeps happening, tell us in Settings → About → Feedback.',15000),0)}
+  try{show('today')}catch(e2){console.warn(e2);if(startRead)afterScripts(()=>{if(typeof errNote==='function')errNote(e2,'Start-up: Today')});startPlain()}
+  window.appReady=true;afterScripts(()=>storageDown(e));
+  if(startRead)afterScripts(()=>{try{safetyStart()}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
+/* Today couldn't be drawn: a plain card says so, with Try again */
+function startPlain(){const t=$('#today');if(!t)return;for(const s of PAGES){const el=$('#'+s);if(el)el.hidden=s!=='today'}
+  t.innerHTML='<div class="mbox"><p><b>Today couldn’t be shown.</b></p><p class="shelp">Your wardrobe is safe on this phone: nothing was deleted.</p><div class="sactions"><button type="button" onclick="location.reload()">Try again</button></div></div>'}
+connRestored.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings'),metaGet(PLAN_SNAP).catch(()=>null)])).then(([r,d,st,sn])=>{startRead={r,d};({items,days:d}=cleanStored(r,d));startTook=true;dayRecs=Object.fromEntries((d||[]).map(x=>[x.date,x]));settings=takeSettings(settings,cleanStoredSettings(st));setSeen=st&&st.updated||0;applyCustom(settings.custom);wxPreload();if(key(sel)===key(todayDate())){const h=homeDay();sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()}}planSnapUse(sn);checkPlanRules().then(()=>whenPulled(checkArrivals)).then(()=>{if(!$('#today').hidden)refreshToday()});afterScripts(()=>{if(typeof migrateVests==='function')migrateVests()});whenPulled(dropLearn);whenPulled(()=>afterScripts(()=>{if(typeof kitFixOldImports==='function')kitFixOldImports().then(n=>{if(n&&!$('#today').hidden)refreshToday()})}));whenPulled(()=>typeof kitSampleMigrate==='function'&&kitSampleMigrate());show('today');afterScripts(()=>{if(typeof setupStart==='function')setupStart()});loadWeather();afterScripts(()=>refreshHolidays());loadRenders().then(()=>asmLive()?asmLoad():0).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});whenPulled(()=>texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));whenPulled(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>fixBlackBackdrops()).then(()=>smallPhotos()));afterScripts(()=>safetyStart())})}).catch(startFailed);
 
 /* (Today opens on the home day once the settings are read: today, or the next workday when today is a weekend or a day off; it opened on the
    calendar day, an empty "Saturday isn't a workday" page, while the Today tab went to Sunday's outfit (audit 2026-11-14))

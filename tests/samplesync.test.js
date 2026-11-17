@@ -71,14 +71,14 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(!p.errs.length,'no page errors: '+p.errs.join(' | '));await p.context().close();
     /* ---- W1-6-04 and W1-3-04 through the real worker ---- */
     const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
-    const store=new Map(),meta=new Map();let posts=0;
+    const store=new Map(),meta=new Map();
     const KV={get:async(k,t)=>store.has(k)?(t==='json'?JSON.parse(store.get(k)):store.get(k)):null,getWithMetadata:async k=>({value:store.has(k)?store.get(k):null,metadata:meta.get(k)||null}),
       put:async(k,v,o)=>{store.set(k,v);meta.set(k,o&&o.metadata)},delete:async k=>{store.delete(k);meta.delete(k)},
       list:async({prefix})=>({keys:[...store.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name,metadata:meta.get(name)})),list_complete:true})};
     const env={APP_TOKEN:'secret',WARDROBE:KV},HOST='https://wardrobevision.test/';
     const wf=(u,o)=>worker.fetch(new Request(HOST+u,{...o,headers:{'x-app-token':'secret','content-type':'application/json',...(o&&o.headers||{})}}),env);
     const device=async(connect)=>{const c=await browser.newContext({timezoneId:'Asia/Kuwait'});
-      await c.route(HOST+'**',async route=>{const q=route.request(),u=new URL(q.url());if(u.pathname!=='/sync')return route.fulfill({status:404,body:'{}'});if(q.method()==='POST')posts++;
+      await c.route(HOST+'**',async route=>{const q=route.request(),u=new URL(q.url());if(u.pathname!=='/sync')return route.fulfill({status:404,body:'{}'});
         const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:['GET','HEAD'].includes(q.method())?undefined:q.postData()}),env);
         await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
       const d=await c.newPage();d.errs=[];d.on('pageerror',e=>d.errs.push(e.message));await d.goto(url);

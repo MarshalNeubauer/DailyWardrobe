@@ -223,11 +223,11 @@ function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlI
    OVL_HB_PX square PNG (the enlarged swatch is 46% of the picture). The drawn swatch (the list dot's tile at 2.2x strength) read as harsh
    charcoal zigzags on near-white. The tile is rasterised, so it is made once per look, asynchronously: until then a plain patch of the
    shirt's colour (data-hb), replaced where it shows when ready; if it can't be made, the drawn swatch as before */
-const OVL_HB_PAIRS=5,OVL_HB_PX=512,OVL_HB=new Map();
+const OVL_HB_PAIRS=5,OVL_HB_PX=512,OVL_HB=new Map();let ovlHbN=0;   // (CR-8-05) ids from a counter: the cache's size repeats after an eviction
 const ovlHbKey=i=>JSON.stringify([colOf(i),usableSett(i),i.pattern,typeof ASM_HB_COL_LIFT!=='undefined'?[ASM_HB_COL_LIFT,ASM_HB_SHIRT_Y]:0,OVL_HB_PAIRS]);
 function ovlHbShirt(i){if(!i||i.type!=='shirt'||typeof document==='undefined'||typeof asmHbShirt!=='function'||typeof asmCmTile!=='function'||!asmHbShirt(i))return null;
   const k=ovlHbKey(i);let e=OVL_HB.get(k);
-  if(!e){e={id:'hb'+OVL_HB.size,url:null,fail:false};OVL_HB.set(k,e);
+  if(!e){e={id:'hb'+(++ovlHbN),url:null,fail:false};OVL_HB.set(k,e);
     const put=h=>document.querySelectorAll(`[data-hb="${e.id}"]`).forEach(x=>{x.outerHTML=h});
     e.p=asmCmTile(i,'shirt').then(T=>{if(!T)throw new Error('no tile');
       const g=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055),tc=document.createElement('canvas');tc.width=T.TW;tc.height=T.TH;

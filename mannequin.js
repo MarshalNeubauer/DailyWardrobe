@@ -33,8 +33,13 @@ function pattern(id, spec, rot, k = 1) {
 
 /* a shirt button where the painter draws one (asm-color.js ASM_CM_BTN): pearl mixed 55% with the shirt's colour in display values
    (ASM_CM_BTN_MIX, the owner's pick), a lit rim, four holes and a soft shadow down and to the right */
-const btnCol = (c) => { const s = /^#[0-9a-fA-F]{6}$/.test(String(c)) ? [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)) : [235, 235, 235];
-  return '#' + [219, 214, 204].map((v, i) => Math.round(v * .45 + s[i] * .55).toString(16).padStart(2, '0')).join(''); };
+/* (CR-8-04, 2026-11-17) the painter's own rule (asmCmBtnCol) where asm-color.js is loaded, so the two can't drift; without it the same
+   rule by hand: the pearl's linear values [.86, .84, .80] are [239, 236, 231] in display values (they were read as display values,
+   up to 12 levels darker than the painted buttons) */
+const btnCol = (c) => { const ok = /^#[0-9a-fA-F]{6}$/.test(String(c)), s = ok ? [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)) : [235, 235, 235];
+  const hex = v => '#' + v.map(x => Math.round(x).toString(16).padStart(2, '0')).join('');
+  if (typeof asmCmBtnCol === 'function' && typeof srgbLin8 === 'function') return hex(asmCmBtnCol(s.map(srgbLin8)).map(v => 255 * linSrgb(v)));
+  return hex([239, 236, 231].map((v, i) => v * .45 + s[i] * .55)); };
 const shirtButton = (x, y, r, c) => `<circle cx="${x + r * .25}" cy="${y + r * .35}" r="${r * 1.05}" fill="#000" fill-opacity=".18"/><circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/>`
   + `<circle cx="${x}" cy="${y}" r="${(r * .8).toFixed(2)}" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="${(r * .18).toFixed(2)}"/>`
   + [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => `<circle cx="${(x + a * r * .27).toFixed(2)}" cy="${(y + b * r * .27).toFixed(2)}" r="${(r * .12).toFixed(2)}" fill="#000" fill-opacity=".35"/>`).join('');
@@ -122,10 +127,5 @@ ${(G.btn || []).length ? `<g class="fig-shirtbtn">${G.btn.map(([x, y, r]) => shi
 </g>
 </svg>`;
 }
-const mqHas = kind => !!(self.MQ_RAW && self.MQ_RAW[kind]);
-self.outfitMannequinSvg = outfitMannequinSvg; self.mqData = mqData; self.mqHas = mqHas;
-/* the pieces' centre points in viewBox units, measured by the tracer from the masks (mqData(kind).hot); FIG_HOTSPOTS are the waistcoat
-   pose's (kept for anything that wants to point at them) */
-self.FIG_VIEWBOX = { w: VB, h: VB };
-Object.defineProperty(self, 'FIG_HOTSPOTS', { configurable: true, get: () => { const g = mqData('vest'); return g ? g.hot : null; } });
+self.outfitMannequinSvg = outfitMannequinSvg; self.mqData = mqData;   // (CR-8-08: mqHas, FIG_VIEWBOX and FIG_HOTSPOTS, read by nothing, were removed)
 })();

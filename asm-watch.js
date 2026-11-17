@@ -3,8 +3,8 @@
    asm-worker.js. It works on the finished picture (assemble.js asmBuild: a JPEG, or the PC's graphics-chip worker's raw pixels), only in
    the watch's square, and only for a watch that doesn't look like the master's (asmWatchPaints); the master's own watch keeps every
    picture's key and pixels as they were.
-   - watch/<kind>.png: per master a square crop at 2048 (R dial, G case with bezel, crown and pushers, B strap), soft; watch/geo.json is
-     inlined below (its offset, the dial's centre, the strap's axis). Placed on the masters by hand (dial and bezel ellipses on zoomed crops,
+   - watch/<kind>.png: per master a square crop at 2048 (R dial, G case with bezel, crown and pushers, B strap), soft; its geometry is
+     ASM_WATCH_GEO below (its offset, the dial's centre, the strap's axis; the copy in watch/geo.json was removed, CR-8-08). Placed on the masters by hand (dial and bezel ellipses on zoomed crops,
      the strap beyond the case along its axis), C:\code\watch-test\... was not needed: the tools are in the session that made them.
    - watch/leather.jpg: 640 px from ambientCG Leather038 (CC0): R grain x128, G relief (lit from the upper left) x128, B roughness.
    The painting is the owner's chosen mockup ("round 3"): from the master's own light, a polished case in the watch's metal, the dial in
@@ -85,5 +85,5 @@ function asmWatchDo(px,S,W,M,T){const L=ASM_LIN,f=S/2048,g=W.g,pad=Math.ceil(14*
     for(let q=0;q<N;q++){const a=D[q];if(a<.004)continue;
       if(W.dark){const fine=Math.min(1,Math.max(0,(sm[q]-Y[q])/ref)),k=Math.min(1.15,Math.max(.7,big[q]/ref)),t=Math.min(.9,fine*2.6);for(let c=0;c<3;c++){const d=DC[c]*k;put(q,c,d+(MK[c]-d)*t,a)}}
       else{const k=Math.min(1.1,Math.max(.35,Y[q]/ref));for(let c=0;c<3;c++)put(q,c,DC[c]*k,a)}}}   // a light dial: its colour, the printing as dark as before
-  const gam=v=>{v=v<0?0:v>1?1:v;return 255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)};
+  const gam=linSrgb8;   // (srgb.js)
   for(let j=0;j<h;j++)for(let i=0;i<w;i++){const q=j*w+i;if(!chg[q])continue;const p=4*((Y0+j)*S+X0+i);for(let c=0;c<3;c++)px[p+c]=gam(out[3*q+c])}}   // only what was painted

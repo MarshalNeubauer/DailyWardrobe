@@ -20,7 +20,6 @@ module.exports=async({ok,chromium,url})=>{
       return j({ok:true})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));if(!o.noGo){await p.goto(url);await p.waitForFunction(()=>window.appReady)}return {ctx,p,errs,st}};
   const link=(t,x='')=>'#invite='+t+'&w='+encodeURIComponent(HOST)+x;
-  const askShown=p=>p.evaluate(()=>!!(document.querySelector('#ask-ok')&&document.querySelector('#ask-ok').offsetParent));
   try{
     // ---- C1: a cold start on another invitation's link, with a wardrobe stored: the question comes (it never did)
     {const {p,errs,st}=await page();
