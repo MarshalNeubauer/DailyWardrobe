@@ -302,7 +302,7 @@ function toggleWorn(){const o=planFor()[key(sel)];if(!o)return;const no=o.worn!=
   return setWorn(no?false:undefined).then(()=>toast(no?'Marked as not worn: this day won’t count as a wear. Tap again if you wore it.':'Marked as worn.',no?5000:2500))}
 function figureStage(o){
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
-  const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}" data-type="${i.type}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-expanded="${belowOpen===s}" aria-controls="bpanel" aria-label="${slotLabel(s,o)}: ${desc(i)}. ${belowOpen===s?'Hide':'Show'} the photo">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
+  const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}" data-type="${i.type}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-expanded="${belowOpen===s}" aria-controls="bpanel" aria-label="${slotLabel(s,o)}: ${shortDesc(i)}. ${belowOpen===s?'Hide':'Show'} the photo">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
   const r=renderFor(o),photo=!!r;
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
   if(asmLive())setTimeout(()=>asmEnsure(o),0);   // and its item photos, to put the outfit's picture together here
@@ -367,7 +367,7 @@ function goToday(){const h=homeDay();sel=new Date(h);view={y:h.getFullYear(),m:h
 let listOpen=false;
 function piecesBox(o){
   const pcs=[['top',o.top],['vest',o.vest?o.top:null],['bot',o.suitDay?null:o.bot],['shirt',o.shirt],['tie',o.tie],['clip',o.clip],['links',o.links],['pocket',o.pocket],['watch',o.watch],['belt',o.belt],['socks',o.socks],['shoes',o.shoes],['coat',o.coat]].filter(([,i])=>i);
-  const chips=pcs.map(([s,i])=>`<span class="pchip${s==='vest'?' vest':''}" title="${slotLabel(s,o)}: ${esc(s==='vest'?'matching vest':desc(i)||nm(i))}">${swatchSVG(i,true)}</span>`).join('');
+  const chips=pcs.map(([s,i])=>`<span class="pchip${s==='vest'?' vest':''}" title="${slotLabel(s,o)}: ${esc(s==='vest'?'matching vest':shortDesc(i)||nm(i))}">${swatchSVG(i,true)}</span>`).join('');
   const pp=piecesParts(o),sum=pp.map((t,k)=>nameHtml(k?t:sentence(t))).join(' · ');   // each name kept in its place in an English line (<bdi>, W2-16-10)
   return `<section class="mbox ibox${listOpen?' open instant':''}" id="ibox"><button class="month-link" onclick="toggleList()" aria-expanded="${listOpen}" aria-controls="ipanel" aria-label="Outfit pieces: ${pcs.length}. ${listOpen?'Fold away':'Show the list'}">
     <span class="pstrip" aria-hidden="true" style="--pc:${pcs.length<=6?pcs.length:Math.ceil(pcs.length/2)}">${chips}</span><span class="mltxt"><b>${pcs.length} piece${pcs.length===1?'':'s'}</b><small class="cap">${sum||'Tap to see the list'}</small></span><span class="chev" aria-hidden="true">›</span></button>

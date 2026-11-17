@@ -36,7 +36,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const sig=p=>p.evaluate(async()=>stateSig(await localState()));
   const hush=async p=>{await quiet(p);await p.evaluate(()=>clearTimeout(syncTimer))};
   const settle=async(...ps)=>{for(let n=0;n<6;n++){for(const p of ps)await syncQ(p);for(const p of ps)await quiet(p);const s=await Promise.all(ps.map(sig));if(s.every(x=>x===s[0]))break}for(const p of ps)await hush(p)};
-  const add=(p,fields)=>p.evaluate(async f=>{const it={id:crypto.randomUUID(),type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now(),...f};await put(it);items.push(it);return it.id},fields);
+  // (socks as the app's Add saves them, with their toeColor: one without is from before, and the one-time move restamps and uploads it)
+  const add=(p,fields)=>p.evaluate(async f=>{const it={id:crypto.randomUUID(),type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now(),...(f.type==='socks'?{toeColor:'none'}:{}),...f};await put(it);items.push(it);return it.id},fields);
   const names=p=>p.evaluate(()=>items.map(i=>i.type+':'+i.primaryColor).sort().join(','));
 
   const A=await device(),B=await device();

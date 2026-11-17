@@ -24,7 +24,7 @@ const careWashed=t=>t==='shirt'||t==='socks'||t==='pocketsquare'||['tee','polo',
 const careWord=t=>careWashed(t)?'washing':'cleaning';
 const careNoun=i=>i.type==='pants'?'pants':(TYPES[i.type]||'item').toLowerCase().replace('dress ','');
 const careTimes=n=>n===1?'once':n===2?'twice':n+' times';
-const careName=i=>`${TYPES[i.type]||'Item'}: ${String(i.name||'').trim()?nameHtml(String(i.name).trim()):sentence(desc(i)||careNoun(i))}`;
+const careName=i=>`${TYPES[i.type]||'Item'}: ${String(i.name||'').trim()?nameHtml(String(i.name).trim()):sentence(shortDesc(i)||careNoun(i))}`;
 /* wears since cleaning for every item: {id: count}. Kept on the plan cache, which is dropped whenever items, days or settings change */
 function careCounts(){if(cache.careW)return cache.careW;const w={},by=Object.fromEntries(items.map(i=>[i.id,i]));
   for(const r of wornDays()){const k=isoKey(r.d);
@@ -172,7 +172,7 @@ function careBandSoon(){if(!document.getElementById('cband'))return;careBandFit(
 function careReminders(days,time){const out={},T=todayDate(),add=(d,t)=>{const k=isoKey(d);out[k]=out[k]?out[k]+' '+t:t};
   const now=new Date(),[h,m]=String(time||'07:00').split(':').map(Number),past=now.getHours()*60+now.getMinutes()>=h*60+m&&isoKey(now)===isoKey(T);
   const wd=[];for(let g=0;g<days;g++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+g);if(isWorkday(d)&&!(g===0&&past))wd.push(d)}   // (today's time gone: from tomorrow)
-  const plan=d=>planMonth(d.getFullYear(),d.getMonth())[key(d)],last={},nm=i=>{const n=String(i.name||'').trim(),d=desc(i)||'';return n||(new RegExp('\\b'+careNoun(i)+'\\b').test(d)?d:(d+' '+careNoun(i)).trim())};   // (its name as typed, else "navy suit")
+  const plan=d=>planMonth(d.getFullYear(),d.getMonth())[key(d)],last={},nm=i=>{const n=String(i.name||'').trim(),d=shortDesc(i)||'';return n||(new RegExp('\\b'+careNoun(i)+'\\b').test(d)?d:(d+' '+careNoun(i)).trim())};   // (its name as typed, else "navy suit")
   let told={};try{told=JSON.parse(localStorage.getItem('care_told')||'{}')||{}}catch{}
   const tk=isoKey(T),keep={},cOf=i=>i.cleaned||'';
   // a reminder of this kind (d: due, o: overdue) already sent this time round (since the piece was last cleaned), this morning included

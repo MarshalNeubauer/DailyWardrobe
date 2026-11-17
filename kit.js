@@ -121,6 +121,9 @@ function kitFail(e){console.warn('save failed',e);if(storeFailure(e))saveFailed(
 /* an item made from a card with no photo, as add.js saveCard makes one (a hand-added card: the fields it keeps for each type) */
 function kitItem(c){const f=hasPat(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:nowMs()};
   {const a=accentsOf(c);if(a.length)it.accents=a}   // an import's "Also has" colours
+  // socks (2026-11-17): a plain sock's second colour is its toe cap, as a spreadsheet and the sample have always meant it; a patterned
+  // sock's is its pattern's (a card set by hand on Add already has toeColor)
+  if(c.type==='socks'){if(c.toeColor!==undefined)it.toeColor=c.toeColor&&COLORS[c.toeColor]?c.toeColor:'none';else{const plain=it.pattern==='solid';it.toeColor=plain&&it.secondaryColor&&COLORS[it.secondaryColor]?it.secondaryColor:'none';if(plain){it.secondaryColor=null;it.tertiaryColor=null}}}
   if(METAL_TYPES.includes(c.type))it.metal=c.metal||'silver';
   if(c.type==='shirt')it.cuff=c.cuff==='french'?'french':'button';
   if(c.type==='suit')it.vest=c.vest==='yes'?'yes':'no';
@@ -312,6 +315,7 @@ function kitRow(c,line){const probs=[],given=new Set();
   let pattern='solid';if(hasPat(type)){if(c.pattern){const p=kitPattern(c.pattern,type);if(p===undefined)probs.push(`pattern “${c.pattern}” read as plain`);else{pattern=p;given.add('pattern')}}
     else{const f=dpat||[c.notes,c.name,c.type].filter(Boolean).map(s=>kitPatWords(kitWords(s),type)).find(Boolean);if(f){pattern=f.p;given.add('pattern')}}}
   const card={id:crypto.randomUUID(),manual:true,type,primaryColor:col,secondaryColor:c2||null,tertiaryColor:c3||null,pattern,metal:mtl?mtl.k:'silver',leather:'calf'};
+  if(type==='socks'){const plain=pattern==='solid';card.toeColor=plain&&c2?c2:null;if(plain){card.secondaryColor=null;card.tertiaryColor=null}}   // a plain sock's second colour is its toe cap (2026-11-17: its own field)
   // an "Also has" column (accents, 2026-11-16): its colours in one cell ("red, gold"), the item's own three left out, at most 4 (a new
   // piece only: a re-import's update of a piece he has leaves its accents, KIT_UPD)
   if(c.accents){const ks=[];for(const w of String(c.accents).split(/\s*(?:,|\/|&|\+|;|\band\b)\s*/i).filter(Boolean)){const x=kitColour(w);if(x)ks.push(x.k);else if(x===undefined)probs.push(`also-has color “${w}” left out`)}
@@ -451,8 +455,8 @@ function kitImportText(t,file){const r=kitRead(t),el=$('#kit-prev');if(!el)retur
    first, then each piece with a tick; a named piece shows its colour and pattern too; an update says what changes on which piece */
 function kitPrevDraw(){const r=kitImp,el=$('#kit-prev');if(!r||!el)return;const good=r.rows.filter(x=>x.ok),bad=r.rows.filter(x=>!x.ok),dup=good.filter(x=>x.dup).length,upd=good.filter(x=>x.upd).length,n=good.reduce((s,x)=>s+(x.qty||1),0);
   const row=(x,k)=>{const it=x.upd&&items.find(i=>i.id===x.upd),t=sentence(itemTitle(x.card));
-    const info=[TYPES[x.card.type],x.card.name?sentence(desc(x.card)):'',(x.qty||1)>1?`${x.qty} of them`:'',x.dup?'already in your wardrobe':x.have?`${x.have} already in your wardrobe`:'',
-      it?(x.asNew?'added as a new piece':`updates your ${itemName(it)?`“${itemName(it)}”`:desc(it)+' '+typeWord(it)}: ${kitDiffText(it,x).join(', ')}`):'',...x.probs].filter(Boolean).join(' · ');
+    const info=[TYPES[x.card.type],x.card.name?sentence(shortDesc(x.card)):'',(x.qty||1)>1?`${x.qty} of them`:'',x.dup?'already in your wardrobe':x.have?`${x.have} already in your wardrobe`:'',
+      it?(x.asNew?'added as a new piece':`updates your ${itemName(it)?`“${itemName(it)}”`:shortDesc(it)+' '+typeWord(it)}: ${kitDiffText(it,x).join(', ')}`):'',...x.probs].filter(Boolean).join(' · ');
     return `<li class="ok${x.dup?' dup':''}${it&&!x.asNew?' upd':''}"><label class="kit-row"><input type="checkbox" class="kit-tick" ${x.on?'checked':''} onchange="kitImpTick(${k},this.checked)"><span class="kit-dot">${swatchSVG(x.card,true)}</span><span><b>${esc(t)}</b><small>${esc(info)}</small></span></label>${it?`<button type="button" class="linkbtn kit-asnew" onclick="kitAsNew(${k})">${x.asNew?'Update it instead':'Add as new'}</button>`:''}</li>`};
   const pl=(k,a,b)=>k===1?a:b,read=[];
   if(r.list)read.push('Read as a list, one piece per line.');
