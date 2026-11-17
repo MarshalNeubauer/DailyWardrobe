@@ -78,16 +78,18 @@ function shopSwipe(){if(shopSwipeOn)return;const v=$('#shop-sheet'),bd=$('#shop-
   v.addEventListener('touchend',end,{passive:true});v.addEventListener('touchcancel',end,{passive:true});
 }
 
+/* the sheet drawn again as the check goes on, the focus kept where it was inside it (it fell to <body>: CR-9-04) */
+const shopKeep=()=>typeof keepFocus==='function'?keepFocus($('#shop-sheet'),renderShop):renderShop();
 /* run the analysis in the background; the sheet fills in section by section */
 function analyzeWardrobe(){
   if(shopWorker){shopWorker.terminate();shopWorker=null}
   const sig=shopSig(),strip=({photo,swatch,stripes,texture,sett,patternText,weave,pbox,patternSpec,meas,tagAI,...i})=>i;   // the planner needs the tags only: no pictures (nor how sure the tagger was)
   const payload={list:items.map(strip),days:Object.values(dayRecs),settings,weather,climate,today:TODAY_OVERRIDE,weeks:SHOP_WEEKS};
-  const redraw=()=>{if(shopOpen)renderShop();const b=$('#shop-btn');if(b)b.outerHTML=shopButton()};
+  const redraw=()=>{if(shopOpen)shopKeep();const b=$('#shop-btn');if(b){const had=document.activeElement===b;b.outerHTML=shopButton();if(had)try{$('#shop-btn').focus({preventScroll:true})}catch{}}};   // (the focus stays on the button drawn again: CR-9-04)
   const finish=res=>{shopWorker=null;shopBusy=null;shopPart=null;shop={sig,at:Date.now(),res};metaPut('shop',shop).catch(()=>{});redraw()};
   const fail=msg=>{shopWorker=null;shopBusy=null;shopPart=null;shopMsg='The check failed: '+msg;redraw()};
   const progress=(i,n,label)=>{shopBusy={i,n,label:label||'',t0:shopBusy&&shopBusy.t0||Date.now()};const el=$('#shop-prog');if(el){el.querySelector('i').style.width=Math.round(100*(i+1)/n)+'%';el.nextElementSibling.textContent=shopBusyText()}};
-  const part=cat=>{shopPart=shopPart||{cats:[],top:[],partial:true};shopPart.cats.push(cat);if(shopOpen)renderShop()};
+  const part=cat=>{shopPart=shopPart||{cats:[],top:[],partial:true};shopPart.cats.push(cat);if(shopOpen)shopKeep()};
   shopBusy={i:-1,n:1,label:'',t0:Date.now()};shopPart=null;redraw();
   let w=null;try{w=new Worker('analysis-worker.js')}catch(e){}
   if(w){shopWorker=w;w.onmessage=e=>{const d=e.data;if(w!==shopWorker)return;if(d.progress)progress(...d.progress);else if(d.cat)part(d.cat);else{w.terminate();if(d.error)fail(d.error);else finish(d.done)}};

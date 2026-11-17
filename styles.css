@@ -7,6 +7,7 @@
 /* text sizes are in rem: the root follows the iPhone's Larger Text (--tscale, set in index.html's head; 1 = the default look) */
 html{font-size:calc(var(--tscale,1) * 100%)}
 *{box-sizing:border-box}
+[hidden]{display:none!important}   /* hidden always wins over a component's display */
 /* the bottom tab bar (labels 17 px, never under 16 px even with a smaller iPhone text size: the owner found 15 hard to read): compact buttons, and it reaches into the home-indicator zone (only 16px of the inset kept clear below it) */
 :root{--navpad:max(0px, calc(env(safe-area-inset-bottom) - 18px));--navx:0px;--navh:calc(44px + var(--navx) + var(--navpad))}   /* --navx: the tab bar grown to meet Today's tiles (fitNav in app.js) */
 body{margin:0;background:var(--bg);color:var(--ink);font:1rem/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif;padding-bottom:calc(var(--navh) + 12px)}
@@ -34,8 +35,6 @@ nav button{transition:height .2s ease,color .25s ease}
 .dot{width:24px;height:24px;border-radius:6px;border:1px solid #0003;flex:none;background-size:cover}
 .warn{background:#d9a21b22;border-left:4px solid var(--acc);padding:8px 12px;border-radius:4px}
 .nav{display:flex;justify-content:space-between;align-items:center;margin:8px 0}
-.pl{display:flex;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;align-items:baseline}
-.pl b{width:54px;flex:none}.pl.on{background:var(--card);box-shadow:inset 3px 0 var(--acc)}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}
 .chip{border-radius:99px;white-space:nowrap;padding:5px 12px}.chip.on{background:var(--ink);color:var(--bg)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -59,12 +58,11 @@ button{touch-action:manipulation}
 .score{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:8px 0}
 .score summary{display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none}.score summary::-webkit-details-marker{display:none}
 .score .num{font-size:1.75rem;font-weight:800;min-width:56px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff}
-.score.good .num,.sc.good{background:#2f7a4f}.score.ok .num,.sc.ok{background:#b5841a}.score.low .num,.sc.low{background:#a23b3b}
+.score.good .num{background:#2f7a4f}.score.ok .num{background:#b5841a}.score.low .num{background:#a23b3b}
 .score .lbl{display:flex;flex-direction:column}.score .lbl small{color:var(--mut)}
 .score ul{list-style:none;margin:10px 0 2px;padding:0}
 .score li{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:6px 0;border-top:1px solid var(--line);font-size:.9375rem}
 .score li small{grid-column:1/-1;color:var(--mut)}.score li.miss span:first-child{color:var(--ink)}.score .pts{color:var(--mut);font-variant-numeric:tabular-nums}
-.sc{flex:none;min-width:30px;height:22px;border-radius:6px;color:#fff;font-size:.8125rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;align-self:center}
 .stage .empty{padding:48px 0;text-align:center}
 /* wide screens: the Wardrobe grid widens. Today goes side by side (outfit left, cards right, the fold crease in the gap) only when the
    screen is wider than tall, e.g. the iPhone Duo unfolded on its side; held upright it stacks outfit, tiles and cards at full width. */
@@ -77,10 +75,10 @@ button{touch-action:manipulation}
 .rv .thumb{max-width:220px;margin:0 auto}
 .row .swap{margin-left:auto;flex:none;border:0;background:none;color:var(--mut);font-size:1.25rem;padding:2px 6px;line-height:1}
 .row .swap:active{color:var(--ink)}
-.dayact{flex-wrap:wrap;align-items:center;margin:4px 0 10px}.dayact .chip{border:1px solid var(--line);display:inline-flex;align-items:center;padding:7px 12px;font-weight:600}.dayact .chip.on{background:#2f7a4f;color:#fff;border-color:#2f7a4f}
+.dayact{flex-wrap:wrap;align-items:center;margin:4px 0 10px}
 .days{display:flex;gap:4px;flex-wrap:wrap}.dtog{padding:6px 9px;font-size:.875rem;border-radius:8px}.dtog.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .day h2 .wx{display:block;font-size:.8125rem;font-weight:600;color:var(--mut);text-align:center;margin-top:2px}
-.day h2{text-align:center}.dayact .chip.formal{background:#1b2a4a;border-color:#1b2a4a}
+.day h2{text-align:center}
 .rec-img .thumb{width:56px;border-radius:8px}
 .day h2 .wx a{color:var(--acc);text-decoration:underline}
 .dot{overflow:hidden;display:inline-block}.dot svg{width:100%;height:100%;display:block}
@@ -92,8 +90,6 @@ button{touch-action:manipulation}
 .drop-hint{font-size:.75rem;margin:2px 0 8px}
 @media (hover:none){.drop-hint{display:none}}
 body.dragging #add{outline:2px dashed var(--acc);outline-offset:4px}
-#refresh-btn{display:inline-block}#refresh-btn[hidden]{display:none}
-#refresh-btn.spin{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* working on it: a spinning ring, in the pill above the tab bar (#busy, app.js renderBusy) and beside "Generating photo…" and the like */
 .spin{display:inline-block;width:.95em;height:.95em;margin-right:.45em;vertical-align:-.12em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;opacity:.85;flex:none}
@@ -106,14 +102,10 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
 #toast{position:fixed;left:50%;bottom:calc(var(--navh) + 12px);transform:translateX(-50%);background:var(--ink,#111);color:var(--bg,#fff);padding:8px 14px;border-radius:18px;font-size:.875rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;max-width:calc(100% - 32px);text-align:center}
 #toast.on{opacity:.92}
-/* Today torso figure (figure.js) */
+/* Today's outfit figure (mannequin.js) */
 .fig{position:relative;width:min(390px,100%);margin:4px auto 0}
 @media (min-width:600px){.fig{width:100%}}   /* wide screens: the full width of its column (the Duo upright stacks outfit, tiles and cards; landscape puts it on the left) */
 .fig>svg{display:block;width:100%;height:auto}
-.fig .hot{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:2px solid transparent;background:transparent;padding:0;cursor:pointer}
-.fig .hot::after{content:'';position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#fff;opacity:.55;box-shadow:0 1px 3px rgba(0,0,0,.35)}
-.fig .hot.on{border-color:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.35)}.fig .hot.on::after{opacity:.95}
-.fig .hot:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 /* tiles share the column's width; pictures keep the size they have four to a row, the tile around them takes the photo's backdrop */
 .below{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:8px;margin:0;container-type:inline-size}
 .below .tile{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 4px;min-height:44px;color:inherit}
@@ -128,23 +120,16 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .fig .wornbar{transition:opacity .2s}
 .fig .wornbar{position:absolute;left:10px;right:10px;bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;pointer-events:none}
 .fig .wornbar>*{pointer-events:auto}.fig .wornbar .lastworn:only-child{margin:0 auto}
-.wmark{width:40px;height:40px;margin:0;padding:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.75);background:rgba(16,24,32,.42);color:#fff;font-size:1.1875rem;font-weight:700;line-height:1;
-  display:flex;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 1px 4px rgba(0,0,0,.3);transition:background .15s,border-color .15s,transform .1s}
-.wmark:active{transform:scale(.92)}.wmark.yes.on{background:#2f7a4f;border-color:#2f7a4f}.wmark.no.on{background:#a23b3b;border-color:#a23b3b}
 .fig .lastworn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem;font-weight:600;color:#fff;background:rgba(16,24,32,.42);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:4px 10px;border-radius:99px}
-.multi-opt{display:flex;gap:8px;align-items:flex-start;margin:10px 0 2px;font-size:.875rem;line-height:1.35}
-.multi-opt input{margin-top:3px;width:18px;height:18px;flex:none}
 #multi-status:empty{display:none}#multi-status{font-size:.8125rem;margin:4px 0}
 #save-all .btn{margin:6px 0}
 .multi-h{margin:0 0 6px;display:flex;gap:8px;align-items:center;font-size:.875rem}
 .conf{font-size:.75rem;padding:2px 8px;border-radius:10px;background:var(--line)}
-.conf.high{background:#2f7a4f;color:#fff}.conf.medium{background:#b5841a;color:#fff}.conf.low{background:#a23b3b;color:#fff}
+.conf.high{background:#2f7a4f;color:#fff}.conf.medium{background:#b5841a;color:#1a1405}.conf.low{background:#a23b3b;color:#fff}
 .rv img.ph{display:block;max-width:100%;max-height:280px;margin:0 auto;object-fit:contain;border-radius:8px}
 /* month view (wear plan), from the design concept */
 .mhead{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 10px}.mhead h3{margin:0;font-size:1.125rem}
-.mhead .eyebrow{font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
 .mhead h1{margin:4px 0 0;font-size:1.75rem;line-height:1.1;letter-spacing:-.01em}
-.mbtns{display:flex;gap:8px}.mbtns button{width:40px;height:40px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:1.375rem;padding:0;margin:0}
 .mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
 .mdow{padding-bottom:6px;text-align:center;font-size:.75rem;font-weight:600;color:var(--mut)}
 .mc{box-sizing:border-box;min-width:0;width:100%;height:76px;padding:6px 4px 4px;border:0;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:4px;margin:0;color:var(--ink);background:var(--card);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}
@@ -156,17 +141,6 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .mc.skip .stack{opacity:.3}.mc.skip .dn{text-decoration:line-through;color:var(--mut)}   /* a past day marked "✕ Didn't" (month.js) */
 .stack{display:block;width:100%;flex:1;min-height:0;border-radius:3px}
 .stack.rest{box-sizing:border-box;border:1.5px dashed var(--mut);opacity:.6;border-radius:6px}
-.mlegend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 2px 0;font-size:.75rem;color:var(--mut)}
-.mlegend span{display:flex;align-items:center;gap:6px}.lg{display:block;width:14px;height:14px;border-radius:4px;box-sizing:border-box}
-.lg.worn{background:color-mix(in srgb,var(--line) 55%,var(--bg))}.lg.today{background:var(--card);box-shadow:inset 0 0 0 2px var(--acc)}
-.lg.planned{background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}.lg.rest{border:1.5px dashed var(--mut)}
-.mcard{margin:12px 0 16px;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
-.mcard hr{border:0;height:1px;background:var(--line);margin:0}
-.mday{display:flex;align-items:center;gap:12px;border:0;background:none;padding:0;margin:0;text-align:left;color:inherit;width:100%;cursor:pointer}
-.stack.big{flex:none;width:44px;height:56px;border-radius:8px}
-.mtxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.mtxt small{font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--acc);line-height:1}
-.mtxt b{font-size:1rem;line-height:1.2}.mtxt span{font-size:.8125rem;line-height:1.3;color:var(--mut)}
 /* box on Today that opens the month */
 .month-link{display:flex;align-items:center;gap:12px;width:100%;margin:0;padding:12px 14px;border:0;border-radius:14px;background:none;color:var(--ink);text-align:left;cursor:pointer}
 .mlstrip{display:flex;gap:4px;flex:none}.mli{display:flex;flex-direction:column;align-items:center;gap:2px;width:22px}
@@ -224,21 +198,12 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 @media (prefers-reduced-motion:no-preference){.mbox.blift .bli{animation:mcLift .26s cubic-bezier(.36,0,.66,-.56) calc((var(--bn) - 1 - var(--bi)) * 20ms) both!important}}
 /* day actions in one row: worn toggle, formal toggle, reset icon */
 .dayact{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin:4px 0 10px}
-.seg{display:flex;flex:0 1 auto;min-width:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
-.seg button{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:0;border-radius:0;margin:0;padding:9px 12px;background:none;color:var(--ink);font-weight:500;min-height:40px}
-.seg button+button{border-left:1px solid var(--line)}
-.seg button.on{background:#2f7a4f;color:#fff}.seg button.on+button,.seg button+button.on{border-left-color:transparent}
-.seg button:last-child.on{background:var(--mut)}
-.tog{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;padding:9px 14px;min-height:40px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:500}
-.tog.on{background:#1b2a4a;border-color:#1b2a4a;color:#fff}
-.dayact .seg button,.dayact .tog{font-size:.9375rem;padding:9px clamp(8px,2.6vw,14px)}
-@media (max-width:340px){.dayact{gap:6px}.dayact .seg button,.dayact .tog{font-size:.875rem;padding:9px 7px}.ftag{font-size:.75rem;padding:5px 7px}.ftag .fx{display:none}}
+@media (max-width:340px){.dayact{gap:6px}.ftag{font-size:.75rem;padding:5px 7px}.ftag .fx{display:none}}
 .resetbox .month-link{justify-content:center;gap:10px;font-size:1.0625rem;color:var(--ink)}.resetbox .rsicon{font-size:1.375rem;line-height:1;color:var(--mut)}
 .resetbox .month-link:active{transform:scale(.99)}
 /* the days the app counted as worn while it wasn't opened (missedCard, history.js) */
 .missbox{padding:12px 14px}.missbox .misstxt{margin:0 0 6px;font-size:.9375rem;line-height:1.35;color:var(--ink)}
 .missbox .missbtns{display:flex;flex-wrap:wrap;gap:4px 18px}.missbox .linkbtn{min-height:44px}
-.reset{flex:0 0 40px;margin:0 0 0 auto;width:40px;height:40px;padding:0;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--mut);font-size:1.125rem}
 
 .ftag{font-size:.8125rem;font-weight:600;color:#fff;background:#1b2a4a;border-radius:8px;padding:5px 9px;white-space:nowrap}
 .fchips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px}
@@ -259,9 +224,7 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 @media (prefers-reduced-motion:reduce){.ibox.open .list>*{animation:none}}
 /* back to today, on the date bar */
 .day h2{min-width:0}.day h2 .wx{display:flex;justify-content:center;align-items:center;gap:8px;min-height:30px;flex-wrap:nowrap;min-width:0}
-.day h2 .wx a{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gotoday{flex:none}
-.gotoday{margin:0;padding:2px 10px;min-height:24px;line-height:1.2;border-radius:14px;border:1px solid var(--acc);background:none;color:var(--acc);font-size:.8125rem;font-weight:600;position:relative}
-.gotoday::after{content:"";position:absolute;inset:-8px -4px}
+.day h2 .wx a{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* an item's photo beside the colour and texture it is tagged with (Wardrobe item open, Add cards) */
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
@@ -273,7 +236,8 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 
 /* a piece in the outfit list unfolds into its photo */
 .list .ritem{border-bottom:1px solid var(--line)}.list .ritem:last-child{border-bottom:0}.list .ritem>.row{border-bottom:0}
-.rowtap{display:flex;align-items:center;gap:10px;flex:1;min-width:0;min-height:40px;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.rowtap{display:flex;align-items:center;gap:10px;flex:1;min-width:0;min-height:40px;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;position:relative}
+.rowtap::after{content:"";position:absolute;inset:-3px 0}   /* 46px to tap, the row no taller (it is 40px inside the row's 9px padding) */
 .rowtap .cap{min-width:0}
 .rpanel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1)}
 .ritem.open .rpanel{grid-template-rows:1fr}
@@ -354,7 +318,7 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .st-bar{display:block;height:5px;border-radius:3px;background:var(--line);overflow:hidden;flex:1;min-width:40px}.st-bar i{display:block;height:100%;background:var(--mut);border-radius:3px}
 .st-bar.w i{background:#2f8a57}.st-bar.p i{background:var(--acc)}
 .st-key{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 4px 0 8px;vertical-align:-1px}.st-key.w{background:#2f8a57;margin-left:0}.st-key.p{background:var(--acc)}
-.st-type{border-top:1px solid var(--line)}.st-type summary{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:10px 0;cursor:pointer;list-style:none}.st-type summary::-webkit-details-marker{display:none}
+.st-type{border-top:1px solid var(--line)}.st-type summary{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:10px 0;min-height:44px;cursor:pointer;list-style:none}.st-type summary::-webkit-details-marker{display:none}
 .st-type summary::after{content:'›';color:var(--mut);margin-left:4px;transition:transform .2s}.st-type[open] summary::after{transform:rotate(90deg)}.st-type summary b{flex:1}
 .st-miss{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}.st-miss .st-bar,.st-miss small{grid-column:1/-1}.st-miss span{font-size:.8125rem}
 .st-mix{margin:8px 0 12px}.st-mixrow{display:grid;grid-template-columns:14px 110px 1fr 38px;gap:8px;align-items:center;padding:3px 0;font-size:.875rem}.st-mixrow small{text-align:right}
@@ -416,9 +380,6 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 @media (prefers-reduced-motion:reduce){.score.open li,.score.open .sbar i,.score.open .num{animation:none}}
 /* folding from inside: the score breakdown and the pieces list's names fold on a tap; the month has a fold button */
 #spanel .mpanel-in{cursor:pointer}.ibox .rpanel-in{cursor:pointer}.ibox .row>.mut:first-child{cursor:pointer}
-.mfoot{display:flex;align-items:center;gap:10px;margin-top:8px}.mfoot .mlegend{flex:1;min-width:0;margin:0}
-.foldbtn{flex:none;width:36px;height:36px;margin:0;padding:0;border-radius:18px;border:1px solid var(--line);background:var(--bg);color:var(--mut);font-size:1.375rem;line-height:1;display:flex;align-items:center;justify-content:center}
-.foldbtn span{display:block;transform:rotate(-90deg)}.foldbtn:active{transform:scale(.92)}
 /* the open month: no arrows (a swipe changes the month), the title centred, and a full-width fold bar at the bottom, in easy reach */
 #mbox .mhead{flex-direction:column;justify-content:center;gap:2px;text-align:center}
 #mbox .mhead{padding:0 2px 4px}   /* the weekday row sits close under the title */
@@ -429,8 +390,6 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .addpick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
 .addpick .btn{margin:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px;text-align:left;font-weight:600}
 .addpick .btn small{font-weight:400;font-size:.75rem;line-height:1.3;opacity:.8}
-.texslot{display:flex;flex-direction:column;gap:6px;margin:10px 0;padding:10px;border:1px dashed var(--acc);border-radius:10px}
-.texslot.done{border-style:solid;border-color:var(--line)}.texslot .btns{margin:0}.texslot .btn{align-self:flex-start;margin:0}
 .wbnote{margin:6px 0 0;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
 .linkbtn{background:none;border:0;padding:0;color:var(--acc);font:inherit;font-size:.8125rem;text-decoration:underline;cursor:pointer}
 .swsplit{position:relative;line-height:0}
@@ -441,10 +400,6 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 .chipbtn{border:1px solid var(--line);background:var(--bg);color:inherit;border-radius:14px;padding:3px 10px;font:inherit;font-size:.8125rem;cursor:pointer;margin:0}
 .msw{display:inline-block;width:22px;height:22px;border-radius:6px;border:1px solid var(--line);flex:none;text-align:center;line-height:20px;font-size:.875rem}
 .offer{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0;padding:8px 10px;border:1px dashed var(--acc);border-radius:10px}
-.newform{display:flex;flex-direction:column;gap:6px;margin:8px 0;padding:10px;border:1px solid var(--acc);border-radius:10px}
-.newform label{display:flex;gap:8px;align-items:center;justify-content:space-between}.newform input[type=text]{flex:1;min-width:0}
-.newform input[type=color]{width:56px;height:32px;padding:0;border:1px solid var(--line);border-radius:6px;background:none}
-.typechecks{display:flex;flex-wrap:wrap;gap:4px 12px}.typechecks label{justify-content:flex-start;font-size:.8125rem;gap:4px}
 .formerr{margin:0;color:#d9534f}.formerr:empty{display:none}
 .custrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin:6px 0}
 .fixlist{margin:4px 0 0;padding-left:18px}
@@ -466,21 +421,21 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
    radius 12px on controls and 14px on cards; cards are --card with a 1px --line border; 12px between cards, 8px between controls. */
 :root{--r-ctl:12px;--r-card:14px;--ctl-h:44px;--in-h:44px;--danger:#c0473f}
 #wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal{font-size:.9375rem}
-:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button)){
+:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button)){
   min-height:var(--ctl-h);padding:0 16px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);color:var(--ink);
   font-size:.9375rem;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;margin:0;line-height:1.2;text-align:center}
-:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}
-:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]{opacity:.5}
-:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :where(select,input[type=text],input[type=url],input[type=date],input[type=number]){
+:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}
+:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]{opacity:.5}
+:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number]){
   height:var(--in-h);padding:0 12px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:.9375rem;min-width:0;max-width:none}
-:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) select{padding-right:8px}
-:is(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select){padding-right:8px}   /* (the field rule's weight plus one, so it still wins) */
+:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
 :is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi{border:1px solid var(--line);border-radius:var(--r-card)}
 /* page header: title, and a line under it */
 .phead{display:flex;align-items:center;gap:10px;margin:4px 0 14px;min-height:44px}
 .phead h2{font-size:1.375rem;line-height:1.2;flex:1;min-width:0}.phead .pcount{font-size:.875rem;font-weight:600;color:var(--mut)}
-.phead .pback{flex:none;width:44px;height:44px;padding:0!important;border-radius:22px!important;font-size:1.375rem!important}
+.phead .pback{flex:none;width:44px;height:44px;padding:0;border-radius:22px;font-size:1.375rem}
 .psub{margin:-8px 0 14px;font-size:.875rem;color:var(--mut)}
 
 /* ---- Settings: a full-screen page with a header that stays put, a stats link and categories that unfold ---- */
@@ -593,9 +548,9 @@ left:50%;width:min(600px,94vw);margin-left:calc(min(600px,94vw)/-2);border-radiu
 .aic{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:4px}
 #add .addmore{padding:14px;margin:0 0 12px}
 #add .paste-box{gap:8px;margin:2px 0 0}#add .paste-box input{flex:1}
-#add .paste-box .btn{min-height:var(--in-h)!important;padding:0 14px!important}
+#add .paste-box .btn{min-height:var(--in-h);padding:0 14px}
 #add .drop-hint{margin:8px 0 0}
-.addrow{display:grid!important;grid-template-columns:1fr auto;align-items:center;width:100%;margin:12px 0 0!important;padding:12px 0 0!important;min-height:0!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:none!important;text-align:left!important;justify-content:stretch!important}
+.addrow{display:grid;grid-template-columns:1fr auto;align-items:center;width:100%;margin:12px 0 0;padding:12px 0 0;min-height:0;border:0;border-top:1px solid var(--line);border-radius:0;background:none;text-align:left;justify-content:stretch}
 .addrow span:first-child{font-weight:600}.addrow small{grid-row:2;font-size:.8125rem;font-weight:400;color:var(--mut)}.addrow .chev{grid-row:1/3;grid-column:2;font-size:1.5rem;color:var(--mut)}
 #add #queue .card{padding:14px;margin:0 0 12px}
 /* the item card's × in its top corner: the same as its Cancel / Skip at the bottom, without scrolling down to it (the owner, 2026-11-15) */
@@ -607,7 +562,6 @@ left:50%;width:min(600px,94vw);margin-left:calc(min(600px,94vw)/-2);border-radiu
 #add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select{flex:0 0 58%;width:58%;max-width:58%}
 #add #queue .card>.btns:last-of-type{margin-top:14px}
 #add #queue .card .btns .pri{flex:1}
-#add .texslot{border-radius:12px;padding:12px}
 #add .multi-h{font-size:.875rem}
 /* ---- Add: "Add without a photo" (a long button under the two tiles, the hanger and pencil in the tiles' line style) and its bottom sheet
    (2026-11-15, the owner's choice: variant A of add-page-mockups) ---- */
@@ -615,7 +569,7 @@ left:50%;width:min(600px,94vw);margin-left:calc(min(600px,94vw)/-2);border-radiu
 #add .addlong .aic{margin:0;width:28px;height:28px}
 .addlong-t{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
 .addlong-t b{font-size:1rem;font-weight:700;line-height:1.25}
-.addlong-t small{font-size:.7813rem;font-weight:400;line-height:1.35;opacity:.75}
+.addlong-t small{font-size:.7813rem;font-weight:400;line-height:1.35;color:var(--mut)}
 .addlong .chev{font-size:1.5rem;line-height:1;color:var(--mut)}
 #nps-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1100;opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .3s}#nps-backdrop.on{opacity:1;visibility:visible;transition:opacity .3s}
 #nps-sheet{position:fixed;left:0;right:0;bottom:0;top:var(--ivtop);z-index:1101;display:flex;flex-direction:column;max-width:640px;margin:0 auto;box-sizing:border-box;background:var(--bg);color:var(--ink);border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;box-shadow:0 -10px 30px rgba(0,0,0,.35);overflow:hidden;outline:none;
@@ -650,7 +604,7 @@ body.nps-on #toast,body.nps-on #busy{bottom:calc(78px + env(safe-area-inset-bott
 .shaderow{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:10px 0 2px}
 .shlab{font-size:.875rem;font-weight:600}
 .shctl{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
-.shctl .shbtn{min-height:44px!important;min-width:44px!important;padding:0!important;border:0!important;border-radius:0!important;background:none!important;font-size:1.25rem!important;font-weight:600!important}
+.shctl .shbtn{min-height:44px;min-width:44px;padding:0;border:0;border-radius:0;background:none;font-size:1.25rem;font-weight:600}
 .shctl .shval{min-width:92px;text-align:center;font-size:.875rem;font-weight:600;padding:0 4px;border-left:1px solid var(--line);border-right:1px solid var(--line);line-height:44px}
 .shaderow .chipbtn{min-height:34px}
 /* moving an outfit in the month: the lifted day, the outfit under the finger, the day it would land on, the others ready to shift */
@@ -829,7 +783,6 @@ span.pk-tick{cursor:default}
 .about-fold summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;font-size:.875rem;font-weight:700;cursor:pointer;list-style:none}
 .about-fold summary::-webkit-details-marker{display:none}.about-fold summary::after{content:"›";color:var(--mut);font-size:1.25rem;font-weight:400;transition:transform .2s}.about-fold[open] summary::after{transform:rotate(90deg)}
 .about-fold p{margin:0 0 8px;font-size:.8125rem;line-height:1.45;color:var(--mut)}
-#about-update[hidden]{display:none}
 /* ---- wardrobe ---- */
 /* the Wardrobe's search field with the sort control beside it; an item's name, brand, material and notes; "nothing matches" */
 .wfind{display:flex;gap:8px;align-items:center;margin:0 0 10px}
@@ -856,7 +809,6 @@ main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
 #wardrobe .wsearch input{flex:1;width:100%;padding:0 44px 0 38px;background:var(--card);outline-offset:-2px}
 .wsicon{position:absolute;left:11px;top:50%;width:18px;height:18px;margin-top:-9px;fill:none;stroke:var(--mut);stroke-width:2;stroke-linecap:round;pointer-events:none}
 #wardrobe .wclear{position:absolute;right:0;top:0;width:44px;height:44px;min-height:0;padding:0;border:0;background:none;color:var(--mut);font-size:1.375rem;font-weight:400;line-height:1}
-#wardrobe .wclear[hidden]{display:none}
 #wardrobe .wsort{flex:0 0 auto;width:132px;background:var(--card);font-weight:600;text-overflow:ellipsis}
 .wwear{font-size:.7813rem;line-height:1.3;color:var(--mut)}
 .wnone{margin:18px 0;padding:22px 16px;border:1px dashed var(--line);border-radius:var(--r-card);text-align:center}
@@ -919,8 +871,7 @@ main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
 :root{--acc-ink:#7a5900}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){--acc-ink:var(--acc)}}
 :root[data-theme=dark]{--acc-ink:var(--acc)}
-.mhead .eyebrow,.mtxt small,.gotoday,.linkbtn,.day h2 .wx a,.sicw{color:var(--acc-ink)}
-.gotoday{border-color:var(--acc-ink)}
+.linkbtn,.day h2 .wx a,.sicw{color:var(--acc-ink)}
 /* the app's own question (askConfirm in ui.js): a sheet from the bottom like the piece picker, above every other layer */
 #ask-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2100;display:none}#ask-backdrop.on{display:block}
 #ask-sheet{position:fixed;left:0;right:0;bottom:0;z-index:2101;background:var(--card);color:var(--ink);border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;
@@ -949,7 +900,7 @@ main[inert] #wardrobe ~ #ward-add,body.iv-on #wardrobe ~ #ward-add{display:none}
 #adv-photos:has(#asm-group[hidden]){display:none}
 /* a button that needs the server while the app is not connected: the reason under it */
 .connnote{margin:6px 0 0;font-size:.8125rem;line-height:1.4;color:var(--mut)}
-.conn-tick{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:10px;background:#2e8b57;color:#fff;font-size:.8125rem;font-weight:700;vertical-align:-3px;margin-right:4px}
+.conn-tick{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:10px;background:#24704a;color:#fff;font-size:.8125rem;font-weight:700;vertical-align:-3px;margin-right:4px}
 .conn-msg{color:var(--danger)}
 /* the danger red on the dark theme: #c0473f on the dark card is 3.5:1 */
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){--danger:#e2695f}}
@@ -1025,7 +976,7 @@ body.nocon .conn-only,.connhide{display:none!important}
 .colbtn{display:flex;align-items:center;gap:10px;flex:0 0 58%;width:58%;max-width:58%;min-height:var(--in-h,44px);margin:0;padding:0 10px 0 8px;border:1px solid var(--line);border-radius:12px;background:var(--field);color:var(--ink);font:inherit;font-size:.875rem;font-weight:500;text-align:left;cursor:pointer}
 .colchip{flex:none;width:28px;height:28px;border-radius:8px;border:1px solid var(--swatch-edge)}
 .colchip.none,.cpsw.none,.cpbig.none{background:repeating-linear-gradient(45deg,transparent 0 6px,var(--line) 6px 7px)}
-.colbtn{justify-content:flex-start!important}.colnm{flex:1;min-width:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.colbtn{justify-content:flex-start}.colnm{flex:1;min-width:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .colchev{flex:none;width:18px;height:18px;fill:none;stroke:var(--mut);stroke-width:2}
 #col-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1200;display:none}#col-backdrop.on{display:block}
 #col-sheet{position:fixed;left:0;right:0;bottom:0;z-index:1201;background:var(--card);color:var(--ink);border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;max-height:92vh;overflow:auto;padding:0 14px;box-shadow:0 -10px 30px rgba(0,0,0,.35);transform:translateY(102%);transition:transform .26s cubic-bezier(.2,.8,.2,1);visibility:hidden;max-width:640px;margin:0 auto;overscroll-behavior:contain}
@@ -1125,7 +1076,7 @@ body.nocon .conn-only,.connhide{display:none!important}
 :is(#item-view,.wbsteps,#cu-sheet) .wbpic{flex:none;position:relative;display:block;width:44px;height:44px;min-height:0;margin:0;padding:0;border:1px solid var(--swatch-edge);border-radius:11px;overflow:hidden;box-sizing:border-box;
   background:repeating-linear-gradient(135deg,rgba(255,255,255,.12) 0 1.5px,transparent 1.5px 5px),repeating-linear-gradient(45deg,rgba(0,0,0,.10) 0 1px,transparent 1px 6px),var(--cloth,#5d6478)}
 /* the hint as "3 tiny steps" (itemsheet.js paperSteps; paper-hint-proposals A, 2026-11-15): one button, as tall as its content (about 108 px) */
-.wbsteps{margin:12px 0 2px}.texslot .wbsteps{margin:2px 0 4px}
+.wbsteps{margin:12px 0 2px}
 :is(#item-view,#add) .wbstcard{display:flex;flex-direction:column;align-items:stretch;gap:8px;width:100%;min-height:44px;margin:0;padding:10px 12px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);
   font:inherit;font-size:0.8125rem;font-weight:400;line-height:1.35;text-align:left;justify-content:flex-start;cursor:pointer;box-sizing:border-box}
 .wbstcard .hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
@@ -1177,11 +1128,7 @@ body.nocon .conn-only,.connhide{display:none!important}
 .ivrd{margin:8px 0 0}.ivrd .ivrdbtn{width:100%;gap:8px}
 .ivrdbtn[aria-disabled=true],.rdgo[aria-disabled=true]{opacity:.55}
 .rdcost{display:block;margin:6px 2px 0;font-size:0.75rem;line-height:1.35;color:var(--mut);text-align:center}
-.texslot .rdcost{text-align:left}
 /* the Add card: Add close-up (filled) and the read button (plain) side by side, the read button's words on two lines when narrow */
-#add .rdpair{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-#add .rdpair>.btn{align-self:center;margin:0;flex:0 0 auto;white-space:nowrap}
-#add .rdpair .rdgo{flex:1 1 9.5rem;min-width:0;padding:0 10px;white-space:normal;font-size:0.84375rem;line-height:1.2;text-align:center}
 /* the sheet: a bottom sheet like the color sheet, over it and under the close-up chooser */
 #rd-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1205;display:none}#rd-backdrop.on{display:block}
 #rd-sheet{--rd-ok:#2f7d4a;position:fixed;left:0;right:0;bottom:0;z-index:1206;max-width:640px;margin:0 auto;max-height:92vh;overflow:auto;box-sizing:border-box;padding:0 14px;background:var(--card);color:var(--ink);
@@ -1236,7 +1183,7 @@ label:has(>.vfile:focus-visible){outline:2px solid var(--acc-ink);outline-offset
    swap and take-off buttons, the Wardrobe's type chips) */
 .nav.day>button,.row .swap,#wardrobe .chip{position:relative}
 .nav.day>button::after{content:"";position:absolute;inset:-3px}   /* (from inside the 1px border: 40px -> 44px) */
-.row .swap::after{content:"";position:absolute;inset:-10px -4px}
+.row .swap::after{content:"";position:absolute;inset:-10px auto;left:min(-4px,calc(50% - 23px));right:min(-4px,calc(50% - 23px))}   /* 46px wide however narrow the glyph (it was 34-38) */
 #wardrobe .chip::after{content:"";position:absolute;inset:-3px -3px -7px}   /* (from inside the 1px border: 36px -> 44px; the row clips 1px of the top) */
 /* reduced motion: the cards' arrows turn at once (.score .chev / .month-link .chev, set after the reduce rule, kept turning them) */
 @media (prefers-reduced-motion:reduce){.score .chev,.month-link .chev,.mbox .chev,.adv-head .chev{transition:none}}
@@ -1252,7 +1199,7 @@ label:has(>.vfile:focus-visible){outline:2px solid var(--acc-ink);outline-offset
 header button,.linkbtn,#toast button,#settings-modal .dtog{position:relative}
 header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after{content:"";position:absolute}
 header button::after{inset:-2px}
-#settings-modal .dtog::after{inset:-2px 0}
+#settings-modal .dtog::after{inset:-3px 0}   /* (from inside the 1px border: 40px -> 44px; not wider: past the sides it counted as the name overflowing) */
 .linkbtn::after{inset:-9px -2px}
 #toast button::after{inset:-8px -6px}
 /* the gear is drawn (the ⚙ character showed as a lilac colour emoji beside the plain ◐) */
@@ -1295,7 +1242,7 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
 @media (orientation:landscape) and (max-height:500px){#pick-sheet{max-height:calc(100vh - 8px);max-height:calc(100dvh - 8px);padding-top:8px}#pick-sheet p{margin:0 0 6px}#pick-sheet .btns{margin:0 0 8px}.pick-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
 
 /* ---- getting started (kit.js): the tour, the close-up guide, the import sheet, the sample banner ---- */
-#kitsheet{display:none;position:fixed;inset:0;z-index:2000;flex-direction:column;background:var(--bg);color:var(--ink);font-size:.9375rem}
+#kitsheet{display:none;position:fixed;inset:0;z-index:2000;flex-direction:column;background:var(--bg);color:var(--ink);font-size:.9375rem;outline:none}
 #kitsheet.on{display:flex}
 .kit-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--line)}
 .kit-head h2{margin:0;font-size:1.25rem;line-height:1.2}.kit-head small{color:var(--mut);font-size:.8125rem}
@@ -1342,7 +1289,6 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
 .kit-last{font-size:.875rem;margin:0 0 12px}
 .kit-no{display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--danger);border-color:var(--danger)}
 .kit-start{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px 8px;margin-top:10px;color:var(--mut)}
-.texguide{display:block;margin:2px 0 6px;padding-left:0}
 .ivdup{margin:22px 0 0;display:flex}.ivdup button{flex:1}.ivdup+.ivdel{margin-top:10px}
 .kit-banner{margin:0 0 12px;padding:12px 14px;border-radius:14px;border:1px dashed var(--acc);background:color-mix(in srgb,var(--acc) 9%,var(--card))}
 .kit-banner b{display:block;font-size:.9375rem}.kit-banner small{display:block;color:var(--mut);margin:3px 0 10px;line-height:1.4}
@@ -1384,7 +1330,7 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
 .wxc.wxlk{padding:15px 0;margin:-15px 0}
 .wxl{display:block;position:relative;z-index:1;padding:15px 0;margin:-15px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wpill{grid-column:3;justify-self:end;flex:none;z-index:2;width:var(--wp);white-space:nowrap;margin:0;padding:2px 0;min-height:24px;line-height:1.2;border-radius:14px;font-size:.8125rem;font-weight:600;position:relative;cursor:pointer}
-.wpill::after{content:"";position:absolute;inset:-10px -6px}
+.wpill::after{content:"";position:absolute;inset:-11px -6px}   /* (from inside the 1px border: 24px -> 44px) */
 .wpill.yes{background:var(--acc);border:1px solid var(--acc);color:#1a1405}
 .wpill.no{background:var(--card);border:1px solid var(--line);color:var(--mut)}
 .fig .wornbar{justify-content:flex-end}.fig .wornbar .lastworn:only-child{margin:0 0 0 auto}   /* "Last worn" alone at the bottom right, clear of the swatches */
@@ -1399,9 +1345,8 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
 #add .qty output{min-width:40px;text-align:center;font-size:1.0625rem;font-weight:700;font-variant-numeric:tabular-nums;border-left:1px solid var(--line);border-right:1px solid var(--line);line-height:var(--ctl-h,44px)}
 
 /* ---- Add to Home Screen (kit.js homeSteps, 2026-11-14): the setup's Home Screen step and the About sheet ---- */
-#home-again[hidden]{display:none}   /* (the Settings buttons' display rule outranked the hidden attribute: it showed on every device) */
 .home-wrap{text-align:left}.home-pic{display:block;width:96px;height:auto;margin:0 auto 10px}
-.hp-phone{fill:var(--card);stroke:var(--line);stroke-width:2}.hp-screen{fill:var(--bg)}.hp-icon{fill:var(--line)}.hp-app{fill:var(--acc)}.hp-hanger{fill:var(--bg)}.hp-label{font:600 7px system-ui,sans-serif;fill:var(--mut)}
+.hp-phone{fill:var(--card);stroke:var(--line);stroke-width:2}.hp-screen{fill:var(--bg)}.hp-icon{fill:var(--line)}.hp-label{font:600 7px system-ui,sans-serif;fill:var(--mut)}
 .home-lead{margin:0 0 12px}
 .home-steps{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
 .home-steps li{display:flex;gap:12px;align-items:flex-start;line-height:1.4}
@@ -1410,7 +1355,6 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
 .home-ico{width:20px;height:20px;vertical-align:-4px;color:var(--acc-ink,var(--acc))}
 .home-note{margin-top:4px}
 .home-cta{margin:4px 0 14px}.home-install{width:100%;min-height:48px;font-size:1rem;display:inline-flex;align-items:center;justify-content:center;gap:8px}.home-install .home-ico{color:inherit}
-.home-install[hidden],.home-manual[hidden]{display:none!important}   /* (the setup's and the sheet's button rules outrank the attribute) */
 /* the setup's last step: the tour and sample links one under the other, as links (audit 2026-11-15: an orphan · and bordered buttons with underlined text) */
 #setup .kit-start{flex-direction:column;gap:0}#setup .kit-start>span{display:none}
 #setup .kit-start .linkbtn{border:0;background:none;min-height:44px;padding:0 8px;font-weight:600;font-size:.9375rem;color:var(--acc-ink,var(--acc))}
@@ -1474,9 +1418,8 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
 .cmpl.tl{left:8px;top:8px}.cmpl.tr{right:8px;top:8px}.cmpl.bl{left:8px;bottom:8px}.cmpl.br{right:8px;bottom:8px}
 .cmpl.ok{background:rgba(22,90,52,.88);text-transform:none;letter-spacing:0;font-size:.78rem}
 .cmpl.ok svg{width:13px;height:13px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
-.cmpl[hidden]{display:none}
 .cmptools{display:flex;gap:8px;margin-top:10px;align-items:center}
-.cmpsp{flex:1}.cmpsp[hidden],.cmpop[hidden]{display:none}
+.cmpsp{flex:1}
 .cmpop{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-size:.78rem;color:var(--mut);font-weight:700}
 .cmpop input{flex:1;min-width:0;min-height:44px;margin:0;accent-color:var(--acc)}
 .cmpzm{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none;background:var(--card)}
@@ -1496,8 +1439,8 @@ nav button{min-width:0;padding:0 2px;white-space:nowrap;overflow:hidden;text-ove
 .ivsumph .ph.thumb{width:100%;height:100%;max-width:none;margin:0;padding:0;aspect-ratio:auto;background:none}.ivsumph svg{width:100%;height:100%;display:block}
 .ivsumt{flex:1;min-width:0}
 .ivpills{display:flex;flex-wrap:wrap;gap:6px}
-.ivpill{display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:13px;font-size:.78rem;font-weight:700;background:color-mix(in srgb,var(--line) 60%,transparent);color:var(--mut);white-space:nowrap}
-.ivpill.good{background:var(--ck-goodbg);color:var(--ck-good)}.ivpill.warn{background:var(--ck-warnbg);color:var(--ck-warn)}
+.ivpill{display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:13px;font-size:.78rem;font-weight:700;background:color-mix(in srgb,var(--line) 60%,transparent);color:color-mix(in srgb,var(--mut) 70%,var(--ink));white-space:nowrap}
+.ivpill.good{background:var(--ck-goodbg);color:color-mix(in srgb,var(--ck-good) 80%,var(--ink))}.ivpill.warn{background:var(--ck-warnbg);color:var(--ck-warn)}
 .ivmeta{margin:4px 0 0;font-size:.8125rem;color:var(--mut);line-height:1.35}
 .ivck .cks .phtools{margin-top:12px}
 .ivck .cks .ivcare{margin:12px 0 0;padding:12px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;background:none;box-shadow:none}
@@ -1579,7 +1522,7 @@ html.bigtext :is(.cpnm,.pick-nm){min-height:3.6em}
 .fig .cband .ctxt{pointer-events:auto;cursor:pointer}
 #today .wxretry{color:var(--acc-ink,var(--acc))}
 /* Add: what Today's "Add one" asked for (W2-14-01); the tour's first line after the setup (W2-14-07) */
-#add .addfor{margin-top:-4px;color:var(--ink)}#add .addfor[hidden]{display:none}
+#add .addfor{margin-top:-4px;color:var(--ink)}
 /* "Your colors" / "Your patterns" with none of one's own: the heading and a small "+ New" button on one line (W2-14-02) */
 #col-sheet .cpownh{display:inline-block;margin-right:10px}#col-sheet .cnown.cnslim{display:inline-flex;grid-template-columns:none;vertical-align:middle;margin:6px 0}
 /* the Ask Claude hint with no close-up (nothing to tap) flows as one quiet paragraph; with larger text the photo and swatch at the top are shorter, 7px for each px of text over 16 (W2-14-02) */
@@ -1587,3 +1530,10 @@ html.bigtext :is(.cpnm,.pick-nm){min-height:3.6em}
 #col-sheet .cpcmp figure{aspect-ratio:auto;height:clamp(84px,calc((min(100vw,640px) - 30px)*.39 - (1rem - 16px)*7),calc((min(100vw,640px) - 30px)*.39))}
 #col-sheet .cpnewl{min-height:44px;margin:0;padding:0 14px;border:1px dashed var(--fline,var(--line));border-radius:12px;background:none;color:var(--ink);font:inherit;font-size:.875rem;font-weight:600;cursor:pointer}
 .kit-lead{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:.9375rem;line-height:1.4}
+/* ---- side safe areas: a notched iPhone on its side (viewport-fit=cover) keeps the full-width bars' text and buttons clear of the camera cutout and the rounded corners; 0 when upright ---- */
+:root{--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px)}
+header{padding-left:max(16px,var(--sal));padding-right:max(12px,var(--sar))}
+nav{padding-left:var(--sal);padding-right:var(--sar)}
+.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar{padding-left:max(16px,var(--sal));padding-right:max(16px,var(--sar))}
+.kit-body{padding-left:max(16px,var(--sal));padding-right:max(16px,var(--sar))}
+.nostore{padding-left:max(20px,var(--sal));padding-right:max(20px,var(--sar))}
