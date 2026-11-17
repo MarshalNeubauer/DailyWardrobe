@@ -11,7 +11,7 @@ module.exports=async({ok})=>{
   let posted=null;const srv=http.createServer((q,r)=>{let b='';q.on('data',c=>b+=c);q.on('end',()=>{r.setHeader('content-type','application/json');
     if(q.method==='POST'){posted=JSON.parse(b);r.end(JSON.stringify({rev:2}));return}
     const cur=posted?items.map(i=>posted.delta.items.find(x=>x.id===i.id)||i):items;r.end(JSON.stringify({rev:posted?2:1,saved:1,items:cur}))})});
-  await new Promise(x=>srv.listen(0,'127.0.0.1',x));
+  await require('./safeport').listenSafe(srv,'127.0.0.1');
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'dw-fill-')),want=path.join(dir,'want.json');
   fs.writeFileSync(want,JSON.stringify([{id:'s1',material:'cotton'},{id:'t1',material:'silk'}]));
   try{

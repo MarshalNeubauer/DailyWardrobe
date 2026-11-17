@@ -14,7 +14,7 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
       if(u==='/sw.js'&&bump)d=Buffer.from(String(d).replace(/dw-v(\d+)/,(m,n)=>'dw-v'+(+n+bump)));
       if(slow&&slow.test(u)){setTimeout(()=>{r.writeHead(200,{'content-type':T[path.extname(f)]||'application/octet-stream'});r.end(d)},6000);return}
       r.writeHead(200,{'content-type':T[path.extname(f)]||'application/octet-stream','cache-control':'max-age=600'});r.end(d)})});
-  await new Promise(r=>srv.listen(0,r));const url=`http://127.0.0.1:${srv.address().port}/`;
+  const url=`http://127.0.0.1:${await require('./safeport').listenSafe(srv)}/`;
   const browser=await chromium.launch();const ctx=await browser.newContext();let page=await ctx.newPage();
   await page.goto(url);await page.waitForFunction(()=>navigator.serviceWorker&&navigator.serviceWorker.controller,null,{timeout:10000}).catch(()=>{});
   await page.reload();await page.waitForFunction(()=>!!navigator.serviceWorker.controller,null,{timeout:5000}).catch(()=>{});

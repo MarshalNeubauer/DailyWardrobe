@@ -76,7 +76,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const srv=http.createServer((q,res)=>{const ch=[];q.on('data',d=>ch.push(d));q.on('end',async()=>{try{const body=Buffer.concat(ch);
     const r=await worker.fetch(new Request(HOST.slice(0,-1)+q.url,{method:q.method,headers:Object.fromEntries(Object.entries(q.headers).filter(([k])=>!/^(host|connection|content-length|transfer-encoding)$/.test(k))),body:body.length?body:undefined}),env);
     res.writeHead(r.status,Object.fromEntries(r.headers));res.end(Buffer.from(await r.arrayBuffer()))}catch(e){res.writeHead(500);res.end(String(e))}})});
-  await new Promise(r=>srv.listen(0,'127.0.0.1',r));const W=`http://127.0.0.1:${srv.address().port}/`,reqs=[];
+  const W=`http://127.0.0.1:${await require('./safeport').listenSafe(srv,'127.0.0.1')}/`,reqs=[];
   srv.on('request',q=>reqs.push(q.method+' '+q.url.split('?')[0]));
   const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'cmshare-')),FIX=path.join(__dirname,'fixtures','cm','suit'),d=path.join(tmp,'out-suit'),ledger=path.join(tmp,'ledger.json');fs.mkdirSync(d);
   fs.copyFileSync(path.join(FIX,'master.jpg'),path.join(d,'colormaster-2880.png'));

@@ -203,7 +203,7 @@ module.exports=async({ok,chromium,url})=>{
       if(u.pathname==='/cm-shared'){if(q.method==='PUT'){kv['cm:shared']=JSON.parse(b);puts.push('cm:shared');return res.end('{"ok":true}')}if(kv['cm:shared'])return res.end(JSON.stringify(kv['cm:shared']));res.statusCode=404;return res.end('{"error":"none"}')}   // the shared list (tests/sharedmasters.test.js)
       if(q.method==='PUT'){const o=JSON.parse(b);kv[o.key]=o.rec;puts.push(o.key);return res.end('{"ok":true}')}
       if(k&&kv[k])return res.end(JSON.stringify(kv[k]));res.statusCode=404;res.end('{"error":"none"}')})});
-    await new Promise(r=>srv.listen(0,'127.0.0.1',r));const W=`http://127.0.0.1:${srv.address().port}/`;
+    const W=`http://127.0.0.1:${await require('./safeport').listenSafe(srv,'127.0.0.1')}/`;
     const run=(args,more={})=>new Promise(r=>{const c=require('child_process').spawn(process.execPath,[path.join(__dirname,'..','tools','asm-cm-upload.js'),...args],{env:{...process.env,...more,DW_WORKER:W,DW_TOKEN:'t',DW_UPLOAD_LEDGER:more.DW_UPLOAD_LEDGER||require('path').join(require('os').tmpdir(),'dw-ledger-test-'+process.pid+'.json')}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>r({code,out}))});
     try{const mfKey='c'+fnv(`asm/${ver}/cm${cmv}/all/manifest`),mk='c'+fnv(`asm/${ver}/cm${cmv}/suit/master`),bgK='c'+fnv(`asm/${ver}/cm${cmv}/all/background`);
       const mfOf=()=>JSON.parse(/^asm\/cm-manifest (\{.*\})$/.exec(kv[mfKey].sig)[1]).keys;
