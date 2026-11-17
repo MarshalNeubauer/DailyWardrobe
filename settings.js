@@ -22,7 +22,7 @@ function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
   // (2026-11-15, the audit: "Backed up today" while the day's saves were used up and none of the new items was on the server)
   const pz=+localStorage.getItem('sync_pause')||0;
-  if(typeof syncPaused==='function'?syncPaused():pz>Date.now()){const p=pausedUntil(pz);return last?`Paused until ${p} · last saved ${when(last)}`:`Paused until ${p}: not backed up yet`}
+  if(typeof syncPaused==='function'?syncPaused():pz>nowMs()){const p=pausedUntil(pz);return last?`Paused until ${p} · last saved ${when(last)}`:`Paused until ${p}: not backed up yet`}
   if(/^Backups held/.test(st))return 'Held: deleted from the server on another device';   // (sync.js syncWiped)
   if(/^Backing up/.test(st))return last?`Backing up photos · last saved ${when(last)}`:'Backing up photos: not finished yet';   // (photos going up in batches, sync.js phBatch)
   if(/^Not backed up:/.test(st))return last?`Waiting for a connection · last saved ${when(last)}`:'Waiting for a connection: not backed up yet';
@@ -90,7 +90,8 @@ function saveSettings(){
   // link's questions (account.js acctTyped: the same account goes through, another asks, backs up and clears first). Stored as typed, the
   // next sync merged this phone's wardrobe into the other account
   const tu=$('#cfg-url')?$('#cfg-url').value.trim():null,tt=$('#cfg-token')?$('#cfg-token').value.trim():null,cu=(localStorage.getItem('worker_url')||'').trim(),ct=(localStorage.getItem('app_token')||'').trim();
-  if(typeof acctTyped==='function'&&tu&&tt&&ct&&cu&&(tt!==ct||tu.replace(/\/*$/,'/')!==cu.replace(/\/*$/,'/'))){
+  // (CR-5-07, 2026-11-17) a first connection typed here too: it skipped the server's check of the code and "Add this phone's N pieces…?"
+  if(typeof acctTyped==='function'&&tu&&tt&&(!ct||!cu||tt!==ct||tu.replace(/\/*$/,'/')!==cu.replace(/\/*$/,'/'))){
     closeSettings();acctTyped(tu,tt).catch(e=>console.warn('connection not changed',e));return}
   // full or blocked storage: Done still closes Settings (it threw before closing), and says the connection wasn't kept
   try{if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());

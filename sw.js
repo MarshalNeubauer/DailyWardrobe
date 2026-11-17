@@ -8,7 +8,7 @@
    A request sent with cache:'no-store' is left to the network (about.js checks for a newer sw.js that way).
    Cross-origin requests (the AI worker, weather) are never cached. Caches named dw-keep-* hold the app's own data
    (the sharp tagging copies, tagging.js) and survive updates. */
-const CACHE='dw-v423';
+const CACHE='dw-v424';
 const ASSETS=['./','index.html','styles.css','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','mannequin.js','mq/vest.js','mq/suit.js','mq/suit-open.js','mq/shirt-tie.js','mq/shirt-open.js','draw.js','app.js','add.js','itemsheet.js','history.js','today.js','month.js','photos.js','settings.js','start.js','ui.js','safety.js','dress.js','tagging.js','assemble.js','asm-color.js','asm-watch.js','asm-pocket.js','asm-kinds.js','watch/suit.png','watch/vest.png','watch/shirt-tie.png','watch/shirt-open.png','watch/leather.jpg','asm-gl.js','asm-worker.js','stats.js','care.js','wardrobe.js','colpick.js','checklist.js','pack.js','shop.js','sync.js','account.js','remind.js','setup.js','kit.js','about.js','sw.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 // cache:'no-cache' revalidates each file with the server (ETag / Last-Modified): an unchanged file comes back as a small 304 instead of
 // being downloaded in full on every release ('reload' fetched all of them, about 1 MB, and twice on a first visit) (audit 2026-11-13)
@@ -20,18 +20,15 @@ self.addEventListener('message',e=>{const d=e.data||{};
 self.addEventListener('fetch',e=>{
   const req=e.request,url=new URL(req.url);
   if(req.method!=='GET'||url.origin!==location.origin||req.cache==='no-store')return;   // let the browser handle it
-  // a Web Worker asked for with a query: answered from the cache it would be the cached file's address without the query, and a worker
-  // reads its flags from its own address (self.location) (found 2026-11-14 with the PC builder's asm-worker.js?nogl=1, since removed;
-  // the app's own workers take no query now, so this only keeps any future flag working)
-  if(req.destination==='worker'&&url.search)return;
   e.respondWith((async()=>{
     const cache=await caches.open(CACHE);
     const hit=await cache.match(req,{ignoreSearch:true});
     if(hit)return hit;
     // a deep link (…/app/some/path) is answered with index.html offline, whose styles.css and scripts then resolve under that path:
-    // one of this version's files asked for under another folder is that file (the page came up unstyled, audit 2026-11-13)
-    const name=url.pathname.split('/').pop();
-    if(name&&ASSETS.includes(name)){const same=await cache.match(name);if(same)return same}
+    // one of this version's files asked for under another folder is that file (the page came up unstyled, audit 2026-11-13); matched by
+    // the end of the path, so the files in sub-folders (mq/, watch/) are found too (CR-5-05: offline, the figure's poses didn't load)
+    const name=ASSETS.find(a=>a!=='./'&&url.pathname.endsWith('/'+a));
+    if(name){const same=await cache.match(name);if(same)return same}
     // not one of this version's files (or the cache was cleared): the network, kept for offline use
     try{
       const res=await fetch(req,{cache:'no-cache'});

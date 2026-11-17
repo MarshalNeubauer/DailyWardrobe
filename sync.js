@@ -1,6 +1,6 @@
 /* Daily Wardrobe: backup and sync through the Cloudflare worker (KV), plus download/restore of a backup file.
    Runs at start-up, a few seconds after any change, when the app comes back to the foreground, and on demand. */
-let restoring=false,syncing=false,syncTimer=null,syncAgain=false,syncRun=null,syncDue=0;
+let restoring=false,syncing=false,syncTimer=null,syncAgain=null,syncRun=null,syncDue=0;
 /* a roll-back waiting for its upload (2026-11-15, the audit: Safari killed 200 ms after "Roll back" left the rolled-back wardrobe on the
    phone, and the next start's sync uploaded it as an ordinary save, so the server never kept "Before the last roll-back" and 24 pieces
    were gone for good). Marked in localStorage (sync_restore = the code it is for) before the phone's copy is changed, so every upload until
@@ -13,16 +13,17 @@ async function localState(){
   return {items:its||[],days:days||[],tombstones:tombstones||{},settings:settings||null};
 }
 /* write a merged snapshot into local storage and refresh the screen.
-   Local edits can happen while a sync is in flight, so every write re-checks current storage first:
-   nothing newer is overwritten, a deletion made meanwhile is never undone, and tombstones are combined, not replaced. */
+   Local edits can happen while a sync is in flight, so every write merges with what storage holds now, in the same transaction (core.js
+   mergeItem / mergeDay): an edit made meanwhile is kept field by field, a deletion made meanwhile is never undone, and tombstones are
+   combined, not replaced. (CR-5-01, 2026-11-17: the write was decided by stamps alone, so a day whose merge winner was the older copy, a
+   change from another phone that beat this phone's own week lock, core.js dayWins, was never written and the phones disagreed for good) */
 async function applyMerged(m,local){
   const tomb=await addTombstones(m.tombstones||{});     // combined atomically with any deletion made meanwhile
   const have=Object.fromEntries(local.items.map(i=>[i.id,i]));
   for(const it of m.items){
     if(have[it.id]&&stamp(have[it.id])===stamp(it))continue;
     if(tombWins(tomb[it.id],it))continue;                     // deleted here meanwhile
-    // write only if storage doesn't already hold a newer version (checked in the same transaction)
-    await atomic('items',it.id,cur=>cur&&stamp(cur)>=stamp(it)?null:{put:it});
+    await atomic('items',it.id,cur=>{const w=cur?mergeItem(cur,it):it;return w===cur?null:{put:w}});
   }
   const keep=new Set(m.items.map(i=>i.id)),dropped=[];
   for(const it of local.items)if(!keep.has(it.id)){
@@ -32,7 +33,7 @@ async function applyMerged(m,local){
   if(dropped.length&&typeof tell==='function')tell(dropped.length===1?`“${dropped[0]}” was deleted on another phone, so your change to it wasn’t kept.`:`${dropped.length} pieces were deleted on another phone, so your changes to them weren’t kept.`);
   const haveDays=Object.fromEntries(local.days.map(d=>[d.date,d]));
   for(const d of m.days)if(!haveDays[d.date]||(haveDays[d.date].updated||0)!==(d.updated||0)){
-    await atomic('days',d.date,cur=>!cur||(cur.updated||0)<(d.updated||0)?{put:d}:null)}
+    await atomic('days',d.date,cur=>{const w=cur?mergeDay(cur,d):d;return w===cur?null:{put:w}})}
   if(m.settings){const cs=await metaGet('settings');if(!cs||(cs.updated||0)<=(m.settings.updated||0))await metaPut('settings',m.settings)}
   const now=await localState();
   if(stateSig(now)!==stateSig(local)){const open=typeof editing!=='undefined'&&editing&&items.find(i=>i.id===editing);
@@ -106,15 +107,20 @@ function syncWiped(at){const last=+localStorage.getItem('last_sync')||0;
   wipeAsk=askConfirm(`Your wardrobe was deleted from the server on another device (${when}).\n\nThis phone still has its own copy. Back it up to the server again?\n\nIf not, nothing is sent. You can delete it from this phone too in Settings → About → Delete my data.`,{ok:'Back it up again',cancel:'Not now'})
     .then(yes=>{wipeAsk=null;if(yes){try{localStorage.setItem('wipe_seen',String(at))}catch{}syncNow()}else wipeLater=at},()=>{wipeAsk=null});
   return true}
-async function syncNow(){
-  if(syncRun){await syncRun.catch(()=>{});if(syncRun)await syncRun.catch(()=>{})}
-  syncRun=syncOnce();try{return await syncRun}finally{syncRun=null}
-}
+/* one sync at a time (CR-5-04, 2026-11-17: four or more callers at once, the timer, going to the background, online, Sync now, a roll-back,
+   started two or three syncOnce together, each with its GET and POST on the same version). A call while one runs gets the one run queued
+   after it (syncAgain), shared by every call that came meanwhile, so each sees its own changes backed up */
+function syncNow(){
+  if(!syncRun){const run=syncOnce().finally(()=>{if(syncRun===run)syncRun=null});syncRun=run;return run}
+  if(!syncAgain){const run=syncRun;syncAgain=run.catch(()=>{}).then(()=>{syncAgain=null;return syncNow()})}
+  return syncAgain}
 /* what this device last agreed on with the worker: the backup's version and a fingerprint of the wardrobe at that moment.
    While both still hold, a sync is one tiny request: nothing is downloaded or uploaded (the backup is several MB of photos). */
 const syncMark=()=>{try{const m=JSON.parse(localStorage.getItem('sync_mark')||'null');return m&&m.url===syncUrl()&&m.v&&m.sig?m:null}catch{return null}};
 const setSyncMark=(rev,saved,sig)=>{try{localStorage.setItem('sync_mark',JSON.stringify({url:syncUrl(),v:rev+':'+saved,sig}))}catch{}};
-const synced=()=>{syncDue=0;localStorage.setItem('last_sync',Date.now());localStorage.removeItem('sync_status');localStorage.removeItem('sync_wait');showSyncStatus()};
+/* last_sync by the corrected time (core.js nowMs), as the server's times it is compared with (CR-5-06: syncWiped held the backups of a phone
+   whose clock was behind, its last_sync read as before the server's wipe) */
+const synced=()=>{syncDue=0;localStorage.setItem('last_sync',nowMs());localStorage.removeItem('sync_status');localStorage.removeItem('sync_wait');showSyncStatus()};
 /* an invitation that was switched off: said once, and the app stops trying (localStorage.invite_ended holds that code) */
 const ENDED='Your invitation has ended. Your wardrobe stays on this phone, and the app keeps working without a connection.';
 /* (j: the server's answer) a tester's code the server doesn't know at all (403 'forbidden token': its storage was lost, or the account
@@ -143,6 +149,8 @@ const syncWaiting=st=>/^Not backed up:/.test(st||'');
 /* a tester's backups for the day are used up (the server's limit): no more uploads until the next UTC day, by the corrected time (core.js
    nowMs); a pause further off than a day and a bit was set by a clock that was ahead (the audit's W1-9-06: a year-long pause) and is let go */
 const nextUtcDay=()=>{const d=new Date(nowMs());return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)};
+/* uploads paused until the next UTC day, with the sentence that says why (CR-5-13: written four times) -> false, what syncOnce returns */
+function pauseTillTomorrow(m){localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
 function syncPaused(){const p=+localStorage.getItem('sync_pause')||0;if(!p)return false;const t=nowMs();
   if(p>t+26*3600e3){localStorage.removeItem('sync_pause');localStorage.removeItem('sync_pause_msg');return false}return p>t}
 /* ---- the phone's clock (fix round 3, the audit's W1-9; core.js nowMs): the server sends its time with every answer (x-now); the gap is
@@ -189,7 +197,7 @@ const backupFullMsg=pr=>{let at='';try{at=new Date(nextUtcDay()).toLocaleTimeStr
   return (pr&&pr.message)||'Today’s backups are used up.'};
 /* what Connection and the setup say about backups: "is backed up", unless backups are paused (W1-10-04, W1-11-06: "✓ Connected … and your
    wardrobe is backed up" while the server held none of the day's items) */
-function backedUpWords(){const p=+localStorage.getItem('sync_pause')||0;if(p<=Date.now())return 'your wardrobe is backed up';
+function backedUpWords(){const p=+localStorage.getItem('sync_pause')||0;if(p<=nowMs())return 'your wardrobe is backed up';
   let at='';try{at=new Date(p).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
   return `your wardrobe is backed up, though not right now: backups are paused until ${at||'tomorrow'}, and your newest changes are only on this phone until then`}
 /* ---- the small sync (worker.js syncLiteGet / syncLitePost). A newer worker answers GET /sync?lite=1&since=<the version last agreed
@@ -326,13 +334,17 @@ async function syncLite(remote,local,url,token,inline){
   // too large for the server all the same (a smaller limit than ours): half the size again, down to one item; one item too large pauses
   // the uploads until tomorrow, said in words, instead of sending it again at every close (W2-18-01: 4 x 61 MB in two closes)
   if(p.status===413){if(batch.up.items.length>1){syncSendMax=syncSendMax>>1;return {again:{since,batch:true}}}
-    localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',TOO_BIG_SYNC);setSyncStatus(TOO_BIG_SYNC);return false}
+    return pauseTillTomorrow(TOO_BIG_SYNC)}
   // a batch went up: the rest from the version it made (the backup now holds those items, so they aren't sent again)
   // (a roll-back's first batch kept "Before the last roll-back": the later ones are ordinary saves, or each would replace that copy)
   if(p.ok&&batch.left&&Number.isInteger(pr.rev)){if(restoreWanted())restoreDone();return {again:{since:`${pr.rev}:${pr.saved||0}`,batch:true}}}
   if(p.status===400&&Array.isArray(pr.missing)){pr.missing.forEach(h=>inline.add(h));return {again:{since}}}
   if(p.status===422&&pr.error==='legacy')return {again:{legacy:true}};          // a backup the server can't index: the whole of it
-  if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
+  return syncSaved(p,pr,token,now)}
+/* the end of a save (the small sync's POST, the whole backup's PUT): refused for the day, ended, failed, or taken -> true/false.
+   (CR-5-13: written twice, once for each) */
+async function syncSaved(p,pr,token,now){
+  if(p.status===429&&pr.what==='backup')return pauseTillTomorrow(backupFullMsg(pr));
   if(endedAnswer(p.status,pr)){inviteEnded(token,pr);setSyncStatus(ENDED);return false}
   if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
   setSyncMark(pr.rev,pr.saved,stateSig(now));syncSdDone();synced();restoreDone();
@@ -376,13 +388,8 @@ async function syncOnce(){
       const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date(nowMs())),...(restoreWanted()?{reason:'restore'}:{}),data:out})});   // data last: the server reads a large backup's few leading fields without parsing the whole
       if(p.status===409)continue;                       // another device saved first: merge again
       const pr=await p.json().catch(()=>({}));
-      if(p.status===413){localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',TOO_BIG_SYNC);setSyncStatus(TOO_BIG_SYNC);return false}   // not again at every close
-      if(p.status===429&&pr.what==='backup'){const m=backupFullMsg(pr);localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
-      if(endedAnswer(p.status,pr)){inviteEnded(token,pr);setSyncStatus(ENDED);return false}
-      if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
-      setSyncMark(pr.rev,pr.saved,stateSig(now));syncSdDone();synced();restoreDone();
-      if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
-      return true;
+      if(p.status===413)return pauseTillTomorrow(TOO_BIG_SYNC);   // not again at every close
+      return await syncSaved(p,pr,token,now);
     }
     throw new Error('another device kept saving at the same time; try again');
   }catch(e){
@@ -403,7 +410,7 @@ function scheduleSync(){clearTimeout(syncTimer);try{if(!localStorage.getItem('sy
   syncTimer=setTimeout(syncNow,2500)}
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&syncDue)syncNow();   // a tester's waiting changes, as the app closes
-  else if(document.visibilityState==='visible'&&Date.now()-(+localStorage.getItem('last_sync')||0)>60000)syncNow()});
+  else if(document.visibilityState==='visible'&&nowMs()-(+localStorage.getItem('last_sync')||0)>60000)syncNow()});
 addEventListener('pagehide',()=>{if(syncDue)syncNow()});
 // back online after a backup that couldn't reach the server: try again at once
 addEventListener('online',()=>{if(syncWaiting(localStorage.getItem('sync_status')))syncNow()});
@@ -425,9 +432,14 @@ async function restoreBackup(file){
   // and holiday country won the per-setting merge over the file's, under "Restored"); a setting only this phone has stays
   const local=await localState();if(data.settings&&typeof data.settings==='object')data={...data,settings:stampAllSettings({...(local.settings||{}),...data.settings},nowMs())};
   await applyMerged(mergeState(local,data),local);
-  if(left){tell(`Restored. Your wardrobe now has ${items.length} item${items.length===1?'':'s'}. ${left} item${left===1?' in the file wasn’t':'s in the file weren’t'} a Daily Wardrobe item and ${left===1?'was':'were'} left out.`);showSyncStatus();scheduleSync();return}
-  tell(`Restored. Your wardrobe now has ${items.length} item${items.length===1?'':'s'}.`);showSyncStatus();scheduleSync();
+  const n2=items.length,out=left?` ${left} item${left===1?' in the file wasn’t':'s in the file weren’t'} a Daily Wardrobe item and ${left===1?'was':'were'} left out.`:'';
+  tell(`Restored. Your wardrobe now has ${n2} item${n2===1?'':'s'}.${out}${restoreGone(data.items)}`);showSyncStatus();scheduleSync();
 }
+/* the file's pieces that didn't come back (CR-5-03, 2026-11-17): a restore merges, so a piece deleted on this phone after the file was saved
+   stays deleted (core.js tombWins), and "Restored" said nothing of it. Named, up to three -> '' or a sentence */
+function restoreGone(fileItems){const have=new Set(items.map(i=>i.id)),gone=(fileItems||[]).filter(i=>i&&!have.has(i.id));if(!gone.length)return '';
+  const names=gone.slice(0,3).map(i=>`“${itemName(i)||nm(i)}”`),more=gone.length-names.length,list=names.join(', ')+(more?` and ${more} more`:'');
+  return ` ${gone.length===1?'1 piece in the file stayed deleted':gone.length+' pieces in the file stayed deleted'}, since ${gone.length===1?'it was':'they were'} deleted after the file was saved: ${list}. Add ${gone.length===1?'it':'them'} again if you still have ${gone.length===1?'it':'them'}.`}
 /* ---- daily backups on the worker (snap:<day> / snap:<month> / snap:before-restore) ---- */
 /* a copy is named by the day it is for (the wardrobe at that day's start), with how many items it holds when the server says (W2-14-03,
    W1-6-07: labelled by the time its content was saved, Monday's copy and Sunday's both read "Sun, Nov 15, 7:30 AM", one full, one empty) */
