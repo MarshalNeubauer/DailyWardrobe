@@ -34,10 +34,18 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(gg[0]===gw[0]&&gg[1]===gw[1]&&gg[3]===gw[3]&&gg[4]===gw[4]&&rain.goneShirt&&rain.goneShirt!==gw[2],`a kept trip's piece deleted: only its slot is planned again (${rain.gone})`);
     ok(rain.plain!==rain.want,'an ordinary week lock is still let go as a whole by the rain (the documented rule)');
 
-    // ---- CR-3-02: suede in the rain to rest yesterday's smooth pair: the note gives that reason, not "only suede shoes suited"
+    // ---- CR-3-02, rain wins (the owner, 2026-11-17): no suede on a rainy day, even if yesterday's leather pair comes again; suede only: said so
     const sd=await p.evaluate(`(()=>{${RAIN};let P=buildPlan(2026,10);const D=['2026-11-12','2026-11-19','2026-11-26'].find(d=>P[d].shoes&&P[d].shoes.leather==='suede');
-      weather[D]={tmax:18,pop:80};cache={};const o=buildPlan(2026,10)[D];return {leather:o.shoes&&o.shoes.leather,notes:o.notes}})()`);
-    ok(!sd.notes.some(n=>/only suede shoes suited/.test(n))&&(sd.leather!=='suede'||sd.notes.some(n=>/were worn yesterday/.test(n))),`suede in the rain is explained by the real reason (${sd.leather}: ${sd.notes.join(' | ')})`);
+      const prevK=Object.keys(P).filter(k=>keyDate(k)<keyDate(D)).sort((a,b)=>keyDate(b)-keyDate(a))[0];
+      weather[D]={tmax:18,pop:80};cache={};let Q=buildPlan(2026,10);const o=Q[D],y=Q[prevK];
+      // every day rainy: suede never comes, though one calf pair must then repeat
+      const rainy=[];for(let d=10;d<=30;d++){const k='2026-11-'+d;weather[k]={tmax:18,pop:80};}cache={};Q=buildPlan(2026,10);for(const [k,x] of Object.entries(Q))if(keyDate(k)>=todayDate()&&x.shoes)rainy.push(x.shoes.leather);
+      // only the suede loafers left
+      items=items.filter(i=>i.type!=='shoes'||i.leather==='suede');cache={};const s=buildPlan(2026,10)[D];
+      return {D,leather:o.shoes&&o.shoes.leather,shoes:o.shoes&&o.shoes.id,yShoes:y&&y.shoes&&y.shoes.id,rainySuede:rainy.filter(l=>l==='suede').length,rainyDays:rainy.length,onlyLeather:s.shoes&&s.shoes.leather,onlyNotes:s.notes}})()`);
+    ok(sd.leather!=='suede'&&sd.shoes===sd.yShoes,`rain with suede and yesterday's leather pair: the leather pair is worn again (${sd.shoes}, yesterday ${sd.yShoes})`);
+    ok(sd.rainyDays>10&&sd.rainySuede===0,`three rainy weeks plan no suede (${sd.rainySuede} of ${sd.rainyDays} days)`);
+    ok(sd.onlyLeather==='suede'&&sd.onlyNotes.some(n=>/^Rain is forecast and suede shoes are the only ones you have for today/.test(n)),`suede only: the day's note says so (${sd.onlyNotes.join(' | ')})`);
 
     // ---- CR-3-04 and CR-3-07: the jacket taken off for a day
     const off=await p.evaluate(()=>{let k=0;const I=(type,c,x={})=>({id:type+(k++),type,primaryColor:c,pattern:'solid',...x});

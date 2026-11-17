@@ -250,6 +250,9 @@ function shoeFormality(shoe,suitDay){
    Leather shoes want a day to dry: yesterday's pair costs SHOE_AGAIN (25, was 7) when another pair suits, more than the halved strap and
    metal swing (20), less than no matching belt (30) (the audit: one pair 87 times two days running) */
 const SUIT_SUEDE=30,SHOE_WATCH=.5,SHOE_AGAIN=25;
+/* rain wins (the owner, 2026-11-17, on the code review's CR-3-02): suede (and nubuck) is never planned on a rainy day while another pair is
+   left, even when that means yesterday's pair again; it was -25, the same as SHOE_AGAIN, so resting yesterday's calf pair put suede in the rain */
+const RAIN_SUEDE=1000;
 function watchFit(w,shoe,belt){
   let v=0;const o=watchOpts(w);
   if(o.band==='leather'&&shoe)v+=leatherGroup(planCol(w))===leatherGroup(planCol(shoe))?8:-20;
@@ -503,7 +506,7 @@ for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.len
   // shoes that don't suit (a real mistake) cost NO_SHOES more, so they lose to a pair with no matching belt (30, not a mistake): the
   // re-audit's blazer day, khaki chinos and black calf shoes at 69 while the oxblood loafers suited them
   if(s){const ss=shoeScore(top,bot,s);t+=ss-(ss<=-50?NO_SHOES:0)+shoeFormality(s,suitDay)+rb(s)-(rest(s)<=1&&!day.formal&&day.occ!=='funeral'?SHOE_AGAIN:0);   // leather shoes want a day to dry: not yesterday's pair when another suits
-    if(day.clim.rain&&finish(s.leather)==='suede')t-=25;             // suede and rain don't mix
+    if(day.clim.rain&&finish(s.leather)==='suede')t-=RAIN_SUEDE;     // suede and rain don't mix: never, while any other pair is left
     if(day.formal||day.occ==='funeral'){const g=leatherGroup(planCol(s)),f=finish(s.leather);t+=(f==='suede'||f==='grain')?-20:g==='black'?(day.occ==='funeral'?20:8):g==='burgundy'?3:-4}
     if(day.occ==='wedding'&&finish(s.leather)==='suede')t-=15}
   if(b){if(!s)continue;const f=beltFit(s,b);if(f===null)continue;t+=12+f+rb(b)}else if(B.length&&s)t-=30; // no matching belt: allowed, but last resort
@@ -537,14 +540,12 @@ if(shoes&&finish(shoes.leather)==='patent')notes.push('Only patent shoes were av
 if(shoes&&B.length&&!belt)notes.push(`None of your belts match the ${desc(shoes)} shoes. Add a ${leatherGroup(planCol(shoes))} ${finish(shoes.leather)==='suede'?'suede':'smooth leather'} belt.`);
 if(watch&&belt&&!metalSame(metalOf(watch),metalOf(belt)))notes.push(`The watch (${metalOf(watch)}) and belt buckle (${metalOf(belt)}) are different metals.`);
 if(french&&!links)notes.push('French-cuff shirt, but no cufflinks in your wardrobe. Add a pair.');
-// suede in the rain, said from the real reason (the code review, CR-3-02: "only suede shoes suited" when a smooth pair that suited was
-// worn yesterday and SHOE_AGAIN outweighed the rain)
-if(clim.rain&&shoes&&finish(shoes.leather)==='suede'){const dry=S.filter(s=>s.id!==shoes.id&&!['suede','patent'].includes(finish(s.leather))&&shoeScore(top,bot,s)>-50);
+// suede in the rain, said from the real reason (the code review, CR-3-02): picked by hand, packed, or the only shoes left (RAIN_SUEDE keeps
+// it off otherwise)
+if(clim.rain&&shoes&&finish(shoes.leather)==='suede')
   notes.push(force.shoes===shoes.id?`Rain is forecast and the ${nm(shoes)} picked for the day are suede. Smooth leather would hold up better.`
     :trip&&lock&&lock.shoes===shoes.id?`Rain is forecast and the packed ${nm(shoes)} are suede. Smooth leather would hold up better.`
-    :!dry.length?'Rain is forecast and only suede shoes suited this outfit. Smooth leather would hold up better.'
-    :dry.every(s=>rest(s)<=1)?`Rain is forecast, but your ${nm(dry[0])} were worn yesterday and want a day to dry, so suede it is.`
-    :`Rain is forecast: your ${nm(dry[0])} would hold up better than suede.`)}
+    :'Rain is forecast and suede shoes are the only ones you have for today. A smooth leather pair would hold up better in the rain.');
 for(const x of tripOff)(x===top?jnote:t=>notes.push(t))(`The packed ${nm(x)} is a ${itemSeason(x)}-weather piece on a ${clim.season} day.`);
 if(needCoat&&!coat)notes.push(clim.rain?'Rain is forecast and there is no raincoat in your wardrobe.':'It will be cold and there is no overcoat in your wardrobe.');
 if(day.occ==='funeral'&&tie&&pcol(tie)!=='black')notes.push(patInfo(tie,'tie')?'No black tie in your wardrobe for a funeral: the most sober one you have was chosen. A plain black tie is right for a funeral.':'No black tie in your wardrobe for a funeral: the darkest, plainest one was chosen.');
