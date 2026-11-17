@@ -68,4 +68,5 @@ function dressNewItem(){if(settings.vestDef||vestMigrating||items.some(legacyVes
 function dressSynced(m){
   if(m&&m.settings){if(!m.settings.vestDef)delete settings.vestDef;if(!m.settings.dress)delete settings.dress}
   if(!vestMigrating)migrateVests(true);
-  if(typeof matMigrate==='function'&&m&&(m.items||[]).some(matRenameTo))matMigrate()}   // a shirt still "nylon/spandex" or "nylon" from another device (wardrobe.js)
+  if(typeof matMigrate==='function'&&m&&(m.items||[]).some(matRenameTo))matMigrate();
+  if(typeof sockToeMigrate==='function'&&m&&(m.items||[]).some(sockLegacy))sockToeMigrate()}   // a sock from an older app: its toe cap to toeColor (wardrobe.js)   // a shirt still "nylon/spandex" or "nylon" from another device (wardrobe.js)

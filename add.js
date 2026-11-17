@@ -416,6 +416,10 @@ async function saveCard(q){
   const it={id:q.id,type:q.type,primaryColor:q.primaryColor,secondaryColor:q.secondaryColor,tertiaryColor:q.tertiaryColor,pattern:hasPat(q.type)?q.pattern:'solid',photo:q.photo,added:nowMs()};
   if(f){it.swatch=q.swatch;it.swSrc=q.swSrc}
   {const a=accentsOf(q);if(a.length)it.accents=a}   // its colours beyond the three (core.js accentsOf)
+  // a sock's toe cap: its own field, always set (a sock without it is from before: core.js sockToe). A card that never had the field (an
+  // import's row: kit.js) keeps a plain sock's second colour as its toe cap, as a spreadsheet means it
+  if(q.type==='socks'){const plain=(patBase(it.pattern)||'solid')==='solid',old=q.toeColor===undefined&&plain&&it.secondaryColor&&COLORS[it.secondaryColor]?it.secondaryColor:null;
+    it.toeColor=q.toeColor&&COLORS[q.toeColor]?q.toeColor:old||'none';if(old)it.secondaryColor=null}
   if(q.order){it.paused=true;it.order=true;if(q.arrives)it.arrives=q.arrives}   // bought, on the way
   if(METAL_TYPES.includes(q.type))it.metal=q.metal||'silver';
   if(q.type==='shirt')it.cuff=q.cuff||'button';

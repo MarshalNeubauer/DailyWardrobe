@@ -19,7 +19,7 @@ const RENDER_AHEAD = 10 * 6e4, RENDER_MAX = 4e6;
 const PIC_RE = /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]*$/, REF_RE = /^dwph:[0-9a-f]{20}$/;
 const ID_RE = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/, KEY_RE = /^[\p{L}\p{M}\p{N}_-]{1,48}$/u, HEX_RE = /^#[0-9a-fA-F]{3,8}$/, DATE_RE = DAY_RE;
 const WORD_RE = /^[\p{L}\p{M}\p{N} _+.,:;()\/#%’-]{0,120}$/u, BAD_CH = /[<>"`]/;
-const COLS = ['primaryColor', 'secondaryColor', 'tertiaryColor', 'dial'], PICS = ['photo', 'photoSm', 'texture', 'swatch'],
+const COLS = ['primaryColor', 'secondaryColor', 'tertiaryColor', 'dial', 'toeColor'], PICS = ['photo', 'photoSm', 'texture', 'swatch'],
   KEYS = ['pattern', 'swSrc', 'metal', 'leather', 'cuff', 'vest', 'season', 'shoeStyle', 'trouserKind', 'band', 'bezel', 'watchStyle'],
   NUMS = ['added', 'updated', 'shade'], TEXT = ['name', 'brand', 'material', 'notes', 'details', 'patternText'];
 const colOk = c => c == null || c === '' || typeof c === 'string' && (/^own/.test(c) ? OWN_COL_RE.test(c) : KEY_RE.test(c) || /^[a-z ]{1,30}$/i.test(c));   // (an own colour's key by the one rule, ownkeys.js)   // (a colour word, "light blue": the app makes it a key)

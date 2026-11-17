@@ -221,7 +221,7 @@ function fitRule(slot,o,c){
     case 'top':case 'bot':case 'shirt':case 'tie':return clothesScore(top,bot,slot==='shirt'?c:o.shirt,slot==='tie'?c:o.tie,suit,day)+(slot==='top'?seasonFit(c,day.clim.season)*2+(day.formal?formalTop(c)*2:0):0);
     case 'shoes':return legs?shoeScore(top,legs,c)+shoeFormality(c,suit):0;
     case 'belt':{const f=o.shoes?beltFit(o.shoes,c):0;return f===null?-60:f}
-    case 'socks':return sockScore(legs,o.shoes,c,sockEcho(o.shirt,o.tie));
+    case 'socks':return sockScore(legs,o.shoes,c,sockEcho(o.shirt,o.tie),{top:o.top,bot:legs,shirt:o.shirt,tie:o.tie,formal:!!o.formal,occasion:o.occasion});   // (a patterned sock's rules too, 2026-11-17)
     case 'watch':return watchFit(c,o.shoes,o.belt);
     case 'clip':case 'links':return accMetal(c,o.tie,o.watch,o.belt);   // the planner's own metal rule (planner.js), enamel and two-tone included
     case 'pocket':return pocketScore(c,o.top,o.shirt,o.tie,{formal:!!o.formal,occ:o.occasion==='formal'?null:o.occasion})}

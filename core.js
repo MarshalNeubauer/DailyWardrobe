@@ -4,7 +4,7 @@ const TYPES={suit:'Suit',blazer:'Blazer',pants:'Pants',shirt:'Dress shirt',tie:'
   tee:'T-shirt',polo:'Polo',henley:'Henley',sweater:'Sweater',sweatshirt:'Sweatshirt',hoodie:'Hoodie',qzip:'Quarter-zip',cardigan:'Cardigan',chore:'Chore jacket'};
 /* the types and kinds the tagger offers only to an app that names them (the request's `types`; worker/tag.js knownTypes; the pocket square too): an older app
    reads an unknown type as a suit, so the worker gives one only when told. 'cargo' is the pants kind (trouserKind) */
-const TAG_TYPES=['pocketsquare','tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','cargo'];
+const TAG_TYPES=['pocketsquare','tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','cargo','sockpat'];   // ('sockpat', 2026-11-17: socks' patterns, their pattern colours and the toe cap's own field, toeColor)
 /* ---- hand-pick only (2026-11-16, the owner: "Planner: hand-pick only"): the casual tops (worn in the shirt slot, in place of the shirt),
    the casual jackets (the jacket slot) and cargo pants are never planned or suggested ("Suggest another" too) and don't count in the
    rotation stats or What to buy; Today's picker offers them under "Casual · pick by hand". isHandPick is the one check the planner, the
@@ -28,9 +28,17 @@ const METAL={gold:'#c9a227',silver:'#c3c6cb',other:'#7d8187'},PATS_BY=(()=>{cons
     pocketsquare:['solid','border','polka-dot','paisley','stripe','check','foulard','woven','other'],
     // the casual garments (2026-11-16): heather (a marled mix of light and dark fibers of one color), cable (cable-knit ropes)
     tee:['solid','stripe','heather','other'],polo:['solid','stripe','heather','other'],henley:['solid','stripe','heather','other'],sweater:['solid','heather','cable','stripe','other'],
-    sweatshirt:['solid','stripe','heather','other'],hoodie:['solid','stripe','heather','other'],qzip:['solid','heather','cable','stripe','other'],cardigan:['solid','heather','cable','stripe','other'],chore:['solid','other']}})(),
+    sweatshirt:['solid','stripe','heather','other'],hoodie:['solid','stripe','heather','other'],qzip:['solid','heather','cable','stripe','other'],cardigan:['solid','heather','cable','stripe','other'],chore:['solid','other'],
+    // socks (2026-11-17, the owner's sock patterns): bold ones (argyle, stripe = horizontal bands, polka-dot, other) and quiet knits that read
+    // plain from a step away (ribbed, birdseye, nailhead, herringbone, clock = a small motif up the side of the ankle); worker/tag.js SOCK_PATS
+    socks:['solid','argyle','stripe','polka-dot','ribbed','birdseye','nailhead','clock','herringbone','other']}})(),
 PAT_ALIAS={suit:{stripe:'pinstripe',check:'glen-check',plaid:'glen-check',texture:'twill'},shirt:{texture:'textured',plaid:'check',hairline:'fine-stripe','hairline-stripe':'fine-stripe','fine-stripes':'fine-stripe','fil-a-fil':'end-on-end','end-to-end':'end-on-end',jacquard:'dobby','pin-point':'pinpoint','royal-oxford-weave':'royal-oxford',poplin:'solid',broadcloth:'solid','fine-textured':'fine-texture','micro-texture':'fine-texture',weave:'woven','basket-weave':'royal-oxford'},tie:{texture:'woven',textured:'woven',weave:'woven','basket-weave':'woven',basketweave:'woven',oxford:'woven','micro-check':'woven',grenadine:'woven',tonal:'tonal-check','tone-on-tone':'tonal-check','tonal-glen-check':'tonal-check','tone-on-tone-check':'tonal-check',dots:'polka-dot',plaid:'check'},
-  pocketsquare:{dots:'polka-dot',dot:'polka-dot','contrast-border':'border',bordered:'border',edged:'border',edge:'border',piped:'border',piping:'border','rolled-edge':'border',hem:'border',plaid:'check',gingham:'check',stripes:'stripe',striped:'stripe',texture:'woven',textured:'woven',plain:'solid',motif:'foulard',geometric:'foulard'}},
+  pocketsquare:{dots:'polka-dot',dot:'polka-dot','contrast-border':'border',bordered:'border',edged:'border',edge:'border',piped:'border',piping:'border','rolled-edge':'border',hem:'border',plaid:'check',gingham:'check',stripes:'stripe',striped:'stripe',texture:'woven',textured:'woven',plain:'solid',motif:'foulard',geometric:'foulard'},
+  socks:{diamond:'argyle',diamonds:'argyle','diamond-pattern':'argyle',harlequin:'argyle',argyles:'argyle','argyle-pattern':'argyle',stripes:'stripe',striped:'stripe','horizontal-stripe':'stripe','horizontal-stripes':'stripe',
+    'rugby-stripe':'stripe','multi-stripe':'stripe',bands:'stripe',banded:'stripe',dot:'polka-dot',dots:'polka-dot',polka:'polka-dot','polka-dots':'polka-dot',dotted:'polka-dot','pin-dot':'polka-dot',pindot:'polka-dot','pin-dots':'polka-dot',spots:'polka-dot',spotted:'polka-dot',
+    rib:'ribbed',ribs:'ribbed','rib-knit':'ribbed','ribbed-knit':'ribbed','ribbed-texture':'ribbed','birds-eye':'birdseye',"bird's-eye":'birdseye','birds-eye-knit':'birdseye','pin-point':'nailhead',pinpoint:'nailhead',
+    clocked:'clock',clocks:'clock','clock-motif':'clock','side-clock':'clock',embroidered:'clock',chevron:'herringbone',zigzag:'herringbone','fishbone':'herringbone',plain:'solid',novelty:'other',print:'other',printed:'other',
+    camo:'other',camouflage:'other',fair:'other','fair-isle':'other'}},
 CASUAL_PAT_ALIAS={striped:'stripe',stripes:'stripe',breton:'stripe','breton-stripe':'stripe',marl:'heather',marled:'heather',melange:'heather',heathered:'heather',mottled:'heather',
   'cable-knit':'cable',cables:'cable',cabled:'cable',plain:'solid',knit:'solid',jersey:'solid',ribbed:'solid',rib:'solid'},
 normPat=(t,p)=>{const l=PATS_BY[t]||['solid'],g=PAT_ALIAS[t==='blazer'||t==='pants'?'suit':t]||(HANDPICK_TYPES.includes(t)?CASUAL_PAT_ALIAS:{});p=String(p||'').toLowerCase().trim().replace(/[\s_]+/g,'-');return l.includes(p)?p:l.includes(g[p])?g[p]:'solid'},
@@ -45,7 +53,7 @@ COL_ALIAS={gray:'grey',lightgray:'lightgrey',palegrey:'lightgrey',palegray:'ligh
 normColFor=(type,c,accent)=>fitCol(type,normCol(c),accent),
 /* a type with a pattern and pattern colours: FABRIC's cloth, the pocket square's print and the casual garments' stripe, heather or
    cable (2026-11-16; they have no close-up, swatch or reading) */
-hasPat=t=>FABRIC.includes(t)||t==='pocketsquare'||HANDPICK_TYPES.includes(t),
+hasPat=t=>FABRIC.includes(t)||t==='pocketsquare'||t==='socks'||HANDPICK_TYPES.includes(t),   // (socks 2026-11-17: argyle, stripes, dots…)
 normCol=c=>{if(!c)return null;const x=String(c).trim().toLowerCase();if(/^own[a-z0-9]+$/.test(x)&&COLORS[x])return x;const k=String(c).toLowerCase().replace(/[^a-z]/g,'');if(!k||k==='none'||k==='null')return null;return COLORS[k]?k:COL_ALIAS[k]||null},FABRIC=['suit','blazer','pants','shirt','tie'],COOL=3;
 /* colours each item type really comes in: p = main colour, a = stripe / check / motif colours.
    The tagger is told the same lists (worker.js TYPE_COLORS); a colour outside the list is moved to the closest one in it. */
@@ -387,11 +395,17 @@ const prettyCols=t=>String(t??'').replace(colourNameRe(),m=>COLOR_NAMES[m]);
 /* the dropdown for a type; a colour an existing item already has is always kept in its own list */
 const COLOR_OPTS=(type,cur,accent)=>{const l=colsFor(type,accent);return (cur&&COLORS[cur]&&!l.includes(cur)?[...l,cur]:l).map(c=>[c,colName(c)])},
   DIAL_OPTS=cur=>(cur&&COLORS[cur]&&!DIAL_COLS.includes(cur)?[...DIAL_COLS,cur]:DIAL_COLS).map(c=>[c,colName(c)]);
-/* socks: the secondary colour is a contrasting toe cap, not a pattern colour */
-const sockToe=i=>i&&i.type==='socks'&&i.secondaryColor&&i.secondaryColor!=='none'&&COLORS[i.secondaryColor]&&i.secondaryColor!==primaryCol(i)?i.secondaryColor:null;
+/* socks: a contrasting toe cap is its own field, item.toeColor (2026-11-17, sock patterns: the second and third colours are now the
+   pattern's, an argyle's diamonds and lines, as on every patterned item). Before, the toe cap was the secondaryColor: a sock with no
+   toeColor at all is from before (wardrobe.js sockToeMigrate moves it, once, stamped; a sock from an older app may still arrive by sync), and
+   a plain one's secondaryColor is read as its toe cap, as it always was. A patterned sock never is: patterns came with the toeColor field */
+const sockPatterned=i=>!!i&&i.type==='socks'&&(patOf(i)||'solid')!=='solid';
+const sockToeKey=i=>{if(!i||i.type!=='socks')return null;const t=i.toeColor!==undefined?i.toeColor:sockPatterned(i)?null:i.secondaryColor;return t&&t!=='none'&&COLORS[t]?t:null};
+const sockToe=i=>{const t=sockToeKey(i);return t&&t!==primaryCol(i)?t:null};
+const sockToeWord=i=>sockToe(i)?`, ${colName(sockToe(i)).toLowerCase()} toe`:'';
 const colorDesc = i => {
   if(!i) return '';
-  if(i.type==='socks')return colName(primaryCol(i))+(sockToe(i)?`, ${colName(sockToe(i)).toLowerCase()} toe`:'');
+  if(i.type==='socks'&&!sockPatterned(i))return colName(primaryCol(i))+sockToeWord(i);   // (a plain sock exactly as before: "Navy, light gray toe")
   let cols=[primaryCol(i)];
   if(i.secondaryColor&&i.secondaryColor!=='none') cols.push(i.secondaryColor);
   if(i.tertiaryColor&&i.tertiaryColor!=='none') cols.push(i.tertiaryColor);
@@ -403,7 +417,7 @@ const metalWord=m=>m==='other'?'gunmetal':m==='silk'?'silk knot':m;
 METAL['two-tone']='#c8b27e';   // (2026-11-15, the owner's option) steel and gold together: planner metalSame lets it go with either
 const METAL_OPTS=Object.keys(METAL).map(c=>[c,metalWord(c)]);
 const linkFace=i=>{const c=i&&i.type==='cufflinks'&&primaryCol(i);return c&&COLORS[c]&&c!=='silver'&&c!=='gold'?c:null};   // an enamel or stone face (silver and gold links are all metal)
-const desc=i=>i?((i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i))?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(i.type==='shoes'||i.type==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i))?'':' · ')+metalWord(i.metal):'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${colName(watchOpts(i).dial)} dial ·${BAND_WORDS[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'&&SEASON_TYPES.includes(i.type)?` · ${i.season} weather`:''):'';
+const desc=i=>i?((i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i))?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(sockPatterned(i)?sockToeWord(i):'')+(i.type==='shoes'||i.type==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i))?'':' · ')+metalWord(i.metal):'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${colName(watchOpts(i).dial)} dial ·${BAND_WORDS[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'&&SEASON_TYPES.includes(i.type)?` · ${i.season} weather`:''):'';
 const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patName(i.pattern):'')+' '+typeWord(i):'none';   // an own pattern by its name, not "own basketweave" (W1-1-04)
 /* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
    (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
@@ -585,7 +599,7 @@ function dayFields(rec,cur){
    worker/records.js recCheck refuses the same shapes on the server ---- */
 const ID_RE=/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/,REC_KEY=/^[\p{L}\p{M}\p{N}_-]{1,48}$/u,REC_PHOTO=/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]*$/,REC_HEX=/^#[0-9a-fA-F]{3,8}$/,
   REC_DATE=/^\d{4}-\d{1,2}-\d{1,2}$/,REC_WORD=/^[\p{L}\p{M}\p{N} _+.,:;()\/#%’-]{0,120}$/u,BIDI_RE=/[‪-‮⁦-⁩]/g;   // embeddings, overrides and isolates (the marks LRM/RLM stay: an Arabic name may need them)
-const REC_COLS=['primaryColor','secondaryColor','tertiaryColor','dial'],REC_PICS=['photo','photoSm','texture','swatch'],
+const REC_COLS=['primaryColor','secondaryColor','tertiaryColor','dial','toeColor'],REC_PICS=['photo','photoSm','texture','swatch'],
   REC_KEYS=['pattern','swSrc','metal','leather','cuff','vest','season','shoeStyle','trouserKind','band','bezel','watchStyle'],
   REC_NUMS=['added','updated','shade'],REC_TEXT={name:200,brand:200,material:200,notes:4000,details:4000,patternText:4000},REC_STRICT=['sett'];
 const recClean=s=>String(s).replace(/[<>"`]/g,'');   // a free field's string: nothing that opens a tag or ends an attribute
