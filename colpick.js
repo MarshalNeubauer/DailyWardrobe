@@ -80,7 +80,7 @@ function closeColPick(){const c=colPick;colPick=null;const s=$('#col-sheet'),b=$
 backOver(top=>{if(!colPick||top==='ask'||top==='cu'||top==='rd')return false;
   if(colPick.newc&&colPick.newc.from==='pick')colNewBack();else closeColPick();return true});
 /* ---- swiping a sheet down closes it (2026-11-15, the owner: "When I click on color or texture, the sheet comes up, but I can't swipe it
-   down"): the color / pattern sheet with its New color / New pattern states, and the reading sheet, by add.js sheetSwipe (the gesture of
+   down"): the color / pattern sheet with its New color / New pattern states, and the reading sheet, by sheet-swipe.js sheetSwipe (the gesture of
    every sheet): the sheet scrolls itself, its sticky top (grabber, title, the photos) is the handle; let go past the line it closes as its
    × does and slides away from where it was let go. Never from a dropdown, a slider (the New color square and hue bar) or its bottom bar. ---- */
 const SW_GRAB='<span class="cpgrab" aria-hidden="true"></span>';

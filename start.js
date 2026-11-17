@@ -32,11 +32,11 @@ function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;
   if(!f.set)return;openSettings();for(const k of f.set.cats)setCatOpen(k,true,true);settingsSummaries();const m=$('#settings-modal');if(m)m.scrollTop=f.set.top}
 /* Add is a page of the Wardrobe (its round + button, #ward-add), with a ‹ back to where it was opened from (subBack) */
 /* type: Today's "Add one" beside a missing piece passes its type (fix round 3, W2-14-01: "Belt: Add one" then "Add without a photo"
-   saved a suit): Add says what is being added and the next card without a photo starts as that type (add.js addFor) */
+   saved a suit): Add says what is being added and the next card without a photo starts as that type (add-sheet.js addFor) */
 function openAdd(type){if(typeof addFor!=='undefined')addFor=typeof type==='string'&&TYPES[type]?type:null;subOpen();show('add');scrollTo({top:0})}
 function show(t){
   const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
-  if(from==='add'&&t!=='add')npsLeave();   // the "Add without a photo" sheet goes with the page, its entry handed back first (add.js)
+  if(from==='add'&&t!=='add')npsLeave();   // the "Add without a photo" sheet goes with the page, its entry handed back first (add-sheet.js)
   if(!SUBS.includes(t))backDrop('sub');   // a page left by the ‹ (to Today) or a tab: its Back entry goes
   if(from==='add'&&t!=='add'&&typeof addFor!=='undefined')addFor=null;   // (what Today's "Add one" asked for goes with the page)
   if(from==='add'&&t!=='add')toastDrop();   // Add's "Saved … Undo" goes with the page: it lay over Today's month card for 8 s
