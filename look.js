@@ -163,12 +163,12 @@ function lookHintOf(q){const c=lookChips('q',q),h={};
 function lookChipHtml(src,it,x){const r=`'${src}','${jsq(it.id)}'`;let sw='',name='',txt;
   if(x.add){name=x.name;sw=x.add==='col'?`<i class="lkdot" style="background:${esc(cnHex(it.newColor&&COLORS[it.primaryColor]?COLORS[it.primaryColor]:'')||(it.lookHint&&it.lookHint.nc&&cnHex(it.lookHint.nc.hex))||COLORS[primaryCol(it)]||'#888')}"></i>`:x.add==='pat'?`<i class="lkdot">${swatchSVG(it,true)}</i>`:`<i class="lkdot">${lookMatSw('fabric',x.name,COLORS[primaryCol(it)])}</i>`;
     txt=`<em>${esc(x.lab)}:</em> ${esc(x.name.toLowerCase())}? <span class="lkuse">Add</span>`;
-    return `<button type="button" class="lkchip lkadd" data-chip="${x.add}" onclick="lookAddChip(${r},'${x.add}')">${sw}<span class="lkct">${txt}</span></button>`}
+    return `<button type="button" class="lkchip lkadd" data-chip="${x.add}" onclick="lookAddChip(${r},'${jsq(x.add)}')">${sw}<span class="lkct">${txt}</span></button>`}
   if(x.f==='primaryColor'){sw=`<i class="lkdot" style="background:${COLORS[x.v]}"></i>`;name=colName(x.v).toLowerCase()}
   else if(x.f==='pattern'){sw=`<i class="lkdot">${swatchSVG(patVar(it,x.v),true)}</i>`;name=patName(x.v).toLowerCase()}
   else{sw=`<i class="lkdot">${lookMatSw(lookPkKind(it,x.f),x.v,COLORS[primaryCol(it)])}</i>`;name=lookName(it,x.f,x.v)}
   txt=`<em>${esc(x.lab)}:</em> ${x.or?'or ':''}${esc(x.f==='material'||x.f==='leather'||x.f==='metal'?name:name)}?`;
-  return `<button type="button" class="lkchip" data-chip="${x.f}" onclick="lookUse(${r},'${x.f}','${jsq(x.v)}','${x.hk||''}')">${sw}<span class="lkct">${txt}</span><span class="lkuse">Use</span></button>`}
+  return `<button type="button" class="lkchip" data-chip="${x.f}" onclick="lookUse(${r},'${jsq(x.f)}','${jsq(x.v)}','${jsq(x.hk||'')}')">${sw}<span class="lkct">${txt}</span><span class="lkuse">Use</span></button>`}
 const lookChipsHtml=(src,it,l)=>l.length?`<div class="lkchips">${l.map(x=>lookChipHtml(src,it,x)).join('')}</div>`:'';
 
 /* ---- fields written, with Undo ---- */
@@ -314,7 +314,7 @@ const lookPatGroupOf=p=>{const b=patBase(p);const g=LOOK_PAT_GROUPS.findIndex(([
 const LOOK_CHEV='<svg class="lkchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
 const lookAi=(src,it,f)=>{const rb=LOOK_RD[src+'|'+it.id];return rb&&rb.by&&rb.by[f]?'<span class="lkai">✦ Claude</span>':''};
 function lookRow(src,it,o){const r=`'${src}','${jsq(it.id)}'`;
-  return `<button type="button" class="lkrow${o.sub?' sub':''}" data-k="${o.k}" onclick="openColPick(${r},'${o.k}')" aria-haspopup="dialog" aria-label="${esc(o.lab)}: ${esc(o.name)}"><span class="lksw">${o.sw}</span><span class="lktx"><small>${esc(o.lab)}${o.hint?` · ${esc(o.hint)}`:''}</small><b>${esc(o.name)}</b>${o.note?`<small class="lknote">${esc(o.note)}</small>`:''}</span>${o.ai||''}${LOOK_CHEV}</button>`}
+  return `<button type="button" class="lkrow${o.sub?' sub':''}" data-k="${o.k}" onclick="openColPick(${r},'${jsq(o.k)}')" aria-haspopup="dialog" aria-label="${esc(o.lab)}: ${esc(o.name)}"><span class="lksw">${o.sw}</span><span class="lktx"><small>${esc(o.lab)}${o.hint?` · ${esc(o.hint)}`:''}</small><b>${esc(o.name)}</b>${o.note?`<small class="lknote">${esc(o.note)}</small>`:''}</span>${o.ai||''}${LOOK_CHEV}</button>`}
 const lookChipSw=c=>c&&COLORS[c]?`<i class="lkcol" style="background:${COLORS[c]}"></i>`:'<i class="lkcol none"></i>';
 function lookColRows(src,it){const t=it.type,rows=[],e=src==='e',pc=e?primaryCol(it):it.primaryColor;
   const col=(k,lab,v,o={})=>lookRow(src,it,{k,lab,name:v&&COLORS[v]?cap1(colName(v))+(k==='primaryColor'&&it.shade&&lookShadeOk(k,v)?' · '+shadeName(it.shade).toLowerCase():''):'None',sw:k==='primaryColor'&&it.shade&&COLORS[v]?`<i class="lkcol" style="background:${shadeHex(COLORS[v],it.shade)}"></i>`:lookChipSw(v),ai:o.ai,...o});

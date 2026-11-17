@@ -99,7 +99,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
     await p.evaluate(()=>{const s=items.find(x=>x.id==='s1');s.lookHint={c:'charcoal',m:'charcoal'};renderWardrobe()});
     e=await p.evaluate(()=>[...document.querySelectorAll('#item-view .lkchip')].map(c=>c.textContent.replace(/\s+/g,' ').trim()));
     ok(e.length===1&&e[0]==='Claude & measured: charcoal?Use',T+`Claude and the measurement agreeing are one chip (${e.join(' / ')})`);
-    await p.locator('#item-view .lkchip').first().scrollIntoViewIfNeeded();await p.click('#item-view .lkchip');await settle(p,150);
+    await p.locator('#item-view .lkchip').first().scrollIntoViewIfNeeded();await p.click('#item-view .lkchip');await p.waitForFunction(()=>items.find(x=>x.id==='s1').primaryColor==='charcoal'&&!document.querySelector('#item-view .lkchip'),null,{timeout:5000}).catch(()=>{});
     e=await p.evaluate(()=>{const s=items.find(x=>x.id==='s1');return {c:s.primaryColor,h:s.lookHint,chips:document.querySelectorAll('#item-view .lkchip').length,undo:!!document.querySelector('#toast.on button,#undo-fab')}});
     ok(e.c==='charcoal'&&!e.h.c&&e.chips===0&&e.undo,T+`a chip's Use sets the color, drops its hint and offers Undo (${JSON.stringify(e)})`);
     await p.evaluate(()=>{const b=document.querySelector('#toast.on button');if(b)b.click()});await settle(p,150);
