@@ -45,8 +45,8 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
         links:[...links.querySelectorAll('.slink b')].map(b=>b.textContent).join(),one:links.querySelectorAll('.slink').length===links.children.length,head:first.textContent,
         gaps:[...links.querySelectorAll('.slink')].map(b=>Math.round(b.getBoundingClientRect().height)),radius:getComputedStyle(links).borderTopLeftRadius}});
     ok(!st.hit,`nothing in Settings says worker, Cloudflare, KV, token or benchmark${st.hit?' (“…'+st.hit+'…”)':''}`);
-    ok(st.sums[4]==='Painted pictures · needs a connection'&&/^Your own colors & patterns$/.test(st.sums[5])&&/needs a connection/.test(st.sums[6])&&st.sums[7]==='Not connected'&&st.sums.every(t=>t.length>4),`every category's summary reads sensibly with nothing connected (${st.sums.slice(4,8).join(' | ')})`);
-    ok(st.links==='Packing list,Laundry & cleaning'&&st.one&&st.head==='Your wardrobe'&&st.radius==='14px'&&st.gaps.every(h=>h>=44),`the page links at the top of Settings are one card under a heading (${st.gaps} px rows)`);
+    ok(st.sums[5]==='Painted pictures · needs a connection'&&/^Your own colors & patterns$/.test(st.sums[6])&&/needs a connection/.test(st.sums[7])&&st.sums[8]==='Not connected'&&st.sums.every(t=>t.length>4),`every category's summary reads sensibly with nothing connected (${st.sums.slice(5,9).join(' | ')})`);
+    ok(st.links==='Packing list'&&st.one&&st.head==='Your wardrobe'&&st.radius==='14px'&&st.gaps.every(h=>h>=44),`the page links at the top of Settings are one card under a heading (${st.gaps} px rows)`);
     const adv=await p.evaluate(()=>{const inAdv=s=>{const e=document.querySelector(s);return !!(e&&e.closest('.adv-in'))};
       return {ids:[...document.querySelectorAll('#settings-modal .adv')].map(a=>a.id).join(),shut:[...document.querySelectorAll('#settings-modal .adv')].every(a=>!a.classList.contains('open')&&getComputedStyle(a.querySelector('.adv-in')).display==='none'&&a.querySelector('.adv-head').getAttribute('aria-expanded')==='false'),
         inside:['#cfg-url','#cfg-token','#asm-group'].every(inAdv),gone:!document.querySelector('#weave-box,#bench-box,#adv-tagging'),out:['#cfg-workdays','#replan-btn','#custom-list','#snap-list','#conn-box','#acct-box'].every(s=>!inAdv(s)),
@@ -95,13 +95,13 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       const probe=v=>{const d=document.createElement('i');d.style.color=v;document.body.append(d);const c=getComputedStyle(d).color;d.remove();return c};
       const ratio=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
       const bg=probe('var(--bg)'),card=probe('var(--card)'),acc=probe('var(--acc)'),out={acc:+Math.min(ratio(acc,bg),ratio(acc,card)).toFixed(2),els:{}};
-      for(const [s,on] of [['.day h2 .wx a',bg],['.mhead .eyebrow',card],['#care .linkbtn',bg],['.sicw',card]]){const e=document.querySelector(s);if(e)out.els[s]={r:+ratio(getComputedStyle(e).color,on).toFixed(2),same:getComputedStyle(e).color===acc}}
+      for(const [s,on] of [['.day h2 .wx a',bg],['.mhead .eyebrow',card],['#care-in .linkbtn',card],['.sicw',card]]){const e=document.querySelector(s);if(e)out.els[s]={r:+ratio(getComputedStyle(e).color,on).toFixed(2),same:getComputedStyle(e).color===acc}}
       return out},theme);
-    await p.evaluate(()=>{careShow('care')});
+    await p.evaluate(()=>{renderCare()});   // (Laundry & cleaning's panel, drawn without opening Settings)
     const cl=await contrast('light'),cd=await contrast('dark');
     ok(cl.acc<4.5&&Object.keys(cl.els).length>=3&&Object.values(cl.els).every(e=>e.r>=4.5),`light theme: accent-coloured text is at least 4.5:1 on its background (${Object.entries(cl.els).map(([s,e])=>s+' '+e.r).join(', ')}; the fill color itself is ${cl.acc})`);
     ok(Object.values(cd.els).every(e=>e.same&&e.r>=4.5),`dark theme: it stays the accent color (${Object.values(cd.els).map(e=>e.r).join(', ')}:1)`);
-    await p.evaluate(()=>{document.documentElement.dataset.theme='light';careShow('today')});
+    await p.evaluate(()=>{document.documentElement.dataset.theme='light'});
 
     /* ---- the checklist comes first with a partial wardrobe ---- */
     await fill(p,'[W.realistic.find(i=>i.type==="shirt")]');
@@ -123,7 +123,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       await p.evaluate(()=>{const T=todayDate(),P=planFor();for(const [k,o] of Object.entries(P))if(keyDate(k)<T&&o&&o.shirt)dayRecs[k]={date:k,worn:true,ids:lockIds(o)};
         settings.care={suit:2,blazer:2,pants:2,shirt:1};items[1].away={why:'cleaner',since:'2026-11-09',back:'2026-11-13'};Object.assign(items[0],{name:'A suit with quite a long name that has to wrap or be cut somewhere'})});
       const out=[];
-      for(const pg of ['pack','care'])for(const theme of ['light','dark']){
+      for(const pg of ['pack'])for(const theme of ['light','dark']){   // (Laundry & cleaning is a fold of Settings since 2026-11-17: tests/care.test.js)
         await p.evaluate(([pg,theme])=>{document.documentElement.dataset.theme=theme;show(pg)},[pg,theme]);await settle(p,300);
         out.push(await p.evaluate(pg=>{const el=document.querySelector('#'+pg),b=[...el.querySelectorAll('button:not(.linkbtn):not(.pback)')].filter(x=>x.offsetParent),i=[...el.querySelectorAll('select,input[type=date],input[type=text]')].filter(x=>x.offsetParent),card=el.querySelector('.card');
           const cs=getComputedStyle(card),probe=v=>{const d=document.createElement('i');d.style.color=v;document.body.append(d);const c=getComputedStyle(d).color;d.remove();return c};

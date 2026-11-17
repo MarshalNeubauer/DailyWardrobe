@@ -2,15 +2,16 @@
    (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
 /* settings management */
 /* Settings: a full-screen page of categories that unfold like Today's cards; openSettings('weather') opens one directly */
-const SET_CATS=['schedule','daysoff','weather','care','photos','tagging','backup','connection','about'];
+const SET_CATS=['laundry','schedule','daysoff','weather','care','photos','tagging','backup','connection','about'];
 function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.classList.toggle('instant',!!instant);if(!instant){el.classList.remove('instant');void el.offsetHeight}
   el.classList.toggle('open',open);const b=el.querySelector('.scat-head');if(b)b.setAttribute('aria-expanded',open);
   if(open&&key==='backup'&&typeof loadSnapshots==='function')loadSnapshots();   // the daily backups list is read as Backup opens (sync.js)
-  if(open&&key==='about'&&typeof renderAbout==='function')renderAbout()}   // only as About opens (its header ran it on closing too, and asked the server each time: CR-7-06)
-function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);settingsSummaries();const t0=Date.now();
-  // the scroll to show what opened gives way to a finger or wheel that moved since the tap: on an iPhone it fought a scroll already under way
-  if(open)setTimeout(()=>{const m=$('#settings-modal');if((m._touch||0)>t0)return;const r=el.getBoundingClientRect(),top=m.querySelector('.shead').getBoundingClientRect().bottom;
-    const over=r.top+Math.min(el.scrollHeight,m.clientHeight-80)-m.clientHeight;if(over>0)m.scrollBy({top:Math.min(over+16,r.top-top-8),behavior:'smooth'})},460)}
+  if(open&&key==='about'&&typeof renderAbout==='function')renderAbout();   // only as About opens (its header ran it on closing too, and asked the server each time: CR-7-06)
+  if(open&&key==='laundry'&&typeof renderCare==='function')renderCare()}   // Laundry & cleaning's lists, as it opens (care.js)
+// a category unfolds where it is: no scroll to show what opened (the owner, 2026-11-17: "I want it to unfold and not scroll automatically at all")
+// the summaries (what was changed inside) are written once the fold has finished moving, not in its first frames
+function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);
+  clearTimeout(toggleCat.t);toggleCat.t=setTimeout(()=>{try{settingsSummaries()}catch(e){console.warn(e)}},480)}
 /* the Backup line in Settings says what really happened: the last backup's time, or that the last try failed (sync.js keeps
    sync_status while a try fails and last_sync when one works) */
 /* when backups start again (the next 00:00 UTC): "tomorrow" only when that is tomorrow here; west of UTC it is later today (W1-10-03: "Paused
@@ -66,7 +67,7 @@ function openSettings(section){
   try{settingsSummaries()}catch(e){console.warn('Settings summaries not drawn',e)}
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='block'; $('#modal-backdrop').style.pointerEvents='auto'; }
-  // the phone's Back closes it (back.js, kind 'set'); over Add, the Packing list or Laundry (the gear, Add's "Connect") Settings takes
+  // the phone's Back closes it (back.js, kind 'set'); over Add or the Packing list (the gear, Add's "Connect") Settings takes
   // over that page's entry and hands it back on closing, so the page's Back still works after (CR-7-04: Settings took the entry, and the
   // next Back left the app)
   setLock(true);if(!already)setOver=subUnder?'sub':'';backPush('set');

@@ -3,7 +3,7 @@
    reading the others' flags). Loaded right after app.js; every page and sheet that Back closes registers here (backOn), and nothing else
    in the app calls history.pushState or history.back.
    - BACK holds the app's own history entries, oldest first, at most two: the item sheet's (kind 'item') and one app entry, whose kind says
-     who holds it now ('set' Settings, 'sub' Add or the Packing list or Laundry, 'setup', 'pick', 'shop', and the sheets that borrow it:
+     who holds it now ('set' Settings, 'sub' Add or the Packing list, 'setup', 'pick', 'shop', and the sheets that borrow it:
      'ask', 'cu', 'rd', 'kit', 'nps'). A page and the sheet over it share that one entry, so Back never needs two presses.
    - Back takes the latest entry and runs what its kind registered (backOn); the page under it keeps its own entry.
    - Left any other way (Done, ×, a tab) an entry is taken away with a history.back() of our own (backPend), which the listener lets pass;

@@ -3,7 +3,7 @@
 /* moving between pages: the page arriving eases in from the side its tab is on (Today, Wardrobe, Add left to right), a short slide and a
    fade on the cards' curve; a page opened from Settings (stats, packing, care) rises in instead. The tab bar's marker slides to the tab
    (styles.css nav::before, --ti). Only the page arriving moves: the one leaving goes at once, so nothing is laid out twice. */
-const PAGES=['today','wardrobe','add','stats','pack','care'],TABS=['today','wardrobe','stats'],PAGE_MS=320;
+const PAGES=['today','wardrobe','add','stats','pack'],TABS=['today','wardrobe','stats'],PAGE_MS=320;
 function pageIn(t,from){const el=$('#'+t),nav=document.querySelector('body>nav'),ti=TABS.indexOf(t);
   if(nav){nav.style.setProperty('--ti',Math.max(0,ti));nav.classList.toggle('tab-none',ti<0)}
   if(!el||!from||from===t||noMotion())return;
@@ -19,7 +19,7 @@ let subFrom=null;
    Settings and such a page share the one app entry (back.js, kind 'set' or 'sub'): opening a page from Settings hands Settings' entry on
    to the page ('set' → 'sub') and its ‹ hands it back (backHold), so Back never needs two presses; left any other way (Done, a tab, the ‹
    to Today) the entry goes (backDrop). */
-const SUBS=['add','pack','care'];
+const SUBS=['add','pack'];
 const subShown=()=>SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden});
 function pageBack(kind){if(kind==='sub'&&subShown())subBack();else if(settingsOpen())saveSettings()}
 backOn('sub',k=>pageBack(k));backOn('set',k=>pageBack(k));
@@ -48,7 +48,6 @@ function show(t){
   const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>typeof statsShow==='function'?statsShow():renderStats()};if(f[t])f[t]();
   if(typeof packShow==='function')packShow(t);   // the packing list page (pack.js)
   if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
-  if(typeof careShow==='function')careShow(t);   // the Care page (care.js)
   pageIn(t,from);
 }
 
