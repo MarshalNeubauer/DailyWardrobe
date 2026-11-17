@@ -12,7 +12,7 @@ module.exports=async({ok,ROOT})=>{
     'account.js|acctEsc(v.id)','add.js|esc(q.id)','add.js|k','add.js|v','app.js|k','care.js|w','care.js|g.t','care.js|t','checklist.js|src',
     'colpick.js|src','colpick.js|k','colpick.js|v','colpick.js|c','colpick.js|p','colpick.js|t','colpick.js|esc(q.id)','colpick.js|h',
     "colpick.js|have?'existing':'new'",'dress.js|k','history.js|k','history.js|slot','history.js|f.slot','history.js|f.item.id','itemsheet.js|k',
-    'itemsheet.js|t','pack.js|which','pack.js|first.k','photos.js|itemKey(i)','settings.js|r.date','settings.js|id','setup.js|k','setup.js|kind',
+    'ward-grid.js|t','pack.js|which','pack.js|first.k','photos.js|itemKey(i)','settings.js|r.date','settings.js|id','setup.js|k','setup.js|kind',
     'setup.js|x','shop.js|k','shop.js|esc(x.key)','today.js|s',"today.js|addForSlot(s,o.suitDay)||''",'ui.js|o.mode',"ui.js|o.cloth||''",'wardrobe.js|k',
     // the Add card's offers: Claude's answer, shown only when it is one of the app's own keys (TYPES, COLORS, colsFor, PATS_BY) or a field name
     'tagging.js|q.refineType','tagging.js|q.refineKept.c','tagging.js|q.altColor','tagging.js|q.altPattern','tagging.js|f','tagging.js|v.f','tagging.js|v.to','tagging.js|mp']);
