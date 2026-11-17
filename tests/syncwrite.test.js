@@ -1,7 +1,8 @@
 // What a sync writes on the phone (code review 2026-11-16, fix round A): the merge's winner is written even when it is the older copy
 // (CR-5-01: a formal day set on one phone lost on the other, whose own week lock it beat); an edit made while a sync runs is merged field
 // by field, not skipped; one sync at a time (CR-5-04); last_sync by the corrected clock (CR-5-06); Restore file names the pieces that
-// stayed deleted (CR-5-03). The real worker.js runs in Node with an in-memory KV; browser contexts are the phones.
+// stayed deleted (CR-5-03). Round C: settings written as the merge with the stored copy (CR-5-09), the other backup times by the corrected
+// clock (CR-5-15). The real worker.js runs in Node with an in-memory KV; browser contexts are the phones.
 const path=require('path'),fs=require('fs'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
@@ -58,6 +59,28 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await sync(A);await sync(B);
     const e2=await B.p.evaluate(id=>{const i=items.find(x=>x.id===id);return i&&{name:i.name,paused:i.paused}},id);
     ok(e2&&e2.name==='Navy one'&&e2.paused===true,`and the other phone gets both after the next syncs (${JSON.stringify(e2)})`);
+    // ---- CR-5-09 (Round C): two phones changing different settings at once. B sets Dark shirts and backs up; A changes Laundry days after
+    // its sync has read its own copy and while it waits for the backup. The settings are written as the merge with what is stored, setting by
+    // setting: A keeps both at once, in storage and in memory (by stamps alone A's newer copy was kept whole and B's setting not written)
+    await B.p.evaluate(async()=>{settings.darkShirts='often';await saveUserSettings();clearTimeout(syncTimer)});await sync(B);
+    A.hold={};A.hold.p=new Promise(r=>A.hold.go=r);
+    const srun=A.p.evaluate(()=>{clearTimeout(syncTimer);return syncNow()});
+    for(let k=0;k<100&&!A.hold.waiting;k++)await new Promise(r=>setTimeout(r,50));
+    await A.p.evaluate(async()=>{settings.laundryDays=3;await saveUserSettings();clearTimeout(syncTimer)});
+    A.hold.go();A.hold=null;await srun;
+    const s1=await A.p.evaluate(async()=>{const s=await metaGet('settings');return {stored:[s.laundryDays,s.darkShirts],mem:[settings.laundryDays,settings.darkShirts]}});
+    ok(JSON.stringify(s1)==='{"stored":[3,"often"],"mem":[3,"often"]}',`CR-5-09: a setting changed during a sync and the other phone's setting both stay, stored and on screen (${JSON.stringify(s1)})`);
+    await sync(A);await sync(B);
+    const s2=await B.p.evaluate(async()=>{const s=await metaGet('settings');return {stored:[s.laundryDays,s.darkShirts],mem:[settings.laundryDays,settings.darkShirts]}});
+    ok(JSON.stringify(s2)==='{"stored":[3,"often"],"mem":[3,"often"]}',`and the other phone gets both after the next syncs (${JSON.stringify(s2)})`);
+    // the same with nothing changed during the sync: each phone's setting reaches the other, and the settings settle (no endless uploads)
+    await A.p.evaluate(async()=>{settings.laundryDays=2;await saveUserSettings();clearTimeout(syncTimer)});
+    await B.p.evaluate(async()=>{settings.darkShirts='never';await saveUserSettings();clearTimeout(syncTimer)});
+    await sync(A);await sync(B);await sync(A);
+    const s3=await Promise.all([A,B].map(d=>d.p.evaluate(async()=>{const s=await metaGet('settings');return [s.laundryDays,s.darkShirts,s.updated]})));
+    const rev=async()=>(await (await worker.fetch(new Request(HOST+'sync?lite=1',{headers:{'x-app-token':'secret'}}),env)).json()).rev;
+    const r0=await rev();await sync(A);await sync(B);const r1=await rev();
+    ok(s3[0][0]===2&&s3[0][1]==='never'&&JSON.stringify(s3[0])===JSON.stringify(s3[1])&&r0===r1,`two phones changing different settings, one after the other: both keep both, the same copy, and further syncs save nothing (${JSON.stringify({s3,r0,r1})})`);
     // ---- CR-5-04: many callers at once (the timer, going to the background, online, Sync now, a roll-back): one sync at a time, and the
     // ones that came while it ran share one more run after it
     A.slow=150;A.most=0;
@@ -70,6 +93,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const C=await device({ahead:3600e3});await sync(C);
     const c=await C.p.evaluate(()=>({last:+localStorage.getItem('last_sync')||0,now:Date.now(),skew:clockSkew}));
     ok(Math.abs(c.skew-3600e3)<60000&&Math.abs(c.last-(c.now+3600e3))<60000,`CR-5-06: last_sync is stamped by the corrected clock (${Math.round((c.last-c.now)/6e4)} min from the phone's own, the gap ${Math.round(c.skew/6e4)} min)`);
+    // ---- CR-5-15 (Round C): the other backup times by the corrected clock too: when the phone joined the account (kit.js compares it with
+    // days' stamps), a change waiting (sync_wait) and a tester's 15 minutes (syncDue)
+    const t15=await C.p.evaluate(()=>{const was=acctRole;clearTimeout(syncTimer);syncDue=0;localStorage.removeItem('sync_wait');localStorage.removeItem('sync_join');localStorage.removeItem('sync_mark');
+      syncJoinMark(localStorage.getItem('app_token'));acctRole=()=>'tester';
+      try{const tester=isTester();scheduleSync();return {tester,now:Date.now(),fixed:nowMs(),join:syncJoinAt(),wait:+localStorage.getItem('sync_wait'),due:syncDue}}finally{acctRole=was;clearTimeout(syncTimer);syncDue=0}});
+    const near=v=>Math.abs(v-t15.fixed)<60000;
+    ok(t15.tester&&near(t15.join)&&near(t15.wait)&&near(t15.due)&&t15.fixed-t15.now>3000e3,`CR-5-15: sync_join, sync_wait and syncDue by the corrected clock (minutes from it: ${['join','wait','due'].map(k=>Math.round((t15[k]-t15.fixed)/6e4)).join(', ')}; the phone's own clock ${Math.round((t15.now-t15.fixed)/6e4)})`);
     // ---- CR-5-03: Restore file, on a phone without a connection: a piece deleted after the file was saved stays deleted (a restore
     // merges), and the message names it
     const E=await device({connect:false});
