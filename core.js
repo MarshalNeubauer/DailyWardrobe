@@ -633,7 +633,7 @@ function stampSettings(s,t){t=t||nowMs();if(!s)return s;
    a setting st marks removed (kh '-': a roll-back to a copy without it, or a removal on another device): it goes from memory too, or, when
    the app has a default for it, back to that default with stamp 0, so it never wins over the removal (2026-11-15, the audit: a roll-back's
    removed day off and holidays stayed in memory, and the next change on that phone stamped them back for every device) */
-function takeSettings(cur,st){const s={...cur,...st};
+function takeSettings(cur,st){if(st&&typeof st==='object')st=cleanSettings(st);const s={...cur,...st};   // (cleanSettings: a setting of the wrong shape is left out, so memory keeps its own)
   if(st&&st.kh){let ks=null,kh=null;
     for(const k of Object.keys(st.kh))if(st.kh[k]==='-'&&!(k in st)&&!SET_META.includes(k)){
       if(k in SET_DEFAULTS){if(!ks){ks={...st.ks};kh={...st.kh}}s[k]=JSON.parse(JSON.stringify(SET_DEFAULTS[k]));ks[k]=0;kh[k]=setHash(s[k])}else delete s[k]}
@@ -757,4 +757,42 @@ function cleanState(st){
   if(Array.isArray(st.items))o.items=st.items.map(cleanRecord).filter(Boolean);
   if(Array.isArray(st.days))o.days=st.days.map(cleanDay).filter(Boolean);
   if(st.tombstones&&typeof st.tombstones==='object')o.tombstones=Object.fromEntries(Object.entries(st.tombstones).filter(([id,t])=>ID_RE.test(id)&&typeof t==='number'&&isFinite(t)));
+  if(st.settings&&typeof st.settings==='object')o.settings=cleanSettings(st.settings);
   return o}
+/* ---- settings coming in (fix round A, 2026-11-17, the code review's Critical C1 = CR-2-02 + CR-4-01 + CR-7-02: a crafted Restore file, a
+   sync pull or a holiday list put an own color's key and hex, a holiday's or day off's date and a hidden What to buy idea's key into the
+   page as script; "settings pass as they are" was the gap). cleanSettings keeps each setting only in its own shape: workdays and blazer days
+   0-6; holidays' country two capital letters (else none), their dates and the days off's YYYY-MM-DD, names without bidi controls or
+   < > " `; What to buy's hidden keys type|group|class of letters, digits, - and _; own colors and patterns only with a key of OWN_COL_RE /
+   OWN_PAT_RE (a color also a 6-digit hex), their base and kinds plain keys (kinds always a list), a pattern's look numbers, hex and plain
+   words; own materials as ownMatName gives them; the tagging stats' counts numbers; every other setting with < > " ` taken out of its
+   strings (recFree). An entry of the wrong shape is left out. The stamps (updated, ks, kh, kse, khe) are never touched, and a setting
+   that is already clean comes out as the same object (a clean copy is returned as it is): nothing is restamped. It runs in cleanState
+   (Restore file, every sync pull, roll-back), in takeSettings (start-up, after a sync, the safety restore) and once over the stored copy
+   (app.js cleanStoredSettings); fetchHolidays' tidy keeps only dated, named holidays (settings.js) ---- */
+const setStr=(v,max)=>typeof v==='string'?noBidi(v).replace(/[<>"`]/g,'').slice(0,max):undefined;
+const setFields=(v,f)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).filter(([k])=>k!=='__proto__'&&REC_WORD.test(k)).map(([k,x])=>[k,f[k]?f[k](x):recFree(x)]).filter(([,x])=>x!==undefined)):undefined;
+const setList=(v,f)=>Array.isArray(v)?v.map(f).filter(x=>x!==undefined):undefined;
+const setDays=v=>setList(v,d=>Number.isInteger(d)&&d>=0&&d<=6?d:undefined);
+const setDate=d=>typeof d==='string'&&REC_DATE.test(d)?d:undefined;
+const setDay=x=>{const o=setFields(x,{d:setDate,n:n=>setStr(n,1000)});return o&&o.d?o:undefined};   // (a holiday's names joined: tidy keeps each at 120)
+const setKey=k=>typeof k==='string'&&REC_KEY.test(k)?k:undefined;
+const SHOP_SKIP_RE=/^[A-Za-z0-9_-]{1,40}\|[A-Za-z0-9_-]{0,40}\|[A-Za-z0-9_-]{0,40}$/;
+/* an own color or pattern: its key by the one rule, else left out; need = fields it can't be without */
+const setOwn=(re,more,need)=>x=>{if(!x||typeof x!=='object'||typeof x.key!=='string'||!re.test(x.key))return undefined;
+  const o=setFields(x,{key:k=>k,name:n=>setStr(n,60),base:setKey,types:t=>setList(t,setKey)||[],...more});return need.every(k=>o[k]!==undefined)?o:undefined};
+const SET_CLEAN={workdays:setDays,blazerDays:setDays,
+  holidays:v=>v===null?null:setFields(v,{country:c=>typeof c==='string'&&/^[A-Z]{2}$/.test(c)?c:'',list:l=>setList(l,setDay)||[],skip:l=>setList(l,setDate)||[],fetched:n=>typeof n==='number'&&isFinite(n)?n:0}),
+  daysOff:v=>setList(v,setDay),
+  shopSkip:v=>setList(v,k=>typeof k==='string'&&SHOP_SKIP_RE.test(k)?k:undefined),
+  custom:v=>setFields(v,{colors:l=>setList(l,setOwn(OWN_COL_RE,{hex:h=>typeof h==='string'&&/^#[0-9a-f]{6}$/i.test(h)?h:undefined},['hex'])),
+    patterns:l=>setList(l,setOwn(OWN_PAT_RE,{desc:d=>setStr(d,150),look:recStrict},[]))}),
+  ownMaterials:v=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).filter(([t,l])=>t!=='__proto__'&&REC_KEY.test(t)&&Array.isArray(l)).map(([t,l])=>[t,l.filter(m=>typeof m==='string'&&ownMatName(m)===m)])):undefined,
+  tagStats:v=>setFields(v,{n:n=>typeof n==='number'&&isFinite(n)?n:0,wrong:w=>w&&typeof w==='object'&&!Array.isArray(w)?Object.fromEntries(Object.entries(w).filter(([k,x])=>k!=='__proto__'&&REC_KEY.test(k)&&typeof x==='number'&&isFinite(x))):{}})};
+/* a settings copy from outside -> the same copy when every setting is clean, else a cleaned copy (null for one that isn't an object) */
+function cleanSettings(s){if(!s||typeof s!=='object'||Array.isArray(s))return null;let o=null;
+  for(const [k,v] of Object.entries(s)){if(SET_META.includes(k))continue;
+    const c=k==='__proto__'||!REC_WORD.test(k)?undefined:(SET_CLEAN[k]||recFree)(v);
+    if(c!==undefined&&setHash(c)===setHash(v))continue;   // already clean: kept as it is
+    o=o||{...s};if(c===undefined)delete o[k];else o[k]=c}
+  return o||s}
