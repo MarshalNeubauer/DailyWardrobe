@@ -1,4 +1,4 @@
-﻿// A close-up added in the editor keeps a sharp copy (CLOSE_MAX) on the device; "Read pattern from photo" and the colour picker's
+// A close-up added in the editor keeps a sharp copy (CLOSE_MAX) on the device; "Read pattern from photo" and the colour picker's
 // Ask Claude send it instead of the synced one (640 px until 2026-11-13) (a fine twill aliased into a false check at that size). A replaced, removed or
 // undone close-up never sends the old sharp copy.
 module.exports=async({ok,chromium,url})=>{
@@ -7,7 +7,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const sent=[];
     await p.route('**/fakeworker/**',async r=>{const b=r.request().postDataJSON()||{};sent.push({path:new URL(r.request().url()).pathname,closeup:b.closeup||null});
-      await r.fulfill({json:{model:'m',response:JSON.stringify({type:'blazer',primaryColor:'midgrey',secondaryColor:'none',tertiaryColor:'none',pattern:'solid',confidence:{type:'high',primaryColor:'high',pattern:'high'},altColor:'none',altPattern:'none',newColor:null,newPattern:null})}})});
+      await r.fulfill({json:{model:'m',...({type:'blazer',primaryColor:'midgrey',secondaryColor:'none',tertiaryColor:'none',pattern:'solid',confidence:{type:'high',primaryColor:'high',pattern:'high'},altColor:'none',altPattern:'none',newColor:null,newPattern:null})}})});
     await p.evaluate(()=>{localStorage.setItem('worker_url',location.origin+'/fakeworker/');localStorage.setItem('app_token','t');
       items=[{id:'b1',type:'blazer',primaryColor:'midgrey',pattern:'solid',photo:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC',added:1}];flt='all';editing='b1';show('wardrobe')});
     // a 1932x2576 close-up, added from the editor
