@@ -120,9 +120,9 @@ function calStatus(){const last=calRead();if(!last||!last.t)return last&&last.er
   const d=new Date(last.t),same=d.toDateString()===new Date().toDateString(),at=same?d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}):d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
   const s=calSeen(),used=calFound().filter(x=>s[x.ev.id]==='k'||x.done).length;
   return `Last read ${at} · ${used} event${used===1?'':'s'} used`+(last.err?` · ${last.err}`:'')}
-function calRow(x,state){const e=x.ev,id=esc(e.id),when=calDateTxt(e.start,e.end)+(e.allDay||!e.time?'':' · '+calTime(e.time));
-  const btns=state==='new'?`${x.can?`<button type="button" class="cal-ok" onclick="calKeep('${id}')" aria-label="Use: ${esc(x.what)}, ${esc(e.title)}">✓</button>`:''}<button type="button" class="cal-no" onclick="calDismiss('${id}')" aria-label="Dismiss ${esc(e.title)}">✕</button>`
-    :`<button type="button" class="linkbtn" onclick="calUndoSeen('${id}')">${state==='kept'?'Used':'Dismissed'} · Undo</button>`;
+function calRow(x,state){const e=x.ev,when=calDateTxt(e.start,e.end)+(e.allDay||!e.time?'':' · '+calTime(e.time));
+  const btns=state==='new'?`${x.can?`<button type="button" class="cal-ok" onclick="calKeep('${jsq(e.id)}')" aria-label="Use: ${esc(x.what)}, ${esc(e.title)}">✓</button>`:''}<button type="button" class="cal-no" onclick="calDismiss('${jsq(e.id)}')" aria-label="Dismiss ${esc(e.title)}">✕</button>`
+    :`<button type="button" class="linkbtn" onclick="calUndoSeen('${jsq(e.id)}')">${state==='kept'?'Used':'Dismissed'} · Undo</button>`;
   return `<li class="cal-row ${state}${x.can?'':' cant'}"><div class="cal-ev"><b dir="auto">${esc(e.title||'(no title)')}</b><small>${when}${e.location?` · <span dir="auto">${esc(e.location)}</span>`:''}</small><span class="cal-to">→ ${esc(x.what)}</span></div><div class="cal-btns">${btns}</div></li>`}
 const calTime=t=>{const [h,m]=String(t).split(':').map(Number);const d=new Date(2026,0,1,h,m);return d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})};
 function renderCalUI(){const box=$('#cal-box');if(!box)return;const url=calLink(),conn=isConnected();
