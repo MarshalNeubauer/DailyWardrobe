@@ -1,0 +1,60 @@
+{
+ "note": "Type errors per file and scope (tests/typecheck.js). May only go down: fix errors, then `node tests/typecheck.js --update`.",
+ "total": 281,
+ "files": {
+  "page": {
+   "about.js": 3,
+   "account.js": 13,
+   "add.js": 9,
+   "analysis.js": 4,
+   "app.js": 5,
+   "asm-color.js": 13,
+   "asm-gl.js": 6,
+   "asm-watch.js": 2,
+   "assemble.js": 4,
+   "backupfile.js": 1,
+   "care.js": 16,
+   "colpick.js": 25,
+   "core.js": 2,
+   "daysoff.js": 6,
+   "detect.js": 7,
+   "draw.js": 3,
+   "history.js": 6,
+   "itemsheet.js": 7,
+   "kit.js": 21,
+   "locale.js": 1,
+   "mannequin.js": 5,
+   "measure.js": 4,
+   "merge.js": 3,
+   "migrate.js": 1,
+   "own-lists.js": 1,
+   "pattern-read.js": 5,
+   "photos.js": 4,
+   "safety.js": 2,
+   "settings.js": 4,
+   "shop.js": 1,
+   "start.js": 2,
+   "stats.js": 7,
+   "sync-status.js": 1,
+   "sync.js": 3,
+   "today.js": 16,
+   "ui.js": 24,
+   "wardrobe.js": 4,
+   "weather.js": 1
+  },
+  "asm": {
+   "asm-worker.js": 4
+  },
+  "analysis": {},
+  "sw": {
+   "sw.js": 17
+  },
+  "server": {
+   "worker/backup.js": 4,
+   "worker/describe.js": 3,
+   "worker/people.js": 1,
+   "worker/photostore.js": 3,
+   "worker/tag.js": 7
+  }
+ }
+}
