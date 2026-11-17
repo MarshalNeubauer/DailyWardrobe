@@ -236,8 +236,7 @@ body.busy-on #toast{bottom:calc(var(--navh) + 56px)}   /* a toast sits above the
 
 /* a piece in the outfit list unfolds into its photo */
 .list .ritem{border-bottom:1px solid var(--line)}.list .ritem:last-child{border-bottom:0}.list .ritem>.row{border-bottom:0}
-.rowtap{display:flex;align-items:center;gap:10px;flex:1;min-width:0;min-height:40px;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;position:relative}
-.rowtap::after{content:"";position:absolute;inset:-3px 0}   /* 46px to tap, the row no taller (it is 40px inside the row's 9px padding) */
+.rowtap{display:flex;align-items:center;gap:10px;flex:1;min-width:0;min-height:44px;margin:-2px 0;padding:2px 0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}   /* 44px to tap: 2px of padding above and below, taken back by the margin, so the row is no taller (it was 40px inside the row's 9px padding) */
 .rowtap .cap{min-width:0}
 .rpanel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1)}
 .ritem.open .rpanel{grid-template-rows:1fr}
