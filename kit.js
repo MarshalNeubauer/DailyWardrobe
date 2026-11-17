@@ -455,8 +455,8 @@ function kitImportText(t,file){const r=kitRead(t),el=$('#kit-prev');if(!el)retur
    first, then each piece with a tick; a named piece shows its colour and pattern too; an update says what changes on which piece */
 function kitPrevDraw(){const r=kitImp,el=$('#kit-prev');if(!r||!el)return;const good=r.rows.filter(x=>x.ok),bad=r.rows.filter(x=>!x.ok),dup=good.filter(x=>x.dup).length,upd=good.filter(x=>x.upd).length,n=good.reduce((s,x)=>s+(x.qty||1),0);
   const row=(x,k)=>{const it=x.upd&&items.find(i=>i.id===x.upd),t=sentence(itemTitle(x.card));
-    const info=[TYPES[x.card.type],x.card.name?sentence(desc(x.card)):'',(x.qty||1)>1?`${x.qty} of them`:'',x.dup?'already in your wardrobe':x.have?`${x.have} already in your wardrobe`:'',
-      it?(x.asNew?'added as a new piece':`updates your ${itemName(it)?`“${itemName(it)}”`:desc(it)+' '+typeWord(it)}: ${kitDiffText(it,x).join(', ')}`):'',...x.probs].filter(Boolean).join(' · ');
+    const info=[TYPES[x.card.type],x.card.name?sentence(shortDesc(x.card)):'',(x.qty||1)>1?`${x.qty} of them`:'',x.dup?'already in your wardrobe':x.have?`${x.have} already in your wardrobe`:'',
+      it?(x.asNew?'added as a new piece':`updates your ${itemName(it)?`“${itemName(it)}”`:shortDesc(it)+' '+typeWord(it)}: ${kitDiffText(it,x).join(', ')}`):'',...x.probs].filter(Boolean).join(' · ');
     return `<li class="ok${x.dup?' dup':''}${it&&!x.asNew?' upd':''}"><label class="kit-row"><input type="checkbox" class="kit-tick" ${x.on?'checked':''} onchange="kitImpTick(${k},this.checked)"><span class="kit-dot">${swatchSVG(x.card,true)}</span><span><b>${esc(t)}</b><small>${esc(info)}</small></span></label>${it?`<button type="button" class="linkbtn kit-asnew" onclick="kitAsNew(${k})">${x.asNew?'Update it instead':'Add as new'}</button>`:''}</li>`};
   const pl=(k,a,b)=>k===1?a:b,read=[];
   if(r.list)read.push('Read as a list, one piece per line.');

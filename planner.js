@@ -176,7 +176,19 @@ const shoeScore=(t,b,s)=>{if(!b)return 0;const sc=pcol(s),bc=pcol(b);const k=(SH
 const sockEcho=(shirt,tie)=>[shirt&&shirtGroup(shirt),tie&&tieGroup(tie)].filter(g=>g&&!['white','black','grey','navy','brown'].includes(g));
 /* (2026-11-17) ctx: the outfit around the socks ({top, bot, shirt, tie, formal, occasion}: sockPatScore's patterned-sock rules); a plain sock
    scores exactly as before */
-const sockScore=(bot,sh,s,echo,ctx)=>{const sc=pcol(s),botc=bot?pcol(bot):'',shc=sh?pcol(sh):'';let v=patOf(s)==='solid'?2:0;if(bot&&sc===botc)v+=8;else if(sh&&sc===shc)v+=4;else if(bot&&echo&&echo.includes(TIE_GROUP[planCol(s)]||sc))v+=4;else if(bot)v+=(WARM.includes(botc)?['brown','tan','olive']:['black','navy','charcoal','grey']).includes(sc)?3:-8;if(bot&&['white','cream','pink','lightblue'].includes(planCol(s)))v-=10;return v+(ctx&&sockPatterned(s)?sockPatScore(s,ctx).v:0)};
+const sockScore=(bot,sh,s,echo,ctx)=>{const sc=pcol(s),botc=bot?pcol(bot):'',shc=sh?pcol(sh):'';let v=patOf(s)==='solid'?2:0;if(bot&&sc===botc)v+=8;else if(sh&&sc===shc)v+=4;else if(bot&&echo&&echo.includes(TIE_GROUP[planCol(s)]||sc))v+=4;else if(bot)v+=(WARM.includes(botc)?['brown','tan','olive']:['black','navy','charcoal','grey']).includes(sc)?3:-8;if(bot&&['white','cream','pink','lightblue'].includes(planCol(s)))v-=10;return v+(ctx?(sockPatterned(s)?sockPatScore(s,ctx).v:0)+sockDayScore(s,ctx):0)};
+/* (2026-11-17, the owner's answers on the sock review) a bright sock that is not a bold pattern (a plain or quiet-knit red, pink, purple,
+   gold, a vivid blue or rust, a light tan or khaki: sockBright) is marked down on a formal day, a wedding or a funeral like a bold pattern
+   (SOCK_FORMAL); burgundy, wine, navy, the grays, browns, olive and green are dark enough. And a sock's material follows the season
+   (SOCK_MAT: merino, wool and cashmere blends in the cold, cotton, bamboo and silk blends in the heat, +-SOCK_MAT_PTS; a sock with no
+   material, or another, is neutral; mild days neither) */
+const SOCK_BRIGHT_FAM=['red','pink','purple','gold'],SOCK_QUIET_FAM=['burgundy','black','charcoal','grey','navy','brown','olive','green'];
+const sockBright=s=>{const c=planCol(s),f=fam(c);if(SOCK_BRIGHT_FAM.includes(f))return true;const [L,a,b]=labOf(c),C=Math.hypot(a,b);
+  if(f!=='burgundy'&&C>40)return true;if(SOCK_QUIET_FAM.includes(f))return false;return L>62&&C>12};   // (a vivid rust or blue by its chroma; wine is a burgundy)
+const SOCK_MAT={cold:['merino wool','wool blend','cashmere blend'],warm:['cotton','mercerized cotton','bamboo','silk blend']},SOCK_MAT_PTS=2;
+const sockMatFit=(s,season)=>{const m=String(s&&s.material||'').toLowerCase().trim();if(!m||!SOCK_MAT[season])return 0;
+  return SOCK_MAT[season].includes(m)?SOCK_MAT_PTS:SOCK_MAT[season==='cold'?'warm':'cold'].includes(m)?-SOCK_MAT_PTS:0};
+const sockDayScore=(s,c)=>(sockFormalDay(c)&&!sockBold(s)&&sockBright(s)?-SOCK_FORMAL:0)+sockMatFit(s,c.season);
 /* ---- patterned socks (2026-11-17, the owner's sock patterns) ----
    A bold sock (argyle, stripes, dots, another design: SOCK_BOLD) is one more pattern in the outfit: with two bold patterns above it already
    (a patterned shirt and a busy tie) it costs SOCK_BUSY, and beside one of its own type it costs SOCK_SAME (same scale) or SOCK_NEAR. Its
@@ -589,7 +601,7 @@ const shoes=take(pick&&pick.s),belt=take(pick&&pick.b),watch=take(pick&&pick.w);
 return {shoes,belt,watch,B}}
 /* socks, tie clip, cufflinks, pocket square and coat */
 function chooseAccessories(c,{top,bot,shirt,tie,shoes,belt,watch,vest}){const {day,force,lock,hpTop,rest,pool,best}=c;
-const sctx={top,bot,shirt,tie,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null)};   // (a patterned sock's outfit: sockPatScore)
+const sctx={top,bot,shirt,tie,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null),season:day.clim&&day.clim.season};   // (a patterned sock's outfit: sockPatScore)
 const socks=best(pool('socks','socks'),s=>sockScore(bot,shoes,s,sockEcho(shirt,tie),sctx));
 const metalPref=c=>accMetal(c,tie,watch,belt);
 const clipPool=pool('tieclip','clip').filter(c=>force.clip===c.id||clipAllowed(c,watch,belt));
@@ -740,6 +752,8 @@ function rateOutfit(o){
     // the shirt is matched to the outfit, not the pants
     if(!hard&&sockBold(socks)){const sp=sockPatScore(socks,{top,bot:o.bot,shirt,tie,formal:o.formal,occasion:o.occasion});
       if(sockFormalDay(o)){v=Math.min(v,2);why=sp.why[sp.why.length-1]}else if(sp.echo&&v<5){v=5;why=''}}
+    // a bright plain sock (or quiet knit) on a formal day, a wedding or a funeral (the owner, 2026-11-17)
+    else if(!hard&&sockFormalDay(o)&&sockBright(socks)){v=Math.min(v,2);why=o.occasion==='funeral'?'a funeral calls for plain dark socks':o.occasion==='wedding'?'dark socks suit a wedding':'a formal day calls for plain dark socks'}
     add('Socks',v,5,why,hard)}
   {const main=[top,bot,shirt,tie].filter(Boolean).map(pcol),n=new Set(main).size,hard=!!(top&&shirt&&tie&&oneColor(top,shirt,tie));let v=5,why='';
     if(hard){v=0;why='jacket, shirt and tie are all one color'}else if(n>4){v=2;why='more than four main colors'}

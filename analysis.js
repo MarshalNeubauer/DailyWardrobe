@@ -59,9 +59,9 @@ function evalPlan(list,T,weeks){
 const jClass=i=>{const p=patInfo(i,'top');return p?p.type:'plain'};                 // solid and the fine weaves are one class: the planner treats them alike
 const sClass=i=>{const p=patInfo(i,'shirt');return p?p.type:'plain'};
 const tClass=i=>{const p=patInfo(i,'tie');return p?p.type:patOf(i)==='knit'?'knit':patOf(i)==='woven'?'tex':'plain'};
-const shopClass=i=>i.type==='tie'?tClass(i):i.type==='shirt'?sClass(i):i.type==='shoes'||i.type==='belt'?finish(i.leather):jClass(i);
+const shopClass=i=>i.type==='socks'?(sockPatterned(i)?(patBase(i.pattern)==='stripe'?'stripe':patBase(i.pattern)==='argyle'?'argyle':'motif'):'plain'):i.type==='tie'?tClass(i):i.type==='shirt'?sClass(i):i.type==='shoes'||i.type==='belt'?finish(i.leather):jClass(i);
 const shopGroup=i=>i.type==='tie'?tieGroup(i):i.type==='shirt'?shirtGroup(i):i.type==='shoes'||i.type==='belt'?leatherGroup(planCol(i)):jacketGroup(i);
-const CLASS_NAMES={plain:'plain',tex:'woven',knit:'knit',stripe:'striped',check:'checked',motif:'dotted or figured',smooth:'smooth leather',suede:'suede',grain:'grain leather',patent:'patent',textile:'canvas or knit'};
+const CLASS_NAMES={argyle:'argyle',plain:'plain',tex:'woven',knit:'knit',stripe:'striped',check:'checked',motif:'dotted or figured',smooth:'smooth leather',suede:'suede',grain:'grain leather',patent:'patent',textile:'canvas or knit'};
 const GROUP_LABELS={tie:{black:'black / charcoal',grey:'gray / silver',red:'burgundy / red',purple:'purple',brown:'brown / tan'},shirt:{lightblue:'light blue',purple:'lavender',yellow:'pale yellow',green:'mint',red:'burgundy',white:'white / cream'},
   jacket:{red:'burgundy',charcoal:'slate',tan:'tan / khaki',green:'green / olive',brown:'brown / taupe'},leather:{burgundy:'oxblood / burgundy'}};
 const GROUP_HEX={red:'burgundy',lightblue:'lightblue',yellow:'paleyellow',beige:'beige',charcoal:'slate',gold:'gold',cream:'cream'};
@@ -139,6 +139,7 @@ function shopName(it){const c=colName(primaryCol(it)),p=patOf(it)||'solid';
     case 'suit':case 'blazer':case 'pants':return p==='solid'?`plain ${c} ${TYPE_WORD[it.type][0]}`:`${c} ${patName(p)} ${TYPE_WORD[it.type][0]}`;
     case 'shoes':return `${c} ${finish(it.leather)==='suede'?'suede':finish(it.leather)==='grain'?'grain-leather':'leather'} shoes`;
     case 'belt':return `${c} ${finish(it.leather)==='suede'?'suede ':''}belt`;
+    case 'socks':return p==='solid'?`${c} socks`:`${c} ${p==='stripe'?'striped':patName(p)} socks`;   // (a patterned pair, 2026-11-17)
     case 'tieclip':return `${colName(it.primaryColor)} tie clip`;case 'cufflinks':return `${it.metal} cufflinks`;
     default:return `${c} ${TYPE_WORD[it.type]?TYPE_WORD[it.type][0]:it.type}`}}
 function shopDetail(it,L){const p=patOf(it)||'solid',a=it.secondaryColor&&colName(it.secondaryColor);
@@ -273,6 +274,10 @@ function runAnalysis0(list,T,weeks,progress,onCat){
       if(t==='belt'){if(f.dFirst>0)why.push(`The first-choice shoe color on ${plural(f.dFirst,'more day')} (now ${base.first} of ${D}).`);if(f.dB2B>0)why.push(`A pair of shoes is worn two days running ${plural(f.dB2B,'time')} less often.`)}
       why.push(`Planned on ${f.worn} of the next ${D} workdays.`);
       tier=fix?'fix':need>=Math.max(6,D*.06)?'better':'optional';rank=fix?8*f.dProb:need+(c.newFinish?1:0)}
+    else if(c.sockIdea){   // a patterned pair: an idea when the plan would wear it often enough, never a fix
+      if(f.worn<Math.max(2,D*.03)||f.pts<0)continue;
+      why.push(`For your ${c.forPants} days: its ${colName(it.secondaryColor).toLowerCase()} ${patOf(it)==='argyle'?'diamonds pick':'stripes pick'} up your ${c.forTie.toLowerCase()} ties.`,`Planned on ${f.worn} of the next ${D} workdays.`);
+      tier='variety';rank=f.worn}
     else{const days=t==='socks'?(base.marked.Socks||0)-(f.marked.Socks||0):t==='tieclip'||t==='belt'?(base.marked.Metals||0)-(f.marked.Metals||0):0;
       if(!fix&&f.pts<Math.max(4,D*.04))continue;
       if(t==='socks')why.push(`Matches your ${c.forFam} pants: your socks are marked down there on ${plural(days,'day')} now.`);
@@ -328,6 +333,17 @@ function smallCandidates(L,B,base,skip){
   // socks for trousers that have no matching pair
   const have=new Set(by('socks').map(pcol)),fams=new Set([...by('suit'),...(B.blazerDays||!wearsJacket()?by('pants'):[])].map(pcol));
   for(const f of fams){if(have.has(f))continue;const c=COLS_BY.socks.p.find(x=>fam(x)===f&&!CUSTOM_COL[x]);if(c)mk([{type:'socks',primaryColor:c}],{forFam:colName(f)})}
+  // a patterned pair (2026-11-17, the owner: "yes, when it fits"): with chinos or jeans in rotation and no bold pair owned, an argyle and a
+  // striped pair on the casual pants' colour whose pattern picks up the two colours his ties have most; ranked by how often the plan
+  // would wear it (an idea, never a fix: sockIdea in runAnalysis)
+  {const casual=by('pants').filter(p=>['chinos','jeans'].includes(trouserKind(p)));
+    if(casual.length&&by('tie').length&&!by('socks').some(s=>typeof sockBold==='function'&&sockBold(s))){
+      const n={},quiet=['white','black','grey','charcoal','silver','cream'];for(const t of by('tie'))for(const f of new Set(colsOf(t)))if(!quiet.includes(f))n[f]=(n[f]||0)+1;
+      const tf=Object.entries(n).sort((a,b)=>b[1]-a[1]||(a[0]<b[0]?-1:1)).map(([f])=>f).slice(0,2);
+      const pf={};for(const p of casual)pf[planCol(p)]=(pf[planCol(p)]||0)+1;const gc=Object.entries(pf).sort((a,b)=>b[1]-a[1])[0][0];   // (the pants' own colour when socks come in it: khaki on khaki chinos)
+      const ground=COLS_BY.socks.p.includes(gc)&&!CUSTOM_COL[gc]?gc:COLS_BY.socks.p.find(x=>fam(x)===fam(gc)&&!CUSTOM_COL[x])||'navy';
+      tf.forEach((f,k)=>{const acc=COLS_BY.socks.a.find(x=>fam(x)===f&&!CUSTOM_COL[x]&&fam(x)!==fam(ground));
+        if(acc)mk([{type:'socks',primaryColor:ground,pattern:k?'stripe':'argyle',secondaryColor:acc,toeColor:'none'}],{sockIdea:true,forTie:colName(f),forPants:TROUSER_KINDS.find(([x])=>x===trouserKind(casual[0]))?trouserKind(casual[0]):'chinos'})})}}
   const clips=by('tieclip');if(wearsTie()&&!clips.some(c=>metalOf(c)===metal)&&metal!=='other')mk([{type:'tieclip',primaryColor:metal==='gold'?'gold':'silver'}]);
   if(!by('cufflinks').length&&by('shirt').some(s=>s.cuff==='french'))mk([{type:'cufflinks',primaryColor:metal==='gold'?'gold':'silver',metal}]);
   if(!by('overcoat').length&&(base.kinds['cold with no overcoat']||base.kinds['rain with no raincoat']))mk([{type:'overcoat',primaryColor:'charcoal'}]);

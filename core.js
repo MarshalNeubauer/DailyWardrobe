@@ -417,12 +417,24 @@ const metalWord=m=>m==='other'?'gunmetal':m==='silk'?'silk knot':m;
 METAL['two-tone']='#c8b27e';   // (2026-11-15, the owner's option) steel and gold together: planner metalSame lets it go with either
 const METAL_OPTS=Object.keys(METAL).map(c=>[c,metalWord(c)]);
 const linkFace=i=>{const c=i&&i.type==='cufflinks'&&primaryCol(i);return c&&COLORS[c]&&c!=='silver'&&c!=='gold'?c:null};   // an enamel or stone face (silver and gold links are all metal)
-const desc=i=>i?((i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i))?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(sockPatterned(i)?sockToeWord(i):'')+(i.type==='shoes'||i.type==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i))?'':' · ')+metalWord(i.metal):'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${colName(watchOpts(i).dial)} dial ·${BAND_WORDS[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'&&SEASON_TYPES.includes(i.type)?` · ${i.season} weather`:''):'';
-const nm=i=>i?colorDesc(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patName(i.pattern):'')+' '+typeWord(i):'none';   // an own pattern by its name, not "own basketweave" (W1-1-04)
+const desc=i=>i?((i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i))?'':colorDesc(i))+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(sockPatterned(i)?sockToeWord(i):'')+(i.type==='shoes'||i.type==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(i.type)?((i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i))?'':' · ')+metalWord(i.metal):'')+(i.type==='watch'?`${watchOpts(i).style==='chronograph'?' chronograph':''} · ${colName(watchOpts(i).dial)} dial · ${BAND_WORDS[watchOpts(i).band]||watchOpts(i).band}`:'')+(i.cuff==='french'?' · French cuffs':'')+(i.season&&i.season!=='all'&&SEASON_TYPES.includes(i.type)?` · ${i.season} weather`:''):'';   // (the band after " · " with its space: it read "·leather strap", 2026-11-17)
+/* ---- titles (2026-11-17, the owner's title audit: "Navy & burgundy & gold argyle, light gray toe socks" was too long): what an item is
+   called on screen (itemTitle, the Saved toast, the piece picker, Today's pieces, Laundry, Insights, What to buy, the import's list) and in
+   the planner's words (nm) is its main colour, its pattern and its kind: "Navy argyle", "Burgundy stripe", "Gray glen check". The second
+   and third colours, a toe cap or a sneaker's sole, the season and French cuffs stay in desc() and the item sheet (its Color summary,
+   Details), and search still finds them (wardHay reads desc). A watch is its metal, chronograph and dial ("Gold chronograph · white dial");
+   cufflinks their face and metal, a belt and shoes their leather, as before. A name the owner typed is always shown as typed (itemName).
+   Pictures keep their keys: they never read titles (photos.js itemDesc, comboSig) */
+const shortCol=i=>colName(primaryCol(i));
+const shortDesc=i=>{if(!i)return '';const t=i.type;
+  if(t==='watch'){const o=watchOpts(i);return `${metalWord(i.metal||'silver')}${o.style==='chronograph'?' chronograph':''} · ${colName(o.dial)} dial`}
+  const c=t==='cufflinks'&&!linkFace(i)?'':shortCol(i);
+  return c+(i.pattern&&i.pattern!=='solid'?' '+patName(i.pattern):'')+(t==='shoes'||t==='belt'?' '+leatherWord(i,i.leather||'calf'):'')+(i.metal&&METAL_TYPES.includes(t)?(c?' · ':'')+metalWord(i.metal):'')};
+const nm=i=>i?shortCol(i)+(i.pattern&&i.pattern!=='solid'&&i.pattern!=='other'?' '+patName(i.pattern):'')+' '+typeWord(i):'none';   // an own pattern by its name, not "own basketweave" (W1-1-04); the main colour only (the title audit, 2026-11-17)
 /* an item's own name (item.name), and what it is called on screen: the name when it has one, else its colour description
    (the planner's texts keep the description); a name is shown as typed, a description capitalised (titleCls) */
 const itemName=i=>i&&typeof i.name==='string'?i.name.trim():'';
-const itemTitle=i=>itemName(i)||sentence(desc(i)+styleWord(i));
+const itemTitle=i=>itemName(i)||sentence(shortDesc(i)+styleWord(i));
 /* a shoe's style and a trouser's kind in a described title ("Oxblood calf loafers", "Stone chinos"): they were "Oxblood calf" and "Stone"
    (W2-17-15); oxfords and dress pants, and items from before styles existed, read as before */
 const styleWord=i=>!i?'':i.type==='shoes'&&i.shoeStyle&&i.shoeStyle!=='oxford'?' '+(({derby:'derbies',loafer:'loafers',boot:'boots',sneaker:'sneakers'})[i.shoeStyle]||''):i.type==='pants'&&(i.trouserKind==='chinos'||i.trouserKind==='jeans')?' '+i.trouserKind:i.type==='pants'&&i.trouserKind==='cargo'?' cargo pants':'';

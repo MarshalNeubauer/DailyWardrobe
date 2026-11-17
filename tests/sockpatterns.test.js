@@ -46,7 +46,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(card.q==='socks,argyle,burgundy,gold,lightgrey'&&card.toe&&card.second&&card.third&&card.pat&&card.alt,`the card: argyle, its diamonds and lines as Second and Third color, the Toe cap its own, Claude's runner-up pattern offered (${JSON.stringify(card)})`);
     await p.evaluate(()=>{const e=document.querySelector('#queue .card');if(e)e.scrollIntoView()});await shot(p,'add-card-argyle','#queue .card');
     await p.evaluate(()=>save(0));await p.waitForFunction(()=>items.some(i=>i.type==='socks'));
-    const saved=await p.evaluate(async()=>{const i=items.find(x=>x.type==='socks'),d=(await tx('readonly',s=>s.getAll())).find(x=>x.id===i.id);return {m:[i.pattern,i.secondaryColor,i.tertiaryColor,i.toeColor].join(),d:[d.pattern,d.secondaryColor,d.tertiaryColor,d.toeColor].join(),desc:desc(i),id:i.id}});
+    const saved=await p.evaluate(async()=>{const i=items.find(x=>x.type==='socks'),d=(await tx('readonly',s=>s.getAll())).find(x=>x.id===i.id);return {m:[i.pattern,i.secondaryColor,i.tertiaryColor,i.toeColor].join(),d:[d.pattern,d.secondaryColor,d.tertiaryColor,d.toeColor].join(),desc:desc(i),id:i.id,title:itemTitle(i),nm:nm(i),toast:document.querySelector('#toast').textContent}});
+    ok(saved.title==='Navy argyle'&&saved.nm==='navy argyle socks'&&/Saved: Navy argyle socks\./.test(saved.toast),`its title is short (${saved.title}; "${saved.toast}"; the planner says "${saved.nm}")`);
     ok(saved.m==='argyle,burgundy,gold,lightgrey'&&saved.d===saved.m,`saved with its pattern, pattern colours and toe cap, on disk too (${saved.d})`);
     ok(saved.desc==='navy & burgundy & gold argyle, light gray toe',`its description (${saved.desc})`);
     // ---- the item sheet's colour fields
@@ -115,7 +116,7 @@ module.exports=async({ok,chromium,url,settle})=>{
         brown=I('shoes','brown',{leather:'calf'}),black=I('shoes','black',{leather:'calf'}),
         plainBrown=I('socks','brown',{toeColor:'none'}),argyle=I('socks','brown',{pattern:'argyle',secondaryColor:'burgundy',tertiaryColor:'cream',toeColor:'none'}),argyleOff=I('socks','brown',{pattern:'argyle',secondaryColor:'green',tertiaryColor:'cream',toeColor:'none'}),
         dots=I('socks','navy',{pattern:'polka-dot',secondaryColor:'red',toeColor:'none'}),plainNavy=I('socks','navy',{toeColor:'none'}),creamArgyle=I('socks','cream',{pattern:'argyle',secondaryColor:'navy',toeColor:'none'});
-      const sc=(s,o)=>sockScore(o.bot,o.shoes,s,sockEcho(o.shirt,o.tie),{top:o.top,bot:o.bot,shirt:o.shirt,tie:o.tie,formal:!!o.formal,occasion:o.occasion});
+      const sc=(s,o)=>sockScore(o.bot,o.shoes,s,sockEcho(o.shirt,o.tie),{top:o.top,bot:o.bot,shirt:o.shirt,tie:o.tie,formal:!!o.formal,occasion:o.occasion,season:o.season});
       const casual={top:blazer,bot:chinos,shirt:white,tie:burgTie,shoes:brown},formal={...casual,formal:true,occasion:'formal'},funeral={...casual,occasion:'funeral'},wedding={...casual,occasion:'wedding'},busy={...casual,shirt:stripeShirt,tie:paisley};
       const suit={top:navySuit,bot:navySuit,shirt:white,tie:foulard,shoes:black,suitDay:true};
       const rate=(o,s)=>rateOutfit({...o,socks:s,suitDay:!!o.suitDay,formal:!!o.formal,occasion:o.occasion||null});
@@ -128,7 +129,13 @@ module.exports=async({ok,chromium,url,settle})=>{
         plainSame:sc(plainBrown,casual)===sockScore(chinos,brown,plainBrown,sockEcho(white,burgTie))&&sc(plainNavy,suit)===sockScore(navySuit,black,plainNavy,sockEcho(white,foulard)),
         rCasual:ck(casual,argyle,'Socks'),rFormal:ck(formal,argyle,'Socks'),rBusy:ck(busy,argyle,'Patterns'),rSame:ck(suit,dots,'Patterns'),
         light:ck({...casual,bot:charcoal},creamArgyle,'Socks'),lightHard:rate({...casual,bot:charcoal},creamArgyle).hard.join(),
-        plainPat:ck(casual,plainBrown,'Patterns'),rules:PLAN_RULES}});
+        plainPat:ck(casual,plainBrown,'Patterns'),rules:PLAN_RULES,
+        // bright plain socks (the owner, 2026-11-17): marked down on formal days, weddings and funerals; dark ones are not
+        bright:['red','pink','purple','gold','rust','blue','tan','khaki','burgundy','wine','navy','charcoal','brown','olive','green','grey','slate','deepblue'].map(c=>c+':'+(sockBright({type:'socks',primaryColor:c})?1:0)).join(),
+        redSuit:[sc(I('socks','red',{toeColor:'none'}),{...suit,formal:true,occasion:'formal'}),sc(plainNavy,{...suit,formal:true,occasion:'formal'}),sc(I('socks','red',{toeColor:'none'}),suit)],
+        redCk:ck({...suit,formal:true,occasion:'formal'},I('socks','burgundy',{toeColor:'none'}),'Socks'),redCk2:ck({...suit,occasion:'funeral'},I('socks','red',{toeColor:'none'}),'Socks'),
+        // the material by season
+        mat:['cold','warm','mild'].map(se=>[I('socks','navy',{material:'merino wool',toeColor:'none'}),I('socks','navy',{material:'cotton',toeColor:'none'}),plainNavy].map(s=>sc(s,{...suit,season:se})).join('/')).join(' ')}});
     ok(r.casual[0]>r.casual[1]&&r.casual[0]>r.casual[2],`chinos with a burgundy tie: the brown argyle with burgundy diamonds is the best sock (${r.casual}); one with green diamonds picks nothing up`);
     ok(r.formal[0]<r.formal[1]&&r.funeral[0]<r.funeral[1]&&r.wedding[0]<r.wedding[1],`a formal day, a funeral and a wedding take the plain sock (formal ${r.formal}, funeral ${r.funeral}, wedding ${r.wedding})`);
     ok(r.busy[0]<r.busy[1],`a striped shirt and a paisley tie: no argyle on top (${r.busy})`);
@@ -138,6 +145,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(r.rBusy&&r.rBusy.pts===4&&!r.rBusy.hard&&r.rSame&&r.rSame.pts===5&&/same kind of pattern as the tie/.test(r.rSame.why),`Patterns: argyle as a third pattern ${r.rBusy&&r.rBusy.pts}/10 (not a real mistake), dots repeating the foulard ${r.rSame&&r.rSame.pts}/10 "${r.rSame&&r.rSame.why}"`);
     ok(r.light&&r.light.pts===0&&r.light.hard&&/Socks/.test(r.lightHard),'a cream argyle with charcoal pants is still the real mistake "light socks with dark pants"');
     ok(r.plainPat&&r.plainPat.pts===10,'plain socks add no pattern');
+    ok(r.bright==='red:1,pink:1,purple:1,gold:1,rust:1,blue:1,tan:1,khaki:1,burgundy:0,wine:0,navy:0,charcoal:0,brown:0,olive:0,green:0,grey:0,slate:0,deepblue:0',`bright socks: ${r.bright}`);
+    ok(r.redSuit[0]<r.redSuit[1]&&r.redSuit[2]===r.redSuit[0]+25,`a red plain sock on a formal day loses to navy (${r.redSuit}); on an ordinary day it isn't marked down`);
+    ok(r.redCk&&!/formal/.test(r.redCk.why)&&r.redCk2&&r.redCk2.pts===2&&/funeral calls for plain dark socks/.test(r.redCk2.why),`the score: burgundy on a formal day is fine (${r.redCk&&r.redCk.pts}/5); red at a funeral ${r.redCk2&&r.redCk2.pts}/5 "${r.redCk2&&r.redCk2.why}"`);
+    {const [c,w,m]=r.mat.split(' ').map(x=>x.split('/').map(Number));ok(c[0]>c[2]&&c[2]>c[1]&&w[1]>w[2]&&w[2]>w[0]&&m[0]===m[2]&&m[1]===m[2],`merino wins in the cold, cotton in the heat, neither on a mild day; no material is neutral (${r.mat})`)}
     ok(r.rules>=25,`PLAN_RULES bumped (${r.rules})`);
     // ---- the planner over two months: a made-up wardrobe with a plain and an argyle pair
     const plan=await p.evaluate(()=>{let n=0;const I=(type,primaryColor,x={})=>({id:type+String(n++).padStart(2,'0'),type,primaryColor,pattern:'solid',added:1,...x});
@@ -156,6 +167,18 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(!plan.special.includes('argyle'),`never on the funeral, the formal day or the wedding (${plan.special})`);
     if(shots)fs.writeFileSync(path.join(shots,'plan.json'),JSON.stringify({r,plan}));
     ok(plan.busy===0&&plan.hard===0,`never under two bold patterns (${plan.busy}), never a real mistake (${plan.hard})`);
+    // ---- What to buy: a patterned pair as an idea when it fits (chinos owned, ties to pick up, no bold pair yet)
+    const shopR=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++).toString().padStart(3,'0'),type,primaryColor,pattern:'solid',added:1,...x});
+      const W=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('blazer','tan'),I('pants','grey'),I('pants','khaki',{trouserKind:'chinos'}),I('pants','stone',{trouserKind:'chinos'}),
+        I('shirt','white'),I('shirt','lightblue'),I('shirt','white',{pattern:'stripe',secondaryColor:'blue'}),I('shirt','pink'),I('shirt','lavender'),
+        I('tie','burgundy'),I('tie','burgundy',{pattern:'stripe',secondaryColor:'navy'}),I('tie','green'),I('tie','navy',{pattern:'polka-dot',secondaryColor:'burgundy'}),I('tie','green',{pattern:'paisley',secondaryColor:'gold'}),
+        I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('watch','grey',{metal:'silver'}),
+        I('socks','navy',{toeColor:'none'}),I('socks','charcoal',{toeColor:'none'}),I('socks','brown',{toeColor:'none'})];
+      settings.blazerDays=[3,4];dayRecs={};settings.shopSkip=[];TODAY_OVERRIDE='2026-11-15T12:00:00';
+      const ideas=r=>r.cats.flatMap(c=>c.recs).filter(x=>x.type==='socks'&&x.items[0].pattern!=='solid').map(x=>({name:x.name,tier:x.tier,why:x.why.join(' ')}));
+      const a=ideas(runAnalysis(W,todayDate())),b=ideas(runAnalysis(W.filter(i=>!i.trouserKind),todayDate()));settings.blazerDays=[3];return {a,b}});
+    ok(shopR.a.length>=1&&shopR.a.every(x=>x.tier==='variety')&&/argyle|stripe/.test(shopR.a.map(x=>x.name).join())&&/picks? up your (burgundy|green) ties/.test(shopR.a[0].why),`What to buy suggests a patterned pair for the chinos days, as an idea (${JSON.stringify(shopR.a)})`);
+    ok(shopR.b.length===0,'without chinos or jeans it suggests none');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
