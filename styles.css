@@ -376,8 +376,13 @@ body.nps-on #toast,body.nps-on #busy{bottom:calc(78px + env(safe-area-inset-bott
 .mbox.open .mpanel-in{opacity:1;transform:none}
 :where(#today) .mbox.open .mpanel-in{padding:4px 10px 12px}
 #spanel .mpanel-in{cursor:pointer}
-#settings-modal .mbox.open .mpanel-in{padding:2px 14px 16px}
-#settings-modal .mpanel-in{padding:0 14px}
+/* Settings' panels keep one padding (2026-11-17, "a little choppy"): their top and bottom space is two spacers inside the clip, not a
+   padding animated beside the panel's height (the open height moved under the animation every frame); their own layer for the fade */
+#settings-modal .mpanel-in{padding:0 14px;transition:opacity .3s ease,transform .45s cubic-bezier(.2,.8,.2,1);will-change:opacity,transform}
+#settings-modal .mpanel-in::before{content:'';display:block;height:2px}
+#settings-modal .mpanel-in::after{content:'';display:block;height:16px}
+#settings-modal .mbox:is(.instant,.bfast) .mpanel-in{transition:none}
+@media (prefers-reduced-motion:reduce){#settings-modal .mpanel-in{transition:none}}
 #sbox:not(.open) #spanel .mpanel-in{visibility:hidden}
 @keyframes mcIn{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){
@@ -714,7 +719,6 @@ body.nps-on #toast,body.nps-on #busy{bottom:calc(78px + env(safe-area-inset-bott
 /* ---- page header ---- */
 .phead{display:flex;align-items:center;gap:10px;margin:4px 0 14px;min-height:44px}
 #stats .phead.nav{display:flex;grid-template-columns:none;margin:4px 0 14px}
-#care .phead.nav{display:flex;margin:4px 0 14px}
 .phead h2{font-size:var(--fs-2xl);line-height:1.2;flex:1;min-width:0}
 .phead .pcount{font-size:var(--fs-b);font-weight:600;color:var(--mut)}
 .ivhead .pcount{flex:none;font-size:var(--fs-b);font-weight:600;color:var(--mut)}
@@ -1151,8 +1155,8 @@ main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add{display:none}
 .morein>label{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0;padding:7px 0;font-size:var(--fs-b);font-weight:600}
 .morein>label select{flex:0 0 58%;width:58%;max-width:58%}
 /* ---- Laundry & cleaning ---- */
-#care .care-card{border:1px solid var(--line);border-radius:var(--r-card);padding:14px;margin:0 0 12px}
-#care .care-card h3{font-size:var(--fs-l);line-height:1.3;margin:0 0 4px}
+#care-in .care-card{border:1px solid var(--line);border-radius:var(--r-card);padding:14px;margin:0 0 12px}
+#care-in .care-card h3{font-size:var(--fs-l);line-height:1.3;margin:0 0 4px}
 .care-row{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
 .care-card>.care-row:first-of-type{border-top:0}
 .care-card>.shelp+.care-row{border-top:1px solid var(--line)}
@@ -1168,7 +1172,7 @@ main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add{display:none}
 .care-foot .linkbtn{min-height:44px;font-size:var(--fs-b)}
 .linkbtn,.day h2 .wx a,.sicw{color:var(--acc-ink)}
 .conn-off-note .linkbtn{margin-left:4px}
-.carelink{margin-top:8px}
+
 .caretag{display:table;margin:6px 4px 2px;padding:2px 8px;border-radius:99px;font-size:var(--fs-2xs);font-weight:600;border:1px solid color-mix(in srgb,var(--acc) 55%,var(--line));color:var(--ink)}
 .ivcare .carecount{margin:0 0 10px}
 .ivcare .carecount.due{color:var(--ink)}

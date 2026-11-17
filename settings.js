@@ -2,13 +2,16 @@
    (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
 /* settings management */
 /* Settings: a full-screen page of categories that unfold like Today's cards; openSettings('weather') opens one directly */
-const SET_CATS=['schedule','daysoff','weather','care','photos','tagging','backup','connection','about'];
+const SET_CATS=['laundry','schedule','daysoff','weather','care','photos','tagging','backup','connection','about'];
 function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.classList.toggle('instant',!!instant);if(!instant){el.classList.remove('instant');void el.offsetHeight}
   el.classList.toggle('open',open);const b=el.querySelector('.scat-head');if(b)b.setAttribute('aria-expanded',open);
   if(open&&key==='backup'&&typeof loadSnapshots==='function')loadSnapshots();   // the daily backups list is read as Backup opens (sync.js)
-  if(open&&key==='about'&&typeof renderAbout==='function')renderAbout()}   // only as About opens (its header ran it on closing too, and asked the server each time: CR-7-06)
+  if(open&&key==='about'&&typeof renderAbout==='function')renderAbout();   // only as About opens (its header ran it on closing too, and asked the server each time: CR-7-06)
+  if(open&&key==='laundry'&&typeof renderCare==='function')renderCare()}   // Laundry & cleaning's lists, as it opens (care.js)
 // a category unfolds where it is: no scroll to show what opened (the owner, 2026-11-17: "I want it to unfold and not scroll automatically at all")
-function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);settingsSummaries()}
+// the summaries (what was changed inside) are written once the fold has finished moving, not in its first frames
+function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);
+  clearTimeout(toggleCat.t);toggleCat.t=setTimeout(()=>{try{settingsSummaries()}catch(e){console.warn(e)}},480)}
 /* the Backup line in Settings says what really happened: the last backup's time, or that the last try failed (sync.js keeps
    sync_status while a try fails and last_sync when one works) */
 /* when backups start again (the next 00:00 UTC): "tomorrow" only when that is tomorrow here; west of UTC it is later today (W1-10-03: "Paused

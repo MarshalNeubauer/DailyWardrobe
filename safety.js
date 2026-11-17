@@ -45,7 +45,7 @@ function errNote(e,ctx){try{if(errNoise(e))return;const x=e&&e.error||e,at=Strin
   localStorage.setItem(ERR_KEY,JSON.stringify(L.slice(-ERR_MAX)));errSoon()}catch{}}
 /* the page it happened on (Add, Today, …; Settings over it) */
 function errWhere(){try{const set=settingsOpen()?'settings ':'';
-  for(const id of ['add','today','wardrobe','stats','pack','care']){const el=document.getElementById(id);if(el&&!el.hidden)return set+id}return set.trim()}catch{return ''}}
+  for(const id of ['add','today','wardrobe','stats','pack']){const el=document.getElementById(id);if(el&&!el.hidden)return set+id}return set.trim()}catch{return ''}}
 /* ---- a tester's phone reports its errors by itself (2026-11-16, the owner: a tester's very first item failed and nothing showed why; the
    log came only with feedback): the new entries of err_log go to the worker (POST /errors, worker/people.js handleErrors) 5 s after one is
    noted and at start-up, at most ERR_SEND_N at a time and one report a minute (ERR_SEND_MS; the worker allows 20 a day): the message,
