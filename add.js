@@ -32,7 +32,7 @@ async function addTexture(i,f,read){const q=cardOf(i);if(!q||!f)return;
     if(read){measureCard(q);renderAdd();if(typeof addKeep==='function')addKeep();return}
     refineFromCloseup(queue.indexOf(q))}   // tag again with both photos (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
-function dropTexture(i){const q=cardOf(i);if(!q)return;delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
+function dropTexture(i){const q=cardOf(i);if(!q)return;if(typeof readAbort==='function')readAbort(q);delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
 /* (the close-up step of a card, "Step 2 · Fabric close-up", is now the checklist's Texture match section: addCkSecs below) */
 const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colors.':'Colors corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${qh(q)})">${q.wbOff?'Correct them':'Show original'}</button></p>`
   :q.wbWas&&q.photo?'<p class="wbnote mut"><small>Colors corrected for the light.</small></p>':'';   // a card brought back after a kill: still corrected, no original kept (addRevive)
@@ -54,9 +54,9 @@ async function addFiles(files,multi){
       q.raw={big:shrink(img,800),full:shrink(img,TAG_MAX)};q.wb=wbGains(q.raw.big);cardPics(q);if(addRestoreState==='done')addKeep();   // tagged from the corrected, sharp copy; kept on the phone at once, before the reading
       // Stop on the card ends the wait (a stalled connection kept "Reading the photo…" with no button for about 75 s): the photo stays, to fill in by hand or try again
       const ac=typeof AbortController==='function'?new AbortController():null;q.abort=ac;if(ac)renderAdd();
-      const aiResult=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),...(ac?{signal:ac.signal}:{})});q.abort=null;   // wb: whether the photo was white-balanced (the tagger is told)
+      const out={},aiResult=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),out,...(ac?{signal:ac.signal}:{})});q.abort=null;   // wb: whether the photo was white-balanced (the tagger is told)
       if(q.stopped){delete q.stopped;fill(q,null);q.unread=1;q.tagErr=STOPPED}
-      else{fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureAndApply(q)}else{q.unread=1;tagFailed(q)}}
+      else{fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureAndApply(q)}else{q.unread=1;tagFailed(q,out.err)}}   // out.err: this card's own reason (CR-2-07)
     }catch(e){console.warn('photo card',e);if(typeof errNote==='function')errNote(e,'Photo card'+(q.type?' ('+q.type+')':''));if(!q.photo){q.err='open'}else{if(!q.type)fill(q,null);if(!q.ai)q.unread=1;q.tagErr=q.tagErr||'Something went wrong while reading it.'}}
     q.busy=0;q.abort=null;
     addKeep();   // the reading kept at once: a kill in the next moment brought the card back as "closed before it was read", and Try again paid again
@@ -93,7 +93,7 @@ function measureGuess(q){if(!q||!q.raw||!q.raw.big||(q.edited&&q.edited.primaryC
 function errToHand(id){const q=queue.find(x=>x.id===id);if(!q)return;const wo=watchOpts({});
   for(const k of ['err','errWh','busy'])delete q[k];Object.assign(q,{manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style});renderAdd()}
 /* Skip, Cancel and Dismiss find their card by its id: by its place, a double tap skipped the next card too */
-function skipCard(id){const k=queue.findIndex(q=>q.id===id);if(k<0)return;const q=queue[k];if(q.abort)try{q.abort.abort()}catch{}queue.splice(k,1);
+function skipCard(id){const k=queue.findIndex(q=>q.id===id);if(k<0)return;const q=queue[k];if(q.abort)try{q.abort.abort()}catch{}if(typeof readAbort==='function')readAbort(q);queue.splice(k,1);   // (readAbort: tagging again and the pattern reading too, CR-2-10)
   if((q.multiBusy||q.multiErr)&&!queue.some(x=>x.multi||x.multiBusy||x.multiErr))multiNote(false);   // "Each item in the photo gets its own card…" stayed over no card
   renderAdd()}
 
@@ -516,9 +516,11 @@ function addCkSecs(q,i){const man=!!q.manual||!q.ai,c=q.conf||{},chk=q.checked||
   if(tex){const rd=cardReading(q),cloth=paperCloth(q),lab=hasCu?cmpLab('q',q):null,d=hasCu?cmpDiff(q,lab):null,p=hasCu?cmpPaper('q',q):null;
     const blur=q.manual&&q.meas&&q.meas.src==='closeup'&&q.meas.sharp!=null&&q.meas.sharp<BLUR_SHARP?'<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>':'';
     const pick=(label,cls,mode)=>closeupBtn({label,cls,mode,file:`f=>addTexture(${qh(q)},f)`,remove:mode==='replace'?`dropTexture(${qh(q)})`:'',cloth});
-    const body=hasCu?cmpHtml(q.id,q.texture,cmpDrawn(q),!!(p&&p.ref))+cmpMatchHtml('q',q.id,q,lab)+cmpPaperLine(p,pick('Retake close-up','linkbtn wbretake','retake'))+blur+
-        `<div class="btns ckcu">${pick('Replace close-up','btn','replace')}${cuTouch()?'':`<button type="button" class="ckrm" onclick="dropTexture(${qh(q)})">Remove close-up</button>`}</div>`+
-        `<div class="ckread">${rdAddBtn(q,'Read color and texture')}${rdCostLine()}</div>${rdDoneHtml('q',q.id,q)}${ckLr(q,i,'tex')}`
+    // while Claude reads the close-up, no Replace, Retake, Remove or Read: one reading per card (CR-2-03: a second close-up paid twice and
+    // switched Confirm back on half way)
+    const body=hasCu?cmpHtml(q.id,q.texture,cmpDrawn(q),!!(p&&p.ref))+cmpMatchHtml('q',q.id,q,lab)+cmpPaperLine(p,rd?'':pick('Retake close-up','linkbtn wbretake','retake'))+blur+
+        (rd?'<p class="tagnote mut ckcuwait"><small>You can replace the close-up once Claude has read it.</small></p>':`<div class="btns ckcu">${pick('Replace close-up','btn','replace')}${cuTouch()?'':`<button type="button" class="ckrm" onclick="dropTexture(${qh(q)})">Remove close-up</button>`}</div>`+
+        `<div class="ckread">${rdAddBtn(q,'Read color and texture')}${rdCostLine()}</div>`)+`${rdDoneHtml('q',q.id,q)}${ckLr(q,i,'tex')}`
       :`<p class="shelp">Texture match puts a close-up of the cloth beside the drawing and sets the true color from white paper.${q.photo?'':' The close-up is saved with the item.'}</p>${paperSteps(cloth)}`+
         `<div class="ckadds"><button type="button" class="btn pri rdgo ckreadadd" onclick="rdStart('q','${jsq(q.id)}')"${rdOff()?' aria-disabled="true"':''}><span>Add close-up and read color, texture &amp; material</span><small class="rdcost">${esc(rdCost())}</small></button>${pick('Add close-up','btn ckadd','add')}</div>`+
         '<p class="shelp ckcheap">Reading counts as 2 lookups for testers. Nothing changes until you choose.</p>';
