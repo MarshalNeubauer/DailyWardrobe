@@ -13,7 +13,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     const title=()=>p.evaluate(()=>document.querySelector('#mbox .mhead h3').textContent);
     const at=async()=>{await p.evaluate(()=>{const r=document.querySelector('#mbox .mgrid:not(.mdow)').getBoundingClientRect();scrollBy(0,r.top+r.height/2-420)});await settle(p,200);
       return p.evaluate(()=>{const r=document.querySelector('#mbox .mgrid:not(.mdow)').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})};
-    const swipe=async(x,y,dx,mid)=>{await T('touchStart',x,y);let m=null;for(let k=1;k<=8;k++){await T('touchMove',x+dx*k/8,y+2);if(k===5&&mid)m=await mid()}await T('touchEnd');await settle(p,500);return m};
+    // (pace: ms between moves. A short drag made fast is a flick, which turns the month by design (monthRelease: over 30 px at more than
+    // 0.5 px/ms); on a quiet machine WebKit's touches ran 40 px in under 80 ms, so "a short drag" turned the month. It is held at a
+    // drag's pace)
+    const swipe=async(x,y,dx,mid,pace=0)=>{await T('touchStart',x,y);let m=null;for(let k=1;k<=8;k++){if(pace)await p.waitForTimeout(pace);await T('touchMove',x+dx*k/8,y+2);if(k===5&&mid)m=await mid()}await T('touchEnd');await settle(p,500);return m};
     const h=await p.evaluate(()=>{const hd=document.querySelector('#mbox .mhead'),t=hd.querySelector('h3').getBoundingClientRect(),b=document.querySelector('#mbox').getBoundingClientRect();
       return {arrows:document.querySelectorAll('#mbox .mbtns, #mbox .mhead button').length,centre:Math.abs((t.left+t.right)/2-(b.left+b.right)/2),hint:!!document.querySelector('#mbox .mhint'),legend:!!document.querySelector('#mbox .mlegend'),
         gap:Math.round(document.querySelector('#mbox .mdow').getBoundingClientRect().top-t.bottom),
@@ -26,7 +29,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await title()==='January 2027'&&await p.evaluate(d=>key(sel)===d&&monthOpen&&scoreOpen,day0),'a swipe left inside the box shows the next month; the day and the other open boxes stay');
     const c2=await at();await swipe(c2.x-60,c2.y,200);await swipe(c2.x-60,c2.y,200);
     ok(await title()==='November 2026','swiping right goes back a month at a time');
-    const c3=await at();await swipe(c3.x,c3.y,-40);
+    const c3=await at();await swipe(c3.x,c3.y,-40,null,30);
     ok(await title()==='November 2026'&&await p.evaluate(()=>{const s=document.querySelector('#mswipe').style.transform;return !s||s==='translateX(0px)'}),'a short drag springs back');
     // a swipe on the outfit (outside the month) still changes the day
     await p.evaluate(()=>scrollTo(0,0));await settle(p,200);

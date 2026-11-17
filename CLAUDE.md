@@ -2294,6 +2294,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - set the worker for a page with `addInitScript` before the one page load, not on a first page followed by a reload: the first page's delayed start-up work can run before the reload (`prefetch` counted a photo downloaded twice)
 - `window.appReady` is set once the kept photos are loaded (`loadRenders`, which starts `renders` afresh) and every script has run (`afterDom`, DOMContentLoaded, not the load event, which also waits for pictures): tests put photos into `renders` right after it, and read notes later scripts show
 - a test that depends on today's date fixes the clock (`watchmatch` failed on the 12th of every month: the date watch's window read as a 12 numeral)
+- a test's "short drag" must be slow enough not to be a flick (2026-11-17): `monthswipe` paces its 40 px drag at 30 ms a move, since `monthRelease` turns the month for over 30 px at more than 0.5 px/ms and WebKit's touch stand-in ran it in under 80 ms on a quiet machine (it passed only under load)
 - touch gestures take their speed from `e.timeStamp`, not `Date.now()` when handled (the shop sheet's swipe); `tests/shopswipe.test.js` gives every CDP touch its own `timestamp`, so its gestures have the same speed however busy the machine is
 
 #### The impact map and selection
