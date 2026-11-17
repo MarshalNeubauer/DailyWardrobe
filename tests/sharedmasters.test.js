@@ -85,8 +85,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   try{const u1=await run(['--dir',tmp,'--kinds','suit']),w1=puts.filter(k=>k==='cm:shared').length,sh=store.has('cm:shared')&&JSON.parse(store.get('cm:shared')).keys;
     const renderKeys=[...store.keys()].filter(k=>k.startsWith('render:')).map(k=>k.slice(7));
     ok(u1.code===0&&w1===1&&/shared list for testers written/.test(u1.out),`cm-upload writes the shared list once (code ${u1.code}, ${w1} write${w1===1?'':'s'}) ${u1.code?u1.out.slice(-300):''}`);
-    ok(sh&&renderKeys.every(k=>sh.includes(k))&&sh.includes(ck('suit','master'))&&sh.includes(ck('suit','mask/jacket'))&&sh.includes(ck('all','manifest'))&&sh.includes(ck('all','background'))&&sh.includes(ck('suit','master2048')),
-      `the list holds every record it uploaded, the manifest, the background and the master's 2048 copy (${sh&&sh.length} keys, ${renderKeys.length} records)`);
+    ok(sh&&renderKeys.every(k=>sh.includes(k))&&sh.includes(ck('suit','master'))&&sh.includes(ck('suit','mask/jacket'))&&sh.includes(ck('all','manifest'))&&sh.includes(ck('all','background'))&&!sh.includes(ck('suit','master2048')),
+      `the list holds every record it uploaded, the manifest and the background, and no longer the PC builder's 2048 copy (CR-8-06) (${sh&&sh.length} keys, ${renderKeys.length} records)`);
     reqs.length=0;const u2=await run(['--dir',tmp,'--kinds','suit']),w2=puts.filter(k=>k==='cm:shared').length;
     ok(u2.code===0&&w2===1&&!reqs.some(x=>/^PUT /.test(x))&&reqs.includes('GET /cm-shared'),`a second run with nothing new writes nothing, the shared list included (${w2} write${w2===1?'':'s'} in all, ${reqs.filter(x=>/^PUT /.test(x)).length} PUTs)`);
     code=(await J(await call(env,'POST','invites',O,{name:'Tess'}))).code}

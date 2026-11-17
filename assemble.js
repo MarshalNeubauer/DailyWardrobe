@@ -513,7 +513,9 @@ async function asmJob(o){const k=asmCmUse(o);if(!k)return null;let j=await asmCm
 /* build one picture from a job (in either thread) -> {url (a JPEG data URL), gl, ms}; a warming job (setupOnly) only sets its master up */
 async function asmBuild(job){
   if(job.cm&&job.setupOnly){const hit=await asmCmSetup(job);if(job.diskCache!==false&&typeof indexedDB!=='undefined'&&!await asmCmDiskGet(asmCmDiskKey(job))){const x=await asmCmPack(hit.P);if(x)await asmCmDiskPut(asmCmDiskKey(job),x,job.cm+'|')}return {setup:true}}   // (warming, asm-color.js asmCmWarm)
-  if(!job||!job.cm)return {};let r=await asmCmBuild(job);if(job.watch&&typeof asmWatchPaint==='function')r=await asmWatchPaint(r,job.watch);
+  if(!job||!job.cm)return {};return asmBuildAfter(await asmCmBuild(job),job)}
+/* the day's watch and pocket square, painted on the finished picture (asm-watch.js, asm-pocket.js; also after the page's draw, asm-gl.js asmGlFinOff) */
+async function asmBuildAfter(r,job){if(job.watch&&typeof asmWatchPaint==='function')r=await asmWatchPaint(r,job.watch);
   return job.pocket&&typeof asmPocketPaint==='function'?asmPocketPaint(r,job.pocket):r}
 /* a picture as a JPEG data URL (the worker has its own, on an OffscreenCanvas) */
 async function asmJpeg(img){const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').putImageData(img,0,0);return c.toDataURL('image/jpeg',.9)}
@@ -523,16 +525,34 @@ const asmQ=[];
 function asmWorker(){if(asmW!==null)return asmW;asmW=false;
   if(typeof Worker==='undefined'||window.ASM_NO_WORKER)return asmW;
   try{const w=new Worker('asm-worker.js'),st={w,ok:null,busy:null};
-    w.onmessage=e=>{const d=e.data||{};if('ready' in d){st.ok=!!d.ready;st.gl=!!d.gl;if(!st.ok)asmWorkerDown();else asmPump();return}
-      clearTimeout(st.timer);const b=st.busy;st.busy=null;if(b&&b.id===d.id){if(d.error)b.no(new Error(d.error));else b.ok(d.res)}asmPump()};
+    w.onmessage=e=>{const d=e.data||{};if('ready' in d){st.ok=!!d.ready;st.gl=!!d.gl;if(!st.ok)asmWorkerDown();else{asmPump();asmIdleArm()}return}
+      if('saving' in d){st.saving=d.saving;asmIdleArm();return}   // (a setup still being saved to disk: asm-worker.js)
+      clearTimeout(st.timer);const b=st.busy;st.busy=null;if(b&&b.id===d.id){if(d.error)b.no(new Error(d.error));else b.ok(d.res)}asmPump();asmIdleArm()};
     w.onerror=e=>{e.preventDefault&&e.preventDefault();asmWorkerDown()};
     asmW=st}catch(e){console.warn('no assembly worker',e)}
   return asmW}
 /* the worker can't run (it failed to load, or the browser has no OffscreenCanvas): what is waiting is built on the page */
 function asmWorkerDown(){const st=asmW;asmW=false;if(st)clearTimeout(st.timer);if(st&&st.w)try{st.w.terminate()}catch{}
-  const left=[...(st&&st.busy?[st.busy]:[]),...asmQ.splice(0)];for(const t of left)asmBuild(t.job).then(t.ok,t.no)}
+  // (a step of asmRunPage's is not a picture: it fails, and asmRunPage paints the look on the page as without a worker)
+  const left=[...(st&&st.busy?[st.busy]:[]),...asmQ.splice(0)];for(const t of left){if(t.step)t.no(new Error('the painting worker stopped'));else asmBuild(t.job).then(t.ok,t.no)}}
 let asmSeq=0;
-function asmPump(){const st=asmW;if(!st||!st.ok||st.busy||!asmQ.length)return;const t=asmQ.shift();st.busy=t;st.timer=setTimeout(()=>asmStuck(st,t),ASM_RUN_MS);st.w.postMessage({id:t.id,job:t.job})}
+function asmPump(){const st=asmW;if(!st||!st.ok||st.busy||!asmQ.length)return;clearTimeout(asmIdleT);const t=asmQ.shift();st.busy=t;st.timer=setTimeout(()=>asmStuck(st,t),ASM_RUN_MS);
+  st.w.postMessage({id:t.id,job:t.job,...t.step},t.tr||[]);t.tr=null}
+/* one message for the worker, in the line (front: the day on screen's, first) -> its answer */
+function asmPost(job,front,step,tr){return new Promise((ok,no)=>{const t={id:++asmSeq,job,step,tr,ok,no};if(front)asmQ.unshift(t);else asmQ.push(t);asmPump()})}
+/* (CR-8-01, 2026-11-17) the worker is let go when nothing is left to paint, ASM_IDLE_MS after its last answer, and as soon as the app
+   is hidden: after one picture it held the master's setup (about 146 MB at 2048) and its graphics-chip textures (about 176 MB) for as
+   long as the app was open, in the same memory as the page on an iPhone. Not while a picture is under way or waiting, building ahead or
+   warming runs, a step of asmRunPage's is under way, or a setup is still being saved to disk (st.saving): the next picture starts a new
+   worker (asmWorker), which reads the setup back from disk (asmCmUnpack, about 0.6 s at phone speed; v3 measured +1.4 s on the next
+   repaint, all off the page). The page's own graphics state (asmRunPage's) goes with it (asm-gl.js asmGlFree). Hidden, it is tried
+   again every second until it is idle */
+let ASM_IDLE_MS=150e3,asmIdleT=0,asmPageN=0;
+function asmIdle(){const st=asmW;return !!st&&!!st.w&&!st.busy&&!asmQ.length&&!st.saving&&!asmAheadOn&&!asmPageN&&!(typeof asmCmWarming!=='undefined'&&asmCmWarming)}
+function asmIdleArm(){clearTimeout(asmIdleT);const st=asmW;if(!st||!st.w)return;asmIdleT=setTimeout(asmIdleEnd,document.hidden?0:ASM_IDLE_MS)}
+function asmIdleEnd(){const st=asmW;if(!st||!st.w)return;if(!asmIdle()){if(document.hidden)asmIdleT=setTimeout(asmIdleEnd,1000);return}
+  clearTimeout(st.timer);try{st.w.terminate()}catch{}asmW=null;if(typeof asmGlFree==='function')asmGlFree()}
+if(typeof document!=='undefined')document.addEventListener('visibilitychange',()=>{if(document.hidden)asmIdleArm()});
 /* (2026-11-14 audit) a picture the worker hasn't answered in ASM_RUN_MS (a hung or crashed worker): it fails, the worker is replaced and
    the line goes on; before, nothing came back and every later picture waited behind it until the app was restarted */
 const ASM_RUN_MS=180e3;
@@ -540,11 +560,27 @@ function asmStuck(st,t){if(asmW!==st||st.busy!==t)return;console.warn('assembly 
   asmW=null;t.no(new Error('the picture took too long'));asmWorker()}
 /* is the picture work off the page (or still finding out)? the build-ahead runs only then */
 const asmOffPage=()=>{const st=asmWorker();return !!st&&st.ok!==false};
-function asmRun(job,front){const st=asmWorker();if(!st)return asmBuild(job);
+function asmRun(job,front){const st=asmWorker();if(!st)return asmBuild(job);clearTimeout(asmIdleT);
   // (2026-11-14) a worker without WebGL2 (an iPhone before iOS 17 has OffscreenCanvas but no WebGL in a worker): a look the graphics chip
-  // covers is painted on the page's own (asm-gl.js asmGlOnPage), a fraction of a second; everything else still goes to the worker
-  if(typeof asmGlOnPage==='function'&&asmGlOnPage(job,st))return asmBuild(job).then(r=>{asmGlNote(r);return r});
-  return new Promise((ok,no)=>{const t={id:++asmSeq,job,ok:r=>{if(typeof asmGlNote==='function')asmGlNote(r);ok(r)},no};if(front)asmQ.unshift(t);else asmQ.push(t);asmPump()})}
+  // covers is drawn on the page's own (asm-gl.js asmGlOnPage), with every CPU part in the worker (asmRunPage); everything else goes to the worker
+  const note=r=>{if(typeof asmGlNote==='function')asmGlNote(r);return r};
+  if(typeof asmGlOnPage==='function'&&asmGlOnPage(job,st))return asmRunPage(job,front).then(note);
+  return asmPost(job,front).then(note)}
+/* (CR-8-02, 2026-11-17) a covered look where the worker has no WebGL2: the worker sets the master up and packs its textures, the page
+   draws, the worker finishes the picture (asm-gl.js asmGlPrepOff, asmGlPage, asmGlFinOff); the page never works a setup out nor paints
+   on its CPU. The worker's CPU paints the look instead when the setup shows it isn't covered after all (asmGlWhy with the setup) or the
+   page's chip fails. One look at a time on the page; a step the stopped worker can't answer paints the look on the page, as without a
+   worker */
+let asmPageChain=Promise.resolve();
+function asmRunPage(job,front){const run=async()=>{asmPageN++;
+    try{for(let i=0;i<2;i++){const G=asmGlState,have=G&&!G.gl.isContextLost()&&i===0?{key:G.key,gk:G.gk}:{};
+        const prep=await asmPost(job,front,{glPrep:have});if(!prep||prep.why)break;
+        const fin=await asmGlPage(job,prep);if(!fin)break;if(fin.again)continue;
+        return await asmPost(job,true,{glFin:fin},[fin.o.buffer])}
+      return await asmPost({...job,gl:false},true)}   // (the worker has no WebGL2: its CPU)
+    catch(e){if(asmW===false)return asmBuild(job);throw e}
+    finally{asmPageN--;asmIdleArm()}};
+  const p=asmPageChain.then(run,run);asmPageChain=p.catch(()=>{});return p}
 /* the outfit's picture as a JPEG data URL, or null when it can't be painted (yet): no colour-coded master for it */
 async function asmPhoto(o,front){const job=await asmJob(o);if(!job)return null;const r=await asmRun(job,front);return r&&r.url||null}
 /* ---- on Today: the assembled picture stands in for the outfit's photo ---- */
@@ -660,7 +696,7 @@ async function asmAheadDays(){const T=todayDate(),c=+new Date(sel.getFullYear(),
     if(i&&i%10===0)await new Promise(r=>setTimeout(r,0));if(asmAheadAgain)return [];
     const o=planOn(d);if(o&&asmWants(o))out.push([Math.abs(+d-c),o])}
   return out.sort((a,b)=>a[0]-b[0]).map(x=>x[1])}
-async function asmAhead(){if(!ASM_ON||asmDrawn()||!asmCmAny()||!asmOffPage()||document.hidden)return;if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;
+async function asmAhead(){if(!ASM_ON||document.hidden||asmDrawn()||!asmCmAny()||!asmOffPage())return;   // (hidden first: asmOffPage starts a worker, CR-8-01)if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;
   try{do{asmAheadAgain=false;const seen=new Set(),todo=[];
       for(const o of await asmAheadDays()){const k=asmOutKey(o);if(seen.has(k))continue;seen.add(k);if(!asmFullWins(o)&&!asmFor(o))todo.push(o)}
       // (2026-11-13) the looks with a picture on the worker first, ASM_AHEAD_N at a time (only their pictures are downloaded); then the rest, one at
@@ -672,7 +708,7 @@ async function asmAhead(){if(!ASM_ON||asmDrawn()||!asmCmAny()||!asmOffPage()||do
       for(const o of rest){if(stop())break;await asmEnsure(o,true)}
       if(!stop()&&typeof asmCmWarm==='function')await asmCmWarm(rest)}   // (2026-11-14) then the masters of the coming looks nobody built, set up ahead
     while(asmAheadAgain)}
-  catch(e){console.warn('building ahead stopped',e)}finally{asmAheadOn=false}}
+  catch(e){console.warn('building ahead stopped',e)}finally{asmAheadOn=false;asmIdleArm()}}
 /* asmState: what the last look at the worker found (cm: colour-coded masters are there) */
 let asmState={checked:false,cm:false},asmSyncing=null;
 /* look at the worker (start-up, Settings): the list of what it keeps and the masters' manifest. A forced look (Settings) waits for the
