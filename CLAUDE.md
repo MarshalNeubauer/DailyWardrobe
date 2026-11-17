@@ -1623,6 +1623,25 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the 14 Nov import saved a row naming an own colour as its index in `settings.custom.colors` ("0", "1"): `kitFixOldImports` (start.js, after the first pull, `whenPulled`) turns such a colour into the one its own colour's name means today through `kitColour` ("Gray" → gray, "Navy" → navy, "Mocha" → the own Mocha), fitted to the type, stamped so it syncs; nothing to do once no colour is a number (W1-2-01)
 
 - "Take them out" (`kitUnimport`) syncs first when connected (fix round 3, W1-6-05), so a piece renamed on another phone counts as changed since and stays; offline it judges this phone's copy
+### `calendar.js`
+
+- calendar import (2026-11-17, the owner's ask: "share a calendar subscription link once, and the app sets up occasion days, trips and days off"), loaded after kit.js; `tests/calendar.test.js` (fixtures `tests/fixtures/calendar/*.ics`, made up; no real calendar is ever fetched)
+- Settings → Calendar (`#sc-calendar`, after Days off & occasions, `SET_CATS` 'calendar', for everyone): drawn by `renderCalUI` (a `settingsPart`) into `#cal-box`; summary `calSummary` ("Not connected", "3 new events to check", "Connected · up to date")
+- not connected to a calendar: a link field (`#cal-link`, webcal:// or https://) and Connect (`calConnect`: reads it first, saves it only when the server read it); without a server connection Connect is off with "Reading a calendar needs a connection: Connect in ⚙ Settings first."
+- connected: "Connected" and the link masked to its host (`calMask`: "p52-caldav.icloud.com/…"; the full link is never shown again), the status line `calStatus` ("Last read 7:02 PM · 3 events used"), Read now (`calRefresh`), Disconnect (`calDisconnect`, asks; days and occasions already set stay)
+- the link is `settings.calendar` {url, at} (synced like any setting; core.js `SET_CLEAN.calendar` keeps only a webcal/https link up to 2048 characters); kept and dismissed events are `settings.calSeen` {id: 'k'|'x'} (merge.js `SET_SPLIT` 'obj': two phones' choices merge entry by entry)
+- the last answer is kept on this phone only: `localStorage.cal_last` {t, url: the masked host, from, to, events, err} (in `ABOUT_KEYS`); it never holds the link
+- read again by itself at start-up (`whenPulled`) and on coming back (`visibilitychange`) at most every `CAL_EVERY` (3 h): `calAuto` → `calSync`
+- the keyword rules are data (`CAL_RULES`, first match wins): funeral/memorial → funeral; wedding/nikah → wedding; gala, black tie, formal, ceremony, interview, awards, graduation, reception → formal day; casual Friday/Thursday, dress down → casual day; PTO, leave, vacation, holiday, OOO, out of office, day off, off (all-day only; not kick-off, sign-off, offsite…) → days off; trip, travel, flight, conference, offsite, summit… → a trip when it lasts 2+ days or is a flight
+- a 2+ day event whose place names another city than the weather location (`calHome`; not online, Teams, Zoom, a room) is a trip too; an outbound flight and the next flight within 21 days make one trip (`calFound`)
+- the review list (`#cal-review`, "Found N events"): each row the title, dates and place and what keeping it does ("→ Wedding day"), ✓ (`calKeep`) and ✕ (`calDismiss`); kept and dismissed rows below with "Used · Undo" / "Dismissed · Undo" (`calUndoSeen`: offered again; what was set stays)
+- an occasion only on a workday (`calPlan`: the planner plans no other day): a Saturday wedding reads "Saturday isn't a workday: no outfit to plan" (a day off "A day off: …") and can only be dismissed
+- ✓ goes through the app's own functions: an occasion `setOccasion(occ, key(d))` for each workday of the event (at most 7; locks released as for a day set by hand), days off settings.js `dayOffAdd(from, to, title)` (split out of `addDayOff`), a trip pack.js `packSetTrip(a, b)` (the Packing list's dates, no limits) with a toast "Packing list set for …" and Open
+- Today (`calBanner(sel)`, prepended to the stage in `renderToday`): on the home day "N new calendar events" with Review (opens Settings → Calendar) while kept-able matches are unseen; on a day of a kept trip "Trip: <title> · Packing list"
+- nothing is applied by itself: new matches only raise the banner
+- the walkthrough (`calGuide('icloud'|'google'|'outlook')`, `CAL_GUIDES`): kit.js cards (`kitOpen`) with drawn mock screens (`calScreen`; no screenshots of other companies' apps), closing goes back to Settings → Calendar; iPhone: a calendar of its own, Calendars → ⓘ → Public Calendar → Share Link… → Copy (it makes that calendar public by link); Google: calendar.google.com on the web → ⚙ Settings → the calendar → Integrate calendar → Secret address in iCal format; Outlook on the web: ⚙ → Calendar → Shared calendars → Publish a calendar → the ICS link; each says the menu may be named slightly differently; the last card is "Paste it here"
+- screenshots of the cards at 390 px light and dark: `CAL_SHOTS=<folder> node tests/run.js calendar` (2026-11-17 set: `C:\code\audit-2026-11-13\calendar\shots\`)
+
 ### `remind.js`
 
 - morning reminder (after account.js): `#remind-box` (`.conn-only`), `remindOn`/`remindOff`, `remindTime`; per phone in `localStorage.remind`
@@ -2368,6 +2387,15 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 - `/holidays?country=XX`: public holidays from Google's public holiday calendars, for countries Nager.Date lacks (the app asks Nager.Date itself first)
 - when no calendar answers, a built-in list (`BUILTIN_HOLIDAYS`, `source:'built-in'`): Kuwait (2026-11-15, the new-user audit: KW answered 404 on every start), the fixed national days and the Islamic holidays on their expected dates, named "(expected)" (Kuwait announces the exact days off shortly before); dated to the end of 2028: extend it each year (`tests/server-limits.test.js` fails when it reaches under ~10 months ahead)
+
+#### worker/calendar.js
+
+- `POST /calendar {url, tz, days?, fresh?}` (`handleCalendar`, 2026-11-17): reads a calendar subscription link for the app (a browser can't: no CORS) → `{from, to, tz, events:[{id, title, start, end, allDay, time, location, days}], more}`, the events touching today to `CAL_DAYS` (60) days ahead in the person's zone; owner or tester, like every route
+- the link is a secret: it comes in the POST body only (a GET with ?url= is 405), is never written to KV, logged or echoed (errors are fixed sentences, `CAL_MSG`; a failed fetch logs only "timeout"/"network"); event descriptions, attendees and the calendar's own UIDs never leave the server (ids are `calHash` of UID and instance day)
+- only https on a public host (`calUrl`: webcal:// and http:// read as https://, links.js `publicHost`, no user:password), redirects followed by hand and each checked (5 at most), `CAL_MAX_BYTES` (6 MB) read, `CAL_FETCH_MS` (15 s); a 401/403/404/410 says the link no longer works, a page that isn't BEGIN:VCALENDAR is 422
+- no KV reads or writes: an answer is kept in memory for `CAL_CACHE_MS` (10 min, keyed by a hash of who, the link, zone and day; `fresh` skips it), and each person may cause `CAL_RATE_N` (6) real reads per 10 minutes per isolate (then the last answer from memory, or 429 "read several times just now")
+- the parser (`calParse`, `calEvents`): folded lines, escaped text, VALUE=DATE all-day (DTEND exclusive), DATE-TIME in UTC, a TZID (IANA; Outlook's Windows names via `WIN_TZ`; else the calendar's VTIMEZONE standard offset; else the person's zone) or floating, DURATION, STATUS:CANCELLED left out, RRULE DAILY/WEEKLY/MONTHLY/YEARLY with INTERVAL, COUNT, UNTIL, BYDAY (with ordinals), BYMONTHDAY, BYMONTH, EXDATE and RECURRENCE-ID overrides (the moved instance keeps the id of the day it replaced); a timed event under 24 hours is its start day (a gala till 1 a.m.)
+- speed (the free plan's CPU time): only the properties used are parsed (`CAL_PROPS`), a non-repeating event outside the window is dropped as it is read, zone offsets are kept per quarter hour (`tzMemo`); measured on the owner's PC: a 1.4 MB calendar of 3,000 events about 8-13 ms warm, the fixture 0.5 ms (the first call in an isolate about 12 ms more for Intl); a dedicated small calendar, as the walkthrough suggests, is the safe case
 
 #### worker/backup.js
 
