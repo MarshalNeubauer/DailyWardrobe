@@ -99,6 +99,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await p.evaluate(()=>!__rxs.length&&!document.querySelector('[data-rx]')),'after the reload Settings runs nothing (it did at every start: the stored copy came back each time)');
     // ---- the holiday list from outside: only dated, named holidays
     await p.selectOption('#cfg-country','US');await p.waitForFunction(()=>settings.holidays&&settings.holidays.country==='US'&&settings.holidays.fetched>0,null,{timeout:8000});
+    await p.waitForFunction(()=>document.querySelectorAll('#holiday-list .hrow').length===settings.holidays.list.length,null,{timeout:5000}).catch(()=>{});   // (drawn just after the list is saved)
     const h=await p.evaluate(()=>({list:settings.holidays.list.map(x=>x.d+' '+x.n),hits:__rxs.slice(),rows:document.querySelectorAll('#holiday-list .hrow').length}));
     ok(h.list.length&&h.list.every(x=>/^\d{4}-12-02 Good Day b$/.test(x))&&!h.hits.length&&h.rows===h.list.length,`a holiday list with a crafted date keeps only the good holidays, names cleaned (${h.list.join(' | ')})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
