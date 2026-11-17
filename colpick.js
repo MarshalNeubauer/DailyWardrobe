@@ -314,7 +314,7 @@ function colNewBack(){const nc=colPick&&colPick.newc;if(!nc)return;if(nc.from===
 /* the shade picked by hand: the square (saturation across, brightness down), the hue bar and the hex field, kept in step; while a finger
    moves only the thumbs, the swatches, the field and the drawn item change (cnLive, cnFigLive), and the sheet is drawn again when it lifts */
 /* the drawn item follows the finger and the hex being typed (the owner's ask, 2026-11-15): only the figure is redrawn, at most once a
-   frame (requestAnimationFrame); about 3-4 ms in Chromium at 4× CPU throttling, 1 ms in WebKit (tests/colpicklive.test.js) */
+   frame (requestAnimationFrame); about 3-4 ms in Chromium at 4× CPU throttling, 1 ms in WebKit (tests/colnew.test.js) */
 let cnFigRaf=0;
 function cnFigLive(){if(cnFigRaf)return;cnFigRaf=requestAnimationFrame(()=>{cnFigRaf=0;const nc=colPick&&colPick.newc,it=nc&&nc.kind==='colour'&&colTarget();
   const d=it&&document.querySelector('#col-sheet .cpph.cpfig .cpdraw');if(!d||d.dataset.hex===nc.hex)return;d.dataset.hex=nc.hex;d.innerHTML=cnDrawn(it,nc.hex,colPick.src==='s'?'primaryColor':colPick.k)})}

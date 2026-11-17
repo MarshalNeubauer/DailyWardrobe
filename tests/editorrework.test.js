@@ -12,7 +12,7 @@ module.exports=async({ok,chromium,engines,url,settle})=>{
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{await run(eng,browser,{ok,url,settle})}finally{await browser.close()}}
 };
-const SAT=59;   // an iPhone's status bar with the Dynamic Island, in CSS px (as tests/sheetswipe.test.js)
+const SAT=59;   // an iPhone's status bar with the Dynamic Island, in CSS px (as tests/wardrobetap.test.js)
 async function run(eng,browser,{ok,url,settle}){
   for(const [w,h] of [[390,844],[690,960],[1180,820]]){
     const T=`${eng} ${w}×${h}: `,H={'content-type':'application/json','access-control-allow-origin':'*'},phone=w===390;

@@ -1,3 +1,8 @@
+// Daily backups and rolling back to them.
+// Joined by feature from 3 files (Round B, 2026-11-17: the code review's CR-10-14); each part below is one old file, its checks unchanged.
+const path=require('path'),fs=require('fs'),vm=require('vm'),{pathToFileURL}=require('url');
+
+/* ---- was tests/rollback.test.js ---- */
 // Roll back, backups and their messages (2026-11-15, the new-user audit, fix round 4):
 // - a roll-back removes from memory the settings its copy lacks (core.js takeSettings), on this phone and the others, and they stay gone
 //   after the next change (they came back for good: the removal mark lost to the stale value in memory);
@@ -6,8 +11,7 @@
 // - open Settings is redrawn when a sync brings changes; offline backups say so in words; a code the server lost ends the invitation and a new
 //   invitation keeps the phone's wardrobe; the write ceiling and feedback limits in words; the item sheet's name saved when the page goes;
 //   a second phone's setup keeps the account's vest choice.
-const path=require('path'),fs=require('fs'),vm=require('vm'),{pathToFileURL}=require('url');
-module.exports=async({ok,chromium,url,ROOT})=>{
+const rollback=async({ok,chromium,url,ROOT})=>{
   /* ---- the rule, in Node ---- */
   const cx={console,localStorage:{getItem(){return null},setItem(){}},document:{querySelector(){return null}}};vm.createContext(cx);
   vm.runInContext(fs.readFileSync(path.join(ROOT,'merge.js'),'utf8')+fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={stampSettings,stampAllSettings,keySettings,takeSettings,setKeys}',cx);
@@ -138,3 +142,216 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(!errs.length,'no page errors: '+errs.join(' | '))}
   finally{await b2.close()}
 };
+
+/* ---- was tests/rollbackwhere.test.js ---- */
+// Roll back wherever it lands (2026-11-15, the re-audit's fix round 2, Fixer 4):
+// - a roll-back answered after Settings closed under its question says its result in a toast with Undo (it was written only to the closed
+//   Settings page: the wardrobe vanished from Today with no word); Undo rolls back to "Before the last roll-back";
+// - a first day's copy, from before the setup, brings back no settings: the setup doesn't start again, workdays and location stay;
+// - the daily backups list is read when Backup opens, not only when the dropdown is focused (an iPhone opens the picker at the tap);
+// - the list cap is said in words about the daily backups, not "photo list checks".
+const rollbackwhere=async({ok,chromium,url,ROOT})=>{
+  const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
+  const store=new Map(),meta=new Map();
+  const KV={get:async(k,t)=>store.has(k)?(t==='json'?JSON.parse(store.get(k)):store.get(k)):null,put:async(k,v,o)=>{store.set(k,v);meta.set(k,o&&o.metadata)},delete:async k=>{store.delete(k);meta.delete(k)},
+    list:async({prefix})=>({keys:[...store.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name,metadata:meta.get(name)})),list_complete:true})};
+  const env={APP_TOKEN:'secret',WARDROBE:KV},HOST='https://wardrobevision.test/';
+  // the account's backup as a new user's first open left it: the defaults, no setup, no items
+  store.set('wardrobe:v1',JSON.stringify({rev:1,saved:1,data:{items:[],days:[],tombstones:{},settings:{workdays:[1,2,3,4,5],blazerDays:[],updated:1}}}));
+  const browser=await chromium.launch();
+  try{let capList=false,lists=0;
+    const c=await browser.newContext({viewport:{width:390,height:844}});
+    await c.route(HOST+'**',async route=>{const r=route.request(),u=new URL(r.url());
+      if(u.searchParams.get('snaps')==='1'){lists++;if(capList)return route.fulfill({status:429,contentType:'application/json',body:JSON.stringify({error:'limit',what:'list',cap:30,used:30,message:'Today’s limit of 30 photo list checks is used up. It starts again at midnight UTC.'})})}
+      const res=await worker.fetch(new Request(r.url(),{method:r.method(),headers:r.headers(),body:['GET','HEAD'].includes(r.method())?undefined:r.postData()}),env);
+      await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
+    const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);
+    await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
+    await p.evaluate(()=>syncNow());
+    // the setup done, a location, three pieces, backed up: today's daily copy is the one from before
+    await p.evaluate(async()=>{if(typeof setupShown==='function'&&setupShown())setupClose();settings.setupDone=Date.now();settings.workdays=[0,1,2,3];settings.location={name:'Kuwait City',lat:29.37,lon:47.98};await saveUserSettings();
+      for(const [id,type,c] of [['r1','suit','navy'],['r2','shirt','white'],['r3','tie','burgundy']]){const it={id,type,primaryColor:c,pattern:'solid',added:Date.now()};await put(it);items.push(it)}});
+    await p.evaluate(()=>syncNow());
+    const day=await p.evaluate(()=>isoKey(new Date()));
+    ok(store.has('snap:'+day)&&!JSON.parse(store.get('snap:'+day)).data.settings.setupDone,'the day\'s copy is from before the setup');
+
+    // the list comes in as Backup opens, with no focus on the dropdown
+    lists=0;await p.evaluate(()=>openSettings('backup'));
+    await p.waitForFunction(()=>document.querySelectorAll('#snap-list option').length>1,null,{timeout:5000}).catch(()=>{});
+    const opts=await p.evaluate(()=>({v:[...document.querySelectorAll('#snap-list option')].map(o=>o.value),focus:document.activeElement===document.querySelector('#snap-list')}));
+    ok(opts.v.includes(day)&&!opts.focus&&lists===1,`opening Backup lists the daily backups without touching the dropdown (${JSON.stringify(opts)}, ${lists} list call)`);
+    await p.evaluate(()=>{toggleCat('backup');toggleCat('backup');document.querySelector('#snap-list').focus()});await p.waitForTimeout(300);
+    ok(lists===1,`opening it again or focusing the dropdown doesn't list again (${lists})`);
+
+    // Roll back, and Settings goes (Back) while its question is up; the question is then answered
+    const run=p.evaluate(d=>{$('#snap-list').value=d;window.__rb=rollBack();return true},day);await run;
+    await p.waitForSelector('#ask-ok',{state:'visible'});
+    await p.evaluate(()=>closeSettings());
+    await p.click('#ask-ok');await p.evaluate(()=>window.__rb);
+    const after=await p.evaluate(()=>({n:items.length,toast:$('#toast').textContent,on:$('#toast').classList.contains('on'),undo:!!$('#toast button'),open:settingsOpen(),
+      done:!!settings.setupDone,wd:settings.workdays.join(),loc:settings.location&&settings.location.name,setup:typeof setupShown==='function'&&setupShown()}));
+    ok(after.n===0&&after.on&&/^Rolled back\. The wardrobe has 0 items\./.test(after.toast)&&after.undo&&!after.open,`with Settings closed the result is a toast with Undo (${JSON.stringify(after)})`);
+    ok(after.done&&after.wd==='0,1,2,3'&&after.loc==='Kuwait City'&&!after.setup&&/settings were kept/.test(after.toast),`a copy from before the setup keeps the settings: no setup again, workdays and location stay (${JSON.stringify(after)})`);
+    const srv=JSON.parse(store.get('wardrobe:v1')).data;
+    ok(srv.items.length===0&&srv.settings.setupDone&&String(srv.settings.workdays)==='0,1,2,3','the server holds the same: no pieces, the settings as they were');
+
+    // the toast's Undo asks, then brings the pieces back from "Before the last roll-back"
+    await p.click('#toast button');await p.waitForSelector('#ask-ok',{state:'visible'});
+    const ask=await p.textContent('#ask-sheet');await p.click('#ask-ok');
+    await p.waitForFunction(()=>items.length===3&&/^Rolled back/.test($('#toast').textContent),null,{timeout:8000}).catch(()=>{});
+    const undo=await p.evaluate(()=>({n:items.length,toast:$('#toast').textContent,undo:!!$('#toast button')}));
+    ok(/Before the last roll-back/.test(ask)&&undo.n===3&&/^Rolled back\. The wardrobe has 3 items\./.test(undo.toast)&&!undo.undo,`Undo asks first, then the three pieces are back (${JSON.stringify(undo)})`);
+
+    // with Settings open the line says it and no toast covers it
+    await p.evaluate(()=>{toastDrop&&toastDrop();$('#toast').classList.remove('on');openSettings('backup')});
+    await p.waitForFunction(()=>!document.querySelector('#snap-list').dataset.loaded||document.querySelectorAll('#snap-list option').length>1);
+    await p.evaluate(()=>loadSnapshots());
+    const inS=await p.evaluate(async()=>{$('#snap-list').value='';await rollBack();return {st:$('#snap-status').textContent,on:$('#toast').classList.contains('on')}});
+    ok(inS.st==='Choose a day first.'&&!inS.on,`in open Settings the line answers and no toast (${JSON.stringify(inS)})`);
+    await p.evaluate(()=>closeSettings());
+
+    // the list cap in words about the daily backups
+    capList=true;
+    const cap=await p.evaluate(async()=>{delete $('#snap-list').dataset.loaded;openSettings('backup');await loadSnapshots();return $('#snap-status').textContent});
+    ok(/daily backups can’t be listed again today/.test(cap)&&!/photo list/.test(cap),`the list cap says what it means here ("${cap}")`);
+    // after a restart the setup still doesn't come back
+    await p.evaluate(()=>closeSettings());capList=false;
+    await p.reload();await p.waitForFunction(()=>window.appReady);await p.waitForTimeout(500);
+    ok(await p.evaluate(()=>!(typeof setupShown==='function'&&setupShown())&&!!settings.setupDone),'after a restart the setup stays done');
+    ok(!errs.length,'no page errors: '+errs.join(' | '));
+  }finally{await browser.close()}
+};
+
+/* ---- was tests/snapshots.test.js ---- */
+// Daily backups: before the first overwrite of each calendar day the worker keeps the backup as it was (snap:<day>, 30 days;
+// snap:<month>, a year), and the app can roll every device back to one of them, a roll-back that itself can be undone.
+const snapshots=async({ok,chromium,url,ROOT})=>{
+  const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
+  const store=new Map(),meta=new Map(),ttl=new Map();
+  const KV={get:async(k,t)=>store.has(k)?(t==='json'?JSON.parse(store.get(k)):store.get(k)):null,
+    put:async(k,v,o)=>{store.set(k,v);meta.set(k,o&&o.metadata);ttl.set(k,o&&o.expirationTtl)},delete:async k=>{store.delete(k)},
+    list:async({prefix})=>({keys:[...store.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name,metadata:meta.get(name)})),list_complete:true})};
+  const env={APP_TOKEN:'secret',WARDROBE:KV},HOST='https://wardrobevision.test/';
+  const call=(method,q='',body,tok='secret')=>worker.fetch(new Request(HOST+'sync'+q,{method,headers:{'x-app-token':tok,'content-type':'application/json'},body:body&&JSON.stringify(body)}),env);
+  const rev=()=>JSON.parse(store.get('wardrobe:v1')||'{"rev":0}').rev;
+  const put=(data,day,x={})=>call('PUT','',{baseRev:rev(),data,day,...x});
+  const st=n=>({items:[{id:'i'+n,type:'tie',primaryColor:'navy',added:n}],days:[],tombstones:{},settings:null});
+
+  // worker. A save's day is the app's when it is within a day of the server's (CR-6-08), so the two days here are the day before and
+  // today (today and tomorrow on the 1st: one month)
+  const iso=t=>new Date(t).toISOString().slice(0,10),T=iso(Date.now()),[D0,D1]=T.endsWith('-01')?[T,iso(Date.now()+864e5)]:[iso(Date.now()-864e5),T],M=D0.slice(0,7);
+  await put(st(1),D0);
+  ok(![...store.keys()].some(k=>k.startsWith('snap:')),'the very first backup has nothing older to keep');
+  const v1=store.get('wardrobe:v1');
+  await put(st(2),D0);
+  ok(store.get('snap:'+D0)===v1&&store.get('snap:'+M)===v1,'the first change of a day keeps the backup as it was, as that day and as that month');
+  ok(ttl.get('snap:'+D0)===30*86400&&ttl.get('snap:'+M)===400*86400,'daily copies last 30 days, monthly ones about a year');
+  await put(st(3),D0);
+  ok(store.get('snap:'+D0)===v1,'later changes the same day leave that day\'s copy alone');
+  await put(st(4),D1);
+  ok(store.get('snap:'+D1)!==v1&&JSON.parse(store.get('snap:'+D1)).data.items[0].id==='i3'&&store.get('snap:'+M)===v1,'the next day keeps the state it started with; the month keeps its first');
+  for(const k of ['snap:'+D0,'snap:'+M,'snap:'+D1])meta.set(k,{...meta.get(k),saved:1700000000000});   // all the same moment: the later date still comes first
+  const L=await (await call('GET','?snaps=1')).json();
+  ok(L.snaps.length===3&&L.snaps.every(s=>s.saved&&s.rev)&&L.snaps[0].id===D1,'GET ?snaps=1 lists the copies, newest first');
+  const g=await (await call('GET','?snap='+D0)).json();
+  ok(g.data.items[0].id==='i1','GET ?snap=<day> returns that copy');
+  ok((await call('GET','?snap=../wardrobe')).status===400&&(await call('GET','?snap=2025-01-01')).status===404&&(await call('GET','?snaps=1',undefined,'nope')).status===403,'bad ids, missing copies and a wrong token are refused');
+  const before=store.get('wardrobe:v1');await put(st(5),D1,{reason:'restore'});
+  ok(store.get('snap:before-restore')===before,'a roll-back first keeps the backup it replaces');
+  await put(st(6),'not-a-date');
+  ok([...store.keys()].some(k=>/^snap:\d{4}-\d{2}-\d{2}$/.test(k)),'a missing or bad day falls back to the worker\'s own date');
+  // a phone whose clock is days behind (or ahead): its copies go under the server's date, not a day of its own (CR-6-08: one behind kept
+  // snap:2020-01-01 and snap:2020-01, two writes for every date it sent)
+  {store.clear();meta.clear();ttl.clear();const far=iso(Date.now()-40*864e5);
+    await put(st(1),far);await put(st(2),far);await put(st(3),'2020-01-01');
+    const ids=[...store.keys()].filter(k=>k.startsWith('snap:')).sort();
+    ok(ids.join()===['snap:'+T.slice(0,7),'snap:'+T].join(),`a day more than one away from the server's is taken as the server's (${ids.join(', ')})`);}
+
+  // large backups: over 20 MB the photos are cut out unparsed and the rest is saved like any other (backup-storage.test.js); one whose
+  // photos can't be cut out is refused (CR-6-02: it was kept in parts as it came, past the record check and the write cap); a backup
+  // kept in parts before (KV holds 25 MiB a value) is still read, copied and replaced; over 48 MB is refused
+  store.clear();meta.clear();ttl.clear();
+  {const big=n=>({items:[{id:'big',type:'suit',primaryColor:'navy',added:1,photo:'data:image/jpeg;base64,'+'A'.repeat(n)}],days:[],tombstones:{},settings:null});
+    const raw=o=>worker.fetch(new Request(HOST+'sync',{method:'PUT',headers:{'x-app-token':'secret','content-type':'application/json'},body:typeof o==='string'?o:JSON.stringify(o)}),env);
+    const r1=await raw({baseRev:0,day:D0,data:big(30e6)});
+    ok(r1.status===413&&!store.size,`a 30 MB backup whose one photo is too large to cut out is refused, nothing stored (${r1.status})`);
+    const pad=raw({baseRev:0,day:D0,data:{items:[{id:'pad',type:'tie',notes:'x'.repeat(21*1024*1024),added:1}],days:[],tombstones:{}}});
+    ok((await pad).status===413&&!store.size,'so is one with no photos to cut out');
+    // a backup the worker kept in parts before 2026-11-17: the first part under the key, the rest under <key>~<rev>~<i>
+    const PM=20*1024*1024,keepParted=(rev,n)=>{const t=Buffer.from(JSON.stringify({rev,saved:1000+rev,data:big(n)}));const parts=Math.ceil(t.length/PM);
+      for(let i=1;i<parts;i++)store.set(`wardrobe:v1~${rev}~${i}`,new Uint8Array(t.subarray(i*PM,(i+1)*PM)).buffer);store.set('wardrobe:v1',new Uint8Array(t.subarray(0,PM)).buffer);meta.set('wardrobe:v1',{rev,saved:1000+rev,parts});return parts};
+    ok(keepParted(2,46e6)===3,'(a 46 MB backup kept in three parts)');
+    const KVp={...KV,get:async(k,t)=>{const v=store.get(k);if(v instanceof ArrayBuffer&&t!=='arrayBuffer'){const s=Buffer.from(v).toString();return t==='json'?JSON.parse(s):s}return KV.get(k,t)}};env.WARDROBE=KVp;
+    let back=await (await call('GET')).json();
+    ok(back.rev===2&&back.saved===1002&&back.data.items[0].photo.length===46e6+23,'it comes back whole');
+    const c=await raw({baseRev:0,day:D1,data:st(8)});const cj=await c.json();
+    ok(c.status===409&&cj.error==='conflict'&&cj.rev===2&&cj.data.items[0].photo.length===46e6+23,'a conflict hands back the stored parted backup to merge with');
+    back=await (await call('GET','?v=2:1002')).json();
+    ok(back.same===true,'an unchanged parted backup costs one tiny request');
+    ok((await raw({baseRev:2,day:D1,data:big(51e6)})).status===413,'over 48 MB is refused');
+    const old=await raw(JSON.stringify({baseRev:2,data:big(25e6),day:D1}));
+    ok(old.status===413&&/update the app/.test((await old.json()).error),'a large backup from an app that sends its data first is asked to update');
+    const r3=await call('PUT','',{baseRev:2,data:st(9),day:D1});
+    ok(r3.status===200&&typeof store.get('wardrobe:v1')==='string'&&!meta.get('wardrobe:v1').parts&&![...store.keys()].some(k=>k.startsWith('wardrobe:v1~')),'a small backup after a parted one is one value again, and the parts are gone');
+    ok(meta.get('snap:'+D1).parts===3&&store.has(`snap:${D1}~2~2`)&&ttl.get(`snap:${D1}~2~1`)===30*86400,'the daily copy of the parted backup keeps its parts, for 30 days');
+    const s=await (await call('GET','?snap='+D1)).json();
+    ok(s.rev===2&&s.data.items[0].photo.length===46e6+23,'and the copy comes back whole');
+    const L2=await (await call('GET','?snaps=1')).json();
+    ok(L2.snaps.length&&L2.snaps.every(x=>!x.id.includes('~')),'parts are not listed as backups');
+    ok((await (await call('GET')).json()).data.items[0].id==='i9','and the new backup reads back');
+    env.WARDROBE=KV;}
+
+  // app: two devices; device A gets damaged, rolls back; device B follows
+  store.clear();meta.clear();ttl.clear();
+  const browser=await chromium.launch();
+  const device=async()=>{const ctx=await browser.newContext();
+    await ctx.route(HOST+'**',async route=>{const r=route.request();
+      const res=await worker.fetch(new Request(r.url(),{method:r.method(),headers:r.headers(),body:['GET','HEAD'].includes(r.method())?undefined:r.postData()}),env);
+      await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
+    const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
+    await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
+    await p.reload();await p.waitForFunction(()=>window.appReady);return {p,errs}};
+  const A=await device(),B=await device();
+  const sig=p=>p.evaluate(()=>items.map(i=>i.id+':'+i.primaryColor).sort().join(','));
+  // a device's background syncs finished first (tests/sync.test.js's quiet/hush): a sync that brought changes redraws Today, which
+  // records the day and locks the week and schedules another backup; one landing after the roll-back sent the damaged copy's settings
+  // up again (the flaky "roll back restores …" and "the other device follows …")
+  const quiet=p=>p.evaluate(async()=>{let last='',same=0;const end=Date.now()+6000;
+    while(Date.now()<end){await recordRun;const s=stateSig(await localState());same=!syncing&&s===last?same+1:0;last=s;if(same>=3)return true;await new Promise(r=>setTimeout(r,120))}return false});
+  const hush=async(...ps)=>{for(const p of ps){await quiet(p);await p.evaluate(()=>clearTimeout(syncTimer))}};
+  const why=async()=>` [A ${await sig(A.p)}; good ${good}; A's workdays ${JSON.stringify(await A.p.evaluate(()=>settings.workdays))}; B ${await sig(B.p)}]`;
+  await A.p.evaluate(async()=>{for(const [id,c] of [['t1','navy'],['t2','burgundy'],['t3','green']]){const it={id,type:'tie',primaryColor:c,pattern:'solid',added:Date.now()};await put(it);items.push(it)}
+    const s={...settings,workdays:[1,2,3,4,5],updated:Date.now()};settings=s;await metaPut('settings',s);await syncNow()});
+  await B.p.evaluate(()=>syncNow());
+  const good=await sig(A.p);
+  // pretend yesterday's copy was this good state, then a bad change: one tie deleted, one recoloured, junk added, settings broken
+  store.set('snap:2026-11-09',store.get('wardrobe:v1'));meta.set('snap:2026-11-09',meta.get('wardrobe:v1'));
+  await A.p.evaluate(async()=>{const t=Date.now()+5;await del('t1');const tomb={...(await metaGet('tombstones')||{}),t1:t};await metaPut('tombstones',tomb);
+    const b={...items.find(i=>i.id==='t2'),primaryColor:'pink',updated:t};await put(b);const j={id:'junk',type:'tie',primaryColor:'red',pattern:'solid',added:t};await put(j);
+    items=await tx('readonly',s=>s.getAll());const s={...settings,workdays:[],updated:t};settings=s;await metaPut('settings',s);await syncNow()});
+  await B.p.evaluate(()=>syncNow());
+  ok(await sig(B.p)!==good&&(await sig(B.p)).includes('junk'),'(the damage reached the backup and the other device)');
+  // roll back from Settings
+  await A.p.evaluate(()=>openSettings&&openSettings());
+  await A.p.evaluate(()=>loadSnapshots());
+  const opts=await A.p.evaluate(()=>[...document.querySelectorAll('#snap-list option')].map(o=>o.value).filter(Boolean));
+  ok(opts.includes('2026-11-09'),`Settings lists the daily backups (${opts.join(', ')})`);
+  await hush(A.p,B.p);
+  await A.p.evaluate(async()=>{$('#snap-list').value='2026-11-09';const r=rollBack();$('#ask-ok').click();await r});   // the app's own question: answered yes
+  const a=await A.p.evaluate(()=>({st:$('#snap-status').textContent,wd:settings.workdays.length}));
+  const back=await sig(A.p)===good&&a.wd===5;
+  ok(back,`roll back restores the deleted tie, the old colour, drops the junk and the settings (${a.st})`+(back?'':await why()));
+  await hush(A.p,B.p);
+  await B.p.evaluate(()=>syncNow());
+  const follows=await sig(B.p)===good&&await B.p.evaluate(()=>settings.workdays.length===5);
+  ok(follows,'the other device follows the roll-back on its next sync'+(follows?'':await why()));
+  ok(store.has('snap:before-restore')&&JSON.parse(store.get('snap:before-restore')).data.items.some(i=>i.id==='junk'),'the damaged state is kept as "before the last roll-back", so the roll-back can be undone');
+  // and undo it
+  await A.p.evaluate(async()=>{delete $('#snap-list').dataset.loaded;await loadSnapshots();$('#snap-list').value='before-restore';const r=rollBack();$('#ask-ok').click();await r});
+  ok((await sig(A.p)).includes('junk'),'rolling back to "before the last roll-back" undoes it');
+  ok(A.errs.length===0&&B.errs.length===0,'no page errors ('+[...A.errs,...B.errs].join('; ')+')');
+  await browser.close();
+};
+
+// the parts run one after another; one that throws is reported and the rest still run (each was its own file)
+module.exports=async t=>{for(const [name,part] of [['rollback',rollback],['rollbackwhere',rollbackwhere],['snapshots',snapshots]]){try{await part(t)}catch(e){t.ok(false,`threw (${name}): ${e.message}`)}}};

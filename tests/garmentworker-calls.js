@@ -1,5 +1,5 @@
 // What an app that sends no `types` (an older app) gets from the tagger: the requests the worker sends to Claude and to Workers AI for
-// the plain single tag, the picker's two calls, /tag-many and the fallback, recorded with stubs (nothing paid). tests/garmentworker.test.js
+// the plain single tag, the picker's two calls, /tag-many and the fallback, recorded with stubs (nothing paid). tests/tagger.test.js
 // compares them with tests/fixtures/garmentworker-old.json, recorded from main before the new garments (2026-11-16); run this file with
 // `node tests/garmentworker-calls.js --write` only to record a deliberate change to what an older app is sent.
 const path = require('path'), fs = require('fs'), { pathToFileURL } = require('url');

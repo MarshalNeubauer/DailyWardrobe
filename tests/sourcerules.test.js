@@ -1,5 +1,5 @@
 // Rules read from the app's sources as text, in Node, with no browser (CR-10-07, 2026-11-17): moved here from about.test.js (the
-// localStorage keys named directly), invitefix.test.js (the keys named through a constant) and ui.test.js (no browser dialogs; ui.js
+// localStorage keys named directly), invite.test.js (the keys named through a constant) and ui.test.js (no browser dialogs; ui.js
 // loaded and kept). Reading a file as text puts it in the impact map whole, so those three page tests (11-15 s each) ran for every
 // change to any script; this file takes about a second. about.js's own rule (ABOUT_KEYS, ABOUT_KEY_PREFIXES, aboutOwnKey) is taken
 // from its source and run here as it is written, not copied.
@@ -22,7 +22,7 @@ module.exports=async({ok,ROOT})=>{
     ok(keys.size>10&&miss.length===0,'every localStorage key named in the app’s scripts is in ABOUT_KEYS / ABOUT_KEY_PREFIXES (missing: '+miss.join(', ')+')');
     ok(aboutOwnKey('render_queue')&&aboutOwnKey('nav_fit2:1x1')&&aboutOwnKey('nav_fit:1x1')&&!aboutOwnKey('someone_elses_key'),'the photo queue and the per-screen keys too, and nothing else')}
 
-  /* every localStorage key the app uses through a constant is one Delete removes (from invitefix.test.js) */
+  /* every localStorage key the app uses through a constant is one Delete removes (from invite.test.js) */
   {const keys=new Set();
     for(const f of scripts){const s=src(f),consts={};
       for(const m of s.matchAll(/const ([A-Z_]+)\s*=\s*'([a-z_0-9]+)'/g))consts[m[1]]=m[2];

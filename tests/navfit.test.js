@@ -1,6 +1,10 @@
+// The tab bar: fit and the compact bar.
+// Joined by feature from 2 files (Round B, 2026-11-17: the code review's CR-10-14); each part below is one old file, its checks unchanged.
+
+/* ---- was tests/navfit.test.js ---- */
 // Today: the tab bar grows upward until its top is one design gap (12px) below the below-the-waist tiles, so nothing peeks out
 // between them; at most 64px more, and unchanged when the tiles already reach it (a short screen).
-module.exports=async({ok,chromium,url,settle})=>{
+const navfit=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();
   try{
     const run=async(w,h)=>{const ctx=await browser.newContext({viewport:{width:w,height:h},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -60,3 +64,26 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(!d.errs.length&&!a.errs.length&&!s.errs.length&&!t.errs.length,'no page errors');
   }finally{await browser.close()}
 };
+
+/* ---- was tests/navbar.test.js ---- */
+// The bottom tab bar is compact (44px buttons, a tap target's size, reaching into the home-indicator zone) so Today's picture and the tiles under it
+// fit on one screen; page content still clears it.
+const navbar=async({ok,chromium,url,devices,WARDROBES})=>{
+  const browser=await chromium.launch();const ctx=await browser.newContext({...devices['iPhone 13']});const p=await ctx.newPage();
+  const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(url);await p.waitForFunction(()=>window.appReady);
+  await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')})()`);
+  const r=await p.evaluate(()=>{const n=document.querySelector('body>nav'),b=n.querySelector('button'),cs=getComputedStyle(document.documentElement);
+    scrollTo(0,document.documentElement.scrollHeight);const last=[...document.querySelectorAll('#today > *')].filter(e=>e.offsetHeight).pop();
+    return {nav:n.getBoundingClientRect().height,btn:b.getBoundingClientRect().height,pad:cs.getPropertyValue('--navpad'),
+      clear:innerHeight-n.getBoundingClientRect().height-last.getBoundingClientRect().bottom}});
+  ok(r.nav<=46,`the tab bar is compact (${r.nav}px without a home indicator; it was 55px, then 39)`);
+  ok(r.btn>=44,`its buttons are a full tap target's height (${r.btn}px)`);
+  ok(/max\(0px,\s*calc\(.*-\s*18px\)\)/.test(r.pad),'with a home indicator it keeps only part of the inset clear below it');
+  ok(r.clear>=8,`scrolled to the bottom, Today's last card clears the bar (${Math.round(r.clear)}px)`);
+  ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
+  await browser.close();
+};
+
+// the parts run one after another; one that throws is reported and the rest still run (each was its own file)
+module.exports=async t=>{for(const [name,part] of [['navfit',navfit],['navbar',navbar]]){try{await part(t)}catch(e){t.ok(false,`threw (${name}): ${e.message}`)}}};

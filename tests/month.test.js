@@ -1,7 +1,11 @@
+// The month view: swiping and unfolding.
+// Joined by feature from 3 files (Round B, 2026-11-17: the code review's CR-10-14); each part below is one old file, its checks unchanged.
+const path=require('path'),{pathToFileURL}=require('url');
+
+/* ---- was tests/month.test.js ---- */
 // Month view (wear plan): calendar of fabric stacks with worn/today/planned/rest states, a Today/Tomorrow card,
 // opened from the box on Today; photo caption shows when the look was last worn; Settings can generate the month's photos.
-const path=require('path'),{pathToFileURL}=require('url');
-module.exports=async({ok,chromium,url,ROOT,settle})=>{
+const month=async({ok,chromium,url,ROOT,settle})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
   const JPG='/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
   const realFetch=globalThis.fetch;let calls=0;
@@ -41,7 +45,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(m.todayCell==='9'&&m.worn===6&&m.planned===16,`today is outlined, earlier workdays read as worn (${m.worn}), later ones planned (${m.planned})`);
     ok(m.sun===3&&m.thu===4,'suit days show jacket, shirt and tie; blazer days add the trousers');
     ok(/Monday, November 9: /.test(m.label)&&!m.legend,`labelled days, and no legend: the cells show worn, today, planned and rest themselves (${m.label})`);
-    // no arrows: a drag inside the box (a mouse here; touch in tests/monthswipe.test.js) changes the month
+    // no arrows: a drag inside the box (a mouse here; touch in tests/month.test.js) changes the month
     const drag=async(dx)=>{const b=await p.evaluate(()=>{const r=document.querySelector('#mbox .mgrid:not(.mdow)').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}});
       await p.mouse.move(b.x,b.y);await p.mouse.down();for(let k=1;k<=6;k++)await p.mouse.move(b.x+dx*k/6,b.y+2);await p.mouse.up();await settle(p,500)};
     ok(await p.evaluate(()=>!document.querySelector('#mbox .mbtns')),'the month has no arrow buttons');
@@ -81,3 +85,117 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };
+
+/* ---- was tests/monthswipe.test.js ---- */
+// The open month on Today: no arrows, the title centred; a sideways swipe inside the box moves between months (the shown day
+// stays, nothing else folds), a short one springs back; a swipe outside it still changes the day; a full-width fold bar folds it.
+const monthswipe=async({ok,chromium,url,settle})=>{
+  const browser=await chromium.launch();
+  try{
+    const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
+      items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-12-10T12:00:00';cache={};sel=new Date(2026,11,10);view={y:2026,m:11};show('today');toggleScore();toggleMonth()});
+    await settle(p,700);
+    const cdp=await ctx.newCDPSession(p);const T=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
+    const title=()=>p.evaluate(()=>document.querySelector('#mbox .mhead h3').textContent);
+    const at=async()=>{await p.evaluate(()=>{const r=document.querySelector('#mbox .mgrid:not(.mdow)').getBoundingClientRect();scrollBy(0,r.top+r.height/2-420)});await settle(p,200);
+      return p.evaluate(()=>{const r=document.querySelector('#mbox .mgrid:not(.mdow)').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})};
+    // (pace: ms between moves. A short drag made fast is a flick, which turns the month by design (monthRelease: over 30 px at more than
+    // 0.5 px/ms); on a quiet machine WebKit's touches ran 40 px in under 80 ms, so "a short drag" turned the month. It is held at a
+    // drag's pace)
+    const swipe=async(x,y,dx,mid,pace=0)=>{await T('touchStart',x,y);let m=null;for(let k=1;k<=8;k++){if(pace)await p.waitForTimeout(pace);await T('touchMove',x+dx*k/8,y+2);if(k===5&&mid)m=await mid()}await T('touchEnd');await settle(p,500);return m};
+    const h=await p.evaluate(()=>{const hd=document.querySelector('#mbox .mhead'),t=hd.querySelector('h3').getBoundingClientRect(),b=document.querySelector('#mbox').getBoundingClientRect();
+      return {arrows:document.querySelectorAll('#mbox .mbtns, #mbox .mhead button').length,centre:Math.abs((t.left+t.right)/2-(b.left+b.right)/2),hint:!!document.querySelector('#mbox .mhint'),legend:!!document.querySelector('#mbox .mlegend'),
+        gap:Math.round(document.querySelector('#mbox .mdow').getBoundingClientRect().top-t.bottom),
+        bar:Math.round(document.querySelector('#mbox .foldbar').getBoundingClientRect().top-Math.max(...[...document.querySelectorAll('#mbox .mc')].map(c=>c.getBoundingClientRect().bottom)))}});
+    ok(h.arrows===0&&h.centre<=2&&!h.hint&&!h.legend,`no arrows, swipe tip or legend; the month and year are centred (${h.centre.toFixed(1)}px off)`);
+    ok(h.gap<=8&&h.bar<=14,`the weekdays sit close under the title (${h.gap}px) and the Fold away bar right under the days (${h.bar}px)`);
+    const day0=await p.evaluate(()=>key(sel)),c=await at();
+    const mid=await swipe(c.x+60,c.y,-200,()=>p.evaluate(()=>document.querySelector('#mswipe').style.transform));
+    ok(/translateX\(-/.test(mid||''),`the month follows the finger (${mid})`);
+    ok(await title()==='January 2027'&&await p.evaluate(d=>key(sel)===d&&monthOpen&&scoreOpen,day0),'a swipe left inside the box shows the next month; the day and the other open boxes stay');
+    const c2=await at();await swipe(c2.x-60,c2.y,200);await swipe(c2.x-60,c2.y,200);
+    ok(await title()==='November 2026','swiping right goes back a month at a time');
+    const c3=await at();await swipe(c3.x,c3.y,-40,null,30);
+    ok(await title()==='November 2026'&&await p.evaluate(()=>{const s=document.querySelector('#mswipe').style.transform;return !s||s==='translateX(0px)'}),'a short drag springs back');
+    // a swipe on the outfit (outside the month) still changes the day
+    await p.evaluate(()=>scrollTo(0,0));await settle(p,200);
+    const st=await p.evaluate(()=>{const b=document.querySelector('#stage').getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+Math.min(b.height/2,300)}});
+    await swipe(st.x+80,st.y,-200);
+    ok(await p.evaluate(d=>key(sel)!==d&&!monthOpen,day0),'a swipe on the outfit still changes the day (and folds the month)');
+    // the fold bar
+    await p.evaluate(()=>{toggleMonth()});await settle(p,700);
+    await p.evaluate(()=>{const b=document.querySelector('#mbox .foldbar');b.scrollIntoView({block:'center'})});await settle(p,300);
+    await p.tap('#mbox .foldbar');await settle(p,800);
+    ok(await p.evaluate(()=>!monthOpen&&!document.querySelector('#mbox').classList.contains('open')),'tapping the Fold away bar folds the month');
+    ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
+    await ctx.close();
+  }finally{await browser.close()}
+};
+
+/* ---- was tests/monthunfold.test.js ---- */
+// The month box unfolds and folds without animating its height (app.js monthUnfold / monthFold): the page is laid out once and a clip,
+// a slide and a fade do the moving. An animated height laid the page out on every frame (30 layouts for one unfold), which was choppy
+// on a phone. The days are put into the folded box while the app is idle (monthFillSoon), and the folded box takes no taps or focus.
+const monthunfold=async({ok,chromium,url,settle})=>{
+  const browser=await chromium.launch();
+  try{
+    const ctx=await browser.newContext({viewport:{width:390,height:844}});
+    const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
+      items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tie','green'),
+        I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
+    // folded: the days are put in while idle, and can't be tapped or reached with the keyboard
+    await p.waitForFunction(()=>{const el=$('#mpanel-in');return el&&el.querySelectorAll('.mc[data-k]').length>=28},null,{timeout:5000});
+    const folded=await p.evaluate(()=>({inert:$('#mpanel-in').inert,open:$('#mbox').classList.contains('open'),h:$('#mpanel').offsetHeight}));
+    ok(folded.inert&&!folded.open&&folded.h===0,'the folded month box already holds the days (put in while idle), with no height, and takes no taps or focus');
+    // unfolding: the page is laid out a few times, not on every frame; a clip, a slide and a fade move
+    let cdp=null;try{cdp=await ctx.newCDPSession(p);await cdp.send('Performance.enable')}catch{cdp=null}   // the layout count is Chromium's (CDP); on WebKit (npm run test:webkit) it isn't counted
+    const lay=async()=>cdp?(await cdp.send('Performance.getMetrics')).metrics.find(m=>m.name==='LayoutCount').value:0;
+    const laid=n=>cdp?`${n} times`:'(not counted on WebKit)';
+    const l0=await lay();
+    const during=await p.evaluate(()=>{const a0=performance.now();document.querySelector('#mbox .month-link').click();const tap=performance.now()-a0;
+      const an=document.getAnimations().map(a=>(a.effect.target.closest('.fedge')?'edge ':'')+Object.keys(a.effect.getKeyframes()[0]).filter(k=>!['offset','easing','composite','computedOffset'].includes(k)).join('+'));
+      return {tap,an,drop:getComputedStyle(document.querySelector('#mbox .mc:not(.blank)')).animationName,cells:document.querySelectorAll('#mbox .mc').length,inert:$('#mpanel-in').inert,heightAnim:getComputedStyle($('#mpanel')).transitionDuration}});
+    await settle(p,700);await p.waitForFunction(()=>!document.getAnimations().length,null,{timeout:3000});
+    const layouts=await lay()-l0;
+    const opened=await p.evaluate(()=>{const b=$('#mbox').getBoundingClientRect(),nav=document.querySelector('body>nav').getBoundingClientRect();return {open:monthOpen&&$('#mbox').classList.contains('open'),inert:$('#mpanel-in').inert,clip:getComputedStyle($('#mbox')).clipPath,edge:!!document.querySelector('.fedge')||$('#mbox').classList.contains('fedge-on'),fold:$('#mbox .foldbar').getBoundingClientRect().bottom<=nav.top+1,top:b.top>=0}});
+    // the card's edge is a strip that slides (app.js foldEdge), not a clip-path: Safari repaints a clip every frame on the page's thread
+    // while it slides the cards below on its own, and the two drifted apart
+    ok(during.an.includes('edge transform')&&!during.an.some(x=>/clipPath/.test(x))&&during.an.includes('opacity')&&during.heightAnim==='0s'&&!during.inert,`unfolding is the card's edge sliding down (no clip-path) and a fade of the days, the height is not animated (${[...new Set(during.an)].join(', ')})`);
+    const drop=await p.evaluate(async()=>{await new Promise(r=>setTimeout(r,1100));const gone=!$('#mbox').classList.contains('mdrop');monthStep(1);const again=getComputedStyle(document.querySelector('#mbox .mc:not(.blank)')).animationName;monthStep(-1);return {gone,again}});
+    ok(during.drop==='mcDrop'&&drop.gone&&drop.again==='none',`the days drop in only while the box unfolds: not again on a month swiped to (${during.drop}, then ${drop.again})`);
+    ok(layouts<=8,`unfolding lays the page out ${laid(layouts)} (it was about 30, once a frame)`);
+    ok(opened.open&&!opened.inert&&opened.clip==='none'&&!opened.edge&&opened.fold&&opened.top,'unfolded: the whole month shows, scrolled so "Fold away" is above the tab bar, with no clip or edge strip left');
+    // what lies under the box slides with it: the Reset card on a changed day
+    await p.evaluate(async()=>{toggleMonth();await new Promise(r=>setTimeout(r,600));const o=planFor()[key(sel)];await saveDay({...(dayRecs[key(sel)]||{date:key(sel)}),force:{tie:items.find(i=>i.type==='tie'&&i.id!==o.tie.id).id}});cache={};renderToday();scrollTo(0,0)});
+    const slide=await p.evaluate(()=>{const r=$('#rbox');if(!r)return null;const y0=r.getBoundingClientRect().top;toggleMonth();const a=r.getAnimations()[0];const y1=r.getBoundingClientRect().top;
+      return {anim:!!a&&/translateY\(-\d/.test(a.effect.getKeyframes()[0].transform),still:Math.abs(y1-y0)<2}});
+    ok(slide&&slide.anim&&slide.still,'the Reset card under the box starts where it was and slides down with the unfolding');
+    await p.waitForFunction(()=>!document.getAnimations().length,null,{timeout:3000});
+    // folding: the days fade and the clip closes, then the box is laid out shut; the page doesn't jump at the end
+    await p.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await settle(p,300);
+    const fold=await p.evaluate(()=>new Promise(res=>{const tops=[];document.querySelector('#mbox .foldbar').click();const cs=[...document.querySelectorAll('#mbox .mc:not(.blank)')],first=getComputedStyle(cs[0]),last=getComputedStyle(cs[cs.length-1]),clipA=document.getAnimations().find(a=>a.effect.target.closest('#mbox .fedge'));
+      const lift={name:first.animationName,ease:first.animationTimingFunction,d0:parseFloat(first.animationDelay),dn:parseFloat(last.animationDelay),clipDelay:clipA?clipA.effect.getTiming().delay:-1};const an=document.getAnimations().length,chev=$('#mbox').classList.contains('mshut')&&getComputedStyle($('#mbox .chev')).transitionProperty;
+      const f=()=>{tops.push(Math.round($('#mbox').getBoundingClientRect().top));if(document.getAnimations().length||tops.length<5)requestAnimationFrame(f);else res({lift,an,chev,tops,open:$('#mbox').classList.contains('open'),inert:$('#mpanel-in').inert,h:$('#mpanel').offsetHeight,over:scrollY-(document.documentElement.scrollHeight-innerHeight)})};requestAnimationFrame(f)}));
+    ok(fold.lift.name==='mcLift'&&/cubic-bezier\(0\.36, 0, 0\.66, -0\.56\)/.test(fold.lift.ease)&&fold.lift.dn===0&&fold.lift.d0>0.15&&fold.lift.clipDelay>100,`folding plays the drop backwards: the last day lifts out first, the first last (${Math.round(fold.lift.d0*1000)} ms later), each with a little dip, and the card closes after them (from ${Math.round(fold.lift.clipDelay)} ms)`);
+    let jump=0;for(let i=1;i<fold.tops.length;i++)jump=Math.max(jump,Math.abs(fold.tops[i]-fold.tops[i-1]));
+    ok(fold.an>=2&&!!fold.chev&&!fold.open&&fold.inert&&fold.h===0&&fold.over<=1,`folding: the arrow turns back at once, the clip closes and the box ends shut, inert, with nothing scrolled past the page's end ${JSON.stringify({...fold,tops:fold.tops.length})}`);
+    // a jump is one frame covering most of the way; an ease-out starts fast (WebKit's frames come further apart than Chromium's)
+    const way=Math.abs(fold.tops[fold.tops.length-1]-fold.tops[0]),moving=fold.tops.filter((v,i)=>i&&Math.abs(v-fold.tops[i-1])>2).length;
+    ok(way<4||(jump<=way*.4&&moving>=6),`folding from the bottom of the page moves the box smoothly over ${moving} frames, no jump (largest step ${jump} of ${way}px: ${fold.tops.join(" ")})`);
+    // reduced motion: no animation, it just opens and shuts
+    await p.emulateMedia({reducedMotion:'reduce'});
+    const rm=await p.evaluate(()=>{toggleMonth();const own=()=>document.getAnimations().filter(x=>!(x instanceof CSSTransition)&&!(x instanceof CSSAnimation)).length,a=own(),o=$('#mbox').classList.contains('open');toggleMonth();return {a,o,b:own(),shut:!$('#mbox').classList.contains('open')}});
+    ok(rm.a===0&&rm.o&&rm.b===0&&rm.shut,'with reduced motion the month opens and shuts at once '+JSON.stringify(rm));
+    ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
+    await ctx.close();
+  }finally{await browser.close()}
+};
+
+// the parts run one after another; one that throws is reported and the rest still run (each was its own file)
+module.exports=async t=>{for(const [name,part] of [['month',month],['monthswipe',monthswipe],['monthunfold',monthunfold]]){try{await part(t)}catch(e){t.ok(false,`threw (${name}): ${e.message}`)}}};
