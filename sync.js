@@ -38,7 +38,9 @@ async function applyMerged(local,incoming){const m=mergeState(local,incoming);
   const haveDays=Object.fromEntries(local.days.map(d=>[d.date,d]));
   for(const d of m.days)if(!haveDays[d.date]||(haveDays[d.date].updated||0)!==(d.updated||0)){
     await atomic('days',d.date,cur=>{const w=cur?mergeDay(cur,d):d;return w===cur?null:{put:w}})}
-  if(m.settings){const cs=await metaGet('settings');if(!cs||(cs.updated||0)<=(m.settings.updated||0))await metaPut('settings',m.settings)}
+  // settings as the merge of the stored copy with the incoming one, setting by setting (core.js mergeSettings; the rest of CR-5-09, Round C:
+  // decided by stamps alone, a setting changed here during the sync kept the stored copy whole and the other phone's setting was not written)
+  if(m.settings)await atomic('meta','settings',r=>{const cur=r&&r.v,w=cur?mergeSettings(cur,m.settings):m.settings;return w===cur?null:{put:{k:'settings',v:w}}});
   const now=await localState();
   if(stateSig(now)!==stateSig(local)){const open=typeof editing!=='undefined'&&editing&&items.find(i=>i.id===editing);
     setWardrobe({items:now.items});planDirty();if(window.onSyncedData)onSyncedData(now);syncRedraw(['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden));syncSettingsRedraw();
@@ -150,7 +152,8 @@ const TOO_BIG_SYNC='Not backed up: an item’s photos are too large for the serv
 /* when this phone first synced with this account (sync_join: the code's last 6 characters and the time; set by syncOnce before its first
    request, so nothing changed before it counts as made in the account; kit.js kitShareFilter is handed it) */
 function syncJoinAt(){try{const j=JSON.parse(localStorage.getItem('sync_join')||'null'),t=localStorage.getItem('app_token')||'';return j&&t&&j.k===t.slice(-6)?+j.at||0:0}catch{return 0}}
-function syncJoinMark(token){try{if(!syncJoinAt()&&token)localStorage.setItem('sync_join',JSON.stringify({k:token.slice(-6),at:syncMark()?1:Date.now()}))}catch{}}   // (a phone that synced with this server before this version: in the account all along)
+/* (by the corrected clock, core.js nowMs: kit.js compares it with days' stamps, which use it; CR-5-15) */
+function syncJoinMark(token){try{if(!syncJoinAt()&&token)localStorage.setItem('sync_join',JSON.stringify({k:token.slice(-6),at:syncMark()?1:nowMs()}))}catch{}}   // (a phone that synced with this server before this version: in the account all along)
 /* one round of the small sync, after GET ?lite=1 answered remote: true/false as syncOnce, or {again:{since, all, legacy}} */
 async function syncLite(remote,local,url,token,inline){
   const raw=await phIn({items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token),got=cleanState(raw);   // (core.js cleanState: records from outside)
@@ -259,8 +262,9 @@ async function syncOnce(){
    minutes after the first change still waiting (TESTER_SYNC_MS), so every tap doesn't upload the whole wardrobe (several MB). */
 const TESTER_SYNC_MS=15*60000;
 /* sync_wait: a change made here that no backup has taken yet (cleared by synced); the Backup summary says so (settings.js backupSummary) */
-function scheduleSync(){clearTimeout(syncTimer);try{if(!localStorage.getItem('sync_wait'))localStorage.setItem('sync_wait',Date.now())}catch{}
-  if(typeof isTester==='function'&&isTester()){if(!syncDue)syncDue=Date.now();syncTimer=setTimeout(syncNow,Math.max(1000,syncDue+TESTER_SYNC_MS-Date.now()));return}
+/* sync_wait and syncDue by the corrected clock (core.js nowMs), as last_sync and the pause (CR-5-15) */
+function scheduleSync(){clearTimeout(syncTimer);try{if(!localStorage.getItem('sync_wait'))localStorage.setItem('sync_wait',nowMs())}catch{}
+  if(typeof isTester==='function'&&isTester()){if(!syncDue)syncDue=nowMs();syncTimer=setTimeout(syncNow,Math.max(1000,syncDue+TESTER_SYNC_MS-nowMs()));return}
   syncTimer=setTimeout(syncNow,2500)}
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&syncDue)syncNow();   // a tester's waiting changes, as the app closes
