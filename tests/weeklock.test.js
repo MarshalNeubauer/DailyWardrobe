@@ -28,7 +28,9 @@ const weeklock=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(L.same&&!L.coat,'a lock holds the pieces the plan showed, without the coat');
     // a different tie today: the locked days stay, later days may move
     const before=await p.evaluate(()=>snap());
-    await p.evaluate(()=>{const o=planFor()[key(sel)],t=items.find(i=>i.type==='tie'&&i.id!==o.tie.id&&pcol(i)!==pcol(o.tie));return pickItem('tie',t.id)});await settle(p,300);await locked();
+    // (a tie not locked on another day of the week: one that is lets go of that day's lock, unlockClash in history.js; with the look in the
+    // plan, PLAN_RULES 26, the first tie of another color was Thursday's, which moved Tuesday and Thursday)
+    await p.evaluate(()=>{const o=planFor()[key(sel)],t=items.find(i=>i.type==='tie'&&i.id!==o.tie.id&&pcol(i)!==pcol(o.tie)&&!Object.values(dayRecs).some(r=>r.lock&&r.lock.tie===i.id));return pickItem('tie',t.id)});await settle(p,300);await locked();
     const a1=await p.evaluate(`(b=>{const n=snap(),d=diff(b,n);return {d,inLock:d.filter(k=>keyDate(k)<${AFTER}),today:n['2026-11-9']!==b['2026-11-9'],relocked:JSON.stringify(dayRecs['2026-11-9'].lock.tie)===JSON.stringify(planFor()['2026-11-9'].tie.id)}})(${JSON.stringify(before)})`);
     ok(a1.today&&a1.inLock.join()==='2026-11-9'&&a1.relocked,`a different tie today changes today only inside the lock (changed: ${a1.inLock.join()}), and today is locked as it now shows`);
     ok(a1.d.some(k=>keyDate2(k)>=+new Date(2026,10,14)),`days after the lock are planned again (${a1.d.length-1} of them changed)`);
