@@ -16,11 +16,13 @@
    "care.js": 16,
    "colpick.js": 25,
    "core.js": 2,
+   "daysoff.js": 6,
    "detect.js": 7,
    "draw.js": 3,
    "history.js": 6,
    "itemsheet.js": 7,
    "kit.js": 21,
+   "locale.js": 1,
    "mannequin.js": 5,
    "measure.js": 4,
    "merge.js": 3,
@@ -29,7 +31,7 @@
    "pattern-read.js": 5,
    "photos.js": 4,
    "safety.js": 2,
-   "settings.js": 12,
+   "settings.js": 4,
    "shop.js": 1,
    "start.js": 2,
    "stats.js": 7,
@@ -37,7 +39,8 @@
    "sync.js": 3,
    "today.js": 16,
    "ui.js": 24,
-   "wardrobe.js": 4
+   "wardrobe.js": 4,
+   "weather.js": 1
   },
   "asm": {
    "asm-worker.js": 4
