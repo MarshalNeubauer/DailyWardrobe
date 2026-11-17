@@ -147,7 +147,9 @@ const nufix9=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(/, Out of rotation$/.test(await p.evaluate(()=>document.querySelector('#gi-'+items[1].id+' .giopen').getAttribute('aria-label'))),'…and so does one out of rotation');
     await p.evaluate(()=>{delete items[1].paused});
     // ---- the largest text with page zoom (150% text, 150% zoom: 268 px)
-    await p.setViewportSize({width:268,height:454});await p.evaluate(()=>{document.documentElement.style.setProperty('--tscale','1.5');show('today')});await settle(p,400);
+    // (--tscale 1.5 with html.bigtext, as index.html's head script sets both on the phone at 150%: a wide font, Linux's on the cloud run,
+    // needs the item title's third line that bigtext gives, 2026-11-18)
+    await p.setViewportSize({width:268,height:454});await p.evaluate(()=>{document.documentElement.style.setProperty('--tscale','1.5');document.documentElement.classList.add('bigtext');show('today')});await settle(p,400);
     const nav=await p.evaluate(()=>[...document.querySelectorAll('nav button')].map(b=>{const r=document.createRange();r.selectNodeContents(b);const t=r.getBoundingClientRect(),o=b.getBoundingClientRect();return t.left>=o.left-1&&t.right<=o.right+1&&b.scrollWidth<=b.clientWidth+1}));
     ok(nav.length===3&&nav.every(Boolean),'150% text at 268 px: each tab name fits its own button (they ran together)');
     // (each read once the layout holds it, within 4 s: after the zoom the sizes settle a moment later on a busy machine, CR-10-03)
@@ -158,7 +160,7 @@ const nufix9=async({ok,chromium,url,WARDROBES,settle})=>{
     const iv=await p.evaluate(()=>{const h=document.querySelector('#iv-title'),c=[...document.querySelectorAll('#item-view .colnm')];return {t:h.scrollWidth<=h.clientWidth+1&&h.scrollHeight<=h.clientHeight+2,c:c.length>0&&c.every(x=>x.scrollWidth<=x.clientWidth+1)}});
     ok(iv.t,'…the item sheet’s title wraps instead of "Mid grey h…"');
     ok(iv.c,'…and its colour and pattern values aren’t cut ("Mid …")');
-    await p.evaluate(()=>{closeItem();document.documentElement.style.removeProperty('--tscale')});await settle(p,300);
+    await p.evaluate(()=>{closeItem();document.documentElement.style.removeProperty('--tscale');document.documentElement.classList.remove('bigtext')});await settle(p,300);
     // ---- a toast with a long unbroken name
     await p.setViewportSize({width:402,height:874});await settle(p,200);
     const tb=await p.evaluate(()=>{show('today');toast('Deleted 🦚🦚🦚🦚🦚 '+'x'.repeat(60)+'.',8000,{label:'Undo',fn:()=>{}});const b=document.querySelector('#toast button').getBoundingClientRect();return b.left>=0&&b.right<=innerWidth});
