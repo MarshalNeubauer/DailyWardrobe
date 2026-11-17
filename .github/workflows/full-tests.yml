@@ -9,8 +9,6 @@ name: Full test run
 on:
   schedule:
     - cron: '0 1 * * *'   # 01:00 UTC = 04:00 in Kuwait, after the day's merges and before the morning
-  push:   # TEMPORARY while building it: workflow_dispatch needs the file on main
-    branches: [claude/split-ci]
   workflow_dispatch:
     inputs:
       ref:
@@ -74,8 +72,9 @@ jobs:
           for i in 1 2 3; do npx playwright install $B && exit 0; sleep $((i * 15)); done
           exit 1
       - name: WebKit's system packages
-        if: false && steps.plan.outputs.webkit == 'true'
-        # (the runner image has Chromium's libraries, not all of WebKit's): through apt for at most five minutes
+        if: steps.plan.outputs.webkit == 'true'
+        # the runner image has Chromium's libraries, not all of WebKit's (without these every WebKit half fails to start, tried
+        # 2026-11-18): through apt for at most five minutes
         run: timeout -k 10 300 npx playwright install-deps webkit || echo "::warning::WebKit's system packages could not be installed (apt); the tests run with what the runner image has."
       - name: Tests
         env:
