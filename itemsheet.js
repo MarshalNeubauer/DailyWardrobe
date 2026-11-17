@@ -28,7 +28,7 @@ const PT_ICON={replace:'<path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0
   rotate:'<path d="M20 11a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/>',crop:'<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M2 6h14a2 2 0 0 1 2 2v14"/>',
   closeup:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/><path d="M8 9l6 4M8 13l6-4" opacity=".6"/>'};
 const ptIcon=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${PT_ICON[k]}</svg>`;
-function photoTools(i){if(phEdit.crop)return '';const tex=TEXTURE_TYPES.includes(i.type),id=i.id;
+function photoTools(i){if(phEdit.crop)return '';const tex=lookCu(i.type),id=i.id;   // (look.js lookCu: TEXTURE_TYPES, more types with the Look beta on)
   const rm=tex&&i.texture?`setTexture('${jsq(id)}',null,'Close-up removed.')`:'';
   return `<div class="phtools" role="group" aria-label="Photo tools"><label class="btn ptbtn pt-replace">${ptIcon('replace')}<span>${i.photo?'Replace':'Add photo'}</span><input type="file" accept="image/*" class="vfile" aria-label="${i.photo?'Replace photo':'Add photo'}" onchange="replacePhoto('${jsq(id)}',this.files[0]);this.value=''"></label>`+
     (i.photo?`<button type="button" class="ptbtn pt-rotate" onclick="rotatePhoto('${jsq(id)}')" aria-label="Rotate the photo a quarter turn clockwise">${ptIcon('rotate')}<span>Rotate</span></button><button type="button" class="ptbtn pt-crop" onclick="startCrop('${jsq(id)}')" aria-label="Zoom and crop the photo">${ptIcon('crop')}<span>Crop</span></button>`:'')+
@@ -52,7 +52,7 @@ const paperSteps=cloth=>{const pic=cls=>`<span class="wbpic ${cls}" style="--clo
 const paperHint=i=>paperSteps(paperCloth(i));
 function paperTip(){if(typeof kitOpen==='function')kitOpen([PAPER_CARD])}
 const paperRetake=(id,fn)=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',file:`f=>${fn}('${jsq(id)}',f)`,cloth:paperCloth(items.find(x=>x.id===id)||{})});
-function paperLine(i){if(!i.texture||!TEXTURE_TYPES.includes(i.type)||phEdit.paper!==texSig(i.texture))return '';const r=paperNow(i);if(!r)return '';
+function paperLine(i){if(!i.texture||!lookCu(i.type)||phEdit.paper!==texSig(i.texture))return '';const r=paperNow(i);if(!r)return '';
   return r.ref?`<div class="wbst ok" id="ivwb" role="status"><span class="ic" aria-hidden="true">✓</span><span class="tx">White paper found<small>Colors set from it.</small></span></div>`
     :`<div class="wbst no" id="ivwb" role="status"><span class="ic" aria-hidden="true">!</span><span class="tx">${r.warm?'No white paper, and the light looks warm<small>Colors may come out yellower than the cloth.</small>':'No white paper<small>Colors may be off.</small>'}</span>${paperRetake(i.id,'replaceTexture')}</div>`}
 const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
@@ -156,7 +156,7 @@ function itemBody(i){
   // match bar, Match close-up, the paper line, True color in 3 steps, Read color and texture), Color, Pattern, Material, Details, Planning &
   // care, Name & notes, Pictures (the photos and the row of photo tools, Edit photos option B), then Duplicate and Delete. While cropping
   // the crop frame takes the summary's place at the top. From 600px two columns: the summary and Look & compare on the left.
-  const id=i.id,tex=TEXTURE_TYPES.includes(i.type),fab=FABRIC.includes(i.type),scope='e';
+  const id=i.id,tex=lookCu(i.type),fab=FABRIC.includes(i.type),scope='e',L=lookOn();   // (lookCu: TEXTURE_TYPES; with the Look beta on more types: look.js)
   if(phEdit.crop)return `<div class="ivin ivck">${cropEditor(i)}</div>`;   // cropping: the frame alone, everything else steps aside
   const top=ivSummary(i,pic);
   let look='';
@@ -166,18 +166,20 @@ function itemBody(i){
     const body=i.texture?cmpHtml(id,i.texture,cmpDrawn(i),!!(p&&p.ref))+cmpMatchHtml('e',id,i,lab)+(paperLine(i)||cmpPaperLine(p,paperRetake(id,'replaceTexture')))+paperHint(i)+rdEditorBtn(i)
       :`<p class="shelp">Put a close-up of the cloth beside the drawing, and have Claude read its color and weave.</p>${paperHint(i)}${rdEditorBtn(i)}<div class="ckadds">${closeupBtn({label:'Add close-up',cls:'btn ckadd',mode:'add',aria:'Add fabric close-up',file:`f=>replaceTexture('${jsq(id)}',f)`,cloth:paperCloth(i)})}</div>`;
     look=ckSec(scope,'look',{mark,title:'Look &amp; compare',sum,body,open:true,id:'ivct',cls:'ivct'})}
-  const cr=colRows('e',id,i),shade=COLORS[primaryCol(i)]&&colShows(i,'primaryColor')?shadeRow(i,`stepShadeE.bind(null,'${jsq(id)}')`,`matchShadeE('${jsq(id)}')`,!tex&&!!(i.meas&&i.meas.src==='closeup')):'';
+  // the Look beta (look.js): one Look section in place of Color, Pattern, Material and Details' leather, metal and dial
+  const lk=L?lookSection('e',i):null,lkSec=lk?ckSec(scope,'lk',{mark:lk.mark,title:lk.title,sum:lk.sum,body:lk.body,open:true,cls:'cklook'}):'';
+  const cr=L?'':colRows('e',id,i),shade=!L&&COLORS[primaryCol(i)]&&colShows(i,'primaryColor')?shadeRow(i,`stepShadeE.bind(null,'${jsq(id)}')`,`matchShadeE('${jsq(id)}')`,!tex&&!!(i.meas&&i.meas.src==='closeup')):'';
   const color=cr||shade?ckSec(scope,'color',{mark:'good',title:'Color',sum:ckColSum(i,primaryCol(i))+(i.shade?` · drawn ${esc(shadeName(i.shade).toLowerCase())}`:''),body:cr+accRow('e',id,i)+shade}):'';
   const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${jsq(id)}')`:`redetect('${jsq(id)}')`}">Read pattern from photo</button>`}${i.stripes||i.sett?`<button onclick="clearStripes('${jsq(id)}')">Use generic</button>`:''}</div></div>`:'';
   const gap=typeof asmGapNote==='function'?asmGapNote(i):'';
-  const pattern=hasPat(i.type)?ckSec(   // (a pocket square or a casual garment too: its pattern, no layout reading)
+  const pattern=!L&&hasPat(i.type)?ckSec(   // (a pocket square or a casual garment too: its pattern, no layout reading)
 scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type,i.pattern))))+(usableSett(i)?' · layout read':''),body:EP(id,i)+layout+gap}):'';
-  const mat=MATERIALS_BY[i.type]?ckSec(scope,'material',{mark:i.material?'good':'opt',title:'Material',sum:i.material?esc(matLabel(i.material)):'Not set',body:matRow(i.type,i.material,`setItemField('${jsq(id)}','material',`)}):'';
-  const det=E(id,'type',Object.entries(TYPES),i.type)+(METAL_TYPES.includes(i.type)?E(id,'metal',metalOptsFor(i.type),i.metal||'silver',i.type==='belt'?'Buckle':''):'')+
+  const mat=!L&&MATERIALS_BY[i.type]?ckSec(scope,'material',{mark:i.material?'good':'opt',title:'Material',sum:i.material?esc(matLabel(i.material)):'Not set',body:matRow(i.type,i.material,`setItemField('${jsq(id)}','material',`)}):'';
+  const det=E(id,'type',Object.entries(TYPES),i.type)+(!L&&METAL_TYPES.includes(i.type)?E(id,'metal',metalOptsFor(i.type),i.metal||'silver',i.type==='belt'?'Buckle':''):'')+
     (i.type==='shirt'?E(id,'cuff',CUFFS,i.cuff||'button'):'')+(i.type==='suit'?E(id,'vest',VESTS,hasVest(i)?'yes':'no'):'')+(SEASON_TYPES.includes(i.type)?E(id,'season',SEASONS,i.season||'all'):'')+
-    (i.type==='pants'?E(id,'trouserKind',TROUSER_KINDS,trouserKindShown(i)):'')+(i.type==='shoes'?E(id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):'')+(i.type==='shoes'||i.type==='belt'?E(id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):'')+
-    (i.type==='watch'?`<label class="wdetails">Details <input type="text" maxlength="${WATCH_DETAILS_MAX}" dir="auto" value="${esc(String(i.details||'').slice(0,WATCH_DETAILS_MAX))}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${jsq(id)}','details',this.value.trim().slice(0,WATCH_DETAILS_MAX)||'none')"></label>`+E(id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(id,'band',BANDS,watchOpts(i).band)+E(id,'bezel',BEZELS,watchOpts(i).bezel)+E(id,'watchStyle',WATCH_STYLES,watchOpts(i).style):'');
-  const details=ckSec(scope,'details',{mark:'good',title:'Details',sum:esc(ivDetailSum(i)),body:det+(fab?'':gap),cls:'ivtags'});
+    (i.type==='pants'?E(id,'trouserKind',TROUSER_KINDS,trouserKindShown(i)):'')+(i.type==='shoes'?E(id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):'')+(!L&&(i.type==='shoes'||i.type==='belt')?E(id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):'')+
+    (i.type==='watch'?`<label class="wdetails">Details <input type="text" maxlength="${WATCH_DETAILS_MAX}" dir="auto" value="${esc(String(i.details||'').slice(0,WATCH_DETAILS_MAX))}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${jsq(id)}','details',this.value.trim().slice(0,WATCH_DETAILS_MAX)||'none')"></label>`+(L?'':E(id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial))+E(id,'band',BANDS,watchOpts(i).band)+E(id,'bezel',BEZELS,watchOpts(i).bezel)+E(id,'watchStyle',WATCH_STYLES,watchOpts(i).style):'');
+  const details=ckSec(scope,'details',{mark:'good',title:'Details',sum:esc(ivDetailSum(i)),body:det+(fab||L?'':gap),cls:'ivtags'});
   const cs=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null;
   const rotIn=`${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" min="${isoKey(todayDate())}" onchange="setItemArrives('${jsq(id)}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
   ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${jsq(id)}',${!i.paused})" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}${typeof careCard==='function'?careCard(i):''}`;
@@ -187,7 +189,7 @@ scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type
   const pics=ckSec(scope,'pics',{mark:'opt',title:'Pictures',sum:esc(cap1([i.photo?'photo':'no photo',tex&&i.texture?'close-up':''].filter(Boolean).join(', ')))+' · replace, rotate, crop',body:`<div class="ivhero">${pair}</div>${photoTools(i)}`,cls:'ivpics'});
   const acts=`<div class="ivdup"><button type="button" id="iv-dup" onclick="wardDuplicate('${jsq(id)}')">Duplicate this item</button></div><div class="ivdel"><button class="danger" onclick="rm('${jsq(id)}')">Delete item</button></div>`;
   const sample=typeof kitSampleNote==='function'?kitSampleNote(i):'';
-  return `<div class="ivin ivck"><div class="ivcols"><div class="ivcl">${top}${sample}${look||pics}</div><div class="ivcr">${color}${pattern}${mat}${details}${care}${names}${look?pics:''}</div></div>${acts}</div>`;
+  return `<div class="ivin ivck"><div class="ivcols"><div class="ivcl">${top}${sample}${look||pics}</div><div class="ivcr">${lkSec}${color}${pattern}${mat}${details}${care}${names}${look?pics:''}</div></div>${acts}</div>`;
 }
 /* the summary line at the top of the item sheet: the photo (or the drawing), "In rotation" / "Out of rotation" / "On the way", how many
    wears are left before cleaning (or "Due for cleaning"), the material and the season */
@@ -329,7 +331,7 @@ function renderItem(){
 const sheetSlides=()=>innerWidth<600;   // a phone: the sheet slides up from the bottom; wider, the panel fades in
 function openItem(id){
   if(!items.some(i=>i.id===id))return;const v=$('#item-view'),bd=$('#item-backdrop'),was=editing;
-  editing=id;itemGone=null;if(!was)itemFrom=id;histPush();ivSwipe();renderItem();$('#ivbody').scrollTop=0;if(!was&&typeof layerOpen==='function')layerOpen(v);   // the focus goes into the sheet and comes back on closing (W2-19-02)
+  editing=id;itemGone=null;if(!was)itemFrom=id;if(lookOn())lookOpenFresh();/* (the Look beta: Look opens unfolded on every item opened) */histPush();ivSwipe();renderItem();$('#ivbody').scrollTop=0;if(!was&&typeof layerOpen==='function')layerOpen(v);   // the focus goes into the sheet and comes back on closing (W2-19-02)
   for(const el of [v,bd]){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}
   if(was||noMotion())return;const o={duration:WARD_MS,easing:WARD_EASE};
   v.animate(sheetSlides()?[{transform:'translateY(100%)'},{transform:'none'}]:[{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],o);

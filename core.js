@@ -5,6 +5,8 @@ const TYPES={suit:'Suit',blazer:'Blazer',pants:'Pants',shirt:'Dress shirt',tie:'
 /* the types and kinds the tagger offers only to an app that names them (the request's `types`; worker/tag.js knownTypes; the pocket square too): an older app
    reads an unknown type as a suit, so the worker gives one only when told. 'cargo' is the pants kind (trouserKind) */
 const TAG_TYPES=['pocketsquare','tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','cargo','sockpat'];   // ('sockpat', 2026-11-17: socks' patterns, their pattern colours and the toe cap's own field, toeColor)
+/* what a tag request names: with the Look editor beta on (look.js lookOn) also 'coatpat', a coat's patterns (2026-11-17); off, exactly TAG_TYPES */
+const tagTypesNow=()=>typeof lookOn==='function'&&lookOn()?[...TAG_TYPES,'coatpat']:TAG_TYPES;
 /* ---- hand-pick only (2026-11-16, the owner: "Planner: hand-pick only"): the casual tops (worn in the shirt slot, in place of the shirt),
    the casual jackets (the jacket slot) and cargo pants are never planned or suggested ("Suggest another" too) and don't count in the
    rotation stats or What to buy; Today's picker offers them under "Casual · pick by hand". isHandPick is the one check the planner, the
@@ -31,7 +33,10 @@ const METAL={gold:'#c9a227',silver:'#c3c6cb',other:'#7d8187'},PATS_BY=(()=>{cons
     sweatshirt:['solid','stripe','heather','other'],hoodie:['solid','stripe','heather','other'],qzip:['solid','heather','cable','stripe','other'],cardigan:['solid','heather','cable','stripe','other'],chore:['solid','other'],
     // socks (2026-11-17, the owner's sock patterns): bold ones (argyle, stripe = horizontal bands, polka-dot, other) and quiet knits that read
     // plain from a step away (ribbed, birdseye, nailhead, herringbone, clock = a small motif up the side of the ankle); worker/tag.js SOCK_PATS
-    socks:['solid','argyle','stripe','polka-dot','ribbed','birdseye','nailhead','clock','herringbone','other']}})(),
+    socks:['solid','argyle','stripe','polka-dot','ribbed','birdseye','nailhead','clock','herringbone','other'],
+    // coats (2026-11-17, the Look editor beta): a herringbone, houndstooth, check or tweed coat; the tagger offers them only to an app that
+    // names 'coatpat' in its types (the beta: tag-request.js tagExtras), and only the beta shows a coat's pattern (hasPat stays as it was)
+    overcoat:['solid','herringbone','houndstooth','check','glen-check','windowpane','tweed','other'],raincoat:['solid','herringbone','houndstooth','check','glen-check','windowpane','tweed','other']}})(),
 PAT_ALIAS={suit:{stripe:'pinstripe',check:'glen-check',plaid:'glen-check',texture:'twill'},shirt:{texture:'textured',plaid:'check',hairline:'fine-stripe','hairline-stripe':'fine-stripe','fine-stripes':'fine-stripe','fil-a-fil':'end-on-end','end-to-end':'end-on-end',jacquard:'dobby','pin-point':'pinpoint','royal-oxford-weave':'royal-oxford',poplin:'solid',broadcloth:'solid','fine-textured':'fine-texture','micro-texture':'fine-texture',weave:'woven','basket-weave':'royal-oxford'},tie:{texture:'woven',textured:'woven',weave:'woven','basket-weave':'woven',basketweave:'woven',oxford:'woven','micro-check':'woven',grenadine:'woven',tonal:'tonal-check','tone-on-tone':'tonal-check','tonal-glen-check':'tonal-check','tone-on-tone-check':'tonal-check',dots:'polka-dot',plaid:'check'},
   pocketsquare:{dots:'polka-dot',dot:'polka-dot','contrast-border':'border',bordered:'border',edged:'border',edge:'border',piped:'border',piping:'border','rolled-edge':'border',hem:'border',plaid:'check',gingham:'check',stripes:'stripe',striped:'stripe',texture:'woven',textured:'woven',plain:'solid',motif:'foulard',geometric:'foulard'},
   socks:{diamond:'argyle',diamonds:'argyle','diamond-pattern':'argyle',harlequin:'argyle',argyles:'argyle','argyle-pattern':'argyle',stripes:'stripe',striped:'stripe','horizontal-stripe':'stripe','horizontal-stripes':'stripe',

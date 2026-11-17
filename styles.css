@@ -1912,3 +1912,54 @@ html.bigtext :is(.cpnm,.pick-nm){min-height:3.6em}
 .kit-lead{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:var(--fs-m);line-height:1.4}
 .kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar{padding-left:max(16px,var(--sal));padding-right:max(16px,var(--sar))}
 .nostore{padding-left:max(20px,var(--sal));padding-right:max(20px,var(--sar))}
+/* ---- the New Look editor (beta, look.js; 2026-11-17, the owner's approved mockup C:\code\audit-2026-11-13\look-mockup\): one Look section,
+   rows of swatch + value + chevron, Claude's chips on the row they change, Read with Claude, the material picker's swatches ---- */
+.lkbody{display:flex;flex-direction:column;gap:8px}
+:is(#item-view,#add) .lkrd{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--acc) 45%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--acc) 12%,var(--card))}
+.lkrd .lkrdtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.lkrd .lkrdtx b{font-size:var(--fs-b)}
+.lkrd .lkrdtx small{color:var(--mut);font-size:var(--fs-s)}
+.lkrd .lkrdtx small.lkerr{color:var(--danger)}
+.lkstar{color:var(--acc)}
+:is(#item-view,#add) .lkrd .lkrdbtn{flex:none;min-height:44px;min-width:72px;margin:0;padding:0 16px;border-radius:12px;font-weight:700}
+:is(#item-view,#add) .lkrd .lkrdbtn[aria-disabled=true]{opacity:.5}
+:is(#item-view,#add) .lkrd .lkrdstop{flex:none;min-height:44px;margin:0}
+.lkrd .lkrdcu{display:block;margin-top:4px}
+:is(#item-view,#add) .lkrd .lkcuadd{min-height:44px;padding:0;border:0;background:none;color:var(--acc-ink);font-weight:600;font-size:var(--fs-s);text-decoration:underline;text-align:left}
+:is(#item-view,#add) .lkrow{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;margin:0;padding:8px 12px;border:1px solid var(--line);border-radius:14px;background:var(--field);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+:is(#item-view,#add) .lkrow.sub{width:calc(100% - 20px);margin-left:20px;min-height:52px}
+:is(#item-view,#add) .lkrow.off{cursor:default;opacity:.55;border-style:dashed;background:transparent}
+.lksw{flex:none;width:44px;height:44px;border-radius:10px;overflow:hidden;border:1px solid var(--swatch-edge);display:flex}
+.lkrow.sub .lksw{width:36px;height:36px}
+.lksw svg,.lksw .lkcol{width:100%;height:100%;display:block}
+.lkcol.none{background:repeating-linear-gradient(45deg,transparent 0 6px,var(--line) 6px 7px)}
+.lktx{flex:1;min-width:0;display:flex;flex-direction:column}
+.lktx small{color:var(--mut);font-size:var(--fs-s);font-weight:500;overflow-wrap:anywhere}
+.lktx b{font-size:var(--fs-b);font-weight:600;overflow-wrap:anywhere}
+.lktx .lknote{font-style:italic}
+.lkchev{flex:none;width:20px;height:20px;fill:none;stroke:var(--mut);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lkai{flex:none;font-size:var(--fs-s);font-weight:700;color:var(--acc-ink)}
+.lkchips{display:flex;flex-wrap:wrap;gap:6px}
+:is(#item-view,#add) .lkchip{display:inline-flex;align-items:center;gap:8px;max-width:100%;min-height:44px;margin:0;padding:4px 6px 4px 8px;border:1px solid color-mix(in srgb,var(--acc) 55%,var(--line));border-radius:22px;background:color-mix(in srgb,var(--acc) 12%,var(--card));color:var(--ink);font:inherit;font-size:var(--fs-s);text-align:left;cursor:pointer}
+.lkchip .lkdot{flex:none;width:22px;height:22px;border-radius:6px;overflow:hidden;border:1px solid var(--swatch-edge);display:inline-flex}
+.lkchip .lkdot svg{width:100%;height:100%}
+.lkchip .lkct{min-width:0;overflow-wrap:anywhere}
+.lkchip em{font-style:normal;font-weight:700;color:var(--acc-ink)}
+.lkchip .lkuse{flex:none;padding:6px 12px;border-radius:16px;background:var(--ink);color:var(--bg);font-weight:700}
+.lkauto{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;color:var(--mut)}
+.lkmsw svg,.lkbig svg{width:100%;height:100%;display:block}
+.lkbig{display:flex}
+.lkshade{display:grid;grid-template-columns:auto 1fr auto;align-items:center;margin:10px 0 0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+#col-sheet .lkshade button{min-height:44px;margin:0;padding:0 14px;border:0;border-radius:0;background:var(--bg);font-weight:600}
+#col-sheet .lkshade button:disabled{opacity:.45}
+.lkshade output{text-align:center;font-weight:600;padding:0 6px;overflow-wrap:anywhere}
+.lkyours{margin:2px 0 6px}
+.lkform{display:flex;flex-direction:column;gap:6px;margin:6px 0 4px}
+.lkform label{font-weight:600;font-size:var(--fs-s)}
+.lkform input[type=text],.lkform select{min-height:44px;padding:0 12px;border:1px solid var(--fline);border-radius:10px;background:var(--field);font-size:var(--fs-b)}
+.lkform .lkchk{display:flex;align-items:center;gap:8px;font-weight:500;min-height:44px}
+.lkform .lkchk input{width:22px;height:22px}
+.lkform .lknewadd{min-height:44px}
+.lkform .lkerr{margin:0}
+.lkownf .btns{display:flex;gap:8px}
+.lkownf .btns button{flex:1;min-height:44px}

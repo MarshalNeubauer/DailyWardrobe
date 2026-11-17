@@ -43,7 +43,16 @@ const PQ_TYPES = ['pocketsquare'];   // trouserKind values offered only on reque
 /* sock patterns (2026-11-17): an app that knows them names 'sockpat' in its types. Only then are socks given their patterns (argyle, stripe,
    dots, ribbed, birdseye, nailhead, clock, herringbone), their second and third colours as the pattern's, and the toe cap its own field
    (toeColor). An older app reads a sock's secondaryColor as its toe cap and has no sock patterns, so its request is exactly as before */
-const OPT_FLAGS = ['sockpat'];
+const OPT_FLAGS = ['sockpat', 'coatpat'];
+/* coat patterns (2026-11-17, the Look editor beta): an app that knows them names 'coatpat' in its types (core.js tagExtras sends it only while
+   the beta is on). Only then are overcoats and raincoats given their patterns (COAT_PATTERNS, all already in the enum) instead of "solid";
+   without it the request is exactly as before */
+const knowsCoat = known => (known || []).includes('coatpat');
+const COAT_KINDS = [', overcoat, raincoat: solid', ': solid'];
+const COAT_PATTERNS = `  overcoat, raincoat:
+    solid, herringbone (columns of small V shapes), houndstooth (small broken four-pointed checks), check (any other check or plaid),
+    glen-check (Prince of Wales), windowpane (thin lines forming large squares), tweed (rough, flecked, multi-tone wool), other
+`;
 /* the optional types and kinds the request names (body.types: an array), in this file's order */
 const knownTypes = body => { const t = body && Array.isArray(body.types) ? body.types : []; return [...PQ_TYPES, ...OPT_TYPES, ...OPT_KINDS, ...OPT_FLAGS].filter(x => t.includes(x)); };
 const knowsSock = known => (known || []).includes('sockpat');
@@ -82,7 +91,8 @@ const promptFor = known => { known = knownOf(known); const types = OPT_TYPES.fil
   const acc = accOpts(known);
   let kinds = acc ? PROMPT_KINDS.replace(ACC_METAL[0], ACC_METAL[1]) : PROMPT_KINDS, head = pq ? PROMPT_HEAD.replace('tieclip, watch', 'tieclip, ' + PQ_TYPE + 'watch') : PROMPT_HEAD, ps = PROMPT_PATS;
   if (sock) { kinds = kinds.replace(SOCK_KINDS[0], SOCK_KINDS[1]); head = head.replace(SOCK_JSON[0], SOCK_JSON[1]); ps = ps.replace(SOCK_SECOND[0], SOCK_SECOND[1]).replace(SOCK_THIRD[0], SOCK_THIRD[1]); }
-  return head + (types.length ? ',\n  ' + types.map(t => OPT_WORDS[t]).join(',\n  ') : '') + PROMPT_COLORS + colorText(known) + ps + pats + (pq ? PQ_PATTERNS : '') + (sock ? SOCK_PATTERNS : '') + kinds
+  const coat = knowsCoat(known); if (coat) kinds = kinds.replace(COAT_KINDS[0], COAT_KINDS[1]);
+  return head + (types.length ? ',\n  ' + types.map(t => OPT_WORDS[t]).join(',\n  ') : '') + PROMPT_COLORS + colorText(known) + ps + pats + (pq ? PQ_PATTERNS : '') + (sock ? SOCK_PATTERNS : '') + (coat ? COAT_PATTERNS : '') + kinds
     + (known.includes('cargo') ? ', cargo (pants with patch cargo pockets on the thighs)' : '') + (acc ? PROMPT_TAIL.replace(ACC_LEATHER[0], ACC_LEATHER[1]).replace(ACC_BAND[0], ACC_BAND[1]) : PROMPT_TAIL) + (sock ? SOCK_TOE : ''); };
 /* the sock pieces of the prompt (sockpat known): the patterns, the pattern's colours, the toe cap's own field */
 const SOCK_KINDS = ['shoes, belt, socks, cufflinks', 'shoes, belt, cufflinks'];
@@ -248,6 +258,9 @@ const PATTERN_BY_TYPE = { suit: SUIT_PATS, blazer: SUIT_PATS, pants: SUIT_PATS,
   Object.assign(PATTERN_BY_TYPE, { tee: top, polo: top, henley: top, sweater: knit, sweatshirt: top, hoodie: top, qzip: knit, cardigan: knit, chore: ['solid','other'] }); }
 // socks (2026-11-17, = core.js PATS_BY.socks; offered in the tag only to an app that knows them: knowsSock)
 PATTERN_BY_TYPE.socks = ['solid','argyle','stripe','polka-dot','ribbed','birdseye','nailhead','clock','herringbone','other'];
+// coats (2026-11-17, = core.js PATS_BY.overcoat / raincoat; offered in the tag only to an app that knows them: knowsCoat)
+PATTERN_BY_TYPE.overcoat = ['solid','herringbone','houndstooth','check','glen-check','windowpane','tweed','other'];
+PATTERN_BY_TYPE.raincoat = PATTERN_BY_TYPE.overcoat.slice();
 /* what each item type is made of: must match MATERIALS_BY in core.js (tests/materials.test.js) */
 const MATERIALS_BY = {
   suit: ['wool','wool blend','tropical wool','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','mohair blend','silk blend','moleskin','corduroy','velvet','polyester blend'],
@@ -789,4 +802,4 @@ async function tagWithWorkersAi(env, image, known = []) {
   catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
 }
 
-export { readAiBody, badPics, AI_BODY_MAX, knowsPq, OPT_TYPES, OPT_KINDS, PATTERN_KEYS, knownTypes, tagTypes, tagRules, tagPatterns, tagKinds, materialExtra, multiPrompt, ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
+export { readAiBody, badPics, AI_BODY_MAX, DIAL_COLS, knowsPq, OPT_TYPES, OPT_KINDS, PATTERN_KEYS, knownTypes, tagTypes, tagRules, tagPatterns, tagKinds, materialExtra, multiPrompt, ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
