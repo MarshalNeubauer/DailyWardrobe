@@ -2514,7 +2514,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 - old worker versions that tests sync against (`deltasync`, `photostore`) are fixtures (`tests/fixtures/old-worker/worker-<commit>.js`), not `git show`: in a shallow clone those checks skipped themselves silently
 - tests that read the worker's text take `require('./workersrc.js')()` (worker.js and every worker/ module)
-- test files are grouped by feature (Round B, 2026-11-17, the code review's CR-10-14): 79 fix-round and small files went into 45 homes, 253 → 174 files (e.g. `planner-rules`, `planner-repeats`, `invite`, `server-limits`, `backup-storage`, `back`, `a11y`, `colors`, `folds`, `tagger`)
+- test files are grouped by feature (Round B, 2026-11-17, the code review's CR-10-14): 79 fix-round and small files went into 45 homes, 257 → 178 files (e.g. `planner-rules`, `planner-repeats`, `invite`, `server-limits`, `backup-storage`, `back`, `a11y`, `colors`, `folds`, `tagger`)
 - in a joined file each old file is one part, its body unchanged: `/* ---- was tests/<old>.test.js ---- */`, then `const <old>=async({…})=>{…}`; a bare old name in this file (`nufix9`, `rules8`) names that part
 - the parts run one after another; a part that throws is reported as `threw (<part>): …` and the others still run (as separate files they did)
 - a file joins only files with the same `realPlanner` and `assembled` (a check moved onto the fixed plan passes by coincidence, CR-10-05), and no file that takes `engines` (its other half would run the joined parts twice); the planner rules on the fixed plan are `planner-pairs`, with the real planner `planner-rules`
