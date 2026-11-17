@@ -11,7 +11,10 @@ const fs=require('fs'),path=require('path');
 const TIMES_FILE=path.join(__dirname,'shard-times.json');
 const WK_HALF=' · WebKit';
 const JOBS=3;   // tests at once on one runner (GitHub's runner has 4 processors; tests/run.js runs one fewer)
-const WK_SETUP=40;   // seconds a runner spends installing WebKit's system packages (measured 39–43 s, 2026-11-18)
+const WK_SETUP=40;   // seconds a runner spends installing WebKit's system packages (measured 25–43 s, 2026-11-18)
+// tests that get a runner to themselves: they keep every processor busy (asmgl paints on SwiftShader, WebGL on the processor) and
+// slow down when they share one: asmgl took 88 s alone and 226 s beside two other tests (2026-11-18)
+const ALONE=new Set(['asmgl.test.js']);
 
 const readTimes=(f=TIMES_FILE)=>{try{const t=JSON.parse(fs.readFileSync(f,'utf8'));return t&&typeof t==='object'?(t.times||t):{}}catch(e){return {}}};
 const median=a=>{if(!a.length)return 30;const s=a.slice().sort((x,y)=>x-y);return s[s.length>>1]};
@@ -28,8 +31,11 @@ function plan(keys,n,times=readTimes(),w=0){
   const cost=(sum,max,wk)=>Math.max(sum/JOBS,max)+(wk?WK_SETUP:0);
   const est=s=>cost(s.sum,s.max,s.wk);
   const groups=w?[[keys.filter(k=>!k.endsWith(WK_HALF)),shards.slice(0,n-w)],[keys.filter(k=>k.endsWith(WK_HALF)),shards.slice(n-w)]]:[[keys,shards]];
-  for(const [list,pool] of groups){
-    const order=list.slice().sort((a,b)=>sec(b)-sec(a)||(a<b?-1:a>b?1:0));
+  for(const [list,all] of groups){
+    // an ALONE test takes a shard of its own first, while at least two shards are left for the rest
+    const solo=list.filter(k=>ALONE.has(k)).sort().slice(0,Math.max(0,all.length-2)),pool=all.slice(solo.length);
+    solo.forEach((k,j)=>{const s=all[j],t=sec(k);s.keys.push(k);s.sum=t;s.max=t;s.wk=k.endsWith(WK_HALF)});
+    const order=list.filter(k=>!solo.includes(k)).sort((a,b)=>sec(b)-sec(a)||(a<b?-1:a>b?1:0));
     for(const k of order){const t=sec(k),w=k.endsWith(WK_HALF);let best=null,bc=0;
       // the shard whose estimate ends lowest; a tie goes to the one with less in it, then the first
       for(const s of pool){const c=cost(s.sum+t,Math.max(s.max,t),s.wk||w);if(!best||c<bc-1e-9||(Math.abs(c-bc)<=1e-9&&s.sum<best.sum)){best=s;bc=c}}
@@ -52,7 +58,7 @@ function readLog(text){const r={passes:0,failures:0,flaky:0,done:false,failed:[]
   for(const line of text.split(/\r?\n/)){let m;
     if((m=/^• (.+)$/.exec(line))){cur=m[1];bad=null;continue}
     if(/^  ✗ /.test(line)){if(!bad){bad={test:cur||'(before the first test)',lines:[]};r.failed.push(bad)}bad.lines.push(line.trim());continue}
-    if((m=/^failed with other tests running, passed by (?:itself|themselves) [^:]*: (.+)$/.exec(line)))r.flakyNames=m[1].split(', ');
+    if((m=/^failed with other tests running, passed by (?:itself|themselves) .*?\): (.+)$/.exec(line)))r.flakyNames=m[1].split(', ');
     if((m=/^(\d+) passed, (\d+) failed(?:, (\d+) flaky)?/.exec(line))){r.passes=+m[1];r.failures=+m[2];r.flaky=+(m[3]||0);r.done=true}}
   return r}
 
@@ -74,7 +80,7 @@ function summary(dir,n){const out=[],all={passes:0,failures:0,flaky:0},times={},
   fs.writeFileSync(path.join(dir,'shard-times.json'),JSON.stringify(rounded,null,1)+'\n');
   return {ok,text:out.join('\n'),all}}
 
-module.exports={plan,parse,verify,readLog,summary,readTimes,wkShards,TIMES_FILE,WK_HALF,JOBS};
+module.exports={ALONE,plan,parse,verify,readLog,summary,readTimes,wkShards,TIMES_FILE,WK_HALF,JOBS};
 
 if(require.main===module){const a=process.argv.slice(2);
   // the test list as tests/run.js has it (without starting a run)

@@ -12,6 +12,7 @@ module.exports=async({ok,ROOT})=>{
   ok(a===b,'the split is the same each time (every runner computes the same)');
   const p=S.plan(keys,10,times,2),wk=p.map(s=>s.keys.filter(k=>k.endsWith(S.WK_HALF)).length);
   ok(wk.slice(0,8).every(x=>x===0)&&wk.slice(8).every(x=>x>0),`with 2 WebKit shards, only the last two run WebKit halves (${wk.join(',')})`);
+  {const a=p.find(s=>s.keys.some(k=>S.ALONE.has(k)));ok(!a||a.keys.length===1,`a test that needs a runner to itself gets one (asmgl's shard holds ${a?a.keys.length:0} test)`)}
   ok(p.every(s=>s.keys.every((k,i)=>!i||keys.indexOf(s.keys[i-1])<keys.indexOf(k))),'each shard keeps the run order');
   // balance by the times: one long test gets a shard nearly to itself, the rest share the others evenly
   const K=['a','b','c','d','e','f','g','h','i','j','k','l'],T={a:120,b:10,c:10,d:10,e:10,f:10,g:10,h:10,i:10,j:10,k:10,l:10};
@@ -28,7 +29,7 @@ module.exports=async({ok,ROOT})=>{
   const r=S.summary(dir,3),saved=JSON.parse(fs.readFileSync(path.join(dir,'shard-times.json'),'utf8'));
   ok(!r.ok&&r.all.passes===15&&r.all.failures===1&&r.all.flaky===1,'the summary adds up the shards');
   ok(/shard 1 · b\.test\.js\n  ✗ three broke/.test(r.text)&&!/✗ old/.test(r.text),'each failure is named with its test and shard (a retried test\'s first failures are not)');
-  ok(/shard 3 · \(the shard did not finish/.test(r.text)&&/c\.test\.js \(shard 2\)/.test(r.text),'a shard with no result line fails the run; flaky tests are listed');
+  ok(/shard 3 · \(the shard did not finish/.test(r.text)&&r.text.includes('passed by itself): c.test.js (shard 2)'),'a shard with no result line fails the run; flaky tests are listed');
   ok(saved['a.test.js']===3.2&&saved['c.test.js']===7,'the run\'s per-test times are written for tests/shard-times.json');
   fs.rmSync(dir,{recursive:true,force:true});
   // the workflow and the runner agree on how many shards
