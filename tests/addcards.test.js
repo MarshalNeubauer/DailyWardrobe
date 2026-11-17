@@ -365,7 +365,11 @@ const auditfix=async({ok,chromium,url})=>{
   ok(sw.includes("'Today’s outfit'")&&!/â€/.test(sw)&&/\$\{asmGapRun\.n\}…</.test(ac),'the reminder reads "Today’s outfit" (no garbled "â€" in sw.js) and Settings\' "Reading 1 of 3…" has its ellipsis');
   const browser=await chromium.launch();
   try{
-    const p=await browser.newPage({viewport:{width:390,height:900}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
+    /* this part points the app at the made-up host w.test with nothing answering it, so the app's own requests there (/sync, /me)
+       fail; WebKit reports each as the page error "/w.test/<path> due to access control checks." (Chromium reports nothing).
+       Exactly that error, on that host, is left out, as tests/webkit.js does for sw.js; every other error still counts */
+    const FAKE_CUT=/^\/w\.test\/[\w\/?=&%.-]* due to access control checks\.$/;
+    const p=await browser.newPage({viewport:{width:390,height:900}});const errs=[];p.on('pageerror',e=>{if(!FAKE_CUT.test(e.message))errs.push(e.message)});
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // the photo from the sharp copy
     const dims=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=3000;c.height=2000;const x=c.getContext('2d');x.fillStyle='#345';x.fillRect(0,0,3000,2000);
