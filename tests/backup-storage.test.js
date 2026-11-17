@@ -485,9 +485,13 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
     const r3=await A.evaluate(async()=>{const ok1=await syncNow();const st=localStorage.getItem('sync_status');const ok2=await syncNow();return {ok1,ok2,st,pause:+localStorage.getItem('sync_pause')||0}});
     ok(!r3.ok1&&!r3.ok2&&r3.pause>Date.now()&&/too large for the server/.test(r3.st)&&!/HTTP|413/.test(r3.st)&&A.ctx.posts.length===1,`one item too large: paused with plain words, sent once only (${A.ctx.posts.length} POST; “${r3.st}”)`);
     // W1-10-03 / W1-10-04: the pause's end in local time; Connection doesn't say "backed up" while paused
-    const pz=await A.evaluate(()=>{const later=new Date();later.setHours(23,0,0,0);const tom=new Date(Date.now()+864e5);tom.setHours(3,0,0,0);
-      localStorage.setItem('sync_pause',+later);const a=backupSummary('x');localStorage.setItem('sync_pause',+tom);const b=backupSummary('x');const w=backedUpWords();localStorage.removeItem('sync_pause');return {a,b,w,w2:backedUpWords()}});
-    ok(/^Paused until 11:00\s?PM/.test(pz.a)&&/^Paused until tomorrow/.test(pz.b),`"Paused until" says the real time when it is today (“${pz.a}” / “${pz.b}”)`);
+    // a pause ending later today, whatever the hour the test runs: 30 minutes from now, or 23:59 when that would be tomorrow (it was
+    // 23:00 today, already past between 23:00 and midnight, so the check failed then); its words are the same minute as the US clock reads it
+    const pz=await A.evaluate(()=>{const now=new Date(),later=new Date(+now+30*60e3);if(later.getDate()!==now.getDate()){later.setTime(+now);later.setHours(23,59,59,0)}
+      const at=later.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});const tom=new Date(Date.now()+864e5);tom.setHours(3,0,0,0);
+      localStorage.setItem('sync_pause',+later);const a=backupSummary('x');localStorage.setItem('sync_pause',+tom);const b=backupSummary('x');const w=backedUpWords();localStorage.removeItem('sync_pause');return {a,b,w,at,w2:backedUpWords()}});
+    const atRe=new RegExp('^Paused until '+pz.at.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s/g,'\\s?'));
+    ok(atRe.test(pz.a)&&/^Paused until tomorrow/.test(pz.b),`"Paused until" says the real time when it is today (“${pz.a}” / “${pz.b}”, ${pz.at} expected)`);
     ok(/paused until/.test(pz.w)&&/only on this phone/.test(pz.w)&&pz.w2==='your wardrobe is backed up',`while paused, Connection's words say so (“${pz.w}”)`);
     // W2-14-03: the labels
     const lab=await A.evaluate(()=>({d:snapLabel({id:'2026-11-16',saved:Date.parse('2026-11-15T04:30:00Z'),n:5}),e:snapLabel({id:'2026-11-15',saved:Date.parse('2026-11-15T04:30:00Z'),n:0}),

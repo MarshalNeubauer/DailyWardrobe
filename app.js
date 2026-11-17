@@ -1,6 +1,7 @@
 /* Daily Wardrobe: the app's state and storage (IndexedDB), and helpers every page uses: the busy pill, the tab bar's fit, questions,
    colour names, photo loading and the precision swatch. The load order is index.html's <script> list: core.js and
-   the drawing scripts, then app.js, add.js, itemsheet.js, history.js, today.js, month.js, photos.js, settings.js, start.js (the start-up
+   the drawing scripts, then app.js, add.js and its parts, item-photo.js, item-view.js, itemsheet.js, history.js, today.js, month.js,
+   photos.js, settings.js, start.js (the start-up
    chain), ui.js and the rest, about.js last.
    (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
 let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());

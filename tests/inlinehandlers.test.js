@@ -9,10 +9,10 @@ const fs=require('fs'),path=require('path');
 module.exports=async({ok,ROOT})=>{
   const CHECKED=new Set([
     // ids of the app's own shape (core.js ID_RE, cleanRecord) and keys from the app's own lists
-    'account.js|acctEsc(v.id)','add.js|esc(q.id)','add.js|k','add.js|v','app.js|k','care.js|w','care.js|g.t','care.js|t','checklist.js|src',
+    'account.js|acctEsc(v.id)','add-card.js|esc(q.id)','add-card.js|k','add-card.js|v','app.js|k','care.js|w','care.js|g.t','care.js|t','checklist.js|src',
     'colpick.js|src','colpick.js|k','colpick.js|v','colpick.js|c','colpick.js|p','colpick.js|t','colpick.js|esc(q.id)','colpick.js|h',
     "colpick.js|have?'existing':'new'",'dress.js|k','missed.js|k','history.js|slot','history.js|f.slot','history.js|f.item.id','itemsheet.js|k',
-    'itemsheet.js|t','pack.js|which','pack.js|first.k','photos.js|itemKey(i)','settings.js|r.date','settings.js|id','setup.js|k','setup.js|kind',
+    'itemsheet.js|t','pack.js|which','pack.js|first.k','photos.js|itemKey(i)','daysoff.js|r.date','settings.js|id','setup.js|k','setup.js|kind',
     'setup.js|x','shop.js|k','shop.js|esc(x.key)','today.js|s',"today.js|addForSlot(s,o.suitDay)||''",'ui.js|o.mode',"ui.js|o.cloth||''",'wardrobe.js|k',
     // the Add card's offers: Claude's answer, shown only when it is one of the app's own keys (TYPES, COLORS, colsFor, PATS_BY) or a field name
     'tagging.js|q.refineType','tagging.js|q.refineKept.c','tagging.js|q.altColor','tagging.js|q.altPattern','tagging.js|f','tagging.js|v.f','tagging.js|v.to','tagging.js|mp']);
@@ -25,7 +25,7 @@ module.exports=async({ok,ROOT})=>{
   // the three sinks of C1 hold no handler at all now: their values are in data-* attributes
   const src=f=>fs.readFileSync(path.join(ROOT,f),'utf8');
   ok(/function renderCustomUI\(/.test(src('own-lists.js'))&&!/onclick="removeCustom/.test(src('own-lists.js')),'Settings\' own colors and patterns: Remove has no inline handler (CR-2-02)');
-  ok(!/on(change|click)="(toggleHoliday|removeDaysOff)/.test(src('settings.js')),'Days off: a holiday\'s checkbox and a day off\'s × have no inline handler (CR-7-02)');
+  ok(!/on(change|click)="(toggleHoliday|removeDaysOff)/.test(src('daysoff.js')),'Days off: a holiday\'s checkbox and a day off\'s × have no inline handler (CR-7-02)');
   ok(!/onclick="shopUnhide/.test(src('shop.js')),'What to buy: "Show again" has no inline handler (CR-4-01)');
   // the lint itself catches the old code
   const old=`<button type="button" onclick="removeCustom('colors','\${c.key}')">Remove</button> onclick="shopUnhide('\${esc(k)}')" onclick="x('\${jsq(k)}')"`;
