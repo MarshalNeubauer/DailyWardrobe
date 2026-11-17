@@ -5,7 +5,6 @@
 // an ended invitation (switched off, or the account deleted) no longer says Connected / backed up; Delete everything says it ends
 // the invitation and finishes after a kill; Delete clears every key; the owner's fold stays away from a new tester; two tabs don't
 // overwrite each other's settings.
-const fs=require('fs'),path=require('path');
 module.exports=async({ok,chromium,url})=>{
   const HOST='https://w.test/',A='a'.repeat(32),B='b'.repeat(32);
   const browser=await chromium.launch();
@@ -21,7 +20,6 @@ module.exports=async({ok,chromium,url})=>{
       return j({ok:true})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));if(!o.noGo){await p.goto(url);await p.waitForFunction(()=>window.appReady)}return {ctx,p,errs,st}};
   const link=(t,x='')=>'#invite='+t+'&w='+encodeURIComponent(HOST)+x;
-  const askShown=p=>p.evaluate(()=>!!(document.querySelector('#ask-ok')&&document.querySelector('#ask-ok').offsetParent));
   try{
     // ---- C1: a cold start on another invitation's link, with a wardrobe stored: the question comes (it never did)
     {const {p,errs,st}=await page();
@@ -111,13 +109,7 @@ module.exports=async({ok,chromium,url})=>{
       await p.evaluate(()=>{openSettings('about');askDelete()});const nav=p.waitForNavigation();await p.click('#del-all');await nav;
       await p.waitForFunction(()=>window.appReady,null,{timeout:15000});const t2=await p.textContent('#toast');
       ok(/already been deleted/.test(t2)&&!/token/.test(t2),`a second phone's Delete everything after the account was deleted clears it and says so ("${t2}")`);st.who[B]={id:'bbbbbbbbbb',name:'Bea',role:'tester'}}
-    // ---- every localStorage key the app uses, named directly or through a constant, is one Delete removes
-    {const keys=new Set(),root=path.join(__dirname,'..');
-      for(const f of fs.readdirSync(root).filter(f=>f.endsWith('.js'))){const src=fs.readFileSync(path.join(root,f),'utf8'),consts={};
-        for(const m of src.matchAll(/const ([A-Z_]+)\s*=\s*'([a-z_0-9]+)'/g))consts[m[1]]=m[2];
-        for(const m of src.matchAll(/localStorage\.(?:getItem|setItem|removeItem)\(\s*([A-Z_]+)\b/g))if(consts[m[1]])keys.add(consts[m[1]])}
-      const {p}=await page();const miss=await p.evaluate(k=>k.filter(x=>!aboutOwnKey(x)),[...keys]);
-      ok(keys.has('tour_seen')&&miss.length===0,`keys kept through a constant (tour_seen, tex_up, photo_up…) are deleted too (missing: ${miss.join()||'none'})`)}
+    // ---- (every localStorage key the app uses through a constant is one Delete removes: tests/sourcerules.test.js, CR-10-07)
     // ---- not connected: the owner's address-and-code fold only after "I run the server"
     {const {p}=await page();await p.evaluate(()=>openSettings('connection'));
       const h=await p.isVisible('#adv-connection .adv-head');await p.click('#conn-own button');

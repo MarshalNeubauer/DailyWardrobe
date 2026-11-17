@@ -5,12 +5,10 @@
 // time, top first (a question over the color sheet over the item sheet; the close-up chooser over the reading sheet over the item
 // sheet). The reading sheet (#rd-sheet, colpick.js) had no Back at all (2026-11-15); the crop frame closed the whole item sheet.
 // The tabs keep no entries (Back there leaves the app, as before).
-const {wrapBrowser}=require('./webkit');
 const NEW={colour:{kind:'colour',match:'new',existing:'deeptaupe',dE:7.5,name:'mink brown',hex:'#4a4434',plansAs:'deeptaupe',fitsType:true,confidence:'high',why:'A warm gray-brown.',ask:null},
   pattern:{kind:'pattern',match:'new',existing:'twill',name:'steep fine twill',description:'Fine, steep diagonal ribs.',plansAs:'twill',
     look:{layout:'texture',tr:34,tex:{kind:'twill',grid:['1000','0100','0010','0001'],aspect:1,lighter:true,contrast:'subtle'}},colourHint:null,confidence:'high',why:'A steep twill.',ask:null},model:'stub',lookups:2};
-module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
-  const engines=[['Chromium',()=>chromium.launch()],['WebKit',async()=>{const pw=require('playwright');return wrapBrowser(await pw.webkit.launch())}]];
+module.exports=async({ok,chromium,engines,url,WARDROBES,settle})=>{
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{await run(eng,browser,{ok,url,WARDROBES,settle})}finally{await browser.close()}}

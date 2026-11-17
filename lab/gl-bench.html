@@ -90,8 +90,8 @@ var glbErrors=[];
    current files, whatever app version this phone has cached; run in order on the page, and joined into the Worker's one script */
 var GLB_WORKER_SRC='',GLB_APP_VERSION=null;
 (async function(){
-  var PAGE=['../core.js','../detect.js','../draw.js','../assemble.js','../asm-color.js','../asm-gl.js','gl-bench-run.js','gl-bench.js'];
-  var WORKER=['../assemble.js','../asm-color.js','../asm-gl.js','gl-bench-run.js'];
+  var PAGE=['../srgb.js','../core.js','../detect.js','../draw.js','../assemble.js','../asm-color.js','../asm-gl.js','gl-bench-run.js','gl-bench.js'];
+  var WORKER=['../srgb.js','../assemble.js','../asm-color.js','../asm-gl.js','gl-bench-run.js'];
   try{
     var src={};
     await Promise.all(PAGE.map(async function(u){var r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(u+': HTTP '+r.status);src[u]=await r.text()}));

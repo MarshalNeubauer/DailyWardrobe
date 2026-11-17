@@ -6,14 +6,12 @@
 // the warm-light note with Retake; a tester sees "2 lookups · N of 40 left today" and can't start with 1 left; one half failing
 // still shows the other; the Add card's second button sits to the right of Add close-up and runs chooser -> reading with no re-tag.
 // The close-ups are the mink suit's test pictures (tests/fixtures/suit-mink*), scaled up, plain or with white paper drawn on.
-const {wrapBrowser}=require('./webkit');
 const NEW={colour:{kind:'colour',match:'new',existing:'deeptaupe',dE:7.5,name:'mink brown',hex:'#4a4434',plansAs:'deeptaupe',fitsType:true,confidence:'high',why:'A warm gray-brown, darker than Deep taupe.',ask:null},
   pattern:{kind:'pattern',match:'new',existing:'twill',name:'steep fine twill',description:'Fine, steep diagonal ribs, tightly woven.',plansAs:'twill',
     look:{layout:'texture',tr:34,tex:{kind:'twill',grid:['1000','0100','0010','0001'],aspect:1,lighter:true,contrast:'subtle'}},colourHint:null,confidence:'high',why:'A steep twill.',ask:null},model:'stub',lookups:2};
 const DUP={colour:{...NEW.colour,existing:'taupe',dE:2.8,name:'mink taupe',hex:'#584c41'},pattern:{...NEW.pattern,match:'existing',existing:'twill',name:'twill',look:{layout:'none',tr:10}},model:'stub',lookups:2};
 const HALF={colour:NEW.colour,pattern:{error:'ai',detail:'failed',status:502},model:'stub',lookups:1};
-module.exports=async({ok,chromium,url,settle})=>{
-  const engines=[['Chromium',()=>chromium.launch()],['WebKit',async()=>{const pw=require('playwright');return wrapBrowser(await pw.webkit.launch())}]];
+module.exports=async({ok,chromium,engines,url,settle})=>{
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{await run(eng,browser,{ok,url,settle})}finally{await browser.close()}}

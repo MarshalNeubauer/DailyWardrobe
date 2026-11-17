@@ -48,8 +48,6 @@ function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
   if(o.top)return o.tie?(o.vest?'vest':'suit'):(o.vest?'vest-open':'suit-open');
   if(!o.bot||!o.belt)return null;   // the shirt masters show the trousers and the belt
   return o.tie?'shirt-tie':'shirt-open'}
-/* the outfit's kind when its master is on this device (downloaded) */
-const asmCmReady=o=>{const k=asmKindOf(o);return k&&renders[asmCmKey(k,'master')]?k:null};
 /* (2026-11-16) the master a look is painted on, the new garments' kinds included (asm-kinds.js asmCmKindOf); asmCmKind (in the painter's
    fingerprint) is unchanged. asmNkBaseOf: a new kind's base master (its cloth and trousers/jacket zones), else the kind itself */
 const asmKindOf=o=>typeof asmCmKindOf==='function'?asmCmKindOf(o):asmCmKind(o);
@@ -296,8 +294,8 @@ const asmCmItems=(o,k)=>{const z={shirt:o.shirt};if(ASM_CM_JACKET.has(k)){z.jack
 const asmCmOutKey=o=>asmKey('out/cm'+ASM_CMV+'/'+fnv64(asmCmSig(o)));
 const asmCmStamp=o=>{const k=asmKindOf(o);return k?asmCmAssets(k).reduce((t,key)=>Math.max(t,renders[key]&&renders[key].t||0),0):0};
 /* bring the kind's master, masks and parts onto the device (true when all are here); the background too, when the worker has one */
-async function asmCmGet(kind){if(!asmCmAssets(kind).length)return false;await asmCmMfGet();const keys=asmCmAssets(kind);if(!renders[keys[0]])await asmCmMasterCopy(kind);if(!await asmGet(keys[0],true))return false;   // (keys after the manifest: it says whether the master has solved positions)
-  await asmCmBgGet();const all=(await Promise.all(keys.slice(1).map(k=>asmGet(k)))).every(Boolean);if(all)await asmCmSetupFetch(asmCmBaseJob(kind));return all}
+async function asmCmGet(kind){if(!asmCmAssets(kind).length)return false;await asmCmMfGet();const keys=asmCmAssets(kind);if(!await asmGet(keys[0],true))return false;   // (keys after the manifest: it says whether the master has solved positions)
+  await asmCmBgGet();return (await Promise.all(keys.slice(1).map(k=>asmGet(k)))).every(Boolean)}   // (CR-8-06: the PC builder's shared setup and 2048 copy, which nothing uploads since 2026-11-16, are no longer asked for)
 /* the background behind every master (2026-11-13, the owner's choice: a blurred office the colour of his earlier masters, made with
    ChatGPT as an empty room and its desk carried further left so its end hides behind the trousers on the shirt masters): one picture on
    the worker (`npm run cm-upload -- --bg <file>`), shared by the four masters; without it the wall is the flat ASM_CM_WALL as before.
@@ -955,8 +953,8 @@ const asmCmPrepCode=()=>[ASM_CM_FOLD_KEEP,ASM_CM_CUFF_PX,ASM_CM_CUFF_STEP,ASM_CM
   ASM_LEG_HAND,ASM_LEG_K,ASM_LEG_SMOOTH,ASM_LIN,ASM_PX_MM,ASM_SIZE,ASM_SLEEVE_FLOW,asmBodyFlow,asmCmBlur,asmCmHandEdge,asmCmLightPrep,asmCmPrep,asmCmRefit,
   asmImg,asmLegsPrep,asmPolyAt,asmSleeveFlow,asmSleeveSegs,asmTubePart,asmTubeRaw,asmTubeTabs];
 /* (2026-11-14) asmData, the image decoder, is not in asmCmPrepCode: the Web Worker swaps in its own (asm-worker.js: createImageBitmap on an
-   OffscreenCanvas, the same pixels), so the page and the worker computed different setup keys, and a setup kept or downloaded on the page
-   (the shared setups on the worker, asmCmSetupFetch) was never found by the worker that paints. It stays in asmCmCode (pictures' keys are
+   OffscreenCanvas, the same pixels), so the page and the worker computed different setup keys, and a setup kept on the page was never
+   found by the worker that paints. It stays in asmCmCode (pictures' keys are
    made on the page only) */
 const asmCmCodeText=list=>list.map(v=>typeof v==='function'?String(v):JSON.stringify(v,(k,x)=>typeof x==='function'?String(x):x instanceof Set||x instanceof Map?[...x]:ArrayBuffer.isView(x)?Array.from(x):x)).join('|');
 let asmCmSrc=null,asmCmCodeH=null;
@@ -1218,16 +1216,11 @@ async function asmCmBuild(job){const hit=await asmCmSetup(job);
 
 /* ---- faster masters on a phone (2026-11-14, the owner's ask: loading a master was the slow part; measured on a simulated phone, CPU 4x
    slower and 4G: a master's first use took about 15.5 s, 6.1 s downloading its 16 files, 7.5 s working out its setup, 1.9 s painting;
-   with the setup kept, 2.6 s). Three things, none of which touches the functions in the pictures' code fingerprints:
-   1. warming: once Today's look is shown and the days ahead are fetched (asmAhead), the masters the coming looks use are downloaded and
-      set up in the background, one at a time (asmCmWarm), so a day nobody built paints in about 2.6 s even the first time
-   2. each master's setup at the phone's size on the worker (asmCmSetupBlob, uploaded with PUT /blob); a phone that lacks it downloads
-      it (asmCmSetupFetch, in asmCmGet) instead of working it out
-   3. a 2048 copy of each master (the masters are 2880): a phone downloads it instead (asmCmMasterCopy, about half the bytes), kept
-      under the master's own key with the master's date, so keys and setups are the same as from the 2880 master
-   (2026-11-16) The PC builder that uploaded 2 and 3 was removed: nothing uploads them now. A phone still takes those on the worker while
-   they match (a setup by its disk key, a copy by its master's date); once a master is uploaded again or the painter's setup code
-   changes, they no longer match and the phone downloads the 2880 master and works the setup out itself, as before them ---- */
+   with the setup kept, 2.6 s). Warming, which touches none of the functions in the pictures' code fingerprints: once Today's look is shown
+   and the days ahead are fetched (asmAhead), the masters the coming looks use are downloaded and set up in the background, one at a time
+   (asmCmWarm), so a day nobody built paints in about 2.6 s even the first time. (CR-8-06, 2026-11-17) The PC builder's shared setups
+   (PUT /blob) and 2048 copies of the masters, which nothing has uploaded since it was removed on 2026-11-16, are no longer asked for:
+   a phone downloads the master and works its setup out once (kept on disk, asmCmPack) ---- */
 /* the master part of a job (asmCmJob's, without the outfit's cloth): enough to work out or read back the master's setup */
 function asmCmBaseJob(kind,size){const K=ASM_CM_KINDS[kind];if(!K)return null;const keys=asmCmAssets(kind);if(keys.some(k=>!renders[k]))return null;
   const masks={};for(const z of K.zones)masks[z]=renders[asmCmKey(kind,'mask/'+z)].img;
@@ -1236,48 +1229,6 @@ function asmCmBaseJob(kind,size){const K=ASM_CM_KINDS[kind];if(!K)return null;co
   return {cm:kind,size:size||self.ASM_CM_SIZE||ASM_SIZE,mk:keys[0],mt:renders[keys[0]].t,rev:asmCmHash(keys.filter(k=>!gks.includes(k)).map(k=>renders[k].t||0).join(',')),master:renders[keys[0]].img,masks,parts,...geo}}
 /* the kept setup's IndexedDB key, as asmCmSetup writes it (tests/masterspeed.test.js checks the two agree) */
 const asmCmDiskKey=job=>job.cm+'|v'+ASM_CMV+'|'+asmCmSrcSig()+'|z'+ASM_CM_PACKV+'|'+job.cm+'|'+job.mk+'|'+job.mt+'|'+(job.rev||'')+'|'+job.size;
-const asmCmSetupKey=dk=>asmKey('cmsetup/'+asmCmHash(dk));
-/* a packed setup as bytes: "DWS1", the length of the JSON part, the JSON part (the disk key it is for, its unpacked size, and the packed
-   description, small typed arrays written out), then the gzipped arrays */
-const asmB64=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
-const asmUnB64=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
-const ASM_TA={Uint8Array,Int8Array,Uint16Array,Int16Array,Uint32Array,Int32Array,Float32Array,Float64Array,Uint8ClampedArray};
-function asmCmBlobOf(dk,rec){const enc=x=>{if(ArrayBuffer.isView(x))return {__ta:[x.constructor.name,asmB64(new Uint8Array(x.buffer,x.byteOffset,x.byteLength))]};
-    if(x instanceof Map)return {__map:[...x].map(([k,v])=>[enc(k),enc(v)])};if(x instanceof Set)return {__set:[...x].map(enc)};
-    if(typeof x==='number'&&!Number.isFinite(x))return {__num:String(x)};if(Array.isArray(x))return x.map(enc);
-    if(x&&typeof x==='object'){const o={};for(const [k,v] of Object.entries(x))if(v!==undefined)o[k]=enc(v);return o}return x};
-  const head=new TextEncoder().encode(JSON.stringify({dk,n:rec.n,meta:enc(rec.meta)})),gz=new Uint8Array(rec.gz),out=new Uint8Array(8+head.length+gz.length);
-  out.set([68,87,83,49]);new DataView(out.buffer).setUint32(4,head.length);out.set(head,8);out.set(gz,8+head.length);return out}
-function asmCmBlobRead(buf,dk){try{const u=new Uint8Array(buf);if(u.length<8||u[0]!==68||u[1]!==87||u[2]!==83||u[3]!==49)return null;const len=new DataView(u.buffer,u.byteOffset).getUint32(4);
-    const h=JSON.parse(new TextDecoder().decode(u.subarray(8,8+len)));if(h.dk!==dk)return null;
-    const dec=x=>{if(Array.isArray(x))return x.map(dec);if(x&&typeof x==='object'){if(x.__ta){const b=asmUnB64(x.__ta[1]),T=ASM_TA[x.__ta[0]];return T?new T(b.buffer,0,b.byteLength/T.BYTES_PER_ELEMENT):null}
-        if(x.__map)return new Map(x.__map.map(([k,v])=>[dec(k),dec(v)]));if(x.__set)return new Set(x.__set.map(dec));if(x.__num)return Number(x.__num);
-        const o={};for(const [k,v] of Object.entries(x))o[k]=dec(v);return o}return x};
-    return {meta:dec(h.meta),n:h.n,gz:u.slice(8+len).buffer}}catch(e){console.warn('could not read the shared setup',e);return null}}
-/* the kind's setup at the phone's size, packed: {key, bytes} or null (made the shared setup the PC builder uploaded; now only
-   tests/masterspeed.test.js uses it, to put one on its test worker) */
-async function asmCmSetupBlob(kind,size){const job=asmCmBaseJob(kind,size||ASM_SIZE);if(!job)return null;const dk=asmCmDiskKey(job);
-  const hit=await asmCmSetup({...job,diskCache:false});const rec=await asmCmPack(hit.P);return rec?{key:asmCmSetupKey(dk),dk,bytes:asmCmBlobOf(dk,rec)}:null}
-/* (a phone) the shared setup for a job this device hasn't set up: downloaded and kept where asmCmSetup reads it. Not when painting
-   larger than a phone (ASM_CM_SIZE over 2048: the setup is for another size); asked once a session per setup */
-const asmCmSetupTried=new Set();
-async function asmCmSetupFetch(job){if(!job||(self.ASM_CM_SIZE||ASM_SIZE)>ASM_SIZE||typeof indexedDB==='undefined'||typeof workerBase!=='function')return false;
-  const dk=asmCmDiskKey(job);if(await asmCmDiskGet(dk))return true;const k=asmCmSetupKey(dk);if(asmCmSetupTried.has(k))return false;asmCmSetupTried.add(k);
-  const W=workerBase();if(!W)return false;
-  try{const r=await fetch(new URL('blob?key='+k,W.url).href,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return false;
-    const rec=asmCmBlobRead(await r.arrayBuffer(),dk);if(!rec)return false;await asmCmDiskPut(dk,rec,job.cm+'|');return true}
-  catch(e){console.warn('no shared setup',e);return false}}
-/* (a phone) the 2048 copy of a master in place of the 2880 one, when the copy is of the master the manifest lists */
-const asmCmCopyKey=kind=>asmCmKey(kind,'master2048'),asmCmCopySig=t=>'asm/cm-copy '+t;
-async function asmCmMasterCopy(kind){const mk=asmCmKey(kind,'master');if(renders[mk]||(self.ASM_CM_SIZE||ASM_SIZE)>ASM_SIZE||typeof workerBase!=='function')return false;
-  const t=asmCmMfNow().keys[mk],W=workerBase();if(!t||!W)return false;
-  try{const r=await fetch(W.url+'?key='+asmCmCopyKey(kind),{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return false;const c=await r.json();
-    if(!c||c.sig!==asmCmCopySig(t)||!/^data:image\//.test(c.img||''))return false;
-    await keepRender(mk,{sig:c.sig,img:c.img,model:c.model||'copy',t},false);return true}catch(e){return false}}
-/* a master's 2048 copy for phones: {key, rec} (made the copy the PC builder uploaded; now only tests/masterspeed.test.js uses it) */
-async function asmCmMasterCopyRec(kind){const mk=asmCmKey(kind,'master'),m=renders[mk];if(!m)return null;const d=await asmData(m.img,ASM_SIZE);
-  const c=document.createElement('canvas');c.width=d.width;c.height=d.height;c.getContext('2d').putImageData(d,0,0);
-  return {key:asmCmCopyKey(kind),rec:{sig:asmCmCopySig(m.t),img:c.toDataURL('image/jpeg',.92),model:'copy',t:m.t}}}
 /* (a phone) warming: the masters the coming looks use, downloaded and set up in the background, one at a time; not on a connection that
    asks to save data or a slow one; once a session per master */
 const asmCmWarmed=new Set();let asmCmWarming=false;

@@ -13,7 +13,7 @@
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="Wardrobe"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head><body>
-<header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="refresh-btn" onclick="refreshAll()" aria-label="Refresh wardrobe" title="Refresh wardrobe" hidden>↻</button><button id="theme-btn" onclick="cycleTheme()" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button onclick="openSettings()" aria-label="Settings" title="Settings"><svg class="hgear" viewBox="0 0 24 24" aria-hidden="true"><mask id="hgear-hole"><rect width="24" height="24" fill="#fff"/><circle cx="12" cy="12" r="3.3" fill="#000"/></mask><g fill="currentColor" mask="url(#hgear-hole)"><circle cx="12" cy="12" r="7.4"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(45 12 12)"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(90 12 12)"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(135 12 12)"/></g></svg></button></div></header>
+<header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="theme-btn" onclick="cycleTheme()" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button onclick="openSettings()" aria-label="Settings" title="Settings"><svg class="hgear" viewBox="0 0 24 24" aria-hidden="true"><mask id="hgear-hole"><rect width="24" height="24" fill="#fff"/><circle cx="12" cy="12" r="3.3" fill="#000"/></mask><g fill="currentColor" mask="url(#hgear-hole)"><circle cx="12" cy="12" r="7.4"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(45 12 12)"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(90 12 12)"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(135 12 12)"/></g></svg></button></div></header>
 <main>
 <section id="today"></section>
 <section id="wardrobe" hidden></section>
@@ -129,7 +129,7 @@
 <label class="srow stack">Code <input type="text" id="cfg-token" placeholder="Your code" autocomplete="off"></label></div></div>
 </div></div></section>
 
-<section class="mbox scat" id="sc-about"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('about');renderAbout()" aria-expanded="false" aria-controls="sp-about"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></span><span class="mltxt"><b>About</b><small id="sum-about">Version · feedback · your data</small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<section class="mbox scat" id="sc-about"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('about')" aria-expanded="false" aria-controls="sp-about"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></span><span class="mltxt"><b>About</b><small id="sum-about">Version · feedback · your data</small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-about"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel" id="about-ver">Version</div><p class="shelp" id="about-status" role="status"></p>
 <div class="sactions"><button type="button" id="about-check" onclick="checkForUpdate(true)">Check for updates</button><button type="button" class="pri" id="about-update" hidden onclick="updateNow()">Update</button></div></div>
@@ -159,6 +159,7 @@
 <script src="planner.js"></script>
 <script src="analysis.js"></script>
 <script src="detect.js"></script>
+<script src="srgb.js"></script>
 <script src="mannequin.js"></script><script src="mq/vest.js"></script><script src="mq/suit.js"></script><script src="mq/suit-open.js"></script><script src="mq/shirt-tie.js"></script><script src="mq/shirt-open.js"></script><script src="draw.js"></script>
 <script src="app.js"></script>
 <script src="add.js"></script>

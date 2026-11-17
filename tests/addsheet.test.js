@@ -5,9 +5,7 @@
 // first (Keep editing / Discard); Confirm and Cancel are pinned at the bottom; saving closes the sheet with a toast and Undo, and the
 // pieces are in the Wardrobe. On the wide layout the sheets sit below a stand-in status bar, at most 640 px wide, centered.
 // Chromium and WebKit, with touch; light and dark; the worker stubbed (nothing paid).
-const {wrapBrowser}=require('./webkit');
-module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
-  const engines=[['Chromium',()=>chromium.launch()],['WebKit',async()=>{const pw=require('playwright');return wrapBrowser(await pw.webkit.launch())}]];
+module.exports=async({ok,chromium,engines,url,WARDROBES,settle})=>{
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{for(const [w,h,scheme] of [[390,844,'light'],[690,960,'dark']])await run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme})}finally{await browser.close()}}
@@ -109,14 +107,15 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
 
   // ---- Confirm: the sheet closes, "Saved: …" with Undo, the piece in the Wardrobe
   const n0=await ev(()=>items.length);
-  await change();await tap('#nps-bar .pri');
+  // (the save, its toast and the redraw come a moment after the tap: waited for, not read after settle, CR-10-03)
+  await change();await tap('#nps-bar .pri');await p.waitForFunction(n0=>!npsId&&items.length===n0+1&&/^Saved: /.test(document.querySelector('#toast').textContent),n0,{timeout:8000}).catch(()=>{});
   e=await ev(()=>({up:!!npsId,n:items.length,toast:document.querySelector('#toast').textContent,undo:!!document.querySelector('#toast.on button'),add:!document.querySelector('#add').hidden}));
   ok(!e.up&&e.n===n0+1&&/^Saved: .+\./.test(e.toast)&&e.undo&&e.add,T+`Confirm saves it, the sheet closes, back on Add, a toast "${e.toast}" with Undo`);
   const sid=await ev(()=>items[items.length-1].id);
   await tap('#toast button');await p.waitForFunction(id=>!items.some(i=>i.id===id),sid);
   ok(true,T+'Undo takes it out again');
   await ev(()=>{queue.length=0;renderAdd()});
-  await change();await tap('#nps-bar .pri');
+  await change();await tap('#nps-bar .pri');await p.waitForFunction(n0=>!npsId&&items.length===n0+1,n0,{timeout:8000}).catch(()=>{});
   await ev(()=>show('wardrobe'));await settle(p,400);
   e=await ev(()=>({n:items.length,tile:document.querySelectorAll('#wardrobe .gi').length}));
   ok(e.n===n0+1&&e.tile>=1&&await ev(()=>{const it=items[items.length-1];return !!document.querySelector(`#wardrobe .gi[data-id="${it.id}"],#wardrobe [onclick*="${it.id}"]`)}),T+`the saved piece is in the Wardrobe (${JSON.stringify(e)})`);

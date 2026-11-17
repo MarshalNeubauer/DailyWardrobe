@@ -3,6 +3,7 @@
 // lift recolours "Your suit, drawn" between steps, at most once a frame, with the big swatch and its hex; a hex typed recolours it before
 // the field is left; the lift still draws the sheet again as before; nothing is fetched or saved while moving; the figure doesn't move;
 // the redraw's cost (Chromium at 4× CPU throttling; WebKit with npm run test:webkit). The worker is stubbed (no paid call).
+const {pace}=require('./pace');
 module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();const ctx=await browser.newContext({viewport:{width:390,height:844}});
   let calls=0;
@@ -60,13 +61,16 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok((await fig()).fills.includes('#2a6e3f'),'a half-typed hex leaves the suit as it was');
     ok(calls===0,`nothing is fetched while moving or typing (${calls})`);
     // the cost of one redraw: the figure's drawing, put in and laid out (Chromium throttled 4×, as a slower phone)
+    // the budget is the owner's PC's (12 ms) times how much slower this machine is right now (tests/pace.js, measured before throttling):
+    // GitHub's 4-core runner took 19.7 ms against a flat 12 (CR-10-03)
+    const k=await pace(p);
     let cdp=null;try{cdp=await ctx.newCDPSession(p);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4})}catch{cdp=null}
     const cost=await p.evaluate(async()=>{const d=document.querySelector('#col-sheet .cpph.cpfig .cpdraw'),it=colTarget(),t=[];
       for(let i=0;i<40;i++){const t0=performance.now();d.innerHTML=cnDrawn(it,cnFromHsv(i*9,60,55),'primaryColor');d.getBoundingClientRect();t.push(performance.now()-t0);await new Promise(r=>requestAnimationFrame(r))}
       t.sort((a,b)=>a-b);return {med:t[20],p90:t[36]}});
     if(cdp)await cdp.send('Emulation.setCPUThrottlingRate',{rate:1});
     console.log(`    redraw per frame${cdp?' (4× CPU throttling)':''}: median ${cost.med.toFixed(1)} ms, 90th ${cost.p90.toFixed(1)} ms`);
-    ok(cost.p90<12,`a redraw fits well inside a 60 fps frame (90th percentile ${cost.p90.toFixed(1)} ms)`);
+    ok(cost.p90<12*k,`a redraw fits well inside a 60 fps frame (90th percentile ${cost.p90.toFixed(1)} ms, ${(12*k).toFixed(0)} allowed: 12 at this machine's pace ×${k.toFixed(2)})`);
     ok(!errs.length,'no page errors ('+errs.join(' | ')+')');
   }finally{await browser.close()}
 };

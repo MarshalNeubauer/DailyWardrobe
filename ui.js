@@ -2,7 +2,7 @@
    - askConfirm(message, {ok, cancel, danger}) -> Promise<boolean>: the app's own question, a sheet from the bottom like the piece picker
    - tell(message): a plain notice (a toast that stays long enough to read)
    - isConnected(), needConn(): what the buttons that need the server show while the app is not connected
-   - advFold(): the "Advanced" folds in Settings */
+   - advToggle(button), advClose(): the "Advanced" folds in Settings */
 const ASK_NONE={ok:'OK',cancel:'Cancel',danger:false};
 const ASK_SETTLE=450;   // ms after a question opens in which a real tap outside it doesn't cancel it: it is the double tap's second tap (re-audit 2026-11-15)
 let asking=null;   // the question on screen: {done(answer), last (what had the focus)}
@@ -151,7 +151,6 @@ function needConn(btn){if(!btn)return false;const off=!isConnected(),box=btn.clo
   if(btn.classList.contains('needconn')){btn.classList.remove('needconn');btn.removeAttribute('title')}
   return off}
 /* the reason as a line of text ('' when connected) */
-const connNote=()=>isConnected()?'':`<p class="connnote">${NEED_CONN}</p>`;
 /* Settings → Connection: its one-line summary, and the box at its top. Not connected: what a connection adds, and a field for the
    invite link (the address and the code themselves are under Advanced). Who is connected is the account box under it (account.js). */
 function connSummary(){if(typeof inviteChecking!=='undefined'&&inviteChecking)return 'Checking your invitation…';if(inviteOver())return 'Invitation ended';if(!isConnected())return 'Not connected';const m=typeof acct!=='undefined'&&acct&&acct.me;

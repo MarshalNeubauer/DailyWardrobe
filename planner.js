@@ -164,8 +164,13 @@ const WARM=['brown','tan','olive'];
 const SHOE_FIT={oxford:{suit:0,dress:0,casual:0},derby:{suit:-4,dress:0,casual:0},loafer:{suit:-8,dress:-2,casual:0},boot:{suit:-60,dress:-20,casual:0},sneaker:{suit:-60,dress:-60,casual:0}};
 const shoeCtx=b=>b.type==='suit'?'suit':trouserKind(b)==='dress'?'dress':'casual';
 const SNEAKER_COLS=['white','cream','grey','black','navy','brown','tan'];
-const shoeScore=(t,b,s)=>{if(!b)return 0;const sc=pcol(s),bc=pcol(b),tc=t?pcol(t):'';const k=(SH[bc]||['black','brown']).indexOf(sc);let v=k<0?-50:6-k*2;
-  if(k<0&&shoeStyle(s)==='sneaker'&&shoeCtx(b)==='casual'&&SNEAKER_COLS.includes(sc))v=4;   /* a white or neutral sneaker goes with any chinos or jeans */if(t&&((WARM.includes(tc)&&sc==='black')||(tc==='black'&&sc!=='black')))v-=50;return v+SHOE_FIT[shoeStyle(s)][shoeCtx(b)]};
+/* black shoes under a brown, tan or olive jacket, or other shoes with a black suit: a real mistake whatever the trousers say. It costs
+   SHOE_CLASH (60, was 50), more than the trousers' best shoe points (6), so it always reaches the -50 line the score (rateOutfit: Shoes,
+   hard), shoeOk, clothesHard and NO_SHOES use (the code review, CR-3-08: -44 to -48 never did, so the score gave such shoes full marks) */
+const SHOE_CLASH=60;
+const shoeClash=(t,s)=>{if(!t||!s)return false;const sc=pcol(s),tc=pcol(t);return (WARM.includes(tc)&&sc==='black')||(tc==='black'&&sc!=='black')};
+const shoeScore=(t,b,s)=>{if(!b)return 0;const sc=pcol(s),bc=pcol(b);const k=(SH[bc]||['black','brown']).indexOf(sc);let v=k<0?-50:6-k*2;
+  if(k<0&&shoeStyle(s)==='sneaker'&&shoeCtx(b)==='casual'&&SNEAKER_COLS.includes(sc))v=4;   /* a white or neutral sneaker goes with any chinos or jeans */if(shoeClash(t,s))v-=SHOE_CLASH;return v+SHOE_FIT[shoeStyle(s)][shoeCtx(b)]};
 /* socks: the trousers' colour first, then the shoes', then a sock that picks up the shirt's or the tie's colour (echo: their colour groups,
    from sockEcho), then a quiet neutral */
 const sockEcho=(shirt,tie)=>[shirt&&shirtGroup(shirt),tie&&tieGroup(tie)].filter(g=>g&&!['white','black','grey','navy','brown'].includes(g));
@@ -245,6 +250,9 @@ function shoeFormality(shoe,suitDay){
    Leather shoes want a day to dry: yesterday's pair costs SHOE_AGAIN (25, was 7) when another pair suits, more than the halved strap and
    metal swing (20), less than no matching belt (30) (the audit: one pair 87 times two days running) */
 const SUIT_SUEDE=30,SHOE_WATCH=.5,SHOE_AGAIN=25;
+/* rain wins (the owner, 2026-11-17, on the code review's CR-3-02): suede (and nubuck) is never planned on a rainy day while another pair is
+   left, even when that means yesterday's pair again; it was -25, the same as SHOE_AGAIN, so resting yesterday's calf pair put suede in the rain */
+const RAIN_SUEDE=1000;
 function watchFit(w,shoe,belt){
   let v=0;const o=watchOpts(w);
   if(o.band==='leather'&&shoe)v+=leatherGroup(planCol(w))===leatherGroup(planCol(shoe))?8:-20;
@@ -252,9 +260,9 @@ function watchFit(w,shoe,belt){
   return v;
 }
 
-/* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans every future day (swaps on days
-   after today are released: the week's locks go, the owner's own picks (force, skip, the vest) stay, see replanFuture in app.js) */
-const PLAN_RULES=23;   // 23: the same tie with the same shirt colour within 10 workdays, under any jacket, costs PAIR_GAP (pairRepeat, 2026-11-16: a pink shirt and tie on 15 and 24 Nov); 22: a piece never worn yet creeps only from the day it was added (fresh, 2026-11-16: two new brown suits ran back to back); 21: pocket squares (2026-11-16): a square with every jacket that has a good one (pocketScore: never the tie's own colour and pattern, an echo of the tie, shirt or jacket, else white; white at a funeral), off with the jacket; 20: a camouflage shirt and pants are a uniform, planned together, not a clash (2026-11-16); 19: accents (2026-11-16): an item's colours beyond its three count, weaker, where the tie and cufflinks are matched (ACC_ECHO, ENAMEL_MINOR); 18: fix round 3 (2026-11-16): shoes with a suit, formality wins (SUIT_SUEDE, SHOE_WATCH), not yesterday's pair (SHOE_AGAIN); 17: camouflage is a bold, large pattern of its own kind, kept off formal days, funerals and weddings (2026-11-16); 16: materials (2026-11-15): seasons from tropical wool, cashmere, moleskin, melton and wool ties; nubuck as suede; a canvas belt with suede; two-tone metal; silk-knot cufflinks; 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (clothesHard, jacketClean, shoes that don't suit lose to no belt), the day before's tie (TIE_NEXT); 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
+/* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans the days after today (the week's locks and
+   the app's own recorded pieces go; the owner's swaps and picks (force, skip, the vest) and a kept trip stay: replanFuture(true) in history.js) */
+const PLAN_RULES=24;   // 24: the code review's fixes (fix round A, 2026-11-17): rain wins (no suede on a rainy day while another pair is left, RAIN_SUEDE), a jacket-off day counts for repeats, comboRepeat capped (COMBO_CAP), black shoes under a warm jacket a real mistake (SHOE_CLASH), a kept trip's lock kept; 23: the same tie with the same shirt colour within 10 workdays, under any jacket, costs PAIR_GAP (pairRepeat, 2026-11-16: a pink shirt and tie on 15 and 24 Nov); 22: a piece never worn yet creeps only from the day it was added (fresh, 2026-11-16: two new brown suits ran back to back); 21: pocket squares (2026-11-16): a square with every jacket that has a good one (pocketScore: never the tie's own colour and pattern, an echo of the tie, shirt or jacket, else white; white at a funeral), off with the jacket; 20: a camouflage shirt and pants are a uniform, planned together, not a clash (2026-11-16); 19: accents (2026-11-16): an item's colours beyond its three count, weaker, where the tie and cufflinks are matched (ACC_ECHO, ENAMEL_MINOR); 18: fix round 3 (2026-11-16): shoes with a suit, formality wins (SUIT_SUEDE, SHOE_WATCH), not yesterday's pair (SHOE_AGAIN); 17: camouflage is a bold, large pattern of its own kind, kept off formal days, funerals and weddings (2026-11-16); 16: materials (2026-11-15): seasons from tropical wool, cashmere, moleskin, melton and wool ties; nubuck as suede; a canvas belt with suede; two-tone metal; silk-knot cufflinks; 15: fix round 2 (2026-11-15): no real mistake while a clean outfit exists (clothesHard, jacketClean, shoes that don't suit lose to no belt), the day before's tie (TIE_NEXT); 14: the new-user audit (2026-11-15): no shoes that suit the trousers or suit (NO_SHOES), the jacket worn the workday before (JKT_AGAIN), no days before the wardrobe began, stale locks, the oldest wash, funeral motifs, seasons from material; 13: gunmetal jackets are grey; two very dark jackets running read as "dark again" (2026-11-14); 12: the next 3 fixed days' ties and shirts, the ties' capped creep, formal days' narrow window, "Not worn" days (and the 2026-11-13 changes that skipped a bump)
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 const FORMAL_QWIN=3;   // a formal day or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
 const TIE_CREEP=.03,TIE_CREEP_MAX=9;   // a tie's rest keeps creeping after 30 days, capped well under TIE_GAP so a tie never repeats for it
@@ -322,6 +330,7 @@ const SHIRT_GROUP={white:'white',ivory:'white',cream:'white',lightblue:'lightblu
 const TIE_GROUP={navy:'navy',darknavy:'navy',deepblue:'navy',blue:'blue',steelblue:'blue',lightblue:'blue',slate:'blue',black:'black',charcoal:'black',grey:'grey',silver:'grey',
   burgundy:'red',wine:'red',red:'red',oxblood:'red',pink:'pink',purple:'purple',lavender:'purple',green:'green',olive:'green',brown:'brown',tan:'brown',rust:'brown',gold:'gold',cream:'cream'};
 const shirtGroup=i=>{const c=planCol(i);return SHIRT_GROUP[c]||fam(c)},tieGroup=i=>{const c=planCol(i);return TIE_GROUP[c]||fam(c)};
+const COMBO_CAP=12;   // comboRepeat at most this for a tie other than the workday before's (outfit's comboCost, the code review CR-3-03)
 const comboRepeat=(sh,x,hist)=>{if(!hist||!hist.length)return 0;const sc=sh?shirtGroup(sh):null;let v=0;
   hist.slice(0,2).forEach((h,n)=>{if(!h)return;if(x&&h.tie===x.id)v+=n?3:7;if(x&&h.tie===x.id&&sc&&h.sc===sc)v+=n?4:8;
     else if(sc&&h.sc===sc&&sc!=='white'&&sc!=='lightblue')v+=n?1:2});return v};
@@ -364,10 +373,13 @@ const lookRepeat=(top,sh,x,prev)=>{if(!top||!prev)return 0;const jg=jacketGroup(
    two of one type and scale; the shirt the jacket's colour, or a dark shirt under a dark jacket; a tie the shirt's colour with no
    contrast; a black tie on a black suit, except at a funeral; trousers the odd jacket's colour; jacket, shirt and tie one colour), and
    trousers with no shoes of the day that suit them (shoeOk from outfit). Keep in step with rateOutfit */
+/* the shirt the jacket's color, or a dark shirt under a dark jacket (a casual top picked by hand, a navy sweater under a charcoal blazer,
+   is no dark dress shirt: the code review, CR-3-09); clothesHard and jacketClean */
+const shirtJacketHard=(t,sh)=>!!(t&&sh&&!darkUnderLight(t,sh)&&(pcol(sh)===pcol(t)||(darkShirt(sh)&&!CASUAL_TOPS.includes(sh.type))));
 function clothesHard(t,b,sh,x,sd,day,shoeOk){
   const P=patsOf([[t,'top'],[sd?null:b,'bot'],[sh,'shirt'],[x,'tie']]);
   if(P.length>=3||(P.length===2&&P[0].type===P[1].type&&P[0].scale===P[1].scale))return true;
-  if(t&&sh&&!darkUnderLight(t,sh)&&(pcol(sh)===pcol(t)||darkShirt(sh)))return true;
+  if(shirtJacketHard(t,sh))return true;
   if(sh&&x&&pcol(x)===pcol(sh)&&(darkShirt(sh)?tieLum(x)-LUM(sh)<25:LUM(sh)-LUM(x)<25))return true;
   if(t&&x&&pcol(t)==='black'&&pcol(x)==='black'&&!(day&&day.occ==='funeral'))return true;
   if(!sd&&t&&b&&pcol(b)===pcol(t))return true;
@@ -410,8 +422,14 @@ let lock=rec&&rec.lock||null;
 // white shirt two workdays running)
 const LD=day.formal||(day.occ&&!casual)?0:Math.max(0,+(settings.laundryDays??1)||0),washing=i=>LD>0&&since(i)<=LD,washed=l=>{const f=l.filter(i=>!washing(i));if(f.length)return f;
   let m=-Infinity;for(const i of l)m=Math.max(m,since(i));return l.filter(i=>since(i)===m)};
+/* a kept trip (pack.js "Keep these outfits", rec.trip: "These outfits stay as shown", its suitcase may be packed) keeps its lock (the code
+   review, CR-3-01): a piece gone lets go of its own slot only (shoes take their belt and socks with them), and the forecast or the wash
+   changes nothing; the day's notes say so (tripOff) */
+const trip=!!(rec&&rec.trip),tripOff=[];
 if(lock)for(const sl in LT){const id=lock[sl],t=LT[sl];if(!id||!t||force[sl]||(skip[sl]||[]).includes(id))continue;const x=by(t).find(i=>i.id===id);
-  if(!x||(sl==='shoes'&&day.clim.rain&&finish(x.leather)==='suede')||seasonFit(x,day.clim.season)<=-15||(sl==='shirt'&&washing(x)&&by(t).some(i=>!washing(i)))){lock=null;break}}
+  const wet=!!x&&sl==='shoes'&&day.clim.rain&&finish(x.leather)==='suede',season=!!x&&seasonFit(x,day.clim.season)<=-15;
+  if(!x||wet||season||(sl==='shirt'&&washing(x)&&by(t).some(i=>!washing(i)))){if(!trip){lock=null;break}
+    if(!x){lock={...lock};for(const s of sl==='shoes'?['shoes','belt','socks']:[sl])delete lock[s]}else if(season)tripOff.push(x)}}
 const pool=(type,slot)=>{const h=slot==='top'?hpTop:slot==='shirt'?hpShirt:slot==='bot'?hpBot:null;if(h)return [h];
   const all=by(type),f=force[slot];if(f){const x=all.find(i=>i.id===f);if(x)return [x]}
   const s=skip[slot]||[],l=lock&&lock[slot];if(l&&!s.includes(l)){const x=all.find(i=>i.id===l);if(x)return [x]}
@@ -422,7 +440,7 @@ const botFits=i=>{const k=trouserKind(i);if(full&&!casual)return k==='dress';if(
 const was={},take=b=>{if(!b)return null;const c={...b,rest:rest(b)};if(!(b.id in was))was[b.id]=last[b.id];last[b.id]=n;return c};
 // a piece taken off for the day (rec.off) was not worn: its rest goes back to what it was
 const untake=b=>{if(!b||!(b.id in was))return;if(was[b.id]===undefined)delete last[b.id];else last[b.id]=was[b.id]};
-const best=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return take(b)};
+const argBest=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return b},best=(arr,sc)=>take(argBest(arr,sc));
 // suits rotate (least recently worn first); season and formality can override a few days of rest
 // a suit whose only shoes were worn yesterday (a black suit the day after black shoes) waits a day when another suit can go first
 const shoeBound=i=>{if(i.type!=='suit'||day.formal||occ)return false;const ok=by('shoes').filter(s=>finish(s.leather)!=='patent'&&shoeScore(i,i,s)>-50);return ok.length>0&&ok.every(s=>since(s)<=1)};
@@ -436,9 +454,13 @@ const tpl=noJ?[]:pool(suitDay?'suit':'blazer','top'),tgw=topGw(tpl);
 // the only clean shirt a stripe and the only tie a stripe, the plain suit free): the jacket rotation would choose takes its turn
 // only when some trousers, shirt and tie of the day make a clean outfit with it (jacketClean, stopping at the first one found)
 const Tday=noT?[null]:pool('tie','tie'),Shday=pool('shirt','shirt');
-const jacketClean=j=>{const P=suitDay?[j]:pool('pants','bot');for(const b of P.length?P:[null])for(const sh of Shday.length?Shday:[null])for(const x of Tday.length?Tday:[null])if(!clothesHard(j,b,sh,x,suitDay,day,shoeOk))return true;return false};
+/* speed (the code review, CR-3-06: a wardrobe with no clean outfit tried every pants x shirt x tie, 6.5x slower): the parts of clothesHard
+   that the jacket and one other piece decide alone are checked once, outside the loop (the shirt against the jacket; the pants' color and
+   their shoes), so the plans are identical */
+const jacketClean=j=>{const P=suitDay?[j]:pool('pants','bot'),Sh=(Shday.length?Shday:[null]).filter(sh=>!shirtJacketHard(j,sh));if(!Sh.length)return false;
+  for(const b of P.length?P:[null]){if((b||j)&&!shoeOk(j,suitDay?j:b))continue;if(!suitDay&&b&&pcol(b)===pcol(j))continue;
+    for(const sh of Sh)for(const x of Tday.length?Tday:[null])if(!clothesHard(j,b,sh,x,suitDay,day,shoeOk))return true}return false};
 const jscore=i=>-(noShoes(i)?NO_SHOES:0)-againJ(i)+Math.min(rest(i),14)*3+Math.max(0,rest(i)-14)+over(i,60)*.2-offSeason(i)-(shoeBound(i)?10:0)+seasonFit(i,day.clim.season)*2+(day.formal?formalTop(i)*2:0)+(occ?occ.top(i,day.clim.season)*3:0)-colourRepeat(i,day.prev&&day.prev.map(p=>p&&{g:p.jg,c:p.jc}),day.ahead&&day.ahead.next,tgw)-(day.ahead&&day.ahead.soft&&!day.ahead.next?Math.round(colourRepeat(i,null,day.ahead.soft,tgw)/2):0)-(day.ahead&&day.ahead.ids.includes(i.id)?100:0);
-const argBest=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return b};
 let tcands=tpl;if(tpl.length>1&&!jacketClean(argBest(tpl,jscore))){const ok=tpl.filter(jacketClean);if(ok.length)tcands=ok}
 const top=noJ?null:best(tcands,jscore);
 // vest: part of a three-piece suit; worn per the user's setting unless the day overrides it
@@ -457,6 +479,9 @@ const Ps=suitDay?[null]:topN(pool('pants','bot'),6,pt=>pairScore(top,pt)+pattern
 // each piece's own terms are worked out once (P, S, X), not once per combination, and the rotation part (r) only for the outfits
 // inside the window; the sums are in the same order as before, so the plans are identical
 const fx=day.ahead&&day.ahead.fx,hk=top&&day.hist&&day.hist[top.id];
+// comboRepeat is capped at COMBO_CAP for a tie that isn't the workday before's (CR-3-03): with two suits and two ties it fell on the other tie
+// and outweighed TIE_NEXT, so the day before's tie came back on 41 of 103 workdays (A A B B)
+const prevTie=day.prev&&day.prev[0]&&day.prev[0].tid,comboCost=(sh,x)=>{const v=comboRepeat(sh,x,hk);return x&&x.id!==prevTie?Math.min(v,COMBO_CAP):v};
 const P1=pt=>({pt,no:pt?ptNo(pt):0,rb:pt?rb(pt):0,pr:pt?ptRest(pt):0});
 const S1=sh=>({sh,rs:sh?shRest(sh):0,rep:shirtRepeat(sh,day.prev),ah:day.ahead?aheadShirt(sh,fx,n):0});
 const X1=x=>({x,r10:x?Math.min(rest(x),10)*.4:0,r30:x?Math.min(rest(x),30)*.25+Math.min(TIE_CREEP_MAX,over(x,30)*TIE_CREEP):0,rep:tieRepeat(x,day.prev,day.prev3),ah:day.ahead?aheadTie(x,fx):0});
@@ -465,7 +490,7 @@ for(const P of PP)for(const S of SS)for(const X of XX){const {pt}=P,{sh}=S,{x}=X
   const q=clothesScore(top,suitDay?top:pt,sh,x,suitDay,day)-P.no;   // trousers no shoes of the day suit
   cands.push({q,pt,sh,x,P,S,X});
 }
-const rOf=({pt,sh,x,P,S,X})=>1.5*(P.rb+X.r10)+P.pr+X.r30+S.rs-S.rep-X.rep-(day.ahead?S.ah+X.ah:0)-lookRepeat(top,sh,x,day.prev)-comboRepeat(sh,x,hk)-pairRepeat(sh,x,day.pairs);
+const rOf=({pt,sh,x,P,S,X})=>1.5*(P.rb+X.r10)+P.pr+X.r30+S.rs-S.rep-X.rep-(day.ahead?S.ah+X.ah:0)-lookRepeat(top,sh,x,day.prev)-comboCost(sh,x)-pairRepeat(sh,x,day.pairs);
 const choose=cs=>{let qmax=-Infinity;for(const c of cs)if(c.q>qmax)qmax=c.q;
   const win=cs.filter(c=>c.q>=qmax-(day.formal||day.occ==='funeral'?FORMAL_QWIN:QWIN));for(const c of win)c.r=rOf(c);
   return win.sort((a,b)=>(b.q+b.r)-(a.q+a.r))[0]};
@@ -481,7 +506,7 @@ for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.len
   // shoes that don't suit (a real mistake) cost NO_SHOES more, so they lose to a pair with no matching belt (30, not a mistake): the
   // re-audit's blazer day, khaki chinos and black calf shoes at 69 while the oxblood loafers suited them
   if(s){const ss=shoeScore(top,bot,s);t+=ss-(ss<=-50?NO_SHOES:0)+shoeFormality(s,suitDay)+rb(s)-(rest(s)<=1&&!day.formal&&day.occ!=='funeral'?SHOE_AGAIN:0);   // leather shoes want a day to dry: not yesterday's pair when another suits
-    if(day.clim.rain&&finish(s.leather)==='suede')t-=25;             // suede and rain don't mix
+    if(day.clim.rain&&finish(s.leather)==='suede')t-=RAIN_SUEDE;     // suede and rain don't mix: never, while any other pair is left
     if(day.formal||day.occ==='funeral'){const g=leatherGroup(planCol(s)),f=finish(s.leather);t+=(f==='suede'||f==='grain')?-20:g==='black'?(day.occ==='funeral'?20:8):g==='burgundy'?3:-4}
     if(day.occ==='wedding'&&finish(s.leather)==='suede')t-=15}
   if(b){if(!s)continue;const f=beltFit(s,b);if(f===null)continue;t+=12+f+rb(b)}else if(B.length&&s)t-=30; // no matching belt: allowed, but last resort
@@ -504,27 +529,33 @@ const pocket=psOk.length?best(psOk,p=>pocketScore(p,top,shirt,tie,day)-(rest(p)<
 const clim=day.clim,needCoat=clim.cold||clim.rain,prefer=clim.rain&&!clim.veryCold?'raincoat':'overcoat';
 const coat=needCoat?best([...pool('overcoat','coat'),...pool('raincoat','coat')],c=>(c.type===prefer?10:0)+seasonFit(c,clim.season)+(['navy','charcoal','tan','grey','black'].includes(pcol(c))?3:0)+(shoes&&pcol(c)==='black'&&leatherGroup(planCol(shoes))!=='black'?-4:0)):null;
 // say so when the wardrobe can't make a correct combination, instead of silently mismatching
-const notes=[];
+const notes=[],jn=[],jnote=t=>{notes.push(t);jn.push(t)};   // jn: the notes about the jacket, dropped when it is taken off (takeOff; the code review CR-3-07: a word filter also took "None of your shoes suit brown pants.")
 // clothing: only reached when the wardrobe had no compliant combination for this jacket
 if(shirt&&tie&&darkShirt(shirt)&&tieLum(tie)-LUM(shirt)<25)notes.push(`The ${nm(tie)} isn't lighter than the ${nm(shirt)}; on a dark shirt a lighter tie reads better.`);
 if(shirt&&tie&&!darkShirt(shirt)&&LUM(shirt)-LUM(tie)<25)notes.push(`The ${nm(tie)} isn't darker than the ${nm(shirt)}; no darker tie suited this outfit. A darker tie would look sharper.`);
-if(top&&shirt&&!darkUnderLight(top,shirt)&&LUM(shirt)<LUM(top)+20)notes.push(`The ${nm(shirt)} is darker than the jacket. A lighter shirt would look more professional.`);
+if(top&&shirt&&!darkUnderLight(top,shirt)&&LUM(shirt)<LUM(top)+20)jnote(`The ${nm(shirt)} is darker than the jacket. A lighter shirt would look more professional.`);
 if(patsOf([[top,'top'],[suitDay?null:bot,'bot'],[shirt,'shirt'],[tie,'tie']]).length>=3)notes.push('Three bold patterns today; there was no quieter combination. A solid shirt or tie would calm it down.');
-if(shoes&&bot&&shoeScore(top,bot,shoes)<=-50)notes.push(`None of your shoes suit ${colName(spokenCol(bot))} pants.`);
+if(shoes&&bot&&shoeScore(top,bot,shoes)<=-50){if(shoeScore(null,bot,shoes)>-50)jnote(`None of your shoes suit the ${colName(spokenCol(top))} ${top.type==='suit'?'suit':'jacket'}.`);else notes.push(`None of your shoes suit ${colName(spokenCol(bot))} pants.`)}
 if(shoes&&finish(shoes.leather)==='patent')notes.push('Only patent shoes were available. Patent is for black tie.');
 if(shoes&&B.length&&!belt)notes.push(`None of your belts match the ${desc(shoes)} shoes. Add a ${leatherGroup(planCol(shoes))} ${finish(shoes.leather)==='suede'?'suede':'smooth leather'} belt.`);
 if(watch&&belt&&!metalSame(metalOf(watch),metalOf(belt)))notes.push(`The watch (${metalOf(watch)}) and belt buckle (${metalOf(belt)}) are different metals.`);
 if(french&&!links)notes.push('French-cuff shirt, but no cufflinks in your wardrobe. Add a pair.');
-if(clim.rain&&shoes&&finish(shoes.leather)==='suede')notes.push('Rain is forecast and only suede shoes suited this outfit. Smooth leather would hold up better.');
+// suede in the rain, said from the real reason (the code review, CR-3-02): picked by hand, packed, or the only shoes left (RAIN_SUEDE keeps
+// it off otherwise)
+if(clim.rain&&shoes&&finish(shoes.leather)==='suede')
+  notes.push(force.shoes===shoes.id?`Rain is forecast and the ${nm(shoes)} picked for the day are suede. Smooth leather would hold up better.`
+    :trip&&lock&&lock.shoes===shoes.id?`Rain is forecast and the packed ${nm(shoes)} are suede. Smooth leather would hold up better.`
+    :'Rain is forecast and suede shoes are the only ones you have for today. A smooth leather pair would hold up better in the rain.');
+for(const x of tripOff)(x===top?jnote:t=>notes.push(t))(`The packed ${nm(x)} is a ${itemSeason(x)}-weather piece on a ${clim.season} day.`);
 if(needCoat&&!coat)notes.push(clim.rain?'Rain is forecast and there is no raincoat in your wardrobe.':'It will be cold and there is no overcoat in your wardrobe.');
 if(day.occ==='funeral'&&tie&&pcol(tie)!=='black')notes.push(patInfo(tie,'tie')?'No black tie in your wardrobe for a funeral: the most sober one you have was chosen. A plain black tie is right for a funeral.':'No black tie in your wardrobe for a funeral: the darkest, plainest one was chosen.');
-if(day.occ==='funeral'&&top&&occ.top(top)<18)notes.push(['black','charcoal','darknavy','navy','darkgrey','slate'].includes(planCol(top))?'No plain black, charcoal or navy suit for a funeral: the plainest dark one was chosen.':'No black, charcoal or navy suit for a funeral: the darkest one was chosen.');   // (a charcoal glen check is dark, only not plain: W2-17-09)
-if(day.occ==='wedding'&&top&&pcol(top)==='black')notes.push('Only a black suit was available: black is usually avoided at a daytime wedding.');
+if(day.occ==='funeral'&&top&&occ.top(top)<18)jnote(['black','charcoal','darknavy','navy','darkgrey','slate'].includes(planCol(top))?'No plain black, charcoal or navy suit for a funeral: the plainest dark one was chosen.':'No black, charcoal or navy suit for a funeral: the darkest one was chosen.');   // (a charcoal glen check is dark, only not plain: W2-17-09)
+if(day.occ==='wedding'&&top&&pcol(top)==='black')jnote('Only a black suit was available: black is usually avoided at a daytime wedding.');
 if(noJ&&!bot)notes.push('No separate pants in your wardrobe for a day without a jacket. Add a pair of pants.');
-if(top&&seasonFit(top,clim.season)<-10)notes.push(`The ${nm(top)} is a ${itemSeason(top)}-weather piece on a ${clim.season} day; no better suit was available.`);
+if(top&&seasonFit(top,clim.season)<-10&&!tripOff.includes(top))jnote(`The ${nm(top)} is a ${itemSeason(top)}-weather piece on a ${clim.season} day; no better suit was available.`);
 // no waistcoat without a tie (the owner, 2026-11-13: "No one should ever wear a vest and no tie"): a day planned without a tie (the dress
 // code, a casual day) has none, whatever the vest setting or the day's own choice
-const o={suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,pocket,vest:vest&&!!tie,vestOverride:vov!==null,notes:notes.map(prettyCols),clim,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null)};
+const o={suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,pocket,vest:vest&&!!tie,vestOverride:vov!==null,notes:notes.map(prettyCols),clim,formal:!!day.formal,occasion:day.occ||(day.formal?'formal':null)};Object.defineProperty(o,'jn',{value:jn.map(prettyCols)});   // (not enumerable: no copy of the outfit carries it)
 // the suit jacket taken off and other pants picked for the day (force.bot, a pair of pants: Today's ⇄ on the suit's pants, the owner's
 // ask 2026-11-16): those pants are worn and the suit is not
 const sep=suitDay&&top&&rec&&rec.off&&rec.off.top&&force.bot&&(by('pants').find(i=>i.id===force.bot)||hpBotAny)||null;
@@ -543,7 +574,7 @@ function takeOff(o,off,untake,sep){if(!off||!(off.top||off.tie||off.pocket))retu
   if(o.pocket&&(r.off.top||r.off.pocket)){if(untake)untake(o.pocket);r.pocket=null}
   if(r.off.top){r.offKind=o.suitDay?'suit':'blazer';
     if(o.suitDay){r.offSuit=o.top;r.suitDay=false;if(sep){r.bot=sep;if(untake)untake(o.top)}else{r.bot=o.top;r.suitBot=true}}else if(untake)untake(o.top);r.top=null;r.vest=false;
-    r.notes=r.notes.filter(t=>!/jacket|suit|blazer/i.test(t))}
+    const jn=o.jn||[];r.notes=r.notes.filter(t=>!jn.includes(t))}
   if(r.off.tie){if(untake){untake(o.tie);if(o.clip)untake(o.clip)}r.tie=null;r.clip=null;r.vest=false;r.notes=r.notes.filter(t=>!/\btie\b/i.test(t))}
   return r}
 /* ---- outfit score ----
@@ -571,9 +602,12 @@ function rateOutfit(o){
   // (o.gone: a past day's piece deleted from the wardrobe since; it was worn, so it isn't missing)
   {const miss=[],G=o.gone||{};if(!shirt&&!G.shirt)miss.push('shirt');if(!trousers&&!G.bot&&!(o.suitDay&&G.top))miss.push('pants');if(!top&&!G.top&&needsJacket(o))miss.push('jacket');if(!tie&&!G.tie&&needsTie(o))miss.push('tie');if(!shoes&&!G.shoes)miss.push('shoes');
     if(miss.length)add('Complete outfit',0,10,'no '+miss.join(', no ')+' for this day',true)}
-  if(shirt){const raw=planCol(shirt);let v=10,why='',hard=false;
+  // a casual top picked by hand (a T-shirt, a sweater) is judged only by "the same color as the jacket": the dress shirt's dark-shirt and
+  // strong-color rules made a navy sweater under a charcoal blazer a real mistake (the code review, CR-3-09)
+  if(shirt){const raw=planCol(shirt),cas=CASUAL_TOPS.includes(shirt.type);let v=10,why='',hard=false;
     if(darkUnderLight(top,shirt)){}
-    else if(top&&pcol(shirt)===pcol(top)){v=0;why='shirt is the same color as the jacket';hard=true}
+    else if(top&&pcol(shirt)===pcol(top)){v=0;why=cas?'top is the same color as the jacket':'shirt is the same color as the jacket';hard=true}
+    else if(cas){}
     else if(top&&darkShirt(shirt)){v=2;why='a dark shirt wants a clearly lighter jacket';hard=true}
     else if(top&&LUM(shirt)<LUM(top)+20){v=5;why='shirt is darker than the jacket'}
     else if(!QUIET_SHIRTS.includes(raw)&&!darkShirt(shirt)){v=5;why=`a ${spokenCol(shirt)} shirt is a strong color for business`}
@@ -602,7 +636,9 @@ function rateOutfit(o){
       if(Math.abs(LUM(top)-LUM(bot))<35){v-=4;why=(why?why+'; ':'')+'jacket and pants lack contrast'}}
     add('Pants',v,10,why,hard)}
   if(shoes&&trousers){const s=shoeScore(top,trousers,shoes),k=(SH[pcol(trousers)]||['black','brown']).indexOf(pcol(shoes));
-    add('Shoes',s<=-50?0:10,10,k<0?`${spokenCol(shoes)} shoes don't suit ${spokenCol(trousers)} pants`:top&&pcol(top)==='black'?'a black suit needs black shoes':`black shoes don't suit a ${top?spokenCol(top):''} jacket`,true)}
+    // the reason: a black suit's clash first (its own pants would say "brown shoes don't suit black pants"), then the pants', then a warm
+    // jacket's clash, then the style's
+    add('Shoes',s<=-50?0:10,10,shoeClash(top,shoes)&&(pcol(top)==='black'||k>=0)?pcol(top)==='black'?'a black suit needs black shoes':`black shoes don't suit a ${spokenCol(top)} jacket`:k<0?`${spokenCol(shoes)} shoes don't suit ${spokenCol(trousers)} pants`:`${shoeStyle(shoes)}s don't go with ${shoeCtx(trousers)==='suit'?'a suit':'dress pants'}`,true)}
   // (no belt you own matches the shoes: the check is left out, as with no belt at all; adding a belt that suits none of the shoes took 15
   // points off every day, W2-14-08. The planner's note still says which belt would match)
   if(shoes&&items.some(i=>i.type==='belt'&&inRotation(i)&&(beltFit(shoes,i)!==null||(belt&&belt.id===i.id)))){const f=belt?beltFit(shoes,belt):null;
@@ -740,10 +776,13 @@ const upTo0=end=>{
 for(const E=di(end);di(d)<=E;d.setDate(d.getDate()+1)){const w=d.getDay();   // (day numbers: where the clocks change at midnight, the date after it sits at 01:00)
  if(!isWorkday(d))continue;   // weekends, public holidays and days off
   const k=key(d);let rec=dayRecs[k];
-  if(rec&&rec.ids&&(d<T||rec.worn===true)&&!idsAhead(rec)){plan[k]=frozenOutfit(rec,di(d),last);plan[k].ctx={prev,prev3,n:di(d)};if(rec.worn!==false&&(plan[k].top||!wearsJacket())){prev3=prev[1]||null;prev=[sumUp(plan[k],di(d)),prev[0]];remember(plan[k])}continue}   // (a day without a jacket leaves the jacket history alone; a day marked "Not worn" is not the previous workday for repeats either)
+  if(rec&&rec.ids&&(d<T||rec.worn===true)&&!idsAhead(rec)){plan[k]=frozenOutfit(rec,di(d),last);plan[k].ctx={prev,prev3,n:di(d)};if(rec.worn!==false){prev3=prev[1]||null;prev=[sumUp(plan[k],di(d)),prev[0]];remember(plan[k])}continue}   // (a day marked "Not worn" is not the previous workday for repeats; a day without a jacket is, see below)
   if(W0&&d<W0&&d<T)continue;   // before the wardrobe began (wardStart): nothing was worn then
   if(rec&&rec.noOutfit&&d<T)continue;   // a past day dressed only from the sample wardrobe, since removed (kit.js kitSampleDay): no outfit recorded
-  const o=planDay(d,rec);plan[k]=o;if(o.top||!wearsJacket()){prev3=prev[1]||null;prev=[sumUp(o,di(d)),prev[0]];remember(o)}}
+  /* every worn workday is the previous workday for repeats, one without a jacket too (the jacket taken off, a casual day: the code review,
+     CR-3-04: the next day could repeat its tie and shirt): its summary has no jacket group (colourRepeat, lookRepeat skip it), and
+     remember() keeps the jackets' own history (hist) to days with a jacket */
+  const o=planDay(d,rec);plan[k]=o;prev3=prev[1]||null;prev=[sumUp(o,di(d)),prev[0]];remember(o)}
 return plan};
 // one workday planned with this record (a day not frozen): the loop above, and peek
 const planDay=(d,rec)=>{const w=d.getDay();if(rec&&rec.lock&&!lockOf(rec,di(d))){rec={...rec};delete rec.lock}

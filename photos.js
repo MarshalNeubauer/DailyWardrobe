@@ -23,11 +23,6 @@ const fnvMemo=new Map();   // the same looks are hashed over and over (every ren
 const fnv64=t=>{let v=fnvMemo.get(t);if(v)return v;let h=0xcbf29ce484222325n;for(const c of new TextEncoder().encode(t)){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}
   v=h.toString(16).padStart(16,'0');if(fnvMemo.size>4000)fnvMemo.clear();fnvMemo.set(t,v);return v};
 const comboKey=o=>'c'+fnv64(comboSig(o));
-/* the key photos were saved under before shirts counted by colour only; moved over on first use */
-const comboSigV1=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];return i?[i.id,...LOOK_FIELDS.map(f=>i[f]??''),i.cuff??'',i.stripes?JSON.stringify(i.stripes):''].join('/'):'-'}).join('|');
-const comboKeyV1=o=>'c'+fnv64(comboSigV1(o));
-/* photos saved before combinations were used were keyed by date with this signature; they are moved over on first use */
-const legacySig=o=>(o.vest?'vest|':'')+['top','shirt','tie','clip','watch'].map(s=>{const i=o[s];return i?[i.id,i.primaryColor,i.secondaryColor,i.tertiaryColor,i.pattern,i.metal,i.updated||0].join('/'):'-'}).join('|');
 /* a picture record whose img isn't a data:image/jpeg|png|webp;base64 picture is not kept (fix round 3, W2-13-06: the server took any text
    after the prefix, and the img went into src) */
 async function keepRender(ck,rec,share){if(!rec||typeof rec.img!=='string'||!REC_PHOTO.test(rec.img))return;renders[ck]=rec;await metaPut('render:'+ck,rec);if(share)shareRender(ck,rec)}
@@ -46,10 +41,7 @@ const asmLive=()=>typeof ASM_ON!=='undefined'&&ASM_ON;
    kept stays on the device, so switching back shows it at once. */
 const picsDrawn=()=>typeof settings!=='undefined'&&!!settings&&settings.pictures==='drawn';
 const renderFor=o=>{if(picsDrawn())return null;const a=asmLive()&&asmShown(o);if(a)return a;   // (or the same outfit's last picture while its current one is made: asmStale)   // put together on the device from item photos (assemble.js)
-  const ck=comboKey(o);if(renders[ck])return renders[ck];
-  const v1=renders[comboKeyV1(o)];if(v1){const rec={...v1,sig:comboSig(o)};keepRender(ck,rec,true);return rec}
-  const old=renders[key(sel)];if(old&&old.sig===legacySig(o)){const rec={...old,sig:comboSig(o)};keepRender(ck,rec,true);return rec}
-  return null};
+  const ck=comboKey(o);return renders[ck]||null};   // (the keys of older builds were moved over long ago; outfit photos are retired: CR-1-12)
 /* a combination with no photo here: ask the worker (another device may have made it); one with a photo only here: share it */
 const renderTried=new Set();
 async function fetchRemoteRender(o,day){
@@ -60,22 +52,18 @@ async function fetchRemoteRender(o,day){
     // with the worker's list in hand, a day it has no photo for is not asked about: each ask was a 404, logged as an error in the
     // console for every day shown (audit 2026-11-13: 31 in one session); "none" is the normal answer
     await remoteList();if(remoteHold())return;   // the server's lists are used up today: no day-by-day asks either
-    if(remoteListed&&!remoteKeys.has(ck)&&!remoteKeys.has(comboKeyV1(o))){if(cur)shareRender(ck,cur);return}
-    let j=await get('key='+ck);
-    if(!j){if(cur){shareRender(ck,cur);return}
-      // a photo the worker kept under the earlier combination key, or for this date before combinations were used
-      const v1=await get('key='+comboKeyV1(o));if(v1&&v1.img)j={...v1,sig:comboSig(o),legacy:true};
-      else{const old=await get('day='+encodeURIComponent(day));if(old&&old.img&&old.sig===legacySig(o))j={...old,sig:comboSig(o),legacy:true}}}
+    if(remoteListed&&!remoteKeys.has(ck)){if(cur)shareRender(ck,cur);return}
+    const j=await get('key='+ck);
+    if(!j&&cur){shareRender(ck,cur);return}
     if(!j||!j.img)return;
     if(cur&&cur.t>(j.t||0)){shareRender(ck,cur);return}if(cur&&cur.t===(j.t||0))return;
-    await keepRender(ck,{sig:comboSig(o),img:keptPhoto(j.img),model:j.model||'',t:j.t||Date.now()},!!j.legacy);
+    await keepRender(ck,{sig:comboSig(o),img:j.img,model:j.model||'',t:j.t||Date.now()},false);
     if(planFor()[key(sel)]&&comboKey(planFor()[key(sel)])===ck&&!$('#today').hidden)refreshToday();
   }catch(e){console.warn('remote photo unavailable',e)}
 }
 /* photos the worker keeps that this device lacks (a new install, or made on another device): download the ones the plan needs
    for the month on screen and the next, nearest the selected day first, so swiping between days shows them at once */
 let prefetching=false,prefetchAgain=false,remoteKeys=null,remoteListed=false,remoteListP=null;
-const planOf=planMonth;
 /* the worker's list of kept photos (GET /render?list=1): ONE request, shared by everything that needs it (the outfit photos here and
    assemble.js asmListGet; they used to ask separately, two lists every start), kept LIST_MS. A list costs one of the server's daily
    KV lists (testers share 150 a day): refused (429: the day's list allowance; 503: the server's lists failing, the free plan's daily
@@ -114,13 +102,13 @@ async function prefetchRenders(){const W=workerBase();if(!W||picsDrawn())return;
   try{
     await remoteList();if(!remoteListed)return;   // no list: fetch per day as before
     do{prefetchAgain=false;const c=+sel,near=new Map();   // each combination ranked by its day closest to the one on screen
-      for(const [y,m] of [[view.y,view.m],[view.m===11?view.y+1:view.y,(view.m+1)%12]])for(const [k,o] of Object.entries(planOf(y,m))){if(!hasOutfit(o))continue;
+      for(const [y,m] of [[view.y,view.m],[view.m===11?view.y+1:view.y,(view.m+1)%12]])for(const [k,o] of Object.entries(planMonth(y,m))){if(!hasOutfit(o))continue;
         const ck=comboKey(o);if(renders[ck]||!remoteKeys.has(ck)||renderTried.has(ck))continue;const d=Math.abs(+keyDate(k)-c),cur=near.get(ck);if(!cur||d<cur[0])near.set(ck,[d,ck,o])}
       const list=[...near.values()].sort((a,b)=>a[0]-b[0]);let i=0;
       const one=async()=>{while(i<list.length&&!prefetchAgain){const [,ck,o]=list[i++];if(renders[ck])continue;
         try{const r=await fetch(W.url+'?key='+ck,{headers:{'x-app-token':W.tok},cache:'no-store'});const j=r.ok?await r.json().catch(()=>null):null;
           if(!j||!j.img){remoteKeys.delete(ck);continue}
-          await keepRender(ck,{sig:comboSig(o),img:keptPhoto(j.img),model:j.model||'',t:j.t||Date.now()},false);
+          await keepRender(ck,{sig:comboSig(o),img:j.img,model:j.model||'',t:j.t||Date.now()},false);
           const s=planFor()[key(sel)];if(s&&comboKey(s)===ck&&!$('#today').hidden)refreshToday()}catch(e){remoteKeys.delete(ck)}}};
       await Promise.all([one(),one(),one()]);
     }while(prefetchAgain)
@@ -131,10 +119,7 @@ async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getA
 const shirtPatterned=i=>!!i&&([...STRIPE_PATS,...CHECK_PATS,'houndstooth'].includes(patBase(i.pattern))||!!(usableSett(i)||{}).motif);
 /* a shirt whose weave texture was read (dobby diamonds, herringbone…): it has its own photo key too */
 const shirtTextured=i=>!!i&&!shirtPatterned(i)&&!!(usableSett(i)||{}).tex;
-/* an outfit photo is kept on the device as the worker made it: shrunk to 900px (JPEG .85) it was softer than the 1024 original, and
-   Today shows it up to 390 points wide on a 3x screen (1170 pixels) and zooms 2.5x. Assembled pictures keep their 900px (assemble.js):
-   their kept zones were measured at that size */
-const keptPhoto=u=>u;
+/* (an outfit photo is kept on the device as the worker made it, not shrunk: Today shows it up to 1170 pixels wide and zooms 2.5x) */
 const shrinkUrl=(u,max,q=.85)=>new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',q))};im.onerror=()=>ok(u);im.src=u});
 /* (2026-11-14, the owner) the outfit photo made by OpenAI from the drawn figure is retired: the colour-coded masters paint every
    look on the device, nothing paid. Photos already kept still show on their days (renderFor) and still sync (GET/PUT /render); the

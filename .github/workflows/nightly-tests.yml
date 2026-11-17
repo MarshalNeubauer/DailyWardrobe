@@ -22,11 +22,14 @@ jobs:
           node-version: 22
       # no package-lock.json in the repo (see deploy-worker.yml)
       - run: npm install --no-package-lock
-      - name: Install Chromium
+      - name: Install Chromium and WebKit
         run: |
-          # system packages through apt for at most two minutes (the runner image already has Chromium's libraries), then the browser, three tries
-          timeout -k 10 120 npx playwright install-deps chromium || echo "::warning::Chromium's system packages could not be installed (apt); the tests run with what the runner image has."
-          for i in 1 2 3; do npx playwright install chromium && exit 0; sleep $((i * 15)); done
+          # seven test files check Back, the sheets and the photo editor on WebKit (Safari's engine, the owner's phone) as well as Chromium
+          # (tests/webkit.js engines): without WebKit each failed "WebKit: the browser starts (Executable doesn't exist …)" every night (CR-10-01).
+          # System packages through apt for at most five minutes (the runner image has Chromium's libraries, not all of WebKit's), then the
+          # browsers, three tries
+          timeout -k 10 300 npx playwright install-deps chromium webkit || echo "::warning::The browsers' system packages could not be installed (apt); the tests run with what the runner image has."
+          for i in 1 2 3; do npx playwright install chromium webkit && exit 0; sleep $((i * 15)); done
           exit 1
       - name: Every test
         run: npm run test:all 2>&1 | tee "$RUNNER_TEMP/tests.log"; exit ${PIPESTATUS[0]}

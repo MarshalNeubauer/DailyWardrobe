@@ -179,7 +179,7 @@ scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type
     (i.type==='watch'?`<label class="wdetails">Details <input type="text" maxlength="${WATCH_DETAILS_MAX}" dir="auto" value="${esc(String(i.details||'').slice(0,WATCH_DETAILS_MAX))}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${jsq(id)}','details',this.value.trim().slice(0,WATCH_DETAILS_MAX)||'none')"></label>`+E(id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial)+E(id,'band',BANDS,watchOpts(i).band)+E(id,'bezel',BEZELS,watchOpts(i).bezel)+E(id,'watchStyle',WATCH_STYLES,watchOpts(i).style):'');
   const details=ckSec(scope,'details',{mark:'good',title:'Details',sum:esc(ivDetailSum(i)),body:det+(fab?'':gap),cls:'ivtags'});
   const cs=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null;
-  const rotIn=`${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" onchange="setItemArrives('${jsq(id)}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
+  const rotIn=`${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" min="${isoKey(todayDate())}" onchange="setItemArrives('${jsq(id)}',this.value)"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
   ${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" onclick="togglePause('${jsq(id)}',${!i.paused})" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}${typeof careCard==='function'?careCard(i):''}`;
   const care=ckSec(scope,'care',{mark:cs&&cs.due?'warn':'good',title:'Planning &amp; care',sum:esc(ivCareSum(i,cs)),body:rotIn,open:!!(cs&&cs.due),cls:'ivrot'});
   const filled=['name','brand','notes'].filter(k=>String(i[k]||'').trim());
@@ -223,8 +223,11 @@ async function sete(id,k,v){
    the watch's options, and a second or third colour it can't show; the photos stay */
 const TYPE_FIELDS={season:t=>SEASON_TYPES.includes(t),metal:t=>METAL_TYPES.includes(t),leather:t=>t==='shoes'||t==='belt',cuff:t=>t==='shirt',vest:t=>t==='suit',
   trouserKind:t=>t==='pants',shoeStyle:t=>t==='shoes',dial:t=>t==='watch',band:t=>t==='watch',bezel:t=>t==='watch',watchStyle:t=>t==='watch',details:t=>t==='watch'};
+/* a material its type can't have goes; a typed "Other" material stays where the type has a list (an own material of another type goes, like a
+   listed one). Also the Add card's type change and save (CR-1-06: a jacket read as tweed and changed to a tie was saved "Other · tweed") */
+function matTidy(it){const ml=matsFor(it.type);if(it.material&&!(ml&&(ml.includes(it.material)||!Object.keys(MATERIALS_BY).some(x=>matsFor(x).includes(it.material)))))delete it.material;return it}
 function typeTidy(it){const t=it.type;for(const [f,ok] of Object.entries(TYPE_FIELDS))if(f in it&&!ok(t))delete it[f];
-  const ml=matsFor(t);if(it.material&&!(ml&&(ml.includes(it.material)||!Object.keys(MATERIALS_BY).some(x=>matsFor(x).includes(it.material)))))delete it.material;   // a typed "Other" material stays where the type has a list (an own material of another type goes, like a listed one)
+  matTidy(it);
   if(t==='shoes'&&it.leather&&!leathersFor(it).includes(it.leather))it.leather='calf';
   if(!FABRIC.includes(t))for(const f of ['sett','stripes','patternSpec','weave','patternText','pbox'])delete it[f];
   return colTidy(it)}
@@ -251,7 +254,9 @@ async function redetect(id){
 }
 /* take an item out of rotation, or put it back. Taking it out also lets go of the upcoming days it was pinned to (a swap or a
    hand pick), so those days are planned again without it; past days and days marked worn keep it. */
-async function setItemArrives(id,v){const it=items.find(x=>x.id===id);if(!it)return;if(/^\d{4}-\d{2}-\d{2}$/.test(v||''))it.arrives=v;else delete it.arrives;await put(it);cache={};
+async function setItemArrives(id,v){const it=items.find(x=>x.id===id);if(!it)return;const a=arriveVal(v);
+  if(a==='past'){renderWardrobe();toast(ARRIVE_PAST,4500);return}   // (the date it had stays)
+  if(a)it.arrives=a;else delete it.arrives;await put(it);cache={};
   if(await checkArrivals())return renderWardrobe();renderWardrobe()}
 /* want: what the button said when it was drawn (true = "Take out of rotation"): a sheet drawn before another phone's change arrived does
    what it says, never the opposite (fix round 3, W1-5-04); nothing to do when the piece is already that way */
@@ -276,7 +281,11 @@ async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast 
    bottom, a tap on the strip of Wardrobe left above it, the phone's Back button or gesture, Esc. ‹ › beside Done, a sideways
    swipe or the arrow keys go to the previous / next item of the list on screen. */
 const WARD_EASE='cubic-bezier(.2,.8,.2,1)',WARD_MS=320;
-const wardList=()=>wardView();   // the filtered, sorted list on screen (wardrobe.js)
+/* the filtered, sorted list on screen (wardrobe.js), with the open item kept in it at the place it had (ivAt) when an edit took it out of the
+   filter (CR-1-05: a suit made a blazer under the Suit chip lost "n of m", ‹ ›, the sideways swipe and its focus on closing) */
+let ivAt=0;
+const wardList=()=>{const l=wardView();if(!editing||l.some(x=>x.id===editing))return l;const it=items.find(x=>x.id===editing);if(!it)return l;
+  const c=l.slice();c.splice(Math.min(ivAt,c.length),0,it);return c};
 const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate;
 let itemFrom=null;   // the item the sheet was opened on: closing on another one brings that one's box into view first
 /* the phone's Back closes the page: one history entry while it is open (itemBack: a history.back() of ours is on its way) */
@@ -327,7 +336,7 @@ function itemGoneTell(id){if(items.some(x=>x.id===id))return false;tell('This pi
 function renderItem(){
   const v=$('#item-view');if(!v)return;const i=editing&&items.find(x=>x.id===editing);
   if(!i){editing=null;itemShown(false);return}
-  const l=wardList(),k=l.findIndex(x=>x.id===i.id);
+  const l=wardList(),k=l.findIndex(x=>x.id===i.id);if(k>=0)ivAt=k;
   $('#ivhead').innerHTML=`<div class="ivt"><small class="gtype">${TYPES[i.type]||'Item'}</small><h2 id="iv-title" class="${titleCls(i)}">${esc(itemTitle(i)||TYPES[i.type]||'Item')}</h2></div>${k>=0?`<span class="pcount">${k+1} of ${l.length}</span>`:''}`;
   keepFocus($('#ivbody'),()=>{$('#ivbody').innerHTML=itemBody(i)});   // every edit redraws it: the field or button used keeps the focus (W2-19-01)
   if(typeof cmpMount==='function')cmpMount($('#ivbody'));
@@ -336,7 +345,7 @@ function renderItem(){
 const sheetSlides=()=>innerWidth<600;   // a phone: the sheet slides up from the bottom; wider, the panel fades in
 function openItem(id){
   if(!items.some(i=>i.id===id))return;const v=$('#item-view'),bd=$('#item-backdrop'),was=editing;
-  editing=id;itemGone=null;if(!was)itemFrom=id;histPush();renderItem();$('#ivbody').scrollTop=0;if(!was&&typeof layerOpen==='function')layerOpen(v);   // the focus goes into the sheet and comes back on closing (W2-19-02)
+  editing=id;itemGone=null;if(!was)itemFrom=id;histPush();ivSwipe();renderItem();$('#ivbody').scrollTop=0;if(!was&&typeof layerOpen==='function')layerOpen(v);   // the focus goes into the sheet and comes back on closing (W2-19-02)
   for(const el of [v,bd]){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}
   if(was||noMotion())return;const o={duration:WARD_MS,easing:WARD_EASE};
   v.animate(sheetSlides()?[{transform:'translateY(100%)'},{transform:'none'}]:[{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],o);
@@ -359,7 +368,8 @@ function closeItem(fromPop,dragged){
    what opened the sheet */
 function itemFocusBack(id){const v=$('#item-view'),f=typeof layerFrom!=='undefined'&&v?layerFrom.get(v):null;if(f!==null&&v)layerFrom.delete(v);
   const a=document.activeElement;if(a&&a!==document.body&&!(v&&v.contains(a)))return;
-  const gi=document.getElementById('gi-'+id),g=gi&&gi.querySelector('.giopen'),to=g&&!g.closest('[inert]')?g:f&&f.isConnected&&!f.closest('[inert]')?f:null;
+  const gi=document.getElementById('gi-'+id),g=gi&&gi.querySelector('.giopen'),ch=document.querySelector('#wardrobe .chip[aria-pressed="true"]');   // (the box gone from the filter: its chip)
+  const to=g&&!g.closest('[inert]')?g:f&&f.isConnected&&!f.closest('[inert]')?f:ch&&!ch.closest('[inert]')?ch:null;
   if(to)try{to.focus({preventScroll:true})}catch{}}
 /* closing with nothing to slide away from: the item was deleted, or another tab is shown */
 function dropItem(){editing=null;itemFrom=null;histDrop();if(typeof layerFrom!=='undefined')layerFrom.delete($('#item-view'));for(const el of [$('#item-view'),$('#item-backdrop')])if(el){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}itemShown(false)}
@@ -370,36 +380,12 @@ function dropItem(){editing=null;itemFrom=null;histDrop();if(typeof layerFrom!==
    dragged), and closing keeps the crop (cropKeep).
    A mouse, trackpad or Pencil (Pointer Events, not touches) drags it by the header the same way; a finger's pointer events are
    left to the touch listeners. (2026-11-15, the owner's Duo unfolded: the centred panel sat at 4vh, under the status bar, and a
-   pull on its grabber went to iOS; the panel now starts below the status bar, `--ivtop` in styles.css.) */
+   pull on its grabber went to iOS; the panel now starts below the status bar, `--ivtop` in styles.css.) The gesture is add.js sheetSwipe,
+   put on the sheet when it first opens; ivDrag is true while the sheet follows a finger (the sideways swipe below leaves it alone). */
 let ivDrag=false;
-(()=>{const v=$('#item-view'),b=$('#ivbody'),bd=$('#item-backdrop');if(!v||!b)return;let st=null;
-  const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';if(bd)bd.style.opacity=d?String(Math.max(.15,1-d/v.offsetHeight)):''};
-  const can=(el,head)=>!(!editing||v.classList.contains('closing')||(phEdit.crop&&!head)||el.closest('input,textarea,.ivbar')||(!head&&b.scrollTop>0));
-  const begin=(x,y,ts)=>({x,y,t:Date.now(),on:false,d:0,ly:y,lt:ts,vy:0});
-  // false: not a pull (upward or sideways), let go of it; true: the sheet follows
-  const move=(x,y,ts)=>{const dx=x-st.x,dy=y-st.y;
-    if(!st.on&&st.pid!==undefined&&Math.abs(dx)<4&&Math.abs(dy)<4)return false;   // a mouse reports every pixel: decide after a few
-    if(!st.on){if(dy>0&&dy>=Math.abs(dx)){st.on=ivDrag=true;v.style.transition='none'}else{st=null;return false}}   // downward: ours; anything else is a scroll or a sideways swipe
-    // the speed from when each move happened (e.timeStamp), not when it was handled, as in shop.js: on a busy phone a flick handled late read as a slow pull
-    if(ts>st.lt){st.vy=(y-st.ly)/(ts-st.lt);st.ly=y;st.lt=ts}
-    st.d=Math.max(0,dy);put(st.d);return true};
-  v.addEventListener('touchstart',e=>{const t=e.touches[0];
-    st=e.touches.length>1||!can(e.target,!!e.target.closest('.ivhead'))?null:begin(t.clientX,t.clientY,e.timeStamp)},{passive:true});
-  v.addEventListener('touchmove',e=>{
-    if(!st||st.pid!==undefined)return;const t=e.touches[0];if(move(t.clientX,t.clientY,e.timeStamp))e.preventDefault()},{passive:false});
-  const end=()=>{
-    if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;ivDrag=false;v.style.transition='';
-    if(d>v.offsetHeight*.25||(vy>.5&&d>30)){closeItem(false,d);return}
-    put(0);if(!noMotion()){v.animate([{transform:`translateY(${d}px)`},{transform:'none'}],{duration:220,easing:WARD_EASE});if(bd)bd.animate([{opacity:Math.max(.15,1-d/v.offsetHeight)},{opacity:1}],{duration:220})}};
-  v.addEventListener('touchend',e=>{if(st&&st.pid===undefined)end()},{passive:true});v.addEventListener('touchcancel',e=>{if(st&&st.pid===undefined)end()},{passive:true});
-  // mouse, trackpad, Pencil: by the header only (the content is scrolled and its text selected with them)
-  const h=$('#ivhead');if(!h||!window.PointerEvent)return;
-  h.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||e.button!==0||st||!can(e.target,true))return;
-    st=begin(e.clientX,e.clientY,e.timeStamp);st.pid=e.pointerId;try{h.setPointerCapture(e.pointerId)}catch{}});
-  h.addEventListener('pointermove',e=>{if(!st||st.pid!==e.pointerId)return;if(move(e.clientX,e.clientY,e.timeStamp))e.preventDefault()});
-  const pend=e=>{if(!st||st.pid!==e.pointerId)return;try{h.releasePointerCapture(e.pointerId)}catch{}end()};
-  h.addEventListener('pointerup',pend);h.addEventListener('pointercancel',pend);
-})();
+function ivSwipe(){const v=$('#item-view'),b=$('#ivbody');if(!v||!b)return;
+  sheetSwipe(v,{head:'.ivhead',body:()=>b,backdrop:()=>$('#item-backdrop'),skip:'.ivbar',live:(el,head)=>!!editing&&!v.classList.contains('closing')&&!(phEdit.crop&&!head),
+    close:d=>closeItem(false,d),spring:true,fadeBack:true,drag:on=>{ivDrag=on}})}
 /* the previous / next item of the list on screen; the new one slides in from the side it lies on */
 function stepItem(n,from){
   const l=wardList(),k=l.findIndex(x=>x.id===editing),t=l[k+n];if(k<0||!t)return false;

@@ -426,7 +426,6 @@ function drawSneakerPair(item,P){
     b.body+`<path d="${S.bout}" fill="#000" opacity=".12"/>`+parts('b')+`<g clip-path="url(#${P}bc)"><path d="${S.fout}" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="2.4"/></g>`+
     f.body+parts('f')+'</g>';
 }
-const drawOxfordSide=(item,P)=>drawShoePair(item,P,'oxford');
 /* the drawing for a pair of shoes, by its style (shoeStyle in core.js; none = oxford) */
 const drawShoeSide=(item,P)=>shoeStyle(item)==='sneaker'?drawSneakerPair(item,P):drawShoePair(item,P,SHOE_ST[shoeStyle(item)]?shoeStyle(item):'oxford');
 
@@ -460,83 +459,6 @@ function drawSock(color,P,toe){
     // mirrored so the toes point right, as the shoes do (the owner, 2026-11-13; the photo's socks point left)
     `</defs><g transform="matrix(-1 0 0 1 100 0)">`+one(S.back,back,'b')+one(S.front,color,'f')+`</g>`;
 }
-
-/* wristwatch seen from above, centred on 0,0; case radius ~15, bracelet to about +/-49.
-   Options: dial colour, metal bracelet or leather strap, fluted or smooth bezel, and a dual-time/annual-calendar
-   dial (off-centre 24h disc, month apertures, cyclops date). No maker's name or logo is drawn. */
-function drawWatch(w,P){
-  const o=watchOpts(w),[mL,mM,mD]=METAL_TONES[w&&w.metal]||METAL_TONES.silver,dial=COLORS[o.dial]||'#f6f6f3';
-  const ink=lum(dial)<.45?'#e9eaec':'#1d2125',f=n=>+n.toFixed(2),now=new Date();
-  let s=`<defs>
-   <linearGradient id="${P}br" x1="0" x2="1"><stop offset="0" stop-color="${mD}"/><stop offset=".28" stop-color="${mL}"/><stop offset=".55" stop-color="${mM}"/><stop offset=".8" stop-color="${mL}"/><stop offset="1" stop-color="${mD}"/></linearGradient>
-   <linearGradient id="${P}po" x1="0" x2="1"><stop offset="0" stop-color="${mD}"/><stop offset=".35" stop-color="#fff"/><stop offset=".6" stop-color="${mM}"/><stop offset=".85" stop-color="${mL}"/><stop offset="1" stop-color="${mD}"/></linearGradient>
-   <radialGradient id="${P}cs" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="${mL}"/><stop offset="1" stop-color="${mD}"/></radialGradient>
-   <radialGradient id="${P}dl" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="${mix(dial,'#fff',.4)}"/><stop offset="1" stop-color="${mix(dial,'#000',.07)}"/></radialGradient>
-   <linearGradient id="${P}gl" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient>
-  </defs>`;
-  if(o.band==='bracelet'||o.band==='integrated'){
-    // three-piece links: brushed outer links, polished centre link; an integrated bracelet starts wide, flowing from the case
-    const integ=o.band==='integrated';
-    for(const sg of [-1,1])for(let k=0;k<6;k++){
-      const wd=(integ?(k===0?22:k===1?19.5:17.6):16.6)-k*.45,h=4.9,y=sg>0?17.3+k*5.3:-17.3-k*5.3-h,ow=wd*.36,cw=wd*.25,g=.35;
-      s+=`<rect x="${f(-wd/2)}" y="${f(y)}" width="${f(ow-g)}" height="${h}" rx=".7" fill="url(#${P}br)" stroke="${mD}" stroke-width=".12"/>`+
-         `<rect x="${f(-cw/2)}" y="${f(y)}" width="${f(cw)}" height="${h}" rx=".7" fill="url(#${P}po)" stroke="${mD}" stroke-width=".12"/>`+
-         `<rect x="${f(wd/2-ow+g)}" y="${f(y)}" width="${f(ow-g)}" height="${h}" rx=".7" fill="url(#${P}br)" stroke="${mD}" stroke-width=".12"/>`;
-    }
-  }else{
-    const sc=w?colOf(w):'#3a2414',st=mix(sc,'#fff',.35);
-    for(const sg of [-1,1]){const p=`M-8.4,${16*sg} L8.4,${16*sg} L7.2,${44*sg} Q0,${50*sg} -7.2,${44*sg} Z`;
-      s+=`<path d="${p}" fill="${sc}" stroke="#000" stroke-opacity=".35" stroke-width=".3"/><path d="M-6.9,${17.5*sg} L-6,${43*sg} M6.9,${17.5*sg} L6,${43*sg}" stroke="${st}" stroke-width=".3" stroke-dasharray=".9 .6"/><path d="${p}" fill="url(#${P}gl)" opacity=".4"/>`}
-  }
-  s+=`<path d="M-11.6,-10 C-10.6,-13 -9.4,-15.6 -8.6,-17.6 L8.6,-17.6 C9.4,-15.6 10.6,-13 11.6,-10 Z" fill="url(#${P}br)" stroke="${mD}" stroke-width=".15"/><path d="M-11.6,10 C-10.6,13 -9.4,15.6 -8.6,17.6 L8.6,17.6 C9.4,15.6 10.6,13 11.6,10 Z" fill="url(#${P}br)" stroke="${mD}" stroke-width=".15"/>`;
-  s+=`<rect x="14.9" y="-2.4" width="3.6" height="4.8" rx=".9" fill="url(#${P}cs)" stroke="${mD}" stroke-width=".2"/>`;
-  if(o.style==='chronograph')for(const a of [-38,38])s+=`<g transform="rotate(${a})"><rect x="14.6" y="-1.5" width="3.2" height="3" rx=".7" fill="url(#${P}cs)" stroke="${mD}" stroke-width=".2"/><rect x="17.4" y="-1.8" width="1.1" height="3.6" rx=".4" fill="url(#${P}po)" stroke="${mD}" stroke-width=".15"/></g>`;   // chronograph pushers at 2 and 4
-  for(let y=-1.8;y<=1.81;y+=.6)s+=`<line x1="15.4" x2="18.1" y1="${f(y)}" y2="${f(y)}" stroke="${mD}" stroke-width=".14"/>`;
-  s+=`<circle r="15.4" fill="url(#${P}cs)" stroke="${mD}" stroke-width=".3"/>`;
-  if(o.bezel==='fluted'){for(let i=0;i<96;i++){const a=i/96*Math.PI*2,c=Math.cos(a),n=Math.sin(a),lit=(Math.cos(a+2.4)+1)/2;
-    s+=`<line x1="${f(12.95*c)}" y1="${f(12.95*n)}" x2="${f(15.15*c)}" y2="${f(15.15*n)}" stroke="${i%2?mD:mix(mM,'#fff',lit*.8)}" stroke-width=".7"/>`}}
-  else{s+=`<circle r="14.05" fill="none" stroke="url(#${P}po)" stroke-width="2.1"/>`;
-    // engraved numerals around a polished bezel
-    if(o.bezel==='engraved')for(let i=1;i<=12;i++)s+=`<g transform="rotate(${i*30})"><text y="-13.55" font-size="1.15" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" fill="${mD}" fill-opacity=".85" transform="rotate(0)">${i*5}</text></g>`}
-  s+=`<circle r="12.9" fill="none" stroke="${mD}" stroke-width=".3"/><circle r="12.75" fill="url(#${P}dl)"/>`;
-  for(let i=0;i<60;i++)if(i%5)s+=`<g transform="rotate(${i*6})"><line y1="-12.1" y2="-12.55" stroke="${ink}" stroke-opacity=".4" stroke-width=".14"/></g>`;
-  if(o.style==='annual-calendar'){
-    // month apertures next to each hour marker (January at 1 o'clock); the current month shows red
-    for(let m=0;m<12;m++)s+=`<g transform="rotate(${(m+1)*30})"><rect x="-.75" y="-12.1" width="1.5" height="1" rx=".15" fill="${m===now.getMonth()?'#c8102e':mix(dial,'#000',.1)}" stroke="${ink}" stroke-opacity=".35" stroke-width=".1"/></g>`;
-  }
-  const chrono=o.style==='chronograph',SUBS=[[-5.4,-3.6,2.9],[4.9,-4.2,3],[0,4.3,4.6]];
-  for(let h=0;h<12;h++){if(h===3&&o.style!=='no-date'&&!chrono)continue;
-    if(chrono){const a=h*Math.PI/6,mx=9.4*Math.sin(a),my=-9.4*Math.cos(a);if(h===0||h===6||(h>=4&&h<=5)||SUBS.some(([x,y,r])=>Math.hypot(mx-x,my-y)<r+1.6))continue}
-    const bar=x=>`<rect x="${x}" y="-10.6" width=".95" height="2.4" rx=".2" fill="url(#${P}po)" stroke="${mD}" stroke-width=".12"/>`;
-    s+=`<g transform="rotate(${h*30})">${h===0?bar(-1.3)+bar(.35):bar(-.48)}</g>`}
-  if(o.style==='annual-calendar'){
-    // off-centre 24-hour disc with a red pointer
-    s+=`<circle cy="4.7" r="3.9" fill="${mix(dial,'#000',.05)}" stroke="${ink}" stroke-opacity=".35" stroke-width=".15"/>`;
-    for(let i=0;i<24;i++)s+=`<g transform="translate(0 4.7) rotate(${i*15})"><line y1="-3.3" y2="${i%2?-3.6:-3.8}" stroke="${ink}" stroke-opacity=".55" stroke-width=".12"/></g>`;
-    s+=`<path d="M-.65,.45 L.65,.45 L0,1.45 Z" fill="#c8102e"/>`;
-  }
-  if(chrono){
-    // like a sporty kinetic chronograph: small seconds at 10, a 15/30/45 minute counter at 2 (blue segment at 45), and the time
-    // itself on a large subdial at 6 with applied 12 and 6; a long dark chronograph seconds hand in the centre; date at 4:30
-    SUBS.forEach(([x,y,r],n)=>{s+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${mix(dial,'#000',n===2?.03:.06)}" stroke="${mD}" stroke-width=".22"/><circle cx="${x}" cy="${y}" r="${f(r-.5)}" fill="none" stroke="${ink}" stroke-opacity=".18" stroke-width=".12"/>`;
-      for(let t=0;t<12;t++)s+=`<g transform="translate(${x} ${y}) rotate(${t*30})"><line y1="${f(-r+.2)}" y2="${f(-r+(t%3?.6:1))}" stroke="${ink}" stroke-opacity=".6" stroke-width="${t%3?.1:.18}"/></g>`;
-      if(n===1)s+=`<path d="M${f(x-r+.25)},${y} A${f(r-.25)},${f(r-.25)} 0 0 1 ${f(x-(r-.25)*Math.cos(Math.PI/6))},${f(y-(r-.25)*.5)}" fill="none" stroke="#1f4fa8" stroke-width=".45"/>`;
-      if(n<2){const ang=[250,20][n];s+=`<g transform="translate(${x} ${y}) rotate(${ang})"><path d="M-.22,.5 L0,${f(-r+.6)} L.22,.5 Z" fill="${n?'#1d2125':ink}"/></g><circle cx="${x}" cy="${y}" r=".35" fill="${mD}"/>`}});
-    const num=(t,y,sz)=>`<text x="0" y="${y}" font-size="${sz}" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-weight="700" fill="url(#${P}po)" stroke="${mD}" stroke-width=".12">${t}</text>`;
-    s+=num('12',1.9,2.2)+num('6',8.6,2.2);
-    s+=`<g transform="rotate(135)"><rect x="-1.5" y="-11" width="3" height="2.4" fill="#fff" stroke="${ink}" stroke-opacity=".4" stroke-width=".12" transform="rotate(-135 0 -9.8)"/></g>`;
-  }
-  else if(o.style!=='no-date')s+=`<rect x="7.3" y="-1.6" width="3.7" height="3.2" fill="#fff" stroke="${ink}" stroke-opacity=".4" stroke-width=".12"/><text x="9.15" y=".98" font-size="2.7" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-weight="700" fill="#111">${now.getDate()}</text><rect x="6.5" y="-2.5" width="5.3" height="5" rx="1.1" fill="#fff" fill-opacity=".12" stroke="#fff" stroke-opacity=".7" stroke-width=".2"/>`;
-  const hand=(deg,len,wid,tail)=>`<g transform="rotate(${deg})"><path d="M${-wid/2},${tail} L${-wid/2},${f(-len+wid)} L0,${-len} L${wid/2},${f(-len+wid)} L${wid/2},${tail} Z" fill="url(#${P}po)" stroke="${mD}" stroke-width=".16"/><rect x="${f(-wid*.22)}" y="${f(-len+wid*1.7)}" width="${f(wid*.44)}" height="${f(len*.55)}" fill="#f5f7ef"/></g>`;
-  if(chrono){const [x,y]=SUBS[2];
-    s+=`<g transform="translate(${x} ${y}) scale(.42)">${hand(305,6.6,1.3,1.4)+hand(240,10.6,1.05,1.6)}</g><circle cx="${x}" cy="${y}" r=".45" fill="url(#${P}po)" stroke="${mD}" stroke-width=".1"/>`;
-    s+=`<g transform="rotate(0)"><path d="M-.18,2.6 L-.12,-11.8 L.12,-11.8 L.18,2.6 Z" fill="#1d2125"/></g><circle r=".75" fill="#1d2125"/>`}
-  else{s+=hand(305,6.6,1.3,1.4)+hand(60,10.6,1.05,1.6);
-  s+=`<g transform="rotate(210)"><line y1="2.8" y2="-11.6" stroke="${mD}" stroke-width=".22"/></g><circle r=".8" fill="url(#${P}po)" stroke="${mD}" stroke-width=".12"/>`}
-  s+=`<circle r="12.75" fill="url(#${P}gl)" opacity=".55"/>`;
-  return s;
-}
-
 
 /* a buckled section of belt: buckle in the middle with a little leather either side, centred on 0,0 (about 62 x 20) */
 /* belt: traced from the item picture of the owner's oxblood cordovan belt (2026-11-13, as the shoes were): the coil behind, the darker
@@ -1121,7 +1043,7 @@ function itemThumb(i,full){
     const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';
     const jk=i.type==='suit',pk=i.type==='pants',shape=i.type==='tie'?'M42,8 L58,8 L55,22 L62,78 L50,92 L38,78 L45,22 Z':jk?SUIT_D.out:pk?PANTS_D.out:'M10,10 H90 V90 H10 Z';
     g=`<defs>${jk?suitFabric(P+'f',i):pk?pantsFabric(P+'f',i):fabricDef(P+'f',i,role)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs>${jk?`<clipPath id="${P}so"><path d="${shape}" clip-rule="evenodd"/></clipPath>`:pk?`<clipPath id="${P}pc"><path d="${shape}"/></clipPath>`:''}<path d="${shape}" fill-rule="evenodd" fill="url(#${P}f)" stroke="#000" stroke-opacity=".25" stroke-width="${jk||pk?.3:.6}"/><path d="${shape}" fill-rule="evenodd" fill="url(#${P}s)"/>`+(jk?suitMarks(i,P):pk?pantsMarks(i,P):trouserMarks(i,P));
-  }else if(i.type==='watch')g=drawWatchTraced(i,P);   /* the traced watch (WATCH_D); drawWatch, the old top view, is kept */
+  }else if(i.type==='watch')g=drawWatchTraced(i,P);   /* the traced watch (WATCH_D); the old top view (drawWatch) was removed with the review's cleanup, CR-8-08 */
   else if(i.type==='shoes')g=`<g transform="translate(2 22)">${drawShoeSide(i,P)}</g>`;
   else if(i.type==='socks')g=drawSock(colOf(i),P,sockToe(i)&&COLORS[sockToe(i)]);   /* the traced pair (SOCK_D), in the full 100 box */
   else if(i.type==='belt')g=`<g transform="translate(2 28)">${drawBelt(i,P)}</g>`;
@@ -1159,7 +1081,7 @@ const figBg=()=>{const k=(document.documentElement.dataset.theme||'')+'|'+(windo
 const FIG_STRIPE_MIX=.3;
 function figStripeLift(i){const s=i&&usableSett(i),sp=i&&i.patternSpec&&i.patternSpec.across;
   if(!s||s.v!==2||!s.bands||s.bands.length<2||!STRIPE_PATS.includes(patBase(i.pattern))||!sp||!sp.bands||sp.bands.length!==s.bands.length)return i;
-  const g=s.bands.reduce((a,b)=>b[1]>a[1]?b:a)[0],lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>Math.round(255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055)),
+  const g=s.bands.reduce((a,b)=>b[1]>a[1]?b:a)[0],lin=srgbLin8,gam=v=>Math.round(255*linSrgb(v)),   // (srgb.js)
     rgb=h=>[1,3,5].map(k=>lin(parseInt(String(h).slice(k,k+2),16)||0)),mix=(a,b)=>{const x=rgb(a),y=rgb(b);return '#'+x.map((v,k)=>gam(v+(y[k]-v)*FIG_STRIPE_MIX).toString(16).padStart(2,'0')).join('')};
   const ok=h=>/^#[0-9a-f]{6}$/i.test(String(h));if(!ok(g))return i;
   return {...i,sett:{...s,bands:s.bands.map((b,k)=>b[0]&&b[0]!==g&&ok(sp.bands[k].hex)?[mix(g,sp.bands[k].hex),b[1]]:b)}}}
@@ -1203,8 +1125,8 @@ const FIG_LIFT=[[.008,2.6],[.023,1.5],[.030,1.35],[.035,1]];   // [tagged lumina
 const FIG_HB={ncol:24,nrib:48,amp:.8,yarn:.35,damp:.3,R:12};   // H2: columns and ribs a tile, rib swing, the close-up's yarn share, its slubs kept, their radius
 const FIG_CUV=1;   // the blocks' maker (in their key)
 const FIG_CU=new Map();
-const figLin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)};
-const figGam=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);
+const figLin=v=>srgbLin8(v);   // (srgb.js)
+const figGam=v=>255*linSrgb(v);
 const figY=(r,g,b)=>.2126*r+.7152*g+.0722*b;
 const figLum=i=>{const h=String(colOf(i)).replace('#','');return figY(...[0,2,4].map(k=>figLin(parseInt(h.slice(k,k+2),16)||0)))};
 function figLiftK(y){const L=FIG_LIFT;if(!(y<FIG_DARK))return 1;if(y<=L[0][0])return L[0][1];

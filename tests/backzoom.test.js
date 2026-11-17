@@ -4,7 +4,7 @@
 // the default look kept; narrow screens (page zoom) keep Today's piece names, Settings' day names and the item sheet's values
 // readable; 44px tap targets for the header, links and a toast's Undo, which stays 8 s; the drawn gear; dark checklist rings;
 // the picker on a phone on its side.
-const fs=require('fs'),path=require('path');
+const fs=require('fs'),path=require('path'),{holds}=require('./pace');
 module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   const css=fs.readFileSync(path.join(__dirname,'..','styles.css'),'utf8'),html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
   const pxText=[];css.replace(/([^{}]*)\{([^{}]*)\}/g,(m,sel,body)=>{if(!/(^|[;\s])fill:/.test(body)&&/(font-size:\s*[\d.]+px|(^|[;\s])font:[^;]*?\b[\d.]+px)/.test(body))pxText.push(sel.trim().slice(-40));return m});
@@ -86,6 +86,8 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     const rows=()=>p.evaluate(()=>[...document.querySelectorAll('#today .rowtap')].map(t=>{const n=t.lastElementChild,l=t.parentElement.firstElementChild;return {w:n.getBoundingClientRect().width,stacked:l.getBoundingClientRect().bottom<=t.getBoundingClientRect().top+1}}));
     let r=await rows();ok(r.length>2&&r.every(x=>!x.stacked),'390 px: each piece’s slot name beside it, as before');
     await p.setViewportSize({width:268,height:454});await settle(p,300);
+    // (once the narrow layout holds, within 4 s: on a busy machine the rows were read before it settled, CR-10-03)
+    await holds(p,()=>{const t=[...document.querySelectorAll('#today .rowtap')];return t.length>2&&t.every(t=>{const n=t.lastElementChild,l=t.parentElement.firstElementChild;return n.getBoundingClientRect().width>=60&&l.getBoundingClientRect().bottom<=t.getBoundingClientRect().top+1})});
     r=await rows();ok(r.length>2&&r.every(x=>x.w>=60&&x.stacked),'268 px (150% zoom): the slot name goes above, piece names keep 60px or more (were 2px)');
     await p.evaluate(()=>{openSettings('schedule')});await settle(p,400);
     const days=await p.evaluate(()=>{const b=[...document.querySelectorAll('#cfg-workdays .dtog')];return {rows:new Set(b.map(x=>Math.round(x.getBoundingClientRect().top))).size,fit:b.every(x=>x.scrollWidth<=x.clientWidth+1)}});
