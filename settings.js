@@ -2,7 +2,7 @@
    (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
 /* settings management */
 /* Settings: a full-screen page of categories that unfold like Today's cards; openSettings('weather') opens one directly */
-const SET_CATS=['laundry','schedule','daysoff','weather','care','photos','tagging','backup','connection','about'];
+const SET_CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.classList.toggle('instant',!!instant);if(!instant){el.classList.remove('instant');void el.offsetHeight}
   el.classList.toggle('open',open);const b=el.querySelector('.scat-head');if(b)b.setAttribute('aria-expanded',open);
   if(open&&key==='backup'&&typeof loadSnapshots==='function')loadSnapshots();   // the daily backups list is read as Backup opens (sync.js)
@@ -38,6 +38,7 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
   set('schedule',`${days(settings.workdays)} · ${scheduleWear(days)}`);
   const T=isoKey(todayDate()),h=settings.holidays,offs=(settings.daysOff||[]).filter(x=>x.d>=T).length,occ=Object.values(dayRecs).filter(r=>r.date&&keyDate(r.date)>=todayDate()&&occOf(r)).length;
   set('daysoff',[h&&h.country?((h.list||[]).length?`${h.country} holidays`:`${typeof countryName==='function'?countryName(h.country):h.country}: no holiday list`):'No holidays',`${offs} day${offs===1?'':'s'} off`,`${occ} occasion${occ===1?'':'s'}`].join(' · '));
+  if(typeof calSummary==='function')set('calendar',calSummary());   // (calendar.js)
   set('weather',`${settings.location?settings.location.name:'No location set'} · °${unit()}`);
   set('photos',picsDrawn()?'Drawing only':typeof isConnected==='function'&&!isConnected()?'Painted pictures · needs a connection':'Painted pictures');   // (the masters come from the server)
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
@@ -236,15 +237,18 @@ async function toggleHoliday(d,on){const h=settings.holidays;if(!h)return;const 
 const isoToDate=v=>{const [y,m,d]=String(v).split('-').map(Number);return new Date(y,m-1,d)};
 /* a day off's name is at most OFF_NAME_MAX letters (W2-12-02: a pasted 57-letter link pushed its chip's × off the screen, and nothing limited it) */
 const OFF_NAME_MAX=40,offNameCut=n=>{n=String(n||'').replace(/\s+/g,' ').trim();return [...n].length>OFF_NAME_MAX?[...n].slice(0,OFF_NAME_MAX-1).join('').trim()+'…':n};
-async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off-to')||{}).value||f,n=offNameCut(($('#cfg-off-name')||{}).value);
-  const say=m=>{holidayMsg=m;renderDaysOffUI()};if(!f)return say('Pick a date first.');
+async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off-to')||{}).value||f,n=($('#cfg-off-name')||{}).value;
+  const r=await dayOffAdd(f,t,n);if(r.ok)for(const id of ['#cfg-off-from','#cfg-off-to','#cfg-off-name'])if($(id))$(id).value=''}
+/* days off from f to t (YYYY-MM-DD, t empty: one day) named n, from the form above or a calendar event kept (calendar.js) -> {ok, msg};
+   the message goes under Days off either way */
+async function dayOffAdd(f,t,n){t=t||f;n=offNameCut(n);
+  const say=m=>{holidayMsg=m;renderDaysOffUI();return {ok:false,msg:m}};if(!f)return say('Pick a date first.');
   const a=isoToDate(f),b=isoToDate(t),T=todayDate();if(b<a)return say('The last day is before the first.');if((b-a)/864e5>92)return say('That is more than three months: add it in parts.');
   // a typed date isn't held back by the field's min (audit 2026-11-15: "1 day off added." for a past day that never showed)
   if(b<T)return say(`${yearDate(b)} has passed: only days from today on can be added.`);
   const cur=new Map((settings.daysOff||[]).map(x=>[x.d,x]));let k=0;for(const d=new Date(a<T?T:a);d<=b;d.setDate(d.getDate()+1)){cur.set(isoKey(d),{d:isoKey(d),n:n||'Day off'});k++}
   settings.daysOff=[...cur.values()].sort((x,y)=>x.d<y.d?-1:1);holidayMsg=`${k} day${k===1?'':'s'} off added.`;
-  for(const id of ['#cfg-off-from','#cfg-off-to','#cfg-off-name'])if($(id))$(id).value='';
-  await saveUserSettings();todayDirty();renderDaysOffUI()}
+  await saveUserSettings();todayDirty();renderDaysOffUI();return {ok:true,msg:holidayMsg,n:k}}
 /* a holiday's checkbox and a day off's × carry their dates in data-* attributes, read by one listener on each list (fix round A, CR-7-02:
    a date from a Restore file, a sync or a holiday list went into an inline handler and ran as script) */
 function daysOffListen(list,ol){
