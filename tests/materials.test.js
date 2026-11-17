@@ -108,7 +108,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     e=await p.evaluate(()=>({done:(document.querySelector('#rd-mat')||{}).textContent||'',bar:document.querySelector('#rd-both').textContent}));
     ok(/Flannel set/.test(e.done)&&/Undo/.test(e.done)&&e.bar==='Keep as it is','the card then says "Flannel set" with Undo; the color and pattern cards wait (the bar: '+e.bar+')');
     await p.click('#rd-both');await p.waitForFunction(()=>!document.querySelector('#rd-sheet.on'));
-    e=await p.evaluate(()=>({t:(document.querySelector('#toast')||{}).textContent||'',season:itemSeason(items.find(i=>i.id==='r1'))}));
+    e=await p.evaluate(()=>({t:((document.querySelector('#toast')||{}).textContent||'')+' '+((document.querySelector('#undo-fab.on')||{getAttribute:()=>''}).getAttribute('aria-label')||''),season:itemSeason(items.find(i=>i.id==='r1'))}));
     ok(/Material updated/.test(e.t)&&e.season==='cold','Use sets it (flannel: cold weather) and the toast says so, with Undo');
     await p.evaluate(()=>rdUndoAll());await p.waitForFunction(()=>!('material' in items.find(i=>i.id==='r1')));ok(true,'Undo takes the material off again');
     S.reply=reply({key:'cotton',confidence:'low',why:'maybe'});await read('r1');e=await sheet();ok(e.mat&&/Claude’s guess: cotton/.test(e.mat)&&/Use cotton/.test(e.mat)&&e.both==='Keep as it is','low confidence (2026-11-16): shown as Claude\'s guess with its own Use; the bar never applies it ('+e.both+')');await p.evaluate(()=>rdClose());
@@ -128,7 +128,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     S.reply={...S.reply,pattern:{...S.reply.pattern,material:{key:'flannel',confidence:'high',why:''}}};await read('r1');e=await sheet();
     ok(e.both==='Use all','color, pattern and material to decide: "Use all"');
     await p.click('#rd-both');await p.waitForFunction(()=>!document.querySelector('#rd-sheet.on'));
-    e=await p.evaluate(()=>{const i=items.find(x=>x.id==='r1');return {m:i.material,p:i.pattern,t:(document.querySelector('#toast')||{}).textContent||''}});
+    e=await p.evaluate(()=>{const i=items.find(x=>x.id==='r1');return {m:i.material,p:i.pattern,t:((document.querySelector('#toast')||{}).textContent||'')+' '+((document.querySelector('#undo-fab.on')||{getAttribute:()=>''}).getAttribute('aria-label')||'')}});
     ok(e.m==='flannel'&&e.p==='twill'&&/Color, texture and material updated/.test(e.t),'Use all sets all three: '+JSON.stringify(e));
     // ---- the Add card: Claude's material from photo tagging
     e=await p.evaluate(()=>{queue.length=0;show('add');addManual();const q=queue[0];

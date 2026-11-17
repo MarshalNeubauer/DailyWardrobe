@@ -1139,6 +1139,29 @@ main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add{display:none}
   #ward-add{transition:transform .12s}
 }
 #ward-add svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;pointer-events:none}
+/* the Wardrobe's Undo (2026-11-17, the owner's pick from mockups): a round button like the +, 18px above it, a glowing gold ring running
+   down its seconds (--ud, set by settings.js undoFab); only while the Wardrobe shows, hidden under the item sheet, Settings and the sheets */
+#undo-fab{display:none;position:fixed;z-index:var(--z-fab);bottom:calc(var(--navh) + 90px);right:max(calc(16px + env(safe-area-inset-right)), calc((100vw - 560px) / 2 + 16px));width:56px;height:56px;padding:0;border:0;border-radius:50%;background:var(--ink);color:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:.6875rem;font-weight:700;line-height:1;box-shadow:var(--fab-shadow);-webkit-tap-highlight-color:transparent}
+#wardrobe:not([hidden])~#undo-fab.on{display:flex}
+main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab{display:none}
+#undo-fab:focus-visible{outline:3px solid var(--acc);outline-offset:9px}
+#undo-fab:active{transform:scale(.94)}
+#undo-fab .ufi{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#undo-fab span{pointer-events:none}
+#undo-fab .ufr{position:absolute;left:-8px;top:-8px;width:72px;height:72px;overflow:visible;transform:rotate(-90deg);pointer-events:none}
+#undo-fab .uft{fill:none;stroke:rgba(217,162,27,.18);stroke-width:3}
+#undo-fab .ufc{fill:none;stroke:#f0b429;stroke-width:3.2;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:0;filter:drop-shadow(0 0 3px rgba(240,180,41,.95)) drop-shadow(0 0 8px rgba(240,180,41,.6))}
+#undo-fab.on .ufc{animation:ufRun var(--ud,8000ms) linear forwards}
+@keyframes ufRun{to{stroke-dashoffset:100}}
+/* a plain toast while the Undo is up goes above it too */
+body:not(.iv-on):has(main:not([inert]) #wardrobe:not([hidden])):has(#undo-fab.on) #toast{bottom:calc(var(--navh) + 160px)}
+@media (min-width:600px){
+  #undo-fab{right:max(calc(16px + env(safe-area-inset-right)), calc((100vw - 1080px) / 2 + 16px))}
+}
+@media (prefers-reduced-motion:no-preference){
+  #wardrobe:not([hidden])~#undo-fab.on{animation:fabIn .22s cubic-bezier(.2,.8,.2,1) backwards}
+  #undo-fab{transition:transform .12s}
+}
 @keyframes fabIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 .wsearch{position:relative;flex:1;min-width:0;display:flex}
 #wardrobe .wsearch input{flex:1;width:100%;padding:0 44px 0 38px;background:var(--card);outline-offset:-2px}
