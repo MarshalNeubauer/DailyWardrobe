@@ -385,10 +385,11 @@ const select=async(root,all)=>{const base=baseOf(root),map=load(root);
   if(!fp||!stampsOf(git(root,'show',base+':'+MAP)).includes(fp))return {all:true,report:'The '+MAP+' on origin/main was not recorded for the files that are there (a change went in without it, or without a passing `npm test`): running everything.'};
   const mine=await impactOf(root,base,all,map);
   const head='Changed since origin/main: '+(mine.said.join('; ')||'nothing')+'\n';
-  if(mine.all)return {all:true,report:head+'Running everything: '+mine.why+'.'};
-  let tests=mine.tests,note='';
+  // (`files`: what changed, for run.js's choice of whether the WebKit halves run)
+  if(mine.all)return {all:true,files:mine.files,report:head+'Running everything: '+mine.why+'.'};
+  let tests=mine.tests,note='',files=mine.files;
   const prev=mine.tests.size?lastPass(root,base):null;
-  if(prev){const theirs=await impactOf(root,prev,all,map),id=prev.slice(0,7);
+  if(prev){const theirs=await impactOf(root,prev,all,map),id=prev.slice(0,7);files=[...new Set([...mine.files,...theirs.files])];
     const both=theirs.files.filter(f=>!DOC(f)&&mine.files.includes(f));
     note='main has moved since `npm test` last passed on this branch ('+id+'). Come in from main since then: '+(theirs.said.join('; ')||'nothing')+'\n';
     if(theirs.all)note+='That can affect every test ('+theirs.why+'), so all '+tests.size+' run again.\n';
@@ -396,7 +397,7 @@ const select=async(root,all)=>{const base=baseOf(root),map=load(root);
     else{tests=new Map([...mine.tests].filter(([t])=>theirs.tests.has(t)).map(([t,why])=>[t,why+'; main: '+theirs.tests.get(t)]));
       note+='Only a test that both changes can affect needs to run again: '+tests.size+' of the '+mine.tests.size+' this branch selects.\n'}}
   const list=[...tests].map(([t,why])=>'  '+t+'  ('+why+')').join('\n');
-  return {all:false,tests:[...tests.keys()],report:head+note+(tests.size?'Running '+tests.size+' of '+all.length+' test files and built-in suites:\n'+list:prev&&mine.tests.size?'Nothing more needs to run.':'No check can be affected by this change.')}};
+  return {all:false,files,tests:[...tests.keys()],report:head+note+(tests.size?'Running '+tests.size+' of '+all.length+' test files and built-in suites:\n'+list:prev&&mine.tests.size?'Nothing more needs to run.':'No check can be affected by this change.')}};
 
 /* ---------- recording what a test uses ---------- */
 /* the helper modules a test file requires from tests/ (`require('./webkit')` → tests/webkit.js), and theirs in turn: Node reads a module
