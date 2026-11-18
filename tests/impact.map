@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	1632de26e1b4103ff0f7
+# tested	8d0c22a74d9c25783e3b
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
@@ -25,7 +26,7 @@ a11y.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge
 a11y.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 a11y.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careBandTap	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTimes	careTop	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 a11y.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
-a11y.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	useColPick
+a11y.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	closeColPick	colAskHtml	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpTileTap	cpUseTap	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	useColPick
 a11y.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	accentsOf	applyCustom	camoPat	casualTop	colBase	colName	colOf	colorDesc	colsFor	dayClimate	dayFields	desc	di	fitCol	handPickSlot	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keySettings	keySplit	labOf	leatherLabel	leatherWord	leathersFor	lum	lumCol	matSeason	matsFor	metalOptsFor	metalWord	mix	nameHtml	nextStamp	nm	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	patOf	planCol	primaryCol	rgbHex	rgbLab	seasonFit	sentence	setWardrobe	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
 a11y.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed
 a11y.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI
@@ -215,7 +216,7 @@ accents.test.js	boxfold.js	<loaded>
 accents.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 accents.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 accents.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
-accents.test.js	colpick.js	<loaded>	EP	accChoices	accDel	accItem	accSet	closeColPick	cnDWord	cnHex	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colPickSel	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSwipe	cpViews	openColPick	patBtn	patTitle	patVar	rdAccCard	rdAccOf	rdAccWords	rdActName	rdAfter	rdBar	rdBoth	rdClose	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdLightNote	rdMain	rdMatCard	rdNaCard	rdOff	rdOpen	rdPaperHtml	rdPatCard	rdPick	rdPreview	rdRefresh	rdRender	rdRestore	rdSet	rdSetAcc	rdUndo	rdUndoAll	rdUse	renderColPick	useColPick
+accents.test.js	colpick.js	<loaded>	EP	accChoices	accDel	accItem	accSet	closeColPick	cnDWord	cnHex	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colPickSel	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSwipe	cpTileTap	cpUseTap	cpViews	openColPick	patBtn	patTitle	patVar	rdAccCard	rdAccOf	rdAccWords	rdActName	rdAfter	rdBar	rdBoth	rdBothTap	rdClose	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdLightNote	rdMain	rdMatCard	rdNaCard	rdOff	rdOpen	rdPaperHtml	rdPatCard	rdPick	rdPreview	rdRefresh	rdRender	rdRestore	rdSet	rdSetAcc	rdUndo	rdUndoAll	rdUse	rdUseTap	renderColPick	useColPick
 accents.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	accentOf	accentsFor	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	cleanRecord	colBase	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	hasPat	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	lumCol	matTypeOne	matTypeWord	matsFor	metalWord	mix	nextStamp	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	planCol	primaryCol	recCol	rgbHex	rgbLab	sentence	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trouserKind	watchOpts
 accents.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSum	cpwSym
 accents.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -1763,7 +1764,6 @@ asmgl.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-asmgl.test.js	tests/webkit.js	<any>
 asmgl.test.js	theme.js	<loaded>	applyTheme
 asmgl.test.js	toast.js	<loaded>
 asmgl.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2694,7 +2694,7 @@ backgesture-item.test.js	boxfold.js	<loaded>
 backgesture-item.test.js	calendar.js	<loaded>	calBanner	calLink
 backgesture-item.test.js	care.js	<loaded>	careBadge	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTop	careWashed	careWord	careWornLine
 backgesture-item.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
-backgesture-item.test.js	colpick.js	<loaded>	@backOnrd	@backOver	@window.addEventListenerkeydown	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDWord	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnPatBase	cnRetakeHtml	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewBack	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAccCard	rdAccOf	rdBack	rdBar	rdClose	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdLightNote	rdMain	rdMatCard	rdMatOf	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPreview	rdRefresh	rdRender	rdRetakeHtml	rdRun	rdStart	renderColNew	renderColPick	renderPatNew	renderPatPick
+backgesture-item.test.js	colpick.js	<loaded>	@backOnrd	@backOver	@window.addEventListenerkeydown	EP	closeColPick	cnAskBox	cnBackTap	cnColBase	cnCost	cnDWord	cnHasClose	cnHex	cnHsv	cnOpenTap	cnPaperDefault	cnPaperLine	cnPatBase	cnRetakeHtml	cnWithPat	colAskHtml	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewBack	colNewFor	colRows	colShows	colSwipe	colTarget	cpCloseTap	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	pnOpenTap	rdAccCard	rdAccOf	rdBack	rdBar	rdClose	rdCloseTap	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdLightNote	rdMain	rdMatCard	rdMatOf	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPreview	rdReadTap	rdRefresh	rdRender	rdRetakeHtml	rdRun	rdStart	renderColNew	renderColPick	renderPatNew	renderPatPick
 backgesture-item.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	colBase	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	leatherWord	lum	matsFor	metalWord	mix	nameHtml	nextStamp	nm	noBidi	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	patOf	planCol	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeFor	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	strapBand	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts
 backgesture-item.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym
 backgesture-item.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -2783,7 +2783,7 @@ backgesture-over.test.js	boxfold.js	<loaded>
 backgesture-over.test.js	calendar.js	<loaded>	calBanner	calLink	calSummary	renderCalUI
 backgesture-over.test.js	care.js	<loaded>	careBadge	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTop	careWashed	laundryDays	renderCareUI
 backgesture-over.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
-backgesture-over.test.js	colpick.js	<loaded>	@backOnrd	@backOver	closeColPick	cnAskBox	cnColBase	cnCost	cnDWord	cnDrawn	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPatBase	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openCustomNew	patBtn	patChoices	patTitle	patVar	rdAccCard	rdAccOf	rdAddBtn	rdBack	rdBar	rdClose	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEls	rdItem	rdLightNote	rdMain	rdMatCard	rdMatOf	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPreview	rdRefresh	rdRender	rdRetakeHtml	rdRun	renderColNew	renderColPick
+backgesture-over.test.js	colpick.js	<loaded>	@backOnrd	@backOver	closeColPick	cnAskBox	cnColBase	cnCost	cnDWord	cnDrawn	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPatBase	colAskHtml	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpAskHint	cpCloseTap	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openCustomNew	patBtn	patChoices	patTitle	patVar	rdAccCard	rdAccOf	rdAddBtn	rdBack	rdBar	rdClose	rdCloseTap	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEls	rdItem	rdLightNote	rdMain	rdMatCard	rdMatOf	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPreview	rdRefresh	rdRender	rdRetakeHtml	rdRun	renderColNew	renderColPick
 backgesture-over.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	colBase	colBaseFor	colName	colOf	colsFor	dE00	dayClimate	di	fitCol	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	leatherWord	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	nameHtml	nameIso	nm	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	patOf	planCol	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeFor	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	strapBand	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 backgesture-over.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwQRow	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed
 backgesture-over.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI
@@ -3017,6 +3017,7 @@ backup-storage.test.js	tests/fixedplan.js	<any>
 backup-storage.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 backup-storage.test.js	tests/fixtures/old-worker/worker-036c1d6.js	<any>
 backup-storage.test.js	tests/fixtures/old-worker/worker-ef18d06.js	<any>
+backup-storage.test.js	tests/webkit.js	<any>
 backup-storage.test.js	theme.js	<loaded>	applyTheme
 backup-storage.test.js	toast.js	<loaded>	toast
 backup-storage.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>todayTouch	@{constroot$today}	mvSig	todayBusy
@@ -3358,7 +3359,7 @@ cardid.test.js	boxfold.js	<loaded>
 cardid.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 cardid.test.js	care.js	<loaded>	careBadge	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTimes	careTop	careWashed	careWord	careWornLine
 cardid.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
-cardid.test.js	colpick.js	<loaded>	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	colTidy	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	useColPick
+cardid.test.js	colpick.js	<loaded>	EP	closeColPick	colAskHtml	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	colTidy	cpAskHint	cpFig	cpSeg	cpSwipe	cpTileTap	cpUseTap	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	useColPick
 cardid.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dE00	dayClimate	dayFields	desc	di	fitCol	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	nameHtml	nextStamp	nm	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trueToday	typeWord	watchOpts
 cardid.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSum	cpwSym
 cardid.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -3839,7 +3840,7 @@ closeupread.test.js	boxfold.js	<loaded>
 closeupread.test.js	calendar.js	<loaded>	calBanner	calLink
 closeupread.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 closeupread.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
-closeupread.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	cnColBase	cnDWord	cnHex	cnLeft	cnPatBase	colBtn	colFieldLabel	colHas	colLetters	colNameTaken	colRows	colShows	cpSwipe	patBtn	patChoices	patTitle	patVar	rdAccCard	rdAccOf	rdActName	rdAddBtn	rdAddCol	rdAddPat	rdAfter	rdBar	rdBoth	rdClose	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneCard	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdKeep	rdLightNote	rdMain	rdMatCard	rdMatOf	rdNaCard	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPick	rdPreview	rdRefresh	rdRender	rdRestore	rdRetakeHtml	rdRun	rdSet	rdStart	rdUndo	rdUndoAll	rdUse	rdWithClose
+closeupread.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	cnColBase	cnDWord	cnHex	cnLeft	cnPatBase	colBtn	colFieldLabel	colHas	colLetters	colNameTaken	colRows	colShows	cpSwipe	patBtn	patChoices	patTitle	patVar	rdAccCard	rdAccOf	rdActName	rdAddBtn	rdAddCol	rdAddPat	rdAfter	rdBar	rdBoth	rdBothTap	rdClose	rdCloseTap	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneCard	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdKeep	rdKeepTap	rdLightNote	rdMain	rdMatCard	rdMatOf	rdNaCard	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPick	rdPreview	rdReadTap	rdRefresh	rdRender	rdRestore	rdRetakeHtml	rdRun	rdSet	rdStart	rdUndo	rdUndoAll	rdUndoAllTap	rdUse	rdUseTap	rdWithClose
 closeupread.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hasPat	hasVest	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	nextStamp	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatFind	ownPatKey	patBase	patLabel	patLetters	patName	patNameTaken	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeFor	shadeName	sockPatterned	stampSettings	subHashes	subStamp	tagTypesNow	takeSettings	thirdOf	titleCls	todayDate	watchOpts
 closeupread.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSum	cpwSym
 closeupread.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -3927,7 +3928,7 @@ closeupsheet.test.js	boxfold.js	<loaded>
 closeupsheet.test.js	calendar.js	<loaded>	calBanner	calLink
 closeupsheet.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 closeupsheet.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
-closeupsheet.test.js	colpick.js	<loaded>	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnRetake	cnRetakeHtml	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick
+closeupsheet.test.js	colpick.js	<loaded>	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnHasClose	cnHex	cnHsv	cnOpenTap	cnPaperDefault	cnPaperLine	cnRetake	cnRetakeHtml	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick
 closeupsheet.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hasPat	hasVest	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	nextStamp	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeFor	shadeName	sockPatterned	subHashes	takeSettings	thirdOf	titleCls	todayDate	watchOpts
 closeupsheet.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSum	cpwSym
 closeupsheet.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -4217,7 +4218,7 @@ colnew.test.js	boxfold.js	<loaded>
 colnew.test.js	calendar.js	<loaded>	calBanner	calLink	calSummary	renderCalUI
 colnew.test.js	care.js	<loaded>	careBadge	careCounts	careLimit	careState	careWashed	laundryDays	renderCareUI
 colnew.test.js	checklist.js	<loaded>
-colnew.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	closeColPick	cnAskBox	cnBaseLive	cnColBase	cnCost	cnDWord	cnDone	cnDrag	cnDrawn	cnErrCard	cnFigLive	cnFromHsv	cnHasClose	cnHex	cnHexIn	cnHsv	cnHueDown	cnKeyUp	cnKindCard	cnLeft	cnLightNote	cnLive	cnName	cnPaperDefault	cnPaperLine	cnPatBase	cnRetake	cnRetakeHtml	cnSetHsv	cnSetType	cnSqDown	cnSqKey	cnSwitch	cnToggleClose	cnUseExisting	cnWithPat	colAskHtml	colChoices	colFamily	colLetters	colNameTaken	colNear	colNewAdd	colNewBack	colNewFor	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	describeAsk	openColNew	openColPick	openCustomNew	openPatNew	patAskHtml	patChoices	patGroupOf	patNewFor	patTitle	patVar	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
+colnew.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	closeColPick	cnAddTap	cnAskBox	cnAskTap	cnBaseLive	cnCloseupTap	cnColBase	cnCost	cnDWord	cnDescType	cnDone	cnDrag	cnDrawn	cnErrCard	cnFigLive	cnForPick	cnFromHsv	cnHasClose	cnHex	cnHexDone	cnHexIn	cnHexType	cnHsv	cnHuePress	cnKindCard	cnKindTap	cnLeft	cnLightNote	cnLive	cnName	cnNameType	cnOpenTap	cnPaperDefault	cnPaperLine	cnPatBase	cnRetake	cnRetakeHtml	cnSetHsv	cnSetType	cnSlideUp	cnSqKey	cnSqPress	cnSwitch	cnToggleClose	cnUseExisting	cnUseOldTap	cnWithPat	colAskHtml	colChoices	colFamily	colLetters	colNameTaken	colNear	colNewAdd	colNewBack	colNewFor	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	describeAsk	openColNew	openColPick	openCustomNew	openPatNew	patAskHtml	patChoices	patGroupOf	patNewFor	patTitle	patVar	pnOpenTap	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
 colnew.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hexRgb	isCargo	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	metalWord	mix	nextStamp	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatKey	patBase	patLabel	patLetters	patName	patNameTaken	patOf	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	wearsJacket	wearsTie
 colnew.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed
 colnew.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI
@@ -4319,7 +4320,7 @@ colors.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge
 colors.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 colors.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTop	careWashed	careWord	careWornLine
 colors.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
-colors.test.js	colpick.js	<loaded>	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	openColPick	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick
+colors.test.js	colpick.js	<loaded>	EP	closeColPick	colAskHtml	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	openColPick	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick
 colors.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	dayFields	desc	di	dressOut	fitCol	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keySettings	keySplit	labHex	labOf	leatherWord	lum	lumCol	matSeason	matTypeOne	matTypeWord	matsFor	metalWord	mix	nameHtml	needsJacket	needsTie	nextStamp	nm	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	rgbLab	seasonFit	sentence	setWardrobe	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	strapBand	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
 colors.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSum	cpwSym
 colors.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -4432,7 +4433,7 @@ colpick.test.js	boxfold.js	<loaded>
 colpick.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 colpick.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 colpick.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
-colpick.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	COL_FIELDS	EP	closeColPick	colAddNew	colAllDiff	colAllOf	colAskHtml	colAskImgs	colAskRun	colAskUseAll	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colLetters	colNameTaken	colNear	colNewFor	colPickSel	colPickView	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	openColPick	patAddNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewBase	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick	useColPick
+colpick.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	COL_FIELDS	EP	closeColPick	colAddNew	colAllDiff	colAllOf	colAskHtml	colAskImgs	colAskRun	colAskUseAll	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colLabel	colLetters	colNameTaken	colNear	colNewFor	colPickSel	colPickView	colRows	colShows	colSwipe	colTarget	cpAskAllTap	cpAskHint	cpAskTap	cpFig	cpSeg	cpSwipe	cpTileTap	cpUseTap	cpViews	openColPick	patAddNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewBase	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick	useColPick
 colpick.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	hasPat	hasVest	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	mergeState	metalWord	mix	nextStamp	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatFind	ownPatKey	patBase	patLabel	patLetters	patName	patNameTaken	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeFor	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trouserKind
 colpick.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSum	cpwSym
 colpick.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -4502,6 +4503,94 @@ colpick.test.js	watch/shirt-tie.png	<loaded>
 colpick.test.js	watch/suit.png	<loaded>
 colpick.test.js	watch/vest.png	<loaded>
 colpick.test.js	weather.js	<loaded>	loadWeather
+colpickacts.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+colpickacts.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
+colpickacts.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
+colpickacts.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	tagSwInner	unreadNote
+colpickacts.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+colpickacts.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
+colpickacts.test.js	add-paste.js	<loaded>
+colpickacts.test.js	add-save.js	<loaded>	cardOf	cardReading	cardReady	qh
+colpickacts.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
+colpickacts.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
+colpickacts.test.js	analysis.js	<loaded>
+colpickacts.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	announce	ask	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	matTag	metaGet	metaPut	normTag	ownColorsOf	put	renderBusy	sockTag	tx	txFail	txs	window.fetch
+colpickacts.test.js	asm-color.js	<loaded>	asmGapNote
+colpickacts.test.js	asm-gl.js	<loaded>
+colpickacts.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
+colpickacts.test.js	asm-pocket.js	<loaded>
+colpickacts.test.js	asm-watch.js	<loaded>
+colpickacts.test.js	assemble.js	<loaded>	@
+colpickacts.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSync	backWanted	histDrop	histPush	inviteInUrl
+colpickacts.test.js	backupfile.js	<loaded>
+colpickacts.test.js	boxfold.js	<loaded>
+colpickacts.test.js	calendar.js	<loaded>	calBanner	calLink
+colpickacts.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
+colpickacts.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
+colpickacts.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	COL_FIELDS	EP	closeColPick	cnAccentTap	cnAddTap	cnAskBox	cnAskTap	cnBackTap	cnBaseLive	cnBasePick	cnCloseupTap	cnColBase	cnCost	cnDWord	cnDescKey	cnDescType	cnDone	cnDrag	cnDrawn	cnFigLive	cnForPick	cnFromHsv	cnHasClose	cnHex	cnHexDone	cnHexIn	cnHexType	cnHsv	cnHueKey	cnHuePress	cnKindCard	cnKindTap	cnLightNote	cnLive	cnName	cnNameType	cnOpenTap	cnPaperDefault	cnPaperLine	cnPatBase	cnRetakeHtml	cnSetHsv	cnSetType	cnSlideUp	cnSqKey	cnSqPress	cnSwitch	cnToggleClose	cnToggleType	cnTypeTap	cnUseExisting	cnUseOldTap	cnWithPat	colAllDiff	colAllOf	colAskHtml	colAskImgs	colAskRun	colAskUseAll	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewBack	colNewFor	colPickSel	colPickView	colRows	colShows	colSwipe	colTarget	cpAskAllTap	cpAskHint	cpAskTap	cpCloseTap	cpFig	cpGoPics	cpPicsTap	cpSeg	cpSwipe	cpTileTap	cpUseTap	cpViewTap	cpViews	describeAsk	openColNew	openColPick	openCustomNew	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	pnAnywayTap	pnOpenTap	rdAccCard	rdAccOf	rdAddCol	rdAddPat	rdAfter	rdAgainTap	rdBar	rdBoth	rdBothTap	rdChange	rdChangeTap	rdClose	rdCloseTap	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneCard	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdKeep	rdKeepTap	rdLightNote	rdMain	rdMatCard	rdMatMain	rdMatOf	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPick	rdPreview	rdReadTap	rdRefresh	rdRender	rdRestore	rdRetakeHtml	rdRun	rdSet	rdSetMat	rdStart	rdUndo	rdUndoAll	rdUndoAllTap	rdUndoTap	rdUse	rdUseTap	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
+colpickacts.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	hasPat	hasVest	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	nextStamp	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatFind	ownPatKey	patBase	patLabel	patLetters	patName	patNameTaken	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeFor	shadeHex	shadeName	sockPatterned	stampSettings	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	watchOpts
+colpickacts.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSum	cpwSym
+colpickacts.test.js	daysoff.js	<loaded>	refreshHolidays
+colpickacts.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
+colpickacts.test.js	draw.js	<loaded>	camoTileUrl	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
+colpickacts.test.js	dress.js	<loaded>	migrateVests	newSuitVest
+colpickacts.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+colpickacts.test.js	history.js	<loaded>	checkPlanRules	whenPulled
+colpickacts.test.js	index.html	<loaded>
+colpickacts.test.js	item-photo.js	<loaded>	imgOf	paperCloth	paperHint	paperLine	paperRetake	paperSteps	phSm	photoTools	ptIcon
+colpickacts.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	noMotion	openItem	renderItem	sheetSlides	wardList
+colpickacts.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	optLab	renderWardrobe	sete	wardPic
+colpickacts.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
+colpickacts.test.js	locale.js	<loaded>	appLocale
+colpickacts.test.js	locks.js	<loaded>
+colpickacts.test.js	look.js	<loaded>	lkShade	lookAi	lookBuiltins	lookChipSw	lookChips	lookChipsHtml	lookColOk	lookColRows	lookCu	lookHasPat	lookMatKind	lookMatRows	lookMatSw	lookNeed	lookOn	lookOpenFresh	lookOwnMatUI	lookOwnRaw	lookPatExtras	lookPatOf	lookPatRow	lookReadBox	lookReadCost	lookRow	lookSection	lookSet	lookShadeHtml	lookShadeOk	lookShadeStep	lookSugCols	lookSum	lookVal	renderLookSetting
+colpickacts.test.js	mannequin.js	<loaded>	@{}
+colpickacts.test.js	measure.js	<loaded>	MULTI_PATS	calibLab	closeRead	colRef	measEdgeCut	measHint	measKL	measureCloth	measureParts	multiCol	nearestCols	paperCopy	paperKey	paperNow	paperOf	urlCanvas	wbRead
+colpickacts.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
+colpickacts.test.js	migrate.js	<loaded>
+colpickacts.test.js	missed.js	<loaded>
+colpickacts.test.js	month.js	<loaded>	dayOnly
+colpickacts.test.js	mq/shirt-open.js	<loaded>
+colpickacts.test.js	mq/shirt-tie.js	<loaded>
+colpickacts.test.js	mq/suit-open.js	<loaded>
+colpickacts.test.js	mq/suit.js	<loaded>
+colpickacts.test.js	mq/vest.js	<loaded>
+colpickacts.test.js	own-lists.js	<loaded>	addCustomColor	addCustomPattern	cleanLookApp	groupOf	ownColOffer	removeCustom	renderCustomUI	renderOwnMatUI	typePl
+colpickacts.test.js	pack.js	<loaded>	packShow
+colpickacts.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
+colpickacts.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	jsq	loadRenders	srcOk
+colpickacts.test.js	pickscore.js	<loaded>
+colpickacts.test.js	planner.js	<loaded>	favItemSet	favRead	isFavItem
+colpickacts.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
+colpickacts.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote
+colpickacts.test.js	scorecard.js	<loaded>
+colpickacts.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	saveUserSettings	setLock	settingsOpen	settingsPart	showCost
+colpickacts.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
+colpickacts.test.js	sheet-swipe.js	<loaded>	sheetSwipe
+colpickacts.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	@document.addEventListenerkeydown	closeShop
+colpickacts.test.js	snapshots.js	<loaded>
+colpickacts.test.js	srgb.js	<loaded>	linSrgb	linSrgb8	srgbLin	srgbLin8
+colpickacts.test.js	start.js	<loaded>	applyStored	loadStored	openAdd	pageIn	show	startChecks	startJobs	startUp	subOpen
+colpickacts.test.js	stats.js	<loaded>	@afterScripts	statsPlan	statsPlanned	wornDays
+colpickacts.test.js	styles.css	#add #nps-q .card	#add #nps-q .ckprog	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select	#add .addfor	#add .addlong	#add .addlong .aic	#add .addmore	#add .addpick	#add .addpick .btn	#add .addpick .btn small	#add .addpick .btn span	#add .drop-hint	#add .nps-bar	#add .nps-bar .ckleft	#add .nps-bar button	#add .nps-x	#add .paste-box	#add .paste-box .btn	#add .paste-box input	#busy	#busy.on	#col-backdrop	#col-backdrop.on	#col-sheet	#col-sheet .cnown.cnslim	#col-sheet .cpask.cpaskhint	#col-sheet .cpaskhint .cpasktx b,#col-sheet .cpaskhint .cpasktx small	#col-sheet .cpcmp figure	#col-sheet .cpnewl	#col-sheet .cpownh	#col-sheet .lkshade button	#col-sheet.on	#col-sheet.on,#rd-sheet.on	#item-backdrop	#item-backdrop.closing	#item-backdrop.on,#item-backdrop.closing	#item-view	#item-view .card.ivsec	#item-view .cropwrap .btns .pri,#add #queue .card .btns .pri,#add .nps-bar .pri	#item-view .ivct .ivrd	#item-view .ivct .wbst	#item-view .ivct .wbstcard	#item-view .ivct .wbsteps	#item-view .phtools	#item-view .phtools .ptbtn	#item-view .ptbtn span	#item-view .ptbtn svg	#item-view.closing	#item-view.on,#item-view.closing	#modal-backdrop	#modal-backdrop,#settings-modal	#multi-status	#multi-status:empty	#nps-backdrop,#shop-backdrop	#nps-backdrop.on,#shop-backdrop.on	#nps-sheet	#nps-sheet .nps-head .aic	#nps-sheet .nps-ht h2	#nps-sheet .nps-ht small	#nps-sheet,#shop-sheet	#nps-sheet.on	#paste-status:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#rd-backdrop	#rd-backdrop.on	#rd-sheet	#rd-sheet .cnwhy .wbretake,#rd-sheet .cnwarm .wbretake	#rd-sheet p	#rd-sheet.on	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast button	#toast button::after	#toast,body.iv-on #toast	#toast.act	#toast.on	#toast:not(.on)	#today	#undo-fab	#ward-add	#ward-add svg	#wardrobe	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chip::after	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .wclear	#wardrobe .wsearch input	#wardrobe .wsort	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	#wardrobe:not([hidden])~#ward-add	*	.accchips	.acclab	.accrow	.addlong .chev	.addlong-t	.addlong-t b	.addlong-t small	.addpick	.addpick .btn	.addpick .btn small	.addrow	.addrow .chev	.addrow small	.addrow span:first-child	.aic	.btn	.btns	.cap	.card label	.chip	.chip.on	.chips	.ck-good	.ck-opt,.ck-todo	.ck-warn	.ckadds	.ckb	.ckb .wbst,.ckb .wbstcard	.ckb .wbsteps	.ckb>label	.ckb>label select,.ckb>label>input[type=text]	.ckcheap	.ckchev	.ckchip	.ckcn	.ckhelp	.ckleft	.ckm	.ckm b	.ckm svg	.ckprog	.ckreadadd .rdcost	.cks	.cks.open>.ckb	.cks.open>.ckh .ckchev	.ckt	.ckt b	.ckt small	.cktrack	.cktrack i	.cmp-cu	.cmp-dw	.cmpbar	.cmpbar i	.cmpl	.cmpl.br	.cmpl.tl	.cmpl.tr	.cmplab	.cmplv canvas	.cmpmb	.cmpmt	.cmpop	.cmpsp	.cmptools	.cmpv	.cmpv.cmpnow .cmplv	.cmpw	.cmpwait	.cmpzm	.cnask	.cnask .wbst	.cnask .wbst .ic	.cnaskrow	.cnaskrow small	.cnback	.cnback+#col-title	.cnbmp	.cnbmp i	.cnbmp i.on	.cnbtns	.cnbusy	.cnch	.cnchip	.cnchip.on	.cnchips	.cnchk	.cnchk i	.cnchk i.on	.cnde	.cneyebrow	.cnfacts	.cnfacts li	.cnfacts li>span:first-child	.cnfld	.cnfld input,.cnfld select	.cnfor	.cnhex	.cnhex i	.cnhex input	.cnhue	.cnhue i	.cnhue::before	.cnnote	.cnres	.cnres.cnerr	.cnres.warn	.cnreshd	.cnreshd b	.cnreshd small	.cnresp svg	.cnresw	.cnrow	.cnsec	.cnsec>.cnfld+.cnfld,.cnsec>.cnfld+.cnnote+.cnfld	.cnsec>b	.cnsq	.cnsq:focus-visible,.cnhue:focus-visible	.cnsw	.cnsw i	.cnsw i.on	.cnsw i.on::after	.cnsw i::after	.cntag	.cntext	.cntext::placeholder	.cnthumb	.cnwhy	.colbtn	.colchev	.colchip	.colchip.none,.cpsw.none,.cpbig.none	.colnm	.cpaid	.cpask	.cpask .cpai	.cpask.done	.cpaskbtn	.cpaskbtn.ghost	.cpaskbtns	.cpaskbtns .cpaskbtn,.cnbtns .cpaskbtn	.cpasktx	.cpasktx b	.cpasktx small	.cpbar	.cpbar button	.cpbig	.cpcmp	.cpcmp figcaption	.cpcmp figure	.cpd	.cpdraw,.cpdraw svg	.cpfig .cpdraw	.cpfig .ph.thumb	.cpgrab	.cpgrid	.cph	.cphelp	.cpnewt .cpnm	.cpnewt .cpsw	.cpnm	.cpnow	.cpothx	.cppat .cpnow	.cppatbig .cpdraw	.cppatbig .cpdraw svg	.cpph	.cpph img	.cpseg	.cpseg button	.cpseg button.on	.cpsw	.cptile	.cptile.sel	.cptop	.cpwbought input	.cpwf	.cpwf label	.cpwin	.cpwin input[type="text"]	.cpwsym	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.drop-hint	.favhint	.favic	.favsw2	.favsw2::after	.favtog	.favtog-t	.favtog>.favic	.firstrun	.firstrun h3	.fit.best,.fit.good,.cpd	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi	.gi img.ph	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.hbtns	.hgear	.ivbar	.ivbar .ivdone	.ivbar .ivnav	.ivbar,.nps-bar,.su-bar,.kit-bar	.ivbody	.ivcare .btns button	.ivcare .carecount	.ivchev	.ivck .cks .ivcare	.ivck .cks .ivcare h3	.ivck .cks .phtools	.ivcl,.ivcr	.ivcols	.ivdel	.ivdel button	.ivdraw	.ivdraw .thumb	.ivdup	.ivdup button	.ivdup+.ivdel	.ivhead	.ivhead .pcount	.ivhead::before	.ivhero .pair	.ivhero .pair img.ph,.ivhero .pair .tagsw .ph.thumb,.ivhero .swsplit .swtex	.ivhero figcaption br,.ivhero figcaption b	.ivin	.ivmeta	.ivpill	.ivpill.good	.ivpills	.ivrd	.ivrd .ivrdbtn	.ivrot .rotbtn	.ivsec .btns	.ivsec .shelp	.ivsec h3	.ivsum	.ivsumph	.ivsumph .ph.thumb	.ivsumph svg	.ivsumt	.ivt	.ivt .gtype	.ivt h2	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.lkbody	.lkchev	.lkrd .lkrdtx	.lkrd .lkrdtx b	.lkrd .lkrdtx small	.lkrow.sub .lksw	.lkshade	.lkshade output	.lkstar	.lksw	.lksw svg,.lksw .lkcol	.lktx	.lktx b	.lktx small	.morein	.morein>label	.mut,small	.named	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.nps-bar	.nps-body	.nps-grab	.nps-grab,.shop-grab,.kit-grab	.nps-head	.nps-ht	.ordrow	.ordrow .rotbtn	.pair	.pair .tagsw .ph.thumb	.pair .tagsw .ph.thumb svg	.pair figcaption	.pair figcaption b	.pair figure	.pair img.ph,.rv .pair img.ph	.paste-box	.paste-box .btn	.paste-box input	.patchip svg,.cppat svg	.patchip,.cppat	.phead	.phead .pback	.phead h2	.phtools	.phtools button,.phtools .btn	.pick-head	.pick-head b	.pick-x	.pri	.psub	.rdalt	.rdbar	.rdbar .ghost	.rdbar .pri	.rdbar button	.rdbar small	.rdbtns	.rdbtns .cpaskbtn	.rdbusy	.rdbusy b	.rdbusy small	.rdcard	.rdcard .cnfacts li>span:first-child	.rdcard .cnreshd	.rdcard .cnresw	.rdcard.done	.rdcard.done .cnresw.rdsm	.rdcard.done b	.rdcost	.rddone	.rddone .rddraw	.rddone b	.rddone small	.rddraw .ph.thumb	.rddraw svg	.rddtx	.rddtx .cneyebrow	.rdfoot	.rdgrab	.rdhead	.rdhead b	.rdlink	.rdmeta	.rdmeta b	.rdpaper	.rdpaper.no	.rdsrc	.rdsrc figcaption	.rdsrc figure	.rdsrc figure>img,.rdsrc figure>.rddraw	.rdtag	.rdtop	.rdx	.rowtap .named,.gimeta .named	.rv .thumb	.shaderow	.shctl	.shctl .shbtn	.shctl .shval	.shelp	.shlab	.slabel	.slide	.spin	.stage	.stage .firstrun	.swsplit	.swsplit .swtex	.swsplit:has(.swtex)::after	.thumb	.thumb svg	.vfile	.vh	.warn	.wbpic i	.wbpic::after	.wbpic::before	.wbretake	.wbretake::after	.wbst	.wbst .ic	.wbst .tx	.wbst .tx small	.wbst .wbretake	.wbst.no .ic	.wbstcard .arr	.wbstcard .cam	.wbstcard .eb	.wbstcard .hd	.wbstcard .li	.wbstcard .more	.wbstcard .n	.wbstcard .n b	.wbstcard .ol	.wbstcard .tap	.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i	.wbsteps	.wfind	.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav	.wsearch	.wsicon	.wslide	.wxc.wxlk	.wxl	::placeholder	:focus-visible	:is(#item-view,#add) .ckadds .btn	:is(#item-view,#add) .ckh	:is(#item-view,#add) .cklr	:is(#item-view,#add) .cklr[aria-pressed=true]	:is(#item-view,#add) .cmpgo	:is(#item-view,#add) .cmplv	:is(#item-view,#add) .cmpzm button	:is(#item-view,#add) .cmpzm button+button	:is(#item-view,#add) .lkrd	:is(#item-view,#add) .lkrd .lkrdbtn	:is(#item-view,#add) .lkrow	:is(#item-view,#add) .lkrow.sub	:is(#item-view,#add) .rdlink	:is(#item-view,#add) .wbst.cmpwb	:is(#item-view,#add) .wbstcard	:is(#item-view,#add) .wbstcard .wbpic	:is(#item-view,#add) .wfld	:is(#item-view,#add) .wnotes textarea	:is(#item-view,#add) label.wnotes	:is(#item-view,#add,body) .accrow .accadd	:is(#item-view,.wbsteps,#cu-sheet) .wbpic	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.busy-on #toast	body.iv-on #toast,body.iv-on #busy	body.iv-on.busy-on #toast	body.nps-on #toast,body.nps-on #busy	body:not(.iv-on):has(main:not([inert]) #wardrobe:not([hidden])) #toast	button	button,.btn,select,input	button:focus-visible,select:focus-visible,input:focus-visible	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	label:has(>.vfile)	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav.tab-none::before	nav::before	select,input[type="text"],input[type="range"]
+colpickacts.test.js	sync-photos.js	<loaded>
+colpickacts.test.js	sync-status.js	<loaded>	endedAnswer	setSyncStatus	showSyncStatus	syncNetText	syncPaused	syncWaiting
+colpickacts.test.js	sync.js	<loaded>	@connRestored.then	afterPull	clockLearn	localState	pulledYet	scheduleSync	syncJoinAt	syncJoinMark	syncLaterRun	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl
+colpickacts.test.js	tag-request.js	<loaded>	benchEstimate	customForTag	describeEstimate	ownMatsForTag	readEstimate	sharpCloseOf	tagExtras	tagFixes	tagImgOf	texSig	visTok
+colpickacts.test.js	tagging.js	<loaded>	tagNotes
+colpickacts.test.js	tests/fixedplan.js	<any>
+colpickacts.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
+colpickacts.test.js	tests/fixtures/suit-mink.jpg	<loaded>
+colpickacts.test.js	theme.js	<loaded>	applyTheme
+colpickacts.test.js	toast.js	<loaded>	toast	toastOff	undoHere
+colpickacts.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
+colpickacts.test.js	today-photofold.js	<loaded>
+colpickacts.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
+colpickacts.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapUse
+colpickacts.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
+colpickacts.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	netErr	uiEsc
+colpickacts.test.js	wardrobe.js	<loaded>	fldRow	giNote	giTag	ivOn	matLabel	matRow	notesRow	setItemField	wardBack	wardBar	wardCount	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardSort	wardView
+colpickacts.test.js	weather.js	<loaded>	loadWeather
 combatboot.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 combatboot.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 combatboot.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
@@ -4899,6 +4988,94 @@ deploy.test.js	worker/remind.js	<any>	<loaded>
 deploy.test.js	worker/render.js	<any>	<loaded>
 deploy.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
 deploy.test.js	wrangler.toml	<any>
+deps.test.js	about.js	<any>
+deps.test.js	account.js	<any>
+deps.test.js	act.js	<any>
+deps.test.js	add-card.js	<any>
+deps.test.js	add-keep.js	<any>
+deps.test.js	add-more.js	<any>
+deps.test.js	add-paste.js	<any>
+deps.test.js	add-save.js	<any>
+deps.test.js	add-sheet.js	<any>
+deps.test.js	add.js	<any>
+deps.test.js	analysis-worker.js	<any>
+deps.test.js	analysis.js	<any>
+deps.test.js	app.js	<any>
+deps.test.js	asm-color.js	<any>
+deps.test.js	asm-gl.js	<any>
+deps.test.js	asm-kinds.js	<any>
+deps.test.js	asm-pocket.js	<any>
+deps.test.js	asm-watch.js	<any>
+deps.test.js	asm-worker.js	<any>
+deps.test.js	assemble.js	<any>
+deps.test.js	back.js	<any>
+deps.test.js	backupfile.js	<any>
+deps.test.js	boxfold.js	<any>
+deps.test.js	calendar.js	<any>
+deps.test.js	care.js	<any>
+deps.test.js	checklist.js	<any>
+deps.test.js	colpick.js	<any>
+deps.test.js	core.js	<any>
+deps.test.js	cost.js	<any>
+deps.test.js	daysoff.js	<any>
+deps.test.js	detect.js	<any>
+deps.test.js	draw.js	<any>
+deps.test.js	dress.js	<any>
+deps.test.js	fav.js	<any>
+deps.test.js	history.js	<any>
+deps.test.js	index.html	<any>
+deps.test.js	item-photo.js	<any>
+deps.test.js	item-view.js	<any>
+deps.test.js	itemsheet.js	<any>
+deps.test.js	kit.js	<any>
+deps.test.js	locale.js	<any>
+deps.test.js	locks.js	<any>
+deps.test.js	look.js	<any>
+deps.test.js	mannequin.js	<any>
+deps.test.js	measure.js	<any>
+deps.test.js	merge.js	<any>
+deps.test.js	migrate.js	<any>
+deps.test.js	missed.js	<any>
+deps.test.js	month.js	<any>
+deps.test.js	mq/shirt-open.js	<any>
+deps.test.js	mq/shirt-tie.js	<any>
+deps.test.js	mq/suit-open.js	<any>
+deps.test.js	mq/suit.js	<any>
+deps.test.js	mq/vest.js	<any>
+deps.test.js	own-lists.js	<any>
+deps.test.js	pack.js	<any>
+deps.test.js	pattern-read.js	<any>
+deps.test.js	photos.js	<any>
+deps.test.js	pickscore.js	<any>
+deps.test.js	planner.js	<any>
+deps.test.js	remind.js	<any>
+deps.test.js	safety.js	<any>
+deps.test.js	scorecard.js	<any>
+deps.test.js	settings.js	<any>
+deps.test.js	setup.js	<any>
+deps.test.js	sheet-swipe.js	<any>
+deps.test.js	shop.js	<any>
+deps.test.js	snapshots.js	<any>
+deps.test.js	srgb.js	<any>
+deps.test.js	start.js	<any>
+deps.test.js	stats.js	<any>
+deps.test.js	sync-photos.js	<any>
+deps.test.js	sync-status.js	<any>
+deps.test.js	sync.js	<any>
+deps.test.js	tag-request.js	<any>
+deps.test.js	tagging.js	<any>
+deps.test.js	tests/deps.json	<any>
+deps.test.js	tests/scriptlist.js	<any>
+deps.test.js	theme.js	<any>
+deps.test.js	toast.js	<any>
+deps.test.js	today-gestures.js	<any>
+deps.test.js	today-photofold.js	<any>
+deps.test.js	today-picture.js	<any>
+deps.test.js	today-plan.js	<any>
+deps.test.js	today.js	<any>
+deps.test.js	ui.js	<any>
+deps.test.js	wardrobe.js	<any>
+deps.test.js	weather.js	<any>
 describe.test.js	tools/describe-eval.js	<any>
 describe.test.js	worker.js	<loaded>	corsFor	fetch	serve
 describe.test.js	worker/colormath.js	<any>	<loaded>	dE00	hexLab	hexRgb	rgbLab
@@ -5147,7 +5324,7 @@ editorrework.test.js	boxfold.js	<loaded>
 editorrework.test.js	calendar.js	<loaded>	calBanner	calLink
 editorrework.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 editorrework.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
-editorrework.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDrag	cnFigLive	cnFromHsv	cnHasClose	cnHex	cnHsv	cnLive	cnPaperDefault	cnPaperLine	cnPatBase	cnRetakeHtml	cnSetHsv	cnSqDown	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdClose	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdOff	rdOpen	rdPaperHtml	rdRefresh	rdRender	renderColNew	renderColPick	renderPatNew	renderPatPick
+editorrework.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDrag	cnFigLive	cnFromHsv	cnHasClose	cnHex	cnHsv	cnLive	cnOpenTap	cnPaperDefault	cnPaperLine	cnPatBase	cnRetakeHtml	cnSetHsv	cnSqPress	cnWithPat	colAskHtml	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	cpCloseTap	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	pnOpenTap	rdClose	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdOff	rdOpen	rdPaperHtml	rdRefresh	rdRender	renderColNew	renderColPick	renderPatNew	renderPatPick
 editorrework.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hasPat	hasVest	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matsFor	metalWord	mix	nextStamp	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeFor	shadeName	sockPatterned	subHashes	takeSettings	thirdOf	titleCls	todayDate
 editorrework.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym
 editorrework.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -6551,6 +6728,7 @@ globals.test.js	sync-status.js	<any>
 globals.test.js	sync.js	<any>
 globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
+globals.test.js	tests/scriptlist.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -7554,7 +7732,7 @@ itemredesign.test.js	boxfold.js	<loaded>
 itemredesign.test.js	calendar.js	<loaded>	calBanner	calLink
 itemredesign.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 itemredesign.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	ckToggle	cmpBind	cmpClamp	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchGo	cmpMatchHtml	cmpMount	cmpOv	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps	cmpZoom
-itemredesign.test.js	colpick.js	<loaded>	@backOver	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSwipe	cpViews	openColPick	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick
+itemredesign.test.js	colpick.js	<loaded>	@backOver	EP	closeColPick	colAskHtml	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSwipe	cpViews	openColPick	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick
 itemredesign.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	hasPat	hasVest	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	leatherWord	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeFor	shadeHex	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trouserKind	watchOpts
 itemredesign.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSum	cpwSym
 itemredesign.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -7643,7 +7821,7 @@ itemsheet.test.js	boxfold.js	<loaded>
 itemsheet.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calLink
 itemsheet.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTimes	careTop	careWashed	careWord	careWornLine
 itemsheet.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
-itemsheet.test.js	colpick.js	<loaded>	EP	closeColPick	cnAskBox	cnBaseLive	cnColBase	cnCost	cnDone	cnDrawn	cnFigLive	cnHasClose	cnHex	cnHexIn	cnHsv	cnLive	cnName	cnPaperDefault	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	useColPick
+itemsheet.test.js	colpick.js	<loaded>	EP	closeColPick	cnAddTap	cnAskBox	cnBaseLive	cnColBase	cnCost	cnDone	cnDrawn	cnFigLive	cnHasClose	cnHex	cnHexDone	cnHexIn	cnHexType	cnHsv	cnLive	cnName	cnNameType	cnOpenTap	cnPaperDefault	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	useColPick
 itemsheet.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	cleanSettings	clipMetal	colBase	colBaseFor	colName	colOf	colorDesc	colsFor	custom	dE00	dayClimate	dayFields	desc	di	fitCol	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	leatherLabel	leatherWord	leathersFor	linkFace	lum	matsFor	metalWord	mix	nameHtml	nameIso	nextStamp	nm	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownFreeKey	ownKeyNorm	ownKeyOther	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	patBase	patLabel	patName	patOf	planCol	primaryCol	recClean	recFree	rgbHex	rgbLab	sentence	setDays	setFields	setKey	setList	setOwn	setStr	setWardrobe	shadeFor	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	soleStyle	stampSettings	strapBand	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trouserKindShown	trueToday	typeWord	watchOpts
 itemsheet.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym
 itemsheet.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -8034,7 +8212,7 @@ lookbeta.test.js	boxfold.js	<loaded>
 lookbeta.test.js	calendar.js	<loaded>	calBanner	calLink	calSummary	renderCalUI
 lookbeta.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 lookbeta.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
-lookbeta.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	accChoices	closeColPick	cnAskBox	cnColBase	cnCost	cnDone	cnDrawn	cnHasClose	cnHex	cnHsv	cnLeft	cnName	cnPaperDefault	cnPatBase	cnWithPat	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openPatNew	patBtn	patChoices	patNewFor	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
+lookbeta.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	accChoices	closeColPick	cnAddTap	cnAskBox	cnColBase	cnCost	cnDone	cnDrawn	cnHasClose	cnHex	cnHsv	cnLeft	cnName	cnNameType	cnPaperDefault	cnPatBase	cnWithPat	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openPatNew	patBtn	patChoices	patNewFor	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
 lookbeta.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LINK_METAL_OPTS	LUM	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	cleanRecord	clipMetal	colBase	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	hasPat	hasVest	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keySettings	keySplit	labHex	labOf	leatherLabel	leatherWord	leathersFor	linkFace	lum	lumCol	matSeason	matTypeWord	matsFor	metalOptsFor	metalWord	mix	nextStamp	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMatName	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatKey	patBase	patLabel	patLetters	patName	patNameTaken	patOf	planCol	primaryCol	pw	recClean	recCol	recFree	rgbHex	rgbLab	seasonFit	sentence	setWardrobe	shadeHex	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	soleStyle	stampSettings	strapBand	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	watchOpts	watchText	wearsJacket	wearsTie
 lookbeta.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed
 lookbeta.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI
@@ -8422,7 +8600,7 @@ materials.test.js	boxfold.js	<loaded>
 materials.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 materials.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 materials.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
-materials.test.js	colpick.js	<loaded>	EP	cnColBase	cnDWord	cnHex	colBtn	colFieldLabel	colHas	colLetters	colNameTaken	colRows	colShows	cpSwipe	patBtn	patChoices	patTitle	patVar	rdAccCard	rdAccOf	rdActName	rdAddBtn	rdAddCol	rdAfter	rdBar	rdBoth	rdClose	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdLightNote	rdMain	rdMatCard	rdMatMain	rdMatOf	rdOff	rdOpen	rdPaperHtml	rdPatCard	rdPatMain	rdPatOf	rdPick	rdPreview	rdRefresh	rdRender	rdRestore	rdRetakeHtml	rdRun	rdSet	rdSetMat	rdUndo	rdUndoAll	rdUse
+materials.test.js	colpick.js	<loaded>	EP	cnColBase	cnDWord	cnHex	colBtn	colFieldLabel	colHas	colLetters	colNameTaken	colRows	colShows	cpSwipe	patBtn	patChoices	patTitle	patVar	rdAccCard	rdAccOf	rdActName	rdAddBtn	rdAddCol	rdAfter	rdBar	rdBoth	rdBothTap	rdClose	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdLightNote	rdMain	rdMatCard	rdMatMain	rdMatOf	rdOff	rdOpen	rdPaperHtml	rdPatCard	rdPatMain	rdPatOf	rdPick	rdPreview	rdRefresh	rdRender	rdRestore	rdRetakeHtml	rdRun	rdSet	rdSetMat	rdUndo	rdUndoAll	rdUse	rdUseTap
 materials.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LINK_METAL_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	colBase	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	hasPat	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keySettings	keySplit	leatherLabel	leatherWord	leathersFor	linkFace	lum	matAlias	matSeason	matTypeOne	matTypeWord	matsFor	metalOptsFor	metalWord	mix	nextStamp	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownFreeKey	ownKeyNorm	ownKeyOther	ownMatName	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	patBase	patLabel	patName	patOf	planCol	primaryCol	rgbHex	sentence	setWardrobe	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	sockToeWord	stampSettings	strapBand	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trouserKind	watchOpts	watchText
 materials.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSum	cpwSym
 materials.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -9499,7 +9677,7 @@ owncolany.test.js	boxfold.js	<loaded>
 owncolany.test.js	calendar.js	<loaded>	calBanner	calLink
 owncolany.test.js	care.js	<loaded>	careBadge	careCounts	careLimit	careState
 owncolany.test.js	checklist.js	<loaded>
-owncolany.test.js	colpick.js	<loaded>	COL_FIELDS	closeColPick	cnAskBox	cnColBase	cnCost	cnDWord	cnDone	cnDrawn	cnHasClose	cnHex	cnHsv	cnLightNote	cnName	cnPaperDefault	cnUseExisting	colAskHtml	colChoices	colFamily	colFieldLabel	colNear	colNewAdd	colNewFor	colPickSel	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	describeAsk	openColNew	openColPick	renderColNew	renderColPick	useColPick
+owncolany.test.js	colpick.js	<loaded>	COL_FIELDS	closeColPick	cnAddTap	cnAskBox	cnAskTap	cnColBase	cnCost	cnDWord	cnDescType	cnDone	cnDrawn	cnHasClose	cnHex	cnHsv	cnLightNote	cnName	cnNameType	cnOpenTap	cnPaperDefault	cnUseExisting	cnUseOldTap	colAskHtml	colChoices	colFamily	colFieldLabel	colNear	colNewAdd	colNewFor	colPickSel	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpTileTap	cpUseTap	cpViews	describeAsk	openColNew	openColPick	renderColNew	renderColPick	useColPick
 owncolany.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	applyCustom	camoPat	casualTop	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hexRgb	isCargo	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labOf	lum	metalWord	mix	nextStamp	normPat	nowMs	occOf	offDays	offName	ownColFind	ownKeyNorm	ownNameClean	ownNameShort	ownNameTidy	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trouserKind
 owncolany.test.js	cost.js	<loaded>
 owncolany.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -9585,7 +9763,7 @@ ownmaterials.test.js	boxfold.js	<loaded>
 ownmaterials.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 ownmaterials.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 ownmaterials.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
-ownmaterials.test.js	colpick.js	<loaded>	EP	cnDWord	cnHex	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	cpSwipe	patBtn	patChoices	patTitle	patVar	rdAccCard	rdAccOf	rdActName	rdAfter	rdBar	rdBoth	rdClose	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdLightNote	rdMain	rdMatCard	rdMatMain	rdMatOf	rdOff	rdOpen	rdPaperHtml	rdPatCard	rdPatMain	rdPatOf	rdPick	rdPreview	rdRefresh	rdRender	rdRestore	rdRetakeHtml	rdRun	rdSetMat	rdUndo	rdUndoAll	rdUse
+ownmaterials.test.js	colpick.js	<loaded>	EP	cnDWord	cnHex	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	cpSwipe	patBtn	patChoices	patTitle	patVar	rdAccCard	rdAccOf	rdActName	rdAfter	rdBar	rdBoth	rdBothTap	rdClose	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdLightNote	rdMain	rdMatCard	rdMatMain	rdMatOf	rdOff	rdOpen	rdPaperHtml	rdPatCard	rdPatMain	rdPatOf	rdPick	rdPreview	rdRefresh	rdRender	rdRestore	rdRetakeHtml	rdRun	rdSetMat	rdUndo	rdUndoAll	rdUse	rdUseTap
 ownmaterials.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	hasPat	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	nextStamp	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMatName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	subStamp	tagTypesNow	takeSettings	thirdOf	titleCls	todayDate	trouserKind	wearsJacket	wearsTie
 ownmaterials.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed
 ownmaterials.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI
@@ -9672,7 +9850,7 @@ ownnames.test.js	boxfold.js	<loaded>
 ownnames.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 ownnames.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTop	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 ownnames.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
-ownnames.test.js	colpick.js	<loaded>	@backOver	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDrawn	cnHasClose	cnHex	cnHsv	cnName	cnPaperDefault	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewBack	colNewFor	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openCustomNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatPick
+ownnames.test.js	colpick.js	<loaded>	@backOver	EP	closeColPick	cnAskBox	cnColBase	cnCost	cnDrawn	cnHasClose	cnHex	cnHsv	cnName	cnNameType	cnOpenTap	cnPaperDefault	colAskHtml	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewBack	colNewFor	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openCustomNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatPick
 ownnames.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	DIAL_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	cleanRecord	colBase	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	dayFields	desc	di	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labOf	leatherWord	lum	matTypeOne	matTypeWord	matsFor	metalOptsFor	metalWord	mix	nameHtml	nameIso	needsTie	nextStamp	nm	normCol	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyHash	ownKeyNorm	ownKeyOther	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatKey	patBase	patLabel	patLetters	patName	patNameTaken	planCol	primaryCol	recCol	rgbHex	rgbLab	sentence	setWardrobe	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	stampSettings	strapBand	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
 ownnames.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed
 ownnames.test.js	daysoff.js	<loaded>	addDayOff	countryName	dayOffAdd	daysOffListen	isoDate	isoToDate	offNameCut	refreshHolidays	renderDaysOffUI	renderFormalUI	shortDate	yearDate
@@ -10230,7 +10408,7 @@ pickbugs.test.js	boxfold.js	<loaded>
 pickbugs.test.js	calendar.js	<loaded>	calBanner	calLink	calSummary	renderCalUI
 pickbugs.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 pickbugs.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckToggle	cmpMount
-pickbugs.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	closeColPick	cnAskBox	cnBaseLive	cnColBase	cnCost	cnDone	cnDrawn	cnFigLive	cnHasClose	cnHex	cnHexIn	cnHsv	cnLive	cnName	cnPaperDefault	cnPatBase	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpGoPics	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openCustomNew	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
+pickbugs.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	closeColPick	cnAddTap	cnAskBox	cnBaseLive	cnColBase	cnCost	cnDone	cnDrawn	cnFigLive	cnHasClose	cnHex	cnHexDone	cnHexIn	cnHexType	cnHsv	cnLive	cnName	cnNameType	cnOpenTap	cnPaperDefault	cnPatBase	cnWithPat	colAskHtml	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpGoPics	cpPicsTap	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openCustomNew	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	pnOpenTap	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
 pickbugs.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	colBaseFor	colName	colOf	colsFor	dE00	dayClimate	di	hasPat	hasVest	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matsFor	metalWord	mix	nextStamp	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatKey	patBase	patLabel	patLetters	patName	patNameTaken	patOf	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	stampSettings	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trouserKindShown	wearsJacket	wearsTie
 pickbugs.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed
 pickbugs.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI
@@ -12411,11 +12589,13 @@ safeport.test.js	tests/colnew.test.js	<any>
 safeport.test.js	tests/colormath.test.js	<any>
 safeport.test.js	tests/colors.test.js	<any>
 safeport.test.js	tests/colpick.test.js	<any>
+safeport.test.js	tests/colpickacts.test.js	<any>
 safeport.test.js	tests/combatboot.test.js	<any>
 safeport.test.js	tests/connkeep.test.js	<any>
 safeport.test.js	tests/costwear.test.js	<any>
 safeport.test.js	tests/daysoff.test.js	<any>
 safeport.test.js	tests/deploy.test.js	<any>
+safeport.test.js	tests/deps.test.js	<any>
 safeport.test.js	tests/describe.test.js	<any>
 safeport.test.js	tests/drawnonly.test.js	<any>
 safeport.test.js	tests/dress.test.js	<any>
@@ -12612,6 +12792,7 @@ safeport.test.js	tests/savelock.test.js	<any>
 safeport.test.js	tests/scoreanim.test.js	<any>
 safeport.test.js	tests/scoredials.test.js	<any>
 safeport.test.js	tests/scorefix.test.js	<any>
+safeport.test.js	tests/scriptlist.js	<any>
 safeport.test.js	tests/server-limits.test.js	<any>
 safeport.test.js	tests/serverchecks.test.js	<any>
 safeport.test.js	tests/sett.test.js	<any>
@@ -13332,7 +13513,7 @@ server-limits.test.js	look.js	<loaded>	lookOn	renderLookSetting
 server-limits.test.js	manifest.webmanifest	<loaded>
 server-limits.test.js	mannequin.js	<loaded>	@{}
 server-limits.test.js	measure.js	<loaded>
-server-limits.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
+server-limits.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
 server-limits.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 server-limits.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen
 server-limits.test.js	month.js	<loaded>	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn
@@ -14120,11 +14301,13 @@ shard.test.js	tests/colnew.test.js	<any>
 shard.test.js	tests/colormath.test.js	<any>
 shard.test.js	tests/colors.test.js	<any>
 shard.test.js	tests/colpick.test.js	<any>
+shard.test.js	tests/colpickacts.test.js	<any>
 shard.test.js	tests/combatboot.test.js	<any>
 shard.test.js	tests/connkeep.test.js	<any>
 shard.test.js	tests/costwear.test.js	<any>
 shard.test.js	tests/daysoff.test.js	<any>
 shard.test.js	tests/deploy.test.js	<any>
+shard.test.js	tests/deps.test.js	<any>
 shard.test.js	tests/describe.test.js	<any>
 shard.test.js	tests/drawnonly.test.js	<any>
 shard.test.js	tests/dress.test.js	<any>
@@ -16205,7 +16388,7 @@ tagging.test.js	boxfold.js	<loaded>
 tagging.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 tagging.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop	careWashed	laundryDays	renderCareUI
 tagging.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
-tagging.test.js	colpick.js	<loaded>	closeColPick	cnAskBox	cnColBase	cnCost	cnDone	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnPatBase	cnWithPat	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
+tagging.test.js	colpick.js	<loaded>	closeColPick	cnAddTap	cnAskBox	cnBasePick	cnColBase	cnCost	cnDone	cnHasClose	cnHex	cnHsv	cnPaperDefault	cnPaperLine	cnPatBase	cnWithPat	colAskHtml	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
 tagging.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	accentsOf	applyCustom	avgText	camoField	camoImage	camoPat	casualTop	cleanSettings	colBase	colBaseFor	colName	colOf	colorDesc	colourNameRe	colsFor	custom	dE00	dayClimate	dayFields	desc	di	dressOut	fitCol	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	lumCol	matTypeOne	matTypeWord	matsFor	metalWord	mix	nameHtml	needsTie	nextStamp	nm	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatKey	patBase	patLabel	patLetters	patName	patNameTaken	patOf	planCol	prettyCols	primaryCol	recClean	recFree	rgbHex	rgbLab	seasonFit	sentence	setDays	setFields	setKey	setList	setOwn	setStr	setWardrobe	shadeFor	shadeName	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	subStamp	tagStats	tagTypesNow	takeSettings	thirdOf	titleCls	todayDate	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
 tagging.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSym	cpwWashLine	cpwWashed
 tagging.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI
@@ -16397,7 +16580,7 @@ tagswatch.test.js	boxfold.js	<loaded>
 tagswatch.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 tagswatch.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 tagswatch.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
-tagswatch.test.js	colpick.js	<loaded>	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	openColPick	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick	useColPick
+tagswatch.test.js	colpick.js	<loaded>	EP	closeColPick	colAskHtml	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colLabel	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpTileTap	cpUseTap	cpViews	openColPick	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick	useColPick
 tagswatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	hasPat	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matsFor	metalWord	mix	nextStamp	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trouserKindShown
 tagswatch.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSum	cpwSym
 tagswatch.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -17528,6 +17711,7 @@ twillswatch.test.js	watch/shirt-tie.png	<loaded>
 twillswatch.test.js	watch/suit.png	<loaded>
 twillswatch.test.js	watch/vest.png	<loaded>
 twillswatch.test.js	weather.js	<loaded>	loadWeather
+typecheck.test.js	tests/scriptlist.js	<any>
 typecheck.test.js	tests/typecheck.js	<any>
 ui.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 ui.test.js	account.js	<loaded>	acctBase	acctCall	acctConnect	acctEsc	acctFailText	acctRole	acctSettingsPart	acctStart	applyRole	connectFromLink	dropInviteHash	hasInviteHash	inviteParts	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
@@ -18037,7 +18221,7 @@ wardrobetap.test.js	boxfold.js	<loaded>
 wardrobetap.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 wardrobetap.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 wardrobetap.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
-wardrobetap.test.js	colpick.js	<loaded>	@backOver	@window.addEventListenerkeydown	EP	closeColPick	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLabel	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	useColPick
+wardrobetap.test.js	colpick.js	<loaded>	@backOver	@window.addEventListenerkeydown	EP	closeColPick	colAskHtml	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colLabel	colNear	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpTileTap	cpUseTap	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	useColPick
 wardrobetap.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	hasPat	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labOf	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	nameIso	nextStamp	nm	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	styleWord	subHashes	takeSettings	thirdOf	titleCls	todayDate	trouserKind	typeWord	watchOpts
 wardrobetap.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSum	cpwSym
 wardrobetap.test.js	daysoff.js	<loaded>	refreshHolidays

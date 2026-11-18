@@ -10,10 +10,11 @@
 const fs=require('fs'),path=require('path');
 const CONTROL=/^(button|a|input|select|textarea|summary)$/;   // act.js ACT_CONTROL: these take a tap without a click handler of their own
 module.exports=async({ok,engines,url,settle,ROOT})=>{
-  /* a data-act on anything else needs act.js's actTaps: index.html's are covered at load; a script that writes one must call it */
+  /* a click's data-act on anything else needs act.js's actTaps: index.html's are covered at load; a script that writes one must call it */
   const odd=[],html=[];
   for(const f of [...fs.readdirSync(ROOT).filter(f=>f.endsWith('.js')&&f!=='act.js'),'index.html']){const s=fs.readFileSync(path.join(ROOT,f),'utf8');
-    for(const m of s.matchAll(/<([a-zA-Z][a-zA-Z0-9]*)\b[^<>]*?\sdata-act(?:-[a-z]+)?="([^"]*)"/g))if(!CONTROL.test(m[1].toLowerCase())){
+    // (the click's attribute only: a pointerdown, a key or a change reaches any element)
+    for(const m of s.matchAll(/<([a-zA-Z][a-zA-Z0-9]*)\b[^<>]*?\sdata-act="([^"]*)"/g))if(!CONTROL.test(m[1].toLowerCase())){
       if(f==='index.html')html.push(m[2]);else if(!/\bactTaps\(/.test(s))odd.push(`${f}: <${m[1]}> ${m[2]}`)}}
   ok(html.sort().join()==='colBackdropTap,itemCloseTap,npsCloseTap,pickBackdropTap,setBackdropTap,shopBackdropTap',`index.html's data-act elements that aren't controls by their tag are the six backdrops (${html.join(', ')})`);
   ok(!odd.length,'no script writes a data-act onto an element that isn’t a control without calling actTaps (a phone’s tap there would be no click)'+(odd.length?': '+odd.join('; '):''));
