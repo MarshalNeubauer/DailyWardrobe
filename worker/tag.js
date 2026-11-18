@@ -22,7 +22,7 @@ const TYPE_COLORS = {
   tieclip: [['silver','gold','rosegold','gunmetal','grey','black','white','red','blue','navy'], ['black','white','silver','gold','navy','red','blue']],
   cufflinks: [['silver','gold','grey','black','white','navy','blue','lightblue','burgundy','red','green','purple'], ['silver','gold','black','white','navy','blue','burgundy','red','green']],
   watch: [['black','brown','tan','oxblood','navy','grey','green','silver','gold'], ['black','brown','white','grey','navy']],
-  shoes: [[...LEATHER_COLS,'white','cream'], ['black','brown','tan','white','navy','cream','grey']],   // white/cream: sneakers; second colour: a sneaker's sole
+  shoes: [[...LEATHER_COLS,'white','cream','coyote'], ['black','brown','tan','white','navy','cream','grey','coyote']],   // white/cream: sneakers; coyote: combat boots (offered with 'combat' only: knowsCombat); second colour: a sneaker's or a combat boot's sole
   belt: [LEATHER_COLS, ['black','brown','tan','navy']],
   socks: [['black','charcoal','darkgrey','grey','midgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','taupe','tan','khaki','olive','green','burgundy','wine','red','rust','purple','pink','gold'],
     ['white','cream','lightgrey','grey','charcoal','black','navy','blue','lightblue','burgundy','red','rust','pink','purple','lavender','green','olive','gold','brown','tan']],
@@ -43,10 +43,23 @@ const PQ_TYPES = ['pocketsquare'];   // trouserKind values offered only on reque
 /* sock patterns (2026-11-17): an app that knows them names 'sockpat' in its types. Only then are socks given their patterns (argyle, stripe,
    dots, ribbed, birdseye, nailhead, clock, herringbone), their second and third colours as the pattern's, and the toe cap its own field
    (toeColor). An older app reads a sock's secondaryColor as its toe cap and has no sock patterns, so its request is exactly as before */
-const OPT_FLAGS = ['sockpat'];
+/* combat boots (2026-11-17): an app that knows them names 'combat'. Only then are shoes offered the style 'combat' and the colour coyote
+   (the prompt's color row, its shoeStyle line, the enums); an older app's request is exactly as before */
+const OPT_FLAGS = ['sockpat', 'combat', 'coatpat'];
+/* coat patterns (2026-11-17, the Look editor beta): an app that knows them names 'coatpat' in its types (core.js tagExtras sends it only while
+   the beta is on). Only then are overcoats and raincoats given their patterns (COAT_PATTERNS, all already in the enum) instead of "solid";
+   without it the request is exactly as before */
+const knowsCoat = known => (known || []).includes('coatpat');
+const COAT_KINDS = [', overcoat, raincoat: solid', ': solid'];
+const COAT_PATTERNS = `  overcoat, raincoat:
+    solid, herringbone (columns of small V shapes), houndstooth (small broken four-pointed checks), check (any other check or plaid),
+    glen-check (Prince of Wales), windowpane (thin lines forming large squares), tweed (rough, flecked, multi-tone wool), other
+`;
 /* the optional types and kinds the request names (body.types: an array), in this file's order */
 const knownTypes = body => { const t = body && Array.isArray(body.types) ? body.types : []; return [...PQ_TYPES, ...OPT_TYPES, ...OPT_KINDS, ...OPT_FLAGS].filter(x => t.includes(x)); };
 const knowsSock = known => (known || []).includes('sockpat');
+const knowsCombat = known => (known || []).includes('combat');
+const CB_COLS = ['coyote'];   // the colours only a combat-aware app is offered
 /* (the pocket squares' branch, merged 2026-11-16) the pocket square is offered on request too (an older app reads it as a suit), but unlike the
    new garments its colour, pattern and material rows are listed for every app, as main did; knowsPq is its flag */
 const knowsPq = body => knownTypes(body).includes('pocketsquare');
@@ -69,8 +82,8 @@ const OPT_PAT_LINES = [
   [['sweater','qzip','cardigan'], 'solid, heather (a mottled, marled mix of light and dark fibers of one color), cable (raised cable-knit ropes), stripe (horizontal stripes), other'],
   [['chore'], 'solid, other']];
 const DIAL_COLS = ['white','cream','silver','lightgrey','grey','slate','charcoal','black','navy','deepblue','blue','lightblue','green','olive','brown','burgundy','gold'];
-const colorText = known => Object.entries(TYPE_COLORS).filter(([t]) => !OPT_TYPES.includes(t) || known.includes(t)).map(([t, [p, a]]) => `  ${t}: ${p.join(', ')} | ${a.join(', ')}`).join('\n')
-  + `\n  watch dial: ${DIAL_COLS.join(', ')}`;
+const colorText = known => { const cb = knowsCombat(known), l = x => cb ? x : x.filter(c => !CB_COLS.includes(c)); return Object.entries(TYPE_COLORS).filter(([t]) => !OPT_TYPES.includes(t) || known.includes(t)).map(([t, [p, a]]) => `  ${t}: ${l(p).join(', ')} | ${l(a).join(', ')}`).join('\n')
+  + `\n  watch dial: ${DIAL_COLS.join(', ')}`; };
 /* the whole prompt for the request's known optional types (none: as it always was) */
 const PQ_TYPE = 'pocketsquare (a handkerchief for the jacket\'s breast pocket, folded or laid flat), ';
 const PQ_PATTERNS = `  pocketsquare:
@@ -82,9 +95,18 @@ const promptFor = known => { known = knownOf(known); const types = OPT_TYPES.fil
   const acc = accOpts(known);
   let kinds = acc ? PROMPT_KINDS.replace(ACC_METAL[0], ACC_METAL[1]) : PROMPT_KINDS, head = pq ? PROMPT_HEAD.replace('tieclip, watch', 'tieclip, ' + PQ_TYPE + 'watch') : PROMPT_HEAD, ps = PROMPT_PATS;
   if (sock) { kinds = kinds.replace(SOCK_KINDS[0], SOCK_KINDS[1]); head = head.replace(SOCK_JSON[0], SOCK_JSON[1]); ps = ps.replace(SOCK_SECOND[0], SOCK_SECOND[1]).replace(SOCK_THIRD[0], SOCK_THIRD[1]); }
-  return head + (types.length ? ',\n  ' + types.map(t => OPT_WORDS[t]).join(',\n  ') : '') + PROMPT_COLORS + colorText(known) + ps + pats + (pq ? PQ_PATTERNS : '') + (sock ? SOCK_PATTERNS : '') + kinds
-    + (known.includes('cargo') ? ', cargo (pants with patch cargo pockets on the thighs)' : '') + (acc ? PROMPT_TAIL.replace(ACC_LEATHER[0], ACC_LEATHER[1]).replace(ACC_BAND[0], ACC_BAND[1]) : PROMPT_TAIL) + (sock ? SOCK_TOE : ''); };
+  const coat = knowsCoat(known); if (coat) kinds = kinds.replace(COAT_KINDS[0], COAT_KINDS[1]);
+  const cbx = knowsCombat(known) ? COMBAT_LINE : '';
+  return head + (types.length ? ',\n  ' + types.map(t => OPT_WORDS[t]).join(',\n  ') : '') + PROMPT_COLORS + colorText(known) + ps + pats + (pq ? PQ_PATTERNS : '') + (sock ? SOCK_PATTERNS : '') + (coat ? COAT_PATTERNS : '') + kinds
+    + (known.includes('cargo') ? ', cargo (pants with patch cargo pockets on the thighs)' : '') + (acc ? PROMPT_TAIL.replace(ACC_LEATHER[0], ACC_LEATHER[1]).replace(ACC_BAND[0], ACC_BAND[1]) : PROMPT_TAIL) + (sock ? SOCK_TOE : '') + cbx; };
 /* the sock pieces of the prompt (sockpat known): the patterns, the pattern's colours, the toe cap's own field */
+/* the combat boot (knowsCombat): its style and colour, after everything else in the prompt */
+const COMBAT_LINE = `
+
+shoeStyle may also be combat: a military or tactical lace-up boot about 8 inches high or taller, with a deep lugged rubber sole, often
+  speed-lace hooks at the top, nylon (cordura) side panels and a rough-out suede lower (desert, coyote, tan, black, olive). A short
+  dress, chelsea or chukka boot is boot. For combat boots the secondaryColor is the sole's color ("none" when it matches the upper),
+  and coyote is the military coyote brown (a muted mid brown between tan and brown, like the US Army's OCP boots).`;
 const SOCK_KINDS = ['shoes, belt, socks, cufflinks', 'shoes, belt, cufflinks'];
 const SOCK_JSON = ['"bezel":"..."}', '"bezel":"...","toeColor":"..."}'];
 const SOCK_SECOND = [`  Socks: the color of a contrasting toe cap (the knitted tip over the toes, often a light heather gray on a dark sock), or "none"
@@ -234,7 +256,7 @@ const tagKinds = known => ['dress','chinos','jeans', ...OPT_KINDS.filter(k => (k
 /* each colour key's sRGB hex: must match COLORS in core.js (tests/colouraudit.test.js); worker/describe.js tells Claude the shades */
 const COLOR_HEX = { black: '#16161a', charcoal: '#3b3f46', darkgrey: '#5e6269', grey: '#8b8f96', midgrey: '#a2a4a8', lightgrey: '#babdc2', white: '#f6f6f3',
   cream: '#efe4c8', lightblue: '#a9c7e4', blue: '#3f6fb5', steelblue: '#56657f', deepblue: '#26326a', navy: '#1b2a4a', darknavy: '#1c1f2b', slate: '#3a3f4c',
-  brown: '#5a3a22', tan: '#b8946a', khaki: '#c3b091', taupe: '#8b7d6b', deeptaupe: '#5f5449', rust: '#a4502a', olive: '#5b5d36', green: '#2f6b4a',
+  brown: '#5a3a22', tan: '#b8946a', khaki: '#c3b091', taupe: '#8b7d6b', deeptaupe: '#5f5449', rust: '#a4502a', olive: '#5b5d36', coyote: '#8f6a3c', green: '#2f6b4a',
   burgundy: '#6d1f2c', wine: '#7d2438', oxblood: '#4a1a1e', red: '#b3262e', purple: '#5d3a7a', pink: '#e3a5b4', gold: '#c9a227', silver: '#c3c6cb',
   rosegold: '#c98f7a', gunmetal: '#55595f', paleyellow: '#f1e6ac', ivory: '#f4efde', beige: '#dccbb0', lavender: '#c9bfe2', periwinkle: '#9ea8d4',
   mint: '#cfe6d4', stone: '#cbbfa3', denim: '#3e5c86' };
@@ -248,6 +270,9 @@ const PATTERN_BY_TYPE = { suit: SUIT_PATS, blazer: SUIT_PATS, pants: SUIT_PATS,
   Object.assign(PATTERN_BY_TYPE, { tee: top, polo: top, henley: top, sweater: knit, sweatshirt: top, hoodie: top, qzip: knit, cardigan: knit, chore: ['solid','other'] }); }
 // socks (2026-11-17, = core.js PATS_BY.socks; offered in the tag only to an app that knows them: knowsSock)
 PATTERN_BY_TYPE.socks = ['solid','argyle','stripe','polka-dot','ribbed','birdseye','nailhead','clock','herringbone','other'];
+// coats (2026-11-17, = core.js PATS_BY.overcoat / raincoat; offered in the tag only to an app that knows them: knowsCoat)
+PATTERN_BY_TYPE.overcoat = ['solid','herringbone','houndstooth','check','glen-check','windowpane','tweed','other'];
+PATTERN_BY_TYPE.raincoat = PATTERN_BY_TYPE.overcoat.slice();
 /* what each item type is made of: must match MATERIALS_BY in core.js (tests/materials.test.js) */
 const MATERIALS_BY = {
   suit: ['wool','wool blend','tropical wool','flannel','tweed','linen','linen blend','cotton','seersucker','cashmere','mohair blend','silk blend','moleskin','corduroy','velvet','polyester blend'],
@@ -446,10 +471,10 @@ ownPattern — the pattern or weave in your own precise words, NOT limited to th
   fits: true only when the listed pattern you put in "pattern" already names it fully, false when your name says more.`;
 /* known: the request's optional types and kinds (knownTypes; none = the schema as it always was) */
 function tagSchema(custom, single, free, freePat, known = []) { known = knownOf(known);
-  const cols = [...COLOR_LIST, ...custom.colors.map(c => c.key)], pats = [...tagPatterns(known), ...custom.patterns.map(p => p.key)];
+  const cols = [...COLOR_LIST, ...(knowsCombat(known) ? CB_COLS : []), ...custom.colors.map(c => c.key)], pats = [...tagPatterns(known), ...custom.patterns.map(p => p.key)];
   // (not on the picker's calls, free / freePat: their schema is near what the API compiles)
   const acc = accOpts(known) && !free && !freePat ? Object.fromEntries(Object.entries(ACC_ENUMS).map(([k, v]) => [k, orNull([...TAG_SCHEMA.properties[k].anyOf[0].enum, ...v])])) : {};
-  const props = { ...TAG_SCHEMA.properties, ...acc, type: { type: 'string', enum: tagTypes(known) }, trouserKind: orNull(tagKinds(known)),
+  const props = { ...TAG_SCHEMA.properties, ...acc, type: { type: 'string', enum: tagTypes(known) }, trouserKind: orNull(tagKinds(known)), ...(knowsCombat(known) ? { shoeStyle: orNull([...TAG_SCHEMA.properties.shoeStyle.anyOf[0].enum, 'combat']) } : {}),
     primaryColor: { type: 'string', enum: cols }, secondaryColor: { type: 'string', enum: [...cols, 'none'] },
     tertiaryColor: { type: 'string', enum: [...cols, 'none'] }, pattern: { type: 'string', enum: pats } };
   // a sock's toe cap (sockpat known; never on the picker's calls, which don't name it): a plain string, not another enum of every colour
@@ -789,4 +814,4 @@ async function tagWithWorkersAi(env, image, known = []) {
   catch { return { status: 502, body: { error: 'unparseable model output', detail: m[0].slice(0, 300) } }; }
 }
 
-export { readAiBody, badPics, AI_BODY_MAX, knowsPq, OPT_TYPES, OPT_KINDS, PATTERN_KEYS, knownTypes, tagTypes, tagRules, tagPatterns, tagKinds, materialExtra, multiPrompt, ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };
+export { readAiBody, badPics, AI_BODY_MAX, DIAL_COLS, knowsPq, OPT_TYPES, OPT_KINDS, PATTERN_KEYS, knownTypes, tagTypes, tagRules, tagPatterns, tagKinds, materialExtra, multiPrompt, ACCENT_MAX, ACCENT_READ_RULES, ACCENT_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, FREE_EXTRA, FREE_PAT_EXTRA, HEX_RE, MATERIALS_BY, MATERIAL_EXTRA, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_LIST, SINGLE_EXTRA, cleanMaterial, cleanOwnMaterials, matName, materialSchema, ownMaterialsText, TAG_INTRO, TAG_RULES, TYPE_COLORS, TYPE_LIST, claudeCall, cleanCustom, cleanTag, correctionsText, customText, handleTagMany, lightText, measuredText, ownTxt, promptOf, tagSchema, tagWithClaude, tagWithWorkersAi, txt, wbOf };

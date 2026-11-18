@@ -11,7 +11,7 @@ const colouraudit=async({ok,chromium,url,ROOT})=>{
   globalThis.fetch=async(href,init)=>{sent=JSON.parse(init.body);return new Response(JSON.stringify({stop_reason:'end_turn',content:[{type:'text',text:'{"type":"tie","primaryColor":"navy","secondaryColor":"none","tertiaryColor":"none","pattern":"solid","metal":null,"leather":null,"dial":null,"band":null,"bezel":null}'}]}),{status:200,headers:{'content-type':'application/json'}})};
   const browser=await chromium.launch();const p=await browser.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{
-    await worker.fetch(new Request('https://w.test/',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify({image:'data:image/png;base64,iVBORw0KGgo=',types:['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','cargo']})}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});
+    await worker.fetch(new Request('https://w.test/',{method:'POST',headers:{'x-app-token':'t','content-type':'application/json'},body:JSON.stringify({image:'data:image/png;base64,iVBORw0KGgo=',types:['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','cargo','combat']})}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});
     const prompt=[...(sent.system||[]).map(s=>s.text),...sent.messages[0].content.filter(c=>c.type==='text').map(c=>c.text)].join('\n'),schema=sent.output_config.format.schema;
     const wTable={};for(const m of prompt.matchAll(/^  (\w+): ([a-z, ]+) \| ([a-z, ]+)$/gm))wTable[m[1]]=[m[2].split(', '),m[3].split(', ')];
     const dial=(prompt.match(/^  watch dial: ([a-z, ]+)$/m)||[])[1];
@@ -35,7 +35,7 @@ const colouraudit=async({ok,chromium,url,ROOT})=>{
     ok(!['silver','gold','pink','purple','red','white','oxblood','paleyellow'].some(c=>r.suit.includes(c))&&['taupe','khaki','navy','charcoal'].every(c=>r.suit.includes(c)),'suits offer suiting colours only (no watch metals, no shirt or tie colours)');
     ok(['mint','periwinkle','lavender','ivory'].every(c=>r.shirt.includes(c))&&!['silver','gold','olive','oxblood','khaki','tan'].some(c=>r.shirt.includes(c)),'shirts offer shirt colours');
     ok(['silver','rust','lavender','gold'].every(c=>r.tie.includes(c))&&!r.tie.includes('white'),'ties include silver, rust and lavender; no white ties');
-    ok(r.shoes.join()==='black,brown,tan,oxblood,burgundy,navy,grey,taupe,white,cream'&&r.clip.join()==='silver,gold,rosegold,gunmetal,grey,black,white,red,blue,navy','shoes are leather colours, plus white and cream for sneakers; tie clips are their finishes: the metals (rose gold and gunmetal too) and the enamel colours clips are sold in');
+    ok(r.shoes.join()==='black,brown,tan,oxblood,burgundy,navy,grey,taupe,white,cream,coyote'&&r.clip.join()==='silver,gold,rosegold,gunmetal,grey,black,white,red,blue,navy','shoes are leather colours, plus white and cream for sneakers and coyote for combat boots; tie clips are their finishes: the metals (rose gold and gunmetal too) and the enamel colours clips are sold in');
     ok(!r.socks.includes('white')&&r.rain.includes('khaki')&&!r.rain.includes('red'),'no white dress socks; raincoats come in trench colours');
     ok(r.fit==='lightgrey,khaki,cream,burgundy,grey,black,cream,lightgrey'||/^lightgrey,/.test(r.fit),`off-list tags move to the closest allowed colour (${r.fit})`);
     ok(/^(white|cream),/.test(r.acc),`stripe colours have their own list (${r.acc})`);

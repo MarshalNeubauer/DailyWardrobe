@@ -67,6 +67,7 @@ async function saveCard(q){
   if(q.spec&&it.sett&&it.sett.src==='claude+pixels')it.patternSpec=q.spec;   // Claude's reading of the pattern (pattern-read.js)
   // the old brightness-only stripe reader: only where the full reader had nothing to go on (no close-up), and never after it turned down a reading as contradicting the tag
   if(!it.sett&&!q.texture&&!q.settReject)try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
+  lookSave(q,it);   // the Look beta's fields (look.js: a coat's pattern, a knit's close-up, Looks right, Claude's runner-ups, own leather or metal); nothing with it off
   colTidy(it);   // no second or third colour its type can't show (colpick.js)
   if(q.sample)it.sample=true;   // the sample wardrobe (kit.js kitSampleLoad)
   // the item and its copies (the same shirt or pair again, qtyRow) in one transaction: all of them or none (a kill right after

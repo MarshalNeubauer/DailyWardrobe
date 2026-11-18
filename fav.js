@@ -24,7 +24,7 @@ const favPieces=l=>{const g=id=>id&&items.find(i=>i.id===id)||null;return {j:g(l
 const favLookName=l=>{const p=favPieces(l);return [p.j,p.sh,p.tie].filter(Boolean).map(i=>shortDesc(i)||nm(i)).join(', ')};
 /* ---- Today: the ♡ on the Wore pill, the ♥ in the last-worn pill ---- */
 function favPillSeg(o){const l=favLookFrom(o);if(!l||o.worn===false)return '';const on=!!favLookOf(o);
-  return `<button type="button" class="wpfav${on?' on':''}" id="wpfav" aria-pressed="${on}" onclick="favToggleLook()" aria-label="Love this look">${on?FAV_HEART:FAV_HEART0}</button>`}
+  return `<button type="button" class="wpfav${on?' on':''}" id="wpfav" aria-pressed="${on}" data-act="favLookTap" aria-label="Love this look">${on?FAV_HEART:FAV_HEART0}</button>`}
 const favLastIcon=o=>favLookOf(o)?`<span class="lwfav" role="img" aria-label="Favorite look">${FAV_HEART}</span>`:'';
 async function favToggleLook(){const o=planFor()[key(sel)],l=favLookFrom(o);if(!l)return;
   const k=favLookKey(l),had=favLooks().find(x=>favLookKey(x)===k),set=async on=>{const n=favData();n.looks=n.looks.filter(x=>favLookKey(x)!==k);if(on)n.looks.push(had?{...had}:{...l,at:Date.now()});await favSave(n);renderToday()};
@@ -34,7 +34,7 @@ async function favToggleLook(){const o=planFor()[key(sel)],l=favLookFrom(o);if(!
 function favStrip(o){if(!o||o.frozen)return '';const n=di(sel),ok=i=>i&&inRotation(i,n);
   const L=favLooks().filter(l=>{const p=favPieces(l);return ok(p.sh)&&(!l.j||ok(p.j))&&(!l.tie||ok(p.tie))});if(!L.length)return '';
   const cur=favLookOf(o),last=favLastWorn(),card=l=>{const p=favPieces(l),k=favLookKey(l),on=!!cur&&favLookKey(cur)===k,lw=last[k];
-    return `<button type="button" class="favlook${on?' cur':''}" onclick="wearFav('${jsq(k)}')" aria-label="Wear this favorite look${dayWord()==='today'?' today':''}: ${esc(favLookName(l))}${on?', wearing':''}"><span class="favsw" aria-hidden="true">${[p.j,p.sh,p.tie].filter(Boolean).map(i=>`<i>${swatchSVG(i,true)}</i>`).join('')}</span><span class="favnm">${esc(sentence(favLookName(l)))}<small>${on?'Wearing':lw?'Last worn '+statDate(lw):'Not worn yet'}</small></span></button>`};
+    return `<button type="button" class="favlook${on?' cur':''}" data-act="favWearTap" data-k="${esc(k)}" aria-label="Wear this favorite look${dayWord()==='today'?' today':''}: ${esc(favLookName(l))}${on?', wearing':''}"><span class="favsw" aria-hidden="true">${[p.j,p.sh,p.tie].filter(Boolean).map(i=>`<i>${swatchSVG(i,true)}</i>`).join('')}</span><span class="favnm">${esc(sentence(favLookName(l)))}<small>${on?'Wearing':lw?'Last worn '+statDate(lw):'Not worn yet'}</small></span></button>`};
   return `<div class="favpick" role="group" aria-labelledby="favpick-h"><b id="favpick-h" class="favpick-h">${FAV_HEART}Favorite looks</b><div class="favstrip">${L.map(card).join('')}</div></div>`}
 /* when each favorite look was last worn (days not marked "Didn't", before today): {key: Date} */
 function favLastWorn(){const out={},T=todayDate(),K=new Set(favLooks().map(favLookKey));if(!K.size)return out;
@@ -42,14 +42,14 @@ function favLastWorn(){const out={},T=todayDate(),K=new Set(favLooks().map(favLo
   return out}
 /* ---- favorite pieces: the item sheet's switch, the tiles' ♥, Wardrobe's chip ---- */
 function favItemRow(i){if(isHandPick(i))return '';const on=isFavItem(i.id);
-  return `<button type="button" class="favtog${on?' on':''}" role="switch" aria-checked="${on}" aria-describedby="favhint" onclick="favToggleItem('${jsq(i.id)}')">${on?FAV_HEART:FAV_HEART0}<span class="favtog-t">Favorite, wear it more</span><span class="favsw2" aria-hidden="true"></span></button><p class="shelp favhint" id="favhint">${on?'It comes round about a fifth sooner, and wins when outfits tie.':'A shorter rest, and it wins when outfits tie.'}</p>`}
+  return `<button type="button" class="favtog${on?' on':''}" role="switch" aria-checked="${on}" aria-describedby="favhint" data-act="favItemTap" data-id="${esc(i.id)}">${on?FAV_HEART:FAV_HEART0}<span class="favtog-t">Favorite, wear it more</span><span class="favsw2" aria-hidden="true"></span></button><p class="shelp favhint" id="favhint">${on?'It comes round about a fifth sooner, and wins when outfits tie.':'A shorter rest, and it wins when outfits tie.'}</p>`}
 async function favToggleItem(id){const it=items.find(i=>i.id===id);if(!it)return;const set=async on=>{const n=favData();n.items=n.items.filter(x=>x!==id);if(on)n.items.push(id);await favSave(n);renderWardrobe()};
   const had=isFavItem(id),name=sentence(itemTitle(it)||nm(it));await set(!had);
   toast(had?`${name} is no longer a favorite.`:`${name} is a favorite now.`,FAV_UNDO_MS,{label:'Undo',fn:()=>set(had)})}
 const favMark=i=>isFavItem(i.id)?`<span class="favmark" role="img" aria-label="Favorite">${FAV_HEART}</span>`:'';
 /* (the chip shows only while a piece is a favorite; with none left the Wardrobe shows everything: wardFlt) */
 const favChip=()=>{const s=favItemSet();if(!s)return '';const n=items.filter(i=>s.has(i.id)).length,on=wardFlt()==='fav';
-  return `<button class="chip favchip ${on?'on':''}" aria-pressed="${on}" onclick="flt='fav';renderWardrobe()"><span aria-hidden="true">♥</span> Favorites ${n}</button>`};
+  return `<button class="chip favchip ${on?'on':''}" aria-pressed="${on}" data-act="favChipTap"><span aria-hidden="true">♥</span> Favorites ${n}</button>`};
 /* ---- the score card's Why: "One of your favorites, last worn 23 days ago (Oct 22). Everything in it has rested." (the last sentence
    when the jacket, shirt and tie have each rested FAV_RESTED days: the planner's rest written on the pieces) ---- */
 const FAV_RESTED=10;
@@ -69,3 +69,12 @@ function favStatsCard(S){if(!favAny())return '';const L=favLooks(),F=favItemSet(
   return `<section class="card st-card st-fav" id="st-fav"><h3>${FAV_HEART}Your favorites</h3>
   <div class="st-tiles">${tile(L.length,L.length===1?'look':'looks')}${tile(pieces.length,pieces.length===1?'piece':'pieces')}${tile(month,'favorite looks worn this month')}</div>
   ${L.map(lookRow).join('')}${pieces.map(pieceRow).join('')}</section>`}
+
+/* ---- the controls (act.js: markup names its handler with data-act) ---- */
+let favWard=false;   // Wardrobe's "♥ Favorites" chip chosen (a type chip's tap takes it off: favOff; wardrobe.js wardFlt reads it)
+const favOff=()=>{favWard=false};
+function favLookTap(){favToggleLook()}
+function favWearTap(el){wearFav(el.dataset.k)}
+function favItemTap(el){favToggleItem(el.dataset.id)}
+function favChipTap(){favWard=true;renderWardrobe()}
+acts({favLookTap,favWearTap,favItemTap,favChipTap});

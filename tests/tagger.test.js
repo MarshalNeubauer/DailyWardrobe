@@ -29,7 +29,7 @@ const claude=async({ok,chromium,url,ROOT})=>{
     ok(sent.body.model==='claude-haiku-5-5'&&!('fallbacks' in sent.body)&&!sent.headers['anthropic-beta'],'CLAUDE_MODEL overrides the model; no fallback parameter on Haiku');
     // the worker's colour list matches the app's
     const appCols=await (async()=>{const b=await chromium.launch();const p=await b.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);const k=await p.evaluate(()=>Object.keys(COLORS));await b.close();return k})();
-    ok(appCols.slice().sort().join()===sch.schema.properties.primaryColor.enum.slice().sort().join(),'the worker colour enum matches COLORS in the app');
+    ok(appCols.filter(c=>c!=='coyote').sort().join()===sch.schema.properties.primaryColor.enum.slice().sort().join(),'the worker colour enum matches COLORS in the app (coyote only for an app that names combat: combatboot.test.js)');
     // errors
     reply=()=>[401,{type:'error',error:{type:'authentication_error',message:'invalid x-api-key'}}];
     r=await tag({ANTHROPIC_API_KEY:'bad'});let e=await r.json();

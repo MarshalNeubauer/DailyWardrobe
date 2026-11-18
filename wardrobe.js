@@ -56,8 +56,8 @@ function wardOrder(list,sort,wear){
     byType;
   return list.slice().sort(f)}
 /* the Wardrobe list on screen: the chip's type, what the search matches, in the chosen order. The item sheet steps through it. */
-/* the chip chosen: 'all', a type, or 'fav' (the favorite pieces, fav.js), which reads as 'all' once no piece is a favorite */
-const wardFlt=()=>flt==='fav'&&!(typeof favItemSet==='function'&&favItemSet())?'all':flt;
+/* the chip chosen: 'all', a type, or 'fav' (the favorite pieces: fav.js favWard), which goes back to the type chip once no piece is a favorite */
+const wardFlt=()=>typeof favWard!=='undefined'&&favWard&&favItemSet()?'fav':flt;
 function wardView(){
   const ft=wardFlt(),q=wardNorm(wardQ),s=wardSort(),k=ft+'|'+s+'|'+q+(ft==='fav'?'|'+[...favItemSet()].join():'');
   if(wardMemo&&wardMemo.items===items&&wardMemo.n===items.length&&wardMemo.k===k)return wardMemo.list;
