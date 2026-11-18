@@ -30,7 +30,7 @@ function builtinHolidays(cc,from,to){if(!HOL_FIXED[cc]&&!HOL_HIJRI[cc])return nu
 const holYears=(from,to)=>{const a=+from.slice(0,4),b=+to.slice(0,4),out=[];for(let y=a;y<=b;y++)out.push(y);return out};
 async function fetchHolidays(cc){
   const T=trueToday(),from=isoKey(new Date(T.getFullYear(),T.getMonth()-1,T.getDate())),to=isoKey(new Date(T.getFullYear()+1,T.getMonth()+1,T.getDate()));
-  // only a dated, named holiday (fix round A, CR-7-02: the string compare let `2026-12-01" onclick="…` through); names as core.js cleanSettings keeps them
+  // only a dated, named holiday (fix round A, CR-7-02: the string compare let a date that went on with a quote and an onclick attribute through); names as core.js cleanSettings keeps them
   const tidy=l=>{const m={};for(let x of l){if(!x||typeof x.d!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(x.d)||typeof x.n!=='string')continue;x={d:x.d,n:setStr(x.n,120).trim()};
     if(x.d>=from&&x.d<=to&&x.n)m[x.d]=m[x.d]&&!m[x.d].includes(x.n)?m[x.d]+', '+x.n:m[x.d]||x.n}return Object.entries(m).sort().map(([d,n])=>({d,n}))};
   const own=()=>{const l=builtinHolidays(cc,from,to);return l&&l.length?tidy(l):null};
@@ -130,7 +130,7 @@ const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-$
 function renderFormalUI(msg){const list=$('#formal-list'),inp=$('#cfg-formal-date');if(!list)return;
   const T=todayDate();if(inp){inp.min=isoDate(T);if(!inp.value)inp.value=isoDate(nextWorkday(T)||T)}
   const up=Object.values(dayRecs).filter(r=>occOf(r)&&keyDate(r.date)>=T).sort((a,b)=>keyDate(a.date)-keyDate(b.date));
-  list.innerHTML=up.length?up.map(r=>{const l=shortDate(keyDate(r.date));return `<span class="fchip">${l} · ${occLabel(occOf(r))}<button type="button" aria-label="Make ${l} a regular day" onclick="setOccasion(null,'${r.date}')">×</button></span>`}).join(''):'<small class="mut">No occasions coming up.</small>';
+  list.innerHTML=up.length?up.map(r=>{const l=shortDate(keyDate(r.date));return `<span class="fchip">${l} · ${occLabel(occOf(r))}<button type="button" aria-label="Make ${l} a regular day" data-act="occClear" data-day="${esc(r.date)}">×</button></span>`}).join(''):'<small class="mut">No occasions coming up.</small>';
   const pick=$('#cfg-occasion');if(pick&&!pick.options.length)pick.innerHTML=OCCASIONS.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
   if(msg!==undefined&&$('#formal-msg'))$('#formal-msg').textContent=msg;
   if(settingsOpen())settingsSummaries()}
@@ -142,3 +142,6 @@ async function addFormalDay(){const v=($('#cfg-formal-date')||{}).value;if(!v)re
   const occ=($('#cfg-occasion')||{}).value||'formal',O=OCCASIONS.find(x=>x[0]===occ)||OCCASIONS[0],what=occ==='casual'?'a day without a jacket or tie':`${aAn(O[1].toLowerCase())} day`;
   if(o.occasion===occ)return renderFormalUI(`${l} is already ${what}.`);
   await setOccasion(occ,k);renderFormalUI(`${l} is now ${what}: ${O[2]}.`)}
+/* the markup's handler (act.js): an occasion's × makes its day (data-day: the day's key) a regular day again */
+function occClear(el){setOccasion(null,el.dataset.day)}
+acts({occClear});
