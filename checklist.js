@@ -26,7 +26,7 @@ function ckColSum(it,main){const sk=it&&it.type==='socks',a=(sk&&!sockPatterned(
 /* "Also has" under the colour rows (2026-11-16, accents: core.js accentsOf): a chip for each with × to take it off, and "Add a color" (the
    colour sheet, colpick.js accChoices) while there are fewer than ACCENT_MAX. On patterned cloth, or any item that has some. src 'q' (the
    Add card, ref its id) or 'e' (the item sheet, ref its id) */
-function accRow(src,ref,it){const a=accentsOf(it);if(!a.length&&!hasPat(it.type))return '';const r=`'${jsq(String(ref))}'`;
+function accRow(src,ref,it){const a=accentsOf(it);if(!a.length&&!lookHasPat(it.type))return '';const r=`'${jsq(String(ref))}'`;   // (look.js lookHasPat: hasPat, and coats with the Look beta on)
   const chip=c=>`<span class="accchip" data-c="${esc(c)}">${ckChip(c)}<span>${esc(cap1(colName(c)))}</span><button type="button" class="accx" aria-label="Remove ${esc(colName(c).toLowerCase())}" onclick="accDel('${src}',${r},'${jsq(c)}')">×</button></span>`;
   return `<div class="accrow" role="group" aria-label="Also has"><span class="acclab">Also has</span><span class="accchips">${a.map(chip).join('')}`+
     `${a.length<ACCENT_MAX?`<button type="button" class="accadd" onclick="openColPick('${src}',${r},'accents')" aria-haspopup="dialog">+ Add a color</button>`:''}</span></div>`}

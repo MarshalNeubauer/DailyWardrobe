@@ -9,7 +9,7 @@
    removed, never more than DESC_MAX characters. A tester's lookups count against the daily describe cap (worker/people.js).
    (An ES module of worker.js, the entry.) */
 import { OWN_COL_RE, OWN_PAT_RE } from './ownkeys.js';
-import { ACCENT_READ_RULES, ACCENT_SCHEMA, cleanAccents, COLOR_HEX, COLOR_LIST, HEX_RE, MATERIALS_BY, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_KEYS, TYPE_COLORS, TYPE_LIST, claudeCall, cleanMaterial, cleanOwnMaterials, lightText, materialSchema, ownMaterialsText, ownTxt, txt, wbOf } from './tag.js';
+import { ACCENT_READ_RULES, ACCENT_SCHEMA, cleanAccents, DIAL_COLS, COLOR_HEX, COLOR_LIST, HEX_RE, MATERIALS_BY, MATERIAL_RULES, PATTERN_BY_TYPE, PATTERN_KEYS, TYPE_COLORS, TYPE_LIST, claudeCall, cleanMaterial, cleanOwnMaterials, lightText, materialSchema, ownMaterialsText, ownTxt, txt, wbOf } from './tag.js';
 import { readCapped } from './links.js';
 import { dE00, hexLab as labHex } from './colormath.js';   // (one copy with tools/describe-eval.js; core.js's checked equal: CR-2-15)
 import { MOTIF_PLACES, MOTIF_SHAPES, TEX_CONTRASTS, TEXTURE_KINDS, bitmapOf } from './patternbits.js';   // (one copy with pattern.js: CR-2-15)
@@ -290,6 +290,43 @@ const colWord = (k, own) => { const o = own.colors.find(c => c.key === k); retur
 /* what:'both' with no words (the app's "Read color and texture from close-up"): each half reads the close-up itself */
 const NO_TEXT = 'the cloth in the close-up';
 const NO_TEXT_LINE = 'The owner wrote no description: read it from the close-up itself (the description below only stands in for the words).';
+/* ---- the Look editor's "Read with Claude" (2026-11-17, the app's beta: a 'both' with look:true). An older app never sends look, so its
+   requests are byte-identical. With src:'photo' the picture is the item's whole photo, not a close-up (a sweater, a coat, shoes or an
+   item with no close-up yet), and the wording says so. A type without patterns (shoes, belts, watches, tie clips, cufflinks) gets the
+   colour half and a finish half: what it is made of (LOOK_FINISH: the leather, or the metal), a watch's dial and a belt's buckle ---- */
+const lookPhoto = b => b.look === true && b.src === 'photo';
+const NO_TEXT_PHOTO = 'the item in the photo';
+const NO_TEXT_PHOTO_LINE = 'The owner wrote no description: read it from the photo itself (the description below only stands in for the words).';
+const LOOK_FINISH = { shoes: ['calf', 'cordovan', 'suede', 'patent', 'pebble-grain', 'scotch-grain', 'nubuck', 'canvas', 'knit'],
+  belt: ['calf', 'cordovan', 'suede', 'patent', 'pebble-grain', 'scotch-grain', 'braided', 'canvas'], watch: ['silver', 'gold', 'two-tone', 'other'],
+  cufflinks: ['silver', 'gold', 'two-tone', 'other', 'silk'], tieclip: ['silver', 'gold', 'rosegold', 'gunmetal'] };
+const LOOK_FINISH_KEYS = [...new Set(Object.values(LOOK_FINISH).flat())], LOOK_BUCKLES = ['silver', 'gold', 'two-tone', 'other'];
+// (built at the first call, not at load: DIAL_COLS comes from tag.js, and the modules import each other in cycles)
+const finishRules = () => `You are a menswear expert helping a wardrobe app. From the photo of one accessory, say what it is made of.
+material.key - one of the keys listed for the kind of item:
+  shoes and belts, the leather or cloth of the upper or strap: calf (smooth leather, moderate shine), cordovan (dense, deep glossy
+  shine with rolling creases), suede (matte napped), nubuck (a fine, short nap, less shaggy than suede), patent (mirror gloss),
+  pebble-grain (large tumbled grain), scotch-grain (fine embossed grain), braided (woven leather strips: belts), canvas (woven
+  cotton), knit (a knitted textile upper: shoes);
+  watches, the case and bracelet metal: silver (steel, silver or white gold), gold, two-tone (steel and gold together), other (a
+  black, gray or gunmetal finish); cufflinks, their metal the same way, or silk for silk knot cufflinks;
+  tie clips, their metal: silver, gold, rosegold or gunmetal.
+  "none" when you can't see it.
+material.confidence - high only when it is plain to see in the photo, medium for a good bet, low for a guess.
+material.why - one short line for the owner, in American English.
+dial - watches only: the dial's color from: ${DIAL_COLS.join(', ')}; "none" for every other item.
+buckle - belts only: the buckle's metal (silver, gold, two-tone or other for gunmetal or black); "none" for every other item.`;
+function finishSchema() {
+  return { type: 'object', additionalProperties: false, required: ['material', 'dial', 'buckle'], properties: {
+    material: { type: 'object', additionalProperties: false, required: ['key', 'confidence', 'why'], properties: { key: { type: 'string', enum: [...LOOK_FINISH_KEYS, 'none'] }, confidence: CONF, why: { type: 'string' } } },
+    dial: { type: 'string', enum: [...DIAL_COLS, 'none'] }, buckle: { type: 'string', enum: [...LOOK_BUCKLES, 'none'] } } };
+}
+/* the finish answer, held to the item's own list (a key another kind has is "none"), its dial and buckle only where they belong */
+function cleanFinish(a, type) {
+  const m = a && a.material && typeof a.material === 'object' ? a.material : {}, l = LOOK_FINISH[type] || [], key = l.includes(m.key) ? m.key : 'none';
+  return { material: { key, confidence: ['high', 'medium', 'low'].includes(m.confidence) ? m.confidence : 'low', why: say(m.why, 160) },
+    dial: type === 'watch' && DIAL_COLS.includes(a && a.dial) ? a.dial : null, buckle: type === 'belt' && LOOK_BUCKLES.includes(a && a.buckle) ? a.buckle : null };
+}
 function perCall(b, own, desc, closeup, noText) {
   const t = TYPE_LIST.includes(b.type) ? b.type : 'suit', cols = b.colours && typeof b.colours === 'object' ? b.colours : {};
   const lines = [];
@@ -302,9 +339,10 @@ function perCall(b, own, desc, closeup, noText) {
     lines.push(`Kind of item: ${t}. Its colors: main ${w('main') || 'not set'}, ${w('second') ? 'second ' + w('second') : 'no second'}, ${w('third') ? 'third ' + w('third') : 'no third'}.`);
     if (typeof b.pattern === 'string' && /^[a-z0-9-]{1,40}$/.test(b.pattern)) lines.push(`The pattern now: ${b.pattern}.`);
   }
-  if (closeup) lines.unshift(b.what === 'colour' ? 'The photo is a close-up of this item\'s cloth. Use it to judge the shade; the description says which color in it is meant.' : 'The photo is a close-up of this item\'s cloth. Draw the look from it; the description says what the owner calls it.');
+  if (closeup) lines.unshift(lookPhoto(b) ? (b.what === 'colour' ? 'The photo shows the whole item, not a close-up. Judge the shade of its main cloth or leather from it; the description says which color in it is meant.' : 'The photo shows the whole item, not a close-up. Read its pattern and cloth from it; the description says what the owner calls it.')
+    : b.what === 'colour' ? 'The photo is a close-up of this item\'s cloth. Use it to judge the shade; the description says which color in it is meant.' : 'The photo is a close-up of this item\'s cloth. Draw the look from it; the description says what the owner calls it.');
   if (closeup) lines.push(lightText(wbOf(b)));
-  if (noText) lines.push(NO_TEXT_LINE);
+  if (noText) lines.push(lookPhoto(b) ? NO_TEXT_PHOTO_LINE : NO_TEXT_LINE);
   lines.push(`<description>${desc}</description>`);
   return lines.join('\n');
 }
@@ -390,7 +428,7 @@ async function handleDescribe(req, env, json, who) {
   if (!b || typeof b !== 'object') return json({ error: 'bad json' }, 400);
   if (b.what !== 'colour' && b.what !== 'pattern' && b.what !== 'both') return json({ error: 'bad request', detail: 'Say whether a color or a pattern is described.' }, 400);
   if (!TYPE_LIST.includes(b.type)) return json({ error: 'bad request', detail: 'Unknown kind of item.' }, 400);
-  if (b.what !== 'colour' && !PATTERN_BY_TYPE[b.type]) return json({ error: 'bad request', detail: 'That kind of item has no patterns.' }, 400);
+  if (b.what !== 'colour' && !PATTERN_BY_TYPE[b.type] && !(b.what === 'both' && b.look === true && LOOK_FINISH[b.type])) return json({ error: 'bad request', detail: 'That kind of item has no patterns.' }, 400);
   const cm = String(b.closeup || '').match(/^data:(image\/[\w.+-]+);base64,(.*)$/s);
   if (b.what === 'both') return describeBoth(req, env, json, who, b, cm);
   const desc = cleanDesc(b.text);
@@ -417,7 +455,7 @@ const BOTH_SHORT = 'Reading color and texture takes 2 lookups and you have 1 lef
 async function describeBoth(req, env, json, who, b, cm) {
   const typed = cleanDesc(b.text);
   if (!typed && !cm) return json({ error: 'bad request', detail: `Send the close-up, or describe it in 1 to ${DESC_MAX} characters.` }, 400);
-  const desc = typed || NO_TEXT, own = ownLists(b.custom);
+  const desc = typed || (lookPhoto(b) ? NO_TEXT_PHOTO : NO_TEXT), own = ownLists(b.custom);
   const over = await spend(env, who, 'describe', utcDay(), 2);
   if (over) {
     if (over.status === 429 && !over.body.all && over.body.cap - over.body.used === 1) return json({ ...over.body, message: BOTH_SHORT, detail: BOTH_SHORT, short: true }, 429);
@@ -446,13 +484,25 @@ async function describeBoth(req, env, json, who, b, cm) {
       return out.status === 200 ? { body: out.body, model: c.body.model } : { fail: true, status: out.status, body: out.body };
     } catch (e) { return { fail: true, status: 502, body: { error: 'ai', detail: 'Claude did not answer: ' + String(e && e.message || e).slice(0, 120) } }; }
   };
-  const [co, pa] = await Promise.all([half('colour'), half('pattern')]);
+  // the Look editor's finish half (look:true on a type without patterns): what it is made of, from the photo; its own cached text and schema
+  const finish = async () => {
+    try {
+      const c = await claudeCall(env, { model: env.CLAUDE_DESCRIBE_MODEL || DESCRIBE_MODEL, system: finishRules(), owner: '',
+        content: [...img, { type: 'text', text: `Kind of item: ${b.type}. Its keys: ${LOOK_FINISH[b.type].join(', ')}.\n` + (cm ? lightText(wbOf(b)) : '') }],
+        schema: finishSchema(), effort: 'low', maxTokens: 2000, signal: req.signal, what: 'described' });
+      if (c.status !== 200) return { fail: true, status: c.status, body: c.body };
+      return { body: cleanFinish(c.body, b.type), model: c.body.model };
+    } catch (e) { return { fail: true, status: 502, body: { error: 'ai', detail: 'Claude did not answer: ' + String(e && e.message || e).slice(0, 120) } }; }
+  };
+  const fin = !PATTERN_BY_TYPE[b.type];
+  const [co, pa] = await Promise.all([half('colour'), fin ? finish() : half('pattern')]);
   const failed = [co, pa].filter(x => x.fail).length;
   if (failed) await unspend(env, who, 'describe', utcDay(), failed);
-  console.log(`described both: ${typed ? typed.length + ' characters' : 'no words'}, colour ${co.fail ? co.status : co.body.kind}, pattern ${pa.fail ? pa.status : pa.body.kind}`);
+  console.log(`described both${b.look === true ? ' (look' + (lookPhoto(b) ? ', photo' : '') + ')' : ''}: ${typed ? typed.length + ' characters' : 'no words'}, colour ${co.fail ? co.status : co.body.kind}, ${fin ? 'finish' : 'pattern'} ${pa.fail ? pa.status : fin ? pa.body.material.key : pa.body.kind}`);
   if (failed === 2) return json(co.body, co.status);
   const err = x => { const e = { error: x.body && x.body.error || 'failed', detail: x.body && (x.body.detail || x.body.message) || '', status: x.status };
     return who.caps ? plainFor(e, '/describe') : e; };
+  if (fin) return json({ colour: co.fail ? err(co) : co.body, pattern: null, ...(pa.fail ? { finish: err(pa) } : { material: pa.body.material, dial: pa.body.dial, buckle: pa.body.buckle }), model: (co.fail ? pa : co).model, lookups: who.caps ? 2 - failed : 0 });
   return json({ colour: co.fail ? err(co) : co.body, pattern: pa.fail ? err(pa) : pa.body, model: (co.fail ? pa : co).model, lookups: who.caps ? 2 - failed : 0 });
 }
 

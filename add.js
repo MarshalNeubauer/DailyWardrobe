@@ -146,7 +146,7 @@ async function addMulti(f,agg,again){
   if(!holder.multiPic)try{holder.multiPic=raw.toDataURL('image/jpeg',.9);holder.file=holder.multiPic}catch(e){console.warn('photo not kept',e)}
   addKeep();
   let r,j;try{r=await fetch(new URL('tag-many',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':tok},
-      body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),types:TAG_TYPES,custom:customForTag(),corrections:tagFixes(),wb:!!wb}),...(ac?{signal:ac.signal}:{})});
+      body:JSON.stringify({image:img.toDataURL('image/jpeg',.9),types:tagTypesNow(),custom:customForTag(),corrections:tagFixes(),wb:!!wb}),...(ac?{signal:ac.signal}:{})});
     j=await r.json().catch(()=>({}))}
   catch(e){if(!queue.includes(holder))return;console.warn('several items',e);fail(multiFail(0,null,e),navigator.onLine===false||e instanceof TypeError);return}   // (Cancel took it off Add: nothing more to say)
   if(!queue.includes(holder))return;   // cancelled while the answer came
