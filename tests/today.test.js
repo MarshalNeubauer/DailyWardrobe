@@ -23,7 +23,8 @@ const todaytight=async({ok,chromium,url,settle})=>{
     ok(!g.heading&&g.tiles===3,'no "Below the waist" heading; the tiles are still there');
     ok(g.border==='1px solid'&&g.mbox,`the score card has the same thin border as the month box (${g.border})`);
     // worn or not: the pill in the date bar
-    const m=await p.evaluate(()=>{const h=document.querySelector('.day h2'),hb=h.getBoundingClientRect(),pl=document.querySelector('#wpill'),pb=pl.getBoundingClientRect(),w=document.querySelector('.day h2 .wxc').getBoundingClientRect(),mid=r=>r.left+r.width/2;
+    // (the pill with the favorites' ♡ joined to it, 2026-11-18: the pair sits at the right end, fav.js)
+    const m=await p.evaluate(()=>{const h=document.querySelector('.day h2'),hb=h.getBoundingClientRect(),pl=document.querySelector('#wpill'),pb=(pl.closest('.wpgrp')||pl).getBoundingClientRect(),w=document.querySelector('.day h2 .wxc').getBoundingClientRect(),mid=r=>r.left+r.width/2;
       return {t:pl.textContent,pressed:pl.getAttribute('aria-pressed'),right:Math.round(hb.right-pb.right),centre:Math.round(Math.abs(mid(w)-mid(hb))),inside:pb.top>=hb.top-1&&pb.bottom<=hb.bottom+1,circles:document.querySelectorAll('.wmark').length,pill:!!document.querySelector('.lastworn')}});
     ok(m.t==='✓ Wore'&&m.pressed==='true'&&m.right<=1&&m.inside,`a day is worn unless marked: the pill reads "✓ Wore", at the right end of the date bar (${m.right}px from it)`);
     ok(m.centre<=1,`the weather stays centred under the date (${m.centre}px off)`);

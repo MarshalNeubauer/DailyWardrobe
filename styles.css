@@ -1961,6 +1961,53 @@ button.cpw-row{width:100%;text-align:left;background:none;border:0;border-top:1p
 .cpwset{flex-wrap:nowrap!important}
 #settings-modal .cpwset .cpwin input[type="text"]{width:6.5em}
 .cpwset input[type="number"]{width:5em;padding:7px;border-radius:8px;border:1px solid var(--line);background:var(--bg);min-height:40px}
+
+/* ---- favorites (2026-11-18, fav.js; the owner's design "B · Wore pill"): their own classes, colors set on them (light, then dark) ---- */
+.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav{--fav:#c2415a;--favbg:#f8e3e7}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) :is(.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav){--fav:#ef6f8a;--favbg:#3a1a22}}
+:root[data-theme=dark] :is(.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav){--fav:#ef6f8a;--favbg:#3a1a22}
+.favic{width:1em;height:1em;flex:none;display:block}
+/* the ♡ joined to the ✓ Wore pill: the pill's column widens by the heart's width */
+.day h2 .wx.haspill:has(.wpgrp){--wp:4.75rem}
+.wpgrp{grid-column:3;justify-self:end;display:inline-flex;align-items:stretch;flex:none;z-index:2;width:var(--wp)}
+.wx.haspill.wxwrap .wpgrp{grid-column:1}
+.wpgrp .wpill{flex:1;width:auto;min-width:0;border-radius:14px 0 0 14px}
+.wpfav{flex:none;width:1.5rem;margin:0;padding:0;min-height:24px;display:flex;align-items:center;justify-content:center;border:1px solid var(--acc);border-left:1px solid rgba(26,20,5,.28);border-radius:0 14px 14px 0;background:var(--acc);color:#1a1405;font-size:.875rem;position:relative;cursor:pointer}
+.wpfav::after{content:"";position:absolute;inset:-11px -6px -11px 0}
+.wpfav.on{background:var(--fav);border-color:var(--fav);color:#fff}
+.wpgrp .wpill.no+.wpfav{display:none}
+.lwfav{display:inline-flex;vertical-align:-2px;margin-right:4px;color:#ff9db0;font-size:.8125rem}
+/* the picker's "Favorite looks" strip: one row */
+.favpick{margin:2px 0 10px}
+.favpick-h{display:flex;align-items:center;gap:6px;font-size:var(--fs-b);color:var(--fav);margin:0 0 6px}
+.favstrip{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
+.favlook{flex:0 0 9.5rem;display:flex;gap:8px;align-items:center;margin:0;padding:6px 8px;min-height:52px;border:1px solid var(--fav);border-radius:12px;background:var(--favbg);color:inherit;font:inherit;font-size:var(--fs-xs);text-align:left;cursor:pointer}
+.favlook.cur{box-shadow:inset 0 0 0 1px var(--fav)}
+.favnm{min-width:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.25}
+.favnm small{display:block;color:var(--mut);font-size:.6875rem}
+.favsw{display:flex;flex-direction:column;gap:2px;flex:none}
+.favsw i{display:block;width:22px;height:14px;border-radius:4px;overflow:hidden}
+.favsw i svg{display:block;width:100%;height:100%}
+/* a favorite piece's ♥ on its Wardrobe and picker tile */
+.giopen:has(> .favmark),.pick-it:has(> .favmark){position:relative}
+.favmark{position:absolute;top:8px;right:8px;z-index:1;width:22px;height:22px;border-radius:50%;background:var(--card);color:var(--fav);display:flex;align-items:center;justify-content:center;font-size:.8125rem;box-shadow:0 1px 3px rgba(0,0,0,.25);pointer-events:none}
+.favchip span{color:var(--fav)}
+.favchip.on span{color:inherit}
+/* the item sheet's "Favorite, wear it more" switch (Planning & care) */
+.favtog{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;margin:8px 0 2px;padding:0 10px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:inherit;font:inherit;text-align:left;cursor:pointer}
+.favtog>.favic{color:var(--fav);font-size:1.125rem}
+.favtog.on{border-color:var(--fav);background:var(--favbg)}
+.favtog-t{flex:1;min-width:0;font-size:var(--fs-b);font-weight:600}
+.favhint{margin:0 0 8px}
+.favsw2{width:42px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.favsw2::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.favtog.on .favsw2{background:var(--fav)}
+.favtog.on .favsw2::after{transform:translateX(16px)}
+/* Insights' "Your favorites" */
+.st-fav h3{display:flex;align-items:center;gap:6px}
+.st-fav h3 .favic{color:var(--fav)}
+.st-fav .st-tile{background:var(--bg)}
+@media (max-width:359px){.day h2 .wx.haspill:has(.wpgrp){--wp:4.25rem}.wpfav{width:1.375rem}.favlook{flex-basis:8.5rem}}
 /* ---- the New Look editor (beta, look.js; 2026-11-17, the owner's approved mockup C:\code\audit-2026-11-13\look-mockup\): one Look section,
    rows of swatch + value + chevron, Claude's chips on the row they change, Read with Claude, the material picker's swatches ---- */
 .lkbody{display:flex;flex-direction:column;gap:8px}

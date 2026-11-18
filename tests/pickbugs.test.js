@@ -84,6 +84,9 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ';
     await p.evaluate(()=>{CK_OPEN['e|pics']=false});await openItemPick(p,'s1','pattern',false);
     ok(await p.evaluate(()=>!document.querySelector('#item-view.on .ivpics').classList.contains('open')),T+'(Pictures starts folded)');
     await p.click('#col-sheet .cpgopics');await settle(p,700);
+    // (the sheet's own smooth scroll, which settle doesn't watch, may still be running: wait for the button to come into view, up to 3 s;
+    // a longer Planning & care, the favorites' switch 2026-11-18, made it 72 px longer and the check read it mid-way)
+    await p.waitForFunction(()=>{const b=document.querySelector('#item-view.on .ivpics .pt-closeup'),r=b&&b.getBoundingClientRect();return !!r&&r.height>0&&r.top>=0&&r.bottom<=innerHeight},null,{timeout:3000}).catch(()=>{});
     let e2=await p.evaluate(()=>{const s=document.querySelector('#item-view.on .ivpics'),b=s&&s.querySelector('.pt-closeup'),r=b&&b.getBoundingClientRect();
       return {sheet:document.querySelector('#col-sheet').classList.contains('on'),open:!!(s&&s.classList.contains('open')),seen:!!r&&r.height>0&&r.top>=0&&r.bottom<=innerHeight}});
     ok(!e2.sheet&&e2.open&&e2.seen,T+`the link closes the picker, opens Pictures and shows its Close-up button (${JSON.stringify(e2)})`);

@@ -69,10 +69,10 @@ function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;
   if(!o.frozen&&pool.length+hand.length<2&&!(slot==='pocket'&&!o.pocket&&pool.length)){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to choose from.`;renderToday();return}
   const scored=pool.map(i=>[fitOf(slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1)),best=scored.length?scored[0][0]:0;
   const card=([f,i])=>{const [cls,txt]=fitTag(best-f),on=i.id===cur,sub=slot==='bot'&&i.type==='suit'?'The suit’s own pants':pickSub(i,pool);
-    return `<button class="pick-it${on?' cur':''}" onclick="pickItem('${slot}','${jsq(i.id)}')" aria-label="${esc(itemTitle(i)||nm(i))}${sub?', '+esc(sub):''}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span>${sub?`<small class="mut pick-sub">${esc(sub)}</small>`:''}<small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
+    return `<button class="pick-it${on?' cur':''}" onclick="pickItem('${slot}','${jsq(i.id)}')" aria-label="${esc(itemTitle(i)||nm(i))}${sub?', '+esc(sub):''}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span>${typeof favMark==='function'?favMark(i):''}<span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span>${sub?`<small class="mut pick-sub">${esc(sub)}</small>`:''}<small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
   const none=o.frozen&&slot!=='top'&&cur?`<button type="button" onclick="pickItem('${slot}','')">None: I didn't wear one</button>`:'';
   $('#pick-sheet').innerHTML=`<div class="pick-head"><b id="pick-title">${o.frozen?`What ${label} did you wear?`:`Choose ${pluralWord(label)?label:aAn(label)}`}</b><button class="pick-x" onclick="closePicker()" aria-label="Close">×</button></div>
-    <p class="mut"><small>${o.frozen?'Pick what you really wore on '+shortDate(sel)+'.':`${pluralWord(label)?`All the ${label}`:`Every ${label}`} you own, by the score the outfit gets with each, best first.`}</small></p>
+    ${typeof favStrip==='function'?favStrip(o):''}<p class="mut"><small>${o.frozen?'Pick what you really wore on '+shortDate(sel)+'.':`${pluralWord(label)?`All the ${label}`:`Every ${label}`} you own, by the score the outfit gets with each, best first.`}</small></p>
     ${!o.frozen||none?`<div class="btns">${o.frozen?none:`<button type="button" id="pick-next" onclick="pickNext()">Suggest another <span aria-hidden="true">↻</span></button>`}</div>`:''}
     <div class="pick-grid">${scored.map(card).join('')}</div>${handGroup(slot,o,hand,cur)}${combatAway(slot,o,hand)}`;
   picker={slot};$('#pick-sheet').classList.add('on');$('#pick-backdrop').classList.add('on');$('#pick-sheet').scrollTop=0;
@@ -100,6 +100,17 @@ async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;cl
   force[slot]=id;suitPants(force,slot,o);bootsOff(force,slot,o);keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;notAhead(rec,k);pocketOn(rec,slot);
   if(slot==='belt'&&beltless(k,rec)){swapMsg='That belt needs shoes that don’t suit this outfit, so the belt stays as it was.';renderToday();return}
   swapMsg='';await saveDay(rec);await unlockClash(k);renderToday()}
+/* wear a favorite look (fav.js, the picker's "Favorite looks" strip) on the day shown: its jacket, shirt and tie become the owner's own
+   picks (rec.force, as pickItem's), the pieces that follow them are chosen again, a jacket of the other kind brings its kind (rec.kind),
+   and the days after it that hold one of them let go (unlockClash); Undo puts the day's record back */
+async function wearFav(k){const dk=key(sel),o=planFor()[dk],l=favLooks().find(x=>favLookKey(x)===k);if(!o||o.frozen||!l)return;closePicker();
+  const p=favPieces(l);if(!p.sh)return;
+  const was=dayRecs[dk]?{...dayRecs[dk]}:{date:dk},rec={...was,ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=new Set(['top','shirt','tie',...FOLLOW.top,...FOLLOW.shirt,...FOLLOW.tie]),force={};
+  for(const s of SLOTS)if(!follow.has(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
+  if(p.j){force.top=p.j.id;if(!isHandPick(p.j))rec.kind=p.j.type==='suit'?'suit':'blazer'}force.shirt=p.sh.id;if(p.tie)force.tie=p.tie.id;
+  rec.force=force;delete rec.skip;delete rec.lock;delete rec.off;notAhead(rec,dk);
+  swapMsg='';await saveDay(rec);await unlockClash(dk);renderToday();
+  toast(`Wearing a favorite look ${dayWord()==='today'?'today':'on '+shortDate(sel)}.`,FAV_UNDO_MS,{label:'Undo',fn:async()=>{await saveDay({...was});renderToday()}})}
 /* ---- correcting a past day: what was really worn replaces what was planned, so rest and "last worn" stay true ---- */
 function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)listOpen=true;swapMsg='';renderToday()}
 async function correctPast(slot,it){const k=key(sel),r=dayRecs[k],o=planFor()[k];if(!r||!r.ids||!o||pastEdit!==k)return;

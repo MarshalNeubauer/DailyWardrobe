@@ -305,7 +305,28 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans the days after today (the week's locks and
    the app's own recorded pieces go; the owner's swaps and picks (force, skip, the vest) and a kept trip stay: replanFuture(true) in history.js) */
-const PLAN_RULES=27;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
+const PLAN_RULES=28;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
+/* ---- favorites (2026-11-18, the owner's approved design, option B): settings.fav = {looks:[{j,sh,tie,at}], items:[id]}, marked by hand
+   only (fav.js). A favorite look is the day's jacket, shirt and tie by id (j null on a day without a jacket, tie null without a tie). The
+   planner brings a favorite look back on its own (favDue in planSim) and gives favorite pieces a rest target shorter by a fifth (FAV_REST_K)
+   and the win when outfits tie (FAV_TIE). With no favorites nothing here changes a plan. */
+const FAV_REST_K=1.25;   // a favorite piece's rest counts a quarter more: its rest target is a fifth shorter (a tie's 25 days, 20)
+const FAV_TIE=1;   // a favorite piece wins when two choices score the same, or within a point (.01 moved too little: on the bench wardrobes a favorite tie 0-18% more wears, now 7-50%)
+const FAV_LOOK_REST=15;   // workdays a favorite look rests before the planner brings it back (about three weeks)
+const FAV_WEEK=7;   // at most one favorite look in any 7 days (worn, picked or planned)
+let favMemo={f:undefined,looks:[],items:null};
+const favRead=()=>{const f=typeof settings!=='undefined'&&settings?settings.fav:undefined;if(favMemo.f===f)return favMemo;
+  const L=f&&Array.isArray(f.looks)?f.looks.filter(l=>l&&typeof l.sh==='string'&&(l.j||l.tie)):[],I=f&&Array.isArray(f.items)?f.items.filter(x=>typeof x==='string'):[];
+  return favMemo={f,looks:L,items:I.length?new Set(I):null}};
+const favKey=(j,sh,tie)=>(j||'-')+'|'+(sh||'-')+'|'+(tie||'-');
+const favLookKey=l=>favKey(l.j,l.sh,l.tie);
+const favLooks=()=>favRead().looks;
+const favItemSet=()=>favRead().items;
+const isFavItem=id=>{const s=favRead().items;return !!s&&s.has(id)};
+/* the favorite look an outfit is (its jacket, shirt and tie), or null */
+const favLookOf=o=>{const L=favRead().looks;if(!L.length||!o||!o.shirt)return null;const k=favKey(o.top&&o.top.id,o.shirt.id,o.tie&&o.tie.id);return L.find(l=>favLookKey(l)===k)||null};
+/* a shirt and tie the owner loves together: Harmony doesn't mark that pairing down (dialHarmony) */
+const favPair=(sh,x)=>{const L=favRead().looks;return !!L.length&&!!sh&&!!x&&L.some(l=>l.sh===sh.id&&l.tie===x.id)};
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 const LOOK_PAIR=3,LOOK_K=2,LOOK_FREE=3,LOOK_RESTED=.75;   // the look in the clothes choice (chooseClothes): points per point of dialLook short of each piece's own best outfit, and of the best rested one's
 const FORMAL_QWIN=3;   // a formal day, a wedding or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
@@ -494,13 +515,17 @@ if(!noJ&&suitDay&&!by('suit').length&&!by('blazer').length)suitDay=false;
 // a piece never worn yet has full rest (it comes round soon) but creeps only from the day it was added (fresh): it counted as rested
 // a year, 63 points over a jacket rested six weeks, so two new brown suits outweighed JKT_SAME and ran back to back (2026-11-16, 22-23 Nov)
 const fresh=i=>{if(last[i.id]!=null||!i.added)return null;const a=new Date(i.added);return n-di(new Date(a.getFullYear(),a.getMonth(),a.getDate()))};
-const since=i=>n-(last[i.id]??-1e5),rest=i=>Math.min(since(i),60),over=(i,from)=>Math.min(Math.max(0,(fresh(i)??since(i))-from),300);
+// a favorite piece (settings.fav.items) counts its rest a quarter longer, so its rest target is a fifth shorter (FAV_REST_K); since stays
+// the real days, for the wash and the shoes worn yesterday
+const fv=favItemSet(),fk=i=>fv&&fv.has(i.id)?FAV_REST_K:1;
+const since=i=>n-(last[i.id]??-1e5),rest=i=>Math.min(since(i)*fk(i),60),over=(i,from)=>Math.min(Math.max(0,(fresh(i)??since(i))*fk(i)-from),300);
 const rb=i=>Math.min(rest(i),10)*.4+over(i,10)*.01;
 // a day's record can pin pieces (force) or rule them out (skip) after the user swaps something; a day the app has locked (rec.lock:
 // the pieces it showed for one of the coming days) keeps them, so a change on one day doesn't reshuffle the days already shown.
 // The lock is dropped as a whole when one of its pieces is gone (deleted, taken out of rotation) or the forecast has turned against
 // it: suede shoes on a rainy day, a cold-weather piece on a warm day.
-const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
+// (day.fav: a favorite look due on a day not yet locked or picked, planSim's favDue: its jacket, shirt and tie pinned like a pick)
+const force=day.fav?{...(rec&&rec.force||{}),...day.fav}:rec&&rec.force||{},skip=rec&&rec.skip||{};
 // a piece the planner never plans (core.js isHandPick: a casual top, a cardigan or chore jacket, cargo pants) is worn only when the day's
 // pick names it for its own slot and it is in rotation that day; a casual jacket makes the day a blazer day (odd pants)
 const hp=s=>{const id=force[s],x=id&&items.find(i=>i.id===id);return x&&handPickSlot(x)===s&&inRotation(x,n)?x:null};
@@ -529,13 +554,13 @@ const pool=(type,slot)=>{const h=slot==='top'?hpTop:slot==='shirt'?hpShirt:slot=
 // the trousers a day allows: dress trousers only on a formal day, a wedding or a funeral; jeans with a blazer only when the dress code
 // says so (settings.dress.jeans); chinos with a blazer, and anything on a day without a jacket
 const botFits=i=>{const k=trouserKind(i);if(full&&!casual)return k==='dress';if(!suitDay&&!noJ&&k==='jeans')return !!(settings.dress&&settings.dress.jeans);return true};
-const was={},take=b=>{if(!b)return null;const c={...b,rest:rest(b)};if(!(b.id in was))was[b.id]=last[b.id];last[b.id]=n;return c};
+const was={},take=b=>{if(!b)return null;const c={...b,rest:Math.min(since(b),60)};if(!(b.id in was))was[b.id]=last[b.id];last[b.id]=n;return c};
 // a piece taken off for the day (rec.off) was not worn: its rest goes back to what it was
 const untake=b=>{if(!b||!(b.id in was))return;if(was[b.id]===undefined)delete last[b.id];else last[b.id]=was[b.id]};
-const argBest=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return b},best=(arr,sc)=>take(argBest(arr,sc));
+const argBest=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i)+(fv&&fv.has(i.id)?FAV_TIE:0);if(s>bs){bs=s;b=i}}return b},best=(arr,sc)=>take(argBest(arr,sc));
 // the day's shoes, and whether any of them suit the jacket and pants (not patent: a last resort)
 const S=pool('shoes','shoes'),shoeOk=(t,b)=>!S.length||S.some(s=>finish(s.leather)!=='patent'&&shoeSuits(t,b,s));
-return {day,suitDay,n,by,last,rec,casual,occ,full,noJ,noT,force,lock,trip,tripOff,hpTop,hpBotAny,hpShoes,since,rest,over,rb,pool,take,untake,argBest,best,S,shoeOk}}
+return {day,suitDay,n,by,last,rec,casual,occ,full,noJ,noT,force,lock,trip,tripOff,hpTop,hpBotAny,hpShoes,since,rest,over,rb,pool,take,untake,argBest,best,S,shoeOk,fv}}
 /* the jacket (null on a day without one) */
 function chooseJacket(c){const {day,suitDay,by,occ,noJ,noT,since,rest,over,pool,argBest,best,shoeOk}=c;
 // suits rotate (least recently worn first); season and formality can override a few days of rest
@@ -560,7 +585,7 @@ const jscore=i=>-(noShoes(i)?NO_SHOES:0)-againJ(i)+Math.min(rest(i),14)*3+Math.m
 let tcands=tpl;if(tpl.length>1&&!jacketClean(argBest(tpl,jscore))){const ok=tpl.filter(jacketClean);if(ok.length)tcands=ok}
 return noJ?null:best(tcands,jscore)}
 /* the pants (the suit on a suit day), shirt and tie, scored together as one outfit for this jacket */
-function chooseClothes(c,top){const {day,suitDay,n,occ,noT,rest,over,rb,pool,take,shoeOk}=c;
+function chooseClothes(c,top){const {day,suitDay,n,occ,noT,rest,over,rb,pool,take,shoeOk,fv}=c;
 // trousers, shirt and tie are scored together as one outfit. Rotation only chooses among outfits within QWIN points
 // of the best one, so variety never costs a clearly better combination.
 // Large wardrobes: keep only the 6 best trousers and 16 best shirts for this jacket (rotation included), then try every tie.
@@ -617,6 +642,7 @@ const choose=cs=>{let qmax=-Infinity;for(const c of cs)if(c.q>qmax)qmax=c.q;
   let win=cs.filter(c=>c.q>=qmax-(day.formal||day.occ==='funeral'||day.occ==='wedding'?FORMAL_QWIN:QWIN));
   const fresh=occ||day.formal?[]:win.filter(c=>!realRep(c));   // (a formal day, a wedding or a funeral: its own rules choose, as before)
   if(fresh.length){win=fresh;const lc=lookCost(win);for(const c of win)c.r=rOf(c)-lc(c)}else for(const c of win)c.r=rOf(c);
+  if(fv)for(const k of win)for(const i of [k.pt,k.sh,k.x])if(i&&fv.has(i.id))k.r+=FAV_TIE;   // (a favorite piece wins a tie)
   return win.sort((a,b)=>(b.q+b.r)-(a.q+a.r))[0]};
 const hardC=c=>clothesHard(top,suitDay?top:c.pt,c.sh,c.x,suitDay,day,shoeOk);
 let pick1=choose(cands);
@@ -886,7 +912,7 @@ function dialHarmony(o,core){const {top,shirt,tie}=o,bot=o.suitDay?null:o.bot,P=
   else if(shirt&&o.bot&&!top){const v=pcol(shirt)===pcol(o.bot)?.1:dLin(Math.abs(LUM(shirt)-LUM(o.bot)),10,120);P.push([25,v,()=>`the ${dCol(shirt)} shirt stands clear of the ${dCol(o.bot)} pants`,()=>`the ${dCol(shirt)} shirt sits close to the ${dCol(o.bot)} pants`])}
   if(shirt&&tie){const d=darkShirt(shirt)?tieLum(tie)-LUM(shirt):LUM(shirt)-tieLum(tie),raw=planCol(shirt),ts=TIE_ON_SHIRT[raw]||TIE_ON_SHIRT[pcol(shirt)];
     let fit=raw==='white'?.85:darkShirt(shirt)?.7:ts?(ts.includes(pcol(tie))?1:.35):.7;if(raw==='pink'&&['red','pink'].includes(pcol(tie)))fit=.1;
-    const c=dLin(d,10,120);let v=.65*c+.35*fit;if(tieShirtHard(shirt,tie))v=Math.min(v,.1);
+    const c=dLin(d,10,120);let v=.65*c+.35*fit;if(tieShirtHard(shirt,tie))v=Math.min(v,.1);else if(favPair(shirt,tie))v=1;   // (a favorite look's pair: known good, never marked down)
     P.push([25,v,()=>`the ${dCol(tie)} tie stands out well on the ${dCol(shirt)} shirt`,()=>c<=fit?`the ${dCol(tie)} tie is close in lightness to the ${dCol(shirt)} shirt`:`${dCol(tie)} is an unusual tie color on a ${dCol(shirt)} shirt`])}
   if(tie&&top){const tc=pcol(top),xc=pcol(tie),acc=colsOf(tie).slice(1),echo=acc.length>0&&acc.some(c=>colsOf(shirt).includes(c)||colsOf(top).includes(c));
     const base=xc===tc?(blackOnBlack(top,tie,o.occasion)?0:pw(tie)>0||LUM(tie)<LUM(top)-15?.6:.3):!HARM[tc]?.75:HARM[tc].includes(xc)?1:.4;
@@ -1091,21 +1117,55 @@ const sumUp=(o,n)=>({jid:o.top?o.top.id:null,jg:o.top?jacketGroup(o.top):null,jc
 const d=new Date(start);
 // the pool for one day: items in rotation that day (one on its way joins the day after it arrives)
 const arriving=items.some(i=>i.paused&&arriveN(i)!=null),byOn=n=>arriving?(t=>by(t).filter(i=>inRotation(i,n))):by;
+/* favorite looks (settings.fav.looks, the owner's design 2026-11-18): each comes back on its own about every three weeks. favW holds each
+   look's last appearance (worn, picked or planned) as a workday count (wn), favN the day number of the last day any favorite look was. A
+   look is due after FAV_LOOK_REST workdays, at most one in FAV_WEEK days, only on a workday from today on that nothing pins (no lock,
+   pick, skip, occasion, kind, trip or piece taken off: a locked or picked day is never moved), and only when all its pieces are in rotation,
+   the shirt out of the wash, each piece suits the weather, the day is of its jacket's kind and nothing repeats by the usual rules
+   (favPick); the day is then planned with the three pinned, and kept only when that breaks no rule (favDay) */
+const FL=favLooks(),favW={};let wn=0,favN=-1e9;
+const favNote=(o,n)=>{if(!FL.length||!o)return;const l=favLookOf(o);if(l){favW[favLookKey(l)]=wn;favN=n}};
+const favFree=(rec,d)=>+d>=+T&&!(rec&&(rec.ids||rec.lock||rec.force||rec.skip||rec.kind||rec.trip||rec.off||rec.formal||rec.occasion||typeof rec.vest==='boolean'||rec.worn===false));
+const favAhead=d=>{const x=new Date(d);for(let g=1;g<FAV_WEEK;g++){x.setDate(x.getDate()+1);const r=dayRecs[key(x)];if(!r||r.worn===false)continue;
+    const pk=s=>(r.force&&r.force[s])||(r.lock&&r.lock[s])||null;if(FL.some(l=>favLookKey(l)===favKey(pk('top'),pk('shirt'),pk('tie'))))return true}return false};
+const favPick=(d,n,sd,day)=>{if(day.formal||day.occ||n-favN<FAV_WEEK)return null;
+  const due=FL.filter(l=>wn-(favW[favLookKey(l)]??-1e9)>=FAV_LOOK_REST);if(!due.length||favAhead(d))return null;
+  const B=byOn(n),LD=Math.max(0,+(settings.laundryDays??1)||0),noJ=!wearsJacket(),noT=!wearsTie(),pv=day.prev||[],ah=day.ahead||{ids:[],fx:[]},fx=ah.fx||[],kind=sd?'suit':'blazer';
+  due.sort((a,b)=>(favW[favLookKey(a)]??-1e9)-(favW[favLookKey(b)]??-1e9)||(favLookKey(a)<favLookKey(b)?-1:1));   // the longest rested first
+  for(const l of due){const j=l.j?B(kind).find(i=>i.id===l.j):null,sh=B('shirt').find(i=>i.id===l.sh),x=l.tie?B('tie').find(i=>i.id===l.tie):null;
+    if(!sh||(l.j?noJ||!j:!noJ)||(l.tie?noT||!x:!noT))continue;   // a piece out of rotation, or a look of the other kind of day
+    if([j,sh,x].some(i=>i&&seasonFit(i,day.clim.season)<=-15))continue;   // a piece out of season
+    if(LD>0&&n-(last[sh.id]??-1e5)<=LD)continue;   // the shirt is in the wash
+    if(j&&((pv[0]&&pv[0].jid===j.id)||ah.ids.includes(j.id)||colourRepeat(j,pv.map(p=>p&&{g:p.jg,c:p.jc}),ah.next,topGw(B(kind)))>=JKT_SAME/2))continue;
+    if(x&&(tieRepeat(x,pv,day.prev3)>=15||aheadTie(x,fx)>=TIE_GAP))continue;
+    const w2=B('shirt').length>3?2:1;if(pv.slice(0,w2).some(p=>p&&p.sid===sh.id)||fx.some(f=>f.w<w2&&f.sid===sh.id)||aheadShirt(sh,fx,n)>=NEXT_SHIRT)continue;
+    if(j&&lookRepeat(j,sh,x,pv)>=20)continue;   // (not comboRepeat: the jacket's own last outfit is often this very look, which is the point)
+    return {l,force:{...(j?{top:j.id}:{}),shirt:sh.id,...(x?{tie:x.id}:{})}}}
+  return null};
 const upTo0=end=>{
 for(const E=di(end);di(d)<=E;d.setDate(d.getDate()+1)){const w=d.getDay();   // (day numbers: where the clocks change at midnight, the date after it sits at 01:00)
  if(!isWorkday(d))continue;   // weekends, public holidays and days off
-  const k=key(d);let rec=dayRecs[k];
-  if(rec&&rec.ids&&(d<T||rec.worn===true)&&!idsAhead(rec)){plan[k]=frozenOutfit(rec,di(d),last);plan[k].ctx={prev,prev3,n:di(d)};if(rec.worn!==false){prev3=prev[1]||null;prev=[sumUp(plan[k],di(d)),prev[0]];remember(plan[k])}continue}   // (a day marked "Not worn" is not the previous workday for repeats; a day without a jacket is, see below)
+  wn++;const k=key(d);let rec=dayRecs[k];
+  if(rec&&rec.ids&&(d<T||rec.worn===true)&&!idsAhead(rec)){plan[k]=frozenOutfit(rec,di(d),last);plan[k].ctx={prev,prev3,n:di(d)};if(rec.worn!==false){prev3=prev[1]||null;prev=[sumUp(plan[k],di(d)),prev[0]];remember(plan[k]);favNote(plan[k],di(d))}continue}   // (a day marked "Not worn" is not the previous workday for repeats; a day without a jacket is, see below)
   if(W0&&d<W0&&d<T)continue;   // before the wardrobe began (wardStart): nothing was worn then
   if(rec&&rec.noOutfit&&d<T)continue;   // a past day dressed only from the sample wardrobe, since removed (kit.js kitSampleDay): no outfit recorded
   /* every worn workday is the previous workday for repeats, one without a jacket too (the jacket taken off, a casual day: the code review,
      CR-3-04: the next day could repeat its tie and shirt): its summary has no jacket group (colourRepeat, lookRepeat skip it), and
      remember() keeps the jackets' own history (hist) to days with a jacket */
-  const o=planDay(d,rec);plan[k]=o;prev3=prev[1]||null;prev=[sumUp(o,di(d)),prev[0]];remember(o)}
+  const o=planDay(d,rec,true);plan[k]=o;prev3=prev[1]||null;prev=[sumUp(o,di(d)),prev[0]];remember(o);favNote(o,di(d))}
 return plan};
-// one workday planned with this record (a day not frozen): the loop above, and peek
-const planDay=(d,rec)=>{const w=d.getDay();if(rec&&rec.lock&&!lockOf(rec,di(d))){rec={...rec};delete rec.lock}
-  const occ=occOf(rec),formal=occ==='formal',lt=rec&&rec.lock&&!(rec.force&&rec.force.top)&&rec.lock.top&&items.find(i=>i.id===rec.lock.top),o=outfit(lt&&!rec.kind&&!(occ==='casual')?lt.type==='suit':rec&&rec.kind?rec.kind==='suit':!!(occ&&occ!=='casual')||!settings.blazerDays.includes(w),di(d),byOn(di(d)),last,rec,{formal,occ:occ&&occ!=='formal'?occ:null,clim:dayClimate(d),hasLinks,prev,prev3,ahead:fixedAhead(d),hist,pairs});o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;o.ctx={prev,prev3,n:di(d)};return o};
+// one workday planned with this record (a day not frozen): the loop above, and peek (fav: the loop, which may bring a favorite look back)
+const planDay=(d,rec,fav)=>{const w=d.getDay();if(rec&&rec.lock&&!lockOf(rec,di(d))){rec={...rec};delete rec.lock}
+  const occ=occOf(rec),formal=occ==='formal',lt=rec&&rec.lock&&!(rec.force&&rec.force.top)&&rec.lock.top&&items.find(i=>i.id===rec.lock.top),n=di(d);
+  const sd=lt&&!rec.kind&&!(occ==='casual')?lt.type==='suit':rec&&rec.kind?rec.kind==='suit':!!(occ&&occ!=='casual')||!settings.blazerDays.includes(w);
+  const day={formal,occ:occ&&occ!=='formal'?occ:null,clim:dayClimate(d),hasLinks,prev,prev3,ahead:fixedAhead(d),hist,pairs};
+  const o=(fav&&FL.length&&favFree(rec,d)&&favDay(d,n,sd,rec,day))||outfit(sd,n,byOn(n),last,rec,day);
+  o.overrides=!!(rec&&(rec.force||rec.skip));o.worn=rec&&rec.worn;o.ctx={prev,prev3,n};return o};
+/* a favorite look due on day d (favPick), planned with its pieces pinned; null (rest counts put back) when none is due or the day it makes
+   breaks a rule. The outfit carries favDue (the look), not enumerable */
+const favDay=(d,n,sd,rec,day)=>{const f=favPick(d,n,sd,day);if(!f)return null;const keep={...last};
+  const o=outfit(sd,n,byOn(n),last,rec,{...day,fav:f.force});o.ctx={prev,prev3,n};
+  const got=favLookOf(o);if(got&&favLookKey(got)===favLookKey(f.l)&&!rateOutfit(o).hard.length){Object.defineProperty(o,'favDue',{value:f.l});return o}  for(const x of Object.keys(last))if(!(x in keep))delete last[x];Object.assign(last,keep);return null};
 /* peek(k, rec): the outfit day k would get with this record, nothing kept (the piece picker's labels and Suggest another, history.js
    pickScores): the days before k are planned once, then each try plans k alone and puts the rest counts back. A sim that has peeked
    plans on only up to k (use a sim of its own) */

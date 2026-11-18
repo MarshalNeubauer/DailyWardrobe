@@ -141,6 +141,7 @@ function statsDraw(){
   const planLine=S.short.length?'':` The plan for the next ${STATS_MONTHS} months averages ${nPlan?avgText(S.avg):'–'}${S.planHard?`, with ${S.planHard} day${S.planHard===1?'':'s'} your wardrobe can't get right`:''}.`;
   el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${typeof shopButton==='function'?shopButton():''}
   <div class="st-tiles">${tile(items.length,items.length===1?'item':'items')}${tile(S.worn.length,`day${S.worn.length===1?'':'s'} worn${first?' since '+statDate(first):''}`)}${S.short.length?'':tile(nPlan,`outfit${nPlan===1?'':'s'} planned, next ${STATS_MONTHS} months`)+tile(S.looks,`different outfit${S.looks===1?'':'s'} planned`)+tile(nPlan?avgText(S.avg):'–','average outfit score')+tile(S.unused.length,`item${S.unused.length===1?'':'s'} never worn`)}</div>
+  ${typeof favStatsCard==='function'?favStatsCard(S):''}
   ${S.short.length?`<section class="card st-card" id="st-short"><h3>Not a full outfit yet</h3><p class="mut"><small>Your wardrobe still needs ${listAnd(S.short)} for a complete outfit. The plan for the next ${STATS_MONTHS} months, its scores and what is never worn show here once Today can dress a workday.</small></p><div class="btns"><button type="button" class="pri" onclick="openAdd()">Add an item</button></div></section>`:`
 
   <section class="card st-card" id="st-unused"><h3>Never worn</h3>
