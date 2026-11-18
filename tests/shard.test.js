@@ -36,4 +36,9 @@ module.exports=async({ok,ROOT})=>{
   const wf=fs.readFileSync(path.join(ROOT,'.github','workflows','full-tests.yml'),'utf8'),n=+/\n  SHARDS: (\d+)/.exec(wf)[1],m=/shard: \[([^\]]*)\]/.exec(wf)[1].split(',').map(Number);
   ok(m.length===n&&m.every((x,i)=>x===i+1),`full-tests.yml: the matrix has shards 1–${n} (SHARDS)`);
   ok(!/pull_request|branches:[^\n]*\bmain\b/.test(wf)&&/cron: '0 1 \* \* \*'/.test(wf)&&/retention-days: 14/.test(wf),'full-tests.yml: nightly at 01:00 UTC and on demand, never on a push or pull request; logs kept 14 days');
+  // WebKit's system packages come from a cache (tools/ci-browser-deps.sh), apt only on a miss, only on the shards with a WebKit half
+  {const w=+(/\n  SHARD_WEBKIT: (\d+)/.exec(wf)||[])[1],P=S.plan(keys,n,S.readTimes(),w),P0=S.plan(keys,n,S.readTimes(),0),runs=p=>p.filter(s=>s.keys.some(k=>k.endsWith(S.WK_HALF))).length,top=p=>Math.max(...p.map(s=>s.est));
+    ok(w>0&&runs(P)<=w&&top(P)<=top(P0)*1.1,`full-tests.yml: SHARD_WEBKIT ${w} puts the WebKit halves on fewer runners (${runs(P)} against ${runs(P0)}) with no slower shard (about ${Math.round(top(P))} s against ${Math.round(top(P0))} s)`);
+    ok(!/install-deps/.test(wf)&&/if: steps\.plan\.outputs\.webkit == 'true'\n\s+run: bash tools\/ci-browser-deps\.sh install ~\/\.cache\/browser-apt \d+ webkit\n/.test(wf)&&/uses: actions\/cache\/restore@v\d+/.test(wf)&&/uses: actions\/cache\/save@v\d+/.test(wf),
+      "full-tests.yml: WebKit's system packages are installed from the cache (apt only on a miss) on the shards with a WebKit half");}
 };

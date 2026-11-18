@@ -29,7 +29,7 @@ env:
   # how many runners, and how many of them (the last ones) take the WebKit halves (only those install WebKit); the split is balanced by
   # tests/shard-times.json. Change SHARDS together with the matrix below
   SHARDS: 10
-  SHARD_WEBKIT: 0
+  SHARD_WEBKIT: 2
 jobs:
   shard:
     name: shard ${{ matrix.shard }}
@@ -71,11 +71,32 @@ jobs:
           B=chromium; [ "${{ steps.plan.outputs.webkit }}" = true ] && B="chromium webkit"
           for i in 1 2 3; do npx playwright install $B && exit 0; sleep $((i * 15)); done
           exit 1
-      - name: WebKit's system packages
+      # WebKit's system packages: the runner image has Chromium's libraries, not all of WebKit's (without these every WebKit half
+      # fails to start, tried 2026-11-18). Their .deb files are cached (tools/ci-browser-deps.sh), keyed by the runner image,
+      # Playwright's version and the package list, and installed offline; apt (up to eight minutes) only when the cache misses
+      - name: WebKit's system packages (cache key)
+        id: aptkey
         if: steps.plan.outputs.webkit == 'true'
-        # the runner image has Chromium's libraries, not all of WebKit's (without these every WebKit half fails to start, tried
-        # 2026-11-18): through apt for at most five minutes
-        run: timeout -k 10 300 npx playwright install-deps webkit || echo "::warning::WebKit's system packages could not be installed (apt); the tests run with what the runner image has."
+        run: |
+          L=$(bash tools/ci-browser-deps.sh list webkit | sha256sum | cut -c1-12)
+          echo "base=browser-apt-$ImageOS-pw${{ steps.plan.outputs.pw }}-webkit-$L-" >> "$GITHUB_OUTPUT"
+          echo "key=browser-apt-$ImageOS-pw${{ steps.plan.outputs.pw }}-webkit-$L-$ImageVersion" >> "$GITHUB_OUTPUT"
+      - id: aptc
+        if: steps.plan.outputs.webkit == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/browser-apt
+          key: ${{ steps.aptkey.outputs.key }}
+          restore-keys: ${{ steps.aptkey.outputs.base }}
+      - name: WebKit's system packages
+        id: apt
+        if: steps.plan.outputs.webkit == 'true'
+        run: bash tools/ci-browser-deps.sh install ~/.cache/browser-apt 480 webkit
+      - if: steps.apt.outputs.save == 'yes' && steps.aptc.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/browser-apt
+          key: ${{ steps.aptkey.outputs.key }}
       - name: Tests
         env:
           TEST_SHARD: ${{ matrix.shard }}/${{ env.SHARDS }}
