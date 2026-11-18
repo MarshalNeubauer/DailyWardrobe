@@ -18,7 +18,7 @@ function lookSet(on){on=!!on;try{if(on)localStorage.setItem(LOOK_LS,'1');else lo
   try{renderLookSetting();renderOwnMatUI()}catch{}
   if(typeof announce==='function')announce(on?'New Look editor on.':'New Look editor off.')}
 function renderLookSetting(){const el=document.querySelector('#beta-list');if(!el)return;const on=lookOn();
-  el.innerHTML=`<div class="dress-row"><span class="dress-txt"><b id="beta-look-l">New Look editor (beta)</b><small id="beta-look-h">One Look section for color, pattern and material when you add or open an item. This phone only; switch it off any time and nothing is lost.</small></span><button type="button" class="dress-sw${on?' on':''}" id="beta-look" role="switch" aria-checked="${on}" aria-labelledby="beta-look-l" aria-describedby="beta-look-h" onclick="lookSet(${!on})"><i></i></button></div>`}
+  el.innerHTML=`<div class="dress-row"><span class="dress-txt"><b id="beta-look-l">New Look editor (beta)</b><small id="beta-look-h">One Look section for color, pattern and material when you add or open an item. This phone only; switch it off any time and nothing is lost.</small></span><button type="button" class="dress-sw${on?' on':''}" id="beta-look" role="switch" aria-checked="${on}" aria-labelledby="beta-look-l" aria-describedby="beta-look-h" data-act="lkSwitch" data-on="${!on}"><i></i></button></div>`}
 if(typeof settingsPart==='function')settingsPart(renderLookSetting);
 
 /* ---- which types have what ---- */
@@ -163,12 +163,12 @@ function lookHintOf(q){const c=lookChips('q',q),h={};
 function lookChipHtml(src,it,x){const r=`'${src}','${jsq(it.id)}'`;let sw='',name='',txt;
   if(x.add){name=x.name;sw=x.add==='col'?`<i class="lkdot" style="background:${esc(cnHex(it.newColor&&COLORS[it.primaryColor]?COLORS[it.primaryColor]:'')||(it.lookHint&&it.lookHint.nc&&cnHex(it.lookHint.nc.hex))||COLORS[primaryCol(it)]||'#888')}"></i>`:x.add==='pat'?`<i class="lkdot">${swatchSVG(it,true)}</i>`:`<i class="lkdot">${lookMatSw('fabric',x.name,COLORS[primaryCol(it)])}</i>`;
     txt=`<em>${esc(x.lab)}:</em> ${esc(x.name.toLowerCase())}? <span class="lkuse">Add</span>`;
-    return `<button type="button" class="lkchip lkadd" data-chip="${x.add}" onclick="lookAddChip(${r},'${jsq(x.add)}')">${sw}<span class="lkct">${txt}</span></button>`}
+    return `<button type="button" class="lkchip lkadd" data-chip="${x.add}" data-src="${src}" data-id="${esc(it.id)}" data-add="${esc(x.add)}" data-act="lkAddChip">${sw}<span class="lkct">${txt}</span></button>`}
   if(x.f==='primaryColor'){sw=`<i class="lkdot" style="background:${COLORS[x.v]}"></i>`;name=colName(x.v).toLowerCase()}
   else if(x.f==='pattern'){sw=`<i class="lkdot">${swatchSVG(patVar(it,x.v),true)}</i>`;name=patName(x.v).toLowerCase()}
   else{sw=`<i class="lkdot">${lookMatSw(lookPkKind(it,x.f),x.v,COLORS[primaryCol(it)])}</i>`;name=lookName(it,x.f,x.v)}
   txt=`<em>${esc(x.lab)}:</em> ${x.or?'or ':''}${esc(x.f==='material'||x.f==='leather'||x.f==='metal'?name:name)}?`;
-  return `<button type="button" class="lkchip" data-chip="${x.f}" onclick="lookUse(${r},'${jsq(x.f)}','${jsq(x.v)}','${jsq(x.hk||'')}')">${sw}<span class="lkct">${txt}</span><span class="lkuse">Use</span></button>`}
+  return `<button type="button" class="lkchip" data-chip="${x.f}" data-src="${src}" data-id="${esc(it.id)}" data-f="${esc(x.f)}" data-v="${esc(x.v)}" data-hk="${esc(x.hk||'')}" data-act="lkUse">${sw}<span class="lkct">${txt}</span><span class="lkuse">Use</span></button>`}
 const lookChipsHtml=(src,it,l)=>l.length?`<div class="lkchips">${l.map(x=>lookChipHtml(src,it,x)).join('')}</div>`:'';
 
 /* ---- fields written, with Undo ---- */
@@ -216,10 +216,10 @@ async function lookDropOwn(t,k,name){const key=lookOwnKey(t,k);if(k==='material'
 const LOOK_OWN_KEYS=[['shoes','Shoes'],['belt','Belt'],['buckle','Belt buckle'],['watch','Watch'],['tieclip','Tie clip'],['cufflinks','Cufflinks']];
 let lookOwnForm=false;
 function lookOwnMatUI(){const rows=[];
-  for(const [key,lab] of LOOK_OWN_KEYS)for(const m of lookOwnRaw(key))rows.push(`<div class="custrow ownmatrow" data-t="${esc(key)}" data-m="${esc(m)}"><span><b>${esc(cap1(m))}</b><br><small class="mut">${esc(lab)}</small></span><button type="button" aria-label="Remove ${esc(m)} from your ${esc(lab.toLowerCase())} materials" onclick="lookOwnRemove('${jsq(key)}','${jsq(m)}')">Remove</button></div>`);
+  for(const [key,lab] of LOOK_OWN_KEYS)for(const m of lookOwnRaw(key))rows.push(`<div class="custrow ownmatrow" data-t="${esc(key)}" data-m="${esc(m)}"><span><b>${esc(cap1(m))}</b><br><small class="mut">${esc(lab)}</small></span><button type="button" aria-label="Remove ${esc(m)} from your ${esc(lab.toLowerCase())} materials" data-key="${esc(key)}" data-m="${esc(m)}" data-act="lkOwnRm">Remove</button></div>`);
   const fors=[...Object.keys(MATERIALS_BY).map(t=>[t,TYPES[t]||t]),...LOOK_OWN_KEYS];
-  const form=lookOwnForm?`<div class="lkform lkownf" id="ownmat-form"><label for="ownmat-for">For</label><select id="ownmat-for">${fors.map(([t,l])=>`<option value="${esc(t)}">${esc(l)}</option>`).join('')}</select><label for="ownmat-name">Name</label><input type="text" id="ownmat-name" dir="auto" maxlength="24" autocomplete="off" placeholder="e.g. cupro, shell cordovan, titanium"><p class="cnbarerr lkerr" id="ownmat-err" role="alert" hidden></p><div class="btns"><button type="button" class="pri" id="ownmat-add" onclick="lookOwnAddForm()">Add</button><button type="button" onclick="lookOwnForm=false;renderOwnMatUI()">Cancel</button></div></div>`
-    :`<div class="custadd"><button type="button" id="ownmat-new" onclick="lookOwnForm=true;renderOwnMatUI();const n=document.querySelector('#ownmat-name');if(n)n.focus()">+ New material</button></div>`;
+  const form=lookOwnForm?`<div class="lkform lkownf" id="ownmat-form"><label for="ownmat-for">For</label><select id="ownmat-for">${fors.map(([t,l])=>`<option value="${esc(t)}">${esc(l)}</option>`).join('')}</select><label for="ownmat-name">Name</label><input type="text" id="ownmat-name" dir="auto" maxlength="24" autocomplete="off" placeholder="e.g. cupro, shell cordovan, titanium"><p class="cnbarerr lkerr" id="ownmat-err" role="alert" hidden></p><div class="btns"><button type="button" class="pri" id="ownmat-add" data-act="lkOwnAdd">Add</button><button type="button" data-act="lkOwnCancel">Cancel</button></div></div>`
+    :`<div class="custadd"><button type="button" id="ownmat-new" data-act="lkOwnOpen">+ New material</button></div>`;
   return rows.join('')+form}
 async function lookOwnAddForm(){const t=($('#ownmat-for')||{}).value,raw=($('#ownmat-name')||{}).value||'',n=ownMatName(raw),err=$('#ownmat-err');
   if(!t||!n){if(err){err.hidden=false;err.textContent=raw.trim()?'Use 2 to 24 letters, spaces or hyphens, at most 3 words.':'Give it a name first.'}return}
@@ -260,22 +260,22 @@ function lookSugMat(it,k){const out=[],src=colPick?colPick.src:'e';
   return out.filter((x,j,a)=>a.findIndex(y=>y[0]===x[0])===j)}
 function renderLookPick(keep){const el=$('#col-sheet'),it=colTarget();if(!el||!it||!colPick)return;const {k,sel,cur}=colPick,y=el.scrollTop,kind=lookPkKind(it,k),hex=COLORS[primaryCol(it)]||'#8b8f96';
   const nm=v=>lookName(it,k,v);
-  const tile=(v,extra='')=>`<button type="button" class="cptile${v===sel?' sel':''}" data-c="${esc(v)}" onclick="colPickSel('${jsq(v)}')" aria-pressed="${v===sel}"><span class="cpsw lkmsw">${lookMatSw(kind,v,hex)}${v===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(nm(v))}</span>${v===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
+  const tile=(v,extra='')=>`<button type="button" class="cptile${v===sel?' sel':''}" data-c="${esc(v)}" data-c2="${esc(v)}" data-act="lkSel" aria-pressed="${v===sel}"><span class="cpsw lkmsw">${lookMatSw(kind,v,hex)}${v===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(nm(v))}</span>${v===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
   const sug=lookSugMat(it,k),own=lookOwnMats(it,k),groups=lookMatGroups(it,k);
   const drawn=k==='leather'?{...it,leather:sel==='none'||String(sel).startsWith('own:')?it.leather:sel}:k==='metal'||k==='buckle'?(it.type==='tieclip'&&LOOK_CLIP_METALS.includes(sel)&&lookCur(it,'enamel')==='none'?{...it,primaryColor:sel}:{...it,metal:METAL[sel]?sel:it.metal}):it;
   const oth=colPick.other!=null?colPick.other:(String(cur).startsWith('own:')&&!own.includes(String(cur).slice(4))?String(cur).slice(4):'');
   const word=kind==='fabric'?'material':kind;
-  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">${lookPickTitle(it,k)}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">${lookPickTitle(it,k)}</b><button class="pick-x" data-act="lkClose" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph cpfig"><div class="cpdraw">${itemThumb(drawn)}</div><figcaption>As drawn</figcaption></figure><figure class="cpbig lkbig">${lookMatSw(kind,sel,hex)}<figcaption>${esc(nm(sel))}</figcaption></figure></div></div>
 ${it.type==='shirt'&&k==='material'?'<p class="cphelp">A shirt’s material is its fiber; its weave (oxford, twill, end-on-end…) is its pattern.</p>':''}
 ${sug.length?`<h4 class="cph">Suggested</h4><div class="cpgrid">${sug.map(([v,l])=>tile(v,`<small class="cpd cpaid">${esc(l)}</small>`)).join('')}</div>`:''}
 <h4 class="cph">Yours</h4>${own.length?`<div class="cpgrid cnown">${own.map(n=>tile('own:'+n)).join('')}</div>`:`<p class="cphelp lkyours">${cap1(word)}s you add show here first. “+ New ${word}” is at the end.</p>`}
 ${groups.map(([g,l])=>`<h4 class="cph">${esc(g)}</h4><div class="cpgrid">${l.map(v=>tile(v)).join('')}</div>`).join('')}
 <h4 class="cph">Or</h4><div class="cpgrid">${kind!=='metal'?tile('none'):''}${tile(LOOK_OTHER)}</div>
-${sel===LOOK_OTHER?`<div class="lkform" id="lk-otherf"><label for="lk-other">Which ${word}?</label><input type="text" id="lk-other" dir="auto" maxlength="24" autocomplete="off" enterkeyhint="done" value="${esc(oth)}" placeholder="e.g. ${kind==='metal'?'titanium':kind==='leather'?'shell cordovan':'cupro'}" oninput="colPick.other=this.value"><label class="lkchk"><input type="checkbox" id="lk-save" ${colPick.saveOther===false?'':'checked'} onchange="colPick.saveOther=this.checked"> Keep it as one of your ${word}s</label></div>`:''}
-<h4 class="cph">New</h4>${colPick.newm?`<div class="lkform" id="lk-newf"><label for="lk-new">Name</label><input type="text" id="lk-new" dir="auto" maxlength="24" autocomplete="off" enterkeyhint="done" placeholder="e.g. ${kind==='metal'?'titanium':kind==='leather'?'shell cordovan':'cupro'}" oninput="colPick.newName=this.value"><p class="cnbarerr lkerr" id="lk-err" role="alert" hidden></p><button type="button" class="pri lknewadd" id="lk-newadd" onclick="lookNewAdd()">Add and use it</button></div>`
-  :`<div class="cpgrid"><button type="button" class="cptile cpnewt" id="lk-newopen" onclick="lookNewOpen()"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New ${word}</span></button></div>`}
-<div class="cpbar"><button type="button" class="pri" onclick="useColPick()">${esc(sel===cur&&sel!==LOOK_OTHER?'Keep '+nm(sel):sel===LOOK_OTHER?'Use the one I typed':'Use '+nm(sel))}</button></div>`;
+${sel===LOOK_OTHER?`<div class="lkform" id="lk-otherf"><label for="lk-other">Which ${word}?</label><input type="text" id="lk-other" dir="auto" maxlength="24" autocomplete="off" enterkeyhint="done" value="${esc(oth)}" placeholder="e.g. ${kind==='metal'?'titanium':kind==='leather'?'shell cordovan':'cupro'}" data-act-input="lkOther"><label class="lkchk"><input type="checkbox" id="lk-save" ${colPick.saveOther===false?'':'checked'} data-act-change="lkSaveOther"> Keep it as one of your ${word}s</label></div>`:''}
+<h4 class="cph">New</h4>${colPick.newm?`<div class="lkform" id="lk-newf"><label for="lk-new">Name</label><input type="text" id="lk-new" dir="auto" maxlength="24" autocomplete="off" enterkeyhint="done" placeholder="e.g. ${kind==='metal'?'titanium':kind==='leather'?'shell cordovan':'cupro'}" data-act-input="lkNewName"><p class="cnbarerr lkerr" id="lk-err" role="alert" hidden></p><button type="button" class="pri lknewadd" id="lk-newadd" data-act="lkNewAdd">Add and use it</button></div>`
+  :`<div class="cpgrid"><button type="button" class="cptile cpnewt" id="lk-newopen" data-act="lkNewOpen"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New ${word}</span></button></div>`}
+<div class="cpbar"><button type="button" class="pri" data-act="lkUsePick">${esc(sel===cur&&sel!==LOOK_OTHER?'Keep '+nm(sel):sel===LOOK_OTHER?'Use the one I typed':'Use '+nm(sel))}</button></div>`;
   if(keep)el.scrollTop=y}
 function lookNewOpen(){if(!colPick)return;colPick.newm=true;colPick.newName='';renderColPick(true);const f=$('#lk-new');if(f){try{f.scrollIntoView({block:'center'})}catch{}f.focus({preventScroll:true})}}
 /* "Add and use it": added to the person's own (synced) and set; the name field never redraws the sheet (the audit's first-tap bug) */
@@ -292,7 +292,7 @@ async function lookUsePick(){const {src,ref,k,sel,cur}=colPick,it=colTarget();if
 /* ---- the colour sheet's beta parts (colpick.js renderColPick / renderPatPick call these while lookOn()) ---- */
 /* Shade under the preview (hidden for metals), Suggested (Claude's pick and runner-up, the measurement) */
 function lookShadeHtml(){if(!colPick)return '';const s=colPick.shade||0;
-  return `<div class="lkshade" role="group" aria-label="Shade"><button type="button" onclick="lookShadeStep(-1)"${s<=-SHADE_MAX?' disabled':''} aria-label="Darker">− Darker</button><output id="lk-shade">${s?esc(shadeName(s)):'As the color'}</output><button type="button" onclick="lookShadeStep(1)"${s>=SHADE_MAX?' disabled':''} aria-label="Lighter">Lighter +</button></div>`}
+  return `<div class="lkshade" role="group" aria-label="Shade"><button type="button" data-d="-1" data-act="lkShade"${s<=-SHADE_MAX?' disabled':''} aria-label="Darker">− Darker</button><output id="lk-shade">${s?esc(shadeName(s)):'As the color'}</output><button type="button" data-d="1" data-act="lkShade"${s>=SHADE_MAX?' disabled':''} aria-label="Lighter">Lighter +</button></div>`}
 function lookShadeStep(d){if(!colPick)return;colPick.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(colPick.shade||0)+d));renderColPick(true)}
 const lookShadeOk=(k,sel)=>k==='primaryColor'&&!!sel&&sel!=='none'&&sel!==NEW_COL&&!LOOK_METAL_COLS.includes(sel)&&!!COLORS[sel];
 function lookSugCols(it,k){if(k!=='primaryColor'||!colPick)return [];const src=colPick.src,ch=lookChips(src==='s'?'e':src,it).col.filter(x=>!x.add),out=ch.map(x=>[x.v,x.lab]);
@@ -314,7 +314,7 @@ const lookPatGroupOf=p=>{const b=patBase(p);const g=LOOK_PAT_GROUPS.findIndex(([
 const LOOK_CHEV='<svg class="lkchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
 const lookAi=(src,it,f)=>{const rb=LOOK_RD[src+'|'+it.id];return rb&&rb.by&&rb.by[f]?'<span class="lkai">✦ Claude</span>':''};
 function lookRow(src,it,o){const r=`'${src}','${jsq(it.id)}'`;
-  return `<button type="button" class="lkrow${o.sub?' sub':''}" data-k="${o.k}" onclick="openColPick(${r},'${jsq(o.k)}')" aria-haspopup="dialog" aria-label="${esc(o.lab)}: ${esc(o.name)}"><span class="lksw">${o.sw}</span><span class="lktx"><small>${esc(o.lab)}${o.hint?` · ${esc(o.hint)}`:''}</small><b>${esc(o.name)}</b>${o.note?`<small class="lknote">${esc(o.note)}</small>`:''}</span>${o.ai||''}${LOOK_CHEV}</button>`}
+  return `<button type="button" class="lkrow${o.sub?' sub':''}" data-k="${o.k}" data-src="${src}" data-id="${esc(it.id)}" data-k2="${esc(o.k)}" data-act="lkRow" aria-haspopup="dialog" aria-label="${esc(o.lab)}: ${esc(o.name)}"><span class="lksw">${o.sw}</span><span class="lktx"><small>${esc(o.lab)}${o.hint?` · ${esc(o.hint)}`:''}</small><b>${esc(o.name)}</b>${o.note?`<small class="lknote">${esc(o.note)}</small>`:''}</span>${o.ai||''}${LOOK_CHEV}</button>`}
 const lookChipSw=c=>c&&COLORS[c]?`<i class="lkcol" style="background:${COLORS[c]}"></i>`:'<i class="lkcol none"></i>';
 function lookColRows(src,it){const t=it.type,rows=[],e=src==='e',pc=e?primaryCol(it):it.primaryColor;
   const col=(k,lab,v,o={})=>lookRow(src,it,{k,lab,name:v&&COLORS[v]?cap1(colName(v))+(k==='primaryColor'&&it.shade&&lookShadeOk(k,v)?' · '+shadeName(it.shade).toLowerCase():''):'None',sw:k==='primaryColor'&&it.shade&&COLORS[v]?`<i class="lkcol" style="background:${shadeHex(COLORS[v],it.shade)}"></i>`:lookChipSw(v),ai:o.ai,...o});
@@ -329,7 +329,7 @@ function lookColRows(src,it){const t=it.type,rows=[],e=src==='e',pc=e?primaryCol
     if(need>=2||colHas(it.tertiaryColor))sub.push(col('tertiaryColor','Third color',it.tertiaryColor,{sub:1,hint:need>=2?LOOK_FOR3[p]||'':''}))}
   if(t==='socks')sub.push(col('toeColor','Toe cap',e?sockToeKey(it):it.toeColor&&it.toeColor!=='none'?it.toeColor:null,{sub:1,hint:'and the cuff edge'}));
   // a change the measurement made by itself on the card, with Undo (tagging.js tagNotes said it under the photo)
-  const auto=src==='q'&&it.auto&&it.auto.primaryColor?`<p class="lkauto"><small>Changed from ${esc(colName(it.auto.primaryColor.from))} (measured from ${it.auto.primaryColor.src==='closeup'?'your close-up':'your photo'})</small><button type="button" class="chipbtn" onclick="undoMeasured(${qh(it)},'primaryColor')">Undo</button></p>`:'';
+  const auto=src==='q'&&it.auto&&it.auto.primaryColor?`<p class="lkauto"><small>Changed from ${esc(colName(it.auto.primaryColor.from))} (measured from ${it.auto.primaryColor.src==='closeup'?'your close-up':'your photo'})</small><button type="button" class="chipbtn" data-id="${esc(it.id)}" data-act="lkUndoMeas">Undo</button></p>`:'';
   return rows.join('')+chips+auto+sub.join('')}
 function lookPatRow(src,it){const t=it.type;
   if(LOOK_NOPAT.includes(t)||!lookHasPat(t))return `<div class="lkrow off" aria-disabled="true"><span class="lksw">${lookMatSw('fabric','none')}</span><span class="lktx"><small>Pattern</small><b>Not used for ${esc(lookNoun(t))}</b></span></div>`;
@@ -350,22 +350,22 @@ const LOOK_RD={};   // in memory: 'q|id' / 'e|id' -> {busy, err, by:{col,pat,mat
 function lookReadCost(){if(!isConnected())return 'connect in ⚙ Settings first';if(showCost())return rdCost();const l=cnLeft();return `counts as ${RD_LOOKUPS} lookups${l?` · ${l.left} of ${l.cap} left today`:''}`}
 function lookReadBox(src,it){const k=src+'|'+it.id,me=LOOK_RD[k]||{},r=`'${src}','${jsq(it.id)}'`,from=it.texture?'from your close-up':'from the photo';
   const what=LOOK_NOPAT.includes(it.type)?`Color and ${lookMatKind(it.type)==='leather'?'leather':'metal'} at once`:'Color, pattern and material at once';
-  if(me.busy)return `<div class="lkrd busy" role="status"><span class="spin" aria-hidden="true"></span><div class="lkrdtx"><b>Claude is reading ${LOOK_NOPAT.includes(it.type)?'color and '+(lookMatKind(it.type)==='leather'?'leather':'metal'):'color, pattern and material'}…</b><small>${from}</small></div><button type="button" class="lkrdstop" onclick="lookReadStop(${r})">Stop</button></div>`;
+  if(me.busy)return `<div class="lkrd busy" role="status"><span class="spin" aria-hidden="true"></span><div class="lkrdtx"><b>Claude is reading ${LOOK_NOPAT.includes(it.type)?'color and '+(lookMatKind(it.type)==='leather'?'leather':'metal'):'color, pattern and material'}…</b><small>${from}</small></div><button type="button" class="lkrdstop" data-src="${src}" data-id="${esc(it.id)}" data-act="lkStop">Stop</button></div>`;
   const pic=!!(it.texture||it.photo||it.tagImg),off=!pic?'Add a photo first: Claude reads the look from it.':rdOff(),reading=src==='q'&&typeof cardReading==='function'&&cardReading(it);
   const cu=!it.texture&&lookCu(it.type)?`<span class="lkrdcu">${closeupBtn({label:'Add a close-up for a truer color',cls:'linkbtn lkcuadd',mode:'add',aria:'Add fabric close-up',file:src==='q'?`f=>addTexture(${qh(it)},f,true)`:`f=>replaceTexture('${jsq(it.id)}',f)`,cloth:paperCloth(it)})}</span>`:'';
-  return `<div class="lkrd"><div class="lkrdtx"><b><span class="lkstar" aria-hidden="true">✦</span> Read with Claude</b><small>${what}, ${from} · <span class="lkcost">${esc(pic?lookReadCost():'needs a photo')}</span></small>${me.err?`<small class="lkerr" role="alert">${esc(me.err)}</small>`:''}${cu}</div><button type="button" class="pri lkrdbtn" id="lk-read-${esc(src)}" onclick="lookRead(${r})"${off||reading?' aria-disabled="true"':''}>${me.by?'Read again':'Read'}</button></div>`}
+  return `<div class="lkrd"><div class="lkrdtx"><b><span class="lkstar" aria-hidden="true">✦</span> Read with Claude</b><small>${what}, ${from} · <span class="lkcost">${esc(pic?lookReadCost():'needs a photo')}</span></small>${me.err?`<small class="lkerr" role="alert">${esc(me.err)}</small>`:''}${cu}</div><button type="button" class="pri lkrdbtn" id="lk-read-${esc(src)}" data-src="${src}" data-id="${esc(it.id)}" data-act="lkRead"${off||reading?' aria-disabled="true"':''}>${me.by?'Read again':'Read'}</button></div>`}
 function lookSum(src,it,ch){const t=it.type,en=t==='tieclip'?lookCur(it,'enamel'):null,c=t==='watch'?watchOpts(it).dial:t==='tieclip'?(en==='none'?lookClipMetal(it):it.primaryColor):src==='e'?primaryCol(it):it.primaryColor;
   const kind=lookMatKind(t),mv=lookVal(it,kind==='fabric'?'material':kind),bits=[en==='none'?'No enamel':`<span class="ckcn">${ckChip(c)}${esc(cap1(colName(c)||'')+(t==='watch'?' dial':''))}</span>`];
   if(!LOOK_NOPAT.includes(t)&&lookHasPat(t))bits.push(esc(cap1(patName(normPat(t,it.pattern)))));
   bits.push(esc(mv.v==='none'?`no ${kind==='fabric'?'material':kind} yet`:mv.name));
   return bits.join(' · ')+(ch?' · Claude has a suggestion':'')}
 function lookSection(src,it,i){const ch=lookChips(src,it),any=ch.col.length+ch.pat.length+ch.mat.length>0,ok=src==='q'?!!(it.checked&&it.checked.lk):!!it.lookOk;
-  const lr=src==='q'?ckLr(it,i,'lk'):`<button type="button" class="cklr" aria-pressed="${ok}" onclick="lookCheck('${jsq(it.id)}')">${ok?'<span aria-hidden="true">✓ </span>Checked':'Looks right'}</button>`;
+  const lr=src==='q'?ckLr(it,i,'lk'):`<button type="button" class="cklr" aria-pressed="${ok}" data-id="${esc(it.id)}" data-act="lkCheck">${ok?'<span aria-hidden="true">✓ </span>Checked':'Looks right'}</button>`;
   const body=`<div class="lkbody">${lookReadBox(src,it)}${lookColRows(src,it)}${accRow(src,it.id,it)}${lookPatRow(src,it)}${src==='e'?lookPatExtras(it):''}${lookMatRows(src,it)}</div>${lr}`;
   return {mark:ok?'good':any?'warn':'todo',title:'Look',sum:lookSum(src,it,any&&!ok),body,warn:any&&!ok}}
 /* the item sheet's pattern reading (Pattern layout, Read pattern from photo) and the outfit pictures' note stay under the Pattern row */
 function lookPatExtras(i){const id=i.id,fab=FABRIC.includes(i.type);
-  const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" onclick="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?`rereadSett('${jsq(id)}')`:`redetect('${jsq(id)}')`}">Read pattern from photo</button>`}${i.stripes||i.sett?`<button onclick="clearStripes('${jsq(id)}')">Use generic</button>`:''}</div></div>`:'';
+  const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" data-id="${esc(id)}" data-how="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?'reread':'detect'}" data-act="lkReread">Read pattern from photo</button>`}${i.stripes||i.sett?`<button data-id="${esc(id)}" data-act="lkClearStripes">Use generic</button>`:''}</div></div>`:'';
   return layout+(typeof asmGapNote==='function'?asmGapNote(i):'')}
 /* the item sheet's "Looks right": kept on the item (lookOk, synced); a later edit leaves it (the owner's question 4: it stays) */
 async function lookCheck(id){const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}if(it.lookOk)delete it.lookOk;else it.lookOk=1;await put(it);renderWardrobe()}
@@ -433,3 +433,32 @@ async function lookApplyRead(src,id,j,me){const it=lookItem(src,id);if(!it)retur
   else{if(it.sample)it.sampleMine=1;if(it.primaryColor!==pc0&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();renderWardrobe()}
   const words=said.filter(Boolean).map(s=>String(s).toLowerCase());
   toast(words.length?`Claude read it: ${words.join(', ')}.${changed?'':' Nothing changed.'}`:'Claude couldn’t tell this time: nothing changed.',8000,changed?{label:'Undo',fn:async()=>{await lookRestore(src,id,snap);const x=LOOK_RD[src+'|'+id];if(x)delete x.by;lookRedraw(src,id)}}:undefined)}
+
+/* ---- what the beta's controls do (act.js: data-act names the handler, its arguments are the element's data-*) ---- */
+const lkSI=el=>[el.dataset.src,el.dataset.id];
+function lkSwitch(el){lookSet(el.dataset.on==='true')}
+function lkAddChip(el){lookAddChip(...lkSI(el),el.dataset.add)}
+function lkUse(el){lookUse(...lkSI(el),el.dataset.f,el.dataset.v,el.dataset.hk||'')}
+function lkOwnRm(el){lookOwnRemove(el.dataset.key,el.dataset.m)}
+function lkOwnAdd(){lookOwnAddForm()}
+function lkOwnCancel(){lookOwnForm=false;renderOwnMatUI()}
+function lkOwnOpen(){lookOwnForm=true;renderOwnMatUI();const n=/** @type {HTMLElement|null} */(document.querySelector('#ownmat-name'));if(n)n.focus()}
+function lkSel(el){colPickSel(el.dataset.c2)}
+function lkClose(){closeColPick()}
+function lkOther(el){if(colPick)colPick.other=el.value}
+function lkSaveOther(el){if(colPick)colPick.saveOther=el.checked}
+function lkNewName(el){if(colPick)colPick.newName=el.value}
+function lkNewAdd(){lookNewAdd()}
+function lkNewOpen(){lookNewOpen()}
+function lkUsePick(){useColPick()}
+function lkShade(el){lookShadeStep(+el.dataset.d)}
+function lkRow(el){openColPick(...lkSI(el),el.dataset.k2)}
+function lkUndoMeas(el){undoMeasured(qAt(el.dataset.id),'primaryColor')}
+function lkStop(el){lookReadStop(...lkSI(el))}
+function lkRead(el){lookRead(...lkSI(el))}
+function lkCheck(el){lookCheck(el.dataset.id)}
+function lkReread(el){if(el.dataset.how==='reread')rereadSett(el.dataset.id);else redetect(el.dataset.id)}
+function lkClearStripes(el){clearStripes(el.dataset.id)}
+function lkNewCol(){openColNew()}
+function lkNewPat(){openPatNew()}
+acts({lkSwitch,lkAddChip,lkUse,lkOwnRm,lkOwnAdd,lkOwnCancel,lkOwnOpen,lkSel,lkClose,lkOther,lkSaveOther,lkNewName,lkNewAdd,lkNewOpen,lkUsePick,lkShade,lkRow,lkUndoMeas,lkStop,lkRead,lkCheck,lkReread,lkClearStripes,lkNewCol,lkNewPat});
