@@ -26,15 +26,14 @@ const PMOTIF = { type: 'object', additionalProperties: false, required: ['grid',
 const PTEX = { type: 'object', additionalProperties: false, required: ['kind', 'grid', 'aspect', 'ground', 'raised', 'contrast'],
   properties: { kind: { type: 'string', enum: TEXTURE_KINDS }, grid: { type: 'array', items: { type: 'string' } }, aspect: { type: 'number' }, ground: PCOL, raised: PCOL,
     contrast: { type: 'string', enum: TEX_CONTRASTS } } };
-/* camouflage (2026-11-16): irregular blotches with no grid; its colours with their shares of the cloth, and how big the blotches are */
-const PCAMO = { type: 'object', additionalProperties: false, required: ['colours', 'blobsAcrossItem'],
-  properties: { colours: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['name', 'hex', 'sharePct'], properties: { name: { type: 'string' }, hex: { type: 'string' }, sharePct: { type: 'number' } } } },
-    blobsAcrossItem: { type: 'number' } } };
+/* camouflage has no object of its own in the schema (2026-11-18): with a sixth optional object (PCAMO, 2026-11-16) Claude's API refused the
+   schema ("The compiled grammar is too large") and every pattern reading failed with a 502 for two days. Claude names the layout
+   'camouflage'; the app reads its colors and shares from the pixels (tagging camoFromPixels), and draws it in the tagged colors anyway */
 const PATTERN_SCHEMA = { type: 'object', additionalProperties: false,
-  required: ['layout', 'across', 'along', 'motif', 'texture', 'camo', 'stripeDirection', 'repeatsInCloseup', 'repeatsAcrossItem', 'paneAspect', 'ignored', 'description'],
+  required: ['layout', 'across', 'along', 'motif', 'texture', 'stripeDirection', 'repeatsInCloseup', 'repeatsAcrossItem', 'paneAspect', 'ignored', 'description'],
   properties: {
     layout: { type: 'string', enum: ['stripes', 'check', 'windowpane', 'plaid', 'motif', 'texture', 'camouflage', 'none'] },
-    across: { anyOf: [PDIR, { type: 'null' }] }, along: { anyOf: [PDIR, { type: 'null' }] }, motif: { anyOf: [PMOTIF, { type: 'null' }] }, texture: { anyOf: [PTEX, { type: 'null' }] }, camo: { anyOf: [PCAMO, { type: 'null' }] },
+    across: { anyOf: [PDIR, { type: 'null' }] }, along: { anyOf: [PDIR, { type: 'null' }] }, motif: { anyOf: [PMOTIF, { type: 'null' }] }, texture: { anyOf: [PTEX, { type: 'null' }] },
     stripeDirection: { type: 'string', enum: ['vertical', 'horizontal', 'upper-left to lower-right', 'lower-left to upper-right'] },
     repeatsInCloseup: { type: 'number' }, repeatsAcrossItem: { type: 'number' }, paneAspect: { type: 'number' },
     ignored: { type: 'string' }, description: { type: 'string' },
@@ -58,9 +57,6 @@ across — one full repeat of the main lines, measured across them (for vertical
   with a thin white line each side) is listed thread by thread with the ground between them.
 along — the same for the lines running the other way (top to bottom for horizontal lines), or null if there are none.
   For a motif, a texture or a camouflage, across and along are null.
-camo — for a camouflage only (null otherwise): colours, every color of the blotches, the ground included, each with a plain color
-  name, an sRGB hex as in "across" and sharePct, its share of the cloth in percent (they add up to 100), largest first;
-  blobsAcrossItem, about how many blotches of the main colors fit across the item's widest part in the first photo.
 motif — for a motif only (null otherwise), as woven, one grid cell being one repeat:
   grid: straight (rows and columns run with the item's edges) or diagonal (rows and columns run at 45°, squares stand on a point);
   ground: the color that shows between the figures (a plain color name and an sRGB hex as in "across");
