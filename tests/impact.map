@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	6adbae420cefb27fdf1a
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -376,8 +375,7 @@ accounts.test.js	worker/people.js	<loaded>	allCaps	capOf	cleanCaps	countWrites	d
 accounts.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	nsOf	putPhotos	putWhole	pvMeta	pvResponse	pvText	readPv	refsIn	refsOf	storePhotos
 accounts.test.js	worker/records.js	<loaded>	delRender	getRender	itemWrong	putRender	recCheck	renderId	renderTtl	sharedKeys
 accounts.test.js	worker/render.js	<loaded>	DIAL_NOTE	RENDER_PROMPT	RenderHub	SWAP_PROMPT	dataUrlToBlob	dropFail	failJob	fetch	handleRender	hasWatch	hubOf	jobClaim	jobMsg	jobOp	keepMade	logHub	logOp	outfitPhoto	prune	queueRender	queueStatus	runRenderJob	serial	sget	sput	tellHub	waitForRenders
-accounts.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	txt	wbOf
-accounts.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	txt	wbOf
+accounts.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	txt	wbOf
 accounts.test.js	wrangler.toml	<any>
 acts.test.js	about.js	<any>	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 acts.test.js	account.js	<any>	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
@@ -1872,8 +1870,7 @@ asmroute.test.js	worker/photostore.js	<any>	<loaded>
 asmroute.test.js	worker/records.js	<any>	<loaded>
 asmroute.test.js	worker/remind.js	<any>	<loaded>
 asmroute.test.js	worker/render.js	<any>	<loaded>
-asmroute.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCoat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
-asmroute.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
+asmroute.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
 asmserverpic.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmserverpic.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 asmserverpic.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -2441,8 +2438,7 @@ assemble.test.js	worker/links.js	<loaded>	readCapped
 assemble.test.js	worker/people.js	<loaded>	msgNs	photoCap	sameText	sha256Hex	spend	spendEach	utcDay	whoIs
 assemble.test.js	worker/records.js	delRender	renderTtl
 assemble.test.js	worker/render.js	<loaded>	DIAL_NOTE	RENDER_PROMPT	SWAP_ADD_PROMPT	SWAP_PROMPT	dataUrlToBlob	dropFail	handleRender	hasWatch	hubOf	jobClaim	jobMsg	keepMade	outfitPhoto	queueRender	runRenderJob	tellHub
-assemble.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
-assemble.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
+assemble.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
 assets.test.js	analysis-worker.js	<any>
 assets.test.js	asm-worker.js	<any>
 assets.test.js	index.html	<any>
@@ -2912,8 +2908,7 @@ backup-storage.test.js	worker/photostore.js	<any>	<loaded>	asText	convertSnaps	g
 backup-storage.test.js	worker/records.js	<any>	<loaded>	colOk	dayWrong	freeOk	itemWrong	picBytesOk	recCheck
 backup-storage.test.js	worker/remind.js	<any>	<loaded>	pushReady	sendReminders
 backup-storage.test.js	worker/render.js	<any>	<loaded>	hubOf	logHub
-backup-storage.test.js	worker/tag.js	<any>	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
-backup-storage.test.js	worker/tag.js	<any>	<loaded>	accOpts	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
+backup-storage.test.js	worker/tag.js	<any>	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
 calendar.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 calendar.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 calendar.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -3103,8 +3098,7 @@ camouflage.test.js	worker.js	<loaded>	corsFor	fetch	serve
 camouflage.test.js	worker/links.js	<loaded>	readCapped
 camouflage.test.js	worker/pattern.js	<loaded>	cleanPattern	handlePattern
 camouflage.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
-camouflage.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	colorText	knownOf	knowsCoat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
-camouflage.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	colorText	knownOf	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
+camouflage.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
 canvasrefuse.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 canvasrefuse.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 canvasrefuse.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -3492,8 +3486,7 @@ casual.test.js	weather.js	<loaded>	loadWeather
 casual.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanCustom	cleanTag	correctionsText	corsFor	customText	fetch	lightText	measuredText	orNull	readCapped	sameText	serve	sha256Hex	spend	tagSchema	tagWithClaude	utcDay	wbOf	whoIs
 casual.test.js	worker/links.js	<loaded>	readCapped
 casual.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
-casual.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
-casual.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
+casual.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
 claudepattern.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 claudepattern.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 claudepattern.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -3587,8 +3580,7 @@ claudepattern.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_
 claudepattern.test.js	worker/links.js	<loaded>	readCapped
 claudepattern.test.js	worker/pattern.js	<loaded>	cleanPattern	handlePattern
 claudepattern.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
-claudepattern.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	colorText	knownOf	knowsCoat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
-claudepattern.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	colorText	knownOf	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
+claudepattern.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
 clock.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 clock.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	rememberRole	renderAccountUI
 clock.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -4260,8 +4252,7 @@ colors.test.js	worker/photostore.js	<any>	<loaded>
 colors.test.js	worker/records.js	<any>	<loaded>
 colors.test.js	worker/remind.js	<any>	<loaded>
 colors.test.js	worker/render.js	<any>	<loaded>
-colors.test.js	worker/tag.js	<any>	<loaded>	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
-colors.test.js	worker/tag.js	<any>	<loaded>	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
+colors.test.js	worker/tag.js	<any>	<loaded>	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
 colpick.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 colpick.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 colpick.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -4746,8 +4737,7 @@ deploy.test.js	worker/photostore.js	<any>	<loaded>
 deploy.test.js	worker/records.js	<any>	<loaded>
 deploy.test.js	worker/remind.js	<any>	<loaded>
 deploy.test.js	worker/render.js	<any>	<loaded>
-deploy.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCoat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
-deploy.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
+deploy.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
 deploy.test.js	wrangler.toml	<any>
 describe.test.js	tools/describe-eval.js	<any>
 describe.test.js	worker.js	<loaded>	corsFor	fetch	serve
@@ -4757,8 +4747,7 @@ describe.test.js	worker/links.js	<loaded>	readCapped
 describe.test.js	worker/patternbits.js	<loaded>	bitmapOf
 describe.test.js	worker/people.js	<loaded>	allCaps	capOf	cleanCaps	firstWeek	handleInvites	handleMe	limitBody	newCode	ownerOnly	plainFor	plainKind	sameText	sha256Hex	smallBody	spend	unspend	useCount	usedOf	utcDay	whoIs
 describe.test.js	worker/render.js	<loaded>	RenderHub	fetch	hubOf	sget	sput
-describe.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanAccents	cleanMaterial	cleanOwnMaterials	colorText	knownOf	knowsCoat	knowsSock	lightText	matCap	matName	matTypes	materialExtra	materialRules	materialSchema	multiPrompt	notMaterial	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	sleep	tagRules	tagTypes	txt	wbOf
-describe.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanAccents	cleanMaterial	cleanOwnMaterials	colorText	knownOf	knowsCombat	knowsSock	lightText	matCap	matName	matTypes	materialExtra	materialRules	materialSchema	multiPrompt	notMaterial	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	sleep	tagRules	tagTypes	txt	wbOf
+describe.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanAccents	cleanMaterial	cleanOwnMaterials	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	lightText	matCap	matName	matTypes	materialExtra	materialRules	materialSchema	multiPrompt	notMaterial	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	sleep	tagRules	tagTypes	txt	wbOf
 drawnonly.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 drawnonly.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRetryLink	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 drawnonly.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -6596,8 +6585,7 @@ herringbone.test.js	worker/photostore.js	<any>	<loaded>
 herringbone.test.js	worker/records.js	<any>	<loaded>
 herringbone.test.js	worker/remind.js	<any>	<loaded>
 herringbone.test.js	worker/render.js	<any>	<loaded>
-herringbone.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCoat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
-herringbone.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
+herringbone.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
 history.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 history.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 history.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -7162,8 +7150,7 @@ itempics.test.js	worker/links.js	<loaded>	readCapped
 itempics.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
 itempics.test.js	worker/records.js	<loaded>	getRender	renderId	renderTtl
 itempics.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
-itempics.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
-itempics.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
+itempics.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
 itemredesign.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 itemredesign.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
 itemredesign.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -7531,8 +7518,7 @@ keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sa
 keptphotos.test.js	worker/photostore.js	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
-keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
-keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
+keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
 kit.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 kit.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 kit.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -7643,13 +7629,13 @@ labbench.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<loaded>
 lookbeta.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 lookbeta.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 lookbeta.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
-lookbeta.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckCheck	ckLeftLine	ckLr	confBtn	formCard	matGuessOf	matNewOf	photoPair	setq	shadeRow	tagSwInner	unreadNote
+lookbeta.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckCheck	ckLeftLine	ckLr	confBtn	formCard	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	tagSwInner	unreadNote
 lookbeta.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 lookbeta.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 lookbeta.test.js	add-paste.js	<loaded>
 lookbeta.test.js	add-save.js	<loaded>	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
 lookbeta.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
-lookbeta.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
+lookbeta.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	skipCard	wbNote
 lookbeta.test.js	analysis.js	<loaded>
 lookbeta.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	announce	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	keepFocus	metaGet	metaPut	put	renderBusy	tx	txFail	txs	window.fetch
 lookbeta.test.js	asm-color.js	<loaded>	asmGapNote
@@ -7665,11 +7651,11 @@ lookbeta.test.js	calendar.js	<loaded>	calBanner	calLink	calSummary	renderCalUI
 lookbeta.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 lookbeta.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
 lookbeta.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	accChoices	closeColPick	cnAskBox	cnColBase	cnCost	cnDone	cnDrawn	cnHasClose	cnHex	cnHsv	cnLeft	cnName	cnPaperDefault	cnPatBase	cnWithPat	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colPickSel	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSwipe	cpViews	openColNew	openColPick	openPatNew	patBtn	patChoices	patNewFor	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
-lookbeta.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LINK_METAL_OPTS	LUM	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	cleanRecord	clipMetal	colBase	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	hasPat	hasVest	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keySettings	keySplit	labHex	labOf	leatherLabel	leatherWord	leathersFor	linkFace	lum	lumCol	matSeason	matTypeWord	matsFor	metalOptsFor	metalWord	mix	nextStamp	noBidi	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMatName	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatKey	patBase	patLabel	patLetters	patName	patNameTaken	patOf	planCol	primaryCol	pw	recClean	recCol	recFree	rgbHex	rgbLab	seasonFit	sentence	setWardrobe	shadeHex	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	stampSettings	strapBand	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	watchOpts	watchText	wearsJacket	wearsTie
+lookbeta.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LINK_METAL_OPTS	LUM	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	cleanRecord	clipMetal	colBase	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	hasPat	hasVest	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keySettings	keySplit	labHex	labOf	leatherLabel	leatherWord	leathersFor	linkFace	lum	lumCol	matSeason	matTypeWord	matsFor	metalOptsFor	metalWord	mix	nextStamp	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMatName	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatKey	patBase	patLabel	patLetters	patName	patNameTaken	patOf	planCol	primaryCol	pw	recClean	recCol	recFree	rgbHex	rgbLab	seasonFit	sentence	setWardrobe	shadeHex	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	soleStyle	stampSettings	strapBand	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	watchOpts	watchText	wearsJacket	wearsTie
 lookbeta.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed
 lookbeta.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI
 lookbeta.test.js	detect.js	<loaded>	@	camoLook	camoTag	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
-lookbeta.test.js	draw.js	<loaded>	camoTileUrl	casMir	casualMarks	casualTile	coatFabric	coatMarks	drawBelt	drawShoePair	drawShoeSide	drawSneakerPair	drawSock	drawWatchTraced	fabricDef	figEyes	itemThumb	leatherLayers	pocketDef	pocketEdge	pocketMarks	rainFabric	rainMarks	shirtFabric	shirtMarks	sockCols	sockPat	sockPatDef	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
+lookbeta.test.js	draw.js	<loaded>	camoTileUrl	casMir	casualMarks	casualTile	cbNap	coatFabric	coatMarks	drawBelt	drawCombatPair	drawShoePair	drawShoeSide	drawSneakerPair	drawSock	drawWatchTraced	fabricDef	figEyes	itemThumb	leatherLayers	pocketDef	pocketEdge	pocketMarks	rainFabric	rainMarks	shirtFabric	shirtMarks	sockCols	sockPat	sockPatDef	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 lookbeta.test.js	dress.js	<loaded>	dressNewItem	dressOn	legacyVest	migrateVests	newSuitVest	renderDressUI
 lookbeta.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 lookbeta.test.js	index.html	<loaded>
@@ -7679,7 +7665,7 @@ lookbeta.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@
 lookbeta.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 lookbeta.test.js	locale.js	<loaded>	appLocale
 lookbeta.test.js	locks.js	<loaded>
-lookbeta.test.js	look.js	<loaded>	lookAddOwn	lookAi	lookApplyRead	lookBuiltins	lookCheck	lookChipHtml	lookChipSw	lookChips	lookChipsHtml	lookClipMetal	lookColOk	lookColRows	lookCu	lookCur	lookFiber	lookGroup	lookHasPat	lookHintOf	lookItem	lookMatGroups	lookMatKind	lookMatRows	lookMatSw	lookName	lookNeed	lookNewAdd	lookNewOpen	lookNoun	lookOn	lookOpenFresh	lookOwnAddForm	lookOwnKey	lookOwnMatUI	lookOwnMats	lookOwnRaw	lookPatExtras	lookPatGroupOf	lookPatOf	lookPatRow	lookPickTitle	lookPkKind	lookRead	lookReadBox	lookReadCost	lookRedraw	lookRestore	lookRow	lookSave	lookSection	lookSet	lookSetEnamel	lookSetMat	lookShadeHtml	lookShadeOk	lookShadeStep	lookSnap	lookSugCols	lookSugMat	lookSugPats	lookSum	lookUse	lookUsePick	lookVal	lookWrite	renderLookPick	renderLookSetting
+lookbeta.test.js	look.js	<loaded>	lkNewAdd	lkNewCol	lkNewName	lkNewOpen	lkNewPat	lkOther	lkOwnAdd	lkOwnOpen	lkRead	lkSI	lkSwitch	lkUse	lkUsePick	lookAddOwn	lookAi	lookApplyRead	lookBuiltins	lookCheck	lookChipHtml	lookChipSw	lookChips	lookChipsHtml	lookClipMetal	lookColOk	lookColRows	lookCu	lookCur	lookFiber	lookGroup	lookHasPat	lookHintOf	lookItem	lookMatGroups	lookMatKind	lookMatRows	lookMatSw	lookName	lookNeed	lookNewAdd	lookNewOpen	lookNoun	lookOn	lookOpenFresh	lookOwnAddForm	lookOwnKey	lookOwnMatUI	lookOwnMats	lookOwnRaw	lookPatExtras	lookPatGroupOf	lookPatOf	lookPatRow	lookPickTitle	lookPkKind	lookRead	lookReadBox	lookReadCost	lookRedraw	lookRestore	lookRow	lookSave	lookSection	lookSet	lookSetEnamel	lookSetMat	lookShadeHtml	lookShadeOk	lookShadeStep	lookSnap	lookSugCols	lookSugMat	lookSugPats	lookSum	lookUse	lookUsePick	lookVal	lookWrite	renderLookPick	renderLookSetting
 lookbeta.test.js	mannequin.js	<loaded>	@{}
 lookbeta.test.js	measure.js	<loaded>
 lookbeta.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -7713,7 +7699,7 @@ lookbeta.test.js	sync-photos.js	<loaded>
 lookbeta.test.js	sync-status.js	<loaded>	backedUpWords	endedAnswer	setSyncStatus	showSyncStatus	syncNetText	syncPaused	syncWaiting
 lookbeta.test.js	sync.js	<loaded>	@connRestored.then	afterPull	clockLearn	localState	pulledYet	scheduleSync	syncJoinAt	syncJoinMark	syncLaterRun	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl
 lookbeta.test.js	tag-request.js	<loaded>	describeEstimate	readEstimate	recordTagResult	tagImgOf	visTok
-lookbeta.test.js	tagging.js	<loaded>	confTxt	tagNotes
+lookbeta.test.js	tagging.js	<loaded>	confTxt	readAbort	tagNotes
 lookbeta.test.js	tests/fixedplan.js	<any>
 lookbeta.test.js	theme.js	<loaded>	applyTheme
 lookbeta.test.js	toast.js	<loaded>	toast	undoHere
@@ -8226,8 +8212,7 @@ measure.test.js	worker/photostore.js	<any>	<loaded>
 measure.test.js	worker/records.js	<any>	<loaded>
 measure.test.js	worker/remind.js	<any>	<loaded>
 measure.test.js	worker/render.js	<any>	<loaded>
-measure.test.js	worker/tag.js	<any>	<loaded>	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
-measure.test.js	worker/tag.js	<any>	<loaded>	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
+measure.test.js	worker/tag.js	<any>	<loaded>	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
 mergeshared.test.js	analysis-worker.js	<any>
 mergeshared.test.js	core.js	<any>
 mergeshared.test.js	index.html	<any>
@@ -8438,8 +8423,7 @@ motif.test.js	worker/photostore.js	<any>	<loaded>
 motif.test.js	worker/records.js	<any>	<loaded>
 motif.test.js	worker/remind.js	<any>	<loaded>
 motif.test.js	worker/render.js	<any>	<loaded>
-motif.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	colorText	knownOf	knowsCoat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
-motif.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	colorText	knownOf	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
+motif.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
 moveoutfit.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 moveoutfit.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 moveoutfit.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -8654,8 +8638,7 @@ multi.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled
 multi.test.js	care.js	<loaded>
 multi.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
 multi.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
-multi.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	hasPat	hasVest	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labOf	leatherLabel	leatherWord	leathersFor	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	tagTypesNow	takeSettings	thirdOf	todayDate	watchOpts
-multi.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	hasPat	hasVest	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labOf	leatherLabel	leatherWord	leathersFor	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	soleStyle	stampSettings	styleWord	subHashes	takeSettings	thirdOf	todayDate	watchOpts
+multi.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	hasPat	hasVest	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labOf	leatherLabel	leatherWord	leathersFor	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	soleStyle	stampSettings	styleWord	subHashes	tagTypesNow	takeSettings	thirdOf	todayDate	watchOpts
 multi.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwQRow	cpwRegion	cpwSaveFields	cpwSym
 multi.test.js	daysoff.js	<loaded>	refreshHolidays
 multi.test.js	detect.js	<loaded>	@	analyzeStripes	boxBlur	camoLook	detectPattern	detectQueued	lookOf	lumGrid	ownSett	settToTag	sobel	texPat	tieWeave	usableSett
@@ -8719,8 +8702,7 @@ multi.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.m
 multi.test.js	worker/links.js	<loaded>	readCapped
 multi.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	usedOf	utcDay	whoIs
 multi.test.js	worker/photostore.js	<loaded>	handleSync
-multi.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	cleanCustom	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
-multi.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	cleanCustom	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
+multi.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	cleanCustom	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
 navfit.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 navfit.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 navfit.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -9359,8 +9341,7 @@ ownnames.test.js	watch/suit.png	<loaded>
 ownnames.test.js	watch/vest.png	<loaded>
 ownnames.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 ownnames.test.js	worker/records.js	<loaded>	colOk	itemWrong	recCheck
-ownnames.test.js	worker/tag.js	<loaded>	accOpts	cleanCustom	colorText	knownOf	knowsCoat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	ownTxt	promptFor	promptOf	tagRules	tagTypes	txt
-ownnames.test.js	worker/tag.js	<loaded>	accOpts	cleanCustom	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	ownTxt	promptFor	promptOf	tagRules	tagTypes	txt
+ownnames.test.js	worker/tag.js	<loaded>	accOpts	cleanCustom	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	ownTxt	promptFor	promptOf	tagRules	tagTypes	txt
 pack.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 pack.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 pack.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -10747,8 +10728,7 @@ records.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	s
 records.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	putWhole	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 records.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	itemWrong	putRender	recCheck	renderId	renderTtl	strictOk
 records.test.js	worker/render.js	<loaded>	hubOf
-records.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
-records.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
+records.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
 remind.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 remind.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 remind.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -11028,8 +11008,7 @@ rotation-pause.test.js	weather.js	<loaded>	loadWeather
 run.js: Cloudflare worker (mocked bindings)	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	corsFor	fetch	orNull	readCapped	sameText	serve	sha256Hex	spend	tagWithWorkersAi	utcDay	whoIs
 run.js: Cloudflare worker (mocked bindings)	worker/links.js	<loaded>	readCapped
 run.js: Cloudflare worker (mocked bindings)	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
-run.js: Cloudflare worker (mocked bindings)	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	cleanTag	colorText	knownOf	knownTypes	knowsCoat	knowsPq	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes	tagWithWorkersAi
-run.js: Cloudflare worker (mocked bindings)	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	cleanTag	colorText	knownOf	knownTypes	knowsCombat	knowsPq	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes	tagWithWorkersAi
+run.js: Cloudflare worker (mocked bindings)	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	cleanTag	colorText	knownOf	knownTypes	knowsCoat	knowsCombat	knowsPq	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes	tagWithWorkersAi
 run.js: add an item without a photo; it persists	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 run.js: add an item without a photo; it persists	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 run.js: add an item without a photo; it persists	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -12955,8 +12934,7 @@ server-limits.test.js	worker/people.js	<loaded>	allCaps	capOf	cleanCaps	countWri
 server-limits.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	putWhole	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 server-limits.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	putRender	recCheck	renderId	renderTtl
 server-limits.test.js	worker/render.js	<loaded>	RenderHub	dataUrlToBlob	fetch	handleRender	hubOf	sget	sput
-server-limits.test.js	worker/tag.js	<loaded>	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
-server-limits.test.js	worker/tag.js	<loaded>	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	colorText	correctionsText	customText	knownOf	knownTypes	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
+server-limits.test.js	worker/tag.js	<loaded>	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
 serverchecks.test.js	merge.js	<loaded>	mergeList	mergeStateBy	stamp	stateSig	tombWins
 serverchecks.test.js	worker.js	<any>	<loaded>	corsFor	fetch	scheduled	serve
 serverchecks.test.js	worker/backup.js	<any>	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putParted	putStored	sampleOnly	saveLock	splitPhotos	stampOf	storedVersion	syncLitePost	syncLiteSave	syncVersion	writeBudget
@@ -12974,8 +12952,7 @@ serverchecks.test.js	worker/photostore.js	<any>	<loaded>	gcDue	handleSync	putPho
 serverchecks.test.js	worker/records.js	<any>	<loaded>	colOk	getBlob	getRender	itemWrong	putRender	recCheck	renderId	renderTtl
 serverchecks.test.js	worker/remind.js	<any>	<loaded>	b64u	dueDay	handlePush	localNow	pushReady	pushTo	sendReminders	subId	unb64u	vapidAuth
 serverchecks.test.js	worker/render.js	<any>	<loaded>	RenderHub	dataUrlToBlob	fetch	handleRender	hubOf	logHub	logOp	serial	sget	sput
-serverchecks.test.js	worker/tag.js	<any>	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
-serverchecks.test.js	worker/tag.js	<any>	<loaded>	accOpts	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
+serverchecks.test.js	worker/tag.js	<any>	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
 sett.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 sett.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 sett.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -13076,8 +13053,7 @@ sett.test.js	weather.js	<loaded>	loadWeather
 sett.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanCustom	cleanTag	correctionsText	corsFor	customText	fetch	lightText	measuredText	orNull	readCapped	sameText	serve	sha256Hex	spend	tagSchema	tagWithClaude	txt	utcDay	wbOf	whoIs
 sett.test.js	worker/links.js	<loaded>	readCapped
 sett.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
-sett.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	txt	wbOf
-sett.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	txt	wbOf
+sett.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	txt	wbOf
 settag.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 settag.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 settag.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -14193,8 +14169,7 @@ shirtweave.test.js	worker/links.js	<loaded>	readCapped
 shirtweave.test.js	worker/pattern.js	<loaded>	cleanPattern	handlePattern
 shirtweave.test.js	worker/patternbits.js	<loaded>	bitmapOf
 shirtweave.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
-shirtweave.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	colorText	knownOf	knowsCoat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
-shirtweave.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	colorText	knownOf	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
+shirtweave.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
 shop.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 shop.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 shop.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -14664,14 +14639,12 @@ socktoe.test.js	worker/photostore.js	<any>	<loaded>	handleSync	isPv	loadAny
 socktoe.test.js	worker/records.js	<any>	<loaded>	renderId	renderTtl
 socktoe.test.js	worker/remind.js	<any>	<loaded>
 socktoe.test.js	worker/render.js	<any>	<loaded>	dataUrlToBlob	dropFail	handleRender	jobMsg
-socktoe.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCoat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
-socktoe.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
+socktoe.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
 sockworker.test.js	worker.js	<loaded>	corsFor	fetch	serve
 sockworker.test.js	worker/links.js	<loaded>	readCapped
 sockworker.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
 sockworker.test.js	worker/records.js	<loaded>	colOk	itemWrong	recCheck
-sockworker.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanAccents	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	cleanToe	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsSock	lightText	matCap	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
-sockworker.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanAccents	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	cleanToe	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCombat	knowsSock	lightText	matCap	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
+sockworker.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanAccents	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	cleanToe	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsCombat	knowsSock	lightText	matCap	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
 sourcerules.test.js	about.js	<any>
 sourcerules.test.js	account.js	<any>
 sourcerules.test.js	act.js	<any>
@@ -15709,8 +15682,7 @@ tagger.test.js	worker/describe.js	<loaded>	askOf	cleanDesc	cleanDescribeColour	c
 tagger.test.js	worker/links.js	<loaded>	readCapped
 tagger.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	unspend	utcDay	whoIs
 tagger.test.js	worker/photostore.js	handleSync
-tagger.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanAccents	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsSock	lightText	matCap	matName	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	notMaterial	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	tagWithWorkersAi	txt	wbOf
-tagger.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanAccents	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCombat	knowsSock	lightText	matCap	matName	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	notMaterial	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	tagWithWorkersAi	txt	wbOf
+tagger.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanAccents	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsCombat	knowsSock	lightText	matCap	matName	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	notMaterial	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	tagWithWorkersAi	txt	wbOf
 tagging.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 tagging.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 tagging.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -15801,8 +15773,7 @@ tagging.test.js	worker/links.js	<loaded>	readCapped
 tagging.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	usedOf	utcDay	whoIs
 tagging.test.js	worker/photostore.js	<loaded>	handleSync
 tagging.test.js	worker/records.js	<loaded>	getRender
-tagging.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	txt	wbOf
-tagging.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	txt	wbOf
+tagging.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	txt	wbOf
 tagreads.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 tagreads.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
 tagreads.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -15894,15 +15865,13 @@ tagreads.test.js	worker.js	<loaded>	corsFor	fetch	serve
 tagreads.test.js	worker/links.js	<loaded>	readCapped
 tagreads.test.js	worker/pattern.js	<loaded>	cleanPattern	handlePattern
 tagreads.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
-tagreads.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	colorText	knownOf	knowsCoat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
-tagreads.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	colorText	knownOf	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
+tagreads.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes	tagWithClaude	txt	wbOf
 tagroutes.test.js	worker.js	<loaded>	corsFor	fetch	serve
 tagroutes.test.js	worker/links.js	<loaded>	readCapped
 tagroutes.test.js	worker/pattern.js	<loaded>	cleanPattern	handlePattern
 tagroutes.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	unspend	utcDay	whoIs
 tagroutes.test.js	worker/render.js	<loaded>	handleRender
-tagroutes.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	txt	wbOf
-tagroutes.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	txt	wbOf
+tagroutes.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	txt	wbOf
 tagswatch.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 tagswatch.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 tagswatch.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -16491,8 +16460,7 @@ tieweave.test.js	worker/photostore.js	<any>	<loaded>
 tieweave.test.js	worker/records.js	<any>	<loaded>
 tieweave.test.js	worker/remind.js	<any>	<loaded>
 tieweave.test.js	worker/render.js	<any>	<loaded>
-tieweave.test.js	worker/tag.js	<any>	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
-tieweave.test.js	worker/tag.js	<any>	<loaded>	accOpts	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
+tieweave.test.js	worker/tag.js	<any>	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
 titles.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 titles.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 titles.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -17818,8 +17786,7 @@ watchmatch.test.js	worker/links.js	<loaded>	readCapped
 watchmatch.test.js	worker/people.js	<loaded>	msgNs	photoCap	sameText	sha256Hex	spend	spendEach	utcDay	whoIs
 watchmatch.test.js	worker/records.js	<loaded>	renderId	renderTtl
 watchmatch.test.js	worker/render.js	<loaded>	DIAL_NOTE	RENDER_PROMPT	WATCH_KEY	dataUrlToBlob	dropFail	handleRender	hasWatch	hubOf	jobClaim	jobMsg	keepMade	outfitPhoto	runRenderJob	tellHub
-watchmatch.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
-watchmatch.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
+watchmatch.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
 weather.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 weather.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 weather.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -18105,8 +18072,7 @@ workerfix.test.js	worker/photostore.js	<loaded>	convertSnaps	gcDue	gcKey	gcSpace
 workerfix.test.js	worker/records.js	<loaded>	delRender	getRender	itemWrong	putRender	recCheck	renderId	renderTtl	sharedKeys
 workerfix.test.js	worker/remind.js	<loaded>	b64u	dueDay	handlePush	localNow	pushReady	pushTo	sendReminders	subId	unb64u	vapidAuth
 workerfix.test.js	worker/render.js	<loaded>	DIAL_NOTE	RENDER_PROMPT	RenderHub	dataUrlToBlob	dropFail	failJob	fetch	handleRender	hasWatch	hubOf	jobClaim	jobMsg	jobOp	keepMade	outfitPhoto	prune	queueRender	runRenderJob	sget	sput	tellHub	waitForRenders
-workerfix.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	readAiBody	sleep	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	tagWithWorkersAi	txt	wbOf
-workerfix.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	readAiBody	sleep	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	tagWithWorkersAi	txt	wbOf
+workerfix.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	badPics	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	readAiBody	sleep	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	tagWithWorkersAi	txt	wbOf
 workersweep.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 workersweep.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 workersweep.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts

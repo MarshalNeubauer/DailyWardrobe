@@ -195,7 +195,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
       show('add');addManual();await new Promise(r=>setTimeout(r,80));let q=queue[0];setq(qAt(q.id),'type','shoes');setq(qAt(q.id),'shoeStyle','combat');await new Promise(r=>setTimeout(r,60));
       const a={l:q.leather,rows:row()};skipCard(q.id);addManual();await new Promise(r=>setTimeout(r,80));q=queue[0];setq(qAt(q.id),'type','shoes');setq(qAt(q.id),'shoeStyle','boot');
       await lookSetMat('q',q.id,'leather','calf');setq(qAt(q.id),'shoeStyle','combat');a.kept=q.leather;skipCard(q.id);return a});
-    ok(e.l==='suede'&&e.rows.some(t=>/Material · Leather Suede and nylon/.test(t))&&e.rows.some(t=>/^Sole/.test(t))&&e.kept==='calf',T+`a combat boot added by hand is Suede and nylon in Look (with its Sole row); a leather picked first stays (${JSON.stringify(e)})`)}
+    ok(e.l==='suede'&&e.rows.some(t=>/Material · Leather\s*Suede and nylon/.test(t))&&e.rows.some(t=>/^Sole/.test(t))&&e.kept==='calf',T+`a combat boot added by hand is Suede and nylon in Look (with its Sole row); a leather picked first stays (${JSON.stringify(e)})`)}
 
   // ================= the tie clip's planner input is unchanged: the same colour field the old UI wrote, the same plans =================
   if(full){const e=await p.evaluate(async()=>{const was=items;const mk=()=>{const I=(id,type,x={})=>({id,type,primaryColor:'navy',pattern:'solid',added:1,...x});
