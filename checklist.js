@@ -1,5 +1,5 @@
 /* Daily Wardrobe: the checklist sections and the close-up / drawing comparison shared by the item sheet (itemsheet.js itemBody) and the Add
-   card (add.js formCard). 2026-11-16, the owner's approved redesign: direction "2B Checklist" with the side-by-side compare of
+   card (add-card.js formCard). 2026-11-16, the owner's approved redesign: direction "2B Checklist" with the side-by-side compare of
    C:\code\audit-2026-11-13\item-redesign\prototype\compare-side.html (DESIGN.md, INVENTORY.md beside it).
    (A classic script sharing one global scope with the others, loaded in index.html's order; nothing runs at load.) */
 
@@ -143,7 +143,7 @@ function cmpMatchHtml(src,ref,it,lab){const d=cmpDiff(it,lab),key=src==='q'?it.i
   const pos=50+Math.max(-SHADE_MAX,Math.min(SHADE_MAX,d))/SHADE_MAX*46,undo=CMP_UNDO[key]!==undefined&&CMP_UNDO[key]!==(it.shade||0);
   return `<div class="cmpmatch"><div class="cmpbar" role="img" aria-label="${cmpDiffText(d)}"><i style="left:${pos}%"></i></div><div class="cmplab" aria-hidden="true"><span>Darker</span><span>Same</span><span>Lighter</span></div>`+
     `<p class="cmpmt" role="status">${cmpDiffText(d)}</p><div class="cmpmb"><button type="button" class="cmpgo" onclick="cmpMatchGo('${src}',${r})">Match close-up</button>${undo?`<button type="button" class="cmpundo" onclick="cmpMatchUndo('${src}',${r})">Undo</button>`:''}</div></div>`}
-/* Match close-up: the shade from the close-up's measurement (add.js matchShadeQ / matchShadeE), the shade before kept for Undo */
+/* Match close-up: the shade from the close-up's measurement (add-card.js matchShadeQ / matchShadeE), the shade before kept for Undo */
 function cmpMatchGo(src,ref){const it=src==='q'?cardOf(ref):items.find(x=>x.id===ref);if(!it)return;CMP_UNDO[src==='q'?it.id:ref]=it.shade||0;
   if(src==='q'){it.checked={...it.checked,tex:1};matchShadeQ(ref)}else matchShadeE(ref)}
 async function cmpMatchUndo(src,ref){const it=src==='q'?cardOf(ref):items.find(x=>x.id===ref);if(!it)return;const key=src==='q'?it.id:ref,v=CMP_UNDO[key];if(v===undefined)return;delete CMP_UNDO[key];

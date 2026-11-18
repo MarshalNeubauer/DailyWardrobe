@@ -62,7 +62,7 @@ function replayServer() {
       if (!a) { r.writeHead(503, { ...cors, 'content-type': 'text/plain' }); return r.end('not recorded (replay tests are offline)') }
       r.writeHead(a.status, { ...cors, 'content-type': a.type }); r.end(a.body);
     });
-    srv.listen(0, '127.0.0.1', () => { srv.unref(); resolve('http://127.0.0.1:' + srv.address().port) });
+    require('../../safeport').listenSafe(srv, '127.0.0.1').then(port => { srv.unref(); resolve('http://127.0.0.1:' + port) });
   });
   return replay;
 }
@@ -98,7 +98,7 @@ function backstopProxy() {
     const http = require('http');
     const px = http.createServer((q, r) => { note('blocked (proxy)', q.url, 'phone'); r.writeHead(403); r.end('blocked in the replay tests') });
     px.on('connect', (q, sock) => { note('blocked (proxy)', 'https://' + q.url + '/', 'phone'); sock.end('HTTP/1.1 403 Forbidden\r\n\r\n') });
-    px.listen(0, '127.0.0.1', () => { px.unref(); resolve({ server: 'http://127.0.0.1:' + px.address().port, bypass: '127.0.0.1,localhost,[::1]' }) });
+    require('../../safeport').listenSafe(px, '127.0.0.1').then(port => { px.unref(); resolve({ server: 'http://127.0.0.1:' + port, bypass: '127.0.0.1,localhost,[::1]' }) });
   });
   return proxy;
 }

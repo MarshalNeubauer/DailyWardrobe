@@ -32,7 +32,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const srv=http.createServer(async(q,res)=>{let b='';for await(const c of q)b+=c;if(q.method==='PUT'&&/\/render/.test(q.url))puts++;
     const o=await worker.fetch(new Request('http://w'+q.url,{method:q.method,headers:q.headers,body:['GET','HEAD','OPTIONS'].includes(q.method)?undefined:b}),env);
     res.writeHead(o.status,Object.fromEntries(o.headers));res.end(Buffer.from(await o.arrayBuffer()))});
-  await new Promise(x=>srv.listen(0,'127.0.0.1',x));const W=`http://127.0.0.1:${srv.address().port}/`,OUT=fs.mkdtempSync(path.join(os.tmpdir(),'dw-atlas-'));
+  const W=`http://127.0.0.1:${await require('./safeport').listenSafe(srv,'127.0.0.1')}/`,OUT=fs.mkdtempSync(path.join(os.tmpdir(),'dw-atlas-'));
   const run=()=>new Promise(res=>{const c=spawn(process.execPath,[s,'--out',OUT,'--origin','http://127.0.0.1:9/dw/','--cm-size','512'],{env:{...process.env,DW_WORKER:W,DW_TOKEN:'owner-code',DW_UPLOAD_LEDGER:require('path').join(require('os').tmpdir(),'dw-ledger-test-'+process.pid+'.json')}});let out='';c.stdout.on('data',d=>out+=d);c.stderr.on('data',d=>out+=d);c.on('close',code=>res({code,out}))});
   try{const r1=await run();
     ok(r1.code===0&&puts===0,`npm run atlas measures the masters and uploads nothing (${puts} uploads${r1.code?': '+r1.out.slice(-400):''})`);

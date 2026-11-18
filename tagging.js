@@ -27,11 +27,11 @@ function takeMaterial(q,ai){const m=ai&&ai.material,l=matsFor(q.type);delete q.m
   if(q.matSet)return;
   if(q.material&&!(q.matAI&&q.material===q.matAI.key))return;
   q.material=m.key;q.matAI={key:m.key,conf:m.conf,why:m.why||''}}
-async function closeTagImg(q){if(q.texDone)return q.raw.tex.toDataURL('image/jpeg',TAG_Q);   // a card brought back after a kill: its close-up is already corrected (add.js addRevive)
+async function closeTagImg(q){if(q.texDone)return q.raw.tex.toDataURL('image/jpeg',TAG_Q);   // a card brought back after a kill: its close-up is already corrected (add-keep.js addRevive)
   const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
 /* one reading of each kind per Add card (CR-2-03, CR-2-10): a newer close-up, Skip or Remove calls the earlier one off (its request is
    aborted: the worker gives a tester's count back), and only the latest may apply its answer or clear q.refining / q.patternReading.
-   Kept beside the card, not on it (an AbortController is not saved with the card: add.js addKeep) */
+   Kept beside the card, not on it (an AbortController is not saved with the card: add-keep.js addKeep) */
 const READS=new WeakMap();
 function readBegin(q,kind){const r=READS.get(q)||{};if(kind==='refine')readAbort(q);else if(r[kind])try{r[kind].ac&&r[kind].ac.abort()}catch{}
   const me={ac:typeof AbortController==='function'?new AbortController():null};r[kind]=me;READS.set(q,r);return me}
@@ -43,7 +43,7 @@ const REFINE_FAIL='Tagging again from the close-up didn’t work; the first tags
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;
   try{measureCard(q)}catch(e){console.warn('close-up not measured',e);errNote(e,'Close-up measuring')}   // (a phone out of picture memory: read anyway, unmeasured)
   if(!q.tagImg||!localStorage.getItem('worker_url')){readAbort(q);renderAdd();addKeep();return}
-  const me=readBegin(q,'refine');q.refining=1;renderAdd();addKeep();   // the close-up kept at once, as a reading under way (add.js keeps it as cut off: refineCut)
+  const me=readBegin(q,'refine');q.refining=1;renderAdd();addKeep();   // the close-up kept at once, as a reading under way (add-keep.js keeps it as cut off: refineCut)
   /* whatever happens from here, the card is drawn again when the reading ends (2026-11-16, a tester: a step that threw after the flag was
      cleared left Confirm switched off until something else redrew the card, so it took "Bought, on the way" to save) */
   // forType: Claude's colours are fitted to the card's own type, not to the type Claude guessed from the close-up (CR-2-04: a burgundy
@@ -69,7 +69,7 @@ function refineApply(q,ai,hint,k,err){
   takeExtras(q,ai,!!hint);measureAndApply(q);q.model=ai.model||q.model;
   q.refineUndo=changes.length?prev:null;   // Undo puts the first tags back
   q.refineNote=changes.length?'Updated from the close-up: '+changes.join(', ')+'.':'The close-up confirmed the tags.';if(k>=0)renderAdd();
-  addKeep();   // kept at once (add.js): a kill in the next moment lost the paid reading
+  addKeep();   // kept at once (add-keep.js): a kill in the next moment lost the paid reading
   readPatternWithClaude(q)}
 /* Claude's new colour against the close-up's measurement: the measured colour is clearly nearer the colour the card has (a white shirt
    whose close-up measured cream was turned navy) */
@@ -84,7 +84,7 @@ const confTxt=c=>c?['type','primaryColor','pattern'].filter(k=>c[k]==='medium'||
 const tagLive=()=>isConnected();   // (an ended invitation: no button to read again)
 function tagNotes(q,i){if(q.manual)return '';const out=[];if(q.meas)q.measV=colourVerdicts(q);   // against the tags as they are now
   if(q.refining)out.push('<p class="tagnote mut"><small>Tagging again with the close-up…</small></p>');
-  // a reading cut off when the app was closed (add.js addRevive): said, with a tap to read it again; nothing is read by itself
+  // a reading cut off when the app was closed (add-keep.js addRevive): said, with a tap to read it again; nothing is read by itself
   else if(q.refineCut)out.push(`<div class="tagfail refcut"><p>The app was closed while the close-up was being read, so the first tags stay.</p>${tagLive()?`<button type="button" class="tagfail-btn" onclick="refineAgain(${i})">Read the close-up again</button>`:''}</div>`);
   else if(q.refineNote)out.push(`<p class="tagnote refnote"><small>${esc(q.refineNote)}</small>${q.refineUndo?`<button type="button" class="chipbtn" onclick="undoRefine(${i})">Undo</button>`:''}</p>`);
   if(q.patternCut&&!q.refineCut&&!q.refining&&!q.patternReading)out.push(`<div class="tagfail patcut"><p>The app was closed while the pattern was being read.</p>${tagLive()?`<button type="button" class="tagfail-btn" onclick="patternAgain(${i})">Read the pattern again</button>`:''}</div>`);

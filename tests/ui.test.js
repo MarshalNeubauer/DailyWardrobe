@@ -45,7 +45,8 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
         links:[...links.querySelectorAll('.slink b')].map(b=>b.textContent).join(),one:links.querySelectorAll('.slink').length===links.children.length,head:first.textContent,
         gaps:[...links.querySelectorAll('.slink')].map(b=>Math.round(b.getBoundingClientRect().height)),radius:getComputedStyle(links).borderTopLeftRadius}});
     ok(!st.hit,`nothing in Settings says worker, Cloudflare, KV, token or benchmark${st.hit?' (“…'+st.hit+'…”)':''}`);
-    ok(st.sums[5]==='Painted pictures · needs a connection'&&/^Your own colors & patterns$/.test(st.sums[6])&&/needs a connection/.test(st.sums[7])&&st.sums[8]==='Not connected'&&st.sums.every(t=>t.length>4),`every category's summary reads sensibly with nothing connected (${st.sums.slice(5,9).join(' | ')})`);
+    // (Calendar, 2026-11-17, is the fourth category: "Not connected" with no calendar link)
+    ok(st.sums[3]==='Not connected'&&st.sums[6]==='Painted pictures · needs a connection'&&/^Your own colors & patterns$/.test(st.sums[7])&&/needs a connection/.test(st.sums[8])&&st.sums[9]==='Not connected'&&st.sums.every(t=>t.length>4),`every category's summary reads sensibly with nothing connected (${st.sums.slice(3,10).join(' | ')})`);
     ok(st.links==='Packing list'&&st.one&&st.head==='Your wardrobe'&&st.radius==='14px'&&st.gaps.every(h=>h>=44),`the page links at the top of Settings are one card under a heading (${st.gaps} px rows)`);
     const adv=await p.evaluate(()=>{const inAdv=s=>{const e=document.querySelector(s);return !!(e&&e.closest('.adv-in'))};
       return {ids:[...document.querySelectorAll('#settings-modal .adv')].map(a=>a.id).join(),shut:[...document.querySelectorAll('#settings-modal .adv')].every(a=>!a.classList.contains('open')&&getComputedStyle(a.querySelector('.adv-in')).display==='none'&&a.querySelector('.adv-head').getAttribute('aria-expanded')==='false'),

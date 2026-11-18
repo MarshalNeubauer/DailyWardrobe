@@ -4,8 +4,13 @@
 //   node tests/run.js --changed --list   say which those are, and run nothing
 //   node tests/run.js <name>      the tests/*.test.js files whose name contains <name> (or TEST_ONLY=<name>)
 //   node tests/run.js --webkit    on WebKit instead of Chromium (`npm run test:webkit`)
-//   TEST_JOBS=<n>                 how many tests run at once (default: the processor cores less one, at most 16); TEST_JOBS=1 runs
-//                                 them one after another in this process, printing as it goes
+//   TEST_JOBS=<n>                 how many tests run at once (default: the processor cores less one, at most 16, fewer when the machine
+//                                 is busy); TEST_JOBS=1 runs them one after another in this process, printing as it goes
+//   node tests/run.js --shard i/N shard i of N of the tests (or TEST_SHARD=i/N), balanced by tests/shard-times.json: the cloud run
+//                                 (`npm run test:cloud`, .github/workflows/full-tests.yml; tests/shard.js)
+//   TEST_LOCK=0                   don't wait for another worktree's test run (one run at a time on this machine: tests/testlock.js)
+//   TEST_WEBKIT=1 / 0             with --changed, run the WebKit halves of the files that check both engines / don't (default: only
+//                                 when the change touches a page file, `webkitWanted`); TEST_WEBKIT=0 also leaves them out of a run by name
 // Serves the repo over HTTP, drives the app in headless Chromium and checks rendering, gestures, layout,
 // the outfit rules (with an independent checklist), pattern detection and the Cloudflare worker.
 const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),{fork}=require('child_process'),{chromium,devices}=require('playwright'),impact=require('./impact');
@@ -60,7 +65,7 @@ const MONTHS=[[2026,10],[2026,11],[2027,0]];
 suite('renders the outfit without errors',async({page,errs})=>{
   await page.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')})()`);
   ok(await page.$('#mannequin-container.fig > svg')!==null,'outfit figure SVG is drawn');
-  ok((await page.$$('.score .dial')).length===5,'score card is shown (five dials)');
+  ok((await page.$$('.score .dial')).length===6,'score card is shown (six dials)');
   ok((await page.$$('#today .month-link .mli')).length===5,'Today links to the month plan with the next 5 outfits');
   ok(errs.length===0,'no console errors ('+errs.join('; ')+')');
 });
@@ -229,7 +234,23 @@ const DUAL=WEBKIT?[]:FILES.filter(f=>/module\.exports\s*=\s*async\s*\(\s*\{[^}]*
 const halfOf=key=>key.endsWith(WK_HALF)?key.slice(0,-WK_HALF.length):null;
 const ALL=[...suites.map(([n])=>'run.js: '+n),'run.js: '+WORKER,...FILES];   // (what the map and the selection know)
 const RUNS=[...ALL,...DUAL.map(f=>f+WK_HALF)];   // (what can run)
-const withHalves=keys=>{const s=new Set(keys);for(const f of DUAL)if(s.has(f))s.add(f+WK_HALF);return s};
+const withHalves=(keys,wk=()=>true)=>{const s=new Set(keys);for(const f of DUAL)if(s.has(f)&&wk(f))s.add(f+WK_HALF);return s};
+/* `npm test` runs a dual file's WebKit half only when the change can show on a page (the owner's choice, 2026-11-17): when it touches
+   a file the phone gets that draws or styles the page (sw.js ASSETS: index.html, styles.css, the page scripts, the figure's pictures),
+   the runner, tests/webkit.js, tests/fixedplan.js or package.json, or the test file itself. The scripts that only compute (the planner,
+   the color and pattern math, the merge rules, the Web Workers' entries, sw.js) don't. Unknown changes (`files` null) run it.
+   `npm run test:all`, `npm run test:webkit` and a run by name always run it. → {wk: file → bool, why} */
+const PURE=new Set(['planner.js','core.js','analysis.js','analysis-worker.js','detect.js','srgb.js','merge.js','migrate.js','asm-worker.js','sw.js']);
+const WK_HARNESS=new Set(['tests/run.js','tests/webkit.js','tests/fixedplan.js','package.json']);
+const pageFiles=()=>{try{const m=/const ASSETS=\[([^\]]*)\]/.exec(fs.readFileSync(path.join(ROOT,'sw.js'),'utf8'));return new Set([...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1]).filter(f=>f!=='./'&&!PURE.has(f)))}catch(e){return null}};
+const webkitWanted=files=>{
+  if(process.env.TEST_WEBKIT==='1')return {wk:()=>true,why:'TEST_WEBKIT=1'};
+  if(process.env.TEST_WEBKIT==='0')return {wk:()=>false,why:'TEST_WEBKIT=0'};
+  if(!files)return {wk:()=>true,why:'what changed is not known'};
+  const P=pageFiles(),ui=files.filter(f=>WK_HARNESS.has(f)||(P?P.has(f):/^[^/]+\.(?:html|css|js)$/.test(f)&&!PURE.has(f)));
+  if(ui.length)return {wk:()=>true,why:'the change touches '+ui.slice(0,6).join(', ')+(ui.length>6?' and '+(ui.length-6)+' more':'')};
+  const own=new Set(files.filter(f=>/^tests\/[^/]+\.test\.js$/.test(f)).map(f=>f.slice(6)));
+  return {wk:f=>own.has(f),why:'the change touches no page file'+(own.size?' (only an edited test file\'s own WebKit half runs)':'')+': `npm run test:webkit` or `npm run test:all` runs WebKit',own}};
 const label=key=>key.startsWith('run.js: ')?key.slice(8):key;
 
 /* What one process needs to run tests one after another: the local server, one Chromium for every test (a file's
@@ -239,13 +260,16 @@ const label=key=>key.startsWith('run.js: ')?key.slice(8):key;
 const FIXED_PLAN=path.join(__dirname,'fixedplan.js');
 const ASM_OFF={content:'window.ASM_TEST_OFF=true'};   // assembled pictures off in a test page (assemble.js ASM_ON)
 const REAL_SUITES=new Set(['renders the outfit without errors','planner: independent outfit checklist','planner: shoes, belts, leather and metals','outfit score']);
-const bench=async()=>{
-  await new Promise(r=>server.listen(0,'127.0.0.1',r));const url=`http://127.0.0.1:${server.address().port}/index.html`;
+const bench=async(eager=true)=>{
+  const url=`http://127.0.0.1:${await require('./safeport').listenSafe(server,'127.0.0.1')}/index.html`;   // (never a port Chromium refuses: tests/safeport.js)
+  // the process's browser starts while the recorder loads the worker (`prepare`), not when the first test asks for it: the two took
+  // one after the other about 1–2 s of every worker's start-up. (A promise is kept, so two asking at once get one browser)
+  let shared=null,sharedP=null;const browserOf=()=>sharedP||(sharedP=(async()=>shared=WEBKIT?require('./webkit').wrapBrowser(await require('playwright').webkit.launch()):await chromium.launch())().catch(e=>{sharedP=null;throw e}));
+  if(eager)browserOf().catch(()=>{});
   if(!process.env.NO_IMPACT){rec=impact.recorder(ROOT);await rec.prepare()}
-  let shared=null;const browserOf=async()=>shared||(shared=WEBKIT?require('./webkit').wrapBrowser(await require('playwright').webkit.launch()):await chromium.launch());
   // the WebKit half of the files that check both engines (tests/webkit.js engines): one WebKit per process too, shared like Chromium
   // (under --webkit it is the same browser); launched only when a file asks for it
-  let sharedWk=null;const webkitOf=async()=>WEBKIT?browserOf():sharedWk||(sharedWk=require('./webkit').wrapBrowser(await require('playwright').webkit.launch()));
+  let sharedWk=null,sharedWkP=null;const webkitOf=()=>WEBKIT?browserOf():sharedWkP||(sharedWkP=(async()=>sharedWk=require('./webkit').wrapBrowser(await require('playwright').webkit.launch()))().catch(e=>{sharedWkP=null;throw e}));
   // the built-in suites get the fixed plan too, except those about the planner and the start-up check, which keeps the real
   // planner so a planner change that breaks start-up is caught by it
   const builtin=async name=>{const browser=await browserOf(),fn=suites.find(([n])=>n===name)[1],fixed=!REAL_SUITES.has(name);
@@ -282,7 +306,7 @@ const bench=async()=>{
         else if(key.startsWith('run.js: '))await builtin(key.slice(8));else await file(key)}
       finally{if(r)res=await rec.end().catch(()=>({m:new Map(),bad:true}))}
       return {ms:Date.now()-t0,res}},
-    async close(){if(shared)await shared.close().catch(()=>{});if(sharedWk)await sharedWk.close().catch(()=>{});server.close()}}};
+    async close(){if(sharedP)await sharedP.catch(()=>{});if(shared)await shared.close().catch(()=>{});if(sharedWk)await sharedWk.close().catch(()=>{});server.close()}}};
 
 /* how long each test took last time (kept beside node_modules, never committed): the slow ones start first */
 const TIMES=path.join(ROOT,'node_modules','.cache','dw-test-times.json');
@@ -294,7 +318,11 @@ const jobsWanted=()=>{const n=parseInt(process.env.TEST_JOBS,10);return n>=1?n:M
 
 /* a worker process (`node tests/run.js --worker`, started by the parent below): it runs the tests it is handed, one at a
    time, keeps what each prints and sends it back whole with the counts and what the test used */
-const worker=async()=>{const B=await bench();let out=null;   // null between tests: anything printed then goes straight out
+const worker=async()=>{
+  // the parent gone (Ctrl+C, killed, crashed): leave too, which closes this process's browsers (Playwright kills them on exit),
+  // instead of running on without anyone to report to and holding the machine
+  process.on('disconnect',()=>process.exit(1));
+  const B=await bench();let out=null;   // null between tests: anything printed then goes straight out
   for(const k of ['stdout','stderr']){const w=process[k].write.bind(process[k]);process[k].write=(d,...a)=>{if(out==null)return w(d,...a);out+=typeof d==='string'?d:Buffer.from(d).toString();const cb=a[a.length-1];if(typeof cb==='function')cb();return true}}
   let chain=Promise.resolve(),cur=null,last=null;
   /* a promise that fails with nobody waiting for it used to stop the whole process ("the test process stopped"), which named
@@ -302,7 +330,11 @@ const worker=async()=>{const B=await bench();let out=null;   // null between tes
   process.on('unhandledRejection',e=>{const why=String(e&&e.stack||e).split('\n').slice(0,6).join('\n    ');
     if(cur){failures++;console.log('  ✗ a promise failed with nothing waiting for it: '+why);return}
     process.send({late:true,out:'\n  ✗ a promise failed with nothing waiting for it, after '+(last?label(last):'start-up')+' had finished: '+why+'\n'})});
-  process.on('message',m=>{chain=chain.then(async()=>{
+  process.on('message',m=>{
+    // the parent's per-test time limit ran out (`together`): hand back what the test printed so far and leave, which closes this
+    // process's browsers (not queued behind the test: that is what hangs)
+    if(m.abort){const text=out||'';out=null;try{process.send({partial:text},()=>process.exit(1))}catch(e){process.exit(1)}setTimeout(()=>process.exit(1),3000).unref();return}
+    chain=chain.then(async()=>{
     if(m.exit){out=null;await B.close();process.exit(0)}
     out='';passes=0;failures=0;cur=m.run;const r=await B.run(m.run);
     // (a rejection is reported on the next turn of the event loop: give one that the test's last step caused that turn)
@@ -313,25 +345,53 @@ const worker=async()=>{const B=await bench();let out=null;   // null between tes
 const RETRY_MAX=5;
 /* several tests at once: `n` worker processes take the tests from one queue, slowest first. Each test's lines are printed
    together when it finishes */
-const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue=keys.slice().sort((a,b)=>(last[b]||0)-(last[a]||0)),live=new Set();
-  const spawn=()=>{const c=fork(__filename,['--worker'],{env:process.env});let job=null;live.add(c);
-    const next=()=>{job=queue.shift();if(job)c.send({run:job});else{c.send({exit:true})}};
-    c.on('message',m=>{if(m.ready){next();return}if(m.late){process.stdout.write(m.out);failures++;return}
+/* A test that runs longer than TEST_FILE_TIMEOUT seconds (900; 0 = no limit) fails "timed out after N s" with what it printed so far,
+   and its worker process is ended (its browsers with it) and replaced (2026-11-17: on a machine crowded by other sessions' runs, single
+   workers sat at no CPU for 20–30 minutes and the run never ended). The slowest test took 477 s on that crowded machine */
+const FILE_LIMIT=(n=>Number.isFinite(n)&&n>=0?n:900)(parseFloat(process.env.TEST_FILE_TIMEOUT))*1000;
+// (a machine with no times of its own, a cloud runner, orders them by the committed tests/shard-times.json, in seconds)
+const together=(keys,n,done)=>new Promise(resolve=>{const last={...Object.fromEntries(Object.entries(require('./shard').readTimes()).map(([k,s])=>[k,s*1000])),...lastTimes()},queue=keys.slice().sort((a,b)=>(last[b]||0)-(last[a]||0)),live=new Set();
+  const spawn=()=>{const c=fork(__filename,['--worker'],{env:process.env});let job=null,t0=0,timer=null,timedOut=false,partial='';live.add(c);
+    const next=()=>{clearTimeout(timer);job=queue.shift();if(job){t0=Date.now();c.send({run:job});
+        if(FILE_LIMIT)timer=setTimeout(()=>{timedOut=true;try{c.send({abort:true})}catch(e){}setTimeout(()=>{try{c.kill()}catch(e){}},10e3).unref()},FILE_LIMIT)}
+      else{c.send({exit:true})}};
+    c.on('message',m=>{if(m.ready){next();return}if(m.late){process.stdout.write(m.out);failures++;return}if('partial' in m){partial=m.partial;return}
+      if(timedOut)return;
       job=null;done(m.key,m.out,m.passes,m.failures,m.ms,m.res&&{bad:m.res.bad,m:new Map(m.res.m.map(([f,L])=>[f,new Set(L)]))});next()});
     // a worker that dies takes its test with it: that test has failed, and another worker takes its place
-    c.on('exit',code=>{live.delete(c);if(job){done(job,'  ✗ the test process stopped (exit code '+code+')\n',0,1,0,{m:new Map(),bad:true});if(queue.length)spawn()}
+    c.on('exit',code=>{clearTimeout(timer);live.delete(c);if(job){done(job,partial+(timedOut?'  ✗ timed out after '+Math.round((Date.now()-t0)/1000)+' s (TEST_FILE_TIMEOUT='+FILE_LIMIT/1000+'): its worker process and browsers were ended\n':'  ✗ the test process stopped (exit code '+code+')\n'),0,1,Date.now()-t0,{m:new Map(),bad:true});if(queue.length)spawn()}
       if(!live.size)resolve()})};
   for(let i=0;i<Math.min(n,queue.length);i++)spawn()});
 
 (async()=>{
   if(process.argv.includes('--worker')){await worker();return}
-  const args=process.argv.slice(2),flag=f=>args.includes(f),ONLY=process.env.TEST_ONLY||args.find(a=>!a.startsWith('--'));
+  if(process.argv.includes('--keys')){console.log(JSON.stringify(RUNS));return}   // every test, in run order (tests/shard.js)
+  const args=process.argv.slice(2),flag=f=>args.includes(f);
+  // --shard i/N (or TEST_SHARD=i/N): only shard i of N of the tests chosen (tests/shard.js; the cloud run, full-tests.yml)
+  const shardArg=(()=>{const j=args.findIndex(a=>a==='--shard'||a.startsWith('--shard='));if(j<0)return process.env.TEST_SHARD||null;
+    const v=args[j].includes('=')?args[j].split('=')[1]:args[j+1];if(!args[j].includes('='))args.splice(j+1,1);return v})();
+  const SHARD=shardArg?require('./shard').parse(shardArg):null;
+  if(shardArg&&!SHARD){console.log(`--shard ${shardArg}: give it as i/N, 1 ≤ i ≤ N (e.g. --shard 2/8)`);process.exit(2)}
+  const ONLY=process.env.TEST_ONLY||args.find(a=>!a.startsWith('--'));
   let want=null;   // null: everything
-  if(ONLY)want=withHalves(FILES.filter(f=>f.includes(ONLY)));
-  else if(flag('--changed')){const s=await impact.select(ROOT,ALL);console.log(s.report);if(!s.all)want=withHalves(s.tests)}
+  if(ONLY)want=withHalves(FILES.filter(f=>f.includes(ONLY)),()=>process.env.TEST_WEBKIT!=='0');
+  else if(flag('--changed')){const s=await impact.select(ROOT,ALL);console.log(s.report);
+    if(DUAL.length){const W=webkitWanted(s.files||null),sel=s.all?DUAL:DUAL.filter(f=>s.tests.includes(f)),on=sel.filter(W.wk);
+      if(sel.length)console.log(on.length===sel.length?`WebKit: the WebKit halves of ${on.length} file${on.length>1?'s':''} run (${W.why}).`
+        :`WebKit: ${on.length?'only '+on.join(', ')+' runs its WebKit half':'the WebKit halves of '+sel.join(', ')+' do not run'} (${W.why}).`);
+      want=withHalves(s.all?ALL:s.tests,W.wk)}
+    else if(!s.all)want=withHalves(s.tests)}
   if(flag('--list'))return;
   impact.installHook(ROOT);   // from now on a push is refused while tests/impact.map has uncommitted changes
-  const keys=RUNS.filter(k=>!want||want.has(k)),results=new Map(),times=[],T0=Date.now(),jobs=Math.min(jobsWanted(),keys.length);
+  let keys=RUNS.filter(k=>!want||want.has(k));const results=new Map(),times=[];
+  if(SHARD){const S=require('./shard'),mine=S.plan(keys,SHARD.n,S.readTimes(),S.wkShards())[SHARD.i-1];keys=mine.keys;
+    console.log(`\nshard ${SHARD.i}/${SHARD.n}: ${keys.length} of ${RUNS.filter(k=>!want||want.has(k)).length} tests (about ${Math.round(mine.est)} s by tests/shard-times.json)`)}
+  // one test run at a time on this machine (tests/testlock.js): wait for another worktree's run, or go ahead with fewer at once
+  let jobs=Math.min(jobsWanted(),keys.length);
+  if(keys.length){const L=require('./testlock'),g=await L.acquire(ROOT);if(g.note)console.log('\n'+g.note);
+    if(!(parseInt(process.env.TEST_JOBS,10)>=1)&&jobs>1){if(g.cap&&g.cap<jobs)jobs=g.cap;
+      if(g.how!=='off'&&jobs>2){const b=await L.busyCap(jobs);if(b){console.log(`\nthe machine is already busy (${Math.round(b.busy*100)}% of the processors in use): ${b.cap} at a time instead of ${jobs} (TEST_JOBS=<n> sets it)`);jobs=b.cap}}}}
+  const T0=Date.now();
   const alone=[];   // tests that only passed on a second run by themselves
   if(jobs>1){const again=[],count=(key,out,p,f,ms,res)=>{process.stdout.write(out);passes+=p;failures+=f;times.push([key,ms]);if(res)results.set(key,{...res,ok:!f})};
     await together(keys,jobs,(key,out,p,f,ms,res)=>{if(f)again.push([key,out,p,f,ms,res]);else{console.log('\n• '+label(key));count(key,out,p,f,ms,res)}});
@@ -349,8 +409,11 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
     for(const key of keys){console.log('\n• '+label(key));cur=key;const f0=failures,r=await B.run(key);cur=null;times.push([key,r.ms]);if(r.res)results.set(key,{...r.res,ok:failures===f0})}
     await B.close()}
   keepTimes(times);
+  // TEST_TIMES_OUT=<file>: each test's seconds and the run's, for the cloud run's summary (tests/shard.js, tests/shard-times.json)
+  if(process.env.TEST_TIMES_OUT)try{fs.writeFileSync(process.env.TEST_TIMES_OUT,JSON.stringify({times:Object.fromEntries(times.map(([k,ms])=>[k,Math.round(ms/100)/10])),wall:Math.round((Date.now()-T0)/1000)}))}catch(e){console.log('could not write '+process.env.TEST_TIMES_OUT+': '+e.message)}
   // what each test used is added to tests/impact.map; when `npm test` or the whole suite passed, so is the fingerprint of the files it passed on
-  const passed=!failures&&!ONLY;
+  // (not for one shard: it passed only part of the suite)
+  const passed=!failures&&!ONLY&&!SHARD;
   // which tests ran with the fixed plan (their planner.js entries are replaced in the map, not added to)
   // the files a test ran with switched off (the fixed plan: planner.js; assembled pictures off: assemble.js): their entries are replaced
   const fixedOf=key=>{if(key.startsWith('run.js: '))return REAL_SUITES.has(key.slice(8))?['assemble.js']:['planner.js','assemble.js'];
@@ -360,5 +423,5 @@ const together=(keys,n,done)=>new Promise(resolve=>{const last=lastTimes(),queue
   // the slowest files, so the suite can be kept quick
   if(times.length)console.log('\nslowest: '+times.sort((a,b)=>b[1]-a[1]).slice(0,10).map(([f,ms])=>`${label(f)} ${(ms/1000).toFixed(1)}s`).join(', ')+` · total ${((Date.now()-T0)/1000).toFixed(0)}s`+(jobs>1?` (${jobs} at a time; one after another ${(times.reduce((a,t)=>a+t[1],0)/1000).toFixed(0)}s)`:''));
   if(alone.length)console.log('\nfailed with other tests running, passed by '+(alone.length>1?'themselves':'itself')+' (a check there depends on timing: make it wait for its condition): '+alone.map(label).join(', '));
-  console.log(`\n${passes} passed, ${failures} failed`+(alone.length?`, ${alone.length} flaky (passed on retry)`:'')+(want?` (${keys.length} of ${ALL.length} test files and built-in suites)`:''));process.exit(failures?1:0);
+  console.log(`\n${passes} passed, ${failures} failed`+(alone.length?`, ${alone.length} flaky (passed on retry)`:'')+(want?` (${keys.length} of ${ALL.length} test files and built-in suites)`:'')+(SHARD?` (shard ${SHARD.i}/${SHARD.n}: ${keys.length} tests)`:''));process.exit(failures?1:0);
 })();

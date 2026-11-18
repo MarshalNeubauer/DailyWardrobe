@@ -75,7 +75,8 @@ const setKeys=s=>Object.keys(s||{}).filter(k=>!SET_META.includes(k));
    stampSettings stamps the entries that changed; mergeSettingsBy merges such a setting entry by entry when the two copies differ on it.
    A copy without them counts the setting's one stamp for every entry, as before. */
 // (own materials, 2026-11-16: ownMaterials {type: [name]}, entry by entry as 'type/name')
-const SET_SPLIT={custom:'custom',care:'obj',dress:'obj',workdays:'set',blazerDays:'set',shopSkip:'set',daysOff:'list',ownMaterials:'mats'};
+// (the calendar's kept and dismissed events, 2026-11-17: calSeen {id: 'k'|'x'}, entry by entry, so two phones' choices both stay)
+const SET_SPLIT={custom:'custom',care:'obj',dress:'obj',workdays:'set',blazerDays:'set',shopSkip:'set',daysOff:'list',ownMaterials:'mats',calSeen:'obj'};
 /* the entries of setting k's value v (a Map), or null for a value of another shape (then it is merged whole) */
 function setEntries(k,v){const t=SET_SPLIT[k],m=new Map();if(v==null)return m;
   if(t==='obj'){if(typeof v!=='object'||Array.isArray(v))return null;for(const e of Object.keys(v))m.set(e,v[e])}

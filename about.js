@@ -61,7 +61,7 @@ function checkForUpdate(manual){
    page reloads once that worker controls it, so the reload gets one whole version. */
 async function updateNow(){
   if(aboutUpdating)return;
-  // the cards waiting on Add come back after the restart (add.js addKeep / addRestore), so they need no question; only a photo still
+  // the cards waiting on Add come back after the restart (add-keep.js addKeep / addRestore), so they need no question; only a photo still
   // being read is stopped by it (re-audit 2026-11-15: "they will be lost" put people off a safe update)
   const n=typeof queue!=='undefined'&&queue?queue.filter(q=>q&&(q.busy||q.multiBusy)).length:0;
   if(n&&!await askConfirm(`Update now?\n\n${n===1?'A photo on the Add page is':`${n} photos on the Add page are`} still being read. Updating restarts the app and stops ${n===1?'that reading':'those readings'}, so ${n===1?'it has':'they have'} to be read again. Your other cards on Add come back as they are.`,{ok:'Update'}))return;
@@ -142,7 +142,7 @@ async function loadFeedback(){
    what-to-buy result…), Cache Storage (dw-keep-*: the sharp tagging copies; dw-v*: the app's own files) and the
    localStorage keys below. A key added elsewhere must be added here too (tests/about.test.js reads the sources and checks). */
 const ABOUT_DB='wardrobe';
-const ABOUT_KEYS=['worker_url','app_token','wipe_seen','theme','wx','wx_norm','sync_mark','sync_join','sync_sd','kit_mine','sync_status','list_pause','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','acct_was_owner','invite_ended','sync_pause','sync_pause_msg','clock_skew','clock_told','invite_lost','sync_wait','sync_restore','sync_off','rec_clean','set_clean','remind','remind_sent','care_told','black_bd','err_log','setup_at','tour_seen','home_told','tex_up','photo_up','asm_gl','del_pending','kit_import_last','ward_pending','missed_ok','safari_remind','backup_file_at','remake_day','missed_seen','plan_rules','beta_look'];
+const ABOUT_KEYS=['worker_url','app_token','wipe_seen','theme','wx','wx_norm','sync_mark','sync_join','sync_sd','kit_mine','sync_status','list_pause','last_sync','render_queue','tag_bench','bench_pct','tex_swatch','tex_swatch2','spec_recolour','asm_none','asm_vest','asm_paint2','asm_cm','asm_cm_listed','asm_cm_mf','pack_trip','pack_marks','ward_sort','persist_asked','persist_ok','acct_role','acct_was_owner','invite_ended','sync_pause','sync_pause_msg','clock_skew','clock_told','invite_lost','sync_wait','sync_restore','sync_off','rec_clean','set_clean','remind','remind_sent','care_told','black_bd','err_log','setup_at','tour_seen','home_told','tex_up','photo_up','asm_gl','del_pending','kit_import_last','ward_pending','missed_ok','safari_remind','backup_file_at','remake_day','missed_seen','plan_rules','cal_last','beta_look'];
 const ABOUT_KEY_PREFIXES=['nav_fit'];
 const ABOUT_NOTE='about_note';   // sessionStorage: what to say after the restart
 const aboutOwnKey=k=>ABOUT_KEYS.includes(k)||ABOUT_KEY_PREFIXES.some(p=>k.startsWith(p));

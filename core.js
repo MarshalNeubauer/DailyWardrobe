@@ -676,7 +676,7 @@ function cleanState(st){
    strings (recFree). An entry of the wrong shape is left out. The stamps (updated, ks, kh, kse, khe) are never touched, and a setting
    that is already clean comes out as the same object (a clean copy is returned as it is): nothing is restamped. It runs in cleanState
    (Restore file, every sync pull, roll-back), in takeSettings (start-up, after a sync, the safety restore) and once over the stored copy
-   (app.js cleanStoredSettings); fetchHolidays' tidy keeps only dated, named holidays (settings.js) ---- */
+   (app.js cleanStoredSettings); fetchHolidays' tidy keeps only dated, named holidays (daysoff.js) ---- */
 const setStr=(v,max)=>typeof v==='string'?noBidi(v).replace(/[<>"`]/g,'').slice(0,max):undefined;
 const setFields=(v,f)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).filter(([k])=>k!=='__proto__'&&REC_WORD.test(k)).map(([k,x])=>[k,f[k]?f[k](x):recFree(x)]).filter(([,x])=>x!==undefined)):undefined;
 const setList=(v,f)=>Array.isArray(v)?v.map(f).filter(x=>x!==undefined):undefined;
@@ -695,6 +695,9 @@ const SET_CLEAN={workdays:setDays,blazerDays:setDays,
   custom:v=>setFields(v,{colors:l=>setList(l,setOwn(OWN_COL_RE,{hex:h=>typeof h==='string'&&/^#[0-9a-f]{6}$/i.test(h)?h:undefined},['hex'])),
     patterns:l=>setList(l,setOwn(OWN_PAT_RE,{desc:d=>setStr(d,150),look:recStrict},[]))}),
   ownMaterials:v=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).filter(([t,l])=>t!=='__proto__'&&REC_KEY.test(t)&&Array.isArray(l)).map(([t,l])=>[t,l.filter(m=>typeof m==='string'&&ownMatName(m)===m)])):undefined,
+  // the calendar link (calendar.js; kept only as a webcal/https link of up to 2048 characters) and the events kept or dismissed {id: 'k'|'x'}
+  calendar:v=>v===null?null:setFields(v,{url:u=>typeof u==='string'&&u.length<=2048&&/^(webcals?|https?):\/\/[^\s<>"`]+$/i.test(u)?u:undefined,at:n=>typeof n==='number'&&isFinite(n)?n:0}),
+  calSeen:v=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).filter(([k,x])=>/^[0-9a-f]{16}$/.test(k)&&(x==='k'||x==='x'))):undefined,
   tagStats:v=>setFields(v,{n:n=>typeof n==='number'&&isFinite(n)?n:0,wrong:w=>w&&typeof w==='object'&&!Array.isArray(w)?Object.fromEntries(Object.entries(w).filter(([k,x])=>k!=='__proto__'&&REC_KEY.test(k)&&typeof x==='number'&&isFinite(x))):{}})};
 /* a settings copy from outside -> the same copy when every setting is clean, else a cleaned copy (null for one that isn't an object) */
 function cleanSettings(s){if(!s||typeof s!=='object'||Array.isArray(s))return null;let o=null;

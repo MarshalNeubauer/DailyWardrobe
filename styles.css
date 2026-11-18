@@ -633,10 +633,11 @@ body.nps-on #toast,body.nps-on #busy{bottom:calc(78px + env(safe-area-inset-bott
 /* ---- the score card: five dials (history.js scoreCard; 2026-11-17, the owner's approved design). Folded it is the cards' 76px: one 52px row
    of dials (ring, number inside, name under it) and the arrow ---- */
 #sbox .month-link{gap:6px;color:inherit}
-.dialrow{flex:1;min-width:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;height:52px}
+.dialrow{flex:1;min-width:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;height:52px}
 .dial{display:flex;flex-direction:column;align-items:center;min-width:0}
-.dial svg{width:40px;height:40px;display:block;flex:none;overflow:visible}
-.dial small{font-size:clamp(9px,2.9vw,10.5px);line-height:12px;font-weight:700;color:var(--mut);white-space:nowrap}
+/* six dials since Interest (2026-11-18): the ring and its name shrink with the width so all six fit at 320 px */
+.dial svg{width:clamp(30px,9.6vw,40px);height:40px;display:block;flex:none;overflow:visible}
+.dial small{font-size:clamp(8px,2.45vw,10.5px);line-height:12px;font-weight:700;color:var(--mut);white-space:nowrap;letter-spacing:-.01em}
 .dial .dtrack{fill:none;stroke:var(--sc-fill);stroke-width:4.5}
 .dial .darc{fill:none;stroke:currentColor;stroke-width:4.5;stroke-linecap:round}
 .dial .dbad{fill:none;stroke:var(--sc-bad);stroke-width:2}
@@ -1180,7 +1181,7 @@ main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add{display:none}
 }
 #ward-add svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;pointer-events:none}
 /* the Wardrobe's Undo (2026-11-17, the owner's pick from mockups): a round button like the +, 18px above it, a glowing gold ring running
-   down its seconds (--ud, set by settings.js undoFab); only while the Wardrobe shows, hidden under the item sheet, Settings and the sheets */
+   down its seconds (--ud, set by toast.js undoFab); only while the Wardrobe shows, hidden under the item sheet, Settings and the sheets */
 #undo-fab{display:none;position:fixed;z-index:var(--z-fab);bottom:calc(var(--navh) + 90px);right:max(calc(16px + env(safe-area-inset-right)), calc((100vw - 560px) / 2 + 16px));width:56px;height:56px;padding:0;border:0;border-radius:50%;background:var(--ink);color:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:.6875rem;font-weight:700;line-height:1;box-shadow:var(--fab-shadow);-webkit-tap-highlight-color:transparent}
 #wardrobe:not([hidden])~#undo-fab.on{display:flex}
 main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab{display:none}
@@ -1612,7 +1613,7 @@ header button::after{inset:-2px}
 :where(#today) .mltxt small{font-size:min(.8125rem,max(13px,3.75vw))}
 @media (max-width:340px){
   nav button{font-size:min(.9375rem,max(15px,5.6vw))}
-  header h1{font-size:min(1.3125rem,7vw)}
+  header h1{font-size:min(1.3125rem,7vw);white-space:normal}
   :where(#today) .month-link{height:auto;min-height:76px}
   .mlstrip,.pstrip{width:84px}
   :where(#today) .mltxt b{white-space:normal;overflow-wrap:anywhere}
@@ -1897,7 +1898,7 @@ header button::after{inset:-2px}
 .hrow{min-height:44px;align-items:center}
 .hrow input{width:20px;height:20px}
 .scat-h{margin:0;font:inherit;color:inherit;letter-spacing:inherit;text-transform:none}
-html.bigtext :is(.gimeta b,.cpnm,.pick-nm,.shop-lead,#settings-modal .scat-head .mltxt small){-webkit-line-clamp:3}
+html.bigtext :is(.gimeta b,.cpnm,.pick-nm,.shop-lead,#settings-modal .scat-head .mltxt small,.ivt h2){-webkit-line-clamp:3}
 html.bigtext :is(.cpnm,.pick-nm){min-height:3.6em}
 #today .plegend{margin:6px 0 2px;font-size:var(--fs-s);color:var(--mut)}
 #today .plegend span{font-weight:700;color:var(--ink)}
@@ -1912,6 +1913,54 @@ html.bigtext :is(.cpnm,.pick-nm){min-height:3.6em}
 .kit-lead{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:var(--fs-m);line-height:1.4}
 .kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar{padding-left:max(16px,var(--sal));padding-right:max(16px,var(--sar))}
 .nostore{padding-left:max(20px,var(--sal));padding-right:max(20px,var(--sar))}
+
+/* ---- calendar import (calendar.js, 2026-11-17): Settings → Calendar, its review list, Today's banner and trip note, the walkthrough's drawn screens ---- */
+.cal-form input[type=url]{flex:1 1 180px}
+.cal-conn{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin:2px 0 4px}
+.cal-conn .mut{overflow-wrap:anywhere}
+.cal-list{list-style:none;margin:6px 0 10px;padding:0;display:flex;flex-direction:column;gap:8px}
+.cal-row{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:8px 8px 8px 12px;background:var(--card)}
+.cal-row.gone .cal-ev,.cal-row.cant .cal-ev{opacity:.7}
+.cal-ev{flex:1 1 auto;min-width:0}
+.cal-ev b{display:block;overflow-wrap:anywhere;font-size:var(--fs-b)}
+.cal-ev small{display:block;color:var(--mut);overflow-wrap:anywhere;line-height:1.35}
+.cal-to{display:block;font-size:var(--fs-b);color:var(--acc-ink);font-weight:600;margin-top:2px}
+.cal-btns{flex:none;display:flex;gap:6px;align-items:center}
+#settings-modal .cal-btns .cal-ok,#settings-modal .cal-btns .cal-no{min-width:44px;padding:0;font-size:var(--fs-l)}
+#settings-modal .cal-btns .cal-ok{color:var(--ok-ink);border-color:color-mix(in srgb,var(--ok-ink) 45%,var(--line))}
+.cal-howh{margin-top:14px}
+.cal-guides button{flex:1 1 auto}
+.cal-priv{margin-top:10px}
+.cal-banner{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:6px 6px 6px 14px;border-radius:14px;border:1px solid var(--acc);background:color-mix(in srgb,var(--acc) 9%,var(--card));font-size:var(--fs-b);font-weight:600}
+.cal-banner .linkbtn{min-height:44px;padding:0 10px}
+.cal-trip{margin:0 0 10px;font-size:var(--fs-b);color:var(--mut)}
+.kp-on{fill:#2f8a57}
+.kp-knob{fill:#fff}
+.kp-ring{fill:none;stroke:var(--acc);stroke-width:1.6}
+.kp-i{fill:var(--acc-ink);font:700 11px system-ui,sans-serif}
+/* ---- cost per wear (cost.js) ---- */
+.cpwf{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:10px 0 6px}
+.cpwf label{display:flex;align-items:center;gap:8px;margin:0;font-size:var(--fs-m);font-weight:600}
+.cpwin{display:inline-flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:8px;background:var(--bg);min-height:40px;max-width:100%}
+.cpwsym{padding:0 2px 0 9px;color:var(--mut);font-weight:600;white-space:nowrap}
+.cpwin input[type="text"]{border:0!important;background:transparent!important;box-shadow:none!important;width:7.5em;max-width:100%;padding:7px 9px 7px 5px;min-height:38px}
+.cpwin input:focus{outline:none}
+.cpwin:focus-within{outline:2px solid var(--acc);outline-offset:1px}
+.cpwbought input{padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;min-height:40px;max-width:100%}
+.cpwline{margin:6px 0 2px;font-size:var(--fs-b);font-weight:700;overflow-wrap:anywhere}
+.cpwhint{margin:2px 0 4px}
+.cpwhow{margin:4px 0 2px;font-size:var(--fs-s);color:var(--mut)}
+.cpwhow summary{cursor:pointer;color:var(--acc);min-height:44px;display:flex;align-items:center;width:max-content;max-width:100%}
+.cpwhow ul{margin:0 0 6px;padding-left:18px;line-height:1.45}
+.cpwhow li{margin:2px 0;overflow-wrap:anywhere}
+.cpw-h{margin:12px 0 4px;font-size:var(--fs-s);font-weight:700;color:var(--mut)}
+#st-cpw .cpw-tiles{grid-template-columns:repeat(2,1fr);margin:6px 0 4px}
+#st-cpw .st-tile{background:var(--bg)}
+button.cpw-row{width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:7px 0;min-height:56px;color:inherit}
+.cpw-go{flex:none;color:var(--mut);font-size:var(--fs-xl)}
+.cpwset{flex-wrap:nowrap!important}
+#settings-modal .cpwset .cpwin input[type="text"]{width:6.5em}
+.cpwset input[type="number"]{width:5em;padding:7px;border-radius:8px;border:1px solid var(--line);background:var(--bg);min-height:40px}
 /* ---- the New Look editor (beta, look.js; 2026-11-17, the owner's approved mockup C:\code\audit-2026-11-13\look-mockup\): one Look section,
    rows of swatch + value + chevron, Claude's chips on the row they change, Read with Claude, the material picker's swatches ---- */
 .lkbody{display:flex;flex-direction:column;gap:8px}

@@ -12,7 +12,7 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
     const setup=(d,extra='')=>p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.holidays=null;settings.daysOff=[];weather={};climate=null;TODAY_OVERRIDE='2026-11-17T09:00:00';dayRecs={};${extra};cache={};sel=new Date(2026,10,${d});view={y:2026,m:10};scoreOpen=false;monthOpen=false;listOpen=false;show('today')})()`);
     // ---- the dials over a month (computed as the card does)
     await setup(17);
-    const M=await p.evaluate(()=>{const out={h:[],t:[],f:[],v:[],o:[]},ranks=[],gains=[];
+    const M=await p.evaluate(()=>{const out={h:[],t:[],f:[],v:[],o:[],i:[]},ranks=[],gains=[];
       for(let d=new Date(2026,10,2);d<=new Date(2026,10,30);d.setDate(d.getDate()+1)){if(!isWorkday(d))continue;sel=new Date(d);const o=planFor()[key(sel)];if(!o)continue;
         const D=dialsFor(o);for(const k of DIAL_KEYS)out[k].push(D[k].v);const R=rankLooks(rankPools(o),o);ranks.push(R.rank);for(const s of R.swaps)gains.push(R.rank-s.rank)}
       sel=new Date(2026,10,17);return {out,ranks,gains}});
@@ -34,6 +34,17 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
       return {taupe:v(tp,false).v,navy:v(nv,false).v,camo:v(cm,false).v,taupeF:v(tp,true).v,navyF:v(nv,true).v,why:v(tp,false).why}});
     ok(Oc.taupe>=Oc.navy-8&&!/less formal/.test(Oc.why),`${eng}: on an ordinary suit day a taupe suit suits the day (${Oc.taupe} against navy ${Oc.navy}: "${Oc.why}")`);
     ok(Oc.camo<Oc.taupe&&Oc.taupeF<Oc.navyF-10,`${eng}: camouflage doesn't (${Oc.camo}); on a formal day the dark suit still leads (taupe ${Oc.taupeF}, navy ${Oc.navyF})`);
+    // ---- Interest (2026-11-18): deliberate choices score; the safe gray-white-black look scores low; it counts in the look only as
+    // Harmony allows
+    const It=await p.evaluate(()=>{const P=(type,c,x={})=>({id:type+c+(x.pattern||''),type,primaryColor:c,pattern:'solid',...x});
+      const safe={top:P('suit','grey'),shirt:P('shirt','white'),tie:P('tie','black'),shoes:P('shoes','black',{leather:'calf'}),belt:P('belt','black',{leather:'calf'}),suitDay:true,clim:{season:'mild'}};
+      const bold={top:P('suit','navy',{pattern:'pinstripe'}),shirt:P('shirt','lightblue'),tie:P('tie','burgundy',{secondaryColor:'navy',pattern:'stripe'}),shoes:P('shoes','brown',{leather:'calf'}),belt:P('belt','brown',{leather:'calf'}),suitDay:true,clim:{season:'mild'}};
+      const a=dialInterest(safe),b=dialInterest(bold),h=o=>dialHarmony(o,true).v,base=o=>h(o)+dialTexture(o,true).v+dialOccasion(o,true).v;
+      const clash={...bold,shirt:P('shirt','navy')};   // (a navy shirt under a navy suit: Harmony low, so Interest shouldn't lift it)
+      return {safe:a.v,bold:b.v,why:b.why,lookBold:dialLook(bold)-base(bold),half:Math.round(INT_W*b.v),hClash:h(clash),lookClash:dialLook(clash)-base(clash),hBold:h(bold)}});
+    ok(It.safe<45&&It.bold>=75&&/picks up/.test(It.why),`${eng}: Interest: the gray suit, white shirt, black tie and shoes score ${It.safe}; a pinstripe, light blue shirt, burgundy-and-navy stripe tie and brown shoes ${It.bold} ("${It.why}")`);
+    ok(It.hBold<80||Math.abs(It.lookBold-It.half)<=1,`${eng}: it adds half its value to the look when Harmony is 80 or more (${It.lookBold.toFixed(1)}, Harmony ${It.hBold})`);
+    ok(It.hClash>=65||It.lookClash===0,`${eng}: and nothing when Harmony is under 65 (Harmony ${It.hClash}, added ${It.lookClash})`);
     // ---- a broken rule rings its own dial
     const B=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:'z'+type+(k++),type,primaryColor,pattern:'solid',...x});
       const navy=I('suit','navy'),wh=I('shirt','white'),bu=I('tie','burgundy'),bl=I('shoes','black',{leather:'calf'}),bb=I('belt','black',{leather:'calf',metal:'silver'}),br=I('belt','brown',{leather:'calf',metal:'silver'});
@@ -54,12 +65,12 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
     const r0=await p.evaluate(()=>({dials:document.querySelectorAll('#sbox .dial').length,line:document.querySelector('#srank').textContent}));
     await p.waitForFunction(()=>document.querySelector('#sbox.ranked'),null,{timeout:15000}).catch(()=>{});
     const r1=await p.evaluate(()=>({line:document.querySelector('#srank').textContent,label:document.querySelector('#sbox .month-link').getAttribute('aria-label'),wk:!!rankW,res:rankMemo.v}));
-    ok(r0.dials===5&&/(best of \d+ outfits today|Ranking)/.test(r0.line)&&/(\d+(st|nd|rd|th) best|Best) of \d+ outfits today/.test(r1.line)&&/best of/.test(r1.label)&&r1.wk,`${eng}: the dials show at once, the rank line fills in from the worker ("${r1.line}")`);
+    ok(r0.dials===6&&/(best of \d+ outfits today|Ranking)/.test(r0.line)&&/(\d+(st|nd|rd|th) best|Best) of \d+ outfits today/.test(r1.line)&&/best of/.test(r1.label)&&r1.wk,`${eng}: the dials show at once, the rank line fills in from the worker ("${r1.line}")`);
     // the unfolded card: rules, Why, dial reasons, the week, weather, rules list
     await p.evaluate(()=>toggleScore());await settle(p,1200);
     const U=await p.evaluate(()=>{const b=document.querySelector('#sbox'),t=b.innerText;return {rules:b.querySelector('.srules').textContent,why:b.querySelector('#swhy').textContent,bars:b.querySelectorAll('.sdl').length,
       week:/This week.s variety · \d+/i.test(t),weeks:b.querySelectorAll('.sweeks li').length,list:b.querySelectorAll('.srl li').length,swaps:[...b.querySelectorAll('.sfixbtn')].map(x=>x.textContent)}});
-    ok(/All \d+ rules met/.test(U.rules)&&U.why.length>20&&U.bars===8&&U.week&&U.weeks>=4&&U.list>=8,`${eng}: unfolded: "${U.rules}", Why, five dial reasons and three week bars, ${U.weeks} weeks, ${U.list} rules`);
+    ok(/All \d+ rules met/.test(U.rules)&&U.why.length>20&&U.bars===9&&U.week&&U.weeks>=4&&U.list>=8,`${eng}: unfolded: "${U.rules}", Why, six dial reasons and three week bars, ${U.weeks} weeks, ${U.list} rules`);
     ok(U.swaps.every(s=>/^Wear the .*\+\d+ places?.*best/.test(s)),`${eng}: swaps say the places they gain (${U.swaps.join(' | ')||'none'})`);
     await p.evaluate(()=>toggleScore());await settle(p,800);
     // the rank on a 4x slower CPU, with a large wardrobe (Chromium: CDP)

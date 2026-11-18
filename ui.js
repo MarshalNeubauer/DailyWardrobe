@@ -102,7 +102,7 @@ function layerInert(){const up=layerUp(),on=up.length>0||!!document.querySelecto
   // the item sheet under a sheet of its own (the color sheet, the close-up chooser, the reading sheet, a question, the picker): out of
   // reach too (fix round 3, W2-19-03: 18 of 40 Tabs from the color sheet landed in the item sheet behind it)
   const iv=document.querySelector('#item-view');if(iv)iv.inert=!!up.length&&up[0]!==iv&&iv.classList.contains('on');
-  if((!on||npsTop)&&typeof npsId!=='undefined'&&npsId)npsInert(true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add.js)
+  if((!on||npsTop)&&typeof npsId!=='undefined'&&npsId)npsInert(true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add-sheet.js)
 function layerOpen(el){if(!el)return;if(!layerFrom.has(el)){const a=document.activeElement;layerFrom.set(el,a);if(a&&a.id)layerFromId.set(el,a.id);else layerFromId.delete(el)}
   if(!el.hasAttribute('tabindex'))el.tabIndex=-1;layerInert();
   if(!el.contains(document.activeElement))try{el.focus({preventScroll:true})}catch{}}

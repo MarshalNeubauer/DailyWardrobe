@@ -6,6 +6,7 @@
     "test": "node tests/run.js --changed",
     "test:all": "node tests/run.js",
     "test:webkit": "node tests/run.js --webkit",
+    "test:cloud": "node tools/cloud-tests.js",
     "test:replay": "node tests/replay/run.js",
     "lint": "node tests/lint.js",
     "typecheck": "node tests/typecheck.js",
