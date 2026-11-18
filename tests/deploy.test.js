@@ -26,14 +26,26 @@ module.exports=async({ok,ROOT})=>{
   {const imp=fs.readFileSync(path.join(ROOT,'tests/impact.js'),'utf8'),said=(sel.match(/grep -Eq '([^']+)'/)||[])[1]||'';
     const parts=said.split('|').map(t=>t.replace(/\\\./g,'.'));
     ok(parts.length===2&&parts.every(t=>t.length>10&&imp.includes("'"+t+"'")),'the sentences it takes for "nothing runs" are the ones tests/impact.js prints');}
-  ok(/if: steps\.sel\.outputs\.browser == 'yes'/.test(inst)&&inst.split('playwright install').length===3&&wf.split('playwright install').length===3,'the browsers are installed only when tests will run');
+  const apt=step("The browsers' system packages\n");
+  ok(/if: steps\.sel\.outputs\.browser == 'yes'/.test(inst)&&/if: steps\.sel\.outputs\.browser == 'yes'/.test(apt)&&inst.split('playwright install').length===2&&wf.split('playwright install').length===2,'the browsers and their system packages are installed only when tests will run');
   // the WebKit halves (#551) need WebKit: the deploy of #557 failed 11 checks with "Executable doesn't exist" (2026-11-17)
   {const run=fs.readFileSync(path.join(ROOT,'tests/run.js'),'utf8');
     ok(/grep -q '\^WebKit: '/.test(sel)&&/grep -Eq '\^WebKit: \.\*do not run'/.test(sel)&&/webkit=yes/.test(sel)&&/webkit=no/.test(sel)
       &&/console\.log\([^\n]*`WebKit: /.test(run)&&run.includes("+' do not run'")
-      &&/steps\.sel\.outputs\.webkit \}\}" = yes \]; then B="chromium webkit"/.test(inst),'WebKit is installed too when the selection runs WebKit halves (run.js\'s "WebKit: …" line, "do not run" when none does)');}
-  ok(!/--with-deps/.test(wf)&&/timeout -k 10 \$T npx playwright install-deps \$B \|\| echo/.test(inst),'system packages (apt) are tried for a limited time and never fail the step');
-  ok(/for i in 1 2 3; do npx playwright install \$B && exit 0;/.test(inst)&&/\n\s+exit 1\s*$/.test(inst),'the browser download is tried three times');
+      &&/B=chromium; \[ "\$\{\{ steps\.sel\.outputs\.webkit \}\}" = yes \] && B="chromium webkit"/.test(inst)
+      &&/B=chromium; \[ "\$\{\{ steps\.sel\.outputs\.webkit \}\}" = yes \] && B="chromium webkit"/.test(step("The browsers' system packages (cache key)")),'WebKit and its system packages are installed too when the selection runs WebKit halves (run.js\'s "WebKit: …" line, "do not run" when none does)');}
+  // the system packages: cached .deb files installed offline, apt only on a miss (2026-11-17/18: 23 s to over 300 s a runner)
+  {const sh=fs.readFileSync(path.join(ROOT,'tools/ci-browser-deps.sh'),'utf8'),key=step("The browsers' system packages (cache key)");
+    ok(!/--with-deps/.test(wf)&&!/install-deps/.test(wf)&&/bash tools\/ci-browser-deps\.sh install ~\/\.cache\/browser-apt \$T /.test(apt)&&/T=120; .*T=480/.test(apt)
+      &&!/^set -e|set -[a-z]*e/m.test(sh)&&/::warning::The browsers' system packages could not be installed[^\n]*\n\s+exit 0/.test(sh),'system packages (apt) are tried for a limited time and never fail the step (the tests fail without them)');
+    ok(/\$ImageOS-pw\$\{\{ steps\.sel\.outputs\.pw \}\}-[^\n]*\$L-\$ImageVersion/.test(key)&&/uses: actions\/cache\/restore@v\d+\n[^]*?path: ~\/\.cache\/browser-apt\n\s+key: \$\{\{ steps\.aptkey\.outputs\.key \}\}/.test(wf)
+      &&/if: steps\.apt\.outputs\.save == 'yes' && steps\.aptc\.outputs\.cache-hit != 'true'\n\s+uses: actions\/cache\/save@v\d+/.test(wf)
+      &&/--no-download/.test(sh)&&/Acquire::Retries=3/.test(sh),'their .deb files are cached by runner image, Playwright version and package list, installed offline, apt with retries only on a miss');}
+  // Run workflow with "check": the tests and browser installs on any branch, never a deploy
+  {const dep=step('Deploy to Cloudflare');
+    ok(/if: steps\.cfg\.outputs\.ready == 'yes' && !inputs\.check\n/.test(dep)&&/TEST_ONLY: \$\{\{ inputs\.check && inputs\.only \|\| '' \}\}/.test(wf)&&/ONLY: \$\{\{ inputs\.check && inputs\.only \|\| '' \}\}/.test(sel)
+      &&/concurrency: \$\{\{ inputs\.check && format\('deploy-worker-check-\{0\}', github\.ref\) \|\| 'deploy-worker' \}\}/.test(wf),'a check run (workflow_dispatch "check") tests without deploying, in its own concurrency group');}
+  ok(/for i in 1 2 3; do npx playwright install \$B && exit 0;/.test(inst)&&/\n\s+exit 1\n/.test(inst),'the browser download is tried three times');
   ok(/- uses: actions\/checkout@v\d+\n\s+with:\n\s+fetch-depth: 0\n/.test(wf),'the checkout has the whole history (tests read older commits with git show)');
   ok(/^    timeout-minutes: \d+$/m.test(wf),'the job has a time limit');
   // npm install must leave the checkout as it was: a package-lock.json written on the runner counts as a change, and then every test runs
