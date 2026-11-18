@@ -44,7 +44,12 @@ if installed "${pkgs[@]}" >/dev/null; then echo "all installed already (the runn
 debs=("$dir"/*.deb)
 if [ -e "${debs[0]}" ]; then
   echo "installing ${#debs[@]} kept .deb files offline"
-  if sudo -E timeout -k 5 180 apt-get install -y -q --no-install-recommends --no-download -o Dpkg::Use-Pty=0 "${debs[@]}" >"$RUNNER_TEMP/apt-offline.log" 2>&1 && installed "${pkgs[@]}"; then
+  # apt sees only the installed packages and these files: no package lists (the image's are stale, and apt went for the
+  # archive's copies: "Unable to fetch some archives"), no sources
+  nolists=$(mktemp -d); mkdir -p "$nolists/partial"
+  off=(-o Dir::State::Lists="$nolists" -o Dir::Etc::SourceList=/dev/null -o Dir::Etc::SourceParts="$nolists" -o Dir::Cache::pkgcache= -o Dir::Cache::srcpkgcache= -o Dpkg::Use-Pty=0)
+  if { sudo timeout -k 5 180 env DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends --no-download "${off[@]}" "${debs[@]}" ||
+       { echo "apt could not install them alone; dpkg -i"; sudo timeout -k 5 180 env DEBIAN_FRONTEND=noninteractive dpkg -i "${debs[@]}"; }; } >"$RUNNER_TEMP/apt-offline.log" 2>&1 && installed "${pkgs[@]}"; then
     echo "installed from the cache in $((SECONDS - start)) s"; echo "save=yes" >> "$out"; exit 0
   fi
   tail -n 20 "$RUNNER_TEMP/apt-offline.log"
@@ -57,7 +62,7 @@ sudo apt-get clean
 for i in 1 2 3; do
   left=$((deadline - SECONDS)); [ $left -gt 20 ] || break
   echo "apt, try $i ($left s left)"
-  if sudo -E timeout -k 5 $left sh -c 'apt-get update -q -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 && apt-get install -y -q --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o APT::Keep-Downloaded-Packages=true -o Dpkg::Use-Pty=0 "$@"' sh "${pkgs[@]}" && installed "${pkgs[@]}"; then ok=1; break; fi
+  if sudo timeout -k 5 $left env DEBIAN_FRONTEND=noninteractive sh -c 'apt-get update -q -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 && apt-get install -y -q --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o APT::Keep-Downloaded-Packages=true -o Dpkg::Use-Pty=0 "$@"' sh "${pkgs[@]}" && installed "${pkgs[@]}"; then ok=1; break; fi
   left=$((deadline - SECONDS)); [ $left -gt $((i * 10 + 20)) ] && sleep $((i * 10))
 done
 if [ -z "$ok" ]; then
