@@ -25,6 +25,7 @@
 //   node tests/typecheck.js --list [file]   every error (or one file's), then the count per error code
 // Without TypeScript installed (a checkout from before it was added: run `npm install`) it says so and passes.
 const fs=require('fs'),path=require('path'),{execFileSync}=require('child_process');
+const {scriptList}=require('./scriptlist');
 const ROOT=path.resolve(__dirname,'..');
 const BASE='tests/typecheck-baseline.json',DTS='types/globals.d.ts';
 const rd=f=>fs.readFileSync(path.join(ROOT,f),'utf8');
@@ -34,7 +35,7 @@ const WEB=['lib.es2023.d.ts','lib.webworker.d.ts'];
 
 /* the scopes, found as eslint.config.mjs finds them */
 function scopes(){
-  const page=[...rd('index.html').matchAll(/<script\s+src="([^"]+\.js)"/g)].map(m=>m[1]);
+  const page=scriptList(rd('index.html'));
   const imp=f=>{const m=/importScripts\(([^)]*)\)/.exec(rd(f));return[...(m?[...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1]):[]),f]};
   const W=f=>{const files=imp(f);return{files,own:files.filter(x=>!page.includes(x)),lib:WEB}};
   const server=['worker.js',...fs.readdirSync(path.join(ROOT,'worker')).filter(f=>f.endsWith('.js')).sort().map(f=>'worker/'+f)];
