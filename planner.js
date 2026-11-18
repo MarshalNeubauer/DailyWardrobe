@@ -302,7 +302,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans the days after today (the week's locks and
    the app's own recorded pieces go; the owner's swaps and picks (force, skip, the vest) and a kept trip stay: replanFuture(true) in history.js) */
-const PLAN_RULES=26;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
+const PLAN_RULES=27;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
 const LOOK_PAIR=3,LOOK_K=2,LOOK_FREE=3,LOOK_RESTED=.75;   // the look in the clothes choice (chooseClothes): points per point of dialLook short of each piece's own best outfit, and of the best rested one's
 const FORMAL_QWIN=3;   // a formal day, a wedding or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
@@ -849,7 +849,7 @@ function rateOutfit(o){
    Each returns {v, why}: the value and one sentence. A broken rule (a hard check of rateOutfit) rings the dial it belongs to
    (DIAL_OF_CHECK). dialLook (Harmony + Texture + Occasion) ranks the outfits a day allows (rankLooks, run in analysis-worker.js) */
 const dLin=(x,a,b)=>Math.max(0,Math.min(1,(x-a)/(b-a)));
-const DIAL_KEYS=['h','t','f','v','o'],DIAL_NAMES={h:'Harmony',t:'Texture',f:'Freshness',v:'Variety',o:'Occasion'};
+const DIAL_KEYS=['h','t','f','v','o','i'],DIAL_NAMES={h:'Harmony',t:'Texture',f:'Freshness',v:'Variety',o:'Occasion',i:'Interest'};
 const DIAL_OF_CHECK={'Complete outfit':'o',Shirt:'h','Tie and shirt':'h','Tie and jacket':'h',Patterns:'t',Pants:'h',Shoes:'o',Belt:'o','Leather formality':'o',Socks:'h','Overall harmony':'h',Weather:'o',Variety:'v','Shirt and pants':'h'};
 /* the rules: rateOutfit's checks that can be broken, as the card names them ('Complete outfit' always counts; the others when the check applies) */
 const DIAL_RULES=[['Complete outfit','Complete outfit'],['Shirt','Shirt lighter than the jacket'],['Tie and shirt','Tie stands out from the shirt'],['Tie and jacket','Not a black tie on a black suit'],
@@ -962,8 +962,40 @@ function dialVariety(o,recent){const {top,shirt,tie}=o;recent=(recent||[]).slice
 /* the same shirt color and tie as one of the recent workdays (the calendar's gold border; the planner's pairRepeat rule, PAIR_DAYS window):
    the index of that day in recent, or -1 */
 const pairSeen=(o,recent)=>{if(!o||!o.shirt||!o.tie)return -1;const sg=shirtGroup(o.shirt);return (recent||[]).slice(0,PAIR_DAYS).findIndex(x=>x&&x.o&&x.o.tie&&x.o.shirt&&x.o.tie.id===o.tie.id&&shirtGroup(x.o.shirt)===sg)};
-/* the look's rank value: Harmony + Texture + Occasion (Freshness and Variety stay out, or the planned outfit would always be first) */
-const dialLook=o=>dialHarmony(o,true).v+dialTexture(o,true).v+dialOccasion(o,true).v;
+/* Interest (2026-11-18, the owner: the rank's #1 was "the most basic possible suit"; his choice from mockups, C:\code\audit-2026-11-13\interest\):
+   the deliberate choices the other dials don't reward, each part 0-1 with a weight, no stretch:
+   - a color echo (30): one of the tie's colors (its own, second, third; chroma over 9) within INT_ECHO ΔE00 of the jacket's, its second
+     color or the shirt's (chroma over 7), at most INT_ECHO_L lightness apart (a dark navy tie doesn't pick up a periwinkle shirt);
+   - two patterns working together (25): patsOf (the rules already keep out a clash), one pattern half, none .15;
+   - a jacket with character (20): a color other than navy, charcoal, gray or black 1, a patterned basic .7, a plain basic .25;
+   - a shirt beyond plain white (15): a color or a pattern 1, a white weave .5, plain white .2;
+   - the shoes (10): brown, oxblood or any not black 1, black with a black or charcoal jacket .6, else .35 */
+const INT_ECHO=[12,18],INT_ECHO_L=20,INT_WEAVES=['dobby','woven','oxford','herringbone','twill','royal-oxford','end-on-end','pinpoint','textured','fine-texture'];
+const intHx=k=>!k||k==='none'?null:(COLORS[k]||(typeof CUSTOM_COL!=='undefined'&&CUSTOM_COL[k]&&CUSTOM_COL[k].hex)||null),intChr=l=>Math.hypot(l[1],l[2]);
+/* an item's colors in Lab for the echo: [main, second, third] (null where none); kept for a planning or rank run (colRun.il), where the same
+   pieces are met thousands of times (a 36,750-outfit rank at 4x CPU took 988 ms without it) */
+function intLabs(i){const run=typeof colRun!=='undefined'&&colRun,m=run&&(run.il||(run.il=new Map()));let v=m&&m.get(i);if(v)return v;
+  const lab=h=>h?rgbLab(...hexRgb(h)):null;v=[lab(colOf(i)),lab(intHx(i.secondaryColor)),lab(intHx(i.tertiaryColor))];if(m)m.set(i,v);return v}
+function dialInterest(o,fast){const {top,shirt,tie,shoes}=o,P=[];
+  if(tie){const tc=intLabs(tie).filter(l=>l&&intChr(l)>9),J=top?intLabs(top):[],S=shirt?intLabs(shirt):[];
+    const tg=[[top,J[0]],[top,J[1]],[shirt,S[0]]].filter(([i,l])=>i&&l&&intChr(l)>7);
+    let best=null;for(const a of tc)for(const [i,l] of tg){if(Math.abs(a[0]-l[0])>INT_ECHO_L)continue;const d=dE00(a,l);if(!best||d<best.d)best={d,i}}
+    const v=!best?.15:best.d<INT_ECHO[0]?1:best.d<INT_ECHO[1]?.6:.2;
+    P.push([30,v,()=>best&&best.d<INT_ECHO[1]?`the tie picks up the ${dCol(best.i)} of the ${best.i===top?dJacket(o):'shirt'}`:'the tie stands on its own',()=>`nothing in the tie picks up another piece's color`])}
+  const n=patsOf([[top,'top'],[o.suitDay?null:o.bot,'bot'],[shirt,'shirt'],[tie,'tie']]).length;
+  P.push([25,n>=2?1:n===1?.5:.15,()=>'two patterns work together',()=>n===1?'only one pattern':'no pattern anywhere']);
+  if(top){const basic=['navy','charcoal','grey','black'].includes(pcol(top)),pat=!!patInfo(top,'top');
+    P.push([20,!basic?1:pat?.7:.25,()=>!basic?`the ${dCol(top)} ${dJacket(o)} has character`:`the patterned ${dJacket(o)}`,()=>`a standard ${dCol(top)} ${dJacket(o)}`])}
+  if(shirt){const w=planCol(shirt)==='white',pat=!!patInfo(shirt,'shirt'),wv=INT_WEAVES.includes(patOf(shirt));
+    P.push([15,!w||pat?1:wv?.5:.2,()=>!w||pat?`the ${dCol(shirt)} shirt adds life`:'the woven white shirt',()=>'a plain white shirt'])}
+  if(shoes&&top){const bl=leatherGroup(planCol(shoes))==='black',dark=['black','charcoal'].includes(pcol(top));
+    P.push([10,!bl?1:dark?.6:.35,()=>`${dCol(shoes)} shoes warm it up`,()=>'black shoes, the safe choice'])}
+  return dialSum(P,1,fast)}
+/* the look's rank value: Harmony + Texture + Occasion + half of Interest (Freshness and Variety stay out, or the planned outfit would always
+   be first). Interest counts only as Harmony allows (INT_GATE: none at 65, all from 80), so an outfit that sits badly together can't climb
+   on interest; the planner's look term (planLook, chooseClothes) reads the same value */
+const INT_W=.5,INT_GATE=[65,80];
+const dialLook=o=>{const h=dialHarmony(o,true).v;return h+dialTexture(o,true).v+dialOccasion(o,true).v+INT_W*dLin(h,INT_GATE[0],INT_GATE[1])*dialInterest(o,true).v};
 /* Rank the outfits a day allows (the score card's "38th best of 296 outfits today"): every jacket of the day's kind in rotation x pants
    (the suit's own on a suit day) x shirt x tie, the shoes, belt and watch chosen for each jacket and pants as the planner's chooseLeather
    does (without rest); only the combinations that break no rule count (clothesHard, shoes that suit, the season). pools: {top, bot, shirt,

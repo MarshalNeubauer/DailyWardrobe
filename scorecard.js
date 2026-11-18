@@ -25,7 +25,7 @@ let dialMemo={c:null,k:'',v:null};
 const outfitKey=o=>key(sel)+JSON.stringify(idsOf(o))+!!o.vest+items.length;
 function dialsFor(o){const k=outfitKey(o);if(dialMemo.c===cache&&dialMemo.k===k)return dialMemo.v;let v;
   if(window.TEST_PLAN)v=TEST_PLAN.dials(o);   // (tests/fixedplan.js: fixed dials, no planner)
-  else{const rec=recentWork(sel);v={h:dialHarmony(o),t:dialTexture(o),f:dialFreshness(o,dialCycle(sel)),v:dialVariety(o,rec),o:dialOccasion(o),r:rateOutfit(o)}}
+  else{const rec=recentWork(sel);v={h:dialHarmony(o),t:dialTexture(o),f:dialFreshness(o,dialCycle(sel)),v:dialVariety(o,rec),o:dialOccasion(o),i:dialInterest(o),r:rateOutfit(o)}}
   v.bad={};for(const c of v.r.hard)v.bad[DIAL_OF_CHECK[c]||'o']=c;
   dialMemo={c:cache,k,v};return v}
 /* ---- the rank: in analysis-worker.js (planner.js rankLooks), only for the day on screen, kept per day and outfit (rankMemo, like the
@@ -108,7 +108,7 @@ function weekVariety(wk){const D=wk.days;if(!D.length)return null;
 let weekMemo={c:null,k:'',v:null};
 function weeksHtml(){const k=key(sel);if(weekMemo.c===cache&&weekMemo.k===k)return weekMemo.v;
   const T=todayDate(),cur=weekOf(sel),V=weekVariety(cur),bar=(t,v,why,n)=>`<div class="sdl sli" style="--i:${n}"><div class="sdh"><span>${t}</span><b class="c-${dialTone(v)}">${v}</b></div><span class="sdb" aria-hidden="true"><i class="b-${dialTone(v)}" style="--p:${v/100}"></i></span><small>${esc(why)}</small></div>`;
-  let h='';if(V){h+=`<p class="ssec sli">This week’s variety · <b class="c-${dialTone(V.score)}">${V.score}</b></p>`+V.parts.map((p,n)=>bar(p[0],p[1],p[2],n+8)).join('');
+  let h='';if(V){h+=`<p class="ssec sli">This week’s variety · <b class="c-${dialTone(V.score)}">${V.score}</b></p>`+V.parts.map((p,n)=>bar(p[0],p[1],p[2],n+3+DIAL_KEYS.length)).join('');   // (after the dials' bars, --i 3 on)
     const m=sel.getMonth(),y=sel.getFullYear(),last=new Date(y,m+1,0),rows=[];
     for(let s=weekOf(new Date(y,m,1)).start;s<=last;s=new Date(s.getFullYear(),s.getMonth(),s.getDate()+7)){const wk=weekOf(s);wk.days=wk.days.filter(x=>x.d.getMonth()===m);const v=weekVariety(wk);if(!v)continue;
       const a=wk.days[0].d,b=wk.days[wk.days.length-1].d,mo=a.toLocaleDateString('en-US',{month:'short'}),isCur=+cur.start===+wk.start,fut=a>T;

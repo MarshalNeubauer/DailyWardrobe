@@ -220,7 +220,7 @@ const sepnotes=async({ok,chromium,url,settle})=>{
     // the metal note in plain words ("other" is gunmetal)
     ok(r.o.notes.includes('The silver watch and the gunmetal belt buckle are different metals.'),`the metal note reads naturally (${r.o.notes.filter(t=>/metal/.test(t)).join(' / ')})`);
     // the dials: "!" with the red ring exactly on the dials with a broken rule; a 0 draws no arc
-    ok(r.dials.length===5&&r.dials.every(d=>(d.txt==='!')===d.bad&&(d.txt!=='0'||!d.arc)),`each dial: "!" with its red ring for a broken rule, no stray dot at 0 (${r.dials.map(d=>d.name+' '+d.txt+(d.arc?'':' no arc')+(d.bad?' ring':'')).join(', ')}; broken ${r.hard.join(', ')||'none'})`);
+    ok(r.dials.length===6&&r.dials.every(d=>(d.txt==='!')===d.bad&&(d.txt!=='0'||!d.arc)),`each dial: "!" with its red ring for a broken rule, no stray dot at 0 (${r.dials.map(d=>d.name+' '+d.txt+(d.arc?'':' no arc')+(d.bad?' ring':'')).join(', ')}; broken ${r.hard.join(', ')||'none'})`);
     ok(r.hard.every(l=>r.dials.some(d=>d.txt==='!'&&d.name===({h:'Harmony',t:'Texture',f:'Freshness',v:'Variety',o:'Occasion'})[r.bad&&Object.keys(r.bad).find(k=>r.bad[k]===l)])),`every broken rule rings its dial (${r.hard.join(', ')||'none'})`);
     ok(!r.unmapped.length,`every rule the card lists belongs to a dial (${r.unmapped.join(', ')})`);
     ok(r.hbad.name==='Harmony'&&r.hbad.txt==='!'&&r.hbad.ring,`a broken Harmony rule (the shirt the jacket's color) shows "!" ringed in red on Harmony (${JSON.stringify(r.hbad)})`);
