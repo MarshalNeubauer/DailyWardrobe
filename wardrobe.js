@@ -56,11 +56,13 @@ function wardOrder(list,sort,wear){
     byType;
   return list.slice().sort(f)}
 /* the Wardrobe list on screen: the chip's type, what the search matches, in the chosen order. The item sheet steps through it. */
+/* the chip chosen: 'all', a type, or 'fav' (the favorite pieces, fav.js), which reads as 'all' once no piece is a favorite */
+const wardFlt=()=>flt==='fav'&&!(typeof favItemSet==='function'&&favItemSet())?'all':flt;
 function wardView(){
-  const q=wardNorm(wardQ),s=wardSort(),k=flt+'|'+s+'|'+q;
+  const ft=wardFlt(),q=wardNorm(wardQ),s=wardSort(),k=ft+'|'+s+'|'+q+(ft==='fav'?'|'+[...favItemSet()].join():'');
   if(wardMemo&&wardMemo.items===items&&wardMemo.n===items.length&&wardMemo.k===k)return wardMemo.list;
   const wear=s==='worn'||s==='rest'?wardWear():null;
-  const list=wardOrder(items.filter(i=>(flt==='all'||i.type===flt)&&(!q||wardMatch(i,q))),s,wear);
+  const list=wardOrder(items.filter(i=>(ft==='all'||i.type===ft||(ft==='fav'&&isFavItem(i.id)))&&(!q||wardMatch(i,q))),s,wear);
   wardMemo={items,n:items.length,k,list,wear,sort:s,q};return list}
 const wardFresh=()=>{wardMemo=null;return wardView()};
 
@@ -80,7 +82,7 @@ function giNote(tag){const t=String(tag||'').replace(/<[^>]*>/g,' ').replace(/\s
 function wardGrid(list){
   if(list.length){const m=wardMemo&&wardMemo.list===list?wardMemo:null,w=m&&m.wear,
       wl=i=>!w?'':`<small class="wwear">${m.sort==='worn'?(w.n[i.id]?`Worn ${w.n[i.id]} time${w.n[i.id]===1?'':'s'}`:'Not worn yet'):w.last[i.id]?`Last worn ${w.last[i.id].toLocaleDateString(undefined,{month:'short',day:'numeric'})}`:'Not worn yet'}</small>`;
-    return `<div class="grid">${list.map(i=>{const tag=giTag(i),wp=wardPic(i);return `<div class="gi${i.paused?' paused':''}" id="gi-${esc(i.id)}"><button class="giopen" onclick="openItem('${jsq(i.id)}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}${giNote(tag)}">${wp?`<img class="ph" src="${srcOk(wp)}" alt="">`:i.photo?`<img class="ph" src="${srcOk(phSm(i))}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${isCargo(i)?'Cargo pants':i.type==='pants'&&trouserKind(i)!=='dress'?cap1(trouserKind(i)):TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${tag}</button></div>`}).join('')}</div>`}   // (wardPic once a box: each call schedules the picture's download)
+    return `<div class="grid">${list.map(i=>{const tag=giTag(i),wp=wardPic(i);return `<div class="gi${i.paused?' paused':''}" id="gi-${esc(i.id)}"><button class="giopen" onclick="openItem('${jsq(i.id)}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}${giNote(tag)}${isFavItem(i.id)?', favorite':''}">${typeof favMark==='function'?favMark(i):''}${wp?`<img class="ph" src="${srcOk(wp)}" alt="">`:i.photo?`<img class="ph" src="${srcOk(phSm(i))}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${isCargo(i)?'Cargo pants':i.type==='pants'&&trouserKind(i)!=='dress'?cap1(trouserKind(i)):TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${tag}</button></div>`}).join('')}</div>`}   // (wardPic once a box: each call schedules the picture's download)
   const q=wardNorm(wardQ);
   if(!items.length&&typeof setupWardEmpty==='function')return setupWardEmpty();   // setup.js: the empty Wardrobe's card
   if(!q||!items.length)return '<p class="mut">Nothing here yet. Add one with the + button.</p>';

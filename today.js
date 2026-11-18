@@ -94,15 +94,17 @@ function wornBar(o){if(wardShort())return '';
   const lw=lastWorn(o);
   // "This look": the same jacket, shirt colour and tie (lastWorn), not the suit alone; "Last worn" read as the suit's own last wear, beside a
   // cleaning banner about the suit (audit 2026-11-14)
-  const pill=lw?`<small class="lastworn">This look last worn ${lw.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</small>`:'';
+  const pill=lw?`<small class="lastworn">${typeof favLastIcon==='function'?favLastIcon(o):''}This look last worn ${lw.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</small>`:'';
   // (2026-11-14, the owner) no ✕ / ✓ circles on the picture any more: worn or not is the pill in the date bar (wornPill); only "Last worn"
   return pill?`<div class="wornbar">${pill}</div>`:''}
 /* the date bar's pill, at the right end of the weather line, on today and past workdays with an outfit (the owner's design, 2026-11-14):
    a day is worn unless marked not (rec.worn false), so it starts "✓ Wore"; a tap makes it "✕ Didn't" (grey), a tap goes back. Back is
    the default (no mark), not rec.worn true, which would freeze today's outfit as worn */
 function wornPill(o){const T=todayDate(),d=dayOnly(sel);if(+d>+T||!isWorkday(sel)||!hasOutfit(o))return '';
-  const no=o.worn===false;
-  return `<button type="button" class="wpill ${no?'no':'yes'}" id="wpill" aria-pressed="${!no}" onclick="toggleWorn()" aria-label="Wore this outfit">${no?'✕ Didn\'t':'✓ Wore'}</button>`}
+  const no=o.worn===false,pill=`<button type="button" class="wpill ${no?'no':'yes'}" id="wpill" aria-pressed="${!no}" onclick="toggleWorn()" aria-label="Wore this outfit">${no?'✕ Didn\'t':'✓ Wore'}</button>`;
+  // (favorites, 2026-11-18: a ♡ joined to the pill on a worn day loves the look, fav.js favPillSeg)
+  const fav=typeof favPillSeg==='function'?favPillSeg(o):'';
+  return fav?`<span class="wpgrp">${pill}${fav}</span>`:pill}
 /* the date bar's weather line with the pill: the weather (or "Set location") sits centred between two pill-wide sides, unless that cuts
    it (Larger Text, page zoom: "Set loc…", then nothing; re-audit 2026-11-15); then it takes the line alone and the pill goes under it
    (.wxwrap). Measured after each drawing and when Today's size changes (the text size or the zoom changed) */

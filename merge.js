@@ -76,13 +76,18 @@ const setKeys=s=>Object.keys(s||{}).filter(k=>!SET_META.includes(k));
    A copy without them counts the setting's one stamp for every entry, as before. */
 // (own materials, 2026-11-16: ownMaterials {type: [name]}, entry by entry as 'type/name')
 // (the calendar's kept and dismissed events, 2026-11-17: calSeen {id: 'k'|'x'}, entry by entry, so two phones' choices both stay)
-const SET_SPLIT={custom:'custom',care:'obj',dress:'obj',workdays:'set',blazerDays:'set',shopSkip:'set',daysOff:'list',ownMaterials:'mats',calSeen:'obj'};
+// (favorites, 2026-11-18: fav {looks:[{j,sh,tie,at}], items:[id]}, entry by entry as 'l/j|sh|tie' and 'i/id', so a look loved on one phone
+// and a piece on the other both stay, and a heart taken back on one phone goes on the other)
+const SET_SPLIT={custom:'custom',care:'obj',dress:'obj',workdays:'set',blazerDays:'set',shopSkip:'set',daysOff:'list',ownMaterials:'mats',calSeen:'obj',fav:'fav'};
 /* the entries of setting k's value v (a Map), or null for a value of another shape (then it is merged whole) */
 function setEntries(k,v){const t=SET_SPLIT[k],m=new Map();if(v==null)return m;
   if(t==='obj'){if(typeof v!=='object'||Array.isArray(v))return null;for(const e of Object.keys(v))m.set(e,v[e])}
   else if(t==='set'){if(!Array.isArray(v))return null;for(const x of v)if(x!=null&&typeof x!=='object')m.set(String(x),x);else return null}
   else if(t==='list'){if(!Array.isArray(v))return null;for(const x of v){if(!x||typeof x!=='object'||!x.d)return null;m.set(String(x.d),x)}}
   else if(t==='mats'){if(typeof v!=='object'||Array.isArray(v))return null;for(const g of Object.keys(v)){const l=v[g];if(!Array.isArray(l))return null;for(const x of l){if(typeof x!=='string')return null;m.set(g+'/'+x,x)}}}
+  else if(t==='fav'){if(typeof v!=='object'||Array.isArray(v))return null;const L=v.looks??[],I=v.items??[];if(!Array.isArray(L)||!Array.isArray(I))return null;
+    for(const l of L){if(!l||typeof l!=='object'||typeof l.sh!=='string')return null;m.set('l/'+(l.j||'-')+'|'+l.sh+'|'+(l.tie||'-'),l)}
+    for(const x of I){if(typeof x!=='string')return null;m.set('i/'+x,x)}}
   else if(t==='custom'){if(typeof v!=='object'||Array.isArray(v))return null;
     for(const g of Object.keys(v)){const l=v[g];if(g!=='colors'&&g!=='patterns'){m.set('@'+g,l);continue}if(!Array.isArray(l))return null;for(const x of l){if(!x||typeof x!=='object'||!x.key)return null;m.set(g+'/'+x.key,x)}}}
   else return null;
@@ -91,6 +96,8 @@ function setJoin(k,m){const t=SET_SPLIT[k],v=[...m.values()];
   if(t==='obj')return Object.fromEntries(m);
   if(t==='set')return v.every(x=>typeof x==='number')?v.sort((a,b)=>a-b):v.sort();
   if(t==='list')return v.sort((a,b)=>String(a.d)<String(b.d)?-1:String(a.d)>String(b.d)?1:0);
+  if(t==='fav'){const looks=[],items=[];for(const [e,x] of m)(e[0]==='l'?looks:items).push(x);   // (looks in the order they were loved)
+    looks.sort((a,b)=>(+a.at||0)-(+b.at||0)||(String(a.sh)<String(b.sh)?-1:String(a.sh)>String(b.sh)?1:0));items.sort();return {looks,items}}
   if(t==='mats'){const o={};for(const [e,x] of m){const g=e.slice(0,e.indexOf('/'));(o[g]=o[g]||[]).push(x)}for(const g of Object.keys(o))o[g].sort();return o}
   const o={colors:[],patterns:[]};for(const [e,x] of m){if(e[0]==='@')o[e.slice(1)]=x;else o[e.slice(0,e.indexOf('/'))].push(x)}return o}
 /* setting k's stamp in copy s (num: read as a number, the server's way; the app takes it as stored) */

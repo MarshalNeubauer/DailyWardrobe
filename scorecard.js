@@ -69,6 +69,7 @@ const itemWord=(i,slot,o)=>`${shortDesc(i)||nm(i)} ${slotLabel(slot,o).toLowerCa
 function whyText(o,D,R){const w=dayWord(),hard=D.r.checks.filter(c=>c.hard);
   if(hard.length){const f=R&&R.swaps.find(s=>s.fix),it=f&&items.find(i=>i.id===f.id);
     return esc(failText(o,hard[0])+'.'+(it?` With the ${itemWord(it,f.slot,o)}, this would be the ${f.rank<=R.n?ordinal(f.rank)+' best':'one'} look ${w}.`:''))}
+  const fw=typeof favWhy==='function'?favWhy(o):'';if(fw)return esc(fw);   // a favorite look says so (fav.js)
   const ks=['h','t','o','v','f'],best=ks.reduce((m,k)=>D[k].v>D[m].v?k:m),weak=ks.reduce((m,k)=>D[k].v<D[m].v?k:m),wk=D[weak];
   const tail=wk.v<70&&weak!==best?' '+(wk.weak?`But ${lowFirst(wk.weak)}.`:wk.why):'';
   if(R&&R.rank>1&&D.f.v>=75&&D.f.most)return esc(`Picked because the ${D.f.most.piece} had rested ${D.f.most.rest>=60?'60+':D.f.most.rest} days.`+(weak!=='f'?tail:''));

@@ -683,6 +683,9 @@ const SHOP_SKIP_RE=/^[A-Za-z0-9_-]{1,40}\|[A-Za-z0-9_-]{0,40}\|[A-Za-z0-9_-]{0,4
 /* an own color or pattern: its key by the one rule, else left out; need = fields it can't be without */
 const setOwn=(re,more,need)=>x=>{if(!x||typeof x!=='object'||typeof x.key!=='string'||!re.test(x.key))return undefined;
   const o=setFields(x,{key:k=>k,name:n=>setStr(n,60),base:setKey,types:t=>setList(t,setKey)||[],...more});return need.every(k=>o[k]!==undefined)?o:undefined};
+const favId=x=>x==null||x===''?null:typeof x==='string'&&ID_RE.test(x)?x:undefined;
+const favClean=l=>{if(!l||typeof l!=='object')return undefined;const j=favId(l.j),sh=favId(l.sh),tie=favId(l.tie);
+  return j!==undefined&&tie!==undefined&&sh&&(j||tie)?{j,sh,tie,at:typeof l.at==='number'&&isFinite(l.at)?l.at:0}:undefined};
 const SET_CLEAN={workdays:setDays,blazerDays:setDays,
   holidays:v=>v===null?null:setFields(v,{country:c=>typeof c==='string'&&/^[A-Z]{2}$/.test(c)?c:'',list:l=>setList(l,setDay)||[],skip:l=>setList(l,setDate)||[],fetched:n=>typeof n==='number'&&isFinite(n)?n:0}),
   daysOff:v=>setList(v,setDay),
@@ -693,6 +696,8 @@ const SET_CLEAN={workdays:setDays,blazerDays:setDays,
   // the calendar link (calendar.js; kept only as a webcal/https link of up to 2048 characters) and the events kept or dismissed {id: 'k'|'x'}
   calendar:v=>v===null?null:setFields(v,{url:u=>typeof u==='string'&&u.length<=2048&&/^(webcals?|https?):\/\/[^\s<>"`]+$/i.test(u)?u:undefined,at:n=>typeof n==='number'&&isFinite(n)?n:0}),
   calSeen:v=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).filter(([k,x])=>/^[0-9a-f]{16}$/.test(k)&&(x==='k'||x==='x'))):undefined,
+  // favorites (fav.js): looks {j, sh, tie, at} of item ids (a jacket or a tie, and the shirt), pieces as item ids
+  fav:v=>v&&typeof v==='object'&&!Array.isArray(v)?{looks:setList(v.looks,favClean)||[],items:setList(v.items,x=>typeof x==='string'&&ID_RE.test(x)?x:undefined)||[]}:undefined,
   tagStats:v=>setFields(v,{n:n=>typeof n==='number'&&isFinite(n)?n:0,wrong:w=>w&&typeof w==='object'&&!Array.isArray(w)?Object.fromEntries(Object.entries(w).filter(([k,x])=>k!=='__proto__'&&REC_KEY.test(k)&&typeof x==='number'&&isFinite(x))):{}})};
 /* a settings copy from outside -> the same copy when every setting is clean, else a cleaned copy (null for one that isn't an object) */
 function cleanSettings(s){if(!s||typeof s!=='object'||Array.isArray(s))return null;let o=null;
