@@ -83,6 +83,10 @@
 <p class="shelp" aria-live="polite" id="formal-msg"></p>
 <div class="fchips" id="formal-list"></div></div>
 </div></div></section>
+<section class="mbox scat" id="sc-calendar"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('calendar')" aria-expanded="false" aria-controls="sp-calendar"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M10 14.5l-2 2 2 2M14 14.5l2 2-2 2"/></svg></span><span class="mltxt"><b>Calendar</b><small id="sum-calendar"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<div class="mpanel" id="sp-calendar"><div class="mpanel-in">
+<div class="sgroup" id="cal-box"></div>
+</div></div></section>
 <section class="mbox scat" id="sc-weather"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('weather')" aria-expanded="false" aria-controls="sp-weather"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span><span class="mltxt"><b>Weather</b><small id="sum-weather"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-weather"><div class="mpanel-in">
 <div class="sgroup" id="wx-section"><div class="slabel">Location</div><p class="shelp" id="wx-loc"></p>
@@ -97,6 +101,7 @@
 <div class="sgroup"><div class="slabel">Due for cleaning</div><p class="shelp">How many times a piece is worn before the app says it is due. It counts the days you wore it; Laundry &amp; cleaning, at the top of Settings, lists what is due.</p><div id="care-limits"></div></div>
 <div class="sgroup"><div class="slabel">Shirts in the wash</div><p class="shelp">A shirt you wore is not planned again for this long, unless you have no other shirt.</p>
 <label class="srow">A worn shirt waits <select id="cfg-laundry" onchange="setLaundryDays(this.value)" aria-label="How long a worn shirt waits before it is planned again"></select></label></div>
+<div class="sgroup" id="cpw-set"></div>
 </div></div></section>
 <p class="sgh">Photos &amp; tagging</p>
 <section class="mbox scat" id="sc-photos"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('photos')" aria-expanded="false" aria-controls="sp-photos"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg></span><span class="mltxt"><b>Outfit pictures</b><small id="sum-photos"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
@@ -148,6 +153,7 @@
 <p>The server is run by the person who invited you. They can see everything kept there: your backup, your photos and the feedback you send, with your name. It runs with a cloud hosting company, and the app itself is served by GitHub Pages; both keep the usual short logs of visits.</p>
 <p>The photos of your items are sent to Anthropic to be read (type, color, pattern). Outfit pictures are drawn or painted by the app itself and never go to OpenAI; only when you tap Generate item pictures are an item's photo and description sent to OpenAI to make its product picture.</p>
 <p>Your weather location (the city you search for, or your phone’s position if you use it) is sent to Open-Meteo for the forecast. Public holidays come from Nager.Date, or Google’s holiday calendars for some countries; only the country is sent.</p>
+<p>If you connect a calendar, its link is kept in your settings and backup like a password. The server uses it to read that calendar from its provider (such as Apple, Google or Microsoft), keeps nothing, and sends back only the next 60 days’ dates, titles and places.</p>
 <p>Nothing else leaves your phone. Delete my data, above, removes it from the server too.</p></details></div>
 </div></div></section>
 
@@ -166,12 +172,35 @@
 <script src="app.js"></script>
 <script src="back.js"></script>
 <script src="add.js"></script>
+<script src="add-paste.js"></script>
+<script src="add-card.js"></script>
+<script src="add-more.js"></script>
+<script src="add-sheet.js"></script>
+<script src="sheet-swipe.js"></script>
+<script src="add-save.js"></script>
+<script src="add-keep.js"></script>
+<script src="item-photo.js"></script>
+<script src="item-view.js"></script>
 <script src="itemsheet.js"></script>
 <script src="history.js"></script>
+<script src="missed.js"></script>
+<script src="locks.js"></script>
+<script src="pickscore.js"></script>
+<script src="scorecard.js"></script>
+<script src="boxfold.js"></script>
+<script src="today-plan.js"></script>
 <script src="today.js"></script>
+<script src="today-photofold.js"></script>
+<script src="today-picture.js"></script>
+<script src="today-gestures.js"></script>
 <script src="month.js"></script>
 <script src="photos.js"></script>
+<script src="locale.js"></script>
 <script src="settings.js"></script>
+<script src="daysoff.js"></script>
+<script src="weather.js"></script>
+<script src="toast.js"></script>
+<script src="theme.js"></script>
 <script src="start.js"></script>
 <script src="ui.js"></script>
 <script src="safety.js"></script>
@@ -194,6 +223,7 @@
 <script src="colpick.js"></script>
 <script src="checklist.js"></script>
 <script src="care.js"></script>
+<script src="cost.js"></script>
 <script src="shop.js"></script>
 <script src="sync-status.js"></script>
 <script src="sync.js"></script>
@@ -203,6 +233,7 @@
 <script src="account.js"></script>
 <script src="setup.js"></script>
 <script src="kit.js"></script>
+<script src="calendar.js"></script>
 <script src="remind.js"></script>
 <script src="about.js"></script>
 <script>startUp()</script>

@@ -203,8 +203,8 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
   store.set('wardrobe:v1',JSON.stringify({rev:5,saved:T0,data:seed}));meta.set('wardrobe:v1',{rev:5,saved:T0});
   const MB=store.get('wardrobe:v1').length/1e6;
   const browser=await chromium.launch();
-  const traffic=[];
-  const device=async(old)=>{const ctx=await browser.newContext();if(old)await ctx.addInitScript(()=>{window.SYNC_OLD=true});
+  const traffic=[],devs=[];
+  const device=async(old)=>{const ctx=await browser.newContext();ctx.__n=devs.length;if(old)await ctx.addInitScript(()=>{window.SYNC_OLD=true});
     await ctx.route(HOST+'**',async route=>{const r=route.request(),u=new URL(r.url());
       if(u.pathname!=='/sync')return route.fulfill({status:404,body:'{}'});
       const res=await W.fetch(new Request(r.url(),{method:r.method(),headers:r.headers(),body:['GET','HEAD'].includes(r.method())?undefined:r.postData()}),env);
@@ -212,14 +212,27 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
-    await p.reload();await p.waitForFunction(()=>window.appReady);return {ctx,p,errs}};
+    await p.reload();await p.waitForFunction(()=>window.appReady);const d={ctx,p,errs,n:ctx.__n};devs.push(d);return d};
   const sync=d=>d.p.evaluate(()=>syncNow());
-  // one sync on d, with what it sent and received
-  const measured=async d=>{traffic.length=0;const r=await sync(d);const t=[...traffic];return {ok:r,up:t.reduce((a,x)=>a+x.up,0),down:t.reduce((a,x)=>a+x.down,0),n:t.length,t,big:t.some(x=>x.up>1e6||x.down>1e6)}};
+  // every device still first: no sync or day recording running, the stored wardrobe the same over three checks 120 ms apart (at most
+  // 6 s), and the backup an edit or a redraw scheduled (scheduleSync, 2.5 s on) called off, as tests/sync.test.js's quiet. On a busy
+  // machine the older app's scheduled sync (C: the whole backup, down and up) came due during B's count on the new worker:
+  // "still takes the small sync (10425.2 KB up, 20886.1 KB down, 5 requests)", the nightly run of 2026-11-17
+  const quiet=d=>d.p.evaluate(async()=>{let last='',same=0;const end=Date.now()+6000;
+    while(Date.now()<end){await recordRun;const sig=stateSig(await localState());same=!syncing&&sig===last?same+1:0;last=sig;if(same>=3)break;await new Promise(r=>setTimeout(r,120))}
+    clearTimeout(syncTimer)});
+  // one sync on d, with what it sent and received (d's own requests: each is noted with its device)
+  const counted=(d,r)=>{const t=traffic.filter(x=>x.who===d.n);return {ok:r,up:t.reduce((a,x)=>a+x.up,0),down:t.reduce((a,x)=>a+x.down,0),n:t.length,t,big:t.some(x=>x.up>1e6||x.down>1e6)}};
+  // (d's own scheduled backup is called off before the wait, so the change it holds goes up in the count, not during the quiet:
+  // "a day marked worn goes up without the backup (0.0 KB up …)" on the branch's nightly run)
+  const measured=async d=>{await d.p.evaluate(()=>clearTimeout(syncTimer));await Promise.all(devs.map(quiet));traffic.length=0;return counted(d,await sync(d))};
   const kb=x=>`${(x.up/1e3).toFixed(1)} KB up, ${(x.down/1e3).toFixed(1)} KB down, ${x.n} requests`;
   const status=d=>d.p.evaluate(()=>localStorage.getItem('sync_status'));
   const itemOf=(d,id)=>d.p.evaluate(id=>items.find(i=>i.id===id)||null,id);
-  const edit=(d,id,f)=>d.p.evaluate(async([id,f])=>{const it={...items.find(i=>i.id===id),...f,updated:Date.now()};await put(it);items=items.map(i=>i.id===id?it:i)},[id,f]);
+  // an edit is made on a quiet device: made while the device's own background sync ran (the older app's, just started), that sync
+  // took the edit into its mark without sending it, and the counted sync then saw nothing to send ("and still saves the whole backup
+  // … 0.0 KB up, 1 requests", after main's #554 changed the timing)
+  const edit=async(d,id,f)=>{await quiet(d);return d.p.evaluate(async([id,f])=>{const it={...items.find(i=>i.id===id),...f,updated:Date.now()};await put(it);items=items.map(i=>i.id===id?it:i)},[id,f])};
   const stored=()=>JSON.parse(store.get('wardrobe:v1'));
   // the backup whole, photos inline, as an older app downloads it (since 2026-11-13 the stored value keeps its photos by reference)
   const full=async()=>JSON.parse(await (await W.fetch(new Request(HOST+'sync',{headers:{'x-app-token':'secret'}}),env)).text());
@@ -266,8 +279,9 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
     ok((await B.p.evaluate(()=>items.length))===(await A.p.evaluate(()=>items.length))&&(await itemOf(B,'it7')).photo===seed.items[7].photo&&stored().data.items.length>30,'a device that lost its wardrobe gets it back, photos and all, and the backup is not emptied');
 
     // an older app (the whole backup each time) on the same worker
-    const C=await device(true);
-    const cs=await measured(C);
+    // (counted from its start: its start-up sync is the first download; a quiet before the count would let it finish uncounted)
+    await Promise.all(devs.map(quiet));traffic.length=0;const C=await device(true);
+    const cs=counted(C,await sync(C));
     ok(cs.ok&&cs.t[0].q===''&&(await itemOf(C,'it9')).photo===np&&(await C.p.evaluate(()=>items.length))===(await A.p.evaluate(()=>items.length)),`an older app still downloads the whole backup and reads it (${kb(cs)})`);
     await edit(C,'it13',{primaryColor:'black'});const cu=await measured(C);
     ok(cu.ok&&cu.t.some(x=>x.m==='PUT'&&x.up>1e6)&&stored().data.items.find(i=>i.id==='it13').primaryColor==='black'&&meta.get('wardrobe:v1').pv,`and still saves the whole backup, which the worker stores by reference (${kb(cu)})`);
@@ -436,12 +450,15 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
   ok(userKeys()===0,'the queue deletes the rest');
 
   // ---- W2-14-03: the daily copies carry their item counts
+  // (yesterday and today by the server's UTC date: the server takes a phone's day only within a day of its own, so the fixed Nov 15 and
+  // Nov 16 of before failed from Nov 18 00:00 UTC on)
+  const utcDay=k=>new Date(Date.now()+k*864e5).toISOString().slice(0,10),dY=utcDay(-1),dT=utcDay(0);
   const L1=await (await call('sync?lite=1')).json();
-  await call('sync',{method:'POST',body:JSON.stringify({baseRev:L1.rev,baseSaved:L1.saved,day:'2026-11-15',delta:{items:[{id:'o1',type:'tie',primaryColor:'navy',pattern:'solid',updated:1},{id:'o2',type:'tie',primaryColor:'green',pattern:'solid',updated:1}],days:[],tombstones:{}},photos:{}})});
+  await call('sync',{method:'POST',body:JSON.stringify({baseRev:L1.rev,baseSaved:L1.saved,day:dY,delta:{items:[{id:'o1',type:'tie',primaryColor:'navy',pattern:'solid',updated:1},{id:'o2',type:'tie',primaryColor:'green',pattern:'solid',updated:1}],days:[],tombstones:{}},photos:{}})});
   const L2=await (await call('sync?lite=1')).json();
-  await call('sync',{method:'POST',body:JSON.stringify({baseRev:L2.rev,baseSaved:L2.saved,day:'2026-11-16',delta:{items:[{id:'o3',type:'tie',primaryColor:'red',pattern:'solid',updated:2}],days:[],tombstones:{}},photos:{}})});
-  const sn=(await (await call('sync?snaps=1')).json()).snaps,s16=sn.find(s=>s.id==='2026-11-16');
-  ok(s16&&s16.n===2,`the copy for Nov 16 says it holds 2 items (${JSON.stringify(sn)})`);
+  await call('sync',{method:'POST',body:JSON.stringify({baseRev:L2.rev,baseSaved:L2.saved,day:dT,delta:{items:[{id:'o3',type:'tie',primaryColor:'red',pattern:'solid',updated:2}],days:[],tombstones:{}},photos:{}})});
+  const sn=(await (await call('sync?snaps=1')).json()).snaps,s16=sn.find(s=>s.id===dT);
+  ok(s16&&s16.n===2,`the copy for ${dT} (today, UTC) says it holds 2 items (${JSON.stringify(sn)})`);
   // (the lead's check on final main) a phone whose date is already tomorrow (east of UTC, late evening) still gets that day's copy, listed
   const tmr=new Date(Date.now()+864e5).toISOString().slice(0,10),L3=await (await call('sync?lite=1')).json();
   await call('sync',{method:'POST',body:JSON.stringify({baseRev:L3.rev,baseSaved:L3.saved,day:tmr,delta:{items:[{id:'o4',type:'tie',primaryColor:'green',pattern:'solid',updated:3}],days:[],tombstones:{}},photos:{}})});
@@ -485,9 +502,15 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
     const r3=await A.evaluate(async()=>{const ok1=await syncNow();const st=localStorage.getItem('sync_status');const ok2=await syncNow();return {ok1,ok2,st,pause:+localStorage.getItem('sync_pause')||0}});
     ok(!r3.ok1&&!r3.ok2&&r3.pause>Date.now()&&/too large for the server/.test(r3.st)&&!/HTTP|413/.test(r3.st)&&A.ctx.posts.length===1,`one item too large: paused with plain words, sent once only (${A.ctx.posts.length} POST; “${r3.st}”)`);
     // W1-10-03 / W1-10-04: the pause's end in local time; Connection doesn't say "backed up" while paused
-    const pz=await A.evaluate(()=>{const later=new Date();later.setHours(23,0,0,0);const tom=new Date(Date.now()+864e5);tom.setHours(3,0,0,0);
-      localStorage.setItem('sync_pause',+later);const a=backupSummary('x');localStorage.setItem('sync_pause',+tom);const b=backupSummary('x');const w=backedUpWords();localStorage.removeItem('sync_pause');return {a,b,w,w2:backedUpWords()}});
-    ok(/^Paused until 11:00\s?PM/.test(pz.a)&&/^Paused until tomorrow/.test(pz.b),`"Paused until" says the real time when it is today (“${pz.a}” / “${pz.b}”)`);
+    // a pause ending later today, whatever the hour the test runs: 30 minutes from now, or 23:59 when that would be tomorrow (it was
+    // 23:00 today, already past between 23:00 and midnight, so the check failed then); its words are the same minute as the US clock reads it.
+    // The pause "tomorrow" is 00:30 tomorrow: at most 24.5 hours off (25.5 over a clock change), as a real pause (next UTC day) never is more
+    // than a day; it was 03:00 tomorrow, over 26 hours off between 00:00 and 01:00, which syncPaused lets go as set by a wrong clock
+    const pz=await A.evaluate(()=>{const now=new Date(),later=new Date(+now+30*60e3);if(later.getDate()!==now.getDate()){later.setTime(+now);later.setHours(23,59,59,0)}
+      const at=later.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});const tom=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,0,30);
+      localStorage.setItem('sync_pause',+later);const a=backupSummary('x');localStorage.setItem('sync_pause',+tom);const b=backupSummary('x');const w=backedUpWords();localStorage.removeItem('sync_pause');return {a,b,w,at,w2:backedUpWords()}});
+    const atRe=new RegExp('^Paused until '+pz.at.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s/g,'\\s?'));
+    ok(atRe.test(pz.a)&&/^Paused until tomorrow/.test(pz.b),`"Paused until" says the real time when it is today (“${pz.a}” / “${pz.b}”, ${pz.at} expected)`);
     ok(/paused until/.test(pz.w)&&/only on this phone/.test(pz.w)&&pz.w2==='your wardrobe is backed up',`while paused, Connection's words say so (“${pz.w}”)`);
     // W2-14-03: the labels
     const lab=await A.evaluate(()=>({d:snapLabel({id:'2026-11-16',saved:Date.parse('2026-11-15T04:30:00Z'),n:5}),e:snapLabel({id:'2026-11-15',saved:Date.parse('2026-11-15T04:30:00Z'),n:0}),

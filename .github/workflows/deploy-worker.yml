@@ -9,16 +9,31 @@ on:
     branches: [main]
     paths: [worker.js, 'worker/**', merge.js, wrangler.toml, .github/workflows/deploy-worker.yml]
   workflow_dispatch:
-concurrency: deploy-worker
+    inputs:
+      # a dry run of this workflow on any branch (e.g. to try the browser install): its tests, never a deploy
+      check:
+        description: 'Check only: run the tests and their browser installs, do not deploy'
+        type: boolean
+        default: false
+      only:
+        description: 'With check: run the tests whose file name contains this (with their WebKit halves) instead of the change''s selection'
+        required: false
+        default: ''
+# (a check run has its own group: queued behind a deploy it would cancel that deploy's place in the queue)
+concurrency: ${{ inputs.check && format('deploy-worker-check-{0}', github.ref) || 'deploy-worker' }}
 # the job only reads the repository; the Cloudflare token is its own secret
 permissions:
   contents: read
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
+      # the whole history: tests compare the app with older commits (garmentpaint.test.js reads #511's first parent with `git show`),
+      # which a shallow checkout lacks ("fatal: bad object", the failed deploy of #557, 2026-11-17)
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Check configuration
         id: cfg
         env:
@@ -51,23 +66,70 @@ jobs:
       - name: Which tests will run
         id: sel
         if: steps.cfg.outputs.ready == 'yes'
+        env:
+          ONLY: ${{ inputs.check && inputs.only || '' }}
         run: |
+          # a check run by name (below) runs those files and their WebKit halves: both browsers
+          if [ -n "$ONLY" ]; then echo "Check run: the tests named \"$ONLY\", with their WebKit halves"; printf 'browser=yes\nwebkit=yes\n' >> "$GITHUB_OUTPUT"; echo "pw=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"; exit 0; fi
           node tests/run.js --changed --list | tee "$RUNNER_TEMP/selection.txt"
           # these two sentences are tests/impact.js saying that nothing runs; anything else (or no answer) installs the browser
           if grep -Eq 'No check can be affected by this change\.|Nothing more needs to run\.' "$RUNNER_TEMP/selection.txt"; then echo "browser=no"; else echo "browser=yes"; fi >> "$GITHUB_OUTPUT"
-      - name: Install Chromium (only when tests will run)
+          # the WebKit halves (tests/run.js webkitWanted, #551): its "WebKit: …" line says whether any run; a line that is not
+          # "… do not run" installs WebKit too, so the deploy runs every check its `npm test` selected
+          if grep -q '^WebKit: ' "$RUNNER_TEMP/selection.txt" && ! grep -Eq '^WebKit: .*do not run' "$RUNNER_TEMP/selection.txt"; then echo "webkit=yes"; else echo "webkit=no"; fi >> "$GITHUB_OUTPUT"
+          echo "pw=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+      # the downloaded browsers are kept between runs (Playwright's version and the browsers in the key)
+      - uses: actions/cache@v4
+        if: steps.sel.outputs.browser == 'yes'
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ steps.sel.outputs.pw }}-${{ steps.sel.outputs.webkit == 'yes' && 'chromium-webkit' || 'chromium' }}
+      - name: Install the browsers (only when tests will run)
         if: steps.sel.outputs.browser == 'yes'
         run: |
-          # system packages through apt, for at most two minutes and without failing the deploy: the runner image already
-          # has Chromium's libraries, apt adds fonts only
-          timeout -k 10 120 npx playwright install-deps chromium || echo "::warning::Chromium's system packages could not be installed (apt); the tests run with what the runner image has."
-          # the browser itself, tried three times
-          for i in 1 2 3; do npx playwright install chromium && exit 0; sleep $((i * 15)); done
+          B=chromium; [ "${{ steps.sel.outputs.webkit }}" = yes ] && B="chromium webkit"
+          # the browsers themselves, tried three times (a cached browser is not downloaded again)
+          for i in 1 2 3; do npx playwright install $B && exit 0; sleep $((i * 15)); done
           exit 1
+      # their system packages (apt), never failing here: the runner image already has Chromium's libraries (apt adds fonts only);
+      # WebKit needs its own, and without them its halves fail to start in npm test, which then stops the deploy with the reason.
+      # The .deb files are cached (tools/ci-browser-deps.sh: keyed by the runner image, Playwright's version and the package
+      # list) and installed offline; apt only when the cache misses, for two minutes (eight with WebKit; 2026-11-17/18 it took
+      # 23 s to over five minutes a runner)
+      - name: The browsers' system packages (cache key)
+        id: aptkey
+        if: steps.sel.outputs.browser == 'yes'
+        run: |
+          B=chromium; [ "${{ steps.sel.outputs.webkit }}" = yes ] && B="chromium webkit"
+          L=$(bash tools/ci-browser-deps.sh list $B | sha256sum | cut -c1-12)
+          echo "b=$B" >> "$GITHUB_OUTPUT"
+          echo "base=browser-apt-$ImageOS-pw${{ steps.sel.outputs.pw }}-${B// /-}-$L-" >> "$GITHUB_OUTPUT"
+          echo "key=browser-apt-$ImageOS-pw${{ steps.sel.outputs.pw }}-${B// /-}-$L-$ImageVersion" >> "$GITHUB_OUTPUT"
+      - id: aptc
+        if: steps.sel.outputs.browser == 'yes'
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/browser-apt
+          key: ${{ steps.aptkey.outputs.key }}
+          restore-keys: ${{ steps.aptkey.outputs.base }}
+      - name: The browsers' system packages
+        id: apt
+        if: steps.sel.outputs.browser == 'yes'
+        run: |
+          T=120; [ "${{ steps.sel.outputs.webkit }}" = yes ] && T=480
+          bash tools/ci-browser-deps.sh install ~/.cache/browser-apt $T ${{ steps.aptkey.outputs.b }}
+      - if: steps.apt.outputs.save == 'yes' && steps.aptc.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/browser-apt
+          key: ${{ steps.aptkey.outputs.key }}
       - run: npm test
         if: steps.cfg.outputs.ready == 'yes'
+        env:
+          # a check run (Run workflow with "check"): the tests by name instead of the change's selection, and no deploy
+          TEST_ONLY: ${{ inputs.check && inputs.only || '' }}
       - name: Deploy to Cloudflare
-        if: steps.cfg.outputs.ready == 'yes'
+        if: steps.cfg.outputs.ready == 'yes' && !inputs.check
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}

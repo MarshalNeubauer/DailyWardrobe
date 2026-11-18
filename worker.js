@@ -28,6 +28,7 @@ import { handleRender } from './worker/render.js';
 import { kvLimit, noteKvFull } from './worker/items.js';
 import { getBlob, getRender, handleShared, putRender } from './worker/records.js';
 import { handleHolidays } from './worker/holidays.js';
+import { handleCalendar } from './worker/calendar.js';
 import { gcDue, handleSync, photoGc } from './worker/photostore.js';
 import { handleAccount, handleErrors, handleFeedback, handleInvites, handleMe, plainFor, resetDelay, runWipe, spend, unspend, whoIs } from './worker/people.js';
 import { handlePush, sendReminders } from './worker/remind.js';
@@ -39,6 +40,7 @@ const ROUTES = {
   '* /sync': [handleSync, 'Set an APP_TOKEN secret on the worker to enable backups.'],
   'GET /fetch': [handleFetchImage, 'Set an APP_TOKEN secret on the worker to fetch photo links.'],
   'GET /holidays': [handleHolidays, 'Set an APP_TOKEN secret on the worker to load holiday lists.'],
+  'POST /calendar': [handleCalendar, UNSET],   // a calendar link read for the app (worker/calendar.js): the link in the body, never in the address
   'POST /tag-many': [handleTagMany, UNSET],
   'POST /pattern': [handlePattern, UNSET],
   'POST /describe': [handleDescribe, UNSET],

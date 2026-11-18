@@ -47,8 +47,8 @@ window.TEST_PLAN={
   // a score with a few checks, so the score card can be opened, tapped and folded like a real one (one check not at full marks)
   rate(){return {score:94,label:'Excellent',raw:94,hard:[],checks:[{label:'Colours',pts:10,max:10,why:'The colours work together.'},
     {label:'Patterns',pts:10,max:10,why:'One bold pattern at most.'},{label:'Shoes',pts:9,max:10,why:'These shoes suit the outfit.'},{label:'Belt',pts:5,max:5,why:'The belt matches the shoes.'}]}},
-  // the score card's five dials (history.js dialsFor) and the day's rank (rankFor), fixed: no planner, no Web Worker
+  // the score card's six dials (scorecard.js dialsFor) and the day's rank (rankFor), fixed: no planner, no Web Worker
   dials(){return {h:{v:88,why:'The colors work together.'},t:{v:64,why:'One pattern, against plain cloth.'},f:{v:91,why:'Every piece has rested.'},
-    v:{v:72,why:'Nothing repeats from the last 10 workdays.'},o:{v:83,why:'The right polish for the day.'},r:this.rate()}},
+    v:{v:72,why:'Nothing repeats from the last 10 workdays.'},o:{v:83,why:'The right polish for the day.'},i:{v:58,why:'The tie picks up the navy of the suit.'},r:this.rate()}},
   rank(){return {n:120,rank:3,swaps:[],look:240}}
 };

@@ -156,6 +156,7 @@ function statsDraw(){
 
   <section class="card st-card" id="st-wear"><h3>Wear counts</h3>
   <p class="mut"><small><span class="st-key w"></span>worn so far <span class="st-key p"></span>planned for the next ${STATS_MONTHS} months</small></p>${types.map(sect).join('')}</section>
+  ${typeof cpwStatsCard==='function'?cpwStatsCard():''}
 ${S.short.length?'':`
   <section class="card st-card" id="st-points"><h3>Small deductions</h3>
   ${missList.length?`<p class="mut"><small>Over the ${nPlan} planned outfits: where the score is marked down most, and the usual reason.</small></p>${missList.map(([l,m])=>{const why=Object.entries(m.why).sort((a,b)=>b[1]-a[1])[0];

@@ -42,7 +42,7 @@ const render=async({ok,chromium,url,ROOT})=>{
       settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today');return !!document.querySelector('.fig.photo img')},PHOTO);
     ok(kept,'the photo is kept for that day after a reload');
     ok(await p.evaluate(ph=>{const o=planFor()[key(sel)];return renders[comboKey(o)]&&renders[comboKey(o)].img===ph},PHOTO),'the photo is kept byte for byte');
-    {const fs=require('fs'),src=['app.js','photos.js','today.js'].map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n');
+    {const fs=require('fs'),src=['app.js','photos.js','today-plan.js','today.js','today-photofold.js','today-picture.js','today-gestures.js'].map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n');
       ok(!/shrinkUrl\([^)]*,\s*900\)/.test(src),'no outfit photo is shrunk to 900px any more (app.js, photos.js, today.js; assembled pictures keep theirs, in assemble.js)');}
     ok(await p.evaluate(async()=>!(await localState()).renders&&!JSON.stringify(await localState()).includes('render:')),'photos stay on the device (not in backup/sync data)');
     ok(await p.evaluate(()=>{const o=planFor()[key(sel)],before=!!renderFor(o),sw={...o,tie:{...o.tie,id:'other',primaryColor:'green'}};return before&&!renderFor(sw)}),'after a swap the stored photo no longer matches, so it is not shown');

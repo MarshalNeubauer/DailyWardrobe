@@ -6,8 +6,10 @@
     "test": "node tests/run.js --changed",
     "test:all": "node tests/run.js",
     "test:webkit": "node tests/run.js --webkit",
+    "test:cloud": "node tools/cloud-tests.js",
     "test:replay": "node tests/replay/run.js",
     "lint": "node tests/lint.js",
+    "typecheck": "node tests/typecheck.js",
     "gaps": "node tests/gaps.js",
     "atlas": "node tools/asm-atlas.js",
     "cm-upload": "node tools/asm-cm-upload.js"
@@ -15,6 +17,7 @@
   "devDependencies": {
     "eslint": "10.14.0",
     "globals": "17.13.0",
-    "playwright": "1.63.0"
+    "playwright": "1.63.0",
+    "typescript": "6.0.3"
   }
 }

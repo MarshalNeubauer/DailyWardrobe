@@ -26,7 +26,10 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(c.cols&&c.hex==='#8f6a3c'&&c.sole==='Sole'&&c.shows,'coyote is a shoe colour; the second colour is the sole');
     ok(c.camo&&!c.chinos,'camoPants: the camouflage cargo pants, not chinos');
     ok(/coyote/i.test(c.title)&&/combat boots/i.test(c.title),`the title (${c.title})`);
-    // never planned
+    // a combat boot added by hand is suede and nylon (the owner, 2026-11-18); a material chosen first is kept
+    const hand=await p.evaluate(()=>{const keep=queue;queue=[{id:'cbq',manual:true,type:'shoes',primaryColor:'coyote',pattern:'solid',leather:'calf'},{id:'cbq2',manual:true,type:'shoes',primaryColor:'coyote',pattern:'solid',leather:'calf'}];
+      setq('cbq','shoeStyle','combat');setq('cbq2','leather','nubuck');setq('cbq2','shoeStyle','combat');const r=[queue[0].leather,queue[1].leather];queue=keep;return r});
+    ok(hand[0]==='suede'&&hand[1]==='nubuck',`by hand: Combat boot makes the material suede and nylon; a material chosen first stays (${hand})`);    // never planned
     const pl=await p.evaluate(B=>{const s=planSim(new Date(2026,9,1)),pl=s.upTo(new Date(2027,0,31));let n=0,hit=0;for(const o of Object.values(pl)){if(!o)continue;n++;if(o.shoes&&o.shoes.id===B)hit++}return {n,hit}},BOOT);
     ok(pl.n>50&&!pl.hit,`never planned over ${pl.n} days`);
     // the picker with other pants: not offered, a line says why

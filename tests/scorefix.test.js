@@ -1,6 +1,6 @@
 // The rebuilt outfit score. Points are lost for things that can be put right, not for taste; a real mistake (a check marked hard)
 // caps the score at 69 however well the rest matches; a missing piece reads "Incomplete"; new checks cover variety against the
-// last two workdays, a leather watch strap against the shoes and the weather. The score card (five dials since 2026-11-17) rings
+// last two workdays, a leather watch strap against the shoes and the weather. The score card (six dials since 2026-11-18) rings
 // the dial a broken rule belongs to and offers the swap that mends it; a tap on it wears it. Stats: the score of what was really
 // worn, week by week.
 module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
@@ -38,10 +38,10 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(S.strap.lost['Watch strap']==='4/5'&&!S.strapOk.lost['Watch strap'],`a brown leather watch strap with black shoes loses points (${S.strap.lost['Watch strap']}; 4/5 with a suit since fix round 3: formality wins), a black one doesn't`);
     ok(!S.var0.lost.Variety&&S.varTie.lost.Variety==='3/5'&&S.varLook.lost.Variety==='2/5'&&S.varShoes.lost.Variety==='4/5'&&!S.varShoesMon.lost.Variety,
       `variety: the same tie as the workday before ${S.varTie.lost.Variety}, the same look as two workdays ago ${S.varLook.lost.Variety}, yesterday's shoes ${S.varShoes.lost.Variety} (not after a weekend)`);
-    // ---- the score card (five dials since 2026-11-17; tests/scoredials.test.js has the rest)
+    // ---- the score card (six dials since 2026-11-18; tests/scoredials.test.js has the rest)
     await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};view={y:2026,m:10};const pl=planMonth(2026,10),k=Object.keys(pl).find(k=>keyDate(k)>=todayDate()&&pl[k].top&&items.some(s=>s.type==='shoes'&&shoeScore(pl[k].top,pl[k].bot||pl[k].top,s)<=-50));sel=keyDate(k);show('today')})()`);await settle(p,400);
     const c0=await p.evaluate(()=>{const o=planFor()[key(sel)],r=rateOutfit(o);return {s:r.score,hard:r.hard.length,dials:document.querySelectorAll('#sbox .dial').length,bad:document.querySelectorAll('#sbox .dial.d-bad').length,variety:r.checks.some(c=>c.label==='Variety')}});
-    ok(c0.hard===0&&c0.s>=90&&c0.dials===5&&!c0.bad&&c0.variety,`the planned day scores ${c0.s} with no real mistake (five dials, none ringed), and is checked for variety`);
+    ok(c0.hard===0&&c0.s>=90&&c0.dials===6&&!c0.bad&&c0.variety,`the planned day scores ${c0.s} with no real mistake (six dials, none ringed), and is checked for variety`);
     // wear the wrong shoes by hand: the Occasion dial says so and the card offers the way back
     await p.evaluate(()=>{const o=planFor()[key(sel)],bad=items.filter(i=>i.type==='shoes').find(s=>shoeScore(o.top,o.bot||o.top,s)<=-50)||null;window.badShoes=bad&&bad.id;return bad&&pickItem('shoes',bad.id)});await settle(p,400);
     const c1=await p.evaluate(()=>{const d=document.querySelector('#sbox .dial.d-bad');return {has:!!window.badShoes,bad:d?d.textContent:'',label:document.querySelector('#sbox .month-link').getAttribute('aria-label')}});
