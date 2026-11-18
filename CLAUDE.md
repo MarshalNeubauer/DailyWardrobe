@@ -521,7 +521,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - "what to buy" analysis (no DOM; runs in `analysis-worker.js`, a Web Worker): `runAnalysis(list, T, weeks, progress, onCat)` → `{v:2, base, cats:[{key, title, verdict, own, notes, recs}], top, occasions}`
 - `horizonKeys(T,weeks)`: the workdays from tomorrow to `weeks`×7 days ahead (today is left out, as on Insights, which counts the same days: stats.js `plannedDays`)
 - `evalPlan(list,T,weeks)` plans the next `SHOP_WEEKS` (26) with the real `dayRecs` (history, occasions) and measures it: score, problem notes, jacket rest, colour/tie/look repeats, shoes worn two days running, first-choice shoe days, pieces never planned, points lost per check
-- `shopList` counts pieces on the way and pieces away being cleaned (`item.away`) as owned; pieces out of rotation don't count
+- `shopList` counts pieces on the way and pieces away being cleaned (`item.away`) as owned; pieces out of rotation don't count in the plan
+- but an idea matching a piece out of rotation (its `shopKey`: type, colour group, pattern class) is never suggested (`shopShelved`, added to the skip set with `settings.shopSkip`; 2026-11-18, the owner: "If I have the purple tie, just not in rotation it shouldn't recommend me a purple tie"); `tests/shop.test.js`
 - suits, blazers, trousers, shirts and ties: candidates are every colour in `SHOP_COLS` × pattern class (`clothesCandidates`), ranked without simulating (`rankClothes`)
 - ranking: fit = how many owned jackets/shirts/ties make an outfit within `QWIN` of that jacket's best (`compatBase`/`compat`), gap = a colour group (`shopGroup`) or pattern class (`shopClass`) not owned, staples first (`STAPLES`), a bonus for partners that are never planned
 - ranking by simulation alone is noise in a full wardrobe (the user's got "another brown suit" first)
