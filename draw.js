@@ -1240,7 +1240,7 @@ const CB_DEFAULT='#8f6a3c',CB_SOLE_DARK=.14;
 /* rough-out suede's nap (the owner, 2026-11-17: the app's dot pattern read as perforated card): soft specks at seeded random places and
    sizes, light and dark, over a tile too large for its repeat to show and turned off the axes; nubuck finer and fainter */
 const cbNap=(id,fine)=>{let s=fine?7:3,h='';const r=()=>(s=(s*16807)%2147483647)/2147483647,T=fine?4.2:6.4,n=fine?150:170;
-  for(let i=0;i<n;i++){const x=(r()*T).toFixed(2),y=(r()*T).toFixed(2),rx=((fine?.07:.1)+r()*(fine?.12:.22)).toFixed(2),ry=(rx*(.5+r()*.6)).toFixed(2),d=r()<.55;
+  for(let i=0;i<n;i++){const x=(r()*T).toFixed(2),y=(r()*T).toFixed(2),rv=(fine?.07:.1)+r()*(fine?.12:.22),rx=rv.toFixed(2),ry=(rv*(.5+r()*.6)).toFixed(2),d=r()<.55;
     h+=`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" transform="rotate(${(r()*180).toFixed(0)} ${x} ${y})" fill="${d?'#000':'#fff'}" opacity="${((d?.05:.035)+r()*(d?.07:.05)).toFixed(3)}"/>`}
   return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${T}" height="${T}" patternTransform="rotate(23)">${h}</pattern>`};function drawCombatPair(item,P){
   const S=SHOE_CB,base=item?colOf(item):CB_DEFAULT,dk=lum(base)<.12,L=item&&item.leather||'calf';

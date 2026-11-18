@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	6f0540d29f4d669356a7
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -4394,6 +4393,7 @@ combatboot.test.js	sync-status.js	<loaded>	setSyncStatus	showSyncStatus	syncPaus
 combatboot.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	syncLaterRun	syncNeedsPull	syncNow	syncOnce	syncUrl
 combatboot.test.js	tag-request.js	<loaded>
 combatboot.test.js	tagging.js	<loaded>	tagNotes
+combatboot.test.js	tests/webkit.js	<any>
 combatboot.test.js	theme.js	<loaded>	applyTheme
 combatboot.test.js	toast.js	<loaded>
 combatboot.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
