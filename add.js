@@ -194,7 +194,7 @@ function addBackOnline(){if(typeof tagNetText==='function'&&tagNetText(aiError))
   for(const q of queue.slice())if(q.tagNet&&q.tagErr&&!q.busy&&q.tagImg)retryTag(queue.indexOf(q));
   for(const q of queue.slice())if(q.multiNet&&q.multiErr&&!q.busy&&q.file)multiAgain(q.id);   // "Several items" too (it waited for a tap)
   const a=$('#add');if(a&&!a.hidden)renderAdd()}
-/* what its controls do (act.js): a card's "Show original" / "Correct them" (the card by its id: add-card.js cardIx), and Save all */
+/* what its controls do (act.js): a card's "Show original" / "Correct them" (the card by its id: add-save.js cardIx), and Save all */
 function cardWb(el){toggleWb(cardIx(el))}
 function saveAllTap(){saveAll()}
 acts({cardWb,saveAllTap});

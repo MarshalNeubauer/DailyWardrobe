@@ -31,7 +31,7 @@ async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.pa
   if(cb.length&&typeof careUnlock==='function')await careUnlock(null,Math.min(...cb.map(i=>+keyDate(i.away.since||isoKey(todayDate())))));   // the locks made while away let go (history.js)
   for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());if(typeof careLog==='function')careLog(it,it.cleaned);delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
   if(done.length){planDirty();toast(cb.length===done.length&&typeof careBackText==='function'?careBackText(cb):done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`,4000)}return done.length}
-/* what the More section's controls do (act.js; the card by its id in data-card: add-card.js cardAt, cardIx) */
+/* what the More section's controls do (act.js; the card by its id in data-card: add-save.js cardAt, cardIx) */
 function cardQty(el){stepQty(cardIx(el),+el.dataset.d)}
 function cardOrder(el){setOrder(cardIx(el),el.dataset.on==='1')}
 function cardArrives(el){setArrives(cardIx(el),el.value)}

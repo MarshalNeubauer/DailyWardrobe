@@ -138,9 +138,8 @@ function typeCard(q,i){const none=typeof isConnected==='function'?!isConnected()
 <div class="btns"><button data-act="cardSkip" ${cardAt(q)}>Skip</button></div></div>`}
 /* a photo added while the app wasn't connected yet (an invitation still being checked): once it is, the card offers the reading */
 const unreadNote=(q,i)=>!q.ai&&!q.manual&&!q.tagErr&&!q.busy&&q.tagImg&&(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))?`<div class="tagfail"><p>This photo was added before the app was connected, so it wasn’t read.</p><button type="button" class="tagfail-btn" data-act="cardRetryTag" ${cardAt(q)}>Read it now</button></div>`:'';
-/* ---- what the card's controls do (act.js): each finds its card by the id in data-card, as the inline handlers did by qAt('id') ---- */
-const cardAt=q=>`data-card="${esc(q.id)}"`;
-const cardIx=el=>qAt(el.dataset.card);
+/* ---- what the card's controls do (act.js): each finds its card by the id in data-card, as the inline handlers did by qAt('id')
+   (add-save.js cardAt, cardIx) ---- */
 function cardSkip(el){skipCard(el.dataset.card)}
 function cardSave(el){save(el.dataset.card)}
 function cardStop(el){stopRead(el.dataset.card)}
