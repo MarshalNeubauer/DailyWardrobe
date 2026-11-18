@@ -144,4 +144,8 @@ async function addFormalDay(){const v=($('#cfg-formal-date')||{}).value;if(!v)re
   await setOccasion(occ,k);renderFormalUI(`${l} is now ${what}: ${O[2]}.`)}
 /* the markup's handler (act.js): an occasion's × makes its day (data-day: the day's key) a regular day again */
 function occClear(el){setOccasion(null,el.dataset.day)}
-acts({occClear});
+/* index.html's (act.js): the holiday country, and the Add buttons of "Your own days off" and Occasions */
+function countryPick(el){setHolidayCountry(el.value)}
+function dayOffAddTap(){addDayOff()}
+function occAddTap(){addFormalDay()}
+acts({occClear,countryPick,dayOffAddTap,occAddTap});

@@ -235,3 +235,6 @@ async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();
   // what wasn't tried after a stop is said as such: "failed" read as if each had been tried (and paid for)
   const left=todo.length-done-fail,why=err?(typeof plainErr==='function'?plainErr(err):err):'';
   itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed`:''}${left?`, ${left} not made`:''}${kept||fail||left?` (${why})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
+/* index.html's (act.js): Settings' "Generate item pictures" */
+function itemPicsTap(){startItemPics()}
+acts({itemPicsTap});

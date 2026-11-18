@@ -105,4 +105,8 @@ if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.se
 /* sync brought new data: refresh the in-memory outfit history too */
 function onSyncedData(m){setWardrobe({days:Object.fromEntries((m.days||[]).map(d=>[d.date,d]))});const drawn=picsDrawn();if(m.settings){setWardrobe({settings:takeSettings(settings,m.settings)});setSeen=m.settings.updated||0;applyCustom(settings.custom)}if(typeof dressSynced==='function')dressSynced(m);loadWeather();if(typeof remindSoon==='function')remindSoon();   // (another device may have changed the coming outfits: the reminder lines follow, CR-4-09)
   if(picsDrawn()!==drawn){picsSwitched();if(settingsOpen()){renderPicturesUI();if(typeof renderAsmUI==='function')renderAsmUI()}}}   // "Drawing only" chosen on another device
-
+/* the markup's handlers (act.js): Add's ‹, the Wardrobe's round +, and the Wardrobe and Insights tabs (data-page: the page shown) */
+function addBackTap(){subBack()}
+function wardAddTap(){openAdd()}
+function tabTap(el){show(el.dataset.page)}
+acts({addBackTap,wardAddTap,tabTap});

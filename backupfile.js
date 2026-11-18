@@ -24,3 +24,8 @@ async function restoreBackup(file){
 function restoreGone(fileItems){const have=new Set(items.map(i=>i.id)),gone=(fileItems||[]).filter(i=>i&&!have.has(i.id));if(!gone.length)return '';
   const names=gone.slice(0,3).map(i=>`“${itemName(i)||nm(i)}”`),more=gone.length-names.length,list=names.join(', ')+(more?` and ${more} more`:'');
   return ` ${gone.length===1?'1 piece in the file stayed deleted':gone.length+' pieces in the file stayed deleted'}, since ${gone.length===1?'it was':'they were'} deleted after the file was saved: ${list}. Add ${gone.length===1?'it':'them'} again if you still have ${gone.length===1?'it':'them'}.`}
+/* the markup's handlers (act.js): Settings' "Download backup", and the file picked with "Restore file" (the field emptied so the same
+   file can be picked again) */
+function backupSaveTap(){downloadBackup()}
+function backupFilePick(el){restoreBackup(el.files[0]);el.value=''}
+acts({backupSaveTap,backupFilePick});

@@ -194,3 +194,7 @@ function dayActions(o){
   if(past&&o.frozen)h+=`<button class="pastedit${pastEdit===key(sel)?' on':''}" onclick="togglePastEdit()" aria-pressed="${pastEdit===key(sel)}">${pastEdit===key(sel)?'Done':'Correct this day'}</button>`;
   return offNote+(h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&pastEdit===key(sel)?'<p class="mut"><small>Tap ⇄ beside a piece to set what you really wore. The planner then counts that, not what was planned.</small></p>':past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
 }
+/* index.html's (act.js): the piece picker's backdrop, and Settings' "Start the plan over" */
+function pickBackdropTap(){closePicker()}
+function replanTap(){replanButton()}
+acts({pickBackdropTap,replanTap});

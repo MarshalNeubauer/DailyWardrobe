@@ -124,3 +124,7 @@ function stepItem(n,from){
     if(e.target.closest&&e.target.closest('input,select,textarea'))return;
     if(e.key==='ArrowRight')stepItem(1);if(e.key==='ArrowLeft')stepItem(-1)});
 })();
+/* the markup's handlers (act.js): the item sheet's backdrop and Done, and its previous and next buttons (data-n: -1 or 1) */
+function itemCloseTap(){closeItem()}
+function itemStepTap(el){stepItem(+el.dataset.n)}
+acts({itemCloseTap,itemStepTap});

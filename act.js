@@ -58,3 +58,13 @@ function actListen(){if(actOn)return;actOn=true;
     document.addEventListener(t,ev=>actFire(ev,a,false,false))}
   for(const t of ACT_OWN){const a=actAttr(t);document.addEventListener(t,ev=>actFire(ev,a,false,true),true)}}
 actListen();
+/* A tap becomes a click only on what the browser takes for a control: a button, a link, a field, or an element with a click handler
+   of its own (document's listener doesn't count). Safari on a phone sends no click for a tap on anything else, and Chrome on a phone
+   hands a tap there to a control nearby (a tap on a sheet's backdrop, just above the sheet, went to the sheet's head). An inline
+   handler made its element such a control; a data-act element that isn't one by its tag (a backdrop <div>) gets an empty click
+   listener of its own instead. actTaps(root) gives one to every such element under root: called here once for index.html's own
+   markup (act.js loads after it), and by a file after it writes such markup (twice on one element is once). */
+const ACT_CONTROL='button,a[href],input,select,textarea,summary';   // these take a tap without a handler of their own
+function actNone(){}
+function actTaps(root){for(const el of root.querySelectorAll('[data-act]'))if(!el.matches(ACT_CONTROL))el.addEventListener('click',actNone)}
+actTaps(document);
