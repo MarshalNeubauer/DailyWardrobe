@@ -40,7 +40,8 @@ function npsInert(on){for(const el of document.querySelectorAll('body>header,bod
 /* the card and its bar; the card gone (saved, or taken away) closes the sheet */
 function npsDraw(){const q=npsCard(),s=$('#nps-sheet');if(!s)return;if(!q){npsClose();return}const i=queue.indexOf(q),body=$('#nps-q'),bar=$('#nps-bar');
   if(body){const y=body.scrollTop;keepFocus(body,()=>{body.innerHTML=cardSafe(q,i,()=>formCard(q,i,true))});body.scrollTop=y;if(typeof cmpMount==='function')cmpMount(body)}
-  if(bar)bar.innerHTML=`${cardSafe(q,i,()=>ckLeftLine(q))}${confBtn(q,i)}<button type="button" id="nps-cancel" onclick="npsCancel()">Cancel</button>`}
+  if(bar)bar.innerHTML=`${cardSafe(q,i,()=>ckLeftLine(q))}${confBtn(q,i)}<button type="button" id="nps-cancel" data-act="npsCancelTap">Cancel</button>`}
+function npsCancelTap(){npsCancel()}
 /* fromBack: the phone's Back did it (its entry is gone already) */
 function npsClose(fromBack){if(!npsId&&npsWas===undefined)return;const s=$('#nps-sheet'),b=$('#nps-backdrop');npsId=null;npsAsking=false;
   if(s)s.classList.remove('on');if(b)b.classList.remove('on');document.body.classList.remove('nps-on');npsInert(false);if(typeof layerInert==='function')layerInert();
@@ -66,3 +67,4 @@ function npsLeave(){if(!npsId)return;const q=npsCard(),changed=!!q&&npsSig(q)!==
 function npsSwipe(){if(npsSwipeOn)return;const s=$('#nps-sheet');if(!s)return;npsSwipeOn=true;
   sheetSwipe(s,{head:'.nps-head',body:()=>$('#nps-q'),backdrop:()=>$('#nps-backdrop'),live:()=>!!npsId&&!npsAsking,close:()=>npsCancel()});
   s.addEventListener('keydown',e=>{if(e.key==='Escape'&&npsId&&!npsAsking){e.preventDefault();e.stopPropagation();npsCancel()}})}
+acts({npsCancelTap});

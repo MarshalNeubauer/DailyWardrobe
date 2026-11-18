@@ -30,7 +30,7 @@ const photoedit=async({ok,chromium,url})=>{
     d=await dims();ok(d.w===300&&d.h===200,'the toast’s Undo brings the previous photo back');
     // zoom & crop: zoom 2x, drag right (shows more of the left = red), apply -> square, all red
     await p.click('#item-view .pt-crop');await p.waitForSelector('#cropbox');await p.waitForTimeout(100);
-    await p.evaluate(()=>{const r=document.querySelector('.cropzoom input');r.value=2;r.dispatchEvent(new Event('input'))});
+    await p.evaluate(()=>{const r=document.querySelector('.cropzoom input');r.value=2;r.dispatchEvent(new Event('input',{bubbles:true}))});   // (as the browser's own input event: it bubbles to act.js's listener)
     const bx=await p.evaluate(()=>{const b=document.querySelector('#cropbox').getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}});
     await p.mouse.move(bx.x,bx.y);await p.mouse.down();await p.mouse.move(bx.x+150,bx.y,{steps:5});await p.mouse.up();
     await p.click('.cropwrap >> text=Apply');await p.waitForFunction(()=>!document.querySelector('#cropbox')&&!/^data:image\/png/.test(items[0].photo));

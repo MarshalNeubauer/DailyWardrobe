@@ -128,7 +128,6 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await B.evaluate(async()=>{const it=items.find(i=>i.id==='b1');it.paused=true;await put(it)});await sync(B);await sync(A);
     const lab=await A.evaluate(()=>document.querySelector('#item-view .rotbtn').textContent);
     ok(/Put back/.test(lab),'the open item sheet is drawn again with the other phone\'s change: '+lab);
-    await A.evaluate(()=>{window.__t=document.querySelector('#item-view .rotbtn').getAttribute('onclick')});
     await A.evaluate(()=>togglePause('b1',true));
     ok(await A.evaluate(()=>!!items.find(i=>i.id==='b1').paused),'a button drawn before the change does what it said ("Take out" never puts it back in)');
     await A.evaluate(()=>closeItem());

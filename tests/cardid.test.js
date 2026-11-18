@@ -67,7 +67,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     // CR-1-05: the Wardrobe on its Suit chip, a suit made a blazer in the item sheet (the real Type dropdown)
     await ev(()=>{items=[{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid'},{id:'s2',type:'suit',primaryColor:'grey',pattern:'solid'},{id:'s3',type:'suit',primaryColor:'charcoal',pattern:'solid'},{id:'t1',type:'tie',primaryColor:'navy',pattern:'solid'}];
       cache={};flt='suit';show('wardrobe');openItem('s2')});await settle(p,500);
-    await p.locator("#ivbody select[onchange^=\"sete('s2','type'\"]").selectOption('blazer');await settle(p,400);
+    await p.locator('#ivbody select[data-act-change="itemPick"][data-id="s2"][data-f="type"]').selectOption('blazer');await settle(p,400);
     const nav=await ev(()=>({n:(document.querySelector('#ivhead .pcount')||{}).textContent||'',prev:document.querySelector('#iv-prev').disabled,next:document.querySelector('#iv-next').disabled,type:items.find(i=>i.id==='s2').type}));
     ok(nav.type==='blazer'&&nav.n==='2 of 3'&&!nav.prev&&!nav.next,`under the Suit chip, a suit made a blazer keeps "n of m" and ‹ › (${JSON.stringify(nav)})`);
     await tap('#iv-next');
