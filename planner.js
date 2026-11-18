@@ -308,7 +308,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans the days after today (the week's locks and
    the app's own recorded pieces go; the owner's swaps and picks (force, skip, the vest) and a kept trip stay: replanFuture(true) in history.js) */
-const PLAN_RULES=29;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
+const PLAN_RULES=30;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
 /* ---- favorites (2026-11-18, the owner's approved design, option B): settings.fav = {looks:[{j,sh,tie,at}], items:[id]}, marked by hand
    only (fav.js). A favorite look is the day's jacket, shirt and tie by id (j null on a day without a jacket, tie null without a tie). The
    planner brings a favorite look back on its own (favDue in planSim) and gives favorite pieces a rest target shorter by a fifth (FAV_REST_K)
@@ -641,7 +641,7 @@ const realRep=(()=>{const w=Ss.length>3?2:1,sids=[...(day.prev||[]).slice(0,w),.
   return ({sh,x,S,X})=>X.rep>=15||(!!sh&&sids.includes(sh.id))||(!!day.ahead&&(X.ah>=TIE_GAP||S.ah>=NEXT_SHIRT))||pairRepeat(sh,x,day.pairs)>0||lookRepeat(top,sh,x,day.prev)>=20||comboRepeat(sh,x,hk)>=15})();
 const wk=Math.max(1,settings.workdays.length),bzWk=Math.max(1,settings.blazerDays.filter(d=>settings.workdays.includes(d)).length);
 const turn={x:Math.max(7,c.by('tie').length*7/wk),sh:Math.max(7,c.by('shirt').length*7/wk),pt:Math.max(7,c.by('pants').length*7/(c.by('suit').length&&!c.noJ?bzWk:wk))};
-const fade=(i,t)=>i?1-Math.min(1,Math.max(0,c.over(i,0)-t)/t):1,fadeTie=i=>i?1-Math.min(1,Math.max(0,c.over(i,0)-TIE_DUE[0]*turn.x)/((TIE_DUE[1]-TIE_DUE[0])*turn.x)):1,
+const fade=(i,t)=>i?1-Math.min(1,Math.max(0,c.over(i,0)-t)/t):1,fadeTie=i=>i?(c.last[i.id]==null?0:1-Math.min(1,Math.max(0,c.over(i,0)-TIE_DUE[0]*turn.x)/((TIE_DUE[1]-TIE_DUE[0])*turn.x))):1,   // (a tie never worn nor planned yet makes its debut free of the look bar: the owner, 2026-11-18, new ties waited up to three months)
   due=({pt,sh,x})=>Math.min(fadeTie(x),fade(sh,turn.sh),suitDay?1:fade(pt,turn.pt));   // (ties sooner: TIE_DUE, the owner's tie audit 2026-11-18)
 const look=planLook(day,suitDay,c.by('shoes'),c.by('belt'),c.by('watch')),lookC=k=>k.L??(k.L=look(top,suitDay?top:k.pt,k.sh,k.x));
 const rested=({pt,sh,x})=>[[x,turn.x],[sh,turn.sh],[suitDay?null:pt,turn.pt]].every(([i,t])=>!i||c.over(i,0)>=LOOK_RESTED*t);
