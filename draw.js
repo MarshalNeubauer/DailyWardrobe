@@ -52,6 +52,13 @@ function camoTileUrl(c){if(typeof document==='undefined'||!c||!Array.isArray(c.c
   const N=CAMO_PX,im=camoImage(N,c.cols,c.shares,c.seed),cv=document.createElement('canvas');cv.width=cv.height=N;const x=cv.getContext('2d');if(!x)return null;
   const D=x.createImageData(N,N);for(let j=0;j<N*N;j++){D.data[4*j]=im[3*j];D.data[4*j+1]=im[3*j+1];D.data[4*j+2]=im[3*j+2];D.data[4*j+3]=255}   // (core.js camoImage: soft edges, cloth grain)
   x.putImageData(D,0,0);const url=cv.toDataURL('image/png');if(TEX_TILES.size>40)TEX_TILES.clear();TEX_TILES.set(key,url);return url}
+/* the OCP tile (core.js ocpImage, OCP_PX a side) as an image, cached like the camouflage's; null without a DOM or a canvas. OCP_DRAW_MM: what
+   the drawings' garment body (about 45 units of the 100) stands for on the cloth, so a tile is drawn at its real share of the garment */
+const OCP_PX=512,OCP_DRAW_MM=560;
+function ocpTileUrl(se){if(typeof document==='undefined'||!se||!se.camo)return null;const key='o'+OCP_V+'/'+se.camo.seed;if(TEX_TILES.has(key))return TEX_TILES.get(key);
+  const N=OCP_PX,im=ocpImage(N,se.camo.seed),cv=document.createElement('canvas');cv.width=cv.height=N;const x=cv.getContext('2d');if(!x)return null;
+  const D=x.createImageData(N,N);for(let j=0;j<N*N;j++){D.data[4*j]=im[3*j];D.data[4*j+1]=im[3*j+1];D.data[4*j+2]=im[3*j+2];D.data[4*j+3]=255}
+  x.putImageData(D,0,0);const url=cv.toDataURL('image/png');if(TEX_TILES.size>40)TEX_TILES.clear();TEX_TILES.set(key,url);return url}
 /* Pattern tile per garment role. Scale differs by role so a pinstripe suit and a striped shirt read correctly. */
 function fabricDef(id,item,role,ctx){
   const b=colOf(item),a=accentOf(item),t3=thirdOf(item),c=t3||a,p=patBase(item.pattern)||'solid',wool=role==='top'||role==='bot';
@@ -89,6 +96,10 @@ function fabricDef(id,item,role,ctx){
   const se=usableSett(item);
   /* camouflage (detect.js: its own reading, else camoLook): one tile of its blotches. In a small swatch about one tile, on the figure
      se.tr tiles across the item, elsewhere a tile per close-up width (se.cr) */
+  /* OCP (detect.js ocpSett, 2026-11-17): its own finer pattern (core.js ocpImage) at the cloth's own scale: a drawing's garment is about
+     OCP_DRAW_MM wide, so a tile is OCP_CAMO.mm of it; Today's figure as the generic camouflage (tr); a small swatch shows a third of a tile */
+  if(se&&se.ocp){const f2=v=>+v.toFixed(3),T=ctx==='dot'?40:ctx==='dia'?100:ctx==='fig'?Math.max(12,(role==='shirt'?180:200)/Math.max(.5,se.tr)):f2(OCP_CAMO.mm/OCP_DRAW_MM*(item.type==='pants'?52:45)),url=ocpTileUrl(se);
+    return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${f2(T)}" height="${f2(T)}"><rect width="${f2(T)}" height="${f2(T)}" fill="${se.camo.cols[0]||b}"/>${url?`<image href="${url}" width="${f2(T)}" height="${f2(T)}" preserveAspectRatio="none"/>`:''}</pattern>`}
   if(se&&se.camo){const T=ctx==='dot'?16:ctx==='dia'?100:ctx==='fig'?Math.max(12,(role==='shirt'?180:200)/Math.max(.5,se.tr||CAMO_TR)):Math.max(30,Math.min(120,100/Math.max(.9,se.cr||1))),f2=v=>+v.toFixed(3),url=camoTileUrl(se.camo);
     return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${f2(T)}" height="${f2(T)}"><rect width="${f2(T)}" height="${f2(T)}" fill="${se.camo.cols[0]||b}"/>${url?`<image href="${url}" width="${f2(T)}" height="${f2(T)}" preserveAspectRatio="none"/>`:''}</pattern>`}
   /* a motif read by Claude (tagging.js motifFromSpec): its figures on a grid two cells square (so two colours can alternate like a
@@ -806,7 +817,52 @@ const CASUAL_D={long:'M39,12 C44,14.5 56,14.5 61,12 L74,15.5 C77,17 78.5,20 79.5
   arm:'M74,15.5 C72.6,22 72.2,30 72.2,38',armS:'M74,15.5 C73,21 72.5,27 72.4,33',crew:'M39,12 C42,20 58,20 61,12 C56,14.5 44,14.5 39,12 Z',
   cuff:'M78.8,78.4 L88.3,77.1',cuffTop:'M78.6,75.6 L88.1,74.2',hem:'M27.5,86.4 C40,87.6 60,87.6 72.6,86.4',hemTop:'M27.5,83.6 C40,84.8 60,84.8 72.6,83.6',sleeveS:'M76.6,36.4 L86,31.3'};
 const casMir=d=>d.replace(/(-?\d*\.?\d+),(-?\d*\.?\d+)/g,(m,x,y)=>+(100-x).toFixed(2)+','+y);
-function casualMarks(i,P){const t=i.type,S=CASUAL_D,c=colOf(i),dark=lum(c)<.25,e=dark?mix(c,'#fff',.24):mix(c,'#000',.34),inside=dark?'#000':mix(c,'#000',.5),
+/* the uniform blouse (2026-11-17, the owner's OCP coat; from the approved mockup C:\code\audit-2026-11-13\ocp-blouse\): the long-sleeved body
+   laid flat, a folded-down collar over a tan T-shirt's crew neck, a covered zip placket, two angled chest pockets with flaps and, above
+   them, the name tape and the service tape (BLOUSE_TAPES: tan tapes, spice brown block letters, as on his own blouse; no rank or badges),
+   shoulder pockets with a hook-and-loop field, a pen pocket on the left sleeve, cuffs with a tab. Rolled (i.rolled: a day with the sleeves
+   rolled, Today's Sleeves row): the sleeves end above the elbow in a thick roll. Pieces cut apart take the cloth at another offset */
+const BLOUSE_TAPES={tape:'#C4AC86',ink:'#5E3F2A',tee:'#A08A6B',pile:'#9C8E6E'};
+/* the rank insignia in a 0..100 box (subdued: spice brown on OCP): a bar for lieutenants, two for a captain, the oak leaf for a major and a
+   lieutenant colonel. Shared with the painted picture (asm-ocp.js draws the same paths on the chest tab) */
+const OCP_RANK_SVG={'2lt':'M30,18 h40 v64 h-40 Z','1lt':'M30,18 h40 v64 h-40 Z','capt':'M14,18 h28 v64 h-28 Z M58,18 h28 v64 h-28 Z',
+  maj:'M50,2 C55,8 60,6 62,12 C68,10 72,14 70,20 C78,18 84,24 80,32 C88,32 94,40 88,46 C94,50 94,58 86,60 C90,66 86,74 78,72 C78,80 70,84 64,80 C62,86 56,88 53,84 L53,98 L47,98 L47,84 C44,88 38,86 36,80 C30,84 22,80 22,72 C14,74 10,66 14,60 C6,58 6,50 12,46 C6,40 12,32 20,32 C16,24 22,18 30,20 C28,14 32,10 38,12 C40,6 45,8 50,2 Z'};
+OCP_RANK_SVG.ltcol=OCP_RANK_SVG.maj;
+function blouseMarks(i,P){const S=CASUAL_D,c=colOf(i),se=typeof usableSett==='function'?usableSett(i):null,g0=se&&se.camo?se.camo.cols[0]:c,e=mix(g0,'#000',.42),inside=mix(g0,'#000',.5),B=BLOUSE_TAPES,
+    both=d=>d+' '+casMir(d),ln=(d,w=.4,op=1,col=e)=>`<path d="${d}" fill="none" stroke="${col}" stroke-opacity="${op}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`,
+    cloth=(d,f='f')=>`<path d="${d}" fill="url(#${P}${f})" stroke="${e}" stroke-width=".4" stroke-linejoin="round"/>`,
+    stitch=(d,op=.55)=>`<path d="${d}" fill="none" stroke="${mix(g0,'#000',.3)}" stroke-opacity="${op}" stroke-width=".22" stroke-dasharray=".55 .45"/>`,
+    off=(id,dx,dy)=>`<pattern id="${P}${id}" href="#${P}f" patternTransform="translate(${dx} ${dy})"/>`,roll=!!i.rolled;
+  const out=roll?'M39,12 C44,14.5 56,14.5 61,12 L74,15.5 C77,17 78.5,20 79.5,24 L84.4,52 L74.6,53.5 L72.2,38 L72.6,89 C60,90.2 40,90.2 27.4,89 L27.8,38 L25.4,53.5 L15.6,52 L20.5,24 C21.5,20 23,17 26,15.5 Z':S.long;
+  const defs=`<defs>${fabricDef(P+'f',i,'top')}${off('g',11,7)}${off('h',5,19)}${off('k',23,13)}${off('m',17,29)}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".14"/><stop offset=".45" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient></defs>`;
+  let g='';
+  // the neck: the T-shirt's crew neck in the open collar
+  g+=`<path d="M39,12 C44,14.5 56,14.5 61,12 L50,21 Z" fill="${inside}" fill-opacity=".45"/><path d="M42.6,13.4 C45,17.6 55,17.6 57.4,13.4 L50,20.4 Z" fill="${B.tee}"/>`+ln('M42.6,13.4 C45,17.6 55,17.6 57.4,13.4',.3,.8,mix(B.tee,'#000',.35))+ln('M43.2,14.6 C45.6,18.4 54.4,18.4 56.8,14.6',.22,.6,mix(B.tee,'#000',.3));
+  // the collar stand behind the neck and the folded-down collar
+  const leaf='M50.4,21 L60.8,11.2 C64.4,11 67.4,12 69.4,14 L65.4,24.4 C61,23.6 55.4,22.6 50.4,21 Z';
+  g+=cloth('M38.6,12.2 C38.8,10.4 39.6,9.6 41.2,9.3 C46,8.5 54,8.5 58.8,9.3 C60.4,9.6 61.2,10.4 61.4,12.2 C56,14.6 44,14.6 38.6,12.2 Z','g')+cloth(leaf,'g')+cloth(casMir(leaf),'k')+stitch(both('M52.6,20.8 L61.4,12.4 C64.2,12.4 66.4,13.2 68.2,14.6 L64.8,23.4'),.45);
+  // the covered zip placket
+  g+=cloth('M48.4,20.4 L52.2,20.4 L52.6,89.4 L48.8,89.4 Z','h')+stitch('M49.2,21 L49.6,89')+stitch('M51.4,21 L51.8,89');
+  // the chest pockets: angled, each with a flap; the tapes above them
+  const pk=(a,b,mir)=>{const p=d=>mir?casMir(d):d;return `<g transform="translate(0 2.6) rotate(${mir?13:-13} ${mir?37:63} 34)">`+cloth(p('M55.6,28.6 L70,28.6 L70,46.4 C70,47.2 69.4,47.8 68.6,47.8 L57,47.8 C56.2,47.8 55.6,47.2 55.6,46.4 Z'),a)+stitch(p('M56.6,29.6 L69,29.6 L69,46.8 L56.6,46.8 Z'),.4)+
+      cloth(p('M55.2,27.6 L70.4,27.6 L70.4,33.4 L55.2,33.4 Z'),b)+stitch(p('M55.9,32.6 L69.7,32.6'),.5)+`</g>`};
+  const tape=(x,txt)=>`<rect x="${x}" y="25" width="14.6" height="3.6" rx=".3" fill="${B.tape}" stroke="${mix(B.tape,'#000',.35)}" stroke-width=".3"/>`+stitch(`M${x+.5},25.5 L${x+14.1},25.5 M${x+.5},28.1 L${x+14.1},28.1`,.35)+
+    (txt?`<text x="${x+7.3}" y="27.75" text-anchor="middle" font-family="'Arial Narrow','Roboto Condensed','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="2.3" fill="${B.ink}" textLength="${Math.min(12.4,txt.length*1.02).toFixed(2)}" lengthAdjust="spacingAndGlyphs">${String(txt).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[ch])}</text>`:'');
+  const T=blouseTapes(i),rk=T.rank&&OCP_RANK_SVG[T.rank];
+  // the rank tab on the placket at the chest (hook-and-loop), the insignia on it
+  const rtab=`<rect x="46.6" y="25.6" width="6.8" height="8.4" rx=".6" fill="${B.pile}" stroke="${mix(B.pile,'#000',.35)}" stroke-width=".25"/>`+(rk?`<path d="${rk}" transform="translate(47.6 26.6) scale(.048 .064)" fill="${B.ink}"/>`:'');
+  g+=pk('h','g',false)+pk('m','k',true)+tape(30,T.name)+tape(55.4,T.service)+rtab;
+  // the shoulder pockets: a flap and a hook-and-loop field
+  const sp='M73.4,24.8 L79.4,23.6 L82.2,40.4 L76.2,41.6 Z',lp='M74.4,28.8 L79.4,27.9 L81.5,39.4 L76.6,40.4 Z',sf='M73.1,23.4 L79.6,22.2 L80.3,26.2 L73.8,27.4 Z',loop=mix('#8D8A6A',g0,.2);
+  g+=cloth(sp,'h')+cloth(casMir(sp),'m')+`<path d="${both(lp)}" fill="${loop}" stroke="${e}" stroke-width=".2" stroke-opacity=".6"/>`+cloth(sf,'g')+cloth(casMir(sf),'k');
+  if(roll){   // the rolled band above the elbow, folds across it
+    const rb='M73.6,46.2 L84.6,44.8 L85.6,52.6 L74.4,54.2 Z';g+=cloth(rb,'g')+cloth(casMir(rb),'k')+ln(both('M74,50.2 L85.1,48.7'),.3,.7)+stitch(both('M74.2,47.6 L84.8,46.2'),.4)}
+  else{   // a pen pocket on the wearer's left sleeve, cuffs with a tab
+    g+=cloth('M80.2,52 L84.4,51.3 L85.6,60.2 L81.4,60.9 Z','g')+stitch('M80.6,53.8 L84.6,53.1',.5);
+    g+=ln(both(S.cuffTop),.35,.8)+stitch(both('M78.9,76.8 L88.4,75.4'),.4)+cloth('M82.6,74 L86.4,73.4 L86.9,76.4 L83.1,77 Z','g')+cloth(casMir('M82.6,74 L86.4,73.4 L86.9,76.4 L83.1,77 Z'),'k')}
+  g+=ln('M27.4,86.4 C40,87.6 60,87.6 72.6,86.4',.3,.7);
+  return defs+`<path d="${out}" fill="url(#${P}f)" stroke="${mix(g0,'#000',.45)}" stroke-width=".45" stroke-linejoin="round"/><path d="${out}" fill="url(#${P}s)"/>`+ln(both(S.arm),.32,.75)+g}
+function casualMarks(i,P){if(i.type==='blouse')return blouseMarks(i,P);const t=i.type,S=CASUAL_D,c=colOf(i),dark=lum(c)<.25,e=dark?mix(c,'#fff',.24):mix(c,'#000',.34),inside=dark?'#000':mix(c,'#000',.5),
     both=d=>d+' '+casMir(d),ln=(d,w=.4,o=1,col=e)=>`<path d="${d}" fill="none" stroke="${col}" stroke-opacity="${o}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`,
     rib=(d,w)=>`<path d="${d}" fill="none" stroke="${e}" stroke-opacity=".38" stroke-width="${w}" stroke-dasharray=".3 .75"/>`,
     cloth=d=>`<path d="${d}" fill="url(#${P}f)" stroke="${e}" stroke-width=".4" stroke-linejoin="round"/>`,
@@ -837,7 +893,7 @@ function casualMarks(i,P){const t=i.type,S=CASUAL_D,c=colOf(i),dark=lum(c)<.25,e
   g+=ribbed?rib(S.hem,5)+ln(S.hemTop,.3,.7):t!=='chore'?ln('M27.4,86.6 C40,87.8 60,87.8 72.6,86.6',.3,.7):'';
   return `<defs>${fabricDef(P+'f',i,CASUAL_JACKETS_D.includes(t)?'top':'shirt')}<linearGradient id="${P}s" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".14"/><stop offset=".45" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient></defs>`+
     under+`<path d="${out}" fill="url(#${P}f)" stroke="${dark?mix(c,'#fff',.15):mix(c,'#000',.4)}" stroke-width=".45" stroke-linejoin="round"/><path d="${out}" fill="url(#${P}s)"/>`+arm+g}
-const CASUAL_JACKETS_D=['cardigan','chore'];
+const CASUAL_JACKETS_D=['cardigan','chore','blouse'];
 /* wristwatch, three-quarter view: traced from the owner's item picture of his watch (the realistic product shot made for it, a
    steel chronograph on an integrated bracelet; 2026-11-13, the owner's ask): the outline from the picture's pixels (the plain ground
    flooded from the edges; where it ran into the soft shadow at the lower right and the bottom, points placed on 1.3x crops), the

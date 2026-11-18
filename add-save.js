@@ -55,6 +55,7 @@ async function saveCard(q){
   if(q.type==='shoes'||q.type==='belt')it.leather=q.leather||'calf';
   if(q.type==='pants'&&(q.trouserKind==='chinos'||q.trouserKind==='jeans'||q.trouserKind==='cargo'))it.trouserKind=q.trouserKind;   // dress trousers: no field (as before kinds)
   if(q.type==='shoes'&&q.shoeStyle&&q.shoeStyle!=='oxford')it.shoeStyle=q.shoeStyle;
+  if(q.type==='blouse'){const b=blouseTapes(q);if(b.name)it.tapeName=b.name;if(b.service)it.tapeService=b.service;if(b.rank)it.rank=b.rank}   // the uniform blouse's tapes and rank (2026-11-18)
   if(q.type==='watch'){const wo=watchOpts(q);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
   if(!it.photo)delete it.photo;else await makeSmall(it);
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;

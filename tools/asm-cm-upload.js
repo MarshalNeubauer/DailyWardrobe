@@ -36,8 +36,10 @@ const ZONES={suit:['jacket','tie','background','skin','shirt','dark','watch'],ve
 // jacket on the open-collar jacket's (the chore jacket's collar as lapels); uploaded once their out-<kind> folder exists
 for(const k of ['tee','polo','henley','sweater','sweatshirt','hoodie','qzip'])ZONES[k]=ZONES['shirt-open'];
 for(const k of ['cardigan','chore'])ZONES[k]=ZONES['suit-open'];
-const NEW_KINDS=['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore'];
-const ASM_LAPELS=new Set(['suit','vest','suit-open','vest-open','chore']),OPTIONAL=new Set(['suit-open','vest-open',...NEW_KINDS]);
+// (2026-11-17) the uniform blouse's masters (asm-ocp.js): sleeves down and rolled, on the open-collar jacket's zones, the collar as lapels
+for(const k of ['blouse','blouse-roll'])ZONES[k]=ZONES['suit-open'];
+const NEW_KINDS=['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','blouse','blouse-roll'];
+const ASM_LAPELS=new Set(['suit','vest','suit-open','vest-open','chore','blouse','blouse-roll']),OPTIONAL=new Set(['suit-open','vest-open',...NEW_KINDS]);
 // (2026-11-16) a master's faded copy for jeans (asm-kinds.js asmJfKey: record 'master-jeans'), when the folder has colormaster-jeans-2880.png
 const JEANS_FILE='colormaster-jeans-2880.png';
 const KINDS=DIR?String(arg('kinds',Object.keys(ZONES).filter(k=>!OPTIONAL.has(k)||fs.existsSync(path.join(DIR,'out-'+k))).join(','))).split(','):[];

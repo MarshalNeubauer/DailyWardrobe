@@ -76,7 +76,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>show('wardrobe'));await settle(p,300);
     const chips=await p.evaluate(()=>[...document.querySelectorAll('#wardrobe .chip')].map(c=>c.textContent.trim()));
     ok(chips.some(c=>/^T-shirt 1/.test(c))&&chips.some(c=>/^Chore jacket 1/.test(c))&&!chips.some(c=>/^Hoodie/.test(c)),`Wardrobe chips: a casual type's chip once one is owned (${chips.join(', ')})`);
-    ok(await p.evaluate(()=>Object.entries(TYPES).filter(([k])=>HANDPICK_TYPES.includes(k)).length===9&&TAG_TYPES.includes('cargo')),'nine new types; the tag requests name them');
+    ok(await p.evaluate(()=>Object.entries(TYPES).filter(([k])=>HANDPICK_TYPES.includes(k)).length===10&&TAG_TYPES.includes('cargo')&&TAG_TYPES.includes('blouse')),'ten new types (the uniform blouse since 2026-11-17); the tag requests name them');
     ok(!errs.length,'no page errors '+errs.join(' | '));
   }finally{await browser.close()}
 };

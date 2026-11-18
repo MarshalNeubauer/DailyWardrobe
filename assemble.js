@@ -506,8 +506,9 @@ function asmShirtAngles(A,idx,W,H){const N=W*H,lab=new Int32Array(N).fill(-1),pa
    in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
    this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
 /* everything the painting needs, as plain data (photos as data URLs), or null: a look with no colour-coded master (asm-color.js asmCmJob) */
-async function asmJob(o){const k=asmCmUse(o);if(!k)return null;let j=await asmCmJob(o);
+async function asmJob(o){const k=asmCmUse(o);if(!k)return null;let j=await asmCmJob(o);const c0=j&&j.cloth;
   if(j&&typeof asmNkJob==='function')j=await asmNkJob(j,o,k);   // a new garment's master and cloth, the faded master for jeans (asm-kinds.js)
+  if(j&&typeof asmOcpJob==='function')j=asmOcpJob(j,o,k,c0);   // the uniform blouse's cloth, OCP pants (asm-ocp.js)
   if(j&&typeof asmWatchJob==='function'){const w=asmWatchJob(o,asmNkBaseOf(k));if(w)j.watch=w}
   if(j&&typeof asmPocketJob==='function'){const q=asmPocketJob(o,asmNkBaseOf(k));if(q)j.pocket=q}return j}   // (the day's watch painted after: asm-watch.js; a new kind's watch is its base master's)
 /* build one picture from a job (in either thread) -> {url (a JPEG data URL), gl, ms}; a warming job (setupOnly) only sets its master up */
@@ -516,6 +517,7 @@ async function asmBuild(job){
   if(!job||!job.cm)return {};return asmBuildAfter(await asmCmBuild(job),job)}
 /* the day's watch and pocket square, painted on the finished picture (asm-watch.js, asm-pocket.js; also after the page's draw, asm-gl.js asmGlFinOff) */
 async function asmBuildAfter(r,job){if(job.watch&&typeof asmWatchPaint==='function')r=await asmWatchPaint(r,job.watch);
+  if(job.ocpDecal&&typeof asmOcpPaint==='function')r=await asmOcpPaint(r,job.ocpDecal);   // the uniform blouse's tapes and rank (asm-ocp.js)
   return job.pocket&&typeof asmPocketPaint==='function'?asmPocketPaint(r,job.pocket):r}
 /* a picture as a JPEG data URL (the worker has its own, on an OffscreenCanvas) */
 async function asmJpeg(img){const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').putImageData(img,0,0);return c.toDataURL('image/jpeg',.9)}
