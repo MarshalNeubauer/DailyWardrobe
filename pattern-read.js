@@ -96,7 +96,7 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   const s=specSett(spec,{full:full2,box:it.pbox,tex,type:it.type})||(camoPat(it.pattern)?camoFromPixels({full:full2,box:it.pbox,tex}):claudeOnly(it.type,it.pattern)?null:settFrom({full,box:it.pbox,tex,weave:it.weave,wb:null,type:it.type}));   // the kept copy is already white-balanced
   if(spec){it.patternSpec=spec;if(spec.description)it.patternText=spec.description}
   const chk=settCheck(it.type,it.pattern,s);if(chk.reject){toast(`The reading showed ${chk.reject==='cross'?'lines crossing the stripes':'level bands'}, which isn't ${patName(it.pattern).toLowerCase()}: the pattern stays as it was.`);return}
-  if(!chk.s){toast('No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.');return}
+  if(!chk.s){toast(spec===null&&patternFail?'Claude couldn’t read the pattern right now (the server had a problem). Try again later.':'No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.',6000);return}
   it.sett=chk.s;delete it.stripes;await put(it);planDirty();renderWardrobe();toast(`Pattern read: ${settSummary(s)}.`)}
 
 /* ---- the pattern read by Claude (worker POST /pattern) and coloured from the pixels. The pixel reader alone is thrown by the
@@ -105,12 +105,15 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
    close-up's exposure is matched to the item photo's (which has a white wall to set it), and where a thread's pixels read grey
    though Claude sees a colour (a light-blue line woven into khaki linen), the pixels keep the lightness and Claude the hue.
    Without the worker, or when Claude finds no pattern, the pixel reader (settFrom) is used. ---- */
-async function claudePattern({image,closeup,type,wb,signal}){const w=localStorage.getItem('worker_url');if(!w||!image||inviteOver())return null;
+/* patternFail: the last reading failed on the server's side (an error status, no answer) rather than finding no pattern; rereadSett says so (2026-11-18:
+   the server refused every reading for two days with a 502 and the item sheet said "No clear pattern found") */
+let patternFail=false;
+async function claudePattern({image,closeup,type,wb,signal}){const w=localStorage.getItem('worker_url');patternFail=false;if(!w||!image||inviteOver())return null;
   try{const r=await fetch(new URL('pattern',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
       body:JSON.stringify({image,...(closeup?{closeup}:{}),type,...(typeof wb==='boolean'?{wb}:{})}),...(signal?{signal}:{})});   // wb: both pictures white-balanced (worker.js); signal: Skip or a newer close-up calls it off (readBegin)
-    const j=await r.json().catch(()=>({}));if(r.status===429&&j.message&&typeof limitNote==='function')limitNote(j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
+    const j=await r.json().catch(()=>({}));if(r.status>=500||r.status===401||r.status===403)patternFail=true;if(r.status===429&&j.message&&typeof limitNote==='function')limitNote(j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
     // any of the four answers (a camouflage has only camo: CR-2-01, it was paid for and dropped)
-    return r.ok&&(j.across||j.motif||j.texture||j.camo)&&j.layout!=='none'?j:null}catch{return null}}
+    return r.ok&&(j.across||j.motif||j.texture||j.camo)&&j.layout!=='none'?j:null}catch(e){if(!(e&&e.name==='AbortError'))patternFail=true;return null}}
 function sampleLabs(c){const x=c.getContext('2d',{willReadFrequently:true}),d=x.getImageData(0,0,c.width,c.height).data,st=Math.max(1,Math.round(c.width*c.height/120000)),out=[];
   for(let i=0;i<d.length;i+=4*st)out.push(rgbLab(d[i],d[i+1],d[i+2]));return out}
 const medLab=ls=>[0,1,2].map(k=>{const v=ls.map(l=>l[k]).sort((a,b)=>a-b);return v[v.length>>1]});
