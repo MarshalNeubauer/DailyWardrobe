@@ -1,6 +1,6 @@
 /* Daily Wardrobe: outfit rules, planning and scoring (no DOM access; also loaded by the analysis worker) */
 /* colour families for the rules: dark grey behaves like charcoal, light grey like grey, oxblood like burgundy */
-const FAM={stone:'tan',denim:'blue',mint:'green',paleyellow:'cream',ivory:'cream',beige:'tan',khaki:'tan',taupe:'tan',deeptaupe:'brown',rust:'brown',periwinkle:'blue',darkgrey:'charcoal',lightgrey:'grey',midgrey:'grey',oxblood:'burgundy',wine:'burgundy',steelblue:'blue',deepblue:'navy',darknavy:'navy',slate:'charcoal',rosegold:'gold',gunmetal:'charcoal'},fam=c=>FAM[c]||c;
+const FAM={stone:'tan',denim:'blue',mint:'green',paleyellow:'cream',ivory:'cream',beige:'tan',khaki:'tan',taupe:'tan',deeptaupe:'brown',coyote:'brown',rust:'brown',periwinkle:'blue',darkgrey:'charcoal',lightgrey:'grey',midgrey:'grey',oxblood:'burgundy',wine:'burgundy',steelblue:'blue',deepblue:'navy',darknavy:'navy',slate:'charcoal',rosegold:'gold',gunmetal:'charcoal'},fam=c=>FAM[c]||c;
 /* colRun: an item's colour family and colours, kept for one planning run (planSim's upTo, runAnalysis; withColRun): the scoring asks
    for them millions of times. Only while a run lasts, when the wardrobe and settings can't change (a run never edits an item) */
 let colRun=null;
@@ -161,7 +161,10 @@ function clothesScore(top,bot,shirt,tie,suitDay,day){
 const WARM=['brown','tan','olive'];
 /* a shoe's style against the trousers: an oxford goes with anything; derbies and loafers a little less with a suit; boots and sneakers
    only with chinos or jeans (with a suit or dress trousers they score as shoes that don't suit, -50 or worse) */
-const SHOE_FIT={oxford:{suit:0,dress:0,casual:0},derby:{suit:-4,dress:0,casual:0},loafer:{suit:-8,dress:-2,casual:0},boot:{suit:-60,dress:-20,casual:0},sneaker:{suit:-60,dress:-60,casual:0}};
+const SHOE_FIT={oxford:{suit:0,dress:0,casual:0},derby:{suit:-4,dress:0,casual:0},loafer:{suit:-8,dress:-2,casual:0},boot:{suit:-60,dress:-20,casual:0},sneaker:{suit:-60,dress:-60,casual:0},combat:{suit:-60,dress:-60,casual:0}};
+/* combat boots (2026-11-17, the owner: "only with camouflage pants"): never planned (core.js isHandPick); picked by hand they suit
+   camouflage pants (core.js camoPants) and nothing else, a shoe that doesn't suit (SHOE_LINE) with any other pants or a suit */
+const COMBAT_FIT=6;
 const shoeCtx=b=>b.type==='suit'?'suit':trouserKind(b)==='dress'?'dress':'casual';
 const SNEAKER_COLS=['white','cream','grey','black','navy','brown','tan'];
 /* black shoes under a brown, tan or olive jacket, or other shoes with a black suit: a real mistake whatever the trousers say. It costs
@@ -169,7 +172,7 @@ const SNEAKER_COLS=['white','cream','grey','black','navy','brown','tan'];
    hard), shoeOk, clothesHard and NO_SHOES use (the code review, CR-3-08: -44 to -48 never did, so the score gave such shoes full marks) */
 const SHOE_CLASH=60;
 const shoeClash=(t,s)=>{if(!t||!s)return false;const sc=pcol(s),tc=pcol(t);return (WARM.includes(tc)&&sc==='black')||(tc==='black'&&sc!=='black')};
-const shoeScore=(t,b,s)=>{if(!b)return 0;const sc=pcol(s),bc=pcol(b);const k=(SH[bc]||['black','brown']).indexOf(sc);let v=k<0?-50:6-k*2;
+const shoeScore=(t,b,s)=>{if(!b)return 0;if(shoeStyle(s)==='combat')return camoPants(b)?COMBAT_FIT:SHOE_LINE-10;const sc=pcol(s),bc=pcol(b);const k=(SH[bc]||['black','brown']).indexOf(sc);let v=k<0?-50:6-k*2;
   if(k<0&&shoeStyle(s)==='sneaker'&&shoeCtx(b)==='casual'&&SNEAKER_COLS.includes(sc))v=4;   /* a white or neutral sneaker goes with any chinos or jeans */if(shoeClash(t,s))v-=SHOE_CLASH;return v+SHOE_FIT[shoeStyle(s)][shoeCtx(b)]};
 /* socks: the trousers' colour first, then the shoes', then a sock that picks up the shirt's or the tie's colour (echo: their colour groups,
    from sockEcho), then a quiet neutral */
@@ -219,7 +222,7 @@ function sockPatScore(s,c){const b=sockBold(s),out={v:0,why:[],echo:'',clash:fal
 /* ---- leather goods ----
    Belt and shoes must be the same colour group (black / brown / tan / burgundy-oxblood) and a compatible finish:
    suede with suede, smooth with smooth or grain. Patent is black-tie only. Metals (buckle, watch, tie clip) should agree. */
-const leatherGroup=c=>({black:'black',brown:'brown',tan:'tan',khaki:'tan',burgundy:'burgundy',oxblood:'burgundy',wine:'burgundy'})[c]||c;
+const leatherGroup=c=>({black:'black',brown:'brown',coyote:'brown',tan:'tan',khaki:'tan',burgundy:'burgundy',oxblood:'burgundy',wine:'burgundy'})[c]||c;
 const finish=l=>l==='suede'||l==='nubuck'?'suede':l==='patent'?'patent':l==='pebble-grain'||l==='scotch-grain'?'grain':l==='canvas'||l==='knit'?'textile':'smooth';   // (nubuck: a napped leather, as suede; a braided belt is smooth leather)
 const metalOf=i=>i&&i.type==='tieclip'?clipMetal(i):i&&i.type==='cufflinks'&&i.metal==='silk'?null:i&&i.metal||'silver';   // a tie clip by its colour: null (enamel) goes with any metal; silk knots too
 /* two metals that agree: the same, or a two-tone (steel and gold) with either (2026-11-15) */
@@ -265,7 +268,7 @@ function pocketScore(p,top,shirt,tie,day){const occ=day&&day.occ;
   if(day&&day.formal)v+=white?PS_FORMAL:-PS_FORMAL;
   return v}
 function beltFit(shoe,belt){
-  if(shoeStyle(shoe)==='sneaker')return 0;   // sneakers don't call for a matching belt: any belt will do
+  if(shoeStyle(shoe)==='sneaker'||shoeStyle(shoe)==='combat')return 0;   // sneakers and combat boots don't call for a matching belt: any belt will do
   if(leatherGroup(planCol(belt))!==leatherGroup(planCol(shoe)))return null;
   const fs=finish(shoe.leather),fb=finish(belt.leather);
   if(fs===fb)return 3;
@@ -275,7 +278,7 @@ function beltFit(shoe,belt){
 /* shoes the planner keeps back because belts are owned and none matches them (a belt that doesn't match is a real mistake and no belt
    is a last resort): the belt they wait for ("black smooth leather belt"), else ''. The audit: black oxfords and only a brown belt, the
    black pair never planned and nothing said why (the score's Variety line and Insights now say it) */
-const beltWait=s=>{if(!s||s.type!=='shoes'||shoeStyle(s)==='sneaker'||!inRotation(s))return '';const B=items.filter(b=>b.type==='belt'&&inRotation(b));
+const beltWait=s=>{if(!s||s.type!=='shoes'||shoeStyle(s)==='sneaker'||shoeStyle(s)==='combat'||!inRotation(s))return '';const B=items.filter(b=>b.type==='belt'&&inRotation(b));
   if(!B.length||B.some(b=>beltFit(s,b)!==null))return '';return `${leatherGroup(planCol(s))} ${finish(s.leather)==='suede'?'suede':'smooth leather'} belt`};
 function shoeFormality(shoe,suitDay){
   const f=finish(shoe.leather);
@@ -501,7 +504,7 @@ const force=rec&&rec.force||{},skip=rec&&rec.skip||{};
 // a piece the planner never plans (core.js isHandPick: a casual top, a cardigan or chore jacket, cargo pants) is worn only when the day's
 // pick names it for its own slot and it is in rotation that day; a casual jacket makes the day a blazer day (odd pants)
 const hp=s=>{const id=force[s],x=id&&items.find(i=>i.id===id);return x&&handPickSlot(x)===s&&inRotation(x,n)?x:null};
-const hpTop=noJ?null:hp('top'),hpShirt=hp('shirt'),hpBotAny=hp('bot');if(hpTop)suitDay=false;const hpBot=suitDay?null:hpBotAny;
+const hpTop=noJ?null:hp('top'),hpShirt=hp('shirt'),hpBotAny=hp('bot'),hpShoes=hp('shoes');if(hpTop)suitDay=false;const hpBot=suitDay?null:hpBotAny;
 const LT={top:suitDay?'suit':'blazer',bot:suitDay?null:'pants',shirt:'shirt',tie:'tie',shoes:'shoes',belt:'belt',socks:'socks',watch:'watch',clip:'tieclip',links:'cufflinks',pocket:'pocketsquare'};
 let lock=rec&&rec.lock||null;
 // the washing cycle (settings.laundryDays, default 1): a shirt worn within that many days is in the wash, so it is left out of the
@@ -532,7 +535,7 @@ const untake=b=>{if(!b||!(b.id in was))return;if(was[b.id]===undefined)delete la
 const argBest=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i);if(s>bs){bs=s;b=i}}return b},best=(arr,sc)=>take(argBest(arr,sc));
 // the day's shoes, and whether any of them suit the jacket and pants (not patent: a last resort)
 const S=pool('shoes','shoes'),shoeOk=(t,b)=>!S.length||S.some(s=>finish(s.leather)!=='patent'&&shoeSuits(t,b,s));
-return {day,suitDay,n,by,last,rec,casual,occ,full,noJ,noT,force,lock,trip,tripOff,hpTop,hpBotAny,since,rest,over,rb,pool,take,untake,argBest,best,S,shoeOk}}
+return {day,suitDay,n,by,last,rec,casual,occ,full,noJ,noT,force,lock,trip,tripOff,hpTop,hpBotAny,hpShoes,since,rest,over,rb,pool,take,untake,argBest,best,S,shoeOk}}
 /* the jacket (null on a day without one) */
 function chooseJacket(c){const {day,suitDay,by,occ,noJ,noT,since,rest,over,pool,argBest,best,shoeOk}=c;
 // suits rotate (least recently worn first); season and formality can override a few days of rest
@@ -622,7 +625,8 @@ if(hardC(pick1)){const clean=cands.filter(c=>!hardC(c));if(clean.length)pick1=ch
 const bot=suitDay?top:take(pick1.pt),shirt=take(pick1.sh),tie=take(pick1.x);
 return {bot,shirt,tie}}
 /* shoes, belt and watch are chosen together so the belt always matches the shoes and the metals agree (B: the day's belts) */
-function chooseLeather(c,top,bot){const {day,suitDay,rest,rb,pool,take,S}=c;
+// (combat boots picked by hand, c.hpShoes: worn whatever the clothes; the clothes were chosen against the planner's own shoes, c.S)
+function chooseLeather(c,top,bot){const {day,suitDay,rest,rb,pool,take}=c,S=c.hpShoes?[c.hpShoes]:c.S;
 const B=pool('belt','belt'),W=pool('watch','watch');let pick=null;
 for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.length?W:[null]){
   let t=0;
@@ -764,7 +768,7 @@ function rateOutfit(o){
   if(shoes&&trousers){const s=shoeScore(top,trousers,shoes),k=(SH[pcol(trousers)]||['black','brown']).indexOf(pcol(shoes));
     // the reason: a black suit's clash first (its own pants would say "brown shoes don't suit black pants"), then the pants', then a warm
     // jacket's clash, then the style's
-    add('Shoes',s<=SHOE_LINE?0:10,10,shoeClash(top,shoes)&&(pcol(top)==='black'||k>=0)?pcol(top)==='black'?'a black suit needs black shoes':`black shoes don't suit a ${spokenCol(top)} jacket`:k<0?`${spokenCol(shoes)} shoes don't suit ${spokenCol(trousers)} pants`:`${shoeStyle(shoes)}s don't go with ${shoeCtx(trousers)==='suit'?'a suit':'dress pants'}`,true)}
+    add('Shoes',s<=SHOE_LINE?0:10,10,shoeStyle(shoes)==='combat'?'combat boots go with camouflage pants':shoeClash(top,shoes)&&(pcol(top)==='black'||k>=0)?pcol(top)==='black'?'a black suit needs black shoes':`black shoes don't suit a ${spokenCol(top)} jacket`:k<0?`${spokenCol(shoes)} shoes don't suit ${spokenCol(trousers)} pants`:`${shoeStyle(shoes)}s don't go with ${shoeCtx(trousers)==='suit'?'a suit':'dress pants'}`,true)}
   // (no belt you own matches the shoes: the check is left out, as with no belt at all; adding a belt that suits none of the shoes took 15
   // points off every day, W2-14-08. The planner's note still says which belt would match)
   if(shoes&&items.some(i=>i.type==='belt'&&inRotation(i)&&(beltFit(shoes,i)!==null||(belt&&belt.id===i.id)))){const f=belt?beltFit(shoes,belt):null;
@@ -917,8 +921,8 @@ function dialTexture(o,fast){const parts=[[o.top,'top'],[o.suitDay?null:o.bot,'b
 function dialOccasion(o,fast){const {top,shirt,tie,shoes,belt}=o,legs=o.bot||top,P=[],s=o.clim&&o.clim.season,occ=OCC[o.occasion]?o.occasion:null,formal=!!o.formal||o.occasion==='formal',sd=!!o.suitDay;
   if(shoes){const st=shoeStyle(shoes),fit=legs?SHOE_FIT[st][shoeCtx(legs)]:0,f=finish(shoes.leather),w=()=>`${dCol(shoes)} ${f==='suede'?'suede ':f==='grain'?'grain ':''}${st==='oxford'?'oxfords':typeWord(shoes)}`;
     P.push([20,dLin(shoeFormality(shoes,sd)+fit,-30,2),()=>`${w()} have the right polish`,()=>`${w()} are a step down for ${sd?'a suit':'the outfit'}`]);
-    if(legs){const k=(SH[pcol(legs)]||['black','brown']).indexOf(pcol(shoes));P.push([18,shoeClash(top,shoes)||!shoeSuits(top,legs,shoes)?0:k<0?.4:[1,.85,.7,.55][k]??.5,()=>`${dCol(shoes)} shoes suit the ${dCol(legs)} ${sd?'suit':'pants'}`,()=>`${dCol(shoes)} shoes don't suit the ${dCol(legs)} ${sd?'suit':'pants'}`])}}
-  if(shoes&&belt&&shoeStyle(shoes)!=='sneaker'){const f=beltFit(shoes,belt);P.push([10,f===null?0:f>0?1:.65,()=>'the belt matches the shoes',()=>`a ${dCol(belt)} belt with ${dCol(shoes)} shoes`])}
+    if(legs){const k=(SH[pcol(legs)]||['black','brown']).indexOf(pcol(shoes));P.push([18,shoeClash(top,shoes)||!shoeSuits(top,legs,shoes)?0:st==='combat'?1:k<0?.4:[1,.85,.7,.55][k]??.5,()=>`${dCol(shoes)} shoes suit the ${dCol(legs)} ${sd?'suit':'pants'}`,()=>`${dCol(shoes)} shoes don't suit the ${dCol(legs)} ${sd?'suit':'pants'}`])}}
+  if(shoes&&belt&&shoeStyle(shoes)!=='sneaker'&&shoeStyle(shoes)!=='combat'){const f=beltFit(shoes,belt);P.push([10,f===null?0:f>0?1:.65,()=>'the belt matches the shoes',()=>`a ${dCol(belt)} belt with ${dCol(shoes)} shoes`])}
   if(tie){const v=formal?dLin(formalTie(tie),-15,3):occ?dLin(OCC[occ].tie(tie),-25,10):dLin(formalTie(tie),-12,3);P.push([14,v,()=>`the ${dCol(tie)} tie suits the day`,()=>`the ${dCol(tie)} tie is a touch casual for the day`])}
   if(top){const v=formal?dLin(formalTop(top),-25,30):occ?dLin(occTop(occ,top,s),-30,30):sd?(isCamo(top)?0:Math.max(.85,dLin(formalTop(top),-25,30))):.85;/* (an ordinary suit day: any suit suits it, a dark one fully; only camouflage, the uniform, doesn't; the strict dark-suit scale is for formal days and occasions: the owner, 2026-11-17, "a warm taupe suit isn't formal as a suit?") */P.push([14,v,()=>`the ${dCol(top)} ${dJacket(o)} suits the day`,()=>`the ${dCol(top)} ${dJacket(o)} is less formal than ${sd?'a suit day':'the day'} wants`])}
   if(shirt&&(formal||occ)){const v=formal?dLin(formalShirt(shirt),-14,10):dLin(OCC[occ].shirt(shirt),-20,10);P.push([10,v,()=>`the ${dCol(shirt)} shirt suits the day`,()=>`the ${dCol(shirt)} shirt is not the shirt for the day`])}

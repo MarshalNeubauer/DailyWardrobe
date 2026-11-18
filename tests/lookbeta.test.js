@@ -189,7 +189,13 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
     ok(e&&e.h&&e.h.c==='darknavy'&&e.h.mat&&e.h.mat.key==='flannel'&&!e.ok,T+`saved unchecked, Claude's runner-ups are kept on the item for the item sheet (${JSON.stringify(e)})`);
     e=await p.evaluate(async()=>{show('add');addManual();await new Promise(r=>setTimeout(r,80));const q=queue[0];Object.assign(q,{type:'tieclip',primaryColor:'silver'});renderAdd();
       await lookSetMat('q',q.id,'metal','gold');await lookSetEnamel('q',q.id,'navy');ckCheck(qAt(q.id),'lk');await save(q.id);await new Promise(r=>setTimeout(r,150));const it=items.find(x=>x.id===q.id);return it&&{pc:it.primaryColor,m:it.metal,ok:it.lookOk}});
-    ok(e&&e.pc==='navy'&&e.m==='gold'&&e.ok===1,T+`a tie clip made on the Add card: navy enamel on gold, checked (${JSON.stringify(e)})`)}
+    ok(e&&e.pc==='navy'&&e.m==='gold'&&e.ok===1,T+`a tie clip made on the Add card: navy enamel on gold, checked (${JSON.stringify(e)})`);
+    // a combat boot added by hand is "Suede and nylon" (the owner, 2026-11-18), as on the old card; a leather picked in Look first is kept
+    e=await p.evaluate(async()=>{const row=()=>[...document.querySelectorAll('#nps-q .cklook .lkrow')].map(r=>r.textContent.replace(/\s+/g,' ').trim());
+      show('add');addManual();await new Promise(r=>setTimeout(r,80));let q=queue[0];setq(qAt(q.id),'type','shoes');setq(qAt(q.id),'shoeStyle','combat');await new Promise(r=>setTimeout(r,60));
+      const a={l:q.leather,rows:row()};skipCard(q.id);addManual();await new Promise(r=>setTimeout(r,80));q=queue[0];setq(qAt(q.id),'type','shoes');setq(qAt(q.id),'shoeStyle','boot');
+      await lookSetMat('q',q.id,'leather','calf');setq(qAt(q.id),'shoeStyle','combat');a.kept=q.leather;skipCard(q.id);return a});
+    ok(e.l==='suede'&&e.rows.some(t=>/Material · Leather Suede and nylon/.test(t))&&e.rows.some(t=>/^Sole/.test(t))&&e.kept==='calf',T+`a combat boot added by hand is Suede and nylon in Look (with its Sole row); a leather picked first stays (${JSON.stringify(e)})`)}
 
   // ================= the tie clip's planner input is unchanged: the same colour field the old UI wrote, the same plans =================
   if(full){const e=await p.evaluate(async()=>{const was=items;const mk=()=>{const I=(id,type,x={})=>({id,type,primaryColor:'navy',pattern:'solid',added:1,...x});

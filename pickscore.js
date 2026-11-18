@@ -13,7 +13,8 @@ const BELT_STUCK='Your other belts need shoes that don’t suit this outfit, so 
 const slotPool=(slot,o)=>(slot==='bot'&&o.offSuit&&!o.frozen?[o.offSuit]:[]).concat((slot==='coat'?items.filter(i=>i.type==='overcoat'||i.type==='raincoat'):slot==='top'&&o.frozen?items.filter(i=>i.type==='suit'||i.type==='blazer'):items.filter(i=>i.type===SLOT_TYPE(slot,o.suitDay))).filter(i=>!isHandPick(i)&&(o.frozen||inRotation(i,di(sel)))));
 /* the pieces worn only when picked by hand (core.js isHandPick) for this slot: the picker's "Casual · pick by hand" group, never scored,
    swapped in by Suggest another or planned (2026-11-16, the owner's new casual garments) */
-const handPool=(slot,o)=>items.filter(i=>handPickSlot(i)===slot&&(o.frozen||inRotation(i,di(sel)))).sort((a,b)=>(TYPES[a.type]||'').localeCompare(TYPES[b.type]||'')||(a.id<b.id?-1:1));
+// (combat boots, 2026-11-17: offered only while the day's pants are camouflage, core.js camoPants; a pair already worn stays listed)
+const handPool=(slot,o)=>items.filter(i=>handPickSlot(i)===slot&&(o.frozen||inRotation(i,di(sel)))&&(slot!=='shoes'||camoPants(o.bot)||(o.shoes&&o.shoes.id===i.id))).sort((a,b)=>(TYPES[a.type]||'').localeCompare(TYPES[b.type]||'')||(a.id<b.id?-1:1));
 /* the picker ranks and labels each piece by the score the outfit would get with it (W2-17-03, fix round 3: "Best match" lowered the score
    93 → 81, leaving out the belt, variety and rest): a coming day is planned with the pick held in memory only (the record pickItem would
    save, planSim's peek: the pieces that follow it, like the belt after the shoes, are chosen again), a past day being corrected has the
@@ -22,9 +23,11 @@ const handPool=(slot,o)=>items.filter(i=>handPickSlot(i)===slot&&(o.frozen||inRo
 let pickMemo={c:null,key:'',v:null};
 const pickRec=(k,o,slot,id)=>{const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=FOLLOW[slot]||[],force={};
   for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
-  force[slot]=id;suitPants(force,slot,o);keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;notAhead(rec,k);pocketOn(rec,slot);return rec};
+  force[slot]=id;suitPants(force,slot,o);bootsOff(force,slot,o);keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;notAhead(rec,k);pocketOn(rec,slot);return rec};
 /* a pocket square chosen puts the square back on (a − on it before: rec.off.pocket) */
 const pocketOn=(rec,slot)=>{if(slot!=='pocket'||!rec.off||!rec.off.pocket)return;rec.off={...rec.off};delete rec.off.pocket;if(!rec.off.top&&!rec.off.tie)delete rec.off};
+// other pants than camouflage, or a jacket, chosen while combat boots are worn: the boots come off (the planner picks the shoes again)
+const bootsOff=(force,slot,o)=>{if((slot==='bot'||slot==='top')&&o.shoes&&shoeStyle(o.shoes)==='combat'&&!camoPants(slot==='bot'?items.find(i=>i.id===force.bot):o.bot))delete force.shoes};
 // the suit's own pants chosen back (its jacket taken off): no pick of pants, the suit is worn as before
 const suitPants=(force,slot,o)=>{if(slot==='bot'&&o.offSuit&&force.bot===o.offSuit.id)delete force.bot};
 const pickSim=()=>planSim(planStart(sel.getFullYear(),sel.getMonth()));

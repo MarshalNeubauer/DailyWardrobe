@@ -4,7 +4,7 @@ const TYPES={suit:'Suit',blazer:'Blazer',pants:'Pants',shirt:'Dress shirt',tie:'
   tee:'T-shirt',polo:'Polo',henley:'Henley',sweater:'Sweater',sweatshirt:'Sweatshirt',hoodie:'Hoodie',qzip:'Quarter-zip',cardigan:'Cardigan',chore:'Chore jacket'};
 /* the types and kinds the tagger offers only to an app that names them (the request's `types`; worker/tag.js knownTypes; the pocket square too): an older app
    reads an unknown type as a suit, so the worker gives one only when told. 'cargo' is the pants kind (trouserKind) */
-const TAG_TYPES=['pocketsquare','tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','cargo','sockpat'];   // ('sockpat', 2026-11-17: socks' patterns, their pattern colours and the toe cap's own field, toeColor)
+const TAG_TYPES=['pocketsquare','tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','cargo','sockpat','combat'];   // ('sockpat', 2026-11-17: socks' patterns, their pattern colours and the toe cap's own field, toeColor; 'combat', 2026-11-17: the combat boot style and the coyote color)
 /* what a tag request names: with the Look editor beta on (look.js lookOn) also 'coatpat', a coat's patterns (2026-11-17); off, exactly TAG_TYPES */
 const tagTypesNow=()=>typeof lookOn==='function'&&lookOn()?[...TAG_TYPES,'coatpat']:TAG_TYPES;
 /* ---- hand-pick only (2026-11-16, the owner: "Planner: hand-pick only"): the casual tops (worn in the shirt slot, in place of the shirt),
@@ -14,12 +14,15 @@ const tagTypesNow=()=>typeof lookOn==='function'&&lookOn()?[...TAG_TYPES,'coatpa
 const CASUAL_TOPS=['tee','polo','henley','sweater','sweatshirt','hoodie','qzip'];
 const CASUAL_JACKETS=['cardigan','chore'];
 const HANDPICK_TYPES=[...CASUAL_TOPS,...CASUAL_JACKETS];
-const isHandPick=i=>!!i&&(HANDPICK_TYPES.includes(i.type)||(i.type==='pants'&&i.trouserKind==='cargo'));
+// (combat boots too, 2026-11-17, the owner: hand-pick only, and only with camouflage pants: camoPants)
+const isHandPick=i=>!!i&&(HANDPICK_TYPES.includes(i.type)||(i.type==='pants'&&i.trouserKind==='cargo')||(i.type==='shoes'&&i.shoeStyle==='combat'));
 /* the Today slot a hand-pick piece is worn in (null: not one) */
-const handPickSlot=i=>!isHandPick(i)?null:CASUAL_TOPS.includes(i.type)?'shirt':CASUAL_JACKETS.includes(i.type)?'top':'bot';
+const handPickSlot=i=>!isHandPick(i)?null:i.type==='shoes'?'shoes':CASUAL_TOPS.includes(i.type)?'shirt':CASUAL_JACKETS.includes(i.type)?'top':'bot';
+/* pants in a camouflage (pattern camouflage, or an own pattern named so: MultiCam, OCP): the only pants combat boots go with */
+const camoPants=b=>!!b&&b.type==='pants'&&camoPat(b.pattern);
 /* a casual top worn in the shirt slot: the day has no tie and no tie clip (the top is the top layer, in place of the shirt) */
 const casualTop=o=>!!(o&&o.shirt&&CASUAL_TOPS.includes(o.shirt.type));
-const COLORS={stone:'#cbbfa3',denim:'#3e5c86',black:'#16161a',charcoal:'#3b3f46',darkgrey:'#5e6269',grey:'#8b8f96',midgrey:'#a2a4a8',lightgrey:'#babdc2',white:'#f6f6f3',cream:'#efe4c8',lightblue:'#a9c7e4',blue:'#3f6fb5',steelblue:'#56657f',deepblue:'#26326a',navy:'#1b2a4a',darknavy:'#1c1f2b',slate:'#3a3f4c',brown:'#5a3a22',tan:'#b8946a',khaki:'#c3b091',taupe:'#8b7d6b',deeptaupe:'#5f5449',rust:'#a4502a',olive:'#5b5d36',green:'#2f6b4a',burgundy:'#6d1f2c',wine:'#7d2438',oxblood:'#4a1a1e',red:'#b3262e',purple:'#5d3a7a',pink:'#e3a5b4',gold:'#c9a227',silver:'#c3c6cb',rosegold:'#c98f7a',gunmetal:'#55595f'};
+const COLORS={stone:'#cbbfa3',denim:'#3e5c86',black:'#16161a',charcoal:'#3b3f46',darkgrey:'#5e6269',grey:'#8b8f96',midgrey:'#a2a4a8',lightgrey:'#babdc2',white:'#f6f6f3',cream:'#efe4c8',lightblue:'#a9c7e4',blue:'#3f6fb5',steelblue:'#56657f',deepblue:'#26326a',navy:'#1b2a4a',darknavy:'#1c1f2b',slate:'#3a3f4c',brown:'#5a3a22',tan:'#b8946a',khaki:'#c3b091',taupe:'#8b7d6b',deeptaupe:'#5f5449',rust:'#a4502a',olive:'#5b5d36',coyote:'#8f6a3c',green:'#2f6b4a',burgundy:'#6d1f2c',wine:'#7d2438',oxblood:'#4a1a1e',red:'#b3262e',purple:'#5d3a7a',pink:'#e3a5b4',gold:'#c9a227',silver:'#c3c6cb',rosegold:'#c98f7a',gunmetal:'#55595f'};
 /* colours offered only for dress shirts (the planner maps them to a family for other rules) */
 const SHIRT_COLORS={mint:'#cfe6d4',paleyellow:'#f1e6ac',ivory:'#f4efde',beige:'#dccbb0',lavender:'#c9bfe2',periwinkle:'#9ea8d4'};
 Object.assign(COLORS,SHIRT_COLORS);
@@ -79,7 +82,7 @@ const COLS_BY={
   tieclip:{p:['silver','gold','rosegold','gunmetal','grey','black','white','red','blue','navy'],a:['black','white','silver','gold','navy','red','blue']},   // a tie clip is its colour (no metal field): plated, polished or enamel, as clips are sold
   cufflinks:{p:['silver','gold','grey','black','white','navy','blue','lightblue','burgundy','red','green','purple'],a:['silver','gold','black','white','navy','blue','burgundy','red','green']},
   watch:{p:['black','brown','tan','oxblood','navy','grey','green','silver','gold'],a:['black','brown','white','grey','navy']},
-  shoes:{p:[...LEATHER_COLS,'white','cream'],a:['black','brown','tan','white','navy','cream','grey']},   // white and cream: sneakers (the planner keeps them off dress outfits); the second colour is a sneaker's sole
+  shoes:{p:[...LEATHER_COLS,'white','cream','coyote'],a:['black','brown','tan','white','navy','cream','grey','coyote']},   // white and cream: sneakers (the planner keeps them off dress outfits); coyote: combat boots; the second colour is a sneaker's or a combat boot's sole
   belt:{p:LEATHER_COLS,a:['black','brown','tan','navy']},
   socks:{p:['black','charcoal','darkgrey','grey','midgrey','navy','darknavy','deepblue','blue','steelblue','slate','brown','taupe','tan','khaki','olive','green','burgundy','wine','red','rust','purple','pink','gold'],
     a:['white','cream','lightgrey','grey','charcoal','black','navy','blue','lightblue','burgundy','red','rust','pink','purple','lavender','green','olive','gold','brown','tan']},
@@ -454,14 +457,16 @@ const nameIso=t=>{t=String(t??'');return RTL_RE.test(t)?'⁨'+t+'⁩':t};
    exactly as before there were kinds and styles (so a wardrobe from before plans the same) */
 /* (2026-11-16) cargo pants: chinos with thigh cargo pockets, picked by hand only (isHandPick); the planner, never planning them, reads
    them as chinos when the owner picks them (trouserKind) */
-const TROUSER_KINDS=[['dress','Dress pants'],['chinos','Chinos'],['jeans','Jeans'],['cargo','Cargo pants']],SHOE_STYLES=[['oxford','Oxford'],['derby','Derby'],['loafer','Loafer'],['boot','Boot'],['sneaker','Sneaker']];
+const TROUSER_KINDS=[['dress','Dress pants'],['chinos','Chinos'],['jeans','Jeans'],['cargo','Cargo pants']],SHOE_STYLES=[['oxford','Oxford'],['derby','Derby'],['loafer','Loafer'],['boot','Boot'],['combat','Combat boot'],['sneaker','Sneaker']];   // (combat, 2026-11-17: the owner's Rocky S2V; hand-pick only, isHandPick)
 const trouserKind=i=>i&&i.type==='pants'&&(i.trouserKind==='chinos'||i.trouserKind==='jeans')?i.trouserKind:i&&i.type==='pants'&&i.trouserKind==='cargo'?'chinos':'dress';
 const isCargo=i=>!!i&&i.type==='pants'&&i.trouserKind==='cargo';
 /* the kind as shown to the owner (the item sheet's Kind and Details, the grid's label): cargo stays cargo there; the planner keeps trouserKind */
 const trouserKindShown=i=>isCargo(i)?'cargo':trouserKind(i);
 const shoeStyle=i=>i&&i.type==='shoes'&&SHOE_STYLES.some(([k])=>k===i.shoeStyle)?i.shoeStyle:'oxford';
+/* shoes whose second colour is the sole: a sneaker, a combat boot */
+const soleStyle=i=>shoeStyle(i)==='sneaker'||shoeStyle(i)==='combat';
 /* the word for the item in descriptions: chinos, jeans, loafers, boots, sneakers, derby shoes; else the type's own */
-const typeWord=i=>isCargo(i)?'cargo pants':i&&i.type==='pants'&&trouserKind(i)!=='dress'?trouserKind(i):i&&i.type==='shoes'&&shoeStyle(i)!=='oxford'?({derby:'derby shoes',loafer:'loafers',boot:'boots',sneaker:'sneakers'})[shoeStyle(i)]:(TYPES[i&&i.type]||'item').toLowerCase();
+const typeWord=i=>isCargo(i)?'cargo pants':i&&i.type==='pants'&&trouserKind(i)!=='dress'?trouserKind(i):i&&i.type==='shoes'&&shoeStyle(i)!=='oxford'?({derby:'derby shoes',loafer:'loafers',boot:'boots',combat:'combat boots',sneaker:'sneakers'})[shoeStyle(i)]:(TYPES[i&&i.type]||'item').toLowerCase();
 /* one title style everywhere: a description starts with a capital and the rest stays as written ("Navy hopsack suit"); a name the
    user typed is shown exactly as typed. (The .cap class used to capitalise every word, names included.) */
 /* an average score as shown: one decimal, rounded down, so it reads 100 only when every day scored 100 (99.6 used to show as 100
@@ -508,8 +513,10 @@ const LEATHERS=['calf','cordovan','suede','patent','pebble-grain','scotch-grain'
 /* (2026-11-15, the owner's accessory options) nubuck (a fine nap, drawn and planned like suede) for derbies, boots and sneakers; a belt
    also in braided leather or canvas (BELT_MATS), so its label is "Material" too */
 const SHOE_NAP=['nubuck'],BELT_MATS=['braided','canvas'];
-const leathersFor=i=>i&&i.type==='shoes'?({sneaker:['calf','suede','nubuck','canvas','knit'],boot:['calf','suede','nubuck','pebble-grain','scotch-grain','cordovan'],loafer:['calf','suede','patent','cordovan'],derby:[...LEATHERS,'nubuck']})[shoeStyle(i)]||LEATHERS:i&&i.type==='belt'?[...LEATHERS,...BELT_MATS]:LEATHERS;
-const leatherWord=(i,l)=>i&&i.type==='shoes'&&shoeStyle(i)==='sneaker'&&l==='calf'?'leather':l==='braided'?'braided leather':patLabel(l);
+const leathersFor=i=>i&&i.type==='shoes'?({sneaker:['calf','suede','nubuck','canvas','knit'],boot:['calf','suede','nubuck','pebble-grain','scotch-grain','cordovan'],loafer:['calf','suede','patent','cordovan'],derby:[...LEATHERS,'nubuck'],combat:['suede','nubuck','calf']})[shoeStyle(i)]||LEATHERS:i&&i.type==='belt'?[...LEATHERS,...BELT_MATS]:LEATHERS;
+/* a combat boot's lower is suede, nubuck or smooth leather, always with nylon panels (the drawing has them every time) */
+const COMBAT_MATS={suede:'suede and nylon',nubuck:'nubuck and nylon',calf:'smooth leather and nylon'};
+const leatherWord=(i,l)=>i&&i.type==='shoes'&&shoeStyle(i)==='combat'&&COMBAT_MATS[l]?COMBAT_MATS[l]:i&&i.type==='shoes'&&shoeStyle(i)==='sneaker'&&l==='calf'?'leather':l==='braided'?'braided leather':patLabel(l);
 const leatherLabel=i=>'Material';   // shoes and belts: "Material" (a sneaker can be canvas or knit, a belt canvas)
 const WATCH_STYLES=[['annual-calendar','Dual time + annual calendar'],['chronograph','Chronograph: three subdials + date'],['date','Three hands + date'],['no-date','Three hands']];
 /* a watch's band: a metal bracelet, or a strap in the item's colour (leather, rubber, a fabric NATO strap: 2026-11-15, the owner's options) */

@@ -25,9 +25,9 @@ const colShows=(it,k)=>{const t=it&&it.type;if(!t)return true;
   if(t==='socks'&&it.toeColor===undefined&&!sockPatterned(it))return false;   // a sock from before: its second colour is its toe cap (shown as Toe cap)
   if(colHas(it[k]))return true;
   if(t==='socks'){const p=patOf(it)||'solid';return k==='secondaryColor'?p!=='solid':SOCK_THIRD.includes(p)}
-  if(k==='secondaryColor')return lookHasPat(t)||(t==='shoes'&&shoeStyle(it)==='sneaker');
+  if(k==='secondaryColor')return lookHasPat(t)||(t==='shoes'&&soleStyle(it));
   return lookHasPat(t)};   // (hasPat: patterned cloth, a pocket square's print or border, a casual garment's stripe, heather or cable; look.js lookHasPat: coats too with the Look beta on)
-const colFieldLabel=(it,k)=>k==='primaryColor'?(it&&it.type==='watch'?'Strap color':'Color'):k==='toeColor'?'Toe cap':k==='secondaryColor'?(it&&it.type==='shoes'&&shoeStyle(it)==='sneaker'?'Sole':'Second color'):'Third color';
+const colFieldLabel=(it,k)=>k==='primaryColor'?(it&&it.type==='watch'?'Strap color':'Color'):k==='toeColor'?'Toe cap':k==='secondaryColor'?(it&&it.type==='shoes'&&soleStyle(it)?'Sole':'Second color'):'Third color';
 /* a second or third colour the item can't show is dropped where the item is made (saveCard) or its type changed (sete): an Add card
    shows only the fields its type uses, a saved item keeps one already set until it is cleared or its type changes */
 function colTidy(it){for(const k of ['secondaryColor','tertiaryColor'])if(colHas(it[k])&&!colShows({...it,[k]:null},k))delete it[k];return it}

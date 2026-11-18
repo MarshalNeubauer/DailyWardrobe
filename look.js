@@ -323,7 +323,7 @@ function lookColRows(src,it){const t=it.type,rows=[],e=src==='e',pc=e?primaryCol
   else rows.push(col('primaryColor','Color',pc,{ai:lookAi(src,it,'col')}));
   const chips=lookChipsHtml(src,it,lookChips(src,it).col);
   const sub=[];
-  if(t==='shoes'&&shoeStyle(it)==='sneaker')sub.push(col('secondaryColor','Sole',it.secondaryColor,{sub:1}));
+  if(t==='shoes'&&soleStyle(it))sub.push(col('secondaryColor','Sole',it.secondaryColor,{sub:1}));
   else if(lookHasPat(t)&&!(t==='socks'&&it.toeColor===undefined&&!sockPatterned(it))){const need=lookNeed(it),p=lookPatOf(it);
     if(need>=1||colHas(it.secondaryColor))sub.push(col('secondaryColor','Second color',it.secondaryColor,{sub:1,hint:need>=1?LOOK_FOR2[p]||'':''}));
     if(need>=2||colHas(it.tertiaryColor))sub.push(col('tertiaryColor','Third color',it.tertiaryColor,{sub:1,hint:need>=2?LOOK_FOR3[p]||'':''}))}
