@@ -31,7 +31,7 @@ async function measure(tag, text) {
   const n = text.trim().split('\n').length - 1;
   const ph = await V.joined(tag);
   await ph.tap('#fr-add'); await V.sleep(800); await ph.tap('#add-import'); await V.sleep(800);
-  await ph.page.locator('input[type=file][onchange*="kitImportFile"]').setInputFiles({ name: `w${n}.tsv`, mimeType: 'text/plain', buffer: Buffer.from(text) });
+  await ph.page.locator('input[type=file][data-act-change="kitFilePick"]').setInputFiles({ name: `w${n}.tsv`, mimeType: 'text/plain', buffer: Buffer.from(text) });
   await V.sleep(1500);
   const bad = await ph.page.evaluate(() => kitImp ? kitImp.rows.filter(r => !r.ok).length : -1);
   await ph.tap('#kit-imp');

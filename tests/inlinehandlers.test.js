@@ -14,9 +14,9 @@ const fs=require('fs'),path=require('path');
 /* the inline handlers left, per file: may only go down (asm-color.js and asm-gl.js are in the painter's fingerprint: they wait for C3) */
 const LEFT={
   'about.js':5,'account.js':7,'add-card.js':26,'add-more.js':4,'add-sheet.js':1,'add.js':2,'app.js':1,'asm-color.js':1,'asm-gl.js':1,
-  'calendar.js':11,'care.js':13,'checklist.js':5,'colpick.js':88,'cost.js':10,'dress.js':1,'history.js':7,'index.html':63,
-  'item-photo.js':9,'itemsheet.js':9,'kit.js':22,'missed.js':4,'month.js':3,'own-lists.js':3,'pack.js':14,'pattern-read.js':2,
-  'photos.js':2,'remind.js':3,'safety.js':2,'scorecard.js':4,'setup.js':19,'shop.js':9,'start.js':1,'stats.js':5,'tagging.js':12,
+  'calendar.js':11,'care.js':13,'colpick.js':88,'cost.js':10,'dress.js':1,'history.js':7,'index.html':63,
+  'item-photo.js':9,'itemsheet.js':9,'missed.js':4,'month.js':3,'own-lists.js':3,'pack.js':14,'pattern-read.js':2,
+  'photos.js':2,'remind.js':3,'safety.js':2,'scorecard.js':4,'shop.js':9,'start.js':1,'stats.js':5,'tagging.js':12,
   'today.js':20,'ui.js':10,'wardrobe.js':10};
 const HANDLER=/\son[a-z]+="/g;
 /* counts {file: n} against the table -> what is wrong, one line each (none: fine) */
@@ -42,11 +42,11 @@ module.exports=async({ok,ROOT})=>{
 
   const CHECKED=new Set([
     // ids of the app's own shape (core.js ID_RE, cleanRecord) and keys from the app's own lists
-    'account.js|acctEsc(v.id)','add-card.js|esc(q.id)','add-card.js|k','add-card.js|v','app.js|k','care.js|w','care.js|g.t','care.js|t','checklist.js|src',
+    'account.js|acctEsc(v.id)','add-card.js|esc(q.id)','add-card.js|k','add-card.js|v','app.js|k','care.js|w','care.js|g.t','care.js|t',
     'colpick.js|src','colpick.js|k','colpick.js|v','colpick.js|c','colpick.js|p','colpick.js|t','colpick.js|esc(q.id)','colpick.js|h',
     "colpick.js|have?'existing':'new'",'dress.js|k','missed.js|k','history.js|slot','itemsheet.js|k',
-    'itemsheet.js|t','pack.js|which','pack.js|first.k','photos.js|itemKey(i)','setup.js|k','setup.js|kind',
-    'setup.js|x','shop.js|k','shop.js|esc(x.key)','today.js|s',"today.js|addForSlot(s,o.suitDay)||''",'ui.js|o.mode',"ui.js|o.cloth||''",'wardrobe.js|k',
+    'itemsheet.js|t','pack.js|which','pack.js|first.k','photos.js|itemKey(i)',
+    'shop.js|k','shop.js|esc(x.key)','today.js|s',"today.js|addForSlot(s,o.suitDay)||''",'ui.js|o.mode',"ui.js|o.cloth||''",'wardrobe.js|k',
     // the Add card's offers: Claude's answer, shown only when it is one of the app's own keys (TYPES, COLORS, colsFor, PATS_BY) or a field name
     'tagging.js|q.refineType','tagging.js|q.refineKept.c','tagging.js|q.altColor','tagging.js|q.altPattern','tagging.js|f','tagging.js|v.f','tagging.js|v.to','tagging.js|mp']);
   const found=[];

@@ -330,12 +330,12 @@ const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.ma
    announce(text): said once by the polite live region #sr-live (index.html; out of sight). Emptied first, then written in the next
    frame, so the same words are said again.
    keepFocus(root, draw): runs draw(); when the focus was on a control inside root that the redraw replaced, the control with the same
-   id, or else the same handler (onclick / onchange / oninput) and data-k / data-c, gets it back (the same words first when there are
+   id, or else the same handler (data-act / data-act-change / data-act-input, or onclick / onchange / oninput) and data-k / data-c / data-s, gets it back (the same words first when there are
    several). Here, not in ui.js: Today is drawn by the start-up chain, which can run before ui.js has loaded. */
 let srLiveT=0;
 function announce(text){const el=document.querySelector('#sr-live');if(!el)return;const t=String(text||'').replace(/\s+/g,' ').trim();clearTimeout(srLiveT);el.textContent='';
   if(t)srLiveT=setTimeout(()=>{el.textContent=t},60)}
-const FOCUS_ATTRS=['onclick','onchange','oninput','data-k','data-c','data-s'];
+const FOCUS_ATTRS=['onclick','onchange','oninput','data-act','data-act-change','data-act-input','data-k','data-c','data-s'];   // (data-act…: a handler named for act.js is the same handler; its arguments that tell two controls apart go in data-k / data-c / data-s)
 function focusKey(el){if(!el||el===document.body||!el.tagName)return null;
   return {el,id:el.id||'',tag:el.tagName,at:FOCUS_ATTRS.map(a=>el.getAttribute(a)||''),label:el.getAttribute('aria-label')||'',text:(el.textContent||'').trim().slice(0,60)}}
 function focusFind(root,k){if(!k||!root)return null;
