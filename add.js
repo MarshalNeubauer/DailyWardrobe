@@ -194,4 +194,7 @@ function addBackOnline(){if(typeof tagNetText==='function'&&tagNetText(aiError))
   for(const q of queue.slice())if(q.tagNet&&q.tagErr&&!q.busy&&q.tagImg)retryTag(queue.indexOf(q));
   for(const q of queue.slice())if(q.multiNet&&q.multiErr&&!q.busy&&q.file)multiAgain(q.id);   // "Several items" too (it waited for a tap)
   const a=$('#add');if(a&&!a.hidden)renderAdd()}
-
+/* the markup's handler (act.js): the photos picked with "One item" or "Several items" (data-multi), the field emptied so the same
+   photo can be picked again */
+function addPhotosPick(el){addFiles([...el.files],el.dataset.multi==='1');el.value=''}
+acts({addPhotosPick});

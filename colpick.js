@@ -754,3 +754,6 @@ async function rdUndoAll(){const L=rdLast;if(!L)return;for(const h of ['a','m','
 function rdDoneHtml(src,id,it){const L=rdLast;if(!L||L.src!==src||L.id!==id||(!L.c&&!L.p&&!L.m&&!L.a)||(rd&&rd.run===L.run))return '';it=it||rdItem(src,id);if(!it)return '';
   const names=[L.c&&L.c.name,L.a&&L.a.name,L.p&&L.p.name,L.m&&L.m.name].filter(Boolean),add=[L.c&&L.c.added&&'colors',L.p&&L.p.added&&'patterns',L.m&&L.m.added&&'materials'].filter(Boolean);
   return `<div class="rddone" id="rd-done" role="status"><span class="rddraw" aria-hidden="true">${itemThumb({...it,photo:undefined})}</span><span class="rddtx"><b>${esc(names.join(' and '))} set</b>${add.length?`<small>Added to your ${add.join(' and ')}.</small>`:''}</span><button type="button" class="rdlink" id="rd-undo" onclick="rdUndoAll()">Undo</button></div>`}
+/* index.html's (act.js): the color sheet's backdrop */
+function colBackdropTap(){closeColPick()}
+acts({colBackdropTap});

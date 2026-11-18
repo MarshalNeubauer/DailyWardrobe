@@ -30,7 +30,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     const r=await p.evaluate(()=>{const x=dayRecs[key(sel)]||{};return {kind:x.kind||null,force:!!x.force,off:!!x.off}});
     ok(pinned==='blazer'&&!r.kind&&!r.force&&!r.off,`Reset after a swap and the blazer taken off puts back the planned day, its blazer-day pin too (kind ${pinned} → ${r.kind})`);
     // ---- the arrow keys under a layer
-    await p.click('header .hbtns button[onclick^="openSettings"]');await p.waitForFunction(()=>settingsOpen());
+    await p.click('header .hbtns button[data-act="setOpenTap"]');await p.waitForFunction(()=>settingsOpen());
     const d0=await day();await p.keyboard.press('ArrowRight');await settle(p,200);
     ok(await p.evaluate(()=>settingsOpen())&&await day()===d0,'→ with Settings open leaves Settings open and the day as it was');
     await p.keyboard.press('Escape');await p.waitForFunction(()=>!settingsOpen()).catch(()=>p.evaluate(()=>closeSettings()));

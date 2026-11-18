@@ -66,3 +66,7 @@ function npsLeave(){if(!npsId)return;const q=npsCard(),changed=!!q&&npsSig(q)!==
 function npsSwipe(){if(npsSwipeOn)return;const s=$('#nps-sheet');if(!s)return;npsSwipeOn=true;
   sheetSwipe(s,{head:'.nps-head',body:()=>$('#nps-q'),backdrop:()=>$('#nps-backdrop'),live:()=>!!npsId&&!npsAsking,close:()=>npsCancel()});
   s.addEventListener('keydown',e=>{if(e.key==='Escape'&&npsId&&!npsAsking){e.preventDefault();e.stopPropagation();npsCancel()}})}
+/* the markup's handlers (act.js): "Add without a photo", and its sheet's backdrop and ✕ */
+function addManualTap(){addManual()}
+function npsCloseTap(){npsCancel()}
+acts({addManualTap,npsCloseTap});

@@ -197,3 +197,6 @@ async function connPaste(){const inp=document.querySelector('#conn-link'),t=(inp
 /* ---- Settings: what only the owner needs sits in an "Advanced" fold inside its category, closed until tapped ---- */
 function advToggle(btn){const f=btn.closest('.adv');if(!f)return;const open=!f.classList.contains('open');f.classList.toggle('open',open);btn.setAttribute('aria-expanded',open)}
 function advClose(){for(const f of document.querySelectorAll('#settings-modal .adv.open')){f.classList.remove('open');const b=f.querySelector('.adv-head');if(b)b.setAttribute('aria-expanded','false')}}
+/* index.html's (act.js): the head of an Advanced fold in Settings */
+function advTap(el){advToggle(el)}
+acts({advTap});

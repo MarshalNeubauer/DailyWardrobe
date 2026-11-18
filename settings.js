@@ -182,4 +182,12 @@ function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=
    Outfit pictures choice */
 function dayTap(el){toggleDay(el.dataset.list,+el.dataset.i)}
 function picsPick(el){setPictures(el.value)}
-acts({dayTap,picsPick});
+/* index.html's (act.js): the header's gear, Settings' backdrop and Done, a category's head (data-cat: its key), the Suit vest and Dark
+   shirts choices */
+function setOpenTap(){openSettings()}
+function setBackdropTap(){closeSettings()}
+function setDoneTap(){saveSettings()}
+function catTap(el){toggleCat(el.dataset.cat)}
+function vestPick(el){setVestMode(el.value)}
+function darkPick(el){setDarkShirts(el.value)}
+acts({dayTap,picsPick,setOpenTap,setBackdropTap,setDoneTap,catTap,vestPick,darkPick});

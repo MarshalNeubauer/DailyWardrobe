@@ -249,3 +249,6 @@ function stepDay(n,from,times=1){
 }
 /* the month as it would be planned with these records (the real ones and the cache stay as they are) */
 function planWith(recs,y,m){const keep=dayRecs;dayRecs=recs;try{return planTrim(buildPlan(y,m))}finally{dayRecs=keep}}   // (trimmed like the month: the days before the wardrobe existed flashed invented outfits during a drag)
+/* the markup's handler (act.js): the Today tab */
+function todayTabTap(){goToday()}
+acts({todayTabTap});
