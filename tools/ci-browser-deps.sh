@@ -50,6 +50,7 @@ if [ -e "${debs[0]}" ]; then
   off=(-o Dir::State::Lists="$nolists" -o Dir::Etc::SourceList=/dev/null -o Dir::Etc::SourceParts="$nolists" -o Dir::Cache::pkgcache= -o Dir::Cache::srcpkgcache= -o Dpkg::Use-Pty=0)
   if { sudo timeout -k 5 180 env DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends --no-download "${off[@]}" "${debs[@]}" ||
        { echo "apt could not install them alone; dpkg -i"; sudo timeout -k 5 180 env DEBIAN_FRONTEND=noninteractive dpkg -i "${debs[@]}"; }; } >"$RUNNER_TEMP/apt-offline.log" 2>&1 && installed "${pkgs[@]}"; then
+    grep -q '^apt could not' "$RUNNER_TEMP/apt-offline.log" && echo "(apt refused them alone; dpkg -i installed them)"
     echo "installed from the cache in $((SECONDS - start)) s"; echo "save=yes" >> "$out"; exit 0
   fi
   tail -n 20 "$RUNNER_TEMP/apt-offline.log"
