@@ -36,7 +36,7 @@ async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').tri
   if(!q){window._cities=[];if($('#city-results'))$('#city-results').innerHTML='';return}
   try{const lang=cityLang(q),r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=8&language='+lang+'&name='+encodeURIComponent(q));const j=await r.json();
     const res=cityList(await cityEnglish((j.results||[]).slice(0,8),lang)).slice(0,5);
-    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" onclick="setLocation(_cities[${i}])">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join(''):'<small class="mut" id="city-none">No matches. Try the name in English or a nearby larger city, or Use my location.</small>';
+    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" data-act="cityPick" data-i="${i}">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join(''):'<small class="mut" id="city-none">No matches. Try the name in English or a nearby larger city, or Use my location.</small>';
     announce(res.length?`${res.length} place${res.length===1?'':'s'} found`:'No matches.')}   // (said: W2-19-01)
   catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>';announce('City search is unavailable right now.')}}
 /* 16-day forecast from Open-Meteo (free, no key); cached for 3 hours */
@@ -68,4 +68,7 @@ async function loadWeather(force){
     weather=days;localStorage.setItem('wx',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),days}));planDirty();if(!$('#today').hidden)refreshToday()}
   catch(e){console.warn('weather unavailable',e)}
 }
+/* the markup's handler (act.js): a place in the city search's results (data-i: its place in the list kept as _cities) */
+function cityPick(el){setLocation(window._cities[+el.dataset.i])}
+acts({cityPick});
 

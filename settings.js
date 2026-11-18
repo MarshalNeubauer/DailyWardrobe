@@ -144,7 +144,7 @@ function renderSettingsExtras(){
   if(typeof renderDressUI==='function')renderDressUI();renderItemPicUI();renderFormalUI();renderReplanUI();renderDaysOffUI();renderCustomUI();if(typeof renderOwnMatUI==='function')renderOwnMatUI();if(typeof renderConnUI==='function')renderConnUI();
   renderPicturesUI();if(typeof renderAsmUI==='function'){renderAsmUI();if(asmLive())asmSync()}
   if(typeof renderCareUI==='function')renderCareUI();
-  const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" onclick="toggleDay('${id}',${i})" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
+  const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" data-act="dayTap" data-list="${id}" data-i="${i}" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
   renderWxLoc();
   if($('#cfg-units'))$('#cfg-units').value=unit();
@@ -161,7 +161,7 @@ function renderPicturesUI(){const pan=$('#sp-photos .mpanel-in');if(!pan)return;
   if(!g){g=document.createElement('div');g.id='pics-box';g.className='sgroup pics-box';pan.insertBefore(g,pan.firstChild)}
   const v=picsDrawn()?'drawn':'painted';
   g.innerHTML=`<div class="slabel">Today’s outfit</div><p class="shelp" id="pics-help">${PICS_HELP[v]}</p>
-<label class="srow">Show <select id="cfg-pictures" onchange="setPictures(this.value)" aria-label="Today’s outfit" aria-describedby="pics-help"><option value="painted">Painted pictures</option><option value="drawn">Drawing only</option></select></label>`;
+<label class="srow">Show <select id="cfg-pictures" data-act-change="picsPick" aria-label="Today’s outfit" aria-describedby="pics-help"><option value="painted">Painted pictures</option><option value="drawn">Drawing only</option></select></label>`;
   $('#cfg-pictures').value=v}
 async function setPictures(v){const d=v==='drawn';if(d===picsDrawn())return;settings.pictures=d?'drawn':'painted';await saveUserSettings();picsSwitched();
   renderPicturesUI();if(typeof renderAsmUI==='function')renderAsmUI();settingsSummaries()}
@@ -178,3 +178,8 @@ async function setDarkShirts(v){settings.darkShirts=v;todayDirty();settingsSumma
 function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=new Set(settings[k]);l.has(i)?l.delete(i):l.add(i);
   if(k==='workdays'&&l.size===0){tell('At least one workday is needed: pick another day first.');return}settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
   planDirty();todayDirty();renderSettingsExtras();return saveUserSettings().then(clearLocks)}
+/* the markup's handlers (act.js): a day button of Workdays or Blazer days (data-list: its group's id, data-i: the weekday), and the
+   Outfit pictures choice */
+function dayTap(el){toggleDay(el.dataset.list,+el.dataset.i)}
+function picsPick(el){setPictures(el.value)}
+acts({dayTap,picsPick});

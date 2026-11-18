@@ -7,11 +7,11 @@ V.run(async () => {
   await V.offline(B, true);
   await V.openSettings(A); await V.cat(A, 'care'); await V.choose(A, '#care-lim-tie', '5');
   await V.cat(A, 'weather'); await V.choose(A, '#cfg-units', 'F');
-  await V.cat(A, 'schedule'); await V.tapL(A, A.page.locator(`button[onclick="toggleDay('#cfg-workdays',5)"]`));
+  await V.cat(A, 'schedule'); await V.tapL(A, A.page.locator('#cfg-workdays button[data-i="5"]'));
   await V.settingsDone(A);
   await V.openSettings(B); await V.cat(B, 'care'); await V.choose(B, '#care-lim-blazer', '8');
-  await V.cat(B, 'schedule'); await V.tapL(B, B.page.locator(`button[onclick="toggleDay('#cfg-blazer',0)"]`));
-  await V.tapL(B, B.page.locator(`button[onclick="toggleDay('#cfg-workdays',6)"]`));
+  await V.cat(B, 'schedule'); await V.tapL(B, B.page.locator('#cfg-blazer button[data-i="0"]'));
+  await V.tapL(B, B.page.locator('#cfg-workdays button[data-i="6"]'));
   await V.settingsDone(B);
   const before = { A: await sets(A), B: await sets(B) };
   await V.sync(A); await V.offline(B, false); await V.sync(B); await V.sync(A);
