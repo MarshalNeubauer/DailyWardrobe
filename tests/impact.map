@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	fb127c67cccf1195078e
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
@@ -4788,6 +4787,95 @@ deploy.test.js	worker/remind.js	<any>	<loaded>
 deploy.test.js	worker/render.js	<any>	<loaded>
 deploy.test.js	worker/tag.js	<any>	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
 deploy.test.js	wrangler.toml	<any>
+deps.test.js	about.js	<any>
+deps.test.js	account.js	<any>
+deps.test.js	act.js	<any>
+deps.test.js	add-card.js	<any>
+deps.test.js	add-keep.js	<any>
+deps.test.js	add-more.js	<any>
+deps.test.js	add-paste.js	<any>
+deps.test.js	add-save.js	<any>
+deps.test.js	add-sheet.js	<any>
+deps.test.js	add.js	<any>
+deps.test.js	analysis-worker.js	<any>
+deps.test.js	analysis.js	<any>
+deps.test.js	app.js	<any>
+deps.test.js	asm-color.js	<any>
+deps.test.js	asm-gl.js	<any>
+deps.test.js	asm-kinds.js	<any>
+deps.test.js	asm-pocket.js	<any>
+deps.test.js	asm-watch.js	<any>
+deps.test.js	asm-worker.js	<any>
+deps.test.js	assemble.js	<any>
+deps.test.js	back.js	<any>
+deps.test.js	backupfile.js	<any>
+deps.test.js	boxfold.js	<any>
+deps.test.js	calendar.js	<any>
+deps.test.js	care.js	<any>
+deps.test.js	checklist.js	<any>
+deps.test.js	colpick.js	<any>
+deps.test.js	core.js	<any>
+deps.test.js	cost.js	<any>
+deps.test.js	daysoff.js	<any>
+deps.test.js	detect.js	<any>
+deps.test.js	draw.js	<any>
+deps.test.js	dress.js	<any>
+deps.test.js	fav.js	<any>
+deps.test.js	history.js	<any>
+deps.test.js	index.html	<any>
+deps.test.js	item-photo.js	<any>
+deps.test.js	item-view.js	<any>
+deps.test.js	itemsheet.js	<any>
+deps.test.js	kit.js	<any>
+deps.test.js	locale.js	<any>
+deps.test.js	locks.js	<any>
+deps.test.js	look.js	<any>
+deps.test.js	mannequin.js	<any>
+deps.test.js	measure.js	<any>
+deps.test.js	merge.js	<any>
+deps.test.js	migrate.js	<any>
+deps.test.js	missed.js	<any>
+deps.test.js	month.js	<any>
+deps.test.js	mq/shirt-open.js	<any>
+deps.test.js	mq/shirt-tie.js	<any>
+deps.test.js	mq/suit-open.js	<any>
+deps.test.js	mq/suit.js	<any>
+deps.test.js	mq/vest.js	<any>
+deps.test.js	own-lists.js	<any>
+deps.test.js	pack.js	<any>
+deps.test.js	pattern-read.js	<any>
+deps.test.js	photos.js	<any>
+deps.test.js	pickscore.js	<any>
+deps.test.js	planner.js	<any>
+deps.test.js	remind.js	<any>
+deps.test.js	safety.js	<any>
+deps.test.js	scorecard.js	<any>
+deps.test.js	settings.js	<any>
+deps.test.js	setup.js	<any>
+deps.test.js	sheet-swipe.js	<any>
+deps.test.js	shop.js	<any>
+deps.test.js	snapshots.js	<any>
+deps.test.js	srgb.js	<any>
+deps.test.js	start.js	<any>
+deps.test.js	stats.js	<any>
+deps.test.js	sync-photos.js	<any>
+deps.test.js	sync-status.js	<any>
+deps.test.js	sync.js	<any>
+deps.test.js	tag-request.js	<any>
+deps.test.js	tagging.js	<any>
+deps.test.js	tests/deps.json	<any>
+deps.test.js	tests/scriptlist.js	<any>
+deps.test.js	tests/webkit.js	<any>
+deps.test.js	theme.js	<any>
+deps.test.js	toast.js	<any>
+deps.test.js	today-gestures.js	<any>
+deps.test.js	today-photofold.js	<any>
+deps.test.js	today-picture.js	<any>
+deps.test.js	today-plan.js	<any>
+deps.test.js	today.js	<any>
+deps.test.js	ui.js	<any>
+deps.test.js	wardrobe.js	<any>
+deps.test.js	weather.js	<any>
 describe.test.js	tools/describe-eval.js	<any>
 describe.test.js	worker.js	<loaded>	corsFor	fetch	serve
 describe.test.js	worker/colormath.js	<any>	<loaded>	dE00	hexLab	hexRgb	rgbLab
