@@ -93,11 +93,11 @@ backOn('pick',()=>closePicker());
 function pickNext(){const s=picker&&picker.slot;closePicker();if(s)swapSlot(s)}
 async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;closePicker();
   const it=id?items.find(i=>i.id===id)||null:null;
-  if(o.frozen)return correctPast(slot,it);
+  if(o.frozen)return correctPast(slot,it,true);   // (a pick on a day marked worn is what was really worn: it did nothing, silently, outside "Correct what you wore" (2026-11-18, the owner's coyote belt on a worn day))
   if(!it||(o[slot]&&o[slot].id===id))return;
   const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=FOLLOW[slot]||[],force={};
   for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
-  force[slot]=id;suitPants(force,slot,o);bootsOff(force,slot,o);keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;notAhead(rec,k);pocketOn(rec,slot);
+  force[slot]=id;suitPants(force,slot,o);keepHand(force,slot,o);bootsOff(force,slot,o);keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;notAhead(rec,k);pocketOn(rec,slot);
   if(slot==='belt'&&beltless(k,rec)){swapMsg='That belt needs shoes that don’t suit this outfit, so the belt stays as it was.';renderToday();return}
   swapMsg='';await saveDay(rec);await unlockClash(k);renderToday()}
 /* wear a favorite look (fav.js, the picker's "Favorite looks" strip) on the day shown: its jacket, shirt and tie become the owner's own
@@ -113,7 +113,7 @@ async function wearFav(k){const dk=key(sel),o=planFor()[dk],l=favLooks().find(x=
   toast(`Wearing a favorite look ${dayWord()==='today'?'today':'on '+shortDate(sel)}.`,FAV_UNDO_MS,{label:'Undo',fn:async()=>{await saveDay({...was});renderToday()}})}
 /* ---- correcting a past day: what was really worn replaces what was planned, so rest and "last worn" stay true ---- */
 function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)listOpen=true;swapMsg='';renderToday()}
-async function correctPast(slot,it){const k=key(sel),r=dayRecs[k],o=planFor()[k];if(!r||!r.ids||!o||pastEdit!==k)return;
+async function correctPast(slot,it,picked){const k=key(sel),r=dayRecs[k],o=planFor()[k];if(!r||!r.ids||!o||(pastEdit!==k&&!picked))return;   // (picked: from the picker, pickItem)
   const ids={...r.ids};let suitDay=!!r.suitDay;
   if(slot==='top'){if(!it)return;ids.top=it.id;if(it.type==='suit'){suitDay=true;ids.bot=it.id}else{if(suitDay||ids.bot===r.ids.top)ids.bot=null;suitDay=false}}
   else ids[slot]=it?it.id:null;
