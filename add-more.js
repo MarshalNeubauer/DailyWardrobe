@@ -11,11 +11,11 @@ const QTY_TYPES=['shirt','socks'],QTY_MAX=12;
 const qtyOf=q=>QTY_TYPES.includes(q.type)?Math.min(QTY_MAX,Math.max(1,+q.qty||1)):1;
 const qtyLabel=q=>{const n=qtyOf(q);return n>1?'Confirm '+n:'Confirm'};
 function qtyRow(q,i){if(!QTY_TYPES.includes(q.type))return '';const n=qtyOf(q);
-  return `<div class="qtyrow" role="group" aria-label="How many to add"><span class="qtyl">How many<small class="mut">${q.type==='socks'?'Identical pairs':'Identical shirts'}, each its own item</small></span><span class="qty"><button type="button" class="qtyb" id="qty-m-${i}" aria-label="One fewer" onclick="stepQty(${qh(q)},-1)"${n<=1?' disabled':''}>−</button><output id="qty-n-${i}" aria-live="polite">${n}</output><button type="button" class="qtyb" id="qty-p-${i}" aria-label="One more" onclick="stepQty(${qh(q)},1)"${n>=QTY_MAX?' disabled':''}>+</button></span></div>`}
+  return `<div class="qtyrow" role="group" aria-label="How many to add"><span class="qtyl">How many<small class="mut">${q.type==='socks'?'Identical pairs':'Identical shirts'}, each its own item</small></span><span class="qty"><button type="button" class="qtyb" id="qty-m-${i}" aria-label="One fewer" data-act="cardQty" ${cardAt(q)} data-d="-1"${n<=1?' disabled':''}>−</button><output id="qty-n-${i}" aria-live="polite">${n}</output><button type="button" class="qtyb" id="qty-p-${i}" aria-label="One more" data-act="cardQty" ${cardAt(q)} data-d="1"${n>=QTY_MAX?' disabled':''}>+</button></span></div>`}
 /* the number, its buttons and Confirm change in place (no redraw: the card would jump) */
 function stepQty(i,d){const q=cardOf(i);if(!q)return;i=queue.indexOf(q);q.qty=Math.min(QTY_MAX,Math.max(1,qtyOf(q)+d));const n=q.qty;queueMicrotask(addKeep);
   const o=$('#qty-n-'+i),m=$('#qty-m-'+i),p=$('#qty-p-'+i),c=$('#qconf-'+i);if(o)o.textContent=n;if(m)m.disabled=n<=1;if(p)p.disabled=n>=QTY_MAX;if(c)c.textContent=qtyLabel(q)}
-function orderRow(q,i){return `<div class="ordrow"><button type="button" class="rotbtn${q.order?' on':''}" aria-pressed="${!!q.order}" onclick="setOrder(${qh(q)},${!q.order})">${q.order?'✓ ':''}Bought, on the way</button>${q.order?`<label class="ordate">Arrives (optional) <input type="date" value="${q.arrives||''}" min="${isoKey(todayDate())}" onchange="setArrives(${qh(q)},this.value)"></label><small class="mut ordhint">${orderHint(q.arrives)}</small>`:''}</div>`}
+function orderRow(q,i){return `<div class="ordrow"><button type="button" class="rotbtn${q.order?' on':''}" aria-pressed="${!!q.order}" data-act="cardOrder" ${cardAt(q)} data-on="${q.order?0:1}">${q.order?'✓ ':''}Bought, on the way</button>${q.order?`<label class="ordate">Arrives (optional) <input type="date" value="${q.arrives||''}" min="${isoKey(todayDate())}" data-act-change="cardArrives" ${cardAt(q)}></label><small class="mut ordhint">${orderHint(q.arrives)}</small>`:''}</div>`}
 function setOrder(i,on){const q=cardOf(i);if(!q)return;q.order=!!on;if(!on)delete q.arrives;renderAdd()}
 /* a day already gone isn't an arrival date (the date field's min only limits its picker: 2020-01-01 typed in read "joins your outfits
    from the day after Jan 1") */
@@ -31,3 +31,8 @@ async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.pa
   if(cb.length&&typeof careUnlock==='function')await careUnlock(null,Math.min(...cb.map(i=>+keyDate(i.away.since||isoKey(todayDate())))));   // the locks made while away let go (history.js)
   for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());if(typeof careLog==='function')careLog(it,it.cleaned);delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
   if(done.length){planDirty();toast(cb.length===done.length&&typeof careBackText==='function'?careBackText(cb):done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`,4000)}return done.length}
+/* what the More section's controls do (act.js; the card by its id in data-card: add-card.js cardAt, cardIx) */
+function cardQty(el){stepQty(cardIx(el),+el.dataset.d)}
+function cardOrder(el){setOrder(cardIx(el),el.dataset.on==='1')}
+function cardArrives(el){setArrives(cardIx(el),el.value)}
+acts({cardQty,cardOrder,cardArrives});

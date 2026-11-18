@@ -27,10 +27,10 @@ const PT_ICON={replace:'<path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0
 const ptIcon=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${PT_ICON[k]}</svg>`;
 function photoTools(i){if(phEdit.crop)return '';const tex=lookCu(i.type),id=i.id;   // (look.js lookCu: TEXTURE_TYPES, more types with the Look beta on)
   const rm=tex&&i.texture?`setTexture('${jsq(id)}',null,'Close-up removed.')`:'';
-  return `<div class="phtools" role="group" aria-label="Photo tools"><label class="btn ptbtn pt-replace">${ptIcon('replace')}<span>${i.photo?'Replace':'Add photo'}</span><input type="file" accept="image/*" class="vfile" aria-label="${i.photo?'Replace photo':'Add photo'}" onchange="replacePhoto('${jsq(id)}',this.files[0]);this.value=''"></label>`+
-    (i.photo?`<button type="button" class="ptbtn pt-rotate" onclick="rotatePhoto('${jsq(id)}')" aria-label="Rotate the photo a quarter turn clockwise">${ptIcon('rotate')}<span>Rotate</span></button><button type="button" class="ptbtn pt-crop" onclick="startCrop('${jsq(id)}')" aria-label="Zoom and crop the photo">${ptIcon('crop')}<span>Crop</span></button>`:'')+
+  return `<div class="phtools" role="group" aria-label="Photo tools"><label class="btn ptbtn pt-replace">${ptIcon('replace')}<span>${i.photo?'Replace':'Add photo'}</span><input type="file" accept="image/*" class="vfile" aria-label="${i.photo?'Replace photo':'Add photo'}" data-act-change="photoFile" data-id="${esc(id)}"></label>`+
+    (i.photo?`<button type="button" class="ptbtn pt-rotate" data-act="photoRotate" data-id="${esc(id)}" aria-label="Rotate the photo a quarter turn clockwise">${ptIcon('rotate')}<span>Rotate</span></button><button type="button" class="ptbtn pt-crop" data-act="photoCrop" data-id="${esc(id)}" aria-label="Zoom and crop the photo">${ptIcon('crop')}<span>Crop</span></button>`:'')+
     (tex?closeupBtn({label:`${ptIcon('closeup')}<span>Close-up</span>`,cls:'btn ptbtn pt-closeup',mode:i.texture?'replace':'add',aria:i.texture?'Replace close-up':'Add fabric close-up',file:`f=>replaceTexture('${jsq(id)}',f)`,remove:rm,cloth:paperCloth(i)}):'')+`</div>`+
-    (rm&&!cuTouch()?`<div class="ptmore"><button type="button" class="ptrm" onclick="${rm}">Remove close-up</button></div>`:'')}   // on a touch screen Remove is in the close-up chooser (ui.js)
+    (rm&&!cuTouch()?`<div class="ptmore"><button type="button" class="ptrm" data-act="photoCuRemove" data-id="${esc(id)}">Remove close-up</button></div>`:'')}   // on a touch screen Remove is in the close-up chooser (ui.js)
 /* ---- white paper in the close-up (2026-11-15, the owner's choice: option A "juiced up" + screens 04-06, photo-wb-mockups): one line of help
    under the close-up buttons with a small drawing beside it (the item's cloth with a strip of white paper along one edge and the
    tap on it, drawn in CSS: no picture to download, both themes); the drawing opens the short tip (PAPER_CARD in kit.js). After a close-up
@@ -41,7 +41,7 @@ function photoTools(i){if(phEdit.crop)return '';const tex=lookCu(i.type),id=i.id
 const paperCloth=i=>{try{return COLORS[primaryCol(i)]?colOf(i):'#5d6478'}catch{return '#5d6478'}};
 const PAPER_CAM='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg>';
 const paperSteps=cloth=>{const pic=cls=>`<span class="wbpic ${cls}" style="--cloth:${cloth}"><i></i></span>`;
-  return `<div class="wbsteps"><button type="button" class="wbstcard" onclick="paperTip()" aria-label="True color in 3 steps: lay white paper along one edge, tap the paper on screen, take the photo. Open tips.">
+  return `<div class="wbsteps"><button type="button" class="wbstcard" data-act="paperTipTap" aria-label="True color in 3 steps: lay white paper along one edge, tap the paper on screen, take the photo. Open tips.">
 <span class="hd" aria-hidden="true"><span class="eb">True color in 3 steps</span><span class="more">Tips ›</span></span>
 <span class="ol" aria-hidden="true"><span class="li"><span class="n"><b>1</b>${pic('nobox noring')}</span>Paper on an edge</span><span class="arr">›</span>
 <span class="li"><span class="n"><b>2</b>${pic('')}<span class="tap"></span></span>Tap the paper</span><span class="arr">›</span>
@@ -111,10 +111,10 @@ async function cropSource(it){const ph=await imgOf(it.photo);
     const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.translate(W/2,H/2);x.rotate(q*Math.PI/2);x.drawImage(sharp,-sharp.naturalWidth/2,-sharp.naturalHeight/2);
     const g=grey(c);let s=0;for(let k=0;k<g.length;k++)s+=Math.abs(g[k]-want[k]);if(s/g.length<=CROP_MATCH)return c}
   return ph}
-function cropEditor(i){const c=phEdit.crop;return `<div class="cropwrap"><div class="cropbox" id="cropbox" onpointerdown="cropDrag(event)"><img id="cropimg" src="${srcOk(i.photo)}" alt="Photo being cropped" draggable="false"></div>
-  <label class="cropzoom">Zoom <input type="range" min="1" max="4" step="0.05" value="${c.z}" oninput="phEdit.crop.z=+this.value;layoutCrop()" aria-label="Zoom"></label>
+function cropEditor(i){const c=phEdit.crop;return `<div class="cropwrap"><div class="cropbox" id="cropbox" data-act-pointerdown="cropDrag"><img id="cropimg" src="${srcOk(i.photo)}" alt="Photo being cropped" draggable="false"></div>
+  <label class="cropzoom">Zoom <input type="range" min="1" max="4" step="0.05" value="${c.z}" data-act-input="cropZoom" aria-label="Zoom"></label>
   <p class="mut" style="margin:2px 0 6px;font-size:13px">Drag the picture to position it.</p>
-  <div class="btns"><button class="pri" type="button" onclick="applyCrop('${jsq(i.id)}')">Apply</button><button type="button" class="cropdiscard" onclick="cropDiscard()">Discard</button></div></div>`}
+  <div class="btns"><button class="pri" type="button" data-act="cropApply" data-id="${esc(i.id)}">Apply</button><button type="button" class="cropdiscard" data-act="cropDiscardTap">Discard</button></div></div>`}
 /* leaving the crop any other way than Discard keeps it (2026-11-15, the owner: "if I zoom and crop, but instead of hitting Apply I hit close,
    I want it to save"): Done, the backdrop, swiping the sheet down, the phone's Back, Esc and ‹ › apply a frame that was moved or zoomed, with
    "Crop saved." and Undo in a toast (the sheet may be gone, and its Undo with it); a frame left as it opened changes nothing. Discard drops it. */
@@ -130,7 +130,8 @@ function cropGeom(){const c=phEdit.crop,box=$('#cropbox');if(!c||!box)return nul
   const hx=V/2/W,hy=V/2/H;c.cx=Math.min(1-hx,Math.max(hx,c.cx));c.cy=Math.min(1-hy,Math.max(hy,c.cy));
   return {V,s,W,H,x:V/2-c.cx*W,y:V/2-c.cy*H}}
 function layoutCrop(){const g=cropGeom(),img=$('#cropimg');if(!g||!img)return;Object.assign(img.style,{width:g.W+'px',height:g.H+'px',left:g.x+'px',top:g.y+'px'})}
-function cropDrag(e){const c=phEdit.crop;if(!c)return;e.preventDefault();const box=e.currentTarget;box.setPointerCapture&&box.setPointerCapture(e.pointerId);let lx=e.clientX,ly=e.clientY;
+/* (act.js: box is the frame, #cropbox, an inline handler's event.currentTarget) */
+function cropDrag(box,e){const c=phEdit.crop;if(!c)return;e.preventDefault();box.setPointerCapture&&box.setPointerCapture(e.pointerId);let lx=e.clientX,ly=e.clientY;
   const mv=ev=>{const g=cropGeom();if(!g)return;c.cx-=(ev.clientX-lx)/g.W;c.cy-=(ev.clientY-ly)/g.H;lx=ev.clientX;ly=ev.clientY;layoutCrop()};
   const up=()=>{box.removeEventListener('pointermove',mv);box.removeEventListener('pointerup',up);box.removeEventListener('pointercancel',up)};
   box.addEventListener('pointermove',mv);box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up)}
@@ -140,3 +141,13 @@ async function applyCrop(id,left){const it=items.find(x=>x.id===id),g=cropGeom()
   const side=g.V/g.s*f,sx=-g.x/g.s*f,sy=-g.y/g.s*f,out=Math.min(PH_MAX,Math.round(side)),c=document.createElement('canvas');c.width=c.height=out;
   c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);if(await setPhoto(id,c.toDataURL('image/jpeg',.9),[left?'Crop saved.':'Photo cropped.',4000,{label:'Undo',fn:()=>cropUndo(id,prev)}])===false){renderWardrobe();return}   // drawn black: nothing saved
   if(typeof resignTagImg==='function')await resignTagImg(id,it.photo)}   // the same picture, cropped: the sharp copy (and the pattern's box on it) still holds
+/* what the photo tools' and the crop frame's controls do (act.js; the item by its id in data-id) */
+function photoFile(el){replacePhoto(el.dataset.id,el.files[0]);el.value=''}
+function photoRotate(el){rotatePhoto(el.dataset.id)}
+function photoCrop(el){startCrop(el.dataset.id)}
+function photoCuRemove(el){setTexture(el.dataset.id,null,'Close-up removed.')}
+function paperTipTap(){paperTip()}
+function cropZoom(el){phEdit.crop.z=+el.value;layoutCrop()}
+function cropApply(el){applyCrop(el.dataset.id)}
+function cropDiscardTap(){cropDiscard()}
+acts({photoFile,photoRotate,photoCrop,photoCuRemove,paperTipTap,cropDrag,cropZoom,cropApply,cropDiscardTap});
