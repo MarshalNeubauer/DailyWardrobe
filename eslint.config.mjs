@@ -13,10 +13,12 @@ import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import globals from 'globals';
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
-const espree = createRequire(import.meta.url)('espree');
+const require = createRequire(import.meta.url);
+const espree = require('espree');
+const {scriptList} = require('./tests/scriptlist.js');
 
-/* the scopes: the page (index.html's script tags, in order) and each Web Worker (itself and what it importScripts) */
-const page = [...fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').matchAll(/<script\s+src="([^"]+\.js)"/g)].map(m => m[1]);
+/* the scopes: the page (index.html's script tags, in order: tests/scriptlist.js) and each Web Worker (itself and what it importScripts) */
+const page = scriptList(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8'));
 const workers = ['asm-worker.js', 'analysis-worker.js'].filter(f => fs.existsSync(path.join(ROOT, f))).map(f => {
   const m = /importScripts\(([^)]*)\)/.exec(fs.readFileSync(path.join(ROOT, f), 'utf8'));
   return [...(m ? [...m[1].matchAll(/'([^']+)'/g)].map(x => x[1]) : []), f];

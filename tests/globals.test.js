@@ -6,6 +6,7 @@
 // - a write that went away fails too, until its allowance is lowered or removed: the list only shrinks, so it stays the true picture.
 const fs=require('fs'),path=require('path');
 const acorn=require('acorn'),escope=require('eslint-scope');
+const {scriptList}=require('./scriptlist');
 
 /* name -> {writing file: number of writes}: the writes on main when this test came (2026-11-17), lowered as owners take them over */
 const ALLOW={
@@ -41,7 +42,7 @@ const ALLOW={
 
 module.exports=async({ok,ROOT})=>{
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
-  const files=[...html.matchAll(/<script src="([^"]+)"/g)].map(m=>m[1]);
+  const files=scriptList(html);
   const asts={};
   for(const f of files)asts[f]=acorn.parse(fs.readFileSync(path.join(ROOT,f),'utf8'),{ecmaVersion:'latest',sourceType:'script',locations:true,ranges:true});
   /* who declares each mutable top-level name */
