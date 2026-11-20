@@ -510,7 +510,7 @@ async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const ob=typeof a
   if(j&&typeof asmNkJob==='function')j=await asmNkJob(j,ob,k);   // a new garment's master and cloth, the faded master for jeans (asm-kinds.js)
   if(j&&typeof asmWatchJob==='function'){const w=asmWatchJob(o,asmNkBaseOf(k));if(w)j.watch=w}
   if(j&&typeof asmPocketJob==='function'){const q=asmPocketJob(o,asmNkBaseOf(k));if(q)j.pocket=q}
-  if(j&&typeof asmOcpJob==='function')j=asmOcpJob(j,o,k);   // the uniform blouse (no watch or pocket square, the rank), OCP pants (asm-ocp.js)
+  if(j&&typeof asmOcpJob==='function')j=await asmOcpJob(j,o,k);   // the uniform blouse (no watch or pocket square, the rank), OCP pants (asm-ocp.js)
   return j}   // (the day's watch painted after: asm-watch.js; a new kind's watch is its base master's)
 /* build one picture from a job (in either thread) -> {url (a JPEG data URL), gl, ms}; a warming job (setupOnly) only sets its master up */
 async function asmBuild(job){

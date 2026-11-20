@@ -70,13 +70,15 @@ module.exports=async({ok,chromium,url,settle})=>{
         catch(e){r.err=String(e&&e.message||e)}return r};
       await asmCmMfGet(true);
       out.push(await paint('blouse',{top:{...b,tapeName:'Hollis',tapeService:'U.S. Air Force',rank:'maj'},shirt:tee,...U}));out.push(await paint('bare',{top:b,shirt:tee,...U}));out.push(await paint('off',{shirt:tee,...U}));
-      return {kinds,keys,none,out}},HOST);
+      const photo=await asmOcpPhotoTex();   // (the owner's own OCP cloth: not in this manifest, so none, as on a tester's phone)
+      return {kinds,keys,none,out,photo}},HOST);
     ok(res.kinds.down==='blouse'&&res.kinds.roll==='blouse'&&res.kinds.nobelt===null&&res.kinds.dress===null&&res.kinds.tie===null&&res.kinds.chore==='chore'&&res.kinds.off==='tee',`the blouse over a T-shirt on pants and a belt is its own master (rolled sleeves too: they have none of their own); without a belt, over a dress shirt or with a tie none (the drawing); the chore jacket and the T-shirt as before (${JSON.stringify(res.kinds)})`);
     ok(res.keys.rank!==res.keys.down&&res.keys.capt!==res.keys.rank&&res.keys.tape===res.keys.down&&res.keys.pants!==res.keys.down&&res.keys.tee!==res.keys.down,'the rank, the pants and the T-shirt each make another picture; the tape text does not (the master\'s tapes are its own)');
     const bad=res.out.filter(r=>!r.ok);
     ok(!bad.length,`painted in the Web Worker: ${res.out.map(r=>r.name+(r.ok?'':' ('+(r.err||'no picture')+')')).join(', ')}`);
     const bl=res.out.find(r=>r.name==='blouse')||{},ro=res.out.find(r=>r.name==='bare')||{},of=res.out.find(r=>r.name==='off')||{};
-    ok(bl.decal===1&&!ro.decal,`the rank is painted on the chest tab of a blouse with one (${bl.decal} box), nothing on one without (${ro.decal}); no tape text`);
+    ok(bl.decal===0&&ro.decal===1,`a Major's blouse paints nothing on the tab (the master's own Major tab: ${bl.decal} boxes); a blouse without that rank covers the tab's leaf (${ro.decal} box); no tape text`);
+    ok(res.photo===null,'without the owner\'s own OCP cloth in the manifest, OCP pants keep the made-up OCP cloth');
     ok(bl.cm==='blouse'&&ro.cm==='blouse'&&bl.ocp&&ro.ocp&&of.ocp&&!bl.watch,`on its own master, the OCP pants in the OCP cloth (and on the T-shirt master); no watch painted over the blouse's cuff (${[bl.cm,ro.cm,bl.ocp,ro.ocp,of.ocp,bl.watch,of.watch]})`);
     ok(bl.cloth&&bl.cloth.sd>25,`the blouse is kept as the master has it (the stand-in's blots: lightness spread ${bl.cloth&&bl.cloth.sd}, mean ${bl.cloth&&bl.cloth.mean})`);
     ok(bl.shirt&&Math.abs(bl.shirt.mean[0]-160)<45&&bl.shirt.mean[0]>bl.shirt.mean[2],`the T-shirt at the collar is painted tan (${bl.shirt&&bl.shirt.mean})`);

@@ -45,7 +45,7 @@ const ASM_LAPELS=new Set(['suit','vest','suit-open','vest-open','chore']),OPTION
 // other, but never into the shared list (cm:shared), so the worker never serves them to a tester: a tester's phone gets a 404 and shows
 // the drawing (asmCmUse null), as before any master was uploaded
 const PERSONAL=new Set(['blouse']);
-const NAMES=k=>['master','master-jeans','light','geo/u','geo/v',...(ZONES[k]||[]).map(z=>'mask/'+z),'part/sleeveR','part/sleeveL','part/lapelR','part/lapelL'];
+const NAMES=k=>['master','master-jeans','light','ocp-cloth','geo/u','geo/v',...(ZONES[k]||[]).map(z=>'mask/'+z),'part/sleeveR','part/sleeveL','part/lapelR','part/lapelL'];
 // (2026-11-16) a master's faded copy for jeans (asm-kinds.js asmJfKey: record 'master-jeans'), when the folder has colormaster-jeans-2880.png
 const JEANS_FILE='colormaster-jeans-2880.png';
 const KINDS=DIR?String(arg('kinds',Object.keys(ZONES).filter(k=>!OPTIONAL.has(k)||fs.existsSync(path.join(DIR,'out-'+k))).join(','))).split(','):[];
@@ -65,7 +65,8 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
     if(out)for(const c of ['u','v']){const f=path.join(out,'uv-'+c+'.png');if(fs.existsSync(f))files.push(['geo/'+c,f])}
     // (2026-11-14) the light map (asm-color.js asmCmLightKeys: form light, edge glow, collar shadow), when the folder has one: a lossless PNG
     if(out){const f=path.join(out,'light.png');if(fs.existsSync(f))files.push(['light',f])}
-    if(out){const f=path.join(out,JEANS_FILE);if(fs.existsSync(f))files.push(['master-jeans',f,true])}   // the faded master for jeans (a JPEG like the master)
+    if(out){const f=path.join(out,JEANS_FILE);if(fs.existsSync(f))files.push(['master-jeans',f,true])}
+    if(out&&PERSONAL.has(kind)){const f=path.join(out,'ocp-cloth.png');if(fs.existsSync(f))files.push(['ocp-cloth',f,true])}   // (2026-11-20) his own OCP cloth for his OCP pants (asm-ocp.js asmOcpPhotoTex), a JPEG like the master   // the faded master for jeans (a JPEG like the master)
     for(const [name,f,isJpeg] of files){if(!fs.existsSync(f)){console.error('missing '+f);process.exit(2)}
       const key=cmKey(kind,name),sum=crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex').slice(0,16),sig=`asm/cm ${JSON.stringify({kind,name,v:ASM_CMV,sum})}`;
       if(DRY){console.log(`${kind} ${name} -> ${key} (${Math.round(fs.statSync(f).size/1024)} KB file)`);continue}

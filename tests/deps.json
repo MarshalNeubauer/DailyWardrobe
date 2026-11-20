@@ -1,6 +1,6 @@
 {
  "note": "Which file uses which other file's top-level names (tests/deps.test.js). It may only shrink: `node tests/deps.test.js --update` takes off what went away; a new edge is added by hand, with the reason in the pull request.",
- "edges": 855,
+ "edges": 856,
  "files": {
   "about.js": ["account.js","add-keep.js","app.js","core.js","kit.js","safety.js","sync-status.js","sync.js","toast.js","ui.js"],
   "account.js": ["about.js","add.js","app.js","back.js","core.js","kit.js","merge.js","settings.js","setup.js","sync-status.js","sync.js","toast.js","ui.js"],
@@ -18,7 +18,7 @@
   "asm-color.js": ["app.js","asm-gl.js","asm-kinds.js","asm-ocp.js","asm-pocket.js","asm-watch.js","assemble.js","core.js","detect.js","draw.js","month.js","pattern-read.js","photos.js","settings.js","today-plan.js","ui.js"],
   "asm-gl.js": ["asm-color.js","assemble.js","srgb.js"],
   "asm-kinds.js": ["asm-color.js","asm-gl.js","assemble.js","core.js","photos.js"],
-  "asm-ocp.js": ["asm-color.js","asm-gl.js","asm-kinds.js","assemble.js","core.js","detect.js","draw.js","srgb.js"],
+  "asm-ocp.js": ["asm-color.js","asm-gl.js","asm-kinds.js","assemble.js","core.js","detect.js","draw.js","photos.js","srgb.js"],
   "asm-pocket.js": ["assemble.js","core.js","srgb.js"],
   "asm-watch.js": ["assemble.js","core.js","srgb.js"],
   "asm-worker.js": ["asm-color.js","asm-gl.js","assemble.js"],
