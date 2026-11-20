@@ -61,9 +61,9 @@ function asmCmKindOf(o){const k=asmCmKind(o);if(!o||typeof CASUAL_TOPS==='undefi
   const ct=!!(o.shirt&&CASUAL_TOPS.includes(o.shirt.type)),cj=!!(o.top&&CASUAL_JACKETS.includes(o.top.type));if(!ct&&!cj)return k;if(!k)return null;
   if(ct&&!cj&&!o.top&&!o.tie&&k==='shirt-open'&&ASM_NK[o.shirt.type])return o.shirt.type;
   if(cj&&!ct&&!o.tie&&!o.vest&&k==='suit-open'&&o.top.type!=='blouse'&&ASM_NK[o.top.type])return o.top.type;
-  // the uniform blouse (asm-ocp.js, 2026-11-17) over a T-shirt, no tie: its own master, sleeves down or rolled (o.rolled, Today's
-  // Sleeves row); over anything else it has none (the drawing)
-  if(cj&&ct&&o.top.type==='blouse'&&o.shirt.type==='tee'&&!o.tie&&!o.vest&&k==='suit-open'){const b=o.rolled?'blouse-roll':'blouse';if(ASM_NK[b])return b}
+  // the uniform blouse (asm-ocp.js, 2026-11-17) over a T-shirt, no tie, on pants and a belt: its own master (2026-11-20: from the
+  // owner's photo, on the open-shirt master's items; sleeves down: rolled sleeves have no master); over anything else none (the drawing)
+  if(cj&&ct&&o.top.type==='blouse'&&o.shirt.type==='tee'&&!o.tie&&!o.vest&&k==='suit-open'&&o.bot&&o.belt&&ASM_NK.blouse)return 'blouse';
   return null}
 /* the records a look needs on this device: the base master's too (asmCmJob builds the cloth on it) and the faded master for jeans */
 async function asmNkGet(o,k){const b=asmNkBase(k);if(b!==k&&!await asmCmGet(b))return false;if(!await asmCmGet(k))return false;

@@ -48,8 +48,8 @@ async function setOff(slot,on){const k=key(sel),o=planFor()[k];if(!o||o.frozen||
   else{delete off[slot];if(slot==='top'&&o.offKind==='suit'&&r.force&&r.force.bot){r.force={...r.force};delete r.force.bot}}
   if(off.top||off.tie||off.pocket)r.off=off;else delete r.off;delete r.lock;swapMsg='';await saveDay(r);renderToday()}
 /* the uniform blouse's sleeves (2026-11-17, the owner: "he wears it with sleeves rolled sometimes"): a row under the blouse, per day
-   (rec.roll), on today, the coming days and a past day being corrected; the picture is painted on the rolled-sleeves master
-   (asm-kinds.js asmCmKindOf: 'blouse-roll') and the drawings show the sleeves rolled */
+   (rec.roll), on today, the coming days and a past day being corrected; the drawings show the sleeves rolled (the painted master,
+   2026-11-20 from the owner's photo, has them down) */
 /* (2026-11-18, the third review) the rolled sleeves' bare forearms can't be made convincing from the sport-coat master (its arms are
    posed inside sleeves): the row stays off until a master with real bare forearms exists; a day already rolled shows it, to roll back */
 let BLOUSE_ROLL_ON=false;

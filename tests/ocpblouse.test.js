@@ -1,8 +1,10 @@
 // The uniform blouse (2026-11-17, the owner's OCP coat; asm-ocp.js, core.js ocpImage/isOcp/camoPants, draw.js blouseMarks): the type and
 // its lists, the fixed OCP look (palette, shares, seamless, the same for the blouse and OCP pants), hand-pick only, its score with camouflage
 // pants only, the picker listing it last with the reason otherwise, Today's Sleeves row (rec.roll) and taking it off, the drawing (tapes,
-// rolled sleeves), its masters (the kind by the outfit; painted at 512 on tests/fixtures/cm/blouse*/ in the real Web Worker with the OCP
-// cloth and the T-shirt in its colour), OCP pants' cloth on the T-shirt master, the upload script's kinds.
+// rolled sleeves), its master (the kind by the outfit; painted at 512 in the real Web Worker on tests/fixtures/cm/blouse/, a MADE-UP
+// stand-in: the real master is from the owner's photo and never in the repo; the blouse kept as the master has it, the T-shirt in its
+// colour, OCP pants in the OCP cloth, the rank on the tab, no watch), OCP pants' cloth on the T-shirt master, the upload script's kinds
+// and the master kept from testers (PERSONAL).
 const fs=require('fs'),path=require('path');
 module.exports=async({ok,chromium,url,settle})=>{
   const FIX=path.join(__dirname,'fixtures','cm'),HOST='https://w.test/';
@@ -28,7 +30,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(t.pats==='camouflage,solid,other'&&t.cols==='khaki'&&t.mats===5&&t.care===3,`its patterns, colors, materials and 3 wears between washes (${t.pats}; ${t.cols}; ${t.mats}; ${t.care})`);
     ok(t.ocp.join()==='true,true,true,false,false',`OCP: the camouflage blouse, pants marked OCP or with an own pattern named OCP/MultiCam; not other camouflage pants or a plain blouse (${t.ocp})`);
     ok(t.camoPants.join()==='true,true,false,false',`camoPants: camouflage pants only (${t.camoPants})`);
-    ok(t.sett[0]===t.ver&&t.sett[1]===t.sett[2]&&t.sett[3]&&t.sett[4]&&new RegExp('/'+t.ver+'\\d{5}/').test(t.sig),`one fixed OCP look for the blouse and OCP pants; other camouflage keeps its tagged colors; the look's version is in its key (${t.sig.slice(0,60)}…)`);
+    ok(t.sett[0]===t.ver&&t.sett[1]===t.sett[2]&&t.sett[3]&&t.sett[4]&&new RegExp('/'+t.ver+'\\d{5}/').test(t.sig),`one fixed OCP look for the blouse and OCP pants; other camouflage keeps its tagged colors; the look's version is in its key (${t.sig.slice(0,60)}â€¦)`);
     ok(t.shares.every((v,k)=>Math.abs(v-t.want[k])<.05),`each OCP color covers about its share (the softened edges blend the smallest flecks into their ground) (${t.shares} vs ${t.want})`);
     ok(t.seam<t.inner*1.6+6&&t.same,`the OCP tile is seamless (edge step ${t.seam.toFixed(1)} vs inside ${t.inner.toFixed(1)}) and kept per seed`);
     ok(t.ms<4000,`a 512 OCP tile is made in ${t.ms} ms`);
@@ -48,34 +50,36 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(dr.name&&dr.svc&&dr.img&&dr.roll&&dr.pants,`the drawing: name and service tapes, the OCP cloth, a rolled-sleeve variant; OCP pants drawn in it (${JSON.stringify(dr)})`);
     // ---- the masters: which outfit takes which; painted at 512 in the Web Worker ----
     const recs={};const add=(kind,n,f)=>{recs[kind+'|'+n]={sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(f).toString('base64'),model:'colormaster',t:1000}};
-    for(const kind of ['suit-open','blouse','blouse-roll','shirt-open','tee']){const d=path.join(FIX,kind);for(const f of fs.readdirSync(d))add(kind,f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/'),path.join(d,f))}
+    for(const kind of ['suit-open','blouse','shirt-open','tee']){const d=path.join(FIX,kind);for(const f of fs.readdirSync(d))add(kind,f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/'),path.join(d,f))}
     const kmap=await p.evaluate(ks=>{const o={};for(const k of ks){const [kind,n]=k.split('|');o[k]=asmCmKey(kind,n)}return o},Object.keys(recs));
     for(const [k,r] of Object.entries(recs))served[kmap[k]]=r;
     const res=await p.evaluate(async h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=512;asmAheadSoon=()=>{};asmAhead=async()=>{};
       let n=0;const I=(type,primaryColor,x={})=>({id:'m'+type+(n++),type,primaryColor,pattern:'solid',...x});COLORS.tan499='#A08A6B';
       const b=I('blouse','khaki',{pattern:'camouflage'}),tee=I('tee','tan499'),sh=I('shirt','white'),camo=I('pants','khaki',{pattern:'camouflage',camo:'ocp',trouserKind:'cargo'}),belt=I('belt','brown'),watch=I('watch','silver',{metal:'silver',dial:'white',band:'integrated'}),tie=I('tie','navy');
-      const kinds={down:asmKindOf({top:b,shirt:tee,watch}),roll:asmKindOf({top:b,shirt:tee,watch,rolled:true}),dress:asmKindOf({top:b,shirt:sh,watch}),tie:asmKindOf({top:b,shirt:tee,tie,watch}),chore:asmKindOf({top:I('chore','olive'),shirt:sh,watch}),off:asmKindOf({shirt:tee,bot:camo,belt,watch})};
-      const keys={down:asmCmOutKey({top:b,shirt:tee,watch}),roll:asmCmOutKey({top:b,shirt:tee,watch,rolled:true}),tape:asmCmOutKey({top:{...b,tapeName:'HOLLIS'},shirt:tee,watch}),rank:asmCmOutKey({top:{...b,rank:'maj'},shirt:tee,watch})};
-      const none=await (async()=>{const o={top:I('blouse','khaki',{pattern:'camouflage'}),shirt:tee,watch};return {use:asmCmUse(o)}})();
+      const U={bot:camo,belt,watch};
+      const kinds={down:asmKindOf({top:b,shirt:tee,...U}),roll:asmKindOf({top:b,shirt:tee,...U,rolled:true}),nobelt:asmKindOf({top:b,shirt:tee,bot:camo,watch}),dress:asmKindOf({top:b,shirt:sh,...U}),tie:asmKindOf({top:b,shirt:tee,tie,...U}),chore:asmKindOf({top:I('chore','olive'),shirt:sh,watch}),off:asmKindOf({shirt:tee,...U})};
+      const keys={down:asmCmOutKey({top:b,shirt:tee,...U}),tape:asmCmOutKey({top:{...b,tapeName:'HOLLIS'},shirt:tee,...U}),rank:asmCmOutKey({top:{...b,rank:'maj'},shirt:tee,...U}),capt:asmCmOutKey({top:{...b,rank:'capt'},shirt:tee,...U}),
+        pants:asmCmOutKey({top:b,shirt:tee,belt,watch,bot:I('pants','olive',{pattern:'camouflage',trouserKind:'cargo'})}),tee:asmCmOutKey({top:b,shirt:I('tee','black'),...U})};
+      const none=await (async()=>{const o={top:I('blouse','khaki',{pattern:'camouflage'}),shirt:tee,...U};return {use:asmCmUse(o)}})();
       const px=async u=>(await asmData(u,512)).data,out=[];
       const paint=async(name,o)=>{const r={name};try{await asmCmLook(o);const k=asmKindOf(o);r.kind=k;if(!await asmNkGet(o,k)){r.err='records not here';return r}
-          const job=await asmJob(o);r.decal=job&&job.ocpDecal?job.ocpDecal.boxes.length:0;if(!job){r.err='no job: use '+asmCmUse(o)+', base job '+!!(await asmCmJob(o))+', base '+asmCmAssets(asmNkBase(k)).filter(x=>!renders[x]).length+' missing, kind '+asmCmAssets(k).filter(x=>!renders[x]).length+' missing';return r}r.cm=job.cm;const J=job.cloth.jacket||job.cloth.trousers;r.ocp=!!(J&&J.suit&&J.suit.TW===1024&&J.suit.mm===OCP_CAMO.mm);r.tee=job.cloth.shirt&&job.cloth.shirt.mat;
+          const job=await asmJob(o);r.decal=job&&job.ocpDecal?job.ocpDecal.boxes.length:0;if(!job){r.err='no job: use '+asmCmUse(o)+', base job '+!!(await asmCmJob(o))+', base '+asmCmAssets(asmNkBase(k)).filter(x=>!renders[x]).length+' missing, kind '+asmCmAssets(k).filter(x=>!renders[x]).length+' missing';return r}r.cm=job.cm;r.watch=!!job.watch;const J=job.cloth.jacket||job.cloth.trousers;r.ocp=!!(J&&J.suit&&J.suit.TW===1024&&J.suit.mm===OCP_CAMO.mm);r.tee=job.cloth.shirt&&job.cloth.shirt.mat;
           const res=await asmRun({...job,gl:false},true);r.ok=!!(res&&res.url);
           if(res&&res.url){const d=await px(res.url),zone=async z=>{const m=await px(renders[asmCmKey(job.cm,'mask/'+z)].img);let s=[0,0,0],c=0,v=0;for(let q=0;q<512*512;q++)if(m[4*q]>250){const L=d[4*q]+d[4*q+1]+d[4*q+2];v+=L*L;for(let e=0;e<3;e++)s[e]+=d[4*q+e];c++}const mean=s.map(x=>x/Math.max(1,c)),ml=mean[0]+mean[1]+mean[2];return {mean:mean.map(Math.round),sd:Math.round(Math.sqrt(Math.max(0,v/Math.max(1,c)-ml*ml)))}};
-            r.cloth=await zone(job.cloth.jacket?'jacket':'trousers');if(job.cloth.jacket)r.shirt=await zone('shirt')}}
+            r.cloth=await zone(job.cm==='blouse'?'dark':job.cloth.jacket?'jacket':'trousers');if(job.cm==='blouse')r.shirt=await zone('shirt')}}
         catch(e){r.err=String(e&&e.message||e)}return r};
       await asmCmMfGet(true);
-      out.push(await paint('blouse',{top:{...b,tapeName:'Hollis',tapeService:'U.S. Air Force',rank:'maj'},shirt:tee,watch}));out.push(await paint('rolled',{top:b,shirt:tee,watch,rolled:true}));out.push(await paint('off',{shirt:tee,bot:camo,belt,watch}));
+      out.push(await paint('blouse',{top:{...b,tapeName:'Hollis',tapeService:'U.S. Air Force',rank:'maj'},shirt:tee,...U}));out.push(await paint('bare',{top:b,shirt:tee,...U}));out.push(await paint('off',{shirt:tee,...U}));
       return {kinds,keys,none,out}},HOST);
-    ok(res.kinds.down==='blouse'&&res.kinds.roll==='blouse-roll'&&res.kinds.dress===null&&res.kinds.tie===null&&res.kinds.chore==='chore'&&res.kinds.off==='tee',`the blouse over a T-shirt is its own master, rolled sleeves the other; over a dress shirt or with a tie none (the drawing); the chore jacket and the T-shirt as before (${JSON.stringify(res.kinds)})`);
-    ok(res.keys.down!==res.keys.roll&&res.keys.tape!==res.keys.down&&res.keys.rank!==res.keys.down&&res.keys.tape!==res.keys.rank,'rolled sleeves, the tape text and the rank each make another picture');
+    ok(res.kinds.down==='blouse'&&res.kinds.roll==='blouse'&&res.kinds.nobelt===null&&res.kinds.dress===null&&res.kinds.tie===null&&res.kinds.chore==='chore'&&res.kinds.off==='tee',`the blouse over a T-shirt on pants and a belt is its own master (rolled sleeves too: they have none of their own); without a belt, over a dress shirt or with a tie none (the drawing); the chore jacket and the T-shirt as before (${JSON.stringify(res.kinds)})`);
+    ok(res.keys.rank!==res.keys.down&&res.keys.capt!==res.keys.rank&&res.keys.tape===res.keys.down&&res.keys.pants!==res.keys.down&&res.keys.tee!==res.keys.down,'the rank, the pants and the T-shirt each make another picture; the tape text does not (the master\'s tapes are its own)');
     const bad=res.out.filter(r=>!r.ok);
     ok(!bad.length,`painted in the Web Worker: ${res.out.map(r=>r.name+(r.ok?'':' ('+(r.err||'no picture')+')')).join(', ')}`);
-    const bl=res.out.find(r=>r.name==='blouse')||{},ro=res.out.find(r=>r.name==='rolled')||{},of=res.out.find(r=>r.name==='off')||{};
-    ok(bl.decal===3&&!ro.decal,`the name tape, service tape and rank are painted on the blouse with them (${bl.decal} boxes), nothing on a blouse without (${ro.decal})`);
-    ok(bl.cm==='blouse'&&ro.cm==='blouse-roll'&&bl.ocp&&ro.ocp&&of.ocp,`on their own masters with the OCP cloth (the blouse, rolled, and OCP pants on the T-shirt master) (${[bl.cm,ro.cm,bl.ocp,ro.ocp,of.ocp]})`);
-    ok(bl.cloth&&bl.cloth.sd>25&&bl.cloth.mean[1]>bl.cloth.mean[2],`the blouse is camouflage, not flat (lightness spread ${bl.cloth&&bl.cloth.sd}, mean ${bl.cloth&&bl.cloth.mean})`);
-    ok(bl.shirt&&Math.abs(bl.shirt.mean[0]-160)<45&&bl.shirt.mean[0]>bl.shirt.mean[2],`the T-shirt in the V is painted tan (${bl.shirt&&bl.shirt.mean})`);
+    const bl=res.out.find(r=>r.name==='blouse')||{},ro=res.out.find(r=>r.name==='bare')||{},of=res.out.find(r=>r.name==='off')||{};
+    ok(bl.decal===1&&!ro.decal,`the rank is painted on the chest tab of a blouse with one (${bl.decal} box), nothing on one without (${ro.decal}); no tape text`);
+    ok(bl.cm==='blouse'&&ro.cm==='blouse'&&bl.ocp&&ro.ocp&&of.ocp&&!bl.watch,`on its own master, the OCP pants in the OCP cloth (and on the T-shirt master); no watch painted over the blouse's cuff (${[bl.cm,ro.cm,bl.ocp,ro.ocp,of.ocp,bl.watch,of.watch]})`);
+    ok(bl.cloth&&bl.cloth.sd>25,`the blouse is kept as the master has it (the stand-in's blots: lightness spread ${bl.cloth&&bl.cloth.sd}, mean ${bl.cloth&&bl.cloth.mean})`);
+    ok(bl.shirt&&Math.abs(bl.shirt.mean[0]-160)<45&&bl.shirt.mean[0]>bl.shirt.mean[2],`the T-shirt at the collar is painted tan (${bl.shirt&&bl.shirt.mean})`);
     // ---- Today: the Sleeves row and taking the blouse off; the picker ----
     const td=await p.evaluate(async()=>{let n=0;const I=(type,primaryColor,x={})=>({id:'t'+type+(n++),type,primaryColor,pattern:'solid',...x});
       items=[I('suit','navy'),I('blazer','tan'),I('pants','grey'),I('shirt','white'),I('tie','burgundy'),I('watch','grey',{metal:'silver'}),I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy'),
@@ -97,12 +101,13 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(td.pick2,'with camouflage pants it is offered by hand like the other casual jackets');
     ok(td.before.off,'the Sleeves row is off for now (BLOUSE_ROLL_ON false): no row, and rolling up does nothing');
     ok(td.before.top&&td.before.row&&!td.before.rolled,`switched on: Today has a Sleeves row, "Down" (${JSON.stringify(td.before)})`);
-    ok(td.after.rec&&td.after.rolled&&td.after.row&&td.after.kind==='blouse-roll',`↑ rolls them up for the day (rec.roll): "Rolled up", the rolled master (${JSON.stringify(td.after)})`);
-    ok(td.taken.top&&/Uniform blouse/.test(td.taken.label||'')&&/Taken off/.test(td.taken.label||'')&&td.taken.shirt,`− takes the blouse off, the T-shirt stays: "${(td.taken.label||'').trim()}"`);
+    ok(td.after.rec&&td.after.rolled&&td.after.row&&td.after.kind==='blouse',`â†‘ rolls them up for the day (rec.roll): "Rolled up", still the blouse's master (${JSON.stringify(td.after)})`);
+    ok(td.taken.top&&/Uniform blouse/.test(td.taken.label||'')&&/Taken off/.test(td.taken.label||'')&&td.taken.shirt,`âˆ’ takes the blouse off, the T-shirt stays: "${(td.taken.label||'').trim()}"`);
     ok(td.cleared,'Reset day clears the rolled sleeves');
     // ---- the upload script knows the kinds ----
     const up=fs.readFileSync(path.join(__dirname,'..','tools','asm-cm-upload.js'),'utf8');
-    ok(/'blouse','blouse-roll'\]\)ZONES\[k\]=ZONES\['suit-open'\]/.test(up)&&/ASM_LAPELS=new Set\(\[[^\]]*'blouse','blouse-roll'/.test(up),'cm-upload uploads the blouse masters (the open-collar jacket\'s zones, the collar as lapels)');
+    ok(/ZONES\.blouse=ZONES\['shirt-open'\]/.test(up)&&!/blouse-roll/.test(up)&&!/ASM_LAPELS=new Set\(\[[^\]]*'blouse'/.test(up),'cm-upload uploads the blouse master on the open-shirt master\'s zones, no lapels');
+    ok(/PERSONAL=new Set\(\['blouse'\]\)/.test(up)&&/\.filter\(k=>!personal\.has\(k\)\)/.test(up),'the blouse master (the owner\'s photo) is never in the shared list testers read (PERSONAL)');
     ok(!errs.length,`no page errors (${errs.join(' | ')})`);
   }finally{await browser.close()}};
 module.exports.assembled=true;   // (assembled pictures on: tests/run.js)

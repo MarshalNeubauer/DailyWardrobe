@@ -36,10 +36,16 @@ const ZONES={suit:['jacket','tie','background','skin','shirt','dark','watch'],ve
 // jacket on the open-collar jacket's (the chore jacket's collar as lapels); uploaded once their out-<kind> folder exists
 for(const k of ['tee','polo','henley','sweater','sweatshirt','hoodie','qzip'])ZONES[k]=ZONES['shirt-open'];
 for(const k of ['cardigan','chore'])ZONES[k]=ZONES['suit-open'];
-// (2026-11-17) the uniform blouse's masters (asm-ocp.js): sleeves down and rolled, on the open-collar jacket's zones, the collar as lapels
-for(const k of ['blouse','blouse-roll'])ZONES[k]=ZONES['suit-open'];
-const NEW_KINDS=['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','blouse','blouse-roll'];
-const ASM_LAPELS=new Set(['suit','vest','suit-open','vest-open','chore','blouse','blouse-roll']),OPTIONAL=new Set(['suit-open','vest-open',...NEW_KINDS]);
+// (2026-11-20) the uniform blouse's master (asm-ocp.js): made from the owner's own photo, on the open-collar shirt master's zones (the
+// blouse kept as photographed in the dark zone)
+ZONES.blouse=ZONES['shirt-open'];
+const NEW_KINDS=['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','blouse'];
+const ASM_LAPELS=new Set(['suit','vest','suit-open','vest-open','chore']),OPTIONAL=new Set(['suit-open','vest-open',...NEW_KINDS]);
+// (2026-11-20) personal masters: made from the owner's own photos, so for him alone. Their records go up and into the manifest like any
+// other, but never into the shared list (cm:shared), so the worker never serves them to a tester: a tester's phone gets a 404 and shows
+// the drawing (asmCmUse null), as before any master was uploaded
+const PERSONAL=new Set(['blouse']);
+const NAMES=k=>['master','master-jeans','light','geo/u','geo/v',...(ZONES[k]||[]).map(z=>'mask/'+z),'part/sleeveR','part/sleeveL','part/lapelR','part/lapelL'];
 // (2026-11-16) a master's faded copy for jeans (asm-kinds.js asmJfKey: record 'master-jeans'), when the folder has colormaster-jeans-2880.png
 const JEANS_FILE='colormaster-jeans-2880.png';
 const KINDS=DIR?String(arg('kinds',Object.keys(ZONES).filter(k=>!OPTIONAL.has(k)||fs.existsSync(path.join(DIR,'out-'+k))).join(','))).split(','):[];
@@ -97,9 +103,10 @@ const api=(p,opt={})=>fetch(new URL(p,WORKER).href,{...opt,headers:{'x-app-token
     let n=-1;try{n=bm?Object.keys(JSON.parse(bm[1]).keys||{}).length:-1}catch{}
     if(n!==Object.keys(keys).length){console.error(`manifest: read back ${n<0?'unreadable':n+' records'}, expected ${Object.keys(keys).length}: the worker may have cut it off`);process.exit(5)}console.log(`manifest written (${Object.keys(keys).length} records)`)}
   // (2026-11-14) the shared list (worker/records.js cm:shared, owner-only PUT /cm-shared): exactly the render keys testers may read from the
-  // owner's records: every record in the manifest, the manifest and the background (CR-8-06, 2026-11-17: the masters' 2048 copies, which
+  // owner's records: every record in the manifest but the personal masters' (PERSONAL), the manifest and the background (CR-8-06, 2026-11-17: the masters' 2048 copies, which
   // the PC builder uploaded until 2026-11-16, are no longer listed: phones don't ask for them). Written only when it changed (one KV write); the worker also skips an unchanged list
-  const shared=[...new Set([...Object.keys(keys),mfKey,cmKey('all','background')])].sort();
+  const personal=new Set([...PERSONAL].flatMap(k=>NAMES(k).map(n=>cmKey(k,n))));
+  const shared=[...new Set([...Object.keys(keys),mfKey,cmKey('all','background')])].filter(k=>!personal.has(k)).sort();
   const curSh=await api('cm-shared',{cache:'no-store'}).then(x=>x.ok?x.json():null).catch(()=>null);
   if(!(curSh&&Array.isArray(curSh.keys)&&[...curSh.keys].sort().join()===shared.join())){
     if(!budget.take(1)){console.error(`The shared list for testers needs writing, but ${budget.why()}.`);process.exit(4)}

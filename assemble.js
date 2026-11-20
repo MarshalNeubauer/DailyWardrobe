@@ -506,11 +506,12 @@ function asmShirtAngles(A,idx,W,H){const N=W*H,lab=new Int32Array(N).fill(-1),pa
    in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
    this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
 /* everything the painting needs, as plain data (photos as data URLs), or null: a look with no colour-coded master (asm-color.js asmCmJob) */
-async function asmJob(o){const k=asmCmUse(o);if(!k)return null;let j=await asmCmJob(o);const c0=j&&j.cloth;
-  if(j&&typeof asmNkJob==='function')j=await asmNkJob(j,o,k);   // a new garment's master and cloth, the faded master for jeans (asm-kinds.js)
-  if(j&&typeof asmOcpJob==='function')j=asmOcpJob(j,o,k,c0);   // the uniform blouse's cloth, OCP pants (asm-ocp.js)
+async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const ob=typeof asmOcpBase==='function'?asmOcpBase(o,k):o;let j=await asmCmJob(ob);   // (the blouse's master is built on the open-shirt master's items: asm-ocp.js)
+  if(j&&typeof asmNkJob==='function')j=await asmNkJob(j,ob,k);   // a new garment's master and cloth, the faded master for jeans (asm-kinds.js)
   if(j&&typeof asmWatchJob==='function'){const w=asmWatchJob(o,asmNkBaseOf(k));if(w)j.watch=w}
-  if(j&&typeof asmPocketJob==='function'){const q=asmPocketJob(o,asmNkBaseOf(k));if(q)j.pocket=q}return j}   // (the day's watch painted after: asm-watch.js; a new kind's watch is its base master's)
+  if(j&&typeof asmPocketJob==='function'){const q=asmPocketJob(o,asmNkBaseOf(k));if(q)j.pocket=q}
+  if(j&&typeof asmOcpJob==='function')j=asmOcpJob(j,o,k);   // the uniform blouse (no watch or pocket square, the rank), OCP pants (asm-ocp.js)
+  return j}   // (the day's watch painted after: asm-watch.js; a new kind's watch is its base master's)
 /* build one picture from a job (in either thread) -> {url (a JPEG data URL), gl, ms}; a warming job (setupOnly) only sets its master up */
 async function asmBuild(job){
   if(job.cm&&job.setupOnly){const hit=await asmCmSetup(job);if(job.diskCache!==false&&typeof indexedDB!=='undefined'&&!await asmCmDiskGet(asmCmDiskKey(job))){const x=await asmCmPack(hit.P);if(x)await asmCmDiskPut(asmCmDiskKey(job),x,job.cm+'|')}return {setup:true}}   // (warming, asm-color.js asmCmWarm)
