@@ -1473,6 +1473,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a start-up fix-up saves an item only while it is still the copy in `items` (`stillCur`, app.js), and redraws through `fixupRedraw` (never with Settings open, since `renderWardrobe` closes it)
 - the week's locks are marked as the app's own (`lockOnly`, `base`; only `saveDay(rec, quiet, true)` keeps the mark): in a merge (`dayWins` in core.js `mergeState`, worker/backup.js `mergeLite`) a newer automatic copy loses to an older one changed after its base
 - such a kept day is sent up by the small sync (`keptD`) and kept by the worker, so devices settle; `tests/staledevice.test.js` replays it
+- `tests/staledevice.test.js` runs its devices on a Sunday 10:00 one to two weeks back (Date shifted by an init script, the worker's `x-now` by the same amount, so no clock gap is learned): the lock runs only through Friday, so on a Thursday or Friday there was no coming workday to lock and its wait timed out (deploy blocked, Friday 2026-11-20); it reads the day's plan from the day's own month (`planFor` is the month on screen, which failed when the coming day was the 1st)
 
 #### Timing, limits, errors
 - a tester's phone backs up on going to the background or closing, or 15 min after the first waiting change (`TESTER_SYNC_MS`, `syncDue`); the owner's 2.5 s after a change
