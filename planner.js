@@ -494,6 +494,8 @@ const o={suitDay,top,bot,shirt,tie,shoes,belt,socks,watch,clip,links,coat,pocket
 // ask 2026-11-16): those pants are worn and the suit is not
 const sep=suitDay&&top&&rec&&rec.off&&rec.off.top&&force.bot&&(by('pants').find(i=>i.id===force.bot)||c.hpBotAny)||null;
 const r=takeOff(o,rec&&rec.off,c.untake,sep&&c.take(sep));
+// the uniform blouse's sleeves rolled up for the day (Today's Sleeves row, rec.roll, 2026-11-17): only its picture and drawing change
+if(rec&&rec.roll&&r.top&&r.top.type==='blouse')r.rolled=true;
 // those pants worn: the day's notes are made again for what is worn (no jacket, those pants, the same shirt, tie, shoes and belt), so
 // none speaks of the suit's trousers (the owner, 2026-11-17: "None of your shoes suit mid gray worsted pants." under multicam pants)
 if(sep&&r.offSuit&&r.bot!==top)r.notes=sepNotes(c,r,top,{links,coat,french,needCoat,B});
@@ -704,7 +706,7 @@ const notes=[],jn=[],jnote=t=>{notes.push(t);jn.push(t)};
 // clothing: only reached when the wardrobe had no compliant combination for this jacket
 if(shirt&&tie&&tieFlat(shirt,tie))notes.push(darkShirt(shirt)?`The ${nm(tie)} isn't lighter than the ${nm(shirt)}; on a dark shirt a lighter tie reads better.`
   :`The ${nm(tie)} isn't darker than the ${nm(shirt)}; no darker tie suited this outfit. A darker tie would look sharper.`);
-if(top&&shirt&&!darkUnderLight(top,shirt)&&LUM(shirt)<LUM(top)+20)jnote(`The ${nm(shirt)} is darker than the jacket. A lighter shirt would look more professional.`);
+if(top&&shirt&&top.type!=='blouse'&&!darkUnderLight(top,shirt)&&LUM(shirt)<LUM(top)+20)jnote(`The ${nm(shirt)} is darker than the jacket. A lighter shirt would look more professional.`);
 if(patsOf([[top,'top'],[suitDay?null:bot,'bot'],[shirt,'shirt'],[tie,'tie']]).length>=3)notes.push('Three bold patterns today; there was no quieter combination. A solid shirt or tie would calm it down.');
 if(shoes&&bot&&!shoeSuits(top,bot,shoes)){if(shoeSuits(null,bot,shoes))jnote(`None of your shoes suit the ${colName(spokenCol(top))} ${top.type==='suit'?'suit':'jacket'}.`);else notes.push(`None of your shoes suit ${colName(spokenCol(bot))} pants.`)}
 if(shoes&&finish(shoes.leather)==='patent')notes.push('Only patent shoes were available. Patent is for black tie.');
@@ -770,7 +772,8 @@ function rateOutfit(o){
   // a casual top picked by hand (a T-shirt, a sweater) is judged only by "the same color as the jacket": the dress shirt's dark-shirt and
   // strong-color rules made a navy sweater under a charcoal blazer a real mistake (the code review, CR-3-09)
   if(shirt){const raw=planCol(shirt),cas=CASUAL_TOPS.includes(shirt.type),hard=shirtJacketHard(top,shirt);let v=10,why='';
-    if(darkUnderLight(top,shirt)){}
+    if(top&&top.type==='blouse'){if(!cas){v=5;why='the uniform blouse goes over a T-shirt'}}   // (2026-11-17: a tan T-shirt under the tan blouse is the uniform, not "the same color as the jacket")
+    else if(darkUnderLight(top,shirt)){}
     else if(top&&pcol(shirt)===pcol(top)){v=0;why=cas?'top is the same color as the jacket':'shirt is the same color as the jacket'}
     else if(cas){}
     else if(top&&darkShirt(shirt)){v=2;why='a dark shirt wants a clearly lighter jacket'}
@@ -797,7 +800,9 @@ function rateOutfit(o){
     // never a real mistake (socks show only when seated; the planner keeps them apart: sockPatScore)
     if(v===10&&socks&&sockBold(socks)&&trousers){const sp=sockPatScore(socks,{top,bot:o.bot,shirt,tie});if(sp.clash){v=P.length>=2?4:5;why=sp.why[0]}}
     if(top||shirt||tie)add('Patterns',v,10,why,hard)}
-  if(bot&&top){const list=BLAZER_TROUSERS[pcol(top)],hard=pantsAsJacket(top,bot);let v=10,why='';const k=list?list.indexOf(pcol(bot)):-1;
+  // the uniform blouse (2026-11-17, the owner: it goes only with camouflage pants; core.js camoPants, shared with the combat boots)
+  if(bot&&top&&top.type==='blouse'){const ok=camoPants(bot);add('Pants',ok?10:0,10,ok?'':'the uniform blouse goes with camouflage pants',!ok)}
+  else if(bot&&top){const list=BLAZER_TROUSERS[pcol(top)],hard=pantsAsJacket(top,bot);let v=10,why='';const k=list?list.indexOf(pcol(bot)):-1;
     if(hard){v=0;why='jacket and pants are the same color: neither a suit nor a contrast'}
     else{if(k<0){v=4;why=`${spokenCol(bot)} pants are not a classic match for a ${spokenCol(top)} jacket`}
       if(Math.abs(LUM(top)-LUM(bot))<35){v-=4;why=(why?why+'; ':'')+'jacket and pants lack contrast'}}
@@ -918,7 +923,9 @@ function dialSum(P,k,fast){if(!P.length)return {v:0,why:''};let W=0,S=0;for(cons
   let lo=P[0],hi=P[0];for(const p of P){if(p[1]<lo[1])lo=p;if(p[0]*p[1]>hi[0]*hi[1])hi=p}
   const weak=lo[1]<.6?lo[3]():'',good=hi[2]();return {v,why:sentence((weak||good)+'.'),good:sentence(good),weak}}
 function dialHarmony(o,core){const {top,shirt,tie}=o,bot=o.suitDay?null:o.bot,P=[],jw=top&&dJacket(o);
-  if(shirt&&top){const dk=darkUnderLight(top,shirt),g=dk?dLin(LUM(top)-LUM(shirt),20,110):dLin(LUM(shirt)-LUM(top),0,150);let v=.65*g+.35*dLin(shirtScore(top,shirt),-15,5);
+  // the uniform blouse over a T-shirt is the uniform (2026-11-17): no "sits close to the jacket"; with camouflage pants it is all one look
+  if(shirt&&top&&top.type==='blouse'){const u=CASUAL_TOPS.includes(shirt.type)&&camoPants(bot);P.push([25,u?1:.4,()=>'the T-shirt, uniform blouse and camouflage pants are one uniform',()=>CASUAL_TOPS.includes(shirt.type)?'the uniform blouse goes with camouflage pants':'the uniform blouse goes over a T-shirt'])}
+  else if(shirt&&top){const dk=darkUnderLight(top,shirt),g=dk?dLin(LUM(top)-LUM(shirt),20,110):dLin(LUM(shirt)-LUM(top),0,150);let v=.65*g+.35*dLin(shirtScore(top,shirt),-15,5);
     if(shirtJacketHard(top,shirt))v=Math.min(v,.1);P.push([25,v,()=>`the ${dCol(shirt)} shirt stands clear of the ${dCol(top)} ${jw}`,()=>`the ${dCol(shirt)} shirt sits close to the ${dCol(top)} ${jw}`])}
   else if(shirt&&o.bot&&!top){const v=pcol(shirt)===pcol(o.bot)?.1:dLin(Math.abs(LUM(shirt)-LUM(o.bot)),10,120);P.push([25,v,()=>`the ${dCol(shirt)} shirt stands clear of the ${dCol(o.bot)} pants`,()=>`the ${dCol(shirt)} shirt sits close to the ${dCol(o.bot)} pants`])}
   if(shirt&&tie){const d=darkShirt(shirt)?tieLum(tie)-LUM(shirt):LUM(shirt)-tieLum(tie),raw=planCol(shirt),ts=TIE_ON_SHIRT[raw]||TIE_ON_SHIRT[pcol(shirt)];
@@ -929,7 +936,8 @@ function dialHarmony(o,core){const {top,shirt,tie}=o,bot=o.suitDay?null:o.bot,P=
     const base=xc===tc?(blackOnBlack(top,tie,o.occasion)?0:pw(tie)>0||LUM(tie)<LUM(top)-15?.6:.3):!HARM[tc]?.75:HARM[tc].includes(xc)?1:.4;
     const v=Math.min(1,.6*base+.25*dLin(Math.abs(LUM(tie)-LUM(top)),5,90)+(echo?.25:.1));
     P.push([22,v,()=>echo?`the ${dCol(tie)} tie picks up a color of the ${xc===tc?'shirt':jw}`:`${dCol(tie)} is a good partner for the ${dCol(top)} ${jw}`,()=>xc===tc?`the ${dCol(tie)} tie sits close to the ${dCol(top)} ${jw} and fades into it`:`${dCol(tie)} is not a classic partner for a ${dCol(top)} ${jw}`])}
-  if(bot&&top)P.push([12,dLin(pairScore(top,bot),-20,14),()=>`the ${dCol(bot)} pants suit the ${dCol(top)} jacket`,()=>`the ${dCol(bot)} pants are a weak match for the ${dCol(top)} jacket`]);
+  if(bot&&top&&top.type==='blouse')P.push([12,camoPants(bot)?1:0,()=>'the camouflage pants match the uniform blouse',()=>'the uniform blouse goes with camouflage pants']);
+  else if(bot&&top)P.push([12,dLin(pairScore(top,bot),-20,14),()=>`the ${dCol(bot)} pants suit the ${dCol(top)} jacket`,()=>`the ${dCol(bot)} pants are a weak match for the ${dCol(top)} jacket`]);
   if(!core&&o.pocket&&top){const p=o.pocket,e=psEcho(p,top,shirt,tie);P.push([6,psSameTie(p,tie)?.1:e.hit?1:psWhite(p)?.85:.4,()=>'the pocket square picks up the outfit',()=>'the pocket square picks up no color of the outfit'])}
   // socks: the planner's sockScore (the pants' color, a patterned pair's rules), and a patterned pair's second or third color picking up the
   // shirt, tie or jacket (2026-11-17, with the sock patterns: colsOf(s).slice(1))
@@ -956,7 +964,9 @@ function dialTexture(o,fast){const parts=[[o.top,'top'],[o.suitDay?null:o.bot,'b
 /* Occasion: the right polish for the day: the shoes (finish, style, color for the pants), the belt, the tie and jacket (an occasion's own
    rules on a formal day, a wedding or a funeral), and the season of what is worn; fast: the value only */
 function dialOccasion(o,fast){const {top,shirt,tie,shoes,belt}=o,legs=o.bot||top,P=[],s=o.clim&&o.clim.season,occ=OCC[o.occasion]?o.occasion:null,formal=!!o.formal||o.occasion==='formal',sd=!!o.suitDay;
-  if(shoes){const st=shoeStyle(shoes),fit=legs?SHOE_FIT[st][shoeCtx(legs)]:0,f=finish(shoes.leather),w=()=>`${dCol(shoes)} ${f==='suede'?'suede ':f==='grain'?'grain ':''}${st==='oxford'?'oxfords':typeWord(shoes)}`;
+  // the uniform (2026-11-17): boots with the uniform blouse and camouflage pants are the uniform's own shoes
+  if(shoes&&top&&top.type==='blouse'&&camoPants(o.bot)&&shoeStyle(shoes)==='boot')P.push([20,1,()=>'boots go with the uniform',()=>'']);
+  else if(shoes){const st=shoeStyle(shoes),fit=legs?SHOE_FIT[st][shoeCtx(legs)]:0,f=finish(shoes.leather),w=()=>`${dCol(shoes)} ${f==='suede'?'suede ':f==='grain'?'grain ':''}${st==='oxford'?'oxfords':typeWord(shoes)}`;
     P.push([20,dLin(shoeFormality(shoes,sd)+fit,-30,2),()=>`${w()} have the right polish`,()=>`${w()} are a step down for ${sd?'a suit':'the outfit'}`]);
     if(legs){const k=(SH[pcol(legs)]||['black','brown']).indexOf(pcol(shoes));P.push([18,shoeClash(top,shoes)||!shoeSuits(top,legs,shoes)?0:st==='combat'?1:k<0?.4:[1,.85,.7,.55][k]??.5,()=>`${dCol(shoes)} shoes suit the ${dCol(legs)} ${sd?'suit':'pants'}`,()=>`${dCol(shoes)} shoes don't suit the ${dCol(legs)} ${sd?'suit':'pants'}`])}}
   if(shoes&&belt&&shoeStyle(shoes)!=='sneaker'&&shoeStyle(shoes)!=='combat'){const f=beltFit(shoes,belt);P.push([10,f===null?0:f>0?1:.65,()=>'the belt matches the shoes',()=>`a ${dCol(belt)} belt with ${dCol(shoes)} shoes`])}
@@ -1092,6 +1102,7 @@ function frozenOutfit(rec,n,last){
   o.vest=!!(rec.vestOn&&o.suitDay&&hasVest(o.top));
   // a piece taken off that day (rec.off, see takeOff): the record already holds the outfit without it
   if(rec.off&&(rec.off.top||rec.off.tie||rec.off.pocket)){o.off={top:!!rec.off.top&&!o.top,tie:!!rec.off.tie&&!o.tie,...(rec.off.pocket&&!o.pocket&&o.top?{pocket:true}:{})};o.suitBot=!!(o.bot&&o.bot.type==='suit');if(o.off.top)o.offKind=o.suitBot||rec.kind==='suit'?'suit':'blazer'}   // (rec.kind: a suit taken off with other pants picked)
+  if(rec.roll&&o.top&&o.top.type==='blouse')o.rolled=true;   // the uniform blouse's sleeves rolled up that day
   if(rec.worn!==false)for(const s of SLOTS)if(o[s])last[o[s].id]=n;
   return o;
 }

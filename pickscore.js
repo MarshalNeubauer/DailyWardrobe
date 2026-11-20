@@ -14,7 +14,11 @@ const slotPool=(slot,o)=>(slot==='bot'&&o.offSuit&&!o.frozen?[o.offSuit]:[]).con
 /* the pieces worn only when picked by hand (core.js isHandPick) for this slot: the picker's "Casual · pick by hand" group, never scored,
    swapped in by Suggest another or planned (2026-11-16, the owner's new casual garments) */
 // (combat boots, 2026-11-17: offered only while the day's pants are camouflage, core.js camoPants; a pair already worn stays listed)
-const handPool=(slot,o)=>items.filter(i=>handPickSlot(i)===slot&&(o.frozen||inRotation(i,di(sel)))&&(slot!=='shoes'||camoPants(o.bot)||(o.shoes&&o.shoes.id===i.id))).sort((a,b)=>(TYPES[a.type]||'').localeCompare(TYPES[b.type]||'')||(a.id<b.id?-1:1));
+const handPool=(slot,o)=>items.filter(i=>handPickSlot(i)===slot&&(o.frozen||inRotation(i,di(sel)))&&(slot!=='shoes'||camoPants(o.bot)||(o.shoes&&o.shoes.id===i.id))).sort((a,b)=>handOk(b,o)-handOk(a,o)||(TYPES[a.type]||'').localeCompare(TYPES[b.type]||'')||(a.id<b.id?-1:1));
+/* the uniform blouse goes only with camouflage pants (2026-11-17, the owner; core.js camoPants): with other pants it is listed last, with
+   the reason (handWhy) */
+const handOk=(i,o)=>i.type!=='blouse'||camoPants(o.suitDay?null:o.bot)?1:0;
+const handWhy=(i,o)=>handOk(i,o)?'':'Goes with camouflage pants';
 /* the picker ranks and labels each piece by the score the outfit would get with it (W2-17-03, fix round 3: "Best match" lowered the score
    93 → 81, leaving out the belt, variety and rest): a coming day is planned with the pick held in memory only (the record pickItem would
    save, planSim's peek: the pieces that follow it, like the belt after the shoes, are chosen again), a past day being corrected has the

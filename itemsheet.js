@@ -38,7 +38,7 @@ scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type
   const mat=!L&&MATERIALS_BY[i.type]?ckSec(scope,'material',{mark:i.material?'good':'opt',title:'Material',sum:i.material?esc(matLabel(i.material)):'Not set',body:matRow(i.type,i.material,`setItemField('${jsq(id)}','material',`)}):'';
   const det=E(id,'type',Object.entries(TYPES),i.type)+(!L&&METAL_TYPES.includes(i.type)?E(id,'metal',metalOptsFor(i.type),i.metal||'silver',i.type==='belt'?'Buckle':''):'')+
     (i.type==='shirt'?E(id,'cuff',CUFFS,i.cuff||'button'):'')+(i.type==='suit'?E(id,'vest',VESTS,hasVest(i)?'yes':'no'):'')+(SEASON_TYPES.includes(i.type)?E(id,'season',SEASONS,i.season||'all'):'')+
-    (i.type==='pants'?E(id,'trouserKind',TROUSER_KINDS,trouserKindShown(i)):'')+(i.type==='shoes'?E(id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):'')+(!L&&(i.type==='shoes'||i.type==='belt')?E(id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):'')+
+    (i.type==='pants'?E(id,'trouserKind',TROUSER_KINDS,trouserKindShown(i)):'')+(i.type==='shoes'?E(id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):'')+(i.type==='blouse'?blouseFields(id,i):'')+(!L&&(i.type==='shoes'||i.type==='belt')?E(id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):'')+
     (i.type==='watch'?`<label class="wdetails">Details <input type="text" maxlength="${WATCH_DETAILS_MAX}" dir="auto" value="${esc(String(i.details||'').slice(0,WATCH_DETAILS_MAX))}" placeholder="e.g. three subdials, 12 and 6 numerals" onchange="sete('${jsq(id)}','details',this.value.trim().slice(0,WATCH_DETAILS_MAX)||'none')"></label>`+(L?'':E(id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial))+E(id,'band',BANDS,watchOpts(i).band)+E(id,'bezel',BEZELS,watchOpts(i).bezel)+E(id,'watchStyle',WATCH_STYLES,watchOpts(i).style):'');
   const details=ckSec(scope,'details',{mark:'good',title:'Details',sum:esc(ivDetailSum(i)),body:det+(fab||L?'':gap),cls:'ivtags'});
   const cs=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null;
@@ -72,6 +72,11 @@ function ivDetailSum(i){const t=i.type,a=[TYPES[t]||'Item'];
 function ivCareSum(i,s){const r=(i.paused?(i.order?'On the way':i.away?'Away being cleaned':'Out of rotation'):'In rotation')+(typeof isFavItem==='function'&&isFavItem(i.id)?' · ♥ favorite':'');
   if(!s||i.away)return r;if(s.due)return `${r} · due for ${careWord(i.type)}`;
   return s.limit>1?`${r} · worn ${s.wears} of ${s.limit} since ${careWord(i.type)}`:s.wears?`${r} · worn ${careTimes(s.wears)}`:`${r} · not worn yet`}
+/* the uniform blouse's name tape, service tape and rank (2026-11-18; core.js blouseTapes): text fields in capitals, the rank a list; the
+   drawing and the painted picture show them */
+const tapeIn=(id,k,lab,ph)=>`<label>${lab} <input type="text" maxlength="${BLOUSE_TAPE_MAX}" autocapitalize="characters" spellcheck="false" value="${esc(tapeText(items.find(x=>x.id===id)&&items.find(x=>x.id===id)[k]))}" placeholder="${ph}" data-act-change="tapeSet" data-id="${esc(id)}" data-k="${k}"></label>`;
+function tapeSet(el){sete(el.dataset.id,el.dataset.k,tapeText(el.value)||'none')}   // (act.js: a tape's text field)
+const blouseFields=(id,i)=>tapeIn(id,'tapeName','Name tape','e.g. SMITH')+tapeIn(id,'tapeService','Service tape','e.g. U.S. AIR FORCE')+E(id,'rank',OCP_RANKS,i.rank||'none','Rank');
 async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}
   it[k]=v==='none'&&k!=='toeColor'?null:v;   // (a sock's toe cap keeps 'none': a sock with no toeColor at all is from before, core.js sockToe)
@@ -85,7 +90,7 @@ async function sete(id,k,v){
    as socks "Green, white toe · warm weather" in waxed cotton): season, material not in its list, metal, leather, cuffs, vest, kind, style,
    the watch's options, and a second or third colour it can't show; the photos stay */
 const TYPE_FIELDS={season:t=>SEASON_TYPES.includes(t),metal:t=>METAL_TYPES.includes(t),leather:t=>t==='shoes'||t==='belt',cuff:t=>t==='shirt',vest:t=>t==='suit',
-  trouserKind:t=>t==='pants',shoeStyle:t=>t==='shoes',dial:t=>t==='watch',band:t=>t==='watch',bezel:t=>t==='watch',watchStyle:t=>t==='watch',details:t=>t==='watch',toeColor:t=>t==='socks'};
+  trouserKind:t=>t==='pants',shoeStyle:t=>t==='shoes',tapeName:t=>t==='blouse',tapeService:t=>t==='blouse',rank:t=>t==='blouse',dial:t=>t==='watch',band:t=>t==='watch',bezel:t=>t==='watch',watchStyle:t=>t==='watch',details:t=>t==='watch',toeColor:t=>t==='socks'};
 /* a material its type can't have goes; a typed "Other" material stays where the type has a list (an own material of another type goes, like a
    listed one). Also the Add card's type change and save (CR-1-06: a jacket read as tweed and changed to a tie was saved "Other · tweed") */
 function matTidy(it){const ml=matsFor(it.type);if(it.material&&!(ml&&(ml.includes(it.material)||!Object.keys(MATERIALS_BY).some(x=>matsFor(x).includes(it.material)))))delete it.material;return it}
@@ -181,4 +186,4 @@ function renderWardrobe(){
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
   renderItem();wardBack(wf);
 }
-
+acts({tapeSet});   // (act.js: the uniform blouse's tapes)
