@@ -9,8 +9,8 @@ function colFamily(c){const [,a,b]=labOf(c),C=Math.hypot(a,b);let h=Math.atan2(b
   return C<9?0:h>=45&&h<100?1:h>=100&&h<200?2:h>=200&&h<298?3:4}   // deep blue (hue 293) is a blue; lavender (302) and purple stay with the purples (W2-16-11)
 const colLabel=k=>k==='primaryColor'?'Color':k==='secondaryColor'?'Second color':'Third color';
 /* lab: the field's name; the button is named "Color: Mid gray" (W2-19-04: inside its <label> it was named only "Color", the value unsaid) */
-const colBtn=(src,ref,k,v,lab)=>{const c=v&&COLORS[v]?v:null,r=`'${jsq(String(ref))}'`;
-  return `<button type="button" class="colbtn" data-k="${k}" onclick="openColPick('${src}',${r},'${k}')" aria-haspopup="dialog" aria-label="${esc(lab||colLabel(k))}: ${c?esc(cap1(colName(c))):'None'}"><span class="colchip${c?'':' none'}"${c?` style="background:${COLORS[c]}"`:''}></span><span class="colnm">${c?esc(cap1(colName(c))):'None'}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
+const colBtn=(src,ref,k,v,lab)=>{const c=v&&COLORS[v]?v:null;
+  return `<button type="button" class="colbtn" data-k="${k}" data-act="colBtnTap" data-src="${src}" data-ref="${esc(String(ref))}" aria-haspopup="dialog" aria-label="${esc(lab||colLabel(k))}: ${c?esc(cap1(colName(c))):'None'}"><span class="colchip${c?'':' none'}"${c?` style="background:${COLORS[c]}"`:''}></span><span class="colnm">${c?esc(cap1(colName(c))):'None'}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
 /* which colour fields an item shows (2026-11-15, the new-user audit: cufflinks asked for three colours, a bracelet watch's Colour did
    nothing, coats saved "Tan & brown"): only what something draws or names. The main colour always, but not on a watch on a metal bracelet
    (on a leather strap it is the strap's: "Strap colour"); a second colour for patterned cloth (its stripe), socks (the toe cap) and
@@ -70,7 +70,7 @@ function openColPick(src,ref,k){if(src==='q'&&typeof ref==='number'){const q=que
 // suits and blazers; a flat square of cloth was shown for fabric items); with a photo or close-up the photo leads, the drawing a tab
 const cpFig=it=>!!it;
 function cpViews(it,photo){const v=[];if(it.texture)v.push(['tex','Close-up']);if(photo)v.push(['photo','Whole photo']);if(cpFig(it)&&v.length)v.push(['draw','Drawing']);return v}
-const cpSeg=(vs,view)=>vs.length>1?`<div class="cpseg" role="group" aria-label="Compare with">${vs.map(([v,l])=>`<button type="button" class="${view===v?'on':''}" onclick="colPickView('${v}')" aria-pressed="${view===v}">${l}</button>`).join('')}</div>`:'';
+const cpSeg=(vs,view)=>vs.length>1?`<div class="cpseg" role="group" aria-label="Compare with">${vs.map(([v,l])=>`<button type="button" class="${view===v?'on':''}" data-act="cpViewTap" data-v="${v}" aria-pressed="${view===v}">${l}</button>`).join('')}</div>`:'';
 /* closing gives the focus back to the button that opened it (W2-19-03: it fell to <body>); when that button was drawn again meanwhile,
    to the same field's button (data-k) in the item sheet or on Add */
 function closeColPick(){const c=colPick;colPick=null;const s=$('#col-sheet'),b=$('#col-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');
@@ -116,7 +116,7 @@ function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==
   const L=lookOn(),lk=L&&(k==='dial'||k==='enamel'),shd=L&&lookShadeOk(k,sel)?colPick.shade||0:0;
   const photo=it.photo||wardPic(it),pic=view==='draw'?null:view==='tex'?it.texture:photo,vs=cpViews(it,photo);
   const acc=k==='accents',nc=acc||lk?null:colNewFor(it,k),name=c=>!c?'':c==='none'?(k==='enamel'?'None · plain metal':'None'):c===NEW_COL?cap1(nc?nc.name:''):cap1(colName(c)),hex=c=>c===NEW_COL?(nc?nc.hex:'transparent'):COLORS[c]||'transparent';  const near=L?[]:colNear(it,k),dWord=d=>d<=4?'Very close':d<=8?'Close':'Nearest';
-  const tile=(c,extra='')=>`<button type="button" class="cptile${c===sel?' sel':''}" data-c="${c}" onclick="colPickSel('${c}')" aria-pressed="${c===sel}"><span class="cpsw${c==='none'?' none':''}"${c==='none'?'':` style="background:${hex(c)}"`}>${c===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(name(c))}</span>${c===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
+  const tile=(c,extra='')=>`<button type="button" class="cptile${c===sel?' sel':''}" data-c="${c}" data-act="cpTileTap" aria-pressed="${c===sel}"><span class="cpsw${c==='none'?' none':''}"${c==='none'?'':` style="background:${hex(c)}"`}>${c===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(name(c))}</span>${c===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
   const fams=COL_FAMS.map(()=>[]);for(const c of colChoices(it,k))fams[colFamily(c)].push(c);
   const groups=fams.map((l,f)=>l.length?`<h4 class="cph">${COL_FAMS[f]}</h4><div class="cpgrid">${l.sort((a,b)=>labOf(b)[0]-labOf(a)[0]).map(c=>tile(c)).join('')}</div>`:'').join('');
   const what=view==='tex'?'Your close-up':'Your photo';
@@ -124,8 +124,8 @@ function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==
   // the Ask Claude card filled the screen above the Keep button, at the largest text with nothing to pick); the editor's order stays
   const mine=lk?[]:colChoices(it,k).filter(c=>CUSTOM_COL[c]),
     ownH=!COLS_BY[it.type]||lk?'':L?`<h4 class="cph">Yours</h4>${mine.length?`<div class="cpgrid cnown">${mine.map(c=>tile(c)).join('')}</div>`:'<p class="cphelp lkyours">Colors you add show here first. “+ New color” is at the end.</p>'}`
-      :mine.length?`<h4 class="cph">Your colors</h4><div class="cpgrid cnown">${mine.map(c=>tile(c)).join('')}<button type="button" class="cptile cpnewt" id="cn-open" onclick="openColNew()"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New color</span></button></div>`
-      :`<h4 class="cph cpownh">Your colors</h4><div class="cpgrid cnown cnslim"><button type="button" class="cpnewl" id="cn-open" onclick="openColNew()"><span aria-hidden="true">+</span> New color</button></div>`;
+      :mine.length?`<h4 class="cph">Your colors</h4><div class="cpgrid cnown">${mine.map(c=>tile(c)).join('')}<button type="button" class="cptile cpnewt" id="cn-open" data-act="cnOpenTap"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New color</span></button></div>`
+      :`<h4 class="cph cpownh">Your colors</h4><div class="cpgrid cnown cnslim"><button type="button" class="cpnewl" id="cn-open" data-act="cnOpenTap"><span aria-hidden="true">+</span> New color</button></div>`;
   // the owner's colours made for other kinds of item (2026-11-16, the owner's coyote brown T-shirt): picking one offers it for this kind too (useColPick)
   const others=acc||lk||!COLS_BY[it.type]?[]:Object.keys(CUSTOM_COL).filter(c=>COLORS[c]&&!colChoices(it,k).includes(c)),
     otherH=others.length?`<h4 class="cph" id="cp-other-h">Your other colors</h4><small class="cpothx">Made for other kinds of item. Pick one and it is offered for ${esc(typePl(it.type))} too.</small><div class="cpgrid cnown cpother" aria-labelledby="cp-other-h">${others.map(c=>tile(c)).join('')}</div>`:'';
@@ -135,7 +135,7 @@ function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==
   const drawn=k==='enamel'?{...it,primaryColor:sel==='none'?lookClipMetal(it):sel}:k==='dial'?{...it,dial:sel}:L&&k==='primaryColor'&&sel!==NEW_COL&&(sel!==cur||shd!==(it.shade||0))?{...it,primaryColor:sel,color:undefined,shade:shd||undefined}
     :sel===NEW_COL||sel===cur?it:acc?{...it,accents:[...accentsOf(it),sel]}:{...it,[k]:sel==='none'?null:sel,...(k==='primaryColor'?{color:undefined}:{})};
   const bigHex=c=>shd&&COLORS[c]?shadeHex(COLORS[c],shd):hex(c),shName=shd?' · '+shadeName(shd):'',same=sel===cur&&(!L||k!=='primaryColor'||shd===(lookShadeOk(k,cur)?it.shade||0:0));
-  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">${acc?'Add a color it also has':k==='dial'?'Choose the dial color':k==='enamel'?'Choose the enamel':k==='toeColor'?'Toe cap color':k==='primaryColor'&&it.type!=='watch'?'Choose the color':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' color':'')}</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">${acc?'Add a color it also has':k==='dial'?'Choose the dial color':k==='enamel'?'Choose the enamel':k==='toeColor'?'Toe cap color':k==='primaryColor'&&it.type!=='watch'?'Choose the color':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' color':'')}</b><button class="pick-x" data-act="cpCloseTap" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${srcOk(pic)}" alt="${what}">`:`<div class="cpdraw">${itemThumb(drawn)}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig${sel==='none'?' none':''}"${sel==='none'?'':` style="background:${bigHex(sel)}"`}><figcaption>${esc(name(sel)+shName)}</figcaption></figure></div>
 ${cpSeg(vs,view)}${L&&lookShadeOk(k,sel)?lookShadeHtml():''}</div>
 ${acc||L?'':colAskHtml(it,k,tile,name)}
@@ -143,7 +143,7 @@ ${acc||L?'':colAskHtml(it,k,tile,name)}
 ${sugH}${acc?'':ownH}${otherH}
 ${near.length?`<h4 class="cph">Closest to your ${it.meas.src==='closeup'?'close-up':'photo'}</h4><div class="cpgrid cpnear">${near.map(x=>tile(x.c,`<small class="cpd">${dWord(x.d)}</small>`)).join('')}</div>`:''}
 ${k==='primaryColor'||k==='dial'||acc?'':`<div class="cpgrid">${tile('none')}</div>`}${groups}${newH}
-<div class="cpbar">${acc?`<button type="button" class="pri" id="acc-use" onclick="useColPick()"${sel?'':' disabled'}>${sel?esc('Add '+name(sel)):'Pick a color'}</button>`:`<button type="button" class="pri" onclick="useColPick()">${esc(sel===NEW_COL?'Add '+name(sel)+' to your colors and use it':same?'Keep '+name(sel):'Use '+name(sel)+shName)}</button>`}</div>`;
+<div class="cpbar">${acc?`<button type="button" class="pri" id="acc-use" data-act="cpUseTap"${sel?'':' disabled'}>${sel?esc('Add '+name(sel)):'Pick a color'}</button>`:`<button type="button" class="pri" data-act="cpUseTap">${esc(sel===NEW_COL?'Add '+name(sel)+' to your colors and use it':same?'Keep '+name(sel):'Use '+name(sel)+shName)}</button>`}</div>`;
   if(keep)el.scrollTop=y}
 /* (a colour of your own by hand, "+ A colour of my own" at the end of the list, colOwn*, became the "+ New colour" sheet, 2026-11-15) */
 /* ---- Ask Claude: the close-up (white-balanced), the sharp photo and the close-up's measurement go to the tagger again, the same
@@ -207,16 +207,16 @@ async function colAskUseAll(){const it=colTarget(),a=it&&colAsk[it.id+'|c'];if(!
    moved the photos there, so "under the photos" pointed nowhere: picker audit 2026-11-17 #3); the link closes the picker, opens
    Pictures and brings its Close-up button into view. On the Add card the close-up button is on the card itself. */
 function cpAskHint(what){const e=colPick&&colPick.src==='e'&&$('#item-view.on .ivpics .pt-closeup');
-  return `<div class="cpask cpaskhint"><div class="cpasktx"><b>Not sure?</b> <small>${e?`Add a close-up in <button type="button" class="linkbtn cpgopics" onclick="cpGoPics()">Pictures, at the bottom</button>`:'Add a close-up'} and Claude can ${what}.</small></div></div>`}
+  return `<div class="cpask cpaskhint"><div class="cpasktx"><b>Not sure?</b> <small>${e?`Add a close-up in <button type="button" class="linkbtn cpgopics" data-act="cpPicsTap">Pictures, at the bottom</button>`:'Add a close-up'} and Claude can ${what}.</small></div></div>`}
 function cpGoPics(){closeColPick();const s=$('#item-view.on .ivpics');if(!s)return;const h=s.querySelector('.ckh');if(h&&!s.classList.contains('open'))ckToggle(h,true);
   const b=s.querySelector('.pt-closeup')||s;try{b.scrollIntoView({block:'center',behavior:'smooth'})}catch{b.scrollIntoView()}try{(s.querySelector('button.pt-closeup')||s.querySelector('.pt-closeup input')||h).focus({preventScroll:true})}catch{}}
 function colAskHtml(it,k,tile,name){const a=colAsk[it.id+'|c'];
   if(!it.texture&&!TEXTURE_TYPES.includes(it.type))return '';   // shoes, belts, watches, socks, coats, clips, links have no close-up: no dead-end hint (2026-11-15)
   if(!it.texture)return cpAskHint('read the colors');
   if(!a){const cents=Math.max(1,Math.round(benchEstimate(1)*100)),on=isConnected();
-    return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up again and says which colors it is. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()"${on?'':' disabled'}>Ask Claude</button></div>`}
+    return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up again and says which colors it is. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" data-act="cpAskTap"${on?'':' disabled'}>Ask Claude</button></div>`}
   if(a.busy)return `<div class="cpask"><span class="spin" aria-hidden="true"></span><div class="cpasktx"><b>Claude is looking at the close-up…</b><small>This takes a few seconds.</small></div></div>`;
-  if(a.err)return `<div class="cpask"><div class="cpasktx"><b>Claude couldn’t answer</b><small>${esc(a.err)}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()">Try again</button></div>`;
+  if(a.err)return `<div class="cpask"><div class="cpasktx"><b>Claude couldn’t answer</b><small>${esc(a.err)}</small></div><button type="button" class="cpaskbtn" data-act="cpAskTap">Try again</button></div>`;
   const cf=a.conf&&a.conf.primaryColor,fs=COL_FIELDS(it);
   // in Claude's own words where it gave them ("mushroom"), else the listed names
   const said=fs.map(f=>a.own&&a.own[f]?a.own[f].name:a[f]&&a[f]!=='none'?colName(a[f]):null).filter(Boolean).map(s=>`<b>${esc(cap1(s))}</b>`);
@@ -229,7 +229,7 @@ function colAskHtml(it,k,tile,name){const a=colAsk[it.id+'|c'];
   return `<div class="cpask done"><div class="cpasktx"><b>Claude reads it as ${said.length>1?said.slice(0,-1).join(', ')+' and '+said[said.length-1]:said[0]}</b>${cf&&k==='primaryColor'?`<small>${cap1(cf)} confidence on the main color.</small>`:''}${a.newColor?`<small>None of the listed colors quite fit: Claude calls it ${esc(a.newColor.name)}${a.newColor.why?`, ${esc(a.newColor.why)}`:''}.</small>`:''}</div>
 ${nc?`<small class="cpnewtx">${esc(cap1(nc.name))} isn’t one of your colors yet: pick it and it is added to the app (it then behaves like ${esc(colName(colBaseFor(nc.hex,it.type,k!=='primaryColor')))} in your outfits).</small>`:''}
 <div class="cpgrid cpai">${tiles.join('')}</div>
-<div class="cpaskbtns">${all?`<button type="button" class="cpaskbtn cpall" onclick="colAskUseAll()">${said.length===2?'Use both colors':`Use all ${said.length} colors`}</button>`:''}<button type="button" class="cpaskbtn ghost" onclick="colAskRun()">Ask again</button></div></div>`}
+<div class="cpaskbtns">${all?`<button type="button" class="cpaskbtn cpall" data-act="cpAskAllTap">${said.length===2?'Use both colors':`Use all ${said.length} colors`}</button>`:''}<button type="button" class="cpaskbtn ghost" data-act="cpAskTap">Ask again</button></div></div>`}
 /* ---- the pattern picker (the same sheet, k 'pattern'): the field is a button with a small drawn swatch (patBtn, EP in the editor);
    the sheet puts the close-up beside a large drawing of the item in the pattern looked at (its colours, the pattern's tile), then
    every pattern the type allows, drawn. Ask Claude (the same request and answer as the colours, with freePattern) shows Claude's
@@ -240,8 +240,8 @@ const patChoices=it=>{const l=(PATS_BY[it.type]||['solid']).slice(),c=normPat(it
 /* the item as it would be drawn in pattern p: a reading belongs to its own pattern, so another pattern is drawn without it */
 const patVar=(it,p)=>p===it.pattern?it:{...it,pattern:p,sett:undefined,stripes:undefined,patternSpec:undefined,weave:undefined,swatch:undefined,swSrc:undefined,texture:undefined};
 const patTitle=p=>cap1(patName(p));
-const patBtn=(src,ref,it)=>{const p=normPat(it.type,it.pattern),r=`'${jsq(String(ref))}'`;
-  return `<button type="button" class="colbtn patbtn" data-k="pattern" onclick="openColPick('${src}',${r},'pattern')" aria-haspopup="dialog" aria-label="Pattern: ${esc(patTitle(p))}"><span class="colchip patchip">${swatchSVG(patVar(it,p),true)}</span><span class="colnm">${esc(patTitle(p))}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
+const patBtn=(src,ref,it)=>{const p=normPat(it.type,it.pattern);
+  return `<button type="button" class="colbtn patbtn" data-k="pattern" data-act="colBtnTap" data-src="${src}" data-ref="${esc(String(ref))}" aria-haspopup="dialog" aria-label="Pattern: ${esc(patTitle(p))}"><span class="colchip patchip">${swatchSVG(patVar(it,p),true)}</span><span class="colnm">${esc(patTitle(p))}</span><svg class="colchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>`};
 const EP=(id,it)=>`<label class="colrow">Pattern ${patBtn('e',id,it)}</label>`;
 const PAT_GROUPS=[[['solid'],'Plain'],[['pinstripe','chalk-stripe','stripe','fine-stripe'],'Stripes'],[['glen-check','windowpane','check','gingham','tattersall','tonal-check','houndstooth'],'Checks'],
   [['herringbone','birdseye','nailhead','sharkskin','twill','tweed','oxford','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture','knit','ribbed'],'Weaves'],[['polka-dot','paisley','foulard','camouflage','argyle','clock'],'Figures']];   // (a sock's ribbed knit, argyle and clock, 2026-11-17)
@@ -258,7 +258,7 @@ async function patAddNew(it,o){if(!o)throw new Error('Ask Claude again: its patt
 function renderPatPick(keep){const el=$('#col-sheet'),it=colTarget();if(!el||!it)return;const {sel,cur,view}=colPick,y=el.scrollTop;
   const photo=it.photo||wardPic(it),pic=view==='draw'?null:view==='tex'?it.texture:photo,vs=cpViews(it,photo);
   const np=patNewFor(it),drawAs=p=>p===NEW_COL?patNewBase(it):p,name=p=>p===NEW_COL?cap1(np?np.name:''):patTitle(p);
-  const tile=(p,extra='')=>`<button type="button" class="cptile${p===sel?' sel':''}" data-c="${p}" onclick="colPickSel('${p}')" aria-pressed="${p===sel}"><span class="cpsw cppat">${swatchSVG(patVar(it,drawAs(p)),true)}${p===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(name(p))}</span>${p===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
+  const tile=(p,extra='')=>`<button type="button" class="cptile${p===sel?' sel':''}" data-c="${p}" data-act="cpTileTap" aria-pressed="${p===sel}"><span class="cpsw cppat">${swatchSVG(patVar(it,drawAs(p)),true)}${p===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(name(p))}</span>${p===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
   // the Look beta (look.js): its groups (heather with the plain ones, the knits together, a border with the figures), Suggested first, no
   // Ask Claude (Read with Claude is in the Look section), "+ New pattern or texture" at the end
   const L=lookOn(),PG=L?LOOK_PAT_GROUPS:PAT_GROUPS,pgOf=L?lookPatGroupOf:patGroupOf;
@@ -267,32 +267,32 @@ function renderPatPick(keep){const el=$('#col-sheet'),it=colTarget();if(!el||!it
   const what=view==='tex'?'Your close-up':'Your photo';
   const mine=patChoices(it).filter(p=>CUSTOM_PAT[p]),   // (as the colors: W2-14-02)
     ownH=L?`<h4 class="cph">Yours</h4>${mine.length?`<div class="cpgrid cnown">${mine.map(p=>tile(p)).join('')}</div>`:'<p class="cphelp lkyours">Patterns you add show here first. “+ New pattern” is at the end.</p>'}`
-      :mine.length?`<h4 class="cph">Your patterns</h4><div class="cpgrid cnown">${mine.map(p=>tile(p)).join('')}<button type="button" class="cptile cpnewt" id="pn-open" onclick="openPatNew()"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New pattern or texture</span></button></div>`
-      :`<h4 class="cph cpownh">Your patterns</h4><div class="cpgrid cnown cnslim"><button type="button" class="cpnewl" id="pn-open" onclick="openPatNew()"><span aria-hidden="true">+</span> New pattern or texture</button></div>`;
+      :mine.length?`<h4 class="cph">Your patterns</h4><div class="cpgrid cnown">${mine.map(p=>tile(p)).join('')}<button type="button" class="cptile cpnewt" id="pn-open" data-act="pnOpenTap"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New pattern or texture</span></button></div>`
+      :`<h4 class="cph cpownh">Your patterns</h4><div class="cpgrid cnown cnslim"><button type="button" class="cpnewl" id="pn-open" data-act="pnOpenTap"><span aria-hidden="true">+</span> New pattern or texture</button></div>`;
   const sug=L?lookSugPats(it):[],sugH=sug.length?`<h4 class="cph">Suggested</h4><div class="cpgrid cpsug">${sug.map(([p,l])=>tile(p,`<small class="cpd cpaid">${esc(l)}</small>`)).join('')}</div>`:'',
     newH=L?`<h4 class="cph">New</h4><div class="cpgrid"><button type="button" class="cptile cpnewt" id="pn-open" data-act="lkNewPat"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New pattern or texture</span></button></div>`:'';
-  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">Choose the pattern</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">Choose the pattern</b><button class="pick-x" data-act="cpCloseTap" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${srcOk(pic)}" alt="${what}">`:`<div class="cpdraw">${itemThumb(patVar(it,drawAs(sel)))}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig cppatbig"><div class="cpdraw">${itemThumb(patVar(it,drawAs(sel)),true)}</div><figcaption>${esc(name(sel))}</figcaption></figure></div>
 ${cpSeg(vs,view)}</div>
 ${L?'':patAskHtml(it,tile,name,np)}
 <p class="cphelp">Tap a pattern to see it drawn in your item’s colors beside your ${pic?view==='tex'?'close-up':'photo':'item'}.</p>
 ${sugH}${ownH}${groups}${newH}
-<div class="cpbar"><button type="button" class="pri" onclick="useColPick()">${sel===NEW_COL?'Add '+esc(name(sel))+' to your patterns and use it':sel===cur?'Keep '+esc(name(sel)):'Use '+esc(name(sel))}</button></div>`;
+<div class="cpbar"><button type="button" class="pri" data-act="cpUseTap">${sel===NEW_COL?'Add '+esc(name(sel))+' to your patterns and use it':sel===cur?'Keep '+esc(name(sel)):'Use '+esc(name(sel))}</button></div>`;
   if(keep)el.scrollTop=y}
 function patAskHtml(it,tile,name,np){const a=colAsk[it.id+'|p'];
   if(!it.texture&&!TEXTURE_TYPES.includes(it.type))return '';   // socks, pocket squares and the casual types have no close-up: no dead-end hint (as the colors, picker audit 2026-11-17 #2)
   if(!it.texture)return cpAskHint('name the pattern');
   if(!a){const cents=Math.max(1,Math.round(benchEstimate(1)*100)),on=isConnected();
-    return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up and names the pattern, even one the app doesn’t have yet. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()"${on?'':' disabled'}>Ask Claude</button></div>`}
+    return `<div class="cpask"><div class="cpasktx"><b>Not sure? Ask Claude</b><small>${on?`Claude looks at the close-up and names the pattern, even one the app doesn’t have yet. About ${cents}¢.`:NEED_CONN}</small></div><button type="button" class="cpaskbtn" data-act="cpAskTap"${on?'':' disabled'}>Ask Claude</button></div>`}
   if(a.busy)return `<div class="cpask"><span class="spin" aria-hidden="true"></span><div class="cpasktx"><b>Claude is looking at the close-up…</b><small>This takes a few seconds.</small></div></div>`;
-  if(a.err)return `<div class="cpask"><div class="cpasktx"><b>Claude couldn’t answer</b><small>${esc(a.err)}</small></div><button type="button" class="cpaskbtn" onclick="colAskRun()">Try again</button></div>`;
+  if(a.err)return `<div class="cpask"><div class="cpasktx"><b>Claude couldn’t answer</b><small>${esc(a.err)}</small></div><button type="button" class="cpaskbtn" data-act="cpAskTap">Try again</button></div>`;
   const o=a.ownPattern,cf=a.conf&&a.conf.pattern,ch=patChoices(it);
   const pick=[a.pattern].concat(a.altPattern&&a.altPattern!==a.pattern?[a.altPattern]:[]).filter(p=>p&&ch.includes(p));
   const tiles=(np?[tile(NEW_COL,`<small class="cpd cpaid">New · Claude’s name</small>`)]:[]).concat(pick.map((p,j)=>tile(p,`<small class="cpd cpaid">${j?'Claude’s 2nd':np?'Closest you have':'Claude’s pick'}</small>`)));
   return `<div class="cpask done"><div class="cpasktx"><b>Claude sees ${esc(o?o.name:patName(a.pattern))}</b>${o&&o.description?`<small>${esc(o.description)}</small>`:''}${cf?`<small>${cap1(cf)} confidence.</small>`:''}</div>
 ${np?`<small class="cpnewtx">${esc(cap1(np.name))} isn’t one of your patterns yet: pick it and it is added to the app (drawn and planned like ${esc(patName(patNewBase(it)))}; your close-up shows the real thing).</small>`:''}
 <div class="cpgrid cpai">${tiles.join('')}</div>
-<div class="cpaskbtns"><button type="button" class="cpaskbtn ghost" onclick="colAskRun()">Ask again</button></div></div>`}
+<div class="cpaskbtns"><button type="button" class="cpaskbtn ghost" data-act="cpAskTap">Ask again</button></div></div>`}
 /* ---- "+ New colour" and "+ New pattern or texture" (2026-11-15, the owner's approved design in C:\code\audit-2026-11-13\custom-colour-texture):
    states of this sheet (colPick.newc = {kind 'colour'|'pattern', from 'pick'|'add'|'settings', hex, h/s/v, name, desc, state, res, base,
    types, accent, look, closeOn, err}), drawn into #col-sheet with ‹ back to the list. "Describe it to Claude" posts to the worker's
@@ -370,11 +370,12 @@ function cnDrag(e,el,at){e.preventDefault();const a=document.activeElement;if(a&
 try{el.setPointerCapture(e.pointerId)}catch(x){}const r=el.getBoundingClientRect(),mv=ev=>at((ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height,false);mv(e);
   const up=ev=>{el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);at((ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height,true)};
   el.addEventListener('pointermove',mv);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up)}
-function cnSqDown(e){const nc=colPick&&colPick.newc;if(!nc)return;cnDrag(e,e.currentTarget,(x,y,end)=>cnSetHsv(nc.h,Math.max(0,Math.min(1,x))*100,(1-Math.max(0,Math.min(1,y)))*100,end))}
-function cnHueDown(e){const nc=colPick&&colPick.newc;if(!nc)return;cnDrag(e,e.currentTarget,(x,y,end)=>cnSetHsv(Math.max(0,Math.min(1,x))*359.9,nc.s,nc.v,end))}
-function cnSqKey(e){const nc=colPick&&colPick.newc,d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[e.key];if(!nc||!d)return;e.preventDefault();e.stopPropagation();cnSetHsv(nc.h,nc.s+d[0],nc.v+d[1],false)}
-function cnHueKey(e){const nc=colPick&&colPick.newc,d={ArrowLeft:-1,ArrowRight:1,ArrowDown:-1,ArrowUp:1}[e.key];if(!nc||!d)return;e.preventDefault();e.stopPropagation();cnSetHsv(nc.h+d,nc.s,nc.v,false)}
-function cnKeyUp(e,id){if(!/^Arrow/.test(e.key))return;renderColPick(true);const el=document.getElementById(id);if(el)el.focus({preventScroll:true})}
+/* (the square's and the hue bar's handlers, act.js: el is the slider, e the event) */
+function cnSqPress(el,e){const nc=colPick&&colPick.newc;if(!nc)return;cnDrag(e,el,(x,y,end)=>cnSetHsv(nc.h,Math.max(0,Math.min(1,x))*100,(1-Math.max(0,Math.min(1,y)))*100,end))}
+function cnHuePress(el,e){const nc=colPick&&colPick.newc;if(!nc)return;cnDrag(e,el,(x,y,end)=>cnSetHsv(Math.max(0,Math.min(1,x))*359.9,nc.s,nc.v,end))}
+function cnSqKey(el,e){const nc=colPick&&colPick.newc,d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[e.key];if(!nc||!d)return;e.preventDefault();e.stopPropagation();cnSetHsv(nc.h,nc.s+d[0],nc.v+d[1],false)}
+function cnHueKey(el,e){const nc=colPick&&colPick.newc,d={ArrowLeft:-1,ArrowRight:1,ArrowDown:-1,ArrowUp:1}[e.key];if(!nc||!d)return;e.preventDefault();e.stopPropagation();cnSetHsv(nc.h+d,nc.s,nc.v,false)}
+function cnSlideUp(el,e){if(!/^Arrow/.test(e.key))return;renderColPick(true);const n=document.getElementById(el.id);if(n)n.focus({preventScroll:true})}
 /* done 'blur' (the hex field's change, when it loses the focus): updated in place, never by drawing the sheet again. The Name and hex fields
    redrew the whole sheet on change, i.e. on the blur a tap elsewhere causes, between the finger going down and the click: the button under
    the finger ("Add … and use it") was replaced and the first tap did nothing (picker audit 2026-11-17 #1) */
@@ -417,18 +418,18 @@ async function describeAsk(){const nc=colPick&&colPick.newc,it=colTarget();if(!n
 /* "Describe it to Claude": the box, the cost or what is left, Ask; the limit and connection notes */
 function cnAskBox(nc,kind,hint,ph){const on=isConnected(),busy=nc.state==='busy',l=!showCost()?cnLeft():null,spent=l&&l.left<=0;
   const lim=nc.state==='limit'||spent?`<div class="cnlim" role="status"><span aria-hidden="true">⏳</span><span><b>${esc(nc.state==='limit'?nc.limit:`Today’s limit of ${l.cap} color and pattern lookups is used up.`)}</b>${nc.state==='limit'?'':'It starts again at midnight UTC. '}You can still ${kind==='pattern'?'set it yourself':'pick the shade yourself'} below.</span></div>`:'';
-  const close=cnHasClose(colTarget())?`<button type="button" class="cnchk" id="${kind==='pattern'?'pn':'cn'}-close" role="checkbox" aria-checked="${!!nc.closeOn}" onclick="cnToggleClose()"${busy?' disabled':''}><i class="${nc.closeOn?'on':''}" aria-hidden="true"></i><span>Also show Claude my close-up</span></button>${cnPaperLine(kind)}`:'';
+  const close=cnHasClose(colTarget())?`<button type="button" class="cnchk" id="${kind==='pattern'?'pn':'cn'}-close" role="checkbox" aria-checked="${!!nc.closeOn}" data-act="cnCloseupTap"${busy?' disabled':''}><i class="${nc.closeOn?'on':''}" aria-hidden="true"></i><span>Also show Claude my close-up</span></button>${cnPaperLine(kind)}`:'';
   const row=busy?`<div class="cnaskrow" role="status"><span class="spin" aria-hidden="true"></span><small><b class="cnbusy">${kind==='pattern'?'Claude is working out the weave…':'Claude is finding the shade…'}</b><br>A few seconds.</small></div>`
-    :`<div class="cnaskrow"><small id="cn-cost">${esc(cnCost(kind,!!nc.closeOn&&!!close))}</small><button type="button" class="cpaskbtn${nc.res?' ghost':''}" id="cn-ask" onclick="describeAsk()"${on&&nc.state!=='limit'&&!spent?'':' disabled'}>${nc.res?'Ask again':'Ask Claude'}</button></div>`;
+    :`<div class="cnaskrow"><small id="cn-cost">${esc(cnCost(kind,!!nc.closeOn&&!!close))}</small><button type="button" class="cpaskbtn${nc.res?' ghost':''}" id="cn-ask" data-act="cnAskTap"${on&&nc.state!=='limit'&&!spent?'':' disabled'}>${nc.res?'Ask again':'Ask Claude'}</button></div>`;
   return `<div class="cpask cnask"><div class="cpasktx"><b>Describe it to Claude</b><small>${hint}</small></div>
-<textarea class="cntext" id="cn-text" dir="auto" rows="2" maxlength="${CN_DESC_MAX}" aria-label="Describe it to Claude" placeholder="${ph}"${nc.state==='limit'||spent||busy?' disabled':''} oninput="colPick.newc.desc=this.value" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();describeAsk()}">${esc(nc.desc||'')}</textarea>${close}${row}${lim}</div>`}
+<textarea class="cntext" id="cn-text" dir="auto" rows="2" maxlength="${CN_DESC_MAX}" aria-label="Describe it to Claude" placeholder="${ph}"${nc.state==='limit'||spent||busy?' disabled':''} data-act-input="cnDescType" data-act-keydown="cnDescKey">${esc(nc.desc||'')}</textarea>${close}${row}${lim}</div>`}
 /* an answer that isn't what this sheet adds (a pattern described on the colour sheet, a material, unclear words) */
 function cnKindCard(nc){const k=nc.answer,other=k==='pattern'&&nc.kind==='colour'?'patterns':k==='colour'&&nc.kind==='pattern'?'colors':'';
   const head=k==='pattern'?'That sounds like a pattern':k==='colour'?'That sounds like a color':k==='material'?'That sounds like a material':nc.kind==='pattern'?'That isn’t a pattern yet':'That isn’t a color yet';
-  return `<div class="cnres warn" id="cn-kind"><div class="cpasktx"><b>${head}</b><small>${esc(nc.ask||'')}</small></div>${other&&colPick.src!=='s'?`<div class="cnbtns"><button type="button" class="cpaskbtn ghost" onclick="cnSwitch()">Open ${other}</button></div>`:''}</div>`}
+  return `<div class="cnres warn" id="cn-kind"><div class="cpasktx"><b>${head}</b><small>${esc(nc.ask||'')}</small></div>${other&&colPick.src!=='s'?`<div class="cnbtns"><button type="button" class="cpaskbtn ghost" data-act="cnKindTap">Open ${other}</button></div>`:''}</div>`}
 function cnSwitch(){const nc=colPick&&colPick.newc;if(!nc)return;const {src,ref}=colPick,desc=nc.desc;closeColPick();
   if(nc.kind==='colour'){openColPick(src,ref,'pattern');openPatNew({from:'add',desc})}else{openColPick(src,ref,'primaryColor');openColNew({from:'add',desc})}}
-const cnErrCard=(nc,what)=>`<div class="cnres cnerr" id="cn-err"><div class="cpasktx"><b>Claude couldn’t answer</b><small>The ${what==='colour'?'color':what} couldn’t be looked up just now. Try again later, or ${what==='colour'?'pick the shade':'set it'} yourself below.${nc.detail?` (${esc(nc.detail)})`:''}</small></div><div class="cnbtns"><button type="button" class="cpaskbtn" onclick="describeAsk()">Try again</button></div></div>`;
+const cnErrCard=(nc,what)=>`<div class="cnres cnerr" id="cn-err"><div class="cpasktx"><b>Claude couldn’t answer</b><small>The ${what==='colour'?'color':what} couldn’t be looked up just now. Try again later, or ${what==='colour'?'pick the shade':'set it'} yourself below.${nc.detail?` (${esc(nc.detail)})`:''}</small></div><div class="cnbtns"><button type="button" class="cpaskbtn" data-act="cnAskTap">Try again</button></div></div>`;
 function renderColNew(keep){const el=$('#col-sheet'),it=colTarget(),nc=colPick&&colPick.newc;if(!el||!it||!nc)return;const y=el.scrollTop,src=colPick.src,hex=nc.hex,r=nc.res;
   const ex=r&&r.existing&&COLORS[r.existing]?r.existing:null,exName=ex?cap1(colName(ex)):'',name=cap1(String(nc.name||'').trim());
   const prefer=ex&&(nc.state==='dup'||(nc.state==='result'&&+r.dE<=6&&r.match==='existing'))?'existing':'new',base=cnColBase(it,nc);
@@ -437,31 +438,31 @@ function renderColNew(keep){const el=$('#col-sheet'),it=colTarget(),nc=colPick&&
   let res='';
   if((nc.state==='result'||nc.state==='dup')&&r){const d=+r.dE||0;
     res=nc.state==='dup'?`<div class="cnres" id="cn-res"><div class="cnreshd"><span class="cnresw" style="background:${COLORS[ex]}"></span><span><span class="cneyebrow">You already have it</span><b>That’s your ${esc(colName(ex))}</b><small>${esc(cap1(r.name||'It'))} is ${d.toFixed(1)} ΔE from ${esc(colName(ex))}: ${cnDWord(d)}.</small></span></div>${cnLightNote(nc)}
-${r.why?`<p class="cnwhy">“${esc(r.why)}”</p>`:''}<div class="cnbtns"><button type="button" class="cpaskbtn ghost" id="cn-anyway" onclick="colNewAdd()"${name?'':' disabled'}>Add ${esc(name||'it')} anyway</button></div></div>`
+${r.why?`<p class="cnwhy">“${esc(r.why)}”</p>`:''}<div class="cnbtns"><button type="button" class="cpaskbtn ghost" id="cn-anyway" data-act="cnAddTap"${name?'':' disabled'}>Add ${esc(name||'it')} anyway</button></div></div>`
     :`<div class="cnres" id="cn-res"><div class="cnreshd"><span class="cnresw" style="background:${r.hex}"></span><span><span class="cneyebrow">Claude’s color</span><b>${esc(cap1(r.name||'')||r.hex.toUpperCase())}</b><small>${r.hex.toUpperCase()} · ${esc(r.confidence||'medium')} confidence</small></span></div>
 <ul class="cnfacts"><li><span>In outfits</span><span class="cnch" style="background:${COLORS[r.plansAs]||'transparent'}"></span><span>behaves like <b>${esc(colName(r.plansAs))}</b></span></li>
 ${ex?`<li><span>Nearest yours</span><span class="cnch" style="background:${COLORS[ex]}"></span><span>${esc(exName)}</span><span class="cnde">${cnDWord(d)} · ΔE ${d.toFixed(1)}</span></li>`:''}</ul>${cnLightNote(nc)}
 ${r.fitsType===false?`<p class="cnwhy">Unusual for ${esc((TYPES[it.type]||'this item').toLowerCase())}, but you can still add it.</p>`:''}${r.why?`<p class="cnwhy">“${esc(r.why)}”</p>`:''}${r.ask?`<p class="cnwhy">${esc(r.ask)}</p>`:''}
-${ex?`<div class="cnbtns">${prefer==='existing'?`<button type="button" class="cpaskbtn ghost" id="cn-anyway" onclick="colNewAdd()"${name?'':' disabled'}>Add ${esc(name||'it')} anyway</button>`:`<button type="button" class="cpaskbtn ghost" id="cn-use" onclick="cnUseExisting()">Use ${esc(exName)} instead</button>`}</div>`:''}</div>`}
+${ex?`<div class="cnbtns">${prefer==='existing'?`<button type="button" class="cpaskbtn ghost" id="cn-anyway" data-act="cnAddTap"${name?'':' disabled'}>Add ${esc(name||'it')} anyway</button>`:`<button type="button" class="cpaskbtn ghost" id="cn-use" data-act="cnUseOldTap">Use ${esc(exName)} instead</button>`}</div>`:''}</div>`}
   if(nc.state==='err')res=cnErrCard(nc,'colour');if(nc.state==='kind')res=cnKindCard(nc);
   const bases=[...new Set([...(src==='s'||COLS_BY[it.type]?colsFor(it.type,nc.accent):Object.keys(COLORS)).filter(c=>COLORS[c]&&!CUSTOM_COL[c]),base])];
   // (always drawn, hidden until there is a name: cnName shows it as one is typed, so the field's blur needn't redraw the sheet, 2026-11-17)
   const fold=`<div class="cnsec" id="cn-how"${r||name||src==='s'?'':' hidden'}><b>How the app uses it</b>
-<label class="cnfld">Behaves like (for the outfit rules)<select id="cn-base" onchange="colPick.newc.base=this.value;renderColPick(true)">${bases.map(c=>`<option value="${c}"${c===base?' selected':''}>${esc(cap1(colName(c)))}</option>`).join('')}</select></label>
+<label class="cnfld">Behaves like (for the outfit rules)<select id="cn-base" data-act-change="cnBasePick">${bases.map(c=>`<option value="${c}"${c===base?' selected':''}>${esc(cap1(colName(c)))}</option>`).join('')}</select></label>
 <span class="cnnote">Outfits treat it like this color; drawings and pictures use its own shade.</span>
-<div class="cnfld cnoffer">Offer it for<div class="cnchips">${groupOf(it.type).map(t=>`<button type="button" class="cnchip${nc.types.includes(t)?' on':''}" aria-pressed="${nc.types.includes(t)}" onclick="cnToggleType('${t}')">${esc(TYPES[t])}</button>`).join('')}</div></div>
-<button type="button" class="cnsw" id="cn-accent" role="switch" aria-checked="${!!nc.accent}" onclick="colPick.newc.accent=!colPick.newc.accent;renderColPick(true)"><span>Also for stripes and motifs</span><i class="${nc.accent?'on':''}" aria-hidden="true"></i></button></div>`;
-  const bar=prefer==='existing'?`<button type="button" class="pri" id="cn-add" data-use="1" onclick="cnUseExisting()">Use ${esc(exName)}</button>`
-    :`<button type="button" class="pri" id="cn-add" onclick="colNewAdd()"${name?'':' disabled'}>${name?`Add ${esc(name)}${src==='s'?'':' and use it'}`:'Add color'}</button>`;
-  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><button type="button" class="cnback" onclick="colNewBack()" aria-label="${nc.from==='pick'?'Back to colors':'Close'}">‹</button><b id="col-title">New color</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
+<div class="cnfld cnoffer">Offer it for<div class="cnchips">${groupOf(it.type).map(t=>`<button type="button" class="cnchip${nc.types.includes(t)?' on':''}" aria-pressed="${nc.types.includes(t)}" data-act="cnTypeTap" data-t="${t}">${esc(TYPES[t])}</button>`).join('')}</div></div>
+<button type="button" class="cnsw" id="cn-accent" role="switch" aria-checked="${!!nc.accent}" data-act="cnAccentTap"><span>Also for stripes and motifs</span><i class="${nc.accent?'on':''}" aria-hidden="true"></i></button></div>`;
+  const bar=prefer==='existing'?`<button type="button" class="pri" id="cn-add" data-use="1" data-act="cnUseOldTap">Use ${esc(exName)}</button>`
+    :`<button type="button" class="pri" id="cn-add" data-act="cnAddTap"${name?'':' disabled'}>${name?`Add ${esc(name)}${src==='s'?'':' and use it'}`:'Add color'}</button>`;
+  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><button type="button" class="cnback" data-act="cnBackTap" aria-label="${nc.from==='pick'?'Back to colors':'Close'}">‹</button><b id="col-title">New color</b><button class="pick-x" data-act="cpCloseTap" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${fig}<figcaption>${pic?'Your close-up':`Your ${esc((TYPES[it.type]||'item').toLowerCase())}, drawn`}</figcaption></figure><figure class="cpbig" style="background:${hex}"><figcaption>${esc(name||hex.toUpperCase())}</figcaption></figure></div></div>
-${src==='s'?`<label class="cnfld cnfor">For<select id="cn-for" onchange="cnSetType(this.value)">${Object.keys(COLS_BY).map(t=>`<option value="${t}"${t===it.type?' selected':''}>${esc(TYPES[t])}</option>`).join('')}</select></label>`:''}
+${src==='s'?`<label class="cnfld cnfor">For<select id="cn-for" data-act-change="cnForPick">${Object.keys(COLS_BY).map(t=>`<option value="${t}"${t===it.type?' selected':''}>${esc(TYPES[t])}</option>`).join('')}</select></label>`:''}
 ${cnAskBox(nc,'colour','Say it as you’d tell a tailor. Claude finds the shade and checks it against your colors.','e.g. faded burgundy like old wine')}
 ${res}
 <div class="cnsec"><b>${r?'Fine-tune the shade':'Or pick the shade'}</b>
-<div class="cnsq" id="cn-sq" style="--h:${Math.round(nc.h)}" tabindex="0" role="slider" aria-label="Shade: saturation across, brightness down" aria-valuetext="${hex.toUpperCase()}" onpointerdown="cnSqDown(event)" onkeydown="cnSqKey(event)" onkeyup="cnKeyUp(event,'cn-sq')"><i class="cnthumb" style="left:${nc.s.toFixed(1)}%;top:${(100-nc.v).toFixed(1)}%;background:${hex}"></i></div>
-<div class="cnhue" id="cn-hue" tabindex="0" role="slider" aria-label="Hue" aria-valuemin="0" aria-valuemax="359" aria-valuenow="${Math.round(nc.h)}" onpointerdown="cnHueDown(event)" onkeydown="cnHueKey(event)" onkeyup="cnKeyUp(event,'cn-hue')"><i style="left:${(nc.h/360*100).toFixed(1)}%;background:hsl(${Math.round(nc.h)},100%,50%)"></i></div>
-<div class="cnrow"><label class="cnfld cnhex">Hex<input id="cn-hex" value="${hex.toUpperCase()}" maxlength="7" autocomplete="off" spellcheck="false" oninput="cnHexIn(this.value,false)" onchange="cnHexIn(this.value,'blur')"><i data-cnsw style="background:${hex}"></i></label><label class="cnfld">Name<input id="cn-name" dir="auto" maxlength="24" value="${esc(nc.name||'')}" placeholder="e.g. Faded burgundy" oninput="cnName(this.value)"></label></div></div>
+<div class="cnsq" id="cn-sq" style="--h:${Math.round(nc.h)}" tabindex="0" role="slider" aria-label="Shade: saturation across, brightness down" aria-valuetext="${hex.toUpperCase()}" data-act-pointerdown="cnSqPress" data-act-keydown="cnSqKey" data-act-keyup="cnSlideUp"><i class="cnthumb" style="left:${nc.s.toFixed(1)}%;top:${(100-nc.v).toFixed(1)}%;background:${hex}"></i></div>
+<div class="cnhue" id="cn-hue" tabindex="0" role="slider" aria-label="Hue" aria-valuemin="0" aria-valuemax="359" aria-valuenow="${Math.round(nc.h)}" data-act-pointerdown="cnHuePress" data-act-keydown="cnHueKey" data-act-keyup="cnSlideUp"><i style="left:${(nc.h/360*100).toFixed(1)}%;background:hsl(${Math.round(nc.h)},100%,50%)"></i></div>
+<div class="cnrow"><label class="cnfld cnhex">Hex<input id="cn-hex" value="${hex.toUpperCase()}" maxlength="7" autocomplete="off" spellcheck="false" data-act-input="cnHexType" data-act-change="cnHexDone"><i data-cnsw style="background:${hex}"></i></label><label class="cnfld">Name<input id="cn-name" dir="auto" maxlength="24" value="${esc(nc.name||'')}" placeholder="e.g. Faded burgundy" data-act-input="cnNameType"></label></div></div>
 ${fold}
 <div class="cpbar">${nc.err?`<p class="formerr cnbarerr" id="cn-error" role="alert">${esc(nc.err)}</p>`:''}${bar}</div>`;   /* the error sits in the sticky bar, over its button (W2-16-05: above the bar it was cut through by the bar's top edge) */
   if(keep)el.scrollTop=y}
@@ -491,18 +492,18 @@ function renderPatNew(keep){const el=$('#col-sheet'),it=colTarget(),nc=colPick&&
 <li><span>Drawn from</span><span>${from}</span>${bmp?`<span class="cnde">${bmp}</span>`:''}</li>
 ${ex?`<li><span>Nearest yours</span><span>${esc(cap1(patName(ex)))}</span><span class="cnde">${r.match==='existing'?'names it already':ex===base?'drawn like it':'a different pattern'}</span></li>`:''}</ul>
 ${r.colourHint?`<p class="cnwhy">${esc(r.colourHint)}</p>`:''}${r.why?`<p class="cnwhy">“${esc(r.why)}”</p>`:''}
-${ex&&patChoices(it).includes(ex)?`<div class="cnbtns">${nc.state==='reuse'?`<button type="button" class="cpaskbtn ghost" id="cn-anyway" onclick="colPick.newc.state='result';renderColPick(true)">Add a new pattern anyway</button>`:`<button type="button" class="cpaskbtn ghost" id="cn-use" onclick="cnUseExisting()">Use ${esc(patName(ex))} instead</button>`}</div>`:''}</div>`}
+${ex&&patChoices(it).includes(ex)?`<div class="cnbtns">${nc.state==='reuse'?`<button type="button" class="cpaskbtn ghost" id="cn-anyway" data-act="pnAnywayTap">Add a new pattern anyway</button>`:`<button type="button" class="cpaskbtn ghost" id="cn-use" data-act="cnUseOldTap">Use ${esc(patName(ex))} instead</button>`}</div>`:''}</div>`}
   if(nc.state==='err')res=cnErrCard(nc,'pattern');if(nc.state==='kind')res=cnKindCard(nc);
   const bases=(PATS_BY[it.type]||['solid']).filter(p=>!CUSTOM_PAT[p]),offer=CN_SUITING.includes(it.type)?CN_SUITING:[it.type];
   const details=nc.state==='reuse'?'':`<div class="cnsec" id="pn-details"><b>${r?'Check the details':'Or set it yourself'}</b>
-<label class="cnfld">Name<input id="cn-name" dir="auto" maxlength="24" value="${esc(nc.name||'')}" placeholder="e.g. Hopsack" oninput="cnName(this.value)"></label>
-<label class="cnfld">Planned and drawn like<select id="cn-base" onchange="colPick.newc.base=this.value;renderColPick(true)">${bases.map(p=>`<option value="${p}"${p===base?' selected':''}>${esc(cap1(patName(p)))}</option>`).join('')}</select></label>
-<div class="cnfld cnoffer">Offer it for<div class="cnchips">${offer.map(t=>`<button type="button" class="cnchip${nc.types.includes(t)?' on':''}" aria-pressed="${nc.types.includes(t)}" onclick="cnToggleType('${t}')">${esc(TYPES[t])}</button>`).join('')}</div></div></div>`;
-  const bar=nc.state==='reuse'&&r?`<button type="button" class="pri" id="cn-add" data-use="1" onclick="cnUseExisting()">Use ${esc(cap1(patName(r.existing)))}</button>`
-    :`<button type="button" class="pri" id="cn-add" onclick="colNewAdd()"${name?'':' disabled'}>${name?`Add ${esc(name)}${src==='s'?'':' and use it'}`:'Add pattern'}</button>`;
-  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><button type="button" class="cnback" onclick="colNewBack()" aria-label="${nc.from==='pick'?'Back to patterns':'Close'}">‹</button><b id="col-title">New pattern or texture</b><button class="pick-x" onclick="closeColPick()" aria-label="Close">×</button></div>
+<label class="cnfld">Name<input id="cn-name" dir="auto" maxlength="24" value="${esc(nc.name||'')}" placeholder="e.g. Hopsack" data-act-input="cnNameType"></label>
+<label class="cnfld">Planned and drawn like<select id="cn-base" data-act-change="cnBasePick">${bases.map(p=>`<option value="${p}"${p===base?' selected':''}>${esc(cap1(patName(p)))}</option>`).join('')}</select></label>
+<div class="cnfld cnoffer">Offer it for<div class="cnchips">${offer.map(t=>`<button type="button" class="cnchip${nc.types.includes(t)?' on':''}" aria-pressed="${nc.types.includes(t)}" data-act="cnTypeTap" data-t="${t}">${esc(TYPES[t])}</button>`).join('')}</div></div></div>`;
+  const bar=nc.state==='reuse'&&r?`<button type="button" class="pri" id="cn-add" data-use="1" data-act="cnUseOldTap">Use ${esc(cap1(patName(r.existing)))}</button>`
+    :`<button type="button" class="pri" id="cn-add" data-act="cnAddTap"${name?'':' disabled'}>${name?`Add ${esc(name)}${src==='s'?'':' and use it'}`:'Add pattern'}</button>`;
+  el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><button type="button" class="cnback" data-act="cnBackTap" aria-label="${nc.from==='pick'?'Back to patterns':'Close'}">‹</button><b id="col-title">New pattern or texture</b><button class="pick-x" data-act="cpCloseTap" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${srcOk(pic)}" alt="Your close-up">`:`<div class="cpdraw">${draw(false)}</div>`}<figcaption>${pic?'Your close-up':`Your ${esc((TYPES[it.type]||'item').toLowerCase())}, drawn`}</figcaption></figure><figure class="cpbig cppatbig"><div class="cpdraw">${draw(true)}</div><figcaption>${esc(name||'Not set yet')}</figcaption></figure></div></div>
-${src==='s'?`<label class="cnfld cnfor">For<select id="cn-for" onchange="cnSetType(this.value)">${Object.keys(PATS_BY).filter(t=>lookOn()||!LOOK_COATS.includes(t)).map(t=>`<option value="${t}"${t===it.type?' selected':''}>${esc(TYPES[t])}</option>`).join('')}</select></label>`:''}
+${src==='s'?`<label class="cnfld cnfor">For<select id="cn-for" data-act-change="cnForPick">${Object.keys(PATS_BY).filter(t=>lookOn()||!LOOK_COATS.includes(t)).map(t=>`<option value="${t}"${t===it.type?' selected':''}>${esc(TYPES[t])}</option>`).join('')}</select></label>`:''}
 ${cnAskBox(nc,'pattern','The weave or pattern in your words. Claude names it, picks how the app plans it, and maps the weave so it can be drawn.','e.g. a small basketweave like a hopsack')}
 ${res}
 ${details}
@@ -537,9 +538,9 @@ const rdCostLine=()=>`<small class="rdcost">${esc(rdCost())}</small>`;
 /* the item editor's button: under Edit photos, the same full-width button, its label and no icon (the owner's ask) */
 /* (after: what goes right under it, before the done card: the editor's "True color in 3 steps", paperHint) */
 function rdEditorBtn(i,after=''){if(!TEXTURE_TYPES.includes(i.type)||lookOn())return '';const off=rdOff();   // (the Look beta: "Read with Claude" in the Look section replaces it)
-  return `<div class="ivrd"><button type="button" class="ivrdbtn" id="iv-read" onclick="rdStart('e','${jsq(i.id)}')"${off?' aria-disabled="true"':''}>Read color and texture from close-up</button>${rdCostLine()}</div>${after}${rdDoneHtml('e',i.id,i)}`}
+  return `<div class="ivrd"><button type="button" class="ivrdbtn" id="iv-read" data-act="rdReadTap" data-src="e" data-id="${esc(i.id)}"${off?' aria-disabled="true"':''}>Read color and texture from close-up</button>${rdCostLine()}</div>${after}${rdDoneHtml('e',i.id,i)}`}
 /* the Add card's second button, beside Add close-up / Replace close-up (same shape, the plain weight beside the filled Add close-up) */
-const rdAddBtn=(q,label)=>`<button type="button" class="btn rdgo" onclick="rdStart('q','${esc(q.id)}')"${rdOff()?' aria-disabled="true"':''}>${label}</button>`;
+const rdAddBtn=(q,label)=>`<button type="button" class="btn rdgo" data-act="rdReadTap" data-src="q" data-id="${esc(q.id)}"${rdOff()?' aria-disabled="true"':''}>${label}</button>`;
 /* a tap: with no close-up the close-up chooser first (mode 'read'; the file window without touch), then the reading */
 function rdStart(src,id){const it=rdItem(src,id);if(!it)return;const off=rdOff();if(off){tell(off);return}
   if(it.texture){rdRun(src,id);return}
@@ -636,29 +637,29 @@ function rdNaCard(it,h,x){const what=h==='c'?'color':'weave';
   return `<div class="rdcard na" id="${h==='c'?'rd-col':'rd-pat'}"><span class="cneyebrow">${h==='c'?'Color':'Pattern &amp; texture'}</span><p class="cnwhy">${x.na==='cloth'?`That doesn’t look like a close-up of cloth. ${rdRetakeHtml(it)}`:`Claude couldn’t read the ${what} this time.`}</p></div>`}
 function rdDoneCard(it,h,x){const id=h==='c'?'rd-col':'rd-pat',cur=h==='c'?cap1(colName(primaryCol(it))):cap1(patName(normPat(it.type,it.pattern)));
   const sw=h==='c'?`<span class="cnresw rdsm" style="background:${COLORS[primaryCol(it)]||'transparent'}"></span>`:`<span class="cnresw cnresp rdsm">${swatchSVG(it,true)}</span>`;
-  return `<div class="rdcard done" id="${esc(id)}">${sw}<span class="rddtx"><span class="cneyebrow">${h==='c'?'Color':'Pattern &amp; texture'}</span><b>${x.done==='keep'?`Kept ${esc(cur)}`:`${esc(x.usedName||cur)} set`}</b></span>${x.done==='keep'?`<button type="button" class="rdlink" onclick="rdChange('${h}')">Change</button>`:`<button type="button" class="rdlink" id="${id}-undo" onclick="rdUndo('${h}')">Undo</button>`}</div>`}
+  return `<div class="rdcard done" id="${esc(id)}">${sw}<span class="rddtx"><span class="cneyebrow">${h==='c'?'Color':'Pattern &amp; texture'}</span><b>${x.done==='keep'?`Kept ${esc(cur)}`:`${esc(x.usedName||cur)} set`}</b></span>${x.done==='keep'?`<button type="button" class="rdlink" data-act="rdChangeTap" data-h="${h}">Change</button>`:`<button type="button" class="rdlink" id="${id}-undo" data-act="rdUndoTap" data-h="${h}">Undo</button>`}</div>`}
 function rdColCard(it,me){const x=me.c;if(x.na)return rdNaCard(it,'c',x);if(x.done)return rdDoneCard(it,'c',x);
   const cur=primaryCol(it),curN=cap1(colName(cur)),ex=x.ex,exN=ex?cap1(colName(ex)):'',d=x.d,word=cnDWord(d),r=x.r,why=r.why?`<p class="cnwhy">“${esc(r.why)}”</p>`:'';
-  const keep=`<button type="button" class="cpaskbtn ghost" id="rd-ckeep" onclick="rdKeep('c')">Keep ${esc(curN)}</button>`;
+  const keep=`<button type="button" class="cpaskbtn ghost" id="rd-ckeep" data-act="rdKeepTap" data-h="c">Keep ${esc(curN)}</button>`;
   if(x.dup)return `<div class="rdcard" id="rd-col"><div class="cnreshd"><span class="cnresw" style="background:${COLORS[ex]}"></span><span><span class="cneyebrow">Color <span class="rdtag have">You have it</span></span><b>That’s your ${esc(exN)}</b><small>Claude’s ${esc(x.name)} (${x.hex.toUpperCase()}) is ${d.toFixed(1)} ΔE from ${esc(exN)}: ${word}.</small></span></div>
 <ul class="cnfacts"><li><span>Now</span><span class="cnch" style="background:${COLORS[cur]||'transparent'}"></span><span>${esc(curN)}</span></li><li><span>In outfits</span><span class="cnch" style="background:${COLORS[r.plansAs]||COLORS[ex]}"></span><span>behaves like <b>${esc(cap1(colName(COLORS[r.plansAs]?r.plansAs:ex)))}</b></span></li></ul>${rdLightNote(it,me)}${why}
-<div class="rdbtns">${ex===cur?keep:`${keep}<button type="button" class="cpaskbtn" id="rd-cuse" onclick="rdUse([['c','existing']])">Use ${esc(exN)}</button>`}</div><button type="button" class="rdalt" id="rd-calt" onclick="rdUse([['c','new']])">Add ${esc(x.name)} as a new color instead</button></div>`;
+<div class="rdbtns">${ex===cur?keep:`${keep}<button type="button" class="cpaskbtn" id="rd-cuse" data-act="rdUseTap" data-h="c" data-how="existing">Use ${esc(exN)}</button>`}</div><button type="button" class="rdalt" id="rd-calt" data-act="rdUseTap" data-h="c" data-how="new">Add ${esc(x.name)} as a new color instead</button></div>`;
   return `<div class="rdcard" id="rd-col"><div class="cnreshd"><span class="cnresw" style="background:${x.hex}"></span><span><span class="cneyebrow">Color <span class="rdtag">New</span></span><b>${esc(x.name)}</b><small>${x.hex.toUpperCase()} · ${esc(r.confidence||'medium')} confidence</small></span></div>
 <ul class="cnfacts"><li><span>Now</span><span class="cnch" style="background:${COLORS[cur]||'transparent'}"></span><span>${esc(curN)}</span>${ex===cur?`<span class="cnde">${word} · ΔE ${d.toFixed(1)}</span>`:''}</li>
 <li><span>In outfits</span><span class="cnch" style="background:${COLORS[r.plansAs]||'transparent'}"></span><span>behaves like <b>${esc(cap1(colName(rdColBase(it,x))))}</b></span></li>
 ${ex&&ex!==cur?`<li><span>Nearest yours</span><span class="cnch" style="background:${COLORS[ex]}"></span><span>${esc(exN)}</span><span class="cnde">${word} · ΔE ${d.toFixed(1)}</span></li>`:''}</ul>${rdLightNote(it,me)}
 ${r.fitsType===false?`<p class="cnwhy">Unusual for ${esc((TYPES[it.type]||'this item').toLowerCase())}, but you can still use it.</p>`:''}${why}
-<div class="rdbtns">${keep}<button type="button" class="cpaskbtn" id="rd-cuse" onclick="rdUse([['c','new']])">Use ${esc(x.name)}</button></div>
-${ex&&ex!==cur&&d<=6?`<button type="button" class="rdalt" id="rd-calt" onclick="rdUse([['c','existing']])">Use ${esc(exN)} instead</button>`:`<p class="rdfoot">Use adds ${esc(x.name)} to your colors.</p>`}</div>`}
+<div class="rdbtns">${keep}<button type="button" class="cpaskbtn" id="rd-cuse" data-act="rdUseTap" data-h="c" data-how="new">Use ${esc(x.name)}</button></div>
+${ex&&ex!==cur&&d<=6?`<button type="button" class="rdalt" id="rd-calt" data-act="rdUseTap" data-h="c" data-how="existing">Use ${esc(exN)} instead</button>`:`<p class="rdfoot">Use adds ${esc(x.name)} to your colors.</p>`}</div>`}
 function rdPatCard(it,me){const x=me.p;if(x.na)return rdNaCard(it,'p',x);if(x.done)return rdDoneCard(it,'p',x);
   const cur=normPat(it.type,it.pattern),curN=cap1(patName(cur)),r=x.r,ex=x.ex,have=x.reuse,base=have?ex:rdPatBase(it,x),col=me.c&&!me.c.na&&!me.c.done?rdPreview(it,{c:me.c}):{};
   const sw=rdDraw(it,{...col,...(have?{pat:ex}:x.look?{look:x.look,base,name:x.name}:{pat:base})},true),g=!have&&x.look&&x.look.tex&&x.look.tex.grid;
   const plain=[...STRIPE_PATS,...CHECK_PATS,...MOTIF_PATS,'houndstooth','paisley','tonal-check'].includes(patBase(base))?'counts as a pattern':'counts as plain';
   const from=have||!x.look?`the ${esc(patName(base))} drawing, in your colors`:g?'Claude’s weave map, in your colors':x.look.motif?'Claude’s figure, in your colors':x.look.layout==='stripes'?'Claude’s stripes, in your colors':'Claude’s check, in your colors';
   const bmp=g?`<span class="cnde"><span class="cnbmp" aria-hidden="true" style="grid-template-columns:repeat(${g[0].length},7px)">${g.join('').split('').map(c=>`<i class="${c==='1'?'on':''}"></i>`).join('')}</span></span>`:'';
-  const keep=`<button type="button" class="cpaskbtn ghost" id="rd-pkeep" onclick="rdKeep('p')">Keep ${esc(curN)}</button>`,nm=have?cap1(patName(ex)):x.name;
-  const btns=have&&ex===cur?keep:`${keep}<button type="button" class="cpaskbtn" id="rd-puse" onclick="rdUse([['p','${have?'existing':'new'}']])">Use ${esc(nm)}</button>`;
-  const alt=!have&&ex&&ex!==cur?`<button type="button" class="rdalt" id="rd-palt" onclick="rdUse([['p','existing']])">Use ${esc(cap1(patName(ex)))} instead</button>`:have?'':`<p class="rdfoot">Use adds ${esc(x.name)} to your patterns.</p>`;
+  const keep=`<button type="button" class="cpaskbtn ghost" id="rd-pkeep" data-act="rdKeepTap" data-h="p">Keep ${esc(curN)}</button>`,nm=have?cap1(patName(ex)):x.name;
+  const btns=have&&ex===cur?keep:`${keep}<button type="button" class="cpaskbtn" id="rd-puse" data-act="rdUseTap" data-h="p" data-how="${have?'existing':'new'}">Use ${esc(nm)}</button>`;
+  const alt=!have&&ex&&ex!==cur?`<button type="button" class="rdalt" id="rd-palt" data-act="rdUseTap" data-h="p" data-how="existing">Use ${esc(cap1(patName(ex)))} instead</button>`:have?'':`<p class="rdfoot">Use adds ${esc(x.name)} to your patterns.</p>`;
   return `<div class="rdcard" id="rd-pat"><div class="cnreshd"><span class="cnresw cnresp">${sw}</span><span><span class="cneyebrow">Pattern &amp; texture ${have?'<span class="rdtag have">You have it</span>':'<span class="rdtag">New</span>'}</span><b>${have?`That’s ${esc(nm)}`:esc(nm)}</b>${r.description?`<small>${esc(r.description)}</small>`:''}</span></div>
 <ul class="cnfacts"><li><span>Now</span><span>${esc(curN)}</span></li><li><span>In outfits</span><span>planned like <b>${esc(cap1(patName(base)))}</b> <span class="cntag">${plain}</span></span></li><li><span>Drawn from</span><span>${from}</span>${bmp}</li></ul>
 ${me.sent&&me.sent.wb===false?'<p class="cnwhy">No white paper needed for this: the weave reads fine without it.</p>':''}${r.colourHint?`<p class="cnwhy">${esc(r.colourHint)}</p>`:''}${r.why?`<p class="cnwhy">“${esc(r.why)}”</p>`:''}
@@ -666,15 +667,15 @@ ${me.sent&&me.sent.wb===false?'<p class="cnwhy">No white paper needed for this: 
 /* the material card: "Material: Flannel" with Keep / Use and Claude's line; when the item already has another material, "Yours: Wool ·
    Claude: Flannel" (Use switches it; Use all leaves it) */
 function rdMatCard(it,me){const x=me.m;if(!x)return '';
-  if(x.done){const cur=String(it.material||'').trim();return `<div class="rdcard done" id="rd-mat"><span class="rddtx"><span class="cneyebrow">Material</span><b>${x.done==='keep'?(cur?`Kept ${esc(cap1(cur))}`:'Left blank'):`${esc(x.name)} set`}</b></span>${x.done==='keep'?`<button type="button" class="rdlink" onclick="rdChange('m')">Change</button>`:`<button type="button" class="rdlink" id="rd-mat-undo" onclick="rdUndo('m')">Undo</button>`}</div>`}
+  if(x.done){const cur=String(it.material||'').trim();return `<div class="rdcard done" id="rd-mat"><span class="rddtx"><span class="cneyebrow">Material</span><b>${x.done==='keep'?(cur?`Kept ${esc(cap1(cur))}`:'Left blank'):`${esc(x.name)} set`}</b></span>${x.done==='keep'?`<button type="button" class="rdlink" data-act="rdChangeTap" data-h="m">Change</button>`:`<button type="button" class="rdlink" id="rd-mat-undo" data-act="rdUndoTap" data-h="m">Undo</button>`}</div>`}
   const why=x.r.why?`<p class="cnwhy">“${esc(x.r.why)}”</p>`:'',yours=x.cur?cap1(x.cur):'';
-  const keepB=`<button type="button" class="cpaskbtn ghost" id="rd-mkeep" onclick="rdKeep('m')">${yours?`Keep ${esc(yours)}`:'Keep blank'}</button>`;
+  const keepB=`<button type="button" class="cpaskbtn ghost" id="rd-mkeep" data-act="rdKeepTap" data-h="m">${yours?`Keep ${esc(yours)}`:'Keep blank'}</button>`;
   if(x.isNew)return `<div class="rdcard rdmatnew" id="rd-mat"><div class="cnreshd"><span><span class="cneyebrow">Material <span class="rdtag">New</span> <span class="rdtag">${esc(x.r.confidence)} confidence</span></span><b>Claude calls it ${esc(x.key)}</b><small>None of the ${esc(matTypeWord(it.type))} materials fit${yours?`; yours is ${esc(yours)}`:''}.</small></span></div>${why}
-<div class="rdbtns">${keepB}<button type="button" class="cpaskbtn" id="rd-muse" onclick="rdUse([['m','add']])">Add ${esc(x.key)} as a material</button></div><p class="rdfoot">Adding puts it in the list for every ${esc(matTypeOne(it.type))} you add, on all your devices. Use all leaves it.</p></div>`;
+<div class="rdbtns">${keepB}<button type="button" class="cpaskbtn" id="rd-muse" data-act="rdUseTap" data-h="m" data-how="add">Add ${esc(x.key)} as a material</button></div><p class="rdfoot">Adding puts it in the list for every ${esc(matTypeOne(it.type))} you add, on all your devices. Use all leaves it.</p></div>`;
   if(x.guess)return `<div class="rdcard rdmatguess" id="rd-mat"><div class="cnreshd"><span><span class="cneyebrow">Material <span class="rdtag">Guess</span></span><b>Claude’s guess: ${esc(x.key)}</b><small>${x.r.why&&String(x.r.why).length<=60?esc(String(x.r.why).replace(/[.\s]+$/,'')):'Can’t be sure from a photo'}. Use all leaves it.</small></span></div>
-<div class="rdbtns">${keepB}<button type="button" class="cpaskbtn" id="rd-muse" onclick="rdUse([['m','use']])">Use ${esc(x.key)}</button></div></div>`;
+<div class="rdbtns">${keepB}<button type="button" class="cpaskbtn" id="rd-muse" data-act="rdUseTap" data-h="m" data-how="use">Use ${esc(x.key)}</button></div></div>`;
   return `<div class="rdcard" id="rd-mat"><div class="cnreshd"><span><span class="cneyebrow">Material <span class="rdtag">${esc(x.r.confidence)} confidence</span></span><b>${yours?`Yours: ${esc(yours)} · Claude: ${esc(x.name)}`:`Material: ${esc(x.name)}`}</b>${yours?'<small>Use switches it to Claude’s; Use all keeps yours.</small>':''}</span></div>${why}
-<div class="rdbtns"><button type="button" class="cpaskbtn ghost" id="rd-mkeep" onclick="rdKeep('m')">${yours?`Keep ${esc(yours)}`:'Keep blank'}</button><button type="button" class="cpaskbtn" id="rd-muse" onclick="rdUse([['m','use']])">Use ${esc(x.name)}</button></div></div>`}
+<div class="rdbtns"><button type="button" class="cpaskbtn ghost" id="rd-mkeep" data-act="rdKeepTap" data-h="m">${yours?`Keep ${esc(yours)}`:'Keep blank'}</button><button type="button" class="cpaskbtn" id="rd-muse" data-act="rdUseTap" data-h="m" data-how="use">Use ${esc(x.name)}</button></div></div>`}
 /* the colours beyond the three (accents, 2026-11-16: the colour half's accents, the worker's cleaned list): a fourth card "Also has" with
    Keep / Use these; its Use is part of Use all (like the material's, it only adds what the item doesn't say yet). null when Claude saw none,
    or exactly the item's own already */
@@ -682,26 +683,26 @@ function rdAccOf(it,c){if(!c||c.error||!Array.isArray(c.accents))return null;con
   return !list.length||list.join()===cur.join()?null:{list,cur,done:null}}
 const rdAccWords=l=>l.map(c=>colName(c).toLowerCase()).join(', ');
 function rdAccCard(it,me){const x=me.a;if(!x)return '';
-  if(x.done)return `<div class="rdcard done" id="rd-acc"><span class="rddtx"><span class="cneyebrow">Also has</span><b>${x.done==='keep'?(x.cur.length?`Kept ${esc(rdAccWords(x.cur))}`:'Left out'):`Also has ${esc(rdAccWords(x.list))} set`}</b></span>${x.done==='keep'?`<button type="button" class="rdlink" onclick="rdChange('a')">Change</button>`:`<button type="button" class="rdlink" id="rd-acc-undo" onclick="rdUndo('a')">Undo</button>`}</div>`;
+  if(x.done)return `<div class="rdcard done" id="rd-acc"><span class="rddtx"><span class="cneyebrow">Also has</span><b>${x.done==='keep'?(x.cur.length?`Kept ${esc(rdAccWords(x.cur))}`:'Left out'):`Also has ${esc(rdAccWords(x.list))} set`}</b></span>${x.done==='keep'?`<button type="button" class="rdlink" data-act="rdChangeTap" data-h="a">Change</button>`:`<button type="button" class="rdlink" id="rd-acc-undo" data-act="rdUndoTap" data-h="a">Undo</button>`}</div>`;
   return `<div class="rdcard" id="rd-acc"><div class="cnreshd"><span><span class="cneyebrow">Also has</span><b>${esc(cap1(rdAccWords(x.list)))}</b><small>Further colors Claude sees in the pattern${x.cur.length?`; the item says ${esc(rdAccWords(x.cur))} now`:''}.</small></span></div>
 <div class="accchips rdacc">${x.list.map(c=>`<span class="accchip">${ckChip(c)}<span>${esc(cap1(colName(c)))}</span></span>`).join('')}</div>
-<div class="rdbtns"><button type="button" class="cpaskbtn ghost" id="rd-akeep" onclick="rdKeep('a')">${x.cur.length?'Keep the item’s':'Leave out'}</button><button type="button" class="cpaskbtn" id="rd-ause" onclick="rdUse([['a','use']])">Use these</button></div></div>`}
+<div class="rdbtns"><button type="button" class="cpaskbtn ghost" id="rd-akeep" data-act="rdKeepTap" data-h="a">${x.cur.length?'Keep the item’s':'Leave out'}</button><button type="button" class="cpaskbtn" id="rd-ause" data-act="rdUseTap" data-h="a" data-how="use">Use these</button></div></div>`}
 async function rdSetAcc(src,id,v){if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i>=0)await accSet('q',i,v)}else await accSet('e',id,v)}
 const RD_HALVES=['c','p','m','a'];
 const rdMain=(it,me,h)=>h==='c'?rdColMain(it,me.c):h==='p'?rdPatMain(it,me.p):h==='a'?'use':rdMatMain(it,me.m);
 function rdBar(it,me){const left=RD_HALVES.filter(h=>me[h]&&!me[h].na&&!me[h].done),acts=left.map(h=>[h,rdMain(it,me,h)]).filter(a=>a[1]);
   const lab=acts.length>=3?'Use all':acts.length===2?'Use both':acts.length===1?`Use ${esc(rdActName(it,me,acts[0]))}`:left.length?'Keep as it is':'Done';
-  return `<div class="rdbar"><button type="button" class="pri" id="rd-both" onclick="rdBoth()"${me.applying?' disabled':''}>${lab}</button>${left.length?'<small>Nothing changes until you tap. You can undo it after.</small>':''}</div>`}
+  return `<div class="rdbar"><button type="button" class="pri" id="rd-both" data-act="rdBothTap"${me.applying?' disabled':''}>${lab}</button>${left.length?'<small>Nothing changes until you tap. You can undo it after.</small>':''}</div>`}
 function rdRender(top){const me=rd;if(!me)return;const {s}=rdEls(),it=rdItem(me.src,me.id);if(!it){rdClose();return}
   const y=s.scrollTop,pr=paperNow(it),res=me.state==='result';
-  const head=`<div class="rdtop"><span class="rdgrab" aria-hidden="true"></span><div class="rdhead"><b id="rd-title">Claude’s reading</b><button type="button" class="rdx" onclick="rdClose()" aria-label="Close">×</button></div>
+  const head=`<div class="rdtop"><span class="rdgrab" aria-hidden="true"></span><div class="rdhead"><b id="rd-title">Claude’s reading</b><button type="button" class="rdx" data-act="rdCloseTap" aria-label="Close">×</button></div>
 <div class="rdsrc"><figure><img src="${srcOk(it.texture)}" alt="Your close-up"><figcaption>Close-up</figcaption></figure><figure><div class="rddraw">${rdDraw(it,res?rdPreview(it,me):{})}</div><figcaption>${res?'With both':'Now'}</figcaption></figure>
 <div class="rdmeta"><b>${me.state==='busy'?'Reading your close-up':'Read from your close-up'}</b>${me.state==='busy'?'Two lookups side by side: the color and the weave.':me.m?'Claude gives a color, a weave and the material. Pick any of them.':'Claude gives a color and a weave. Pick either, or both.'}<br>${rdPaperHtml(pr)}</div></div></div>`;
   let body='';
   if(me.state==='busy')body=`<div class="rdbusy" role="status"><span class="spin" aria-hidden="true"></span><span><b>Claude is reading the color and the weave…</b><small>About 15 seconds. Nothing changes until you choose.</small></span></div>
-<div class="rdbar"><button type="button" class="ghost" id="rd-stop" onclick="rdClose()">Stop</button><small>Stopping changes nothing. · <span id="rd-cost">${esc(rdCost())}</span></small></div>`;
-  else if(me.state==='limit')body=`<div class="cnlim" id="rd-limit" role="status"><span aria-hidden="true">⏳</span><span><b>${esc(me.limit)}</b>You can still set the color and pattern yourself.</span></div><div class="rdbar"><button type="button" class="pri" onclick="rdClose()">Close</button></div>`;
-  else if(me.state==='err')body=`<div class="cnres cnerr" id="rd-err"><div class="cpasktx"><b>Claude couldn’t answer</b><small>The color and weave couldn’t be read just now. Try again later, or set them yourself.${me.detail?` (${esc(me.detail)})`:''}</small></div><div class="cnbtns"><button type="button" class="cpaskbtn" onclick="rdRun(rd.src,rd.id)">Try again</button></div></div><div class="rdbar"><button type="button" class="ghost" onclick="rdClose()">Close</button></div>`;
+<div class="rdbar"><button type="button" class="ghost" id="rd-stop" data-act="rdCloseTap">Stop</button><small>Stopping changes nothing. · <span id="rd-cost">${esc(rdCost())}</span></small></div>`;
+  else if(me.state==='limit')body=`<div class="cnlim" id="rd-limit" role="status"><span aria-hidden="true">⏳</span><span><b>${esc(me.limit)}</b>You can still set the color and pattern yourself.</span></div><div class="rdbar"><button type="button" class="pri" data-act="rdCloseTap">Close</button></div>`;
+  else if(me.state==='err')body=`<div class="cnres cnerr" id="rd-err"><div class="cpasktx"><b>Claude couldn’t answer</b><small>The color and weave couldn’t be read just now. Try again later, or set them yourself.${me.detail?` (${esc(me.detail)})`:''}</small></div><div class="cnbtns"><button type="button" class="cpaskbtn" data-act="rdAgainTap">Try again</button></div></div><div class="rdbar"><button type="button" class="ghost" data-act="rdCloseTap">Close</button></div>`;
   else body=rdColCard(it,me)+rdAccCard(it,me)+rdPatCard(it,me)+rdMatCard(it,me)+rdBar(it,me);
   s.innerHTML=head+body;s.scrollTop=top?0:y}
 function rdKeep(h){const me=rd;if(!me||!me[h])return;me[h].done='keep';rdAfter()}
@@ -753,4 +754,46 @@ async function rdUndoAll(){const L=rdLast;if(!L)return;for(const h of ['a','m','
 /* the card left on the page after a reading set something: the new drawing, what changed, Undo */
 function rdDoneHtml(src,id,it){const L=rdLast;if(!L||L.src!==src||L.id!==id||(!L.c&&!L.p&&!L.m&&!L.a)||(rd&&rd.run===L.run))return '';it=it||rdItem(src,id);if(!it)return '';
   const names=[L.c&&L.c.name,L.a&&L.a.name,L.p&&L.p.name,L.m&&L.m.name].filter(Boolean),add=[L.c&&L.c.added&&'colors',L.p&&L.p.added&&'patterns',L.m&&L.m.added&&'materials'].filter(Boolean);
-  return `<div class="rddone" id="rd-done" role="status"><span class="rddraw" aria-hidden="true">${itemThumb({...it,photo:undefined})}</span><span class="rddtx"><b>${esc(names.join(' and '))} set</b>${add.length?`<small>Added to your ${add.join(' and ')}.</small>`:''}</span><button type="button" class="rdlink" id="rd-undo" onclick="rdUndoAll()">Undo</button></div>`}
+  return `<div class="rddone" id="rd-done" role="status"><span class="rddraw" aria-hidden="true">${itemThumb({...it,photo:undefined})}</span><span class="rddtx"><b>${esc(names.join(' and '))} set</b>${add.length?`<small>Added to your ${add.join(' and ')}.</small>`:''}</span><button type="button" class="rdlink" id="rd-undo" data-act="rdUndoAllTap">Undo</button></div>`}
+/* ---- what the markup's controls do (act.js: data-act names a handler; el is the control, ev the event). The color and pattern
+   buttons of the Add card and the item sheet, the sheet's tiles, views, Use, Ask Claude, × ---- */
+function colBtnTap(el){openColPick(el.dataset.src,el.dataset.ref,el.dataset.k)}
+function cpViewTap(el){colPickView(el.dataset.v)}
+function cpTileTap(el){colPickSel(el.dataset.c)}
+function cpCloseTap(){closeColPick()}
+function cpUseTap(){useColPick()}
+function cpPicsTap(){cpGoPics()}
+function cpAskTap(){colAskRun()}
+function cpAskAllTap(){colAskUseAll()}
+/* "+ New color" / "+ New pattern or texture": the tiles that open them, ‹, Describe it to Claude, the shade's fields, How the app uses it, Add */
+function cnOpenTap(){openColNew()}
+function pnOpenTap(){openPatNew()}
+function cnBackTap(){colNewBack()}
+function cnCloseupTap(){cnToggleClose()}
+function cnAskTap(){describeAsk()}
+function cnDescType(el){colPick.newc.desc=el.value}
+function cnDescKey(el,ev){if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();describeAsk()}}
+function cnKindTap(){cnSwitch()}
+function cnAddTap(){colNewAdd()}
+function cnUseOldTap(){cnUseExisting()}
+function pnAnywayTap(){colPick.newc.state='result';renderColPick(true)}
+function cnBasePick(el){colPick.newc.base=el.value;renderColPick(true)}
+function cnTypeTap(el){cnToggleType(el.dataset.t)}
+function cnAccentTap(){colPick.newc.accent=!colPick.newc.accent;renderColPick(true)}
+function cnForPick(el){cnSetType(el.value)}
+function cnHexType(el){cnHexIn(el.value,false)}
+function cnHexDone(el){cnHexIn(el.value,'blur')}
+function cnNameType(el){cnName(el.value)}
+/* "Read color and texture from close-up": the button, the reading sheet's cards, its bar, the card left on the page */
+function rdReadTap(el){rdStart(el.dataset.src,el.dataset.id)}
+function rdKeepTap(el){rdKeep(el.dataset.h)}
+function rdChangeTap(el){rdChange(el.dataset.h)}
+function rdUndoTap(el){rdUndo(el.dataset.h)}
+function rdUseTap(el){rdUse([[el.dataset.h,el.dataset.how]])}
+function rdBothTap(){rdBoth()}
+function rdCloseTap(){rdClose()}
+function rdAgainTap(){rdRun(rd.src,rd.id)}
+function rdUndoAllTap(){rdUndoAll()}
+acts({colBtnTap,cpViewTap,cpTileTap,cpCloseTap,cpUseTap,cpPicsTap,cpAskTap,cpAskAllTap,cnOpenTap,pnOpenTap,cnBackTap,cnCloseupTap,cnAskTap,cnDescType,cnDescKey,
+  cnKindTap,cnAddTap,cnUseOldTap,pnAnywayTap,cnBasePick,cnTypeTap,cnAccentTap,cnForPick,cnSqPress,cnHuePress,cnSqKey,cnHueKey,cnSlideUp,cnHexType,cnHexDone,cnNameType,
+  rdReadTap,rdKeepTap,rdChangeTap,rdUndoTap,rdUseTap,rdBothTap,rdCloseTap,rdAgainTap,rdUndoAllTap});

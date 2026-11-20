@@ -117,6 +117,10 @@ const SHOP_COLS={suit:['navy','charcoal','grey','lightgrey','blue','brown','tan'
 const STAPLES={suit:[['navy',['plain']],['charcoal',['plain']],['grey',['plain']]],blazer:[['navy',['plain']]],shirt:[['white',['plain']],['lightblue',['plain']]],
   tie:[['navy',['plain','tex']],['burgundy',['plain','tex']],['navy',['stripe']]],pants:[['grey',['plain']]]};
 const shopKey=it=>it.type+'|'+shopGroup(it)+'|'+shopClass(it);
+/* the keys of what is owned but out of rotation (paused, not bought-on-the-way nor away being cleaned): never suggested, as a hidden idea
+   isn't (2026-11-18, the owner: "If I have the purple tie, just not in rotation it shouldn't recommend me a purple tie"); the plan still
+   leaves them out, so they don't count as worn */
+const shopShelved=list=>list.filter(i=>i.paused&&!i.order&&!i.away&&!isHandPick(i)).map(shopKey);
 function clothesCandidates(B){
   let n=0;const C=[],mk=(x)=>C.push({cat:x.type,items:[{id:'cand-'+(n++),pattern:'solid',added:0,...x}]}),cols=t=>SHOP_COLS[t].filter(c=>COLS_BY[t].p.includes(c));
   const other=(c,l)=>l.filter(a=>fam(a)!==fam(c));
@@ -201,7 +205,7 @@ function fixWhy(f){const why=f.fixed.map(([k,n])=>`Fixes ${plural(n,'day')}: ${k
 // one colour memo for the whole analysis (withColRun in planner.js): about a fifth of its time was colour lookups
 function runAnalysis(list,T,weeks,progress,onCat){return withColRun(()=>runAnalysis0(list,T,weeks,progress,onCat))}
 function runAnalysis0(list,T,weeks,progress,onCat){
-  weeks=weeks||SHOP_WEEKS;const L=shopList(list),skip=new Set(settings.shopSkip||[]);
+  weeks=weeks||SHOP_WEEKS;const L=shopList(list),skip=new Set([...(settings.shopSkip||[]),...shopShelved(list)]);
   const base=evalPlan(L,T,weeks),D=base.days;
   const seasons={};for(const k of horizonKeys(T,weeks)){const s=dayClimate(keyDate2(k)).season;seasons[s]=(seasons[s]||0)+1}
   const season=(Object.entries(seasons).sort((a,b)=>b[1]-a[1])[0]||['mild'])[0];

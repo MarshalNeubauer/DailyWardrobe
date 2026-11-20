@@ -27,10 +27,15 @@ const handWhy=(i,o)=>handOk(i,o)?'':'Goes with camouflage pants';
 let pickMemo={c:null,key:'',v:null};
 const pickRec=(k,o,slot,id)=>{const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=FOLLOW[slot]||[],force={};
   for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
-  force[slot]=id;suitPants(force,slot,o);bootsOff(force,slot,o);keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;notAhead(rec,k);pocketOn(rec,slot);return rec};
+  force[slot]=id;suitPants(force,slot,o);keepHand(force,slot,o);bootsOff(force,slot,o);keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;notAhead(rec,k);pocketOn(rec,slot);return rec};
 /* a pocket square chosen puts the square back on (a − on it before: rec.off.pocket) */
 const pocketOn=(rec,slot)=>{if(slot!=='pocket'||!rec.off||!rec.off.pocket)return;rec.off={...rec.off};delete rec.off.pocket;if(!rec.off.top&&!rec.off.tie)delete rec.off};
 // other pants than camouflage, or a jacket, chosen while combat boots are worn: the boots come off (the planner picks the shoes again)
+/* the pieces that follow a swap (FOLLOW) are chosen again, except hand-picked ones (isHandPick: combat boots, a uniform's pieces): the
+   planner never chooses those itself, so freeing them swapped them out (2026-11-18: a belt picked on a camo day took the boots off for black
+   calf shoes, which suit neither the camo pants nor the canvas belt, and the belt was refused); bootsOff runs after and still takes the boots
+   off when the pants or jacket change to ones that aren't camouflage */
+const keepHand=(force,slot,o)=>{for(const s of FOLLOW[slot]||[])if(o[s]&&!(s in force)&&typeof isHandPick==='function'&&isHandPick(o[s]))force[s]=o[s].id};
 const bootsOff=(force,slot,o)=>{if((slot==='bot'||slot==='top')&&o.shoes&&shoeStyle(o.shoes)==='combat'&&!camoPants(slot==='bot'?items.find(i=>i.id===force.bot):o.bot))delete force.shoes};
 // the suit's own pants chosen back (its jacket taken off): no pick of pants, the suit is worn as before
 const suitPants=(force,slot,o)=>{if(slot==='bot'&&o.offSuit&&force.bot===o.offSuit.id)delete force.bot};

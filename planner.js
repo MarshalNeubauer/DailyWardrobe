@@ -11,7 +11,10 @@ const SH={black:['black'],charcoal:['black','burgundy','brown'],grey:['black','b
 /* ---- clothing rules (suit/blazer, trousers, shirt, tie) ----
    Every candidate outfit gets one score from these rules; the planner picks among the best-scoring outfits. */
 /* (a black, charcoal, grey or silver tie is a quiet neutral: right with navy, charcoal and grey suits, and charcoal or grey with brown and tan) */
-const HARM={navy:['burgundy','red','gold','grey','lightblue','green','purple','pink','brown','charcoal','black','silver','blue'],charcoal:['burgundy','red','purple','navy','lightblue','pink','green','gold','black','grey','silver','blue'],grey:['navy','burgundy','blue','purple','pink','green','black','charcoal','silver','red'],black:['red','grey','burgundy','purple','silver','navy','green','charcoal'],brown:['green','gold','navy','tan','burgundy','cream','olive','grey','charcoal'],tan:['navy','brown','burgundy','green','olive','charcoal','blue'],olive:['brown','burgundy','navy','gold','cream','tan'],blue:['navy','burgundy','grey','gold','brown','charcoal','silver'],green:['tan','brown','burgundy','gold','navy']};
+/* (2026-11-18, the owner's tie audit: brown, rust, olive, light blue and champagne ties were never planned in 8 weeks; the table knew only the
+   classic navy/burgundy pairings, so a brown tie scored as a poor match on every gray, charcoal and brown suit): added the standard pairings
+   brown/rust and olive on gray and charcoal, brown on brown, light blue on gray, brown and tan, gold and cream on gray and navy */
+const HARM={navy:['burgundy','red','gold','grey','lightblue','green','purple','pink','brown','charcoal','black','silver','blue','olive','cream'],charcoal:['burgundy','red','purple','navy','lightblue','pink','green','gold','black','grey','silver','blue','brown','olive'],grey:['navy','burgundy','blue','purple','pink','green','black','charcoal','silver','red','brown','olive','gold','lightblue','cream'],black:['red','grey','burgundy','purple','silver','navy','green','charcoal'],brown:['green','gold','navy','tan','burgundy','cream','olive','grey','charcoal','brown','lightblue','blue'],tan:['navy','brown','burgundy','green','olive','charcoal','blue','lightblue','gold'],olive:['brown','burgundy','navy','gold','cream','tan'],blue:['navy','burgundy','grey','gold','brown','charcoal','silver'],green:['tan','brown','burgundy','gold','navy']};
 /* good tie colours on each shirt colour (white takes almost anything) */
 const TIE_ON_SHIRT={mint:['navy','burgundy','brown','green','olive','charcoal','purple','grey'],ivory:['navy','burgundy','brown','green','olive','gold','charcoal','red','grey'],paleyellow:['navy','burgundy','brown','green','purple','charcoal','blue'],lavender:['navy','purple','burgundy','charcoal','grey','black','pink'],periwinkle:['navy','burgundy','charcoal','gold','brown','red','grey','black'],beige:['brown','navy','green','olive','burgundy','tan'],lightblue:['navy','burgundy','red','gold','brown','green','purple','charcoal','grey','black'],pink:['navy','burgundy','grey','charcoal','purple','blue','green','black'],cream:['brown','green','burgundy','olive','navy','gold','tan','charcoal'],lightgrey:['navy','burgundy','black','purple','charcoal','pink','red'],blue:['navy','burgundy','gold','brown','charcoal','red','black'],grey:['navy','burgundy','black','purple','red','charcoal']};
 /* good trousers for each odd jacket, best first */
@@ -305,7 +308,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans the days after today (the week's locks and
    the app's own recorded pieces go; the owner's swaps and picks (force, skip, the vest) and a kept trip stay: replanFuture(true) in history.js) */
-const PLAN_RULES=28;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
+const PLAN_RULES=30;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
 /* ---- favorites (2026-11-18, the owner's approved design, option B): settings.fav = {looks:[{j,sh,tie,at}], items:[id]}, marked by hand
    only (fav.js). A favorite look is the day's jacket, shirt and tie by id (j null on a day without a jacket, tie null without a tie). The
    planner brings a favorite look back on its own (favDue in planSim) and gives favorite pieces a rest target shorter by a fifth (FAV_REST_K)
@@ -328,6 +331,8 @@ const favLookOf=o=>{const L=favRead().looks;if(!L.length||!o||!o.shirt)return nu
 /* a shirt and tie the owner loves together: Harmony doesn't mark that pairing down (dialHarmony) */
 const favPair=(sh,x)=>{const L=favRead().looks;return !!L.length&&!!sh&&!!x&&L.some(l=>l.sh===sh.id&&l.tie===x.id)};
 const QWIN=8,SH_CAP=45;   // outfits within this many points of the best one take turns (rest decides among them)
+const TIE_DUE=[.6,1.4];   // a tie's look bar fades from .6 of its turn of rest to nothing at 1.4 turns ([.5,1.25] let a rested tie outweigh a shirt color repeat: tests/jacketcolour.test.js) (pants and shirts: one to two turns)
+const TIE_LIGHT=150,TIE_LIGHT_GAP=40,LIGHT_TIE_SHIRTS=4;   // light ties and the darker shirts the clothes choice adds for them (chooseClothes)
 const LOOK_PAIR=3,LOOK_K=2,LOOK_FREE=3,LOOK_RESTED=.75;   // the look in the clothes choice (chooseClothes): points per point of dialLook short of each piece's own best outfit, and of the best rested one's
 const FORMAL_QWIN=3;   // a formal day, a wedding or a funeral: only outfits this close to the best one take turns, so the white shirt (formalShirt) isn't traded for rest
 const TIE_CREEP=.03,TIE_CREEP_MAX=9;   // a tie's rest keeps creeping after 30 days, capped well under TIE_GAP so a tie never repeats for it
@@ -598,6 +603,11 @@ const shRest=sh=>Math.min(rest(sh),SH_CAP)*.5+over(sh,SH_CAP)*.05;
 const ptRest=pt=>Math.min(rest(pt),60)*.2+over(pt,60)*.05;
 const ptNo=pt=>shoeOk(top,pt)?0:NO_SHOES;
 const Ps=suitDay?[null]:topN(pool('pants','bot'),6,pt=>pairScore(top,pt)+patternScore([[top,'top'],[pt,'bot']])+ptRest(pt)-ptNo(pt)),Ss=topN(pool('shirt','shirt'),16,sh=>shirtScore(top,sh)+patternScore([[top,'top'],[sh,'shirt']])+shRest(sh)+(occ?occ.shirt(sh):0)+(day.formal?formalShirt(sh,FORMAL_SHIRT_K):0)),Ts=noT?[]:pool('tie','tie'),cands=[];
+// a light tie (tieLum over TIE_LIGHT) shows only on a shirt darker than it: when the day's ties hold one, the shortlist also takes the
+// best LIGHT_TIE_SHIRTS shirts at least TIE_LIGHT_GAP darker than the lightest such tie that the jacket allows (shirtJacketHard), so a
+// champagne or light blue tie can be planned at all (2026-11-18, the tie audit: they never were, the 16 shirts chosen for the jacket being light)
+{const lt=Ts.filter(x=>tieLum(x)>=TIE_LIGHT);if(lt.length&&Ss.length){const lim=Math.max(...lt.map(tieLum))-TIE_LIGHT_GAP,have=new Set(Ss.map(s=>s.id));
+  for(const sh of topN(pool('shirt','shirt').filter(sh=>!have.has(sh.id)&&LUM(sh)<=lim&&!(top&&shirtJacketHard(top,sh))),LIGHT_TIE_SHIRTS,sh=>shirtScore(top,sh)+patternScore([[top,'top'],[sh,'shirt']])+shRest(sh)))Ss.push(sh)}}
 // each piece's own terms are worked out once (P, S, X), not once per combination, and the rotation part (r) only for the outfits
 // inside the window; the sums are in the same order as before, so the plans are identical
 const fx=day.ahead&&day.ahead.fx,hk=top&&day.hist&&day.hist[top.id];
@@ -633,7 +643,8 @@ const realRep=(()=>{const w=Ss.length>3?2:1,sids=[...(day.prev||[]).slice(0,w),.
   return ({sh,x,S,X})=>X.rep>=15||(!!sh&&sids.includes(sh.id))||(!!day.ahead&&(X.ah>=TIE_GAP||S.ah>=NEXT_SHIRT))||pairRepeat(sh,x,day.pairs)>0||lookRepeat(top,sh,x,day.prev)>=20||comboRepeat(sh,x,hk)>=15})();
 const wk=Math.max(1,settings.workdays.length),bzWk=Math.max(1,settings.blazerDays.filter(d=>settings.workdays.includes(d)).length);
 const turn={x:Math.max(7,c.by('tie').length*7/wk),sh:Math.max(7,c.by('shirt').length*7/wk),pt:Math.max(7,c.by('pants').length*7/(c.by('suit').length&&!c.noJ?bzWk:wk))};
-const fade=(i,t)=>i?1-Math.min(1,Math.max(0,c.over(i,0)-t)/t):1,due=({pt,sh,x})=>Math.min(fade(x,turn.x),fade(sh,turn.sh),suitDay?1:fade(pt,turn.pt));
+const fade=(i,t)=>i?1-Math.min(1,Math.max(0,c.over(i,0)-t)/t):1,fadeTie=i=>i?(c.last[i.id]==null?0:1-Math.min(1,Math.max(0,c.over(i,0)-TIE_DUE[0]*turn.x)/((TIE_DUE[1]-TIE_DUE[0])*turn.x))):1,   // (a tie never worn nor planned yet makes its debut free of the look bar: the owner, 2026-11-18, new ties waited up to three months)
+  due=({pt,sh,x})=>Math.min(fadeTie(x),fade(sh,turn.sh),suitDay?1:fade(pt,turn.pt));   // (ties sooner: TIE_DUE, the owner's tie audit 2026-11-18)
 const look=planLook(day,suitDay,c.by('shoes'),c.by('belt'),c.by('watch')),lookC=k=>k.L??(k.L=look(top,suitDay?top:k.pt,k.sh,k.x));
 const rested=({pt,sh,x})=>[[x,turn.x],[sh,turn.sh],[suitDay?null:pt,turn.pt]].every(([i,t])=>!i||c.over(i,0)>=LOOK_RESTED*t);
 const lookCost=win=>{let lm=-Infinity;const best=new Map(),up=(p,v)=>{if(p&&!(best.get(p)>=v))best.set(p,v)};
