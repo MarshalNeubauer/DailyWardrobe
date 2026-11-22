@@ -3,12 +3,13 @@
 // (nextStamp), the worker leaving out stamps dated ahead of its clock (worker/backup.js dropFuture) and reading the backup's own with them
 // put back (clampStamps), the phone putting its own back once it knows the gap (sync.js clockFix), a roll-back stamped above every mark.
 // The rules in Node, then devices with wrong clocks syncing through the real worker with an in-memory KV, as sync.test.js does.
-const path=require('path'),fs=require('fs'),vm=require('vm'),{pathToFileURL}=require('url');
+const path=require('path'),vm=require('vm'),{pathToFileURL}=require('url');
+const {appSrc}=require('./appsrc');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const YEAR=365*864e5;
   /* ---- the rules ---- */
   {const ls={clock_skew:'60000'};const ctx={console,localStorage:{getItem:k=>k in ls?ls[k]:null,setItem(k,v){ls[k]=String(v)}},document:{querySelector(){return null}}};vm.createContext(ctx);
-    vm.runInContext(fs.readFileSync(path.join(ROOT,'merge.js'),'utf8')+fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={nowMs,nextStamp,stampSettings,keySettings,trueToday}',ctx);
+    vm.runInContext(appSrc(ROOT,'merge.js','core.js')+';this.K={nowMs,nextStamp,stampSettings,keySettings,trueToday}',ctx);
     const K=ctx.K,d=K.nowMs()-Date.now();
     ok(d>=59990&&d<=60010,'nowMs is the phone\'s time corrected by the gap the last sync learned');
     const far=Date.now()+5*YEAR;ok(K.nextStamp(far)===far+1&&K.nextStamp(1000)>=Date.now()+59990,'a new stamp is above the one it replaces, whatever the clock says');

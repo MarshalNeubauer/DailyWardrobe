@@ -1,0 +1,11 @@
+<!doctype html>
+<!-- A made-up app for tests/modtools.test.js: two classic scripts and two ES modules, with mistakes on purpose (each file says which).
+     Not served and not part of the app. -->
+<html><head>
+<script>inlineClassic()</script>
+<!-- <script src="old.js"></script> -->
+<script src="a.js"></script>
+<script src='lib/n.js' type=module></script>
+<script type="module" src="m.js"></script>
+<script defer src="c.js"></script>
+</head><body></body></html>

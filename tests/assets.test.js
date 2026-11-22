@@ -3,6 +3,7 @@
 // manifest and icons; the workers' importScripts; the manifest's icons) must be listed, or it is fetched from the network and the
 // app isn't whole offline. (audit 2026-11-13)
 const fs=require('fs'),path=require('path');
+const {scriptList}=require('./scriptlist');
 module.exports=async({ok,ROOT})=>{
   const R=f=>fs.readFileSync(path.join(ROOT,f),'utf8');
   const sw=R('sw.js'),a=/const ASSETS=\[([^\]]*)\]/.exec(sw),assets=a?[...a[1].matchAll(/'([^']+)'/g)].map(m=>m[1]):[];
@@ -10,7 +11,7 @@ module.exports=async({ok,ROOT})=>{
   const missing=assets.filter(f=>f!=='./'&&!fs.existsSync(path.join(ROOT,f)));
   ok(!missing.length,`every file in ASSETS exists (${missing.join(', ')||'all there'})`);
   const html=R('index.html'),need=new Set();
-  for(const m of html.matchAll(/<script[^>]*\ssrc="([^"]+)"/g))need.add(m[1]);
+  for(const f of scriptList(html))need.add(f);   // (every <script src>, type="module" and defer too: tests/scriptlist.js)
   for(const m of html.matchAll(/<link[^>]*\shref="([^"]+)"/g))if(!/^https?:/.test(m[1]))need.add(m[1]);
   for(const f of fs.readdirSync(ROOT).filter(f=>/worker\.js$/.test(f)&&f!=='worker.js')){need.add(f);for(const m of R(f).matchAll(/importScripts\(([^)]*)\)/g))for(const s of m[1].matchAll(/'([^']+)'/g))need.add(s[1])}
   for(const ic of JSON.parse(R('manifest.webmanifest')).icons||[])need.add(ic.src);
