@@ -4,7 +4,7 @@ const L = require('./_verify12-lib.js');
 L.run(async () => {
   await L.startLab('w2-12-03');
   const ph = await L.phone('a'), pg = ph.page, res = {};
-  await ph.tap('header .hbtns button[onclick^="openSettings"]'); await L.sleep(700);
+  await ph.tap('header .hbtns button[data-act="setOpenTap"]'); await L.sleep(700);
   if (await pg.getAttribute('#sc-tagging .scat-head', 'aria-expanded') !== 'true') { await ph.tap('#sc-tagging .scat-head'); await L.sleep(700) }   // Photo tagging
   for (const [btn, nm] of [['#cust-newcol', 'بني فاتح'], ['#cust-newpat', 'حياكة'], ['#cust-newcol', 'Café']]) {
     await ph.tap(btn); await L.sleep(800);

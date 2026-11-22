@@ -105,7 +105,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const E=await device({connect:false});
     await E.p.evaluate(async()=>{for(const [id,type,c,name] of [['r1','tie','burgundy','Burgundy tie'],['r2','tie','navy','Navy tie'],['r3','shirt','white','White shirt']]){const it={id,type,primaryColor:c,pattern:'solid',name,added:nowMs()};await put(it);items.push(it)}});
     await E.p.evaluate(()=>openSettings('backup'));
-    const [dl]=await Promise.all([E.p.waitForEvent('download'),E.p.click('#sp-backup button[onclick="downloadBackup()"]')]);
+    const [dl]=await Promise.all([E.p.waitForEvent('download'),E.p.click('#sp-backup button[data-act="backupSaveTap"]')]);
     const file=path.join(require('os').tmpdir(),'dw-syncwrite-'+process.pid+'.json');await dl.saveAs(file);
     await E.p.evaluate(async()=>{closeSettings();await del('r1');items=items.filter(i=>i.id!=='r1')});
     await E.p.evaluate(()=>openSettings('backup'));

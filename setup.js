@@ -233,3 +233,6 @@ function setupWardEmpty(){
 <b class="wempty-t">Your wardrobe is empty</b><p class="wempty-s">Add what you wear to work: a photo of each piece, or pick its type and colors by hand.</p>
 <button type="button" class="pri" id="wempty-add" onclick="openAdd()">Add your first item</button><div class="kit-start"><button type="button" class="linkbtn" onclick="kitImportOpen()">Import from a spreadsheet</button><span aria-hidden="true">·</span><button type="button" class="linkbtn" onclick="kitSampleLoad()">Try a sample wardrobe</button></div></div>`;
 }
+/* index.html's (act.js): Settings' "Run setup again" */
+function setupAgainTap(){setupOpen(true)}
+acts({setupAgainTap});

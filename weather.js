@@ -70,5 +70,9 @@ async function loadWeather(force){
 }
 /* the markup's handler (act.js): a place in the city search's results (data-i: its place in the list kept as _cities) */
 function cityPick(el){setLocation(window._cities[+el.dataset.i])}
-acts({cityPick});
-
+/* index.html's (act.js): Enter in the city field, Search, "Use my location" and the Units choice */
+function cityKey(el,ev){if(ev.key==='Enter'){ev.preventDefault();findCity()}}
+function citySearchTap(){findCity()}
+function myLocTap(){useMyLocation()}
+function unitsPick(el){setUnits(el.value)}
+acts({cityPick,cityKey,citySearchTap,myLocTap,unitsPick});

@@ -206,3 +206,6 @@ function renderCareUI(){const el=$('#care-limits');
 async function setCareLimit(t,v){if(!CARE_TYPES.includes(t))return;settings.care={...(settings.care||{}),[t]:Math.max(0,Math.min(CARE_MAX,Math.round(+v)||0))};await saveUserSettings();todayDirty();renderCareUI()}
 /* the shirt rule changes the plan: the days shown for the coming week are planned again with it */
 async function setLaundryDays(v){settings.laundryDays=Math.max(0,Math.min(14,Math.round(+v)||0));await clearLocks();await saveUserSettings();todayDirty();renderCareUI()}
+/* index.html's (act.js): Settings' "A worn shirt waits" choice */
+function laundryPick(el){setLaundryDays(el.value)}
+acts({laundryPick});

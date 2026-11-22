@@ -779,3 +779,8 @@ function homeOpen(){kitOpen([HOME_CARD])}
 /* Settings → About: the button only where it helps */
 function homeAbout(){const b=$('#home-again');if(b){b.hidden=!homeNeeded();b.textContent=homeLabel()}}
 homeAbout();   // (once at start: the device doesn't change; Settings can open straight on About, where renderAbout doesn't run)
+/* index.html's (act.js): Add's "Import from a spreadsheet", and Settings' "Take the tour" and "Add to Home Screen" */
+function importOpenTap(){kitImportOpen()}
+function tourAgainTap(){tourAgain()}
+function homeAgainTap(){homeAgain()}
+acts({importOpenTap,tourAgainTap,homeAgainTap});

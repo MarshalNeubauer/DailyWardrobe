@@ -5,7 +5,7 @@ const NAME = 'https://intranet.example.com/hr/leave/requests/2026/12/21';
 L.run(async () => {
   await L.startLab('w2-12-02');
   const ph = await L.phone('a'), pg = ph.page;
-  await ph.tap('header .hbtns button[onclick^="openSettings"]'); await L.sleep(700);
+  await ph.tap('header .hbtns button[data-act="setOpenTap"]'); await L.sleep(700);
   await ph.tap('#sc-daysoff .scat-head'); await L.sleep(500);
   await pg.fill('#cfg-off-from', '2026-12-21');
   await ph.tap('#cfg-off-name'); await pg.keyboard.insertText(NAME);

@@ -273,3 +273,6 @@ addEventListener('pagehide',()=>{if(syncDue)syncNow()});
 // back online after a backup that couldn't reach the server: try again at once
 addEventListener('online',()=>{if(syncWaiting(localStorage.getItem('sync_status')))syncNow()});
 connRestored.then(()=>setTimeout(syncNow,300));   // (after the connection is put back where storage lost it: app.js)
+/* the markup's handler (act.js): Settings' "Sync now" */
+function syncNowTap(){syncTap()}
+acts({syncNowTap});
