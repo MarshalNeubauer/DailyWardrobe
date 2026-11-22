@@ -3,6 +3,7 @@
 // had its own copy); the tagging files' sRGB <-> linear (tagging.js sLin/linS) is srgb.js's srgbLin8/linSrgb8, the same to the last bit on
 // both engines. Every comparison is exact (===), not within a tolerance.
 const path=require('path'),fs=require('fs'),vm=require('vm'),{pathToFileURL}=require('url');
+const {appSrc}=require('./appsrc');
 // the copies that were removed, frozen here as the reference
 const OLD_SRC=`
 const oldLab=hex=>{const v=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)).map(u=>{u/=255;return u>.04045?((u+.055)/1.055)**2.4:u/12.92});
@@ -21,8 +22,8 @@ const SRGB_CHECK=`(()=>{const bad=[];let n=0;const same=(a,b)=>a===b||(a!==a&&b!
 module.exports=async({ok,engines,ROOT})=>{
   /* ---- core.js and srgb.js in Node */
   const ctx={console,localStorage:{getItem(){return null},setItem(){}},document:{querySelector(){return null}}};vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={rgbLab,dE00,labOf,hexRgb,COLORS}',ctx);
-  vm.runInContext(fs.readFileSync(path.join(ROOT,'srgb.js'),'utf8')+OLD_SRC+';this.S={oldLab,run:()=>'+SRGB_CHECK+'}',ctx);
+  vm.runInContext(appSrc(ROOT,'core.js')+';this.K={rgbLab,dE00,labOf,hexRgb,COLORS}',ctx);
+  vm.runInContext(appSrc(ROOT,'srgb.js')+OLD_SRC+';this.S={oldLab,run:()=>'+SRGB_CHECK+'}',ctx);
   const K=ctx.K,W=await import(pathToFileURL(path.join(ROOT,'worker','colormath.js')).href);
   const same=(a,b)=>a.length===b.length&&a.every((v,i)=>v===b[i]);
   // a fixed spread of colours: every grey, every key colour, and 20,000 from a seeded generator

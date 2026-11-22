@@ -8,10 +8,11 @@
 // CR-8-04 the mannequin's shirt buttons are the painter's (asmCmBtnCol); CR-8-05 Today's herringbone swatch ids never repeat.
 // Real app files, the real asm-worker.js, the suit master's fixtures at 512 (tests/fixtures/cm/suit), no network.
 const fs=require('fs'),path=require('path'),vm=require('vm');
+const {appSrc}=require('./appsrc');
 module.exports=async({ok,chromium,url,ROOT})=>{
   // ---- CR-8-04 without asm-color.js (the mannequin's own rule, as in a page that hasn't loaded the painter) ----
   {const ctx={self:{},console};ctx.self=ctx;vm.createContext(ctx);
-    for(const f of ['srgb.js','mq/shirt-open.js','mannequin.js'])vm.runInContext(fs.readFileSync(path.join(ROOT,f),'utf8'),ctx);
+    for(const f of ['srgb.js','mq/shirt-open.js','mannequin.js'])vm.runInContext(appSrc(ROOT,f),ctx);
     const L=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},G=v=>Math.round(255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055));
     const PEARL=[.86,.84,.80],MIX=.55,rule=lin=>PEARL.map((v,q)=>L(255*(G(v)/255*(1-MIX)+G(lin[q])/255*MIX)));   // (the painter's asmCmBtnCol, in display values)
     let worst=0;for(const shirt of ['#ffffff','#cfe0f2','#f2d3da','#3b4a63']){const svg=ctx.outfitMannequinSvg({kind:'shirt-open',shirtColor:shirt,bot:{color:'#555'},shirt:{color:shirt}});

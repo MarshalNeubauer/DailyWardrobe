@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	4a11dcd18c2fb8f2a065
+# tested	877014911f62d44e487a
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts
@@ -1956,6 +1957,7 @@ asmrelease.test.js	sync-status.js	<loaded>	setSyncStatus	showSyncStatus	syncPaus
 asmrelease.test.js	sync.js	<loaded>	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	pulledYet	syncNeedsPull	syncNow	syncOnce	syncUrl
 asmrelease.test.js	tag-request.js	<loaded>
 asmrelease.test.js	tagging.js	<loaded>
+asmrelease.test.js	tests/appsrc.js	<any>
 asmrelease.test.js	tests/fixedplan.js	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
@@ -1969,6 +1971,7 @@ asmrelease.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmrelease.test.js	tests/webkit.js	<any>
 asmrelease.test.js	theme.js	<loaded>	applyTheme
 asmrelease.test.js	toast.js	<loaded>
 asmrelease.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2687,6 +2690,7 @@ assets.test.js	asm-worker.js	<any>
 assets.test.js	index.html	<any>
 assets.test.js	manifest.webmanifest	<any>
 assets.test.js	sw.js	<any>
+assets.test.js	tests/scriptlist.js	<any>
 back.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 back.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	dropInviteHash	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 back.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts
@@ -3163,6 +3167,95 @@ backup-storage.test.js	worker/records.js	<any>	<loaded>	colOk	dayWrong	freeOk	it
 backup-storage.test.js	worker/remind.js	<any>	<loaded>	pushReady	sendReminders
 backup-storage.test.js	worker/render.js	<any>	<loaded>	hubOf	logHub
 backup-storage.test.js	worker/tag.js	<any>	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes
+bridge.test.js	about.js	<any>
+bridge.test.js	account.js	<any>
+bridge.test.js	act.js	<any>
+bridge.test.js	add-card.js	<any>
+bridge.test.js	add-keep.js	<any>
+bridge.test.js	add-more.js	<any>
+bridge.test.js	add-paste.js	<any>
+bridge.test.js	add-save.js	<any>
+bridge.test.js	add-sheet.js	<any>
+bridge.test.js	add.js	<any>
+bridge.test.js	analysis-worker.js	<any>
+bridge.test.js	analysis.js	<any>
+bridge.test.js	app.js	<any>
+bridge.test.js	asm-color.js	<any>
+bridge.test.js	asm-gl.js	<any>
+bridge.test.js	asm-kinds.js	<any>
+bridge.test.js	asm-ocp.js	<any>
+bridge.test.js	asm-pocket.js	<any>
+bridge.test.js	asm-watch.js	<any>
+bridge.test.js	asm-worker.js	<any>
+bridge.test.js	assemble.js	<any>
+bridge.test.js	back.js	<any>
+bridge.test.js	backupfile.js	<any>
+bridge.test.js	boxfold.js	<any>
+bridge.test.js	calendar.js	<any>
+bridge.test.js	care.js	<any>
+bridge.test.js	checklist.js	<any>
+bridge.test.js	colpick.js	<any>
+bridge.test.js	core.js	<any>
+bridge.test.js	cost.js	<any>
+bridge.test.js	daysoff.js	<any>
+bridge.test.js	detect.js	<any>
+bridge.test.js	draw.js	<any>
+bridge.test.js	dress.js	<any>
+bridge.test.js	fav.js	<any>
+bridge.test.js	history.js	<any>
+bridge.test.js	index.html	<any>
+bridge.test.js	item-photo.js	<any>
+bridge.test.js	item-view.js	<any>
+bridge.test.js	itemsheet.js	<any>
+bridge.test.js	kit.js	<any>
+bridge.test.js	locale.js	<any>
+bridge.test.js	locks.js	<any>
+bridge.test.js	look.js	<any>
+bridge.test.js	mannequin.js	<any>
+bridge.test.js	measure.js	<any>
+bridge.test.js	merge.js	<any>
+bridge.test.js	migrate.js	<any>
+bridge.test.js	missed.js	<any>
+bridge.test.js	month.js	<any>
+bridge.test.js	mq/shirt-open.js	<any>
+bridge.test.js	mq/shirt-tie.js	<any>
+bridge.test.js	mq/suit-open.js	<any>
+bridge.test.js	mq/suit.js	<any>
+bridge.test.js	mq/vest.js	<any>
+bridge.test.js	own-lists.js	<any>
+bridge.test.js	pack.js	<any>
+bridge.test.js	pattern-read.js	<any>
+bridge.test.js	photos.js	<any>
+bridge.test.js	pickscore.js	<any>
+bridge.test.js	planner.js	<any>
+bridge.test.js	remind.js	<any>
+bridge.test.js	safety.js	<any>
+bridge.test.js	scorecard.js	<any>
+bridge.test.js	settings.js	<any>
+bridge.test.js	setup.js	<any>
+bridge.test.js	sheet-swipe.js	<any>
+bridge.test.js	shop.js	<any>
+bridge.test.js	snapshots.js	<any>
+bridge.test.js	srgb.js	<any>
+bridge.test.js	start.js	<any>
+bridge.test.js	stats.js	<any>
+bridge.test.js	sync-photos.js	<any>
+bridge.test.js	sync-status.js	<any>
+bridge.test.js	sync.js	<any>
+bridge.test.js	tag-request.js	<any>
+bridge.test.js	tagging.js	<any>
+bridge.test.js	tests/modscope.js	<any>
+bridge.test.js	tests/scriptlist.js	<any>
+bridge.test.js	theme.js	<any>
+bridge.test.js	toast.js	<any>
+bridge.test.js	today-gestures.js	<any>
+bridge.test.js	today-photofold.js	<any>
+bridge.test.js	today-picture.js	<any>
+bridge.test.js	today-plan.js	<any>
+bridge.test.js	today.js	<any>
+bridge.test.js	ui.js	<any>
+bridge.test.js	wardrobe.js	<any>
+bridge.test.js	weather.js	<any>
 calendar.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 calendar.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 calendar.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts
@@ -3925,7 +4018,9 @@ clock.test.js	sync-status.js	<loaded>	endedAnswer	setSyncStatus	showSyncStatus	s
 clock.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	clockFix	clockLearn	clockTell	clockText	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	syncJoinAt	syncJoinMark	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncSaved	syncSettingsRedraw	syncUrl	synced
 clock.test.js	tag-request.js	<loaded>
 clock.test.js	tagging.js	<loaded>
+clock.test.js	tests/appsrc.js	<any>
 clock.test.js	tests/fixedplan.js	<any>
+clock.test.js	tests/webkit.js	<any>
 clock.test.js	theme.js	<loaded>	applyTheme
 clock.test.js	toast.js	<loaded>	toast	toastOff
 clock.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>todayTouch	@{constroot$today}	mvSig	todayBusy
@@ -4422,6 +4517,7 @@ colormath.test.js	pattern-read.js	<any>
 colormath.test.js	srgb.js	<any>
 colormath.test.js	tag-request.js	<any>
 colormath.test.js	tagging.js	<any>
+colormath.test.js	tests/appsrc.js	<any>
 colormath.test.js	tests/fixedplan.js	<any>
 colormath.test.js	tools/describe-eval.js	<any>
 colormath.test.js	worker/colormath.js	<loaded>	dE00	hexLab	hexRgb	rgbLab
@@ -5076,7 +5172,9 @@ costwear.test.js	sync-status.js	<loaded>	endedAnswer	setSyncStatus	showSyncStatu
 costwear.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	clockFix	clockLearn	clockTell	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	syncJoinAt	syncJoinMark	syncLaterRun	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncSaved	syncSettingsRedraw	syncUrl	synced
 costwear.test.js	tag-request.js	<loaded>	recordTagResult	tagStatsCard
 costwear.test.js	tagging.js	<loaded>	tagNotes
+costwear.test.js	tests/appsrc.js	<any>
 costwear.test.js	tests/fixedplan.js	<any>
+costwear.test.js	tests/webkit.js	<any>
 costwear.test.js	theme.js	<loaded>	applyTheme
 costwear.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 costwear.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>todayTouch	@{constroot$today}	mvSig	todayBusy
@@ -5291,6 +5389,7 @@ deps.test.js	sync.js	<any>
 deps.test.js	tag-request.js	<any>
 deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
+deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
@@ -6176,6 +6275,7 @@ fieldmerge.test.js	sync-status.js	<loaded>	endedAnswer	setSyncStatus	showSyncSta
 fieldmerge.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	clockFix	clockLearn	clockTell	localState	pullDone	pulledYet	restoreDone	restoreWanted	setSyncMark	syncJoinAt	syncJoinMark	syncLaterRun	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncSaved	syncSettingsRedraw	syncTap	syncUrl	syncWiped	synced
 fieldmerge.test.js	tag-request.js	<loaded>	describeEstimate	readEstimate	visTok
 fieldmerge.test.js	tagging.js	<loaded>
+fieldmerge.test.js	tests/appsrc.js	<any>
 fieldmerge.test.js	tests/fixedplan.js	<any>
 fieldmerge.test.js	theme.js	<loaded>	applyTheme
 fieldmerge.test.js	toast.js	<loaded>	toast	undoFab	undoHere
@@ -6970,7 +7070,9 @@ globals.test.js	sync-status.js	<any>
 globals.test.js	sync.js	<any>
 globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
+globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
+globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -9135,7 +9237,448 @@ mergeshared.test.js	analysis-worker.js	<any>
 mergeshared.test.js	core.js	<any>
 mergeshared.test.js	index.html	<any>
 mergeshared.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	dayUnflat	dayWins	fieldStamp	fsOk	fsPack	itemBase	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeSplit	mergeStateBy	sameVal	setEntries	setHash	setJoin	setKeys	setStampOf	stamp	subOk	subStampOf	tombWins
+mergeshared.test.js	tests/appsrc.js	<any>
+mergeshared.test.js	tests/webkit.js	<any>
 mergeshared.test.js	worker/backup.js	<any>	<loaded>	mergeLite	now	sampleOnly
+modtools.test.js	about.js	<any>
+modtools.test.js	account.js	<any>
+modtools.test.js	act.js	<any>
+modtools.test.js	add-card.js	<any>
+modtools.test.js	add-keep.js	<any>
+modtools.test.js	add-more.js	<any>
+modtools.test.js	add-paste.js	<any>
+modtools.test.js	add-save.js	<any>
+modtools.test.js	add-sheet.js	<any>
+modtools.test.js	add.js	<any>
+modtools.test.js	analysis-worker.js	<any>
+modtools.test.js	analysis.js	<any>
+modtools.test.js	app.js	<any>
+modtools.test.js	asm-color.js	<any>
+modtools.test.js	asm-gl.js	<any>
+modtools.test.js	asm-kinds.js	<any>
+modtools.test.js	asm-ocp.js	<any>
+modtools.test.js	asm-pocket.js	<any>
+modtools.test.js	asm-watch.js	<any>
+modtools.test.js	asm-worker.js	<any>
+modtools.test.js	assemble.js	<any>
+modtools.test.js	back.js	<any>
+modtools.test.js	backupfile.js	<any>
+modtools.test.js	boxfold.js	<any>
+modtools.test.js	calendar.js	<any>
+modtools.test.js	care.js	<any>
+modtools.test.js	checklist.js	<any>
+modtools.test.js	colpick.js	<any>
+modtools.test.js	core.js	<any>
+modtools.test.js	cost.js	<any>
+modtools.test.js	daysoff.js	<any>
+modtools.test.js	detect.js	<any>
+modtools.test.js	draw.js	<any>
+modtools.test.js	dress.js	<any>
+modtools.test.js	eslint.config.mjs	<any>
+modtools.test.js	fav.js	<any>
+modtools.test.js	history.js	<any>
+modtools.test.js	index.html	<any>
+modtools.test.js	item-photo.js	<any>
+modtools.test.js	item-view.js	<any>
+modtools.test.js	itemsheet.js	<any>
+modtools.test.js	kit.js	<any>
+modtools.test.js	locale.js	<any>
+modtools.test.js	locks.js	<any>
+modtools.test.js	look.js	<any>
+modtools.test.js	mannequin.js	<any>
+modtools.test.js	measure.js	<any>
+modtools.test.js	merge.js	<any>
+modtools.test.js	migrate.js	<any>
+modtools.test.js	missed.js	<any>
+modtools.test.js	month.js	<any>
+modtools.test.js	mq/shirt-open.js	<any>
+modtools.test.js	mq/shirt-tie.js	<any>
+modtools.test.js	mq/suit-open.js	<any>
+modtools.test.js	mq/suit.js	<any>
+modtools.test.js	mq/vest.js	<any>
+modtools.test.js	own-lists.js	<any>
+modtools.test.js	pack.js	<any>
+modtools.test.js	pattern-read.js	<any>
+modtools.test.js	photos.js	<any>
+modtools.test.js	pickscore.js	<any>
+modtools.test.js	planner.js	<any>
+modtools.test.js	remind.js	<any>
+modtools.test.js	safety.js	<any>
+modtools.test.js	scorecard.js	<any>
+modtools.test.js	settings.js	<any>
+modtools.test.js	setup.js	<any>
+modtools.test.js	sheet-swipe.js	<any>
+modtools.test.js	shop.js	<any>
+modtools.test.js	snapshots.js	<any>
+modtools.test.js	srgb.js	<any>
+modtools.test.js	start.js	<any>
+modtools.test.js	stats.js	<any>
+modtools.test.js	sw.js	<any>
+modtools.test.js	sync-photos.js	<any>
+modtools.test.js	sync-status.js	<any>
+modtools.test.js	sync.js	<any>
+modtools.test.js	tag-request.js	<any>
+modtools.test.js	tagging.js	<any>
+modtools.test.js	tests/a11y.test.js	<any>
+modtools.test.js	tests/about.test.js	<any>
+modtools.test.js	tests/accents.test.js	<any>
+modtools.test.js	tests/accounts.test.js	<any>
+modtools.test.js	tests/acts.test.js	<any>
+modtools.test.js	tests/actsindex.test.js	<any>
+modtools.test.js	tests/addcards.test.js	<any>
+modtools.test.js	tests/additemacts.test.js	<any>
+modtools.test.js	tests/addsheet.test.js	<any>
+modtools.test.js	tests/advicefresh.test.js	<any>
+modtools.test.js	tests/aiverdict.test.js	<any>
+modtools.test.js	tests/appsrc.js	<any>
+modtools.test.js	tests/asmahead.test.js	<any>
+modtools.test.js	tests/asmatlas.test.js	<any>
+modtools.test.js	tests/asmcloth.test.js	<any>
+modtools.test.js	tests/asmcode.test.js	<any>
+modtools.test.js	tests/asmcolor.test.js	<any>
+modtools.test.js	tests/asmcr.test.js	<any>
+modtools.test.js	tests/asmcu.test.js	<any>
+modtools.test.js	tests/asmgl.test.js	<any>
+modtools.test.js	tests/asmrelease.test.js	<any>
+modtools.test.js	tests/asmroute.test.js	<any>
+modtools.test.js	tests/asmserverpic.test.js	<any>
+modtools.test.js	tests/asmstuck.test.js	<any>
+modtools.test.js	tests/asmtwill.test.js	<any>
+modtools.test.js	tests/asmwatch.test.js	<any>
+modtools.test.js	tests/asmweave.test.js	<any>
+modtools.test.js	tests/assemble.test.js	<any>
+modtools.test.js	tests/assets.test.js	<any>
+modtools.test.js	tests/back.test.js	<any>
+modtools.test.js	tests/backgesture-item.test.js	<any>
+modtools.test.js	tests/backgesture-over.test.js	<any>
+modtools.test.js	tests/backgesture-parts.js	<any>
+modtools.test.js	tests/backgesture.test.js	<any>
+modtools.test.js	tests/backup-storage.test.js	<any>
+modtools.test.js	tests/bridge.test.js	<any>
+modtools.test.js	tests/calendar.test.js	<any>
+modtools.test.js	tests/camouflage.test.js	<any>
+modtools.test.js	tests/canvasrefuse.test.js	<any>
+modtools.test.js	tests/cardid.test.js	<any>
+modtools.test.js	tests/care.test.js	<any>
+modtools.test.js	tests/casual.test.js	<any>
+modtools.test.js	tests/childrec.js	<any>
+modtools.test.js	tests/claudepattern.test.js	<any>
+modtools.test.js	tests/clock.test.js	<any>
+modtools.test.js	tests/closeupread.test.js	<any>
+modtools.test.js	tests/closeupsheet.test.js	<any>
+modtools.test.js	tests/cmhandedge.test.js	<any>
+modtools.test.js	tests/cmpmeasure.test.js	<any>
+modtools.test.js	tests/colnew.test.js	<any>
+modtools.test.js	tests/colormath.test.js	<any>
+modtools.test.js	tests/colors.test.js	<any>
+modtools.test.js	tests/colpick.test.js	<any>
+modtools.test.js	tests/colpickacts.test.js	<any>
+modtools.test.js	tests/colpickfocus.test.js	<any>
+modtools.test.js	tests/combatboot.test.js	<any>
+modtools.test.js	tests/connkeep.test.js	<any>
+modtools.test.js	tests/costwear.test.js	<any>
+modtools.test.js	tests/daysoff.test.js	<any>
+modtools.test.js	tests/deploy.test.js	<any>
+modtools.test.js	tests/deps.json	<any>
+modtools.test.js	tests/deps.test.js	<any>
+modtools.test.js	tests/describe.test.js	<any>
+modtools.test.js	tests/drawnonly.test.js	<any>
+modtools.test.js	tests/dress.test.js	<any>
+modtools.test.js	tests/editorrework.test.js	<any>
+modtools.test.js	tests/editphotosb.test.js	<any>
+modtools.test.js	tests/errnet.test.js	<any>
+modtools.test.js	tests/errreport.test.js	<any>
+modtools.test.js	tests/favorites.test.js	<any>
+modtools.test.js	tests/favplan.test.js	<any>
+modtools.test.js	tests/fieldmerge.test.js	<any>
+modtools.test.js	tests/figure.test.js	<any>
+modtools.test.js	tests/fillmaterial.test.js	<any>
+modtools.test.js	tests/fixedplan.js	<any>
+modtools.test.js	tests/fixtures/modtools/a.js	<any>
+modtools.test.js	tests/fixtures/modtools/c.js	<any>
+modtools.test.js	tests/fixtures/modtools/index.html	<any>
+modtools.test.js	tests/fixtures/modtools/lib/n.js	<any>
+modtools.test.js	tests/fixtures/modtools/m.js	<any>
+modtools.test.js	tests/fixtures/modtools/tests/t.js	<any>
+modtools.test.js	tests/folds.test.js	<any>
+modtools.test.js	tests/freshrest.test.js	<any>
+modtools.test.js	tests/gaps.js	<any>
+modtools.test.js	tests/garmentdraw.test.js	<any>
+modtools.test.js	tests/garmentpaint.test.js	<any>
+modtools.test.js	tests/garmentworker-calls.js	<any>
+modtools.test.js	tests/geomaps.test.js	<any>
+modtools.test.js	tests/globals.test.js	<any>
+modtools.test.js	tests/handpick.test.js	<any>
+modtools.test.js	tests/hbshirt.test.js	<any>
+modtools.test.js	tests/hbswatch.test.js	<any>
+modtools.test.js	tests/herringbone.test.js	<any>
+modtools.test.js	tests/history.test.js	<any>
+modtools.test.js	tests/homescreen.test.js	<any>
+modtools.test.js	tests/impact.js	<any>
+modtools.test.js	tests/impact.test.js	<any>
+modtools.test.js	tests/inlinehandlers.test.js	<any>
+modtools.test.js	tests/invite.test.js	<any>
+modtools.test.js	tests/itempics.test.js	<any>
+modtools.test.js	tests/itemredesign.test.js	<any>
+modtools.test.js	tests/itemsheet.test.js	<any>
+modtools.test.js	tests/jacketcolour.test.js	<any>
+modtools.test.js	tests/keptphotos.test.js	<any>
+modtools.test.js	tests/kit.test.js	<any>
+modtools.test.js	tests/kitsetup-taps.test.js	<any>
+modtools.test.js	tests/labbench.test.js	<any>
+modtools.test.js	tests/lint.js	<any>
+modtools.test.js	tests/lookbeta.test.js	<any>
+modtools.test.js	tests/lookplan.test.js	<any>
+modtools.test.js	tests/lookworker.test.js	<any>
+modtools.test.js	tests/mannequin.test.js	<any>
+modtools.test.js	tests/masterspeed.test.js	<any>
+modtools.test.js	tests/materials.test.js	<any>
+modtools.test.js	tests/measure.test.js	<any>
+modtools.test.js	tests/mergeshared.test.js	<any>
+modtools.test.js	tests/modscope.js	<any>
+modtools.test.js	tests/month.test.js	<any>
+modtools.test.js	tests/motif.test.js	<any>
+modtools.test.js	tests/moveoutfit.test.js	<any>
+modtools.test.js	tests/mqcloth.test.js	<any>
+modtools.test.js	tests/multi.test.js	<any>
+modtools.test.js	tests/navfit.test.js	<any>
+modtools.test.js	tests/newuser.test.js	<any>
+modtools.test.js	tests/occasions.test.js	<any>
+modtools.test.js	tests/ocpblouse.test.js	<any>
+modtools.test.js	tests/onorder.test.js	<any>
+modtools.test.js	tests/owncolany.test.js	<any>
+modtools.test.js	tests/ownmaterials.test.js	<any>
+modtools.test.js	tests/ownnames.test.js	<any>
+modtools.test.js	tests/pace.js	<any>
+modtools.test.js	tests/pack.test.js	<any>
+modtools.test.js	tests/packcare-taps.test.js	<any>
+modtools.test.js	tests/pairrepeat.test.js	<any>
+modtools.test.js	tests/paperstatus.test.js	<any>
+modtools.test.js	tests/paste.test.js	<any>
+modtools.test.js	tests/photoedit.test.js	<any>
+modtools.test.js	tests/pickbugs.test.js	<any>
+modtools.test.js	tests/picker.test.js	<any>
+modtools.test.js	tests/pickerfocus.test.js	<any>
+modtools.test.js	tests/pieces.test.js	<any>
+modtools.test.js	tests/planner-pairs.test.js	<any>
+modtools.test.js	tests/planner-repeats.test.js	<any>
+modtools.test.js	tests/planner-rules.test.js	<any>
+modtools.test.js	tests/planreview.test.js	<any>
+modtools.test.js	tests/pocketsquare.test.js	<any>
+modtools.test.js	tests/records.test.js	<any>
+modtools.test.js	tests/remind.test.js	<any>
+modtools.test.js	tests/replay/harness/lab.js	<any>
+modtools.test.js	tests/replay/harness/make-photos.js	<any>
+modtools.test.js	tests/replay/harness/net.js	<any>
+modtools.test.js	tests/replay/harness/paths.js	<any>
+modtools.test.js	tests/replay/harness/phone.js	<any>
+modtools.test.js	tests/replay/run.js	<any>
+modtools.test.js	tests/replay/scripts/CR-6-12.js	<any>
+modtools.test.js	tests/replay/scripts/W1-1-01.js	<any>
+modtools.test.js	tests/replay/scripts/W1-1-02.js	<any>
+modtools.test.js	tests/replay/scripts/W1-10-01.js	<any>
+modtools.test.js	tests/replay/scripts/W1-10-02.js	<any>
+modtools.test.js	tests/replay/scripts/W1-11-01.js	<any>
+modtools.test.js	tests/replay/scripts/W1-11-02.js	<any>
+modtools.test.js	tests/replay/scripts/W1-11-03.js	<any>
+modtools.test.js	tests/replay/scripts/W1-11-04.js	<any>
+modtools.test.js	tests/replay/scripts/W1-11-05.js	<any>
+modtools.test.js	tests/replay/scripts/W1-2-01.js	<any>
+modtools.test.js	tests/replay/scripts/W1-2-02.js	<any>
+modtools.test.js	tests/replay/scripts/W1-2-04.js	<any>
+modtools.test.js	tests/replay/scripts/W1-3-01.js	<any>
+modtools.test.js	tests/replay/scripts/W1-3-02-today.js	<any>
+modtools.test.js	tests/replay/scripts/W1-3-02.js	<any>
+modtools.test.js	tests/replay/scripts/W1-3-03.js	<any>
+modtools.test.js	tests/replay/scripts/W1-3-04.js	<any>
+modtools.test.js	tests/replay/scripts/W1-3-05.js	<any>
+modtools.test.js	tests/replay/scripts/W1-4-01.js	<any>
+modtools.test.js	tests/replay/scripts/W1-5-01.js	<any>
+modtools.test.js	tests/replay/scripts/W1-5-02.js	<any>
+modtools.test.js	tests/replay/scripts/W1-5-03.js	<any>
+modtools.test.js	tests/replay/scripts/W1-5-04.js	<any>
+modtools.test.js	tests/replay/scripts/W1-5-06.js	<any>
+modtools.test.js	tests/replay/scripts/W1-5-07.js	<any>
+modtools.test.js	tests/replay/scripts/W1-6-01.js	<any>
+modtools.test.js	tests/replay/scripts/W1-6-02.js	<any>
+modtools.test.js	tests/replay/scripts/W1-6-04.js	<any>
+modtools.test.js	tests/replay/scripts/W1-6-05.js	<any>
+modtools.test.js	tests/replay/scripts/W1-6-06.js	<any>
+modtools.test.js	tests/replay/scripts/W1-7-01.js	<any>
+modtools.test.js	tests/replay/scripts/W1-7-02.js	<any>
+modtools.test.js	tests/replay/scripts/W1-8-01.js	<any>
+modtools.test.js	tests/replay/scripts/W1-8-02.js	<any>
+modtools.test.js	tests/replay/scripts/W1-8-05.js	<any>
+modtools.test.js	tests/replay/scripts/W1-9-01.js	<any>
+modtools.test.js	tests/replay/scripts/W1-9-02.js	<any>
+modtools.test.js	tests/replay/scripts/W1-9-03.js	<any>
+modtools.test.js	tests/replay/scripts/W1-9-04.js	<any>
+modtools.test.js	tests/replay/scripts/W1-9-05.js	<any>
+modtools.test.js	tests/replay/scripts/W1-9-06.js	<any>
+modtools.test.js	tests/replay/scripts/W1-9-08.js	<any>
+modtools.test.js	tests/replay/scripts/W2-12-01.js	<any>
+modtools.test.js	tests/replay/scripts/W2-12-02.js	<any>
+modtools.test.js	tests/replay/scripts/W2-12-03.js	<any>
+modtools.test.js	tests/replay/scripts/W2-13-01.js	<any>
+modtools.test.js	tests/replay/scripts/W2-13-02.js	<any>
+modtools.test.js	tests/replay/scripts/W2-13-03.js	<any>
+modtools.test.js	tests/replay/scripts/W2-13-04.js	<any>
+modtools.test.js	tests/replay/scripts/W2-14-01.js	<any>
+modtools.test.js	tests/replay/scripts/W2-14-02.js	<any>
+modtools.test.js	tests/replay/scripts/W2-14-03.js	<any>
+modtools.test.js	tests/replay/scripts/W2-14-04.js	<any>
+modtools.test.js	tests/replay/scripts/W2-14-05.js	<any>
+modtools.test.js	tests/replay/scripts/W2-15-01.js	<any>
+modtools.test.js	tests/replay/scripts/W2-15-02.js	<any>
+modtools.test.js	tests/replay/scripts/W2-15-03.js	<any>
+modtools.test.js	tests/replay/scripts/W2-15-04.js	<any>
+modtools.test.js	tests/replay/scripts/W2-15-05.js	<any>
+modtools.test.js	tests/replay/scripts/W2-15-06.js	<any>
+modtools.test.js	tests/replay/scripts/W2-16-01.js	<any>
+modtools.test.js	tests/replay/scripts/W2-16-02.js	<any>
+modtools.test.js	tests/replay/scripts/W2-16-03.js	<any>
+modtools.test.js	tests/replay/scripts/W2-16-04.js	<any>
+modtools.test.js	tests/replay/scripts/W2-17-01.js	<any>
+modtools.test.js	tests/replay/scripts/W2-17-02.js	<any>
+modtools.test.js	tests/replay/scripts/W2-17-03.js	<any>
+modtools.test.js	tests/replay/scripts/W2-17-04.js	<any>
+modtools.test.js	tests/replay/scripts/W2-17-05.js	<any>
+modtools.test.js	tests/replay/scripts/W2-17-06.js	<any>
+modtools.test.js	tests/replay/scripts/W2-17-07.js	<any>
+modtools.test.js	tests/replay/scripts/W2-17-08.js	<any>
+modtools.test.js	tests/replay/scripts/W2-17-09.js	<any>
+modtools.test.js	tests/replay/scripts/W2-18-01.js	<any>
+modtools.test.js	tests/replay/scripts/W2-18-02.js	<any>
+modtools.test.js	tests/replay/scripts/W2-19-01.js	<any>
+modtools.test.js	tests/replay/scripts/W2-19-02.js	<any>
+modtools.test.js	tests/replay/scripts/W2-19-03.js	<any>
+modtools.test.js	tests/replay/scripts/W2-19-04.js	<any>
+modtools.test.js	tests/replay/scripts/W2-19-05.js	<any>
+modtools.test.js	tests/replay/scripts/W2-19-06.js	<any>
+modtools.test.js	tests/replay/scripts/W2-19-07.js	<any>
+modtools.test.js	tests/replay/scripts/W2-19-08.js	<any>
+modtools.test.js	tests/replay/scripts/W2-19-09.js	<any>
+modtools.test.js	tests/replay/scripts/_v9lib.js	<any>
+modtools.test.js	tests/replay/scripts/_verify10-lib.js	<any>
+modtools.test.js	tests/replay/scripts/_verify11-lib.js	<any>
+modtools.test.js	tests/replay/scripts/_verify12-lib.js	<any>
+modtools.test.js	tests/replay/scripts/_verify19-lib.js	<any>
+modtools.test.js	tests/replay/scripts/_verify2-lib.js	<any>
+modtools.test.js	tests/replay/scripts/_verify3-lib.js	<any>
+modtools.test.js	tests/replay/scripts/_verify6-lib.js	<any>
+modtools.test.js	tests/replay/scripts/_verify7-lib.js	<any>
+modtools.test.js	tests/replay/scripts/_verify8-lib.js	<any>
+modtools.test.js	tests/replay/scripts/lib-verify1.js	<any>
+modtools.test.js	tests/replay/scripts/lib-verify13.js	<any>
+modtools.test.js	tests/replay/scripts/lib-verify14.js	<any>
+modtools.test.js	tests/replay/scripts/lib-verify15.js	<any>
+modtools.test.js	tests/replay/scripts/lib-verify16.js	<any>
+modtools.test.js	tests/replay/scripts/lib-verify17.js	<any>
+modtools.test.js	tests/replay/scripts/lib-verify18.js	<any>
+modtools.test.js	tests/replay/scripts/lib-verify5.js	<any>
+modtools.test.js	tests/restacts.test.js	<any>
+modtools.test.js	tests/rollback.test.js	<any>
+modtools.test.js	tests/rotation-pause.test.js	<any>
+modtools.test.js	tests/run.js	<any>
+modtools.test.js	tests/safeport.js	<any>
+modtools.test.js	tests/safeport.test.js	<any>
+modtools.test.js	tests/safety.test.js	<any>
+modtools.test.js	tests/safetysync.test.js	<any>
+modtools.test.js	tests/sample.test.js	<any>
+modtools.test.js	tests/savelock.test.js	<any>
+modtools.test.js	tests/scoreanim.test.js	<any>
+modtools.test.js	tests/scoredials.test.js	<any>
+modtools.test.js	tests/scorefix.test.js	<any>
+modtools.test.js	tests/scriptlist.js	<any>
+modtools.test.js	tests/server-limits.test.js	<any>
+modtools.test.js	tests/serverchecks.test.js	<any>
+modtools.test.js	tests/sett.test.js	<any>
+modtools.test.js	tests/settag.test.js	<any>
+modtools.test.js	tests/settingsin.test.js	<any>
+modtools.test.js	tests/settingsmerge.test.js	<any>
+modtools.test.js	tests/settingsui.test.js	<any>
+modtools.test.js	tests/setup.test.js	<any>
+modtools.test.js	tests/shade.test.js	<any>
+modtools.test.js	tests/shard.js	<any>
+modtools.test.js	tests/shard.test.js	<any>
+modtools.test.js	tests/sharedmasters.test.js	<any>
+modtools.test.js	tests/sharpclose.test.js	<any>
+modtools.test.js	tests/shellfix.test.js	<any>
+modtools.test.js	tests/shirtweave.test.js	<any>
+modtools.test.js	tests/shop.test.js	<any>
+modtools.test.js	tests/shopstay.test.js	<any>
+modtools.test.js	tests/shopswipe.test.js	<any>
+modtools.test.js	tests/sockpatterns.test.js	<any>
+modtools.test.js	tests/socktoe.test.js	<any>
+modtools.test.js	tests/sockworker.test.js	<any>
+modtools.test.js	tests/sourcerules.test.js	<any>
+modtools.test.js	tests/speed.test.js	<any>
+modtools.test.js	tests/staledevice.test.js	<any>
+modtools.test.js	tests/stats.test.js	<any>
+modtools.test.js	tests/stylea11y.test.js	<any>
+modtools.test.js	tests/sw.test.js	<any>
+modtools.test.js	tests/swatchzoom.test.js	<any>
+modtools.test.js	tests/sync.test.js	<any>
+modtools.test.js	tests/syncwrite.test.js	<any>
+modtools.test.js	tests/tabmove.test.js	<any>
+modtools.test.js	tests/tagger.test.js	<any>
+modtools.test.js	tests/tagging.test.js	<any>
+modtools.test.js	tests/tagreads.test.js	<any>
+modtools.test.js	tests/tagroutes.test.js	<any>
+modtools.test.js	tests/tagswatch.test.js	<any>
+modtools.test.js	tests/takeoff.test.js	<any>
+modtools.test.js	tests/testlock.js	<any>
+modtools.test.js	tests/texswatch.test.js	<any>
+modtools.test.js	tests/texture.test.js	<any>
+modtools.test.js	tests/theme.test.js	<any>
+modtools.test.js	tests/tieweave.test.js	<any>
+modtools.test.js	tests/titles.test.js	<any>
+modtools.test.js	tests/today.test.js	<any>
+modtools.test.js	tests/todayacts.test.js	<any>
+modtools.test.js	tests/todayedges.test.js	<any>
+modtools.test.js	tests/todayswatch.test.js	<any>
+modtools.test.js	tests/todayzoom.test.js	<any>
+modtools.test.js	tests/twillswatch.test.js	<any>
+modtools.test.js	tests/typecheck.js	<any>
+modtools.test.js	tests/typecheck.test.js	<any>
+modtools.test.js	tests/ui.test.js	<any>
+modtools.test.js	tests/uipages.test.js	<any>
+modtools.test.js	tests/uploadbudget.test.js	<any>
+modtools.test.js	tests/vest.test.js	<any>
+modtools.test.js	tests/wardfab.test.js	<any>
+modtools.test.js	tests/wardrobe.test.js	<any>
+modtools.test.js	tests/wardrobetap.test.js	<any>
+modtools.test.js	tests/wardswipe.test.js	<any>
+modtools.test.js	tests/watchmatch.test.js	<any>
+modtools.test.js	tests/weather.test.js	<any>
+modtools.test.js	tests/webkit.js	<any>
+modtools.test.js	tests/weeklock.test.js	<any>
+modtools.test.js	tests/weeklockdays.test.js	<any>
+modtools.test.js	tests/workerfix.test.js	<any>
+modtools.test.js	tests/workersrc.js	<any>
+modtools.test.js	tests/workersweep.test.js	<any>
+modtools.test.js	theme.js	<any>
+modtools.test.js	toast.js	<any>
+modtools.test.js	today-gestures.js	<any>
+modtools.test.js	today-photofold.js	<any>
+modtools.test.js	today-picture.js	<any>
+modtools.test.js	today-plan.js	<any>
+modtools.test.js	today.js	<any>
+modtools.test.js	tools/asm-atlas.js	<any>
+modtools.test.js	tools/asm-cm-upload.js	<any>
+modtools.test.js	tools/atlas-measure.js	<any>
+modtools.test.js	tools/atlas.js	<any>
+modtools.test.js	tools/cloud-tests.js	<any>
+modtools.test.js	tools/cssdiff.js	<any>
+modtools.test.js	tools/describe-eval.js	<any>
+modtools.test.js	tools/fill-material.js	<any>
+modtools.test.js	tools/read-errors.js	<any>
+modtools.test.js	tools/upload-budget.js	<any>
+modtools.test.js	tools/visit-measure.js	<any>
+modtools.test.js	tsconfig.json	<any>
+modtools.test.js	ui.js	<any>
+modtools.test.js	wardrobe.js	<any>
+modtools.test.js	weather.js	<any>
 month.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 month.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 month.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts
@@ -10502,11 +11045,6 @@ pack.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSig	planSnap
 pack.test.js	today.js	<loaded>	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 pack.test.js	ui.js	<loaded>	advClose	connSummary	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 pack.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-pack.test.js	watch/leather.jpg	<loaded>
-pack.test.js	watch/shirt-open.png	<loaded>
-pack.test.js	watch/shirt-tie.png	<loaded>
-pack.test.js	watch/suit.png	<loaded>
-pack.test.js	watch/vest.png	<loaded>
 pack.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 packcare-taps.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 packcare-taps.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
@@ -12172,7 +12710,9 @@ rollback.test.js	sync-status.js	<loaded>	backedUpWords	backupFullMsg	endedAnswer
 rollback.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	clockFix	clockLearn	clockTell	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	syncJoinAt	syncJoinMark	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncSaved	syncSettingsRedraw	syncUrl	synced
 rollback.test.js	tag-request.js	<loaded>
 rollback.test.js	tagging.js	<loaded>
+rollback.test.js	tests/appsrc.js	<any>
 rollback.test.js	tests/fixedplan.js	<any>
+rollback.test.js	tests/webkit.js	<any>
 rollback.test.js	theme.js	<loaded>	applyTheme
 rollback.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 rollback.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig	todayBusy
@@ -12477,9 +13017,6 @@ run.js: figure draws the tie, and the shirt when there is no jacket	ui.js	<loade
 run.js: figure draws the tie, and the shirt when there is no jacket	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 run.js: figure draws the tie, and the shirt when there is no jacket	watch/leather.jpg	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	watch/shirt-open.png	<loaded>
-run.js: figure draws the tie, and the shirt when there is no jacket	watch/shirt-tie.png	<loaded>
-run.js: figure draws the tie, and the shirt when there is no jacket	watch/suit.png	<loaded>
-run.js: figure draws the tie, and the shirt when there is no jacket	watch/vest.png	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	weather.js	<loaded>	loadWeather
 run.js: outfit score	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 run.js: outfit score	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -13242,6 +13779,7 @@ safeport.test.js	tests/additemacts.test.js	<any>
 safeport.test.js	tests/addsheet.test.js	<any>
 safeport.test.js	tests/advicefresh.test.js	<any>
 safeport.test.js	tests/aiverdict.test.js	<any>
+safeport.test.js	tests/appsrc.js	<any>
 safeport.test.js	tests/asmahead.test.js	<any>
 safeport.test.js	tests/asmatlas.test.js	<any>
 safeport.test.js	tests/asmcloth.test.js	<any>
@@ -13265,6 +13803,7 @@ safeport.test.js	tests/backgesture-over.test.js	<any>
 safeport.test.js	tests/backgesture-parts.js	<any>
 safeport.test.js	tests/backgesture.test.js	<any>
 safeport.test.js	tests/backup-storage.test.js	<any>
+safeport.test.js	tests/bridge.test.js	<any>
 safeport.test.js	tests/calendar.test.js	<any>
 safeport.test.js	tests/camouflage.test.js	<any>
 safeport.test.js	tests/canvasrefuse.test.js	<any>
@@ -13338,6 +13877,8 @@ safeport.test.js	tests/masterspeed.test.js	<any>
 safeport.test.js	tests/materials.test.js	<any>
 safeport.test.js	tests/measure.test.js	<any>
 safeport.test.js	tests/mergeshared.test.js	<any>
+safeport.test.js	tests/modscope.js	<any>
+safeport.test.js	tests/modtools.test.js	<any>
 safeport.test.js	tests/month.test.js	<any>
 safeport.test.js	tests/motif.test.js	<any>
 safeport.test.js	tests/moveoutfit.test.js	<any>
@@ -14656,6 +15197,7 @@ settingsmerge.test.js	sync-status.js	<loaded>	endedAnswer	setSyncStatus	showSync
 settingsmerge.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	clockFix	clockLearn	clockTell	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	syncJoinAt	syncJoinMark	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncSaved	syncSettingsRedraw	syncUrl	synced
 settingsmerge.test.js	tag-request.js	<loaded>
 settingsmerge.test.js	tagging.js	<loaded>
+settingsmerge.test.js	tests/appsrc.js	<any>
 settingsmerge.test.js	tests/fixedplan.js	<any>
 settingsmerge.test.js	theme.js	<loaded>	applyTheme
 settingsmerge.test.js	toast.js	<loaded>
@@ -14998,6 +15540,7 @@ shard.test.js	tests/backgesture-item.test.js	<any>
 shard.test.js	tests/backgesture-over.test.js	<any>
 shard.test.js	tests/backgesture.test.js	<any>
 shard.test.js	tests/backup-storage.test.js	<any>
+shard.test.js	tests/bridge.test.js	<any>
 shard.test.js	tests/calendar.test.js	<any>
 shard.test.js	tests/camouflage.test.js	<any>
 shard.test.js	tests/canvasrefuse.test.js	<any>
@@ -15015,6 +15558,7 @@ shard.test.js	tests/colormath.test.js	<any>
 shard.test.js	tests/colors.test.js	<any>
 shard.test.js	tests/colpick.test.js	<any>
 shard.test.js	tests/colpickacts.test.js	<any>
+shard.test.js	tests/colpickfocus.test.js	<any>
 shard.test.js	tests/combatboot.test.js	<any>
 shard.test.js	tests/connkeep.test.js	<any>
 shard.test.js	tests/costwear.test.js	<any>
@@ -15065,6 +15609,7 @@ shard.test.js	tests/masterspeed.test.js	<any>
 shard.test.js	tests/materials.test.js	<any>
 shard.test.js	tests/measure.test.js	<any>
 shard.test.js	tests/mergeshared.test.js	<any>
+shard.test.js	tests/modtools.test.js	<any>
 shard.test.js	tests/month.test.js	<any>
 shard.test.js	tests/motif.test.js	<any>
 shard.test.js	tests/moveoutfit.test.js	<any>
@@ -18638,6 +19183,7 @@ twillswatch.test.js	watch/shirt-tie.png	<loaded>
 twillswatch.test.js	watch/suit.png	<loaded>
 twillswatch.test.js	watch/vest.png	<loaded>
 twillswatch.test.js	weather.js	<loaded>	loadWeather
+typecheck.test.js	tests/modscope.js	<any>
 typecheck.test.js	tests/scriptlist.js	<any>
 typecheck.test.js	tests/typecheck.js	<any>
 ui.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	checkForUpdate	loadFeedback	renderAbout	swVersionOf

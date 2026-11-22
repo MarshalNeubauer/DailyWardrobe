@@ -3,7 +3,9 @@
 // (allowJs, checkJs, not strict), and only reports.
 //
 // The scopes are read from the sources on every run, as eslint.config.mjs reads them, so they can't drift:
-//   page      index.html's scripts, in order: one shared global scope (lib DOM)
+//   page      index.html's scripts, in order: one shared global scope (lib DOM). A script whose tag is type="module" (none yet) is
+//             checked as an ES module in this same program: its top-level names are its own, and the names it bridges onto
+//             globalThis (tests/modscope.js) are declared in globals.d.ts for everyone else (as `any`: the bridge is temporary)
 //   asm       asm-worker.js and what it importScripts (lib WebWorker)
 //   analysis  analysis-worker.js and what it importScripts (lib WebWorker)
 //   sw        sw.js (lib WebWorker)
@@ -25,42 +27,48 @@
 //   node tests/typecheck.js --list [file]   every error (or one file's), then the count per error code
 // Without TypeScript installed (a checkout from before it was added: run `npm install`) it says so and passes.
 const fs=require('fs'),path=require('path'),{execFileSync}=require('child_process');
-const {scriptList}=require('./scriptlist');
+const {scriptTags}=require('./scriptlist'),modscope=require('./modscope');
 const ROOT=path.resolve(__dirname,'..');
 const BASE='tests/typecheck-baseline.json',DTS='types/globals.d.ts';
-const rd=f=>fs.readFileSync(path.join(ROOT,f),'utf8');
-const rel=f=>path.relative(ROOT,f).split(path.sep).join('/');
+const rd=(f,root=ROOT)=>fs.readFileSync(path.join(root,f),'utf8');
+const rel=(f,root=ROOT)=>path.relative(root,f).split(path.sep).join('/');
 const git=(...a)=>{try{return execFileSync('git',a,{cwd:ROOT,maxBuffer:1<<28,stdio:['ignore','pipe','ignore']}).toString('utf8')}catch(e){return null}};
 const WEB=['lib.es2023.d.ts','lib.webworker.d.ts'];
 
-/* the scopes, found as eslint.config.mjs finds them */
-function scopes(){
-  const page=scriptList(rd('index.html'));
-  const imp=f=>{const m=/importScripts\(([^)]*)\)/.exec(rd(f));return[...(m?[...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1]):[]),f]};
+/* the scopes, found as eslint.config.mjs finds them (root: another folder laid out like the app, for tests/modtools.test.js) */
+function scopes(root=ROOT){
+  const tags=scriptTags(rd('index.html',root)),page=tags.map(t=>t.src),mods=tags.filter(t=>t.module).map(t=>t.src);
+  const has=f=>fs.existsSync(path.join(root,f));
+  const imp=f=>{const m=/importScripts\(([^)]*)\)/.exec(has(f)?rd(f,root):'');return[...(m?[...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1]):[]),f]};
   const W=f=>{const files=imp(f);return{files,own:files.filter(x=>!page.includes(x)),lib:WEB}};
+  const S={page:{files:page,mods,lib:['lib.es2023.d.ts','lib.dom.d.ts','lib.dom.iterable.d.ts']}};
+  if(root!==ROOT){for(const [k,f] of [['asm','asm-worker.js'],['analysis','analysis-worker.js']])if(has(f))S[k]=W(f);return S}
   const server=['worker.js',...fs.readdirSync(path.join(ROOT,'worker')).filter(f=>f.endsWith('.js')).sort().map(f=>'worker/'+f)];
-  return {page:{files:page,lib:['lib.es2023.d.ts','lib.dom.d.ts','lib.dom.iterable.d.ts']},
+  return {...S,
     asm:W('asm-worker.js'),analysis:W('analysis-worker.js'),sw:{files:['sw.js'],lib:WEB},
     server:{files:server,own:server,lib:WEB,module:true}};
 }
 
 /* the generated declarations: names written on window/self/globalThis anywhere (the scripts, the test runner's page scripts, the
    tests and tools) that no classic script declares at its top level and the platform doesn't have */
-function globalsDts(ts,S){
-  const classic=[...new Set(Object.values(S).filter(s=>!s.module).flatMap(s=>s.files))];
+function globalsDts(ts,S,root=ROOT){
+  const rd=f=>fs.readFileSync(path.join(root,f),'utf8');
+  // (a page module's top-level names are not the page's: only its bridge is, added to `put` below)
+  const mods=S.page.mods||[],classic=[...new Set(Object.values(S).filter(s=>!s.module).flatMap(s=>s.files))].filter(f=>!mods.includes(f));
   const top=new Set();
   for(const f of classic)for(const st of ts.createSourceFile(f,rd(f),ts.ScriptTarget.Latest,false,ts.ScriptKind.JS).statements){
     if((ts.isFunctionDeclaration(st)||ts.isClassDeclaration(st))&&st.name)top.add(st.name.text);
     else if(ts.isVariableStatement(st))for(const d of st.declarationList.declarations)for(const n of bound(ts,d.name))top.add(n)}
   const lib=new Set();const libDir=path.dirname(require.resolve('typescript/lib/lib.d.ts'));
   for(const l of ['lib.dom.d.ts','lib.webworker.d.ts','lib.es5.d.ts'])for(const m of fs.readFileSync(path.join(libDir,l),'utf8').matchAll(/^declare (?:var|function|const|let) ([A-Za-z_$][\w$]*)/gm))lib.add(m[1]);
-  const list=d=>fs.existsSync(path.join(ROOT,d))?fs.readdirSync(path.join(ROOT,d),{recursive:true}).map(f=>(d+'/'+f).split(path.sep).join('/'))
+  const list=d=>fs.existsSync(path.join(root,d))?fs.readdirSync(path.join(root,d),{recursive:true}).map(f=>(d+'/'+f).split(path.sep).join('/'))
     .filter(f=>f.endsWith('.js')&&!/^tests\/(fixtures|replay\/\.work)\//.test(f)):[];
   const put=new Set(['TEST_PLAN','ASM_TEST_OFF']),W=/\b(?:window|self|globalThis)\.([A-Za-z_$][\w$]*)\s*=(?!=)/g;
-  for(const f of [...classic,'tests/fixedplan.js'])for(const m of rd(f).matchAll(W))put.add(m[1]);
+  for(const f of [...classic,...mods,'tests/fixedplan.js'])if(fs.existsSync(path.join(root,f)))for(const m of rd(f).matchAll(W))put.add(m[1]);
+  for(const f of mods)for(const n of modscope.shared(root,f,true))put.add(n);
   // a test's or tool's own page helpers (`window.__t = …`) only when a script reads the name off window/self/globalThis (a test's
   // switch such as ASM_NO_WORKER): declaring them all would hide a typo of a local `base` or `lines` in the app
-  const read=new Set(classic.flatMap(f=>[...rd(f).matchAll(/\b(?:window|self|globalThis)\.([A-Za-z_$][\w$]*)/g)].map(m=>m[1])));
+  const read=new Set([...classic,...mods].flatMap(f=>[...rd(f).matchAll(/\b(?:window|self|globalThis)\.([A-Za-z_$][\w$]*)/g)].map(m=>m[1])));
   for(const f of [...list('tests'),...list('tools')])for(const m of rd(f).matchAll(W))if(read.has(m[1]))put.add(m[1]);
   const names=[...put].filter(n=>!top.has(n)&&!lib.has(n)).sort();
   return '// Generated by `node tests/typecheck.js --update` from the scripts, tests and tools: do not edit by hand.\n'+
@@ -70,12 +78,12 @@ function globalsDts(ts,S){
 function bound(ts,b){if(ts.isIdentifier(b))return[b.text];const o=[];for(const e of b.elements||[])if(e.name)o.push(...bound(ts,e.name));return o}
 
 /* every scope checked: {counts: {scope: {file: n}}, diags: [{scope, file, code, text}], dts} */
-function check(ts){
-  const S=scopes(),dts=globalsDts(ts,S);
+function check(ts,root=ROOT){
+  const S=scopes(root),dts=globalsDts(ts,S,root);
   const cfg=ts.readConfigFile(path.join(ROOT,'tsconfig.json'),ts.sys.readFile);if(cfg.error)throw new Error('tsconfig.json: '+ts.flattenDiagnosticMessageText(cfg.error.messageText,' '));
-  const opts=ts.convertCompilerOptionsFromJson(cfg.config.compilerOptions,ROOT).options;
+  const opts=ts.convertCompilerOptionsFromJson(cfg.config.compilerOptions,root).options;
   // the declarations are checked as generated (not as committed), so a stale copy fails only once, on the comparison below
-  const dtsPath=path.join(ROOT,DTS);
+  const dtsPath=path.join(root,DTS);
   const host=ts.createCompilerHost(opts),parsed=new Map(),get=host.getSourceFile.bind(host);
   host.getSourceFile=(f,lang,...r)=>{const k=f+'|'+(typeof lang==='object'?lang.languageVersion:lang);
     if(path.resolve(f)===dtsPath)return ts.createSourceFile(f,dts,lang);   // (not cached: tiny)
@@ -84,11 +92,12 @@ function check(ts){
   const counts={},diags=[];
   for(const [name,s] of Object.entries(S)){
     const o={...opts,lib:s.lib,noEmit:true};
-    if(s.module)Object.assign(o,{module:ts.ModuleKind.ESNext,moduleResolution:ts.ModuleResolutionKind.Bundler});
-    const p=ts.createProgram({rootNames:[...s.files.map(f=>path.join(ROOT,f)),...(s.module?[]:[dtsPath])],options:o,host});
+    // (a scope with a page module resolves its imports as the server's does; the files without import or export stay global scripts)
+    if(s.module||(s.mods&&s.mods.length))Object.assign(o,{module:ts.ModuleKind.ESNext,moduleResolution:ts.ModuleResolutionKind.Bundler});
+    const p=ts.createProgram({rootNames:[...s.files.map(f=>path.join(root,f)),...(s.module?[]:[dtsPath])],options:o,host});
     const c=counts[name]={};
     for(const d of [...p.getGlobalDiagnostics(),...p.getSyntacticDiagnostics(),...p.getSemanticDiagnostics()]){
-      const f=d.file?rel(d.file.fileName):'(options)';if(f.startsWith('node_modules/'))continue;if(s.own&&d.file&&!s.own.includes(f))continue;
+      const f=d.file?rel(d.file.fileName,root):'(options)';if(f.startsWith('node_modules/'))continue;if(s.own&&d.file&&!s.own.includes(f))continue;
       c[f]=(c[f]||0)+1;let at='';if(d.file&&d.start!=null){const {line,character}=d.file.getLineAndCharacterOfPosition(d.start);at=`:${line+1}:${character+1}`}
       diags.push({scope:name,file:f,code:d.code,text:`${f}${at}  TS${d.code}  ${ts.flattenDiagnosticMessageText(d.messageText,' ')}`})}
   }
@@ -139,4 +148,4 @@ function main(argv){
 }
 
 if(require.main===module)process.exitCode=main(process.argv.slice(2));
-module.exports={main,compare,total,scopes};
+module.exports={main,compare,total,scopes,check};

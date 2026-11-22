@@ -4,10 +4,11 @@
 // deletions, days with picks and the week's lock, settings stamped setting by setting and entry by entry), each merged both ways round.
 // Then the few ways the server always differed on purpose, and that no copy of the rules is left in core.js or worker/backup.js.
 const fs=require('fs'),path=require('path'),vm=require('vm'),{pathToFileURL}=require('url');
+const {appSrc}=require('./appsrc');
 module.exports=async({ok,ROOT})=>{
   const R=f=>fs.readFileSync(path.join(ROOT,f),'utf8');
   const ctx={console,localStorage:{getItem(){return null},setItem(){}},document:{querySelector(){return null}}};vm.createContext(ctx);
-  vm.runInContext(R('merge.js')+R('core.js')+';this.K={mergeState,stateSig,keySettings,stampSettings,itemFields,dayFields}',ctx);
+  vm.runInContext(appSrc(ROOT,'merge.js','core.js')+';this.K={mergeState,stateSig,keySettings,stampSettings,itemFields,dayFields}',ctx);
   const K=ctx.K,{mergeLite}=await import(pathToFileURL(path.join(ROOT,'worker','backup.js')).href),J=o=>JSON.parse(JSON.stringify(o));
   // the page's objects come from another realm: compare as JSON
   const app=(a,b)=>JSON.stringify(K.mergeState(J(a),J(b))),srv=(a,b)=>JSON.stringify(mergeLite(J(a),J(b)));

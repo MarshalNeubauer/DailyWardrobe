@@ -6,6 +6,9 @@
 // other page scripts' top-level declarations (function, class, let, const, var; the first script to declare a name owns it). A use
 // is a read, a call, a `typeof X` guard or an assignment. Each Web Worker file gets a row too: what it uses from the files it
 // `importScripts` (those files' own rows are the page's, where they see more names).
+// A page script that is an ES module (type="module": none yet) owns, for the others, only the names it bridges onto globalThis
+// (tests/modscope.js); what it uses is the names it leaves to the global scope and the files it imports from (`import {a} from
+// './b.js'` is an edge to b.js like a use of `a` was), so converting a file keeps its row.
 //
 // tests/deps.json holds every file -> file edge:
 // - a new edge fails: use what the file already depends on, move the code to the file that owns the name, or add the edge to
@@ -22,6 +25,7 @@
 const fs=require('fs'),path=require('path');
 const acorn=require('acorn'),escope=require('eslint-scope');
 const {scriptList,scriptTags}=require('./scriptlist');
+const modscope=require('./modscope');
 const LEDGER='tests/deps.json';
 const LEAVES=['merge.js','srgb.js','back.js','locale.js'];
 const WORKERS=['asm-worker.js','analysis-worker.js'];
@@ -29,8 +33,8 @@ const WORKERS=['asm-worker.js','analysis-worker.js'];
 /* the scopes, as eslint.config.mjs and tests/typecheck.js find them: [{name, files (in load order), rows (the files that get a row)}] */
 function scopes(ROOT){
   const rd=f=>fs.readFileSync(path.join(ROOT,f),'utf8');
-  const page=scriptList(rd('index.html'));
-  const out=[{name:'page',files:page,rows:page}];
+  const tags=scriptTags(rd('index.html')),page=tags.map(t=>t.src);
+  const out=[{name:'page',files:page,rows:page,mods:tags.filter(t=>t.module).map(t=>t.src)}];
   for(const w of WORKERS){if(!fs.existsSync(path.join(ROOT,w)))continue;
     const m=/importScripts\(([^)]*)\)/.exec(rd(w));
     out.push({name:w,files:[...(m?[...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1]):[]),w],rows:[w]})}
@@ -53,11 +57,13 @@ function topNames(ast){
 
 /* {scopes, names: top-level names in the page, uses: {file: {other file: [names]}}} */
 function measure(ROOT){
-  const S=scopes(ROOT),parsed={},uses={};
-  const info=f=>{if(!parsed[f]){
-    const ast=acorn.parse(fs.readFileSync(path.join(ROOT,f),'utf8'),{ecmaVersion:'latest',sourceType:'script',ranges:true});
-    const g=escope.analyze(ast,{ecmaVersion:2024,sourceType:'script'}).globalScope,own=new Set(g.variables.map(v=>v.name));
-    parsed[f]={top:topNames(ast),free:[...new Set(g.through.map(r=>r.identifier.name))].filter(n=>!own.has(n))}}
+  const S=scopes(ROOT),parsed={},uses={},mods=new Set(S[0].mods);
+  // (a module is read as one in the page's scope only: a worker can't importScripts it, which tests/bridge.test.js checks)
+  const info=f=>{if(!parsed[f]){const m=mods.has(f),src=fs.readFileSync(path.join(ROOT,f),'utf8');
+    const ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:m?'module':'script',ranges:true});
+    const g=escope.analyze(ast,{ecmaVersion:2024,sourceType:m?'module':'script'}).globalScope,own=new Set(g.variables.map(v=>v.name));
+    parsed[f]={top:m?[...modscope.bridged(ast,src).names.keys()]:topNames(ast),free:[...new Set(g.through.map(r=>r.identifier.name))].filter(n=>!own.has(n)),
+      imports:m?modscope.imports(ast,f):[]}}
     return parsed[f]};
   let names=0;
   for(const s of S){
@@ -66,6 +72,7 @@ function measure(ROOT){
     if(s.name==='page')names=owner.size;
     for(const f of s.rows){const u=uses[f]={};
       for(const n of info(f).free){const o=owner.get(n);if(o&&o!==f)(u[o]=u[o]||[]).push(n)}
+      if(s.name==='page')for(const i of info(f).imports)if(i.from!==f)u[i.from]=[...new Set([...(u[i.from]||[]),...i.names])];
       for(const o of Object.keys(u))u[o].sort()}
   }
   return {scopes:S,names,uses};
@@ -138,6 +145,7 @@ module.exports=async({ok,ROOT})=>{
   ok(WORKERS.every(w=>s.edges[w]&&s.edges[w].length),'each Web Worker\'s row lists the files it uses from its importScripts');
   console.log(`  (deps: largest cycle ${s.cyc[0]?s.cyc[0].length:0} of ${s.page.length} page scripts; ${s.leaves.length} use no other file: ${s.leaves.join(' ')})`);
 };
+module.exports.measure=measure;module.exports.edgesOf=edgesOf;
 
 if(require.main===module){
   const ROOT=path.resolve(__dirname,'..'),argv=process.argv.slice(2);
