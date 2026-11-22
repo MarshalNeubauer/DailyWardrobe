@@ -63,7 +63,7 @@ async function pickOther(ph, slot, label) {
   const row = ph.page.locator('#ibox .row').filter({ hasText: new RegExp('^\\s*' + label + '(?! clip)') }).first();
   const b = row.locator('button', { hasText: '⇄' }).first(); await b.evaluate(e => e.scrollIntoView({ block: 'center' }));
   const bb = await b.boundingBox(); await ph.tapAt(bb.x + bb.width / 2, bb.y + bb.height / 2); await sleep(900);
-  const id = await ph.page.evaluate(() => { const c = [...document.querySelectorAll('#pick-sheet .pick-it:not(.cur)')]; const x = c[c.length - 1]; return x ? x.getAttribute('onclick').match(/'([^']+)'\)$/)[1] : null });
+  const id = await ph.page.evaluate(() => { const c = [...document.querySelectorAll('#pick-sheet .pick-it:not(.cur)')]; const x = c[c.length - 1]; return x ? x.dataset.id : null });
   const card = ph.page.locator('#pick-sheet .pick-it:not(.cur)').last(); await card.evaluate(e => e.scrollIntoView({ block: 'center' }));
   const cb = await card.boundingBox(); await ph.tapAt(cb.x + cb.width / 2, cb.y + cb.height / 2); await sleep(1200);
   return id;

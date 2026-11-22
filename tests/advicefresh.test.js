@@ -16,7 +16,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(!!s,'a day with a suggested swap is found');if(!s)return;
     // (the rank comes from the worker; a plan cache cleared meanwhile, by the day's record being saved, asks again)
     const offered=async()=>{await p.waitForFunction(()=>document.querySelector('#sbox.ranked')&&rankFor(planFor()[key(sel)]),null,{timeout:10000}).catch(()=>{});
-      return p.evaluate(id=>{const a=rankFor(planFor()[key(sel)]);return {card:!!a&&a.swaps.some(f=>f.id===id),btn:[...document.querySelectorAll('#sbox .sfixbtn')].some(b=>(b.getAttribute('onclick')||'').includes(id))}},s.id)};
+      return p.evaluate(id=>{const a=rankFor(planFor()[key(sel)]);return {card:!!a&&a.swaps.some(f=>f.id===id),btn:[...document.querySelectorAll('#sbox .sfixbtn')].some(b=>b.dataset.id===id)}},s.id)};
     if(!(await p.$('#sbox.open')))await p.click('#sbox .month-link');await settle(p,400);
     const b=await offered();ok(b.card&&b.btn,`the score card offers ${s.id} on ${s.k}`);
     // the piece taken out of rotation in its own sheet, then back to Today

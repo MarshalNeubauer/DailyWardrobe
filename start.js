@@ -69,7 +69,7 @@ function startFailed(e){console.warn(e);
   if(startRead)afterScripts(()=>{try{safetyStart()}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
 /* Today couldn't be drawn: a plain card says so, with Try again */
 function startPlain(){const t=$('#today');if(!t)return;for(const s of PAGES){const el=$('#'+s);if(el)el.hidden=s!=='today'}
-  t.innerHTML='<div class="mbox"><p><b>Today couldn’t be shown.</b></p><p class="shelp">Your wardrobe is safe on this phone: nothing was deleted.</p><div class="sactions"><button type="button" onclick="location.reload()">Try again</button></div></div>'}
+  t.innerHTML='<div class="mbox"><p><b>Today couldn’t be shown.</b></p><p class="shelp">Your wardrobe is safe on this phone: nothing was deleted.</p><div class="sactions"><button type="button" data-act="reloadTap">Try again</button></div></div>'}
 /* start-up (Round B, CR-7-09: it was one 2,000-character line): index.html's last script calls startUp() once every script has run, so
    nothing here can come before a later script (the rule "whatever Today draws at start-up lives in start.js or earlier" is gone). The steps
    run in the order the line had them; a throw in any of them, or stores that can't be read, goes to startFailed as before. What is
@@ -109,4 +109,5 @@ function onSyncedData(m){setWardrobe({days:Object.fromEntries((m.days||[]).map(d
 function addBackTap(){subBack()}
 function wardAddTap(){openAdd()}
 function tabTap(el){show(el.dataset.page)}
-acts({addBackTap,wardAddTap,tabTap});
+function reloadTap(){location.reload()}   // "Try again" on the plain card shown when Today couldn't be drawn (startPlain)
+acts({addBackTap,wardAddTap,tabTap,reloadTap});

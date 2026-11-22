@@ -40,7 +40,7 @@ function shopButton(){
   if(gate.length)return `<div class="shopbtn locked" id="shop-btn" aria-disabled="true"><span class="shopbtn-t"><b>What to buy</b><small>${esc(`Add ${gate.length>1?gate.slice(0,-1).join(', ')+' and '+gate[gate.length-1]:gate[0]} to get advice: it needs enough of your wardrobe to judge.`)}</small></span></div>`;
   const r=shop&&shop.res,n=shopRecs(r),first=r&&r.top.map(t=>shopFindIn(r,t.key)).find(x=>x&&!shopHid(x));
   const sub=shopBusy?'Checking your wardrobe…':r?`${n?`${n} idea${n===1?'':'s'}`:'Nothing needed'}${first?` · first: ${first.name}`:''}${shop.sig===shopSig()?'':' · your wardrobe changed since'}`:'What would improve your outfits most';
-  return `<button type="button" class="shopbtn" id="shop-btn" onclick="openShop()" aria-haspopup="dialog"><span class="shopbtn-t"><b>What to buy</b><small>${esc(sub)}</small></span><span class="shopbtn-c" aria-hidden="true">›</span></button>`;
+  return `<button type="button" class="shopbtn" id="shop-btn" data-act="shopOpenTap" aria-haspopup="dialog"><span class="shopbtn-t"><b>What to buy</b><small>${esc(sub)}</small></span><span class="shopbtn-c" aria-hidden="true">›</span></button>`;
 }
 const shopFindIn=(r,key)=>{for(const c of r.cats){const x=c.recs.find(x=>x.key===key);if(x)return x}return null};
 
@@ -122,11 +122,11 @@ function shopSamples(rec){
 /* one idea: folded to its picture, name and first reason; a tap unfolds every reason, sample outfits and the two actions */
 function shopRec(x){
   const k=esc(x.key),open=!!shopShown[x.key],form=shopForm===x.key;
-  return `<div class="shop-rec${open?' open':''}" data-key="${k}"><button type="button" class="shop-rechead" aria-expanded="${open}" onclick="shopToggle('${k}')"><span class="rec-img">${itemThumb(x.items[0],true)}</span>
+  return `<div class="shop-rec${open?' open':''}" data-key="${k}"><button type="button" class="shop-rechead" aria-expanded="${open}" data-act="shopRecTap" data-rec="${k}"><span class="rec-img">${itemThumb(x.items[0],true)}</span>
     <span class="rec-txt"><small class="shop-tag ${x.tier}">${SHOP_TIER[x.tier]||''}</small><b class="cap">${esc(sentence(x.name))}</b>${open?'':`<small class="shop-lead">${esc(x.why[0]||'')}</small>`}</span><span class="shop-chev" aria-hidden="true">${open?'−':'+'}</span></button>
     ${open?`<div class="shop-more">${x.detail?`<p><small>${esc(x.detail)}</small></p>`:''}<ul class="shop-why">${x.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>${shopSamples(x)}
-      ${form?`<div class="shop-buy"><label class="ordate">Arrives (optional) <input type="date" id="shop-arr" min="${isoKey(todayDate())}"></label><div class="btns"><button type="button" class="pri" onclick="shopBought('${k}')">Add as on the way</button><button type="button" onclick="shopForm=null;renderShop()">Cancel</button></div><small class="mut">It joins your outfits the day after it arrives; without a date, when you put it in rotation.</small></div>`
-        :`<div class="btns"><button type="button" onclick="shopForm='${k}';renderShop()">Bought it</button><button type="button" onclick="shopHide('${k}')">Not for me</button></div>`}</div>`:''}</div>`;
+      ${form?`<div class="shop-buy"><label class="ordate">Arrives (optional) <input type="date" id="shop-arr" min="${isoKey(todayDate())}"></label><div class="btns"><button type="button" class="pri" data-act="shopBoughtTap" data-rec="${k}">Add as on the way</button><button type="button" data-act="shopCancelTap">Cancel</button></div><small class="mut">It joins your outfits the day after it arrives; without a date, when you put it in rotation.</small></div>`
+        :`<div class="btns"><button type="button" data-act="shopFormTap" data-rec="${k}">Bought it</button><button type="button" data-act="shopHideTap" data-rec="${k}">Not for me</button></div>`}</div>`:''}</div>`;
 }
 function shopCat(c){
   const o=c.own,mix=o&&o.n?`<p class="shop-mix">${o.groups.map(([l,h,n])=>`<span class="shop-g"><i style="background:${h}"></i>${esc(l)} ${n}</span>`).join('')}</p>
@@ -142,9 +142,9 @@ function renderShop(){
   if(shopBusy)body+=`<div class="shop-busy"><span class="st-bar" id="shop-prog"><i style="width:${Math.round(100*(shopBusy.i+1)/shopBusy.n)}%"></i></span><small class="mut">${esc(shopBusyText())}</small></div>`;
   if(shopMsg)body+=`<p class="shop-msg"><small>${esc(shopMsg)}</small></p>`;
   if(b)body+=`<p class="mut shop-sum"><small>Your next ${full.months} months, ${b.days} workdays: average outfit score ${avgText(b.avg)}, ${b.looks} color combination${b.looks===1?'':'s'}, ${b.problems?`${b.problems} day${b.problems===1?'':'s'} with a warning`:'no day with a warning'}${b.rest?`, ${b.rest} where a jacket hasn't rested ${COOL} days`:''}${idle?`, ${idle} piece${idle===1?'':'s'} never planned`:''}. ${shop&&shop.at?`Checked ${new Date(shop.at).toLocaleDateString(undefined,{month:'short',day:'numeric'})}${stale?'; your wardrobe changed since':''}.`:''}</small></p>`;
-  if(!shopBusy&&r)body+=`<div class="btns shop-re"><button type="button" onclick="analyzeWardrobe()">Check again</button></div>`;
+  if(!shopBusy&&r)body+=`<div class="btns shop-re"><button type="button" data-act="shopAgainTap">Check again</button></div>`;
   if(full){const top=full.top.map(t=>shopFindIn(full,t.key)).filter(x=>x&&!shopHid(x));
-    body+=`<section class="shop-cat" id="shop-c-top"><h3>Top picks</h3>${top.length?`<p class="mut"><small>The most useful first, across everything. Tap one for its reasons.</small></p><ol class="shop-top">${top.map((x,i)=>`<li><button type="button" class="shop-toprow" onclick="shopGo('${esc(x.key)}')"><span class="shop-n">${i+1}</span><span class="rec-img">${itemThumb(x.items[0],true)}</span><span class="shop-topnm"><b class="cap">${esc(sentence(x.name))}</b><small class="shop-tag ${x.tier}">${SHOP_TIER[x.tier]}</small></span><span aria-hidden="true">›</span></button></li>`).join('')}</ol>`
+    body+=`<section class="shop-cat" id="shop-c-top"><h3>Top picks</h3>${top.length?`<p class="mut"><small>The most useful first, across everything. Tap one for its reasons.</small></p><ol class="shop-top">${top.map((x,i)=>`<li><button type="button" class="shop-toprow" data-act="shopGoTap" data-rec="${esc(x.key)}"><span class="shop-n">${i+1}</span><span class="rec-img">${itemThumb(x.items[0],true)}</span><span class="shop-topnm"><b class="cap">${esc(sentence(x.name))}</b><small class="shop-tag ${x.tier}">${SHOP_TIER[x.tier]}</small></span><span aria-hidden="true">›</span></button></li>`).join('')}</ol>`
       :'<p class="shop-none"><small>Nothing would make a real difference: your wardrobe covers the plan well. The optional ideas are below.</small></p>'}</section>`}
   if(r)body+=r.cats.map(shopCat).join('');
   if(full){
@@ -156,7 +156,7 @@ function renderShop(){
   // "Show again" carries its key in data-unhide, read by one listener (fix round A, CR-4-01: esc inside an inline handler is decoded back,
   // so a quote in a synced settings.shopSkip key ran as script)
   if(!el.dataset.unhide){el.dataset.unhide='1';el.addEventListener('click',e=>{const b=e.target.closest('button[data-unhide]');if(b&&el.contains(b))shopUnhide(b.dataset.unhide)})}
-  el.innerHTML=`<div class="pick-head shop-top-head"><i class="shop-grab" aria-hidden="true"></i><b id="shop-title">What to buy</b><button class="pick-x" onclick="closeShop()" aria-label="Close">×</button></div><div class="shop-body">${body}</div>`;
+  el.innerHTML=`<div class="pick-head shop-top-head"><i class="shop-grab" aria-hidden="true"></i><b id="shop-title">What to buy</b><button class="pick-x" data-act="shopCloseTap" aria-label="Close">×</button></div><div class="shop-body">${body}</div>`;
   el.scrollTop=y;
 }
 /* a hidden idea in words, from its key (type|colour group|pattern class) */
@@ -177,6 +177,17 @@ async function shopBought(key){
 /* not for me: hidden at once, and left out of every later check (the next check puts another idea in its place) */
 async function shopHide(key){settings.shopSkip=[...new Set([...(settings.shopSkip||[]),key])];await saveUserSettings();shopMsg='Hidden. You can bring it back under "Hidden ideas" at the bottom.';renderShop();if(!$('#wardrobe').hidden&&!editing)renderWardrobe()}
 async function shopUnhide(key){settings.shopSkip=(settings.shopSkip||[]).filter(k=>k!==key);await saveUserSettings();shopMsg='';if(shopFind(key))renderShop();else analyzeWardrobe()}
-/* index.html's (act.js): What to buy's backdrop */
+/* what the controls do (act.js). index.html's: What to buy's backdrop */
 function shopBackdropTap(){closeShop()}
-acts({shopBackdropTap});
+/* Insights' "What to buy" card; the sheet's ×, "Check again", a top pick, and an idea's head, "Bought it", "Add as on the way", Cancel and
+   "Not for me" (the idea by its key in data-rec; "Show again" keeps its data-unhide listener, renderShop) */
+function shopOpenTap(){openShop()}
+function shopCloseTap(){closeShop()}
+function shopAgainTap(){analyzeWardrobe()}
+function shopGoTap(el){shopGo(el.dataset.rec)}
+function shopRecTap(el){shopToggle(el.dataset.rec)}
+function shopFormTap(el){shopForm=el.dataset.rec;renderShop()}
+function shopCancelTap(){shopForm=null;renderShop()}
+function shopBoughtTap(el){shopBought(el.dataset.rec)}
+function shopHideTap(el){shopHide(el.dataset.rec)}
+acts({shopBackdropTap,shopOpenTap,shopCloseTap,shopAgainTap,shopGoTap,shopRecTap,shopFormTap,shopCancelTap,shopBoughtTap,shopHideTap});

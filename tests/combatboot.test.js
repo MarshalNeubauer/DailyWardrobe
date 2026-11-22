@@ -34,14 +34,14 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(pl.n>50&&!pl.hit,`never planned over ${pl.n} days`);
     // the picker with other pants: not offered, a line says why
     await p.evaluate(()=>openPicker('shoes'));await settle(p,300);
-    const a=await p.evaluate(B=>{const s=document.querySelector('#pick-sheet');return {boot:!!s.querySelector(`[onclick*="${B}"]`),away:(s.querySelector('.pick-away')||{}).textContent||''}},BOOT);
+    const a=await p.evaluate(B=>{const s=document.querySelector('#pick-sheet');return {boot:!!s.querySelector(`[data-id="${B}"]`),away:(s.querySelector('.pick-away')||{}).textContent||''}},BOOT);
     ok(!a.boot&&/camouflage pants/.test(a.away),`not offered with the day's pants; the line says why (${a.away})`);
     await p.evaluate(()=>closePicker());
     // pick the camouflage pants (a blazer day: Wednesday), then the boots are offered by hand
     await p.evaluate(()=>{sel=new Date(2026,10,11);cache={};renderToday()});await settle(p,300);
     await p.evaluate(C=>pickItem('bot',C),CAMO);await settle(p,400);
     await p.evaluate(()=>openPicker('shoes'));await settle(p,300);
-    const g=await p.evaluate(B=>{const s=document.querySelector('#pick-sheet'),h=s.querySelector('.pick-hand');return {inHand:!!(h&&h.querySelector(`[onclick*="${B}"]`)),note:h&&h.textContent,main:!!s.querySelector(`#pick-sheet > .pick-grid [onclick*="${B}"]`)}},BOOT);
+    const g=await p.evaluate(B=>{const s=document.querySelector('#pick-sheet'),h=s.querySelector('.pick-hand');return {inHand:!!(h&&h.querySelector(`[data-id="${B}"]`)),note:h&&h.textContent,main:!!s.querySelector(`#pick-sheet > .pick-grid [data-id="${B}"]`)}},BOOT);
     ok(g.inHand&&!g.main&&/Combat boots/.test(g.note),'with camouflage pants the boots are offered in the hand-pick group, not the scored grid');
     await p.evaluate(B=>{closePicker();return pickItem('shoes',B)},BOOT);await settle(p,400);
     const w=await p.evaluate(()=>{const o=planFor()[key(sel)],r=rateOutfit(o);return {shoes:o.shoes&&o.shoes.id,bot:o.bot&&o.bot.id,shoesCheck:(r.checks.find(x=>x.label==='Shoes')||{}),hard:r.hard,belt:!!o.belt}});

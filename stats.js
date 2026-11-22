@@ -106,7 +106,7 @@ function buildStats(){
    "My charcoal pinstripe", audit 2026-11-14) */
 const statName=i=>itemName(i)||sentence(shortDesc(i)||nm(i)),statName1=i=>itemName(i)||sentence(nm(i)),statName2=i=>itemName(i)||nm(i);   // (statName1/2: with the type, "Navy suit"; statName2 later in a line, not capitalised)
 /* an empty wardrobe's pages (Insights, Packing list, Laundry & cleaning): the way to start, as on the empty Wardrobe */
-const emptyAdd=()=>`<div class="btns emptyadd"><button type="button" class="pri" onclick="openAdd()">Add your first item</button>${typeof kitSampleLoad==='function'?'<button type="button" onclick="kitSampleLoad()">Try a sample wardrobe</button>':''}</div>`;
+const emptyAdd=()=>`<div class="btns emptyadd"><button type="button" class="pri" data-act="emptyAddTap">Add your first item</button>${typeof kitSampleLoad==='function'?'<button type="button" data-act="emptySampleTap">Try a sample wardrobe</button>':''}</div>`;
 const statDate=d=>d?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
 const statPic=i=>`<span class="st-pic">${i.photo?`<img src="${phSm(i)}" alt="">`:itemPic(i)?`<img src="${srcOk(itemPic(i).img)}" alt="">`:itemThumb(i,true)}</span>`;
 const GROUP_NAMES={grey:'Gray',navy:'Navy',blue:'Blue',brown:'Brown',tan:'Tan',black:'Black',green:'Green',red:'Burgundy / red',white:'White',lightblue:'Light blue',pink:'Pink',purple:'Purple',yellow:'Yellow',beige:'Beige',gold:'Gold',cream:'Cream',charcoal:'Charcoal'};
@@ -134,7 +134,7 @@ function statsDraw(){
     // a type the dress code leaves out (blazers with jackets off) isn't "never worn": it isn't asked for (re-audit 2026-11-15)
     const out=dressOut(t),idle=out||S.short.length?0:rs.filter(r=>!r.worn&&!r.planned).length;
     // a folded section holds no rows (and so none of its photos) until it is opened
-    return `<details class="st-type" data-type="${t}"${open?' open':''} ontoggle="statsToggle(this)"><summary><b>${TYPES[t]}${rs.length>1&&!/s$/.test(TYPES[t])?'s':''}</b><small class="mut">${rs.length} · ${out?'left out by your dress code':S.short.length?'nothing planned yet':idle?`${idle} never worn`:'all in use'}</small></summary>
+    return `<details class="st-type" data-type="${t}"${open?' open':''} data-act-toggle="statsFold"><summary><b>${TYPES[t]}${rs.length>1&&!/s$/.test(TYPES[t])?'s':''}</b><small class="mut">${rs.length} · ${out?'left out by your dress code':S.short.length?'nothing planned yet':idle?`${idle} never worn`:'all in use'}</small></summary>
       <div class="st-rows">${!open?'':statRowsHtml(S,t)}</div></details>`};
   const mix=(title,list)=>!list.length?'':`<div class="st-mix"><small class="mut">${title}</small>${list.slice(0,7).map(([g,n])=>`<div class="st-mixrow"><span class="st-dot" style="background:${groupCol(g)}"></span><span class="st-mixnm">${esc(groupName(g))}</span>${bar(n,list[0][1])}<small class="mut">${Math.round(100*n/nPlan)}%</small></div>`).join('')}</div>`;
   const missList=Object.entries(S.miss).sort((a,b)=>b[1].lost-a[1].lost).slice(0,6);
@@ -142,7 +142,7 @@ function statsDraw(){
   el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${typeof shopButton==='function'?shopButton():''}
   <div class="st-tiles">${tile(items.length,items.length===1?'item':'items')}${tile(S.worn.length,`day${S.worn.length===1?'':'s'} worn${first?' since '+statDate(first):''}`)}${S.short.length?'':tile(nPlan,`outfit${nPlan===1?'':'s'} planned, next ${STATS_MONTHS} months`)+tile(S.looks,`different outfit${S.looks===1?'':'s'} planned`)+tile(nPlan?avgText(S.avg):'–','average outfit score')+tile(S.unused.length,`item${S.unused.length===1?'':'s'} never worn`)}</div>
   ${typeof favStatsCard==='function'?favStatsCard(S):''}
-  ${S.short.length?`<section class="card st-card" id="st-short"><h3>Not a full outfit yet</h3><p class="mut"><small>Your wardrobe still needs ${listAnd(S.short)} for a complete outfit. The plan for the next ${STATS_MONTHS} months, its scores and what is never worn show here once Today can dress a workday.</small></p><div class="btns"><button type="button" class="pri" onclick="openAdd()">Add an item</button></div></section>`:`
+  ${S.short.length?`<section class="card st-card" id="st-short"><h3>Not a full outfit yet</h3><p class="mut"><small>Your wardrobe still needs ${listAnd(S.short)} for a complete outfit. The plan for the next ${STATS_MONTHS} months, its scores and what is never worn show here once Today can dress a workday.</small></p><div class="btns"><button type="button" class="pri" data-act="emptyAddTap">Add an item</button></div></section>`:`
 
   <section class="card st-card" id="st-unused"><h3>Never worn</h3>
   ${S.unused.length?`<p class="mut"><small>Not worn so far and not in any outfit for the next ${STATS_MONTHS} months, with the reason.</small></p>${S.unused.map(r=>`<div class="st-row">${statPic(r.i)}<div class="st-main"><span class="st-nm">${TYPES[r.i.type]}: <span class="${titleCls(r.i)}">${esc(statName(r.i))}</span></span><small class="mut">${prettyCols(whyUnused(r.i))}</small></div></div>`).join('')}`
@@ -162,7 +162,7 @@ ${S.short.length?'':`
   <section class="card st-card" id="st-points"><h3>Small deductions</h3>
   ${missList.length?`<p class="mut"><small>Over the ${nPlan} planned outfits: where the score is marked down most, and the usual reason.</small></p>${missList.map(([l,m])=>{const why=Object.entries(m.why).sort((a,b)=>b[1]-a[1])[0];
       return `<div class="st-miss"><b>${l}</b><span class="mut">${m.n} of ${nPlan} days</span>${bar(m.n,nPlan)}${why?`<small class="mut">Mostly: ${why[0]}.</small>`:''}</div>`}).join('')}`:'<p class="mut"><small>Nothing: every planned outfit scores full marks.</small></p>'}
-  ${S.lowest.length?`<p class="mut" style="margin-top:10px"><small>Lowest-scoring days: ${S.lowest.map(([k,,r])=>`<a href="#" onclick="openDay(${keyDate(k).getTime()});show('today');return false">${statDate(keyDate(k))} (${r.score})</a>`).join(', ')}.</small></p>`:''}</section>
+  ${S.lowest.length?`<p class="mut" style="margin-top:10px"><small>Lowest-scoring days: ${S.lowest.map(([k,,r])=>`<a href="#" data-act="statsDayTap" data-t="${keyDate(k).getTime()}">${statDate(keyDate(k))} (${r.score})</a>`).join(', ')}.</small></p>`:''}</section>
 
   <section class="card st-card" id="st-colours"><h3>Color balance</h3><p class="mut"><small>Share of the planned days by color.</small></p>
   ${mix('Jackets',S.jackets)}${mix('Shirts',S.shirts)}${mix('Ties',S.ties)}</section>
@@ -204,3 +204,10 @@ function statsShow(){const el=$('#stats');if(!el)return;
   statsPlan().then(()=>{if(!el.hidden&&el.querySelector('.st-wait'))renderStats()})}
 // a few seconds after start-up, while nothing else is going on
 afterScripts(()=>setTimeout(()=>{if(items.length&&!document.hidden)statsPlan()},4000));
+/* what the controls do (act.js): an empty page's two buttons and "Add an item" (emptyAdd: Insights, the Packing list), a Wear counts section folded
+   or unfolded, and a lowest-scoring day's link (data-t: the day; a link: its jump to # is called off) */
+function emptyAddTap(){openAdd()}
+function emptySampleTap(){kitSampleLoad()}
+function statsFold(el){statsToggle(el)}
+function statsDayTap(el,ev){openDay(+el.dataset.t);show('today');ev.preventDefault()}
+acts({emptyAddTap,emptySampleTap,statsFold,statsDayTap});

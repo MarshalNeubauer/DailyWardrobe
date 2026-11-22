@@ -183,8 +183,8 @@ suite('add an item without a photo; it persists',async({page})=>{
   // "Add without a photo" opens its card in a sheet over Add (#nps-sheet), Confirm pinned at its bottom (#nps-bar)
   // (the card is a checklist since 2026-11-16: its sections open, checklist.js CK_OPEN['*'])
   await page.evaluate(()=>{CK_OPEN['*']=true});await page.click('#n-wardrobe');await page.click('#ward-add');await page.click('#add-manual');
-  await page.selectOption('#nps-q .card >> nth=0 >> select[onchange*="\'type\'"]','belt');
-  await page.selectOption('#nps-q .card >> nth=0 >> select[onchange*="\'leather\'"]','suede');
+  await page.selectOption('#nps-q .card >> nth=0 >> select[data-f="type"]','belt');
+  await page.selectOption('#nps-q .card >> nth=0 >> select[data-f="leather"]','suede');
   await page.click('#nps-bar >> button:has-text("Confirm")');   // (the bar also says "… you can still confirm")
   await page.waitForFunction(()=>items.some(i=>i.type==='belt'));await page.waitForTimeout(200);
   await page.reload();await page.waitForFunction(()=>window.appReady);

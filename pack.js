@@ -188,40 +188,54 @@ function packShow(t){const el=$('#pack');if(!el)return;el.hidden=t!=='pack';if(t
 function openPack(){subOpen();closeSettings();show('pack');scrollTo({top:0})}
 function renderPack(){
   const el=$('#pack');if(!el)return;
-  const head=n=>`<div class="phead"><button class="pback" onclick="subBack()" aria-label="Back">‹</button><h2>Packing list</h2>${n?`<span class="pcount">${n}</span>`:''}</div>`;
+  const head=n=>`<div class="phead"><button class="pback" data-act="packBackTap" aria-label="Back">‹</button><h2>Packing list</h2>${n?`<span class="pcount">${n}</span>`:''}</div>`;
   if(!items.length){packNow=null;el.innerHTML=head('')+`<p class="mut empty">Your wardrobe is empty.</p>${emptyAdd()}`;return}
   const t=packTrip(),late=packLate(t),base0=packDays(t),lateUsed=late.filter(i=>base0.some(x=>x.o&&SLOTS.some(s=>x.o[s]&&x.o[s].id===i.id))),
     src=lateUsed.length?packLateRecs(base0,late,dayRecs):dayRecs,base=lateUsed.length?packDays(t,packPlanOf(src,keyDate(t.b))):base0,light=packLight(t,base,src),days=light?light.days:base,mark=packMark(),list=packList(days,mark.w),live=days.filter(x=>x.o),T=new Set(mark.t),W=new Set(mark.w);
   packNow={days,list,light,text:packText(t,days,list)};packLines=[];
-  const capSel=(id,which,v,word)=>`<label class="pk-f">${word}<select id="${id}" onchange="packSetCap('${which}',this.value)">${[0,1,2,3,4].map(n=>`<option value="${n}"${n===v?' selected':''}>${n||'No limit'}</option>`).join('')}</select></label>`;
+  const capSel=(id,which,v,word)=>`<label class="pk-f">${word}<select id="${id}" data-act-change="packCapPick" data-which="${which}">${[0,1,2,3,4].map(n=>`<option value="${n}"${n===v?' selected':''}>${n||'No limit'}</option>`).join('')}</select></label>`;
   // pack lighter
   const nj=packUses(base,'top'),ns=packUses(base,'shoes'),uses=(j,s)=>`${j} jacket${j===1?'':'s'} and ${packN(s,'shoes')}`;
   let lightTxt,lightBtns='';
   if(!live.length&&!light)lightTxt='';
   else if(light){const sv=packSaved(packList(base,mark.w),list),over=(t.j&&light.j>t.j)||(t.s&&light.s>t.s),a0=packAvg(base),a1=packAvg(days);
     lightTxt=`<p class="pk-note" id="pk-light"><b>${over?'The closest plan':'A lighter plan'}: ${uses(light.j,light.s)}</b> instead of ${uses(nj,ns)}. ${sv.less?`It saves ${sv.less}`:'It packs the same number of pieces'}${sv.more?` and adds ${sv.more}`:''}. Outfit score ${a1} on average${a1!==a0?` (${a0} before)`:''}. The outfits below show it; nothing is changed until you keep it.</p>`;
-    lightBtns=`<div class="btns"><button type="button" class="pri" id="pk-keep" onclick="packLock()">Keep this plan</button><button type="button" id="pk-nocap" onclick="packNoCap()">Don’t limit</button></div>`}
+    lightBtns=`<div class="btns"><button type="button" class="pri" id="pk-keep" data-act="packKeepTap">Keep this plan</button><button type="button" id="pk-nocap" data-act="packNoCapTap">Don’t limit</button></div>`}
   else lightTxt=`<p class="pk-note" id="pk-light">${t.j||t.s?'Within your limit: the':'The'} trip uses ${uses(nj,ns)}.</p>`;
   // the days
   const dayRow=x=>`<div class="pk-day${x.o?'':' off'}"><span class="pk-dn">${packDate(x.d)}</span>${x.o?`${stackSVG(x.o,'pk-stack')}<span class="pk-what"><b>${esc(shortTop(x.o))}</b><small>${esc([shortRest(x.o),x.o.shoes&&colName(primaryCol(x.o.shoes))+' shoes'].filter(Boolean).join(' · '))}</small></span>`:`<span class="pk-what"><small>${x.wd?'Nothing planned':'Day off'+(x.off?': '+nameHtml(x.off):'')}</small></span>`}</div>`;
   // to pack
   const line=l=>{const ix=packLines.push(l)-1,one=live.length<2&&l.n<2;
-    return `<div class="pk-line"><label class="pk-tick"><input type="checkbox" ${T.has(l.key)?'checked':''} onchange="packTick(${ix},this.checked)"><span class="pk-sw">${l.i?swatchSVG(l.i,true):''}</span><span class="pk-nm">${nameHtml(l.name)}${one?'':` <small>· ${packDaysTxt(l.n)}</small>`}</span></label>${l.i?`<button type="button" class="pk-wear" aria-pressed="false" aria-label="Wear the ${esc(l.name)} on the way" onclick="packWear(${ix},true)">Wear</button>`:''}</div>`};
-  const wornLine=l=>{const ix=packLines.push(l)-1;return `<div class="pk-line worn"><span class="pk-tick"><span class="pk-sw">${swatchSVG(l.i,true)}</span><span class="pk-nm">${nameHtml(l.name)}</span></span><button type="button" class="pk-wear" aria-pressed="true" aria-label="Pack the ${esc(l.name)} instead" onclick="packWear(${ix},false)">Pack</button></div>`};
+    return `<div class="pk-line"><label class="pk-tick"><input type="checkbox" ${T.has(l.key)?'checked':''} data-act-change="packTickPick" data-ix="${ix}"><span class="pk-sw">${l.i?swatchSVG(l.i,true):''}</span><span class="pk-nm">${nameHtml(l.name)}${one?'':` <small>· ${packDaysTxt(l.n)}</small>`}</span></label>${l.i?`<button type="button" class="pk-wear" aria-pressed="false" aria-label="Wear the ${esc(l.name)} on the way" data-act="packWearTap" data-ix="${ix}" data-on="1">Wear</button>`:''}</div>`};
+  const wornLine=l=>{const ix=packLines.push(l)-1;return `<div class="pk-line worn"><span class="pk-tick"><span class="pk-sw">${swatchSVG(l.i,true)}</span><span class="pk-nm">${nameHtml(l.name)}</span></span><button type="button" class="pk-wear" aria-pressed="true" aria-label="Pack the ${esc(l.name)} instead" data-act="packWearTap" data-ix="${ix}" data-on="0">Pack</button></div>`};
   const first=live[0],firstAll=first&&packWornIds(first.o).every(i=>W.has(i));
   const lock=packLockState(days),allLocked=lock.of>0&&lock.n===lock.of;
   const span=days.length;
   el.innerHTML=head(packDaysTxt(span))+
-    `<div class="card pk-card pk-dates"><label class="pk-f">First day<input type="date" id="pk-a" value="${t.a}" onchange="packSetDate('a',this.value)"></label><label class="pk-f">Last day<input type="date" id="pk-b" value="${t.b}" min="${t.a}" onchange="packSetDate('b',this.value)"></label></div>`+
+    `<div class="card pk-card pk-dates"><label class="pk-f">First day<input type="date" id="pk-a" value="${t.a}" data-act-change="packDatePick" data-which="a"></label><label class="pk-f">Last day<input type="date" id="pk-b" value="${t.b}" min="${t.a}" data-act-change="packDatePick" data-which="b"></label></div>`+
     `<div class="card pk-card" id="pk-lighter"><h3>Pack lighter</h3><p class="mut pk-help">Limit how many jackets (suits and blazers) and pairs of shoes the trip uses.</p><div class="pk-caps">${capSel('pk-j','j',t.j,'Jackets')}${capSel('pk-s','s',t.s,'Pairs of shoes')}</div>${lightTxt}${lightBtns}</div>`+
     `<div class="card pk-card" id="pk-days"><h3>Outfits${light?' <small class="pk-tag">Lighter plan</small>':''}</h3>${lateUsed.length?`<p class="mut pk-help" id="pk-late">${lateUsed.map(i=>`${nameHtml(packName(i))} ${i.away?'is back':'arrives'} ${esc(packDate(keyDate(i.arrives)))}`).join('; ')}: after you leave, so ${lateUsed.length===1?'it is':'they are'} left out of this trip.</p>`:''}${days.map(dayRow).join('')}</div>`+
     (live.length?`<div class="card pk-card" id="pk-list"><div class="pk-h"><h3>To pack</h3><small class="mut" id="pk-done"></small></div><p class="pk-count" id="pk-count">${esc(packCount(list.counts)||'Nothing left to pack')}</p>`+
       list.groups.map(g=>`<div class="pk-group"><h4>${g.title}</h4>${g.lines.map(line).join('')}</div>`).join('')+
-      `<div class="pk-group pk-travel"><h4>Wearing on the way</h4>${list.worn.length?list.worn.map(wornLine).join(''):''}<p class="mut pk-help">${list.worn.length?'Not counted as packed.':'Tap Wear on what you travel in, and it isn’t counted as packed.'}</p>${first?`<button type="button" id="pk-wearday" onclick="packWearDay('${first.k}')">${firstAll?`Pack ${esc(packDate(first.d))}’s outfit instead`:`Travel in ${esc(packDate(first.d))}’s outfit`}</button>`:''}</div>`+
-      `<div class="btns pk-out"><button type="button" class="pri" id="pk-copy" onclick="packCopy()">Copy list</button>${navigator.share?`<button type="button" id="pk-share" onclick="packShare()">Share</button>`:''}</div></div>`
+      `<div class="pk-group pk-travel"><h4>Wearing on the way</h4>${list.worn.length?list.worn.map(wornLine).join(''):''}<p class="mut pk-help">${list.worn.length?'Not counted as packed.':'Tap Wear on what you travel in, and it isn’t counted as packed.'}</p>${first?`<button type="button" id="pk-wearday" data-act="packWearDayTap" data-day="${first.k}">${firstAll?`Pack ${esc(packDate(first.d))}’s outfit instead`:`Travel in ${esc(packDate(first.d))}’s outfit`}</button>`:''}</div>`+
+      `<div class="btns pk-out"><button type="button" class="pri" id="pk-copy" data-act="packCopyTap">Copy list</button>${navigator.share?`<button type="button" id="pk-share" data-act="packShareTap">Share</button>`:''}</div></div>`
       :`<p class="mut empty" id="pk-none">No outfits are planned for these days.</p>`)+
-    (lock.of&&!light?`<div class="card pk-card" id="pk-lock"><h3>Keep these outfits</h3><p class="pk-note" id="pk-lockmsg">${allLocked?'<b>Locked.</b> These outfits stay as shown, whatever you change on other days.':lock.n?`<b>${lock.n} of ${lock.of} day${lock.of===1?'':'s'} locked.</b> The others can still change when another day changes or you add an item.`:'<b>Not locked.</b> The list is only right while the plan doesn’t move: a change on another day or a new item can still change these outfits.'}</p><div class="btns">${allLocked?'':`<button type="button" class="pri" id="pk-lockbtn" onclick="packLock()">Keep these outfits</button>`}${lock.n?`<button type="button" id="pk-release" onclick="packRelease()">Let the plan change again</button>`:''}</div><p class="mut pk-help">The app keeps today through Friday as shown by itself. A swap you make on one of these days re-plans that day only.</p></div>`:'');
+    (lock.of&&!light?`<div class="card pk-card" id="pk-lock"><h3>Keep these outfits</h3><p class="pk-note" id="pk-lockmsg">${allLocked?'<b>Locked.</b> These outfits stay as shown, whatever you change on other days.':lock.n?`<b>${lock.n} of ${lock.of} day${lock.of===1?'':'s'} locked.</b> The others can still change when another day changes or you add an item.`:'<b>Not locked.</b> The list is only right while the plan doesn’t move: a change on another day or a new item can still change these outfits.'}</p><div class="btns">${allLocked?'':`<button type="button" class="pri" id="pk-lockbtn" data-act="packKeepTap">Keep these outfits</button>`}${lock.n?`<button type="button" id="pk-release" data-act="packReleaseTap">Let the plan change again</button>`:''}</div><p class="mut pk-help">The app keeps today through Friday as shown by itself. A swap you make on one of these days re-plans that day only.</p></div>`:'');
   packProgress()}
-/* index.html's (act.js): Settings' Packing list link */
+/* what the controls do (act.js). index.html's: Settings' Packing list link */
 function packOpenTap(){openPack()}
-acts({packOpenTap});
+/* the page's own: ‹, the two dates (data-which a | b), the two limits (data-which j | s), "Keep this plan" / "Keep these outfits", "Don’t limit",
+   a line's checkbox and its Wear / Pack (data-ix: its place in packLines; data-on 1 = wear it on the way), the first day's outfit (data-day),
+   Copy list, Share, "Let the plan change again" */
+function packBackTap(){subBack()}
+function packDatePick(el){packSetDate(el.dataset.which,el.value)}
+function packCapPick(el){packSetCap(el.dataset.which,el.value)}
+function packKeepTap(){packLock()}
+function packNoCapTap(){packNoCap()}
+function packTickPick(el){packTick(+el.dataset.ix,el.checked)}
+function packWearTap(el){packWear(+el.dataset.ix,el.dataset.on==='1')}
+function packWearDayTap(el){packWearDay(el.dataset.day)}
+function packCopyTap(){packCopy()}
+function packShareTap(){packShare()}
+function packReleaseTap(){packRelease()}
+acts({packOpenTap,packBackTap,packDatePick,packCapPick,packKeepTap,packNoCapTap,packTickPick,packWearTap,packWearDayTap,packCopyTap,packShareTap,packReleaseTap});

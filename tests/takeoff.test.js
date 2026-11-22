@@ -111,10 +111,10 @@ const todaypants=async({ok,chromium,url,settle})=>{
     // the picker: the suit's own pants first (wearing), then every pair of pants
     await p.click('#ibox button[aria-label="Change pants"]');await settle(p,300);
     const pk=await p.evaluate(()=>({on:document.querySelector('#pick-sheet').classList.contains('on'),title:document.querySelector('#pick-title').textContent,
-      cards:[...document.querySelectorAll('#pick-sheet .pick-it')].map(c=>({id:(c.getAttribute('onclick').match(/'bot','([^']+)'/)||[])[1],cur:c.classList.contains('cur'),txt:c.textContent.replace(/\s+/g,' ').trim()}))}));
+      cards:[...document.querySelectorAll('#pick-sheet .pick-it')].map(c=>({id:(c.dataset.slot==='bot'?c.dataset.id:undefined),cur:c.classList.contains('cur'),txt:c.textContent.replace(/\s+/g,' ').trim()}))}));
     const sc=pk.cards.find(c=>c.id===SUIT);
     ok(pk.on&&/Choose pants/.test(pk.title)&&sc&&sc.cur&&/The suit’s own pants/.test(sc.txt)&&pk.cards.some(c=>c.id===GREY)&&pk.cards.some(c=>c.id===CHAR)&&pk.cards.length===3,`the picker offers the suit's own pants (wearing) and both pairs of pants (${pk.cards.map(c=>c.id+(c.cur?'*':'')).join(', ')})`);
-    await tap(`#pick-sheet button[onclick*="'${GREY}'"]`);
+    await tap(`#pick-sheet button[data-id="${GREY}"]`);
     const c=await st();
     ok(!c.suitBot&&!c.suitDay&&!c.ids.top&&c.ids.bot===GREY&&c.offKind==='suit'&&c.force&&c.force.bot===GREY&&c.force.top===SUIT&&c.off&&c.off.top,`grey pants picked: worn in place of the suit, kept as a pick (${JSON.stringify(c.force)})`);
     ok(['shirt','tie','shoes','belt','socks','watch'].every(s=>c.ids[s]===b.ids[s]),'the rest of the outfit stays as shown');
@@ -130,7 +130,7 @@ const todaypants=async({ok,chromium,url,settle})=>{
     ok(r1.recIds&&r1.recIds.bot===GREY&&!r1.recIds.top&&r1.recSuit===false,`today's record: grey pants, no jacket, not a suit day (${JSON.stringify(r1.recIds)})`);
     // the suit's own pants back from the picker: the suit is worn again, no pick of pants left
     await p.click('#ibox button[aria-label="Change pants"]');await settle(p,300);
-    await tap(`#pick-sheet button[onclick*="'${SUIT}'"]`);
+    await tap(`#pick-sheet button[data-id="${SUIT}"]`);
     const d=await st();
     ok(d.suitBot&&d.ids.bot===SUIT&&!(d.force&&d.force.bot),'choosing the suit\'s own pants puts them back (no pants pick left)');
     // Suggest another from the suit's pants: the best other pants
@@ -147,7 +147,7 @@ const todaypants=async({ok,chromium,url,settle})=>{
     ok(g.suitBot&&g.ids.bot===SUIT,'taking it off again leaves the suit\'s own pants on');
     // Reset (Today's undo for changes) puts everything back
     await tap(`#ibox button[aria-label="Change pants"]`).catch(()=>{});await settle(p,200);
-    await tap(`#pick-sheet button[onclick*="'${CHAR}'"]`);
+    await tap(`#pick-sheet button[data-id="${CHAR}"]`);
     const h0=await st();
     await p.click('[aria-label="Reset changes"]');await settle(p,400);
     const h=await st();
@@ -157,7 +157,7 @@ const todaypants=async({ok,chromium,url,settle})=>{
     await p.evaluate(async()=>{const k=key(sel),o=planFor()[k];await saveDay({...(dayRecs[k]||{date:k}),lock:idsOf(o)});cache={};renderToday()});await settle(p,200);
     await tap('#ibox button[aria-label="Take off the suit jacket"]');
     await p.click('#ibox button[aria-label="Change pants"]');await settle(p,300);
-    await tap(`#pick-sheet button[onclick*="'${CHAR}'"]`);
+    await tap(`#pick-sheet button[data-id="${CHAR}"]`);
     // (the day is locked again from what Today then shows, lockUpcoming: the pick wins over a lock either way)
     const l=await p.evaluate(async()=>{const k=key(sel);await replanFuture(true);cache={};const o=planFor()[k];return {bot:o.bot&&o.bot.id,top:o.top&&o.top.id,force:dayRecs[k].force}});
     ok(l.bot===CHAR&&!l.top&&l.force.bot===CHAR,`a locked coming day: the pick is kept over the lock and through re-planning (${JSON.stringify(l)})`);
@@ -165,7 +165,7 @@ const todaypants=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await settle(p,300);
     await tap('#ibox button[aria-label="Take off the suit jacket"]');
     await p.click('#ibox button[aria-label="Change pants"]');await settle(p,300);
-    await tap(`#pick-sheet button[onclick*="'${GREY}'"]`);
+    await tap(`#pick-sheet button[data-id="${GREY}"]`);
     const w0=await p.evaluate(()=>({...careCounts()}));
     await p.evaluate(()=>setWorn(true));await settle(p,400);
     const w=await p.evaluate(()=>{cache={};const c=careCounts(),o=planFor()[key(sel)];return {c:{...c},frozen:!!o.frozen,bot:o.bot&&o.bot.id,offKind:o.offKind||null,

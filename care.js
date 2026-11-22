@@ -49,9 +49,9 @@ function careLog(it,d){if(!it||!/^\d{4}-\d{2}-\d{2}$/.test(d||''))return;it.clea
 function careCard(i){if(!CARE_ABLE.includes(i.type)||i.order)return '';
   const id=i.id,a=i.away,first=careWashed(i.type)?['laundry','cleaner']:['cleaner','laundry'],lab={cleaner:'Send to the dry cleaner',laundry:'In the laundry'},s=careState(i);
   const body=a?`<p class="shelp carewhere">${a.why==='laundry'?'In the laundry':'At the cleaner\'s'} since ${fmtDay(a.since)}: it is out of your outfits.</p>`+
-      `<div class="ordrow careback"><label class="ordate">Back on (optional) <input type="date" value="${a.back||''}" min="${isoKey(todayDate())}" onchange="careSetBack('${jsq(id)}',this.value)"></label><small class="mut ordhint">${careBackHint(a.back)}</small></div>`+
-      `<div class="btns"><button type="button" class="pri careitsback" onclick="careBack('${jsq(id)}')">It's back</button></div>`
-    :`<div class="btns">${i.paused?'':first.map(w=>`<button type="button" class="caresend" data-why="${w}" onclick="careSend('${jsq(id)}','${w}')">${lab[w]}</button>`).join('')}${s.wears?`<button type="button" class="caredone" onclick="careCleaned('${jsq(id)}')">${careWashed(i.type)?'Washed':'Cleaned'} today</button>`:''}</div>`;
+      `<div class="ordrow careback"><label class="ordate">Back on (optional) <input type="date" value="${a.back||''}" min="${isoKey(todayDate())}" data-act-change="careBackDate" data-id="${esc(id)}"></label><small class="mut ordhint">${careBackHint(a.back)}</small></div>`+
+      `<div class="btns"><button type="button" class="pri careitsback" data-act="careBackTap" data-id="${esc(id)}">It's back</button></div>`
+    :`<div class="btns">${i.paused?'':first.map(w=>`<button type="button" class="caresend" data-why="${w}" data-act="careSendTap" data-id="${esc(id)}">${lab[w]}</button>`).join('')}${s.wears?`<button type="button" class="caredone" data-act="careDoneTap" data-id="${esc(id)}">${careWashed(i.type)?'Washed':'Cleaned'} today</button>`:''}</div>`;
   return `<section class="card ivsec ivcare" id="ivcare"><h3>Care</h3><p class="shelp carecount${s.due?' due':''}">${careWornLine(i)}${s.due?' · due now':''}</p>${body}</section>`}
 /* redraw whichever page the change was made on */
 function careRedraw(){if(typeof remindSoon==='function')remindSoon();/* the cleaning reminders follow a piece sent away or cleaned */careSum();const c=$('#sc-laundry');if(c&&c.classList.contains('open'))renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();else if($('#today')&&!$('#today').hidden)refreshToday()}
@@ -97,16 +97,16 @@ function renderCare(){const el=$('#care-in');if(!el)return;careSum();const head=
   if(!items.length){el.innerHTML='<p class="mut empty">Your wardrobe is empty.</p>';return}
   const L=careLists(),pic=i=>statPic(i);
   const row=(x,btns)=>`<div class="care-row" id="care-${x.id}">${pic(x)}<div class="care-main"><span class="cap care-nm">${careName(x)}</span><small class="mut">${x.away?careTag(x)+' · since '+fmtDay(x.away.since):careWornLine(x)}</small></div><div class="care-acts">${btns}</div></div>`;
-  const acts=x=>{const w=careWashed(x.type)?'laundry':'cleaner';return `<button type="button" class="caresend" onclick="careSend('${jsq(x.id)}','${w}')">${w==='laundry'?'In the laundry':'Send to the cleaner'}</button><button type="button" class="caredone" onclick="careCleaned('${jsq(x.id)}')">${careWashed(x.type)?'Washed':'Cleaned'} today</button>`};
+  const sendBtns=x=>{const w=careWashed(x.type)?'laundry':'cleaner';return `<button type="button" class="caresend" data-act="careSendTap" data-id="${esc(x.id)}" data-why="${w}">${w==='laundry'?'In the laundry':'Send to the cleaner'}</button><button type="button" class="caredone" data-act="careDoneTap" data-id="${esc(x.id)}">${careWashed(x.type)?'Washed':'Cleaned'} today</button>`};
   const card=(id,title,sub,rows)=>`<section class="card care-card" id="${esc(id)}"><h3>${title}</h3>${sub?`<p class="shelp">${sub}</p>`:''}${rows}</section>`;
   const quiet=!L.due.length&&!L.near.length;
   el.innerHTML=head+`<p class="shelp">What is due for cleaning, counted from the days you wore each piece. Nothing to log: tap only when something goes out or comes back.</p>`+
-    (L.due.length?card('care-due','Due for cleaning',`${L.due.length} piece${L.due.length===1?' has':'s have'} reached ${L.due.length===1?'its':'their'} number of wears.`,L.due.map(x=>row(x.i,acts(x.i))).join('')):'')+
-    (L.near.length?card('care-near','Nearly due','One more wear and these are due.',L.near.map(x=>row(x.i,acts(x.i))).join('')):'')+
+    (L.due.length?card('care-due','Due for cleaning',`${L.due.length} piece${L.due.length===1?' has':'s have'} reached ${L.due.length===1?'its':'their'} number of wears.`,L.due.map(x=>row(x.i,sendBtns(x.i))).join('')):'')+
+    (L.near.length?card('care-near','Nearly due','One more wear and these are due.',L.near.map(x=>row(x.i,sendBtns(x.i))).join('')):'')+
     (quiet?card('care-none','Nothing is due','No suit, blazer or pair of pants has reached its number of wears yet.',''):'')+
-    (L.each.length?card('care-each','Washed after every wear','',L.each.map(g=>`<div class="care-row care-group" id="care-each-${g.t}"><div class="care-main"><span class="care-nm">${g.list.length} ${g.list.length===1?careNoun(g.list[0]):(CARE_PLURAL[g.t]||'pieces').toLowerCase()} worn since washing</span><small class="mut">${laundryDays()&&g.t==='shirt'?`A worn shirt is not planned again for ${laundryDays()} day${laundryDays()===1?'':'s'}.`:'Tap when the wash is done, or leave it: nothing depends on it.'}</small></div><div class="care-acts"><button type="button" class="caredone" onclick="careCleanedType('${g.t}')">All washed today</button></div></div>`).join('')):'')+
-    (L.away.length?card('care-away','Away now','Out of your outfits until they are back.',L.away.map(x=>row(x,`<button type="button" class="pri careitsback" onclick="careBack('${jsq(x.id)}')">It's back</button>`)).join('')):'')+
-    `<p class="care-foot"><button type="button" class="linkbtn" onclick="openSettings('care')">Change how many wears each piece takes</button></p>`}
+    (L.each.length?card('care-each','Washed after every wear','',L.each.map(g=>`<div class="care-row care-group" id="care-each-${g.t}"><div class="care-main"><span class="care-nm">${g.list.length} ${g.list.length===1?careNoun(g.list[0]):(CARE_PLURAL[g.t]||'pieces').toLowerCase()} worn since washing</span><small class="mut">${laundryDays()&&g.t==='shirt'?`A worn shirt is not planned again for ${laundryDays()} day${laundryDays()===1?'':'s'}.`:'Tap when the wash is done, or leave it: nothing depends on it.'}</small></div><div class="care-acts"><button type="button" class="caredone" data-act="careTypeDone" data-t="${g.t}">All washed today</button></div></div>`).join('')):'')+
+    (L.away.length?card('care-away','Away now','Out of your outfits until they are back.',L.away.map(x=>row(x,`<button type="button" class="pri careitsback" data-act="careBackTap" data-id="${esc(x.id)}">It's back</button>`)).join('')):'')+
+    `<p class="care-foot"><button type="button" class="linkbtn" data-act="careLimitsTap">Change how many wears each piece takes</button></p>`}
 function openCare(){openSettings('laundry')}   // (Today's "See what is due")
 /* Today: one quiet line when today's suit, blazer or odd trousers reaches its limit with this wear (or is past it) */
 function careNote(o){if(!o||!isWorkday(sel)||key(sel)!==key(todayDate()))return '';
@@ -114,7 +114,7 @@ function careNote(o){if(!o||!isWorkday(sel)||key(sel)!==key(todayDate()))return 
   for(const p of o.bot&&o.top&&o.bot.id===o.top.id?[o.top]:[o.top,o.bot]){if(!p||p.type!=='pants')continue;const limit=careLimit(p.type);if(limit<2)continue;   // (suits and blazers: the frame on the picture, careFrame)
     const n=(w[p.id]||0)+(counted?0:1);if(n<limit)continue;
     out.push(n===limit?`This is the ${careNoun(p)}'s ${n+(n===2?'nd':n===3?'rd':'th')} wear since cleaning: ${p.type==='pants'?'they are':'it is'} due for the cleaner after today.`:`${p.type==='pants'?'These pants are':'This '+careNoun(p)+' is'} due for the cleaner: worn ${careTimes(n-(counted?0:1))} since cleaning, due after ${limit}.`)}
-  return out.length?`<p class="carenote" id="carenote">${out.join(' ')} <a href="#" onclick="openCare();return false">See what is due</a></p>`:''}
+  return out.length?`<p class="carenote" id="carenote">${out.join(' ')} <a href="#" data-act="careDueTap">See what is due</a></p>`:''}
 /* ---- the cleaning frame on Today's picture (the owner's design, 2026-11-14) ----
    A suit or blazer one wear short of its cleaning limit has a yellow frame round the picture and a banner along its bottom ("1 wear left ·
    Suit – wear 4 of 5", wear dots on the left), on its last wear a red one ("Last wear · Suit – to the cleaner today"), and worn past it
@@ -138,7 +138,7 @@ function careDayState(o,d){const p=careTop(o);if(!p||!CARE_FRAME.includes(p.type
 /* what figureStage (today.js) puts in the picture's frame: {cls, html}, or null */
 function careFrame(o){const s=typeof sel!=='undefined'&&careDayState(o,sel);if(!s)return null;
   const dots=Array.from({length:s.limit},(_,i)=>`<i${i<s.n?' class="on"':''}></i>`).join('')+(s.n>s.limit?`<em>+${s.n-s.limit}</em>`:'');
-  return {cls:` cb care-${s.k}`,html:`<div class="cframe" aria-hidden="true"></div><div class="cband" id="cband" role="button" tabindex="0" aria-label="${esc(s.bold+': '+s.rest)}. Tap if it was cleaned" onclick="careBandTap()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();careBandTap()}"><svg aria-hidden="true"><path/></svg><div class="crow"><span class="cdots" aria-hidden="true">${dots}</span><span class="ctxt"><b>${s.bold}</b> · ${esc(s.rest)}</span></div></div>`,s}}
+  return {cls:` cb care-${s.k}`,html:`<div class="cframe" aria-hidden="true"></div><div class="cband" id="cband" role="button" tabindex="0" aria-label="${esc(s.bold+': '+s.rest)}. Tap if it was cleaned" data-act="careBandTap" data-act-keydown="careBandKey"><svg aria-hidden="true"><path/></svg><div class="crow"><span class="cdots" aria-hidden="true">${dots}</span><span class="ctxt"><b>${s.bold}</b> · ${esc(s.rest)}</span></div></div>`,s}}
 /* a tap on the banner (fix round 3, W2-14-05: the red "Overdue" came back every morning and a tap did nothing; the way to clear it was
    Settings → Laundry & cleaning, which nothing on Today pointed to): asks whether it was cleaned, and "Cleaned today" starts its count again */
 function careBandTap(){const o=planFor()[key(sel)],s=o&&careDayState(o,sel);if(!s||!o.top)return;const p=o.top,w=careWashed(p.type)?'Washed':'Cleaned';
@@ -168,7 +168,7 @@ function careBandFit(){const fig=document.getElementById('mannequin-container'),
   if(typeof ResizeObserver==='function'){if(!careRO)careRO=new ResizeObserver(()=>requestAnimationFrame(careBandFit));
     if(careObs[0]!==fig||careObs[1]!==sw){careRO.disconnect();careRO.observe(fig);if(sw)careRO.observe(sw);careObs=[fig,sw]}}}
 /* through a transition (the swatches moving and shrinking, about 0.45 s): laid out again every frame */
-function careBandSoon(){if(!document.getElementById('cband'))return;careBandFit();   /* (at once too: the words never show a frame unfitted) */const end=performance.now()+700;const step=()=>{careBandFit();if(performance.now()<end)requestAnimationFrame(step)};requestAnimationFrame(step)}
+function careBandSoon(){const band=document.getElementById('cband');if(!band)return;actTaps(band.parentNode);/* (the banner is a <div>: a phone's tap is a click only with a listener of its own, act.js) */careBandFit();   /* (at once too: the words never show a frame unfitted) */const end=performance.now()+700;const step=()=>{careBandFit();if(performance.now()<end)requestAnimationFrame(step)};requestAnimationFrame(step)}
 /* ---- cleaning reminders on the phone (the owner's ask, 2026-11-14; sent by the morning reminder's push, remind.js, sw.js) ----
    {YYYY-MM-DD: text} for the coming workdays: a suit's or blazer's last wear before cleaning, and a wear past it, on the morning it is
    planned (overdue: the first such morning only); and once due (worn up to its limit, not sent away or cleaned), one reminder the next workday
@@ -197,7 +197,7 @@ function careReminders(days,time){const out={},T=todayDate(),add=(d,t)=>{const k
   return out}
 /* Settings → Care */
 function renderCareUI(){const el=$('#care-limits');
-  if(el)el.innerHTML=CARE_TYPES.map(t=>{const v=careLimit(t);return `<label class="srow">${CARE_PLURAL[t]} <select id="care-lim-${t}" onchange="setCareLimit('${t}',this.value)"><option value="0"${v===0?' selected':''}>Never</option><option value="1"${v===1?' selected':''}>After every wear</option>${Array.from({length:CARE_MAX-1},(_,k)=>k+2).map(n=>`<option value="${n}"${v===n?' selected':''}>After ${n} wears</option>`).join('')}</select></label>`}).join('');
+  if(el)el.innerHTML=CARE_TYPES.map(t=>{const v=careLimit(t);return `<label class="srow">${CARE_PLURAL[t]} <select id="care-lim-${t}" data-act-change="careLimitPick" data-t="${t}"><option value="0"${v===0?' selected':''}>Never</option><option value="1"${v===1?' selected':''}>After every wear</option>${Array.from({length:CARE_MAX-1},(_,k)=>k+2).map(n=>`<option value="${n}"${v===n?' selected':''}>After ${n} wears</option>`).join('')}</select></label>`}).join('');
   const s=$('#cfg-laundry');if(s){const d=laundryDays(),opts=[...new Set([...LAUNDRY_OPTS,d])].sort((a,b)=>a-b);
     s.innerHTML=opts.map(n=>`<option value="${n}"${n===d?' selected':''}>${n?`${n} day${n===1?'':'s'}`:'Not at all'}</option>`).join('')}
   const sum=$('#sum-care');if(sum){const lim=t=>{const v=careLimit(t);return v?`${CARE_PLURAL[t].toLowerCase()} after ${v} wear${v===1?'':'s'}`:''},parts=[lim('suit'),lim('blazer')].filter(Boolean);
@@ -206,6 +206,18 @@ function renderCareUI(){const el=$('#care-limits');
 async function setCareLimit(t,v){if(!CARE_TYPES.includes(t))return;settings.care={...(settings.care||{}),[t]:Math.max(0,Math.min(CARE_MAX,Math.round(+v)||0))};await saveUserSettings();todayDirty();renderCareUI()}
 /* the shirt rule changes the plan: the days shown for the coming week are planned again with it */
 async function setLaundryDays(v){settings.laundryDays=Math.max(0,Math.min(14,Math.round(+v)||0));await clearLocks();await saveUserSettings();todayDirty();renderCareUI()}
-/* index.html's (act.js): Settings' "A worn shirt waits" choice */
+/* what the controls do (act.js). index.html's: Settings' "A worn shirt waits" choice */
 function laundryPick(el){setLaundryDays(el.value)}
-acts({laundryPick});
+/* the item sheet's Care card and Laundry & cleaning's rows (the piece by its id in data-id): send it away (data-why laundry | cleaner), cleaned
+   or washed today, the "Back on" date, "It's back"; a type's "All washed today" (data-t); the link to the wear limits; a limit's dropdown (data-t) */
+function careSendTap(el){careSend(el.dataset.id,el.dataset.why)}
+function careDoneTap(el){careCleaned(el.dataset.id)}
+function careBackDate(el){careSetBack(el.dataset.id,el.value)}
+function careBackTap(el){careBack(el.dataset.id)}
+function careTypeDone(el){careCleanedType(el.dataset.t)}
+function careLimitsTap(){openSettings('care')}
+function careLimitPick(el){setCareLimit(el.dataset.t,el.value)}
+/* Today's: "See what is due" (a link: its jump to # is called off), and Enter or Space on the cleaning banner (its tap is careBandTap itself) */
+function careDueTap(el,ev){openCare();ev.preventDefault()}
+function careBandKey(el,ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();careBandTap()}}
+acts({laundryPick,careSendTap,careDoneTap,careBackDate,careBackTap,careTypeDone,careLimitsTap,careLimitPick,careDueTap,careBandTap,careBandKey});

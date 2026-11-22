@@ -24,7 +24,7 @@ const picker=async({ok,chromium,url,settle:settleFor})=>{
     ok(sheet.cur===1&&/Wearing/.test(sheet.curTxt)&&/Best match/.test(sheet.first),`the one being worn is marked and the best match comes first (${sheet.curTxt}; ${sheet.tags})`);
     // pick a specific tie: exactly that one, everything else stays
     const want=await p.evaluate(()=>{const o=planFor()[key(sel)];return items.filter(i=>i.type==='tie'&&i.id!==o.tie.id).pop().id});
-    await p.click(`.pick-it[onclick*="${want}"]`);await settle();
+    await p.click(`.pick-it[data-id="${want}"]`);await settle();
     const after=await p.evaluate(()=>({ids:idsOf(planFor()[key(sel)]),open:document.querySelector('#pick-sheet').classList.contains('on'),msg:document.querySelector('#today').textContent,over:planFor()[key(sel)].overrides}));
     ok(after.ids.tie===want&&!after.open&&after.over,'tapping a tie wears exactly that one and closes the sheet');
     ok(['top','shirt','shoes','belt','socks','watch'].every(s=>after.ids[s]===before[s]),'the rest of the outfit stays');
@@ -36,7 +36,7 @@ const picker=async({ok,chromium,url,settle:settleFor})=>{
     // picking the jacket re-picks what must follow it; closing the sheet changes nothing
     await p.evaluate(()=>{const k=Object.entries(planFor()).find(([d,o])=>keyDate(d)>todayDate()&&o.top&&o.top.primaryColor!=='brown')[0];sel=keyDate(k);renderToday()});await settle();
     await p.click('#ri-top .swap');const topWant=await p.evaluate(()=>{const o=planFor()[key(sel)];return items.find(i=>i.type==='suit'&&i.primaryColor==='brown').id});
-    await p.click(`.pick-it[onclick*="${topWant}"]`);await settle();
+    await p.click(`.pick-it[data-id="${topWant}"]`);await settle();
     const tp=await p.evaluate(()=>{const o=planFor()[key(sel)];return {top:o.top.id,shoes:o.shoes.primaryColor,score:rateOutfit(o).score}});
     ok(tp.top===topWant&&tp.shoes==='brown'&&tp.score>=75,`choosing a suit re-picks the pieces that follow it (brown suit → ${tp.shoes} shoes, score ${tp.score})`);
     await p.click('#ri-tie .swap');await p.click('.pick-x');await settle();
@@ -60,12 +60,12 @@ const picker=async({ok,chromium,url,settle:settleFor})=>{
     const ps=await p.evaluate(()=>({title:document.querySelector('#pick-title').textContent,none:/None: I didn't wear one/.test(document.querySelector('#pick-sheet').textContent),next:!!document.querySelector('#pick-next')}));
     ok(/What tie did you wear\?/.test(ps.title)&&ps.none&&!ps.next,'the sheet asks what was worn, and offers "None"');
     const wore=await p.evaluate(t=>items.find(i=>i.type==='tie'&&i.id!==t).id,past.tie);
-    await p.click(`.pick-it[onclick*="${wore}"]`);await settle();
+    await p.click(`.pick-it[data-id="${wore}"]`);await settle();
     // the suit too: a blazer instead of the suit, then its trousers
     await p.click('#ri-top .swap');
     ok(await p.evaluate(()=>[...document.querySelectorAll('.pick-it')].length===items.filter(i=>i.type==='suit'||i.type==='blazer').length),'for the jacket it lists suits and blazers alike');
-    const blz=await p.evaluate(()=>items.find(i=>i.type==='blazer').id);await p.click(`.pick-it[onclick*="${blz}"]`);await settle();
-    await p.click('#ri-bot .swap');const pt=await p.evaluate(()=>items.find(i=>i.type==='pants'&&i.primaryColor==='grey').id);await p.click(`.pick-it[onclick*="${pt}"]`);await settle();
+    const blz=await p.evaluate(()=>items.find(i=>i.type==='blazer').id);await p.click(`.pick-it[data-id="${blz}"]`);await settle();
+    await p.click('#ri-bot .swap');const pt=await p.evaluate(()=>items.find(i=>i.type==='pants'&&i.primaryColor==='grey').id);await p.click(`.pick-it[data-id="${pt}"]`);await settle();
     await p.click('#ri-socks .swap');await p.click('#pick-sheet .btns button');await settle();   // None
     const fixed=await p.evaluate(()=>{const r=dayRecs['2026-11-9'],o=planFor()['2026-11-9'];return {tie:r.ids.tie,top:r.ids.top,bot:r.ids.bot,socks:r.ids.socks,suitDay:r.suitDay,worn:r.worn,edited:r.edited,auto:r.auto,shown:o.tie.id,frozen:o.frozen,
       rest:planFor()['2026-11-10'].top&&items.find(i=>i.id===r.ids.top),lastTie:null}});

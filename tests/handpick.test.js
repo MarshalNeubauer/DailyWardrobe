@@ -24,7 +24,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{resetDay&&dayRecs[key(sel)]&&delete dayRecs[key(sel)];cache={};renderToday()});await settle(p,300);
     // the picker: a "Casual · pick by hand" group with the tops, not in the scored grid
     await p.evaluate(()=>openPicker('shirt'));await settle(p,300);
-    const pk=await p.evaluate(()=>{const s=document.querySelector('#pick-sheet'),g=s.querySelector('.pick-hand'),ids=el=>[...el.querySelectorAll('.pick-it')].map(c=>(c.getAttribute('onclick').match(/'shirt','([^']+)'/)||[])[1]);
+    const pk=await p.evaluate(()=>{const s=document.querySelector('#pick-sheet'),g=s.querySelector('.pick-hand'),ids=el=>[...el.querySelectorAll('.pick-it')].map(c=>(c.dataset.slot==='shirt'?c.dataset.id:undefined));
       return {title:s.querySelector('#pick-title').textContent,head:g&&g.querySelector('.pick-hand-h').textContent,hand:g?ids(g):[],main:ids(s.querySelector('.pick-grid')),note:g&&g.textContent}});
     ok(pk.head==='Casual · pick by hand'&&pk.hand.includes('tee16')&&pk.hand.includes('sweater17')&&pk.hand.includes('polo18')&&!pk.hand.includes('cardigan19'),`the shirt picker has the casual tops by hand (${pk.hand})`);
     ok(!pk.main.some(id=>/tee|sweater|polo/.test(id))&&pk.main.length===2,`the scored grid keeps the shirts only (${pk.main})`);
@@ -52,7 +52,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     // Wednesday (a blazer day): pick the cardigan as the jacket; Monday (a suit day) the chore jacket: a blazer day with odd pants
     await p.evaluate(()=>{sel=new Date(2026,10,10);cache={};renderToday()});await settle(p,300);
     await p.evaluate(()=>openPicker('top'));await settle(p,300);
-    const tp=await p.evaluate(()=>[...document.querySelectorAll('#pick-sheet .pick-hand .pick-it')].map(c=>(c.getAttribute('onclick').match(/'top','([^']+)'/)||[])[1]));
+    const tp=await p.evaluate(()=>[...document.querySelectorAll('#pick-sheet .pick-hand .pick-it')].map(c=>(c.dataset.slot==='top'?c.dataset.id:undefined)));
     ok(tp.includes('cardigan19')&&tp.includes('chore20')&&tp.length===2,`the jacket picker's hand-pick group: cardigan and chore jacket (${tp})`);
     await p.evaluate(()=>{closePicker();return pickItem('top','chore20')});await settle(p,400);
     const ch=await p.evaluate(()=>{const o=planFor()[key(sel)];return {top:o.top&&o.top.id,suitDay:o.suitDay,bot:o.bot&&o.bot.id,tie:!!o.tie,rows:[...document.querySelectorAll('#ibox .row')].map(e=>e.textContent.replace(/\s+/g,' ').trim())}});
@@ -60,7 +60,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(ch.rows.some(r=>/^Chore jacket/.test(r)),'the row is named "Chore jacket"');
     // cargo pants by hand
     await p.evaluate(()=>openPicker('bot'));await settle(p,300);
-    const bp=await p.evaluate(()=>({hand:[...document.querySelectorAll('#pick-sheet .pick-hand .pick-it')].map(c=>c.textContent),main:[...document.querySelectorAll('#pick-sheet > .pick-grid .pick-it')].map(c=>(c.getAttribute('onclick').match(/'bot','([^']+)'/)||[])[1])}));
+    const bp=await p.evaluate(()=>({hand:[...document.querySelectorAll('#pick-sheet .pick-hand .pick-it')].map(c=>c.textContent),main:[...document.querySelectorAll('#pick-sheet > .pick-grid .pick-it')].map(c=>(c.dataset.slot==='bot'?c.dataset.id:undefined))}));
     ok(bp.hand.length===1&&/Cargo pants/.test(bp.hand[0])&&!bp.main.includes('pants21'),`cargo pants are in the pants picker's hand-pick group only (${bp.main})`);
     await p.evaluate(()=>{closePicker();return pickItem('bot','pants21')});await settle(p,400);
     ok(await p.evaluate(()=>{const o=planFor()[key(sel)];return o.bot&&o.bot.id==='pants21'}),'cargo pants picked are worn that day');

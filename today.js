@@ -21,7 +21,7 @@ function wxPreload(){const L=settings.location;if(!L)return;
 const hasOutfit=o=>!!o&&!!(o.top||o.shirt);   // a day without a jacket (the no-jacket occasion) still has an outfit
 const canPick=o=>!o.frozen||pastEdit===key(sel);   // a past day only while it is being corrected
 // no waistcoat without a tie: the vest row (and its +) goes with the tie
-const vestRow=o=>!(o.suitDay&&hasVest(o.top)&&o.tie)?'':`<div class="row vest-row"><span class="mut">Vest</span>${o.vest?`<span class="dot">${swatchSVG(o.top,true)}</span><span class="cap">Matching vest</span>`:'<span class="mut none">Not today</span>'}${!canPick(o)?'':`<button class="swap" onclick="setVest(${!o.vest})" aria-label="${o.vest?'Leave off the vest':'Wear the vest'}" title="${o.vest?'Leave off the vest':'Wear the vest'}">${o.vest?'−':'+'}</button>`}</div>`;
+const vestRow=o=>!(o.suitDay&&hasVest(o.top)&&o.tie)?'':`<div class="row vest-row"><span class="mut">Vest</span>${o.vest?`<span class="dot">${swatchSVG(o.top,true)}</span><span class="cap">Matching vest</span>`:'<span class="mut none">Not today</span>'}${!canPick(o)?'':`<button class="swap" data-act="vestTap" data-on="${o.vest?0:1}" aria-label="${o.vest?'Leave off the vest':'Wear the vest'}" title="${o.vest?'Leave off the vest':'Wear the vest'}">${o.vest?'−':'+'}</button>`}</div>`;
 /* the outfit list: tapping a piece's swatch or name unfolds its photo inside the list (the actual item, so you can see
    exactly which shirt it is); one at a time; items without a photo show their product picture or drawing */
 let openRow=null;
@@ -32,12 +32,12 @@ const rowPanel=i=>rowPic(i)+(i.photo?'':`<small class="mut rnote">No photo of th
    jacket off its pants have ⇄ like any pants (the owner, 2026-11-16: "my pants are locked"): other pants are a pick (force.bot), the
    picker offers the suit's own pants back, and the jacket back on brings the whole suit */
 const offOn=o=>!o.frozen&&o.occasion!=='casual';
-const offBtn=(s,o)=>offOn(o)&&o[s]&&(s==='top'||s==='tie'||s==='pocket')?`<button class="swap offb" onclick="setOff('${s}',true)" aria-label="Take off the ${s==='top'?(o.suitDay?'suit jacket':'blazer'):s==='pocket'?'pocket square':'tie'}" title="Take off for the day">−</button>`:'';
+const offBtn=(s,o)=>offOn(o)&&o[s]&&(s==='top'||s==='tie'||s==='pocket')?`<button class="swap offb" data-act="offTap" data-slot="${s}" data-on="1" aria-label="Take off the ${s==='top'?(o.suitDay?'suit jacket':'blazer'):s==='pocket'?'pocket square':'tie'}" title="Take off for the day">−</button>`:'';
 /* the jacket taken off: a casual jacket picked by hand (a chore jacket, the uniform blouse) is called by its type (2026-11-17), from the
    day's pinned top */
 const offTop=()=>{const r=dayRecs[key(sel)],id=r&&r.force&&r.force.top,i=id&&items.find(x=>x.id===id);return i&&isHandPick(i)?i:null};
 const offRow=(s,o)=>{const ht=s==='top'&&offTop(),l=s==='top'?(ht?TYPES[ht.type]:o.offKind==='suit'?'Suit':'Blazer'):s==='pocket'?'Pocket square':'Tie',w=s==='top'?(ht?TYPES[ht.type].toLowerCase():o.offKind==='suit'?'suit jacket':'blazer'):s==='pocket'?'pocket square':'tie';
-  return `<div class="ritem off-row" id="ri-${s}"><div class="row"><span class="mut">${l}</span><span class="mut none">Taken off${s==='top'&&o.suitBot?': the pants stay':''}</span>${o.frozen?'':`<button class="swap" onclick="setOff('${s}',false)" aria-label="Put the ${w} back on" title="Put it back on">+</button>`}</div></div>`};
+  return `<div class="ritem off-row" id="ri-${s}"><div class="row"><span class="mut">${l}</span><span class="mut none">Taken off${s==='top'&&o.suitBot?': the pants stay':''}</span>${o.frozen?'':`<button class="swap" data-act="offTap" data-slot="${s}" data-on="0" aria-label="Put the ${w} back on" title="Put it back on">+</button>`}</div></div>`};
 async function setOff(slot,on){const k=key(sel),o=planFor()[k];if(!o||o.frozen||(slot!=='top'&&slot!=='tie'&&slot!=='pocket'))return;
   const r={...(dayRecs[k]||{date:k})},off={...(r.off||{})};
   if(on){if(!o[slot])return;
@@ -70,13 +70,13 @@ function restWarn(o){if(!o||!o.top||!(o.top.rest<COOL))return '';const kind=o.to
 /* the pocket square's row (2026-11-16): only with a jacket on, and only for someone who owns one (in rotation that day), or when the day has
    one or had it taken off; none planned: "Not today" with + to choose one (the picker); with one: ⇄ and − like the jacket and the tie */
 const pocketRow=o=>!!o.top&&!!(o.pocket||(o.off&&o.off.pocket)||items.some(i=>i.type==='pocketsquare'&&(o.frozen||inRotation(i,di(sel)))));
-const pocketNone=o=>`<div class="ritem" id="ri-pocket"><div class="row"><span class="mut">Pocket square</span><span class="mut none">${o.frozen?'None':'Not today'}</span>${canPick(o)?`<button class="swap" onclick="openPicker('pocket')" aria-label="${o.frozen?'Choose the pocket square worn':'Wear a pocket square'}" title="${o.frozen?'Choose':'Choose one'}">${o.frozen?'⇄':'+'}</button>`:''}</div></div>`;
+const pocketNone=o=>`<div class="ritem" id="ri-pocket"><div class="row"><span class="mut">Pocket square</span><span class="mut none">${o.frozen?'None':'Not today'}</span>${canPick(o)?`<button class="swap" data-act="pickTap" data-s="pocket" aria-label="${o.frozen?'Choose the pocket square worn':'Wear a pocket square'}" title="${o.frozen?'Choose':'Choose one'}">${o.frozen?'⇄':'+'}</button>`:''}</div></div>`;
 const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&&!needsTie(o)&&!(o.off&&o.off.tie)&&!(o.frozen&&pastEdit===key(sel));const rows=([...(nj?[]:[[slotLabel('top',o),o.top,'top']]),...(o.suitDay?[]:[['Pants',o.bot,'bot']]),[slotLabel('shirt',o),o.shirt,'shirt'],...(nt?[]:[['Tie',o.tie,'tie'],['Tie clip',o.clip,'clip']]),...(o.links||(o.shirt&&o.shirt.cuff==='french')?[['Cufflinks',o.links,'links']]:[]),...(pocketRow(o)?[['Pocket square',o.pocket,'pocket']]:[]),['Watch',o.watch,'watch'],['Belt',o.belt,'belt'],['Socks',o.socks,'socks'],['Shoes',o.shoes,'shoes'],...(o.coat||(o.clim&&(o.clim.cold||o.clim.rain))?[[o.coat?TYPES[o.coat.type]:'Coat',o.coat,'coat']]:[])])
   .filter(([l,i,s])=>!(s==='clip'&&!i&&(o.vest||!(o.frozen&&pastEdit===key(sel)))))   // no tie clip that day: no row (kept while correcting a past day, to add the one worn, but not on a vest day: the vest holds the tie, W2-17-20)
 .filter(([l,i,s])=>!(s==='clip'&&o.off&&o.off.tie))
 .map(([l,i,s])=>{if((s==='top'||s==='tie'||s==='pocket')&&!i&&o.off&&o.off[s])return offRow(s,o);if(s==='pocket'&&!i)return pocketNone(o);const open=!!i&&openRow===s;
-  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}${offBtn(s,o)}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':`<button type="button" class="linkbtn addone" onclick="openAdd('${addForSlot(s,o.suitDay)||''}')" aria-label="${l}: none yet. Add one">Add one</button>`}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
-    (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in" onclick="toggleRow('${s}')">${open?rowPanel(rolledOf(i,s,o)):''}</div></div>`:'')+`</div>`});
+  return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" data-act="rowTap" data-s="${s}" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)?`<button class="swap" data-act="pickTap" data-s="${s}" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}${offBtn(s,o)}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':`<button type="button" class="linkbtn addone" data-act="addOneTap" data-type="${addForSlot(s,o.suitDay)||''}" aria-label="${l}: none yet. Add one">Add one</button>`}</span>${o.frozen&&canPick(o)?`<button class="swap" data-act="pickTap" data-s="${s}" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
+    (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in" data-act="rowTap" data-s="${s}">${open?rowPanel(rolledOf(i,s,o)):''}</div></div>`:'')+`</div>`});
   rows.splice(nj?0:1,0,vestRow(o)+rollRow(o));return rows.join('')};
 function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[s])return;const opening=!el.classList.contains('open');
   // another open photo (a row, or the tile's photo above the list) shuts at once; one above the tapped row is made up for by the scroll, so the row stays under the finger
@@ -93,13 +93,13 @@ let belowOpen=null;
 // (2026-11-16) a casual piece picked by hand is called by its type: "T-shirt" in the shirt's row, "Cardigan" in the jacket's
 const slotLabel=(s,o)=>({top:o.top&&CASUAL_JACKETS.includes(o.top.type)?TYPES[o.top.type]:o.suitDay?'Suit':'Blazer',bot:'Pants',shirt:o.shirt&&CASUAL_TOPS.includes(o.shirt.type)?TYPES[o.shirt.type]:'Shirt',tie:'Tie',clip:'Tie clip',vest:'Vest',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks',pocket:'Pocket square'})[s]||s;
 const belowBox=(o,below)=>{const i=below.some(([s])=>s===belowOpen)&&o[belowOpen];if(!i)belowOpen=null;
-  return `<div class="ritem bbox${i?' open instant':''}" id="bbox"><div class="rpanel" id="bpanel"><div class="rpanel-in" onclick="pickPiece(belowOpen)">${i?rowPanel(i):''}</div></div></div>`};
+  return `<div class="ritem bbox${i?' open instant':''}" id="bbox"><div class="rpanel" id="bpanel"><div class="rpanel-in" data-act="belowPicTap">${i?rowPanel(i):''}</div></div></div>`};
 /* did you wear it: ✗ and ✓ over the picture's bottom corners (today and past days); tapping the chosen one again clears it.
    Between them, a small pill says when this look was last worn (nothing when it never was). */
 /* (no share button on the picture: the owner, 2026-11-14, "the user can just send a screenshot") */
 function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.tie]].filter(([,i])=>i);if(!ps.length)return '';
   // each swatch is a button: it opens that piece up close (swTap)
-  return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" onclick="swTap('${s}')" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${ovlPiece(i)}</button>`).join('')}</div>`}
+  return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" data-act="swatchTap" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${ovlPiece(i)}</button>`).join('')}</div>`}
 /* the wardrobe can't dress a day yet (setup.js setupNeeds: the "Get your first outfit" checklist shows): a half-outfit gets no score,
    no "This look last worn" and no outfit count (after removing the sample a suit and a shirt showed a red "50 Incomplete", "last worn
    Thu, Nov 19" and "12 outfits", re-audit 2026-11-15) */
@@ -115,7 +115,7 @@ function wornBar(o){if(wardShort())return '';
    a day is worn unless marked not (rec.worn false), so it starts "✓ Wore"; a tap makes it "✕ Didn't" (grey), a tap goes back. Back is
    the default (no mark), not rec.worn true, which would freeze today's outfit as worn */
 function wornPill(o){const T=todayDate(),d=dayOnly(sel);if(+d>+T||!isWorkday(sel)||!hasOutfit(o))return '';
-  const no=o.worn===false,pill=`<button type="button" class="wpill ${no?'no':'yes'}" id="wpill" aria-pressed="${!no}" onclick="toggleWorn()" aria-label="Wore this outfit">${no?'✕ Didn\'t':'✓ Wore'}</button>`;
+  const no=o.worn===false,pill=`<button type="button" class="wpill ${no?'no':'yes'}" id="wpill" aria-pressed="${!no}" data-act="wornTap" aria-label="Wore this outfit">${no?'✕ Didn\'t':'✓ Wore'}</button>`;
   // (favorites, 2026-11-18: a ♡ joined to the pill on a worn day loves the look, fav.js favPillSeg)
   const fav=typeof favPillSeg==='function'?favPillSeg(o):'';
   return fav?`<span class="wpgrp">${pill}${fav}</span>`:pill}
@@ -135,7 +135,7 @@ function toggleWorn(){const o=planFor()[key(sel)];if(!o)return;const no=o.worn!=
   return setWorn(no?false:undefined).then(()=>toast(no?'Marked as not worn: this day won’t count as a wear. Tap again if you wore it.':'Marked as worn.',no?5000:2500))}
 function figureStage(o){
   const below=[...(o.suitDay?[]:[['bot',o.bot]]),['belt',o.belt],['shoes',o.shoes],['socks',o.socks],...(o.coat?[['coat',o.coat]]:[])].filter(([,i])=>i);
-  const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}" data-type="${i.type}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} onclick="pickPiece('${s}')" aria-expanded="${belowOpen===s}" aria-controls="bpanel" aria-label="${slotLabel(s,o)}: ${shortDesc(i)}. ${belowOpen===s?'Hide':'Show'} the photo">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
+  const tiles=below.map(([s,i])=>{const bg=itemPic(i)&&(picBgs[itemKey(i)]||PIC_BG);return `<button class="tile${s==='coat'?' coat-tile':''}${bg?' has-pic':''}" data-type="${i.type}"${bg?` style="background:${bg}"`:''}${s==='coat'?` data-coat="${i.type}"`:''} data-act="tileTap" data-s="${s}" aria-expanded="${belowOpen===s}" aria-controls="bpanel" aria-label="${slotLabel(s,o)}: ${shortDesc(i)}. ${belowOpen===s?'Hide':'Show'} the photo">${itemPicHtml(i,itemThumb(i))}<small>${slotLabel(s,o)}</small></button>`}).join('');
   const r=renderFor(o),photo=!!r;
   setTimeout(()=>fetchRemoteRender(o,key(sel)),0);   // missing here: fetch it; only here: share it
   if(asmLive())setTimeout(()=>asmEnsure(o),0);   // and its item photos, to put the outfit's picture together here
@@ -143,7 +143,7 @@ function figureStage(o){
   // a painted (or kept) picture replaces the drawing; until it is ready the traced mannequin of the same pose shows (draw.js figureSvg).
   // Nothing paid is ever made from here (the drawn-figure photo was retired 2026-11-14)
   const cf=typeof careFrame==='function'?careFrame(o):null,cc=cf?cf.cls:'',ch=cf?cf.html:'';   // a suit or blazer coming due for cleaning (care.js)
-  return (photo?`<div class="fig photo${cc}" id="mannequin-container"><img onload="fitNavSoon()" src="${srcOk(r.img)}" alt="Photo of ${esc(figureLabel(o))}">${swatchStack(o)}${wornBar(o)}${ch}</div>`
+  return (photo?`<div class="fig photo${cc}" id="mannequin-container"><img data-act-load="figLoad" src="${srcOk(r.img)}" alt="Photo of ${esc(figureLabel(o))}">${swatchStack(o)}${wornBar(o)}${ch}</div>`
     :`<div class="fig${cc}" id="mannequin-container">${figureSvg(o)}${wornBar(o)}${ch}</div>`)+
     (tiles?`<div class="below" style="--n:${below.length}" aria-label="${o.coat?'Coat and below the waist':'Below the waist'}" role="group">${tiles}</div>`+belowBox(o,below):'');
 }
@@ -173,7 +173,7 @@ function keepHome(){if(!dayShown||!dayShown.home||dayShown.k!==key(todayDate()))
   sel=new Date(h);view={y:h.getFullYear(),m:h.getMonth()};monthOpen=false}
 function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||!o[s])return;const opening=belowOpen!==s,was=el.classList.contains('open');
   belowOpen=opening?s:null;
-  document.querySelectorAll('.below .tile').forEach(t=>{const on=opening&&t.getAttribute('onclick')===`pickPiece('${s}')`;t.setAttribute('aria-expanded',on);
+  document.querySelectorAll('.below .tile').forEach(t=>{const on=opening&&t.getAttribute('data-s')===s;t.setAttribute('aria-expanded',on);
     t.setAttribute('aria-label',t.getAttribute('aria-label').replace(/(Show|Hide) the photo/,on?'Hide the photo':'Show the photo'))});
   const inn=el.querySelector('.rpanel-in');
   if(opening&&was){picStop(el);inn.innerHTML=rowPanel(o[s]);if(!noMotion())inn.animate([{opacity:0},{opacity:1}],{duration:200});return}   // another tile while one is open: its photo takes the place
@@ -184,7 +184,7 @@ const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)||T};
 /* a location is set but the day within the forecast's 16 days has no weather (it couldn't be fetched): say so, with a way to try again
    (fix round 3, W2-14-14: "Set location" went and the line stayed blank) */
 function wxMissing(d,pill){const T=todayDate(),n=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-T)/864e5);if(n<0||n>15)return '';
-  return `<a href="#" class="wxl wxretry" onclick="loadWeather(true);return false">${pill?'No forecast · retry':'No forecast yet: tap to try again'}</a>`}
+  return `<a href="#" class="wxl wxretry" data-act="wxRetryTap">${pill?'No forecast · retry':'No forecast yet: tap to try again'}</a>`}
 const ADD_HINT='Add one with the + in the Wardrobe';
 /* a missing piece's "Add one" opens Add for that type (openAdd(type), add.js addFor; W2-14-01): the jacket's by the day, a suit or a blazer */
 const ADD_FOR_SLOT={bot:'pants',shirt:'shirt',tie:'tie',clip:'tieclip',pocket:'pocketsquare',links:'cufflinks',watch:'watch',belt:'belt',socks:'socks',shoes:'shoes',coat:'overcoat'};
@@ -202,9 +202,9 @@ function piecesBox(o){
   const pcs=[['top',o.top],['vest',o.vest?o.top:null],['bot',o.suitDay?null:o.bot],['shirt',o.shirt],['tie',o.tie],['clip',o.clip],['links',o.links],['pocket',o.pocket],['watch',o.watch],['belt',o.belt],['socks',o.socks],['shoes',o.shoes],['coat',o.coat]].filter(([,i])=>i);
   const chips=pcs.map(([s,i])=>`<span class="pchip${s==='vest'?' vest':''}" title="${slotLabel(s,o)}: ${esc(s==='vest'?'matching vest':shortDesc(i)||nm(i))}">${swatchSVG(i,true)}</span>`).join('');
   const pp=piecesParts(o),sum=pp.map((t,k)=>nameHtml(k?t:sentence(t))).join(' · ');   // each name kept in its place in an English line (<bdi>, W2-16-10)
-  return `<section class="mbox ibox${listOpen?' open instant':''}" id="ibox"><button class="month-link" onclick="toggleList()" aria-expanded="${listOpen}" aria-controls="ipanel" aria-label="Outfit pieces: ${pcs.length}. ${listOpen?'Fold away':'Show the list'}">
+  return `<section class="mbox ibox${listOpen?' open instant':''}" id="ibox"><button class="month-link" data-act="listTap" aria-expanded="${listOpen}" aria-controls="ipanel" aria-label="Outfit pieces: ${pcs.length}. ${listOpen?'Fold away':'Show the list'}">
     <span class="pstrip" aria-hidden="true" style="--pc:${pcs.length<=6?pcs.length:Math.ceil(pcs.length/2)}">${chips}</span><span class="mltxt"><b>${pcs.length} piece${pcs.length===1?'':'s'}</b><small class="cap">${sum||'Tap to see the list'}</small></span><span class="chev" aria-hidden="true">›</span></button>
-    <div class="mpanel" id="ipanel"><div class="mpanel-in" onclick="foldListTap(event)"><div class="list">${slots(o)}</div>${canPick(o)&&!o.frozen?`<p class="plegend" aria-hidden="true"><span>⇄</span> choose another${offOn(o)&&(o.top||o.tie||o.pocket)?' · <span>−</span> take off for today':''}</p>`:''}</div></div></section>`}   // (the icons in words, W2-14-10; the buttons have their names already)
+    <div class="mpanel" id="ipanel"><div class="mpanel-in" data-act="listFoldTap"><div class="list">${slots(o)}</div>${canPick(o)&&!o.frozen?`<p class="plegend" aria-hidden="true"><span>⇄</span> choose another${offOn(o)&&(o.top||o.tie||o.pocket)?' · <span>−</span> take off for today':''}</p>`:''}</div></div></section>`}   // (the icons in words, W2-14-10; the buttons have their names already)
 /* a tap inside the open pieces list that is not on a button, a link or a photo (e.g. on the names on the left) folds the list */
 function foldListTap(e){if(!listOpen||e.target.closest('button,a,input,select,label,.rpanel'))return;toggleList()}
 /* folding a box whose top is above the screen (folded from its bottom): bring the card back into view */
@@ -219,7 +219,7 @@ function renderToday(){
   // in this drawing's "last worn" and cleaning frame (fix round 3, W2-14-12: they changed a moment after opening)
   if(!snapped&&items.length&&typeof pulledYet==='function'&&pulledYet())recordRun=recordDays(p).then(lockUpcoming).then(()=>{if(typeof planSnapSoon==='function')planSnapSoon()});
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
-  const nav=`<div class="nav day"><button onclick="stepDay(-1)" aria-label="Previous day">‹</button><h2 aria-label="${esc(sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))}"><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc${settings.location?'':' wxlk'}">${settings.location?(wxChip(sel)||wxMissing(sel,wp)):`<a href="#" class="wxl" onclick="openSettings('weather');return false">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button onclick="stepDay(1)" aria-label="Next day">›</button></div>`;
+  const nav=`<div class="nav day"><button data-act="dayStepTap" data-n="-1" aria-label="Previous day">‹</button><h2 aria-label="${esc(sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))}"><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc${settings.location?'':' wxlk'}">${settings.location?(wxChip(sel)||wxMissing(sel,wp)):`<a href="#" class="wxl" data-act="wxSetTap">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button data-act="dayStepTap" data-n="1" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
   let stage='',side='';const first=(typeof setupToday==='function'?setupToday():'')+(typeof kitSampleBanner==='function'?kitSampleBanner():'');   // what is still needed for a first outfit (setup.js)
   if(!isWorkday(sel))stage=first+(offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
@@ -231,7 +231,7 @@ function renderToday(){
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${wardShort()?'':scoreCard(o)}${piecesBox(o)}${dayActions(o)}${goneNote(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${restWarn(o)}${typeof careNote==='function'?careNote(o):''}`}
   if(typeof calBanner==='function')stage=calBanner(sel)+stage;   // new calendar events, a trip kept (calendar.js)
-  keepFocus($('#today'),()=>{$('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+missedCard()+resetCard(isWorkday(sel)?o:null):''}</div></div>`});applyZoom(false);swApply(false);fitNavSoon();wxFit();
+  keepFocus($('#today'),()=>{$('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+missedCard()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;actTaps($('#today'))});applyZoom(false);swApply(false);fitNavSoon();wxFit();
   todaySay(o);
   if(snapped){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
   else if(items.length&&!(typeof pulledYet==='function'&&pulledYet())&&!todayPullWait){todayPullWait=true;whenPulled(()=>{todayPullWait=false;if(!$('#today').hidden)refreshToday()})}   // (recorded above when pulled; else drawn again once the backup is merged, and recorded then)
@@ -263,6 +263,22 @@ function stepDay(n,from,times=1){
 }
 /* the month as it would be planned with these records (the real ones and the cache stay as they are) */
 function planWith(recs,y,m){const keep=dayRecs;dayRecs=recs;try{return planTrim(buildPlan(y,m))}finally{dayRecs=keep}}   // (trimmed like the month: the days before the wardrobe existed flashed invented outfits during a drag)
-/* the markup's handler (act.js): the Today tab */
-function todayTabTap(){goToday()}
-acts({rollTap,todayTabTap});   // (act.js: the uniform blouse's Sleeves row)
+/* the markup's handlers (act.js). Today's markup has <div>s that take a tap (a row's photo, the photo under the tiles, the open list's
+   own ground; scorecard.js's panel and swaps): renderToday calls actTaps on the page after writing it, so a phone's tap there is a click */
+function todayTabTap(){goToday()}   // the Today tab (index.html)
+function vestTap(el){setVest(el.dataset.on==='1')}   // the Vest row's + / −
+function offTap(el){setOff(el.dataset.slot,el.dataset.on==='1')}   // − beside the jacket, tie or pocket square (data-on 1), + on its "Taken off" row (0)
+function pickTap(el){openPicker(el.dataset.s)}   // a row's ⇄ (and the pocket square's +): the picker for its slot
+function rowTap(el){toggleRow(el.dataset.s)}   // a row's swatch and name, and its unfolded photo
+function addOneTap(el){openAdd(el.dataset.type)}   // a missing piece's "Add one" (data-type: the type to add, '' when none)
+function belowPicTap(){pickPiece(belowOpen)}   // the photo unfolded under the tiles
+function tileTap(el){pickPiece(el.dataset.s)}   // a tile under the figure
+function swatchTap(el){swTap(el.dataset.s)}   // a cloth swatch on the picture (today-picture.js)
+function wornTap(){toggleWorn()}   // the date bar's Wore pill
+function figLoad(){fitNavSoon()}   // the day's picture has loaded (data-act-load)
+function wxRetryTap(el,ev){loadWeather(true);ev.preventDefault()}   // "No forecast · retry" (a link: it goes nowhere)
+function wxSetTap(el,ev){openSettings('weather');ev.preventDefault()}   // "Set location"
+function listTap(){toggleList()}   // the pieces box's head
+function listFoldTap(el,ev){foldListTap(ev)}   // the open list's own ground
+function dayStepTap(el){stepDay(+el.dataset.n)}   // the date bar's ‹ and ›
+acts({rollTap,todayTabTap,vestTap,offTap,pickTap,rowTap,addOneTap,belowPicTap,tileTap,swatchTap,wornTap,figLoad,wxRetryTap,wxSetTap,listTap,listFoldTap,dayStepTap});
