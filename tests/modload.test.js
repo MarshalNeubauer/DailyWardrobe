@@ -37,7 +37,7 @@ async function run(eng,browser,{ok,url,settle}){
       if(c.hold&&name===c.held)await c.hold;await route.continue().catch(()=>{})});
     c.p=await ctx.newPage();c.p.on('pageerror',e=>c.errs.push(e.message));
     await c.p.goto(url);await c.p.waitForFunction(()=>window.appReady);
-    await c.p.evaluate(async()=>{if(document.querySelector('#setup.on'))setupClose();settings.setupDone=1;await saveUserSettings();
+    await c.p.evaluate(async()=>{if(document.querySelector('#setup.on'))setupClose();settings.setupDone=1;settings.laundryDays=3;await saveUserSettings();
       await put({id:'ml-shirt',type:'shirt',primaryColor:'white',pattern:'solid',added:1});await put({id:'ml-tie',type:'tie',primaryColor:'navy',pattern:'solid',added:2});await put({id:'ml-suit',type:'suit',primaryColor:'navy',pattern:'solid',added:3})});
     return c};
   // loads the page with one script held: every script before it has run, none after
@@ -70,10 +70,17 @@ async function run(eng,browser,{ok,url,settle}){
   await held(c,'ui.js',()=>typeof tabTap==='function');
   await tap(c,CTRL['the gear']);const setEarly=await c.p.evaluate(()=>settingsOpen());await tap(c,CTRL['the theme button']);
   const themed=await c.p.evaluate(()=>document.documentElement.dataset.theme||'');
-  ok(c.errs.length===0,T+`the gear and the theme button tapped with their scripts in and the later ones not: no page error (${c.errs.join(' | ')||'none'}; Settings ${setEarly?'opened':'did not open'}, theme "${themed}")`);
+  ok(c.errs.length===0,T+`the gear and the theme button tapped with their scripts in and the later ones not: no page error (${c.errs.join(' | ')||'none'}; theme "${themed}")`);
+  // Settings opened before the stored settings were read showed the defaults, and a change there was saved over the stored copy
+  ok(!setEarly&&await c.p.evaluate(()=>settings.laundryDays!==3),T+'the gear doesn\'t open Settings before the stored settings are read (the page still holds the defaults)');
+  await c.p.evaluate(()=>{document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));window.dispatchEvent(new PopStateEvent('popstate',{state:null}));
+    const dt=new DataTransfer();dt.items.add(new File([new Uint8Array([137,80,78,71])],'p.png',{type:'image/png'}));document.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true}))});
+  await wait(150);ok(c.errs.length===0&&await c.p.evaluate(()=>queue.length===0),T+`Escape, Back and a pasted photo during loading: no page error, no card started (${c.errs.join(' | ')||'none'})`);
   await tap(c,CTRL.Insights);await go(c);
-  ok(await shown(c)==='stats'&&c.errs.length===0&&await c.p.evaluate(()=>items.length===3&&settings.setupDone===1),T+`after start-up the app is on Insights, the tab tapped last, with its wardrobe and settings (${await shown(c)}; ${c.errs.join(' | ')||'no page error'})`);
-  await c.p.evaluate(()=>{try{localStorage.removeItem('theme')}catch(e){}});
+  const aft=await c.p.evaluate(async()=>{const st=await metaGet('settings');return {set:settingsOpen(),n:items.length,mem:settings.laundryDays+'/'+settings.setupDone,st:st.laundryDays+'/'+st.setupDone}});
+  ok(await shown(c)==='stats'&&c.errs.length===0&&aft.n===3,T+`after start-up the app is on Insights, the tab tapped last, with its wardrobe (${await shown(c)}; ${c.errs.join(' | ')||'no page error'})`);
+  ok(aft.set&&aft.mem==='3/1'&&aft.st==='3/1',T+`and Settings, asked for during loading, opens now, over the stored settings (laundry days/setup ${aft.mem} in memory, ${aft.st} stored)`);
+  await c.p.evaluate(()=>{closeSettings();try{localStorage.removeItem('theme')}catch(e){}});
 
   /* ---- a script that can't be loaded (CR-7-03) ---- */
   const card=()=>c.p.evaluate(()=>{const d=document.querySelector('#today #start-fail');return d?{text:d.textContent,btn:!!d.querySelector('button'),vis:d.getBoundingClientRect().height>40&&!document.querySelector('#today').hidden,role:d.getAttribute('role')}:null});
@@ -96,7 +103,27 @@ async function run(eng,browser,{ok,url,settle}){
   // a late script missing: the app starts without that feature, and no card
   k=await fail({'about.js':{status:404}},()=>window.appReady);await wait(5200);k=await card();
   ok(!k&&await shown(c)==='today'&&await c.p.evaluate(()=>window.appReady&&items.length===3&&document.querySelector('#today').children.length>0),T+'about.js can\'t be loaded: the app still starts on Today with its wardrobe, and no start-up card covers it');
+  /* ---- the card never comes on a start that is only slow ---- */
+  // an error nobody catches during loading (the catcher hears it), then the stored wardrobe 6 s late: start-up is under way, so it waits
+  const src=fs.readFileSync(path.join(ROOT,'start.js'),'utf8'),slow=src.replace('connRestored.then(()=>','connRestored.then(()=>new Promise(r=>setTimeout(r,6000))).then(()=>');
+  ok(slow!==src,T+'(start.js\'s stored read can be slowed for the test)');
+  await c.ctx.addInitScript(()=>{window.__card=0;new MutationObserver(()=>{if(document.getElementById('start-fail'))window.__card++}).observe(document,{childList:true,subtree:true});
+    try{if(localStorage.getItem('ml_stray'))setTimeout(()=>{throw new Error('modload test: a stray error during loading')},20)}catch(e){}});
+  const notedBefore=await c.p.evaluate(()=>{localStorage.setItem('ml_stray','1');return JSON.parse(localStorage.getItem('err_log')||'[]').filter(x=>/didn’t start/.test(x.m)).length});
+  c.errs.length=0;c.refuse={'start.js':{body:slow}};c.hold=null;await c.p.goto('about:blank');await c.p.goto(url,{waitUntil:'load'});await wait(5000);
+  const midway=await c.p.evaluate(()=>({card:window.__card,today:document.querySelector('#today').children.length,ready:!!window.appReady,busy:window.startBusy}));
+  ok(c.errs.length===1&&midway.today===0&&!midway.ready&&midway.card===0,T+`an uncaught error during loading and the stored wardrobe 6 s late: 5 s after the page loaded Today is still empty and no card has come (${JSON.stringify(midway)})`);
+  await c.p.waitForFunction(()=>window.appReady,null,{timeout:20000});await settle(c.p,300);
+  ok(await c.p.evaluate(n=>window.__card===0&&items.length===3&&document.querySelector('#today').children.length>0&&JSON.parse(localStorage.getItem('err_log')||'[]').filter(x=>/didn’t start/.test(x.m)).length===n,notedBefore),T+'then the app starts as usual: the card never came and nothing was noted as a failed start');
   c.refuse=null;await c.ctx.close();
+  // a first run, signed out, with such an error: Today's first page and the setup, never the card
+  {const ctx=await browser.newContext({viewport:{width:402,height:874},hasTouch:true,isMobile:eng==='Chromium'});
+    await ctx.route(u=>!u.href.startsWith(origin)&&/^https?:/.test(u.href),route=>route.fulfill({status:503,headers:{'content-type':'application/json','access-control-allow-origin':'*'},body:'{"error":"server"}'}));
+    await ctx.addInitScript(()=>{window.__card=0;new MutationObserver(()=>{if(document.getElementById('start-fail'))window.__card++}).observe(document,{childList:true,subtree:true});setTimeout(()=>{throw new Error('modload test: a stray error during loading')},20)});
+    const p=await ctx.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);await wait(5000);
+    const f=await p.evaluate(()=>({card:window.__card,today:document.querySelector('#today').children.length,n:items.length,setup:!!document.querySelector('#setup.on,#tour.on,.tour.on')}));
+    ok(f.card===0&&f.today>0&&f.n===0,T+`a first run, signed out, with an uncaught error during loading: Today's first page is drawn and the card never comes (${JSON.stringify(f)})`);
+    await ctx.close()}
 
   /* ---- an Arabic-language phone: dates are drawn after locale.js's patch ---- */
   const a=await open({locale:'ar-KW',timezoneId:'Asia/Kuwait'});

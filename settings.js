@@ -184,7 +184,12 @@ function dayTap(el){toggleDay(el.dataset.list,+el.dataset.i)}
 function picsPick(el){setPictures(el.value)}
 /* index.html's (act.js): the header's gear, Settings' backdrop and Done, a category's head (data-cat: its key), the Suit vest and Dark
    shirts choices */
-function setOpenTap(){openSettings()}
+/* The gear tapped before start-up has read the stored settings (the scripts are deferred: the page takes taps while they load) only
+   notes it, and start-up opens Settings once Today is up (start.js showWanted, setWanted). Opened at once it showed the defaults, and a
+   change made there was saved over the stored settings: every other setting went back to its default (found 2026-11-23). */
+let setWant=false;
+function setWanted(){const w=setWant;setWant=false;return w}
+function setOpenTap(){if(typeof pagesOn==='undefined'||!pagesOn){setWant=true;return}openSettings()}
 function setBackdropTap(){closeSettings()}
 function setDoneTap(){saveSettings()}
 function catTap(el){toggleCat(el.dataset.cat)}

@@ -44,7 +44,8 @@ async function pasteFromClipboard(){
 }
 const clipImages=dt=>[...(dt&&dt.items||[])].filter(x=>x.kind==='file'&&x.type.startsWith('image/')).map(x=>x.getAsFile()).filter(Boolean);
 /* Ctrl+V / ⌘V: a copied image anywhere in the app goes to Add; a pasted link goes in when the Add screen is open */
-document.addEventListener('paste',e=>{
+const pasteUp=()=>typeof pagesOn!=='undefined'&&pagesOn;   // start-up has drawn Today (start.js): before that a paste or a drop is passed over (openAdd and the stored wardrobe aren't there yet)
+document.addEventListener('paste',e=>{if(!pasteUp())return;
   const imgs=clipImages(e.clipboardData),tgt=e.target,inBox=tgt&&tgt.id==='photo-url';
   const typing=tgt&&/^(INPUT|TEXTAREA|SELECT)$/.test(tgt.tagName)&&!inBox;
   if(imgs.length){if(typing&&tgt.type!=='url'&&tgt.type!=='text')return;e.preventDefault();if($('#add').hidden)openAdd();addBlobs(imgs);return}
@@ -57,7 +58,7 @@ document.addEventListener('dragleave',e=>{if(!e.relatedTarget)document.body.clas
 document.addEventListener('drop',e=>{const dt=e.dataTransfer;if(!dt)return;document.body.classList.remove('dragging');
   const files=[...dt.files].filter(f=>f.type.startsWith('image/'));
   const link=(dt.getData('text/uri-list')||'').split(/\r?\n/).find(l=>l&&!l.startsWith('#'))||dt.getData('text/plain');
-  if(!files.length&&!isLink(link))return;e.preventDefault();if($('#add').hidden)openAdd();
+  if(!files.length&&!isLink(link))return;e.preventDefault();if(!pasteUp())return;if($('#add').hidden)openAdd();
   if(files.length)addBlobs(files);else addFromUrl(link.trim())});
 /* the markup's handlers (act.js): Enter in the "Photo or link" field, and its Paste and Add buttons */
 function linkKey(el,ev){if(ev.key==='Enter'){ev.preventDefault();addLink()}}

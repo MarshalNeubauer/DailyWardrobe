@@ -15,3 +15,4 @@ declare var _cities: any;
 declare var appReady: any;
 declare var mqData: any;
 declare var outfitMannequinSvg: any;
+declare var startBusy: any;

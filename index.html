@@ -13,8 +13,9 @@
    get to say "something went wrong, your wardrobe is safe" (startFailed). This plain script, which needs no other, hears a script that
    didn't load and every error nobody caught before the app is ready; if Today is still empty some seconds later, or startUp is
    missing once the scripts have run, it says so itself in Today's place, with Try again, and notes it for the error report
-   (localStorage err_log, safety.js's list). Nothing is deleted or written to the wardrobe. A start-up that does come overwrites it. */(function(){var w=window,why=[],timer=0,WAIT=4000;
+   (localStorage err_log, safety.js's list). Nothing is deleted or written to the wardrobe. A start-up that does come overwrites it. */(function(){var w=window,why=[],timer=0,WAIT=4000,waited=0;
 function card(){timer=0;var t=document.getElementById("today");if(!t||w.appReady||t.firstChild||document.getElementById("nostore"))return;
+  if(w.startBusy&&waited<14){waited++;soon(WAIT);return}   /* start-up is reading the stored wardrobe (start.js): a slow start is not a failed one; a minute at most */
   var d=document.createElement("div");d.className="mbox";d.id="start-fail";d.setAttribute("role","alert");
   d.innerHTML='<p><b>The app couldn’t start.</b></p><p class="shelp">Your wardrobe is safe on this phone: nothing was deleted. Check your connection, then try again.</p><div class="sactions"><button type="button">Try again</button></div>';
   d.querySelector("button").addEventListener("click",function(){location.reload()});t.hidden=false;t.appendChild(d);
