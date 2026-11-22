@@ -1,10 +1,12 @@
 /* Daily Wardrobe: shared constants and item helpers (no DOM access; also loaded by the analysis worker) */
 const TYPES={suit:'Suit',blazer:'Blazer',pants:'Pants',shirt:'Dress shirt',tie:'Tie',tieclip:'Tie clip',pocketsquare:'Pocket square',watch:'Watch',shoes:'Shoes',belt:'Belt',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Overcoat',raincoat:'Raincoat',
   // the casual garments (2026-11-16, the owner's approved new types): worn only when picked by hand on Today (isHandPick)
-  tee:'T-shirt',polo:'Polo',henley:'Henley',sweater:'Sweater',sweatshirt:'Sweatshirt',hoodie:'Hoodie',qzip:'Quarter-zip',cardigan:'Cardigan',chore:'Chore jacket'};
+  tee:'T-shirt',polo:'Polo',henley:'Henley',sweater:'Sweater',sweatshirt:'Sweatshirt',hoodie:'Hoodie',qzip:'Quarter-zip',cardigan:'Cardigan',chore:'Chore jacket',
+  // the uniform blouse (2026-11-17, the owner's: the OCP coat worn over a T-shirt with camouflage pants; hand-picked only)
+  blouse:'Uniform blouse'};
 /* the types and kinds the tagger offers only to an app that names them (the request's `types`; worker/tag.js knownTypes; the pocket square too): an older app
    reads an unknown type as a suit, so the worker gives one only when told. 'cargo' is the pants kind (trouserKind) */
-const TAG_TYPES=['pocketsquare','tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','cargo','sockpat','combat'];   // ('sockpat', 2026-11-17: socks' patterns, their pattern colours and the toe cap's own field, toeColor; 'combat', 2026-11-17: the combat boot style and the coyote color)
+const TAG_TYPES=['pocketsquare','tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','cargo','sockpat','combat','blouse'];   // ('sockpat', 2026-11-17: socks' patterns, their pattern colours and the toe cap's own field, toeColor; 'combat', 2026-11-17: the combat boot style and the coyote color; 'blouse', 2026-11-17: the uniform blouse)
 /* what a tag request names: with the Look editor beta on (look.js lookOn) also 'coatpat', a coat's patterns (2026-11-17); off, exactly TAG_TYPES */
 const tagTypesNow=()=>typeof lookOn==='function'&&lookOn()?[...TAG_TYPES,'coatpat']:TAG_TYPES;
 /* ---- hand-pick only (2026-11-16, the owner: "Planner: hand-pick only"): the casual tops (worn in the shirt slot, in place of the shirt),
@@ -12,7 +14,7 @@ const tagTypesNow=()=>typeof lookOn==='function'&&lookOn()?[...TAG_TYPES,'coatpa
    rotation stats or What to buy; Today's picker offers them under "Casual · pick by hand". isHandPick is the one check the planner, the
    suggestions and the stats ask; a later "Uniform" flag can extend it ---- */
 const CASUAL_TOPS=['tee','polo','henley','sweater','sweatshirt','hoodie','qzip'];
-const CASUAL_JACKETS=['cardigan','chore'];
+const CASUAL_JACKETS=['cardigan','chore','blouse'];
 const HANDPICK_TYPES=[...CASUAL_TOPS,...CASUAL_JACKETS];
 // (combat boots too, 2026-11-17, the owner: hand-pick only, and only with camouflage pants: camoPants)
 const isHandPick=i=>!!i&&(HANDPICK_TYPES.includes(i.type)||(i.type==='pants'&&i.trouserKind==='cargo')||(i.type==='shoes'&&i.shoeStyle==='combat'));
@@ -34,6 +36,8 @@ const METAL={gold:'#c9a227',silver:'#c3c6cb',other:'#7d8187'},PATS_BY=(()=>{cons
     // the casual garments (2026-11-16): heather (a marled mix of light and dark fibers of one color), cable (cable-knit ropes)
     tee:['solid','stripe','heather','other'],polo:['solid','stripe','heather','other'],henley:['solid','stripe','heather','other'],sweater:['solid','heather','cable','stripe','other'],
     sweatshirt:['solid','stripe','heather','other'],hoodie:['solid','stripe','heather','other'],qzip:['solid','heather','cable','stripe','other'],cardigan:['solid','heather','cable','stripe','other'],chore:['solid','other'],
+    // the uniform blouse (2026-11-17): camouflage (drawn and painted as OCP: isOcp), plain or other
+    blouse:['camouflage','solid','other'],
     // socks (2026-11-17, the owner's sock patterns): bold ones (argyle, stripe = horizontal bands, polka-dot, other) and quiet knits that read
     // plain from a step away (ribbed, birdseye, nailhead, herringbone, clock = a small motif up the side of the ankle); worker/tag.js SOCK_PATS
     socks:['solid','argyle','stripe','polka-dot','ribbed','birdseye','nailhead','clock','herringbone','other'],
@@ -93,7 +97,9 @@ const COLS_BY={
   CAS_A=['white','cream','lightgrey','grey','charcoal','black','navy','blue','lightblue','red','burgundy','green','olive','tan','brown','gold','rust','pink'],
   KNIT_P=['cream','white','lightgrey','midgrey','grey','charcoal','black','navy','darknavy','blue','steelblue','slate','green','olive','khaki','tan','taupe','brown','burgundy','wine','rust','red','gold'];
   for(const t of ['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan'])COLS_BY[t]={p:[...(['sweater','qzip','cardigan'].includes(t)?KNIT_P:CAS_P)],a:[...CAS_A]};
-  COLS_BY.chore={p:['navy','darknavy','blue','steelblue','olive','green','khaki','tan','stone','brown','rust','black','charcoal','grey','cream'],a:['black','brown','navy','cream','white','tan','olive']}}
+  COLS_BY.chore={p:['navy','darknavy','blue','steelblue','olive','green','khaki','tan','stone','brown','rust','black','charcoal','grey','cream'],a:['black','brown','navy','cream','white','tan','olive']};
+  // the uniform blouse (2026-11-17): the OCP coat's tan ground first; a plain one in its usual colors
+  COLS_BY.blouse={p:['khaki','tan','stone','olive','brown','green','black','navy'],a:['olive','brown','tan','khaki','black','green']}}
 /* watch dials */
 const DIAL_COLS=['white','cream','silver','lightgrey','grey','slate','charcoal','black','navy','deepblue','blue','lightblue','green','olive','brown','burgundy','gold'];
 const colsFor=(type,accent)=>{const t=COLS_BY[type];return t?(accent?t.a:t.p):Object.keys(COLORS)};
@@ -233,7 +239,8 @@ const MATERIALS_BY={
   hoodie:['cotton','fleece','french terry','cotton blend','polyester blend','merino wool'],
   qzip:['merino wool','lambswool','cashmere','wool','wool blend','cotton','fleece','polyester blend'],
   cardigan:['merino wool','lambswool','cashmere','cashmere blend','wool','wool blend','alpaca','cotton'],
-  chore:['canvas','duck canvas','cotton twill','cotton','denim','moleskin','corduroy','wool','waxed cotton','linen']};
+  chore:['canvas','duck canvas','cotton twill','cotton','denim','moleskin','corduroy','wool','waxed cotton','linen'],
+  blouse:['nylon/cotton ripstop','cotton ripstop','cotton twill','polyester/cotton','cotton']};
 /* other words for a material (the spreadsheet import and the Wardrobe's search, 2026-11-15, the audit's alias table): word -> the listed
    name, per type where it differs ('*' every type). "fresco" finds and imports as tropical wool, "lisle" as mercerized cotton */
 const MAT_ALIAS={'*':{fresco:'tropical wool',tropical:'tropical wool','tropical wool':'tropical wool','high-twist':'tropical wool','high twist':'tropical wool',worsted:'wool','worsted wool':'wool',
@@ -250,6 +257,7 @@ const MAT_ALIAS={'*':{fresco:'tropical wool',tropical:'tropical wool','tropical 
   sweater:{shetland:'shetland wool',lambs:'lambswool','lambs wool':'lambswool','lamb’s wool':'lambswool',merino:'merino wool',mohair:'mohair blend'},cardigan:{lambs:'lambswool','lambs wool':'lambswool',merino:'merino wool'},qzip:{lambs:'lambswool',merino:'merino wool',polar:'fleece'},
   sweatshirt:{terry:'french terry','loopback':'loopback cotton',polar:'fleece','brushed fleece':'fleece'},hoodie:{terry:'french terry',polar:'fleece','brushed fleece':'fleece'},
   chore:{duck:'duck canvas',twill:'cotton twill',waxed:'waxed cotton',wax:'waxed cotton',cord:'corduroy'},
+  blouse:{nyco:'nylon/cotton ripstop',ripstop:'nylon/cotton ripstop','nylon cotton':'nylon/cotton ripstop','nylon/cotton':'nylon/cotton ripstop','poly cotton':'polyester/cotton','poly/cotton':'polyester/cotton',twill:'cotton twill'},
   // (polyester is a shirt material of its own since 2026-11-16, the owner's ask: no longer read as performance stretch; nylon still is)
   shirt:{nylon:'performance stretch',viscose:'rayon',tencel:'lyocell',merino:'wool','merino wool':'wool','poly-cotton':'cotton blend',polycotton:'cotton blend','poly cotton':'cotton blend','cotton-polyester':'cotton blend','cotton polyester':'cotton blend',poly:'polyester','poly blend':'polyester blend'}};
 /* ---- the person's own materials (2026-11-16, the owner's approved design): settings.ownMaterials = {type: [name]}, added from Claude's
@@ -379,6 +387,53 @@ function camoImage(N,cols,shares,seed=1){const idx=camoField(N,shares,seed),rgb=
   let s=(Math.imul((seed|0)+7,2246822519)>>>0)||1;const rnd=()=>(s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296,out=new Uint8ClampedArray(3*n);
   for(let j=0;j<n;j++){const g=1+CAMO_GRAIN*(rnd()-.5)*2;for(let q=0;q<3;q++)out[3*j+q]=Math.round(a[3*j+q]*g)}
   return out}
+/* ---- OCP (2026-11-17, the owner's uniform blouse and OCP pants: "one fixed OCP look", matched to his photo of the blouse): the Scorpion W2
+   pattern in a fixed palette, whatever colours were tagged. Finer and more broken up than the generic camouflage: green and brown areas
+   wider than tall with fragmented edges, light sand islands and dark brown flecks mostly inside and beside them, a fine vertical streak in
+   every edge (the cloth's print), a faint thread grain. OCP_CAMO.mm: the tile is that wide on the cloth (the painter's and the drawings'
+   scale); its blotches are about 1-8 cm, as in his photo at the same scale. Bump OCP_V when the look changes (it is in the looks' keys
+   through the sett's seed, detect.js camoTag) */
+const OCP_V=2,OCP_CAMO={cols:['#BDA685','#828E5D','#8A6A4F','#D8D0BD','#3D3029'],shares:[.30,.28,.20,.11,.11],mm:450,ax:2,k:1.1,warp:.012,vs:.08,grain:.03};
+/* an OCP piece: the uniform blouse in camouflage, or camouflage pants whose own pattern is named or described as OCP, Scorpion or
+   MultiCam (his "Camouflage (OCP/MultiCam)"), or any piece marked camo:'ocp' */
+const isOcp=i=>!!i&&camoPat(i.pattern)&&(i.type==='blouse'||i.camo==='ocp'||(i.type==='pants'&&(()=>{const c=typeof CUSTOM_PAT!=='undefined'&&CUSTOM_PAT[i.pattern];return !!c&&/\bocp\b|scorpion|multicam/i.test((c.name||'')+' '+(c.desc||''))})()));
+/* the uniform blouse's tapes and rank (2026-11-18, the owner: per item, set in the item sheet and on the Add card): the name tape and
+   service tape text (capitals, at most BLOUSE_TAPE_MAX letters; drawn and painted on the blank tapes) and the rank on the chest tab
+   (OCP_RANKS; on OCP subdued spice brown: bars for lieutenants and captains, the oak leaf for majors and lieutenant colonels) */
+const BLOUSE_TAPE_MAX=18;
+const OCP_RANKS=[['none','None'],['2lt','Second lieutenant'],['1lt','First lieutenant'],['capt','Captain'],['maj','Major'],['ltcol','Lieutenant colonel']];
+const tapeText=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9 .'\-]/g,'').replace(/\s+/g,' ').trim().slice(0,BLOUSE_TAPE_MAX);
+const blouseTapes=i=>({name:tapeText(i&&i.tapeName),service:tapeText(i&&i.tapeService),rank:i&&OCP_RANKS.some(r=>r[0]===i.rank)&&i.rank!=='none'?i.rank:''});
+const ocpMemo=new Map();
+/* the OCP tile, N x N sRGB (Uint8ClampedArray, 3 a pixel), seamless; seeded */
+function ocpImage(N,seed=1){const key=N+'|'+seed;if(ocpMemo.has(key))return ocpMemo.get(key);const P=OCP_CAMO;
+  let s=(Math.imul(seed|0,2654435761)>>>0)||1;const rnd=()=>(s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296;
+  const n=N*N,sm=t=>t*t*(3-2*t),g=a=>Math.max(1,Math.round(a*P.k)),h=a=>Math.max(1,Math.round(a*P.k*P.ax));
+  // wrapping value noise on a Gx x Gy lattice (more rows than columns: shapes wider than tall)
+  const lat=(Gx,Gy)=>{const L=new Float32Array(Gx*Gy);for(let q=0;q<L.length;q++)L[q]=rnd();return {L,Gx,Gy}};
+  const at=(A,x,y)=>{const fx=((x/N*A.Gx)%A.Gx+A.Gx)%A.Gx,fy=((y/N*A.Gy)%A.Gy+A.Gy)%A.Gy,x0=Math.floor(fx),y0=Math.floor(fy),x1=(x0+1)%A.Gx,y1=(y0+1)%A.Gy,u=sm(fx-x0),v=sm(fy-y0),L=A.L,G=A.Gx;
+    return (L[y0*G+x0]*(1-u)+L[y0*G+x1]*u)*(1-v)+(L[y1*G+x0]*(1-u)+L[y1*G+x1]*u)*v};
+  const oct=list=>list.map(([gx,gy,w])=>({A:lat(gx,gy),w})),f=(O,x,y)=>{let v=0,W=0;for(const o of O){v+=o.w*at(o.A,x,y);W+=o.w}return v/W};
+  const WX=oct([[g(20),g(20),1],[g(48),g(48),.6],[g(110),g(36),.45]]),WY=oct([[g(20),g(20),1],[g(48),g(48),.6],[g(40),g(110),.3]]),wa=P.warp*N;
+  const VS=oct([[g(150),g(14),1],[g(260),g(26),.5]]);   // the vertical streaks: fine across, long down
+  const FG=oct([[g(5),h(5),1],[g(10),h(10),.55],[g(22),h(22),.3],[g(46),h(46),.16]]),FB=oct([[g(6),h(6),1],[g(12),h(12),.55],[g(25),h(25),.3],[g(50),h(50),.16]]),
+    FL=oct([[g(9),h(9),.5],[g(17),h(17),1],[g(34),h(34),.35],[g(70),h(70),.12]]),FD=oct([[g(10),h(10),.5],[g(20),h(20),1],[g(40),h(40),.35],[g(80),h(80),.12]]);
+  const fld=[null,new Float32Array(n),new Float32Array(n),new Float32Array(n),new Float32Array(n)];
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const q=y*N+x,X=x+(f(WX,x,y)-.5)*2*wa,Y=y+(f(WY,x,y)-.5)*2*wa,vs=(f(VS,x,y)-.5)*P.vs,G=f(FG,X,Y),B=f(FB,X+37,Y+11);
+    fld[1][q]=G+vs;fld[2][q]=B+vs;fld[3][q]=f(FL,X,Y)+vs;fld[4][q]=f(FD,X,Y)+.55*Math.max(B,G*.8)+vs*1.5}
+  // each colour takes exactly its share, the smallest first, where its field is highest (a histogram threshold: no sort)
+  const idx=new Uint8Array(n),taken=new Uint8Array(n);
+  for(const c of [4,3,2,1]){const F=fld[c],want=Math.round(P.shares[c]*n);let lo=Infinity,hi=-Infinity;
+    for(let q=0;q<n;q++)if(!taken[q]){if(F[q]<lo)lo=F[q];if(F[q]>hi)hi=F[q]}
+    const NB=4096,H=new Uint32Array(NB),sc=(NB-1)/Math.max(1e-9,hi-lo);for(let q=0;q<n;q++)if(!taken[q])H[Math.floor((F[q]-lo)*sc)]++;
+    let acc=0,bin=NB-1;while(bin>0&&acc+H[bin]<=want)acc+=H[bin--];const th=lo+(bin+1)/sc;
+    for(let q=0;q<n;q++)if(!taken[q]&&F[q]>=th){idx[q]=c;taken[q]=1}}
+  // a one-pixel soft edge (a wrapping 3x3 weighted average of the colours) and the thread grain
+  const cols=P.cols.map(hexRgb),out=new Uint8ClampedArray(3*n);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){let r=0,gg=0,b=0;
+    for(let a=-1;a<=1;a++)for(let c=-1;c<=1;c++){const w=(a===0&&c===0)?4:(a===0||c===0)?2:1,C=cols[idx[((y+a+N)%N)*N+(x+c+N)%N]];r+=C[0]*w;gg+=C[1]*w;b+=C[2]*w}
+    const t=1+P.grain*((((x*7+(y>>1)*13)%5)/2-1)*.6+(rnd()*2-1)),q=3*(y*N+x);out[q]=r/16*t;out[q+1]=gg/16*t;out[q+2]=b/16*t}
+  if(ocpMemo.size>4)ocpMemo.clear();ocpMemo.set(key,out);return out}
 const MAT_SEASON={flannel:'cold',tweed:'cold',corduroy:'cold',velvet:'cold',cashmere:'cold','cashmere blend':'cold',moleskin:'cold',melton:'cold',
   linen:'warm','linen blend':'warm',seersucker:'warm','tropical wool':'warm'};
 const MAT_SEASON_BY={tie:{wool:'cold'}};

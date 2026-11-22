@@ -15,7 +15,7 @@ fs.writeFileSync(FILE, JSON.stringify({ app: 'daily-wardrobe', version: 1, expor
 ], days: [], settings: null }));
 
 async function restore(ph) {
-  await ph.tap('header .hbtns button[onclick^="openSettings"]'); await L.sleep(700);
+  await ph.tap('header .hbtns button[data-act="setOpenTap"]'); await L.sleep(700);
   await ph.tap('#sc-backup .scat-head'); await L.sleep(500);
   await ph.page.setInputFiles('#sc-backup input[type=file]', FILE); await L.sleep(2500);
   const msg = await ph.page.evaluate(() => document.body.innerText.match(/Restored\.[^\n]*/)?.[0] || null);

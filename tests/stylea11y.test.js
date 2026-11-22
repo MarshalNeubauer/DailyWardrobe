@@ -69,7 +69,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await act()==='BUTTON#add-import',`Escape closes it and the focus is back on Import (${await act()})`);
     // the tour (from About in Settings)
     await p.evaluate(()=>{show('today');openSettings('about')});await settle(p,400);
-    await p.focus('#settings-modal button[onclick^="tourAgain"]');await p.keyboard.press('Enter');await settle(p,500);
+    await p.focus('#settings-modal button[data-act="tourAgainTap"]');await p.keyboard.press('Enter');await settle(p,500);
     ok(await inside('#kitsheet.on'),`the tour opens with the focus in it (${await act()})`);
     const tOut=await tabs('#kitsheet',30);
     ok(tOut===0,`30 Tabs stay inside the tour (${tOut} outside)`);

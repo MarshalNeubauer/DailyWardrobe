@@ -37,7 +37,7 @@ const TYPE_COLORS = {
    corrections and own colors; only the tag's type list, color table rows, pattern lines, material rows and enums are gated.
    (The pocket-squares branch gates its type the same way with a flag, knowsPq(body): once both are on main it becomes
    knownTypes(body).includes('pocketsquare'), its type joins OPT_TYPES, and its PQ_MARK words join promptFor's pieces.) */
-const OPT_TYPES = ['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore'];
+const OPT_TYPES = ['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore','blouse'];   // (blouse: the uniform blouse, 2026-11-17)
 const OPT_KINDS = ['cargo'];
 const PQ_TYPES = ['pocketsquare'];   // trouserKind values offered only on request
 /* sock patterns (2026-11-17): an app that knows them names 'sockpat' in its types. Only then are socks given their patterns (argyle, stripe,
@@ -70,17 +70,20 @@ const CAS_P = ['white','cream','lightgrey','midgrey','grey','charcoal','black','
   KNIT_P = ['cream','white','lightgrey','midgrey','grey','charcoal','black','navy','darknavy','blue','steelblue','slate','green','olive','khaki','tan','taupe','brown','burgundy','wine','rust','red','gold'];
 Object.assign(TYPE_COLORS, { tee: [CAS_P, CAS_A], polo: [CAS_P, CAS_A], henley: [CAS_P, CAS_A], sweater: [KNIT_P, CAS_A], sweatshirt: [CAS_P, CAS_A],
   hoodie: [CAS_P, CAS_A], qzip: [KNIT_P, CAS_A], cardigan: [KNIT_P, CAS_A],
-  chore: [['navy','darknavy','blue','steelblue','olive','green','khaki','tan','stone','brown','rust','black','charcoal','grey','cream'], ['black','brown','navy','cream','white','tan','olive']] });
+  chore: [['navy','darknavy','blue','steelblue','olive','green','khaki','tan','stone','brown','rust','black','charcoal','grey','cream'], ['black','brown','navy','cream','white','tan','olive']],
+  blouse: [['khaki','tan','stone','olive','brown','green','black','navy'], ['olive','brown','tan','khaki','black','green']] });
 /* the tag's words for each new type and kind */
 const OPT_WORDS = { tee: 'tee (T-shirt: short or long sleeves, no collar)', polo: 'polo (knit polo shirt: soft collar, short button placket)',
   henley: 'henley (collarless knit top with a short button placket)', sweater: 'sweater (pullover knit sweater: crewneck, V-neck or roll neck)',
   sweatshirt: 'sweatshirt (crewneck fleece or terry sweatshirt)', hoodie: 'hoodie (hooded sweatshirt, pullover or zip)',
   qzip: 'qzip (quarter-zip pullover: a zip at the neck)', cardigan: 'cardigan (button-front knit cardigan)',
-  chore: 'chore (chore coat or field jacket: an unlined cotton work jacket with patch pockets, no lapel roll like a blazer)' };
+  chore: 'chore (chore coat or field jacket: an unlined cotton work jacket with patch pockets, no lapel roll like a blazer)',
+  blouse: 'blouse (military uniform coat, e.g. the OCP/Scorpion camouflage coat: name and service tapes over angled chest pockets, shoulder pockets with hook-and-loop, a zip front under a flap; not a chore jacket)' };
 const OPT_PAT_LINES = [
   [['tee','polo','henley','sweatshirt','hoodie'], 'solid, stripe (horizontal stripes, e.g. a Breton), heather (a mottled, marled mix of light and dark fibers of one color), other'],
   [['sweater','qzip','cardigan'], 'solid, heather (a mottled, marled mix of light and dark fibers of one color), cable (raised cable-knit ropes), stripe (horizontal stripes), other'],
-  [['chore'], 'solid, other']];
+  [['chore'], 'solid, other'],
+  [['blouse'], 'camouflage (OCP, MultiCam, woodland: irregular blotches of several colors), solid, other']];
 const DIAL_COLS = ['white','cream','silver','lightgrey','grey','slate','charcoal','black','navy','deepblue','blue','lightblue','green','olive','brown','burgundy','gold'];
 const colorText = known => { const cb = knowsCombat(known), l = x => cb ? x : x.filter(c => !CB_COLS.includes(c)); return Object.entries(TYPE_COLORS).filter(([t]) => !OPT_TYPES.includes(t) || known.includes(t)).map(([t, [p, a]]) => `  ${t}: ${l(p).join(', ')} | ${l(a).join(', ')}`).join('\n')
   + `\n  watch dial: ${DIAL_COLS.join(', ')}`; };
@@ -267,7 +270,7 @@ const PATTERN_BY_TYPE = { suit: SUIT_PATS, blazer: SUIT_PATS, pants: SUIT_PATS,
   tie: ['solid','woven','stripe','polka-dot','paisley','check','tonal-check','foulard','knit','other'],
   pocketsquare: ['solid','border','polka-dot','paisley','stripe','check','foulard','woven','other'] };
 { const top = ['solid','stripe','heather','other'], knit = ['solid','heather','cable','stripe','other'];
-  Object.assign(PATTERN_BY_TYPE, { tee: top, polo: top, henley: top, sweater: knit, sweatshirt: top, hoodie: top, qzip: knit, cardigan: knit, chore: ['solid','other'] }); }
+  Object.assign(PATTERN_BY_TYPE, { tee: top, polo: top, henley: top, sweater: knit, sweatshirt: top, hoodie: top, qzip: knit, cardigan: knit, chore: ['solid','other'], blouse: ['camouflage','solid','other'] }); }
 // socks (2026-11-17, = core.js PATS_BY.socks; offered in the tag only to an app that knows them: knowsSock)
 PATTERN_BY_TYPE.socks = ['solid','argyle','stripe','polka-dot','ribbed','birdseye','nailhead','clock','herringbone','other'];
 // coats (2026-11-17, = core.js PATS_BY.overcoat / raincoat; offered in the tag only to an app that knows them: knowsCoat)
@@ -293,7 +296,8 @@ const MATERIALS_BY = {
   hoodie: ['cotton','fleece','french terry','cotton blend','polyester blend','merino wool'],
   qzip: ['merino wool','lambswool','cashmere','wool','wool blend','cotton','fleece','polyester blend'],
   cardigan: ['merino wool','lambswool','cashmere','cashmere blend','wool','wool blend','alpaca','cotton'],
-  chore: ['canvas','duck canvas','cotton twill','cotton','denim','moleskin','corduroy','wool','waxed cotton','linen'] };
+  chore: ['canvas','duck canvas','cotton twill','cotton','denim','moleskin','corduroy','wool','waxed cotton','linen'],
+  blouse: ['nylon/cotton ripstop','cotton ripstop','cotton twill','polyester/cotton','cotton'] };
 /* how well Claude can tell a material from a photo (the materials audit's tiers, 2026-11-15): a cloth plain to see may be high; a good
    bet from the look medium at most, and low without a close-up; a fiber the eye can't tell (wool vs blends, cashmere, cotton vs a
    blend, polyester) low at most; socks always low. The cleaner holds every answer to its tier, whatever Claude said */

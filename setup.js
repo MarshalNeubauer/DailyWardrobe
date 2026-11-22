@@ -240,7 +240,7 @@ function setupCancelTap(el,ev){setupCancel(ev)}
 function setupSkipTap(el,ev){setupFinish(false,ev)}
 function setupBackTap(el,ev){setupGo(-1,ev)}
 function setupNextTap(el,ev){setupGo(1,ev)}
-/* (an argument that tells two controls of one handler apart is in data-k or data-s: keepFocus finds the redrawn control by them, app.js FOCUS_ATTRS) */
+/* (an argument that tells two controls of one handler apart is in data-k or data-s: keepFocus finds the redrawn control by them, app.js focusFind) */
 /* Your week and What you wear: a day button (data-k the list, data-s the day), a switch (data-k), the vest */
 function setupDayTap(el){setupDay(el.dataset.k,+el.dataset.s)}
 function setupSwTap(el){setupSetDress(el.dataset.k)}
@@ -260,5 +260,8 @@ function setupConnectTap(){setupConnect()}
 function setupAddTap(){openAdd()}
 function wemptyImportTap(){kitImportOpen()}
 function wemptySampleTap(){kitSampleLoad()}
+/* index.html's (act.js): Settings' "Run setup again" */
+function setupAgainTap(){setupOpen(true)}
 acts({setupCancelTap,setupSkipTap,setupBackTap,setupNextTap,setupDayTap,setupSwTap,setupVestPick,setupGeoTap,setupCityType,setupCityKey,setupFindTap,
-  setupCityTap,setupUnitTap,setupLinkKey,setupConnectTap,setupAddTap,wemptyImportTap,wemptySampleTap});
+  setupCityTap,setupUnitTap,setupLinkKey,setupConnectTap,setupAddTap,wemptyImportTap,wemptySampleTap,
+  setupAgainTap});

@@ -32,7 +32,7 @@ function accRow(src,ref,it){const a=accentsOf(it);if(!a.length&&!lookHasPat(it.t
   return `<div class="accrow" role="group" aria-label="Also has"><span class="acclab">Also has</span><span class="accchips">${a.map(chip).join('')}`+
     `${a.length<ACCENT_MAX?`<button type="button" class="accadd" data-act="accAddTap" ${r} aria-haspopup="dialog">+ Add a color</button>`:''}</span></div>`}
 /* the row's controls (act.js; data-s, data-k as accRow's src and ref, data-c the color: the three attributes keepFocus tells two controls
-   apart by, app.js FOCUS_ATTRS): × and "+ Add a color" (colpick.js) */
+   apart by, app.js focusFind): × and "+ Add a color" (colpick.js) */
 function accDelTap(el){accDel(el.dataset.s,el.dataset.k,el.dataset.c)}
 function accAddTap(el){openColPick(el.dataset.s,el.dataset.k,'accents')}
 /* how sure Claude was, in words */

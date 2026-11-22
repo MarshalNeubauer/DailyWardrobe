@@ -40,7 +40,7 @@ async function addTexture(i,f,read){const q=cardOf(i);if(!q||!f)return;
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 function dropTexture(i){const q=cardOf(i);if(!q)return;if(typeof readAbort==='function')readAbort(q);delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
 /* (the close-up step of a card, "Step 2 · Fabric close-up", is now the checklist's Texture match section: addCkSecs below) */
-const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colors.':'Colors corrected for the light.'}</small> <button type="button" class="linkbtn" onclick="toggleWb(${qh(q)})">${q.wbOff?'Correct them':'Show original'}</button></p>`
+const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colors.':'Colors corrected for the light.'}</small> <button type="button" class="linkbtn" data-act="cardWb" ${cardAt(q)}>${q.wbOff?'Correct them':'Show original'}</button></p>`
   :q.wbWas&&q.photo?'<p class="wbnote mut"><small>Colors corrected for the light.</small></p>':'';   // a card brought back after a kill: still corrected, no original kept (addRevive)
 /* Add: "One item" (multi false; also paste and drag) makes one card per photo; "Several items" finds every item in it */
 async function addFiles(files,multi){
@@ -182,7 +182,7 @@ function addNoteText(){const workerSet=typeof isConnected==='function'?isConnect
 function renderAdd(){
   if($('#note')) $('#note').textContent = addNoteText();
   renderAddFor();
-  const ready=queue.filter(cardReady).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" onclick="saveAll()"${reading||saveAllOn?` disabled title="${saveAllOn?'Saving…':'Claude is still reading a card'}"`:''}>${saveAllOn?'Saving…':`Save all ${ready} items`}</button>`:'';
+  const ready=queue.filter(cardReady).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" data-act="saveAllTap"${reading||saveAllOn?` disabled title="${saveAllOn?'Saving…':'Claude is still reading a card'}"`:''}>${saveAllOn?'Saving…':`Save all ${ready} items`}</button>`:'';
   if(typeof addGate==='function')addGate();
   addKeepSoon();
   if($('#queue')){keepFocus($('#queue'),()=>{$('#queue').innerHTML=queue.map((q,i)=>q.id===npsId?'':cardSafe(q,i,()=>q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):formCard(q,i))).join('')});   // (the field changed keeps the keyboard: W2-19-01)
@@ -194,4 +194,10 @@ function addBackOnline(){if(typeof tagNetText==='function'&&tagNetText(aiError))
   for(const q of queue.slice())if(q.tagNet&&q.tagErr&&!q.busy&&q.tagImg)retryTag(queue.indexOf(q));
   for(const q of queue.slice())if(q.multiNet&&q.multiErr&&!q.busy&&q.file)multiAgain(q.id);   // "Several items" too (it waited for a tap)
   const a=$('#add');if(a&&!a.hidden)renderAdd()}
-
+/* what its controls do (act.js): a card's "Show original" / "Correct them" (the card by its id: add-save.js cardIx), and Save all */
+function cardWb(el){toggleWb(cardIx(el))}
+function saveAllTap(){saveAll()}
+/* the markup's handler (act.js): the photos picked with "One item" or "Several items" (data-multi), the field emptied so the same
+   photo can be picked again */
+function addPhotosPick(el){addFiles([...el.files],el.dataset.multi==='1');el.value=''}
+acts({cardWb,saveAllTap,addPhotosPick});

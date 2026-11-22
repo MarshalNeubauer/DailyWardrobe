@@ -59,3 +59,8 @@ document.addEventListener('drop',e=>{const dt=e.dataTransfer;if(!dt)return;docum
   const link=(dt.getData('text/uri-list')||'').split(/\r?\n/).find(l=>l&&!l.startsWith('#'))||dt.getData('text/plain');
   if(!files.length&&!isLink(link))return;e.preventDefault();if($('#add').hidden)openAdd();
   if(files.length)addBlobs(files);else addFromUrl(link.trim())});
+/* the markup's handlers (act.js): Enter in the "Photo or link" field, and its Paste and Add buttons */
+function linkKey(el,ev){if(ev.key==='Enter'){ev.preventDefault();addLink()}}
+function pasteTap(){pasteFromClipboard()}
+function linkAddTap(){addLink()}
+acts({linkKey,pasteTap,linkAddTap});

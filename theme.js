@@ -19,3 +19,6 @@ function cycleTheme(){
 }
 try{applyTheme(localStorage.getItem('theme')||'auto')}catch{applyTheme('auto')}
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(window.appReady&&!$('#today').hidden&&$('.fig'))renderToday()})}catch{}
+/* the markup's handler (act.js): the header's theme button */
+function themeTap(){cycleTheme()}
+acts({themeTap});

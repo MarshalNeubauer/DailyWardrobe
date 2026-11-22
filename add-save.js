@@ -26,6 +26,9 @@ const cardOf=k=>typeof k==='string'?queue.find(q=>q.id===k):queue[k];
    gone), qh(q) writes that call into the markup; a place written in when the card was drawn pointed at another card once the list moved */
 const qAt=id=>queue.findIndex(q=>q.id===id);
 const qh=q=>`qAt('${jsq(q.id)}')`;
+/* a data-act control (act.js) carries its card's id as data-card (cardAt(q) writes it); cardIx(el) is that card's place, as qAt('id') was */
+const cardAt=q=>`data-card="${esc(q.id)}"`;
+const cardIx=el=>qAt(el.dataset.card);
 /* one save per card (audit 2026-11-15, C2: a double tap on Confirm saved the card twice and, the list having moved up, threw away the
    next card unsaved): the card is found by its id, marked while it saves (a second tap does nothing) and its Confirm switched off;
    -> true once saved, false when it couldn't be */
@@ -55,6 +58,7 @@ async function saveCard(q){
   if(q.type==='shoes'||q.type==='belt')it.leather=q.leather||'calf';
   if(q.type==='pants'&&(q.trouserKind==='chinos'||q.trouserKind==='jeans'||q.trouserKind==='cargo'))it.trouserKind=q.trouserKind;   // dress trousers: no field (as before kinds)
   if(q.type==='shoes'&&q.shoeStyle&&q.shoeStyle!=='oxford')it.shoeStyle=q.shoeStyle;
+  if(q.type==='blouse'){const b=blouseTapes(q);if(b.name)it.tapeName=b.name;if(b.service)it.tapeService=b.service;if(b.rank)it.rank=b.rank}   // the uniform blouse's tapes and rank (2026-11-18)
   if(q.type==='watch'){const wo=watchOpts(q);Object.assign(it,{dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style})}
   if(!it.photo)delete it.photo;else await makeSmall(it);
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;

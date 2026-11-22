@@ -52,6 +52,11 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   // the same answer from the page thread: nothing random in it
   const again=await p.evaluate(()=>runAnalysis(items,todayDate()).cats.flatMap(c=>c.recs.map(x=>x.key+x.tier)).join());
   ok(again===recs.map(x=>x.key+x.tier).join(),'the same wardrobe gives the same ideas every time');
+  // a piece owned but out of rotation is not suggested (2026-11-18, the owner: his purple tie out of rotation, a purple tie suggested)
+  const sh=await p.evaluate(()=>{const keys=r=>r.cats.flatMap(c=>c.recs.map(x=>x.key)),a=runAnalysis(items,todayDate()),k=keys(a).find(x=>/^(tie|shirt)\|/.test(x));if(!k)return {none:true};
+    const rec=a.cats.flatMap(c=>c.recs).find(x=>x.key===k),own={...rec.items[0],id:'shelved1',paused:true};
+    const b=runAnalysis([...items,own],todayDate()),c=runAnalysis([...items,{...own,paused:false,order:true}],todayDate());return {k,gone:!keys(b).includes(k),orderStill:shopShelved([{...own,order:true}]).length===0}});
+  ok(!sh.none&&sh.gone&&sh.orderStill,`an idea whose piece is owned but out of rotation is not suggested (${sh.k}); a piece on order isn't counted as set aside (${JSON.stringify(sh)})`);
   // the sheet
   const ui=await p.evaluate(()=>{const s=document.querySelector('#shop-sheet'),b=s.getBoundingClientRect();
     return {top:b.top,bottom:Math.round(innerHeight-b.bottom),rows:s.querySelectorAll('.shop-cat:not(#shop-c-top) .shop-rec').length,tops:s.querySelectorAll('.shop-toprow').length,cats:s.querySelectorAll('.shop-cat').length,
@@ -108,7 +113,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       socks:c('extra').recs.filter(x=>x.type==='socks').map(x=>x.name),n:r.cats.flatMap(c=>c.recs).length}})()`);
   ok(full.problems===0&&full.fix===0&&full.n>=10,`a well-stocked wardrobe has nothing to fix and still gets ideas (${full.n})`);
   ok(full.shirts==='covered'&&full.shirtTiers.length>0&&full.shirtTiers.every(t=>t==='optional')&&/nothing here is needed/.test(full.note),`38 shirts: the section is Covered and its ideas are optional (${full.note})`);
-  ok(full.socks.includes('black socks'),'black socks out of rotation are not counted as owned: black socks are still suggested');
+  ok(!full.socks.includes('black socks'),'black socks out of rotation are owned: black socks are not suggested (the owner, 2026-11-18; until then they were)');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };

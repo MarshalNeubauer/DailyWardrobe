@@ -330,18 +330,27 @@ const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.ma
    announce(text): said once by the polite live region #sr-live (index.html; out of sight). Emptied first, then written in the next
    frame, so the same words are said again.
    keepFocus(root, draw): runs draw(); when the focus was on a control inside root that the redraw replaced, the control with the same
-   id, or else the same handler (data-act / data-act-change / data-act-input, or onclick / onchange / oninput) and data-k / data-c / data-s, gets it back (the same words first when there are
+   id, or else the same handler (onclick / onchange / oninput, or data-act and its data-* arguments) and data-k / data-c, gets it back (the same words first when there are
    several). Here, not in ui.js: Today is drawn by the start-up chain, which can run before ui.js has loaded. */
 let srLiveT=0;
 function announce(text){const el=document.querySelector('#sr-live');if(!el)return;const t=String(text||'').replace(/\s+/g,' ').trim();clearTimeout(srLiveT);el.textContent='';
   if(t)srLiveT=setTimeout(()=>{el.textContent=t},60)}
-const FOCUS_ATTRS=['onclick','onchange','oninput','data-act','data-act-change','data-act-input','data-k','data-c','data-s'];   // (data-act…: a handler named for act.js is the same handler; its arguments that tell two controls apart go in data-k / data-c / data-s)
+const FOCUS_ATTRS=['onclick','onchange','oninput','data-k','data-c','data-s'];
+/* a control that names its handler with data-act (act.js) is told apart as an inline one was by its handler's text (the function and its
+   arguments): by its handlers' names, then by every data-* it carries (its arguments). focusActs -> [the data-act… attributes, all its
+   data-* attributes], both '' for a control without data-act */
+function focusActs(el){const a=[],n=[];for(const x of el.attributes)if(x.name.startsWith('data-')){a.push(x.name+'='+x.value);if(x.name.startsWith('data-act'))n.push(x.name+'='+x.value)}
+  return n.length?[n.sort().join('\n'),a.sort().join('\n')]:['','']}
+const focusAt=el=>[...FOCUS_ATTRS.map(a=>el.getAttribute(a)||''),...focusActs(el)];
 function focusKey(el){if(!el||el===document.body||!el.tagName)return null;
-  return {el,id:el.id||'',tag:el.tagName,at:FOCUS_ATTRS.map(a=>el.getAttribute(a)||''),label:el.getAttribute('aria-label')||'',text:(el.textContent||'').trim().slice(0,60)}}
+  return {el,id:el.id||'',tag:el.tagName,at:focusAt(el),label:el.getAttribute('aria-label')||'',text:(el.textContent||'').trim().slice(0,60)}}
 function focusFind(root,k){if(!k||!root)return null;
   if(k.id){const e=document.getElementById(k.id);if(e&&root.contains(e))return e}
   if(!k.at.some(Boolean))return null;
-  const same=[...root.querySelectorAll(k.tag)].filter(e=>FOCUS_ATTRS.every((a,j)=>(e.getAttribute(a)||'')===k.at[j]));
+  // the same handlers and data-k / data-c / data-s; then the same arguments too. Without those a data-act control is found only by
+  // data-k / data-c / data-s, as before (a control that keeps a state in a data-* is still found by them)
+  const N=FOCUS_ATTRS.length,cand=[...root.querySelectorAll(k.tag)].map(e=>[e,focusAt(e)]).filter(([,at])=>at.slice(0,N+1).every((v,j)=>v===k.at[j]));
+  const exact=cand.filter(([,at])=>at[N+1]===k.at[N+1]),same=(exact.length?exact:k.at.slice(0,N).some(Boolean)?cand:[]).map(x=>x[0]);
   return same.find(e=>(e.getAttribute('aria-label')||'')===k.label&&(e.textContent||'').trim().slice(0,60)===k.text)||same.find(e=>(e.getAttribute('aria-label')||'')===k.label)||same[0]||null}
 /* a control whose focus opens the phone's own picker (a select's list, a date wheel) is never focused by code after a touch: iOS opened
    the picker again right after each choice (the owner's bug, CR-1-01: every dropdown on Add without a photo and in the item sheet).

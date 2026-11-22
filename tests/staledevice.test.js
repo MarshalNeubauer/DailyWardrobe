@@ -10,12 +10,18 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     delete:async k=>{store.delete(k);meta.delete(k)},list:async({prefix})=>({keys:[...store.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name,metadata:meta.get(name)})),list_complete:true})};
   const env={APP_TOKEN:'secret',WARDROBE:KV},HOST='https://wardrobevision.test/';
   let hold=null;   // while set, the phone's sync downloads wait (its start-up runs on its old copy meanwhile)
+  // the devices' day is a Sunday at 10:00, one to two weeks back, so the week has coming workdays to lock: the lock runs today through
+  // Friday (locks.js lockSpan), so on a Thursday or Friday (Sunday-Thursday workdays) there is none and the wait below timed out (CI,
+  // Friday 2026-11-20). Time runs on from there; the worker's x-now is moved the same, so the app learns no clock gap (sync.js clockLearn)
+  const SUN=new Date();SUN.setDate(SUN.getDate()-SUN.getDay()-7);SUN.setHours(10,0,0,0);const OFF=+SUN-Date.now();
   const browser=await chromium.launch();
   const device=async held=>{const ctx=await browser.newContext({viewport:{width:390,height:844}});
+    await ctx.addInitScript(o=>{const R=Date;class D extends R{constructor(...a){if(a.length)super(...a);else super(R.now()+o)}static now(){return R.now()+o}}self.Date=D},OFF);
     await ctx.route(HOST+'**',async route=>{const r=route.request();
       if(held&&hold&&r.method()==='GET'&&new URL(r.url()).pathname==='/sync')await hold.p;
       const res=await worker.fetch(new Request(r.url(),{method:r.method(),headers:r.headers(),body:['GET','HEAD'].includes(r.method())?undefined:r.postData()}),env);
-      await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
+      const h=Object.fromEntries(res.headers);if(h['x-now'])h['x-now']=String(+h['x-now']+OFF);
+      await route.fulfill({status:res.status,headers:h,body:await res.text()})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
     await p.reload();await p.waitForFunction(()=>window.appReady);return {ctx,p,errs}};
@@ -48,7 +54,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await A.p.waitForFunction(()=>pulledYet()&&window.__ran,null,{timeout:15000}).catch(()=>{});
     await A.p.evaluate(()=>syncNow());await new Promise(r=>setTimeout(r,800));await A.p.evaluate(()=>syncNow());
     const kv=await B.p.evaluate(()=>syncNow()).then(()=>B.p.evaluate(([d,ids])=>({force:dayRecs[d]&&dayRecs[d].force&&dayRecs[d].force.top,pat:(items.find(i=>i.id===ids[1])||{}).pattern,grey:items.some(i=>i.id===ids[9])}),[day,ids]));
-    const a=await A.p.evaluate(([d,ids])=>({ran:window.__ran,force:dayRecs[d]&&dayRecs[d].force&&dayRecs[d].force.top,top:(planFor()[d]||{}).top&&planFor()[d].top.id,pat:(items.find(i=>i.id===ids[1])||{}).pattern,grey:items.some(i=>i.id===ids[9])}),[day,ids]);
+    // (the day's plan read from its own month, not the one on screen, planFor: the coming day can be in the next month, Sunday Jan 31)
+    const a=await A.p.evaluate(([d,ids])=>({ran:window.__ran,force:dayRecs[d]&&dayRecs[d].force&&dayRecs[d].force.top,top:((x=>planMonth(x.getFullYear(),x.getMonth()))(keyDate(d))[d]||{}).top?.id,pat:(items.find(i=>i.id===ids[1])||{}).pattern,grey:items.some(i=>i.id===ids[9])}),[day,ids]);
     ok(a.ran&&a.force===pin&&a.top===pin&&a.pat==='pinstripe'&&!a.grey,`once pulled, the phone has the other device's pick, tag and deletion, and plans the picked suit (${JSON.stringify(a)})`);
     ok(kv.force===pin&&kv.pat==='pinstripe'&&!kv.grey,`and after the phone's own sync the backup still has them (${JSON.stringify(kv)})`);
     // the two settle: after a few rounds nothing more is written either way (no lock rewriting back and forth)

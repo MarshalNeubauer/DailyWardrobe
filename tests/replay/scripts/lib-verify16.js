@@ -50,7 +50,7 @@ const byText = (re, sel = 'button,[role=button],a,.card,[onclick]') => ph.page.e
   const e = els[els.length - 1]; if (!e) return null; document.querySelectorAll('[data-v16]').forEach(x => x.removeAttribute('data-v16')); e.setAttribute('data-v16', '1'); return true
 }, [re.source, re.flags, sel]);
 async function tapText(re, sel) { if (!await byText(re, sel)) throw new Error('no visible control matching ' + re); await ph.tap('[data-v16]'); await sleep(700) }
-async function openSettings() { await ph.tap('header .hbtns button[onclick^="openSettings"]'); await sleep(800) }
+async function openSettings() { await ph.tap('header .hbtns button[data-act="setOpenTap"]'); await sleep(800) }
 async function openCat(id) { if (await ph.page.getAttribute(`#sc-${id} .scat-head`, 'aria-expanded') !== 'true') { await ph.tap(`#sc-${id} .scat-head`); await sleep(700) } }
 const text = (sel = 'body') => ph.page.locator(sel).first().innerText();
 function verdict(ok, ev) { console.log(ok ? 'REPRODUCED' : 'NOT REPRODUCED'); console.log(JSON.stringify(ev, null, 1)) }

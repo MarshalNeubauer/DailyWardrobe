@@ -177,3 +177,6 @@ async function shopBought(key){
 /* not for me: hidden at once, and left out of every later check (the next check puts another idea in its place) */
 async function shopHide(key){settings.shopSkip=[...new Set([...(settings.shopSkip||[]),key])];await saveUserSettings();shopMsg='Hidden. You can bring it back under "Hidden ideas" at the bottom.';renderShop();if(!$('#wardrobe').hidden&&!editing)renderWardrobe()}
 async function shopUnhide(key){settings.shopSkip=(settings.shopSkip||[]).filter(k=>k!==key);await saveUserSettings();shopMsg='';if(shopFind(key))renderShop();else analyzeWardrobe()}
+/* index.html's (act.js): What to buy's backdrop */
+function shopBackdropTap(){closeShop()}
+acts({shopBackdropTap});

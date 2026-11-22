@@ -13,104 +13,104 @@
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="Wardrobe"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head><body>
-<header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="theme-btn" onclick="cycleTheme()" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button onclick="openSettings()" aria-label="Settings" title="Settings"><svg class="hgear" viewBox="0 0 24 24" aria-hidden="true"><mask id="hgear-hole"><rect width="24" height="24" fill="#fff"/><circle cx="12" cy="12" r="3.3" fill="#000"/></mask><g fill="currentColor" mask="url(#hgear-hole)"><circle cx="12" cy="12" r="7.4"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(45 12 12)"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(90 12 12)"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(135 12 12)"/></g></svg></button></div></header>
+<header><h1>Daily Wardrobe</h1><div class="hbtns"><button id="theme-btn" data-act="themeTap" aria-label="Theme: automatic" title="Theme: automatic">◐</button><button data-act="setOpenTap" aria-label="Settings" title="Settings"><svg class="hgear" viewBox="0 0 24 24" aria-hidden="true"><mask id="hgear-hole"><rect width="24" height="24" fill="#fff"/><circle cx="12" cy="12" r="3.3" fill="#000"/></mask><g fill="currentColor" mask="url(#hgear-hole)"><circle cx="12" cy="12" r="7.4"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(45 12 12)"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(90 12 12)"/><rect x="10.2" y="1.6" width="3.6" height="20.8" rx="1.1" transform="rotate(135 12 12)"/></g></svg></button></div></header>
 <main>
 <section id="today"></section>
 <section id="wardrobe" hidden></section>
 <section id="stats" hidden></section>
 <section id="pack" hidden></section>
-<section id="add" hidden><div class="phead nav"><button class="pback" onclick="subBack()" aria-label="Back">‹</button><h2>Add to wardrobe</h2></div><p id="note" class="psub"></p><p id="add-for" class="psub addfor" role="status" hidden></p>
-<div class="addpick"><label class="btn pri" id="add-one"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg><span>One item</span><small>A photo of it, then a close-up of the fabric</small><input type="file" accept="image/*" multiple class="vfile" onchange="addFiles([...this.files]);this.value=''"></label><label class="btn" id="add-group"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11"/></svg><span>Several items</span><small id="add-group-sub">One photo of a rail, a pile or a few on hangers</small><input type="file" accept="image/*" multiple class="vfile" onchange="addFiles([...this.files],true);this.value=''"></label></div>
-<button type="button" class="addlong" id="add-manual" aria-haspopup="dialog" onclick="addManual()"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5a2 2 0 1 1 3 1.7c-.6.4-1 .9-1 1.6V9"/><path d="M12 9 2.9 15.3a1 1 0 0 0 .6 1.8h7.8"/><path d="M12 9l5.2 3.6"/><path d="M21.1 14.3l-6.4 6.4-2.9.8.8-2.9 6.4-6.4a1.5 1.5 0 0 1 2.1 2.1z"/></svg><span class="addlong-t"><b>Add without a photo</b><small>Pick the type and colors yourself</small></span><span class="chev" aria-hidden="true">›</span></button>
+<section id="add" hidden><div class="phead nav"><button class="pback" data-act="addBackTap" aria-label="Back">‹</button><h2>Add to wardrobe</h2></div><p id="note" class="psub"></p><p id="add-for" class="psub addfor" role="status" hidden></p>
+<div class="addpick"><label class="btn pri" id="add-one"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg><span>One item</span><small>A photo of it, then a close-up of the fabric</small><input type="file" accept="image/*" multiple class="vfile" data-act-change="addPhotosPick"></label><label class="btn" id="add-group"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v11"/></svg><span>Several items</span><small id="add-group-sub">One photo of a rail, a pile or a few on hangers</small><input type="file" accept="image/*" multiple class="vfile" data-act-change="addPhotosPick" data-multi="1"></label></div>
+<button type="button" class="addlong" id="add-manual" aria-haspopup="dialog" data-act="addManualTap"><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5a2 2 0 1 1 3 1.7c-.6.4-1 .9-1 1.6V9"/><path d="M12 9 2.9 15.3a1 1 0 0 0 .6 1.8h7.8"/><path d="M12 9l5.2 3.6"/><path d="M21.1 14.3l-6.4 6.4-2.9.8.8-2.9 6.4-6.4a1.5 1.5 0 0 1 2.1 2.1z"/></svg><span class="addlong-t"><b>Add without a photo</b><small>Pick the type and colors yourself</small></span><span class="chev" aria-hidden="true">›</span></button>
 <div class="card addmore"><div class="slabel">Other ways to add</div>
-<div class="paste-box"><input type="url" id="photo-url" aria-label="Photo or link to a photo" inputmode="url" autocomplete="off" placeholder="Photo or link" onkeydown="if(event.key==='Enter'){event.preventDefault();addLink()}"><button class="btn" onclick="pasteFromClipboard()">Paste</button><button class="btn pri" onclick="addLink()">Add</button></div>
+<div class="paste-box"><input type="url" id="photo-url" aria-label="Photo or link to a photo" inputmode="url" autocomplete="off" placeholder="Photo or link" data-act-keydown="linkKey"><button class="btn" data-act="pasteTap">Paste</button><button class="btn pri" data-act="linkAddTap">Add</button></div>
 <p id="paste-status" class="mut"></p><p class="mut drop-hint">On a computer you can also drag photos here, or press Ctrl+V / ⌘V anywhere.</p>
-<button class="addrow" id="add-import" onclick="kitImportOpen()"><span>Import from a spreadsheet</span><small>Rows pasted from Numbers, Excel or Google Sheets, or a CSV file</small><span class="chev" aria-hidden="true">›</span></button></div>
+<button class="addrow" id="add-import" data-act="importOpenTap"><span>Import from a spreadsheet</span><small>Rows pasted from Numbers, Excel or Google Sheets, or a CSV file</small><span class="chev" aria-hidden="true">›</span></button></div>
 <p id="multi-status" class="mut"></p><div id="save-all"></div>
 <div id="queue"></div>
-<div id="nps-backdrop" onclick="npsCancel()"></div><div id="nps-sheet" role="dialog" aria-modal="true" aria-labelledby="nps-title" tabindex="-1"><div class="nps-head"><span class="nps-grab" aria-hidden="true"></span><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5a2 2 0 1 1 3 1.7c-.6.4-1 .9-1 1.6V9"/><path d="M12 9 2.9 15.3a1 1 0 0 0 .6 1.8h7.8"/><path d="M12 9l5.2 3.6"/><path d="M21.1 14.3l-6.4 6.4-2.9.8.8-2.9 6.4-6.4a1.5 1.5 0 0 1 2.1 2.1z"/></svg><div class="nps-ht"><h2 id="nps-title">Add without a photo</h2><small>Pick the type and colors yourself</small></div><button type="button" class="nps-x" aria-label="Close" onclick="npsCancel()">✕</button></div><div class="nps-body" id="nps-q"></div><div class="nps-bar" id="nps-bar"></div></div></section>
-<button type="button" id="ward-add" class="wfab" onclick="openAdd()" aria-label="Add to wardrobe"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg></button>
+<div id="nps-backdrop" data-act="npsCloseTap"></div><div id="nps-sheet" role="dialog" aria-modal="true" aria-labelledby="nps-title" tabindex="-1"><div class="nps-head"><span class="nps-grab" aria-hidden="true"></span><svg class="aic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5a2 2 0 1 1 3 1.7c-.6.4-1 .9-1 1.6V9"/><path d="M12 9 2.9 15.3a1 1 0 0 0 .6 1.8h7.8"/><path d="M12 9l5.2 3.6"/><path d="M21.1 14.3l-6.4 6.4-2.9.8.8-2.9 6.4-6.4a1.5 1.5 0 0 1 2.1 2.1z"/></svg><div class="nps-ht"><h2 id="nps-title">Add without a photo</h2><small>Pick the type and colors yourself</small></div><button type="button" class="nps-x" aria-label="Close" data-act="npsCloseTap">✕</button></div><div class="nps-body" id="nps-q"></div><div class="nps-bar" id="nps-bar"></div></div></section>
+<button type="button" id="ward-add" class="wfab" data-act="wardAddTap" aria-label="Add to wardrobe"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg></button>
 <button type="button" id="undo-fab" aria-label="Undo" tabindex="-1"><svg class="ufi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg><span>Undo</span><svg class="ufr" viewBox="0 0 72 72" aria-hidden="true" focusable="false"><circle class="uft" cx="36" cy="36" r="32"/><circle class="ufc" cx="36" cy="36" r="32" pathLength="100"/></svg></button>
 </main>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="sr-live" class="vh" aria-live="polite" aria-atomic="true"></div>
-<nav><button id="n-today" onclick="goToday()">Today</button><button id="n-wardrobe" onclick="show('wardrobe')">Wardrobe</button><button id="n-stats" onclick="show('stats')">Insights</button></nav>
+<nav><button id="n-today" data-act="todayTabTap">Today</button><button id="n-wardrobe" data-act="tabTap" data-page="wardrobe">Wardrobe</button><button id="n-stats" data-act="tabTap" data-page="stats">Insights</button></nav>
 
-<div id="pick-backdrop" onclick="closePicker()"></div>
+<div id="pick-backdrop" data-act="pickBackdropTap"></div>
 <div id="pick-sheet" role="dialog" aria-modal="true" aria-labelledby="pick-title"></div>
-<div id="col-backdrop" onclick="closeColPick()"></div>
+<div id="col-backdrop" data-act="colBackdropTap"></div>
 <div id="col-sheet" role="dialog" aria-modal="true" aria-labelledby="col-title"></div>
-<div id="shop-backdrop" onclick="closeShop()"></div>
+<div id="shop-backdrop" data-act="shopBackdropTap"></div>
 <div id="shop-sheet" role="dialog" aria-modal="true" aria-labelledby="shop-title"></div>
-<div id="item-backdrop" onclick="closeItem()"></div>
+<div id="item-backdrop" data-act="itemCloseTap"></div>
 <div id="item-view" role="dialog" aria-modal="true" aria-labelledby="iv-title">
 <div class="ivhead" id="ivhead"></div>
 <div class="ivbody" id="ivbody"></div>
-<div class="ivbar"><button type="button" class="ivnav" id="iv-prev" onclick="stepItem(-1)" aria-label="Previous item"><svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><button type="button" class="pri ivdone" onclick="closeItem()">Done</button><button type="button" class="ivnav" id="iv-next" onclick="stepItem(1)" aria-label="Next item"><svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div>
+<div class="ivbar"><button type="button" class="ivnav" id="iv-prev" data-act="itemStepTap" data-n="-1" aria-label="Previous item"><svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><button type="button" class="pri ivdone" data-act="itemCloseTap">Done</button><button type="button" class="ivnav" id="iv-next" data-act="itemStepTap" data-n="1" aria-label="Next item"><svg class="ivchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div>
 </div>
-<div id="modal-backdrop" onclick="closeSettings()"></div>
+<div id="modal-backdrop" data-act="setBackdropTap"></div>
 <div id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="set-title">
-<div class="shead"><h2 id="set-title">Settings</h2><button type="button" class="pri sdone" onclick="saveSettings()">Done</button></div>
+<div class="shead"><h2 id="set-title">Settings</h2><button type="button" class="pri sdone" data-act="setDoneTap">Done</button></div>
 <div class="sbody">
 <p class="sgh sgh-first">Your wardrobe</p>
 <div class="slinks" id="slinks">
-<button type="button" class="slink pack-link" id="pack-btn" onclick="openPack()"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M9 8V5h6v3M4 13h16"/></svg></span><span class="mltxt"><b>Packing list</b><small>What to pack for a trip</small></span><span class="chev" aria-hidden="true">›</span></button>
+<button type="button" class="slink pack-link" id="pack-btn" data-act="packOpenTap"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M9 8V5h6v3M4 13h16"/></svg></span><span class="mltxt"><b>Packing list</b><small>What to pack for a trip</small></span><span class="chev" aria-hidden="true">›</span></button>
 </div>
-<section class="mbox scat" id="sc-laundry"><h3 class="scat-h"><button type="button" class="month-link scat-head" id="care-btn" onclick="toggleCat('laundry')" aria-expanded="false" aria-controls="sp-laundry"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a2 2 0 1 1 2-2M12 7v2l9 7a1.5 1.5 0 0 1-1 2.7H4A1.5 1.5 0 0 1 3 16l9-7"/></svg></span><span class="mltxt"><b>Laundry &amp; cleaning</b><small id="sum-laundry">What is due, and what is away</small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<section class="mbox scat" id="sc-laundry"><h3 class="scat-h"><button type="button" class="month-link scat-head" id="care-btn" data-act="catTap" data-cat="laundry" aria-expanded="false" aria-controls="sp-laundry"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a2 2 0 1 1 2-2M12 7v2l9 7a1.5 1.5 0 0 1-1 2.7H4A1.5 1.5 0 0 1 3 16l9-7"/></svg></span><span class="mltxt"><b>Laundry &amp; cleaning</b><small id="sum-laundry">What is due, and what is away</small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-laundry"><div class="mpanel-in" id="care-in"></div></div></section>
 <p class="sgh">Planning</p>
-<section class="mbox scat" id="sc-schedule"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('schedule')" aria-expanded="false" aria-controls="sp-schedule"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><span class="mltxt"><b>Schedule</b><small id="sum-schedule"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<section class="mbox scat" id="sc-schedule"><h3 class="scat-h"><button type="button" class="month-link scat-head" data-act="catTap" data-cat="schedule" aria-expanded="false" aria-controls="sp-schedule"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><span class="mltxt"><b>Schedule</b><small id="sum-schedule"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-schedule"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel">Workdays</div><div class="days" id="cfg-workdays" role="group" aria-label="Workdays"></div></div>
 <div class="sgroup" id="dress-group"><div class="slabel">Dress code</div><p class="shelp">What you wear to work. The planner, the score and the pictures follow it.</p><div id="cfg-dress"></div></div>
 <div class="sgroup" id="blazer-group"><div class="slabel">Blazer days</div><p class="shelp">Business-casual days get a blazer and pants; other workdays get a suit.</p><div class="days" id="cfg-blazer" role="group" aria-label="Blazer days"></div></div>
-<label class="srow" id="vest-row">Suit vest <select id="cfg-vest" onchange="setVestMode(this.value)"><option value="auto">Suit days, except hot ones</option><option value="always">Every suit day</option><option value="never">Never</option></select></label>
-<label class="srow">Dark shirts <select id="cfg-dark" onchange="setDarkShirts(this.value)"><option value="some">Sometimes, under a light jacket</option><option value="often">Often, like any other shirt</option><option value="never">Never</option></select></label>
+<label class="srow" id="vest-row">Suit vest <select id="cfg-vest" data-act-change="vestPick"><option value="auto">Suit days, except hot ones</option><option value="always">Every suit day</option><option value="never">Never</option></select></label>
+<label class="srow">Dark shirts <select id="cfg-dark" data-act-change="darkPick"><option value="some">Sometimes, under a light jacket</option><option value="often">Often, like any other shirt</option><option value="never">Never</option></select></label>
 <div class="sgroup conn-only" id="remind-box"></div>
-<div class="sgroup"><div class="slabel">Start the plan over</div><p class="shelp" id="replan-status"></p><div class="sactions"><button type="button" id="replan-btn" onclick="replanButton()">Start the plan over</button></div></div>
+<div class="sgroup"><div class="slabel">Start the plan over</div><p class="shelp" id="replan-status"></p><div class="sactions"><button type="button" id="replan-btn" data-act="replanTap">Start the plan over</button></div></div>
 </div></div></section>
-<section class="mbox scat" id="sc-daysoff"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('daysoff')" aria-expanded="false" aria-controls="sp-daysoff"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9.5 13.5l5 5M14.5 13.5l-5 5"/></svg></span><span class="mltxt"><b>Days off &amp; occasions</b><small id="sum-daysoff"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<section class="mbox scat" id="sc-daysoff"><h3 class="scat-h"><button type="button" class="month-link scat-head" data-act="catTap" data-cat="daysoff" aria-expanded="false" aria-controls="sp-daysoff"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9.5 13.5l5 5M14.5 13.5l-5 5"/></svg></span><span class="mltxt"><b>Days off &amp; occasions</b><small id="sum-daysoff"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-daysoff"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel">Public holidays</div><p class="shelp">Holidays get no outfit and don't count as worn. Check the ones you have off.</p>
-<label class="srow">Country <select id="cfg-country" onchange="setHolidayCountry(this.value)" aria-label="Country for public holidays"><option value="">No public holidays</option></select></label>
+<label class="srow">Country <select id="cfg-country" data-act-change="countryPick" aria-label="Country for public holidays"><option value="">No public holidays</option></select></label>
 <p class="shelp" aria-live="polite" id="holiday-msg"></p>
 <div class="hlist" id="holiday-list"></div></div>
 <div class="sgroup"><div class="slabel">Your own days off</div><p class="shelp">Leave the second date empty for a single day.</p>
-<div class="sform offadd"><input type="date" id="cfg-off-from" aria-label="First day off"><span class="mut">to</span><input type="date" id="cfg-off-to" aria-label="Last day off"><input type="text" id="cfg-off-name" maxlength="40" dir="auto" placeholder="Name (optional)" aria-label="Name of the days off"><button type="button" onclick="addDayOff()">Add</button></div>
+<div class="sform offadd"><input type="date" id="cfg-off-from" aria-label="First day off"><span class="mut">to</span><input type="date" id="cfg-off-to" aria-label="Last day off"><input type="text" id="cfg-off-name" maxlength="40" dir="auto" placeholder="Name (optional)" aria-label="Name of the days off"><button type="button" data-act="dayOffAddTap">Add</button></div>
 <div class="fchips" id="off-list"></div></div>
 <div class="sgroup"><div class="slabel">Occasions</div><p class="shelp">Give a date an occasion and its outfit is chosen for it: formal, a wedding, a funeral, or a day with no jacket or tie.</p>
-<div class="sform occadd"><input type="date" id="cfg-formal-date" aria-label="Date of the occasion"><select id="cfg-occasion" aria-label="Occasion"></select><button type="button" id="occ-add" onclick="addFormalDay()">Add</button></div>
+<div class="sform occadd"><input type="date" id="cfg-formal-date" aria-label="Date of the occasion"><select id="cfg-occasion" aria-label="Occasion"></select><button type="button" id="occ-add" data-act="occAddTap">Add</button></div>
 <p class="shelp" aria-live="polite" id="formal-msg"></p>
 <div class="fchips" id="formal-list"></div></div>
 </div></div></section>
-<section class="mbox scat" id="sc-calendar"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('calendar')" aria-expanded="false" aria-controls="sp-calendar"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M10 14.5l-2 2 2 2M14 14.5l2 2-2 2"/></svg></span><span class="mltxt"><b>Calendar</b><small id="sum-calendar"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<section class="mbox scat" id="sc-calendar"><h3 class="scat-h"><button type="button" class="month-link scat-head" data-act="catTap" data-cat="calendar" aria-expanded="false" aria-controls="sp-calendar"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M10 14.5l-2 2 2 2M14 14.5l2 2-2 2"/></svg></span><span class="mltxt"><b>Calendar</b><small id="sum-calendar"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-calendar"><div class="mpanel-in">
 <div class="sgroup" id="cal-box"></div>
 </div></div></section>
-<section class="mbox scat" id="sc-weather"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('weather')" aria-expanded="false" aria-controls="sp-weather"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span><span class="mltxt"><b>Weather</b><small id="sum-weather"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<section class="mbox scat" id="sc-weather"><h3 class="scat-h"><button type="button" class="month-link scat-head" data-act="catTap" data-cat="weather" aria-expanded="false" aria-controls="sp-weather"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span><span class="mltxt"><b>Weather</b><small id="sum-weather"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-weather"><div class="mpanel-in">
 <div class="sgroup" id="wx-section"><div class="slabel">Location</div><p class="shelp" id="wx-loc"></p>
-<div class="sform"><input type="text" id="cfg-city" aria-label="City" placeholder="Search a city" enterkeyhint="search" onkeydown="if(event.key==='Enter'){event.preventDefault();findCity()}"><button type="button" onclick="findCity()">Search</button></div>
-<div class="sactions"><button type="button" onclick="useMyLocation()">Use my location</button></div>
+<div class="sform"><input type="text" id="cfg-city" aria-label="City" placeholder="Search a city" enterkeyhint="search" data-act-keydown="cityKey"><button type="button" data-act="citySearchTap">Search</button></div>
+<div class="sactions"><button type="button" data-act="myLocTap">Use my location</button></div>
 <div id="city-results" class="sactions"></div></div>
-<label class="srow">Units <select id="cfg-units" onchange="setUnits(this.value)"><option value="F">°F</option><option value="C">°C</option></select></label>
+<label class="srow">Units <select id="cfg-units" data-act-change="unitsPick"><option value="F">°F</option><option value="C">°C</option></select></label>
 </div></div></section>
 
-<section class="mbox scat" id="sc-care"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('care')" aria-expanded="false" aria-controls="sp-care"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a2 2 0 1 1 2-2M12 7v2l9 7a1.5 1.5 0 0 1-1 2.7H4A1.5 1.5 0 0 1 3 16l9-7"/></svg></span><span class="mltxt"><b>Care</b><small id="sum-care"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<section class="mbox scat" id="sc-care"><h3 class="scat-h"><button type="button" class="month-link scat-head" data-act="catTap" data-cat="care" aria-expanded="false" aria-controls="sp-care"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a2 2 0 1 1 2-2M12 7v2l9 7a1.5 1.5 0 0 1-1 2.7H4A1.5 1.5 0 0 1 3 16l9-7"/></svg></span><span class="mltxt"><b>Care</b><small id="sum-care"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-care"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel">Due for cleaning</div><p class="shelp">How many times a piece is worn before the app says it is due. It counts the days you wore it; Laundry &amp; cleaning, at the top of Settings, lists what is due.</p><div id="care-limits"></div></div>
 <div class="sgroup"><div class="slabel">Shirts in the wash</div><p class="shelp">A shirt you wore is not planned again for this long, unless you have no other shirt.</p>
-<label class="srow">A worn shirt waits <select id="cfg-laundry" onchange="setLaundryDays(this.value)" aria-label="How long a worn shirt waits before it is planned again"></select></label></div>
+<label class="srow">A worn shirt waits <select id="cfg-laundry" data-act-change="laundryPick" aria-label="How long a worn shirt waits before it is planned again"></select></label></div>
 <div class="sgroup" id="cpw-set"></div>
 </div></div></section>
 <p class="sgh">Photos &amp; tagging</p>
-<section class="mbox scat" id="sc-photos"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('photos')" aria-expanded="false" aria-controls="sp-photos"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg></span><span class="mltxt"><b>Outfit pictures</b><small id="sum-photos"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<section class="mbox scat" id="sc-photos"><h3 class="scat-h"><button type="button" class="month-link scat-head" data-act="catTap" data-cat="photos" aria-expanded="false" aria-controls="sp-photos"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg></span><span class="mltxt"><b>Outfit pictures</b><small id="sum-photos"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-photos"><div class="mpanel-in">
 <p class="shelp conn-off-note" id="photos-conn" data-what="Making item pictures"></p>
-<div class="sgroup conn-only"><div class="slabel">Item pictures</div><p class="shelp" id="itempic-status">Product photos of your shoes, belts, socks, pants, coats and watches. Where a piece has one, Today shows it under the picture instead of its drawing.</p><div class="sactions"><button id="itempic-btn" type="button" onclick="startItemPics()">Generate item pictures</button></div></div>
-<div class="adv" id="adv-photos"><button type="button" class="adv-head" aria-expanded="false" aria-controls="advin-photos" onclick="advToggle(this)"><span class="adv-t">Advanced<small>For the person who runs the server</small></span><span class="chev" aria-hidden="true">›</span></button><div class="adv-in" id="advin-photos"><div class="sgroup" id="asm-group" hidden></div></div></div>
+<div class="sgroup conn-only"><div class="slabel">Item pictures</div><p class="shelp" id="itempic-status">Product photos of your shoes, belts, socks, pants, coats and watches. Where a piece has one, Today shows it under the picture instead of its drawing.</p><div class="sactions"><button id="itempic-btn" type="button" data-act="itemPicsTap">Generate item pictures</button></div></div>
+<div class="adv" id="adv-photos"><button type="button" class="adv-head" aria-expanded="false" aria-controls="advin-photos" data-act="advTap"><span class="adv-t">Advanced<small>For the person who runs the server</small></span><span class="chev" aria-hidden="true">›</span></button><div class="adv-in" id="advin-photos"><div class="sgroup" id="asm-group" hidden></div></div></div>
 </div></div></section>
-<section class="mbox scat" id="sc-tagging"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('tagging')" aria-expanded="false" aria-controls="sp-tagging"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></span><span class="mltxt"><b>Photo tagging</b><small id="sum-tagging"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<section class="mbox scat" id="sc-tagging"><h3 class="scat-h"><button type="button" class="month-link scat-head" data-act="catTap" data-cat="tagging" aria-expanded="false" aria-controls="sp-tagging"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></span><span class="mltxt"><b>Photo tagging</b><small id="sum-tagging"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-tagging"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel">Your colors &amp; patterns</div><div id="custom-list"></div></div>
 <div class="sgroup"><div class="slabel">Your materials</div><div id="ownmat-list"></div></div>
@@ -118,35 +118,35 @@
 </div></div></section>
 
 <p class="sgh">Account</p>
-<section class="mbox scat" id="sc-backup"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('backup')" aria-expanded="false" aria-controls="sp-backup"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/><path d="M12 11v6M9.5 13.5 12 11l2.5 2.5"/></svg></span><span class="mltxt"><b>Backup &amp; sync</b><small id="sum-backup"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<section class="mbox scat" id="sc-backup"><h3 class="scat-h"><button type="button" class="month-link scat-head" data-act="catTap" data-cat="backup" aria-expanded="false" aria-controls="sp-backup"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/><path d="M12 11v6M9.5 13.5 12 11l2.5 2.5"/></svg></span><span class="mltxt"><b>Backup &amp; sync</b><small id="sum-backup"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-backup"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel">Sync</div><p class="shelp" id="sync-status"></p>
 <p class="shelp conn-off-note" id="backup-conn" data-what="Backing up and syncing"></p>
-<div class="sactions"><button type="button" class="conn-only" onclick="syncTap()">Sync now</button><button type="button" onclick="downloadBackup()">Download backup</button><label class="btn">Restore file<input type="file" accept="application/json,.json" class="vfile" onchange="restoreBackup(this.files[0]);this.value=''"></label></div></div>
+<div class="sactions"><button type="button" class="conn-only" data-act="syncNowTap">Sync now</button><button type="button" data-act="backupSaveTap">Download backup</button><label class="btn">Restore file<input type="file" accept="application/json,.json" class="vfile" data-act-change="backupFilePick"></label></div></div>
 <div class="sgroup conn-only"><div class="slabel">Daily backups</div><p class="shelp">The server keeps the wardrobe as it was at the start of each day for 30 days, and the first of each month for a year. Rolling back replaces the wardrobe, history and settings on every device with that copy.</p>
-<div class="sform"><select id="snap-list" onfocus="loadSnapshots()" aria-label="Daily backup"><option value="">Choose a day…</option></select><button id="snap-btn" type="button" onclick="rollBack()">Roll back</button></div>
+<div class="sform"><select id="snap-list" data-act-focus="snapFocus" aria-label="Daily backup"><option value="">Choose a day…</option></select><button id="snap-btn" type="button" data-act="rollBackTap">Roll back</button></div>
 <p class="shelp" id="snap-status"></p></div>
 </div></div></section>
-<section class="mbox scat" id="sc-connection"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('connection')" aria-expanded="false" aria-controls="sp-connection"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span><span class="mltxt"><b>Connection</b><small id="sum-connection"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<section class="mbox scat" id="sc-connection"><h3 class="scat-h"><button type="button" class="month-link scat-head" data-act="catTap" data-cat="connection" aria-expanded="false" aria-controls="sp-connection"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span><span class="mltxt"><b>Connection</b><small id="sum-connection"></small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-connection"><div class="mpanel-in">
 <div class="sgroup" id="conn-box"></div>
 <div class="sgroup acct-box" id="acct-box" hidden></div>
-<div class="adv" id="adv-connection"><button type="button" class="adv-head" aria-expanded="false" aria-controls="advin-connection" onclick="advToggle(this)"><span class="adv-t">Advanced<small>For the person who runs the server</small></span><span class="chev" aria-hidden="true">›</span></button><div class="adv-in" id="advin-connection"><p class="shelp">The server reads your photos, makes item pictures when you ask for them and keeps your backup. An invite link fills these in; saved when you tap Done.</p>
+<div class="adv" id="adv-connection"><button type="button" class="adv-head" aria-expanded="false" aria-controls="advin-connection" data-act="advTap"><span class="adv-t">Advanced<small>For the person who runs the server</small></span><span class="chev" aria-hidden="true">›</span></button><div class="adv-in" id="advin-connection"><p class="shelp">The server reads your photos, makes item pictures when you ask for them and keeps your backup. An invite link fills these in; saved when you tap Done.</p>
 <label class="srow stack">Server address <input type="text" id="cfg-url" placeholder="https://…" autocomplete="off" inputmode="url"></label>
 <label class="srow stack">Code <input type="text" id="cfg-token" placeholder="Your code" autocomplete="off"></label></div></div>
 </div></div></section>
 
-<section class="mbox scat" id="sc-about"><h3 class="scat-h"><button type="button" class="month-link scat-head" onclick="toggleCat('about')" aria-expanded="false" aria-controls="sp-about"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></span><span class="mltxt"><b>About</b><small id="sum-about">Version · feedback · your data</small></span><span class="chev" aria-hidden="true">›</span></button></h3>
+<section class="mbox scat" id="sc-about"><h3 class="scat-h"><button type="button" class="month-link scat-head" data-act="catTap" data-cat="about" aria-expanded="false" aria-controls="sp-about"><span class="sicw"><svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></span><span class="mltxt"><b>About</b><small id="sum-about">Version · feedback · your data</small></span><span class="chev" aria-hidden="true">›</span></button></h3>
 <div class="mpanel" id="sp-about"><div class="mpanel-in">
 <div class="sgroup"><div class="slabel" id="about-ver">Version</div><p class="shelp" id="about-status" role="status"></p>
-<div class="sactions"><button type="button" id="about-check" onclick="checkForUpdate(true)">Check for updates</button><button type="button" class="pri" id="about-update" hidden onclick="updateNow()">Update</button></div></div>
+<div class="sactions"><button type="button" id="about-check" data-act="updCheckTap">Check for updates</button><button type="button" class="pri" id="about-update" hidden data-act="updNowTap">Update</button></div></div>
 <div class="sgroup"><div class="slabel">Feedback</div><p class="shelp conn-off-note" id="fb-conn" data-what="Sending feedback"></p><div class="conn-only"><p class="shelp" id="fb-help">What works, what doesn’t, what is missing: it goes to the person who invited you. When something goes wrong in the app, this phone also tells them what broke and where, so it can be fixed: never your photos or your wardrobe.</p>
 <textarea id="fb-text" class="about-text" rows="4" maxlength="4000" placeholder="Your feedback" aria-label="Your feedback"></textarea>
-<div class="sactions"><button type="button" class="pri" id="fb-send" onclick="sendFeedback()">Send</button></div>
+<div class="sactions"><button type="button" class="pri" id="fb-send" data-act="fbSendTap">Send</button></div>
 <p class="shelp about-note" id="fb-status" role="status"></p>
 <div id="fb-list" class="fb-list" hidden></div></div></div>
 <div class="sgroup"><div class="slabel">Your data</div><p class="shelp">Delete your wardrobe, history, settings and photos. The app then starts as new.</p>
-<div class="sactions"><button type="button" class="danger" id="del-open" onclick="askDelete()">Delete my data</button></div>
+<div class="sactions"><button type="button" class="danger" id="del-open" data-act="delAskTap">Delete my data</button></div>
 <div id="del-confirm" class="about-confirm" hidden></div>
 <p class="shelp about-note" id="del-status" role="status"></p></div>
 <div class="sgroup"><details class="about-fold" id="about-privacy"><summary>Privacy</summary>
@@ -158,7 +158,7 @@
 <p>Nothing else leaves your phone. Delete my data, above, removes it from the server too.</p></details></div>
 </div></div></section>
 
-<div class="sactions setup-again"><button type="button" id="setup-again" onclick="setupOpen(true)">Run setup again</button><button type="button" id="tour-again" onclick="tourAgain()">Take the tour</button><button type="button" id="home-again" hidden onclick="homeAgain()">Add to Home Screen</button></div>
+<div class="sactions setup-again"><button type="button" id="setup-again" data-act="setupAgainTap">Run setup again</button><button type="button" id="tour-again" data-act="tourAgainTap">Take the tour</button><button type="button" id="home-again" hidden data-act="homeAgainTap">Add to Home Screen</button></div>
 <p class="sfoot">Daily Wardrobe</p>
 </div>
 </div>
@@ -219,6 +219,7 @@
 <script src="asm-pocket.js"></script>
 <script src="asm-gl.js"></script>
 <script src="asm-kinds.js"></script>
+<script src="asm-ocp.js"></script>
 <script src="stats.js"></script>
 <script src="pack.js"></script>
 <script src="wardrobe.js"></script>

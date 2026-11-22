@@ -47,6 +47,11 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const w=await p.evaluate(()=>{const o=planFor()[key(sel)],r=rateOutfit(o);return {shoes:o.shoes&&o.shoes.id,bot:o.bot&&o.bot.id,shoesCheck:(r.checks.find(x=>x.label==='Shoes')||{}),hard:r.hard,belt:!!o.belt}});
     ok(w.shoes===BOOT&&w.bot===CAMO,`picked: the boots are worn with the camouflage pants (${w.shoes}, ${w.bot})`);
     ok(w.shoesCheck.pts===w.shoesCheck.max&&!w.hard.includes('Shoes'),`the score finds the boots right with camouflage pants (${JSON.stringify(w.shoesCheck)})`);
+    // a belt swapped with the boots on: the boots stay (2026-11-18, the owner's coyote belt was refused: the swap freed the shoes, the planner
+    // took calf shoes that suit neither the camo pants nor a canvas belt, and dropped the belt)
+    const bs=await p.evaluate(async B=>{const k=key(sel),o=planFor()[k],nb=items.find(i=>i.type==='belt'&&(!o.belt||i.id!==o.belt.id));await pickItem('belt',nb.id);await new Promise(r=>setTimeout(r,300));
+      const o2=planFor()[k];return {shoes:o2.shoes&&o2.shoes.id,belt:o2.belt&&o2.belt.id,want:nb.id,msg:swapMsg}},BOOT);
+    ok(bs.shoes===BOOT&&bs.belt===bs.want&&!/stays as it was/.test(bs.msg),`a belt swap with the boots on keeps the boots and takes the belt (${JSON.stringify(bs)})`);
     // other pants picked: the boots come off
     await p.evaluate(()=>pickItem('bot','pants3'));await settle(p,400);
     const off=await p.evaluate(B=>{const o=planFor()[key(sel)];return {shoes:o.shoes&&o.shoes.id,bot:o.bot&&o.bot.id}},BOOT);
