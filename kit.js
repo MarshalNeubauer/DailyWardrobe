@@ -35,10 +35,16 @@ function kitGo(n){if(!kit)return;const ev=window.event,tap=!!(ev&&ev.isTrusted&&
   if(tap){if(now-(kit.tapAt||-1e9)<KIT_TAP_MS)return;kit.tapAt=now}
   const at=kit.at+n;if(at>=kit.cards.length)return kitClose();if(at<0)return;kit.at=at;kitDraw();const t=$('#kit-next');if(t)t.focus({preventScroll:true})}
 function kitDraw(){if(!kit)return;const c=kit.cards[kit.at],n=kit.cards.length,last=kit.at===n-1;
-  kitEl().innerHTML=`<div class="kit-head"><div><h2 id="kit-title">${c.title}</h2>${n>1?`<small>${kit.at+1} of ${n}</small>`:''}</div><button type="button" class="kit-x" onclick="kitClose()" aria-label="Close">✕</button></div>
+  kitEl().innerHTML=`<div class="kit-head"><div><h2 id="kit-title">${c.title}</h2>${n>1?`<small>${kit.at+1} of ${n}</small>`:''}</div><button type="button" class="kit-x" data-act="kitShut" aria-label="Close">✕</button></div>
 ${n>1?`<div class="su-prog kit-prog" aria-hidden="true">${kit.cards.map((x,i)=>`<i class="${i<=kit.at?'on':''}"></i>`).join('')}</div>`:''}
 <div class="kit-body" data-card="${c.key}">${kit.lead&&!kit.at?`<p class="kit-lead">${kit.lead}</p>`:''}<div class="kit-pic" aria-hidden="true">${c.pic()}</div>${c.body}</div>
-<div class="kit-bar">${kit.at?`<button type="button" id="kit-back" onclick="kitGo(-1)">Back</button>`:''}<button type="button" class="pri" id="kit-next" onclick="kitGo(1)">${last?(kit.lastLabel||c.last||'Got it'):'Next'}</button></div>`}
+<div class="kit-bar">${kit.at?`<button type="button" id="kit-back" data-act="kitBackTap">Back</button>`:''}<button type="button" class="pri" id="kit-next" data-act="kitNextTap">${last?(kit.lastLabel||c.last||'Got it'):'Next'}</button></div>`}
+/* the sheet's controls (act.js): ✕ and Cancel, Back and Next (kitGo reads the tap from window.event, which is the click here too), and
+   the tour's and the paper tip's link to the close-up guide */
+function kitShut(){kitClose()}
+function kitBackTap(){kitGo(-1)}
+function kitNextTap(){kitGo(1)}
+function kitGuideTap(){kitClose();kitCloseupGuide()}
 // ← → step the cards only: not in the import (no cards: → closed it and lost the pasted rows) nor while typing in a field (re-audit 2026-11-15)
 addEventListener('keydown',e=>{if(!kit)return;if(e.key==='Escape'){e.preventDefault();kitClose();return}
   if(!kit.cards.length||(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable]')))return;
@@ -62,7 +68,7 @@ const kitPatternPic=()=>`<svg viewBox="0 0 300 150"><defs><pattern id="kp-gen" w
 /* ---- the quick tour ---- */
 const TOUR_CARDS=[
   {key:'score',title:'The score',pic:kitScorePic,get body(){return `<p>Every outfit gets a score out of 100.</p><p>Points come off only for things you can put right: shoes that don't suit the ${kitWears('jacket')?'suit':'pants'}, a color worn two days running, socks lighter than the pants.</p><p class="kit-tip">Tap the score on Today to see why, and the swaps that would raise it.</p>`}},
-  {key:'closeup',title:'The close-up',pic:()=>kitClothPic(true,false),body:`<p>After the photo of the whole piece, take one close-up of the cloth: hold the phone close so the weave fills the screen.</p><p>It gives the true color and the real size of the pattern. A sheet of plain white paper along one edge lets the app correct for the light: tap the paper on the camera screen before you take the picture.</p><p><button type="button" class="linkbtn" onclick="kitClose();kitCloseupGuide()">How to take a good close-up</button></p>`},
+  {key:'closeup',title:'The close-up',pic:()=>kitClothPic(true,false),body:`<p>After the photo of the whole piece, take one close-up of the cloth: hold the phone close so the weave fills the screen.</p><p>It gives the true color and the real size of the pattern. A sheet of plain white paper along one edge lets the app correct for the light: tap the paper on the camera screen before you take the picture.</p><p><button type="button" class="linkbtn" data-act="kitGuideTap">How to take a good close-up</button></p>`},
   {key:'shade',title:'Shade',pic:kitShadePic,body:`<p>If a piece is drawn lighter or darker than the real thing, Shade nudges it, up to six steps either way.</p><p><b>Match close-up</b> sets it from your close-up for you.</p><p class="kit-tip">Shade changes only the drawing. The color the planner matches stays the one you tagged.</p>`},
   {key:'patterns',title:'Patterns',pic:kitPatternPic,body:`<p>Stripes, checks and weaves are read too.</p><p>With a close-up the app measures the stripes' widths and colors, so the drawing and the outfit pictures show your cloth, not a generic one.</p><p class="kit-tip">If a reading looks wrong, tap <b>Use the simple pattern</b> on the card, or <b>Read pattern from photo</b> on the item later.</p>`}];
 /* then: what happens after the last card (the setup's "Add my first item" goes on to Add) */
@@ -84,7 +90,7 @@ function kitCloseupGuide(){kitOpen([GUIDE_CARD])}
 /* the short white-paper tip (photo-wb-mockups variant B's words), opened from the drawing beside the item sheet's close-up hint (paperTip) */
 const PAPER_CARD={key:'paper',title:'White paper, true colors',pic:()=>kitClothPic(true,true),last:'Got it',body:`<p>Lay a sheet of plain white paper along one edge of the cloth, about a fifth of the picture.</p>
 <p>Tap the paper on the camera screen, then take the picture. The app reads the light from the paper, so the color comes out true, even under warm lamps.</p>
-<p><button type="button" class="linkbtn" onclick="kitClose();kitCloseupGuide()">Tips for a good close-up</button></p>`};
+<p><button type="button" class="linkbtn" data-act="kitGuideTap">Tips for a good close-up</button></p>`};
 
 /* ---- Undo after Confirm (app.js save calls this for each card saved) ----
    Cards saved within a moment of each other (Save all, an import) are one Undo. Undo takes the items out (a tombstone each, as Delete
@@ -389,7 +395,7 @@ function kitLastImp(){try{const l=JSON.parse(localStorage.getItem(KIT_IMP_LAST)|
   const its=l.ids.map(id=>items.find(i=>i.id===id)).filter(Boolean),ch=i=>(i.updated||0)-(+l.at||0)>KIT_EDIT_MS;
   const ids=its.filter(i=>!ch(i)).map(i=>i.id);return ids.length?{ids,kept:its.length-ids.length,at:l.at}:null}catch{return null}}
 function kitLastRow(){const l=kitLastImp();if(!l)return '';const when=new Date(l.at).toLocaleDateString(undefined,{month:'short',day:'numeric'});
-  return `<p class="kit-last" id="kit-last">Your last import (${when}): ${l.ids.length} item${l.ids.length===1?'':'s'} in your wardrobe${l.kept?` you haven't changed since`:''}. <button type="button" class="linkbtn" onclick="kitUnimport()">Take ${l.ids.length===1?'it':'them'} out</button></p>`}
+  return `<p class="kit-last" id="kit-last">Your last import (${when}): ${l.ids.length} item${l.ids.length===1?'':'s'} in your wardrobe${l.kept?` you haven't changed since`:''}. <button type="button" class="linkbtn" data-act="kitUnimportTap">Take ${l.ids.length===1?'it':'them'} out</button></p>`}
 /* the import is a bottom sheet over Add (2026-11-15, the owner's choice from add-page-mockups): grabber, the table icon, the backdrop,
    a swipe down closes it as ✕ (sheet-swipe.js sheetSwipe), at most 640 px wide; its content is as before */
 const KIT_TABLE='<svg class="kit-hic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 4.5v15"/></svg>';
@@ -402,13 +408,23 @@ function kitBsAway(e){const b=$('#kit-backdrop');if(b)b.classList.remove('on');e
 function kitImportSwipe(){if(kitSwipeOn)return;kitSwipeOn=true;const e=kitEl();
   sheetSwipe(e,{head:'.kit-head',body:()=>e.querySelector('.kit-body'),backdrop:()=>$('#kit-backdrop'),live:()=>!!kit&&e.classList.contains('kbs')&&!kitImpBusy,close:()=>kitClose()})}
 function kitImportOpen(){kitImp=null;const e=kitEl(),prev=kit?kit.hist:undefined;kit={cards:[],at:0,then:null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitBs(true);kitImportSwipe();
-  e.innerHTML=`<div class="kit-head"><span class="kit-grab" aria-hidden="true"></span><div class="kit-ht">${KIT_TABLE}<h2 id="kit-title">Import from a spreadsheet</h2></div><button type="button" class="kit-x" onclick="kitClose()" aria-label="Close">✕</button></div>
+  e.innerHTML=`<div class="kit-head"><span class="kit-grab" aria-hidden="true"></span><div class="kit-ht">${KIT_TABLE}<h2 id="kit-title">Import from a spreadsheet</h2></div><button type="button" class="kit-x" data-act="kitShut" aria-label="Close">✕</button></div>
 <div class="kit-body" data-card="import"><p>One row per piece. The first row names the columns; only <b>Type</b> and <b>Color</b> are needed (a Description column is read for patterns and styles, a Qty column for how many; a list with one piece per line, like “Navy suit”, works too). Importing the sheet again updates the pieces it changed. From Numbers, Excel or Google Sheets, export the sheet as CSV, or copy the rows and paste them below.</p>
-${kitLastRow()}<div class="btns"><button type="button" onclick="kitTemplate()">Download a template</button><label class="btn">Choose a CSV file<input type="file" accept=".csv,.tsv,.txt,text/csv,text/plain" class="vfile" onchange="kitImportFile(this.files[0]);this.value=''"></label></div>
-<label class="kit-paste">Or paste the rows<textarea id="kit-paste" rows="5" onfocus="kitPasteShow(this)" placeholder="Type, Color, Pattern…" oninput="kitImportText(this.value)"></textarea></label>
+${kitLastRow()}<div class="btns"><button type="button" data-act="kitTemplateTap">Download a template</button><label class="btn">Choose a CSV file<input type="file" accept=".csv,.tsv,.txt,text/csv,text/plain" class="vfile" data-act-change="kitFilePick"></label></div>
+<label class="kit-paste">Or paste the rows<textarea id="kit-paste" rows="5" data-act-focus="kitPasteFocus" placeholder="Type, Color, Pattern…" data-act-input="kitPasteType"></textarea></label>
 <div id="kit-prev" aria-live="polite"></div></div>
-<div class="kit-bar"><button type="button" id="kit-cancel" onclick="kitClose()">Cancel</button><button type="button" class="pri" id="kit-imp" disabled onclick="kitImportGo()">Add items</button></div>`;
+<div class="kit-bar"><button type="button" id="kit-cancel" data-act="kitShut">Cancel</button><button type="button" class="pri" id="kit-imp" disabled data-act="kitImpTap">Add items</button></div>`;
   e.classList.add('on');kitInert(true);kitHist();e.tabIndex=-1;try{e.focus({preventScroll:true})}catch{}}   // the focus goes into the sheet (it stayed on <body>, outside the dialog)
+/* the import sheet's controls (act.js): the last import's "Take them out", the template, a picked file (the field is emptied, so the
+   same file can be picked again), the paste field, Add items, and a preview row's check and "Add as new" (data-k: its place in kitImp.rows) */
+function kitUnimportTap(){kitUnimport()}
+function kitTemplateTap(){kitTemplate()}
+function kitFilePick(el){kitImportFile(el.files[0]);el.value=''}
+function kitPasteFocus(el){kitPasteShow(el)}
+function kitPasteType(el){kitImportText(el.value)}
+function kitImpTap(){kitImportGo()}
+function kitTickPick(el){kitImpTick(+el.dataset.k,el.checked)}
+function kitAsNewTap(el){kitAsNew(+el.dataset.k)}
 /* the paste field comes into view below the sheet's header once the keyboard is up (re-audit 2026-11-15: with the preview scrolled it
    stayed under the header) */
 function kitPasteShow(t){setTimeout(()=>{if(!t.isConnected)return;const b=t.closest('.kit-body');if(!b)return;const r=t.getBoundingClientRect(),br=b.getBoundingClientRect(),vh=window.visualViewport?visualViewport.height:innerHeight;
@@ -458,7 +474,7 @@ function kitPrevDraw(){const r=kitImp,el=$('#kit-prev');if(!r||!el)return;const 
   const row=(x,k)=>{const it=x.upd&&items.find(i=>i.id===x.upd),t=sentence(itemTitle(x.card));
     const info=[TYPES[x.card.type],x.card.name?sentence(shortDesc(x.card)):'',(x.qty||1)>1?`${x.qty} of them`:'',x.dup?'already in your wardrobe':x.have?`${x.have} already in your wardrobe`:'',
       it?(x.asNew?'added as a new piece':`updates your ${itemName(it)?`“${itemName(it)}”`:shortDesc(it)+' '+typeWord(it)}: ${kitDiffText(it,x).join(', ')}`):'',...x.probs].filter(Boolean).join(' · ');
-    return `<li class="ok${x.dup?' dup':''}${it&&!x.asNew?' upd':''}"><label class="kit-row"><input type="checkbox" class="kit-tick" ${x.on?'checked':''} onchange="kitImpTick(${k},this.checked)"><span class="kit-dot">${swatchSVG(x.card,true)}</span><span><b>${esc(t)}</b><small>${esc(info)}</small></span></label>${it?`<button type="button" class="linkbtn kit-asnew" onclick="kitAsNew(${k})">${x.asNew?'Update it instead':'Add as new'}</button>`:''}</li>`};
+    return `<li class="ok${x.dup?' dup':''}${it&&!x.asNew?' upd':''}"><label class="kit-row"><input type="checkbox" class="kit-tick" ${x.on?'checked':''} data-act-change="kitTickPick" data-k="${k}"><span class="kit-dot">${swatchSVG(x.card,true)}</span><span><b>${esc(t)}</b><small>${esc(info)}</small></span></label>${it?`<button type="button" class="linkbtn kit-asnew" data-act="kitAsNewTap" data-k="${k}">${x.asNew?'Update it instead':'Add as new'}</button>`:''}</li>`};
   const pl=(k,a,b)=>k===1?a:b,read=[];
   if(r.list)read.push('Read as a list, one piece per line.');
   if(r.head)read.push(`The column names are in row ${r.head}; the rows above it were skipped.`);
@@ -683,13 +699,21 @@ async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.s
   if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();toast('It’s yours now: Remove the sample keeps it.',3000)}
 /* marks: the Wardrobe grid's tag and the item sheet's note */
 const kitSampleTag=i=>i.sample&&!kitEdited(i)?'<span class="pausetag sampletag">Sample</span>':'';
-const kitSampleNote=i=>i.sample&&!kitEdited(i)?`<section class="card ivsec ivsample"><p class="shelp">A piece of the sample wardrobe: Remove the sample takes it away. Change anything on it, or keep it, and it stays as yours.</p><div class="btns"><button type="button" id="iv-keep" onclick="kitKeepSample('${jsq(i.id)}')">Keep it as mine</button></div></section>`:'';
+const kitSampleNote=i=>i.sample&&!kitEdited(i)?`<section class="card ivsec ivsample"><p class="shelp">A piece of the sample wardrobe: Remove the sample takes it away. Change anything on it, or keep it, and it stays as yours.</p><div class="btns"><button type="button" id="iv-keep" data-act="kitKeepTap" data-id="${esc(i.id)}">Keep it as mine</button></div></section>`:'';
 /* Today, while sample pieces are there */
 function kitSampleBanner(){if(!kitHasSample())return '';const own=items.filter(i=>!i.sample||kitEdited(i)).length;
   return `<div class="kit-banner" id="kit-sample"><b>You're trying a sample wardrobe</b><small>${own?`Your ${own} own piece${own===1?' is':'s are'} mixed in. `:''}Swipe through the days, tap the score, try a swap. Add your own clothes whenever you like.</small>
-<div class="btns"><button type="button" onclick="openAdd()">Add my own</button><button type="button" onclick="kitSampleRemove()">Remove the sample</button></div></div>`}
+<div class="btns"><button type="button" data-act="kitAddOwnTap">Add my own</button><button type="button" data-act="kitSampleRemoveTap">Remove the sample</button></div></div>`}
 /* the setup's last step, Today's checklist and the empty Wardrobe: the ways in for a new user */
-const kitStartRow=inSetup=>`<div class="kit-start"><button type="button" class="linkbtn" id="kit-tour-link" onclick="tourOpen()">Take the 1-minute tour</button><span aria-hidden="true">·</span><button type="button" class="linkbtn" id="kit-sample-link" onclick="${inSetup?'setupSample(event)':'kitSampleLoad()'}">Try a sample wardrobe</button></div>`;
+const kitStartRow=inSetup=>`<div class="kit-start"><button type="button" class="linkbtn" id="kit-tour-link" data-act="kitTourTap">Take the 1-minute tour</button><span aria-hidden="true">·</span><button type="button" class="linkbtn" id="kit-sample-link"${inSetup?' data-act="kitSetupSampleTap"':' data-act="kitSampleTap"'}>Try a sample wardrobe</button></div>`;
+/* the sample's and the ways-in's controls (act.js): the item sheet's "Keep it as mine" (data-id), Today's banner, the tour link, and "Try a
+   sample wardrobe" (on the setup's last step it goes through setup.js setupSample, with the tap for its double-tap guard) */
+function kitKeepTap(el){kitKeepSample(el.dataset.id)}
+function kitAddOwnTap(){openAdd()}
+function kitSampleRemoveTap(){kitSampleRemove()}
+function kitTourTap(){tourOpen()}
+function kitSampleTap(){kitSampleLoad()}
+function kitSetupSampleTap(el,ev){setupSample(ev)}
 
 /* ---- Add to Home Screen (2026-11-14, the owner: show a new person on an iPhone how to add it as a web app) ----
    iPhone and iPad only, in a browser tab (homeNeeded): the setup's Home Screen step (setup.js) and Settings → About (#home-again). The app
@@ -732,7 +756,7 @@ const homePic=()=>'<svg viewBox="0 0 120 160" class="home-pic" aria-hidden="true
   '<text x="41" y="94" class="hp-label">Wardrobe</text></svg>';
 function homeStepsAndroid(inSetup){
   return '<div class="home-wrap">'+homePic()+'<p class="su-lead home-lead">Install Daily Wardrobe on your phone: it gets its own icon and opens full screen like an app, straight to today\'s outfit.</p>'+
-    '<p class="home-cta"><button type="button" class="pri home-install"'+(homeEvt?'':' hidden')+' onclick="homeInstall()">'+HOME_DL+' Install the app</button></p>'+
+    '<p class="home-cta"><button type="button" class="pri home-install"'+(homeEvt?'':' hidden')+' data-act="homeInstallTap">'+HOME_DL+' Install the app</button></p>'+
     '<div class="home-manual"'+(homeEvt?' hidden':'')+'><ol class="home-steps"><li><span class="home-n">1</span><span>Tap the menu <b>⋮</b> at the top right of your browser.</span></li>'+
     '<li><span class="home-n">2</span><span>Tap <b>Install app</b> or <b>Add to Home screen</b>.</span></li>'+
     '<li><span class="home-n">3</span><span>Tap <b>Install</b>, then open Daily Wardrobe from its new icon.</span></li></ol></div>'+
@@ -741,7 +765,7 @@ function homeStepsAndroid(inSetup){
    gets after connecting from a link (account.js homeScreenGuide) all show this. iOS 26's Safari shows ⋯ at the bottom (Share is in its
    menu); the Home Screen app keeps its own storage and starts unconnected, so a tester copies the invitation link here to paste there */
 const homeTester=()=>isTester()&&!!myInviteLink();
-const homeCopyBtn=()=>'<p class="home-cta"><button type="button" class="pri home-copy" onclick="homeCopy()">Copy my invitation link</button></p><input type="text" class="home-mylink" readonly hidden aria-label="Your invitation link">';
+const homeCopyBtn=()=>'<p class="home-cta"><button type="button" class="pri home-copy" data-act="homeCopyTap">Copy my invitation link</button></p><input type="text" class="home-mylink" readonly hidden aria-label="Your invitation link">';
 async function homeCopy(){const l=myInviteLink();if(!l)return false;
   try{await navigator.clipboard.writeText(l);toast('Your invitation link is copied. Paste it in the Home Screen app.',4500);return true}
   catch{document.querySelectorAll('.home-mylink').forEach(f=>{f.hidden=false;f.value=l;f.select()});toast('Copy the link shown under the button.',5000);return false}}
@@ -779,8 +803,13 @@ function homeOpen(){kitOpen([HOME_CARD])}
 /* Settings → About: the button only where it helps */
 function homeAbout(){const b=$('#home-again');if(b){b.hidden=!homeNeeded();b.textContent=homeLabel()}}
 homeAbout();   // (once at start: the device doesn't change; Settings can open straight on About, where renderAbout doesn't run)
+/* the Home Screen step's Install and "Copy my invitation link" (act.js) */
+function homeInstallTap(){homeInstall()}
+function homeCopyTap(){homeCopy()}
 /* index.html's (act.js): Add's "Import from a spreadsheet", and Settings' "Take the tour" and "Add to Home Screen" */
 function importOpenTap(){kitImportOpen()}
 function tourAgainTap(){tourAgain()}
 function homeAgainTap(){homeAgain()}
-acts({importOpenTap,tourAgainTap,homeAgainTap});
+acts({kitShut,kitBackTap,kitNextTap,kitGuideTap,kitUnimportTap,kitTemplateTap,kitFilePick,kitPasteFocus,kitPasteType,kitImpTap,kitTickPick,kitAsNewTap,
+  kitKeepTap,kitAddOwnTap,kitSampleRemoveTap,kitTourTap,kitSampleTap,kitSetupSampleTap,homeInstallTap,homeCopyTap,
+  importOpenTap,tourAgainTap,homeAgainTap});

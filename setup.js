@@ -137,8 +137,8 @@ function setupGo(n,e){if(setupGoDouble(e))return;
   backPush('setup')}   // (again after a tap: an entry made at start-up without one may be skipped by Back)
 
 /* ---- the steps ---- */
-const setupSwitch=(k,on,title,sub)=>`<button type="button" class="su-sw" id="su-sw-${k}" role="switch" aria-checked="${on}" onclick="setupSetDress('${k}')"><span class="su-swt"><b>${title}</b><small>${sub}</small></span><i class="su-knob" aria-hidden="true"></i></button>`;
-const setupDays=(kind,list,shown)=>`<div class="su-days" id="su-${kind}" role="group" aria-label="${kind==='workdays'?'Workdays':'Blazer days'}">${DAY_NAMES.map((n,i)=>shown.includes(i)?`<button type="button" class="su-day${list.includes(i)?' on':''}" aria-pressed="${list.includes(i)}" onclick="setupDay('${kind}',${i})">${n.slice(0,3)}</button>`:'').join('')}</div>`;
+const setupSwitch=(k,on,title,sub)=>`<button type="button" class="su-sw" id="su-sw-${k}" role="switch" aria-checked="${on}" data-act="setupSwTap" data-k="${k}"><span class="su-swt"><b>${title}</b><small>${sub}</small></span><i class="su-knob" aria-hidden="true"></i></button>`;
+const setupDays=(kind,list,shown)=>`<div class="su-days" id="su-${kind}" role="group" aria-label="${kind==='workdays'?'Workdays':'Blazer days'}">${DAY_NAMES.map((n,i)=>shown.includes(i)?`<button type="button" class="su-day${list.includes(i)?' on':''}" aria-pressed="${list.includes(i)}" data-act="setupDayTap" data-k="${kind}" data-s="${i}">${n.slice(0,3)}</button>`:'').join('')}</div>`;
 function setupStep(k){const d=setupDress();
   if(k==='welcome')return `<p class="su-lead">Daily Wardrobe picks what you wear each workday from the clothes you own.</p><p class="su-lead">It rotates your pieces so nothing is worn out or forgotten, and keeps the colors and patterns working together.</p><p class="su-help">A few short questions first. You can change every answer later in Settings.</p>${setupConnected()?'':'<p class="su-help" id="su-before">Used the app before with an invitation link? Open that link again: your wardrobe, day history and settings come back from your backup. Do that before adding anything here.</p>'}`;   // (audit 2026-11-15, W1-11-01: after Safari cleared the site, nothing said the wardrobe was safe)
   if(k==='home')return typeof homeSteps==='function'?homeSteps(true):'';
@@ -147,17 +147,17 @@ function setupStep(k){const d=setupDress();
   if(k==='wear'){const v=setup.first&&!setupVestChosen()?'never':(settings.vestMode||'auto');
     // the vest only with ties, as Settings (a waistcoat is never planned without a tie; audit 2026-11-15)
     return `<p class="su-help">Outfits are planned around what you actually wear to work.</p>${setupSwitch('jacket',d.jacket,'Jackets','A suit or a blazer on workdays')}${setupSwitch('tie',d.tie,'Ties','A tie with every outfit')}`+
-    (d.jacket&&d.tie?`<label class="su-row">Suit vest <select id="su-vest" onchange="setupVest(this.value)">${[['never','No vest'],['auto','On cooler suit days'],['always','Every suit day']].map(o=>`<option value="${o[0]}"${o[0]===v?' selected':''}>${o[1]}</option>`).join('')}</select></label>`:'')}
+    (d.jacket&&d.tie?`<label class="su-row">Suit vest <select id="su-vest" data-act-change="setupVestPick">${[['never','No vest'],['auto','On cooler suit days'],['always','Every suit day']].map(o=>`<option value="${o[0]}"${o[0]===v?' selected':''}>${o[1]}</option>`).join('')}</select></label>`:'')}
   if(k==='weather'){const u=unit(),loc=settings.location;
     return `<div class="su-group"><div class="su-label">Where you are</div><p class="su-help" id="su-loc">${loc?`<span class="su-tick" aria-hidden="true">✓</span> Weather for ${esc(loc.name)}.`:'With a location, outfits follow the forecast: lighter cloth on hot days, no suede in the rain. Without one they follow the calendar season.'}</p>
-<div class="su-acts"><button type="button" id="su-geo" onclick="setupLocate()">Use my location</button></div>
-<div class="su-form"><input type="text" id="su-city" placeholder="Search a city" aria-label="City" value="${esc(setup.q)}" oninput="setup.q=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();setupSearch()}"><button type="button" id="su-find" onclick="setupSearch()">Search</button></div>
-<div class="su-acts" id="su-cities">${(setup.cities||[]).map((c,i)=>`<button type="button" onclick="setupPick(${i})">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join('')}</div>${setup.cityMsg?`<p class="su-help" role="status">${esc(setup.cityMsg)}</p>`:''}</div>
-<div class="su-group"><div class="su-label">Temperatures in</div><div class="su-days" id="su-units" role="group" aria-label="Temperatures in">${['C','F'].map(x=>`<button type="button" class="su-day${u===x?' on':''}" aria-pressed="${u===x}" onclick="setupUnits('${x}')">°${x}</button>`).join('')}</div></div>`}
+<div class="su-acts"><button type="button" id="su-geo" data-act="setupGeoTap">Use my location</button></div>
+<div class="su-form"><input type="text" id="su-city" placeholder="Search a city" aria-label="City" value="${esc(setup.q)}" data-act-input="setupCityType" data-act-keydown="setupCityKey"><button type="button" id="su-find" data-act="setupFindTap">Search</button></div>
+<div class="su-acts" id="su-cities">${(setup.cities||[]).map((c,i)=>`<button type="button" data-act="setupCityTap" data-s="${i}">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join('')}</div>${setup.cityMsg?`<p class="su-help" role="status">${esc(setup.cityMsg)}</p>`:''}</div>
+<div class="su-group"><div class="su-label">Temperatures in</div><div class="su-days" id="su-units" role="group" aria-label="Temperatures in">${['C','F'].map(x=>`<button type="button" class="su-day${u===x?' on':''}" aria-pressed="${u===x}" data-act="setupUnitTap" data-k="${x}">°${x}</button>`).join('')}</div></div>`}
   if(k==='connect')return setupConnected()?`<p class="su-ok" id="su-conn"><span class="su-tick" aria-hidden="true">✓</span> Connected</p><p class="su-help">Photos of your clothes are read automatically, item pictures can be made, and ${backedUpWords()}.</p>${setup.joined&&items.length?`<p class="su-help" id="su-came">Your wardrobe came across: ${items.length} item${items.length===1?'':'s'}. The answers are your account’s.</p>`:''}${setupHomeLink()}`
     :setupLinkChecking()?'<p class="su-ok" id="su-conn" role="status"><span class="spin" aria-hidden="true"></span> Checking your invitation…</p><p class="su-help">This can take a moment on a slow connection. You can carry on with Next meanwhile.</p>'
     :`<p class="su-help">${inviteOver()?'Your invitation has ended, so the link you used no longer works: nothing is read or backed up. If you were given a new invitation link, paste it here.':setupLinkWaiting()?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you come back to the app or your connection returns, or tap Connect.':'If you were given an invite link, paste it here. It turns on automatic reading of your photos, item pictures and a backup. Used the app before? The same link brings your backed-up wardrobe back.'}</p>
-<div class="su-form"><input type="text" id="su-link" placeholder="Paste your invite link" aria-label="Invite link"${setupLinkWaiting()?` value="${esc(location.href)}"`:''} autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();setupConnect()}"><button type="button" id="su-connect" onclick="setupConnect()"${setup.busy?' disabled':''}>${setup.busy?'Connecting…':'Connect'}</button></div>
+<div class="su-form"><input type="text" id="su-link" placeholder="Paste your invite link" aria-label="Invite link"${setupLinkWaiting()?` value="${esc(location.href)}"`:''} autocomplete="off" autocapitalize="off" spellcheck="false" data-act-keydown="setupLinkKey"><button type="button" id="su-connect" data-act="setupConnectTap"${setup.busy?' disabled':''}>${setup.busy?'Connecting…':'Connect'}</button></div>
 ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
 <p class="su-note" id="su-without"><b>No link? The app works without one.</b> You then add your items by hand, picking the type and colors yourself: no automatic photo reading and no item pictures. You can connect later in Settings.</p>`;
   /* in the Week step's order (Sunday first, as Settings shows them) */
@@ -180,10 +180,10 @@ function setupSample(e){setupTapGuard(e);if(typeof kitSampleLoad==='function')ki
 function setupDraw(){if(!setupShown())return;const k=SETUP_STEPS[setup.at],n=SETUP_STEPS.length,last=setup.at===n-1;
   keepFocus(setupEl(),()=>setupHtml(k,n,last))}
 function setupHtml(k,n,last){
-  setupEl().innerHTML=`<div class="su-head"><div class="su-ttl"><h2 id="su-title">${SETUP_TITLES[k]}</h2><small id="su-count">Step ${setup.at+1} of ${n}</small></div>${!setup.first?`<button type="button" class="su-skip" id="su-cancel" onclick="setupCancel(event)">Cancel</button>`:last?'':`<button type="button" class="su-skip" id="su-skip" onclick="setupFinish(false,event)">Skip</button>`}</div>
+  setupEl().innerHTML=`<div class="su-head"><div class="su-ttl"><h2 id="su-title">${SETUP_TITLES[k]}</h2><small id="su-count">Step ${setup.at+1} of ${n}</small></div>${!setup.first?`<button type="button" class="su-skip" id="su-cancel" data-act="setupCancelTap">Cancel</button>`:last?'':`<button type="button" class="su-skip" id="su-skip" data-act="setupSkipTap">Skip</button>`}</div>
 <div class="su-prog" aria-hidden="true">${SETUP_STEPS.map((s,i)=>`<i class="${i<=setup.at?'on':''}"></i>`).join('')}</div>
 <div class="su-body"><div class="su-in" id="su-step" data-step="${k}">${setupStep(k)}</div></div>
-<div class="su-bar">${setup.at?`<button type="button" id="su-back" onclick="setupGo(-1,event)">Back</button>`:''}<button type="button" class="pri" id="su-next" onclick="setupGo(1,event)">${last?(items.length?'Done':'Add my first item'):setup.at?'Next':'Get started'}</button></div>`;
+<div class="su-bar">${setup.at?`<button type="button" id="su-back" data-act="setupBackTap">Back</button>`:''}<button type="button" class="pri" id="su-next" data-act="setupNextTap">${last?(items.length?'Done':'Add my first item'):setup.at?'Next':'Get started'}</button></div>`;
 }
 
 /* ---- what the steps store (all through the app's own settings functions) ---- */
@@ -225,14 +225,43 @@ function setupToday(){
   const rows=setupNeeds(),left=rows.filter(r=>!r.ok).length;if(!left)return '';
   return `<div class="firstrun" id="firstrun"><h3>Get your first outfit</h3><p class="fr-sub">${left===rows.length?'Add these and Today picks an outfit for every workday.':`${rows.length-left} of ${rows.length} added. Add the rest and Today picks an outfit for every workday.`}</p>
 <ul class="fr-list">${rows.map(r=>`<li class="fr-it${r.ok?' done':''}" data-need="${r.k}"><span class="fr-tick" aria-hidden="true">${r.ok?'✓':''}</span><span class="fr-t">${r.t}${r.sub&&!r.ok?` <small>(${r.sub})</small>`:''}</span><small class="fr-st">${r.ok?'Added':r.sub?'If no suit':'Needed'}</small></li>`).join('')}</ul>
-<button type="button" class="fr-add pri" id="fr-add" onclick="openAdd()">Add an item</button>${typeof kitStartRow==='function'?kitStartRow():''}</div>`;
+<button type="button" class="fr-add pri" id="fr-add" data-act="setupAddTap">Add an item</button>${typeof kitStartRow==='function'?kitStartRow():''}</div>`;
 }
 /* the Wardrobe tab with nothing in it */
 function setupWardEmpty(){
   return `<div class="card wempty" id="wempty"><svg class="wempty-pic" viewBox="0 0 120 84" aria-hidden="true"><path class="we-rail" d="M8 12h104"/><path class="we-hook" d="M60 12v6a5 5 0 1 0 5 5"/><path class="we-hang" d="M60 30 24 52a4 4 0 0 0 2 7h68a4 4 0 0 0 2-7z"/><path class="we-ghost" d="M26 12v10M94 12v10M20 30l6-8 6 8M88 30l6-8 6 8"/></svg>
 <b class="wempty-t">Your wardrobe is empty</b><p class="wempty-s">Add what you wear to work: a photo of each piece, or pick its type and colors by hand.</p>
-<button type="button" class="pri" id="wempty-add" onclick="openAdd()">Add your first item</button><div class="kit-start"><button type="button" class="linkbtn" onclick="kitImportOpen()">Import from a spreadsheet</button><span aria-hidden="true">·</span><button type="button" class="linkbtn" onclick="kitSampleLoad()">Try a sample wardrobe</button></div></div>`;
+<button type="button" class="pri" id="wempty-add" data-act="setupAddTap">Add your first item</button><div class="kit-start"><button type="button" class="linkbtn" data-act="wemptyImportTap">Import from a spreadsheet</button><span aria-hidden="true">·</span><button type="button" class="linkbtn" data-act="wemptySampleTap">Try a sample wardrobe</button></div></div>`;
 }
+
+/* ---- what the controls do (act.js): el is the control, ev the tap or key; the arguments are in its data-* attributes ---- */
+/* the head and the bar: Cancel, Skip, Back and Next take the tap itself (the double-tap guards read where it landed) */
+function setupCancelTap(el,ev){setupCancel(ev)}
+function setupSkipTap(el,ev){setupFinish(false,ev)}
+function setupBackTap(el,ev){setupGo(-1,ev)}
+function setupNextTap(el,ev){setupGo(1,ev)}
+/* (an argument that tells two controls of one handler apart is in data-k or data-s: keepFocus finds the redrawn control by them, app.js focusFind) */
+/* Your week and What you wear: a day button (data-k the list, data-s the day), a switch (data-k), the vest */
+function setupDayTap(el){setupDay(el.dataset.k,+el.dataset.s)}
+function setupSwTap(el){setupSetDress(el.dataset.k)}
+function setupVestPick(el){setupVest(el.value)}
+/* Weather: Use my location, the city field (typed text kept for a redraw; Enter searches), Search, a result (data-s: its place in
+   setup.cities), °C / °F (data-k) */
+function setupGeoTap(){setupLocate()}
+function setupCityType(el){setup.q=el.value}
+function setupCityKey(el,ev){if(ev.key==='Enter'){ev.preventDefault();setupSearch()}}
+function setupFindTap(){setupSearch()}
+function setupCityTap(el){setupPick(+el.dataset.s)}
+function setupUnitTap(el){setupUnits(el.dataset.k)}
+/* Connection: Enter in the link field, Connect */
+function setupLinkKey(el,ev){if(ev.key==='Enter'){ev.preventDefault();setupConnect()}}
+function setupConnectTap(){setupConnect()}
+/* Today's checklist and the empty Wardrobe: Add, Import from a spreadsheet, Try a sample wardrobe (kit.js) */
+function setupAddTap(){openAdd()}
+function wemptyImportTap(){kitImportOpen()}
+function wemptySampleTap(){kitSampleLoad()}
 /* index.html's (act.js): Settings' "Run setup again" */
 function setupAgainTap(){setupOpen(true)}
-acts({setupAgainTap});
+acts({setupCancelTap,setupSkipTap,setupBackTap,setupNextTap,setupDayTap,setupSwTap,setupVestPick,setupGeoTap,setupCityType,setupCityKey,setupFindTap,
+  setupCityTap,setupUnitTap,setupLinkKey,setupConnectTap,setupAddTap,wemptyImportTap,wemptySampleTap,
+  setupAgainTap});

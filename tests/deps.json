@@ -1,6 +1,6 @@
 {
  "note": "Which file uses which other file's top-level names (tests/deps.test.js). It may only shrink: `node tests/deps.test.js --update` takes off what went away; a new edge is added by hand, with the reason in the pull request.",
- "edges": 877,
+ "edges": 879,
  "files": {
   "about.js": ["account.js","act.js","add-keep.js","app.js","core.js","kit.js","safety.js","sync-status.js","sync.js","toast.js","ui.js"],
   "account.js": ["about.js","add.js","app.js","back.js","core.js","kit.js","merge.js","settings.js","setup.js","sync-status.js","sync.js","toast.js","ui.js"],
@@ -28,7 +28,7 @@
   "boxfold.js": ["item-view.js","month.js","today.js"],
   "calendar.js": ["app.js","core.js","daysoff.js","history.js","kit.js","pack.js","photos.js","settings.js","toast.js","today.js","ui.js"],
   "care.js": ["act.js","add-more.js","app.js","core.js","cost.js","history.js","itemsheet.js","locks.js","photos.js","remind.js","settings.js","stats.js","toast.js","today-plan.js","ui.js"],
-  "checklist.js": ["add-card.js","add-save.js","add.js","app.js","core.js","draw.js","item-photo.js","item-view.js","itemsheet.js","look.js","measure.js","photos.js","tag-request.js","today-plan.js"],
+  "checklist.js": ["act.js","add-card.js","add-save.js","add.js","app.js","colpick.js","core.js","draw.js","item-photo.js","item-view.js","itemsheet.js","look.js","measure.js","photos.js","tag-request.js","today-plan.js"],
   "colpick.js": ["account.js","act.js","add-card.js","add-keep.js","add-save.js","add.js","app.js","back.js","checklist.js","core.js","detect.js","draw.js","item-photo.js","item-view.js","itemsheet.js","look.js","measure.js","own-lists.js","photos.js","settings.js","sheet-swipe.js","tag-request.js","tagging.js","toast.js","today-plan.js","ui.js","wardrobe.js"],
   "core.js": ["look.js","merge.js","photos.js"],
   "cost.js": ["add-keep.js","add-save.js","app.js","care.js","core.js","item-view.js","locale.js","photos.js","settings.js","start.js","stats.js","toast.js","today-plan.js"],
