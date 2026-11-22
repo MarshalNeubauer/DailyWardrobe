@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	8b2e0f529eda216f7166
-# tested	d1ce6f15e20d336fdedd
+# tested	f708cb38039c36f5453c
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
@@ -195,10 +194,8 @@ about.test.js	watch/vest.png	<loaded>
 about.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 accents.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 accents.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-accents.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
-accents.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	cardSave	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	setq	shadeRow	shirtColFix	unreadNote
 accents.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
-accents.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	setq	shadeRow	shirtColFix	unreadNote
+accents.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	cardSave	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	setq	shadeRow	shirtColFix	unreadNote
 accents.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 accents.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 accents.test.js	add-paste.js	<loaded>
@@ -286,6 +283,10 @@ accents.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPil
 accents.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	uiEsc
 accents.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMigrate	matRow	matSyn	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardHay	wardKeep	wardMatch	wardNorm	wardOrder	wardPendingRestore	wardRefresh	wardSaveFields	wardSearch	wardSort	wardView
 accents.test.js	watch/leather.jpg	<loaded>
+accents.test.js	watch/shirt-open.png	<loaded>
+accents.test.js	watch/shirt-tie.png	<loaded>
+accents.test.js	watch/suit.png	<loaded>
+accents.test.js	watch/vest.png	<loaded>
 accents.test.js	weather.js	<loaded>	loadWeather
 accounts.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 accounts.test.js	account.js	<loaded>	acctBase	acctCall	acctConnect	acctEsc	acctFailText	acctJoin	acctLinkDrawn	acctLocal	acctLoopback	acctOwnServer	acctRole	acctSettingsPart	acctStart	acctToast	acctUse	applyRole	connectFromLink	copyInvite	createInvite	dropInviteHash	hasInviteHash	inviteLink	inviteParts	iosDevice	iosInSafari	isTester	limitNote	loadAccount	rememberRole	renderAccountUI	revokeInvite
@@ -483,12 +484,12 @@ actsindex.test.js	add-card.js	<any>	<loaded>	addCkCount	addCkSecs	cardSafe	ckLef
 actsindex.test.js	add-keep.js	<any>	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 actsindex.test.js	add-more.js	<any>	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 actsindex.test.js	add-paste.js	<any>	<loaded>	linkAddTap	linkKey	pasteTap
-actsindex.test.js	add-save.js	<any>	<loaded>	cardReading	cardReady	qh
+actsindex.test.js	add-save.js	<any>	<loaded>	cardAt	cardReading	cardReady	qh
 actsindex.test.js	add-sheet.js	<any>	<loaded>	addManual	addManualTap	npsCancel	npsCard	npsClose	npsCloseTap	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 actsindex.test.js	add.js	<any>	<loaded>	@document.addEventListenerclick	addNoteText	addPhotosPick	needType	renderAdd	skipCard	wbNote
 actsindex.test.js	analysis-worker.js	<any>
 actsindex.test.js	analysis.js	<any>	<loaded>	horizonKeys	listAnd
-actsindex.test.js	app.js	<any>	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	announce	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusKey	focusWatch	keepFocus	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
+actsindex.test.js	app.js	<any>	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	announce	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusKey	focusWatch	keepFocus	metaGet	metaPut	texSwatches	tx	txFail	txs	window.fetch
 actsindex.test.js	asm-color.js	<any>	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmGapNote	asmPileKind	asmWtWants
 actsindex.test.js	asm-gl.js	<any>	<loaded>
 actsindex.test.js	asm-kinds.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -569,10 +570,8 @@ actsindex.test.js	weather.js	<any>	<loaded>	cityKey	citySearchTap	loadWeather	lo
 actsindex.test.js	worker.js	<any>	<loaded>
 addcards.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 addcards.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRetryLink	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
-addcards.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
-addcards.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardByHand	cardSafe	cardSave	cardSkip	cardStop	cardTypePick	ckLeftLine	ckLr	confBtn	errCard	formCard	matExtras	matGuessOf	matNewOf	multiErrCard	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
 addcards.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
-addcards.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	errCard	formCard	matExtras	matGuessOf	matNewOf	multiErrCard	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
+addcards.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardByHand	cardSafe	cardSave	cardSkip	cardStop	cardTypePick	ckLeftLine	ckLr	confBtn	errCard	formCard	matExtras	matGuessOf	matNewOf	multiErrCard	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
 addcards.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addRevive	addWatch
 addcards.test.js	add-more.js	<loaded>	arriveVal	cardQty	checkArrivals	orderHint	orderRow	qtyLabel	qtyOf	qtyRow	setArrives	stepQty
 addcards.test.js	add-paste.js	<loaded>
@@ -670,19 +669,20 @@ addcards.test.js	watch/vest.png	<loaded>
 addcards.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 additemacts.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 additemacts.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-additemacts.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
+additemacts.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
 additemacts.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardByHand	cardCheck	cardCuRemove	cardField	cardMatGuess	cardSafe	cardSave	cardSkip	cardStop	cardTypePick	ckCheck	ckLeftLine	ckLr	confBtn	errCard	formCard	matExtras	matGuessOf	matNewOf	multiErrCard	photoPair	setq	shadeRow	shadeStep	shirtColFix	stepShadeE	stepShadeQ	tagSwInner	typeCard	unreadNote
 additemacts.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 additemacts.test.js	add-more.js	<loaded>	arriveVal	cardArrives	cardOrder	cardQty	checkArrivals	fmtDay	orderHint	orderRow	qtyLabel	qtyOf	qtyRow	setArrives	setOrder	stepQty
 additemacts.test.js	add-paste.js	<loaded>
 additemacts.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveAll	saveCard	savedTitle
-additemacts.test.js	add-sheet.js	<loaded>	addManual	npsCancel	npsCancelTap	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
+additemacts.test.js	add-sheet.js	<loaded>	addManual	addManualTap	npsCancel	npsCancelTap	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 additemacts.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	dropTexture	errToHand	measureGuess	multiMsg	multiNote	needType	renderAdd	saveAllTap	skipCard	stopRead	wbNote
 additemacts.test.js	analysis.js	<loaded>
 additemacts.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addTombstones	afterDom	afterScripts	aiLabel	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	keepFocus	loadImg	metaGet	metaPut	put	refreshSwatch	shrink	texSwatches	tx	txFail	txs	window.fetch
-additemacts.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmGapNote	asmPileKind
+additemacts.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmCuDark	asmCuPatch	asmCuTile	asmCuTile1	asmCuWants	asmCuWrap	asmGapNote	asmPileKind
 additemacts.test.js	asm-gl.js	<loaded>
 additemacts.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
+additemacts.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 additemacts.test.js	asm-pocket.js	<loaded>
 additemacts.test.js	asm-watch.js	<loaded>
 additemacts.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
@@ -697,7 +697,7 @@ additemacts.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 additemacts.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSum	cpwSym
 additemacts.test.js	daysoff.js	<loaded>	refreshHolidays
 additemacts.test.js	detect.js	<loaded>	@	analyzeStripes	boxBlur	camoLook	detectPattern	detectQueued	lookOf	lumGrid	ownSett	settToTag	sobel	texPat	tieWeave	usableSett
-additemacts.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	drawWatchTraced	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
+additemacts.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	drawWatchTraced	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figFabric	figKind	figLiftK	figLin	figLum	figScale	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 additemacts.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests	newSuitVest
 additemacts.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favOff	favPillSeg	favWhy
 additemacts.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
@@ -750,26 +750,19 @@ additemacts.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}
 additemacts.test.js	today-photofold.js	<loaded>
 additemacts.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
 additemacts.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapSoon	planSnapUse
-additemacts.test.js	today.js	<loaded>	addForSlot	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	keepHome	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
+additemacts.test.js	today.js	<loaded>	addForSlot	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	keepHome	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 additemacts.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	addGate	askAnswer	askConfirm	askEls	closeupBtn	cuTouch	inviteOver	isConnected	layerFocusables	layerInert	layerOpen	layerUp	tell	uiEsc
 additemacts.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matLabel	matMigrate	matRow	notesRow	setQField	sockToeMigrate	wardBack	wardBar	wardCount	wardDelete	wardDeleteNow	wardDuplicate	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOnce	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
 additemacts.test.js	weather.js	<loaded>	loadWeather
 addsheet.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 addsheet.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
-addsheet.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
+addsheet.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
 addsheet.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	cardSave	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	setq	shadeRow	shirtColFix	unreadNote
 addsheet.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addRevive	addWatch
 addsheet.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 addsheet.test.js	add-paste.js	<loaded>
 addsheet.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
-addsheet.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	npsBack	npsCancel	npsCancelTap	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
-addsheet.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
-addsheet.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	setq	shadeRow	shirtColFix	unreadNote
-addsheet.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addRevive	addWatch
-addsheet.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
-addsheet.test.js	add-paste.js	<loaded>
-addsheet.test.js	add-save.js	<loaded>	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
-addsheet.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	addManualTap	npsBack	npsCancel	npsCard	npsClose	npsCloseTap	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
+addsheet.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	addManualTap	npsBack	npsCancel	npsCancelTap	npsCard	npsClose	npsCloseTap	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 addsheet.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	multiMsg	needType	renderAdd	skipCard	wbNote
 addsheet.test.js	analysis.js	<loaded>
 addsheet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	generateSwatch	keepFocus	metaGet	metaPut	tx	txFail	txs	window.fetch
@@ -1364,6 +1357,11 @@ asmcloth.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 asmcloth.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 asmcloth.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmcloth.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+asmcloth.test.js	watch/leather.jpg	<loaded>
+asmcloth.test.js	watch/shirt-open.png	<loaded>
+asmcloth.test.js	watch/shirt-tie.png	<loaded>
+asmcloth.test.js	watch/suit.png	<loaded>
+asmcloth.test.js	watch/vest.png	<loaded>
 asmcloth.test.js	weather.js	<loaded>	loadWeather
 asmcode.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmcode.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -2483,7 +2481,6 @@ asmwatch.test.js	watch/leather.jpg	<loaded>
 asmwatch.test.js	watch/shirt-open.png	<loaded>
 asmwatch.test.js	watch/shirt-tie.png	<loaded>
 asmwatch.test.js	watch/suit.png	<loaded>
-asmwatch.test.js	watch/vest.png	<loaded>
 asmwatch.test.js	weather.js	<loaded>	loadWeather
 asmweave.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmweave.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -2885,8 +2882,6 @@ backgesture-over.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	add
 backgesture-over.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 backgesture-over.test.js	add-paste.js	<loaded>
 backgesture-over.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	savedTitle
-backgesture-over.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
-backgesture-over.test.js	add-save.js	<loaded>	cardOf	cardReading	cardReady	qh	savedTitle
 backgesture-over.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	addManualTap	npsBack	npsCancel	npsCard	npsClose	npsCloseTap	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 backgesture-over.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	errToHand	needType	renderAdd	skipCard	wbNote
 backgesture-over.test.js	analysis.js	<loaded>
@@ -3461,10 +3456,8 @@ canvasrefuse.test.js	watch/vest.png	<loaded>
 canvasrefuse.test.js	weather.js	<loaded>	loadWeather
 cardid.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 cardid.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-cardid.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
-cardid.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardCheck	cardSafe	cardSave	cardTypePick	ckCheck	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
 cardid.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
-cardid.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckCheck	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
+cardid.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardCheck	cardSafe	cardSave	cardTypePick	ckCheck	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
 cardid.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addRevive	addWatch
 cardid.test.js	add-more.js	<loaded>	cardQty	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow	stepQty
 cardid.test.js	add-paste.js	<loaded>
@@ -3500,10 +3493,8 @@ cardid.test.js	icon-192.png	<loaded>
 cardid.test.js	icon-512.png	<loaded>
 cardid.test.js	index.html	<loaded>
 cardid.test.js	item-photo.js	<loaded>	imgOf	makeSmall	paperCloth	paperHint	paperSteps	phSigOf	photoTools	ptIcon	smallPhotos
-cardid.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	closeItem	itemFocusBack	itemShown	ivSwipe	noMotion	openItem	renderItem	sheetSlides	stepItem	wardList
-cardid.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	itemPick	ivCareSum	ivDetailSum	ivSummary	matTidy	optLab	renderWardrobe	sete	typeTidy	wardPic
 cardid.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	closeItem	itemCloseTap	itemFocusBack	itemShown	itemStepTap	ivSwipe	noMotion	openItem	renderItem	sheetSlides	stepItem	wardList
-cardid.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	matTidy	optLab	renderWardrobe	sete	typeTidy	wardPic
+cardid.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	itemPick	ivCareSum	ivDetailSum	ivSummary	matTidy	optLab	renderWardrobe	sete	typeTidy	wardPic
 cardid.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDelMany	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitTombs	kitTx	kitUnsave	kitUserEdit
 cardid.test.js	locale.js	<loaded>	appLocale
 cardid.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
@@ -3952,10 +3943,8 @@ clock.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWro
 clock.test.js	worker/render.js	<loaded>	hubOf
 closeupread.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 closeupread.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
-closeupread.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
-closeupread.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardRdStart	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	tagSwInner	unreadNote
 closeupread.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
-closeupread.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	tagSwInner	unreadNote
+closeupread.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardRdStart	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	tagSwInner	unreadNote
 closeupread.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 closeupread.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 closeupread.test.js	add-paste.js	<loaded>
@@ -4446,10 +4435,8 @@ colors.test.js	add-paste.js	<loaded>
 colors.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh
 colors.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 colors.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	skipCard	wbNote
-colors.test.js	analysis.js	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	listAnd	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	simFacts	smallCandidates	tClass
-colors.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	put	texSwatches	tx	txFail	txs	window.fetch
 colors.test.js	analysis.js	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	listAnd	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	shopShelved	simFacts	smallCandidates	tClass
-colors.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	put	texSwatches	tx	txFail	txs	window.fetch
+colors.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	put	texSwatches	tx	txFail	txs	window.fetch
 colors.test.js	apple-touch-icon.png	<loaded>
 colors.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmGapNote	asmPileKind	asmWtWants
 colors.test.js	asm-gl.js	<loaded>
@@ -5362,10 +5349,8 @@ dress.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	s
 dress.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
 dress.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 dress.test.js	analysis-worker.js	<any>
-dress.test.js	analysis.js	<any>	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	listAnd	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	several	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	simFacts	smallCandidates	tClass
-dress.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	keepFocus	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 dress.test.js	analysis.js	<any>	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	listAnd	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	several	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	shopShelved	simFacts	smallCandidates	tClass
-dress.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	keepFocus	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
+dress.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	keepFocus	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 dress.test.js	apple-touch-icon.png	<loaded>
 dress.test.js	asm-color.js	<loaded>	asmCmBtnCol	asmCmKind	asmCmPref	asmCmRoute	asmGapNote	asmPileKind	asmWtWants
 dress.test.js	asm-gl.js	<loaded>
@@ -5491,8 +5476,6 @@ editorrework.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
 editorrework.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 editorrework.test.js	index.html	<loaded>
 editorrework.test.js	item-photo.js	<loaded>	applyCrop	cropApply	cropDirty	cropDiscard	cropDiscardTap	cropDrag	cropEditor	cropGeom	cropKeep	cropSource	cropUndo	cropZoom	imgOf	layoutCrop	makeSmall	paperCloth	paperHint	paperLine	paperRetake	paperSteps	phSigOf	phSm	photoTools	picUndo	ptIcon	setPhoto	setPic	startCrop	undoPhoto
-editorrework.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchmove	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	closeItem	itemFocusBack	itemShown	ivSwipe	noMotion	openItem	renderItem	sheetSlides	stepItem	wardList
-editorrework.test.js	item-photo.js	<loaded>	applyCrop	cropDirty	cropDiscard	cropDrag	cropEditor	cropGeom	cropKeep	cropSource	cropUndo	imgOf	layoutCrop	makeSmall	paperCloth	paperHint	paperLine	paperRetake	paperSteps	phSigOf	phSm	photoTools	picUndo	ptIcon	setPhoto	setPic	startCrop	undoPhoto
 editorrework.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchmove	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	closeItem	itemCloseTap	itemFocusBack	itemShown	itemStepTap	ivSwipe	noMotion	openItem	renderItem	sheetSlides	stepItem	wardList
 editorrework.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	optLab	renderWardrobe	wardPic
 editorrework.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
@@ -7192,10 +7175,6 @@ hbswatch.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 hbswatch.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 hbswatch.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 hbswatch.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-hbswatch.test.js	watch/leather.jpg	<loaded>
-hbswatch.test.js	watch/shirt-open.png	<loaded>
-hbswatch.test.js	watch/shirt-tie.png	<loaded>
-hbswatch.test.js	watch/vest.png	<loaded>
 hbswatch.test.js	weather.js	<loaded>	loadWeather
 herringbone.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 herringbone.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -7890,10 +7869,8 @@ itempics.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 itempics.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
 itemredesign.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 itemredesign.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
-itemredesign.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
-itemredesign.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardCheck	cardSafe	cardSave	ckCheck	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matchShadeQ	photoPair	setq	shadeRow	shirtColFix	tagSwInner	unreadNote
 itemredesign.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
-itemredesign.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckCheck	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matchShadeQ	photoPair	setq	shadeRow	shirtColFix	tagSwInner	unreadNote
+itemredesign.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardCheck	cardSafe	cardSave	ckCheck	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matchShadeQ	photoPair	setq	shadeRow	shirtColFix	tagSwInner	unreadNote
 itemredesign.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 itemredesign.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 itemredesign.test.js	add-paste.js	<loaded>
@@ -8018,10 +7995,8 @@ itemsheet.test.js	icon-192.png	<loaded>
 itemsheet.test.js	icon-512.png	<loaded>
 itemsheet.test.js	index.html	<loaded>
 itemsheet.test.js	item-photo.js	<loaded>	imgOf	paperCloth	paperHint	paperLine	paperRetake	paperSteps	phSm	photoTools	ptIcon	smallPhotos
-itemsheet.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	dropItem	itemShown	ivSwipe	noMotion	openItem	renderItem	sheetSlides	stepItem	wardList
-itemsheet.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	itemDelete	itemDup	ivCareSum	ivDetailSum	ivSummary	matTidy	metal	optLab	patSummary	renderWardrobe	rm	season	sete	typeTidy	wardPic
 itemsheet.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	dropItem	itemShown	itemStepTap	ivSwipe	noMotion	openItem	renderItem	sheetSlides	stepItem	wardList
-itemsheet.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	ivCareSum	ivDetailSum	ivSummary	matTidy	metal	optLab	patSummary	renderWardrobe	rm	season	sete	typeTidy	wardPic
+itemsheet.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	itemDelete	itemDup	ivCareSum	ivDetailSum	ivSummary	matTidy	metal	optLab	patSummary	renderWardrobe	rm	season	sete	typeTidy	wardPic
 itemsheet.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDuplicate	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 itemsheet.test.js	locale.js	<loaded>	appLocale
 itemsheet.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
@@ -8309,8 +8284,6 @@ kit.test.js	index.html	<loaded>
 kit.test.js	item-photo.js	<loaded>	paperCloth	paperHint	paperSteps	paperTip	paperTipTap	photoTools	ptIcon	smallPhotos
 kit.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	itemFocusBack	itemShown	ivSwipe	noMotion	openItem	renderItem	sheetSlides	wardList
 kit.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	itemDup	ivCareSum	ivDetailSum	ivSummary	matTidy	optLab	patSummary	renderWardrobe	wardPic
-kit.test.js	kit.js	<loaded>	@addEventListenerkeydown	get body	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAdds	kitAdopt	kitApply	kitAsNew	kitBd	kitBs	kitBsAway	kitClose	kitCloseupGuide	kitClothPic	kitColList	kitColour	kitCols	kitDayOwn	kitDecode	kitDelMany	kitDiff	kitDiffText	kitDraw	kitDupKey	kitDupMark	kitDuplicate	kitEdited	kitEl	kitFail	kitFixOldImports	kitFree	kitGo	kitHasSample	kitHead	kitHist	kitImpBtn	kitImpTick	kitImportFile	kitImportGo	kitImportOpen	kitImportSwipe	kitImportText	kitInert	kitItem	kitKeepSample	kitLastImp	kitLastRow	kitLeather	kitLeft	kitMaterial	kitMetal	kitNear	kitNorm	kitOpen	kitPasteShow	kitPatWords	kitPattern	kitPatternPic	kitPrevDraw	kitQtyIn	kitQtyOut	kitRead	kitReadList	kitRow	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleSig	kitSampleTag	kitSaved	kitScorePic	kitShadePic	kitSplit	kitStartRow	kitStore	kitTemplate	kitTombs	kitTx	kitType	kitTypeNear	kitTypeOne	kitUnimport	kitUnsave	kitUpds	kitUserEdit	kitWears	kitWords	pic	tourOpen	tourSeen
-kit.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	matTidy	optLab	patSummary	renderWardrobe	wardPic
 kit.test.js	kit.js	<loaded>	@addEventListenerkeydown	get body	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	importOpenTap	kitAdds	kitAdopt	kitApply	kitAsNew	kitBd	kitBs	kitBsAway	kitClose	kitCloseupGuide	kitClothPic	kitColList	kitColour	kitCols	kitDayOwn	kitDecode	kitDelMany	kitDiff	kitDiffText	kitDraw	kitDupKey	kitDupMark	kitDuplicate	kitEdited	kitEl	kitFail	kitFixOldImports	kitFree	kitGo	kitHasSample	kitHead	kitHist	kitImpBtn	kitImpTick	kitImportFile	kitImportGo	kitImportOpen	kitImportSwipe	kitImportText	kitInert	kitItem	kitKeepSample	kitLastImp	kitLastRow	kitLeather	kitLeft	kitMaterial	kitMetal	kitNear	kitNorm	kitOpen	kitPasteShow	kitPatWords	kitPattern	kitPatternPic	kitPrevDraw	kitQtyIn	kitQtyOut	kitRead	kitReadList	kitRow	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleSig	kitSampleTag	kitSaved	kitScorePic	kitShadePic	kitSplit	kitStartRow	kitStore	kitTemplate	kitTombs	kitTx	kitType	kitTypeNear	kitTypeOne	kitUnimport	kitUnsave	kitUpds	kitUserEdit	kitWears	kitWords	pic	tourOpen	tourSeen
 kit.test.js	locale.js	<loaded>	appLocale
 kit.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
@@ -9380,18 +9353,11 @@ mqcloth.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapSoon	
 mqcloth.test.js	today.js	<loaded>	addForSlot	belowBox	canPick	figCuDone	figureStage	goneNote	hasOutfit	homeDay	keepHome	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 mqcloth.test.js	ui.js	<loaded>	advClose	connSummary	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 mqcloth.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-mqcloth.test.js	watch/leather.jpg	<loaded>
-mqcloth.test.js	watch/shirt-open.png	<loaded>
-mqcloth.test.js	watch/shirt-tie.png	<loaded>
-mqcloth.test.js	watch/suit.png	<loaded>
-mqcloth.test.js	watch/vest.png	<loaded>
 mqcloth.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 multi.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 multi.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	rememberRole	renderAccountUI
-multi.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
-multi.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardMultiAgain	cardSafe	cardSkip	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	multiErrCard	photoPair	shadeRow	tagSwInner	unreadNote
 multi.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
-multi.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	multiErrCard	photoPair	shadeRow	tagSwInner	unreadNote
+multi.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardMultiAgain	cardSafe	cardSkip	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	multiErrCard	photoPair	shadeRow	tagSwInner	unreadNote
 multi.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 multi.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 multi.test.js	add-paste.js	<loaded>
@@ -10083,10 +10049,8 @@ owncolany.test.js	wardrobe.js	<loaded>	giNote	giTag	wardBack	wardBar	wardCount	w
 owncolany.test.js	weather.js	<loaded>	loadWeather
 ownmaterials.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 ownmaterials.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
-ownmaterials.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
-ownmaterials.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardMatGuess	cardMatOffer	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matWhy	photoPair	shadeRow	tagSwInner	unreadNote
 ownmaterials.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
-ownmaterials.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matWhy	photoPair	shadeRow	tagSwInner	unreadNote
+ownmaterials.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardMatGuess	cardMatOffer	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matWhy	photoPair	shadeRow	tagSwInner	unreadNote
 ownmaterials.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore
 ownmaterials.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 ownmaterials.test.js	add-paste.js	<loaded>
@@ -10554,10 +10518,8 @@ paste.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
 paste.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
 paste.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 paste.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
-paste.test.js	add-paste.js	<loaded>	@document.addEventListenerdrop	@document.addEventListenerpaste	addBlobs	addFromUrl	addLink	clipImages	fetchPhoto	isLink	pasteFromClipboard	pasteMsg
-paste.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
 paste.test.js	add-paste.js	<loaded>	@document.addEventListenerdrop	@document.addEventListenerpaste	addBlobs	addFromUrl	addLink	clipImages	fetchPhoto	isLink	linkAddTap	linkKey	pasteFromClipboard	pasteMsg	pasteTap
-paste.test.js	add-save.js	<loaded>	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
+paste.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
 paste.test.js	add-sheet.js	<loaded>	renderAddFor
 paste.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	applyWb	cardPics	measureGuess	needType	renderAdd	wbNote
 paste.test.js	analysis.js	<loaded>
@@ -10928,8 +10890,6 @@ pickerfocus.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepa
 pickerfocus.test.js	add-more.js	<loaded>	arriveVal	cardArrives	cardOrder	checkArrivals	fmtDay	orderHint	orderRow	qtyLabel	qtyOf	qtyRow	setArrives	setOrder
 pickerfocus.test.js	add-paste.js	<loaded>
 pickerfocus.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh
-pickerfocus.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
-pickerfocus.test.js	add-save.js	<loaded>	cardOf	cardReading	cardReady	qAt	qh
 pickerfocus.test.js	add-sheet.js	<loaded>	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 pickerfocus.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 pickerfocus.test.js	analysis.js	<loaded>
@@ -11977,19 +11937,12 @@ run.js: Cloudflare worker (mocked bindings)	worker/people.js	<loaded>	sameText	s
 run.js: Cloudflare worker (mocked bindings)	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	cleanTag	colorText	knownOf	knownTypes	knowsCoat	knowsCombat	knowsPq	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	tagRules	tagTypes	tagWithWorkersAi
 run.js: add an item without a photo; it persists	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 run.js: add an item without a photo; it persists	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-run.js: add an item without a photo; it persists	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
+run.js: add an item without a photo; it persists	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
 run.js: add an item without a photo; it persists	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	cardSave	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	setq	shadeRow	shirtColFix	unreadNote
 run.js: add an item without a photo; it persists	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 run.js: add an item without a photo; it persists	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 run.js: add an item without a photo; it persists	add-paste.js	<loaded>
 run.js: add an item without a photo; it persists	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
-run.js: add an item without a photo; it persists	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
-run.js: add an item without a photo; it persists	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
-run.js: add an item without a photo; it persists	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	setq	shadeRow	shirtColFix	unreadNote
-run.js: add an item without a photo; it persists	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
-run.js: add an item without a photo; it persists	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
-run.js: add an item without a photo; it persists	add-paste.js	<loaded>
-run.js: add an item without a photo; it persists	add-save.js	<loaded>	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
 run.js: add an item without a photo; it persists	add-sheet.js	<loaded>	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 run.js: add an item without a photo; it persists	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	needType	renderAdd	wbNote
 run.js: add an item without a photo; it persists	analysis.js	<loaded>
@@ -13266,22 +13219,20 @@ safeport.test.js	tools/upload-budget.js	<any>
 safeport.test.js	tools/visit-measure.js	<any>
 safeport.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 safeport.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate
+safeport.test.js	watch/leather.jpg	<loaded>
+safeport.test.js	watch/shirt-open.png	<loaded>
+safeport.test.js	watch/shirt-tie.png	<loaded>
+safeport.test.js	watch/suit.png	<loaded>
+safeport.test.js	watch/vest.png	<loaded>
 safeport.test.js	weather.js	<loaded>	loadWeather
 safety.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 safety.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-safety.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
+safety.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
 safety.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	cardSave	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	typeCard	unreadNote
 safety.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 safety.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 safety.test.js	add-paste.js	<loaded>
 safety.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
-safety.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
-safety.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
-safety.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	typeCard	unreadNote
-safety.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
-safety.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
-safety.test.js	add-paste.js	<loaded>
-safety.test.js	add-save.js	<loaded>	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
 safety.test.js	add-sheet.js	<loaded>	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 safety.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	applyWb	cardPics	needType	renderAdd	wbNote
 safety.test.js	analysis.js	<loaded>
@@ -13663,6 +13614,11 @@ scoreanim.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapSoo
 scoreanim.test.js	today.js	<loaded>	addForSlot	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 scoreanim.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	inviteOver	isConnected	layerInert	layerUp
 scoreanim.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+scoreanim.test.js	watch/leather.jpg	<loaded>
+scoreanim.test.js	watch/shirt-open.png	<loaded>
+scoreanim.test.js	watch/shirt-tie.png	<loaded>
+scoreanim.test.js	watch/suit.png	<loaded>
+scoreanim.test.js	watch/vest.png	<loaded>
 scoreanim.test.js	weather.js	<loaded>	loadWeather
 scoredials.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 scoredials.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -14554,10 +14510,8 @@ setup.test.js	watch/vest.png	<loaded>
 setup.test.js	weather.js	<loaded>	cityEnglish	cityKey	cityLang	cityList	cityPick	findCity	geoName	loadClimate	loadWeather	locCC	renderWxLoc	setLocation	setUnits	unit	unitCC	useMyLocation	wxChip
 shade.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 shade.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-shade.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
-shade.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matchShadeE	matchShadeQ	photoPair	shadeRow	shadeStep	stepShadeE	stepShadeQ	tagSwInner	unreadNote
 shade.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
-shade.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matchShadeE	matchShadeQ	photoPair	shadeRow	stepShadeE	stepShadeQ	tagSwInner	unreadNote
+shade.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matchShadeE	matchShadeQ	photoPair	shadeRow	shadeStep	stepShadeE	stepShadeQ	tagSwInner	unreadNote
 shade.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 shade.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 shade.test.js	add-paste.js	<loaded>
@@ -15242,10 +15196,8 @@ shop.test.js	add-save.js	<loaded>
 shop.test.js	add-sheet.js	<loaded>
 shop.test.js	add.js	<loaded>	@document.addEventListenerclick
 shop.test.js	analysis-worker.js	<any>
-shop.test.js	analysis.js	<any>	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	listAnd	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	several	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	simFacts	smallCandidates	tClass
-shop.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	keepFocus	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 shop.test.js	analysis.js	<any>	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	listAnd	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	several	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	shopShelved	simFacts	smallCandidates	tClass
-shop.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusFind	focusKey	focusWatch	keepFocus	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
+shop.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	keepFocus	metaGet	metaPut	put	putRaw	texSwatches	tx	txFail	txs	window.fetch
 shop.test.js	apple-touch-icon.png	<loaded>
 shop.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmPileKind	asmWtWants
 shop.test.js	asm-gl.js	<loaded>
@@ -15960,7 +15912,7 @@ staledevice.test.js	pack.js	<loaded>	packShow
 staledevice.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 staledevice.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
 staledevice.test.js	pickscore.js	<loaded>
-staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
+staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 staledevice.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 staledevice.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 staledevice.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
@@ -16104,8 +16056,6 @@ stylea11y.test.js	add-keep.js	<any>	<loaded>	addCardRec	addKeep	addKeepSoon	addK
 stylea11y.test.js	add-more.js	<any>	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 stylea11y.test.js	add-paste.js	<any>	<loaded>
 stylea11y.test.js	add-save.js	<any>	<loaded>	cardAt	cardReading	cardReady	qh
-stylea11y.test.js	add-sheet.js	<any>	<loaded>	addManual	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
-stylea11y.test.js	add-save.js	<any>	<loaded>	cardReading	cardReady	qh
 stylea11y.test.js	add-sheet.js	<any>	<loaded>	addManual	addManualTap	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 stylea11y.test.js	add.js	<any>	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	skipCard	wbNote
 stylea11y.test.js	analysis-worker.js	<any>
@@ -17283,8 +17233,7 @@ texture.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRo
 texture.test.js	add-paste.js	<loaded>
 texture.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
 texture.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
-texture.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	addTexture	applyWb	cardPics	cardWb	measureGuess	needType	renderAdd	texGains	toggleWb	wbNote
-texture.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addPhotosPick	addShowCard	addTexture	applyWb	cardPics	measureGuess	needType	renderAdd	texGains	toggleWb	wbNote
+texture.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addPhotosPick	addShowCard	addTexture	applyWb	cardPics	cardWb	measureGuess	needType	renderAdd	texGains	toggleWb	wbNote
 texture.test.js	analysis.js	<loaded>
 texture.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	shrink	texSwatches	tx	txFail	txs	window.fetch
 texture.test.js	apple-touch-icon.png	<loaded>
@@ -18543,10 +18492,8 @@ wardfab.test.js	watch/vest.png	<loaded>
 wardfab.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 wardrobe.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 wardrobe.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	rememberRole	renderAccountUI
-wardrobe.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
-wardrobe.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardField	cardSafe	cardSave	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	tagSwInner	unreadNote
 wardrobe.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts
-wardrobe.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	tagSwInner	unreadNote
+wardrobe.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardField	cardSafe	cardSave	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	tagSwInner	unreadNote
 wardrobe.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 wardrobe.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 wardrobe.test.js	add-paste.js	<loaded>
@@ -18582,10 +18529,8 @@ wardrobe.test.js	icon-192.png	<loaded>
 wardrobe.test.js	icon-512.png	<loaded>
 wardrobe.test.js	index.html	<loaded>
 wardrobe.test.js	item-photo.js	<loaded>	imgOf	paperCloth	paperHint	paperLine	paperRetake	paperSteps	phSm	photoTools	ptIcon	smallPhotos
-wardrobe.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	dropItem	itemFocusBack	itemShown	itemSynced	ivSwipe	noMotion	openItem	renderItem	sheetSlides	stepItem	wardList
-wardrobe.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	itemDelete	ivCareSum	ivDetailSum	ivSummary	matTidy	optLab	patSummary	renderWardrobe	rm	setFlt	wardChip	wardPic
 wardrobe.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	dropItem	itemFocusBack	itemShown	itemStepTap	itemSynced	ivSwipe	noMotion	openItem	renderItem	sheetSlides	stepItem	wardList
-wardrobe.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	matTidy	optLab	patSummary	renderWardrobe	rm	wardPic
+wardrobe.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	itemDelete	ivCareSum	ivDetailSum	ivSummary	matTidy	optLab	patSummary	renderWardrobe	rm	setFlt	wardChip	wardPic
 wardrobe.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDuplicate	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 wardrobe.test.js	locale.js	<loaded>	appLocale
 wardrobe.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
@@ -18649,10 +18594,8 @@ wardrobe.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	item
 wardrobe.test.js	worker/render.js	<loaded>	hubOf
 wardrobetap.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 wardrobetap.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-wardrobetap.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	acts
-wardrobetap.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	cardSkip	ckLeftLine	ckLr	confBtn	errCard	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	unreadNote
 wardrobetap.test.js	act.js	<loaded>	actAttr	actFire	actListen	actNone	actPath	actTaps	acts
-wardrobetap.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	errCard	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	unreadNote
+wardrobetap.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	cardSkip	ckLeftLine	ckLr	confBtn	errCard	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	unreadNote
 wardrobetap.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore
 wardrobetap.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 wardrobetap.test.js	add-paste.js	<loaded>
@@ -18688,11 +18631,8 @@ wardrobetap.test.js	icon-192.png	<loaded>
 wardrobetap.test.js	icon-512.png	<loaded>
 wardrobetap.test.js	index.html	<loaded>
 wardrobetap.test.js	item-photo.js	<loaded>	cropDirty	cropEditor	cropGeom	cropKeep	cropZoom	imgOf	layoutCrop	paperCloth	paperHint	paperSteps	phSm	photoTools	ptIcon	smallPhotos	startCrop
-wardrobetap.test.js	item-view.js	<loaded>	@backLand	@backOnitem	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchmove	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	dropItem	itemFocusBack	itemShown	ivSwipe	noMotion	openItem	renderItem	sheetSlides	stepItem	wardList
-wardrobetap.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	itemDelete	ivCareSum	ivDetailSum	ivSummary	optLab	renderWardrobe	rm	sete	wardPic
-wardrobetap.test.js	item-photo.js	<loaded>	cropDirty	cropEditor	cropGeom	cropKeep	imgOf	layoutCrop	paperCloth	paperHint	paperSteps	phSm	photoTools	ptIcon	smallPhotos	startCrop
 wardrobetap.test.js	item-view.js	<loaded>	@backLand	@backOnitem	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchmove	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	dropItem	itemCloseTap	itemFocusBack	itemShown	itemStepTap	ivSwipe	noMotion	openItem	renderItem	sheetSlides	stepItem	wardList
-wardrobetap.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	ivCareSum	ivDetailSum	ivSummary	optLab	renderWardrobe	rm	sete	wardPic
+wardrobetap.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	itemDelete	ivCareSum	ivDetailSum	ivSummary	optLab	renderWardrobe	rm	sete	wardPic
 wardrobetap.test.js	kit.js	<loaded>	@addEventListenerkeydown	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDuplicate	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 wardrobetap.test.js	locale.js	<loaded>	appLocale
 wardrobetap.test.js	locks.js	<loaded>
