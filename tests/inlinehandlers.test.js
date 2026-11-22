@@ -13,11 +13,11 @@
 const fs=require('fs'),path=require('path');
 /* the inline handlers left, per file: may only go down (asm-color.js and asm-gl.js are in the painter's fingerprint: they wait for C3) */
 const LEFT={
-  'about.js':5,'account.js':7,'app.js':1,'asm-color.js':1,'asm-gl.js':1,
-  'calendar.js':11,'dress.js':1,'history.js':7,
-  'missed.js':4,'month.js':3,'own-lists.js':3,'pattern-read.js':2,
-  'photos.js':2,'remind.js':3,'safety.js':2,'scorecard.js':4,'start.js':1,'tagging.js':12,
-  'today.js':20,'ui.js':10};
+  'about.js':5,'account.js':7,'asm-color.js':1,'asm-gl.js':1,
+  'calendar.js':11,'dress.js':1,
+  'own-lists.js':3,'pattern-read.js':2,
+  'photos.js':2,'remind.js':3,'safety.js':2,'tagging.js':12,
+  'ui.js':10};
 const HANDLER=/\son[a-z]+="/g;
 /* counts {file: n} against the table -> what is wrong, one line each (none: fine) */
 const ratchet=(counts,left)=>{const bad=[];
@@ -33,6 +33,7 @@ module.exports=async({ok,ROOT})=>{
   ok(!bad.length,'no file has more inline handlers than its number, and every number is as low as its file'+(bad.length?': '+bad.join('; '):''));
   ok(!counts['settings.js']&&!counts['daysoff.js']&&!counts['weather.js']&&!counts['act.js'],'settings.js, daysoff.js and weather.js have none left (their controls use data-act), nor has act.js');
   ok(['add-card.js','add-more.js','add.js','add-sheet.js','item-photo.js','itemsheet.js'].every(f=>!counts[f]),'the Add card, the "Add without a photo" sheet, the item page and its photo tools have none left (C2-5)');
+  ok(['today.js','history.js','scorecard.js','missed.js','month.js','start.js','app.js'].every(f=>!counts[f]),'Today, the piece picker, the score card, the missed-days card, the month and the Add card’s dropdowns (app.js S) have none left (C2-7)');
   ok(['pack.js','care.js','cost.js','wardrobe.js','shop.js','stats.js'].every(f=>!counts[f]),'the Packing list, Laundry and cleaning, cost per wear, the Wardrobe, What to buy and Insights have none left (C2-8)');
   ok(!counts['index.html']&&(fs.readFileSync(path.join(ROOT,'index.html'),'utf8').match(/\sdata-act(-[a-z]+)?="/g)||[]).length>=63,'index.html has none left: its 63 controls name their handlers with data-act (C2-4)');
   // the rule itself, on made-up counts: one more fails, a new file fails, one fewer fails until the table follows, the same passes
@@ -45,9 +46,9 @@ module.exports=async({ok,ROOT})=>{
 
   const CHECKED=new Set([
     // ids of the app's own shape (core.js ID_RE, cleanRecord) and keys from the app's own lists
-    'account.js|acctEsc(v.id)','app.js|k',
-    'dress.js|k','missed.js|k','history.js|slot','photos.js|itemKey(i)',
-    'today.js|s',"today.js|addForSlot(s,o.suitDay)||''",'ui.js|o.mode',"ui.js|o.cloth||''",
+    'account.js|acctEsc(v.id)',
+    'dress.js|k','photos.js|itemKey(i)',
+    'ui.js|o.mode',"ui.js|o.cloth||''",
     // the Add card's offers: Claude's answer, shown only when it is one of the app's own keys (TYPES, COLORS, colsFor, PATS_BY) or a field name
     'tagging.js|q.refineType','tagging.js|q.refineKept.c','tagging.js|q.altColor','tagging.js|q.altPattern','tagging.js|f','tagging.js|v.f','tagging.js|v.to','tagging.js|mp']);
   const found=[];

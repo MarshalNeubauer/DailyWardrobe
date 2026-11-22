@@ -52,7 +52,7 @@ const colouraudit=async({ok,chromium,url,ROOT})=>{
       const l=[...document.querySelectorAll('#col-sheet .cpgrid:not(.cpnear):not(.cnown) .cptile')].map(b=>b.dataset.c);closeColPick();
       return l.length===new Set(l).size&&l.slice().sort().join()===colChoices(queue[0],'primaryColor').slice().sort().join()?colChoices(queue[0],'primaryColor').join():l.join()});
     ok(add==='silver,gold,rosegold,gunmetal,grey,black,white,red,blue,navy','the Add form shows a tie clip its finishes');
-    const nm=await p.evaluate(()=>{show('add');const q=queue[0];return {metal:document.querySelectorAll('#nps-q select[onchange*="\'metal\'"]').length,word:colName(primaryCol({type:'tieclip',primaryColor:'rosegold'})),
+    const nm=await p.evaluate(()=>{show('add');const q=queue[0];return {metal:document.querySelectorAll('#nps-q select[data-f="metal"]').length,word:colName(primaryCol({type:'tieclip',primaryColor:'rosegold'})),
       m:[{type:'tieclip',primaryColor:'rosegold'},{type:'tieclip',primaryColor:'silver',metal:'gold'},{type:'tieclip',primaryColor:'gunmetal'},{type:'tieclip',primaryColor:'red'}].map(metalOf).join()}});
     ok(nm.metal===0&&nm.word==='rose gold'&&nm.m==='gold,silver,other,',`a tie clip has no Metal field: its colour says its metal (rose gold reads as gold, a silver clip tagged gold as silver, red enamel as none: ${nm.m})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

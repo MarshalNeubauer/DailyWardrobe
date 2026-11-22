@@ -69,11 +69,11 @@ function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;
   if(!o.frozen&&pool.length+hand.length<2&&!(slot==='pocket'&&!o.pocket&&pool.length)){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to choose from.`;renderToday();return}
   const scored=pool.map(i=>[fitOf(slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1)),best=scored.length?scored[0][0]:0;
   const card=([f,i])=>{const [cls,txt]=fitTag(best-f),on=i.id===cur,sub=slot==='bot'&&i.type==='suit'?'The suit’s own pants':pickSub(i,pool);
-    return `<button class="pick-it${on?' cur':''}" onclick="pickItem('${slot}','${jsq(i.id)}')" aria-label="${esc(itemTitle(i)||nm(i))}${sub?', '+esc(sub):''}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span>${typeof favMark==='function'?favMark(i):''}<span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span>${sub?`<small class="mut pick-sub">${esc(sub)}</small>`:''}<small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
-  const none=o.frozen&&slot!=='top'&&cur?`<button type="button" onclick="pickItem('${slot}','')">None: I didn't wear one</button>`:'';
-  $('#pick-sheet').innerHTML=`<div class="pick-head"><b id="pick-title">${o.frozen?`What ${label} did you wear?`:`Choose ${pluralWord(label)?label:aAn(label)}`}</b><button class="pick-x" onclick="closePicker()" aria-label="Close">×</button></div>
+    return `<button class="pick-it${on?' cur':''}" data-act="pickItTap" data-slot="${slot}" data-id="${esc(i.id)}" aria-label="${esc(itemTitle(i)||nm(i))}${sub?', '+esc(sub):''}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span>${typeof favMark==='function'?favMark(i):''}<span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span>${sub?`<small class="mut pick-sub">${esc(sub)}</small>`:''}<small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
+  const none=o.frozen&&slot!=='top'&&cur?`<button type="button" data-act="pickItTap" data-slot="${slot}" data-id="">None: I didn't wear one</button>`:'';
+  $('#pick-sheet').innerHTML=`<div class="pick-head"><b id="pick-title">${o.frozen?`What ${label} did you wear?`:`Choose ${pluralWord(label)?label:aAn(label)}`}</b><button class="pick-x" data-act="pickCloseTap" aria-label="Close">×</button></div>
     ${typeof favStrip==='function'?favStrip(o):''}<p class="mut"><small>${o.frozen?'Pick what you really wore on '+shortDate(sel)+'.':`${pluralWord(label)?`All the ${label}`:`Every ${label}`} you own, by the score the outfit gets with each, best first.`}</small></p>
-    ${!o.frozen||none?`<div class="btns">${o.frozen?none:`<button type="button" id="pick-next" onclick="pickNext()">Suggest another <span aria-hidden="true">↻</span></button>`}</div>`:''}
+    ${!o.frozen||none?`<div class="btns">${o.frozen?none:`<button type="button" id="pick-next" data-act="pickNextTap">Suggest another <span aria-hidden="true">↻</span></button>`}</div>`:''}
     <div class="pick-grid">${scored.map(card).join('')}</div>${handGroup(slot,o,hand,cur)}${combatAway(slot,o,hand)}`;
   picker={slot};$('#pick-sheet').classList.add('on');$('#pick-backdrop').classList.add('on');$('#pick-sheet').scrollTop=0;
   if(typeof layerOpen==='function')layerOpen($('#pick-sheet'));backPush('pick')}   // the phone's Back closes it (back.js)
@@ -84,7 +84,7 @@ const HAND_NOTE={shirt:'Worn instead of the shirt: no tie that day.',top:'Worn i
 const combatAway=(slot,o,hand)=>slot==='shoes'&&!o.frozen&&!hand.length&&items.some(i=>handPickSlot(i)==='shoes'&&inRotation(i,di(sel)))?'<p class="mut pick-away"><small>Combat boots go with camouflage pants: pick those first.</small></p>':'';
 function handGroup(slot,o,hand,cur){if(!hand.length)return '';
   const card=i=>{const on=i.id===cur,sub=isCargo(i)?'Cargo pants':i.type==='shoes'?'Combat boots':TYPES[i.type],why=handWhy(i,o);
-    return `<button class="pick-it hand-it${on?' cur':''}${why?' hand-no':''}" onclick="pickItem('${slot}','${jsq(i.id)}')" aria-label="${esc(itemTitle(i)||nm(i))}, ${esc(sub.toLowerCase())}: ${on?'wearing, ':''}${why?esc(why.toLowerCase()):'picked by hand'}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span><small class="mut pick-sub">${esc(sub)}</small><small class="fit ${why?'weak':'hand'}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${why||'By hand'}</small></button>`};
+    return `<button class="pick-it hand-it${on?' cur':''}${why?' hand-no':''}" data-act="pickItTap" data-slot="${slot}" data-id="${esc(i.id)}" aria-label="${esc(itemTitle(i)||nm(i))}, ${esc(sub.toLowerCase())}: ${on?'wearing, ':''}${why?esc(why.toLowerCase()):'picked by hand'}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span><small class="mut pick-sub">${esc(sub)}</small><small class="fit ${why?'weak':'hand'}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${why||'By hand'}</small></button>`};
   return `<div class="pick-hand" role="group" aria-labelledby="pick-hand-h"><b id="pick-hand-h" class="pick-hand-h">Casual · pick by hand</b><p class="mut"><small>${HAND_NOTE[slot]||''} Never planned or suggested.</small></p><div class="pick-grid">${hand.map(card).join('')}</div></div>`}
 function closePicker(){const was=!!picker;picker=null;const s=$('#pick-sheet'),b=$('#pick-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');
   if(was&&typeof layerClose==='function')layerClose(s);if(was)backDrop('pick');
@@ -181,7 +181,7 @@ async function setVest(v){const k=key(sel),o=planFor()[k];if(!o)return;
  const r={...(dayRecs[k]||{date:k})};r.vest=v;swapMsg='';await saveDay(r);renderToday()}
 /* Reset: a card of its own under the month, like the other cards, on a day the user changed (a swap, a pick, the vest); it puts the
    planned outfit back */
-function resetCard(o){return o&&!o.frozen&&(o.overrides||o.vestOverride)?`<section class="mbox resetbox" id="rbox"><button class="month-link resetlink" onclick="resetDay()" aria-label="Reset changes" title="Undo your changes to this day"><span class="rsicon" aria-hidden="true">↺</span><b>Reset</b></button></section>`:''}
+function resetCard(o){return o&&!o.frozen&&(o.overrides||o.vestOverride)?`<section class="mbox resetbox" id="rbox"><button class="month-link resetlink" data-act="resetTap" aria-label="Reset changes" title="Undo your changes to this day"><span class="rsicon" aria-hidden="true">↺</span><b>Reset</b></button></section>`:''}
 function dayActions(o){
   const T=todayDate(),d=dayOnly(sel),past=d<T;
   let h='';
@@ -191,10 +191,17 @@ function dayActions(o){
   // to Sunday without a word on National Day)
   const offT=d>T&&typeof homeDay==='function'&&+d===+homeDay()&&settings.workdays.includes(T.getDay())?offName(T):'';
   const offNote=offT?`<p class="mut offtoday" id="offtoday"><small>Today is ${esc(offT)}, a day off. This is ${esc(DAY_NAMES[d.getDay()])}’s outfit.</small></p>`:'';
-  if(past&&o.frozen)h+=`<button class="pastedit${pastEdit===key(sel)?' on':''}" onclick="togglePastEdit()" aria-pressed="${pastEdit===key(sel)}">${pastEdit===key(sel)?'Done':'Correct this day'}</button>`;
+  if(past&&o.frozen)h+=`<button class="pastedit${pastEdit===key(sel)?' on':''}" data-act="pastEditTap" aria-pressed="${pastEdit===key(sel)}">${pastEdit===key(sel)?'Done':'Correct this day'}</button>`;
   return offNote+(h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&pastEdit===key(sel)?'<p class="mut"><small>Tap ⇄ beside a piece to set what you really wore. The planner then counts that, not what was planned.</small></p>':past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
 }
 /* index.html's (act.js): the piece picker's backdrop, and Settings' "Start the plan over" */
 function pickBackdropTap(){closePicker()}
 function replanTap(){replanButton()}
-acts({pickBackdropTap,replanTap});
+/* the picker's and Today's (act.js): a piece in the picker (data-slot, data-id; '' = "None: I didn't wear one"), its ×, Suggest another,
+   the Reset card, and "Correct this day" / Done on a past day */
+function pickItTap(el){pickItem(el.dataset.slot,el.dataset.id)}
+function pickCloseTap(){closePicker()}
+function pickNextTap(){pickNext()}
+function resetTap(){resetDay()}
+function pastEditTap(){togglePastEdit()}
+acts({pickBackdropTap,replanTap,pickItTap,pickCloseTap,pickNextTap,resetTap,pastEditTap});

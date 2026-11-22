@@ -182,14 +182,14 @@ const nufix7=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{items[0].sample=true});   // (with the sample's banner above it too: it hid the note on the phone)
     await at('2026-11-16T09:00:00',[2026,10,5],[2026,10]);
     const d=await p.evaluate(()=>{const r={pre:($('#prewd')||{}).textContent||'',score:!!$('#sbox'),banner:!!$('#kit-sample')};delete items[0].sample;      settings.blazerDays=[1];sel=new Date(2026,10,16);dayRecs={};cache={};renderToday();if(!listOpen)toggleList();
-      r.rows=[...document.querySelectorAll('#ibox .row > span.mut:first-child')].map(e=>e.textContent);r.add=[...document.querySelectorAll('#ibox .addone')].map(b=>b.textContent+'|'+b.getAttribute('onclick'));
+      r.rows=[...document.querySelectorAll('#ibox .row > span.mut:first-child')].map(e=>e.textContent);r.add=[...document.querySelectorAll('#ibox .addone')].map(b=>b.textContent+'|'+b.dataset.act+'|'+b.dataset.type);
       r.html=$('#today').innerHTML;settings.blazerDays=[];
       dayRecs={'2026-11-12':{date:'2026-11-12',ids:{top:'gone1',bot:'gone1',shirt:'shirt5',tie:'tie6',shoes:'shoes8',belt:'belt9',socks:'socks10'},suitDay:true}};cache={};sel=new Date(2026,10,12);renderToday();
       r.gone=($('.gonenote')||{}).textContent||'';cache={};listOpen=false;return r});
     await quiet();
     ok(/No outfit: your wardrobe starts on Tuesday, November 10/.test(d.pre)&&!d.score&&d.banner,`a day before the wardrobe existed says so, with no score (${d.pre})`);
     ok(d.rows.includes('Pants')&&!d.rows.includes('Trousers'),`a blazer day's pants row says Pants (${d.rows.join(', ')})`);
-    ok(d.add.length&&d.add.every(a=>/^Add one\|openAdd\('[a-z]+'\)/.test(a))&&!/Add tab/.test(d.html),`a missing piece offers "Add one", which opens Add for its type; no "Add tab" (${d.add.join(', ')})`);
+    ok(d.add.length&&d.add.every(a=>/^Add one\|addOneTap\|[a-z]+$/.test(a))&&!/Add tab/.test(d.html),`a missing piece offers "Add one", which opens Add for its type; no "Add tab" (${d.add.join(', ')})`);
     ok(/suit worn this day is no longer in your wardrobe/.test(d.gone),`a past day's deleted suit is named under the picture (${d.gone})`);
     // ---- the month: a day marked not worn; a past workday with no outfit is not "worn"; a striped shirt's name
     await at('2026-11-19T09:00:00',[2026,10,19],[2026,10]);

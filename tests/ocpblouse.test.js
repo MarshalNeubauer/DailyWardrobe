@@ -90,9 +90,9 @@ module.exports=async({ok,chromium,url,settle})=>{
       const B=items[9].id,T=items[10].id,P=items[11].id;
       // the pants picker first is grey dress pants: the blouse is listed last with the reason
       openPicker('top');const g=document.querySelector('#pick-sheet .pick-hand'),cards=g?[...g.querySelectorAll('.pick-it')]:[];const last=cards[cards.length-1];
-      const pick1={last:last&&last.getAttribute('onclick').includes(B),why:last&&last.textContent.includes('Goes with camouflage pants')};closePicker();
+      const pick1={last:last&&last.dataset.id===B,why:last&&last.textContent.includes('Goes with camouflage pants')};closePicker();
       await pickItem('top',B);await pickItem('bot',P);await pickItem('shirt',T);
-      openPicker('top');const g2=document.querySelector('#pick-sheet .pick-hand'),c2=g2?[...g2.querySelectorAll('.pick-it')].find(c=>c.getAttribute('onclick').includes(B)):null;const pick2=!!c2&&!c2.textContent.includes('Goes with');closePicker();
+      openPicker('top');const g2=document.querySelector('#pick-sheet .pick-hand'),c2=g2?[...g2.querySelectorAll('.pick-it')].find(c=>c.dataset.id===B):null;const pick2=!!c2&&!c2.textContent.includes('Goes with');closePicker();
       // the Sleeves row is off (BLOUSE_ROLL_ON, 2026-11-18): no row, and rolling does nothing; then switched on for the rest
       renderToday();const offRowGone=!document.querySelector('.roll-row');await setRoll(true);const offNoRoll=!(dayRecs[key(sel)]||{}).roll;BLOUSE_ROLL_ON=true;renderToday();
       const o=planFor()[key(sel)],row=document.querySelector('.roll-row');const before={off:offRowGone&&offNoRoll,top:o.top&&o.top.id===B,row:!!row&&row.textContent.includes('Down'),rolled:!!o.rolled};

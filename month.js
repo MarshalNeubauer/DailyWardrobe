@@ -53,13 +53,13 @@ function monthGridHtml(){
     const label=`${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}: ${work?`${skip?'not worn: ':''}${shortTop(o)}, ${shortRest(o)}`:wd?'no outfit recorded':off?'day off: '+off:'day off'}`;
     const mv=work&&!past&&!o.frozen&&!occOf(dayRecs[k]);   // a day whose outfit can be picked up and moved, or a day it can be dropped on
     const mk=work?dayMarks(d,o):{},mark=(mk.bad?', a rule broken':'')+(mk.rep?', the same shirt and tie within 10 workdays':'');
-    cells.push(`<button class="mc ${!wd?'rest':skip?'skip':past&&work?'worn':past?'past':'planned'}${off&&!wd?' hol':''}${isT?' today':''}${k===key(sel)?' sel':''}${mk.bad?' bad':''}${mk.rep?' rep':''}" style="--i:${n++}" data-k="${k}"${work?` data-sig="${mvSig(o)}"`:''}${mv?' data-mv="1"':''} aria-label="${esc(label+mark)}"${k===key(sel)?' aria-current="date"':''} onclick="openDay(${d.getTime()})"><span class="dn">${d.getDate()}</span>${work?stackSVG(o,'',mk.rep):wd?'<span class="stack none"></span>':'<span class="stack rest"></span>'}</button>`)}
+    cells.push(`<button class="mc ${!wd?'rest':skip?'skip':past&&work?'worn':past?'past':'planned'}${off&&!wd?' hol':''}${isT?' today':''}${k===key(sel)?' sel':''}${mk.bad?' bad':''}${mk.rep?' rep':''}" style="--i:${n++}" data-k="${k}"${work?` data-sig="${mvSig(o)}"`:''}${mv?' data-mv="1"':''} aria-label="${esc(label+mark)}"${k===key(sel)?' aria-current="date"':''} data-act="dayCellTap" data-t="${d.getTime()}"><span class="dn">${d.getDate()}</span>${work?stackSVG(o,'',mk.rep):wd?'<span class="stack none"></span>':'<span class="stack rest"></span>'}</button>`)}
   // no arrows, hint or legend: a swipe (or a mouse drag) inside the box moves between months (monthDrag); the title is centred; the cells still
   // show worn / today / planned / rest by their own look
   return `<div class="mswipe" id="mswipe"><div class="mhead"><h3>${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h3></div>
     <div class="mgrid mdow" aria-hidden="true">${[0,1,2,3,4,5,6].map(i=>'SMTWTFS'[(i+w0)%7]).map(x=>`<span>${x}</span>`).join('')}</div>
     <div class="mgrid">${cells.join('')}</div></div>
-    <button class="foldbar" onclick="toggleMonth()" aria-label="Fold away the month"><span class="fchev" aria-hidden="true">›</span>Fold away</button>`;
+    <button class="foldbar" data-act="monthTap" aria-label="Fold away the month"><span class="fchev" aria-hidden="true">›</span>Fold away</button>`;
 }
 /* how far to scroll so el shows above the tab bar, without the top of `top` going past the top of the screen (sat: the notch's inset) */
 function revealNeed(el,top,sat){if(sat===undefined){const probe=document.createElement('div');probe.style.cssText='position:fixed;top:0;height:0;padding-top:env(safe-area-inset-top);visibility:hidden';document.body.appendChild(probe);sat=parseFloat(getComputedStyle(probe).paddingTop)||0;probe.remove()}
@@ -149,8 +149,11 @@ function monthLink(){
   const f=new Date(view.y,view.m,1),n=Object.keys(planFor()).filter(k=>{const d=keyDate(k);return d.getMonth()===view.m&&d.getFullYear()===view.y}).length;
   if(monthOpen&&!monthPanel)monthPanel={y:view.y,m:view.m};
   if(!monthOpen)monthFillSoon();
-  return `<section class="mbox${monthOpen?' open instant':''}" id="mbox"><button class="month-link" onclick="toggleMonth()" aria-expanded="${monthOpen}" aria-controls="mpanel"><span class="mlstrip" aria-hidden="true">${days.map(([d,o])=>{const mk=dayMarks(d,o);return `<span class="mli${mk.bad?' bad':''}${mk.rep?' rep':''}"><small>${d.toLocaleDateString(undefined,{weekday:'narrow'})}</small>${stackSVG(o,'',mk.rep)}</span>`}).join('')}</span>
+  return `<section class="mbox${monthOpen?' open instant':''}" id="mbox"><button class="month-link" data-act="monthTap" aria-expanded="${monthOpen}" aria-controls="mpanel"><span class="mlstrip" aria-hidden="true">${days.map(([d,o])=>{const mk=dayMarks(d,o);return `<span class="mli${mk.bad?' bad':''}${mk.rep?' rep':''}"><small>${d.toLocaleDateString(undefined,{weekday:'narrow'})}</small>${stackSVG(o,'',mk.rep)}</span>`}).join('')}</span>
     <span class="mltxt"><b>${f.toLocaleDateString(undefined,{month:'long'})} wear plan</b><small>${wardShort()?'pieces still missing':`${n} outfit${n===1?'':'s'}`} · ${monthOpen?'tap to fold away':'tap to see the month'}</small></span><span class="chev" aria-hidden="true">›</span></button>
     <div class="mpanel" id="mpanel"><div class="mpanel-in" id="mpanel-in"${monthOpen?` data-fill="${monthPanel.y+'-'+monthPanel.m+'|'+key(sel)}">${monthGridHtml()}`:' inert>'}</div></div></section>`;
 }
-
+/* the markup's handlers (act.js): the month box's head and its "Fold away" bar, and a day of the month (data-t: its time) */
+function monthTap(){toggleMonth()}
+function dayCellTap(el){openDay(+el.dataset.t)}
+acts({monthTap,dayCellTap});

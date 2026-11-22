@@ -132,7 +132,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     const tie=await p.evaluate(async()=>{await lockUpcoming();sel=new Date(2026,10,23);view={y:2026,m:10};listOpen=true;show('today');const t=dayRecs['2026-11-25'].lock.tie,o=planFor()[key(sel)];return o.tie&&o.tie.id===t?null:t});
     ok(!!tie,'the trip\'s first day wears a tie other than today\'s');
     await settle(p,300);await p.click('#ri-tie button.swap');await p.waitForSelector('#pick-sheet.on');
-    await p.click(`#pick-sheet .pick-it[onclick*="'${tie}'"]`);await p.waitForFunction(t=>dayRecs['2026-11-23']&&dayRecs['2026-11-23'].force&&dayRecs['2026-11-23'].force.tie===t,tie);await settle(p,500);
+    await p.click(`#pick-sheet .pick-it[data-id="${tie}"]`);await p.waitForFunction(t=>dayRecs['2026-11-23']&&dayRecs['2026-11-23'].force&&dayRecs['2026-11-23'].force.tie===t,tie);await settle(p,500);
     const tr=await p.evaluate(()=>{show('pack');const s=packLockState(packNow.days);return {n:s.n,of:s.of,locks:['2026-11-25','2026-11-26','2026-11-27'].map(k=>!!dayRecs[k].lock).join(),msg:(document.querySelector('#pk-lockmsg')||{}).textContent||''}});
     ok(tr.locks==='true,true,true'&&tr.n===tr.of&&/Locked\./.test(tr.msg),`a pick today of the trip's tie leaves the kept trip locked (${tr.locks}; ${tr.msg.slice(0,40)})`);
     ok(!errs.length,'no page errors: '+errs.join('; '));
