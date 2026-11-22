@@ -5,7 +5,8 @@
 // here as a person uses it (a tap, Enter, a time typed, a file chosen), with the effect it had before. The test reads no attribute of the
 // handlers (it finds controls by id, class and words), so it passes unchanged on the app from before the move: run there to prove the
 // effects are the same. Where the real function would need the server or the push service, the function the control called is replaced
-// on window and its arguments are checked. Chromium and WebKit (Safari's engine), with touch; then without touch for the file fields.
+// on window and its arguments are checked. Chromium and WebKit (Safari's engine), with touch; then without touch for the file fields,
+// one of them redrawn away while its picker is open (act.js actFileGone).
 module.exports=async({ok,engines,url,settle})=>{
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
@@ -293,6 +294,13 @@ async function desk(eng,browser,{ok,url,settle}){
   const f1=p.locator('#queue [data-q="k2"] label.ckadd input[type=file]').first();
   await f1.setInputFiles(FILE('c.jpg'));await settle(p,400);
   const a=await calls(),av=await f1.evaluate(e=>e.value);
+  // the picker open while the cards are drawn again (another card was read, say): the file chosen still goes to its card
+  const [fc]=await Promise.all([p.waitForEvent('filechooser'),p.locator('#queue [data-q="k2"] label.ckadd').first().click()]);
+  const gone=await ev(()=>{const old=document.querySelector('#queue [data-q="k2"] label.ckadd input[type=file]');queue.unshift({id:'k9',manual:true,type:'tie',primaryColor:'red',pattern:'solid'});renderAdd();return !old.isConnected});
+  await fc.setFiles(FILE('e.jpg'));await settle(p,400);
+  const g=await calls();
+  ok(gone&&g==='[["addTexture",2,"file:e.jpg"]]',T+'a close-up chosen after the cards were drawn again (its field no longer on the page) still goes to its card, now third ('+gone+' '+g+')');
+  await ev(()=>{queue.shift();renderAdd()});
   await ev(()=>{queue.length=0;show('wardrobe');openItem('s1')});await settle(p,700);
   const f2=p.locator('#item-view .phtools label.pt-closeup input[type=file]').first();
   await f2.setInputFiles(FILE('d.jpg'));await settle(p,400);

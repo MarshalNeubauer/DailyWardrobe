@@ -41,8 +41,9 @@ function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)as
    photos (iPhone needs a tap; a click from code can be blocked). Cancel, a tap outside (not in the first ASK_SETTLE ms), Escape and the
    phone's Back close it with nothing changed. Without a touch screen (pointer: fine) capture does nothing, so the button stays today's file
    window, and Remove stays a button of its own.
-   closeupBtn({label, cls, mode:'add'|'replace'|'retake', act:' data-act-change="…" data-…', remove:'…'|'', cloth, aria}) -> the button's HTML. act is the
-   attributes of the caller's file handler (act.js; written out by the caller, a function(el, ev, f) that hands the file to cuGot), remove the
+   closeupBtn({label, cls, mode:'add'|'replace'|'retake', act, remove:'…'|'', cloth, aria}) -> the button's HTML. act is the
+   attributes of the caller's file handler (act.js: its data-act-change name and data-* written out by the caller; a function(el, ev, f)
+   that hands the file to cuGot), remove the
    name of its registered Remove handler, run with the button; label may hold markup, aria names the button or the file input when the label
    is short ---- */
 const CU_COPY={add:['Fabric close-up','Hold the camera close so the weave fills the frame.'],
