@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	3a93b5e878204bf1f7b7
+# tested	ba5f79c054d3cb58ed30
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts
@@ -6480,6 +6480,8 @@ freshrest.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	war
 freshrest.test.js	watch/leather.jpg	<loaded>
 freshrest.test.js	watch/shirt-open.png	<loaded>
 freshrest.test.js	watch/shirt-tie.png	<loaded>
+freshrest.test.js	watch/suit.png	<loaded>
+freshrest.test.js	watch/vest.png	<loaded>
 freshrest.test.js	weather.js	<loaded>	loadWeather
 garmentdraw.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 garmentdraw.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -12859,6 +12861,11 @@ run.js: planner: shoes, belts, leather and metals	today-plan.js	<loaded>	planFor
 run.js: planner: shoes, belts, leather and metals	today.js	<loaded>	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	renderToday	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 run.js: planner: shoes, belts, leather and metals	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 run.js: planner: shoes, belts, leather and metals	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+run.js: planner: shoes, belts, leather and metals	watch/leather.jpg	<loaded>
+run.js: planner: shoes, belts, leather and metals	watch/shirt-open.png	<loaded>
+run.js: planner: shoes, belts, leather and metals	watch/shirt-tie.png	<loaded>
+run.js: planner: shoes, belts, leather and metals	watch/suit.png	<loaded>
+run.js: planner: shoes, belts, leather and metals	watch/vest.png	<loaded>
 run.js: planner: shoes, belts, leather and metals	weather.js	<loaded>	loadWeather
 run.js: planner: shoes, belts, leather and metals	worker.js	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	fetch	orNull	waitForRenders
 run.js: renders the outfit without errors	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -17579,6 +17586,11 @@ texswatch.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapSoo
 texswatch.test.js	today.js	<loaded>	addForSlot	belowBox	canPick	figCuDone	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	todaySay	toggleList	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 texswatch.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerUp
 texswatch.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	matMigrate	matOn	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
+texswatch.test.js	watch/leather.jpg	<loaded>
+texswatch.test.js	watch/shirt-open.png	<loaded>
+texswatch.test.js	watch/shirt-tie.png	<loaded>
+texswatch.test.js	watch/suit.png	<loaded>
+texswatch.test.js	watch/vest.png	<loaded>
 texswatch.test.js	weather.js	<loaded>	loadWeather
 texture.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 texture.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester

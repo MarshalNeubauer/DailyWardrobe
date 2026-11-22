@@ -223,11 +223,11 @@ const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':/^claude/.test(q
    shared aiError / tagWhy / tagNetLast, still set for the Add page's note, could hold another card's reason by the time it was read) */
 async function ask(c,extra){
   const {signal,forType,out,...ex}=extra||{};   // signal: Stop on an Add card calls the reading off (add.js stopRead)
-  const fail=note=>{aiError=note;if(out)out.err={note,why:tagWhy,net:!!tagNetLast};return null};
+  const fail=note=>{aiError=note;if(out)out.err={note,why:typeof tagWhy==='string'?tagWhy:'',net:typeof tagNetLast!=='undefined'&&!!tagNetLast};return null};
   try {
     const workerUrl=localStorage.getItem('worker_url');
     if(!workerUrl) return null;
-    if(inviteOver())return null;   // an ended invitation: the photo isn't sent (it was, and refused; re-audit 2026-11-15)
+    if(typeof inviteOver==='function'&&inviteOver())return null;   // an ended invitation: the photo isn't sent (it was, and refused; re-audit 2026-11-15)
     const dataUrl=typeof c==='string'?c:c.toDataURL('image/jpeg',TAG_Q);
     const res=await fetch(workerUrl,{
       method:'POST',
@@ -236,7 +236,7 @@ async function ask(c,extra){
       ...(signal?{signal}:{})
     });
     if(!res.ok){let e='',j={};try{j=await res.json();e=j.detail||j.error||''}catch{}
-      if(endedAnswer(res.status,j)){inviteEnded(localStorage.getItem('app_token')||'',j);aiError='';return null}   // found out here: said as ended (sync.js), the card has no Try again
+      if(typeof endedAnswer==='function'&&endedAnswer(res.status,j)){inviteEnded(localStorage.getItem('app_token')||'',j);aiError='';return null}   // found out here: said as ended (sync.js), the card has no Try again
       return fail(tagFailText(res.status,j,e))}
     aiError='';
     const result=await res.json();aiModel=result.model||'';
