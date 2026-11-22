@@ -88,6 +88,19 @@ async function run(eng,browser,{ok,url,settle}){
   ok(r.took&&r.opened===0&&!r.has,T+`"Behaves like" picked after a tap: the choice is taken and no dropdown is focused by code (${JSON.stringify(r)})`);
   r=await pick('key');
   ok(r.took&&r.has,T+`"Behaves like" picked after a key press: the new dropdown keeps the focus (${JSON.stringify(r)})`);
+
+  // ---- a text field with the focus is left as before: a redraw from elsewhere drops the focus to <body> and code focuses no field
+  // (a phone's keyboard would come back up). The shade square pressed with the Name field focused; a redraw while the words are typed.
+  await p.focus('#cn-name');
+  const box=await (async()=>{await p.evaluate(()=>document.querySelector('#cn-sq').scrollIntoView({block:'center'}));await settle(p,150);return p.locator('#cn-sq').boundingBox()})();
+  e=await p.evaluate(()=>{window.__foc=[];document.querySelector('#cn-name').__old=1;return document.activeElement.id+' '+colPick.newc.hex});
+  await p.mouse.click(box.x+box.width*.3,box.y+box.height*.6);await settle(p,200);
+  r=await p.evaluate(()=>({foc:window.__foc.join(),active:document.activeElement===document.body?'BODY':document.activeElement.tagName+'#'+document.activeElement.id,fresh:!document.querySelector('#cn-name').__old,hex:colPick.newc.hex,name:document.querySelector('#cn-name').value}));
+  ok(/^cn-name /.test(e)&&!e.endsWith(r.hex)&&r.fresh&&r.active==='BODY'&&!/INPUT|TEXTAREA/.test(r.foc)&&r.name==='Dusk',T+`the shade square pressed while the Name field has the focus: the shade is taken, the sheet is drawn again, and no field is focused by code (${e} -> ${JSON.stringify(r)})`);
+  await p.focus('#cn-text');await p.keyboard.type('plum');
+  r=await p.evaluate(()=>{window.__foc=[];const was=document.activeElement.id;renderColPick(true);
+    return {was,foc:window.__foc.join(),active:document.activeElement===document.body?'BODY':document.activeElement.tagName+'#'+document.activeElement.id,text:document.querySelector('#cn-text').value}});
+  ok(r.was==='cn-text'&&r.active==='BODY'&&!/INPUT|TEXTAREA/.test(r.foc)&&r.text==='plum',T+`a redraw while the words are being typed: the words stay and no field is focused by code (${JSON.stringify(r)})`);
   await p.evaluate(()=>closeColPick());await settle(p,250);
 
   // ---- the pattern sheet's tiles go the same way

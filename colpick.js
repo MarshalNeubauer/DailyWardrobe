@@ -110,8 +110,12 @@ async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick
   if(off)toast(off.msg,4000,{label:'Undo',fn:off.undo})}
 /* every redraw of the sheet goes through keepFocus (app.js): a keyboard user who pressed a tile, a Shade step or an "Offer it for" chip
    keeps the focus on that control in the new markup (it fell to <body>). A tile listed twice (one of the owner's own, under "Your colors"
-   and again in its family) is told apart by the family copy's data-k. A dropdown picked after a touch is not focused (focusSafe). */
-function renderColPick(keep){return keepFocus($('#col-sheet'),()=>colPickDraw(keep))}
+   and again in its family) is told apart by the family copy's data-k. A dropdown picked after a touch is not focused (focusSafe).
+   Not while a text field of the sheet has the focus (cpTyping: the words, the name, the hex): a redraw then leaves the focus as it
+   always did (on <body>), so a shade dragged or the white-paper check finishing never brings a phone's keyboard back up. */
+const cpTyping=()=>{const a=document.activeElement,s=$('#col-sheet');
+  return !!a&&!!s&&s.contains(a)&&(a.tagName==='TEXTAREA'||a.tagName==='INPUT'&&!/^(checkbox|radio|button|submit|reset|range|file|color|image)$/i.test(a.getAttribute('type')||''))};
+function renderColPick(keep){return cpTyping()?colPickDraw(keep):keepFocus($('#col-sheet'),()=>colPickDraw(keep))}
 function colPickDraw(keep){if(colPick&&colPick.newc)return colPick.newc.kind==='pattern'?renderPatNew(keep):renderColNew(keep);
   if(colPick&&colPick.k==='pattern')return renderPatPick(keep);if(colPick&&LOOK_PK.includes(colPick.k))return renderLookPick(keep);
   const el=$('#col-sheet'),it=colTarget();if(!el||!it)return;const {k,sel,cur,view}=colPick,y=el.scrollTop;
