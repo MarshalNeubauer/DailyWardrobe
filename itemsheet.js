@@ -69,7 +69,7 @@ function ivDetailSum(i){const t=i.type,a=[TYPES[t]||'Item'];
   if(METAL_TYPES.includes(t))a.push(optLab(metalOptsFor(t),i.metal||'silver').toLowerCase());
   return a.filter(Boolean).join(' · ')}
 /* Planning & care's summary: "In rotation · worn 3 of 5 since cleaning" */
-function ivCareSum(i,s){const r=(i.paused?(i.order?'On the way':i.away?'Away being cleaned':'Out of rotation'):'In rotation')+(typeof isFavItem==='function'&&isFavItem(i.id)?' · ♥ favorite':'');
+function ivCareSum(i,s){const r=(i.paused?(i.order?'On the way':i.away?'Away being cleaned':'Out of rotation'):'In rotation')+(isFavItem(i.id)?' · ♥ favorite':'');
   if(!s||i.away)return r;if(s.due)return `${r} · due for ${careWord(i.type)}`;
   return s.limit>1?`${r} · worn ${s.wears} of ${s.limit} since ${careWord(i.type)}`:s.wears?`${r} · worn ${careTimes(s.wears)}`:`${r} · not worn yet`}
 /* the uniform blouse's name tape, service tape and rank (2026-11-18; core.js blouseTapes): text fields in capitals, the rank a list; the

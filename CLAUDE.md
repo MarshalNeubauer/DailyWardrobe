@@ -1426,6 +1426,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `start.js`
 
+- core.js … itemsheet.js lost 11 guards that are always true (C2-10, 2026-11-22): three on an earlier script's name (detect.js `isOcp` and `CUSTOM_PAT`, itemsheet.js `isFavItem`) and eight on a later script's name that nothing loaded before that script can reach (app.js `toast` twice and `settingsOpen`, add.js `isConnected` in `refineAgain` / `patternAgain`, item-photo.js `remakeLeft` / `remakeSpend`, item-view.js `layerOpen`)
+- that range keeps 61 guards on later scripts' names in app.js … itemsheet.js: a tap, a file picked or the start-up sync can reach them while later scripts are still loading (`show`, `renderAdd`, `renderItem`, `renderWardrobe`, `put`, `ask`, `save`); and those of core.js, planner.js and analysis.js (also loaded by analysis-worker.js and by Node tests on their own), draw.js and mannequin.js (the painter's) and the browser features (`ResizeObserver`, `AbortController`, `HTMLCanvasElement`, `reportError`, `window`)
+
 - moving between pages animates (`pageIn`, from `show`): the page arriving eases in 28px from its tab's side (`TABS` today, wardrobe, stats, left to right) with a fade, `PAGE_MS` 320 on `MONTH_EASE`; a sub-page (add, pack, care) rises 14px; the one leaving hides at once (nothing laid out twice); the tab marker is `nav::before` sliding by `--ti` (`.tab-none` hides it); reduced motion switches instantly; `tests/tabmove.test.js`
 - `show(t)` ends with `packShow(t)` (pack.js), which hides or shows `#pack`
 - leaving the Wardrobe tab empties `#wardrobe` (`show()`): its grid (about 4,900 elements at 107 items) is drawn again on coming back; `.gi` has `content-visibility:auto` (`contain-intrinsic-size:auto 230px`)

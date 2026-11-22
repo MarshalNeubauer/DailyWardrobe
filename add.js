@@ -75,9 +75,9 @@ const STOPPED='You stopped the reading.';
 /* Stop on a card being read (one item, or Try again): the request is called off and the card keeps its photo */
 function stopRead(id){const q=queue.find(x=>x.id===id);if(!q||!q.abort||q.multiBusy)return;q.stopped=1;try{q.abort.abort()}catch{}}
 /* a reading cut off by a kill (addRevive: refineCut, patternCut), read again on a tap */
-function refineAgain(i){const q=cardOf(i);if(!q)return;if(!(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))){toast('Connect in ⚙ Settings first.',4000);return}
+function refineAgain(i){const q=cardOf(i);if(!q)return;if(!(isConnected())){toast('Connect in ⚙ Settings first.',4000);return}
   delete q.refineCut;delete q.patternCut;refineFromCloseup(queue.indexOf(q))}
-function patternAgain(i){const q=cardOf(i);if(!q)return;if(!(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))){toast('Connect in ⚙ Settings first.',4000);return}
+function patternAgain(i){const q=cardOf(i);if(!q)return;if(!(isConnected())){toast('Connect in ⚙ Settings first.',4000);return}
   delete q.patternCut;readPatternWithClaude(q)}
 /* a double tap on Confirm: the card saves once, then the list closes up under the finger and the second tap landed on what moved
    there (the last card's: "Import from a spreadsheet", whose sheet then covered Add). A tap within ADD_CALM ms of a Confirm and near
