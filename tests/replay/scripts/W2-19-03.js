@@ -5,7 +5,7 @@ L.run(async () => {
   await L.startLab('w2-19-03');
   const ph = await L.phone('a'); const p = ph.page; const ev = {};
   await L.kbd(ph, '#n-wardrobe', 800);
-  await p.locator('#wardrobe [onclick^="openItem"]').nth(2).click(); await L.sleep(900);
+  await p.locator('#wardrobe .giopen').nth(2).click(); await L.sleep(900);
   await L.kbd(ph, '#item-view .colbtn', 900); ev.openFocus = await L.act(ph);
   await p.keyboard.press('Escape'); await L.sleep(700);
   ev.escAtOnce = await p.evaluate(() => ({ focus: __v19.act(), colOpen: !!document.querySelector('#col-sheet.on') }));

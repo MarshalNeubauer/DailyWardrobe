@@ -566,6 +566,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `shopSig` signs each item by what the planner reads (fix round A, CR-4-12: `shopPlanned`, the payload's `strip` less names, brand, notes, details and stamps, hashed) and the days off by their dates (`offDays()`, not the holiday list's monthly `fetched` stamp): a new photo, a rename or the monthly holiday fetch made a large wardrobe check again for 40-60 s; the new signature made every kept result stale once; `tests/shopstay.test.js`
 - `shopSig` holds the wardrobe and every setting the planner reads: laundry days, dark shirts (`darkMode()`), jeans with a blazer, holidays, days off and the occasions marked from today on (else a change left the check up to a week stale); `|nojacket` / `|notie` stay last
 - the progress line says about how long is left once three checks are done and over 8 s remain (`shopLeft`, from `shopBusy.t0`; W2-18-03: a 300-item wardrobe waited 40-60 s with only "5 of 20"); the check itself is no faster
+- its controls use data-act (act.js; C2-8, 2026-11-22), registered as shop.js's last statement: `shopOpenTap` (Insights' card), `shopCloseTap` (×), `shopAgainTap`, `shopGoTap` (a top pick), `shopRecTap` (an idea's head), `shopFormTap` (Bought it), `shopCancelTap`, `shopBoughtTap` (Add as on the way), `shopHideTap` (Not for me); the idea's key is in `data-rec` (the idea's box keeps `data-key`); "Show again" keeps its `data-unhide` listener on the sheet
 
 ### `detect.js`
 
@@ -955,9 +956,17 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - an event a test makes up must bubble, as the browser's own does (`new Event('change',{bubbles:true})`): one that doesn't never reaches `document`, where an inline handler on the control itself ran (`tests/addcards.test.js`, `tests/photoedit.test.js`)
 - so a `data-act` control's `data-*` are its identity for the keyboard's focus: a state kept in a `data-*` on it (one that changes between redraws) needs an `id`, or a `data-k` / `data-c` / `data-s`, for the control to keep the focus
 - C2-5 (2026-11-18) moved the Add card, the "Add without a photo" sheet, the item page, its photo tools and the Wardrobe's type chips over: add-card.js (26), add-more.js (4), add.js (2), add-sheet.js (1), item-photo.js (9), itemsheet.js (9) have no inline handler left
-- the helpers of other files that those screens call still write inline handlers from the code they are handed, until their own files move: ui.js `closeupBtn` (`file`, `remove`), wardrobe.js `matRow` (`setQField(` / `setItemField(`) and `ivOn`, tagging.js `tagFailNote` / `tagNotes` (`qh(q)`), colpick.js's color and pattern buttons
+- the helpers of other files that those screens call still write inline handlers from the code they are handed, until their own files move: ui.js `closeupBtn` (`file`, `remove`), tagging.js `tagFailNote` / `tagNotes` (`qh(q)`), colpick.js's color and pattern buttons
 - `tests/additemacts.test.js` (Chromium and WebKit): every kind of control C2-5 moved, used as a person does (taps, the real dropdowns, typing, the crop's slider and drag, a file chosen, Remove close-up without touch), with the effect each had; it reads none of the handlers' attributes and passes on the app from before the move (102 checks there and here); the Wardrobe chip and the item page's dropdown keep the focus by keyboard
 - `tests/acts.test.js` (Chromium and WebKit): the first controls by real taps (it reads none of the handlers' attributes, and passes on the app from before the move); the same markup built with inline handlers and with `data-act`, the same clicks and keys to both, and the same handlers run in the same order (nesting, stopPropagation, preventDefault and `return false`, a handler that removes its element or throws, a disabled button, five event types on one field, focus, toggle, load); unknown and doubled names, `actsFirst`; every name in the app's markup registered and every registered name used
+- C2-8 (2026-11-22) moved the Packing list, Laundry and cleaning, cost per wear, the Wardrobe's search, sort and grid, What to buy and Insights over: pack.js (14), care.js (13), cost.js (10), wardrobe.js (11), shop.js (9) and stats.js (5) have no inline handler left; each file's section lists its handlers
+- wardrobe.js `matRow(type, cur, on, ai)` and `ivOn(id)` write `data-act` attributes now: `on` is the control's attributes, `matOn(q)` on an Add card (`matCardPick`, `data-card`) or `matOnItem(id)` on the item sheet (`matItemPick`, `data-id`); it was the start of a call (`setQField(` / `setItemField(`) compiled into the markup
+- a handler another file's markup uses is registered where its markup is written: care.js's `careDueTap`, `careBandTap` and `careBandKey` are in markup today.js puts on Today, stats.js's `emptyAddTap` / `emptySampleTap` (`emptyAdd()`) also on the empty Packing list, cost.js's `cpwCardField` on the Add card
+- Today's cleaning banner (`#cband`, a `<div role="button">`) gets its tap listener from care.js `careBandSoon` (`actTaps` on the picture's frame), which today-picture.js `swApply` runs after every draw of Today
+- its tap now runs after `#today`'s own click listener (today-picture.js: a tap on the picture closes an open swatch), not before: the listener stops nothing and the banner's question reads only the plan, so the result is the same
+- the Wardrobe's search field stops Escape (`wardSearchKey`, `ev.stopPropagation()`) without `actsFirst`: no `keydown` listener sits between the field and `document`, and the `document` and `window` listeners that close things on Escape are all added after act.js's
+- `tests/packcare-taps.test.js` (Chromium and WebKit, touch, the real planner): every kind of control C2-8 moved, used as a person does (taps, typing, the real dropdowns, dates, Enter and Space on the banner, Escape in the search), with the effect each had; it reads no handler attribute and passes on the app from before the move (the same 63 checks an engine there and here)
+- tests and replay scripts that found a Wardrobe box by its `onclick` find it by its class (`#wardrobe .giopen`, with `data-id`), and the Material dropdown by `select.wmat`
 
 ### `add.js`
 
@@ -1839,6 +1848,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Wear counts: a type the dress code leaves out (`dressOut`: blazers and suits with Jackets off) says "left out by your dress code", never "N never worn" (re-audit 2026-11-15); `tests/stats.test.js`
 - `plannedDays()` takes What to buy's days (`statsDays` = analysis.js `horizonKeys(today, SHOP_WEEKS)`: the workdays of 26 weeks from tomorrow), so Insights' "outfits planned" and What to buy's "workdays" are the same number (they were 122 and 126); `statsMonths` reaches the horizon's last day
 - a wardrobe that can't dress a day yet (`statsShort`: setup.js `setupNeeds` rows not ticked, as Today's checklist) gets no plan numbers: the tiles keep items and days worn, a "Not a full outfit yet" card (`#st-short`) names what is missing, and Never worn, Small deductions, Colour balance, Pairings and the plan's average are left out (it said "121 outfits planned … 50.0 average" for a suit and a shirt)
+- its controls use data-act (act.js; C2-8, 2026-11-22), registered as stats.js's last statement: `emptyAddTap` and `emptySampleTap` (`emptyAdd()`'s two buttons, and "Add an item"), `statsFold` (a Wear counts section, `data-act-toggle`), `statsDayTap` (a lowest-scoring day's link, `data-t` the day's time; it calls the link's jump off)
+- the dependency ledger gained stats.js -> month.js (`openDay`: the call was text in the markup before, which the ledger can't see)
 
 ### `pack.js`
 
@@ -1864,6 +1875,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a piece that won't be here by the trip's first day (on the way or away being cleaned, `!inRotation(i, first day)`: `packLate`) is left out of the trip's plan (`packLateRecs`: `rec.skip` on a copy of the records, used by Pack lighter too) and the Outfits card says so (`#pk-late`)
 - `packText(t, days, list)` is the plain-text list (title, count line, groups, travel wear, the outfits per day); `packCopy` uses `navigator.clipboard`, falling back to a hidden textarea; Share (`packShare`) only where `navigator.share` exists
 - `tests/pack.test.js`; `PACK_SHOTS=<folder>` saves pictures of the page at 320/390/626px in both themes
+- its controls use data-act (act.js; C2-8, 2026-11-22), registered as pack.js's last statement: `packBackTap` (‹), `packDatePick` (`data-which` a | b), `packCapPick` (`data-which` j | s), `packKeepTap` (Keep this plan, Keep these outfits), `packNoCapTap`, `packTickPick` and `packWearTap` (`data-ix`: the line's place in `packLines`; `data-on` 1 = Wear, 0 = Pack), `packWearDayTap` (`data-day`), `packCopyTap`, `packShareTap`, `packReleaseTap`
 
 ### `wardrobe.js`
 
@@ -1900,6 +1912,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Material (`matRow`, types in `MATERIALS_BY`) sits on the Add card above "More details" and at the end of the item sheet's Details
 - a text field's typing is also kept in `localStorage.ward_pending` `{id,k,v,was,at}` at each keystroke and saved at once on `pagehide` / the page hidden (`wardFlush`; 2026-11-15: a name typed then Safari swiped away within 0.6 s was lost on a kill, a hidden page's timers stop); `wardPendingRestore` (from `safetyStart`, after the first pull) puts a copy left by a kill back when that field still holds `was` (another device's change since wins), and drops it otherwise
 - Delete and Duplicate ignore a second tap while the first runs (`wardOnce`, `wardBusy`, 400 ms after; `wardDelete` → `wardDeleteNow`, `wardDuplicate` → kit.js `kitDuplicate`, one key for Duplicate since the sheet moves to the copy)
+- its controls use data-act (act.js; C2-8, 2026-11-22), registered as wardrobe.js's last statement: `wardSearchType` and `wardSearchKey` (the search field's input and keydown), `wardClearTap` (× and "Clear search"), `wardSortPick`, `wardOpenTap` (a box, `data-id`), `wardAllTap` ("Search all types"), `itemFieldType` / `itemFieldDone` (the item sheet's Name, Brand and Notes: `data-id`, `data-f`), `matItemPick` and `matCardPick` (Material: the dropdown's choice, or the "Which material?" field trimmed, `matPicked`)
 
 ### `colpick.js`
 
@@ -2044,6 +2057,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 - the cleanings are logged (2026-11-17, cost per wear): `careLog(it, d)` adds the day to `item.cleans` (YYYY-MM-DD, sorted, the last `CARE_LOG` 100) from `careBack`, `careCleaned` (its Undo puts the old list back), `careCleanedType` and add.js `checkArrivals`; kit.js `KIT_NO_COPY` leaves it off a duplicate
 - Settings → Care also holds the currency and what a cleaning costs (`#cpw-set`, drawn by cost.js `cpwSettingsUI` at the end of `renderCareUI`); `tests/care.test.js` counts 9 dropdowns there now (the currency's)
+- its controls use data-act (act.js; C2-8, 2026-11-22), registered as care.js's last statement: `careSendTap` (`data-id`, `data-why` laundry | cleaner), `careDoneTap`, `careBackDate`, `careBackTap`, `careTypeDone` (`data-t`), `careLimitsTap`, `careLimitPick` (`data-t`), Today's `careDueTap` ("See what is due": it calls the link's jump off), and the banner's `careBandTap` (the function itself) and `careBandKey` (Enter or Space)
 
 ### `cost.js`
 
@@ -2056,6 +2070,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - the Add card's More: Price and Bought under "Bought, on the way" (`cpwQRow`, `cpwQSet` keeps them on the card as typed), saved by `saveCard` (`cpwSaveFields`), copies of "How many" too
 - Insights: a "Cost per wear" card after Wear counts (`cpwStatsCard`, `#st-cpw`) only with `CPW_MIN` (3) priced items: total spent, cleaning since Jan 1 (`cpwCleanYear`), Best value and Most per wear (up to 3 each, worn items), Not worn yet (priced, by price); each row a button opening the item (`cpwOpenItem`)
 - `tests/costwear.test.js`: the merge rule, currency and parsing, the counts, the lines, the sheet, the Add card, Settings, Insights' threshold, 320/390 px in both themes, two devices through the real worker; `CPW_SHOTS=<dir>` saves its screenshots
+- its controls use data-act (act.js; C2-8, 2026-11-22), registered as cost.js's last statement: `cpwPriceType` / `cpwPriceDone` (the item sheet's Price: input and change, `data-id`), `cpwBoughtPick`, `cpwCardField` (the Add card's Price and Bought: `data-card`, `data-f`), `cpwCareTap` ("Set it in Settings → Care"), `cpwRowTap` (an Insights row, `data-id`), `cpwCostDone` (`data-f`: a type, load or perLoad), `cpwCurPick`
 
 ### `fav.js`
 
