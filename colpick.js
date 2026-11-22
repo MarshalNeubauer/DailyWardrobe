@@ -407,7 +407,7 @@ async function describeAsk(){const nc=colPick&&colPick.newc,it=colTarget();if(!n
   const w=localStorage.getItem('worker_url')||'';let r=null,j={};
   try{r=await fetch(new URL('describe',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},body:JSON.stringify(body)});j=await r.json().catch(()=>({}))}catch(e){r=null}
   if(!colPick||colPick.newc!==nc)return;   // closed meanwhile
-  if(r&&r.ok&&typeof acct==='object'&&acct&&acct.me&&acct.me.used)acct.me.used.describe=(+acct.me.used.describe||0)+1;
+  if(r&&r.ok&&acct&&acct.me&&acct.me.used)acct.me.used.describe=(+acct.me.used.describe||0)+1;
   if(r&&r.status===429){nc.state='limit';nc.limit=j.message||'Today’s color and pattern lookups are used up. They start again at midnight UTC.'}
   else if(!r||!r.ok){nc.state='err';nc.detail=showCost()&&(j.detail||j.message)||''}
   else if(pat?j.kind==='pattern':j.kind==='colour'||j.kind==='several'){nc.res=j;nc.base=null;nc.sent=sent;
@@ -563,7 +563,7 @@ async function rdRun(src,id){const it=rdItem(src,id);if(!it||!it.texture)return;
   const w=localStorage.getItem('worker_url')||'';let r=null,j={};
   try{r=await fetch(new URL('describe',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},body:JSON.stringify(body),...(me.ac?{signal:me.ac.signal}:{})});j=await r.json().catch(()=>({}))}catch(e){r=null}
   if(rd!==me)return;   // closed or Stopped meanwhile: nothing changes
-  if(r&&r.ok&&typeof acct==='object'&&acct&&acct.me&&acct.me.caps&&acct.me.used)acct.me.used.describe=(+acct.me.used.describe||0)+(j.lookups!=null?+j.lookups||0:RD_LOOKUPS);
+  if(r&&r.ok&&acct&&acct.me&&acct.me.caps&&acct.me.used)acct.me.used.describe=(+acct.me.used.describe||0)+(j.lookups!=null?+j.lookups||0:RD_LOOKUPS);
   if(r&&r.status===429){me.state='limit';me.limit=j.message||'Today’s color and pattern lookups are used up. They start again at midnight UTC.'}
   else if(!r||!r.ok||!j.colour||!j.pattern){me.state='err';me.detail=showCost()&&(j.detail||j.message)||''}
   else{const now=rdItem(src,id)||it;me.state='result';me.c=rdColOf(j.colour);me.p=rdPatOf(now,j.pattern);me.m=rdMatOf(now,j.pattern&&j.pattern.material);me.a=rdAccOf(now,j.colour)}
@@ -626,7 +626,7 @@ function rdClose(fromBack){const me=rd;rd=null;if(me&&me.state==='busy'&&me.ac)t
   if(me)rdRefresh(me.src,me.id)}
 function rdBack(){if(rdHist!==undefined||rd)rdClose(true)}
 /* the page under it, redrawn (the done card, the cost line) */
-function rdRefresh(src,id){if(src==='q'){renderAdd()}else if(typeof editing!=='undefined'&&editing===id)renderWardrobe()}
+function rdRefresh(src,id){if(src==='q'){renderAdd()}else if(editing===id)renderWardrobe()}
 const rdPaperHtml=pr=>!pr?'':pr.ref?'<span class="rdpaper ok" id="rd-paper">✓ White paper found: true color</span>':`<span class="rdpaper no" id="rd-paper">! No white paper${pr.warm?', warm light':''}</span>`;
 const rdRetakeHtml=it=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',act:' data-act-change="rdRetakeFile"',cloth:paperCloth(it)});
 function rdLightNote(it,me){const s=me.sent;if(!s||s.wb!==false)return '';

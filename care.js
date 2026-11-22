@@ -54,7 +54,7 @@ function careCard(i){if(!CARE_ABLE.includes(i.type)||i.order)return '';
     :`<div class="btns">${i.paused?'':first.map(w=>`<button type="button" class="caresend" data-why="${w}" data-act="careSendTap" data-id="${esc(id)}">${lab[w]}</button>`).join('')}${s.wears?`<button type="button" class="caredone" data-act="careDoneTap" data-id="${esc(id)}">${careWashed(i.type)?'Washed':'Cleaned'} today</button>`:''}</div>`;
   return `<section class="card ivsec ivcare" id="ivcare"><h3>Care</h3><p class="shelp carecount${s.due?' due':''}">${careWornLine(i)}${s.due?' · due now':''}</p>${body}</section>`}
 /* redraw whichever page the change was made on */
-function careRedraw(){if(typeof remindSoon==='function')remindSoon();/* the cleaning reminders follow a piece sent away or cleaned */careSum();const c=$('#sc-laundry');if(c&&c.classList.contains('open'))renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();else if($('#today')&&!$('#today').hidden)refreshToday()}
+function careRedraw(){remindSoon();/* the cleaning reminders follow a piece sent away or cleaned */careSum();const c=$('#sc-laundry');if(c&&c.classList.contains('open'))renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();else if($('#today')&&!$('#today').hidden)refreshToday()}
 /* upcoming days the piece was pinned to (a swap, a hand pick) let go of it, as when it is taken out of rotation: they are planned again */
 async function careRelease(id){const T=todayDate();let n=0;
   for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<T||r.worn===true||!r.force)continue;const f={...r.force};let hit=false;
@@ -136,7 +136,7 @@ function careDayState(o,d){const p=careTop(o);if(!p||!CARE_FRAME.includes(p.type
   return n===limit-1?{k:'near',n,limit,bold:'1 wear left',rest:`${what} – wear ${n} of ${limit}`}
     :n===limit?{k:'last',n,limit,bold:'Last wear',rest:`${what} – to the cleaner today`}:{k:'over',n,limit,bold:'Overdue',rest:`${what} – worn ${n} of ${limit}`}}
 /* what figureStage (today.js) puts in the picture's frame: {cls, html}, or null */
-function careFrame(o){const s=typeof sel!=='undefined'&&careDayState(o,sel);if(!s)return null;
+function careFrame(o){const s=careDayState(o,sel);if(!s)return null;
   const dots=Array.from({length:s.limit},(_,i)=>`<i${i<s.n?' class="on"':''}></i>`).join('')+(s.n>s.limit?`<em>+${s.n-s.limit}</em>`:'');
   return {cls:` cb care-${s.k}`,html:`<div class="cframe" aria-hidden="true"></div><div class="cband" id="cband" role="button" tabindex="0" aria-label="${esc(s.bold+': '+s.rest)}. Tap if it was cleaned" data-act="careBandTap" data-act-keydown="careBandKey"><svg aria-hidden="true"><path/></svg><div class="crow"><span class="cdots" aria-hidden="true">${dots}</span><span class="ctxt"><b>${s.bold}</b> · ${esc(s.rest)}</span></div></div>`,s}}
 /* a tap on the banner (fix round 3, W2-14-05: the red "Overdue" came back every morning and a tap did nothing; the way to clear it was

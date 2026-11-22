@@ -12,14 +12,14 @@ let lookBetaMemo=null;
 function lookOn(){if(lookBetaMemo===null){try{lookBetaMemo=localStorage.getItem(LOOK_LS)==='1'}catch{lookBetaMemo=false}}return lookBetaMemo}
 /* flipping it redraws what is open (Add, the no-photo sheet, the item sheet); nothing is saved or lost either way */
 function lookSet(on){on=!!on;try{if(on)localStorage.setItem(LOOK_LS,'1');else localStorage.removeItem(LOOK_LS)}catch{}lookBetaMemo=on;
-  try{if(typeof colPick!=='undefined'&&colPick)closeColPick()}catch{}
+  try{if(colPick)closeColPick()}catch{}
   try{renderAdd()}catch{}
-  try{if(typeof editing!=='undefined'&&editing)renderWardrobe()}catch{}
+  try{if(editing)renderWardrobe()}catch{}
   try{renderLookSetting();renderOwnMatUI()}catch{}
-  if(typeof announce==='function')announce(on?'New Look editor on.':'New Look editor off.')}
+  announce(on?'New Look editor on.':'New Look editor off.')}
 function renderLookSetting(){const el=document.querySelector('#beta-list');if(!el)return;const on=lookOn();
   el.innerHTML=`<div class="dress-row"><span class="dress-txt"><b id="beta-look-l">New Look editor (beta)</b><small id="beta-look-h">One Look section for color, pattern and material when you add or open an item. This phone only; switch it off any time and nothing is lost.</small></span><button type="button" class="dress-sw${on?' on':''}" id="beta-look" role="switch" aria-checked="${on}" aria-labelledby="beta-look-l" aria-describedby="beta-look-h" data-act="lkSwitch" data-on="${!on}"><i></i></button></div>`}
-if(typeof settingsPart==='function')settingsPart(renderLookSetting);
+settingsPart(renderLookSetting);
 
 /* ---- which types have what ---- */
 const LOOK_CU=['sweater','qzip','cardigan','polo','socks','pocketsquare','overcoat','raincoat'];   // also take a close-up in the beta
@@ -156,7 +156,7 @@ function lookChips(src,it){const out={col:[],pat:[],mat:[]};if(it.type==='tiecli
 const lookFiber=(it,k)=>it.type==='shirt'&&LOOK_SHIRT_AS[k]?LOOK_SHIRT_AS[k]:k;
 /* the hints kept on a card saved in the beta (its runner-ups, for the item sheet until used or checked) */
 function lookHintOf(q){const c=lookChips('q',q),h={};
-  for(const x of c.col){if(x.add)h.nc={name:x.name,hex:typeof newColHex==='function'?newColHex(q):null};else if(x.lab==='Measured')h.m=x.v;else if(!h.c)h.c=x.v;if(x.lab==='Claude & measured')h.m=x.v}
+  for(const x of c.col){if(x.add)h.nc={name:x.name,hex:newColHex(q)};else if(x.lab==='Measured')h.m=x.v;else if(!h.c)h.c=x.v;if(x.lab==='Claude & measured')h.m=x.v}
   for(const x of c.pat){if(x.add)h.np={name:x.name,desc:q.newPattern&&q.newPattern.why||''};else if(!h.p)h.p=x.v}
   for(const x of c.mat){h.mat=x.add?{key:x.name,why:x.why||'',isNew:1}:{key:x.v,why:x.why||''};break}
   return Object.keys(h).length?h:null}
@@ -175,7 +175,7 @@ const lookChipsHtml=(src,it,l)=>l.length?`<div class="lkchips">${l.map(x=>lookCh
 const lookSnap=(it,fs)=>Object.fromEntries(fs.map(f=>[f,it[f]===undefined?undefined:JSON.parse(JSON.stringify(it[f]))]));
 async function lookRestore(src,id,snap){const it=lookItem(src,id);if(!it)return;const pat=it.pattern,col=it.primaryColor;
   for(const [k,v] of Object.entries(snap)){if(v===undefined)delete it[k];else it[k]=v}
-  if(src==='q'){if(it.pattern!==pat&&typeof readSett==='function')try{readSett(it)}catch{}if(it.primaryColor!==col&&it.texCanvas)try{generateSwatch(it)}catch{}queueMicrotask(addKeep);renderAdd()}
+  if(src==='q'){if(it.pattern!==pat)try{readSett(it)}catch{}if(it.primaryColor!==col&&it.texCanvas)try{generateSwatch(it)}catch{}queueMicrotask(addKeep);renderAdd()}
   else{if(it.sample)it.sampleMine=1;if(it.primaryColor!==col&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();renderWardrobe()}}
 /* o: {field: value} (undefined or null: the field goes) */
 async function lookWrite(src,id,o){const it=lookItem(src,id);if(!it){if(src==='e')itemGoneTell(id);return null}
@@ -351,7 +351,7 @@ function lookReadCost(){if(!isConnected())return 'connect in ⚙ Settings first'
 function lookReadBox(src,it){const k=src+'|'+it.id,me=LOOK_RD[k]||{},r=`'${src}','${jsq(it.id)}'`,from=it.texture?'from your close-up':'from the photo';
   const what=LOOK_NOPAT.includes(it.type)?`Color and ${lookMatKind(it.type)==='leather'?'leather':'metal'} at once`:'Color, pattern and material at once';
   if(me.busy)return `<div class="lkrd busy" role="status"><span class="spin" aria-hidden="true"></span><div class="lkrdtx"><b>Claude is reading ${LOOK_NOPAT.includes(it.type)?'color and '+(lookMatKind(it.type)==='leather'?'leather':'metal'):'color, pattern and material'}…</b><small>${from}</small></div><button type="button" class="lkrdstop" data-src="${src}" data-id="${esc(it.id)}" data-act="lkStop">Stop</button></div>`;
-  const pic=!!(it.texture||it.photo||it.tagImg),off=!pic?'Add a photo first: Claude reads the look from it.':rdOff(),reading=src==='q'&&typeof cardReading==='function'&&cardReading(it);
+  const pic=!!(it.texture||it.photo||it.tagImg),off=!pic?'Add a photo first: Claude reads the look from it.':rdOff(),reading=src==='q'&&cardReading(it);
   const cu=!it.texture&&lookCu(it.type)?`<span class="lkrdcu">${closeupBtn({label:'Add a close-up for a truer color',cls:'linkbtn lkcuadd',mode:'add',aria:'Add fabric close-up',act:src==='q'?` data-act-change="lkCuFileQ" ${cardAt(it)}`:` data-act-change="photoCuFile" data-id="${esc(it.id)}"`,cloth:paperCloth(it)})}</span>`:'';
   return `<div class="lkrd"><div class="lkrdtx"><b><span class="lkstar" aria-hidden="true">✦</span> Read with Claude</b><small>${what}, ${from} · <span class="lkcost">${esc(pic?lookReadCost():'needs a photo')}</span></small>${me.err?`<small class="lkerr" role="alert">${esc(me.err)}</small>`:''}${cu}</div><button type="button" class="pri lkrdbtn" id="lk-read-${esc(src)}" data-src="${src}" data-id="${esc(it.id)}" data-act="lkRead"${off||reading?' aria-disabled="true"':''}>${me.by?'Read again':'Read'}</button></div>`}
 function lookSum(src,it,ch){const t=it.type,en=t==='tieclip'?lookCur(it,'enamel'):null,c=t==='watch'?watchOpts(it).dial:t==='tieclip'?(en==='none'?lookClipMetal(it):it.primaryColor):src==='e'?primaryCol(it):it.primaryColor;
@@ -382,10 +382,10 @@ function lookSave(q,it){if(!lookOn())return;const t=q.type;
   if(t==='tieclip'&&LOOK_CLIP_METALS.includes(q.metal)&&!LOOK_CLIP_METALS.includes(it.primaryColor))it.metal=q.metal}
 
 /* ---- Read with Claude ---- */
-function lookRedraw(src,id){if(src==='q')renderAdd();else if(typeof editing!=='undefined'&&editing===id)renderWardrobe()}
+function lookRedraw(src,id){if(src==='q')renderAdd();else if(editing===id)renderWardrobe()}
 function lookReadStop(src,id){const me=LOOK_RD[src+'|'+id];if(me&&me.ac)try{me.ac.abort()}catch{}delete LOOK_RD[src+'|'+id];lookRedraw(src,id)}
 async function lookRead(src,id){const it=lookItem(src,id);if(!it)return;const key=src+'|'+id;if(LOOK_RD[key]&&LOOK_RD[key].busy)return;
-  if(src==='q'&&typeof cardReading==='function'&&cardReading(it)){tell('Claude is still reading this card.');return}
+  if(src==='q'&&cardReading(it)){tell('Claude is still reading this card.');return}
   const off=rdOff();if(off){tell(off);return}
   const pats=!LOOK_NOPAT.includes(it.type)&&!!PATS_BY[it.type];
   const me=LOOK_RD[key]={busy:true,err:'',by:(LOOK_RD[key]||{}).by,ac:typeof AbortController==='function'?new AbortController():null};lookRedraw(src,id);
@@ -399,7 +399,7 @@ async function lookRead(src,id){const it=lookItem(src,id);if(!it)return;const ke
   try{r=await fetch(new URL('describe',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},body:JSON.stringify(body),...(me.ac?{signal:me.ac.signal}:{})});j=await r.json().catch(()=>({}))}catch(e){r=null}
   if(LOOK_RD[key]!==me)return;   // stopped meanwhile: nothing changes
   me.busy=false;delete me.ac;
-  if(r&&r.ok&&typeof acct==='object'&&acct&&acct.me&&acct.me.caps&&acct.me.used)acct.me.used.describe=(+acct.me.used.describe||0)+(j.lookups!=null?+j.lookups||0:RD_LOOKUPS);
+  if(r&&r.ok&&acct&&acct.me&&acct.me.caps&&acct.me.used)acct.me.used.describe=(+acct.me.used.describe||0)+(j.lookups!=null?+j.lookups||0:RD_LOOKUPS);
   if(r&&r.status===429){me.err=j.message||'Today’s readings are used up. They start again at midnight UTC.';lookRedraw(src,id);return}
   if(!r||!r.ok||!j.colour){me.err=r&&!r.ok&&showCost()&&(j.detail||j.message)?`Claude couldn’t read it this time (${j.detail||j.message}).`:'Claude couldn’t read it this time. Try again.';lookRedraw(src,id);return}
   me.err='';await lookApplyRead(src,id,j,me)}
@@ -429,7 +429,7 @@ async function lookApplyRead(src,id,j,me){const it=lookItem(src,id);if(!it)retur
   if(t==='belt'&&j.buckle&&METAL[j.buckle]){if(j.buckle!==it.metal||it.metalOwn){it.metal=j.buckle;delete it.metalOwn;changed=true}said.push(metalWord(j.buckle)+' buckle')}
   if(Object.keys(h).length)it.lookHint=h;else delete it.lookHint;
   me.by=by;
-  if(src==='q'){if(normPat(t,it.pattern)!==pat0&&typeof readSett==='function')try{readSett(it)}catch{}if(it.primaryColor!==pc0&&it.texCanvas)try{generateSwatch(it)}catch{}queueMicrotask(addKeep);renderAdd()}
+  if(src==='q'){if(normPat(t,it.pattern)!==pat0)try{readSett(it)}catch{}if(it.primaryColor!==pc0&&it.texCanvas)try{generateSwatch(it)}catch{}queueMicrotask(addKeep);renderAdd()}
   else{if(it.sample)it.sampleMine=1;if(it.primaryColor!==pc0&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();renderWardrobe()}
   const words=said.filter(Boolean).map(s=>String(s).toLowerCase());
   toast(words.length?`Claude read it: ${words.join(', ')}.${changed?'':' Nothing changed.'}`:'Claude couldn’t tell this time: nothing changed.',8000,changed?{label:'Undo',fn:async()=>{await lookRestore(src,id,snap);const x=LOOK_RD[src+'|'+id];if(x)delete x.by;lookRedraw(src,id)}}:undefined)}

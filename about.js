@@ -63,7 +63,7 @@ async function updateNow(){
   if(aboutUpdating)return;
   // the cards waiting on Add come back after the restart (add-keep.js addKeep / addRestore), so they need no question; only a photo still
   // being read is stopped by it (re-audit 2026-11-15: "they will be lost" put people off a safe update)
-  const n=typeof queue!=='undefined'&&queue?queue.filter(q=>q&&(q.busy||q.multiBusy)).length:0;
+  const n=queue?queue.filter(q=>q&&(q.busy||q.multiBusy)).length:0;
   if(n&&!await askConfirm(`Update now?\n\n${n===1?'A photo on the Add page is':`${n} photos on the Add page are`} still being read. Updating restarts the app and stops ${n===1?'that reading':'those readings'}, so ${n===1?'it has':'they have'} to be read again. Your other cards on Add come back as they are.`,{ok:'Update'}))return;
   try{await addKeep()}catch{}   // the cards as they are now, before the restart
   aboutUpdating=true;aboutMsg='Updating…';aboutShow();
@@ -184,8 +184,8 @@ async function aboutDbLeft(){
   if(n===0)await aboutTimeout(aboutDbDelete(),ABOUT_WIPE_MS);return n}
 async function wipeDevice(){
   dbWiping=true;connReady=false;   // (app.js: no new connection, no connection copy written)
-  if(typeof syncTimer!=='undefined')clearTimeout(syncTimer);
-  if(typeof syncRun!=='undefined'&&syncRun)await aboutTimeout(syncRun.catch(()=>{}),ABOUT_WIPE_MS);   // a backup under way finishes (or fails) first
+  clearTimeout(syncTimer);
+  if(syncRun)await aboutTimeout(syncRun.catch(()=>{}),ABOUT_WIPE_MS);   // a backup under way finishes (or fails) first
   for(const d of [await db.catch(()=>null),dbConn])try{if(d)d.close()}catch{}
   dbConn=null;dbCur=null;
   let gone=false;
@@ -208,7 +208,7 @@ async function deleteMyData(server){
   const stop=t=>{aboutDeleting=false;for(const b of document.querySelectorAll('#del-confirm button'))b.disabled=false;aboutSay('#del-status',t,true)};
   if(server&&c){
     const keep={w:localStorage.getItem('worker_url'),t:localStorage.getItem('app_token')};
-    if(typeof syncTimer!=='undefined')clearTimeout(syncTimer);
+    clearTimeout(syncTimer);
     // no backup may start (and bring the data back) from here on: the connection goes, its database copy too (app.js connKeep), and
     // del_pending remembers the request, so a phone killed before the answer finishes the job when it opens again (aboutResumeDelete);
     // killed there, it came back with the whole wardrobe and "Connected", the server's copy already gone (audit 2026-11-14)
@@ -244,7 +244,7 @@ function aboutKeptTester(tok){try{const r=JSON.parse(localStorage.getItem('acct_
 /* start-up: a "Delete everything" the app was closed in the middle of is finished (or, the server unreachable, undone and said) */
 async function aboutResumeDelete(){let keep=null;try{keep=JSON.parse(localStorage.getItem('del_pending')||'null')}catch{}
   if(!keep||!keep.w||!keep.t){try{localStorage.removeItem('del_pending')}catch{}return}
-  aboutDeleting=true;if(typeof syncTimer!=='undefined')clearTimeout(syncTimer);
+  aboutDeleting=true;clearTimeout(syncTimer);
   const res=await aboutDeleteAccount(keep,true);
   if(res.fail){aboutDeleting=false;toast('“Delete everything” didn’t finish. '+res.fail.replace(/delete from this device only\./,'delete from this device only, in Settings → About.'),9000);if(window.syncNow)syncNow();return}
   if(!await wipeDevice()){aboutDeleting=false;toast(ABOUT_WIPE_FAIL_SERVER,9000);return}
