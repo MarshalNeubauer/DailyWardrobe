@@ -37,7 +37,7 @@ const CAMO_TR=2,CAMO_RANK=[.08,.32,.26,.2,.14],CAMO_LIGHT_MAX=.12,CAMO_DARK_MAX=
    Without a reading the shares go by that order (CAMO_ACC_SHARES: the ground the largest, each further colour smaller), not by lightness;
    a reading's shares still go by lightness rank. An item without accents is drawn exactly as before */
 const CAMO_ACC_SHARES={5:[.38,.24,.16,.12,.1],6:[.34,.22,.15,.12,.09,.08],7:[.32,.2,.14,.11,.09,.08,.06]};
-function camoTag(i,rd){const main=colOf(i),sec=i.secondaryColor&&COLORS[i.secondaryColor]||null,th=thirdOf(i),acc=accentsOf(i).map(c=>COLORS[c]),key=JSON.stringify(['camo',CAMO_V,i.id,main,sec,th,rd&&rd.camo,...(acc.length?[acc]:[])]);
+function camoTag(i,rd){if(typeof isOcp==='function'&&isOcp(i))return ocpSett(i);const main=colOf(i),sec=i.secondaryColor&&COLORS[i.secondaryColor]||null,th=thirdOf(i),acc=accentsOf(i).map(c=>COLORS[c]),key=JSON.stringify(['camo',CAMO_V,i.id,main,sec,th,rd&&rd.camo,...(acc.length?[acc]:[])]);
   if(lookMemo.has(key))return lookMemo.get(key);
   const lab=rgbLab(...hexRgb(main)),step=d=>labHex([Math.max(0,Math.min(100,lab[0]+d)),lab[1],lab[2]]),L=h=>rgbLab(...hexRgb(h))[0];
   // printed camouflage's colours sit on one cloth and read as related: each accent is taken CAMO_MUTE of the way toward the main colour's
@@ -55,6 +55,11 @@ function camoTag(i,rd){const main=colOf(i),sec=i.secondaryColor&&COLORS[i.second
   let hh=5381;for(const ch of String(i.id||key))hh=(Math.imul(hh,33)+ch.charCodeAt(0))>>>0;
   const s={v:5,camo:{cols:pairs.map(x=>x.h),shares:pairs.map(x=>+x.s.toFixed(3)),seed:rd&&rd.camo?rd.camo.seed:hh%100000},tr:rd&&rd.src&&/claude/.test(rd.src)?rd.tr:CAMO_TR,cr:1,look:'cm'+CAMO_V+hh.toString(36),...(rd&&rd.src?{src:rd.src}:{})};
   if(lookMemo.size>200)lookMemo.clear();lookMemo.set(key,s);return s}
+/* an OCP piece (core.js isOcp, 2026-11-17: the owner's "one fixed OCP look" for the uniform blouse and his OCP pants): the fixed palette
+   and shares, whatever was tagged or read; `ocp` marks it for the OCP drawing and painter (draw.js ocpTileUrl, asm-ocp.js); `tr` puts
+   OCP_CAMO.mm on the painter's ASM_SHIRT_MM scale; the seed carries OCP_V, so a new OCP look repaints only these looks */
+function ocpSett(i){let hh=5381;for(const ch of String(i&&i.id||'ocp'))hh=(Math.imul(hh,33)+ch.charCodeAt(0))>>>0;
+  return {v:5,camo:{cols:OCP_CAMO.cols.slice(),shares:OCP_CAMO.shares.slice(),seed:OCP_V*100000+hh%100000},ocp:OCP_V,tr:+(550/OCP_CAMO.mm).toFixed(4),cr:1,look:'ocp'+OCP_V}}
 /* a camouflage with no reading of its own: the same, with CAMO_RANK's shares (so it is never drawn plain) */
 const camoLook=i=>i&&camoPat(i.pattern)?camoTag(i,null):null;
 /* a jacket's or pants' band reading whose ground is far from the selected color is drawn in the selected color (2026-11-15, the owner's

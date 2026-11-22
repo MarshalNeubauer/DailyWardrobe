@@ -13,9 +13,9 @@ const CARE_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat']; 
 const CARE_ABLE=['suit','blazer','pants','shirt','tie','overcoat','raincoat','socks','pocketsquare',...HANDPICK_TYPES];   // what can be sent away (a pocket square: worn count, laundry; the casual garments too, 2026-11-16)
 // wears before cleaning; a type not listed is never due. The casual garments (2026-11-16, not in Settings' limits): T-shirts, polos and
 // henleys washed after every wear, sweatshirts and hoodies after 3, knitwear after 4, a chore jacket after 6
-const CARE_DEF={suit:5,blazer:6,pants:4,shirt:1,tee:1,polo:1,henley:1,sweatshirt:3,hoodie:3,sweater:4,qzip:4,cardigan:4,chore:6};
+const CARE_DEF={suit:5,blazer:6,pants:4,shirt:1,tee:1,polo:1,henley:1,sweatshirt:3,hoodie:3,sweater:4,qzip:4,cardigan:4,chore:6,blouse:3};   // (the uniform blouse: washed after 3 wears, the owner, 2026-11-17)
 const CARE_PLURAL={suit:'Suits',blazer:'Blazers',pants:'Pants',shirt:'Shirts',tie:'Ties',overcoat:'Overcoats',raincoat:'Raincoats',socks:'Socks',
-  tee:'T-shirts',polo:'Polos',henley:'Henleys',sweater:'Sweaters',sweatshirt:'Sweatshirts',hoodie:'Hoodies',qzip:'Quarter-zips',cardigan:'Cardigans',chore:'Chore jackets'};
+  tee:'T-shirts',polo:'Polos',henley:'Henleys',sweater:'Sweaters',sweatshirt:'Sweatshirts',hoodie:'Hoodies',qzip:'Quarter-zips',cardigan:'Cardigans',chore:'Chore jackets',blouse:'Uniform blouses'};
 const CARE_MAX=10;
 const LAUNDRY_OPTS=[0,1,2,3,5,7];
 const careLimit=t=>{const v=(settings.care||{})[t];return v==null?(CARE_DEF[t]||0):Math.max(0,Math.min(CARE_MAX,Math.round(+v)||0))};

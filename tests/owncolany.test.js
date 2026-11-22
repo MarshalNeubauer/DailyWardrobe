@@ -24,7 +24,7 @@ module.exports=async({ok,chromium,url})=>{
     // ---- the groups
     const g=await p.evaluate(()=>({tee:groupOf('tee'),hoodie:groupOf('hoodie'),chore:groupOf('chore'),cardigan:groupOf('cardigan'),ps:groupOf('pocketsquare'),tie:groupOf('tie'),suit:groupOf('suit'),shirt:groupOf('shirt'),fresh:groupOf('tee')!==groupOf('tee')}));
     ok(g.tee.join()==='tee,polo,henley,sweater,sweatshirt,hoodie,qzip'&&g.hoodie.join()===g.tee.join(),'a new color made on a casual top is offered for every casual top ('+g.tee+')');
-    ok(g.chore.join()==='cardigan,chore'&&g.cardigan.join()==='cardigan,chore','… on a casual jacket for both casual jackets');
+    ok(g.chore.join()==='cardigan,chore,blouse'&&g.cardigan.join()==='cardigan,chore,blouse','… on a casual jacket for every casual jacket (the uniform blouse too)');
     ok(g.ps.join()==='tie,pocketsquare'&&g.tie.join()==='tie,pocketsquare','the pocket square goes with the tie');
     ok(g.suit.join()==='suit,blazer,pants'&&g.shirt.join()==='shirt'&&g.fresh,'the other groups are as before (and each call gives a copy, so "Offer it for" can\'t change the group)');
     // ---- the T-shirt's picker

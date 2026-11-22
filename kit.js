@@ -195,7 +195,8 @@ const KIT_TYPE_WORDS={suit:['suit','suits','two-piece','three-piece','suit jacke
   henley:['henley','henleys','henley shirt'],sweater:['sweater','sweaters','jumper','jumpers','pullover','crewneck','crew neck','crewneck sweater','crew neck sweater','v-neck sweater','v-neck','vneck','roll neck','rollneck','turtleneck','knit','knitwear','كنزه','بلوفر'],
   sweatshirt:['sweatshirt','sweatshirts','crewneck sweatshirt','sweat shirt','sweat'],hoodie:['hoodie','hoodies','hooded sweatshirt','hoody','zip hoodie','هودي'],
   qzip:['quarter-zip','quarter zip','1/4 zip','1/4-zip','quarter zip pullover','quarter-zip pullover','half zip','half-zip','1/2 zip','zip neck','qzip'],cardigan:['cardigan','cardigans','cardi','كارديجان'],
-  chore:['chore jacket','chore coat','chore','field jacket','work jacket','barn jacket','overshirt','shirt jacket','shacket']};
+  chore:['chore jacket','chore coat','chore','field jacket','work jacket','barn jacket','overshirt','shirt jacket','shacket'],
+  blouse:['uniform blouse','ocp blouse','ocp coat','ocp top','uniform coat','uniform top','acu coat','utility coat','blouse']};
 KIT_TYPE_WORDS.pants.push('cargos','cargo pants','cargo trousers','cargo');   // (cargo pants: kind 'cargo', kitTrouserKind)
 const KIT_PLANS='suits, blazers, pants, shirts, ties, tie clips, pocket squares, shoes, belts, socks, watches, cufflinks and coats';
 const kitNorm=s=>String(s??'').normalize('NFKC').trim().toLowerCase().replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')

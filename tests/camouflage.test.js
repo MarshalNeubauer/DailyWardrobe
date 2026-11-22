@@ -5,16 +5,19 @@
 // large pattern kept off formal days; the worker's /pattern answers a camouflage layout.
 const path=require('path'),{pathToFileURL}=require('url');
 module.exports=async({ok,chromium,url,ROOT})=>{
-  // the worker: a camouflage answer is cleaned and kept
+  // the worker: Claude names a camouflage layout but sends no colours object (2026-11-18: the schema's sixth optional object, camo, made
+  // Claude's API refuse it as "compiled grammar too large" and every pattern reading failed); the answer is 422 and the app reads the
+  // camouflage from the pixels (camoFromPixels). The schema sent keeps to five optional objects: tests stub Claude, so only this guards it
   const mod=await import(pathToFileURL(path.join(ROOT,'worker.js')).href),worker=mod.default,realFetch=globalThis.fetch;
   const store=new Map(),KV={get:async(k,t)=>store.has(k)?(t==='json'?JSON.parse(store.get(k)):store.get(k)):null,put:async(k,v)=>{store.set(k,v)},delete:async k=>{store.delete(k)},list:async()=>({keys:[],list_complete:true})};
   const env={APP_TOKEN:'owner',ANTHROPIC_API_KEY:'k',WARDROBE:KV,RENDER_QUEUE:{send:async()=>{}},RENDER_HUB:{idFromName:x=>x,get:()=>({fetch:async()=>new Response('{"ok":true}')})}};
-  const answer={layout:'camouflage',across:null,along:null,motif:null,texture:null,camo:{colours:[{name:'khaki',hex:'#B8A47E',sharePct:40},{name:'sage',hex:'#7d8a68',sharePct:25},{name:'brown',hex:'#6b5444',sharePct:20},{name:'plum',hex:'#3d2c2a',sharePct:10},{name:'cream',hex:'#e6e1cf',sharePct:5},{name:'bad',hex:'nope',sharePct:3}],blobsAcrossItem:14},
-    stripeDirection:'vertical',repeatsInCloseup:3,repeatsAcrossItem:14,paneAspect:1,ignored:'folds',description:'MultiCam'};
-  globalThis.fetch=async(h,init)=>String(h)==='https://api.anthropic.com/v1/messages'?new Response(JSON.stringify({model:'m',stop_reason:'end_turn',content:[{type:'text',text:JSON.stringify(answer)}]}),{status:200,headers:{'content-type':'application/json'}}):realFetch(h,init);
+  const answer={layout:'camouflage',across:null,along:null,motif:null,texture:null,stripeDirection:'vertical',repeatsInCloseup:3,repeatsAcrossItem:14,paneAspect:1,ignored:'folds',description:'MultiCam'};
+  let sent=null;globalThis.fetch=async(h,init)=>{if(String(h)==='https://api.anthropic.com/v1/messages'){sent=JSON.parse(init.body);return new Response(JSON.stringify({model:'m',stop_reason:'end_turn',content:[{type:'text',text:JSON.stringify(answer)}]}),{status:200,headers:{'content-type':'application/json'}})}return realFetch(h,init)};
   const PNG='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
   let r;try{r=await worker.fetch(new Request('https://w.test/pattern',{method:'POST',headers:{'x-app-token':'owner','content-type':'application/json'},body:JSON.stringify({image:PNG,type:'pants'})}),env);r={s:r.status,...(await r.json())}}finally{globalThis.fetch=realFetch}
-  ok(r.s===200&&r.layout==='camouflage'&&r.camo&&r.camo.colours.length===5&&r.camo.colours[0].hex==='#b8a47e'&&Math.abs(r.camo.colours.reduce((a,c)=>a+c.share,0)-1)<.01&&r.camo.blobsAcrossItem===14&&!r.across,'the worker keeps a camouflage reading: valid colours only, shares as fractions, largest first ('+JSON.stringify(r).slice(0,160)+')');
+  const sch=sent&&sent.output_config&&sent.output_config.format&&sent.output_config.format.schema,opt=sch?Object.values(sch.properties).filter(p=>p.anyOf&&p.anyOf.some(x=>x.type==='object')).length:-1;
+  ok(sch&&!sch.properties.camo&&sch.properties.layout.enum.includes('camouflage')&&opt<=5,'the /pattern schema names camouflage but has no camo object, and at most five optional objects (Claude’s API refused six:'+opt+')');
+  ok(r.s===422&&r.layout==='camouflage','a camouflage answer is a 422 naming the layout, so the app reads it from the pixels ('+JSON.stringify(r).slice(0,120)+')');
 
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{

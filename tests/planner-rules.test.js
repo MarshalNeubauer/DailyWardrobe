@@ -414,6 +414,12 @@ const fix8r3=async({ok,chromium,url})=>{
       sel=new Date(2026,10,17);view={y:2026,m:10};listOpen=true;show('today');togglePastEdit();await new Promise(r=>setTimeout(r,100));
       return {clip:!!document.querySelector('#ri-clip'),vest:planFor()['2026-11-17'].vest}});
     ok(vc.vest&&!vc.clip,'correcting a vest day offers no tie clip');
+    // ---- a belt picked from the picker on a day marked worn is recorded as worn (2026-11-18: outside "Correct what you wore" it did nothing)
+    const wp=await p.evaluate(async()=>{fresh('2026-11-18T08:00:00');items=w17();const s=items,b2=I('belt','brown',{leather:'calf',metal:'silver'});items.push(b2);
+      const belt=s.find(i=>i.type==='belt');dayRecs['2026-11-18']={date:'2026-11-18',ids:{top:s[0].id,bot:s[0].id,shirt:s[3].id,tie:s[7].id,shoes:s[12].id,belt:belt&&belt.id},suitDay:true,worn:true};cache={};
+      sel=new Date(2026,10,18);view={y:2026,m:10};pastEdit=null;show('today');await pickItem('belt',b2.id);await new Promise(r=>setTimeout(r,200));
+      return {belt:dayRecs['2026-11-18'].ids.belt===b2.id,worn:dayRecs['2026-11-18'].worn,msg:swapMsg}});
+    ok(wp.belt&&wp.worn===true&&/Corrected/.test(wp.msg),`a belt picked on a worn day is recorded as what was worn (${JSON.stringify(wp)})`);
 
     // ---- W2-17-06 (part): "Add more suits" only when there aren't enough suits in rotation for the rest
     const rw=await p.evaluate(()=>{fresh('2026-11-18T08:00:00');const s=[I('suit','navy'),I('suit','grey'),I('suit','charcoal',{paused:true,away:{why:'cleaner'}})];items=[...s];
