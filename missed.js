@@ -39,12 +39,18 @@ function missedSeen(ks){const last=ks[ks.length-1],t=isoKey(todayDate());let s=n
   s.d.push(t);try{localStorage.setItem('missed_seen',JSON.stringify(s))}catch{}return true}
 let missedPick=false;   // the card's day-by-day choice is open (W2-17-18: the card was all or nothing)
 function missedCard(){if(typeof homeDay!=='function'||isoKey(sel)!==isoKey(homeDay()))return '';const ks=missedOpen(),n=ks.length;if(!n||!missedSeen(ks))return '';
-  const one=k=>`<button class="linkbtn missone" onclick="missedOne('${k}')" aria-label="I didn’t wear the outfit of ${esc(shortDate(keyDate(k)))}">${esc(shortDate(keyDate(k)))} ✕</button>`;
+  const one=k=>`<button class="linkbtn missone" data-act="missOneTap" data-day="${k}" aria-label="I didn’t wear the outfit of ${esc(shortDate(keyDate(k)))}">${esc(shortDate(keyDate(k)))} ✕</button>`;
   return `<section class="mbox missbox" id="missbox" aria-label="Days counted as worn"><p class="misstxt">${n===1?'A workday':n+' workdays'} you didn’t open the app (${esc(missedSpan(ks))}) ${n===1?'counts':'count'} as worn, as planned.</p>`+
-    `<div class="missbtns"><button class="linkbtn" onclick="missedCardNo()">I didn’t wear ${n===1?'it':'them'}</button>${n>1?`<button class="linkbtn" onclick="missedPickToggle()" aria-expanded="${missedPick}">Choose days</button>`:''}<button class="linkbtn" onclick="missedCardOk()">Keep as worn</button></div>`+
+    `<div class="missbtns"><button class="linkbtn" data-act="missNoTap">I didn’t wear ${n===1?'it':'them'}</button>${n>1?`<button class="linkbtn" data-act="missPickTap" aria-expanded="${missedPick}">Choose days</button>`:''}<button class="linkbtn" data-act="missOkTap">Keep as worn</button></div>`+
     (n>1&&missedPick?`<p class="misstxt mut"><small>Tap a day you didn’t wear its outfit:</small></p><div class="missbtns missdays">${ks.map(one).join('')}</div>`:'')+`</section>`}
 function missedPickToggle(){missedPick=!missedPick;missedPut()}
 async function missedOne(k){const r=dayRecs[k];if(!r||!r.ids||r.worn===false)return;await saveDay({...r,worn:false},true);if(window.scheduleSync)scheduleSync();
   toast(`Marked as not worn: ${shortDate(keyDate(k))}.`,3000);if(typeof refreshToday==='function')refreshToday()}
 function missedCardNo(){const ks=missedOpen();if(ks.length)missedNotWorn(ks)}
 function missedCardOk(){const ks=missedOpen();if(ks.length){try{localStorage.setItem('missed_ok',ks[ks.length-1])}catch{}}missedPut()}
+/* the markup's handlers (act.js): the card's "I didn't wear it / them", "Choose days", one day's ✕ (data-day) and "Keep as worn" */
+function missNoTap(){missedCardNo()}
+function missPickTap(){missedPickToggle()}
+function missOneTap(el){missedOne(el.dataset.day)}
+function missOkTap(){missedCardOk()}
+acts({missNoTap,missPickTap,missOneTap,missOkTap});

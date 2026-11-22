@@ -95,8 +95,8 @@ async function cat(ph, c) { const h = ph.page.locator(`#settings-modal .scat-hea
 async function choose(ph, sel, v) { const l = ph.page.locator(sel); await l.evaluate(e => e.scrollIntoView({ block: 'center' })); await l.selectOption(v); await sleep(400) }
 async function settingsDone(ph) { await tapL(ph, ph.page.locator('#settings-modal .sdone')); await sleep(500) }
 async function pickTo(ph, slot, name) {
-  if (!(await ph.page.evaluate(() => { const b = document.querySelector('#ibox'); return b && b.classList.contains('open') }))) { await tapL(ph, ph.page.locator('#today button.month-link[onclick="toggleList()"]')); await sleep(1200) }
-  await tapL(ph, ph.page.locator(`#today .swap[onclick="openPicker('${slot}')"]`)); await sleep(500);
+  if (!(await ph.page.evaluate(() => { const b = document.querySelector('#ibox'); return b && b.classList.contains('open') }))) { await tapL(ph, ph.page.locator('#today button.month-link[data-act="listTap"]')); await sleep(1200) }
+  await tapL(ph, ph.page.locator(`#today .swap[data-act="pickTap"][data-s="${slot}"]`)); await sleep(500);
   const l = ph.page.locator('#pick-sheet .pick-it').filter({ hasText: name }); if (!(await l.count())) throw new Error('picker lacks ' + name + ': ' + (await ph.page.locator('#pick-sheet').innerText().catch(() => '?')).slice(0, 400).replace(/\n/g, '|') + ' picker=' + await ph.page.evaluate(() => JSON.stringify(picker)));
   await tapL(ph, l); await sleep(700);
 }

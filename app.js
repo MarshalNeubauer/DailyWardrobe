@@ -321,7 +321,7 @@ async function fill(q,ai){
 
 
 const cap1=t=>{t=String(t??'');return t&&t[0].toUpperCase()+t.slice(1)};   // option labels start with a capital ("Grey", "Solid"); values stay as they are
-const S=(list,v,k,i)=>`<select onchange="setq(${i},'${k}',this.value)">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select>`;
+const S=(list,v,k,at)=>`<select data-act-change="cardSel" ${at} data-f="${k}">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select>`;
 
 
 /* ---- what a screen reader hears, and where the keyboard stays, when part of the page is drawn again (fix round 3, W2-19-01: after

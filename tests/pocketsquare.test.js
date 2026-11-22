@@ -81,8 +81,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     const pk=await p.evaluate(()=>({title:$('#pick-title').textContent,n:document.querySelectorAll('#pick-sheet .pick-it').length,fits:[...document.querySelectorAll('#pick-sheet .pick-it .fit')].map(e=>e.textContent)}));
     ok(pk.title==='Choose a pocket square'&&pk.n===5&&pk.fits.some(f=>/Best match/.test(f)),`the picker lists the pocket squares by match (${pk.title}: ${pk.fits.join(' / ')})`);
     await p.screenshot({path:require('path').join(process.env.PS_SHOTS||require('os').tmpdir(),'pocket-picker.png')}).catch(()=>{});
-    const other=await p.evaluate(cur=>[...document.querySelectorAll('#pick-sheet .pick-it')].map(b=>b.getAttribute('onclick')).find(x=>!x.includes(cur)),a.pocket);
-    await p.evaluate(on=>{new Function(on)()},other);await p.waitForTimeout(300);await settle(p,300);
+    const other=await p.evaluate(cur=>[...document.querySelectorAll('#pick-sheet .pick-it')].map(b=>b.dataset.id).find(x=>x!==cur),a.pocket);
+    await p.evaluate(id=>{pickItem('pocket',id)},other);await p.waitForTimeout(300);await settle(p,300);
     const b=await st();ok(b.pocket&&b.pocket!==a.pocket,`a pick changes the square (${a.pocket} → ${b.pocket})`);
     // − takes it off: "Taken off" with +, not worn
     await tap('#ri-pocket button[aria-label="Take off the pocket square"]');

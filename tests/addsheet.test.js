@@ -55,7 +55,7 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
     const c=document.querySelector('#nps-q .card');return {top:sr.top,w:sr.width,left:sr.left,bottom:sr.bottom,grab:!!s.querySelector('.nps-grab'),title:s.querySelector('#nps-title').textContent,icon:s.querySelectorAll('.nps-head svg.aic path').length,
       x:x&&{w:R(x).width,h:R(x).height,label:x.getAttribute('aria-label')},cardX:!!(c&&c.querySelector('.qx')),cardBtns:!!(c&&c.querySelector('.btns #qconf-0')),
       bar:[...document.querySelectorAll('#nps-bar button')].map(b=>b.textContent).join(','),barBottom:bar.bottom,
-      fields:!!(c&&c.querySelector('.rv svg,.rv .thumb'))&&!!c.querySelector('.shaderow')&&!!c.querySelector('[data-ck="tex"] .wbstcard')&&!!c.querySelector('select[onchange*="\'type\'"]'),
+      fields:!!(c&&c.querySelector('.rv svg,.rv .thumb'))&&!!c.querySelector('.shaderow')&&!!c.querySelector('[data-ck="tex"] .wbstcard')&&!!c.querySelector('select[data-f="type"]'),
       inert:document.querySelector('body>header').inert&&document.querySelector('body>nav').inert&&document.querySelector('#add .addpick').inert&&!s.closest('[inert]'),dim:+getComputedStyle(document.querySelector('#nps-backdrop')).opacity,
       bg:getComputedStyle(s).backgroundColor}});
   ok(await npsUp()&&r.first>r.end+40&&Math.abs(r.end-e.top)<2,T+`tapping it slides the sheet up from below (top ${r.first} → ${r.end})`);
@@ -90,7 +90,7 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
   ok(!await npsUp()&&!e.asking&&e.q===0&&await ev(()=>!document.querySelector('#add').hidden),T+`the phone's Back closes it and stays on Add (${JSON.stringify(e)})`);
 
   // ---- a changed card asks first: Keep editing keeps it, Discard drops it (×, Cancel, swipe, Back)
-  const change=async()=>{await tap('#add-manual');await p.selectOption('#nps-q select[onchange*="\'type\'"]','tie');await settle(p,300)};
+  const change=async()=>{await tap('#add-manual');await p.selectOption('#nps-q select[data-f="type"]','tie');await settle(p,300)};
   await change();await tap('#nps-sheet .nps-x');
   e=await ev(()=>({q:(document.querySelector('#ask-title')||{}).textContent,ok:(document.querySelector('#ask-ok')||{}).textContent,cancel:(document.querySelector('#ask-cancel')||{}).textContent,up:!!npsId}));
   ok(e.q==='Discard this item?'&&e.ok==='Discard'&&e.cancel==='Keep editing'&&e.up,T+`× on a changed card asks "Discard this item?" with Keep editing / Discard (${JSON.stringify(e)})`);

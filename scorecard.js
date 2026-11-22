@@ -78,7 +78,7 @@ function swapsHtml(o,D,R){if(o.frozen||!canPick(o))return '';if(!R)return '';con
   const head=`<p class="ssec">${hard?'These would put it right':'These would rank higher'}</p>`;
   if(!R.swaps.length)return head+`<p class="snone">${hard?'Nothing you own puts it right with one swap.':`Nothing you own makes a better look ${dayWord()}.`}</p>`;
   return head+R.swaps.map(s=>{const it=items.find(i=>i.id===s.id);if(!it)return '';const gain=R.rank-s.rank,place=s.rank>R.n?'meets every rule':s.rank===1?'best':ordinal(s.rank)+' best',w=itemWord(it,s.slot,o);
-    return `<button type="button" class="sfixbtn${s.fix?' fix':''}" onclick="event.stopPropagation();applyFix('${jsq(s.slot)}','${jsq(s.id)}')" aria-label="${s.fix?'Fix it: wear the ':'Wear the '}${esc(w)}: ${gain>0?gain+' place'+(gain===1?'':'s')+' higher, ':''}${place}"><span class="dot" aria-hidden="true">${swatchSVG(it,true)}</span><span class="sfixnm">${s.fix?'Fix it: ':'Wear the '}${esc(w)}</span><b>${gain>0?`+${gain} place${gain===1?'':'s'}`:''}<small>${place}</small></b></button>`}).join('')}
+    return `<button type="button" class="sfixbtn${s.fix?' fix':''}" data-act="scoreFixTap" data-slot="${esc(s.slot)}" data-id="${esc(s.id)}" aria-label="${s.fix?'Fix it: wear the ':'Wear the '}${esc(w)}: ${gain>0?gain+' place'+(gain===1?'':'s')+' higher, ':''}${place}"><span class="dot" aria-hidden="true">${swatchSVG(it,true)}</span><span class="sfixnm">${s.fix?'Fix it: ':'Wear the '}${esc(w)}</span><b>${gain>0?`+${gain} place${gain===1?'':'s'}`:''}<small>${place}</small></b></button>`}).join('')}
 function applyFix(slot,id){return pickItem(slot,id)}
 function cardLabel(D,R){return DIAL_KEYS.map(k=>`${DIAL_NAMES[k]} ${D.bad[k]?'broken rule':D[k].v}`).join(', ')+'. '+(R?rankLine(R,D).replace(/<[^>]+>/g,'')+'. ':'')+(D.r.hard.length?`${D.r.hard.length} thing${D.r.hard.length===1?'':'s'} to fix`:'All rules met')+'. '+(scoreOpen?'Fold away':'Show why')}
 /* one dial: a ring filled to the value, the number inside (or "!" for a broken rule, ringed in red), the name under it; at 0 no arc is
@@ -129,9 +129,9 @@ function scoreCard(o){
   const rlist=rules.map(([l,t])=>{const c=D.r.checks.find(x=>x.label===l&&x.hard);return `<li${c?' class="f"':''}>${esc(c?failText(o,c):l==='Shoes'&&o.suitDay?'Shoes suit the suit':t)}</li>`}).join('');
   const wx=wxLine(o,D);
   // unfolds like the pieces list and the month plan (boxUnfold); each part slides in, the bars fill to their value
-  return `<section class="mbox score dials${hard.length?' hasbad':''}${scoreOpen?' open instant':''}${R?' ranked':''}" id="sbox" data-rk="${esc(outfitKey(o))}"><button class="month-link" onclick="toggleScore()" aria-expanded="${scoreOpen}" aria-controls="spanel" aria-label="${esc(cardLabel(D,R))}">
+  return `<section class="mbox score dials${hard.length?' hasbad':''}${scoreOpen?' open instant':''}${R?' ranked':''}" id="sbox" data-rk="${esc(outfitKey(o))}"><button class="month-link" data-act="scoreTap" aria-expanded="${scoreOpen}" aria-controls="spanel" aria-label="${esc(cardLabel(D,R))}">
     <span class="dialrow" aria-hidden="true">${dials}</span><span class="chev" aria-hidden="true">›</span></button>
-    <div class="mpanel" id="spanel"><div class="mpanel-in" onclick="toggleScore()"><p class="srank sli" id="srank" style="--i:0">${rankLine(R,D)}</p>${rl}<p class="swhy sli" id="swhy" style="--i:2">${whyText(o,D,R)}</p><div id="sswaps" class="sswaps" onclick="event.stopPropagation()">${swapsHtml(o,D,R)}</div>
+    <div class="mpanel" id="spanel"><div class="mpanel-in" data-act="scoreTap"><p class="srank sli" id="srank" style="--i:0">${rankLine(R,D)}</p>${rl}<p class="swhy sli" id="swhy" style="--i:2">${whyText(o,D,R)}</p><div id="sswaps" class="sswaps" data-act="scoreSwapsTap">${swapsHtml(o,D,R)}</div>
     <p class="ssec sli">Why each dial</p>${bars}${weeksHtml()}${wx?`<p class="ssec sli">Weather</p><p class="swx sli">${esc(wx)}</p>`:''}<p class="ssec sli">Rules</p><ul class="srl sli">${rlist}</ul></div></div></section>`;
 }
 
@@ -139,3 +139,10 @@ function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;
   const b=box.querySelector('.month-link');b.setAttribute('aria-expanded',scoreOpen);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show why/,scoreOpen?'Fold away':'Show why'));
   if(scoreOpen)boxUnfold(box);else boxFold(box,'#spanel .sli, #spanel .sfixbtn')}
+/* the markup's handlers (act.js): the card's head and its unfolded panel fold and unfold it; a swap wears its piece; a tap among the swaps
+   (between two buttons) does nothing and goes no further, so the panel around them doesn't fold. The panel and the swaps are <div>s:
+   today.js renderToday calls actTaps(#today) after writing the card, so a phone's tap on them is a click */
+function scoreTap(){toggleScore()}
+function scoreSwapsTap(el,ev){ev.stopPropagation()}
+function scoreFixTap(el,ev){ev.stopPropagation();applyFix(el.dataset.slot,el.dataset.id)}
+acts({scoreTap,scoreSwapsTap,scoreFixTap});
