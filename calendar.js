@@ -92,7 +92,7 @@ async function calSync(force){const url=calLink();if(!url||calBusy||!isConnected
   try{const j=await calFetch(url,force);calWrite({t:Date.now(),url:calMask(url),from:j.from,to:j.to,events:(j.events||[]).slice(0,300),err:''});calMsg=''}
   catch(e){const o=calRead()||{};calWrite({...o,url:calMask(url),err:e.message||'The calendar couldn’t be read.',errAt:Date.now()});calMsg=e.message||''}
   finally{calBusy=false}
-  const n=calNew();if(n.length!==before&&typeof refreshToday==='function'&&!$('#today').hidden)refreshToday();
+  const n=calNew();if(n.length!==before&&!$('#today').hidden)refreshToday();
   if(settingsOpen())renderCalUI();
   return n}
 const calAuto=()=>{if(calLink())calSync(false).catch(e=>console.warn('calendar not read',e))};
@@ -112,9 +112,9 @@ async function calConnect(){const inp=$('#cal-link'),v=(inp&&inp.value||'').trim
     announce(calMsg)}
   catch(e){calMsg=e.message||'The calendar couldn’t be read.'}
   finally{calBusy=false}
-  renderCalUI();if(typeof refreshToday==='function')refreshToday()}
+  renderCalUI();refreshToday()}
 async function calDisconnect(){if(!await askConfirm('Disconnect the calendar?\n\nThe app stops reading it. Days off, occasions and trips already set stay as they are.',{ok:'Disconnect',danger:true}))return;
-  delete settings.calendar;calWrite(null);calMsg='Disconnected.';renderCalUI();await saveUserSettings();if(typeof refreshToday==='function')refreshToday()}
+  delete settings.calendar;calWrite(null);calMsg='Disconnected.';renderCalUI();await saveUserSettings();refreshToday()}
 async function calRefresh(){if(calBusy)return;calMsg='Reading your calendar…';renderCalUI();const n=await calSync(true);
   const last=calRead()||{};calMsg=last.err||(n?(n.length?`${n.length} new event${n.length===1?'':'s'} to check below.`:'Up to date: nothing new.'):'');renderCalUI();if(calMsg)announce(calMsg)}
 function calSummary(){if(!calLink())return 'Not connected';const last=calRead();if(!last||!last.t)return 'Connected';
@@ -170,7 +170,7 @@ async function calUndoSeen(id){const was=calSeen()[id];await calSetSeen(id,null)
   calMsg=was==='k'?'It is offered again. What it set stays: change it in Days off & occasions or the Packing list.':'';todayDirty();renderCalUI()}
 
 /* ---- Today: "2 new calendar events" and, on a day of a trip kept, the trip ---- */
-function calBanner(day){if(!calLink())return '';let h='';const n=calNew().length,home=!day||key(day)===key(typeof homeDay==='function'?homeDay():todayDate());
+function calBanner(day){if(!calLink())return '';let h='';const n=calNew().length,home=!day||key(day)===key(homeDay());
   if(n&&home)h+=`<div class="cal-banner" id="cal-new"><span>${n} new calendar event${n===1?'':'s'}</span><button type="button" class="linkbtn" data-act="calReviewTap">Review</button></div>`;
   if(day){const k=isoKey(day),s=calSeen(),t=calFound().find(x=>x.k==='trip'&&s[x.ev.id]==='k'&&x.ev.start<=k&&x.ev.end>=k);
     if(t)h+=`<p class="cal-trip" id="cal-trip">Trip: <span dir="auto">${esc(t.ev.title)}</span> · <button type="button" class="linkbtn" data-act="calPackTap">Packing list</button></p>`}

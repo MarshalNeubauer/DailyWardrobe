@@ -111,7 +111,7 @@ let patternFail=false;
 async function claudePattern({image,closeup,type,wb,signal}){const w=localStorage.getItem('worker_url');patternFail=false;if(!w||!image||inviteOver())return null;
   try{const r=await fetch(new URL('pattern',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
       body:JSON.stringify({image,...(closeup?{closeup}:{}),type,...(typeof wb==='boolean'?{wb}:{})}),...(signal?{signal}:{})});   // wb: both pictures white-balanced (worker.js); signal: Skip or a newer close-up calls it off (readBegin)
-    const j=await r.json().catch(()=>({}));if(r.status>=500||r.status===401||r.status===403)patternFail=true;if(r.status===429&&j.message&&typeof limitNote==='function')limitNote(j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
+    const j=await r.json().catch(()=>({}));if(r.status>=500||r.status===401||r.status===403)patternFail=true;if(r.status===429&&j.message)limitNote(j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
     // any of the four answers (a camouflage has only camo: CR-2-01, it was paid for and dropped)
     return r.ok&&(j.across||j.motif||j.texture||j.camo)&&j.layout!=='none'?j:null}catch(e){if(!(e&&e.name==='AbortError'))patternFail=true;return null}}
 function sampleLabs(c){const x=c.getContext('2d',{willReadFrequently:true}),d=x.getImageData(0,0,c.width,c.height).data,st=Math.max(1,Math.round(c.width*c.height/120000)),out=[];

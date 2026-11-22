@@ -33,7 +33,7 @@ async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_
    copy) is a new server value: a connected phone remakes at most REMAKE_DAY a day (localStorage remake_day {d, n}), the rest on the next
    days; a phone with no connection writes nothing to the server and has no limit */
 const REMAKE_DAY=10;
-const remakeOn=()=>typeof syncNeedsPull==='function'&&syncNeedsPull();
+const remakeOn=()=>syncNeedsPull();
 const remakeRead=()=>{try{const r=JSON.parse(localStorage.getItem('remake_day')||'null');return r&&r.d===isoKey(new Date())?+r.n||0:0}catch{return 0}};
 const remakeLeft=()=>remakeOn()?Math.max(0,REMAKE_DAY-remakeRead()):Infinity;
 function remakeSpend(k){if(!remakeOn())return;try{localStorage.setItem('remake_day',JSON.stringify({d:isoKey(new Date()),n:remakeRead()+k}))}catch{}}

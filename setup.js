@@ -15,8 +15,8 @@ let setupNo=false;   // the app was already driven somewhere before start-up loo
 const setupDress=()=>({jacket:!(settings.dress&&settings.dress.jacket===false),tie:!(settings.dress&&settings.dress.tie===false)});
 const setupConnected=()=>isConnected();
 /* an invitation link from the address being checked (account.js), or one the server couldn't be reached for (it stays in the address) */
-const setupLinkChecking=()=>typeof inviteChecking!=='undefined'&&inviteChecking;
-const setupLinkWaiting=()=>(typeof acctWhy!=='undefined'&&acctWhy==='offline')&&hasInviteHash();
+const setupLinkChecking=()=>inviteChecking;
+const setupLinkWaiting=()=>acctWhy==='offline'&&hasInviteHash();
 const setupShown=()=>setup.at>=0;
 
 /* start-up, once the wardrobe, history and settings are read: a new install (nothing in the wardrobe, no day ever recorded,
@@ -176,7 +176,7 @@ ${items.length?'':`<p class="su-help">Today shows your first outfit once you hav
 const setupHomeLink=()=>setup.joined&&typeof homeIOS==='function'&&homeIOS()&&homeNeeded()&&homeTester()?`<p class="su-help">For the app on your Home Screen: copy your invitation link here and paste it at its Connection step.</p>${homeCopyBtn()}`:'';
 /* "Try a sample wardrobe" on the last step loads it, and the setup finishes (holidays, the vest) once it is stored (kit.js kitSampleDone;
    audit 2026-11-15); finished first, a kill before the sample was stored left the setup done and no sample (re-audit 2026-11-15) */
-function setupSample(e){setupTapGuard(e);if(typeof kitSampleLoad==='function')kitSampleLoad();else setupFinish(false,e)}
+function setupSample(e){setupTapGuard(e);kitSampleLoad()}
 function setupDraw(){if(!setupShown())return;const k=SETUP_STEPS[setup.at],n=SETUP_STEPS.length,last=setup.at===n-1;
   keepFocus(setupEl(),()=>setupHtml(k,n,last))}
 function setupHtml(k,n,last){
@@ -207,7 +207,7 @@ async function setupConnect(){const el=$('#su-link'),t=(el&&el.value||'').trim()
   setup.busy=true;setup.msg='';setupDraw();if($('#su-link'))$('#su-link').value=t;let ok=false;
   try{ok=!!(await connectFromLink(t))}catch(e){ok=false}
   // why, in the setup's words: offline is not a wrong link (it said "check that you copied all of it" while offline)
-  const why=typeof acctWhy!=='undefined'?acctWhy:'';
+  const why=acctWhy;
   setup.busy=false;if(ok)setup.joined=true;setup.msg=ok||why==='kept'?'':why==='offline'?'Couldn’t reach the server: you may be offline. Connect when you’re back online, or tap Next and connect later in Settings.':why==='refused'?acctFailText()+' Or carry on without it.':'That link didn’t work. Check that you copied all of it, or carry on without it.';
   if(!setupShown())return;setupDraw();if(!ok&&$('#su-link'))$('#su-link').value=t}
 
