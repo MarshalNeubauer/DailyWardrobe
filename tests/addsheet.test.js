@@ -118,7 +118,7 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
   await change();await tap('#nps-bar .pri');await p.waitForFunction(n0=>!npsId&&items.length===n0+1,n0,{timeout:8000}).catch(()=>{});
   await ev(()=>show('wardrobe'));await settle(p,400);
   e=await ev(()=>({n:items.length,tile:document.querySelectorAll('#wardrobe .gi').length}));
-  ok(e.n===n0+1&&e.tile>=1&&await ev(()=>{const it=items[items.length-1];return !!document.querySelector(`#wardrobe .gi[data-id="${it.id}"],#wardrobe [onclick*="${it.id}"]`)}),T+`the saved piece is in the Wardrobe (${JSON.stringify(e)})`);
+  ok(e.n===n0+1&&e.tile>=1&&await ev(()=>{const it=items[items.length-1];return !!document.querySelector(`#wardrobe .gi[data-id="${it.id}"],#wardrobe .giopen[data-id="${it.id}"]`)}),T+`the saved piece is in the Wardrobe (${JSON.stringify(e)})`);
   await ev(()=>openAdd());await settle(p,300);
 
   // ---- the import sheet: from below, ×, Cancel, swipe, Back; importing closes it with "Imported N items." and Undo

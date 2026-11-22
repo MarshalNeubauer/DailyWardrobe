@@ -214,7 +214,7 @@ const nufix7=async({ok,chromium,url,settle})=>{
     ok(s.weeks===2,`"Your scores" leaves out the weeks before the wardrobe existed (${s.weeks} weeks shown)`);
     // ---- the empty pages have a way to start
     const e=await p.evaluate(()=>{const keep=items;items=[];renderStats();const a=$('#stats').innerHTML;renderPack();const b=$('#pack').innerHTML;items=keep;cache={};return [a,b]});
-    ok(e.every(h=>/openAdd\(\)/.test(h)&&/kitSampleLoad\(\)/.test(h)),'empty Insights and Packing list offer Add your first item and the sample');
+    ok(e.every(h=>/<button[^>]*>Add your first item<\/button>/.test(h)&&/<button[^>]*>Try a sample wardrobe<\/button>/.test(h)),'empty Insights and Packing list offer Add your first item and the sample');
     // ---- packing: a kept trip outlasts a Settings change; a suit arriving after the trip starts isn't packed
     const pk=await p.evaluate(async()=>{cache={};dayRecs={};localStorage.removeItem('pack_trip');
       packT={a:'2026-11-29',b:'2026-12-3',j:0,s:0};show('pack');await packLock();const before=packLockState(packNow.days);await clearLocks();renderPack();const after=packLockState(packNow.days);

@@ -45,7 +45,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       ok(e.sel==='cupro'&&e.set&&e.checked&&!e.offer&&/Now one of your materials: it’s in the list for every shirt you add, on all your devices\./.test(e.note),T+'it is chosen (by hand: Fabric & fit checked), the offer goes and the note says so');
       ok(/Cupro added to your shirt materials\./.test(st.toast)&&st.undo,T+`toast with Undo (${st.toast})`);
       await shot('add-offer-after','#queue .qcard [data-ck="fabric"]');
-      e=await ev(()=>({shirt:matsFor('shirt').includes('cupro'),tie:matsFor('tie').includes('cupro'),rowS:/value="cupro"/.test(matRow('shirt','','x(')),rowT:/value="cupro"/.test(matRow('tie','','x(')),ext:JSON.stringify(tagExtras({}).ownMaterials)}));
+      e=await ev(()=>({shirt:matsFor('shirt').includes('cupro'),tie:matsFor('tie').includes('cupro'),rowS:/value="cupro"/.test(matRow('shirt','','')),rowT:/value="cupro"/.test(matRow('tie','','')),ext:JSON.stringify(tagExtras({}).ownMaterials)}));
       ok(e.shirt&&e.rowS&&!e.tie&&!e.rowT,T+'the shirt dropdown lists it; the tie one does not');
       ok(e.ext==='{"shirt":["cupro"]}',T+'tag requests carry the person\'s own materials '+e.ext);
       // Undo takes it off the card and out of the list
@@ -78,7 +78,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       ok(/Your colors & patterns\|Your materials/.test(e.lab)&&e.rows.length===1&&/Cupro/.test(e.rows[0])&&/shirt/i.test(e.rows[0])&&/1 item/.test(e.rows[0])&&/Remove/.test(e.rows[0])&&/1 material$/.test(e.sum),T+'Settings → Photo tagging → Your materials, next to Your colors & patterns, lists it per type: '+e.rows.join(' / ')+' ('+e.sum+')');
       await shot('settings-materials','#sp-tagging');
       await p.click('#ownmat-list .ownmatrow button');await p.waitForFunction(()=>!ownMats('shirt').length);await settle(p,200);
-      e=await ev(()=>({empty:/None yet/.test(document.querySelector('#ownmat-list').textContent),kept:items.find(i=>i.id==='s1').material,row:/value="cupro"/.test(matRow('shirt','','x(')),other:/wmat-o/.test(matRow('shirt','cupro','x('))}));
+      e=await ev(()=>({empty:/None yet/.test(document.querySelector('#ownmat-list').textContent),kept:items.find(i=>i.id==='s1').material,row:/value="cupro"/.test(matRow('shirt','','')),other:/wmat-o/.test(matRow('shirt','cupro',''))}));
       ok(e.empty&&e.kept==='cupro'&&!e.row&&e.other,T+'Remove: no longer offered; the item using it keeps it (shown as Other with its name)');
       await ev(()=>closeSettings&&closeSettings());
       // ---- the close-up reader

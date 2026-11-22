@@ -32,7 +32,7 @@ L.run(async () => {
   const r = await L.phone('r', { invite: false });
   ev.rRestore = await restore(r); ev.rAfterRestore = await L.hits(r);
   ev.rWardrobe = await wardrobe(r);
-  const box = r.page.locator('#wardrobe .giopen[onclick*="__v12h(201)"]');
+  const box = r.page.locator('#wardrobe .giopen[data-id*="__v12h(201)"]');
   // tapped when it is there (a fixed app leaves the crafted item out); the verdict is the markers, not the box
   ev.boxCount = await box.count();
   if (ev.boxCount) { await box.scrollIntoViewIfNeeded(); const b = await box.boundingBox(); await r.tapAt(b.x + b.width / 2, b.y + b.height / 2); await L.sleep(800) }
