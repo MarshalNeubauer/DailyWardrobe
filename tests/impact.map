@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	03418384f2adbf0c5cd0
+# tested	cfe1e743bcc794f3c836
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts
@@ -1127,6 +1127,7 @@ asmahead.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmahead.test.js	tests/webkit.js	<any>
 asmahead.test.js	theme.js	<loaded>	applyTheme
 asmahead.test.js	toast.js	<loaded>
 asmahead.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	mvSig	todayBusy	todayFree
@@ -1868,7 +1869,6 @@ asmgl.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-asmgl.test.js	tests/webkit.js	<any>
 asmgl.test.js	theme.js	<loaded>	applyTheme
 asmgl.test.js	toast.js	<loaded>
 asmgl.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -4815,6 +4815,11 @@ combatboot.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapSo
 combatboot.test.js	today.js	<loaded>	addForSlot	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 combatboot.test.js	ui.js	<loaded>	addGate	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp
 combatboot.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	matMigrate	matOn	matRow	notesRow	sockToeMigrate	wardPendingRestore
+combatboot.test.js	watch/leather.jpg	<loaded>
+combatboot.test.js	watch/shirt-open.png	<loaded>
+combatboot.test.js	watch/shirt-tie.png	<loaded>
+combatboot.test.js	watch/suit.png	<loaded>
+combatboot.test.js	watch/vest.png	<loaded>
 combatboot.test.js	weather.js	<loaded>	loadWeather
 combatboot.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	materialSchema	multiPrompt	orNull	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes
 connkeep.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -8619,6 +8624,9 @@ lookplan.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 lookplan.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 lookplan.test.js	watch/leather.jpg	<loaded>
 lookplan.test.js	watch/shirt-open.png	<loaded>
+lookplan.test.js	watch/shirt-tie.png	<loaded>
+lookplan.test.js	watch/suit.png	<loaded>
+lookplan.test.js	watch/vest.png	<loaded>
 lookplan.test.js	weather.js	<loaded>	loadWeather
 lookworker.test.js	worker.js	<loaded>	corsFor	fetch	serve
 lookworker.test.js	worker/colormath.js	<loaded>	dE00	hexLab	hexRgb	rgbLab
@@ -11996,7 +12004,6 @@ restacts.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@
 restacts.test.js	tag-request.js	<loaded>	describeEstimate	readEstimate	texSig	visTok
 restacts.test.js	tagging.js	<loaded>	confTxt	readAbort	tagLive	tagMeasUndo	tagNewCol	tagNewPat	tagNotes	tagPatternAgain	tagRefineAgain	tagRefineUndo	tagSet	undoRefine
 restacts.test.js	tests/fixedplan.js	<any>
-restacts.test.js	tests/webkit.js	<any>
 restacts.test.js	theme.js	<loaded>	applyTheme
 restacts.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 restacts.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	mvSig	todayBusy	todayFree
@@ -14298,6 +14305,11 @@ sett.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapUse
 sett.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 sett.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerOpen	layerUp	needConn	netErr	uiEsc
 sett.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	fldRow	giNote	giTag	itemFieldNow	ivOn	matMigrate	matOn	matOnItem	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlt	wardFlush	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
+sett.test.js	watch/leather.jpg	<loaded>
+sett.test.js	watch/shirt-open.png	<loaded>
+sett.test.js	watch/shirt-tie.png	<loaded>
+sett.test.js	watch/suit.png	<loaded>
+sett.test.js	watch/vest.png	<loaded>
 sett.test.js	weather.js	<loaded>	loadWeather
 sett.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanCustom	cleanTag	correctionsText	corsFor	customText	fetch	lightText	measuredText	orNull	readCapped	sameText	serve	sha256Hex	spend	tagSchema	tagWithClaude	txt	utcDay	wbOf	whoIs
 sett.test.js	worker/links.js	<loaded>	readCapped
