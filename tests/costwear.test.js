@@ -3,11 +3,12 @@
 // cleanings counted from the records (item.cleans, item.cleaned) or estimated from wears ÷ wears per cleaning, the cost per wear
 // (nothing without a price, "Not worn yet" with no wears), Insights' card only with CPW_MIN priced items, the price synced field by
 // field between two devices, and the sizes at 320 and 390 px in both themes with no sideways scroll.
-const path=require('path'),fs=require('fs'),vm=require('vm'),{pathToFileURL}=require('url');
+const path=require('path'),vm=require('vm'),{pathToFileURL}=require('url');
+const {appSrc}=require('./appsrc');
 module.exports=async({ok,chromium,url,settle,ROOT})=>{
   {// the merge rule: a price set on one phone and a rename on the other both stay (merge.js mergeItem, field stamps from core.js itemFields)
     const ctx={console,localStorage:{getItem(){return null},setItem(){}},document:{querySelector(){return null}}};vm.createContext(ctx);
-    vm.runInContext(fs.readFileSync(path.join(ROOT,'merge.js'),'utf8')+fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={itemFields,mergeState,cleanRecord}',ctx);
+    vm.runInContext(appSrc(ROOT,'merge.js','core.js')+';this.K={itemFields,mergeState,cleanRecord}',ctx);
     const K=ctx.K,J=o=>JSON.parse(JSON.stringify(o)),base={id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',added:1000,updated:2000};
     const a=K.itemFields({...J(base),price:450,bought:'2025-03-02',updated:5000},J(base)),b=K.itemFields({...J(base),name:'Navy birdseye',updated:6000},J(base));
     const m=[K.mergeState({items:[a]},{items:[b]}).items[0],K.mergeState({items:[b]},{items:[a]}).items[0]];

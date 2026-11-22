@@ -4,9 +4,12 @@
 // made by a file other than the one that declares it. Each one must be in ALLOW below, with its exact count:
 // - a new cross-file write fails: give the state's owner a function and call that (planDirty, todayDirty, setWardrobe);
 // - a write that went away fails too, until its allowance is lowered or removed: the list only shrinks, so it stays the true picture.
+// A page script that is an ES module (type="module": none yet) owns the names it bridges onto globalThis (tests/modscope.js), since
+// those are what another file can still assign: a function or `let` handed over with Object.assign, a getter/setter pair. A name
+// keeps its owner file through the conversion, so the allowances carry over. A module's writes to other files' names count as before.
 const fs=require('fs'),path=require('path');
 const acorn=require('acorn'),escope=require('eslint-scope');
-const {scriptList}=require('./scriptlist');
+const modscope=require('./modscope');
 
 /* name -> {writing file: number of writes}: the writes on main when this test came (2026-11-17), lowered as owners take them over */
 const ALLOW={
@@ -40,22 +43,26 @@ const ALLOW={
   dbCur:{'about.js':1},
 };
 
-module.exports=async({ok,ROOT})=>{
-  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
-  const files=scriptList(html);
-  const asts={};
-  for(const f of files)asts[f]=acorn.parse(fs.readFileSync(path.join(ROOT,f),'utf8'),{ecmaVersion:'latest',sourceType:'script',locations:true,ranges:true});
-  /* who declares each mutable top-level name */
+/* {files, owner: name -> file, seen: name -> {writing file: n}, where: 'name file' -> [lines]} for the app in ROOT */
+function measure(ROOT){
+  const tags=modscope.pageScripts(ROOT),files=tags.map(t=>t.src),mod=Object.fromEntries(tags.map(t=>[t.src,t.module]));
+  const asts={},srcs={};
+  for(const f of files){srcs[f]=fs.readFileSync(path.join(ROOT,f),'utf8');asts[f]=acorn.parse(srcs[f],{ecmaVersion:'latest',sourceType:mod[f]?'module':'script',locations:true,ranges:true})}
+  /* who declares each mutable top-level name (a module: who bridges it) */
   const owner={};
-  for(const f of files)for(const st of asts[f].body){
+  for(const f of files){
+    if(mod[f]){const kind=new Map(modscope.declared(asts[f]).map(d=>[d.name,d.kind]));
+      for(const [n,how] of modscope.bridged(asts[f],srcs[f]).names)if(how==='accessor'||!/^(?:const|class|import)$/.test(kind.get(n)||''))owner[n]=f;
+      continue}
+    for(const st of asts[f].body){
     if(st.type==='FunctionDeclaration')owner[st.id.name]=f;
-    else if(st.type==='VariableDeclaration'&&st.kind!=='const')for(const d of st.declarations)if(d.id.type==='Identifier')owner[d.id.name]=f}
+    else if(st.type==='VariableDeclaration'&&st.kind!=='const')for(const d of st.declarations)if(d.id.type==='Identifier')owner[d.id.name]=f}}
   /* every write to one of them from another file: plain assignments, ++/--, destructuring, and window.name = … */
   const seen={},where={};
   const note=(name,f,line)=>{if(!owner[name]||owner[name]===f)return;
     const a=seen[name]=seen[name]||{};a[f]=(a[f]||0)+1;(where[name+' '+f]=where[name+' '+f]||[]).push(line)};
   for(const f of files){
-    const sm=escope.analyze(asts[f],{ecmaVersion:2024,sourceType:'script'}),gs=sm.globalScope;
+    const sm=escope.analyze(asts[f],{ecmaVersion:2024,sourceType:mod[f]?'module':'script'}),gs=sm.globalScope;
     for(const sc of sm.scopes)for(const r of sc.references){
       if(r.resolved&&r.resolved.scope!==gs)continue;   // a local of the same name
       if(!r.isWrite()||r.init&&sc===gs)continue;        // its own declaration
@@ -64,6 +71,11 @@ module.exports=async({ok,ROOT})=>{
       if(n.type==='MemberExpression'&&!n.computed&&n.object.type==='Identifier'&&/^(window|self|globalThis)$/.test(n.object.name)&&parent&&(parent.type==='AssignmentExpression'&&parent.left===n||parent.type==='UpdateExpression'))note(n.property.name,f,n.loc.start.line);
       for(const k in n){const v=n[k];if(Array.isArray(v))v.forEach(c=>walk(c,n));else if(v&&typeof v.type==='string')walk(v,n)}})(asts[f],null);
   }
+  return {files,owner,seen,where};
+}
+
+module.exports=async({ok,ROOT})=>{
+  const {files,owner,seen,where}=measure(ROOT);
   ok(files.length>40&&Object.keys(owner).length>1000,`index.html's ${files.length} scripts read, ${Object.keys(owner).length} mutable top-level names`);
   const fresh=[],over=[],under=[];
   for(const [name,by] of Object.entries(seen))for(const [f,n] of Object.entries(by)){
@@ -79,3 +91,4 @@ module.exports=async({ok,ROOT})=>{
   ok(!seen.settings&&Object.keys(seen.items||{}).join()==='analysis.js'&&Object.keys(seen.dayRecs||{}).sort().join()==='pack.js,today.js','the wardrobe, history and settings are set through core.js setWardrobe (only the planner\'s brief swaps in analysis.js, pack.js packPlanOf and today.js planWith remain)');
   ok(!seen.renderSettingsExtras,'no script replaces another\'s function (account.js and remind.js register their parts of Settings with settingsPart)');
 };
+module.exports.measure=measure;

@@ -2,10 +2,11 @@
 // entries of own colors, Care, workdays … each by their own stamp; a deletion against an edit made on a copy from before it; the owner's
 // "Delete everything" held on his other phones; Restore file's settings winning. core.js (itemFields/mergeItem, dayFields/mergeDay,
 // SET_SPLIT) and the worker's port (worker/backup.js mergeLite): the rules in Node, then two browser devices through the real worker.
-const path=require('path'),fs=require('fs'),vm=require('vm'),{pathToFileURL}=require('url');
+const path=require('path'),vm=require('vm'),{pathToFileURL}=require('url');
+const {appSrc}=require('./appsrc');
 module.exports=async({ok,chromium,url,ROOT})=>{
   const ctx={console,localStorage:{getItem(){return null},setItem(){}},document:{querySelector(){return null}}};vm.createContext(ctx);
-  vm.runInContext(fs.readFileSync(path.join(ROOT,'merge.js'),'utf8')+fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={itemFields,mergeItem,mergeState,dayFields,mergeDay,keySettings,stampSettings,mergeSettings,stateSig}',ctx);
+  vm.runInContext(appSrc(ROOT,'merge.js','core.js')+';this.K={itemFields,mergeItem,mergeState,dayFields,mergeDay,keySettings,stampSettings,mergeSettings,stateSig}',ctx);
   const K=ctx.K,J=o=>JSON.parse(JSON.stringify(o));
   const {mergeLite,dropFuture,clampStamps}=await import(pathToFileURL(path.join(ROOT,'worker','backup.js')).href);
   {// field stamps from a wrong clock (#485's rule): a save carrying one ahead is left out, a stored one is read back at the save time

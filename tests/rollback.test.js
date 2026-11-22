@@ -1,6 +1,7 @@
 // Daily backups and rolling back to them.
 // Joined by feature from 3 files (Round B, 2026-11-17: the code review's CR-10-14); each part below is one old file, its checks unchanged.
-const path=require('path'),fs=require('fs'),vm=require('vm'),{pathToFileURL}=require('url');
+const path=require('path'),vm=require('vm'),{pathToFileURL}=require('url');
+const {appSrc}=require('./appsrc');
 
 /* ---- was tests/rollback.test.js ---- */
 // Roll back, backups and their messages (2026-11-15, the new-user audit, fix round 4):
@@ -14,7 +15,7 @@ const path=require('path'),fs=require('fs'),vm=require('vm'),{pathToFileURL}=req
 const rollback=async({ok,chromium,url,ROOT})=>{
   /* ---- the rule, in Node ---- */
   const cx={console,localStorage:{getItem(){return null},setItem(){}},document:{querySelector(){return null}}};vm.createContext(cx);
-  vm.runInContext(fs.readFileSync(path.join(ROOT,'merge.js'),'utf8')+fs.readFileSync(path.join(ROOT,'core.js'),'utf8')+';this.K={stampSettings,stampAllSettings,keySettings,takeSettings,setKeys}',cx);
+  vm.runInContext(appSrc(ROOT,'merge.js','core.js')+';this.K={stampSettings,stampAllSettings,keySettings,takeSettings,setKeys}',cx);
   const {stampSettings,stampAllSettings,keySettings,takeSettings,setKeys}=cx.K,J=o=>JSON.parse(JSON.stringify(o));
   const mem=keySettings({workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,vestMode:'always',laundryDays:2,holidays:{country:'DE',list:[]},updated:5});
   const snap=stampAllSettings({workdays:[0,1,2,3,4],blazerDays:[4],units:null,location:null,updated:1},9000);
