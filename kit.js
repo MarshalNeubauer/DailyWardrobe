@@ -349,7 +349,7 @@ function kitRow(c,line){const probs=[],given=new Set();
   else{const n=[c.desc,c.name,c.type,c.notes].map(kitQtyIn).find(x=>x>0);if(n)qty=n}
   if(qty>KIT_QTY_MAX){probs.push(`${qty} asked for: ${KIT_QTY_MAX} added at most`);qty=KIT_QTY_MAX}
   // what is kept of long text (wardrobe.js WARD_MAX), said (W2-12-05)
-  const MX=typeof WARD_MAX==='object'?WARD_MAX:{name:60,brand:40,material:40,notes:500};
+  const MX=WARD_MAX;
   for(const k of ['name','brand','material','notes'])if(card[k]&&card[k].length>MX[k]){card[k]=card[k].slice(0,MX[k]).trim();probs.push(`${k} cut to ${MX[k]} characters`)}
   return {line,ok:true,card,probs,qty,given}}
 /* a line of a list with no column names ("Navy suit", "White shirt x3", "Charcoal pinstripe suit") → {line, qty, type, col, col2, rest} */
@@ -550,7 +550,7 @@ const kitHasSample=()=>items.some(i=>i.sample&&!kitEdited(i));   // (pieces he m
    untouched sample piece, which was then uploaded and kept on Remove the sample), nor does out of rotation (itemsheet.js togglePause sets
    kitNoMine around its save: paused sample shoes stayed after Remove the sample) */
 let kitNoMine=false;
-const kitUserEdit=i=>{if(i&&i.sample&&!kitNoMine&&typeof editing!=='undefined'&&editing===i.id)i.sampleMine=1};
+const kitUserEdit=i=>{if(i&&i.sample&&!kitNoMine&&editing===i.id)i.sampleMine=1};
 const kitEdited=i=>!!i.sample&&!!i.sampleMine;
 /* the sample pieces the earlier rule counted as his (fix round 3, W1-3-01: an edit, a pause or a cleaning on 14-15 Nov builds made a piece
    his, updated more than KIT_EDIT_MS after added; the rule above turned them back into sample, and Remove the sample took them with their
@@ -605,7 +605,7 @@ async function kitSampleRemove(quiet){if(kitSampling)return;   // quiet: already
   const also=kn?`, and so ${kn===1?'does the sample piece':`do the ${kn} sample pieces`} you changed: ${kn===1?'it is':'they are'} yours now`:'';
   if(!quiet&&gone.length&&!await askConfirm(`Remove the ${gone.length} sample piece${gone.length===1?'':'s'}?\n\nYour own clothes stay${also}.`,{ok:'Remove',danger:true}))return;
   kitSampling=true;kitSampleBusy(true);if(!quiet)toast('Removing the sample…',8000);
-  try{if(typeof recordRun!=='undefined'&&recordRun)await Promise.resolve(recordRun).catch(()=>{});   // (a recording of today from the plan with the sample, still running, would write its pieces back after)
+  try{if(recordRun)await Promise.resolve(recordRun).catch(()=>{});   // (a recording of today from the plan with the sample, still running, would write its pieces back after)
     const ids=new Set(gone.map(i=>i.id)),mine=keep.map(i=>{const c={...i};delete c.sample;delete c.sampleMine;return c}),T=todayDate();
     const orig=Object.values(dayRecs).filter(r=>[...ids].some(id=>JSON.stringify(r).includes(id)));
     // a day made only from the sample keeps the stamp KIT_YIELD: the account's own record of it (another phone's) wins (kitDayOwn)

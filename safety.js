@@ -101,7 +101,7 @@ async function pruneTagImgs(){
     return n}
   catch(e){console.warn('kept tagging copies not checked',e);return 0}}
 /* once the wardrobe is loaded (from the start-up chain in app.js) */
-function safetyStart(){pruneTagImgs();errSoon(8000);if(items.length)askPersist();if(items.length&&typeof safariRemind==='function')setTimeout(safariRemind,5000);if(typeof wardPendingRestore==='function')whenPulled(wardPendingRestore);addRestore()}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add-keep.js)
+function safetyStart(){pruneTagImgs();errSoon(8000);if(items.length)askPersist();if(items.length)setTimeout(safariRemind,5000);whenPulled(wardPendingRestore);addRestore()}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add-keep.js)
 
 /* ---- tagging that failed: why, on the card, with Try again ---- */
 let tagWhy='',tagNetLast=false;
@@ -134,7 +134,7 @@ const tagFailNote=q=>q.tagErr&&!inviteOver()?`<div class="tagfail" role="alert">
 async function retryTag(i){const q=queue[i];if(!q||q.busy||!q.tagImg)return;
   const ac=typeof AbortController==='function'?new AbortController():null;q.abort=ac;   // Stop on the card (add.js stopRead)
   q.busy=1;renderAdd();let ai=null;const out={};try{ai=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),out,...(ac?{signal:ac.signal}:{})})}catch(e){console.warn(e)}
-  q.busy=0;q.abort=null;if(q.stopped){delete q.stopped;delete q.tagNet;q.tagErr=typeof STOPPED==='string'?STOPPED:'You stopped the reading.'}
+  q.busy=0;q.abort=null;if(q.stopped){delete q.stopped;delete q.tagNet;q.tagErr=STOPPED}
   else if(ai){try{delete q.tagErr;delete q.tagNet;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}catch(e){console.warn('answer not applied',e);errNote(e,'Try again: answer not applied')}}else tagFailed(q,out.err);
   // drawn again however it went (a step that threw left the card as it was, Confirm off: tagging.js refineFromCloseup, 2026-11-16)
   addKeep();

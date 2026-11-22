@@ -201,7 +201,7 @@ function homeScreenGuide(){if(typeof setupShown==='function'&&setupShown())retur
 function homeTold(set){try{if(set)localStorage.setItem('home_told','1');return localStorage.getItem('home_told')==='1'}catch{return false}}
 /* who this device is connected as, remembered for the connection's code ({tok, role} in localStorage.acct_role), so the app
    knows it at start-up without asking the server: testers see no costs (showCost in app.js) */
-function rememberRole(m){try{const b=acctBase();if(b&&m&&m.role)localStorage.setItem('acct_role',JSON.stringify({tok:b.tok,role:m.role,...(m.id?{id:String(m.id)}:{})}))}catch{}if(typeof applyRole==='function')applyRole()}   // (id: a new link for the same account is known as such, acctJoin)
+function rememberRole(m){try{const b=acctBase();if(b&&m&&m.role)localStorage.setItem('acct_role',JSON.stringify({tok:b.tok,role:m.role,...(m.id?{id:String(m.id)}:{})}))}catch{}applyRole()}   // (id: a new link for the same account is known as such, acctJoin)
 function acctRole(){if(acct.me&&acct.me.role)return acct.me.role;
   try{const r=JSON.parse(localStorage.getItem('acct_role')||'null'),b=acctBase();return r&&b&&r.tok===b.tok?r.role:null}catch{return null}}
 const isTester=()=>acctRole()==='tester';
