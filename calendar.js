@@ -125,26 +125,26 @@ function calStatus(){const last=calRead();if(!last||!last.t)return last&&last.er
   const s=calSeen(),used=calFound().filter(x=>s[x.ev.id]==='k'||x.done).length;
   return `Last read ${at} · ${used} event${used===1?'':'s'} used`+(last.err?` · ${last.err}`:'')}
 function calRow(x,state){const e=x.ev,when=calDateTxt(e.start,e.end)+(e.allDay||!e.time?'':' · '+calTime(e.time));
-  const btns=state==='new'?`${x.can?`<button type="button" class="cal-ok" onclick="calKeep('${jsq(e.id)}')" aria-label="Use: ${esc(x.what)}, ${esc(e.title)}">✓</button>`:''}<button type="button" class="cal-no" onclick="calDismiss('${jsq(e.id)}')" aria-label="Dismiss ${esc(e.title)}">✕</button>`
-    :`<button type="button" class="linkbtn" onclick="calUndoSeen('${jsq(e.id)}')">${state==='kept'?'Used':'Dismissed'} · Undo</button>`;
+  const btns=state==='new'?`${x.can?`<button type="button" class="cal-ok" data-act="calKeepTap" data-id="${esc(e.id)}" aria-label="Use: ${esc(x.what)}, ${esc(e.title)}">✓</button>`:''}<button type="button" class="cal-no" data-act="calDismissTap" data-id="${esc(e.id)}" aria-label="Dismiss ${esc(e.title)}">✕</button>`
+    :`<button type="button" class="linkbtn" data-act="calUndoTap" data-id="${esc(e.id)}">${state==='kept'?'Used':'Dismissed'} · Undo</button>`;
   return `<li class="cal-row ${state}${x.can?'':' cant'}"><div class="cal-ev"><b dir="auto">${esc(e.title||'(no title)')}</b><small>${when}${e.location?` · <span dir="auto">${esc(e.location)}</span>`:''}</small><span class="cal-to">→ ${esc(x.what)}</span></div><div class="cal-btns">${btns}</div></li>`}
 const calTime=t=>{const [h,m]=String(t).split(':').map(Number);const d=new Date(2026,0,1,h,m);return d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})};
 function renderCalUI(){const box=$('#cal-box');if(!box)return;const url=calLink(),conn=isConnected();
   const typed=$('#cal-link')?$('#cal-link').value:'';
   let h='';
   if(!url){h+=`<p class="shelp">Share a calendar link once and the app finds weddings, funerals, formal days, days off and trips in your next 60 days. You choose what it uses.</p>
-<div class="sform cal-form"><input type="url" id="cal-link" inputmode="url" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="webcal://… or https://….ics" aria-label="Calendar link"><button type="button" id="cal-connect" onclick="calConnect()"${conn&&!calBusy?'':' disabled'}>Connect</button></div>
+<div class="sform cal-form"><input type="url" id="cal-link" inputmode="url" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="webcal://… or https://….ics" aria-label="Calendar link"><button type="button" id="cal-connect" data-act="calConnectTap"${conn&&!calBusy?'':' disabled'}>Connect</button></div>
 ${conn?'':'<p class="shelp">Reading a calendar needs a connection: Connect in ⚙ Settings first.</p>'}`}
   else{h+=`<div class="cal-conn"><b>Connected</b><span class="mut" id="cal-masked">${esc(calMask(url))}</span></div>
 <p class="shelp" id="cal-status">${esc(calStatus())}</p>
-<div class="sactions"><button type="button" id="cal-read" onclick="calRefresh()"${conn&&!calBusy?'':' disabled'}>Read now</button><button type="button" class="danger" id="cal-off" onclick="calDisconnect()">Disconnect</button></div>`}
+<div class="sactions"><button type="button" id="cal-read" data-act="calReadTap"${conn&&!calBusy?'':' disabled'}>Read now</button><button type="button" class="danger" id="cal-off" data-act="calOffTap">Disconnect</button></div>`}
   h+=`<p class="shelp" aria-live="polite" id="cal-msg">${esc(calMsg)}</p>`;
   if(url){const s=calSeen(),f=calFound(),nw=f.filter(x=>!s[x.ev.id]&&!x.done),kept=f.filter(x=>s[x.ev.id]==='k'||(!s[x.ev.id]&&x.done)),gone=f.filter(x=>s[x.ev.id]==='x');
     h+=`<div class="cal-review" id="cal-review">${f.length?`<div class="slabel">Found ${f.length} event${f.length===1?'':'s'}</div>`:'<p class="shelp">No weddings, funerals, formal days, days off or trips in the next 60 days.</p>'}
 ${nw.length?`<ul class="cal-list" id="cal-new-list">${nw.map(x=>calRow(x,'new')).join('')}</ul>`:''}
 ${kept.length?`<ul class="cal-list">${kept.map(x=>calRow(x,'kept')).join('')}</ul>`:''}
 ${gone.length?`<ul class="cal-list">${gone.map(x=>calRow(x,'gone')).join('')}</ul>`:''}</div>`}
-  h+=`<div class="slabel cal-howh">How to get the link</div><div class="sactions cal-guides"><button type="button" onclick="calGuide('icloud')">iPhone (iCloud)</button><button type="button" onclick="calGuide('google')">Google</button><button type="button" onclick="calGuide('outlook')">Outlook</button></div>
+  h+=`<div class="slabel cal-howh">How to get the link</div><div class="sactions cal-guides"><button type="button" data-act="calGuideTap" data-g="icloud">iPhone (iCloud)</button><button type="button" data-act="calGuideTap" data-g="google">Google</button><button type="button" data-act="calGuideTap" data-g="outlook">Outlook</button></div>
 <p class="shelp cal-priv">Anyone with a calendar link can read that calendar, so the app treats it like a password: it is kept in your settings (on your devices and in your backup) and shown here only by where it points. The server reads the calendar when the app asks, keeps nothing, and sends back only dates, titles and places.</p>`;
   box.innerHTML=h;const inp=$('#cal-link');if(inp&&typed)inp.value=typed;
   const sm=$('#sum-calendar');if(sm)sm.textContent=calSummary()}
@@ -171,9 +171,9 @@ async function calUndoSeen(id){const was=calSeen()[id];await calSetSeen(id,null)
 
 /* ---- Today: "2 new calendar events" and, on a day of a trip kept, the trip ---- */
 function calBanner(day){if(!calLink())return '';let h='';const n=calNew().length,home=!day||key(day)===key(typeof homeDay==='function'?homeDay():todayDate());
-  if(n&&home)h+=`<div class="cal-banner" id="cal-new"><span>${n} new calendar event${n===1?'':'s'}</span><button type="button" class="linkbtn" onclick="openSettings('calendar')">Review</button></div>`;
+  if(n&&home)h+=`<div class="cal-banner" id="cal-new"><span>${n} new calendar event${n===1?'':'s'}</span><button type="button" class="linkbtn" data-act="calReviewTap">Review</button></div>`;
   if(day){const k=isoKey(day),s=calSeen(),t=calFound().find(x=>x.k==='trip'&&s[x.ev.id]==='k'&&x.ev.start<=k&&x.ev.end>=k);
-    if(t)h+=`<p class="cal-trip" id="cal-trip">Trip: <span dir="auto">${esc(t.ev.title)}</span> · <button type="button" class="linkbtn" onclick="openPack()">Packing list</button></p>`}
+    if(t)h+=`<p class="cal-trip" id="cal-trip">Trip: <span dir="auto">${esc(t.ev.title)}</span> · <button type="button" class="linkbtn" data-act="calPackTap">Packing list</button></p>`}
   return h}
 
 /* ---- the walkthrough: how to get the link, with drawn screens (simple mock-ups in the app's own colors, not screenshots) ---- */
@@ -215,3 +215,15 @@ const CAL_GUIDES={
     CAL_PASTE]};
 /* opened from Settings → Calendar; closing goes back there */
 function calGuide(which){const c=CAL_GUIDES[which];if(!c)return;closeSettings();kitOpen(c,()=>openSettings('calendar'))}
+/* what the calendar's controls do (act.js): Settings → Calendar's Connect, Read now, Disconnect and the three guides (data-g), an
+   event's ✓, ✕ and Undo (the event's id in data-id), and Today's "Review" and "Packing list" */
+function calConnectTap(){calConnect()}
+function calReadTap(){calRefresh()}
+function calOffTap(){calDisconnect()}
+function calGuideTap(el){calGuide(el.dataset.g)}
+function calKeepTap(el){calKeep(el.dataset.id)}
+function calDismissTap(el){calDismiss(el.dataset.id)}
+function calUndoTap(el){calUndoSeen(el.dataset.id)}
+function calReviewTap(){openSettings('calendar')}
+function calPackTap(){openPack()}
+acts({calConnectTap,calReadTap,calOffTap,calGuideTap,calKeepTap,calDismissTap,calUndoTap,calReviewTap,calPackTap});

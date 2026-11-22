@@ -82,11 +82,11 @@ function missedPattern(q){if(!q||!q.raw||!q.raw.tex||(patBase(q.pattern)||'solid
   q.missed={c:q.raw.tex,p};return p}
 function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);if(q.meas)measureAndApply(q);renderAdd()}
 const settSummary=s=>!s?'generic':s.camo?`camouflage in its tagged colors${s.src==='claude+pixels'?', laid out as Claude and the photo read it':s.src==='pixels'?', laid out as the photo shows it':''}`:s.tex?`a ${TEX_WORDS[s.tex.kind]||'woven texture'} (${s.tex.grid[0].length}×${s.tex.grid.length} repeat), read by Claude with the contrast from the close-up`:s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colors from the photo`:s.src==='claude+pixels'?`${s.bands.length} band${s.bands.length===1?'':'s'}${s.cross?' and lines the other way':''}, read by Claude with the colors from the photo`:`${s.bands.length} color band${s.bands.length===1?'':'s'}${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
-function settNote(q,i){if(!readable(q.type,q.pattern,q.weave))return '';
+function settNote(q){if(!readable(q.type,q.pattern,q.weave))return '';
   if(q.patternReading)return '<p class="tagnote mut"><small><span class="spin" aria-hidden="true"></span>Claude is reading the pattern…</small></p>';
-  if(q.settOff)return `<p class="tagnote mut"><small>Drawn with the simple ${esc(patName(q.pattern))} pattern.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the pattern from the photo</button></p>`;
+  if(q.settOff)return `<p class="tagnote mut"><small>Drawn with the simple ${esc(patName(q.pattern))} pattern.</small><button type="button" class="chipbtn" data-act="settTap" ${cardAt(q)}>Use the pattern from the photo</button></p>`;
   if(q.settReject)return `<p class="tagnote settrej"><small>The pattern reader saw ${q.settReject==='cross'?'lines crossing the stripes':'level bands'}, which isn't ${esc(patName(q.pattern).toLowerCase())}: drawn with the simple pattern.</small></p>`;
-  return q.sett?`<p class="tagnote"><small>Pattern: ${settSummary(q.sett)}.</small><button type="button" class="chipbtn" onclick="toggleSett(${i})">Use the simple pattern</button></p>`:''}
+  return q.sett?`<p class="tagnote"><small>Pattern: ${settSummary(q.sett)}.</small><button type="button" class="chipbtn" data-act="settTap" ${cardAt(q)}>Use the simple pattern</button></p>`:''}
 /* Wardrobe editor: read it again from the kept sharp copy (or the close-up) */
 async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   const toCanvas=async src=>{if(!src)return null;try{const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c}catch{return null}};
@@ -259,3 +259,6 @@ function texFromSpec(spec,{tex}){const t=spec&&spec.texture;if(!t||!t.grid||t.gr
   const L=h=>rgbLab(...hexRgb(h))[0];
   return {v:4,tex:{kind:t.kind,grid:t.grid,aspect:+(+t.aspect||t.grid.length/t.grid[0].length).toFixed(2),lighter:L(t.raised.hex)>=L(t.ground.hex),contrast:t.contrast,rel:+(rel??TEX_REL[t.contrast]??.08).toFixed(3),measured:rel!=null},
     a:0,cr:+(+spec.repeatsInCloseup||8).toFixed(2),tr:+(+spec.repeatsAcrossItem||100).toFixed(2),src:'claude+pixels'}}
+/* the Add card's "Use the pattern from the photo" / "Use the simple pattern" (act.js; the card by its id: add-save.js cardIx) */
+function settTap(el){toggleSett(cardIx(el))}
+acts({settTap});

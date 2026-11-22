@@ -153,14 +153,14 @@ function askDelete(){
   // (re-audit 2026-11-15: it still listed the server's backup and "connect again to get it back")
   if(inviteOver()){
     box.innerHTML=`<p><b>This can’t be undone.</b> It deletes:</p><ul><li>your wardrobe, outfit history and settings on this device</li><li>the photos kept on this device</li></ul><p class="shelp">Your invitation has ended, so this phone can’t reach the server any more. Anything still kept there under that invitation is up to the person who invited you: ask them if you want it removed.</p>`+
-      `<div class="sactions"><button type="button" class="danger" id="del-device" onclick="deleteMyData(false)">Delete from this device</button><button type="button" id="del-cancel" onclick="cancelDelete()">Cancel</button></div>`;
+      `<div class="sactions"><button type="button" class="danger" id="del-device" data-act="delDeviceTap">Delete from this device</button><button type="button" id="del-cancel" data-act="delCancelTap">Cancel</button></div>`;
     box.hidden=false;if(box.scrollIntoView)box.scrollIntoView({block:'nearest'});return}
   const c=aboutConn();
   // a tester's "everything" ends the invitation too: the server deletes it first, and its link stops working on every phone
   const t=c&&isTester();
   box.innerHTML=`<p><b>This can’t be undone.</b> It deletes:</p><ul><li>your wardrobe, outfit history and settings on this device</li><li>the photos kept on this device</li>${c?'<li>your backup, its daily copies and your photos on the server</li>':''}${t?'<li>your invitation: “Delete everything” ends it, so its link stops working, also on your other phones; to use the app with the server again you need a new link</li>':''}</ul>`+
     (c?'<p class="shelp">“This device only” leaves the server’s copy as it is: connect again to get it back.</p>':'<p class="shelp">This device isn’t connected, so there is nothing on a server to delete.</p>')+
-    `<div class="sactions">${c?'<button type="button" class="danger" id="del-all" onclick="deleteMyData(true)">Delete everything</button>':''}<button type="button" class="danger" id="del-device" onclick="deleteMyData(false)">Delete from this device only</button><button type="button" id="del-cancel" onclick="cancelDelete()">Cancel</button></div>`;
+    `<div class="sactions">${c?'<button type="button" class="danger" id="del-all" data-act="delAllTap">Delete everything</button>':''}<button type="button" class="danger" id="del-device" data-act="delDeviceTap">Delete from this device only</button><button type="button" id="del-cancel" data-act="delCancelTap">Cancel</button></div>`;
   box.hidden=false;if(box.scrollIntoView)box.scrollIntoView({block:'nearest'})}
 function cancelDelete(){const box=$('#del-confirm');if(box){box.hidden=true;box.innerHTML=''}}
 /* -> true once the database is gone (checked), false when it couldn't be deleted: then nothing else is cleared and the app works on.
@@ -272,4 +272,8 @@ function updCheckTap(){checkForUpdate(true)}
 function updNowTap(){updateNow()}
 function fbSendTap(){sendFeedback()}
 function delAskTap(){askDelete()}
-acts({updCheckTap,updNowTap,fbSendTap,delAskTap});
+/* the delete card's own buttons */
+function delDeviceTap(){deleteMyData(false)}
+function delAllTap(){deleteMyData(true)}
+function delCancelTap(){cancelDelete()}
+acts({updCheckTap,updNowTap,fbSendTap,delAskTap,delDeviceTap,delAllTap,delCancelTap});

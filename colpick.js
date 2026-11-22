@@ -331,7 +331,7 @@ const cnHasClose=it=>!!(colPick&&colPick.src!=='s'&&it&&it.texture);
 function cnPaperDefault(nc){const it=colTarget();if(!cnHasClose(it))return;const set=r=>{if(!nc.closeSet&&nc.kind==='colour')nc.closeOn=!!(r&&r.ref)};const r=paperNow(it);
   if(r){set(r);return}paperOf(it).then(r=>{if(!colPick||colPick.newc!==nc||!r)return;set(r);renderColPick(true)})}
 function cnToggleClose(){const nc=colPick&&colPick.newc;if(!nc)return;nc.closeOn=!nc.closeOn;nc.closeSet=true;renderColPick(true)}
-const cnRetakeHtml=()=>colPick&&colPick.src==='e'?' '+closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',file:'f=>cnRetake(f)',cloth:paperCloth(colTarget()||{})}):'';   // the close-up chooser on a touch screen (ui.js)
+const cnRetakeHtml=()=>colPick&&colPick.src==='e'?' '+closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',act:' data-act-change="cnRetakeFile"',cloth:paperCloth(colTarget()||{})}):'';   // the close-up chooser on a touch screen (ui.js)
 async function cnRetake(f){const nc=colPick&&colPick.newc;if(!nc||colPick.src!=='e'||!f)return;const id=colPick.ref;await replaceTexture(id,f);
   if(!colPick||colPick.newc!==nc)return;nc.closeSet=false;await paperOf(colTarget());if(!colPick||colPick.newc!==nc)return;cnPaperDefault(nc);renderColPick(true)}
 function cnPaperLine(kind){const it=colTarget();if(!cnHasClose(it))return '';const r=paperNow(it);if(!r)return '';
@@ -628,7 +628,7 @@ function rdBack(){if(rdHist!==undefined||rd)rdClose(true)}
 /* the page under it, redrawn (the done card, the cost line) */
 function rdRefresh(src,id){if(src==='q'){renderAdd()}else if(typeof editing!=='undefined'&&editing===id)renderWardrobe()}
 const rdPaperHtml=pr=>!pr?'':pr.ref?'<span class="rdpaper ok" id="rd-paper">✓ White paper found: true color</span>':`<span class="rdpaper no" id="rd-paper">! No white paper${pr.warm?', warm light':''}</span>`;
-const rdRetakeHtml=it=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',file:'f=>rdRetake(f)',cloth:paperCloth(it)});
+const rdRetakeHtml=it=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',act:' data-act-change="rdRetakeFile"',cloth:paperCloth(it)});
 function rdLightNote(it,me){const s=me.sent;if(!s||s.wb!==false)return '';
   return s.warm?`<div class="cnwarm" id="rd-warm" role="note"><span aria-hidden="true">☀︎</span><span>Taken in warm light — the color may be yellower than the cloth; add white paper for a truer color.<br>${rdRetakeHtml(it)}</span></div>`
     :`<p class="cnwhy cnnopaper" id="rd-warm">No white paper in the close-up, so this shade is Claude’s best guess from the photo as taken. ${rdRetakeHtml(it)}</p>`}
@@ -796,6 +796,9 @@ function rdAgainTap(){rdRun(rd.src,rd.id)}
 function rdUndoAllTap(){rdUndoAll()}
 /* index.html's (act.js): the color sheet's backdrop */
 function colBackdropTap(){closeColPick()}
+/* a close-up retaken from the New color sheet and from the reading sheet (ui.js closeupBtn, cuGot) */
+function cnRetakeFile(el,ev,f){cuGot(el,f,x=>cnRetake(x))}
+function rdRetakeFile(el,ev,f){cuGot(el,f,x=>rdRetake(x))}
 acts({colBtnTap,cpViewTap,cpTileTap,cpCloseTap,cpUseTap,cpPicsTap,cpAskTap,cpAskAllTap,cnOpenTap,pnOpenTap,cnBackTap,cnCloseupTap,cnAskTap,cnDescType,cnDescKey,
   cnKindTap,cnAddTap,cnUseOldTap,pnAnywayTap,cnBasePick,cnTypeTap,cnAccentTap,cnForPick,cnSqPress,cnHuePress,cnSqKey,cnHueKey,cnSlideUp,cnHexType,cnHexDone,cnNameType,
-  rdReadTap,rdKeepTap,rdChangeTap,rdUndoTap,rdUseTap,rdBothTap,rdCloseTap,rdAgainTap,rdUndoAllTap,colBackdropTap});
+  rdReadTap,rdKeepTap,rdChangeTap,rdUndoTap,rdUseTap,rdBothTap,rdCloseTap,rdAgainTap,rdUndoAllTap,colBackdropTap,cnRetakeFile,rdRetakeFile});

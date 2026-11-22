@@ -74,9 +74,9 @@ function renderRemindUI(){const el=document.querySelector('#remind-box');if(!el)
   let body;
   if(ios)body=`<p class="shelp">On an iPhone, reminders come to the app on your Home Screen: add it there (${homeShareShort()}), open it and switch this on.</p>`;
   else if(!remindCan())body='<p class="shelp">This browser can’t show reminders from the app.</p>';
-  else body=`<div class="dress-row"><span class="dress-txt"><b id="remind-l">Remind me</b><small id="remind-h">A notification with the day’s outfit, on workdays</small></span><button type="button" class="dress-sw${p.on?' on':''}" id="remind-sw" role="switch" aria-checked="${p.on}" aria-labelledby="remind-l" aria-describedby="remind-h"${remindBusy?' disabled':''} onclick="${p.on?'remindOff()':'remindOn()'}"><i></i></button></div>
-    <div class="dress-row"><span class="dress-txt"><b id="care-rem-l">Cleaning reminders</b><small id="care-rem-h">A notification when a suit or blazer is on its last wear or due for the cleaner</small></span><button type="button" class="dress-sw${care?' on':''}" id="care-rem-sw" role="switch" aria-checked="${care}" aria-labelledby="care-rem-l" aria-describedby="care-rem-h"${remindBusy?' disabled':''} onclick="${care?'careRemindOff()':'careRemindOn()'}"><i></i></button></div>
-    <label class="srow">Time <input type="time" id="remind-time" value="${p.time}" onchange="remindTime(this.value)"></label>`;
+  else body=`<div class="dress-row"><span class="dress-txt"><b id="remind-l">Remind me</b><small id="remind-h">A notification with the day’s outfit, on workdays</small></span><button type="button" class="dress-sw${p.on?' on':''}" id="remind-sw" role="switch" aria-checked="${p.on}" aria-labelledby="remind-l" aria-describedby="remind-h"${remindBusy?' disabled':''} data-act="remindSwTap"><i></i></button></div>
+    <div class="dress-row"><span class="dress-txt"><b id="care-rem-l">Cleaning reminders</b><small id="care-rem-h">A notification when a suit or blazer is on its last wear or due for the cleaner</small></span><button type="button" class="dress-sw${care?' on':''}" id="care-rem-sw" role="switch" aria-checked="${care}" aria-labelledby="care-rem-l" aria-describedby="care-rem-h"${remindBusy?' disabled':''} data-act="careRemSwTap"><i></i></button></div>
+    <label class="srow">Time <input type="time" id="remind-time" value="${p.time}" data-act-change="remindTimePick"></label>`;
   el.innerHTML=`<div class="slabel">Morning reminder</div>${body}<p class="shelp remind-msg" role="status">${remindMsg?acctEsc(remindMsg):''}</p>`}
 async function remindTime(v){if(!/^\d\d:\d\d$/.test(v))return;const p={...remindPrefs(),time:v};remindSave(p);if(remindAny(p)){localStorage.removeItem('remind_sent');await remindRefresh();remindMsg=`Notifications at ${v}.`;renderRemindUI()}}
 /* start-up: draw with Settings' extras, and refresh once the app is up */
@@ -88,3 +88,8 @@ async function remindTime(v){if(!/^\d\d:\d\d$/.test(v))return;const p={...remind
    iOS suspends a page within seconds, so a swap, a rename or a deletion just before closing never reached the 3 s refresh and the
    morning's notification named the old outfit or a deleted piece (CR-4-09) */
 function remindHidden(){const p=remindPrefs();if(!remindAny(p))return;remindKeep(p).catch(()=>{})}
+/* Settings' reminder switches and time (act.js): a tap turns a switch the other way from what it shows */
+function remindSwTap(el){if(el.getAttribute('aria-checked')==='true')remindOff();else remindOn()}
+function careRemSwTap(el){if(el.getAttribute('aria-checked')==='true')careRemindOff();else careRemindOn()}
+function remindTimePick(el){remindTime(el.value)}
+acts({remindSwTap,careRemSwTap,remindTimePick});

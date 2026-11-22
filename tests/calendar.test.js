@@ -158,7 +158,7 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
     ok(k.trip.a==='2026-12-07'&&k.trip.b==='2026-12-09'&&k.calls.includes('packSetTrip 2026-12-07 2026-12-09'),`✓ on the conference in Dubai sets the Packing list's trip (${JSON.stringify(k.trip)})`);
     ok(k.seen===5,'each kept event is remembered by its id');
     // a dismissal
-    const dId=await p.evaluate(()=>{const r=[...document.querySelectorAll('#cal-new-list .cal-row')].find(x=>/Dress down/.test(x.textContent));const id=r.querySelector('.cal-no').getAttribute('onclick').match(/'([0-9a-f]{16})'/)[1];r.querySelector('.cal-no').click();return id});
+    const dId=await p.evaluate(()=>{const r=[...document.querySelectorAll('#cal-new-list .cal-row')].find(x=>/Dress down/.test(x.textContent));const id=r.querySelector('.cal-no').dataset.id;r.querySelector('.cal-no').click();return id});
     await p.waitForFunction(id=>settings.calSeen&&settings.calSeen[id]==='x',dId,{timeout:5000});
     const st=await p.evaluate(()=>$('#cal-status').textContent);
     ok(/ · 5 events used$/.test(st),`the status counts the events used ("${st}")`);

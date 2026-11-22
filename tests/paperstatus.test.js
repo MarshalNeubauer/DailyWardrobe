@@ -42,7 +42,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await p.evaluate(()=>{openItem('k1');const none=!document.querySelector('#item-view .wbstcard');openItem('m1');return none}),'no hint for an item without a close-up (shoes)');
     await settle(p,300);
     // ---- after Replace close-up
-    const replace=async(name,u,sel='#item-view .phtools label:has(.vfile[onchange*=replaceTexture]) input')=>{const h=await p.$(sel);await p.evaluate(()=>{const l=document.querySelector('#ivwb');if(l)l.remove();phEdit.paper=null});
+    const replace=async(name,u,sel='#item-view .phtools label.pt-closeup input')=>{const h=await p.$(sel);await p.evaluate(()=>{const l=document.querySelector('#ivwb');if(l)l.remove();phEdit.paper=null});
       await h.setInputFiles(file(name,u));
       await p.waitForFunction(()=>{const it=items.find(x=>x.id==='m1');return it.texture&&phEdit.paper===texSig(it.texture)&&!!document.querySelector('#ivwb')})};
     const line=()=>p.evaluate(()=>{const l=document.querySelector('#ivwb');return {cls:l.className,text:l.textContent,retake:!!l.querySelector('label.wbretake input[type=file]'),under:!!l.closest('#ivct')&&!!l.nextElementSibling&&l.nextElementSibling.classList.contains('wbsteps')}});

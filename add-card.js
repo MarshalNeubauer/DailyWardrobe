@@ -64,7 +64,7 @@ function addCkSecs(q,i){const man=!!q.manual||!q.ai,c=q.conf||{},chk=q.checked||
   // Texture match: counted once there is a close-up
   if(tex){const rd=cardReading(q),cloth=paperCloth(q),lab=hasCu?cmpLab('q',q):null,d=hasCu?cmpDiff(q,lab):null,p=hasCu?cmpPaper('q',q):null;
     const blur=q.manual&&q.meas&&q.meas.src==='closeup'&&q.meas.sharp!=null&&q.meas.sharp<BLUR_SHARP?'<p class="tagnote blurnote"><small>The close-up is too blurry to read the weave: retake it?</small></p>':'';
-    const pick=(label,cls,mode)=>closeupBtn({label,cls,mode,file:`f=>addTexture(${qh(q)},f)`,remove:mode==='replace'?`dropTexture(${qh(q)})`:'',cloth});
+    const pick=(label,cls,mode)=>closeupBtn({label,cls,mode,act:` data-act-change="cardCuFile" ${cardAt(q)}`,remove:mode==='replace'?'cardCuRemove':'',cloth});
     // while Claude reads the close-up, no Replace, Retake, Remove or Read: one reading per card (CR-2-03: a second close-up paid twice and
     // switched Confirm back on half way)
     const body=hasCu?cmpHtml(q.id,q.texture,cmpDrawn(q),!!(p&&p.ref))+cmpMatchHtml('q',q.id,q,lab)+cmpPaperLine(p,rd?'':pick('Retake close-up','linkbtn wbretake','retake'))+blur+
@@ -123,8 +123,8 @@ const ckLeftLine=(q,secs)=>{const {n,M}=addCkCount(q,secs||addCkSecs(q,queue.ind
 function formCard(q,i,inSheet){const secs=addCkSecs(q,i),{n,M}=addCkCount(q,secs),sc='q|'+q.id,sec=k=>{const s=secs.find(x=>x.k===k);if(!s)return '';if(CK_OPEN[sc+'|'+k]===undefined)CK_OPEN[sc+'|'+k]=ckIsOpen(sc,k,s.open);return ckSec(sc,k,s)};
   return `<div class="card qcard ckcard" data-q="${esc(q.id)}">${inSheet?'':`<button type="button" class="qx" aria-label="Close" title="Close" data-act="cardSkip" ${cardAt(q)}>×</button><div class="ckhd"><small>New item · check and confirm</small><b>${esc(savedTitle(q))}</b></div>`}`+
     `<div class="ckprog"><b>${n} of ${M} checked</b><span class="cktrack" aria-hidden="true"><i style="width:${M?Math.round(n/M*100):0}%"></i></span></div>`+
-    `<div class="ckcols"><div class="ckcol">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}${tagFailNote(q,qh(q))}${unreadNote(q,qh(q))}`+
-    `<div class="ckintro"><div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${wbNote(q,i)}<p class="shelp ckhelp">${q.manual||!q.ai?'Pick the type and the colors, then confirm.':'Claude filled these in. Check each part, or fix it.'}</p></div>${tagNotes(q,qh(q))}${sec('tex')}</div>`+
+    `<div class="ckcols"><div class="ckcol">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}${tagFailNote(q)}${unreadNote(q,qh(q))}`+
+    `<div class="ckintro"><div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${wbNote(q,i)}<p class="shelp ckhelp">${q.manual||!q.ai?'Pick the type and the colors, then confirm.':'Claude filled these in. Check each part, or fix it.'}</p></div>${tagNotes(q)}${sec('tex')}</div>`+
     `<div class="ckcol">${sec('type')}${sec('lk')}${sec('colors')}${sec('pattern')}${sec('fabric')}${sec('more')}</div></div>`+
     `${inSheet?'':`<div class="ckfoot">${ckLeftLine(q,secs)}<div class="btns">${confBtn(q,i)}<button data-act="cardSkip" ${cardAt(q)}>${q.manual?'Cancel':'Skip'}</button></div></div>`}${q.manual?'':`<small class="ckai">${aiLabel(q)}</small>`}</div>`}
 const confBtn=(q,i)=>`<button class="pri" id="qconf-${i}" data-act="cardSave" ${cardAt(q)}${cardReading(q)?' disabled title="Claude is still reading this item"':q.saving||saveAllOn?' disabled':''}>${qtyLabel(q)}</button>`;
@@ -134,7 +134,7 @@ const busyCard=q=>`<div class="card" data-q="${esc(q.id)}"><span class="spin" ar
 const multiErrCard=q=>`<div class="card" data-q="${esc(q.id)}"><div class="tagfail" role="alert"><p><b>${q.multiCut?'This photo wasn’t read.':'The items in this photo weren’t found.'}</b> ${esc(q.multiErr)}</p></div><div class="btns">${typeof inviteOver==='function'&&inviteOver()?'':`<button type="button" class="pri" data-act="cardMultiAgain" ${cardAt(q)}>Try again</button>`}<button type="button" data-act="cardSkip" ${cardAt(q)}>Dismiss</button></div></div>`;
 const errCard=q=>`<div class="card" data-q="${esc(q.id)}" role="alert"><p>${q.err==='small'?`This picture is too small to read (${(q.errWh||[]).join('×')} pixels). Use a larger photo of the item.`:'That photo couldn’t be opened. Try a JPEG or PNG, or fill the item in by hand.'}</p><div class="btns"><button type="button" data-act="cardByHand" ${cardAt(q)}>Fill it in by hand</button><button type="button" data-act="cardSkip" ${cardAt(q)}>Dismiss</button></div></div>`;
 function typeCard(q,i){const none=typeof isConnected==='function'?!isConnected():!localStorage.getItem('worker_url');   // (an ended invitation reads nothing either)
-  return `<div class="card typeask" data-q="${esc(q.id)}">${tagFailNote(q,qh(q))}${unreadNote(q,qh(q))}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):''}</div>
+  return `<div class="card typeask" data-q="${esc(q.id)}">${tagFailNote(q)}${unreadNote(q,qh(q))}<div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):''}</div>
 <p class="typeq">${none&&!q.tagErr?'<b>What is it?</b> Photos aren’t read automatically here: pick the type and the color is measured from the photo.':'<b>What is it?</b> Pick the type, then check the colors.'}</p>
 <label>Type <select data-act-change="cardTypePick" ${cardAt(q)} aria-label="Type"><option value="" selected disabled>Choose…</option>${Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
 <div class="btns"><button data-act="cardSkip" ${cardAt(q)}>Skip</button></div></div>`}
@@ -152,10 +152,11 @@ function cardMatOffer(el){matOffer(cardIx(el))}
 function cardMatGuess(el){matGuessUse(cardIx(el))}
 function cardCheck(el){ckCheck(cardIx(el),el.dataset.sec)}
 function cardCuRemove(el){dropTexture(cardIx(el))}
+function cardCuFile(el,ev,f){cuGot(el,f,x=>addTexture(cardIx(el),x))}   // (a close-up chosen: ui.js closeupBtn, cuGot)
 function cardRdStart(el){rdStart('q',el.dataset.card)}
 function cardPatTile(el){setq(cardIx(el),'pattern',el.dataset.v)}
 function cardTypePick(el){setq(cardIx(el),'type',el.value)}
 function cardSwatch(el){updateSwatchParam(cardIx(el),el.dataset.f,el.value)}
 function tapeQ(el){setq(qAt(el.dataset.q),el.dataset.k,tapeText(el.value)||'none')}   // (the Add card's tape fields)
 function cardField(el){setQField(cardIx(el),el.dataset.f,el.value)}
-acts({shadeStep,shadeMatch,cardSkip,cardSave,cardStop,cardMultiAgain,cardByHand,cardRetryTag,cardMatOffer,cardMatGuess,cardCheck,cardCuRemove,cardRdStart,cardPatTile,cardTypePick,cardSwatch,cardField,tapeQ});
+acts({shadeStep,shadeMatch,cardSkip,cardSave,cardStop,cardMultiAgain,cardByHand,cardRetryTag,cardMatOffer,cardMatGuess,cardCheck,cardCuRemove,cardCuFile,cardRdStart,cardPatTile,cardTypePick,cardSwatch,cardField,tapeQ});

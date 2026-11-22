@@ -24,8 +24,8 @@ function itemBody(i){
   if(tex){const lab=i.texture?cmpLab('e',i):null,d=i.texture?cmpDiff(i,lab):null,p=i.texture?cmpPaper('e',i):null;
     const mark=!i.texture?'opt':d===null?'todo':d===0?'good':'warn';
     const sum=!i.texture?'Not yet · add a close-up to compare':d===null?'Close-up vs drawing':d===0?'Close-up vs drawing · they match':`Close-up vs drawing · ${cmpSteps(Math.abs(d))} off`;
-    const body=i.texture?cmpHtml(id,i.texture,cmpDrawn(i),!!(p&&p.ref))+cmpMatchHtml('e',id,i,lab)+(paperLine(i)||cmpPaperLine(p,paperRetake(id,'replaceTexture')))+paperHint(i)+rdEditorBtn(i)
-      :`<p class="shelp">Put a close-up of the cloth beside the drawing, and have Claude read its color and weave.</p>${paperHint(i)}${rdEditorBtn(i)}<div class="ckadds">${closeupBtn({label:'Add close-up',cls:'btn ckadd',mode:'add',aria:'Add fabric close-up',file:`f=>replaceTexture('${jsq(id)}',f)`,cloth:paperCloth(i)})}</div>`;
+    const body=i.texture?cmpHtml(id,i.texture,cmpDrawn(i),!!(p&&p.ref))+cmpMatchHtml('e',id,i,lab)+(paperLine(i)||cmpPaperLine(p,paperRetake(id)))+paperHint(i)+rdEditorBtn(i)
+      :`<p class="shelp">Put a close-up of the cloth beside the drawing, and have Claude read its color and weave.</p>${paperHint(i)}${rdEditorBtn(i)}<div class="ckadds">${closeupBtn({label:'Add close-up',cls:'btn ckadd',mode:'add',aria:'Add fabric close-up',act:` data-act-change="photoCuFile" data-id="${esc(id)}"`,cloth:paperCloth(i)})}</div>`;
     look=ckSec(scope,'look',{mark,title:'Look &amp; compare',sum,body,open:true,id:'ivct',cls:'ivct'})}
   // the Look beta (look.js): one Look section in place of Color, Pattern, Material and Details' leather, metal and dial
   const lk=L?lookSection('e',i):null,lkSec=lk?ckSec(scope,'lk',{mark:lk.mark,title:lk.title,sum:lk.sum,body:lk.body,open:true,cls:'cklook'}):'';
