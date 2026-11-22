@@ -18,7 +18,7 @@ async function ownColOffer(key,type,accent){const cu=settings.custom||{},l=cu.co
   settings.custom={...cu,colors:l.map(x=>x===c?{...c,types:[...new Set([...(c.types||[]),type])],accent:!!c.accent||!!accent}:x)};
   applyCustom(settings.custom);planDirty();await saveUserSettings();
   const undo=async()=>{const u=settings.custom||{};settings.custom={...u,colors:(u.colors||[]).map(x=>x&&x.key===key?{...x,types:had.types,accent:had.accent}:x)};
-    applyCustom(settings.custom);planDirty();await saveUserSettings();if(typeof renderCustomUI==='function')renderCustomUI()};
+    applyCustom(settings.custom);planDirty();await saveUserSettings();renderCustomUI()};
   return {msg:`${cap1(colName(key))} is now offered for ${typePl(type)}${newAcc?' and their stripes and motifs':''} too.`,undo}}
 /* the Add card's offer of a new colour (Claude's newColor, or a close-up measured over FAR_DE from every listed colour) opens the
    "+ New colour" sheet (colpick.js openColNew) on the card's main colour, with Claude's name and the measured shade filled in; the inline

@@ -52,7 +52,7 @@ async function migrateVests(synced){
   if(settings.vestDef||vestMigrating)return 0;
   // (the stored wardrobe is what counts: it is what syncs)
   const old=((await tx('readonly',s=>s.getAll()))||[]).filter(legacyVest);if(!old.length||settings.vestDef||vestMigrating)return 0;
-  if(!synced&&typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')){
+  if(!synced&&syncUrl()&&localStorage.getItem('app_token')){
     // wait for a sync that went through; it calls back here (dressSynced) only if it changed something, so ask again after it
     vestMigrating=true;let ok=false;try{ok=await syncNow()}catch(e){}vestMigrating=false;
     return ok&&!settings.vestDef?migrateVests(true):0}
@@ -68,8 +68,8 @@ function dressNewItem(){if(settings.vestDef||vestMigrating||items.some(legacyVes
 function dressSynced(m){
   if(m&&m.settings){if(!m.settings.vestDef)delete settings.vestDef;if(!m.settings.dress)delete settings.dress}
   if(!vestMigrating)migrateVests(true);
-  if(typeof matMigrate==='function'&&m&&(m.items||[]).some(matRenameTo))matMigrate();
-  if(typeof sockToeMigrate==='function'&&m&&(m.items||[]).some(sockLegacy))sockToeMigrate()}   // a sock from an older app: its toe cap to toeColor (wardrobe.js)   // a shirt still "nylon/spandex" or "nylon" from another device (wardrobe.js)
+  if(m&&(m.items||[]).some(matRenameTo))matMigrate();
+  if(m&&(m.items||[]).some(sockLegacy))sockToeMigrate()}   // a sock from an older app: its toe cap to toeColor (wardrobe.js)   // a shirt still "nylon/spandex" or "nylon" from another device (wardrobe.js)
 /* a dress-code switch (act.js; which one in data-k): a tap turns it the other way from what it shows */
 function dressSwTap(el){setDress(el.dataset.k,el.getAttribute('aria-checked')!=='true')}
 acts({dressSwTap});

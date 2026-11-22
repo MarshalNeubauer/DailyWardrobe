@@ -78,7 +78,7 @@ async function setHolidayCountry(cc,quiet){
 /* by the corrected time (core.js nowMs), and a list fetched "in the future" (the clock was ahead that day, the audit's W1-9-04) is due */
 async function refreshHolidays(){const due=()=>{const h=settings.holidays,f=h&&+h.fetched||0;return !!(h&&h.country&&(nowMs()-f>30*864e5||f>nowMs()+864e5))};
   if(!due())return;
-  if(typeof syncUrl==='function'&&syncUrl()&&localStorage.getItem('app_token')){
+  if(syncUrl()&&localStorage.getItem('app_token')){
     if(!await syncNow())return;
     const st=await metaGet('settings');if(st)setWardrobe({settings:takeSettings(settings,st)});if(!due())return}
   return setHolidayCountry(settings.holidays.country,true)}

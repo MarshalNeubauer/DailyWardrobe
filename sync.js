@@ -42,7 +42,7 @@ async function applyMerged(local,incoming){const m=mergeState(local,incoming);
   // decided by stamps alone, a setting changed here during the sync kept the stored copy whole and the other phone's setting was not written)
   if(m.settings)await atomic('meta','settings',r=>{const cur=r&&r.v,w=cur?mergeSettings(cur,m.settings):m.settings;return w===cur?null:{put:{k:'settings',v:w}}});
   const now=await localState();
-  if(stateSig(now)!==stateSig(local)){const open=typeof editing!=='undefined'&&editing&&items.find(i=>i.id===editing);
+  if(stateSig(now)!==stateSig(local)){const open=editing&&items.find(i=>i.id===editing);
     setWardrobe({items:now.items});planDirty();if(window.onSyncedData)onSyncedData(now);syncRedraw(['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden));syncSettingsRedraw();
     if(open)itemSynced(open)}   // the item sheet follows the new copy (item-view.js)
   return now;
@@ -209,7 +209,7 @@ async function syncSaved(p,pr,token,now){
   if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
   return true}
 /* this phone's storage failed during a sync: said in a toast every time (safety.js storeFailText), unless the full-page message already says it */
-function syncStoreTell(e){console.warn('storage failure during sync',e);if(typeof dbDown!=='undefined'&&dbDown)return;
+function syncStoreTell(e){console.warn('storage failure during sync',e);if(dbDown)return;
   try{storeToldAt=Date.now()}catch{}toast(storeFailText(e),9000)}
 async function syncOnce(){
   const url=syncUrl(),token=localStorage.getItem('app_token')||'';

@@ -33,12 +33,12 @@ function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;
 /* Add is a page of the Wardrobe (its round + button, #ward-add), with a ‹ back to where it was opened from (subBack) */
 /* type: Today's "Add one" beside a missing piece passes its type (fix round 3, W2-14-01: "Belt: Add one" then "Add without a photo"
    saved a suit): Add says what is being added and the next card without a photo starts as that type (add-sheet.js addFor) */
-function openAdd(type){if(typeof addFor!=='undefined')addFor=typeof type==='string'&&TYPES[type]?type:null;subOpen();show('add');scrollTo({top:0})}
+function openAdd(type){addFor=typeof type==='string'&&TYPES[type]?type:null;subOpen();show('add');scrollTo({top:0})}
 function show(t){
   const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
   if(from==='add'&&t!=='add')npsLeave();   // the "Add without a photo" sheet goes with the page, its entry handed back first (add-sheet.js)
   if(!SUBS.includes(t))backDrop('sub');   // a page left by the ‹ (to Today) or a tab: its Back entry goes
-  if(from==='add'&&t!=='add'&&typeof addFor!=='undefined')addFor=null;   // (what Today's "Add one" asked for goes with the page)
+  if(from==='add'&&t!=='add')addFor=null;   // (what Today's "Add one" asked for goes with the page)
   if(from==='add'&&t!=='add')toastDrop();   // Add's "Saved … Undo" goes with the page: it lay over Today's month card for 8 s
   if(typeof setupYield==='function')setupYield(t);
   closeSettings();if(!SUBS.includes(t))backDrop('sub');   // (again: Settings over Add hands Add's entry back as it closes, CR-7-04)
@@ -103,8 +103,8 @@ function startJobs(){afterScripts(()=>setupStart());loadWeather();afterScripts((
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
 /* sync brought new data: refresh the in-memory outfit history too */
-function onSyncedData(m){setWardrobe({days:Object.fromEntries((m.days||[]).map(d=>[d.date,d]))});const drawn=picsDrawn();if(m.settings){setWardrobe({settings:takeSettings(settings,m.settings)});setSeen=m.settings.updated||0;applyCustom(settings.custom)}if(typeof dressSynced==='function')dressSynced(m);loadWeather();if(typeof remindSoon==='function')remindSoon();   // (another device may have changed the coming outfits: the reminder lines follow, CR-4-09)
-  if(picsDrawn()!==drawn){picsSwitched();if(settingsOpen()){renderPicturesUI();if(typeof renderAsmUI==='function')renderAsmUI()}}}   // "Drawing only" chosen on another device
+function onSyncedData(m){setWardrobe({days:Object.fromEntries((m.days||[]).map(d=>[d.date,d]))});const drawn=picsDrawn();if(m.settings){setWardrobe({settings:takeSettings(settings,m.settings)});setSeen=m.settings.updated||0;applyCustom(settings.custom)}dressSynced(m);loadWeather();if(typeof remindSoon==='function')remindSoon();   // (another device may have changed the coming outfits: the reminder lines follow, CR-4-09)
+  if(picsDrawn()!==drawn){picsSwitched();if(settingsOpen()){renderPicturesUI();renderAsmUI()}}}   // "Drawing only" chosen on another device
 /* the markup's handlers (act.js): Add's ‹, the Wardrobe's round +, and the Wardrobe and Insights tabs (data-page: the page shown) */
 function addBackTap(){subBack()}
 function wardAddTap(){openAdd()}
