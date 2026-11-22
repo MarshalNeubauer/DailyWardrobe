@@ -35,7 +35,7 @@ const pocketOn=(rec,slot)=>{if(slot!=='pocket'||!rec.off||!rec.off.pocket)return
    planner never chooses those itself, so freeing them swapped them out (2026-11-18: a belt picked on a camo day took the boots off for black
    calf shoes, which suit neither the camo pants nor the canvas belt, and the belt was refused); bootsOff runs after and still takes the boots
    off when the pants or jacket change to ones that aren't camouflage */
-const keepHand=(force,slot,o)=>{for(const s of FOLLOW[slot]||[])if(o[s]&&!(s in force)&&typeof isHandPick==='function'&&isHandPick(o[s]))force[s]=o[s].id};
+const keepHand=(force,slot,o)=>{for(const s of FOLLOW[slot]||[])if(o[s]&&!(s in force)&&isHandPick(o[s]))force[s]=o[s].id};
 const bootsOff=(force,slot,o)=>{if((slot==='bot'||slot==='top')&&o.shoes&&shoeStyle(o.shoes)==='combat'&&!camoPants(slot==='bot'?items.find(i=>i.id===force.bot):o.bot))delete force.shoes};
 // the suit's own pants chosen back (its jacket taken off): no pick of pants, the suit is worn as before
 const suitPants=(force,slot,o)=>{if(slot==='bot'&&o.offSuit&&force.bot===o.offSuit.id)delete force.bot};

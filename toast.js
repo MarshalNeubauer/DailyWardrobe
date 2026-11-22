@@ -6,9 +6,9 @@ const TOAST_ACT_MS=8000;   // a toast with Undo stays at least this long (audit 
    (2026-11-17, the owner's pick "A with the glowing countdown", no line saying what it undoes): its words are read out (announce) and
    are its label ("Undo: Deleted …"); another Undo replaces it; it goes with the toast's rules (toastDrop, the keyboard on it keeps it up) */
 let undoTimer=null;
-const undoHere=()=>{const w=$('#wardrobe'),m=document.querySelector('main');return !!w&&!w.hidden&&!(m&&m.inert)&&!(typeof editing!=='undefined'&&editing)&&!!$('#undo-fab')};   // (not while the item sheet is open: an Undo made there is the toast over it)
+const undoHere=()=>{const w=$('#wardrobe'),m=document.querySelector('main');return !!w&&!w.hidden&&!(m&&m.inert)&&!editing&&!!$('#undo-fab')};   // (not while the item sheet is open: an Undo made there is the toast over it)
 function undoFab(t,ms,act){const b=$('#undo-fab'),e=$('#toast');if(e&&e.classList.contains('act')){clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent=''}
-  if(typeof announce==='function')announce(t+'. Undo is above the add button.');
+  announce(t+'. Undo is above the add button.');
   b.setAttribute('aria-label','Undo: '+t);b.tabIndex=0;b.style.setProperty('--ud',ms+'ms');b.classList.remove('on');void b.offsetWidth;b.classList.add('on');
   b.onclick=()=>{undoOff(true);act.fn()};clearTimeout(undoTimer);undoTimer=setTimeout(function off(){if(b.contains(document.activeElement)){undoTimer=setTimeout(off,1500);return}undoOff()},ms)}
 function undoOff(now){const b=$('#undo-fab');if(!b)return;clearTimeout(undoTimer);if(document.activeElement===b)b.blur();b.classList.remove('on');b.tabIndex=-1;b.onclick=null}

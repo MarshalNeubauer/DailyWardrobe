@@ -39,7 +39,7 @@ const asmLive=()=>typeof ASM_ON!=='undefined'&&ASM_ON;
    no built pictures, no list, no outfit photos (asmEnsure, asmAhead, asmSync, fetchRemoteRender, prefetchRenders all return). Item
    pictures (the product photos on the tiles under the figure, made on a tap) are their own feature and are not affected. What is already
    kept stays on the device, so switching back shows it at once. */
-const picsDrawn=()=>typeof settings!=='undefined'&&!!settings&&settings.pictures==='drawn';
+const picsDrawn=()=>!!settings&&settings.pictures==='drawn';
 const renderFor=o=>{if(picsDrawn())return null;const a=asmLive()&&asmShown(o);if(a)return a;   // (or the same outfit's last picture while its current one is made: asmStale)   // put together on the device from item photos (assemble.js)
   const ck=comboKey(o);return renders[ck]||null};   // (the keys of older builds were moved over long ago; outfit photos are retired: CR-1-12)
 /* a combination with no photo here: ask the worker (another device may have made it); one with a photo only here: share it */

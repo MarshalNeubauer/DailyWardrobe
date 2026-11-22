@@ -11,7 +11,7 @@ async function saveDay(rec,quiet,auto){rec.updated=nextStamp(rec.updated);if(!au
   if(was!==rec){dayFields(rec,was);await txs('days','readwrite',s=>s.put(rec))}else await atomic('days',rec.date,cur=>{dayFields(rec,cur);return {put:rec}});planDirty();if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
 /* start-up writers wait for the first pull (sync.js afterPull; sync.js loads after this file, so through afterScripts) */
 let todayPullWait=false;
-const whenPulled=f=>afterScripts(()=>typeof afterPull==='function'?afterPull(f):f());
+const whenPulled=f=>afterScripts(()=>afterPull(f));
 /* remember what each day showed: past days become fixed, and today's record follows the screen until the day ends */
 async function recordDays(p){
   const T=todayDate(),tk=key(T),mine=dayRecs,out=[],first=firstReal();
@@ -189,7 +189,7 @@ function dayActions(o){
   if(o.occasion)h+=`<span class="ftag" title="Set in Settings, Occasions" aria-label="${o.occasion==='formal'?'Formal day':'Occasion: '+occLabel(o.occasion)}">${o.occasion==='casual'?'No jacket':occLabel(o.occasion)}${o.occasion==='formal'?'<span class="fx"> day</span>':''}</span>`;
   // today is a public holiday or a day off of the user's own: Today shows the next workday, and says why (fix round 3, W2-16-09: it jumped
   // to Sunday without a word on National Day)
-  const offT=d>T&&typeof homeDay==='function'&&+d===+homeDay()&&settings.workdays.includes(T.getDay())?offName(T):'';
+  const offT=d>T&&+d===+homeDay()&&settings.workdays.includes(T.getDay())?offName(T):'';
   const offNote=offT?`<p class="mut offtoday" id="offtoday"><small>Today is ${esc(offT)}, a day off. This is ${esc(DAY_NAMES[d.getDay()])}’s outfit.</small></p>`:'';
   if(past&&o.frozen)h+=`<button class="pastedit${pastEdit===key(sel)?' on':''}" data-act="pastEditTap" aria-pressed="${pastEdit===key(sel)}">${pastEdit===key(sel)?'Done':'Correct this day'}</button>`;
   return offNote+(h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&pastEdit===key(sel)?'<p class="mut"><small>Tap ⇄ beside a piece to set what you really wore. The planner then counts that, not what was planned.</small></p>':past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
