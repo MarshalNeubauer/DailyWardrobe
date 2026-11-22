@@ -34,7 +34,13 @@ function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;
 /* type: Today's "Add one" beside a missing piece passes its type (fix round 3, W2-14-01: "Belt: Add one" then "Add without a photo"
    saved a suit): Add says what is being added and the next card without a photo starts as that type (add-sheet.js addFor) */
 function openAdd(type){addFor=typeof type==='string'&&TYPES[type]?type:null;subOpen();show('add');scrollTo({top:0})}
+/* a page asked for before start-up has drawn Today (a tap on a tab while later scripts are still loading: renderWardrobe needs
+   wardrobe.js, the Insights page stats.js, and the stored wardrobe isn't read yet) is only noted; start-up shows it once Today is up
+   (showWanted). It threw before, and start-up then went to Today whatever was tapped. */
+let pagesOn=false,pageWant=null;
+function showWanted(){const t=pageWant;pageWant=null;if(t&&t!=='today'&&TABS.includes(t))show(t)}
 function show(t){
+  if(!pagesOn){pageWant=t;return}
   const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
   if(from==='add'&&t!=='add')npsLeave();   // the "Add without a photo" sheet goes with the page, its entry handed back first (add-sheet.js)
   if(!SUBS.includes(t))backDrop('sub');   // a page left by the ‹ (to Today) or a tab: its Back entry goes
@@ -64,6 +70,7 @@ function startFailed(e){console.warn(e);
   if(!startRead)setWardrobe({items:[]});
   else{afterScripts(()=>errNote(e,'Start-up'));
     setTimeout(()=>toast('Something went wrong while the app was starting. Your wardrobe is safe on this phone: nothing was deleted. Close the app fully and open it again; if this keeps happening, tell us in Settings → About → Feedback.',15000),0)}
+  pagesOn=true;pageWant=null;   // (a failed start-up stays on Today, where its message is)
   try{show('today')}catch(e2){console.warn(e2);if(startRead)afterScripts(()=>errNote(e2,'Start-up: Today'));startPlain()}
   window.appReady=true;afterScripts(()=>storageDown(e));
   if(startRead)afterScripts(()=>{try{safetyStart()}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
@@ -75,7 +82,7 @@ function startPlain(){const t=$('#today');if(!t)return;for(const s of PAGES){con
    run in the order the line had them; a throw in any of them, or stores that can't be read, goes to startFailed as before. What is
    started in the background (the plan rules check, the photo fix-ups) keeps its own promise chain, as before: its errors don't reach
    startFailed. afterScripts still waits for the load event and whenPulled for the first pull, as they did. */
-async function startUp(){try{const [r,d,st,sn]=await loadStored();applyStored(r,d,st,sn);startChecks();show('today');startJobs()}catch(e){startFailed(e)}}
+async function startUp(){try{const [r,d,st,sn]=await loadStored();applyStored(r,d,st,sn);startChecks();pagesOn=true;show('today');startJobs();showWanted()}catch(e){startFailed(e)}}
 /* the four reads: items, days, settings and the plan snapshot */
 const loadStored=()=>connRestored.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings'),metaGet(PLAN_SNAP).catch(()=>null)]));
 /* what was read goes into memory (startRead/startTook tell startFailed how far it got), then the day Today opens on and the plan snapshot */
