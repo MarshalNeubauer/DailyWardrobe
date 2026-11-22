@@ -6969,6 +6969,7 @@ handpick.test.js	sync-status.js	<loaded>	setSyncStatus	showSyncStatus	syncPaused
 handpick.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	syncLaterRun	syncNeedsPull	syncNow	syncOnce	syncUrl
 handpick.test.js	tag-request.js	<loaded>
 handpick.test.js	tagging.js	<loaded>
+handpick.test.js	tests/webkit.js	<any>
 handpick.test.js	theme.js	<loaded>	applyTheme
 handpick.test.js	toast.js	<loaded>
 handpick.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}	mvSig
@@ -13589,6 +13590,7 @@ sample.test.js	sync-status.js	<loaded>	endedAnswer	setSyncStatus	showSyncStatus	
 sample.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	clockFix	clockLearn	clockTell	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	syncJoinAt	syncJoinMark	syncLaterRun	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncSaved	syncSettingsRedraw	syncUrl	synced
 sample.test.js	tag-request.js	<loaded>
 sample.test.js	tagging.js	<loaded>
+sample.test.js	tests/webkit.js	<any>
 sample.test.js	theme.js	<loaded>	applyTheme
 sample.test.js	toast.js	<loaded>	toast	undoHere
 sample.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig	todayBusy	todayCovered
