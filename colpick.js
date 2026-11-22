@@ -108,7 +108,15 @@ async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick
   const off=k!=='pattern'&&v&&CUSTOM_COL[v]&&it?await ownColOffer(v,it.type,k!=='primaryColor'):null;
   if(src==='q')setq(ref,k,v);else await sete(ref,k,v);
   if(off)toast(off.msg,4000,{label:'Undo',fn:off.undo})}
-function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==='pattern'?renderPatNew(keep):renderColNew(keep);
+/* every redraw of the sheet goes through keepFocus (app.js): a keyboard user who pressed a tile, a Shade step or an "Offer it for" chip
+   keeps the focus on that control in the new markup (it fell to <body>). A tile listed twice (one of the owner's own, under "Your colors"
+   and again in its family) is told apart by the family copy's data-k. A dropdown picked after a touch is not focused (focusSafe).
+   Not while a text field of the sheet has the focus (cpTyping: the words, the name, the hex): a redraw then leaves the focus as it
+   always did (on <body>), so a shade dragged or the white-paper check finishing never brings a phone's keyboard back up. */
+const cpTyping=()=>{const a=document.activeElement,s=$('#col-sheet');
+  return !!a&&!!s&&s.contains(a)&&(a.tagName==='TEXTAREA'||a.tagName==='INPUT'&&!/^(checkbox|radio|button|submit|reset|range|file|color|image)$/i.test(a.getAttribute('type')||''))};
+function renderColPick(keep){return cpTyping()?colPickDraw(keep):keepFocus($('#col-sheet'),()=>colPickDraw(keep))}
+function colPickDraw(keep){if(colPick&&colPick.newc)return colPick.newc.kind==='pattern'?renderPatNew(keep):renderColNew(keep);
   if(colPick&&colPick.k==='pattern')return renderPatPick(keep);if(colPick&&LOOK_PK.includes(colPick.k))return renderLookPick(keep);
   const el=$('#col-sheet'),it=colTarget();if(!el||!it)return;const {k,sel,cur,view}=colPick,y=el.scrollTop;
   // the Look beta (look.js, 2026-11-17): Shade under the preview (not for a metal), Suggested first, no Ask Claude (Read with Claude is in
@@ -116,9 +124,9 @@ function renderColPick(keep){if(colPick&&colPick.newc)return colPick.newc.kind==
   const L=lookOn(),lk=L&&(k==='dial'||k==='enamel'),shd=L&&lookShadeOk(k,sel)?colPick.shade||0:0;
   const photo=it.photo||wardPic(it),pic=view==='draw'?null:view==='tex'?it.texture:photo,vs=cpViews(it,photo);
   const acc=k==='accents',nc=acc||lk?null:colNewFor(it,k),name=c=>!c?'':c==='none'?(k==='enamel'?'None · plain metal':'None'):c===NEW_COL?cap1(nc?nc.name:''):cap1(colName(c)),hex=c=>c===NEW_COL?(nc?nc.hex:'transparent'):COLORS[c]||'transparent';  const near=L?[]:colNear(it,k),dWord=d=>d<=4?'Very close':d<=8?'Close':'Nearest';
-  const tile=(c,extra='')=>`<button type="button" class="cptile${c===sel?' sel':''}" data-c="${c}" data-act="cpTileTap" aria-pressed="${c===sel}"><span class="cpsw${c==='none'?' none':''}"${c==='none'?'':` style="background:${hex(c)}"`}>${c===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(name(c))}</span>${c===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
+  const tile=(c,extra='',k='')=>`<button type="button" class="cptile${c===sel?' sel':''}"${k?` data-k="${k}"`:''} data-c="${c}" data-act="cpTileTap" aria-pressed="${c===sel}"><span class="cpsw${c==='none'?' none':''}"${c==='none'?'':` style="background:${hex(c)}"`}>${c===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(name(c))}</span>${c===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
   const fams=COL_FAMS.map(()=>[]);for(const c of colChoices(it,k))fams[colFamily(c)].push(c);
-  const groups=fams.map((l,f)=>l.length?`<h4 class="cph">${COL_FAMS[f]}</h4><div class="cpgrid">${l.sort((a,b)=>labOf(b)[0]-labOf(a)[0]).map(c=>tile(c)).join('')}</div>`:'').join('');
+  const groups=fams.map((l,f)=>l.length?`<h4 class="cph">${COL_FAMS[f]}</h4><div class="cpgrid">${l.sort((a,b)=>labOf(b)[0]-labOf(a)[0]).map(c=>tile(c,'','fam')).join('')}</div>`:'').join('');
   const what=view==='tex'?'Your close-up':'Your photo';
   // with no colors of one's own "Your colors" is one slim line, the heading and a small "+ New color" (fix round 3, W2-14-02: its tile and
   // the Ask Claude card filled the screen above the Keep button, at the largest text with nothing to pick); the editor's order stays
@@ -258,12 +266,12 @@ async function patAddNew(it,o){if(!o)throw new Error('Ask Claude again: its patt
 function renderPatPick(keep){const el=$('#col-sheet'),it=colTarget();if(!el||!it)return;const {sel,cur,view}=colPick,y=el.scrollTop;
   const photo=it.photo||wardPic(it),pic=view==='draw'?null:view==='tex'?it.texture:photo,vs=cpViews(it,photo);
   const np=patNewFor(it),drawAs=p=>p===NEW_COL?patNewBase(it):p,name=p=>p===NEW_COL?cap1(np?np.name:''):patTitle(p);
-  const tile=(p,extra='')=>`<button type="button" class="cptile${p===sel?' sel':''}" data-c="${p}" data-act="cpTileTap" aria-pressed="${p===sel}"><span class="cpsw cppat">${swatchSVG(patVar(it,drawAs(p)),true)}${p===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(name(p))}</span>${p===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
+  const tile=(p,extra='',k='')=>`<button type="button" class="cptile${p===sel?' sel':''}"${k?` data-k="${k}"`:''} data-c="${p}" data-act="cpTileTap" aria-pressed="${p===sel}"><span class="cpsw cppat">${swatchSVG(patVar(it,drawAs(p)),true)}${p===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(name(p))}</span>${p===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
   // the Look beta (look.js): its groups (heather with the plain ones, the knits together, a border with the figures), Suggested first, no
   // Ask Claude (Read with Claude is in the Look section), "+ New pattern or texture" at the end
   const L=lookOn(),PG=L?LOOK_PAT_GROUPS:PAT_GROUPS,pgOf=L?lookPatGroupOf:patGroupOf;
   const gs=[...PG.map(()=>[]),[]];for(const p of patChoices(it))gs[pgOf(p)].push(p);
-  const groups=gs.map((l,g)=>l.length?`<h4 class="cph">${g<PG.length?PG[g][1]:'Other'}</h4><div class="cpgrid">${l.map(p=>tile(p)).join('')}</div>`:'').join('');
+  const groups=gs.map((l,g)=>l.length?`<h4 class="cph">${g<PG.length?PG[g][1]:'Other'}</h4><div class="cpgrid">${l.map(p=>tile(p,'','fam')).join('')}</div>`:'').join('');
   const what=view==='tex'?'Your close-up':'Your photo';
   const mine=patChoices(it).filter(p=>CUSTOM_PAT[p]),   // (as the colors: W2-14-02)
     ownH=L?`<h4 class="cph">Yours</h4>${mine.length?`<div class="cpgrid cnown">${mine.map(p=>tile(p)).join('')}</div>`:'<p class="cphelp lkyours">Patterns you add show here first. “+ New pattern” is at the end.</p>'}`
