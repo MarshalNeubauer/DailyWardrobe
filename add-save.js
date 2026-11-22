@@ -36,8 +36,8 @@ async function save(k){const q=cardOf(k);if(!q||q.saving||cardReading(q))return 
   if(needType(q)){toast('Choose what it is first: pick its Type.',4000);return false}
   q.saving=1;const b=$('#qconf-'+queue.indexOf(q));if(b)b.disabled=true;
   if(!saveAllOn)await addKeep();   // the card as it is now (a kill right after Confirm brought back How many one lower: the last + waited for the timer)
-  try{return await saveCard(q)}catch(e){console.warn('save failed',e);if(typeof errNote==='function')errNote(e,'Confirm on Add ('+q.type+')');
-    if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}
+  try{return await saveCard(q)}catch(e){console.warn('save failed',e);errNote(e,'Confirm on Add ('+q.type+')');
+    if(storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}
   finally{delete q.saving;if(queue.includes(q)&&$('#add')&&!$('#add').hidden)renderAdd()}}
 async function saveCard(q){
   if(!q||cardReading(q))return false;
@@ -53,7 +53,7 @@ async function saveCard(q){
   if(q.order){it.paused=true;it.order=true;if(q.arrives)it.arrives=q.arrives}   // bought, on the way
   if(METAL_TYPES.includes(q.type))it.metal=q.metal||'silver';
   if(q.type==='shirt')it.cuff=q.cuff||'button';
-  if(q.type==='suit')it.vest=(q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'yes':'no';if(typeof dressNewItem==='function')dressNewItem();
+  if(q.type==='suit')it.vest=(q.vest||(newSuitVest()))==='yes'?'yes':'no';dressNewItem();
   if(SEASON_TYPES.includes(q.type)&&q.season&&q.season!=='all')it.season=q.season;
   if(q.type==='shoes'||q.type==='belt')it.leather=q.leather||'calf';
   if(q.type==='pants'&&(q.trouserKind==='chinos'||q.trouserKind==='jeans'||q.trouserKind==='cargo'))it.trouserKind=q.trouserKind;   // dress trousers: no field (as before kinds)
@@ -64,7 +64,7 @@ async function saveCard(q){
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;
   if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src,...(q.meas.parts?{parts:q.meas.parts.map(p=>({role:p.role,lab:p.lab,hex:p.hex,share:p.share}))}:{})};   // a patterned cloth's ground and stripe too (colpick.js)
   if(q.tagAI&&!q.manual)it.tagAI=q.tagAI;   // Claude's colour it gave, how sure it was, its runner-ups (measure.js aiSignals): to calibrate the verdict later
-  wardSaveFields(q,it);matTidy(it);if(typeof cpwSaveFields==='function')cpwSaveFields(q,it);   // (cost.js: the price and the day bought)   // name, brand, material, notes (wardrobe.js); no material the type can't have (CR-1-06)
+  wardSaveFields(q,it);matTidy(it);cpwSaveFields(q,it);   // (cost.js: the price and the day bought)   // name, brand, material, notes (wardrobe.js); no material the type can't have (CR-1-06)
   if(q.shade)it.shade=q.shade;   // drawn darker or lighter than the swatch, to match the close-up   // the owner's own colour samples (calibLab)
   if(q.sett&&!q.settOff&&readable(it.type,it.pattern,q.weave)){it.sett=q.sett;if(q.patternBox)it.pbox=q.patternBox}   // the full pattern (pattern-read.js)
   if(q.weave&&FABRIC.includes(it.type)&&it.pattern!=='solid'){it.weave=q.weave;if(q.weave.description)it.patternText=q.weave.description}
@@ -81,7 +81,7 @@ async function saveCard(q){
   await txs('items','readwrite',s=>{for(const x of all)s.put(x)});if(window.scheduleSync)scheduleSync();
   items.push(...all);
   const i=queue.indexOf(q);planDirty();if(i>=0)queue.splice(i,1);if(addCalm)addCalm.ok=1;renderAdd();   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
-  if(typeof kitSaved==='function')kitSaved(it,q,Math.max(0,i),copies);   // Saved, with Undo for all of them (kit.js)
+  kitSaved(it,q,Math.max(0,i),copies);   // Saved, with Undo for all of them (kit.js)
   if(q.tagImg)for(const x of all)keepTagImg(x.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tag-request.js: the sharp copy (signed with the photo), for every copy too (CR-1-04); what the tagger got wrong
   if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>{for(const x of all)keepCloseImg(x.id,u,it.texture)}).catch(()=>{});   // the sharp close-up for later readings (tag-request.js)
   q.raw=null;q.big=null;q.texCanvas=null;   // the card's canvases (a 2048 px photo, its 800 px copy, the close-up) go now, not when the last reply about the card comes back

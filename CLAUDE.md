@@ -1424,6 +1424,9 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `start.js`
 
+- `typeof X==='function'` guards that are always true went from detect.js and app.js … itemsheet.js (C2-10, 2026-11-22: 72 of them): the name's script loads first, or the code runs only after `startUp()` (index.html's last script) or from a tap on what the app has drawn; a call to a later file's function there is now written plainly, so `no-undef` and the typecheck see it
+- the guards kept in that range: core.js, planner.js and analysis.js (also loaded by analysis-worker.js and by Node tests on their own), draw.js and mannequin.js (the painter's), browser features (`ResizeObserver`, `AbortController`, `HTMLCanvasElement`, `reportError`, `window`), and six on kit.js and account.js names in code a sync's redraw can reach (`kitUserEdit` in `put`, `kitQuiet` in `addKeep`, `kitSampleNote` in `itemBody`, `inviteChecking` / `acctWhy` / `hasInviteHash` in `addNoteText`): sync.js starts a sync on a timer, which a slow load could run before those two files
+
 - moving between pages animates (`pageIn`, from `show`): the page arriving eases in 28px from its tab's side (`TABS` today, wardrobe, stats, left to right) with a fade, `PAGE_MS` 320 on `MONTH_EASE`; a sub-page (add, pack, care) rises 14px; the one leaving hides at once (nothing laid out twice); the tab marker is `nav::before` sliding by `--ti` (`.tab-none` hides it); reduced motion switches instantly; `tests/tabmove.test.js`
 - `show(t)` ends with `packShow(t)` (pack.js), which hides or shows `#pack`
 - leaving the Wardrobe tab empties `#wardrobe` (`show()`): its grid (about 4,900 elements at 107 items) is drawn again on coming back; `.gi` has `content-visibility:auto` (`contain-intrinsic-size:auto 230px`)

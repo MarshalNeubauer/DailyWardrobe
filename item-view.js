@@ -23,8 +23,8 @@ backOn('item',()=>{if(editing&&phEdit.crop){cropKeep();renderWardrobe();histPush
 /* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
 function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;const was=v.classList.contains('on');
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
-  if(typeof layerInert==='function')layerInert();else for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;   // (ui.js: counts Settings and the sheets too)
-  if(was&&!on&&typeof syncLaterRun==='function')setTimeout(()=>syncLaterRun('wardrobe'),0)}   // a sync's redraw that waited for the sheet (sync.js)
+  layerInert();   // (ui.js: counts Settings and the sheets too)
+  if(was&&!on)setTimeout(()=>syncLaterRun('wardrobe'),0)}   // a sync's redraw that waited for the sheet (sync.js)
 /* ---- a sync changed the piece open in the sheet (fix round 3, 2026-11-16) ----
    The sync's redraw of the Wardrobe waits while the sheet is up (sync.js syncLater), so the sheet kept the old state and its buttons acted
    on the new one: "Take out of rotation" put a piece taken out on the other phone back in (W1-5-04). Now the sheet is drawn again from the
@@ -49,13 +49,13 @@ function renderItem(){
   const l=wardList(),k=l.findIndex(x=>x.id===i.id);if(k>=0)ivAt=k;
   $('#ivhead').innerHTML=`<div class="ivt"><small class="gtype">${TYPES[i.type]||'Item'}</small><h2 id="iv-title" class="${titleCls(i)}">${esc(itemTitle(i)||TYPES[i.type]||'Item')}</h2></div>${k>=0?`<span class="pcount">${k+1} of ${l.length}</span>`:''}`;
   keepFocus($('#ivbody'),()=>{$('#ivbody').innerHTML=itemBody(i)});   // every edit redraws it: the field or button used keeps the focus (W2-19-01)
-  if(typeof cmpMount==='function')cmpMount($('#ivbody'));
+  cmpMount($('#ivbody'));
   $('#iv-prev').disabled=k<=0;$('#iv-next').disabled=k<0||k>=l.length-1;
   itemShown(true)}
 const sheetSlides=()=>innerWidth<600;   // a phone: the sheet slides up from the bottom; wider, the panel fades in
 function openItem(id){
   if(!items.some(i=>i.id===id))return;const v=$('#item-view'),bd=$('#item-backdrop'),was=editing;
-  editing=id;itemGone=null;if(!was)itemFrom=id;if(lookOn())lookOpenFresh();/* (the Look beta: Look opens unfolded on every item opened) */histPush();ivSwipe();renderItem();$('#ivbody').scrollTop=0;if(!was&&typeof layerOpen==='function')layerOpen(v);   // the focus goes into the sheet and comes back on closing (W2-19-02)
+  editing=id;itemGone=null;if(!was)itemFrom=id;if(lookOn())lookOpenFresh();/* (the Look beta: Look opens unfolded on every item opened) */histPush();ivSwipe();renderItem();$('#ivbody').scrollTop=0;if(!was)layerOpen(v);   // the focus goes into the sheet and comes back on closing (W2-19-02)
   for(const el of [v,bd]){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}
   if(was||noMotion())return;const o={duration:WARD_MS,easing:WARD_EASE};
   v.animate(sheetSlides()?[{transform:'translateY(100%)'},{transform:'none'}]:[{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],o);
@@ -76,13 +76,13 @@ function closeItem(fromPop,dragged){
 /* the focus back after closing (fix round 3, W2-19-02: it stayed on <body>, at the top of the Wardrobe): on the item's own box in the
    grid (the one shown last, when ‹ › moved on; the grid is drawn again on every edit, so the box that opened it may be gone), else on
    what opened the sheet */
-function itemFocusBack(id){const v=$('#item-view'),f=typeof layerFrom!=='undefined'&&v?layerFrom.get(v):null;if(f!==null&&v)layerFrom.delete(v);
+function itemFocusBack(id){const v=$('#item-view'),f=v?layerFrom.get(v):null;if(f!==null&&v)layerFrom.delete(v);
   const a=document.activeElement;if(a&&a!==document.body&&!(v&&v.contains(a)))return;
   const gi=document.getElementById('gi-'+id),g=gi&&gi.querySelector('.giopen'),ch=document.querySelector('#wardrobe .chip[aria-pressed="true"]');   // (the box gone from the filter: its chip)
   const to=g&&!g.closest('[inert]')?g:f&&f.isConnected&&!f.closest('[inert]')?f:ch&&!ch.closest('[inert]')?ch:null;
   if(to)try{to.focus({preventScroll:true})}catch{}}
 /* closing with nothing to slide away from: the item was deleted, or another tab is shown */
-function dropItem(){editing=null;itemFrom=null;histDrop();if(typeof layerFrom!=='undefined')layerFrom.delete($('#item-view'));for(const el of [$('#item-view'),$('#item-backdrop')])if(el){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}itemShown(false)}
+function dropItem(){editing=null;itemFrom=null;histDrop();layerFrom.delete($('#item-view'));for(const el of [$('#item-view'),$('#item-backdrop')])if(el){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}itemShown(false)}
 /* swiping the sheet down closes it. The header is a handle at any time; the content is one only while it is scrolled to the
    top (further down, a downward swipe scrolls it back up, as it must). The choice is made on the first move of a touch, before
    the browser starts scrolling. The sheet follows the finger and the Wardrobe behind brightens; let go past a quarter of the

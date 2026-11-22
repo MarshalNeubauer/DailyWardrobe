@@ -99,13 +99,13 @@ function cleanStoredSettings(st){if(!st||typeof st!=='object')return st;const c=
   (async()=>{await txs('meta','readwrite',s=>{const r=s.get('settings'),k=s.get('set_kept');
       k.onsuccess=()=>{const prev=k.result&&k.result.v;s.put({k:'set_kept',v:[...(Array.isArray(prev)?prev:[]),{rec:st,at:Date.now()}]})};
       r.onsuccess=()=>{const cur=r.result&&r.result.v;if(cur&&(cur.updated||0)===(st.updated||0))s.put({k:'settings',v:cleanSettings(cur)})}});
-    flag();const say=()=>typeof toast==='function'?toast('Some of this phone’s settings couldn’t be shown safely and were set aside. Nothing was deleted: the originals are kept on this phone.',12000):setTimeout(say,500);setTimeout(say,1500)})()
+    flag();const say=()=>toast('Some of this phone’s settings couldn’t be shown safely and were set aside. Nothing was deleted: the originals are kept on this phone.',12000);setTimeout(say,1500)})()
     .catch(e=>console.warn('stored settings not cleaned',e));
   return c}
 /* said once, in plain words, whenever the start-up check set something aside (the originals stay in meta rec_kept on this phone) */
 function recKeptTell(kept){const n=kept.filter(x=>x.kind==='item'&&x.dropped).length,f=kept.filter(x=>x.kind==='item'&&!x.dropped).length;if(!n&&!f)return;
   const t=(n?`${n} item${n===1?'':'s'} in this phone’s storage couldn’t be shown safely and ${n===1?'was':'were'} set aside. `:'')+(f?`Some details of ${f} item${f===1?'':'s'} couldn’t be shown safely and were set aside. `:'')+'Nothing was deleted: the originals are kept on this phone.';
-  const say=()=>typeof toast==='function'?toast(t,12000):setTimeout(say,500);setTimeout(say,1500)}
+  const say=()=>toast(t,12000);setTimeout(say,1500)}
 // every local edit is timestamped and triggers a (debounced) backup; deletions leave a tombstone so they sync too
 const putRaw=i=>tx('readwrite',s=>s.put(i));
 /* a start-up fix-up saves an item only while it is still the copy on screen: an edit or a sync may have replaced it meanwhile, and saving the
@@ -113,7 +113,7 @@ const putRaw=i=>tx('readwrite',s=>s.put(i));
 const stillCur=it=>items.find(x=>x.id===it.id)===it;
 /* and redraws the Wardrobe only when it is on screen and Settings is not open (renderWardrobe closes Settings; these now run after the first
    pull, which can be while Settings is open); the Wardrobe is drawn afresh when it is opened */
-const fixupRedraw=()=>{if(typeof settingsOpen==='function'&&settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)renderWardrobe()};
+const fixupRedraw=()=>{if(settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)renderWardrobe()};
 const put=i=>{i.updated=nextStamp(stamp(i));if(typeof kitUserEdit==='function')kitUserEdit(i);   // (an edit in the item sheet makes a sample piece his: kit.js)
 // the fields changed since the stored copy get the edit's stamp, in the same transaction (core.js itemFields: two phones' changes to
 // different fields of one piece both stay, fix round 3; the stamp is nextStamp's, made one above the stored copy's only when it isn't)
@@ -223,11 +223,11 @@ const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':/^claude/.test(q
    shared aiError / tagWhy / tagNetLast, still set for the Add page's note, could hold another card's reason by the time it was read) */
 async function ask(c,extra){
   const {signal,forType,out,...ex}=extra||{};   // signal: Stop on an Add card calls the reading off (add.js stopRead)
-  const fail=note=>{aiError=note;if(out)out.err={note,why:typeof tagWhy==='string'?tagWhy:'',net:typeof tagNetLast!=='undefined'&&!!tagNetLast};return null};
+  const fail=note=>{aiError=note;if(out)out.err={note,why:tagWhy,net:!!tagNetLast};return null};
   try {
     const workerUrl=localStorage.getItem('worker_url');
     if(!workerUrl) return null;
-    if(typeof inviteOver==='function'&&inviteOver())return null;   // an ended invitation: the photo isn't sent (it was, and refused; re-audit 2026-11-15)
+    if(inviteOver())return null;   // an ended invitation: the photo isn't sent (it was, and refused; re-audit 2026-11-15)
     const dataUrl=typeof c==='string'?c:c.toDataURL('image/jpeg',TAG_Q);
     const res=await fetch(workerUrl,{
       method:'POST',
@@ -236,7 +236,7 @@ async function ask(c,extra){
       ...(signal?{signal}:{})
     });
     if(!res.ok){let e='',j={};try{j=await res.json();e=j.detail||j.error||''}catch{}
-      if(typeof endedAnswer==='function'&&endedAnswer(res.status,j)){inviteEnded(localStorage.getItem('app_token')||'',j);aiError='';return null}   // found out here: said as ended (sync.js), the card has no Try again
+      if(endedAnswer(res.status,j)){inviteEnded(localStorage.getItem('app_token')||'',j);aiError='';return null}   // found out here: said as ended (sync.js), the card has no Try again
       return fail(tagFailText(res.status,j,e))}
     aiError='';
     const result=await res.json();aiModel=result.model||'';

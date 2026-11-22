@@ -57,7 +57,7 @@ async function addRestore(){if(addRestoreState)return;addRestoreState='busy';let
 /* installed with the first card: keep the cards when the app goes to the background (iOS may close it there), ask before a desktop
    tab closes (safety.js guardUnsaved), and read again, once back online, the photos that failed for want of a connection */
 let addWatchOn=false;
-function addWatch(){if(addWatchOn)return;addWatchOn=true;if(typeof guardUnsaved==='function')guardUnsaved();
+function addWatch(){if(addWatchOn)return;addWatchOn=true;guardUnsaved();
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')addKeep()});
   addEventListener('pagehide',()=>addKeep());
   addEventListener('online',addBackOnline)}

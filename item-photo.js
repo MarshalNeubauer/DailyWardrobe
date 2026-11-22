@@ -14,8 +14,8 @@ async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.ph
     it.photoSm=sm;it.phSig=sig;return true}catch{return false}}
 /* at start-up: items whose small copy is missing or old (added before it, or changed on a device with an older app) */
 /* (a connected phone makes at most the day's remakes, migrate.js remakeLeft: each small copy can be a new server value; the rest the next days) */
-async function smallPhotos(){let n=0;for(const it of items){if(!it.photo||(it.photoSm&&it.phSig===phSigOf(it.photo)))continue;if(typeof remakeLeft==='function'&&remakeLeft()<1)break;
-  if(await makeSmall(it)&&stillCur(it)){await put(it);if(typeof remakeSpend==='function')remakeSpend(1);n++}}if(n)fixupRedraw();return n}
+async function smallPhotos(){let n=0;for(const it of items){if(!it.photo||(it.photoSm&&it.phSig===phSigOf(it.photo)))continue;if(remakeLeft()<1)break;
+  if(await makeSmall(it)&&stillCur(it)){await put(it);remakeSpend(1);n++}}if(n)fixupRedraw();return n}
 /* ---- the photo tools (2026-11-15, edit-photos-mockups option B, the owner's choice; they were folded under "Edit photos"): one row of
    icon-and-label buttons right under the pictures, Replace (the photo's file window), Rotate, Crop (zoom & crop) and Close-up (on a touch
    screen the close-up chooser: Take / Choose / Remove / Cancel; without touch the file window itself, with Remove close-up under the row).
@@ -47,7 +47,7 @@ const paperSteps=cloth=>{const pic=cls=>`<span class="wbpic ${cls}" style="--clo
 <span class="li"><span class="n"><b>2</b>${pic('')}<span class="tap"></span></span>Tap the paper</span><span class="arr">›</span>
 <span class="li"><span class="n"><b>3</b><span class="cam">${PAPER_CAM}</span></span>Take the photo</span></span></button></div>`};
 const paperHint=i=>paperSteps(paperCloth(i));
-function paperTip(){if(typeof kitOpen==='function')kitOpen([PAPER_CARD])}
+function paperTip(){kitOpen([PAPER_CARD])}
 const paperRetake=id=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',act:` data-act-change="photoCuFile" data-id="${esc(id)}"`,cloth:paperCloth(items.find(x=>x.id===id)||{})});
 function paperLine(i){if(!i.texture||!lookCu(i.type)||phEdit.paper!==texSig(i.texture))return '';const r=paperNow(i);if(!r)return '';
   return r.ref?`<div class="wbst ok" id="ivwb" role="status"><span class="ic" aria-hidden="true">✓</span><span class="tx">White paper found<small>Colors set from it.</small></span></div>`
@@ -80,14 +80,14 @@ async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f);
 const photoUndoAct=(id,prev,sharp,pbox)=>({label:'Undo',fn:async()=>{await picUndo(id,'photo',prev);const it=items.find(x=>x.id===id);if(!it||!prev||it.photo!==prev)return;
   if(pbox){it.pbox=pbox;await put(it)}if(sharp)await keepTagImg(id,sharp,prev)}});
 async function replacePhoto(id,f){if(!f)return;try{const img=await loadImg(f),sharp=shrink(img,TAG_MAX).toDataURL('image/jpeg',TAG_Q),it=items.find(x=>x.id===id);
-  const prev=it&&it.photo||null,pbox=it&&it.pbox,old=prev&&typeof tagImgOf==='function'?await tagImgOf(id,it):null;if(it)delete it.pbox;   // the pattern's box was on the old picture
+  const prev=it&&it.photo||null,pbox=it&&it.pbox,old=prev?await tagImgOf(id,it):null;if(it)delete it.pbox;   // the pattern's box was on the old picture
   if(await setPhoto(id,shrink(img,PH_MAX).toDataURL('image/jpeg',.85),['Photo replaced. The item’s tags and your plan are unchanged.',4000,photoUndoAct(id,prev,old,pbox)])===false){if(it&&pbox)it.pbox=pbox;return}   // drawn black: nothing saved, the box stays
   const now=items.find(x=>x.id===id);if(now&&now.photo)await keepTagImg(id,sharp,now.photo)}   // the new sharp copy (tag-request.js), signed with the new photo
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
 async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const prev=it.photo,im=await imgOf(it.photo),c=document.createElement('canvas');
   c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);
   // the kept sharp copy turns with it, and the pattern's box (thousandths of the picture) with the copy
-  const sharp=typeof tagImgOf==='function'?await tagImgOf(id,it):null,b=it.pbox;
+  const sharp=await tagImgOf(id,it),b=it.pbox;
   if(b)it.pbox={x:1000-(b.y+b.h),y:b.x,w:b.h,h:b.w};
   if(await setPhoto(id,c.toDataURL('image/jpeg',.9),['Photo rotated.',4000,photoUndoAct(id,prev,sharp,b)])===false){it.pbox=b;return}   // drawn black: the box stays as it was
   if(sharp)try{const si=await imgOf(sharp),sc=document.createElement('canvas');sc.width=si.naturalHeight;sc.height=si.naturalWidth;const sx=sc.getContext('2d');sx.translate(sc.width,0);sx.rotate(Math.PI/2);sx.drawImage(si,0,0);await keepTagImg(id,sc.toDataURL('image/jpeg',TAG_Q),it.photo)}catch(e){console.warn('sharp copy not turned',e)}}
@@ -102,7 +102,7 @@ async function startCrop(id){const it=items.find(x=>x.id===id);if(!it||!it.photo
    matches the sharp copy, so it is cropped from itself */
 const CROP_MATCH=12;   // the largest mean grey difference (0-255) at 24x24 that still counts as the same picture
 async function cropSource(it){const ph=await imgOf(it.photo);
-  let sharp=null;try{const u=typeof tagImgOf==='function'?await tagImgOf(it.id):null;sharp=u?await imgOf(u):null}catch{sharp=null}
+  let sharp=null;try{const u=await tagImgOf(it.id);sharp=u?await imgOf(u):null}catch{sharp=null}
   if(!sharp||sharp.naturalWidth<=ph.naturalWidth)return ph;
   const grey=src=>{const N=24,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');x.drawImage(src,0,0,N,N);
     const d=x.getImageData(0,0,N,N).data,g=[];for(let k=0;k<d.length;k+=4)g.push(.3*d[k]+.59*d[k+1]+.11*d[k+2]);return g};
@@ -124,7 +124,7 @@ function cropDiscard(){phEdit.crop=null;renderWardrobe()}
 function cropKeep(){if(!phEdit.crop)return null;const id=phEdit.id;if(!cropDirty()){phEdit.crop=null;return null}return applyCrop(id,true)}
 /* the toast's Undo: the editor's own Undo while the sheet is still on this item, else the photo as it was; the sharp copy is the same picture again */
 async function cropUndo(id,prev){const it=items.find(x=>x.id===id);if(!it||!prev)return;await picUndo(id,'photo',prev);
-  if(typeof resignTagImg==='function')await resignTagImg(id,it.photo)}
+  await resignTagImg(id,it.photo)}
 function cropGeom(){const c=phEdit.crop,box=$('#cropbox');if(!c||!box)return null;const V=box.clientWidth,s=V/Math.min(c.w,c.h)*c.z,W=c.w*s,H=c.h*s;
   // keep the frame inside the picture
   const hx=V/2/W,hy=V/2/H;c.cx=Math.min(1-hx,Math.max(hx,c.cx));c.cy=Math.min(1-hy,Math.max(hy,c.cy));
@@ -140,7 +140,7 @@ async function applyCrop(id,left){const it=items.find(x=>x.id===id),g=cropGeom()
   const im=await cropSource(it),f=(im.naturalWidth||im.width)/cr.w;   // the frame is measured on the photo; f scales it to the source
   const side=g.V/g.s*f,sx=-g.x/g.s*f,sy=-g.y/g.s*f,out=Math.min(PH_MAX,Math.round(side)),c=document.createElement('canvas');c.width=c.height=out;
   c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);if(await setPhoto(id,c.toDataURL('image/jpeg',.9),[left?'Crop saved.':'Photo cropped.',4000,{label:'Undo',fn:()=>cropUndo(id,prev)}])===false){renderWardrobe();return}   // drawn black: nothing saved
-  if(typeof resignTagImg==='function')await resignTagImg(id,it.photo)}   // the same picture, cropped: the sharp copy (and the pattern's box on it) still holds
+  await resignTagImg(id,it.photo)}   // the same picture, cropped: the sharp copy (and the pattern's box on it) still holds
 /* what the photo tools' and the crop frame's controls do (act.js; the item by its id in data-id) */
 function photoFile(el){replacePhoto(el.dataset.id,el.files[0]);el.value=''}
 function photoRotate(el){rotatePhoto(el.dataset.id)}

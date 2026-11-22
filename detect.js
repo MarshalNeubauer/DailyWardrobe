@@ -37,7 +37,7 @@ const CAMO_TR=2,CAMO_RANK=[.08,.32,.26,.2,.14],CAMO_LIGHT_MAX=.12,CAMO_DARK_MAX=
    Without a reading the shares go by that order (CAMO_ACC_SHARES: the ground the largest, each further colour smaller), not by lightness;
    a reading's shares still go by lightness rank. An item without accents is drawn exactly as before */
 const CAMO_ACC_SHARES={5:[.38,.24,.16,.12,.1],6:[.34,.22,.15,.12,.09,.08],7:[.32,.2,.14,.11,.09,.08,.06]};
-function camoTag(i,rd){if(typeof isOcp==='function'&&isOcp(i))return ocpSett(i);const main=colOf(i),sec=i.secondaryColor&&COLORS[i.secondaryColor]||null,th=thirdOf(i),acc=accentsOf(i).map(c=>COLORS[c]),key=JSON.stringify(['camo',CAMO_V,i.id,main,sec,th,rd&&rd.camo,...(acc.length?[acc]:[])]);
+function camoTag(i,rd){if(isOcp(i))return ocpSett(i);const main=colOf(i),sec=i.secondaryColor&&COLORS[i.secondaryColor]||null,th=thirdOf(i),acc=accentsOf(i).map(c=>COLORS[c]),key=JSON.stringify(['camo',CAMO_V,i.id,main,sec,th,rd&&rd.camo,...(acc.length?[acc]:[])]);
   if(lookMemo.has(key))return lookMemo.get(key);
   const lab=rgbLab(...hexRgb(main)),step=d=>labHex([Math.max(0,Math.min(100,lab[0]+d)),lab[1],lab[2]]),L=h=>rgbLab(...hexRgb(h))[0];
   // printed camouflage's colours sit on one cloth and read as related: each accent is taken CAMO_MUTE of the way toward the main colour's
@@ -80,7 +80,7 @@ function settToTag(i,s){if(!s||s.v!==2||!Array.isArray(s.bands)||s.bands.length<
       const map=h=>{if(!ok(h))return h;if(h.toLowerCase()===g)return tag;const l=rgbLab(...hexRgb(h));return labHex([Math.max(0,Math.min(100,Lof(Math.min(1,Y(l[0])*k)))),tl[1]+l[1]-gl[1],tl[2]+l[2]-gl[2]])};
       out={...s,bands:s.bands.map(([h,w])=>[map(h),w]),...(s.cross&&Array.isArray(s.cross.bands)?{cross:{...s.cross,bands:s.cross.bands.map(([h,w])=>[h?map(h):h,w])}}:{})}}}
   if(m.size>8)m.clear();m.set(tag,out);return out}
-const lookOf=i=>{const p=i&&i.pattern,c=p&&typeof CUSTOM_PAT!=='undefined'&&CUSTOM_PAT[p];return c&&c.look&&c.look.layout&&c.look.layout!=='none'?lookSett(i,c.look):null};
+const lookOf=i=>{const p=i&&i.pattern,c=p&&CUSTOM_PAT[p];return c&&c.look&&c.look.layout&&c.look.layout!=='none'?lookSett(i,c.look):null};
 /* a look as a reading (the shapes texFromSpec, the band reader and motifFromSpec make), its roles turned into this item's colours: main =
    its drawn colour (colOf), second and third = its second and third colours (else a step lighter or darker), lighter and darker = main
    ±LOOK_STEP L*; tr = repeats across the item, cr = repeats a close-up would show; look = a short signature of the recipe (the painter's

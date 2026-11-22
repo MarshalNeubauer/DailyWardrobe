@@ -17,7 +17,7 @@ async function fetchPhoto(link){
   try{const r=await fetch(url.href,{mode:'cors',credentials:'omit'});
     if(r.ok){const b=await r.blob();if(/^image\//.test(b.type))return b}}catch(e){/* blocked by the site (no CORS): use the worker */}
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');
-  if(!w||!tok||(typeof inviteOver==='function'&&inviteOver()))throw new Error('That site doesn’t let the app download the photo directly. Connect in ⚙ Settings so the server can fetch it, or save the photo and add it from your device.');
+  if(!w||!tok||(inviteOver()))throw new Error('That site doesn’t let the app download the photo directly. Connect in ⚙ Settings so the server can fetch it, or save the photo and add it from your device.');
   let r;try{r=await fetch(new URL('fetch',w.replace(/\/*$/,'/')).href+'?url='+encodeURIComponent(url.href),{headers:{'x-app-token':tok}})}
   catch{throw new Error('Couldn’t reach the server to fetch the photo.')}
   if(!r.ok){let m='';try{m=(await r.json()).error}catch{}

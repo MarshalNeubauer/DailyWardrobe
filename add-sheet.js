@@ -39,12 +39,12 @@ function npsInert(on){for(const el of document.querySelectorAll('body>header,bod
   for(const el of a.children)if(el.id!=='nps-sheet'&&el.id!=='nps-backdrop')el.inert=on}
 /* the card and its bar; the card gone (saved, or taken away) closes the sheet */
 function npsDraw(){const q=npsCard(),s=$('#nps-sheet');if(!s)return;if(!q){npsClose();return}const i=queue.indexOf(q),body=$('#nps-q'),bar=$('#nps-bar');
-  if(body){const y=body.scrollTop;keepFocus(body,()=>{body.innerHTML=cardSafe(q,i,()=>formCard(q,i,true))});body.scrollTop=y;if(typeof cmpMount==='function')cmpMount(body)}
+  if(body){const y=body.scrollTop;keepFocus(body,()=>{body.innerHTML=cardSafe(q,i,()=>formCard(q,i,true))});body.scrollTop=y;cmpMount(body)}
   if(bar)bar.innerHTML=`${cardSafe(q,i,()=>ckLeftLine(q))}${confBtn(q,i)}<button type="button" id="nps-cancel" data-act="npsCancelTap">Cancel</button>`}
 function npsCancelTap(){npsCancel()}
 /* fromBack: the phone's Back did it (its entry is gone already) */
 function npsClose(fromBack){if(!npsId&&npsWas===undefined)return;const s=$('#nps-sheet'),b=$('#nps-backdrop');npsId=null;npsAsking=false;
-  if(s)s.classList.remove('on');if(b)b.classList.remove('on');document.body.classList.remove('nps-on');npsInert(false);if(typeof layerInert==='function')layerInert();
+  if(s)s.classList.remove('on');if(b)b.classList.remove('on');document.body.classList.remove('nps-on');npsInert(false);layerInert();
   const was=npsWas;npsWas=undefined;backReturn('nps',was,fromBack);
   const f=npsFrom;npsFrom=null;const to=f&&f.isConnected&&!f.closest('[inert]')&&f!==document.body?f:$('#add-manual');
   if(to&&$('#add')&&!$('#add').hidden)try{to.focus({preventScroll:true})}catch{}
@@ -60,7 +60,7 @@ function npsBack(){if(npsId)npsCancel(true)}
 backOn('nps',()=>npsBack());
 /* Add left while the sheet is up (start.js show): the sheet closes; a card with changes stays on Add as a card of the list, an
    untouched one goes */
-function npsLeave(){if(!npsId)return;const q=npsCard(),changed=!!q&&npsSig(q)!==npsSnap;if(npsAsking&&typeof asking!=='undefined'&&asking)askAnswer(false);
+function npsLeave(){if(!npsId)return;const q=npsCard(),changed=!!q&&npsSig(q)!==npsSnap;if(npsAsking&&asking)askAnswer(false);
   npsClose();if(q&&!changed)skipCard(q.id)}
 /* swiping the sheet down closes it, as What to buy and the item sheet: its header is a handle at any time, the card only while it is
    scrolled to the top; past a quarter of its height or a flick it closes (asking first when changed), else it springs back */

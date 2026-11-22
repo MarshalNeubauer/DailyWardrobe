@@ -32,7 +32,7 @@ function itemBody(i){
   const cr=L?'':colRows('e',id,i),shade=!L&&COLORS[primaryCol(i)]&&colShows(i,'primaryColor')?shadeRow(i,'e',id,!tex&&!!(i.meas&&i.meas.src==='closeup')):'';
   const color=cr||shade?ckSec(scope,'color',{mark:'good',title:'Color',sum:ckColSum(i,primaryCol(i))+(i.shade?` · drawn ${esc(shadeName(i.shade).toLowerCase())}`:''),body:cr+accRow('e',id,i)+shade}):'';
   const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" data-act="itemReadPat" data-id="${esc(id)}" data-how="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?'reread':'detect'}">Read pattern from photo</button>`}${i.stripes||i.sett?`<button data-act="itemGeneric" data-id="${esc(id)}">Use generic</button>`:''}</div></div>`:'';
-  const gap=typeof asmGapNote==='function'?asmGapNote(i):'';
+  const gap=asmGapNote(i);
   const pattern=!L&&hasPat(i.type)?ckSec(   // (a pocket square or a casual garment too: its pattern, no layout reading)
 scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type,i.pattern))))+(usableSett(i)?' · layout read':''),body:EP(id,i)+layout+gap}):'';
   const mat=!L&&MATERIALS_BY[i.type]?ckSec(scope,'material',{mark:i.material?'good':'opt',title:'Material',sum:i.material?esc(matLabel(i.material)):'Not set',body:matRow(i.type,i.material,matOnItem(id))}):'';
@@ -41,10 +41,10 @@ scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type
     (i.type==='pants'?E(id,'trouserKind',TROUSER_KINDS,trouserKindShown(i)):'')+(i.type==='shoes'?E(id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):'')+(i.type==='blouse'?blouseFields(id,i):'')+(!L&&(i.type==='shoes'||i.type==='belt')?E(id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):'')+
     (i.type==='watch'?`<label class="wdetails">Details <input type="text" maxlength="${WATCH_DETAILS_MAX}" dir="auto" value="${esc(String(i.details||'').slice(0,WATCH_DETAILS_MAX))}" placeholder="e.g. three subdials, 12 and 6 numerals" data-act-change="itemDetails" data-id="${esc(id)}"></label>`+(L?'':E(id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial))+E(id,'band',BANDS,watchOpts(i).band)+E(id,'bezel',BEZELS,watchOpts(i).bezel)+E(id,'watchStyle',WATCH_STYLES,watchOpts(i).style):'');
   const details=ckSec(scope,'details',{mark:'good',title:'Details',sum:esc(ivDetailSum(i)),body:det+(fab||L?'':gap),cls:'ivtags'});
-  const cs=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null;
+  const cs=CARE_ABLE.includes(i.type)&&!i.order?careState(i):null;
   const rotIn=`${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" min="${isoKey(todayDate())}" data-act-change="itemArrives" data-id="${esc(id)}"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
-  ${typeof favItemRow==='function'?favItemRow(i):''}${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" data-act="itemPause" data-id="${esc(id)}" data-want="${i.paused?0:1}" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}${typeof careCard==='function'?careCard(i):''}${typeof cpwBlock==='function'?cpwBlock(i):''}`;   // (cost.js: price, day bought, cost per wear)
-  const care=ckSec(scope,'care',{mark:cs&&cs.due?'warn':'good',title:'Planning &amp; care',sum:esc(ivCareSum(i,cs)+(typeof cpwSum==='function'?cpwSum(i):'')),body:rotIn,open:!!(cs&&cs.due),cls:'ivrot'});
+  ${favItemRow(i)}${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" data-act="itemPause" data-id="${esc(id)}" data-want="${i.paused?0:1}" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}${careCard(i)}${cpwBlock(i)}`;   // (cost.js: price, day bought, cost per wear)
+  const care=ckSec(scope,'care',{mark:cs&&cs.due?'warn':'good',title:'Planning &amp; care',sum:esc(ivCareSum(i,cs)+(cpwSum(i))),body:rotIn,open:!!(cs&&cs.due),cls:'ivrot'});
   const filled=['name','brand','notes'].filter(k=>String(i[k]||'').trim());
   const names=ckSec(scope,'names',{mark:filled.length?'good':'opt',title:'Name &amp; notes',sum:filled.length?esc(cap1(filled.join(', ')))+' filled in'+(filled.length<3?` · no ${['name','brand','notes'].filter(k=>!filled.includes(k)).join(' or ')}`:''):'Name, brand, notes · optional',body:wardFieldsTop(i)+notesRow(i.notes,ivOn(id))});
   const pics=ckSec(scope,'pics',{mark:'opt',title:'Pictures',sum:esc(cap1([i.photo?'photo':'no photo',tex&&i.texture?'close-up':''].filter(Boolean).join(', ')))+' · replace, rotate, crop',body:`<div class="ivhero">${pair}</div>${photoTools(i)}`,cls:'ivpics'});
@@ -55,7 +55,7 @@ scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type
 /* the summary line at the top of the item sheet: the photo (or the drawing), "In rotation" / "Out of rotation" / "On the way", how many
    wears are left before cleaning (or "Due for cleaning"), the material and the season */
 const optLab=(list,v)=>{const o=list.find(x=>x[0]===v);return o?cap1(o[1]):''};
-function ivSummary(i,pic){const s=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null,left=s?s.limit-s.wears:0;
+function ivSummary(i,pic){const s=CARE_ABLE.includes(i.type)&&!i.order?careState(i):null,left=s?s.limit-s.wears:0;
   const rot=i.paused?`<span class="ivpill${i.order?'':' warn'}">${i.order?'On the way':i.away?(i.away.why==='laundry'?'In the laundry':'At the cleaner’s'):'Out of rotation'}</span>`:'<span class="ivpill good">In rotation</span>';
   const care=s&&!i.away&&s.limit>1?(s.due?`<span class="ivpill warn">Due for ${careWord(i.type)}</span>`:`<span class="ivpill">${careWashed(i.type)?'Wash':'Clean'} in ${left} wear${left===1?'':'s'}</span>`):'';
   const meta=[i.material?matLabel(i.material):'',SEASON_TYPES.includes(i.type)&&i.season&&i.season!=='all'?optLab(SEASONS,i.season):''].filter(Boolean).join(' · ');
@@ -69,7 +69,7 @@ function ivDetailSum(i){const t=i.type,a=[TYPES[t]||'Item'];
   if(METAL_TYPES.includes(t))a.push(optLab(metalOptsFor(t),i.metal||'silver').toLowerCase());
   return a.filter(Boolean).join(' · ')}
 /* Planning & care's summary: "In rotation · worn 3 of 5 since cleaning" */
-function ivCareSum(i,s){const r=(i.paused?(i.order?'On the way':i.away?'Away being cleaned':'Out of rotation'):'In rotation')+(typeof isFavItem==='function'&&isFavItem(i.id)?' · ♥ favorite':'');
+function ivCareSum(i,s){const r=(i.paused?(i.order?'On the way':i.away?'Away being cleaned':'Out of rotation'):'In rotation')+(isFavItem(i.id)?' · ♥ favorite':'');
   if(!s||i.away)return r;if(s.due)return `${r} · due for ${careWord(i.type)}`;
   return s.limit>1?`${r} · worn ${s.wears} of ${s.limit} since ${careWord(i.type)}`:s.wears?`${r} · worn ${careTimes(s.wears)}`:`${r} · not worn yet`}
 /* the uniform blouse's name tape, service tape and rank (2026-11-18; core.js blouseTapes): text fields in capitals, the rank a list; the
@@ -137,7 +137,7 @@ async function togglePause(id,want){const it=items.find(x=>x.id===id);if(!it){it
       for(const [s,v] of Object.entries(f))if(v===id){delete f[s];hit=true}
       if(hit){const nr={...r,force:f};if(!Object.keys(f).length)delete nr.force;delete nr.ids;await saveDay(nr,true);n++}}}
   // out of rotation doesn't make a sample piece his (kit.js kitNoMine; put reads it at once)
-  const kn=typeof kitNoMine!=='undefined';if(kn)kitNoMine=true;const pw=put(it);if(kn)kitNoMine=false;await pw;planDirty();renderWardrobe();
+  kitNoMine=true;const pw=put(it);kitNoMine=false;await pw;planDirty();renderWardrobe();
   toast(it.paused?`Out of rotation: the planner won't pick it${n?`, and ${n} upcoming day${n===1?' was':'s were'} planned again without it`:''}.`:'Back in rotation.')}
 async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);planDirty();renderWardrobe()}
 async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast (wardrobe.js)
@@ -181,7 +181,7 @@ function renderWardrobe(){
   const wf=wardKeep();
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   // (2026-11-16) a casual type's chip shows once one is owned (or its chip is the one chosen)
-  const ft=wardFlt(),chips=['all',...Object.keys(TYPES).filter(t=>!HANDPICK_TYPES.includes(t)||ft===t||items.some(i=>i.type===t))].map(t=>`<button class="chip ${ft===t?'on':''}" aria-pressed="${ft===t}" data-act="wardChip" data-t="${t}">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`+(t==='all'&&typeof favChip==='function'?favChip():'')).join('');   // (the ♥ Favorites chip after All, once a piece is a favorite: fav.js)
+  const ft=wardFlt(),chips=['all',...Object.keys(TYPES).filter(t=>!HANDPICK_TYPES.includes(t)||ft===t||items.some(i=>i.type===t))].map(t=>`<button class="chip ${ft===t?'on':''}" aria-pressed="${ft===t}" data-act="wardChip" data-t="${t}">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`+(t==='all'?favChip():'')).join('');   // (the ♥ Favorites chip after All, once a piece is a favorite: fav.js)
   const list=wardFresh();
   keepFocus($('#wardrobe'),()=>{$('#wardrobe').innerHTML=`<h2 class="vh">Wardrobe</h2><span class="vh" id="wcount" role="status">${wardCount(list)}</span>${items.length?wardBar()+`<div class="chips">${chips}</div>`:''}<div class="wslide" id="wslide">`+wardGrid(list)+'</div>'});   // (the chip or field pressed keeps the focus: W2-19-01)
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
