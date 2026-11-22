@@ -26,10 +26,10 @@ const PT_ICON={replace:'<path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0
   closeup:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/><path d="M8 9l6 4M8 13l6-4" opacity=".6"/>'};
 const ptIcon=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${PT_ICON[k]}</svg>`;
 function photoTools(i){if(phEdit.crop)return '';const tex=lookCu(i.type),id=i.id;   // (look.js lookCu: TEXTURE_TYPES, more types with the Look beta on)
-  const rm=tex&&i.texture?`setTexture('${jsq(id)}',null,'Close-up removed.')`:'';
+  const rm=!!(tex&&i.texture);
   return `<div class="phtools" role="group" aria-label="Photo tools"><label class="btn ptbtn pt-replace">${ptIcon('replace')}<span>${i.photo?'Replace':'Add photo'}</span><input type="file" accept="image/*" class="vfile" aria-label="${i.photo?'Replace photo':'Add photo'}" data-act-change="photoFile" data-id="${esc(id)}"></label>`+
     (i.photo?`<button type="button" class="ptbtn pt-rotate" data-act="photoRotate" data-id="${esc(id)}" aria-label="Rotate the photo a quarter turn clockwise">${ptIcon('rotate')}<span>Rotate</span></button><button type="button" class="ptbtn pt-crop" data-act="photoCrop" data-id="${esc(id)}" aria-label="Zoom and crop the photo">${ptIcon('crop')}<span>Crop</span></button>`:'')+
-    (tex?closeupBtn({label:`${ptIcon('closeup')}<span>Close-up</span>`,cls:'btn ptbtn pt-closeup',mode:i.texture?'replace':'add',aria:i.texture?'Replace close-up':'Add fabric close-up',file:`f=>replaceTexture('${jsq(id)}',f)`,remove:rm,cloth:paperCloth(i)}):'')+`</div>`+
+    (tex?closeupBtn({label:`${ptIcon('closeup')}<span>Close-up</span>`,cls:'btn ptbtn pt-closeup',mode:i.texture?'replace':'add',aria:i.texture?'Replace close-up':'Add fabric close-up',act:` data-act-change="photoCuFile" data-id="${esc(id)}"`,remove:rm?'photoCuRemove':'',cloth:paperCloth(i)}):'')+`</div>`+
     (rm&&!cuTouch()?`<div class="ptmore"><button type="button" class="ptrm" data-act="photoCuRemove" data-id="${esc(id)}">Remove close-up</button></div>`:'')}   // on a touch screen Remove is in the close-up chooser (ui.js)
 /* ---- white paper in the close-up (2026-11-15, the owner's choice: option A "juiced up" + screens 04-06, photo-wb-mockups): one line of help
    under the close-up buttons with a small drawing beside it (the item's cloth with a strip of white paper along one edge and the
@@ -48,10 +48,10 @@ const paperSteps=cloth=>{const pic=cls=>`<span class="wbpic ${cls}" style="--clo
 <span class="li"><span class="n"><b>3</b><span class="cam">${PAPER_CAM}</span></span>Take the photo</span></span></button></div>`};
 const paperHint=i=>paperSteps(paperCloth(i));
 function paperTip(){if(typeof kitOpen==='function')kitOpen([PAPER_CARD])}
-const paperRetake=(id,fn)=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',file:`f=>${fn}('${jsq(id)}',f)`,cloth:paperCloth(items.find(x=>x.id===id)||{})});
+const paperRetake=id=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',act:` data-act-change="photoCuFile" data-id="${esc(id)}"`,cloth:paperCloth(items.find(x=>x.id===id)||{})});
 function paperLine(i){if(!i.texture||!lookCu(i.type)||phEdit.paper!==texSig(i.texture))return '';const r=paperNow(i);if(!r)return '';
   return r.ref?`<div class="wbst ok" id="ivwb" role="status"><span class="ic" aria-hidden="true">✓</span><span class="tx">White paper found<small>Colors set from it.</small></span></div>`
-    :`<div class="wbst no" id="ivwb" role="status"><span class="ic" aria-hidden="true">!</span><span class="tx">${r.warm?'No white paper, and the light looks warm<small>Colors may come out yellower than the cloth.</small>':'No white paper<small>Colors may be off.</small>'}</span>${paperRetake(i.id,'replaceTexture')}</div>`}
+    :`<div class="wbst no" id="ivwb" role="status"><span class="ic" aria-hidden="true">!</span><span class="tx">${r.warm?'No white paper, and the light looks warm<small>Colors may come out yellower than the cloth.</small>':'No white paper<small>Colors may be off.</small>'}</span>${paperRetake(i.id)}</div>`}
 const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
 /* (msg: a toast's text, which gets Undo (picUndo), or toast()'s arguments; the editor's Undo only for the item it is open on: a crop kept as
    the sheet closed lands later) */
@@ -146,8 +146,9 @@ function photoFile(el){replacePhoto(el.dataset.id,el.files[0]);el.value=''}
 function photoRotate(el){rotatePhoto(el.dataset.id)}
 function photoCrop(el){startCrop(el.dataset.id)}
 function photoCuRemove(el){setTexture(el.dataset.id,null,'Close-up removed.')}
+function photoCuFile(el,ev,f){cuGot(el,f,x=>replaceTexture(el.dataset.id,x))}   // (a close-up chosen or retaken: ui.js closeupBtn, cuGot)
 function paperTipTap(){paperTip()}
 function cropZoom(el){phEdit.crop.z=+el.value;layoutCrop()}
 function cropApply(el){applyCrop(el.dataset.id)}
 function cropDiscardTap(){cropDiscard()}
-acts({photoFile,photoRotate,photoCrop,photoCuRemove,paperTipTap,cropDrag,cropZoom,cropApply,cropDiscardTap});
+acts({photoFile,photoRotate,photoCrop,photoCuRemove,photoCuFile,paperTipTap,cropDrag,cropZoom,cropApply,cropDiscardTap});

@@ -42,15 +42,15 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await p.evaluate(()=>{openItem('k1');const none=!document.querySelector('#item-view .wbstcard');openItem('m1');return none}),'no hint for an item without a close-up (shoes)');
     await settle(p,300);
     // ---- after Replace close-up
-    const replace=async(name,u,sel='#item-view .phtools label:has(.vfile[onchange*=replaceTexture]) input')=>{const h=await p.$(sel);await p.evaluate(()=>{const l=document.querySelector('#ivwb');if(l)l.remove();phEdit.paper=null});
+    const replace=async(name,u,sel='#item-view .phtools label.pt-closeup input')=>{const h=await p.$(sel);await p.evaluate(()=>{const l=document.querySelector('#ivwb');if(l)l.dataset.old='1';phEdit.paper=null});   // (the old line is marked, not removed: Retake's field is inside it, and a field off the page reaches no data-act handler)
       await h.setInputFiles(file(name,u));
-      await p.waitForFunction(()=>{const it=items.find(x=>x.id==='m1');return it.texture&&phEdit.paper===texSig(it.texture)&&!!document.querySelector('#ivwb')})};
+      await p.waitForFunction(()=>{const it=items.find(x=>x.id==='m1');return it.texture&&phEdit.paper===texSig(it.texture)&&!!document.querySelector('#ivwb:not([data-old])')})};
     const line=()=>p.evaluate(()=>{const l=document.querySelector('#ivwb');return {cls:l.className,text:l.textContent,retake:!!l.querySelector('label.wbretake input[type=file]'),under:!!l.closest('#ivct')&&!!l.nextElementSibling&&l.nextElementSibling.classList.contains('wbsteps')}});
     await replace('paper.jpg',F.paper);e=await line();
     ok(/\bok\b/.test(e.cls)&&/White paper found/.test(e.text)&&/Colors set from it\./.test(e.text)&&!e.retake&&e.under,'a close-up with paper: "White paper found · Colors set from it." at the top of the Color & texture card, over the 3 steps');
     await replace('plain.jpg',F.plain);e=await line();
     ok(/\bno\b/.test(e.cls)&&/^!No white paperColors may be off\./.test(e.text)&&e.retake,`no paper: "No white paper · Colors may be off." with Retake close-up (${e.text})`);
-    await p.evaluate(F=>{const it=items.find(x=>x.id==='m1');it.photo=F.warmPhoto;delete it.photoSm;renderWardrobe()},F);
+    await p.evaluate(F=>{const it=items.find(x=>x.id==='m1');it.photo=F.warmPhoto;delete it.photoSm;renderWardrobe()},F);await settle(p,600);   // (the redraw that follows replaces the field: a file set on the old one, no longer on the page, reaches no data-act handler)
     await replace('plain2.jpg',F.plain);e=await line();
     ok(/No white paper, and the light looks warm/.test(e.text)&&/Colors may come out yellower than the cloth\./.test(e.text)&&e.retake,'no paper and a warm photo: the warm wording, with Retake close-up');
     await replace('retake.jpg',F.paper,'#ivwb input[type=file]');e=await line();

@@ -31,7 +31,7 @@ backOn('ask',()=>askBack());
 function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)askAnswer(false);
   const parts=String(message).split(/\n\s*\n/),{b,s}=askEls();
   s.innerHTML=`<p class="ask-q" id="ask-title">${uiEsc(parts[0])}</p>${parts.slice(1).map(t=>`<p class="ask-more">${uiEsc(t)}</p>`).join('')}
-<div class="ask-btns">${o.cancel?`<button type="button" id="ask-cancel" onclick="askAnswer(false)">${uiEsc(o.cancel)}</button>`:''}<button type="button" id="ask-ok" class="${o.danger?'ask-danger':'pri'}" onclick="askAnswer(true)">${uiEsc(o.ok)}</button></div>`;
+<div class="ask-btns">${o.cancel?`<button type="button" id="ask-cancel" data-act="askNoTap">${uiEsc(o.cancel)}</button>`:''}<button type="button" id="ask-ok" class="${o.danger?'ask-danger':'pri'}" data-act="askYesTap">${uiEsc(o.ok)}</button></div>`;
   return new Promise(done=>{asking={done,last:document.activeElement,at:performance.now(),was:backBorrow('ask')};b.classList.add('on');s.classList.add('on');
     const f=s.querySelector(o.danger&&o.cancel?'#ask-cancel':'#ask-ok');if(f)f.focus({preventScroll:true})})}
 /* ---- the close-up chooser (2026-11-15, closeup-chooser-mockups variant A, the owner's choice): a close-up button went straight to the
@@ -41,8 +41,11 @@ function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)as
    photos (iPhone needs a tap; a click from code can be blocked). Cancel, a tap outside (not in the first ASK_SETTLE ms), Escape and the
    phone's Back close it with nothing changed. Without a touch screen (pointer: fine) capture does nothing, so the button stays today's file
    window, and Remove stays a button of its own.
-   closeupBtn({label, cls, mode:'add'|'replace'|'retake', file:'f=>…', remove:'…'|'', cloth, aria}) -> the button's HTML (file and remove are
-   code, run when chosen, as the inline handlers around them; label may hold markup, aria names the button or the file input when the label is short) ---- */
+   closeupBtn({label, cls, mode:'add'|'replace'|'retake', act, remove:'…'|'', cloth, aria}) -> the button's HTML. act is the
+   attributes of the caller's file handler (act.js: its data-act-change name and data-* written out by the caller; a function(el, ev, f)
+   that hands the file to cuGot), remove the
+   name of its registered Remove handler, run with the button; label may hold markup, aria names the button or the file input when the label
+   is short ---- */
 const CU_COPY={add:['Fabric close-up','Hold the camera close so the weave fills the frame.'],
   replace:['Replace close-up','The new close-up takes the place of the one you have.'],
   read:['Close-up for Claude','Claude reads the color and the weave from it. Hold the camera close so the weave fills the frame.'],
@@ -52,8 +55,15 @@ const CU_LIB='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke
 const cuTouch=()=>{try{return matchMedia('(pointer: coarse)').matches}catch{return false}};
 let cuOpen=null;   // the chooser on screen: {o, at, last (what had the focus), was (whose Back entry it borrowed)}
 function closeupBtn(o){const ar=o.aria?` aria-label="${uiEsc(o.aria)}"`:'';
-  if(!cuTouch())return `<label class="${o.cls}">${o.label}<input type="file" accept="image/*" class="vfile"${ar} onchange="(${o.file})(this.files[0]);this.value=''"></label>`;
-  return `<button type="button" class="${o.cls} cubtn" aria-haspopup="dialog"${ar} onclick="closeupPick({mode:'${o.mode}',cloth:'${o.cloth||''}',file:${o.file}${o.remove?`,remove:()=>{${o.remove}}`:''}})">${o.label}</button>`}
+  if(!cuTouch())return `<label class="${o.cls}">${o.label}<input type="file" accept="image/*" class="vfile"${ar}${o.act}></label>`;
+  return `<button type="button" class="${o.cls} cubtn" aria-haspopup="dialog"${ar} data-act="cuBtnTap" data-mode="${uiEsc(o.mode)}" data-cloth="${uiEsc(o.cloth||'')}"${o.remove?` data-rm="${o.remove}"`:''}${o.act}>${o.label}</button>`}
+/* a tap on that button (act.js): the chooser, with the button's own file handler (its data-act-change name, which a button never fires
+   itself) and, when it has one, its Remove handler (data-rm) */
+function cuBtnTap(el){const d=el.dataset,file=ACTS[d.actChange],rm=d.rm?ACTS[d.rm]:null;
+  closeupPick({mode:d.mode,cloth:d.cloth,file:f=>file(el,null,f),...(rm?{remove:()=>rm(el)}:{})})}
+/* a close-up's file handler hands its file on: the chooser's (f), or without a touch screen the field's own, which is then emptied
+   so the same picture can be chosen again */
+function cuGot(el,f,use){if(f){use(f);return}use(el.files[0]);el.value=''}
 function cuEls(){let b=document.querySelector('#cu-backdrop'),s=document.querySelector('#cu-sheet');
   if(!s){b=document.createElement('div');b.id='cu-backdrop';b.onclick=e=>{if(e.isTrusted&&cuOpen&&performance.now()-cuOpen.at<ASK_SETTLE)return;closeupClose()};
     s=document.createElement('div');s.id='cu-sheet';s.setAttribute('role','dialog');s.setAttribute('aria-modal','true');s.setAttribute('aria-labelledby','cu-title');s.setAttribute('aria-describedby','cu-sub');s.tabIndex=-1;
@@ -163,15 +173,15 @@ function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)retu
   el.innerHTML=checking?'<p class="shelp" id="conn-state" role="status">Checking your invitation…</p>'
    :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and ${typeof backedUpWords==='function'?backedUpWords():'your wardrobe is backed up'}.</p>`+
      // (audit 2026-11-15, W1-7-02) the owner's phone moved to a tester's invitation keeps the owner's way back (account.js acctOwnerPhone)
-     (typeof isTester==='function'&&isTester()&&localStorage.getItem('acct_was_owner')==='1'?'<p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" onclick="connOwn()">I run the server: connect with its address and code</button></p>':'')
+     (typeof isTester==='function'&&isTester()&&localStorage.getItem('acct_was_owner')==='1'?'<p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" data-act="connOwnTap">I run the server: connect with its address and code</button></p>':'')
    :`<p class="shelp" id="conn-state">${inviteOver()?'Your invitation has ended, so photos aren’t read automatically and nothing is backed up. Your wardrobe stays on this phone, and the app keeps working without a connection. If you were given a new invitation link, paste it here.'
      :waiting?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you come back to the app or your connection returns, or tap Connect.'
      :'The app works without a connection: you add your items by hand. With an invite link, photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.'}</p>
-<div class="sform"><input type="text" id="conn-link" placeholder="Paste your invite link" aria-label="Invite link" autocomplete="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();connPaste()}"><button type="button" class="pri" id="conn-go" onclick="connPaste()"${connBusy?' disabled':''}>${connBusy?'Connecting…':'Connect'}</button></div>
+<div class="sform"><input type="text" id="conn-link" placeholder="Paste your invite link" aria-label="Invite link" autocomplete="off" autocapitalize="off" spellcheck="false" data-act-keydown="connLinkKey"><button type="button" class="pri" id="conn-go" data-act="connGoTap"${connBusy?' disabled':''}>${connBusy?'Connecting…':'Connect'}</button></div>
 <p class="shelp conn-msg" id="conn-msg" role="status">${uiEsc(connMsg)}</p>
-<p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" onclick="connOwn()">I run the server: connect with its address and code</button></p>`;
+<p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" data-act="connOwnTap">I run the server: connect with its address and code</button></p>`;
   const f=el.querySelector('#conn-link');if(f)f.value=typed||(waiting?location.href:'');
-  for(const ph of document.querySelectorAll('.conn-off-note'))ph.innerHTML=isConnected()?'':`${uiEsc(ph.dataset.what||'This')} needs a connection. <button type="button" class="linkbtn" onclick="goConnect()">Connect</button>`;
+  for(const ph of document.querySelectorAll('.conn-off-note'))ph.innerHTML=isConnected()?'':`${uiEsc(ph.dataset.what||'This')} needs a connection. <button type="button" class="linkbtn" data-act="connOffTap">Connect</button>`;
   if(typeof applyRole==='function')applyRole()}
 /* not connected, the owner's fold (the server's address and code) stays out of sight until asked for: a new tester was invited to type
    into "Code" (audit 2026-11-14). The owner connecting a new phone taps this line (styles.css: body.nocon:not(.srv-open)) */
@@ -186,7 +196,7 @@ function addGate(){const l=document.querySelector('#add-group'),s=document.query
   l.classList.toggle('connhide',off);l.classList.remove('needconn');l.removeAttribute('aria-disabled');inp.disabled=off;s.textContent=ADD_GROUP_SUB;   // not connected: the card is not shown
   // ...and a line says why, before any photo is picked (audit 2026-11-13: a new user found out only after picking one)
   let n=document.querySelector('#add-group-off');if(!n&&off){n=document.createElement('p');n.id='add-group-off';n.className='mut addoff';l.parentElement.after(n)}
-  if(n){n.hidden=!off;n.innerHTML=off?'Several items in one photo are found by the server, so that needs a connection. <button type="button" class="linkbtn" onclick="openSettings(\'connection\');goConnect()">Connect</button>':''}}
+  if(n){n.hidden=!off;n.innerHTML=off?'Several items in one photo are found by the server, so that needs a connection. <button type="button" class="linkbtn" data-act="addConnTap">Connect</button>':''}}
 async function connPaste(){const inp=document.querySelector('#conn-link'),t=(inp&&inp.value||'').trim();if(!t||connBusy)return;
   connBusy=true;connMsg='';renderConnUI();let ok=false;
   try{ok=typeof connectFromLink==='function'&&!!(await connectFromLink(t))}catch(e){ok=false}
@@ -199,4 +209,13 @@ function advToggle(btn){const f=btn.closest('.adv');if(!f)return;const open=!f.c
 function advClose(){for(const f of document.querySelectorAll('#settings-modal .adv.open')){f.classList.remove('open');const b=f.querySelector('.adv-head');if(b)b.setAttribute('aria-expanded','false')}}
 /* index.html's (act.js): the head of an Advanced fold in Settings */
 function advTap(el){advToggle(el)}
-acts({advTap});
+/* what this file's own controls do (act.js): a question's two buttons, Connection's invite field (Enter connects), Connect and the
+   owner's line, "Connect" in a section that needs the server and under Add's "Several items" */
+function askNoTap(){askAnswer(false)}
+function askYesTap(){askAnswer(true)}
+function connOwnTap(){connOwn()}
+function connLinkKey(el,ev){if(ev.key==='Enter'){ev.preventDefault();connPaste()}}
+function connGoTap(){connPaste()}
+function connOffTap(){goConnect()}
+function addConnTap(){openSettings('connection');goConnect()}
+acts({advTap,askNoTap,askYesTap,cuBtnTap,connOwnTap,connLinkKey,connGoTap,connOffTap,addConnTap});

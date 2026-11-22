@@ -72,7 +72,7 @@ function renderCustomUI(){const el=$('#custom-list');if(!el)return;const cu=sett
   el.innerHTML=(!cols.length&&!pats.length?'<p class="mut"><small>None yet. Add one below, or from any color or pattern list (“+ New”); the Add card offers one when a photo shows a color or pattern the lists lack.</small></p>':
     [...cols.map(c=>{const n=used(c.key,(i,k)=>[i.primaryColor,i.secondaryColor,i.tertiaryColor].includes(k));return `<div class="custrow"><span class="msw" style="background:${esc(c.hex)}"></span><span><b>${esc(c.name)}</b><br><small class="mut">behaves like ${esc(colName(c.base))} · ${kinds(c)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':rm('colors',c.key)}</div>`}),
      ...pats.map(p=>{const n=used(p.key,(i,k)=>i.pattern===k);return `<div class="custrow"><span class="msw pat">${patSw(p)}</span><span><b>${esc(p.name)}</b><br><small class="mut">${p.look?'drawn from its own look, planned':'drawn'} like ${esc(patLabel(p.base))} · ${kinds(p)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span>${n?'':rm('patterns',p.key)}</div>`})].join(''))
-    +`<div class="custadd"><button type="button" id="cust-newcol" onclick="openCustomNew('colour')">+ New color</button><button type="button" id="cust-newpat" onclick="openCustomNew('pattern')">+ New pattern</button></div>`}
+    +`<div class="custadd"><button type="button" id="cust-newcol" data-act="custNewTap" data-kind="colour">+ New color</button><button type="button" id="cust-newpat" data-act="custNewTap" data-kind="pattern">+ New pattern</button></div>`}
 async function removeCustom(kind,key){if(kind!=='colors'&&kind!=='patterns')return;const cu=settings.custom||{};settings.custom={...cu,[kind]:(cu[kind]||[]).filter(x=>x.key!==key)};applyCustom(settings.custom);planDirty();await saveUserSettings();renderCustomUI()}
 
 /* adding one of Claude's new materials to the person's own for a type (settings.ownMaterials, synced; core.js ownMats): -> the name, or ''.
@@ -97,7 +97,12 @@ function matGuessUse(i){const q=queue[i];if(!q||!q.matGuess)return;const k=q.mat
    shows as Other with its name there; it is only no longer offered) */
 function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[];
   for(const t of Object.keys(MATERIALS_BY))for(const m of ownMats(t)){const n=items.filter(i=>i.type===t&&i.material===m).length;
-    rows.push(`<div class="custrow ownmatrow" data-t="${esc(t)}" data-m="${esc(m)}"><span><b>${esc(cap1(m))}</b><br><small class="mut">${esc(TYPES[t]||t)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span><button type="button" aria-label="Remove ${esc(m)} from your ${esc(matTypeWord(t))} materials" onclick="removeOwnMaterial('${jsq(t)}','${jsq(m)}')">Remove</button></div>`)}
+    rows.push(`<div class="custrow ownmatrow" data-t="${esc(t)}" data-m="${esc(m)}"><span><b>${esc(cap1(m))}</b><br><small class="mut">${esc(TYPES[t]||t)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span><button type="button" aria-label="Remove ${esc(m)} from your ${esc(matTypeWord(t))} materials" data-act="ownMatRmTap" data-t="${esc(t)}" data-m="${esc(m)}">Remove</button></div>`)}
   el.innerHTML=rows.length?rows.join('')+'<p class="mut"><small>Removing one leaves the items that use it as they are; it just stops being offered.</small></p>'
     :'<p class="mut"><small>None yet. When Claude reads a material that is on no list (cupro, say), the Add card offers to add it here.</small></p>';
   if(lookOn())el.insertAdjacentHTML('beforeend',lookOwnMatUI())}   // (the Look beta: leathers and metals too, and "+ New material": look.js)
+/* what Settings' own lists do (act.js): "+ New color" / "+ New pattern" (data-kind), and a material's Remove (its type and name in
+   data-t and data-m) */
+function custNewTap(el){openCustomNew(el.dataset.kind)}
+function ownMatRmTap(el){removeOwnMaterial(el.dataset.t,el.dataset.m)}
+acts({custNewTap,ownMatRmTap});

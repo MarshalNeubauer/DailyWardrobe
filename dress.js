@@ -13,7 +13,7 @@ const DRESS_ROWS=[['jacket','Jackets (suits and blazers)','Off if you don\'t wea
 const dressOn=k=>k==='jacket'?wearsJacket():k==='tie'?wearsTie():!!(settings.dress&&settings.dress.jeans);
 function renderDressUI(){const el=$('#cfg-dress');if(!el)return;const j=wearsJacket(),t=wearsTie();
   el.innerHTML=DRESS_ROWS.filter(([k])=>k!=='jeans'||j).map(([k,label,help])=>{const on=dressOn(k);
-    return `<div class="dress-row"><span class="dress-txt"><b id="dress-l-${k}">${label}</b><small id="dress-h-${k}">${help}</small></span><button type="button" class="dress-sw${on?' on':''}" id="dress-${k}" role="switch" aria-checked="${on}" aria-labelledby="dress-l-${k}" aria-describedby="dress-h-${k}" onclick="setDress('${k}',${!on})"><i></i></button></div>`}).join('')
+    return `<div class="dress-row"><span class="dress-txt"><b id="dress-l-${k}">${label}</b><small id="dress-h-${k}">${help}</small></span><button type="button" class="dress-sw${on?' on':''}" id="dress-${k}" role="switch" aria-checked="${on}" aria-labelledby="dress-l-${k}" aria-describedby="dress-h-${k}" data-act="dressSwTap" data-k="${k}"><i></i></button></div>`}).join('')
     +(j?t?'':'<p class="shelp dress-note">The suit vest is hidden: a vest is only worn with a tie.</p>':'<p class="shelp dress-note">Blazer days and the suit vest don\'t apply without jackets, so they are hidden. A day you mark as formal, a wedding or a funeral is still dressed in full from what you own.</p>');
   // (2026-11-13) the suit vest also hides without ties: no waistcoat is ever planned without a tie (planner.js outfit)
   const e=$('#blazer-group');if(e)e.classList.toggle('dress-hide',!j);const v=$('#vest-row');if(v)v.classList.toggle('dress-hide',!j||!t)}
@@ -70,3 +70,6 @@ function dressSynced(m){
   if(!vestMigrating)migrateVests(true);
   if(typeof matMigrate==='function'&&m&&(m.items||[]).some(matRenameTo))matMigrate();
   if(typeof sockToeMigrate==='function'&&m&&(m.items||[]).some(sockLegacy))sockToeMigrate()}   // a sock from an older app: its toe cap to toeColor (wardrobe.js)   // a shirt still "nylon/spandex" or "nylon" from another device (wardrobe.js)
+/* a dress-code switch (act.js; which one in data-k): a tap turns it the other way from what it shows */
+function dressSwTap(el){setDress(el.dataset.k,el.getAttribute('aria-checked')!=='true')}
+acts({dressSwTap});

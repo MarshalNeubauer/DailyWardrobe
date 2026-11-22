@@ -236,17 +236,17 @@ function renderAccountUI(){const el=document.querySelector('#acct-box');if(!el)r
   else if(m&&m.role==='tester')h=`<div class="slabel">Connected as ${acctEsc(m.name||'a tester')}</div>
     <div class="acct-uses" id="acct-uses">${acctUse(m.used,m.caps)}</div><p class="shelp">These limits start again at midnight UTC.${m.firstUntil&&m.firstUntil>Date.now()?` Your first week has twice the usual limits, until ${new Date(m.firstUntil).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}.`:''}</p>
     ${iosInSafari()?(b=>`<p class="shelp acct-ios">You’re using the app in ${b}. Add it to your Home Screen, open it there and paste your invitation link: iPhone keeps the two apart, and can clear ${b}’s copy after a week.</p>`)(typeof homeBrowser==='function'?homeBrowser():'Safari'):''}
-    <div class="sactions"><button type="button" onclick="copyInviteLink()">Copy my invitation link</button></div>
+    <div class="sactions"><button type="button" data-act="acctMyLinkTap">Copy my invitation link</button></div>
     <p class="shelp">To connect the app on your Home Screen or another phone. Keep it somewhere safe, such as a note or your mail: if this phone’s data is ever cleared, the link brings your wardrobe back. Keep it to yourself: it opens your wardrobe.</p>
     <input type="text" id="acct-mylink" class="acct-mylink" readonly hidden aria-label="Your invitation link">`;
   else if(m){
-    const list=(acct.invites||[]).map(v=>`<div class="acct-inv${v.off?' off':''}" data-id="${acctEsc(v.id)}"><div class="acct-inv-top"><b>${acctEsc(v.name)}</b>${v.off?`<span class="acct-tag">Switched off</span><button type="button" class="danger" onclick="purgeInvite('${acctEsc(v.id)}')">Delete their data</button>`:`<span class="acct-btns"><button type="button" class="acct-new" onclick="reissueInvite('${acctEsc(v.id)}')"${acct.busy?' disabled':''}>New link</button><button type="button" class="danger" onclick="revokeInvite('${acctEsc(v.id)}')">Revoke</button></span>`}</div>
+    const list=(acct.invites||[]).map(v=>`<div class="acct-inv${v.off?' off':''}" data-id="${acctEsc(v.id)}"><div class="acct-inv-top"><b>${acctEsc(v.name)}</b>${v.off?`<span class="acct-tag">Switched off</span><button type="button" class="danger" data-act="acctPurgeTap" data-id="${acctEsc(v.id)}">Delete their data</button>`:`<span class="acct-btns"><button type="button" class="acct-new" data-act="acctReissueTap" data-id="${acctEsc(v.id)}"${acct.busy?' disabled':''}>New link</button><button type="button" class="danger" data-act="acctRevokeTap" data-id="${acctEsc(v.id)}">Revoke</button></span>`}</div>
       ${v.off?'':`<div class="acct-uses">${acctUse(v.used,v.caps)}</div>`}</div>`).join('');
     h=`<div class="slabel">Connected as the owner</div>
     <div class="slabel acct-h">Invite testers</div><p class="shelp">Each tester gets a wardrobe of their own on your server and a daily limit on photos and readings. Send them the link; it is shown only once.</p>
-    <div class="sform"><input type="text" id="acct-name" placeholder="Tester’s name" maxlength="40" autocomplete="off" aria-label="Tester’s name"><button type="button" class="pri" id="acct-create" onclick="createInvite()"${acct.busy?' disabled':''}>Create</button></div>
+    <div class="sform"><input type="text" id="acct-name" placeholder="Tester’s name" maxlength="40" autocomplete="off" aria-label="Tester’s name"><button type="button" class="pri" id="acct-create" data-act="acctCreateTap"${acct.busy?' disabled':''}>Create</button></div>
     <p class="shelp" id="acct-msg">${acctEsc(acct.msg)}</p>
-    ${acct.link?`<div class="acct-link" id="acct-link"><div class="slabel">${acct.link.again?'New link':'Link'} for ${acctEsc(acct.link.name)}</div><input type="text" readonly id="acct-link-url" value="${acctEsc(acct.link.url)}" aria-label="Invitation link" onfocus="this.select()"><div class="sactions"><button type="button" id="acct-copy" onclick="copyInvite()">Copy</button></div><p class="shelp">${acct.link.again?'It opens the same wardrobe as before; their old link no longer works. ':''}Copy it now: it can’t be shown again.</p></div>`:''}
+    ${acct.link?`<div class="acct-link" id="acct-link"><div class="slabel">${acct.link.again?'New link':'Link'} for ${acctEsc(acct.link.name)}</div><input type="text" readonly id="acct-link-url" value="${acctEsc(acct.link.url)}" aria-label="Invitation link" data-act-focus="acctLinkFocus"><div class="sactions"><button type="button" id="acct-copy" data-act="acctCopyTap">Copy</button></div><p class="shelp">${acct.link.again?'It opens the same wardrobe as before; their old link no longer works. ':''}Copy it now: it can’t be shown again.</p></div>`:''}
     <div class="acct-list" id="acct-list">${list||(acct.invites?'<p class="shelp">No testers invited yet.</p>':'')}</div>`}
   el.hidden=!h;el.innerHTML=h;if(typed&&el.querySelector('#acct-name')&&!acct.link)el.querySelector('#acct-name').value=typed}   // a redraw keeps the name being typed
 async function createInvite(){const inp=document.querySelector('#acct-name'),name=(inp&&inp.value||'').trim();
@@ -298,3 +298,13 @@ function acctRetryLink(){if(acctWhy==='offline'&&hasInviteHash()&&!acctLinkRun)c
 /* the invitation has ended (switched off, or the account deleted; sync-status.js inviteEnded): what said "Connected" is drawn again */
 function acctEndedUI(){acct={...acct,me:null,state:'',invites:null};try{applyRole();renderAccountUI();acctLinkDrawn();addGate()}catch(e){console.warn(e)}}
 acctStart();
+/* what Settings' account controls do (act.js): a tester's "Copy my invitation link"; the owner's Create, a new link's field (focus selects
+   it) and Copy, and a tester's New link, Revoke and Delete their data (the invitation's id in data-id) */
+function acctMyLinkTap(){copyInviteLink()}
+function acctCreateTap(){createInvite()}
+function acctLinkFocus(el){el.select()}
+function acctCopyTap(){copyInvite()}
+function acctPurgeTap(el){purgeInvite(el.dataset.id)}
+function acctReissueTap(el){reissueInvite(el.dataset.id)}
+function acctRevokeTap(el){revokeInvite(el.dataset.id)}
+acts({acctMyLinkTap,acctCreateTap,acctLinkFocus,acctCopyTap,acctPurgeTap,acctReissueTap,acctRevokeTap});

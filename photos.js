@@ -4,7 +4,7 @@
    day that wears the same pieces shows the photo; the worker keeps a copy (KV) so every device can show it. ---- */
 let renders={};   // kept pictures by key: outfit photos made before 2026-11-14 (renderFor shows them), item pictures, assembled pictures
 const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');   // ' too: some go into onclick='…'
-/* (fix round 3, W2-13-02) a value inside a quoted JS string inside an inline handler, onclick="f('…')": the browser decodes the attribute
+/* (fix round 3, W2-13-02) a value inside a quoted JS string inside an inline handler (an onclick calling f('…')): the browser decodes the attribute
    first, so esc alone gives the JS string its ' back; jsq escapes for JS, then for the attribute */
 const jsq=t=>esc(String(t??'').replace(/[\\'"\n\r\u2028\u2029<>&]/g,c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')));
 /* a picture's src: only a data:image base64 picture, a blob: or http(s) address or a file path, with nothing that ends the attribute,
@@ -185,7 +185,7 @@ async function fixItemBackdrops(){let n=0;for(const [k,r] of Object.entries(rend
     await keepRender(k,{...r,...(g?{img:g}:{}),grey:1},false);if(g){n++;delete picBgs[k]}}return n}
 function picBg(img,k){if(picBgs[k]!==undefined)return;picBgs[k]=null;
   readPicBg(img.src).then(c=>{if(!c)return;picBgs[k]=c;document.querySelectorAll(`img.item-pic[data-k="${k}"]`).forEach(i=>{const t=i.closest('.tile');if(t)t.style.background=c})})}
-const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${srcOk(p.img)}" alt="" data-k="${itemKey(i)}" onload="picBg(this,'${itemKey(i)}')">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
+const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${srcOk(p.img)}" alt="" data-k="${itemKey(i)}" data-act-load="itemPicLoad">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
 /* sure: asked before paying for a new picture (startItemPics), so without a list the key is asked for even while lists are paused */
 async function fetchItemPic(i,sure){const W=workerBase(),k=itemKey(i);if(!W||renderTried.has(k)||renders[k])return;renderTried.add(k);
   try{await remoteList();if(remoteListed&&!remoteKeys.has(k)||!sure&&remoteHold())return;   // not on the worker: no 404 to ask for
@@ -237,4 +237,6 @@ async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();
   itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed`:''}${left?`, ${left} not made`:''}${kept||fail||left?` (${why})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
 /* index.html's (act.js): Settings' "Generate item pictures" */
 function itemPicsTap(){startItemPics()}
-acts({itemPicsTap});
+/* an item picture has loaded (data-act-load; its key in data-k): its background color is read from it once */
+function itemPicLoad(el){picBg(el,el.dataset.k)}
+acts({itemPicsTap,itemPicLoad});

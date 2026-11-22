@@ -50,7 +50,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     const addPhoto=async(answer)=>{S.tags.push({body:answer});await p.evaluate(()=>{queue.length=0;openAdd()});await settle(p,300);
       await (await p.$('#add-one input[type=file]')).setInputFiles(file('item.jpg',F.photo));
       await p.waitForFunction(()=>queue[0]&&!queue[0].busy&&document.querySelector('#queue .card'));await settle(p,300)};
-    const addCloseup=async(name,u)=>{await (await p.$('#queue label.ckadd input[type=file], #queue label input.vfile[onchange*="addTexture"]')).setInputFiles(file(name,u))};
+    const addCloseup=async(name,u)=>{await (await p.$('#queue label.ckadd input[type=file], #queue label input.vfile[data-act-change="cardCuFile"]')).setInputFiles(file(name,u))};
     const ended=()=>p.waitForFunction(()=>queue[0]&&!queue[0].refining&&!queue[0].patternReading,null,{timeout:20000});
 
     // ---- CR-2-03 / CR-2-04: a blazer; its close-up read again, Claude calling it a suit in burgundy

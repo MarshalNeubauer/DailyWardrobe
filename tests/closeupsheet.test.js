@@ -47,7 +47,7 @@ async function run(eng,browser,{ok,url,settle}){
     const closed=async()=>{await p.waitForFunction(()=>!document.querySelector('#cu-sheet.on'));await settle(p,320)};
     // ---- the editor, an item with a close-up
     await p.evaluate(()=>openItem('m1'));await settle(p,400);
-    let e=await p.evaluate(()=>{const t=[...document.querySelectorAll('#item-view .phtools > *')].map(x=>x.tagName+':'+(x.getAttribute('aria-label')||x.textContent.trim()));return {t,file:!!document.querySelector('#item-view .phtools .vfile[onchange*=replaceTexture]'),rm:!!document.querySelector('#item-view .ptmore,#item-view .ptrm')}});
+    let e=await p.evaluate(()=>{const t=[...document.querySelectorAll('#item-view .phtools > *')].map(x=>x.tagName+':'+(x.getAttribute('aria-label')||x.textContent.trim()));return {t,file:!!document.querySelector('#item-view .phtools .pt-closeup .vfile'),rm:!!document.querySelector('#item-view .ptmore,#item-view .ptrm')}});
     ok(e.t.includes('BUTTON:Replace close-up')&&!e.t.some(x=>/Remove close-up/.test(x))&&!e.file&&!e.rm,T+`the editor's close-up button is a plain button and there is no separate Remove close-up (${e.t.join(', ')})`);
     const t0=await tex('m1');
     await (await btn('Replace close-up')).click();await p.waitForSelector('#cu-sheet.on');let s=await sheet();
@@ -152,11 +152,11 @@ async function run(eng,browser,{ok,url,settle}){
   {const {ctx,p,errs,F}=await open(false);
     ok(await p.evaluate(()=>!cuTouch()),T+'the desktop context reads as no touch screen');
     await p.evaluate(()=>openItem('m1'));await settle(p,400);
-    let e=await p.evaluate(()=>{const l=document.querySelector('#item-view .phtools label:has(.vfile[onchange*=replaceTexture])'),i=l&&l.querySelector('input'),rm=document.querySelector('#item-view .ptmore .ptrm');
+    let e=await p.evaluate(()=>{const l=document.querySelector('#item-view .phtools label.pt-closeup'),i=l&&l.querySelector('input'),rm=document.querySelector('#item-view .ptmore .ptrm');
       return {label:l&&l.textContent.trim(),name:i&&i.getAttribute('aria-label'),cap:i&&i.hasAttribute('capture'),rm:rm&&rm.textContent,hRm:rm?Math.round(rm.getBoundingClientRect().height):0,cubtn:!!document.querySelector('.cubtn')}});
     ok(e.label==='Close-up'&&e.name==='Replace close-up'&&!e.cap&&e.rm==='Remove close-up'&&e.hRm>=44&&!e.cubtn,T+`without touch: the Close-up button is the file window itself, and Remove close-up stays a button (44 px) under the row (${JSON.stringify(e)})`);
     const t0=await p.evaluate(()=>texSig(items[0].texture));
-    await (await p.$('#item-view .phtools label:has(.vfile[onchange*=replaceTexture]) input')).setInputFiles(file('d.jpg',F.paper));
+    await (await p.$('#item-view .phtools label.pt-closeup input')).setInputFiles(file('d.jpg',F.paper));
     await p.waitForFunction(t0=>texSig(items[0].texture)!==t0,t0);
     ok(await p.evaluate(()=>!document.querySelector('#cu-sheet.on')),T+'a file chosen there replaces the close-up with no sheet');
     await p.waitForFunction(()=>/Close-up added/.test((document.querySelector('#toast.on')||{}).textContent||''));await settle(p,300);   // the replace's save has landed

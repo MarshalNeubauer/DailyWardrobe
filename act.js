@@ -58,6 +58,17 @@ function actListen(){if(actOn)return;actOn=true;
     document.addEventListener(t,ev=>actFire(ev,a,false,false))}
   for(const t of ACT_OWN){const a=actAttr(t);document.addEventListener(t,ev=>actFire(ev,a,false,true),true)}}
 actListen();
+/* A file field's picker stays open for as long as the person takes, and the page may redraw the field away meanwhile (a card read, a
+   sync): the file then arrives on a field that is no longer in the document, and its change never reaches document's listener (an
+   inline handler ran there, and the file went where it was meant). So a click on a file field with data-act-change (the click that
+   opens the picker: the field's own, or its label's) gives the field a change listener of its own, once, which runs the handler only
+   when the field is off the page by then; on the page document's listener runs it as usual. */
+const ACT_FILES=new WeakSet();   // the file fields that have that listener
+function actFileGone(ev){const el=ev.currentTarget;if(!(el instanceof HTMLInputElement)||el.isConnected||el.disabled)return;
+  const name=el.getAttribute('data-act-change');
+  try{const f=ACTS[name];if(!f)throw new Error(`act.js: no handler named "${name}" (data-act-change)`);f(el,ev)}catch(e){actErr(e)}}
+document.addEventListener('click',ev=>{const el=ev.target;
+  if(el instanceof HTMLInputElement&&el.type==='file'&&el.hasAttribute('data-act-change')&&!ACT_FILES.has(el)){ACT_FILES.add(el);el.addEventListener('change',actFileGone)}},true);
 /* A tap becomes a click only on what the browser takes for a control: a button, a link, a field, or an element with a click handler
    of its own (document's listener doesn't count). Safari on a phone sends no click for a tap on anything else, and Chrome on a phone
    hands a tap there to a control nearby (a tap on a sheet's backdrop, just above the sheet, went to the sheet's head). An inline

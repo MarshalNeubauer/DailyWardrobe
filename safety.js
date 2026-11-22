@@ -76,7 +76,7 @@ async function storageDown(e){
 <p>This browser isn’t letting the app keep anything on this device, so your wardrobe can’t be loaded or saved.</p>
 <p>That happens in a private window, or when storage for websites is switched off or full. Open the app in a normal window, or allow this site to store data, then try again. Nothing in your wardrobe has been changed.</p>
 ${x.message?`<p class="nostore-why">What the browser said: ${esc(String(x.message))}</p>`:''}
-<button type="button" class="nostore-btn" onclick="location.reload()">Try again</button></div>`;
+<button type="button" class="nostore-btn" data-act="nostoreAgainTap">Try again</button></div>`;
   document.body.appendChild(el);for(const s of ['header','main','nav']){const n=document.querySelector(s);if(n)n.inert=true}
   const t=document.getElementById('toast');if(t)t.classList.remove('on','act');
   el.querySelector('button').focus();return true}
@@ -130,7 +130,7 @@ const tagNetText=t=>/offline|couldn’t be reached/.test(t||'');
 function tagFailed(q,err){if(localStorage.getItem('worker_url')&&!inviteOver()){const why=err?err.why:tagWhy,net=err?err.net:tagNetLast;q.tagErr=why||'No answer came back.';if(net)q.tagNet=1;else delete q.tagNet;
   if(!net)errNote(new Error(q.tagErr),'Photo not tagged')}}   // reported (a phone offline is not a failure to fix)
 /* the card says what to do once: not when the reason already does ("Try again later, or add the item by hand.") */
-const tagFailNote=(q,i)=>q.tagErr&&!inviteOver()?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)}${/try again|by hand|yourself/i.test(q.tagErr)?'':' <span class="tagfail-do">Fill in the details yourself, or try again.</span>'}</p><button type="button" class="tagfail-btn" onclick="retryTag(${i})">Try again</button></div>`:'';
+const tagFailNote=q=>q.tagErr&&!inviteOver()?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)}${/try again|by hand|yourself/i.test(q.tagErr)?'':' <span class="tagfail-do">Fill in the details yourself, or try again.</span>'}</p><button type="button" class="tagfail-btn" data-act="cardRetryTag" ${cardAt(q)}>Try again</button></div>`:'';
 async function retryTag(i){const q=queue[i];if(!q||q.busy||!q.tagImg)return;
   const ac=typeof AbortController==='function'?new AbortController():null;q.abort=ac;   // Stop on the card (add.js stopRead)
   q.busy=1;renderAdd();let ai=null;const out={};try{ai=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),out,...(ac?{signal:ac.signal}:{})})}catch(e){console.warn(e)}
@@ -155,3 +155,6 @@ async function adoptBackupSettings(local,data){
   const kept={...local.settings,...data.settings};await metaPut('settings',kept);local.settings=kept;
   setWardrobe({settings:takeSettings(settings,data.settings)});applyCustom(settings.custom);planDirty();loadWeather();
   if(!$('#today').hidden)refreshToday();return true}
+/* "Try again" on the page shown when the wardrobe can't be opened (act.js) */
+function nostoreAgainTap(){location.reload()}
+acts({nostoreAgainTap});
