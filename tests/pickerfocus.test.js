@@ -44,7 +44,7 @@ async function run(eng,browser,{ok,url,settle}){
   await check('Add without a photo, Type → Polo',ts,'polo','key');
   await check('Add without a photo, Type → Suit',ts,'suit','touch');
   ok(await p.evaluate(()=>queue[0]&&queue[0].type==='suit'),`${T}the card took the type picked`);
-  const ms='#nps-q select[onchange^="setQField"]';
+  const ms='#nps-q select.wmat';
   const mat=await p.evaluate(s=>{const e=document.querySelector(s);return e?[...e.options].map(o=>o.value).filter(v=>v&&v!==e.value&&v!=='other'):[]},ms);
   ok(mat.length>=2,`${T}the card has a Material dropdown (${mat.join(', ')})`);
   if(mat.length>=2){await check('Add without a photo, Material',ms,mat[0],'touch');await check('Add without a photo, Material by keyboard',ms,mat[1],'key')}
@@ -60,7 +60,7 @@ async function run(eng,browser,{ok,url,settle}){
   const it='#ivbody select[data-act-change="itemPick"][data-id="suit0"][data-f="type"]';
   await check('the item sheet, Type → Blazer',it,'blazer','touch');
   await check('the item sheet, Type → Suit by keyboard',it,'suit','key');
-  const im='#ivbody select[onchange^="setItemField"]';
+  const im='#ivbody select.wmat';
   const imat=await p.evaluate(s=>{const e=document.querySelector(s);return e?[...e.options].map(o=>o.value).filter(v=>v&&v!==e.value&&v!=='other'):[]},im);
   ok(imat.length>=2,`${T}the item sheet has a Material dropdown (${imat.join(', ')})`);
   if(imat.length>=2){await check('the item sheet, Material',im,imat[0],'touch');await check('the item sheet, Material by keyboard',im,imat[1],'key')}

@@ -12,7 +12,7 @@ L.run(async () => {
     const ph = await L.phone(scheme, { colorScheme: scheme }); const p = ph.page;
     await L.kbd(ph, '#n-wardrobe', 800);
     const ward = await p.evaluate(FIELDS);
-    await p.locator('#wardrobe [onclick^="openItem"]').nth(2).click(); await L.sleep(900);
+    await p.locator('#wardrobe .giopen').nth(2).click(); await L.sleep(900);
     const item = (await p.evaluate(FIELDS)).filter(f => !/wsearch|wsort/.test(f.el));
     ev[scheme] = { wardrobe: ward, itemSheet: item.slice(0, 4), worst: Math.max(...ward.concat(item).map(f => f.best)) };
   }

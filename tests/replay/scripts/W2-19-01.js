@@ -15,7 +15,7 @@ L.run(async () => {
   await press('previousDay', 'button[aria-label="Previous day"]');   // back to today, which has the Wore pill
   await press('worePill', '#wpill', 900);
   await L.kbd(ph, '#n-wardrobe', 800);
-  await press('openItem', '#wardrobe [onclick^="openItem"] >> nth=2', 900);
+  await press('openItem', '#wardrobe .giopen >> nth=2', 900);
   const bad = ['nextDay', 'previousDay', 'worePill', 'openItem'].every(k => ev[k].focus === 'BODY' && ev[k].announced.length === 0);
   L.verdict(ev.dayChanged && bad, ev);
 });

@@ -14,10 +14,10 @@ const fs=require('fs'),path=require('path');
 /* the inline handlers left, per file: may only go down (asm-color.js and asm-gl.js are in the painter's fingerprint: they wait for C3) */
 const LEFT={
   'about.js':5,'account.js':7,'app.js':1,'asm-color.js':1,'asm-gl.js':1,
-  'calendar.js':11,'care.js':13,'cost.js':10,'dress.js':1,'history.js':7,
-  'missed.js':4,'month.js':3,'own-lists.js':3,'pack.js':14,'pattern-read.js':2,
-  'photos.js':2,'remind.js':3,'safety.js':2,'scorecard.js':4,'shop.js':9,'start.js':1,'stats.js':5,'tagging.js':12,
-  'today.js':20,'ui.js':10,'wardrobe.js':10};
+  'calendar.js':11,'dress.js':1,'history.js':7,
+  'missed.js':4,'month.js':3,'own-lists.js':3,'pattern-read.js':2,
+  'photos.js':2,'remind.js':3,'safety.js':2,'scorecard.js':4,'start.js':1,'tagging.js':12,
+  'today.js':20,'ui.js':10};
 const HANDLER=/\son[a-z]+="/g;
 /* counts {file: n} against the table -> what is wrong, one line each (none: fine) */
 const ratchet=(counts,left)=>{const bad=[];
@@ -33,6 +33,7 @@ module.exports=async({ok,ROOT})=>{
   ok(!bad.length,'no file has more inline handlers than its number, and every number is as low as its file'+(bad.length?': '+bad.join('; '):''));
   ok(!counts['settings.js']&&!counts['daysoff.js']&&!counts['weather.js']&&!counts['act.js'],'settings.js, daysoff.js and weather.js have none left (their controls use data-act), nor has act.js');
   ok(['add-card.js','add-more.js','add.js','add-sheet.js','item-photo.js','itemsheet.js'].every(f=>!counts[f]),'the Add card, the "Add without a photo" sheet, the item page and its photo tools have none left (C2-5)');
+  ok(['pack.js','care.js','cost.js','wardrobe.js','shop.js','stats.js'].every(f=>!counts[f]),'the Packing list, Laundry and cleaning, cost per wear, the Wardrobe, What to buy and Insights have none left (C2-8)');
   ok(!counts['index.html']&&(fs.readFileSync(path.join(ROOT,'index.html'),'utf8').match(/\sdata-act(-[a-z]+)?="/g)||[]).length>=63,'index.html has none left: its 63 controls name their handlers with data-act (C2-4)');
   // the rule itself, on made-up counts: one more fails, a new file fails, one fewer fails until the table follows, the same passes
   const T={'a.js':3,'b.js':1};
@@ -44,16 +45,16 @@ module.exports=async({ok,ROOT})=>{
 
   const CHECKED=new Set([
     // ids of the app's own shape (core.js ID_RE, cleanRecord) and keys from the app's own lists
-    'account.js|acctEsc(v.id)','app.js|k','care.js|w','care.js|g.t','care.js|t',
-    'dress.js|k','missed.js|k','history.js|slot','pack.js|which','pack.js|first.k','photos.js|itemKey(i)',
-    'shop.js|k','shop.js|esc(x.key)','today.js|s',"today.js|addForSlot(s,o.suitDay)||''",'ui.js|o.mode',"ui.js|o.cloth||''",'wardrobe.js|k',
+    'account.js|acctEsc(v.id)','app.js|k',
+    'dress.js|k','missed.js|k','history.js|slot','photos.js|itemKey(i)',
+    'today.js|s',"today.js|addForSlot(s,o.suitDay)||''",'ui.js|o.mode',"ui.js|o.cloth||''",
     // the Add card's offers: Claude's answer, shown only when it is one of the app's own keys (TYPES, COLORS, colsFor, PATS_BY) or a field name
     'tagging.js|q.refineType','tagging.js|q.refineKept.c','tagging.js|q.altColor','tagging.js|q.altPattern','tagging.js|f','tagging.js|v.f','tagging.js|v.to','tagging.js|mp']);
   const found=[];
   for(const f of files){const s=fs.readFileSync(path.join(ROOT,f),'utf8');
     for(const m of s.matchAll(/\son[a-z]+="([^"]*)"/g))for(const q of m[1].matchAll(/'\$\{((?:[^{}]|\{[^{}]*\})*)\}/g))if(!/^jsq\(/.test(q[1]))found.push(f+'|'+q[1])}
   const fresh=[...new Set(found)].filter(x=>!CHECKED.has(x)),stale=[...CHECKED].filter(x=>!found.includes(x));
-  ok(files.length>40&&found.length>40,`the lint reads the app's scripts (${files.length} files, ${found.length} quoted values in inline handlers)`);
+  ok(files.length>40&&found.length>=CHECKED.size,`the lint reads the app's scripts (${files.length} files, ${found.length} quoted values in inline handlers)`);
   ok(!fresh.length,'no quoted value in an inline handler that isn\'t jsq() or checked to be app-made'+(fresh.length?': '+fresh.join(', '):''));
   ok(!stale.length,'the checked list holds no value whose handler is gone'+(stale.length?': '+stale.join(', '):''));
   // the three sinks of C1 hold no handler at all now: their values are in data-* attributes

@@ -71,9 +71,9 @@ const wardCount=list=>list.length===items.length?`${items.length} item${items.le
 function wardBar(){
   const s=wardSort();
   return `<div class="wfind"><div class="wsearch"><svg class="wsicon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>`+
-    `<input type="text" id="wsearch" dir="auto" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Search your wardrobe" placeholder="Search" value="${esc(wardQ)}" oninput="wardSearch(this.value)" onkeydown="if(event.key==='Escape'&&this.value){event.stopPropagation();wardClear()}">`+
-    `<button type="button" class="wclear" id="wclear" aria-label="Clear search" onclick="wardClear()"${wardQ?'':' hidden'}>×</button></div>`+
-    `<select class="wsort" id="wsort" aria-label="Sort the wardrobe" onchange="setWardSort(this.value)">${WARD_SORTS.map(([k,l])=>`<option value="${k}"${k===s?' selected':''}>${l}</option>`).join('')}</select></div>`}
+    `<input type="text" id="wsearch" dir="auto" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Search your wardrobe" placeholder="Search" value="${esc(wardQ)}" data-act-input="wardSearchType" data-act-keydown="wardSearchKey">`+
+    `<button type="button" class="wclear" id="wclear" aria-label="Clear search" data-act="wardClearTap"${wardQ?'':' hidden'}>×</button></div>`+
+    `<select class="wsort" id="wsort" aria-label="Sort the wardrobe" data-act-change="wardSortPick">${WARD_SORTS.map(([k,l])=>`<option value="${k}"${k===s?' selected':''}>${l}</option>`).join('')}</select></div>`}
 /* a box's tag: Sample, Out of rotation, On the way, away being cleaned, due for cleaning */
 function giTag(i){return i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:i.away&&typeof careTag==='function'?careTag(i):'Out of rotation'}</span>`:i.sample&&typeof kitSampleTag==='function'?kitSampleTag(i):typeof careBadge==='function'?careBadge(i):''}
 /* ...read out with the box's name: the aria-label took its place, so a sample piece sounded like one's own (re-audit 2026-11-15) */
@@ -82,13 +82,13 @@ function giNote(tag){const t=String(tag||'').replace(/<[^>]*>/g,' ').replace(/\s
 function wardGrid(list){
   if(list.length){const m=wardMemo&&wardMemo.list===list?wardMemo:null,w=m&&m.wear,
       wl=i=>!w?'':`<small class="wwear">${m.sort==='worn'?(w.n[i.id]?`Worn ${w.n[i.id]} time${w.n[i.id]===1?'':'s'}`:'Not worn yet'):w.last[i.id]?`Last worn ${w.last[i.id].toLocaleDateString(undefined,{month:'short',day:'numeric'})}`:'Not worn yet'}</small>`;
-    return `<div class="grid">${list.map(i=>{const tag=giTag(i),wp=wardPic(i);return `<div class="gi${i.paused?' paused':''}" id="gi-${esc(i.id)}"><button class="giopen" onclick="openItem('${jsq(i.id)}')" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}${giNote(tag)}${isFavItem(i.id)?', favorite':''}">${typeof favMark==='function'?favMark(i):''}${wp?`<img class="ph" src="${srcOk(wp)}" alt="">`:i.photo?`<img class="ph" src="${srcOk(phSm(i))}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${isCargo(i)?'Cargo pants':i.type==='pants'&&trouserKind(i)!=='dress'?cap1(trouserKind(i)):TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${tag}</button></div>`}).join('')}</div>`}   // (wardPic once a box: each call schedules the picture's download)
+    return `<div class="grid">${list.map(i=>{const tag=giTag(i),wp=wardPic(i);return `<div class="gi${i.paused?' paused':''}" id="gi-${esc(i.id)}"><button class="giopen" data-act="wardOpenTap" data-id="${esc(i.id)}" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}${giNote(tag)}${isFavItem(i.id)?', favorite':''}">${typeof favMark==='function'?favMark(i):''}${wp?`<img class="ph" src="${srcOk(wp)}" alt="">`:i.photo?`<img class="ph" src="${srcOk(phSm(i))}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${isCargo(i)?'Cargo pants':i.type==='pants'&&trouserKind(i)!=='dress'?cap1(trouserKind(i)):TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${tag}</button></div>`}).join('')}</div>`}   // (wardPic once a box: each call schedules the picture's download)
   const q=wardNorm(wardQ);
   if(!items.length&&typeof setupWardEmpty==='function')return setupWardEmpty();   // setup.js: the empty Wardrobe's card
   if(!q||!items.length)return '<p class="mut">Nothing here yet. Add one with the + button.</p>';
   const all=flt==='all'?0:items.filter(i=>wardMatch(i,q)).length,tl=(TYPES[flt]||'').toLowerCase();
   return `<div class="wnone" id="wnone"><b>Nothing matches “${esc(wardQ.trim())}”${flt==='all'?'':` in ${esc(tl)}`}</b><p class="mut">${all?`${all} item${all===1?' matches':'s match'} in the rest of your wardrobe.`:'Search looks at names, brands, notes, materials, types, colors and patterns.'}</p>`+
-    `<div class="btns">${all?`<button type="button" class="pri" onclick="flt='all';renderWardrobe()">Search all types</button>`:''}<button type="button" onclick="wardClear()">Clear search</button></div></div>`}
+    `<div class="btns">${all?`<button type="button" class="pri" data-act="wardAllTap">Search all types</button>`:''}<button type="button" data-act="wardClearTap">Clear search</button></div></div>`}
 /* redraws only the grid and the count: the search field is left alone, so typing keeps its focus and the keyboard */
 function wardRefresh(){
   const sl=$('#wslide');if(!sl)return;const list=wardFresh();sl.innerHTML=wardGrid(list);
@@ -104,11 +104,12 @@ const matLabel=m=>m==='other'?'Other':cap1(m);
 /* the Material dropdown for a type (none for types without a list): its own materials, then Other (with a field to say which) and None */
 /* ai: Claude's suggestion on an Add card (tagging.js takeMaterial: {key, conf, why}), said under the field while the field still holds it */
 // (2026-11-16) the list is the type's own plus the person's own materials (core.js matsFor); one removed from those shows as Other with its name
-function matRow(type,cur,call,ai){
+// on: the control's own attributes (the Add card's matOn(q), the item sheet's matOnItem(id)); its change is matCardPick or matItemPick
+function matRow(type,cur,on,ai){
   const l=matsFor(type);if(!l)return '';const m=String(cur||'').trim(),other=!!m&&!l.includes(m),sug=ai&&ai.key&&ai.key===m;
-  return `<label>Material <select class="wmat" onchange="${call}this.value)">${[['','None'],...l.map(x=>[x,x]),['other','Other']].map(([v,t])=>`<option value="${v}"${v===(other?'other':m)?' selected':''}>${cap1(t)}</option>`).join('')}</select></label>`+
+  return `<label>Material <select class="wmat" ${on}>${[['','None'],...l.map(x=>[x,x]),['other','Other']].map(([v,t])=>`<option value="${v}"${v===(other?'other':m)?' selected':''}>${cap1(t)}</option>`).join('')}</select></label>`+
     (sug?`<p class="tagnote matai"><small>Material suggested by Claude (${esc(ai.conf||'medium')} confidence)${ai.why?`: ${esc(String(ai.why).replace(/[.\s]+$/,''))}`:''}. Change it if it’s wrong.</small></p>`:'')+
-    (other?`<label class="wmat-o">Which material? <input type="text" class="wfld wmat-t" dir="auto" maxlength="${WARD_MAX.material}" value="${esc(m==='other'?'':m)}" placeholder="e.g. alpaca" onchange="${call}this.value.trim()||'other')"></label>`:'')}
+    (other?`<label class="wmat-o">Which material? <input type="text" class="wfld wmat-t" dir="auto" maxlength="${WARD_MAX.material}" value="${esc(m==='other'?'':m)}" placeholder="e.g. alpaca" ${on}></label>`:'')}
 const fldRow=(k,lab,v,on,ph)=>`<label>${lab} <input type="text" class="wfld wf-${k}" dir="auto" maxlength="${WARD_MAX[k]}" value="${esc(v||'')}" placeholder="${ph}" autocomplete="off" ${on(k)}></label>`;
 const notesRow=(v,on)=>`<label class="wnotes">Notes <textarea class="wf-notes" dir="auto" rows="2" maxlength="${WARD_MAX.notes}" placeholder="Size, where it came from, how it fits…" ${on('notes')}>${esc(v||'').replace(/>/g,'&gt;')}</textarea></label>`;
 /* the item sheet's Details card: name and brand at its top, material and notes at its end. A text field saves when it is left,
@@ -132,9 +133,13 @@ async function wardPendingRestore(){let p=null;try{p=JSON.parse(localStorage.get
   const it=items.find(x=>x.id===p.id),cur=String(it&&it[p.k]||'');wardPendSet(null);
   if(!it||cur===String(p.v).trim()||cur!==String(p.was??''))return false;   // saved already, or changed since (on another device): left alone
   await setItemField(p.id,p.k,p.v);return true}
-const ivOn=id=>k=>`oninput="itemFieldSoon('${jsq(id)}','${k}',this.value)" onchange="itemFieldNow('${jsq(id)}','${k}',this.value)"`;
+const ivOn=id=>k=>`data-id="${esc(id)}" data-f="${k}" data-act-input="itemFieldType" data-act-change="itemFieldDone"`;
+/* the Material control's attributes, for matRow: on an Add card (its card's id, add-save.js cardAt) and on the item sheet (the item's id) */
+const matOn=q=>`${cardAt(q)} data-act-change="matCardPick"`,matOnItem=id=>`data-id="${esc(id)}" data-act-change="matItemPick"`;
+/* what the dropdown or its "Which material?" field says: the choice, or what was typed (nothing typed stays Other) */
+const matPicked=el=>el.matches('select')?el.value:el.value.trim()||'other';
 function wardFieldsTop(i){return fldRow('name','Name',i.name,ivOn(i.id),'Optional')+fldRow('brand','Brand',i.brand,ivOn(i.id),'Optional')}
-function wardFieldsEnd(i){return matRow(i.type,i.material,`setItemField('${jsq(i.id)}','material',`)+notesRow(i.notes,ivOn(i.id))}
+function wardFieldsEnd(i){return matRow(i.type,i.material,matOnItem(i.id))+notesRow(i.notes,ivOn(i.id))}
 /* saving one of them. Text fields don't redraw the sheet (the next field tapped would lose its focus): only the title and the grid follow */
 async function setItemField(id,k,v){
   const it=items.find(x=>x.id===id);if((!it)&&itemGoneTell(id))return;if(!it||!WARD_FIELDS.includes(k))return;v=noBidi(v).trim().slice(0,WARD_MAX[k]);if((it[k]||'')===v)return;   // (noBidi: no right-to-left overrides, W2-12-06, core.js)
@@ -205,3 +210,17 @@ async function wardUndelete(it,k,days,at){
   planDirty();if(window.scheduleSync)scheduleSync();
   const v=['today','wardrobe','stats'].find(t=>$('#'+t)&&!$('#'+t).hidden);if(v)show(v);
   toast(`${nameIso(cap1(itemName(it)||nm(it)))} is back`)}
+/* what the controls do (act.js). The Wardrobe's top and grid: the search field (typing; Escape empties a field that holds something, and goes no
+   further), its ×, the sort, a piece's box (data-id), and the two buttons under "Nothing matches" */
+function wardSearchType(el){wardSearch(el.value)}
+function wardSearchKey(el,ev){if(ev.key==='Escape'&&el.value){ev.stopPropagation();wardClear()}}
+function wardClearTap(){wardClear()}
+function wardSortPick(el){setWardSort(el.value)}
+function wardOpenTap(el){openItem(el.dataset.id)}
+function wardAllTap(){setFlt('all');renderWardrobe()}   // (setFlt: itemsheet.js, the one place the type filter is set)
+/* the item sheet's Name, Brand and Notes (ivOn: data-id, data-f), as they are typed and when the field is left; Material on the item sheet and on an Add card */
+function itemFieldType(el){itemFieldSoon(el.dataset.id,el.dataset.f,el.value)}
+function itemFieldDone(el){itemFieldNow(el.dataset.id,el.dataset.f,el.value)}
+function matItemPick(el){setItemField(el.dataset.id,'material',matPicked(el))}
+function matCardPick(el){setQField(cardIx(el),'material',matPicked(el))}
+acts({wardSearchType,wardSearchKey,wardClearTap,wardSortPick,wardOpenTap,wardAllTap,itemFieldType,itemFieldDone,matItemPick,matCardPick});
