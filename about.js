@@ -267,3 +267,9 @@ function aboutStart(){
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-aboutLast>ABOUT_FRONT_MS)checkForUpdate()});
   setInterval(()=>{if(document.visibilityState==='visible')checkForUpdate()},ABOUT_CHECK_MS)}
 aboutStart();
+/* index.html's (act.js): About's "Check for updates", Update, the feedback's Send and "Delete my data" */
+function updCheckTap(){checkForUpdate(true)}
+function updNowTap(){updateNow()}
+function fbSendTap(){sendFeedback()}
+function delAskTap(){askDelete()}
+acts({updCheckTap,updNowTap,fbSendTap,delAskTap});

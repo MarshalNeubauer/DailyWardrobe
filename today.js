@@ -33,7 +33,10 @@ const rowPanel=i=>rowPic(i)+(i.photo?'':`<small class="mut rnote">No photo of th
    picker offers the suit's own pants back, and the jacket back on brings the whole suit */
 const offOn=o=>!o.frozen&&o.occasion!=='casual';
 const offBtn=(s,o)=>offOn(o)&&o[s]&&(s==='top'||s==='tie'||s==='pocket')?`<button class="swap offb" onclick="setOff('${s}',true)" aria-label="Take off the ${s==='top'?(o.suitDay?'suit jacket':'blazer'):s==='pocket'?'pocket square':'tie'}" title="Take off for the day">−</button>`:'';
-const offRow=(s,o)=>{const l=s==='top'?(o.offKind==='suit'?'Suit':'Blazer'):s==='pocket'?'Pocket square':'Tie',w=s==='top'?(o.offKind==='suit'?'suit jacket':'blazer'):s==='pocket'?'pocket square':'tie';
+/* the jacket taken off: a casual jacket picked by hand (a chore jacket, the uniform blouse) is called by its type (2026-11-17), from the
+   day's pinned top */
+const offTop=()=>{const r=dayRecs[key(sel)],id=r&&r.force&&r.force.top,i=id&&items.find(x=>x.id===id);return i&&isHandPick(i)?i:null};
+const offRow=(s,o)=>{const ht=s==='top'&&offTop(),l=s==='top'?(ht?TYPES[ht.type]:o.offKind==='suit'?'Suit':'Blazer'):s==='pocket'?'Pocket square':'Tie',w=s==='top'?(ht?TYPES[ht.type].toLowerCase():o.offKind==='suit'?'suit jacket':'blazer'):s==='pocket'?'pocket square':'tie';
   return `<div class="ritem off-row" id="ri-${s}"><div class="row"><span class="mut">${l}</span><span class="mut none">Taken off${s==='top'&&o.suitBot?': the pants stay':''}</span>${o.frozen?'':`<button class="swap" onclick="setOff('${s}',false)" aria-label="Put the ${w} back on" title="Put it back on">+</button>`}</div></div>`};
 async function setOff(slot,on){const k=key(sel),o=planFor()[k];if(!o||o.frozen||(slot!=='top'&&slot!=='tie'&&slot!=='pocket'))return;
   const r={...(dayRecs[k]||{date:k})},off={...(r.off||{})};
@@ -44,6 +47,17 @@ async function setOff(slot,on){const k=key(sel),o=planFor()[k];if(!o||o.frozen||
   // the suit jacket back on is the whole suit again: other pants picked while it was off (⇄ on the pants) let go
   else{delete off[slot];if(slot==='top'&&o.offKind==='suit'&&r.force&&r.force.bot){r.force={...r.force};delete r.force.bot}}
   if(off.top||off.tie||off.pocket)r.off=off;else delete r.off;delete r.lock;swapMsg='';await saveDay(r);renderToday()}
+/* the uniform blouse's sleeves (2026-11-17, the owner: "he wears it with sleeves rolled sometimes"): a row under the blouse, per day
+   (rec.roll), on today, the coming days and a past day being corrected; the drawings show the sleeves rolled (the painted master,
+   2026-11-20 from the owner's photo, has them down) */
+/* (2026-11-18, the third review) the rolled sleeves' bare forearms can't be made convincing from the sport-coat master (its arms are
+   posed inside sleeves): the row stays off until a master with real bare forearms exists; a day already rolled shows it, to roll back */
+let BLOUSE_ROLL_ON=false;
+const rollRow=o=>!(o.top&&o.top.type==='blouse')||!(BLOUSE_ROLL_ON||o.rolled)?'':`<div class="row roll-row"><span class="mut">Sleeves</span><span class="cap">${o.rolled?'Rolled up':'Down'}</span>${!canPick(o)?'':`<button class="swap" data-act="rollTap" data-on="${o.rolled?0:1}" aria-label="${o.rolled?'Roll the sleeves down':'Roll the sleeves up'}" title="${o.rolled?'Roll them down':'Roll them up'}">${o.rolled?'↓':'↑'}</button>`}</div>`;
+const rolledOf=(i,s,o)=>s==='top'&&o.rolled&&i&&i.type==='blouse'?{...i,rolled:true}:i;   // the row's drawing with the sleeves rolled (draw.js)
+function rollTap(el){setRoll(el.dataset.on==='1')}   // (act.js: the Sleeves row's button)
+async function setRoll(on){if(on&&!BLOUSE_ROLL_ON)return;const k=key(sel),o=planFor()[k];if(!o||!o.top||o.top.type!=='blouse'||!canPick(o))return;
+  const r={...(dayRecs[k]||{date:k})};if(on)r.roll=true;else delete r.roll;await saveDay(r);renderToday()}
 /* a jacket worn again too soon (rest under COOL days): "Add more suits" only when the suits in rotation that day (not away at the cleaner,
    not paused) are too few for a COOL-day rest; on a day the owner chose the jacket (a pick, a correction) it says only when it was last
    worn; otherwise (the planner's trade-off with three or more suits: an occasion, the season, the week's lock) nothing (W2-17-06: "Add
@@ -62,12 +76,12 @@ const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&
 .filter(([l,i,s])=>!(s==='clip'&&o.off&&o.off.tie))
 .map(([l,i,s])=>{if((s==='top'||s==='tie'||s==='pocket')&&!i&&o.off&&o.off[s])return offRow(s,o);if(s==='pocket'&&!i)return pocketNone(o);const open=!!i&&openRow===s;
   return `<div class="ritem${open?' open instant':''}" id="ri-${s}"><div class="row"><span class="mut">${l}</span>${i?`<button class="rowtap" onclick="toggleRow('${s}')" aria-expanded="${open}" aria-controls="rp-${s}" aria-label="${l}: ${esc(itemTitle(i)||nm(i))}. ${open?'Hide':'Show'} the photo"><span class="dot">${swatchSVG(i,true)}</span><span class="${titleCls(i)}">${esc(itemTitle(i))}</span></button>${canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Change ${l.toLowerCase()}" title="Choose another">⇄</button>`:''}${offBtn(s,o)}`:`<span class="mut none">${s==='clip'&&o.vest?'Not with the vest':o.frozen?'None':`<button type="button" class="linkbtn addone" onclick="openAdd('${addForSlot(s,o.suitDay)||''}')" aria-label="${l}: none yet. Add one">Add one</button>`}</span>${o.frozen&&canPick(o)?`<button class="swap" onclick="openPicker('${s}')" aria-label="Choose ${l.toLowerCase()}" title="Choose">⇄</button>`:''}`}</div>`+
-    (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in" onclick="toggleRow('${s}')">${open?rowPanel(i):''}</div></div>`:'')+`</div>`});
-  rows.splice(nj?0:1,0,vestRow(o));return rows.join('')};
+    (i?`<div class="rpanel" id="rp-${s}"><div class="rpanel-in" onclick="toggleRow('${s}')">${open?rowPanel(rolledOf(i,s,o)):''}</div></div>`:'')+`</div>`});
+  rows.splice(nj?0:1,0,vestRow(o)+rollRow(o));return rows.join('')};
 function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[s])return;const opening=!el.classList.contains('open');
   // another open photo (a row, or the tile's photo above the list) shuts at once; one above the tapped row is made up for by the scroll, so the row stays under the finger
   document.querySelectorAll('.ritem.open').forEach(r=>{if(r!==el){picSnap(r,el);const b=r.querySelector('.rowtap');if(b)b.setAttribute('aria-expanded','false')}});
-  if(opening)el.querySelector('.rpanel-in').innerHTML=rowPanel(o[s]);
+  if(opening)el.querySelector('.rpanel-in').innerHTML=rowPanel(rolledOf(o[s],s,o));
   openRow=opening?s:null;const b=el.querySelector('.rowtap');b.setAttribute('aria-expanded',opening);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/(Show|Hide) the photo/,opening?'Hide the photo':'Show the photo'));
   if(opening)picOpenReady(el,el,()=>openRow===s);else picShut(el)}
@@ -249,3 +263,6 @@ function stepDay(n,from,times=1){
 }
 /* the month as it would be planned with these records (the real ones and the cache stay as they are) */
 function planWith(recs,y,m){const keep=dayRecs;dayRecs=recs;try{return planTrim(buildPlan(y,m))}finally{dayRecs=keep}}   // (trimmed like the month: the days before the wardrobe existed flashed invented outfits during a drag)
+/* the markup's handler (act.js): the Today tab */
+function todayTabTap(){goToday()}
+acts({rollTap,todayTabTap});   // (act.js: the uniform blouse's Sleeves row)

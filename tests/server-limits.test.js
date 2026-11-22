@@ -37,8 +37,8 @@ const kvlimit=async({ok,chromium,url,ROOT})=>{
     const s1=await p.evaluate(()=>{localStorage.setItem('last_sync',Date.now()-3600e3);openSettings('backup');showSyncStatus();return document.querySelector('#sync-status').textContent});
     ok(/^Today’s backups are used up on the server\..*Last backed up /.test(s1),`while paused, the status says so instead of only the last backup's time ("${s1}")`);
     full=false;
-    const s2=await p.evaluate(async()=>{const ok=await syncTap();return {ok,pause:localStorage.getItem('sync_pause'),st:document.querySelector('#sync-status').textContent,btn:document.querySelector('.sactions button.conn-only').getAttribute('onclick')}});
-    ok(s2.ok&&!s2.pause&&/^Backed up /.test(s2.st)&&s2.btn==='syncTap()',`Sync now tries despite the pause: the server takes it now, the pause is gone ("${s2.st}")`);
+    const s2=await p.evaluate(async()=>{const ok=await syncTap();return {ok,pause:localStorage.getItem('sync_pause'),st:document.querySelector('#sync-status').textContent,btn:document.querySelector('.sactions button.conn-only').getAttribute('data-act')}});
+    ok(s2.ok&&!s2.pause&&/^Backed up /.test(s2.st)&&s2.btn==='syncNowTap',`Sync now tries despite the pause: the server takes it now, the pause is gone ("${s2.st}")`);
     full=true;
     const s3=await p.evaluate(async()=>{const it={id:'n2',type:'tie',primaryColor:'green',pattern:'solid',added:Date.now()};await put(it);items.push(it);const ok=await syncTap();return {ok,pause:+localStorage.getItem('sync_pause')||0}});
     ok(!s3.ok&&s3.pause>Date.now(),'still refused: the pause comes back');

@@ -65,3 +65,7 @@ async function rollBack(pick){const sel=$('#snap-list'),id=pick&&pick.id||sel&&s
     if(ok)rollSay(`Rolled back. The wardrobe has ${n}.${kept}`,8000,id==='before-restore'?null:{label:'Undo',fn:()=>rollBack({id:'before-restore',label:'Before the last roll-back'})});
     else rollSay(`Rolled back on this device (${n}), but the backup could not be updated yet: ${localStorage.getItem('sync_status')||''} It is sent, with “Before the last roll-back” kept, at the next backup.${kept}`,8000)}
   catch(e){rollSay('Roll back failed: '+errWords(e))}}
+/* the markup's handlers (act.js): the Daily backups list on focus (it loads its days), and Roll back */
+function snapFocus(){loadSnapshots()}
+function rollBackTap(){rollBack()}
+acts({snapFocus,rollBackTap});

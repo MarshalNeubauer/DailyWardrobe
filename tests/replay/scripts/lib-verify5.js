@@ -91,7 +91,7 @@ async function rot(ph) { await tapL(ph, ph.page.locator('#item-view .rotbtn')); 
 const item = (ph, idOrName) => ph.page.evaluate(n => { const i = items.find(x => x.id === n || x.name === n); return i ? { n: i.name, p: i.primaryColor, paused: !!i.paused, u: i.updated } : null }, idOrName);
 async function kvData() { const d = await mock('kv-dump'); const k = Object.keys(d).find(k => /:wardrobe:v1$/.test(k)); const e = d[k]; const t = e.b ? Buffer.from(e.v, 'base64').toString() : e.v; const j = JSON.parse(t); return j.data || j }
 async function openSettings(ph) { if (!(await ph.page.evaluate(() => settingsOpen()))) { await tapL(ph, ph.page.locator('header button[aria-label=Settings]')); await sleep(900) } }
-async function cat(ph, c) { const h = ph.page.locator(`#settings-modal .scat-head[onclick="toggleCat('${c}')"]`); if (await h.getAttribute('aria-expanded') !== 'true') { await tapL(ph, h); await sleep(400) } }
+async function cat(ph, c) { const h = ph.page.locator(`#settings-modal .scat-head[data-cat="${c}"]`); if (await h.getAttribute('aria-expanded') !== 'true') { await tapL(ph, h); await sleep(400) } }
 async function choose(ph, sel, v) { const l = ph.page.locator(sel); await l.evaluate(e => e.scrollIntoView({ block: 'center' })); await l.selectOption(v); await sleep(400) }
 async function settingsDone(ph) { await tapL(ph, ph.page.locator('#settings-modal .sdone')); await sleep(500) }
 async function pickTo(ph, slot, name) {

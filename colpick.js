@@ -301,7 +301,7 @@ ${np?`<small class="cpnewtx">${esc(cap1(np.name))} isn’t one of your patterns 
    patterns (addCustomColor / addCustomPattern: settings.custom, synced; testers' own too) and sets the field as a pick does. Opened from
    the "Your colours" / "Your patterns" tile of the picker, from the Add card's offer (Claude's newColor / newPattern, a colour measured
    far from every listed one: openColForm / openPatForm, own-lists.js) and from Settings (openCustomNew: no item, a "For" choice). ---- */
-const CN_SAMPLE={suit:'navy',blazer:'navy',pants:'charcoal',shirt:'white',tie:'navy',socks:'navy',shoes:'brown',belt:'brown',overcoat:'charcoal',raincoat:'khaki',pocketsquare:'white',tee:'white',polo:'navy',henley:'cream',sweater:'navy',sweatshirt:'grey',hoodie:'grey',qzip:'navy',cardigan:'charcoal',chore:'navy',tieclip:'silver',cufflinks:'silver',watch:'brown'};
+const CN_SAMPLE={suit:'navy',blazer:'navy',pants:'charcoal',shirt:'white',tie:'navy',socks:'navy',shoes:'brown',belt:'brown',overcoat:'charcoal',raincoat:'khaki',pocketsquare:'white',tee:'white',polo:'navy',henley:'cream',sweater:'navy',sweatshirt:'grey',hoodie:'grey',qzip:'navy',cardigan:'charcoal',chore:'navy',blouse:'khaki',tieclip:'silver',cufflinks:'silver',watch:'brown'};
 const CN_DESC_MAX=120,CN_SUITING=['suit','blazer','pants'];
 const cnHex=h=>/^#[0-9a-f]{6}$/i.test(String(h||'').trim())?String(h).trim().toLowerCase():null;
 const cnHsv=hex=>{const [r,g,b]=hexRgb(hex).map(v=>v/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;
@@ -794,6 +794,8 @@ function rdBothTap(){rdBoth()}
 function rdCloseTap(){rdClose()}
 function rdAgainTap(){rdRun(rd.src,rd.id)}
 function rdUndoAllTap(){rdUndoAll()}
+/* index.html's (act.js): the color sheet's backdrop */
+function colBackdropTap(){closeColPick()}
 acts({colBtnTap,cpViewTap,cpTileTap,cpCloseTap,cpUseTap,cpPicsTap,cpAskTap,cpAskAllTap,cnOpenTap,pnOpenTap,cnBackTap,cnCloseupTap,cnAskTap,cnDescType,cnDescKey,
   cnKindTap,cnAddTap,cnUseOldTap,pnAnywayTap,cnBasePick,cnTypeTap,cnAccentTap,cnForPick,cnSqPress,cnHuePress,cnSqKey,cnHueKey,cnSlideUp,cnHexType,cnHexDone,cnNameType,
-  rdReadTap,rdKeepTap,rdChangeTap,rdUndoTap,rdUseTap,rdBothTap,rdCloseTap,rdAgainTap,rdUndoAllTap});
+  rdReadTap,rdKeepTap,rdChangeTap,rdUndoTap,rdUseTap,rdBothTap,rdCloseTap,rdAgainTap,rdUndoAllTap,colBackdropTap});

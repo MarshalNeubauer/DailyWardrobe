@@ -197,5 +197,7 @@ function addBackOnline(){if(typeof tagNetText==='function'&&tagNetText(aiError))
 /* what its controls do (act.js): a card's "Show original" / "Correct them" (the card by its id: add-save.js cardIx), and Save all */
 function cardWb(el){toggleWb(cardIx(el))}
 function saveAllTap(){saveAll()}
-acts({cardWb,saveAllTap});
-
+/* the markup's handler (act.js): the photos picked with "One item" or "Several items" (data-multi), the field emptied so the same
+   photo can be picked again */
+function addPhotosPick(el){addFiles([...el.files],el.dataset.multi==='1');el.value=''}
+acts({cardWb,saveAllTap,addPhotosPick});
