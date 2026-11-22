@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	4a11dcd18c2fb8f2a065
-# tested	877014911f62d44e487a
+# tested	ec9daddadcd8cd38cda4
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts
@@ -6277,6 +6276,7 @@ fieldmerge.test.js	tag-request.js	<loaded>	describeEstimate	readEstimate	visTok
 fieldmerge.test.js	tagging.js	<loaded>
 fieldmerge.test.js	tests/appsrc.js	<any>
 fieldmerge.test.js	tests/fixedplan.js	<any>
+fieldmerge.test.js	tests/webkit.js	<any>
 fieldmerge.test.js	theme.js	<loaded>	applyTheme
 fieldmerge.test.js	toast.js	<loaded>	toast	undoFab	undoHere
 fieldmerge.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>todayTouch	@{constroot$today}	mvSig	todayBusy
@@ -9620,6 +9620,7 @@ modtools.test.js	tests/sw.test.js	<any>
 modtools.test.js	tests/swatchzoom.test.js	<any>
 modtools.test.js	tests/sync.test.js	<any>
 modtools.test.js	tests/syncwrite.test.js	<any>
+modtools.test.js	tests/tabload.test.js	<any>
 modtools.test.js	tests/tabmove.test.js	<any>
 modtools.test.js	tests/tagger.test.js	<any>
 modtools.test.js	tests/tagging.test.js	<any>
@@ -14123,6 +14124,8 @@ safeport.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate
 safeport.test.js	watch/leather.jpg	<loaded>
 safeport.test.js	watch/shirt-open.png	<loaded>
 safeport.test.js	watch/shirt-tie.png	<loaded>
+safeport.test.js	watch/suit.png	<loaded>
+safeport.test.js	watch/vest.png	<loaded>
 safeport.test.js	weather.js	<loaded>	loadWeather
 safety.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 safety.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -17523,6 +17526,7 @@ tabload.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 tabload.test.js	tag-request.js	<loaded>	tagStatsCard
 tabload.test.js	tagging.js	<loaded>
 tabload.test.js	tests/fixedplan.js	<any>
+tabload.test.js	tests/webkit.js	<any>
 tabload.test.js	theme.js	<loaded>	applyTheme
 tabload.test.js	toast.js	<loaded>
 tabload.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup
