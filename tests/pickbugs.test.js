@@ -94,7 +94,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ';
     ok(/Add a close-up and Claude can name the pattern/.test(e2)&&!/cpgopics|Pictures/.test(e2),T+'on the Add card the hint names no place and has no link');
     // ================= (4) cargo pants =================
     await p.evaluate(()=>{closeColPick();openItem('p1')});await settle(p,150);
-    e2=await p.evaluate(()=>{const s=[...document.querySelectorAll('#item-view.on select')].find(x=>/trouserKind/.test(x.getAttribute('onchange')||''));
+    e2=await p.evaluate(()=>{const s=[...document.querySelectorAll('#item-view.on select')].find(x=>x.dataset.f==='trouserKind');
       const d=[...document.querySelectorAll('#item-view.on .cks')].find(x=>x.dataset.ck==='details');
       return {v:s&&s.value,shown:s&&s.selectedOptions[0].textContent,opts:s&&[...s.options].map(o=>o.value),sum:d&&d.querySelector('.ckt small').textContent,plan:trouserKind(items.find(x=>x.id==='p1'))}});
     ok(e2.v==='cargo'&&e2.shown==='Cargo pants'&&e2.opts.join()==='dress,chinos,jeans,cargo'&&/cargo pants/.test(e2.sum)&&!/chinos/.test(e2.sum),T+`cargo pants: the item sheet's Kind reads "Cargo pants" and Details says cargo (${JSON.stringify(e2)})`);

@@ -7,7 +7,7 @@ module.exports=async({ok,chromium,url})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(ph=>{items=[{id:'s1',type:'suit',primaryColor:'black',pattern:'solid',photo:ph,texture:ph,added:1,meas:{src:'closeup',lab:labOf('deeptaupe'),ref:false}}];flt='all';editing='s1';show('wardrobe')},PH);
-    const a=await p.evaluate(()=>{const b=document.querySelector('#item-view .colbtn[data-k="primaryColor"]');return {txt:b&&b.textContent,chip:b&&b.querySelector('.colchip').style.background,sel:!!document.querySelector('#item-view select[onchange*="primaryColor"]')}});
+    const a=await p.evaluate(()=>{const b=document.querySelector('#item-view .colbtn[data-k="primaryColor"]');return {txt:b&&b.textContent,chip:b&&b.querySelector('.colchip').style.background,sel:!!document.querySelector('#item-view select[onchange*="primaryColor"],#item-view select[data-f="primaryColor"]')}});
     ok(a.txt==='Black'&&/22, 26|#16161a/i.test(a.chip)&&!a.sel,`the editor's color is a chip and a name, not a dropdown (${a.txt}, ${a.chip})`);
     await p.click('#item-view .colbtn[data-k="primaryColor"]');
     const b=await p.evaluate(()=>{const s=document.querySelector('#col-sheet');return {on:s.classList.contains('on'),img:!!s.querySelector('.cpph img'),big:s.querySelector('.cpbig figcaption').textContent,
@@ -126,7 +126,7 @@ module.exports=async({ok,chromium,url})=>{
       confidence:{type:'high',primaryColor:'high',pattern:'medium'},altColor:'none',altPattern:'windowpane',newColor:null,newPattern:null,ownColors:null,
       ownPattern:{name:'broken twill',description:'A fine twill whose ribs reverse every few threads.',fits:false}})}})});
     await p.evaluate(ph=>{items.push({id:'b1',type:'blazer',primaryColor:'midgrey',pattern:'other',photo:ph,texture:ph,added:5});editing='b1';renderWardrobe()},PH);
-    const pb=await p.evaluate(()=>{const b=document.querySelector('#item-view .patbtn');return {txt:b&&b.textContent,svg:!!(b&&b.querySelector('svg')),sel:!!document.querySelector('#item-view select[onchange*="\'pattern\'"]')}});
+    const pb=await p.evaluate(()=>{const b=document.querySelector('#item-view .patbtn');return {txt:b&&b.textContent,svg:!!(b&&b.querySelector('svg')),sel:!!document.querySelector('#item-view select[onchange*="\'pattern\'"],#item-view select[data-f="pattern"]')}});
     ok(pb.txt==='Other'&&pb.svg&&!pb.sel,'the pattern field is a drawn swatch and a name, not a dropdown');
     await p.click('#item-view .patbtn');
     const ps=await p.evaluate(()=>({title:document.querySelector('#col-title').textContent,big:!!document.querySelector('#col-sheet .cppatbig svg'),tiles:document.querySelectorAll('#col-sheet .cpgrid .cptile').length,ask:/names the pattern/.test(document.querySelector('#col-sheet .cpask').textContent)}));

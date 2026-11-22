@@ -57,7 +57,7 @@ async function run(eng,browser,{ok,url,settle}){
 
   // the item sheet: Type, Material, and the Arrives date of a piece on the way
   await p.evaluate(()=>openItem('suit0'));await settle(p,500);
-  const it="#ivbody select[onchange^=\"sete('suit0','type'\"]";
+  const it='#ivbody select[data-act-change="itemPick"][data-id="suit0"][data-f="type"]';
   await check('the item sheet, Type → Blazer',it,'blazer','touch');
   await check('the item sheet, Type → Suit by keyboard',it,'suit','key');
   const im='#ivbody select[onchange^="setItemField"]';

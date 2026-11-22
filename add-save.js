@@ -26,6 +26,9 @@ const cardOf=k=>typeof k==='string'?queue.find(q=>q.id===k):queue[k];
    gone), qh(q) writes that call into the markup; a place written in when the card was drawn pointed at another card once the list moved */
 const qAt=id=>queue.findIndex(q=>q.id===id);
 const qh=q=>`qAt('${jsq(q.id)}')`;
+/* a data-act control (act.js) carries its card's id as data-card (cardAt(q) writes it); cardIx(el) is that card's place, as qAt('id') was */
+const cardAt=q=>`data-card="${esc(q.id)}"`;
+const cardIx=el=>qAt(el.dataset.card);
 /* one save per card (audit 2026-11-15, C2: a double tap on Confirm saved the card twice and, the list having moved up, threw away the
    next card unsaved): the card is found by its id, marked while it saves (a second tap does nothing) and its Confirm switched off;
    -> true once saved, false when it couldn't be */

@@ -61,7 +61,7 @@ const addcards=async({ok,chromium,url})=>{
     s=await p.evaluate(()=>({sel:!!document.querySelector('#queue .typeask select'),conf:!!document.querySelector('#queue .card button.pri'),need:needType(queue[0])}));
     ok(s.sel&&!s.conf&&s.need,`an unread photo asks "What is it?" instead of saying Suit · Grey (${JSON.stringify(s)})`);
     ok(await p.evaluate(async()=>(await save(0))===false&&queue.length===1),'and can\'t be saved before its type is chosen');
-    await p.evaluate(()=>{const e=document.querySelector('#queue .typeask select');e.value='suit';e.dispatchEvent(new Event('change'))});
+    await p.evaluate(()=>{const e=document.querySelector('#queue .typeask select');e.value='suit';e.dispatchEvent(new Event('change',{bubbles:true}))});   // (as the browser's own change: it bubbles to act.js's listener)
     s=await p.evaluate(()=>({col:queue[0].primaryColor,conf:!!document.querySelector('#qconf-0'),ai:document.querySelector('#queue').textContent.includes('Not tagged by AI')}));
     ok(s.conf&&/navy/.test(s.col),`choosing the type gives the full card, its colour measured from the photo (${s.col})`);
     // too small to read: refused before any reading
