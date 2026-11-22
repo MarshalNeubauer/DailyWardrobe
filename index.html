@@ -8,6 +8,23 @@
 <script>/* iPhone Larger Text (Settings → Accessibility → Display & Text Size): text is sized in rem, and the root follows the system body
    size as a ratio of its default 17px (--tscale; styles.css html), so the default look stays as it was; kept between .85 and 1.5,
    measured again on coming back to the app (the setting can change meanwhile). Other browsers have no -apple-system-body: 1. */(function(){var d=document.documentElement;function ts(){try{if(!(window.CSS&&CSS.supports&&CSS.supports("font","-apple-system-body")))return;var p=document.createElement("span");p.style.cssText="font:-apple-system-body;position:absolute;visibility:hidden";d.appendChild(p);var px=parseFloat(getComputedStyle(p).fontSize);d.removeChild(p);if(px>0){var v=Math.round(Math.min(1.5,Math.max(.85,px/17))*1000)/1000;d.style.setProperty("--tscale",String(v));d.classList.toggle("bigtext",v>=1.3)}}catch(e){}}ts();addEventListener("pageshow",ts);document.addEventListener("visibilitychange",function(){if(!document.hidden)ts()})})()</script>
+<script>/* A start-up that never happens. The app's scripts are deferred, and startUp() is the last of them: when one of them can't be
+   loaded or doesn't parse (and, once they are modules, when one import fails: nothing of the graph runs then), start.js may never
+   get to say "something went wrong, your wardrobe is safe" (startFailed). This plain script, which needs no other, hears a script that
+   didn't load and every error nobody caught before the app is ready; if Today is still empty some seconds later, or startUp is
+   missing once the scripts have run, it says so itself in Today's place, with Try again, and notes it for the error report
+   (localStorage err_log, safety.js's list). Nothing is deleted or written to the wardrobe. A start-up that does come overwrites it. */(function(){var w=window,why=[],timer=0,WAIT=4000;
+function card(){timer=0;var t=document.getElementById("today");if(!t||w.appReady||t.firstChild||document.getElementById("nostore"))return;
+  var d=document.createElement("div");d.className="mbox";d.id="start-fail";d.setAttribute("role","alert");
+  d.innerHTML='<p><b>The app couldn’t start.</b></p><p class="shelp">Your wardrobe is safe on this phone: nothing was deleted. Check your connection, then try again.</p><div class="sactions"><button type="button">Try again</button></div>';
+  d.querySelector("button").addEventListener("click",function(){location.reload()});t.hidden=false;t.appendChild(d);
+  try{var L=JSON.parse(localStorage.getItem("err_log")||"[]");if(!Array.isArray(L))L=[];L.push({t:Date.now(),m:("Start-up: the app didn’t start: "+why.join("; ")).slice(0,200),at:"",v:"",w:"today"});localStorage.setItem("err_log",JSON.stringify(L.slice(-20)))}catch(e){}}
+function soon(ms){if(!timer&&!w.appReady)timer=setTimeout(card,ms)}
+function heard(m){if(w.appReady)return;if(why.length<4)why.push(String(m).slice(0,80));if(document.readyState==="complete")soon(WAIT)}
+addEventListener("error",function(ev){var t=ev.target;if(t&&t!==w){if(t.tagName==="SCRIPT"&&t.src)heard("not loaded: "+t.src.split("/").pop().split("?")[0])}else heard(ev.message||"error")},true);
+addEventListener("unhandledrejection",function(ev){var r=ev.reason;heard(r&&r.message||r||"rejection")});
+document.addEventListener("DOMContentLoaded",function(){if(typeof w.startUp!=="function"){if(!why.length)why.push("no startUp");soon(0)}});
+addEventListener("load",function(){if(why.length)soon(WAIT)})})()</script>
 <title>Daily Wardrobe</title>
 <link rel="stylesheet" href="styles.css">
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
@@ -163,83 +180,83 @@
 </div>
 </div>
 
-<script src="merge.js"></script>
-<script src="core.js"></script>
-<script src="planner.js"></script>
-<script src="analysis.js"></script>
-<script src="detect.js"></script>
-<script src="srgb.js"></script>
-<script src="mannequin.js"></script><script src="mq/vest.js"></script><script src="mq/suit.js"></script><script src="mq/suit-open.js"></script><script src="mq/shirt-tie.js"></script><script src="mq/shirt-open.js"></script><script src="draw.js"></script>
-<script src="app.js"></script>
-<script src="back.js"></script>
-<script src="act.js"></script>
-<script src="add.js"></script>
-<script src="add-paste.js"></script>
-<script src="add-card.js"></script>
-<script src="add-more.js"></script>
-<script src="add-sheet.js"></script>
-<script src="sheet-swipe.js"></script>
-<script src="add-save.js"></script>
-<script src="add-keep.js"></script>
-<script src="item-photo.js"></script>
-<script src="item-view.js"></script>
-<script src="itemsheet.js"></script>
-<script src="history.js"></script>
-<script src="missed.js"></script>
-<script src="locks.js"></script>
-<script src="pickscore.js"></script>
-<script src="scorecard.js"></script>
-<script src="boxfold.js"></script>
-<script src="today-plan.js"></script>
-<script src="today.js"></script>
-<script src="today-photofold.js"></script>
-<script src="today-picture.js"></script>
-<script src="today-gestures.js"></script>
-<script src="month.js"></script>
-<script src="photos.js"></script>
-<script src="locale.js"></script>
-<script src="settings.js"></script>
-<script src="daysoff.js"></script>
-<script src="weather.js"></script>
-<script src="toast.js"></script>
-<script src="theme.js"></script>
-<script src="start.js"></script>
-<script src="ui.js"></script>
-<script src="safety.js"></script>
-<script src="dress.js"></script>
-<script src="tag-request.js"></script>
-<script src="migrate.js"></script>
-<script src="measure.js"></script>
-<script src="tagging.js"></script>
-<script src="own-lists.js"></script>
-<script src="pattern-read.js"></script>
-<script src="assemble.js"></script>
-<script src="asm-color.js"></script>
-<script src="asm-watch.js"></script>
-<script src="asm-pocket.js"></script>
-<script src="asm-gl.js"></script>
-<script src="asm-kinds.js"></script>
-<script src="asm-ocp.js"></script>
-<script src="stats.js"></script>
-<script src="pack.js"></script>
-<script src="wardrobe.js"></script>
-<script src="colpick.js"></script>
-<script src="checklist.js"></script>
-<script src="look.js"></script>
-<script src="care.js"></script>
-<script src="cost.js"></script>
-<script src="fav.js"></script>
-<script src="shop.js"></script>
-<script src="sync-status.js"></script>
-<script src="sync.js"></script>
-<script src="sync-photos.js"></script>
-<script src="snapshots.js"></script>
-<script src="backupfile.js"></script>
-<script src="account.js"></script>
-<script src="setup.js"></script>
-<script src="kit.js"></script>
-<script src="calendar.js"></script>
-<script src="remind.js"></script>
-<script src="about.js"></script>
-<script>startUp()</script>
+<script src="merge.js" defer></script>
+<script src="core.js" defer></script>
+<script src="planner.js" defer></script>
+<script src="analysis.js" defer></script>
+<script src="detect.js" defer></script>
+<script src="srgb.js" defer></script>
+<script src="mannequin.js" defer></script><script src="mq/vest.js" defer></script><script src="mq/suit.js" defer></script><script src="mq/suit-open.js" defer></script><script src="mq/shirt-tie.js" defer></script><script src="mq/shirt-open.js" defer></script><script src="draw.js" defer></script>
+<script src="app.js" defer></script>
+<script src="back.js" defer></script>
+<script src="act.js" defer></script>
+<script src="add.js" defer></script>
+<script src="add-paste.js" defer></script>
+<script src="add-card.js" defer></script>
+<script src="add-more.js" defer></script>
+<script src="add-sheet.js" defer></script>
+<script src="sheet-swipe.js" defer></script>
+<script src="add-save.js" defer></script>
+<script src="add-keep.js" defer></script>
+<script src="item-photo.js" defer></script>
+<script src="item-view.js" defer></script>
+<script src="itemsheet.js" defer></script>
+<script src="history.js" defer></script>
+<script src="missed.js" defer></script>
+<script src="locks.js" defer></script>
+<script src="pickscore.js" defer></script>
+<script src="scorecard.js" defer></script>
+<script src="boxfold.js" defer></script>
+<script src="today-plan.js" defer></script>
+<script src="today.js" defer></script>
+<script src="today-photofold.js" defer></script>
+<script src="today-picture.js" defer></script>
+<script src="today-gestures.js" defer></script>
+<script src="month.js" defer></script>
+<script src="photos.js" defer></script>
+<script src="locale.js" defer></script>
+<script src="settings.js" defer></script>
+<script src="daysoff.js" defer></script>
+<script src="weather.js" defer></script>
+<script src="toast.js" defer></script>
+<script src="theme.js" defer></script>
+<script src="start.js" defer></script>
+<script src="ui.js" defer></script>
+<script src="safety.js" defer></script>
+<script src="dress.js" defer></script>
+<script src="tag-request.js" defer></script>
+<script src="migrate.js" defer></script>
+<script src="measure.js" defer></script>
+<script src="tagging.js" defer></script>
+<script src="own-lists.js" defer></script>
+<script src="pattern-read.js" defer></script>
+<script src="assemble.js" defer></script>
+<script src="asm-color.js" defer></script>
+<script src="asm-watch.js" defer></script>
+<script src="asm-pocket.js" defer></script>
+<script src="asm-gl.js" defer></script>
+<script src="asm-kinds.js" defer></script>
+<script src="asm-ocp.js" defer></script>
+<script src="stats.js" defer></script>
+<script src="pack.js" defer></script>
+<script src="wardrobe.js" defer></script>
+<script src="colpick.js" defer></script>
+<script src="checklist.js" defer></script>
+<script src="look.js" defer></script>
+<script src="care.js" defer></script>
+<script src="cost.js" defer></script>
+<script src="fav.js" defer></script>
+<script src="shop.js" defer></script>
+<script src="sync-status.js" defer></script>
+<script src="sync.js" defer></script>
+<script src="sync-photos.js" defer></script>
+<script src="snapshots.js" defer></script>
+<script src="backupfile.js" defer></script>
+<script src="account.js" defer></script>
+<script src="setup.js" defer></script>
+<script src="kit.js" defer></script>
+<script src="calendar.js" defer></script>
+<script src="remind.js" defer></script>
+<script src="about.js" defer></script>
+<script type="module">startUp()</script>
 </body></html>

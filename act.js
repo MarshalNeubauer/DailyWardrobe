@@ -22,7 +22,7 @@
      stops the event nothing else sees it at all: use it only where needed.
    - The three types that don't bubble (focus, load, toggle) are heard in the capture phase and run only the target's own handler.
    - A handler that throws, or a name nothing registered, is reported as a page error (as an inline handler's was) and the handlers
-     further out still run.
+     further out still run. Only while the page's scripts are still loading is a name nothing registered yet passed over (actsIn).
    - An inline handler and a data-act handler on nested elements don't see each other's stopPropagation the same way as two of a
      kind: convert an element and the elements around it that stop its events together.
    tests/inlinehandlers.test.js counts the inline handlers left in each file (the count may only go down); tests/acts.test.js. */
@@ -36,6 +36,10 @@ function acts(map){for(const k of Object.keys(map)){if(ACTS[k])throw new Error(`
   if(typeof map[k]!=='function')throw new Error(`act.js: the handler "${k}" is not a function`);ACTS[k]=map[k]}}
 /* the same, for handlers that must run before every listener below document (the capture phase): see the head of this file */
 function actsFirst(map){acts(map);for(const k of Object.keys(map))ACT_FIRST.add(k)}
+/* While the page's scripts are still running (they are deferred, so the page is drawn and takes taps before them) a control's file may
+   not have registered its handler yet: until DOMContentLoaded, which comes after the last script, a name nothing registered is not an
+   error. After it, it is one. */
+let actsIn=false;addEventListener('DOMContentLoaded',()=>{actsIn=true},{once:true});
 /* a handler's error is a page error, as an inline handler's was; the event goes on */
 function actErr(e){if(typeof reportError==='function')reportError(e);else setTimeout(()=>{throw e})}
 /* the elements on the event's path that carry attr, innermost first (own: only the target itself) */
@@ -47,6 +51,7 @@ function actFire(ev,attr,first,own){if(ev.cancelBubble)return;
   for(const el of actPath(ev,attr,own)){const name=el.getAttribute(attr);
     if(!own&&ACT_FIRST.has(name)!==first)continue;
     if(el.matches(':disabled'))continue;
+    if(!ACTS[name]&&!actsIn)continue;   // its file hasn't run yet: the tap is dropped, not a page error
     try{const f=ACTS[name];if(!f)throw new Error(`act.js: no handler named "${name}" (${attr})`);f(el,ev)}catch(e){actErr(e)}
     // stopped by the handler: nothing further out runs, nor document's and window's later listeners (the event never reached them before)
     if(ev.cancelBubble){if(!first)ev.stopImmediatePropagation();return}}}

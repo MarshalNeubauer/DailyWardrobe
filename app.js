@@ -214,8 +214,11 @@ if(typeof ResizeObserver!=='undefined')addEventListener('DOMContentLoaded',()=>{
 addEventListener('resize',fitNavSoon);
 /* run once every script has loaded: the start-up chain can resolve before the photo tagging files (tag-request.js … pattern-read.js, loaded after app.js) have run */
 const afterScripts=f=>document.readyState==='complete'?f():addEventListener('load',()=>f(),{once:true});
-// once every script of the page has run (DOMContentLoaded comes after the last one, and unlike load it doesn't wait for pictures)
-const afterDom=f=>document.readyState!=='loading'?f():addEventListener('DOMContentLoaded',()=>f(),{once:true});
+// once every script of the page has run (DOMContentLoaded comes after the last one, and unlike load it doesn't wait for pictures).
+// Its own flag, not document.readyState: the page's scripts are deferred, and while deferred scripts run readyState is already
+// 'interactive' (it was 'loading' while plain scripts ran), so reading it would run f before the later scripts.
+let domDone=false;addEventListener('DOMContentLoaded',()=>{domDone=true},{once:true});
+const afterDom=f=>domDone?f():addEventListener('DOMContentLoaded',()=>f(),{once:true});
 const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':/^claude/.test(q.model||'')?'Tagged by Claude.':'Tagged by AI.';   // (no model name: a tester read "Tagged by Claude (claude-mock)")
 /* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tag-request.js).
    forType: fit the colours and pattern to this type (the card's own, when tagging again or Ask Claude) instead of the one Claude answers
