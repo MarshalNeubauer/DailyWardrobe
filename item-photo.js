@@ -1,5 +1,5 @@
 /* Daily Wardrobe: the item sheet's photo tools: replace, rotate, zoom-crop and undo the photo, the close-up, the small copy for grids,
-   the white-paper steps. (A classic script sharing one global scope; split out of itemsheet.js on 2026-11-17, no behavior change.) */
+   the white-paper steps. (An ES module since 2026-11-23; split out of itemsheet.js on 2026-11-17, no behavior change.) */
 /* ---- Wardrobe editor: replace, rotate, zoom-crop the item's photo. Only the picture changes: the tags (colour, pattern...)
    and the item itself stay, so the plan and the outfit history are untouched. Each change's toast has Undo (picUndo; phEdit.undo holds the editor's steps). ---- */
 const PH_MAX=1536;   // the item photo (2026-11-13, the owner: "upgrade the main photo size stored as well"; it was 720, before that 360)
@@ -151,4 +151,8 @@ function paperTipTap(){paperTip()}
 function cropZoom(el){phEdit.crop.z=+el.value;layoutCrop()}
 function cropApply(el){applyCrop(el.dataset.id)}
 function cropDiscardTap(){cropDiscard()}
+/* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
+   one top-level call (acts, when act.js did not load): the names are then still the page's */
+Object.assign(globalThis,{PH_MAX,phSm,phSigOf,makeSmall,smallPhotos,photoTools,paperCloth,paperSteps,paperHint,paperTip,paperRetake,paperLine,imgOf,setPhoto,setTexture,replaceTexture,undoPhoto,startCrop,cropSource,cropEditor,cropKeep,layoutCrop,applyCrop});
+export {PH_MAX,phSm,phSigOf,makeSmall,smallPhotos,photoTools,paperCloth,paperSteps,paperHint,paperTip,paperRetake,paperLine,imgOf,setPhoto,setTexture,replaceTexture,undoPhoto,startCrop,cropSource,cropEditor,cropKeep,layoutCrop,applyCrop};
 acts({photoFile,photoRotate,photoCrop,photoCuRemove,photoCuFile,paperTipTap,cropDrag,cropZoom,cropApply,cropDiscardTap});

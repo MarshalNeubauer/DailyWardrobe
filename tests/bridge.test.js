@@ -61,6 +61,8 @@ const BRIDGE={
   // every file that changes a card keeps it (addKeep, addKeepSoon); add and add-sheet (addWatch, addCardRec), kit (addRevive),
   // safety (addRestore); addKeepT is read by tests/addcards.test.js, which also assigns addRestoreState (add.js reads it): a setter
   'add-keep.js':['addCardRec','addKeep','addKeepSoon','addKeepT','addRestore','addRestoreState','addRevive','addWatch'],
+  // add, add-card, add-keep, add-save, itemsheet, item-view, history, stats, wardrobe, colpick, look, migrate, measure, pattern-read and app draw and edit with these; the rest: tests
+  'item-photo.js':['PH_MAX','applyCrop','cropEditor','cropKeep','cropSource','imgOf','layoutCrop','makeSmall','paperCloth','paperHint','paperLine','paperRetake','paperSteps','paperTip','phSigOf','phSm','photoTools','replaceTexture','setPhoto','setTexture','smallPhotos','startCrop','undoPhoto'],
   // editing is read by twelve classic page scripts and set by 31 tests (a setter); wardrobe, cost and kit open a piece (openItem), start
   // and wardrobe drop the sheet (dropItem), sync says a sync changed the open piece (itemSynced), itemsheet, start and checklist redraw
   // it (renderItem); itemGoneTell: itemsheet, wardrobe, look, cost; noMotion: nine files; closeItem, stepItem and wardList: tests only
@@ -138,6 +140,8 @@ const BRIDGE={
   // start.js runs the four remakes, item-photo.js counts its own within the day's (remakeLeft, remakeSpend); REMAKE_DAY is read by
   // tests/tagreads.test.js only
   'migrate.js':['REMAKE_DAY','fixBlackBackdrops','recolourSpecSetts','remakeLeft','remakeSpend','upgradeCloseups','upgradePhotos'],
+  // add, add-card, tagging, pattern-read, safety, colpick, checklist, look and item-photo; the rest: tests
+  'measure.js':['AI_HIGH_FLAG','AI_LOW_AUTO','BLUR_SHARP','FAR_DE','MEAS_AUTO','MEAS_GAP','PAPER','aiSignals','applyMeasured','calibLab','closeRead','colRef','colourVerdicts','measHint','measKL','measureAndApply','measureCard','measureCloth','measureParts','multiCol','nearestCols','paperCopy','paperKey','paperNow','paperOf','sharpness','undoMeasured','urlCanvas','wbGains','wbRead'],
   // add, add-card, measure, pattern-read, colpick and safety are classic scripts; add-save.js and tag-request.js (fieldLabel, valName),
   // modules earlier in the list, read these as globals; confTxt is read by tests/records.test.js only
   'tagging.js':['aiFields','closeTagImg','confTxt','fieldLabel','readAbort','readBegin','readEnd','refineFromCloseup','tagNotes','takeExtras','valName'],
@@ -145,6 +149,8 @@ const BRIDGE={
   // as globals (tests/restacts.test.js replaces those two on window, which reaches tagging.js's calls); guessPatBase is called by
   // tests/asmroute.test.js only
   'own-lists.js':['addCustomColor','addCustomPattern','addOwnMaterial','groupOf','guessPatBase','matGuessUse','matOffer','newColHex','openColForm','openPatForm','ownColOffer','removeCustom','removeOwnMaterial','renderCustomUI','renderOwnMatUI','typePl'],
+  // add, add-card, add-save, tagging, itemsheet, look, measure, migrate and asm-color; the rest: tests
+  'pattern-read.js':['TEX_WORDS','camoFromPixels','claudeOnly','claudePattern','missedPattern','motifFromSpec','motifPat','readPatternWithClaude','readSett','readable','rereadSett','settCheck','settFrom','settFromSpec','settNote','settSummary','settable','specSett','texContrast','texFromSpec'],
   // calendar.js opens the page and sets the trip (openPack, packSetTrip), start.js shows it (packShow); the rest are called or read by
   // the pack, packcare-taps, planreview, stats, calendar, restacts and pocketsquare tests, which set packT and packNow (setters)
   'pack.js':['PACK_TITLE','openPack','packComplete','packDefault','packLock','packLockState','packMark','packNow','packRelease','packSetCap','packSetDate','packSetTrip','packShow','packT','packTrip','packUses','packWear','renderPack'],

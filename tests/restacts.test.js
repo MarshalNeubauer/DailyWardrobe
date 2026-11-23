@@ -15,6 +15,8 @@ module.exports=async({ok,engines,url,settle})=>{
 const HOST='https://w.test/',J={'content-type':'application/json','access-control-allow-origin':'*'};
 const PUSH_KEY='BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';   // a made-up public key of the right shape (65 bytes)
 const FILE=n=>({name:n,mimeType:'image/jpeg',buffer:Buffer.from('not a real picture')});
+// replaceTexture (item-photo.js) is called inside its module, so it runs for real on the item page's close-up: a real picture, and the test reads which item took it
+const REAL=n=>({name:n,mimeType:'image/jpeg',buffer:require('fs').readFileSync(require('path').join(__dirname,'fixtures','blazer-windowpane-closeup.jpg'))});
 async function open(browser,eng,url,settle,o={}){
   const ctx=await browser.newContext(o.desk?{viewport:{width:900,height:900}}:{viewport:{width:390,height:844},hasTouch:true,isMobile:eng==='Chromium',locale:'en-US',timezoneId:'Asia/Kuwait'});
   const S={reads:0,push:[],invites:[{id:'inv1',name:'Sam',used:{},caps:{}}],n:1};
@@ -255,7 +257,7 @@ async function linked(eng,browser,{ok,url,settle}){
 
   // the Add card's notes: three cards, so a control must find its own card
   await ev(()=>{closeSettings();const other=PATS_BY.suit.find(x=>x!=='pinstripe'&&x!=='solid'&&x!=='other');window.__other=other;
-    __spy('retryTag','patternAgain','refineAgain','toggleSett','openColForm','openPatForm','addTexture');
+    __spy('retryTag','patternAgain','refineAgain','openColForm','openPatForm','addTexture');
     queue.length=0;queue.push({id:'k0',manual:true,type:'tie',primaryColor:'navy',pattern:'solid'},
       {id:'k1',type:'suit',primaryColor:'navy',pattern:'pinstripe',ai:{},tagErr:'It failed.',patternCut:true,refineNote:'Tagged again from the close-up.',refineUndo:{brand:'Was'},
         refineType:'blazer',refineKept:{c:'grey'},altColor:'charcoal',altPattern:other,auto:{secondaryColor:{from:'grey',to:'blue',src:'photo'}},secondaryColor:'blue',
@@ -269,10 +271,11 @@ async function linked(eng,browser,{ok,url,settle}){
   await tap(chip(/^Try again$/));const t1=await calls();
   await tap(chip(/^Read the pattern again$/));const t2=await calls();
   await tap(chip(/^Read the close-up again$/,'#queue [data-q="k2"] '));const t3=await calls();
-  await tap(chip(/^Use the pattern from the photo$/));const t4=await calls();
+  // (toggleSett is called inside pattern-read.js, so it runs for real: the switch moved on this card alone; put back for the steps below)
+  await tap(chip(/^Use the pattern from the photo$/));const t4=await ev(()=>{const q=queue.find(x=>x.id==='k1'),r=[q.settOff===false,queue.filter(x=>x!==q).every(x=>!x.settOff),__calls.splice(0).length];q.settOff=true;renderAdd();return r.join()});await settle(p,200);
   await tap(chip(/^Add as a new color$/));const t5=await calls();
   await tap(chip(/^Add this pattern$/));const t6=await calls();
-  ok(t1==='[["retryTag",1]]'&&t2==='[["patternAgain",1]]'&&t3==='[["refineAgain",2]]'&&t4==='[["toggleSett",1]]'&&t5==='[["openColForm",1]]'&&t6==='[["openPatForm",1]]',
+  ok(t1==='[["retryTag",1]]'&&t2==='[["patternAgain",1]]'&&t3==='[["refineAgain",2]]'&&t4==='true,true,0'&&t5==='[["openColForm",1]]'&&t6==='[["openPatForm",1]]',
     T+'Try again, Read the pattern again, Read the close-up again, Use the pattern from the photo, Add as a new color and Add this pattern each act on their own card ('+[t1,t2,t3,t4,t5,t6].join(' ')+')');
   await tap(chip(/^Use /,K+'.measalt '),400);let q=await Q();
   ok(q.c3==='grey',T+'a measured color’s "Use …" sets that field ('+JSON.stringify(q)+')');
@@ -300,16 +303,17 @@ async function linked(eng,browser,{ok,url,settle}){
   await tap('#cu-rm',500);
   const u5=await ev(()=>({tex:!!queue.find(x=>x.id==='k2').texture,up:!!cuOpen}));
   ok(u4.up&&u4.rm&&u4.title==='Replace close-up'&&!u5.tex&&!u5.up,T+'"Replace close-up" opens the chooser with Remove close-up, which takes the card’s close-up off ('+JSON.stringify([u4,u5])+')');
-  await ev(()=>{queue.length=0;__spy('replaceTexture');show('wardrobe');openItem('s1')});await settle(p,700);
+  await ev(()=>{queue.length=0;window.__s2=items.find(x=>x.id==='s2').texture;show('wardrobe');openItem('s1')});await settle(p,700);
   await tap('#item-view .pt-closeup',600);
   const v1=await ev(()=>({up:!!cuOpen,rm:!!document.querySelector('#cu-rm')}));
-  await p.locator('#cu-take').setInputFiles(FILE('b.jpg'));await settle(p,400);const v2=await calls();
+  await p.locator('#cu-take').setInputFiles(REAL('b.jpg'));await p.waitForFunction(()=>!!items.find(x=>x.id==='s1').texture,null,{timeout:8000}).catch(()=>{});await settle(p,400);
+  const v2=await ev(()=>({s1:!!items.find(x=>x.id==='s1').texture,s2same:items.find(x=>x.id==='s2').texture===__s2}));
   await ev(()=>{closeItem();openItem('s2')});await settle(p,700);
   await tap('#item-view .pt-closeup',600);
   const v3=await ev(()=>({up:!!cuOpen,rm:!!document.querySelector('#cu-rm')}));
   await tap('#cu-rm',300);await p.waitForFunction(()=>!items.find(x=>x.id==='s2').texture,null,{timeout:8000}).catch(()=>{});await settle(p,300);
   const v4=await ev(()=>({tex:!!items.find(x=>x.id==='s2').texture,other:!!items.find(x=>x.id==='s1').texture,up:!!cuOpen}));
-  ok(v1.up&&!v1.rm&&v2==='[["replaceTexture","s1","file:b.jpg"]]'&&v3.up&&v3.rm&&!v4.tex&&!v4.up,
+  ok(v1.up&&!v1.rm&&v2.s1&&v2.s2same&&v3.up&&v3.rm&&!v4.tex&&!v4.up,
     T+'the item page’s Close-up: the picture taken goes to that item; with a close-up, Remove close-up takes that item’s off ('+JSON.stringify([v1,v2,v3,v4])+')');
   ok(!errs.length,T+'no page errors'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close()}
@@ -317,7 +321,7 @@ async function linked(eng,browser,{ok,url,settle}){
 /* ---- without a touch screen a close-up button is the file field itself ---- */
 async function desk(eng,browser,{ok,url,settle}){
   const T=eng+' (no touch): ',{ctx,p,errs,ev,calls}=await open(browser,eng,url,settle,{desk:true});
-  await ev(()=>{__spy('addTexture','replaceTexture');queue.length=0;queue.push({id:'k0',manual:true,type:'tie',primaryColor:'navy',pattern:'solid'},{id:'k2',type:'suit',primaryColor:'grey',pattern:'solid',ai:{}});openAdd();renderAdd()});await settle(p,600);
+  await ev(()=>{__spy('addTexture');window.__s2=items.find(x=>x.id==='s2').texture;queue.length=0;queue.push({id:'k0',manual:true,type:'tie',primaryColor:'navy',pattern:'solid'},{id:'k2',type:'suit',primaryColor:'grey',pattern:'solid',ai:{}});openAdd();renderAdd()});await settle(p,600);
   const f1=p.locator('#queue [data-q="k2"] label.ckadd input[type=file]').first();
   await f1.setInputFiles(FILE('c.jpg'));await settle(p,400);
   const a=await calls(),av=await f1.evaluate(e=>e.value);
@@ -330,8 +334,8 @@ async function desk(eng,browser,{ok,url,settle}){
   await ev(()=>{queue.shift();renderAdd()});
   await ev(()=>{queue.length=0;show('wardrobe');openItem('s1')});await settle(p,700);
   const f2=p.locator('#item-view .phtools label.pt-closeup input[type=file]').first();
-  await f2.setInputFiles(FILE('d.jpg'));await settle(p,400);
-  const b=await calls(),bv=await f2.evaluate(e=>e.value);
-  ok(a==='[["addTexture",1,"file:c.jpg"]]'&&av===''&&b==='[["replaceTexture","s1","file:d.jpg"]]'&&bv==='',T+'a picture chosen in the card’s and the item page’s close-up field goes to that card and that item, and the field is emptied ('+[a,JSON.stringify(av),b,JSON.stringify(bv)].join(' ')+')');
+  const f2h=await f2.elementHandle();await f2.setInputFiles(REAL('d.jpg'));await p.waitForFunction(()=>!!items.find(x=>x.id==='s1').texture,null,{timeout:8000}).catch(()=>{});await settle(p,400);
+  const b=await ev(()=>({s1:!!items.find(x=>x.id==='s1').texture,s2same:items.find(x=>x.id==='s2').texture===__s2})),bv=await f2h.evaluate(e=>e.value);
+  ok(a==='[["addTexture",1,"file:c.jpg"]]'&&av===''&&b.s1&&b.s2same&&bv==='',T+'a picture chosen in the card’s and the item page’s close-up field goes to that card and that item, and the field is emptied ('+[a,JSON.stringify(av),JSON.stringify(b),JSON.stringify(bv)].join(' ')+')');
   ok(!errs.length,T+'no page errors'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close()}

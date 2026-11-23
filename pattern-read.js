@@ -5,6 +5,10 @@
    area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's
    weave also gives the direction (for a close-up, whose angle says nothing), the repeats across the item (the drawing's
    scale on the figure) and a description for the photo generator. ---- */
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
+   as globals. The functions are handed over here, above the next line, which reads other files' lists while loading and throws when
+   they did not load (a classic script kept its functions then); the consts, declared further down, above acts({…}) */
+Object.assign(globalThis,{settFrom,readSett,settCheck,missedPattern,settNote,rereadSett,claudePattern,settFromSpec,readPatternWithClaude,camoFromPixels,motifFromSpec,texContrast,texFromSpec});
 const SETT_PATS={tie:[...STRIPE_PATS,...CHECK_PATS,'tonal-check','other',...MOTIF_PATS],shirt:[...STRIPE_PATS,...CHECK_PATS,'other',...TEXTURE_PATS],suit:[...STRIPE_PATS,...CHECK_PATS],blazer:[...STRIPE_PATS,...CHECK_PATS],pants:[...STRIPE_PATS,...CHECK_PATS]};
 const settable=(type,pat,weave)=>{const p=patBase(pat)||'solid';return p!=='solid'&&((SETT_PATS[type]||[]).includes(p)||!!(weave&&weave.layout&&FABRIC.includes(type)))};
 const DIR_ANG={'upper-left to lower-right':-45,'lower-left to upper-right':45,vertical:0,horizontal:90};
@@ -261,4 +265,6 @@ function texFromSpec(spec,{tex}){const t=spec&&spec.texture;if(!t||!t.grid||t.gr
     a:0,cr:+(+spec.repeatsInCloseup||8).toFixed(2),tr:+(+spec.repeatsAcrossItem||100).toFixed(2),src:'claude+pixels'}}
 /* the Add card's "Use the pattern from the photo" / "Use the simple pattern" (act.js; the card by its id: add-save.js cardIx) */
 function settTap(el){toggleSett(cardIx(el))}
+Object.assign(globalThis,{settable,motifPat,claudeOnly,readable,specSett,settSummary,TEX_WORDS});
+export {settable,motifPat,claudeOnly,readable,specSett,settSummary,TEX_WORDS,settFrom,readSett,settCheck,missedPattern,settNote,rereadSett,claudePattern,settFromSpec,readPatternWithClaude,camoFromPixels,motifFromSpec,texContrast,texFromSpec};
 acts({settTap});
