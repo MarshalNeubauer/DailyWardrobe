@@ -69,6 +69,12 @@ const BRIDGE={
   // and photos do (a getter: only itemsheet.js assigns it); add-card (optLab, matTidy), add-save (matTidy), colpick and look (sete,
   // patSummary, redetect, clearStripes), wardrobe (setFlt, wardPic), colpick (wardPic); rm and togglePause: tests only
   'itemsheet.js':['clearStripes','itemBody','matTidy','optLab','patSummary','phEdit','redetect','renderWardrobe','rm','setFlt','sete','togglePause','wardPic'],
+  // keyDate is read by 17 classic page scripts, saveDay by 8; today.js draws and records with recordDays, openPicker, closePicker,
+  // setWorn, setVest, resetCard and dayActions and sets swapMsg, todayPullWait and pastEdit (setters; tests set swapMsg and pastEdit
+  // too); picker is a getter (today, today-gestures and sync read it); whenPulled: start, safety, wardrobe, calendar; dropLearn and
+  // checkPlanRules: start; renderReplanUI: settings; setOccasion: daysoff, calendar; wearFav: fav; pickItem: scorecard; notAhead and
+  // idsOf: pickscore; swapSlot, togglePastEdit, correctPast, setFormal, resetDay, replanFuture and planRulesNote: tests only
+  'history.js':['checkPlanRules','closePicker','correctPast','dayActions','dropLearn','idsOf','keyDate','notAhead','openPicker','pastEdit','pickItem','picker','planRulesNote','recordDays','renderReplanUI','replanFuture','resetCard','resetDay','saveDay','setFormal','setOccasion','setVest','setWorn','swapMsg','swapSlot','todayPullWait','togglePastEdit','wearFav','whenPulled'],
   // history.js (firstReal, missedNote) and today.js (missedCard) are classic scripts; the rest are called by the todayacts and weeklock tests
   'missed.js':['firstReal','missedCard','missedNote','missedOne','missedOpen','missedPickToggle','missedPut'],
   // history.js, a classic script, swaps, picks and draws the picker with these; slotPool, fitOf, fitTag and pickSub are also called by
@@ -81,8 +87,17 @@ const BRIDGE={
   // today.js is a classic script (boxFold, boxUnfold); scorecard.js (boxFold, boxUnfold), today-photofold.js and month.js (foldEdge)
   // are modules that still read these as globals: boxfold.js comes after scorecard.js in the list, and an import would run it first
   'boxfold.js':['boxFold','boxUnfold','foldEdge'],
+  // planDirty is called by 25 classic page scripts, planFor by 14, planMonth by 9; cache is read by nine and set by 95 tests (a
+  // setter); today and stats ask planStartDay, today planTrim, outSig and planSnapSoon, start PLAN_SNAP and planSnapUse, shop strHash;
+  // planRuns, planSig and planSnapUsed (a getter): tests/speed.test.js
+  'today-plan.js':['PLAN_SNAP','cache','outSig','planDirty','planFor','planMonth','planRuns','planSig','planSnapSoon','planSnapUse','planSnapUsed','planStartDay','planTrim','strHash'],
   // today.js, a classic script, opens and shuts a piece's photo with these
   'today-photofold.js':['picOpenReady','picShut','picSnap','picStop'],
+  // today.js lays out the swatches with ovlPiece and calls applyZoom, zoomOut, swApply, swTap and swClose; zoom is a getter
+  // (today-gestures reads it); tests/care.test.js sets swOpen (a setter); the swatch makers and their caches, zoomTarget and
+  // toggleZoom: the todayswatch, hbswatch, twillswatch, asmrelease, materials, todayzoom and swatchzoom tests (ovlItem only inside a
+  // string tests/todayswatch.test.js runs in the page, which --plan can't see)
+  'today-picture.js':['OVL_CU','OVL_HB','applyZoom','ovlCuKey','ovlGrain','ovlHbKey','ovlHbShirt','ovlItem','ovlPiece','ovlSuitPng','ovlSvg','ovlWeave','swApply','swClose','swOpen','swTap','toggleZoom','zoom','zoomOut','zoomTarget'],
   // sync.js asks todayBusy before a redraw; month.js signs a day's outfit with mvSig (it comes after in the list, read as a global);
   // tests/moveoutfit.test.js calls moveRecs and reads outfitMove (a getter: only today-gestures.js writes it)
   'today-gestures.js':['moveRecs','mvSig','outfitMove','todayBusy'],
@@ -99,6 +114,12 @@ const BRIDGE={
   'weather.js':['findCity','geoName','loadWeather','renderWxLoc','setLocation','setUnits','temp','unit','useMyLocation','wxChip'],
   // read by the tests only: a11y (applyTheme, cycleTheme), actsindex (cycleTheme), modload (themeTap)
   'theme.js':['applyTheme','cycleTheme','themeTap'],
+  // start.js calls safetyStart and storageDown; add-save and kit storeFailure, saveFailed and askPersist; sync storeFailure,
+  // storeFailText and adoptBackupSettings and sets storeToldAt (a setter, tests too); add, add-card and app the tagging failure's
+  // (tagFailText, tagFailed, tagFailNote, tagNetText, retryTag; tagWhy and tagNetLast have setters for the errreport and tagreads
+  // tests); add-keep guardUnsaved; tagging oneStop; about errReport; seven page scripts errNote; dbDown is a getter (sync reads it);
+  // errTapAt (a setter), errList and pruneTagImgs: tests only
+  'safety.js':['adoptBackupSettings','askPersist','dbDown','errList','errNote','errReport','errTapAt','guardUnsaved','oneStop','pruneTagImgs','retryTag','safetyStart','saveFailed','storageDown','storeFailText','storeFailure','storeToldAt','tagFailNote','tagFailText','tagFailed','tagNetLast','tagNetText','tagWhy'],
   // settings.js, stats.js, start.js, add-card.js, add-save.js, shop.js and kit.js are classic scripts; vestMigrating is read by the
   // dress test only: a getter
   'dress.js':['dressNewItem','dressSummary','dressSynced','dressWhyUnused','migrateVests','newSuitVest','renderDressUI','vestMigrating'],

@@ -17,6 +17,20 @@ fs.mkdirSync(OUT,{recursive:true});
 const {chromium}=require(path.join(ROOT,'node_modules','playwright'));
 const ORIGIN='https://marshalneubauer.github.io/DailyWardrobe/',WORKER=String(process.env.DW_WORKER).replace(/\/?$/,'/'),TOKEN=process.env.DW_TOKEN;
 if(!TOKEN||!WORKER.startsWith('http')){console.error('DW_WORKER / DW_TOKEN missing');process.exit(1)}
+// The plan's trace wraps these as window.<name>. A page script that is an ES module calls its own functions inside the module, where a
+// wrapped window.<name> isn't seen (history.js's replanFuture, called by its own planRulesCheck and replanButton, since 2026-11-23), so
+// the trace would silently lack those calls. The tool reads the checkout's files and stops when a traced function is called inside its
+// own module; --skip-untraced runs anyway, leaves those names out and says so in the trace and the summary.
+const TRACED=['renderToday','planSnapCheck','refreshToday','onSyncedData','replanFuture','clearLocks','checkPlanRules','syncRedraw','mergeState','planSnapUse'];
+const UNTRACED=(()=>{const out=[];let html='';try{html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8')}catch{return out}
+  for(const m of html.matchAll(/<script type="module" src="([^"]+)"/g)){let s='';try{s=fs.readFileSync(path.join(ROOT,m[1]),'utf8')}catch{continue}
+    for(const n of TRACED){if(!new RegExp('(?:^|[^.\\w$])(?:async\\s+)?function\\s+'+n+'\\s*\\(|(?:^|[^.\\w$])(?:const|let|var)\\s+'+n+'\\s*=','m').test(s))continue;
+      const calls=(s.match(new RegExp('(?<![.\\w$])'+n+'\\s*\\(','g'))||[]).length-(s.match(new RegExp('function\\s+'+n+'\\s*\\(','g'))||[]).length;
+      if(calls>0)out.push(`${n} (${m[1]} calls it ${calls} time${calls===1?'':'s'} itself)`)}}
+  return out})();
+if(UNTRACED.length&&!has('skip-untraced')){console.error('visit-measure: the plan\'s trace can no longer see every call of '+UNTRACED.join(', ')+
+  '.\nThose files are ES modules now: a call made inside the module doesn\'t go through window.<name>, which is what this tool wraps.\n'+
+  'Nothing was measured. To measure the pictures anyway, with those names left out of the trace (and said so), add --skip-untraced.');process.exit(2)}
 const TYPES={js:'text/javascript',css:'text/css',html:'text/html',png:'image/png',json:'application/json',webmanifest:'application/manifest+json',svg:'image/svg+xml'};
 const NETS={'4g':{latency:60,downloadThroughput:9e6/8,uploadThroughput:1.5e6/8},wifi:{latency:15,downloadThroughput:40e6/8,uploadThroughput:10e6/8}};
 // in the page: a frame-by-frame record of the picture area (drawing / picture loading / picture shown), from navigation start
@@ -35,12 +49,13 @@ async function open(ctx,label){
   await page.evaluate(PROBE).catch(()=>{});
   await page.waitForFunction(()=>window.appReady,null,{timeout:300000});
   // a trace of the plan Today reads (planFor) and of the calls that change it, for the first 20 s
-  await page.evaluate(()=>{window.__pl=[];const T0=performance.now(),note=s=>window.__pl.push(Math.round(performance.now())+' '+s);
+  await page.evaluate(([TRACED,UNTRACED])=>{window.__pl=[];const note=s=>window.__pl.push(Math.round(performance.now())+' '+s);
+    if(UNTRACED.length)note('NOT TRACED (called inside their own module): '+UNTRACED.join(', '));const skip=new Set(UNTRACED.map(x=>x.split(' ')[0]));
     const sum=()=>{try{const o=planFor()[key(sel)];return `${key(sel)} top=${o&&o.top?o.top.primaryColor:null} shirt=${o&&o.shirt?o.shirt.primaryColor:null} items=${items.length} cacheKeys=${Object.keys(cache).join('/')} snap=${cache.snap} pulled=${typeof pulledYet==='function'?pulledYet():'?'} dress=${JSON.stringify(settings.dress)}`}catch(e){return 'err '+e}};
     note('ready '+sum());
-    for(const n of ['renderToday','planSnapCheck','refreshToday','onSyncedData','replanFuture','clearLocks','checkPlanRules','syncRedraw','mergeState','planSnapUse']){const f=window[n];if(typeof f!=='function')continue;
+    for(const n of TRACED){if(skip.has(n))continue;const f=window[n];if(typeof f!=='function'){note('NOT TRACED (not a global): '+n);continue}
       window[n]=function(...a){note('call '+n+' '+sum());const r=f.apply(this,a);Promise.resolve(r).then(()=>note('after '+n+': '+sum())).catch(()=>{});return r}}
-    let i=0;const iv=setInterval(()=>{note('tick '+sum());if(++i>20)clearInterval(iv)},1000)});
+    let i=0;const iv=setInterval(()=>{note('tick '+sum());if(++i>20)clearInterval(iv)},1000)},[TRACED,UNTRACED]);
   // (a day off today, as on a Saturday: the first open is measured on the next workday, stepped to as soon as the app is ready)
   const tReady=await page.evaluate(()=>{if(!isWorkday(sel))stepDay(1);return Math.round(performance.now())});
   const target=await page.evaluate(()=>sel.getFullYear()+'-'+(sel.getMonth()+1)+'-'+sel.getDate());
@@ -94,4 +109,5 @@ async function open(ctx,label){
     console.log(`\n== ${r.label} (${NET}, CPU ${CPU}x), ${r.first.day}: app ready ${r.first.ready} ms; drawing shown ${drew?'at '+drew.t+' ms':'never'}; picture shown ${firstPic?'at '+firstPic.t+' ms ('+firstPic.m+')':'NOT within 180 s'} [server: ${r.built[r.first.day]}]; worker ${r.worker.asks} asks, ${r.worker.mb} MB`);
     for(const s of r.swipes)console.log(`  swipe to ${s.d}: ${s.drew?'DRAWING first':'no drawing'} -> picture ${s.ms==null?'NOT within 60 s':s.ms+' ms'} ${s.how} [server: ${r.built[s.d]}]${s.ms==null?' '+JSON.stringify(s.st):''}`);
     if(r.errs.length)console.log('  page errors:',r.errs.join(' | '))}
+  if(UNTRACED.length)console.log('\nThe plan\'s trace leaves out (called inside their own module): '+UNTRACED.join(', '));
 })().catch(e=>{console.error(e);process.exit(1)});
