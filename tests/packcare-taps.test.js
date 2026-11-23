@@ -198,7 +198,8 @@ async function run(eng,browser,{ok,url,settle}){
   await ev(()=>{for(const k of Object.keys(dayRecs))if(k>'2026-11-11')delete dayRecs[k];localStorage.removeItem('pack_trip');packT=null;cache={};show('today')});await settle(p,500);
 
   /* ---- What to buy ---- */
-  await ev(()=>{window.__an=0;analyzeWardrobe=()=>{window.__an++;if(shopOpen)renderShop()};   // (the check itself is not this file's: counted, not run)
+  await ev(()=>{window.__an=0;const W=window.Worker;window.Worker=function(u,o){if(!/analysis-worker/.test(u))return new W(u,o);window.__an++;   // (the real analyzeWardrobe runs; its worker is counted and hands back the result it has)
+      const w={terminate(){},postMessage(){setTimeout(()=>{if(w.onmessage)w.onmessage({data:{done:shop.res}})},0)}};return w};
     const rec={key:'tie|purple|plain',type:'tie',name:'purple tie',tier:'variety',why:['A color your ties lack.','It goes with four of your suits.'],detail:'',items:[{type:'tie',primaryColor:'purple',pattern:'solid'}],samples:[]};
     shopShown={};shop={sig:shopSig(),at:Date.now(),res:{v:2,base:null,cats:[{key:'tie',title:'Ties',verdict:'worth',own:null,notes:[],recs:[rec]}],top:[{key:rec.key}],occasions:[],checked:1,sims:2,months:6}};
     show('stats');renderStats()});await settle(p,600);

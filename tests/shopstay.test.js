@@ -10,7 +10,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white'),I('shirt','cream'),
         I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','gold'),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'})];
       settings.holidays={country:'KW',list:[{d:'2026-12-01',n:'Holiday'}],skip:[],fetched:1};settings.daysOff=[];dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};
-      window.analyzeWardrobe=()=>{};shop=null;show('stats')});
+      shopBusy={i:-1,n:1,label:'',t0:Date.now()};shop=null;show('stats')});   // (a check "already running", so none starts)
     await p.click('#shop-btn');await settle(p,500);
     ok(await p.evaluate(()=>shopOpen&&$('#shop-sheet').classList.contains('on')),'What to buy opens from Insights');
     await p.evaluate(()=>syncRedraw('stats'));await settle(p,300);
@@ -19,7 +19,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await p.evaluate(()=>!shopOpen),'× still closes it');
     // the kept result's signature
     const fresh=()=>p.evaluate(()=>shopFresh());
-    await p.evaluate(()=>{shop={sig:shopSig(),at:Date.now(),res:{v:2,base:{},cats:[],top:[],occasions:[]}}});
+    await p.evaluate(()=>{shopBusy=null;shop={sig:shopSig(),at:Date.now(),res:{v:2,base:{},cats:[],top:[],occasions:[]}}});
     ok(await fresh(),'the kept result is fresh to begin with');
     await p.evaluate(()=>{const it=items[0];it.photo='data:image/jpeg;base64,AAAA';it.name='My navy suit';it.notes='from the tailor';it.updated=Date.now();settings.holidays={...settings.holidays,fetched:Date.now()}});
     ok(await fresh(),'a new photo, a name, notes and the holiday list fetched again leave it fresh: the planner reads none of them');
