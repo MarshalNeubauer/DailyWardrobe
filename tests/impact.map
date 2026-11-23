@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	af66ded3b441ca7c2290
+# tested	eaf27d236b7e348f33e6
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -2578,8 +2578,6 @@ asmweave.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	ward
 asmweave.test.js	watch/leather.jpg	<loaded>
 asmweave.test.js	watch/shirt-open.png	<loaded>
 asmweave.test.js	watch/shirt-tie.png	<loaded>
-asmweave.test.js	watch/suit.png	<loaded>
-asmweave.test.js	watch/vest.png	<loaded>
 asmweave.test.js	weather.js	<loaded>	loadWeather
 assemble.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 assemble.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
@@ -2866,7 +2864,6 @@ backgesture-item.test.js	tests/backgesture-parts.js	<any>
 backgesture-item.test.js	tests/fixedplan.js	<any>
 backgesture-item.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-item.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-item.test.js	tests/webkit.js	<any>
 backgesture-item.test.js	theme.js	<loaded>	applyTheme
 backgesture-item.test.js	toast.js	<loaded>	toast	undoHere
 backgesture-item.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -5897,7 +5894,7 @@ dress.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListe
 dress.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI
 dress.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 dress.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
-dress.test.js	dress.js	<loaded>	dressNewItem	dressOn	dressSummary	dressSwTap	dressSynced	dressWhyUnused	legacyVest	migrateVests	newSuitVest	renderDressUI	setDress
+dress.test.js	dress.js	<loaded>	dressNewItem	dressOn	dressSummary	dressSwTap	dressSynced	dressWhyUnused	get	legacyVest	migrateVests	newSuitVest	renderDressUI	setDress
 dress.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	get
 dress.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	planRulesCheck	planRulesLs	planRulesNote	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	whenPulled
 dress.test.js	icon-192.png	<loaded>
@@ -11109,6 +11106,11 @@ onorder.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapUse
 onorder.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 onorder.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerOpen	layerUp	uiEsc
 onorder.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMigrate	matOn	matOnItem	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
+onorder.test.js	watch/leather.jpg	<loaded>
+onorder.test.js	watch/shirt-open.png	<loaded>
+onorder.test.js	watch/shirt-tie.png	<loaded>
+onorder.test.js	watch/suit.png	<loaded>
+onorder.test.js	watch/vest.png	<loaded>
 onorder.test.js	weather.js	<loaded>	loadWeather
 owncolany.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 owncolany.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
@@ -13001,7 +13003,7 @@ restacts.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibil
 restacts.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backWanted	histDrop	histPush	inviteInUrl
 restacts.test.js	backupfile.js	<loaded>
 restacts.test.js	boxfold.js	<loaded>
-restacts.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calById	calConnect	calConnectTap	calDateTxt	calDay	calDisconnect	calDismiss	calDismissTap	calFetch	calFound	calGuide	calGuideTap	calKeep	calKeepTap	calKind	calLink	calMask	calNew	calOffTap	calPackTap	calPlan	calRead	calReadTap	calRefresh	calReviewTap	calRow	calScreen	calSeen	calSetSeen	calStatus	calSummary	calSync	calTz	calUndoSeen	calUndoTap	calWrite	pic	renderCalUI
+restacts.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calById	calConnect	calConnectTap	calDateTxt	calDay	calDisconnect	calDismiss	calDismissTap	calFetch	calFound	calGuide	calGuideTap	calKeep	calKeepTap	calKind	calLink	calMask	calNew	calOffTap	calPackTap	calPlan	calRead	calReadTap	calRefresh	calReviewTap	calRow	calScreen	calSeen	calSetSeen	calStatus	calSummary	calSync	calTz	calUndoSeen	calUndoTap	calWrite	get	pic	renderCalUI
 restacts.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTimes	careTop	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 restacts.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
 restacts.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
@@ -14555,11 +14557,6 @@ safeport.test.js	tools/upload-budget.js	<any>
 safeport.test.js	tools/visit-measure.js	<any>
 safeport.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 safeport.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate
-safeport.test.js	watch/leather.jpg	<loaded>
-safeport.test.js	watch/shirt-open.png	<loaded>
-safeport.test.js	watch/shirt-tie.png	<loaded>
-safeport.test.js	watch/suit.png	<loaded>
-safeport.test.js	watch/vest.png	<loaded>
 safeport.test.js	weather.js	<loaded>	loadWeather
 safety.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 safety.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -17259,7 +17256,7 @@ staledevice.test.js	pack.js	<loaded>	packShow
 staledevice.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 staledevice.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
 staledevice.test.js	pickscore.js	<loaded>
-staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
+staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 staledevice.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 staledevice.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 staledevice.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine

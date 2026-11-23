@@ -227,3 +227,9 @@ function calUndoTap(el){calUndoSeen(el.dataset.id)}
 function calReviewTap(){openSettings('calendar')}
 function calPackTap(){openPack()}
 acts({calConnectTap,calReadTap,calOffTap,calGuideTap,calKeepTap,calDismissTap,calUndoTap,calReviewTap,calPackTap});
+/* An ES module (2026-11-23): its names are its own, and this is what the other scripts and the tests still use as globals (the bridge;
+   tests/bridge.test.js lists it): settings.js (calSummary), today.js (calBanner) and the calendar and restacts tests. calBusy is read by
+   the restacts test only, and only this file writes it: a getter and no setter. */
+Object.assign(globalThis,{CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,CAL_GUIDES,calGuide});
+Object.defineProperties(globalThis,{calBusy:{get:()=>calBusy}});
+export {calBusy,CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,CAL_GUIDES,calGuide};
