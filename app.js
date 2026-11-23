@@ -45,15 +45,18 @@ const metaGet=async k=>{const r=await txs('meta','readonly',s=>s.get(k));return 
    both). A copy of these keys is kept in meta 'conn' and put back at start-up where localStorage lost them, before anything reads them
    (start.js and sync.js wait for connRestored). The copy follows localStorage: written after the restore, when Settings closes, when a
    connection is made and whenever the app goes to the background (an address cleared on purpose is copied as cleared); Delete my data
-   deletes the database and the copy with it. ---- */
+   deletes the database and the copy with it. The two automatic copies (`connKeep(true)`: after the restore, going to the background)
+   only add what localStorage holds: a key missing there may be storage's loss, not a choice, and writing that absence wiped the good
+   copy when the read at start-up failed or the keys went while the app was open. Clearing on purpose calls connKeep() and replaces it. ---- */
 const CONN_KEEP=['worker_url','app_token','remind'];
 let connReady=false;
-async function connKeep(){if(!connReady)return;try{const v={};for(const k of CONN_KEEP){const x=localStorage.getItem(k);if(x!=null)v[k]=x}await metaPut('conn',v)}catch(e){console.warn('connection copy not kept',e)}}
-const connRestored=db.then(async()=>{let n=0;
-  // (not during a "Delete everything" that was cut off: about.js aboutResumeDelete)
-  try{const v=localStorage.getItem('del_pending')?null:await metaGet('conn');if(v)for(const k of CONN_KEEP)if(v[k]&&!localStorage.getItem(k)){localStorage.setItem(k,v[k]);n++}}catch(e){console.warn('connection copy not read',e)}
-  connReady=true;await connKeep();if(n)console.warn(`put back ${n} connection setting(s) this browser's storage had lost`);return n}).catch(()=>{connReady=true;return 0});
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')connKeep()});
+const connNow=()=>{const v={};for(const k of CONN_KEEP){const x=localStorage.getItem(k);if(x!=null)v[k]=x}return v};
+async function connKeep(addOnly){if(!connReady)return;try{if(addOnly===true)await atomic('meta','conn',r=>({put:{k:'conn',v:{...(r&&r.v||{}),...connNow()}}}));else await metaPut('conn',connNow())}catch(e){console.warn('connection copy not kept',e)}}
+const connRestored=db.then(async()=>{let n=0,del=false;
+  // (not during a "Delete everything" that was cut off: about.js aboutResumeDelete; its copy is replaced, so the connection stays gone)
+  try{del=!!localStorage.getItem('del_pending');const v=del?null:await metaGet('conn');if(v)for(const k of CONN_KEEP)if(v[k]&&!localStorage.getItem(k)){localStorage.setItem(k,v[k]);n++}}catch(e){console.warn('connection copy not read',e)}
+  connReady=true;await connKeep(!del);if(n)console.warn(`put back ${n} connection setting(s) this browser's storage had lost`);return n}).catch(()=>{connReady=true;return 0});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')connKeep(true)});
 /* read-modify-write inside ONE transaction, so a sync finishing at the same moment can't overwrite it */
 /* a put that throws at once (a full disk in some browsers, a value it can't store) aborts the transaction with that error, not WebKit's
    "IDBTransaction will abort due to uncaught exception" (W1-11-05) */
