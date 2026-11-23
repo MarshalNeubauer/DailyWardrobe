@@ -87,3 +87,9 @@ async function saveCard(q){
   q.raw=null;q.big=null;q.texCanvas=null;   // the card's canvases (a 2048 px photo, its 800 px copy, the close-up) go now, not when the last reply about the card comes back
   return true;
 }
+/* An ES module since 2026-11-23: saveCard is its own. The bridge (tests/bridge.test.js lists it): add.js, add-card.js, add-more.js,
+   add-sheet.js, look.js, kit.js and every file whose handlers find a card by its id (cardOf, cardAt, cardIx, qAt, qh) read these as
+   globals; save, saveAll, cardOf and qAt are also called by the tests. saveAllOn is written here only: a getter */
+Object.assign(globalThis,{cardReading,cardReady,saveAll,savedTitle,cardOf,qAt,qh,cardAt,cardIx,save});
+Object.defineProperties(globalThis,{saveAllOn:{get:()=>saveAllOn}});
+export {cardReading,cardReady,saveAllOn,saveAll,savedTitle,cardOf,qAt,qh,cardAt,cardIx,save};

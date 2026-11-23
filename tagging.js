@@ -110,8 +110,8 @@ function tagNotes(q){if(q.manual)return '';const out=[];if(q.meas)q.measV=colour
   if(!L&&PATS_BY[q.type]){if(q.newPattern)out.push(`<div class="offer"><small>No listed pattern fits: Claude calls it <b>${esc(q.newPattern.name)}</b>${q.newPattern.why?`: ${esc(q.newPattern.why)}`:''}.</small><button type="button" class="chipbtn" data-act="tagNewPat" ${cardAt(q)}>Add this pattern</button></div>`)}
   return out.join('')}
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level
-   call: add.js, add-card.js, add-save.js, measure.js, pattern-read.js, colpick.js and safety.js, classic scripts, and tag-request.js
-   (fieldLabel, valName, read as globals: it comes before this file in the list) use these; confTxt is read by tests/records.test.js only */
+   call: add.js, add-card.js, measure.js, pattern-read.js, colpick.js and safety.js, classic scripts, and the modules add-save.js and
+   tag-request.js (fieldLabel, valName), which read them as globals (they come before this file in the list), use these; confTxt is read by tests/records.test.js only */
 Object.assign(globalThis,{fieldLabel,valName,aiFields,takeExtras,closeTagImg,readBegin,readEnd,readAbort,refineFromCloseup,confTxt,tagNotes});
 export {fieldLabel,valName,aiFields,takeExtras,closeTagImg,readBegin,readEnd,readAbort,refineFromCloseup,confTxt,tagNotes};
 /* what the Add card's notes do (act.js; the card by its id in data-card: add-save.js cardAt, cardIx): read the close-up or the pattern

@@ -46,6 +46,12 @@ const BRIDGE={
   'add-paste.js':['pasteMsg'],
   // the sheets that close on a swipe down are classic scripts: add-sheet, item-view, colpick and kit call it
   'sheet-swipe.js':['sheetSwipe'],
+  // add, look, kit, wardrobe, colpick, safety, tagging, pattern-read and the other Add files find a card and save it with these;
+  // saveAllOn is a let only add-save.js writes (add and add-card read it): a getter
+  'add-save.js':['cardAt','cardIx','cardOf','cardReading','cardReady','qAt','qh','save','saveAll','saveAllOn','savedTitle'],
+  // every file that changes a card keeps it (addKeep, addKeepSoon); add and add-sheet (addWatch, addCardRec), kit (addRevive),
+  // safety (addRestore); addKeepT is read by tests/addcards.test.js, which also assigns addRestoreState (add.js reads it): a setter
+  'add-keep.js':['addCardRec','addKeep','addKeepSoon','addKeepT','addRestore','addRestoreState','addRevive','addWatch'],
   // history.js (firstReal, missedNote) and today.js (missedCard) are classic scripts; the rest are called by the todayacts and weeklock tests
   'missed.js':['firstReal','missedCard','missedNote','missedOne','missedOpen','missedPickToggle','missedPut'],
   // history.js, a classic script, swaps, picks and draws the picker with these; slotPool, fitOf, fitTag and pickSub are also called by
@@ -79,11 +85,11 @@ const BRIDGE={
   // settings.js, stats.js, start.js, add-card.js, add-save.js, shop.js and kit.js are classic scripts; vestMigrating is read by the
   // dress test only: a getter
   'dress.js':['dressNewItem','dressSummary','dressSynced','dressWhyUnused','migrateVests','newSuitVest','renderDressUI','vestMigrating'],
-  // the photo-tagging request: app, add, add-keep, add-save, item-photo, migrate, measure, pattern-read, colpick, look, safety and stats
-  // are classic scripts; tagging.js (TAG_Q) and checklist.js (texSig) are modules that read these as globals (they come later in the list)
+  // the photo-tagging request: app, add, item-photo, migrate, measure, pattern-read, colpick, look, safety and stats are classic
+  // scripts; add-keep.js, add-save.js, tagging.js (TAG_Q) and checklist.js (texSig) are modules that read these as globals
   'tag-request.js':['CLOSE_MAX','TAGIMG_CACHE','TAG_MAX','TAG_Q','benchEstimate','customForTag','describeEstimate','keepCloseImg','keepTagImg','readEstimate','recordTagResult','resignTagImg','sharpCloseOf','tagExtras','tagFixes','tagImgOf','tagStatsCard','texSig'],
-  // add, add-card, add-save, measure, pattern-read, colpick and safety are classic scripts; tag-request.js, a module earlier in the list,
-  // reads fieldLabel and valName as globals; confTxt is read by tests/records.test.js only
+  // add, add-card, measure, pattern-read, colpick and safety are classic scripts; add-save.js and tag-request.js (fieldLabel, valName),
+  // modules earlier in the list, read these as globals; confTxt is read by tests/records.test.js only
   'tagging.js':['aiFields','closeTagImg','confTxt','fieldLabel','readAbort','readBegin','readEnd','refineFromCloseup','tagNotes','takeExtras','valName'],
   // colpick, look, settings and add-card are classic scripts; tagging.js, a module earlier in the list, reads openColForm and openPatForm
   // as globals (tests/restacts.test.js replaces those two on window, which reaches tagging.js's calls); guessPatBase is called by
