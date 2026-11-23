@@ -1,7 +1,7 @@
 /* Daily Wardrobe: the swipe down that closes a sheet (split from add.js, Round C 2026-11-17): sheetSwipe, used by the
    "Add without a photo" and import sheets, the color, pattern and reading sheets (colpick.js) and the item sheet (itemsheet.js). */
 /* ---- swiping a sheet down closes it: the one gesture of every sheet but What to buy's (CR-1-09: there were four copies): the no-photo and
-   import sheets, the color, pattern and reading sheets (colpick.js) and the item sheet (itemsheet.js). Its handle (o.head, a selector) at
+   the import sheets, the color, pattern and reading sheets (colpick.js) and the item sheet (itemsheet.js). Its handle (o.head, a selector) at
    any time, the rest only while its scrolling part (o.body(), else the sheet) is at the top (further down a downward swipe scrolls it back
    up); decided on the first move of a touch, before the browser scrolls; the sheet follows the finger by its own transform and the backdrop
    lightens; let go past a quarter of its height or with a flick and it closes (o.close(d), d: how far down it was let go), else it springs
