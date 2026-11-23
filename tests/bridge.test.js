@@ -42,8 +42,16 @@ const BRIDGE={
   // the pages and sheets that Back closes are classic scripts: add-sheet, colpick, history, item-view, kit, settings, setup, shop,
   // start, ui and account call these. appHist, appKind and itemHist are read by the tests only (back, backgesture, shellfix): getters
   'back.js':['appHist','appKind','backBorrow','backDrop','backHold','backKind','backLand','backOn','backOver','backPush','backReturn','backSettled','backWanted','histDrop','histPush','itemHist'],
+  // history.js (firstReal, missedNote) and today.js (missedCard) are classic scripts; the rest are called by the todayacts and weeklock tests
+  'missed.js':['firstReal','missedCard','missedNote','missedOne','missedOpen','missedPickToggle','missedPut'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
+  // settings.js, stats.js, start.js, add-card.js, add-save.js, shop.js and kit.js are classic scripts; vestMigrating is read by the
+  // dress test only: a getter
+  'dress.js':['dressNewItem','dressSummary','dressSynced','dressWhyUnused','migrateVests','newSuitVest','renderDressUI','vestMigrating'],
+  // settings.js (calSummary) and today.js (calBanner) are classic scripts; the rest are read by the calendar test, calBusy by the
+  // restacts test only: a getter
+  'calendar.js':['CAL_GUIDES','CAL_X','calBanner','calBusy','calGuide','calNew','calPlan','calSummary','renderCalUI'],
 };
 /* file -> names its row gained after its conversion (each with the reason beside it); every one is in BRIDGE too */
 const GROWN={

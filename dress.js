@@ -73,3 +73,9 @@ function dressSynced(m){
 /* a dress-code switch (act.js; which one in data-k): a tap turns it the other way from what it shows */
 function dressSwTap(el){setDress(el.dataset.k,el.getAttribute('aria-checked')!=='true')}
 acts({dressSwTap});
+/* An ES module (2026-11-23): its names are its own, and this is what the other scripts and the tests still use as globals (the bridge;
+   tests/bridge.test.js lists it): settings.js, stats.js, start.js, add-card.js, add-save.js, shop.js, kit.js and the dress, sockpatterns
+   and planner-rules tests. vestMigrating is read by the dress test only, and only this file writes it: a getter and no setter. */
+Object.assign(globalThis,{renderDressUI,newSuitVest,dressSummary,dressWhyUnused,migrateVests,dressNewItem,dressSynced});
+Object.defineProperties(globalThis,{vestMigrating:{get:()=>vestMigrating}});
+export {renderDressUI,newSuitVest,dressSummary,dressWhyUnused,vestMigrating,migrateVests,dressNewItem,dressSynced};
