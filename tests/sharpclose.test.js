@@ -21,7 +21,7 @@ module.exports=async({ok,chromium,url})=>{
     ok((await size(sharp)).join()==='1152,1536','a sharp 1536 px copy is kept on the device');
     await p.evaluate(()=>colAskImgs(items[0],'e').then(x=>window._x=x));
     ok((await size(await p.evaluate(()=>window._x.closeup))).join()==='1152,1536','Ask Claude sends the sharp copy');
-    await p.evaluate(()=>{const s=settable;window.settable=()=>true;return rereadSett('b1').catch(()=>{}).finally(()=>{window.settable=s})});
+    await p.evaluate(()=>rereadSett('b1').catch(()=>{}));   // (settable was a const: a window.settable never reached rereadSett)
     const pat=sent.find(s=>s.path.endsWith('/pattern'));
     ok(!!pat&&!!pat.closeup&&(await size(pat.closeup)).join()==='1152,1536','"Read pattern from photo" sends the sharp copy');
     // removed: no close-up at all; replaced by a small one through undo: the old sharp copy is not used

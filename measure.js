@@ -249,3 +249,7 @@ function undoMeasured(i,f){const q=queue[i];if(!q||!q.auto||!q.auto[f])return;co
   if(q.texCanvas)generateSwatch(q);q.measV=colourVerdicts(q);renderAdd()}
 /* measure the card and take what is sure (the first tag, tagging again from the close-up, Try again) */
 function measureAndApply(q){measureCard(q);missedPattern(q);return applyMeasured(q)}
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
+   as globals. The file has no top-level call, so the bridge is its last lines */
+Object.assign(globalThis,{wbRead,wbGains,closeRead,PAPER,paperKey,urlCanvas,paperOf,paperNow,paperCopy,measureCloth,calibLab,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,MEAS_AUTO,colourVerdicts,AI_LOW_AUTO,AI_HIGH_FLAG,aiSignals,applyMeasured,undoMeasured,measureAndApply});
+export {wbRead,wbGains,closeRead,PAPER,paperKey,urlCanvas,paperOf,paperNow,paperCopy,measureCloth,calibLab,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,MEAS_AUTO,colourVerdicts,AI_LOW_AUTO,AI_HIGH_FLAG,aiSignals,applyMeasured,undoMeasured,measureAndApply};
