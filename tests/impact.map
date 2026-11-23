@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	92c184af0f2306cb4ef7
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -33,7 +32,7 @@ a11y.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolida
 a11y.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 a11y.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 a11y.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
-a11y.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favOff	favPillSeg	favStrip	favWhy
+a11y.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favOff	favPillSeg	favStrip	favWhy	get
 a11y.test.js	history.js	<loaded>	checkPlanRules	closePicker	combatAway	dayActions	dayChanged	dropLearn	handGroup	idsOf	keyDate	openPicker	pickPic	pluralWord	recordDays	renderReplanUI	replanCount	resetCard	saveDay	setWorn	whenPulled
 a11y.test.js	icon-192.png	<loaded>
 a11y.test.js	icon-512.png	<loaded>
@@ -225,7 +224,7 @@ accents.test.js	daysoff.js	<loaded>	refreshHolidays
 accents.test.js	detect.js	<loaded>	@	camoLook	camoTag	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 accents.test.js	draw.js	<loaded>	camoTileUrl	fabricDef	itemThumb	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 accents.test.js	dress.js	<loaded>	dressNewItem	migrateVests	newSuitVest
-accents.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+accents.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 accents.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 accents.test.js	icon-192.png	<loaded>
 accents.test.js	icon-512.png	<loaded>
@@ -511,7 +510,7 @@ actsindex.test.js	daysoff.js	<any>	<loaded>	addDayOff	addFormalDay	countryName	c
 actsindex.test.js	detect.js	<any>	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 actsindex.test.js	draw.js	<any>	<loaded>	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	rainFabric	rainMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 actsindex.test.js	dress.js	<any>	<loaded>	dressOn	migrateVests	newSuitVest	renderDressUI
-actsindex.test.js	fav.js	<any>	<loaded>	favAny	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy
+actsindex.test.js	fav.js	<any>	<loaded>	favAny	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy	get
 actsindex.test.js	history.js	<any>	<loaded>	checkPlanRules	closePicker	combatAway	dayActions	dayChanged	dropLearn	handGroup	idsOf	keyDate	openPicker	pickBackdropTap	pickPic	pluralWord	recordDays	renderReplanUI	replanCount	replanTap	resetCard	saveDay	setOccasion	whenPulled
 actsindex.test.js	index.html	<any>	<loaded>
 actsindex.test.js	item-photo.js	<any>	<loaded>	paperCloth	paperHint	paperSteps	photoTools	ptIcon	smallPhotos
@@ -699,7 +698,7 @@ additemacts.test.js	daysoff.js	<loaded>	refreshHolidays
 additemacts.test.js	detect.js	<loaded>	@	analyzeStripes	boxBlur	camoLook	detectPattern	detectQueued	lookOf	lumGrid	ownSett	settToTag	sobel	texPat	tieWeave	usableSett
 additemacts.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	drawWatchTraced	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figFabric	figKind	figLiftK	figLin	figLum	figScale	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 additemacts.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests	newSuitVest
-additemacts.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favOff	favPillSeg	favWhy
+additemacts.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favOff	favPillSeg	favWhy	get
 additemacts.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 additemacts.test.js	index.html	<loaded>
 additemacts.test.js	item-photo.js	<loaded>	applyCrop	cropApply	cropDiscard	cropDiscardTap	cropDrag	cropEditor	cropGeom	cropSource	cropZoom	imgOf	layoutCrop	makeSmall	paperCloth	paperHint	paperLine	paperRetake	paperSteps	paperTip	paperTipTap	phSigOf	phSm	photoCrop	photoCuRemove	photoFile	photoRotate	photoTools	photoUndoAct	ptIcon	replacePhoto	rotatePhoto	setPhoto	setPic	setTexture	smallPhotos	startCrop
@@ -786,7 +785,7 @@ addsheet.test.js	daysoff.js	<loaded>	refreshHolidays
 addsheet.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 addsheet.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 addsheet.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests	newSuitVest
-addsheet.test.js	fav.js	<loaded>	favChip	favLookFrom	favMark	favPillSeg	favWhy
+addsheet.test.js	fav.js	<loaded>	favChip	favLookFrom	favMark	favPillSeg	favWhy	get
 addsheet.test.js	history.js	<loaded>	checkPlanRules	dayActions	idsOf	keyDate	resetCard	whenPulled
 addsheet.test.js	index.html	<loaded>
 addsheet.test.js	item-photo.js	<loaded>	paperCloth	paperSteps
@@ -875,7 +874,7 @@ advicefresh.test.js	daysoff.js	<loaded>	refreshHolidays
 advicefresh.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 advicefresh.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 advicefresh.test.js	dress.js	<loaded>	migrateVests
-advicefresh.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy
+advicefresh.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	get
 advicefresh.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	planRulesCheck	planRulesLs	planRulesNote	recordDays	resetCard	saveDay	whenPulled
 advicefresh.test.js	icon-192.png	<loaded>
 advicefresh.test.js	icon-512.png	<loaded>
@@ -2721,7 +2720,7 @@ back.test.js	daysoff.js	<loaded>	builtinHolidays	countryName	daysOffListen	fetch
 back.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 back.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 back.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
-back.test.js	fav.js	<loaded>	favAny	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy
+back.test.js	fav.js	<loaded>	favAny	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy	get
 back.test.js	history.js	<loaded>	@backOnpick	checkPlanRules	closePicker	combatAway	dayActions	dayChanged	dropLearn	handGroup	idsOf	keyDate	openPicker	pickPic	pluralWord	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 back.test.js	icon-192.png	<loaded>
 back.test.js	icon-512.png	<loaded>
@@ -2817,7 +2816,7 @@ backgesture-item.test.js	daysoff.js	<loaded>	refreshHolidays
 backgesture-item.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
 backgesture-item.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	camoTileUrl	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figStripeLift	figWay	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 backgesture-item.test.js	dress.js	<loaded>	migrateVests
-backgesture-item.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	favWhy
+backgesture-item.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	favWhy	get
 backgesture-item.test.js	history.js	<loaded>	checkPlanRules	dayActions	idsOf	keyDate	resetCard	whenPulled
 backgesture-item.test.js	index.html	<loaded>
 backgesture-item.test.js	item-photo.js	<loaded>	applyCrop	cropDirty	cropDiscard	cropDiscardTap	cropEditor	cropGeom	cropKeep	cropSource	cropUndo	cropZoom	imgOf	layoutCrop	makeSmall	paperCloth	paperHint	paperLine	paperRetake	paperSteps	paperTip	phSigOf	phSm	photoTools	picUndo	ptIcon	setPhoto	setPic	startCrop	undoPhoto
@@ -2908,7 +2907,7 @@ backgesture-over.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	r
 backgesture-over.test.js	detect.js	<loaded>	@	camoLook	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
 backgesture-over.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figStripeLift	figWay	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 backgesture-over.test.js	dress.js	<loaded>	dressOn	migrateVests	newSuitVest	renderDressUI
-backgesture-over.test.js	fav.js	<loaded>	favChip	favMark	favWhy
+backgesture-over.test.js	fav.js	<loaded>	favChip	favMark	favWhy	get
 backgesture-over.test.js	history.js	<loaded>	checkPlanRules	dayActions	idsOf	keyDate	renderReplanUI	replanCount	resetCard	whenPulled
 backgesture-over.test.js	icon-192.png	<loaded>
 backgesture-over.test.js	index.html	<loaded>
@@ -3000,7 +2999,7 @@ backgesture.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refres
 backgesture.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
 backgesture.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	camoTileUrl	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 backgesture.test.js	dress.js	<loaded>	dressOn	migrateVests	newSuitVest	renderDressUI
-backgesture.test.js	fav.js	<loaded>	favAny	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy
+backgesture.test.js	fav.js	<loaded>	favAny	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy	get
 backgesture.test.js	history.js	<loaded>	@backOnpick	checkPlanRules	closePicker	combatAway	dayActions	handGroup	idsOf	keyDate	openPicker	pickCloseTap	pickPic	pluralWord	renderReplanUI	replanCount	resetCard	whenPulled
 backgesture.test.js	index.html	<loaded>
 backgesture.test.js	item-photo.js	<loaded>	applyCrop	cropDirty	cropDiscard	cropEditor	cropGeom	cropKeep	cropSource	cropUndo	imgOf	layoutCrop	makeSmall	paperCloth	paperHint	paperLine	paperRetake	paperSteps	paperTip	phSigOf	phSm	photoTools	picUndo	ptIcon	setPhoto	setPic	startCrop	undoPhoto
@@ -3723,7 +3722,7 @@ camouflage.test.js	daysoff.js	<loaded>	refreshHolidays
 camouflage.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ocpSett	ownSett	settToTag	texPat	tieWeave	usableSett
 camouflage.test.js	draw.js	<loaded>	camoTileUrl	fabricDef	itemThumb	shirtFabric	shirtMarks	swatchSVG
 camouflage.test.js	dress.js	<loaded>	migrateVests
-camouflage.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+camouflage.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 camouflage.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 camouflage.test.js	icon-192.png	<loaded>
 camouflage.test.js	icon-512.png	<loaded>
@@ -3824,7 +3823,7 @@ canvasrefuse.test.js	daysoff.js	<loaded>	refreshHolidays
 canvasrefuse.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 canvasrefuse.test.js	draw.js	<loaded>	fabricDef	itemThumb	shirtFabric	shirtMarks	swatchSVG	texTileSmooth	texTileUrl	texTones	tieFabric	tieMarks
 canvasrefuse.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-canvasrefuse.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+canvasrefuse.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 canvasrefuse.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 canvasrefuse.test.js	icon-192.png	<loaded>
 canvasrefuse.test.js	icon-512.png	<loaded>
@@ -3922,7 +3921,7 @@ cardid.test.js	daysoff.js	<loaded>	refreshHolidays
 cardid.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 cardid.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 cardid.test.js	dress.js	<loaded>	dressNewItem	migrateVests	newSuitVest
-cardid.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg
+cardid.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	get
 cardid.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 cardid.test.js	icon-192.png	<loaded>
 cardid.test.js	icon-512.png	<loaded>
@@ -4018,7 +4017,7 @@ care.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolida
 care.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 care.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 care.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-care.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy
+care.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	get
 care.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 care.test.js	icon-192.png	<loaded>
 care.test.js	icon-512.png	<loaded>
@@ -4120,7 +4119,7 @@ casual.test.js	daysoff.js	<loaded>	refreshHolidays
 casual.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 casual.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	drawSneakerPair	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	suitFabric	suitMarks	swatchSVG	trouserMarks
 casual.test.js	dress.js	<loaded>	migrateVests	newSuitVest
-casual.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+casual.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 casual.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 casual.test.js	icon-192.png	<loaded>
 casual.test.js	icon-512.png	<loaded>
@@ -4219,7 +4218,7 @@ claudepattern.test.js	daysoff.js	<loaded>	refreshHolidays
 claudepattern.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 claudepattern.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
 claudepattern.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-claudepattern.test.js	fav.js	<loaded>	favChip	favMark
+claudepattern.test.js	fav.js	<loaded>	favChip	favMark	get
 claudepattern.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 claudepattern.test.js	index.html	<loaded>
 claudepattern.test.js	item-photo.js	<loaded>	imgOf	makeSmall	paperCloth	paperSteps	phSigOf	phSm	smallPhotos
@@ -4409,7 +4408,7 @@ closeupread.test.js	daysoff.js	<loaded>	refreshHolidays
 closeupread.test.js	detect.js	<loaded>	@	camoLook	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
 closeupread.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG
 closeupread.test.js	dress.js	<loaded>	migrateVests	newSuitVest
-closeupread.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+closeupread.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 closeupread.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 closeupread.test.js	index.html	<loaded>
 closeupread.test.js	item-photo.js	<loaded>	imgOf	paperCloth	paperHint	paperLine	paperRetake	paperSteps	phSm	photoTools	ptIcon	replaceTexture	setPic	setTexture
@@ -4498,7 +4497,7 @@ closeupsheet.test.js	daysoff.js	<loaded>	refreshHolidays
 closeupsheet.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 closeupsheet.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG
 closeupsheet.test.js	dress.js	<loaded>	migrateVests	newSuitVest
-closeupsheet.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+closeupsheet.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 closeupsheet.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 closeupsheet.test.js	index.html	<loaded>
 closeupsheet.test.js	item-photo.js	<loaded>	imgOf	paperCloth	paperHint	paperLine	paperRetake	paperSteps	paperTip	paperTipTap	phSm	photoCuFile	photoCuRemove	photoTools	picUndo	ptIcon	replaceTexture	setPic	setTexture	undoPhoto
@@ -4696,7 +4695,7 @@ cmpmeasure.test.js	daysoff.js	<loaded>	refreshHolidays
 cmpmeasure.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 cmpmeasure.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG
 cmpmeasure.test.js	dress.js	<loaded>	migrateVests
-cmpmeasure.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+cmpmeasure.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 cmpmeasure.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 cmpmeasure.test.js	icon-192.png	<loaded>
 cmpmeasure.test.js	icon-512.png	<loaded>
@@ -4791,7 +4790,7 @@ colnew.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHoli
 colnew.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	lookSett	ownSett	settToTag	usableSett
 colnew.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	camoTileUrl	fabricDef	figEyes	itemThumb	suitFabric	suitMarks	swatchSVG	texTileUrl	texTones	tieFabric	tieMarks
 colnew.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
-colnew.test.js	fav.js	<loaded>	favChip	favMark
+colnew.test.js	fav.js	<loaded>	favChip	favMark	get
 colnew.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 colnew.test.js	index.html	<loaded>
 colnew.test.js	item-photo.js	<loaded>	imgOf	paperCloth	phSm	replaceTexture	setPic	setTexture
@@ -4895,7 +4894,7 @@ colors.test.js	daysoff.js	<loaded>	refreshHolidays
 colors.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 colors.test.js	draw.js	<loaded>	camoTileUrl	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 colors.test.js	dress.js	<loaded>	migrateVests	newSuitVest
-colors.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favMark	favWhy
+colors.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favMark	favWhy	get
 colors.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 colors.test.js	icon-192.png	<loaded>
 colors.test.js	icon-512.png	<loaded>
@@ -5009,7 +5008,7 @@ colpick.test.js	daysoff.js	<loaded>	refreshHolidays
 colpick.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 colpick.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	camoTileUrl	drawShoePair	drawShoeSide	fabricDef	figEyes	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 colpick.test.js	dress.js	<loaded>	migrateVests
-colpick.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+colpick.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 colpick.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 colpick.test.js	icon-192.png	<loaded>
 colpick.test.js	icon-512.png	<loaded>
@@ -5104,7 +5103,7 @@ colpickacts.test.js	daysoff.js	<loaded>	refreshHolidays
 colpickacts.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
 colpickacts.test.js	draw.js	<loaded>	camoTileUrl	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 colpickacts.test.js	dress.js	<loaded>	migrateVests	newSuitVest
-colpickacts.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+colpickacts.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 colpickacts.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 colpickacts.test.js	index.html	<loaded>
 colpickacts.test.js	item-photo.js	<loaded>	imgOf	paperCloth	paperHint	paperLine	paperRetake	paperSteps	phSm	photoTools	ptIcon
@@ -5193,7 +5192,7 @@ colpickfocus.test.js	daysoff.js	<loaded>	refreshHolidays
 colpickfocus.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 colpickfocus.test.js	draw.js	<loaded>	camoTileUrl	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG
 colpickfocus.test.js	dress.js	<loaded>	migrateVests
-colpickfocus.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+colpickfocus.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 colpickfocus.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 colpickfocus.test.js	index.html	<loaded>
 colpickfocus.test.js	item-photo.js	<loaded>	paperCloth	paperHint	paperSteps	photoTools	ptIcon	smallPhotos
@@ -5465,7 +5464,7 @@ costwear.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHo
 costwear.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 costwear.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 costwear.test.js	dress.js	<loaded>	dressNewItem	dressOn	dressSynced	legacyVest	migrateVests	newSuitVest	renderDressUI
-costwear.test.js	fav.js	<loaded>	favAny	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favWhy
+costwear.test.js	fav.js	<loaded>	favAny	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favWhy	get
 costwear.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 costwear.test.js	icon-192.png	<loaded>
 costwear.test.js	icon-512.png	<loaded>
@@ -5898,7 +5897,7 @@ dress.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolid
 dress.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 dress.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 dress.test.js	dress.js	<loaded>	dressNewItem	dressOn	dressSummary	dressSwTap	dressSynced	dressWhyUnused	get	legacyVest	migrateVests	newSuitVest	renderDressUI	setDress
-dress.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy
+dress.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	get
 dress.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	planRulesCheck	planRulesLs	planRulesNote	recordDays	renderReplanUI	replanCount	replanFuture	resetCard	saveDay	whenPulled
 dress.test.js	icon-192.png	<loaded>
 dress.test.js	icon-512.png	<loaded>
@@ -5998,7 +5997,7 @@ editorrework.test.js	daysoff.js	<loaded>	refreshHolidays
 editorrework.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 editorrework.test.js	draw.js	<loaded>	camoTileUrl	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG
 editorrework.test.js	dress.js	<loaded>	migrateVests
-editorrework.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+editorrework.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 editorrework.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 editorrework.test.js	index.html	<loaded>
 editorrework.test.js	item-photo.js	<loaded>	applyCrop	cropApply	cropDirty	cropDiscard	cropDiscardTap	cropDrag	cropEditor	cropGeom	cropKeep	cropSource	cropUndo	cropZoom	imgOf	layoutCrop	makeSmall	paperCloth	paperHint	paperLine	paperRetake	paperSteps	phSigOf	phSm	photoTools	picUndo	ptIcon	setPhoto	setPic	startCrop	undoPhoto
@@ -6088,7 +6087,7 @@ editphotosb.test.js	daysoff.js	<loaded>	refreshHolidays
 editphotosb.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 editphotosb.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	fabricDef	itemThumb	leatherLayers	swatchSVG
 editphotosb.test.js	dress.js	<loaded>	migrateVests
-editphotosb.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+editphotosb.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 editphotosb.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 editphotosb.test.js	index.html	<loaded>
 editphotosb.test.js	item-photo.js	<loaded>	cropDiscard	cropDiscardTap	cropEditor	cropGeom	imgOf	layoutCrop	makeSmall	paperCloth	paperHint	paperLine	paperRetake	paperSteps	phSigOf	phSm	photoCrop	photoCuFile	photoCuRemove	photoFile	photoRotate	photoTools	photoUndoAct	picUndo	ptIcon	replacePhoto	replaceTexture	rotatePhoto	setPhoto	setPic	setTexture	startCrop	undoPhoto
@@ -6374,7 +6373,7 @@ favorites.test.js	daysoff.js	<loaded>	refreshHolidays	shortDate
 favorites.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 favorites.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 favorites.test.js	dress.js	<loaded>	migrateVests
-favorites.test.js	fav.js	<loaded>	favAny	favChip	favChipTap	favData	favItemRow	favItemTap	favLastIcon	favLastWorn	favLookFrom	favLookName	favLookTap	favMark	favPieces	favPillSeg	favSave	favStatsCard	favStrip	favToggleItem	favToggleLook	favWearTap	favWhy
+favorites.test.js	fav.js	<loaded>	favAny	favChip	favChipTap	favData	favItemRow	favItemTap	favLastIcon	favLastWorn	favLookFrom	favLookName	favLookTap	favMark	favPieces	favPillSeg	favSave	favStatsCard	favStrip	favToggleItem	favToggleLook	favWearTap	favWhy	get
 favorites.test.js	history.js	<loaded>	checkPlanRules	closePicker	combatAway	dayActions	dropLearn	handGroup	idsOf	keyDate	notAhead	openPicker	pickPic	pluralWord	recordDays	resetCard	saveDay	wearFav	whenPulled
 favorites.test.js	icon-192.png	<loaded>
 favorites.test.js	icon-512.png	<loaded>
@@ -6570,7 +6569,7 @@ fieldmerge.test.js	daysoff.js	<loaded>	refreshHolidays
 fieldmerge.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 fieldmerge.test.js	draw.js	<loaded>	drawBelt	fabricDef	figBg	figFabric	figKind	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	swatchSVG	tieFabric	tieMarks
 fieldmerge.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests
-fieldmerge.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg
+fieldmerge.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	get
 fieldmerge.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 fieldmerge.test.js	index.html	<loaded>
 fieldmerge.test.js	item-photo.js	<loaded>	paperCloth	paperHint	paperSteps	photoTools	ptIcon	smallPhotos
@@ -7455,7 +7454,7 @@ handpick.test.js	daysoff.js	<loaded>	refreshHolidays
 handpick.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 handpick.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	cargoPockets	casMir	casualMarks	casualTile	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 handpick.test.js	dress.js	<loaded>	migrateVests
-handpick.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favStrip	favWhy
+handpick.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favStrip	favWhy	get
 handpick.test.js	history.js	<loaded>	checkPlanRules	closePicker	combatAway	dayActions	dropLearn	handGroup	idsOf	keyDate	notAhead	openPicker	pickItem	pickPic	planRulesCheck	planRulesLs	planRulesNote	pluralWord	recordDays	resetCard	saveDay	setWorn	swapSlot	whenPulled
 handpick.test.js	icon-192.png	<loaded>
 handpick.test.js	icon-512.png	<loaded>
@@ -8049,7 +8048,7 @@ impact.test.js	daysoff.js	<loaded>	refreshHolidays
 impact.test.js	detect.js	<loaded>	@
 impact.test.js	draw.js	<loaded>
 impact.test.js	dress.js	<loaded>	migrateVests
-impact.test.js	fav.js	<loaded>	favChip
+impact.test.js	fav.js	<loaded>	favChip	get
 impact.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 impact.test.js	icon-192.png	<loaded>
 impact.test.js	icon-512.png	<loaded>
@@ -8331,7 +8330,7 @@ itempics.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHo
 itempics.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 itempics.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG	tieFabric	tieMarks
 itempics.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-itempics.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy
+itempics.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	get
 itempics.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	notAhead	renderReplanUI	replanCount	resetCard	resetDay	resetTap	saveDay	setFormal	setOccasion	setWorn	swapSlot	whenPulled
 itempics.test.js	icon-192.png	<loaded>
 itempics.test.js	icon-512.png	<loaded>
@@ -8433,7 +8432,7 @@ itemredesign.test.js	daysoff.js	<loaded>	refreshHolidays
 itemredesign.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 itemredesign.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	fabricDef	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG
 itemredesign.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests	newSuitVest
-itemredesign.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+itemredesign.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 itemredesign.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 itemredesign.test.js	index.html	<loaded>
 itemredesign.test.js	item-photo.js	<loaded>	imgOf	makeSmall	paperCloth	paperHint	paperLine	paperRetake	paperSteps	phSigOf	phSm	photoTools	ptIcon
@@ -8523,7 +8522,7 @@ itemsheet.test.js	daysoff.js	<loaded>	refreshHolidays
 itemsheet.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 itemsheet.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 itemsheet.test.js	dress.js	<loaded>	legacyVest	migrateVests
-itemsheet.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy
+itemsheet.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	get
 itemsheet.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 itemsheet.test.js	icon-192.png	<loaded>
 itemsheet.test.js	icon-512.png	<loaded>
@@ -8810,7 +8809,7 @@ kit.test.js	daysoff.js	<loaded>	builtinHolidays	countryName	daysOffListen	fetchH
 kit.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 kit.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 kit.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests	newSuitVest
-kit.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy
+kit.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	get
 kit.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 kit.test.js	icon-192.png	<loaded>
 kit.test.js	icon-512.png	<loaded>
@@ -8905,7 +8904,7 @@ kitsetup-taps.test.js	daysoff.js	<loaded>	builtinHolidays	countryName	daysOffLis
 kitsetup-taps.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 kitsetup-taps.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 kitsetup-taps.test.js	dress.js	<loaded>	dressNewItem	dressOn	legacyVest	migrateVests	renderDressUI
-kitsetup-taps.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy
+kitsetup-taps.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	get
 kitsetup-taps.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 kitsetup-taps.test.js	index.html	<loaded>
 kitsetup-taps.test.js	item-photo.js	<loaded>	paperCloth	paperHint	paperLine	paperRetake	paperSteps	photoTools	ptIcon	smallPhotos
@@ -9005,7 +9004,7 @@ lookbeta.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHo
 lookbeta.test.js	detect.js	<loaded>	@	camoLook	camoTag	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 lookbeta.test.js	draw.js	<loaded>	camoTileUrl	casMir	casualMarks	casualTile	cbNap	coatFabric	coatMarks	drawBelt	drawCombatPair	drawShoePair	drawShoeSide	drawSneakerPair	drawSock	drawWatchTraced	fabricDef	figEyes	itemThumb	leatherLayers	pocketDef	pocketEdge	pocketMarks	rainFabric	rainMarks	shirtFabric	shirtMarks	sockCols	sockPat	sockPatDef	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 lookbeta.test.js	dress.js	<loaded>	dressNewItem	dressOn	legacyVest	migrateVests	newSuitVest	renderDressUI
-lookbeta.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+lookbeta.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 lookbeta.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 lookbeta.test.js	index.html	<loaded>
 lookbeta.test.js	item-photo.js	<loaded>	paperCloth	paperHint	paperSteps	phSm	photoTools	ptIcon
@@ -9397,7 +9396,7 @@ materials.test.js	daysoff.js	<loaded>	refreshHolidays
 materials.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 materials.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawSock	fabricDef	figEyes	itemThumb	pantsFabric	pantsMarks	rainFabric	rainMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 materials.test.js	dress.js	<loaded>	migrateVests	newSuitVest
-materials.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+materials.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 materials.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 materials.test.js	index.html	<loaded>
 materials.test.js	item-photo.js	<loaded>	paperCloth	paperHint	paperSteps	photoTools	ptIcon	smallPhotos
@@ -10242,7 +10241,7 @@ motif.test.js	daysoff.js	<loaded>	refreshHolidays
 motif.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 motif.test.js	draw.js	<loaded>	fabricDef	figFabric	itemThumb	swatchSVG
 motif.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-motif.test.js	fav.js	<loaded>	favChip	favMark
+motif.test.js	fav.js	<loaded>	favChip	favMark	get
 motif.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 motif.test.js	index.html	<loaded>
 motif.test.js	item-photo.js	<loaded>	imgOf	makeSmall	paperCloth	paperSteps	phSigOf	phSm	smallPhotos
@@ -11054,7 +11053,7 @@ onorder.test.js	daysoff.js	<loaded>	refreshHolidays
 onorder.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 onorder.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 onorder.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests	newSuitVest
-onorder.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+onorder.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 onorder.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 onorder.test.js	icon-192.png	<loaded>
 onorder.test.js	icon-512.png	<loaded>
@@ -11111,11 +11110,6 @@ onorder.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapUse
 onorder.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 onorder.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerOpen	layerUp	uiEsc
 onorder.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMigrate	matOn	matOnItem	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
-onorder.test.js	watch/leather.jpg	<loaded>
-onorder.test.js	watch/shirt-open.png	<loaded>
-onorder.test.js	watch/shirt-tie.png	<loaded>
-onorder.test.js	watch/suit.png	<loaded>
-onorder.test.js	watch/vest.png	<loaded>
 onorder.test.js	weather.js	<loaded>	loadWeather
 owncolany.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 owncolany.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
@@ -11149,7 +11143,7 @@ owncolany.test.js	daysoff.js	<loaded>	refreshHolidays
 owncolany.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	usableSett
 owncolany.test.js	draw.js	<loaded>	casMir	casualMarks	casualTile	fabricDef	itemThumb	pantsFabric	pantsMarks
 owncolany.test.js	dress.js	<loaded>	migrateVests
-owncolany.test.js	fav.js	<loaded>	favChip	favMark
+owncolany.test.js	fav.js	<loaded>	favChip	favMark	get
 owncolany.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 owncolany.test.js	index.html	<loaded>
 owncolany.test.js	item-photo.js	<loaded>
@@ -11236,7 +11230,7 @@ ownmaterials.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refre
 ownmaterials.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 ownmaterials.test.js	draw.js	<loaded>	fabricDef	itemThumb	pantsFabric	pantsMarks	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 ownmaterials.test.js	dress.js	<loaded>	dressNewItem	dressOn	migrateVests	newSuitVest	renderDressUI
-ownmaterials.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+ownmaterials.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 ownmaterials.test.js	history.js	<loaded>	checkPlanRules	dropLearn	renderReplanUI	replanCount	whenPulled
 ownmaterials.test.js	index.html	<loaded>
 ownmaterials.test.js	item-photo.js	<loaded>	paperCloth	paperHint	paperSteps	photoTools	ptIcon	smallPhotos
@@ -11324,7 +11318,7 @@ ownnames.test.js	daysoff.js	<loaded>	addDayOff	countryName	dayOffAdd	daysOffList
 ownnames.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 ownnames.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawWatchTraced	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 ownnames.test.js	dress.js	<loaded>	dressOn	migrateVests	newSuitVest	renderDressUI
-ownnames.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy
+ownnames.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	get
 ownnames.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 ownnames.test.js	icon-192.png	<loaded>
 ownnames.test.js	icon-512.png	<loaded>
@@ -11518,7 +11512,7 @@ packcare-taps.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refr
 packcare-taps.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 packcare-taps.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 packcare-taps.test.js	dress.js	<loaded>	dressNewItem	dressOn	legacyVest	migrateVests	newSuitVest	renderDressUI
-packcare-taps.test.js	fav.js	<loaded>	favAny	favChip	favItemRow	favLookFrom	favMark	favOff	favPillSeg	favStatsCard	favWhy
+packcare-taps.test.js	fav.js	<loaded>	favAny	favChip	favItemRow	favLookFrom	favMark	favOff	favPillSeg	favStatsCard	favWhy	get
 packcare-taps.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	planRulesCheck	planRulesLs	planRulesNote	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 packcare-taps.test.js	index.html	<loaded>
 packcare-taps.test.js	item-photo.js	<loaded>	paperCloth	paperHint	paperSteps	photoTools	ptIcon	smallPhotos
@@ -11699,7 +11693,7 @@ paperstatus.test.js	daysoff.js	<loaded>	refreshHolidays
 paperstatus.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 paperstatus.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	fabricDef	itemThumb	leatherLayers	swatchSVG
 paperstatus.test.js	dress.js	<loaded>	migrateVests
-paperstatus.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+paperstatus.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 paperstatus.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 paperstatus.test.js	index.html	<loaded>
 paperstatus.test.js	item-photo.js	<loaded>	imgOf	paperCloth	paperHint	paperLine	paperRetake	paperSteps	paperTip	paperTipTap	phSm	photoCuFile	photoTools	picUndo	ptIcon	replaceTexture	setPic	setTexture	undoPhoto
@@ -11880,7 +11874,7 @@ photoedit.test.js	daysoff.js	<loaded>	refreshHolidays
 photoedit.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 photoedit.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 photoedit.test.js	dress.js	<loaded>	migrateVests
-photoedit.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+photoedit.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 photoedit.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 photoedit.test.js	icon-192.png	<loaded>
 photoedit.test.js	icon-512.png	<loaded>
@@ -11975,7 +11969,7 @@ pickbugs.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHo
 pickbugs.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 pickbugs.test.js	draw.js	<loaded>	camoTileUrl	cargoPockets	casMir	casualMarks	casualTile	drawSock	fabricDef	itemThumb	pantsFabric	pantsMarks	pocketDef	pocketEdge	pocketMarks	sockClock	sockCols	sockPat	sockPatDef	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 pickbugs.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
-pickbugs.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+pickbugs.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 pickbugs.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 pickbugs.test.js	index.html	<loaded>
 pickbugs.test.js	item-photo.js	<loaded>	paperCloth	paperHint	paperSteps	photoTools	ptIcon
@@ -12158,7 +12152,7 @@ pickerfocus.test.js	daysoff.js	<loaded>	refreshHolidays
 pickerfocus.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 pickerfocus.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	casMir	casualMarks	casualTile	drawShoePair	drawShoeSide	fabricDef	figEyes	itemThumb	leatherLayers	shirtFabric	shirtMarks	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 pickerfocus.test.js	dress.js	<loaded>	migrateVests	newSuitVest
-pickerfocus.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+pickerfocus.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 pickerfocus.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 pickerfocus.test.js	index.html	<loaded>
 pickerfocus.test.js	item-photo.js	<loaded>	paperCloth	paperHint	paperSteps	photoTools	ptIcon	smallPhotos
@@ -12246,7 +12240,7 @@ pieces.test.js	daysoff.js	<loaded>	refreshHolidays	shortDate
 pieces.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 pieces.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 pieces.test.js	dress.js	<loaded>	migrateVests
-pieces.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favStrip	favWhy
+pieces.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favStrip	favWhy	get
 pieces.test.js	history.js	<loaded>	checkPlanRules	closePicker	combatAway	dayActions	dropLearn	handGroup	idsOf	keyDate	notAhead	openPicker	pickNext	pickNextTap	pickPic	pluralWord	recordDays	resetCard	saveDay	swapSlot	whenPulled
 pieces.test.js	icon-192.png	<loaded>
 pieces.test.js	icon-512.png	<loaded>
@@ -12439,7 +12433,7 @@ planner-repeats.test.js	daysoff.js	<loaded>	refreshHolidays	shortDate
 planner-repeats.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 planner-repeats.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 planner-repeats.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests
-planner-repeats.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy
+planner-repeats.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	get
 planner-repeats.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	planRulesCheck	planRulesLs	planRulesNote	recordDays	resetCard	saveDay	whenPulled
 planner-repeats.test.js	icon-192.png	<loaded>
 planner-repeats.test.js	icon-512.png	<loaded>
@@ -12535,7 +12529,7 @@ planner-rules.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refr
 planner-rules.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 planner-rules.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 planner-rules.test.js	dress.js	<loaded>	dressOn	dressSwTap	migrateVests	newSuitVest	renderDressUI	setDress
-planner-rules.test.js	fav.js	<loaded>	favAny	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy
+planner-rules.test.js	fav.js	<loaded>	favAny	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy	get
 planner-rules.test.js	history.js	<loaded>	checkPlanRules	closePicker	combatAway	correctPast	dayActions	dropLearn	handGroup	idsOf	keyDate	notAhead	openPicker	pickItem	pickPic	planRulesCheck	planRulesLs	planRulesNote	pluralWord	recordDays	renderReplanUI	replanCount	resetCard	saveDay	swapSlot	togglePastEdit	whenPulled
 planner-rules.test.js	icon-192.png	<loaded>
 planner-rules.test.js	icon-512.png	<loaded>
@@ -12822,7 +12816,7 @@ records.test.js	daysoff.js	<loaded>	refreshHolidays	shortDate
 records.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 records.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 records.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests
-records.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy
+records.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	get
 records.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 records.test.js	icon-192.png	<loaded>
 records.test.js	icon-512.png	<loaded>
@@ -13018,7 +13012,7 @@ restacts.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	isoToDate
 restacts.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 restacts.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figScale	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 restacts.test.js	dress.js	<loaded>	dressOn	migrateVests	newSuitVest	renderDressUI
-restacts.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	favWhy
+restacts.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	favWhy	get
 restacts.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	setOccasion	whenPulled
 restacts.test.js	index.html	<loaded>
 restacts.test.js	item-photo.js	<loaded>	imgOf	paperCloth	paperHint	paperLine	paperRetake	paperSteps	phSm	photoCuFile	photoCuRemove	photoTools	ptIcon	setPic	setTexture	smallPhotos
@@ -13200,7 +13194,7 @@ rotation-pause.test.js	daysoff.js	<loaded>	refreshHolidays	shortDate
 rotation-pause.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 rotation-pause.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 rotation-pause.test.js	dress.js	<loaded>	migrateVests
-rotation-pause.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy
+rotation-pause.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	get
 rotation-pause.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	notAhead	recordDays	resetCard	saveDay	swapSlot	whenPulled
 rotation-pause.test.js	icon-192.png	<loaded>
 rotation-pause.test.js	icon-512.png	<loaded>
@@ -13300,7 +13294,7 @@ run.js: add an item without a photo; it persists	daysoff.js	<loaded>	refreshHoli
 run.js: add an item without a photo; it persists	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 run.js: add an item without a photo; it persists	draw.js	<loaded>	drawBelt	fabricDef	figBg	figFabric	figKind	figureSvg	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	trouserMarks
 run.js: add an item without a photo; it persists	dress.js	<loaded>	dressNewItem	migrateVests	newSuitVest
-run.js: add an item without a photo; it persists	fav.js	<loaded>	favChip	favMark
+run.js: add an item without a photo; it persists	fav.js	<loaded>	favChip	favMark	get
 run.js: add an item without a photo; it persists	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 run.js: add an item without a photo; it persists	icon-192.png	<loaded>
 run.js: add an item without a photo; it persists	icon-512.png	<loaded>
@@ -14188,13 +14182,13 @@ safeport.test.js	planner.js	<loaded>
 safeport.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
 safeport.test.js	safety.js	<loaded>	db.then.dbDown
 safeport.test.js	scorecard.js	<loaded>
-safeport.test.js	settings.js	<loaded>	@constsetChan{try}	closeSettings	refreshToday	setLock	settingsOpen	settingsPart
+safeport.test.js	settings.js	<loaded>	@constsetChan{try}	closeSettings	refreshToday	setLock	setWanted	settingsOpen	settingsPart
 safeport.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 safeport.test.js	sheet-swipe.js	<loaded>
 safeport.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then
 safeport.test.js	snapshots.js	<loaded>
 safeport.test.js	srgb.js	<loaded>
-safeport.test.js	start.js	<loaded>	applyStored	loadStored	pageIn	show	startChecks	startJobs	startUp
+safeport.test.js	start.js	<loaded>	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp
 safeport.test.js	stats.js	<loaded>	@afterScripts
 safeport.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .firstrun	.vh	.wxc.wxlk	.wxl	:root	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
 safeport.test.js	sync-photos.js	<loaded>
@@ -14783,7 +14777,7 @@ sample.test.js	daysoff.js	<loaded>	builtinHolidays	countryName	daysOffListen	fet
 sample.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 sample.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 sample.test.js	dress.js	<loaded>	dressNewItem	dressSynced	legacyVest	migrateVests
-sample.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy
+sample.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	get
 sample.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	planRulesCheck	planRulesLs	planRulesNote	recordDays	resetCard	saveDay	whenPulled
 sample.test.js	icon-192.png	<loaded>
 sample.test.js	icon-512.png	<loaded>
@@ -15305,7 +15299,7 @@ sett.test.js	daysoff.js	<loaded>	refreshHolidays
 sett.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	camoLook	corrAt	detrend	foldBins	labGrid	lineModel	linePeaks	lookOf	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 sett.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
 sett.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-sett.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+sett.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 sett.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 sett.test.js	icon-192.png	<loaded>
 sett.test.js	icon-512.png	<loaded>
@@ -15781,7 +15775,7 @@ setup.test.js	daysoff.js	<loaded>	addDayOff	builtinHolidays	countryName	countryP
 setup.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 setup.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 setup.test.js	dress.js	<loaded>	dressNewItem	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-setup.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favPillSeg	favWhy
+setup.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favPillSeg	favWhy	get
 setup.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 setup.test.js	icon-192.png	<loaded>
 setup.test.js	icon-512.png	<loaded>
@@ -15878,7 +15872,7 @@ shade.test.js	daysoff.js	<loaded>	refreshHolidays
 shade.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 shade.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG	trouserMarks
 shade.test.js	dress.js	<loaded>	dressNewItem	migrateVests	newSuitVest
-shade.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+shade.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 shade.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 shade.test.js	icon-192.png	<loaded>
 shade.test.js	icon-512.png	<loaded>
@@ -16287,7 +16281,7 @@ sharpclose.test.js	daysoff.js	<loaded>	refreshHolidays
 sharpclose.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	camoLook	corrAt	detrend	foldBins	labGrid	lookOf	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 sharpclose.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	fabricDef	figEyes	itemThumb	swatchSVG
 sharpclose.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests
-sharpclose.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+sharpclose.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 sharpclose.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 sharpclose.test.js	icon-192.png	<loaded>
 sharpclose.test.js	icon-512.png	<loaded>
@@ -16382,7 +16376,7 @@ shellfix.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHo
 shellfix.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 shellfix.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 shellfix.test.js	dress.js	<loaded>	dressOn	legacyVest	migrateVests	renderDressUI
-shellfix.test.js	fav.js	<loaded>	favChip	favLookFrom	favMark	favPillSeg	favWhy
+shellfix.test.js	fav.js	<loaded>	favChip	favLookFrom	favMark	favPillSeg	favWhy	get
 shellfix.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 shellfix.test.js	index.html	<loaded>
 shellfix.test.js	item-photo.js	<loaded>	smallPhotos
@@ -16469,7 +16463,7 @@ shirtweave.test.js	daysoff.js	<loaded>	refreshHolidays
 shirtweave.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 shirtweave.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figureSvg	itemThumb	swatchSVG	texTileUrl	texTones
 shirtweave.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-shirtweave.test.js	fav.js	<loaded>	favChip	favLookFrom	favMark	favPillSeg
+shirtweave.test.js	fav.js	<loaded>	favChip	favLookFrom	favMark	favPillSeg	get
 shirtweave.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	resetCard	whenPulled
 shirtweave.test.js	index.html	<loaded>
 shirtweave.test.js	item-photo.js	<loaded>	imgOf	makeSmall	paperCloth	paperSteps	phSigOf	phSm	smallPhotos
@@ -16565,7 +16559,7 @@ shop.test.js	daysoff.js	<loaded>	refreshHolidays
 shop.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 shop.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	rainFabric	rainMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 shop.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests
-shop.test.js	fav.js	<loaded>	favAny	favChip	favMark	favStatsCard	favWhy
+shop.test.js	fav.js	<loaded>	favAny	favChip	favMark	favStatsCard	favWhy	get
 shop.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 shop.test.js	icon-192.png	<loaded>
 shop.test.js	icon-512.png	<loaded>
@@ -16852,7 +16846,7 @@ sockpatterns.test.js	daysoff.js	<loaded>	refreshHolidays
 sockpatterns.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 sockpatterns.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockClock	sockCols	sockPat	sockPatDef	swatchSVG	tieFabric	tieMarks
 sockpatterns.test.js	dress.js	<loaded>	dressNewItem	dressSynced	migrateVests
-sockpatterns.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+sockpatterns.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 sockpatterns.test.js	history.js	<loaded>	checkPlanRules	dropLearn	planRulesCheck	planRulesLs	planRulesNote	whenPulled
 sockpatterns.test.js	index.html	<loaded>
 sockpatterns.test.js	item-photo.js	<loaded>	imgOf	makeSmall	phSigOf	phSm	photoTools	ptIcon	smallPhotos
@@ -17135,7 +17129,7 @@ speed.test.js	daysoff.js	<loaded>	refreshHolidays
 speed.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 speed.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 speed.test.js	dress.js	<loaded>	legacyVest	migrateVests
-speed.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy
+speed.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	get
 speed.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	planRulesCheck	planRulesLs	planRulesNote	recordDays	replanFuture	resetCard	saveDay	whenPulled
 speed.test.js	icon-192.png	<loaded>
 speed.test.js	icon-512.png	<loaded>
@@ -17430,7 +17424,7 @@ stylea11y.test.js	daysoff.js	<any>	<loaded>	countryName	daysOffListen	isoDate	re
 stylea11y.test.js	detect.js	<any>	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 stylea11y.test.js	draw.js	<any>	<loaded>	coatFabric	coatMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	rainFabric	rainMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 stylea11y.test.js	dress.js	<any>	<loaded>	dressOn	migrateVests	newSuitVest	renderDressUI
-stylea11y.test.js	fav.js	<any>	<loaded>	favAny	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favWhy
+stylea11y.test.js	fav.js	<any>	<loaded>	favAny	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favWhy	get
 stylea11y.test.js	history.js	<any>	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 stylea11y.test.js	icon-192.png	<loaded>
 stylea11y.test.js	icon-512.png	<loaded>
@@ -17724,7 +17718,7 @@ sync.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolida
 sync.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 sync.test.js	draw.js	<loaded>	drawBelt	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	trouserMarks
 sync.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
-sync.test.js	fav.js	<loaded>	favChip	favLookFrom	favMark	favPillSeg
+sync.test.js	fav.js	<loaded>	favChip	favLookFrom	favMark	favPillSeg	get
 sync.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 sync.test.js	icon-192.png	<loaded>
 sync.test.js	icon-512.png	<loaded>
@@ -17918,7 +17912,7 @@ tabload.test.js	daysoff.js	<loaded>	refreshHolidays
 tabload.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	usableSett
 tabload.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figureSvg	itemThumb	shirtFabric	shirtMarks	swatchSVG	tieFabric	tieMarks
 tabload.test.js	dress.js	<loaded>	legacyVest	migrateVests
-tabload.test.js	fav.js	<loaded>	favAny	favChip	favLookFrom	favMark	favPillSeg	favStatsCard
+tabload.test.js	fav.js	<loaded>	favAny	favChip	favLookFrom	favMark	favPillSeg	favStatsCard	get
 tabload.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 tabload.test.js	index.html	<loaded>
 tabload.test.js	item-photo.js	<loaded>	smallPhotos
@@ -18006,7 +18000,7 @@ tabmove.test.js	daysoff.js	<loaded>	refreshHolidays
 tabmove.test.js	detect.js	<loaded>	@
 tabmove.test.js	draw.js	<loaded>
 tabmove.test.js	dress.js	<loaded>	migrateVests
-tabmove.test.js	fav.js	<loaded>	favChip
+tabmove.test.js	fav.js	<loaded>	favChip	get
 tabmove.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 tabmove.test.js	icon-192.png	<loaded>
 tabmove.test.js	icon-512.png	<loaded>
@@ -18400,7 +18394,7 @@ tagswatch.test.js	daysoff.js	<loaded>	refreshHolidays
 tagswatch.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 tagswatch.test.js	draw.js	<loaded>	camoTileUrl	fabricDef	itemThumb	pantsFabric	pantsMarks	swatchSVG	trouserMarks
 tagswatch.test.js	dress.js	<loaded>	migrateVests
-tagswatch.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+tagswatch.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 tagswatch.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 tagswatch.test.js	icon-192.png	<loaded>
 tagswatch.test.js	icon-512.png	<loaded>
@@ -18592,7 +18586,7 @@ texswatch.test.js	daysoff.js	<loaded>	refreshHolidays
 texswatch.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 texswatch.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figCuSpec	figFabric	figGam	figKind	figLiftK	figLin	figLum	figScale	figStripeLift	figTileUrl	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	swatchSVG	texTileUrl	texTones	tieFabric	tieMarks	trouserMarks
 texswatch.test.js	dress.js	<loaded>	dressNewItem	migrateVests	newSuitVest
-texswatch.test.js	fav.js	<loaded>	favChip	favLookFrom	favMark	favPillSeg	favWhy
+texswatch.test.js	fav.js	<loaded>	favChip	favLookFrom	favMark	favPillSeg	favWhy	get
 texswatch.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 texswatch.test.js	icon-192.png	<loaded>
 texswatch.test.js	icon-512.png	<loaded>
@@ -18691,7 +18685,7 @@ texture.test.js	daysoff.js	<loaded>	refreshHolidays
 texture.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 texture.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	fabricDef	itemThumb	leatherLayers	swatchSVG
 texture.test.js	dress.js	<loaded>	dressNewItem	migrateVests	newSuitVest
-texture.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+texture.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 texture.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 texture.test.js	icon-192.png	<loaded>
 texture.test.js	icon-512.png	<loaded>
@@ -18887,7 +18881,7 @@ tieweave.test.js	daysoff.js	<loaded>	refreshHolidays
 tieweave.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 tieweave.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG	texTileUrl	texTones
 tieweave.test.js	dress.js	<loaded>	migrateVests
-tieweave.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+tieweave.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 tieweave.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 tieweave.test.js	icon-192.png	<loaded>
 tieweave.test.js	icon-512.png	<loaded>
@@ -19280,7 +19274,7 @@ todayedges.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refresh
 todayedges.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 todayedges.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 todayedges.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
-todayedges.test.js	fav.js	<loaded>	favChip	favLookFrom	favMark	favPillSeg	favStrip	favWhy
+todayedges.test.js	fav.js	<loaded>	favChip	favLookFrom	favMark	favPillSeg	favStrip	favWhy	get
 todayedges.test.js	history.js	<loaded>	checkPlanRules	closePicker	combatAway	dayActions	dayChanged	dropLearn	handGroup	idsOf	keyDate	notAhead	openPicker	pickNext	pickNextTap	pickPic	pluralWord	recordDays	renderReplanUI	replanCount	resetCard	resetDay	resetTap	saveDay	swapSlot	whenPulled
 todayedges.test.js	icon-192.png	<loaded>
 todayedges.test.js	icon-512.png	<loaded>
@@ -19659,7 +19653,7 @@ ui.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays
 ui.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 ui.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 ui.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-ui.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy
+ui.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	get
 ui.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 ui.test.js	icon-192.png	<loaded>
 ui.test.js	icon-512.png	<loaded>
@@ -19755,7 +19749,7 @@ uipages.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHol
 uipages.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 uipages.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 uipages.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	newSuitVest	renderDressUI
-uipages.test.js	fav.js	<loaded>	favAny	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favStatsCard	favWhy
+uipages.test.js	fav.js	<loaded>	favAny	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favStatsCard	favWhy	get
 uipages.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 uipages.test.js	icon-192.png	<loaded>
 uipages.test.js	icon-512.png	<loaded>
@@ -19853,7 +19847,7 @@ vest.test.js	daysoff.js	<loaded>	refreshHolidays
 vest.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 vest.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 vest.test.js	dress.js	<loaded>	migrateVests
-vest.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favMark	favWhy
+vest.test.js	fav.js	<loaded>	favChip	favItemRow	favLastIcon	favMark	favWhy	get
 vest.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	planRulesCheck	planRulesLs	planRulesNote	recordDays	replanFuture	resetCard	saveDay	setVest	whenPulled
 vest.test.js	icon-192.png	<loaded>
 vest.test.js	icon-512.png	<loaded>
@@ -19949,7 +19943,7 @@ wardfab.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHol
 wardfab.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 wardfab.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 wardfab.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
-wardfab.test.js	fav.js	<loaded>	favAny	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy
+wardfab.test.js	fav.js	<loaded>	favAny	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy	get
 wardfab.test.js	history.js	<loaded>	checkPlanRules	closePicker	combatAway	dayActions	dayChanged	dropLearn	handGroup	idsOf	keyDate	openPicker	pickPic	pluralWord	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 wardfab.test.js	icon-192.png	<loaded>
 wardfab.test.js	icon-512.png	<loaded>
@@ -20046,7 +20040,7 @@ wardrobe.test.js	daysoff.js	<loaded>	refreshHolidays	shortDate
 wardrobe.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 wardrobe.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 wardrobe.test.js	dress.js	<loaded>	dressNewItem	dressSynced	legacyVest	migrateVests	newSuitVest
-wardrobe.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favOff	favPillSeg	favStrip	favWhy
+wardrobe.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favOff	favPillSeg	favStrip	favWhy	get
 wardrobe.test.js	history.js	<loaded>	checkPlanRules	closePicker	combatAway	dayActions	dropLearn	handGroup	idsOf	keyDate	openPicker	pickPic	pluralWord	recordDays	resetCard	saveDay	whenPulled
 wardrobe.test.js	icon-192.png	<loaded>
 wardrobe.test.js	icon-512.png	<loaded>
@@ -20148,7 +20142,7 @@ wardrobetap.test.js	daysoff.js	<loaded>	refreshHolidays
 wardrobetap.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 wardrobetap.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 wardrobetap.test.js	dress.js	<loaded>	migrateVests	newSuitVest
-wardrobetap.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+wardrobetap.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 wardrobetap.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 wardrobetap.test.js	icon-192.png	<loaded>
 wardrobetap.test.js	icon-512.png	<loaded>
@@ -20245,7 +20239,7 @@ wardswipe.test.js	daysoff.js	<loaded>	refreshHolidays
 wardswipe.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 wardswipe.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawShoePair	drawShoeSide	fabricDef	figEyes	itemThumb	leatherLayers	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 wardswipe.test.js	dress.js	<loaded>	migrateVests
-wardswipe.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+wardswipe.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 wardswipe.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 wardswipe.test.js	icon-192.png	<loaded>
 wardswipe.test.js	icon-512.png	<loaded>
@@ -20341,7 +20335,7 @@ watchmatch.test.js	daysoff.js	<loaded>	refreshHolidays
 watchmatch.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 watchmatch.test.js	draw.js	<loaded>	drawWatchTraced	itemThumb
 watchmatch.test.js	dress.js	<loaded>	migrateVests
-watchmatch.test.js	fav.js	<loaded>	favChip	favItemRow	favMark
+watchmatch.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
 watchmatch.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 watchmatch.test.js	icon-192.png	<loaded>
 watchmatch.test.js	icon-512.png	<loaded>
@@ -20532,7 +20526,7 @@ weeklock.test.js	daysoff.js	<loaded>	countryName	daysOffListen	holPast	isoDate	i
 weeklock.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 weeklock.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 weeklock.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI
-weeklock.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy
+weeklock.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	get
 weeklock.test.js	history.js	<loaded>	checkPlanRules	closePicker	correctPast	dayActions	dayChanged	dropLearn	idsOf	keyDate	notAhead	pickItem	planRulesCheck	planRulesLs	planRulesNote	recordDays	renderReplanUI	replanButton	replanCount	replanFuture	replanTap	resetCard	resetDay	saveDay	swapSlot	whenPulled
 weeklock.test.js	icon-192.png	<loaded>
 weeklock.test.js	icon-512.png	<loaded>

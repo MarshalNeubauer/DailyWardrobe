@@ -42,13 +42,40 @@ const BRIDGE={
   // the pages and sheets that Back closes are classic scripts: add-sheet, colpick, history, item-view, kit, settings, setup, shop,
   // start, ui and account call these. appHist, appKind and itemHist are read by the tests only (back, backgesture, shellfix): getters
   'back.js':['appHist','appKind','backBorrow','backDrop','backHold','backKind','backLand','backOn','backOver','backPush','backReturn','backSettled','backWanted','histDrop','histPush','itemHist'],
+  // tests/paste.test.js clears the line under the "Photo or link" field with it
+  'add-paste.js':['pasteMsg'],
+  // the sheets that close on a swipe down are classic scripts: add-sheet, item-view, colpick and kit call it
+  'sheet-swipe.js':['sheetSwipe'],
   // history.js (firstReal, missedNote) and today.js (missedCard) are classic scripts; the rest are called by the todayacts and weeklock tests
   'missed.js':['firstReal','missedCard','missedNote','missedOne','missedOpen','missedPickToggle','missedPut'],
+  // scorecard and today (boxFold, boxUnfold), today-photofold and month (foldEdge) are classic scripts
+  'boxfold.js':['boxFold','boxUnfold','foldEdge'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
+  // read by the tests only: a11y (applyTheme, cycleTheme), actsindex (cycleTheme), modload (themeTap)
+  'theme.js':['applyTheme','cycleTheme','themeTap'],
   // settings.js, stats.js, start.js, add-card.js, add-save.js, shop.js and kit.js are classic scripts; vestMigrating is read by the
   // dress test only: a getter
   'dress.js':['dressNewItem','dressSummary','dressSynced','dressWhyUnused','migrateVests','newSuitVest','renderDressUI','vestMigrating'],
+  // add-card, itemsheet, colpick, look, add, add-sheet and item-view draw their sections and the close-up comparison with these;
+  // CK_OPEN is also how 53 test files open the sections
+  'checklist.js':['CK_OPEN','accRow','ckChip','ckColSum','ckIsOpen','ckSec','ckSure','ckToggle','cmpDiff','cmpDiffText','cmpDrawn','cmpHtml','cmpLab','cmpMatchHtml','cmpMount','cmpPaper','cmpPaperLine','cmpSteps'],
+  // itemsheet (cpwSum, cpwBlock), add-card (cpwQRow), add-save (cpwSaveFields), stats (cpwStatsCard), care (cpwSettingsUI); the
+  // other nine are read by tests/costwear.test.js only
+  'cost.js':['cpwBlock','cpwCleanYear','cpwCur','cpwHint','cpwMoney','cpwOf','cpwParse','cpwQRow','cpwQSet','cpwSaveFields','cpwSetPrice','cpwSettingsUI','cpwStatsCard','cpwSum','cpwText'],
+  // history, today, itemsheet, wardrobe, scorecard and stats; favData, favSave and favToggleItem by the favorites tests only;
+  // favWard is a let only fav.js writes (wardrobe.js reads it): a getter
+  'fav.js':['FAV_UNDO_MS','favChip','favData','favItemRow','favLastIcon','favMark','favOff','favPieces','favPillSeg','favSave','favStatsCard','favStrip','favToggleItem','favWard','favWhy'],
+  // sync.js and the screens that say how the backup stands: app, photos, settings, snapshots, backupfile, account, about, ui, setup;
+  // the clock, rollback, backup-storage, server-limits and addcards tests
+  'sync-status.js':['ENDED','backedUpWords','backupFullMsg','endedAnswer','inviteEnded','pauseTillTomorrow','setSyncStatus','showSyncStatus','syncNetText','syncPaused','syncWaiting'],
+  // sync.js calls phIn, phOut and phBatch; PH_MIN, isPh, phMap and phStrings are read by tests only (backup-storage, lib-verify18)
+  'sync-photos.js':['PH_MIN','isPh','phBatch','phIn','phMap','phOut','phStrings'],
+  // settings.js lists the daily backups when Backup opens (loadSnapshots); the tests call the four (actsindex, backup-storage, clock,
+  // rollback, sample)
+  'snapshots.js':['loadSnapshots','rollBack','rollBackState','snapLabel'],
+  // kit.js offers the backup file (downloadBackup); the tests restore one (restoreBackup: actsindex, fieldmerge, records, wardrobe)
+  'backupfile.js':['downloadBackup','restoreBackup'],
   // settings.js (calSummary) and today.js (calBanner) are classic scripts; the rest are read by the calendar test, calBusy by the
   // restacts test only: a getter
   'calendar.js':['CAL_GUIDES','CAL_X','calBanner','calBusy','calGuide','calNew','calPlan','calSummary','renderCalUI'],

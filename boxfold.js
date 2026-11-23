@@ -1,5 +1,5 @@
 /* Daily Wardrobe: how Today's cards unfold and fold (the score box and the pieces list; the month and the piece photos use foldEdge)
-   (A classic script sharing one global scope with the others; split out of history.js, Round C 2026-11-17, and loaded after it.) */
+   (An ES module since 2026-11-23; split out of history.js, Round C 2026-11-17, and loaded after it.) */
 /* the score box and the pieces list unfold and fold like the month (monthUnfold / monthFold): the page is laid out once and the card's
    edge (a strip, foldEdge) and what is under it slide; their own entry cascades (the checks and their bars, the pieces) still play.
    Folding is that cascade backwards: the last check or piece lifts out first (BOX_LIFT ms apart, styles.css .blift), the card closes
@@ -42,3 +42,7 @@ function boxFold(box,items){boxStop(box);const pan=box.querySelector('.mpanel'),
   if(want<scrollY-.5)pageScroll(want,o.duration,o.delay);
   const end=()=>{c.drop();if(scrollY>max)scrollTo(0,max);close()},a=box._fa={list,end};
   list[0].finished.then(()=>{if(box._fa!==a)return;box._fa=null;end();for(const x of list)x.cancel()},()=>{})}
+/* the bridge (tests/bridge.test.js): scorecard.js and today.js (boxUnfold, boxFold), today-photofold.js and month.js (foldEdge) are classic
+   scripts; a module imports them */
+Object.assign(globalThis,{boxUnfold,foldEdge,boxFold});
+export {boxUnfold,foldEdge,boxFold};
