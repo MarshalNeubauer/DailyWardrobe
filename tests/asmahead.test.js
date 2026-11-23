@@ -35,12 +35,12 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(sw.every(Boolean),`swiping through eight days never seen shows each day's picture at once (${sw.join(',')})`);
     // the day on screen isn't redrawn under a finger: it waits for the finger to lift
     const cdp=await ctx.newCDPSession(p);
-    await p.evaluate(()=>{window.__rt=0;window.__r0=refreshToday;refreshToday=()=>{__rt++}});
+    await p.evaluate(()=>{window.__rt=0;window.__r0=renderToday;renderToday=()=>{__rt++}});
     await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:200,y:300}]});
     const during=await p.evaluate(()=>{asmShow();return __rt});
     await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
     await p.waitForFunction(()=>__rt>0,null,{timeout:3000}).catch(()=>{});
-    const after=await p.evaluate(()=>{const n=__rt;refreshToday=__r0;return n});
+    const after=await p.evaluate(()=>{const n=__rt;renderToday=__r0;return n});
     ok(during===0&&after===1,`a picture ready while a finger is down is shown when it lifts (${during} redraws during, ${after} after)`);
     // without a worker nothing is built ahead (on the page it would freeze swiping); the day on screen still is
     const nw=await p.evaluate(async()=>{asmWorkerDown();window.ASM_NO_WORKER=true;asmW=null;for(const k of Object.keys(asmOut))delete asmOut[k];
