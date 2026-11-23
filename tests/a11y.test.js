@@ -190,9 +190,9 @@ const a11yround3=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>{const l=document.querySelector('#today .plegend');return !!l&&/choose another/.test(l.textContent)&&l.getAttribute('aria-hidden')==='true'}),'the open pieces list has a line saying what ⇄ and − do');
 
     // W2-14-05: the cleaning banner leads somewhere: a tap asks, "Cleaned today" starts the count again
-    const cb=await p.evaluate(async()=>{const o=planFor()[key(sel)];const id=o.top.id;const real=careCounts;window.careCounts=()=>({[id]:6});renderToday();
+    const cb=await p.evaluate(async()=>{const o=planFor()[key(sel)];const id=o.top.id;const real=cache.careW;cache.careW={[id]:6};renderToday();   /* (care.js careCounts answers from cache.careW) */
       const b=document.querySelector('#cband');const r={over:!!document.querySelector('.care-over'),role:b&&b.getAttribute('role')};b.querySelector('.ctxt').click();await new Promise(r=>setTimeout(r,100));
-      r.ask=document.querySelector('#ask-sheet.on')?document.querySelector('#ask-ok').textContent:'';window.careCounts=real;askAnswer(false);return r});
+      r.ask=document.querySelector('#ask-sheet.on')?document.querySelector('#ask-ok').textContent:'';if(real)cache.careW=real;else delete cache.careW;askAnswer(false);return r});
     ok(cb.over&&cb.role==='button'&&cb.ask==='Cleaned today',`tapping the red "Overdue" banner asks, with "Cleaned today" (${JSON.stringify(cb)})`);
 
     // W2-14-14: a location set and no weather read: the line says so, with a retry

@@ -55,7 +55,8 @@ const VIA={cycleTheme:{themeTap:''},addLink:{linkKey:'enter',linkAddTap:''},past
   addManual:{addManualTap:''},npsCancel:{npsCloseTap:''},
   closePicker:{pickBackdropTap:''},replanButton:{replanTap:''},startItemPics:{itemPicsTap:''},
   closeShop:{shopBackdropTap:''},addDayOff:{dayOffAddTap:''},addFormalDay:{occAddTap:''},setHolidayCountry:{countryPick:'value'},
-  askDelete:{delAskTap:''},checkForUpdate:{updCheckTap:'true'},updateNow:{updNowTap:''},sendFeedback:{fbSendTap:''}};
+  askDelete:{delAskTap:''},checkForUpdate:{updCheckTap:'true'},updateNow:{updNowTap:''},sendFeedback:{fbSendTap:''},
+  setLaundryDays:{laundryPick:'value'}};
 const CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==','base64');
 async function run(eng,browser,{ok,url,settle}){

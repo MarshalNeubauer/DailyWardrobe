@@ -59,8 +59,11 @@ const invitefix=async({ok,chromium,url})=>{
       await p.evaluate(()=>openSettings('connection'));await p.fill('#conn-link',url+link(A));await p.click('#conn-go');
       await p.waitForFunction(()=>!connBusy);const msg=await p.textContent('#conn-msg');
       ok(/offline/.test(msg)&&!/copied/.test(msg),`connecting offline says so ("${msg}")`);
-      await p.evaluate(()=>closeSettings());
-      await p.evaluate(l=>{location.hash=l},link(A));await p.waitForFunction(()=>acctWhy==='offline',null,{timeout:8000});
+      // (Settings' step back lands first: landing after the link is set, it takes the link out of the address. acctWhy is still 'offline'
+      // from the typed try above, so the wait is for this link's own attempt: the app has started on it, and it has ended)
+      await p.evaluate(async()=>{closeSettings();await backSettled()});
+      await p.evaluate(l=>new Promise(r=>{addEventListener('hashchange',()=>r(),{once:true});location.hash=l}),link(A));
+      await p.waitForFunction(()=>acctWhy==='offline'&&!acctLinkRun&&!inviteChecking,null,{timeout:8000});
       const kept=await p.evaluate(()=>location.hash);
       await p.evaluate(()=>openSettings('connection'));
       const w=await p.evaluate(()=>({st:document.querySelector('#conn-state').textContent,f:document.querySelector('#conn-link').value}));
@@ -366,7 +369,7 @@ const linkfix=async({ok,chromium,url,ROOT})=>{
   const ask=async p=>{try{await p.waitForSelector('#ask-ok',{state:'visible',timeout:6000})}catch{return null}return {t:await p.textContent('#ask-sheet'),ok:await p.textContent('#ask-ok')}};
   const state=p=>p.evaluate(()=>({url:localStorage.getItem('worker_url'),tok:localStorage.getItem('app_token'),n:items.length,toast:(window.__toasts&&__toasts.length?__toasts[__toasts.length-1]:'')||(document.querySelector('#toast')||{}).textContent||''}));
 // each toast's words as shown (a faded toast is emptied, W2-19-06, and `ask` waits 6 s for a question that may not come)
-const noteToasts=p=>p.evaluate(()=>{if(window.__toasts)return;window.__toasts=[];const t0=toast;window.toast=function(t,...a){__toasts.push(String(t));return t0.call(this,t,...a)}});
+const noteToasts=p=>p.evaluate(()=>{if(window.__toasts)return;window.__toasts=[];const e=document.querySelector('#toast');new MutationObserver(()=>{const t=e.firstChild&&e.firstChild.nodeValue;if(t&&t!==__toasts[__toasts.length-1])__toasts.push(t)}).observe(e,{childList:true})});
   try{
     // W2-13-01: a link to a stranger's server on a phone that isn't connected: refused, nothing sent anywhere
     {const {p,st,errs}=await page();await seed(p,null,2);
