@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	af66ded3b441ca7c2290
+# tested	122641f38a57b740287f
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -51,7 +51,7 @@ a11y.test.js	measure.js	<loaded>
 a11y.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 a11y.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 a11y.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-a11y.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+a11y.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 a11y.test.js	mq/shirt-open.js	<loaded>
 a11y.test.js	mq/shirt-tie.js	<loaded>
 a11y.test.js	mq/suit-open.js	<loaded>
@@ -65,7 +65,7 @@ a11y.test.js	pickscore.js	<loaded>	fitOf	fitRule	fitTag	handPool	pickSub	slotPoo
 a11y.test.js	planner.js	<loaded>	accFams	clothesScore	colsOf	colsOf0	dCol	darkShirt	darkUnderLight	fam	favItemSet	favLookOf	favLooks	favRead	isCamo	isFavItem	jacketGroup	lockStale	outfitScore	pairSeen	patInfo	patsOf	patternScore	pcol	shirtGroup	shirtScore	spokenCol	tieGroup	tieScore	uniformSplit
 a11y.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 a11y.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
-a11y.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
+a11y.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 a11y.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	scheduleWear	setCatOpen	setLock	setOpenTap	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 a11y.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 a11y.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -284,9 +284,6 @@ accents.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected
 accents.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMigrate	matOn	matOnItem	matRow	matSyn	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardHay	wardKeep	wardMatch	wardNorm	wardOrder	wardPendingRestore	wardRefresh	wardSaveFields	wardSearch	wardSort	wardView
 accents.test.js	watch/leather.jpg	<loaded>
 accents.test.js	watch/shirt-open.png	<loaded>
-accents.test.js	watch/shirt-tie.png	<loaded>
-accents.test.js	watch/suit.png	<loaded>
-accents.test.js	watch/vest.png	<loaded>
 accents.test.js	weather.js	<loaded>	loadWeather
 accounts.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 accounts.test.js	account.js	<loaded>	acctBase	acctCall	acctConnect	acctCopyTap	acctCreateTap	acctEsc	acctFailText	acctJoin	acctLinkDrawn	acctLocal	acctLoopback	acctOwnServer	acctRevokeTap	acctRole	acctSettingsPart	acctStart	acctToast	acctUse	applyRole	connectFromLink	copyInvite	createInvite	dropInviteHash	hasInviteHash	inviteLink	inviteParts	iosDevice	iosInSafari	isTester	limitNote	loadAccount	rememberRole	renderAccountUI	revokeInvite
@@ -526,7 +523,7 @@ actsindex.test.js	measure.js	<any>	<loaded>
 actsindex.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 actsindex.test.js	migrate.js	<any>	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 actsindex.test.js	missed.js	<any>	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-actsindex.test.js	month.js	<any>	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+actsindex.test.js	month.js	<any>	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 actsindex.test.js	mq/shirt-open.js	<loaded>
 actsindex.test.js	mq/shirt-tie.js	<loaded>
 actsindex.test.js	mq/suit-open.js	<loaded>
@@ -893,7 +890,7 @@ advicefresh.test.js	measure.js	<loaded>
 advicefresh.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 advicefresh.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 advicefresh.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-advicefresh.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+advicefresh.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 advicefresh.test.js	mq/shirt-open.js	<loaded>
 advicefresh.test.js	mq/shirt-tie.js	<loaded>
 advicefresh.test.js	mq/suit-open.js	<loaded>
@@ -907,7 +904,7 @@ advicefresh.test.js	pickscore.js	<loaded>
 advicefresh.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	beltWait	blackOnBlack	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkJkt	darkMode	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialInterest	dialLook	dialOccasion	dialSum	dialTexture	dialVariety	fam	favItemSet	favLookOf	favLooks	favPair	favRead	finish	formalTie	formalTop	frozenOutfit	groupsNear	idsAhead	intChr	intHx	intLabs	isCamo	isFavItem	jacketGroup	leatherGroup	lightTop	lockStale	lookLeather	lookRepeat	metalOf	metalSame	metalsWhy	nearCost	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairScore	pairSeen	pantsAsJacket	patInfo	patsHard	patsOf	patternScore	pcol	planLook	planSim	planStart	rankLooks	rateOutfit	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	takeOff	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	topGw	uniformSplit	wardStart	watchFit	withColRun
 advicefresh.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 advicefresh.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
-advicefresh.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	scoreTap	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
+advicefresh.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	scoreTap	set	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 advicefresh.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	setLock	setWanted	settingsOpen	settingsPart	weekFirst
 advicefresh.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 advicefresh.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -1085,7 +1082,7 @@ asmahead.test.js	measure.js	<loaded>
 asmahead.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 asmahead.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 asmahead.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-asmahead.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+asmahead.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 asmahead.test.js	mq/shirt-open.js	<loaded>
 asmahead.test.js	mq/shirt-tie.js	<loaded>
 asmahead.test.js	mq/suit-open.js	<loaded>
@@ -1099,7 +1096,7 @@ asmahead.test.js	pickscore.js	<loaded>
 asmahead.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 asmahead.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 asmahead.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
-asmahead.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+asmahead.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 asmahead.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	setLock	setWanted	settingsOpen	settingsPart	weekFirst
 asmahead.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 asmahead.test.js	sheet-swipe.js	<loaded>
@@ -1664,11 +1661,6 @@ asmcr.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 asmcr.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 asmcr.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmcr.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-asmcr.test.js	watch/leather.jpg	<loaded>
-asmcr.test.js	watch/shirt-open.png	<loaded>
-asmcr.test.js	watch/shirt-tie.png	<loaded>
-asmcr.test.js	watch/suit.png	<loaded>
-asmcr.test.js	watch/vest.png	<loaded>
 asmcr.test.js	weather.js	<loaded>	loadWeather
 asmcu.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmcu.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -2071,11 +2063,6 @@ asmroute.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 asmroute.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 asmroute.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmroute.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-asmroute.test.js	watch/leather.jpg	<loaded>
-asmroute.test.js	watch/shirt-open.png	<loaded>
-asmroute.test.js	watch/shirt-tie.png	<loaded>
-asmroute.test.js	watch/suit.png	<loaded>
-asmroute.test.js	watch/vest.png	<loaded>
 asmroute.test.js	weather.js	<loaded>	loadWeather
 asmroute.test.js	worker.js	<any>	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	orNull
 asmroute.test.js	worker/backup.js	<any>	<loaded>
@@ -2285,11 +2272,6 @@ asmstuck.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 asmstuck.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 asmstuck.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmstuck.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-asmstuck.test.js	watch/leather.jpg	<loaded>
-asmstuck.test.js	watch/shirt-open.png	<loaded>
-asmstuck.test.js	watch/shirt-tie.png	<loaded>
-asmstuck.test.js	watch/suit.png	<loaded>
-asmstuck.test.js	watch/vest.png	<loaded>
 asmstuck.test.js	weather.js	<loaded>	loadWeather
 asmtwill.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmtwill.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -2958,6 +2940,7 @@ backgesture-over.test.js	tests/backgesture-parts.js	<any>
 backgesture-over.test.js	tests/fixedplan.js	<any>
 backgesture-over.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-over.test.js	tests/fixtures/suit-mink.jpg	<loaded>
+backgesture-over.test.js	tests/webkit.js	<any>
 backgesture-over.test.js	theme.js	<loaded>	applyTheme
 backgesture-over.test.js	toast.js	<loaded>	toastDrop	undoOff
 backgesture-over.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -3015,7 +2998,7 @@ backgesture.test.js	measure.js	<loaded>	closeRead	measEdgeCut	measureCloth	paper
 backgesture.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 backgesture.test.js	migrate.js	<loaded>
 backgesture.test.js	missed.js	<loaded>	firstReal	missedCard	missedOpen
-backgesture.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+backgesture.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 backgesture.test.js	mq/shirt-open.js	<loaded>
 backgesture.test.js	mq/shirt-tie.js	<loaded>
 backgesture.test.js	mq/suit-open.js	<loaded>
@@ -5582,7 +5565,7 @@ daysoff.test.js	measure.js	<loaded>
 daysoff.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 daysoff.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 daysoff.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedPut	missedSeen	missedSpan	missedTell
-daysoff.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	openDay	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+daysoff.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	openDay	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 daysoff.test.js	mq/shirt-open.js	<loaded>
 daysoff.test.js	mq/shirt-tie.js	<loaded>
 daysoff.test.js	mq/suit-open.js	<loaded>
@@ -5596,7 +5579,7 @@ daysoff.test.js	pickscore.js	<loaded>
 daysoff.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storeFailure
-daysoff.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+daysoff.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	setCatOpen	setLock	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 daysoff.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield	tzCountry
 daysoff.test.js	sheet-swipe.js	<loaded>
@@ -5801,7 +5784,7 @@ drawnonly.test.js	measure.js	<loaded>
 drawnonly.test.js	merge.js	<loaded>	mergeList	mergeSettingsBy	mergeStateBy	setEntries	setHash	setKeys	setStampOf	stateSig	subOk
 drawnonly.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 drawnonly.test.js	missed.js	<loaded>	firstReal	missedCard	missedOpen
-drawnonly.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+drawnonly.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 drawnonly.test.js	mq/shirt-open.js	<loaded>
 drawnonly.test.js	mq/shirt-tie.js	<loaded>
 drawnonly.test.js	mq/suit-open.js	<loaded>
@@ -5815,7 +5798,7 @@ drawnonly.test.js	pickscore.js	<loaded>
 drawnonly.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	pairSeen	shirtGroup	spokenCol	tieGroup
 drawnonly.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 drawnonly.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
-drawnonly.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+drawnonly.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 drawnonly.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	picsPick	picsSwitched	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	setCatOpen	setLock	setPictures	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
 drawnonly.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 drawnonly.test.js	sheet-swipe.js	<loaded>
@@ -5916,7 +5899,7 @@ dress.test.js	measure.js	<loaded>
 dress.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
 dress.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 dress.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-dress.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+dress.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 dress.test.js	mq/shirt-open.js	<loaded>
 dress.test.js	mq/shirt-tie.js	<loaded>
 dress.test.js	mq/suit-open.js	<loaded>
@@ -5930,7 +5913,7 @@ dress.test.js	pickscore.js	<loaded>
 dress.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	beltFit	beltWait	blackOnBlack	buildPlan	camoUniform	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clipAllowed	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkJkt	darkMode	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialInterest	dialLook	dialOccasion	dialSum	dialTexture	dialVariety	fam	favItemSet	favLookOf	favLooks	favPair	favRead	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	idsAhead	intChr	intHx	intLabs	isCamo	isFavItem	jacketGroup	leatherGroup	lightTop	lockStale	lookLeather	lookRepeat	metalOf	metalSame	metalsWhy	nearCost	occTop	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairScore	pairSeen	pantsAsJacket	patInfo	patsHard	patsOf	patternScore	pcol	planLook	planSim	planStart	rankLooks	rateOutfit	shirt	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockBright	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	takeOff	tie	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	top	topGw	uniformSplit	wardStart	watchFit	withColRun
 dress.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 dress.test.js	safety.js	<loaded>	@addEventListenererror	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storeFailure	tagFailNote
-dress.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+dress.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 dress.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	setCatOpen	setLock	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 dress.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 dress.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -6782,7 +6765,7 @@ folds.test.js	measure.js	<loaded>
 folds.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 folds.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 folds.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-folds.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthTap	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+folds.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthTap	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 folds.test.js	mq/shirt-open.js	<loaded>
 folds.test.js	mq/shirt-tie.js	<loaded>
 folds.test.js	mq/suit-open.js	<loaded>
@@ -6796,7 +6779,7 @@ folds.test.js	pickscore.js	<loaded>	fitOf	fitRule	fitTag	handPool	pickSub	slotPo
 folds.test.js	planner.js	<loaded>	accFams	clothesScore	colsOf	colsOf0	dCol	darkShirt	darkUnderLight	fam	favLookOf	favLooks	favRead	isCamo	isFavItem	jacketGroup	lockStale	outfitScore	pairSeen	patInfo	patsOf	patternScore	pcol	shirtGroup	shirtScore	spokenCol	tieGroup	tieScore	uniformSplit
 folds.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 folds.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
-folds.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	scoreTap	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
+folds.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	scoreTap	set	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 folds.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	setLock	setWanted	settingsOpen	settingsPart	weekFirst
 folds.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 folds.test.js	sheet-swipe.js	<loaded>
@@ -7754,7 +7737,6 @@ herringbone.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	home
 herringbone.test.js	locale.js	<loaded>	appLocale
 herringbone.test.js	locks.js	<loaded>
 herringbone.test.js	look.js	<loaded>
-herringbone.test.js	manifest.webmanifest	<loaded>
 herringbone.test.js	mannequin.js	<loaded>	@{}
 herringbone.test.js	measure.js	<loaded>
 herringbone.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -7800,11 +7782,6 @@ herringbone.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 herringbone.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 herringbone.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 herringbone.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-herringbone.test.js	watch/leather.jpg	<loaded>
-herringbone.test.js	watch/shirt-open.png	<loaded>
-herringbone.test.js	watch/shirt-tie.png	<loaded>
-herringbone.test.js	watch/suit.png	<loaded>
-herringbone.test.js	watch/vest.png	<loaded>
 herringbone.test.js	weather.js	<loaded>	loadWeather
 herringbone.test.js	worker.js	<any>	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	orNull
 herringbone.test.js	worker/backup.js	<any>	<loaded>
@@ -8280,6 +8257,7 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
+invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -8827,7 +8805,7 @@ kit.test.js	measure.js	<loaded>
 kit.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 kit.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 kit.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedSeen	missedSpan	missedTell
-kit.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+kit.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 kit.test.js	mq/shirt-open.js	<loaded>
 kit.test.js	mq/shirt-tie.js	<loaded>
 kit.test.js	mq/suit-open.js	<loaded>
@@ -8919,7 +8897,7 @@ kitsetup-taps.test.js	measure.js	<loaded>	closeRead	paperKey	paperNow	paperOf	ur
 kitsetup-taps.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 kitsetup-taps.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 kitsetup-taps.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-kitsetup-taps.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+kitsetup-taps.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 kitsetup-taps.test.js	mq/shirt-open.js	<loaded>
 kitsetup-taps.test.js	mq/shirt-tie.js	<loaded>
 kitsetup-taps.test.js	mq/suit-open.js	<loaded>
@@ -9149,11 +9127,6 @@ lookplan.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 lookplan.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 lookplan.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 lookplan.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-lookplan.test.js	watch/leather.jpg	<loaded>
-lookplan.test.js	watch/shirt-open.png	<loaded>
-lookplan.test.js	watch/shirt-tie.png	<loaded>
-lookplan.test.js	watch/suit.png	<loaded>
-lookplan.test.js	watch/vest.png	<loaded>
 lookplan.test.js	weather.js	<loaded>	loadWeather
 lookworker.test.js	worker.js	<loaded>	corsFor	fetch	serve
 lookworker.test.js	worker/colormath.js	<loaded>	dE00	hexLab	hexRgb	rgbLab
@@ -9655,6 +9628,7 @@ modload.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 modload.test.js	tag-request.js	<loaded>	tagStatsCard
 modload.test.js	tagging.js	<loaded>
 modload.test.js	tests/fixedplan.js	<any>
+modload.test.js	tests/webkit.js	<any>
 modload.test.js	theme.js	<loaded>	applyTheme	cycleTheme	themeTap
 modload.test.js	toast.js	<loaded>	toast
 modload.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig	todayCovered
@@ -10157,7 +10131,7 @@ month.test.js	measure.js	<loaded>
 month.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk
 month.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 month.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-month.test.js	month.js	<loaded>	dayCellTap	dayMarks	dayOnly	monthBelow	monthDrag	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthRelease	monthStep	monthStop	monthTap	monthUnfold	nextWorkday	openDay	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+month.test.js	month.js	<loaded>	dayCellTap	dayMarks	dayOnly	get	monthBelow	monthDrag	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthRelease	monthStep	monthStop	monthTap	monthUnfold	nextWorkday	openDay	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 month.test.js	mq/shirt-open.js	<loaded>
 month.test.js	mq/shirt-tie.js	<loaded>
 month.test.js	mq/suit-open.js	<loaded>
@@ -10171,7 +10145,7 @@ month.test.js	pickscore.js	<loaded>
 month.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 month.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 month.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
-month.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
+month.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 month.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	setCatOpen	setLock	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	weekFirst
 month.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 month.test.js	sheet-swipe.js	<loaded>
@@ -10367,7 +10341,7 @@ moveoutfit.test.js	measure.js	<loaded>
 moveoutfit.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 moveoutfit.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 moveoutfit.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-moveoutfit.test.js	month.js	<loaded>	dayCellTap	dayMarks	dayOnly	monthFillSoon	monthGridHtml	monthLink	nextWorkday	openDay	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+moveoutfit.test.js	month.js	<loaded>	dayCellTap	dayMarks	dayOnly	get	monthFillSoon	monthGridHtml	monthLink	nextWorkday	openDay	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 moveoutfit.test.js	mq/shirt-open.js	<loaded>
 moveoutfit.test.js	mq/shirt-tie.js	<loaded>
 moveoutfit.test.js	mq/suit-open.js	<loaded>
@@ -10399,7 +10373,7 @@ moveoutfit.test.js	tagging.js	<loaded>
 moveoutfit.test.js	tests/fixedplan.js	<any>
 moveoutfit.test.js	theme.js	<loaded>	applyTheme
 moveoutfit.test.js	toast.js	<loaded>	toast	undoHere
-moveoutfit.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchmove	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchmove	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	@{constroot$today}>cellAt	@{constroot$today}>drop	@{constroot$today}>lift	@{constroot$today}>place	@{constroot$today}>start	moveRecs	mvSig	showPlan	todayBusy	todayFree
+moveoutfit.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchmove	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchmove	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	@{constroot$today}>cellAt	@{constroot$today}>drop	@{constroot$today}>lift	@{constroot$today}>place	@{constroot$today}>start	get	moveRecs	mvSig	showPlan	todayBusy	todayFree
 moveoutfit.test.js	today-photofold.js	<loaded>
 moveoutfit.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	@{constel$todayinPice}>@el.addEventListenertouchend	@{constel$todayinPice}>@el.addEventListenertouchmove	@{constel$todayinPice}>@el.addEventListenertouchstart	@{constel$todayinPice}>inPic	applyZoom	swApply	zoomTarget
 moveoutfit.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapSoon	planSnapUse	planStartDay	planTrim
@@ -10503,11 +10477,6 @@ mqcloth.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapSoon	
 mqcloth.test.js	today.js	<loaded>	addForSlot	belowBox	canPick	figCuDone	figureStage	goneNote	hasOutfit	homeDay	keepHome	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 mqcloth.test.js	ui.js	<loaded>	advClose	connSummary	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 mqcloth.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-mqcloth.test.js	watch/leather.jpg	<loaded>
-mqcloth.test.js	watch/shirt-open.png	<loaded>
-mqcloth.test.js	watch/shirt-tie.png	<loaded>
-mqcloth.test.js	watch/suit.png	<loaded>
-mqcloth.test.js	watch/vest.png	<loaded>
 mqcloth.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 multi.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 multi.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	rememberRole	renderAccountUI
@@ -10750,7 +10719,7 @@ newuser.test.js	measure.js	<loaded>
 newuser.test.js	merge.js	<any>	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
 newuser.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 newuser.test.js	missed.js	<loaded>	missedCard
-newuser.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+newuser.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 newuser.test.js	mq/shirt-open.js	<loaded>
 newuser.test.js	mq/shirt-tie.js	<loaded>
 newuser.test.js	mq/suit-open.js	<loaded>
@@ -10764,7 +10733,7 @@ newuser.test.js	pickscore.js	<loaded>
 newuser.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	blackOnBlack	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialInterest	dialLook	dialOccasion	dialSum	dialTexture	dialVariety	fam	favItemSet	favLookOf	favLooks	favPair	favRead	finish	formalTie	formalTop	frozenOutfit	idsAhead	intChr	intHx	intLabs	isCamo	jacketGroup	leatherGroup	lookLeather	lookRepeat	metalOf	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairSeen	patInfo	patsHard	patsOf	patternScore	pcol	planLook	planSim	planStart	rateOutfit	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	takeOff	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	topGw	uniformSplit	wardStart	withColRun
 newuser.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 newuser.test.js	safety.js	<loaded>	db.then.dbDown	errSoon	oneStop	pruneTagImgs	safetyStart	storeFailure	tagFailText	tagReason
-newuser.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+newuser.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	get	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 newuser.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	setCatOpen	setLock	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 newuser.test.js	setup.js	<loaded>	setupAuto	setupCityOpen	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkWaiting	setupNeeds	setupOpen	setupResume	setupSave	setupSearch	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupVestChosen	setupYield	tzCountry
 newuser.test.js	sheet-swipe.js	<loaded>
@@ -10842,7 +10811,7 @@ occasions.test.js	measure.js	<loaded>
 occasions.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 occasions.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 occasions.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-occasions.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+occasions.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 occasions.test.js	mq/shirt-open.js	<loaded>
 occasions.test.js	mq/shirt-tie.js	<loaded>
 occasions.test.js	mq/suit-open.js	<loaded>
@@ -11109,6 +11078,11 @@ onorder.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapUse
 onorder.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 onorder.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerOpen	layerUp	uiEsc
 onorder.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMigrate	matOn	matOnItem	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
+onorder.test.js	watch/leather.jpg	<loaded>
+onorder.test.js	watch/shirt-open.png	<loaded>
+onorder.test.js	watch/shirt-tie.png	<loaded>
+onorder.test.js	watch/suit.png	<loaded>
+onorder.test.js	watch/vest.png	<loaded>
 onorder.test.js	weather.js	<loaded>	loadWeather
 owncolany.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 owncolany.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
@@ -11434,7 +11408,7 @@ pack.test.js	measure.js	<loaded>
 pack.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 pack.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 pack.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-pack.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+pack.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 pack.test.js	mq/shirt-open.js	<loaded>
 pack.test.js	mq/shirt-tie.js	<loaded>
 pack.test.js	mq/suit-open.js	<loaded>
@@ -11472,11 +11446,6 @@ pack.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSig	planSnap
 pack.test.js	today.js	<loaded>	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 pack.test.js	ui.js	<loaded>	advClose	connSummary	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 pack.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-pack.test.js	watch/leather.jpg	<loaded>
-pack.test.js	watch/shirt-open.png	<loaded>
-pack.test.js	watch/shirt-tie.png	<loaded>
-pack.test.js	watch/suit.png	<loaded>
-pack.test.js	watch/vest.png	<loaded>
 pack.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 packcare-taps.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 packcare-taps.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
@@ -12075,7 +12044,7 @@ picker.test.js	measure.js	<loaded>
 picker.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 picker.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 picker.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-picker.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+picker.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 picker.test.js	mq/shirt-open.js	<loaded>
 picker.test.js	mq/shirt-tie.js	<loaded>
 picker.test.js	mq/suit-open.js	<loaded>
@@ -12089,7 +12058,7 @@ picker.test.js	pickscore.js	<loaded>	beltless	bootsOff	fitOf	fitTag	handPool	kee
 picker.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	beltWait	blackOnBlack	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkJkt	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialInterest	dialLook	dialOccasion	dialSum	dialTexture	dialVariety	fam	favItemSet	favLookOf	favLooks	favPair	favRead	finish	formalTie	formalTop	frozenOutfit	groupsNear	idsAhead	intChr	intHx	intLabs	isCamo	isFavItem	jacketGroup	leatherGroup	lockStale	lookLeather	lookRepeat	metalOf	metalSame	metalsWhy	nearCost	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairScore	pairSeen	pantsAsJacket	patInfo	patsHard	patsOf	patternScore	pcol	planLook	planSim	planStart	rateOutfit	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	takeOff	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	topGw	uniformSplit	wardStart	watchFit	withColRun
 picker.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 picker.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
-picker.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+picker.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	get	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 picker.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	setLock	setWanted	settingsOpen	settingsPart	weekFirst
 picker.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield
 picker.test.js	sheet-swipe.js	<loaded>
@@ -12257,7 +12226,7 @@ pieces.test.js	measure.js	<loaded>
 pieces.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 pieces.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 pieces.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedSeen	missedSpan	missedTell
-pieces.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+pieces.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 pieces.test.js	mq/shirt-open.js	<loaded>
 pieces.test.js	mq/shirt-tie.js	<loaded>
 pieces.test.js	mq/suit-open.js	<loaded>
@@ -12450,7 +12419,7 @@ planner-repeats.test.js	measure.js	<loaded>
 planner-repeats.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 planner-repeats.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 planner-repeats.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedSeen	missedSpan	missedTell
-planner-repeats.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+planner-repeats.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 planner-repeats.test.js	mq/shirt-open.js	<loaded>
 planner-repeats.test.js	mq/shirt-tie.js	<loaded>
 planner-repeats.test.js	mq/suit-open.js	<loaded>
@@ -12546,7 +12515,7 @@ planner-rules.test.js	measure.js	<loaded>
 planner-rules.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 planner-rules.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 planner-rules.test.js	missed.js	<loaded>	firstReal	missNoTap	missOkTap	missedCard	missedCardNo	missedCardOk	missedNotWorn	missedNote	missedOpen	missedPut	missedSeen	missedSpan	missedTell
-planner-rules.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+planner-rules.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 planner-rules.test.js	mq/shirt-open.js	<loaded>
 planner-rules.test.js	mq/shirt-tie.js	<loaded>
 planner-rules.test.js	mq/suit-open.js	<loaded>
@@ -12560,7 +12529,7 @@ planner-rules.test.js	pickscore.js	<loaded>	bootsOff	fitOf	fitTag	handPool	keepH
 planner-rules.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	beltFit	beltWait	blackOnBlack	camoUniform	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clipAllowed	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkJkt	darkMode	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialInterest	dialLook	dialOccasion	dialSum	dialTexture	dialVariety	enamelPref	fam	favItemSet	favLookOf	favLooks	favPair	favRead	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	idsAhead	intChr	intHx	intLabs	isCamo	isFavItem	jacketGroup	leatherGroup	lightTop	lockStale	lookLeather	lookRepeat	metalOf	metalSame	metalsWhy	nearCost	occTop	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairScore	pairSeen	pantsAsJacket	patInfo	patsHard	patsOf	patternScore	pcol	planLook	planSim	planStart	rateOutfit	shirt	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockBright	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	takeOff	tie	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	top	topGw	uniformSplit	wardStart	watchFit	withColRun
 planner-rules.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 planner-rules.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
-planner-rules.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+planner-rules.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	failText	get	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 planner-rules.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	setCatOpen	setLock	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
 planner-rules.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 planner-rules.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -13981,7 +13950,7 @@ run.js: swipe edge cases and month crossing	measure.js	<loaded>
 run.js: swipe edge cases and month crossing	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 run.js: swipe edge cases and month crossing	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 run.js: swipe edge cases and month crossing	missed.js	<loaded>	firstReal	missedCard	missedNote	missedTell
-run.js: swipe edge cases and month crossing	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+run.js: swipe edge cases and month crossing	month.js	<loaded>	dayMarks	dayOnly	get	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 run.js: swipe edge cases and month crossing	mq/shirt-open.js	<loaded>
 run.js: swipe edge cases and month crossing	mq/shirt-tie.js	<loaded>
 run.js: swipe edge cases and month crossing	mq/suit-open.js	<loaded>
@@ -13995,7 +13964,7 @@ run.js: swipe edge cases and month crossing	pickscore.js	<loaded>
 run.js: swipe edge cases and month crossing	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 run.js: swipe edge cases and month crossing	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 run.js: swipe edge cases and month crossing	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
-run.js: swipe edge cases and month crossing	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+run.js: swipe edge cases and month crossing	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 run.js: swipe edge cases and month crossing	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	setLock	setWanted	settingsOpen	settingsPart	weekFirst
 run.js: swipe edge cases and month crossing	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield
 run.js: swipe edge cases and month crossing	sheet-swipe.js	<loaded>
@@ -14020,11 +13989,6 @@ run.js: swipe edge cases and month crossing	today-plan.js	<loaded>	planDirty	pla
 run.js: swipe edge cases and month crossing	today.js	<loaded>	addForSlot	belowBox	canPick	figureStage	foldAll	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	stepDay	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 run.js: swipe edge cases and month crossing	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 run.js: swipe edge cases and month crossing	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-run.js: swipe edge cases and month crossing	watch/leather.jpg	<loaded>
-run.js: swipe edge cases and month crossing	watch/shirt-open.png	<loaded>
-run.js: swipe edge cases and month crossing	watch/shirt-tie.png	<loaded>
-run.js: swipe edge cases and month crossing	watch/suit.png	<loaded>
-run.js: swipe edge cases and month crossing	watch/vest.png	<loaded>
 run.js: swipe edge cases and month crossing	weather.js	<loaded>	loadWeather
 run.js: swipe moves only the outfit, across viewports	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 run.js: swipe moves only the outfit, across viewports	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -14077,7 +14041,7 @@ run.js: swipe moves only the outfit, across viewports	measure.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 run.js: swipe moves only the outfit, across viewports	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 run.js: swipe moves only the outfit, across viewports	missed.js	<loaded>	firstReal	missedCard	missedNote	missedTell
-run.js: swipe moves only the outfit, across viewports	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+run.js: swipe moves only the outfit, across viewports	month.js	<loaded>	dayMarks	dayOnly	get	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 run.js: swipe moves only the outfit, across viewports	mq/shirt-open.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	mq/shirt-tie.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	mq/suit-open.js	<loaded>
@@ -14091,7 +14055,7 @@ run.js: swipe moves only the outfit, across viewports	pickscore.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 run.js: swipe moves only the outfit, across viewports	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 run.js: swipe moves only the outfit, across viewports	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
-run.js: swipe moves only the outfit, across viewports	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+run.js: swipe moves only the outfit, across viewports	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 run.js: swipe moves only the outfit, across viewports	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	setLock	setWanted	settingsOpen	settingsPart	weekFirst
 run.js: swipe moves only the outfit, across viewports	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 run.js: swipe moves only the outfit, across viewports	sheet-swipe.js	<loaded>
@@ -14612,7 +14576,7 @@ safety.test.js	measure.js	<loaded>	aiSignals	applyMeasured	measureAndApply	measu
 safety.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 safety.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 safety.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-safety.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+safety.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 safety.test.js	mq/shirt-open.js	<loaded>
 safety.test.js	mq/shirt-tie.js	<loaded>
 safety.test.js	mq/suit-open.js	<loaded>
@@ -14801,7 +14765,7 @@ sample.test.js	measure.js	<loaded>
 sample.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
 sample.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 sample.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell
-sample.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+sample.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 sample.test.js	mq/shirt-open.js	<loaded>
 sample.test.js	mq/shirt-tie.js	<loaded>
 sample.test.js	mq/suit-open.js	<loaded>
@@ -14926,7 +14890,7 @@ scoreanim.test.js	pickscore.js	<loaded>
 scoreanim.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	blackOnBlack	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkJkt	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialInterest	dialLook	dialOccasion	dialSum	dialTexture	dialVariety	fam	favItemSet	favLookOf	favLooks	favPair	favRead	finish	formalTie	formalTop	frozenOutfit	groupsNear	idsAhead	intChr	intHx	intLabs	isCamo	jacketGroup	leatherGroup	lockStale	lookLeather	lookRepeat	metalOf	nearCost	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairSeen	patInfo	patsHard	patsOf	patternScore	pcol	planLook	planSim	planStart	rateOutfit	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	takeOff	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	topGw	uniformSplit	wardStart	withColRun
 scoreanim.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 scoreanim.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
-scoreanim.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	scoreTap	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
+scoreanim.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	scoreTap	set	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 scoreanim.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	setLock	setWanted	settingsOpen	settingsPart	weekFirst
 scoreanim.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield
 scoreanim.test.js	sheet-swipe.js	<loaded>
@@ -15008,7 +14972,7 @@ scoredials.test.js	measure.js	<loaded>
 scoredials.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 scoredials.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 scoredials.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedPut	missedSeen	missedSpan	missedTell
-scoredials.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+scoredials.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 scoredials.test.js	mq/shirt-open.js	<loaded>
 scoredials.test.js	mq/shirt-tie.js	<loaded>
 scoredials.test.js	mq/suit-open.js	<loaded>
@@ -15022,7 +14986,7 @@ scoredials.test.js	pickscore.js	<loaded>	beltless	bootsOff	keepHand	keepOff	pock
 scoredials.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	beltWait	blackOnBlack	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkJkt	darkMode	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialInterest	dialLook	dialOccasion	dialSum	dialTexture	dialVariety	fam	favItemSet	favLookOf	favLooks	favPair	favRead	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	idsAhead	intChr	intHx	intLabs	isCamo	jacketGroup	leatherGroup	lightTop	lockStale	lookLeather	lookRepeat	lowFirstD	metalOf	metalSame	metalsWhy	nearCost	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairScore	pairSeen	pantsAsJacket	patInfo	patsHard	patsOf	patternScore	pcol	planLook	planSim	planStart	rankLooks	rateOutfit	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	surfWord	takeOff	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	topGw	uniformSplit	wardStart	watchFit	withColRun
 scoredials.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 scoredials.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storageDown	storeFailure
-scoredials.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
+scoredials.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	get	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 scoredials.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	setLock	setWanted	settingsOpen	settingsPart	weekFirst
 scoredials.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 scoredials.test.js	sheet-swipe.js	<loaded>
@@ -15799,7 +15763,7 @@ setup.test.js	measure.js	<loaded>
 setup.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk
 setup.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 setup.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-setup.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG
+setup.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG
 setup.test.js	mq/shirt-open.js	<loaded>
 setup.test.js	mq/shirt-tie.js	<loaded>
 setup.test.js	mq/suit-open.js	<loaded>
@@ -17351,7 +17315,7 @@ stats.test.js	measure.js	<loaded>
 stats.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeSettingsBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 stats.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 stats.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedPut	missedSeen	missedSpan	missedTell
-stats.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+stats.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 stats.test.js	mq/shirt-open.js	<loaded>
 stats.test.js	mq/shirt-tie.js	<loaded>
 stats.test.js	mq/suit-open.js	<loaded>
@@ -17365,7 +17329,7 @@ stats.test.js	pickscore.js	<loaded>
 stats.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	beltWait	blackOnBlack	buildPlan	camoUniform	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkJkt	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialInterest	dialLook	dialOccasion	dialSum	dialTexture	dialVariety	fam	favItemSet	favLookOf	favLooks	favPair	favRead	finish	formalTie	formalTop	frozenOutfit	groupsNear	idsAhead	intChr	intHx	intLabs	isCamo	jacketGroup	leatherGroup	lockStale	lookLeather	lookRepeat	metalOf	metalSame	metalsWhy	nearCost	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairScore	pairSeen	pantsAsJacket	patInfo	patsHard	patsOf	patternScore	pcol	planLook	planSim	planStart	rateOutfit	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	takeOff	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	topGw	uniformSplit	wardStart	watchFit	withColRun
 stats.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 stats.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
-stats.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+stats.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	get	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 stats.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	setCatOpen	setLock	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	toggleDay	weekFirst
 stats.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield	tzCountry
 stats.test.js	sheet-swipe.js	<loaded>
@@ -17646,7 +17610,7 @@ swatchzoom.test.js	measure.js	<loaded>
 swatchzoom.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 swatchzoom.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 swatchzoom.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-swatchzoom.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+swatchzoom.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 swatchzoom.test.js	mq/shirt-open.js	<loaded>
 swatchzoom.test.js	mq/shirt-tie.js	<loaded>
 swatchzoom.test.js	mq/suit-open.js	<loaded>
@@ -17660,7 +17624,7 @@ swatchzoom.test.js	pickscore.js	<loaded>
 swatchzoom.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 swatchzoom.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 swatchzoom.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
-swatchzoom.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+swatchzoom.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 swatchzoom.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	setLock	setWanted	settingsOpen	settingsPart	weekFirst
 swatchzoom.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 swatchzoom.test.js	sheet-swipe.js	<loaded>
@@ -17933,7 +17897,7 @@ tabload.test.js	measure.js	<loaded>
 tabload.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 tabload.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 tabload.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen
-tabload.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFillSoon	monthLink	piecesLine	piecesParts	planOn	shirtWords	stackSVG
+tabload.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFillSoon	monthLink	piecesLine	piecesParts	planOn	set	shirtWords	stackSVG
 tabload.test.js	mq/shirt-open.js	<loaded>
 tabload.test.js	mq/shirt-tie.js	<loaded>
 tabload.test.js	mq/suit-open.js	<loaded>
@@ -19115,7 +19079,7 @@ today.test.js	measure.js	<loaded>
 today.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 today.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 today.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedSeen	missedSpan	missedTell
-today.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+today.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 today.test.js	mq/shirt-open.js	<loaded>
 today.test.js	mq/shirt-tie.js	<loaded>
 today.test.js	mq/suit-open.js	<loaded>
@@ -19298,7 +19262,7 @@ todayedges.test.js	measure.js	<loaded>
 todayedges.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 todayedges.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 todayedges.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-todayedges.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+todayedges.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 todayedges.test.js	mq/shirt-open.js	<loaded>
 todayedges.test.js	mq/shirt-tie.js	<loaded>
 todayedges.test.js	mq/suit-open.js	<loaded>
@@ -19312,7 +19276,7 @@ todayedges.test.js	pickscore.js	<loaded>	fitOf	fitRule	fitTag	handPool	keepOff	p
 todayedges.test.js	planner.js	<loaded>	accFams	clothesScore	colsOf	colsOf0	dCol	darkShirt	darkUnderLight	fam	favItemSet	favLookOf	favLooks	favRead	isCamo	isFavItem	jacketGroup	lockStale	outfitScore	pairScore	pairSeen	patInfo	patsOf	patternScore	pcol	shirtGroup	shirtScore	spokenCol	tieGroup	tieScore	uniformSplit
 todayedges.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 todayedges.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
-todayedges.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+todayedges.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 todayedges.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	setCatOpen	setLock	setOpenTap	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 todayedges.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 todayedges.test.js	sheet-swipe.js	<loaded>
@@ -19486,7 +19450,7 @@ todayzoom.test.js	measure.js	<loaded>
 todayzoom.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
 todayzoom.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 todayzoom.test.js	missed.js	<loaded>	firstReal	missedCard	missedOpen
-todayzoom.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+todayzoom.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 todayzoom.test.js	mq/shirt-open.js	<loaded>
 todayzoom.test.js	mq/shirt-tie.js	<loaded>
 todayzoom.test.js	mq/suit-open.js	<loaded>
@@ -19500,7 +19464,7 @@ todayzoom.test.js	pickscore.js	<loaded>
 todayzoom.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	pairSeen	shirtGroup	spokenCol	tieGroup
 todayzoom.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 todayzoom.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure	tagFailText	tagReason
-todayzoom.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
+todayzoom.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 todayzoom.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	setLock	setWanted	settingsOpen	settingsPart	weekFirst
 todayzoom.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 todayzoom.test.js	sheet-swipe.js	<loaded>
@@ -19967,7 +19931,7 @@ wardfab.test.js	measure.js	<loaded>
 wardfab.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 wardfab.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 wardfab.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-wardfab.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+wardfab.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 wardfab.test.js	mq/shirt-open.js	<loaded>
 wardfab.test.js	mq/shirt-tie.js	<loaded>
 wardfab.test.js	mq/suit-open.js	<loaded>
@@ -19997,6 +19961,7 @@ wardfab.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedule
 wardfab.test.js	tag-request.js	<loaded>	tagStatsCard
 wardfab.test.js	tagging.js	<loaded>
 wardfab.test.js	tests/fixedplan.js	<any>
+wardfab.test.js	tests/webkit.js	<any>
 wardfab.test.js	theme.js	<loaded>	applyTheme
 wardfab.test.js	toast.js	<loaded>	toast	toastDrop	undoFab	undoHere	undoOff
 wardfab.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -20458,7 +20423,7 @@ weather.test.js	measure.js	<loaded>
 weather.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 weather.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 weather.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-weather.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
+weather.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG	tieWord
 weather.test.js	mq/shirt-open.js	<loaded>
 weather.test.js	mq/shirt-tie.js	<loaded>
 weather.test.js	mq/suit-open.js	<loaded>
@@ -20472,7 +20437,7 @@ weather.test.js	pickscore.js	<loaded>
 weather.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	beltFit	beltWait	blackOnBlack	buildPlan	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkJkt	darkMode	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialInterest	dialLook	dialOccasion	dialSum	dialTexture	dialVariety	fam	favItemSet	favLookOf	favLooks	favPair	favRead	finish	formalShirt	formalTie	formalTop	frozenOutfit	groupsNear	idsAhead	intChr	intHx	intLabs	isCamo	jacketGroup	leatherGroup	lockStale	lookLeather	lookRepeat	lowFirstD	metalOf	metalSame	metalsWhy	nearCost	occTop	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairScore	pairSeen	pantsAsJacket	patInfo	patsHard	patsOf	patternScore	pcol	planLook	planSim	planStart	rateOutfit	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockBright	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	surfWord	takeOff	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	topGw	uniformSplit	wardStart	watchFit	withColRun
 weather.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 weather.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
-weather.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
+weather.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	get	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 weather.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	setCatOpen	setLock	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 weather.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield	tzCountry
 weather.test.js	sheet-swipe.js	<loaded>
