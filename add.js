@@ -1,5 +1,5 @@
 /* Daily Wardrobe: the Add page: photo cards (white balance, close-ups, pasted photos and links, several items in one photo), typing an item in by hand, saving
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
+   (An ES module since 2026-11-23, at its place in index.html's order; split out of app.js on 2026-11-14.) */
 /* Its other parts (Round C, 2026-11-17: split by job, no behavior change), loaded right after it in index.html's order:
    add-paste.js (pasted photos, photo links, drag & drop), add-card.js (a card's fields and its drawing: setq, the shade rows, the
    checklist's sections, formCard), add-more.js (How many, Bought on the way and its Arrives date, checkArrivals), add-sheet.js (Today's
@@ -200,4 +200,9 @@ function saveAllTap(){saveAll()}
 /* the markup's handler (act.js): the photos picked with "One item" or "Several items" (data-multi), the field emptied so the same
    photo can be picked again */
 function addPhotosPick(el){addFiles([...el.files],el.dataset.multi==='1');el.value=''}
+/* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
+   one top-level call that can throw (acts, when act.js did not load): the names are then still the page's */
+Object.assign(globalThis,{applyWb,cardPics,TEX_MIN_PX,TEX_MAX,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,refineAgain,patternAgain,needType,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,countWord,multiAgain,addNoteText,renderAdd,addBackOnline});
+Object.defineProperties(globalThis,{addCalm:{get:()=>addCalm}});
+export {applyWb,cardPics,TEX_MIN_PX,TEX_MAX,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,refineAgain,patternAgain,addCalm,needType,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,countWord,multiAgain,addNoteText,renderAdd,addBackOnline};
 acts({cardWb,saveAllTap,addPhotosPick});
