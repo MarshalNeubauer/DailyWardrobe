@@ -44,6 +44,15 @@ const BRIDGE={
   'back.js':['appHist','appKind','backBorrow','backDrop','backHold','backKind','backLand','backOn','backOver','backPush','backReturn','backSettled','backWanted','histDrop','histPush','itemHist'],
   // tests/paste.test.js clears the line under the "Photo or link" field with it
   'add-paste.js':['pasteMsg'],
+  // add, itemsheet, look, tagging and colpick are classic scripts; add-sheet, add-more and checklist read these as globals too (no
+  // page module imports another yet); setq, cardSafe, ckCheck and addCkSecs are also called by tests
+  'add-card.js':['addCkSecs','busyCard','cardSafe','ckCheck','ckLeftLine','ckLr','confBtn','errCard','formCard','matGuessOf','matNewOf','matchShadeE','matchShadeQ','multiErrCard','photoPair','setq','shadeRow','shirtColFix','typeCard'],
+  // itemsheet (orderHint, arriveVal, ARRIVE_PAST, checkArrivals), stats, wardrobe, care and shop (fmtDay), today, start and care
+  // (checkArrivals); add-card and add-save read the rows; setOrder and setArrives are called by tests only
+  'add-more.js':['ARRIVE_PAST','arriveVal','checkArrivals','fmtDay','orderHint','orderRow','qtyLabel','qtyOf','qtyRow','setArrives','setOrder'],
+  // add (renderAddFor, npsDraw, npsId), ui (npsId, npsAsking, npsInert, npsCancel), start (npsLeave; it assigns addFor: a setter);
+  // addManual and npsClose by tests only; npsId and npsAsking are lets only add-sheet.js writes: getters
+  'add-sheet.js':['addFor','addManual','npsAsking','npsCancel','npsClose','npsDraw','npsId','npsInert','npsLeave','renderAddFor'],
   // the sheets that close on a swipe down are classic scripts: add-sheet, item-view, colpick and kit call it
   'sheet-swipe.js':['sheetSwipe'],
   // add, look, kit, wardrobe, colpick, safety, tagging, pattern-read and the other Add files find a card and save it with these;

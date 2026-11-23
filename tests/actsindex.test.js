@@ -36,9 +36,12 @@ const FN={cycleTheme:true,openSettings:true,closeSettings:true,saveSettings:true
    With true above the real handler then runs (the step checks what the app did); with false the wrapper stands in for the handler, so
    for those this file no longer runs the handler's own line: theme.test.js, paste.test.js (Enter, Add, Paste), syncwrite.test.js and
    sync.test.js (Download backup, Restore file) and rollback.test.js (the list's focus) use the real ones.
-   window.<name> is wrapped as well where the module bridges it, for the classic scripts that call it (settings.js: loadSnapshots). */
+   window.<name> is wrapped as well where the module bridges it, for the classic scripts that call it (settings.js: loadSnapshots).
+   addManual and npsCancel (add-sheet.js, both true above): the real handlers still run here, and the steps check that the sheet
+   opened and closed; addsheet.test.js and additemacts.test.js tap the same controls with nothing wrapped. */
 const VIA={cycleTheme:{themeTap:''},addLink:{linkKey:'enter',linkAddTap:''},pasteFromClipboard:{pasteTap:''},
-  downloadBackup:{backupSaveTap:''},restoreBackup:{backupFilePick:'file'},loadSnapshots:{snapFocus:''},rollBack:{rollBackTap:''}};
+  downloadBackup:{backupSaveTap:''},restoreBackup:{backupFilePick:'file'},loadSnapshots:{snapFocus:''},rollBack:{rollBackTap:''},
+  addManual:{addManualTap:''},npsCancel:{npsCloseTap:''}};
 const CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==','base64');
 async function run(eng,browser,{ok,url,settle}){
