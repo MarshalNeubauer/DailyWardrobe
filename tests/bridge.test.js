@@ -86,8 +86,9 @@ const BRIDGE={
   'today-photofold.js':['picOpenReady','picShut','picSnap','picStop'],
   // today.js lays out the swatches with ovlPiece and calls applyZoom, zoomOut, swApply, swTap and swClose; zoom is a getter
   // (today-gestures reads it); tests/care.test.js sets swOpen (a setter); the swatch makers and their caches, zoomTarget and
-  // toggleZoom: the todayswatch, hbswatch, twillswatch, asmrelease, materials, todayzoom and swatchzoom tests
-  'today-picture.js':['OVL_CU','OVL_HB','applyZoom','ovlCuKey','ovlGrain','ovlHbKey','ovlHbShirt','ovlPiece','ovlSuitPng','ovlSvg','ovlWeave','swApply','swClose','swOpen','swTap','toggleZoom','zoom','zoomOut','zoomTarget'],
+  // toggleZoom: the todayswatch, hbswatch, twillswatch, asmrelease, materials, todayzoom and swatchzoom tests (ovlItem only inside a
+  // string tests/todayswatch.test.js runs in the page, which --plan can't see)
+  'today-picture.js':['OVL_CU','OVL_HB','applyZoom','ovlCuKey','ovlGrain','ovlHbKey','ovlHbShirt','ovlItem','ovlPiece','ovlSuitPng','ovlSvg','ovlWeave','swApply','swClose','swOpen','swTap','toggleZoom','zoom','zoomOut','zoomTarget'],
   // sync.js asks todayBusy before a redraw; month.js signs a day's outfit with mvSig (it comes after in the list, read as a global);
   // tests/moveoutfit.test.js calls moveRecs and reads outfitMove (a getter: only today-gestures.js writes it)
   'today-gestures.js':['moveRecs','mvSig','outfitMove','todayBusy'],

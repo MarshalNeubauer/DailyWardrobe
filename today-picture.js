@@ -148,13 +148,13 @@ function swTap(s){const k=key(sel);if(zoom){zoom=null;applyZoom(false)}swOpen=sw
 function swClose(){if(swOpen){swOpen=null;swApply(true)}}
 /* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. today.js lays out the swatches with
    ovlPiece and calls applyZoom, zoomOut, swApply, swTap and swClose; zoom is read by today-gestures.js and only this file assigns it:
-   a getter; tests/care.test.js sets swOpen: a getter and a setter; the swatch makers and their caches (ovlWeave, ovlSvg, ovlGrain,
+   a getter; tests/care.test.js sets swOpen: a getter and a setter; the swatch makers and their caches (ovlItem, ovlWeave, ovlSvg, ovlGrain,
    ovlSuitPng, OVL_HB, ovlHbKey, ovlHbShirt, OVL_CU, ovlCuKey), zoomTarget and toggleZoom are read by tests only; a module imports them.
    Above the file's first call that can throw ($ and Today's own element, when core.js did not load): the names are then still the
    page's, as a classic script's were */
-Object.assign(globalThis,{ovlWeave,ovlSvg,ovlGrain,ovlSuitPng,OVL_HB,ovlHbKey,ovlHbShirt,OVL_CU,ovlCuKey,ovlPiece,zoomTarget,applyZoom,toggleZoom,zoomOut,swApply,swTap,swClose});
+Object.assign(globalThis,{ovlItem,ovlWeave,ovlSvg,ovlGrain,ovlSuitPng,OVL_HB,ovlHbKey,ovlHbShirt,OVL_CU,ovlCuKey,ovlPiece,zoomTarget,applyZoom,toggleZoom,zoomOut,swApply,swTap,swClose});
 Object.defineProperties(globalThis,{zoom:{get:()=>zoom},swOpen:{get:()=>swOpen,set:v=>{swOpen=v}}});
-export {ovlWeave,ovlSvg,ovlGrain,ovlSuitPng,OVL_HB,ovlHbKey,ovlHbShirt,OVL_CU,ovlCuKey,ovlPiece,zoom,zoomTarget,applyZoom,toggleZoom,zoomOut,swOpen,swApply,swTap,swClose};
+export {ovlItem,ovlWeave,ovlSvg,ovlGrain,ovlSuitPng,OVL_HB,ovlHbKey,ovlHbShirt,OVL_CU,ovlCuKey,ovlPiece,zoom,zoomTarget,applyZoom,toggleZoom,zoomOut,swOpen,swApply,swTap,swClose};
 // a tap on the picture (not on a swatch or another button) closes it
 $('#today').addEventListener('click',e=>{if(!swOpen)return;const c=e.target.closest&&e.target.closest('#mannequin-container');if(c&&!e.target.closest('button,a'))swClose()});
 (()=>{const el=$('#today'),inPic=e=>{const c=e.target.closest&&e.target.closest('#mannequin-container');return c&&!e.target.closest('button,a')?c:null};

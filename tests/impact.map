@@ -1913,7 +1913,7 @@ asmrelease.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat
 asmrelease.test.js	draw.js	<loaded>	fabricDef
 asmrelease.test.js	dress.js	<loaded>	migrateVests
 asmrelease.test.js	fav.js	<loaded>
-asmrelease.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
+asmrelease.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
 asmrelease.test.js	index.html	<loaded>
 asmrelease.test.js	item-photo.js	<loaded>	smallPhotos
 asmrelease.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
@@ -1970,12 +1970,13 @@ asmrelease.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmrelease.test.js	tests/webkit.js	<any>
 asmrelease.test.js	theme.js	<loaded>	applyTheme
 asmrelease.test.js	toast.js	<loaded>
 asmrelease.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
 asmrelease.test.js	today-photofold.js	<loaded>
 asmrelease.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	ovlHbKey	ovlHbShirt	swApply	zoomTarget
-asmrelease.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
+asmrelease.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
 asmrelease.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	hasOutfit	homeDay	newDayCheck	renderToday	todaySay	wornPill	wxFit	wxPreload
 asmrelease.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmrelease.test.js	wardrobe.js	<loaded>	@document.addEventListenervisibilitychange	@whenPulled	matMigrate	sockToeMigrate	wardFlush	wardPendingRestore
@@ -7650,7 +7651,7 @@ hbswatch.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	t
 hbswatch.test.js	draw.js	<loaded>	fabricDef	swatchSVG	texPlainBand
 hbswatch.test.js	dress.js	<loaded>	migrateVests
 hbswatch.test.js	fav.js	<loaded>
-hbswatch.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
+hbswatch.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
 hbswatch.test.js	icon-192.png	<loaded>
 hbswatch.test.js	icon-512.png	<loaded>
 hbswatch.test.js	index.html	<loaded>
@@ -7697,12 +7698,13 @@ hbswatch.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	syncNee
 hbswatch.test.js	tag-request.js	<loaded>
 hbswatch.test.js	tagging.js	<loaded>
 hbswatch.test.js	tests/fixedplan.js	<any>
+hbswatch.test.js	tests/webkit.js	<any>
 hbswatch.test.js	theme.js	<loaded>	applyTheme
 hbswatch.test.js	toast.js	<loaded>
 hbswatch.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
 hbswatch.test.js	today-photofold.js	<loaded>
 hbswatch.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	ovlCloseup	ovlHbKey	ovlHbShirt	ovlItem	ovlPiece	ovlSvg	ovlWeave	swApply	zoomTarget
-hbswatch.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
+hbswatch.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
 hbswatch.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 hbswatch.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 hbswatch.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
@@ -17639,7 +17641,7 @@ swatchzoom.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat
 swatchzoom.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG
 swatchzoom.test.js	dress.js	<loaded>	migrateVests
 swatchzoom.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy
-swatchzoom.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
+swatchzoom.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	get	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 swatchzoom.test.js	icon-192.png	<loaded>
 swatchzoom.test.js	icon-512.png	<loaded>
 swatchzoom.test.js	index.html	<loaded>
@@ -17686,12 +17688,13 @@ swatchzoom.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	sched
 swatchzoom.test.js	tag-request.js	<loaded>
 swatchzoom.test.js	tagging.js	<loaded>
 swatchzoom.test.js	tests/fixedplan.js	<any>
+swatchzoom.test.js	tests/webkit.js	<any>
 swatchzoom.test.js	theme.js	<loaded>	applyTheme
 swatchzoom.test.js	toast.js	<loaded>
 swatchzoom.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	mvSig
 swatchzoom.test.js	today-photofold.js	<loaded>
 swatchzoom.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	applyZoom	ovlCloseup	ovlCuSuit	ovlCuWants	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitOld	ovlSuitPng	ovlSvg	ovlWeave	swApply	swClose	swKind	swSpot	swTap	zoomOut	zoomTarget
-swatchzoom.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapSoon	planSnapUse
+swatchzoom.test.js	today-plan.js	<loaded>	get	planDirty	planFor	planMonth	planSnapSoon	planSnapUse	set
 swatchzoom.test.js	today.js	<loaded>	belowBox	canPick	figLoad	figureStage	foldAll	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	stepDay	swatchStack	swatchTap	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 swatchzoom.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 swatchzoom.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
@@ -19388,7 +19391,7 @@ todayswatch.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPa
 todayswatch.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	sockPat	swatchSVG	texPlainBand	texTileSmooth	texTileUrl	texTones
 todayswatch.test.js	dress.js	<loaded>	migrateVests
 todayswatch.test.js	fav.js	<loaded>
-todayswatch.test.js	history.js	<loaded>	checkPlanRules	dropLearn	keyDate	whenPulled
+todayswatch.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	keyDate	whenPulled
 todayswatch.test.js	icon-192.png	<loaded>
 todayswatch.test.js	icon-512.png	<loaded>
 todayswatch.test.js	index.html	<loaded>
@@ -19435,12 +19438,13 @@ todayswatch.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	sync
 todayswatch.test.js	tag-request.js	<loaded>
 todayswatch.test.js	tagging.js	<loaded>
 todayswatch.test.js	tests/fixedplan.js	<any>
+todayswatch.test.js	tests/webkit.js	<any>
 todayswatch.test.js	theme.js	<loaded>	applyTheme
 todayswatch.test.js	toast.js	<loaded>
 todayswatch.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
 todayswatch.test.js	today-photofold.js	<loaded>
 todayswatch.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	ovlCloseup	ovlCuKey	ovlCuSuit	ovlCuWants	ovlDrawn	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitOld	ovlSuitPng	ovlSvg	ovlWeave	swApply	zoomTarget
-todayswatch.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
+todayswatch.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse	set
 todayswatch.test.js	today.js	<loaded>	belowBox	figureStage	hasOutfit	homeDay	renderToday	slotLabel	swatchStack	todaySay	wardShort	wornBar	wornPill	wxFit	wxPreload
 todayswatch.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 todayswatch.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
@@ -19483,7 +19487,7 @@ todayzoom.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag
 todayzoom.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG	texTileUrl	texTones
 todayzoom.test.js	dress.js	<loaded>	migrateVests
 todayzoom.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy
-todayzoom.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	resetCard	whenPulled
+todayzoom.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	get	idsOf	keyDate	resetCard	set	whenPulled
 todayzoom.test.js	index.html	<loaded>
 todayzoom.test.js	item-photo.js	<loaded>	smallPhotos
 todayzoom.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	noMotion	renderItem
@@ -19527,12 +19531,13 @@ todayzoom.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	
 todayzoom.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 todayzoom.test.js	tagging.js	<loaded>
 todayzoom.test.js	tests/fixedplan.js	<any>
+todayzoom.test.js	tests/webkit.js	<any>
 todayzoom.test.js	theme.js	<loaded>	applyTheme
 todayzoom.test.js	toast.js	<loaded>
 todayzoom.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchmove	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchmove	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	flyGo	mvSig	todayBusy	todayFree
 todayzoom.test.js	today-photofold.js	<loaded>	picBelow	picCards	picOpen	picOpenReady	picShut	picSnap	picStop
-todayzoom.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	@{constel$todayinPice}>@el.addEventListenerdblclick	@{constel$todayinPice}>@el.addEventListenertouchend	@{constel$todayinPice}>@el.addEventListenertouchmove	@{constel$todayinPice}>@el.addEventListenertouchstart	@{constel$todayinPice}>inPic	applyZoom	clampZoom	ovlCloseup	ovlCuSuit	ovlCuWants	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitOld	ovlSuitPng	ovlSvg	ovlWeave	swApply	swClose	toggleZoom	zoomOut	zoomTarget
-todayzoom.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
+todayzoom.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	@{constel$todayinPice}>@el.addEventListenerdblclick	@{constel$todayinPice}>@el.addEventListenertouchend	@{constel$todayinPice}>@el.addEventListenertouchmove	@{constel$todayinPice}>@el.addEventListenertouchstart	@{constel$todayinPice}>inPic	applyZoom	clampZoom	get	ovlCloseup	ovlCuSuit	ovlCuWants	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitOld	ovlSuitPng	ovlSvg	ovlWeave	swApply	swClose	toggleZoom	zoomOut	zoomTarget
+todayzoom.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse	set
 todayzoom.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	addForSlot	belowBox	canPick	figLoad	figureStage	foldAll	goneNote	hasOutfit	homeDay	keepInView	offBtn	offOn	pickPiece	piecesBox	pocketRow	renderToday	restWarn	rollRow	rolledOf	rowPanel	rowPic	slotLabel	slots	stepDay	swatchStack	todaySay	toggleList	toggleRow	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 todayzoom.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp	needConn	netErr
 todayzoom.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	itemFieldNow	matMigrate	sockToeMigrate	wardFlush	wardPendingRestore
@@ -19571,7 +19576,7 @@ twillswatch.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPa
 twillswatch.test.js	draw.js	<loaded>
 twillswatch.test.js	dress.js	<loaded>	migrateVests
 twillswatch.test.js	fav.js	<loaded>
-twillswatch.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
+twillswatch.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
 twillswatch.test.js	icon-192.png	<loaded>
 twillswatch.test.js	icon-512.png	<loaded>
 twillswatch.test.js	index.html	<loaded>
@@ -19619,12 +19624,13 @@ twillswatch.test.js	tag-request.js	<loaded>
 twillswatch.test.js	tagging.js	<loaded>
 twillswatch.test.js	tests/fixedplan.js	<any>
 twillswatch.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
+twillswatch.test.js	tests/webkit.js	<any>
 twillswatch.test.js	theme.js	<loaded>	applyTheme
 twillswatch.test.js	toast.js	<loaded>
 twillswatch.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
 twillswatch.test.js	today-photofold.js	<loaded>
 twillswatch.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	ovlCloseup	ovlCuKey	ovlCuSuit	ovlCuWants	ovlDrawn	ovlPiece	ovlSuitOld	swApply	zoomTarget
-twillswatch.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
+twillswatch.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
 twillswatch.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 twillswatch.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 twillswatch.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore

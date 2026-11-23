@@ -213,6 +213,7 @@ declare var ovlCuKey: any;
 declare var ovlGrain: any;
 declare var ovlHbKey: any;
 declare var ovlHbShirt: any;
+declare var ovlItem: any;
 declare var ovlPiece: any;
 declare var ovlSuitPng: any;
 declare var ovlSvg: any;
