@@ -1444,7 +1444,6 @@ asmcode.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	syncNeed
 asmcode.test.js	tag-request.js	<loaded>
 asmcode.test.js	tagging.js	<loaded>
 asmcode.test.js	tests/fixedplan.js	<any>
-asmcode.test.js	tests/webkit.js	<any>
 asmcode.test.js	theme.js	<loaded>	applyTheme
 asmcode.test.js	toast.js	<loaded>
 asmcode.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2072,11 +2071,6 @@ asmroute.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 asmroute.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 asmroute.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmroute.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-asmroute.test.js	watch/leather.jpg	<loaded>
-asmroute.test.js	watch/shirt-open.png	<loaded>
-asmroute.test.js	watch/shirt-tie.png	<loaded>
-asmroute.test.js	watch/suit.png	<loaded>
-asmroute.test.js	watch/vest.png	<loaded>
 asmroute.test.js	weather.js	<loaded>	loadWeather
 asmroute.test.js	worker.js	<any>	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	orNull
 asmroute.test.js	worker/backup.js	<any>	<loaded>
@@ -2690,7 +2684,6 @@ assets.test.js	index.html	<any>
 assets.test.js	manifest.webmanifest	<any>
 assets.test.js	sw.js	<any>
 assets.test.js	tests/scriptlist.js	<any>
-assets.test.js	tests/webkit.js	<any>
 back.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 back.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	dropInviteHash	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 back.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -5731,7 +5724,6 @@ deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
 deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
-deps.test.js	tests/webkit.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
 deps.test.js	today-gestures.js	<any>
@@ -5947,7 +5939,6 @@ dress.test.js	sync-status.js	<loaded>	endedAnswer	setSyncStatus	showSyncStatus	s
 dress.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	clockFix	clockLearn	clockTell	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	syncJoinAt	syncJoinMark	syncLaterRun	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncSaved	syncSettingsRedraw	syncUrl	synced
 dress.test.js	tag-request.js	<loaded>	recordTagResult
 dress.test.js	tagging.js	<loaded>	tagNotes
-dress.test.js	tests/webkit.js	<any>
 dress.test.js	theme.js	<loaded>	applyTheme
 dress.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 dress.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig	todayBusy
@@ -6241,8 +6232,6 @@ errnet.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPe
 errnet.test.js	watch/leather.jpg	<loaded>
 errnet.test.js	watch/shirt-open.png	<loaded>
 errnet.test.js	watch/shirt-tie.png	<loaded>
-errnet.test.js	watch/suit.png	<loaded>
-errnet.test.js	watch/vest.png	<loaded>
 errnet.test.js	weather.js	<loaded>	loadWeather
 errreport.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 errreport.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -7414,7 +7403,6 @@ globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
 globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
-globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -9659,7 +9647,6 @@ modload.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 modload.test.js	tag-request.js	<loaded>	tagStatsCard
 modload.test.js	tagging.js	<loaded>
 modload.test.js	tests/fixedplan.js	<any>
-modload.test.js	tests/webkit.js	<any>
 modload.test.js	theme.js	<loaded>	applyTheme	cycleTheme	themeTap
 modload.test.js	toast.js	<loaded>	toast
 modload.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig	todayCovered
@@ -14565,6 +14552,11 @@ safeport.test.js	tools/upload-budget.js	<any>
 safeport.test.js	tools/visit-measure.js	<any>
 safeport.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 safeport.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate
+safeport.test.js	watch/leather.jpg	<loaded>
+safeport.test.js	watch/shirt-open.png	<loaded>
+safeport.test.js	watch/shirt-tie.png	<loaded>
+safeport.test.js	watch/suit.png	<loaded>
+safeport.test.js	watch/vest.png	<loaded>
 safeport.test.js	weather.js	<loaded>	loadWeather
 safety.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 safety.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -17264,7 +17256,7 @@ staledevice.test.js	pack.js	<loaded>	packShow
 staledevice.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 staledevice.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
 staledevice.test.js	pickscore.js	<loaded>
-staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
+staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 staledevice.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 staledevice.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 staledevice.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
@@ -17585,7 +17577,6 @@ sw.test.js	tag-request.js	<any>	<loaded>
 sw.test.js	tagging.js	<any>	<loaded>
 sw.test.js	tests/fixedplan.js	<any>
 sw.test.js	tests/safeport.js	<any>
-sw.test.js	tests/webkit.js	<any>
 sw.test.js	theme.js	<any>	<loaded>	applyTheme
 sw.test.js	toast.js	<any>	<loaded>	toast
 sw.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constroot$today}
@@ -17969,7 +17960,6 @@ tabload.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 tabload.test.js	tag-request.js	<loaded>	tagStatsCard
 tabload.test.js	tagging.js	<loaded>
 tabload.test.js	tests/fixedplan.js	<any>
-tabload.test.js	tests/webkit.js	<any>
 tabload.test.js	theme.js	<loaded>	applyTheme
 tabload.test.js	toast.js	<loaded>
 tabload.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup
