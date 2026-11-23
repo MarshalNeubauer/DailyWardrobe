@@ -35,4 +35,10 @@ async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.pa
 function cardQty(el){stepQty(cardIx(el),+el.dataset.d)}
 function cardOrder(el){setOrder(cardIx(el),el.dataset.on==='1')}
 function cardArrives(el){setArrives(cardIx(el),el.value)}
+/* An ES module since 2026-11-23: its other names are its own. The bridge (tests/bridge.test.js lists it): add-card.js and add-save.js (the
+   How many and On the way rows), itemsheet.js (the Arrives rule), stats, wardrobe, care and shop (fmtDay), and today, start and care
+   (checkArrivals); setOrder, setArrives and checkArrivals are also called by the tests. Before acts(), the file's one call that can
+   throw (act.js not loaded): the names are then still the page's, as a classic script's were (start-up calls checkArrivals) */
+Object.assign(globalThis,{fmtDay,orderHint,qtyOf,qtyLabel,qtyRow,orderRow,setOrder,arriveVal,ARRIVE_PAST,setArrives,checkArrivals});
+export {fmtDay,orderHint,qtyOf,qtyLabel,qtyRow,orderRow,setOrder,arriveVal,ARRIVE_PAST,setArrives,checkArrivals};
 acts({cardQty,cardOrder,cardArrives});
