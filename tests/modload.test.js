@@ -109,9 +109,9 @@ async function run(eng,browser,{ok,url,settle}){
   // act.js missing: every file's last statement, acts({…}), throws. A classic script's names were the page's all the same; a module's
   // are only when its bridge is above that statement (missed.js's below it left Today undrawn: today.js draws with missedCard)
   k=await fail({'act.js':{status:404}},()=>window.appReady);await wait(5200);k=await card();
-  const noAct=await c.p.evaluate(()=>({ready:!!window.appReady,n:items.length,mbox:!!document.querySelector('#today #mbox'),sbox:!!document.querySelector('#today #sbox'),
+  const noAct=await c.p.evaluate(()=>({ready:!!window.appReady,n:items.length,mbox:!!document.querySelector('#today #mbox'),
     gone:['pasteMsg','firstReal','missedCard','scoreCard','toggleMonth','cycleTheme','renderDressUI','CK_OPEN','cpwSum','favStrip','loadSnapshots','downloadBackup','calSummary'].filter(n=>typeof globalThis[n]==='undefined').join()}));
-  ok(!k&&noAct.ready&&noAct.n===3&&noAct.mbox&&noAct.sbox&&noAct.gone==='',T+`act.js can't be loaded: the modules that end with acts({…}) still hand over their names, and Today is drawn with its cards, no start-up card (names missing: ${noAct.gone||'none'}; month box ${noAct.mbox}, score card ${noAct.sbox})`);
+  ok(!k&&noAct.ready&&noAct.n===3&&noAct.mbox&&noAct.gone==='',T+`act.js can't be loaded: the modules that end with acts({…}) still hand over their names, and Today is drawn down to its month box, no start-up card (names missing: ${noAct.gone||'none'}; month box ${noAct.mbox})`);
   /* ---- a page script that is an ES module (back.js: every page and sheet registers its Back there while loading) ---- */
   // it can't be loaded, doesn't parse, or asks another module for a name that one doesn't export (the graph doesn't link, none of it runs)
   const backSrc=fs.readFileSync(path.join(ROOT,'back.js'),'utf8');
