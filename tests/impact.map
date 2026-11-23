@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	a0bffda9cffd2f78049b
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -515,8 +514,8 @@ actsindex.test.js	fav.js	<any>	<loaded>	favAny	favChip	favItemRow	favLastIcon	fa
 actsindex.test.js	history.js	<any>	<loaded>	checkPlanRules	closePicker	combatAway	dayActions	dayChanged	dropLearn	handGroup	idsOf	keyDate	openPicker	pickBackdropTap	pickPic	pluralWord	recordDays	renderReplanUI	replanCount	replanTap	resetCard	saveDay	setOccasion	whenPulled
 actsindex.test.js	index.html	<any>	<loaded>
 actsindex.test.js	item-photo.js	<any>	<loaded>	paperCloth	paperHint	paperSteps	photoTools	ptIcon	smallPhotos
-actsindex.test.js	item-view.js	<any>	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemCloseTap	itemFocusBack	itemShown	itemStepTap	ivSwipe	noMotion	openItem	renderItem	sheetSlides	stepItem	wardList
-actsindex.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	optLab	renderWardrobe	wardPic
+actsindex.test.js	item-view.js	<any>	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	get	itemCloseTap	itemFocusBack	itemShown	itemStepTap	ivSwipe	noMotion	openItem	renderItem	sheetSlides	stepItem	wardList
+actsindex.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	get	itemBody	ivCareSum	ivDetailSum	ivSummary	optLab	renderWardrobe	wardPic
 actsindex.test.js	kit.js	<any>	<loaded>	@addEventListenerkeydown	homeAbout	homeAgainTap	homeAndroid	homeIOS	homeLabel	homeNeeded	importOpenTap	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	tourAgainTap
 actsindex.test.js	locale.js	<any>	<loaded>	appLocale
 actsindex.test.js	locks.js	<any>	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
@@ -557,6 +556,7 @@ actsindex.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	
 actsindex.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 actsindex.test.js	tagging.js	<any>	<loaded>	readAbort	tagNotes
 actsindex.test.js	tests/fixedplan.js	<any>
+actsindex.test.js	tests/webkit.js	<any>
 actsindex.test.js	theme.js	<any>	<loaded>	applyTheme	cycleTheme	themeTap
 actsindex.test.js	toast.js	<any>	<loaded>	toast	toastDrop	toastOff	undoOff
 actsindex.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig
@@ -2689,6 +2689,7 @@ assets.test.js	index.html	<any>
 assets.test.js	manifest.webmanifest	<any>
 assets.test.js	sw.js	<any>
 assets.test.js	tests/scriptlist.js	<any>
+assets.test.js	tests/webkit.js	<any>
 back.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 back.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	dropInviteHash	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 back.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -5731,6 +5732,7 @@ deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
 deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
+deps.test.js	tests/webkit.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
 deps.test.js	today-gestures.js	<any>
@@ -7412,6 +7414,7 @@ globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
 globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
+globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -9611,7 +9614,7 @@ modload.test.js	fav.js	<loaded>	favAny	favLookFrom	favPillSeg	favStatsCard
 modload.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
 modload.test.js	index.html	<any>	<loaded>
 modload.test.js	item-photo.js	<loaded>	smallPhotos
-modload.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	itemShown	noMotion	renderItem
+modload.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	get	itemShown	noMotion	renderItem
 modload.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown
 modload.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit	safariRemind
 modload.test.js	locale.js	<loaded>	appLocale
@@ -17509,7 +17512,7 @@ sw.test.js	icon-192.png	<any>
 sw.test.js	icon-512.png	<any>
 sw.test.js	index.html	<any>
 sw.test.js	item-photo.js	<any>	<loaded>	smallPhotos
-sw.test.js	item-view.js	<any>	<loaded>	@{constb$ivbody}	itemShown	renderItem
+sw.test.js	item-view.js	<any>	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
 sw.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}
 sw.test.js	kit.js	<any>	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 sw.test.js	locale.js	<any>	<loaded>	appLocale
@@ -17553,6 +17556,7 @@ sw.test.js	tag-request.js	<any>	<loaded>
 sw.test.js	tagging.js	<any>	<loaded>
 sw.test.js	tests/fixedplan.js	<any>
 sw.test.js	tests/safeport.js	<any>
+sw.test.js	tests/webkit.js	<any>
 sw.test.js	theme.js	<any>	<loaded>	applyTheme
 sw.test.js	toast.js	<any>	<loaded>	toast
 sw.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constroot$today}
@@ -17895,7 +17899,7 @@ tabload.test.js	fav.js	<loaded>	favAny	favChip	favLookFrom	favMark	favPillSeg	fa
 tabload.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
 tabload.test.js	index.html	<loaded>
 tabload.test.js	item-photo.js	<loaded>	smallPhotos
-tabload.test.js	item-view.js	<loaded>	@{constb$ivbody}	itemShown	noMotion	renderItem
+tabload.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	noMotion	renderItem
 tabload.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe	wardPic
 tabload.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
 tabload.test.js	locale.js	<loaded>	appLocale
@@ -17936,6 +17940,7 @@ tabload.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 tabload.test.js	tag-request.js	<loaded>	tagStatsCard
 tabload.test.js	tagging.js	<loaded>
 tabload.test.js	tests/fixedplan.js	<any>
+tabload.test.js	tests/webkit.js	<any>
 tabload.test.js	theme.js	<loaded>	applyTheme
 tabload.test.js	toast.js	<loaded>
 tabload.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup

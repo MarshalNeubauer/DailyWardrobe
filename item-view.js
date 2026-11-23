@@ -1,5 +1,5 @@
 /* Daily Wardrobe: the item sheet itself: open, close, swipe down, ‹ › and the sideways swipe, the phone's Back, the focus back, and a
-   sync's change to the piece open. (A classic script sharing one global scope; split out of itemsheet.js on 2026-11-17, no behavior change.) */
+   sync's change to the piece open. (An ES module since 2026-11-23; split out of itemsheet.js on 2026-11-17, no behavior change.) */
 let editing=null;
 /* ---- Wardrobe item sheet ----
    Tapping an item opens it in a sheet that slides up over the Wardrobe: the full width of a phone, to just under the top of the
@@ -15,6 +15,16 @@ const wardList=()=>{const l=wardView();if(!editing||l.some(x=>x.id===editing))re
   const c=l.slice();c.splice(Math.min(ivAt,c.length),0,it);return c};
 const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate;
 let itemFrom=null;   // the item the sheet was opened on: closing on another one brings that one's box into view first
+/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. editing is read by twelve page scripts
+   (item-photo, itemsheet, toast, start, wardrobe, colpick, look, kit …) and set by 31 tests: a getter and a setter; wardrobe.js, cost.js
+   and kit.js open a piece (openItem), start.js and wardrobe.js drop the sheet (dropItem), sync.js says a sync changed the piece open
+   (itemSynced), itemsheet.js, start.js and checklist.js redraw it (renderItem); itemGoneTell: itemsheet, wardrobe, look, cost; noMotion:
+   nine files; closeItem, stepItem and wardList are called by tests only; a module imports them.
+   Above the file's first call that can throw (backLand, when back.js did not load; then $ and acts): the names are then still the
+   page's, as a classic script's were */
+Object.assign(globalThis,{wardList,noMotion,itemSynced,itemGoneTell,renderItem,openItem,closeItem,dropItem,stepItem});
+Object.defineProperties(globalThis,{editing:{get:()=>editing,set:v=>{editing=v}}});
+export {editing,wardList,noMotion,itemSynced,itemGoneTell,renderItem,openItem,closeItem,dropItem,stepItem};
 /* the phone's Back closes the sheet: it has its own history entry while it is open (back.js histPush/histDrop, kind 'item'); one asked for
    while a step back of ours was on its way is made once it lands. Back in the crop frame keeps the crop (cropKeep: when moved or zoomed)
    and leaves it, and the sheet keeps its entry (the Back audit, 2026-11-15: it closed the sheet) */

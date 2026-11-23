@@ -32,13 +32,16 @@ const FN={cycleTheme:true,openSettings:true,closeSettings:true,saveSettings:true
 /* The functions above whose file is an ES module now (the bridge, tests/bridge.test.js). A module's handler calls its own function
    inside the module, where a wrapped window.<name> isn't seen, so these are watched one step earlier, at the handler the markup names
    (ACTS, act.js): function -> {handler: how the handler calls it}: '' with no argument; 'enter' with none and only for the Enter key,
-   whose default it prevents; 'file' with the field's file, the field then emptied.
+   whose default it prevents; 'file' with the field's file, the field then emptied; 'n' with the control's data-n as a number;
+   'true' with true.
    With true above the real handler then runs (the step checks what the app did); with false the wrapper stands in for the handler, so
    for those this file no longer runs the handler's own line: theme.test.js, paste.test.js (Enter, Add, Paste), syncwrite.test.js and
-   sync.test.js (Download backup, Restore file) and rollback.test.js (the list's focus) use the real ones.
+   sync.test.js (Download backup, Restore file), rollback.test.js (the list's focus) and setup.test.js ("Run setup again", a real
+   click) use the real ones.
    window.<name> is wrapped as well where the module bridges it, for the classic scripts that call it (settings.js: loadSnapshots). */
 const VIA={cycleTheme:{themeTap:''},addLink:{linkKey:'enter',linkAddTap:''},pasteFromClipboard:{pasteTap:''},
-  downloadBackup:{backupSaveTap:''},restoreBackup:{backupFilePick:'file'},loadSnapshots:{snapFocus:''},rollBack:{rollBackTap:''}};
+  downloadBackup:{backupSaveTap:''},restoreBackup:{backupFilePick:'file'},loadSnapshots:{snapFocus:''},rollBack:{rollBackTap:''},
+  closeItem:{itemCloseTap:''},stepItem:{itemStepTap:'n'},openPack:{packOpenTap:''},setupOpen:{setupAgainTap:'true'}};
 const CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==','base64');
 async function run(eng,browser,{ok,url,settle}){
@@ -61,7 +64,7 @@ async function run(eng,browser,{ok,url,settle}){
       if(via)for(const h of Object.keys(via)){const real=ACTS[h],how=via[h];   // a module's function: watched at its handler
         if(typeof real!=='function'){window.__calls.push('missing:'+n+' ('+h+')');continue}
         ACTS[h]=function(el,ev){if(how==='enter'&&ev.key!=='Enter')return real(el,ev);
-          const a=how==='file'?[el.files[0]]:[];window.__calls.push(`${n}(${a.map(fmt).join(',')})`);
+          const a=how==='file'?[el.files[0]]:how==='n'?[+el.dataset.n]:how==='true'?[true]:[];window.__calls.push(`${n}(${a.map(fmt).join(',')})`);
           if(FN[n])return real(el,ev);
           if(how==='enter')ev.preventDefault();if(how==='file')el.value=''}}
       if(typeof f!=='function'){if(!via)window.__calls.push('missing:'+n);continue}

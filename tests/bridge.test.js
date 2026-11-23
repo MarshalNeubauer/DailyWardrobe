@@ -46,6 +46,14 @@ const BRIDGE={
   'add-paste.js':['pasteMsg'],
   // the sheets that close on a swipe down are classic scripts: add-sheet, item-view, colpick and kit call it
   'sheet-swipe.js':['sheetSwipe'],
+  // editing is read by twelve classic page scripts and set by 31 tests (a setter); wardrobe, cost and kit open a piece (openItem), start
+  // and wardrobe drop the sheet (dropItem), sync says a sync changed the open piece (itemSynced), itemsheet, start and checklist redraw
+  // it (renderItem); itemGoneTell: itemsheet, wardrobe, look, cost; noMotion: nine files; closeItem, stepItem and wardList: tests only
+  'item-view.js':['closeItem','dropItem','editing','itemGoneTell','itemSynced','noMotion','openItem','renderItem','stepItem','wardList'],
+  // renderWardrobe is called by 16 page scripts and 15 tests; item-view draws the sheet with itemBody and reads phEdit, as item-photo
+  // and photos do (a getter: only itemsheet.js assigns it); add-card (optLab, matTidy), add-save (matTidy), colpick and look (sete,
+  // patSummary, redetect, clearStripes), wardrobe (setFlt, wardPic), colpick (wardPic); rm and togglePause: tests only
+  'itemsheet.js':['clearStripes','itemBody','matTidy','optLab','patSummary','phEdit','redetect','renderWardrobe','rm','setFlt','sete','togglePause','wardPic'],
   // history.js (firstReal, missedNote) and today.js (missedCard) are classic scripts; the rest are called by the todayacts and weeklock tests
   'missed.js':['firstReal','missedCard','missedNote','missedOne','missedOpen','missedPickToggle','missedPut'],
   // history.js, a classic script, swaps, picks and draws the picker with these; slotPool, fitOf, fitTag and pickSub are also called by
@@ -75,6 +83,14 @@ const BRIDGE={
   // settings.js, stats.js, start.js, add-card.js, add-save.js, shop.js and kit.js are classic scripts; vestMigrating is read by the
   // dress test only: a getter
   'dress.js':['dressNewItem','dressSummary','dressSynced','dressWhyUnused','migrateVests','newSuitVest','renderDressUI','vestMigrating'],
+  // calendar.js opens the page and sets the trip (openPack, packSetTrip), start.js shows it (packShow); the rest are called or read by
+  // the pack, packcare-taps, planreview, stats, calendar, restacts and pocketsquare tests, which set packT and packNow (setters)
+  'pack.js':['PACK_TITLE','openPack','packComplete','packDefault','packLock','packLockState','packMark','packNow','packRelease','packSetCap','packSetDate','packSetTrip','packShow','packT','packTrip','packUses','packWear','renderPack'],
+  // itemsheet draws the Wardrobe and the item sheet with these, item-view lists with wardView, add-card draws its fields, add-save and
+  // kit save them (wardSaveFields), colpick and own-lists set a field, dress.js runs the one-time renames (matMigrate, matRenameTo,
+  // sockToeMigrate, sockLegacy), safety asks wardPendingRestore, fav reads wardFlt; the search and sort names, itemFieldSoon,
+  // wardDeleteNow and WARD_UNDO_MS: tests only; tests/materials.test.js sets wardQ (a setter)
+  'wardrobe.js':['WARD_MAX','WARD_UNDO_MS','WATCH_DETAILS_MAX','fldRow','itemFieldSoon','ivOn','matLabel','matMigrate','matOn','matOnItem','matRenameTo','matRow','notesRow','setItemField','setQField','setWardSort','sockLegacy','sockToeMigrate','wardBack','wardBar','wardClear','wardCount','wardDelete','wardDeleteNow','wardDuplicate','wardFieldsTop','wardFlt','wardFresh','wardGrid','wardHay','wardKeep','wardMatch','wardNorm','wardOrder','wardPendingRestore','wardQ','wardSaveFields','wardSearch','wardSort','wardView'],
   // add-card, itemsheet, colpick, look, add, add-sheet and item-view draw their sections and the close-up comparison with these;
   // CK_OPEN is also how 53 test files open the sections
   'checklist.js':['CK_OPEN','accRow','ckChip','ckColSum','ckIsOpen','ckSec','ckSure','ckToggle','cmpDiff','cmpDiffText','cmpDrawn','cmpHtml','cmpLab','cmpMatchHtml','cmpMount','cmpPaper','cmpPaperLine','cmpSteps'],
@@ -94,6 +110,11 @@ const BRIDGE={
   'snapshots.js':['loadSnapshots','rollBack','rollBackState','snapLabel'],
   // kit.js offers the backup file (downloadBackup); the tests restore one (restoreBackup: actsindex, fieldmerge, records, wardrobe)
   'backupfile.js':['downloadBackup','restoreBackup'],
+  // start.js starts and yields the setup (setupStart, setupYield), account and kit read and redraw it (setup, SETUP_STEPS, setupShown,
+  // setupDraw, setupFinish, setupSample), today, stats and wardrobe draw the empty states (setupNeeds, setupToday, setupWardEmpty),
+  // weather asks tzCountry; the rest: tests only. SETUP_STEPS is a getter (only setup.js writes it), setup has a setter
+  // (tests/rollback.test.js)
+  'setup.js':['SETUP_STEPS','setup','setupCancel','setupClose','setupDraw','setupDress','setupFinish','setupGo','setupNeeds','setupOpen','setupSample','setupSearch','setupShown','setupStart','setupToday','setupVestChosen','setupWardEmpty','setupYield','tzCountry'],
   // settings.js (calSummary) and today.js (calBanner) are classic scripts; the rest are read by the calendar test, calBusy by the
   // restacts test only: a getter
   'calendar.js':['CAL_GUIDES','CAL_X','calBanner','calBusy','calGuide','calNew','calPlan','calSummary','renderCalUI'],
