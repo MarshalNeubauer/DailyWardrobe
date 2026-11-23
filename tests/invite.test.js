@@ -59,8 +59,11 @@ const invitefix=async({ok,chromium,url})=>{
       await p.evaluate(()=>openSettings('connection'));await p.fill('#conn-link',url+link(A));await p.click('#conn-go');
       await p.waitForFunction(()=>!connBusy);const msg=await p.textContent('#conn-msg');
       ok(/offline/.test(msg)&&!/copied/.test(msg),`connecting offline says so ("${msg}")`);
-      await p.evaluate(()=>closeSettings());
-      await p.evaluate(l=>{location.hash=l},link(A));await p.waitForFunction(()=>acctWhy==='offline',null,{timeout:8000});
+      // (Settings' step back lands first: landing after the link is set, it takes the link out of the address. acctWhy is still 'offline'
+      // from the typed try above, so the wait is for this link's own attempt: the app has started on it, and it has ended)
+      await p.evaluate(async()=>{closeSettings();await backSettled()});
+      await p.evaluate(l=>new Promise(r=>{addEventListener('hashchange',()=>r(),{once:true});location.hash=l}),link(A));
+      await p.waitForFunction(()=>acctWhy==='offline'&&!acctLinkRun&&!inviteChecking,null,{timeout:8000});
       const kept=await p.evaluate(()=>location.hash);
       await p.evaluate(()=>openSettings('connection'));
       const w=await p.evaluate(()=>({st:document.querySelector('#conn-state').textContent,f:document.querySelector('#conn-link').value}));
