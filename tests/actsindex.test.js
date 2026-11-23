@@ -56,6 +56,7 @@ const VIA={cycleTheme:{themeTap:''},addLink:{linkKey:'enter',linkAddTap:''},past
   closePicker:{pickBackdropTap:''},replanButton:{replanTap:''},startItemPics:{itemPicsTap:''},
   closeShop:{shopBackdropTap:''},addDayOff:{dayOffAddTap:''},addFormalDay:{occAddTap:''},setHolidayCountry:{countryPick:'value'},
   askDelete:{delAskTap:''},checkForUpdate:{updCheckTap:'true'},updateNow:{updNowTap:''},sendFeedback:{fbSendTap:''},
+  setLaundryDays:{laundryPick:'value'},
   kitImportOpen:{importOpenTap:''},tourAgain:{tourAgainTap:''},homeAgain:{homeAgainTap:''}};
 const CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==','base64');

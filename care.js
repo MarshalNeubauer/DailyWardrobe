@@ -220,4 +220,9 @@ function careLimitPick(el){setCareLimit(el.dataset.t,el.value)}
 /* Today's: "See what is due" (a link: its jump to # is called off), and Enter or Space on the cleaning banner (its tap is careBandTap itself) */
 function careDueTap(el,ev){openCare();ev.preventDefault()}
 function careBandKey(el,ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();careBandTap()}}
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
+   as globals: itemsheet, cost, wardrobe, add-more, settings, today, today-picture and remind; the rest are read by tests. Above the
+   file's last top-level call (acts, when act.js did not load): the names are then still the page's */
+Object.assign(globalThis,{CARE_ABLE,CARE_DEF,careLimit,careWashed,careWord,careTimes,careName,careCounts,careState,careTag,careBadge,careBackText,careLog,careCard,careSend,careBack,careCleaned,careLists,renderCare,openCare,careNote,careDayState,careFrame,careBandSoon,careReminders,renderCareUI});
+export {CARE_ABLE,CARE_DEF,careLimit,careWashed,careWord,careTimes,careName,careCounts,careState,careTag,careBadge,careBackText,careLog,careCard,careSend,careBack,careCleaned,careLists,renderCare,openCare,careNote,careDayState,careFrame,careBandSoon,careReminders,renderCareUI};
 acts({laundryPick,careSendTap,careDoneTap,careBackDate,careBackTap,careTypeDone,careLimitsTap,careLimitPick,careDueTap,careBandTap,careBandKey});

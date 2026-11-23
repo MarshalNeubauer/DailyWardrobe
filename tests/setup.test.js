@@ -452,7 +452,7 @@ const nufix8=async({ok,chromium,url,settle})=>{
     ok(await s.evaluate(()=>/Loading the public holidays of France/.test(document.querySelector('#holiday-msg').textContent)&&!document.querySelector('#holiday-list').textContent.trim()),'while loading it says so, with no "no list yet" line under it');
     release();
     ok(await stored(s,`s=>s.holidays.country==='FR'&&s.holidays.fetched>0&&s.holidays.list.length>0`),'and the list replaces it when it arrives');
-    await s.evaluate(()=>{window.clearLocks=()=>new Promise(()=>{});settings.workdays=[1,2,3,4,5];openSettings('schedule')});   // the locks never finish releasing
+    await s.evaluate(()=>{window.__held=0;const realTx=IDBDatabase.prototype.transaction,T=todayDate();for(let g=1;g<=4;g++){const k=key(new Date(T.getFullYear(),T.getMonth(),T.getDate()+g));dayRecs[k]={date:k,lock:{tie:'held'},updated:1}}IDBDatabase.prototype.transaction=function(st,m){if(st==='days'&&m==='readwrite')return {objectStore:()=>({put(r){if(!r.lock)window.__held++;return {}}})};return realTx.apply(this,arguments)};settings.workdays=[1,2,3,4,5];openSettings('schedule')});   // the locks never finish releasing: the real clearLocks, each release's write held
     await s.click('#cfg-workdays .dtog:nth-child(7)');
     ok(await stored(s,`s=>s.workdays.includes(6)`,3000),'a workday tapped is stored before the week\'s locks are released');
     await s.evaluate(()=>{setDarkShirts('never')});
@@ -460,6 +460,7 @@ const nufix8=async({ok,chromium,url,settle})=>{
     await s.evaluate(()=>{closeSettings();setupOpen(true);setupGo(1);setupGo(1)});await s.waitForSelector('#su-sw-tie');
     await s.click('#su-sw-tie');
     ok(await stored(s,`s=>s.dress&&s.dress.tie===false`,3000),'and the setup\'s dress switch');
+    ok(await s.waitForFunction(()=>window.__held>=3,null,{timeout:3000}).then(()=>true,()=>false),'(each of the three was saved while the real clearLocks was still releasing a lock)');
     await s.evaluate(()=>setupClose());
     ok(!s.errs.length,'no page errors: '+s.errs.join(' | '));await s.context().close();
 
