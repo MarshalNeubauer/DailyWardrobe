@@ -109,6 +109,11 @@ function tagNotes(q){if(q.manual)return '';const out=[];if(q.meas)q.measV=colour
     if(q.newColor||far)out.push(`<div class="offer"><small>${q.newColor?`None of your colors quite fit: Claude calls it <b>${esc(q.newColor.name)}</b>${q.newColor.why?`, ${esc(q.newColor.why)}`:''}.`:'The measured color is far from every color for this item.'}</small><button type="button" class="chipbtn" data-act="tagNewCol" ${cardAt(q)}>Add as a new color</button></div>`)}
   if(!L&&PATS_BY[q.type]){if(q.newPattern)out.push(`<div class="offer"><small>No listed pattern fits: Claude calls it <b>${esc(q.newPattern.name)}</b>${q.newPattern.why?`: ${esc(q.newPattern.why)}`:''}.</small><button type="button" class="chipbtn" data-act="tagNewPat" ${cardAt(q)}>Add this pattern</button></div>`)}
   return out.join('')}
+/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level
+   call: add.js, add-card.js, add-save.js, measure.js, pattern-read.js, colpick.js and safety.js, classic scripts, and tag-request.js
+   (fieldLabel, valName, read as globals: it comes before this file in the list) use these; confTxt is read by tests/records.test.js only */
+Object.assign(globalThis,{fieldLabel,valName,aiFields,takeExtras,closeTagImg,readBegin,readEnd,readAbort,refineFromCloseup,confTxt,tagNotes});
+export {fieldLabel,valName,aiFields,takeExtras,closeTagImg,readBegin,readEnd,readAbort,refineFromCloseup,confTxt,tagNotes};
 /* what the Add card's notes do (act.js; the card by its id in data-card: add-save.js cardAt, cardIx): read the close-up or the pattern
    again, Undo of the close-up's tags and of a measured change (the field in data-f), an offered type, color or pattern (data-f, data-v),
    "Add as a new color" and "Add this pattern" */

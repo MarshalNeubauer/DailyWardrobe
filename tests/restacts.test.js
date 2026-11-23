@@ -45,6 +45,11 @@ async function open(browser,eng,url,settle,o={}){
       {id:'t1',type:'tie',primaryColor:'burgundy',pattern:'solid'},{id:'h1',type:'shirt',primaryColor:'white',pattern:'solid'},{id:'p1',type:'pants',primaryColor:'grey',pattern:'solid'},{id:'o1',type:'shoes',primaryColor:'black',pattern:'solid',leather:'calf'}];
     settings.setupDone=1;settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-20T09:00:00';cache={};queue.length=0;
     window.__calls=[];window.__spy=(...names)=>{for(const f of names)window[f]=(...a)=>{__calls.push([f,...a.map(x=>x instanceof File?'file:'+x.name:x)])}};
+    /* a function of a file that is an ES module (remind.js: remindSwitch) is called inside its module, where a replaced window.<name>
+       isn't seen (tests/bridge.test.js; tests/actsindex.test.js VIA): it is replaced one step earlier, at the handlers the markup names
+       (ACTS, act.js), each given here with the arguments its own line calls the function with. So this file no longer runs those
+       handlers' own lines: tests/remind.test.js taps both switches with the real ones (and a push service of its own). */
+    window.__via=(f,how)=>{for(const h of Object.keys(how)){if(typeof ACTS[h]!=='function'){__calls.push(['missing',h]);continue}ACTS[h]=el=>{__calls.push([f,...how[h](el)])}}};
     show('today')});
   await settle(p,400);
   const ev=(f,a)=>p.evaluate(f,a);
@@ -163,7 +168,8 @@ async function linked(eng,browser,{ok,url,settle}){
     T+'About’s delete card: Cancel puts it away, "Delete everything" deletes from the server too, "this device only" doesn’t ('+JSON.stringify([a1,a2,a3,a4])+')');
 
   // reminders (the push service is replaced: remindSwitch is what both switches call)
-  await ev(()=>{__spy('remindSwitch');remindSave({on:false,care:false,time:'06:30'});openSettings('schedule')});await settle(p,600);
+  await ev(()=>{const turn=el=>el.getAttribute('aria-checked')!=='true';   // (a tap turns a switch the other way from what it shows)
+    __via('remindSwitch',{remindSwTap:el=>['morning',turn(el)],careRemSwTap:el=>['care',turn(el)]});remindSave({on:false,care:false,time:'06:30'});openSettings('schedule')});await settle(p,600);
   const hasSw=await ev(()=>!!document.querySelector('#remind-sw'));
   await tap('#remind-sw',300);const r1=await calls();
   await ev(()=>{remindSave({on:true,care:false,time:'06:30'});renderRemindUI()});

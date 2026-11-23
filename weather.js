@@ -1,5 +1,5 @@
 /* Daily Wardrobe: the weather: units, the location and its search, the 16-day forecast and the usual weather by month
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of settings.js on 2026-11-17.) */
+   (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
 /* ---- settings: schedule, weather location, units ---- */
 /* °F where the country uses it (audit 2026-11-15: a Kuwait user on an English (US) iPhone got °F): the chosen location's country, else the
    time zone's (setup.js tzCountry, which falls back on the phone's region), else the phone's language as before */
@@ -68,6 +68,11 @@ async function loadWeather(force){
     weather=days;localStorage.setItem('wx',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),days}));planDirty();if(!$('#today').hidden)refreshToday()}
   catch(e){console.warn('weather unavailable',e)}
 }
+/* the bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level call: settings.js and setup.js (unit, renderWxLoc,
+   setUnits, setLocation, useMyLocation, findCity), today.js (wxChip, loadWeather), start.js and safety.js (loadWeather), classic scripts,
+   and scorecard.js (temp) use these as globals; geoName is read by tests/setup.test.js only */
+Object.assign(globalThis,{unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,geoName,findCity,loadWeather});
+export {unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,geoName,findCity,loadWeather};
 /* the markup's handler (act.js): a place in the city search's results (data-i: its place in the list kept as _cities) */
 function cityPick(el){setLocation(window._cities[+el.dataset.i])}
 /* index.html's (act.js): Enter in the city field, Search, "Use my location" and the Units choice */

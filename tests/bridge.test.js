@@ -70,11 +70,25 @@ const BRIDGE={
   'month.js':['MONTH_EASE','MONTH_MS','dayOnly','monthBelow','monthDrag','monthGridHtml','monthLink','monthOpen','monthPanel','monthPlan','monthRelease','monthStep','nextWorkday','openDay','pageScroll','piecesLine','piecesParts','planOn','revealNeed','shortRest','shortTop','stackSVG','toggleMonth'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
+  // settings.js and setup.js (unit, renderWxLoc, setUnits, setLocation, useMyLocation, findCity), today.js (wxChip, loadWeather), start.js
+  // and safety.js (loadWeather) are classic scripts; scorecard.js, a module earlier in the list, reads temp as a global; geoName is read
+  // by tests/setup.test.js only
+  'weather.js':['findCity','geoName','loadWeather','renderWxLoc','setLocation','setUnits','temp','unit','useMyLocation','wxChip'],
   // read by the tests only: a11y (applyTheme, cycleTheme), actsindex (cycleTheme), modload (themeTap)
   'theme.js':['applyTheme','cycleTheme','themeTap'],
   // settings.js, stats.js, start.js, add-card.js, add-save.js, shop.js and kit.js are classic scripts; vestMigrating is read by the
   // dress test only: a getter
   'dress.js':['dressNewItem','dressSummary','dressSynced','dressWhyUnused','migrateVests','newSuitVest','renderDressUI','vestMigrating'],
+  // the photo-tagging request: app, add, add-keep, add-save, item-photo, migrate, measure, pattern-read, colpick, look, safety and stats
+  // are classic scripts; tagging.js (TAG_Q) and checklist.js (texSig) are modules that read these as globals (they come later in the list)
+  'tag-request.js':['CLOSE_MAX','TAGIMG_CACHE','TAG_MAX','TAG_Q','benchEstimate','customForTag','describeEstimate','keepCloseImg','keepTagImg','readEstimate','recordTagResult','resignTagImg','sharpCloseOf','tagExtras','tagFixes','tagImgOf','tagStatsCard','texSig'],
+  // add, add-card, add-save, measure, pattern-read, colpick and safety are classic scripts; tag-request.js, a module earlier in the list,
+  // reads fieldLabel and valName as globals; confTxt is read by tests/records.test.js only
+  'tagging.js':['aiFields','closeTagImg','confTxt','fieldLabel','readAbort','readBegin','readEnd','refineFromCloseup','tagNotes','takeExtras','valName'],
+  // colpick, look, settings and add-card are classic scripts; tagging.js, a module earlier in the list, reads openColForm and openPatForm
+  // as globals (tests/restacts.test.js replaces those two on window, which reaches tagging.js's calls); guessPatBase is called by
+  // tests/asmroute.test.js only
+  'own-lists.js':['addCustomColor','addCustomPattern','addOwnMaterial','groupOf','guessPatBase','matGuessUse','matOffer','newColHex','openColForm','openPatForm','ownColOffer','removeCustom','removeOwnMaterial','renderCustomUI','renderOwnMatUI','typePl'],
   // add-card, itemsheet, colpick, look, add, add-sheet and item-view draw their sections and the close-up comparison with these;
   // CK_OPEN is also how 53 test files open the sections
   'checklist.js':['CK_OPEN','accRow','ckChip','ckColSum','ckIsOpen','ckSec','ckSure','ckToggle','cmpDiff','cmpDiffText','cmpDrawn','cmpHtml','cmpLab','cmpMatchHtml','cmpMount','cmpPaper','cmpPaperLine','cmpSteps'],
@@ -97,6 +111,9 @@ const BRIDGE={
   // settings.js (calSummary) and today.js (calBanner) are classic scripts; the rest are read by the calendar test, calBusy by the
   // restacts test only: a getter
   'calendar.js':['CAL_GUIDES','CAL_X','calBanner','calBusy','calGuide','calNew','calPlan','calSummary','renderCalUI'],
+  // history.js, settings.js, start.js and care.js are classic scripts (remindSoon); the rest are read by the remind, connkeep and
+  // restacts tests, remindBusy too (a getter: only remind.js writes it)
+  'remind.js':['outfitLine','remindBusy','remindCareOn','remindKeep','remindPrefs','remindRefresh','remindSave','remindSig','remindSoon','renderRemindUI'],
 };
 /* file -> names its row gained after its conversion (each with the reason beside it); every one is in BRIDGE too */
 const GROWN={
