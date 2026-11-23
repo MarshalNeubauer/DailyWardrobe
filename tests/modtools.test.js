@@ -1,11 +1,11 @@
-// The checkers are ready for a page script that is an ES module (the ES-module move, step 1: tooling, 2026-11-22). No app file is
-// one yet, so this runs every checker on a made-up app (tests/fixtures/modtools: two classic scripts, two modules, a deferred tag,
+// The checkers are ready for a page script that is an ES module (the ES-module move, step 1: tooling, 2026-11-22). The app's
+// first modules came with step 3 (back.js, locale.js); this runs every checker on a made-up app (tests/fixtures/modtools: two classic scripts, two modules, a deferred tag,
 // mistakes on purpose) and checks each finds every file and reports exactly the mistakes:
 //   the shared script list and tests/modscope.js; ESLint with eslint.config.mjs's own rules; the type check (tests/typecheck.js);
 //   the cross-file write check (tests/globals.test.js); the dependency ledger (tests/deps.test.js); the bridge (tests/bridge.test.js);
 //   tests/appsrc.js (a module's text run as a script by the Node vm tests).
-// And that today's app is untouched by all of it: no page script is a module, every checker reads the same list, and appSrc hands
-// the vm tests the files' exact text.
+// And the app itself: every checker reads the same list and takes the same files as modules, and appSrc hands the vm tests a
+// classic file's exact text (a module's with only its import and export statements blanked).
 const fs=require('fs'),path=require('path'),vm=require('vm'),{pathToFileURL}=require('url');
 const {scriptTags,scriptList}=require('./scriptlist');
 const modscope=require('./modscope');
@@ -22,7 +22,8 @@ module.exports=async({ok,ROOT})=>{
   const own=readers.filter(f=>{const s=rd(f);return !/require\(['"]\.\/(?:tests\/)?(?:scriptlist|modscope)(?:\.js)?['"]\)/.test(s)});
   ok(!own.length,'every checker that needs index.html\'s scripts takes them from tests/scriptlist.js (straight or through tests/modscope.js)'+(own.length?': '+own.join(', '):''));
   const html=rd('index.html'),page=scriptList(html);
-  ok(page.length>40&&scriptTags(html).every(t=>!t.module),`no page script of the app is a module yet (${page.length} scripts)`);
+  const appMods=scriptTags(html).filter(t=>t.module).map(t=>t.src);
+  ok(page.length>40&&appMods.length<page.length&&!appMods.some(f=>['merge.js','srgb.js'].includes(f)),`the app's page scripts are read, its modules marked (${page.length} scripts, ${appMods.length} of them modules; merge.js and srgb.js, which the Web Workers importScripts, are not)`);
 
   /* ---- tests/modscope.js: what a module shares ---- */
   const src=rd('m.js',FIX),ast=modscope.parse(src,true),b=modscope.bridged(ast,src);
@@ -51,13 +52,13 @@ module.exports=async({ok,ROOT})=>{
     ok(strict[0].messages.some(m=>m.fatal&&/strict mode/i.test(m.message)),'a module is parsed strict (a `with` statement is a syntax error there)');
     const real=(await import(pathToFileURL(path.join(ROOT,'eslint.config.mjs')).href)).default;
     const scoped=new Set(real.filter(c=>c.files&&c.files.length===1&&c.languageOptions).map(c=>c.files[0]));
-    ok(page.every(f=>scoped.has(f))&&real.every(c=>!c.files||c.files.length!==1||c.languageOptions.sourceType==='script'),'the app\'s own config gives every page script its scope, all classic today');
+    ok(page.every(f=>scoped.has(f))&&real.every(c=>!c.files||c.files.length!==1||c.languageOptions.sourceType===(appMods.includes(c.files[0])?'module':'script')),'the app\'s own config gives every page script its scope: a module\'s tag makes it a module there, the others are classic');
   }
 
   /* ---- the type check ---- */
   let ts=null;try{ts=require('typescript')}catch(e){}
   const tc=require('./typecheck');
-  ok(tc.scopes().page.files.join()===page.join()&&!tc.scopes().page.mods.length,'the type check\'s page scope is the same list, with no module');
+  ok(tc.scopes().page.files.join()===page.join()&&tc.scopes().page.mods.join()===appMods.join(),'the type check\'s page scope is the same list, with the same modules');
   if(!ts)ok(true,'(TypeScript is not installed in this checkout: its module scope was not run)');
   else{
     const r=tc.check(ts,FIX),of=f=>r.diags.filter(d=>d.file===f).map(d=>d.text.replace(/^\S+\s+/,''));
@@ -94,11 +95,34 @@ module.exports=async({ok,ROOT})=>{
     ok(has(/^p\.js is loaded as a module but has no import or export/)&&has(/^p\.js: a bridge statement the checkers can't read/)&&has(/^bump is bridged by p\.js and also declared at its top level by a\.js/)&&has(/^dup is bridged by q\.js and also bridged by p\.js/)
       &&has(/^q\.js imports r\.js, which is not a type="module" script/)&&has(/^q\.js: its import from p\.js is a default import/)&&has(/^q\.js: its import from gone\.js is not a plain relative path/)&&has(/^analysis-worker\.js importScripts q\.js/)&&p.length===8,
       'the bridge check names a module tag without module syntax, an unreadable bridge, a name bridged twice or over a classic script\'s, an import of a classic script, a default import, a path with a query, and a worker that importScripts a module ('+p.join(' | ')+')');
+    /* the bridge's own mistakes (step 3): how a name is handed over, a write nobody would see, a module the service worker lacks */
+    for(const f of ['p.js','q.js','r.js','analysis-worker.js'])fs.rmSync(path.join(tmp,f));
+    put('index.html','<script src="a.js"></script><script type="module" src="s.js"></script><script type="module" src="lib/u.js"></script><script src="t.js" defer></script>');
+    put('s.js','import {deep} from "./lib/u.js";\nlet n=0,open=false,w=0,seen=1,kept=2;const K=1;function f(){return deep}function stub(){}\n'
+      +'Object.assign(globalThis,{n,f,stub});\n'
+      +'Object.defineProperties(globalThis,{open:{get:()=>open},K:{get:()=>K},g:{get:()=>n+1},w:{get:()=>w,set:v=>{n=v}},seen:{get(){return seen},set(v){seen=v}},kept:{get:()=>kept}});\n'
+      +'Object.defineProperty(globalThis,"late",{set:v=>{w=v}});\nexport {f};');
+    put('lib/u.js','export const deep=1;');
+    put('t.js','function go(){open=true;seen=2;stub=null;return kept}');
+    put('tests/x.test.js','const local=()=>{let seen=0;seen++;return seen};\nmodule.exports=async p=>{await p.evaluate(()=>{open=false;seen=3;window.stub=()=>1;f();bump()});local()};');
+    put('tests/fixtures/y.js','open=1;kept=1;');put('tools/z.js','module.exports=p=>p.evaluate(()=>{open++})');
+    put('sw.js',"const ASSETS=['./','index.html','a.js','s.js','u.js','t.js'];");
+    const s=B.measure(tmp),hasS=re=>s.problems.some(t=>re.test(t));
+    ok(hasS(/^s\.js: n is a `let` handed over with Object\.assign/)&&hasS(/^s\.js: K has a getter but is not a `let`/)&&hasS(/^s\.js: the bridge of g needs `get: \(\) => g`/)&&hasS(/^s\.js: the setter of w must be/)&&hasS(/^s\.js: the bridge of late needs .*no getter/)&&s.problems.length===5,
+      'the bridge check names a `let` handed over as a copy, a getter on a constant, a getter that gives something else back, a setter that assigns another name, and a setter with no getter; a plain getter, with or without a setter, passes ('+s.problems.join(' | ')+')');
+    ok(s.unseen.length===2&&s.unseen.some(t=>/^open is assigned by t\.js, tests\/x\.test\.js, tools\/z\.js, but s\.js bridges it with a getter only/.test(t))&&s.unseen.some(t=>/^stub is assigned by t\.js, tests\/x\.test\.js, but s\.js hands it over with Object\.assign/.test(t)),
+      'a write to a bridged name with no setter is found in a classic script, a test\'s page function and a tool (name = …, name++, window.name = …), not in the fixtures; a write through a setter, a read and a test\'s own variable of that name are fine ('+s.unseen.join(' | ')+')');
+    ok(s.assets.join()==='lib/u.js is a module and not in sw.js ASSETS under that spelling','a module that sw.js ASSETS lacks under its exact spelling is named ('+s.assets.join(' | ')+')');
+    const acc=modscope.bridged(modscope.parse(fs.readFileSync(path.join(tmp,'s.js'),'utf8'),true)).acc;
+    ok(JSON.stringify(acc.get('open'))==='{"get":true,"set":false,"reads":"open","writes":null}'&&JSON.stringify(acc.get('seen'))==='{"get":true,"set":true,"reads":"seen","writes":"seen"}'&&acc.get('g').reads===null&&acc.get('w').writes==='n',
+      'tests/modscope.js reads each accessor as written: whether it has a getter and a setter, and the name each hands on');
   }finally{fs.rmSync(tmp,{recursive:true,force:true})}
 
   /* ---- tests/appsrc.js: app files as scripts for the Node vm tests ---- */
   const all=[...new Set([...page,'analysis-worker.js','asm-worker.js','sw.js'])];
-  ok(all.every(f=>{const s=rd(f);return asScript(s,f)===s&&!isModule(s)}),`every app script comes back from asScript as the very same text today (${all.length} files)`);
+  ok(all.filter(f=>!appMods.includes(f)).every(f=>{const s=rd(f);return asScript(s,f)===s&&!isModule(s)}),`every classic app script comes back from asScript as the very same text (${all.length-appMods.length} files)`);
+  ok(appMods.every(f=>{const s=rd(f),o=asScript(s,f);return isModule(s)&&o!==s&&o.length===s.length&&o.split('\n').length===s.split('\n').length&&!/^\s*(?:import|export)\b/m.test(o)&&(()=>{try{new vm.Script(o);return true}catch(e){return false}})()}),
+    `each of the app's modules comes back with only its import and export statements blanked, a script the Node tests can run (${appMods.join(', ')||'none'})`);
   ok(appSrc(ROOT,'merge.js','core.js')===rd('merge.js')+rd('core.js'),'appSrc joins the files exactly as the vm tests did (merge.js + core.js)');
   const tpl='const t=`\nexport const a=1\nimport x from "y"\n`;// export {t}';
   ok(asScript(tpl)===tpl&&!isModule(tpl),'a script with the words at the start of a line inside a template is left alone');

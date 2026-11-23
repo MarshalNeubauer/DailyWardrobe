@@ -1,6 +1,6 @@
 /* Daily Wardrobe: the phone's Back (the iPhone's edge swipe, Android's Back button, a browser's Back): one history stack for the whole app
    (Round B, the code review's CR-7-08, 2026-11-17: it was three systems, in start.js, itemsheet.js and the color sheet's own listener, each
-   reading the others' flags). Loaded right after app.js; every page and sheet that Back closes registers here (backOn), and nothing else
+   reading the others' flags). An ES module, loaded right after app.js; every page and sheet that Back closes registers here (backOn), and nothing else
    in the app calls history.pushState or history.back.
    - BACK holds the app's own history entries, oldest first, at most two: the item sheet's (kind 'item') and one app entry, whose kind says
      who holds it now ('set' Settings, 'sub' Add or the Packing list, 'setup', 'pick', 'shop', and the sheets that borrow it:
@@ -71,3 +71,9 @@ function backPop(){
   if(item)return;
   const a=backApp();backOut(a);(BACK_ON[a.kind]||BACK_ON.set)(a.kind)}
 addEventListener('popstate',()=>{try{backPop()}finally{backSync()}});
+/* An ES module (2026-11-23): its names are its own, and this is what the other scripts and the tests still use as globals (the bridge;
+   tests/bridge.test.js lists it). The functions the pages and sheets call, and the three flags the tests read, read-only: only backSync
+   writes them, so they have a getter and no setter. A script that is a module too imports them instead (the export below). */
+Object.assign(globalThis,{backKind,backOn,backOver,backLand,backPush,backDrop,backBorrow,backReturn,backHold,backSettled,backWanted,histPush,histDrop});
+Object.defineProperties(globalThis,{appHist:{get:()=>appHist},appKind:{get:()=>appKind},itemHist:{get:()=>itemHist}});
+export {backKind,backOn,backOver,backLand,backPush,backDrop,backBorrow,backReturn,backHold,backSettled,backWanted,histPush,histDrop,appHist,appKind,itemHist};

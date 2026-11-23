@@ -13,8 +13,11 @@ module.exports=async({ok,engines,url,settle})=>{
   // the markup: every script with a src is deferred, the start is an inline module after them, the head's three are plain and first
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8').replace(/<!--[\s\S]*?-->/g,''),tags=[...html.matchAll(/<script\b([^>]*)>/g)].map(m=>m[1]);
   const withSrc=tags.filter(t=>/\bsrc=/.test(t)),inline=tags.filter(t=>!/\bsrc=/.test(t)),head=html.slice(0,html.indexOf('</head>'));
-  ok(withSrc.length>80&&withSrc.every(t=>/\bdefer\b/.test(t)&&!/\basync\b/.test(t)),`every page script is deferred (${withSrc.filter(t=>/\bdefer\b/.test(t)).length} of ${withSrc.length})`);
-  ok(withSrc.every(t=>!/type=/.test(t)),'no page script is a module yet');
+  const isMod=t=>/\btype="module"/.test(t),srcOf=t=>(/\bsrc="([^"]+)"/.exec(t)||[])[1],modTags=withSrc.filter(isMod);
+  ok(withSrc.length>80&&withSrc.every(t=>!/\basync\b/.test(t)&&(isMod(t)?!/\bdefer\b/.test(t):/\bdefer\b/.test(t)&&!/type=/.test(t))),`every page script is deferred: a classic one by \`defer\`, a module by being one (${withSrc.length-modTags.length} and ${modTags.length} of ${withSrc.length}); none is async`);
+  const order=withSrc.map(srcOf);
+  ok(order.indexOf('back.js')===order.indexOf('app.js')+1&&order.indexOf('act.js')===order.indexOf('back.js')+1&&order.indexOf('locale.js')>order.indexOf('act.js')&&order.indexOf('locale.js')<order.indexOf('settings.js')&&isMod(withSrc[order.indexOf('back.js')])&&isMod(withSrc[order.indexOf('locale.js')])&&!modTags.some(t=>/^(?:merge|srgb)\.js$/.test(srcOf(t))),
+    'back.js and locale.js are modules with a tag each, where they always were in the list (back.js between app.js and act.js, locale.js before settings.js); merge.js and srgb.js, which the Web Workers importScripts, are not modules');
   ok(/<script type="module">startUp\(\)<\/script>\s*<\/body>/.test(html)&&inline.filter(t=>/module/.test(t)).length===1,'startUp() is the page\'s last script, an inline module: it runs after every deferred script');
   const headTags=[...head.matchAll(/<script\b([^>]*)>/g)].map(m=>m[1]);
   ok(headTags.length===3&&headTags.every(t=>t.trim()==='')&&/localStorage\.getItem\("theme"\)/.test(head)&&/--tscale/.test(head)&&/start-fail/.test(head),
@@ -103,6 +106,32 @@ async function run(eng,browser,{ok,url,settle}){
   // a late script missing: the app starts without that feature, and no card
   k=await fail({'about.js':{status:404}},()=>window.appReady);await wait(5200);k=await card();
   ok(!k&&await shown(c)==='today'&&await c.p.evaluate(()=>window.appReady&&items.length===3&&document.querySelector('#today').children.length>0),T+'about.js can\'t be loaded: the app still starts on Today with its wardrobe, and no start-up card covers it');
+  /* ---- a page script that is an ES module (back.js: every page and sheet registers its Back there while loading) ---- */
+  // it can't be loaded, doesn't parse, or asks another module for a name that one doesn't export (the graph doesn't link, none of it runs)
+  const backSrc=fs.readFileSync(path.join(ROOT,'back.js'),'utf8');
+  for(const [what,how] of [['can\'t be loaded',{status:404}],['doesn\'t parse',{body:'const broken=;'}],['imports a name locale.js doesn\'t export',{body:'import {nope} from "./locale.js";\n'+backSrc}]]){
+    k=await fail({'back.js':how},()=>!!document.querySelector('#start-fail'),12000);
+    ok(k&&/The app couldn’t start\./.test(k.text)&&/nothing was deleted/.test(k.text)&&k.btn&&k.vis&&await stored()==='ml-shirt,ml-suit,ml-tie',T+`back.js, a module, ${what}: the start-up card says so with Try again, and the stored wardrobe is untouched (${k?'shown':'not shown'}; ${c.errs.slice(0,2).join(' | ').slice(0,160)})`)}
+  // loaded: its names are its own, the bridge is what the page sees
+  c.refuse=null;c.errs.length=0;await c.p.goto('about:blank');await c.p.goto(url);await c.p.waitForFunction(()=>window.appReady);await settle(c.p,300);
+  const md=await c.p.evaluate(()=>{const d=n=>Object.getOwnPropertyDescriptor(globalThis,n)||{},has=(f,n)=>{try{return f[n]===null}catch(e){return 'throws'}};
+    return {fns:['backKind','backOn','backOver','backLand','backPush','backDrop','backBorrow','backReturn','backHold','backSettled','backWanted','histPush','histDrop'].every(n=>typeof globalThis[n]==='function'),
+      loc:APP_LOC,get:['appHist','appKind','itemHist'].map(n=>typeof d(n).get+'/'+typeof d(n).set).join(),strict:has(backPush,'caller')+'/'+has(show,'caller'),patched:!!Date.prototype._dwLoc}});
+  md.own=await c.p.evaluate('[typeof BACK,typeof backPop,typeof appLocale].join()');   // (as text: these are not the page's names, and the checkers would take a function's use of them for one)
+  ok(md.own==='undefined,undefined,undefined'&&md.fns&&md.loc==='en-US'&&md.patched,T+`back.js and locale.js run as modules: their own names (BACK, backPop, appLocale) are not the page's, the bridged functions and APP_LOC are, and the Date patch is in (${JSON.stringify(md)})`);
+  ok(md.get==='function/undefined,function/undefined,function/undefined'&&md.strict==='throws/true',T+'the three Back flags are getters with no setter, and back.js\'s functions are strict (reading a function\'s caller throws) where a classic script\'s are not');
+  const flags=()=>c.p.evaluate(()=>appHist+'/'+appKind+'/'+itemHist+'/'+backKind());
+  const live=[await flags()];
+  await c.p.evaluate(()=>openSettings());await settle(c.p,300);live.push(await flags());
+  const kept=await c.p.evaluate(()=>Reflect.set(globalThis,'appKind','zz')+'/'+appKind);
+  await c.p.evaluate(()=>closeSettings());await settle(c.p,500);live.push(await flags());
+  ok(live.join(' ')==='false//false/ true/set/false/set false//false/'&&kept==='false/set'&&c.errs.length===0,T+`a getter gives the module's value of the moment: no entry, Settings' entry, none again (${live.join(' ')}); a write from outside is refused and changes nothing (${kept})`);
+  // the pattern for a `let` the tests assign: a getter and a setter, so a bare assignment in the page reaches the module's own variable
+  await c.p.addScriptTag({type:'module',content:'let mlState=1;globalThis.mlRead=()=>mlState;Object.defineProperties(globalThis,{mlState:{get:()=>mlState,set:v=>{mlState=v}}});export {};'});
+  await c.p.waitForFunction('typeof mlRead==="function"');
+  const sett=await c.p.evaluate('(()=>{const a=mlState+"/"+mlRead();mlState=5;const b=mlState+"/"+mlRead();mlState++;return a+" "+b+" "+mlRead()})()');
+  ok(sett==='1/1 5/5 6',T+`a module's \`let\` bridged with a getter and a setter: \`name=5\` and \`name++\` in the page change the module's own variable (${sett})`);
+
   /* ---- the card never comes on a start that is only slow ---- */
   // an error nobody catches during loading (the catcher hears it), then the stored wardrobe 6 s late: start-up is under way, so it waits
   const src=fs.readFileSync(path.join(ROOT,'start.js'),'utf8'),slow=src.replace('connRestored.then(()=>','connRestored.then(()=>new Promise(r=>setTimeout(r,6000))).then(()=>');
