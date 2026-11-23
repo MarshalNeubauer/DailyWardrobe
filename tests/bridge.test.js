@@ -39,10 +39,6 @@ const modscope=require('./modscope');
 
 /* file -> the names it bridges onto globalThis. Rows are added by the pull request that converts the file; after that they only shrink */
 const BRIDGE={
-  // the pattern lists, usableSett, settSig, texPat, tieWeave and CAMO_TR are read by draw, today-picture, measure, pattern-read (at
-  // load), colpick and the painter (assemble, asm-color), all classic scripts, and by photos.js, itemsheet.js and look.js (modules
-  // that read them as globals); add-save.js and itemsheet.js start a detection; camoTag and settToTag are called by tests only
-  'detect.js':['CAMO_TR','CHECK_PATS','DETECT_PATS','MOTIF_PATS','STRIPE_PATS','TEXTURE_PATS','camoTag','detectPattern','detectQueued','settFromCanvas','settSig','settToTag','texPat','tieWeave','usableSett'],
   // the pages and sheets that Back closes are classic scripts: add-sheet, colpick, history, item-view, kit, settings, setup, shop,
   // start, ui and account call these. appHist, appKind and itemHist are read by the tests only (back, backgesture, shellfix): getters
   'back.js':['appHist','appKind','backBorrow','backDrop','backHold','backKind','backLand','backOn','backOver','backPush','backReturn','backSettled','backWanted','histDrop','histPush','itemHist'],
