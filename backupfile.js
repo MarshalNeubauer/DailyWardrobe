@@ -28,8 +28,8 @@ function restoreGone(fileItems){const have=new Set(items.map(i=>i.id)),gone=(fil
    file can be picked again) */
 function backupSaveTap(){downloadBackup()}
 function backupFilePick(el){restoreBackup(el.files[0]);el.value=''}
-acts({backupSaveTap,backupFilePick});
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): kit.js, a classic script, calls downloadBackup; the tests call restoreBackup
    (actsindex, fieldmerge, records, wardrobe); a module imports them */
 Object.assign(globalThis,{downloadBackup,restoreBackup});
 export {downloadBackup,restoreBackup};
+acts({backupSaveTap,backupFilePick});
