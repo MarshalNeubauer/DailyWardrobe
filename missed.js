@@ -1,5 +1,5 @@
 /* Daily Wardrobe: past workdays the app recorded by itself as worn (the app wasn't opened): the toast and Today's card to undo them
-   (A classic script sharing one global scope with the others; split out of history.js, Round C 2026-11-17, and loaded right after it.) */
+   (An ES module since 2026-11-23, the bridge in its last lines; split out of history.js, Round C 2026-11-17, and loaded right after it.) */
 /* past workdays the app was not opened on are recorded as planned and count as worn: say so once, with a way to mark them not worn
    (2026-11-15, the audit: back after a week away, every missed workday was silently counted as worn, toward the cleaning counts too) */
 let missedDays=[],missedT=0;
@@ -54,3 +54,7 @@ function missPickTap(){missedPickToggle()}
 function missOneTap(el){missedOne(el.dataset.day)}
 function missOkTap(){missedCardOk()}
 acts({missNoTap,missPickTap,missOneTap,missOkTap});
+/* An ES module (2026-11-23): its names are its own, and this is what the other scripts and the tests still use as globals (the bridge;
+   tests/bridge.test.js lists it): history.js (firstReal, missedNote), today.js (missedCard) and the todayacts and weeklock tests. */
+Object.assign(globalThis,{firstReal,missedNote,missedPut,missedOpen,missedCard,missedPickToggle,missedOne});
+export {firstReal,missedNote,missedPut,missedOpen,missedCard,missedPickToggle,missedOne};
