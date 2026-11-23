@@ -9,7 +9,7 @@
    Stored as settings.fav = {looks:[{j,sh,tie,at}], items:[id]}, synced and merged entry by entry (merge.js SET_SPLIT 'fav'); the planner
    reads it (planner.js favLooks, favItemSet: a look comes back about every three weeks, a piece rests a fifth less). Nothing is learned:
    only what is marked counts.
-   (A classic script sharing one global scope with the others, loaded in index.html's order.) */
+   (An ES module, run in index.html's order; what the classic scripts still use of it is bridged in its last lines.) */
 const FAV_HEART='<svg class="favic" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.3C1 8.4 3 5 6.4 5c2.1 0 3.6 1.2 4.4 2.5h2.4C14 6.2 15.5 5 17.6 5 21 5 23 8.4 21.6 11.7 19.5 16.4 12 21 12 21z"/></svg>';
 const FAV_HEART0='<svg class="favic" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" d="M12 20s-7-4.3-9-8.7C1.7 8.3 3.5 6 6.4 6c2 0 3.4 1.2 4.2 2.5h2.8C14.2 7.2 15.6 6 17.6 6c2.9 0 4.7 2.3 3.4 5.3C19 15.7 12 20 12 20z"/></svg>';
 const FAV_UNDO_MS=5000;   // (toast.js keeps a toast with Undo up at least TOAST_ACT_MS)
@@ -78,3 +78,8 @@ function favWearTap(el){wearFav(el.dataset.k)}
 function favItemTap(el){favToggleItem(el.dataset.id)}
 function favChipTap(){favWard=true;renderWardrobe()}
 acts({favLookTap,favWearTap,favItemTap,favChipTap});
+/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): Today, the picker, the item sheet, the Wardrobe, the score card and Insights, classic scripts, call these; favData, favSave and
+   favToggleItem are read by the favorites tests. favWard is a `let` only this file writes (wardrobe.js reads it): a getter, no setter. */
+Object.assign(globalThis,{FAV_UNDO_MS,favData,favSave,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favToggleItem,favMark,favChip,favWhy,favStatsCard,favOff});
+Object.defineProperties(globalThis,{favWard:{get:()=>favWard}});
+export {FAV_UNDO_MS,favData,favSave,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favToggleItem,favMark,favChip,favWhy,favStatsCard,favWard,favOff};
