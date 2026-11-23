@@ -34,5 +34,5 @@ module.exports=async({ok,ROOT})=>{
   {const files=scripts.filter(f=>f!=='worker.js').concat('index.html'),hits=[];
     for(const f of files){const t=src(f);for(const m of t.matchAll(/(^|[^.\w$])(confirm|alert|prompt)\s*\(/g))hits.push(f+': '+t.slice(m.index,m.index+50).replace(/\s+/g,' '))}
     ok(!hits.length,`no confirm(), alert() or prompt() in the app's scripts${hits.length?' ('+hits.slice(0,3).join(' | ')+')':''}`);
-    ok(/'ui\.js'/.test(src('sw.js'))&&/<script src="ui\.js">/.test(src('index.html')),'ui.js is loaded by the page and kept by the service worker')}
+    ok(/'ui\.js'/.test(src('sw.js'))&&require('./scriptlist').scriptList(src('index.html')).includes('ui.js'),'ui.js is loaded by the page and kept by the service worker')}
 };

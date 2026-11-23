@@ -38,7 +38,8 @@ function openAdd(type){addFor=typeof type==='string'&&TYPES[type]?type:null;subO
    wardrobe.js, the Insights page stats.js, and the stored wardrobe isn't read yet) is only noted; start-up shows it once Today is up
    (showWanted). It threw before, and start-up then went to Today whatever was tapped. */
 let pagesOn=false,pageWant=null;
-function showWanted(){const t=pageWant;pageWant=null;if(t&&t!=='today'&&TABS.includes(t))show(t)}
+function showWanted(){const t=pageWant;pageWant=null;if(t&&t!=='today'&&TABS.includes(t))show(t);
+  if(setWanted())openSettings()}   // the gear tapped during loading (settings.js setOpenTap): Settings opens now, with the stored settings read
 function show(t){
   if(!pagesOn){pageWant=t;return}
   const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
@@ -70,7 +71,7 @@ function startFailed(e){console.warn(e);
   if(!startRead)setWardrobe({items:[]});
   else{afterScripts(()=>errNote(e,'Start-up'));
     setTimeout(()=>toast('Something went wrong while the app was starting. Your wardrobe is safe on this phone: nothing was deleted. Close the app fully and open it again; if this keeps happening, tell us in Settings → About → Feedback.',15000),0)}
-  pagesOn=true;pageWant=null;   // (a failed start-up stays on Today, where its message is)
+  pagesOn=true;pageWant=null;setWanted();   // (a failed start-up stays on Today, where its message is)
   try{show('today')}catch(e2){console.warn(e2);if(startRead)afterScripts(()=>errNote(e2,'Start-up: Today'));startPlain()}
   window.appReady=true;afterScripts(()=>storageDown(e));
   if(startRead)afterScripts(()=>{try{safetyStart()}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
@@ -82,7 +83,11 @@ function startPlain(){const t=$('#today');if(!t)return;for(const s of PAGES){con
    run in the order the line had them; a throw in any of them, or stores that can't be read, goes to startFailed as before. What is
    started in the background (the plan rules check, the photo fix-ups) keeps its own promise chain, as before: its errors don't reach
    startFailed. afterScripts still waits for the load event and whenPulled for the first pull, as they did. */
-async function startUp(){try{const [r,d,st,sn]=await loadStored();applyStored(r,d,st,sn);startChecks();pagesOn=true;show('today');startJobs();showWanted()}catch(e){startFailed(e)}}
+/* window.startBusy: start-up is under way (index.html's start-up catcher waits for it while the stored wardrobe is being read, however
+   long that takes); false again only when startFailed itself couldn't finish, which leaves nobody else to say so */
+async function startUp(){window.startBusy=true;
+  try{const [r,d,st,sn]=await loadStored();applyStored(r,d,st,sn);startChecks();pagesOn=true;show('today');startJobs();showWanted()}
+  catch(e){try{startFailed(e)}catch(e2){window.startBusy=false;throw e2}}}
 /* the four reads: items, days, settings and the plan snapshot */
 const loadStored=()=>connRestored.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings'),metaGet(PLAN_SNAP).catch(()=>null)]));
 /* what was read goes into memory (startRead/startTook tell startFailed how far it got), then the day Today opens on and the plan snapshot */

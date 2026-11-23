@@ -55,7 +55,8 @@ module.exports=async({ok,ROOT})=>{
   ok(RULES.every(n=>defs(merge,n)&&!defs(core,n)&&!defs(bk,n))&&!/\w+Lite\s*\(a, b, k, hi\)|function mergeItemLite|function mergeSettingsLite/.test(bk),
     'the merge rules are written once, in merge.js: neither core.js nor worker/backup.js defines them ('+RULES.filter(n=>defs(core,n)||defs(bk,n)).join(', ')+')');
   ok(/^import '\.\.\/merge\.js';$/m.test(bk)&&/globalThis\.DW_MERGE/.test(bk)&&/^globalThis\.DW_MERGE=\{/m.test(merge),'the worker imports merge.js and takes its functions from globalThis.DW_MERGE');
-  ok(idx.indexOf('<script src="merge.js"></script>')>0&&idx.indexOf('<script src="merge.js"></script>')<idx.indexOf('<script src="core.js"></script>')&&/importScripts\('merge\.js','core\.js'/.test(aw),
+  const pageList=require('./scriptlist').scriptList(idx);   // (however the tags are written: they carry defer now)
+  ok(pageList.indexOf('merge.js')>=0&&pageList.indexOf('merge.js')<pageList.indexOf('core.js')&&/importScripts\('merge\.js','core\.js'/.test(aw),
     'the page and the What to buy worker load merge.js before core.js');
   ok(!/^\s*(?:import|export)\b/m.test(merge)&&!/\b(?:document|window|localStorage|indexedDB)\b/.test(merge.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/.*$/gm,'')),
     'merge.js stays a plain script with nothing of the page in it (no import/export, DOM or storage), so the page, a Web Worker, the server and Node all load it');
