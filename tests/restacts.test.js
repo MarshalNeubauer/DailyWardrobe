@@ -13,10 +13,11 @@ module.exports=async({ok,engines,url,settle})=>{
     try{await free(eng,browser,{ok,url,settle});await linked(eng,browser,{ok,url,settle});await desk(eng,browser,{ok,url,settle})}finally{await browser.close()}}
 };
 const HOST='https://w.test/',J={'content-type':'application/json','access-control-allow-origin':'*'};
+const PUSH_KEY='BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';   // a made-up public key of the right shape (65 bytes)
 const FILE=n=>({name:n,mimeType:'image/jpeg',buffer:Buffer.from('not a real picture')});
 async function open(browser,eng,url,settle,o={}){
   const ctx=await browser.newContext(o.desk?{viewport:{width:900,height:900}}:{viewport:{width:390,height:844},hasTouch:true,isMobile:eng==='Chromium',locale:'en-US',timezoneId:'Asia/Kuwait'});
-  const S={reads:0,invites:[{id:'inv1',name:'Sam',used:{},caps:{}}],n:1};
+  const S={reads:0,push:[],invites:[{id:'inv1',name:'Sam',used:{},caps:{}}],n:1};
   await ctx.route(HOST+'**',async r=>{const q=r.request(),u=new URL(q.url()),m=q.method(),send=(j,status=200)=>r.fulfill({status,headers:J,body:JSON.stringify(j)});
     if(m==='OPTIONS')return r.fulfill({status:204,headers:{...J,'access-control-allow-headers':'*','access-control-allow-methods':'*'}});
     if(!o.linked)return send({error:'server'},503);
@@ -27,6 +28,7 @@ async function open(browser,eng,url,settle,o={}){
         if(b.reissue){const v=S.invites.find(x=>x.id===b.reissue);return send({code:'again'+(++S.n),name:v&&v.name})}
         S.invites.push({id:'inv'+(++S.n),name:b.name,used:{},caps:{}});return send({code:'code'+S.n,name:b.name})}
       if(m==='DELETE'){const id=u.searchParams.get('id');if(u.searchParams.get('purge'))S.invites=S.invites.filter(x=>x.id!==id);else S.invites.find(x=>x.id===id).off=true;return send({ok:true})}}
+    if(u.pathname==='/push'){if(m==='GET')return send({key:PUSH_KEY,on:false});S.push.push(JSON.parse(q.postData()||'{}'));return send({ok:true,on:true})}
     if(u.pathname==='/calendar'){S.reads++;return send({from:'2026-11-20',to:'2027-01-19',events:[
       {id:'a1a1a1a1a1a1a1a1',title:'Annual gala, black tie',start:'2026-11-26',end:'2026-11-26',allDay:true,days:1},
       {id:'b2b2b2b2b2b2b2b2',title:'Dress down Thursday',start:'2026-11-25',end:'2026-11-25',allDay:true,days:1},
@@ -167,7 +169,26 @@ async function linked(eng,browser,{ok,url,settle}){
   ok(a1.up&&a1.btns.join()==='del-all,del-device,del-cancel'&&a2&&a3==='[["deleteMyData",true]]'&&a4==='[["deleteMyData",false]]',
     T+'About’s delete card: Cancel puts it away, "Delete everything" deletes from the server too, "this device only" doesn’t ('+JSON.stringify([a1,a2,a3,a4])+')');
 
-  // reminders (the push service is replaced: remindSwitch is what both switches call)
+  // reminders, the real handlers first (remind.js remindSwTap and careRemSwTap, down to remindSwitch), on both engines: the app's
+  // users are on iPhones, and tests/remind.test.js, which also clicks both switches, starts Chromium only (it runs the server's
+  // side in Node and reads the lines kept in Cache Storage). The phone's notifications and push service are stood in for (no
+  // prompt, nothing subscribed anywhere), and the server is this test's route.
+  await ev(()=>{const sub={endpoint:'https://push.test/me',unsubscribe:async()=>{window.__unsub=(window.__unsub||0)+1;have=null;return true}};let have=null;
+    window.__perm=0;window.Notification.requestPermission=async()=>{window.__perm++;return 'granted'};
+    const reg={addEventListener(){},removeEventListener(){},update:async()=>{},installing:null,waiting:null,active:null,pushManager:{getSubscription:async()=>have,subscribe:async()=>{have=sub;return sub}}};
+    Object.defineProperty(navigator,'serviceWorker',{configurable:true,value:{ready:Promise.resolve(reg),getRegistration:async()=>reg,addEventListener(){},removeEventListener(){}}});
+    localStorage.removeItem('remind_sent');remindSave({on:false,care:false,time:'06:30'});openSettings('schedule')});await settle(p,600);
+  {const flip=async(sw,want)=>{await tap(sw,100);await p.waitForFunction(w=>!remindBusy&&JSON.stringify([remindPrefs().on,remindPrefs().care])===w,want,{timeout:8000}).catch(()=>{});
+      return ev(()=>({p:[remindPrefs().on,remindPrefs().care],sw:['#remind-sw','#care-rem-sw'].map(s=>document.querySelector(s).getAttribute('aria-checked')).join(),msg:document.querySelector('.remind-msg').textContent}))};
+    const a=await flip('#remind-sw','[true,false]'),b=await flip('#care-rem-sw','[true,true]'),c2=await flip('#remind-sw','[false,true]'),d=await flip('#care-rem-sw','[false,false]');
+    const n=await ev(()=>({perm:window.__perm,unsub:window.__unsub||0})),ps=S.push;
+    ok(a.p.join()==='true,false'&&a.sw==='true,false'&&/^On: a notification at 06:30 on your workdays/.test(a.msg)&&b.p.join()==='true,true'&&b.sw==='true,true'&&/due for the cleaner/.test(b.msg)
+      &&c2.p.join()==='false,true'&&c2.sw==='false,true'&&c2.msg==='Off.'&&d.p.join()==='false,false'&&d.sw==='false,false'&&d.msg==='Off.',
+      T+'reminders, the real handlers: a tap switches the morning reminder on, a tap the cleaning reminders on, then each off again, each switch its own ('+JSON.stringify([a,b,c2,d])+')');
+    ok(ps.length===4&&ps.slice(0,3).every(x=>x.endpoint==='https://push.test/me'&&x.time==='06:30'&&Array.isArray(x.dates)&&!x.off)&&ps[3].off===true&&n.perm===2&&n.unsub===1,
+      T+'and the server is told each time: the time and the dates while either is on, off with the last one, the subscription then given up ('+JSON.stringify({posts:ps.map(x=>x.off?'off':x.time+' '+(x.dates||[]).length+' dates'),...n})+')');
+    await ev(()=>{delete navigator.serviceWorker;localStorage.removeItem('remind_sent');closeSettings()});await settle(p,300)}
+  // then the calls themselves (the push service is replaced: remindSwitch is what both switches call)
   await ev(()=>{const turn=el=>el.getAttribute('aria-checked')!=='true';   // (a tap turns a switch the other way from what it shows)
     __via('remindSwitch',{remindSwTap:el=>['morning',turn(el)],careRemSwTap:el=>['care',turn(el)]});remindSave({on:false,care:false,time:'06:30'});openSettings('schedule')});await settle(p,600);
   const hasSw=await ev(()=>!!document.querySelector('#remind-sw'));
