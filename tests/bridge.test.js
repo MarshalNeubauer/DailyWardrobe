@@ -42,8 +42,16 @@ const BRIDGE={
   // the pages and sheets that Back closes are classic scripts: add-sheet, colpick, history, item-view, kit, settings, setup, shop,
   // start, ui and account call these. appHist, appKind and itemHist are read by the tests only (back, backgesture, shellfix): getters
   'back.js':['appHist','appKind','backBorrow','backDrop','backHold','backKind','backLand','backOn','backOver','backPush','backReturn','backSettled','backWanted','histDrop','histPush','itemHist'],
+  // tests/paste.test.js clears the line under the "Photo or link" field with it
+  'add-paste.js':['pasteMsg'],
+  // the sheets that close on a swipe down are classic scripts: add-sheet, item-view, colpick and kit call it
+  'sheet-swipe.js':['sheetSwipe'],
+  // scorecard and today (boxFold, boxUnfold), today-photofold and month (foldEdge) are classic scripts
+  'boxfold.js':['boxFold','boxUnfold','foldEdge'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
+  // read by the tests only: a11y (applyTheme, cycleTheme), actsindex (cycleTheme), modload (themeTap)
+  'theme.js':['applyTheme','cycleTheme','themeTap'],
   // add-card, itemsheet, colpick, look, add, add-sheet and item-view draw their sections and the close-up comparison with these;
   // CK_OPEN is also how 53 test files open the sections
   'checklist.js':['CK_OPEN','accRow','ckChip','ckColSum','ckIsOpen','ckSec','ckSure','ckToggle','cmpDiff','cmpDiffText','cmpDrawn','cmpHtml','cmpLab','cmpMatchHtml','cmpMount','cmpPaper','cmpPaperLine','cmpSteps'],
@@ -58,6 +66,11 @@ const BRIDGE={
   'sync-status.js':['ENDED','backedUpWords','backupFullMsg','endedAnswer','inviteEnded','pauseTillTomorrow','setSyncStatus','showSyncStatus','syncNetText','syncPaused','syncWaiting'],
   // sync.js calls phIn, phOut and phBatch; PH_MIN, isPh, phMap and phStrings are read by tests only (backup-storage, lib-verify18)
   'sync-photos.js':['PH_MIN','isPh','phBatch','phIn','phMap','phOut','phStrings'],
+  // settings.js lists the daily backups when Backup opens (loadSnapshots); the tests call the four (actsindex, backup-storage, clock,
+  // rollback, sample)
+  'snapshots.js':['loadSnapshots','rollBack','rollBackState','snapLabel'],
+  // kit.js offers the backup file (downloadBackup); the tests restore one (restoreBackup: actsindex, fieldmerge, records, wardrobe)
+  'backupfile.js':['downloadBackup','restoreBackup'],
 };
 /* file -> names its row gained after its conversion (each with the reason beside it); every one is in BRIDGE too */
 const GROWN={

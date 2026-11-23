@@ -65,3 +65,6 @@ function linkKey(el,ev){if(ev.key==='Enter'){ev.preventDefault();addLink()}}
 function pasteTap(){pasteFromClipboard()}
 function linkAddTap(){addLink()}
 acts({linkKey,pasteTap,linkAddTap});
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): only tests/paste.test.js still calls pasteMsg as a global; a module imports it */
+Object.assign(globalThis,{pasteMsg});
+export {pasteMsg};

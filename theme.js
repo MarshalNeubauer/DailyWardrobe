@@ -1,5 +1,5 @@
 /* Daily Wardrobe: the theme (Auto, Light, Dark), applied at load
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of settings.js on 2026-11-17.) */
+   (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
 /* ---- theme: Auto (follow the device) → Light → Dark; saved per device ---- */
 const THEMES={auto:['◐','automatic'],light:['☀︎','light'],dark:['☾','dark']};
 function applyTheme(t){
@@ -22,3 +22,6 @@ try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if
 /* the markup's handler (act.js): the header's theme button */
 function themeTap(){cycleTheme()}
 acts({themeTap});
+/* the bridge (tests/bridge.test.js): only the tests still call these as globals (a11y, actsindex, modload); a module imports them */
+Object.assign(globalThis,{applyTheme,cycleTheme,themeTap});
+export {applyTheme,cycleTheme,themeTap};

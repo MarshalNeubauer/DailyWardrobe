@@ -29,6 +29,16 @@ const FN={cycleTheme:true,openSettings:true,closeSettings:true,saveSettings:true
   addFiles:false,addLink:false,pasteFromClipboard:false,kitImportOpen:false,replanButton:false,setHolidayCountry:false,findCity:false,
   useMyLocation:false,startItemPics:false,syncTap:false,downloadBackup:false,restoreBackup:false,loadSnapshots:false,rollBack:false,
   checkForUpdate:false,updateNow:false,sendFeedback:false,setupOpen:false,tourAgain:false,homeAgain:false};
+/* The functions above whose file is an ES module now (the bridge, tests/bridge.test.js). A module's handler calls its own function
+   inside the module, where a wrapped window.<name> isn't seen, so these are watched one step earlier, at the handler the markup names
+   (ACTS, act.js): function -> {handler: how the handler calls it}: '' with no argument; 'enter' with none and only for the Enter key,
+   whose default it prevents; 'file' with the field's file, the field then emptied.
+   With true above the real handler then runs (the step checks what the app did); with false the wrapper stands in for the handler, so
+   for those this file no longer runs the handler's own line: theme.test.js, paste.test.js (Enter, Add, Paste), syncwrite.test.js and
+   sync.test.js (Download backup, Restore file) and rollback.test.js (the list's focus) use the real ones.
+   window.<name> is wrapped as well where the module bridges it, for the classic scripts that call it (settings.js: loadSnapshots). */
+const VIA={cycleTheme:{themeTap:''},addLink:{linkKey:'enter',linkAddTap:''},pasteFromClipboard:{pasteTap:''},
+  downloadBackup:{backupSaveTap:''},restoreBackup:{backupFilePick:'file'},loadSnapshots:{snapFocus:''},rollBack:{rollBackTap:''}};
 const CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==','base64');
 async function run(eng,browser,{ok,url,settle}){
@@ -38,7 +48,7 @@ async function run(eng,browser,{ok,url,settle}){
   await ctx.addInitScript(()=>{localStorage.setItem('tour_seen','1')});
   const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
-  await p.evaluate(FN=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
+  await p.evaluate(([FN,VIA])=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
     items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white'),I('shirt','lightblue'),
       I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','grey'),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf'})];
     dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';settings.setupDone=1;settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.location=null;
@@ -47,12 +57,19 @@ async function run(eng,browser,{ok,url,settle}){
     window.__calls=[];
     const fmt=v=>v instanceof Element?'<'+v.tagName.toLowerCase()+(v.id?'#'+v.id:v.className?'.'+String(v.className).split(' ')[0]:'')+'>'
       :v instanceof File?'file:'+v.name:Array.isArray(v)&&v.length&&v.every(x=>x instanceof File)?'files:'+v.length:JSON.stringify(v);
-    for(const n of Object.keys(FN)){const f=window[n];if(typeof f!=='function'){window.__calls.push('missing:'+n);continue}
+    for(const n of Object.keys(FN)){const f=window[n],via=VIA[n];
+      if(via)for(const h of Object.keys(via)){const real=ACTS[h],how=via[h];   // a module's function: watched at its handler
+        if(typeof real!=='function'){window.__calls.push('missing:'+n+' ('+h+')');continue}
+        ACTS[h]=function(el,ev){if(how==='enter'&&ev.key!=='Enter')return real(el,ev);
+          const a=how==='file'?[el.files[0]]:[];window.__calls.push(`${n}(${a.map(fmt).join(',')})`);
+          if(FN[n])return real(el,ev);
+          if(how==='enter')ev.preventDefault();if(how==='file')el.value=''}}
+      if(typeof f!=='function'){if(!via)window.__calls.push('missing:'+n);continue}
       window[n]=function(...a){
         window.__calls.push(n==='addFiles'?`addFiles(${fmt(a[0])},${a[1]?'several':'one'})`:`${n}(${a.map(fmt).join(',')})`);
         return FN[n]?f.apply(this,a):undefined}}
     document.addEventListener('click',()=>window.__calls.push('doc:click'));
-    window.addEventListener('keydown',e=>window.__calls.push('key:'+e.key+':'+(e.defaultPrevented?'prevented':'default')))},FN);
+    window.addEventListener('keydown',e=>window.__calls.push('key:'+e.key+':'+(e.defaultPrevented?'prevented':'default')))},[FN,VIA]);
   // the controls shown only to a connected phone, and the folds shown only to the person who runs the server, are shown here without a server
   await p.addStyleTag({content:'html body.nocon .conn-only,html body .connhide,html body #adv-connection,html body #adv-photos{display:block!important}'});
   await settle(p,300);
