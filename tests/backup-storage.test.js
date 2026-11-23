@@ -526,9 +526,9 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
     ok(del.fail&&/can’t delete anything more today, so nothing was deleted\. Try again after \d/.test(del.fail),`Delete everything refused for the day's saves: said in the app's words (“${del.fail}”)`);
     // W1-1-02: the day's remakes
     const rm=await A.evaluate(async()=>{localStorage.removeItem('remake_day');const a=remakeLeft();remakeSpend(10);const b=remakeLeft();
-      const m0=window.makeSmall;let made=0;window.makeSmall=async it=>{made++;it.photoSm='data:image/jpeg;base64,AA';it.phSig=phSigOf(it.photo);return true};
-      for(const it of items)delete it.photoSm;const n0=await smallPhotos();localStorage.removeItem('remake_day');remakeSpend(7);const n1=await smallPhotos();window.makeSmall=m0;return {a,b,n0,n1,made}});
-    ok(rm.a===10&&rm.b===0&&rm.n0===0&&rm.n1===3,`a connected phone remakes at most 10 pictures a day, the rest on the next days (${JSON.stringify(rm)})`);
+      const cv=document.createElement('canvas');cv.width=cv.height=8;const cx=cv.getContext('2d');items.forEach((it,k)=>{cx.fillStyle='rgb(40,'+(60+k)+',90)';cx.fillRect(0,0,8,8);it.photo=cv.toDataURL('image/png')});   // real pictures: the real makeSmall runs
+      for(const it of items)delete it.photoSm;const n0=await smallPhotos();localStorage.removeItem('remake_day');remakeSpend(7);const n1=await smallPhotos(),made=items.filter(it=>it.photoSm&&it.phSig===phSigOf(it.photo)).length;return {a,b,n0,n1,made}});
+    ok(rm.a===10&&rm.b===0&&rm.n0===0&&rm.n1===3&&rm.made===3,`a connected phone remakes at most 10 pictures a day, the rest on the next days (${JSON.stringify(rm)})`);
     ok(!A.errs.length,'no page errors: '+A.errs.join('; '));
     await A.ctx.close();
 

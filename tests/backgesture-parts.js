@@ -86,7 +86,7 @@ async function run(eng,browser,parts,{ok,url,WARDROBES,settle}){
   await layer('Add',{base:()=>ev(()=>show('wardrobe')),open:()=>ev(()=>openAdd()),on:()=>!document.querySelector('#add').hidden,x:()=>tap('#add .pback'),under:()=>!document.querySelector('#wardrobe').hidden});
   await layer('the item sheet',{base:()=>ev(()=>show('wardrobe')),open:()=>ev(()=>openItem('m1')),on:()=>!!editing,x:()=>tap('#item-view .ivdone'),under:()=>!document.querySelector('#wardrobe').hidden});
   await layer('the piece picker',{base:()=>ev(()=>show('today')),open:()=>ev(()=>openPicker('shirt')),on:()=>!!picker,x:()=>tap('#pick-sheet .pick-x'),under:today});
-  await layer('What to buy',{base:()=>ev(()=>{show('wardrobe');window.shopGate=()=>[];window.analyzeWardrobe=()=>{}}),open:()=>ev(()=>openShop()),on:()=>shopOpen,x:()=>tap('#shop-sheet .pick-x'),under:()=>!document.querySelector('#wardrobe').hidden});
+  await layer('What to buy',{base:()=>ev(()=>{show('wardrobe');shopBusy={i:-1,n:1,label:'',t0:Date.now()}}),open:()=>ev(()=>openShop()),on:()=>shopOpen,x:()=>tap('#shop-sheet .pick-x'),under:()=>!document.querySelector('#wardrobe').hidden});
   await layer('a question',{base:()=>ev(()=>show('today')),open:()=>ev(()=>{askConfirm('Remove it?',{ok:'Remove',danger:true})}),on:()=>!!asking,x:()=>tap('#ask-cancel'),under:today});
   await layer('the tour',{base:()=>ev(()=>show('today')),open:()=>ev(()=>tourOpen()),on:()=>!!kit,x:()=>tap('#kitsheet .kit-x'),under:today});
   await layer('the close-up chooser',{base:()=>ev(()=>show('today')),open:()=>ev(()=>closeupPick({mode:'add',file:()=>{}})),on:()=>!!cuOpen,x:()=>tap('#cu-cancel'),under:today});

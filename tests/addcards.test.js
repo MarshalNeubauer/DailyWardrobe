@@ -186,12 +186,15 @@ const addreadend=async({ok,chromium,url})=>{
     await p.route('**/wv.test/**',r=>r.fulfill({status:200,contentType:'application/json',body:'{}'}));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const conf=()=>p.evaluate(()=>{const q=queue[0],b=document.querySelector('#qconf-0');return {reading:!!(q&&(q.refining||q.patternReading)),off:b?b.disabled:'none'}});
-    const start=async(pattern)=>{await p.evaluate(async pat=>{queue.length=0;localStorage.setItem('worker_url','https://wv.test/');localStorage.setItem('app_token','x');
+    const start=async(pattern,arm)=>{await p.evaluate(async pat=>{queue.length=0;localStorage.setItem('worker_url','https://wv.test/');localStorage.setItem('app_token','x');
       window.ask=async()=>({type:'suit',primaryColor:'navy',secondaryColor:'white',tertiaryColor:null,pattern:'pinstripe',confidence:{type:'high',primaryColor:'high',pattern:'high'},model:'stub',
         weave:{direction:'vertical',repeatsAcross:30,colours:['#1f2a44','#e8e8e8'],description:'navy with fine white pinstripes'}});
-      window.claudePattern=async()=>pat;openAdd();
+      window.__patAns=pat;if(!window.__patF){const f0=window.fetch;window.__patF=1;window.fetch=(u,o)=>/\/pattern$/.test(String(u))?Promise.resolve(new Response(JSON.stringify(window.__patAns||{}),{status:200})):f0(u,o)}   // the server's answer to POST /pattern
+      openAdd();
       const bl=await (await fetch('tests/fixtures/suit-pinstripe.jpg')).blob();await addFiles([new File([bl],'s.jpg',{type:'image/jpeg'})])},pattern);
       await p.waitForFunction(()=>queue[0]&&!queue[0].busy&&document.querySelector('#qconf-0'));
+      // arm: measuring this card throws from its second write of q.meas on (the first is the close-up's own, before the reading, which tagging.js catches)
+      if(arm)await p.evaluate(()=>{const q=queue[0];let v=q.meas,n=0;window.__measThrew=0;Object.defineProperty(q,'meas',{configurable:true,enumerable:true,get:()=>v,set(x){if(++n>1){window.__measThrew++;throw new Error('measuring failed')}v=x}})});
       await p.evaluate(async()=>{const bl=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([bl],'c.jpg',{type:'image/jpeg'}))});
       await p.waitForFunction(()=>queue[0]&&!queue[0].refining&&!queue[0].patternReading,null,{timeout:20000});await p.waitForTimeout(300)};
 
@@ -201,10 +204,8 @@ const addreadend=async({ok,chromium,url})=>{
     ok(await p.evaluate(async()=>{const r=await save(queue[0].id);return r===true&&items.length===1&&!items[0].order}),'and the item saves in rotation, without "Bought, on the way"');
 
     // a step after the close-up's answer throws
-    await p.evaluate(()=>{window._ma=measureAndApply;window.measureAndApply=()=>{throw new Error('measuring failed')}});
-    await start(null);
-    c=await conf();ok(!c.reading&&c.off===false,'a measuring step that throws after the close-up\'s answer: Confirm is on ('+JSON.stringify(c)+')');
-    await p.evaluate(()=>{window.measureAndApply=window._ma});
+    await start(null,true);
+    c=await conf();const threw=await p.evaluate(()=>window.__measThrew);ok(threw>0&&!c.reading&&c.off===false,'a measuring step that throws after the close-up\'s answer: Confirm is on ('+JSON.stringify({...c,threw})+')');
 
     // the reading itself fails (the network): Confirm comes back too
     await p.evaluate(()=>{window._ask=window.ask});await start(null);
@@ -380,9 +381,9 @@ const auditfix=async({ok,chromium,url})=>{
     const r=await p.evaluate(async()=>{show('add');addManual();queue.push({id:'h1',err:'open'});errToHand('h1');queue[0].refining=1;renderAdd();
       const conf=['#nps-bar .pri','#queue .btns button.pri'].map(s=>document.querySelector(s).disabled),all=document.querySelector('#save-all button');
       const before=items.length;await save(0);await saveAll();const kept=queue.length,after=items.length;
-      let called=0;const was=window.claudePattern;window.claudePattern=async()=>{called++;return null};
+      let called=0;const was=window.fetch;window.fetch=(u,o)=>{if(/\/pattern$/.test(String(u))){called++;return Promise.resolve(new Response('{}',{status:200}))}return was(u,o)};
       const q={...queue[1],raw:{tex:document.createElement('canvas')},tagImg:'data:x',type:'tie',pattern:'stripe'};localStorage.setItem('worker_url','https://w.test/');
-      await readPatternWithClaude(q);window.claudePattern=was;localStorage.removeItem('worker_url');
+      await readPatternWithClaude(q);window.fetch=was;localStorage.removeItem('worker_url');
       queue[0].refining=0;renderAdd();const conf2=document.querySelector('#nps-bar .pri').disabled;queue.length=0;renderAdd();
       return {conf,all:all&&all.disabled,before,after,kept,called,conf2}});
     ok(r.conf[0]===true&&r.conf[1]===false&&r.all===true,`while Claude reads a card its Confirm and Save all are switched off, the other card's Confirm not (${JSON.stringify(r)})`);

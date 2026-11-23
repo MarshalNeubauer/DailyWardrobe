@@ -1,5 +1,5 @@
 /* Daily Wardrobe: outfit photos: keys, kept photos and item pictures
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
+   (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14.) */
 /* ---- kept outfit photos (made by the retired photo generator, worker /render): saved per outfit combination, not per day, so any
    day that wears the same pieces shows the photo; the worker keeps a copy (KV) so every device can show it. ---- */
 let renders={};   // kept pictures by key: outfit photos made before 2026-11-14 (renderFor shows them), item pictures, assembled pictures
@@ -235,6 +235,19 @@ async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();
   // what wasn't tried after a stop is said as such: "failed" read as if each had been tried (and paid for)
   const left=todo.length-done-fail,why=err?(typeof plainErr==='function'?plainErr(err):err):'';
   itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed`:''}${left?`, ${left} not made`:''}${kept||fail||left?` (${why})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
+/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. esc is called by 35 page scripts,
+   srcOk by nine, jsq by add-save.js and look.js; the painter, which stays classic, reads the kept pictures and their keys (renders,
+   comboSig, comboKey, fnv64, keepRender, workerBase, workerList, listAt, picsDrawn); today.js draws with renderFor, itemPic,
+   itemPicHtml, itemKey, picBgs, PIC_BG, figureLabel, lastWorn and fetchRemoteRender; start.js loads and mends (loadRenders,
+   fixItemBackdrops, asmLive); settings.js draws the item pictures' line (renderItemPicUI, schedulePrefetch); history.js and
+   daysoff.js word with aAn; itemsheet.js asks for a piece's picture (fetchItemPic); the rest are called or read by tests only.
+   renders is replaced by tests (care, navfit, socktoe), remoteKeys by today.js and tests, remoteListed, listKeys and listAt by
+   tests: a getter and a setter each; itemBatch is a let only this file writes: a getter. A module imports them.
+   Above acts(), the file's one top-level call that can throw (act.js not loaded): the names are then still the page's, as a
+   classic script's were */
+Object.assign(globalThis,{esc,jsq,srcOk,figureLabel,comboSig,fnv64,comboKey,keepRender,workerBase,asmLive,picsDrawn,renderFor,renderTried,fetchRemoteRender,workerList,remoteList,prefetchRenders,schedulePrefetch,loadRenders,shirtPatterned,lastWorn,ITEM_PIC_TYPES,aAn,itemDesc,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,fetchItemPic,renderItemPic,shareLocalPics,missingItemPics,itemPicLimitText,itemPicsUsedUp,renderItemPicUI,startItemPics});
+Object.defineProperties(globalThis,{itemBatch:{get:()=>itemBatch},renders:{get:()=>renders,set:v=>{renders=v}},remoteKeys:{get:()=>remoteKeys,set:v=>{remoteKeys=v}},remoteListed:{get:()=>remoteListed,set:v=>{remoteListed=v}},listKeys:{get:()=>listKeys,set:v=>{listKeys=v}},listAt:{get:()=>listAt,set:v=>{listAt=v}}});
+export {renders,esc,jsq,srcOk,figureLabel,comboSig,fnv64,comboKey,keepRender,workerBase,asmLive,picsDrawn,renderFor,renderTried,fetchRemoteRender,remoteKeys,remoteListed,listKeys,listAt,workerList,remoteList,prefetchRenders,schedulePrefetch,loadRenders,shirtPatterned,lastWorn,ITEM_PIC_TYPES,aAn,itemDesc,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,fetchItemPic,renderItemPic,shareLocalPics,missingItemPics,itemPicLimitText,itemPicsUsedUp,itemBatch,renderItemPicUI,startItemPics};
 /* index.html's (act.js): Settings' "Generate item pictures" */
 function itemPicsTap(){startItemPics()}
 /* an item picture has loaded (data-act-load; its key in data-k): its background color is read from it once */

@@ -22,6 +22,12 @@ const shopFresh=()=>!!shop&&shop.sig===shopSig()&&Date.now()-(shop.at||0)<SHOP_S
 const shopHid=x=>(settings.shopSkip||[]).includes(x.key);
 const shopRecs=r=>r?r.cats.reduce((a,c)=>a+c.recs.filter(x=>!shopHid(x)).length,0):0;
 const shopFind=key=>{const r=shopPart||(shop&&shop.res);if(!r)return null;for(const c of r.cats){const x=c.recs.find(x=>x.key===key);if(x)return x}return null};
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
+   as globals: stats (shopButton), start (closeShop), today-gestures (shopOpen); the rest are read by tests. Above the file's first call
+   that can throw (db.then, then backOn and acts): the names are then still the page's. shopBusyText, a const declared further down, is
+   handed over above acts({…}), where the one export is */
+Object.assign(globalThis,{shopSig,shopFresh,shopButton,openShop,closeShop,analyzeWardrobe,renderShop,shopGo,shopBought});
+Object.defineProperties(globalThis,{shopPart:{get:()=>shopPart},shopOpen:{get:()=>shopOpen},shopForm:{get:()=>shopForm},shopDrag:{get:()=>shopDrag},shopStale:{get:()=>shopStale},shopSwipeOn:{get:()=>shopSwipeOn},shop:{get:()=>shop,set:v=>{shop=v}},shopBusy:{get:()=>shopBusy,set:v=>{shopBusy=v}},shopWorker:{get:()=>shopWorker,set:v=>{shopWorker=v}},shopShown:{get:()=>shopShown,set:v=>{shopShown=v}}});
 db.then(()=>metaGet('shop')).then(v=>{if(v&&v.res&&v.res.v===2&&!shop){shop=v;if(!$('#wardrobe').hidden&&!editing)renderWardrobe()}}).catch(()=>{});
 
 /* the button on the Wardrobe tab */
@@ -190,4 +196,6 @@ function shopFormTap(el){shopForm=el.dataset.rec;renderShop()}
 function shopCancelTap(){shopForm=null;renderShop()}
 function shopBoughtTap(el){shopBought(el.dataset.rec)}
 function shopHideTap(el){shopHide(el.dataset.rec)}
+Object.assign(globalThis,{shopBusyText});
+export {shop,shopBusy,shopPart,shopWorker,shopOpen,shopShown,shopForm,shopSig,shopFresh,shopButton,openShop,closeShop,shopDrag,shopStale,shopSwipeOn,analyzeWardrobe,shopBusyText,renderShop,shopGo,shopBought};
 acts({shopBackdropTap,shopOpenTap,shopCloseTap,shopAgainTap,shopGoTap,shopRecTap,shopFormTap,shopCancelTap,shopBoughtTap,shopHideTap});

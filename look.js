@@ -4,7 +4,7 @@
    #col-sheet); Claude's and the measurement's suggestions on the row they change; one "Read with Claude" for all three. A Settings switch
    (Photo tagging → Beta features) turns it on for this phone only (localStorage beta_look, not synced); off, the app is exactly as before.
    Both UIs read and write the same item fields; the beta's own fields (lookOk, lookHint, leatherOwn, metalOwn) are ignored by the old UI.
-   Loaded after checklist.js; nothing runs at load but Settings' registration. */
+   Loaded after checklist.js (an ES module since 2026-11-23); nothing runs at load but Settings' registration. */
 
 /* ---- the switch ---- */
 const LOOK_LS='beta_look';
@@ -19,6 +19,15 @@ function lookSet(on){on=!!on;try{if(on)localStorage.setItem(LOOK_LS,'1');else lo
   announce(on?'New Look editor on.':'New Look editor off.')}
 function renderLookSetting(){const el=document.querySelector('#beta-list');if(!el)return;const on=lookOn();
   el.innerHTML=`<div class="dress-row"><span class="dress-txt"><b id="beta-look-l">New Look editor (beta)</b><small id="beta-look-h">One Look section for color, pattern and material when you add or open an item. This phone only; switch it off any time and nothing is lost.</small></span><button type="button" class="dress-sw${on?' on':''}" id="beta-look" role="switch" aria-checked="${on}" aria-labelledby="beta-look-l" aria-describedby="beta-look-h" data-act="lkSwitch" data-on="${!on}"><i></i></button></div>`}
+/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. lookOn is asked by core.js,
+   add-card.js, item-view.js, itemsheet.js, tagging.js, own-lists.js and colpick.js; add-card.js and itemsheet.js draw the section
+   (lookSection), colpick.js draws and uses the picker sheet with lookCur, lookWrite, lookClipMetal, lookSetEnamel, renderLookPick,
+   lookUsePick, lookShadeHtml, lookSugCols and lookSugPats; own-lists.js draws the own materials (lookOwnMatUI), item-view.js opens
+   a piece fresh (lookOpenFresh), add-save.js saves (lookSave); lookSet, lookOwnMats, lookSetMat, lookShadeStep and lookCheck are
+   called by tests only. A module imports them.
+   Above the file's first call that can throw (settingsPart, when settings.js did not load; then acts): the functions are then still
+   the page's, as a classic script's were; the consts declared further down are handed over above acts */
+Object.assign(globalThis,{lookOn,lookSet,lookOwnMats,lookCur,lookClipMetal,lookWrite,lookOwnMatUI,lookSetMat,lookSetEnamel,renderLookPick,lookUsePick,lookShadeHtml,lookShadeStep,lookSugCols,lookSugPats,lookSection,lookCheck,lookOpenFresh,lookSave});
 settingsPart(renderLookSetting);
 
 /* ---- which types have what ---- */
@@ -462,4 +471,9 @@ function lkClearStripes(el){clearStripes(el.dataset.id)}
 function lkNewCol(){openColNew()}
 function lkNewPat(){openPatNew()}
 function lkCuFileQ(el,ev,f){cuGot(el,f,x=>addTexture(cardIx(el),x,true))}   // (the Add card's "Add a close-up for a truer color": read at once)
+/* the rest of the bridge: the consts declared above (colpick.js: the coat, metal and enamel lists, LOOK_PK, LOOK_KS, lookHasPat,
+   lookShadeOk, LOOK_PAT_GROUPS, lookPatGroupOf; add-card.js, item-photo.js and itemsheet.js: lookCu; checklist.js: lookHasPat;
+   tests/lookbeta.test.js: LOOK_OTHER) */
+Object.assign(globalThis,{LOOK_COATS,LOOK_METALT,LOOK_ENAMEL,LOOK_METAL_COLS,lookCu,lookHasPat,LOOK_OTHER,LOOK_PK,LOOK_KS,lookShadeOk,LOOK_PAT_GROUPS,lookPatGroupOf});
+export {lookOn,lookSet,LOOK_COATS,LOOK_METALT,LOOK_ENAMEL,LOOK_METAL_COLS,lookCu,lookHasPat,lookOwnMats,lookCur,lookClipMetal,LOOK_OTHER,lookWrite,lookOwnMatUI,lookSetMat,lookSetEnamel,LOOK_PK,LOOK_KS,renderLookPick,lookUsePick,lookShadeHtml,lookShadeStep,lookShadeOk,lookSugCols,lookSugPats,LOOK_PAT_GROUPS,lookPatGroupOf,lookSection,lookCheck,lookOpenFresh,lookSave};
 acts({lkSwitch,lkAddChip,lkUse,lkOwnRm,lkOwnAdd,lkOwnCancel,lkOwnOpen,lkSel,lkClose,lkOther,lkSaveOther,lkNewName,lkNewAdd,lkNewOpen,lkUsePick,lkShade,lkRow,lkUndoMeas,lkStop,lkRead,lkCheck,lkReread,lkClearStripes,lkNewCol,lkNewPat,lkCuFileQ});

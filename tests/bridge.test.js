@@ -61,6 +61,8 @@ const BRIDGE={
   // every file that changes a card keeps it (addKeep, addKeepSoon); add and add-sheet (addWatch, addCardRec), kit (addRevive),
   // safety (addRestore); addKeepT is read by tests/addcards.test.js, which also assigns addRestoreState (add.js reads it): a setter
   'add-keep.js':['addCardRec','addKeep','addKeepSoon','addKeepT','addRestore','addRestoreState','addRevive','addWatch'],
+  // add, add-card, add-keep, add-save, itemsheet, item-view, history, stats, wardrobe, colpick, look, migrate, measure, pattern-read and app draw and edit with these; the rest: tests
+  'item-photo.js':['PH_MAX','applyCrop','cropEditor','cropKeep','cropSource','imgOf','layoutCrop','makeSmall','paperCloth','paperHint','paperLine','paperRetake','paperSteps','paperTip','phSigOf','phSm','photoTools','replaceTexture','setPhoto','setTexture','smallPhotos','startCrop','undoPhoto'],
   // editing is read by twelve classic page scripts and set by 31 tests (a setter); wardrobe, cost and kit open a piece (openItem), start
   // and wardrobe drop the sheet (dropItem), sync says a sync changed the open piece (itemSynced), itemsheet, start and checklist redraw
   // it (renderItem); itemGoneTell: itemsheet, wardrobe, look, cost; noMotion: nine files; closeItem, stepItem and wardList: tests only
@@ -108,8 +110,17 @@ const BRIDGE={
   // scorecard, today-gestures and today-photofold are modules earlier in the list that read these as globals; monthGridHtml and
   // monthStep are called by tests only (month, setup); tests/setup.test.js sets monthPanel (a setter)
   'month.js':['MONTH_EASE','MONTH_MS','dayOnly','monthBelow','monthDrag','monthGridHtml','monthLink','monthOpen','monthPanel','monthPlan','monthRelease','monthStep','nextWorkday','openDay','pageScroll','piecesLine','piecesParts','planOn','revealNeed','shortRest','shortTop','stackSVG','toggleMonth'],
+  // esc is called by 35 page scripts, srcOk by nine; the painter (assemble, asm-color, asm-kinds, asm-ocp: classic) reads the kept
+  // pictures and their keys; today, start, settings, daysoff and stats (classic), history, today-picture and itemsheet (modules that
+  // read them as globals) draw with the rest; 15 names are read by
+  // tests only. renders (tests), remoteKeys (today.js, tests), remoteListed, listKeys and listAt (tests) are assigned from outside:
+  // a getter and a setter each; itemBatch is a let only photos.js writes: a getter
+  'photos.js':['ITEM_PIC_TYPES','PIC_BG','aAn','asmLive','comboKey','comboSig','esc','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','fnv64','itemBatch','itemDesc','itemKey','itemPic','itemPicHtml','itemPicLimitText','itemPicsUsedUp','jsq','keepRender','lastWorn','listAt','listKeys','loadRenders','missingItemPics','picBgs','picsDrawn','prefetchRenders','remoteKeys','remoteList','remoteListed','renderFor','renderItemPic','renderItemPicUI','renderTried','renders','schedulePrefetch','shareLocalPics','shirtPatterned','srcOk','startItemPics','workerBase','workerList'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
+  // settings (countryName, renderDaysOffUI, renderFormalUI), setup (COUNTRY_CODES, setHolidayCountry), start (refreshHolidays), calendar
+  // (isoToDate, dayOffAdd, yearDate), history and missed (shortDate, renderFormalUI); the rest: tests; holidayMsg is a getter
+  'daysoff.js':['COUNTRY_CODES','addDayOff','builtinHolidays','countryName','dayOffAdd','holYears','holidayMsg','isoToDate','nagerKeep','refreshHolidays','renderDaysOffUI','renderFormalUI','setHolidayCountry','shortDate','toggleHoliday','yearDate'],
   // settings.js and setup.js (unit, renderWxLoc, setUnits, setLocation, useMyLocation, findCity), today.js (wxChip, loadWeather), start.js
   // and safety.js (loadWeather) read these as globals (setup.js is a module later in the list); scorecard.js, a module earlier in the list, reads temp; geoName is read
   // by tests/setup.test.js only
@@ -130,6 +141,11 @@ const BRIDGE={
   // the photo-tagging request: app, add, item-photo, migrate, measure, pattern-read, colpick, look, safety and stats are classic
   // scripts; add-keep.js, add-save.js, tagging.js (TAG_Q) and checklist.js (texSig) are modules that read these as globals
   'tag-request.js':['CLOSE_MAX','TAGIMG_CACHE','TAG_MAX','TAG_Q','benchEstimate','customForTag','describeEstimate','keepCloseImg','keepTagImg','readEstimate','recordTagResult','resignTagImg','sharpCloseOf','tagExtras','tagFixes','tagImgOf','tagStatsCard','texSig'],
+  // start.js runs the four remakes, item-photo.js counts its own within the day's (remakeLeft, remakeSpend); REMAKE_DAY is read by
+  // tests/tagreads.test.js only
+  'migrate.js':['REMAKE_DAY','fixBlackBackdrops','recolourSpecSetts','remakeLeft','remakeSpend','upgradeCloseups','upgradePhotos'],
+  // add, add-card, tagging, pattern-read, safety, colpick, checklist, look and item-photo; the rest: tests
+  'measure.js':['AI_HIGH_FLAG','AI_LOW_AUTO','BLUR_SHARP','FAR_DE','MEAS_AUTO','MEAS_GAP','PAPER','aiSignals','applyMeasured','calibLab','closeRead','colRef','colourVerdicts','measHint','measKL','measureAndApply','measureCard','measureCloth','measureParts','multiCol','nearestCols','paperCopy','paperKey','paperNow','paperOf','sharpness','undoMeasured','urlCanvas','wbGains','wbRead'],
   // add, add-card, measure, pattern-read, colpick and safety are classic scripts; add-save.js and tag-request.js (fieldLabel, valName),
   // modules earlier in the list, read these as globals; confTxt is read by tests/records.test.js only
   'tagging.js':['aiFields','closeTagImg','confTxt','fieldLabel','readAbort','readBegin','readEnd','refineFromCloseup','tagNotes','takeExtras','valName'],
@@ -137,6 +153,8 @@ const BRIDGE={
   // as globals (tests/restacts.test.js replaces those two on window, which reaches tagging.js's calls); guessPatBase is called by
   // tests/asmroute.test.js only
   'own-lists.js':['addCustomColor','addCustomPattern','addOwnMaterial','groupOf','guessPatBase','matGuessUse','matOffer','newColHex','openColForm','openPatForm','ownColOffer','removeCustom','removeOwnMaterial','renderCustomUI','renderOwnMatUI','typePl'],
+  // add, add-card, add-save, tagging, itemsheet, look, measure, migrate and asm-color; the rest: tests
+  'pattern-read.js':['TEX_WORDS','camoFromPixels','claudeOnly','claudePattern','missedPattern','motifFromSpec','motifPat','readPatternWithClaude','readSett','readable','rereadSett','settCheck','settFrom','settFromSpec','settNote','settSummary','settable','specSett','texContrast','texFromSpec'],
   // start (renderStats, statsShow), wardrobe, care and cost (wornDays), dress (shoesWhyUnused), fav, cost, care and pack (the names and pictures); the rest: tests; statsOpen and fitMemo are getters (only stats.js writes them)
   'stats.js':['buildStats','emptyAdd','fitMemo','groupName','openStats','plannedDays','renderStats','shoesWhyUnused','statDate','statName','statName1','statPic','statsOpen','statsShow','statsToggle','whyUnused','wornDays'],
   // calendar.js opens the page and sets the trip (openPack, packSetTrip), start.js shows it (packShow); the rest are called or read by
@@ -150,6 +168,9 @@ const BRIDGE={
   // add-card, itemsheet, colpick, look, add, add-sheet and item-view draw their sections and the close-up comparison with these;
   // CK_OPEN is also how 53 test files open the sections
   'checklist.js':['CK_OPEN','accRow','ckChip','ckColSum','ckIsOpen','ckSec','ckSure','ckToggle','cmpDiff','cmpDiffText','cmpDrawn','cmpHtml','cmpLab','cmpMatchHtml','cmpMount','cmpPaper','cmpPaperLine','cmpSteps'],
+  // core, item-photo and colpick are classic scripts; add-card, item-view, itemsheet, tagging, own-lists, add-save and checklist
+  // are modules that read these as globals; LOOK_OTHER, lookSet, lookOwnMats, lookSetMat, lookShadeStep and lookCheck by tests only
+  'look.js':['LOOK_COATS','LOOK_ENAMEL','LOOK_KS','LOOK_METALT','LOOK_METAL_COLS','LOOK_OTHER','LOOK_PAT_GROUPS','LOOK_PK','lookCheck','lookClipMetal','lookCu','lookCur','lookHasPat','lookOn','lookOpenFresh','lookOwnMatUI','lookOwnMats','lookPatGroupOf','lookSave','lookSection','lookSet','lookSetEnamel','lookSetMat','lookShadeHtml','lookShadeOk','lookShadeStep','lookSugCols','lookSugPats','lookUsePick','lookWrite','renderLookPick'],
   // itemsheet, cost, wardrobe, add-more, settings, today, today-picture and remind; the rest: tests
   'care.js':['CARE_ABLE','CARE_DEF','careBack','careBackText','careBadge','careBandSoon','careCard','careCleaned','careCounts','careDayState','careFrame','careLimit','careLists','careLog','careName','careNote','careReminders','careSend','careState','careTag','careTimes','careWashed','careWord','openCare','renderCare','renderCareUI'],
   // itemsheet (cpwSum, cpwBlock), add-card (cpwQRow), add-save (cpwSaveFields), stats (cpwStatsCard), care (cpwSettingsUI); the
@@ -158,6 +179,8 @@ const BRIDGE={
   // history, today, itemsheet, wardrobe, scorecard and stats; favData, favSave and favToggleItem by the favorites tests only;
   // favWard is a let only fav.js writes (wardrobe.js reads it): a getter
   'fav.js':['FAV_UNDO_MS','favChip','favData','favItemRow','favLastIcon','favMark','favOff','favPieces','favPillSeg','favSave','favStatsCard','favStrip','favToggleItem','favWard','favWhy'],
+  // stats (shopButton), start (closeShop), today-gestures (shopOpen); the rest: tests, which assign shop, shopBusy, shopWorker and shopShown (getters and setters)
+  'shop.js':['analyzeWardrobe','closeShop','openShop','renderShop','shop','shopBought','shopBusy','shopBusyText','shopButton','shopDrag','shopForm','shopFresh','shopGo','shopOpen','shopPart','shopShown','shopSig','shopStale','shopSwipeOn','shopWorker'],
   // sync.js and the screens that say how the backup stands: app, photos, settings, snapshots, backupfile, account, about, ui, setup;
   // the clock, rollback, backup-storage, server-limits and addcards tests
   'sync-status.js':['ENDED','backedUpWords','backupFullMsg','endedAnswer','inviteEnded','pauseTillTomorrow','setSyncStatus','showSyncStatus','syncNetText','syncPaused','syncWaiting'],
@@ -179,6 +202,8 @@ const BRIDGE={
   // history.js, settings.js, start.js and care.js are classic scripts (remindSoon); the rest are read by the remind, connkeep and
   // restacts tests, remindBusy too (a getter: only remind.js writes it)
   'remind.js':['outfitLine','remindBusy','remindCareOn','remindKeep','remindPrefs','remindRefresh','remindSave','remindSig','remindSoon','renderRemindUI'],
+  // safety (appVersion), account (ABOUT_NOTE, wipeDevice), settings (renderAbout); the rest: tests; aboutUpdating has a setter (tests/invite.test.js)
+  'about.js':['ABOUT_KEYS','ABOUT_NOTE','aboutAsk','aboutDeleteAccount','aboutNew','aboutResetAt','aboutUpdating','appVersion','askDelete','checkForUpdate','fbWithErrs','renderAbout','sendFeedback','updateNow','wipeDevice'],
 };
 /* file -> names its row gained after its conversion (each with the reason beside it); every one is in BRIDGE too */
 const GROWN={
