@@ -106,6 +106,12 @@ const BRIDGE={
   // scorecard, today-gestures and today-photofold are modules earlier in the list that read these as globals; monthGridHtml and
   // monthStep are called by tests only (month, setup); tests/setup.test.js sets monthPanel (a setter)
   'month.js':['MONTH_EASE','MONTH_MS','dayOnly','monthBelow','monthDrag','monthGridHtml','monthLink','monthOpen','monthPanel','monthPlan','monthRelease','monthStep','nextWorkday','openDay','pageScroll','piecesLine','piecesParts','planOn','revealNeed','shortRest','shortTop','stackSVG','toggleMonth'],
+  // esc is called by 35 page scripts, srcOk by nine; the painter (assemble, asm-color, asm-kinds, asm-ocp: classic) reads the kept
+  // pictures and their keys; today, start, settings, daysoff and stats (classic), history, today-picture and itemsheet (modules that
+  // read them as globals) draw with the rest; 15 names are read by
+  // tests only. renders (tests), remoteKeys (today.js, tests), remoteListed, listKeys and listAt (tests) are assigned from outside:
+  // a getter and a setter each; itemBatch is a let only photos.js writes: a getter
+  'photos.js':['ITEM_PIC_TYPES','PIC_BG','aAn','asmLive','comboKey','comboSig','esc','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','fnv64','itemBatch','itemDesc','itemKey','itemPic','itemPicHtml','itemPicLimitText','itemPicsUsedUp','jsq','keepRender','lastWorn','listAt','listKeys','loadRenders','missingItemPics','picBgs','picsDrawn','prefetchRenders','remoteKeys','remoteList','remoteListed','renderFor','renderItemPic','renderItemPicUI','renderTried','renders','schedulePrefetch','shareLocalPics','shirtPatterned','srcOk','startItemPics','workerBase','workerList'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
   // settings.js and setup.js (unit, renderWxLoc, setUnits, setLocation, useMyLocation, findCity), today.js (wxChip, loadWeather), start.js
@@ -126,6 +132,9 @@ const BRIDGE={
   // the photo-tagging request: app, add, item-photo, migrate, measure, pattern-read, colpick, look, safety and stats are classic
   // scripts; add-keep.js, add-save.js, tagging.js (TAG_Q) and checklist.js (texSig) are modules that read these as globals
   'tag-request.js':['CLOSE_MAX','TAGIMG_CACHE','TAG_MAX','TAG_Q','benchEstimate','customForTag','describeEstimate','keepCloseImg','keepTagImg','readEstimate','recordTagResult','resignTagImg','sharpCloseOf','tagExtras','tagFixes','tagImgOf','tagStatsCard','texSig'],
+  // start.js runs the four remakes, item-photo.js counts its own within the day's (remakeLeft, remakeSpend); REMAKE_DAY is read by
+  // tests/tagreads.test.js only
+  'migrate.js':['REMAKE_DAY','fixBlackBackdrops','recolourSpecSetts','remakeLeft','remakeSpend','upgradeCloseups','upgradePhotos'],
   // add, add-card, measure, pattern-read, colpick and safety are classic scripts; add-save.js and tag-request.js (fieldLabel, valName),
   // modules earlier in the list, read these as globals; confTxt is read by tests/records.test.js only
   'tagging.js':['aiFields','closeTagImg','confTxt','fieldLabel','readAbort','readBegin','readEnd','refineFromCloseup','tagNotes','takeExtras','valName'],
@@ -144,6 +153,9 @@ const BRIDGE={
   // add-card, itemsheet, colpick, look, add, add-sheet and item-view draw their sections and the close-up comparison with these;
   // CK_OPEN is also how 53 test files open the sections
   'checklist.js':['CK_OPEN','accRow','ckChip','ckColSum','ckIsOpen','ckSec','ckSure','ckToggle','cmpDiff','cmpDiffText','cmpDrawn','cmpHtml','cmpLab','cmpMatchHtml','cmpMount','cmpPaper','cmpPaperLine','cmpSteps'],
+  // core, item-photo and colpick are classic scripts; add-card, item-view, itemsheet, tagging, own-lists, add-save and checklist
+  // are modules that read these as globals; LOOK_OTHER, lookSet, lookOwnMats, lookSetMat, lookShadeStep and lookCheck by tests only
+  'look.js':['LOOK_COATS','LOOK_ENAMEL','LOOK_KS','LOOK_METALT','LOOK_METAL_COLS','LOOK_OTHER','LOOK_PAT_GROUPS','LOOK_PK','lookCheck','lookClipMetal','lookCu','lookCur','lookHasPat','lookOn','lookOpenFresh','lookOwnMatUI','lookOwnMats','lookPatGroupOf','lookSave','lookSection','lookSet','lookSetEnamel','lookSetMat','lookShadeHtml','lookShadeOk','lookShadeStep','lookSugCols','lookSugPats','lookUsePick','lookWrite','renderLookPick'],
   // itemsheet (cpwSum, cpwBlock), add-card (cpwQRow), add-save (cpwSaveFields), stats (cpwStatsCard), care (cpwSettingsUI); the
   // other nine are read by tests/costwear.test.js only
   'cost.js':['cpwBlock','cpwCleanYear','cpwCur','cpwHint','cpwMoney','cpwOf','cpwParse','cpwQRow','cpwQSet','cpwSaveFields','cpwSetPrice','cpwSettingsUI','cpwStatsCard','cpwSum','cpwText'],
