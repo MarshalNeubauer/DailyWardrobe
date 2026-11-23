@@ -1,5 +1,5 @@
 /* Daily Wardrobe: the month view (wear plan): the calendar of fabric stacks
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
+   (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14.) */
 /* ---- month view (wear plan): a calendar of fabric stacks, from the design concept ---- */
 /* stacked bands for one outfit: jacket, trousers on blazer days, shirt, tie (drawn from the tagged fabrics) */
 let stkN=0;
@@ -153,6 +153,14 @@ function monthLink(){
     <span class="mltxt"><b>${f.toLocaleDateString(undefined,{month:'long'})} wear plan</b><small>${wardShort()?'pieces still missing':`${n} outfit${n===1?'':'s'}`} · ${monthOpen?'tap to fold away':'tap to see the month'}</small></span><span class="chev" aria-hidden="true">›</span></button>
     <div class="mpanel" id="mpanel"><div class="mpanel-in" id="mpanel-in"${monthOpen?` data-fill="${monthPanel.y+'-'+monthPanel.m+'|'+key(sel)}">${monthGridHtml()}`:' inert>'}</div></div></section>`;
 }
+/* the bridge (tests/bridge.test.js): the classic scripts that draw with the month's pieces: today.js (the box, the pieces line, the home
+   day), today-gestures.js and today-photofold.js (the drags, the scroll), boxfold.js, scorecard.js, history.js, fav.js, daysoff.js,
+   pack.js, remind.js, stats.js, start.js and the painter (planOn); monthGridHtml and monthStep are called by tests only. today.js and
+   the tests set monthOpen, tests/setup.test.js sets monthPanel: setters; a module imports them.
+   Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the page's, as a classic script's were */
+Object.assign(globalThis,{stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthPlan,monthGridHtml,revealNeed,toggleMonth,pageScroll,MONTH_MS,MONTH_EASE,monthBelow,monthStep,monthDrag,monthRelease,openDay,monthLink});
+Object.defineProperties(globalThis,{monthOpen:{get:()=>monthOpen,set:v=>{monthOpen=v}},monthPanel:{get:()=>monthPanel,set:v=>{monthPanel=v}}});
+export {stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthOpen,monthPanel,monthPlan,monthGridHtml,revealNeed,toggleMonth,pageScroll,MONTH_MS,MONTH_EASE,monthBelow,monthStep,monthDrag,monthRelease,openDay,monthLink};
 /* the markup's handlers (act.js): the month box's head and its "Fold away" bar, and a day of the month (data-t: its time) */
 function monthTap(){toggleMonth()}
 function dayCellTap(el){openDay(+el.dataset.t)}

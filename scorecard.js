@@ -1,6 +1,6 @@
 /* Daily Wardrobe: Today's score card: the five dials, the rank (worked out in analysis-worker.js), the Why, the swaps, the week's
    variety, the weather line and the rules
-   (A classic script sharing one global scope with the others; split out of history.js, Round C 2026-11-17, and loaded after it.) */
+   (An ES module since 2026-11-23; split out of history.js, Round C 2026-11-17, and loaded after it.) */
 /* ---- the score card: five dials (2026-11-17, the owner's approved design, C:\code\audit-2026-11-13\score-ideas\score-dials.html) ----
    Folded, one 52px row of five dials (planner.js dialHarmony, dialTexture, dialFreshness, dialVariety, dialOccasion), a broken rule ringing
    its dial red with "!". Unfolded: the rank among the day's outfits (rankFor, worked out in analysis-worker.js and filled in when it comes),
@@ -139,6 +139,13 @@ function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;
   const b=box.querySelector('.month-link');b.setAttribute('aria-expanded',scoreOpen);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show why/,scoreOpen?'Fold away':'Show why'));
   if(scoreOpen)boxUnfold(box);else boxFold(box,'#spanel .sli, #spanel .sfixbtn')}
+/* the bridge (tests/bridge.test.js): today.js draws and folds the card (scoreCard, toggleScore) and sets scoreOpen, as five tests do: a
+   setter; history.js and fav.js say dayWord, month.js reads recentWork; the tests call dialsFor, dialHtml, rankPools and rankFor and
+   read rankMemo and rankW, which only this file writes: getters; a module imports them.
+   Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the page's, as a classic script's were */
+Object.assign(globalThis,{dayWord,recentWork,dialsFor,rankPools,rankFor,dialHtml,scoreCard,toggleScore});
+Object.defineProperties(globalThis,{rankMemo:{get:()=>rankMemo},rankW:{get:()=>rankW},scoreOpen:{get:()=>scoreOpen,set:v=>{scoreOpen=v}}});
+export {scoreOpen,dayWord,recentWork,dialsFor,rankMemo,rankW,rankPools,rankFor,dialHtml,scoreCard,toggleScore};
 /* the markup's handlers (act.js): the card's head and its unfolded panel fold and unfold it; a swap wears its piece; a tap among the swaps
    (between two buttons) does nothing and goes no further, so the panel around them doesn't fold. The panel and the swaps are <div>s:
    today.js renderToday calls actTaps(#today) after writing the card, so a phone's tap on them is a click */
