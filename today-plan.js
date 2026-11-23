@@ -1,7 +1,7 @@
 /* Daily Wardrobe: Today's plan: the month's plan (planMonth, planFor, the plan cache and planDirty), the days before the wardrobe existed
    (planStartDay, planTrim) and the month kept on the device so start-up draws Today at once (PLAN_SNAP: planSig, snapOut/snapIn,
    planSnapUse, planSnapSoon; planSnapCheck, which records the days, is in today.js)
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of today.js on 2026-11-17, Round C.) */
+   (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of today.js on 2026-11-17, Round C.) */
 /* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
 let cache={};
@@ -45,3 +45,11 @@ const outSig=o=>o&&JSON.stringify([idsOf(o),!!o.vest,!!o.suitDay,o.notes||[]]);
 let planSnapT=0;
 function planSnapSoon(){clearTimeout(planSnapT);planSnapT=setTimeout(()=>{const T=todayDate(),k=T.getFullYear()+'-'+T.getMonth(),p=cache[k];if(!p||cache.snap||window.TEST_PLAN||!items.length)return;
   try{metaPut(PLAN_SNAP,{k,sig:planSig(),plan:snapOut(p,new Map(items.map(i=>[i.id,i]))),t:Date.now()}).catch(e=>console.warn('plan not kept',e))}catch(e){console.warn('plan not kept',e)}},1500)}
+/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. planDirty is called by 25 page
+   scripts, planFor by 14 and planMonth by 9; cache is read by nine page scripts and set by 95 tests (cache={}): a getter and a
+   setter; today.js and stats.js ask planStartDay, today.js planTrim, outSig and planSnapSoon, start.js PLAN_SNAP and planSnapUse,
+   shop.js strHash; planRuns, planSig and planSnapUsed (a let only this file writes: a getter) are read by tests/speed.test.js; a
+   module imports them. The file has no top-level call, so the bridge is its last lines */
+Object.assign(globalThis,{planDirty,planRuns,planMonth,planStartDay,planTrim,planFor,PLAN_SNAP,strHash,planSig,planSnapUse,outSig,planSnapSoon});
+Object.defineProperties(globalThis,{planSnapUsed:{get:()=>planSnapUsed},cache:{get:()=>cache,set:v=>{cache=v}}});
+export {cache,planDirty,planRuns,planMonth,planStartDay,planTrim,planFor,PLAN_SNAP,strHash,planSig,planSnapUse,planSnapUsed,outSig,planSnapSoon};

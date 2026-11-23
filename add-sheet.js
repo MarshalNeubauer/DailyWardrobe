@@ -57,6 +57,14 @@ async function npsCancel(fromBack){const q=npsCard();if(!npsId||npsAsking)return
     if(!go||npsCard()!==q)return false;npsClose();skipCard(q.id);return true}
   const id=npsId;npsClose(fromBack);if(q)skipCard(id);return true}
 function npsBack(){if(npsId)npsCancel(true)}
+/* An ES module since 2026-11-23: its other names are its own. The bridge (tests/bridge.test.js lists it): add.js (renderAddFor, npsDraw,
+   npsId), ui.js (npsId, npsAsking, npsInert, npsCancel) and start.js (npsLeave, addFor); addManual and npsClose are called by the tests.
+   npsId and npsAsking are written here only: getters. start.js assigns addFor (openAdd, show): a setter too. Before backOn() and
+   acts(), the file's two calls that can throw (back.js or act.js not loaded): the names are then still the page's, as a classic
+   script's were (every one is a function, or a let declared above) */
+Object.assign(globalThis,{addManual,renderAddFor,npsInert,npsDraw,npsClose,npsCancel,npsLeave});
+Object.defineProperties(globalThis,{npsId:{get:()=>npsId},npsAsking:{get:()=>npsAsking},addFor:{get:()=>addFor,set:v=>{addFor=v}}});
+export {addManual,addFor,renderAddFor,npsId,npsAsking,npsInert,npsDraw,npsClose,npsCancel,npsLeave};
 backOn('nps',()=>npsBack());
 /* Add left while the sheet is up (start.js show): the sheet closes; a card with changes stays on Add as a card of the list, an
    untouched one goes */

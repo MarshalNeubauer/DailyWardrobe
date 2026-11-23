@@ -1,6 +1,6 @@
 /* Daily Wardrobe: Today's picture: the cloth swatches over it (ovlPiece and its makers; swatchStack, which lays them out, is in today.js),
    the double-tap zoom (toggleZoom, applyZoom) and a swatch tapped up close (swApply, swTap, swClose), with their touch listeners
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of today.js on 2026-11-17, Round C.) */
+   (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of today.js on 2026-11-17, Round C.) */
 /* the cloth over Today's picture (the owner's choice, 2026-11-13): bottom left, the jacket's, the shirt's and the tie's swatches top to
    bottom, 52 px, no rim, no names, above ✕ on days that show it; the app's drawn swatches, with a jacket's or shirt's stripes in Claude's
    own colours as the painter draws them (measured from the photo a thin stripe blurs into the ground and nearly vanishes) and at least
@@ -146,6 +146,15 @@ function swApply(anim){const c=$('#mannequin-container'),t=zoomTarget(),o=planFo
   const ring=mk('swring'),d=cl(2*r*SW_Z,.16,.26)*W;ring.style.width=ring.style.height=d+'px';ring.style.left=(tx+SW_Z*fx*W)+'px';ring.style.top=(ty+SW_Z*fy*H)+'px'}
 function swTap(s){const k=key(sel);if(zoom){zoom=null;applyZoom(false)}swOpen=swOpen&&swOpen.k===k&&swOpen.s===s?null:{k,s};swApply(true)}
 function swClose(){if(swOpen){swOpen=null;swApply(true)}}
+/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. today.js lays out the swatches with
+   ovlPiece and calls applyZoom, zoomOut, swApply, swTap and swClose; zoom is read by today-gestures.js and only this file assigns it:
+   a getter; tests/care.test.js sets swOpen: a getter and a setter; the swatch makers and their caches (ovlItem, ovlWeave, ovlSvg, ovlGrain,
+   ovlSuitPng, OVL_HB, ovlHbKey, ovlHbShirt, OVL_CU, ovlCuKey), zoomTarget and toggleZoom are read by tests only; a module imports them.
+   Above the file's first call that can throw ($ and Today's own element, when core.js did not load): the names are then still the
+   page's, as a classic script's were */
+Object.assign(globalThis,{ovlItem,ovlWeave,ovlSvg,ovlGrain,ovlSuitPng,OVL_HB,ovlHbKey,ovlHbShirt,OVL_CU,ovlCuKey,ovlPiece,zoomTarget,applyZoom,toggleZoom,zoomOut,swApply,swTap,swClose});
+Object.defineProperties(globalThis,{zoom:{get:()=>zoom},swOpen:{get:()=>swOpen,set:v=>{swOpen=v}}});
+export {ovlItem,ovlWeave,ovlSvg,ovlGrain,ovlSuitPng,OVL_HB,ovlHbKey,ovlHbShirt,OVL_CU,ovlCuKey,ovlPiece,zoom,zoomTarget,applyZoom,toggleZoom,zoomOut,swOpen,swApply,swTap,swClose};
 // a tap on the picture (not on a swatch or another button) closes it
 $('#today').addEventListener('click',e=>{if(!swOpen)return;const c=e.target.closest&&e.target.closest('#mannequin-container');if(c&&!e.target.closest('button,a'))swClose()});
 (()=>{const el=$('#today'),inPic=e=>{const c=e.target.closest&&e.target.closest('#mannequin-container');return c&&!e.target.closest('button,a')?c:null};

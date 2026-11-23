@@ -160,4 +160,10 @@ function cardSel(el){setq(cardIx(el),el.dataset.f,el.value)}   // one of the car
 function cardSwatch(el){updateSwatchParam(cardIx(el),el.dataset.f,el.value)}
 function tapeQ(el){setq(qAt(el.dataset.q),el.dataset.k,tapeText(el.value)||'none')}   // (the Add card's tape fields)
 function cardField(el){setQField(cardIx(el),el.dataset.f,el.value)}
+/* An ES module since 2026-11-23: its other names are its own. The bridge (tests/bridge.test.js lists it): add.js, add-sheet.js, add-more.js,
+   itemsheet.js, look.js, tagging.js, colpick.js and checklist.js draw and change cards with these; setq, cardSafe, ckCheck and addCkSecs
+   are also called by the tests. Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the
+   page's, as a classic script's were */
+Object.assign(globalThis,{shirtColFix,setq,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckCheck,addCkSecs,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard});
+export {shirtColFix,setq,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckCheck,addCkSecs,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard};
 acts({shadeStep,shadeMatch,cardSkip,cardSave,cardStop,cardMultiAgain,cardByHand,cardRetryTag,cardMatOffer,cardMatGuess,cardCheck,cardCuRemove,cardCuFile,cardRdStart,cardPatTile,cardTypePick,cardSel,cardSwatch,cardField,tapeQ});
