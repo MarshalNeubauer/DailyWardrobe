@@ -1,6 +1,6 @@
 /* Daily Wardrobe: Settings: the page and its categories, the summaries, open, close and Done, saving the settings (saveUserSettings),
    the parts drawn by later scripts (settingsPart), Outfit pictures and the schedule's switches
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14;
+   (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14;
    days off, weather, toasts, dates and the theme are in daysoff.js, weather.js, toast.js, locale.js and theme.js since 2026-11-17.) */
 /* settings management */
 /* Settings: a full-screen page of categories that unfold like Today's cards; openSettings('weather') opens one directly */
@@ -195,4 +195,9 @@ function setDoneTap(){saveSettings()}
 function catTap(el){toggleCat(el.dataset.cat)}
 function vestPick(el){setVestMode(el.value)}
 function darkPick(el){setDarkShirts(el.value)}
+/* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above acts({…}),
+   the file's only top-level call that can throw: without act.js its names are still the page's */
+Object.assign(globalThis,{SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayDirty,settingsOpen,refreshToday,closeSettings,saveSettings,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,setPictures,picsSwitched,setVestMode,setDarkShirts,toggleDay,setWanted,setOpenTap});
+Object.defineProperties(globalThis,{todayStale:{get:()=>todayStale},setOther:{get:()=>setOther},viewStale:{get:()=>viewStale,set:v=>{viewStale=v}},setSeen:{get:()=>setSeen,set:v=>{setSeen=v}}});
+export {SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayStale,todayDirty,viewStale,settingsOpen,refreshToday,closeSettings,saveSettings,setSeen,setOther,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,setPictures,picsSwitched,setVestMode,setDarkShirts,toggleDay,setWanted,setOpenTap};
 acts({dayTap,picsPick,setOpenTap,setBackdropTap,setDoneTap,catTap,vestPick,darkPick});

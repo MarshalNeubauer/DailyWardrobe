@@ -120,6 +120,9 @@ const BRIDGE={
   'photos.js':['ITEM_PIC_TYPES','PIC_BG','aAn','asmLive','comboKey','comboSig','esc','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','fnv64','itemBatch','itemDesc','itemKey','itemPic','itemPicHtml','itemPicLimitText','itemPicsUsedUp','jsq','keepRender','lastWorn','listAt','listKeys','loadRenders','missingItemPics','picBgs','picsDrawn','prefetchRenders','remoteKeys','remoteList','remoteListed','renderFor','renderItemPic','renderItemPicUI','renderTried','renders','schedulePrefetch','shareLocalPics','shirtPatterned','srcOk','startItemPics','workerBase','workerList'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
+  // nearly every page script opens, closes or saves through these; settingsPart is called at load by look, account, calendar and remind.
+  // viewStale (sync.js) and setSeen (start.js) have setters, todayStale and setOther are getters
+  'settings.js':['SET_CATS','backupSummary','closeSettings','openSettings','picsSwitched','refreshToday','renderPicturesUI','renderSettingsExtras','saveSettings','saveUserSettings','setCatOpen','setDarkShirts','setOpenTap','setOther','setPictures','setSeen','setVestMode','setWanted','settingsOpen','settingsPart','settingsSummaries','showCost','todayDirty','todayStale','toggleCat','toggleDay','viewStale','weekFirst'],
   // settings (countryName, renderDaysOffUI, renderFormalUI), setup (COUNTRY_CODES, setHolidayCountry), start (refreshHolidays), calendar
   // (isoToDate, dayOffAdd, yearDate), history and missed (shortDate, renderFormalUI); the rest: tests; holidayMsg is a getter
   'daysoff.js':['COUNTRY_CODES','addDayOff','builtinHolidays','countryName','dayOffAdd','holYears','holidayMsg','isoToDate','nagerKeep','refreshHolidays','renderDaysOffUI','renderFormalUI','setHolidayCountry','shortDate','toggleHoliday','yearDate'],
@@ -131,6 +134,9 @@ const BRIDGE={
   'toast.js':['TOAST_ACT_MS','toast','toastDrop'],
   // read by the tests only: a11y (applyTheme, cycleTheme), actsindex (cycleTheme), modload (themeTap)
   'theme.js':['applyTheme','cycleTheme','themeTap'],
+  // the question, the close-up chooser, the layers' focus, the connection's state and plain errors, for nearly every page script;
+  // connMsg has a setter (tests/restacts.test.js), asking, cuOpen and connBusy are getters
+  'ui.js':['NEED_CONN','addGate','advClose','askAnswer','askConfirm','asking','closeupBtn','closeupClose','closeupPick','connBusy','connMsg','connSummary','cuGot','cuOpen','cuTouch','inviteOver','isConnected','layerClose','layerFrom','layerInert','layerOpen','needConn','netErr','plainErr','renderConnUI','tell'],
   // start.js calls safetyStart and storageDown; add-save and kit storeFailure, saveFailed and askPersist; sync storeFailure,
   // storeFailText and adoptBackupSettings and sets storeToldAt (a setter, tests too); add, add-card and app the tagging failure's
   // (tagFailText, tagFailed, tagFailNote, tagNetText, retryTag; tagWhy and tagNetLast have setters for the errreport and tagreads
