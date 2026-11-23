@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	5951878868201eb5e117
-# tested	d5c40e10038899b8130b
+# tested	3bbc2307f39f0fa91072
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -1137,6 +1136,11 @@ asmahead.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapSoon
 asmahead.test.js	today.js	<loaded>	belowBox	canPick	figLoad	figureStage	foldAll	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	stepDay	swatchStack	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 asmahead.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmahead.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+asmahead.test.js	watch/leather.jpg	<loaded>
+asmahead.test.js	watch/shirt-open.png	<loaded>
+asmahead.test.js	watch/shirt-tie.png	<loaded>
+asmahead.test.js	watch/suit.png	<loaded>
+asmahead.test.js	watch/vest.png	<loaded>
 asmahead.test.js	weather.js	<loaded>	loadWeather
 asmatlas.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmatlas.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -2475,10 +2479,7 @@ asmwatch.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPi
 asmwatch.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmwatch.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 asmwatch.test.js	watch/leather.jpg	<loaded>
-asmwatch.test.js	watch/shirt-open.png	<loaded>
-asmwatch.test.js	watch/shirt-tie.png	<loaded>
 asmwatch.test.js	watch/suit.png	<loaded>
-asmwatch.test.js	watch/vest.png	<loaded>
 asmwatch.test.js	weather.js	<loaded>	loadWeather
 asmweave.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmweave.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -2515,6 +2516,7 @@ asmweave.test.js	draw.js	<loaded>	fabricDef	texPlainBand
 asmweave.test.js	dress.js	<loaded>	migrateVests
 asmweave.test.js	fav.js	<loaded>
 asmweave.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
+asmweave.test.js	icon-192.png	<loaded>
 asmweave.test.js	icon-512.png	<loaded>
 asmweave.test.js	index.html	<loaded>
 asmweave.test.js	item-photo.js	<loaded>	smallPhotos
@@ -2524,6 +2526,7 @@ asmweave.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNee
 asmweave.test.js	locale.js	<loaded>	appLocale
 asmweave.test.js	locks.js	<loaded>
 asmweave.test.js	look.js	<loaded>
+asmweave.test.js	manifest.webmanifest	<loaded>
 asmweave.test.js	mannequin.js	<loaded>	@{}
 asmweave.test.js	measure.js	<loaded>
 asmweave.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -6523,6 +6526,8 @@ favplan.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEven
 favplan.test.js	watch/leather.jpg	<loaded>
 favplan.test.js	watch/shirt-open.png	<loaded>
 favplan.test.js	watch/shirt-tie.png	<loaded>
+favplan.test.js	watch/suit.png	<loaded>
+favplan.test.js	watch/vest.png	<loaded>
 favplan.test.js	weather.js	<loaded>	loadWeather
 favplan.test.js	worker.js	<loaded>	corsFor	fetch	serve
 favplan.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
@@ -9247,6 +9252,9 @@ mannequin.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 mannequin.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 mannequin.test.js	watch/leather.jpg	<loaded>
 mannequin.test.js	watch/shirt-open.png	<loaded>
+mannequin.test.js	watch/shirt-tie.png	<loaded>
+mannequin.test.js	watch/suit.png	<loaded>
+mannequin.test.js	watch/vest.png	<loaded>
 mannequin.test.js	weather.js	<loaded>	loadWeather
 masterspeed.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 masterspeed.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	rememberRole	renderAccountUI
@@ -10493,10 +10501,6 @@ mqcloth.test.js	today.js	<loaded>	addForSlot	belowBox	canPick	figCuDone	figureSt
 mqcloth.test.js	ui.js	<loaded>	advClose	connSummary	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 mqcloth.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 mqcloth.test.js	watch/leather.jpg	<loaded>
-mqcloth.test.js	watch/shirt-open.png	<loaded>
-mqcloth.test.js	watch/shirt-tie.png	<loaded>
-mqcloth.test.js	watch/suit.png	<loaded>
-mqcloth.test.js	watch/vest.png	<loaded>
 mqcloth.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 multi.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 multi.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	rememberRole	renderAccountUI
@@ -11101,6 +11105,7 @@ onorder.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMig
 onorder.test.js	watch/leather.jpg	<loaded>
 onorder.test.js	watch/shirt-open.png	<loaded>
 onorder.test.js	watch/shirt-tie.png	<loaded>
+onorder.test.js	watch/suit.png	<loaded>
 onorder.test.js	watch/vest.png	<loaded>
 onorder.test.js	weather.js	<loaded>	loadWeather
 owncolany.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -15459,6 +15464,10 @@ settag.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill
 settag.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 settag.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 settag.test.js	watch/leather.jpg	<loaded>
+settag.test.js	watch/shirt-open.png	<loaded>
+settag.test.js	watch/shirt-tie.png	<loaded>
+settag.test.js	watch/suit.png	<loaded>
+settag.test.js	watch/vest.png	<loaded>
 settag.test.js	weather.js	<loaded>	loadWeather
 settingsin.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 settingsin.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
@@ -19424,6 +19433,8 @@ todayswatch.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 todayswatch.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 todayswatch.test.js	watch/leather.jpg	<loaded>
 todayswatch.test.js	watch/shirt-open.png	<loaded>
+todayswatch.test.js	watch/shirt-tie.png	<loaded>
+todayswatch.test.js	watch/suit.png	<loaded>
 todayswatch.test.js	watch/vest.png	<loaded>
 todayswatch.test.js	weather.js	<loaded>	loadWeather
 todayzoom.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
