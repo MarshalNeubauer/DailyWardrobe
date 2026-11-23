@@ -1,5 +1,5 @@
 /* Daily Wardrobe: toasts and the Wardrobe's round Undo button
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of settings.js on 2026-11-17.) */
+   (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
 let toastTimer=null;
 const TOAST_ACT_MS=8000;   // a toast with Undo stays at least this long (audit 2026-11-14: gone after 5 s, and Delete has no question)
 /* on the Wardrobe, where the + is, an Undo is a round button above it, a glowing ring running down its seconds, instead of the toast
@@ -23,3 +23,7 @@ function toastOff(e){if(e.contains(document.activeElement)&&e.querySelector('but
   e.classList.remove('on','act');setTimeout(()=>{if(!e.classList.contains('on'))e.textContent=''},250)}
 /* a toast with a button (Undo) taken away at once (start.js show(): leaving Add takes its "Saved … Undo" with it) */
 function toastDrop(){undoOff();const e=$('#toast');if(!e||!e.classList.contains('act'))return;clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent=''}
+/* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals: toast (34 page
+   scripts), toastDrop (start.js), TOAST_ACT_MS (tests/a11y.test.js). The file has no top-level call, so the bridge is its last lines */
+Object.assign(globalThis,{TOAST_ACT_MS,toast,toastDrop});
+export {TOAST_ACT_MS,toast,toastDrop};

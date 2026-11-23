@@ -279,10 +279,10 @@ const newuserplan=async({ok,chromium,url})=>{
       queue.length=0;show('wardrobe');openAdd();addManual();const sel=[...document.querySelectorAll('#add select')].find(s=>[...s.options].some(o=>o.value==='yes'&&/vest/i.test(o.text)));return {a,b,c,card:sel&&sel.value}});
     ok(vs.a==='yes'&&vs.b==='no'&&vs.c==='no'&&vs.card==='yes',`"Every suit day" gives a new suit its vest on the Add card (${vs.card}); not with ties off or by default`);
     await p.evaluate(()=>{queue.length=0;settings.vestMode='never';show('today');openSettings('schedule')});
-    const dc=await p.evaluate(async()=>{const real=window.clearLocks;window.clearLocks=()=>new Promise(()=>{});document.querySelector('#dress-tie').click();
+    const dc=await p.evaluate(async()=>{/* a lock on the next two days, whose release is never written: the real clearLocks never finishes */ window.__held=0;const realTx=IDBDatabase.prototype.transaction,T=todayDate(),ks=[1,2].map(g=>key(new Date(T.getFullYear(),T.getMonth(),T.getDate()+g)));for(const k of ks)dayRecs[k]={date:k,lock:{tie:'held'},updated:1};IDBDatabase.prototype.transaction=function(st,m){if(st==='days'&&m==='readwrite')return {objectStore:()=>({put(r){if(!r.lock)window.__held++;return {}}})};return realTx.apply(this,arguments)};document.querySelector('#dress-tie').click();
       for(let i=0;i<40;i++){const s=await metaGet('settings');if(s&&s.dress&&s.dress.tie===false)break;await new Promise(r=>setTimeout(r,25))}
-      const s=await metaGet('settings'),sw=document.querySelector('#dress-tie').getAttribute('aria-checked');window.clearLocks=real;return {stored:s&&s.dress&&s.dress.tie,sw}});
-    ok(dc.stored===false&&dc.sw==='false','a dress-code switch is saved and shown at once, before the week\'s locks are released');
+      for(let i=0;i<40&&!window.__held;i++)await new Promise(r=>setTimeout(r,25));const held=window.__held;const s=await metaGet('settings'),sw=document.querySelector('#dress-tie').getAttribute('aria-checked');IDBDatabase.prototype.transaction=realTx;for(const k of ks)delete dayRecs[k];return {stored:s&&s.dress&&s.dress.tie,sw,held}});
+    ok(dc.stored===false&&dc.sw==='false'&&dc.held>0,'a dress-code switch is saved and shown at once, before the week\'s locks are released');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
@@ -387,11 +387,11 @@ const fix8r3=async({ok,chromium,url})=>{
 
     // ---- W2-18-02: the reasons table is kept, and a fold fills its rows without drawing the page again
     const st=await p.evaluate(()=>{fresh('2026-11-15T08:00:00');items=[...w17(),I('tie','purple',{pattern:'paisley',secondaryColor:'gold'}),I('shirt','black')];cache={};show('stats');renderStats();
-      whyUnused(items.find(i=>i.pattern==='paisley'));const m1=fitMemo;let calls=0;const keep=window.renderStats;renderStats();const m2=fitMemo;
-      window.renderStats=(...a)=>{calls++;return keep(...a)};statsOpen.tie=false;const d=document.querySelector('#stats details.st-type[data-type="tie"]');d.open=true;statsToggle(d);window.renderStats=keep;
-      return {same:m1===m2&&!!m1,calls,rows:d.querySelectorAll('.st-row').length,unused:document.querySelectorAll('#st-unused .st-row').length}});
+      whyUnused(items.find(i=>i.pattern==='paisley'));const m1=fitMemo;let calls=0;const h0=document.querySelector('#stats .phead');renderStats();const seen=!h0.isConnected,m2=fitMemo,head=document.querySelector('#stats .phead');   /* (a redraw replaces the page's head) */
+      statsOpen.tie=false;const d=document.querySelector('#stats details.st-type[data-type="tie"]');d.open=true;statsToggle(d);if(!head.isConnected)calls++;
+      return {same:m1===m2&&!!m1,calls,seen,rows:d.querySelectorAll('.st-row').length,unused:document.querySelectorAll('#st-unused .st-row').length}});
     ok(st.same,'opening Insights again keeps the never-worn reasons worked out (fitMemo), until the plan changes');
-    ok(st.calls===0&&st.rows>=5,`unfolding Ties fills its ${st.rows} rows without drawing the page again (${st.calls} redraws)`);
+    ok(st.seen&&st.calls===0&&st.rows>=5,`unfolding Ties fills its ${st.rows} rows without drawing the page again (${st.calls} redraws)`);
 
     // ---- W2-15-08: weeks are named from the first workday the wardrobe had, not a Friday before it
     const wk=await p.evaluate(()=>{fresh('2026-11-18T08:00:00');items=w17().map(i=>({...i,added:+new Date(2026,10,16,9)}));const s=items;
