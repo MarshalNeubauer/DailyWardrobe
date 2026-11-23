@@ -165,8 +165,8 @@ function cmpPaper(src,it){const n=paperNow(it);if(n)return n;if(src==='q'&&it.me
 function cmpPaperLine(p,retake){if(!p)return '';
   return p.ref?`<div class="wbst ok cmpwb" role="status"><span class="ic" aria-hidden="true">✓</span><span class="tx">White paper found<small>Colors set from it.</small></span></div>`
     :`<div class="wbst no cmpwb" role="status"><span class="ic" aria-hidden="true">!</span><span class="tx">${p.warm?'No white paper, and the light looks warm<small>Colors may come out yellower than the cloth.</small>':'No white paper<small>Colors may be off.</small>'}</span>${retake||''}</div>`}
-acts({ckHeadTap,accDelTap,accAddTap,cmpGoTap,cmpUndoTap});
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): the Add card, the item sheet, the color sheet and the Look beta, classic scripts, draw their sections and the close-up comparison with
    these; CK_OPEN is also what most tests open the sections with. */
 Object.assign(globalThis,{CK_OPEN,ckIsOpen,ckSec,ckToggle,ckChip,ckColSum,accRow,ckSure,cmpDrawn,cmpHtml,cmpMount,cmpLab,cmpDiff,cmpSteps,cmpDiffText,cmpMatchHtml,cmpPaper,cmpPaperLine});
 export {CK_OPEN,ckIsOpen,ckSec,ckToggle,ckChip,ckColSum,accRow,ckSure,cmpDrawn,cmpHtml,cmpMount,cmpLab,cmpDiff,cmpSteps,cmpDiffText,cmpMatchHtml,cmpPaper,cmpPaperLine};
+acts({ckHeadTap,accDelTap,accAddTap,cmpGoTap,cmpUndoTap});

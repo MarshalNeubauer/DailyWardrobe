@@ -21,7 +21,7 @@ try{applyTheme(localStorage.getItem('theme')||'auto')}catch{applyTheme('auto')}
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(window.appReady&&!$('#today').hidden&&$('.fig'))renderToday()})}catch{}
 /* the markup's handler (act.js): the header's theme button */
 function themeTap(){cycleTheme()}
-acts({themeTap});
 /* the bridge (tests/bridge.test.js): only the tests still call these as globals (a11y, actsindex, modload); a module imports them */
 Object.assign(globalThis,{applyTheme,cycleTheme,themeTap});
 export {applyTheme,cycleTheme,themeTap};
+acts({themeTap});
