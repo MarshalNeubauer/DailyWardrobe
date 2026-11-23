@@ -37,7 +37,8 @@ async function run(eng,browser,{ok,url,settle}){
       {id:'t1',type:'tie',primaryColor:'red',pattern:'solid',added:2,name:'Bare tie'}];flt='all';editing=null;show('wardrobe');
     // the order of a tap: document's capture listeners, the control's own function, window's listeners
     window.__o=[];document.addEventListener('click',()=>window.__o.push('document capture'),true);window.addEventListener('click',()=>window.__o.push('window'));
-    for(const n of ['openColPick','colPickSel','useColPick']){const f=window[n];window[n]=function(...a){window.__o.push(n);return f.apply(this,a)}}});
+    // (colpick.js is a module: its handlers call these inside it, so each is watched at the handler the markup names)
+    for(const [h,n] of [['colBtnTap','openColPick'],['cpTileTap','colPickSel'],['cpUseTap','useColPick']]){const f=ACTS[h];ACTS[h]=function(...a){window.__o.push(n);return f.apply(this,a)}}});
   const tap=async sel=>{await p.tap(sel)};
   const order=()=>p.evaluate(()=>{const o=window.__o.join(' > ');window.__o=[];return o});
   const it=id=>p.evaluate(id=>{const i=items.find(x=>x.id===id);return {c:i.primaryColor,c2:i.secondaryColor||null,p:i.pattern,m:i.material||null,shade:i.shade||0,cols:(settings.custom.colors||[]).map(c=>c.key),pats:(settings.custom.patterns||[]).length}},id);

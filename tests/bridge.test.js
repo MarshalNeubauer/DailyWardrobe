@@ -42,6 +42,8 @@ const BRIDGE={
   // the pages and sheets that Back closes are classic scripts: add-sheet, colpick, history, item-view, kit, settings, setup, shop,
   // start, ui and account call these. appHist, appKind and itemHist are read by the tests only (back, backgesture, shellfix): getters
   'back.js':['appHist','appKind','backBorrow','backDrop','backHold','backKind','backLand','backOn','backOver','backPush','backReturn','backSettled','backWanted','histDrop','histPush','itemHist'],
+  // the other Add files, tagging, pattern-read, measure, item-photo, migrate, safety, settings, kit and others draw and read cards with these; addCalm is a let only add.js writes (add-save reads it): a getter; the rest: tests
+  'add.js':['PAIR_TYPES','STOPPED','TEX_MAX','TEX_MIN_PX','addBackOnline','addCalm','addFiles','addNoteText','addTexture','applyWb','cardPics','countWord','dropTexture','errToHand','measureGuess','multiAgain','multiMsg','needType','patternAgain','refineAgain','renderAdd','skipCard','stopRead','wbNote'],
   // tests/paste.test.js clears the line under the "Photo or link" field with it
   'add-paste.js':['pasteMsg'],
   // add, itemsheet, look, tagging and colpick are classic scripts; add-sheet, add-more and checklist read these as globals too (no
@@ -118,6 +120,9 @@ const BRIDGE={
   'photos.js':['ITEM_PIC_TYPES','PIC_BG','aAn','asmLive','comboKey','comboSig','esc','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','fnv64','itemBatch','itemDesc','itemKey','itemPic','itemPicHtml','itemPicLimitText','itemPicsUsedUp','jsq','keepRender','lastWorn','listAt','listKeys','loadRenders','missingItemPics','picBgs','picsDrawn','prefetchRenders','remoteKeys','remoteList','remoteListed','renderFor','renderItemPic','renderItemPicUI','renderTried','renders','schedulePrefetch','shareLocalPics','shirtPatterned','srcOk','startItemPics','workerBase','workerList'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
+  // nearly every page script opens, closes or saves through these; settingsPart is called at load by look, account, calendar and remind.
+  // viewStale (sync.js) and setSeen (start.js) have setters, todayStale and setOther are getters
+  'settings.js':['SET_CATS','backupSummary','closeSettings','openSettings','picsSwitched','refreshToday','renderPicturesUI','renderSettingsExtras','saveSettings','saveUserSettings','setCatOpen','setDarkShirts','setOpenTap','setOther','setPictures','setSeen','setVestMode','setWanted','settingsOpen','settingsPart','settingsSummaries','showCost','todayDirty','todayStale','toggleCat','toggleDay','viewStale','weekFirst'],
   // settings (countryName, renderDaysOffUI, renderFormalUI), setup (COUNTRY_CODES, setHolidayCountry), start (refreshHolidays), calendar
   // (isoToDate, dayOffAdd, yearDate), history and missed (shortDate, renderFormalUI); the rest: tests; holidayMsg is a getter
   'daysoff.js':['COUNTRY_CODES','addDayOff','builtinHolidays','countryName','dayOffAdd','holYears','holidayMsg','isoToDate','nagerKeep','refreshHolidays','renderDaysOffUI','renderFormalUI','setHolidayCountry','shortDate','toggleHoliday','yearDate'],
@@ -129,6 +134,9 @@ const BRIDGE={
   'toast.js':['TOAST_ACT_MS','toast','toastDrop'],
   // read by the tests only: a11y (applyTheme, cycleTheme), actsindex (cycleTheme), modload (themeTap)
   'theme.js':['applyTheme','cycleTheme','themeTap'],
+  // the question, the close-up chooser, the layers' focus, the connection's state and plain errors, for nearly every page script;
+  // connMsg has a setter (tests/restacts.test.js), asking, cuOpen and connBusy are getters
+  'ui.js':['NEED_CONN','addGate','advClose','askAnswer','askConfirm','asking','closeupBtn','closeupClose','closeupPick','connBusy','connMsg','connSummary','cuGot','cuOpen','cuTouch','inviteOver','isConnected','layerClose','layerFrom','layerInert','layerOpen','needConn','netErr','plainErr','renderConnUI','tell'],
   // start.js calls safetyStart and storageDown; add-save and kit storeFailure, saveFailed and askPersist; sync storeFailure,
   // storeFailText and adoptBackupSettings and sets storeToldAt (a setter, tests too); add, add-card and app the tagging failure's
   // (tagFailText, tagFailed, tagFailNote, tagNetText, retryTag; tagWhy and tagNetLast have setters for the errreport and tagreads
@@ -165,6 +173,8 @@ const BRIDGE={
   // sockToeMigrate, sockLegacy), safety asks wardPendingRestore, fav reads wardFlt; the search and sort names, itemFieldSoon,
   // wardDeleteNow and WARD_UNDO_MS: tests only; tests/materials.test.js sets wardQ (a setter)
   'wardrobe.js':['WARD_MAX','WARD_UNDO_MS','WATCH_DETAILS_MAX','fldRow','itemFieldSoon','ivOn','matLabel','matMigrate','matOn','matOnItem','matRenameTo','matRow','notesRow','setItemField','setQField','setWardSort','sockLegacy','sockToeMigrate','wardBack','wardBar','wardClear','wardCount','wardDelete','wardDeleteNow','wardDuplicate','wardFieldsTop','wardFlt','wardFresh','wardGrid','wardHay','wardKeep','wardMatch','wardNorm','wardOrder','wardPendingRestore','wardQ','wardSaveFields','wardSearch','wardSort','wardView'],
+  // add, add-card, add-save, itemsheet, look, checklist and own-lists; colPick (a test assigns it) and rd (tests assign it) have setters, rdLast a getter; the rest: tests
+  'colpick.js':['EP','NEW_COL','RD_LOOKUPS','SOCK_THIRD','SW_GRAB','accDel','closeColPick','cnDrawn','cnFromHsv','cnHex','cnLeft','cnName','colAsk','colAskImgs','colChoices','colFamily','colFieldLabel','colHas','colNameTaken','colNear','colNewAdd','colPick','colPickSel','colPickView','colRows','colShows','colTarget','colTidy','cpAskHint','openColNew','openColPick','openCustomNew','openPatNew','patBtn','patChoices','patVar','rd','rdAccOf','rdAddBtn','rdClose','rdColOf','rdCost','rdCostLine','rdDoneHtml','rdEditorBtn','rdLast','rdOff','rdOpen','rdRender','rdRetake','rdRun','rdStart','rdUndoAll','renderColPick','useColPick'],
   // add-card, itemsheet, colpick, look, add, add-sheet and item-view draw their sections and the close-up comparison with these;
   // CK_OPEN is also how 53 test files open the sections
   'checklist.js':['CK_OPEN','accRow','ckChip','ckColSum','ckIsOpen','ckSec','ckSure','ckToggle','cmpDiff','cmpDiffText','cmpDrawn','cmpHtml','cmpLab','cmpMatchHtml','cmpMount','cmpPaper','cmpPaperLine','cmpSteps'],
