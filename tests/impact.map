@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	c34f24b2ec52b4b66b6b
+# tested	35b1528ad124698adef1
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -557,6 +557,7 @@ actsindex.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	
 actsindex.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 actsindex.test.js	tagging.js	<any>	<loaded>	readAbort	tagNotes
 actsindex.test.js	tests/fixedplan.js	<any>
+actsindex.test.js	tests/webkit.js	<any>
 actsindex.test.js	theme.js	<any>	<loaded>	applyTheme	cycleTheme	themeTap
 actsindex.test.js	toast.js	<any>	<loaded>	toast	toastDrop	toastOff	undoOff
 actsindex.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig
@@ -1127,6 +1128,7 @@ asmahead.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmahead.test.js	tests/webkit.js	<any>
 asmahead.test.js	theme.js	<loaded>	applyTheme
 asmahead.test.js	toast.js	<loaded>
 asmahead.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	mvSig	todayBusy	todayFree
@@ -1868,7 +1870,6 @@ asmgl.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-asmgl.test.js	tests/webkit.js	<any>
 asmgl.test.js	theme.js	<loaded>	applyTheme
 asmgl.test.js	toast.js	<loaded>
 asmgl.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2709,7 +2710,7 @@ back.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constowno
 back.test.js	asm-pocket.js	<loaded>
 back.test.js	asm-watch.js	<loaded>
 back.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	renderAsmUI
-back.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backHold	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backTop	backWanted	histDrop	histPush	inviteInUrl
+back.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backHold	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backTop	backWanted	get	histDrop	histPush	inviteInUrl
 back.test.js	backupfile.js	<loaded>
 back.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge
 back.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
@@ -2805,7 +2806,7 @@ backgesture-item.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}
 backgesture-item.test.js	asm-pocket.js	<loaded>
 backgesture-item.test.js	asm-watch.js	<loaded>
 backgesture-item.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave
-backgesture-item.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backTop	backWanted	histDrop	histPush	inviteInUrl
+backgesture-item.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backTop	backWanted	get	histDrop	histPush	inviteInUrl
 backgesture-item.test.js	backupfile.js	<loaded>
 backgesture-item.test.js	boxfold.js	<loaded>
 backgesture-item.test.js	calendar.js	<loaded>	calBanner	calLink
@@ -2896,7 +2897,7 @@ backgesture-over.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}
 backgesture-over.test.js	asm-pocket.js	<loaded>
 backgesture-over.test.js	asm-watch.js	<loaded>
 backgesture-over.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	renderAsmUI
-backgesture-over.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backHold	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backTop	backWanted	inviteInUrl
+backgesture-over.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backHold	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backTop	backWanted	get	inviteInUrl
 backgesture-over.test.js	backupfile.js	<loaded>
 backgesture-over.test.js	boxfold.js	<loaded>
 backgesture-over.test.js	calendar.js	<loaded>	calBanner	calLink	calSummary	renderCalUI
@@ -2958,6 +2959,7 @@ backgesture-over.test.js	tests/backgesture-parts.js	<any>
 backgesture-over.test.js	tests/fixedplan.js	<any>
 backgesture-over.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-over.test.js	tests/fixtures/suit-mink.jpg	<loaded>
+backgesture-over.test.js	tests/webkit.js	<any>
 backgesture-over.test.js	theme.js	<loaded>	applyTheme
 backgesture-over.test.js	toast.js	<loaded>	toastDrop	undoOff
 backgesture-over.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -2987,7 +2989,7 @@ backgesture.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{co
 backgesture.test.js	asm-pocket.js	<loaded>
 backgesture.test.js	asm-watch.js	<loaded>
 backgesture.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	renderAsmUI
-backgesture.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backHold	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backTop	backWanted	histDrop	histPush	inviteInUrl
+backgesture.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backHold	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backTop	backWanted	get	histDrop	histPush	inviteInUrl
 backgesture.test.js	backupfile.js	<loaded>
 backgesture.test.js	boxfold.js	<loaded>
 backgesture.test.js	calendar.js	<loaded>	calBanner	calLink	calSummary	renderCalUI
@@ -3048,6 +3050,7 @@ backgesture.test.js	tests/backgesture-parts.js	<any>
 backgesture.test.js	tests/fixedplan.js	<any>
 backgesture.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture.test.js	tests/fixtures/suit-mink.jpg	<loaded>
+backgesture.test.js	tests/webkit.js	<any>
 backgesture.test.js	theme.js	<loaded>	applyTheme
 backgesture.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 backgesture.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -3138,6 +3141,7 @@ backup-storage.test.js	tests/fixedplan.js	<any>
 backup-storage.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 backup-storage.test.js	tests/fixtures/old-worker/worker-036c1d6.js	<any>
 backup-storage.test.js	tests/fixtures/old-worker/worker-ef18d06.js	<any>
+backup-storage.test.js	tests/webkit.js	<any>
 backup-storage.test.js	theme.js	<loaded>	applyTheme
 backup-storage.test.js	toast.js	<loaded>	toast	toastOff
 backup-storage.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>todayTouch	@{constroot$today}	mvSig	todayBusy
@@ -3237,13 +3241,345 @@ bridge.test.js	snapshots.js	<any>
 bridge.test.js	srgb.js	<any>
 bridge.test.js	start.js	<any>
 bridge.test.js	stats.js	<any>
+bridge.test.js	sw.js	<any>
 bridge.test.js	sync-photos.js	<any>
 bridge.test.js	sync-status.js	<any>
 bridge.test.js	sync.js	<any>
 bridge.test.js	tag-request.js	<any>
 bridge.test.js	tagging.js	<any>
+bridge.test.js	tests/a11y.test.js	<any>
+bridge.test.js	tests/about.test.js	<any>
+bridge.test.js	tests/accents.test.js	<any>
+bridge.test.js	tests/accounts.test.js	<any>
+bridge.test.js	tests/acts.test.js	<any>
+bridge.test.js	tests/actsindex.test.js	<any>
+bridge.test.js	tests/addcards.test.js	<any>
+bridge.test.js	tests/additemacts.test.js	<any>
+bridge.test.js	tests/addsheet.test.js	<any>
+bridge.test.js	tests/advicefresh.test.js	<any>
+bridge.test.js	tests/aiverdict.test.js	<any>
+bridge.test.js	tests/appsrc.js	<any>
+bridge.test.js	tests/asmahead.test.js	<any>
+bridge.test.js	tests/asmatlas.test.js	<any>
+bridge.test.js	tests/asmcloth.test.js	<any>
+bridge.test.js	tests/asmcode.test.js	<any>
+bridge.test.js	tests/asmcolor.test.js	<any>
+bridge.test.js	tests/asmcr.test.js	<any>
+bridge.test.js	tests/asmcu.test.js	<any>
+bridge.test.js	tests/asmgl.test.js	<any>
+bridge.test.js	tests/asmrelease.test.js	<any>
+bridge.test.js	tests/asmroute.test.js	<any>
+bridge.test.js	tests/asmserverpic.test.js	<any>
+bridge.test.js	tests/asmstuck.test.js	<any>
+bridge.test.js	tests/asmtwill.test.js	<any>
+bridge.test.js	tests/asmwatch.test.js	<any>
+bridge.test.js	tests/asmweave.test.js	<any>
+bridge.test.js	tests/assemble.test.js	<any>
+bridge.test.js	tests/assets.test.js	<any>
+bridge.test.js	tests/back.test.js	<any>
+bridge.test.js	tests/backgesture-item.test.js	<any>
+bridge.test.js	tests/backgesture-over.test.js	<any>
+bridge.test.js	tests/backgesture-parts.js	<any>
+bridge.test.js	tests/backgesture.test.js	<any>
+bridge.test.js	tests/backup-storage.test.js	<any>
+bridge.test.js	tests/calendar.test.js	<any>
+bridge.test.js	tests/camouflage.test.js	<any>
+bridge.test.js	tests/canvasrefuse.test.js	<any>
+bridge.test.js	tests/cardid.test.js	<any>
+bridge.test.js	tests/care.test.js	<any>
+bridge.test.js	tests/casual.test.js	<any>
+bridge.test.js	tests/childrec.js	<any>
+bridge.test.js	tests/claudepattern.test.js	<any>
+bridge.test.js	tests/clock.test.js	<any>
+bridge.test.js	tests/closeupread.test.js	<any>
+bridge.test.js	tests/closeupsheet.test.js	<any>
+bridge.test.js	tests/cmhandedge.test.js	<any>
+bridge.test.js	tests/cmpmeasure.test.js	<any>
+bridge.test.js	tests/colnew.test.js	<any>
+bridge.test.js	tests/colormath.test.js	<any>
+bridge.test.js	tests/colors.test.js	<any>
+bridge.test.js	tests/colpick.test.js	<any>
+bridge.test.js	tests/colpickacts.test.js	<any>
+bridge.test.js	tests/colpickfocus.test.js	<any>
+bridge.test.js	tests/combatboot.test.js	<any>
+bridge.test.js	tests/connkeep.test.js	<any>
+bridge.test.js	tests/costwear.test.js	<any>
+bridge.test.js	tests/daysoff.test.js	<any>
+bridge.test.js	tests/deploy.test.js	<any>
+bridge.test.js	tests/deps.test.js	<any>
+bridge.test.js	tests/describe.test.js	<any>
+bridge.test.js	tests/drawnonly.test.js	<any>
+bridge.test.js	tests/dress.test.js	<any>
+bridge.test.js	tests/editorrework.test.js	<any>
+bridge.test.js	tests/editphotosb.test.js	<any>
+bridge.test.js	tests/errnet.test.js	<any>
+bridge.test.js	tests/errreport.test.js	<any>
+bridge.test.js	tests/favorites.test.js	<any>
+bridge.test.js	tests/favplan.test.js	<any>
+bridge.test.js	tests/fieldmerge.test.js	<any>
+bridge.test.js	tests/figure.test.js	<any>
+bridge.test.js	tests/fillmaterial.test.js	<any>
+bridge.test.js	tests/fixedplan.js	<any>
+bridge.test.js	tests/folds.test.js	<any>
+bridge.test.js	tests/freshrest.test.js	<any>
+bridge.test.js	tests/gaps.js	<any>
+bridge.test.js	tests/garmentdraw.test.js	<any>
+bridge.test.js	tests/garmentpaint.test.js	<any>
+bridge.test.js	tests/garmentworker-calls.js	<any>
+bridge.test.js	tests/geomaps.test.js	<any>
+bridge.test.js	tests/globals.test.js	<any>
+bridge.test.js	tests/handpick.test.js	<any>
+bridge.test.js	tests/hbshirt.test.js	<any>
+bridge.test.js	tests/hbswatch.test.js	<any>
+bridge.test.js	tests/herringbone.test.js	<any>
+bridge.test.js	tests/history.test.js	<any>
+bridge.test.js	tests/homescreen.test.js	<any>
+bridge.test.js	tests/impact.js	<any>
+bridge.test.js	tests/impact.test.js	<any>
+bridge.test.js	tests/inlinehandlers.test.js	<any>
+bridge.test.js	tests/invite.test.js	<any>
+bridge.test.js	tests/itempics.test.js	<any>
+bridge.test.js	tests/itemredesign.test.js	<any>
+bridge.test.js	tests/itemsheet.test.js	<any>
+bridge.test.js	tests/jacketcolour.test.js	<any>
+bridge.test.js	tests/keptphotos.test.js	<any>
+bridge.test.js	tests/kit.test.js	<any>
+bridge.test.js	tests/kitsetup-taps.test.js	<any>
+bridge.test.js	tests/labbench.test.js	<any>
+bridge.test.js	tests/lint.js	<any>
+bridge.test.js	tests/lookbeta.test.js	<any>
+bridge.test.js	tests/lookplan.test.js	<any>
+bridge.test.js	tests/lookworker.test.js	<any>
+bridge.test.js	tests/mannequin.test.js	<any>
+bridge.test.js	tests/masterspeed.test.js	<any>
+bridge.test.js	tests/materials.test.js	<any>
+bridge.test.js	tests/measure.test.js	<any>
+bridge.test.js	tests/mergeshared.test.js	<any>
+bridge.test.js	tests/modload.test.js	<any>
 bridge.test.js	tests/modscope.js	<any>
+bridge.test.js	tests/modtools.test.js	<any>
+bridge.test.js	tests/month.test.js	<any>
+bridge.test.js	tests/motif.test.js	<any>
+bridge.test.js	tests/moveoutfit.test.js	<any>
+bridge.test.js	tests/mqcloth.test.js	<any>
+bridge.test.js	tests/multi.test.js	<any>
+bridge.test.js	tests/navfit.test.js	<any>
+bridge.test.js	tests/newuser.test.js	<any>
+bridge.test.js	tests/occasions.test.js	<any>
+bridge.test.js	tests/ocpblouse.test.js	<any>
+bridge.test.js	tests/onorder.test.js	<any>
+bridge.test.js	tests/owncolany.test.js	<any>
+bridge.test.js	tests/ownmaterials.test.js	<any>
+bridge.test.js	tests/ownnames.test.js	<any>
+bridge.test.js	tests/pace.js	<any>
+bridge.test.js	tests/pack.test.js	<any>
+bridge.test.js	tests/packcare-taps.test.js	<any>
+bridge.test.js	tests/pairrepeat.test.js	<any>
+bridge.test.js	tests/paperstatus.test.js	<any>
+bridge.test.js	tests/paste.test.js	<any>
+bridge.test.js	tests/photoedit.test.js	<any>
+bridge.test.js	tests/pickbugs.test.js	<any>
+bridge.test.js	tests/picker.test.js	<any>
+bridge.test.js	tests/pickerfocus.test.js	<any>
+bridge.test.js	tests/pieces.test.js	<any>
+bridge.test.js	tests/planner-pairs.test.js	<any>
+bridge.test.js	tests/planner-repeats.test.js	<any>
+bridge.test.js	tests/planner-rules.test.js	<any>
+bridge.test.js	tests/planreview.test.js	<any>
+bridge.test.js	tests/pocketsquare.test.js	<any>
+bridge.test.js	tests/records.test.js	<any>
+bridge.test.js	tests/remind.test.js	<any>
+bridge.test.js	tests/replay/harness/lab.js	<any>
+bridge.test.js	tests/replay/harness/make-photos.js	<any>
+bridge.test.js	tests/replay/harness/net.js	<any>
+bridge.test.js	tests/replay/harness/paths.js	<any>
+bridge.test.js	tests/replay/harness/phone.js	<any>
+bridge.test.js	tests/replay/run.js	<any>
+bridge.test.js	tests/replay/scripts/CR-6-12.js	<any>
+bridge.test.js	tests/replay/scripts/W1-1-01.js	<any>
+bridge.test.js	tests/replay/scripts/W1-1-02.js	<any>
+bridge.test.js	tests/replay/scripts/W1-10-01.js	<any>
+bridge.test.js	tests/replay/scripts/W1-10-02.js	<any>
+bridge.test.js	tests/replay/scripts/W1-11-01.js	<any>
+bridge.test.js	tests/replay/scripts/W1-11-02.js	<any>
+bridge.test.js	tests/replay/scripts/W1-11-03.js	<any>
+bridge.test.js	tests/replay/scripts/W1-11-04.js	<any>
+bridge.test.js	tests/replay/scripts/W1-11-05.js	<any>
+bridge.test.js	tests/replay/scripts/W1-2-01.js	<any>
+bridge.test.js	tests/replay/scripts/W1-2-02.js	<any>
+bridge.test.js	tests/replay/scripts/W1-2-04.js	<any>
+bridge.test.js	tests/replay/scripts/W1-3-01.js	<any>
+bridge.test.js	tests/replay/scripts/W1-3-02-today.js	<any>
+bridge.test.js	tests/replay/scripts/W1-3-02.js	<any>
+bridge.test.js	tests/replay/scripts/W1-3-03.js	<any>
+bridge.test.js	tests/replay/scripts/W1-3-04.js	<any>
+bridge.test.js	tests/replay/scripts/W1-3-05.js	<any>
+bridge.test.js	tests/replay/scripts/W1-4-01.js	<any>
+bridge.test.js	tests/replay/scripts/W1-5-01.js	<any>
+bridge.test.js	tests/replay/scripts/W1-5-02.js	<any>
+bridge.test.js	tests/replay/scripts/W1-5-03.js	<any>
+bridge.test.js	tests/replay/scripts/W1-5-04.js	<any>
+bridge.test.js	tests/replay/scripts/W1-5-06.js	<any>
+bridge.test.js	tests/replay/scripts/W1-5-07.js	<any>
+bridge.test.js	tests/replay/scripts/W1-6-01.js	<any>
+bridge.test.js	tests/replay/scripts/W1-6-02.js	<any>
+bridge.test.js	tests/replay/scripts/W1-6-04.js	<any>
+bridge.test.js	tests/replay/scripts/W1-6-05.js	<any>
+bridge.test.js	tests/replay/scripts/W1-6-06.js	<any>
+bridge.test.js	tests/replay/scripts/W1-7-01.js	<any>
+bridge.test.js	tests/replay/scripts/W1-7-02.js	<any>
+bridge.test.js	tests/replay/scripts/W1-8-01.js	<any>
+bridge.test.js	tests/replay/scripts/W1-8-02.js	<any>
+bridge.test.js	tests/replay/scripts/W1-8-05.js	<any>
+bridge.test.js	tests/replay/scripts/W1-9-01.js	<any>
+bridge.test.js	tests/replay/scripts/W1-9-02.js	<any>
+bridge.test.js	tests/replay/scripts/W1-9-03.js	<any>
+bridge.test.js	tests/replay/scripts/W1-9-04.js	<any>
+bridge.test.js	tests/replay/scripts/W1-9-05.js	<any>
+bridge.test.js	tests/replay/scripts/W1-9-06.js	<any>
+bridge.test.js	tests/replay/scripts/W1-9-08.js	<any>
+bridge.test.js	tests/replay/scripts/W2-12-01.js	<any>
+bridge.test.js	tests/replay/scripts/W2-12-02.js	<any>
+bridge.test.js	tests/replay/scripts/W2-12-03.js	<any>
+bridge.test.js	tests/replay/scripts/W2-13-01.js	<any>
+bridge.test.js	tests/replay/scripts/W2-13-02.js	<any>
+bridge.test.js	tests/replay/scripts/W2-13-03.js	<any>
+bridge.test.js	tests/replay/scripts/W2-13-04.js	<any>
+bridge.test.js	tests/replay/scripts/W2-14-01.js	<any>
+bridge.test.js	tests/replay/scripts/W2-14-02.js	<any>
+bridge.test.js	tests/replay/scripts/W2-14-03.js	<any>
+bridge.test.js	tests/replay/scripts/W2-14-04.js	<any>
+bridge.test.js	tests/replay/scripts/W2-14-05.js	<any>
+bridge.test.js	tests/replay/scripts/W2-15-01.js	<any>
+bridge.test.js	tests/replay/scripts/W2-15-02.js	<any>
+bridge.test.js	tests/replay/scripts/W2-15-03.js	<any>
+bridge.test.js	tests/replay/scripts/W2-15-04.js	<any>
+bridge.test.js	tests/replay/scripts/W2-15-05.js	<any>
+bridge.test.js	tests/replay/scripts/W2-15-06.js	<any>
+bridge.test.js	tests/replay/scripts/W2-16-01.js	<any>
+bridge.test.js	tests/replay/scripts/W2-16-02.js	<any>
+bridge.test.js	tests/replay/scripts/W2-16-03.js	<any>
+bridge.test.js	tests/replay/scripts/W2-16-04.js	<any>
+bridge.test.js	tests/replay/scripts/W2-17-01.js	<any>
+bridge.test.js	tests/replay/scripts/W2-17-02.js	<any>
+bridge.test.js	tests/replay/scripts/W2-17-03.js	<any>
+bridge.test.js	tests/replay/scripts/W2-17-04.js	<any>
+bridge.test.js	tests/replay/scripts/W2-17-05.js	<any>
+bridge.test.js	tests/replay/scripts/W2-17-06.js	<any>
+bridge.test.js	tests/replay/scripts/W2-17-07.js	<any>
+bridge.test.js	tests/replay/scripts/W2-17-08.js	<any>
+bridge.test.js	tests/replay/scripts/W2-17-09.js	<any>
+bridge.test.js	tests/replay/scripts/W2-18-01.js	<any>
+bridge.test.js	tests/replay/scripts/W2-18-02.js	<any>
+bridge.test.js	tests/replay/scripts/W2-19-01.js	<any>
+bridge.test.js	tests/replay/scripts/W2-19-02.js	<any>
+bridge.test.js	tests/replay/scripts/W2-19-03.js	<any>
+bridge.test.js	tests/replay/scripts/W2-19-04.js	<any>
+bridge.test.js	tests/replay/scripts/W2-19-05.js	<any>
+bridge.test.js	tests/replay/scripts/W2-19-06.js	<any>
+bridge.test.js	tests/replay/scripts/W2-19-07.js	<any>
+bridge.test.js	tests/replay/scripts/W2-19-08.js	<any>
+bridge.test.js	tests/replay/scripts/W2-19-09.js	<any>
+bridge.test.js	tests/replay/scripts/_v9lib.js	<any>
+bridge.test.js	tests/replay/scripts/_verify10-lib.js	<any>
+bridge.test.js	tests/replay/scripts/_verify11-lib.js	<any>
+bridge.test.js	tests/replay/scripts/_verify12-lib.js	<any>
+bridge.test.js	tests/replay/scripts/_verify19-lib.js	<any>
+bridge.test.js	tests/replay/scripts/_verify2-lib.js	<any>
+bridge.test.js	tests/replay/scripts/_verify3-lib.js	<any>
+bridge.test.js	tests/replay/scripts/_verify6-lib.js	<any>
+bridge.test.js	tests/replay/scripts/_verify7-lib.js	<any>
+bridge.test.js	tests/replay/scripts/_verify8-lib.js	<any>
+bridge.test.js	tests/replay/scripts/lib-verify1.js	<any>
+bridge.test.js	tests/replay/scripts/lib-verify13.js	<any>
+bridge.test.js	tests/replay/scripts/lib-verify14.js	<any>
+bridge.test.js	tests/replay/scripts/lib-verify15.js	<any>
+bridge.test.js	tests/replay/scripts/lib-verify16.js	<any>
+bridge.test.js	tests/replay/scripts/lib-verify17.js	<any>
+bridge.test.js	tests/replay/scripts/lib-verify18.js	<any>
+bridge.test.js	tests/replay/scripts/lib-verify5.js	<any>
+bridge.test.js	tests/restacts.test.js	<any>
+bridge.test.js	tests/rollback.test.js	<any>
+bridge.test.js	tests/rotation-pause.test.js	<any>
+bridge.test.js	tests/run.js	<any>
+bridge.test.js	tests/safeport.js	<any>
+bridge.test.js	tests/safeport.test.js	<any>
+bridge.test.js	tests/safety.test.js	<any>
+bridge.test.js	tests/safetysync.test.js	<any>
+bridge.test.js	tests/sample.test.js	<any>
+bridge.test.js	tests/savelock.test.js	<any>
+bridge.test.js	tests/scoreanim.test.js	<any>
+bridge.test.js	tests/scoredials.test.js	<any>
+bridge.test.js	tests/scorefix.test.js	<any>
 bridge.test.js	tests/scriptlist.js	<any>
+bridge.test.js	tests/server-limits.test.js	<any>
+bridge.test.js	tests/serverchecks.test.js	<any>
+bridge.test.js	tests/sett.test.js	<any>
+bridge.test.js	tests/settag.test.js	<any>
+bridge.test.js	tests/settingsin.test.js	<any>
+bridge.test.js	tests/settingsmerge.test.js	<any>
+bridge.test.js	tests/settingsui.test.js	<any>
+bridge.test.js	tests/setup.test.js	<any>
+bridge.test.js	tests/shade.test.js	<any>
+bridge.test.js	tests/shard.js	<any>
+bridge.test.js	tests/shard.test.js	<any>
+bridge.test.js	tests/sharedmasters.test.js	<any>
+bridge.test.js	tests/sharpclose.test.js	<any>
+bridge.test.js	tests/shellfix.test.js	<any>
+bridge.test.js	tests/shirtweave.test.js	<any>
+bridge.test.js	tests/shop.test.js	<any>
+bridge.test.js	tests/shopstay.test.js	<any>
+bridge.test.js	tests/shopswipe.test.js	<any>
+bridge.test.js	tests/sockpatterns.test.js	<any>
+bridge.test.js	tests/socktoe.test.js	<any>
+bridge.test.js	tests/sockworker.test.js	<any>
+bridge.test.js	tests/sourcerules.test.js	<any>
+bridge.test.js	tests/speed.test.js	<any>
+bridge.test.js	tests/staledevice.test.js	<any>
+bridge.test.js	tests/stats.test.js	<any>
+bridge.test.js	tests/stylea11y.test.js	<any>
+bridge.test.js	tests/sw.test.js	<any>
+bridge.test.js	tests/swatchzoom.test.js	<any>
+bridge.test.js	tests/sync.test.js	<any>
+bridge.test.js	tests/syncwrite.test.js	<any>
+bridge.test.js	tests/tabload.test.js	<any>
+bridge.test.js	tests/tabmove.test.js	<any>
+bridge.test.js	tests/tagger.test.js	<any>
+bridge.test.js	tests/tagging.test.js	<any>
+bridge.test.js	tests/tagreads.test.js	<any>
+bridge.test.js	tests/tagroutes.test.js	<any>
+bridge.test.js	tests/tagswatch.test.js	<any>
+bridge.test.js	tests/takeoff.test.js	<any>
+bridge.test.js	tests/testlock.js	<any>
+bridge.test.js	tests/texswatch.test.js	<any>
+bridge.test.js	tests/texture.test.js	<any>
+bridge.test.js	tests/theme.test.js	<any>
+bridge.test.js	tests/tieweave.test.js	<any>
+bridge.test.js	tests/titles.test.js	<any>
+bridge.test.js	tests/today.test.js	<any>
+bridge.test.js	tests/todayacts.test.js	<any>
+bridge.test.js	tests/todayedges.test.js	<any>
+bridge.test.js	tests/todayswatch.test.js	<any>
+bridge.test.js	tests/todayzoom.test.js	<any>
+bridge.test.js	tests/twillswatch.test.js	<any>
+bridge.test.js	tests/typecheck.js	<any>
+bridge.test.js	tests/typecheck.test.js	<any>
+bridge.test.js	tests/ui.test.js	<any>
+bridge.test.js	tests/uipages.test.js	<any>
+bridge.test.js	tests/uploadbudget.test.js	<any>
+bridge.test.js	tests/vest.test.js	<any>
+bridge.test.js	tests/wardfab.test.js	<any>
+bridge.test.js	tests/wardrobe.test.js	<any>
+bridge.test.js	tests/wardrobetap.test.js	<any>
+bridge.test.js	tests/wardswipe.test.js	<any>
+bridge.test.js	tests/watchmatch.test.js	<any>
+bridge.test.js	tests/weather.test.js	<any>
+bridge.test.js	tests/webkit.js	<any>
+bridge.test.js	tests/weeklock.test.js	<any>
+bridge.test.js	tests/weeklockdays.test.js	<any>
+bridge.test.js	tests/workerfix.test.js	<any>
+bridge.test.js	tests/workersrc.js	<any>
+bridge.test.js	tests/workersweep.test.js	<any>
 bridge.test.js	theme.js	<any>
 bridge.test.js	toast.js	<any>
 bridge.test.js	today-gestures.js	<any>
@@ -3251,6 +3587,17 @@ bridge.test.js	today-photofold.js	<any>
 bridge.test.js	today-picture.js	<any>
 bridge.test.js	today-plan.js	<any>
 bridge.test.js	today.js	<any>
+bridge.test.js	tools/asm-atlas.js	<any>
+bridge.test.js	tools/asm-cm-upload.js	<any>
+bridge.test.js	tools/atlas-measure.js	<any>
+bridge.test.js	tools/atlas.js	<any>
+bridge.test.js	tools/cloud-tests.js	<any>
+bridge.test.js	tools/cssdiff.js	<any>
+bridge.test.js	tools/describe-eval.js	<any>
+bridge.test.js	tools/fill-material.js	<any>
+bridge.test.js	tools/read-errors.js	<any>
+bridge.test.js	tools/upload-budget.js	<any>
+bridge.test.js	tools/visit-measure.js	<any>
 bridge.test.js	ui.js	<any>
 bridge.test.js	wardrobe.js	<any>
 bridge.test.js	weather.js	<any>
@@ -3636,6 +3983,11 @@ cardid.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapSoon	p
 cardid.test.js	today.js	<loaded>	addForSlot	canPick	figureStage	goneNote	hasOutfit	homeDay	keepHome	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 cardid.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerOpen	layerUp	uiEsc
 cardid.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matLabel	matMigrate	matOn	matOnItem	matRow	notesRow	setQField	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
+cardid.test.js	watch/leather.jpg	<loaded>
+cardid.test.js	watch/shirt-open.png	<loaded>
+cardid.test.js	watch/shirt-tie.png	<loaded>
+cardid.test.js	watch/suit.png	<loaded>
+cardid.test.js	watch/vest.png	<loaded>
 cardid.test.js	weather.js	<loaded>	loadWeather
 care.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 care.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
@@ -4992,9 +5344,6 @@ combatboot.test.js	ui.js	<loaded>	addGate	inviteOver	isConnected	layerClose	laye
 combatboot.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	matMigrate	matOn	matRow	notesRow	sockToeMigrate	wardPendingRestore
 combatboot.test.js	watch/leather.jpg	<loaded>
 combatboot.test.js	watch/shirt-open.png	<loaded>
-combatboot.test.js	watch/shirt-tie.png	<loaded>
-combatboot.test.js	watch/suit.png	<loaded>
-combatboot.test.js	watch/vest.png	<loaded>
 combatboot.test.js	weather.js	<loaded>	loadWeather
 combatboot.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	materialSchema	multiPrompt	orNull	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes
 connkeep.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -6102,7 +6451,7 @@ favplan.test.js	add.js	<loaded>
 favplan.test.js	analysis.js	<loaded>
 favplan.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	put	texSwatches	tx	txFail	txs	window.fetch
 favplan.test.js	apple-touch-icon.png	<loaded>
-favplan.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmPileKind	asmWtWants
+favplan.test.js	asm-color.js	<loaded>	asmCmBtnCol	asmCmKind	asmCmPref	asmCmRoute	asmPileKind	asmWtWants
 favplan.test.js	asm-gl.js	<loaded>
 favplan.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 favplan.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -6116,7 +6465,7 @@ favplan.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPull
 favplan.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop
 favplan.test.js	checklist.js	<loaded>
 favplan.test.js	colpick.js	<loaded>
-favplan.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	accentOf	applyCustom	camoPat	cleanDay	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colourNameRe	dE00	dayClimate	dayFields	di	fav	favClean	favId	handPickSlot	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keySettings	keySplit	labOf	lum	lumCol	matSeason	mergeSettings	mergeState	metalWord	mix	nameHtml	nextStamp	nm	now	nowMs	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	recClean	recCol	recFree	rgbHex	rgbLab	seasonFit	sentence	setDays	setList	setWardrobe	shoeStyle	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
+favplan.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	accentOf	applyCustom	camoPat	casualTop	cleanDay	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colourNameRe	dE00	dayClimate	dayFields	di	fav	favClean	favId	handPickSlot	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keySettings	keySplit	labOf	lum	lumCol	matSeason	mergeSettings	mergeState	metalWord	mix	nameHtml	needsTie	nextStamp	nm	now	nowMs	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	recClean	recCol	recFree	rgbHex	rgbLab	seasonFit	sentence	setDays	setList	setWardrobe	shoeStyle	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
 favplan.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush
 favplan.test.js	daysoff.js	<loaded>	refreshHolidays
 favplan.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
@@ -6135,7 +6484,7 @@ favplan.test.js	locale.js	<loaded>	appLocale
 favplan.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
 favplan.test.js	look.js	<loaded>
 favplan.test.js	manifest.webmanifest	<loaded>
-favplan.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
+favplan.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 favplan.test.js	measure.js	<loaded>
 favplan.test.js	merge.js	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeSplit	mergeStateBy	sameVal	setEntries	setHash	setJoin	setKeys	setStampOf	stamp	stateSig	subOk	subStampOf	tombWins
 favplan.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
@@ -7932,6 +8281,7 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
+invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -8601,6 +8951,7 @@ kitsetup-taps.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	sc
 kitsetup-taps.test.js	tag-request.js	<loaded>	texSig
 kitsetup-taps.test.js	tagging.js	<loaded>
 kitsetup-taps.test.js	tests/fixedplan.js	<any>
+kitsetup-taps.test.js	tests/webkit.js	<any>
 kitsetup-taps.test.js	theme.js	<loaded>	applyTheme
 kitsetup-taps.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoFab	undoHere	undoOff
 kitsetup-taps.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	mvSig	todayBusy	todayCovered	todayFree
@@ -9249,7 +9600,7 @@ modload.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{consto
 modload.test.js	asm-pocket.js	<loaded>
 modload.test.js	asm-watch.js	<loaded>
 modload.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	asmMicroKind	asmSuitBands	asmSuitWeave	renderAsmUI
-modload.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backTop	backWanted	inviteInUrl
+modload.test.js	back.js	<any>	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backTop	backWanted	get	inviteInUrl
 modload.test.js	backupfile.js	<loaded>
 modload.test.js	boxfold.js	<loaded>
 modload.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
@@ -9300,7 +9651,7 @@ modload.test.js	snapshots.js	<loaded>
 modload.test.js	srgb.js	<loaded>	linSrgb	srgbLin	srgbLin8
 modload.test.js	start.js	<any>	<loaded>	applyStored	loadStored	pageIn	show	showWanted	startChecks	startFailed	startJobs	startUp	tabTap
 modload.test.js	stats.js	<loaded>	@afterScripts	buildStats	renderStats	statBar	statDate	statName	statPic	statRowsHtml	statTypeRows	statsDraw	statsFold	statsPlan	statsPlanned	statsShort	statsShow	statsToggle	wornDays
-modload.test.js	styles.css	#adv-photos:has(#asm-group[hidden]),body:not(.owner) #adv-photos	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#itempic-btn[disabled]	#mannequin-container	#mbox .mhead	#mbox .mswipe	#modal-backdrop	#modal-backdrop,#settings-modal	#mpanel-in .mc[data-mv]	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#photos-conn	#photos-conn:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal .cpwset .cpwin input[type="text"]	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .dtog::after	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox:is(.instant,.bfast) .mpanel-in	#settings-modal .mpanel-in	#settings-modal .mpanel-in::after	#settings-modal .mpanel-in::before	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date],#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal .sgroup:has(>.days)	#settings-modal .srow	#settings-modal .srow select	#settings-modal button.adv-head	#settings-modal button.dress-sw	#settings-modal label.btn	#settings-modal,#setup,#kitsheet	#shop-sheet	#stats .card	#stats .shopbtn	#stats .st-card h3	#stats .st-tile	#stats .st-tiles	#toast	#toast,body.iv-on #toast	#toast.on	#toast:not(.on)	#today	#today .plegend	#today .plegend span	#today .row	#today .row .dot	#today .row>.mut:first-child	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.about-confirm	.about-fold summary	.about-fold summary::after	.about-note	.about-text	.adv	.adv-head .chev	.adv-in	.adv-t	.adv-t small	.btn	.btns	.cal-form input[type=url]	.cal-guides button	.cal-howh	.cal-priv	.cap	.conn-msg	.conn-off-note .linkbtn	.conn-off-note:empty	.cpw-h	.cpwin	.cpwin input[type="text"]	.cpwset	.cpwset input[type="number"]	.cpwsym	.custadd	.custadd button	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.day h2 .wx.haspill	.day h2 .wx.haspill .wxc	.day h2 .wx.haspill:has(.wpgrp)	.days	.dot	.dot svg	.dot,.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb,.st-pic,.pick-pic	.dress-row	.dress-row:first-child	.dress-sw i	.dress-sw i::after	.dress-sw.on i	.dress-sw.on i::after	.dress-txt	.dress-txt b	.dress-txt small	.dtog	.dtog.on	.favic	.fb-list	.fchips	.fig	.fig .cband	.fig .cband .cdots	.fig .cband .cdots em	.fig .cband .cdots i	.fig .cband .cdots i.on	.fig .cband .crow	.fig .cband .ctxt	.fig .cband .ctxt b	.fig .cband path	.fig .cband svg	.fig .cframe	.fig.cb	.fig.cb.care-last,.fig.cb.care-over	.fig>svg	.firstrun	.firstrun h3	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it.done .fr-t	.fr-it.done .fr-tick	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi,.card	.hbtns	.hgear	.hlist	.hlist:empty	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mlstrip,.pstrip	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.offadd input[type=date]	.pack-link	.pchip	.pchip svg	.phead	.phead h2	.pick-pic .ph.thumb,.st-pic .ph.thumb	.pri	.pstrip	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.row:last-child	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sactions	.sactions:empty	.sbody	.scat-h	.setup-again	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgh.sgh-first	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.shopbtn-t	.shopbtn-t b	.shopbtn-t small	.shopbtn.locked	.shopbtn.locked small	.sic	.sicw	.side>.mbox:last-child	.side>.score,.side>.mbox,.side>.dayact,.side>p	.slabel	.slide	.slink	.slink .chev	.slinks	.slinks .slink	.srow	.srow select	.st-bar	.st-bar i	.st-bar.p i	.st-bar.w i	.st-bars	.st-bars .st-bar	.st-card h3	.st-card>p	.st-col	.st-col i	.st-col i.low	.st-key	.st-key.p	.st-key.w	.st-main	.st-main small	.st-nm	.st-pic	.st-pic svg	.st-row	.st-tile	.st-tile b	.st-tile small	.st-tiles	.st-trend	.st-type	.st-type summary	.st-type summary b	.st-type summary::after	.st-type[open] summary::after	.st-wk	.st-wk b	.st-wk small	.stack	.stack .strep	.stack.rest	.stage	.stage .firstrun	.thumb	.thumb svg	.vfile	.vh	.wpfav	.wpfav::after	.wpgrp	.wpgrp .wpill	.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav	.wpill	.wpill.yes	.wpill::after	.wxc.wxlk	.wxl	::placeholder	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#stats) .shopbtn	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:root:not([data-theme=light])	:root[data-theme=dark]	:root[data-theme=dark] :is(.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav)	:root[data-theme=light]	:where(#today) .mbox	:where(#today) .mltxt b	:where(#today) .mltxt small	:where(#today) .month-link	:where(#today) .mpanel-in	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.nocon .conn-only,.connhide	body.tester:not(.srv-open) #adv-connection,body.nocon:not(.srv-open) #adv-connection	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	html.set-lock,html.set-lock body	label:has(>.vfile)	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav::before	select,input[type="text"],input[type="range"]
+modload.test.js	styles.css	#adv-photos:has(#asm-group[hidden]),body:not(.owner) #adv-photos	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#itempic-btn[disabled]	#mannequin-container	#mbox .mhead	#mbox .mswipe	#modal-backdrop	#modal-backdrop,#settings-modal	#mpanel-in .mc[data-mv]	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#photos-conn	#photos-conn:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal .cpwset .cpwin input[type="text"]	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .dtog::after	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox:is(.instant,.bfast) .mpanel-in	#settings-modal .mpanel-in	#settings-modal .mpanel-in::after	#settings-modal .mpanel-in::before	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date],#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal .sgroup:has(>.days)	#settings-modal .srow	#settings-modal .srow select	#settings-modal button.adv-head	#settings-modal button.dress-sw	#settings-modal label.btn	#settings-modal,#setup,#kitsheet	#shop-sheet	#stats .card	#stats .shopbtn	#stats .st-card h3	#stats .st-tile	#stats .st-tiles	#toast	#toast,body.iv-on #toast	#toast.on	#toast:not(.on)	#today	#today .plegend	#today .plegend span	#today .row	#today .row .dot	#today .row>.mut:first-child	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.about-confirm	.about-fold summary	.about-fold summary::after	.about-note	.about-text	.adv	.adv-head .chev	.adv-in	.adv-t	.adv-t small	.btn	.btns	.cal-form input[type=url]	.cal-guides button	.cal-howh	.cal-priv	.cap	.conn-msg	.conn-off-note .linkbtn	.conn-off-note:empty	.cpw-h	.cpwin	.cpwin input[type="text"]	.cpwset	.cpwset input[type="number"]	.cpwsym	.custadd	.custadd button	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.day h2 .wx.haspill	.day h2 .wx.haspill .wxc	.day h2 .wx.haspill:has(.wpgrp)	.days	.dot	.dot svg	.dot,.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb,.st-pic,.pick-pic	.dress-row	.dress-row:first-child	.dress-sw i	.dress-sw i::after	.dress-sw.on i	.dress-sw.on i::after	.dress-txt	.dress-txt b	.dress-txt small	.dtog	.dtog.on	.favic	.fb-list	.fchips	.fig	.fig .cband	.fig .cband .cdots	.fig .cband .cdots em	.fig .cband .cdots i	.fig .cband .cdots i.on	.fig .cband .crow	.fig .cband .ctxt	.fig .cband .ctxt b	.fig .cband path	.fig .cband svg	.fig .cframe	.fig.cb	.fig.cb.care-last,.fig.cb.care-over	.fig>svg	.firstrun	.firstrun h3	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it.done .fr-t	.fr-it.done .fr-tick	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi,.card	.hbtns	.hgear	.hlist	.hlist:empty	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mlstrip,.pstrip	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.offadd input[type=date]	.pack-link	.pchip	.pchip svg	.phead	.phead h2	.pick-pic .ph.thumb,.st-pic .ph.thumb	.pri	.pstrip	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.row:last-child	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sactions	.sactions:empty	.sbody	.scat-h	.setup-again	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgh.sgh-first	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.shopbtn-t	.shopbtn-t b	.shopbtn-t small	.shopbtn.locked	.shopbtn.locked small	.sic	.sicw	.side>.mbox:last-child	.side>.score,.side>.mbox,.side>.dayact,.side>p	.slabel	.slide	.slink	.slink .chev	.slinks	.slinks .slink	.srow	.srow select	.st-bar	.st-bar i	.st-bar.p i	.st-bar.w i	.st-bars	.st-bars .st-bar	.st-card h3	.st-card>p	.st-col	.st-col i	.st-col i.low	.st-key	.st-key.p	.st-key.w	.st-main	.st-main small	.st-nm	.st-pic	.st-pic svg	.st-row	.st-tile	.st-tile b	.st-tile small	.st-tiles	.st-trend	.st-type	.st-type summary	.st-type summary b	.st-type summary::after	.st-type[open] summary::after	.st-wk	.st-wk b	.st-wk small	.stack	.stack .strep	.stack.rest	.stage	.stage .firstrun	.thumb	.thumb svg	.vfile	.vh	.wpfav	.wpfav::after	.wpgrp	.wpgrp .wpill	.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav	.wpill	.wpill.yes	.wpill::after	.wxc.wxlk	.wxl	::placeholder	:focus-visible	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#stats) .shopbtn	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:root:not([data-theme=light])	:root[data-theme=dark]	:root[data-theme=dark] :is(.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav)	:root[data-theme=light]	:where(#today) .mbox	:where(#today) .mltxt b	:where(#today) .mltxt small	:where(#today) .month-link	:where(#today) .mpanel-in	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.nocon .conn-only,.connhide	body.tester:not(.srv-open) #adv-connection,body.nocon:not(.srv-open) #adv-connection	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	html.set-lock,html.set-lock body	label:has(>.vfile)	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav::before	select,input[type="text"],input[type="range"]
 modload.test.js	sync-photos.js	<loaded>
 modload.test.js	sync-status.js	<loaded>	setSyncStatus	showSyncStatus	syncPaused	syncWaiting
 modload.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	pulledYet	scheduleSync	syncNeedsPull	syncNow	syncOnce	syncUrl
@@ -10761,11 +11112,6 @@ onorder.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapUse
 onorder.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 onorder.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerOpen	layerUp	uiEsc
 onorder.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMigrate	matOn	matOnItem	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
-onorder.test.js	watch/leather.jpg	<loaded>
-onorder.test.js	watch/shirt-open.png	<loaded>
-onorder.test.js	watch/shirt-tie.png	<loaded>
-onorder.test.js	watch/suit.png	<loaded>
-onorder.test.js	watch/vest.png	<loaded>
 onorder.test.js	weather.js	<loaded>	loadWeather
 owncolany.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 owncolany.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
@@ -13106,7 +13452,6 @@ run.js: figure draws the tie, and the shirt when there is no jacket	wardrobe.js	
 run.js: figure draws the tie, and the shirt when there is no jacket	watch/leather.jpg	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	watch/shirt-open.png	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	watch/shirt-tie.png	<loaded>
-run.js: figure draws the tie, and the shirt when there is no jacket	watch/suit.png	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	watch/vest.png	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	weather.js	<loaded>	loadWeather
 run.js: outfit score	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -14694,6 +15039,7 @@ scoredials.test.js	sync-status.js	<loaded>	setSyncStatus	showSyncStatus	syncPaus
 scoredials.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	syncLaterRun	syncNeedsPull	syncNow	syncOnce	syncUrl
 scoredials.test.js	tag-request.js	<loaded>
 scoredials.test.js	tagging.js	<loaded>
+scoredials.test.js	tests/webkit.js	<any>
 scoredials.test.js	theme.js	<loaded>	applyTheme
 scoredials.test.js	toast.js	<loaded>
 scoredials.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}	mvSig
@@ -15703,6 +16049,7 @@ shard.test.js	tests/masterspeed.test.js	<any>
 shard.test.js	tests/materials.test.js	<any>
 shard.test.js	tests/measure.test.js	<any>
 shard.test.js	tests/mergeshared.test.js	<any>
+shard.test.js	tests/modload.test.js	<any>
 shard.test.js	tests/modtools.test.js	<any>
 shard.test.js	tests/month.test.js	<any>
 shard.test.js	tests/motif.test.js	<any>
@@ -15776,6 +16123,7 @@ shard.test.js	tests/sw.test.js	<any>
 shard.test.js	tests/swatchzoom.test.js	<any>
 shard.test.js	tests/sync.test.js	<any>
 shard.test.js	tests/syncwrite.test.js	<any>
+shard.test.js	tests/tabload.test.js	<any>
 shard.test.js	tests/tabmove.test.js	<any>
 shard.test.js	tests/tagger.test.js	<any>
 shard.test.js	tests/tagging.test.js	<any>
@@ -16024,7 +16372,7 @@ shellfix.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{const
 shellfix.test.js	asm-pocket.js	<loaded>
 shellfix.test.js	asm-watch.js	<loaded>
 shellfix.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	asmMicroKind	asmSuitBands	asmSuitWeave	renderAsmUI
-shellfix.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backHold	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backTop	backWanted	inviteInUrl
+shellfix.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backHold	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backTop	backWanted	get	inviteInUrl
 shellfix.test.js	backupfile.js	<loaded>
 shellfix.test.js	boxfold.js	<loaded>
 shellfix.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
@@ -16914,7 +17262,7 @@ staledevice.test.js	pack.js	<loaded>	packShow
 staledevice.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 staledevice.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
 staledevice.test.js	pickscore.js	<loaded>
-staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
+staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 staledevice.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 staledevice.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 staledevice.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
@@ -17816,6 +18164,11 @@ tagger.test.js	today-plan.js	<loaded>	planFor	planMonth	planSnapUse
 tagger.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 tagger.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerUp	netErr	ownerHere	plainErr
 tagger.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	fldRow	matMigrate	matOn	matRow	notesRow	sockToeMigrate	wardFlush	wardPendingRestore
+tagger.test.js	watch/leather.jpg	<loaded>
+tagger.test.js	watch/shirt-open.png	<loaded>
+tagger.test.js	watch/shirt-tie.png	<loaded>
+tagger.test.js	watch/suit.png	<loaded>
+tagger.test.js	watch/vest.png	<loaded>
 tagger.test.js	weather.js	<loaded>	loadWeather
 tagger.test.js	worker.js	<loaded>	corsFor	fetch	serve
 tagger.test.js	worker/colormath.js	<loaded>	dE00	hexLab	hexRgb	rgbLab
@@ -19647,6 +20000,7 @@ wardfab.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedule
 wardfab.test.js	tag-request.js	<loaded>	tagStatsCard
 wardfab.test.js	tagging.js	<loaded>
 wardfab.test.js	tests/fixedplan.js	<any>
+wardfab.test.js	tests/webkit.js	<any>
 wardfab.test.js	theme.js	<loaded>	applyTheme
 wardfab.test.js	toast.js	<loaded>	toast	toastDrop	undoFab	undoHere	undoOff
 wardfab.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig

@@ -15,7 +15,9 @@
 //   pageScripts(root)        [{src, module}] of index.html, in order
 //   parse(src, module, opt)  acorn's tree (ranges on)
 //   declared(ast)            [{name, kind}] the file's top-level names (kind: function, class, let, const, var, import), exported or not
-//   bridged(ast)             {names: Map name -> 'assign'|'accessor', odd: [text]}
+//   bridged(ast)             {names: Map name -> 'assign'|'accessor', odd: [text], acc: Map name -> {get, set, reads, writes}}
+//                            (acc: each accessor as written: whether it has a getter and a setter, and the one name each hands on;
+//                            tests/bridge.test.js wants `get:()=>name`, and `set:v=>{name=v}` when anything outside the file writes it)
 //   imports(ast, file)       [{from, names, odd}] its `import … from` and `export … from` (from: the path from the root, '/' separated)
 //   hasModuleSyntax(ast)     it has an import or an export (what TypeScript and Node go by)
 //   shared(root, file, module)  the names the file gives the page's global scope: every top-level name of a classic script, a
@@ -46,11 +48,27 @@ function declared(ast){
 }
 
 const keyOf=p=>p.type==='Property'&&!p.computed?(p.key.type==='Identifier'?p.key.name:p.key.type==='Literal'&&typeof p.key.value==='string'?p.key.value:null):null;
+/* an accessor's descriptor, as written: {get, set (it has one), reads (the name `get:()=>name` or `get(){return name}` gives back, else
+   null), writes (the name `set:v=>{name=v}` / `set:v=>name=v` / `set(v){name=v}` assigns its argument to, else null)}; null when the
+   descriptor isn't an object written out */
+function accessorOf(d){
+  if(!d||d.type!=='ObjectExpression')return null;
+  const a={get:false,set:false,reads:null,writes:null};
+  const one=f=>{if(!f||!/^(?:Arrow)?FunctionExpression$/.test(f.type))return null;
+    if(f.body.type!=='BlockStatement')return f.body;
+    const s=f.body.body.length===1?f.body.body[0]:null;return s&&(s.type==='ReturnStatement'?s.argument:s.type==='ExpressionStatement'?s.expression:null)};
+  for(const p of d.properties){const k=keyOf(p);if(k!=='get'&&k!=='set')continue;
+    const f=p.value,e=one(f);a[k]=true;
+    if(k==='get'){if(e&&e.type==='Identifier'&&!f.params.length)a.reads=e.name}
+    else if(e&&e.type==='AssignmentExpression'&&e.operator==='='&&e.left.type==='Identifier'&&f.params.length===1&&f.params[0].type==='Identifier'&&e.right.type==='Identifier'&&e.right.name===f.params[0].name)a.writes=e.left.name}
+  return a;
+}
 function bridged(ast,src){
-  const names=new Map(),odd=[];
+  const names=new Map(),odd=[],acc=new Map();
   const text=n=>src?src.slice(n.range[0],Math.min(n.range[1],n.range[0]+80)).replace(/\s+/g,' '):n.type;
   const obj=(o,kind,st)=>{if(!o||o.type!=='ObjectExpression'){odd.push(text(st));return}
-    for(const p of o.properties){const k=keyOf(p);if(k==null)odd.push(text(st));else names.set(k,kind)}};
+    for(const p of o.properties){const k=keyOf(p);if(k==null)odd.push(text(st));else{names.set(k,kind);
+      if(kind==='accessor'){const a=accessorOf(p.value);if(a)acc.set(k,a);else odd.push(text(st))}}}};
   for(const st of ast.body){
     if(st.type!=='ExpressionStatement')continue;const e=st.expression;
     if(e.type==='AssignmentExpression'&&e.left.type==='MemberExpression'&&G(e.left.object)){
@@ -59,8 +77,9 @@ function bridged(ast,src){
     const fn=e.callee.property.name,a=e.arguments;
     if(fn==='assign')for(const o of a.slice(1))obj(o,'assign',st);
     else if(fn==='defineProperties')obj(a[1],'accessor',st);
-    else if(fn==='defineProperty'){if(a[1]&&a[1].type==='Literal'&&typeof a[1].value==='string')names.set(a[1].value,'accessor');else odd.push(text(st))}}
-  return {names,odd};
+    else if(fn==='defineProperty'){if(a[1]&&a[1].type==='Literal'&&typeof a[1].value==='string'){names.set(a[1].value,'accessor');
+      const d=accessorOf(a[2]);if(d)acc.set(a[1].value,d);else odd.push(text(st))}else odd.push(text(st))}}
+  return {names,odd,acc};
 }
 
 function imports(ast,file){
