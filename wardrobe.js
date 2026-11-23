@@ -1,5 +1,5 @@
 /* Daily Wardrobe: the Wardrobe tab's search and sort, an item's own name, brand, material and notes, and Delete with Undo.
-   Loaded after app.js and stats.js (classic script, one shared scope); app.js calls in here from renderWardrobe, wardList,
+   Loaded after app.js and stats.js (an ES module since 2026-11-23); app.js calls in here from renderWardrobe, wardList,
    itemBody, save and rm. */
 
 /* ---- an item's own name ---- */
@@ -166,6 +166,17 @@ async function matMigrate(){if(matMigrating)return 0;matMigrating=true;let n=0;
     if(n){if(window.scheduleSync)scheduleSync();wardMemo=null;fixupRedraw()}}
   catch(e){console.warn('material rename',e)}finally{matMigrating=false}
   return n}
+/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. itemsheet.js draws the Wardrobe and
+   the item sheet with 16 of them (wardFlt, wardFresh, wardCount, wardBar, wardGrid, wardKeep, wardBack, matRow, notesRow, ivOn …),
+   item-view.js lists with wardView, add-card.js draws its fields (matLabel, matRow, fldRow, notesRow, matOn, setQField), add-save.js
+   and kit.js save them (wardSaveFields), colpick.js and own-lists.js set a field (setItemField, setQField), dress.js runs the one-time
+   renames (matMigrate, matRenameTo, sockToeMigrate, sockLegacy), safety.js asks wardPendingRestore, fav.js reads wardFlt; the search
+   and sort names, itemFieldSoon, wardDeleteNow and WARD_UNDO_MS are read by tests only. wardQ is set by tests/materials.test.js: a
+   getter and a setter; a module imports them.
+   Above the file's first call that can throw (whenPulled, when history.js did not load; then acts): the names are then still the
+   page's, as a classic script's were; the four consts declared further down are handed over above acts */
+Object.assign(globalThis,{WARD_MAX,WATCH_DETAILS_MAX,wardNorm,wardHay,wardMatch,wardSort,setWardSort,wardOrder,wardFlt,wardView,wardFresh,wardCount,wardBar,wardGrid,wardSearch,wardClear,wardKeep,wardBack,matLabel,matRow,fldRow,notesRow,itemFieldSoon,wardPendingRestore,ivOn,matOn,matOnItem,wardFieldsTop,setItemField,setQField,matRenameTo,matMigrate,sockToeMigrate,wardSaveFields,wardDeleteNow});
+Object.defineProperties(globalThis,{wardQ:{get:()=>wardQ,set:v=>{wardQ=v}}});
 whenPulled(()=>matMigrate());
 /* ---- a sock's toe cap moves to its own field (2026-11-17, sock patterns) ----
    Until now a sock's secondaryColor was its toe cap; now the second and third colours are the pattern's (an argyle's diamonds and lines) and
@@ -210,6 +221,9 @@ async function wardUndelete(it,k,days,at){
   planDirty();if(window.scheduleSync)scheduleSync();
   const v=['today','wardrobe','stats'].find(t=>$('#'+t)&&!$('#'+t).hidden);if(v)show(v);
   toast(`${nameIso(cap1(itemName(it)||nm(it)))} is back`)}
+/* the rest of the bridge: the consts declared above (dress.js: sockLegacy; itemsheet.js: wardDuplicate, wardDelete; tests/wardrobe.test.js: WARD_UNDO_MS) */
+Object.assign(globalThis,{sockLegacy,WARD_UNDO_MS,wardDuplicate,wardDelete});
+export {WARD_MAX,WATCH_DETAILS_MAX,wardQ,wardNorm,wardHay,wardMatch,wardSort,setWardSort,wardOrder,wardFlt,wardView,wardFresh,wardCount,wardBar,wardGrid,wardSearch,wardClear,wardKeep,wardBack,matLabel,matRow,fldRow,notesRow,itemFieldSoon,wardPendingRestore,ivOn,matOn,matOnItem,wardFieldsTop,setItemField,setQField,matRenameTo,matMigrate,sockLegacy,sockToeMigrate,wardSaveFields,WARD_UNDO_MS,wardDuplicate,wardDelete,wardDeleteNow};
 /* what the controls do (act.js). The Wardrobe's top and grid: the search field (typing; Escape empties a field that holds something, and goes no
    further), its ×, the sort, a piece's box (data-id), and the two buttons under "Nothing matches" */
 function wardSearchType(el){wardSearch(el.value)}
