@@ -1,6 +1,6 @@
 {
  "note": "Type errors per file and scope (tests/typecheck.js). May only go down: fix errors, then `node tests/typecheck.js --update`.",
- "total": 280,
+ "total": 269,
  "files": {
   "page": {
    "about.js": 3,
@@ -18,7 +18,7 @@
    "care.js": 16,
    "colpick.js": 24,
    "core.js": 2,
-   "daysoff.js": 6,
+   "daysoff.js": 4,
    "detect.js": 7,
    "draw.js": 3,
    "item-view.js": 4,
@@ -29,7 +29,7 @@
    "measure.js": 4,
    "merge.js": 3,
    "migrate.js": 1,
-   "missed.js": 6,
+   "missed.js": 1,
    "own-lists.js": 1,
    "pattern-read.js": 5,
    "photos.js": 4,
@@ -37,7 +37,7 @@
    "settings.js": 4,
    "shop.js": 1,
    "start.js": 2,
-   "stats.js": 7,
+   "stats.js": 3,
    "sync-status.js": 1,
    "sync.js": 3,
    "today-gestures.js": 8,

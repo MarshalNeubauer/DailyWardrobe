@@ -21,6 +21,16 @@ function saveFailed(e){console.warn('storage failure',e);if(dbDown)return;const 
 
 /* whether the wardrobe's storage opened: known before any later script's own wait on it fails */
 let dbDown=null,dbErr=null;
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals:
+   start.js calls safetyStart and storageDown, add-save.js and kit.js storeFailure, saveFailed and askPersist, sync.js storeFailure,
+   storeFailText and adoptBackupSettings, add.js, add-card.js and app.js the tagging failure's (tagFailText, tagFailed, retryTag),
+   add-keep.js guardUnsaved, seven page scripts errNote; pruneTagImgs is called by tests only. dbDown is read by sync.js and only this
+   file assigns it: a getter; sync.js and tests set storeToldAt, tests set errTapAt, tagWhy and tagNetLast: a getter and a setter
+   each (the three declared further down can't be read before their own line has run, as in the classic script); a module imports them.
+   Above the file's first call that can throw (db, when app.js did not load; then acts): the names are then still the page's, as a
+   classic script's were; the five consts declared further down are handed over above the handler */
+Object.assign(globalThis,{storeFailure,storeFailText,saveFailed,errNote,storageDown,askPersist,pruneTagImgs,safetyStart,tagFailText,tagFailed,retryTag,guardUnsaved,adoptBackupSettings});
+Object.defineProperties(globalThis,{dbDown:{get:()=>dbDown},storeToldAt:{get:()=>storeToldAt,set:v=>{storeToldAt=v}},errTapAt:{get:()=>errTapAt,set:v=>{errTapAt=v}},tagWhy:{get:()=>tagWhy,set:v=>{tagWhy=v}},tagNetLast:{get:()=>tagNetLast,set:v=>{tagNetLast=v}}});
 db.then(()=>{dbDown=false},e=>{dbDown=true;dbErr=e});
 /* a storage failure nobody caught is shown; every other rejection is left alone */
 addEventListener('unhandledrejection',ev=>{const e=ev.reason;errNote(e);
@@ -155,6 +165,10 @@ async function adoptBackupSettings(local,data){
   const kept={...local.settings,...data.settings};await metaPut('settings',kept);local.settings=kept;
   setWardrobe({settings:takeSettings(settings,data.settings)});applyCustom(settings.custom);planDirty();loadWeather();
   if(!$('#today').hidden)refreshToday();return true}
+/* the rest of the bridge: the consts declared above (about.js: errReport; tagging.js: oneStop; add.js: tagNetText; add-card.js:
+   tagFailNote; tests/errreport.test.js: errList) */
+Object.assign(globalThis,{errList,errReport,oneStop,tagNetText,tagFailNote});
+export {storeFailure,storeFailText,storeToldAt,saveFailed,dbDown,errTapAt,errList,errNote,errReport,storageDown,askPersist,pruneTagImgs,safetyStart,tagWhy,tagNetLast,oneStop,tagFailText,tagNetText,tagFailed,tagFailNote,retryTag,guardUnsaved,adoptBackupSettings};
 /* "Try again" on the page shown when the wardrobe can't be opened (act.js) */
 function nostoreAgainTap(){location.reload()}
 acts({nostoreAgainTap});
