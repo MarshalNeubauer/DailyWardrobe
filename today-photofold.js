@@ -1,5 +1,5 @@
 /* Daily Wardrobe: Today: a piece's photo opening and shutting (picOpen, picShut, picSnap), in the pieces list and under the tiles
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of today.js on 2026-11-17, Round C.) */
+   (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of today.js on 2026-11-17, Round C.) */
 /* A piece's photo (a row of the pieces list, or a tile's photo under the tiles) opens and shuts like the cards (boxUnfold/boxFold):
    the page is laid out once; the photo's own area is clipped open downward while what lies below it on the page slides down in step
    (picBelow: the rows after it, the cards under its card, the cards under the stage), and the card it is in (the pieces list) is
@@ -43,3 +43,6 @@ function picShut(el){picStop(el);const close=()=>{el.classList.add('pfast');el.c
 /* shut at once (another photo is opening): when it lay above `keep`, scroll by what it gave back, so `keep` doesn't move */
 function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().bottom<=keep.getBoundingClientRect().top+1,h0=r.getBoundingClientRect().height;
   r.classList.add('pfast');r.classList.remove('open','instant');if(above){const dh=h0-r.getBoundingClientRect().height;if(dh>0)scrollBy(0,-dh)}}
+/* the bridge (tests/bridge.test.js): today.js, a classic script, opens and shuts a piece's photo with these; a module imports them */
+Object.assign(globalThis,{picStop,picOpenReady,picShut,picSnap});
+export {picStop,picOpenReady,picShut,picSnap};

@@ -1,6 +1,6 @@
 /* Daily Wardrobe: what a swap or a pick keeps and follows (keepOff, FOLLOW, beltless), and how the piece picker ranks each candidate
    (slotPool, handPool, pickScores, fitOf, fitRule, fitTag, pickSub) and Suggest another stays clean (suggestClean)
-   (A classic script sharing one global scope with the others; split out of history.js, Round C 2026-11-17, and loaded after it.) */
+   (An ES module since 2026-11-23; split out of history.js, Round C 2026-11-17, and loaded after it.) */
 /* a piece taken off (rec.off) stays pinned through a swap or a pick of another piece, so putting it back brings the same one */
 const keepOff=(force,k,slot)=>{const r=dayRecs[k];if(!r||!r.off||!r.force)return;for(const s of ['top','tie','clip','pocket'])if(s!==slot&&r.off[s==='clip'?'tie':s]&&r.force[s])force[s]=r.force[s]};
 // (the pocket square follows the jacket, the tie and the shirt it is chosen against: 2026-11-16)
@@ -79,3 +79,7 @@ const pickSub=(i,pool)=>{const t=x=>itemTitle(x)||nm(x),same=pool.filter(x=>t(x)
   const by=f=>{const v=String(f(i)||'').trim();return v&&same.filter(x=>String(f(x)||'').trim()===v).length===1?v:''};
   return by(x=>x.brand)||by(x=>x.material&&x.material!=='other'?cap1(x.material):'')||by(x=>String(x.notes||'').slice(0,40))||
     `${[...same].sort((a,b)=>(a.added||0)-(b.added||0)||(a.id<b.id?-1:1)).indexOf(i)+1} of ${same.length}`};
+/* the bridge (tests/bridge.test.js): history.js, a classic script, swaps, picks and draws the picker with these; the care, onorder,
+   planner-rules and rotation-pause tests call slotPool, fitOf, fitTag and pickSub; a module imports them */
+Object.assign(globalThis,{keepOff,FOLLOW,beltless,BELT_STUCK,slotPool,handPool,handWhy,pocketOn,keepHand,bootsOff,suitPants,suggestClean,fitOf,fitTag,pickSub});
+export {keepOff,FOLLOW,beltless,BELT_STUCK,slotPool,handPool,handWhy,pocketOn,keepHand,bootsOff,suitPants,suggestClean,fitOf,fitTag,pickSub};

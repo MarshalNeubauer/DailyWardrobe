@@ -1,6 +1,6 @@
 /* Daily Wardrobe: Today's gestures: swiping to another day (fly, todayBusy, todayFree; stepDay is in today.js) and moving an outfit to
    another day in the open month (outfitMove, moveRecs, showPlan; planWith is in today.js)
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of today.js on 2026-11-17, Round C.) */
+   (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of today.js on 2026-11-17, Round C.) */
 /* fast swipes one after another (audit 2026-11-14: five quick swipes moved three days): a swipe made while the last one's fly-out is still
    running is added to it (fly.n), and the day is drawn only once no finger is down: drawing Today removes the element a touch started on,
    and the browser then stops sending that touch's moves and its end, so the swipe under way was lost */
@@ -119,4 +119,8 @@ function showPlan(p){const grid=document.querySelector('#mpanel-in .mgrid:not(.m
   root.addEventListener('click',e=>{if(noClick&&e.target.closest('#mpanel-in')){e.stopPropagation();e.preventDefault()}},true);
   root.addEventListener('contextmenu',e=>{if(e.target.closest('#mpanel-in .mc[data-mv]'))e.preventDefault()});
 })();
-
+/* the bridge (tests/bridge.test.js): sync.js, a classic script, asks todayBusy before it redraws; month.js signs a day's outfit with
+   mvSig; tests/moveoutfit.test.js calls moveRecs and reads outfitMove, which only this file writes: a getter; a module imports them */
+Object.assign(globalThis,{todayBusy,mvSig,moveRecs});
+Object.defineProperties(globalThis,{outfitMove:{get:()=>outfitMove}});
+export {todayBusy,outfitMove,mvSig,moveRecs};
