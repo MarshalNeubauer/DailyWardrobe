@@ -79,6 +79,12 @@ function renderRemindUI(){const el=document.querySelector('#remind-box');if(!el)
     <label class="srow">Time <input type="time" id="remind-time" value="${p.time}" data-act-change="remindTimePick"></label>`;
   el.innerHTML=`<div class="slabel">Morning reminder</div>${body}<p class="shelp remind-msg" role="status">${remindMsg?acctEsc(remindMsg):''}</p>`}
 async function remindTime(v){if(!/^\d\d:\d\d$/.test(v))return;const p={...remindPrefs(),time:v};remindSave(p);if(remindAny(p)){localStorage.removeItem('remind_sent');await remindRefresh();remindMsg=`Notifications at ${v}.`;renderRemindUI()}}
+/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it), above the file's first top-level call
+   that can throw (settingsPart, then acts): history.js, settings.js, start.js and care.js, classic scripts, call remindSoon; the rest
+   are read by the remind, connkeep and restacts tests, remindBusy too, which only this file writes: a getter */
+Object.assign(globalThis,{remindPrefs,remindCareOn,remindSave,outfitLine,remindKeep,remindSig,remindSoon,remindRefresh,renderRemindUI});
+Object.defineProperties(globalThis,{remindBusy:{get:()=>remindBusy}});
+export {remindBusy,remindPrefs,remindCareOn,remindSave,outfitLine,remindKeep,remindSig,remindSoon,remindRefresh,renderRemindUI};
 /* start-up: draw with Settings' extras, and refresh once the app is up */
 (function remindStart(){
   settingsPart(renderRemindUI);   // drawn with the rest of Settings (settings.js)

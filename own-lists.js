@@ -101,6 +101,11 @@ function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[]
   el.innerHTML=rows.length?rows.join('')+'<p class="mut"><small>Removing one leaves the items that use it as they are; it just stops being offered.</small></p>'
     :'<p class="mut"><small>None yet. When Claude reads a material that is on no list (cupro, say), the Add card offers to add it here.</small></p>';
   if(lookOn())el.insertAdjacentHTML('beforeend',lookOwnMatUI())}   // (the Look beta: leathers and metals too, and "+ New material": look.js)
+/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level
+   call: colpick.js, look.js, settings.js and add-card.js, classic scripts, and tagging.js (openColForm, openPatForm, read as globals: it
+   comes before this file in the list) use these; guessPatBase is called by tests/asmroute.test.js only */
+Object.assign(globalThis,{groupOf,typePl,ownColOffer,newColHex,openColForm,addCustomColor,guessPatBase,openPatForm,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI});
+export {groupOf,typePl,ownColOffer,newColHex,openColForm,addCustomColor,guessPatBase,openPatForm,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI};
 /* what Settings' own lists do (act.js): "+ New color" / "+ New pattern" (data-kind), and a material's Remove (its type and name in
    data-t and data-m) */
 function custNewTap(el){openCustomNew(el.dataset.kind)}

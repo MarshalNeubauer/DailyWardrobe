@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	be1c98c7b94ff22033e5
+# tested	af0edbbb2a9c88c8fca8
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -566,7 +566,7 @@ actsindex.test.js	today-plan.js	<any>	<loaded>	planDirty	planFor	planMonth	planS
 actsindex.test.js	today.js	<any>	<loaded>	addForSlot	belowBox	canPick	figureStage	goToday	goneNote	hasOutfit	homeDay	keepHome	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	todaySay	todayTabTap	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 actsindex.test.js	ui.js	<any>	<loaded>	@window.addEventListenerkeydown	addGate	advClose	advTap	advToggle	closeupBtn	connSummary	cuTouch	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 actsindex.test.js	wardrobe.js	<any>	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMigrate	matOn	matOnItem	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
-actsindex.test.js	weather.js	<any>	<loaded>	cityKey	citySearchTap	loadWeather	locCC	myLocTap	renderWxLoc	setUnits	unit	unitCC	unitsPick
+actsindex.test.js	weather.js	<any>	<loaded>	cityKey	citySearchTap	loadWeather	locCC	myLocTap	renderWxLoc	setUnits	unit	unitCC	unitsPick	useMyLocation
 actsindex.test.js	worker.js	<any>	<loaded>
 addcards.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 addcards.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRetryLink	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
@@ -1127,6 +1127,7 @@ asmahead.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmahead.test.js	tests/webkit.js	<any>
 asmahead.test.js	theme.js	<loaded>	applyTheme
 asmahead.test.js	toast.js	<loaded>
 asmahead.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	mvSig	todayBusy	todayFree
@@ -1868,7 +1869,6 @@ asmgl.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-asmgl.test.js	tests/webkit.js	<any>
 asmgl.test.js	theme.js	<loaded>	applyTheme
 asmgl.test.js	toast.js	<loaded>
 asmgl.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -12950,7 +12950,7 @@ remind.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 remind.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	jsq	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
 remind.test.js	pickscore.js	<loaded>	fitOf	fitRule	fitTag	handPool	keepOff	pickSub	slotPool	suggestClean
 remind.test.js	planner.js	<loaded>	accFams	clothesScore	colsOf	colsOf0	dCol	darkShirt	darkUnderLight	fam	favLookOf	favLooks	favRead	isCamo	isFavItem	jacketGroup	lockStale	outfitScore	pairSeen	patInfo	patsOf	patternScore	pcol	shirtGroup	shirtScore	spokenCol	tieGroup	tieScore	uniformSplit
-remind.test.js	remind.js	<loaded>	careRemSwTap	careRemindOff	careRemindOn	outfitLine	remindAny	remindCall	remindCan	remindCareOn	remindHidden	remindKeep	remindKey	remindLines	remindLost	remindOff	remindOn	remindPost	remindPrefs	remindRefresh	remindSave	remindSig	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindSub	remindSwTap	remindSwitch	remindTime	remindTimePick	remindTz	renderRemindUI
+remind.test.js	remind.js	<loaded>	careRemSwTap	careRemindOff	careRemindOn	get	outfitLine	remindAny	remindCall	remindCan	remindCareOn	remindHidden	remindKeep	remindKey	remindLines	remindLost	remindOff	remindOn	remindPost	remindPrefs	remindRefresh	remindSave	remindSig	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindSub	remindSwTap	remindSwitch	remindTime	remindTimePick	remindTz	renderRemindUI
 remind.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 remind.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 remind.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	setCatOpen	setLock	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
@@ -13007,7 +13007,7 @@ restacts.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	b
 restacts.test.js	backupfile.js	<loaded>
 restacts.test.js	boxfold.js	<loaded>
 restacts.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calById	calConnect	calConnectTap	calDateTxt	calDay	calDisconnect	calDismiss	calDismissTap	calFetch	calFound	calGuide	calGuideTap	calKeep	calKeepTap	calKind	calLink	calMask	calNew	calOffTap	calPackTap	calPlan	calRead	calReadTap	calRefresh	calReviewTap	calRow	calScreen	calSeen	calSetSeen	calStatus	calSummary	calSync	calTz	calUndoSeen	calUndoTap	calWrite	get	pic	renderCalUI
-restacts.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTimes	careTop	careWashed	careWord	careWornLine	laundryDays	renderCareUI
+restacts.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careReminders	careState	careTimes	careTop	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 restacts.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
 restacts.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	colBtn	colFieldLabel	colHas	colRows	colShows	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
 restacts.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	accentsOf	applyCustom	camoPat	casualTop	cleanSettings	colBase	colName	colOf	colorDesc	colsFor	dayClimate	dayFields	desc	di	fitCol	hasPat	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	leatherWord	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	nameHtml	nameIso	needsJacket	needsTie	nextStamp	nm	normCol	normColFor	normPat	nowMs	occLabel	occOf	offDays	offName	ownMatName	ownMaterials	ownMats	patBase	patLabel	patName	planCol	primaryCol	recClean	recFree	rgbHex	rgbLab	sentence	setDays	setList	setWardrobe	shadeFor	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	wearsJacket	wearsTie
@@ -13043,7 +13043,7 @@ restacts.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	
 restacts.test.js	photos.js	<loaded>	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	jsq	lastWorn	listNextDay	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	srcOk	workerBase	workerList
 restacts.test.js	pickscore.js	<loaded>
 restacts.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	isFavItem	jacketGroup	leatherGroup	pairSeen	shirtGroup	spokenCol	tieGroup
-restacts.test.js	remind.js	<loaded>	careRemSwTap	careRemindOff	careRemindOn	remindAny	remindCan	remindCareOn	remindHidden	remindOff	remindOn	remindPrefs	remindRefresh	remindSave	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindSwTap	remindTime	remindTimePick	renderRemindUI
+restacts.test.js	remind.js	<loaded>	careRemSwTap	careRemindOff	careRemindOn	get	outfitLine	remindAny	remindCall	remindCan	remindCareOn	remindHidden	remindKeep	remindKey	remindLines	remindOff	remindOn	remindPost	remindPrefs	remindRefresh	remindSave	remindSig	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindSub	remindSwTap	remindSwitch	remindTime	remindTimePick	remindTz	renderRemindUI
 restacts.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 restacts.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 restacts.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	setCatOpen	setLock	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
@@ -17264,7 +17264,7 @@ staledevice.test.js	pack.js	<loaded>	packShow
 staledevice.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 staledevice.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
 staledevice.test.js	pickscore.js	<loaded>
-staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
+staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 staledevice.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 staledevice.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 staledevice.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
