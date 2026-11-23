@@ -54,8 +54,26 @@ const BRIDGE={
   'add-keep.js':['addCardRec','addKeep','addKeepSoon','addKeepT','addRestore','addRestoreState','addRevive','addWatch'],
   // history.js (firstReal, missedNote) and today.js (missedCard) are classic scripts; the rest are called by the todayacts and weeklock tests
   'missed.js':['firstReal','missedCard','missedNote','missedOne','missedOpen','missedPickToggle','missedPut'],
-  // scorecard and today (boxFold, boxUnfold), today-photofold and month (foldEdge) are classic scripts
+  // history.js, a classic script, swaps, picks and draws the picker with these; slotPool, fitOf, fitTag and pickSub are also called by
+  // the care, onorder, planner-rules and rotation-pause tests
+  'pickscore.js':['BELT_STUCK','FOLLOW','beltless','bootsOff','fitOf','fitTag','handPool','handWhy','keepHand','keepOff','pickSub','pocketOn','slotPool','suggestClean','suitPants'],
+  // today.js draws and folds the card (scoreCard, toggleScore) and sets scoreOpen, as the advicefresh, folds, scoreanim and scoredials
+  // tests do (a setter); history.js and fav.js say dayWord; month.js reads recentWork; dialHtml, dialsFor, rankFor and rankPools are
+  // called by tests only (advicefresh, scoredials, takeoff), which also read rankMemo and rankW (getters: only scorecard.js writes them)
+  'scorecard.js':['dayWord','dialHtml','dialsFor','rankFor','rankMemo','rankPools','rankW','recentWork','scoreCard','scoreOpen','toggleScore'],
+  // today.js is a classic script (boxFold, boxUnfold); scorecard.js (boxFold, boxUnfold), today-photofold.js and month.js (foldEdge)
+  // are modules that still read these as globals: boxfold.js comes after scorecard.js in the list, and an import would run it first
   'boxfold.js':['boxFold','boxUnfold','foldEdge'],
+  // today.js, a classic script, opens and shuts a piece's photo with these
+  'today-photofold.js':['picOpenReady','picShut','picSnap','picStop'],
+  // sync.js asks todayBusy before a redraw; month.js signs a day's outfit with mvSig (it comes after in the list, read as a global);
+  // tests/moveoutfit.test.js calls moveRecs and reads outfitMove (a getter: only today-gestures.js writes it)
+  'today-gestures.js':['moveRecs','mvSig','outfitMove','todayBusy'],
+  // today.js (the month box, the pieces line, the home day; it sets monthOpen, as nine tests do: a setter), daysoff, history, pack,
+  // remind, start, stats and the painter (assemble.js, asm-color.js: planOn) are classic scripts; boxfold, fav,
+  // scorecard, today-gestures and today-photofold are modules earlier in the list that read these as globals; monthGridHtml and
+  // monthStep are called by tests only (month, setup); tests/setup.test.js sets monthPanel (a setter)
+  'month.js':['MONTH_EASE','MONTH_MS','dayOnly','monthBelow','monthDrag','monthGridHtml','monthLink','monthOpen','monthPanel','monthPlan','monthRelease','monthStep','nextWorkday','openDay','pageScroll','piecesLine','piecesParts','planOn','revealNeed','shortRest','shortTop','stackSVG','toggleMonth'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
   // read by the tests only: a11y (applyTheme, cycleTheme), actsindex (cycleTheme), modload (themeTap)
