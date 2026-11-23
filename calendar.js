@@ -96,6 +96,13 @@ async function calSync(force){const url=calLink();if(!url||calBusy||!isConnected
   if(settingsOpen())renderCalUI();
   return n}
 const calAuto=()=>{if(calLink())calSync(false).catch(e=>console.warn('calendar not read',e))};
+/* An ES module (2026-11-23): its names are its own, and this is what the other scripts and the tests still use as globals (the bridge;
+   tests/bridge.test.js lists it): settings.js (calSummary), today.js (calBanner) and the calendar and restacts tests. calBusy is read by
+   the restacts test only, and only this file writes it: a getter and no setter.
+   Above the file's first call that can throw (whenPulled, when history.js did not load; then settingsPart and acts): the names are
+   then still the page's, as a classic script's were. CAL_GUIDES is declared further down and handed over there. */
+Object.assign(globalThis,{CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,calGuide});
+Object.defineProperties(globalThis,{calBusy:{get:()=>calBusy}});
 whenPulled(()=>afterScripts(calAuto));
 addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')calAuto()});
 
@@ -226,10 +233,7 @@ function calDismissTap(el){calDismiss(el.dataset.id)}
 function calUndoTap(el){calUndoSeen(el.dataset.id)}
 function calReviewTap(){openSettings('calendar')}
 function calPackTap(){openPack()}
-/* An ES module (2026-11-23): its names are its own, and this is what the other scripts and the tests still use as globals (the bridge;
-   tests/bridge.test.js lists it): settings.js (calSummary), today.js (calBanner) and the calendar and restacts tests. calBusy is read by
-   the restacts test only, and only this file writes it: a getter and no setter. */
-Object.assign(globalThis,{CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,CAL_GUIDES,calGuide});
-Object.defineProperties(globalThis,{calBusy:{get:()=>calBusy}});
+/* the rest of the bridge: CAL_GUIDES, declared above (tests/calendar.test.js reads it) */
+Object.assign(globalThis,{CAL_GUIDES});
 export {calBusy,CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,CAL_GUIDES,calGuide};
 acts({calConnectTap,calReadTap,calOffTap,calGuideTap,calKeepTap,calDismissTap,calUndoTap,calReviewTap,calPackTap});
