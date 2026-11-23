@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	035c23548e97cfadec77
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -652,7 +653,6 @@ addcards.test.js	tagging.js	<loaded>	aiFields	closeTagImg	confTxt	readAbort	read
 addcards.test.js	tests/fixedplan.js	<any>
 addcards.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 addcards.test.js	tests/fixtures/suit-pinstripe.jpg	<loaded>
-addcards.test.js	tests/webkit.js	<any>
 addcards.test.js	theme.js	<loaded>	applyTheme
 addcards.test.js	toast.js	<loaded>	toast	undoHere
 addcards.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -1019,7 +1019,6 @@ aiverdict.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedu
 aiverdict.test.js	tag-request.js	<loaded>	keepTagImg	recordTagResult	texSig
 aiverdict.test.js	tagging.js	<loaded>	aiFields	confTxt	tagMeasUndo	tagNotes	takeExtras	takeMaterial
 aiverdict.test.js	tests/fixedplan.js	<any>
-aiverdict.test.js	tests/webkit.js	<any>
 aiverdict.test.js	theme.js	<loaded>	applyTheme
 aiverdict.test.js	toast.js	<loaded>	toast	undoHere
 aiverdict.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -1129,6 +1128,7 @@ asmahead.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmahead.test.js	tests/webkit.js	<any>
 asmahead.test.js	theme.js	<loaded>	applyTheme
 asmahead.test.js	toast.js	<loaded>
 asmahead.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	mvSig	todayBusy	todayFree
@@ -1141,7 +1141,6 @@ asmahead.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	ward
 asmahead.test.js	watch/leather.jpg	<loaded>
 asmahead.test.js	watch/shirt-open.png	<loaded>
 asmahead.test.js	watch/shirt-tie.png	<loaded>
-asmahead.test.js	watch/suit.png	<loaded>
 asmahead.test.js	watch/vest.png	<loaded>
 asmahead.test.js	weather.js	<loaded>	loadWeather
 asmatlas.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -1870,7 +1869,6 @@ asmgl.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-asmgl.test.js	tests/webkit.js	<any>
 asmgl.test.js	theme.js	<loaded>	applyTheme
 asmgl.test.js	toast.js	<loaded>
 asmgl.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2673,6 +2671,11 @@ assemble.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
 assemble.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 assemble.test.js	ui.js	<loaded>	advClose	advToggle	askAnswer	askConfirm	askEls	connSummary	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 assemble.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+assemble.test.js	watch/leather.jpg	<loaded>
+assemble.test.js	watch/shirt-open.png	<loaded>
+assemble.test.js	watch/shirt-tie.png	<loaded>
+assemble.test.js	watch/suit.png	<loaded>
+assemble.test.js	watch/vest.png	<loaded>
 assemble.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 assemble.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	RENDER_PROMPT	SWAP_ADD_PROMPT	SWAP_PROMPT	WATCH_KEY	corsFor	dataUrlToBlob	delRender	dropFail	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	hasWatch	hubOf	jobClaim	jobMsg	keepMade	keepSnapshots	msgNs	orNull	outfitPhoto	ownerOnly	photoCap	queue	queueRender	queueStatus	renderId	renderTtl	runRenderJob	sameText	serve	sha256Hex	spend	spendEach	syncVersion	tellHub	usedOf	utcDay	waitForRenders	whoIs
 assemble.test.js	worker/links.js	<loaded>	readCapped
@@ -2686,7 +2689,6 @@ assets.test.js	index.html	<any>
 assets.test.js	manifest.webmanifest	<any>
 assets.test.js	sw.js	<any>
 assets.test.js	tests/scriptlist.js	<any>
-assets.test.js	tests/webkit.js	<any>
 back.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 back.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	dropInviteHash	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 back.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -3047,6 +3049,7 @@ backgesture.test.js	tests/backgesture-parts.js	<any>
 backgesture.test.js	tests/fixedplan.js	<any>
 backgesture.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture.test.js	tests/fixtures/suit-mink.jpg	<loaded>
+backgesture.test.js	tests/webkit.js	<any>
 backgesture.test.js	theme.js	<loaded>	applyTheme
 backgesture.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 backgesture.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -3771,7 +3774,6 @@ camouflage.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	sched
 camouflage.test.js	tag-request.js	<loaded>	texSig
 camouflage.test.js	tagging.js	<loaded>
 camouflage.test.js	tests/fixedplan.js	<any>
-camouflage.test.js	tests/webkit.js	<any>
 camouflage.test.js	theme.js	<loaded>	applyTheme
 camouflage.test.js	toast.js	<loaded>
 camouflage.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -3875,7 +3877,6 @@ canvasrefuse.test.js	tagging.js	<loaded>	aiFields	closeTagImg	confTxt	readAbort	
 canvasrefuse.test.js	tests/fixedplan.js	<any>
 canvasrefuse.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 canvasrefuse.test.js	tests/fixtures/suit-pinstripe.jpg	<loaded>
-canvasrefuse.test.js	tests/webkit.js	<any>
 canvasrefuse.test.js	theme.js	<loaded>	applyTheme
 canvasrefuse.test.js	toast.js	<loaded>	toast	undoHere
 canvasrefuse.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -4270,7 +4271,6 @@ claudepattern.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 claudepattern.test.js	tests/fixtures/blazer-windowpane.jpg	<loaded>
 claudepattern.test.js	tests/fixtures/suit-pinstripe-closeup.jpg	<loaded>
 claudepattern.test.js	tests/fixtures/suit-pinstripe.jpg	<loaded>
-claudepattern.test.js	tests/webkit.js	<any>
 claudepattern.test.js	theme.js	<loaded>	applyTheme
 claudepattern.test.js	toast.js	<loaded>	toast	undoHere
 claudepattern.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -4459,7 +4459,6 @@ closeupread.test.js	tagging.js	<loaded>	closeTagImg	readAbort	readBegin	readEnd	
 closeupread.test.js	tests/fixedplan.js	<any>
 closeupread.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 closeupread.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-closeupread.test.js	tests/webkit.js	<any>
 closeupread.test.js	theme.js	<loaded>	applyTheme
 closeupread.test.js	toast.js	<loaded>	toast	toastOff	undoHere
 closeupread.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -4748,7 +4747,6 @@ cmpmeasure.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	syncN
 cmpmeasure.test.js	tag-request.js	<loaded>	texSig
 cmpmeasure.test.js	tagging.js	<loaded>
 cmpmeasure.test.js	tests/fixedplan.js	<any>
-cmpmeasure.test.js	tests/webkit.js	<any>
 cmpmeasure.test.js	theme.js	<loaded>	applyTheme
 cmpmeasure.test.js	toast.js	<loaded>
 cmpmeasure.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -5735,7 +5733,6 @@ deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
 deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
-deps.test.js	tests/webkit.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
 deps.test.js	today-gestures.js	<any>
@@ -7417,7 +7414,6 @@ globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
 globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
-globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -8780,7 +8776,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
+keptphotos.test.js	worker/photostore.js	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
@@ -8980,7 +8976,6 @@ labbench.test.js	tests/fixtures/cm/suit/part-lapelL.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-lapelR.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<loaded>
-labbench.test.js	tests/webkit.js	<any>
 lookbeta.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 lookbeta.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 lookbeta.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -9547,7 +9542,6 @@ measure.test.js	tests/fixtures/walk-shirt-bluestripe-closeup.jpg	<loaded>
 measure.test.js	tests/fixtures/walk-shirt-lightblue-closeup.jpg	<loaded>
 measure.test.js	tests/fixtures/walk-suit-pinstripe-closeup.jpg	<loaded>
 measure.test.js	tests/fixtures/walk-trousers-cream-closeup.jpg	<loaded>
-measure.test.js	tests/webkit.js	<any>
 measure.test.js	tests/workersrc.js	<any>
 measure.test.js	theme.js	<loaded>	applyTheme
 measure.test.js	toast.js	<loaded>
@@ -10299,7 +10293,6 @@ motif.test.js	tests/fixedplan.js	<any>
 motif.test.js	tests/fixtures/shirt-chevron-closeup.png	<loaded>
 motif.test.js	tests/fixtures/tie-neat-closeup.jpg	<loaded>
 motif.test.js	tests/fixtures/tie-neat.jpg	<loaded>
-motif.test.js	tests/webkit.js	<any>
 motif.test.js	tests/workersrc.js	<any>
 motif.test.js	theme.js	<loaded>	applyTheme
 motif.test.js	toast.js	<loaded>	toast	undoHere
@@ -11756,7 +11749,6 @@ paperstatus.test.js	tagging.js	<loaded>
 paperstatus.test.js	tests/fixedplan.js	<any>
 paperstatus.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 paperstatus.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-paperstatus.test.js	tests/webkit.js	<any>
 paperstatus.test.js	theme.js	<loaded>	applyTheme
 paperstatus.test.js	toast.js	<loaded>	toast	toastOff	undoHere
 paperstatus.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -11939,7 +11931,6 @@ photoedit.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedu
 photoedit.test.js	tag-request.js	<loaded>	keepTagImg	resignTagImg	tagImgOf	texSig
 photoedit.test.js	tagging.js	<loaded>
 photoedit.test.js	tests/fixedplan.js	<any>
-photoedit.test.js	tests/webkit.js	<any>
 photoedit.test.js	theme.js	<loaded>	applyTheme
 photoedit.test.js	toast.js	<loaded>	toast	undoHere
 photoedit.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -14155,6 +14146,7 @@ safeport.test.js	add-sheet.js	<loaded>
 safeport.test.js	add.js	<loaded>
 safeport.test.js	analysis.js	<loaded>
 safeport.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	tx	txFail	txs	window.fetch
+safeport.test.js	apple-touch-icon.png	<loaded>
 safeport.test.js	asm-color.js	<loaded>
 safeport.test.js	asm-gl.js	<loaded>
 safeport.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -14177,6 +14169,8 @@ safeport.test.js	draw.js	<loaded>
 safeport.test.js	dress.js	<loaded>	migrateVests
 safeport.test.js	fav.js	<loaded>
 safeport.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
+safeport.test.js	icon-192.png	<loaded>
+safeport.test.js	icon-512.png	<loaded>
 safeport.test.js	index.html	<loaded>
 safeport.test.js	item-photo.js	<loaded>
 safeport.test.js	item-view.js	<loaded>	@{constb$ivbody}	itemShown	renderItem
@@ -14185,6 +14179,7 @@ safeport.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNee
 safeport.test.js	locale.js	<loaded>	appLocale
 safeport.test.js	locks.js	<loaded>
 safeport.test.js	look.js	<loaded>
+safeport.test.js	manifest.webmanifest	<loaded>
 safeport.test.js	mannequin.js	<loaded>	@{}
 safeport.test.js	measure.js	<loaded>
 safeport.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -14572,11 +14567,6 @@ safeport.test.js	tools/upload-budget.js	<any>
 safeport.test.js	tools/visit-measure.js	<any>
 safeport.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 safeport.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate
-safeport.test.js	watch/leather.jpg	<loaded>
-safeport.test.js	watch/shirt-open.png	<loaded>
-safeport.test.js	watch/shirt-tie.png	<loaded>
-safeport.test.js	watch/suit.png	<loaded>
-safeport.test.js	watch/vest.png	<loaded>
 safeport.test.js	weather.js	<loaded>	loadWeather
 safety.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 safety.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -15373,7 +15363,6 @@ sett.test.js	tests/fixedplan.js	<any>
 sett.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 sett.test.js	tests/fixtures/blazer-windowpane.jpg	<loaded>
 sett.test.js	tests/fixtures/tie-plaid.jpg	<loaded>
-sett.test.js	tests/webkit.js	<any>
 sett.test.js	theme.js	<loaded>	applyTheme
 sett.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoHere	undoOff
 sett.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -16353,7 +16342,6 @@ sharpclose.test.js	sync.js	<loaded>	@connRestored.then	afterPull	applyMerged	clo
 sharpclose.test.js	tag-request.js	<loaded>	describeEstimate	keepCloseImg	readEstimate	sharpCloseOf	tagImgOf	texSig	visTok
 sharpclose.test.js	tagging.js	<loaded>
 sharpclose.test.js	tests/fixedplan.js	<any>
-sharpclose.test.js	tests/webkit.js	<any>
 sharpclose.test.js	theme.js	<loaded>	applyTheme
 sharpclose.test.js	toast.js	<loaded>	toast	undoHere
 sharpclose.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -16534,7 +16522,6 @@ shirtweave.test.js	tag-request.js	<loaded>	customForTag	describeEstimate	keepClo
 shirtweave.test.js	tagging.js	<loaded>	aiFields	closeTagImg	confTxt	readAbort	readBegin	readEnd	refineApply	refineFromCloseup	tagNotes	takeExtras	takeMaterial
 shirtweave.test.js	tests/fixedplan.js	<any>
 shirtweave.test.js	tests/fixtures/shirt-diamond-closeup.jpg	<loaded>
-shirtweave.test.js	tests/webkit.js	<any>
 shirtweave.test.js	theme.js	<loaded>	applyTheme
 shirtweave.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 shirtweave.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -17600,7 +17587,6 @@ sw.test.js	tag-request.js	<any>	<loaded>
 sw.test.js	tagging.js	<any>	<loaded>
 sw.test.js	tests/fixedplan.js	<any>
 sw.test.js	tests/safeport.js	<any>
-sw.test.js	tests/webkit.js	<any>
 sw.test.js	theme.js	<any>	<loaded>	applyTheme
 sw.test.js	toast.js	<any>	<loaded>	toast
 sw.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constroot$today}
@@ -17984,7 +17970,6 @@ tabload.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 tabload.test.js	tag-request.js	<loaded>	tagStatsCard
 tabload.test.js	tagging.js	<loaded>
 tabload.test.js	tests/fixedplan.js	<any>
-tabload.test.js	tests/webkit.js	<any>
 tabload.test.js	theme.js	<loaded>	applyTheme
 tabload.test.js	toast.js	<loaded>
 tabload.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup
@@ -18665,7 +18650,6 @@ texswatch.test.js	tests/fixedplan.js	<any>
 texswatch.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 texswatch.test.js	tests/fixtures/blazer-windowpane.jpg	<loaded>
 texswatch.test.js	tests/fixtures/shirt-diamond-closeup.jpg	<loaded>
-texswatch.test.js	tests/webkit.js	<any>
 texswatch.test.js	theme.js	<loaded>	applyTheme
 texswatch.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 texswatch.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}	mvSig
@@ -18762,7 +18746,6 @@ texture.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedule
 texture.test.js	tag-request.js	<loaded>	keepCloseImg	keepTagImg	recordTagResult	texSig
 texture.test.js	tagging.js	<loaded>	closeTagImg	confTxt	readAbort	refineFromCloseup	tagNotes
 texture.test.js	tests/fixedplan.js	<any>
-texture.test.js	tests/webkit.js	<any>
 texture.test.js	theme.js	<loaded>	applyTheme
 texture.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 texture.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -18959,7 +18942,6 @@ tieweave.test.js	sync.js	<loaded>	@connRestored.then	afterPull	clockLearn	localS
 tieweave.test.js	tag-request.js	<loaded>	describeEstimate	readEstimate	texSig	visTok
 tieweave.test.js	tagging.js	<loaded>
 tieweave.test.js	tests/fixedplan.js	<any>
-tieweave.test.js	tests/webkit.js	<any>
 tieweave.test.js	tests/workersrc.js	<any>
 tieweave.test.js	theme.js	<loaded>	applyTheme
 tieweave.test.js	toast.js	<loaded>
