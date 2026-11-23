@@ -40,3 +40,7 @@ async function phBatch(up,have,max=SYNC_SEND_MAX){
     if(pick.length&&size+add+own>max)return {up:{...up,items:pick},left:up.items.length-k};
     size+=add+own;pick.push(it);for(const h of hs)taken.add(h)}
   return {up,left:0}}
+/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): sync.js, a classic script, calls phIn, phOut and phBatch while a sync runs; PH_MIN, isPh, phStrings and phMap are read
+   by tests/backup-storage.test.js and the replay script lib-verify18.js. */
+Object.assign(globalThis,{PH_MIN,isPh,phStrings,phMap,phIn,phOut,phBatch});
+export {PH_MIN,isPh,phStrings,phMap,phIn,phOut,phBatch};

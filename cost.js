@@ -166,3 +166,7 @@ function cpwRowTap(el){cpwOpenItem(el.dataset.id)}
 function cpwCostDone(el){cpwSetCost(el.dataset.f,el.value)}
 function cpwCurPick(el){cpwSetCurrency(el.value)}
 acts({cpwPriceType,cpwPriceDone,cpwBoughtPick,cpwCardField,cpwCareTap,cpwRowTap,cpwCostDone,cpwCurPick});
+/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): the item sheet, the Add card, Insights and Laundry & cleaning, classic scripts, call these; the rest are read by
+   tests/costwear.test.js. */
+Object.assign(globalThis,{cpwCur,cpwMoney,cpwParse,cpwOf,cpwCleanYear,cpwText,cpwHint,cpwSum,cpwBlock,cpwSetPrice,cpwQRow,cpwQSet,cpwSaveFields,cpwStatsCard,cpwSettingsUI});
+export {cpwCur,cpwMoney,cpwParse,cpwOf,cpwCleanYear,cpwText,cpwHint,cpwSum,cpwBlock,cpwSetPrice,cpwQRow,cpwQSet,cpwSaveFields,cpwStatsCard,cpwSettingsUI};
