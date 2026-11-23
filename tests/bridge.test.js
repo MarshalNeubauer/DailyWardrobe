@@ -46,6 +46,12 @@ const BRIDGE={
   'add-paste.js':['pasteMsg'],
   // the sheets that close on a swipe down are classic scripts: add-sheet, item-view, colpick and kit call it
   'sheet-swipe.js':['sheetSwipe'],
+  // add, look, kit, wardrobe, colpick, safety, tagging, pattern-read and the other Add files find a card and save it with these;
+  // saveAllOn is a let only add-save.js writes (add and add-card read it): a getter
+  'add-save.js':['cardAt','cardIx','cardOf','cardReading','cardReady','qAt','qh','save','saveAll','saveAllOn','savedTitle'],
+  // every file that changes a card keeps it (addKeep, addKeepSoon); add and add-sheet (addWatch, addCardRec), kit (addRevive),
+  // safety (addRestore); addKeepT is read by tests/addcards.test.js, which also assigns addRestoreState (add.js reads it): a setter
+  'add-keep.js':['addCardRec','addKeep','addKeepSoon','addKeepT','addRestore','addRestoreState','addRevive','addWatch'],
   // editing is read by twelve classic page scripts and set by 31 tests (a setter); wardrobe, cost and kit open a piece (openItem), start
   // and wardrobe drop the sheet (dropItem), sync says a sync changed the open piece (itemSynced), itemsheet, start and checklist redraw
   // it (renderItem); itemGoneTell: itemsheet, wardrobe, look, cost; noMotion: nine files; closeItem, stepItem and wardList: tests only
