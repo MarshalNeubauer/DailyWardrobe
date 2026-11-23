@@ -366,7 +366,7 @@ const linkfix=async({ok,chromium,url,ROOT})=>{
   const ask=async p=>{try{await p.waitForSelector('#ask-ok',{state:'visible',timeout:6000})}catch{return null}return {t:await p.textContent('#ask-sheet'),ok:await p.textContent('#ask-ok')}};
   const state=p=>p.evaluate(()=>({url:localStorage.getItem('worker_url'),tok:localStorage.getItem('app_token'),n:items.length,toast:(window.__toasts&&__toasts.length?__toasts[__toasts.length-1]:'')||(document.querySelector('#toast')||{}).textContent||''}));
 // each toast's words as shown (a faded toast is emptied, W2-19-06, and `ask` waits 6 s for a question that may not come)
-const noteToasts=p=>p.evaluate(()=>{if(window.__toasts)return;window.__toasts=[];const t0=toast;window.toast=function(t,...a){__toasts.push(String(t));return t0.call(this,t,...a)}});
+const noteToasts=p=>p.evaluate(()=>{if(window.__toasts)return;window.__toasts=[];const e=document.querySelector('#toast');new MutationObserver(()=>{const t=e.firstChild&&e.firstChild.nodeValue;if(t&&t!==__toasts[__toasts.length-1])__toasts.push(t)}).observe(e,{childList:true})});
   try{
     // W2-13-01: a link to a stranger's server on a phone that isn't connected: refused, nothing sent anywhere
     {const {p,st,errs}=await page();await seed(p,null,2);

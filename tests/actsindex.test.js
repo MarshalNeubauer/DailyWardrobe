@@ -51,7 +51,7 @@ const VIA={cycleTheme:{themeTap:''},addLink:{linkKey:'enter',linkAddTap:''},past
   closeItem:{itemCloseTap:''},stepItem:{itemStepTap:'n'},openPack:{packOpenTap:''},setupOpen:{setupAgainTap:'true'},
   setUnits:{unitsPick:'value'},findCity:{cityKey:'enter',citySearchTap:''},useMyLocation:{myLocTap:''},
   addManual:{addManualTap:''},npsCancel:{npsCloseTap:''},
-  closePicker:{pickBackdropTap:''},replanButton:{replanTap:''}};
+  closePicker:{pickBackdropTap:''},replanButton:{replanTap:''},setLaundryDays:{laundryPick:'value'}};
 const CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==','base64');
 async function run(eng,browser,{ok,url,settle}){

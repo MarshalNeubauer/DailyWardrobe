@@ -1,6 +1,6 @@
 /* Daily Wardrobe: the current week's locks: locking today through Friday as shown, letting them go (releaseLocks, clearLocks,
    careUnlock) and after a change by hand that clashes with them (unlockClash)
-   (A classic script sharing one global scope with the others; split out of history.js, Round C 2026-11-17, and loaded after it.) */
+   (An ES module since 2026-11-23; split out of history.js, Round C 2026-11-17, and loaded after it.) */
 /* ---- the current week stays as shown ----
    Each workday from today through the coming Friday (lockSpan) gets rec.lock, the pieces the plan showed for it (not the coat: that
    follows the forecast). The planner keeps a locked day's pieces (planner.js, outfit()), so swapping today's tie, marking a day not
@@ -60,3 +60,8 @@ async function unlockClash(k,past){const o=planFor()[k];if(!o||(o.frozen&&!past)
     w++}
   if(!clash)return 0;const from=keyDate(k),n=await releaseLocks(r=>keyDate(r.date)>from&&keyDate(r.date)>=T);   // (a kept trip stays locked: CR-3-05)
   if(n&&window.scheduleSync)scheduleSync();return n}
+/* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals: clearLocks
+   (history, settings, dress, care, setup, kit), lockIds (pack), lockUpcoming (today), careUnlock (add-more, care), unlockClash
+   (history). The file has no top-level call, so the bridge is its last lines */
+Object.assign(globalThis,{lockIds,lockUpcoming,clearLocks,careUnlock,unlockClash});
+export {lockIds,lockUpcoming,clearLocks,careUnlock,unlockClash};

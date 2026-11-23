@@ -202,6 +202,13 @@ function statsShow(){const el=$('#stats');if(!el)return;
   if(!items.length||statsPlanned())return renderStats();
   el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${typeof shopButton==='function'?shopButton():''}<p class="mut st-wait" role="status"><span class="spin" aria-hidden="true"></span> Planning your next ${STATS_MONTHS} months…</p>`;
   statsPlan().then(()=>{if(!el.hidden&&el.querySelector('.st-wait'))renderStats()})}
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
+   as globals: start.js (renderStats, statsShow), wardrobe, care and cost (wornDays), dress (shoesWhyUnused), fav (statName, statDate,
+   statPic), cost (statName1, statPic), care (statPic), pack (emptyAdd); the rest are read by tests; statsOpen and fitMemo are lets only
+   this file writes: getters. Above the file's first call that can throw (afterScripts, then acts): the names are then still the page's */
+Object.assign(globalThis,{wornDays,plannedDays,whyUnused,shoesWhyUnused,buildStats,statName,statName1,emptyAdd,statDate,statPic,groupName,renderStats,statsToggle,openStats,statsShow});
+Object.defineProperties(globalThis,{statsOpen:{get:()=>statsOpen},fitMemo:{get:()=>fitMemo}});
+export {statsOpen,wornDays,plannedDays,whyUnused,shoesWhyUnused,fitMemo,buildStats,statName,statName1,emptyAdd,statDate,statPic,groupName,renderStats,statsToggle,openStats,statsShow};
 // a few seconds after start-up, while nothing else is going on
 afterScripts(()=>setTimeout(()=>{if(items.length&&!document.hidden)statsPlan()},4000));
 /* what the controls do (act.js): an empty page's two buttons and "Add an item" (emptyAdd: Insights, the Packing list), a Wear counts section folded

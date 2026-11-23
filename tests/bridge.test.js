@@ -77,6 +77,8 @@ const BRIDGE={
   'history.js':['checkPlanRules','closePicker','correctPast','dayActions','dropLearn','idsOf','keyDate','notAhead','openPicker','pastEdit','pickItem','picker','planRulesNote','recordDays','renderReplanUI','replanFuture','resetCard','resetDay','saveDay','setFormal','setOccasion','setVest','setWorn','swapMsg','swapSlot','todayPullWait','togglePastEdit','wearFav','whenPulled'],
   // history.js (firstReal, missedNote) and today.js (missedCard) are classic scripts; the rest are called by the todayacts and weeklock tests
   'missed.js':['firstReal','missedCard','missedNote','missedOne','missedOpen','missedPickToggle','missedPut'],
+  // history, settings, dress, care, setup and kit (clearLocks), pack (lockIds), today (lockUpcoming), add-more and care (careUnlock), history (unlockClash)
+  'locks.js':['careUnlock','clearLocks','lockIds','lockUpcoming','unlockClash'],
   // history.js, a classic script, swaps, picks and draws the picker with these; slotPool, fitOf, fitTag and pickSub are also called by
   // the care, onorder, planner-rules and rotation-pause tests
   'pickscore.js':['BELT_STUCK','FOLLOW','beltless','bootsOff','fitOf','fitTag','handPool','handWhy','keepHand','keepOff','pickSub','pocketOn','slotPool','suggestClean','suitPants'],
@@ -112,6 +114,8 @@ const BRIDGE={
   // and safety.js (loadWeather) read these as globals (setup.js is a module later in the list); scorecard.js, a module earlier in the list, reads temp; geoName is read
   // by tests/setup.test.js only
   'weather.js':['findCity','geoName','loadWeather','renderWxLoc','setLocation','setUnits','temp','unit','useMyLocation','wxChip'],
+  // toast: 34 page scripts; toastDrop: start; TOAST_ACT_MS: tests/a11y.test.js
+  'toast.js':['TOAST_ACT_MS','toast','toastDrop'],
   // read by the tests only: a11y (applyTheme, cycleTheme), actsindex (cycleTheme), modload (themeTap)
   'theme.js':['applyTheme','cycleTheme','themeTap'],
   // start.js calls safetyStart and storageDown; add-save and kit storeFailure, saveFailed and askPersist; sync storeFailure,
@@ -133,6 +137,8 @@ const BRIDGE={
   // as globals (tests/restacts.test.js replaces those two on window, which reaches tagging.js's calls); guessPatBase is called by
   // tests/asmroute.test.js only
   'own-lists.js':['addCustomColor','addCustomPattern','addOwnMaterial','groupOf','guessPatBase','matGuessUse','matOffer','newColHex','openColForm','openPatForm','ownColOffer','removeCustom','removeOwnMaterial','renderCustomUI','renderOwnMatUI','typePl'],
+  // start (renderStats, statsShow), wardrobe, care and cost (wornDays), dress (shoesWhyUnused), fav, cost, care and pack (the names and pictures); the rest: tests; statsOpen and fitMemo are getters (only stats.js writes them)
+  'stats.js':['buildStats','emptyAdd','fitMemo','groupName','openStats','plannedDays','renderStats','shoesWhyUnused','statDate','statName','statName1','statPic','statsOpen','statsShow','statsToggle','whyUnused','wornDays'],
   // calendar.js opens the page and sets the trip (openPack, packSetTrip), start.js shows it (packShow); the rest are called or read by
   // the pack, packcare-taps, planreview, stats, calendar, restacts and pocketsquare tests, which set packT and packNow (setters)
   'pack.js':['PACK_TITLE','openPack','packComplete','packDefault','packLock','packLockState','packMark','packNow','packRelease','packSetCap','packSetDate','packSetTrip','packShow','packT','packTrip','packUses','packWear','renderPack'],
@@ -144,6 +150,8 @@ const BRIDGE={
   // add-card, itemsheet, colpick, look, add, add-sheet and item-view draw their sections and the close-up comparison with these;
   // CK_OPEN is also how 53 test files open the sections
   'checklist.js':['CK_OPEN','accRow','ckChip','ckColSum','ckIsOpen','ckSec','ckSure','ckToggle','cmpDiff','cmpDiffText','cmpDrawn','cmpHtml','cmpLab','cmpMatchHtml','cmpMount','cmpPaper','cmpPaperLine','cmpSteps'],
+  // itemsheet, cost, wardrobe, add-more, settings, today, today-picture and remind; the rest: tests
+  'care.js':['CARE_ABLE','CARE_DEF','careBack','careBackText','careBadge','careBandSoon','careCard','careCleaned','careCounts','careDayState','careFrame','careLimit','careLists','careLog','careName','careNote','careReminders','careSend','careState','careTag','careTimes','careWashed','careWord','openCare','renderCare','renderCareUI'],
   // itemsheet (cpwSum, cpwBlock), add-card (cpwQRow), add-save (cpwSaveFields), stats (cpwStatsCard), care (cpwSettingsUI); the
   // other nine are read by tests/costwear.test.js only
   'cost.js':['cpwBlock','cpwCleanYear','cpwCur','cpwHint','cpwMoney','cpwOf','cpwParse','cpwQRow','cpwQSet','cpwSaveFields','cpwSetPrice','cpwSettingsUI','cpwStatsCard','cpwSum','cpwText'],

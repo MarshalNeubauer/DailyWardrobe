@@ -42,8 +42,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     {const {p,ctx}=await open({},{newer:swVer+5,connect:false});
       await p.waitForFunction(()=>$('#toast').classList.contains('on')&&/A new version is ready/.test($('#toast').textContent));
       ok(await p.evaluate(()=>{const b=$('#toast button');return !!b&&b.textContent==='Update'}),'a newer sw.js raises the toast "A new version is ready" with Update');
-      const again=await p.evaluate(async()=>{window.__same=1;let n=0;const t0=toast;toast=function(){n++;return t0.apply(this,arguments)};
-        await checkForUpdate();await checkForUpdate(true);document.dispatchEvent(new Event('visibilitychange'));await checkForUpdate();toast=t0;return n});
+      const again=await p.evaluate(async()=>{window.__same=1;let n=0;const mo=new MutationObserver(l=>{for(const r of l)if(r.addedNodes.length)n++});mo.observe($('#toast'),{childList:true});   /* (a toast raised writes its words into #toast) */
+        await checkForUpdate();await checkForUpdate(true);document.dispatchEvent(new Event('visibilitychange'));await checkForUpdate();await new Promise(r=>setTimeout(r,50));mo.disconnect();return n});
       ok(again===0,'the prompt is raised once for a version, however often it is checked');
       await about(p);
       ok(await p.evaluate(()=>window.__same===1&&appVersion()<aboutNew&&!$('#about-update').hidden)&&(await text(p,'#about-status')).includes(`Version ${swVer+5} is ready`),'nothing reloads by itself; About offers Update for the new version');
