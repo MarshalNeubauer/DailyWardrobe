@@ -26,24 +26,31 @@ module.exports=async({ok,engines,url,settle,ROOT})=>{
 const FN={cycleTheme:true,openSettings:true,closeSettings:true,saveSettings:true,subBack:true,openAdd:true,goToday:true,show:true,closePicker:true,
   closeColPick:true,closeShop:true,closeItem:true,stepItem:true,openPack:true,toggleCat:true,setVestMode:true,setDarkShirts:true,setUnits:true,
   setLaundryDays:true,advToggle:true,addManual:true,npsCancel:true,addDayOff:true,addFormalDay:true,askDelete:true,replanButton:true,
+  useMyLocation:true,   // (the real one runs since weather.js is a module, so the handler's own line still runs here; the phone's location is stood in for below)
   addFiles:false,addLink:false,pasteFromClipboard:false,kitImportOpen:false,setHolidayCountry:false,findCity:false,
-  useMyLocation:false,startItemPics:false,syncTap:false,downloadBackup:false,restoreBackup:false,loadSnapshots:false,rollBack:false,
+  startItemPics:false,syncTap:false,downloadBackup:false,restoreBackup:false,loadSnapshots:false,rollBack:false,
   checkForUpdate:false,updateNow:false,sendFeedback:false,setupOpen:false,tourAgain:false,homeAgain:false};
 /* The functions above whose file is an ES module now (the bridge, tests/bridge.test.js). A module's handler calls its own function
    inside the module, where a wrapped window.<name> isn't seen, so these are watched one step earlier, at the handler the markup names
    (ACTS, act.js): function -> {handler: how the handler calls it}: '' with no argument; 'enter' with none and only for the Enter key,
-   whose default it prevents; 'file' with the field's file, the field then emptied; 'n' with the control's data-n as a number;
-   'true' with true.
+   whose default it prevents; 'file' with the field's file, the field then emptied; 'value' with the control's value; 'n' with the
+   control's data-n as a number; 'true' with true.
    With true above the real handler then runs (the step checks what the app did); with false the wrapper stands in for the handler, so
    for those this file no longer runs the handler's own line: theme.test.js, paste.test.js (Enter, Add, Paste), syncwrite.test.js and
    sync.test.js (Download backup, Restore file), rollback.test.js (the list's focus) and setup.test.js ("Run setup again", a real
-   click) use the real ones.
+   click) use the real ones; the city search's (weather.js cityKey, citySearchTap: the real findCity would ask the geocoding
+   service) are run by setup.test.js (Enter) and by acts.test.js and weather.test.js (Search), each answering the service itself.
    history.js's two run for real here on both engines: the picker's backdrop (pickBackdropTap, closePicker) and "Start the plan over"
    (replanTap, replanButton, which history.js doesn't bridge: the step answers its question with Cancel).
-   window.<name> is wrapped as well where the module bridges it, for the classic scripts that call it (settings.js: loadSnapshots). */
+   window.<name> is wrapped as well where the module bridges it, for the scripts that call it as a global (settings.js:
+   loadSnapshots; setup.js: setUnits, findCity, useMyLocation).
+   addManual and npsCancel (add-sheet.js, both true above): the real handlers still run here, and the steps check that the sheet
+   opened and closed; addsheet.test.js and additemacts.test.js tap the same controls with nothing wrapped. */
 const VIA={cycleTheme:{themeTap:''},addLink:{linkKey:'enter',linkAddTap:''},pasteFromClipboard:{pasteTap:''},
   downloadBackup:{backupSaveTap:''},restoreBackup:{backupFilePick:'file'},loadSnapshots:{snapFocus:''},rollBack:{rollBackTap:''},
   closeItem:{itemCloseTap:''},stepItem:{itemStepTap:'n'},openPack:{packOpenTap:''},setupOpen:{setupAgainTap:'true'},
+  setUnits:{unitsPick:'value'},findCity:{cityKey:'enter',citySearchTap:''},useMyLocation:{myLocTap:''},
+  addManual:{addManualTap:''},npsCancel:{npsCloseTap:''},
   closePicker:{pickBackdropTap:''},replanButton:{replanTap:''}};
 const CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==','base64');
@@ -61,13 +68,15 @@ async function run(eng,browser,{ok,url,settle}){
     cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today');
     /* what ran: each wrapped function says its name and arguments; document and window say when a click or a key reached them */
     window.__calls=[];
+    // "Use my location" runs the real useMyLocation (weather.js): the phone's location service is stood in for, and never answers
+    try{Object.defineProperty(navigator,'geolocation',{configurable:true,value:{getCurrentPosition(){window.__geo=(window.__geo||0)+1}}})}catch(e){}
     const fmt=v=>v instanceof Element?'<'+v.tagName.toLowerCase()+(v.id?'#'+v.id:v.className?'.'+String(v.className).split(' ')[0]:'')+'>'
       :v instanceof File?'file:'+v.name:Array.isArray(v)&&v.length&&v.every(x=>x instanceof File)?'files:'+v.length:JSON.stringify(v);
     for(const n of Object.keys(FN)){const f=window[n],via=VIA[n];
       if(via)for(const h of Object.keys(via)){const real=ACTS[h],how=via[h];   // a module's function: watched at its handler
         if(typeof real!=='function'){window.__calls.push('missing:'+n+' ('+h+')');continue}
         ACTS[h]=function(el,ev){if(how==='enter'&&ev.key!=='Enter')return real(el,ev);
-          const a=how==='file'?[el.files[0]]:how==='n'?[+el.dataset.n]:how==='true'?[true]:[];window.__calls.push(`${n}(${a.map(fmt).join(',')})`);
+          const a=how==='file'?[el.files[0]]:how==='value'?[el.value]:how==='n'?[+el.dataset.n]:how==='true'?[true]:[];window.__calls.push(`${n}(${a.map(fmt).join(',')})`);
           if(FN[n])return real(el,ev);
           if(how==='enter')ev.preventDefault();if(how==='file')el.value=''}}
       if(typeof f!=='function'){if(!via)window.__calls.push('missing:'+n);continue}
@@ -124,6 +133,7 @@ async function run(eng,browser,{ok,url,settle}){
       const c2=await calls();ok(c2.join()==='key:a:default'&&await p.inputValue('#cfg-city')==='Springfielda',T+'another key in the city field is just typed ('+c2.join()+')');
       await step('a tap on Search searches',()=>tap('#sp-weather .sform button'),'findCity()');
       await step('a tap on "Use my location" asks for it',()=>tap('#wx-section > .sactions button'),'useMyLocation()');
+      ok(await p.evaluate(()=>window.__geo===1),T+'and the real useMyLocation asks the phone for its location, once');
       await step('choosing °C for Units sets it',()=>p.selectOption('#cfg-units','C'),'setUnits("C")',E(()=>settings.units==='C'))}
     if(k==='care'){
       const v=await p.evaluate(()=>{const s=document.querySelector('#cfg-laundry'),o=[...s.options].find(o=>o.value!==s.value&&+o.value>0);return o.value});
