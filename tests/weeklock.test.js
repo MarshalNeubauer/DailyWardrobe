@@ -192,10 +192,11 @@ const w3plan=async({ok,chromium,url})=>{
 
     // ---- W1-8-01: past holidays stay days off
     const hol=await p.evaluate(async()=>{fresh();at('2027-01-06T07:30:00');settings.holidays={country:'KW',list:[{d:'2027-01-05',n:'Isra and Mi’raj'},{d:'2027-02-25',n:'National Day'}],skip:[],fetched:Date.now()};
-      const real=fetchHolidays;fetchHolidays=async()=>[{d:'2027-02-25',n:'National Day'},{d:'2027-02-26',n:'Liberation Day'}];
+      const real=window.fetch,L=[{date:'2027-02-25',name:'National Day'},{date:'2027-02-26',name:'Liberation Day'}];   // the holiday services answered here (the real fetchHolidays runs)
+      window.fetch=async u=>new Response(JSON.stringify(/PublicHolidays/.test(String(u))?L:{holidays:L}),{status:200,headers:{'content-type':'application/json'}});
       try{at('2027-02-08T07:30:00');await setHolidayCountry('KW',true);const a=!isWorkday(new Date(2027,0,5))&&!isWorkday(new Date(2027,1,26));
         await setHolidayCountry('FR',true);const b=!isWorkday(new Date(2027,0,5));
-        await setHolidayCountry('');const c=!isWorkday(new Date(2027,0,5))&&isWorkday(new Date(2027,1,25));return {a,b,c}}finally{fetchHolidays=real}});
+        await setHolidayCountry('');const c=!isWorkday(new Date(2027,0,5))&&isWorkday(new Date(2027,1,25));return {a,b,c}}finally{window.fetch=real}});
     ok(hol.a,'the monthly refresh keeps a past holiday a day off (Isra and Mi’raj, after the list moved on)');
     ok(hol.b&&hol.c,'so do another country and "No public holidays": only the coming holidays change');
 

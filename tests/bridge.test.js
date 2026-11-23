@@ -114,6 +114,9 @@ const BRIDGE={
   'photos.js':['ITEM_PIC_TYPES','PIC_BG','aAn','asmLive','comboKey','comboSig','esc','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','fnv64','itemBatch','itemDesc','itemKey','itemPic','itemPicHtml','itemPicLimitText','itemPicsUsedUp','jsq','keepRender','lastWorn','listAt','listKeys','loadRenders','missingItemPics','picBgs','picsDrawn','prefetchRenders','remoteKeys','remoteList','remoteListed','renderFor','renderItemPic','renderItemPicUI','renderTried','renders','schedulePrefetch','shareLocalPics','shirtPatterned','srcOk','startItemPics','workerBase','workerList'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
+  // settings (countryName, renderDaysOffUI, renderFormalUI), setup (COUNTRY_CODES, setHolidayCountry), start (refreshHolidays), calendar
+  // (isoToDate, dayOffAdd, yearDate), history and missed (shortDate, renderFormalUI); the rest: tests; holidayMsg is a getter
+  'daysoff.js':['COUNTRY_CODES','addDayOff','builtinHolidays','countryName','dayOffAdd','holYears','holidayMsg','isoToDate','nagerKeep','refreshHolidays','renderDaysOffUI','renderFormalUI','setHolidayCountry','shortDate','toggleHoliday','yearDate'],
   // settings.js and setup.js (unit, renderWxLoc, setUnits, setLocation, useMyLocation, findCity), today.js (wxChip, loadWeather), start.js
   // and safety.js (loadWeather) read these as globals (setup.js is a module later in the list); scorecard.js, a module earlier in the list, reads temp; geoName is read
   // by tests/setup.test.js only
@@ -162,6 +165,8 @@ const BRIDGE={
   // history, today, itemsheet, wardrobe, scorecard and stats; favData, favSave and favToggleItem by the favorites tests only;
   // favWard is a let only fav.js writes (wardrobe.js reads it): a getter
   'fav.js':['FAV_UNDO_MS','favChip','favData','favItemRow','favLastIcon','favMark','favOff','favPieces','favPillSeg','favSave','favStatsCard','favStrip','favToggleItem','favWard','favWhy'],
+  // stats (shopButton), start (closeShop), today-gestures (shopOpen); the rest: tests, which assign shop, shopBusy, shopWorker and shopShown (getters and setters)
+  'shop.js':['analyzeWardrobe','closeShop','openShop','renderShop','shop','shopBought','shopBusy','shopBusyText','shopButton','shopDrag','shopForm','shopFresh','shopGo','shopOpen','shopPart','shopShown','shopSig','shopStale','shopSwipeOn','shopWorker'],
   // sync.js and the screens that say how the backup stands: app, photos, settings, snapshots, backupfile, account, about, ui, setup;
   // the clock, rollback, backup-storage, server-limits and addcards tests
   'sync-status.js':['ENDED','backedUpWords','backupFullMsg','endedAnswer','inviteEnded','pauseTillTomorrow','setSyncStatus','showSyncStatus','syncNetText','syncPaused','syncWaiting'],
@@ -183,6 +188,8 @@ const BRIDGE={
   // history.js, settings.js, start.js and care.js are classic scripts (remindSoon); the rest are read by the remind, connkeep and
   // restacts tests, remindBusy too (a getter: only remind.js writes it)
   'remind.js':['outfitLine','remindBusy','remindCareOn','remindKeep','remindPrefs','remindRefresh','remindSave','remindSig','remindSoon','renderRemindUI'],
+  // safety (appVersion), account (ABOUT_NOTE, wipeDevice), settings (renderAbout); the rest: tests; aboutUpdating has a setter (tests/invite.test.js)
+  'about.js':['ABOUT_KEYS','ABOUT_NOTE','aboutAsk','aboutDeleteAccount','aboutNew','aboutResetAt','aboutUpdating','appVersion','askDelete','checkForUpdate','fbWithErrs','renderAbout','sendFeedback','updateNow','wipeDevice'],
 };
 /* file -> names its row gained after its conversion (each with the reason beside it); every one is in BRIDGE too */
 const GROWN={

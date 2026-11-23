@@ -1,5 +1,5 @@
 /* Daily Wardrobe: Settings → About. The app's version and updates, feedback, deleting one's data, the privacy note.
-   Loaded last (index.html's final script); shares the global scope with the other scripts. */
+   Loaded last (index.html's final file before startUp); an ES module since 2026-11-23. */
 
 /* ---- version ----
    The version is the number in the service worker's cache name (sw.js: const CACHE='dw-v<n>'), bumped with every release.
@@ -266,6 +266,13 @@ function aboutStart(){
   aboutReadVersion().then(()=>checkForUpdate());
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-aboutLast>ABOUT_FRONT_MS)checkForUpdate()});
   setInterval(()=>{if(document.visibilityState==='visible')checkForUpdate()},ABOUT_CHECK_MS)}
+/* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals: safety (appVersion),
+   account (ABOUT_NOTE, wipeDevice), settings (renderAbout); the rest are read by tests; aboutNew is a getter, aboutUpdating a getter and
+   a setter (tests assign it). Above the file's top-level calls (aboutStart, then acts): the names are then still the page's. One
+   statement each: tools and tests cut this file's `^const` lines */
+Object.assign(globalThis,{appVersion,aboutAsk,checkForUpdate,updateNow,fbWithErrs,sendFeedback,aboutResetAt,ABOUT_KEYS,ABOUT_NOTE,askDelete,wipeDevice,aboutDeleteAccount,renderAbout});
+Object.defineProperties(globalThis,{aboutNew:{get:()=>aboutNew},aboutUpdating:{get:()=>aboutUpdating,set:v=>{aboutUpdating=v}}});
+export {aboutNew,aboutUpdating,appVersion,aboutAsk,checkForUpdate,updateNow,fbWithErrs,sendFeedback,aboutResetAt,ABOUT_KEYS,ABOUT_NOTE,askDelete,wipeDevice,aboutDeleteAccount,renderAbout};
 aboutStart();
 /* index.html's (act.js): About's "Check for updates", Update, the feedback's Send and "Delete my data" */
 function updCheckTap(){checkForUpdate(true)}

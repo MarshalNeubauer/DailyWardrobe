@@ -26,10 +26,11 @@ module.exports=async({ok,engines,url,settle,ROOT})=>{
 const FN={cycleTheme:true,openSettings:true,closeSettings:true,saveSettings:true,subBack:true,openAdd:true,goToday:true,show:true,closePicker:true,
   closeColPick:true,closeShop:true,closeItem:true,stepItem:true,openPack:true,toggleCat:true,setVestMode:true,setDarkShirts:true,setUnits:true,
   setLaundryDays:true,advToggle:true,addManual:true,npsCancel:true,addDayOff:true,addFormalDay:true,askDelete:true,replanButton:true,
+  setHolidayCountry:true,checkForUpdate:true,updateNow:true,sendFeedback:true,   // (the real ones run: the holiday service is refused below, Send has no connection, Update returns at once: aboutUpdating)
   useMyLocation:true,   // (the real one runs since weather.js is a module, so the handler's own line still runs here; the phone's location is stood in for below)
-  addFiles:false,addLink:false,pasteFromClipboard:false,kitImportOpen:false,setHolidayCountry:false,findCity:false,
+  addFiles:false,addLink:false,pasteFromClipboard:false,kitImportOpen:false,findCity:false,
   startItemPics:false,syncTap:false,downloadBackup:false,restoreBackup:false,loadSnapshots:false,rollBack:false,
-  checkForUpdate:false,updateNow:false,sendFeedback:false,setupOpen:false,tourAgain:false,homeAgain:false};
+  setupOpen:false,tourAgain:false,homeAgain:false};
 /* The functions above whose file is an ES module now (the bridge, tests/bridge.test.js). A module's handler calls its own function
    inside the module, where a wrapped window.<name> isn't seen, so these are watched one step earlier, at the handler the markup names
    (ACTS, act.js): function -> {handler: how the handler calls it}: '' with no argument; 'enter' with none and only for the Enter key,
@@ -52,7 +53,9 @@ const VIA={cycleTheme:{themeTap:''},addLink:{linkKey:'enter',linkAddTap:''},past
   closeItem:{itemCloseTap:''},stepItem:{itemStepTap:'n'},openPack:{packOpenTap:''},setupOpen:{setupAgainTap:'true'},
   setUnits:{unitsPick:'value'},findCity:{cityKey:'enter',citySearchTap:''},useMyLocation:{myLocTap:''},
   addManual:{addManualTap:''},npsCancel:{npsCloseTap:''},
-  closePicker:{pickBackdropTap:''},replanButton:{replanTap:''},startItemPics:{itemPicsTap:''}};
+  closePicker:{pickBackdropTap:''},replanButton:{replanTap:''},startItemPics:{itemPicsTap:''},
+  closeShop:{shopBackdropTap:''},addDayOff:{dayOffAddTap:''},addFormalDay:{occAddTap:''},setHolidayCountry:{countryPick:'value'},
+  askDelete:{delAskTap:''},checkForUpdate:{updCheckTap:'true'},updateNow:{updNowTap:''},sendFeedback:{fbSendTap:''}};
 const CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==','base64');
 async function run(eng,browser,{ok,url,settle}){
@@ -70,6 +73,7 @@ async function run(eng,browser,{ok,url,settle}){
     /* what ran: each wrapped function says its name and arguments; document and window say when a click or a key reached them */
     window.__calls=[];
     // "Use my location" runs the real useMyLocation (weather.js): the phone's location service is stood in for, and never answers
+    {const f0=window.fetch;window.fetch=(u,...a)=>/date\.nager\.at/.test(String(u))?Promise.reject(new TypeError('no network')):f0(u,...a)}   // the real setHolidayCountry runs: no holiday service is reached
     try{Object.defineProperty(navigator,'geolocation',{configurable:true,value:{getCurrentPosition(){window.__geo=(window.__geo||0)+1}}})}catch(e){}
     const fmt=v=>v instanceof Element?'<'+v.tagName.toLowerCase()+(v.id?'#'+v.id:v.className?'.'+String(v.className).split(' ')[0]:'')+'>'
       :v instanceof File?'file:'+v.name:Array.isArray(v)&&v.length&&v.every(x=>x instanceof File)?'files:'+v.length:JSON.stringify(v);
@@ -121,7 +125,7 @@ async function run(eng,browser,{ok,url,settle}){
       if(await p.evaluate(()=>!!document.querySelector('#ask-sheet.on #ask-cancel'))){await tap('#ask-cancel');await until(()=>!document.querySelector('#ask-sheet').classList.contains('on'));await settle(p,300)}}
     if(k==='daysoff'){
       const cc=await p.evaluate(()=>{const o=[...document.querySelector('#cfg-country').options].find(o=>o.value);return o&&o.value});
-      await step(`choosing a country (${cc}) for public holidays sets it`,()=>p.selectOption('#cfg-country',cc),`setHolidayCountry("${cc}")`);
+      await step(`choosing a country (${cc}) for public holidays sets it`,()=>p.selectOption('#cfg-country',cc),`setHolidayCountry("${cc}")`,E(c=>!!settings.holidays&&settings.holidays.country===c,cc));
       await p.fill('#cfg-off-from','2026-12-24');
       await step('a tap on Add under "Your own days off" adds the day',()=>tap('#sp-daysoff .offadd button'),'addDayOff()',E(()=>(settings.daysOff||[]).some(x=>x.d==='2026-12-24')&&!!document.querySelector('#off-list button')));
       await p.fill('#cfg-formal-date','2026-11-18');
@@ -160,7 +164,10 @@ async function run(eng,browser,{ok,url,settle}){
     if(k==='about'){
       await p.evaluate(()=>{document.querySelector('#about-update').hidden=false;document.querySelector('#fb-send').disabled=false});
       await step('a tap on "Check for updates" checks',()=>tap('#about-check'),'checkForUpdate(true)');
+      await until(()=>document.querySelector('#about-status').textContent!=='Checking…');   // (the real check's answer redraws the Update button)
+      await p.evaluate(()=>{document.querySelector('#about-update').hidden=false;aboutUpdating=true});   // the real updateNow returns at once: it would restart the page
       await step('a tap on Update updates',()=>tap('#about-update'),'updateNow()');
+      await p.evaluate(()=>{aboutUpdating=false});
       await p.fill('#fb-text','A note');
       await step('a tap on the feedback’s Send sends it',()=>tap('#fb-send'),'sendFeedback()');
       await step('a tap on "Delete my data" asks first',()=>tap('#del-open'),'askDelete()',E(()=>!document.querySelector('#del-confirm').hidden));
