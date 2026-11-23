@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	035c23548e97cfadec77
-# tested	f7f9106af00f059f438e
+# tested	c8c62a36a8ba36d4bed5
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -558,7 +557,6 @@ actsindex.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	
 actsindex.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 actsindex.test.js	tagging.js	<any>	<loaded>	readAbort	tagNotes
 actsindex.test.js	tests/fixedplan.js	<any>
-actsindex.test.js	tests/webkit.js	<any>
 actsindex.test.js	theme.js	<any>	<loaded>	applyTheme	cycleTheme	themeTap
 actsindex.test.js	toast.js	<any>	<loaded>	toast	toastDrop	toastOff	undoOff
 actsindex.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig
@@ -1129,7 +1127,6 @@ asmahead.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmahead.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-asmahead.test.js	tests/webkit.js	<any>
 asmahead.test.js	theme.js	<loaded>	applyTheme
 asmahead.test.js	toast.js	<loaded>
 asmahead.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	mvSig	todayBusy	todayFree
@@ -1142,6 +1139,7 @@ asmahead.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	ward
 asmahead.test.js	watch/leather.jpg	<loaded>
 asmahead.test.js	watch/shirt-open.png	<loaded>
 asmahead.test.js	watch/shirt-tie.png	<loaded>
+asmahead.test.js	watch/suit.png	<loaded>
 asmahead.test.js	watch/vest.png	<loaded>
 asmahead.test.js	weather.js	<loaded>	loadWeather
 asmatlas.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -1455,6 +1453,11 @@ asmcode.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
 asmcode.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 asmcode.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmcode.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+asmcode.test.js	watch/leather.jpg	<loaded>
+asmcode.test.js	watch/shirt-open.png	<loaded>
+asmcode.test.js	watch/shirt-tie.png	<loaded>
+asmcode.test.js	watch/suit.png	<loaded>
+asmcode.test.js	watch/vest.png	<loaded>
 asmcode.test.js	weather.js	<loaded>	loadWeather
 asmcolor.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmcolor.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
@@ -1757,6 +1760,11 @@ asmcu.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
 asmcu.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 asmcu.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmcu.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+asmcu.test.js	watch/leather.jpg	<loaded>
+asmcu.test.js	watch/shirt-open.png	<loaded>
+asmcu.test.js	watch/shirt-tie.png	<loaded>
+asmcu.test.js	watch/suit.png	<loaded>
+asmcu.test.js	watch/vest.png	<loaded>
 asmcu.test.js	weather.js	<loaded>	loadWeather
 asmgl.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmgl.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -2470,7 +2478,10 @@ asmwatch.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPi
 asmwatch.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmwatch.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 asmwatch.test.js	watch/leather.jpg	<loaded>
+asmwatch.test.js	watch/shirt-open.png	<loaded>
+asmwatch.test.js	watch/shirt-tie.png	<loaded>
 asmwatch.test.js	watch/suit.png	<loaded>
+asmwatch.test.js	watch/vest.png	<loaded>
 asmwatch.test.js	weather.js	<loaded>	loadWeather
 asmweave.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmweave.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -2563,6 +2574,11 @@ asmweave.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
 asmweave.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 asmweave.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmweave.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+asmweave.test.js	watch/leather.jpg	<loaded>
+asmweave.test.js	watch/shirt-open.png	<loaded>
+asmweave.test.js	watch/shirt-tie.png	<loaded>
+asmweave.test.js	watch/suit.png	<loaded>
+asmweave.test.js	watch/vest.png	<loaded>
 asmweave.test.js	weather.js	<loaded>	loadWeather
 assemble.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 assemble.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
@@ -2941,7 +2957,6 @@ backgesture-over.test.js	tests/backgesture-parts.js	<any>
 backgesture-over.test.js	tests/fixedplan.js	<any>
 backgesture-over.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-over.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-over.test.js	tests/webkit.js	<any>
 backgesture-over.test.js	theme.js	<loaded>	applyTheme
 backgesture-over.test.js	toast.js	<loaded>	toastDrop	undoOff
 backgesture-over.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -3032,7 +3047,6 @@ backgesture.test.js	tests/backgesture-parts.js	<any>
 backgesture.test.js	tests/fixedplan.js	<any>
 backgesture.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture.test.js	tests/webkit.js	<any>
 backgesture.test.js	theme.js	<loaded>	applyTheme
 backgesture.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 backgesture.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -6512,6 +6526,11 @@ favplan.test.js	today-plan.js	<loaded>	get	planDirty	planFor	planMonth	planSnapS
 favplan.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	addForSlot	canPick	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 favplan.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 favplan.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	matMigrate	matRenameTo	sockLegacy	sockToeMigrate	wardFlush	wardPendingRestore
+favplan.test.js	watch/leather.jpg	<loaded>
+favplan.test.js	watch/shirt-open.png	<loaded>
+favplan.test.js	watch/shirt-tie.png	<loaded>
+favplan.test.js	watch/suit.png	<loaded>
+favplan.test.js	watch/vest.png	<loaded>
 favplan.test.js	weather.js	<loaded>	loadWeather
 favplan.test.js	worker.js	<loaded>	corsFor	fetch	serve
 favplan.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
@@ -8261,7 +8280,6 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
-invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -9637,7 +9655,6 @@ modload.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 modload.test.js	tag-request.js	<loaded>	tagStatsCard
 modload.test.js	tagging.js	<loaded>
 modload.test.js	tests/fixedplan.js	<any>
-modload.test.js	tests/webkit.js	<any>
 modload.test.js	theme.js	<loaded>	applyTheme	cycleTheme	themeTap
 modload.test.js	toast.js	<loaded>	toast
 modload.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig	todayCovered
@@ -13045,7 +13062,6 @@ restacts.test.js	tag-request.js	<loaded>	describeEstimate	keepCloseImg	readEstim
 restacts.test.js	tagging.js	<loaded>	confTxt	readAbort	tagLive	tagMeasUndo	tagNewCol	tagNewPat	tagNotes	tagPatternAgain	tagRefineAgain	tagRefineUndo	tagSet	undoRefine
 restacts.test.js	tests/fixedplan.js	<any>
 restacts.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<any>
-restacts.test.js	tests/webkit.js	<any>
 restacts.test.js	theme.js	<loaded>	applyTheme
 restacts.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoHere	undoOff
 restacts.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	mvSig	todayBusy	todayFree
@@ -13668,6 +13684,7 @@ run.js: planner: independent outfit checklist	draw.js	<loaded>	drawBelt	drawShoe
 run.js: planner: independent outfit checklist	dress.js	<loaded>	migrateVests
 run.js: planner: independent outfit checklist	fav.js	<loaded>
 run.js: planner: independent outfit checklist	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	get	idsOf	keyDate	planRulesCheck	planRulesLs	planRulesNote	recordDays	replanFuture	resetCard	saveDay	whenPulled
+run.js: planner: independent outfit checklist	icon-192.png	<loaded>
 run.js: planner: independent outfit checklist	icon-512.png	<loaded>
 run.js: planner: independent outfit checklist	index.html	<loaded>
 run.js: planner: independent outfit checklist	item-photo.js	<loaded>	smallPhotos
@@ -13677,6 +13694,7 @@ run.js: planner: independent outfit checklist	kit.js	<loaded>	homeAbout	homeAndr
 run.js: planner: independent outfit checklist	locale.js	<loaded>	appLocale
 run.js: planner: independent outfit checklist	locks.js	<loaded>
 run.js: planner: independent outfit checklist	look.js	<loaded>
+run.js: planner: independent outfit checklist	manifest.webmanifest	<loaded>
 run.js: planner: independent outfit checklist	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern
 run.js: planner: independent outfit checklist	measure.js	<loaded>
 run.js: planner: independent outfit checklist	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -13720,6 +13738,11 @@ run.js: planner: independent outfit checklist	today-plan.js	<loaded>	get	planFor
 run.js: planner: independent outfit checklist	today.js	<loaded>	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	renderToday	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 run.js: planner: independent outfit checklist	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 run.js: planner: independent outfit checklist	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+run.js: planner: independent outfit checklist	watch/leather.jpg	<loaded>
+run.js: planner: independent outfit checklist	watch/shirt-open.png	<loaded>
+run.js: planner: independent outfit checklist	watch/shirt-tie.png	<loaded>
+run.js: planner: independent outfit checklist	watch/suit.png	<loaded>
+run.js: planner: independent outfit checklist	watch/vest.png	<loaded>
 run.js: planner: independent outfit checklist	weather.js	<loaded>	loadWeather
 run.js: planner: shoes, belts, leather and metals	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 run.js: planner: shoes, belts, leather and metals	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -13810,6 +13833,11 @@ run.js: planner: shoes, belts, leather and metals	today-plan.js	<loaded>	get	pla
 run.js: planner: shoes, belts, leather and metals	today.js	<loaded>	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	renderToday	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 run.js: planner: shoes, belts, leather and metals	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 run.js: planner: shoes, belts, leather and metals	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+run.js: planner: shoes, belts, leather and metals	watch/leather.jpg	<loaded>
+run.js: planner: shoes, belts, leather and metals	watch/shirt-open.png	<loaded>
+run.js: planner: shoes, belts, leather and metals	watch/shirt-tie.png	<loaded>
+run.js: planner: shoes, belts, leather and metals	watch/suit.png	<loaded>
+run.js: planner: shoes, belts, leather and metals	watch/vest.png	<loaded>
 run.js: planner: shoes, belts, leather and metals	weather.js	<loaded>	loadWeather
 run.js: planner: shoes, belts, leather and metals	worker.js	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	fetch	orNull	waitForRenders
 run.js: renders the outfit without errors	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -14923,6 +14951,11 @@ scoreanim.test.js	today-plan.js	<loaded>	get	planDirty	planFor	planMonth	planSna
 scoreanim.test.js	today.js	<loaded>	addForSlot	belowBox	canPick	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 scoreanim.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	inviteOver	isConnected	layerInert	layerUp
 scoreanim.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+scoreanim.test.js	watch/leather.jpg	<loaded>
+scoreanim.test.js	watch/shirt-open.png	<loaded>
+scoreanim.test.js	watch/shirt-tie.png	<loaded>
+scoreanim.test.js	watch/suit.png	<loaded>
+scoreanim.test.js	watch/vest.png	<loaded>
 scoreanim.test.js	weather.js	<loaded>	loadWeather
 scoredials.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 scoredials.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -15164,7 +15197,7 @@ server-limits.test.js	look.js	<loaded>	lookOn	renderLookSetting
 server-limits.test.js	manifest.webmanifest	<loaded>
 server-limits.test.js	mannequin.js	<loaded>	@{}
 server-limits.test.js	measure.js	<loaded>
-server-limits.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
+server-limits.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
 server-limits.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 server-limits.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen
 server-limits.test.js	month.js	<loaded>	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	planOn
@@ -15433,6 +15466,11 @@ settag.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
 settag.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 settag.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 settag.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+settag.test.js	watch/leather.jpg	<loaded>
+settag.test.js	watch/shirt-open.png	<loaded>
+settag.test.js	watch/shirt-tie.png	<loaded>
+settag.test.js	watch/suit.png	<loaded>
+settag.test.js	watch/vest.png	<loaded>
 settag.test.js	weather.js	<loaded>	loadWeather
 settingsin.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 settingsin.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
@@ -17222,7 +17260,7 @@ staledevice.test.js	pack.js	<loaded>	packShow
 staledevice.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 staledevice.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	get	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
 staledevice.test.js	pickscore.js	<loaded>
-staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
+staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 staledevice.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 staledevice.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 staledevice.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
@@ -18195,7 +18233,7 @@ tagging.test.js	pack.js	<loaded>	packShow
 tagging.test.js	pattern-read.js	<loaded>	claudeOnly	missedPattern	motifPat	readPatternWithClaude	readSett	readable	settCheck	settNote	settable
 tagging.test.js	photos.js	<loaded>	asmLive	comboKey	comboSig	esc	fetchRemoteRender	fixItemBackdrops	fnv64	get	jsq	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	srcOk	workerBase	workerList
 tagging.test.js	pickscore.js	<loaded>
-tagging.test.js	planner.js	<loaded>	favItemSet	favLooks	favRead	idsAhead	lockStale	pairSeen
+tagging.test.js	planner.js	<loaded>	favItemSet	favLooks	favRead	pairSeen
 tagging.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 tagging.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errSoon	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 tagging.test.js	scorecard.js	<loaded>	recentWork
@@ -19580,6 +19618,11 @@ twillswatch.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
 twillswatch.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 twillswatch.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 twillswatch.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+twillswatch.test.js	watch/leather.jpg	<loaded>
+twillswatch.test.js	watch/shirt-open.png	<loaded>
+twillswatch.test.js	watch/shirt-tie.png	<loaded>
+twillswatch.test.js	watch/suit.png	<loaded>
+twillswatch.test.js	watch/vest.png	<loaded>
 twillswatch.test.js	weather.js	<loaded>	loadWeather
 typecheck.test.js	tests/modscope.js	<any>
 typecheck.test.js	tests/scriptlist.js	<any>
@@ -19955,7 +19998,6 @@ wardfab.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedule
 wardfab.test.js	tag-request.js	<loaded>	tagStatsCard
 wardfab.test.js	tagging.js	<loaded>
 wardfab.test.js	tests/fixedplan.js	<any>
-wardfab.test.js	tests/webkit.js	<any>
 wardfab.test.js	theme.js	<loaded>	applyTheme
 wardfab.test.js	toast.js	<loaded>	toast	toastDrop	undoFab	undoHere	undoOff
 wardfab.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
