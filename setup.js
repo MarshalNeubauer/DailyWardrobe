@@ -64,6 +64,17 @@ function setupOpen(again,resume){
 /* the phone's Back is its ‹ Back; on the first step a first setup stays open, "Run setup again" closes as its Cancel (the Back audit,
    2026-11-15: Back did nothing there) */
 function setupBack(){if(!setupShown())return;if(setup.at>0){setupGo(-1);backPush('setup')}else if(!setup.first)setupCancel();else backPush('setup')}
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals:
+   start.js starts and yields the setup (setupStart, setupYield), account.js and kit.js read and redraw it (setup, SETUP_STEPS,
+   setupShown, setupDraw, setupFinish, setupSample), today.js, stats.js and wardrobe.js draw the empty states (setupNeeds, setupToday,
+   setupWardEmpty), weather.js asks tzCountry; setupOpen, setupClose, setupCancel, setupGo, setupSearch, setupDress and setupVestChosen
+   are called by tests only. SETUP_STEPS is a let only this file writes: a getter; tests/rollback.test.js sets setup: a getter and a
+   setter; a module imports them.
+   Above the file's first call that can throw (backOn, when back.js did not load; then acts): the names are then still the page's, as
+   a classic script's were */
+Object.assign(globalThis,{setupDress,setupShown,setupStart,setupVestChosen,setupOpen,setupClose,setupCancel,setupFinish,tzCountry,setupYield,setupGo,setupSample,setupDraw,setupSearch,setupNeeds,setupToday,setupWardEmpty});
+Object.defineProperties(globalThis,{SETUP_STEPS:{get:()=>SETUP_STEPS},setup:{get:()=>setup,set:v=>{setup=v}}});
+export {SETUP_STEPS,setup,setupDress,setupShown,setupStart,setupVestChosen,setupOpen,setupClose,setupCancel,setupFinish,tzCountry,setupYield,setupGo,setupSample,setupDraw,setupSearch,setupNeeds,setupToday,setupWardEmpty};
 backOn('setup',()=>setupBack());
 function setupClose(){
   if(setup.watch)clearInterval(setup.watch);setup.watch=null;setup.at=-1;setupKeep(null);

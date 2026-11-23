@@ -222,6 +222,14 @@ function renderPack(){
       :`<p class="mut empty" id="pk-none">No outfits are planned for these days.</p>`)+
     (lock.of&&!light?`<div class="card pk-card" id="pk-lock"><h3>Keep these outfits</h3><p class="pk-note" id="pk-lockmsg">${allLocked?'<b>Locked.</b> These outfits stay as shown, whatever you change on other days.':lock.n?`<b>${lock.n} of ${lock.of} day${lock.of===1?'':'s'} locked.</b> The others can still change when another day changes or you add an item.`:'<b>Not locked.</b> The list is only right while the plan doesn’t move: a change on another day or a new item can still change these outfits.'}</p><div class="btns">${allLocked?'':`<button type="button" class="pri" id="pk-lockbtn" data-act="packKeepTap">Keep these outfits</button>`}${lock.n?`<button type="button" id="pk-release" data-act="packReleaseTap">Let the plan change again</button>`:''}</div><p class="mut pk-help">The app keeps today through Friday as shown by itself. A swap you make on one of these days re-plans that day only.</p></div>`:'');
   packProgress()}
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals:
+   calendar.js opens the page and sets the trip (openPack, packSetTrip), start.js shows it (packShow); the rest are called or read by
+   the pack, packcare-taps, planreview, stats, calendar, restacts and pocketsquare tests. packT and packNow are set by tests: a getter
+   and a setter each; a module imports them.
+   Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the page's, as a classic script's were */
+Object.assign(globalThis,{PACK_TITLE,packDefault,packTrip,packMark,packUses,packComplete,packLockState,packLock,packRelease,packSetDate,packSetTrip,packSetCap,packWear,packShow,openPack,renderPack});
+Object.defineProperties(globalThis,{packT:{get:()=>packT,set:v=>{packT=v}},packNow:{get:()=>packNow,set:v=>{packNow=v}}});
+export {PACK_TITLE,packT,packNow,packDefault,packTrip,packMark,packUses,packComplete,packLockState,packLock,packRelease,packSetDate,packSetTrip,packSetCap,packWear,packShow,openPack,renderPack};
 /* what the controls do (act.js). index.html's: Settings' Packing list link */
 function packOpenTap(){openPack()}
 /* the page's own: ‹, the two dates (data-which a | b), the two limits (data-which j | s), "Keep this plan" / "Keep these outfits", "Don’t limit",
