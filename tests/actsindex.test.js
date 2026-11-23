@@ -25,8 +25,8 @@ module.exports=async({ok,engines,url,settle,ROOT})=>{
 /* the functions index.html's controls call: true = the real one runs too, false = only noted (the network, a download, a reload) */
 const FN={cycleTheme:true,openSettings:true,closeSettings:true,saveSettings:true,subBack:true,openAdd:true,goToday:true,show:true,closePicker:true,
   closeColPick:true,closeShop:true,closeItem:true,stepItem:true,openPack:true,toggleCat:true,setVestMode:true,setDarkShirts:true,setUnits:true,
-  setLaundryDays:true,advToggle:true,addManual:true,npsCancel:true,addDayOff:true,addFormalDay:true,askDelete:true,
-  addFiles:false,addLink:false,pasteFromClipboard:false,kitImportOpen:false,replanButton:false,setHolidayCountry:false,findCity:false,
+  setLaundryDays:true,advToggle:true,addManual:true,npsCancel:true,addDayOff:true,addFormalDay:true,askDelete:true,replanButton:true,
+  addFiles:false,addLink:false,pasteFromClipboard:false,kitImportOpen:false,setHolidayCountry:false,findCity:false,
   useMyLocation:false,startItemPics:false,syncTap:false,downloadBackup:false,restoreBackup:false,loadSnapshots:false,rollBack:false,
   checkForUpdate:false,updateNow:false,sendFeedback:false,setupOpen:false,tourAgain:false,homeAgain:false};
 /* The functions above whose file is an ES module now (the bridge, tests/bridge.test.js). A module's handler calls its own function
@@ -38,10 +38,13 @@ const FN={cycleTheme:true,openSettings:true,closeSettings:true,saveSettings:true
    for those this file no longer runs the handler's own line: theme.test.js, paste.test.js (Enter, Add, Paste), syncwrite.test.js and
    sync.test.js (Download backup, Restore file), rollback.test.js (the list's focus) and setup.test.js ("Run setup again", a real
    click) use the real ones.
+   history.js's two run for real here on both engines: the picker's backdrop (pickBackdropTap, closePicker) and "Start the plan over"
+   (replanTap, replanButton, which history.js doesn't bridge: the step answers its question with Cancel).
    window.<name> is wrapped as well where the module bridges it, for the classic scripts that call it (settings.js: loadSnapshots). */
 const VIA={cycleTheme:{themeTap:''},addLink:{linkKey:'enter',linkAddTap:''},pasteFromClipboard:{pasteTap:''},
   downloadBackup:{backupSaveTap:''},restoreBackup:{backupFilePick:'file'},loadSnapshots:{snapFocus:''},rollBack:{rollBackTap:''},
-  closeItem:{itemCloseTap:''},stepItem:{itemStepTap:'n'},openPack:{packOpenTap:''},setupOpen:{setupAgainTap:'true'}};
+  closeItem:{itemCloseTap:''},stepItem:{itemStepTap:'n'},openPack:{packOpenTap:''},setupOpen:{setupAgainTap:'true'},
+  closePicker:{pickBackdropTap:''},replanButton:{replanTap:''}};
 const CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==','base64');
 async function run(eng,browser,{ok,url,settle}){
@@ -103,7 +106,9 @@ async function run(eng,browser,{ok,url,settle}){
     if(k==='schedule'){
       await step('choosing "Every suit day" for the Suit vest sets it',()=>p.selectOption('#cfg-vest','always'),'setVestMode("always")',E(()=>settings.vestMode==='always'));
       await step('choosing "Often" for Dark shirts sets it',()=>p.selectOption('#cfg-dark','often'),'setDarkShirts("often")',E(()=>settings.darkShirts==='often'));
-      await step('a tap on "Start the plan over" asks to start it over',()=>tap('#replan-btn'),'replanButton()')}
+      // (the real one runs: it asks, or says there is nothing to start over; the question is answered with Cancel, so nothing is planned again)
+      await step('a tap on "Start the plan over" asks to start it over',()=>tap('#replan-btn'),'replanButton()',E(()=>document.querySelector('#ask-sheet').classList.contains('on')||/^Nothing to start over/.test(document.querySelector('#replan-status').textContent)));
+      if(await p.evaluate(()=>!!document.querySelector('#ask-sheet.on #ask-cancel'))){await tap('#ask-cancel');await until(()=>!document.querySelector('#ask-sheet').classList.contains('on'));await settle(p,300)}}
     if(k==='daysoff'){
       const cc=await p.evaluate(()=>{const o=[...document.querySelector('#cfg-country').options].find(o=>o.value);return o&&o.value});
       await step(`choosing a country (${cc}) for public holidays sets it`,()=>p.selectOption('#cfg-country',cc),`setHolidayCountry("${cc}")`);

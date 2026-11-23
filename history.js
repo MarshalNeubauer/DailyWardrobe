@@ -1,6 +1,6 @@
 /* Daily Wardrobe: the outfit history: saving a day and recording what each day showed, "Suggest another" and the piece picker,
    correcting a past day, occasions, Reset, the vest, "Start the plan over" and the planning rules' re-plan
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14. Round C,
+   (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14. Round C,
    2026-11-17: the missed days are in missed.js, the week's locks in locks.js, the picker's scoring in pickscore.js, the score card in
    scorecard.js and the cards' fold motion in boxfold.js, loaded right after this file.) */
 /* ---- outfit history: freeze past days, swap pieces, record what was worn ---- */
@@ -89,6 +89,17 @@ function handGroup(slot,o,hand,cur){if(!hand.length)return '';
 function closePicker(){const was=!!picker;picker=null;const s=$('#pick-sheet'),b=$('#pick-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');
   if(was&&typeof layerClose==='function')layerClose(s);if(was)backDrop('pick');
   if(typeof syncLaterRun==='function')syncLaterRun('today')}   // a sync's redraw that waited for the picker (sync.js)
+/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. keyDate is read by 17 page scripts and
+   saveDay by 8; today.js draws and records with recordDays, openPicker, closePicker, setWorn, setVest, resetCard and dayActions and
+   sets swapMsg, todayPullWait and pastEdit (a getter and a setter each; tests set swapMsg and pastEdit too); picker is read by
+   today.js, today-gestures.js and sync.js and only this file assigns it: a getter; start.js, safety.js, wardrobe.js and calendar.js
+   wait with whenPulled; start.js calls dropLearn and checkPlanRules, settings.js renderReplanUI, daysoff.js and calendar.js
+   setOccasion, fav.js wearFav, scorecard.js pickItem, pickscore.js notAhead and idsOf; swapSlot, togglePastEdit, correctPast,
+   resetDay, replanFuture and planRulesNote are called by tests only; a module imports them.
+   Above the file's first call that can throw (backOn, when back.js did not load; then acts): the names are then still the page's,
+   as a classic script's were; setFormal, a const declared further down, is handed over above the handlers */
+Object.assign(globalThis,{idsOf,keyDate,saveDay,whenPulled,recordDays,swapSlot,dropLearn,openPicker,closePicker,pickItem,wearFav,togglePastEdit,correctPast,setOccasion,resetDay,notAhead,setWorn,replanFuture,checkPlanRules,planRulesNote,renderReplanUI,setVest,resetCard,dayActions});
+Object.defineProperties(globalThis,{picker:{get:()=>picker},swapMsg:{get:()=>swapMsg,set:v=>{swapMsg=v}},todayPullWait:{get:()=>todayPullWait,set:v=>{todayPullWait=v}},pastEdit:{get:()=>pastEdit,set:v=>{pastEdit=v}}});
 backOn('pick',()=>closePicker());
 function pickNext(){const s=picker&&picker.slot;closePicker();if(s)swapSlot(s)}
 async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;closePicker();
@@ -194,6 +205,9 @@ function dayActions(o){
   if(past&&o.frozen)h+=`<button class="pastedit${pastEdit===key(sel)?' on':''}" data-act="pastEditTap" aria-pressed="${pastEdit===key(sel)}">${pastEdit===key(sel)?'Done':'Correct this day'}</button>`;
   return offNote+(h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&pastEdit===key(sel)?'<p class="mut"><small>Tap ⇄ beside a piece to set what you really wore. The planner then counts that, not what was planned.</small></p>':past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
 }
+/* the rest of the bridge: setFormal, declared above (tests/itempics.test.js and tests/weather.test.js call it) */
+Object.assign(globalThis,{setFormal});
+export {idsOf,keyDate,swapMsg,saveDay,todayPullWait,whenPulled,recordDays,swapSlot,dropLearn,picker,pastEdit,openPicker,closePicker,pickItem,wearFav,togglePastEdit,correctPast,setFormal,setOccasion,resetDay,notAhead,setWorn,replanFuture,checkPlanRules,planRulesNote,renderReplanUI,setVest,resetCard,dayActions};
 /* index.html's (act.js): the piece picker's backdrop, and Settings' "Start the plan over" */
 function pickBackdropTap(){closePicker()}
 function replanTap(){replanButton()}
