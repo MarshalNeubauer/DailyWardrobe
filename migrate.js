@@ -98,3 +98,9 @@ async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='3
     const s=settFromSpec(it.patternSpec,it.pbox&&full?{tex:c,full,box:it.pbox,type:it.type}:{tex:c,type:it.type});
     if(s&&stillCur(it)&&(JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)||JSON.stringify(s.cross)!==JSON.stringify(it.sett.cross))){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
   localStorage.setItem('spec_recolour','3');if(n)planDirty();return n}
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals:
+   start.js runs the four remakes (upgradeCloseups, upgradePhotos, fixBlackBackdrops, recolourSpecSetts), item-photo.js counts its
+   own remake within the day's (remakeLeft, remakeSpend); REMAKE_DAY is read by tests/tagreads.test.js. A module imports them.
+   At the file's end: nothing runs at load (declarations only), so nothing above can throw */
+Object.assign(globalThis,{upgradeCloseups,REMAKE_DAY,remakeLeft,remakeSpend,upgradePhotos,fixBlackBackdrops,recolourSpecSetts});
+export {upgradeCloseups,REMAKE_DAY,remakeLeft,remakeSpend,upgradePhotos,fixBlackBackdrops,recolourSpecSetts};

@@ -458,3 +458,12 @@ function foldBins(G,tAdj,T,skip){const M=Math.max(24,Math.min(400,Math.round(T))
 /* a sett from a whole canvas (its middle 90%): a close-up */
 function settFromCanvas(c,box,opt){if(box){const b={x:box.x/1000*c.width,y:box.y/1000*c.height,w:box.w/1000*c.width,h:box.h/1000*c.height};return analyzeSett(c,b.x,b.y,b.w,b.h,opt)}
   return analyzeSett(c,c.width*.05,c.height*.05,c.width*.9,c.height*.9,opt)}
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals.
+   The pattern lists are read by draw.js, today-picture.js, photos.js, measure.js, assemble.js, itemsheet.js, look.js and colpick.js,
+   and by pattern-read.js while it loads (STRIPE_PATS, CHECK_PATS, MOTIF_PATS, TEXTURE_PATS: this file's tag stays above it);
+   usableSett, settSig, texPat, tieWeave and CAMO_TR by the drawing and the painter (draw.js, assemble.js, asm-color.js), which stay
+   classic; itemsheet.js and add-save.js start a detection (detectPattern, detectQueued), pattern-read.js reads a close-up
+   (settFromCanvas); camoTag and settToTag are called by tests only. No Web Worker loads this file. A module imports them.
+   At the file's end: no top-level statement above reads another file's name or calls anything that can throw */
+Object.assign(globalThis,{STRIPE_PATS,CHECK_PATS,DETECT_PATS,MOTIF_PATS,TEXTURE_PATS,texPat,tieWeave,usableSett,CAMO_TR,camoTag,settToTag,settSig,detectPattern,detectQueued,settFromCanvas});
+export {STRIPE_PATS,CHECK_PATS,DETECT_PATS,MOTIF_PATS,TEXTURE_PATS,texPat,tieWeave,usableSett,CAMO_TR,camoTag,settToTag,settSig,detectPattern,detectQueued,settFromCanvas};

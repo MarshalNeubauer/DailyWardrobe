@@ -37,7 +37,8 @@ const FN={cycleTheme:true,openSettings:true,closeSettings:true,saveSettings:true
    control's data-n as a number; 'true' with true.
    With true above the real handler then runs (the step checks what the app did); with false the wrapper stands in for the handler, so
    for those this file no longer runs the handler's own line: theme.test.js, paste.test.js (Enter, Add, Paste), syncwrite.test.js and
-   sync.test.js (Download backup, Restore file), rollback.test.js (the list's focus) and setup.test.js ("Run setup again", a real
+   sync.test.js (Download backup, Restore file), rollback.test.js (the list's focus), itempics.test.js ("Generate item pictures", a
+   real click, then the question's OK: photos.js itemPicsTap) and setup.test.js ("Run setup again", a real
    click) use the real ones; the city search's (weather.js cityKey, citySearchTap: the real findCity would ask the geocoding
    service) are run by setup.test.js (Enter) and by acts.test.js and weather.test.js (Search), each answering the service itself.
    window.<name> is wrapped as well where the module bridges it, for the scripts that call it as a global (settings.js:
@@ -45,7 +46,7 @@ const FN={cycleTheme:true,openSettings:true,closeSettings:true,saveSettings:true
 const VIA={cycleTheme:{themeTap:''},addLink:{linkKey:'enter',linkAddTap:''},pasteFromClipboard:{pasteTap:''},
   downloadBackup:{backupSaveTap:''},restoreBackup:{backupFilePick:'file'},loadSnapshots:{snapFocus:''},rollBack:{rollBackTap:''},
   closeItem:{itemCloseTap:''},stepItem:{itemStepTap:'n'},openPack:{packOpenTap:''},setupOpen:{setupAgainTap:'true'},
-  setUnits:{unitsPick:'value'},findCity:{cityKey:'enter',citySearchTap:''},useMyLocation:{myLocTap:''}};
+  setUnits:{unitsPick:'value'},findCity:{cityKey:'enter',citySearchTap:''},useMyLocation:{myLocTap:''},startItemPics:{itemPicsTap:''}};
 const CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==','base64');
 async function run(eng,browser,{ok,url,settle}){
