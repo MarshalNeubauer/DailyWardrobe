@@ -40,3 +40,7 @@ function sheetSwipe(v,o){if(!v||v.dataset.swipe)return;v.dataset.swipe='1';let s
   v.addEventListener('pointermove',e=>{if(!st||st.pid!==e.pointerId)return;if(move(e.clientX,e.clientY,e.timeStamp))e.preventDefault()});
   const pend=e=>{if(!st||st.pid!==e.pointerId)return;try{v.releasePointerCapture(e.pointerId)}catch{}end()};
   v.addEventListener('pointerup',pend);v.addEventListener('pointercancel',pend);v.addEventListener('dragstart',e=>{if(st&&st.pid!==undefined)e.preventDefault()})}   // (a photo in the handle would be dragged off as a picture)
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): the sheets that call sheetSwipe are classic scripts (add-sheet.js, item-view.js,
+   colpick.js, kit.js); a module imports it */
+Object.assign(globalThis,{sheetSwipe});
+export {sheetSwipe};

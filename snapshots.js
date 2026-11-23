@@ -69,3 +69,7 @@ async function rollBack(pick){const sel=$('#snap-list'),id=pick&&pick.id||sel&&s
 function snapFocus(){loadSnapshots()}
 function rollBackTap(){rollBack()}
 acts({snapFocus,rollBackTap});
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): settings.js, a classic script, calls loadSnapshots; the tests call it and the
+   other three (actsindex, backup-storage, clock, rollback, sample); a module imports them */
+Object.assign(globalThis,{snapLabel,loadSnapshots,rollBackState,rollBack});
+export {snapLabel,loadSnapshots,rollBackState,rollBack};
