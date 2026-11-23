@@ -234,7 +234,7 @@ const colpicklive=async({ok,chromium,url,settle})=>{
     await p.click('#cn-open');
     ok(await p.evaluate(()=>/Your suit, drawn/.test(document.querySelector('#col-sheet .cpph figcaption').textContent)&&getComputedStyle(document.querySelector('#cn-sq')).touchAction==='none'&&getComputedStyle(document.querySelector('#cn-hue')).touchAction==='none'),
       'the sheet shows "Your suit, drawn"; the square and the hue bar don\'t scroll the sheet (touch-action none)');
-    await p.evaluate(()=>{document.querySelector('#cn-sq').dataset.mark='1';let n=0;const f=cnDrawn;window.cnDrawn=(...a)=>{n++;return f(...a)};window.__draws=()=>n});
+    await p.evaluate(()=>{document.querySelector('#cn-sq').dataset.mark='1';let n=0;const cnt=r=>{for(const x of r)if(x.target.matches&&x.target.matches('.cpdraw'))n++},mo=new MutationObserver(cnt);mo.observe(document.querySelector('#col-sheet'),{childList:true,subtree:true});window.__draws=()=>{cnt(mo.takeRecords());return n}});   // a redraw is one replacement of the figure's contents (cnDrawn is called inside colpick.js, a module)
     const before=await fig();calls=0;
     // the square: down, four moves, no lift
     const box=await p.locator('#cn-sq').boundingBox(),steps=[[.2,.3],[.45,.25],[.7,.15],[.9,.1],[.55,.6]];

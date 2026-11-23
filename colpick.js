@@ -82,6 +82,11 @@ function closeColPick(){const c=colPick;colPick=null;const s=$('#col-sheet'),b=$
    the page's, so it is asked first (back.js backOver), closes (‹ first on a "New" sheet opened from the list, as its own ‹ does) and back.js
    puts that entry back, so the next Back closes the page. A sheet that borrowed the entry over it (a question, the close-up chooser, the
    reading sheet) takes its own Back. */
+/* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
+   first top-level call that can throw (backOver, when back.js did not load): the functions are then still the page's. The consts
+   declared below this line are handed over above acts({…}), with the one export */
+Object.assign(globalThis,{colFamily,colHas,SOCK_THIRD,colShows,colFieldLabel,colTidy,colRows,colTarget,colChoices,accDel,colNear,openColPick,closeColPick,colPickSel,colPickView,useColPick,renderColPick,colAskImgs,cpAskHint,cnDrawn,cnLeft,openColNew,openPatNew,openCustomNew,cnName,colNewAdd,rdOff,rdCost,rdEditorBtn,rdStart,rdRetake,rdRun,rdColOf,rdOpen,rdClose,rdAccOf,rdRender,rdUndoAll,rdDoneHtml});
+Object.defineProperties(globalThis,{rdLast:{get:()=>rdLast},colPick:{get:()=>colPick,set:v=>{colPick=v}},rd:{get:()=>rd,set:v=>{rd=v}}});
 backOver(top=>{if(!colPick||top==='ask'||top==='cu'||top==='rd')return false;
   if(colPick.newc&&colPick.newc.from==='pick')colNewBack();else closeColPick();return true});
 /* ---- swiping a sheet down closes it (2026-11-15, the owner: "When I click on color or texture, the sheet comes up, but I can't swipe it
@@ -807,6 +812,8 @@ function colBackdropTap(){closeColPick()}
 /* a close-up retaken from the New color sheet and from the reading sheet (ui.js closeupBtn, cuGot) */
 function cnRetakeFile(el,ev,f){cuGot(el,f,x=>cnRetake(x))}
 function rdRetakeFile(el,ev,f){cuGot(el,f,x=>rdRetake(x))}
+Object.assign(globalThis,{SW_GRAB,colAsk,NEW_COL,colNameTaken,patChoices,patVar,patBtn,EP,cnHex,cnFromHsv,RD_LOOKUPS,rdCostLine,rdAddBtn});
+export {colPick,colFamily,colHas,SOCK_THIRD,colShows,colFieldLabel,colTidy,colRows,colTarget,colChoices,accDel,colNear,openColPick,closeColPick,SW_GRAB,colPickSel,colPickView,useColPick,renderColPick,colAsk,colAskImgs,NEW_COL,colNameTaken,cpAskHint,patChoices,patVar,patBtn,EP,cnHex,cnFromHsv,cnDrawn,cnLeft,openColNew,openPatNew,openCustomNew,cnName,colNewAdd,rd,rdLast,RD_LOOKUPS,rdOff,rdCost,rdCostLine,rdEditorBtn,rdAddBtn,rdStart,rdRetake,rdRun,rdColOf,rdOpen,rdClose,rdAccOf,rdRender,rdUndoAll,rdDoneHtml};
 acts({colBtnTap,cpViewTap,cpTileTap,cpCloseTap,cpUseTap,cpPicsTap,cpAskTap,cpAskAllTap,cnOpenTap,pnOpenTap,cnBackTap,cnCloseupTap,cnAskTap,cnDescType,cnDescKey,
   cnKindTap,cnAddTap,cnUseOldTap,pnAnywayTap,cnBasePick,cnTypeTap,cnAccentTap,cnForPick,cnSqPress,cnHuePress,cnSqKey,cnHueKey,cnSlideUp,cnHexType,cnHexDone,cnNameType,
   rdReadTap,rdKeepTap,rdChangeTap,rdUndoTap,rdUseTap,rdBothTap,rdCloseTap,rdAgainTap,rdUndoAllTap,colBackdropTap,cnRetakeFile,rdRetakeFile});
