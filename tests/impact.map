@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	eaf27d236b7e348f33e6
+# tested	5951878868201eb5e117
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -7,7 +7,7 @@ a11y.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	
 a11y.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 a11y.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 a11y.test.js	add-paste.js	<loaded>
-a11y.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	qh
+a11y.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	get	qh
 a11y.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 a11y.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 a11y.test.js	analysis.js	<loaded>
@@ -199,7 +199,7 @@ accents.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	cardSave	ckLe
 accents.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 accents.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 accents.test.js	add-paste.js	<loaded>
-accents.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
+accents.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	save	saveCard	savedTitle
 accents.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 accents.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 accents.test.js	analysis.js	<loaded>
@@ -292,10 +292,10 @@ accounts.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	about
 accounts.test.js	account.js	<loaded>	acctBase	acctCall	acctConnect	acctCopyTap	acctCreateTap	acctEsc	acctFailText	acctJoin	acctLinkDrawn	acctLocal	acctLoopback	acctOwnServer	acctRevokeTap	acctRole	acctSettingsPart	acctStart	acctToast	acctUse	applyRole	connectFromLink	copyInvite	createInvite	dropInviteHash	hasInviteHash	inviteLink	inviteParts	iosDevice	iosInSafari	isTester	limitNote	loadAccount	rememberRole	renderAccountUI	revokeInvite
 accounts.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 accounts.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	typeCard	unreadNote
-accounts.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+accounts.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 accounts.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 accounts.test.js	add-paste.js	<loaded>
-accounts.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	qh	savedTitle
+accounts.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	get	qh	savedTitle
 accounts.test.js	add-sheet.js	<loaded>	renderAddFor
 accounts.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	applyWb	cardPics	needType	renderAdd	wbNote
 accounts.test.js	analysis.js	<loaded>
@@ -484,7 +484,7 @@ actsindex.test.js	add-card.js	<any>	<loaded>	addCkCount	addCkSecs	cardSafe	ckLef
 actsindex.test.js	add-keep.js	<any>	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 actsindex.test.js	add-more.js	<any>	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 actsindex.test.js	add-paste.js	<any>	<loaded>	linkAddTap	linkKey	pasteTap
-actsindex.test.js	add-save.js	<any>	<loaded>	cardAt	cardReading	cardReady	qh
+actsindex.test.js	add-save.js	<any>	<loaded>	cardAt	cardReading	cardReady	get	qh
 actsindex.test.js	add-sheet.js	<any>	<loaded>	addManual	addManualTap	npsCancel	npsCard	npsClose	npsCloseTap	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 actsindex.test.js	add.js	<any>	<loaded>	@document.addEventListenerclick	addNoteText	addPhotosPick	needType	renderAdd	skipCard	wbNote
 actsindex.test.js	analysis-worker.js	<any>
@@ -572,10 +572,10 @@ addcards.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	about
 addcards.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRetryLink	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 addcards.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 addcards.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardByHand	cardSafe	cardSave	cardSkip	cardStop	cardTypePick	ckLeftLine	ckLr	confBtn	errCard	formCard	matExtras	matGuessOf	matNewOf	multiErrCard	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
-addcards.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addRevive	addWatch
+addcards.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addRevive	addWatch	get	set
 addcards.test.js	add-more.js	<loaded>	arriveVal	cardQty	checkArrivals	orderHint	orderRow	qtyLabel	qtyOf	qtyRow	setArrives	stepQty
 addcards.test.js	add-paste.js	<loaded>
-addcards.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveAll	saveCard	savedTitle
+addcards.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveAll	saveCard	savedTitle
 addcards.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 addcards.test.js	add.js	<loaded>	@document.addEventListenerclick	addBackOnline	addFiles	addMulti	addNoteText	addShowCard	addTexture	applyWb	cardPics	countWord	cropBox	errToHand	measureGuess	multiAgain	multiFail	multiMsg	multiNote	needType	oddWord	refineAgain	renderAdd	saveAllTap	skipCard	stopRead	texGains	wbNote
 addcards.test.js	analysis.js	<loaded>
@@ -674,7 +674,7 @@ additemacts.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardByHan
 additemacts.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 additemacts.test.js	add-more.js	<loaded>	arriveVal	cardArrives	cardOrder	cardQty	checkArrivals	fmtDay	orderHint	orderRow	qtyLabel	qtyOf	qtyRow	setArrives	setOrder	stepQty
 additemacts.test.js	add-paste.js	<loaded>
-additemacts.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveAll	saveCard	savedTitle
+additemacts.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveAll	saveCard	savedTitle
 additemacts.test.js	add-sheet.js	<loaded>	addManual	addManualTap	npsCancel	npsCancelTap	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 additemacts.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	dropTexture	errToHand	measureGuess	multiMsg	multiNote	needType	renderAdd	saveAllTap	skipCard	stopRead	wbNote
 additemacts.test.js	analysis.js	<loaded>
@@ -761,7 +761,7 @@ addsheet.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	cardSave	car
 addsheet.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addRevive	addWatch
 addsheet.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 addsheet.test.js	add-paste.js	<loaded>
-addsheet.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+addsheet.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 addsheet.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	addManualTap	npsBack	npsCancel	npsCancelTap	npsCard	npsClose	npsCloseTap	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 addsheet.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	multiMsg	needType	renderAdd	skipCard	wbNote
 addsheet.test.js	analysis.js	<loaded>
@@ -941,10 +941,10 @@ aiverdict.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	abou
 aiverdict.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 aiverdict.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 aiverdict.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	unreadNote
-aiverdict.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+aiverdict.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 aiverdict.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 aiverdict.test.js	add-paste.js	<loaded>
-aiverdict.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+aiverdict.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 aiverdict.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 aiverdict.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	applyWb	cardPics	needType	renderAdd	wbNote
 aiverdict.test.js	analysis.js	<loaded>
@@ -1136,11 +1136,6 @@ asmahead.test.js	today-plan.js	<loaded>	planDirty	planFor	planMonth	planSnapSoon
 asmahead.test.js	today.js	<loaded>	belowBox	canPick	figLoad	figureStage	foldAll	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	stepDay	swatchStack	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 asmahead.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 asmahead.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-asmahead.test.js	watch/leather.jpg	<loaded>
-asmahead.test.js	watch/shirt-open.png	<loaded>
-asmahead.test.js	watch/shirt-tie.png	<loaded>
-asmahead.test.js	watch/suit.png	<loaded>
-asmahead.test.js	watch/vest.png	<loaded>
 asmahead.test.js	weather.js	<loaded>	loadWeather
 asmatlas.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmatlas.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
@@ -2578,6 +2573,8 @@ asmweave.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	ward
 asmweave.test.js	watch/leather.jpg	<loaded>
 asmweave.test.js	watch/shirt-open.png	<loaded>
 asmweave.test.js	watch/shirt-tie.png	<loaded>
+asmweave.test.js	watch/suit.png	<loaded>
+asmweave.test.js	watch/vest.png	<loaded>
 asmweave.test.js	weather.js	<loaded>	loadWeather
 assemble.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 assemble.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
@@ -2864,6 +2861,7 @@ backgesture-item.test.js	tests/backgesture-parts.js	<any>
 backgesture-item.test.js	tests/fixedplan.js	<any>
 backgesture-item.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-item.test.js	tests/fixtures/suit-mink.jpg	<loaded>
+backgesture-item.test.js	tests/webkit.js	<any>
 backgesture-item.test.js	theme.js	<loaded>	applyTheme
 backgesture-item.test.js	toast.js	<loaded>	toast	undoHere
 backgesture-item.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -2881,7 +2879,7 @@ backgesture-over.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLe
 backgesture-over.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 backgesture-over.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 backgesture-over.test.js	add-paste.js	<loaded>
-backgesture-over.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	savedTitle
+backgesture-over.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	savedTitle
 backgesture-over.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	addManualTap	npsBack	npsCancel	npsCard	npsClose	npsCloseTap	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 backgesture-over.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	errToHand	needType	renderAdd	skipCard	wbNote
 backgesture-over.test.js	analysis.js	<loaded>
@@ -3792,10 +3790,10 @@ canvasrefuse.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	a
 canvasrefuse.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 canvasrefuse.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 canvasrefuse.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	errCard	formCard	matExtras	matGuessOf	matNewOf	photoPair	plainCard	shadeRow	tagSwInner	unreadNote
-canvasrefuse.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+canvasrefuse.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 canvasrefuse.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 canvasrefuse.test.js	add-paste.js	<loaded>
-canvasrefuse.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
+canvasrefuse.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	save	saveCard	savedTitle
 canvasrefuse.test.js	add-sheet.js	<loaded>	renderAddFor
 canvasrefuse.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	addTexture	applyWb	cardPics	needType	renderAdd	texGains	wbNote
 canvasrefuse.test.js	analysis.js	<loaded>
@@ -3890,10 +3888,10 @@ cardid.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutRe
 cardid.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 cardid.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 cardid.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardCheck	cardSafe	cardSave	cardSel	cardTypePick	ckCheck	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
-cardid.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addRevive	addWatch
+cardid.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addRevive	addWatch	get
 cardid.test.js	add-more.js	<loaded>	cardQty	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow	stepQty
 cardid.test.js	add-paste.js	<loaded>
-cardid.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+cardid.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 cardid.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
 cardid.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	applyWb	cardPics	errToHand	measureGuess	multiMsg	needType	renderAdd	skipCard	wbNote
 cardid.test.js	analysis.js	<loaded>
@@ -4091,7 +4089,7 @@ casual.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckL
 casual.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 casual.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 casual.test.js	add-paste.js	<loaded>
-casual.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh
+casual.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh
 casual.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 casual.test.js	add.js	<loaded>	addNoteText	addShowCard	needType	renderAdd	wbNote
 casual.test.js	analysis.js	<loaded>
@@ -4188,10 +4186,10 @@ claudepattern.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	
 claudepattern.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 claudepattern.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 claudepattern.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	unreadNote
-claudepattern.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+claudepattern.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 claudepattern.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 claudepattern.test.js	add-paste.js	<loaded>
-claudepattern.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
+claudepattern.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	save	saveCard	savedTitle
 claudepattern.test.js	add-sheet.js	<loaded>	renderAddFor
 claudepattern.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	addTexture	applyWb	cardPics	needType	renderAdd	texGains	wbNote
 claudepattern.test.js	analysis.js	<loaded>
@@ -4381,7 +4379,7 @@ closeupread.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardCuFile	cardRdS
 closeupread.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 closeupread.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 closeupread.test.js	add-paste.js	<loaded>
-closeupread.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh
+closeupread.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh
 closeupread.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 closeupread.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	addTexture	applyWb	needType	renderAdd	texGains	wbNote
 closeupread.test.js	analysis.js	<loaded>
@@ -4470,7 +4468,7 @@ closeupsheet.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardCuFile	cardCu
 closeupsheet.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 closeupsheet.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 closeupsheet.test.js	add-paste.js	<loaded>
-closeupsheet.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh
+closeupsheet.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh
 closeupsheet.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 closeupsheet.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	addTexture	applyWb	dropTexture	needType	renderAdd	texGains	wbNote
 closeupsheet.test.js	analysis.js	<loaded>
@@ -4866,7 +4864,7 @@ colors.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckL
 colors.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 colors.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 colors.test.js	add-paste.js	<loaded>
-colors.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh
+colors.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh
 colors.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 colors.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	skipCard	wbNote
 colors.test.js	analysis.js	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	listAnd	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	shopShelved	simFacts	smallCandidates	tClass
@@ -4980,7 +4978,7 @@ colpick.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ck
 colpick.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore
 colpick.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 colpick.test.js	add-paste.js	<loaded>
-colpick.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	savedTitle
+colpick.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	savedTitle
 colpick.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
 colpick.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 colpick.test.js	analysis.js	<loaded>
@@ -5076,7 +5074,7 @@ colpickacts.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLin
 colpickacts.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 colpickacts.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 colpickacts.test.js	add-paste.js	<loaded>
-colpickacts.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh
+colpickacts.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh
 colpickacts.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 colpickacts.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 colpickacts.test.js	analysis.js	<loaded>
@@ -5252,7 +5250,7 @@ combatboot.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine
 combatboot.test.js	add-keep.js	<loaded>	addKeep	addKeepSoon	addRestore
 combatboot.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 combatboot.test.js	add-paste.js	<loaded>
-combatboot.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	savedTitle
+combatboot.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	savedTitle
 combatboot.test.js	add-sheet.js	<loaded>	renderAddFor
 combatboot.test.js	add.js	<loaded>	addNoteText	needType	renderAdd	wbNote
 combatboot.test.js	analysis-worker.js	<any>
@@ -5436,7 +5434,7 @@ costwear.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	c
 costwear.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 costwear.test.js	add-more.js	<loaded>	checkArrivals	orderHint	orderRow	qtyLabel	qtyOf	qtyRow	setOrder
 costwear.test.js	add-paste.js	<loaded>
-costwear.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+costwear.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 costwear.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 costwear.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 costwear.test.js	analysis.js	<loaded>	horizonKeys
@@ -5868,7 +5866,7 @@ dress.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr
 dress.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore
 dress.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 dress.test.js	add-paste.js	<loaded>
-dress.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
+dress.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	save	saveCard	savedTitle
 dress.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
 dress.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 dress.test.js	analysis-worker.js	<any>
@@ -6526,8 +6524,6 @@ favplan.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEven
 favplan.test.js	watch/leather.jpg	<loaded>
 favplan.test.js	watch/shirt-open.png	<loaded>
 favplan.test.js	watch/shirt-tie.png	<loaded>
-favplan.test.js	watch/suit.png	<loaded>
-favplan.test.js	watch/vest.png	<loaded>
 favplan.test.js	weather.js	<loaded>	loadWeather
 favplan.test.js	worker.js	<loaded>	corsFor	fetch	serve
 favplan.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
@@ -8404,7 +8400,7 @@ itemredesign.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardCheck	cardSaf
 itemredesign.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 itemredesign.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 itemredesign.test.js	add-paste.js	<loaded>
-itemredesign.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+itemredesign.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 itemredesign.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 itemredesign.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	skipCard	wbNote
 itemredesign.test.js	analysis.js	<loaded>
@@ -8780,7 +8776,7 @@ kit.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	c
 kit.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addRevive	addWatch
 kit.test.js	add-more.js	<loaded>	checkArrivals	fmtDay	orderRow	qtyLabel	qtyOf	qtyRow
 kit.test.js	add-paste.js	<loaded>
-kit.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
+kit.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	save	saveCard	savedTitle
 kit.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 kit.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	errToHand	multiMsg	needType	renderAdd	wbNote
 kit.test.js	analysis.js	<loaded>
@@ -8976,7 +8972,7 @@ lookbeta.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckCheck	ckLe
 lookbeta.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 lookbeta.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 lookbeta.test.js	add-paste.js	<loaded>
-lookbeta.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+lookbeta.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 lookbeta.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 lookbeta.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	skipCard	wbNote
 lookbeta.test.js	analysis.js	<loaded>
@@ -9252,9 +9248,6 @@ mannequin.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 mannequin.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 mannequin.test.js	watch/leather.jpg	<loaded>
 mannequin.test.js	watch/shirt-open.png	<loaded>
-mannequin.test.js	watch/shirt-tie.png	<loaded>
-mannequin.test.js	watch/suit.png	<loaded>
-mannequin.test.js	watch/vest.png	<loaded>
 mannequin.test.js	weather.js	<loaded>	loadWeather
 masterspeed.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 masterspeed.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	rememberRole	renderAccountUI
@@ -9368,7 +9361,7 @@ materials.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	
 materials.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addRestore	addWatch
 materials.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 materials.test.js	add-paste.js	<loaded>
-materials.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh
+materials.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh
 materials.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 materials.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	needType	renderAdd	wbNote
 materials.test.js	analysis.js	<loaded>
@@ -9452,10 +9445,10 @@ measure.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutR
 measure.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 measure.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 measure.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	typeCard	unreadNote
-measure.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+measure.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 measure.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 measure.test.js	add-paste.js	<loaded>
-measure.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh
+measure.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh
 measure.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 measure.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	applyWb	cardPics	needType	renderAdd	wbNote
 measure.test.js	analysis.js	<loaded>
@@ -10209,10 +10202,10 @@ motif.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg
 motif.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 motif.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 motif.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	unreadNote
-motif.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+motif.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 motif.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 motif.test.js	add-paste.js	<loaded>
-motif.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
+motif.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	save	saveCard	savedTitle
 motif.test.js	add-sheet.js	<loaded>	renderAddFor
 motif.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	addTexture	applyWb	cardPics	needType	renderAdd	texGains	wbNote
 motif.test.js	analysis.js	<loaded>
@@ -10513,7 +10506,7 @@ multi.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardMultiAgain	
 multi.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 multi.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 multi.test.js	add-paste.js	<loaded>
-multi.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveAll	saveCard	savedTitle
+multi.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	save	saveAll	saveCard	savedTitle
 multi.test.js	add-sheet.js	<loaded>	renderAddFor
 multi.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addMulti	addNoteText	addShowCard	applyWb	cardPics	countWord	cropBox	multiAgain	multiFail	multiMsg	multiNote	needType	renderAdd	saveAllTap	skipCard	wbNote
 multi.test.js	analysis.js	<loaded>
@@ -11023,7 +11016,7 @@ onorder.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ck
 onorder.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 onorder.test.js	add-more.js	<loaded>	arriveVal	cardArrives	cardOrder	checkArrivals	fmtDay	orderHint	orderRow	qtyLabel	qtyOf	qtyRow	setArrives	setOrder
 onorder.test.js	add-paste.js	<loaded>
-onorder.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+onorder.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 onorder.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 onorder.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	needType	renderAdd	wbNote
 onorder.test.js	analysis.js	<loaded>
@@ -11206,7 +11199,7 @@ ownmaterials.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardMatGuess	card
 ownmaterials.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore
 ownmaterials.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 ownmaterials.test.js	add-paste.js	<loaded>
-ownmaterials.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+ownmaterials.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 ownmaterials.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
 ownmaterials.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 ownmaterials.test.js	analysis.js	<loaded>
@@ -11293,7 +11286,7 @@ ownnames.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	c
 ownnames.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 ownnames.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 ownnames.test.js	add-paste.js	<loaded>
-ownnames.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	savedTitle
+ownnames.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	savedTitle
 ownnames.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 ownnames.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	needType	renderAdd	skipCard	wbNote
 ownnames.test.js	analysis.js	<loaded>
@@ -11487,7 +11480,7 @@ packcare-taps.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	cardSel
 packcare-taps.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 packcare-taps.test.js	add-more.js	<loaded>	checkArrivals	fmtDay	orderRow	qtyLabel	qtyOf	qtyRow
 packcare-taps.test.js	add-paste.js	<loaded>
-packcare-taps.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh
+packcare-taps.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh
 packcare-taps.test.js	add-sheet.js	<loaded>	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 packcare-taps.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 packcare-taps.test.js	analysis-worker.js	<any>
@@ -11755,10 +11748,10 @@ paste.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg
 paste.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 paste.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 paste.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
-paste.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+paste.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 paste.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 paste.test.js	add-paste.js	<loaded>	@document.addEventListenerdrop	@document.addEventListenerpaste	addBlobs	addFromUrl	addLink	clipImages	fetchPhoto	isLink	linkAddTap	linkKey	pasteFromClipboard	pasteMsg	pasteTap	pasteUp
-paste.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
+paste.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	save	saveCard	savedTitle
 paste.test.js	add-sheet.js	<loaded>	renderAddFor
 paste.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	applyWb	cardPics	measureGuess	needType	renderAdd	wbNote
 paste.test.js	analysis.js	<loaded>
@@ -12128,7 +12121,7 @@ pickerfocus.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	cardSel	c
 pickerfocus.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 pickerfocus.test.js	add-more.js	<loaded>	arriveVal	cardArrives	cardOrder	checkArrivals	fmtDay	orderHint	orderRow	qtyLabel	qtyOf	qtyRow	setArrives	setOrder
 pickerfocus.test.js	add-paste.js	<loaded>
-pickerfocus.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh
+pickerfocus.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh
 pickerfocus.test.js	add-sheet.js	<loaded>	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 pickerfocus.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 pickerfocus.test.js	analysis.js	<loaded>
@@ -12503,7 +12496,7 @@ planner-rules.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftL
 planner-rules.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addRestore	addWatch
 planner-rules.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 planner-rules.test.js	add-paste.js	<loaded>
-planner-rules.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	qh
+planner-rules.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	get	qh
 planner-rules.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 planner-rules.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 planner-rules.test.js	analysis-worker.js	<any>
@@ -12695,7 +12688,7 @@ pocketsquare.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLi
 pocketsquare.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore
 pocketsquare.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 pocketsquare.test.js	add-paste.js	<loaded>
-pocketsquare.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	qh	savedTitle
+pocketsquare.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	get	qh	savedTitle
 pocketsquare.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
 pocketsquare.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 pocketsquare.test.js	analysis-worker.js	<any>
@@ -12988,7 +12981,7 @@ restacts.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardCuFile	cardCuRemo
 restacts.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore
 restacts.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 restacts.test.js	add-paste.js	<loaded>
-restacts.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	savedTitle
+restacts.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	savedTitle
 restacts.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
 restacts.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	dropTexture	needType	renderAdd	wbNote
 restacts.test.js	analysis.js	<loaded>
@@ -13269,7 +13262,7 @@ run.js: add an item without a photo; it persists	add-card.js	<loaded>	addCkCount
 run.js: add an item without a photo; it persists	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 run.js: add an item without a photo; it persists	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 run.js: add an item without a photo; it persists	add-paste.js	<loaded>
-run.js: add an item without a photo; it persists	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+run.js: add an item without a photo; it persists	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 run.js: add an item without a photo; it persists	add-sheet.js	<loaded>	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 run.js: add an item without a photo; it persists	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	needType	renderAdd	wbNote
 run.js: add an item without a photo; it persists	analysis.js	<loaded>
@@ -14557,15 +14550,20 @@ safeport.test.js	tools/upload-budget.js	<any>
 safeport.test.js	tools/visit-measure.js	<any>
 safeport.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 safeport.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate
+safeport.test.js	watch/leather.jpg	<loaded>
+safeport.test.js	watch/shirt-open.png	<loaded>
+safeport.test.js	watch/shirt-tie.png	<loaded>
+safeport.test.js	watch/suit.png	<loaded>
+safeport.test.js	watch/vest.png	<loaded>
 safeport.test.js	weather.js	<loaded>	loadWeather
 safety.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 safety.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 safety.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 safety.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardRetryTag	cardSafe	cardSave	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	typeCard	unreadNote
-safety.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+safety.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 safety.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 safety.test.js	add-paste.js	<loaded>
-safety.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+safety.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 safety.test.js	add-sheet.js	<loaded>	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
 safety.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	applyWb	cardPics	needType	renderAdd	wbNote
 safety.test.js	analysis.js	<loaded>
@@ -15273,10 +15271,10 @@ sett.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	
 sett.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 sett.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 sett.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	unreadNote
-sett.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+sett.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 sett.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 sett.test.js	add-paste.js	<loaded>
-sett.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+sett.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 sett.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
 sett.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	applyWb	cardPics	needType	renderAdd	wbNote
 sett.test.js	analysis.js	<loaded>
@@ -15849,7 +15847,7 @@ shade.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr
 shade.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 shade.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 shade.test.js	add-paste.js	<loaded>
-shade.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+shade.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 shade.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 shade.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	needType	renderAdd	wbNote
 shade.test.js	analysis.js	<loaded>
@@ -16438,10 +16436,10 @@ shirtweave.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	abo
 shirtweave.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 shirtweave.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 shirtweave.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	unreadNote
-shirtweave.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+shirtweave.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 shirtweave.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 shirtweave.test.js	add-paste.js	<loaded>
-shirtweave.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
+shirtweave.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	save	saveCard	savedTitle
 shirtweave.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
 shirtweave.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	addTexture	applyWb	cardPics	needType	renderAdd	texGains	wbNote
 shirtweave.test.js	analysis.js	<loaded>
@@ -16821,10 +16819,10 @@ sockpatterns.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	a
 sockpatterns.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
 sockpatterns.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 sockpatterns.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	unreadNote
-sockpatterns.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+sockpatterns.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 sockpatterns.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 sockpatterns.test.js	add-paste.js	<loaded>
-sockpatterns.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
+sockpatterns.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	save	saveCard	savedTitle
 sockpatterns.test.js	add-sheet.js	<loaded>	renderAddFor
 sockpatterns.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	applyWb	cardPics	needType	renderAdd	wbNote
 sockpatterns.test.js	analysis.js	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	listAnd	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	several	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	shopShelved	simFacts	smallCandidates	tClass
@@ -16910,7 +16908,7 @@ socktoe.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ck
 socktoe.test.js	add-keep.js	<loaded>	addKeep	addKeepSoon	addRestore
 socktoe.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 socktoe.test.js	add-paste.js	<loaded>
-socktoe.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	qh	savedTitle
+socktoe.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	get	qh	savedTitle
 socktoe.test.js	add-sheet.js	<loaded>	renderAddFor
 socktoe.test.js	add.js	<loaded>	addNoteText	needType	renderAdd	wbNote
 socktoe.test.js	analysis.js	<loaded>
@@ -17256,7 +17254,7 @@ staledevice.test.js	pack.js	<loaded>	packShow
 staledevice.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 staledevice.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	listPaused	loadRenders	lookSig	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
 staledevice.test.js	pickscore.js	<loaded>
-staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
+staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 staledevice.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 staledevice.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 staledevice.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
@@ -17399,7 +17397,7 @@ stylea11y.test.js	add-card.js	<any>	<loaded>	addCkCount	addCkSecs	cardSafe	ckLef
 stylea11y.test.js	add-keep.js	<any>	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 stylea11y.test.js	add-more.js	<any>	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 stylea11y.test.js	add-paste.js	<any>	<loaded>
-stylea11y.test.js	add-save.js	<any>	<loaded>	cardAt	cardReading	cardReady	qh
+stylea11y.test.js	add-save.js	<any>	<loaded>	cardAt	cardReading	cardReady	get	qh
 stylea11y.test.js	add-sheet.js	<any>	<loaded>	addManual	addManualTap	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 stylea11y.test.js	add.js	<any>	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	skipCard	wbNote
 stylea11y.test.js	analysis-worker.js	<any>
@@ -18070,10 +18068,10 @@ tagger.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutRe
 tagger.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
 tagger.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 tagger.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	typeCard	unreadNote
-tagger.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+tagger.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 tagger.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 tagger.test.js	add-paste.js	<loaded>
-tagger.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	qh	savedTitle
+tagger.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	get	qh	savedTitle
 tagger.test.js	add-sheet.js	<loaded>	renderAddFor
 tagger.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	applyWb	cardPics	needType	renderAdd	wbNote
 tagger.test.js	analysis.js	<loaded>
@@ -18175,10 +18173,10 @@ tagging.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutR
 tagging.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 tagging.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 tagging.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	tagSwInner	unreadNote
-tagging.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addRevive	addWatch
+tagging.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addRevive	addWatch	get
 tagging.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 tagging.test.js	add-paste.js	<loaded>
-tagging.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+tagging.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 tagging.test.js	add-sheet.js	<loaded>	renderAddFor
 tagging.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	addTexture	applyWb	cardPics	needType	renderAdd	texGains	wbNote
 tagging.test.js	analysis.js	<loaded>	listAnd
@@ -18268,10 +18266,10 @@ tagreads.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	about
 tagreads.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
 tagreads.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 tagreads.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardCuFile	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	unreadNote
-tagreads.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+tagreads.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 tagreads.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 tagreads.test.js	add-paste.js	<loaded>
-tagreads.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	savedTitle
+tagreads.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	savedTitle
 tagreads.test.js	add-sheet.js	<loaded>	renderAddFor
 tagreads.test.js	add.js	<loaded>	addFiles	addNoteText	addPhotosPick	addShowCard	addTexture	applyWb	cardPics	needType	renderAdd	skipCard	texGains	wbNote
 tagreads.test.js	analysis.js	<loaded>
@@ -18371,7 +18369,7 @@ tagswatch.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	
 tagswatch.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore
 tagswatch.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 tagswatch.test.js	add-paste.js	<loaded>
-tagswatch.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	savedTitle
+tagswatch.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	savedTitle
 tagswatch.test.js	add-sheet.js	<loaded>	renderAddFor
 tagswatch.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	needType	renderAdd	wbNote
 tagswatch.test.js	analysis.js	<loaded>
@@ -18560,10 +18558,10 @@ texswatch.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	abou
 texswatch.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 texswatch.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 texswatch.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
-texswatch.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+texswatch.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 texswatch.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 texswatch.test.js	add-paste.js	<loaded>
-texswatch.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	save	saveCard	savedTitle
+texswatch.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	save	saveCard	savedTitle
 texswatch.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
 texswatch.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	addTexture	applyWb	cardPics	dropTexture	measureGuess	needType	renderAdd	texGains	wbNote
 texswatch.test.js	analysis.js	<loaded>
@@ -18659,10 +18657,10 @@ texture.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutR
 texture.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 texture.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 texture.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardCuFile	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
-texture.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
+texture.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 texture.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 texture.test.js	add-paste.js	<loaded>
-texture.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+texture.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 texture.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
 texture.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addPhotosPick	addShowCard	addTexture	applyWb	cardPics	cardWb	measureGuess	needType	renderAdd	texGains	toggleWb	wbNote
 texture.test.js	analysis.js	<loaded>
@@ -19432,8 +19430,6 @@ todayswatch.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 todayswatch.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 todayswatch.test.js	watch/leather.jpg	<loaded>
 todayswatch.test.js	watch/shirt-open.png	<loaded>
-todayswatch.test.js	watch/shirt-tie.png	<loaded>
-todayswatch.test.js	watch/suit.png	<loaded>
 todayswatch.test.js	watch/vest.png	<loaded>
 todayswatch.test.js	weather.js	<loaded>	loadWeather
 todayzoom.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -19726,7 +19722,7 @@ uipages.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ck
 uipages.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 uipages.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 uipages.test.js	add-paste.js	<loaded>
-uipages.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	qh	savedTitle
+uipages.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	savedTitle
 uipages.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 uipages.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	needType	renderAdd	wbNote
 uipages.test.js	analysis.js	<loaded>	horizonKeys
@@ -20016,7 +20012,7 @@ wardrobe.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardField	cardSafe	ca
 wardrobe.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 wardrobe.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 wardrobe.test.js	add-paste.js	<loaded>
-wardrobe.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	qAt	qh	save	saveCard	savedTitle
+wardrobe.test.js	add-save.js	<loaded>	cardAt	cardIx	cardOf	cardReading	cardReady	get	qAt	qh	save	saveCard	savedTitle
 wardrobe.test.js	add-sheet.js	<loaded>	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor
 wardrobe.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	needType	renderAdd	wbNote
 wardrobe.test.js	analysis.js	<loaded>
@@ -20118,7 +20114,7 @@ wardrobetap.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	cardSkip	
 wardrobetap.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore
 wardrobetap.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 wardrobetap.test.js	add-paste.js	<loaded>
-wardrobetap.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	qh	savedTitle
+wardrobetap.test.js	add-save.js	<loaded>	cardAt	cardReading	cardReady	get	qh	savedTitle
 wardrobetap.test.js	add-sheet.js	<loaded>	npsLeave	renderAddFor
 wardrobetap.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	errToHand	needType	renderAdd	skipCard	wbNote
 wardrobetap.test.js	analysis.js	<loaded>
