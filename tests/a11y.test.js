@@ -33,9 +33,9 @@ const a11yfix=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>!!picker&&document.querySelector('#pick-sheet').classList.contains('on')&&syncLater==='today'),'a sync arriving leaves the picker open; Today is redrawn once it closes');
     await p.keyboard.press('Escape');
     ok(await p.evaluate(()=>!picker&&syncLater===null&&!document.querySelector('main').inert),'Escape closes the picker, and the waiting redraw runs');
-    // What to buy (its gate and analysis stood in for)
-    const sh=await p.evaluate(()=>{const g=window.shopGate,a=window.analyzeWardrobe;window.shopGate=()=>[];window.analyzeWardrobe=()=>{};openShop();const r={inside:document.querySelector('#shop-sheet').contains(document.activeElement),inert:document.querySelector('main').inert};
-      closeShop();r.after=document.querySelector('main').inert;window.shopGate=g;window.analyzeWardrobe=a;return r});
+    // What to buy (enough pieces for its gate, for this one step; a check "already running", so none starts)
+    const sh=await p.evaluate(()=>{const keep=items,I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',...x});items=[...keep,I('sx1','suit','grey'),I('sx2','shirt','white'),I('sx3','shirt','pink'),I('sx4','shirt','cream'),I('sx5','tie','green'),I('sx6','tie','gold'),I('sx7','shoes','brown',{leather:'calf'})];shopBusy={i:-1,n:1,label:'',t0:Date.now()};openShop();const r={inside:document.querySelector('#shop-sheet').contains(document.activeElement),inert:document.querySelector('main').inert};
+      closeShop();r.after=document.querySelector('main').inert;items=keep;shopBusy=null;return r});
     ok(sh.inside&&sh.inert&&!sh.after,`What to buy: the focus moves in, the page behind is inert while it is up (${JSON.stringify(sh)})`);
     // the item sheet: a sync doesn't wipe what is being typed
     const iv=await p.evaluate(async()=>{show('wardrobe');openItem(items[2].id);await new Promise(r=>setTimeout(r,50));const f=document.querySelector('#item-view textarea,#item-view input[type=text]');if(!f)return {none:true};

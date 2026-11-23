@@ -221,10 +221,10 @@ const backzoom=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(await app()===url&&await p.evaluate(()=>!picker&&!document.querySelector('#pick-sheet.on')),'Back closes the picker, in the app');
     await p.evaluate(()=>openPicker('shirt'));await settle(p,300);await p.evaluate(()=>closePicker());await settle(p,300);
     ok(await stateApp()==='','closing the picker with × takes its entry away');
-    await p.evaluate(()=>{show('stats');window.shopGate=()=>[];window.analyzeWardrobe=()=>{};openShop()});await settle(p,300);
+    await p.evaluate(()=>{show('stats');shopBusy={i:-1,n:1,label:'',t0:Date.now()};openShop()});await settle(p,300);   // (a check "already running", so none starts)
     ok(await stateApp()==='shop','What to buy has a Back entry');
     await back();
-    ok(await app()===url&&await p.evaluate(()=>!shopOpen),'Back closes What to buy, in the app');
+    ok(await app()===url&&await p.evaluate(()=>!shopOpen),'Back closes What to buy, in the app');await p.evaluate(()=>{shopBusy=null});
     // ---- text size: rem, following --tscale
     await p.evaluate(()=>show('today'));await settle(p,200);
     const fsz=()=>p.evaluate(()=>[getComputedStyle(document.body).fontSize,getComputedStyle(document.querySelector('nav button')).fontSize,getComputedStyle(document.querySelector('header h1')).fontSize]);

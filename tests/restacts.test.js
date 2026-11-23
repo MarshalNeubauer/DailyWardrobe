@@ -161,7 +161,7 @@ async function linked(eng,browser,{ok,url,settle}){
   await ev(()=>{acct={...acct,me:{id:'own',role:'owner',name:'Owner'}};renderAccountUI()});
 
   // About: the delete card (the deletion itself is replaced: it would empty this test's app)
-  await ev(()=>{__spy('deleteMyData');openSettings('about')});await settle(p,600);
+  await ev(()=>{__via('deleteMyData',{delAllTap:()=>[true],delDeviceTap:()=>[false]});openSettings('about')});await settle(p,600);   // (at the two handlers: about.js is a module; about.test.js and shellfix.test.js tap them for real)
   await tap('#del-open',400);const a1=await ev(()=>({up:!document.querySelector('#del-confirm').hidden,btns:[...document.querySelectorAll('#del-confirm button')].map(b=>b.id)}));
   await tap('#del-cancel',300);const a2=await ev(()=>document.querySelector('#del-confirm').hidden);
   await tap('#del-open',400);await tap('#del-all',300);const a3=await calls();
