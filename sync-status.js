@@ -67,3 +67,7 @@ const backupFullMsg=pr=>{let at='';try{at=new Date(nextUtcDay()).toLocaleTimeStr
 function backedUpWords(){const p=+localStorage.getItem('sync_pause')||0;if(p<=nowMs())return 'your wardrobe is backed up';
   let at='';try{at=new Date(p).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
   return `your wardrobe is backed up, though not right now: backups are paused until ${at||'tomorrow'}, and your newest changes are only on this phone until then`}
+/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): sync.js and the screens that say how the backup stands (app, photos, settings, snapshots, backupfile, account, about,
+   ui, setup), classic scripts, call these; the clock, rollback, backup-storage, server-limits and addcards tests too. */
+Object.assign(globalThis,{setSyncStatus,showSyncStatus,ENDED,inviteEnded,endedAnswer,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords});
+export {setSyncStatus,showSyncStatus,ENDED,inviteEnded,endedAnswer,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords};
