@@ -24,7 +24,7 @@ self.addEventListener('fetch',e=>{
     const cache=await caches.open(CACHE);
     const hit=await cache.match(req,{ignoreSearch:true});
     if(hit)return hit;
-    // a deep link (???/app/some/path) is answered with index.html offline, whose styles.css and scripts then resolve under that path:
+    // a deep link (…/app/some/path) is answered with index.html offline, whose styles.css and scripts then resolve under that path:
     // one of this version's files asked for under another folder is that file (the page came up unstyled, audit 2026-11-13); matched by
     // the end of the path, so the files in sub-folders (mq/, watch/) are found too (CR-5-05: offline, the figure's poses didn't load)
     const name=ASSETS.find(a=>a!=='./'&&url.pathname.endsWith('/'+a));
@@ -49,7 +49,7 @@ const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${
 async function reminderNote(){let line='',care='';const k=dayKey(new Date());
   try{const c=await caches.open('dw-keep-remind'),r=await c.match('remind.json'),q=await c.match('care.json');if(r)line=(await r.json())[k]||'';if(q)care=(await q.json())[k]||''}catch{}
   if(care&&!line)return self.registration.showNotification('Due for cleaning',{body:care,icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'});
-  return self.registration.showNotification('Today???s outfit',{body:(line||'Open the app to see what to wear today.')+(care?'\n'+care:''),icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'})}
+  return self.registration.showNotification('Today’s outfit',{body:(line||'Open the app to see what to wear today.')+(care?'\n'+care:''),icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'})}
 self.addEventListener('push',e=>{e.waitUntil(reminderNote())});
 self.addEventListener('notificationclick',e=>{e.notification.close();
   e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{const c=cs.find(x=>'focus' in x);return c?c.focus():self.clients.openWindow('./')}))});

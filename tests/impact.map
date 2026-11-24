@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	88c1a60c9cb61de832b4
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -679,6 +678,7 @@ addcards.test.js	tagging.js	<loaded>	aiFields	closeTagImg	confTxt	readAbort	read
 addcards.test.js	tests/fixedplan.js	<any>
 addcards.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 addcards.test.js	tests/fixtures/suit-pinstripe.jpg	<loaded>
+addcards.test.js	tests/webkit.js	<any>
 addcards.test.js	theme.js	<loaded>	applyTheme
 addcards.test.js	toast.js	<loaded>	toast	undoHere
 addcards.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -1098,7 +1098,7 @@ asmahead.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@
 asmahead.test.js	asm-pocket.js	<any>	<loaded>	asmPocketJob
 asmahead.test.js	asm-watch.js	<any>	<loaded>	asmWatchJob	asmWatchPaints
 asmahead.test.js	asm-worker.js	<any>
-asmahead.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmBlobUp	asmBuild	asmBuildAfter	asmCalibKey	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmIdleArm	asmImg	asmImgOf	asmJob	asmJpeg	asmKeepOut	asmKey	asmLab	asmListGet	asmLoad	asmLookId	asmMasterKey	asmMicroKind	asmMotif	asmOffPage	asmOutKey	asmPhoto	asmPost	asmPump	asmRun	asmShirtAngles	asmShow	asmShown	asmStale	asmStamp	asmSuitBands	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmVestKey	asmVestTag	asmWants	asmWeave	asmWorker	asmWorkerDown	asmZoneImgs	asmZoneKey
+asmahead.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmBlobUp	asmBuild	asmBuildAfter	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmIdleArm	asmImg	asmImgOf	asmJob	asmJpeg	asmKeepOut	asmKey	asmLab	asmListGet	asmLoad	asmLookId	asmMicroKind	asmMotif	asmOffPage	asmOutKey	asmPhoto	asmPost	asmPump	asmRun	asmShirtAngles	asmShow	asmShown	asmStale	asmStamp	asmSuitBands	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmWants	asmWeave	asmWorker	asmWorkerDown
 asmahead.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 asmahead.test.js	backupfile.js	<loaded>
 asmahead.test.js	boxfold.js	<loaded>
@@ -1187,131 +1187,6 @@ asmahead.test.js	watch/shirt-tie.png	<loaded>
 asmahead.test.js	watch/suit.png	<loaded>
 asmahead.test.js	watch/vest.png	<loaded>
 asmahead.test.js	weather.js	<loaded>	loadWeather
-asmatlas.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
-asmatlas.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
-asmatlas.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
-asmatlas.test.js	add-card.js	<loaded>
-asmatlas.test.js	add-keep.js	<loaded>	addKeep	addRestore
-asmatlas.test.js	add-more.js	<loaded>	checkArrivals
-asmatlas.test.js	add-paste.js	<loaded>
-asmatlas.test.js	add-save.js	<loaded>
-asmatlas.test.js	add-sheet.js	<loaded>	get
-asmatlas.test.js	add.js	<loaded>
-asmatlas.test.js	analysis.js	<loaded>
-asmatlas.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
-asmatlas.test.js	apple-touch-icon.png	<loaded>
-asmatlas.test.js	asm-color.js	<loaded>	asmCmKey	asmCmKind	asmCmPref
-asmatlas.test.js	asm-gl.js	<loaded>	asmGlNote	asmGlOnPage
-asmatlas.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
-asmatlas.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
-asmatlas.test.js	asm-pocket.js	<loaded>
-asmatlas.test.js	asm-watch.js	<loaded>
-asmatlas.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBlobUp	asmCalibKey	asmCmHeld	asmCmSeen	asmCmUse	asmData	asmDrawn	asmImg	asmJob	asmKey	asmLab	asmLoad	asmMasterKey	asmMotif	asmPhoto	asmPump	asmRun	asmShirtAngles	asmSuitBands	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmVestKey	asmVestTag	asmWeave	asmWorker	asmZoneImgs	asmZoneKey
-asmatlas.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
-asmatlas.test.js	backupfile.js	<loaded>
-asmatlas.test.js	boxfold.js	<loaded>
-asmatlas.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
-asmatlas.test.js	care.js	<loaded>
-asmatlas.test.js	checklist.js	<loaded>
-asmatlas.test.js	colpick.js	<loaded>
-asmatlas.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	casualTop	colOf	dayClimate	di	get	hexRgb	isWorkday	isoKey	key	keySettings	keySplit	lum	metalWord	mix	occOf	offDays	offName	patBase	primaryCol	rgbHex	rgbLab	setWardrobe	subHashes	takeSettings	thirdOf	todayDate
-asmatlas.test.js	cost.js	<loaded>
-asmatlas.test.js	daysoff.js	<loaded>	refreshHolidays
-asmatlas.test.js	detect.js	<loaded>	@	settSig	texPat	usableSett
-asmatlas.test.js	draw.js	<loaded>	fabricDef
-asmatlas.test.js	dress.js	<loaded>	migrateVests
-asmatlas.test.js	fav.js	<loaded>
-asmatlas.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
-asmatlas.test.js	icon-192.png	<loaded>
-asmatlas.test.js	icon-512.png	<loaded>
-asmatlas.test.js	index.html	<loaded>
-asmatlas.test.js	item-photo.js	<loaded>	smallPhotos
-asmatlas.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
-asmatlas.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
-asmatlas.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
-asmatlas.test.js	locale.js	<loaded>	appLocale
-asmatlas.test.js	locks.js	<loaded>
-asmatlas.test.js	look.js	<loaded>
-asmatlas.test.js	manifest.webmanifest	<loaded>
-asmatlas.test.js	mannequin.js	<loaded>	@{}
-asmatlas.test.js	measure.js	<loaded>
-asmatlas.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
-asmatlas.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
-asmatlas.test.js	missed.js	<loaded>
-asmatlas.test.js	month.js	<loaded>	dayOnly	nextWorkday
-asmatlas.test.js	mq/shirt-open.js	<any>	<loaded>
-asmatlas.test.js	mq/shirt-tie.js	<any>	<loaded>
-asmatlas.test.js	mq/suit-open.js	<any>	<loaded>
-asmatlas.test.js	mq/suit.js	<any>	<loaded>
-asmatlas.test.js	mq/vest.js	<any>	<loaded>
-asmatlas.test.js	own-lists.js	<loaded>
-asmatlas.test.js	pack.js	<loaded>	packShow
-asmatlas.test.js	pattern-read.js	<loaded>
-asmatlas.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	fnv64	get	loadRenders	picsDrawn	workerBase
-asmatlas.test.js	pickscore.js	<loaded>
-asmatlas.test.js	planner.js	<loaded>
-asmatlas.test.js	remind.js	<loaded>	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
-asmatlas.test.js	safety.js	<loaded>	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
-asmatlas.test.js	scorecard.js	<loaded>
-asmatlas.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setWanted	settingsOpen	settingsPart
-asmatlas.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
-asmatlas.test.js	sheet-swipe.js	<loaded>
-asmatlas.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
-asmatlas.test.js	snapshots.js	<loaded>
-asmatlas.test.js	srgb.js	<loaded>
-asmatlas.test.js	start.js	<loaded>	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp
-asmatlas.test.js	stats.js	<loaded>	@afterScripts
-asmatlas.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	.vh	.wxc.wxlk	.wxl	:root	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
-asmatlas.test.js	sync-photos.js	<loaded>
-asmatlas.test.js	sync-status.js	<loaded>	setSyncStatus	showSyncStatus	syncPaused	syncWaiting
-asmatlas.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	syncNeedsPull	syncNow	syncOnce	syncUrl
-asmatlas.test.js	tag-request.js	<loaded>
-asmatlas.test.js	tagging.js	<loaded>
-asmatlas.test.js	tests/fixedplan.js	<any>
-asmatlas.test.js	tests/fixtures/asm-master.jpg	<any>
-asmatlas.test.js	tests/fixtures/asm-shirt-black.jpg	<any>
-asmatlas.test.js	tests/fixtures/asm-vestmaster.jpg	<any>
-asmatlas.test.js	tests/fixtures/asm-zone-jacket.png	<any>
-asmatlas.test.js	tests/fixtures/asm-zone-shirt.png	<any>
-asmatlas.test.js	tests/fixtures/asm-zone-tie.png	<any>
-asmatlas.test.js	tests/fixtures/asm-zone-vest.png	<any>
-asmatlas.test.js	tests/fixtures/asm-zone-watch.png	<any>
-asmatlas.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
-asmatlas.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
-asmatlas.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
-asmatlas.test.js	tests/fixtures/cm/suit/mask-shirt.png	<any>
-asmatlas.test.js	tests/fixtures/cm/suit/mask-skin.png	<any>
-asmatlas.test.js	tests/fixtures/cm/suit/mask-tie.png	<any>
-asmatlas.test.js	tests/fixtures/cm/suit/mask-watch.png	<any>
-asmatlas.test.js	tests/fixtures/cm/suit/master.jpg	<any>
-asmatlas.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
-asmatlas.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
-asmatlas.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
-asmatlas.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-asmatlas.test.js	tests/safeport.js	<any>
-asmatlas.test.js	theme.js	<loaded>	applyTheme
-asmatlas.test.js	toast.js	<loaded>
-asmatlas.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
-asmatlas.test.js	today-photofold.js	<loaded>
-asmatlas.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
-asmatlas.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
-asmatlas.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
-asmatlas.test.js	tools/asm-atlas.js	<any>
-asmatlas.test.js	tools/atlas-measure.js	<any>
-asmatlas.test.js	tools/atlas.js	<any>
-asmatlas.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
-asmatlas.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-asmatlas.test.js	watch/leather.jpg	<loaded>
-asmatlas.test.js	watch/shirt-open.png	<loaded>
-asmatlas.test.js	watch/shirt-tie.png	<loaded>
-asmatlas.test.js	watch/suit.png	<loaded>
-asmatlas.test.js	watch/vest.png	<loaded>
-asmatlas.test.js	weather.js	<loaded>	loadWeather
-asmatlas.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	corsFor	fetch	getRender	handleBlob	handleInvites	handleMe	handleSync	isParted	isPv	kvMeta	orNull	ownerOnly	putRender	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendEach	storedResponse	storedVersion	syncLiteGet	syncVersion	usedOf	utcDay	whoIs
-asmatlas.test.js	worker/backup.js	<loaded>	isParted	kvMeta	storedResponse	storedVersion	syncLiteGet	syncVersion
-asmatlas.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	usedOf	utcDay	whoIs
-asmatlas.test.js	worker/photostore.js	<loaded>	handleSync	isPv
-asmatlas.test.js	worker/records.js	<loaded>	getBlob	getRender	handleBlob	renderId
 asmcloth.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmcloth.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
 asmcloth.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -1427,7 +1302,7 @@ asmcode.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{cons
 asmcode.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpSig
 asmcode.test.js	asm-pocket.js	<loaded>
 asmcode.test.js	asm-watch.js	<loaded>	asmWatchPaints
-asmcode.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmCmHeld	asmCmUse	asmDrawn	asmKey	asmLoad	asmMicroKind	asmOutKey	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	asmVestKey	asmVestTag
+asmcode.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmCmHeld	asmCmUse	asmDrawn	asmKey	asmLoad	asmMicroKind	asmOutKey	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync
 asmcode.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 asmcode.test.js	backupfile.js	<loaded>
 asmcode.test.js	boxfold.js	<loaded>
@@ -1524,7 +1399,7 @@ asmcolor.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@
 asmcolor.test.js	asm-pocket.js	<any>	<loaded>	asmPocketJob
 asmcolor.test.js	asm-watch.js	<any>	<loaded>	asmWatchJob	asmWatchPaints
 asmcolor.test.js	asm-worker.js	<any>
-asmcolor.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmBodyFlow	asmCalibKey	asmClothOf	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmEnsure	asmFlowAt	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmIdleArm	asmImg	asmImgOf	asmJob	asmJpeg	asmKeepOut	asmKey	asmLinen	asmListGet	asmLoad	asmLookId	asmMasterKey	asmMicroKind	asmOffPage	asmOutKey	asmPhoto	asmPolyAt	asmPost	asmPreSigOk	asmPump	asmRun	asmShown	asmSleeveFlow	asmSleeveSegs	asmStale	asmStamp	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTq	asmTqn	asmTqr	asmTrim	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmVestKey	asmVestTag	asmWants	asmWorker	renderAsmUI
+asmcolor.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmBodyFlow	asmClothOf	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmEnsure	asmFlowAt	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmIdleArm	asmImg	asmImgOf	asmJob	asmJpeg	asmKeepOut	asmKey	asmLinen	asmListGet	asmLoad	asmLookId	asmMicroKind	asmOffPage	asmOutKey	asmPhoto	asmPolyAt	asmPost	asmPreSigOk	asmPump	asmRun	asmShown	asmSleeveFlow	asmSleeveSegs	asmStale	asmStamp	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTq	asmTqn	asmTqr	asmTrim	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmWants	asmWorker	renderAsmUI
 asmcolor.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 asmcolor.test.js	backupfile.js	<loaded>
 asmcolor.test.js	boxfold.js	<loaded>
@@ -1840,7 +1715,7 @@ asmgl.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{co
 asmgl.test.js	asm-pocket.js	<any>	<loaded>
 asmgl.test.js	asm-watch.js	<any>	<loaded>	asmWatchPaints
 asmgl.test.js	asm-worker.js	<any>
-asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBarDraw	asmBarRgb	asmBlobUp	asmBodyFlow	asmCalibKey	asmClothOf	asmData	asmDrawn	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMasterKey	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexMm	asmTieFor	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmVestKey	asmVestTag	asmWeave
+asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBarDraw	asmBarRgb	asmBlobUp	asmBodyFlow	asmClothOf	asmData	asmDrawn	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexMm	asmTieFor	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmWeave
 asmgl.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 asmgl.test.js	backupfile.js	<loaded>
 asmgl.test.js	boxfold.js	<loaded>
@@ -2062,7 +1937,7 @@ asmroute.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{con
 asmroute.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 asmroute.test.js	asm-pocket.js	<loaded>
 asmroute.test.js	asm-watch.js	<loaded>
-asmroute.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmDrawn	asmKey	asmLoad	asmMicroGrid	asmMicroKind	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag
+asmroute.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmDrawn	asmKey	asmLoad	asmMicroGrid	asmMicroKind	asmSuitBands	asmSuitWeave	asmSync
 asmroute.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 asmroute.test.js	backupfile.js	<loaded>
 asmroute.test.js	boxfold.js	<loaded>
@@ -2286,7 +2161,7 @@ asmstuck.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@
 asmstuck.test.js	asm-pocket.js	<any>	<loaded>
 asmstuck.test.js	asm-watch.js	<any>	<loaded>
 asmstuck.test.js	asm-worker.js	<any>
-asmstuck.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmCalibKey	asmDrawn	asmIdleArm	asmKey	asmLoad	asmPost	asmPump	asmRun	asmStuck	asmSync	asmVestKey	asmVestTag	asmWorker
+asmstuck.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmDrawn	asmIdleArm	asmKey	asmLoad	asmPost	asmPump	asmRun	asmStuck	asmSync	asmWorker
 asmstuck.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 asmstuck.test.js	backupfile.js	<loaded>
 asmstuck.test.js	boxfold.js	<loaded>
@@ -2672,7 +2547,7 @@ assemble.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{con
 assemble.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpSig
 assemble.test.js	asm-pocket.js	<loaded>
 assemble.test.js	asm-watch.js	<loaded>	asmWatchPaints
-assemble.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmBarDraw	asmBarRgb	asmBarSig	asmBlobUp	asmCalibKey	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmImg	asmImgOf	asmJob	asmKeepOut	asmKey	asmLab	asmLinen	asmListGet	asmLoad	asmLookId	asmMasterKey	asmMicroKind	asmMotif	asmOffPage	asmOutKey	asmPhoto	asmPreSigOk	asmPump	asmRun	asmShow	asmShown	asmStale	asmStamp	asmSuitBands	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmTwillTex	asmVestKey	asmVestTag	asmWants	asmWeave	asmWorker	asmZoneImgs	asmZoneKey	renderAsmUI
+assemble.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmBarDraw	asmBarRgb	asmBarSig	asmBlobUp	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmImg	asmImgOf	asmJob	asmKeepOut	asmKey	asmLab	asmLinen	asmListGet	asmLoad	asmLookId	asmMicroKind	asmMotif	asmOffPage	asmOutKey	asmPhoto	asmPreSigOk	asmPump	asmRun	asmShow	asmShown	asmStale	asmStamp	asmSuitBands	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmTwillTex	asmWants	asmWeave	asmWorker	renderAsmUI
 assemble.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 assemble.test.js	backupfile.js	<loaded>
 assemble.test.js	boxfold.js	<loaded>
@@ -3363,7 +3238,6 @@ bridge.test.js	tests/advicefresh.test.js	<any>
 bridge.test.js	tests/aiverdict.test.js	<any>
 bridge.test.js	tests/appsrc.js	<any>
 bridge.test.js	tests/asmahead.test.js	<any>
-bridge.test.js	tests/asmatlas.test.js	<any>
 bridge.test.js	tests/asmcloth.test.js	<any>
 bridge.test.js	tests/asmcode.test.js	<any>
 bridge.test.js	tests/asmcolor.test.js	<any>
@@ -3691,10 +3565,7 @@ bridge.test.js	today-photofold.js	<any>
 bridge.test.js	today-picture.js	<any>
 bridge.test.js	today-plan.js	<any>
 bridge.test.js	today.js	<any>
-bridge.test.js	tools/asm-atlas.js	<any>
 bridge.test.js	tools/asm-cm-upload.js	<any>
-bridge.test.js	tools/atlas-measure.js	<any>
-bridge.test.js	tools/atlas.js	<any>
 bridge.test.js	tools/cloud-tests.js	<any>
 bridge.test.js	tools/cssdiff.js	<any>
 bridge.test.js	tools/describe-eval.js	<any>
@@ -4727,7 +4598,7 @@ cmhandedge.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{c
 cmhandedge.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 cmhandedge.test.js	asm-pocket.js	<loaded>
 cmhandedge.test.js	asm-watch.js	<loaded>
-cmhandedge.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmCalibKey	asmData	asmDrawn	asmImg	asmJpeg	asmKey	asmLoad	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSync	asmTubePart	asmTubeRaw	asmTubeTabs	asmVestKey	asmVestTag
+cmhandedge.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmBlobUp	asmData	asmDrawn	asmImg	asmJpeg	asmKey	asmLoad	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSync	asmTubePart	asmTubeRaw	asmTubeTabs
 cmhandedge.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 cmhandedge.test.js	backupfile.js	<loaded>
 cmhandedge.test.js	boxfold.js	<loaded>
@@ -7570,7 +7441,7 @@ geomaps.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{cons
 geomaps.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 geomaps.test.js	asm-pocket.js	<loaded>
 geomaps.test.js	asm-watch.js	<loaded>
-geomaps.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmData	asmDrawn	asmImg	asmKey	asmLoad	asmSync	asmVestKey	asmVestTag
+geomaps.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmData	asmDrawn	asmImg	asmKey	asmLoad	asmSync
 geomaps.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 geomaps.test.js	backupfile.js	<loaded>
 geomaps.test.js	boxfold.js	<loaded>
@@ -7849,7 +7720,7 @@ hbshirt.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{cons
 hbshirt.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 hbshirt.test.js	asm-pocket.js	<loaded>
 hbshirt.test.js	asm-watch.js	<loaded>
-hbshirt.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmDrawn	asmImg	asmKey	asmLoad	asmMotif	asmSync	asmTexMm	asmVestKey	asmVestTag	asmWeave
+hbshirt.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmDrawn	asmImg	asmKey	asmLoad	asmMotif	asmSync	asmTexMm	asmWeave
 hbshirt.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 hbshirt.test.js	backupfile.js	<loaded>
 hbshirt.test.js	boxfold.js	<loaded>
@@ -7945,7 +7816,7 @@ hbswatch.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{con
 hbswatch.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 hbswatch.test.js	asm-pocket.js	<loaded>
 hbswatch.test.js	asm-watch.js	<loaded>
-hbswatch.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmCalibKey	asmDrawn	asmImg	asmKey	asmLoad	asmMotif	asmSync	asmVestKey	asmVestTag	asmWeave
+hbswatch.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmDrawn	asmImg	asmKey	asmLoad	asmMotif	asmSync	asmWeave
 hbswatch.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 hbswatch.test.js	backupfile.js	<loaded>
 hbswatch.test.js	boxfold.js	<loaded>
@@ -8421,7 +8292,7 @@ impact.test.js	today-photofold.js	<loaded>
 impact.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
 impact.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
 impact.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
-impact.test.js	tools/atlas.js	<any>
+impact.test.js	tools/upload-budget.js	<any>
 impact.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	inviteOver	isConnected	layerInert	layerUp
 impact.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	itemFieldNow	matMigrate	sockToeMigrate	wardBack	wardBar	wardCount	wardFlt	wardFlush	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
 impact.test.js	watch/leather.jpg	<loaded>
@@ -9636,7 +9507,7 @@ masterspeed.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw
 masterspeed.test.js	asm-pocket.js	<any>	<loaded>
 masterspeed.test.js	asm-watch.js	<any>	<loaded>
 masterspeed.test.js	asm-worker.js	<any>
-masterspeed.test.js	assemble.js	<any>	<loaded>	@	@defineddocument.addEventListenervisibilitychange	ASM_OUT_RANGE	asmBlobUp	asmBodyFlow	asmCalibKey	asmCmAny	asmCmHeld	asmCmSeen	asmCmUse	asmData	asmDrawn	asmGet	asmGetOnce	asmIdleArm	asmImg	asmKey	asmListGet	asmLoad	asmMasterKey	asmOffPage	asmPost	asmPump	asmRun	asmSleeveFlow	asmSleeveSegs	asmSync	asmTubePart	asmTubeRaw	asmTubeTabs	asmVestKey	asmVestTag	asmWants	asmWorker	renderAsmUI
+masterspeed.test.js	assemble.js	<any>	<loaded>	@	@defineddocument.addEventListenervisibilitychange	ASM_OUT_RANGE	asmBlobUp	asmBodyFlow	asmCmAny	asmCmHeld	asmCmSeen	asmCmUse	asmData	asmDrawn	asmGet	asmGetOnce	asmIdleArm	asmImg	asmKey	asmListGet	asmLoad	asmOffPage	asmPost	asmPump	asmRun	asmSleeveFlow	asmSleeveSegs	asmSync	asmTubePart	asmTubeRaw	asmTubeTabs	asmWants	asmWorker	renderAsmUI
 masterspeed.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 masterspeed.test.js	backupfile.js	<loaded>
 masterspeed.test.js	boxfold.js	<loaded>
@@ -10133,7 +10004,6 @@ modtools.test.js	tests/advicefresh.test.js	<any>
 modtools.test.js	tests/aiverdict.test.js	<any>
 modtools.test.js	tests/appsrc.js	<any>
 modtools.test.js	tests/asmahead.test.js	<any>
-modtools.test.js	tests/asmatlas.test.js	<any>
 modtools.test.js	tests/asmcloth.test.js	<any>
 modtools.test.js	tests/asmcode.test.js	<any>
 modtools.test.js	tests/asmcolor.test.js	<any>
@@ -10468,10 +10338,7 @@ modtools.test.js	today-photofold.js	<any>
 modtools.test.js	today-picture.js	<any>
 modtools.test.js	today-plan.js	<any>
 modtools.test.js	today.js	<any>
-modtools.test.js	tools/asm-atlas.js	<any>
 modtools.test.js	tools/asm-cm-upload.js	<any>
-modtools.test.js	tools/atlas-measure.js	<any>
-modtools.test.js	tools/atlas.js	<any>
 modtools.test.js	tools/cloud-tests.js	<any>
 modtools.test.js	tools/cssdiff.js	<any>
 modtools.test.js	tools/describe-eval.js	<any>
@@ -14720,7 +14587,6 @@ safeport.test.js	tests/advicefresh.test.js	<any>
 safeport.test.js	tests/aiverdict.test.js	<any>
 safeport.test.js	tests/appsrc.js	<any>
 safeport.test.js	tests/asmahead.test.js	<any>
-safeport.test.js	tests/asmatlas.test.js	<any>
 safeport.test.js	tests/asmcloth.test.js	<any>
 safeport.test.js	tests/asmcode.test.js	<any>
 safeport.test.js	tests/asmcolor.test.js	<any>
@@ -15048,10 +14914,7 @@ safeport.test.js	today-photofold.js	<loaded>
 safeport.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
 safeport.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
 safeport.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
-safeport.test.js	tools/asm-atlas.js	<any>
 safeport.test.js	tools/asm-cm-upload.js	<any>
-safeport.test.js	tools/atlas-measure.js	<any>
-safeport.test.js	tools/atlas.js	<any>
 safeport.test.js	tools/cloud-tests.js	<any>
 safeport.test.js	tools/cssdiff.js	<any>
 safeport.test.js	tools/describe-eval.js	<any>
@@ -16489,7 +16352,6 @@ shard.test.js	tests/addsheet.test.js	<any>
 shard.test.js	tests/advicefresh.test.js	<any>
 shard.test.js	tests/aiverdict.test.js	<any>
 shard.test.js	tests/asmahead.test.js	<any>
-shard.test.js	tests/asmatlas.test.js	<any>
 shard.test.js	tests/asmcloth.test.js	<any>
 shard.test.js	tests/asmcode.test.js	<any>
 shard.test.js	tests/asmcolor.test.js	<any>
@@ -19087,7 +18949,7 @@ takeoff.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{cons
 takeoff.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 takeoff.test.js	asm-pocket.js	<loaded>
 takeoff.test.js	asm-watch.js	<loaded>
-takeoff.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	ASM_OUT_RANGE	asmBlobUp	asmCalibKey	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmDrawn	asmEnsure	asmFor	asmFullWins	asmGet	asmGetOnce	asmIdleArm	asmKey	asmListGet	asmLoad	asmMasterKey	asmMicroKind	asmShown	asmStale	asmSuitBands	asmSuitWeave	asmSync	asmVestKey	asmVestTag	asmWants
+takeoff.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	ASM_OUT_RANGE	asmBlobUp	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmDrawn	asmEnsure	asmFor	asmFullWins	asmGet	asmGetOnce	asmIdleArm	asmKey	asmListGet	asmLoad	asmMicroKind	asmShown	asmStale	asmSuitBands	asmSuitWeave	asmSync	asmWants
 takeoff.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 takeoff.test.js	backupfile.js	<loaded>
 takeoff.test.js	boxfold.js	<loaded>
