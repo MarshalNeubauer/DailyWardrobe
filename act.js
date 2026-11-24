@@ -62,6 +62,10 @@ function actListen(){if(actOn)return;actOn=true;
     document.addEventListener(t,ev=>actFire(ev,a,true,false),true);
     document.addEventListener(t,ev=>actFire(ev,a,false,false))}
   for(const t of ACT_OWN){const a=actAttr(t);document.addEventListener(t,ev=>actFire(ev,a,false,true),true)}}
+/* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): every file registers its handlers through acts as a global, so it is
+   handed over before this file's first top-level call */
+Object.assign(globalThis,{ACTS,ACT_FIRST,acts,actsFirst,actTaps});
+export {ACTS,ACT_FIRST,acts,actsFirst,actTaps};
 actListen();
 /* A file field's picker stays open for as long as the person takes, and the page may redraw the field away meanwhile (a card read, a
    sync): the file then arrives on a field that is no longer in the document, and its change never reaches document's listener (an

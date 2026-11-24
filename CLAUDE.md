@@ -929,6 +929,8 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `app.js`
 
+- an ES module since 2026-11-24, its code unchanged, importing nothing; its bridge is its last lines (nothing above can throw at load: the database's failures are its promises'); `flt`, `queue`, `view`, `sel`, `dbCur`, `dbConn`, `dbWiping`, `connReady`, `aiError` and `aiModel` have setters, since other files and tests assign them
+- `ask` is handed over with `Object.assign`, so a test no longer replaces it: tests/addcards, aiverdict and measure run the real `ask` and answer its `POST` in `window.fetch`
 - `afterDom(f)` goes by its own flag (`domDone`, set by a `DOMContentLoaded` listener added when app.js runs), not `document.readyState` (2026-11-23): while deferred scripts run readyState is already `'interactive'`, so reading it would run `f` before the later scripts; `afterScripts` (the `load` event, `readyState==='complete'`) is unchanged
 - `ask()` sends the code in the `x-app-token` header only (no body `appToken`) and takes the worker's answer as it is (the old Workers AI text shape with code fences is gone: the worker parses it); test stubs of `POST /` answer the fields at the top, not `{response: …}` (code review CR-2-14)
 - the busy pill says "Claude is reading the color and texture…" for `/describe` with `what:'both'` (`busyLabelFor`, code review CR-2-09)
@@ -991,6 +993,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `act.js`
 
+- an ES module since 2026-11-24, its code unchanged, importing nothing; its bridge (`ACTS`, `ACT_FIRST`, `acts`, `actsFirst`, `actTaps`) is above `actListen()`, its first top-level call; a tap during load is still passed over until `DOMContentLoaded` (`actsIn`)
 - a control tapped before its file has registered its handler (the scripts are deferred: the page takes taps while they load) is passed over, not a page error (`actsIn`, false until `DOMContentLoaded`; 2026-11-23); after that a name nothing registered is a page error as before
 - such an early tap is dropped: the gear before settings.js, the theme button before theme.js and a tab before start.js do nothing; a tab once start.js has run is kept for after start-up (start.js `pageWant`); today.js `todayTabTap` keeps a guard on `show` (start.js, later) for the Today tab between the two
 - the gear tapped before start-up has drawn Today is only noted (settings.js `setOpenTap`, `setWant`; start.js `pagesOn`) and `showWanted` opens Settings once Today is up (`setWanted()`), after the tab asked for; opened at once, Settings showed the defaults and a change made there (a workday toggled) was saved over the stored settings: laundry days, dark shirts and the rest went back to their defaults (found 2026-11-23, on main too), and Back there threw (`backOn('set')` is start.js's)
@@ -1503,6 +1506,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 
 ### `start.js`
 
+- an ES module since 2026-11-24, its code unchanged, importing nothing; its bridge is above `backOn('sub', …)`, its first top-level call that can throw (back.js not loaded); index.html's last script reads `startUp` from it as a global, and the head's catcher checks `window.startUp`; `pagesOn` is a getter; `tests/actsindex.test.js` watches `show`, `openAdd` and `subBack` at their handlers (`VIA`: `tabTap` with the control's data-page, `wardAddTap`, `addBackTap`)
 - core.js … itemsheet.js lost 11 guards that are always true (C2-10, 2026-11-22): three on an earlier script's name (detect.js `isOcp` and `CUSTOM_PAT`, itemsheet.js `isFavItem`) and eight on a later script's name that nothing loaded before that script can reach (app.js `toast` twice and `settingsOpen`, add.js `isConnected` in `refineAgain` / `patternAgain`, item-photo.js `remakeLeft` / `remakeSpend`, item-view.js `layerOpen`)
 - that range keeps 61 guards on later scripts' names in app.js … itemsheet.js: a tap, a file picked or the start-up sync can reach them while later scripts are still loading (`show`, `renderAdd`, `renderItem`, `renderWardrobe`, `put`, `ask`, `save`); and those of core.js, planner.js and analysis.js (also loaded by analysis-worker.js and by Node tests on their own), draw.js and mannequin.js (the painter's) and the browser features (`ResizeObserver`, `AbortController`, `HTMLCanvasElement`, `reportError`, `window`)
 - `show(t)` before start-up has drawn Today only notes the page (`pagesOn` false, `pageWant`; 2026-11-22): a tab tapped while later scripts were still loading threw (`renderWardrobe` needs wardrobe.js `wardKeep`, Insights stats.js `renderStats`) and start-up then went to Today whatever was tapped
