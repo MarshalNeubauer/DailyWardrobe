@@ -52,7 +52,12 @@ async function asmOcpPhotoTex(){const k=asmOcpClothKey(),t0=asmOcpClothT();if(!t
    one, on any master */
 async function asmOcpJob(j,o,k){if(!j||!j.cloth)return j;
   if(ASM_OCP_KINDS[k]){delete j.watch;delete j.pocket;const D=asmOcpDecal(o.top);if(D)j.ocpDecal=D}
-  const tr=j.cloth.trousers;if(tr&&tr.suit&&o.bot&&typeof isOcp==='function'&&isOcp(o.bot)){const T=(await asmOcpPhotoTex())||asmOcpTex(o.bot);if(T)j.cloth={...j.cloth,trousers:{...tr,suit:T}}}
+  const tr=j.cloth.trousers;if(tr&&tr.suit&&o.bot&&typeof isOcp==='function'&&isOcp(o.bot)){const own=await asmOcpPhotoTex(),ck=asmOcpClothKey();
+    // (2026-11-24, the code review R8 N1) the manifest lists his cloth (the key says 'oc:', asmOcpSig) but it isn't here and the worker
+    // hasn't answered 404 (no connection, a 5xx, the day's limits: asmGetOnce asks again after ASM_RETRY_MS): no job, so no picture in
+    // the made-up cloth is kept under his cloth's key; the look is painted at a later try. Only a 404 (asmTried) falls back
+    if(!own&&asmOcpClothT()&&!renders[ck]&&!asmTried.has(ck))return null;
+    const T=own||asmOcpTex(o.bot);if(T)j.cloth={...j.cloth,trousers:{...tr,suit:T}}}
   return j}
 /* ---- the rank (2026-11-18, the owner: per item; 2026-11-20 round 2: "just take the major rank from the second photo") ----
    The master's chest tab is his own Major tab, cut from his second photo (build_photo.py: the photo's Captain bars cloned out, the real
