@@ -1339,6 +1339,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Today's short-rest warning (today.js `restWarn`, a jacket worn under `COOL` days ago) says "Add more suits/blazers" only when fewer than `COOL` of that kind are in rotation that day (not paused, not at the cleaner); on a day the owner chose it (a pick, a correction) it says "You wore this suit N days ago too."; otherwise nothing (W2-17-06: "Add more suits" with three owned)
 - the score card's "… pieces were chosen for variety" line is not said on a day the owner changed (`o.overrides`: "These would score higher:"), and says "This day's" on a day other than today (W2-17-08)
 - swaps and picks keep a piece taken off pinned (`keepOff`); Reset and an occasion clear `rec.off`
+- an occasion clears the day's `kind` too (`setOccasion`, 2026-11-24, the review's R4 N-1; Calendar ✓ goes through it): a tie taken off, a moved outfit or a favorite worn pinned `kind`, which planner.js reads before the occasion, so a funeral, wedding or formal day stayed a blazer day with no Reset card; `tests/takeoff.test.js` (`offpins`)
 - swaps, picks and corrections teach the planner nothing (see "No learning from changes"); a pick or swap shows no message, a correction says "Corrected."
 - a past day can be corrected to what was really worn (`togglePastEdit`/`correctPast`: the record gets `edited`, `worn:true` and the real ids)
 
@@ -1401,6 +1402,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - dropping saves both days, re-renders and toasts what moved with Undo (`toast(text, ms, {label, fn})`); dropping off the days, or on the day it came from, changes nothing; `outfitMove` stops the day swipe and month drag while moving
 - during a move the lifted day's old drawing stays in the page hidden (`.mv-held`): removing the node a touch started on stops its touchmove/touchend; the cells' children take no pointer events (`#mpanel-in.mv-on .mc *`), since a drawing sliding to its new day caught the pointer over its old one
 - a day record's `kind` ('suit' / 'blazer') fixes the day's jacket kind in `planSim`, so a suit outfit moved onto a blazer day stays a suit day; `tests/moveoutfit.test.js`
+- pieces taken off move with the outfit (2026-11-24, the review's R4 N-2): `moveRecs` carries the day's `off` and `roll` to the target, pins the pieces that came off (`force` from the day's record, as `setOff` pinned them), takes `kind` from `o.offKind` (a suit with its jacket off is a suit day, its pants not forced) and drops `off`/`roll` from both days' old records, so the day it left is planned afresh and a target whose tie was off doesn't strip the moved tie; `tests/takeoff.test.js` (`offpins`)
 
 #### The plan and its snapshot
 
