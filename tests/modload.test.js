@@ -30,7 +30,9 @@ module.exports=async({ok,engines,url,settle})=>{
 };
 async function run(eng,browser,{ok,url,settle}){
   const T=eng+': ',origin=new URL(url).origin,wait=ms=>new Promise(r=>setTimeout(r,ms));
-  const open=async(opt={},init)=>{const ctx=await browser.newContext({viewport:{width:402,height:874},hasTouch:true,isMobile:eng==='Chromium',...opt});
+  // service workers blocked: once sw.js controls the page it answers every script from its cache, and the routes below that hold or
+  // refuse one never see it (on Linux from the second load on; on Windows the test server's 404 for `./` failed sw.js's install)
+  const open=async(opt={},init)=>{const ctx=await browser.newContext({viewport:{width:402,height:874},hasTouch:true,isMobile:eng==='Chromium',serviceWorkers:'block',...opt});
     await ctx.route(u=>!u.href.startsWith(origin)&&/^https?:/.test(u.href),route=>route.fulfill({status:503,headers:{'content-type':'application/json','access-control-allow-origin':'*'},body:'{"error":"server"}'}));
     await ctx.addInitScript(()=>{try{localStorage.setItem('tour_seen','1')}catch(e){}});if(init)await ctx.addInitScript(init);
     const c={ctx,held:'',hold:null,let:()=>{},refuse:null,errs:[]};
@@ -55,6 +57,8 @@ async function run(eng,browser,{ok,url,settle}){
 
   /* ---- taps while the scripts load ---- */
   const c=await open();
+  const sw=await c.p.evaluate(async()=>({root:(await fetch('./',{cache:'no-store'})).status,ctl:!!(navigator.serviceWorker&&navigator.serviceWorker.controller),reg:!!(navigator.serviceWorker&&await navigator.serviceWorker.getRegistration())}));
+  ok(sw.root===200&&!sw.ctl&&!sw.reg,T+`the test server serves the folder's address (./, ${sw.root}) as on every system, and no service worker is in the way of the routes (controlled ${sw.ctl}, registered ${sw.reg})`);
   await held(c,'add.js',()=>typeof ACTS==='object');
   const st0=await c.p.evaluate(()=>({n:Object.keys(ACTS).length,rs:document.readyState,nav:!!document.querySelector('#n-stats'),late:typeof show==='undefined'&&typeof startUp==='undefined'}));
   ok(st0.n===0&&st0.late&&st0.nav,T+`with add.js held the page is drawn and act.js listens, but no script has registered a handler yet (${JSON.stringify(st0)})`);
@@ -152,7 +156,7 @@ async function run(eng,browser,{ok,url,settle}){
   ok(await c.p.evaluate(n=>window.__card===0&&items.length===3&&document.querySelector('#today').children.length>0&&JSON.parse(localStorage.getItem('err_log')||'[]').filter(x=>/didn’t start/.test(x.m)).length===n,notedBefore),T+'then the app starts as usual: the card never came and nothing was noted as a failed start');
   c.refuse=null;await c.ctx.close();
   // a first run, signed out, with such an error: Today's first page and the setup, never the card
-  {const ctx=await browser.newContext({viewport:{width:402,height:874},hasTouch:true,isMobile:eng==='Chromium'});
+  {const ctx=await browser.newContext({viewport:{width:402,height:874},hasTouch:true,isMobile:eng==='Chromium',serviceWorkers:'block'});
     await ctx.route(u=>!u.href.startsWith(origin)&&/^https?:/.test(u.href),route=>route.fulfill({status:503,headers:{'content-type':'application/json','access-control-allow-origin':'*'},body:'{"error":"server"}'}));
     await ctx.addInitScript(()=>{window.__card=0;new MutationObserver(()=>{if(document.getElementById('start-fail'))window.__card++}).observe(document,{childList:true,subtree:true});setTimeout(()=>{throw new Error('modload test: a stray error during loading')},20)});
     const p=await ctx.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);await wait(5000);
