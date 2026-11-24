@@ -8,7 +8,7 @@
    A request sent with cache:'no-store' is left to the network (about.js checks for a newer sw.js that way).
    Cross-origin requests (the AI worker, weather) are never cached. Caches named dw-keep-* hold the app's own data
    (the sharp tagging copies, tag-request.js) and survive updates. */
-const CACHE='dw-v508';
+const CACHE='dw-v509';
 const ASSETS=['./','index.html','styles.css','merge.js','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','srgb.js','mannequin.js','mq/vest.js','mq/suit.js','mq/suit-open.js','mq/shirt-tie.js','mq/shirt-open.js','draw.js','app.js','back.js','act.js','add.js','add-paste.js','add-card.js','add-more.js','add-sheet.js','sheet-swipe.js','add-save.js','add-keep.js','item-photo.js','item-view.js','itemsheet.js','history.js','missed.js','locks.js','pickscore.js','scorecard.js','boxfold.js','today-plan.js','today.js','today-photofold.js','today-picture.js','today-gestures.js','month.js','photos.js','locale.js','settings.js','daysoff.js','weather.js','toast.js','theme.js','start.js','ui.js','safety.js','dress.js','tag-request.js','migrate.js','measure.js','tagging.js','own-lists.js','pattern-read.js','assemble.js','asm-color.js','asm-watch.js','asm-pocket.js','asm-kinds.js','asm-ocp.js','watch/suit.png','watch/vest.png','watch/shirt-tie.png','watch/shirt-open.png','watch/leather.jpg','asm-gl.js','asm-worker.js','stats.js','care.js','cost.js','fav.js','wardrobe.js','colpick.js','checklist.js','look.js','pack.js','shop.js','sync-status.js','sync.js','sync-photos.js','snapshots.js','backupfile.js','account.js','remind.js','setup.js','kit.js','calendar.js','about.js','sw.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 // cache:'no-cache' revalidates each file with the server (ETag / Last-Modified): an unchanged file comes back as a small 304 instead of
 // being downloaded in full on every release ('reload' fetched all of them, about 1 MB, and twice on a first visit) (audit 2026-11-13)
@@ -24,7 +24,7 @@ self.addEventListener('fetch',e=>{
     const cache=await caches.open(CACHE);
     const hit=await cache.match(req,{ignoreSearch:true});
     if(hit)return hit;
-    // a deep link (…/app/some/path) is answered with index.html offline, whose styles.css and scripts then resolve under that path:
+    // a deep link (???/app/some/path) is answered with index.html offline, whose styles.css and scripts then resolve under that path:
     // one of this version's files asked for under another folder is that file (the page came up unstyled, audit 2026-11-13); matched by
     // the end of the path, so the files in sub-folders (mq/, watch/) are found too (CR-5-05: offline, the figure's poses didn't load)
     const name=ASSETS.find(a=>a!=='./'&&url.pathname.endsWith('/'+a));
@@ -49,7 +49,7 @@ const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${
 async function reminderNote(){let line='',care='';const k=dayKey(new Date());
   try{const c=await caches.open('dw-keep-remind'),r=await c.match('remind.json'),q=await c.match('care.json');if(r)line=(await r.json())[k]||'';if(q)care=(await q.json())[k]||''}catch{}
   if(care&&!line)return self.registration.showNotification('Due for cleaning',{body:care,icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'});
-  return self.registration.showNotification('Today’s outfit',{body:(line||'Open the app to see what to wear today.')+(care?'\n'+care:''),icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'})}
+  return self.registration.showNotification('Today???s outfit',{body:(line||'Open the app to see what to wear today.')+(care?'\n'+care:''),icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'})}
 self.addEventListener('push',e=>{e.waitUntil(reminderNote())});
 self.addEventListener('notificationclick',e=>{e.notification.close();
   e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{const c=cs.find(x=>'focus' in x);return c?c.focus():self.clients.openWindow('./')}))});

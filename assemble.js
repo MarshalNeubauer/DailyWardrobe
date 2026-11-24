@@ -78,14 +78,6 @@ function asmBarDraw(o,tieM,W,rgb,lab){const N=W*W,s=W/ASM_SIZE,m=new Uint8Array(
   return m}
 /* ---- keys ---- */
 const asmKey=t=>'c'+fnv64('asm/'+ASM_VER+'/'+t);
-/* the earlier assembler's masters, black calibration shirt and SAM zone pictures, still on the worker: only the computer's full atlas
-   (npm run atlas, tools/asm-atlas.js and atlas-measure.js) reads them now. ASM_VEST is the waistcoat master's version in its keys */
-const ASM_VEST=3,asmVestTag=(v=ASM_VEST)=>v>1?String(v):'';
-const asmMasterKey=()=>asmKey('master/jacket'),asmCalibKey=(s,v)=>asmKey('calib/'+s+(s==='vest'?asmVestTag(v):''));
-const asmVestKey=v=>asmKey('master/vest'+asmVestTag(v));
-const ASM_ZONE_SLOTS=['jacket','shirt','tie','watch'],asmZoneKey=s=>asmKey('zone/'+(s==='vest'?'vest'+asmVestTag():s));
-const asmZoneImgs=()=>{const o={};for(const s of ASM_ZONE_SLOTS){const r=renders[asmZoneKey(s)];if(!r)return null;o[s]=r.img}return o};
-async function asmMaskFromImg(img,W){const d=(await asmData(img,W)).data,N=W*W,m=new Uint8Array(N);for(let i=0;i<N;i++)if(d[4*i]>127)m[i]=1;return m}
 /* the outfit is painted on a colour-coded master (asm-color.js) when its kind has one on this device or in the worker's list (a phone
    then needn't download a master and its masks just to learn it exists; it downloads them only to paint a look with no picture on the worker,
    asmCmEnsure); else null: the day shows its own photo or the drawing */

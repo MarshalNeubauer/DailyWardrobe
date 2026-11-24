@@ -1,5 +1,5 @@
 // Loaded into every Node process a test starts (NODE_OPTIONS=--require, set by the recorder in tests/impact.js), so what a
-// test runs through a child process (`node tools/asm-atlas.js …`) is known too: the repo's files this process reads (its own
+// test runs through a child process (`node tools/asm-cm-upload.js …`) is known too: the repo's files this process reads (its own
 // script and what it requires included) are written, when it exits, to a file in DW_REC_DIR; the recorder adds them to the
 // test's entry in tests/impact.map. Processes this one starts inherit it.
 const fs=require('fs'),path=require('path'),{fileURLToPath}=require('url');
