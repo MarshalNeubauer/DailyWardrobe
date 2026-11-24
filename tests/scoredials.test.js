@@ -4,6 +4,7 @@
 // and it fills in after the dials without blocking (timed at 4x CPU on Chromium); the calendar marks a shirt-and-tie repeat in gold and a
 // broken rule in red, and rings today in ink; the folded card keeps the cards' height at 390 and 320 px, in both themes, with no sideways
 // scroll. Chromium and WebKit.
+const {pace}=require('./pace');
 module.exports=async({ok,engines,url,WARDROBES,settle})=>{
   for(const [eng,launch] of engines){const browser=await launch();
   try{
@@ -74,7 +75,8 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
     ok(U.swaps.every(s=>/^Wear the .*\+\d+ places?.*best/.test(s)),`${eng}: swaps say the places they gain (${U.swaps.join(' | ')||'none'})`);
     await p.evaluate(()=>toggleScore());await settle(p,800);
     // the rank on a 4x slower CPU, with a large wardrobe (Chromium: CDP)
-    if(eng==='Chromium'){const cdp=await ctx.newCDPSession(p);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});
+    // (the 900 ms is at this machine's pace, measured before the throttling: tests/pace.js; a flat 900 failed a cloud run at 1039 ms)
+    if(eng==='Chromium'){const k=await pace(p),cdp=await ctx.newCDPSession(p);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});
       const t=await p.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:'b'+type+(k++),type,primaryColor,pattern:'solid',...x});
         items=[...['navy','charcoal','grey','darkgrey','lightgrey','navy','brown','charcoal','black','darknavy','grey','tan'].map(c=>I('suit',c)),...['navy','tan','brown','olive','grey','burgundy'].map(c=>I('blazer',c)),...['grey','charcoal','tan','cream','navy','olive','lightgrey','brown'].map(c=>I('pants',c)),
           ...Array.from({length:25},(_,n)=>I('shirt',['white','lightblue','pink','lavender','cream'][n%5],{pattern:['solid','oxford','stripe','end-on-end','gingham'][n%5],secondaryColor:'blue'})),
@@ -85,7 +87,7 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
           await new Promise(res=>{const f=()=>rankMemo.v?res():setTimeout(f,10);f()});out.push({drawn:Math.round(drawn),wall:rankMemo.v.wall,n:rankMemo.v.n})}return out});
       await cdp.send('Emulation.setCPUThrottlingRate',{rate:1});
       console.log('    rank at 4x CPU: '+t.map(x=>`${x.n} outfits ${x.wall} ms (Today drawn in ${x.drawn} ms)`).join('; '));
-      ok(t.every(x=>x.wall<900&&x.n>1000),`${eng}: at 4x CPU a large wardrobe's rank comes in ${t.map(x=>x.wall+' ms ('+x.n+' outfits)').join(', ')} while Today is drawn without waiting for it`)}
+      ok(t.every(x=>x.wall<900*k&&x.n>1000),`${eng}: at 4x CPU a large wardrobe's rank comes in ${t.map(x=>x.wall+' ms ('+x.n+' outfits)').join(', ')} (${(900*k).toFixed(0)} allowed: 900 at this machine's pace ×${k.toFixed(2)}) while Today is drawn without waiting for it`)}
     // ---- the calendar: gold for a shirt-and-tie repeat, red for a broken rule, today in ink
     await setup(17,`const pl0=(()=>{cache={};return planMonth(2026,10)})(),a=pl0['2026-11-9'],ids=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
       dayRecs['2026-11-9']={date:'2026-11-9',ids:ids(a),suitDay:a.suitDay,worn:true};const b=pl0['2026-11-12'];dayRecs['2026-11-12']={date:'2026-11-12',ids:{...ids(b),shirt:a.shirt.id,tie:a.tie.id},suitDay:b.suitDay,worn:true};
