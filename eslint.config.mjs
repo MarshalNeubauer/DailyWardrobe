@@ -68,8 +68,7 @@ const tests = dir('tests', {recursive: true}).map(f => f.split(path.sep).join('/
   .filter(f => f.endsWith('.js') && !f.startsWith('fixtures/') && !f.startsWith('replay/.work/')).map(f => 'tests/' + f);
 const tools = dir('tools').filter(f => f.endsWith('.js')).map(f => 'tools/' + f);
 const pageExtra = onWindow([...classic, 'tests/fixedplan.js']);
-// (tools/atlas-measure.js is put into the page by tools/asm-atlas.js: its functions are page names too)
-const testExtra = new Set([...onWindow([...tests, ...tools]), ...(topNames('tools/atlas-measure.js') || [])]);
+const testExtra = onWindow([...tests, ...tools]);
 const appNames = new Set([...names.values()].flatMap(s => [...s]));
 const writable = list => Object.fromEntries([...list].map(n => [n, 'writable']));
 /* the platform's names, less those the app declares itself (a top-level `function open` is the app's own open) */

@@ -156,7 +156,7 @@ module.exports=async({ok,chromium,url})=>{
       const old=await p.evaluate(async()=>{await asmListGet(true);const st=await asmSync(true);openSettings('photos');renderAsmUI();
         const g=document.querySelector('#asm-group'),seen=s=>{const e=g.querySelector(s);return !!e&&getComputedStyle(e).display!=='none'};
         return {cm:!!st.cm,gone:!g.querySelector('#asm-status')&&!g.querySelector('#asm-btn')&&!g.querySelector(':scope>.slabel')&&typeof asmMakeMissing==='undefined'&&typeof asmNeeds==='undefined',ahead:seen('#cm-box'),
-          old:[asmMasterKey(),asmVestKey(),...['jacket','shirt','tie','watch','vest'].map(s=>asmCalibKey(s))]}});
+          old:['master/jacket','master/vest3',...['jacket','shirt','tie','watch','vest3'].map(s=>'calib/'+s)].map(asmKey)}});   // (the earlier masters' keys, still on the worker)
       const a3=asked.slice(n0);
       ok(old.cm&&!a3.some(k=>old.old.includes(k)),`the earlier assembler's master, waistcoat master and calibration photos are not downloaded (asked for ${a3.length})`);
       ok(old.gone&&old.ahead,`Settings has no Item photos (label, status, button: the earlier assembler is gone) and keeps Pictures ahead (${JSON.stringify({gone:old.gone,ahead:old.ahead})})`);

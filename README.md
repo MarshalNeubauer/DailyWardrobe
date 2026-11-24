@@ -66,15 +66,13 @@ Secrets are set once in the Cloudflare dashboard (or `wrangler secret put NAME`)
 
 The owner connects their own device under Settings → Connection with the server's address and `APP_TOKEN`, and sends each tester an invite link. Invite links open only on the app's own server: if you host the worker yourself, put its address in `APP_SERVERS` in account.js, or links to it are refused. A tester who lost the link gets a new one from the owner's list (Settings → Connection → New link); it opens the same wardrobe.
 
-## The color-coded masters and the master atlas
+## The color-coded masters
 
 An assembled outfit picture is painted on a color-coded master photo (one per kind of dress), from each garment's color and pattern. Each phone paints its own looks, on its graphics chip where it can (about 90 ms a look) or on the processor.
 
-Two scripts for the computer, in PowerShell from the repository folder (after `npm install` and `npx playwright install chromium`, as for the tests), with the server's address and code in the environment: `$env:DW_WORKER='https://<your worker>.workers.dev/'; $env:DW_TOKEN='<APP_TOKEN>'`. The code is only read from the environment: never put it in a file in the repository. Each upload is one write on the server's storage (the free plan allows 1,000 a day for everything), and this computer uploads at most 300 a day (`tools/upload-budget.js`).
+One script for the computer, in PowerShell from the repository folder (after `npm install` and `npx playwright install chromium`, as for the tests), with the server's address and code in the environment: `$env:DW_WORKER='https://<your worker>.workers.dev/'; $env:DW_TOKEN='<APP_TOKEN>'`. The code is only read from the environment: never put it in a file in the repository. Each upload is one write on the server's storage (the free plan allows 1,000 a day for everything), and this computer uploads at most 300 a day (`tools/upload-budget.js`).
 
 - `npm run cm-upload -- --dir <folder>` puts the color-coded masters (each kind's master, zone masks, sleeve and lapel masks, from the folder `colormaster.js` writes) on the server under the keys the app asks for. `--kinds suit,vest` limits it to some kinds, `--bg <file>` uploads the background behind every master (alone, or with the masters), `--dry` says what would go up. A record already there with the same signature is not written again.
-- `npm run atlas` measures every pixel of the masters once and writes the full atlas for work on the computer to `--out` (default `./atlas`, which git ignores); it uploads nothing. `--parts <folder>` adds finer SAM part pictures, `--origin` as above. Run it again after a master or a mask is made again. `node tools/atlas.js <folder> list` reads it back.
-
 ## Running the tests
 
 ```

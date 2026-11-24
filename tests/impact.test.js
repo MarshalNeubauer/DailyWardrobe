@@ -184,7 +184,7 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
       await p.evaluate(()=>show('wardrobe'));await p.keyboard.press('ArrowRight');
       fs.readFileSync(path.join(ROOT,'wrangler.toml'));
       // a Node child process: the script it is given (a tool) and the repo files it reads itself
-      const {spawnSync}=require('child_process'),kid=spawnSync(process.execPath,['-e',"require('fs').readFileSync(require('path').join(process.argv[1],'tests','fixtures','tie-plaid.jpg'))",ROOT,path.join(ROOT,'tools','atlas.js')],{encoding:'utf8'});
+      const {spawnSync}=require('child_process'),kid=spawnSync(process.execPath,['-e',"require('fs').readFileSync(require('path').join(process.argv[1],'tests','fixtures','tie-plaid.jpg'))",ROOT,path.join(ROOT,'tools','upload-budget.js')],{encoding:'utf8'});
       const {m,odd}=await impactRec.peek(),has=(f,k)=>!!(m.get(f)&&m.get(f).has(k));
       ok(has('stats.js','openStats')&&has('app.js',I.LOADED),'functions a page ran are recorded, also those from before a reload');
       const blocks=[...(m.get('itemsheet.js')||[])].filter(k=>k.includes('>')),keyed=k=>/^@\{constel\$wardrobe\}>@document\.addEventListenerkeydown$/.test(k);   // (the Wardrobe's swipe block, itemsheet.js since app.js was split)
@@ -192,7 +192,7 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
       ok(odd===0,'Chromium and Node agree on where every function starts, so a page\'s functions go by the names a diff is read with ('+odd+' did not)');
       ok([...(m.get('styles.css')||[])].some(k=>k.includes('#stats')),'CSS rules that applied are recorded');
       ok(has('index.html',I.LOADED)&&has('wrangler.toml',I.ANY)&&!m.has('worker.js'),'so are the files served to the page and the files the test read');
-      ok(kid.status===0&&has('tools/atlas.js',I.ANY)&&has('tests/fixtures/tie-plaid.jpg',I.ANY),'and a script a child process ran (a tool) and the files that process read ('+(kid.stderr||'').trim().slice(0,200)+')');
+      ok(kid.status===0&&has('tools/upload-budget.js',I.ANY)&&has('tests/fixtures/tie-plaid.jpg',I.ANY),'and a script a child process ran (a tool) and the files that process read ('+(kid.stderr||'').trim().slice(0,200)+')');
       await b.close()}
   }finally{fs.rmSync(dir,{recursive:true,force:true})}
 };

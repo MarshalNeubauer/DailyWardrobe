@@ -421,7 +421,7 @@ const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new
     if((/^[^/]+\.js$/.test(r)||workerFile(r))&&/node:internal\/modules/.test(new Error().stack))return;cur.add(r,ANY)}catch(e){}};
   for(const k of ['readFileSync','readFile','createReadStream']){const o=fs[k];fs[k]=function(p,...a){note(p);return o.call(this,p,...a)}}
   const pr=fs.promises.readFile;fs.promises.readFile=function(p,...a){note(p);return pr.call(this,p,...a)};
-  /* a child process the test starts (`node tools/asm-atlas.js`): a repo file named in its command line is noted, and a Node child
+  /* a child process the test starts (`node tools/asm-cm-upload.js`): a repo file named in its command line is noted, and a Node child
      gets tests/childrec.js (NODE_OPTIONS), which writes the repo files it reads into recDir when it exits; end() adds them.
      Except root-level files: a tool serves those to its own headless page (the app), which the test's pages already record
      function by function; noting them whole would select the test for every app change */
