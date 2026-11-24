@@ -691,7 +691,7 @@ async function asmAheadDays(){const T=todayDate(),c=+new Date(sel.getFullYear(),
     if(i&&i%10===0)await new Promise(r=>setTimeout(r,0));if(asmAheadAgain)return [];
     const o=planOn(d);if(o&&asmWants(o))out.push([Math.abs(+d-c),o])}
   return out.sort((a,b)=>a[0]-b[0]).map(x=>x[1])}
-let asmAhead=async function asmAhead(){if(!ASM_ON||document.hidden||asmDrawn()||!asmCmAny()||!asmOffPage())return;   // (hidden first: asmOffPage starts a worker, CR-8-01)if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;
+let asmAhead=async function asmAhead(){if(!ASM_ON||document.hidden||asmDrawn()||!asmCmAny()||!asmOffPage())return;if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;   // (hidden first: asmOffPage starts a worker, CR-8-01; a pass started while one runs only sends it round again)
   try{do{asmAheadAgain=false;const seen=new Set(),todo=[];
       for(const o of await asmAheadDays()){const k=asmOutKey(o);if(seen.has(k))continue;seen.add(k);if(!asmFullWins(o)&&!asmFor(o))todo.push(o)}
       // (2026-11-13) the looks with a picture on the worker first, ASM_AHEAD_N at a time (only their pictures are downloaded); then the rest, one at
