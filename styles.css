@@ -1941,7 +1941,7 @@ html.bigtext :is(.cpnm,.pick-nm){min-height:3.6em}
 /* ---- cost per wear (cost.js) ---- */
 .cpwf{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:10px 0 6px}
 .cpwf label{display:flex;align-items:center;gap:8px;margin:0;font-size:var(--fs-m);font-weight:600}
-.cpwin{display:inline-flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:8px;background:var(--bg);min-height:40px;max-width:100%}
+.cpwin{display:inline-flex;align-items:center;gap:0;border:1px solid var(--fline);border-radius:8px;background:var(--field);min-height:40px;max-width:100%}
 .cpwsym{padding:0 2px 0 9px;color:var(--mut);font-weight:600;white-space:nowrap}
 .cpwin input[type="text"]{border:0!important;background:transparent!important;box-shadow:none!important;width:7.5em;max-width:100%;padding:7px 9px 7px 5px;min-height:38px}
 .cpwin input:focus{outline:none}

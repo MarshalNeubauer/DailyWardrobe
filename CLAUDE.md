@@ -955,6 +955,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - on a tie no ground lightness is mixed into a line (the quarter mix is for a line whose threads cross the ground's): it darkened the repp tie's blue stripe and turned a thin white edging grey
 
 #### Patterns and photo keys
+- tagging again keeps the pattern as `normTag` fitted it to the card's type (`aiFields`, 2026-11-24, the review's R2 N1): `aiFields` fitted it again to Claude's type, so a shirt's oxford, end-on-end, gingham or chambray that Claude called a suit, blazer or pants came back Solid (42 of 60 shirt patterns); a first tag's `normTag` already fits Claude's own type, so nothing changes there; `tests/tagreads.test.js`
 - a striped or checked shirt, or one with a motif reading (`shirtPatterned` in photos.js), gets its own photo key; plain and finely woven shirts share one photo per colour
 - the words and drawings that described a read pattern to the retired outfit-photo generator (`patternPrompt`, `settText`, `motifText`, `patternDiagram`, `outfitRefsFull`, `trimRefs`, the watch's turned references) were removed on 2026-11-14 (the owner: "remove the leftovers too")
 
@@ -1341,6 +1342,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - Today's short-rest warning (today.js `restWarn`, a jacket worn under `COOL` days ago) says "Add more suits/blazers" only when fewer than `COOL` of that kind are in rotation that day (not paused, not at the cleaner); on a day the owner chose it (a pick, a correction) it says "You wore this suit N days ago too."; otherwise nothing (W2-17-06: "Add more suits" with three owned)
 - the score card's "… pieces were chosen for variety" line is not said on a day the owner changed (`o.overrides`: "These would score higher:"), and says "This day's" on a day other than today (W2-17-08)
 - swaps and picks keep a piece taken off pinned (`keepOff`); Reset and an occasion clear `rec.off`
+- an occasion clears the day's `kind` too (`setOccasion`, 2026-11-24, the review's R4 N-1; Calendar ✓ goes through it): a tie taken off, a moved outfit or a favorite worn pinned `kind`, which planner.js reads before the occasion, so a funeral, wedding or formal day stayed a blazer day with no Reset card; `tests/takeoff.test.js` (`offpins`)
 - swaps, picks and corrections teach the planner nothing (see "No learning from changes"); a pick or swap shows no message, a correction says "Corrected."
 - a past day can be corrected to what was really worn (`togglePastEdit`/`correctPast`: the record gets `edited`, `worn:true` and the real ids)
 
@@ -1403,6 +1405,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - dropping saves both days, re-renders and toasts what moved with Undo (`toast(text, ms, {label, fn})`); dropping off the days, or on the day it came from, changes nothing; `outfitMove` stops the day swipe and month drag while moving
 - during a move the lifted day's old drawing stays in the page hidden (`.mv-held`): removing the node a touch started on stops its touchmove/touchend; the cells' children take no pointer events (`#mpanel-in.mv-on .mc *`), since a drawing sliding to its new day caught the pointer over its old one
 - a day record's `kind` ('suit' / 'blazer') fixes the day's jacket kind in `planSim`, so a suit outfit moved onto a blazer day stays a suit day; `tests/moveoutfit.test.js`
+- pieces taken off move with the outfit (2026-11-24, the review's R4 N-2): `moveRecs` carries the day's `off` and `roll` to the target, pins the pieces that came off (`force` from the day's record, as `setOff` pinned them), takes `kind` from `o.offKind` (a suit with its jacket off is a suit day, its pants not forced) and drops `off`/`roll` from both days' old records, so the day it left is planned afresh and a target whose tie was off doesn't strip the moved tie; `tests/takeoff.test.js` (`offpins`)
 
 #### The plan and its snapshot
 
@@ -1484,6 +1487,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - socks are drawn as a pair (the owner's ask, 2026-11-13), traced from Nike's product photo of their Everyday Plus Cushioned Crew socks: both socks, the back one 12% darker; no maker's mark; the toe cap and the cuff's edge take the toe colour (`class="sock-toe"`); `SOCK_D` is in a 0..100 box and the thumbnail calls `drawSock` without a transform
 - the pair is drawn mirrored (`drawSock` wraps both socks in `matrix(-1 0 0 1 100 0)`) so the toes point right like the shoes (the owner, 2026-11-13); `SOCK_D` stays in the photo's own direction
 - `esc()` escapes `'` too (some strings go into `onclick='…'`)
+- a product picture that arrives while the Wardrobe shows redraws it through `wardRefresh` (photos.js, 2026-11-24, the review's R1 N1): with Settings or an item's sheet open it waits for it to close, as a sync's redraw does (`syncRedraw('wardrobe')`: `viewStale`, `syncLater`); `renderWardrobe` closes Settings, so a picture landing a moment after the Wardrobe was drawn shut Settings by itself; pattern-read.js still calls `renderWardrobe` directly (rarer: Settings opened while a pattern is read); `tests/itempics.test.js` (`wardpicwait`)
 
 ### `settings.js`
 
@@ -2221,6 +2225,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - `tests/costwear.test.js`: the merge rule, currency and parsing, the counts, the lines, the sheet, the Add card, Settings, Insights' threshold, 320/390 px in both themes, two devices through the real worker; `CPW_SHOTS=<dir>` saves its screenshots
 - its controls use data-act (act.js; C2-8, 2026-11-22), registered as cost.js's last statement: `cpwPriceType` / `cpwPriceDone` (the item sheet's Price: input and change, `data-id`), `cpwBoughtPick`, `cpwCardField` (the Add card's Price and Bought: `data-card`, `data-f`), `cpwCareTap` ("Set it in Settings → Care"), `cpwRowTap` (an Insights row, `data-id`), `cpwCostDone` (`data-f`: a type, load or perLoad), `cpwCurPick`
 - an ES module since 2026-11-23 (strict; `<script type="module" src="cost.js">` at its old place): `cpwFmts`, `CPW_MIN`, `cpwFmt` and the rest are its own; its last lines bridge `cpwSum`, `cpwBlock` (itemsheet.js), `cpwQRow` (add-card.js), `cpwSaveFields` (add-save.js), `cpwStatsCard` (stats.js), `cpwSettingsUI` (care.js) and, for tests/costwear.test.js, `cpwCur`, `cpwMoney`, `cpwParse`, `cpwOf`, `cpwCleanYear`, `cpwText`, `cpwHint`, `cpwSetPrice`, `cpwQSet`; it still reads `APP_LOC` as a global, not by import: an import would make a locale.js that failed to load stop cost.js too
+- the money field (`.cpwin`: the symbol and the input in one box) is the field itself (2026-11-24, the review's R9 N1): `--field` with every field's `--fline` edge, so the input (painted `--field` by the pages' field rule, which outranks `.cpwin input`) and its box are one color; it was a white input inside a `--bg` box with a `--line` edge (about 1.4:1 light, 1.3:1 dark); `tests/stylea11y.test.js`
 
 ### `fav.js`
 

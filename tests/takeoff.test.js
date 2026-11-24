@@ -229,7 +229,47 @@ const sepnotes=async({ok,chromium,url,settle})=>{
   }finally{await browser.close()}
 };
 
+/* ---- the pins a piece taken off leaves (Round D, 2026-11-24: the review's R4 N-1 and N-2) ---- */
+// Taking the tie off pins the day's kind (rec.kind). An occasion set later on that day decides the kind again: a funeral, a wedding or a
+// formal day is a suit day, as a fresh one is. Moving an outfit whose jacket and tie were taken off moves that outfit (the suit's pants,
+// no jacket, no tie) and the day it left is planned afresh; a day whose tie was off doesn't take the tie off an outfit moved onto it.
+const offpins=async({ok,chromium,url,WARDROBES})=>{
+  const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  try{
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    const setup=()=>p.evaluate(async W=>{W=eval(W);items=W.realistic.map(i=>({...i}));settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.holidays=null;settings.daysOff=[];weather={};climate=null;
+      TODAY_OVERRIDE='2026-11-11T09:00:00';dayRecs={};cache={};try{await recordRun}catch{}view={y:2026,m:10}},WARDROBES);
+    await setup();
+    const occ=await p.evaluate(async()=>{const k='2026-11-19',out={};   // Thursday 19 November, a blazer day
+      for(const o of ['funeral','wedding','formal']){dayRecs={};cache={};sel=keyDate(k);renderToday();await setOff('tie',true);const kind=dayRecs[k].kind;
+        await setOccasion(o,k);const top=planFor()[k].top;
+        dayRecs={[k]:{date:k,...(o==='formal'?{formal:true}:{occasion:o})}};cache={};const fresh=planFor()[k].top;
+        out[o]={kind,type:top&&top.type,fresh:fresh&&fresh.type}}
+      return out});
+    for(const [o,v] of Object.entries(occ))ok(v.kind==='blazer'&&v.type==='suit'&&v.fresh==='suit',`a ${o} set on a blazer day whose tie was taken off is a suit day, as a fresh ${o} day (${v.type}, fresh ${v.fresh}; the tie off pinned ${v.kind})`);
+    await setup();
+    const mv=await p.evaluate(async()=>{const src='2026-11-13',dst='2026-11-16';   // Friday 13 November (a suit day) moved to Monday 16 November
+      sel=keyDate(src);renderToday();await setOff('top',true);await setOff('tie',true);
+      const ids=x=>({top:x.top&&x.top.id,bot:x.bot&&x.bot.id,shirt:x.shirt&&x.shirt.id,tie:x.tie&&x.tie.id});
+      const shown=ids(planFor()[src]);const recs=moveRecs(src,dst,planFor());const preview=ids(planWith(recs,2026,10)[dst]);
+      await saveDay(recs[dst]);if(recs[src])await saveDay(recs[src]);else await saveDay({date:src});planDirty();
+      const left=planFor()[src];return {shown,preview,moved:ids(planFor()[dst]),left:{...ids(left),off:!!left.off},srcRec:dayRecs[src]||null}});
+    const same=(a,b)=>a.top===b.top&&a.bot===b.bot&&a.shirt===b.shirt&&a.tie===b.tie;
+    ok(!mv.shown.top&&!mv.shown.tie&&mv.shown.bot&&same(mv.moved,mv.shown)&&same(mv.preview,mv.shown),`an outfit with its jacket and tie taken off moves as shown (${JSON.stringify(mv.shown)} → ${JSON.stringify(mv.moved)}, preview ${JSON.stringify(mv.preview)})`);
+    ok(mv.left.top&&mv.left.tie&&!mv.left.off&&!(mv.srcRec&&mv.srcRec.off),`the day it left is planned afresh, its jacket and tie on (${JSON.stringify(mv.left)})`);
+    await setup();
+    const rev=await p.evaluate(async()=>{const src='2026-11-13',dst='2026-11-16';
+      sel=keyDate(dst);renderToday();await setOff('tie',true);
+      const ids=x=>({top:x.top&&x.top.id,bot:x.bot&&x.bot.id,shirt:x.shirt&&x.shirt.id,tie:x.tie&&x.tie.id});
+      const shown=ids(planFor()[src]);const recs=moveRecs(src,dst,planFor());
+      await saveDay(recs[dst]);if(recs[src])await saveDay(recs[src]);else await saveDay({date:src});planDirty();
+      return {shown,moved:ids(planFor()[dst])}});
+    ok(rev.shown.tie&&same(rev.moved,rev.shown),`an outfit moved onto a day whose tie was taken off keeps its tie (${JSON.stringify(rev.shown)} → ${JSON.stringify(rev.moved)})`);
+    ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
+  }finally{await browser.close()}
+};
+
 // the parts run one after another; one that throws is reported and the rest still run (each was its own file)
-module.exports=async t=>{for(const [name,part] of [['takeoff',takeoff],['todaypants',todaypants],['sepnotes',sepnotes]]){try{await part(t)}catch(e){t.ok(false,`threw (${name}): ${e.message}`)}}};
+module.exports=async t=>{for(const [name,part] of [['takeoff',takeoff],['todaypants',todaypants],['sepnotes',sepnotes],['offpins',offpins]]){try{await part(t)}catch(e){t.ok(false,`threw (${name}): ${e.message}`)}}};
 module.exports.realPlanner=true;   // runs the real planner (every part checks the planner's choices); other tests get tests/fixedplan.js
 module.exports.assembled=true;   // assembled pictures on, as every part had them

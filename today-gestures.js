@@ -67,8 +67,12 @@ const mvSig=o=>o?[o.top&&o.top.id,o.bot&&o.bot.id,o.shirt&&o.shirt.id,o.tie&&o.t
 const MOVE_HOLD=380,MOVE_SLOP=8;
 function moveRecs(src,dst,plan){const o=(plan||planFor())[src];if(!o)return null;const ids=idsOf(o),force={};
   for(const [s,v] of Object.entries(ids))if(v&&s!=='coat')force[s]=v;   // the coat is the weather's choice
-  const recs={...dayRecs},keep=r=>{const n={...(r||{})};delete n.force;delete n.skip;delete n.ids;delete n.vest;delete n.kind;delete n.auto;delete n.lock;return n};
-  recs[dst]={...keep(dayRecs[dst]),date:dst,force,vest:!!o.vest,kind:o.suitDay?'suit':'blazer'};
+  // pieces taken off (rec.off) and rolled sleeves (rec.roll) go with the outfit: the pieces that came off stay pinned (setOff pinned
+  // them) and a suit with its jacket off is still a suit day; the day it left is planned afresh, and the target's own go (R4 N-2)
+  const sr=dayRecs[src]||{},off=sr.off&&(sr.off.top||sr.off.tie||sr.off.pocket)?{...sr.off}:null;
+  if(off){for(const s of ['top','tie','pocket'])if(off[s]&&sr.force&&sr.force[s])force[s]=sr.force[s];if(o.suitBot)delete force.bot}
+  const recs={...dayRecs},keep=r=>{const n={...(r||{})};delete n.force;delete n.skip;delete n.ids;delete n.vest;delete n.kind;delete n.auto;delete n.lock;delete n.off;delete n.roll;return n};
+  recs[dst]={...keep(dayRecs[dst]),date:dst,force,vest:!!o.vest,kind:o.offKind||(o.suitDay?'suit':'blazer'),...(off?{off}:{}),...(sr.roll?{roll:true}:{})};
   const s=keep(dayRecs[src]);if(Object.keys(s).filter(k=>k!=='date'&&k!=='updated').length)recs[src]={...s,date:src};else delete recs[src];
   return recs}
 /* put a plan into the grid: a cell whose outfit changed gets its new stack, sliding in from the cell that showed it before */
