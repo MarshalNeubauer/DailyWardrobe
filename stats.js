@@ -12,7 +12,7 @@ function wornDays(){const T=todayDate(),out=[];
     if(!pcs.length||(!r.edited&&r.worn!==true&&pcs.some(i=>(i.added||0)>+d+864e5)))continue;   // dated before a piece was in the wardrobe: a planner warm-up day (one recorded by the app; a day corrected or marked worn by hand counts, CR-3-11)
     if(+d===+T&&r.worn!==true)continue;                            // today counts once it is marked worn
     out.push({date:r.date,d,ids:r.ids,suitDay:!!r.suitDay,vestOn:!!r.vestOn})}
-  return out.sort((a,b)=>a.d-b.d)}
+  return out.sort((a,b)=>a.d.getTime()-b.d.getTime())}
 /* the planned outfits of the next six months: [[key, outfit]]. The same workdays What to buy measures (analysis.js horizonKeys:
    SHOP_WEEKS weeks from tomorrow), so the two count the same outfits; they counted 122 and 126 (re-audit 2026-11-15) */
 const statsDays=()=>horizonKeys(todayDate(),SHOP_WEEKS);
@@ -88,7 +88,7 @@ function buildStats(){
   const pairs=tally(o=>o.top&&o.tie&&o.top.id+'|'+o.tie.id).slice(0,5).map(([k,n])=>{const [a,b]=k.split('|').map(id=>items.find(i=>i.id===id));return {a,b,n}}).filter(p=>p.a&&p.b);
   // rest
   let minRest=null,b2b=0;const lastTop={};plan.forEach(([k,o],n)=>{if(o.top){if(lastTop[o.top.id]!==undefined)minRest=Math.min(minRest??1e9,n-lastTop[o.top.id]);lastTop[o.top.id]=n}
-    if(n&&o.shoes&&plan[n-1][1].shoes&&o.shoes.id===plan[n-1][1].shoes.id&&keyDate(k)-keyDate(plan[n-1][0])<1.5*864e5)b2b++});
+    if(n&&o.shoes&&plan[n-1][1].shoes&&o.shoes.id===plan[n-1][1].shoes.id&&keyDate(k).getTime()-keyDate(plan[n-1][0]).getTime()<1.5*864e5)b2b++});
   const looks=new Set(plan.map(([,o])=>comboKey(o))).size;
   // the score of what was really worn, week by week for the last TREND_WEEKS weeks (oldest first; a week with nothing worn has n 0)
   const T=todayDate(),wk=d=>Math.floor((di(T)-di(d))/7),trend=Array.from({length:TREND_WEEKS},(_,n)=>({from:new Date(T.getFullYear(),T.getMonth(),T.getDate()-7*(TREND_WEEKS-n)+1),n:0,sum:0,hard:0}));

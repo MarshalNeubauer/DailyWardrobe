@@ -123,6 +123,7 @@ function sampleLabs(c){const x=c.getContext('2d',{willReadFrequently:true}),d=x.
 const medLab=ls=>[0,1,2].map(k=>{const v=ls.map(l=>l[k]).sort((a,b)=>a-b);return v[v.length>>1]});
 function cropCanvas(c,box){const x=box.x/1000*c.width,y=box.y/1000*c.height,w=Math.max(1,box.w/1000*c.width),h=Math.max(1,box.h/1000*c.height),o=document.createElement('canvas');
   o.width=Math.round(w);o.height=Math.round(h);o.getContext('2d').drawImage(c,x,y,w,h,0,0,o.width,o.height);return o}
+/** @param {any} spec @param {{tex: any, full?: any, box?: any, wb?: any, type: any}} on */
 function settFromSpec(spec,{tex,full,box,wb,type}){
   const L=h=>rgbLab(...hexRgb(h)),C=l=>Math.hypot(l[1],l[2]);
   let src=null;try{src=tex?settCanvas(tex,closeRead(tex).ref?null:wb,true):full&&box?cropCanvas(settCanvas(full,wb),box):null}catch{}
