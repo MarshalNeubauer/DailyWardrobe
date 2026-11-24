@@ -26,7 +26,9 @@ const UNTRACED=(()=>{const out=[];let html='';try{html=fs.readFileSync(path.join
   for(const m of html.matchAll(/<script type="module" src="([^"]+)"/g)){let s='';try{s=fs.readFileSync(path.join(ROOT,m[1]),'utf8')}catch{continue}
     for(const n of TRACED){if(!new RegExp('(?:^|[^.\\w$])(?:async\\s+)?function\\s+'+n+'\\s*\\(|(?:^|[^.\\w$])(?:const|let|var)\\s+'+n+'\\s*=','m').test(s))continue;
       const calls=(s.match(new RegExp('(?<![.\\w$])'+n+'\\s*\\(','g'))||[]).length-(s.match(new RegExp('function\\s+'+n+'\\s*\\(','g'))||[]).length;
-      if(calls>0)out.push(`${n} (${m[1]} calls it ${calls} time${calls===1?'':'s'} itself)`)}}
+      if(calls>0)out.push(`${n} (${m[1]} calls it ${calls} time${calls===1?'':'s'} itself)`);
+      // (a function the module keeps to itself is on no window to wrap, however it is called: today.js hands planSnapCheck to requestIdleCallback)
+      else if(!new RegExp('Object\\.assign\\(globalThis,\\{[^}]*(?<![\\w$])'+n+'(?![\\w$])').test(s))out.push(`${n} (${m[1]} keeps it to itself)`)}}
   return out})();
 if(UNTRACED.length&&!has('skip-untraced')){console.error('visit-measure: the plan\'s trace can no longer see every call of '+UNTRACED.join(', ')+
   '.\nThose files are ES modules now: a call made inside the module doesn\'t go through window.<name>, which is what this tool wraps.\n'+

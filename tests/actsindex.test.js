@@ -59,7 +59,7 @@ const VIA={cycleTheme:{themeTap:''},addLink:{linkKey:'enter',linkAddTap:''},past
   setLaundryDays:{laundryPick:'value'},show:{tabTap:'page'},openAdd:{wardAddTap:''},subBack:{addBackTap:''},
   openSettings:{setOpenTap:''},closeSettings:{setBackdropTap:''},saveSettings:{setDoneTap:''},toggleCat:{catTap:'cat'},
   setVestMode:{vestPick:'value'},setDarkShirts:{darkPick:'value'},advToggle:{advTap:'el'},
-  kitImportOpen:{importOpenTap:''},tourAgain:{tourAgainTap:''},homeAgain:{homeAgainTap:''}};
+  kitImportOpen:{importOpenTap:''},tourAgain:{tourAgainTap:''},homeAgain:{homeAgainTap:''},goToday:{todayTabTap:''},syncTap:{syncNowTap:''}};
 const CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==','base64');
 async function run(eng,browser,{ok,url,settle}){

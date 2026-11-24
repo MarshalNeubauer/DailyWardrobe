@@ -13,7 +13,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     p.on('pageerror',e=>errs.push(e.message));
     await p.route(SRV+'**',r=>{const q=r.request();if(q.method()==='OPTIONS')return r.fulfill({status:204,headers:cors});calls.push(q.method()+' '+new URL(q.url()).pathname);
       const a=(o.srv||{})[q.method()+' '+new URL(q.url()).pathname];return r.fulfill({status:a?200:404,headers:{...cors,'content-type':'application/json'},body:JSON.stringify(a?a():{error:'not found'})})});
-    if(o.today)await p.route(/\/today\.js(\?|$)/,r=>r.fulfill({status:200,contentType:'text/javascript',body:fs.readFileSync(path.join(ROOT,'today.js'),'utf8')+'\n'+o.today}));
+    if(o.today)await p.route(/\/today\.js(\?|$)/,r=>r.fulfill({status:200,contentType:'text/javascript',body:fs.readFileSync(path.join(ROOT,'today.js'),'utf8').replace('function renderToday(){','function renderToday(){'+o.today)}));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);return {p,ctx,errs,calls}};
   const seed=p=>p.evaluate(async()=>{const mk=(id,type,c)=>({id,type,primaryColor:c,pattern:'solid',added:Date.now()});
     for(const it of [mk('s1','suit','navy'),mk('h1','shirt','white'),mk('t1','tie','burgundy'),mk('p1','shoes','black')]){await put(it);items.push(it)}
@@ -49,7 +49,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(s.items===4&&s.stored===4&&s.w==='ok'&&s.btn,`a failed delete says so and changes nothing; the app still saves (${JSON.stringify(s)})`);await ctx.close()}
 
     /* CR-7-03: one failure while drawing Today at start-up: the wardrobe stays, it says so, the error is noted */
-    {const once='{const t0=renderToday;renderToday=function(){if(window.__boom&&!window.__boomed){window.__boomed=1;throw new Error("test: Today failed once")}return t0.apply(this,arguments)}}';
+    {const once='if(window.__boom&&!window.__boomed){window.__boomed=1;throw new Error("test: Today failed once")}';
       const {p,ctx}=await open({today:once});await seed(p);
       await p.addInitScript(()=>{window.__boom=1});await p.reload();await p.waitForFunction(()=>window.appReady);await settle(p,1500);
       const s=await p.evaluate(()=>({boomed:!!window.__boomed,items:items.length,first:/Get your first outfit/.test($('#today').innerText),toast:$('#toast').textContent,
@@ -59,7 +59,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(s.noted,'and the error is noted for the error report (err_log)');
       ok(await stored(p)===4,'nothing in storage changed');await ctx.close()}
     /* CR-7-03: Today can't be drawn at all: a plain card with Try again, the wardrobe still in memory */
-    {const always='{const t0=renderToday;renderToday=function(){if(window.__boom)throw new Error("test: Today failed");return t0.apply(this,arguments)}}';
+    {const always='if(window.__boom)throw new Error("test: Today failed");';
       const {p,ctx}=await open({today:always});await seed(p);
       await p.addInitScript(()=>{window.__boom=1});await p.reload();await p.waitForFunction(()=>window.appReady);await settle(p,800);
       const s=await p.evaluate(()=>({items:items.length,shown:!$('#today').hidden,text:$('#today').innerText,btn:[...document.querySelectorAll('#today button')].some(b=>/Try again/.test(b.textContent))}));

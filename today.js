@@ -1,7 +1,7 @@
 /* Daily Wardrobe: Today: the weather kept on the device, the pieces list and its rows (slots, toggleRow, setOff, the pieces box), the
    figure and its tiles, the worn pill and the date bar, a new calendar day, renderToday, what a screen reader hears, folding everything
    on a swipe (foldAll), stepping a day (stepDay) and the month planned with other records (planWith)
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14, and on
+   (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14, and on
    2026-11-17 (Round C) into today-plan.js, today.js, today-photofold.js, today-picture.js and today-gestures.js, in that order.) */
 /* the day records and the week's locks a drawing of Today writes (recordDays, lockUpcoming) run in the background; recordRun is the latest
    run, so a test can wait until a device has finished writing before it counts its syncs (tests/sync.test.js quiet) */
@@ -281,4 +281,9 @@ function wxSetTap(el,ev){openSettings('weather');ev.preventDefault()}   // "Set 
 function listTap(){toggleList()}   // the pieces box's head
 function listFoldTap(el,ev){foldListTap(ev)}   // the open list's own ground
 function dayStepTap(el){stepDay(+el.dataset.n)}   // the date bar's ‹ and ›
+/* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above acts({…}),
+   the file's only top-level call that can throw: without act.js its names are still the page's */
+Object.assign(globalThis,{wxPreload,hasOutfit,canPick,setOff,setRoll,restWarn,toggleRow,slotLabel,swatchStack,wardShort,figureStage,figCuDone,keepHome,pickPiece,homeDay,goToday,piecesBox,keepInView,toggleList,renderToday,foldAll,stepDay,planWith,todayTabTap});
+Object.defineProperties(globalThis,{recordRun:{get:()=>recordRun},foldQuiet:{get:()=>foldQuiet},openRow:{get:()=>openRow,set:v=>{openRow=v}},BLOUSE_ROLL_ON:{get:()=>BLOUSE_ROLL_ON,set:v=>{BLOUSE_ROLL_ON=v}},belowOpen:{get:()=>belowOpen,set:v=>{belowOpen=v}},dayShown:{get:()=>dayShown,set:v=>{dayShown=v}},listOpen:{get:()=>listOpen,set:v=>{listOpen=v}}});
+export {recordRun,wxPreload,hasOutfit,canPick,openRow,setOff,BLOUSE_ROLL_ON,setRoll,restWarn,toggleRow,belowOpen,slotLabel,swatchStack,wardShort,figureStage,figCuDone,dayShown,keepHome,pickPiece,homeDay,goToday,listOpen,piecesBox,keepInView,toggleList,renderToday,foldQuiet,foldAll,stepDay,planWith,todayTabTap};
 acts({rollTap,todayTabTap,vestTap,offTap,pickTap,rowTap,addOneTap,belowPicTap,tileTap,swatchTap,wornTap,figLoad,wxRetryTap,wxSetTap,listTap,listFoldTap,dayStepTap});
