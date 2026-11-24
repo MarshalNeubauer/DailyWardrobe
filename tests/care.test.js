@@ -80,7 +80,20 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       ok(overAgain===0,'the overdue reminder told on its first morning: not again on the later mornings it is planned')
       const fresh=await p.evaluate(()=>{const n=items.find(i=>i.id==='char');n.cleaned='2026-11-11';cache={};localStorage.removeItem('care_told');const r=careReminders(14,'07:00');delete n.cleaned;cache={};localStorage.removeItem('care_told');
         return Object.values(r).some(t=>/The charcoal suit (is due|is overdue)|Last wear for the charcoal/.test(t))});
-      ok(!fresh,'cleaned: nothing to remind')}    // ---- the Wardrobe grid: a quiet tag on due pieces only
+      ok(!fresh,'cleaned: nothing to remind')}
+    // ---- R3 N2 (the code review 2026-11-24): the overdue navy suit worn with its jacket taken off (o.top null, o.suitBot): the reminders
+    // still name it (they threw on nm(null), so neither reminder was stored) and the banner's tap asks about the suit (it did nothing)
+    {const off=await p.evaluate(async()=>{localStorage.removeItem('care_told');dayRecs['2026-11-11']={date:'2026-11-11',force:{top:'navy'}};cache={};sel=new Date(2026,10,11);view={y:2026,m:10};
+        const P=planMonth(2026,10),k=key(sel),navy=items.find(i=>i.id==='navy');P[k]={...P[k],top:null,suitBot:true,bot:navy};
+        let rem,asked=null;try{rem=careReminders(14,'07:00')}catch(e){rem='throws: '+e.message}
+        const t0=document.querySelector('#ask-title');if(t0)t0.textContent='';
+        let tap='';try{ACTS.careBandTap()}catch(e){tap='throws: '+e.message}
+        const q=document.querySelector('#ask-title');asked=q?q.textContent:null;const no=document.querySelector('#ask-cancel');if(no&&asked)no.click();
+        delete dayRecs['2026-11-11'];cache={};localStorage.removeItem('care_told');
+        return {state:careDayState(P[k],sel),rem,asked,tap}});
+      ok(off.state&&off.state.k==='over'&&typeof off.rem==='object'&&Object.values(off.rem).some(t=>/The navy suit is overdue for cleaning: today is wear 6 of 5/.test(t)),`the suit worn with its jacket off on an overdue wear: the cleaning reminders name it (${typeof off.rem==='string'?off.rem:JSON.stringify(off.rem)})`);
+      ok(!off.tap&&/^Overdue: Suit/.test(off.asked||''),`and the banner's tap asks whether it was cleaned (${off.tap||off.asked})`)}
+    // ---- the Wardrobe grid: a quiet tag on due pieces only
     await p.evaluate(()=>{flt='all';editing=null;show('wardrobe')});
     const g=await p.evaluate(()=>({navy:(document.querySelector('#gi-navy .caretag')||{}).textContent||'',n:document.querySelectorAll('#wardrobe .caretag').length}));
     ok(g.navy==='Due for cleaning'&&g.n===1,'the grid marks the one due piece "Due for cleaning" (shirts, washed after every wear, are not marked)');
