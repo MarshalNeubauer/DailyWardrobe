@@ -172,12 +172,16 @@ const reviewfixes=async({ok,chromium,url,settle:settleFor})=>{
     // the box on Today counts this month's outfits only, also a year ahead (the plan then holds two Novembers)
     const cnt=await p.evaluate(()=>{settings.blazerDays=[];cache={};sel=new Date(2027,10,15);view={y:2027,m:10};renderToday();return +document.querySelector('#mbox .mltxt small').textContent.match(/(\d+) outfit/)[1]});
     ok(cnt>=20&&cnt<=23,`the month box counts one month's outfits, a year ahead too (${cnt})`);
-    // one shared simulation: the same outfits as planning each month on its own, and each day planned once
-    const sim=await p.evaluate(()=>{cache={};const orig=outfit;let calls=0;outfit=function(){calls++;return orig.apply(this,arguments)};
+    // one shared simulation: the same outfits as planning each month on its own, and each day planned once. The days dressed are
+    // counted where outfit() reads the day's waistcoat setting (planner.js: settings.vestMode, once a call, read nowhere else in
+    // planning): planner.js is an ES module (2026-11-24), so its own calls of outfit() no longer go through a wrapped window.outfit,
+    // which this counted until then (on main the two counts were the same: C:\code\c2-core-lab\simcount.ps1)
+    const sim=await p.evaluate(()=>{cache={};const s0=settings;let calls=0;
+      settings=Object.defineProperty({...s0},'vestMode',{get(){calls++;return s0.vestMode},set(v){s0.vestMode=v},enumerable:true,configurable:true});
       const months=[[2026,10],[2026,11],[2027,0],[2027,1],[2027,2]],diff=[];
       for(const [y,m] of months)planMonth(y,m);const shared=calls;calls=0;
       for(const [y,m] of months){const a=planMonth(y,m),b=buildPlan(y,m);for(const k of Object.keys(b)){const d=keyDate(k);if(d.getMonth()!==m||d.getFullYear()!==y)continue;if(JSON.stringify(idsOf(a[k]))!==JSON.stringify(idsOf(b[k])))diff.push(k)}}
-      const separate=calls;outfit=orig;
+      const separate=calls;settings=s0;
       // a month from before the shared start is still planned on its own, the same as buildPlan
       const old=planMonth(2026,5),oldB=buildPlan(2026,5),oldDiff=Object.keys(oldB).filter(k=>JSON.stringify(idsOf(old[k]))!==JSON.stringify(idsOf(oldB[k]))).length;
       const future=Object.keys(planMonth(2027,2)).filter(k=>keyDate(k)>=todayDate()).length;

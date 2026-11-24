@@ -35,10 +35,11 @@ let rankMemo={c:null,k:'',v:null},rankW=null,rankN=0;const rankWait=new Map();
 function rankPools(o){const n=di(sel),pool=t=>items.filter(i=>i.type===t&&!isHandPick(i)&&inRotation(i,n)).sort((a,b)=>a.id<b.id?-1:1);
   return {top:pool(o.top?o.top.type:o.suitDay?'suit':'blazer'),bot:pool('pants'),shirt:pool('shirt'),tie:pool('tie'),shoes:pool('shoes'),belt:pool('belt'),watch:pool('watch'),socks:pool('socks')}}
 function rankWorker(){if(rankW!==null)return rankW||null;
-  try{rankW=new Worker('analysis-worker.js')}catch(e){rankW=false;return null}
+  try{rankW=new Worker('analysis-worker.js',{type:'module'})}catch(e){rankW=false;return null}
   rankW.onmessage=e=>{const d=e.data||{},w=rankWait.get(d.rank);if(!w)return;rankWait.delete(d.rank);if(d.res)w.done(d.res);else{console.warn('rank: '+d.error);w.done(null)}};
   // a worker that fails: the asks still waiting are worked out here instead, and the next ones too
-  rankW.onerror=()=>{rankW=false;const left=[...rankWait.values()];rankWait.clear();for(const w of left)setTimeout(()=>{try{w.done(rankLooks(w.P,w.o))}catch(e){w.done(null)}},30)};
+  rankW.onerror=e=>{if(!(e instanceof ErrorEvent)&&typeof errNote==='function')errNote(new Error('The background check (analysis-worker.js) didn\u2019t start: it or a file it imports didn\u2019t load'));   // (a load failure is a plain Event the page's error listener never hears: noted here, as main's classic worker's was)
+  rankW=false;const left=[...rankWait.values()];rankWait.clear();for(const w of left)setTimeout(()=>{try{w.done(rankLooks(w.P,w.o))}catch(e){w.done(null)}},30)};
   return rankW}
 function rankFor(o){if(!o||!hasOutfit(o))return null;if(window.TEST_PLAN)return TEST_PLAN.rank(o);const k=outfitKey(o);
   if(rankMemo.c===cache&&rankMemo.k===k)return rankMemo.v;   // (null while it is worked out)

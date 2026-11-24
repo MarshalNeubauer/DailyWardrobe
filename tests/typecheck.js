@@ -39,8 +39,10 @@ const WEB=['lib.es2023.d.ts','lib.webworker.d.ts'];
 function scopes(root=ROOT){
   const tags=scriptTags(rd('index.html',root)),page=tags.map(t=>t.src),mods=tags.filter(t=>t.module).map(t=>t.src);
   const has=f=>fs.existsSync(path.join(root,f));
-  const imp=f=>{const m=/importScripts\(([^)]*)\)/.exec(has(f)?rd(f,root):'');return[...(m?[...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1]):[]),f]};
-  const W=f=>{const files=imp(f);return{files,own:files.filter(x=>!page.includes(x)),lib:WEB}};
+  // (a worker's files: its importScripts, or a module worker's imports; a module worker's scope resolves them as modules, the page's
+  // modules among its files are modules there too, and the bridged names reach it through globals.d.ts as they reach the page)
+  const W=f=>{const w=modscope.workerFiles(root,f),files=w.files;
+    return{files,own:files.filter(x=>!page.includes(x)),lib:WEB,...(w.module?{mods:[f,...files.filter(x=>mods.includes(x))]}:{})}};
   const S={page:{files:page,mods,lib:['lib.es2023.d.ts','lib.dom.d.ts','lib.dom.iterable.d.ts']}};
   if(root!==ROOT){for(const [k,f] of [['asm','asm-worker.js'],['analysis','analysis-worker.js']])if(has(f))S[k]=W(f);return S}
   const server=['worker.js',...fs.readdirSync(path.join(ROOT,'worker')).filter(f=>f.endsWith('.js')).sort().map(f=>'worker/'+f)];

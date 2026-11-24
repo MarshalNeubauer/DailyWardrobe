@@ -29,10 +29,10 @@ const modscope = require('./tests/modscope.js');
 /* the scopes: the page (index.html's script tags, in order: tests/scriptlist.js) and each Web Worker (itself and what it importScripts) */
 const tags = scriptTags(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8'));
 const page = tags.map(t => t.src), mods = new Set(tags.filter(t => t.module).map(t => t.src));
-const workers = ['asm-worker.js', 'analysis-worker.js'].filter(f => fs.existsSync(path.join(ROOT, f))).map(f => {
-  const m = /importScripts\(([^)]*)\)/.exec(fs.readFileSync(path.join(ROOT, f), 'utf8'));
-  return [...(m ? [...m[1].matchAll(/'([^']+)'/g)].map(x => x[1]) : []), f];
-});
+// (a module worker, `new Worker(url, {type: 'module'})`: its `import './x.js'` lines name its files, and it is linted as a module)
+const wk = ['asm-worker.js', 'analysis-worker.js'].filter(f => fs.existsSync(path.join(ROOT, f))).map(f => [f, modscope.workerFiles(ROOT, f)]);
+const workers = wk.map(([, w]) => w.files);
+for (const [f, w] of wk) if (w.module) mods.add(f);
 const scopes = [page, ...workers];
 const classic = [...new Set(scopes.flat())];
 

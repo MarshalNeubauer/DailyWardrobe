@@ -35,9 +35,10 @@ function scopes(ROOT){
   const rd=f=>fs.readFileSync(path.join(ROOT,f),'utf8');
   const tags=scriptTags(rd('index.html')),page=tags.map(t=>t.src);
   const out=[{name:'page',files:page,rows:page,mods:tags.filter(t=>t.module).map(t=>t.src)}];
+  // (a worker's files: its importScripts, or a module worker's `import './x.js'` lines; a module worker is read as a module)
   for(const w of WORKERS){if(!fs.existsSync(path.join(ROOT,w)))continue;
-    const m=/importScripts\(([^)]*)\)/.exec(rd(w));
-    out.push({name:w,files:[...(m?[...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1]):[]),w],rows:[w]})}
+    const k=modscope.workerFiles(ROOT,w);
+    out.push({name:w,files:k.files,rows:[w],mods:k.module?[w]:[]})}
   return out;
 }
 
@@ -57,7 +58,7 @@ function topNames(ast){
 
 /* {scopes, names: top-level names in the page, uses: {file: {other file: [names]}}} */
 function measure(ROOT){
-  const S=scopes(ROOT),parsed={},uses={},mods=new Set(S[0].mods);
+  const S=scopes(ROOT),parsed={},uses={},mods=new Set(S.flatMap(s=>s.mods));
   // (a module is read as one in the page's scope only: a worker can't importScripts it, which tests/bridge.test.js checks)
   const info=f=>{if(!parsed[f]){const m=mods.has(f),src=fs.readFileSync(path.join(ROOT,f),'utf8');
     const ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:m?'module':'script',ranges:true});

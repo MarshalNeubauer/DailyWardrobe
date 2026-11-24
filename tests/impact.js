@@ -452,7 +452,9 @@ const recorder=root=>{let cur=null;const live=new Map(),srcs=new Map(),scans=new
       await s.send('Profiler.enable');await s.send('Profiler.startPreciseCoverage',{callCount:false,detailed:false});
       await s.send('DOM.enable');await s.send('CSS.enable');await s.send('CSS.startRuleUsageTracking');
       // code run in a Web Worker isn't seen: the test then depends on the worker's files as a whole
-      page.on('worker',w=>{const f=urlRel(w.url());if(!f)return;c.add(f,ANY);for(const m of (srcOf(f)||'').matchAll(/importScripts\(([^)]*)\)/g))for(const q of m[1].matchAll(/['"]([^'"]+)['"]/g))c.add(q[1],ANY)});
+      // (a module worker names its files in `import './x.js'` lines: analysis-worker.js)
+      page.on('worker',w=>{const f=urlRel(w.url());if(!f)return;c.add(f,ANY);const ws=srcOf(f)||'';for(const m of ws.matchAll(/importScripts\(([^)]*)\)/g))for(const q of m[1].matchAll(/['"]([^'"]+)['"]/g))c.add(q[1],ANY);
+        for(const m of ws.matchAll(/^import\s+(?:[^'";]*\sfrom\s+)?['"]\.\/([^'"]+)['"]/gm))c.add(m[1],ANY)});
       live.set(page,{s,sheets,c});
       const pc=page.close.bind(page);page.close=async(...a)=>{await take(page,true);return pc(...a)};
       // a page load drops what the old document ran, and Chromium answers nothing while a load is pending: read it first

@@ -13,7 +13,8 @@ module.exports=async({ok,ROOT})=>{
   const html=R('index.html'),need=new Set();
   for(const f of scriptList(html))need.add(f);   // (every <script src>, type="module" and defer too: tests/scriptlist.js)
   for(const m of html.matchAll(/<link[^>]*\shref="([^"]+)"/g))if(!/^https?:/.test(m[1]))need.add(m[1]);
-  for(const f of fs.readdirSync(ROOT).filter(f=>/worker\.js$/.test(f)&&f!=='worker.js')){need.add(f);for(const m of R(f).matchAll(/importScripts\(([^)]*)\)/g))for(const s of m[1].matchAll(/'([^']+)'/g))need.add(s[1])}
+  for(const f of fs.readdirSync(ROOT).filter(f=>/worker\.js$/.test(f)&&f!=='worker.js')){need.add(f);for(const m of R(f).matchAll(/importScripts\(([^)]*)\)/g))for(const s of m[1].matchAll(/'([^']+)'/g))need.add(s[1]);
+    for(const m of R(f).matchAll(/^import\s+(?:[^'";]*\sfrom\s+)?'\.\/([^']+)'/gm))need.add(m[1])}   // (a module worker's imports: analysis-worker.js)
   for(const ic of JSON.parse(R('manifest.webmanifest')).icons||[])need.add(ic.src);
   const unlisted=[...need].filter(f=>!assets.includes(f));
   ok(!unlisted.length,`every script, stylesheet, icon, manifest and worker the app loads is in ASSETS (${unlisted.join(', ')||'all listed'})`);
