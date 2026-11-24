@@ -47,6 +47,25 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(sd.rainyDays>10&&sd.rainySuede===0,`three rainy weeks plan no suede (${sd.rainySuede} of ${sd.rainyDays} days)`);
     ok(sd.onlyLeather==='suede'&&sd.onlyNotes.some(n=>/^Rain is forecast and suede shoes are the only ones you have for today/.test(n)),`suede only: the day's note says so (${sd.onlyNotes.join(' | ')})`);
 
+    // ---- R3 N1 (the code review 2026-11-24; the owner: rain beats repeating yesterday's pair, not a real shoe mistake): brown and tan suits
+    // that only the brown suede suits, with black calf (a mistake under them) or black patent as the other pair: suede in the rain, no hard check;
+    // with a navy suit too, rainy days go to the navy suit and its calf pair (no suede, no mistake), and dry days are as before
+    const rc=await p.evaluate(()=>{const out={};
+      for(const [name,other,navy] of [['calf','calf',false],['patent','patent',false],['navy','calf',true]]){let k=0;const I=(type,c,x={})=>({id:type+(k++),type,primaryColor:c,pattern:'solid',...x});
+        items=[I('suit','brown'),I('suit','tan'),...(navy?[I('suit','navy')]:[]),I('shirt','white'),I('shirt','lightblue'),I('shirt','white',{pattern:'pinstripe',secondaryColor:'blue'}),I('tie','navy'),I('tie','burgundy'),I('tie','green'),
+          I('shoes','black',{leather:other}),I('shoes','brown',{leather:'suede'}),I('belt','brown',{leather:'suede'}),I('belt','black',{leather:'calf'})];
+        settings.workdays=[1,2,3,4,5];settings.blazerDays=[];settings.holidays=null;settings.daysOff=[];TODAY_OVERRIDE='2026-11-09T12:00:00';dayRecs={};climate=null;
+        for(const wet of [false,true]){weather={};for(let d=9;d<=30;d++)weather['2026-11-'+d]={tmax:18,pop:wet?90:0};cache={};
+          const P=buildPlan(2026,10),days=Object.keys(P).filter(k=>keyDate(k)>=todayDate()&&P[k].shoes);
+          out[name+(wet?' rain':' dry')]={days:days.length,suede:days.filter(k=>P[k].shoes.leather==='suede').length,hard:days.filter(k=>rateOutfit(P[k]).hard.length).length,
+            brown:days.filter(k=>P[k].top&&P[k].top.primaryColor!=='navy').length,mistake:days.filter(k=>P[k].notes.some(n=>/^None of your shoes suit|^Only patent/.test(n))).length}}}
+      return out});
+    const rs=o=>JSON.stringify(o);
+    ok(rc['calf rain'].days>10&&rc['calf rain'].suede===rc['calf rain'].days&&!rc['calf rain'].hard&&!rc['calf rain'].mistake,`rain, brown and tan suits, black calf and brown suede: the suede that suits, never the calf under them (${rs(rc['calf rain'])})`);
+    ok(rc['patent rain'].days>10&&rc['patent rain'].suede===rc['patent rain'].days&&!rc['patent rain'].hard&&!rc['patent rain'].mistake,`rain, the other pair patent: the suede, not patent (${rs(rc['patent rain'])})`);
+    ok(rc['navy rain'].days>10&&!rc['navy rain'].suede&&!rc['navy rain'].hard&&!rc['navy rain'].brown,`rain with a navy suit too: every day the navy suit and its calf pair, no suede, no mistake (${rs(rc['navy rain'])})`);
+    ok(rc['calf dry'].suede===rc['calf dry'].days&&!rc['calf dry'].hard&&rc['navy dry'].brown>0&&rc['navy dry'].suede>0,`dry days: the brown suits and their suede as before (${rs(rc['calf dry'])} ${rs(rc['navy dry'])})`);
+
     // ---- CR-3-04 and CR-3-07: the jacket taken off for a day
     const off=await p.evaluate(()=>{let k=0;const I=(type,c,x={})=>({id:type+(k++),type,primaryColor:c,pattern:'solid',...x});
       items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','green'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'})];

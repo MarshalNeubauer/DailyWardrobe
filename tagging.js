@@ -9,9 +9,11 @@
 const TAG_FIELDS=['type','primaryColor','secondaryColor','tertiaryColor','pattern'];
 const fieldLabel={type:'item',primaryColor:'color',secondaryColor:'second color',tertiaryColor:'third color',pattern:'pattern'};
 const valName=(k,v)=>!v?'none':k==='type'?(TYPES[v]||v).toLowerCase():k==='pattern'?patName(v):colName(v);
-/* what the tagger answered, as the card's values (the same normalising as a first tag) */
+/* what the tagger answered, as the card's values (the same normalising as a first tag); the pattern as normTag fitted it (to the card's
+   type when tagging again, forType): fitted again to Claude's type, a shirt's oxford Claude called a suit came back Solid (the 2026-11-24
+   review's R2 N1: 42 of 60 shirt patterns) */
 function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?ai.primaryColor:'grey',secondaryColor:ai.secondaryColor&&ai.secondaryColor!=='none'?ai.secondaryColor:null,
-  tertiaryColor:ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null,pattern:normPat(ai.type,ai.pattern)}}
+  tertiaryColor:ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null,pattern:ai.pattern||'solid'}}
 function takeExtras(q,ai,seen){q.tagAI=aiSignals(ai,seen);Object.assign(q,{conf:ai.conf||null,altColor:ai.altColor||null,altPattern:ai.altPattern||null,newColor:ai.newColor||null,newPattern:ai.newPattern||null,clothBox:ai.clothBox||q.clothBox||null,
     patternBox:ai.patternBox||q.patternBox||null,weave:ai.weave||q.weave||null});
   q.aiTag={...aiFields(ai)};takeMaterial(q,ai);readSett(q)}

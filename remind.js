@@ -23,7 +23,9 @@ function remindLines(){const out={},T=todayDate();
     const o=planMonth(d.getFullYear(),d.getMonth())[key(d)];if(o&&(o.top||o.shirt))out[isoKey(d)]=outfitLine(o)}
   return out}
 /* keep both kinds where the service worker reads them (only the kinds switched on) -> the dates a push is wanted on */
-async function remindKeep(p=remindPrefs()){const lines=p.on?remindLines():{},care=remindCareOn(p)?careReminders(REMIND_DAYS,p.time):{};
+async function remindKeep(p=remindPrefs()){const lines=p.on?remindLines():{};
+  // (a cleaning reminder that throws must not stop the outfit lines from being kept and sent: Round D, after the code review's R3 N2)
+  let care={};if(remindCareOn(p)){try{care=careReminders(REMIND_DAYS,p.time)}catch(e){console.warn('cleaning reminders',e)}}
   try{if(self.caches){const c=await caches.open(REMIND_CACHE),put=(u,o)=>c.put(u,new Response(JSON.stringify(o),{headers:{'content-type':'application/json'}}));await put(REMIND_URL,lines);await put(CARE_URL,care)}}catch(e){console.warn('reminder lines',e)}
   return [...new Set([...Object.keys(lines),...Object.keys(care)])].sort()}
 async function remindCall(body){const r=await acctCall('push',{method:'POST',body:JSON.stringify(body)});if(r.status!==200)throw new Error(r.j&&r.j.message||'The reminder couldn’t be set. Try again.');return r.j}

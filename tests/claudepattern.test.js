@@ -28,9 +28,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok((await call({image:IMG})).status===422,'no pattern found is reported, not drawn');
 
     // ---- app: Claude's answer coloured from the user's blazer photos
-    const ctx=await browser.newContext({viewport:{width:390,height:844}});let patternReply=()=>[200,{...SPEC,across:{bands:dir.bands.map(b=>({...b,w:b.widthPct/100}))},along:{bands:dir.bands.map(b=>({...b,w:b.widthPct/100}))},model:'m'}],calls=[];
+    const ctx=await browser.newContext({viewport:{width:390,height:844}});let patternReply=()=>[200,{...SPEC,across:{bands:dir.bands.map(b=>({...b,w:b.widthPct/100}))},along:{bands:dir.bands.map(b=>({...b,w:b.widthPct/100}))},model:'m'}],calls=[],patternDelay=0;
     await ctx.route('https://w.test/**',async route=>{const q=route.request(),u=new URL(q.url());
-      if(u.pathname==='/pattern'){calls.push(JSON.parse(q.postData()));const [st,b]=patternReply();return route.fulfill({status:st,contentType:'application/json',body:JSON.stringify(b)})}
+      if(u.pathname==='/pattern'){calls.push(JSON.parse(q.postData()));if(patternDelay)await new Promise(r=>setTimeout(r,patternDelay));const [st,b]=patternReply();return route.fulfill({status:st,contentType:'application/json',body:JSON.stringify(b)})}
       if(q.method()==='POST'&&u.pathname==='/')return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({type:'blazer',primaryColor:'khaki',secondaryColor:'lightblue',tertiaryColor:'white',pattern:'windowpane',metal:null,leather:null,dial:null,band:null,bezel:null,
         confidence:{type:'high',primaryColor:'high',pattern:'high'},altColor:'none',altPattern:'none',newColor:null,newPattern:null,clothBox:null,patternBox:{x:220,y:420,w:180,h:280},weave:null,model:'m'})});
       return route.fulfill({status:404,contentType:'application/json',body:'{}'})});
@@ -108,6 +108,17 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     patternReply=()=>[200,{...SPEC,across:{bands:dir.bands.map(b=>({...b,w:b.widthPct/100}))},along:{bands:dir.bands.map(b=>({...b,w:b.widthPct/100}))},model:'m'}];
     const before=calls.length;await p.evaluate(async()=>{queue=[];const it=items[0];delete it.sett;delete it.patternSpec;await rereadSett(it.id)});
     ok(calls.length===before+1&&calls.at(-1).closeup&&await p.evaluate(()=>items[0].sett.src==='claude+pixels'&&!!items[0].patternSpec),'"Read pattern from photo" in the Wardrobe asks Claude and keeps its reading');
+    // (the 2026-11-24 review's R1 N1, pattern-read.js) the reading lands a moment later: Settings opened meanwhile (the sheet closed, the
+    // gear tapped) stays open, and the Wardrobe is drawn once it closes; with the item's sheet still open the sheet shows the new reading
+    patternDelay=900;
+    const rs=await p.evaluate(async()=>{const it=items[0];delete it.sett;show('wardrobe');openItem(it.id);const run=rereadSett(it.id);
+      await new Promise(r=>setTimeout(r,200));closeItem();openSettings();const before=settingsOpen();await run;await new Promise(r=>setTimeout(r,300));
+      const still=settingsOpen(),read=!!items[0].sett;closeSettings();return {before,still,read}});
+    ok(rs.before&&rs.still&&rs.read,`a pattern reading that lands while Settings is open leaves Settings open (${JSON.stringify(rs)})`);
+    const rs2=await p.evaluate(async()=>{const it=items[0];delete it.sett;show('wardrobe');openItem(it.id);document.querySelector('#ivbody').firstElementChild.dataset.mark='1';
+      await rereadSett(it.id);await new Promise(r=>setTimeout(r,300));const r={redrawn:!document.querySelector('#ivbody [data-mark="1"]'),open:editing===it.id,read:!!items[0].sett};closeItem();return r});
+    ok(rs2.redrawn&&rs2.open&&rs2.read,`…and with the item's sheet open the sheet is drawn again with the reading (${JSON.stringify(rs2)})`);
+    patternDelay=0;
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

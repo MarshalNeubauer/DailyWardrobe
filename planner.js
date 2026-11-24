@@ -296,9 +296,11 @@ function shoeFormality(shoe,suitDay){
    Leather shoes want a day to dry: yesterday's pair costs SHOE_AGAIN (25, was 7) when another pair suits, more than the halved strap and
    metal swing (20), less than no matching belt (30) (the audit: one pair 87 times two days running) */
 const SUIT_SUEDE=30,SHOE_WATCH=.5,SHOE_AGAIN=25;
-/* rain wins (the owner, 2026-11-17, on the code review's CR-3-02): suede (and nubuck) is never planned on a rainy day while another pair is
-   left, even when that means yesterday's pair again; it was -25, the same as SHOE_AGAIN, so resting yesterday's calf pair put suede in the rain */
-const RAIN_SUEDE=1000;
+/* rain wins (the owner, 2026-11-17, on the code review's CR-3-02): suede (and nubuck) is not planned on a rainy day while another pair
+   suits, even when that means yesterday's pair again; it was -25, the same as SHOE_AGAIN, so resting yesterday's calf pair put suede in the rain.
+   But not over a real mistake (the owner, 2026-11-24, R3 N1): at 1000 black calf under a brown suit, or patent, beat brown suede that suited;
+   60 is more than SHOE_AGAIN and less than a pair that doesn't suit (NO_SHOES) or patent (shoeFormality -200). dayPools' shoeOk counts the rain too */
+const RAIN_SUEDE=60;
 function watchFit(w,shoe,belt){
   let v=0;const o=watchOpts(w);
   if(o.band==='leather'&&shoe)v+=leatherGroup(planCol(w))===leatherGroup(planCol(shoe))?8:-20;
@@ -308,7 +310,7 @@ function watchFit(w,shoe,belt){
 
 /* bump PLAN_RULES whenever the planning rules change: on the next start the app re-plans the days after today (the week's locks and
    the app's own recorded pieces go; the owner's swaps and picks (force, skip, the vest) and a kept trip stay: replanFuture(true) in history.js) */
-const PLAN_RULES=30;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
+const PLAN_RULES=31;   // what each number changed: CLAUDE.md, "PLAN_RULES history" (add the next one there)
 /* ---- favorites (2026-11-18, the owner's approved design, option B): settings.fav = {looks:[{j,sh,tie,at}], items:[id]}, marked by hand
    only (fav.js). A favorite look is the day's jacket, shirt and tie by id (j null on a day without a jacket, tie null without a tie). The
    planner brings a favorite look back on its own (favDue in planSim) and gives favorite pieces a rest target shorter by a fifth (FAV_REST_K)
@@ -565,8 +567,10 @@ const was={},take=b=>{if(!b)return null;const c={...b,rest:Math.min(since(b),60)
 // a piece taken off for the day (rec.off) was not worn: its rest goes back to what it was
 const untake=b=>{if(!b||!(b.id in was))return;if(was[b.id]===undefined)delete last[b.id];else last[b.id]=was[b.id]};
 const argBest=(arr,sc)=>{let b=null,bs=-1e9;for(const i of arr){const s=sc(i)+rb(i)+(fv&&fv.has(i.id)?FAV_TIE:0);if(s>bs){bs=s;b=i}}return b},best=(arr,sc)=>take(argBest(arr,sc));
-// the day's shoes, and whether any of them suit the jacket and pants (not patent: a last resort)
-const S=pool('shoes','shoes'),shoeOk=(t,b)=>!S.length||S.some(s=>finish(s.leather)!=='patent'&&shoeSuits(t,b,s));
+// the day's shoes, and whether any of them suit the jacket and pants (not patent: a last resort); on a rainy day not suede either while
+// the day has a smooth pair (the code review R3 N1, 2026-11-24: the jacket and clothes choice steer to a jacket a dry pair suits)
+const S=pool('shoes','shoes'),wet=!!(day.clim&&day.clim.rain)&&S.some(s=>!['patent','suede'].includes(finish(s.leather)));
+const shoeOk=(t,b)=>!S.length||S.some(s=>finish(s.leather)!=='patent'&&!(wet&&finish(s.leather)==='suede')&&shoeSuits(t,b,s));
 return {day,suitDay,n,by,last,rec,casual,occ,full,noJ,noT,force,lock,trip,tripOff,hpTop,hpBotAny,hpShoes,since,rest,over,rb,pool,take,untake,argBest,best,S,shoeOk,fv}}
 /* the jacket (null on a day without one) */
 function chooseJacket(c){const {day,suitDay,by,occ,noJ,noT,since,rest,over,pool,argBest,best,shoeOk}=c;
@@ -672,7 +676,7 @@ for(const s of S.length?S:[null])for(const b of [...B,null])for(const w of W.len
   // shoes that don't suit (a real mistake) cost NO_SHOES more, so they lose to a pair with no matching belt (30, not a mistake): the
   // re-audit's blazer day, khaki chinos and black calf shoes at 69 while the oxblood loafers suited them
   if(s){const ss=shoeScore(top,bot,s);t+=ss-(ss<=SHOE_LINE?NO_SHOES:0)+shoeFormality(s,suitDay)+rb(s)-(rest(s)<=1&&!day.formal&&day.occ!=='funeral'?SHOE_AGAIN:0);   // leather shoes want a day to dry: not yesterday's pair when another suits
-    if(day.clim.rain&&finish(s.leather)==='suede')t-=RAIN_SUEDE;     // suede and rain don't mix: never, while any other pair is left
+    if(day.clim.rain&&finish(s.leather)==='suede')t-=RAIN_SUEDE;     // suede and rain don't mix: not while another pair suits
     if(day.formal||day.occ==='funeral'){const g=leatherGroup(planCol(s)),f=finish(s.leather);t+=(f==='suede'||f==='grain')?-20:g==='black'?(day.occ==='funeral'?20:8):g==='burgundy'?3:-4}
     if(day.occ==='wedding'&&finish(s.leather)==='suede')t-=15}
   if(b){if(!s)continue;const f=beltFit(s,b);if(f===null)continue;t+=12+f+rb(b)}else if(B.length&&s)t-=30; // no matching belt: allowed, but last resort

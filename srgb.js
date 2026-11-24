@@ -1,8 +1,9 @@
 /* sRGB <-> linear light, written once (CR-8-09, 2026-11-17): it was copied about 20 times across the drawing files, and one hand copy (the
    mannequin's shirt buttons) had drifted from the painter. Loaded first on the page (index.html) and in the picture worker (asm-worker.js).
-   The copies inside the painter's code fingerprint (asm-color.js asmCmCode: asmCmBtnCol, asmCmBuild's gam and hexLin; assemble.js ASM_LIN)
-   stay where they are until a planned repaint (ASM_CM_PAINTV): moving them changes every look's key. The same arithmetic as the copies,
-   so every result is bit for bit the same */
+   The same arithmetic as the copies it replaced, so every result is bit for bit the same. Since C3 (2026-11-24) the painter's
+   fingerprinted code calls it (asmCmBtnCol, asmCmBuild's gam, assemble.js ASM_LIN), but these four names are in no picture key
+   (asm-color.js asmCmCode): an edit here changes every painted pixel and no key. tests/asmcode.test.js pins this file's code, so change
+   it only with a planned repaint (bump ASM_CM_PAINTV, or add the four names to asmCmCode: every phone repaints every look) */
 const srgbLin=v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4);   // a display value 0..1 -> linear
 const linSrgb=v=>v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055;   // linear -> a display value 0..1 (not clamped)
 const srgbLin8=v=>srgbLin(v/255);   // a display byte 0..255 -> linear
