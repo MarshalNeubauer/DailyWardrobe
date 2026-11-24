@@ -208,11 +208,17 @@ const BRIDGE={
   'snapshots.js':['loadSnapshots','rollBack','rollBackState','snapLabel'],
   // kit.js offers the backup file (downloadBackup); the tests restore one (restoreBackup: actsindex, fieldmerge, records, wardrobe)
   'backupfile.js':['downloadBackup','restoreBackup'],
+  // photos, ui, colpick, look, add, setup, settings, safety, sync-status, sync, about, remind, kit, pattern-read read who is connected and
+  // the link's state; the rest: tests. acct and inviteChecking have setters (tests assign them); acctWhy and acctLinkRun are getters
+  'account.js':['acct','acctBase','acctCall','acctEndedUI','acctEsc','acctFailText','acctLinkRun','acctPending','acctRole','acctTyped','acctWhy','applyRole','connectFromLink','dropInviteHash','hasInviteHash','homeScreenGuide','inviteChecking','iosInSafari','isTester','limitNote','loadAccount','myInviteLink','rememberRole','renderAccountUI'],
   // start.js starts and yields the setup (setupStart, setupYield), account and kit read and redraw it (setup, SETUP_STEPS, setupShown,
   // setupDraw, setupFinish, setupSample), today, stats and wardrobe draw the empty states (setupNeeds, setupToday, setupWardEmpty),
   // weather asks tzCountry; the rest: tests only. SETUP_STEPS is a getter (only setup.js writes it), setup has a setter
   // (tests/rollback.test.js)
   'setup.js':['SETUP_STEPS','setup','setupCancel','setupClose','setupDraw','setupDress','setupFinish','setupGo','setupNeeds','setupOpen','setupSample','setupSearch','setupShown','setupStart','setupToday','setupVestChosen','setupWardEmpty','setupYield','tzCountry'],
+  // account, setup, item-photo, calendar, add-save, add-keep, app, itemsheet, wardrobe, start, stats, sync, sync-status, today, remind, safety,
+  // about use it; the rest: tests. kitNoMine (itemsheet.js) and kitSdNew (tests/sample.test.js) have setters, the other lets are getters
+  'kit.js':['HOME_CARD','KIT_IMP_LAST','KIT_IMP_UNDO_MS','KIT_MINE_CUT','KIT_TEMPLATE','KIT_YIELD','PAPER_CARD','homeAbout','homeAgain','homeAndroid','homeBrowser','homeCopyBtn','homeIOS','homeNeeded','homeOpen','homeShareShort','homeStandalone','homeSteps','homeTester','kit','kitClose','kitDelMany','kitDraw','kitDupMark','kitDuplicate','kitEdited','kitEl','kitFixOldImports','kitImp','kitImpBusy','kitImportFile','kitImportGo','kitImportOpen','kitImportText','kitItem','kitLastImp','kitNoMine','kitOpen','kitQuiet','kitRead','kitSampleBanner','kitSampleLoad','kitSampleMigrate','kitSampleNote','kitSampleRemove','kitSampleSig','kitSampleTag','kitSampling','kitSaved','kitSdNew','kitSends','kitSentStamp','kitShareDone','kitShareFilter','kitStartRow','kitStore','kitTemplate','kitTx','kitType','kitUnimport','kitUnsave','kitUserEdit','safariRemind','tourAgain','tourOpen','tourSeen'],
   // settings.js (calSummary) and today.js (calBanner) are classic scripts; the rest are read by the calendar test, calBusy by the
   // restacts test only: a getter
   'calendar.js':['CAL_GUIDES','CAL_X','calBanner','calBusy','calGuide','calNew','calPlan','calSummary','renderCalUI'],
