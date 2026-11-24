@@ -141,7 +141,7 @@ function careFrame(o){const s=careDayState(o,sel);if(!s)return null;
   return {cls:` cb care-${s.k}`,html:`<div class="cframe" aria-hidden="true"></div><div class="cband" id="cband" role="button" tabindex="0" aria-label="${esc(s.bold+': '+s.rest)}. Tap if it was cleaned" data-act="careBandTap" data-act-keydown="careBandKey"><svg aria-hidden="true"><path/></svg><div class="crow"><span class="cdots" aria-hidden="true">${dots}</span><span class="ctxt"><b>${s.bold}</b> · ${esc(s.rest)}</span></div></div>`,s}}
 /* a tap on the banner (fix round 3, W2-14-05: the red "Overdue" came back every morning and a tap did nothing; the way to clear it was
    Settings → Laundry & cleaning, which nothing on Today pointed to): asks whether it was cleaned, and "Cleaned today" starts its count again */
-function careBandTap(){const o=planFor()[key(sel)],s=o&&careDayState(o,sel);if(!s||!o.top)return;const p=o.top,w=careWashed(p.type)?'Washed':'Cleaned';
+function careBandTap(){const o=planFor()[key(sel)],s=o&&careDayState(o,sel),p=careTop(o);if(!s||!p)return;const w=careWashed(p.type)?'Washed':'Cleaned';
   askConfirm(`${s.bold}: ${s.rest}.\n\nWas it cleaned since you last wore it? “${w} today” starts its count again. To send it away or see everything that is due, open ⚙ Settings → Laundry & cleaning.`,{ok:`${w} today`,cancel:'Not yet'}).then(y=>{if(y)careCleaned(p.id)})}
 /* lay the banner out: its shape (the cut round the tie swatch when the swatch reaches into it) and its words (13 px, smaller down to 11,
    then the bold words on a line of their own) */
@@ -183,7 +183,7 @@ function careReminders(days,time){const out={},T=todayDate(),add=(d,t)=>{const k
   const sent=(i,f)=>{const t=told[i.id];return !!(t&&t.c===cOf(i)&&t[f]&&(t[f]<tk||(t[f]===tk&&past)))};
   const mark=(i,f,v)=>{keep[i.id]={...(keep[i.id]||{c:cOf(i)}),[f]:v}};
   for(const i of items){const t=told[i.id];if(t&&t.c===cOf(i))keep[i.id]={...t}}   // (kept while the piece isn't cleaned)
-  wd.forEach((d,j)=>{const o=plan(d),s=o&&careDayState(o,d);if(!s)return;const p=o.top;
+  wd.forEach((d,j)=>{const o=plan(d),s=o&&careDayState(o,d);if(!s)return;const p=careTop(o);   // (a suit worn with its jacket off too, the code review R3 N2)
     if(s.k==='last'){add(d,`Last wear for the ${nm(p)} before cleaning: it goes to the cleaner after today.`);if(last[p.id]==null)last[p.id]=j}
     // overdue: the first morning it is planned past its limit only (the owner, 2026-11-14), once per cleaning
     else if(s.k==='over'&&!sent(p,'o')&&!(keep[p.id]&&keep[p.id].o&&keep[p.id].o<isoKey(d))){add(d,`The ${nm(p)} is overdue for cleaning: today is wear ${s.n} of ${s.limit}.`);mark(p,'o',isoKey(d))}});
@@ -191,7 +191,7 @@ function careReminders(days,time){const out={},T=todayDate(),add=(d,t)=>{const k
   for(const i of items){if(!CARE_FRAME.includes(i.type)||i.away||i.order)continue;const L=careLimit(i.type);if(L<2||sent(i,'d'))continue;
     const j=(w[i.id]||0)>=L?0:last[i.id]!=null?last[i.id]+1:null;   // due already: the first morning to come; due after a coming last wear: the morning after
     const d=j!=null&&wd[j];if(!d)continue;const o=plan(d);
-    if(o&&o.top&&o.top.id===i.id)continue;   // planned that day: that day's own line says it
+    if(careTop(o)&&careTop(o).id===i.id)continue;   // planned that day: that day's own line says it
     add(d,`The ${nm(i)} is due for the cleaner.`);mark(i,'d',isoKey(d))}
   try{localStorage.setItem('care_told',JSON.stringify(keep))}catch{}
   return out}
