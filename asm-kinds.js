@@ -131,4 +131,4 @@ export {ASM_NK,ASM_NK_KNIT,asmNkBase,ASM_JF_BASES,asmJfKey,asmJfWants,asmCmKindO
   for(const [k,v] of Object.entries(ASM_NK)){const B=ASM_CM_KINDS[v.base];
     if(!own(ASM_CM_KINDS,k))Object.defineProperty(ASM_CM_KINDS,k,{value:{...B,zones:[...B.zones],lapels:v.lapels!=null?v.lapels:B.lapels},enumerable:false});
     if(v.btn&&!own(ASM_CM_BTN,k))Object.defineProperty(ASM_CM_BTN,k,{value:v.btn,enumerable:false});
-    ASM_GL_KINDS.add(k)}})();
+    if(typeof ASM_GL_KINDS!=='undefined')ASM_GL_KINDS.add(k)}})();

@@ -498,20 +498,20 @@ function asmShirtAngles(A,idx,W,H){const N=W*H,lab=new Int32Array(N).fill(-1),pa
    in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
    this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
 /* everything the painting needs, as plain data (photos as data URLs), or null: a look with no colour-coded master (asm-color.js asmCmJob) */
-async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const ob=asmOcpBase(o,k);let j=await asmCmJob(ob);   // (the blouse's master is built on the open-shirt master's items: asm-ocp.js)
+async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const ob=typeof asmOcpBase==='function'?asmOcpBase(o,k):o;let j=await asmCmJob(ob);   // (the blouse's master is built on the open-shirt master's items: asm-ocp.js)
   if(j)j=await asmNkJob(j,ob,k);   // a new garment's master and cloth, the faded master for jeans (asm-kinds.js)
-  if(j){const w=asmWatchJob(o,asmNkBaseOf(k));if(w)j.watch=w}
-  if(j){const q=asmPocketJob(o,asmNkBaseOf(k));if(q)j.pocket=q}
-  if(j)j=await asmOcpJob(j,o,k);   // the uniform blouse (no watch or pocket square, the rank), OCP pants (asm-ocp.js)
+  if(j&&typeof asmWatchJob==='function'){const w=asmWatchJob(o,asmNkBaseOf(k));if(w)j.watch=w}
+  if(j&&typeof asmPocketJob==='function'){const q=asmPocketJob(o,asmNkBaseOf(k));if(q)j.pocket=q}
+  if(j&&typeof asmOcpJob==='function')j=await asmOcpJob(j,o,k);   // the uniform blouse (no watch or pocket square, the rank), OCP pants (asm-ocp.js)
   return j}   // (the day's watch painted after: asm-watch.js; a new kind's watch is its base master's)
 /* build one picture from a job (in either thread) -> {url (a JPEG data URL), gl, ms}; a warming job (setupOnly) only sets its master up */
 async function asmBuild(job){
   if(job.cm&&job.setupOnly){const hit=await asmCmSetup(job);if(job.diskCache!==false&&typeof indexedDB!=='undefined'&&!await asmCmDiskGet(asmCmDiskKey(job))){const x=await asmCmPack(hit.P);if(x)await asmCmDiskPut(asmCmDiskKey(job),x,job.cm+'|')}return {setup:true}}   // (warming, asm-color.js asmCmWarm)
   if(!job||!job.cm)return {};return asmBuildAfter(await asmCmBuild(job),job)}
 /* the day's watch and pocket square, painted on the finished picture (asm-watch.js, asm-pocket.js; also after the page's draw, asm-gl.js asmGlFinOff) */
-async function asmBuildAfter(r,job){if(job.watch)r=await asmWatchPaint(r,job.watch);
-  if(job.ocpDecal)r=await asmOcpPaint(r,job.ocpDecal);   // the uniform blouse's tapes and rank (asm-ocp.js)
-  return job.pocket?asmPocketPaint(r,job.pocket):r}
+async function asmBuildAfter(r,job){if(job.watch&&typeof asmWatchPaint==='function')r=await asmWatchPaint(r,job.watch);
+  if(job.ocpDecal&&typeof asmOcpPaint==='function')r=await asmOcpPaint(r,job.ocpDecal);   // the uniform blouse's tapes and rank (asm-ocp.js)
+  return job.pocket&&typeof asmPocketPaint==='function'?asmPocketPaint(r,job.pocket):r}
 /* a picture as a JPEG data URL (the worker has its own, on an OffscreenCanvas) */
 let asmJpeg=async function asmJpeg(img){const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').putImageData(img,0,0);return c.toDataURL('image/jpeg',.9)};
 /* the worker: one picture at a time; the day on screen goes to the front of the line (asmRun(job, true)) */
@@ -546,7 +546,7 @@ let ASM_IDLE_MS=150e3,asmIdleT=0,asmPageN=0;
 function asmIdle(){const st=asmW;return !!st&&!!st.w&&!st.busy&&!asmQ.length&&!st.saving&&!asmAheadOn&&!asmPageN&&!asmCmWarming}
 function asmIdleArm(){clearTimeout(asmIdleT);const st=asmW;if(!st||!st.w)return;asmIdleT=setTimeout(asmIdleEnd,document.hidden?0:ASM_IDLE_MS)}
 function asmIdleEnd(){const st=asmW;if(!st||!st.w)return;if(!asmIdle()){if(document.hidden)asmIdleT=setTimeout(asmIdleEnd,1000);return}
-  clearTimeout(st.timer);try{st.w.terminate()}catch{}asmW=null;asmGlFree()}
+  clearTimeout(st.timer);try{st.w.terminate()}catch{}asmW=null;if(typeof asmGlFree==='function')asmGlFree()}
 if(typeof document!=='undefined')document.addEventListener('visibilitychange',()=>{if(document.hidden)asmIdleArm()});
 /* (2026-11-14 audit) a picture the worker hasn't answered in ASM_RUN_MS (a hung or crashed worker): it fails, the worker is replaced and
    the line goes on; before, nothing came back and every later picture waited behind it until the app was restarted */
@@ -558,8 +558,8 @@ const asmOffPage=()=>{const st=asmWorker();return !!st&&st.ok!==false};
 function asmRun(job,front){const st=asmWorker();if(!st)return asmBuild(job);clearTimeout(asmIdleT);
   // (2026-11-14) a worker without WebGL2 (an iPhone before iOS 17 has OffscreenCanvas but no WebGL in a worker): a look the graphics chip
   // covers is drawn on the page's own (asm-gl.js asmGlOnPage), with every CPU part in the worker (asmRunPage); everything else goes to the worker
-  const note=r=>{asmGlNote(r);return r};
-  if(asmGlOnPage(job,st))return asmRunPage(job,front).then(note);
+  const note=r=>{if(typeof asmGlNote==='function')asmGlNote(r);return r};
+  if(typeof asmGlOnPage==='function'&&asmGlOnPage(job,st))return asmRunPage(job,front).then(note);
   return asmPost(job,front).then(note)}
 /* (CR-8-02, 2026-11-17) a covered look where the worker has no WebGL2: the worker sets the master up and packs its textures, the page
    draws, the worker finishes the picture (asm-gl.js asmGlPrepOff, asmGlPage, asmGlFinOff); the page never works a setup out nor paints

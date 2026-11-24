@@ -283,9 +283,9 @@ function asmCmSig(o){const k=asmKindOf(o);if(!k)return '';const b=asmNkBaseOf(k)
   const rev=asmCmRev(k);if(rev)s.push('mf:'+rev);   // the painter's code and the master's record dates (asmCmCode, asmCmRev)
   for(const z of Object.keys(it).sort()){const i=it[z];s.push(z+':'+colOf(i)+'/'+(i.pattern||'')+'/'+(typeof usableSett==='function'?settSig(usableSett(i)):'')+(i.patternSpec?'/ps'+fnv64(JSON.stringify([i.patternSpec.across,i.patternSpec.along])).slice(0,6):'')+(i.material?'/'+i.material:'')+asmCmWeaveTag(z,i)+asmCmTrSc(z,i)+asmCmTieTag(z,i)+asmCuTag(z,i)+asmCrTag(z,i)+asmWtTag(z,i)+asmLookTag(z,i))}
   if(o.clip&&k!=='vest')s.push('bar:'+asmBarSig(o.clip));
-  if(asmWatchPaints(o.watch))s.push('watch:'+asmWatchSig(o.watch));   // another watch than the master's (asm-watch.js)
-  if(o.pocket&&o.top&&asmPocketQuad(k))s.push('pocket:'+asmPocketSig(o.pocket));
-  {const q=asmOcpSig(o,k);if(q)s.push(q)}   // the uniform blouse's tapes and rank, painted after (asm-ocp.js): only those looks   // the day's pocket square, painted after (asm-pocket.js): only such looks change key
+  if(typeof asmWatchPaints==='function'&&asmWatchPaints(o.watch))s.push('watch:'+asmWatchSig(o.watch));   // another watch than the master's (asm-watch.js)
+  if(o.pocket&&o.top&&typeof asmPocketQuad==='function'&&asmPocketQuad(k))s.push('pocket:'+asmPocketSig(o.pocket));
+  if(typeof asmOcpSig==='function'){const q=asmOcpSig(o,k);if(q)s.push(q)}   // the uniform blouse's tapes and rank, painted after (asm-ocp.js): only those looks   // the day's pocket square, painted after (asm-pocket.js): only such looks change key
   if(ASM_CM_BTN[k])s.push('btn'+ASM_CM_BTNV);   // the masters whose shirt buttons are drawn: a new look of them paints those looks again
   const bg=renders[asmCmBgKey()];if(bg)s.push('bg:'+bg.t+'/'+ASM_CM_BG_SHADOW);
   const jf=asmJfWants(o,k);if(jf)s.push('jf'+jf.t);   // jeans on the faded master (asm-kinds.js), once it is on the worker
@@ -678,7 +678,7 @@ async function asmCmJob(o){const kind=asmCmKind(o),K=ASM_CM_KINDS[kind];if(!K)re
     cloth[z]=c}
   const bg=renders[asmCmBgKey()],lks=asmCmLightKeys(kind);if(lks.length)geo.light=renders[lks[0]].img;
   return {cm:kind,size:self.ASM_CM_SIZE||ASM_SIZE,mk:keys[0],mt:renders[keys[0]].t,rev:asmCmHash(keys.filter(k=>!gks.includes(k)).map(k=>renders[k].t||0).join(',')),master:renders[keys[0]].img,masks,parts,cloth,...geo,bg:bg?bg.img:null,bgt:bg?bg.t:0,
-    bar:o.clip&&kind!=='vest'?asmBarRgb(o.clip):null,gl:asmGlPref()}}   // (gl: this phone's graphics-chip switch, asm-gl.js; the worker has no localStorage)
+    bar:o.clip&&kind!=='vest'?asmBarRgb(o.clip):null,gl:typeof asmGlPref==='function'?asmGlPref():false}}   // (gl: this phone's graphics-chip switch, asm-gl.js; the worker has no localStorage)
 
 /* ---- the pixel work (page or worker): the colour-free part once per master (asmCmPrep), then each outfit (asmCmBuild) ---- */
 let asmCmMem=null;
@@ -1022,7 +1022,7 @@ keep=1;   // (2026-11-14 audit) one master in memory everywhere: the PC pre-buil
 let asmCmBuild=async function asmCmBuild(job){const hit=await asmCmSetup(job);
   // (2026-11-14) a look the graphics chip covers (asm-gl.js asmGlCovers) is painted there, about ten times faster and within 2 levels
   // of the picture below; anything else, no WebGL2, a lost context or the switch off (job.gl false) is painted here as before
-  if(job.gl!==false){const r=await asmGlTry(job,hit);if(r)return r}
+  if(job.gl!==false&&typeof asmGlTry==='function'){const r=await asmGlTry(job,hit);if(r)return r}
   const t0=performance.now(),P=hit.P,S=P.S,N=P.N,L=ASM_LIN,M=P.M,A=P.A,names=P.names,geo=P.geo,tg=P.tieGeo,ls=S/ASM_SIZE,o=new Uint8ClampedArray(4*N);
   // the background picture at this size (kept while the same picture and size come back)
   let BG=null;if(job.bg&&P.bgShadow){const bk=job.bgt+'|'+S;if(!asmCmMem.bg||asmCmMem.bg.k!==bk)asmCmMem.bg={k:bk,d:(await asmData(job.bg,S)).data};BG=asmCmMem.bg.d}
@@ -1256,7 +1256,7 @@ async function asmCmEnsure(o,ahead){const kind=asmKindOf(o);if(!kind)return;if(a
    "Painted plain" with the other pieces waiting for a reading) */
 function asmCmUI(){const grp=$('#asm-group');if(!grp)return;let b=$('#cm-box');if(!b){b=document.createElement('div');b.id='cm-box';b.className='sgroup';grp.appendChild(b)}
   b.innerHTML=`<div class="slabel">Pictures ahead</div><p class="shelp" id="cm-status" role="status"></p>`;
-  asmGapUI();asmCmStatus();asmGlUI(b)}
+  asmGapUI();asmCmStatus();if(typeof asmGlUI==='function')asmGlUI(b)}
 /* the workdays of the next ASM_AHEAD days painted on a colour-coded master: how many looks and how many this phone holds (it said how
    many the computer had built until the PC builder was removed, 2026-11-16) */
 let asmCmStatusRun=0;

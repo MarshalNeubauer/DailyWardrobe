@@ -97,4 +97,4 @@ export {asmOcpBase,asmOcpPhotoTex,asmOcpJob,asmOcpSig,asmOcpPaint};
   for(const [k,v] of Object.entries(ASM_OCP_KINDS)){const B=ASM_CM_KINDS[v.base];
     if(!own(ASM_NK,k))Object.defineProperty(ASM_NK,k,{value:v,enumerable:false});
     if(!own(ASM_CM_KINDS,k))Object.defineProperty(ASM_CM_KINDS,k,{value:{...B,zones:[...B.zones],lapels:v.lapels},enumerable:false});
-    ASM_GL_KINDS.add(k)}})();
+    if(typeof ASM_GL_KINDS!=='undefined')ASM_GL_KINDS.add(k)}})();
