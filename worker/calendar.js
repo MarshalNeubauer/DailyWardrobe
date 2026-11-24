@@ -12,14 +12,19 @@
    within CAL_CACHE_MS is answered from memory and costs nothing). */
 import { publicHost, readCapped } from './links.js';
 
-/* CAL_MAX_BYTES: how much of a calendar is read (24 MB since 2026-11-24, R6 N2; it was 6 MB, cut silently): it is read as it arrives and
-   only the window's events are kept, so the size costs read time, not memory; past it the answer says truncated */
-const CAL_DAYS = 60, CAL_EVENTS = 300, CAL_MAX_BYTES = 24e6, CAL_FETCH_MS = 15000, CAL_BODY = 8192;
+/* CAL_MAX_BYTES: the most of a calendar ever read (it was cut there silently, R6 N2, 2026-11-24): it is read as it arrives and only the
+   window's events are kept; the work budget below stops the read far sooner, and past either the answer says truncated */
+const CAL_DAYS = 60, CAL_EVENTS = 300, CAL_MAX_BYTES = 6e6, CAL_FETCH_MS = 15000, CAL_BODY = 8192;
 const CAL_CACHE_MS = 10 * 60e3, CAL_RATE_N = 6, CAL_RATE_MS = 10 * 60e3, CAL_SCAN = 40000;
-/* the limits that keep a request inside the Worker's memory (128 MB) and CPU time whatever the feed holds (2026-11-24): at most CAL_KEEP
-   events kept from the feed (the window's, and every repeating one), CAL_STEPS day steps walking repeating events, CAL_OUT instances
-   held before they are cut to the earliest; past the first two the answer says truncated */
-const CAL_KEEP = 3000, CAL_STEPS = 5e5, CAL_OUT = 5000;
+/* the work budget: the server runs on Cloudflare's free plan, about 10 ms of CPU a request, and Date.now doesn't move during CPU work in a
+   Worker, so the work done is counted instead (2026-11-24, calibrated in Node on this PC, C:\code\d-server-lab\unitcost.mjs): a line
+   seen 0.2 units, a byte 0.0005, an event kept and worked out 4, a day step of a repeating event 1.5, an instance found 6 (a unit is about
+   a microsecond here). Reading stops past W_READ, repeating events past W_SERIES, everything past W_MAX (about 3.5 ms here, leaving room
+   for a slower Worker): what was found so far is answered, said truncated. A calendar under them answers as before byte for byte.
+   CAL_KEEP (events kept) and CAL_OUT (instances held before they are cut to the earliest) bound the memory */
+const W_READ = 2000, W_SERIES = 3000, W_MAX = 3500, LINE_W = 0.2, BYTE_W = 0.0005, KEPT_W = 4, STEP_W = 1.5, INST_W = 6;
+const SERIES_W = 1.5, HOLD_W = 1, SKIP_W = 0.5;   // (a series' end check at the parse, an event kept, a series passed over)
+const CAL_KEEP = 3000, CAL_OUT = 5000;
 const calCache = new Map();   // hash of (who, link, tz, day) -> {t, body}
 const calHits = new Map();    // who.id -> [times of real reads]
 
@@ -133,11 +138,23 @@ function calParser(fromIso, toIso) {
   // read: the time zone work below is the slow part, and a calendar of years holds thousands of past events
   const lo = fromIso ? isoAdd(fromIso, -2) : '', hi = toIso ? isoAdd(toIso, 2) : '', far = fromIso ? isoAdd(fromIso, -40) : '';
   const dayOf = p => { const m = /^(\d{4})(\d{2})(\d{2})/.exec(((p || [])[0] || {}).value || ''); return m ? m[1] + '-' + m[2] + '-' + m[3] : ''; };
-  const inWindow = ev => { if (!lo || ev.props.RRULE || ev.props['RECURRENCE-ID']) return true; const s = dayOf(ev.props.DTSTART); if (!s || s > hi) return false;
+  const inWindow = ev => { if (!lo || ev.props['RECURRENCE-ID']) return true; if (ev.props.RRULE) return !seriesOver(ev); const s = dayOf(ev.props.DTSTART); if (!s || s > hi) return false;
     return ev.props.DURATION ? s >= far : (dayOf(ev.props.DTEND) || s) >= lo; };
+  // (an upper bound of a series' last day; the event's length and two days' slack added; any rule it can't bound is kept)
+  const seriesOver = ev => {
+    const s = dayOf(ev.props.DTSTART), r = calRule(((ev.props.RRULE || [])[0] || {}).value); if (!s || !r) return false;
+    const e = dayOf(ev.props.DTEND), span = ev.props.DURATION ? 40 : e && e > s ? isoDays(s, e) : 1;
+    let last = null;
+    if (r.until) { const m = /^(\d{4})(\d{2})(\d{2})/.exec(r.until); if (m) last = m[1] + '-' + m[2] + '-' + m[3]; }
+    else if (r.count && r.freq === 'DAILY' && !r.byday.length && !r.bymonth.length) last = isoAdd(s, (r.count - 1) * r.interval);
+    else if (r.count && r.freq === 'WEEKLY') last = isoAdd(s, (Math.ceil(r.count / Math.max(1, new Set(r.byday.map(b => b.wd)).size)) + 1) * 7 * r.interval);
+    return !!last && isoAdd(last, span + 2) < lo;
+  };
   const events = [], tzStd = {}; let ev = null, depth = [], tzid = '', inStd = false;
-  const P = { events, tzStd, full: false };
+  const P = { events, tzStd, full: false, work: 0, cut: false };
   P.line = raw => {
+    P.work += LINE_W;
+    if (P.work > W_READ) { P.full = true; return; }   // (the work budget's reading part, line by line: a 64 KB chunk of short events is ~2,000 units)
     if (P.full || !raw || !CAL_PROPS.test(raw)) return;   // (descriptions, attendees, alarms' text: never read)
     const l = calLine(raw); if (!l) return;
     if (l.name === 'BEGIN') {
@@ -148,7 +165,7 @@ function calParser(fromIso, toIso) {
     }
     if (l.name === 'END') {
       const what = l.value.trim().toUpperCase(); depth.pop();
-      if (what === 'VEVENT' && ev) { if (inWindow(ev)) events.push(ev); ev = null; if (events.length > CAL_KEEP) P.full = true; }
+      if (what === 'VEVENT' && ev) { if (ev.props.RRULE) P.work += SERIES_W; if (inWindow(ev)) { events.push(ev); P.work += HOLD_W; } ev = null; if (events.length > CAL_KEEP) P.full = true; }
       else if (what === 'STANDARD') inStd = false;
       else if (what === 'VTIMEZONE') tzid = '';
       return;
@@ -185,7 +202,7 @@ async function calRead(body, fromIso, toIso) {
       const { done, value: got } = await r.read();
       if (done) break;
       let value = got;
-      bytes += value.byteLength;
+      bytes += value.byteLength; P.work += value.byteLength * BYTE_W;
       if (bytes > CAL_MAX_BYTES) { cut = true; value = value.subarray(0, Math.max(0, value.byteLength - (bytes - CAL_MAX_BYTES))); }   // (read up to the limit)
       let t = cr + dec.decode(value, { stream: !cut }); cr = '';
       if (first) { t = t.replace(/^﻿/, ''); first = false; }
@@ -193,6 +210,7 @@ async function calRead(body, fromIso, toIso) {
       if (head.trim().length >= 15 && !/^\s*BEGIN:VCALENDAR/i.test(head)) { try { await r.cancel(); } catch { } return { P, head, cut: false }; }   // (a web page: not read on)
       if (t.endsWith('\r')) { cr = '\r'; t = t.slice(0, -1); }   // (a CRLF cut between two chunks)
       take(t.replace(/\r(?!\n)/g, '\n'));
+      if (P.work > W_READ) cut = true;   // (the work budget: what was read is used)
       if (cut || P.full) { cut = true; try { await r.cancel(); } catch { } break; }
     }
   }
@@ -212,7 +230,7 @@ function zoneOf(tzid, tzStd, home) {
 
 /* the occurrences' start wall times of a recurring event, from its first start, up to (and including) the day `toIso`;
    each {y, m, d, h, mi, s} in the event's zone */
-function occurrences(w, rule, toIso, fromIso, spanDays, untilMs, zone, budget = { left: Infinity }) {
+function occurrences(w, rule, toIso, fromIso, spanDays, untilMs, zone, budget = { used: 0, out: false }) {
   const out = [], start = isoOf(w.y, w.m, w.d), wd0 = new Date(start + 'T00:00:00Z').getUTCDay();
   const byday = rule.byday.length ? rule.byday : rule.freq === 'WEEKLY' ? [{ n: 0, wd: wd0 }] : [];
   const weekOf = iso => { const t = Date.parse(iso + 'T00:00:00Z') / 864e5, wd = new Date(iso + 'T00:00:00Z').getUTCDay(); return Math.floor((t - ((wd - rule.wkst + 7) % 7)) / 7); };
@@ -220,7 +238,7 @@ function occurrences(w, rule, toIso, fromIso, spanDays, untilMs, zone, budget = 
   // without COUNT the days before the window can be skipped (the alignment counts from the first start); with COUNT every one counts
   let iso = start; if (!rule.count) { const skip = isoAdd(fromIso, -spanDays - 1); if (skip > iso) iso = skip; }
   for (let g = 0, n = 0; g < CAL_SCAN && iso <= toIso; g++, iso = isoAdd(iso, 1)) {
-    if (--budget.left < 0) { budget.out = true; break; }   // (the whole calendar's day steps: CAL_STEPS)
+    if ((budget.used += STEP_W) > W_SERIES) { budget.out = true; break; }   // (the work budget)
     const [y, m, d] = iso.split('-').map(Number), wd = new Date(iso + 'T00:00:00Z').getUTCDay(), dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
     let hit = false;
     if (rule.freq === 'DAILY') hit = isoDays(start, iso) % rule.interval === 0 && (!rule.byday.length || rule.byday.some(b => b.wd === wd)) && (!rule.bymonth.length || rule.bymonth.includes(m));
@@ -247,10 +265,11 @@ function calEvents(text, home, fromIso, toIso) { return calEventsOf(calParse(tex
 /* the same from a parse already made (calParser's {events, tzStd}) */
 function calEventsOf(parsed, home, fromIso, toIso) {
   const { events, tzStd } = parsed, moved = new Map();   // moved: uid -> the original starts (wall times) overrides replace
-  // the work is bounded (2026-11-24, measured on made-up 24 MB feeds of repeating series): CAL_STEPS day steps for all repeating events
-  // together, and the instances found kept to the earliest CAL_EVENTS + 1 whenever they pass CAL_OUT (sorted and cut: the same answer);
-  // when the steps run out, parsed.cut is set and the answer says truncated
-  const budget = { left: CAL_STEPS, out: false }, byStart = (x, y) => x.start < y.start ? -1 : x.start > y.start ? 1 : x.time < y.time ? -1 : 1;
+  // the work budget goes on from the reading's (W_SERIES, W_MAX); instances are kept to the earliest CAL_EVENTS + 1 whenever they pass
+  // CAL_OUT (sorted and cut: the same answer); past the budget parsed.cut is set and the answer says truncated. In the feed's order, but a
+  // repeating event past W_SERIES is passed over while the one-off events after it are still worked out up to W_MAX (coming one-offs
+  // first: a series costs far more)
+  const budget = { used: parsed.work || 0, out: false }, byStart = (x, y) => x.start < y.start ? -1 : x.start > y.start ? 1 : x.time < y.time ? -1 : 1;
   let out = [];
   const one = (ev, k) => (ev.props[k] || [])[0];
   for (const ev of events) {
@@ -260,6 +279,8 @@ function calEventsOf(parsed, home, fromIso, toIso) {
   // a wall time (an EXDATE, a RECURRENCE-ID) -> its day in zone z: a UTC or other-zone time is moved into z first
   const dayIn = (w, z) => w.allDay ? isoOf(w.y, w.m, w.d) : utcToLocal(w.utc ? Date.UTC(w.y, w.m - 1, w.d, w.h, w.mi, w.s) : wallToUtc(w, w.tzid ? zoneOf(w.tzid, tzStd, home) : z), z).date;
   for (const ev of events) {
+    if (ev.props.RRULE && !ev.props['RECURRENCE-ID'] && budget.used > W_SERIES) { budget.out = true; if ((budget.used += SKIP_W) > W_MAX) break; continue; }
+    if ((budget.used += KEPT_W) > W_MAX) { budget.out = true; break; }
     if (/^CANCELLED$/i.test(((one(ev, 'STATUS') || {}).value || '').trim())) continue;
     const st = calWhen(one(ev, 'DTSTART')); if (!st) continue;
     const uid = (one(ev, 'UID') || {}).value || '', title = calText((one(ev, 'SUMMARY') || {}).value, 120), location = calText((one(ev, 'LOCATION') || {}).value, 120);
@@ -277,7 +298,7 @@ function calEventsOf(parsed, home, fromIso, toIso) {
     if (rr) {
       let untilMs = null;
       if (rr.until) { const u = calWhen({ value: rr.until, params: {} }); if (u) untilMs = u.allDay ? Date.UTC(u.y, u.m - 1, u.d, 23, 59, 59) : u.utc ? Date.UTC(u.y, u.m - 1, u.d, u.h, u.mi, u.s) : wallToUtc(u, zone); }
-      if (budget.out) { parsed.cut = true; break; }
+      if (budget.used > W_SERIES) { budget.out = true; continue; }
       starts = occurrences(st, rr, toIso, fromIso, spanDays, untilMs, zone, budget);
       // EXDATEs and the instances an override (RECURRENCE-ID) replaces, by their day in the event's zone (a rule here repeats at most daily)
       const ex = new Set((moved.get(uid) || []).map(w => dayIn(w, zone)));
@@ -297,6 +318,7 @@ function calEventsOf(parsed, home, fromIso, toIso) {
       }
       if (end < fromIso || start > toIso) continue;
       const inst = rr ? isoOf(o.y, o.m, o.d) : rid ? dayIn(rid, zone) : uid ? '' : start;
+      budget.used += INST_W;
       out.push({ id: calHash(base + '|' + inst), title, start, end, allDay: !!st.allDay, time, location, days: isoDays(start, end) + 1 });
     }
     if (out.length > CAL_OUT) out = out.sort(byStart).slice(0, CAL_EVENTS + 1);
@@ -368,7 +390,7 @@ async function handleCalendar(req, env, json, who) {
   let events;
   try { events = calEventsOf(read.P, tz, fromIso, toIso); }
   catch (e) { console.log('calendar parse failed:', e && e.name); return json({ error: 'not a calendar', message: CAL_MSG.notCal }, 422); }
-  // truncated: the calendar went on past what is read (CAL_MAX_BYTES, CAL_KEEP events kept or CAL_STEPS steps): the events found are given, and
+  // truncated: the calendar went on past what is read (the work budget, CAL_KEEP events kept or CAL_MAX_BYTES): the events found are given, and
   // the app says in plain words that some may be missing (an older app reads the events as before)
   const out = { from: fromIso, to: toIso, tz, events: events.slice(0, CAL_EVENTS), more: events.length > CAL_EVENTS, ...(read.cut || read.P.cut ? { truncated: true } : {}) };
   calCache.set(ck, { t: now, body: out });

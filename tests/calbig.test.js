@@ -1,7 +1,8 @@
 // A very large calendar (the 2026-11-24 review's R6 N2). POST /calendar read the first 6 MB of a feed and silently dropped the rest; a
 // calendar used for years lists its coming events last, so it showed no coming events and said nothing. Now the feed is read as it arrives
-// and only the window's events are kept, wherever they lie; past what is read (CAL_MAX_BYTES) the answer says truncated, and the app tells
-// the person in plain words. Made-up feeds and a stood-in fetch: no real calendar is fetched, no KV is used.
+// and only the window's events are kept, wherever they lie; the server runs on the free plan (about 10 ms of CPU a request), so the read is
+// bounded by the work done (worker/calendar.js W_READ, W_SERIES, W_MAX): past it the answer gives what was found and says truncated, and the
+// app tells the person in plain words. Made-up feeds and a stood-in fetch: no real calendar is fetched, no KV is used.
 const path=require('path'),fs=require('fs'),{pathToFileURL}=require('url');
 const NOW=Date.UTC(2026,10,20,6,0,0);   // 20 Nov 2026, 9:00 in Kuwait
 const blk=(i,y)=>`BEGIN:VEVENT\r\nUID:past${i}@example.test\r\nSUMMARY:Old meeting ${i}\r\nDESCRIPTION:${'notes '.repeat(60)}\r\nDTSTART:${y}0105T090000Z\r\nDTEND:${y}0105T100000Z\r\nEND:VEVENT\r\n`;
@@ -20,10 +21,14 @@ const worker_=async({ok,ROOT})=>{
   const read=async(link)=>{cm.calReset();const r=await worker.fetch(new Request('https://w.test/calendar',{method:'POST',headers:{'content-type':'application/json','x-app-token':'o'},body:JSON.stringify({url:link,tz:'Asia/Kuwait'})}),env);let j={};try{j=await r.json()}catch{}return {s:r.status,...j}};
   Date.now=()=>NOW;
   try{
-    // years of past meetings first, the coming gala last (6.5 MB)
+    // a small calendar with its coming event listed last: read whole, nothing said
+    FEEDS['https://cal.example.test/small.ics']={text:cal(past(0.2)+GALA)};
+    const s0=await read('https://cal.example.test/small.ics');
+    ok(s0.s===200&&(s0.events||[]).some(e=>e.title==='Embassy gala'&&e.start==='2026-11-25')&&!s0.truncated,`a 0.2 MB calendar with its coming event listed last: the event is found and nothing is said to be missing (${s0.s}, ${(s0.events||[]).map(e=>e.title).join(',')||'no events'}, truncated ${!!s0.truncated})`);
+    // years of past meetings first, the coming gala last (6.5 MB): more than the free plan's time allows; it is said, not dropped silently
     FEEDS['https://cal.example.test/years.ics']={text:cal(past(6.5)+GALA)};
-    const a=await read('https://cal.example.test/years.ics');
-    ok(a.s===200&&(a.events||[]).some(e=>e.title==='Embassy gala'&&e.start==='2026-11-25')&&!a.truncated,`a 6.5 MB calendar with its coming event listed last: the event is found and nothing is said to be missing (${a.s}, ${(a.events||[]).map(e=>e.title).join(',')||'no events'}, truncated ${!!a.truncated})`);
+    const t0=performance.now(),a=await read('https://cal.example.test/years.ics'),ams=performance.now()-t0;
+    ok(a.s===200&&a.truncated===true&&ams<60,`a 6.5 MB calendar: read only as far as the work budget allows, and the answer says truncated (${a.s}, truncated ${a.truncated}, ${ams.toFixed(1)} ms here)`);
     // past what is read: the events found are given, and the answer says the calendar was cut
     const over=cm.CAL_MAX_BYTES?cm.CAL_MAX_BYTES/1e6+1:7;
     FEEDS['https://cal.example.test/huge.ics']={text:cal(GALA+past(over)+GALA.replace('gala@','later@').replace('Embassy gala','Gala past the limit'))};
@@ -38,10 +43,10 @@ const worker_=async({ok,ROOT})=>{
     const lf=await read('https://cal.example.test/lf.ics'),cr=await read('https://cal.example.test/cr.ics');
     ok(same===6&&lf.events.length===17&&cr.events.length===17,`read as it arrives, in chunks of 1 byte to 4 KB, with LF, CR and a byte-order mark: the same 17 events as the text read whole (${same} of 6 chunk sizes, LF ${lf.events.length}, CR ${cr.events.length})`);
     // a feed of thousands of repeating series (each kept: it may repeat into the window) is bounded: the earliest events, said truncated
-    const ser=n=>Array.from({length:n},(_,i)=>`BEGIN:VEVENT\r\nUID:s${i}@example.test\r\nSUMMARY:Series ${i}\r\nDTSTART;TZID=Asia/Kuwait:2018${String(1+i%12).padStart(2,'0')}05T090000\r\nRRULE:FREQ=DAILY;COUNT=3000\r\nEND:VEVENT\r\n`).join('');
+    const ser=n=>Array.from({length:n},(_,i)=>`BEGIN:VEVENT\r\nUID:s${i}@example.test\r\nSUMMARY:Series ${i}\r\nDTSTART;TZID=Asia/Kuwait:2026${String(1+i%11).padStart(2,'0')}05T090000\r\nRRULE:FREQ=DAILY;COUNT=3000\r\nEND:VEVENT\r\n`).join('');
     FEEDS['https://cal.example.test/series.ics']={text:cal(ser(8000))};
-    const c0=process.cpuUsage(),sr=await read('https://cal.example.test/series.ics'),cpu=process.cpuUsage(c0),ms=Math.round((cpu.user+cpu.system)/1000);
-    ok(sr.s===200&&sr.truncated===true&&sr.events.length===300&&sr.more===true&&ms<8000,`8,000 daily series: answered with the first 300 events and truncated, its work bounded (${sr.s}, ${sr.events&&sr.events.length}, truncated ${sr.truncated}, ${ms} ms CPU here)`);
+    const c0=performance.now(),sr=await read('https://cal.example.test/series.ics'),ms=performance.now()-c0;
+    ok(sr.s===200&&sr.truncated===true&&sr.events.length>0&&ms<60,`8,000 daily series running into the window: the events found are answered and said truncated, the work bounded (${sr.s}, ${sr.events&&sr.events.length} events, truncated ${sr.truncated}, ${ms.toFixed(1)} ms here)`);
     // a web page stops at its first bytes
     FEEDS['https://cal.example.test/page.ics']={text:'<!doctype html><html>'+'x'.repeat(5e6)};
     const p=await read('https://cal.example.test/page.ics');
