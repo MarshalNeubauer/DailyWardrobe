@@ -174,19 +174,20 @@ async function saveLock(env, ns) {
       await nap(LOCK_WAIT[i]);
     }
   } catch (e) { console.log('save lock not taken', ns, e && e.message); return { ...NO_LOCK }; }
-  const lk = { ok: true, last: t.last || null, ver: null, lost: false, give: async () => { try { await call({ op: 'give', tok: t.tok, ver: lk.ver }); } catch (e) { console.log('save lock not given back', ns, e && e.message); } } };
-  // still this save's lease? (renewed when asked). Lost stays lost. A hub that can't be asked, or doesn't know the op: as before, the save goes on
-  lk.hold = async () => {
-    if (lk.lost) return false;
-    if (Date.now() - at < HOLD_MS) return true;
-    const t1 = Date.now();
-    try {
-      const r = await call({ op: 'hold', tok: t.tok });
-      if (r && r.ok) { at = t1; return true; }
-      if (r && r.lost) { lk.lost = true; console.log('save lock lost: a save ran past its lease', ns); return false; }
-    } catch (e) { console.log('save lock not renewed', ns, e && e.message); }
-    return true;
-  };
+  let lost = false;
+  const lk = { ...NO_LOCK, last: t.last || null, give: async () => { try { await call({ op: 'give', tok: t.tok, ver: lk.ver }); } catch (e) { console.log('save lock not given back', ns, e && e.message); } },
+    // still this save's lease? (renewed when asked). Lost stays lost. A hub that can't be asked, or doesn't know the op: as before, the save goes on
+    hold: async () => {
+      if (lost) return false;
+      if (Date.now() - at < HOLD_MS) return true;
+      const t1 = Date.now();
+      try {
+        const r = await call({ op: 'hold', tok: t.tok });
+        if (r && r.ok) { at = t1; return true; }
+        if (r && r.lost) { lost = true; console.log('save lock lost: a save ran past its lease', ns); return false; }
+      } catch (e) { console.log('save lock not renewed', ns, e && e.message); }
+      return true;
+    } };
   return lk;
 }
 /* the answer to a save that lost its lease (lk.hold): 409, as for a lock that is busy; the backup's KV write asked for is given back */
