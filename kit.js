@@ -19,6 +19,11 @@ function kitInert(on){for(const el of document.querySelectorAll('body>header,mai
 /* the phone's Back closes the sheet (fix round 2, 2026-11-15: it left the app from the tour and the Home Screen sheet, and closed Add
    under the import sheet): the sheet takes a history entry (back.js kind 'kit'), or borrows Add's (kitHist keeps whose it was) */
 function kitHist(){if(kit&&kit.hist===undefined)kit.hist=backBorrow('kit')}
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
+   as globals. Above the file's first top-level call that can throw (backOn): its functions are then still the page's. A getter reads its
+   `let` when asked, so the ones declared below are here too; the consts declared below are handed over above homeAbout() */
+Object.assign(globalThis,{tourSeen,kitEl,kitOpen,kitClose,kitDraw,tourOpen,tourAgain,homeAgain,kitSaved,kitUnsave,kitItem,kitStore,kitDelMany,kitDuplicate,kitType,kitRead,kitTemplate,kitLastImp,kitImportOpen,kitImportFile,kitDupMark,kitImportText,kitImportGo,kitFixOldImports,kitUnimport,kitSampleMigrate,kitSampleLoad,kitSampleRemove,kitShareDone,kitShareFilter,kitSampleBanner,homeSteps,safariRemind,homeOpen,homeAbout});
+Object.defineProperties(globalThis,{kit:{get:()=>kit},kitImpBusy:{get:()=>kitImpBusy},kitQuiet:{get:()=>kitQuiet},kitImp:{get:()=>kitImp},kitSampling:{get:()=>kitSampling},kitNoMine:{get:()=>kitNoMine,set:v=>{kitNoMine=v}},kitSdNew:{get:()=>kitSdNew,set:v=>{kitSdNew=v}}});
 backOn('kit',()=>{if(kit)kitClose(true)});
 function kitOpen(cards,then){const prev=kit?kit.hist:undefined;kit={cards,at:0,then:then||null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitBs(false);kitDraw();kitEl().classList.add('on');kitInert(true);kitHist();
   const t=$('#kit-next');if(t)t.focus({preventScroll:true})}
@@ -802,6 +807,8 @@ const HOME_CARD={key:'home',get title(){return homeLabel()},pic:()=>'',last:'Got
 function homeOpen(){kitOpen([HOME_CARD])}
 /* Settings → About: the button only where it helps */
 function homeAbout(){const b=$('#home-again');if(b){b.hidden=!homeNeeded();b.textContent=homeLabel()}}
+Object.assign(globalThis,{PAPER_CARD,kitTx,KIT_TEMPLATE,KIT_IMP_LAST,KIT_IMP_UNDO_MS,kitUserEdit,kitEdited,KIT_MINE_CUT,KIT_YIELD,kitSampleSig,kitSentStamp,kitSends,kitSampleTag,kitSampleNote,kitStartRow,homeIOS,homeStandalone,homeAndroid,homeNeeded,homeBrowser,homeShareShort,homeTester,homeCopyBtn,HOME_CARD});
+export {kit,kitImpBusy,tourSeen,kitEl,kitOpen,kitClose,kitDraw,tourOpen,tourAgain,homeAgain,PAPER_CARD,kitQuiet,kitSaved,kitUnsave,kitTx,kitItem,kitStore,kitDelMany,kitDuplicate,kitType,kitRead,KIT_TEMPLATE,kitTemplate,kitImp,KIT_IMP_LAST,KIT_IMP_UNDO_MS,kitLastImp,kitImportOpen,kitImportFile,kitDupMark,kitImportText,kitImportGo,kitFixOldImports,kitUnimport,kitNoMine,kitUserEdit,kitEdited,KIT_MINE_CUT,kitSampleMigrate,KIT_YIELD,kitSampleSig,kitSampling,kitSampleLoad,kitSampleRemove,kitSdNew,kitShareDone,kitSentStamp,kitSends,kitShareFilter,kitSampleTag,kitSampleNote,kitSampleBanner,kitStartRow,homeIOS,homeStandalone,homeAndroid,homeNeeded,homeBrowser,homeShareShort,homeTester,homeCopyBtn,homeSteps,safariRemind,HOME_CARD,homeOpen,homeAbout};
 homeAbout();   // (once at start: the device doesn't change; Settings can open straight on About, where renderAbout doesn't run)
 /* the Home Screen step's Install and "Copy my invitation link" (act.js) */
 function homeInstallTap(){homeInstall()}
