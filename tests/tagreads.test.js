@@ -101,6 +101,15 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(S.pats===1&&cm.spec&&cm.camo&&/^claude/.test(cm.src)&&cm.tr===3.5,`a camouflage reading from the worker is kept: drawn from Claude's reading, 14 blotches across → ${cm.tr} tiles (${JSON.stringify(cm)})`);
     S.camo=false;
 
+    // ---- R2 N1 (the 2026-11-24 review): a shirt's woven pattern stays when Claude calls the close-up a suit, a blazer or pants (it
+    // was fitted to Claude's type and came back Solid: 42 of 60)
+    for(const [claude,pat] of [['suit','oxford'],['blazer','end-on-end'],['pants','gingham']]){
+      await addPhoto({...TAG,type:'shirt',primaryColor:'white',pattern:pat});
+      S.tags.push({body:{...TAG,type:claude,primaryColor:'white',pattern:pat}});
+      await addCloseup('shirt.jpg',F.close);await ended();await settle(p,200);c=await card();
+      ok(c.type==='shirt'&&c.p===pat&&c.offer===claude,`the ${pat} shirt that Claude reads as "${claude}" from its close-up keeps its pattern (${c.type}, ${c.p}, offer ${c.offer})`);
+    }
+
     // ---- CR-2-09: the busy pill during "Read color and texture"
     const lab=await p.evaluate(()=>[busyLabelFor('https://w.test/describe',{method:'POST',body:JSON.stringify({what:'both',type:'suit'})}),busyLabelFor('https://w.test/describe',{method:'POST',body:JSON.stringify({what:'pattern'})})]);
     ok(lab[0]==='Claude is reading the color and texture…'&&lab[1]==='Claude is working out the weave…',`the busy pill names the reading (${lab.join(' / ')})`);

@@ -1,6 +1,6 @@
 {
  "note": "Which file uses which other file's top-level names (tests/deps.test.js). It may only shrink: `node tests/deps.test.js --update` takes off what went away; a new edge is added by hand, with the reason in the pull request.",
- "edges": 905,
+ "edges": 907,
  "files": {
   "about.js": ["account.js","act.js","add-keep.js","app.js","core.js","kit.js","safety.js","sync-status.js","sync.js","toast.js","ui.js"],
   "account.js": ["about.js","act.js","add.js","app.js","back.js","core.js","kit.js","merge.js","settings.js","setup.js","sync-status.js","sync.js","toast.js","ui.js"],
@@ -59,7 +59,7 @@
   "own-lists.js": ["act.js","add-keep.js","add.js","app.js","colpick.js","core.js","draw.js","look.js","photos.js","settings.js","toast.js","today-plan.js","wardrobe.js"],
   "pack.js": ["act.js","core.js","draw.js","history.js","locks.js","month.js","photos.js","planner.js","settings.js","start.js","stats.js","sync.js","toast.js","today-plan.js","today.js"],
   "pattern-read.js": ["account.js","act.js","add-keep.js","add-save.js","add.js","app.js","core.js","detect.js","item-photo.js","itemsheet.js","measure.js","photos.js","safety.js","srgb.js","tag-request.js","tagging.js","toast.js","today-plan.js","ui.js"],
-  "photos.js": ["account.js","act.js","app.js","assemble.js","core.js","detect.js","history.js","itemsheet.js","settings.js","sync-status.js","toast.js","today-plan.js","today.js","ui.js"],
+  "photos.js": ["account.js","act.js","app.js","assemble.js","core.js","detect.js","history.js","item-view.js","itemsheet.js","settings.js","sync-status.js","sync.js","toast.js","today-plan.js","today.js","ui.js"],
   "pickscore.js": ["app.js","core.js","history.js","planner.js","today-plan.js"],
   "planner.js": ["core.js","history.js"],
   "remind.js": ["account.js","act.js","care.js","core.js","kit.js","month.js","settings.js","today-plan.js"],
