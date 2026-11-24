@@ -62,8 +62,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     // ---- the owner's stretch shirts: renamed once, through the normal save and sync
     e=await p.evaluate(async()=>{const mk=(id,type,material)=>({id,type,primaryColor:'white',pattern:'solid',material,added:1,updated:1});
       const list=[mk('a','shirt','nylon/spandex'),mk('b','shirt','Nylon/Spandex'),mk('c','shirt','nylon'),mk('d','raincoat','nylon'),mk('e','shirt','nylon spandex blend'),mk('f','shirt','cotton'),mk('g','socks','nylon/spandex')];
-      for(const i of list)await putRaw(i);items=list.map(i=>({...i}));let syncs=0;const was=window.scheduleSync;window.scheduleSync=()=>{syncs++};
-      const n=await matMigrate(),again=await matMigrate();window.scheduleSync=was;const st=await tx('readonly',s=>s.getAll());const m=id=>st.find(x=>x.id===id);
+      for(const i of list)await putRaw(i);items=list.map(i=>({...i}));let syncs=0;const was=window.setTimeout;window.setTimeout=(f,...a)=>{if(f===syncNow){syncs++;return 0}return was.call(window,f,...a)};
+      const n=await matMigrate(),again=await matMigrate();window.setTimeout=was;const st=await tx('readonly',s=>s.getAll());const m=id=>st.find(x=>x.id===id);
       return {n,again,syncs,mats:['a','b','c','d','e','f','g'].map(id=>m(id).material).join('|'),mem:items.find(i=>i.id==='a').material,stamped:m('a').updated>1&&m('f').updated===1,syn:wardHay({type:'shirt',material:'performance stretch'}).includes('nylon')}});
     ok(e.n===3&&e.mats==='performance stretch|performance stretch|performance stretch|nylon|nylon spandex blend|cotton|nylon/spandex','exactly "nylon/spandex" (any case) and "nylon" on shirts become performance stretch; a raincoat\'s nylon, other words and socks are left: '+e.mats);
     ok(e.again===0&&e.syncs===1&&e.stamped&&e.mem==='performance stretch','idempotent (a second run changes nothing), stamped and synced, the copy on screen too');

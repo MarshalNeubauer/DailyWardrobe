@@ -84,8 +84,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // ---- CR-5-04: many callers at once (the timer, going to the background, online, Sync now, a roll-back): one sync at a time, and the
     // ones that came while it ran share one more run after it
     A.slow=150;A.most=0;
-    const ov=await A.p.evaluate(async()=>{const o=syncOnce;let n=0,most=0,runs=0;syncOnce=async()=>{n++;runs++;most=Math.max(most,n);try{return await o()}finally{n--}};
-      try{const r=await Promise.all([1,2,3,4,5].map(()=>syncNow()));return {r,most,runs,syncing}}finally{syncOnce=o}});
+    const ov=await A.p.evaluate(async()=>{const f0=window.fetch;let n=0,most=0,runs=0;   // (each run starts with one GET ?lite=1; its requests are what can overlap)
+      window.fetch=async(u,o)=>{if(!/\/sync(\?|$)/.test(String(u)))return f0(u,o);if(/[?&]lite=1/.test(String(u))&&!(o&&o.method&&o.method!=='GET'))runs++;n++;most=Math.max(most,n);try{return await f0(u,o)}finally{n--}};
+      try{const r=await Promise.all([1,2,3,4,5].map(()=>syncNow()));return {r,most,runs,syncing}}finally{window.fetch=f0}});
     A.slow=0;
     ok(ov.most===1&&ov.runs===2&&A.most===1&&ov.r.every(x=>x===true)&&!ov.syncing,`CR-5-04: five syncs asked for at once run one at a time, two runs in all, every caller told it went through (${JSON.stringify({...ov,getsAtOnce:A.most})})`);
     // ---- CR-5-06: a phone whose clock is an hour behind the server's: its last backup's time is the corrected one, as the server's times

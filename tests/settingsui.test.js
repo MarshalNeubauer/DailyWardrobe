@@ -12,8 +12,8 @@ const settingsstay=async({ok,chromium,url})=>{
     const r=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today');
-      openSettings();let drawn=0;const r0=renderToday;renderToday=function(){drawn++;return r0.apply(this,arguments)};
-      refreshToday();const stillOpen=settingsOpen(),during=drawn;closeSettings();const after=drawn;renderToday=r0;
+      openSettings();let n=0;const mo=new MutationObserver(()=>{}),drawn=()=>n+=mo.takeRecords().filter(r=>r.addedNodes.length).length;mo.observe($('#today'),{childList:true});
+      refreshToday();const stillOpen=settingsOpen(),during=drawn();closeSettings();const after=drawn();mo.disconnect();
       refreshToday();return {stillOpen,during,after,closedNow:!settingsOpen()}});
     ok(r.stillOpen&&r.during===0,'a background redraw while Settings is open leaves Settings open');
     ok(r.after===1&&r.closedNow,'Today is redrawn once Settings closes');
