@@ -266,6 +266,11 @@ const TESTER_SYNC_MS=15*60000;
 function scheduleSync(){clearTimeout(syncTimer);try{if(!localStorage.getItem('sync_wait'))localStorage.setItem('sync_wait',nowMs())}catch{}
   if(typeof isTester==='function'&&isTester()){if(!syncDue)syncDue=nowMs();syncTimer=setTimeout(syncNow,Math.max(1000,syncDue+TESTER_SYNC_MS-nowMs()));return}
   syncTimer=setTimeout(syncNow,2500)}
+/* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
+   as globals. Above the file's top-level set-up, whose connRestored.then and acts({…}) throw when app.js or act.js didn't load */
+Object.assign(globalThis,{syncUrl,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync});
+Object.defineProperties(globalThis,{syncTimer:{get:()=>syncTimer},syncRun:{get:()=>syncRun},syncLater:{get:()=>syncLater},restoring:{get:()=>restoring,set:v=>{restoring=v}},syncing:{get:()=>syncing,set:v=>{syncing=v}},syncDue:{get:()=>syncDue,set:v=>{syncDue=v}}});
+export {restoring,syncing,syncTimer,syncRun,syncDue,syncUrl,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync};
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&syncDue)syncNow();   // a tester's waiting changes, as the app closes
   else if(document.visibilityState==='visible'&&nowMs()-(+localStorage.getItem('last_sync')||0)>60000)syncNow()});

@@ -108,7 +108,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
       const p=await c.newPage();p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));await p.goto(url);
       await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
-      await p.evaluate(()=>{clearTimeout(syncTimer);window.scheduleSync=()=>{}});return p};   // syncs only when the test says
+      await p.evaluate(()=>{clearTimeout(syncTimer);const st=window.setTimeout;window.setTimeout=(f,...a)=>f===syncNow?0:st.call(window,f,...a)});return p};   // syncs only when the test says
     const sync=p=>p.evaluate(()=>syncNow());
     const data=()=>{const v=store.get('wardrobe:v1');return v?JSON.parse(typeof v==='string'?v:new TextDecoder().decode(v)).data:null};
     const A=await device();

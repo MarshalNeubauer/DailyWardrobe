@@ -23,7 +23,9 @@ if(process.argv.includes('--webkit'))process.env.TEST_BROWSER='webkit';
 const WEBKIT=process.env.TEST_BROWSER==='webkit';
 if(WEBKIT)process.env.NO_IMPACT='1';
 const TYPES={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml'};
-const server=http.createServer((q,r)=>{let f=path.join(ROOT,decodeURIComponent(q.url.split('?')[0]));if(f.endsWith('/'))f+='index.html';
+// (a folder's address is its index.html, tested on the address: path.join gives a Windows path a backslash, and `./` was a 404 there
+// only, so sw.js's install failed on Windows and the service worker took over every test page on Linux alone)
+const server=http.createServer((q,r)=>{let u=decodeURIComponent(q.url.split('?')[0]);if(u.endsWith('/'))u+='index.html';const f=path.join(ROOT,u);
   readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end();return}if(rec)rec.served(path.relative(ROOT,f).split(path.sep).join('/'));
     r.writeHead(200,{'content-type':TYPES[path.extname(f)]||'application/octet-stream'});r.end(d)})});
 

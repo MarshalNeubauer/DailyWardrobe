@@ -97,11 +97,11 @@ module.exports=async({ok,chromium,url,settle})=>{
     const m=await p.evaluate(async()=>{const mk=(id,x)=>({id,type:'socks',primaryColor:'black',pattern:'solid',added:1,updated:5,...x});
       const list=[mk('m1',{secondaryColor:'lightgrey'}),mk('m2',{}),mk('m3',{secondaryColor:'grey',tertiaryColor:'red'}),mk('m4',{toeColor:'none',pattern:'argyle',secondaryColor:'red'}),{id:'m5',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',added:1,updated:5}];
       for(const i of list)await putRaw(i);items=list.map(i=>({...i}));const fnv=i=>{thumbN=0;return itemThumb(i)},before=items.slice(0,3).map(fnv);
-      let syncs=0;const was=window.scheduleSync;window.scheduleSync=()=>{syncs++};const n=await sockToeMigrate(),again=await sockToeMigrate();
+      let syncs=0;const was=window.setTimeout;window.setTimeout=(f,...a)=>{if(f===syncNow){syncs++;return 0}return was.call(window,f,...a)};const n=await sockToeMigrate(),again=await sockToeMigrate();
       const st=await tx('readonly',s=>s.getAll()),g=id=>st.find(x=>x.id===id);const after=['m1','m2','m3'].map(id=>fnv(items.find(x=>x.id===id)));
       // a sock from an older app, synced in
       await putRaw(mk('m6',{secondaryColor:'navy',updated:9}));items.push(mk('m6',{secondaryColor:'navy',updated:9}));dressSynced({items:[mk('m6',{secondaryColor:'navy'})]});
-      await new Promise(r=>setTimeout(r,400));const m6=(await tx('readonly',s=>s.getAll())).find(x=>x.id==='m6');window.scheduleSync=was;
+      await new Promise(r=>setTimeout(r,400));const m6=(await tx('readonly',s=>s.getAll())).find(x=>x.id==='m6');window.setTimeout=was;
       return {n,again,syncs,m1:[g('m1').toeColor,'secondaryColor' in g('m1')].join(),m2:g('m2').toeColor,m3:[g('m3').toeColor,'tertiaryColor' in g('m3')].join(),m4:[g('m4').toeColor,g('m4').secondaryColor].join(),m5:'toeColor' in g('m5'),
         fs:g('m1').fs&&Object.keys(g('m1').fs.s||{}).sort().join(),stamped:g('m1').updated>5&&g('m4').updated===5,same:before.every((h,k)=>h===after[k]),m6:m6&&m6.toeColor}});
     ok(m.n===3&&m.m1==='lightgrey,false'&&m.m2==='none'&&m.m3==='grey,false',`the old socks' toe caps move to toeColor ('none' without one), their second and third colours go (${JSON.stringify(m)})`);

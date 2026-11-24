@@ -117,7 +117,10 @@ const BRIDGE={
   // setter); today and stats ask planStartDay, today planTrim, outSig and planSnapSoon, start PLAN_SNAP and planSnapUse, shop strHash;
   // planRuns, planSig and planSnapUsed (a getter): tests/speed.test.js
   'today-plan.js':['PLAN_SNAP','cache','outSig','planDirty','planFor','planMonth','planRuns','planSig','planSnapSoon','planSnapUse','planSnapUsed','planStartDay','planTrim','strHash'],
-  // today.js, a classic script, opens and shuts a piece's photo with these
+  // Today's names for the screens that step, fold and pick (history, scorecard, today-gestures, month, settings, start, kit, …) and the
+  // tests; openRow, belowOpen, listOpen (history.js too), dayShown and BLOUSE_ROLL_ON have setters (tests assign them), recordRun and foldQuiet are getters; figureStage: tests/todayswatch.test.js, inside a string run in the page
+  'today.js':['BLOUSE_ROLL_ON','belowOpen','canPick','dayShown','figCuDone','figureStage','foldAll','foldQuiet','goToday','hasOutfit','homeDay','keepHome','keepInView','listOpen','openRow','pickPiece','piecesBox','planWith','recordRun','renderToday','restWarn','setOff','setRoll','slotLabel','stepDay','swatchStack','todayTabTap','toggleList','toggleRow','wardShort','wxPreload'],
+  // today.js opens and shuts a piece's photo with these
   'today-photofold.js':['picOpenReady','picShut','picSnap','picStop'],
   // today.js lays out the swatches with ovlPiece and calls applyZoom, zoomOut, swApply, swTap and swClose; zoom is a getter
   // (today-gestures reads it); tests/care.test.js sets swOpen (a setter); the swatch makers and their caches, zoomTarget and
@@ -216,6 +219,9 @@ const BRIDGE={
   // sync.js and the screens that say how the backup stands: app, photos, settings, snapshots, backupfile, account, about, ui, setup;
   // the clock, rollback, backup-storage, server-limits and addcards tests
   'sync-status.js':['ENDED','backedUpWords','backupFullMsg','endedAnswer','inviteEnded','pauseTillTomorrow','setSyncStatus','showSyncStatus','syncNetText','syncPaused','syncWaiting'],
+  // the backup for every screen that saves (scheduleSync, syncNow) and the tests; restoring (snapshots.js), syncing and syncDue (tests)
+  // have setters, syncTimer, syncRun and syncLater are getters
+  'sync.js':['SYNC_SEND_MAX','TESTER_SYNC_MS','WIPED_SYNC','afterPull','applyMerged','localState','pulledYet','restoring','scheduleSync','syncDue','syncJoinAt','syncJoinMark','syncLater','syncLaterRun','syncMark','syncNeedsPull','syncNow','syncRedraw','syncRun','syncTap','syncTimer','syncUrl','syncing'],
   // sync.js calls phIn, phOut and phBatch; PH_MIN, isPh, phMap and phStrings are read by tests only (backup-storage, lib-verify18)
   'sync-photos.js':['PH_MIN','isPh','phBatch','phIn','phMap','phOut','phStrings'],
   // settings.js lists the daily backups when Backup opens (loadSnapshots); the tests call the four (actsindex, backup-storage, clock,

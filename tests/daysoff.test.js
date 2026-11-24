@@ -81,18 +81,23 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.selectOption('#cfg-country','KW');await p.waitForFunction(()=>settings.holidays&&settings.holidays.country==='KW'&&settings.holidays.list.length>0,null,{timeout:8000});
     ok(nager===n0&&await p.evaluate(()=>settings.holidays.list.some(h=>h.d==='2027-02-25'&&h.n==='National Day')&&settings.holidays.list.some(h=>/tentative/.test(h.n))&&!isWorkday(new Date(2027,1,25))&&settings.holidays.skip.length===0),'a country the first source lacks (Kuwait) is loaded through the worker, without asking that source (a 404 on every start)');
     // the list is fetched again after a month, keeping what was unticked
-    // (it syncs first, so a device that was away doesn't stamp its old settings over another device's newer ones: syncNow is a stand-in here)
+    // (it syncs first, so a device that was away doesn't stamp its old settings over another device's newer ones: the real syncNow, its
+    // request answered here: "the backup is still that version", or no network)
+    await p.evaluate(()=>{window.__syncAs=async up=>{clearTimeout(syncTimer);await syncRun;const f0=window.__f0||(window.__f0=window.fetch);window.__synced=0;
+      localStorage.setItem('sync_mark',JSON.stringify({url:syncUrl(),v:'1:1',sig:stateSig(mergeState(await localState(),{}))}));
+      window.fetch=async(u,o)=>{if(!/\/sync(\?|$)/.test(String(u)))return f0(u,o);window.__synced++;if(!up)throw new TypeError('Failed to fetch');return new Response('{"same":true}',{status:200,headers:{'content-type':'application/json'}})}};
+      window.__syncOff=()=>{if(window.__f0)window.fetch=window.__f0;for(const k of ['sync_mark','sync_status'])localStorage.removeItem(k)}});
     const again=await p.evaluate(async()=>{await toggleHoliday('2027-02-25',false);settings.holidays={...settings.holidays,fetched:Date.now()-40*864e5,list:settings.holidays.list.slice(0,2)};await metaPut('settings',settings);
-      const real=syncNow;let synced=0;syncNow=async()=>{synced++;return true};try{await refreshHolidays()}finally{syncNow=real}
+      await __syncAs(true);let synced=0;try{await refreshHolidays();synced=__synced}finally{__syncOff()}
       return {n:settings.holidays.list.length,skip:settings.holidays.skip.join(),fresh:Date.now()-settings.holidays.fetched<60000,synced}});
     ok(again.n===4&&again.skip==='2027-02-25'&&again.fresh&&again.synced===1,'the holiday list refreshes after a month, after a sync, and keeps the days you unticked');
-    const stay=await p.evaluate(async()=>{const real=syncNow,st=settings.holidays,stale={...st,fetched:Date.now()-40*864e5,list:st.list.slice(0,1)};
+    const stay=await p.evaluate(async()=>{const st=settings.holidays,stale={...st,fetched:Date.now()-40*864e5,list:st.list.slice(0,1)};
       // the sync brought another device's settings, which refreshed the list already: nothing is fetched or saved over them
       settings.holidays=stale;await metaPut('settings',{...settings,holidays:{...st,fetched:Date.now()}});
-      syncNow=async()=>true;await refreshHolidays();const a=settings.holidays.list.length;
+      await __syncAs(true);await refreshHolidays();__syncOff();const a=settings.holidays.list.length;
       // the sync failed (offline): not this time
-      settings.holidays=stale;await metaPut('settings',settings);syncNow=async()=>false;await refreshHolidays();const b=settings.holidays.list.length;
-      syncNow=real;settings.holidays=st;await metaPut('settings',settings);return {a,b,n:st.list.length}});
+      settings.holidays=stale;await metaPut('settings',settings);await __syncAs(false);await refreshHolidays();__syncOff();const b=settings.holidays.list.length;
+      settings.holidays=st;await metaPut('settings',settings);return {a,b,n:st.list.length}});
     ok(stay.a===stay.n&&stay.b===1,`no refetch when the synced settings are fresh already, or when the sync fails (${JSON.stringify(stay)})`);
     // choosing "No public holidays" turns them off
     await p.selectOption('#cfg-country','');await p.waitForFunction(()=>!(settings.holidays&&settings.holidays.country)&&!document.querySelector('#holiday-list .hrow'),null,{timeout:5000}).catch(()=>{});   // the list is redrawn after the setting clears
