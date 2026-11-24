@@ -5996,7 +5996,6 @@ deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
 deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
-deps.test.js	tests/webkit.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
 deps.test.js	today-gestures.js	<any>
@@ -6212,7 +6211,6 @@ dress.test.js	sync-status.js	<loaded>	endedAnswer	setSyncStatus	showSyncStatus	s
 dress.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	clockFix	clockLearn	clockTell	get	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	syncJoinAt	syncJoinMark	syncLaterRun	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncSaved	syncSettingsRedraw	syncUrl	synced
 dress.test.js	tag-request.js	<loaded>	recordTagResult
 dress.test.js	tagging.js	<loaded>	tagNotes
-dress.test.js	tests/webkit.js	<any>
 dress.test.js	theme.js	<loaded>	applyTheme
 dress.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 dress.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig	todayBusy
@@ -7297,7 +7295,9 @@ garmentdraw.test.js	sync-status.js	<loaded>	setSyncStatus	showSyncStatus	syncPau
 garmentdraw.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	syncNeedsPull	syncNow	syncOnce	syncUrl
 garmentdraw.test.js	tag-request.js	<loaded>
 garmentdraw.test.js	tagging.js	<loaded>
+garmentdraw.test.js	tests/appsrc.js	<any>
 garmentdraw.test.js	tests/fixedplan.js	<any>
+garmentdraw.test.js	tests/webkit.js	<any>
 garmentdraw.test.js	theme.js	<loaded>	applyTheme
 garmentdraw.test.js	toast.js	<loaded>
 garmentdraw.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -7706,7 +7706,6 @@ globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
 globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
-globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -10014,7 +10013,6 @@ modload.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 modload.test.js	tag-request.js	<loaded>	tagStatsCard
 modload.test.js	tagging.js	<loaded>
 modload.test.js	tests/fixedplan.js	<any>
-modload.test.js	tests/webkit.js	<any>
 modload.test.js	theme.js	<loaded>	applyTheme	cycleTheme	themeTap
 modload.test.js	toast.js	<loaded>	toast
 modload.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig	todayCovered
@@ -18079,7 +18077,7 @@ sw.test.js	fav.js	<any>	<loaded>
 sw.test.js	history.js	<any>	<loaded>	checkPlanRules	dropLearn	get	whenPulled
 sw.test.js	icon-192.png	<any>
 sw.test.js	icon-512.png	<any>
-sw.test.js	index.html	<any>	<loaded>
+sw.test.js	index.html	<any>
 sw.test.js	item-photo.js	<any>	<loaded>	smallPhotos
 sw.test.js	item-view.js	<any>	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
 sw.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}
@@ -20225,7 +20223,6 @@ twillswatch.test.js	weather.js	<loaded>	loadWeather
 typecheck.test.js	tests/modscope.js	<any>
 typecheck.test.js	tests/scriptlist.js	<any>
 typecheck.test.js	tests/typecheck.js	<any>
-typecheck.test.js	tests/webkit.js	<any>
 ui.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 ui.test.js	account.js	<loaded>	acctBase	acctCall	acctConnect	acctEsc	acctFailText	acctRole	acctSettingsPart	acctStart	applyRole	connectFromLink	dropInviteHash	get	hasInviteHash	inviteParts	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 ui.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
