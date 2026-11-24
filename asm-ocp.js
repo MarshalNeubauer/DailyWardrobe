@@ -22,11 +22,6 @@
    - the keys: a blouse look's carries its kind, 'nk' + asmNkSig, the items (T-shirt, pants, belt) and the rank (asmOcpSig); OCP pants'
      sett signatures carry OCP_V (detect.js ocpSett): bump core.js OCP_V whenever the OCP cloth changes */
 const ASM_OCP_KINDS={blouse:{base:'shirt-open',lapels:0,cloth:'jersey'}};
-(()=>{const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
-  for(const [k,v] of Object.entries(ASM_OCP_KINDS)){const B=ASM_CM_KINDS[v.base];
-    if(!own(ASM_NK,k))Object.defineProperty(ASM_NK,k,{value:v,enumerable:false});
-    if(!own(ASM_CM_KINDS,k))Object.defineProperty(ASM_CM_KINDS,k,{value:{...B,zones:[...B.zones],lapels:v.lapels},enumerable:false});
-    if(typeof ASM_GL_KINDS!=='undefined')ASM_GL_KINDS.add(k)}})();
 /* the outfit the base job is built from: a blouse look's without the blouse (the open-shirt master's items), any other as it is */
 const asmOcpBase=(o,k)=>ASM_OCP_KINDS[k]&&o?{...o,top:null}:o;
 /* the OCP cloth for the painter: OCP_TEX px a side, OCP_CAMO.mm wide on the cloth (the same mm as asmCamoTex's), linear light; kept per seed */
@@ -47,7 +42,7 @@ const ASM_OCP_CLOTH={name:'ocp-cloth',mm:211};
 const asmOcpClothKey=()=>asmCmKey('blouse',ASM_OCP_CLOTH.name);
 const asmOcpClothT=()=>{try{return asmCmMfNow().keys[asmOcpClothKey()]||0}catch{return 0}};
 async function asmOcpPhotoTex(){const k=asmOcpClothKey(),t0=asmOcpClothT();if(!t0)return null;
-  if(!renders[k]&&typeof asmGet==='function')await asmGet(k).catch(()=>false);const r=renders[k];if(!r||!r.img)return null;
+  if(!renders[k])await asmGet(k).catch(()=>false);const r=renders[k];if(!r||!r.img)return null;
   const mk='photo:'+(r.t||t0);if(asmOcpMemo.has(mk))return asmOcpMemo.get(mk);
   const d=await asmData(r.img),N=d.width,L=ASM_LIN,p=d.data,t=new Float32Array(3*N*N),c=new Float32Array(3);
   for(let q=0;q<N*N;q++)for(let e=0;e<3;e++){const v=L[p[4*q+e]];t[3*q+e]=v;c[e]+=v}for(let e=0;e<3;e++)c[e]/=N*N;
@@ -94,3 +89,12 @@ async function asmOcpPaint(res,D){if(!res||!D||!D.boxes)return res;let img=null,
       const u=Math.min(MW-1,Math.max(0,Math.floor(((x+.5)/f-b.x)/b.w*MW))),v=Math.min(MH-1,Math.max(0,Math.floor(((y+.5)/f-b.y)/b.h*MH))),a=m.data[4*(v*MW+u)+3]/255;if(a<=0)continue;
       const i=4*(y*S+x),sh=Math.min(1.25,Math.max(.5,Y(i)/Math.max(1e-4,mean)));for(let q=0;q<3;q++){const cur=L(px[i+q]);px[i+q]=G(cur*(1-a)+ink[q]*sh*a)}}}
   if(img)res.url=await asmJpeg(img);return res}
+/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
+Object.assign(globalThis,{asmOcpBase,asmOcpPhotoTex,asmOcpJob,asmOcpSig,asmOcpPaint});
+export {asmOcpBase,asmOcpPhotoTex,asmOcpJob,asmOcpSig,asmOcpPaint};
+/* (below the bridge: it reads asm-color.js's and asm-gl.js's tables at load, and throws without them) */
+(()=>{const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+  for(const [k,v] of Object.entries(ASM_OCP_KINDS)){const B=ASM_CM_KINDS[v.base];
+    if(!own(ASM_NK,k))Object.defineProperty(ASM_NK,k,{value:v,enumerable:false});
+    if(!own(ASM_CM_KINDS,k))Object.defineProperty(ASM_CM_KINDS,k,{value:{...B,zones:[...B.zones],lapels:v.lapels},enumerable:false});
+    ASM_GL_KINDS.add(k)}})();

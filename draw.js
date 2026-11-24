@@ -559,7 +559,7 @@ function swatchSVG(i,drawn){
   else{// a bracelet watch and plain metal cufflinks show their metal; a tie clip is its colour (it has no metal field: it was always silver),
     // shiny when it is a metal colour; enamel cufflinks their face (2026-11-15)
     const clip=i.type==='tieclip',metal=(i.type==='watch'&&!strapBand(i))||(i.type==='cufflinks'&&!linkFace(i)&&i.metal!=='silk')||(clip&&!!clipMetal(i));
-    const [mL,mM,mD]=METAL_TONES[i.metal]||METAL_TONES.silver,c=metal&&!clip?mM:colOf(i);
+    const mM=(METAL_TONES[i.metal]||METAL_TONES.silver)[1],c=metal&&!clip?mM:colOf(i);
     body=`<defs><linearGradient id="${P}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="${metal?.45:.15}"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs><rect width="16" height="16" fill="${c}"/><rect width="16" height="16" fill="url(#${P}g)"/>`}
   return `<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${body}</svg>`;
 }
@@ -1305,7 +1305,7 @@ const cbNap=(id,fine)=>{let s=fine?7:3,h='';const r=()=>(s=(s*16807)%2147483647)
   const sc=item&&item.secondaryColor&&item.secondaryColor!=='none'&&COLORS[item.secondaryColor]?COLORS[item.secondaryColor]:mix(base,'#000',CB_SOLE_DARK);
   const f=leatherLayers(P+'f',item,S.fout,{x:74,y:61,r:15,rot:-8,g:.5}),b=leatherLayers(P+'b',item,S.bout,{x:87,y:62,r:9,rot:-8,g:.5});
   const nap=d=>d.replace(/<pattern id="([^"]+tx)"[^>]*>[\s\S]*?<\/pattern>/,(m,id)=>cbNap(id,L==='nubuck'));if(L==='suede'||L==='nubuck'){f.defs=nap(f.defs);b.defs=nap(b.defs)}
-  const ny=mix(base,'#000',.05),nyT=mix(base,'#000',.2),edge=mix(base,'#000',.45);
+  const ny=mix(base,'#000',.05);
   const lace=dk?'#5a5852':mix(base,'#7d7770',.42),laceE=mix(lace,'#000',.45);
   const metal=dk?'#3b3c3f':mix(mix(base,'#6f6a5a',.6),'#000',.12),metalL=mix(metal,'#fff',.35),metalD=mix(metal,'#000',.45),hole=mix(base,'#000',.72);
   const soleD=mix(sc,'#000',.4),soleE=mix(sc,'#000',.5);
@@ -1334,3 +1334,7 @@ const cbNap=(id,fine)=>{let s=fine?7:3,h='';const r=()=>(s=(s*16807)%2147483647)
     back+front+'</g>';
 }
 
+/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
+Object.assign(globalThis,{texPlainBand,TIE_TEX_K,TIE_DARK_L,TIE_DARK_X,texTones,TEX_TILES,texTileUrl,texTileSmooth,camoTileUrl,fabricDef,SOCK_D,swatchSVG,SUIT_D,BLAZER_D,RAIN_D,OCP_RANK_SVG,COAT_D,itemThumb,figFabric,figBg,figStripeLift,figKind,FIG_NO_SHIRT,figureSvg,FIG_CU,figY,figLum,figLiftK,figWay,figCuKey,figNorm,figHbTile,SHOE_CB,CB_SOLE_DARK});
+Object.defineProperties(globalThis,{swN:{get:()=>swN,set:v=>{swN=v}},thumbN:{get:()=>thumbN,set:v=>{thumbN=v}},figBgMemo:{get:()=>figBgMemo,set:v=>{figBgMemo=v}}});
+export {texPlainBand,TIE_TEX_K,TIE_DARK_L,TIE_DARK_X,texTones,TEX_TILES,texTileUrl,texTileSmooth,camoTileUrl,fabricDef,SOCK_D,swatchSVG,SUIT_D,BLAZER_D,RAIN_D,OCP_RANK_SVG,COAT_D,itemThumb,figFabric,figBg,figStripeLift,figKind,FIG_NO_SHIRT,figureSvg,FIG_CU,figY,figLum,figLiftK,figWay,figCuKey,figNorm,figHbTile,SHOE_CB,CB_SOLE_DARK,swN,thumbN,figBgMemo};

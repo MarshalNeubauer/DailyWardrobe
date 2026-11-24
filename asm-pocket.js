@@ -71,7 +71,7 @@ function asmPocketDo(px,S,J){const Q=asmPocketQuad(J.kind);if(!Q)return;const f=
      - one or two faint vertical creases where the fold relaxes, lit on their left (the window) and shaded on their right
      - at the bottom corners the cloth tucks into the opening: a small corner shadow inside the strip and on the welt beside it
      - silk a soft sheen along the fold and across the strip; linen and cotton matte with a fine weave */
-  const Hh=ASM_POCKET_SHAPE.h,Ww=W/f,PI=Math.PI,ex=Math.exp;
+  const Hh=ASM_POCKET_SHAPE.h,Ww=W/f,ex=Math.exp;
   const dv=uu=>.38*Math.sin(uu*.034+.4)+.22*Math.sin(uu*.093+2.1)+1*ex(-uu/3)+1*ex(-(Ww-uu)/3);   // the fold line's small waver, rounded corners
   const topAt=x=>top(x)+dv((x-b0[0])/f)*f;
   const CREASES=[[.34,1],[.71,.7]];
@@ -103,3 +103,6 @@ function asmPocketDo(px,S,J){const Q=asmPocketQuad(J.kind);if(!Q)return;const f=
       const c=cloth(bx-b0[0],v,vv);
       for(let q=0;q<3;q++){const base=c[q]*k*shade*weave,lit=base+(Math.min(1,k*1.05)-base)*sheen;out[q]=out[q]*(1-cov)+Math.min(1,lit)*cov}}
     for(let q=0;q<3;q++)px[i+q]=gam(out[q])}}
+/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
+Object.assign(globalThis,{asmPocketQuad,asmPocketSig,asmPocketJob,asmPocketPaint,asmPocketDo});
+export {asmPocketQuad,asmPocketSig,asmPocketJob,asmPocketPaint,asmPocketDo};

@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	fff2cdc0c0273883f3fc
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -1296,13 +1295,13 @@ asmcode.test.js	add.js	<loaded>
 asmcode.test.js	analysis.js	<loaded>
 asmcode.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
 asmcode.test.js	apple-touch-icon.png	<loaded>
-asmcode.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmGeoKeys	asmCmHash	asmCmItems	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSig	asmCmSrcSig	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmKindOf	asmLookTag	asmNkBaseOf	asmPileKind	asmTieSheenK	asmWtTag	asmWtWants
+asmcode.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmGeoKeys	asmCmHash	asmCmItems	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSig	asmCmSrcSig	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmKindOf	asmLookTag	asmNkBaseOf	asmPileKind	asmTieSheenK	asmWtTag	asmWtWants	get	set
 asmcode.test.js	asm-gl.js	<loaded>
 asmcode.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmCmKindOf	asmJfWants	asmNkBase
 asmcode.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpSig
 asmcode.test.js	asm-pocket.js	<loaded>
 asmcode.test.js	asm-watch.js	<loaded>	asmWatchPaints
-asmcode.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmCmHeld	asmCmUse	asmDrawn	asmKey	asmLoad	asmMicroKind	asmOutKey	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync
+asmcode.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmCmHeld	asmCmUse	asmDrawn	asmKey	asmLoad	asmMicroKind	asmOutKey	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	get
 asmcode.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 asmcode.test.js	backupfile.js	<loaded>
 asmcode.test.js	boxfold.js	<loaded>
@@ -1354,7 +1353,7 @@ asmcode.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	se
 asmcode.test.js	sheet-swipe.js	<loaded>
 asmcode.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 asmcode.test.js	snapshots.js	<loaded>
-asmcode.test.js	srgb.js	<loaded>
+asmcode.test.js	srgb.js	<loaded>	srgbLin	srgbLin8
 asmcode.test.js	start.js	<loaded>	@tocolnavigator.serviceWorker.registersw.js.catch	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp
 asmcode.test.js	stats.js	<loaded>	@afterScripts
 asmcode.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	.vh	.wxc.wxlk	.wxl	:root	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
@@ -1364,6 +1363,7 @@ asmcode.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	syncNeed
 asmcode.test.js	tag-request.js	<loaded>
 asmcode.test.js	tagging.js	<loaded>
 asmcode.test.js	tests/fixedplan.js	<any>
+asmcode.test.js	tests/webkit.js	<any>
 asmcode.test.js	theme.js	<loaded>	applyTheme
 asmcode.test.js	toast.js	<loaded>
 asmcode.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -1708,14 +1708,14 @@ asmgl.test.js	add.js	<loaded>
 asmgl.test.js	analysis.js	<loaded>
 asmgl.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
 asmgl.test.js	apple-touch-icon.png	<loaded>
-asmgl.test.js	asm-color.js	<any>	<loaded>	asmAaK	asmCellT	asmCellV	asmCmAssets	asmCmAt	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCanvas	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmFinPrep	asmCmFinish	asmCmFoldW	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmLightPrep	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMips	asmCmMp	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRead	asmCmRefit	asmCmRev	asmCmRoute	asmCmSetup	asmCmSig	asmCmSrcSig	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmWeaveTag	asmCmWk	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGeoPrep	asmH32	asmHbShirt	asmHbShirtLook	asmKindOf	asmKnitTile	asmLegsAt	asmLegsPrep	asmLookSuit	asmLookTag	asmNkBaseOf	asmPaisleyTile	asmPileKind	asmTieLit	asmTieSheenK	asmUvAt	asmWorstedTile	asmWtTag	asmWtWants
-asmgl.test.js	asm-gl.js	<any>	<loaded>	asmGlAtlas	asmGlBytes	asmGlContext	asmGlCovers	asmGlCuffs	asmGlDraw	asmGlEncode	asmGlF	asmGlFrag	asmGlGeoPack	asmGlHashGlsl	asmGlInit	asmGlLegsOk	asmGlLost	asmGlNote	asmGlOnPage	asmGlPack	asmGlPaint	asmGlPref	asmGlProbe	asmGlProgram	asmGlRead	asmGlRelease	asmGlRenderer	asmGlReset	asmGlSame	asmGlSet	asmGlStatus	asmGlTail	asmGlTex	asmGlTry	asmGlUI	asmGlUniforms	asmGlUpload	asmGlUploadGeo	asmGlUploadSteps	asmGlUse	asmGlVar	asmGlWhy
+asmgl.test.js	asm-color.js	<any>	<loaded>	asmAaK	asmCellT	asmCellV	asmCmAssets	asmCmAt	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCanvas	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmFinPrep	asmCmFinish	asmCmFoldW	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmLightPrep	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMips	asmCmMp	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRead	asmCmRefit	asmCmRev	asmCmRoute	asmCmSetup	asmCmSig	asmCmSrcSig	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmWeaveTag	asmCmWk	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGeoPrep	asmH32	asmHbShirt	asmHbShirtLook	asmKindOf	asmKnitTile	asmLegsAt	asmLegsPrep	asmLookSuit	asmLookTag	asmNkBaseOf	asmPaisleyTile	asmPileKind	asmTieLit	asmTieSheenK	asmUvAt	asmWorstedTile	asmWtTag	asmWtWants	get
+asmgl.test.js	asm-gl.js	<any>	<loaded>	asmGlAtlas	asmGlBytes	asmGlContext	asmGlCovers	asmGlCuffs	asmGlDraw	asmGlEncode	asmGlF	asmGlFrag	asmGlGeoPack	asmGlHashGlsl	asmGlInit	asmGlLegsOk	asmGlLost	asmGlNote	asmGlOnPage	asmGlPack	asmGlPaint	asmGlPick	asmGlPref	asmGlProbe	asmGlProgram	asmGlRead	asmGlRelease	asmGlRenderer	asmGlReset	asmGlSame	asmGlSet	asmGlStatus	asmGlTail	asmGlTex	asmGlTry	asmGlUI	asmGlUniforms	asmGlUpload	asmGlUploadGeo	asmGlUploadSteps	asmGlUse	asmGlVar	asmGlWhy	get	set
 asmgl.test.js	asm-kinds.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmCmKindOf	asmJfWants	asmNkBase
 asmgl.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpSig
 asmgl.test.js	asm-pocket.js	<any>	<loaded>
 asmgl.test.js	asm-watch.js	<any>	<loaded>	asmWatchPaints
 asmgl.test.js	asm-worker.js	<any>
-asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBarDraw	asmBarRgb	asmBlobUp	asmBodyFlow	asmClothOf	asmData	asmDrawn	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexMm	asmTieFor	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmWeave
+asmgl.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBarDraw	asmBarRgb	asmBlobUp	asmBodyFlow	asmClothOf	asmData	asmDrawn	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmImg	asmKey	asmLinen	asmLinenTile	asmLoad	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmPolyAt	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTexMm	asmTieFor	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmWeave	get	set
 asmgl.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 asmgl.test.js	backupfile.js	<loaded>
 asmgl.test.js	boxfold.js	<loaded>
@@ -1767,7 +1767,7 @@ asmgl.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setu
 asmgl.test.js	sheet-swipe.js	<loaded>
 asmgl.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 asmgl.test.js	snapshots.js	<loaded>
-asmgl.test.js	srgb.js	<any>	<loaded>	linSrgb	linSrgb8
+asmgl.test.js	srgb.js	<any>	<loaded>	linSrgb	linSrgb8	srgbLin	srgbLin8
 asmgl.test.js	start.js	<loaded>	@tocolnavigator.serviceWorker.registersw.js.catch	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp
 asmgl.test.js	stats.js	<loaded>	@afterScripts	statsPlan	statsPlanned
 asmgl.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	.vh	.wxc.wxlk	.wxl	:root	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
@@ -1829,14 +1829,14 @@ asmrelease.test.js	add-sheet.js	<loaded>	get
 asmrelease.test.js	add.js	<loaded>
 asmrelease.test.js	analysis.js	<loaded>
 asmrelease.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
-asmrelease.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgKey	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmFinPrep	asmCmFinish	asmCmFoldW	asmCmGeoKeys	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmLightPrep	asmCmMat	asmCmMfNow	asmCmMp	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRefit	asmCmRoute	asmCmSetup	asmCmSrcSig	asmCmTile	asmCuWants	asmH32	asmHbShirt	asmHbShirtLook	asmKindOf	asmNkBaseOf	asmPileKind	asmTieLit	asmTieSheenK
-asmrelease.test.js	asm-gl.js	<any>	<loaded>	asmGlAtlas	asmGlContext	asmGlCovers	asmGlCuffs	asmGlDraw	asmGlEncode	asmGlF	asmGlFail	asmGlFrag	asmGlFree	asmGlGeoPack	asmGlHashGlsl	asmGlInit	asmGlLost	asmGlNote	asmGlOnPage	asmGlPack	asmGlPage	asmGlPaint	asmGlPref	asmGlProbe	asmGlProgram	asmGlRead	asmGlRelease	asmGlRenderer	asmGlReset	asmGlStatus	asmGlTail	asmGlTex	asmGlTry	asmGlUniforms	asmGlUpload	asmGlUploadGeo	asmGlUploadSlow	asmGlUploadSteps	asmGlUse	asmGlVar	asmGlWhy
+asmrelease.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgKey	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmFinPrep	asmCmFinish	asmCmFoldW	asmCmGeoKeys	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmLightPrep	asmCmMat	asmCmMfNow	asmCmMp	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRefit	asmCmRoute	asmCmSetup	asmCmSrcSig	asmCmTile	asmCuWants	asmH32	asmHbShirt	asmHbShirtLook	asmKindOf	asmNkBaseOf	asmPileKind	asmTieLit	asmTieSheenK	get	set
+asmrelease.test.js	asm-gl.js	<any>	<loaded>	asmGlAtlas	asmGlContext	asmGlCovers	asmGlCuffs	asmGlDraw	asmGlEncode	asmGlF	asmGlFail	asmGlFrag	asmGlFree	asmGlGeoPack	asmGlHashGlsl	asmGlInit	asmGlLost	asmGlNote	asmGlOnPage	asmGlPack	asmGlPage	asmGlPaint	asmGlPref	asmGlProbe	asmGlProgram	asmGlRead	asmGlRelease	asmGlRenderer	asmGlReset	asmGlStatus	asmGlTail	asmGlTex	asmGlTry	asmGlUniforms	asmGlUpload	asmGlUploadGeo	asmGlUploadSlow	asmGlUploadSteps	asmGlUse	asmGlVar	asmGlWhy	get	set
 asmrelease.test.js	asm-kinds.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmCmKindOf	asmJfWants	asmNkBase	asmNkJob
 asmrelease.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpBase	asmOcpJob
 asmrelease.test.js	asm-pocket.js	<any>	<loaded>	asmPocketJob
 asmrelease.test.js	asm-watch.js	<any>	<loaded>	asmWatchJob	asmWatchPaints
 asmrelease.test.js	asm-worker.js	<any>
-asmrelease.test.js	assemble.js	<any>	<loaded>	@	@defineddocument.addEventListenervisibilitychange	ASM_OUT_RANGE	asmBlobUp	asmBodyFlow	asmCmHeld	asmCmUse	asmData	asmDrawn	asmIdle	asmIdleArm	asmIdleEnd	asmImg	asmJob	asmJpeg	asmKey	asmLoad	asmMicroKind	asmMotif	asmPost	asmPump	asmRun	asmRunPage	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitWeave	asmSync	asmTq	asmTqn	asmTqr	asmTubePart	asmTubeRaw	asmTubeTabs	asmWeave	asmWorker
+asmrelease.test.js	assemble.js	<any>	<loaded>	@	@defineddocument.addEventListenervisibilitychange	ASM_OUT_RANGE	asmBlobUp	asmBodyFlow	asmCmHeld	asmCmUse	asmData	asmDrawn	asmIdle	asmIdleArm	asmIdleEnd	asmImg	asmJob	asmJpeg	asmKey	asmLoad	asmMicroKind	asmMotif	asmPost	asmPump	asmRun	asmRunPage	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitWeave	asmSync	asmTq	asmTqn	asmTqr	asmTubePart	asmTubeRaw	asmTubeTabs	asmWeave	asmWorker	get	set
 asmrelease.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 asmrelease.test.js	backupfile.js	<loaded>
 asmrelease.test.js	boxfold.js	<loaded>
@@ -1885,7 +1885,7 @@ asmrelease.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume
 asmrelease.test.js	sheet-swipe.js	<loaded>
 asmrelease.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 asmrelease.test.js	snapshots.js	<loaded>
-asmrelease.test.js	srgb.js	<any>	<loaded>	linSrgb	srgbLin	srgbLin8
+asmrelease.test.js	srgb.js	<any>	<loaded>	linSrgb	linSrgb8	srgbLin	srgbLin8
 asmrelease.test.js	start.js	<loaded>	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp
 asmrelease.test.js	stats.js	<loaded>	@afterScripts
 asmrelease.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	.vh	.wxc.wxlk	.wxl	:root	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
@@ -1908,6 +1908,7 @@ asmrelease.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmrelease.test.js	tests/webkit.js	<any>
 asmrelease.test.js	theme.js	<loaded>	applyTheme
 asmrelease.test.js	toast.js	<loaded>
 asmrelease.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2354,7 +2355,7 @@ asmwatch.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@
 asmwatch.test.js	asm-pocket.js	<any>	<loaded>
 asmwatch.test.js	asm-watch.js	<any>	<loaded>	asmWatchBlur	asmWatchDark	asmWatchDo	asmWatchImg	asmWatchJob	asmWatchMetal	asmWatchPaint	asmWatchPaints	asmWatchPct	asmWatchSig
 asmwatch.test.js	asm-worker.js	<any>
-asmwatch.test.js	assemble.js	<any>	<loaded>	@	asmData	asmImg	asmJpeg	asmKey	asmMicroKind	asmSuitBands	asmSuitTwill	asmSuitWeave
+asmwatch.test.js	assemble.js	<any>	<loaded>	@	asmData	asmImg	asmJpeg	asmKey	asmMicroKind	asmSuitBands	asmSuitTwill	asmSuitWeave	get
 asmwatch.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 asmwatch.test.js	backupfile.js	<loaded>
 asmwatch.test.js	boxfold.js	<loaded>
@@ -2406,7 +2407,7 @@ asmwatch.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	s
 asmwatch.test.js	sheet-swipe.js	<loaded>
 asmwatch.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 asmwatch.test.js	snapshots.js	<loaded>
-asmwatch.test.js	srgb.js	<any>	<loaded>	linSrgb	linSrgb8
+asmwatch.test.js	srgb.js	<any>	<loaded>	linSrgb	linSrgb8	srgbLin	srgbLin8
 asmwatch.test.js	start.js	<loaded>	@tocolnavigator.serviceWorker.registersw.js.catch	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp
 asmwatch.test.js	stats.js	<loaded>	@afterScripts
 asmwatch.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	.vh	.wxc.wxlk	.wxl	:root	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
@@ -2416,6 +2417,7 @@ asmwatch.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedul
 asmwatch.test.js	tag-request.js	<loaded>
 asmwatch.test.js	tagging.js	<loaded>
 asmwatch.test.js	tests/fixtures/cm/suit/master.jpg	<loaded>
+asmwatch.test.js	tests/webkit.js	<any>
 asmwatch.test.js	theme.js	<loaded>	applyTheme
 asmwatch.test.js	toast.js	<loaded>
 asmwatch.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2547,7 +2549,7 @@ assemble.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{con
 assemble.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpSig
 assemble.test.js	asm-pocket.js	<loaded>
 assemble.test.js	asm-watch.js	<loaded>	asmWatchPaints
-assemble.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmBarDraw	asmBarRgb	asmBarSig	asmBlobUp	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmImg	asmImgOf	asmJob	asmKeepOut	asmKey	asmLab	asmLinen	asmListGet	asmLoad	asmLookId	asmMicroKind	asmMotif	asmOffPage	asmOutKey	asmPhoto	asmPreSigOk	asmPump	asmRun	asmShow	asmShown	asmStale	asmStamp	asmSuitBands	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmTwillTex	asmWants	asmWeave	asmWorker	renderAsmUI
+assemble.test.js	assemble.js	<loaded>	@	ASM_OUT_RANGE	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmBarDraw	asmBarRgb	asmBarSig	asmBlobUp	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmImg	asmImgOf	asmJob	asmKeepOut	asmKey	asmLab	asmLinen	asmListGet	asmLoad	asmLookId	asmMicroKind	asmMotif	asmOffPage	asmOutKey	asmPhoto	asmPreSigOk	asmPump	asmRun	asmShow	asmShown	asmStale	asmStamp	asmSuitBands	asmSuitSig	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmTwillTex	asmWants	asmWeave	asmWorker	get	renderAsmUI	set
 assemble.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 assemble.test.js	backupfile.js	<loaded>
 assemble.test.js	boxfold.js	<loaded>
@@ -2599,7 +2601,7 @@ assemble.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	set
 assemble.test.js	sheet-swipe.js	<loaded>
 assemble.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 assemble.test.js	snapshots.js	<loaded>
-assemble.test.js	srgb.js	<loaded>
+assemble.test.js	srgb.js	<loaded>	srgbLin	srgbLin8
 assemble.test.js	start.js	<loaded>	@tocolnavigator.serviceWorker.registersw.js.catch	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp
 assemble.test.js	stats.js	<loaded>	@afterScripts	statsPlan	statsPlanned	wornDays
 assemble.test.js	styles.css	#add	#adv-photos:has(#asm-group[hidden]),body:not(.owner) #adv-photos	#ask-backdrop	#ask-backdrop.on	#ask-sheet	#ask-sheet.on	#busy	#busy.on	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#itempic-btn[disabled]	#mannequin-container	#mbox .mhead	#mbox .mswipe	#modal-backdrop	#modal-backdrop,#settings-modal	#mpanel-in .mc[data-mv]	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#photos-conn	#photos-conn:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#settings-modal .cpwset .cpwin input[type="text"]	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .dtog::after	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox:is(.instant,.bfast) .mpanel-in	#settings-modal .mpanel-in	#settings-modal .mpanel-in::after	#settings-modal .mpanel-in::before	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date],#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal .sgroup:has(>.days)	#settings-modal .srow	#settings-modal .srow select	#settings-modal button.adv-head	#settings-modal button.dress-sw	#settings-modal label.btn	#settings-modal,#setup,#kitsheet	#setup	#setup .su-skip	#setup button	#setup.on	#shop-sheet	#spanel .mpanel-in	#toast	#toast,body.iv-on #toast	#toast.on	#toast:not(.on)	#today	#today .row .dot	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.about-confirm	.about-fold summary	.about-fold summary::after	.about-note	.about-text	.acct-box .acct-h	.adv	.adv-head .chev	.adv-in	.adv-in>.sgroup:first-child	.adv-t	.adv-t small	.adv.open .adv-head .chev	.adv.open .adv-in	.ask-btns	.ask-btns button	.ask-more	.ask-q	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.btns	.cal-form input[type=url]	.cal-guides button	.cal-howh	.cal-priv	.cap	.carenote	.carenote a	.conn-off-note:empty	.conn-tick	.cpw-h	.cpwin	.cpwin input[type="text"]	.cpwset	.cpwset input[type="number"]	.cpwsym	.custadd	.custadd button	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.days	.dot	.dot svg	.dress-row	.dress-row:first-child	.dress-sw i	.dress-sw i::after	.dress-sw.on i	.dress-sw.on i::after	.dress-txt	.dress-txt b	.dress-txt small	.dtog	.dtog.on	.fb-list	.fchips	.fig	.fig .lastworn	.fig .swstack	.fig .swstack .ovsw	.fig .swstack .ovsw svg,.fig .swstack .ovsw img	.fig .swstack.up	.fig .wornbar	.fig .wornbar .lastworn:only-child	.fig .wornbar>*	.fig.photo	.fig.photo img	.fig>svg	.firstrun	.firstrun h3	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.hlist	.hlist:empty	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mpanel-in>.srow:first-child,.mpanel-in>.shelp+.srow	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.offadd input[type=date]	.pack-link	.pchip	.pchip svg	.pri	.pstrip	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sactions	.sactions:empty	.sbody	.scat-h	.score	.setup-again	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgh.sgh-first	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.sic	.sicw	.side>.mbox:last-child	.slabel	.slide	.slink	.slink .chev	.slinks	.slinks .slink	.slinks .slink+.slink	.spin	.srow	.srow select	.srow.stack	.srow.stack input	.stack	.stack.rest	.stage	.stage .empty	.stage .firstrun	.su-bar	.su-bar .pri	.su-body	.su-head	.su-help	.su-in	.su-lead	.su-prog	.su-prog i	.su-prog i.on	.su-ttl	.su-ttl h2	.su-ttl small	.thumb	.thumb svg	.vfile	.vh	.warn	.wxc.wxlk	.wxl	::placeholder	:focus-visible	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.busy-on #toast	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	html.set-lock,html.set-lock body	label:has(>.vfile)	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav::before	select,input[type="text"],input[type="range"]
@@ -2609,6 +2611,7 @@ assemble.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@
 assemble.test.js	tag-request.js	<loaded>
 assemble.test.js	tagging.js	<loaded>
 assemble.test.js	tests/fixedplan.js	<any>
+assemble.test.js	tests/webkit.js	<any>
 assemble.test.js	theme.js	<loaded>	applyTheme
 assemble.test.js	toast.js	<loaded>
 assemble.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2636,6 +2639,7 @@ assets.test.js	index.html	<any>
 assets.test.js	manifest.webmanifest	<any>
 assets.test.js	sw.js	<any>
 assets.test.js	tests/scriptlist.js	<any>
+assets.test.js	tests/webkit.js	<any>
 back.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 back.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	dropInviteHash	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 back.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -5887,6 +5891,7 @@ deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
 deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
+deps.test.js	tests/webkit.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
 deps.test.js	today-gestures.js	<any>
@@ -7215,14 +7220,14 @@ garmentpaint.test.js	add.js	<loaded>
 garmentpaint.test.js	analysis.js	<loaded>
 garmentpaint.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
 garmentpaint.test.js	apple-touch-icon.png	<loaded>
-garmentpaint.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSig	asmCmSrcSig	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmKindOf	asmLookTag	asmNkBaseOf	asmPileKind	asmTieSheenK	asmWtTag	asmWtWants
+garmentpaint.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmGeoKeys	asmCmGet	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSig	asmCmSrcSig	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmKindOf	asmLookTag	asmNkBaseOf	asmPileKind	asmTieSheenK	asmWtTag	asmWtWants	set
 garmentpaint.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlWhy
 garmentpaint.test.js	asm-kinds.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmCmKindOf	asmJfKey	asmJfWants	asmNkBase	asmNkCloth	asmNkCode	asmNkGet	asmNkJob	asmNkKnitTile	asmNkLeg	asmNkLin	asmNkRnd	asmNkSecond	asmNkSig	asmNkStitchMm	asmNkTopTile
 garmentpaint.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpBase	asmOcpJob	asmOcpSig
 garmentpaint.test.js	asm-pocket.js	<any>	<loaded>	asmPocketJob
 garmentpaint.test.js	asm-watch.js	<any>	<loaded>	asmWatchJob	asmWatchPaints	asmWatchSig
 garmentpaint.test.js	asm-worker.js	<any>
-garmentpaint.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBarRgb	asmBarSig	asmBlobUp	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmGet	asmGetOnce	asmIdleArm	asmImg	asmJob	asmKey	asmListGet	asmLoad	asmMicroKind	asmOffPage	asmPost	asmPump	asmRun	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	asmWeave	asmWorker
+garmentpaint.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBarRgb	asmBarSig	asmBlobUp	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmGet	asmGetOnce	asmIdleArm	asmImg	asmJob	asmKey	asmListGet	asmLoad	asmMicroKind	asmOffPage	asmPost	asmPump	asmRun	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	asmWeave	asmWorker	get	set
 garmentpaint.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 garmentpaint.test.js	backupfile.js	<loaded>
 garmentpaint.test.js	boxfold.js	<loaded>
@@ -7274,7 +7279,7 @@ garmentpaint.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResu
 garmentpaint.test.js	sheet-swipe.js	<loaded>
 garmentpaint.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 garmentpaint.test.js	snapshots.js	<loaded>
-garmentpaint.test.js	srgb.js	<any>	<loaded>
+garmentpaint.test.js	srgb.js	<any>	<loaded>	srgbLin	srgbLin8
 garmentpaint.test.js	start.js	<loaded>	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp
 garmentpaint.test.js	stats.js	<loaded>	@afterScripts
 garmentpaint.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	.vh	.wxc.wxlk	.wxl	:root	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
@@ -7405,6 +7410,7 @@ garmentpaint.test.js	tests/fixtures/cm/tee/mask-watch.png	<any>
 garmentpaint.test.js	tests/fixtures/cm/tee/master.jpg	<any>
 garmentpaint.test.js	tests/fixtures/cm/tee/part-sleeveL.png	<any>
 garmentpaint.test.js	tests/fixtures/cm/tee/part-sleeveR.png	<any>
+garmentpaint.test.js	tests/webkit.js	<any>
 garmentpaint.test.js	theme.js	<loaded>	applyTheme
 garmentpaint.test.js	toast.js	<loaded>
 garmentpaint.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -7595,6 +7601,7 @@ globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
 globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
+globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -8375,6 +8382,7 @@ inlinehandlers.test.js	sync-status.js	<any>
 inlinehandlers.test.js	sync.js	<any>
 inlinehandlers.test.js	tag-request.js	<any>
 inlinehandlers.test.js	tagging.js	<any>
+inlinehandlers.test.js	tests/webkit.js	<any>
 inlinehandlers.test.js	theme.js	<any>
 inlinehandlers.test.js	toast.js	<any>
 inlinehandlers.test.js	today-gestures.js	<any>
@@ -9191,6 +9199,7 @@ labbench.test.js	tests/fixtures/cm/suit/part-lapelL.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-lapelR.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<loaded>
+labbench.test.js	tests/webkit.js	<any>
 lookbeta.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 lookbeta.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 lookbeta.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -9843,7 +9852,7 @@ modload.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{cons
 modload.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 modload.test.js	asm-pocket.js	<loaded>
 modload.test.js	asm-watch.js	<loaded>
-modload.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	asmMicroKind	asmSuitBands	asmSuitWeave	renderAsmUI
+modload.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 modload.test.js	back.js	<any>	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backTop	backWanted	get	inviteInUrl
 modload.test.js	backupfile.js	<loaded>
 modload.test.js	boxfold.js	<loaded>
@@ -9902,6 +9911,7 @@ modload.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 modload.test.js	tag-request.js	<loaded>	tagStatsCard
 modload.test.js	tagging.js	<loaded>
 modload.test.js	tests/fixedplan.js	<any>
+modload.test.js	tests/webkit.js	<any>
 modload.test.js	theme.js	<loaded>	applyTheme	cycleTheme	themeTap
 modload.test.js	toast.js	<loaded>	toast
 modload.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig	todayCovered
@@ -21215,7 +21225,7 @@ workersweep.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw
 workersweep.test.js	asm-pocket.js	<any>	<loaded>	asmPocketJob
 workersweep.test.js	asm-watch.js	<any>	<loaded>	asmWatchDark	asmWatchJob	asmWatchMetal	asmWatchPaints
 workersweep.test.js	asm-worker.js	<any>
-workersweep.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBarRgb	asmBlobUp	asmClothOf	asmCmHeld	asmCmLook	asmCmUse	asmDrawn	asmGet	asmGetOnce	asmHbCw	asmIdleArm	asmImg	asmJob	asmKey	asmLinen	asmListGet	asmLoad	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmOffPage	asmPost	asmPump	asmRun	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTieTile	asmTweedTex	asmTwillTex	asmWeave	asmWorker
+workersweep.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmBarRgb	asmBlobUp	asmClothOf	asmCmHeld	asmCmLook	asmCmUse	asmDrawn	asmGet	asmGetOnce	asmHbCw	asmIdleArm	asmImg	asmJob	asmKey	asmLinen	asmListGet	asmLoad	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmOffPage	asmPost	asmPump	asmRun	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTieTile	asmTweedTex	asmTwillTex	asmWeave	asmWorker	get	set
 workersweep.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 workersweep.test.js	backupfile.js	<loaded>
 workersweep.test.js	boxfold.js	<loaded>
@@ -21267,7 +21277,7 @@ workersweep.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResum
 workersweep.test.js	sheet-swipe.js	<loaded>
 workersweep.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 workersweep.test.js	snapshots.js	<loaded>
-workersweep.test.js	srgb.js	<any>	<loaded>
+workersweep.test.js	srgb.js	<any>	<loaded>	srgbLin	srgbLin8
 workersweep.test.js	start.js	<loaded>	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp
 workersweep.test.js	stats.js	<loaded>	@afterScripts	statsPlan	statsPlanned
 workersweep.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	.vh	.wxc.wxlk	.wxl	:root	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
@@ -21336,6 +21346,7 @@ workersweep.test.js	tests/fixtures/cm/vest/part-lapelL.png	<any>
 workersweep.test.js	tests/fixtures/cm/vest/part-lapelR.png	<any>
 workersweep.test.js	tests/fixtures/cm/vest/part-sleeveL.png	<any>
 workersweep.test.js	tests/fixtures/cm/vest/part-sleeveR.png	<any>
+workersweep.test.js	tests/webkit.js	<any>
 workersweep.test.js	theme.js	<loaded>	applyTheme
 workersweep.test.js	toast.js	<loaded>
 workersweep.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}

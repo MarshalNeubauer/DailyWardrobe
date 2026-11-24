@@ -7,3 +7,6 @@ const srgbLin=v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4);   // a display 
 const linSrgb=v=>v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055;   // linear -> a display value 0..1 (not clamped)
 const srgbLin8=v=>srgbLin(v/255);   // a display byte 0..255 -> linear
 const linSrgb8=v=>255*linSrgb(v<0?0:v>1?1:v);   // linear, clamped to 0..1 -> a display value 0..255 (not rounded)
+/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
+Object.assign(globalThis,{srgbLin,linSrgb,srgbLin8,linSrgb8});
+export {srgbLin,linSrgb,srgbLin8,linSrgb8};

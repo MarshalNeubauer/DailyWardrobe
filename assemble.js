@@ -15,9 +15,9 @@ const asmDrawn=()=>typeof picsDrawn==='function'&&picsDrawn();
 try{for(const k of ['asm_paint2','asm_none','asm_vest'])localStorage.removeItem(k)}catch{}   // the earlier assembler's settings on a phone (2026-11-14: deleted)
 const asmImg=u=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>no(new Error('could not read a photo'));im.src=u});
 /* a photo as pixels, W wide and high (its own width when not given: photos are square) */
-async function asmData(u,W){const im=await asmImg(u),w=W||im.naturalWidth,c=document.createElement('canvas');c.width=c.height=w;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,w,w);return x.getImageData(0,0,w,w)}
+let asmData=async function asmData(u,W){const im=await asmImg(u),w=W||im.naturalWidth,c=document.createElement('canvas');c.width=c.height=w;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,w,w);return x.getImageData(0,0,w,w)};
 /* colours as the eye tells them apart (CIE Lab), so a dark green and a dark navy of one brightness still differ; remembered per photo */
-const ASM_LIN=Float32Array.from({length:256},(_,v)=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)}),asmLabs=new WeakMap();
+const ASM_LIN=Float32Array.from({length:256},(_,v)=>srgbLin8(v)),asmLabs=new WeakMap();   // (srgb.js)
 function asmLab(d){let o=asmLabs.get(d);if(o)return o;const p=d.data,n=p.length>>2,h=t=>t>.008856?Math.cbrt(t):7.787*t+16/116;o=new Float32Array(3*n);
   for(let i=0,j=0;i<n;i++,j+=4){const r=ASM_LIN[p[j]],g=ASM_LIN[p[j+1]],b=ASM_LIN[p[j+2]],X=h((.4124*r+.3576*g+.1805*b)/.9505),Y=h(.2126*r+.7152*g+.0722*b),Z=h((.0193*r+.1192*g+.9505*b)/1.089);
     o[3*i]=116*Y-16;o[3*i+1]=500*(X-Y);o[3*i+2]=200*(Y-Z)}
@@ -94,7 +94,7 @@ const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const
   for(const m of new Set([asmNkBaseOf(k),k]))if(!renders[asmCmKey(m,'master')]){const L=await asmListGet();if(!(L&&L.has(asmCmKey(m,'master')))&&!asmTried.has(asmCmKey(m,'master')))await asmCmGet(m)}
   // the background (asm-color.js), once a session: its date is in every look's key, so a phone needs it to find the worker's pictures
   if(asmCmHeld(k))await asmCmBgGet()};
-const asmCmAny=()=>typeof asmCmKey==='function'&&Object.keys(ASM_CM_KINDS).some(asmCmHeld);
+const asmCmAny=()=>Object.keys(ASM_CM_KINDS).some(asmCmHeld);
 /* the worker's list of the photos it keeps (GET /render?list=1: keys only, a few KB): which looks have a picture there (uploaded
    by the PC builder until it was removed, 2026-11-16) and which colour-coded masters are there. It is photos.js's one shared list (workerList: one request for the outfit photos
    and for these, kept LIST_MS, not asked again until the next UTC day once refused); null when the worker can't list: then a look is
@@ -102,7 +102,7 @@ const asmCmAny=()=>typeof asmCmKey==='function'&&Object.keys(ASM_CM_KINDS).some(
 let asmList=null,asmListAt=0;
 function asmListGet(force){if(!workerBase())return Promise.resolve(null);
   return workerList(force).then(L=>{if(L&&L!==asmList){asmList=L;asmListAt=listAt;
-      if(typeof ASM_CM_KINDS!=='undefined'){asmCmListed=new Set(Object.keys(ASM_CM_KINDS).map(k=>asmCmKey(k,'master')).filter(m=>asmList.has(m)));try{localStorage.setItem('asm_cm_listed',JSON.stringify([...asmCmListed]))}catch{}}}
+      asmCmListed=new Set(Object.keys(ASM_CM_KINDS).map(k=>asmCmKey(k,'master')).filter(m=>asmList.has(m)));try{localStorage.setItem('asm_cm_listed',JSON.stringify([...asmCmListed]))}catch{}}
     return asmList})}
 /* a figured shirt (a small figure on a grid, read from its close-up: the owner's grey chevron dobby, his lavender micro-print neat) is
    painted too, in colour: one repeat of the app's own drawing of the reading (two cells each way), each pixel as its colour over the
@@ -498,28 +498,28 @@ function asmShirtAngles(A,idx,W,H){const N=W*H,lab=new Int32Array(N).fill(-1),pa
    in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
    this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
 /* everything the painting needs, as plain data (photos as data URLs), or null: a look with no colour-coded master (asm-color.js asmCmJob) */
-async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const ob=typeof asmOcpBase==='function'?asmOcpBase(o,k):o;let j=await asmCmJob(ob);   // (the blouse's master is built on the open-shirt master's items: asm-ocp.js)
-  if(j&&typeof asmNkJob==='function')j=await asmNkJob(j,ob,k);   // a new garment's master and cloth, the faded master for jeans (asm-kinds.js)
-  if(j&&typeof asmWatchJob==='function'){const w=asmWatchJob(o,asmNkBaseOf(k));if(w)j.watch=w}
-  if(j&&typeof asmPocketJob==='function'){const q=asmPocketJob(o,asmNkBaseOf(k));if(q)j.pocket=q}
-  if(j&&typeof asmOcpJob==='function')j=await asmOcpJob(j,o,k);   // the uniform blouse (no watch or pocket square, the rank), OCP pants (asm-ocp.js)
+async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const ob=asmOcpBase(o,k);let j=await asmCmJob(ob);   // (the blouse's master is built on the open-shirt master's items: asm-ocp.js)
+  if(j)j=await asmNkJob(j,ob,k);   // a new garment's master and cloth, the faded master for jeans (asm-kinds.js)
+  if(j){const w=asmWatchJob(o,asmNkBaseOf(k));if(w)j.watch=w}
+  if(j){const q=asmPocketJob(o,asmNkBaseOf(k));if(q)j.pocket=q}
+  if(j)j=await asmOcpJob(j,o,k);   // the uniform blouse (no watch or pocket square, the rank), OCP pants (asm-ocp.js)
   return j}   // (the day's watch painted after: asm-watch.js; a new kind's watch is its base master's)
 /* build one picture from a job (in either thread) -> {url (a JPEG data URL), gl, ms}; a warming job (setupOnly) only sets its master up */
 async function asmBuild(job){
   if(job.cm&&job.setupOnly){const hit=await asmCmSetup(job);if(job.diskCache!==false&&typeof indexedDB!=='undefined'&&!await asmCmDiskGet(asmCmDiskKey(job))){const x=await asmCmPack(hit.P);if(x)await asmCmDiskPut(asmCmDiskKey(job),x,job.cm+'|')}return {setup:true}}   // (warming, asm-color.js asmCmWarm)
   if(!job||!job.cm)return {};return asmBuildAfter(await asmCmBuild(job),job)}
 /* the day's watch and pocket square, painted on the finished picture (asm-watch.js, asm-pocket.js; also after the page's draw, asm-gl.js asmGlFinOff) */
-async function asmBuildAfter(r,job){if(job.watch&&typeof asmWatchPaint==='function')r=await asmWatchPaint(r,job.watch);
-  if(job.ocpDecal&&typeof asmOcpPaint==='function')r=await asmOcpPaint(r,job.ocpDecal);   // the uniform blouse's tapes and rank (asm-ocp.js)
-  return job.pocket&&typeof asmPocketPaint==='function'?asmPocketPaint(r,job.pocket):r}
+async function asmBuildAfter(r,job){if(job.watch)r=await asmWatchPaint(r,job.watch);
+  if(job.ocpDecal)r=await asmOcpPaint(r,job.ocpDecal);   // the uniform blouse's tapes and rank (asm-ocp.js)
+  return job.pocket?asmPocketPaint(r,job.pocket):r}
 /* a picture as a JPEG data URL (the worker has its own, on an OffscreenCanvas) */
-async function asmJpeg(img){const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').putImageData(img,0,0);return c.toDataURL('image/jpeg',.9)}
+let asmJpeg=async function asmJpeg(img){const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').putImageData(img,0,0);return c.toDataURL('image/jpeg',.9)};
 /* the worker: one picture at a time; the day on screen goes to the front of the line (asmRun(job, true)) */
 let asmW=null;
 const asmQ=[];
 function asmWorker(){if(asmW!==null)return asmW;asmW=false;
   if(typeof Worker==='undefined'||window.ASM_NO_WORKER)return asmW;
-  try{const w=new Worker('asm-worker.js'),st={w,ok:null,busy:null};
+  try{const w=new Worker('asm-worker.js',{type:'module'}),st={w,ok:null,busy:null};
     w.onmessage=e=>{const d=e.data||{};if('ready' in d){st.ok=!!d.ready;st.gl=!!d.gl;if(!st.ok)asmWorkerDown();else{asmPump();asmIdleArm()}return}
       if('saving' in d){st.saving=d.saving;asmIdleArm();return}   // (a setup still being saved to disk: asm-worker.js)
       clearTimeout(st.timer);const b=st.busy;st.busy=null;if(b&&b.id===d.id){if(d.error)b.no(new Error(d.error));else b.ok(d.res)}asmPump();asmIdleArm()};
@@ -543,10 +543,10 @@ function asmPost(job,front,step,tr){return new Promise((ok,no)=>{const t={id:++a
    repaint, all off the page). The page's own graphics state (asmRunPage's) goes with it (asm-gl.js asmGlFree). Hidden, it is tried
    again every second until it is idle */
 let ASM_IDLE_MS=150e3,asmIdleT=0,asmPageN=0;
-function asmIdle(){const st=asmW;return !!st&&!!st.w&&!st.busy&&!asmQ.length&&!st.saving&&!asmAheadOn&&!asmPageN&&!(typeof asmCmWarming!=='undefined'&&asmCmWarming)}
+function asmIdle(){const st=asmW;return !!st&&!!st.w&&!st.busy&&!asmQ.length&&!st.saving&&!asmAheadOn&&!asmPageN&&!asmCmWarming}
 function asmIdleArm(){clearTimeout(asmIdleT);const st=asmW;if(!st||!st.w)return;asmIdleT=setTimeout(asmIdleEnd,document.hidden?0:ASM_IDLE_MS)}
 function asmIdleEnd(){const st=asmW;if(!st||!st.w)return;if(!asmIdle()){if(document.hidden)asmIdleT=setTimeout(asmIdleEnd,1000);return}
-  clearTimeout(st.timer);try{st.w.terminate()}catch{}asmW=null;if(typeof asmGlFree==='function')asmGlFree()}
+  clearTimeout(st.timer);try{st.w.terminate()}catch{}asmW=null;asmGlFree()}
 if(typeof document!=='undefined')document.addEventListener('visibilitychange',()=>{if(document.hidden)asmIdleArm()});
 /* (2026-11-14 audit) a picture the worker hasn't answered in ASM_RUN_MS (a hung or crashed worker): it fails, the worker is replaced and
    the line goes on; before, nothing came back and every later picture waited behind it until the app was restarted */
@@ -558,8 +558,8 @@ const asmOffPage=()=>{const st=asmWorker();return !!st&&st.ok!==false};
 function asmRun(job,front){const st=asmWorker();if(!st)return asmBuild(job);clearTimeout(asmIdleT);
   // (2026-11-14) a worker without WebGL2 (an iPhone before iOS 17 has OffscreenCanvas but no WebGL in a worker): a look the graphics chip
   // covers is drawn on the page's own (asm-gl.js asmGlOnPage), with every CPU part in the worker (asmRunPage); everything else goes to the worker
-  const note=r=>{if(typeof asmGlNote==='function')asmGlNote(r);return r};
-  if(typeof asmGlOnPage==='function'&&asmGlOnPage(job,st))return asmRunPage(job,front).then(note);
+  const note=r=>{asmGlNote(r);return r};
+  if(asmGlOnPage(job,st))return asmRunPage(job,front).then(note);
   return asmPost(job,front).then(note)}
 /* (CR-8-02, 2026-11-17) a covered look where the worker has no WebGL2: the worker sets the master up and packs its textures, the page
    draws, the worker finishes the picture (asm-gl.js asmGlPrepOff, asmGlPage, asmGlFinOff); the page never works a setup out nor paints
@@ -577,7 +577,7 @@ function asmRunPage(job,front){const run=async()=>{asmPageN++;
     finally{asmPageN--;asmIdleArm()}};
   const p=asmPageChain.then(run,run);asmPageChain=p.catch(()=>{});return p}
 /* the outfit's picture as a JPEG data URL, or null when it can't be painted (yet): no colour-coded master for it */
-async function asmPhoto(o,front){const job=await asmJob(o);if(!job)return null;const r=await asmRun(job,front);return r&&r.url||null}
+let asmPhoto=async function asmPhoto(o,front){const job=await asmJob(o);if(!job)return null;const r=await asmRun(job,front);return r&&r.url||null};
 /* ---- on Today: the assembled picture stands in for the outfit's photo ---- */
 /* assembled pictures are kept on the device (meta 'asm:out:<key>', the newest ASM_KEEP); a look's key carries everything it is painted
    from (asm-color.js asmCmOutKey), so a changed garment, master or painter is a new key */
@@ -683,7 +683,7 @@ const ASM_AHEAD=60;
 const ASM_AHEAD_WAIT=1200;
 const ASM_AHEAD_N=3;   // pictures already on the worker downloaded at once while building ahead (one at a time took about 80 s for 40 on 4G)
 let asmAheadT=0,asmAheadOn=false,asmAheadAgain=false;
-function asmAheadSoon(){clearTimeout(asmAheadT);asmAheadT=setTimeout(asmAhead,ASM_AHEAD_WAIT)}
+let asmAheadSoon=function asmAheadSoon(){clearTimeout(asmAheadT);asmAheadT=setTimeout(asmAhead,ASM_AHEAD_WAIT)};
 /* the workdays from today to ASM_AHEAD days on, with the day on screen and its neighbours first: [[date, outfit]] (planned a day at a
    time with a pause between, so planning months ahead doesn't hold the page either) */
 async function asmAheadDays(){const T=todayDate(),c=+new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),out=[];
@@ -691,7 +691,7 @@ async function asmAheadDays(){const T=todayDate(),c=+new Date(sel.getFullYear(),
     if(i&&i%10===0)await new Promise(r=>setTimeout(r,0));if(asmAheadAgain)return [];
     const o=planOn(d);if(o&&asmWants(o))out.push([Math.abs(+d-c),o])}
   return out.sort((a,b)=>a[0]-b[0]).map(x=>x[1])}
-async function asmAhead(){if(!ASM_ON||document.hidden||asmDrawn()||!asmCmAny()||!asmOffPage())return;   // (hidden first: asmOffPage starts a worker, CR-8-01)if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;
+let asmAhead=async function asmAhead(){if(!ASM_ON||document.hidden||asmDrawn()||!asmCmAny()||!asmOffPage())return;   // (hidden first: asmOffPage starts a worker, CR-8-01)if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;
   try{do{asmAheadAgain=false;const seen=new Set(),todo=[];
       for(const o of await asmAheadDays()){const k=asmOutKey(o);if(seen.has(k))continue;seen.add(k);if(!asmFullWins(o)&&!asmFor(o))todo.push(o)}
       // (2026-11-13) the looks with a picture on the worker first, ASM_AHEAD_N at a time (only their pictures are downloaded); then the rest, one at
@@ -701,9 +701,9 @@ async function asmAhead(){if(!ASM_ON||document.hidden||asmDrawn()||!asmCmAny()||
       await Promise.all(Array.from({length:ASM_AHEAD_N},async()=>{while(i<built.length&&!stop())await asmEnsure(built[i++],true)}));
       rest.sort((a,b)=>String(asmCmUse(a)||'').localeCompare(String(asmCmUse(b)||'')));   // (a stable sort: nearest first within a master)
       for(const o of rest){if(stop())break;await asmEnsure(o,true)}
-      if(!stop()&&typeof asmCmWarm==='function')await asmCmWarm(rest)}   // (2026-11-14) then the masters of the coming looks nobody built, set up ahead
+      if(!stop())await asmCmWarm(rest)}   // (2026-11-14) then the masters of the coming looks nobody built, set up ahead
     while(asmAheadAgain)}
-  catch(e){console.warn('building ahead stopped',e)}finally{asmAheadOn=false;asmIdleArm()}}
+  catch(e){console.warn('building ahead stopped',e)}finally{asmAheadOn=false;asmIdleArm()}};
 /* asmState: what the last look at the worker found (cm: colour-coded masters are there) */
 let asmState={checked:false,cm:false},asmSyncing=null;
 /* look at the worker (start-up, Settings): the list of what it keeps and the masters' manifest. A forced look (Settings) waits for the
@@ -714,11 +714,15 @@ function asmSync(force){if(!ASM_ON||asmDrawn()||!workerBase())return Promise.res
       asmState={checked:true,cm:asmCmAny()}}
     catch(e){console.warn('assembled pictures: could not check the worker',e)}
     asmSyncing=null;
-    if(typeof renderAsmUI==='function')renderAsmUI();
+    renderAsmUI();
     const cur=planFor()[key(sel)];if(cur&&asmWants(cur)&&!asmFor(cur)&&!$('#today').hidden)refreshToday();
     return asmState})();
   return asmSyncing}
 /* Settings → Outfit pictures → Advanced: the colour-coded masters' rows (asm-color.js asmCmUI) */
 /* (with "Drawing only" the group is hidden, and with it the whole Advanced fold (styles.css #adv-photos:has(#asm-group[hidden])): Pictures
    ahead, Painted plain and the graphics-chip switch are about the painter; and asmCmStatus would read the worker's list) */
-function renderAsmUI(){const on=ASM_ON&&!asmDrawn(),grp=$('#asm-group');if(grp)grp.hidden=!on;if(on&&typeof asmCmUI==='function')asmCmUI()}
+function renderAsmUI(){const on=ASM_ON&&!asmDrawn(),grp=$('#asm-group');if(grp)grp.hidden=!on;if(on)asmCmUI()}
+/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
+Object.assign(globalThis,{ASM_VER,ASM_SIZE,asmDrawn,asmImg,ASM_LIN,asmLab,asmAreas,ASM_BAR_AT,ASM_BAR_MM,ASM_BAR_LEN,ASM_METAL,asmBarRgb,asmBarSig,asmBarDraw,asmKey,asmCmHeld,asmCmUse,asmCmLook,asmListGet,asmMotif,ASM_SHIRT_MM,ASM_TR_CAP,ASM_HB_TR,ASM_CLOSEUP_MM,ASM_TEX_MIN_MM,ASM_PX_MM,asmWeave,asmRepeatPx,asmTexMm,ASM_SUITV,ASM_TWILL,ASM_HB_MM,ASM_HB_AMP,ASM_HB_RIB,ASM_HB_FLECK,ASM_HB_YARN,ASM_HB_BREAK,ASM_HB_THIN,ASM_HB_MOTTLE,ASM_HB_FLOAT,ASM_HB_FLOATL,ASM_HB_SOFT,ASM_HB_GRAIN,ASM_HB_SNAP,ASM_HB_PBRK,asmSuitWeave,asmSuitTwill,asmHbCw,asmTwillTex,ASM_MICRO,ASM_MICRO_KINDS,asmMicroGrid,asmMicroKind,asmMicroTex,asmSuitTweed,asmTweedTex,asmSuitSig,asmSuitBands,asmLinen,ASM_LINE_PX,ASM_STRIPE_PX,ASM_STRIPE,asmClothOf,asmSuitTex,asmLinenTile,ASM_TWEED,asmTweedTile,asmSleeveSegs,ASM_FLOW,asmBodyFlow,asmFlowAt,ASM_CREASE_DEG,ASM_TUBE_K,asmPolyAt,asmTubePart,asmTq,asmTqn,asmTqr,asmTubePartQ,asmTubeRaw,asmTubeTabs,ASM_SLEEVE_FLOW,ASM_FORE_K,asmSleeveFlow,asmTubeAt,ASM_TIEV,asmTieTile,asmStripeCount,ASM_TIE_TEX_MAX,ASM_TIE_FIG_MAX,asmTieFor,asmTieSig,asmShirtAngles,asmJob,asmBuild,asmBuildAfter,asmQ,asmWorker,asmWorkerDown,asmIdleEnd,ASM_RUN_MS,asmStuck,asmOffPage,asmRun,asmBusy,asmTried,asmOutKey,asmStamp,asmWants,asmFullWins,asmFor,asmLookId,asmShown,asmPreGetting,asmPreNo,asmRetryAt,ASM_RETRY_MS,asmGetPre,asmLoad,asmImgOf,asmKeepOut,asmBlobUp,asmGet,asmEnsure,asmShow,ASM_AHEAD,asmSync,renderAsmUI});
+Object.defineProperties(globalThis,{asmListAt:{get:()=>asmListAt},asmAheadOn:{get:()=>asmAheadOn},asmSyncing:{get:()=>asmSyncing},ASM_ON:{get:()=>ASM_ON,set:v=>{ASM_ON=v}},asmList:{get:()=>asmList,set:v=>{asmList=v}},asmW:{get:()=>asmW,set:v=>{asmW=v}},ASM_IDLE_MS:{get:()=>ASM_IDLE_MS,set:v=>{ASM_IDLE_MS=v}},asmOut:{get:()=>asmOut,set:v=>{asmOut=v}},asmData:{get:()=>asmData,set:v=>{asmData=v}},asmJpeg:{get:()=>asmJpeg,set:v=>{asmJpeg=v}},asmPhoto:{get:()=>asmPhoto,set:v=>{asmPhoto=v}},asmAheadSoon:{get:()=>asmAheadSoon,set:v=>{asmAheadSoon=v}},asmAhead:{get:()=>asmAhead,set:v=>{asmAhead=v}}});
+export {ASM_VER,ASM_SIZE,asmDrawn,asmImg,ASM_LIN,asmLab,asmAreas,ASM_BAR_AT,ASM_BAR_MM,ASM_BAR_LEN,ASM_METAL,asmBarRgb,asmBarSig,asmBarDraw,asmKey,asmCmHeld,asmCmUse,asmCmLook,asmListGet,asmMotif,ASM_SHIRT_MM,ASM_TR_CAP,ASM_HB_TR,ASM_CLOSEUP_MM,ASM_TEX_MIN_MM,ASM_PX_MM,asmWeave,asmRepeatPx,asmTexMm,ASM_SUITV,ASM_TWILL,ASM_HB_MM,ASM_HB_AMP,ASM_HB_RIB,ASM_HB_FLECK,ASM_HB_YARN,ASM_HB_BREAK,ASM_HB_THIN,ASM_HB_MOTTLE,ASM_HB_FLOAT,ASM_HB_FLOATL,ASM_HB_SOFT,ASM_HB_GRAIN,ASM_HB_SNAP,ASM_HB_PBRK,asmSuitWeave,asmSuitTwill,asmHbCw,asmTwillTex,ASM_MICRO,ASM_MICRO_KINDS,asmMicroGrid,asmMicroKind,asmMicroTex,asmSuitTweed,asmTweedTex,asmSuitSig,asmSuitBands,asmLinen,ASM_LINE_PX,ASM_STRIPE_PX,ASM_STRIPE,asmClothOf,asmSuitTex,asmLinenTile,ASM_TWEED,asmTweedTile,asmSleeveSegs,ASM_FLOW,asmBodyFlow,asmFlowAt,ASM_CREASE_DEG,ASM_TUBE_K,asmPolyAt,asmTubePart,asmTq,asmTqn,asmTqr,asmTubePartQ,asmTubeRaw,asmTubeTabs,ASM_SLEEVE_FLOW,ASM_FORE_K,asmSleeveFlow,asmTubeAt,ASM_TIEV,asmTieTile,asmStripeCount,ASM_TIE_TEX_MAX,ASM_TIE_FIG_MAX,asmTieFor,asmTieSig,asmShirtAngles,asmJob,asmBuild,asmBuildAfter,asmQ,asmWorker,asmWorkerDown,asmIdleEnd,ASM_RUN_MS,asmStuck,asmOffPage,asmRun,asmBusy,asmTried,asmOutKey,asmStamp,asmWants,asmFullWins,asmFor,asmLookId,asmShown,asmPreGetting,asmPreNo,asmRetryAt,ASM_RETRY_MS,asmGetPre,asmLoad,asmImgOf,asmKeepOut,asmBlobUp,asmGet,asmEnsure,asmShow,ASM_AHEAD,asmSync,renderAsmUI,asmListAt,asmAheadOn,asmSyncing,ASM_ON,asmList,asmW,ASM_IDLE_MS,asmOut,asmData,asmJpeg,asmPhoto,asmAheadSoon,asmAhead};

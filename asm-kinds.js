@@ -42,12 +42,6 @@ const ASM_NK_KNIT={fine:3,mid:3.8,chunky:4.6,cols:8,rows:8,cw:12,ch:9,amp:.42,li
    about a mm, ±`amp`) */
 const ASM_NK_STRIPE={mm:12,share:.36},ASM_NK_HEATHER={T:64,mm:14,amp:.16,fleck:.5};
 const asmNkBase=k=>ASM_NK[k]?ASM_NK[k].base:k;
-/* the kinds into the painter's tables, invisibly to its fingerprint (runs on the page and in the worker) */
-(()=>{const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
-  for(const [k,v] of Object.entries(ASM_NK)){const B=ASM_CM_KINDS[v.base];
-    if(!own(ASM_CM_KINDS,k))Object.defineProperty(ASM_CM_KINDS,k,{value:{...B,zones:[...B.zones],lapels:v.lapels!=null?v.lapels:B.lapels},enumerable:false});
-    if(v.btn&&!own(ASM_CM_BTN,k))Object.defineProperty(ASM_CM_BTN,k,{value:v.btn,enumerable:false});
-    if(typeof ASM_GL_KINDS!=='undefined')ASM_GL_KINDS.add(k)}})();
 /* the masters that show trousers: jeans there are painted on the faded copy */
 const ASM_JF_BASES=['shirt-open','shirt-tie'];
 const asmJfKey=k=>asmCmKey(k,'master-jeans');
@@ -128,3 +122,13 @@ async function asmNkJob(j,o,k){if(!j)return j;const N=ASM_NK[k];
 const asmNkCode=()=>[ASM_NKV,ASM_NK,ASM_NK_MAT,ASM_NK_KNIT,ASM_NK_STRIPE,ASM_NK_HEATHER,ASM_JF_BASES,asmNkLin,asmNkRnd,asmNkStitchMm,asmNkSecond,asmNkLeg,asmNkKnitTile,asmNkTopTile,asmNkCloth,asmNkJob,asmJfWants];
 let asmNkH=null;
 const asmNkSig=()=>asmNkH||(asmNkH=asmCmHash(asmCmCodeText(asmNkCode())));
+/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
+Object.assign(globalThis,{ASM_NK,ASM_NK_KNIT,asmNkBase,ASM_JF_BASES,asmJfKey,asmJfWants,asmCmKindOf,asmNkGet,asmNkLin,asmNkKnitTile,asmNkCloth,asmNkJob,asmNkSig});
+export {ASM_NK,ASM_NK_KNIT,asmNkBase,ASM_JF_BASES,asmJfKey,asmJfWants,asmCmKindOf,asmNkGet,asmNkLin,asmNkKnitTile,asmNkCloth,asmNkJob,asmNkSig};
+/* (below the bridge: it reads asm-color.js's and asm-gl.js's tables at load, and throws without them) */
+/* the kinds into the painter's tables, invisibly to its fingerprint (runs on the page and in the worker) */
+(()=>{const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+  for(const [k,v] of Object.entries(ASM_NK)){const B=ASM_CM_KINDS[v.base];
+    if(!own(ASM_CM_KINDS,k))Object.defineProperty(ASM_CM_KINDS,k,{value:{...B,zones:[...B.zones],lapels:v.lapels!=null?v.lapels:B.lapels},enumerable:false});
+    if(v.btn&&!own(ASM_CM_BTN,k))Object.defineProperty(ASM_CM_BTN,k,{value:v.btn,enumerable:false});
+    ASM_GL_KINDS.add(k)}})();
