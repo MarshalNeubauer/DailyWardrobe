@@ -261,6 +261,7 @@ const label=key=>key.startsWith('run.js: ')?key.slice(8):key;
    (below) has its own set of these, so no two tests ever share a server, a browser, a recorder or Node's coverage. */
 const FIXED_PLAN=path.join(__dirname,'fixedplan.js');
 const ASM_OFF={content:'window.ASM_TEST_OFF=true'};   // assembled pictures off in a test page (assemble.js ASM_ON)
+const SW_BLOCK='block';   // service workers off in a Chromium test context (`sw` in `file` below)
 const REAL_SUITES=new Set(['renders the outfit without errors','planner: independent outfit checklist','planner: shoes, belts, leather and metals','outfit score']);
 const bench=async(eager=true)=>{
   const url=`http://127.0.0.1:${await require('./safeport').listenSafe(server,'127.0.0.1')}/index.html`;   // (never a port Chromium refuses: tests/safeport.js)
@@ -275,11 +276,11 @@ const bench=async(eager=true)=>{
   // the built-in suites get the fixed plan too, except those about the planner and the start-up check, which keeps the real
   // planner so a planner change that breaks start-up is caught by it
   const builtin=async name=>{const browser=await browserOf(),fn=suites.find(([n])=>n===name)[1],fixed=!REAL_SUITES.has(name);
-    const ctx=await browser.newContext({...devices['iPhone 13']});if(fixed)await ctx.addInitScript({path:FIXED_PLAN});await ctx.addInitScript(ASM_OFF);if(rec)rec.context(ctx);const page=await ctx.newPage();const errs=[];
+    const ctx=await browser.newContext({serviceWorkers:SW_BLOCK,...devices['iPhone 13']});if(fixed)await ctx.addInitScript({path:FIXED_PLAN});await ctx.addInitScript(ASM_OFF);if(rec)rec.context(ctx);const page=await ctx.newPage();const errs=[];
     page.on('pageerror',e=>errs.push(e.message));page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
     await page.goto(url);await page.waitForFunction(()=>window.appReady);
     // a suite's own contexts are recorded too
-    const b=new Proxy(browser,{get:(t,k)=>k==='newContext'?async o=>{const c=await t.newContext(o);if(fixed)await c.addInitScript({path:FIXED_PLAN});await c.addInitScript(ASM_OFF);if(rec)rec.context(c);return c}:typeof t[k]==='function'?t[k].bind(t):t[k]});
+    const b=new Proxy(browser,{get:(t,k)=>k==='newContext'?async o=>{const c=await t.newContext({serviceWorkers:SW_BLOCK,...(o||{})});if(fixed)await c.addInitScript({path:FIXED_PLAN});await c.addInitScript(ASM_OFF);if(rec)rec.context(c);return c}:typeof t[k]==='function'?t[k].bind(t):t[k]});
     try{await fn({page,ctx,browser:b,url,errs})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
     if(errs.length&&name!=='renders the outfit without errors'){failures++;console.log('  ✗ console errors: '+errs.join('; '))}
     await ctx.close()};
@@ -289,10 +290,14 @@ const bench=async(eager=true)=>{
     const browser=await browserOf(),mine=new Set(),mod=require(path.join(__dirname,f)),fixed=!mod.realPlanner;
     // assembled pictures (assemble.js) are switched off too unless the file says module.exports.assembled=true (ASM_TEST_OFF)
     const asmOff=!mod.assembled;
+    // service workers are blocked in every Chromium context (as tests/webkit.js does for WebKit) unless the file says
+    // module.exports.serviceWorkers=true (sw.test.js): once sw.js controls a page it answers from its cache, so a route that holds or
+    // swaps a page file never sees the request (tabload's reloads were all finished pages, 2026-11-24). A context's own option wins
+    const sw=mod.serviceWorkers?{}:{serviceWorkers:SW_BLOCK};
     // (the recorder is Chromium's: CDP coverage; a WebKit context gets the fixed plan and the painter off, as Chromium's does: CR-10-02)
     const track=async(c,wk)=>{c=await c;if(fixed)await c.addInitScript({path:FIXED_PLAN});if(asmOff)await c.addInitScript(ASM_OFF);if(rec&&!wk&&!WEBKIT)rec.context(c);mine.add(c);return c};
     const view=(t,wk)=>new Proxy(t,{get:(t,k)=>k==='close'?async()=>{for(const c of mine)await c.close().catch(()=>{});mine.clear()}
-      :k==='newContext'?o=>track(t.newContext(o),wk):k==='newPage'?async o=>{const c=await track(t.newContext(o),wk);return c.newPage()}
+      :k==='newContext'?o=>track(t.newContext(wk?o:{...sw,...(o||{})}),wk):k==='newPage'?async o=>{const c=await track(t.newContext(wk?o:{...sw,...(o||{})}),wk);return c.newPage()}
       :typeof t[k]==='function'?t[k].bind(t):t[k]});
     const b=view(browser,false);let wb=null;
     const chr=new Proxy(chromium,{get:(t,k)=>k==='launch'?async()=>b:t[k]});
@@ -306,6 +311,9 @@ const bench=async(eager=true)=>{
       if(r)await rec.begin(key,key.startsWith('run.js: ')?null:'tests/'+key);
       try{if(key==='run.js: '+WORKER){try{await workerTests()}catch(e){failures++;console.log('  ✗ worker tests threw: '+e.message)}}
         else if(key.startsWith('run.js: '))await builtin(key.slice(8));else await file(key)}
+      // (a test file that can't be loaded, one that doesn't parse: it fails here; uncaught, the worker never answered and the run waited
+      // out TEST_FILE_TIMEOUT, 15 minutes, 2026-11-24)
+      catch(e){failures++;console.log('  ✗ threw: '+String(e&&e.message||e).split('\n').slice(0,4).join('\n    '))}
       finally{if(r)res=await rec.end().catch(()=>({m:new Map(),bad:true}))}
       return {ms:Date.now()-t0,res}},
     async close(){if(sharedP)await sharedP.catch(()=>{});if(shared)await shared.close().catch(()=>{});if(sharedWk)await sharedWk.close().catch(()=>{});server.close()}}};

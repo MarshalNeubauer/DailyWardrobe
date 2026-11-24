@@ -6,6 +6,7 @@
 // colour, OCP pants in the OCP cloth, the rank on the tab, no watch), OCP pants' cloth on the T-shirt master, the upload script's kinds
 // and the master kept from testers (PERSONAL).
 const fs=require('fs'),path=require('path');
+const {pace}=require('./pace');
 module.exports=async({ok,chromium,url,settle})=>{
   const FIX=path.join(__dirname,'fixtures','cm'),HOST='https://w.test/';
   const browser=await chromium.launch();const errs=[];
@@ -15,6 +16,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       if(route.request().method()!=='GET')return j({ok:true});if(u.pathname==='/render'&&k)return served[k]?j(served[k]):j({error:'not found'},404);
       if(u.pathname==='/me')return j({id:'owner',role:'owner',name:'Owner',caps:null,used:{}});if(u.pathname==='/sync')return j({rev:0,saved:0,data:null});return j({ok:true})});
     const p=await ctx.newPage();p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    const k=await pace(p);   // (the 4000 ms is at this machine's pace: tests/pace.js)
     // ---- the type and the fixed OCP look ----
     const t=await p.evaluate(()=>{const b={id:'b1',type:'blouse',primaryColor:'khaki',pattern:'camouflage'},pc={id:'p1',type:'pants',primaryColor:'khaki',pattern:'camouflage',camo:'ocp'},pg={id:'p2',type:'pants',primaryColor:'khaki',pattern:'camouflage'};
       CUSTOM_PAT.ownocp={name:'Camouflage (OCP/MultiCam)',base:'camouflage'};const po={id:'p3',type:'pants',primaryColor:'khaki',pattern:'ownocp'};
@@ -33,7 +35,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(t.sett[0]===t.ver&&t.sett[1]===t.sett[2]&&t.sett[3]&&t.sett[4]&&new RegExp('/'+t.ver+'\\d{5}/').test(t.sig),`one fixed OCP look for the blouse and OCP pants; other camouflage keeps its tagged colors; the look's version is in its key (${t.sig.slice(0,60)}â€¦)`);
     ok(t.shares.every((v,k)=>Math.abs(v-t.want[k])<.05),`each OCP color covers about its share (the softened edges blend the smallest flecks into their ground) (${t.shares} vs ${t.want})`);
     ok(t.seam<t.inner*1.6+6&&t.same,`the OCP tile is seamless (edge step ${t.seam.toFixed(1)} vs inside ${t.inner.toFixed(1)}) and kept per seed`);
-    ok(t.ms<4000,`a 512 OCP tile is made in ${t.ms} ms`);
+    ok(t.ms<4000*k,`a 512 OCP tile is made in ${t.ms} ms (${(4000*k).toFixed(0)} allowed at this machine's pace ×${k.toFixed(2)})`);
     // ---- the score: with camouflage pants only; over a T-shirt ----
     const sc=await p.evaluate(()=>{let n=0;const I=(type,primaryColor,x={})=>({id:'s'+type+(n++),type,primaryColor,pattern:'solid',...x});
       const b=I('blouse','khaki',{pattern:'camouflage'}),tee=I('tee','tan'),camo=I('pants','khaki',{pattern:'camouflage',camo:'ocp',trouserKind:'cargo'}),chinos=I('pants','khaki',{trouserKind:'chinos'}),sh=I('shirt','white'),boots=I('shoes','brown',{shoeStyle:'boot',leather:'suede'});

@@ -50,8 +50,13 @@ const units=(fns,src,shift=0)=>{const L=fns.map(f=>({n:f.functionName,a:f.ranges
 const flat=U=>U.flatMap(u=>u.kids?[u,...u.kids]:[u]);
 let seq=0;
 /* compiled inside a branch that is never taken, so nothing runs: V8 still lists every top-level function. null when it doesn't parse */
+/* (an ES module's `import …;` and `export … from …;` statements are syntax errors there, so each whole statement is blanked to
+   spaces first, newlines kept, as tests/appsrc.js does: every offset stays the file's own. Before 2026-11-24 a file with an import
+   (worker.js, worker/*.js, the module workers) didn't parse, and any edit in it counted as top-level code) */
+const MOD_STMT=/^(?:import\s*(?:[\w$*{][^;'"]*?\bfrom\s*)?|export\s*(?:\*(?:\s*as\s+[\w$]+)?|\{[^}]*\})\s*from\s*)(['"])[^'"\n]*\1[ \t]*;?/gm;
+const blankMod=src=>src.replace(MOD_STMT,m=>m.replace(/[^\n]/g,' '));
 const scan=async src=>{await nodeCov();const id='impact-scan-'+(++seq)+'.js',pre='if(Math.random()<0){';
-  const code=pre+src.replace(/^export default\b/gm,'void          ').replace(/^export\b/gm,'      ')+'\n}';
+  const code=pre+blankMod(src).replace(/^export default\b/gm,'void          ').replace(/^export\b/gm,'      ')+'\n}';
   try{new vm.Script(code,{filename:id}).runInNewContext({Math})}catch(e){return null}
   const e=(await post('Profiler.takePreciseCoverage')).result.find(x=>x.url===id);if(!e)return null;
   const U=units(e.functions,src,pre.length);

@@ -84,3 +84,4 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
     await c2.close()}
   await browser.close();srv.close();
 };
+module.exports.serviceWorkers=true;   // (its own server: the runner's contexts block service workers otherwise, tests/run.js)
