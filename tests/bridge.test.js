@@ -39,6 +39,20 @@ const modscope=require('./modscope');
 
 /* file -> the names it bridges onto globalThis. Rows are added by the pull request that converts the file; after that they only shrink */
 const BRIDGE={
+  // nearly every page script, classic or module, and analysis-worker.js and its other files read these as globals (no page module imports
+  // another); 184 test files read items; items (analysis.js, analysis-worker.js), dayRecs (today, pack), settings (snapshots),
+  // weather and climate (today, weather), clockSkew (sync), TODAY_OVERRIDE (the worker) and the tests assign seven lets: setters;
+  // CUSTOM_COL and CUSTOM_PAT are lets only core.js writes (applyCustom): getters
+
+  'core.js':['$','ACCENT_MAX','BANDS','BELT_MATS','BEZELS','BLOUSE_TAPE_MAX','CAMO_V','CASUAL_JACKETS','CASUAL_TOPS','CLOCK_AHEAD','CLOCK_MIN','COLORS','COLOR_NAMES','COLOR_OPTS','COLS_BY','COL_ALIAS','COOL','CUFFS','CUSTOM_COL','CUSTOM_PAT','DAY_NAMES','DIAL_COLS','DIAL_OPTS','FABRIC','HANDPICK_TYPES','LEATHERS','LUM','LUMS','MATERIALS_BY','MAT_ALIAS','METAL','METAL_OPTS','METAL_TONES','METAL_TYPES','OCCASIONS','OCP_CAMO','OCP_RANKS','OCP_V','OWN_COL_RE','OWN_MAT_MAX','OWN_PAT_RE','PATS_BY','PAT_ALIAS','REC_PHOTO','SEASONS','SEASON_TYPES','SHADE_MAX','SHIRT_FALLBACK','SHIRT_ONLY','SHIRT_WEAVE_MAT','SHOE_NAP','SHOE_STYLES','SHOE_TEXTILES','SLOTS','SLOT_TYPE','STRAP_BANDS','TAG_TYPES','TEXTURE_TYPES','TODAY_OVERRIDE','TROUSER_KINDS','TYPES','VESTS','WATCH_STYLES','accentOf','accentsFor','accentsOf','applyCustom','arriveN','avgText','blouseTapes','camoField','camoImage','camoPants','camoPat','casualTop','cleanDay','cleanRecord','cleanSettings','cleanState','climate','clipMetal','clockSkew','colBase','colBaseFor','colName','colOf','colorDesc','colsFor','dE00','dayClimate','dayFields','dayRecs','desc','di','dressOut','fitCol','handPickSlot','hasPat','hasVest','hexRgb','inRotation','isCargo','isHandPick','isOcp','isWorkday','isoKey','itemFields','itemName','itemSeason','itemTitle','items','key','keySettings','labHex','labOf','leatherLabel','leatherWord','leathersFor','linkFace','lum','lumCol','matAlias','matTypeOne','matTypeWord','matsFor','mergeSettings','mergeState','metalOptsFor','metalWord','mix','nameHtml','nameIso','needsJacket','needsTie','nextStamp','nm','noBidi','normCol','normColFor','normPat','nowMs','occLabel','occOf','ocpImage','offDays','offName','ownColFind','ownColKey','ownDescClean','ownFreeKey','ownKeyNorm','ownMatName','ownMats','ownNameBad','ownNameClean','ownNameShort','ownPatFind','ownPatKey','patBase','patLabel','patName','patNameTaken','patOf','planCol','prettyCols','primaryCol','pw','rgbLab','seasonFit','sentence','setStr','setWardrobe','settings','shadeFor','shadeHex','shadeName','shoeStyle','shortCol','shortDesc','sockPatterned','sockToe','sockToeKey','soleStyle','stampAllSettings','stampSettings','strapBand','styleWord','tagTypesNow','takeSettings','tapeText','thirdOf','titleCls','todayDate','trouserKind','trouserKindShown','trueToday','typeWord','watchOpts','watchText','wearsJacket','wearsTie','weather'],
+  // analysis.js (in the page and the worker), history, pickscore, scorecard, today-plan, today, month, stats, pack, fav, wardrobe,
+  // itemsheet, locks, dress and shop plan and score with these; analysis-worker.js ranks with rankLooks; the rest: tests
+
+  'planner.js':['DIAL_KEYS','DIAL_NAMES','DIAL_OF_CHECK','DIAL_RULES','FRESH_FULL','HARD_CAP','HARM','INT_W','JKT_SAME','PAIR_DAYS','PAIR_GAP','PLAN_RULES','QWIN','SH','accMetal','beltFit','beltWait','buildPlan','clothesHard','clothesScore','colourRepeat','colsOf','dCol','darkMode','darkShirt','darkUnderLight','dialFreshness','dialHarmony','dialInterest','dialLook','dialOccasion','dialTexture','dialVariety','enamelPref','fam','favItemSet','favKey','favLookKey','favLookOf','favLooks','finish','formalTop','frozenOutfit','idsAhead','isFavItem','jacketGroup','leatherGroup','lightTop','lockStale','lookRepeat','lumOf','metalOf','metalSame','outfit','pairScore','pairSeen','patInfo','patsOf','patternScore','pcol','planSim','planStart','pocketScore','psEcho','psSameTie','psWhite','rankLooks','rateOutfit','shirtGroup','shirtLook','shirtRepeat','shirtScore','shoeFormality','shoeScore','shoeSuits','sockBold','sockBright','sockEcho','sockPatScore','sockScore','tieGroup','tieLook','tieLum','tieRepeat','tieScore','watchFit','withColRun'],
+  // shop.js runs the check where no worker starts (runAnalysis) and draws it (CLASS_NAMES, groupLabel, TYPE_WORD, listAnd), stats.js
+  // and shop.js count the same days (SHOP_WEEKS, horizonKeys, listAnd), analysis-worker.js runs runAnalysis; the rest: tests
+
+  'analysis.js':['CLASS_NAMES','SHOP_WEEKS','TYPE_WORD','evalPlan','groupLabel','horizonKeys','listAnd','occasionCheck','runAnalysis','shopList','shopShelved'],
   // the app's state, storage and shared helpers for nearly every file and the tests; flt, queue, view, sel, the database's and the
   // connection copy's flags, aiError and aiModel have setters (other files and tests assign them)
   'app.js':['DEAD_MSG','S','addTombstones','afterDom','afterScripts','aiError','aiLabel','aiModel','announce','ask','atomic','busyLabelFor','cap1','cleanStored','cleanStoredSettings','connKeep','connReady','connRestored','cropSwatch','db','dbConn','dbCur','dbGone','dbMark','dbRetry','dbUnhold','dbWiping','deadCanvas','deadPic','del','fill','fitNav','fitNavSoon','fixupRedraw','flt','generateSwatch','keepFocus','loadImg','metaGet','metaPut','normTag','put','putRaw','queue','refreshSwatch','sel','shrink','stillCur','texSwatches','tx','txFail','txs','updateSwatchParam','view'],
@@ -249,7 +263,9 @@ function writesOf(src,module){
   try{ast=acorn.parse(src,{...opt,sourceType:module?'module':'script'})}catch(e){try{ast=acorn.parse(src,{...opt,sourceType:'module',allowReturnOutsideFunction:false});module=true}catch(e2){return null}}
   const out=new Map(),add=n=>out.set(n,(out.get(n)||0)+1);
   const g=escope.analyze(ast,{ecmaVersion:2024,sourceType:module?'module':'script'}).globalScope,own=new Set(g.variables.filter(v=>v.defs.length).map(v=>v.name));
-  for(const r of g.through)if(r.isWrite()&&!own.has(r.identifier.name))add(r.identifier.name);
+  // (r.init: a declaration's own initializer, which escope leaves unresolved in a function that has a direct eval: tests/sample.test.js's
+  // `const key=` sat beside an eval(pd) and read as a write of core.js's key)
+  for(const r of g.through)if(r.isWrite()&&!r.init&&!own.has(r.identifier.name))add(r.identifier.name);
   for(const m of src.matchAll(/\b(?:window|self|globalThis)\.([A-Za-z_$][\w$]*)\s*(?:=(?!=)|\+\+|--|[-+*\/%&|^]=|\*\*=|<<=|>>>?=|&&=|\|\|=|\?\?=)/g))add(m[1]);
   return out;
 }
@@ -288,14 +304,32 @@ function measure(ROOT){
   /* a global use of a name only a module has, kept to itself */
   const unbridged=[],plat=platform();
   for(const f of page)if(info[f])for(const n of info[f].free){const o=kept.get(n);if(o&&o!==f&&!plat.has(n))unbridged.push(`${f} uses ${n}, which ${o} declares and doesn't bridge`)}
+  /* a classic worker can't importScripts a module; a module worker (analysis-worker.js) imports its files by plain relative paths, and
+     what its files read as globals there must be some file's of its own list: a classic one's top-level name or a module's bridge */
+  const wfiles={};
   for(const w of WORKERS){if(!fs.existsSync(path.join(ROOT,w)))continue;
-    const m=/importScripts\(([^)]*)\)/.exec(fs.readFileSync(path.join(ROOT,w),'utf8'));
-    for(const x of m?[...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1]):[])if(isMod.has(x))problems.push(`${w} importScripts ${x}, which the page loads as a module`)}
+    const k=modscope.workerFiles(ROOT,w);
+    if(!k.module){for(const x of k.files)if(x!==w&&isMod.has(x))problems.push(`${w} importScripts ${x}, which the page loads as a module`);continue}
+    const src=srcs[w]=fs.readFileSync(path.join(ROOT,w),'utf8');let ast;
+    try{ast=modscope.parse(src,true)}catch(e){problems.push(`${w} doesn't parse as a module: ${e.message}`);continue}
+    for(const i of modscope.imports(ast,w)){
+      if(i.odd)problems.push(`${w}: its import from ${i.from} is ${i.odd}`);
+      else if(!page.includes(i.from))problems.push(`${w} imports ${i.from}, which is not a page script (the worker's files are the page's, cached under their tags' names)`);
+      else if(i.names.length)problems.push(`${w} imports names from ${i.from}: a worker's files hand theirs over on globalThis (the bridge), as on the page`);
+      else (spelled[i.from]=spelled[i.from]||new Set()).add(i.from)}
+    if(modscope.bridged(ast,src).names.size)problems.push(`${w} bridges names: a worker's own names are its own`);
+    const g=escope.analyze(ast,{ecmaVersion:2024,sourceType:'module'}).globalScope,own=new Set(g.variables.map(v=>v.name));
+    info[w]={top:[],free:[...new Set(g.through.map(r=>r.identifier.name))].filter(n=>!own.has(n))};
+    wfiles[w]=k.files}
+  for(const [w,files] of Object.entries(wfiles)){const give=new Set(),keep=new Map();
+    for(const f of files){if(!info[f])continue;if(isMod.has(f)){for(const n of bridge[f])give.add(n);for(const n of info[f].top)if(!keep.has(n))keep.set(n,f)}else for(const n of info[f].top)give.add(n)}
+    for(const f of files)if(info[f])for(const n of info[f].free){const o=keep.get(n);if(o&&o!==f&&!give.has(n)&&!plat.has(n))unbridged.push(`${f} uses ${n} in ${w}, which ${o} declares and doesn't bridge`)}}
   /* a write to a bridged name from outside its file: seen by the module only through a setter */
   const unseen=[];
   if(Object.keys(how).length){const by={};
     const note=(f,w)=>{if(w)for(const [n,c] of w){const h=how[n];if(h&&h.file!==f&&!h.set&&(h.own||!h.assign))(by[n]=by[n]||[]).push(f+(c>1?' ('+c+')':''))}};
     for(const f of page)if(srcs[f]!=null)note(f,writesOf(srcs[f],isMod.has(f)));
+    for(const w of Object.keys(wfiles))note(w,writesOf(srcs[w],true));
     for(const f of nodeFiles(ROOT))note(f,writesOf(fs.readFileSync(path.join(ROOT,f),'utf8'),false));
     for(const [n,l] of Object.entries(by)){const h=how[n];
       unseen.push(h.assign?`${n} is assigned by ${l.join(', ')}, but ${h.file} hands it over with Object.assign: the global is replaced and ${h.file} goes on using its own (make it a \`let\` with a getter and a setter, or give ${h.file} a function for it)`
@@ -375,6 +409,10 @@ function plan(ROOT,file){
     for(const n of free(src,t.module))if(kind.has(n))at(n).page.push(t.src);
     for(const [n] of writesOf(src,t.module)||[])if(kind.has(n))at(n).wpage.push(t.src)}
   for(const w of WORKERS)if(fs.existsSync(path.join(ROOT,w))&&new RegExp("importScripts\\([^)]*'"+file.replace(/[.\\/]/g,'\\$&')+"'").test(rd(w)))at('').page.push(w);
+  // a module worker that imports the file reads its names as globals too (analysis-worker.js: through the file's bridge)
+  for(const w of WORKERS){if(!fs.existsSync(path.join(ROOT,w)))continue;const k=modscope.workerFiles(ROOT,w);if(!k.module||!k.files.includes(file))continue;
+    const src=rd(w);for(const n of free(src,true))if(kind.has(n))at(n).page.push(w);
+    for(const [n] of writesOf(src,true)||[])if(kind.has(n))at(n).wpage.push(w)}
   for(const f of nodeFiles(ROOT)){const src=rd(f);
     for(const n of free(src,false))if(kind.has(n))at(n).node.push(f);
     for(const [n] of writesOf(src,false)||[])if(kind.has(n))at(n).wnode.push(f)}

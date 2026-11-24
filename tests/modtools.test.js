@@ -23,7 +23,8 @@ module.exports=async({ok,ROOT})=>{
   ok(!own.length,'every checker that needs index.html\'s scripts takes them from tests/scriptlist.js (straight or through tests/modscope.js)'+(own.length?': '+own.join(', '):''));
   const html=rd('index.html'),page=scriptList(html);
   const appMods=scriptTags(html).filter(t=>t.module).map(t=>t.src);
-  ok(page.length>40&&appMods.length<page.length&&!appMods.some(f=>['merge.js','srgb.js'].includes(f)),`the app's page scripts are read, its modules marked (${page.length} scripts, ${appMods.length} of them modules; merge.js and srgb.js, which the Web Workers importScripts, are not)`);
+  const wMods=['asm-worker.js','analysis-worker.js'].filter(w=>modscope.workerFiles(ROOT,w).module);   // (module workers: analysis-worker.js since 2026-11-24)
+  ok(page.length>40&&appMods.length<page.length&&!appMods.some(f=>['merge.js','srgb.js'].includes(f)),`the app's page scripts are read, its modules marked (${page.length} scripts, ${appMods.length} of them modules; merge.js, which the server imports, and srgb.js, which asm-worker.js importScripts, are not)`);
 
   /* ---- tests/modscope.js: what a module shares ---- */
   const src=rd('m.js',FIX),ast=modscope.parse(src,true),b=modscope.bridged(ast,src);
@@ -52,7 +53,7 @@ module.exports=async({ok,ROOT})=>{
     ok(strict[0].messages.some(m=>m.fatal&&/strict mode/i.test(m.message)),'a module is parsed strict (a `with` statement is a syntax error there)');
     const real=(await import(pathToFileURL(path.join(ROOT,'eslint.config.mjs')).href)).default;
     const scoped=new Set(real.filter(c=>c.files&&c.files.length===1&&c.languageOptions).map(c=>c.files[0]));
-    ok(page.every(f=>scoped.has(f))&&real.every(c=>!c.files||c.files.length!==1||c.languageOptions.sourceType===(appMods.includes(c.files[0])?'module':'script')),'the app\'s own config gives every page script its scope: a module\'s tag makes it a module there, the others are classic');
+    ok(page.every(f=>scoped.has(f))&&real.every(c=>!c.files||c.files.length!==1||c.languageOptions.sourceType===(appMods.includes(c.files[0])||wMods.includes(c.files[0])?'module':'script'))&&wMods.every(f=>scoped.has(f)),'the app\'s own config gives every page script its scope: a module\'s tag makes it a module there, the others are classic (and a module worker is a module: '+(wMods.join(', ')||'none')+')');
   }
 
   /* ---- the type check ---- */
@@ -119,11 +120,11 @@ module.exports=async({ok,ROOT})=>{
   }finally{fs.rmSync(tmp,{recursive:true,force:true})}
 
   /* ---- tests/appsrc.js: app files as scripts for the Node vm tests ---- */
-  const all=[...new Set([...page,'analysis-worker.js','asm-worker.js','sw.js'])];
-  ok(all.filter(f=>!appMods.includes(f)).every(f=>{const s=rd(f);return asScript(s,f)===s&&!isModule(s)}),`every classic app script comes back from asScript as the very same text (${all.length-appMods.length} files)`);
-  ok(appMods.every(f=>{const s=rd(f),o=asScript(s,f);return isModule(s)&&o!==s&&o.length===s.length&&o.split('\n').length===s.split('\n').length&&!/^\s*(?:import|export)\b/m.test(o)&&(()=>{try{new vm.Script(o);return true}catch(e){return false}})()}),
-    `each of the app's modules comes back with only its import and export statements blanked, a script the Node tests can run (${appMods.join(', ')||'none'})`);
-  ok(appSrc(ROOT,'merge.js','core.js')===rd('merge.js')+rd('core.js'),'appSrc joins the files exactly as the vm tests did (merge.js + core.js)');
+  const all=[...new Set([...page,'analysis-worker.js','asm-worker.js','sw.js'])],mods=[...appMods,...wMods];
+  ok(all.filter(f=>!mods.includes(f)).every(f=>{const s=rd(f);return asScript(s,f)===s&&!isModule(s)}),`every classic app script comes back from asScript as the very same text (${all.length-mods.length} files)`);
+  ok(mods.every(f=>{const s=rd(f),o=asScript(s,f);return isModule(s)&&o!==s&&o.length===s.length&&o.split('\n').length===s.split('\n').length&&!/^\s*(?:import|export)\b/m.test(o)&&(()=>{try{new vm.Script(o);return true}catch(e){return false}})()}),
+    `each of the app's modules comes back with only its import and export statements blanked, a script the Node tests can run (${mods.join(', ')||'none'})`);
+  ok(appSrc(ROOT,'merge.js','srgb.js')===rd('merge.js')+rd('srgb.js')&&appSrc(ROOT,'merge.js','core.js')===rd('merge.js')+asScript(rd('core.js'),'core.js'),'appSrc joins the files exactly as the vm tests did (merge.js + srgb.js, two classic scripts), a module as asScript gives it (merge.js + core.js)');
   const tpl='const t=`\nexport const a=1\nimport x from "y"\n`;// export {t}';
   ok(asScript(tpl)===tpl&&!isModule(tpl),'a script with the words at the start of a line inside a template is left alone');
   const mod=rd('m.js',FIX),out=asScript(mod,'m.js');

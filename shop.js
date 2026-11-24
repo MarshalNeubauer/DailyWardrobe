@@ -101,7 +101,7 @@ function analyzeWardrobe(){
   const progress=(i,n,label)=>{shopBusy={i,n,label:label||'',t0:shopBusy&&shopBusy.t0||Date.now()};const el=$('#shop-prog');if(el){el.querySelector('i').style.width=Math.round(100*(i+1)/n)+'%';el.nextElementSibling.textContent=shopBusyText()}};
   const part=cat=>{shopPart=shopPart||{cats:[],top:[],partial:true};shopPart.cats.push(cat);if(shopOpen)shopKeep()};
   shopBusy={i:-1,n:1,label:'',t0:Date.now()};shopPart=null;redraw();
-  let w=null;try{w=new Worker('analysis-worker.js')}catch(e){}
+  let w=null;try{w=new Worker('analysis-worker.js',{type:'module'})}catch(e){}
   if(w){shopWorker=w;w.onmessage=e=>{const d=e.data;if(w!==shopWorker)return;if(d.progress)progress(...d.progress);else if(d.cat)part(d.cat);else{w.terminate();if(d.error)fail(d.error);else finish(d.done)}};
     w.onerror=()=>{w.terminate();if(w===shopWorker){shopWorker=null;onMain()}};w.postMessage(JSON.parse(JSON.stringify(payload)))}
   else onMain();

@@ -103,4 +103,17 @@ function shared(root,file,module){
   return module?[...bridged(ast,src).names.keys()]:declared(ast).map(d=>d.name);
 }
 
-module.exports={pageScripts,parse,declared,bridged,imports,hasModuleSyntax,shared};
+/* a Web Worker's files, in the order they run, the worker last: {files, module}. A classic worker (`new Worker(url)`) names them in
+   its importScripts('a.js', …); a module worker (`new Worker(url, {type: 'module'})`, analysis-worker.js since 2026-11-24) in its
+   `import './a.js';` statements (every checker asks here, as for the page: eslint.config.mjs, tests/typecheck.js, tests/deps.test.js,
+   tests/bridge.test.js, tests/assets.test.js, tests/impact.js) */
+function workerFiles(root,worker){
+  let src='';try{src=fs.readFileSync(path.join(root,worker),'utf8')}catch(e){return {files:[worker],module:false}}
+  const m=/importScripts\(([^)]*)\)/.exec(src);
+  if(m)return {files:[...[...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1]),worker],module:false};
+  let ast=null;try{ast=parse(src,true)}catch(e){}
+  if(!ast||!hasModuleSyntax(ast))return {files:[worker],module:false};
+  return {files:[...imports(ast,worker).map(i=>i.from),worker],module:true};
+}
+
+module.exports={pageScripts,parse,declared,bridged,imports,hasModuleSyntax,shared,workerFiles};

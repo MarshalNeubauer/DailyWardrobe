@@ -2,8 +2,17 @@
    Posts {progress:[i,n,label]} as it works, {cat} as each section is ready, then {done} (or {error}).
    It also ranks a day's outfits for the score card (a message with `rank`, history.js rankFor: kept alive between asks): the items in the
    day's pools and the outfit (by id), the settings and the day ({suitDay, clim, formal, occasion}); answers {rank: id, res} (planner.js
-   rankLooks) or {rank: id, error}. */
-importScripts('merge.js','core.js','planner.js','analysis.js');
+   rankLooks) or {rank: id, error}.
+   A module worker (scorecard.js and shop.js start it with {type: 'module'}; 2026-11-24): core.js, planner.js and analysis.js are ES modules,
+   which importScripts can't load. The imports run the four files in this order, as importScripts did; each module's bridge puts its
+   names on the worker's globalThis, where the others and the lines below read them (and assign items, settings, … through the setters).
+   merge.js stays a plain script (the page and the server load it): run as a module here, as worker/backup.js does, its names are only
+   in globalThis.DW_MERGE, and they are made the worker's globals again before any message, as importScripts left them. */
+import './merge.js';
+import './core.js';
+import './planner.js';
+import './analysis.js';
+Object.assign(globalThis,globalThis.DW_MERGE);
 onmessage=e=>{
   const d=e.data;
   if(d.rank){const q=d.rank;try{settings={...settings,...q.settings};applyCustom(settings.custom);items=q.list;const by=id=>id&&items.find(i=>i.id===id)||null;
