@@ -111,6 +111,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       await p.evaluate(async()=>{navigator.serviceWorker.getRegistration=async()=>({pushManager:{getSubscription:async()=>null}});await remindRefresh();openSettings('schedule')});
       const lost=await p.evaluate(()=>({on:remindPrefs().on,sw:document.querySelector('#remind-sw').getAttribute('aria-checked'),msg:document.querySelector('.remind-msg').textContent}));
       ok(!lost.on&&lost.sw==='false'&&/Reminders stopped on this phone/.test(lost.msg),`with no push subscription any more the switch goes off and says so ("${lost.msg}")`)}
+    // Round D (2026-11-24, after the code review's R3 N2): a cleaning reminder that throws never stops the morning reminder's lines
+    // from being kept (careReminders was called outside remindKeep's try, so one bad day left remind.json as it was)
+    {const r=await p.evaluate(async()=>{const P={on:true,care:true,time:'07:00'},c=await caches.open('dw-keep-remind');
+        await remindKeep(P);await c.put('remind.json',new Response('{}',{headers:{'content-type':'application/json'}}));   // the plan is worked out; the kept lines emptied
+        const trap={type:'suit',get id(){throw new Error('a piece that cannot be read')}};items.push(trap);
+        let err='',dates=null;try{dates=await remindKeep(P)}catch(e){err=e.message}items.splice(items.indexOf(trap),1);
+        const lines=await (await c.match('remind.json')).json(),care=await (await c.match('care.json')).json();
+        return {err,dates,lines:Object.keys(lines).length,care:Object.keys(care).length}});
+      ok(!r.err&&r.lines>0&&r.dates&&r.dates.length===r.lines&&r.care===0,`a cleaning reminder that throws: the morning reminder's lines are kept anyway and their dates sent (${r.err||r.lines+' lines, '+(r.dates||[]).length+' dates, '+r.care+' cleaning'})`)}
     // not connected: not shown
     await p.evaluate(()=>{closeSettings();localStorage.removeItem('worker_url');localStorage.removeItem('app_token');openSettings('schedule')});
     ok(!(await p.isVisible('#remind-box')),'not connected: no reminder switch');

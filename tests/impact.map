@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	12068816aec6c0594982
+# tested	323ef8ea4baecc2c631c
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -479,6 +479,7 @@ acts.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	sched
 acts.test.js	tag-request.js	<any>	<loaded>
 acts.test.js	tagging.js	<any>	<loaded>
 acts.test.js	tests/fixedplan.js	<any>
+acts.test.js	tests/webkit.js	<any>
 acts.test.js	theme.js	<any>	<loaded>	applyTheme
 acts.test.js	toast.js	<any>	<loaded>	toast
 acts.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -579,6 +580,7 @@ actsindex.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	
 actsindex.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 actsindex.test.js	tagging.js	<any>	<loaded>	readAbort	tagNotes
 actsindex.test.js	tests/fixedplan.js	<any>
+actsindex.test.js	tests/webkit.js	<any>
 actsindex.test.js	theme.js	<any>	<loaded>	applyTheme	cycleTheme	themeTap
 actsindex.test.js	toast.js	<any>	<loaded>	toast	toastDrop	toastOff	undoOff
 actsindex.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig
@@ -679,6 +681,7 @@ addcards.test.js	tagging.js	<loaded>	aiFields	closeTagImg	confTxt	readAbort	read
 addcards.test.js	tests/fixedplan.js	<any>
 addcards.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 addcards.test.js	tests/fixtures/suit-pinstripe.jpg	<loaded>
+addcards.test.js	tests/webkit.js	<any>
 addcards.test.js	theme.js	<loaded>	applyTheme
 addcards.test.js	toast.js	<loaded>	toast	undoHere
 addcards.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -5585,6 +5588,7 @@ connkeep.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@
 connkeep.test.js	tag-request.js	<loaded>
 connkeep.test.js	tagging.js	<loaded>
 connkeep.test.js	tests/fixedplan.js	<any>
+connkeep.test.js	tests/webkit.js	<any>
 connkeep.test.js	theme.js	<loaded>	applyTheme
 connkeep.test.js	toast.js	<loaded>	toast
 connkeep.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -5995,6 +5999,7 @@ deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
 deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
+deps.test.js	tests/webkit.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
 deps.test.js	today-gestures.js	<any>
@@ -7703,6 +7708,7 @@ globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
 globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
+globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -9576,6 +9582,7 @@ mannequin.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedu
 mannequin.test.js	tag-request.js	<loaded>
 mannequin.test.js	tagging.js	<loaded>
 mannequin.test.js	tests/pace.js	<any>
+mannequin.test.js	tests/webkit.js	<any>
 mannequin.test.js	theme.js	<loaded>	applyTheme
 mannequin.test.js	toast.js	<loaded>
 mannequin.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}	mvSig
@@ -13532,6 +13539,7 @@ remind.test.js	sync.js	<loaded>	@connRestored.then	@document.addEventListenervis
 remind.test.js	tag-request.js	<loaded>
 remind.test.js	tagging.js	<loaded>
 remind.test.js	tests/fixedplan.js	<any>
+remind.test.js	tests/webkit.js	<any>
 remind.test.js	theme.js	<loaded>	applyTheme
 remind.test.js	toast.js	<loaded>	toast
 remind.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	mvSig
@@ -13635,6 +13643,7 @@ restacts.test.js	tag-request.js	<loaded>	describeEstimate	keepCloseImg	readEstim
 restacts.test.js	tagging.js	<loaded>	confTxt	readAbort	tagLive	tagMeasUndo	tagNewCol	tagNewPat	tagNotes	tagPatternAgain	tagRefineAgain	tagRefineUndo	tagSet	undoRefine
 restacts.test.js	tests/fixedplan.js	<any>
 restacts.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<any>
+restacts.test.js	tests/webkit.js	<any>
 restacts.test.js	theme.js	<loaded>	applyTheme
 restacts.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoHere	undoOff
 restacts.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	mvSig	todayBusy	todayFree
@@ -18128,6 +18137,7 @@ stylea11y.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	
 stylea11y.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 stylea11y.test.js	tagging.js	<any>	<loaded>	readAbort	tagNotes
 stylea11y.test.js	tests/fixedplan.js	<any>
+stylea11y.test.js	tests/webkit.js	<any>
 stylea11y.test.js	theme.js	<any>	<loaded>	@apreferscolorschemedark.addEventListenerchange	applyTheme
 stylea11y.test.js	toast.js	<any>	<loaded>	toastDrop	undoOff
 stylea11y.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constroot$today}	@{constroot$today}>@root.addEventListenerclick	mvSig	todayCovered
@@ -18229,6 +18239,7 @@ sw.test.js	tag-request.js	<any>	<loaded>
 sw.test.js	tagging.js	<any>	<loaded>
 sw.test.js	tests/fixedplan.js	<any>
 sw.test.js	tests/safeport.js	<any>
+sw.test.js	tests/webkit.js	<any>
 sw.test.js	theme.js	<any>	<loaded>	applyTheme
 sw.test.js	toast.js	<any>	<loaded>	toast
 sw.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constroot$today}
