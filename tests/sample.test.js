@@ -220,8 +220,8 @@ const nu2fix3=async({ok,chromium,url,ROOT})=>{
     /* ---- the sample from the setup's last step: the setup finishes once the sample is stored ---- */
     const s=await open();
     await s.evaluate(()=>{localStorage.setItem('tour_seen','1');setupOpen(false);setup.at=SETUP_STEPS.length-1;setupDraw();
-      window.kitHold=new Promise(r=>window.kitGo2=r);const T=IDBDatabase.prototype.transaction;   // (the sample's one write, items and days: what waits for it hears it only after kitGo2)
-      IDBDatabase.prototype.transaction=function(st,m){const t=T.apply(this,arguments);if(m==='readwrite'&&Array.isArray(st)&&st.join()==='items,days')Object.defineProperty(t,'oncomplete',{configurable:true,set(f){t.addEventListener('complete',e=>kitHold.then(()=>f.call(t,e)))}});return t}});
+      window.kitHold=new Promise(r=>window.kitGo2=r);const T=IDBDatabase.prototype.transaction;   // (kit.js's writes, the only ones given a list of stores: what waits for them hears it only after kitGo2)
+      IDBDatabase.prototype.transaction=function(st,m){const t=T.apply(this,arguments);if(m==='readwrite'&&Array.isArray(st))Object.defineProperty(t,'oncomplete',{configurable:true,set(f){t.addEventListener('complete',e=>kitHold.then(()=>f.call(t,e)))}});return t}});
     await s.click('#setup #kit-sample-link');await s.waitForTimeout(250);
     const mid=await s.evaluate(async()=>{const m=await metaGet('settings');return {shown:setupShown(),done:!!(m&&m.setupDone)}});
     await s.evaluate(()=>kitGo2());await s.waitForFunction(()=>items.length===24&&!kitSampling);
