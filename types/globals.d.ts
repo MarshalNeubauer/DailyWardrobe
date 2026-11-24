@@ -445,6 +445,7 @@ declare var asmGlCuffs: any;
 declare var asmGlFinOff: any;
 declare var asmGlFree: any;
 declare var asmGlInit: any;
+declare var asmGlNot: any;
 declare var asmGlNote: any;
 declare var asmGlOnPage: any;
 declare var asmGlPack: any;
