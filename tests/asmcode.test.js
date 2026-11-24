@@ -57,6 +57,15 @@ module.exports=async({ok,chromium,url})=>{
   ok(prep.size>20&&!missP.length&&['asmCmHandEdge','asmCmBlur','asmTubeTabs','ASM_CM_RIM','ASM_LEG_K'].every(n=>prep.has(n)),`every function and constant the master's setup reaches is in asmCmPrepCode, the kept setup's key (${prep.size}; missing: ${missP.join(', ')||'none'})`);
   const stale=[...code,...prep].filter(n=>!D.has(n));
   ok(!stale.length,`both lists name only what exists (${stale.join(', ')||'all there'})`);
+  // srgb.js (the code review R8 N2, 2026-11-24): the painted code calls its curves (asmCmBuild's gam = linSrgb8, asmCmBtnCol, ASM_LIN),
+  // but its four names are in neither list, so an edit to srgb.js would change every painted pixel and no picture's key. Adding them
+  // to asmCmCode changes every key (every phone repaints every look), so until a planned repaint its code is pinned here instead
+  const SRGB_PIN='1033611a2f0c';
+  const S=decls(fs.readFileSync(path.join(ROOT,'srgb.js'),'utf8')),srgbH=require('crypto').createHash('sha256').update([...S].map(([n,v])=>n+v.text.replace(/\s+/g,'')).join('\n')).digest('hex').slice(0,12);
+  const painted=[...reach(D,['asmCmJob','asmCmPrep','asmCmBuild','asmCmLightPrep'])].map(n=>D.get(n).text.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g,'')).join('\n');
+  const uses=[...S.keys()].filter(n=>new RegExp('\\b'+n.replace('$','\\$')+'\\b').test(painted)),open=uses.filter(n=>!code.has(n));
+  ok(S.size===4&&uses.length>0,`srgb.js's names are read and the painted code calls them (${[...S.keys()].join(', ')}; called: ${uses.join(', ')})`);
+  ok(!open.length||srgbH===SRGB_PIN,open.length?`srgb.js is pinned (${srgbH}${srgbH===SRGB_PIN?'':', pinned '+SRGB_PIN}): the painter calls ${open.join(', ')}, which no picture key covers. A change to srgb.js changes every painted pixel without changing any key, so phones would keep old pictures beside new ones. Change it only together with a planned repaint: bump ASM_CM_PAINTV in asm-color.js (or add ${open.join(', ')} to asmCmCode; either way every phone repaints every look), then update SRGB_PIN here`:'srgb.js\'s names the painter calls are all in asmCmCode: no pin needed');
   const browser=await chromium.launch();const p=await (await browser.newContext()).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(()=>{renders[asmCmKey('suit','master')]={t:1,img:'',sig:''};let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
