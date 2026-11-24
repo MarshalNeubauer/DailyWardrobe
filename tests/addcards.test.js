@@ -187,9 +187,10 @@ const addreadend=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const conf=()=>p.evaluate(()=>{const q=queue[0],b=document.querySelector('#qconf-0');return {reading:!!(q&&(q.refining||q.patternReading)),off:b?b.disabled:'none'}});
     const start=async(pattern,arm)=>{await p.evaluate(async pat=>{queue.length=0;localStorage.setItem('worker_url','https://wv.test/');localStorage.setItem('app_token','x');
-      window.ask=async()=>({type:'suit',primaryColor:'navy',secondaryColor:'white',tertiaryColor:null,pattern:'pinstripe',confidence:{type:'high',primaryColor:'high',pattern:'high'},model:'stub',
-        weave:{direction:'vertical',repeatsAcross:30,colours:['#1f2a44','#e8e8e8'],description:'navy with fine white pinstripes'}});
-      window.__patAns=pat;if(!window.__patF){const f0=window.fetch;window.__patF=1;window.fetch=(u,o)=>/\/pattern$/.test(String(u))?Promise.resolve(new Response(JSON.stringify(window.__patAns||{}),{status:200})):f0(u,o)}   // the server's answer to POST /pattern
+      window.__tagAns={type:'suit',primaryColor:'navy',secondaryColor:'white',tertiaryColor:null,pattern:'pinstripe',confidence:{type:'high',primaryColor:'high',pattern:'high'},model:'stub',
+        weave:{direction:'vertical',repeatsAcross:30,colours:['#1f2a44','#e8e8e8'],description:'navy with fine white pinstripes'}};
+      // the server's answers to POST / (the real ask runs; __tagThrow: a failure ask itself doesn't catch, reading the error's name throws) and POST /pattern
+      window.__patAns=pat;if(!window.__patF){const f0=window.fetch;window.__patF=1;window.fetch=(u,o)=>String(u)==='https://wv.test/'&&o&&o.method==='POST'?(window.__tagThrow?Promise.reject({get name(){throw new Error('offline')}}):Promise.resolve(new Response(JSON.stringify(window.__tagAns),{status:200}))):/\/pattern$/.test(String(u))?Promise.resolve(new Response(JSON.stringify(window.__patAns||{}),{status:200})):f0(u,o)}
       openAdd();
       const bl=await (await fetch('tests/fixtures/suit-pinstripe.jpg')).blob();await addFiles([new File([bl],'s.jpg',{type:'image/jpeg'})])},pattern);
       await p.waitForFunction(()=>queue[0]&&!queue[0].busy&&document.querySelector('#qconf-0'));
@@ -208,8 +209,8 @@ const addreadend=async({ok,chromium,url})=>{
     c=await conf();const threw=await p.evaluate(()=>window.__measThrew);ok(threw>0&&!c.reading&&c.off===false,'a measuring step that throws after the close-up\'s answer: Confirm is on ('+JSON.stringify({...c,threw})+')');
 
     // the reading itself fails (the network): Confirm comes back too
-    await p.evaluate(()=>{window._ask=window.ask});await start(null);
-    await p.evaluate(()=>{window.ask=async()=>{throw new Error('offline')}});
+    await start(null);
+    await p.evaluate(()=>{window.__tagThrow=1});
     await p.evaluate(async()=>{const bl=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([bl],'c2.jpg',{type:'image/jpeg'}))});
     await p.waitForFunction(()=>queue[0]&&!queue[0].refining&&!queue[0].patternReading,null,{timeout:20000});await p.waitForTimeout(300);
     c=await conf();ok(!c.reading&&c.off===false,'a close-up reading that fails outright: Confirm is on ('+JSON.stringify(c)+')');

@@ -1,5 +1,5 @@
 /* Daily Wardrobe: moving between pages (show) and the start-up chain: the wardrobe from IndexedDB, then Today; the service worker
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
+   (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
 /* moving between pages: the page arriving eases in from the side its tab is on (Today, Wardrobe, Add left to right), a short slide and a
    fade on the cards' curve; a page opened from Settings (stats, packing, care) rises in instead. The tab bar's marker slides to the tab
    (styles.css nav::before, --ti). Only the page arriving moves: the one leaving goes at once, so nothing is laid out twice. */
@@ -22,6 +22,11 @@ let subFrom=null;
 const SUBS=['add','pack'];
 const subShown=()=>SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden});
 function pageBack(kind){if(kind==='sub'&&subShown())subBack();else if(settingsOpen())saveSettings()}
+/* The bridge (tests/bridge.test.js): what the classic scripts, the other modules, index.html's last script (startUp) and the tests still use
+   as globals. Above the file's first top-level call that can throw (backOn, when back.js didn't load) */
+Object.assign(globalThis,{subShown,subOpen,subBack,openAdd,show,startPlain,startUp,onSyncedData,tabTap});
+Object.defineProperties(globalThis,{pagesOn:{get:()=>pagesOn}});
+export {subShown,subOpen,subBack,openAdd,pagesOn,show,startPlain,startUp,onSyncedData,tabTap};
 backOn('sub',k=>pageBack(k));backOn('set',k=>pageBack(k));
 function subOpen(){backPush('sub');
   const m=$('#settings-modal');let page=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden})||'today';

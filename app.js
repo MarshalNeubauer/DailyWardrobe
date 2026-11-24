@@ -3,7 +3,7 @@
    the drawing scripts, then app.js, add.js and its parts, item-photo.js, item-view.js, itemsheet.js, history.js, today.js, month.js,
    photos.js, settings.js, start.js (the start-up
    chain), ui.js and the rest, about.js last.
-   (A classic script sharing one global scope with the others, loaded in index.html's order; split out of app.js on 2026-11-14.) */
+   (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
 let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 
 /* storage */
@@ -374,3 +374,8 @@ function keepFocus(root,draw){focusWatch();const a=document.activeElement,k=root
   const r=draw();
   if(k&&!(k.el.isConnected&&root.contains(k.el))){const f=focusFind(root,k),e=f&&focusSafe(f);if(e&&!e.closest('[inert]'))try{e.focus({preventScroll:true})}catch{}}
   return r}
+/* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. At the end: nothing
+   above it can throw at load (the database's failures are its promises'), and the consts it hands over are declared all the way down */
+Object.assign(globalThis,{dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,cropSwatch,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,busyLabelFor,fitNav,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus});
+Object.defineProperties(globalThis,{flt:{get:()=>flt,set:v=>{flt=v}},queue:{get:()=>queue,set:v=>{queue=v}},view:{get:()=>view,set:v=>{view=v}},sel:{get:()=>sel,set:v=>{sel=v}},dbCur:{get:()=>dbCur,set:v=>{dbCur=v}},dbConn:{get:()=>dbConn,set:v=>{dbConn=v}},dbWiping:{get:()=>dbWiping,set:v=>{dbWiping=v}},connReady:{get:()=>connReady,set:v=>{connReady=v}},aiError:{get:()=>aiError,set:v=>{aiError=v}},aiModel:{get:()=>aiModel,set:v=>{aiModel=v}}});
+export {flt,queue,view,sel,dbCur,dbConn,dbWiping,dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connReady,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,cropSwatch,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,aiError,aiModel,busyLabelFor,fitNav,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus};

@@ -85,9 +85,10 @@ const measure=async({ok,chromium,url})=>{
     ok(sig.same&&sig.other===null&&sig.any&&sig.again,'the sharp copy is handed out only with the photo it was kept for (after Replace photo the old one is not sent), and a crop signs it again');
 
     // ---- 8. tag requests say whether the photo was white-balanced; several photos are tagged three at a time
-    const par=await p.evaluate(async()=>{const was=ask;let live=0,max=0;const sent=[];window.ask=async(img,x)=>{sent.push(x&&x.wb);live++;max=Math.max(max,live);await new Promise(r=>setTimeout(r,150));live--;return null};
+    const par=await p.evaluate(async()=>{const was=window.fetch;let live=0,max=0;const sent=[];localStorage.setItem('worker_url','https://w.test/');   // (the real ask: each tag request is counted and refused)
+      window.fetch=async(u,o)=>{if(!String(u).startsWith('https://w.test/'))return was(u,o);if(String(u)==='https://w.test/'&&o&&o.method==='POST'){sent.push(JSON.parse(o.body).wb);live++;max=Math.max(max,live);await new Promise(r=>setTimeout(r,150));live--}return new Response('{}',{status:500})};
       const file=async n=>new File([await new Promise(r=>cloth(60,40,()=>[n*40,90,120]).toBlob(r,'image/png'))],`p${n}.png`,{type:'image/png'});
-      const fs=[];for(let n=0;n<5;n++)fs.push(await file(n));show('add');const t0=performance.now();await addFiles(fs,false);const ms=performance.now()-t0;window.ask=was;
+      const fs=[];for(let n=0;n<5;n++)fs.push(await file(n));show('add');const t0=performance.now();await addFiles(fs,false);const ms=performance.now()-t0;window.fetch=was;localStorage.removeItem('worker_url');
       let pat=null;const f0=window.fetch;localStorage.setItem('worker_url','https://w.test/');window.fetch=async(u,o)=>{pat=JSON.parse(o.body);return new Response('{}',{status:500})};
       await claudePattern({image:'data:image/jpeg;base64,AA',type:'tie',wb:false});window.fetch=f0;localStorage.removeItem('worker_url');
       const ex=tagExtras({wb:true}),cards=queue.length;window.patWb=pat&&pat.wb;queue.length=0;renderAdd();return {max,sent,cards,ms,ex:ex.wb,none:'wb' in tagExtras({}),pat:window.patWb}});

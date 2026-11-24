@@ -39,9 +39,14 @@ const modscope=require('./modscope');
 
 /* file -> the names it bridges onto globalThis. Rows are added by the pull request that converts the file; after that they only shrink */
 const BRIDGE={
+  // the app's state, storage and shared helpers for nearly every file and the tests; flt, queue, view, sel, the database's and the
+  // connection copy's flags, aiError and aiModel have setters (other files and tests assign them)
+  'app.js':['DEAD_MSG','S','addTombstones','afterDom','afterScripts','aiError','aiLabel','aiModel','announce','ask','atomic','busyLabelFor','cap1','cleanStored','cleanStoredSettings','connKeep','connReady','connRestored','cropSwatch','db','dbConn','dbCur','dbGone','dbMark','dbRetry','dbUnhold','dbWiping','deadCanvas','deadPic','del','fill','fitNav','fitNavSoon','fixupRedraw','flt','generateSwatch','keepFocus','loadImg','metaGet','metaPut','normTag','put','putRaw','queue','refreshSwatch','sel','shrink','stillCur','texSwatches','tx','txFail','txs','updateSwatchParam','view'],
   // the pages and sheets that Back closes are classic scripts: add-sheet, colpick, history, item-view, kit, settings, setup, shop,
   // start, ui and account call these. appHist, appKind and itemHist are read by the tests only (back, backgesture, shellfix): getters
   'back.js':['appHist','appKind','backBorrow','backDrop','backHold','backKind','backLand','backOn','backOver','backPush','backReturn','backSettled','backWanted','histDrop','histPush','itemHist'],
+  // every file registers its handlers with acts; today.js and care.js call actTaps; ui.js and tests read ACTS
+  'act.js':['ACTS','ACT_FIRST','actTaps','acts','actsFirst'],
   // the other Add files, tagging, pattern-read, measure, item-photo, migrate, safety, settings, kit and others draw and read cards with these; addCalm is a let only add.js writes (add-save reads it): a getter; the rest: tests
   'add.js':['PAIR_TYPES','STOPPED','TEX_MAX','TEX_MIN_PX','addBackOnline','addCalm','addFiles','addNoteText','addTexture','applyWb','cardPics','countWord','dropTexture','errToHand','measureGuess','multiAgain','multiMsg','needType','patternAgain','refineAgain','renderAdd','skipCard','stopRead','wbNote'],
   // tests/paste.test.js clears the line under the "Photo or link" field with it
@@ -137,6 +142,8 @@ const BRIDGE={
   'toast.js':['TOAST_ACT_MS','toast','toastDrop'],
   // read by the tests only: a11y (applyTheme, cycleTheme), actsindex (cycleTheme), modload (themeTap)
   'theme.js':['applyTheme','cycleTheme','themeTap'],
+  // moving between pages and start-up: index.html's last script calls startUp; pagesOn is a getter
+  'start.js':['onSyncedData','openAdd','pagesOn','show','startPlain','startUp','subBack','subOpen','subShown','tabTap'],
   // the question, the close-up chooser, the layers' focus, the connection's state and plain errors, for nearly every page script;
   // connMsg has a setter (tests/restacts.test.js), asking, cuOpen and connBusy are getters
   'ui.js':['NEED_CONN','addGate','advClose','askAnswer','askConfirm','asking','closeupBtn','closeupClose','closeupPick','connBusy','connMsg','connSummary','cuGot','cuOpen','cuTouch','inviteOver','isConnected','layerClose','layerFrom','layerInert','layerOpen','needConn','netErr','plainErr','renderConnUI','tell'],

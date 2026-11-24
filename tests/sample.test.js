@@ -33,19 +33,19 @@ const samplesync=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(async()=>{await kitDelMany(items.map(i=>i.id))});
     /* ---- W1-3-02: what goes up ---- */
     const sh=await p.evaluate(async(pd)=>{const share=(s,r)=>kitShareFilter(s,r||null,syncJoinAt()),past=eval(pd),T=todayDate(),tk=key(T),fut=new Date(T.getFullYear(),T.getMonth(),T.getDate()+3);
-      const S=kitItem({type:'suit',primaryColor:'navy',pattern:'solid',sample:true}),M=kitItem({type:'tie',primaryColor:'green',pattern:'solid',sample:true}),O=kitItem({type:'shirt',primaryColor:'white',pattern:'solid'});M.sampleMine=1;
-      const days=[{date:past[0],ids:{top:S.id,shirt:O.id,tie:M.id},worn:false,updated:5},{date:past[1],ids:{top:S.id},updated:6},{date:tk,ids:{top:S.id,shirt:O.id},updated:7},
-        {date:key(fut),lock:{top:S.id,shirt:O.id},lockOnly:1,base:0,updated:8},{date:past[2],noOutfit:1,updated:KIT_YIELD},{date:past[3],ids:{top:O.id},updated:9},
-        {date:past[4],ids:{top:S.id},worn:false,updated:20},{date:past[5],ids:{top:S.id},worn:false,updated:4},{date:past[6],ids:{top:S.id},updated:25}];
-      const st={items:[S,M,O],days,tombstones:{},settings:null},a=share(st),b=share(st,{days:[{date:past[1],ids:{top:'theirs'},updated:3},{date:past[2],ids:{top:'theirs2'},updated:2}]});
+      const Su=kitItem({type:'suit',primaryColor:'navy',pattern:'solid',sample:true}),M=kitItem({type:'tie',primaryColor:'green',pattern:'solid',sample:true}),O=kitItem({type:'shirt',primaryColor:'white',pattern:'solid'});M.sampleMine=1;
+      const days=[{date:past[0],ids:{top:Su.id,shirt:O.id,tie:M.id},worn:false,updated:5},{date:past[1],ids:{top:Su.id},updated:6},{date:tk,ids:{top:Su.id,shirt:O.id},updated:7},
+        {date:key(fut),lock:{top:Su.id,shirt:O.id},lockOnly:1,base:0,updated:8},{date:past[2],noOutfit:1,updated:KIT_YIELD},{date:past[3],ids:{top:O.id},updated:9},
+        {date:past[4],ids:{top:Su.id},worn:false,updated:20},{date:past[5],ids:{top:Su.id},worn:false,updated:4},{date:past[6],ids:{top:Su.id},updated:25}];
+      const st={items:[Su,M,O],days,tombstones:{},settings:null},a=share(st),b=share(st,{days:[{date:past[1],ids:{top:'theirs'},updated:3},{date:past[2],ids:{top:'theirs2'},updated:2}]});
       localStorage.setItem('app_token','tok123456');localStorage.setItem('sync_join',JSON.stringify({k:'123456',at:10}));const c=share(st);
       localStorage.removeItem('app_token');localStorage.removeItem('sync_join');
-      share(st);kitShareDone();const again1=!!share(st).days.find(d=>d.date===tk);days[2]={...days[2],ids:{...days[2].ids,shoes:S.id},updated:30};const again2=!!share(st).days.find(d=>d.date===tk);
+      share(st);kitShareDone();const again1=!!share(st).days.find(d=>d.date===tk);days[2]={...days[2],ids:{...days[2].ids,shoes:Su.id},updated:30};const again2=!!share(st).days.find(d=>d.date===tk);
       days[2]={...days[2],worn:false,updated:31};const again3=!!share(st).days.find(d=>d.date===tk);localStorage.removeItem('sync_sd');kitSdNew={};
       const D=(s,k)=>s.days.find(d=>d.date===k);
       return {items:a.items.map(i=>i.type).sort().join(),d0:D(a,past[0]),d1:!!D(a,past[1]),today:D(a,tk),fut:!!D(a,key(fut)),y:!!D(a,past[2]),own:D(a,past[3])===days[5],
         said:D(c,past[4]),yc:D(c,past[6]),ya:!!D(a,past[6]),before:!!D(c,past[5]),saidA:!!D(a,past[4]),again:[again1,again2,again3],
-        put1:D(b,past[1])&&D(b,past[1]).ids.top,put2:D(b,past[2])&&D(b,past[2]).ids.top,local:JSON.stringify(days[0].ids),S:S.id,O:O.id,M:M.id}},pastDays(7));
+        put1:D(b,past[1])&&D(b,past[1]).ids.top,put2:D(b,past[2])&&D(b,past[2]).ids.top,local:JSON.stringify(days[0].ids),S:Su.id,O:O.id,M:M.id}},pastDays(7));
     ok(sh.items==='shirt,tie','the sample piece he hasn\'t made his stays on the phone; his own and the one he made his go up: '+sh.items);
     ok(sh.d0&&sh.d0.worn===false&&sh.d0.ids.shirt===sh.O&&sh.d0.ids.tie===sh.M&&sh.d0.ids.top===null&&sh.d0.gone&&sh.d0.gone.top&&sh.d0.updated===5,`a past day with a sample piece goes up with that piece taken out, its "Didn't" and his pieces kept, same stamp (${JSON.stringify(sh.d0)})`);
     ok(sh.today&&sh.today.ids&&sh.today.ids.shirt===sh.O&&sh.today.ids.top===null,`today goes up with his pieces (so a phone joining isn't told he didn't open the app) (${JSON.stringify(sh.today)})`);
@@ -220,7 +220,8 @@ const nu2fix3=async({ok,chromium,url,ROOT})=>{
     /* ---- the sample from the setup's last step: the setup finishes once the sample is stored ---- */
     const s=await open();
     await s.evaluate(()=>{localStorage.setItem('tour_seen','1');setupOpen(false);setup.at=SETUP_STEPS.length-1;setupDraw();
-      window.kitHold=new Promise(r=>window.kitGo2=r);const K=dbRetry;dbRetry=async(m,run)=>{if(/transaction\(stores/.test(String(run)))await kitHold;return K(m,run)}});
+      window.kitHold=new Promise(r=>window.kitGo2=r);const T=IDBDatabase.prototype.transaction;   // (kit.js's writes, the only ones given a list of stores: what waits for them hears it only after kitGo2)
+      IDBDatabase.prototype.transaction=function(st,m){const t=T.apply(this,arguments);if(m==='readwrite'&&Array.isArray(st))Object.defineProperty(t,'oncomplete',{configurable:true,set(f){t.addEventListener('complete',e=>kitHold.then(()=>f.call(t,e)))}});return t}});
     await s.click('#setup #kit-sample-link');await s.waitForTimeout(250);
     const mid=await s.evaluate(async()=>{const m=await metaGet('settings');return {shown:setupShown(),done:!!(m&&m.setupDone)}});
     await s.evaluate(()=>kitGo2());await s.waitForFunction(()=>items.length===24&&!kitSampling);

@@ -50,10 +50,10 @@ module.exports=async({ok,chromium,url})=>{
     ok(r.hand.col==='navy'&&!r.hand.notes,'a colour set by hand is never overruled nor asked about, whatever Claude said');
 
     // ---- 2. kept from the answer itself (first tag and tag-many), saved on the item, not sent to the planner
-    const sv=await p.evaluate(async()=>{const was=window.ask;
-      window.ask=async()=>normTag({type:'suit',primaryColor:'navy',secondaryColor:'none',tertiaryColor:'none',pattern:'solid',confidence:{type:'high',primaryColor:'low',pattern:'medium'},altColor:'charcoal',altPattern:'twill',newColor:null,newPattern:null,clothBox:null},'m');
+    const sv=await p.evaluate(async()=>{const was=window.fetch,wu=localStorage.getItem('worker_url');localStorage.setItem('worker_url','https://v.test/');   // (the real ask, its request answered here)
+      window.fetch=async(u,o)=>!String(u).startsWith('https://v.test/')?was(u,o):String(u)==='https://v.test/'&&o&&o.method==='POST'?new Response(JSON.stringify({type:'suit',primaryColor:'navy',secondaryColor:'none',tertiaryColor:'none',pattern:'solid',confidence:{type:'high',primaryColor:'low',pattern:'medium'},altColor:'charcoal',altPattern:'twill',newColor:null,newPattern:null,clothBox:null,model:'m'}),{status:200}):new Response('{}',{status:500});
       const c=document.createElement('canvas');c.width=c.height=200;const x=c.getContext('2d');x.fillStyle='#283050';x.fillRect(0,0,200,200);
-      const b=await new Promise(r=>c.toBlob(r,'image/png'));show('add');await addFiles([new File([b],'s.png',{type:'image/png'})]);window.ask=was;
+      const b=await new Promise(r=>c.toBlob(r,'image/png'));show('add');await addFiles([new File([b],'s.png',{type:'image/png'})]);window.fetch=was;if(wu==null)localStorage.removeItem('worker_url');else localStorage.setItem('worker_url',wu);
       const card=queue[0]&&queue[0].tagAI;await save(0);const it=items.find(i=>i.tagAI);
       const multi=aiSignals({...normTag({type:'tie',primaryColor:'navy',pattern:'stripe'},'m'),confidence:'medium'},false);
       return {card,saved:it&&it.tagAI,multi}});
