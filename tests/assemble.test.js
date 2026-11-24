@@ -35,8 +35,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         r.off.calls=calls.filter(u=>!/\/me$/.test(u)).length;r.off.hidden=document.querySelector('#asm-group').hidden;ASM_ON=true;renderAsmUI();r.onShown=!document.querySelector('#asm-group').hidden;closeSettings&&closeSettings();
         // a photo made for this outfit after its master (Settings: Regenerate) wins, and nothing is painted or redrawn for it
         renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,NEW',model:'gpt',t:2000};r.under=renderFor(o).model;
-        let made=0,redraws=0;const p0=asmPhoto,r0=refreshToday;asmPhoto=async x=>{made++;return p0(x)};refreshToday=()=>{redraws++};
-        try{asmTried.clear();await asmEnsure(o);await asmEnsure(o)}finally{asmPhoto=p0;refreshToday=r0}r.loop={made,redraws};
+        let made=0;const p0=asmPhoto,mo=new MutationObserver(()=>{});mo.observe($('#today'),{childList:true});asmPhoto=async x=>{made++;return p0(x)};
+        try{asmTried.clear();await asmEnsure(o);await asmEnsure(o)}finally{asmPhoto=p0}r.loop={made,redraws:mo.takeRecords().filter(x=>x.addedNodes.length).length};mo.disconnect();
         // a look with no colour-coded master: no picture, no job
         const o2={...o,top:null,bot:null};r.none={use:asmCmUse(o2),key:asmOutKey(o2),job:await asmJob(o2)};
         delete asmOut[k]}

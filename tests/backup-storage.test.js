@@ -518,7 +518,7 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
     ok(lab.d==='Mon, Nov 16, start of the day · 5 items'&&lab.e==='Sun, Nov 15, start of the day · empty'&&lab.m==='Start of November 2026 · empty'&&lab.o==='Sat, Nov 14, start of the day',
       `daily backups named by their day, with counts (${JSON.stringify(lab)})`);
     const askQ=await A.evaluate(async()=>{const sel=document.querySelector('#snap-list');sel.innerHTML='<option value="2026-11-15" data-n="0">Sun, Nov 15, start of the day · empty</option>';sel.value='2026-11-15';
-      let txt='';const a0=window.askConfirm;window.askConfirm=async t=>{txt=t;return false};await rollBack();window.askConfirm=a0;return txt});
+      const run=rollBack();for(let i=0;i<300&&!asking;i++)await new Promise(r=>setTimeout(r,10));const txt=document.querySelector('#ask-sheet.on')?document.querySelector('#ask-sheet').textContent:'';askAnswer(false);await run;return txt});
     ok(/no items: rolling back to it empties the wardrobe/.test(askQ),'the roll-back question says an empty copy empties the wardrobe');
     // W1-10-01 in the app: the server's saves used up says nothing was deleted, with the local time
     const del=await A.evaluate(async()=>{const f0=window.fetch;window.fetch=async()=>new Response('{"error":"kv-limit","what":"write","message":"x"}',{status:429});

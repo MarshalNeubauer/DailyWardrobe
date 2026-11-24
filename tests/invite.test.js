@@ -480,7 +480,7 @@ const endedpics=async({ok,chromium,url})=>{
     ok(/You can make 2 more today, of your daily 40\. The first 2 are made now/.test(t.a)&&/2 more today/.test(t.b)&&!/first/.test(t.b)&&/40 more today/.test(t.old)&&t.owner===''&&t.up===20,
       `the Generate question says the day's limit ("${t.a.trim()}"); yesterday's count starts again; the owner has none`);
     const st=await p.evaluate(async()=>{if(!$('#itempic-status')){const d=document.createElement('div');d.id='itempic-status';document.body.append(d)}items=[{id:'z1',type:'shoes',primaryColor:'black',pattern:'solid'}];
-      let asked=false;const real=askConfirm;askConfirm=async()=>{asked=true;return false};await startItemPics();askConfirm=real;return {asked,t:$('#itempic-status').textContent}});
+      let over=false;const run=startItemPics().finally(()=>{over=true});while(!over&&!asking)await new Promise(r=>setTimeout(r,10));const asked=!!asking;if(asked)askAnswer(false);await run;return {asked,t:$('#itempic-status').textContent}});
     ok(!st.asked&&/item pictures are used up/.test(st.t),`with the day's pictures used up it says so instead of asking ("${st.t}")`);
     ok(!errs.length,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
