@@ -128,5 +128,41 @@ const wardpic=async({ok,chromium,url})=>{
   }finally{await browser.close()}
 };
 
+/* ---- a product picture arriving in the background (Round D, 2026-11-24: the review's R1 N1) ---- */
+// The Wardrobe asks the server for a belt's picture; it lands a moment later. With Settings opened meanwhile, Settings stays open and the
+// Wardrobe shows the picture once Settings closes; with the belt's sheet open, the sheet is not drawn again and the grid shows the picture
+// once the sheet closes. (The server is a route: its list answers 404, so the picture is asked for by its key.)
+const wardpicwait=async({ok,chromium,url,settle})=>{
+  const browser=await chromium.launch();const ctx=await browser.newContext({viewport:{width:390,height:900},serviceWorkers:'block'});
+  const PIC='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEklEQVR4nGNgYGD4z0AswK4SAFXuAf8EPy+xAAAAAElFTkSuQmCC';
+  const S={asked:0};
+  await ctx.addInitScript(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});
+  await ctx.route('https://w.test/**',async route=>{const u=route.request().url();
+    if(/[?&]key=/.test(u)){S.asked++;await new Promise(r=>setTimeout(r,700));return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({img:PIC,t:1})})}
+    return route.fulfill({status:404,headers:{'access-control-allow-origin':'*'},body:''})});
+  const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  try{
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);
+    const fresh=()=>p.evaluate(()=>{items=[{id:'b',type:'belt',primaryColor:'brown',pattern:'solid',leather:'calf',metal:'silver',added:2}];const k=itemKey(items[0]);delete renders[k];renderTried.delete(k);flt='all';return k});
+    const got=k=>p.waitForFunction(k=>!!renders[k],k,{timeout:10000}).then(()=>true,()=>false);
+    const tile=()=>p.evaluate(()=>!!document.querySelector('#gi-b img.item-pic, #gi-b .giopen img.ph'));
+    // Settings opened while the picture is on its way
+    let k=await fresh();await p.evaluate(()=>{closeItem();show('wardrobe');openSettings()});
+    const before=await p.evaluate(()=>settingsOpen()),had=await got(k);await settle(p,300);
+    const still=await p.evaluate(()=>settingsOpen());
+    ok(had&&before&&still,`a product picture arriving while Settings is open leaves Settings open (open before ${before}, after ${still}, picture ${had})`);
+    await p.evaluate(()=>closeSettings());await settle(p,300);
+    ok(await tile(),'…and the Wardrobe shows the picture once Settings closes');
+    // the belt's sheet open while the picture is on its way
+    k=await fresh();await p.evaluate(()=>{show('wardrobe');openItem('b');document.querySelector('#ivbody').firstElementChild.dataset.mark='1'});
+    const had2=await got(k);await settle(p,300);
+    const kept=await p.evaluate(()=>!!document.querySelector('#ivbody [data-mark="1"]')&&editing==='b');
+    ok(had2&&kept,`a product picture arriving while the item's sheet is open doesn't draw the sheet again (picture ${had2}, sheet as it was ${kept})`);
+    await p.evaluate(()=>closeItem());await settle(p,600);
+    ok(await tile(),'…and the Wardrobe shows the picture once the sheet closes');
+    ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
+  }finally{await browser.close()}
+};
+
 // the parts run one after another; one that throws is reported and the rest still run (each was its own file)
-module.exports=async t=>{for(const [name,part] of [['itempics',itempics],['wardpic',wardpic]]){try{await part(t)}catch(e){t.ok(false,`threw (${name}): ${e.message}`)}}};
+module.exports=async t=>{for(const [name,part] of [['itempics',itempics],['wardpic',wardpic],['wardpicwait',wardpicwait]]){try{await part(t)}catch(e){t.ok(false,`threw (${name}): ${e.message}`)}}};
