@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	2d42062b0288eddde0b6
-# tested	2cbc3970c2de7d55332d
+# tested	e87ca0223a6546ddaa13
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -2360,6 +2359,7 @@ asmtwill.test.js	add-sheet.js	<loaded>	get
 asmtwill.test.js	add.js	<loaded>
 asmtwill.test.js	analysis.js	<loaded>
 asmtwill.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
+asmtwill.test.js	apple-touch-icon.png	<loaded>
 asmtwill.test.js	asm-color.js	<loaded>	asmCmRoute	asmCmWeaveTag	asmHbShirt
 asmtwill.test.js	asm-gl.js	<loaded>
 asmtwill.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -2382,6 +2382,8 @@ asmtwill.test.js	draw.js	<loaded>
 asmtwill.test.js	dress.js	<loaded>	migrateVests
 asmtwill.test.js	fav.js	<loaded>
 asmtwill.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
+asmtwill.test.js	icon-192.png	<loaded>
+asmtwill.test.js	icon-512.png	<loaded>
 asmtwill.test.js	index.html	<loaded>
 asmtwill.test.js	item-photo.js	<loaded>	smallPhotos
 asmtwill.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
@@ -2390,6 +2392,7 @@ asmtwill.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	hom
 asmtwill.test.js	locale.js	<loaded>	appLocale
 asmtwill.test.js	locks.js	<loaded>
 asmtwill.test.js	look.js	<loaded>
+asmtwill.test.js	manifest.webmanifest	<loaded>
 asmtwill.test.js	mannequin.js	<loaded>	@{}
 asmtwill.test.js	measure.js	<loaded>
 asmtwill.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -7918,6 +7921,7 @@ hbswatch.test.js	add-sheet.js	<loaded>	get
 hbswatch.test.js	add.js	<loaded>
 hbswatch.test.js	analysis.js	<loaded>
 hbswatch.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
+hbswatch.test.js	apple-touch-icon.png	<loaded>
 hbswatch.test.js	asm-color.js	<loaded>	asmCmTile	asmHbShirt	asmHbShirtLook
 hbswatch.test.js	asm-gl.js	<loaded>
 hbswatch.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -7940,6 +7944,8 @@ hbswatch.test.js	draw.js	<loaded>	fabricDef	swatchSVG	texPlainBand
 hbswatch.test.js	dress.js	<loaded>	migrateVests
 hbswatch.test.js	fav.js	<loaded>
 hbswatch.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
+hbswatch.test.js	icon-192.png	<loaded>
+hbswatch.test.js	icon-512.png	<loaded>
 hbswatch.test.js	index.html	<loaded>
 hbswatch.test.js	item-photo.js	<loaded>	smallPhotos
 hbswatch.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
@@ -7948,6 +7954,7 @@ hbswatch.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	hom
 hbswatch.test.js	locale.js	<loaded>	appLocale
 hbswatch.test.js	locks.js	<loaded>
 hbswatch.test.js	look.js	<loaded>
+hbswatch.test.js	manifest.webmanifest	<loaded>
 hbswatch.test.js	mannequin.js	<loaded>	@{}
 hbswatch.test.js	measure.js	<loaded>
 hbswatch.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -8010,6 +8017,7 @@ herringbone.test.js	add-sheet.js	<loaded>	get
 herringbone.test.js	add.js	<loaded>
 herringbone.test.js	analysis.js	<loaded>
 herringbone.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
+herringbone.test.js	apple-touch-icon.png	<loaded>
 herringbone.test.js	asm-color.js	<loaded>
 herringbone.test.js	asm-gl.js	<loaded>
 herringbone.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -8032,6 +8040,8 @@ herringbone.test.js	draw.js	<loaded>	fabricDef	texPlainBand	texTileUrl	texTones
 herringbone.test.js	dress.js	<loaded>	migrateVests
 herringbone.test.js	fav.js	<loaded>
 herringbone.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
+herringbone.test.js	icon-192.png	<loaded>
+herringbone.test.js	icon-512.png	<loaded>
 herringbone.test.js	index.html	<loaded>
 herringbone.test.js	item-photo.js	<loaded>	smallPhotos
 herringbone.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
@@ -8040,6 +8050,7 @@ herringbone.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	
 herringbone.test.js	locale.js	<loaded>	appLocale
 herringbone.test.js	locks.js	<loaded>
 herringbone.test.js	look.js	<loaded>
+herringbone.test.js	manifest.webmanifest	<loaded>
 herringbone.test.js	mannequin.js	<loaded>	@{}
 herringbone.test.js	measure.js	<loaded>
 herringbone.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -8568,7 +8579,6 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
-invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -14230,6 +14240,7 @@ run.js: planner: shoes, belts, leather and metals	add-sheet.js	<loaded>	get
 run.js: planner: shoes, belts, leather and metals	add.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	analysis.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
+run.js: planner: shoes, belts, leather and metals	apple-touch-icon.png	<loaded>
 run.js: planner: shoes, belts, leather and metals	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmWtWants
 run.js: planner: shoes, belts, leather and metals	asm-gl.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -14252,6 +14263,8 @@ run.js: planner: shoes, belts, leather and metals	draw.js	<loaded>	drawBelt	draw
 run.js: planner: shoes, belts, leather and metals	dress.js	<loaded>	migrateVests
 run.js: planner: shoes, belts, leather and metals	fav.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	get	idsOf	keyDate	planRulesCheck	planRulesLs	planRulesNote	recordDays	replanFuture	resetCard	saveDay	whenPulled
+run.js: planner: shoes, belts, leather and metals	icon-192.png	<loaded>
+run.js: planner: shoes, belts, leather and metals	icon-512.png	<loaded>
 run.js: planner: shoes, belts, leather and metals	index.html	<loaded>
 run.js: planner: shoes, belts, leather and metals	item-photo.js	<loaded>	smallPhotos
 run.js: planner: shoes, belts, leather and metals	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
@@ -14260,6 +14273,7 @@ run.js: planner: shoes, belts, leather and metals	kit.js	<loaded>	get	homeAbout	
 run.js: planner: shoes, belts, leather and metals	locale.js	<loaded>	appLocale
 run.js: planner: shoes, belts, leather and metals	locks.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	look.js	<loaded>
+run.js: planner: shoes, belts, leather and metals	manifest.webmanifest	<loaded>
 run.js: planner: shoes, belts, leather and metals	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 run.js: planner: shoes, belts, leather and metals	measure.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -15516,7 +15530,6 @@ scoredials.test.js	sync-status.js	<loaded>	setSyncStatus	showSyncStatus	syncPaus
 scoredials.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	syncLaterRun	syncNeedsPull	syncNow	syncOnce	syncUrl
 scoredials.test.js	tag-request.js	<loaded>
 scoredials.test.js	tagging.js	<loaded>
-scoredials.test.js	tests/webkit.js	<any>
 scoredials.test.js	theme.js	<loaded>	applyTheme
 scoredials.test.js	toast.js	<loaded>
 scoredials.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}	mvSig
@@ -19548,6 +19561,7 @@ titles.test.js	add-sheet.js	<loaded>	get
 titles.test.js	add.js	<loaded>
 titles.test.js	analysis.js	<loaded>
 titles.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
+titles.test.js	apple-touch-icon.png	<loaded>
 titles.test.js	asm-color.js	<loaded>
 titles.test.js	asm-gl.js	<loaded>
 titles.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -19570,6 +19584,8 @@ titles.test.js	draw.js	<loaded>
 titles.test.js	dress.js	<loaded>	migrateVests
 titles.test.js	fav.js	<loaded>
 titles.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
+titles.test.js	icon-192.png	<loaded>
+titles.test.js	icon-512.png	<loaded>
 titles.test.js	index.html	<loaded>
 titles.test.js	item-photo.js	<loaded>	smallPhotos
 titles.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
@@ -19578,6 +19594,7 @@ titles.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeN
 titles.test.js	locale.js	<loaded>	appLocale
 titles.test.js	locks.js	<loaded>
 titles.test.js	look.js	<loaded>
+titles.test.js	manifest.webmanifest	<loaded>
 titles.test.js	mannequin.js	<loaded>	@{}
 titles.test.js	measure.js	<loaded>
 titles.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
