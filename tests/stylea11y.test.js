@@ -131,6 +131,18 @@ module.exports=async({ok,chromium,url,settle})=>{
       const t=m.t;const small=[t.wpill&&t.wpill[1]<44&&'Wore pill',t.swap&&(t.swap[0]<44||t.swap[1]<44)&&'⇄/−',t.rowtap<44&&'piece row',t.sttype<44&&'Insights type row',t.dtog<44&&'Settings day'].filter(Boolean);
       ok(t.wpill&&t.swap&&t.rowtap&&t.sttype&&t.dtog&&!small.length,`${theme}: 44px to tap on the Wore pill, ⇄ and −, a piece's row, Insights' type rows and Settings' day buttons (${JSON.stringify(t)})`);
     }
+    // R9 N1 (the 2026-11-24 review): the cost-per-wear money field is one field, the input's color inside its box with the $, and its edge
+    // over 3:1 like every field's (it was a white box inside a gray one, its edge about 1.4:1 light and 1.3:1 dark)
+    for(const theme of ['light','dark']){
+      await p.emulateMedia({colorScheme:theme});await settle(p,200);
+      const f=await p.evaluate(()=>{openSettings();const w=document.querySelector('#settings-modal .cpwin'),i=w&&w.querySelector('input');if(!i){closeSettings();return null}
+        // its edge against the first solid background behind it (the Settings category may be folded: its opacity is left out)
+        const rgb=c=>(c.match(/[\d.]+/g)||[]).map(Number),L=c=>{const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2])};
+        let a=w.parentElement,bg=null;while(a&&!bg){const c=rgb(getComputedStyle(a).backgroundColor);if(c.length===3||(c.length===4&&c[3]>=.99))bg=c;a=a.parentElement}
+        const x=L(rgb(getComputedStyle(w).borderTopColor)),y=L(bg||[255,255,255]),edge=+((Math.max(x,y)+.05)/(Math.min(x,y)+.05)).toFixed(2);
+        const r={input:getComputedStyle(i).backgroundColor,box:getComputedStyle(w).backgroundColor,edge};closeSettings();return r});
+      ok(f&&f.input===f.box&&f.edge>=3,`${theme}: the cost-per-wear field's box is the input's color and its edge is over 3:1 (${JSON.stringify(f)})`);
+    }
     await p.emulateMedia({colorScheme:'light'});
 
     // CR-9-07: an iPhone on its side: the full-width bars keep clear of the side insets (WebKit and Chromium have none, so set them)
