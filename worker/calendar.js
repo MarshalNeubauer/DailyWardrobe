@@ -16,6 +16,10 @@ import { publicHost, readCapped } from './links.js';
    only the window's events are kept, so the size costs read time, not memory; past it the answer says truncated */
 const CAL_DAYS = 60, CAL_EVENTS = 300, CAL_MAX_BYTES = 24e6, CAL_FETCH_MS = 15000, CAL_BODY = 8192;
 const CAL_CACHE_MS = 10 * 60e3, CAL_RATE_N = 6, CAL_RATE_MS = 10 * 60e3, CAL_SCAN = 40000;
+/* the limits that keep a request inside the Worker's memory (128 MB) and CPU time whatever the feed holds (2026-11-24): at most CAL_KEEP
+   events kept from the feed (the window's, and every repeating one), CAL_STEPS day steps walking repeating events, CAL_OUT instances
+   held before they are cut to the earliest; past the first two the answer says truncated */
+const CAL_KEEP = 3000, CAL_STEPS = 5e5, CAL_OUT = 5000;
 const calCache = new Map();   // hash of (who, link, tz, day) -> {t, body}
 const calHits = new Map();    // who.id -> [times of real reads]
 
@@ -123,7 +127,7 @@ const CAL_PROPS = /^(BEGIN|END|UID|DTSTART|DTEND|DURATION|RRULE|EXDATE|RECURRENC
 /* the text -> [{props: {NAME: [prop…]}}] of the VEVENTs, and the VTIMEZONEs' standard offsets {TZID: minutes} (for a TZID Intl doesn't know) */
 /* the parse as a reader fed one unfolded line at a time (calParser), so a calendar is read as it arrives (calRead): only the window's
    events are kept, wherever they lie in the feed (R6 N2, 2026-11-24: the first 6 MB were read and the rest dropped without a word, and a
-   calendar of years lists its coming events last). full: more than CAL_SCAN events kept, the rest not read */
+   calendar of years lists its coming events last). full: more than CAL_KEEP events kept, the rest not read */
 function calParser(fromIso, toIso) {
   // an event that isn't repeating and lies wholly outside the window (a couple of days' slack for time zones) is dropped as soon as it is
   // read: the time zone work below is the slow part, and a calendar of years holds thousands of past events
@@ -144,7 +148,7 @@ function calParser(fromIso, toIso) {
     }
     if (l.name === 'END') {
       const what = l.value.trim().toUpperCase(); depth.pop();
-      if (what === 'VEVENT' && ev) { if (inWindow(ev)) events.push(ev); ev = null; if (events.length > CAL_SCAN) P.full = true; }
+      if (what === 'VEVENT' && ev) { if (inWindow(ev)) events.push(ev); ev = null; if (events.length > CAL_KEEP) P.full = true; }
       else if (what === 'STANDARD') inStd = false;
       else if (what === 'VTIMEZONE') tzid = '';
       return;
@@ -162,7 +166,7 @@ function calParse(text, fromIso, toIso) {
   return P;
 }
 /* a calendar's body read as it arrives, at most CAL_MAX_BYTES, its lines unfolded and handed to a calParser -> {P, head: its first
-   characters (the BEGIN:VCALENDAR check), cut: the body went on past CAL_MAX_BYTES or past CAL_SCAN events, so the rest was not read} */
+   characters (the BEGIN:VCALENDAR check), cut: the body went on past CAL_MAX_BYTES or past CAL_KEEP events, so the rest was not read} */
 async function calRead(body, fromIso, toIso) {
   const P = calParser(fromIso, toIso), dec = new TextDecoder();
   let head = '', rest = '', line = null, bytes = 0, cut = false, first = true, cr = '';
@@ -208,7 +212,7 @@ function zoneOf(tzid, tzStd, home) {
 
 /* the occurrences' start wall times of a recurring event, from its first start, up to (and including) the day `toIso`;
    each {y, m, d, h, mi, s} in the event's zone */
-function occurrences(w, rule, toIso, fromIso, spanDays, untilMs, zone) {
+function occurrences(w, rule, toIso, fromIso, spanDays, untilMs, zone, budget = { left: Infinity }) {
   const out = [], start = isoOf(w.y, w.m, w.d), wd0 = new Date(start + 'T00:00:00Z').getUTCDay();
   const byday = rule.byday.length ? rule.byday : rule.freq === 'WEEKLY' ? [{ n: 0, wd: wd0 }] : [];
   const weekOf = iso => { const t = Date.parse(iso + 'T00:00:00Z') / 864e5, wd = new Date(iso + 'T00:00:00Z').getUTCDay(); return Math.floor((t - ((wd - rule.wkst + 7) % 7)) / 7); };
@@ -216,6 +220,7 @@ function occurrences(w, rule, toIso, fromIso, spanDays, untilMs, zone) {
   // without COUNT the days before the window can be skipped (the alignment counts from the first start); with COUNT every one counts
   let iso = start; if (!rule.count) { const skip = isoAdd(fromIso, -spanDays - 1); if (skip > iso) iso = skip; }
   for (let g = 0, n = 0; g < CAL_SCAN && iso <= toIso; g++, iso = isoAdd(iso, 1)) {
+    if (--budget.left < 0) { budget.out = true; break; }   // (the whole calendar's day steps: CAL_STEPS)
     const [y, m, d] = iso.split('-').map(Number), wd = new Date(iso + 'T00:00:00Z').getUTCDay(), dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
     let hit = false;
     if (rule.freq === 'DAILY') hit = isoDays(start, iso) % rule.interval === 0 && (!rule.byday.length || rule.byday.some(b => b.wd === wd)) && (!rule.bymonth.length || rule.bymonth.includes(m));
@@ -241,7 +246,12 @@ function occurrences(w, rule, toIso, fromIso, spanDays, untilMs, zone) {
 function calEvents(text, home, fromIso, toIso) { return calEventsOf(calParse(text, fromIso, toIso), home, fromIso, toIso); }
 /* the same from a parse already made (calParser's {events, tzStd}) */
 function calEventsOf(parsed, home, fromIso, toIso) {
-  const { events, tzStd } = parsed, out = [], moved = new Map();   // moved: uid -> the original starts (wall times) overrides replace
+  const { events, tzStd } = parsed, moved = new Map();   // moved: uid -> the original starts (wall times) overrides replace
+  // the work is bounded (2026-11-24, measured on made-up 24 MB feeds of repeating series): CAL_STEPS day steps for all repeating events
+  // together, and the instances found kept to the earliest CAL_EVENTS + 1 whenever they pass CAL_OUT (sorted and cut: the same answer);
+  // when the steps run out, parsed.cut is set and the answer says truncated
+  const budget = { left: CAL_STEPS, out: false }, byStart = (x, y) => x.start < y.start ? -1 : x.start > y.start ? 1 : x.time < y.time ? -1 : 1;
+  let out = [];
   const one = (ev, k) => (ev.props[k] || [])[0];
   for (const ev of events) {
     const rid = one(ev, 'RECURRENCE-ID'), uid = (one(ev, 'UID') || {}).value || '';
@@ -267,7 +277,8 @@ function calEventsOf(parsed, home, fromIso, toIso) {
     if (rr) {
       let untilMs = null;
       if (rr.until) { const u = calWhen({ value: rr.until, params: {} }); if (u) untilMs = u.allDay ? Date.UTC(u.y, u.m - 1, u.d, 23, 59, 59) : u.utc ? Date.UTC(u.y, u.m - 1, u.d, u.h, u.mi, u.s) : wallToUtc(u, zone); }
-      starts = occurrences(st, rr, toIso, fromIso, spanDays, untilMs, zone);
+      if (budget.out) { parsed.cut = true; break; }
+      starts = occurrences(st, rr, toIso, fromIso, spanDays, untilMs, zone, budget);
       // EXDATEs and the instances an override (RECURRENCE-ID) replaces, by their day in the event's zone (a rule here repeats at most daily)
       const ex = new Set((moved.get(uid) || []).map(w => dayIn(w, zone)));
       for (const p of ev.props.EXDATE || []) for (const v of String(p.value).split(',')) { const w = calWhen({ value: v.trim(), params: p.params }); if (w) ex.add(dayIn(w, zone)); }
@@ -288,8 +299,10 @@ function calEventsOf(parsed, home, fromIso, toIso) {
       const inst = rr ? isoOf(o.y, o.m, o.d) : rid ? dayIn(rid, zone) : uid ? '' : start;
       out.push({ id: calHash(base + '|' + inst), title, start, end, allDay: !!st.allDay, time, location, days: isoDays(start, end) + 1 });
     }
+    if (out.length > CAL_OUT) out = out.sort(byStart).slice(0, CAL_EVENTS + 1);
   }
-  out.sort((x, y) => x.start < y.start ? -1 : x.start > y.start ? 1 : x.time < y.time ? -1 : 1);
+  if (budget.out) parsed.cut = true;
+  out.sort(byStart);
   return out;
 }
 
@@ -355,9 +368,9 @@ async function handleCalendar(req, env, json, who) {
   let events;
   try { events = calEventsOf(read.P, tz, fromIso, toIso); }
   catch (e) { console.log('calendar parse failed:', e && e.name); return json({ error: 'not a calendar', message: CAL_MSG.notCal }, 422); }
-  // truncated: the calendar went on past what is read (CAL_MAX_BYTES, or CAL_SCAN events in the window): the events found are given, and
+  // truncated: the calendar went on past what is read (CAL_MAX_BYTES, CAL_KEEP events kept or CAL_STEPS steps): the events found are given, and
   // the app says in plain words that some may be missing (an older app reads the events as before)
-  const out = { from: fromIso, to: toIso, tz, events: events.slice(0, CAL_EVENTS), more: events.length > CAL_EVENTS, ...(read.cut ? { truncated: true } : {}) };
+  const out = { from: fromIso, to: toIso, tz, events: events.slice(0, CAL_EVENTS), more: events.length > CAL_EVENTS, ...(read.cut || read.P.cut ? { truncated: true } : {}) };
   calCache.set(ck, { t: now, body: out });
   if (calCache.size > 200) for (const [k, v] of calCache) if (now - v.t >= CAL_CACHE_MS) calCache.delete(k);
   return json(out);

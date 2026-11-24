@@ -37,6 +37,11 @@ const worker_=async({ok,ROOT})=>{
     FEEDS['https://cal.example.test/lf.ics']={text:fx.replace(/\r\n/g,'\n'),n:5};FEEDS['https://cal.example.test/cr.ics']={text:'﻿'+fx.replace(/\r?\n/g,'\r'),n:5};
     const lf=await read('https://cal.example.test/lf.ics'),cr=await read('https://cal.example.test/cr.ics');
     ok(same===6&&lf.events.length===17&&cr.events.length===17,`read as it arrives, in chunks of 1 byte to 4 KB, with LF, CR and a byte-order mark: the same 17 events as the text read whole (${same} of 6 chunk sizes, LF ${lf.events.length}, CR ${cr.events.length})`);
+    // a feed of thousands of repeating series (each kept: it may repeat into the window) is bounded: the earliest events, said truncated
+    const ser=n=>Array.from({length:n},(_,i)=>`BEGIN:VEVENT\r\nUID:s${i}@example.test\r\nSUMMARY:Series ${i}\r\nDTSTART;TZID=Asia/Kuwait:2018${String(1+i%12).padStart(2,'0')}05T090000\r\nRRULE:FREQ=DAILY;COUNT=3000\r\nEND:VEVENT\r\n`).join('');
+    FEEDS['https://cal.example.test/series.ics']={text:cal(ser(8000))};
+    const c0=process.cpuUsage(),sr=await read('https://cal.example.test/series.ics'),cpu=process.cpuUsage(c0),ms=Math.round((cpu.user+cpu.system)/1000);
+    ok(sr.s===200&&sr.truncated===true&&sr.events.length===300&&sr.more===true&&ms<8000,`8,000 daily series: answered with the first 300 events and truncated, its work bounded (${sr.s}, ${sr.events&&sr.events.length}, truncated ${sr.truncated}, ${ms} ms CPU here)`);
     // a web page stops at its first bytes
     FEEDS['https://cal.example.test/page.ics']={text:'<!doctype html><html>'+'x'.repeat(5e6)};
     const p=await read('https://cal.example.test/page.ics');
