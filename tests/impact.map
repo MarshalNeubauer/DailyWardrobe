@@ -1364,6 +1364,7 @@ asmcode.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	syncNeed
 asmcode.test.js	tag-request.js	<loaded>
 asmcode.test.js	tagging.js	<loaded>
 asmcode.test.js	tests/fixedplan.js	<any>
+asmcode.test.js	tests/webkit.js	<any>
 asmcode.test.js	theme.js	<loaded>	applyTheme
 asmcode.test.js	toast.js	<loaded>
 asmcode.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -3576,6 +3577,179 @@ bridge.test.js	tools/visit-measure.js	<any>
 bridge.test.js	ui.js	<any>
 bridge.test.js	wardrobe.js	<any>
 bridge.test.js	weather.js	<any>
+c3pixels.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+c3pixels.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
+c3pixels.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
+c3pixels.test.js	add-card.js	<loaded>
+c3pixels.test.js	add-keep.js	<loaded>	addKeep	addRestore
+c3pixels.test.js	add-more.js	<loaded>	checkArrivals
+c3pixels.test.js	add-paste.js	<loaded>
+c3pixels.test.js	add-save.js	<loaded>
+c3pixels.test.js	add-sheet.js	<loaded>	get
+c3pixels.test.js	add.js	<loaded>
+c3pixels.test.js	analysis.js	<loaded>
+c3pixels.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
+c3pixels.test.js	asm-color.js	<any>	<loaded>	asmAaK	asmCellT	asmCellV	asmCmAssets	asmCmAt	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBtnCol	asmCmBuild	asmCmButtons	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmFinPrep	asmCmFinish	asmCmFoldW	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmLightPrep	asmCmMat	asmCmMfApply	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmMips	asmCmMp	asmCmOutKey	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRead	asmCmRefit	asmCmRev	asmCmRoute	asmCmSetup	asmCmSig	asmCmSrcSig	asmCmTieTag	asmCmTile	asmCmTrSc	asmCmWeaveTag	asmCmWk	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmH32	asmHbShirt	asmHbShirtLook	asmKindOf	asmKnitTile	asmLegsAt	asmLegsPrep	asmLookTag	asmNkBaseOf	asmPaisleyTile	asmPileKind	asmTieLit	asmTieSheenK	asmWorstedTile	asmWtTag	asmWtWants	get
+c3pixels.test.js	asm-gl.js	<any>	<loaded>	asmGlAtlas	asmGlContext	asmGlCovers	asmGlCuffs	asmGlDraw	asmGlEncode	asmGlF	asmGlFrag	asmGlHashGlsl	asmGlInit	asmGlLegsOk	asmGlNote	asmGlOnPage	asmGlPage	asmGlPaint	asmGlPref	asmGlProbe	asmGlProgram	asmGlRead	asmGlRenderer	asmGlSame	asmGlStatus	asmGlTail	asmGlTex	asmGlTry	asmGlUniforms	asmGlUploadGeo	asmGlUploadSlow	asmGlUploadSteps	asmGlUse	asmGlVar	asmGlWhy	get
+c3pixels.test.js	asm-kinds.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmCmKindOf	asmJfKey	asmJfWants	asmNkBase	asmNkCloth	asmNkCode	asmNkGet	asmNkJob	asmNkKnitTile	asmNkLeg	asmNkLin	asmNkRnd	asmNkSecond	asmNkSig	asmNkStitchMm	asmNkTopTile
+c3pixels.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpBase	asmOcpJob	asmOcpSig
+c3pixels.test.js	asm-pocket.js	<any>	<loaded>	asmPocketDo	asmPocketJob	asmPocketPaint	asmPocketQuad	asmPocketSig
+c3pixels.test.js	asm-watch.js	<any>	<loaded>	asmWatchBlur	asmWatchDark	asmWatchDo	asmWatchImg	asmWatchJob	asmWatchMetal	asmWatchPaint	asmWatchPaints	asmWatchPct	asmWatchSig
+c3pixels.test.js	asm-worker.js	<any>
+c3pixels.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBarDraw	asmBarRgb	asmBarSig	asmBlobUp	asmBodyFlow	asmBuild	asmBuildAfter	asmClothOf	asmCmHeld	asmCmLook	asmCmUse	asmData	asmDrawn	asmFlowAt	asmGet	asmGetOnce	asmHbCw	asmIdleArm	asmImg	asmJob	asmJpeg	asmKey	asmLinen	asmListGet	asmLoad	asmMicroGrid	asmMicroKind	asmMicroTex	asmMotif	asmOutKey	asmPolyAt	asmPost	asmPump	asmRun	asmRunPage	asmSleeveFlow	asmSleeveSegs	asmSuitBands	asmSuitSig	asmSuitTex	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTieTile	asmTq	asmTqn	asmTqr	asmTubeAt	asmTubePart	asmTubePartQ	asmTubeRaw	asmTubeTabs	asmTweedTex	asmTweedTile	asmTwillTex	asmWeave	asmWorker	get	set
+c3pixels.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
+c3pixels.test.js	backupfile.js	<loaded>
+c3pixels.test.js	boxfold.js	<loaded>
+c3pixels.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
+c3pixels.test.js	care.js	<loaded>
+c3pixels.test.js	checklist.js	<loaded>
+c3pixels.test.js	colpick.js	<loaded>
+c3pixels.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	applyCustom	camoPat	casualTop	cleanState	colOf	dE00	dayClimate	di	get	hexRgb	isOcp	isWorkday	isoKey	key	keySettings	keySplit	labHex	lum	mergeState	metalWord	mix	now	nowMs	occOf	offDays	offName	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	set	setWardrobe	subHashes	takeSettings	thirdOf	todayDate	trouserKind	watchOpts
+c3pixels.test.js	cost.js	<loaded>
+c3pixels.test.js	daysoff.js	<loaded>	refreshHolidays
+c3pixels.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+c3pixels.test.js	draw.js	<loaded>	fabricDef
+c3pixels.test.js	dress.js	<loaded>	migrateVests
+c3pixels.test.js	fav.js	<loaded>
+c3pixels.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
+c3pixels.test.js	index.html	<loaded>
+c3pixels.test.js	item-photo.js	<loaded>	smallPhotos
+c3pixels.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
+c3pixels.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
+c3pixels.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
+c3pixels.test.js	locale.js	<loaded>	appLocale
+c3pixels.test.js	locks.js	<loaded>
+c3pixels.test.js	look.js	<loaded>
+c3pixels.test.js	mannequin.js	<loaded>	@{}
+c3pixels.test.js	measure.js	<loaded>
+c3pixels.test.js	merge.js	<loaded>	mergeList	mergeStateBy	setEntries	setHash	setKeys	setStampOf	stateSig	subOk
+c3pixels.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
+c3pixels.test.js	missed.js	<loaded>
+c3pixels.test.js	month.js	<loaded>	dayOnly
+c3pixels.test.js	mq/shirt-open.js	<loaded>
+c3pixels.test.js	mq/shirt-tie.js	<loaded>
+c3pixels.test.js	mq/suit-open.js	<loaded>
+c3pixels.test.js	mq/suit.js	<loaded>
+c3pixels.test.js	mq/vest.js	<loaded>
+c3pixels.test.js	own-lists.js	<loaded>
+c3pixels.test.js	pack.js	<loaded>	packShow
+c3pixels.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
+c3pixels.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	fnv64	get	keepRender	loadRenders	picsDrawn	workerBase	workerList
+c3pixels.test.js	pickscore.js	<loaded>
+c3pixels.test.js	planner.js	<loaded>
+c3pixels.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
+c3pixels.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
+c3pixels.test.js	scorecard.js	<loaded>
+c3pixels.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setWanted	settingsOpen	settingsPart
+c3pixels.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
+c3pixels.test.js	sheet-swipe.js	<loaded>
+c3pixels.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then
+c3pixels.test.js	snapshots.js	<loaded>
+c3pixels.test.js	srgb.js	<any>	<loaded>	linSrgb	linSrgb8	srgbLin	srgbLin8
+c3pixels.test.js	start.js	<loaded>	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp
+c3pixels.test.js	stats.js	<loaded>	@afterScripts	statsPlan	statsPlanned
+c3pixels.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .firstrun	.vh	.wxc.wxlk	.wxl	:root	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
+c3pixels.test.js	sync-photos.js	<loaded>
+c3pixels.test.js	sync-status.js	<loaded>	endedAnswer	setSyncStatus	showSyncStatus	syncPaused	syncWaiting
+c3pixels.test.js	sync.js	<loaded>	@connRestored.then	afterPull	applyMerged	clockLearn	localState	pullDone	pulledYet	restoreDone	restoreWanted	setSyncMark	syncJoinAt	syncJoinMark	syncMark	syncNeedsPull	syncNow	syncOnce	syncSaved	syncUrl	synced
+c3pixels.test.js	tag-request.js	<loaded>
+c3pixels.test.js	tagging.js	<loaded>
+c3pixels.test.js	tests/fixedplan.js	<any>
+c3pixels.test.js	tests/fixtures/cm/cardigan/mask-background.png	<any>
+c3pixels.test.js	tests/fixtures/cm/cardigan/mask-dark.png	<any>
+c3pixels.test.js	tests/fixtures/cm/cardigan/mask-jacket.png	<any>
+c3pixels.test.js	tests/fixtures/cm/cardigan/mask-shirt.png	<any>
+c3pixels.test.js	tests/fixtures/cm/cardigan/mask-skin.png	<any>
+c3pixels.test.js	tests/fixtures/cm/cardigan/mask-watch.png	<any>
+c3pixels.test.js	tests/fixtures/cm/cardigan/master.jpg	<any>
+c3pixels.test.js	tests/fixtures/cm/cardigan/part-sleeveL.png	<any>
+c3pixels.test.js	tests/fixtures/cm/cardigan/part-sleeveR.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-open/mask-background.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-open/mask-belt.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-open/mask-buckle.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-open/mask-dark.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-open/mask-shirt.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-open/mask-skin.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-open/mask-trousers.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-open/mask-watch.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-open/master.jpg	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-open/part-sleeveL.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-open/part-sleeveR.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-tie/mask-background.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-tie/mask-belt.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-tie/mask-buckle.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-tie/mask-dark.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-tie/mask-shirt.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-tie/mask-skin.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-tie/mask-tie.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-tie/mask-trousers.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-tie/mask-watch.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-tie/master.jpg	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-tie/part-sleeveL.png	<any>
+c3pixels.test.js	tests/fixtures/cm/shirt-tie/part-sleeveR.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit-open/mask-background.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit-open/mask-dark.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit-open/mask-jacket.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit-open/mask-shirt.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit-open/mask-skin.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit-open/mask-watch.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit-open/master.jpg	<any>
+c3pixels.test.js	tests/fixtures/cm/suit-open/part-lapelL.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit-open/part-lapelR.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit-open/part-sleeveL.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit-open/part-sleeveR.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit/mask-shirt.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit/mask-skin.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit/mask-tie.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit/mask-watch.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit/master.jpg	<any>
+c3pixels.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
+c3pixels.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+c3pixels.test.js	tests/fixtures/cm/tee/mask-background.png	<any>
+c3pixels.test.js	tests/fixtures/cm/tee/mask-belt.png	<any>
+c3pixels.test.js	tests/fixtures/cm/tee/mask-buckle.png	<any>
+c3pixels.test.js	tests/fixtures/cm/tee/mask-dark.png	<any>
+c3pixels.test.js	tests/fixtures/cm/tee/mask-shirt.png	<any>
+c3pixels.test.js	tests/fixtures/cm/tee/mask-skin.png	<any>
+c3pixels.test.js	tests/fixtures/cm/tee/mask-trousers.png	<any>
+c3pixels.test.js	tests/fixtures/cm/tee/mask-watch.png	<any>
+c3pixels.test.js	tests/fixtures/cm/tee/master.jpg	<any>
+c3pixels.test.js	tests/fixtures/cm/tee/part-sleeveL.png	<any>
+c3pixels.test.js	tests/fixtures/cm/tee/part-sleeveR.png	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/mask-background.png	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/mask-dark.png	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/mask-jacket.png	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/mask-shirt.png	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/mask-skin.png	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/mask-tie.png	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/mask-waistcoat.png	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/mask-watch.png	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/master.jpg	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/part-lapelL.png	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/part-lapelR.png	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/part-sleeveL.png	<any>
+c3pixels.test.js	tests/fixtures/cm/vest/part-sleeveR.png	<any>
+c3pixels.test.js	tests/webkit.js	<any>
+c3pixels.test.js	theme.js	<loaded>	applyTheme
+c3pixels.test.js	toast.js	<loaded>
+c3pixels.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
+c3pixels.test.js	today-photofold.js	<loaded>
+c3pixels.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
+c3pixels.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
+c3pixels.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
+c3pixels.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
+c3pixels.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
+c3pixels.test.js	watch/leather.jpg	<loaded>
+c3pixels.test.js	watch/shirt-open.png	<loaded>
+c3pixels.test.js	watch/shirt-tie.png	<loaded>
+c3pixels.test.js	watch/suit.png	<loaded>
+c3pixels.test.js	watch/vest.png	<loaded>
+c3pixels.test.js	weather.js	<loaded>	loadWeather
 calendar.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 calendar.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 calendar.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -4892,6 +5066,7 @@ colormath.test.js	tag-request.js	<any>
 colormath.test.js	tagging.js	<any>
 colormath.test.js	tests/appsrc.js	<any>
 colormath.test.js	tests/fixedplan.js	<any>
+colormath.test.js	tests/webkit.js	<any>
 colormath.test.js	tools/describe-eval.js	<any>
 colormath.test.js	worker/colormath.js	<loaded>	dE00	hexLab	hexRgb	rgbLab
 colormath.test.js	worker/describe.js	<any>	<loaded>
@@ -5887,6 +6062,7 @@ deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
 deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
+deps.test.js	tests/webkit.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
 deps.test.js	today-gestures.js	<any>
@@ -7405,6 +7581,7 @@ garmentpaint.test.js	tests/fixtures/cm/tee/mask-watch.png	<any>
 garmentpaint.test.js	tests/fixtures/cm/tee/master.jpg	<any>
 garmentpaint.test.js	tests/fixtures/cm/tee/part-sleeveL.png	<any>
 garmentpaint.test.js	tests/fixtures/cm/tee/part-sleeveR.png	<any>
+garmentpaint.test.js	tests/webkit.js	<any>
 garmentpaint.test.js	theme.js	<loaded>	applyTheme
 garmentpaint.test.js	toast.js	<loaded>
 garmentpaint.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -7595,6 +7772,7 @@ globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
 globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
+globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -8375,6 +8553,7 @@ inlinehandlers.test.js	sync-status.js	<any>
 inlinehandlers.test.js	sync.js	<any>
 inlinehandlers.test.js	tag-request.js	<any>
 inlinehandlers.test.js	tagging.js	<any>
+inlinehandlers.test.js	tests/webkit.js	<any>
 inlinehandlers.test.js	theme.js	<any>
 inlinehandlers.test.js	toast.js	<any>
 inlinehandlers.test.js	today-gestures.js	<any>

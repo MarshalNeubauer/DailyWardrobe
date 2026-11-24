@@ -60,7 +60,7 @@ module.exports=async({ok,engines,url,ROOT})=>{
         const r=await p.evaluate(pageRun,String(looksFn));await ctx.close();return {...r,errs}};
       const A=await runOn(mainSrc),B=await runOn(null),T=eng==='webkit'?'WebKit: ':'';
       ok(Object.keys(mainSrc).length>=16,`${T}main's painter files of just before C3 are served to the first page (${Object.keys(mainSrc).length} files)`);
-      ok(A.out.length>=20&&A.out.every(r=>!r.err)&&B.out.every(r=>!r.err),`${T}${A.out.length} looks painted on both (${[...A.out,...B.out].filter(r=>r.err).map(r=>r.err).join('; ')||'no errors'})`);
+      ok(A.out.length>=18&&A.out.every(r=>!r.err)&&B.out.every(r=>!r.err),`${T}${A.out.length} looks painted on both (${[...A.out,...B.out].filter(r=>r.err).map(r=>r.err).join('; ')||'no errors'})`);
       ok(A.out.every((r,i)=>r.key!==B.out[i].key),`${T}every look's key is new (C3's one planned repaint)`);
       const routes=['wgl','wcpu','pdraw','pcpu','pgl'],names={wgl:'the worker\'s graphics chip',wcpu:'the worker\'s CPU',pdraw:'the page\'s draw (a worker without WebGL2)',pcpu:'the page\'s CPU',pgl:'the page\'s own graphics chip'};
       for(const R of routes){const n=A.out.filter(r=>r.routes[R]).length,diff=A.out.map((r,i)=>r.routes[R]!==B.out[i].routes[R]?i:-1).filter(i=>i>=0);

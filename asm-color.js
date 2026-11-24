@@ -50,8 +50,8 @@ function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
   return o.tie?'shirt-tie':'shirt-open'}
 /* (2026-11-16) the master a look is painted on, the new garments' kinds included (asm-kinds.js asmCmKindOf); asmCmKind (in the painter's
    fingerprint) is unchanged. asmNkBaseOf: a new kind's base master (its cloth and trousers/jacket zones), else the kind itself */
-const asmKindOf=o=>asmCmKindOf(o);
-const asmNkBaseOf=k=>asmNkBase(k);
+const asmKindOf=o=>typeof asmCmKindOf==='function'?asmCmKindOf(o):asmCmKind(o);
+const asmNkBaseOf=k=>typeof asmNkBase==='function'?asmNkBase(k):k;
 /* the cloth of each garment, as it goes into the picture's key: a new colour, reading or drawing makes a new picture */
 const ASM_CM_PAINTV=9;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points; 5: the sleeves reach the jacket's outer edge (ASM_CM_RIM); 6: the cloth look (#304, rolled back: its pictures are still on the worker under p6); 7: the cloth look and lighting as chosen (ASM_CM_LOOK, ASM_CM_LIGHT); 8: the same on trousers, the shirt's buttons drawn (ASM_CM_BTN), the tie's sheen dialled back (the owner: too glossy), the half-hidden button drawn as a button, no purple skin edge (the button smudge); 9: (2026-11-14 audit) the tie sheen, hand edge and trousers lighting shipped under 8 without a bump: repainted; since then the painter's code is hashed into every key (asmCmCodeSig), so a forgotten bump can't leave old pictures
 /* the cloth look (the owner's choice, 2026-11-13, after several rounds of mockups against an OpenAI picture of his black suit, which the
