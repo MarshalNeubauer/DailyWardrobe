@@ -1,6 +1,6 @@
 /* Daily Wardrobe worker: photos stored once (ph:<hash>), their clean-up, and POST/GET /sync.
    (An ES module of worker.js, the entry; split out of it on 2026-11-14.) */
-import { BACKUP_MAX, NO_LOCK, PART_MAX, PH_HEX, conflictBody, lockStale, nextSaved, saveLock, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget } from './backup.js';
+import { BACKUP_MAX, NO_LOCK, PART_MAX, leaseLost, PH_HEX, conflictBody, lockStale, nextSaved, saveLock, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget } from './backup.js';
 import { INVITE_INDEX, UID_RE, countWrites, spend, unspend } from './people.js';
 import { picBytesOk, recCheck } from './records.js';
 
@@ -43,8 +43,9 @@ async function phThere(env, ns, h) {
 }
 /* each photo of want (hash -> its JSON string, or a function of the hash giving it) stored: written only when it is not there yet,
    or when the clean-up has it in view (unreferenced at its last run, or deleted in the last days: KV elsewhere may still show it).
-   -> the hashes that could not be stored (no text for them) */
-async function putPhotos(env, ns, want, allow) {
+   -> the hashes that could not be stored (no text for them). keep: the save lock's hold (backup.js saveLock), asked after each photo: it
+   renews the lease while a long save writes, and stops the writing when the lease went to another save (R6 N1) */
+async function putPhotos(env, ns, want, allow, keep) {
   const failed = new Set(), todo = [];
   if (want.size) {
     let gc = {}; try { gc = (await env.WARDROBE.get(gcKey(ns), 'json')) || {}; } catch { }
@@ -58,15 +59,16 @@ async function putPhotos(env, ns, want, allow) {
     const l = typeof lit === 'function' ? lit(h) : lit;
     if (l == null) { failed.add(h); continue; }
     await env.WARDROBE.put(phKey(ns, h), l, { metadata: { t: Date.now(), n: l.length } });
+    if (keep && !(await keep())) break;
   }
   return failed;
 }
 /* a save's photos stored before anything refers to them; a backup stored inline has all of its own stored too, and -> the
    by-reference text of that version (for its daily copy), or null when it is already by reference or a photo could not be had */
-async function storePhotos(env, ns, m, src, want, allow) {
+async function storePhotos(env, ns, m, src, want, allow, keep) {
   const conv = !!(m && src && !src.pv);
   if (conv) for (const h of Object.keys(src.lite.ph || {})) if (!want.has(h)) want.set(h, src.lit);
-  const failed = await putPhotos(env, ns, want, allow);
+  const failed = await putPhotos(env, ns, want, allow, keep);
   if (!conv || failed.size) return null;
   const t = pvText(m.rev, m.saved, src.lite.revs, src.lite.data);
   return t.length <= PART_MAX ? t : null;
@@ -281,11 +283,15 @@ async function putWhole(env, json, cors, who, body, pre = new Map(), lk = NO_LOC
     else if (photos.has(h)) want.set(h, JSON.stringify(photos.get(h)));
     // (else a "dwph:" string that came as text: kept as it came)
   }
-  const w = writeBudget(env, who), oldPv = await storePhotos(env, ns, m, src, want, w.allow);
+  const w = writeBudget(env, who), oldPv = await storePhotos(env, ns, m, src, want, w.allow, lk.hold);
   if (w.short) { await unspend(env, who, 'backup'); const x = await w.refuse(); const r = json(x.body, x.status); r.refunded = true; return r; }
+  // the save lock still this save's (R6 N1): else 409, no backup written, the count given back
+  const lost = async () => { await unspend(env, who, 'backup'); const r = await leaseLost(env, json, who, m); r.refunded = true; return r; };
+  if (!(await lk.hold())) return lost();
   const had = src && src.lite && src.lite.data;   // (the version copied: its item count goes on the copies)
   await countWrites(env, who, await keepSnapshots(env, m, body, ns, oldPv, had && Array.isArray(had.items) ? had.items.length : null));
   const saved = nextSaved(m);
+  if (!(await lk.hold())) return lost();
   await putStored(env, KEY, { text: pvText(rev + 1, saved, nextRevs(src && src.lite, refs, rev + 1), refs), meta: pvMeta(rev + 1, saved) }, m);
   lk.ver = { rev: rev + 1, saved };
   return json({ rev: rev + 1, saved });
