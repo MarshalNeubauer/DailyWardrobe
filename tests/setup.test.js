@@ -318,9 +318,11 @@ const setupfix=async({ok,chromium,url,settle})=>{
 
     /* ---- connecting at the setup's own Connection step: the wardrobe that comes across doesn't end the setup ---- */
     const c=await open();
-    // the real connectFromLink; the backup it starts brings a piece (sync.js is what brings a wardrobe across)
+    // the real connectFromLink and the real sync it starts: the server's backup holds a piece, which comes across
     await c.route('https://server.example.test/me',r=>r.fulfill({contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify({id:'t1',role:'tester',name:'Sam'})}));
-    await c.evaluate(()=>{window.syncNow=async()=>{items.push({id:'x1',type:'suit',primaryColor:'navy',pattern:'solid',added:1});cache={};show('today');return true}});
+    await c.route('https://server.example.test/sync**',r=>{const m=r.request().method(),h={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,PUT,POST,OPTIONS'};
+      if(m==='OPTIONS')return r.fulfill({status:204,headers:h});
+      return r.fulfill({contentType:'application/json',headers:h,body:JSON.stringify(m==='GET'?{rev:1,saved:1,data:{items:[{id:'x1',type:'suit',primaryColor:'navy',pattern:'solid',added:1,updated:1}],days:[],tombstones:{},settings:null}}:{ok:true,rev:2,saved:2})})});
     await next(c,'week');await next(c,'wear');await next(c,'weather');await next(c,'connect');
     await c.fill('#su-link',`#invite=${'x'.repeat(24)}&w=https%3A%2F%2Fserver.example.test%2F`);await c.click('#su-connect');await c.waitForSelector('#su-conn');
     ok(await c.evaluate(()=>!!document.querySelector('#setup.on')&&/came across: 1 item/.test(document.querySelector('#su-step').textContent)),'connected at the Connection step, the setup stays and says the wardrobe came across');

@@ -1,6 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	a8143a065f609bb179d9
-# tested	5fa9da7647aec36d0d77
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -7492,6 +7490,7 @@ globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
 globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
+globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -15854,7 +15853,7 @@ setup.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled
 setup.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careTimes	careTop	careWashed	laundryDays	renderCareUI
 setup.test.js	checklist.js	<loaded>	cmpMount
 setup.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	get
-setup.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	accentsOf	applyCustom	arriveN	camoPat	casualTop	cleanSettings	cleanState	colBase	colName	colOf	colorDesc	dayClimate	dayFields	desc	di	dressOut	hasPat	hasVest	hexRgb	holidays	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	leatherWord	lum	mergeSettings	mergeState	metalWord	mix	nameHtml	needsJacket	needsTie	nextStamp	nm	noBidi	now	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	patOf	planCol	primaryCol	recClean	recFree	rgbHex	sentence	setDays	setFields	setList	setStr	setWardrobe	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	stampSettings	strapBand	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
+setup.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	accentsOf	applyCustom	arriveN	camoPat	casualTop	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colorDesc	dayClimate	dayFields	desc	di	dressOut	hasPat	hasVest	hexRgb	holidays	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	leatherWord	lum	mergeSettings	mergeState	metalWord	mix	nameHtml	needsJacket	needsTie	nextStamp	nm	noBidi	now	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	patOf	planCol	primaryCol	recClean	recCol	recFree	rgbHex	sentence	setDays	setFields	setList	setStr	setWardrobe	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	stampSettings	strapBand	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
 setup.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed
 setup.test.js	daysoff.js	<loaded>	addDayOff	builtinHolidays	countryName	countryPick	dayOffAdd	dayOffAddTap	daysOffListen	fetchHolidays	get	holPast	holYears	isoDate	isoToDate	nagerKeep	offNameCut	refreshHolidays	renderDaysOffUI	renderFormalUI	setHolidayCountry	shortDate	yearDate
 setup.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
@@ -15868,14 +15867,14 @@ setup.test.js	index.html	<loaded>
 setup.test.js	item-photo.js	<loaded>	smallPhotos
 setup.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	get	itemShown	noMotion	renderItem
 setup.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	renderWardrobe
-setup.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	get body	get title	homeAbout	homeAndroid	homeBrowser	homeCopyBtn	homeIOS	homeIPad	homeLabel	homeNeeded	homeNote	homeOpen	homePic	homeRisk	homeShareStep	homeStandalone	homeSteps	homeTester	kitAdopt	kitBs	kitClose	kitClothPic	kitDraw	kitEdited	kitEl	kitFixOldImports	kitGo	kitHasSample	kitHist	kitInert	kitItem	kitNextTap	kitOpen	kitPatternPic	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleSig	kitScorePic	kitSetupSampleTap	kitShadePic	kitShareDone	kitShareFilter	kitStartRow	kitStore	kitTx	kitUserEdit	kitWears	pic	safariRemind	tourAgain	tourAgainTap	tourOpen	tourSeen
+setup.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	get body	get title	homeAbout	homeAndroid	homeBrowser	homeCopyBtn	homeIOS	homeIPad	homeLabel	homeNeeded	homeNote	homeOpen	homePic	homeRisk	homeShareStep	homeStandalone	homeSteps	homeTester	kitAdopt	kitBs	kitClose	kitClothPic	kitDraw	kitEdited	kitEl	kitFixOldImports	kitGo	kitHasSample	kitHist	kitInert	kitItem	kitNextTap	kitOpen	kitPatternPic	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleSig	kitScorePic	kitSends	kitSetupSampleTap	kitShadePic	kitShareDone	kitShareFilter	kitStartRow	kitStore	kitTx	kitUserEdit	kitWears	pic	safariRemind	tourAgain	tourAgainTap	tourOpen	tourSeen
 setup.test.js	locale.js	<loaded>	appLocale
 setup.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
 setup.test.js	look.js	<loaded>	lookOn	renderLookSetting
 setup.test.js	manifest.webmanifest	<loaded>
 setup.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 setup.test.js	measure.js	<loaded>
-setup.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk
+setup.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
 setup.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 setup.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
 setup.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	shirtWords	shortRest	shortTop	stackSVG
@@ -15911,7 +15910,7 @@ setup.test.js	tests/fixedplan.js	<any>
 setup.test.js	tests/webkit.js	<any>
 setup.test.js	theme.js	<loaded>	applyTheme
 setup.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoOff
-setup.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	mvSig	todayCovered
+setup.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	mvSig	todayBusy	todayCovered
 setup.test.js	today-photofold.js	<loaded>
 setup.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
 setup.test.js	today-plan.js	<loaded>	get	planDirty	planFor	planMonth	planSnapSoon	planSnapUse	set
