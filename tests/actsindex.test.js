@@ -35,7 +35,7 @@ const FN={cycleTheme:true,openSettings:true,closeSettings:true,saveSettings:true
    inside the module, where a wrapped window.<name> isn't seen, so these are watched one step earlier, at the handler the markup names
    (ACTS, act.js): function -> {handler: how the handler calls it}: '' with no argument; 'enter' with none and only for the Enter key,
    whose default it prevents; 'file' with the field's file, the field then emptied; 'files' with all its files and whether it is "Several items", the field then emptied; 'value' with the control's value; 'n' with the
-   control's data-n as a number; 'cat' with its data-cat; 'el' with the control itself; 'true' with true.
+   control's data-n as a number; 'cat' with its data-cat; 'page' with its data-page; 'el' with the control itself; 'true' with true.
    With true above the real handler then runs (the step checks what the app did); with false the wrapper stands in for the handler, so
    for those this file no longer runs the handler's own line: theme.test.js, paste.test.js (Enter, Add, Paste), syncwrite.test.js and
    sync.test.js (Download backup, Restore file), rollback.test.js (the list's focus), itempics.test.js ("Generate item pictures", a
@@ -56,7 +56,7 @@ const VIA={cycleTheme:{themeTap:''},addLink:{linkKey:'enter',linkAddTap:''},past
   closePicker:{pickBackdropTap:''},replanButton:{replanTap:''},startItemPics:{itemPicsTap:''},
   closeShop:{shopBackdropTap:''},closeColPick:{colBackdropTap:''},addFiles:{addPhotosPick:'files'},addDayOff:{dayOffAddTap:''},addFormalDay:{occAddTap:''},setHolidayCountry:{countryPick:'value'},
   askDelete:{delAskTap:''},checkForUpdate:{updCheckTap:'true'},updateNow:{updNowTap:''},sendFeedback:{fbSendTap:''},
-  setLaundryDays:{laundryPick:'value'},
+  setLaundryDays:{laundryPick:'value'},show:{tabTap:'page'},openAdd:{wardAddTap:''},subBack:{addBackTap:''},
   openSettings:{setOpenTap:''},closeSettings:{setBackdropTap:''},saveSettings:{setDoneTap:''},toggleCat:{catTap:'cat'},
   setVestMode:{vestPick:'value'},setDarkShirts:{darkPick:'value'},advToggle:{advTap:'el'},
   kitImportOpen:{importOpenTap:''},tourAgain:{tourAgainTap:''},homeAgain:{homeAgainTap:''}};
@@ -85,7 +85,7 @@ async function run(eng,browser,{ok,url,settle}){
       if(via)for(const h of Object.keys(via)){const real=ACTS[h],how=via[h];   // a module's function: watched at its handler
         if(typeof real!=='function'){window.__calls.push('missing:'+n+' ('+h+')');continue}
         ACTS[h]=function(el,ev){if(how==='enter'&&ev.key!=='Enter')return real(el,ev);
-          const a=how==='file'?[el.files[0]]:how==='files'?[[...el.files],el.dataset.multi==='1']:how==='value'?[el.value]:how==='n'?[+el.dataset.n]:how==='cat'?[el.dataset.cat]:how==='el'?[el]:how==='true'?[true]:[];window.__calls.push(how==='files'?`${n}(${fmt(a[0])},${a[1]?'several':'one'})`:`${n}(${a.map(fmt).join(',')})`);
+          const a=how==='file'?[el.files[0]]:how==='files'?[[...el.files],el.dataset.multi==='1']:how==='value'?[el.value]:how==='n'?[+el.dataset.n]:how==='cat'?[el.dataset.cat]:how==='page'?[el.dataset.page]:how==='el'?[el]:how==='true'?[true]:[];window.__calls.push(how==='files'?`${n}(${fmt(a[0])},${a[1]?'several':'one'})`:`${n}(${a.map(fmt).join(',')})`);
           if(FN[n])return real(el,ev);
           if(how==='enter')ev.preventDefault();if(how==='file'||how==='files')el.value=''}}
       if(typeof f!=='function'){if(!via)window.__calls.push('missing:'+n);continue}
