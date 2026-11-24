@@ -35,7 +35,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(sw.every(Boolean),`swiping through eight days never seen shows each day's picture at once (${sw.join(',')})`);
     // the day on screen isn't redrawn under a finger: it waits for the finger to lift
     const cdp=await ctx.newCDPSession(p);
-    await p.evaluate(()=>{window.__rt=0;window.__mo=new MutationObserver(()=>{});__mo.observe($('#today'),{childList:true});window.__drawn=()=>__rt+=__mo.takeRecords().filter(r=>r.addedNodes.length).length});   // (each drawing writes #today's content once)
+    await p.evaluate(()=>{window.__rt=0;const n=l=>l.filter(r=>r.addedNodes.length).length;window.__mo=new MutationObserver(l=>{__rt+=n(l)});__mo.observe($('#today'),{childList:true});window.__drawn=()=>__rt+=n(__mo.takeRecords())});   // (each drawing writes #today's content once)
     await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:200,y:300}]});
     const during=await p.evaluate(()=>{asmShow();return __drawn()});
     await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
