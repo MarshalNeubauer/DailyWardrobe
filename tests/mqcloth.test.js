@@ -5,6 +5,7 @@
 // once per figure (pattern href inheritance), cached by item, colour, shade and close-up, and drawing only asks the network for nothing.
 // Fixture close-up: tests/fixtures/suit-mink-closeup.png (as tests/twillswatch.test.js).
 const fs=require('fs'),path=require('path');
+const {pace}=require('./pace');
 module.exports=async({ok,chromium,url})=>{
   const CU='data:image/png;base64,'+fs.readFileSync(path.join(__dirname,'fixtures','suit-mink-closeup.png')).toString('base64');
   const browser=await chromium.launch();const ctx=await browser.newContext({viewport:{width:390,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -39,12 +40,13 @@ module.exports=async({ok,chromium,url})=>{
       return [a,b,c].map((o,i)=>figureSvg(o,'s'+i+'-')===old(o,'s'+i+'-'))});
     ok(same.every(Boolean),`a striped jacket (and a plain cloth with no close-up) draws byte-identical to before (${same.join()})`);
     // drawn first, in a millisecond or so; the block made in the background; the figure then written with it, the image once
+    const k=await pace(p);   // (the 50 ms is at this machine's pace: tests/pace.js)
     const bg=await p.evaluate(async()=>{const Q=__Q,o={suitDay:true,top:Q.tw,bot:Q.tw,shirt:Q.shirt,tie:Q.tie,vest:true},t0=performance.now(),first=figureSvg(o,'b-'),ms=performance.now()-t0;
       const e=[...FIG_CU.values()].pop();await e.p;const then=figureSvg(o,'b-'),d=document.createElement('div');d.innerHTML=then;
       const base=d.querySelector('pattern#b-cuT'),kids=[...d.querySelectorAll('pattern[href="#b-cuT"]')].length,G=mqData(figKind(o));
       return {ms,first:!/cuT/.test(first)&&/id="b-suitB"/.test(first),imgs:(then.match(/<image href="data:image\/jpeg/g)||[]).length,base:!!(base&&base.querySelector('image')),kids,parts:G.parts.length+(G.parts.some(p=>p.id==='lapL')?0:2)+1,
         W:e.blk&&e.blk.W,N:e.blk&&e.blk.N,suitB:d.querySelector('#b-suitB').getAttribute('href'),bytes:e.blk&&e.blk.url.length}});
-    ok(bg.first&&bg.ms<50,`the first drawing is the drawn tile, at once (${bg.ms.toFixed(1)} ms; the block is not waited for)`);
+    ok(bg.first&&bg.ms<50*k,`the first drawing is the drawn tile, at once (${bg.ms.toFixed(1)} ms, ${(50*k).toFixed(0)} allowed at this machine's pace ×${k.toFixed(2)}; the block is not waited for)`);
     ok(bg.base&&bg.imgs===1&&bg.kids===bg.parts&&bg.suitB==='#b-cuT',`once made, one base pattern holds the block and every piece's pattern (${bg.kids} of ${bg.parts}: body, lapels, sleeves) inherits it: the image is written once (${bg.imgs}, ${(bg.bytes/1024).toFixed(1)} KB)`);
     ok(bg.W>40&&bg.W<120&&bg.N>=16&&bg.N<=256,`at the painter's repeat (${bg.W&&bg.W.toFixed(1)} units, ${bg.N} px from the figure's real width x DPR)`);
     // herringbone: two images (body and sleeves); its tile is the clean herringbone at the tagged colour's lifted mean

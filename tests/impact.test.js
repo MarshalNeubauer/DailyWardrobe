@@ -30,6 +30,10 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
     ok(await js(A,A.replace('return a+1}','return a+1'))===' +top','a file that no longer parses selects everything that loads it');
     const M=`const help=x=>x*2;\nexport class Hub {\n  constructor(){this.n=0}\n  bump(){this.n++}\n}\nexport default {\n  async fetch(req){return help(1)}\n};\n`;
     ok(await js(M,M.replace('x*2','x*3'))==='help'&&await js(M,M.replace('this.n++','this.n+=2'))==='bump','an ES module (worker.js) is read too: a helper, a class method');
+    // a module with imports (worker.js, worker/*.js, the module workers): read function by function too, an import line is load-time code
+    const W=`import {toast} from './toast.js';\nimport './merge.js';\nimport {\n  a,\n  b\n} from "./x.js";\nexport {c} from './y.js';\nexport * from './w.js';\nconst help=x=>x*2;\nexport const go=()=>help(a)+b;\nconst lazy=()=>import('./z.js').then(m=>m.v);\n`;
+    ok(await js(W,W.replace('x*2','x*3'))==='help'&&await js(W,W.replace('help(a)','help(b)'))==='go'&&await js(W,W.replace('m.v','m.w'))==='lazy','a module with import lines is read function by function (an edit inside one names only it)');
+    ok((await js(W,W.replace("'./merge.js'","'./merge2.js'"))).endsWith(' +top')&&(await js(W,W.replace('  b\n}','  b,d\n}'))).endsWith(' +top'),'an edit to an import line is top-level code');
     const lx=I.jsLex("const u='http://x',r=/a\\/\\/b[/]/,t=`p${`//q`}//r`;f(a/2); // real\n/* also */");
     ok(lx&&lx.com.length===2&&lx.com[0][1]-lx.com[0][0]===7,'// inside strings, patterns and templates is not a comment');
     ok(I.jsLex("const a='x")===null&&I.jsLex('f(){')===null,'a text it cannot follow is not trusted');

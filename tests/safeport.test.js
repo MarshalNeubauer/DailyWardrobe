@@ -4,19 +4,23 @@
 const fs=require('fs'),path=require('path'),http=require('http');
 const {UNSAFE_PORTS,unsafePort,listenSafe}=require('./safeport');
 module.exports=async({ok,chromium,url,ROOT})=>{
-  // Node's fetch: "bad port" is said before any connection is tried
-  const bad=[];for(let p=1;p<=10100;p+=1000){const b=[];for(let q=p;q<Math.min(p+1000,10101);q++)b.push(fetch('http://127.0.0.1:'+q+'/',{signal:AbortSignal.timeout(3000)}).then(()=>0,e=>{if(/bad port/.test((e.cause&&e.cause.message)||e.message))bad.push(q)}));await Promise.all(b)}
+  // Node's fetch: "bad port" is said before any connection is tried; the host can't resolve (bad.invalid), so a port that isn't
+  // refused is never connected to: nothing running here is touched (it swept 127.0.0.1 before 2026-11-24)
+  const bad=[];for(let p=1;p<=10100;p+=1000){const b=[];for(let q=p;q<Math.min(p+1000,10101);q++)b.push(fetch('http://bad.invalid:'+q+'/',{signal:AbortSignal.timeout(3000)}).then(()=>0,e=>{if(/bad port/.test((e.cause&&e.cause.message)||e.message))bad.push(q)}));await Promise.all(b)}
   bad.sort((a,b)=>a-b);const mine=[...UNSAFE_PORTS].sort((a,b)=>a-b);
   ok(bad.join()===mine.join(),`the list is exactly the ports Node's fetch refuses as bad (${mine.length} listed, ${bad.length} refused${bad.join()===mine.join()?'':': '+bad.filter(p=>!UNSAFE_PORTS.has(p)).join()+' missing, '+mine.filter(p=>!bad.includes(p)).join()+' extra'})`);
-  // Chromium refuses each listed port before connecting, and loads the app from the port the runner chose
+  // Chromium refuses each listed port before connecting (on bad.invalid too: 4190 and 6679 then fail to resolve), and loads the app from the port the runner chose
   const browser=await chromium.launch();
   try{const pg=await browser.newPage(),refused=[];
-    for(const p of mine){const e=await pg.goto(`http://127.0.0.1:${p}/`).then(()=>'',e=>e.message);if(/ERR_UNSAFE_PORT/.test(e))refused.push(p)}
+    for(const p of mine){const e=await pg.goto(`http://bad.invalid:${p}/`).then(()=>'',e=>e.message);if(/ERR_UNSAFE_PORT/.test(e))refused.push(p)}
     // (Chromium's kRestrictedPorts is the Fetch list less 4190 and 6679, which only the standard, WebKit and Node added: the union is avoided)
     const let_=mine.filter(p=>!refused.includes(p));
     ok(let_.every(p=>p===4190||p===6679)&&refused.length>=80,`Chromium refuses every listed port with ERR_UNSAFE_PORT but 4190 and 6679 (${refused.length} of ${mine.length}; let through: ${let_.join()||'none'})`);
     const port=+new URL(url).port;
-    ok(!unsafePort(port)&&(await pg.goto(url)).ok(),`the runner's server is on a safe port (${port}) and the app loads from it`);
+    // (in a fresh page: on the page above, a failed goto's error page commits late and breaks the next goto, "interrupted by another
+    // navigation to chrome-error://chromewebdata/", every run on Windows; a goto('about:blank') between doesn't help, 2026-11-24)
+    const app=await browser.newPage();
+    ok(!unsafePort(port)&&(await app.goto(url)).ok(),`the runner's server is on a safe port (${port}) and the app loads from it`);
   }finally{await browser.close()}
   // listenSafe: a port on the list is given back and another asked for (a stand-in server that is handed 6665, then 1719, then 40123)
   const handed=[6665,1719,40123];let closes=0,asked=0;
