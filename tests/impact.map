@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	2cbc3970c2de7d55332d
+# tested	1d58c29de5ddcf03e04c
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -479,6 +479,7 @@ acts.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	sched
 acts.test.js	tag-request.js	<any>	<loaded>
 acts.test.js	tagging.js	<any>	<loaded>
 acts.test.js	tests/fixedplan.js	<any>
+acts.test.js	tests/webkit.js	<any>
 acts.test.js	theme.js	<any>	<loaded>	applyTheme
 acts.test.js	toast.js	<any>	<loaded>	toast
 acts.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -579,6 +580,7 @@ actsindex.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	
 actsindex.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 actsindex.test.js	tagging.js	<any>	<loaded>	readAbort	tagNotes
 actsindex.test.js	tests/fixedplan.js	<any>
+actsindex.test.js	tests/webkit.js	<any>
 actsindex.test.js	theme.js	<any>	<loaded>	applyTheme	cycleTheme	themeTap
 actsindex.test.js	toast.js	<any>	<loaded>	toast	toastDrop	toastOff	undoOff
 actsindex.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig
@@ -679,6 +681,7 @@ addcards.test.js	tagging.js	<loaded>	aiFields	closeTagImg	confTxt	readAbort	read
 addcards.test.js	tests/fixedplan.js	<any>
 addcards.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 addcards.test.js	tests/fixtures/suit-pinstripe.jpg	<loaded>
+addcards.test.js	tests/webkit.js	<any>
 addcards.test.js	theme.js	<loaded>	applyTheme
 addcards.test.js	toast.js	<loaded>	toast	undoHere
 addcards.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -4287,50 +4290,50 @@ casual.test.js	worker/links.js	<loaded>	readCapped
 casual.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	utcDay	whoIs
 casual.test.js	worker/tag.js	<loaded>	@Object.entriesMATERIALS_BY.map	@constTAG_TYPES_OLDTYPE_LIST.filter	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	accOpts	claudeCall	cleanCustom	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsCombat	knowsPq	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
 claudepattern.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
-claudepattern.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	renderAccountUI
+claudepattern.test.js	account.js	<loaded>	acctBase	acctCall	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 claudepattern.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 claudepattern.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	photoPair	shadeRow	tagSwInner	unreadNote
 claudepattern.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 claudepattern.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 claudepattern.test.js	add-paste.js	<loaded>
 claudepattern.test.js	add-save.js	<loaded>	cardAt	cardOf	cardReading	cardReady	get	qh	save	saveCard	savedTitle
-claudepattern.test.js	add-sheet.js	<loaded>	get	renderAddFor
+claudepattern.test.js	add-sheet.js	<loaded>	get	npsLeave	renderAddFor	set
 claudepattern.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	addTexture	applyWb	cardPics	get	needType	renderAdd	texGains	wbNote
 claudepattern.test.js	analysis.js	<loaded>
-claudepattern.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	focusWatch	generateSwatch	get	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set	shrink	sockTag	stillCur	texSwatches	tx	txFail	txs	window.fetch
+claudepattern.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set	shrink	sockTag	stillCur	texSwatches	tx	txFail	txs	window.fetch
 claudepattern.test.js	apple-touch-icon.png	<loaded>
-claudepattern.test.js	asm-color.js	<loaded>
+claudepattern.test.js	asm-color.js	<loaded>	asmGapNote
 claudepattern.test.js	asm-gl.js	<loaded>
 claudepattern.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 claudepattern.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 claudepattern.test.js	asm-pocket.js	<loaded>
 claudepattern.test.js	asm-watch.js	<loaded>
-claudepattern.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	get
-claudepattern.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
+claudepattern.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	get	renderAsmUI
+claudepattern.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	histDrop	histPush	inviteInUrl
 claudepattern.test.js	backupfile.js	<loaded>
 claudepattern.test.js	boxfold.js	<loaded>
-claudepattern.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calLink
-claudepattern.test.js	care.js	<loaded>	careBadge	careCounts	careLimit	careState
+claudepattern.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
+claudepattern.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 claudepattern.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
-claudepattern.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	get	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdOff
-claudepattern.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	get	hasPat	hexRgb	isCargo	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	nextStamp	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeFor	shadeName	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	tagTypesNow	takeSettings	thirdOf	titleCls	todayDate	watchOpts
-claudepattern.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwQRow	cpwRegion	cpwSaveFields	cpwSym
-claudepattern.test.js	daysoff.js	<loaded>	refreshHolidays
-claudepattern.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	detrend	foldBins	labGrid	lineModel	linePeaks	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
+claudepattern.test.js	colpick.js	<loaded>	EP	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	get	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
+claudepattern.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	get	hasPat	hexRgb	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	nextStamp	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	sentence	setWardrobe	shadeFor	shadeName	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	tagTypesNow	takeSettings	thirdOf	titleCls	todayDate	watchOpts	wearsJacket	wearsTie
+claudepattern.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed
+claudepattern.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI
+claudepattern.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	camoLook	detrend	foldBins	labGrid	lineModel	linePeaks	lookOf	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 claudepattern.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
-claudepattern.test.js	dress.js	<loaded>	dressNewItem	migrateVests
-claudepattern.test.js	fav.js	<loaded>	favChip	favMark	get
-claudepattern.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
+claudepattern.test.js	dress.js	<loaded>	dressNewItem	dressOn	migrateVests	renderDressUI
+claudepattern.test.js	fav.js	<loaded>	favChip	favItemRow	favMark	get
+claudepattern.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	renderReplanUI	replanCount	whenPulled
 claudepattern.test.js	icon-192.png	<loaded>
 claudepattern.test.js	icon-512.png	<loaded>
 claudepattern.test.js	index.html	<loaded>
-claudepattern.test.js	item-photo.js	<loaded>	imgOf	makeSmall	paperCloth	paperSteps	phSigOf	phSm	smallPhotos
-claudepattern.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	noMotion	renderItem
-claudepattern.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	matTidy	renderWardrobe	wardPic
-claudepattern.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow	kitUserEdit
+claudepattern.test.js	item-photo.js	<loaded>	imgOf	makeSmall	paperCloth	paperHint	paperLine	paperRetake	paperSteps	phSigOf	phSm	photoTools	ptIcon	smallPhotos
+claudepattern.test.js	item-view.js	<loaded>	@backLand	@{constb$ivbody}	closeItem	get	itemFocusBack	itemShown	ivSwipe	noMotion	openItem	renderItem	sheetSlides	wardList
+claudepattern.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	get	itemBody	ivCareSum	ivDetailSum	ivSummary	matTidy	optLab	patSummary	renderWardrobe	wardPic
+claudepattern.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 claudepattern.test.js	locale.js	<loaded>	appLocale
 claudepattern.test.js	locks.js	<loaded>
-claudepattern.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+claudepattern.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave	renderLookSetting
 claudepattern.test.js	manifest.webmanifest	<loaded>
 claudepattern.test.js	mannequin.js	<loaded>	@{}
 claudepattern.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	aiSignals	applyMeasured	calibLab	clamp01	closeRead	colRef	colourVerdicts	measConf	measEdgeCut	measHint	measKL	measSplit	measureAndApply	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	plainCloth	sharpness	urlCanvas	verdictMode	wbGains	wbRead	wbSolidOk	wbSolidStats
@@ -4343,27 +4346,27 @@ claudepattern.test.js	mq/shirt-tie.js	<loaded>
 claudepattern.test.js	mq/suit-open.js	<loaded>
 claudepattern.test.js	mq/suit.js	<loaded>
 claudepattern.test.js	mq/vest.js	<loaded>
-claudepattern.test.js	own-lists.js	<loaded>
+claudepattern.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI
 claudepattern.test.js	pack.js	<loaded>	packShow
 claudepattern.test.js	pattern-read.js	<loaded>	claudeOnly	claudePattern	cropCanvas	medLab	missedPattern	motifPat	readPatternWithClaude	readSett	readable	rereadSett	sampleLabs	settCanvas	settCheck	settFrom	settFromRaw	settFromSpec	settNote	settSummary	settable	specSett	specSett1
-claudepattern.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	get	jsq	loadRenders	srcOk
+claudepattern.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	get	jsq	loadRenders	missingItemPics	picsDrawn	renderItemPicUI	srcOk
 claudepattern.test.js	pickscore.js	<loaded>
 claudepattern.test.js	planner.js	<loaded>	favItemSet	favRead	isFavItem
-claudepattern.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+claudepattern.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 claudepattern.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 claudepattern.test.js	scorecard.js	<loaded>
-claudepattern.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setWanted	settingsOpen	settingsPart	showCost
-claudepattern.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
-claudepattern.test.js	sheet-swipe.js	<loaded>
+claudepattern.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	weekFirst
+claudepattern.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
+claudepattern.test.js	sheet-swipe.js	<loaded>	sheetSwipe
 claudepattern.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop	shopButton	shopRecs
 claudepattern.test.js	snapshots.js	<loaded>
 claudepattern.test.js	srgb.js	<loaded>	linSrgb	linSrgb8	srgbLin	srgbLin8
 claudepattern.test.js	start.js	<loaded>	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp
 claudepattern.test.js	stats.js	<loaded>	@afterScripts	statsPlan	statsPlanned	wornDays
-claudepattern.test.js	styles.css	#add #queue .card	#add #queue .card>.btns:last-of-type	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select	#add #queue .card>label,#item-view .card>label,#nps-q .card>label	#add #queue .ckfoot .btns .pri	#add #queue .qcard	#add #queue .qcard.ckcard	#add #queue .qcard>.qx	#add .addfor	#add .addlong	#add .addlong .aic	#add .addmore	#add .addpick	#add .addpick .btn	#add .addpick .btn small	#add .addpick .btn span	#add .drop-hint	#add .nps-bar	#add .nps-x	#add .paste-box	#add .paste-box .btn	#add .paste-box input	#busy	#busy.on	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#item-view .cropwrap .btns .pri,#add #queue .card .btns .pri,#add .nps-bar .pri	#modal-backdrop	#modal-backdrop,#settings-modal	#multi-status	#multi-status:empty	#nps-backdrop,#shop-backdrop	#nps-sheet	#nps-sheet .nps-head .aic	#nps-sheet .nps-ht h2	#nps-sheet .nps-ht small	#nps-sheet,#shop-sheet	#paste-status:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#setup	#setup .su-skip	#setup button	#setup.on	#shop-sheet	#toast	#toast button	#toast button::after	#toast,body.iv-on #toast	#toast.act	#toast.on	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.addlong .chev	.addlong-t	.addlong-t b	.addlong-t small	.addpick	.addpick .btn	.addpick .btn small	.addrow	.addrow .chev	.addrow small	.addrow span:first-child	.aic	.btn	.btns	.cap	.card label	.chipbtn	.ck-ai	.ck-ai svg	.ck-opt,.ck-todo	.ck-warn	.ckadds	.ckai	.ckb	.ckb .wbst,.ckb .wbstcard	.ckb .wbsteps	.ckb>label	.ckb>label select,.ckb>label>input[type=text]	.ckcheap	.ckchev	.ckchip	.ckcn	.ckcu	.ckfoot	.ckfoot .btns	.ckhd	.ckhd b	.ckhd small	.ckhelp	.ckintro .pair	.ckleft	.ckm	.ckm b	.ckm svg	.ckprog	.ckread	.ckreadadd .rdcost	.cks	.cks.open>.ckb	.cks.open>.ckh .ckchev	.ckt	.ckt b	.ckt small	.cktrack	.cktrack i	.cmp-cu	.cmp-dw	.cmpbar	.cmpbar i	.cmpl	.cmpl.br	.cmpl.tl	.cmpl.tr	.cmplab	.cmplv canvas	.cmpmb	.cmpmt	.cmpop	.cmpsp	.cmptools	.cmpv	.cmpv.cmpnow .cmplv	.cmpw	.cmpwait	.cmpzm	.colbtn	.colchev	.colchip	.colnm	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.drop-hint	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi,.card	.hbtns	.hgear	.ivbar,.nps-bar,.su-bar,.kit-bar	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.msw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.nps-bar	.nps-body	.nps-grab	.nps-grab,.shop-grab,.kit-grab	.nps-head	.nps-ht	.ordrow	.ordrow .rotbtn	.pair	.pair .tagsw .ph.thumb	.pair .tagsw .ph.thumb svg	.pair figcaption	.pair figcaption b	.pair figure	.pair img.ph,.rv .pair img.ph	.paste-box	.paste-box .btn	.paste-box input	.patchip svg,.cppat svg	.patchip,.cppat	.phead	.phead .pback	.phead h2	.pri	.psub	.rdcost	.rv .thumb	.rv img.ph	.shaderow	.shaderow .chipbtn	.shctl	.shctl .shbtn	.shctl .shval	.shelp	.shlab	.slabel	.slide	.spin	.stage	.stage .empty	.stage .firstrun	.su-bar	.su-bar .pri	.su-body	.su-head	.su-help	.su-in	.su-lead	.su-prog	.su-prog i	.su-prog i.on	.su-ttl	.su-ttl h2	.su-ttl small	.sw	.sw-box	.swsplit	.swsplit .swtex	.swsplit:has(.swtex)::after	.tagnote	.thumb	.thumb svg	.vfile	.vh	.wbpic i	.wbpic::after	.wbpic::before	.wbretake	.wbretake::after	.wbst	.wbst .ic	.wbst .tx	.wbst .tx small	.wbst .wbretake	.wbst.no .ic	.wbstcard .arr	.wbstcard .cam	.wbstcard .eb	.wbstcard .hd	.wbstcard .li	.wbstcard .more	.wbstcard .n	.wbstcard .n b	.wbstcard .ol	.wbstcard .tap	.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i	.wbsteps	.wxc.wxlk	.wxl	::placeholder	:is(#item-view,#add) .ckadds .btn	:is(#item-view,#add) .ckcu .btn	:is(#item-view,#add) .ckh	:is(#item-view,#add) .cklr	:is(#item-view,#add) .ckread .rdgo	:is(#item-view,#add) .ckrm	:is(#item-view,#add) .cmpgo	:is(#item-view,#add) .cmplv	:is(#item-view,#add) .cmpzm button	:is(#item-view,#add) .cmpzm button+button	:is(#item-view,#add) .wbst.cmpwb	:is(#item-view,#add) .wbstcard	:is(#item-view,#add) .wbstcard .wbpic	:is(#item-view,.wbsteps,#cu-sheet) .wbpic	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.busy-on #toast	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	input[type="range"]	label:has(>.vfile)	main	nav	nav button	nav button.on	nav.tab-none::before	nav::before	select,input[type="text"],input[type="range"]
+claudepattern.test.js	styles.css	#add #queue .card	#add #queue .card>.btns:last-of-type	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select	#add #queue .card>label,#item-view .card>label,#nps-q .card>label	#add #queue .ckfoot .btns .pri	#add #queue .qcard	#add #queue .qcard.ckcard	#add #queue .qcard>.qx	#add .addfor	#add .addlong	#add .addlong .aic	#add .addmore	#add .addpick	#add .addpick .btn	#add .addpick .btn small	#add .addpick .btn span	#add .drop-hint	#add .nps-bar	#add .nps-x	#add .paste-box	#add .paste-box .btn	#add .paste-box input	#adv-photos:has(#asm-group[hidden]),body:not(.owner) #adv-photos	#busy	#busy.on	#col-backdrop	#col-sheet	#item-backdrop	#item-backdrop.closing	#item-backdrop.on,#item-backdrop.closing	#item-view	#item-view .cropwrap .btns .pri,#add #queue .card .btns .pri,#add .nps-bar .pri	#item-view .ivct .ivrd	#item-view .ivct .wbst	#item-view .ivct .wbstcard	#item-view .ivct .wbsteps	#item-view.closing	#item-view.on,#item-view.closing	#itempic-btn[disabled]	#modal-backdrop	#modal-backdrop,#settings-modal	#multi-status	#multi-status:empty	#nps-backdrop,#shop-backdrop	#nps-sheet	#nps-sheet .nps-head .aic	#nps-sheet .nps-ht h2	#nps-sheet .nps-ht small	#nps-sheet,#shop-sheet	#paste-status:empty	#photos-conn	#photos-conn:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal .cpwset .cpwin input[type="text"]	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .dtog::after	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox:is(.instant,.bfast) .mpanel-in	#settings-modal .mpanel-in	#settings-modal .mpanel-in::after	#settings-modal .mpanel-in::before	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date],#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal .sgroup:has(>.days)	#settings-modal .srow	#settings-modal .srow select	#settings-modal button.adv-head	#settings-modal button.dress-sw	#settings-modal label.btn	#settings-modal,#setup,#kitsheet	#setup	#setup .su-skip	#setup button	#setup.on	#shop-sheet	#toast	#toast button	#toast button::after	#toast,body.iv-on #toast	#toast.act	#toast.on	#toast:not(.on)	#today	#undo-fab	#ward-add	#ward-add svg	#wardrobe	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chip::after	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .wclear	#wardrobe .wsearch input	#wardrobe .wsort	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	#wardrobe:not([hidden])~#ward-add	*	.about-confirm	.about-fold summary	.about-fold summary::after	.about-note	.about-text	.addlong .chev	.addlong-t	.addlong-t b	.addlong-t small	.addpick	.addpick .btn	.addpick .btn small	.addrow	.addrow .chev	.addrow small	.addrow span:first-child	.adv	.adv-head .chev	.adv-in	.adv-t	.adv-t small	.aic	.btn	.btns	.cal-form input[type=url]	.cal-guides button	.cal-howh	.cal-priv	.cap	.card label	.chip	.chip.on	.chipbtn	.chips	.ck-ai	.ck-ai svg	.ck-good	.ck-opt,.ck-todo	.ck-warn	.ckadds	.ckai	.ckb	.ckb .wbst,.ckb .wbstcard	.ckb .wbsteps	.ckb>label	.ckb>label select,.ckb>label>input[type=text]	.ckcheap	.ckchev	.ckchip	.ckcn	.ckcu	.ckfoot	.ckfoot .btns	.ckhd	.ckhd b	.ckhd small	.ckhelp	.ckintro .pair	.ckleft	.ckm	.ckm b	.ckm svg	.ckprog	.ckread	.ckreadadd .rdcost	.cks	.cks.open>.ckb	.cks.open>.ckh .ckchev	.ckt	.ckt b	.ckt small	.cktrack	.cktrack i	.cmp-cu	.cmp-dw	.cmpbar	.cmpbar i	.cmpl	.cmpl.br	.cmpl.tl	.cmpl.tr	.cmplab	.cmplv canvas	.cmpmb	.cmpmt	.cmpop	.cmpsp	.cmptools	.cmpv	.cmpv.cmpnow .cmplv	.cmpw	.cmpwait	.cmpzm	.colbtn	.colchev	.colchip	.colnm	.conn-off-note:empty	.conn-tick	.cpw-h	.cpwin	.cpwin input[type="text"]	.cpwset	.cpwset input[type="number"]	.cpwsym	.custadd	.custadd button	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.days	.dress-row	.dress-row:first-child	.dress-sw i	.dress-sw i::after	.dress-sw.on i	.dress-sw.on i::after	.dress-txt	.dress-txt b	.dress-txt small	.drop-hint	.dtog	.dtog.on	.fb-list	.fchips	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi	.gi img.ph	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.hbtns	.hgear	.hlist	.hlist:empty	.ivbar	.ivbar .ivdone	.ivbar .ivnav	.ivbar,.nps-bar,.su-bar,.kit-bar	.ivbody	.ivchev	.ivcl,.ivcr	.ivcols	.ivdel	.ivdel button	.ivdup	.ivdup button	.ivdup+.ivdel	.ivhead	.ivhead .pcount	.ivhead::before	.ivin	.ivpill	.ivpill.good	.ivpills	.ivrd	.ivrd .ivrdbtn	.ivsum	.ivsumph	.ivsumt	.ivt	.ivt .gtype	.ivt h2	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.msw	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.nps-bar	.nps-body	.nps-grab	.nps-grab,.shop-grab,.kit-grab	.nps-head	.nps-ht	.offadd input[type=date]	.ordrow	.ordrow .rotbtn	.pack-link	.pair	.pair .tagsw .ph.thumb	.pair .tagsw .ph.thumb svg	.pair figcaption	.pair figcaption b	.pair figure	.pair img.ph,.rv .pair img.ph	.paste-box	.paste-box .btn	.paste-box input	.patchip svg,.cppat svg	.patchip,.cppat	.phead	.phead .pback	.phead h2	.pri	.psub	.rdcost	.rv .thumb	.rv img.ph	.sactions	.sactions:empty	.sbody	.scat-h	.setup-again	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgh.sgh-first	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shaderow	.shaderow .chipbtn	.shctl	.shctl .shbtn	.shctl .shval	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.shlab	.sic	.sicw	.slabel	.slide	.slink	.slink .chev	.slinks	.slinks .slink	.spin	.srow	.srow select	.stage	.stage .empty	.stage .firstrun	.su-bar	.su-bar .pri	.su-body	.su-head	.su-help	.su-in	.su-lead	.su-prog	.su-prog i	.su-prog i.on	.su-ttl	.su-ttl h2	.su-ttl small	.sw	.sw-box	.swsplit	.swsplit .swtex	.swsplit:has(.swtex)::after	.tagnote	.thumb	.thumb svg	.vfile	.vh	.wbpic i	.wbpic::after	.wbpic::before	.wbretake	.wbretake::after	.wbst	.wbst .ic	.wbst .tx	.wbst .tx small	.wbst .wbretake	.wbst.no .ic	.wbstcard .arr	.wbstcard .cam	.wbstcard .eb	.wbstcard .hd	.wbstcard .li	.wbstcard .more	.wbstcard .n	.wbstcard .n b	.wbstcard .ol	.wbstcard .tap	.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i	.wbsteps	.wfind	.wsearch	.wsicon	.wslide	.wxc.wxlk	.wxl	::placeholder	:focus-visible	:is(#item-view,#add) .ckadds .btn	:is(#item-view,#add) .ckcu .btn	:is(#item-view,#add) .ckh	:is(#item-view,#add) .cklr	:is(#item-view,#add) .ckread .rdgo	:is(#item-view,#add) .ckrm	:is(#item-view,#add) .cmpgo	:is(#item-view,#add) .cmplv	:is(#item-view,#add) .cmpzm button	:is(#item-view,#add) .cmpzm button+button	:is(#item-view,#add) .wbst.cmpwb	:is(#item-view,#add) .wbstcard	:is(#item-view,#add) .wbstcard .wbpic	:is(#item-view,.wbsteps,#cu-sheet) .wbpic	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.busy-on #toast	body.iv-on #toast,body.iv-on #busy	body.iv-on.busy-on #toast	body:not(.iv-on):has(main:not([inert]) #wardrobe:not([hidden])) #toast	button	button,.btn,select,input	button:focus-visible,select:focus-visible,input:focus-visible	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	html.set-lock,html.set-lock body	input[type="range"]	label:has(>.vfile)	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav.tab-none::before	nav::before	select,input[type="text"],input[type="range"]
 claudepattern.test.js	sync-photos.js	<loaded>
-claudepattern.test.js	sync-status.js	<loaded>	endedAnswer	setSyncStatus	showSyncStatus	syncNetText	syncPaused	syncWaiting
-claudepattern.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	clockLearn	localState	pulledYet	scheduleSync	syncJoinAt	syncJoinMark	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl
+claudepattern.test.js	sync-status.js	<loaded>	backedUpWords	endedAnswer	setSyncStatus	showSyncStatus	syncNetText	syncPaused	syncWaiting
+claudepattern.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	clockLearn	localState	pulledYet	scheduleSync	syncJoinAt	syncJoinMark	syncLaterRun	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncUrl
 claudepattern.test.js	tag-request.js	<loaded>	customForTag	describeEstimate	keepCloseImg	keepTagImg	ownMatsForTag	readEstimate	recordTagResult	sharpCloseOf	tagExtras	tagFixes	tagImgOf	texSig	visTok
 claudepattern.test.js	tagging.js	<loaded>	aiFields	closeTagImg	confTxt	readAbort	readBegin	readEnd	refineApply	refineFromCloseup	tagNotes	takeExtras	takeMaterial
 claudepattern.test.js	tests/fixedplan.js	<any>
@@ -4371,21 +4374,22 @@ claudepattern.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 claudepattern.test.js	tests/fixtures/blazer-windowpane.jpg	<loaded>
 claudepattern.test.js	tests/fixtures/suit-pinstripe-closeup.jpg	<loaded>
 claudepattern.test.js	tests/fixtures/suit-pinstripe.jpg	<loaded>
+claudepattern.test.js	tests/webkit.js	<any>
 claudepattern.test.js	theme.js	<loaded>	applyTheme
-claudepattern.test.js	toast.js	<loaded>	toast	undoHere
+claudepattern.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 claudepattern.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
 claudepattern.test.js	today-photofold.js	<loaded>
 claudepattern.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
 claudepattern.test.js	today-plan.js	<loaded>	get	planDirty	planFor	planMonth	planSnapUse
 claudepattern.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
-claudepattern.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerUp	needConn	netErr
-claudepattern.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	fldRow	giNote	giTag	itemFieldNow	matMigrate	matOn	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFlt	wardFlush	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
+claudepattern.test.js	ui.js	<loaded>	addGate	advClose	closeupBtn	connSummary	cuTouch	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	netErr	renderConnUI	uiEsc
+claudepattern.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	fldRow	giNote	giTag	itemFieldNow	ivOn	matMigrate	matOn	matOnItem	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsTop	wardFlt	wardFlush	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSaveFields	wardSort	wardView
 claudepattern.test.js	watch/leather.jpg	<loaded>
 claudepattern.test.js	watch/shirt-open.png	<loaded>
 claudepattern.test.js	watch/shirt-tie.png	<loaded>
 claudepattern.test.js	watch/suit.png	<loaded>
 claudepattern.test.js	watch/vest.png	<loaded>
-claudepattern.test.js	weather.js	<loaded>	loadWeather
+claudepattern.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 claudepattern.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	cleanPattern	corsFor	fetch	handlePattern	lightText	orNull	sameText	serve	sha256Hex	spend	tagWithClaude	txt	utcDay	wbOf	whoIs
 claudepattern.test.js	worker/links.js	<loaded>	readCapped
 claudepattern.test.js	worker/pattern.js	<loaded>	cleanPattern	handlePattern
@@ -5998,6 +6002,7 @@ deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
 deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
+deps.test.js	tests/webkit.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
 deps.test.js	today-gestures.js	<any>
@@ -7707,6 +7712,7 @@ globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
 globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
+globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -10651,6 +10657,7 @@ motif.test.js	tests/fixedplan.js	<any>
 motif.test.js	tests/fixtures/shirt-chevron-closeup.png	<loaded>
 motif.test.js	tests/fixtures/tie-neat-closeup.jpg	<loaded>
 motif.test.js	tests/fixtures/tie-neat.jpg	<loaded>
+motif.test.js	tests/webkit.js	<any>
 motif.test.js	tests/workersrc.js	<any>
 motif.test.js	theme.js	<loaded>	applyTheme
 motif.test.js	toast.js	<loaded>	toast	undoHere
@@ -15851,6 +15858,7 @@ sett.test.js	tests/fixedplan.js	<any>
 sett.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 sett.test.js	tests/fixtures/blazer-windowpane.jpg	<loaded>
 sett.test.js	tests/fixtures/tie-plaid.jpg	<loaded>
+sett.test.js	tests/webkit.js	<any>
 sett.test.js	theme.js	<loaded>	applyTheme
 sett.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoHere	undoOff
 sett.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -17039,6 +17047,7 @@ shirtweave.test.js	tag-request.js	<loaded>	customForTag	describeEstimate	keepClo
 shirtweave.test.js	tagging.js	<loaded>	aiFields	closeTagImg	confTxt	readAbort	readBegin	readEnd	refineApply	refineFromCloseup	tagNotes	takeExtras	takeMaterial
 shirtweave.test.js	tests/fixedplan.js	<any>
 shirtweave.test.js	tests/fixtures/shirt-diamond-closeup.jpg	<loaded>
+shirtweave.test.js	tests/webkit.js	<any>
 shirtweave.test.js	theme.js	<loaded>	applyTheme
 shirtweave.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 shirtweave.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -18026,6 +18035,7 @@ stylea11y.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	
 stylea11y.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 stylea11y.test.js	tagging.js	<any>	<loaded>	readAbort	tagNotes
 stylea11y.test.js	tests/fixedplan.js	<any>
+stylea11y.test.js	tests/webkit.js	<any>
 stylea11y.test.js	theme.js	<any>	<loaded>	@apreferscolorschemedark.addEventListenerchange	applyTheme
 stylea11y.test.js	toast.js	<any>	<loaded>	toastDrop	undoOff
 stylea11y.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constroot$today}	@{constroot$today}>@root.addEventListenerclick	mvSig	todayCovered
@@ -18127,6 +18137,7 @@ sw.test.js	tag-request.js	<any>	<loaded>
 sw.test.js	tagging.js	<any>	<loaded>
 sw.test.js	tests/fixedplan.js	<any>
 sw.test.js	tests/safeport.js	<any>
+sw.test.js	tests/webkit.js	<any>
 sw.test.js	theme.js	<any>	<loaded>	applyTheme
 sw.test.js	toast.js	<any>	<loaded>	toast
 sw.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constroot$today}
