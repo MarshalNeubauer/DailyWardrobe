@@ -12,7 +12,9 @@
    within CAL_CACHE_MS is answered from memory and costs nothing). */
 import { publicHost, readCapped } from './links.js';
 
-const CAL_DAYS = 60, CAL_EVENTS = 300, CAL_MAX_BYTES = 6e6, CAL_FETCH_MS = 15000, CAL_BODY = 8192;
+/* CAL_MAX_BYTES: how much of a calendar is read (24 MB since 2026-11-24, R6 N2; it was 6 MB, cut silently): it is read as it arrives and
+   only the window's events are kept, so the size costs read time, not memory; past it the answer says truncated */
+const CAL_DAYS = 60, CAL_EVENTS = 300, CAL_MAX_BYTES = 24e6, CAL_FETCH_MS = 15000, CAL_BODY = 8192;
 const CAL_CACHE_MS = 10 * 60e3, CAL_RATE_N = 6, CAL_RATE_MS = 10 * 60e3, CAL_SCAN = 40000;
 const calCache = new Map();   // hash of (who, link, tz, day) -> {t, body}
 const calHits = new Map();    // who.id -> [times of real reads]
@@ -119,37 +121,79 @@ function calRule(v) {
 
 const CAL_PROPS = /^(BEGIN|END|UID|DTSTART|DTEND|DURATION|RRULE|EXDATE|RECURRENCE-ID|SUMMARY|LOCATION|STATUS|TZID|TZOFFSETTO)[;:]/i;   // the only properties read
 /* the text -> [{props: {NAME: [prop…]}}] of the VEVENTs, and the VTIMEZONEs' standard offsets {TZID: minutes} (for a TZID Intl doesn't know) */
-function calParse(text, fromIso, toIso) {
+/* the parse as a reader fed one unfolded line at a time (calParser), so a calendar is read as it arrives (calRead): only the window's
+   events are kept, wherever they lie in the feed (R6 N2, 2026-11-24: the first 6 MB were read and the rest dropped without a word, and a
+   calendar of years lists its coming events last). full: more than CAL_SCAN events kept, the rest not read */
+function calParser(fromIso, toIso) {
   // an event that isn't repeating and lies wholly outside the window (a couple of days' slack for time zones) is dropped as soon as it is
   // read: the time zone work below is the slow part, and a calendar of years holds thousands of past events
   const lo = fromIso ? isoAdd(fromIso, -2) : '', hi = toIso ? isoAdd(toIso, 2) : '', far = fromIso ? isoAdd(fromIso, -40) : '';
   const dayOf = p => { const m = /^(\d{4})(\d{2})(\d{2})/.exec(((p || [])[0] || {}).value || ''); return m ? m[1] + '-' + m[2] + '-' + m[3] : ''; };
   const inWindow = ev => { if (!lo || ev.props.RRULE || ev.props['RECURRENCE-ID']) return true; const s = dayOf(ev.props.DTSTART); if (!s || s > hi) return false;
     return ev.props.DURATION ? s >= far : (dayOf(ev.props.DTEND) || s) >= lo; };
-  const lines = String(text).replace(/^﻿/, '').replace(/\r\n?/g, '\n').replace(/\n[ \t]/g, '').split('\n');
   const events = [], tzStd = {}; let ev = null, depth = [], tzid = '', inStd = false;
-  for (const raw of lines) {
-    if (!raw || !CAL_PROPS.test(raw)) continue;   // (descriptions, attendees, alarms' text: never read)
-    const l = calLine(raw); if (!l) continue;
+  const P = { events, tzStd, full: false };
+  P.line = raw => {
+    if (P.full || !raw || !CAL_PROPS.test(raw)) return;   // (descriptions, attendees, alarms' text: never read)
+    const l = calLine(raw); if (!l) return;
     if (l.name === 'BEGIN') {
       const what = l.value.trim().toUpperCase(); depth.push(what);
       if (what === 'VEVENT' && depth.length === 2) ev = { props: {} };
       else if (what === 'STANDARD') inStd = true;
-      continue;
+      return;
     }
     if (l.name === 'END') {
       const what = l.value.trim().toUpperCase(); depth.pop();
-      if (what === 'VEVENT' && ev) { if (inWindow(ev)) events.push(ev); ev = null; if (events.length > CAL_SCAN) break; }
+      if (what === 'VEVENT' && ev) { if (inWindow(ev)) events.push(ev); ev = null; if (events.length > CAL_SCAN) P.full = true; }
       else if (what === 'STANDARD') inStd = false;
       else if (what === 'VTIMEZONE') tzid = '';
-      continue;
+      return;
     }
     const top = depth[depth.length - 1];
     if (ev && top === 'VEVENT') (ev.props[l.name] = ev.props[l.name] || []).push(l);
     else if (top === 'VTIMEZONE' && l.name === 'TZID') tzid = l.value.trim();
     else if (inStd && tzid && l.name === 'TZOFFSETTO' && !(tzid in tzStd)) { const m = /^([+-])(\d{2})(\d{2})/.exec(l.value.trim()); if (m) tzStd[tzid] = (m[1] === '-' ? -1 : 1) * (+m[2] * 60 + +m[3]); }
+  };
+  return P;
+}
+function calParse(text, fromIso, toIso) {
+  const P = calParser(fromIso, toIso);
+  for (const raw of String(text).replace(/^﻿/, '').replace(/\r\n?/g, '\n').replace(/\n[ \t]/g, '').split('\n')) { P.line(raw); if (P.full) break; }
+  return P;
+}
+/* a calendar's body read as it arrives, at most CAL_MAX_BYTES, its lines unfolded and handed to a calParser -> {P, head: its first
+   characters (the BEGIN:VCALENDAR check), cut: the body went on past CAL_MAX_BYTES or past CAL_SCAN events, so the rest was not read} */
+async function calRead(body, fromIso, toIso) {
+  const P = calParser(fromIso, toIso), dec = new TextDecoder();
+  let head = '', rest = '', line = null, bytes = 0, cut = false, first = true, cr = '';
+  const take = t => {   // text -> whole lines; a line starting with a space or a tab continues the one before (folding)
+    const ls = (rest + t).split('\n'); rest = ls.pop();
+    for (let l of ls) {
+      if (l.endsWith('\r')) l = l.slice(0, -1);
+      if (line !== null && (l[0] === ' ' || l[0] === '\t')) { line += l.slice(1); continue; }
+      if (line !== null) P.line(line);
+      line = l;
+    }
+  };
+  const r = body && body.getReader ? body.getReader() : null;
+  if (r) {
+    for (; ;) {
+      const { done, value: got } = await r.read();
+      if (done) break;
+      let value = got;
+      bytes += value.byteLength;
+      if (bytes > CAL_MAX_BYTES) { cut = true; value = value.subarray(0, Math.max(0, value.byteLength - (bytes - CAL_MAX_BYTES))); }   // (read up to the limit)
+      let t = cr + dec.decode(value, { stream: !cut }); cr = '';
+      if (first) { t = t.replace(/^﻿/, ''); first = false; }
+      if (head.length < 256) head += t.slice(0, 256 - head.length);
+      if (head.trim().length >= 15 && !/^\s*BEGIN:VCALENDAR/i.test(head)) { try { await r.cancel(); } catch { } return { P, head, cut: false }; }   // (a web page: not read on)
+      if (t.endsWith('\r')) { cr = '\r'; t = t.slice(0, -1); }   // (a CRLF cut between two chunks)
+      take(t.replace(/\r(?!\n)/g, '\n'));
+      if (cut || P.full) { cut = true; try { await r.cancel(); } catch { } break; }
+    }
   }
-  return { events, tzStd };
+  if (!cut) { take((cr ? '\n' : '') + dec.decode() + '\n'); if (line !== null) P.line(line); }
+  return { P, head, cut: cut || P.full };
 }
 
 /* the zone a TZID names: IANA as is, a Windows name mapped, else the calendar's own VTIMEZONE standard offset, else the person's zone */
@@ -194,8 +238,10 @@ function occurrences(w, rule, toIso, fromIso, spanDays, untilMs, zone) {
 }
 
 /* the calendar's events that touch [fromIso, toIso] in the person's zone `home` (an IANA name) -> [{id, title, start, end, allDay, time, location, days}] */
-function calEvents(text, home, fromIso, toIso) {
-  const { events, tzStd } = calParse(text, fromIso, toIso), out = [], moved = new Map();   // moved: uid -> the original starts (wall times) overrides replace
+function calEvents(text, home, fromIso, toIso) { return calEventsOf(calParse(text, fromIso, toIso), home, fromIso, toIso); }
+/* the same from a parse already made (calParser's {events, tzStd}) */
+function calEventsOf(parsed, home, fromIso, toIso) {
+  const { events, tzStd } = parsed, out = [], moved = new Map();   // moved: uid -> the original starts (wall times) overrides replace
   const one = (ev, k) => (ev.props[k] || [])[0];
   for (const ev of events) {
     const rid = one(ev, 'RECURRENCE-ID'), uid = (one(ev, 'UID') || {}).value || '';
@@ -282,7 +328,7 @@ async function handleCalendar(req, env, json, who) {
   if (times.length >= CAL_RATE_N) { if (hit) return json({ ...hit.body, cached: true }); return json({ error: 'limit', message: CAL_MSG.busy }, 429); }
   times.push(now); calHits.set(who.id, times);
   if (calHits.size > 500) for (const [k, v] of calHits) if (!v.some(t => now - t < CAL_RATE_MS)) calHits.delete(k);
-  let text;
+  let read;
   try {
     const ac = new AbortController(), timer = setTimeout(() => ac.abort(), CAL_FETCH_MS);
     try {
@@ -298,19 +344,20 @@ async function handleCalendar(req, env, json, who) {
       if (!r) return json({ error: 'unreachable', message: CAL_MSG.unreachable }, 502);
       if (r.status === 401 || r.status === 403 || r.status === 404 || r.status === 410) { try { await r.body?.cancel(); } catch { } return json({ error: 'gone', message: CAL_MSG.gone }, 502); }
       if (!r.ok) { try { await r.body?.cancel(); } catch { } return json({ error: 'unreachable', message: CAL_MSG.unreachable }, 502); }
-      const b = await readCapped(r.body, CAL_MAX_BYTES);
-      text = new TextDecoder().decode(b.bytes);
+      read = await calRead(r.body, fromIso, toIso);
     } finally { clearTimeout(timer); }
   } catch (e) {
     // only the kind of failure goes to the log: never the link, its host or the error's text (which can quote the address)
     console.log('calendar read failed:', e && e.name === 'AbortError' ? 'timeout' : 'network');
     return json({ error: e && e.name === 'AbortError' ? 'slow' : 'unreachable', message: e && e.name === 'AbortError' ? CAL_MSG.slow : CAL_MSG.unreachable }, e && e.name === 'AbortError' ? 504 : 502);
   }
-  if (!/^\s*BEGIN:VCALENDAR/i.test(text.replace(/^﻿/, ''))) return json({ error: 'not a calendar', message: CAL_MSG.notCal }, 422);
+  if (!/^\s*BEGIN:VCALENDAR/i.test(read.head)) return json({ error: 'not a calendar', message: CAL_MSG.notCal }, 422);
   let events;
-  try { events = calEvents(text, tz, fromIso, toIso); }
+  try { events = calEventsOf(read.P, tz, fromIso, toIso); }
   catch (e) { console.log('calendar parse failed:', e && e.name); return json({ error: 'not a calendar', message: CAL_MSG.notCal }, 422); }
-  const out = { from: fromIso, to: toIso, tz, events: events.slice(0, CAL_EVENTS), more: events.length > CAL_EVENTS };
+  // truncated: the calendar went on past what is read (CAL_MAX_BYTES, or CAL_SCAN events in the window): the events found are given, and
+  // the app says in plain words that some may be missing (an older app reads the events as before)
+  const out = { from: fromIso, to: toIso, tz, events: events.slice(0, CAL_EVENTS), more: events.length > CAL_EVENTS, ...(read.cut ? { truncated: true } : {}) };
   calCache.set(ck, { t: now, body: out });
   if (calCache.size > 200) for (const [k, v] of calCache) if (now - v.t >= CAL_CACHE_MS) calCache.delete(k);
   return json(out);
@@ -318,4 +365,4 @@ async function handleCalendar(req, env, json, who) {
 /* for the tests: forget the in-memory cache and counts */
 function calReset() { calCache.clear(); calHits.clear(); }
 
-export { handleCalendar, calEvents, calUrl, calReset, CAL_RATE_N };
+export { handleCalendar, calEvents, calUrl, calReset, CAL_MAX_BYTES, CAL_RATE_N };

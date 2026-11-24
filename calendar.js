@@ -13,7 +13,9 @@
      ("2 new calendar events"), never applied by themselves
    - the last answer is kept on this phone only (localStorage cal_last), for the review list and Today's trip note */
 const CAL_EVERY=3*3600e3;   // read again at most this often by itself
-const CAL_KEY='cal_last';    // {t, from, to, events, err} on this phone
+const CAL_KEY='cal_last';    // {t, from, to, events, err, part} on this phone
+/* the server read only part of a very large calendar (its answer's truncated, 2026-11-24): said wherever the read is reported */
+const CAL_PART='This calendar is very large, so only part of it could be read and some events may be missing. A calendar just for work events works best.';
 let calBusy=false,calMsg='';
 
 /* ---- the keyword rules (data, so they can be made editable later): the first rule whose words match wins ---- */
@@ -89,7 +91,7 @@ async function calFetch(url,fresh){const w=(localStorage.getItem('worker_url')||
 async function calSync(force){const url=calLink();if(!url||calBusy||!isConnected())return null;const last=calRead();
   if(!force&&last&&last.url===calMask(url)&&Date.now()-(last.t||0)<CAL_EVERY)return null;
   calBusy=true;const before=calNew().length;
-  try{const j=await calFetch(url,force);calWrite({t:Date.now(),url:calMask(url),from:j.from,to:j.to,events:(j.events||[]).slice(0,300),err:''});calMsg=''}
+  try{const j=await calFetch(url,force);calWrite({t:Date.now(),url:calMask(url),from:j.from,to:j.to,events:(j.events||[]).slice(0,300),err:'',part:!!j.truncated});calMsg=''}
   catch(e){const o=calRead()||{};calWrite({...o,url:calMask(url),err:e.message||'The calendar couldn’t be read.',errAt:Date.now()});calMsg=e.message||''}
   finally{calBusy=false}
   const n=calNew();if(n.length!==before&&!$('#today').hidden)refreshToday();
@@ -113,9 +115,9 @@ async function calConnect(){const inp=$('#cal-link'),v=(inp&&inp.value||'').trim
   if(calBusy)return;calBusy=true;say('Reading your calendar…');
   try{const j=await calFetch(v,true);
     settings.calendar={url:v,at:Date.now()};await saveUserSettings();
-    calWrite({t:Date.now(),url:calMask(v),from:j.from,to:j.to,events:(j.events||[]).slice(0,300),err:''});
+    calWrite({t:Date.now(),url:calMask(v),from:j.from,to:j.to,events:(j.events||[]).slice(0,300),err:'',part:!!j.truncated});
     const n=calFound().filter(x=>!calSeen()[x.ev.id]).length;
-    calMsg=`Connected. ${(j.events||[]).length} event${(j.events||[]).length===1?'':'s'} in the next 60 days${n?`; ${n} could set up your outfits: check them below.`:'; none that change what you wear.'}`;
+    calMsg=`Connected. ${(j.events||[]).length} event${(j.events||[]).length===1?'':'s'} in the next 60 days${n?`; ${n} could set up your outfits: check them below.`:'; none that change what you wear.'}`+(j.truncated?' '+CAL_PART:'');
     announce(calMsg)}
   catch(e){calMsg=e.message||'The calendar couldn’t be read.'}
   finally{calBusy=false}
@@ -123,14 +125,14 @@ async function calConnect(){const inp=$('#cal-link'),v=(inp&&inp.value||'').trim
 async function calDisconnect(){if(!await askConfirm('Disconnect the calendar?\n\nThe app stops reading it. Days off, occasions and trips already set stay as they are.',{ok:'Disconnect',danger:true}))return;
   delete settings.calendar;calWrite(null);calMsg='Disconnected.';renderCalUI();await saveUserSettings();refreshToday()}
 async function calRefresh(){if(calBusy)return;calMsg='Reading your calendar…';renderCalUI();const n=await calSync(true);
-  const last=calRead()||{};calMsg=last.err||(n?(n.length?`${n.length} new event${n.length===1?'':'s'} to check below.`:'Up to date: nothing new.'):'');renderCalUI();if(calMsg)announce(calMsg)}
+  const last=calRead()||{};calMsg=last.err||(n?(n.length?`${n.length} new event${n.length===1?'':'s'} to check below.`:'Up to date: nothing new.')+(last.part?' '+CAL_PART:''):'');renderCalUI();if(calMsg)announce(calMsg)}
 function calSummary(){if(!calLink())return 'Not connected';const last=calRead();if(!last||!last.t)return 'Connected';
   const n=calNew().length;return n?`${n} new event${n===1?'':'s'} to check`:last.err?'Couldn’t read it last time':'Connected · up to date'}
 /* "Last read 7:02 · 3 events used" */
 function calStatus(){const last=calRead();if(!last||!last.t)return last&&last.err?last.err:'Not read yet.';
   const d=new Date(last.t),same=d.toDateString()===new Date().toDateString(),at=same?d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}):d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
   const s=calSeen(),used=calFound().filter(x=>s[x.ev.id]==='k'||x.done).length;
-  return `Last read ${at} · ${used} event${used===1?'':'s'} used`+(last.err?` · ${last.err}`:'')}
+  return `Last read ${at} · ${used} event${used===1?'':'s'} used`+(last.err?` · ${last.err}`:last.part?` · ${CAL_PART}`:'')}
 function calRow(x,state){const e=x.ev,when=calDateTxt(e.start,e.end)+(e.allDay||!e.time?'':' · '+calTime(e.time));
   const btns=state==='new'?`${x.can?`<button type="button" class="cal-ok" data-act="calKeepTap" data-id="${esc(e.id)}" aria-label="Use: ${esc(x.what)}, ${esc(e.title)}">✓</button>`:''}<button type="button" class="cal-no" data-act="calDismissTap" data-id="${esc(e.id)}" aria-label="Dismiss ${esc(e.title)}">✕</button>`
     :`<button type="button" class="linkbtn" data-act="calUndoTap" data-id="${esc(e.id)}">${state==='kept'?'Used':'Dismissed'} · Undo</button>`;

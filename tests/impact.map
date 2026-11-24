@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	37244644e963c4e0e9fc
+# tested	cd962ee834073d19b22a
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -579,6 +579,7 @@ actsindex.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	
 actsindex.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 actsindex.test.js	tagging.js	<any>	<loaded>	readAbort	tagNotes
 actsindex.test.js	tests/fixedplan.js	<any>
+actsindex.test.js	tests/webkit.js	<any>
 actsindex.test.js	theme.js	<any>	<loaded>	applyTheme	cycleTheme	themeTap
 actsindex.test.js	toast.js	<any>	<loaded>	toast	toastDrop	toastOff	undoOff
 actsindex.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig
@@ -3240,7 +3241,7 @@ backup-storage.test.js	watch/suit.png	<loaded>
 backup-storage.test.js	watch/vest.png	<loaded>
 backup-storage.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 backup-storage.test.js	worker.js	<loaded>	corsFor	fetch	queue	scheduled	serve
-backup-storage.test.js	worker/backup.js	<any>	<loaded>	arrOf	asBytes	clampStamps	dropFuture	dropParts	fsOver	give	isParted	isPhoto	isPhotoOld	keepSnapshots	kseOver	kvMeta	listSnapshots	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	phHash	phMapStr	putParted	putStored	readHead	readLite	readText	sampleOnly	saveLock	splitPhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncPhotos	syncVersion	writeBudget
+backup-storage.test.js	worker/backup.js	<any>	<loaded>	arrOf	asBytes	clampStamps	dropFuture	dropParts	fsOver	give	hold	isParted	isPhoto	isPhotoOld	keepSnapshots	kseOver	kvMeta	listSnapshots	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	phHash	phMapStr	putParted	putStored	readHead	readLite	readText	sampleOnly	saveLock	splitPhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncPhotos	syncVersion	writeBudget
 backup-storage.test.js	worker/calendar.js	<any>	<loaded>
 backup-storage.test.js	worker/colormath.js	<any>	<loaded>
 backup-storage.test.js	worker/describe.js	<any>	<loaded>
@@ -3369,6 +3370,7 @@ bridge.test.js	tests/backgesture-over.test.js	<any>
 bridge.test.js	tests/backgesture-parts.js	<any>
 bridge.test.js	tests/backgesture.test.js	<any>
 bridge.test.js	tests/backup-storage.test.js	<any>
+bridge.test.js	tests/calbig.test.js	<any>
 bridge.test.js	tests/calendar.test.js	<any>
 bridge.test.js	tests/camouflage.test.js	<any>
 bridge.test.js	tests/canvasrefuse.test.js	<any>
@@ -3595,6 +3597,7 @@ bridge.test.js	tests/safeport.test.js	<any>
 bridge.test.js	tests/safety.test.js	<any>
 bridge.test.js	tests/safetysync.test.js	<any>
 bridge.test.js	tests/sample.test.js	<any>
+bridge.test.js	tests/savelease.test.js	<any>
 bridge.test.js	tests/savelock.test.js	<any>
 bridge.test.js	tests/scoreanim.test.js	<any>
 bridge.test.js	tests/scoredials.test.js	<any>
@@ -3686,6 +3689,107 @@ bridge.test.js	tools/visit-measure.js	<any>
 bridge.test.js	ui.js	<any>
 bridge.test.js	wardrobe.js	<any>
 bridge.test.js	weather.js	<any>
+calbig.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
+calbig.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
+calbig.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
+calbig.test.js	add-card.js	<loaded>
+calbig.test.js	add-keep.js	<loaded>	addKeep	addRestore
+calbig.test.js	add-more.js	<loaded>
+calbig.test.js	add-paste.js	<loaded>
+calbig.test.js	add-save.js	<loaded>
+calbig.test.js	add-sheet.js	<loaded>	get
+calbig.test.js	add.js	<loaded>	@document.addEventListenerclick
+calbig.test.js	analysis.js	<loaded>
+calbig.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	tx	txFail	txs	window.fetch
+calbig.test.js	apple-touch-icon.png	<loaded>
+calbig.test.js	asm-color.js	<loaded>
+calbig.test.js	asm-gl.js	<loaded>
+calbig.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
+calbig.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
+calbig.test.js	asm-pocket.js	<loaded>
+calbig.test.js	asm-watch.js	<loaded>
+calbig.test.js	assemble.js	<loaded>	@	get	renderAsmUI
+calbig.test.js	back.js	<loaded>	backApp	backDrop	backItem	backKind	backLand	backOn	backOver	backPush	backSync	inviteInUrl
+calbig.test.js	backupfile.js	<loaded>
+calbig.test.js	boxfold.js	<loaded>
+calbig.test.js	calendar.js	<loaded>	calBanner	calConnect	calConnectTap	calDateTxt	calDay	calFetch	calFound	calKind	calLink	calMask	calNew	calPlan	calRead	calReadTap	calRefresh	calRow	calSeen	calStatus	calSummary	calSync	calTz	calWrite	get	renderCalUI
+calbig.test.js	care.js	<loaded>	careLimit	careWashed	laundryDays	renderCareUI
+calbig.test.js	checklist.js	<loaded>
+calbig.test.js	colpick.js	<loaded>
+calbig.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	applyCustom	casualTop	dayClimate	di	get	isWorkday	isoKey	key	keySettings	keySplit	metalWord	nowMs	occOf	offDays	offName	ownMats	set	setWardrobe	stampSettings	subHashes	takeSettings	todayDate	wearsJacket	wearsTie
+calbig.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed
+calbig.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	isoToDate	refreshHolidays	renderDaysOffUI	renderFormalUI	shortDate	yearDate
+calbig.test.js	detect.js	<loaded>	@
+calbig.test.js	draw.js	<loaded>
+calbig.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI
+calbig.test.js	fav.js	<loaded>
+calbig.test.js	history.js	<loaded>	checkPlanRules	get	renderReplanUI	replanCount	whenPulled
+calbig.test.js	icon-192.png	<loaded>
+calbig.test.js	icon-512.png	<loaded>
+calbig.test.js	index.html	<loaded>
+calbig.test.js	item-photo.js	<loaded>
+calbig.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
+calbig.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
+calbig.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
+calbig.test.js	locale.js	<loaded>	appLocale
+calbig.test.js	locks.js	<loaded>
+calbig.test.js	look.js	<loaded>	lookOn	renderLookSetting
+calbig.test.js	manifest.webmanifest	<loaded>
+calbig.test.js	mannequin.js	<loaded>	@{}
+calbig.test.js	measure.js	<loaded>
+calbig.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
+calbig.test.js	migrate.js	<loaded>
+calbig.test.js	missed.js	<loaded>
+calbig.test.js	month.js	<loaded>	dayOnly	nextWorkday
+calbig.test.js	mq/shirt-open.js	<loaded>
+calbig.test.js	mq/shirt-tie.js	<loaded>
+calbig.test.js	mq/suit-open.js	<loaded>
+calbig.test.js	mq/suit.js	<loaded>
+calbig.test.js	mq/vest.js	<loaded>
+calbig.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI
+calbig.test.js	pack.js	<loaded>	packShow
+calbig.test.js	pattern-read.js	<loaded>
+calbig.test.js	photos.js	<loaded>	asmLive	esc	fixItemBackdrops	get	loadRenders	missingItemPics	picsDrawn	renderItemPicUI
+calbig.test.js	pickscore.js	<loaded>
+calbig.test.js	planner.js	<loaded>
+calbig.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
+calbig.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart	storeFailure
+calbig.test.js	scorecard.js	<loaded>
+calbig.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
+calbig.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
+calbig.test.js	sheet-swipe.js	<loaded>
+calbig.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then
+calbig.test.js	snapshots.js	<loaded>
+calbig.test.js	srgb.js	<loaded>	srgbLin	srgbLin8
+calbig.test.js	start.js	<loaded>	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp
+calbig.test.js	stats.js	<loaded>	@afterScripts
+calbig.test.js	styles.css	#adv-photos:has(#asm-group[hidden]),body:not(.owner) #adv-photos	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#itempic-btn[disabled]	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#photos-conn	#photos-conn:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal .cal-btns .cal-ok	#settings-modal .cal-btns .cal-ok,#settings-modal .cal-btns .cal-no	#settings-modal .cpwset .cpwin input[type="text"]	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .dtog::after	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox:is(.instant,.bfast) .mpanel-in	#settings-modal .mpanel-in	#settings-modal .mpanel-in::after	#settings-modal .mpanel-in::before	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date],#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal .sgroup:has(>.days)	#settings-modal .srow	#settings-modal .srow select	#settings-modal button.adv-head	#settings-modal button.dress-sw	#settings-modal label.btn	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.about-confirm	.about-fold summary	.about-fold summary::after	.about-note	.about-text	.acct-bad	.adv	.adv-head .chev	.adv-in	.adv-t	.adv-t small	.btn	.cal-btns	.cal-conn	.cal-conn .mut	.cal-ev	.cal-ev b	.cal-ev small	.cal-form input[type=url]	.cal-guides button	.cal-howh	.cal-list	.cal-priv	.cal-row	.cal-to	.conn-off-note:empty	.conn-tick	.cpw-h	.cpwin	.cpwin input[type="text"]	.cpwset	.cpwset input[type="number"]	.cpwsym	.custadd	.custadd button	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.days	.dress-row	.dress-row:first-child	.dress-sw i	.dress-sw i::after	.dress-sw.on i	.dress-sw.on i::after	.dress-txt	.dress-txt b	.dress-txt small	.dtog	.dtog.on	.fb-list	.fchips	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.hlist	.hlist:empty	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.offadd input[type=date]	.pack-link	.pri	.sactions	.sactions:empty	.sbody	.scat-h	.setup-again	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgh.sgh-first	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.sic	.sicw	.slabel	.slide	.slink	.slink .chev	.slinks	.slinks .slink	.srow	.srow select	.stage	.stage .firstrun	.vfile	.vh	.wxc.wxlk	.wxl	::placeholder	:focus-visible	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	button	button,.btn,select,input	button:focus-visible,select:focus-visible,input:focus-visible	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	html.set-lock,html.set-lock body	label:has(>.vfile)	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav::before	select,input[type="text"],input[type="range"]
+calbig.test.js	sync-photos.js	<loaded>
+calbig.test.js	sync-status.js	<loaded>	backedUpWords	endedAnswer	setSyncStatus	showSyncStatus	syncNetText	syncPaused	syncWaiting
+calbig.test.js	sync.js	<loaded>	@connRestored.then	afterPull	clockLearn	localState	pulledYet	scheduleSync	syncJoinAt	syncJoinMark	syncMark	syncNeedsPull	syncNow	syncOnce	syncUrl
+calbig.test.js	tag-request.js	<loaded>
+calbig.test.js	tagging.js	<loaded>
+calbig.test.js	tests/fixedplan.js	<any>
+calbig.test.js	tests/fixtures/calendar/personal.ics	<any>
+calbig.test.js	theme.js	<loaded>	applyTheme
+calbig.test.js	toast.js	<loaded>
+calbig.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
+calbig.test.js	today-photofold.js	<loaded>
+calbig.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
+calbig.test.js	today-plan.js	<loaded>	get	planDirty	planFor	planMonth	planSnapUse	set
+calbig.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
+calbig.test.js	ui.js	<loaded>	advClose	connSummary	inviteOver	isConnected	layerInert	layerOpen	layerUp	needConn	netErr	renderConnUI
+calbig.test.js	wardrobe.js	<loaded>
+calbig.test.js	watch/leather.jpg	<loaded>
+calbig.test.js	watch/shirt-open.png	<loaded>
+calbig.test.js	watch/shirt-tie.png	<loaded>
+calbig.test.js	watch/suit.png	<loaded>
+calbig.test.js	watch/vest.png	<loaded>
+calbig.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
+calbig.test.js	worker.js	<loaded>	corsFor	fetch	serve
+calbig.test.js	worker/calendar.js	<loaded>	calDur	calEvents	calEventsOf	calHash	calLine	calParse	calParser	calRead	calReset	calRule	calText	calUrl	calWhen	handleCalendar	isoAdd	isoDays	isoOf	occurrences	tzOffset	tzOffsetOf	tzOk	utcToLocal	wallToUtc	zoneOf
+calbig.test.js	worker/links.js	<loaded>	publicHost	readCapped
+calbig.test.js	worker/people.js	<loaded>	sameText	sha256Hex	whoIs
 calendar.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 calendar.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
 calendar.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -3769,6 +3873,7 @@ calendar.test.js	tagging.js	<loaded>
 calendar.test.js	tests/fixedplan.js	<any>
 calendar.test.js	tests/fixtures/calendar/outlook.ics	<any>
 calendar.test.js	tests/fixtures/calendar/personal.ics	<any>
+calendar.test.js	tests/webkit.js	<any>
 calendar.test.js	theme.js	<loaded>	@apreferscolorschemedark.addEventListenerchange	applyTheme
 calendar.test.js	toast.js	<loaded>	toast	toastOff
 calendar.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold
@@ -3785,7 +3890,7 @@ calendar.test.js	watch/suit.png	<loaded>
 calendar.test.js	watch/vest.png	<loaded>
 calendar.test.js	weather.js	<loaded>	loadClimate	loadWeather	locCC	renderWxLoc	temp	unit	unitCC	wxChip	wxIcon
 calendar.test.js	worker.js	<loaded>	corsFor	fetch	serve
-calendar.test.js	worker/calendar.js	<loaded>	calDur	calEvents	calHash	calLine	calParse	calReset	calRule	calText	calUrl	calWhen	handleCalendar	isoAdd	isoDays	isoOf	occurrences	tzOffset	tzOffsetOf	tzOk	utcToLocal	wallToUtc	zoneOf
+calendar.test.js	worker/calendar.js	<loaded>	calDur	calEvents	calEventsOf	calHash	calLine	calParse	calParser	calRead	calReset	calRule	calText	calUrl	calWhen	handleCalendar	isoAdd	isoDays	isoOf	occurrences	tzOffset	tzOffsetOf	tzOk	utcToLocal	wallToUtc	zoneOf
 calendar.test.js	worker/links.js	<loaded>	publicHost	readCapped
 calendar.test.js	worker/people.js	<loaded>	cleanCaps	firstWeek	handleInvites	handleMe	newCode	ownerOnly	plainFor	sameText	sha256Hex	smallBody	usedOf	utcDay	whoIs
 camouflage.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
@@ -4180,7 +4285,7 @@ care.test.js	watch/suit.png	<loaded>
 care.test.js	watch/vest.png	<loaded>
 care.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 care.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	countWrites	dropParts	fetch	getRender	handleSync	isParted	isPhoto	isPv	keepSnapshots	kvMeta	liteSig	loadAny	loadSync	mergeLite	nextRevs	orNull	ownerAs	phCollect	putPhotos	putStored	pvMeta	pvText	readHead	readLite	readPv	readText	refsIn	refsOf	renderId	sameText	serve	sha256Hex	spend	spendUpTo	splitPhotos	stampOf	storePhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	unspend	utcDay	whoIs	writeBudget
-care.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+care.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	hold	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 care.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendUpTo	unspend	usedOf	utcDay	whoIs
 care.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 care.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	proseOk	recCheck
@@ -4488,7 +4593,7 @@ clock.test.js	watch/suit.png	<loaded>
 clock.test.js	watch/vest.png	<loaded>
 clock.test.js	weather.js	<loaded>	loadWeather
 clock.test.js	worker.js	<loaded>	ROUTES.* /sync	corsFor	fetch	serve
-clock.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsClamp	fsOk	fsOver	give	isParted	isPhoto	itemBase	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+clock.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsClamp	fsOk	fsOver	give	hold	isParted	isPhoto	itemBase	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 clock.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendUpTo	unspend	usedOf	utcDay	whoIs
 clock.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 clock.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	recCheck
@@ -5788,7 +5893,7 @@ costwear.test.js	watch/suit.png	<loaded>
 costwear.test.js	watch/vest.png	<loaded>
 costwear.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 costwear.test.js	worker.js	<loaded>	corsFor	fetch	serve
-costwear.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+costwear.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	hold	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 costwear.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	spendUpTo	unspend	utcDay	whoIs
 costwear.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 costwear.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	recCheck
@@ -5855,7 +5960,7 @@ daysoff.test.js	pack.js	<loaded>	packShow
 daysoff.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 daysoff.test.js	photos.js	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	fixItemBackdrops	fnv64	get	itemDesc	itemKey	itemPic	itemPicHtml	jsq	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shirtPatterned	shirtTextured	workerBase	workerList
 daysoff.test.js	pickscore.js	<loaded>
-daysoff.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
+daysoff.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 daysoff.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storeFailure
 daysoff.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
@@ -6126,7 +6231,7 @@ drawnonly.test.js	watch/suit.png	<loaded>
 drawnonly.test.js	watch/vest.png	<loaded>
 drawnonly.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 drawnonly.test.js	worker.js	<loaded>	ROUTES.* /sync	corsFor	fetch	ownerAs	serve
-drawnonly.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	mergeSettingsLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	setHashLite	setKeysLite	setStampLite	splitPhotos	stampOf	storedVersion	subOkLite	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+drawnonly.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	give	hold	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	mergeSettingsLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	setHashLite	setKeysLite	setStampLite	splitPhotos	stampOf	storedVersion	subOkLite	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 drawnonly.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	spendUpTo	unspend	usedOf	utcDay	whoIs
 drawnonly.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 drawnonly.test.js	worker/records.js	<loaded>	getRender	handleBlob	putRender	recCheck	renderId	renderTtl
@@ -6228,7 +6333,7 @@ dress.test.js	watch/suit.png	<loaded>
 dress.test.js	watch/vest.png	<loaded>
 dress.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 dress.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	RENDER_PROMPT	ROUTES.* /sync	WATCH_KEY	arrOf	corsFor	countWrites	dataUrlToBlob	dropParts	fetch	getRender	handleRender	handleSync	hasWatch	isParted	isPhoto	isPv	keepSnapshots	kvMeta	liteSig	loadAny	loadSync	mergeLite	nextRevs	orNull	outfitPhoto	ownerAs	phCollect	photoCap	putPhotos	putStored	pvMeta	pvText	readHead	readLite	readPv	readText	refsIn	refsOf	renderId	sameText	serve	sha256Hex	spend	spendEach	spendUpTo	splitPhotos	stampOf	storePhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	unspend	utcDay	whoIs	writeBudget
-dress.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	mergeSettingsLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sampleOnly	saveLock	setHashLite	setKeysLite	setStampLite	splitPhotos	stampOf	storedVersion	subOkLite	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+dress.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	hold	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	mergeSettingsLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sampleOnly	saveLock	setHashLite	setKeysLite	setStampLite	splitPhotos	stampOf	storedVersion	subOkLite	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 dress.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	photoCap	sameText	sha256Hex	spend	spendEach	spendUpTo	unspend	usedOf	utcDay	whoIs
 dress.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 dress.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	recCheck	renderId
@@ -6607,6 +6712,7 @@ errreport.test.js	sync.js	<loaded>	@connRestored.then	afterPull	applyMerged	cloc
 errreport.test.js	tag-request.js	<loaded>
 errreport.test.js	tagging.js	<loaded>
 errreport.test.js	tests/fixedplan.js	<any>
+errreport.test.js	tests/webkit.js	<any>
 errreport.test.js	theme.js	<loaded>	applyTheme
 errreport.test.js	toast.js	<loaded>
 errreport.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -6818,8 +6924,8 @@ favplan.test.js	watch/suit.png	<loaded>
 favplan.test.js	watch/vest.png	<loaded>
 favplan.test.js	weather.js	<loaded>	loadWeather
 favplan.test.js	worker.js	<loaded>	corsFor	fetch	serve
-favplan.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
-favplan.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	spendUpTo	utcDay	whoIs
+favplan.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	hold	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+favplan.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	spendUpTo	unspend	utcDay	whoIs
 favplan.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 favplan.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	recCheck
 favplan.test.js	worker/render.js	<loaded>	hubOf
@@ -6921,7 +7027,7 @@ fieldmerge.test.js	watch/suit.png	<loaded>
 fieldmerge.test.js	watch/vest.png	<loaded>
 fieldmerge.test.js	weather.js	<loaded>	loadWeather
 fieldmerge.test.js	worker.js	<loaded>	ROUTES.* /sync	corsFor	fetch	ownerAs	serve
-fieldmerge.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayUnflat	dayWins	dropFuture	dropParts	fieldStamp	fsClamp	fsOk	fsOver	fsPack	give	isParted	isPhoto	itemBase	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	mergeSettingsLite	mergeSplitLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sameVal	sampleOnly	saveLock	setEntriesLite	setHashLite	setJoinLite	setKeysLite	setStampLite	splitPhotos	stampOf	storedVersion	subOkLite	subStampLite	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+fieldmerge.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayUnflat	dayWins	dropFuture	dropParts	fieldStamp	fsClamp	fsOk	fsOver	fsPack	give	hold	isParted	isPhoto	itemBase	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	mergeSettingsLite	mergeSplitLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sameVal	sampleOnly	saveLock	setEntriesLite	setHashLite	setJoinLite	setKeysLite	setStampLite	splitPhotos	stampOf	storedVersion	subOkLite	subStampLite	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 fieldmerge.test.js	worker/links.js	<loaded>	readCapped
 fieldmerge.test.js	worker/people.js	<loaded>	countWrites	dropPush	handleAccount	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	smallBody	spend	spendUpTo	unspend	usedOf	utcDay	whoIs	wipeSome
 fieldmerge.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
@@ -8578,6 +8684,7 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
+invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -9093,7 +9200,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	handleSync
+keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
@@ -10138,6 +10245,7 @@ modtools.test.js	tests/backgesture-parts.js	<any>
 modtools.test.js	tests/backgesture.test.js	<any>
 modtools.test.js	tests/backup-storage.test.js	<any>
 modtools.test.js	tests/bridge.test.js	<any>
+modtools.test.js	tests/calbig.test.js	<any>
 modtools.test.js	tests/calendar.test.js	<any>
 modtools.test.js	tests/camouflage.test.js	<any>
 modtools.test.js	tests/canvasrefuse.test.js	<any>
@@ -10370,6 +10478,7 @@ modtools.test.js	tests/safeport.test.js	<any>
 modtools.test.js	tests/safety.test.js	<any>
 modtools.test.js	tests/safetysync.test.js	<any>
 modtools.test.js	tests/sample.test.js	<any>
+modtools.test.js	tests/savelease.test.js	<any>
 modtools.test.js	tests/savelock.test.js	<any>
 modtools.test.js	tests/scoreanim.test.js	<any>
 modtools.test.js	tests/scoredials.test.js	<any>
@@ -10559,7 +10668,7 @@ month.test.js	watch/suit.png	<loaded>
 month.test.js	watch/vest.png	<loaded>
 month.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 month.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	DIAL_NOTE	RENDER_PROMPT	ROUTES.* /sync	WATCH_KEY	arrOf	corsFor	countWrites	dataUrlToBlob	dropParts	fetch	getRender	handleInvites	handleMe	handleRender	handleSync	hasWatch	isParted	isPhoto	isPv	keepSnapshots	kvMeta	liteSig	loadAny	loadSync	mergeLite	nextRevs	orNull	outfitPhoto	ownerOnly	phCollect	photoCap	putPhotos	putStored	pvMeta	pvText	queueRender	readText	refsIn	refsOf	renderId	renderTtl	sameText	serve	sha256Hex	spend	spendUpTo	splitPhotos	storePhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	usedOf	utcDay	whoIs	writeBudget
-month.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+month.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	hold	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 month.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendUpTo	usedOf	utcDay	whoIs
 month.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	refsIn	refsOf	storePhotos
 month.test.js	worker/records.js	<loaded>	dayWrong	freeOk	getRender	recCheck	renderId
@@ -13339,7 +13448,7 @@ records.test.js	watch/suit.png	<loaded>
 records.test.js	watch/vest.png	<loaded>
 records.test.js	weather.js	<loaded>	loadWeather
 records.test.js	worker.js	<loaded>	ROUTES.* /sync	corsFor	fetch	serve
-records.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+records.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	hold	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 records.test.js	worker/links.js	<loaded>	readCapped
 records.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	spendEach	spendUpTo	unspend	utcDay	whoIs
 records.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	putWhole	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
@@ -13530,6 +13639,7 @@ restacts.test.js	tag-request.js	<loaded>	describeEstimate	keepCloseImg	readEstim
 restacts.test.js	tagging.js	<loaded>	confTxt	readAbort	tagLive	tagMeasUndo	tagNewCol	tagNewPat	tagNotes	tagPatternAgain	tagRefineAgain	tagRefineUndo	tagSet	undoRefine
 restacts.test.js	tests/fixedplan.js	<any>
 restacts.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<any>
+restacts.test.js	tests/webkit.js	<any>
 restacts.test.js	theme.js	<loaded>	applyTheme
 restacts.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoHere	undoOff
 restacts.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	mvSig	todayBusy	todayFree
@@ -13643,7 +13753,7 @@ rollback.test.js	watch/suit.png	<loaded>
 rollback.test.js	watch/vest.png	<loaded>
 rollback.test.js	weather.js	<loaded>	loadClimate	loadWeather	locCC	renderWxLoc	temp	unit	unitCC	wxChip	wxIcon
 rollback.test.js	worker.js	<loaded>	ROUTES.* /sync	corsFor	fetch	ownerAs	serve
-rollback.test.js	worker/backup.js	<loaded>	arrOf	asBytes	clampStamps	copyStored	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	isParted	isPhoto	itemBase	keepSnapshots	kseOver	kvMeta	listSnapshots	liteSig	loadSync	lockStale	mergeDayLite	mergeLite	mergeSettingsLite	mergeSplitLite	nextRevs	nextSaved	now	over	own	partKey	partedStream	phCollect	putParted	putStored	readText	sampleOnly	saveLock	setEntriesLite	setHashLite	setKeysLite	setStampLite	splitPhotos	stampOf	storedResponse	storedVersion	subOkLite	subStampLite	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+rollback.test.js	worker/backup.js	<loaded>	arrOf	asBytes	clampStamps	copyStored	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	hold	isParted	isPhoto	itemBase	keepSnapshots	kseOver	kvMeta	listSnapshots	liteSig	loadSync	lockStale	mergeDayLite	mergeLite	mergeSettingsLite	mergeSplitLite	nextRevs	nextSaved	now	over	own	partKey	partedStream	phCollect	putParted	putStored	readText	sampleOnly	saveLock	setEntriesLite	setHashLite	setKeysLite	setStampLite	splitPhotos	stampOf	storedResponse	storedVersion	subOkLite	subStampLite	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 rollback.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendUpTo	unspend	usedOf	utcDay	whoIs
 rollback.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	nsOf	putPhotos	putWhole	pvMeta	pvResponse	pvText	readPv	refsIn	refsOf	scanPhotos	storePhotos
 rollback.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	recCheck
@@ -15235,7 +15345,7 @@ safetysync.test.js	watch/suit.png	<loaded>
 safetysync.test.js	watch/vest.png	<loaded>
 safetysync.test.js	weather.js	<loaded>	loadClimate	loadWeather	locCC	temp	unit	unitCC	wxChip	wxIcon
 safetysync.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	countWrites	dropParts	fetch	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	keepSnapshots	kvMeta	liteSig	loadAny	loadSync	mergeLite	nextRevs	orNull	ownerAs	ownerOnly	phCollect	putPhotos	putStored	pvMeta	pvText	readHead	readLite	readPv	readText	refsIn	refsOf	renderId	sameText	serve	sha256Hex	spend	spendUpTo	splitPhotos	storePhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	usedOf	utcDay	whoIs	writeBudget
-safetysync.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	mergeSettingsLite	mergeSplitLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	saveLock	setEntriesLite	setHashLite	setKeysLite	setStampLite	splitPhotos	storedVersion	subOkLite	subStampLite	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+safetysync.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	give	hold	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	mergeSettingsLite	mergeSplitLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	saveLock	setEntriesLite	setHashLite	setKeysLite	setStampLite	splitPhotos	storedVersion	subOkLite	subStampLite	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 safetysync.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendUpTo	usedOf	utcDay	whoIs
 safetysync.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 safetysync.test.js	worker/records.js	<loaded>	recCheck
@@ -15337,14 +15447,22 @@ sample.test.js	watch/suit.png	<loaded>
 sample.test.js	watch/vest.png	<loaded>
 sample.test.js	weather.js	<loaded>	loadWeather	locCC	unit	unitCC
 sample.test.js	worker.js	<loaded>	corsFor	fetch	serve
-sample.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+sample.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	hold	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 sample.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	spendUpTo	utcDay	whoIs
 sample.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	nsOf	putPhotos	putWhole	pvMeta	pvResponse	pvText	readPv	refsIn	refsOf	storePhotos
 sample.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	itemWrong	recCheck
 sample.test.js	worker/render.js	<loaded>	hubOf
+savelease.test.js	merge.js	<loaded>	mergeList	mergeStateBy	stamp	stateSig	tombWins
+savelease.test.js	worker.js	<loaded>	corsFor	fetch	serve
+savelease.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	conflictBody	dropFuture	dropParts	fsOver	isParted	isPhoto	keepSnapshots	kvMeta	leaseLost	liteSig	lockStale	mergeLite	nap	nextRevs	nextSaved	now	over	phCollect	phHash	phMapStr	putStored	readText	sampleOnly	saveLock	splitPhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+savelease.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	spendUpTo	unspend	utcDay	whoIs
+savelease.test.js	worker/photostore.js	<loaded>	gcKey	handleSync	isPv	loadAny	nsOf	phKey	phThere	putPhotos	putWhole	pvMeta	pvResponse	pvText	readPv	refsIn	refsOf	storePhotos
+savelease.test.js	worker/records.js	<loaded>	colOk	itemWrong	recCheck
+savelease.test.js	worker/render.js	<loaded>	RenderHub	fetch	hubOf
 savelock.test.js	merge.js	<loaded>	mergeList	mergeStateBy	stamp	stateSig	tombWins
+savelock.test.js	tests/webkit.js	<any>
 savelock.test.js	worker.js	<loaded>	corsFor	fetch	serve
-savelock.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	conflictBody	dropFuture	dropParts	fsOver	give	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	lockStale	mergeLite	nap	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+savelock.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	conflictBody	dropFuture	dropParts	fsOver	give	hold	isParted	isPhoto	keepSnapshots	kvMeta	liteSig	lockStale	mergeLite	nap	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 savelock.test.js	worker/items.js	<loaded>	kvLimit	nextUtcDay	noteKvFull
 savelock.test.js	worker/links.js	<loaded>	readCapped
 savelock.test.js	worker/people.js	<loaded>	allCaps	capOf	cleanCaps	countWrites	dropPush	firstWeek	handleAccount	handleInvites	newCode	ownerOnly	plainFor	sameText	sha256Hex	smallBody	spend	spendUpTo	unspend	useCount	utcDay	whoIs	wipeSome
@@ -15736,7 +15854,7 @@ server-limits.test.js	watch/suit.png	<loaded>
 server-limits.test.js	watch/vest.png	<loaded>
 server-limits.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 server-limits.test.js	worker.js	<loaded>	corsFor	fetch	serve
-server-limits.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	listSnapshots	liteSig	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+server-limits.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	hold	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	listSnapshots	liteSig	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 server-limits.test.js	worker/holidays.js	<loaded>	builtinHolidays	handleHolidays
 server-limits.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_PROMPT	itemPhoto	kvIsFull	kvLimit	nextUtcDay	noteKvFull	renderItem
 server-limits.test.js	worker/links.js	<loaded>	readCapped
@@ -16156,7 +16274,7 @@ settingsmerge.test.js	watch/suit.png	<loaded>
 settingsmerge.test.js	watch/vest.png	<loaded>
 settingsmerge.test.js	weather.js	<loaded>	loadClimate	loadWeather	temp	unit	wxChip	wxIcon
 settingsmerge.test.js	worker.js	<loaded>	ROUTES.* /sync	corsFor	fetch	ownerAs	serve
-settingsmerge.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	mergeSettingsLite	mergeSplitLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	saveLock	setEntriesLite	setHashLite	setKeysLite	setStampLite	splitPhotos	storedVersion	subOkLite	subStampLite	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+settingsmerge.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	give	hold	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	mergeSettingsLite	mergeSplitLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	saveLock	setEntriesLite	setHashLite	setKeysLite	setStampLite	splitPhotos	storedVersion	subOkLite	subStampLite	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 settingsmerge.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendUpTo	unspend	usedOf	utcDay	whoIs
 settingsmerge.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 settingsmerge.test.js	worker/records.js	<loaded>	recCheck
@@ -17452,7 +17570,6 @@ socktoe.test.js	add-sheet.js	<loaded>	get	renderAddFor
 socktoe.test.js	add.js	<loaded>	addNoteText	needType	renderAdd	wbNote
 socktoe.test.js	analysis.js	<loaded>
 socktoe.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	renderBusy	set	texSwatches	tx	txFail	txs	window.fetch
-socktoe.test.js	apple-touch-icon.png	<loaded>
 socktoe.test.js	asm-color.js	<loaded>	asmGapNote
 socktoe.test.js	asm-gl.js	<loaded>
 socktoe.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -17476,7 +17593,6 @@ socktoe.test.js	dress.js	<loaded>	migrateVests
 socktoe.test.js	fav.js	<loaded>	favItemRow
 socktoe.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	keyDate	recordDays	resetCard	whenPulled
 socktoe.test.js	icon-192.png	<loaded>
-socktoe.test.js	icon-512.png	<loaded>
 socktoe.test.js	index.html	<loaded>
 socktoe.test.js	item-photo.js	<loaded>	paperCloth	paperHint	paperSteps	photoTools	ptIcon	smallPhotos
 socktoe.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	noMotion	renderItem
@@ -17837,7 +17953,7 @@ staledevice.test.js	watch/suit.png	<loaded>
 staledevice.test.js	watch/vest.png	<loaded>
 staledevice.test.js	weather.js	<loaded>	loadWeather
 staledevice.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	asText	corsFor	countWrites	dropParts	fetch	gcKey	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	keepSnapshots	kvMeta	liteSig	loadAny	loadSync	mergeLite	nextRevs	orNull	ownerAs	ownerOnly	phCollect	phHash	phKey	phThere	putPhotos	putStored	pvMeta	pvText	readPv	readText	refsIn	refsOf	renderId	sameText	serve	sha256Hex	spend	spendUpTo	splitPhotos	stampOf	storePhotos	storedVersion	syncLiteGet	syncLitePost	syncPhotos	syncVersion	unspend	usedOf	utcDay	whoIs	writeBudget
-staledevice.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayUnflat	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	fsPack	give	isParted	isPhoto	isPhotoOld	itemBase	keepSnapshots	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	phHash	putStored	readText	sameVal	sampleOnly	saveLock	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncPhotos	syncVersion	writeBudget
+staledevice.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayUnflat	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	fsPack	give	hold	isParted	isPhoto	isPhotoOld	itemBase	keepSnapshots	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	phHash	putStored	readText	sameVal	sampleOnly	saveLock	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncPhotos	syncVersion	writeBudget
 staledevice.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendUpTo	unspend	usedOf	utcDay	whoIs
 staledevice.test.js	worker/photostore.js	<loaded>	asText	gcKey	handleSync	isPv	loadAny	phKey	phThere	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 staledevice.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	recCheck
@@ -18331,7 +18447,7 @@ sync.test.js	watch/suit.png	<loaded>
 sync.test.js	watch/vest.png	<loaded>
 sync.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 sync.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	countWrites	dropParts	fetch	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	keepSnapshots	kvMeta	liteSig	loadAny	loadSync	mergeLite	nextRevs	orNull	ownerAs	ownerOnly	phCollect	putPhotos	putStored	putWhole	pvMeta	pvText	readHead	readLite	readPv	readText	refsIn	refsOf	renderId	sameText	serve	sha256Hex	spend	spendUpTo	splitPhotos	stampOf	storePhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	unspend	usedOf	utcDay	whoIs	writeBudget
-sync.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	isParted	isPhoto	itemBase	keepSnapshots	kvMeta	listSnapshots	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sameVal	sampleOnly	saveLock	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+sync.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	hold	isParted	isPhoto	itemBase	keepSnapshots	kvMeta	listSnapshots	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sameVal	sampleOnly	saveLock	splitPhotos	stampOf	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 sync.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendUpTo	unspend	usedOf	utcDay	whoIs
 sync.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	nsOf	putPhotos	putWhole	pvMeta	pvResponse	pvText	readPv	refsIn	refsOf	storePhotos
 sync.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	recCheck
@@ -18433,7 +18549,7 @@ syncwrite.test.js	watch/suit.png	<loaded>
 syncwrite.test.js	watch/vest.png	<loaded>
 syncwrite.test.js	weather.js	<loaded>	loadWeather	locCC	renderWxLoc	unit	unitCC
 syncwrite.test.js	worker.js	<loaded>	ROUTES.* /sync	corsFor	fetch	serve
-syncwrite.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+syncwrite.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	hold	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 syncwrite.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendUpTo	unspend	usedOf	utcDay	whoIs
 syncwrite.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 syncwrite.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	recCheck
@@ -18657,7 +18773,7 @@ tagger.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulle
 tagger.test.js	care.js	<loaded>
 tagger.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
 tagger.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	get	patBtn	patTitle	patVar	rdCost	rdOff
-tagger.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	get	hasPat	hexRgb	isWorkday	isoKey	itemName	key	keySettings	keySplit	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	sentence	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	styleWord	subHashes	tagTypesNow	takeSettings	thirdOf	todayDate	watchOpts
+tagger.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	accentsOf	applyCustom	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dayClimate	desc	di	fitCol	get	hasPat	hexRgb	isWorkday	isoKey	itemName	key	keySettings	keySplit	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	primaryCol	rgbHex	sentence	set	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	styleWord	subHashes	tagTypesNow	takeSettings	thirdOf	todayDate	watchOpts
 tagger.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwQRow	cpwRegion	cpwSym
 tagger.test.js	daysoff.js	<loaded>	refreshHolidays
 tagger.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
@@ -18733,7 +18849,7 @@ tagger.test.js	worker/colormath.js	<loaded>	dE00	hexLab	hexRgb	rgbLab
 tagger.test.js	worker/describe.js	<loaded>	askOf	cleanDesc	cleanDescribeColour	cleanDescribePattern	cleanLook	colWord	colourSchema	descTables	describeBoth	guessBase	handleDescribe	lookPhoto	num	ownLists	ownerText	patternSchema	patternSchemaOf	perCall	say
 tagger.test.js	worker/links.js	<loaded>	readCapped
 tagger.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	unspend	utcDay	whoIs
-tagger.test.js	worker/photostore.js	handleSync
+tagger.test.js	worker/photostore.js	<loaded>	handleSync
 tagger.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanAccents	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsCombat	knowsSock	lightText	matCap	matName	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	notMaterial	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	tagWithWorkersAi	txt	wbOf
 tagging.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 tagging.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	rememberRole	renderAccountUI
@@ -20706,7 +20822,7 @@ wardrobe.test.js	watch/suit.png	<loaded>
 wardrobe.test.js	watch/vest.png	<loaded>
 wardrobe.test.js	weather.js	<loaded>	loadWeather
 wardrobe.test.js	worker.js	<loaded>	@onstTYPE_COLOR_TEXTObject.entriesTYPE_COLORS.map	ROUTES.* /sync	arrOf	corsFor	countWrites	dropParts	fetch	getRender	handleInvites	handleMe	handleSync	isParted	isPhoto	isPv	keepSnapshots	kvMeta	liteSig	loadAny	loadSync	mergeLite	nextRevs	orNull	ownerAs	ownerOnly	phCollect	putPhotos	putStored	pvMeta	pvText	readHead	readLite	readPv	readText	refsIn	refsOf	renderId	sameText	serve	sha256Hex	spend	spendUpTo	splitPhotos	stampOf	storePhotos	storedResponse	storedVersion	syncLiteGet	syncLitePost	syncVersion	unspend	usedOf	utcDay	whoIs	writeBudget
-wardrobe.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	isParted	isPhoto	itemBase	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	mergeSettingsLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sampleOnly	saveLock	setKeysLite	setStampLite	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+wardrobe.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dayFlat	dayStamp	dayWins	dropFuture	dropParts	fieldStamp	fsOk	fsOver	give	hold	isParted	isPhoto	itemBase	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeDayLite	mergeItemLite	mergeLite	mergeSettingsLite	nextRevs	nextSaved	now	over	own	phCollect	putStored	readText	sampleOnly	saveLock	setKeysLite	setStampLite	splitPhotos	stampOf	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 wardrobe.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendUpTo	unspend	usedOf	utcDay	whoIs
 wardrobe.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 wardrobe.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	recCheck

@@ -150,15 +150,23 @@ async function putParted(env, json, cors, who, all, lk = NO_LOCK) {
    the save's own read. Without the binding, or when the hub can't be asked, the save goes ahead unlocked, as before (backups never stop
    because of the hub). ---- */
 const LOCK_WAIT = [60, 120, 200, 300, 400, 500, 600, 700];
-const NO_LOCK = { ok: true, last: null, ver: null, give: async () => { } };
+/* the lease is LOCK_MS (30 s, render.js). A save older than HOLD_MS since it took or last renewed its lease asks the hub before it writes
+   again (R6 N1, the 2026-11-24 review: a save that ran past the lease let a second one in, both wrote rev N+1 and one change was lost):
+   lk.hold() renews it and says whether it is still this save's. It is asked between photo writes (putPhotos) and before the daily copies
+   and the backup are written; a save that lost it is answered 409 (the app asks again) and writes no backup. A quicker save asks nothing:
+   no hub request or KV write is added to it (measured: tests/savelease.test.js). Measured from before the take was sent, so the hub's
+   lease is never shorter than this save thinks */
+const HOLD_MS = 10000;   // (a third of LOCK_MS)
+const NO_LOCK = { ok: true, last: null, ver: null, give: async () => { }, hold: async () => true };
 const nap = ms => new Promise(r => setTimeout(r, ms));
 async function saveLock(env, ns) {
   const hub = hubOf(env, ns);
   if (!hub) return { ...NO_LOCK };
   const call = b => hub.fetch('https://hub/lock', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) }).then(r => r.json());
-  let t;
+  let t, at = 0;
   try {
     for (let i = 0; ; i++) {
+      at = Date.now();
       t = await call({ op: 'take' });
       if (t && t.ok && t.tok) break;
       if (!(t && t.busy)) return { ...NO_LOCK };   // (an answer this worker doesn't know: unlocked, as before)
@@ -166,8 +174,25 @@ async function saveLock(env, ns) {
       await nap(LOCK_WAIT[i]);
     }
   } catch (e) { console.log('save lock not taken', ns, e && e.message); return { ...NO_LOCK }; }
-  const lk = { ok: true, last: t.last || null, ver: null, give: async () => { try { await call({ op: 'give', tok: t.tok, ver: lk.ver }); } catch (e) { console.log('save lock not given back', ns, e && e.message); } } };
+  const lk = { ok: true, last: t.last || null, ver: null, lost: false, give: async () => { try { await call({ op: 'give', tok: t.tok, ver: lk.ver }); } catch (e) { console.log('save lock not given back', ns, e && e.message); } } };
+  // still this save's lease? (renewed when asked). Lost stays lost. A hub that can't be asked, or doesn't know the op: as before, the save goes on
+  lk.hold = async () => {
+    if (lk.lost) return false;
+    if (Date.now() - at < HOLD_MS) return true;
+    const t1 = Date.now();
+    try {
+      const r = await call({ op: 'hold', tok: t.tok });
+      if (r && r.ok) { at = t1; return true; }
+      if (r && r.lost) { lk.lost = true; console.log('save lock lost: a save ran past its lease', ns); return false; }
+    } catch (e) { console.log('save lock not renewed', ns, e && e.message); }
+    return true;
+  };
   return lk;
+}
+/* the answer to a save that lost its lease (lk.hold): 409, as for a lock that is busy; the backup's KV write asked for is given back */
+async function leaseLost(env, json, who, m) {
+  await unspend(env, who, 'write', utcDay(), 1);
+  return json(conflictBody(m, true), 409);
 }
 /* KV shows an older version than the last save committed (a stale read in another location) */
 const lockStale = (lk, m) => !!(lk && lk.last && (!m || m.rev < lk.last.rev || (m.rev === lk.last.rev && m.saved !== lk.last.saved)));
@@ -402,10 +427,12 @@ async function syncLiteSave(env, json, who, body, lk, give) {
     else missing.push(h);
   }
   if (missing.length) return give(json({ error: 'missing photos', missing }, 400));
-  const w = writeBudget(env, who), oldPv = await storePhotos(env, ns, m, src, want, w.allow);
+  const w = writeBudget(env, who), oldPv = await storePhotos(env, ns, m, src, want, w.allow, lk.hold);
   if (w.short) { const x = await w.refuse(); return give(json(x.body, x.status)); }
+  if (!(await lk.hold())) return give(await leaseLost(env, json, who, m));   // (the photos written are left to the daily clean-up)
   await countWrites(env, who, await keepSnapshots(env, m, body, ns, oldPv, m ? arrOf(cur.items).length : null));
   const saved = nextSaved(m);
+  if (!(await lk.hold())) return give(await leaseLost(env, json, who, m));
   await putStored(env, KEY, { text: pvText(rev + 1, saved, nextRevs(src.lite, next, rev + 1), next), meta: pvMeta(rev + 1, saved) }, m);
   lk.ver = { rev: rev + 1, saved };
   return json({ rev: rev + 1, saved });
@@ -430,4 +457,4 @@ function writeBudget(env, who) {
   return w;
 }
 
-export { BACKUP_MAX, CLOCK_AHEAD, NO_LOCK, clampStamps, conflictBody, dropFuture, lockStale, mergeLite, nextSaved, saveLock, PART_MAX, PH_HEX, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget };
+export { BACKUP_MAX, CLOCK_AHEAD, NO_LOCK, leaseLost, clampStamps, conflictBody, dropFuture, lockStale, mergeLite, nextSaved, saveLock, PART_MAX, PH_HEX, PH_MIN, PH_REF, PH_TOKEN, SNAP_DAY, SNAP_DAYS, SNAP_MONTHS, SYNC_KEY, SYNC_NONE, asBytes, isParted, keepSnapshots, kvMeta, listSnapshots, loadSync, nextRevs, putParted, putStored, readText, splitPhotos, storedResponse, storedVersion, syncLiteGet, syncLitePost, syncPhotos, syncVersion, writeBudget };

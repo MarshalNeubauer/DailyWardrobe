@@ -79,7 +79,7 @@ export class RenderHub {
     const out = b => new Response(JSON.stringify(b), { headers: { 'content-type': 'application/json' } });
     // POST /lock {op:'take'} -> {ok, tok, last} | {ok:false, busy}: one save at a time for this person (CR-6-01: KV can't compare and
     // swap, so two saves read the same version and both wrote it); last: the version the last save committed, while KV may still show an
-    // older one elsewhere. {op:'give', tok, ver?}: let go (only by the holder), ver = {rev, saved} the version it stored
+    // older one elsewhere. {op:'give', tok, ver?}: let go (only by the holder), ver = {rev, saved} the version it stored; {op:'hold', tok}: renew
     if (u.pathname === '/lock') {
       const m = await req.json().catch(() => ({})), now = Date.now();
       if (m.op === 'take') {
@@ -87,6 +87,13 @@ export class RenderHub {
         const tok = now.toString(36) + Math.random().toString(36).slice(2);
         this.lk = { tok, until: now + LOCK_MS };
         return out({ ok: true, tok, last: this.last && now - this.last.at < LAST_MS ? { rev: this.last.rev, saved: this.last.saved } : null });
+      }
+      // {op:'hold', tok}: the holder renews its lease (R6 N1, 2026-11-24: a save that ran past LOCK_MS let the next save in, and both
+      // wrote the same rev); refused (lost) once another save took the lock or it was given back, so that save doesn't write
+      if (m.op === 'hold') {
+        if (!this.lk || this.lk.tok !== m.tok) return out({ ok: false, lost: true });
+        this.lk.until = now + LOCK_MS;
+        return out({ ok: true });
       }
       if (m.op === 'give') {
         if (this.lk && this.lk.tok === m.tok) this.lk = null;
@@ -124,4 +131,4 @@ export class RenderHub {
   }
 }
 
-export { OPENAI_MS, dataUrlToBlob, handleRender, hubOf, logHub };
+export { LOCK_MS, OPENAI_MS, dataUrlToBlob, handleRender, hubOf, logHub };
