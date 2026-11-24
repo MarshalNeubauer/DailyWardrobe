@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	e87ca0223a6546ddaa13
-# tested	382090d9b738fbded4da
+# tested	12068816aec6c0594982
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -580,7 +579,6 @@ actsindex.test.js	sync.js	<any>	<loaded>	@connRestored.then	afterPull	pulledYet	
 actsindex.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 actsindex.test.js	tagging.js	<any>	<loaded>	readAbort	tagNotes
 actsindex.test.js	tests/fixedplan.js	<any>
-actsindex.test.js	tests/webkit.js	<any>
 actsindex.test.js	theme.js	<any>	<loaded>	applyTheme	cycleTheme	themeTap
 actsindex.test.js	toast.js	<any>	<loaded>	toast	toastDrop	toastOff	undoOff
 actsindex.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig
@@ -681,7 +679,6 @@ addcards.test.js	tagging.js	<loaded>	aiFields	closeTagImg	confTxt	readAbort	read
 addcards.test.js	tests/fixedplan.js	<any>
 addcards.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 addcards.test.js	tests/fixtures/suit-pinstripe.jpg	<loaded>
-addcards.test.js	tests/webkit.js	<any>
 addcards.test.js	theme.js	<loaded>	applyTheme
 addcards.test.js	toast.js	<loaded>	toast	undoHere
 addcards.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -1407,7 +1404,6 @@ asmcode.test.js	add-sheet.js	<loaded>	get
 asmcode.test.js	add.js	<loaded>
 asmcode.test.js	analysis.js	<loaded>
 asmcode.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
-asmcode.test.js	apple-touch-icon.png	<loaded>
 asmcode.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmGeoKeys	asmCmHash	asmCmItems	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSig	asmCmSrcSig	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmKindOf	asmLookTag	asmNkBaseOf	asmPileKind	asmTieSheenK	asmWtTag	asmWtWants	get	set
 asmcode.test.js	asm-gl.js	<loaded>
 asmcode.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmCmKindOf	asmJfWants	asmNkBase
@@ -1430,8 +1426,6 @@ asmcode.test.js	draw.js	<loaded>
 asmcode.test.js	dress.js	<loaded>	migrateVests
 asmcode.test.js	fav.js	<loaded>
 asmcode.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
-asmcode.test.js	icon-192.png	<loaded>
-asmcode.test.js	icon-512.png	<loaded>
 asmcode.test.js	index.html	<loaded>
 asmcode.test.js	item-photo.js	<loaded>	smallPhotos
 asmcode.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
@@ -1440,7 +1434,6 @@ asmcode.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	home
 asmcode.test.js	locale.js	<loaded>	appLocale
 asmcode.test.js	locks.js	<loaded>
 asmcode.test.js	look.js	<loaded>
-asmcode.test.js	manifest.webmanifest	<loaded>
 asmcode.test.js	mannequin.js	<loaded>	@{}
 asmcode.test.js	measure.js	<loaded>
 asmcode.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -1598,7 +1591,6 @@ asmcolor.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmcolor.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmcolor.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
 asmcolor.test.js	tests/safeport.js	<any>
-asmcolor.test.js	tests/webkit.js	<any>
 asmcolor.test.js	theme.js	<loaded>	applyTheme
 asmcolor.test.js	toast.js	<loaded>
 asmcolor.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -7234,7 +7226,6 @@ garmentdraw.test.js	add-sheet.js	<loaded>	get
 garmentdraw.test.js	add.js	<loaded>
 garmentdraw.test.js	analysis.js	<loaded>
 garmentdraw.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
-garmentdraw.test.js	apple-touch-icon.png	<loaded>
 garmentdraw.test.js	asm-color.js	<loaded>
 garmentdraw.test.js	asm-gl.js	<loaded>
 garmentdraw.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -7522,7 +7513,6 @@ garmentpaint.test.js	tests/fixtures/cm/tee/mask-watch.png	<any>
 garmentpaint.test.js	tests/fixtures/cm/tee/master.jpg	<any>
 garmentpaint.test.js	tests/fixtures/cm/tee/part-sleeveL.png	<any>
 garmentpaint.test.js	tests/fixtures/cm/tee/part-sleeveR.png	<any>
-garmentpaint.test.js	tests/webkit.js	<any>
 garmentpaint.test.js	theme.js	<loaded>	applyTheme
 garmentpaint.test.js	toast.js	<loaded>
 garmentpaint.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -7927,7 +7917,6 @@ hbswatch.test.js	add-sheet.js	<loaded>	get
 hbswatch.test.js	add.js	<loaded>
 hbswatch.test.js	analysis.js	<loaded>
 hbswatch.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
-hbswatch.test.js	apple-touch-icon.png	<loaded>
 hbswatch.test.js	asm-color.js	<loaded>	asmCmTile	asmHbShirt	asmHbShirtLook
 hbswatch.test.js	asm-gl.js	<loaded>
 hbswatch.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -7950,8 +7939,6 @@ hbswatch.test.js	draw.js	<loaded>	fabricDef	swatchSVG	texPlainBand
 hbswatch.test.js	dress.js	<loaded>	migrateVests
 hbswatch.test.js	fav.js	<loaded>
 hbswatch.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
-hbswatch.test.js	icon-192.png	<loaded>
-hbswatch.test.js	icon-512.png	<loaded>
 hbswatch.test.js	index.html	<loaded>
 hbswatch.test.js	item-photo.js	<loaded>	smallPhotos
 hbswatch.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
@@ -7960,7 +7947,6 @@ hbswatch.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	hom
 hbswatch.test.js	locale.js	<loaded>	appLocale
 hbswatch.test.js	locks.js	<loaded>
 hbswatch.test.js	look.js	<loaded>
-hbswatch.test.js	manifest.webmanifest	<loaded>
 hbswatch.test.js	mannequin.js	<loaded>	@{}
 hbswatch.test.js	measure.js	<loaded>
 hbswatch.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -9062,7 +9048,7 @@ keptphotos.test.js	pack.js	<loaded>	packShow
 keptphotos.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 keptphotos.test.js	photos.js	<any>	<loaded>	aAn	asmLive	comboKey	comboSig	esc	fetchItemPic	fetchRemoteRender	figureLabel	fixItemBackdrops	fnv64	get	itemDesc	itemKey	itemPic	itemPicHtml	jsq	keepRender	lastWorn	listPaused	loadRenders	lookSig	missingItemPics	picCol	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shareLocalPics	shareRender	shirtPatterned	shirtTextured	srcOk	workerBase	workerList
 keptphotos.test.js	pickscore.js	<loaded>
-keptphotos.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	pairSeen	shirtGroup	spokenCol	tieGroup
+keptphotos.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	pairSeen	shirtGroup	spokenCol	tieGroup
 keptphotos.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 keptphotos.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 keptphotos.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
@@ -11421,7 +11407,7 @@ ocpblouse.test.js	watch/suit.png	<loaded>
 ocpblouse.test.js	watch/vest.png	<loaded>
 ocpblouse.test.js	weather.js	<loaded>	loadWeather
 ocpcloth.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
-ocpcloth.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester
+ocpcloth.test.js	account.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	acctStart	applyRole	hasInviteHash	isTester	loadAccount	rememberRole	renderAccountUI
 ocpcloth.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
 ocpcloth.test.js	add-card.js	<loaded>
 ocpcloth.test.js	add-keep.js	<loaded>	addKeep	addRestore
@@ -11439,7 +11425,7 @@ ocpcloth.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@
 ocpcloth.test.js	asm-pocket.js	<any>	<loaded>	asmPocketJob
 ocpcloth.test.js	asm-watch.js	<any>	<loaded>	asmWatchJob	asmWatchPaints
 ocpcloth.test.js	asm-worker.js	<any>
-ocpcloth.test.js	assemble.js	<any>	<loaded>	@	@defineddocument.addEventListenervisibilitychange	ASM_OUT_RANGE	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmIdleArm	asmImg	asmImgOf	asmJob	asmKeepOut	asmKey	asmListGet	asmLoad	asmLookId	asmOutKey	asmPhoto	asmPost	asmPreSigOk	asmPump	asmRun	asmStamp	asmSuitWeave	asmSync	asmTrim	asmWants	asmWorker	get	renderAsmUI	set
+ocpcloth.test.js	assemble.js	<any>	<loaded>	@	@defineddocument.addEventListenervisibilitychange	ASM_OUT_RANGE	asmBlobUp	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmIdleArm	asmImg	asmImgOf	asmJob	asmKeepOut	asmKey	asmListGet	asmLoad	asmLookId	asmOutKey	asmPhoto	asmPost	asmPreSigOk	asmPump	asmRun	asmStamp	asmSuitWeave	asmSync	asmTrim	asmWants	asmWorker	get	renderAsmUI	set
 ocpcloth.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 ocpcloth.test.js	backupfile.js	<loaded>
 ocpcloth.test.js	boxfold.js	<loaded>
@@ -11480,7 +11466,7 @@ ocpcloth.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 ocpcloth.test.js	photos.js	<loaded>	asmLive	comboKey	comboSig	esc	fixItemBackdrops	fnv64	get	keepRender	listPaused	loadRenders	lookSig	picsDrawn	shirtPatterned	shirtTextured	workerBase	workerList
 ocpcloth.test.js	pickscore.js	<loaded>
 ocpcloth.test.js	planner.js	<loaded>
-ocpcloth.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
+ocpcloth.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 ocpcloth.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 ocpcloth.test.js	scorecard.js	<loaded>
 ocpcloth.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setWanted	settingsOpen	settingsPart
@@ -14927,6 +14913,7 @@ safeport.test.js	tests/navfit.test.js	<any>
 safeport.test.js	tests/newuser.test.js	<any>
 safeport.test.js	tests/occasions.test.js	<any>
 safeport.test.js	tests/ocpblouse.test.js	<any>
+safeport.test.js	tests/ocpcloth.test.js	<any>
 safeport.test.js	tests/onorder.test.js	<any>
 safeport.test.js	tests/owncolany.test.js	<any>
 safeport.test.js	tests/ownmaterials.test.js	<any>
@@ -18242,7 +18229,6 @@ sw.test.js	tag-request.js	<any>	<loaded>
 sw.test.js	tagging.js	<any>	<loaded>
 sw.test.js	tests/fixedplan.js	<any>
 sw.test.js	tests/safeport.js	<any>
-sw.test.js	tests/webkit.js	<any>
 sw.test.js	theme.js	<any>	<loaded>	applyTheme
 sw.test.js	toast.js	<any>	<loaded>	toast
 sw.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constroot$today}
@@ -19679,7 +19665,6 @@ titles.test.js	add-sheet.js	<loaded>	get
 titles.test.js	add.js	<loaded>
 titles.test.js	analysis.js	<loaded>
 titles.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	texSwatches	tx	txFail	txs	window.fetch
-titles.test.js	apple-touch-icon.png	<loaded>
 titles.test.js	asm-color.js	<loaded>
 titles.test.js	asm-gl.js	<loaded>
 titles.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -19702,8 +19687,6 @@ titles.test.js	draw.js	<loaded>
 titles.test.js	dress.js	<loaded>	migrateVests
 titles.test.js	fav.js	<loaded>
 titles.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	whenPulled
-titles.test.js	icon-192.png	<loaded>
-titles.test.js	icon-512.png	<loaded>
 titles.test.js	index.html	<loaded>
 titles.test.js	item-photo.js	<loaded>	smallPhotos
 titles.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
@@ -19712,7 +19695,6 @@ titles.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeN
 titles.test.js	locale.js	<loaded>	appLocale
 titles.test.js	locks.js	<loaded>
 titles.test.js	look.js	<loaded>
-titles.test.js	manifest.webmanifest	<loaded>
 titles.test.js	mannequin.js	<loaded>	@{}
 titles.test.js	measure.js	<loaded>
 titles.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -19757,8 +19739,6 @@ titles.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse
 titles.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	wornPill	wxFit	wxPreload
 titles.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 titles.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-titles.test.js	watch/leather.jpg	<loaded>
-titles.test.js	watch/shirt-open.png	<loaded>
 titles.test.js	watch/shirt-tie.png	<loaded>
 titles.test.js	watch/suit.png	<loaded>
 titles.test.js	watch/vest.png	<loaded>
@@ -21570,7 +21550,6 @@ workersweep.test.js	tests/fixtures/cm/vest/part-lapelL.png	<any>
 workersweep.test.js	tests/fixtures/cm/vest/part-lapelR.png	<any>
 workersweep.test.js	tests/fixtures/cm/vest/part-sleeveL.png	<any>
 workersweep.test.js	tests/fixtures/cm/vest/part-sleeveR.png	<any>
-workersweep.test.js	tests/webkit.js	<any>
 workersweep.test.js	theme.js	<loaded>	applyTheme
 workersweep.test.js	toast.js	<loaded>
 workersweep.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
