@@ -286,6 +286,8 @@ async function purgeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if(
 function acctSettingsPart(){if(!settingsOpen())acct.link=null;   // a new link is shown once: gone when Settings is opened again
   renderAccountUI();loadAccount()}
 function acctStart(){applyRole();
+  // a connection localStorage lost comes back from the database after this first look (app.js connRestored): the classes are set again then
+  try{connRestored.catch(()=>{}).then(()=>{try{applyRole()}catch(e){console.warn(e)}})}catch{}
   settingsPart(acctSettingsPart);
   if(hasInviteHash()){const go=()=>connectFromLink(location.href,{address:true});document.readyState==='complete'?go():addEventListener('load',go,{once:true})}
   else if(acctBase()&&!acctRole())setTimeout(()=>{if(!acctRole())loadAccount()},4000);   // connected before roles were remembered: ask once
