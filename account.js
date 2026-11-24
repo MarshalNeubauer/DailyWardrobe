@@ -286,6 +286,8 @@ async function purgeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if(
 function acctSettingsPart(){if(!settingsOpen())acct.link=null;   // a new link is shown once: gone when Settings is opened again
   renderAccountUI();loadAccount()}
 function acctStart(){applyRole();
+  // a connection localStorage lost comes back from the database after this first look (app.js connRestored): the classes are set again then
+  try{connRestored.catch(()=>{}).then(()=>{try{applyRole()}catch(e){console.warn(e)}})}catch{}
   settingsPart(acctSettingsPart);
   if(hasInviteHash()){const go=()=>connectFromLink(location.href,{address:true});document.readyState==='complete'?go():addEventListener('load',go,{once:true})}
   else if(acctBase()&&!acctRole())setTimeout(()=>{if(!acctRole())loadAccount()},4000);   // connected before roles were remembered: ask once
@@ -297,6 +299,11 @@ function acctStart(){applyRole();
 function acctRetryLink(){if(acctWhy==='offline'&&hasInviteHash()&&!acctLinkRun)connectFromLink(location.href,{address:true})}
 /* the invitation has ended (switched off, or the account deleted; sync-status.js inviteEnded): what said "Connected" is drawn again */
 function acctEndedUI(){acct={...acct,me:null,state:'',invites:null};try{applyRole();renderAccountUI();acctLinkDrawn();addGate()}catch(e){console.warn(e)}}
+/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
+   as globals. Above the file's first top-level call that can throw (acctStart, then acts): the names are then still the page's */
+Object.assign(globalThis,{acctEsc,acctBase,acctCall,dropInviteHash,hasInviteHash,acctFailText,connectFromLink,acctTyped,acctPending,iosInSafari,myInviteLink,homeScreenGuide,rememberRole,acctRole,isTester,applyRole,limitNote,loadAccount,renderAccountUI,acctEndedUI});
+Object.defineProperties(globalThis,{acctWhy:{get:()=>acctWhy},acctLinkRun:{get:()=>acctLinkRun},acct:{get:()=>acct,set:v=>{acct=v}},inviteChecking:{get:()=>inviteChecking,set:v=>{inviteChecking=v}}});
+export {acct,acctEsc,acctBase,acctCall,dropInviteHash,hasInviteHash,acctWhy,inviteChecking,acctLinkRun,acctFailText,connectFromLink,acctTyped,acctPending,iosInSafari,myInviteLink,homeScreenGuide,rememberRole,acctRole,isTester,applyRole,limitNote,loadAccount,renderAccountUI,acctEndedUI};
 acctStart();
 /* what Settings' account controls do (act.js): a tester's "Copy my invitation link"; the owner's Create, a new link's field (focus selects
    it) and Copy, and a tester's New link, Revoke and Delete their data (the invitation's id in data-id) */

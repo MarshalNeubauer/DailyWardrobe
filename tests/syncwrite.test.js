@@ -96,9 +96,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(Math.abs(c.skew-3600e3)<60000&&Math.abs(c.last-(c.now+3600e3))<60000,`CR-5-06: last_sync is stamped by the corrected clock (${Math.round((c.last-c.now)/6e4)} min from the phone's own, the gap ${Math.round(c.skew/6e4)} min)`);
     // ---- CR-5-15 (Round C): the other backup times by the corrected clock too: when the phone joined the account (kit.js compares it with
     // days' stamps), a change waiting (sync_wait) and a tester's 15 minutes (syncDue)
-    const t15=await C.p.evaluate(()=>{const was=acctRole;clearTimeout(syncTimer);syncDue=0;localStorage.removeItem('sync_wait');localStorage.removeItem('sync_join');localStorage.removeItem('sync_mark');
-      syncJoinMark(localStorage.getItem('app_token'));acctRole=()=>'tester';
-      try{const tester=isTester();scheduleSync();return {tester,now:Date.now(),fixed:nowMs(),join:syncJoinAt(),wait:+localStorage.getItem('sync_wait'),due:syncDue}}finally{acctRole=was;clearTimeout(syncTimer);syncDue=0}});
+    const t15=await C.p.evaluate(()=>{const was=acct;clearTimeout(syncTimer);syncDue=0;localStorage.removeItem('sync_wait');localStorage.removeItem('sync_join');localStorage.removeItem('sync_mark');
+      syncJoinMark(localStorage.getItem('app_token'));acct={...acct,me:{role:'tester'}};
+      try{const tester=isTester();scheduleSync();return {tester,now:Date.now(),fixed:nowMs(),join:syncJoinAt(),wait:+localStorage.getItem('sync_wait'),due:syncDue}}finally{acct=was;clearTimeout(syncTimer);syncDue=0}});
     const near=v=>Math.abs(v-t15.fixed)<60000;
     ok(t15.tester&&near(t15.join)&&near(t15.wait)&&near(t15.due)&&t15.fixed-t15.now>3000e3,`CR-5-15: sync_join, sync_wait and syncDue by the corrected clock (minutes from it: ${['join','wait','due'].map(k=>Math.round((t15[k]-t15.fixed)/6e4)).join(', ')}; the phone's own clock ${Math.round((t15.now-t15.fixed)/6e4)})`);
     // ---- CR-5-03: Restore file, on a phone without a connection: a piece deleted after the file was saved stays deleted (a restore

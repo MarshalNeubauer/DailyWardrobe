@@ -251,10 +251,11 @@ async function run(eng,browser,{ok,url,settle}){
   await ev(()=>{items=items.filter(i=>i.id==='b1');cache={};show('stats');renderStats()});await settle(p,600);
   const short=await has('#st-short .btns .pri');if(short)await tap('#st-short .btns .pri',700);
   ok(short&&await ev(()=>!document.querySelector('#add').hidden),T+'"Add an item" under "Not a full outfit yet" opens Add');
-  await ev(()=>{window.__sample=0;kitSampleLoad=()=>{window.__sample++};items=[];cache={};show('stats');renderStats()});await settle(p,600);
-  await tap('#stats .emptyadd button:not(.pri)',400);const smp=await ev(()=>window.__sample);
+  await ev(()=>{items=[];cache={};show('stats');renderStats()});await settle(p,600);
+  await tap('#stats .emptyadd button:not(.pri)',400);await p.waitForFunction(()=>!!document.querySelector('#ask-sheet.on #ask-ok')||!kitSampling&&items.some(i=>i.sample));if(await has('#ask-sheet.on #ask-ok'))await tap('#ask-sheet.on #ask-ok',300);await p.waitForFunction(()=>!kitSampling&&items.some(i=>i.sample));const smp=await ev(()=>items.filter(i=>i.sample).length);
+  await ev(async()=>{await kitSampleRemove(true);items=[];cache={};show('stats');renderStats()});await settle(p,600);
   await tap('#stats .emptyadd .pri',700);
-  ok(smp===1&&await ev(()=>!document.querySelector('#add').hidden),T+'an empty wardrobe’s Insights: "Try a sample wardrobe" loads it and "Add your first item" opens Add ('+smp+')');
+  ok(smp>0&&await ev(()=>!document.querySelector('#add').hidden),T+'an empty wardrobe’s Insights: "Try a sample wardrobe" loads it and "Add your first item" opens Add ('+smp+')');
   await ev(()=>{show('today');openPack()});await settle(p,600);
   const pe=await has('#pack .emptyadd .pri');if(pe)await tap('#pack .emptyadd .pri',700);
   ok(pe&&await ev(()=>!document.querySelector('#add').hidden),T+'the empty Packing list has the same way to start');

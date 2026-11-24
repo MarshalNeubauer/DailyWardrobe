@@ -76,12 +76,11 @@ const setup=async({ok,chromium,url,settle})=>{
     await p.fill('#su-link','hello there');await p.click('#su-connect');
     await p.waitForFunction(()=>!!document.querySelector('#setup .su-err'));
     ok(await p.evaluate(()=>!localStorage.getItem('worker_url')&&!localStorage.getItem('app_token')&&document.querySelector('#su-link').value==='hello there'),'text that is no invite link stores nothing and says so');
-    // account.js would ask the server: its answer is stood in for here (tests/accounts.test.js covers connectFromLink itself)
-    await p.evaluate(()=>{connectFromLink=async t=>{const c=/[#&]invite=([^&#\s]+)/.exec(t),w=/[#&]w=([^&#\s]+)/.exec(t);if(!c||!w)return false;
-      localStorage.setItem('worker_url',decodeURIComponent(w[1]));localStorage.setItem('app_token',decodeURIComponent(c[1]));return true}});
-    await p.fill('#su-link','https://app.example.test/#invite=abc123&w='+encodeURIComponent('https://server.example.test/api'));await p.click('#su-connect');
+    // the real connectFromLink, the server's answer stood in for (tests/accounts.test.js covers its other paths)
+    await p.route('https://server.example.test/api/me',r=>r.fulfill({contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify({id:'t1',role:'tester',name:'Sam'})}));
+    await p.fill('#su-link','https://app.example.test/#invite=abc123abc123abc123abc123&w='+encodeURIComponent('https://server.example.test/api'));await p.click('#su-connect');
     await p.waitForFunction(()=>!!document.querySelector('#su-conn'));
-    ok(await p.evaluate(()=>localStorage.getItem('worker_url')==='https://server.example.test/api'&&localStorage.getItem('app_token')==='abc123'),'an invite link the server takes: its server address and code are stored');
+    ok(await p.evaluate(()=>localStorage.getItem('worker_url')==='https://server.example.test/api'&&localStorage.getItem('app_token')==='abc123abc123abc123abc123'),'an invite link the server takes: its server address and code are stored');
     ok(/✓/.test(await p.textContent('#su-conn'))&&/Connected/.test(await p.textContent('#su-conn')),'and the step shows Connected with a tick');
     await next(p,'done');
     ok(await p.evaluate(()=>!document.querySelector('#su-skip')&&/Add my first item/.test(document.querySelector('#su-next').textContent)&&/a vest every suit day/.test(document.querySelector('.su-sum').textContent)&&/Blazer days/.test(document.querySelector('.su-sum').textContent)&&/connected/.test(document.querySelector('.su-sum').textContent)),'the last step sums up the answers and offers to add the first item');
@@ -184,13 +183,15 @@ const setup=async({ok,chromium,url,settle})=>{
     ok(await c.evaluate(()=>!!document.querySelector('#su-conn .su-tick')&&!document.querySelector('#su-link')),'its Connection step says Connected with a tick and asks for no link');
     await c.context().close();
     const f=await open();
-    await f.evaluate(()=>{window.connectFromLink=async t=>{window._cl=t;if(!/good/.test(t))return false;localStorage.setItem('worker_url','https://server.example.test/api');localStorage.setItem('app_token','viaaccount');return true}});
+    const BAD='bad'.padEnd(24,'x'),GOOD='good'.padEnd(24,'x'),asked=[];
+    await f.route('https://server.example.test/me',r=>{const t=r.request().headers()['x-app-token'];if(t)asked.push(t);
+      return t===GOOD?r.fulfill({contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify({id:'t1',role:'tester',name:'Sam'})}):r.fulfill({status:403,contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:'{"error":"forbidden token"}'})});
     await next(f,'week');await next(f,'wear');await next(f,'weather');await next(f,'connect');
-    await f.fill('#su-link','#invite=bad&w=https%3A%2F%2Fserver.example.test');await f.click('#su-connect');
+    await f.fill('#su-link',`#invite=${BAD}&w=https%3A%2F%2Fserver.example.test`);await f.click('#su-connect');
     await f.waitForFunction(()=>!!document.querySelector('#setup .su-err'));
-    ok(await f.evaluate(()=>window._cl==='#invite=bad&w=https%3A%2F%2Fserver.example.test'&&!localStorage.getItem('app_token')),'with connectFromLink in the app the link goes to it, and a refused code stores nothing');
-    await f.fill('#su-link','good link');await f.click('#su-connect');await f.waitForFunction(()=>!!document.querySelector('#su-conn'));
-    ok(await f.evaluate(()=>localStorage.getItem('app_token')==='viaaccount'),'an accepted one shows Connected');
+    ok(asked.includes(BAD)&&await f.evaluate(()=>!localStorage.getItem('app_token')),'with connectFromLink in the app the link goes to it, and a refused code stores nothing');
+    await f.fill('#su-link',`#invite=${GOOD}&w=https%3A%2F%2Fserver.example.test`);await f.click('#su-connect');await f.waitForFunction(()=>!!document.querySelector('#su-conn'));
+    ok(await f.evaluate(G=>localStorage.getItem('app_token')===G,GOOD),'an accepted one shows Connected');
     await f.context().close();
 
     /* ---- it steps aside when the app is driven past it ---- */
@@ -317,10 +318,11 @@ const setupfix=async({ok,chromium,url,settle})=>{
 
     /* ---- connecting at the setup's own Connection step: the wardrobe that comes across doesn't end the setup ---- */
     const c=await open();
-    await c.evaluate(()=>{window.connectFromLink=async()=>{await new Promise(r=>setTimeout(r,50));items.push({id:'x1',type:'suit',primaryColor:'navy',pattern:'solid',added:1});cache={};show('today');
-      localStorage.setItem('worker_url','https://server.example.test/');localStorage.setItem('app_token','abc');return true}});
+    // the real connectFromLink; the backup it starts brings a piece (sync.js is what brings a wardrobe across)
+    await c.route('https://server.example.test/me',r=>r.fulfill({contentType:'application/json',headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*'},body:JSON.stringify({id:'t1',role:'tester',name:'Sam'})}));
+    await c.evaluate(()=>{window.syncNow=async()=>{items.push({id:'x1',type:'suit',primaryColor:'navy',pattern:'solid',added:1});cache={};show('today');return true}});
     await next(c,'week');await next(c,'wear');await next(c,'weather');await next(c,'connect');
-    await c.fill('#su-link','#invite=x&w=y');await c.click('#su-connect');await c.waitForSelector('#su-conn');
+    await c.fill('#su-link',`#invite=${'x'.repeat(24)}&w=https%3A%2F%2Fserver.example.test%2F`);await c.click('#su-connect');await c.waitForSelector('#su-conn');
     ok(await c.evaluate(()=>!!document.querySelector('#setup.on')&&/came across: 1 item/.test(document.querySelector('#su-step').textContent)),'connected at the Connection step, the setup stays and says the wardrobe came across');
     await next(c,'done');ok(/^Done$/.test((await c.textContent('#su-next')).trim()),'and goes on to All set');
     await c.context().close();
