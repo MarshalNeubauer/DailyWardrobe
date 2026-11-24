@@ -266,7 +266,7 @@ module.exports=async({ok,chromium,url})=>{
       const cov=__jobs[0],unc=__jobs[__jobs.length-1];
       out.page=[asmGlOnPage(cov,{ok:true,gl:false}),asmGlOnPage(cov,{ok:true,gl:true}),asmGlOnPage(unc,{ok:true,gl:false}),asmGlOnPage({...cov,gl:false},{ok:true,gl:false})];
       out.size=[asmGlWhy({...cov,size:2048}),asmGlWhy({...cov,size:2880}),asmGlWhy({...cov,size:2881})];   // (stage 6) 2880 is covered
-      const w=new Worker('asm-worker.js');const next=()=>new Promise(r=>{w.onmessage=e=>r(e.data)});
+      const w=new Worker('asm-worker.js',{type:'module'});const next=()=>new Promise(r=>{w.onmessage=e=>r(e.data)});
       const ready=await next();const {geoU,geoV,...job}=cov;w.postMessage({id:1,job:{...job,gl:true}});const res=await next();w.terminate();
       out.ready=ready;out.res={gl:res.res&&res.res.gl,url:!!(res.res&&res.res.url&&res.res.url.startsWith('data:image/jpeg')),err:res.error||null,ms:res.res&&res.res.ms};return out});
     ok(rt.on===true&&rt.off===false,'the job carries the switch (localStorage asm_gl \'0\' = off on this phone)');
@@ -275,7 +275,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(rt.ready.ready===true&&rt.ready.gl===true&&rt.res.gl===true&&rt.res.url,`the app's worker says it has WebGL2 and paints a covered look on the graphics chip (${JSON.stringify(rt.res)})`);
     // Settings: the owner's switch
     const ui=await p.evaluate(()=>{const b=document.createElement('div');document.body.appendChild(b);asmGlNote({gl:true,ms:91});asmGlUI(b);const s=document.getElementById('cfg-gl'),out={v:s.value,txt:document.getElementById('gl-status').textContent};
-      s.value='off';s.dispatchEvent(new Event('change'));out.ls=localStorage.getItem('asm_gl');out.txt2=document.getElementById('gl-status').textContent;asmGlSet('on');out.ls2=localStorage.getItem('asm_gl');b.remove();return out});
+      s.value='off';s.dispatchEvent(new Event('change',{bubbles:true}));out.ls=localStorage.getItem('asm_gl');out.txt2=document.getElementById('gl-status').textContent;asmGlSet('on');out.ls2=localStorage.getItem('asm_gl');b.remove();return out});
     ok(ui.v==='on'&&/graphics chip, 91 ms/.test(ui.txt)&&ui.ls==='0'&&/Off on this phone/.test(ui.txt2)&&ui.ls2===null,`Settings → Outfit pictures → Advanced: "Graphics-chip painting" on by default, off kept in localStorage, the last picture's way shown (${ui.txt.slice(-60)})`);
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}

@@ -24,7 +24,7 @@ module.exports=async({ok,ROOT})=>{
   const html=rd('index.html'),page=scriptList(html);
   const appMods=scriptTags(html).filter(t=>t.module).map(t=>t.src);
   const wMods=['asm-worker.js','analysis-worker.js'].filter(w=>modscope.workerFiles(ROOT,w).module);   // (module workers: analysis-worker.js since 2026-11-24)
-  ok(page.length>40&&appMods.length<page.length&&!appMods.some(f=>['merge.js','srgb.js'].includes(f)),`the app's page scripts are read, its modules marked (${page.length} scripts, ${appMods.length} of them modules; merge.js, which the server imports, and srgb.js, which asm-worker.js importScripts, are not)`);
+  ok(page.length>40&&appMods.length<page.length&&!appMods.includes('merge.js'),`the app's page scripts are read, its modules marked (${page.length} scripts, ${appMods.length} of them modules; merge.js, which the server imports, is not)`);
 
   /* ---- tests/modscope.js: what a module shares ---- */
   const src=rd('m.js',FIX),ast=modscope.parse(src,true),b=modscope.bridged(ast,src);
@@ -124,7 +124,7 @@ module.exports=async({ok,ROOT})=>{
   ok(all.filter(f=>!mods.includes(f)).every(f=>{const s=rd(f);return asScript(s,f)===s&&!isModule(s)}),`every classic app script comes back from asScript as the very same text (${all.length-mods.length} files)`);
   ok(mods.every(f=>{const s=rd(f),o=asScript(s,f);return isModule(s)&&o!==s&&o.length===s.length&&o.split('\n').length===s.split('\n').length&&!/^\s*(?:import|export)\b/m.test(o)&&(()=>{try{new vm.Script(o);return true}catch(e){return false}})()}),
     `each of the app's modules comes back with only its import and export statements blanked, a script the Node tests can run (${mods.join(', ')||'none'})`);
-  ok(appSrc(ROOT,'merge.js','srgb.js')===rd('merge.js')+rd('srgb.js')&&appSrc(ROOT,'merge.js','core.js')===rd('merge.js')+asScript(rd('core.js'),'core.js'),'appSrc joins the files exactly as the vm tests did (merge.js + srgb.js, two classic scripts), a module as asScript gives it (merge.js + core.js)');
+  ok(appSrc(ROOT,'merge.js')===rd('merge.js')&&appSrc(ROOT,'merge.js','srgb.js')===rd('merge.js')+asScript(rd('srgb.js'),'srgb.js')&&appSrc(ROOT,'merge.js','core.js')===rd('merge.js')+asScript(rd('core.js'),'core.js'),'appSrc joins the files as the vm tests did: a classic script as it is (merge.js), a module as asScript gives it (merge.js + srgb.js, merge.js + core.js)');
   const tpl='const t=`\nexport const a=1\nimport x from "y"\n`;// export {t}';
   ok(asScript(tpl)===tpl&&!isModule(tpl),'a script with the words at the start of a line inside a template is left alone');
   const mod=rd('m.js',FIX),out=asScript(mod,'m.js');

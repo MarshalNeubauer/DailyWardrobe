@@ -263,10 +263,6 @@ function projAvg(M,P){const s=new Float64Array(P.len),c=new Float64Array(P.len);
   return {avg:[...s].map((v,i)=>c[i]?v/c[i]:0),cnt:[...c]}}
 const boxBlurWH=(a,W,H)=>{const o=new Float32Array(W*H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s=0,c=0;for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const X=x+i,Y=y+j;if(X>=0&&Y>=0&&X<W&&Y<H){s+=a[Y*W+X];c++}}o[y*W+x]=s/c}return o};
 /* fold a Lab profile on its repeat (or take it whole) and merge it into bands */
-/* one repeat in M steps, each the median colour of its pixels (a median, so lines crossing the band don't tint it) */
-function foldMedian(G,P,first,len,okIdx,T,skip){const M=Math.max(24,Math.min(400,Math.round(T))),bin=new Int32Array(G.L.length).fill(-1);
-  for(let i=0;i<G.L.length;i++){const pi=P.idx[i],t=pi-first;if(t<0||t>=len||!okIdx[pi]||skip&&skip[i])continue;bin[i]=Math.floor(((t%T)/T)*M)%M}
-  return binMedians(G,bin,M).filter(Boolean)}
 /* the median Lab of each bin's pixels (bin[i]: 0…M-1, or -1 = left out); null for an empty bin. The pixels are grouped into one
    typed array per channel and each bin sorted numerically: sorting plain arrays with a comparator took half of a reading's time */
 function binMedians(G,bin,M){const cnt=new Int32Array(M+1);for(let i=0;i<bin.length;i++)if(bin[i]>=0)cnt[bin[i]+1]++;
@@ -423,7 +419,7 @@ function lineModel(strips,minSep){const raw=strips.map(st=>linePeaks(st,minSep))
   const need=Math.max(2,Math.ceil(strips.length*.4)-1);   // other strips that must have it too (3 of 4, 4 of 8)
   const pk=raw.map((p,g)=>strips.length<3?p:p.filter(v=>raw.filter((q,h)=>h!==g&&q.some(w=>Math.abs(w-v)<=tol)).length>=need));
   if(pk.some(p=>p.length<2))return null;
-  const gaps=pk.flatMap(p=>p.slice(1).map((v,i)=>v-p[i])).sort((a,b)=>a-b),T=gaps[gaps.length>>1],mean=gaps.reduce((a,b)=>a+b,0)/gaps.length;
+  const gaps=pk.flatMap(p=>p.slice(1).map((v,i)=>v-p[i])).sort((a,b)=>a-b),T=gaps[gaps.length>>1];
   // a gap that skips one line (a faint line missed) counts as two
   const norm=gaps.map(g=>g/T>1.7?g/Math.round(g/T):g),sd=Math.sqrt(variance(norm)),cv=sd/(norm.reduce((a,b)=>a+b,0)/norm.length);
   if(cv>.25||T<minSep)return null;
@@ -458,3 +454,6 @@ function foldBins(G,tAdj,T,skip){const M=Math.max(24,Math.min(400,Math.round(T))
 /* a sett from a whole canvas (its middle 90%): a close-up */
 function settFromCanvas(c,box,opt){if(box){const b={x:box.x/1000*c.width,y:box.y/1000*c.height,w:box.w/1000*c.width,h:box.h/1000*c.height};return analyzeSett(c,b.x,b.y,b.w,b.h,opt)}
   return analyzeSett(c,c.width*.05,c.height*.05,c.width*.9,c.height*.9,opt)}
+/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
+Object.assign(globalThis,{STRIPE_PATS,CHECK_PATS,DETECT_PATS,MOTIF_PATS,TEXTURE_PATS,texPat,tieWeave,usableSett,CAMO_TR,camoTag,settToTag,settSig,detectPattern,detectQueued,settFromCanvas});
+export {STRIPE_PATS,CHECK_PATS,DETECT_PATS,MOTIF_PATS,TEXTURE_PATS,texPat,tieWeave,usableSett,CAMO_TR,camoTag,settToTag,settSig,detectPattern,detectQueued,settFromCanvas};

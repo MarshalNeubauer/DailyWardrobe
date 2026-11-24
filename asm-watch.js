@@ -87,3 +87,6 @@ function asmWatchDo(px,S,W,M,T){const L=ASM_LIN,f=S/2048,g=W.g,pad=Math.ceil(14*
       else{const k=Math.min(1.1,Math.max(.35,Y[q]/ref));for(let c=0;c<3;c++)put(q,c,DC[c]*k,a)}}}   // a light dial: its colour, the printing as dark as before
   const gam=linSrgb8;   // (srgb.js)
   for(let j=0;j<h;j++)for(let i=0;i<w;i++){const q=j*w+i;if(!chg[q])continue;const p=4*((Y0+j)*S+X0+i);for(let c=0;c<3;c++)px[p+c]=gam(out[3*q+c])}}   // only what was painted
+/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
+Object.assign(globalThis,{ASM_WATCH_GEO,asmWatchPaints,asmWatchSig,asmWatchJob,asmWatchPaint});
+export {ASM_WATCH_GEO,asmWatchPaints,asmWatchSig,asmWatchJob,asmWatchPaint};

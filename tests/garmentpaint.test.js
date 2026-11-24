@@ -24,8 +24,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const L=[];J.forEach((j,a)=>S.forEach((s,b)=>{L.push({top:j,shirt:s,tie:T[(a+b)%3],watch:W[a%2],clip:a%2?clip:null,vest:j.vest==='yes'});L.push({top:j,shirt:s,watch:W[b%2]})}));
       P.forEach((p,a)=>S.forEach((s,b)=>{L.push({shirt:s,bot:p,belt,watch:W[(a+b)%2]});L.push({shirt:s,bot:p,belt,tie:T[b],watch:W[a%2]})}));
       return L};
-    const keysOf=async(p,mf)=>p.evaluate(([src,mf])=>{const L=new Function('return ('+src+')()')();asmCmMf={keys:mf||{}};
-      return {keys:L.map(o=>asmCmOutKey(o)),jeans:L.map(o=>!!(o.bot&&o.bot.trouserKind==='jeans')),code:asmCmCodeSig(),src:asmCmSrcSig(),kindsJson:JSON.stringify(ASM_CM_KINDS),btnJson:JSON.stringify(ASM_CM_BTN)}},[String(looksFn),mf]);
+    // (the looks' signatures with the painter's code fingerprint set aside: C3's planned repaint, 2026-11-24, changed asmCmCodeSig on
+    // purpose, and with it every key; what this test guards is that the new garments changed nothing else in an existing look's key)
+    const keysOf=async(p,mf)=>p.evaluate(([src,mf])=>{const L=new Function('return ('+src+')()')();asmCmMf={keys:mf||{}};const code=asmCmCodeSig();
+      return {keys:L.map(o=>asmCmSig(o).split(code).join('<code>')),jeans:L.map(o=>!!(o.bot&&o.bot.trouserKind==='jeans')),code:asmCmCodeSig(),src:asmCmSrcSig(),kindsJson:JSON.stringify(ASM_CM_KINDS),btnJson:JSON.stringify(ASM_CM_BTN)}},[String(looksFn),mf]);
     const origin=new URL(url).origin;
     const mctx=await browser.newContext({viewport:{width:390,height:844}});
     await mctx.route(origin+'/**',route=>{const f=decodeURIComponent(new URL(route.request().url()).pathname.slice(1))||'index.html';
@@ -36,8 +38,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const m=await keysOf(mp,mfKeys),b=await keysOf(bp,mfKeys);
     const diff=m.keys.map((k,i)=>k!==b.keys[i]?i:-1).filter(i=>i>=0);
     ok(Object.keys(mainSrc).length>0,`origin/main's versions of the changed app files are served to the first page (${Object.keys(mainSrc).sort().join(', ')})`);
-    ok(m.keys.length>=60&&!diff.length,`every existing look keeps its picture key: ${m.keys.length} looks (suits, waistcoats, open collars, shirt and tie, open shirt; patterned cloth, a gold watch, a clip, chinos, jeans, cargo), ${diff.length} differ`);
-    ok(m.code===b.code&&m.src===b.src,`the painter's code fingerprints are main's (asmCmCodeSig ${b.code}, asmCmSrcSig ${b.src})`);
+    ok(m.keys.length>=60&&!diff.length,`every existing look keeps its picture key, the painter's code fingerprint aside: ${m.keys.length} looks (suits, waistcoats, open collars, shirt and tie, open shirt; patterned cloth, a gold watch, a clip, chinos, jeans, cargo), ${diff.length} differ`);
+    ok(m.src===b.src,`the kept setups' fingerprint is the one before the new garments (asmCmSrcSig ${b.src}; asmCmCodeSig ${m.code} then, ${b.code} since C3's repaint)`);
     ok(m.kindsJson===b.kindsJson&&m.btnJson===b.btnJson,'ASM_CM_KINDS and ASM_CM_BTN read as on main (the new kinds are not enumerable)');
     // jeans: once the faded master is in the manifest, only looks with jeans on the open shirt or shirt-and-tie masters change
     const jf=await bp.evaluate(mf=>{const o={...mf};for(const k of ['shirt-open','shirt-tie',...ASM_JF_BASES])o[asmJfKey(k)]=5678;return o},mfKeys);

@@ -1,8 +1,20 @@
 /* Assembled outfit pictures, put together off the page (assemble.js: asmRun). It loads assemble.js for the pixel work and swaps in
    its own decoder and encoder, since a worker has no <img> or <canvas>: photos are decoded with createImageBitmap and drawn on an
    OffscreenCanvas. One picture at a time, in the order they come. Without OffscreenCanvas it says so ({ready:false}) and the page
-   builds the pictures itself. */
-importScripts('srgb.js','assemble.js','asm-color.js','asm-gl.js','asm-watch.js','asm-pocket.js','asm-kinds.js','asm-ocp.js');   // (asm-gl.js: the looks the graphics chip covers are painted there, WebGL2 on an OffscreenCanvas)
+   builds the pictures itself.
+   A module worker (assemble.js asmWorker starts it with {type: 'module'}; Round C, wave C3, 2026-11-24): the painter's files are ES
+   modules, which importScripts can't load. The imports run them in the order importScripts did; each file's bridge puts its names on the
+   worker's globalThis, where the other files and the lines below read them, and the lines below replace asmData, asmJpeg, asmCmPack and
+   asmCmDiskPut through the bridge's setters (the files' own calls then reach the replacements, as when they shared one global scope).
+   (asm-gl.js: the looks the graphics chip covers are painted there, WebGL2 on an OffscreenCanvas) */
+import './srgb.js';
+import './assemble.js';
+import './asm-color.js';
+import './asm-gl.js';
+import './asm-watch.js';
+import './asm-pocket.js';
+import './asm-kinds.js';
+import './asm-ocp.js';
 const ASM_CAN=typeof OffscreenCanvas!=='undefined'&&typeof createImageBitmap!=='undefined'&&typeof FileReaderSync!=='undefined';
 asmData=async(u,W)=>{const bm=await createImageBitmap(await (await fetch(u)).blob()),w=W||bm.width,c=new OffscreenCanvas(w,w),x=c.getContext('2d',{willReadFrequently:true});
   x.drawImage(bm,0,0,w,w);if(bm.close)bm.close();return x.getImageData(0,0,w,w)};

@@ -16,8 +16,8 @@ module.exports=async({ok,engines,url,settle})=>{
   const isMod=t=>/\btype="module"/.test(t),srcOf=t=>(/\bsrc="([^"]+)"/.exec(t)||[])[1],modTags=withSrc.filter(isMod);
   ok(withSrc.length>80&&withSrc.every(t=>!/\basync\b/.test(t)&&(isMod(t)?!/\bdefer\b/.test(t):/\bdefer\b/.test(t)&&!/type=/.test(t))),`every page script is deferred: a classic one by \`defer\`, a module by being one (${withSrc.length-modTags.length} and ${modTags.length} of ${withSrc.length}); none is async`);
   const order=withSrc.map(srcOf);
-  ok(order.indexOf('back.js')===order.indexOf('app.js')+1&&order.indexOf('act.js')===order.indexOf('back.js')+1&&order.indexOf('locale.js')>order.indexOf('act.js')&&order.indexOf('locale.js')<order.indexOf('settings.js')&&isMod(withSrc[order.indexOf('back.js')])&&isMod(withSrc[order.indexOf('locale.js')])&&!modTags.some(t=>/^(?:merge|srgb)\.js$/.test(srcOf(t))),
-    'back.js and locale.js are modules with a tag each, where they always were in the list (back.js between app.js and act.js, locale.js before settings.js); merge.js and srgb.js, which the Web Workers importScripts, are not modules');
+  ok(order.indexOf('back.js')===order.indexOf('app.js')+1&&order.indexOf('act.js')===order.indexOf('back.js')+1&&order.indexOf('locale.js')>order.indexOf('act.js')&&order.indexOf('locale.js')<order.indexOf('settings.js')&&isMod(withSrc[order.indexOf('back.js')])&&isMod(withSrc[order.indexOf('locale.js')])&&!modTags.some(t=>/^merge\.js$/.test(srcOf(t)))&&modTags.some(t=>/^srgb\.js$/.test(srcOf(t))),
+    'back.js and locale.js are modules with a tag each, where they always were in the list (back.js between app.js and act.js, locale.js before settings.js); merge.js, which the server imports, is not a module (srgb.js is one since C3, with asm-worker.js a module worker)');
   ok(/<script type="module">startUp\(\)<\/script>\s*<\/body>/.test(html)&&inline.filter(t=>/module/.test(t)).length===1,'startUp() is the page\'s last script, an inline module: it runs after every deferred script');
   const headTags=[...head.matchAll(/<script\b([^>]*)>/g)].map(m=>m[1]);
   ok(headTags.length===3&&headTags.every(t=>t.trim()==='')&&/localStorage\.getItem\("theme"\)/.test(head)&&/--tscale/.test(head)&&/start-fail/.test(head),
@@ -126,7 +126,7 @@ async function run(eng,browser,{ok,url,settle}){
   c.refuse=null;c.errs.length=0;await c.p.goto('about:blank');await c.p.goto(url);await c.p.waitForFunction(()=>window.appReady);await settle(c.p,300);
   const md=await c.p.evaluate(()=>{const d=n=>Object.getOwnPropertyDescriptor(globalThis,n)||{},has=(f,n)=>{try{return f[n]===null}catch(e){return 'throws'}};
     return {fns:['backKind','backOn','backOver','backLand','backPush','backDrop','backBorrow','backReturn','backHold','backSettled','backWanted','histPush','histDrop'].every(n=>typeof globalThis[n]==='function'),
-      loc:APP_LOC,get:['appHist','appKind','itemHist'].map(n=>typeof d(n).get+'/'+typeof d(n).set).join(),strict:has(backPush,'caller')+'/'+has(swatchSVG,'caller'),patched:!!Date.prototype._dwLoc}});
+      loc:APP_LOC,get:['appHist','appKind','itemHist'].map(n=>typeof d(n).get+'/'+typeof d(n).set).join(),strict:has(backPush,'caller')+'/'+has(mergeItem,'caller'),patched:!!Date.prototype._dwLoc}});
   md.own=await c.p.evaluate('[typeof BACK,typeof backPop,typeof appLocale].join()');   // (as text: these are not the page's names, and the checkers would take a function's use of them for one)
   ok(md.own==='undefined,undefined,undefined'&&md.fns&&md.loc==='en-US'&&md.patched,T+`back.js and locale.js run as modules: their own names (BACK, backPop, appLocale) are not the page's, the bridged functions and APP_LOC are, and the Date patch is in (${JSON.stringify(md)})`);
   ok(md.get==='function/undefined,function/undefined,function/undefined'&&md.strict==='throws/true',T+'the three Back flags are getters with no setter, and back.js\'s functions are strict (reading a function\'s caller throws) where a classic script\'s are not');

@@ -129,3 +129,4 @@ ${(G.btn || []).length ? `<g class="fig-shirtbtn">${G.btn.map(([x, y, r]) => shi
 }
 self.outfitMannequinSvg = outfitMannequinSvg; self.mqData = mqData;   // (CR-8-08: mqHas, FIG_VIEWBOX and FIG_HOTSPOTS, read by nothing, were removed)
 })();
+export {};

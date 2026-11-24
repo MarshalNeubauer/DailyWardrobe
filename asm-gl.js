@@ -538,7 +538,7 @@ function asmGlAtlas(G,ts){const gl=G.gl;let W0=1,W1=1,H=0;const ms=ts.map(t=>t?a
   gl.uniform4iv(gl.getUniformLocation(G.prog,'uTO'),to)}
 /* ---- one look */
 /* its pixels on the GPU -> Uint8ClampedArray (RGBA, rows top-down, as asmCmBuild's before its buttons, clip and JPEG) */
-async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocation(G.prog,n),L=ASM_LIN,LK=ASM_CM_LOOK;gl.useProgram(G.prog);
+let asmGlPaint=async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocation(G.prog,n),L=ASM_LIN,LK=ASM_CM_LOOK;gl.useProgram(G.prog);
   const hexLin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])},lum=v=>.2126*v[0]+.7152*v[1]+.0722*v[2];
   // the background picture (kept while the same one comes back)
   const bk=job.bgt+'|'+S;if(G.bgk!==bk){const d=(await asmData(job.bg,S)).data;if(G.bgt)gl.deleteTexture(G.bgt);G.bgt=asmGlTex(gl,4,S,S,gl.RGBA8UI,gl.RGBA_INTEGER,gl.UNSIGNED_BYTE,new Uint8Array(d.buffer,d.byteOffset,d.byteLength));G.bgk=bk}
@@ -590,7 +590,7 @@ async function asmGlPaint(G,job,P){const gl=G.gl,S=P.S,u=n=>gl.getUniformLocatio
   if(SH){const rep=SH.mm*P.pxmm;gl.uniform1i(u('uShT'),1);gl.uniform4f(u('uShR'),rep,rep*SH.TH/SH.TW,SH.fine?1:0,G.cuff?1:0)}else gl.uniform1i(u('uShT'),0);
   asmGlAtlas(G,[tile?{c:tc,TW:T.TW,TH:T.TH}:TT?{c:TT.t||TT.c,TW:TT.TW,TH:TT.TH}:null,TI?{c:TI.c,TW:TI.TW,TH:TI.TH}:null,SH?{c:SH.t||SH.c,TW:SH.TW,TH:SH.TH}:null]);
   gl.bindFramebuffer(gl.FRAMEBUFFER,G.fbo);gl.viewport(0,0,S,S);gl.drawArrays(gl.TRIANGLES,0,3);
-  return asmGlRead(gl,S)}
+  return asmGlRead(gl,S)};
 /* (CR-8-02, 2026-11-17) the drawn pixels read back without holding the thread: into a pixel buffer, a fence, polled with short timers
    until the chip is done, then copied out. A plain readPixels waits for the whole draw (and, the first time, the program's build): on the
    page that was one block of 1.5-4 s on a slow chip. The same bytes either way; where fences are missing, the plain read */
@@ -652,16 +652,16 @@ async function asmGlPrepOff(job,have){const hit=await asmCmSetup(job),P=hit.P;if
   if(have.key!==hit.key){res.pk=asmGlPack(P);for(const v of Object.values(res.pk))if(ArrayBuffer.isView(v))tr.push(v.buffer)}
   if(have.key!==hit.key||have.gk!==gk){const g=asmGlGeoPack(hit.uv,P.S);res.geo=g&&{g16:g.g16,h:g.h,f:g.f,R:g.R.slice()};if(g)tr.push((g.h||g.f).buffer)}   // (R is the worker's own: copied)
   return {res,tr}}
-async function asmGlPage(job,prep){const G=asmGlInit(prep.lite.S);if(!G){asmGlNot='no WebGL2 context at '+prep.lite.S;return null}
+let asmGlPage=async function asmGlPage(job,prep){const G=asmGlInit(prep.lite.S);if(!G){asmGlNot='no WebGL2 context at '+prep.lite.S;return null}
   try{const t0=performance.now();
     const o=await asmGlDraw(G,job,prep.lite,prep.key,()=>prep.pk,prep.gk,()=>{if(!('geo' in prep))throw Object.assign(new Error('the solved positions were not sent'),{again:true});return prep.geo},true);
     prep.pk=prep.geo=null;asmGlErr=null;return {o,ms:Math.round(performance.now()-t0),renderer:G.renderer}}
-  catch(e){if(e&&e.again)return {again:true};asmGlFail(G,e);return null}}
+  catch(e){if(e&&e.again)return {again:true};asmGlFail(G,e);return null}};
 async function asmGlFinOff(job,fin){const hit=await asmCmSetup(job);return asmBuildAfter({url:await asmGlTail(fin.o,job,hit),gl:true,ms:fin.ms,renderer:fin.renderer},job)}
 /* ---- Settings → Outfit pictures → Advanced (owner only): "Graphics-chip painting", this phone's switch, and how the last picture
    painted here was made */
 function asmGlUI(b){if(!b)return;let g=document.getElementById('gl-box');if(!g){g=document.createElement('div');g.id='gl-box';b.appendChild(g)}
-  g.innerHTML=`<label class="srow">Graphics-chip painting <select id="cfg-gl" onchange="asmGlSet(this.value)"><option value="on">On</option><option value="off">Off</option></select></label><p class="shelp" id="gl-status" role="status"></p>`;
+  g.innerHTML=`<label class="srow">Graphics-chip painting <select id="cfg-gl" data-act-change="asmGlPick"><option value="on">On</option><option value="off">Off</option></select></label><p class="shelp" id="gl-status" role="status"></p>`;
   document.getElementById('cfg-gl').value=asmGlPref()?'on':'off';asmGlStatus()}
 function asmGlStatus(){const el=document.getElementById('gl-status');if(!el)return;
   const last=asmGlLast?` Last picture painted on this phone: ${asmGlLast.gl?'graphics chip':'processor'}${asmGlLast.ms!=null?`, ${asmGlLast.ms} ms`:''}.`:'';
@@ -670,3 +670,9 @@ function asmGlStatus(){const el=document.getElementById('gl-status');if(!el)retu
 function asmGlSet(v){try{if(v==='off')localStorage.setItem(ASM_GL,'0');else localStorage.removeItem(ASM_GL)}catch{}asmGlStatus()}
 /* a picture came back from the painter (asmRun): remember which way it was made, for the line above */
 function asmGlNote(r){if(!r||!('gl' in r))return;asmGlLast={gl:!!r.gl,ms:r.ms!=null?r.ms:null};asmGlStatus()}
+/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
+Object.assign(globalThis,{asmGlCuffs,asmGlPref,ASM_GL_KINDS,asmGlWhy,asmGlFree,asmGlProbe,asmGlOnPage,asmGlInit,asmGlReset,asmGlBytes,asmGlTry,asmGlPrepOff,asmGlFinOff,asmGlUI,asmGlSet,asmGlNote,asmGlContext,asmGlProgram,asmGlRenderer,asmGlPack,asmGlUpload,asmGlUploadGeo});
+Object.defineProperties(globalThis,{asmGlNot:{get:()=>asmGlNot},asmGlState:{get:()=>asmGlState,set:v=>{asmGlState=v}},asmGlRetry:{get:()=>asmGlRetry,set:v=>{asmGlRetry=v}},asmGlPaint:{get:()=>asmGlPaint,set:v=>{asmGlPaint=v}},asmGlPage:{get:()=>asmGlPage,set:v=>{asmGlPage=v}}});
+export {asmGlCuffs,asmGlPref,ASM_GL_KINDS,asmGlWhy,asmGlFree,asmGlProbe,asmGlOnPage,asmGlInit,asmGlReset,asmGlBytes,asmGlTry,asmGlPrepOff,asmGlFinOff,asmGlUI,asmGlSet,asmGlNote,asmGlState,asmGlRetry,asmGlPaint,asmGlPage,asmGlContext,asmGlProgram,asmGlRenderer,asmGlPack,asmGlUpload,asmGlUploadGeo,asmGlNot};
+/* Settings' "Graphics-chip painting" (act.js; on the page only: the painting worker has no act.js) */
+if(typeof acts==='function')acts({asmGlPick:el=>asmGlSet(el.value)});

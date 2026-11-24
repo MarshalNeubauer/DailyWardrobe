@@ -42,8 +42,8 @@ module.exports=async({ok,chromium,url})=>{
     ok(r.goldBuckle.gold>0,`with a gold watch and a gold buckle it can be (${JSON.stringify(r.goldBuckle)})`);
     const w=await p.evaluate(async()=>{const t=await (await fetch('asm-worker.js')).text(),a=await (await fetch('asm-watch.js')).text();
       // the worker really starts with it (it loads asm-watch.js without core.js: a core.js name read at load time killed it)
-      const ready=await new Promise(res=>{const wk=new Worker('asm-worker.js');const tm=setTimeout(()=>{wk.terminate();res('no answer')},15000);wk.onerror=e=>{clearTimeout(tm);wk.terminate();res('error: '+(e.message||'?'))};wk.onmessage=e=>{if('ready' in (e.data||{})){clearTimeout(tm);wk.terminate();res(e.data.ready?'ready':'not ready')}}});
-      return {imp:/importScripts\([^)]*asm-watch\.js/.test(t),dom:/document\.|window\./.test(a),ready}});
+      const ready=await new Promise(res=>{const wk=new Worker('asm-worker.js',{type:'module'});const tm=setTimeout(()=>{wk.terminate();res('no answer')},15000);wk.onerror=e=>{clearTimeout(tm);wk.terminate();res('error: '+(e.message||'?'))};wk.onmessage=e=>{if('ready' in (e.data||{})){clearTimeout(tm);wk.terminate();res(e.data.ready?'ready':'not ready')}}});
+      return {imp:/import '\.\/asm-watch\.js'/.test(t),dom:/document\.|window\./.test(a),ready}});
     ok(w.imp&&!w.dom&&w.ready==='ready',`the picture worker loads asm-watch.js and starts (${w.ready})`);
     // what runs in the worker names nothing of core.js (the worker has none: a COLORS read in asmWatchDo failed every gold-watch picture there)
     const src=require('fs').readFileSync(require('path').join(__dirname,'..','asm-watch.js'),'utf8'),fnOf=n=>{const i=src.indexOf('function '+n+'(');if(i<0)return '';const j=src.indexOf('\nfunction ',i+1),k=src.indexOf('\nconst ',i+1);return src.slice(i,Math.min(...[j,k].filter(x=>x>0),src.length))};

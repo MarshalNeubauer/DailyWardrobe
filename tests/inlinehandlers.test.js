@@ -11,9 +11,8 @@
 // that isn't jsq(…) and isn't on the list below of the ones checked to hold only app-made values (fixed names, slot names, ids and keys
 // that the records check or applyCustom already limits to letters, digits, - _ . :). No new one is added: a new control uses data-act.
 const fs=require('fs'),path=require('path');
-/* the inline handlers left, per file: may only go down (asm-color.js and asm-gl.js are in the painter's fingerprint: they wait for C3) */
-const LEFT={
-  'asm-color.js':1,'asm-gl.js':1};
+/* the inline handlers left, per file: may only go down (none since C3, 2026-11-24: the painter's two went with its repaint) */
+const LEFT={};
 const HANDLER=/\son[a-z]+="/g;
 /* counts {file: n} against the table -> what is wrong, one line each (none: fine) */
 const ratchet=(counts,left)=>{const bad=[];

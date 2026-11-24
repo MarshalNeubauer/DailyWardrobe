@@ -1,6 +1,6 @@
 {
  "note": "Type errors per file and scope (tests/typecheck.js). May only go down: fix errors, then `node tests/typecheck.js --update`.",
- "total": 256,
+ "total": 250,
  "files": {
   "page": {
    "about.js": 3,
@@ -13,7 +13,7 @@
    "asm-color.js": 13,
    "asm-gl.js": 6,
    "asm-watch.js": 2,
-   "assemble.js": 4,
+   "assemble.js": 2,
    "backupfile.js": 1,
    "care.js": 16,
    "colpick.js": 24,
@@ -45,9 +45,7 @@
    "wardrobe.js": 4,
    "weather.js": 1
   },
-  "asm": {
-   "asm-worker.js": 4
-  },
+  "asm": {},
   "analysis": {},
   "sw": {
    "sw.js": 17

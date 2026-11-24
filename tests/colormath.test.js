@@ -53,7 +53,7 @@ module.exports=async({ok,engines,ROOT})=>{
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{const p=await browser.newPage();
-      await p.addScriptTag({content:src('srgb.js')+OLD_SRC});
+      await p.addScriptTag({content:appSrc(ROOT,'srgb.js')+OLD_SRC});   // (srgb.js is an ES module since C3: appSrc gives it as a plain script)
       const r=await p.evaluate(SRGB_CHECK);
       ok(r.n>200000&&!r.nbad,`${eng}: srgb.js srgbLin8/linSrgb8 give exactly the removed sLin/linS (${r.n} values${r.nbad?', '+r.nbad+' differ: '+r.bad.join(', '):''})`)}
     finally{await browser.close()}}
