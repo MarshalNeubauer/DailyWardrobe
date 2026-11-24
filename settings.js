@@ -22,7 +22,7 @@ function pausedUntil(t){const d=new Date(t),n=new Date();let at='';try{at=d.toLo
   return d.toDateString()===n.toDateString()?(at||'later today'):'tomorrow'}
 function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
   if(typeof inviteOver==='function'&&inviteOver())return 'Not backed up: your invitation has ended';
-  const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'',when=t=>{const d=new Date(t),days=Math.round((todayDate()-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
+  const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'',when=t=>{const d=new Date(t),days=Math.round((todayDate().getTime()-new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime())/864e5);
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
   // (2026-11-15, the audit: "Backed up today" while the day's saves were used up and none of the new items was on the server)
   const pz=+localStorage.getItem('sync_pause')||0;

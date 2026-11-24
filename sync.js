@@ -108,7 +108,7 @@ const syncMark=()=>{try{const m=JSON.parse(localStorage.getItem('sync_mark')||'n
 const setSyncMark=(rev,saved,sig)=>{try{localStorage.setItem('sync_mark',JSON.stringify({url:syncUrl(),v:rev+':'+saved,sig}))}catch{}};
 /* last_sync by the corrected time (core.js nowMs), as the server's times it is compared with (CR-5-06: syncWiped held the backups of a phone
    whose clock was behind, its last_sync read as before the server's wipe) */
-const synced=()=>{syncDue=0;localStorage.setItem('last_sync',nowMs());localStorage.removeItem('sync_status');localStorage.removeItem('sync_wait');showSyncStatus()};
+const synced=()=>{syncDue=0;localStorage.setItem('last_sync',String(nowMs()));localStorage.removeItem('sync_status');localStorage.removeItem('sync_wait');showSyncStatus()};
 /* ---- the phone's clock (fix round 3, the audit's W1-9; core.js nowMs): the server sends its time with every answer (x-now); the gap is
    learned from each sync's request (the middle of the request taken as the server's moment) and kept (localStorage clock_skew) ---- */
 function clockLearn(r,t0,t1){const srv=+(r&&r.headers&&r.headers.get('x-now'))||0;if(!(srv>1e12)||t1-t0>15000)return false;
@@ -263,7 +263,7 @@ async function syncOnce(){
 const TESTER_SYNC_MS=15*60000;
 /* sync_wait: a change made here that no backup has taken yet (cleared by synced); the Backup summary says so (settings.js backupSummary) */
 /* sync_wait and syncDue by the corrected clock (core.js nowMs), as last_sync and the pause (CR-5-15) */
-function scheduleSync(){clearTimeout(syncTimer);try{if(!localStorage.getItem('sync_wait'))localStorage.setItem('sync_wait',nowMs())}catch{}
+function scheduleSync(){clearTimeout(syncTimer);try{if(!localStorage.getItem('sync_wait'))localStorage.setItem('sync_wait',String(nowMs()))}catch{}
   if(typeof isTester==='function'&&isTester()){if(!syncDue)syncDue=nowMs();syncTimer=setTimeout(syncNow,Math.max(1000,syncDue+TESTER_SYNC_MS-nowMs()));return}
   syncTimer=setTimeout(syncNow,2500)}
 /* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use

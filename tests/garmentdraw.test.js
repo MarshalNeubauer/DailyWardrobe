@@ -7,7 +7,8 @@ const {execSync}=require('child_process');
 // its own details, their stripe / heather / cable cloth (casualTile) in the drawing and the 16 px swatch, cargo pants' thigh pockets
 // (cargoPockets), and the existing types' drawings byte for byte as on origin/main.
 const garmentdraw=async({ok,chromium,url,ROOT})=>{
-  let old='';try{old=execSync('git show origin/main:draw.js',{cwd:ROOT,encoding:'utf8',maxBuffer:64e6})}catch(e){}
+  // (main's draw.js is a module since C3: its export line blanked, as the vm tests read a module: tests/appsrc.js)
+  let old='';try{old=require('./appsrc').asScript(execSync('git show origin/main:draw.js',{cwd:ROOT,encoding:'utf8',maxBuffer:64e6}))}catch(e){}
   const browser=await chromium.launch();const p=await browser.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
@@ -40,7 +41,8 @@ const garmentdraw=async({ok,chromium,url,ROOT})=>{
     ok(/stroke="#([0-9a-f]{6})"/.test(r.dark)&&parseInt(r.dark.match(/stroke="#([0-9a-f]{2})/)[1],16)>0x30,'a black T-shirt draws with lines lighter than its cloth');
     ok(r.boot.includes('<svg')&&r.sneaker.includes('<svg'),'boots and sneakers already draw (shoe styles boot and sneaker)');
     // the existing types' drawings are unchanged (origin/main's draw.js evaluated in a scope of its own)
-    if(old){const same=await p.evaluate(src=>{const O=new Function(src+'\n;return {itemThumb,swatchSVG}')();
+    // (its bridge goes to a stand-in globalThis, so the page's own draw.js names stay as they are)
+    if(old){const same=await p.evaluate(src=>{const O=new Function('globalThis',src+'\n;return {itemThumb,swatchSVG}')({});
         const L=[{id:'a',type:'shirt',primaryColor:'lightblue',pattern:'solid'},{id:'b',type:'shirt',primaryColor:'white',secondaryColor:'navy',pattern:'stripe'},{id:'c',type:'blazer',primaryColor:'navy',pattern:'solid'},
           {id:'d',type:'suit',primaryColor:'charcoal',pattern:'pinstripe'},{id:'e',type:'pants',primaryColor:'grey',pattern:'solid'},{id:'f',type:'pants',primaryColor:'stone',pattern:'solid',trouserKind:'chinos'},
           {id:'g',type:'pants',primaryColor:'denim',pattern:'solid',trouserKind:'jeans'},{id:'h',type:'tie',primaryColor:'burgundy',secondaryColor:'navy',pattern:'stripe'},{id:'i',type:'shoes',primaryColor:'brown',shoeStyle:'loafer'},

@@ -9,7 +9,7 @@ const missedSpan=ks=>{const n=ks.length,f=d=>shortDate(keyDate(d));return n===1?
 function missedNote(k){missedDays.push(k);clearTimeout(missedT);missedT=setTimeout(missedTell,400)}
 function missedTell(){const first=firstReal();
   // only days after the app was first used for real (not the first plan of past days)
-  const ks=[...new Set(missedDays)].filter(k=>+keyDate(k)>first).sort((a,b)=>keyDate(a)-keyDate(b));missedDays=[];if(!ks.length||typeof toast!=='function')return;
+  const ks=[...new Set(missedDays)].filter(k=>+keyDate(k)>first).sort((a,b)=>keyDate(a).getTime()-keyDate(b).getTime());missedDays=[];if(!ks.length||typeof toast!=='function')return;
   const n=ks.length;
   // the days were recorded after Today was drawn: put their card in (missedCard) without drawing Today again, which would cut off
   // an unfolding box or a swipe. The toast says it only where the card isn't on screen (another day or page shown): both at once said
@@ -28,8 +28,8 @@ async function missedNotWorn(ks){for(const k of ks){const r=dayRecs[k];if(r&&r.i
 const MISSED_KEEP=30;
 function missedOpen(){const T=todayDate(),first=firstReal();let ok=null;try{ok=localStorage.getItem('missed_ok')}catch{}
   const okD=ok&&/^\d{4}-\d{1,2}-\d{1,2}$/.test(ok)?+keyDate(ok):-Infinity;
-  return Object.values(dayRecs).filter(r=>{if(!r||!r.auto||!r.ids||r.worn===false||r.edited)return false;const d=keyDate(r.date);return d<T&&+d>first&&+d>okD&&T-d<=MISSED_KEEP*864e5})
-    .map(r=>r.date).sort((a,b)=>keyDate(a)-keyDate(b))}
+  return Object.values(dayRecs).filter(r=>{if(!r||!r.auto||!r.ids||r.worn===false||r.edited)return false;const d=keyDate(r.date);return d<T&&+d>first&&+d>okD&&T.getTime()-d.getTime()<=MISSED_KEEP*864e5})
+    .map(r=>r.date).sort((a,b)=>keyDate(a).getTime()-keyDate(b).getTime())}
 /* the card is shown on at most MISSED_DAYS different days for the same missed days (localStorage missed_seen {k: the last missed day,
    d: the dates it was shown}); a newly missed day shows it again (fix round 3, W1-8-04: someone who skips a workday now and then had it on
    Today on 216 of 226 mornings, each skipped day keeping it for 30 days) */

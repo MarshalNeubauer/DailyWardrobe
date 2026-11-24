@@ -183,7 +183,7 @@ const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)||T};
 /* where to add a piece (there is no Add tab: Add is the round + on the Wardrobe) */
 /* a location is set but the day within the forecast's 16 days has no weather (it couldn't be fetched): say so, with a way to try again
    (fix round 3, W2-14-14: "Set location" went and the line stayed blank) */
-function wxMissing(d,pill){const T=todayDate(),n=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-T)/864e5);if(n<0||n>15)return '';
+function wxMissing(d,pill){const T=todayDate(),n=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()-T.getTime())/864e5);if(n<0||n>15)return '';
   return `<a href="#" class="wxl wxretry" data-act="wxRetryTap">${pill?'No forecast · retry':'No forecast yet: tap to try again'}</a>`}
 const ADD_HINT='Add one with the + in the Wardrobe';
 /* a missing piece's "Add one" opens Add for that type (openAdd(type), add.js addFor; W2-14-01): the jacket's by the day, a suit or a blazer */

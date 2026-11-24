@@ -66,9 +66,14 @@ module.exports=async({ok,ROOT})=>{
     ok(Object.keys(r.counts).join()==='page'&&!of('a.js').length&&!of('lib/n.js').length,'the type check takes the made-up app\'s modules in the page\'s program: the classic script and the clean module have no error'+(of('a.js').length+of('lib/n.js').length?': '+[...of('a.js'),...of('lib/n.js')].join(' | '):''));
     const names=l=>[...new Set(l.flatMap(t=>(t.match(/'([A-Za-z_$][\w$]*)'/g)||[]).map(x=>x.slice(1,-1))))].sort().join();
     ok(names(of('m.js').filter(t=>/TS2304|TS2552/.test(t)))==='gone,undeclared'&&!/bump|LIMIT|px|count/.test(of('m.js').join()),'in a module the undeclared names are errors, and its import and the classic scripts\' globals resolve ('+of('m.js').join(' | ')+')');
-    ok(names(of('c.js'))==='hidden','a classic script sees the bridged names and not the module\'s own ('+of('c.js').join(' | ')+')');
-    const dts=r.dts.split('\n').filter(l=>/^declare/.test(l)).map(l=>l.replace(/^declare var (\S+): any;$/,'$1'));
+    ok(names(of('c.js').filter(t=>/TS2304|TS2552/.test(t)))==='hidden','a classic script sees the bridged names and not the module\'s own ('+of('c.js').join(' | ')+')');
+    const typed=of('c.js').filter(t=>!/'hidden'/.test(t));
+    ok(typed.length===1&&/^TS(2339|2551)\s+Property 'toFixed' does not exist on type 'string'/.test(typed[0]),
+      'a wrong use of a bridged name\'s type is an error: label(1) is m.js\'s export, a string, so .toFixed is caught ('+of('c.js').join(' | ')+')');
+    const decl=Object.fromEntries(r.dts.split('\n').map(l=>/^declare var (\S+): (.*);$/.exec(l)).filter(Boolean).map(m=>[m[1],m[2]])),dts=Object.keys(decl);
     ok(['cache','label','px'].every(n=>dts.includes(n))&&!['hidden','SECRET','UNIT','bump','count'].some(n=>dts.includes(n)),'globals.d.ts would declare the bridged names, and not a module\'s own names or a classic script\'s ('+dts.join(', ')+')');
+    ok(decl.label==="typeof import('../m.js').label"&&decl.px==="typeof import('../lib/n.js').px"&&decl.cache==='any',
+      'a bridged name has its module\'s export\'s type, and one the module doesn\'t export (cache) stays any ('+JSON.stringify(decl)+')');
   }
 
   /* ---- the cross-file write check, the ledger and the bridge ---- */

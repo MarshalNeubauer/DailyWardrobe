@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	087909af4ae87e3f17bb
+# tested	37244644e963c4e0e9fc
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -7296,6 +7296,7 @@ garmentdraw.test.js	sync-status.js	<loaded>	setSyncStatus	showSyncStatus	syncPau
 garmentdraw.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	syncNeedsPull	syncNow	syncOnce	syncUrl
 garmentdraw.test.js	tag-request.js	<loaded>
 garmentdraw.test.js	tagging.js	<loaded>
+garmentdraw.test.js	tests/appsrc.js	<any>
 garmentdraw.test.js	tests/fixedplan.js	<any>
 garmentdraw.test.js	theme.js	<loaded>	applyTheme
 garmentdraw.test.js	toast.js	<loaded>
@@ -18076,7 +18077,7 @@ sw.test.js	fav.js	<any>	<loaded>
 sw.test.js	history.js	<any>	<loaded>	checkPlanRules	dropLearn	get	whenPulled
 sw.test.js	icon-192.png	<any>
 sw.test.js	icon-512.png	<any>
-sw.test.js	index.html	<any>	<loaded>
+sw.test.js	index.html	<any>
 sw.test.js	item-photo.js	<any>	<loaded>	smallPhotos
 sw.test.js	item-view.js	<any>	<loaded>	@{constb$ivbody}	get	itemShown	renderItem
 sw.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}

@@ -53,6 +53,7 @@ function openPatForm(i){const q=queue[i];if(!q)return;const name=q.newPattern?q.
 /* look: the drawing recipe from "+ New pattern" (worker /describe: {layout, tr, tex | across (+ along) | motif}, roles not colours),
    kept with the pattern (synced) and drawn by detect.js lookSett in each item's colours, the painter too */
 const cleanLookApp=l=>l&&typeof l==='object'&&['texture','stripes','check','windowpane','plaid','motif'].includes(l.layout)&&(Array.isArray(l.tex&&l.tex.grid)||Array.isArray(l.across)||l.motif&&Array.isArray(l.motif.figs))?JSON.parse(JSON.stringify(l)):null;
+/** @param {{name: any, desc: any, base: any, types: any, look?: any}} p */
 async function addCustomPattern({name,desc,base,types,look}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);
   if(ownNameShort(name))throw new Error('Give it a name of at least two letters.');if(patNameTaken(name))throw new Error('There is already a pattern with that name.');
   const key=ownFreeKey(ownPatKey(name),k=>!!CUSTOM_PAT[k]||(settings.custom&&settings.custom.patterns||[]).some(p=>p.key===k)||Object.values(PATS_BY).some(l=>l.includes(k)),OWN_PAT_RE);

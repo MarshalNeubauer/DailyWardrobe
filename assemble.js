@@ -498,7 +498,7 @@ function asmShirtAngles(A,idx,W,H){const N=W*H,lab=new Int32Array(N).fill(-1),pa
    in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
    this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
 /* everything the painting needs, as plain data (photos as data URLs), or null: a look with no colour-coded master (asm-color.js asmCmJob) */
-async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const ob=typeof asmOcpBase==='function'?asmOcpBase(o,k):o;let j=await asmCmJob(ob);   // (the blouse's master is built on the open-shirt master's items: asm-ocp.js)
+async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const ob=typeof asmOcpBase==='function'?asmOcpBase(o,k):o;let j=/** @type {any} */(await asmCmJob(ob));   // (the blouse's master is built on the open-shirt master's items: asm-ocp.js)
   if(j)j=await asmNkJob(j,ob,k);   // a new garment's master and cloth, the faded master for jeans (asm-kinds.js)
   if(j&&typeof asmWatchJob==='function'){const w=asmWatchJob(o,asmNkBaseOf(k));if(w)j.watch=w}
   if(j&&typeof asmPocketJob==='function'){const q=asmPocketJob(o,asmNkBaseOf(k));if(q)j.pocket=q}
