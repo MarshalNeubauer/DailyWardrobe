@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	c3853c8483525c248e5b
+# tested	88c1a60c9cb61de832b4
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -3042,7 +3042,6 @@ backgesture-over.test.js	tests/backgesture-parts.js	<any>
 backgesture-over.test.js	tests/fixedplan.js	<any>
 backgesture-over.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-over.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-over.test.js	tests/webkit.js	<any>
 backgesture-over.test.js	theme.js	<loaded>	applyTheme
 backgesture-over.test.js	toast.js	<loaded>	toastDrop	undoOff
 backgesture-over.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -8597,7 +8596,6 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
-invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -10033,7 +10031,6 @@ modload.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 modload.test.js	tag-request.js	<loaded>	tagStatsCard
 modload.test.js	tagging.js	<loaded>
 modload.test.js	tests/fixedplan.js	<any>
-modload.test.js	tests/webkit.js	<any>
 modload.test.js	theme.js	<loaded>	applyTheme	cycleTheme	themeTap
 modload.test.js	toast.js	<loaded>	toast
 modload.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	mvSig	todayCovered
@@ -15064,6 +15061,11 @@ safeport.test.js	tools/upload-budget.js	<any>
 safeport.test.js	tools/visit-measure.js	<any>
 safeport.test.js	ui.js	<loaded>	isConnected	layerInert	layerUp
 safeport.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate
+safeport.test.js	watch/leather.jpg	<loaded>
+safeport.test.js	watch/shirt-open.png	<loaded>
+safeport.test.js	watch/shirt-tie.png	<loaded>
+safeport.test.js	watch/suit.png	<loaded>
+safeport.test.js	watch/vest.png	<loaded>
 safeport.test.js	weather.js	<loaded>	loadWeather
 safety.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 safety.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	get	hasInviteHash	isTester
@@ -17475,6 +17477,7 @@ socktoe.test.js	add-sheet.js	<loaded>	get	renderAddFor
 socktoe.test.js	add.js	<loaded>	addNoteText	needType	renderAdd	wbNote
 socktoe.test.js	analysis.js	<loaded>
 socktoe.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	renderBusy	set	texSwatches	tx	txFail	txs	window.fetch
+socktoe.test.js	apple-touch-icon.png	<loaded>
 socktoe.test.js	asm-color.js	<loaded>	asmGapNote
 socktoe.test.js	asm-gl.js	<loaded>
 socktoe.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -17497,6 +17500,8 @@ socktoe.test.js	draw.js	<loaded>	drawSock	fabricDef	itemThumb	sockPat	swatchSVG	
 socktoe.test.js	dress.js	<loaded>	migrateVests
 socktoe.test.js	fav.js	<loaded>	favItemRow
 socktoe.test.js	history.js	<loaded>	checkPlanRules	dropLearn	get	keyDate	recordDays	resetCard	whenPulled
+socktoe.test.js	icon-192.png	<loaded>
+socktoe.test.js	icon-512.png	<loaded>
 socktoe.test.js	index.html	<loaded>
 socktoe.test.js	item-photo.js	<loaded>	paperCloth	paperHint	paperSteps	photoTools	ptIcon	smallPhotos
 socktoe.test.js	item-view.js	<loaded>	@{constb$ivbody}	get	itemShown	noMotion	renderItem
@@ -17505,6 +17510,7 @@ socktoe.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	home
 socktoe.test.js	locale.js	<loaded>	appLocale
 socktoe.test.js	locks.js	<loaded>
 socktoe.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+socktoe.test.js	manifest.webmanifest	<loaded>
 socktoe.test.js	mannequin.js	<loaded>	@{}
 socktoe.test.js	measure.js	<loaded>
 socktoe.test.js	merge.js	<loaded>	mergeList	mergeStateBy	setEntries	setHash	setKeys	setStampOf	stateSig	subOk
@@ -20613,7 +20619,6 @@ wardfab.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedule
 wardfab.test.js	tag-request.js	<loaded>	tagStatsCard
 wardfab.test.js	tagging.js	<loaded>
 wardfab.test.js	tests/fixedplan.js	<any>
-wardfab.test.js	tests/webkit.js	<any>
 wardfab.test.js	theme.js	<loaded>	applyTheme
 wardfab.test.js	toast.js	<loaded>	toast	toastDrop	undoFab	undoHere	undoOff
 wardfab.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
