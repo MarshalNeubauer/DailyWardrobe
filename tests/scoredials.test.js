@@ -15,7 +15,7 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
     await setup(17);
     const M=await p.evaluate(()=>{const out={h:[],t:[],f:[],v:[],o:[],i:[]},ranks=[],gains=[];
       for(let d=new Date(2026,10,2);d<=new Date(2026,10,30);d.setDate(d.getDate()+1)){if(!isWorkday(d))continue;sel=new Date(d);const o=planFor()[key(sel)];if(!o)continue;
-        const D=dialsFor(o);for(const k of DIAL_KEYS)out[k].push(D[k].v);const R=rankLooks(rankPools(o),o);ranks.push(R.rank);for(const s of R.swaps)gains.push(R.rank-s.rank)}
+        const D=HOOK.dialsFor(o);for(const k of DIAL_KEYS)out[k].push(D[k].v);const R=rankLooks(HOOK.rankPools(o),o);ranks.push(R.rank);for(const s of R.swaps)gains.push(R.rank-s.rank)}
       sel=new Date(2026,10,17);return {out,ranks,gains}});
     const all=Object.values(M.out).flat();
     ok(all.length>=100&&all.every(v=>Number.isInteger(v)&&v>=0&&v<=100),`${eng}: every dial reads 0-100 on every workday of November (${all.length} readings)`);
@@ -26,7 +26,7 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
     // with 35 shirts read a quarter fresh); a type with few pieces still counts against its own shorter turn
     const F=await p.evaluate(()=>{const P=(type,rest)=>({id:type+rest,type,primaryColor:'navy',pattern:'solid',rest}),o=r=>({top:P('suit',60),shirt:P('shirt',r),tie:P('tie',60),shoes:P('shoes',7),suitDay:true});
       const many=t=>t==='shirt'?49:t==='shoes'?4.2:t==='tie'?14:15.75,few=t=>t==='shirt'?3:7;
-      return {s14:dialFreshness(o(14),many).v,s12:dialFreshness(o(12),many).v,s3:dialFreshness(o(3),many).v,few:dialFreshness(o(3),few).v,cap:FRESH_FULL.shirt}});
+      return {s14:dialFreshness(o(14),many).v,s12:dialFreshness(o(12),many).v,s3:dialFreshness(o(3),many).v,few:dialFreshness(o(3),few).v,cap:HOOK.FRESH_FULL.shirt}});
     ok(F.cap===14&&F.s14===100&&F.s12>=90&&F.s3<F.s12,`${eng}: a shirt rested 14 days is fully fresh with 35 shirts (${F.s14}); 12 days ${F.s12}, 3 days ${F.s3}`);
     ok(F.few===100,`${eng}: with 3 shirts, a shirt rested 3 days is a full turn (${F.few})`);
     // ---- Occasion on an ordinary suit day: a taupe or brown suit suits it (2026-11-17, the owner); a formal day keeps the dark-suit scale
@@ -42,7 +42,7 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
       const bold={top:P('suit','navy',{pattern:'pinstripe'}),shirt:P('shirt','lightblue'),tie:P('tie','burgundy',{secondaryColor:'navy',pattern:'stripe'}),shoes:P('shoes','brown',{leather:'calf'}),belt:P('belt','brown',{leather:'calf'}),suitDay:true,clim:{season:'mild'}};
       const a=dialInterest(safe),b=dialInterest(bold),h=o=>dialHarmony(o,true).v,base=o=>h(o)+dialTexture(o,true).v+dialOccasion(o,true).v;
       const clash={...bold,shirt:P('shirt','navy')};   // (a navy shirt under a navy suit: Harmony low, so Interest shouldn't lift it)
-      return {safe:a.v,bold:b.v,why:b.why,lookBold:dialLook(bold)-base(bold),half:Math.round(INT_W*b.v),hClash:h(clash),lookClash:dialLook(clash)-base(clash),hBold:h(bold)}});
+      return {safe:a.v,bold:b.v,why:b.why,lookBold:HOOK.dialLook(bold)-base(bold),half:Math.round(HOOK.INT_W*b.v),hClash:h(clash),lookClash:HOOK.dialLook(clash)-base(clash),hBold:h(bold)}});
     ok(It.safe<45&&It.bold>=75&&/picks up/.test(It.why),`${eng}: Interest: the gray suit, white shirt, black tie and shoes score ${It.safe}; a pinstripe, light blue shirt, burgundy-and-navy stripe tie and brown shoes ${It.bold} ("${It.why}")`);
     ok(It.hBold<80||Math.abs(It.lookBold-It.half)<=1,`${eng}: it adds half its value to the look when Harmony is 80 or more (${It.lookBold.toFixed(1)}, Harmony ${It.hBold})`);
     ok(It.hClash>=65||It.lookClash===0,`${eng}: and nothing when Harmony is under 65 (Harmony ${It.hClash}, added ${It.lookClash})`);
@@ -65,7 +65,7 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
     await setup(17);
     const r0=await p.evaluate(()=>({dials:document.querySelectorAll('#sbox .dial').length,line:document.querySelector('#srank').textContent}));
     await p.waitForFunction(()=>document.querySelector('#sbox.ranked'),null,{timeout:15000}).catch(()=>{});
-    const r1=await p.evaluate(()=>({line:document.querySelector('#srank').textContent,label:document.querySelector('#sbox .month-link').getAttribute('aria-label'),wk:!!rankW,res:rankMemo.v}));
+    const r1=await p.evaluate(()=>({line:document.querySelector('#srank').textContent,label:document.querySelector('#sbox .month-link').getAttribute('aria-label'),wk:!!HOOK.rankW,res:HOOK.rankMemo.v}));
     ok(r0.dials===6&&/(best of \d+ outfits today|Ranking)/.test(r0.line)&&/(\d+(st|nd|rd|th) best|Best) of \d+ outfits today/.test(r1.line)&&/best of/.test(r1.label)&&r1.wk,`${eng}: the dials show at once, the rank line fills in from the worker ("${r1.line}")`);
     // the unfolded card: rules, Why, dial reasons, the week, weather, rules list
     await p.evaluate(()=>toggleScore());await settle(p,1200);
@@ -84,7 +84,7 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
           I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),I('shoes','brown',{leather:'suede',shoeStyle:'loafer'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('belt','burgundy',{leather:'calf',metal:'silver'}),I('watch','grey',{metal:'silver'})];
         cache={};const out=[];
         for(const d of [new Date(2026,10,19),new Date(2026,10,18)]){sel=d;view={y:2026,m:10};const t0=performance.now();renderToday();const drawn=performance.now()-t0;
-          await new Promise(res=>{const f=()=>rankMemo.v?res():setTimeout(f,10);f()});out.push({drawn:Math.round(drawn),wall:rankMemo.v.wall,n:rankMemo.v.n})}return out});
+          await new Promise(res=>{const f=()=>HOOK.rankMemo.v?res():setTimeout(f,10);f()});out.push({drawn:Math.round(drawn),wall:HOOK.rankMemo.v.wall,n:HOOK.rankMemo.v.n})}return out});
       await cdp.send('Emulation.setCPUThrottlingRate',{rate:1});
       console.log('    rank at 4x CPU: '+t.map(x=>`${x.n} outfits ${x.wall} ms (Today drawn in ${x.drawn} ms)`).join('; '));
       ok(t.every(x=>x.wall<900*k&&x.n>1000),`${eng}: at 4x CPU a large wardrobe's rank comes in ${t.map(x=>x.wall+' ms ('+x.n+' outfits)').join(', ')} (${(900*k).toFixed(0)} allowed: 900 at this machine's pace ×${k.toFixed(2)}) while Today is drawn without waiting for it`)}

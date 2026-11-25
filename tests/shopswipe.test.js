@@ -9,20 +9,20 @@ module.exports=async({ok,chromium,url,settle})=>{
     // a kept result, so opening the sheet runs no check; long enough to scroll
     await p.evaluate(()=>{items=[...'abc'].map(c=>({id:'s'+c,type:'suit',primaryColor:'navy',pattern:'solid'})).concat([...'abcde'].map(c=>({id:'h'+c,type:'shirt',primaryColor:'white',pattern:'solid'})),[...'abcd'].map(c=>({id:'t'+c,type:'tie',primaryColor:'navy',pattern:'solid'})),[...'ab'].map(c=>({id:'f'+c,type:'shoes',primaryColor:'black',pattern:'solid',leather:'calf'})));dayRecs={};cache={};show('stats');
       const cat=n=>({key:'c'+n,title:'Section '+n,verdict:'covered',own:null,notes:[...Array(8)].map((_,k)=>`Note ${k} of section ${n}`),recs:[]});
-      shop={sig:shopSig(),at:Date.now(),res:{v:2,base:null,cats:[...Array(8)].map((_,n)=>cat(n)),top:[],occasions:[],checked:0,sims:1,months:6}}});
+      HOOK.shop={sig:HOOK.shopSig(),at:Date.now(),res:{v:2,base:null,cats:[...Array(8)].map((_,n)=>cat(n)),top:[],occasions:[],checked:0,sims:1,months:6}}});
     const view=()=>p.evaluate(()=>{const v=document.querySelector('#shop-sheet'),r=v.getBoundingClientRect(),bd=getComputedStyle(document.querySelector('#shop-backdrop'));
-      return {open:shopOpen,on:v.classList.contains('on'),vis:getComputedStyle(v).visibility,top:Math.round(r.top),scroll:Math.round(v.scrollTop),tall:v.scrollHeight-v.clientHeight,bd:bd.visibility,dim:+bd.opacity,busy:!!shopBusy,
+      return {open:shopOpen,on:v.classList.contains('on'),vis:getComputedStyle(v).visibility,top:Math.round(r.top),scroll:Math.round(v.scrollTop),tall:v.scrollHeight-v.clientHeight,bd:bd.visibility,dim:+bd.opacity,busy:!!HOOK.shopBusy,
         inline:v.style.transform+v.style.transition,grab:(g=>g?Math.round(g.getBoundingClientRect().width)+'px':'')(v.querySelector('.shop-top-head .shop-grab'))}});
     // every touch carries its own time (the sheet reads e.timeStamp), so a gesture's speed doesn't depend on how busy the machine is;
     // a gesture starts at the real time and each move is `ms` after the one before, however long sending it took
     const cdp=await ctx.newCDPSession(p);let clock=0;
     const T=(type,x,y,ms=16)=>{clock=type==='touchStart'?Math.max(clock+ms,Date.now()):clock+ms;return cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}],timestamp:clock/1000})};
     const drag=async(x,y0,y1,n=8,probe)=>{let mid=null;await T('touchStart',x,y0);for(let k=1;k<=n;k++){await T('touchMove',x,y0+(y1-y0)*k/n);await p.waitForTimeout(16);if(probe&&k===n)mid=await probe()}await T('touchEnd');await settle(p,500);return mid};
-    const open=async()=>{await p.evaluate(()=>openShop());await settle(p,500)};
-    ok(await p.evaluate(()=>!shopSwipeOn),'the swipe is not installed before the sheet is first opened');
+    const open=async()=>{await p.evaluate(()=>HOOK.openShop());await settle(p,500)};
+    ok(await p.evaluate(()=>!HOOK.shopSwipeOn),'the swipe is not installed before the sheet is first opened');
     await open();let v=await view();const top0=v.top;
     ok(v.open&&v.on&&!v.busy&&v.tall>300&&v.bd==='visible'&&v.dim===1,`the sheet is open on the kept result and scrolls (${v.tall}px)`);
-    ok(v.grab==='38px'&&await p.evaluate(()=>shopSwipeOn),'its header has a grabber, and opening the sheet installed the swipe');
+    ok(v.grab==='38px'&&await p.evaluate(()=>HOOK.shopSwipeOn),'its header has a grabber, and opening the sheet installed the swipe');
     // from the content while it is scrolled to the top
     let mid=await drag(200,400,640,8,view);v=await view();
     ok(mid.top>top0+200&&mid.dim<1&&mid.open,`swiping down on the content drags the sheet with the finger and the backdrop lightens (top ${mid.top}px, backdrop ${mid.dim.toFixed(2)})`);
@@ -51,11 +51,11 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(v.open&&v.top===top0&&v.scroll===0,'a sideways swipe does not move the sheet');
     // a redraw asked for mid-swipe (a section arriving from the check) waits for the finger to lift
     await T('touchStart',200,400);for(let k=1;k<=4;k++){await T('touchMove',200,400+10*k,60);await p.waitForTimeout(60)}
-    const held=await p.evaluate(()=>{shop.res.cats.push({key:'late',title:'Late section',verdict:'worth',own:null,notes:['Arrived during the swipe'],recs:[]});renderShop();
-      return {drag:shopDrag,late:!!document.querySelector('#shop-c-late'),top:Math.round(document.querySelector('#shop-sheet').getBoundingClientRect().top)}});
+    const held=await p.evaluate(()=>{HOOK.shop.res.cats.push({key:'late',title:'Late section',verdict:'worth',own:null,notes:['Arrived during the swipe'],recs:[]});HOOK.renderShop();
+      return {drag:HOOK.shopDrag,late:!!document.querySelector('#shop-c-late'),top:Math.round(document.querySelector('#shop-sheet').getBoundingClientRect().top)}});
     await T('touchEnd');await settle(p,500);v=await view();
     ok(held.drag&&!held.late&&held.top>top0,'a section arriving during a swipe is not drawn under the finger');
-    ok(v.open&&v.top===top0&&await p.evaluate(()=>!!document.querySelector('#shop-c-late')&&!shopDrag&&!shopStale),'it is drawn when the finger lifts, and the sheet springs back');
+    ok(v.open&&v.top===top0&&await p.evaluate(()=>!!document.querySelector('#shop-c-late')&&!HOOK.shopDrag&&!HOOK.shopStale),'it is drawn when the finger lifts, and the sheet springs back');
     // the other ways out still work
     await p.touchscreen.tap(380,Math.max(2,top0-6));await settle(p,500);
     ok(!(await view()).open,'a tap on the backdrop above the sheet closes it');

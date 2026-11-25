@@ -22,7 +22,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    let e=await p.evaluate(()=>{const N=64,sh=[.4,.3,.2,.1],a=camoField(N,sh,7),b=camoField(N,sh,7),c=camoField(N,sh,8),cnt=[0,0,0,0];for(const v of a)cnt[v]++;
+    let e=await p.evaluate(()=>{const N=64,sh=[.4,.3,.2,.1],a=HOOK.camoField(N,sh,7),b=HOOK.camoField(N,sh,7),c=HOOK.camoField(N,sh,8),cnt=[0,0,0,0];for(const v of a)cnt[v]++;
       // seamless: the colour across the right edge matches the left edge about as often as inside the tile
       let edge=0,inner=0;for(let y=0;y<N;y++){if(a[y*N+N-1]===a[y*N])edge++;if(a[y*N+N/2-1]===a[y*N+N/2])inner++}
       return {same:a===b||a.every((v,k)=>v===b[k]),diff:!a.every((v,k)=>v===c[k]),shares:cnt.map(n=>n/(N*N)),edge,inner}});
@@ -33,7 +33,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const it={id:'cm1',type:'pants',primaryColor:'khaki',secondaryColor:'brown',tertiaryColor:'olive',pattern:'camouflage'},own={...it,id:'cm2',pattern:'own-multicam-ocp'},chk={...it,id:'cm3',pattern:'own-micro-check'};
       const s=usableSett(it),s2=usableSett(own);
       return {pat:[camoPat('camouflage'),camoPat('own-multicam-ocp'),camoPat('own-micro-check'),camoPat('solid')].join(),look:!!(s&&s.camo&&s.camo.cols.length===5&&s.camo.cols[0]===colOf(it)),own:!!(s2&&s2.camo),chk:!!(usableSett(chk)&&usableSett(chk).camo),
-        fab:fabricDef('t1',it,'bot','fig'),sw:swatchSVG(it,true),route:asmCmRoute(it,'trousers').how,tex:(t=>t&&[t.TW,t.TH,t.t.length].join())(asmCamoTex(it)),
+        fab:fabricDef('t1',it,'bot','fig'),sw:swatchSVG(it,true),route:asmCmRoute(it,'trousers').how,tex:(t=>t&&[t.TW,t.TH,t.t.length].join())(HOOK.asmCamoTex(it)),
         read:(()=>{const r={...it,sett:{v:5,camo:{cols:['#111111','#eeeeee','#777777'],shares:[.5,.4,.1],seed:3},tr:4,cr:1,src:'pixels'}};const x=usableSett(r),tag=usableSett(it);
           return {ground:x.camo.cols[0]===colOf(it),fromTags:x.camo.cols.every(h=>tag.camo.cols.includes(h)),noPhoto:!x.camo.cols.includes('#111111'),seed:x.camo.seed,shares:x.camo.shares.join()!==tag.camo.shares.join(),light:Math.min(...x.camo.shares)<=.12+1e-9}})(),
         stripe:(()=>{const r={...it,pattern:'pinstripe',sett:{v:5,camo:{cols:['#111111','#eeeeee'],shares:[.6,.4],seed:3},tr:4,cr:1}};const x=usableSett(r);return !!(x&&x.camo)})()}});
@@ -53,7 +53,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // the close-up reader: three coloured regions in known shares
     e=await p.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=300;const x=c.getContext('2d');x.fillStyle='#c3b091';x.fillRect(0,0,300,300);
       x.fillStyle='#4f6b3a';x.fillRect(60,60,180,90);x.fillStyle='#3a2a24';x.fillRect(60,150,180,45);
-      const s=camoFromPixels({tex:c});return s&&{n:s.camo.cols.length,cols:s.camo.cols,shares:s.camo.shares,src:s.src}});
+      const s=HOOK.camoFromPixels({tex:c});return s&&{n:s.camo.cols.length,cols:s.camo.cols,shares:s.camo.shares,src:s.src}});
     ok(e&&e.n===3&&e.shares[0]>.45&&e.shares[1]>.25&&e.shares[2]>.12,'camoFromPixels finds the three colours and their shares, the largest first ('+JSON.stringify(e)+')');
     e=await p.evaluate(()=>{const a={type:'pants',primaryColor:'khaki',pattern:'camouflage'},jk={type:'suit',primaryColor:'olive',pattern:'camouflage'};return {pi:patInfo(a,'bot'),pis:patInfo({type:'shirt',pattern:'camouflage',primaryColor:'olive'},'shirt'),formal:formalTop(jk)<formalTop({...jk,pattern:'windowpane'}),pats:['suit','blazer','pants','shirt'].every(t=>PATS_BY[t].includes('camouflage'))&&!PATS_BY.tie.includes('camouflage')}});
     ok(e.pi&&e.pi.type==='camo'&&e.pi.scale===3&&e.pis.scale===3,'the planner counts camouflage as a bold, large pattern of its own kind');
@@ -63,9 +63,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     e=await p.evaluate(()=>{const sh={id:'u1',type:'shirt',primaryColor:'khaki',secondaryColor:'brown',pattern:'camouflage'},pt={id:'u2',type:'pants',primaryColor:'khaki',secondaryColor:'olive',pattern:'camouflage'},
         wsh={id:'u3',type:'shirt',primaryColor:'white',pattern:'solid'},npt={id:'u4',type:'pants',primaryColor:'navy',pattern:'solid'},day={clim:{season:'mild',rain:false,cold:false},nojkt:true,hasLinks:false};
       const r=rateOutfit({top:null,bot:pt,shirt:sh,tie:null,shoes:null,suitDay:false});
-      return {ps:patternScore([[null,'top'],[pt,'bot'],[sh,'shirt']]),hard:clothesHard(null,pt,sh,null,false,day,()=>true),pat:(r.checks.find(c=>c.label==='Patterns')||{}).pts,same:!!r.checks.find(c=>/same color/.test(c.why||'')),
+      return {ps:patternScore([[null,'top'],[pt,'bot'],[sh,'shirt']]),hard:HOOK.clothesHard(null,pt,sh,null,false,day,()=>true),pat:(r.checks.find(c=>c.label==='Patterns')||{}).pts,same:!!r.checks.find(c=>/same color/.test(c.why||'')),
         together:clothesScore(null,pt,sh,null,false,day),split1:clothesScore(null,pt,wsh,null,false,day),split2:clothesScore(null,npt,sh,null,false,day),suit:clothesScore({id:'u5',type:'suit',primaryColor:'brown',pattern:'solid'},null,sh,null,true,day)-clothesScore({id:'u5',type:'suit',primaryColor:'brown',pattern:'solid'},null,wsh,null,true,day),
-        three:patsOf([[pt,'bot'],[sh,'shirt'],[{type:'tie',pattern:'stripe',primaryColor:'navy'},'tie']]).length}});
+        three:HOOK.patsOf([[pt,'bot'],[sh,'shirt'],[{type:'tie',pattern:'stripe',primaryColor:'navy'},'tie']]).length}});
     ok(e.ps===0&&!e.hard&&(e.pat==null||e.pat===10)&&!e.same&&e.three===2,'a camouflage shirt with camouflage pants is one pattern, no clash or same-color mark ('+JSON.stringify(e)+')');
     ok(e.together>e.split1&&e.together>e.split2,'a camouflage shirt and pants are planned together: either with a plain piece scores lower');
     ok(e.suit<=-30,'a camouflage shirt under a plain suit costs the uniform split ('+e.suit+')');

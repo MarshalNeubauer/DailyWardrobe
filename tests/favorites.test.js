@@ -72,7 +72,7 @@ async function run(eng,browser,{ok,url,settle}){
   await toastUndo();await sw('false');
   ok(true,`${T}Undo unmarks it`);
   await p.locator('.favtog').tap();await sw('true');await settle(p,200);
-  const wd=await p.evaluate(()=>{closeItem();show('wardrobe');const r={mark:!!document.querySelector('#gi-t2 .favmark'),others:document.querySelectorAll('#wardrobe .favmark').length,chip:(document.querySelector('.favchip')||{}).textContent,label:document.querySelector('#gi-t2 .giopen').getAttribute('aria-label')};
+  const wd=await p.evaluate(()=>{HOOK.closeItem();show('wardrobe');const r={mark:!!document.querySelector('#gi-t2 .favmark'),others:document.querySelectorAll('#wardrobe .favmark').length,chip:(document.querySelector('.favchip')||{}).textContent,label:document.querySelector('#gi-t2 .giopen').getAttribute('aria-label')};
     document.querySelector('.favchip').click();r.shown=[...document.querySelectorAll('#wardrobe .gi')].map(g=>g.id).join();
     sel=new Date(2026,10,12);show('today');openPicker('tie');r.pick=!!document.querySelector('#pick-sheet .pick-it .favmark');closePicker();
     show('stats');const c=document.querySelector('#st-fav');r.card=c?c.textContent.replace(/\s+/g,' ').trim():'';return r});
@@ -80,20 +80,20 @@ async function run(eng,browser,{ok,url,settle}){
   ok(/Favorites 1/.test(wd.chip||'')&&wd.shown==='gi-t2',`${T}Wardrobe's "♥ Favorites" chip shows only the favorites (${wd.chip}: ${wd.shown})`);
   ok(wd.pick,`${T}the picker's tile has the ♥ too`);
   ok(/Your favorites/.test(wd.card)&&/1\s*look/.test(wd.card)&&/1\s*piece/.test(wd.card),`${T}Insights shows "Your favorites" (${wd.card.slice(0,140)})`);
-  const gone=await p.evaluate(async()=>{await favToggleItem('t2');const r={chip:!!document.querySelector('.favchip'),all:document.querySelectorAll('#wardrobe .gi').length===items.length};return r});
+  const gone=await p.evaluate(async()=>{await HOOK.favToggleItem('t2');const r={chip:!!document.querySelector('.favchip'),all:document.querySelectorAll('#wardrobe .gi').length===items.length};return r});
   ok(!gone.chip&&gone.all,`${T}with no favorite piece left the chip goes and the Wardrobe shows everything (${JSON.stringify(gone)})`);
-  await p.evaluate(async()=>{await favToggleItem('t2')});
+  await p.evaluate(async()=>{await HOOK.favToggleItem('t2')});
 
   // ---- 390 and 320 px, light and dark: the pill and its ♡, the strip, the switch stay inside
   for(const w of [390,320])for(const th of ['light','dark']){
     await p.setViewportSize({width:w,height:780});
-    const L=await p.evaluate(async th=>{document.documentElement.dataset.theme=th;closeItem();sel=new Date(2026,10,11);show('today');await new Promise(r=>setTimeout(r,120));
+    const L=await p.evaluate(async th=>{document.documentElement.dataset.theme=th;HOOK.closeItem();sel=new Date(2026,10,11);show('today');await new Promise(r=>setTimeout(r,120));
       const g=document.querySelector('.wpgrp'),h=document.querySelector('#today .day h2'),gr=g.getBoundingClientRect(),hr=h.getBoundingClientRect(),hb=$('#wpfav').getBoundingClientRect(),wx=document.querySelector('#today .day h2 .wxc');
       const r={pill:gr.right<=hr.right+.5&&gr.left>=hr.left-.5,heartW:Math.round(hb.width),heartH:Math.round(hb.height),wxCut:wx?wx.scrollWidth>wx.clientWidth+1&&!document.querySelector('.wx.wxwrap'):false,wrap:!!document.querySelector('#today .wx.wxwrap'),side:document.documentElement.scrollWidth-innerWidth,
         bg:getComputedStyle($('#wpfav')).backgroundColor};
       sel=new Date(2026,10,12);renderToday();openPicker('tie');await new Promise(r=>setTimeout(r,350));const s=$('#pick-sheet').getBoundingClientRect(),f=document.querySelector('.favlook').getBoundingClientRect();
       r.strip=f.left>=s.left-.5&&f.height>=44&&document.querySelector('.favstrip').getBoundingClientRect().right<=s.right+.5;closePicker();
-      show('wardrobe');openItem('t2');await new Promise(r=>setTimeout(r,300));const t=document.querySelector('.favtog').getBoundingClientRect();r.tog=t.height>=44&&t.right<=innerWidth+.5;r.side2=document.documentElement.scrollWidth-innerWidth;closeItem();return r},th);
+      show('wardrobe');openItem('t2');await new Promise(r=>setTimeout(r,300));const t=document.querySelector('.favtog').getBoundingClientRect();r.tog=t.height>=44&&t.right<=innerWidth+.5;r.side2=document.documentElement.scrollWidth-innerWidth;HOOK.closeItem();return r},th);
     ok(L.pill&&L.heartH>=24&&L.heartW>=20&&(w<390||!L.wrap)&&!L.wxCut&&L.side<=0,`${T}${w}px ${th}: the ✓ Wore pill and its ♡ fit the date bar (♡ ${L.heartW}×${L.heartH}, the weather ${L.wxCut?'cut':'whole'}${L.wrap?', the pill under it':', one line'})`);
     ok(L.strip&&L.tog&&L.side2<=0,`${T}${w}px ${th}: the picker strip and the item switch stay inside (${JSON.stringify(L)})`);
   }

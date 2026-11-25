@@ -89,12 +89,12 @@ module.exports=async({ok,chromium,url,WARDROBES,ROOT})=>{
     const A=await device(),B=await device();
     await A.evaluate(async()=>{for(const it of [{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',added:1},{id:'h1',type:'shirt',primaryColor:'white',pattern:'solid',added:1},{id:'t1',type:'tie',primaryColor:'burgundy',pattern:'solid',added:1}]){await put(it);items.push(it)}});
     await sync(A);await sync(B);
-    await A.evaluate(async()=>{const n=favData();n.looks.push({j:'s1',sh:'h1',tie:'t1',at:Date.now()});await favSave(n)});
-    await B.evaluate(async()=>{const n=favData();n.items.push('t1');await favSave(n)});
+    await A.evaluate(async()=>{const n=HOOK.favData();n.looks.push({j:'s1',sh:'h1',tie:'t1',at:Date.now()});await HOOK.favSave(n)});
+    await B.evaluate(async()=>{const n=HOOK.favData();n.items.push('t1');await HOOK.favSave(n)});
     await sync(A);await sync(B);await sync(A);
     const fa=await fav(A),fb=await fav(B);
     ok(fa==='s1|h1|t1/t1'&&fb===fa,`a favorite look marked on one phone and a favorite piece on the other end up on both (A ${fa}, B ${fb})`);
-    await B.evaluate(async()=>{const n=favData();n.looks=[];await favSave(n)});await sync(B);await sync(A);
+    await B.evaluate(async()=>{const n=HOOK.favData();n.looks=[];await HOOK.favSave(n)});await sync(B);await sync(A);
     ok(await fav(A)==='/t1','a heart taken back on one phone goes on the other');
   }finally{await b2.close()}
 };
