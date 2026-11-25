@@ -31,6 +31,8 @@ async function open(browser,eng,url,settle,o={}){
         S.invites.push({id:'inv'+(++S.n),name:b.name,used:{},caps:{}});return send({code:'code'+S.n,name:b.name})}
       if(m==='DELETE'){const id=u.searchParams.get('id');if(u.searchParams.get('purge'))S.invites=S.invites.filter(x=>x.id!==id);else S.invites.find(x=>x.id===id).off=true;return send({ok:true})}}
     if(u.pathname==='/push'){if(m==='GET')return send({key:PUSH_KEY,on:false});S.push.push(JSON.parse(q.postData()||'{}'));return send({ok:true,on:true})}
+    // (no relay here, as a server from before it: the app then asks POST /calendar for the events; tests/calfeed.test.js has the relay)
+    if(u.pathname==='/calendar/feed')return send({error:'not found'},404);
     if(u.pathname==='/calendar'){S.reads++;return send({from:'2026-11-20',to:'2027-01-19',events:[
       {id:'a1a1a1a1a1a1a1a1',title:'Annual gala, black tie',start:'2026-11-26',end:'2026-11-26',allDay:true,days:1},
       {id:'b2b2b2b2b2b2b2b2',title:'Dress down Thursday',start:'2026-11-25',end:'2026-11-25',allDay:true,days:1},

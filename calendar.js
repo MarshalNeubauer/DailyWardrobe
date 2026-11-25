@@ -3,8 +3,10 @@
    - Settings → Calendar (#sc-calendar, for everyone): paste a webcal:// or https:// link, Connect, a status line, Read now, Disconnect;
      the link is kept in settings.calendar {url, at} (synced like the other settings) and shown only as its host after it is saved
    - the walkthrough (calGuide: iPhone / iCloud, Google, Outlook): kit.js cards with drawn screens, no screenshots of other companies' apps
-   - the server reads the link (POST /calendar, worker/calendar.js: browsers can't read most calendar links) and gives back only the next
-     60 days' events: dates, title, all-day, start time, place. The link goes in the request's body, never in an address
+   - the server fetches the link for the app (POST /calendar/feed, worker/calendar.js: browsers can't read most calendar links) and relays
+     it unparsed; this phone reads the next 60 days' events from it (calFeed, cal-worker.js with calparse.js): dates, title, all-day,
+     start time, place. The link goes in the request's body, never in an address. (Before 2026-11-25 the server parsed it: POST
+     /calendar, still there for older apps)
    - the events are matched by keyword rules (CAL_RULES) to an occasion (wedding, funeral, formal, casual), days off or a trip; the review
      list (in Settings → Calendar) applies only what is kept (✓), through the app's own setOccasion (history.js), dayOffAdd (settings.js)
      and packSetTrip (pack.js), so locks and re-planning behave as for a day set by hand; ✕ dismisses; both are remembered by the event's
@@ -13,6 +15,9 @@
      ("2 new calendar events"), never applied by themselves
    - the last answer is kept on this phone only (localStorage cal_last), for the review list and Today's trip note */
 const CAL_EVERY=3*3600e3;   // read again at most this often by itself
+// ... and this often when the calendar's host sends neither an ETag nor a Last-Modified, or nothing could be kept: then every read
+// downloads the whole feed (at most twice a day by itself: 2.8 MB a day for a 1.4 MB calendar, 12 MB for 6 MB; Read now still reads it)
+const CAL_EVERY_WHOLE=12*3600e3;
 const CAL_KEY='cal_last';    // {t, from, to, events, err} on this phone
 let calBusy=false,calMsg='';
 
@@ -85,12 +90,58 @@ async function calFetch(url,fresh){const w=(localStorage.getItem('worker_url')||
   if(r.status===404||r.status===405)throw new Error('The server can’t read calendars yet: it needs an update.');
   if(!r.ok)throw new Error(j.message||'The calendar couldn’t be read just now.');
   return j}
+/* ---- this phone reads the calendar (2026-11-25, the owner's design): the server relays the feed unparsed (POST /calendar/feed) and
+   cal-worker.js parses it off the main thread with calparse.js, the parser the server's POST /calendar uses, so the events are the same;
+   every event of the 60 days is kept, whatever the feed's size. The worker keeps the last good copy (Cache Storage dw-keep-cal): a read
+   sends its etag / last-modified and an unchanged calendar answers 204 (no data); offline, or when a read fails, the kept copy is read
+   for today's window. A server from before the relay (404/405) reads the calendar itself, as before (calFetch). ---- */
+let calW=null;   // {ask} once started, false when no Worker could start (then the parser runs here: calHere)
+function calWorker(){if(calW!==null)return calW;
+  try{const w=new Worker('cal-worker.js',{type:'module'}),wait=new Map();let n=0;
+    const fail=()=>{for(const f of wait.values())f({failed:true});wait.clear();calW=false;try{w.terminate()}catch{}};
+    w.onmessage=e=>{const f=wait.get(e.data&&e.data.id);if(f){wait.delete(e.data.id);f(e.data)}};
+    w.onerror=e=>{if(e&&e.preventDefault)e.preventDefault();fail()};
+    calW={ask:(m,tr)=>new Promise(ok=>{const id=++n;wait.set(id,ok);try{w.postMessage({...m,id},tr||[])}catch{wait.delete(id);ok({failed:true})}}),
+      post:(m,tr)=>{try{w.postMessage(m,tr||[])}catch{}}}}
+  catch{calW=false}
+  return calW}
+const calAsk=(m,tr)=>{const w=calWorker();return w?w.ask(m,tr):Promise.resolve({failed:true})};
+/* the window the events are read for: today on this phone (the server took its own clock in the person's zone) and 60 days */
+const calWin=()=>({from:isoKey(todayDate()),days:60,tz:calTz()});
+/* no Worker: the same parser on the page (nothing is kept, so the next read downloads the feed again) */
+async function calHere(buf,win){const P=await import('./calparse.js'),to=P.isoAdd(win.from,win.days);
+  return {from:win.from,to,events:P.calEvents(new TextDecoder().decode(buf),win.tz,win.from,to),whole:true}}
+async function calFeed(url){const w=(localStorage.getItem('worker_url')||'').trim(),tok=(localStorage.getItem('app_token')||'').trim();
+  if(!w||!tok||!isConnected())throw new Error('Reading a calendar needs a connection: Connect in ⚙ Settings first.');
+  const win=calWin(),m=await calAsk({op:'meta',url}),base=new URL('calendar/feed',w.replace(/\/*$/,'/')).href;
+  const ask=async cond=>{try{return await fetch(base,{method:'POST',cache:'no-store',headers:{'content-type':'application/json','x-app-token':tok},
+      body:JSON.stringify({url,...(m.tk?{tk:m.tk}:{}),...(cond&&m.has?{etag:m.etag||undefined,lm:m.lm||undefined}:{})})})}
+    catch(e){throw new Error(netErr(e&&e.message)?'The server couldn’t be reached. Try again in a moment.':'The calendar couldn’t be read just now.')}};
+  let r=await ask(true);
+  if(r.status===404||r.status===405)return calFetch(url,true);   // a server from before the relay: it reads the calendar itself
+  if(r.status===204){const k=await calAsk({op:'read',url,tk:r.headers.get('x-cal-tk')||'',...win});if(k.events)return k;r=await ask(false)}   // unchanged: the kept copy
+  if(!r.ok){const j=await r.json().catch(()=>({}));throw new Error(j.message||'The calendar couldn’t be read just now.')}
+  const tk=r.headers.get('x-cal-tk')||'',etag=r.headers.get('x-cal-etag')||'',lm=r.headers.get('x-cal-lm')||'';
+  const cant=()=>new Error('The calendar couldn’t be read just now.');
+  if(!calW||!r.body||!r.body.getReader){let buf;try{buf=await r.arrayBuffer()}catch{throw cant()}return calHere(buf,win)}   // no Worker could start: read here
+  // the feed goes to the worker piece by piece as it arrives (a 24 MB feed read whole on the page held WebKit's frames for 190 ms)
+  const rd=r.body.getReader();calW.post({op:'begin'});
+  try{for(;;){const {done,value}=await rd.read();if(done)break;const b=value.byteOffset||value.byteLength!==value.buffer.byteLength?value.slice().buffer:value.buffer;calW.post({op:'part',buf:b},[b])}}
+  catch{throw cant()}
+  const k=await calAsk({op:'read',url,parts:true,etag,lm,tk,...win});
+  if(k.events)return {...k,whole:!(etag||lm)||!k.kept};   // (whole: the next read downloads it all again)
+  if(k.error)throw cant();
+  r=await ask(false);if(!r.ok)throw cant();   // the Worker failed with the feed: again, read here
+  return calHere(await r.arrayBuffer(),win)}
+/* a read that failed: the kept copy for today's window, or null */
+async function calKept(url){try{const k=await calAsk({op:'read',url,...calWin()});return k&&k.events?k:null}catch{return null}}
 /* reads the saved link (on demand, or by itself when the last read is older than CAL_EVERY) -> the list of new matches, or null */
 async function calSync(force){const url=calLink();if(!url||calBusy||!isConnected())return null;const last=calRead();
-  if(!force&&last&&last.url===calMask(url)&&Date.now()-(last.t||0)<CAL_EVERY)return null;
+  if(!force&&last&&last.url===calMask(url)&&Date.now()-(last.t||0)<(last.whole?CAL_EVERY_WHOLE:CAL_EVERY))return null;
   calBusy=true;const before=calNew().length;
-  try{const j=await calFetch(url,force);calWrite({t:Date.now(),url:calMask(url),from:j.from,to:j.to,events:(j.events||[]).slice(0,300),err:''});calMsg=''}
-  catch(e){const o=calRead()||{};calWrite({...o,url:calMask(url),err:e.message||'The calendar couldn’t be read.',errAt:Date.now()});calMsg=e.message||''}
+  try{const j=await calFeed(url);calWrite({t:Date.now(),url:calMask(url),from:j.from,to:j.to,events:j.events||[],err:'',...(j.whole?{whole:1}:{})});calMsg=''}
+  catch(e){const o=calRead()||{},k=await calKept(url);
+    calWrite({...o,...(k?{from:k.from,to:k.to,events:k.events}:{}),url:calMask(url),err:e.message||'The calendar couldn’t be read.',errAt:Date.now()});calMsg=e.message||''}
   finally{calBusy=false}
   const n=calNew();if(n.length!==before&&!$('#today').hidden)refreshToday();
   if(settingsOpen())renderCalUI();
@@ -111,9 +162,9 @@ async function calConnect(){const inp=$('#cal-link'),v=(inp&&inp.value||'').trim
   if(!v)return say('Paste the calendar link first.');
   if(!/^(webcals?|https?):\/\/\S+$/i.test(v)||v.length>2048)return say('That doesn’t look like a calendar link. Copy the whole link that starts with webcal:// or https://.');
   if(calBusy)return;calBusy=true;say('Reading your calendar…');
-  try{const j=await calFetch(v,true);
+  try{const j=await calFeed(v);
     settings.calendar={url:v,at:Date.now()};await saveUserSettings();
-    calWrite({t:Date.now(),url:calMask(v),from:j.from,to:j.to,events:(j.events||[]).slice(0,300),err:''});
+    calWrite({t:Date.now(),url:calMask(v),from:j.from,to:j.to,events:j.events||[],err:'',...(j.whole?{whole:1}:{})});
     const n=calFound().filter(x=>!calSeen()[x.ev.id]).length;
     calMsg=`Connected. ${(j.events||[]).length} event${(j.events||[]).length===1?'':'s'} in the next 60 days${n?`; ${n} could set up your outfits: check them below.`:'; none that change what you wear.'}`;
     announce(calMsg)}
@@ -121,7 +172,7 @@ async function calConnect(){const inp=$('#cal-link'),v=(inp&&inp.value||'').trim
   finally{calBusy=false}
   renderCalUI();refreshToday()}
 async function calDisconnect(){if(!await askConfirm('Disconnect the calendar?\n\nThe app stops reading it. Days off, occasions and trips already set stay as they are.',{ok:'Disconnect',danger:true}))return;
-  delete settings.calendar;calWrite(null);calMsg='Disconnected.';renderCalUI();await saveUserSettings();refreshToday()}
+  delete settings.calendar;calWrite(null);calAsk({op:'forget'}).catch(()=>{});calMsg='Disconnected.';renderCalUI();await saveUserSettings();refreshToday()}
 async function calRefresh(){if(calBusy)return;calMsg='Reading your calendar…';renderCalUI();const n=await calSync(true);
   const last=calRead()||{};calMsg=last.err||(n?(n.length?`${n.length} new event${n.length===1?'':'s'} to check below.`:'Up to date: nothing new.'):'');renderCalUI();if(calMsg)announce(calMsg)}
 function calSummary(){if(!calLink())return 'Not connected';const last=calRead();if(!last||!last.t)return 'Connected';
@@ -152,7 +203,7 @@ ${nw.length?`<ul class="cal-list" id="cal-new-list">${nw.map(x=>calRow(x,'new'))
 ${kept.length?`<ul class="cal-list">${kept.map(x=>calRow(x,'kept')).join('')}</ul>`:''}
 ${gone.length?`<ul class="cal-list">${gone.map(x=>calRow(x,'gone')).join('')}</ul>`:''}</div>`}
   h+=`<div class="slabel cal-howh">How to get the link</div><div class="sactions cal-guides"><button type="button" data-act="calGuideTap" data-g="icloud">iPhone (iCloud)</button><button type="button" data-act="calGuideTap" data-g="google">Google</button><button type="button" data-act="calGuideTap" data-g="outlook">Outlook</button></div>
-<p class="shelp cal-priv">Anyone with a calendar link can read that calendar, so the app treats it like a password: it is kept in your settings (on your devices and in your backup) and shown here only by where it points. The server reads the calendar when the app asks, keeps nothing, and sends back only dates, titles and places.</p>`;
+<p class="shelp cal-priv">Anyone with a calendar link can read that calendar, so the app treats it like a password: it is kept in your settings (on your devices and in your backup) and shown here only by where it points. The server fetches the calendar when the app asks and keeps nothing; this phone reads it and uses only dates, titles and places.</p>`;
   box.innerHTML=h;const inp=$('#cal-link');if(inp&&typed)inp.value=typed;
   const sm=$('#sum-calendar');if(sm)sm.textContent=calSummary()}
 settingsPart(renderCalUI);

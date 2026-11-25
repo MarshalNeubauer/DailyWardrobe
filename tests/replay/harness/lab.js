@@ -22,6 +22,8 @@
      POST /__mock/kv-limit {perDay:N}  KV writes per UTC day (server clock) before put() fails like Cloudflare's daily limit; 0 = off
      POST /__mock/clock {offsetMs} | {at:'2027-01-05T08:00:00Z'}   the server's clock (Date/Date.now in the worker); {} resets
      POST /__mock/reset                clear failures, delays, drops and the KV limit (not the clock)
+     POST /__mock/cal {href, fixture|mb|text, etag}   a made-up calendar at href (a tests/fixtures/calendar file, tests/calfeeds.js's
+                                       feed of mb megabytes, or the text); the worker's fetch of href answers it, 304 for its etag
 */
 const http=require('http'),fs=require('fs'),path=require('path'),{pathToFileURL}=require('url');
 const R=require('./paths.js'),NET=require('./net.js');
@@ -70,8 +72,13 @@ http.createServer((q,r)=>{let f=path.join(APP,decodeURIComponent(q.url.split('?'
       else{ans=nextTag||{...TAGS[rot++%TAGS.length]};nextTag=null}
       note('CLAUDE '+Object.keys(props).slice(0,6).join(','));
       return new Response(JSON.stringify({model:'mock',stop_reason:'end_turn',usage:{input_tokens:1,output_tokens:1},content:[{type:'text',text:JSON.stringify(ans)}]}),{status:200,headers:{'content-type':'application/json'}})}
+    // a made-up calendar host (POST /__mock/cal): only these links answer, from local text; If-None-Match answers 304
+    if(cals.has(href)){const c=cals.get(href),h=(init&&init.headers)||{};log.cal=(log.cal||0)+1;
+      if(c.etag&&h['if-none-match']===c.etag){note('CAL 304');return new Response(null,{status:304})}
+      note('CAL 200 '+c.text.length);return new Response(c.text,{status:200,headers:{'content-type':'text/calendar',...(c.etag?{etag:c.etag}:{})}})}
     if(!NET.isData(href))note('BLOCKED outbound '+href);
     return NET.nodeAnswer(href)};
+  const cals=new Map();
 
   // ---------- KV in memory, optionally kept in a file
   const store=new Map(),meta=new Map();
@@ -111,6 +118,8 @@ http.createServer((q,r)=>{let f=path.join(APP,decodeURIComponent(q.url.split('?'
         if(w==='kv-limit'){kvLimit=+b.perDay||0;return json(res,200,{ok:1,today:today(),putsToday:putsByDay[today()]||0})}
         if(w==='clock'){clockOff=b.at?new RealDate(b.at).getTime()-RealDate.now():(+b.offsetMs||0);return json(res,200,{ok:1,now:new LabDate().toISOString()})}
         if(w==='reset'){fail={};delay=0;drop=0;kvLimit=0;return json(res,200,{ok:1})}
+        if(w==='cal'){const text=b.fixture?fs.readFileSync(path.join(R.REPO,'tests','fixtures','calendar',path.basename(b.fixture)),'utf8'):b.mb?require(path.join(R.REPO,'tests','calfeeds.js')).feed(+b.mb):String(b.text||'');
+          cals.set(String(b.href),{text,etag:b.etag||''});return json(res,200,{ok:1,bytes:Buffer.byteLength(text)})}
         if(w==='kv')return json(res,200,{keys:[...store.keys()]});
         if(w==='kv-dump')return json(res,200,dump());
         return json(res,404,{})}

@@ -1,5 +1,5 @@
 name: Deploy worker
-# Deploys worker.js (the entry; Wrangler bundles its ES modules in worker/ and merge.js, the merge rules it shares with the app) to Cloudflare whenever a change to it reaches main (after the tests pass).
+# Deploys worker.js (the entry; Wrangler bundles its ES modules in worker/, merge.js, the merge rules it shares with the app, and calparse.js, the calendar parser it shares) to Cloudflare whenever a change to it reaches main (after the tests pass).
 # Needs, in GitHub > Settings > Secrets and variables > Actions:
 #   secret   CLOUDFLARE_API_TOKEN   (Cloudflare token from the "Edit Cloudflare Workers" template, plus Queues edit)
 #   variable CLOUDFLARE_ACCOUNT_ID
@@ -7,7 +7,7 @@ name: Deploy worker
 on:
   push:
     branches: [main]
-    paths: [worker.js, 'worker/**', merge.js, wrangler.toml, .github/workflows/deploy-worker.yml]
+    paths: [worker.js, 'worker/**', merge.js, calparse.js, wrangler.toml, .github/workflows/deploy-worker.yml]
   workflow_dispatch:
     inputs:
       # a dry run of this workflow on any branch (e.g. to try the browser install): its tests, never a deploy
