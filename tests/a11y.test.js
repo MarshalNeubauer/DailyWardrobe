@@ -14,8 +14,8 @@ const a11yfix=async({ok,chromium,url})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';sel=new Date(2026,10,16);view={y:2026,m:10};cache={};show('today')});
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.cache={};show('today')});
     const inertMain=()=>p.evaluate(()=>['header','main','nav'].every(s=>document.querySelector(s).inert));
     // Settings
     await p.focus('header button[aria-label="Settings"]');await p.keyboard.press('Enter');
@@ -34,8 +34,8 @@ const a11yfix=async({ok,chromium,url})=>{
     await p.keyboard.press('Escape');
     ok(await p.evaluate(()=>!picker&&HOOK.syncLater===null&&!document.querySelector('main').inert),'Escape closes the picker, and the waiting redraw runs');
     // What to buy (enough pieces for its gate, for this one step; a check "already running", so none starts)
-    const sh=await p.evaluate(()=>{const keep=items,I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',...x});items=[...keep,I('sx1','suit','grey'),I('sx2','shirt','white'),I('sx3','shirt','pink'),I('sx4','shirt','cream'),I('sx5','tie','green'),I('sx6','tie','gold'),I('sx7','shoes','brown',{leather:'calf'})];HOOK.shopBusy={i:-1,n:1,label:'',t0:Date.now()};HOOK.openShop();const r={inside:document.querySelector('#shop-sheet').contains(document.activeElement),inert:document.querySelector('main').inert};
-      closeShop();r.after=document.querySelector('main').inert;items=keep;HOOK.shopBusy=null;return r});
+    const sh=await p.evaluate(()=>{const keep=items,I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',...x});HOOK.items=[...keep,I('sx1','suit','grey'),I('sx2','shirt','white'),I('sx3','shirt','pink'),I('sx4','shirt','cream'),I('sx5','tie','green'),I('sx6','tie','gold'),I('sx7','shoes','brown',{leather:'calf'})];HOOK.shopBusy={i:-1,n:1,label:'',t0:Date.now()};HOOK.openShop();const r={inside:document.querySelector('#shop-sheet').contains(document.activeElement),inert:document.querySelector('main').inert};
+      closeShop();r.after=document.querySelector('main').inert;HOOK.items=keep;HOOK.shopBusy=null;return r});
     ok(sh.inside&&sh.inert&&!sh.after,`What to buy: the focus moves in, the page behind is inert while it is up (${JSON.stringify(sh)})`);
     // the item sheet: a sync doesn't wipe what is being typed
     const iv=await p.evaluate(async()=>{show('wardrobe');openItem(items[2].id);await new Promise(r=>setTimeout(r,50));const f=document.querySelector('#item-view textarea,#item-view input[type=text]');if(!f)return {none:true};
@@ -90,9 +90,9 @@ const a11yround3=async({ok,chromium,url})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const build=()=>p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy',{pattern:'herringbone'}),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('socks','navy')];
+      HOOK.items=[I('suit','navy',{pattern:'herringbone'}),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('socks','navy')];
       if(typeof CK_OPEN!=='undefined')CK_OPEN['*']=true;   // (the item sheet's checklist sections open: the color button is inside one)
-      settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-16T09:00:00';sel=new Date(2026,10,16);view={y:2026,m:10};cache={};show('today')});
+      settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-16T09:00:00';HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.cache={};show('today')});
     await build();
     const live=()=>p.evaluate(()=>new Promise(r=>setTimeout(()=>r(document.querySelector('#sr-live').textContent),150)));
     const act=()=>p.evaluate(()=>{const a=document.activeElement;return !a||a===document.body?'BODY':(a.id?'#'+a.id:'')+(a.getAttribute('aria-label')||a.textContent||'').trim().slice(0,40)});
@@ -104,7 +104,7 @@ const a11yround3=async({ok,chromium,url})=>{
     ok(/^Tuesday, November 17: \S/.test(said),`the new day and its outfit are said by the live region ("${said}")`);
     await p.focus('#today button[aria-label="Previous day"]');await p.keyboard.press('Enter');await p.waitForTimeout(400);
     // the Wore pill (today, Monday 16): the focus stays, a line says what changed (W2-14-09)
-    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-16T18:00:00';cache={};renderToday()});
+    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-16T18:00:00';HOOK.cache={};renderToday()});
     await p.focus('#wpill');await p.keyboard.press('Enter');await p.waitForTimeout(400);
     const wp=await p.evaluate(()=>({f:document.activeElement&&document.activeElement.id,no:document.querySelector('#wpill').classList.contains('no'),t:document.querySelector('#toast').textContent,label:document.querySelector('#wpill').getAttribute('aria-label')}));
     ok(wp.f==='wpill'&&wp.no&&/not worn/.test(wp.t)&&wp.label==='Wore this outfit',`the Wore pill keeps the focus, says "Marked as not worn", and its name stays (${JSON.stringify(wp)})`);
@@ -116,7 +116,7 @@ const a11yround3=async({ok,chromium,url})=>{
     const st=await p.evaluate(()=>({tab:document.querySelector('#n-wardrobe').getAttribute('aria-current'),other:document.querySelector('#n-today').getAttribute('aria-current'),
       chip:[...document.querySelectorAll('#wardrobe .chip')].filter(b=>b.getAttribute('aria-pressed')==='true').map(b=>b.textContent.trim())}));
     ok(st.tab==='page'&&st.other===null&&st.chip.length===1&&/^Suit/.test(st.chip[0]),`the tab is aria-current and the chip aria-pressed (${JSON.stringify(st)})`);
-    await p.evaluate(()=>{flt='all';renderWardrobe()});
+    await p.evaluate(()=>{HOOK.flt='all';renderWardrobe()});
 
     // W2-19-02: the item sheet takes the focus and gives it back to the item's box
     const tile='#wardrobe .gi:nth-child(3) .giopen';
@@ -175,7 +175,7 @@ const a11yround3=async({ok,chromium,url})=>{
     ok(['light','dark'].every(t=>con[t].danger>=4.5&&con[t].field>=3&&con[t].green>=4.5),`the danger button 4.5:1, field edges 3:1 and green words 4.5:1 in both themes (${JSON.stringify(con)})`);
 
     // W2-14-01: Today's "Add one" beside a belt opens Add for a belt, and "Add without a photo" starts as a belt
-    await p.evaluate(()=>{show('today');if(!listOpen)HOOK.toggleList()});await p.waitForTimeout(400);
+    await p.evaluate(()=>{show('today');if(!HOOK.listOpen)HOOK.toggleList()});await p.waitForTimeout(400);
     await p.evaluate(()=>document.querySelector('button.addone[aria-label^="Belt"]').click());await p.waitForTimeout(300);
     const af=await p.evaluate(()=>({add:!document.querySelector('#add').hidden,note:document.querySelector('#add-for').textContent,shown:!document.querySelector('#add-for').hidden}));
     ok(af.add&&af.shown&&/a belt/.test(af.note),`"Add one" beside Belt opens Add, which says a belt is being added (${JSON.stringify(af)})`);
@@ -184,7 +184,7 @@ const a11yround3=async({ok,chromium,url})=>{
     ok(ty==='belt',`its card without a photo starts as a belt (${ty})`);
     await p.evaluate(()=>{HOOK.npsClose();queue.splice(0,queue.length);show('today')});
     await p.evaluate(()=>openAdd());
-    ok(await p.evaluate(()=>addFor===null&&document.querySelector('#add-for').hidden),"Add from the Wardrobe's + asks for no type");
+    ok(await p.evaluate(()=>HOOK.addFor===null&&document.querySelector('#add-for').hidden),"Add from the Wardrobe's + asks for no type");
     // W2-14-10: the pieces list says what ⇄ and − do
     await p.evaluate(()=>show('today'));
     ok(await p.evaluate(()=>{const l=document.querySelector('#today .plegend');return !!l&&/choose another/.test(l.textContent)&&l.getAttribute('aria-hidden')==='true'}),'the open pieces list has a line saying what ⇄ and − do');
@@ -196,7 +196,7 @@ const a11yround3=async({ok,chromium,url})=>{
     ok(cb.over&&cb.role==='button'&&cb.ask==='Cleaned today',`tapping the red "Overdue" banner asks, with "Cleaned today" (${JSON.stringify(cb)})`);
 
     // W2-14-14: a location set and no weather read: the line says so, with a retry
-    await p.evaluate(()=>{settings.location={name:'Kuwait City',lat:29.37,lon:47.98};weather={};renderToday()});
+    await p.evaluate(()=>{settings.location={name:'Kuwait City',lat:29.37,lon:47.98};HOOK.weather={};renderToday()});
     ok(await p.evaluate(()=>!!document.querySelector('#today .wxretry')),'a location with no forecast read says so, with a way to try again');
     await p.evaluate(()=>{settings.location=null;renderToday()});
 

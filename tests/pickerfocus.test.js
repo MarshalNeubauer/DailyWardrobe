@@ -17,8 +17,8 @@ async function run(eng,browser,{ok,url,settle}){
   const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   await p.evaluate(()=>{CK_OPEN['*']=true;let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-    items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('tie','green',{paused:true,order:true,arrives:'2099-01-10'})];
-    settings.setupDone=1;cache={};queue.length=0;show('wardrobe');openAdd()});
+    HOOK.items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('tie','green',{paused:true,order:true,arrives:'2099-01-10'})];
+    settings.setupDone=1;HOOK.cache={};queue.length=0;show('wardrobe');openAdd()});
   await settle(p,400);
   const T=eng+': ';
   const act=()=>p.evaluate(()=>{const a=document.activeElement;return !a||a===document.body?'BODY':a.tagName+(a.className?'.'+a.className:'')+' '+(a.getAttribute('aria-label')||a.textContent||'').trim().replace(/\s+/g,' ').slice(0,40)});

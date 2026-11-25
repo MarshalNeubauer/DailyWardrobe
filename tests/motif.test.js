@@ -69,11 +69,11 @@ const motif=async({ok,chromium,url,ROOT})=>{
 
     // an older band reading of the same tie is ignored: no plaid drawn
     const old=await p.evaluate(()=>{const it={id:'t2',type:'tie',primaryColor:'purple',secondaryColor:'navy',tertiaryColor:'white',pattern:'foulard',sett:{v:2,a:-45,bands:[['#6c5584',.5],['#463a64',.5]],cross:null,cr:3,tr:4,src:'claude+pixels'}};
-      items=[it];return {use:usableSett(it),def:fabricDef('q',it,'tie'),sum:patSummary(it),stripe:usableSett({...it,pattern:'stripe'})}});
+      HOOK.items=[it];return {use:usableSett(it),def:fabricDef('q',it,'tie'),sum:patSummary(it),stripe:usableSett({...it,pattern:'stripe'})}});
     ok(old.use===null&&!old.def.includes('#6c5584')&&/older reading drew these foulard figures as stripes/.test(old.sum)&&old.stripe,'an older band reading of a foulard is ignored (drawn generic, not described), and the editor says to read it again; a striped tie keeps its bands');
 
     // the Add card: the tagger says foulard; once the close-up is in, Claude reads the motif
-    await p.evaluate(async()=>{items=[];show('add');const b=await (await fetch('tests/fixtures/tie-neat.jpg')).blob();await addFiles([new File([b],'t.jpg',{type:'image/jpeg'})])});
+    await p.evaluate(async()=>{HOOK.items=[];show('add');const b=await (await fetch('tests/fixtures/tie-neat.jpg')).blob();await addFiles([new File([b],'t.jpg',{type:'image/jpeg'})])});
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/tie-neat-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
     await p.waitForFunction(()=>queue[0].sett&&queue[0].sett.motif,null,{timeout:20000});
     const card=await p.evaluate(()=>document.querySelector('#queue').textContent);
@@ -146,7 +146,7 @@ const figuremotif=async({ok,chromium,url,ROOT})=>{
     ok(m.usable&&m.band===null,'a dobby shirt takes the figure reading (a band reading still does not apply)');
     ok(m.patterned&&m.key,'the figured shirt counts as patterned: its own photo key');
     // the Add card: a dobby shirt's close-up asks Claude, and the reading is saved
-    await p.evaluate(async()=>{items=[];show('add');const b=await (await fetch('tests/fixtures/shirt-chevron-closeup.png')).blob();await addFiles([new File([b],'s.png',{type:'image/png'})])});
+    await p.evaluate(async()=>{HOOK.items=[];show('add');const b=await (await fetch('tests/fixtures/shirt-chevron-closeup.png')).blob();await addFiles([new File([b],'s.png',{type:'image/png'})])});
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/shirt-chevron-closeup.png')).blob();await addTexture(0,new File([b],'c.png',{type:'image/png'}))});
     await p.waitForFunction(()=>queue[0]&&queue[0].sett&&queue[0].sett.motif,null,{timeout:20000});
     ok(calls.length===1&&calls[0].type==='shirt'&&/read by Claude/.test(await p.textContent('#queue')),'a dobby shirt\'s close-up asks Claude for the pattern on the Add card');

@@ -14,7 +14,7 @@ const plannerfix=async({ok,chromium,url})=>{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;window.I=(type,primaryColor,x={})=>({id:type+(k++).toString().padStart(3,'0'),type,primaryColor,pattern:'solid',...x});
-      window.fresh=()=>{settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.vestMode='never';delete settings.darkShirts;dayRecs={};weather={};climate=null;TODAY_OVERRIDE='2026-11-11T12:00:00';cache={}};
+      window.fresh=()=>{settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.vestMode='never';delete settings.darkShirts;HOOK.dayRecs={};HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={}};
       window.months=n=>{const T=todayDate(),pl=planSim(planStart(T.getFullYear(),T.getMonth())).upTo(new Date(T.getFullYear(),T.getMonth()+n,0));return Object.entries(pl).filter(([k,o])=>keyDate(k)>=T)};
       window.uses=(pl,slot)=>{const u={};for(const [k,o] of pl)if(o[slot]&&!(slot==='bot'&&o.suitDay))u[o[slot].id]=(u[o[slot].id]||0)+1;return u}});
     // ---- rule tables
@@ -30,7 +30,7 @@ const plannerfix=async({ok,chromium,url})=>{
     ok(t.pair.tanBlue>0&&t.pair.greyBlue>0&&t.pair.navyBlue<0,`mid-blue trousers go under tan and grey jackets (${t.pair.tanBlue}, ${t.pair.greyBlue}), not under navy (${t.pair.navyBlue})`);
     // ---- nothing starves: trousers a point or two short of the favourite, and interchangeable socks
     const st=await p.evaluate(()=>{fresh();settings.blazerDays=[2,4];
-      items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('blazer','charcoal'),I('blazer','slate'),I('pants','grey'),I('pants','grey'),I('pants','khaki'),I('pants','taupe',{pattern:'windowpane',secondaryColor:'white'}),I('pants','taupe'),
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('blazer','charcoal'),I('blazer','slate'),I('pants','grey'),I('pants','grey'),I('pants','khaki'),I('pants','taupe',{pattern:'windowpane',secondaryColor:'white'}),I('pants','taupe'),
         I('shirt','white'),I('shirt','white'),I('shirt','lightblue'),I('shirt','lightblue'),I('shirt','pink'),I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','purple'),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),
         I('socks','charcoal'),I('socks','charcoal'),I('socks','darkgrey'),I('socks','charcoal'),I('socks','navy'),I('socks','grey')];
@@ -39,32 +39,32 @@ const plannerfix=async({ok,chromium,url})=>{
     ok(st.pants.every(n=>n>=3),`every pair of trousers that suits the blazers is worn over eight months, the windowpane pair too (${st.pants.join(', ')})`);
     ok(st.socks.every(n=>n>=3)&&Math.max(...st.socks)-Math.min(...st.socks)<=4,`four interchangeable charcoal socks take turns (${st.socks.join(', ')})`);
     // ---- seasons
-    const se=await p.evaluate(()=>{fresh();climate=Array.from({length:12},()=>({tmax:32,tmin:20,rainDays:0}));
-      const tw=I('suit','brown',{season:'cold'});items=[tw,I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','brown',{leather:'calf'}),I('shoes','black',{leather:'calf'})];
+    const se=await p.evaluate(()=>{fresh();HOOK.climate=Array.from({length:12},()=>({tmax:32,tmin:20,rainDays:0}));
+      const tw=I('suit','brown',{season:'cold'});HOOK.items=[tw,I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','brown',{leather:'calf'}),I('shoes','black',{leather:'calf'})];
       const warm=months(4).filter(([k,o])=>o.top&&o.top.id===tw.id).length;
-      climate=Array.from({length:12},()=>({tmax:8,tmin:0,rainDays:0}));cache={};const cold=months(4).filter(([k,o])=>o.top&&o.top.id===tw.id).length;
-      climate=Array.from({length:12},()=>({tmax:32,tmin:20,rainDays:0}));items=items.filter(i=>i.type!=='suit'||i.id===tw.id);const only=months(1)[0][1];
+      HOOK.climate=Array.from({length:12},()=>({tmax:8,tmin:0,rainDays:0}));HOOK.cache={};const cold=months(4).filter(([k,o])=>o.top&&o.top.id===tw.id).length;
+      HOOK.climate=Array.from({length:12},()=>({tmax:32,tmin:20,rainDays:0}));HOOK.items=items.filter(i=>i.type!=='suit'||i.id===tw.id);const only=months(1)[0][1];
       return {warm,cold,only:only.top&&only.top.id===tw.id,note:only.notes.join(' ')}});
     ok(se.warm===0&&se.cold>10,`a cold-weather suit is not planned on warm days while other suits are there (${se.warm} warm days), and takes its turn on cold ones (${se.cold})`);
     ok(se.only&&/cold-weather piece on a warm day/.test(se.note),'when it is the only suit it is worn, with a note');
     // ---- a suit whose only shoes were worn yesterday waits
     const sb=await p.evaluate(()=>{fresh();const bk=I('suit','black'),nv=I('suit','navy'),sB=I('shoes','black',{leather:'calf'}),sR=I('shoes','brown',{leather:'calf'});
-      items=[bk,nv,I('shirt','white'),I('tie','burgundy'),sB,sR];const by=t=>items.filter(i=>i.type===t),day={formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false,prev:[]};
+      HOOK.items=[bk,nv,I('shirt','white'),I('tie','burgundy'),sB,sR];const by=t=>items.filter(i=>i.type===t),day={formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:false,prev:[]};
       const a=outfit(true,100,by,{[sB.id]:99,[bk.id]:80,[nv.id]:80},null,day),b=outfit(true,100,by,{[sB.id]:96,[bk.id]:80,[nv.id]:80},null,day);
       return {after:a.top.id===nv.id,rested:b.top.id===bk.id}});
     ok(sb.after&&sb.rested,'the day after black shoes the navy suit goes before the black one; once the shoes have rested the black suit takes its turn');
     // ---- dark shirts follow the setting
     const dk=await p.evaluate(()=>{fresh();settings.workdays=[1,2,3,4,5];settings.blazerDays=[];
-      items=[I('suit','lightgrey'),I('suit','midgrey'),I('suit','darkgrey'),I('suit','navy'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','black'),I('shirt','navy'),I('shirt','charcoal'),
+      HOOK.items=[I('suit','lightgrey'),I('suit','midgrey'),I('suit','darkgrey'),I('suit','navy'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','black'),I('shirt','navy'),I('shirt','charcoal'),
         I('tie','silver'),I('tie','lightgrey'),I('tie','burgundy'),I('tie','navy'),I('tie','charcoal',{pattern:'check',secondaryColor:'lightgrey'}),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'})];
-      const n=()=>{cache={};return months(4).filter(([k,o])=>o.shirt&&darkShirt(o.shirt)).length},some=n();settings.darkShirts='often';const often=n(),
+      const n=()=>{HOOK.cache={};return months(4).filter(([k,o])=>o.shirt&&darkShirt(o.shirt)).length},some=n();settings.darkShirts='often';const often=n(),
         under=HOOK.darkUnderLight(items[2],items.find(i=>i.type==='shirt'&&i.primaryColor==='black')),sc=rateOutfit({suitDay:true,top:items[0],bot:null,shirt:items[7],tie:items[10],notes:[]}).checks.find(c=>c.label==='Shirt');
       settings.darkShirts='never';const never=n(),underNever=HOOK.darkUnderLight(items[0],items[7]);delete settings.darkShirts;
       return {some,often,never,under,underSome:HOOK.darkUnderLight(items[2],items[7]),underNever,shirtPts:sc.pts}});
     ok(dk.often>dk.some&&dk.never===0,`dark shirts: "often" plans them more than the default (${dk.often} against ${dk.some} days in four months), "never" not at all (${dk.never})`);
     ok(dk.under&&!dk.underSome&&!dk.underNever,'with "often" a dark shirt also goes under a mid-tone jacket that is clearly lighter (black under dark grey); by default only under a light one');
     // ---- no jacket in the wardrobe
-    const nj=await p.evaluate(()=>{fresh();items=[I('shirt','white'),I('shirt','lightblue'),I('pants','grey'),I('pants','navy'),I('pants','charcoal'),I('tie','burgundy'),I('shoes','black',{leather:'calf'})];
+    const nj=await p.evaluate(()=>{fresh();HOOK.items=[I('shirt','white'),I('shirt','lightblue'),I('pants','grey'),I('pants','navy'),I('pants','charcoal'),I('tie','burgundy'),I('shoes','black',{leather:'calf'})];
       return months(1).map(([k,o])=>!!o.bot&&!!o.shirt&&!o.top)});
     ok(nj.length>5&&nj.every(Boolean),'a wardrobe with no suit or blazer still gets trousers and a shirt every workday');
     // ---- socks may pick up the shirt's or the tie's colour
@@ -74,8 +74,8 @@ const plannerfix=async({ok,chromium,url})=>{
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     // ---- where the clocks go forward at midnight (Cairo, 24 April 2026) the month's last day is still planned
     const c2=await browser.newContext({viewport:{width:390,height:844},timezoneId:'Africa/Cairo'}),q=await c2.newPage();await q.goto(url);await q.waitForFunction(()=>window.appReady);
-    const dst=await q.evaluate(()=>{let k=0;const I=(type,primaryColor)=>({id:type+(k++),type,primaryColor,pattern:'solid'});items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('tie','burgundy'),I('shoes','black')];
-      settings.workdays=[0,1,2,3,4,5,6];settings.blazerDays=[];dayRecs={};TODAY_OVERRIDE='2026-04-02T12:00:00';cache={};const pl=buildPlan(2026,3);return {last:!!pl['2026-4-30'],n:Object.keys(pl).filter(k=>k.startsWith('2026-4-')).length}});
+    const dst=await q.evaluate(()=>{let k=0;const I=(type,primaryColor)=>({id:type+(k++),type,primaryColor,pattern:'solid'});HOOK.items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('tie','burgundy'),I('shoes','black')];
+      settings.workdays=[0,1,2,3,4,5,6];settings.blazerDays=[];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-04-02T12:00:00';HOOK.cache={};const pl=buildPlan(2026,3);return {last:!!pl['2026-4-30'],n:Object.keys(pl).filter(k=>k.startsWith('2026-4-')).length}});
     ok(dst.last&&dst.n===30,`Cairo: all ${dst.n} days of April 2026 are planned, the 30th too`);
     await c2.close();
   }finally{await browser.close()}
@@ -104,11 +104,11 @@ const darkshirts=async({ok,chromium,url})=>{
   // rotation with 6 light + 4 dark shirts, 2 light and 2 dark suits, mixed ties
   const rot=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+String(k++).padStart(3,'0'),type,primaryColor,pattern:'solid',...x});
     const sh=[['white'],['white'],['lightblue'],['pink'],['ivory'],['lavender'],['navy'],['charcoal'],['black'],['burgundy']];
-    items=[I('suit','navy'),I('suit','charcoal'),I('suit','lightgrey'),I('suit','tan'),I('blazer','navy'),I('pants','grey'),...sh.map(([c])=>I('shirt',c)),
+    HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','lightgrey'),I('suit','tan'),I('blazer','navy'),I('pants','grey'),...sh.map(([c])=>I('shirt',c)),
       I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white',tertiaryColor:'grey'}),I('tie','navy'),I('tie','green'),I('tie','silver'),I('tie','lightblue'),
       I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
-    settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-08T12:00:00';
-    const cnt={};let bad=0,dkDays=0,days=0;for(const m of [10,11]){cache={};for(const [kk,o] of Object.entries(buildPlan(2026,m))){if(keyDate(kk)<new Date(2026,10,8)||keyDate(kk).getMonth()!==m)continue;days++;
+    settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';
+    const cnt={};let bad=0,dkDays=0,days=0;for(const m of [10,11]){HOOK.cache={};for(const [kk,o] of Object.entries(buildPlan(2026,m))){if(keyDate(kk)<new Date(2026,10,8)||keyDate(kk).getMonth()!==m)continue;days++;
       if(o.shirt){cnt[o.shirt.primaryColor]=(cnt[o.shirt.primaryColor]||0)+1;if(darkShirt(o.shirt)){dkDays++;if(!HOOK.lightTop(o.top))bad++;if(o.tie&&HOOK.tieLum(o.tie)-LUM(o.shirt)<25)bad++}}}}
     return {cnt,bad,dkDays,days}});
   ok(['navy','charcoal','black','burgundy'].every(c=>rot.cnt[c]>=1),`every dark shirt is worn in 8 weeks (${JSON.stringify(rot.cnt)})`);

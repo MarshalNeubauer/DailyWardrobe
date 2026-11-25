@@ -21,13 +21,13 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
   // a wardrobe with a worn history (Oct 22 to Nov 10): navy suit 10 wears, grey suit 6 wears then cleaned Nov 6 and 2 more, blazer 3,
   // white shirt 5, a tie and shoes; the suits and the blazer priced
   const SETUP=`(()=>{const I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',added:+new Date(2026,9,20,12),...x});
-    items=[I('navy','suit','navy',{price:600}),I('grey','suit','grey',{price:450,cleans:['2026-11-06']}),I('bz','blazer','navy',{price:300}),I('p1','pants','grey'),
+    HOOK.items=[I('navy','suit','navy',{price:600}),I('grey','suit','grey',{price:450,cleans:['2026-11-06']}),I('bz','blazer','navy',{price:300}),I('p1','pants','grey'),
       I('sh1','shirt','white',{price:60}),I('sh2','shirt','lightblue'),I('t1','tie','burgundy'),I('bs','shoes','black',{leather:'calf'}),I('bb','belt','black',{leather:'calf',metal:'silver'}),I('so','socks','charcoal',{price:12})];
-    settings.workdays=[1,2,3,4,5];settings.blazerDays=[5];delete settings.care;delete settings.cleanCost;delete settings.currency;settings.holidays={country:'US',list:[],skip:[]};TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};
+    settings.workdays=[1,2,3,4,5];settings.blazerDays=[5];delete settings.care;delete settings.cleanCost;delete settings.currency;settings.holidays={country:'US',list:[],skip:[]};HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};
     const W=(m,d,top,sh)=>{const k=key(new Date(2026,m,d)),suit=top!=='bz';dayRecs[k]={date:k,ids:{top,bot:suit?null:'p1',shirt:sh,tie:'t1',shoes:'bs',belt:'bb',socks:'so'},suitDay:suit,worn:true}};
     [[9,22,'navy'],[9,23,'grey'],[9,26,'navy'],[9,27,'grey'],[9,28,'navy'],[9,29,'grey'],[9,30,'bz'],[10,2,'grey'],[10,3,'navy'],[10,4,'grey'],[10,5,'navy'],[10,6,'bz'],
      [10,9,'navy'],[10,10,'grey'],[9,21,'navy'],[9,20,'navy'],[9,24,'grey'],[9,31,'navy'],[10,1,'navy'],[10,7,'grey'],[10,8,'bz']].forEach(([m,d,t],n)=>W(m,d,t,n%4?'sh2':'sh1'));
-    cache={};sel=new Date(2026,10,11);view={y:2026,m:10}})()`;
+    HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10}})()`;
   const open=async(vp={width:390,height:844},scheme='light')=>{const p=await (await browser.newContext({viewport:vp,colorScheme:scheme})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});await p.evaluate(SETUP);return {p,errs}};
   try{
@@ -49,14 +49,14 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(c.sh.join()==='6,each,6'&&c.so.join()==='21,each,21','shirts and socks: one wash per wear '+c.sh+' / '+c.so);
     ok(c.bz.join()==='3,est,0'&&c.none===null&&c.tie.cl.how==='none','a blazer under its limit has none yet; no price, nothing at all; a tie (no limit) counts none');
     // ---- costs set: cost per wear
-    const d=await p.evaluate(()=>{settings.cleanCost={suit:15,load:3,perLoad:12};cache={};const n=HOOK.cpwOf(items.find(i=>i.id==='navy')),s=HOOK.cpwOf(items.find(i=>i.id==='sh1'));
+    const d=await p.evaluate(()=>{settings.cleanCost={suit:15,load:3,perLoad:12};HOOK.cache={};const n=HOOK.cpwOf(items.find(i=>i.id==='navy')),s=HOOK.cpwOf(items.find(i=>i.id==='sh1'));
       return {n:HOOK.cpwText(n),per:n.per,s:HOOK.cpwText(s),hint:HOOK.cpwHint(HOOK.cpwOf(items.find(i=>i.id==='bz'))),year:HOOK.cpwCleanYear(items.find(i=>i.id==='navy')),zero:HOOK.cpwText(HOOK.cpwOf({id:'zz',type:'suit',primaryColor:'navy',price:250})),zh:HOOK.cpwHint(HOOK.cpwOf({id:'zz',type:'suit',primaryColor:'navy',price:250}))}});
     ok(d.n==='$63.00 a wear · 10 wears · $600 + $30 cleaning'&&Math.abs(d.per-63)<1e-9,'the line: "'+d.n+'"');
     ok(d.s==='$10.25 a wear · 6 wears · $60 + $1.50 washing','a shirt: six home washes at $3 a load of 12: "'+d.s+'"');
     ok(d.hint==='Wear it 4 more times to get under $50 a wear.'&&d.zero==='Not worn yet · $250'&&d.zh==='Wear it 2 times to get under $200 a wear.','a hint for an expensive piece worn rarely ("'+d.hint+'"); none worn: "'+d.zero+'"');
     ok(d.year===30,'cleaning spent this year');
     // ---- the item sheet
-    const sheet=async id=>{await p.evaluate(id=>{flt='all';show('wardrobe');openItem(id)},id);await settle(p,450);
+    const sheet=async id=>{await p.evaluate(id=>{HOOK.flt='all';show('wardrobe');openItem(id)},id);await settle(p,450);
       return p.evaluate(()=>({price:(document.querySelector('#iv-price')||{}).value,line:(document.querySelector('#cpw-line')||{}).textContent||'',how:!!document.querySelector('#ivcpw .cpwhow'),
         sum:(document.querySelector('#item-view .ivrot .ckh small')||{}).textContent||'',sym:(document.querySelector('#ivcpw .cpwsym')||{}).textContent}))};
     {const s=await sheet('navy');ok(s.price==='600'&&s.line==='$63.00 a wear · 10 wears · $600 + $30 cleaning'&&s.how&&/\$63\.00 a wear$/.test(s.sum)&&s.sym==='$','the item sheet: Price $600 and the line in Planning & care, its summary ends "'+s.sum+'"')}
@@ -75,7 +75,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(await p.evaluate(()=>items.find(i=>i.id==='p1').bought==='2025-04-05'&&/Bought Apr 5, 2025/.test(document.querySelector('#ivcpw .cpwhow').textContent)),'the day bought is saved and named in "How it’s worked out"');
     {const s=await sheet('grey');const how=await p.evaluate(()=>document.querySelector('#ivcpw .cpwhow').textContent);
       ok(/1 cleaning recorded, and about 1 more before it/.test(how)&&/\$15/.test(how),'"How it’s worked out" says which cleanings are recorded and which estimated: '+how.slice(0,160))}
-    {await p.evaluate(()=>{delete settings.cleanCost;cache={}});const s=await sheet('navy');const how=await p.evaluate(()=>document.querySelector('#ivcpw .cpwhow').textContent);
+    {await p.evaluate(()=>{delete settings.cleanCost;HOOK.cache={}});const s=await sheet('navy');const how=await p.evaluate(()=>document.querySelector('#ivcpw .cpwhow').textContent);
       ok(s.line==='$60.00 a wear · 10 wears · $600'&&/About 2 cleanings/.test(how)&&/isn’t set/.test(how),'no cleaning cost: price alone, and it says the cost isn’t set ("'+s.line+'")')}
     // ---- the cleanings log
     await p.evaluate(()=>HOOK.closeItem());
@@ -83,7 +83,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       return {a,after:items.find(i=>i.id==='bz').cleans||null}});
     ok(lg.a.join()==='2026-11-11'&&lg.after===null,'"Cleaned today" records the cleaning; Undo takes it back');
     // ---- Insights: only with CPW_MIN priced items
-    const ins=async()=>{await p.evaluate(()=>{cache={};show('stats');renderStats()});await settle(p,300);
+    const ins=async()=>{await p.evaluate(()=>{HOOK.cache={};show('stats');renderStats()});await settle(p,300);
       return p.evaluate(()=>{const c=document.querySelector('#st-cpw');return c?{h:[...c.querySelectorAll('.cpw-h')].map(x=>x.textContent),rows:[...c.querySelectorAll('.cpw-row')].map(r=>r.querySelector('.st-main small').textContent),tiles:[...c.querySelectorAll('.st-tile')].map(t=>t.textContent)}:null})};
     await p.evaluate(()=>{for(const i of items)if(!['navy','grey'].includes(i.id))delete i.price});
     ok(await ins()===null,'two priced items: no Cost per wear card in Insights');
@@ -94,7 +94,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(await p.evaluate(()=>editing==='sh1'&&!document.querySelector('#wardrobe').hidden),'a row opens the item');
     await p.evaluate(()=>HOOK.closeItem());
     // ---- the Add card: Price and Bought in More, saved with the item; with "Bought, on the way" too
-    const add=await p.evaluate(async()=>{queue=[];openAdd();HOOK.addManual();setq(0,'type','tie');const q=queue[0];HOOK.setOrder(qAt(q.id),true);
+    const add=await p.evaluate(async()=>{HOOK.queue=[];openAdd();HOOK.addManual();setq(0,'type','tie');const q=queue[0];HOOK.setOrder(qAt(q.id),true);
       const has=!!document.querySelector('#nps-q .wf-price');HOOK.cpwQSet(qAt(q.id),'price','45.50');HOOK.cpwQSet(qAt(q.id),'bought','2026-11-10');const ok1=await save(q.id);const it=items.find(i=>i.id===q.id);
       return {has,ok1,price:it&&it.price,bought:it&&it.bought,order:it&&it.order}});
     ok(add.has&&add.ok1&&add.price===45.5&&add.bought==='2026-11-10'&&add.order,'the Add card takes a price and the day bought, "Bought, on the way" too '+JSON.stringify(add));
@@ -108,7 +108,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const shots=process.env.CPW_SHOTS;
     for(const w of [320,390])for(const th of ['light','dark']){
       const {p:q,errs:e2}=await open({width:w,height:844},th);
-      await q.evaluate(()=>{settings.cleanCost={suit:15,load:3,perLoad:12};items.find(i=>i.id==='navy').bought='2025-03-02';cache={};flt='all';show('wardrobe');openItem('navy')});await settle(q,500);
+      await q.evaluate(()=>{settings.cleanCost={suit:15,load:3,perLoad:12};items.find(i=>i.id==='navy').bought='2025-03-02';HOOK.cache={};HOOK.flt='all';show('wardrobe');openItem('navy')});await settle(q,500);
       await q.evaluate(()=>{const s=document.querySelector('#ivcpw .cpwhow');s.open=true;document.querySelector('#ivcpw').scrollIntoView({block:'start'})});await settle(q,200);
       const iv=await q.evaluate(()=>{const v=document.querySelector('#ivbody'),vr=document.querySelector('#item-view').getBoundingClientRect(),b=document.querySelector('#ivcpw');
         const out=[...b.querySelectorAll('*')].filter(x=>{const r=x.getBoundingClientRect();return r.width&&(r.right>vr.right+.5||r.left<vr.left-.5)}).length;
@@ -144,7 +144,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
         const res=await worker.fetch(new Request(r.url(),{method:r.method(),headers:r.headers(),body:['GET','HEAD'].includes(r.method())?undefined:r.postData()}),env);
         await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
       const p=await ctx.newPage();await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
-      await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-11T12:00:00'});return p};
+      await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00'});return p};
     const sync=p=>p.evaluate(()=>syncNow()),get=p=>p.evaluate(()=>{const i=items.find(x=>x.id==='s1');return i?{price:i.price??null,name:i.name||null,cleans:i.cleans||null}:null});
     const A=await device(),B=await device();
     await A.evaluate(async()=>{const it={id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',vest:'no',added:1};await put(it);items.push(it)});

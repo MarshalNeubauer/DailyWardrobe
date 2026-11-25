@@ -20,8 +20,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const W=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('blazer','grey'),I('pants','grey'),I('pants','khaki',{trouserKind:'chinos'}),I('pants','stone',{trouserKind:'chinos'}),I('pants','denim',{trouserKind:'jeans'}),I('pants','black',{trouserKind:'jeans'}),
         I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white',{pattern:'stripe',secondaryColor:'blue'}),I('tie','burgundy'),I('tie','navy'),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf',shoeStyle:'loafer'}),I('shoes','white',{leather:'calf',shoeStyle:'sneaker'}),I('shoes','brown',{leather:'suede',shoeStyle:'boot'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      const run=(dress,recs={})=>{items=W;settings={...settings,workdays:[0,1,2,3,4],blazerDays:[1,3],dress,laundryDays:1,holidays:null,daysOff:[]};weather={};climate=null;
-        TODAY_OVERRIDE='2026-11-08T12:00:00';dayRecs=recs;cache={};const P=buildPlan(2026,10),days=Object.values(P).filter(o=>o&&(o.top||o.shirt));
+      const run=(dress,recs={})=>{HOOK.items=W;HOOK.settings={...settings,workdays:[0,1,2,3,4],blazerDays:[1,3],dress,laundryDays:1,holidays:null,daysOff:[]};HOOK.weather={};HOOK.climate=null;
+        HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';HOOK.dayRecs=recs;HOOK.cache={};const P=buildPlan(2026,10),days=Object.values(P).filter(o=>o&&(o.top||o.shirt));
         const kindOf=o=>o.bot&&o.bot.type==='pants'?trouserKind(o.bot):o.suitDay?'suit':'-';
         return {n:days.length,blazer:[...new Set(days.filter(o=>o.top&&!o.suitDay).map(kindOf))].sort().join(),suitShoes:[...new Set(days.filter(o=>o.suitDay).map(o=>shoeStyle(o.shoes)))].sort().join(),
           noJ:[...new Set(days.filter(o=>!o.top).map(kindOf))].sort().join(),dressShoes:[...new Set(days.filter(o=>o.bot&&kindOf(o)==='dress').map(o=>shoeStyle(o.shoes)))].sort().join(),
@@ -38,7 +38,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return [shoeScore(suit,suit,s({})),shoeScore(suit,suit,s({shoeStyle:'sneaker'})),shoeScore(null,jeans,s({shoeStyle:'sneaker'}))-shoeScore(null,jeans,s({}))]});
     ok(sc[1]<=-50&&sc[2]===0,`a sneaker with a suit scores as shoes that don't suit (${sc[1]}), with jeans as well as an oxford`);
     // the Add card and the editor
-    const ui=await p.evaluate(()=>{items=[];cache={};openAdd();HOOK.addManual();const i=queue.length-1;setq(i,'type','pants');renderAdd();const kind=!!document.querySelector('#nps-q select[data-f="trouserKind"]');
+    const ui=await p.evaluate(()=>{HOOK.items=[];HOOK.cache={};openAdd();HOOK.addManual();const i=queue.length-1;setq(i,'type','pants');renderAdd();const kind=!!document.querySelector('#nps-q select[data-f="trouserKind"]');
       setq(i,'trouserKind','jeans');setq(i,'primaryColor','denim');setq(i,'type','shoes');renderAdd();const style=!!document.querySelector('#nps-q select[data-f="shoeStyle"]');setq(i,'type','pants');return {kind,style}});
     ok(ui.kind&&ui.style,'the Add card has Kind for pants and Style for shoes');
     // each is drawn as what it is
@@ -58,7 +58,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(mat.label==='Material'&&mat.opts==='Leather,Suede,Nubuck,Canvas,Knit'&&mat.leather==='calf',`a sneaker has Material: ${mat.opts}; switching a cordovan loafer to a sneaker makes it leather (${mat.leather})`);
     ok(!/canvas|knit/.test(mat.boots)&&mat.belt,'boots stay in leathers (and nubuck); a belt may be canvas (2026-11-15, the owner\'s option)');
     // the item sheet: Material right under Style, above Notes
-    const sheet=await p.evaluate(async()=>{closeSettings&&closeSettings();items=[{id:'sn9',type:'shoes',primaryColor:'white',pattern:'solid',leather:'canvas',shoeStyle:'sneaker',added:1}];cache={};show('wardrobe');openItem('sn9');await new Promise(r=>setTimeout(r,400));
+    const sheet=await p.evaluate(async()=>{closeSettings&&closeSettings();HOOK.items=[{id:'sn9',type:'shoes',primaryColor:'white',pattern:'solid',leather:'canvas',shoeStyle:'sneaker',added:1}];HOOK.cache={};show('wardrobe');openItem('sn9');await new Promise(r=>setTimeout(r,400));
       const labs=[...document.querySelectorAll('#item-view label')].map(l=>(l.firstChild&&l.firstChild.textContent||'').trim()).filter(Boolean);
       const sel=[...document.querySelectorAll('#item-view select')].find(s=>s.dataset.f==='leather');
       return {labs:labs.join(','),opts:sel?[...sel.options].map(o=>o.textContent).join():'',val:sel&&sel.value}});

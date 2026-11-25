@@ -18,9 +18,9 @@ async function open(browser,eng,url,touch,settle){
   await p.evaluate(()=>{CK_OPEN['*']=true;
     window.__pic=(w,h,c)=>{const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d');x.fillStyle=c;x.fillRect(0,0,w,h);x.fillStyle='#fff';x.fillRect(0,0,w/4,h/4);return cv.toDataURL('image/jpeg',.9)};
     let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-    items=[I('suit','navy',{photo:__pic(400,300,'#234')}),I('shirt','white',{photo:__pic(300,300,'#eee'),pattern:'stripe',secondaryColor:'blue',stripes:{kind:'stripe',a:0,b:[['#fff',4],['#36c',1]]}}),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),
+    HOOK.items=[I('suit','navy',{photo:__pic(400,300,'#234')}),I('shirt','white',{photo:__pic(300,300,'#eee'),pattern:'stripe',secondaryColor:'blue',stripes:{kind:'stripe',a:0,b:[['#fff',4],['#36c',1]]}}),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),
       I('tie','green',{paused:true,order:true,arrives:'2099-01-10'}),I('watch','black',{metal:'silver'}),I('suit','charcoal',{texture:__pic(300,300,'#444')})];
-    settings.setupDone=1;cache={};queue.length=0;show('wardrobe')});
+    settings.setupDone=1;HOOK.cache={};queue.length=0;show('wardrobe')});
   await settle(p,400);
   return {ctx,p,errs}}
 async function run(eng,browser,{ok,url,settle}){

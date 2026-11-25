@@ -33,7 +33,7 @@ module.exports=async({ok,chromium,url,settle})=>{
         ownMaterials:{shirt:['cupro']},tagStats:{n:3,wrong:{type:1}},tagFixes:[{field:'pattern',type:'tie',from:'solid',to:'woven',id:'a1',t:1}],care:{suit:5},dress:{jacket:true,tie:false},laundryDays:1,darkShirts:'some',pictures:'drawn',
         ks:{workdays:5},kh:{workdays:'abc'},kse:{shopSkip:{'':5}},khe:{shopSkip:{'#':'x'}}};
       const x=cleanSettings(own),cs=cleanSettings(c),st=cleanState({items:[],days:[],tombstones:{},settings:c}).settings;
-      let shown=null;const was=settings;try{settings=takeSettings({...settings,workdays:[0,1,2,3,4]},{workdays:'x<b>',custom:{colors:{}},updated:9});applyCustom(settings.custom);shown=JSON.stringify(settings.workdays)}catch(e){shown='threw '+e.message}finally{settings=was;applyCustom(settings.custom)}
+      let shown=null;const was=settings;try{HOOK.settings=takeSettings({...settings,workdays:[0,1,2,3,4]},{workdays:'x<b>',custom:{colors:{}},updated:9});applyCustom(settings.custom);shown=JSON.stringify(settings.workdays)}catch(e){shown='threw '+e.message}finally{HOOK.settings=was;applyCustom(settings.custom)}
       return {same:x===own,again:cleanSettings(cs)===cs,state:JSON.stringify(st)===JSON.stringify(cs),cols:cs.custom.colors.map(c=>c.key).join(),pats:cs.custom.patterns.map(p=>p.key+':'+JSON.stringify(p.types)).join(),
         hol:cs.holidays.list.map(h=>h.d).join(),off:cs.daysOff.map(h=>h.d).join(),skip:cs.shopSkip.join(),n:cs.tagStats.n,upd:cs.updated,shown,
         markup:JSON.stringify(cs).includes('__rx')}},crafted());

@@ -24,8 +24,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     let e=await p.evaluate(async F=>{const c=async u=>closeRead(await HOOK.urlCanvas(u)).ref,g=async u=>wbRead(await HOOK.urlCanvas(u)).gains;const w=await g(F.warmPhoto),n=await g(F.photo);
       return {plain:await c(F.plain),paper:await c(F.paper),warm:w&&+(w.b/w.r).toFixed(3),cool:n?+(n.b/n.r).toFixed(3):null}},F);
     ok(!e.plain&&e.paper&&e.warm>=PAPER_WARM_T&&!(e.cool>=PAPER_WARM_T),`the fixtures: paper found only with the band; the warm photo reads warm, the plain one doesn't (${JSON.stringify(e)})`);
-    await p.evaluate(F=>{HOOK.rememberRole({role:'owner'});items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:F.photo,texture:F.plain,added:1,name:'Mink suit'},
-      {id:'k1',type:'shoes',primaryColor:'black',leather:'calf',photo:F.photo,added:2}];flt='all';editing=null;show('wardrobe');openItem('m1')},F);await settle(p,400);
+    await p.evaluate(F=>{HOOK.rememberRole({role:'owner'});HOOK.items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:F.photo,texture:F.plain,added:1,name:'Mink suit'},
+      {id:'k1',type:'shoes',primaryColor:'black',leather:'calf',photo:F.photo,added:2}];HOOK.flt='all';HOOK.editing=null;show('wardrobe');openItem('m1')},F);await settle(p,400);
     // ---- the hint: "True color in 3 steps", one button with three small drawings
     e=await p.evaluate(()=>{const h=document.querySelector('#item-view .wbstcard'),b=h&&h.querySelector('.wbpic'),r=b&&b.getBoundingClientRect(),cr=h&&h.getBoundingClientRect();
       return {tag:h&&h.tagName,text:h&&[...h.querySelectorAll('.eb,.more,.li,.arr')].map(x=>x.textContent.replace(/\s+/g,' ').trim()).join(' '),hh:cr&&Math.round(cr.height),pics:h&&h.querySelectorAll('.wbpic').length,cam:!!(h&&h.querySelector('.cam svg')),tap:!!(h&&h.querySelector('.tap')),

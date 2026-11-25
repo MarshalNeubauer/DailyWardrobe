@@ -18,7 +18,7 @@ async function run(eng,browser,{ok,url,settle}){
   const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   const own=await p.evaluate(async()=>{CK_OPEN['*']=true;settings.setupDone=1;settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
-    items=[{id:'s1',type:'suit',primaryColor:'grey',pattern:'solid',added:1,name:'Gray suit'}];flt='all';editing=null;show('wardrobe');
+    HOOK.items=[{id:'s1',type:'suit',primaryColor:'grey',pattern:'solid',added:1,name:'Gray suit'}];HOOK.flt='all';HOOK.editing=null;show('wardrobe');
     const k=await addCustomColor({name:'Test plum',hex:'#5a2a4a',base:'wine',types:groupOf('suit'),accent:false});
     openItem('s1');return k});
   await settle(p,400);

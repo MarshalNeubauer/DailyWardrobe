@@ -14,10 +14,10 @@ module.exports=async({ok,chromium,url,WARDROBES,ROOT})=>{
   try{
     const p=await browser.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const r=await p.evaluate(W=>{const w=(0,eval)(W);items=w.realistic.map(i=>({...i}));
+    const r=await p.evaluate(W=>{const w=(0,eval)(W);HOOK.items=w.realistic.map(i=>({...i}));
       settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.laundryDays=1;settings.holidays=null;settings.daysOff=[];delete settings.dress;delete settings.fav;
-      weather={};climate=null;TODAY_OVERRIDE='2026-11-01T12:00:00';dayRecs={};
-      const end=new Date(2027,0,31),plan=()=>{cache={};const pl=planSim(new Date(2026,10,2)).upTo(end);return pl},ks=pl=>Object.keys(pl).sort((a,b)=>keyDate(a)-keyDate(b));
+      HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-01T12:00:00';HOOK.dayRecs={};
+      const end=new Date(2027,0,31),plan=()=>{HOOK.cache={};const pl=planSim(new Date(2026,10,2)).upTo(end);return pl},ks=pl=>Object.keys(pl).sort((a,b)=>keyDate(a)-keyDate(b));
       const sig=pl=>ks(pl).map(k=>k+':'+SLOTS.map(s=>pl[k][s]?pl[k][s].id:'-').join(',')).join(';');
       const P0=plan(),K=ks(P0),s0=sig(P0);settings.fav={looks:[],items:[]};const sEmpty=sig(plan());
       // two looks of the plan without favorites (a suit day and the next look with another jacket), and the tie worn least but not never
@@ -84,7 +84,7 @@ module.exports=async({ok,chromium,url,WARDROBES,ROOT})=>{
         const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:['GET','HEAD'].includes(q.method())?undefined:q.postData()}),env);
         await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
       const d=await ctx.newPage();await d.goto(url);await d.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
-      await d.reload();await d.waitForFunction(()=>window.appReady);await d.evaluate(()=>{TODAY_OVERRIDE='2026-11-11T12:00:00'});return d};
+      await d.reload();await d.waitForFunction(()=>window.appReady);await d.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00'});return d};
     const sync=d=>d.evaluate(()=>syncNow()),fav=d=>d.evaluate(()=>{const f=settings.fav||{looks:[],items:[]};return f.looks.map(l=>l.j+'|'+l.sh+'|'+l.tie).sort().join()+'/'+f.items.slice().sort().join()});
     const A=await device(),B=await device();
     await A.evaluate(async()=>{for(const it of [{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',added:1},{id:'h1',type:'shirt',primaryColor:'white',pattern:'solid',added:1},{id:'t1',type:'tie',primaryColor:'burgundy',pattern:'solid',added:1}]){await put(it);items.push(it)}});
