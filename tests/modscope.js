@@ -63,6 +63,36 @@ function accessorOf(d){
     else if(e&&e.type==='AssignmentExpression'&&e.operator==='='&&e.left.type==='Identifier'&&f.params.length===1&&f.params[0].type==='Identifier'&&e.right.type==='Identifier'&&e.right.name===f.params[0].name)a.writes=e.left.name}
   return a;
 }
+/* The tests' access point (T2, 2026-11-25; tests/hook.js). A module puts the names only the tests use on a chain of plain objects,
+   one per module, in one statement at its top level, after its bridge:
+     globalThis.HOOK={__proto__:globalThis.HOOK||null, fnA, CONST_B, get flag(){return flag}, set flag(v){flag=v}};
+   A test reads `HOOK.fnA` (the chain finds it in whichever module has it) and assigns `HOOK.flag = …` (the setter reaches the
+   module's own `let`). It isn't the bridge: nothing is put on the page's global scope but HOOK, and the app never reads HOOK.
+   It can't throw (an object literal of names already declared above it), so a module that loads, or fails to, does what it did.
+     hooked(ast, src)   {names: Map name -> {value, get, set, at}, odd: [text], count (statements), ranges: [[a, b]]} */
+const isHook=st=>!!st&&st.type==='ExpressionStatement'&&st.expression.type==='AssignmentExpression'&&st.expression.left.type==='MemberExpression'
+  &&G(st.expression.left.object)&&!st.expression.left.computed&&st.expression.left.property.name==='HOOK';
+function hooked(ast,src){
+  const names=new Map(),odd=[],stmts=ast.body.filter(isHook);
+  const text=n=>src?src.slice(n.range[0],Math.min(n.range[1],n.range[0]+80)).replace(/\s+/g,' '):n.type;
+  const body=f=>f&&f.type==='FunctionExpression'&&f.body.body.length===1?f.body.body[0]:null;
+  for(const st of stmts){const e=st.expression,o=e.right;
+    if(e.operator!=='='||!o||o.type!=='ObjectExpression'){odd.push(text(st));continue}
+    const [first,...rest]=o.properties,v=first&&first.value;
+    if(!(first&&first.type==='Property'&&first.kind==='init'&&!first.computed&&!first.shorthand&&keyOf(first)==='__proto__'&&v.type==='LogicalExpression'&&v.operator==='||'
+      &&v.left.type==='MemberExpression'&&G(v.left.object)&&!v.left.computed&&v.left.property.name==='HOOK'&&v.right.type==='Literal'&&v.right.value===null)){
+      odd.push('its first property must be `__proto__:globalThis.HOOK||null`: '+text(st));continue}
+    for(const p of rest){const k=p.type==='Property'&&!p.computed?keyOf(p):null;
+      if(k==null||k==='__proto__'){odd.push(text(p));continue}
+      const n=names.get(k)||{value:false,get:false,set:false,at:p.range[0]};names.set(k,n);
+      if(p.kind==='init'&&p.shorthand){n.value=true;continue}
+      const s=body(p.value);
+      if(p.kind==='get'&&!p.value.params.length&&s&&s.type==='ReturnStatement'&&s.argument&&s.argument.type==='Identifier'&&s.argument.name===k)n.get=true;
+      else if(p.kind==='set'&&p.value.params.length===1&&p.value.params[0].type==='Identifier'&&s&&s.type==='ExpressionStatement'&&s.expression.type==='AssignmentExpression'
+        &&s.expression.operator==='='&&s.expression.left.type==='Identifier'&&s.expression.left.name===k&&s.expression.right.type==='Identifier'&&s.expression.right.name===p.value.params[0].name)n.set=true;
+      else odd.push('write each name as `name`, `get name(){return name}` or `set name(v){name=v}`: '+text(p))}}
+  return {names,odd,count:stmts.length,ranges:stmts.map(s=>s.range)};
+}
 function bridged(ast,src){
   const names=new Map(),odd=[],acc=new Map();
   const text=n=>src?src.slice(n.range[0],Math.min(n.range[1],n.range[0]+80)).replace(/\s+/g,' '):n.type;
@@ -70,7 +100,7 @@ function bridged(ast,src){
     for(const p of o.properties){const k=keyOf(p);if(k==null)odd.push(text(st));else{names.set(k,kind);
       if(kind==='accessor'){const a=accessorOf(p.value);if(a)acc.set(k,a);else odd.push(text(st))}}}};
   for(const st of ast.body){
-    if(st.type!=='ExpressionStatement')continue;const e=st.expression;
+    if(st.type!=='ExpressionStatement'||isHook(st))continue;const e=st.expression;
     if(e.type==='AssignmentExpression'&&e.left.type==='MemberExpression'&&G(e.left.object)){
       if(e.left.computed||e.operator!=='=')odd.push(text(st));else names.set(e.left.property.name,'assign');continue}
     if(e.type!=='CallExpression'||e.callee.type!=='MemberExpression'||e.callee.computed||e.callee.object.type!=='Identifier'||e.callee.object.name!=='Object'||!G(e.arguments[0]))continue;
@@ -116,4 +146,4 @@ function workerFiles(root,worker){
   return {files:[...imports(ast,worker).map(i=>i.from),worker],module:true};
 }
 
-module.exports={pageScripts,parse,declared,bridged,imports,hasModuleSyntax,shared,workerFiles};
+module.exports={pageScripts,parse,declared,bridged,hooked,isHook,imports,hasModuleSyntax,shared,workerFiles};

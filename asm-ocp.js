@@ -96,6 +96,8 @@ async function asmOcpPaint(res,D){if(!res||!D||!D.boxes)return res;let img=null,
   if(img)res.url=await asmJpeg(img);return res}
 /* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
 Object.assign(globalThis,{asmOcpBase,asmOcpPhotoTex,asmOcpJob,asmOcpSig,asmOcpPaint});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,asmOcpPhotoTex};
 export {asmOcpBase,asmOcpPhotoTex,asmOcpJob,asmOcpSig,asmOcpPaint};
 /* (below the bridge: it reads asm-color.js's and asm-gl.js's tables at load, and throws without them) */
 (()=>{const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);

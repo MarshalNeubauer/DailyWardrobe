@@ -52,4 +52,6 @@ function planSnapSoon(){clearTimeout(planSnapT);planSnapT=setTimeout(()=>{const 
    module imports them. The file has no top-level call, so the bridge is its last lines */
 Object.assign(globalThis,{planDirty,planRuns,planMonth,planStartDay,planTrim,planFor,PLAN_SNAP,strHash,planSig,planSnapUse,outSig,planSnapSoon});
 Object.defineProperties(globalThis,{planSnapUsed:{get:()=>planSnapUsed},cache:{get:()=>cache,set:v=>{cache=v}}});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,planRuns,planSig,get planSnapUsed(){return planSnapUsed}};
 export {cache,planDirty,planRuns,planMonth,planStartDay,planTrim,planFor,PLAN_SNAP,strHash,planSig,planSnapUse,planSnapUsed,outSig,planSnapSoon};

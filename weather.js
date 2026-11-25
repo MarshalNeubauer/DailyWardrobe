@@ -72,6 +72,8 @@ async function loadWeather(force){
    setUnits, setLocation, useMyLocation, findCity), today.js (wxChip, loadWeather), start.js and safety.js (loadWeather) use these as
    globals (setup.js is a module too, as is scorecard.js: temp); geoName is read by tests/setup.test.js only */
 Object.assign(globalThis,{unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,geoName,findCity,loadWeather});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,geoName};
 export {unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,geoName,findCity,loadWeather};
 /* the markup's handler (act.js): a place in the city search's results (data-i: its place in the list kept as _cities) */
 function cityPick(el){setLocation(window._cities[+el.dataset.i])}

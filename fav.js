@@ -81,5 +81,7 @@ function favChipTap(){favWard=true;renderWardrobe()}
    favToggleItem are read by the favorites tests. favWard is a `let` only this file writes (wardrobe.js reads it): a getter, no setter. */
 Object.assign(globalThis,{FAV_UNDO_MS,favData,favSave,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favToggleItem,favMark,favChip,favWhy,favStatsCard,favOff});
 Object.defineProperties(globalThis,{favWard:{get:()=>favWard}});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,favData,favSave,favToggleItem};
 export {FAV_UNDO_MS,favData,favSave,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favToggleItem,favMark,favChip,favWhy,favStatsCard,favWard,favOff};
 acts({favLookTap,favWearTap,favItemTap,favChipTap});

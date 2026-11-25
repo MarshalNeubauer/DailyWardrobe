@@ -115,6 +115,8 @@ function tagNotes(q){if(q.manual)return '';const out=[];if(q.meas)q.measV=colour
    call: add.js, add-card.js, measure.js, pattern-read.js, colpick.js and safety.js, classic scripts, and the modules add-save.js and
    tag-request.js (fieldLabel, valName), which read them as globals (they come before this file in the list), use these; confTxt is read by tests/records.test.js only */
 Object.assign(globalThis,{fieldLabel,valName,aiFields,takeExtras,closeTagImg,readBegin,readEnd,readAbort,refineFromCloseup,confTxt,tagNotes});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,confTxt};
 export {fieldLabel,valName,aiFields,takeExtras,closeTagImg,readBegin,readEnd,readAbort,refineFromCloseup,confTxt,tagNotes};
 /* what the Add card's notes do (act.js; the card by its id in data-card: add-save.js cardAt, cardIx): read the close-up or the pattern
    again, Undo of the close-up's tags and of a measured change (the field in data-f), an offered type, color or pattern (data-f, data-v),

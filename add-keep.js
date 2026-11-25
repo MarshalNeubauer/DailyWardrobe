@@ -66,4 +66,6 @@ function addWatch(){if(addWatchOn)return;addWatchOn=true;if(typeof guardUnsaved=
    addKeepT is read by tests/addcards.test.js (a getter); the same test assigns addRestoreState (add.js reads it): a setter too */
 Object.assign(globalThis,{addKeepSoon,addCardRec,addKeep,addRevive,addRestore,addWatch});
 Object.defineProperties(globalThis,{addKeepT:{get:()=>addKeepT},addRestoreState:{get:()=>addRestoreState,set:v=>{addRestoreState=v}}});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,get addKeepT(){return addKeepT}};
 export {addKeepT,addRestoreState,addKeepSoon,addCardRec,addKeep,addRevive,addRestore,addWatch};

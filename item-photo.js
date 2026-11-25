@@ -154,5 +154,7 @@ function cropDiscardTap(){cropDiscard()}
 /* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
    one top-level call (acts, when act.js did not load): the names are then still the page's */
 Object.assign(globalThis,{PH_MAX,phSm,phSigOf,makeSmall,smallPhotos,photoTools,paperCloth,paperSteps,paperHint,paperTip,paperRetake,paperLine,imgOf,setPhoto,setTexture,replaceTexture,undoPhoto,startCrop,cropSource,cropEditor,cropKeep,layoutCrop,applyCrop});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,applyCrop,layoutCrop,paperTip,phSigOf,setPhoto,setTexture,startCrop,undoPhoto};
 export {PH_MAX,phSm,phSigOf,makeSmall,smallPhotos,photoTools,paperCloth,paperSteps,paperHint,paperTip,paperRetake,paperLine,imgOf,setPhoto,setTexture,replaceTexture,undoPhoto,startCrop,cropSource,cropEditor,cropKeep,layoutCrop,applyCrop};
 acts({photoFile,photoRotate,photoCrop,photoCuRemove,photoCuFile,paperTipTap,cropDrag,cropZoom,cropApply,cropDiscardTap});

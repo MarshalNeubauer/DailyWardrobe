@@ -153,5 +153,7 @@ function occAddTap(){addFormalDay()}
    file's one top-level call (acts, when act.js did not load): the names are then still the page's */
 Object.assign(globalThis,{COUNTRY_CODES,countryName,nagerKeep,builtinHolidays,holYears,setHolidayCountry,refreshHolidays,toggleHoliday,isoToDate,addDayOff,dayOffAdd,renderDaysOffUI,shortDate,yearDate,renderFormalUI});
 Object.defineProperties(globalThis,{holidayMsg:{get:()=>holidayMsg}});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,addDayOff,builtinHolidays,holYears,get holidayMsg(){return holidayMsg},nagerKeep,toggleHoliday};
 export {COUNTRY_CODES,countryName,holidayMsg,nagerKeep,builtinHolidays,holYears,setHolidayCountry,refreshHolidays,toggleHoliday,isoToDate,addDayOff,dayOffAdd,renderDaysOffUI,shortDate,yearDate,renderFormalUI};
 acts({occClear,countryPick,dayOffAddTap,occAddTap});

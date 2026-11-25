@@ -40,5 +40,7 @@ function cardArrives(el){setArrives(cardIx(el),el.value)}
    (checkArrivals); setOrder, setArrives and checkArrivals are also called by the tests. Before acts(), the file's one call that can
    throw (act.js not loaded): the names are then still the page's, as a classic script's were (start-up calls checkArrivals) */
 Object.assign(globalThis,{fmtDay,orderHint,qtyOf,qtyLabel,qtyRow,orderRow,setOrder,arriveVal,ARRIVE_PAST,setArrives,checkArrivals});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,setArrives,setOrder};
 export {fmtDay,orderHint,qtyOf,qtyLabel,qtyRow,orderRow,setOrder,arriveVal,ARRIVE_PAST,setArrives,checkArrivals};
 acts({cardQty,cardOrder,cardArrives});

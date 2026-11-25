@@ -151,6 +151,7 @@ declare var HANDPICK_TYPES: typeof import('../core.js').HANDPICK_TYPES;
 declare var HARD_CAP: typeof import('../planner.js').HARD_CAP;
 declare var HARM: typeof import('../planner.js').HARM;
 declare var HOME_CARD: typeof import('../kit.js').HOME_CARD;
+declare var HOOK: any;
 declare var INT_W: typeof import('../planner.js').INT_W;
 declare var ITEM_PIC_TYPES: typeof import('../photos.js').ITEM_PIC_TYPES;
 declare var JKT_SAME: typeof import('../planner.js').JKT_SAME;

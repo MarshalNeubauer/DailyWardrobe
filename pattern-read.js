@@ -269,5 +269,7 @@ function texFromSpec(spec,{tex}){const t=spec&&spec.texture;if(!t||!t.grid||t.gr
 /* the Add card's "Use the pattern from the photo" / "Use the simple pattern" (act.js; the card by its id: add-save.js cardIx) */
 function settTap(el){toggleSett(cardIx(el))}
 Object.assign(globalThis,{settable,motifPat,claudeOnly,readable,specSett,settSummary,TEX_WORDS});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,camoFromPixels,claudePattern,motifFromSpec,motifPat,settCheck,settFrom,specSett,texContrast,texFromSpec};
 export {settable,motifPat,claudeOnly,readable,specSett,settSummary,TEX_WORDS,settFrom,readSett,settCheck,missedPattern,settNote,rereadSett,claudePattern,settFromSpec,readPatternWithClaude,camoFromPixels,motifFromSpec,texContrast,texFromSpec};
 acts({settTap});

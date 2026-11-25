@@ -286,5 +286,7 @@ function calReviewTap(){openSettings('calendar')}
 function calPackTap(){openPack()}
 /* the rest of the bridge: CAL_GUIDES, declared above (tests/calendar.test.js reads it) */
 Object.assign(globalThis,{CAL_GUIDES});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,CAL_GUIDES,CAL_X,get calBusy(){return calBusy},calGuide,calNew,calPlan,renderCalUI};
 export {calBusy,CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,CAL_GUIDES,calGuide};
 acts({calConnectTap,calReadTap,calOffTap,calGuideTap,calKeepTap,calDismissTap,calUndoTap,calReviewTap,calPackTap});

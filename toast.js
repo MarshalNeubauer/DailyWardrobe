@@ -26,4 +26,6 @@ function toastDrop(){undoOff();const e=$('#toast');if(!e||!e.classList.contains(
 /* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals: toast (34 page
    scripts), toastDrop (start.js), TOAST_ACT_MS (tests/a11y.test.js). The file has no top-level call, so the bridge is its last lines */
 Object.assign(globalThis,{TOAST_ACT_MS,toast,toastDrop});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,TOAST_ACT_MS};
 export {TOAST_ACT_MS,toast,toastDrop};

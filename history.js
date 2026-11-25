@@ -207,6 +207,8 @@ function dayActions(o){
 }
 /* the rest of the bridge: setFormal, declared above (tests/itempics.test.js and tests/weather.test.js call it) */
 Object.assign(globalThis,{setFormal});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,correctPast,planRulesNote,replanFuture,resetDay,setFormal,swapSlot,togglePastEdit};
 export {idsOf,keyDate,swapMsg,saveDay,todayPullWait,whenPulled,recordDays,swapSlot,dropLearn,picker,pastEdit,openPicker,closePicker,pickItem,wearFav,togglePastEdit,correctPast,setFormal,setOccasion,resetDay,notAhead,setWorn,replanFuture,checkPlanRules,planRulesNote,renderReplanUI,setVest,resetCard,dayActions};
 /* index.html's (act.js): the piece picker's backdrop, and Settings' "Start the plan over" */
 function pickBackdropTap(){closePicker()}

@@ -26,6 +26,8 @@ function pageBack(kind){if(kind==='sub'&&subShown())subBack();else if(settingsOp
    as globals. Above the file's first top-level call that can throw (backOn, when back.js didn't load) */
 Object.assign(globalThis,{subShown,subOpen,subBack,openAdd,show,startPlain,startUp,onSyncedData,tabTap});
 Object.defineProperties(globalThis,{pagesOn:{get:()=>pagesOn}});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,startPlain,tabTap};
 export {subShown,subOpen,subBack,openAdd,pagesOn,show,startPlain,startUp,onSyncedData,tabTap};
 backOn('sub',k=>pageBack(k));backOn('set',k=>pageBack(k));
 function subOpen(){backPush('sub');

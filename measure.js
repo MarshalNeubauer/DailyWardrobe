@@ -252,4 +252,6 @@ function measureAndApply(q){measureCard(q);missedPattern(q);return applyMeasured
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. The file has no top-level call, so the bridge is its last lines */
 Object.assign(globalThis,{wbRead,wbGains,closeRead,PAPER,paperKey,urlCanvas,paperOf,paperNow,paperCopy,measureCloth,calibLab,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,MEAS_AUTO,colourVerdicts,AI_LOW_AUTO,AI_HIGH_FLAG,aiSignals,applyMeasured,undoMeasured,measureAndApply});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,AI_HIGH_FLAG,AI_LOW_AUTO,MEAS_AUTO,PAPER,applyMeasured,calibLab,urlCanvas};
 export {wbRead,wbGains,closeRead,PAPER,paperKey,urlCanvas,paperOf,paperNow,paperCopy,measureCloth,calibLab,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,MEAS_AUTO,colourVerdicts,AI_LOW_AUTO,AI_HIGH_FLAG,aiSignals,applyMeasured,undoMeasured,measureAndApply};

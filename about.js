@@ -272,6 +272,8 @@ function aboutStart(){
    statement each: tools and tests cut this file's `^const` lines */
 Object.assign(globalThis,{appVersion,aboutAsk,checkForUpdate,updateNow,fbWithErrs,sendFeedback,aboutResetAt,ABOUT_KEYS,ABOUT_NOTE,askDelete,wipeDevice,aboutDeleteAccount,renderAbout});
 Object.defineProperties(globalThis,{aboutNew:{get:()=>aboutNew},aboutUpdating:{get:()=>aboutUpdating,set:v=>{aboutUpdating=v}}});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,ABOUT_KEYS,aboutAsk,aboutDeleteAccount,get aboutNew(){return aboutNew},aboutResetAt,get aboutUpdating(){return aboutUpdating},set aboutUpdating(v){aboutUpdating=v},askDelete,checkForUpdate,fbWithErrs,sendFeedback,updateNow};
 export {aboutNew,aboutUpdating,appVersion,aboutAsk,checkForUpdate,updateNow,fbWithErrs,sendFeedback,aboutResetAt,ABOUT_KEYS,ABOUT_NOTE,askDelete,wipeDevice,aboutDeleteAccount,renderAbout};
 aboutStart();
 /* index.html's (act.js): About's "Check for updates", Update, the feedback's Send and "Delete my data" */

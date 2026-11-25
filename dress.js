@@ -77,5 +77,7 @@ function dressSwTap(el){setDress(el.dataset.k,el.getAttribute('aria-checked')!==
    and planner-rules tests. vestMigrating is read by the dress test only, and only this file writes it: a getter and no setter. */
 Object.assign(globalThis,{renderDressUI,newSuitVest,dressSummary,dressWhyUnused,migrateVests,dressNewItem,dressSynced});
 Object.defineProperties(globalThis,{vestMigrating:{get:()=>vestMigrating}});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,get vestMigrating(){return vestMigrating}};
 export {renderDressUI,newSuitVest,dressSummary,dressWhyUnused,vestMigrating,migrateVests,dressNewItem,dressSynced};
 acts({dressSwTap});

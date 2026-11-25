@@ -8,19 +8,19 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++).toString().padStart(3,'0'),type,primaryColor,pattern:'solid',...x});
     items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','grey'),I('shirt','lightblue'),I('shirt','pink'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),
       I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('watch','grey',{metal:'silver'}),I('socks','navy')];
-    dayRecs={};settings.shopSkip=[];TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};shop=null;show('stats')});
+    dayRecs={};settings.shopSkip=[];TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};HOOK.shop=null;show('stats')});
   // it waits for a wardrobe big enough to judge: this one has 2 shirts and 2 ties
-  const gate=await p.evaluate(()=>({t:document.querySelector('#stats #shop-btn').textContent,btn:document.querySelector('#shop-btn').tagName,open:(openShop(),shopOpen)}));
+  const gate=await p.evaluate(()=>({t:document.querySelector('#stats #shop-btn').textContent,btn:document.querySelector('#shop-btn').tagName,open:(HOOK.openShop(),shopOpen)}));
   ok(/Add 3 more shirts and 2 more ties to get advice/.test(gate.t)&&gate.btn!=='BUTTON'&&!gate.open,`What to buy waits until the wardrobe is big enough, and says what to add ("${gate.t}")`);
   await p.evaluate(()=>{let k=50;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-    items.push(I('shirt','white'),I('shirt','white',{pattern:'stripe',secondaryColor:'blue'}),I('shirt','lavender'),I('tie','green'),I('tie','silver'));cache={};shop=null;show('stats')});
+    items.push(I('shirt','white'),I('shirt','white',{pattern:'stripe',secondaryColor:'blue'}),I('shirt','lavender'),I('tie','green'),I('tie','silver'));cache={};HOOK.shop=null;show('stats')});
   ok(await p.$('#stats #shop-btn')&&await p.evaluate(()=>document.querySelector('#shop-btn').tagName==='BUTTON')&&!await p.$('#wardrobe #shop-btn'),'then Insights has a "What to buy" button (no longer on the Wardrobe)');
   const t0=Date.now();
   await p.click('#shop-btn');
-  ok(await p.evaluate(()=>document.querySelector('#shop-sheet').classList.contains('on')&&!!shopBusy),'the button opens the sheet and starts the check');
-  await p.waitForFunction(()=>shop&&!shopBusy,null,{timeout:90000});
+  ok(await p.evaluate(()=>document.querySelector('#shop-sheet').classList.contains('on')&&!!HOOK.shopBusy),'the button opens the sheet and starts the check');
+  await p.waitForFunction(()=>HOOK.shop&&!HOOK.shopBusy,null,{timeout:90000});
   const secs=(Date.now()-t0)/1000;await settle(p,400);
-  const r=await p.evaluate(()=>shop.res),recs=r.cats.flatMap(c=>c.recs),cat=k=>r.cats.find(c=>c.key===k),top=r.top.map(t=>cat(t.cat).recs.find(x=>x.key===t.key));
+  const r=await p.evaluate(()=>HOOK.shop.res),recs=r.cats.flatMap(c=>c.recs),cat=k=>r.cats.find(c=>c.key===k),top=r.top.map(t=>cat(t.cat).recs.find(x=>x.key===t.key));
   ok(secs<60,`the check finished in ${secs.toFixed(1)}s`);
   ok(await p.evaluate(()=>performance.getEntriesByType('resource').some(e=>e.name.includes('analysis-worker.js'))),'it ran in a background Web Worker');
   ok(recs.length>=12&&top.length>5,`far more than three ideas (${recs.length} in ${r.cats.length} sections, ${top.length} top picks; ${r.checked} possible purchases compared)`);
@@ -55,7 +55,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   // a piece owned but out of rotation is not suggested (2026-11-18, the owner: his purple tie out of rotation, a purple tie suggested)
   const sh=await p.evaluate(()=>{const keys=r=>r.cats.flatMap(c=>c.recs.map(x=>x.key)),a=runAnalysis(items,todayDate()),k=keys(a).find(x=>/^(tie|shirt)\|/.test(x));if(!k)return {none:true};
     const rec=a.cats.flatMap(c=>c.recs).find(x=>x.key===k),own={...rec.items[0],id:'shelved1',paused:true};
-    const b=runAnalysis([...items,own],todayDate()),c=runAnalysis([...items,{...own,paused:false,order:true}],todayDate());return {k,gone:!keys(b).includes(k),orderStill:shopShelved([{...own,order:true}]).length===0}});
+    const b=runAnalysis([...items,own],todayDate()),c=runAnalysis([...items,{...own,paused:false,order:true}],todayDate());return {k,gone:!keys(b).includes(k),orderStill:HOOK.shopShelved([{...own,order:true}]).length===0}});
   ok(!sh.none&&sh.gone&&sh.orderStill,`an idea whose piece is owned but out of rotation is not suggested (${sh.k}); a piece on order isn't counted as set aside (${JSON.stringify(sh)})`);
   // the sheet
   const ui=await p.evaluate(()=>{const s=document.querySelector('#shop-sheet'),b=s.getBoundingClientRect();
@@ -67,7 +67,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   ok(!/lightblue|lightgrey|darkgrey|undefined|NaN/.test(ui.text),'no run-together color names or blanks in the sheet');
   // a top pick opens its idea: reasons, sample outfits drawn from the owner's pieces
   const firstSuit=top.find(x=>x.type==='suit');
-  await p.evaluate(k=>shopGo(k),firstSuit.key);await settle(p,700);
+  await p.evaluate(k=>HOOK.shopGo(k),firstSuit.key);await settle(p,700);
   const open=await p.evaluate(k=>{const e=[...document.querySelectorAll('#shop-sheet .shop-rec')].find(e=>e.dataset.key===k),s=document.querySelector('#shop-sheet').getBoundingClientRect(),b=e.getBoundingClientRect();
     return {open:e.classList.contains('open'),figs:e.querySelectorAll('.shop-fig svg').length,cap:(e.querySelector('figcaption')||{}).textContent||'',why:e.querySelectorAll('.shop-why li').length,vis:b.top>=s.top&&b.top<s.bottom-80,
       btns:[...e.querySelectorAll('.btns button')].map(b=>b.textContent)}},firstSuit.key);
@@ -81,30 +81,30 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   await p.setViewportSize({width:390,height:780});
   // "Not for me": hidden at once, remembered, listed at the bottom, and left out of the next check
   const hideKey=ties.find(x=>x.tier!=='gap').key;
-  await p.evaluate(k=>{shopShown[k]=true;renderShop()},hideKey);
+  await p.evaluate(k=>{HOOK.shopShown[k]=true;HOOK.renderShop()},hideKey);
   await p.evaluate(k=>[...document.querySelectorAll('#shop-sheet .shop-rec')].find(e=>e.dataset.key===k).querySelector('.btns button:last-child').click(),hideKey);
   await p.waitForFunction(k=>(settings.shopSkip||[]).includes(k)&&![...document.querySelectorAll('#shop-sheet .shop-rec')].some(e=>e.dataset.key===k),hideKey);
   ok(await p.evaluate(async k=>(await metaGet('settings')).shopSkip.includes(k)&&/Hidden ideas/.test(document.querySelector('#shop-sheet').innerText),hideKey),'"Not for me" hides the idea, saves it with the settings and lists it under Hidden ideas');
   // "Bought it": added as on the way, with the arrival date; it counts as owned in the next check
   const buy=suits[0];
-  await p.evaluate(k=>{shopShown[k]=true;renderShop();[...document.querySelectorAll('#shop-sheet .shop-rec')].find(e=>e.dataset.key===k).querySelector('.btns button').click()},buy.key);
+  await p.evaluate(k=>{HOOK.shopShown[k]=true;HOOK.renderShop();[...document.querySelectorAll('#shop-sheet .shop-rec')].find(e=>e.dataset.key===k).querySelector('.btns button').click()},buy.key);
   await p.fill('#shop-arr','2026-11-20');const n0=await p.evaluate(()=>items.length);
   await p.click('#shop-sheet .shop-buy .pri');
-  await p.waitForFunction(n=>items.length>n&&shop&&!shopBusy&&!shopPart,n0,{timeout:90000});
-  const after=await p.evaluate(({k,hk})=>{const it=items[items.length-1],r=shop.res,all=r.cats.flatMap(c=>c.recs);
+  await p.waitForFunction(n=>items.length>n&&HOOK.shop&&!HOOK.shopBusy&&!HOOK.shopPart,n0,{timeout:90000});
+  const after=await p.evaluate(({k,hk})=>{const it=items[items.length-1],r=HOOK.shop.res,all=r.cats.flatMap(c=>c.recs);
     return {it:{type:it.type,paused:it.paused,order:it.order,arrives:it.arrives,uuid:/^[0-9a-f-]{36}$/.test(it.id)},gone:!all.some(x=>x.key===k),hidden:!all.some(x=>x.key===hk),rest:r.base.rest,msg:document.querySelector('#shop-sheet .shop-msg').textContent,
       tag:(renderWardrobe(),[...document.querySelectorAll('#wardrobe .pausetag')].map(e=>e.textContent).join())}},{k:buy.key,hk:hideKey});
   ok(after.it.type==='suit'&&after.it.paused===true&&after.it.order===true&&after.it.arrives==='2026-11-20'&&after.it.uuid,'"Bought it" adds the piece as bought, on the way, with its arrival date');
   ok(/On the way/.test(after.tag)&&/on the way/.test(after.msg),'the wardrobe shows it as on the way and the sheet says so');
   ok(after.gone&&after.rest<r.base.rest,`the next check counts it as owned: the idea is gone and the suits rest (${r.base.rest} short-rest days, now ${after.rest})`);
   ok(after.hidden,'and the hidden idea stays out of the new check');
-  ok(await p.evaluate(async()=>{const v=await metaGet('shop');return v&&v.res.v===2&&v.sig===shopSig()}),'the result is kept on the device for next time');
+  ok(await p.evaluate(async()=>{const v=await metaGet('shop');return v&&v.res.v===2&&v.sig===HOOK.shopSig()}),'the result is kept on the device for next time');
   // closing
   await p.keyboard.press('Escape');
   ok(await p.evaluate(()=>!document.querySelector('#shop-sheet').classList.contains('on')&&!shopOpen),'Escape closes the sheet');
   const btn=await p.textContent('#shop-btn');
   ok(/\d+ ideas · first: /.test(btn)&&!/changed since/.test(btn),`the button sums up the last check (${btn.replace(/\s+/g,' ').trim()})`);
-  await p.click('#shop-btn');ok(await p.evaluate(()=>shopOpen&&!shopBusy),'opening it again shows the kept result without checking again');
+  await p.click('#shop-btn');ok(await p.evaluate(()=>shopOpen&&!HOOK.shopBusy),'opening it again shows the kept result without checking again');
   await p.evaluate(()=>show('today'));ok(await p.evaluate(()=>!shopOpen),'leaving the tab closes it');
   // a well-stocked wardrobe: nothing to fix; a full category's ideas are optional; an item out of rotation is not counted as owned
   const full=await p.evaluate(`(()=>{const W=${WARDROBES};let k=900;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});settings.shopSkip=[];
