@@ -89,9 +89,9 @@ const colours=async({ok,chromium,url})=>{
   ok(rules.steelTie,'ties on a steel blue shirt use the blue-shirt table');
   // a wardrobe built from the new colours plans and renders cleanly
   const txt=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-    items=[I('suit','slate'),I('suit','deepblue'),I('suit','midgrey'),I('shirt','cream'),I('shirt','steelblue'),I('shirt','lightblue'),I('tie','wine'),I('tie','darknavy'),
+    HOOK.items=[I('suit','slate'),I('suit','deepblue'),I('suit','midgrey'),I('shirt','cream'),I('shirt','steelblue'),I('shirt','lightblue'),I('tie','wine'),I('tie','darknavy'),
       I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('shoes','wine',{leather:'calf'}),I('belt','burgundy',{leather:'calf',metal:'silver'}),I('socks','darknavy')];
-    dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today');document.querySelector('#sbox .month-link')?.click();
+    HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today');document.querySelector('#sbox .month-link')?.click();
     const t=[document.querySelector('#today').innerText];show('wardrobe');t.push(document.querySelector('#wardrobe').innerText);return t.join('\n')});
   ok(!/\b(darknavy|steelblue|deepblue|midgrey)\b/.test(txt),'no run-together color keys on Today or in the wardrobe');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
@@ -140,7 +140,7 @@ const shirts=async({ok,chromium,url,ROOT})=>{
   ok(pl.lavTie,'a lavender shirt prefers a purple tie over a tan one');
   ok(pl.rate>=6,`a pale yellow shirt scores reasonably (${pl.rate}/10)`);
   // editor: a shirt offers them, switching type to tie falls back
-  const ed=await p.evaluate(async()=>{items=[{id:'sh1',type:'shirt',primaryColor:'periwinkle',pattern:'end-on-end'}];editing='sh1';show('wardrobe');
+  const ed=await p.evaluate(async()=>{HOOK.items=[{id:'sh1',type:'shirt',primaryColor:'periwinkle',pattern:'end-on-end'}];HOOK.editing='sh1';show('wardrobe');
     const pb=document.querySelector('#item-view .patbtn');pb.click();const texOk=!!document.querySelector('#col-sheet .cptile[data-c="royal-oxford"]');closeColPick();const tex={value:/end on end/i.test(pb.textContent)?'end-on-end':pb.textContent};
     const btn=document.querySelector('#item-view .colbtn[data-k="primaryColor"]');btn.click();const prim=!!document.querySelector('#col-sheet .cptile[data-c="lavender"]');closeColPick();
     const a=prim&&texOk&&/periwinkle/i.test(btn.textContent)&&tex.value==='end-on-end';await sete('sh1','type','tie');const it=items[0];HOOK.closeItem();return {a,col:it.primaryColor,pat:it.pattern}});
@@ -165,9 +165,9 @@ const display=async({ok,chromium,url})=>{
   // a brownish photo crop on a grey suit and a light-blue shirt (what warm indoor light does to a photo)
   const brown='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
   await p.evaluate(b=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-    items=[I('suit','grey',{pattern:'herringbone',swatch:b,photo:b}),I('suit','darkgrey',{swatch:b}),I('shirt','lightblue',{swatch:b}),I('shirt','lightgrey'),I('tie','navy',{pattern:'stripe',secondaryColor:'white',tertiaryColor:'lightgrey',swatch:b}),
+    HOOK.items=[I('suit','grey',{pattern:'herringbone',swatch:b,photo:b}),I('suit','darkgrey',{swatch:b}),I('shirt','lightblue',{swatch:b}),I('shirt','lightgrey'),I('tie','navy',{pattern:'stripe',secondaryColor:'white',tertiaryColor:'lightgrey',swatch:b}),
       I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('watch','grey',{metal:'silver'}),I('socks','darkgrey')];
-    dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')},brown);
+    HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')},brown);
   const sw=await p.evaluate(()=>[...document.querySelectorAll('#today .list .dot')].map(d=>({bg:d.getAttribute('style')||'',svg:!!d.querySelector('svg'),html:d.innerHTML})));
   ok(sw.length>=6&&sw.every(d=>d.svg&&!d.bg.includes('url(')),'every list swatch is drawn, none uses the photo crop');
   const suitSw=sw[0].html;
@@ -179,7 +179,7 @@ const display=async({ok,chromium,url})=>{
   // colour names with spaces everywhere they are shown
   await p.click('#sbox .month-link');
   const texts=await p.evaluate(()=>{const t=[document.querySelector('#today').innerText];
-    sel=new Date(2026,10,16);items.push({id:'x1',type:'shoes',primaryColor:'brown',leather:'suede'});cache={};renderToday();t.push(document.querySelector('#today').innerText);
+    HOOK.sel=new Date(2026,10,16);items.push({id:'x1',type:'shoes',primaryColor:'brown',leather:'suede'});HOOK.cache={};renderToday();t.push(document.querySelector('#today').innerText);
     show('add');HOOK.addManual();t.push([...document.querySelectorAll('#nps-q select option')].map(o=>o.textContent).join(' '));
     t.push(runAnalysis(items,todayDate(),2).cats.map(c=>c.notes.join(' ')+' '+(c.own?c.own.groups.map(g=>g[0]).join(' '):'')+' '+c.recs.map(r=>r.name+' '+r.detail+' '+r.why.join(' ')).join(' ')).join(' '));
     return t.join('\n')});
@@ -206,9 +206,9 @@ const khaki=async({ok,chromium,url,ROOT})=>{
     ok(/khaki cotton twill dress trousers/.test(r.desc)&&/tan wool dress trousers/.test(r.wool),'the khaki item picture asks for cotton twill');
     // a blazer day with a navy blazer wears the khaki trousers
     const bot=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','khaki'),I('pants','black'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','khaki'),I('pants','black'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),
         I('shoes','brown',{leather:'calf'}),I('shoes','black',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};view={y:2026,m:10};
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.view={y:2026,m:10};
       // (the real planner, buildPlan, on three blazer days: planFor gives tests/fixedplan.js's outfit, whose pants the day number picks; CR-10-05)
       const P=buildPlan(2026,10);return ['2026-11-12','2026-11-19','2026-11-26'].map(k=>P[k]&&P[k].bot&&P[k].bot.primaryColor).join()});
     ok(bot==='khaki,khaki,khaki','a navy blazer is paired with the khaki trousers on every blazer day ('+bot+')');
@@ -244,8 +244,8 @@ const deeptaupe=async({ok,chromium,url,ROOT})=>{
     ok(r.shoes[0]>r.shoes[1],`a deep taupe suit prefers brown shoes over black (${r.shoes})`);
     // a deep taupe suit is planned, drawn and scored
     const d=await p.evaluate(()=>{const I=(id,type,primaryColor,x)=>({id,type,primaryColor,pattern:'solid',...x});
-      items=[I('st','suit','deeptaupe'),I('sh','shirt','white'),I('tb','tie','burgundy'),I('tn','tie','navy'),I('bs','shoes','brown',{leather:'calf'}),I('bk','shoes','black',{leather:'calf'}),I('bb','belt','brown',{leather:'calf'})];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];dayRecs={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};
+      HOOK.items=[I('st','suit','deeptaupe'),I('sh','shirt','white'),I('tb','tie','burgundy'),I('tn','tie','navy'),I('bs','shoes','brown',{leather:'calf'}),I('bk','shoes','black',{leather:'calf'}),I('bb','belt','brown',{leather:'calf'})];
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};
       // (the real planner, buildPlan: planMonth gives tests/fixedplan.js's outfit, whose shoe the day number picks; the code review CR-10-05)
       const days=['2026-11-10','2026-11-11','2026-11-12'],P=buildPlan(2026,10),o=P['2026-11-10'],allBrown=days.every(k=>P[k].shoes&&P[k].shoes.id==='bs');const div=document.createElement('div');div.innerHTML=figureSvg({suitDay:true,top:items[0],shirt:items[1],tie:items[2]},'q-');
       return {top:o.top&&o.top.id,shoes:o.shoes&&o.shoes.id,allBrown,drawn:div.innerHTML.includes(COLORS.deeptaupe),score:rateOutfit(o).score}});

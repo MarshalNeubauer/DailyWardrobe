@@ -116,19 +116,19 @@ const nuserver=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const lists=()=>asks.filter(a=>/list=1/.test(a)).length;
-    const both=await p.evaluate(async()=>{HOOK.listKeys=null;listAt=0;remoteKeys=null;await Promise.all([asmListGet(),HOOK.remoteList(),asmListGet(),HOOK.remoteList()]);return {asm:!!asmList,remote:HOOK.remoteListed}});
+    const both=await p.evaluate(async()=>{HOOK.listKeys=null;HOOK.listAt=0;HOOK.remoteKeys=null;await Promise.all([asmListGet(),HOOK.remoteList(),asmListGet(),HOOK.remoteList()]);return {asm:!!asmList,remote:HOOK.remoteListed}});
     const n0=lists();asks.length=0;
-    await p.evaluate(async()=>{remoteKeys=null;await Promise.all([asmListGet(),HOOK.remoteList()])});
+    await p.evaluate(async()=>{HOOK.remoteKeys=null;await Promise.all([asmListGet(),HOOK.remoteList()])});
     ok(both.asm&&both.remote&&lists()===0,`the painted pictures and the outfit photos share one list, kept for a while (${n0} at start, ${lists()} more when both asked again)`);
     listMode=429;asks.length=0;
-    const paused=await p.evaluate(async()=>{HOOK.listKeys=null;listAt=0;remoteKeys=null;asmList=null;await HOOK.remoteList();remoteKeys=null;
+    const paused=await p.evaluate(async()=>{HOOK.listKeys=null;HOOK.listAt=0;HOOK.remoteKeys=null;HOOK.asmList=null;await HOOK.remoteList();HOOK.remoteKeys=null;
       await Promise.all([asmListGet(),HOOK.remoteList(),asmListGet()]);
       const o={top:{id:'s',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'}};HOOK.renderTried.clear();await fetchRemoteRender(o,'2026-11-16');
       let p=null;try{p=JSON.parse(localStorage.getItem('list_pause'))}catch{}return {p,asm:asmList,listed:HOOK.remoteListed}});
     const tomorrow=(d=>Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1))(new Date());
     ok(lists()===1&&asks.length===1&&paused.p&&paused.p.until===tomorrow&&!paused.asm&&!paused.listed,
       `a refused list (429) is not asked again until the next UTC day, and no day is asked about one by one meanwhile (${asks.length} requests: ${asks.join(' ')})`);
-    listMode=503;asks.length=0;await p.evaluate(async()=>{localStorage.removeItem('list_pause');HOOK.listKeys=null;remoteKeys=null;await HOOK.remoteList();remoteKeys=null;await HOOK.remoteList();await asmListGet()});
+    listMode=503;asks.length=0;await p.evaluate(async()=>{localStorage.removeItem('list_pause');HOOK.listKeys=null;HOOK.remoteKeys=null;await HOOK.remoteList();HOOK.remoteKeys=null;await HOOK.remoteList();await asmListGet()});
     ok(lists()===1,`a 503 list pauses the same way (${lists()} request)`);
     listMode=200;asks.length=0;const forced=await p.evaluate(async()=>{const L=await asmListGet(true);return !!L&&!localStorage.getItem('list_pause')});
     ok(lists()===1&&forced,'a forced ask (Settings) still tries once, and a list that comes clears the pause');
@@ -136,7 +136,7 @@ const nuserver=async({ok,chromium,url,ROOT})=>{
     // ---- the app: an item-picture batch stops at the first picture the server can't keep
     KV.o.failPut=k=>/render:/.test(k);openai=0;
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
+      HOOK.items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
       for(const x of Object.keys(renders))delete renders[x];HOOK.renderTried.clear();openSettings('photos')});
     await p.evaluate(()=>{HOOK.startItemPics()});await p.click('#ask-ok');
     await p.waitForFunction(()=>!HOOK.itemBatch&&/Done/.test($('#itempic-status').textContent),null,{timeout:20000});
@@ -220,7 +220,7 @@ const testerview=async({ok,chromium,url})=>{
     // the role is remembered for the connection's code
     const as=role=>p.evaluate(r=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','code-'+r);acct.me=null;HOOK.rememberRole({role:r})},role);
     // (the day's photo line with its price went with the photo generator, 2026-11-14; showCost still guards the item pictures' price)
-    const texts=()=>p.evaluate(()=>({cost:showCost(),fb:(renderAbout(),document.querySelector('#fb-help').textContent)}));
+    const texts=()=>p.evaluate(()=>({cost:showCost(),fb:(HOOK.renderAbout(),document.querySelector('#fb-help').textContent)}));
     await as('tester');const t=await texts();
     ok(t.cost===false,'a tester sees no costs');
     ok(/goes to the person who invited you/.test(t.fb),'a tester is told who reads the feedback');

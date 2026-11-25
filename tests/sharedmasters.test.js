@@ -107,10 +107,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const res=await p.evaluate(async()=>{HOOK.asmAheadSoon=()=>{};HOOK.asmAhead=async()=>{};
       let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
-      const W={watch:I('watch','silver',{metal:'silver'}),suit:I('suit','navy'),shirt:I('shirt','pink'),tie:I('tie','burgundy')};items=Object.values(W);
+      const W={watch:I('watch','silver',{metal:'silver'}),suit:I('suit','navy'),shirt:I('shirt','pink'),tie:I('tie','burgundy')};HOOK.items=Object.values(W);
       const o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie},before=asmCmUse(o);await asmListGet(true);const listed=asmList&&asmList.has(asmCmKey('suit','master'))&&asmList.has(HOOK.asmCmMfKey());
       await asmEnsure(o);for(let i=0;i<200&&(asmBusy.size||HOOK.asmPreGetting.size);i++)await new Promise(r=>setTimeout(r,50));
-      const f=asmFor(o),r=asmOut[asmOutKey(o)];let px=null;
+      const f=asmFor(o),r=HOOK.asmOut[asmOutKey(o)];let px=null;
       if(f){const im=new Image();im.src=f.img;await im.decode();const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);px=[...x.getImageData(Math.round(im.width*.5),Math.round(im.width*.62),1,1).data].slice(0,3)}
       // (2026-11-14, a tester's gold watch) the same look with a gold watch on leather: painted on the tester's phone too, its dial dark
       const gw=I('watch','brown',{metal:'gold',dial:'charcoal',band:'leather'});items.push(gw);const o2={...o,watch:gw};let g2=null,gerr=null;

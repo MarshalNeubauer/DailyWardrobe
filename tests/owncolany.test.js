@@ -19,7 +19,7 @@ module.exports=async({ok,chromium,url})=>{
     const before=await p.evaluate(()=>Object.fromEntries(['suit','blazer','pants','shirt','tie','socks','shoes','tee','chore','pocketsquare'].map(t=>[t,colsFor(t).join()+'|'+colsFor(t,true).join()])));
     await p.evaluate(async CB=>{HOOK.rememberRole({role:'owner'});
       settings.custom={colors:[{key:CB,name:'Coyote brown',hex:'#81613c',base:'tan',types:['suit','blazer','pants'],accent:false}],patterns:[]};applyCustom(settings.custom);await saveUserSettings();
-      items=[{id:'p1',type:'pants',primaryColor:'charcoal',pattern:'solid',added:1},{id:'tee1',type:'tee',primaryColor:'white',pattern:'solid',added:2},
+      HOOK.items=[{id:'p1',type:'pants',primaryColor:'charcoal',pattern:'solid',added:1},{id:'tee1',type:'tee',primaryColor:'white',pattern:'solid',added:2},
         {id:'tee2',type:'tee',primaryColor:'navy',pattern:'stripe',secondaryColor:'white',added:3},{id:'po1',type:'polo',primaryColor:'navy',pattern:'solid',added:4}]},CB);
     // ---- the groups
     const g=await p.evaluate(()=>({tee:groupOf('tee'),hoodie:groupOf('hoodie'),chore:groupOf('chore'),cardigan:groupOf('cardigan'),ps:groupOf('pocketsquare'),tie:groupOf('tie'),suit:groupOf('suit'),shirt:groupOf('shirt'),fresh:groupOf('tee')!==groupOf('tee')}));

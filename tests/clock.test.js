@@ -57,11 +57,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(Math.abs(skew-YEAR)<60000,'a phone a year behind learns the gap from the server at its first sync');
     const told=await B.p.evaluate(()=>{const t=document.querySelector('#toast');return t?t.innerText:''});
     ok(/clock is 1 year behind/.test(told)&&!/server|worker/i.test(told),'and says once, in plain words, that its clock is wrong and how to fix it');
-    await B.p.evaluate(async()=>{const it=items.find(i=>i.id==='s1');it.name='Navy suit EDITED';await put(it);await del('s2');items=items.filter(i=>i.id!=='s2')});
+    await B.p.evaluate(async()=>{const it=items.find(i=>i.id==='s1');it.name='Navy suit EDITED';await put(it);await del('s2');HOOK.items=items.filter(i=>i.id!=='s2')});
     await sync(B.p);await sync(A.p);
     ok((await names(B.p))==='Grey suit,Navy suit EDITED'&&(await names(A.p))==='Grey suit,Navy suit EDITED','its edit and deletion survive the backup, on both phones');
     // the same phone before any server answered this time (its gap not known): the edit still wins over the copy it was made on (nextStamp)
-    await B.p.evaluate(async()=>{localStorage.removeItem('clock_skew');clockSkew=0;const it=items.find(i=>i.id==='s3');it.name='Grey suit B';await put(it)});
+    await B.p.evaluate(async()=>{localStorage.removeItem('clock_skew');HOOK.clockSkew=0;const it=items.find(i=>i.id==='s3');it.name='Grey suit B';await put(it)});
     await sync(B.p);await sync(A.p);
     ok((await names(A.p)).includes('Grey suit B'),'an edit stamped by a clock a year behind still replaces the copy it was made on');
     // two phones minutes apart: the later edit wins (W1-9-08, W1-5-07)

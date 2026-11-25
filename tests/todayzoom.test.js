@@ -14,8 +14,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
     await p.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
-      settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
+      settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};
       // a photo for the day: a 1024 px square with a grid, so zoom and pan can be measured
       const c=document.createElement('canvas');c.width=c.height=1024;const x=c.getContext('2d');x.fillStyle='#ccd';x.fillRect(0,0,1024,1024);x.strokeStyle='#333';for(let i=0;i<1024;i+=64){x.strokeRect(i,0,64,1024);x.strokeRect(0,i,1024,64)}
       const o=planFor()[key(sel)];renders[comboKey(o)]={sig:comboSig(o),img:c.toDataURL('image/jpeg',.8),model:'m',t:1};show('today')});
@@ -63,7 +63,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await T('touchStart',st.x+80,st.y);for(let k=1;k<=3;k++)await T('touchMove',st.x+80-20*k,st.y+2);
     const mid=await open();
     for(let k=4;k<=8;k++)await T('touchMove',st.x+80-25*k,st.y+2);await T('touchEnd');await settle(p,500);
-    const after=await p.evaluate(()=>({scoreOpen,listOpen,monthOpen,belowOpen:HOOK.belowOpen,openRow:HOOK.openRow}));
+    const after=await p.evaluate(()=>({scoreOpen,listOpen:HOOK.listOpen,monthOpen,belowOpen:HOOK.belowOpen,openRow:HOOK.openRow}));
     ok(mid===0,'the boxes fold as soon as the drag is known to be sideways (during the swipe)');
     ok(await day()!==d1&&await open()===0&&!after.scoreOpen&&!after.listOpen&&!after.monthOpen&&!after.belowOpen&&!after.openRow,'the next day comes in with everything folded');
     // the arrow buttons too
