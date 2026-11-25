@@ -29,7 +29,7 @@ const subback=async({ok,chromium,url,settle})=>{
       await p.evaluate(()=>{closeSettings();document.querySelector('main').style.minHeight=''});
     }
     // Today's "See what is due" opens Settings with Laundry & cleaning unfolded; Back closes Settings, back on Today
-    await p.evaluate(()=>{show('today');scrollTo(0,0);openCare()});await settle(p,300);
+    await p.evaluate(()=>{show('today');scrollTo(0,0);HOOK.openCare()});await settle(p,300);
     ok(await p.evaluate(()=>settingsOpen()&&document.querySelector('#sc-laundry').classList.contains('open')),'opened from Today, Laundry & cleaning is unfolded in Settings');
     await p.evaluate(()=>history.back());await p.waitForFunction(()=>!settingsOpen(),null,{timeout:3000}).catch(()=>{});await settle(p,300);
     ok(await p.evaluate(()=>!settingsOpen()&&!document.querySelector('#today').hidden),'and the phone\'s Back closes Settings, back on Today');
@@ -115,14 +115,14 @@ const nufix9=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(await st()==='set'&&await p.evaluate(()=>settingsOpen()),'a yes that opens Settings: Settings has the Back entry');
     // ---- a question over Settings borrows Settings' entry
     await ask('Roll back to Sun, Nov 15?');await settle(p,200);
-    ok(await st()==='set'&&await p.evaluate(()=>appKind==='ask'),'a question over Settings borrows its entry (no second one)');
+    ok(await st()==='set'&&await p.evaluate(()=>HOOK.appKind==='ask'),'a question over Settings borrows its entry (no second one)');
     await back();
     ok(await inApp()===url&&!await asked()&&await p.evaluate(()=>window._ans===false&&settingsOpen()),'Back over Settings closes the question as Cancel; Settings stays open (it closed Settings and left the question up)');
     ok(await st()==='set','…and Settings has its Back entry again');
     await back();
     ok(await inApp()===url&&await p.evaluate(()=>!settingsOpen()),'the next Back closes Settings, in the app');
     await p.evaluate(()=>openSettings('schedule'));await settle(p,300);await ask();await settle(p,200);await p.click('#ask-cancel');await settle(p,300);
-    ok(await st()==='set'&&await p.evaluate(()=>appKind==='set'&&settingsOpen()),'Cancel over Settings hands the entry back to Settings');
+    ok(await st()==='set'&&await p.evaluate(()=>HOOK.appKind==='set'&&settingsOpen()),'Cancel over Settings hands the entry back to Settings');
     await back();ok(await p.evaluate(()=>!settingsOpen())&&await inApp()===url,'…and Back then closes Settings');
     // (Back over the item sheet, over the color sheet over it, the tour, Add to Home Screen from Settings and the import sheet over Add
     // are checked on Chromium and WebKit in tests/backgesture.test.js: layer() and the nested steps; their copies here went, CR-10-14 / v4)
@@ -133,10 +133,10 @@ const nufix9=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.waitForTimeout(600);await p.mouse.click(195,120);await settle(p,300);
     ok(!await asked()&&await p.evaluate(()=>window._ans===false),'a tap outside half a second later still cancels it');
     // ---- the tour from Settings
-    await p.evaluate(()=>openSettings('about'));await settle(p,300);await p.evaluate(()=>tourAgain());await settle(p,400);
+    await p.evaluate(()=>openSettings('about'));await settle(p,300);await p.evaluate(()=>HOOK.tourAgain());await settle(p,400);
     ok(await st()==='kit'&&await p.evaluate(()=>!!kit&&!settingsOpen()),'Take the tour from Settings: the tour has the entry');
     await back();
-    ok(await inApp()===url&&await p.evaluate(()=>!kit&&settingsOpen()&&appKind==='set')&&await st()==='set','Back on it goes back to Settings → About, with Settings’ entry');
+    ok(await inApp()===url&&await p.evaluate(()=>!kit&&settingsOpen()&&HOOK.appKind==='set')&&await st()==='set','Back on it goes back to Settings → About, with Settings’ entry');
     await back();ok(await p.evaluate(()=>!settingsOpen()),'…and Back again closes Settings');
     await p.evaluate(()=>closeSettings());await settle(p,300);
     // ---- the Sample tag in the box's name
@@ -160,7 +160,7 @@ const nufix9=async({ok,chromium,url,WARDROBES,settle})=>{
     const iv=await p.evaluate(()=>{const h=document.querySelector('#iv-title'),c=[...document.querySelectorAll('#item-view .colnm')];return {t:h.scrollWidth<=h.clientWidth+1&&h.scrollHeight<=h.clientHeight+2,c:c.length>0&&c.every(x=>x.scrollWidth<=x.clientWidth+1)}});
     ok(iv.t,'…the item sheet’s title wraps instead of "Mid grey h…"');
     ok(iv.c,'…and its colour and pattern values aren’t cut ("Mid …")');
-    await p.evaluate(()=>{closeItem();document.documentElement.style.removeProperty('--tscale');document.documentElement.classList.remove('bigtext')});await settle(p,300);
+    await p.evaluate(()=>{HOOK.closeItem();document.documentElement.style.removeProperty('--tscale');document.documentElement.classList.remove('bigtext')});await settle(p,300);
     // ---- a toast with a long unbroken name
     await p.setViewportSize({width:402,height:874});await settle(p,200);
     const tb=await p.evaluate(()=>{show('today');toast('Deleted 🦚🦚🦚🦚🦚 '+'x'.repeat(60)+'.',8000,{label:'Undo',fn:()=>{}});const b=document.querySelector('#toast button').getBoundingClientRect();return b.left>=0&&b.right<=innerWidth});
@@ -189,8 +189,8 @@ const backzoom=async({ok,chromium,url,WARDROBES,settle})=>{
     const back=async()=>{await p.goBack({timeout:3000}).catch(()=>{});await settle(p,300)};
     const stateApp=()=>p.evaluate(()=>history.state&&history.state.app||'');
     // ---- the setup
-    await p.evaluate(()=>{items=[];delete settings.setupDone;setupOpen(false)});await settle(p,300);
-    await p.evaluate(()=>{setupGo(1);setupGo(1)});await settle(p,200);
+    await p.evaluate(()=>{items=[];delete settings.setupDone;HOOK.setupOpen(false)});await settle(p,300);
+    await p.evaluate(()=>{HOOK.setupGo(1);HOOK.setupGo(1)});await settle(p,200);
     ok(await stateApp()==='setup','the setup has a Back entry');
     await back();
     ok(await app()===url&&await p.evaluate(()=>setupShown()&&setup.at===1),'Back in the setup goes to the step before, in the app');
@@ -200,7 +200,7 @@ const backzoom=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(await stateApp()===''&&await p.evaluate(()=>!setupShown()),'Skip takes the setup’s entry away');
     // Run setup again from Settings: Settings' entry goes first, the setup's comes once that step back has landed
     await p.evaluate(()=>openSettings('about'));await settle(p,300);
-    await p.evaluate(()=>setupOpen(true));await settle(p,400);
+    await p.evaluate(()=>HOOK.setupOpen(true));await settle(p,400);
     ok(await stateApp()==='setup','Run setup again from Settings: the setup gets its entry after Settings’ step back');
     // finishing on Add: Add's entry waits for the setup's step back, then Back goes to the Wardrobe
     await p.evaluate(()=>{setup.at=SETUP_STEPS.length-1;setupFinish(true)});await settle(p,500);
@@ -208,9 +208,9 @@ const backzoom=async({ok,chromium,url,WARDROBES,settle})=>{
     await back();
     ok(await app()===url&&await p.evaluate(()=>document.querySelector('#add').hidden),'Back on Add (from the setup) stays in the app');
     // an invitation in the address: the entry waits until it is dropped
-    await p.evaluate(()=>{history.replaceState(null,'',location.pathname+'#invite=abcdefghijklmnopqrstuvwxyz&w=x');setupOpen(false)});await settle(p,200);
+    await p.evaluate(()=>{history.replaceState(null,'',location.pathname+'#invite=abcdefghijklmnopqrstuvwxyz&w=x');HOOK.setupOpen(false)});await settle(p,200);
     ok(await stateApp()==='','no entry while the address holds an invitation (Back would land on it again)');
-    await p.evaluate(()=>dropInviteHash());await settle(p,200);
+    await p.evaluate(()=>HOOK.dropInviteHash());await settle(p,200);
     ok(await stateApp()==='setup'&&await p.evaluate(()=>!location.hash),'the entry is made once the invitation leaves the address');
     await p.evaluate(()=>setupFinish(false));await settle(p,300);
     // ---- the picker and What to buy
@@ -221,10 +221,10 @@ const backzoom=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(await app()===url&&await p.evaluate(()=>!picker&&!document.querySelector('#pick-sheet.on')),'Back closes the picker, in the app');
     await p.evaluate(()=>openPicker('shirt'));await settle(p,300);await p.evaluate(()=>closePicker());await settle(p,300);
     ok(await stateApp()==='','closing the picker with × takes its entry away');
-    await p.evaluate(()=>{show('stats');shopBusy={i:-1,n:1,label:'',t0:Date.now()};openShop()});await settle(p,300);   // (a check "already running", so none starts)
+    await p.evaluate(()=>{show('stats');HOOK.shopBusy={i:-1,n:1,label:'',t0:Date.now()};HOOK.openShop()});await settle(p,300);   // (a check "already running", so none starts)
     ok(await stateApp()==='shop','What to buy has a Back entry');
     await back();
-    ok(await app()===url&&await p.evaluate(()=>!shopOpen),'Back closes What to buy, in the app');await p.evaluate(()=>{shopBusy=null});
+    ok(await app()===url&&await p.evaluate(()=>!shopOpen),'Back closes What to buy, in the app');await p.evaluate(()=>{HOOK.shopBusy=null});
     // ---- text size: rem, following --tscale
     await p.evaluate(()=>show('today'));await settle(p,200);
     const fsz=()=>p.evaluate(()=>[getComputedStyle(document.body).fontSize,getComputedStyle(document.querySelector('nav button')).fontSize,getComputedStyle(document.querySelector('header h1')).fontSize]);
@@ -253,7 +253,7 @@ const backzoom=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(lk,'a text link takes taps 9px above and below (44px)');
     await p.evaluate(()=>{document.documentElement.dataset.theme='light'});
     // ---- narrow screens (Safari page zoom 150% on this phone = 268 CSS px)
-    await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;cache={};show('today');if(!document.querySelector('#ibox.open'))toggleList()})()`);await settle(p,400);
+    await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;cache={};show('today');if(!document.querySelector('#ibox.open'))HOOK.toggleList()})()`);await settle(p,400);
     const rows=()=>p.evaluate(()=>[...document.querySelectorAll('#today .rowtap')].map(t=>{const n=t.lastElementChild,l=t.parentElement.firstElementChild;return {w:n.getBoundingClientRect().width,stacked:l.getBoundingClientRect().bottom<=t.getBoundingClientRect().top+1}}));
     let r=await rows();ok(r.length>2&&r.every(x=>!x.stacked),'390 px: each piece’s slot name beside it, as before');
     await p.setViewportSize({width:268,height:454});await settle(p,300);
@@ -267,7 +267,7 @@ const backzoom=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.evaluate(()=>{show('wardrobe');openItem(items.find(i=>i.type==='suit').id)});await settle(p,500);
     const cb=await p.evaluate(()=>{const b=document.querySelector('#item-view .colbtn');return b?b.getBoundingClientRect().width:0});
     ok(cb>=135,'268 px: the item sheet’s colour field keeps 8.5rem for its value (was about 118px, "N…")');
-    await p.evaluate(()=>closeItem());await settle(p,300);
+    await p.evaluate(()=>HOOK.closeItem());await settle(p,300);
     await p.setViewportSize({width:390,height:844});await settle(p,300);
     await p.evaluate(()=>{openSettings('schedule')});await settle(p,400);
     ok(await p.evaluate(()=>new Set([...document.querySelectorAll('#cfg-workdays .dtog')].map(x=>Math.round(x.getBoundingClientRect().top))).size===1),'390 px: the seven workday buttons stay on one row');

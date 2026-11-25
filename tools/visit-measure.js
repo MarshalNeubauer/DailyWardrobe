@@ -71,13 +71,13 @@ async function open(ctx,label){
       const until=Date.now()+60000;while(Date.now()<until){if(window.__vis.slice(n0).some(x=>x.d===d&&x.s==='photo'))break;await new Promise(r=>setTimeout(r,50))}
       const L=window.__vis.slice(n0).filter(x=>x.d===d).map(x=>({...x,t:Math.round(x.t-t)}));const shown=L.find(x=>x.s==='photo');
       let st={};try{const o=planFor()[key(sel)],k=asmCmKind(o),ok=asmOutKey(o),t=x=>x?x.type+':'+x.primaryColor:null;st={o:o?{top:t(o.top),shirt:t(o.shirt),tie:t(o.tie),vest:o.vest,suitDay:o.suitDay}:null,
-        dress:JSON.stringify(settings.dress),items:items.length,masterKinds:Object.keys(ASM_CM_KINDS).join(),ready:Object.keys(ASM_CM_KINDS).map(x=>x+':'+(typeof asmCmHeld==='function'&&asmCmHeld(x))).join(),kind:k,held:asmCmHeld(k),use:asmCmUse(o),list:asmList?asmList.size:null,key:ok,kept:!!asmOut[ok],listed:asmList&&ok?asmList.has(ok):null,busy:asmBusy.size,
-        queue:typeof asmQ!=='undefined'?asmQ.length:null,ahead:asmAheadOn,shown:!!renderFor(o),pre:ok?asmPreGetting.has(ok):null,tried:ok?asmTried.has('pre:'+ok):null,retry:ok?asmRetryAt.get('pre:'+ok)||0:null}}catch(e){st={err:String(e)}}
+        dress:JSON.stringify(settings.dress),items:items.length,masterKinds:Object.keys(ASM_CM_KINDS).join(),ready:Object.keys(ASM_CM_KINDS).map(x=>x+':'+('asmCmHeld' in HOOK&&HOOK.asmCmHeld(x))).join(),kind:k,held:HOOK.asmCmHeld(k),use:asmCmUse(o),list:asmList?asmList.size:null,key:ok,kept:!!asmOut[ok],listed:asmList&&ok?asmList.has(ok):null,busy:asmBusy.size,
+        queue:'asmQ' in HOOK?HOOK.asmQ.length:null,ahead:HOOK.asmAheadOn,shown:!!renderFor(o),pre:ok?HOOK.asmPreGetting.has(ok):null,tried:ok?asmTried.has('pre:'+ok):null,retry:ok?HOOK.asmRetryAt.get('pre:'+ok)||0:null}}catch(e){st={err:String(e)}}
       return {d,firstState:(L[0]||{}).s,drew:L.some(x=>x.s==='drawing'),ms:shown?shown.t:null,how:shown?shown.m:'',log:L,st}},null);
     swipes.push(r);await page.waitForTimeout(1200)}
   // what the worker keeps for the days measured: one of the PC builder's old pictures, or painted on the phone?
   const built=await page.evaluate(async days=>{try{await asmListGet(true)}catch{}const L=asmList;const out={};
-    for(const d of days){const [y,m,dd]=d.split('-').map(Number),o=planOn(new Date(y,m-1,dd));if(!o){out[d]='no outfit';continue}await asmCmLook(o);const k=asmOutKey(o);out[d]=!k?'no master':L&&L.has(k)?'on server':'painted on the phone'}return out},[first.day,...swipes.map(s=>s.d)].filter(Boolean));
+    for(const d of days){const [y,m,dd]=d.split('-').map(Number),o=planOn(new Date(y,m-1,dd));if(!o){out[d]='no outfit';continue}await HOOK.asmCmLook(o);const k=asmOutKey(o);out[d]=!k?'no master':L&&L.has(k)?'on server':'painted on the phone'}return out},[first.day,...swipes.map(s=>s.d)].filter(Boolean));
   const trace=await page.evaluate(()=>window.__pl||[]);
   return {label,first,swipes,built,trace,worker:{asks,mb:+(bytes/1048576).toFixed(1)},errs:errs.slice(0,5)}}
 (async()=>{

@@ -26,17 +26,17 @@ module.exports=async({ok,chromium,url,settle})=>{
     const ck=await p.evaluate(ns=>ns.map(n=>asmCmKey('suit',n)),names);
     files.forEach((f,i)=>{served[ck[i]]={sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,f)).toString('base64'),model:'colormaster',t:1000}});
     // the default: painted pictures, and the start-up look at the server happens (the network watch sees it)
-    await p.waitForFunction(()=>!asmSyncing,null,{timeout:10000}).catch(()=>{});
+    await p.waitForFunction(()=>!HOOK.asmSyncing,null,{timeout:10000}).catch(()=>{});
     const d0=await p.evaluate(()=>({pictures:settings.pictures,drawn:picsDrawn()}));
     ok(d0.pictures===undefined&&d0.drawn===false&&log.some(l=>/list=1/.test(l)),`the default is painted pictures, and painted, start-up reads the server's list of pictures (${log.length} picture requests)`);
     // a suit wardrobe, its day's look painted on the suit master; an outfit photo kept for that very look from the retired photo path
     const wardrobe=()=>p.evaluate(()=>{let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
       items=[I('watch','silver',{metal:'silver'}),I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      for(const i of items)if(ITEM_PIC_TYPES.includes(i.type))renderTried.add(itemKey(i));   // (item pictures are their own feature, not the painter's)
+      for(const i of items)if(HOOK.ITEM_PIC_TYPES.includes(i.type))HOOK.renderTried.add(itemKey(i));   // (item pictures are their own feature, not the painter's)
       settings.workdays=[1,2,3,4,5];settings.blazerDays=[];settings.vestMode='never';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};
       const o=planFor()[key(sel)];renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,/9j/KEPTPHOTO',model:'gpt',t:500};   // (older than the master: painting wins)
-      window.__paint=0;window.__ahead=0;if(!window.__P0){window.__P0=asmPhoto;window.__A0=asmAhead}
-      asmPhoto=async(...a)=>{__paint++;return __P0(...a)};asmAhead=async()=>{__ahead++};   // (building ahead counted, not run)
+      window.__paint=0;window.__ahead=0;if(!window.__P0){window.__P0=asmPhoto;window.__A0=HOOK.asmAhead}
+      asmPhoto=async(...a)=>{__paint++;return __P0(...a)};HOOK.asmAhead=async()=>{__ahead++};   // (building ahead counted, not run)
       show('today')});
     // Settings (the wardrobe comes after the switch: painted, its first drawing would start painting): the choice is there for everyone, outside the Advanced fold
     await p.evaluate(()=>{document.body.classList.add('owner');openSettings('photos')});await settle(p,300);
@@ -54,7 +54,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     const t1=await p.evaluate(()=>{const c=document.querySelector('#mannequin-container');return {svg:!!c.querySelector(':scope > svg'),img:!!c.querySelector(':scope > img'),photo:c.classList.contains('photo'),sw:!!document.querySelector('.swstack'),share:!!document.querySelector('.wshare'),kept:!!renders[comboKey(planFor()[key(sel)])]}});
     ok(t1.svg&&!t1.img&&!t1.photo&&!t1.sw&&t1.kept,`Today shows the traced mannequin, not the outfit photo kept for this look (still kept on the device), and no swatches (${JSON.stringify(t1)})`);
     ok(!t1.share,'there is no share button on Today to send anything else (it was removed 2026-11-14: a screenshot shares what is shown)');
-    await p.evaluate(async()=>{stepDay(1);stepDay(1);stepDay(-2);await asmSync(true);await __A0();await prefetchRenders();await asmEnsure(planFor()[key(sel)]);document.dispatchEvent(new Event('visibilitychange'))});
+    await p.evaluate(async()=>{stepDay(1);stepDay(1);stepDay(-2);await asmSync(true);await __A0();await HOOK.prefetchRenders();await asmEnsure(planFor()[key(sel)]);document.dispatchEvent(new Event('visibilitychange'))});
     await new Promise(r=>setTimeout(r,2500));   // (waiting to see that nothing happens)
     const t2=await p.evaluate(()=>({paint:__paint,ahead:__ahead,shown:!!renderFor(planFor()[key(sel)]),svg:!!document.querySelector('#mannequin-container > svg'),gap:asmGapNote({type:'blazer',pattern:'other',primaryColor:'navy'})}));
     ok(t2.gap==='','the item sheet has no "Outfit pictures: painted plain" line either');
@@ -97,7 +97,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await A.q.evaluate(()=>closeSettings());await sync(A);await sync(B);
     const sb=await B.q.evaluate(()=>{openSettings('photos');const r={drawn:picsDrawn(),val:document.querySelector('#cfg-pictures').value,sum:document.querySelector('#sum-photos').textContent};closeSettings();return r});
     ok(sb.drawn&&sb.val==='drawn'&&sb.sum==='Drawing only',`"Drawing only" chosen on one device reaches the second one with a sync (${JSON.stringify(sb)})`);
-    await B.q.evaluate(()=>{settings.units='C';return saveUserSettings()});await A.q.evaluate(()=>setPictures('painted'));
+    await B.q.evaluate(()=>{settings.units='C';return saveUserSettings()});await A.q.evaluate(()=>HOOK.setPictures('painted'));
     await sync(B);await sync(A);await sync(B);
     const both=await Promise.all([A,B].map(d=>d.q.evaluate(()=>[settings.pictures,settings.units].join())));
     ok(both[0]==='painted,C'&&both[1]==='painted,C',`switching back on the first device while the second changed another setting: both end painted and keep the other change (${both.join(' / ')})`);

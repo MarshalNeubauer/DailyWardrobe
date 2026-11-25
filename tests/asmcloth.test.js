@@ -7,7 +7,7 @@ module.exports=async({ok,chromium,url})=>{
   try{
     const p=await browser.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    ok(await p.evaluate(()=>ASM_SIZE===2048&&ASM_VER===3),'phones paint at 2048, and the keys carry ASM_VER 3');
+    ok(await p.evaluate(()=>ASM_SIZE===2048&&HOOK.ASM_VER===3),'phones paint at 2048, and the keys carry ASM_VER 3');
     // a figured shirt (a motif reading) is painted in colour, its repeat two cells from the close-up
     const mf=await p.evaluate(()=>{const i={id:'mf',type:'shirt',primaryColor:'white',secondaryColor:'grey',pattern:'dobby',
         sett:{v:3,motif:{grid:'straight',ground:'#c9c9d4',groundName:'white',figs:[{shape:'square',place:'cell',size:.5,cols:['#716f7b'],names:['grey']}],aspect:1},a:0,cr:10,tr:80,src:'claude+pixels'}};

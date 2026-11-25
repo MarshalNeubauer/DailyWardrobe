@@ -17,7 +17,7 @@ module.exports=async({ok,chromium,url})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const before=await p.evaluate(()=>Object.fromEntries(['suit','blazer','pants','shirt','tie','socks','shoes','tee','chore','pocketsquare'].map(t=>[t,colsFor(t).join()+'|'+colsFor(t,true).join()])));
-    await p.evaluate(async CB=>{rememberRole({role:'owner'});
+    await p.evaluate(async CB=>{HOOK.rememberRole({role:'owner'});
       settings.custom={colors:[{key:CB,name:'Coyote brown',hex:'#81613c',base:'tan',types:['suit','blazer','pants'],accent:false}],patterns:[]};applyCustom(settings.custom);await saveUserSettings();
       items=[{id:'p1',type:'pants',primaryColor:'charcoal',pattern:'solid',added:1},{id:'tee1',type:'tee',primaryColor:'white',pattern:'solid',added:2},
         {id:'tee2',type:'tee',primaryColor:'navy',pattern:'stripe',secondaryColor:'white',added:3},{id:'po1',type:'polo',primaryColor:'navy',pattern:'solid',added:4}]},CB);
@@ -83,7 +83,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(r.col===CB&&r.acc&&r.a&&/and their stripes and motifs too/.test(r.toast),`picked for the stripe it is set and offered for stripes and motifs (${r.toast})`);
     // ---- the picker's Ask Claude (the tagger's answer, stubbed): Claude names an own color made for another kind
     await p.evaluate(()=>{items.push({id:'hd1',type:'hoodie',primaryColor:'grey',pattern:'solid',added:5,texture:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='});
-      colAsk['hd1|c']={primaryColor:'brown',secondaryColor:'none',tertiaryColor:'none',conf:{primaryColor:'high'},own:{primaryColor:{name:'coyote brown',hex:'#80603c'}}};openColPick('e','hd1','primaryColor')});
+      HOOK.colAsk['hd1|c']={primaryColor:'brown',secondaryColor:'none',tertiaryColor:'none',conf:{primaryColor:'high'},own:{primaryColor:{name:'coyote brown',hex:'#80603c'}}};openColPick('e','hd1','primaryColor')});
     ok(await p.evaluate(CB=>!!document.querySelector(`#col-sheet .cpai [data-c="${CB}"]`)&&!colsFor('hoodie').includes(CB),CB),'Claude reads a hoodie as coyote brown: "Your color" Coyote brown is offered beside its listed pick');
     await p.click(`#col-sheet .cpai [data-c="${CB}"]`);await p.click('#col-sheet .cpbar button');
     await p.waitForFunction(CB=>items.find(x=>x.id==='hd1').primaryColor===CB,CB,{timeout:5000}).catch(()=>{});await toastWait('hoodies too');

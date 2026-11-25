@@ -76,11 +76,11 @@ async function free(eng,browser,{ok,url,settle}){
   // Connection: Enter in the invite field, Connect, the owner's line
   await ev(()=>{openSettings('connection');document.addEventListener('keydown',e=>{if(e.key==='Enter')window.__kd=e.defaultPrevented})});await settle(p,600);
   await p.locator('#conn-link').click();await p.keyboard.type('nonsense');await p.keyboard.press('Enter');
-  await p.waitForFunction(()=>!connBusy&&!!document.querySelector('#conn-msg').textContent,null,{timeout:8000}).catch(()=>{});
+  await p.waitForFunction(()=>!HOOK.connBusy&&!!document.querySelector('#conn-msg').textContent,null,{timeout:8000}).catch(()=>{});
   let c=await ev(()=>({msg:document.querySelector('#conn-msg').textContent,kd:window.__kd,typed:document.querySelector('#conn-link').value}));
   ok(/link/.test(c.msg)&&c.kd===true&&c.typed==='nonsense',T+'Connection: Enter in the invite field tries the link (the key’s own effect held back) and says why it failed ('+JSON.stringify(c)+')');
-  await ev(()=>{connMsg='';renderConnUI()});
-  await tap('#conn-go');await p.waitForFunction(()=>!connBusy&&!!document.querySelector('#conn-msg').textContent,null,{timeout:8000}).catch(()=>{});
+  await ev(()=>{HOOK.connMsg='';renderConnUI()});
+  await tap('#conn-go');await p.waitForFunction(()=>!HOOK.connBusy&&!!document.querySelector('#conn-msg').textContent,null,{timeout:8000}).catch(()=>{});
   c=await ev(()=>document.querySelector('#conn-msg').textContent);
   ok(/link/.test(c),T+'a tap on Connect does the same ('+c+')');
   await tap('#conn-own button',400);
@@ -114,7 +114,7 @@ async function free(eng,browser,{ok,url,settle}){
   await ev(()=>closeColPick());await settle(p,500);
   ok(n1.on&&n2.on&&/color/i.test(n1.t)&&/pattern/i.test(n2.t)&&n1.t!==n2.t,T+'"+ New color" opens the new color sheet and "+ New pattern" the new pattern sheet ('+JSON.stringify([n1.t,n2.t])+')');
   // an item picture reads its background color once it has loaded
-  const bg=await ev(async()=>{closeSettings();const t=ITEM_PIC_TYPES[0],it={id:'pic1',type:t,primaryColor:'black',pattern:'solid'},k=itemKey(it);renders[k]={img:__pic(64,64,'#a33')};
+  const bg=await ev(async()=>{closeSettings();const t=HOOK.ITEM_PIC_TYPES[0],it={id:'pic1',type:t,primaryColor:'black',pattern:'solid'},k=itemKey(it);renders[k]={img:__pic(64,64,'#a33')};
     const before=picBgs[k];const d=document.createElement('div');d.id='pic-fx';document.body.append(d);d.innerHTML=itemPicHtml(it,'');
     for(let i=0;i<60&&picBgs[k]===undefined;i++)await new Promise(r=>setTimeout(r,50));
     const r={img:!!d.querySelector('img.item-pic'),before:before===undefined,after:picBgs[k]!==undefined};d.remove();return r});
@@ -158,11 +158,11 @@ async function linked(eng,browser,{ok,url,settle}){
   await tap('#ask-ok',300);await p.waitForFunction(()=>!document.querySelector('#acct-list .acct-inv[data-id="inv2"]'),null,{timeout:8000}).catch(()=>{});
   c=await ev(()=>[...document.querySelectorAll('#acct-list .acct-inv')].map(r=>r.dataset.id));
   ok(/Delete Kim/.test(q3||'')&&c.join()==='inv1'&&S.invites.length===1,T+'Delete their data asks first, then takes Kim off the server and the list ('+JSON.stringify([q3,c])+')');
-  await ev(()=>{toastDrop&&toastDrop();acct={...acct,me:{id:'t',role:'tester',name:'Tess',used:{},caps:{}},state:'ok'};renderAccountUI()});await settle(p,200);
+  await ev(()=>{toastDrop&&toastDrop();acct={...acct,me:{id:'t',role:'tester',name:'Tess',used:{},caps:{}},state:'ok'};HOOK.renderAccountUI()});await settle(p,200);
   await tap('#acct-box .sactions button',500);
   c=await ev(()=>document.querySelector('#toast').textContent);
   ok(/Your invitation link is copied|Copy the link shown under the button/.test(c),T+'a tester’s "Copy my invitation link" copies it, or shows it to copy ('+c+')');
-  await ev(()=>{acct={...acct,me:{id:'own',role:'owner',name:'Owner'}};renderAccountUI()});
+  await ev(()=>{acct={...acct,me:{id:'own',role:'owner',name:'Owner'}};HOOK.renderAccountUI()});
 
   // About: the delete card (the deletion itself is replaced: it would empty this test's app)
   await ev(()=>{__via('deleteMyData',{delAllTap:()=>[true],delDeviceTap:()=>[false]});openSettings('about')});await settle(p,600);   // (at the two handlers: about.js is a module; about.test.js and shellfix.test.js tap them for real)
@@ -181,9 +181,9 @@ async function linked(eng,browser,{ok,url,settle}){
     window.__perm=0;window.Notification.requestPermission=async()=>{window.__perm++;return 'granted'};
     const reg={addEventListener(){},removeEventListener(){},update:async()=>{},installing:null,waiting:null,active:null,pushManager:{getSubscription:async()=>have,subscribe:async()=>{have=sub;return sub}}};
     Object.defineProperty(navigator,'serviceWorker',{configurable:true,value:{ready:Promise.resolve(reg),getRegistration:async()=>reg,addEventListener(){},removeEventListener(){}}});
-    localStorage.removeItem('remind_sent');remindSave({on:false,care:false,time:'06:30'});openSettings('schedule')});await settle(p,600);
-  {const flip=async(sw,want)=>{await tap(sw,100);await p.waitForFunction(w=>!remindBusy&&JSON.stringify([remindPrefs().on,remindPrefs().care])===w,want,{timeout:8000}).catch(()=>{});
-      return ev(()=>({p:[remindPrefs().on,remindPrefs().care],sw:['#remind-sw','#care-rem-sw'].map(s=>document.querySelector(s).getAttribute('aria-checked')).join(),msg:document.querySelector('.remind-msg').textContent}))};
+    localStorage.removeItem('remind_sent');HOOK.remindSave({on:false,care:false,time:'06:30'});openSettings('schedule')});await settle(p,600);
+  {const flip=async(sw,want)=>{await tap(sw,100);await p.waitForFunction(w=>!HOOK.remindBusy&&JSON.stringify([HOOK.remindPrefs().on,HOOK.remindPrefs().care])===w,want,{timeout:8000}).catch(()=>{});
+      return ev(()=>({p:[HOOK.remindPrefs().on,HOOK.remindPrefs().care],sw:['#remind-sw','#care-rem-sw'].map(s=>document.querySelector(s).getAttribute('aria-checked')).join(),msg:document.querySelector('.remind-msg').textContent}))};
     const a=await flip('#remind-sw','[true,false]'),b=await flip('#care-rem-sw','[true,true]'),c2=await flip('#remind-sw','[false,true]'),d=await flip('#care-rem-sw','[false,false]');
     const n=await ev(()=>({perm:window.__perm,unsub:window.__unsub||0})),ps=S.push;
     ok(a.p.join()==='true,false'&&a.sw==='true,false'&&/^On: a notification at 06:30 on your workdays/.test(a.msg)&&b.p.join()==='true,true'&&b.sw==='true,true'&&/due for the cleaner/.test(b.msg)
@@ -194,19 +194,19 @@ async function linked(eng,browser,{ok,url,settle}){
     await ev(()=>{delete navigator.serviceWorker;localStorage.removeItem('remind_sent');closeSettings()});await settle(p,300)}
   // then the calls themselves (the push service is replaced: remindSwitch is what both switches call)
   await ev(()=>{const turn=el=>el.getAttribute('aria-checked')!=='true';   // (a tap turns a switch the other way from what it shows)
-    __via('remindSwitch',{remindSwTap:el=>['morning',turn(el)],careRemSwTap:el=>['care',turn(el)]});remindSave({on:false,care:false,time:'06:30'});openSettings('schedule')});await settle(p,600);
+    __via('remindSwitch',{remindSwTap:el=>['morning',turn(el)],careRemSwTap:el=>['care',turn(el)]});HOOK.remindSave({on:false,care:false,time:'06:30'});openSettings('schedule')});await settle(p,600);
   const hasSw=await ev(()=>!!document.querySelector('#remind-sw'));
   await tap('#remind-sw',300);const r1=await calls();
-  await ev(()=>{remindSave({on:true,care:false,time:'06:30'});renderRemindUI()});
+  await ev(()=>{HOOK.remindSave({on:true,care:false,time:'06:30'});HOOK.renderRemindUI()});
   await tap('#remind-sw',300);const r2=await calls();
   await tap('#care-rem-sw',300);const r3=await calls();
-  await ev(()=>{remindSave({on:true,care:true,time:'06:30'});renderRemindUI()});
+  await ev(()=>{HOOK.remindSave({on:true,care:true,time:'06:30'});HOOK.renderRemindUI()});
   await tap('#care-rem-sw',300);const r4=await calls();
   ok(hasSw&&r1==='[["remindSwitch","morning",true]]'&&r2==='[["remindSwitch","morning",false]]'&&r3==='[["remindSwitch","care",true]]'&&r4==='[["remindSwitch","care",false]]',
     T+'reminders: each switch turns the other way from what it shows, the morning one and the cleaning one ('+[r1,r2,r3,r4].join(' ')+')');
-  await ev(()=>{remindSave({on:false,care:false,time:'06:30'});renderRemindUI()});
+  await ev(()=>{HOOK.remindSave({on:false,care:false,time:'06:30'});HOOK.renderRemindUI()});
   {const h=await p.locator('#remind-time').elementHandle();await h.fill('07:15');if(await h.evaluate(e=>e.isConnected))await h.evaluate(e=>e.dispatchEvent(new Event('change',{bubbles:true})));await settle(p,300)}
-  c=await ev(()=>remindPrefs().time);
+  c=await ev(()=>HOOK.remindPrefs().time);
   ok(c==='07:15',T+'the reminder’s time is kept when it is changed ('+c+')');
 
   // the calendar
@@ -233,7 +233,7 @@ async function linked(eng,browser,{ok,url,settle}){
   c=await ev(()=>({seen:(settings.calSeen||{}).b2b2b2b2b2b2b2b2||'',gone:!!document.querySelector('.cal-row.gone .linkbtn')&&document.querySelector('.cal-row.gone .linkbtn').textContent}));
   ok(c.seen==='x'&&c.gone==='Dismissed · Undo',T+'✕ dismisses an event ('+JSON.stringify(c)+')');
   await tap(row('Retail conference')+' .cal-ok',300);await p.waitForFunction(()=>(settings.calSeen||{}).c3c3c3c3c3c3c3c3==='k',null,{timeout:8000}).catch(()=>{});await settle(p,300);
-  c=await ev(()=>({trip:packTrip(),toast:document.querySelector('#toast').textContent,on:document.querySelector('#toast').classList.contains('on')}));
+  c=await ev(()=>({trip:HOOK.packTrip(),toast:document.querySelector('#toast').textContent,on:document.querySelector('#toast').classList.contains('on')}));
   ok(c.trip&&c.trip.a==='2026-12-07'&&c.trip.b==='2026-12-09'&&c.on&&/Packing list set/.test(c.toast)&&/Open/.test(c.toast),T+'✓ on the conference sets the Packing list’s trip, with a toast that offers Open ('+JSON.stringify(c)+')');
   await tap('#toast button',700);
   c=await ev(()=>({pack:!document.querySelector('#pack').hidden,set:settingsOpen()}));
@@ -249,7 +249,7 @@ async function linked(eng,browser,{ok,url,settle}){
   await ev(()=>kitClose());await settle(p,600);
   const back=await ev(()=>settingsOpen()&&document.querySelector('#sc-calendar').classList.contains('open'));
   ok(c.kit&&!c.set&&c.text&&back,T+'"How to get the link · Google" opens that walkthrough over the app, and closing it goes back to Settings → Calendar ('+JSON.stringify([c,back])+')');
-  await tap('#cal-read',300);await p.waitForFunction(()=>!calBusy&&/nothing new|new event/.test(document.querySelector('#cal-msg').textContent),null,{timeout:8000}).catch(()=>{});
+  await tap('#cal-read',300);await p.waitForFunction(()=>!HOOK.calBusy&&/nothing new|new event/.test(document.querySelector('#cal-msg').textContent),null,{timeout:8000}).catch(()=>{});
   c=await ev(()=>document.querySelector('#cal-msg').textContent);
   ok(S.reads===2&&/nothing new|new event/.test(c),T+'Read now reads the calendar again ('+S.reads+', '+c+')');
   await tap('#cal-off',500);const q4=await ev(()=>!!asking&&document.querySelector('#ask-title').textContent);
@@ -310,7 +310,7 @@ async function linked(eng,browser,{ok,url,settle}){
   const v1=await ev(()=>({up:!!cuOpen,rm:!!document.querySelector('#cu-rm')}));
   await p.locator('#cu-take').setInputFiles(REAL('b.jpg'));await p.waitForFunction(()=>!!items.find(x=>x.id==='s1').texture,null,{timeout:8000}).catch(()=>{});await settle(p,400);
   const v2=await ev(()=>({s1:!!items.find(x=>x.id==='s1').texture,s2same:items.find(x=>x.id==='s2').texture===__s2}));
-  await ev(()=>{closeItem();openItem('s2')});await settle(p,700);
+  await ev(()=>{HOOK.closeItem();openItem('s2')});await settle(p,700);
   await tap('#item-view .pt-closeup',600);
   const v3=await ev(()=>({up:!!cuOpen,rm:!!document.querySelector('#cu-rm')}));
   await tap('#cu-rm',300);await p.waitForFunction(()=>!items.find(x=>x.id==='s2').texture,null,{timeout:8000}).catch(()=>{});await settle(p,300);

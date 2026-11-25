@@ -109,7 +109,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(await p.evaluate(()=>!COLORS.ownsage&&settings.custom.colors.length===1),'an unused one can be removed');
     // calibration: two measured items of a colour set that colour's reference
     const cal=await p.evaluate(()=>{items.push({id:'a',type:'suit',primaryColor:'navy',meas:{lab:[20,2,-20],ref:true}},{id:'b',type:'suit',primaryColor:'navy',meas:{lab:[22,2,-18],ref:true}});
-      const c=calibLab('navy','blazer'),n=nearestCols('suit',[21,2,-19],true);items=items.filter(i=>!['a','b'].includes(i.id));return {c,n}});
+      const c=HOOK.calibLab('navy','blazer'),n=nearestCols('suit',[21,2,-19],true);items=items.filter(i=>!['a','b'].includes(i.id));return {c,n}});
     ok(cal.c&&cal.c[0]===20||cal.c[0]===22,'two measured navy items set what navy looks like in this wardrobe');
     ok(cal.n[0].c==='navy'&&cal.n[0].d<3,`a new measurement close to them matches navy (ΔE ${cal.n[0].d})`);
     // ---- an item is never shown its own corrections (the colour picker's Ask Claude passes skipId; the accuracy check that did too was removed 2026-11-13)

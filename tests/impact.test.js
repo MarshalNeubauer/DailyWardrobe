@@ -184,7 +184,7 @@ module.exports=async({ok,chromium,url,ROOT,impactRec})=>{
 
     /* the runner's own record of this test */
     if(impactRec){const b=await chromium.launch(),p=await b.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);
-      await p.evaluate(()=>openStats());await p.waitForSelector('#stats:not([hidden])');await p.reload();await p.waitForFunction(()=>window.appReady);
+      await p.evaluate(()=>HOOK.openStats());await p.waitForSelector('#stats:not([hidden])');await p.reload();await p.waitForFunction(()=>window.appReady);
       await p.evaluate(()=>show('wardrobe'));await p.keyboard.press('ArrowRight');
       fs.readFileSync(path.join(ROOT,'wrangler.toml'));
       // a Node child process: the script it is given (a tool) and the repo files it reads itself

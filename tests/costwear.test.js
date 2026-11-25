@@ -33,24 +33,24 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
   try{
     const {p,errs}=await open();
     // ---- currency and formatting
-    const f=await p.evaluate(()=>{const o={};o.us=[cpwCur(),cpwMoney(12.4),cpwMoney(186,true),cpwMoney(7.5,true)];
-      settings.holidays.country='KW';o.kw=[cpwCur(),cpwMoney(12.4)];settings.holidays.country='DE';o.de=cpwCur();settings.currency='GBP';o.gb=[cpwCur(),cpwMoney(1234.5,true)];
-      settings.currency='XX1';o.bad=cpwCur();delete settings.currency;settings.holidays.country='US';
-      o.parse=['120','89.50','89,90','1,234.50','1.234,50','12,500','$1 299','abc','','-5','٤٥'].map(cpwParse);return o});
+    const f=await p.evaluate(()=>{const o={};o.us=[HOOK.cpwCur(),HOOK.cpwMoney(12.4),HOOK.cpwMoney(186,true),HOOK.cpwMoney(7.5,true)];
+      settings.holidays.country='KW';o.kw=[HOOK.cpwCur(),HOOK.cpwMoney(12.4)];settings.holidays.country='DE';o.de=HOOK.cpwCur();settings.currency='GBP';o.gb=[HOOK.cpwCur(),HOOK.cpwMoney(1234.5,true)];
+      settings.currency='XX1';o.bad=HOOK.cpwCur();delete settings.currency;settings.holidays.country='US';
+      o.parse=['120','89.50','89,90','1,234.50','1.234,50','12,500','$1 299','abc','','-5','٤٥'].map(HOOK.cpwParse);return o});
     ok(f.us.join('|')==='USD|$12.40|$186|$7.50','the currency from the holiday country, formatted by Intl: "$12.40", a total of 10 or more without cents "$186" '+f.us.join(' '));
     ok(f.kw[0]==='KWD'&&/KWD|KD|د\.ك/.test(f.kw[1])&&/12\.400/.test(f.kw[1])&&f.de==='EUR'&&f.gb[0]==='GBP'&&f.gb[1]==='£1,235'&&f.bad==='EUR','Kuwait in dinars with three decimals ('+f.kw[1]+'), Germany in euros, the one chosen in Settings wins, a bad code falls back to the country’s '+JSON.stringify(f));
     ok(JSON.stringify(f.parse)===JSON.stringify([120,89.5,89.9,1234.5,1234.5,12500,1299,null,null,5,45]),'typed prices read as numbers in either decimal style '+JSON.stringify(f.parse));
     // ---- cleanings: estimated, recorded, washed after every wear
-    const c=await p.evaluate(()=>{const g=id=>cpwOf(items.find(i=>i.id===id));const n=g('navy'),gr=g('grey'),sh=g('sh1'),so=g('so'),bz=g('bz');
+    const c=await p.evaluate(()=>{const g=id=>HOOK.cpwOf(items.find(i=>i.id===id));const n=g('navy'),gr=g('grey'),sh=g('sh1'),so=g('so'),bz=g('bz');
       return {n:[n.wears,n.cl.how,n.cl.n,n.clean,n.per],g:[gr.wears,gr.cl.how,gr.cl.n,gr.cl.rec,gr.cl.extra],sh:[sh.wears,sh.cl.how,sh.cl.n],so:[so.wears,so.cl.how,so.cl.n],bz:[bz.wears,bz.cl.how,bz.cl.n],
-        none:cpwOf(items.find(i=>i.id==='p1')),tie:cpwOf({...items.find(i=>i.id==='t1'),price:80})}});
+        none:HOOK.cpwOf(items.find(i=>i.id==='p1')),tie:HOOK.cpwOf({...items.find(i=>i.id==='t1'),price:80})}});
     ok(c.n.join()==='10,est,2,0,60','no cleaning recorded: about 10 ÷ 5 = 2 cleanings, no cost set so nothing added, $600 ÷ 10 wears '+c.n.join());
     ok(c.g.join()==='8,mix,2,1,1','one cleaning recorded (Nov 6) after 6 wears: that one and about one more before it '+c.g.join());
     ok(c.sh.join()==='6,each,6'&&c.so.join()==='21,each,21','shirts and socks: one wash per wear '+c.sh+' / '+c.so);
     ok(c.bz.join()==='3,est,0'&&c.none===null&&c.tie.cl.how==='none','a blazer under its limit has none yet; no price, nothing at all; a tie (no limit) counts none');
     // ---- costs set: cost per wear
-    const d=await p.evaluate(()=>{settings.cleanCost={suit:15,load:3,perLoad:12};cache={};const n=cpwOf(items.find(i=>i.id==='navy')),s=cpwOf(items.find(i=>i.id==='sh1'));
-      return {n:cpwText(n),per:n.per,s:cpwText(s),hint:cpwHint(cpwOf(items.find(i=>i.id==='bz'))),year:cpwCleanYear(items.find(i=>i.id==='navy')),zero:cpwText(cpwOf({id:'zz',type:'suit',primaryColor:'navy',price:250})),zh:cpwHint(cpwOf({id:'zz',type:'suit',primaryColor:'navy',price:250}))}});
+    const d=await p.evaluate(()=>{settings.cleanCost={suit:15,load:3,perLoad:12};cache={};const n=HOOK.cpwOf(items.find(i=>i.id==='navy')),s=HOOK.cpwOf(items.find(i=>i.id==='sh1'));
+      return {n:HOOK.cpwText(n),per:n.per,s:HOOK.cpwText(s),hint:HOOK.cpwHint(HOOK.cpwOf(items.find(i=>i.id==='bz'))),year:HOOK.cpwCleanYear(items.find(i=>i.id==='navy')),zero:HOOK.cpwText(HOOK.cpwOf({id:'zz',type:'suit',primaryColor:'navy',price:250})),zh:HOOK.cpwHint(HOOK.cpwOf({id:'zz',type:'suit',primaryColor:'navy',price:250}))}});
     ok(d.n==='$63.00 a wear · 10 wears · $600 + $30 cleaning'&&Math.abs(d.per-63)<1e-9,'the line: "'+d.n+'"');
     ok(d.s==='$10.25 a wear · 6 wears · $60 + $1.50 washing','a shirt: six home washes at $3 a load of 12: "'+d.s+'"');
     ok(d.hint==='Wear it 4 more times to get under $50 a wear.'&&d.zero==='Not worn yet · $250'&&d.zh==='Wear it 2 times to get under $200 a wear.','a hint for an expensive piece worn rarely ("'+d.hint+'"); none worn: "'+d.zero+'"');
@@ -78,8 +78,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     {await p.evaluate(()=>{delete settings.cleanCost;cache={}});const s=await sheet('navy');const how=await p.evaluate(()=>document.querySelector('#ivcpw .cpwhow').textContent);
       ok(s.line==='$60.00 a wear · 10 wears · $600'&&/About 2 cleanings/.test(how)&&/isn’t set/.test(how),'no cleaning cost: price alone, and it says the cost isn’t set ("'+s.line+'")')}
     // ---- the cleanings log
-    await p.evaluate(()=>closeItem());
-    const lg=await p.evaluate(async()=>{show('today');await careCleaned('bz');const a=[...items.find(i=>i.id==='bz').cleans];const t=document.querySelector('#toast button');if(t)t.click();await new Promise(r=>setTimeout(r,200));
+    await p.evaluate(()=>HOOK.closeItem());
+    const lg=await p.evaluate(async()=>{show('today');await HOOK.careCleaned('bz');const a=[...items.find(i=>i.id==='bz').cleans];const t=document.querySelector('#toast button');if(t)t.click();await new Promise(r=>setTimeout(r,200));
       return {a,after:items.find(i=>i.id==='bz').cleans||null}});
     ok(lg.a.join()==='2026-11-11'&&lg.after===null,'"Cleaned today" records the cleaning; Undo takes it back');
     // ---- Insights: only with CPW_MIN priced items
@@ -92,10 +92,10 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       'four priced items: the card, best value first, most per wear, total spent, cleaning this year '+JSON.stringify(s))}
     await p.evaluate(()=>document.querySelector('#st-cpw .cpw-row').click());await settle(p,500);
     ok(await p.evaluate(()=>editing==='sh1'&&!document.querySelector('#wardrobe').hidden),'a row opens the item');
-    await p.evaluate(()=>closeItem());
+    await p.evaluate(()=>HOOK.closeItem());
     // ---- the Add card: Price and Bought in More, saved with the item; with "Bought, on the way" too
-    const add=await p.evaluate(async()=>{queue=[];openAdd();addManual();setq(0,'type','tie');const q=queue[0];setOrder(qAt(q.id),true);
-      const has=!!document.querySelector('#nps-q .wf-price');cpwQSet(qAt(q.id),'price','45.50');cpwQSet(qAt(q.id),'bought','2026-11-10');const ok1=await save(q.id);const it=items.find(i=>i.id===q.id);
+    const add=await p.evaluate(async()=>{queue=[];openAdd();HOOK.addManual();setq(0,'type','tie');const q=queue[0];HOOK.setOrder(qAt(q.id),true);
+      const has=!!document.querySelector('#nps-q .wf-price');HOOK.cpwQSet(qAt(q.id),'price','45.50');HOOK.cpwQSet(qAt(q.id),'bought','2026-11-10');const ok1=await save(q.id);const it=items.find(i=>i.id===q.id);
       return {has,ok1,price:it&&it.price,bought:it&&it.bought,order:it&&it.order}});
     ok(add.has&&add.ok1&&add.price===45.5&&add.bought==='2026-11-10'&&add.order,'the Add card takes a price and the day bought, "Bought, on the way" too '+JSON.stringify(add));
     // ---- Settings → Care: the currency and the costs
@@ -115,7 +115,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
         return {side:v.scrollWidth-v.clientWidth,out,page:document.documentElement.scrollWidth-innerWidth,inp:Math.round(document.querySelector('#iv-price').getBoundingClientRect().height),sum:Math.round(document.querySelector('#ivcpw summary').getBoundingClientRect().height)}});
       ok(iv.side<=0&&iv.out===0&&iv.page<=0&&iv.inp>=38&&iv.sum>=44,`item sheet at ${w}px, ${th}: the price block stays inside, no sideways scroll ${JSON.stringify(iv)}`);
       if(shots)await q.screenshot({path:path.join(shots,`sheet-${w}-${th}.png`)});
-      await q.evaluate(()=>{closeItem();show('stats');renderStats()});await settle(q,500);
+      await q.evaluate(()=>{HOOK.closeItem();show('stats');renderStats()});await settle(q,500);
       await q.evaluate(()=>document.querySelector('#st-cpw').scrollIntoView({block:'start'}));await settle(q,200);
       const st=await q.evaluate(()=>{const c=document.querySelector('#st-cpw'),r=c.getBoundingClientRect();return {page:document.documentElement.scrollWidth-innerWidth,
         out:[...c.querySelectorAll('*')].filter(x=>{const b=x.getBoundingClientRect();return b.width&&(b.right>r.right+.5||b.left<r.left-.5)}).length,rows:[...c.querySelectorAll('.cpw-row')].map(b=>Math.round(b.getBoundingClientRect().height))}});
@@ -149,11 +149,11 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const A=await device(),B=await device();
     await A.evaluate(async()=>{const it={id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',vest:'no',added:1};await put(it);items.push(it)});
     await sync(A);await sync(B);
-    await A.evaluate(()=>cpwSetPrice('s1','450',false));await B.evaluate(()=>setItemField('s1','name','Navy birdseye'));
+    await A.evaluate(()=>HOOK.cpwSetPrice('s1','450',false));await B.evaluate(()=>setItemField('s1','name','Navy birdseye'));
     await sync(A);await sync(B);await sync(A);
     const a=await get(A),b=await get(B);
     ok(a&&b&&a.price===450&&b.price===450&&a.name==='Navy birdseye'&&b.name==='Navy birdseye','a price set on one device and a rename on the other: both on both devices '+JSON.stringify([a,b]));
-    await B.evaluate(()=>careCleaned('s1'));await sync(B);await sync(A);
+    await B.evaluate(()=>HOOK.careCleaned('s1'));await sync(B);await sync(A);
     ok((await get(A)).cleans.join()==='2026-11-11','a cleaning recorded on one device is on the other');
   }finally{await b2.close()}
 };

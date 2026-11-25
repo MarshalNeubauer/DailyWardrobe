@@ -47,7 +47,7 @@ async function addOne(a, i) {   // one photo, the mocked tags, Confirm (the 12 N
   await a.page.waitForFunction(() => [...document.querySelectorAll('button')].some(b => b.innerText.trim() === 'Confirm' && b.offsetParent && !b.disabled), null, { timeout: 20000 });
   await sleep(800); await tt(a, 'Confirm'); await sleep(1200);
 }
-const sync = p => p.page.evaluate(async () => { for (let i = 0; i < 100 && (window.syncing || window.syncRun); i++) await new Promise(r => setTimeout(r, 200)); return typeof syncNow === 'function' ? syncNow() : null });
+const sync = p => p.page.evaluate(async () => { for (let i = 0; i < 100 && ((typeof HOOK !== 'undefined' && HOOK.syncing) || window.syncRun); i++) await new Promise(r => setTimeout(r, 200)); return typeof syncNow === 'function' ? syncNow() : null });
 const backup = async p => { await sync(p); await sleep(1500); await sync(p); await sleep(1000) };
 const phoneItems = p => p.page.evaluate(() => items.map(i => i.id).sort());
 async function server() {

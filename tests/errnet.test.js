@@ -21,10 +21,10 @@ module.exports=async({ok,chromium,url})=>{
     await p.evaluate(()=>{Promise.reject(new DOMException('stopped','AbortError'))});await p.waitForTimeout(200);
     ok(await p.evaluate(()=>JSON.parse(localStorage.getItem('err_log')).length===2),'a stopped request is not a problem');
     // feedback takes them along, and clears them once sent
-    const fb=await p.evaluate(()=>fbWithErrs('The button did nothing'));
+    const fb=await p.evaluate(()=>HOOK.fbWithErrs('The button did nothing'));
     ok(/^The button did nothing\n\n— Problems noted on this phone —\n.*undefined is not an object.*\n.*background thing/.test(fb)&&fb.length<=4000,'the next feedback carries them');
-    ok(await p.evaluate(()=>fbWithErrs('x'.repeat(3990)).length===4000),'within the server\'s 4,000 characters');
-    await p.evaluate(()=>localStorage.removeItem('err_log'));ok(await p.evaluate(()=>fbWithErrs('hi')==='hi'),'with nothing noted the feedback is as written');
+    ok(await p.evaluate(()=>HOOK.fbWithErrs('x'.repeat(3990)).length===4000),'within the server\'s 4,000 characters');
+    await p.evaluate(()=>localStorage.removeItem('err_log'));ok(await p.evaluate(()=>HOOK.fbWithErrs('hi')==='hi'),'with nothing noted the feedback is as written');
     await ctx.close();
   }finally{await browser.close()}
 };
