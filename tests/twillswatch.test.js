@@ -10,7 +10,7 @@ module.exports=async({ok,chromium,url})=>{
       const sw='data:image/png;base64,SWATCH'+'x'.repeat(40);
       const tw={id:'tw1',type:'suit',primaryColor:'deeptaupe',pattern:'twill',texture:CU,swatch:sw,swSrc:'tex'};
       const first=ovlPiece(tw),host=document.createElement('div');host.innerHTML=first;document.body.appendChild(host);   // the placeholder where it shows
-      const e=OVL_CU.get(ovlCuKey(tw));await e.p;const swapped=host.innerHTML,then=ovlPiece(tw);host.remove();
+      const e=HOOK.OVL_CU.get(HOOK.ovlCuKey(tw));await e.p;const swapped=host.innerHTML,then=ovlPiece(tw);host.remove();
       const T=await asmCuTile(tw),im=await new Promise(res=>{const m=new Image();m.onload=()=>res(m);m.src=e.url});
       // the swatch's pixels are the painter's tile (sRGB of its linear values, under the swatches' faint light)
       const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,c.width,c.height).data;
@@ -18,7 +18,7 @@ module.exports=async({ok,chromium,url})=>{
       for(let k=0;k<T.TW*T.TH;k++){const yy=Math.floor(k/T.TW),xx=k%T.TW;if(Math.abs(xx-mid)>20||Math.abs(yy-mid)>20)continue;diff+=Math.abs(d[4*k+1]-g(Math.min(1,T.t[3*k+1])));n++}
       const blackTw={id:'tw2',type:'suit',primaryColor:'black',pattern:'twill',texture:CU,swatch:sw,swSrc:'tex'};
       const noPatch={id:'tw3',type:'blazer',primaryColor:'brown',pattern:'twill',texture:PH,swatch:sw,swSrc:'tex'};
-      const np0=ovlPiece(noPatch);await (OVL_CU.get(ovlCuKey(noPatch))||{}).p;
+      const np0=ovlPiece(noPatch);await (HOOK.OVL_CU.get(HOOK.ovlCuKey(noPatch))||{}).p;
       const plain={id:'tw4',type:'suit',primaryColor:'deeptaupe',pattern:'solid',texture:CU,swatch:sw,swSrc:'tex'};
       return {placeholder:/data-hb=/.test(first)&&/<rect[^>]*fill=/.test(first),swapped:/^<img src="data:image\/png/.test(swapped)&&!swapped.includes(sw),cached:then===`<img src="${e.url}" alt="">`,
         size:[im.naturalWidth,im.naturalHeight],tile:[T.TW,T.TH],diff:diff/n,

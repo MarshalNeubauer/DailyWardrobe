@@ -112,11 +112,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // gear tapped) stays open, and the Wardrobe is drawn once it closes; with the item's sheet still open the sheet shows the new reading
     patternDelay=900;
     const rs=await p.evaluate(async()=>{const it=items[0];delete it.sett;show('wardrobe');openItem(it.id);const run=rereadSett(it.id);
-      await new Promise(r=>setTimeout(r,200));closeItem();openSettings();const before=settingsOpen();await run;await new Promise(r=>setTimeout(r,300));
+      await new Promise(r=>setTimeout(r,200));HOOK.closeItem();openSettings();const before=settingsOpen();await run;await new Promise(r=>setTimeout(r,300));
       const still=settingsOpen(),read=!!items[0].sett;closeSettings();return {before,still,read}});
     ok(rs.before&&rs.still&&rs.read,`a pattern reading that lands while Settings is open leaves Settings open (${JSON.stringify(rs)})`);
     const rs2=await p.evaluate(async()=>{const it=items[0];delete it.sett;show('wardrobe');openItem(it.id);document.querySelector('#ivbody').firstElementChild.dataset.mark='1';
-      await rereadSett(it.id);await new Promise(r=>setTimeout(r,300));const r={redrawn:!document.querySelector('#ivbody [data-mark="1"]'),open:editing===it.id,read:!!items[0].sett};closeItem();return r});
+      await rereadSett(it.id);await new Promise(r=>setTimeout(r,300));const r={redrawn:!document.querySelector('#ivbody [data-mark="1"]'),open:editing===it.id,read:!!items[0].sett};HOOK.closeItem();return r});
     ok(rs2.redrawn&&rs2.open&&rs2.read,`…and with the item's sheet open the sheet is drawn again with the reading (${JSON.stringify(rs2)})`);
     patternDelay=0;
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

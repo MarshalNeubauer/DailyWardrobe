@@ -27,7 +27,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {opts:[WATCH_STYLES,BANDS,BEZELS].map(l=>l.map(x=>x[0]).join()).join(' | '),
         // the traced watch (drawWatchTraced) is seen at an angle: its subdials are ellipses, two more than a three-hand watch has
         subdials:(svg.match(/<ellipse /g)||[]).length-(plain.match(/<ellipse /g)||[]).length,blue:svg.includes('#1f4fa8'),nums:/>12<\/text>/.test(svg)&&/>6<\/text>/.test(svg),bezel:/>30<\/text>/.test(svg),plainHas:/>12<\/text>/.test(plain),
-        txt:watchText(w),desc:itemDesc(w),pic:ITEM_PIC_TYPES.includes('watch'),
+        txt:watchText(w),desc:HOOK.itemDesc(w),pic:HOOK.ITEM_PIC_TYPES.includes('watch'),
         key:comboKey(o)!==comboKey({...o,watch:{...w,details:'other'}})&&comboKey(o)!==comboKey({...o,watch:{...w,watchStyle:'date'}})}});
     ok(/chronograph/.test(r.opts)&&/integrated/.test(r.opts)&&/engraved/.test(r.opts),`the wardrobe offers chronograph, integrated bracelet and engraved bezel (${r.opts})`);
     ok(r.subdials>=2&&r.blue&&r.nums&&r.bezel&&!r.plainHas,'a chronograph is drawn with subdials (and the minute counter\'s blue segment), 12 and 6 numerals and an engraved bezel');

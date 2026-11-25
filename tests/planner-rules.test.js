@@ -46,7 +46,7 @@ const enamelclip=async({ok,chromium,url})=>{
     const r=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       const T1=I('tie','taupe',{pattern:'stripe',secondaryColor:'cream',tertiaryColor:'steelblue'}),T2=I('tie','burgundy'),T3=I('tie','green'),T4=I('tie','navy',{pattern:'stripe',secondaryColor:'white'});
       const silver=I('tieclip','silver'),blue=I('tieclip','blue'),red=I('tieclip','red'),navy=I('tieclip','navy'),gold=I('tieclip','gold');
-      const prefs={accent:enamelPref(blue,T1),tone:enamelPref(red,T2),toneNavy:enamelPref(navy,T4),near:enamelPref(blue,T4),clash:enamelPref(blue,T3),clashRed:enamelPref(red,T1),none:enamelPref(blue,null)};
+      const prefs={accent:HOOK.enamelPref(blue,T1),tone:HOOK.enamelPref(red,T2),toneNavy:HOOK.enamelPref(navy,T4),near:HOOK.enamelPref(blue,T4),clash:HOOK.enamelPref(blue,T3),clashRed:HOOK.enamelPref(red,T1),none:HOOK.enamelPref(blue,null)};
       items=[I('blazer','navy'),I('blazer','charcoal'),I('pants','grey'),I('pants','tan'),I('shirt','white'),I('shirt','lightblue'),T1,T2,T3,T4,
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy'),I('socks','charcoal'),
         I('watch','silver',{metal:'silver'}),silver,blue,red,navy,gold];
@@ -215,7 +215,7 @@ const newuserplan=async({ok,chromium,url})=>{
     // ---- black shoes waiting for a belt are named
     const bw=await p.evaluate(()=>{fresh();items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','brown',{leather:'calf'}),I('shoes','black',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'})];
       const blk=items.find(i=>i.type==='shoes'&&i.primaryColor==='black'),pl=months(1),v=pl.map(([k,o])=>(rateOutfit(o).checks.find(c=>c.label==='Variety')||{}).why||'').find(w=>/same shoes as yesterday/.test(w))||'';
-      return {wait:beltWait(blk),brown:beltWait(items.find(i=>i.type==='shoes'&&i.primaryColor==='brown')),v,why:whyUnused(blk)}});
+      return {wait:beltWait(blk),brown:beltWait(items.find(i=>i.type==='shoes'&&i.primaryColor==='brown')),v,why:HOOK.whyUnused(blk)}});
     ok(bw.wait==='black smooth leather belt'&&bw.brown==='','black oxfords with only a brown belt wait for a black smooth leather belt; the brown pair waits for nothing');
     ok(/your black shoes wait for a black smooth leather belt/.test(bw.v),`the score's Variety line says why the same shoes come again ("${bw.v}")`);
     ok(/None of your belts match them.*black smooth leather belt/.test(bw.why),`Insights says why they are never worn ("${bw.why}")`);
@@ -271,12 +271,12 @@ const newuserplan=async({ok,chromium,url})=>{
     const sw=await p.evaluate(async()=>{fresh();items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','green'),I('tie','burgundy'),I('shoes','black',{leather:'calf'})];show('today');
       await recordRun;/* the past days the drawing records, saved in the background */await lockUpcoming();let was=week();const B=items.find(i=>i.type==='tie'&&i.id!==was[0].tie).id;
       for(const d of was.slice(1,3)){dayRecs[d.k].lock.tie=B}cache={};was=week();   // as in the audit: the next two days locked with the tie today is swapped to
-      await swapSlot('tie');await recordRun;const now=week();return {was:was.map(d=>d.tie),now:now.map(d=>d.tie)}});
+      await HOOK.swapSlot('tie');await recordRun;const now=week();return {was:was.map(d=>d.tie),now:now.map(d=>d.tie)}});
     ok(sw.now[0]!==sw.was[0]&&sw.now[1]!==sw.now[0],`after today's tie is swapped the next workday doesn't keep that tie (${sw.was.join(',')} -> ${sw.now.join(',')})`);
 
     // ---- waistcoats and the dress code
     const vs=await p.evaluate(()=>{fresh();settings.vestMode='always';const a=newSuitVest();settings.dress={jacket:true,tie:false};const b=newSuitVest();delete settings.dress;settings.vestMode='auto';const c=newSuitVest();settings.vestMode='always';
-      queue.length=0;show('wardrobe');openAdd();addManual();const sel=[...document.querySelectorAll('#add select')].find(s=>[...s.options].some(o=>o.value==='yes'&&/vest/i.test(o.text)));return {a,b,c,card:sel&&sel.value}});
+      queue.length=0;show('wardrobe');openAdd();HOOK.addManual();const sel=[...document.querySelectorAll('#add select')].find(s=>[...s.options].some(o=>o.value==='yes'&&/vest/i.test(o.text)));return {a,b,c,card:sel&&sel.value}});
     ok(vs.a==='yes'&&vs.b==='no'&&vs.c==='no'&&vs.card==='yes',`"Every suit day" gives a new suit its vest on the Add card (${vs.card}); not with ties off or by default`);
     await p.evaluate(()=>{queue.length=0;settings.vestMode='never';show('today');openSettings('schedule')});
     const dc=await p.evaluate(async()=>{/* a lock on the next two days, whose release is never written: the real clearLocks never finishes */ window.__held=0;const realTx=IDBDatabase.prototype.transaction,T=todayDate(),ks=[1,2].map(g=>key(new Date(T.getFullYear(),T.getMonth(),T.getDate()+g)));for(const k of ks)dayRecs[k]={date:k,lock:{tie:'held'},updated:1};IDBDatabase.prototype.transaction=function(st,m){if(st==='days'&&m==='readwrite')return {objectStore:()=>({put(r){if(!r.lock)window.__held++;return {}}})};return realTx.apply(this,arguments)};document.querySelector('#dress-tie').click();
@@ -356,7 +356,7 @@ const fix8r3=async({ok,chromium,url})=>{
     const own=await p.evaluate(()=>{fresh('2026-11-15T08:00:00');settings.custom={colors:[{key:'owndustypink',name:'Dusty pink',hex:'#d8a1a8',base:'tan',types:['suit']}],patterns:[]};applyCustom(settings.custom);
       const pink=I('suit','owndustypink');items=[pink,...w17().filter(i=>i.type!=='suit'),I('tie','pink')];cache={};
       const r=rateOutfit({suitDay:true,top:pink,bot:pink,shirt:items.find(i=>i.primaryColor==='white'),tie:items.find(i=>i.type==='tie'&&i.primaryColor==='pink'),shoes:items.find(i=>i.type==='shoes'&&i.primaryColor==='oxblood')});
-      const why=r.checks.map(c=>c.why).join(' | '),S=buildStats();return {why,jackets:S.jackets.map(x=>x[0]),names:S.jackets.map(x=>groupName(x[0]))}});
+      const why=r.checks.map(c=>c.why).join(' | '),S=HOOK.buildStats();return {why,jackets:S.jackets.map(x=>x[0]),names:S.jackets.map(x=>HOOK.groupName(x[0]))}});
     ok(!/\btan\b/.test(own.why)&&/dusty pink jacket/.test(own.why),`the reasons call the suit dusty pink, not tan (${own.why})`);
     ok(own.jackets.includes('owndustypink')&&own.names.includes('Dusty pink')&&!own.jackets.includes('tan'),`Insights' color balance lists Dusty pink (${own.names.join(', ')})`);
     await p.evaluate(()=>{settings.custom={colors:[],patterns:[]};applyCustom(settings.custom)});
@@ -377,7 +377,7 @@ const fix8r3=async({ok,chromium,url})=>{
       items=[su,I('suit','charcoal'),wh,lav,bl,t,I('tie','navy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf'})];
       dayRecs['2026-11-16']={date:'2026-11-16',ids:{top:items[1].id,bot:items[1].id,shirt:lav.id,tie:items[6].id,shoes:items[7].id},suitDay:true};
       dayRecs['2026-11-17']={date:'2026-11-17',force:{top:su.id,shirt:wh.id,tie:t.id}};cache={};show('today');
-      const o0=planFor()[key(sel)];await swapSlot('shirt');await new Promise(r=>setTimeout(r,200));cache={};const o=planFor()[key(sel)],r=rateOutfit(o);
+      const o0=planFor()[key(sel)];await HOOK.swapSlot('shirt');await new Promise(r=>setTimeout(r,200));cache={};const o=planFor()[key(sel)],r=rateOutfit(o);
       return {from:o0.shirt.primaryColor,shirt:o.shirt.primaryColor,score:r.score,hard:r.hard}});
     ok(sg.from==='white'&&sg.shirt==='lavender'&&!sg.hard.length,`Suggest another after the white shirt gives ${sg.shirt} (${sg.score}), not the black shirt (69)`);
 
@@ -387,8 +387,8 @@ const fix8r3=async({ok,chromium,url})=>{
 
     // ---- W2-18-02: the reasons table is kept, and a fold fills its rows without drawing the page again
     const st=await p.evaluate(()=>{fresh('2026-11-15T08:00:00');items=[...w17(),I('tie','purple',{pattern:'paisley',secondaryColor:'gold'}),I('shirt','black')];cache={};show('stats');renderStats();
-      whyUnused(items.find(i=>i.pattern==='paisley'));const m1=fitMemo;let calls=0;const h0=document.querySelector('#stats .phead');renderStats();const seen=!h0.isConnected,m2=fitMemo,head=document.querySelector('#stats .phead');   /* (a redraw replaces the page's head) */
-      statsOpen.tie=false;const d=document.querySelector('#stats details.st-type[data-type="tie"]');d.open=true;statsToggle(d);if(!head.isConnected)calls++;
+      HOOK.whyUnused(items.find(i=>i.pattern==='paisley'));const m1=HOOK.fitMemo;let calls=0;const h0=document.querySelector('#stats .phead');renderStats();const seen=!h0.isConnected,m2=HOOK.fitMemo,head=document.querySelector('#stats .phead');   /* (a redraw replaces the page's head) */
+      HOOK.statsOpen.tie=false;const d=document.querySelector('#stats details.st-type[data-type="tie"]');d.open=true;HOOK.statsToggle(d);if(!head.isConnected)calls++;
       return {same:m1===m2&&!!m1,calls,seen,rows:d.querySelectorAll('.st-row').length,unused:document.querySelectorAll('#st-unused .st-row').length}});
     ok(st.same,'opening Insights again keeps the never-worn reasons worked out (fitMemo), until the plan changes');
     ok(st.seen&&st.calls===0&&st.rows>=5,`unfolding Ties fills its ${st.rows} rows without drawing the page again (${st.calls} redraws)`);
@@ -396,12 +396,12 @@ const fix8r3=async({ok,chromium,url})=>{
     // ---- W2-15-08: weeks are named from the first workday the wardrobe had, not a Friday before it
     const wk=await p.evaluate(()=>{fresh('2026-11-18T08:00:00');items=w17().map(i=>({...i,added:+new Date(2026,10,16,9)}));const s=items;
       dayRecs['2026-11-16']={date:'2026-11-16',ids:{top:s[0].id,bot:s[0].id,shirt:s[3].id,tie:s[7].id,shoes:s[12].id},suitDay:true,worn:true};cache={};
-      const S=buildStats();return S.trend.map(t=>key(t.label))});
+      const S=HOOK.buildStats();return S.trend.map(t=>key(t.label))});
     ok(wk[0]==='2026-11-16',`the first week is named Nov 16, the day the wardrobe began (${wk.join(', ')})`);
 
     // ---- W2-17-09: What to buy's occasions: a charcoal glen check is dark, not missing; the metals point once; Ready means ready
     const oc=await p.evaluate(()=>{fresh('2026-11-15T08:00:00');items=[I('suit','charcoal',{pattern:'glen-check'}),I('suit','navy',{pattern:'chalk-stripe',secondaryColor:'white'}),...w17().filter(i=>i.type!=='suit')];
-      const r=occasionCheck(items,'mild'),f=r.find(x=>x.occ==='funeral'),all=r.map(x=>x.gaps.join(' ')).join(' | ');
+      const r=HOOK.occasionCheck(items,'mild'),f=r.find(x=>x.occ==='funeral'),all=r.map(x=>x.gaps.join(' ')).join(' | ');
       const twice=r.some(x=>x.gaps.some(g=>/different metals/.test(g))&&x.gaps.some(g=>/metals differ/.test(g)));
       const odd=r.some(x=>x.ready&&x.gaps.some(g=>/suit a wedding|right for a funeral|formal (choice|shirt)/.test(g)));
       return {fun:f.gaps.join(' | '),twice,odd,all}});
@@ -411,7 +411,7 @@ const fix8r3=async({ok,chromium,url})=>{
     // ---- W2-17-20: correcting a vest day shows no tie clip row
     const vc=await p.evaluate(async()=>{fresh('2026-11-18T08:00:00');items=w17().map(i=>i.type==='suit'?{...i,vest:'yes'}:i);items.push(I('tieclip','silver'));const s=items;
       dayRecs['2026-11-17']={date:'2026-11-17',ids:{top:s[0].id,bot:s[0].id,shirt:s[3].id,tie:s[7].id,shoes:s[12].id},suitDay:true,vestOn:true,worn:true};cache={};
-      sel=new Date(2026,10,17);view={y:2026,m:10};listOpen=true;show('today');togglePastEdit();await new Promise(r=>setTimeout(r,100));
+      sel=new Date(2026,10,17);view={y:2026,m:10};listOpen=true;show('today');HOOK.togglePastEdit();await new Promise(r=>setTimeout(r,100));
       return {clip:!!document.querySelector('#ri-clip'),vest:planFor()['2026-11-17'].vest}});
     ok(vc.vest&&!vc.clip,'correcting a vest day offers no tie clip');
     // ---- a belt picked from the picker on a day marked worn is recorded as worn (2026-11-18: outside "Correct what you wore" it did nothing)
@@ -424,14 +424,14 @@ const fix8r3=async({ok,chromium,url})=>{
     // ---- W2-17-06 (part): "Add more suits" only when there aren't enough suits in rotation for the rest
     const rw=await p.evaluate(()=>{fresh('2026-11-18T08:00:00');const s=[I('suit','navy'),I('suit','grey'),I('suit','charcoal',{paused:true,away:{why:'cleaner'}})];items=[...s];
       const o=(r)=>({suitDay:true,top:{...s[0],rest:1},frozen:false});
-      const two=restWarn(o());items.push(I('suit','brown'));const three=restWarn(o());
-      dayRecs[key(sel)]={date:key(sel),force:{top:s[0].id}};const pick=restWarn(o());return {two,three,pick}});
+      const two=HOOK.restWarn(o());items.push(I('suit','brown'));const three=HOOK.restWarn(o());
+      dayRecs[key(sel)]={date:key(sel),force:{top:s[0].id}};const pick=HOOK.restWarn(o());return {two,three,pick}});
     ok(/Add more suits/.test(rw.two),`two suits in rotation (one at the cleaner): "Add more suits" (${rw.two.replace(/<[^>]+>/g,'')})`);
     ok(rw.three==='','three suits in rotation and the planner chose it: no "Add more suits"');
     ok(/You wore this suit 1 day ago too/.test(rw.pick)&&!/Add more/.test(rw.pick),`picked by hand: it says only when it was worn (${rw.pick.replace(/<[^>]+>/g,'')})`);
 
     // ---- W2-18-03: What to buy says about how long is left
-    const lf=await p.evaluate(()=>{shopBusy={i:4,n:20,label:'Suits',t0:Date.now()-25000};const a=shopBusyText();shopBusy=null;return a});
+    const lf=await p.evaluate(()=>{HOOK.shopBusy={i:4,n:20,label:'Suits',t0:Date.now()-25000};const a=HOOK.shopBusyText();HOOK.shopBusy=null;return a});
     ok(/About 1 minute left|About \d+ seconds left/.test(lf),`What to buy's progress says how long is left ("${lf}")`);
 
     ok(!errs.length,`no page errors (${errs.join('; ')})`);

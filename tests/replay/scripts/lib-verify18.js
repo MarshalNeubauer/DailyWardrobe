@@ -42,7 +42,7 @@ async function joined(tag) {
   await ph.page.goto(link); await ph.ready(); await sleep(2500);
   await checkUrl(ph);
   if (await ph.page.locator('#su-skip').isVisible().catch(() => false)) { await ph.tap('#su-skip'); await sleep(1000) }
-  for (let i = 0; i < 40 && await ph.page.evaluate(() => typeof syncing !== 'undefined' && syncing); i++) await sleep(250);
+  for (let i = 0; i < 40 && await ph.page.evaluate(() => 'syncing' in HOOK && HOOK.syncing); i++) await sleep(250);
   return ph;
 }
 // SETUP (impossible by hand): N photo items made as Add makes them: each photo is one of the 16 sample photos drawn at PH_MAX
@@ -68,11 +68,11 @@ async function addPhotoItems(ph, n, { closeups = false, from = 0, store = true }
         const tg = t.getContext('2d'), w = Math.min(s.naturalWidth, s.naturalHeight) / 2; tg.drawImage(s, (s.naturalWidth - w) / 2, (s.naturalHeight - w) / 2, w, w, 0, 0, TEX_MAX, TEX_MAX);
         tg.fillStyle = '#123'; tg.fillRect(k % 1500, 7, 4, 4); it.texture = t.toDataURL('image/jpeg', .85) }
       // what this item adds to POST /sync: its record with references, plus each photo as "hash":"data…"
-      const strs = [...phStrings(it, isPh)]; let ref = JSON.stringify(phMap(it, s => strs.includes(s) ? 'dwph:' + '0'.repeat(20) : s)).length + 1;
+      const strs = [...HOOK.phStrings(it, HOOK.isPh)]; let ref = JSON.stringify(HOOK.phMap(it, s => strs.includes(s) ? 'dwph:' + '0'.repeat(20) : s)).length + 1;
       per.push(ref + strs.reduce((a, s) => a + s.length + 26, 0));
       list.push(it);
     }
-    const ok = store ? await kitStore(list, null) : null;
+    const ok = store ? await HOOK.kitStore(list, null) : null;
     return { ok, n: list.length, items: items.length, per, photoKB: Math.round(list.reduce((a, i) => a + i.photo.length, 0) / list.length / 1024), smKB: Math.round(list.reduce((a, i) => a + i.photoSm.length, 0) / list.length / 1024) };
   }, [sampleUrls(), n, closeups, from, store]);
 }
@@ -81,9 +81,9 @@ const syncPosts = async ph => (await reqs(ph)).filter(r => r.m === 'POST' && /^\
 // the person closes the app (background) and comes back; waits for the backup's POST(s) to finish
 async function backgroundAndWait(ph, ms = 90000) {
   const n0 = (await syncPosts(ph)).length; await ph.background(); const t = Date.now();
-  while (Date.now() - t < ms) { await sleep(500); const p = await syncPosts(ph); if (p.length > n0 && p.every(x => x.st != null) && !(await ph.page.evaluate(() => syncing))) break }
+  while (Date.now() - t < ms) { await sleep(500); const p = await syncPosts(ph); if (p.length > n0 && p.every(x => x.st != null) && !(await ph.page.evaluate(() => HOOK.syncing))) break }
   await sleep(1500); await ph.foreground(); await sleep(1500);
-  for (let i = 0; i < 120 && await ph.page.evaluate(() => syncing); i++) await sleep(500);
+  for (let i = 0; i < 120 && await ph.page.evaluate(() => HOOK.syncing); i++) await sleep(500);
   return (await syncPosts(ph)).slice(n0);
 }
 const status = ph => ph.page.evaluate(() => ({ sync_status: localStorage.getItem('sync_status'), pause: localStorage.getItem('sync_pause') }));

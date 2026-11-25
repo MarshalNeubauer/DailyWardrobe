@@ -24,14 +24,14 @@ module.exports=async({ok,chromium,url})=>{
         const m=await img('data:image/svg+xml;base64,'+btoa(svg)),c=document.createElement('canvas');c.width=c.height=300;const x=c.getContext('2d');x.drawImage(m,0,0);
         const d=x.getImageData(0,0,300,300).data,s=[0,0,0];for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)s[q]+=lin(d[k+q]);return hex(s.map(v=>v/(d.length/4)))};
       const L=h=>rgbLab(...hexRgb(h)),de=(a,b)=>+dE00(L(a),L(b)).toFixed(1),tag=colOf(pants),u=usableSett(pants);
-      const m={sheet:await mean(fabricDef('q',pants,'bot')),dot:await mean(fabricDef('q',pants,'bot','dot')),fig:await mean(figFabric(pants,'bot').def('q'))};
+      const m={sheet:await mean(fabricDef('q',pants,'bot')),dot:await mean(fabricDef('q',pants,'bot','dot')),fig:await mean(HOOK.figFabric(pants,'bot').def('q'))};
       const T=await asmCmTile(pants,'bot'),n=T.TW*T.TH,ts=[0,0,0];for(let k=0;k<n;k++)for(let q=0;q<3;q++)ts[q]+=T.t[3*k+q];m.painter=hex(ts.map(v=>v/n));
       const shaded={...pants,shade:3},us=usableSett(shaded);
       return {tag,tagL:L(tag),bands:u.bands,cross:u.cross.bands,m:Object.fromEntries(Object.entries(m).map(([k,v])=>[k,{hex:v,dE:de(v,tag),L:+L(v)[0].toFixed(1),C:+Math.hypot(L(v)[1],L(v)[2]).toFixed(1)}])),
         lineL:L(u.bands[1][0])[0],lineB:L(u.bands[1][0])[2],before:{dE:de('#707984',tag)},
         nearSame:usableSett(near)===near.sett,tieSame:usableSett(tie)===tie.sett,shirtSame:usableSett(shirt)===shirt.sett,memo:usableSett(pants)===u,
         shadeGround:us.bands[0][0]===colOf(shaded)&&colOf(shaded)!==tag,
-        again:settToTag(pants,u)===u,route:asmCmRoute(pants,'trousers').how,way:figWay(pants,'trousers').way}});
+        again:HOOK.settToTag(pants,u)===u,route:asmCmRoute(pants,'trousers').how,way:HOOK.figWay(pants,'trousers').way}});
     ok(r.bands[0][0]===r.tag&&r.cross[0][0]===null,`the micro check's ground is the selected color (${r.bands[0][0]} = ${r.tag})`);
     ok(r.lineL>r.tagL[0]+8&&r.lineB<-15,`its lines stay lighter than the ground and blue (${r.bands[1][0]}, L* ${r.lineL.toFixed(1)}, b* ${r.lineB.toFixed(1)})`);
     for(const k of ['sheet','dot','fig','painter'])ok(r.m[k].dE<=6&&Math.abs(r.m[k].L-r.tagL[0])<=6,`${k}: the drawn check averages ${r.m[k].hex} (L* ${r.m[k].L}, C ${r.m[k].C}), ΔE00 ${r.m[k].dE} from the selected ${r.tag} (L* ${r.tagL[0].toFixed(1)}; before about ${r.before.dE})`);

@@ -31,7 +31,8 @@ const phone = async name => { const p = await openPhone({ profile: 'verify4-r01-
 const guard = async p => { const u = await p.page.evaluate(() => localStorage.worker_url); if (u && u !== `http://127.0.0.1:${PORT + 1}/`) throw new Error('worker_url wrong: ' + u) };
 async function tapBtn(p, re, scope = 'body') { const l = p.page.locator(scope).getByRole('button', { name: re }).first(); await l.scrollIntoViewIfNeeded().catch(() => {}); const b = await l.boundingBox(); if (!b) throw new Error('no button ' + re); await p.tapAt(b.x + b.width / 2, b.y + b.height / 2); await sleep(500) }
 async function skipSetup(p) { for (let i = 0; i < 4; i++) { let hit = false; for (const re of [/^Skip$/, /^Not now$/, /^Later$/]) if (await p.page.getByRole('button', { name: re }).first().isVisible().catch(() => false)) { await tapBtn(p, re); hit = true } if (!hit) break } }
-const sync = p => p.page.evaluate(async () => { for (let i = 0; i < 100 && (window.syncing || window.syncRun); i++) await new Promise(r => setTimeout(r, 200)); return syncNow() });
+// P runs the old c4a549b app, which has no HOOK (tests/hook.js): there `syncing` is still the page's global
+const sync = p => p.page.evaluate(async () => { for (let i = 0; i < 100 && ((window.HOOK ? HOOK.syncing : window.syncing) || window.syncRun); i++) await new Promise(r => setTimeout(r, 200)); return syncNow() });
 const rules = p => p.page.evaluate(async () => ({ mem: settings.planRules, idb: ((await metaGet('settings')) || {}).planRules, PLAN_RULES }));
 const toasts = p => p.page.evaluate(() => window.__toasts || []);
 const planned = t => t.some(s => /planner was updated/i.test(s));

@@ -22,7 +22,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     let e;
     // ---- the lists
     e=await p.evaluate(()=>({M:MATERIALS_BY,label:[leatherLabel({type:'belt'}),leatherLabel({type:'shoes'})],belt:leathersFor({type:'belt'}),boot:leathersFor({type:'shoes',shoeStyle:'boot'}),oxford:leathersFor({type:'shoes'}),
-      derby:leathersFor({type:'shoes',shoeStyle:'derby'}),loafer:leathersFor({type:'shoes',shoeStyle:'loafer'}),bands:BANDS.map(x=>x[0]),metals:METAL_OPTS.map(x=>x[0]),links:metalOptsFor('cufflinks').map(x=>x.join(':')),watchM:metalOptsFor('watch').map(x=>x[0])}));
+      derby:leathersFor({type:'shoes',shoeStyle:'derby'}),loafer:leathersFor({type:'shoes',shoeStyle:'loafer'}),bands:BANDS.map(x=>x[0]),metals:HOOK.METAL_OPTS.map(x=>x[0]),links:metalOptsFor('cufflinks').map(x=>x.join(':')),watchM:metalOptsFor('watch').map(x=>x[0])}));
     ok(JSON.stringify(e.M)===JSON.stringify(WM),'core.js MATERIALS_BY is the worker\'s list, type by type');
     ok(e.M.shirt.join()==='cotton,poplin,linen,linen blend,flannel,cotton blend,performance stretch,seersucker,polyester,polyester blend,silk,rayon,modal,lyocell,bamboo,wool,jersey,denim,corduroy','shirts hold the fabric only (the owner\'s list, polyester and the other fibers added 2026-11-16): no twill, oxford, pinpoint oxford, end-on-end, chambray or nylon');
     ok(await p.evaluate(()=>[matAlias('shirt','polyester'),matAlias('shirt','Viscose'),matAlias('shirt','Tencel'),matAlias('shirt','poly-cotton'),matAlias('shirt','nylon'),matAlias('shirt','merino')].join('|'))==='polyester|rayon|lyocell|cotton blend|performance stretch|wool','a shirt\'s polyester is polyester (no longer performance stretch); viscose is rayon, Tencel lyocell, poly-cotton cotton blend; nylon is still performance stretch');
@@ -35,10 +35,10 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(e.bands.join()==='bracelet,integrated,leather,rubber,nato'&&e.metals.includes('two-tone')&&e.links.includes('silk:silk knot')&&!e.watchM.includes('silk'),'watch bands rubber and NATO, a two-tone metal, silk knots for cufflinks only');
     // ---- stored names off the lists keep working: shown, searched, seasoned, painted
     e=await p.evaluate(()=>{items=[{id:'s1',type:'shirt',primaryColor:'white',pattern:'solid',material:'twill',added:3},{id:'t1',type:'tie',primaryColor:'navy',pattern:'knit',material:'knitted silk',added:2},
-      {id:'p1',type:'pants',primaryColor:'grey',pattern:'solid',material:'tropical wool',added:1},{id:'so',type:'socks',primaryColor:'navy',pattern:'solid',material:'Merino',added:4}];flt='all';editing=null;wardQ='';show('wardrobe');
-      openItem('s1');const sel=document.querySelector('#item-view .wmat'),tx=document.querySelector('#item-view .wmat-t');const r={sel:sel&&sel.value,tx:tx&&tx.value};closeItem();
-      const find=q=>{wardQ=q;const l=wardFresh().map(i=>i.id).join();wardQ='';return l};
-      return {...r,twill:find('twill'),knitted:find('knitted'),fresco:find('fresco'),highTwist:find('high-twist'),merino:find('merino wool'),silkT:find('silk'),mat:asmCmMat(items[1],'tie').join(),sea:itemSeason({type:'shirt',material:'twill'})}});
+      {id:'p1',type:'pants',primaryColor:'grey',pattern:'solid',material:'tropical wool',added:1},{id:'so',type:'socks',primaryColor:'navy',pattern:'solid',material:'Merino',added:4}];flt='all';editing=null;HOOK.wardQ='';show('wardrobe');
+      openItem('s1');const sel=document.querySelector('#item-view .wmat'),tx=document.querySelector('#item-view .wmat-t');const r={sel:sel&&sel.value,tx:tx&&tx.value};HOOK.closeItem();
+      const find=q=>{HOOK.wardQ=q;const l=wardFresh().map(i=>i.id).join();HOOK.wardQ='';return l};
+      return {...r,twill:find('twill'),knitted:find('knitted'),fresco:find('fresco'),highTwist:find('high-twist'),merino:find('merino wool'),silkT:find('silk'),mat:HOOK.asmCmMat(items[1],'tie').join(),sea:itemSeason({type:'shirt',material:'twill'})}});
     ok(e.sel==='other'&&e.tx==='twill','a shirt saved with a weave as material shows "Other: twill"');
     ok(e.twill==='s1'&&e.knitted==='t1'&&e.silkT==='t1','stored names are still searched (twill, knitted silk)');
     ok(e.fresco==='p1'&&e.highTwist==='p1'&&e.merino==='so','search synonyms: "fresco" and "high-twist" find tropical wool, "merino wool" finds socks typed "Merino"');
@@ -51,7 +51,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(e.woolTie==='cold'&&e.woolSuit==='all'&&e.woolBlendTie==='all','a wool tie is cold (a tie-only rule): a wool suit stays all year');
     ok(e.own==='all'&&e.own2==='cold'&&e.socks==='all'&&e.mohair==='all'&&e.hop==='all','the owner\'s own season wins; socks have none; mohair blend and hopsack set none');
     // ---- import
-    e=await p.evaluate(()=>{const R=t=>kitRead(t).rows.map(x=>x.ok?[x.card.type,x.card.pattern,x.card.material||'',x.card.type==='shoes'||x.card.type==='belt'?x.card.leather:'',x.probs.join('/')].join(':'):'bad:'+x.why);
+    e=await p.evaluate(()=>{const R=t=>HOOK.kitRead(t).rows.map(x=>x.ok?[x.card.type,x.card.pattern,x.card.material||'',x.card.type==='shoes'||x.card.type==='belt'?x.card.leather:'',x.probs.join('/')].join(':'):'bad:'+x.why);
       return R('Type,Colour,Material,Pattern\nSuit,Navy,Fresco,\nPants,Grey,Worsted,\nShirt,White,Broadcloth,\nSocks,Navy,Lisle,\nSocks,Black,Merino,\nBlazer,Grey,Wool-linen,\nSuit,Grey,Wool-silk,\nShirt,Blue,Oxford,\nShirt,Blue,End-on-end,Stripe\nShirt,White,Nylon/spandex,\nShoes,Brown,Pebble grain,\nBelt,Black,Scotch grain,\nShoes,Tan,Nubuck,\nBoots,Tan,Nubuck,\nBelt,Brown,Braided leather,\nShirt,White,Twill weave,\nTie,Navy,Knitted silk,\nBlazer,Tan,Camel,\n')});
     const imp=e;
     ok(/^suit:solid:tropical wool::.*read as tropical wool/.test(imp[0])&&/^pants:solid:wool:/.test(imp[1])&&/^shirt:solid:poplin:/.test(imp[2])&&/^socks:solid:mercerized cotton:/.test(imp[3])&&/^socks:solid:merino wool:/.test(imp[4])&&/^blazer:solid:linen blend:/.test(imp[5])&&/^suit:solid:silk blend:/.test(imp[6])&&/^blazer:solid:camel hair:/.test(imp[17]),'import aliases: Fresco, Worsted, Broadcloth, Lisle, Merino, Wool-linen, Wool-silk, Camel ("read as" said): '+imp.join(' | '));
@@ -64,19 +64,19 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       const list=[mk('a','shirt','nylon/spandex'),mk('b','shirt','Nylon/Spandex'),mk('c','shirt','nylon'),mk('d','raincoat','nylon'),mk('e','shirt','nylon spandex blend'),mk('f','shirt','cotton'),mk('g','socks','nylon/spandex')];
       for(const i of list)await putRaw(i);items=list.map(i=>({...i}));let syncs=0;const was=window.setTimeout;window.setTimeout=(f,...a)=>{if(f===syncNow){syncs++;return 0}return was.call(window,f,...a)};
       const n=await matMigrate(),again=await matMigrate();window.setTimeout=was;const st=await tx('readonly',s=>s.getAll());const m=id=>st.find(x=>x.id===id);
-      return {n,again,syncs,mats:['a','b','c','d','e','f','g'].map(id=>m(id).material).join('|'),mem:items.find(i=>i.id==='a').material,stamped:m('a').updated>1&&m('f').updated===1,syn:wardHay({type:'shirt',material:'performance stretch'}).includes('nylon')}});
+      return {n,again,syncs,mats:['a','b','c','d','e','f','g'].map(id=>m(id).material).join('|'),mem:items.find(i=>i.id==='a').material,stamped:m('a').updated>1&&m('f').updated===1,syn:HOOK.wardHay({type:'shirt',material:'performance stretch'}).includes('nylon')}});
     ok(e.n===3&&e.mats==='performance stretch|performance stretch|performance stretch|nylon|nylon spandex blend|cotton|nylon/spandex','exactly "nylon/spandex" (any case) and "nylon" on shirts become performance stretch; a raincoat\'s nylon, other words and socks are left: '+e.mats);
     ok(e.again===0&&e.syncs===1&&e.stamped&&e.mem==='performance stretch','idempotent (a second run changes nothing), stamped and synced, the copy on screen too');
     ok(e.syn,'"nylon" still finds the performance stretch shirts');
     // ---- the painter
-    e=await p.evaluate(()=>{const M=(t,z,m,x={})=>asmCmMat({type:t,material:m,pattern:'solid',...x},z).join();
+    e=await p.evaluate(()=>{const M=(t,z,m,x={})=>HOOK.asmCmMat({type:t,material:m,pattern:'solid',...x},z).join();
       return {velvet:M('blazer','jacket','velvet'),cord:M('suit','jacket','corduroy'),seer:M('suit','jacket','seersucker'),cotSuit:M('suit','jacket','cotton'),woolSuit:M('suit','jacket','wool'),cotTie:M('tie','tie','cotton'),silkTie:M('tie','tie','silk'),
         mohair:M('suit','jacket','mohair blend'),trop:M('suit','jacket','tropical wool'),stretch:M('shirt','shirt','performance stretch'),poplin:M('shirt','shirt','poplin'),camel:M('blazer','jacket','camel hair'),jersey:M('blazer','jacket','jersey'),
         routeCord:asmCmRoute({type:'suit',primaryColor:'brown',pattern:'solid',material:'corduroy'},'jacket').how,routeSeer:asmCmRoute({type:'pants',primaryColor:'blue',pattern:'solid',material:'seersucker'},'trousers').how,
         routeWool:asmCmRoute({type:'suit',primaryColor:'navy',pattern:'solid',material:'wool'},'jacket').how,routeCu:asmCmRoute({type:'suit',primaryColor:'tan',pattern:'solid',material:'corduroy',texture:'data:image/jpeg;base64,AAAA'},'jacket').how,
-        tile:(()=>{const t=asmPileTile({type:'suit',primaryColor:'brown',material:'corduroy'},'cord');return t&&t.TW===256&&t.t.length===3*256*256&&t.mm>0})(),
-        grain:['corduroy','seersucker','velvet','wool'].map(m=>ovlGrain({material:m,pattern:'solid'})).join(),
-        sig:asmCmWeaveTag('jacket',{type:'suit',primaryColor:'brown',pattern:'solid',material:'corduroy'})}});
+        tile:(()=>{const t=HOOK.asmPileTile({type:'suit',primaryColor:'brown',material:'corduroy'},'cord');return t&&t.TW===256&&t.t.length===3*256*256&&t.mm>0})(),
+        grain:['corduroy','seersucker','velvet','wool'].map(m=>HOOK.ovlGrain({material:m,pattern:'solid'})).join(),
+        sig:HOOK.asmCmWeaveTag('jacket',{type:'suit',primaryColor:'brown',pattern:'solid',material:'corduroy'})}});
     ok(e.velvet==='1.2,1.45'&&e.cord==='0.96,0.6'&&e.camel==='0.96,0.6'&&e.jersey==='0.9,0.4','velvet a deep pile sheen; corduroy and camel hair soft and matt; jersey like a knit');
     ok(e.cotSuit==='1.05,0.7'&&e.seer==='1.05,0.7'&&e.woolSuit==='1,1.15','a cotton or seersucker suit is matt like chinos; wool keeps the worsted sheen');
     ok(e.cotTie==='1.05,0.7'&&e.silkTie==='1.1,1.3','a cotton tie is matt, not silk-shiny');
@@ -85,7 +85,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(e.grain==='cord,sucker,velvet,plain','Today\'s painted swatch has corduroy wales, seersucker pucker and velvet pile');
     // ---- accessories in the planner and the drawings
     e=await p.evaluate(()=>{const w=I=>({type:'watch',primaryColor:'black',metal:'silver',...I});
-      return {same:[metalSame('two-tone','gold'),metalSame('silver','two-tone'),metalSame('gold','silver'),metalSame('other','two-tone')].join(),silk:metalOf({type:'cufflinks',metal:'silk',primaryColor:'navy'}),
+      return {same:[HOOK.metalSame('two-tone','gold'),HOOK.metalSame('silver','two-tone'),HOOK.metalSame('gold','silver'),HOOK.metalSame('other','two-tone')].join(),silk:metalOf({type:'cufflinks',metal:'silk',primaryColor:'navy'}),
         fin:[finish('nubuck'),finish('braided'),finish('canvas')].join(),fit:beltFit({type:'shoes',primaryColor:'brown',leather:'nubuck',shoeStyle:'derby'},{type:'belt',primaryColor:'brown',leather:'canvas'}),
         strap:[strapBand(w({band:'rubber'})),strapBand(w({band:'nato'})),strapBand(w({band:'bracelet'}))].join(),desc:[desc(w({band:'rubber'})),desc({type:'cufflinks',primaryColor:'navy',metal:'silk'}),desc({type:'belt',primaryColor:'brown',leather:'braided',metal:'silver'})].join(' | '),
         thumb:/link|circle/.test(itemThumb({type:'cufflinks',primaryColor:'navy',metal:'silk'})),paints:asmWatchPaints(w({band:'nato'}))&&!asmWatchPaints(w({band:'bracelet',dial:'white'})),text:watchText(w({band:'nato',metal:'two-tone'}))}});
@@ -94,12 +94,12 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(e.strap==='true,true,false'&&/black/.test(e.desc)&&/rubber strap/.test(e.desc)&&/Navy · silk knot|navy · silk knot/i.test(e.desc)&&/braided leather/.test(e.desc)&&e.thumb&&e.paints&&/two-tone/.test(e.text)&&/NATO strap/.test(e.text),'rubber and NATO straps have a color and are painted; descriptions say silk knot and braided leather: '+e.desc);
     // ---- the close-up reader's material card
     const CU='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
-    await p.evaluate(cu=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
+    await p.evaluate(cu=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');HOOK.rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
       items=[{id:'r1',type:'suit',primaryColor:'grey',pattern:'solid',texture:cu,added:2,name:'Grey suit'},{id:'r2',type:'suit',primaryColor:'grey',pattern:'solid',texture:cu,material:'wool',added:1,name:'Wool suit'}];show('wardrobe')},CU);
     const COL={kind:'colour',match:'existing',existing:'grey',dE:1,name:'grey',hex:'#8b8f96',plansAs:'grey',fitsType:true,confidence:'high',why:'',ask:null};
     const PAT={kind:'pattern',match:'existing',existing:'solid',name:'solid',description:'',plansAs:'solid',look:{layout:'none',tr:10},colourHint:null,confidence:'high',why:'',ask:null};
     const reply=m=>({colour:COL,pattern:{...PAT,...(m?{material:m}:{})},model:'stub',lookups:2});
-    const read=async id=>{S.sent=[];await p.evaluate(id=>rdRun('e',id),id);await p.waitForSelector('#rd-sheet.on #rd-both');await settle(p,200)};
+    const read=async id=>{S.sent=[];await p.evaluate(id=>HOOK.rdRun('e',id),id);await p.waitForSelector('#rd-sheet.on #rd-both');await settle(p,200)};
     const sheet=()=>p.evaluate(()=>{const s=document.querySelector('#rd-sheet'),m=s.querySelector('#rd-mat');return {mat:m&&m.textContent,both:s.querySelector('#rd-both').textContent,h:[...s.querySelectorAll('#rd-mat button,#rd-both')].map(b=>Math.round(b.getBoundingClientRect().height))}});
     S.reply=reply({key:'flannel',confidence:'high',why:'A fuzzy nap hides the weave.'});await read('r1');e=await sheet();
     ok(S.sent.length===1&&e.mat&&/Material: Flannel/.test(e.mat)&&/high confidence/.test(e.mat)&&/A fuzzy nap hides the weave/.test(e.mat)&&/Keep blank/.test(e.mat)&&/Use Flannel/.test(e.mat)&&e.h.every(x=>x>=44),'high confidence: a third card "Material: Flannel" with Keep / Use and Claude\'s line, one request (still 2 lookups), buttons 44 px: '+e.mat);
@@ -110,10 +110,10 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await p.click('#rd-both');await p.waitForFunction(()=>!document.querySelector('#rd-sheet.on'));
     e=await p.evaluate(()=>({t:((document.querySelector('#toast')||{}).textContent||'')+' '+((document.querySelector('#undo-fab.on')||{getAttribute:()=>''}).getAttribute('aria-label')||''),season:itemSeason(items.find(i=>i.id==='r1'))}));
     ok(/Material updated/.test(e.t)&&e.season==='cold','Use sets it (flannel: cold weather) and the toast says so, with Undo');
-    await p.evaluate(()=>rdUndoAll());await p.waitForFunction(()=>!('material' in items.find(i=>i.id==='r1')));ok(true,'Undo takes the material off again');
-    S.reply=reply({key:'cotton',confidence:'low',why:'maybe'});await read('r1');e=await sheet();ok(e.mat&&/Claude’s guess: cotton/.test(e.mat)&&/Use cotton/.test(e.mat)&&e.both==='Keep as it is','low confidence (2026-11-16): shown as Claude\'s guess with its own Use; the bar never applies it ('+e.both+')');await p.evaluate(()=>rdClose());
-    S.reply=reply({key:'none',confidence:'low',why:''});await read('r1');e=await sheet();ok(!e.mat,'"none": no card');await p.evaluate(()=>rdClose());
-    S.reply=reply(null);await read('r1');e=await sheet();ok(!e.mat,'an older worker (no material): no card');await p.evaluate(()=>rdClose());
+    await p.evaluate(()=>HOOK.rdUndoAll());await p.waitForFunction(()=>!('material' in items.find(i=>i.id==='r1')));ok(true,'Undo takes the material off again');
+    S.reply=reply({key:'cotton',confidence:'low',why:'maybe'});await read('r1');e=await sheet();ok(e.mat&&/Claude’s guess: cotton/.test(e.mat)&&/Use cotton/.test(e.mat)&&e.both==='Keep as it is','low confidence (2026-11-16): shown as Claude\'s guess with its own Use; the bar never applies it ('+e.both+')');await p.evaluate(()=>HOOK.rdClose());
+    S.reply=reply({key:'none',confidence:'low',why:''});await read('r1');e=await sheet();ok(!e.mat,'"none": no card');await p.evaluate(()=>HOOK.rdClose());
+    S.reply=reply(null);await read('r1');e=await sheet();ok(!e.mat,'an older worker (no material): no card');await p.evaluate(()=>HOOK.rdClose());
     // a material set by hand: "Yours · Claude", Use all leaves it
     S.reply={colour:{...COL,match:'new',existing:'charcoal',dE:9,name:'smoke',hex:'#55585e',plansAs:'charcoal'},pattern:{...PAT,match:'existing',existing:'twill',name:'twill',plansAs:'twill',material:{key:'flannel',confidence:'medium',why:'Soft nap.'}},model:'stub',lookups:2};
     await read('r2');e=await sheet();
@@ -122,7 +122,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await p.click('#rd-both');await p.waitForFunction(()=>!document.querySelector('#rd-sheet.on'));
     e=await p.evaluate(()=>{const i=items.find(x=>x.id==='r2');return {m:i.material,p:i.pattern,c:i.primaryColor}});
     ok(e.m==='wool'&&e.p==='twill'&&/^own/.test(e.c),'Use both sets the color and pattern and never changes a hand-set material: '+JSON.stringify(e));
-    await p.evaluate(()=>rdUndoAll());await settle(p,300);
+    await p.evaluate(()=>HOOK.rdUndoAll());await settle(p,300);
     // all three: "Use all"
     await p.evaluate(()=>{const i=items.find(x=>x.id==='r1');delete i.material;i.pattern='solid';i.primaryColor='grey'});
     S.reply={...S.reply,pattern:{...S.reply.pattern,material:{key:'flannel',confidence:'high',why:''}}};await read('r1');e=await sheet();
@@ -131,7 +131,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     e=await p.evaluate(()=>{const i=items.find(x=>x.id==='r1');return {m:i.material,p:i.pattern,t:((document.querySelector('#toast')||{}).textContent||'')+' '+((document.querySelector('#undo-fab.on')||{getAttribute:()=>''}).getAttribute('aria-label')||'')}});
     ok(e.m==='flannel'&&e.p==='twill'&&/Color, texture and material updated/.test(e.t),'Use all sets all three: '+JSON.stringify(e));
     // ---- the Add card: Claude's material from photo tagging
-    e=await p.evaluate(()=>{queue.length=0;show('add');addManual();const q=queue[0];
+    e=await p.evaluate(()=>{queue.length=0;show('add');HOOK.addManual();const q=queue[0];
       const tag=m=>normTag({type:'blazer',primaryColor:'navy',pattern:'solid',material:m},'claude-x');
       q.type='blazer';takeExtras(q,tag({key:'tweed',confidence:'high',why:'Flecked, rough wool.'}));renderAdd();
       const card=document.querySelector(`.qcard[data-q="${q.id}"]`),r1={m:q.material,note:(card.querySelector('.matai')||{}).textContent||'',sel:card.querySelector('.wmat').value};

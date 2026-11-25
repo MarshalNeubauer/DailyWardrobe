@@ -123,7 +123,7 @@ async function run(eng,browser,{ok,url,settle}){
   const band2=await ev(f=>{const e=(0,eval)('('+f+')')();return [...e.options].map(o=>o.value).find(v=>v!==e.value)},String(bandEl));
   await p.selectOption(bandSel,band2);await settle(p,400);
   ok((await item('watch5')).band===band2&&await ev(f=>document.activeElement===(0,eval)('('+f+')')(),String(bandEl)),T+'picked by keyboard, the new Band dropdown keeps the focus');
-  await ev(()=>{closeItem();openItem('tie2')});await settle(p,500);
+  await ev(()=>{HOOK.closeItem();openItem('tie2')});await settle(p,500);
   await tap('#ivbody .shaderow .shbtn[aria-label="Darker"]',400);
   ok((await item('tie2')).shade===-1,T+'the item page’s Shade − makes the drawn color a step darker');
   await tap('#ivbody .shaderow .shbtn[aria-label="Lighter"]',400);
@@ -132,10 +132,10 @@ async function run(eng,browser,{ok,url,settle}){
   ok((await item('tie2')).paused===true&&await ev(()=>/Put back in rotation/.test(document.querySelector('#ivbody .ivrot .rotbtn').textContent)),T+'"Take out of rotation" takes the piece out');
   await tap('#ivbody .ivrot .rotbtn',500);
   ok(!(await item('tie2')).paused,T+'"Put back in rotation" puts it back');
-  await ev(()=>{closeItem();openItem('tie4')});await settle(p,500);
+  await ev(()=>{HOOK.closeItem();openItem('tie4')});await settle(p,500);
   await date('#ivbody .ordrow input[type="date"]','2099-02-01');
   ok((await item('tie4')).arrives==='2099-02-01',T+'the item page’s Arrives date is saved');
-  await ev(()=>{closeItem();openItem('shirt1')});await settle(p,500);
+  await ev(()=>{HOOK.closeItem();openItem('shirt1')});await settle(p,500);
   ok(await ev(()=>/stripes read from photo/.test(document.querySelector('#ivbody .ivpat').textContent)),T+'a shirt with read stripes says so');
   await tap('#ivbody .ivpat .btns button:has-text("Use generic")',500);
   ok(!(await item('shirt1')).stripes&&await ev(()=>/generic/.test(document.querySelector('#ivbody .ivpat .shelp').textContent)),T+'"Use generic" drops the reading');
@@ -144,12 +144,12 @@ async function run(eng,browser,{ok,url,settle}){
   const n3=await ev(()=>items.length);
   await tap('#ivbody #iv-dup',700);await p.waitForFunction(n=>items.length===n+1,n3).catch(()=>{});
   ok(await ev(n=>items.length===n+1,n3),T+'"Duplicate this item" adds a copy');
-  await ev(()=>{closeItem();openItem('tie2')});await settle(p,500);
+  await ev(()=>{HOOK.closeItem();openItem('tie2')});await settle(p,500);
   await tap('#ivbody .ivdel .danger',700);await p.waitForFunction(()=>!items.some(i=>i.id==='tie2')).catch(()=>{});
   ok(await ev(()=>!items.some(i=>i.id==='tie2')),T+'"Delete item" deletes the piece');
 
   /* ---- the photo tools: rotate, crop (zoom, drag, apply, discard) ---- */
-  await ev(()=>{closeItem();openItem('suit0')});await settle(p,500);
+  await ev(()=>{HOOK.closeItem();openItem('suit0')});await settle(p,500);
   const dims=()=>ev(async()=>{const im=await imgOf(items.find(i=>i.id==='suit0').photo);return [im.naturalWidth,im.naturalHeight]});
   const d0=await dims();
   await tap('#ivbody .pt-rotate',900);await p.waitForFunction(()=>/Photo rotated/.test(document.querySelector('#toast').textContent)).catch(()=>{});
@@ -172,7 +172,7 @@ async function run(eng,browser,{ok,url,settle}){
   await tap('#ivbody .pt-crop',700);await tap('#ivbody .cropwrap .cropdiscard',500);
   ok(await ev(()=>!phEdit.crop&&!document.querySelector('#cropbox'))&&(await dims()).join()===d2.join(),T+'Discard leaves the crop frame with the photo unchanged');
   // True color in 3 steps: the card opens the tip
-  await ev(()=>{closeItem();openItem('suit6')});await settle(p,500);
+  await ev(()=>{HOOK.closeItem();openItem('suit6')});await settle(p,500);
   await tap('#ivbody .wbstcard',600);
   ok(await ev(()=>!!kit&&!!document.querySelector('.kit-body')),T+'the "True color in 3 steps" card opens the tip');
   await ev(()=>{if(kit)kitClose()});await settle(p,300);
@@ -188,11 +188,11 @@ async function run(eng,browser,{ok,url,settle}){
   await d.waitForFunction(()=>/Photo replaced/.test(document.querySelector('#toast').textContent)).catch(()=>{});
   const rep=await d.evaluate(()=>({toast:document.querySelector('#toast').textContent,empty:document.querySelector('#ivbody .pt-replace input[type=file]').value===''}));
   ok(await dimsD()==='640,480'&&rep.empty&&/Photo replaced/.test(rep.toast),T+'a file chosen with Replace becomes the photo and says so, and the field is emptied for the next one ('+await dimsD()+' '+JSON.stringify(rep)+')');
-  await d.evaluate(()=>{closeItem();openItem('suit6')});await settle(d,500);
+  await d.evaluate(()=>{HOOK.closeItem();openItem('suit6')});await settle(d,500);
   const has=await d.evaluate(()=>!!document.querySelector('#ivbody .ptrm'));
   if(has){await d.locator('#ivbody .ptrm').first().click();await d.waitForFunction(()=>!items.find(i=>i.id==='suit6').texture&&/Close-up removed/.test(document.querySelector('#toast').textContent)).catch(()=>{})}
   ok(has&&await d.evaluate(()=>!items.find(i=>i.id==='suit6').texture&&/Close-up removed/.test(document.querySelector('#toast').textContent)),T+'no touch: the item page’s "Remove close-up" removes it and says so');
-  await d.evaluate(()=>{closeItem();openAdd();queue.unshift({id:'cR',err:'open'});errToHand('cR');const c=cardOf('cR');c.texture=__pic(300,300,'#555');renderAdd()});await settle(d,400);
+  await d.evaluate(()=>{HOOK.closeItem();openAdd();queue.unshift({id:'cR',err:'open'});errToHand('cR');const c=cardOf('cR');c.texture=__pic(300,300,'#555');renderAdd()});await settle(d,400);
   const has2=await d.evaluate(()=>!!document.querySelector('#queue [data-q="cR"] .ckrm'));
   if(has2){await d.locator('#queue [data-q="cR"] .ckrm').first().click();await settle(d,400)}
   ok(has2&&await d.evaluate(()=>!cardOf('cR').texture&&!document.querySelector('#queue [data-q="cR"] .ckrm')),T+'no touch: the Add card’s "Remove close-up" removes it');

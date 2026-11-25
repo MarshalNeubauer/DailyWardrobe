@@ -27,7 +27,7 @@ async function run(eng,browser,{ok,url,settle}){
     await p.evaluate(async()=>{const load=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
       const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
       const cv=(im,k)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9)};
-      rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
+      HOOK.rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
       window.PH0=cv(pi,1);items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:PH0,texture:cv(ci,3),added:2,name:'Mink suit'},{id:'m2',type:'suit',primaryColor:'navy',pattern:'solid',photo:PH0,added:1,name:'Navy suit'}];
       settings.workdays=[0,1,2,3,4];settings.setupDone=1;cache={};flt='all';editing=null;show('wardrobe')});
     await settle(p,400);
@@ -36,7 +36,7 @@ async function run(eng,browser,{ok,url,settle}){
     const TE=(type,x,y,ms=16)=>{clock=type==='touchStart'?Math.max(clock+ms,Date.now()):clock+ms;return cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}],timestamp:clock/1000})};
     const touch=async(x,y0,y1,at,n=8,ms=16)=>{let mid;await TE('touchStart',x,y0);for(let k=1;k<=n;k++){await TE('touchMove',x,y0+(y1-y0)*k/n,ms);await p.waitForTimeout(ms);if(k===n&&at)mid=await at()}await TE('touchEnd',x,y1);await settle(p,450);return mid};
     const mouse=async(x,y0,y1,at,n=10)=>{let mid;await p.mouse.move(x,y0);await p.mouse.down();for(let k=1;k<=n;k++){await p.mouse.move(x,y0+(y1-y0)*k/n);await p.waitForTimeout(30);if(k===n&&at)mid=await at()}await p.mouse.up();await settle(p,450);return mid};
-    const openItem1=async(id='m1')=>{await ev(()=>{if(colPick)closeColPick();if(rd)rdClose();phEdit.crop=null;if(editing)closeItem()});await settle(p,450);await ev(id=>openItem(id),id);await settle(p,500)};
+    const openItem1=async(id='m1')=>{await ev(()=>{if(colPick)closeColPick();if(HOOK.rd)HOOK.rdClose();phEdit.crop=null;if(editing)HOOK.closeItem()});await settle(p,450);await ev(id=>openItem(id),id);await settle(p,500)};
 
     // ---- 1. "True color in 3 steps" seen before the Read tap: since Edit photos option B it sits right ABOVE Read color and texture, in
     //         the Color & texture card (tests/editphotosb.test.js has the rest of B)
@@ -59,15 +59,15 @@ async function run(eng,browser,{ok,url,settle}){
     // ---- 2. the color / pattern sheet, New color and the reading sheet swipe down
     const geo=sel=>ev(sel=>{const s=document.querySelector(sel),r=s.getBoundingClientRect(),g=s.querySelector('.cpgrab,.rdgrab').getBoundingClientRect(),t=s.querySelector('#col-title,#rd-title').getBoundingClientRect(),c=s.querySelector('.cphelp,.rdbusy,.cnlim');
       const cr=c?c.getBoundingClientRect():null;return {top:r.top,left:r.left,w:r.width,h:r.height,gx:g.left+g.width/2,gy:g.top+g.height/2,tx:t.left+8,ty:t.top+t.height/2,cx:cr?cr.left+20:0,cy:cr?cr.top+cr.height/2:0}},sel);
-    const at=sel=>()=>ev(sel=>{const s=document.querySelector(sel),b=document.querySelector(sel==='#col-sheet'?'#col-backdrop':'#rd-backdrop');return {top:s.getBoundingClientRect().top,dim:+getComputedStyle(b).opacity,up:sel==='#col-sheet'?!!colPick:!!rd}},sel);
+    const at=sel=>()=>ev(sel=>{const s=document.querySelector(sel),b=document.querySelector(sel==='#col-sheet'?'#col-backdrop':'#rd-backdrop');return {top:s.getBoundingClientRect().top,dim:+getComputedStyle(b).opacity,up:sel==='#col-sheet'?!!colPick:!!HOOK.rd}},sel);
     const openCol=async k=>{await openItem1();await p.click(k==='pattern'?'#item-view .patbtn':'#item-view .colbtn[data-k="primaryColor"]');await settle(p,450)};
     // under a stand-in status bar: the top (and so the grabber) starts below it
     await ev(s=>document.documentElement.style.setProperty('--sat',s+'px'),SAT);
     for(const k of ['primaryColor','pattern']){await openCol(k);const g=await geo('#col-sheet');
       ok(g.top>=SAT+8&&g.gy>=SAT+8&&g.top+g.h<=h+1,T+`under a ${SAT}px status bar the ${k==='pattern'?'pattern':'color'} sheet starts below it (top ${Math.round(g.top)}px, grabber at ${Math.round(g.gy)}px)`)}
-    await ev(()=>{closeColPick();rd={src:'e',id:'m1',run:1,state:'limit',limit:'Today’s lookups are used up.'};rdOpen();rdRender(true)});await settle(p,400);
+    await ev(()=>{closeColPick();HOOK.rd={src:'e',id:'m1',run:1,state:'limit',limit:'Today’s lookups are used up.'};HOOK.rdOpen();HOOK.rdRender(true)});await settle(p,400);
     let g=await geo('#rd-sheet');ok(g.top>=SAT+8,T+`under a ${SAT}px status bar the reading sheet starts below it (top ${Math.round(g.top)}px)`);
-    await ev(()=>{rdClose();document.documentElement.style.removeProperty('--sat')});await settle(p,300);
+    await ev(()=>{HOOK.rdClose();document.documentElement.style.removeProperty('--sat')});await settle(p,300);
     // touch: the grabber, the title and the content at the top close it, the sheet following the finger and the backdrop lightening
     for(const k of ['primaryColor','pattern'])for(const where of ['grabber','title','content']){await openCol(k);g=await geo('#col-sheet');
       const x=where==='grabber'?g.gx:where==='title'?g.tx:g.cx,y=where==='grabber'?g.gy:where==='title'?g.ty:g.cy;
@@ -96,17 +96,17 @@ async function run(eng,browser,{ok,url,settle}){
     await openCol('pattern');await p.click('#pn-open');await settle(p,400);g=await geo('#col-sheet');await touch(g.tx,g.ty,g.ty+g.h*.5);
     ok(!await ev(()=>colPick),T+'New pattern: dragging its title down closes it');
     // the reading sheet: by its grabber (finger and mouse), springing back on a short pull
-    const openRd=async()=>{await openItem1();await ev(()=>{rd={src:'e',id:'m1',run:1,state:'limit',limit:'Today’s lookups are used up.'};rdOpen();rdRender(true)});await settle(p,400)};
+    const openRd=async()=>{await openItem1();await ev(()=>{HOOK.rd={src:'e',id:'m1',run:1,state:'limit',limit:'Today’s lookups are used up.'};HOOK.rdOpen();HOOK.rdRender(true)});await settle(p,400)};
     await openRd();g=await geo('#rd-sheet');let mid=await touch(g.gx,g.gy,g.gy+g.h*.6,at('#rd-sheet'));
-    ok(mid&&mid.up&&mid.top>g.top+20&&!await ev(()=>!!rd||!!document.querySelector('#rd-sheet.on'))&&await ev(()=>editing==='m1'),T+`the reading sheet: a finger dragging its grabber down moves it and closes it, the item sheet stays`);
+    ok(mid&&mid.up&&mid.top>g.top+20&&!await ev(()=>!!HOOK.rd||!!document.querySelector('#rd-sheet.on'))&&await ev(()=>editing==='m1'),T+`the reading sheet: a finger dragging its grabber down moves it and closes it, the item sheet stays`);
     await openRd();g=await geo('#rd-sheet');await touch(g.gx,g.gy,g.gy+20,null,4,60);s=await at('#rd-sheet')();
     ok(s.up&&Math.abs(s.top-g.top)<1,T+'the reading sheet: a short, slow pull springs back');
-    await mouse(g.tx,g.ty,g.ty+g.h*.6);ok(!await ev(()=>!!rd),T+'the reading sheet: a mouse dragging its title down closes it');
+    await mouse(g.tx,g.ty,g.ty+g.h*.6);ok(!await ev(()=>!!HOOK.rd),T+'the reading sheet: a mouse dragging its title down closes it');
 
     // ---- 4. zoom & crop: leaving it without Apply keeps a moved or zoomed frame
     if(phone){
       const photo=()=>ev(()=>items.find(x=>x.id==='m1').photo);
-      const crop=async(z='2')=>{await openItem1();await ev(()=>{items.find(x=>x.id==='m1').photo=PH0;startCrop('m1')});await p.waitForSelector('#cropbox');await settle(p,200);
+      const crop=async(z='2')=>{await openItem1();await ev(()=>{items.find(x=>x.id==='m1').photo=PH0;HOOK.startCrop('m1')});await p.waitForSelector('#cropbox');await settle(p,200);
         if(z)await ev(z=>{const r=document.querySelector('#item-view .cropzoom input');r.value=z;r.dispatchEvent(new Event('input',{bubbles:true}))},z)};
       const saved=()=>p.waitForFunction(()=>items.find(x=>x.id==='m1').photo!==PH0,null,{timeout:6000}).then(()=>true,()=>false);
       const sq1=()=>ev(async()=>{const im=await imgOf(items.find(x=>x.id==='m1').photo);return im.naturalWidth===im.naturalHeight});
@@ -130,7 +130,7 @@ async function run(eng,browser,{ok,url,settle}){
       await crop();await p.keyboard.press('Escape');sv=await saved();await settle(p,300);
       let e=await ev(()=>({crop:!!phEdit.crop,ed:editing,frame:!!document.querySelector('#cropbox'),undo:phEdit.undo.length,toast:(document.querySelector('#toast.on')||{}).textContent||''}));
       ok(sv&&!e.crop&&e.ed==='m1'&&!e.frame&&e.undo===1&&/Crop saved\..*Undo/.test(e.toast),T+`zoomed, then Esc: the crop is saved and the frame left, the sheet stays, "Crop saved." with Undo in the toast (${JSON.stringify(e)})`);
-      await ev(()=>undoPhoto('m1'));await settle(p,300);ok(await photo()===await ev(()=>PH0),T+'…and the editor’s Undo (phEdit.undo) still puts the photo back');
+      await ev(()=>HOOK.undoPhoto('m1'));await settle(p,300);ok(await photo()===await ev(()=>PH0),T+'…and the editor’s Undo (phEdit.undo) still puts the photo back');
       // ‹ ›: the next item; the crop kept for the one it was on
       await crop();await p.click('#iv-next');sv=await saved();await settle(p,300);
       ok(sv&&await ev(()=>editing==='m2'&&items.find(x=>x.id==='m2').photo===PH0),T+'zoomed, then › to the next item: the crop is kept for the item it was on, the next item untouched');

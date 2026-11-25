@@ -19,7 +19,7 @@ module.exports=async({ok,chromium,url,settle})=>{
         return route.fulfill({status:503,headers:H,body:'{"error":"server"}'})});
       const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);
       const ev=(f,a)=>p.evaluate(f,a);let e;
-      await ev(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');rememberRole({role:'owner'});delete settings.ownMaterials;CK_OPEN['*']=true});
+      await ev(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');HOOK.rememberRole({role:'owner'});delete settings.ownMaterials;CK_OPEN['*']=true});
       const shot=async(name,sel)=>{if(!SHOTS)return;fs.mkdirSync(SHOTS,{recursive:true});const el=sel&&await p.$(sel);if(el){await el.scrollIntoViewIfNeeded();await settle(p,200)}
         await (el||p).screenshot({path:path.join(SHOTS,`${name}-${scheme}.png`)})};
       // ---- the Add card: a shirt Claude reads as cupro (medium), on no list
@@ -60,7 +60,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       await shot('add-guess','#queue .qcard [data-ck="fabric"]');
       await p.click('#queue .matguess button');await p.waitForFunction(()=>queue[0].material==='wool');await settle(p,200);e=await look();
       ok(e.sel==='wool'&&e.set&&e.checked&&e.mark==='good'&&!e.guess,T+'Use sets it as chosen by hand and checks Fabric & fit');
-      e=await ev(()=>['suit','blazer','pants','shirt','tie'].map(t=>{const q={id:'z',type:t,primaryColor:'navy',pattern:'solid',manual:1};const s=addCkSecs(q,0).find(x=>x.k==='fabric');return t+':'+s.mark+':'+s.sum}).join('|'));
+      e=await ev(()=>['suit','blazer','pants','shirt','tie'].map(t=>{const q={id:'z',type:t,primaryColor:'navy',pattern:'solid',manual:1};const s=HOOK.addCkSecs(q,0).find(x=>x.k==='fabric');return t+':'+s.mark+':'+s.sum}).join('|'));
       ok(/suit:warn:Material not set\|blazer:warn:Material not set\|pants:warn:Material not set\|shirt:todo:[^|]*\|tie:todo/.test(e),T+'"!" and "Material not set" on suits, blazers and pants with no material, not on shirts or ties: '+e);
       const n0=await ev(()=>items.length);
       await ev(()=>{openAdd();queue.length=0;queue.unshift({id:'q2',ai:true,type:'pants',primaryColor:'navy',secondaryColor:null,tertiaryColor:null,pattern:'solid',photo:null,conf:{type:'high',primaryColor:'high',pattern:'high'},aiTag:{pattern:'solid'}});renderAdd()});
@@ -86,7 +86,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       const PAT={kind:'pattern',match:'existing',existing:'solid',name:'solid',description:'',plansAs:'solid',look:{layout:'none',tr:10},colourHint:null,confidence:'high',why:'',ask:null};
       const reply=m=>({colour:COL,pattern:{...PAT,...(m?{material:m}:{})},model:'stub',lookups:2});
       await ev(cu=>{items.push({id:'r1',type:'shirt',primaryColor:'white',pattern:'solid',texture:cu,added:6})},PH);
-      const read=async()=>{S.sent=[];await ev(()=>rdRun('e','r1'));await p.waitForSelector('#rd-sheet.on #rd-both');await settle(p,200)};
+      const read=async()=>{S.sent=[];await ev(()=>HOOK.rdRun('e','r1'));await p.waitForSelector('#rd-sheet.on #rd-both');await settle(p,200)};
       const sheet=()=>ev(()=>{const s=document.querySelector('#rd-sheet'),m=s.querySelector('#rd-mat');return {mat:m&&m.textContent.replace(/\s+/g,' '),both:s.querySelector('#rd-both').textContent}});
       S.reply=reply({key:'cupro',confidence:'medium',why:'Silky drape.',new:true});await read();e=await sheet();
       ok(e.mat&&/Claude calls it cupro/.test(e.mat)&&/Add cupro as a material/.test(e.mat)&&/Keep blank/.test(e.mat)&&e.both==='Keep as it is',T+`the reader offers a new material with Keep / Add; the bar leaves it (${e.both})`);
@@ -94,14 +94,14 @@ module.exports=async({ok,chromium,url,settle})=>{
       ok(await ev(()=>!ownMats('shirt').length&&!items.find(i=>i.id==='r1').material),T+'"Use all" / the bar never adds a new material');
       await read();await p.click('#rd-muse');await p.waitForFunction(()=>ownMats('shirt').includes('cupro')&&items.find(i=>i.id==='r1').material==='cupro');
       await p.waitForSelector('#rd-mat.done');ok(true,T+'its own tap adds it to the shirt materials and sets it');
-      await ev(()=>rdClose());await ev(()=>rdUndoAll());await p.waitForFunction(()=>!items.find(i=>i.id==='r1').material);
+      await ev(()=>HOOK.rdClose());await ev(()=>HOOK.rdUndoAll());await p.waitForFunction(()=>!items.find(i=>i.id==='r1').material);
       ok(await ev(()=>ownMats('shirt').includes('cupro')),T+'Undo takes it off the item; it stays in the list while another shirt still uses it');
       await ev(async()=>{items=items.filter(i=>i.id!=='s1');await removeOwnMaterial('shirt','cupro')});
       await ev(()=>addOwnMaterial('shirt','cupro'));
       S.reply=reply({key:'cupro',confidence:'high',why:''});await read();e=await sheet();
       ok(/Material: Cupro/.test(e.mat)&&S.sent[0]&&JSON.stringify(S.sent[0].ownMaterials)==='{"shirt":["cupro"]}',T+'once added, the reading sends it and a cupro answer is a normal material card');
-      await ev(()=>rdClose());
-      S.reply=reply({key:'ramie',confidence:'low',why:'',new:true});await read();e=await sheet();ok(!e.mat,T+'a low new material: no card');await ev(()=>rdClose());
+      await ev(()=>HOOK.rdClose());
+      S.reply=reply({key:'ramie',confidence:'low',why:'',new:true});await read();e=await sheet();ok(!e.mat,T+'a low new material: no card');await ev(()=>HOOK.rdClose());
       ok(!errs.length,T+'no page errors: '+errs.join(' | '));
       await ctx.close()}
   }finally{await b.close()}

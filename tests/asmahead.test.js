@@ -19,14 +19,14 @@ module.exports=async({ok,chromium,url,settle})=>{
       window.__lt=[];new PerformanceObserver(l=>{for(const e of l.getEntries())__lt.push(Math.round(e.duration))}).observe({type:'longtask'});
       show('today')},recs);
     // the worker and the page make the same picture
-    const same=await p.evaluate(async()=>{const o=planFor()[key(sel)],job=await asmJob(o),w=await asmRun(job),pg=await asmBuild(job);
+    const same=await p.evaluate(async()=>{const o=planFor()[key(sel)],job=await HOOK.asmJob(o),w=await asmRun(job),pg=await asmBuild(job);
       const px=async u=>{const im=new Image();im.src=u;await im.decode();const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);return x.getImageData(0,0,im.width,im.width).data};
-      const A=await px(w.url),B=await px(pg.url);let d=0;for(let i=0;i<A.length;i++)d+=Math.abs(A[i]-B[i]);return {worker:asmOffPage()&&!!asmW&&asmW.ok===true,len:A.length===B.length,mean:d/A.length}});
+      const A=await px(w.url),B=await px(pg.url);let d=0;for(let i=0;i<A.length;i++)d+=Math.abs(A[i]-B[i]);return {worker:HOOK.asmOffPage()&&!!HOOK.asmW&&HOOK.asmW.ok===true,len:A.length===B.length,mean:d/A.length}});
     ok(same.worker&&same.len&&same.mean<0.5,`the picture is put together in a Web Worker and comes out as on the page (mean difference ${same.mean.toFixed(3)} per channel)`);
     // building ahead: every look of the coming days gets its picture without being shown
     await p.evaluate(()=>{__lt=[]});
-    await p.waitForFunction(()=>{if(asmAheadOn)return false;const T=todayDate();for(let i=0;i<ASM_AHEAD;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;const o=planOn(d);if(o&&asmWants(o)&&!asmFor(o))return false}return true},null,{timeout:60000,polling:250});
-    const built=await p.evaluate(()=>{const T=todayDate(),looks=new Set();let days=0;for(let i=0;i<ASM_AHEAD;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;const o=planOn(d);if(o&&asmWants(o)){days++;looks.add(asmOutKey(o))}}
+    await p.waitForFunction(()=>{if(HOOK.asmAheadOn)return false;const T=todayDate();for(let i=0;i<ASM_AHEAD;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;const o=planOn(d);if(o&&HOOK.asmWants(o)&&!asmFor(o))return false}return true},null,{timeout:60000,polling:250});
+    const built=await p.evaluate(()=>{const T=todayDate(),looks=new Set();let days=0;for(let i=0;i<ASM_AHEAD;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;const o=planOn(d);if(o&&HOOK.asmWants(o)){days++;looks.add(asmOutKey(o))}}
       return {days,looks:looks.size,kept:Object.keys(asmOut).length,lt:Math.max(0,...__lt)}});
     ok(built.days>=40&&built.looks>=2&&built.kept>=built.looks,`the next 60 days are built in the background: ${built.days} workdays, ${built.looks} looks, all kept`);
     ok(built.lt<400,`building them ahead never holds the page for long (longest task ${built.lt} ms)`);
@@ -43,9 +43,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     const after=await p.evaluate(()=>{const n=__drawn();__mo.disconnect();return n});
     ok(during===0&&after===1,`a picture ready while a finger is down is shown when it lifts (${during} redraws during, ${after} after)`);
     // without a worker nothing is built ahead (on the page it would freeze swiping); the day on screen still is
-    const nw=await p.evaluate(async()=>{asmWorkerDown();window.ASM_NO_WORKER=true;asmW=null;for(const k of Object.keys(asmOut))delete asmOut[k];
-      await asmAhead();const T=todayDate(),d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+7),o=planOn(d),aheadNone=!Object.keys(asmOut).length;
-      const cur=planFor()[key(sel)];await asmEnsure(cur);return {off:!asmOffPage(),aheadNone,cur:!!asmFor(cur),later:!asmFor(o)||+d===+sel}});
+    const nw=await p.evaluate(async()=>{HOOK.asmWorkerDown();window.ASM_NO_WORKER=true;HOOK.asmW=null;for(const k of Object.keys(asmOut))delete asmOut[k];
+      await HOOK.asmAhead();const T=todayDate(),d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+7),o=planOn(d),aheadNone=!Object.keys(asmOut).length;
+      const cur=planFor()[key(sel)];await asmEnsure(cur);return {off:!HOOK.asmOffPage(),aheadNone,cur:!!asmFor(cur),later:!asmFor(o)||+d===+sel}});
     ok(nw.off&&nw.aheadNone&&nw.cur,'without a worker nothing is built ahead, and the day on screen is still put together (on the page)');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
