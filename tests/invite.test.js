@@ -95,7 +95,7 @@ const invitefix=async({ok,chromium,url})=>{
       ok(!e.conn&&e.sum==='Invitation ended'&&/invitation has ended/.test(e.box)&&!/✓/.test(e.box)&&/invitation has ended/.test(e.bk)&&/invitation has ended/.test(e.line)&&e.nocon,`a switched-off invitation: Connection, Backup and the server-only parts no longer say connected (${JSON.stringify(e)})`);
       ok(!/Photos are read automatically/.test(note),`and Add doesn't promise reading ("${note}")`);
       // feedback: the server's sentence or the ended text, never "invite off"
-      await p.evaluate(()=>{openSettings('about');renderAbout()});const fb=await p.evaluate(()=>({off:document.querySelector('#fb-send').disabled,t:document.querySelector('#fb-status').textContent}));
+      await p.evaluate(()=>{openSettings('about');HOOK.renderAbout()});const fb=await p.evaluate(()=>({off:document.querySelector('#fb-send').disabled,t:document.querySelector('#fb-status').textContent}));
       ok(fb.off&&/invitation has ended/.test(fb.t)&&!/invite off/.test(fb.t),`Feedback says the invitation ended ("${fb.t}")`);
       // the account deleted on another phone: 403 forbidden token, said as ended, not "Backups aren't available on this server yet"
       await p.evaluate(b=>{closeSettings();localStorage.setItem('app_token',b);localStorage.removeItem('invite_ended');HOOK.rememberRole({role:'tester'})},B);delete st.who[B];
@@ -281,7 +281,7 @@ const inviteswitch=async({ok,chromium,url})=>{
       ok(errs.length===0,'no page errors ('+errs.join('; ')+')')}
     // ---- Feedback: a double tap leaves "Thank you"; the day's saves used up doesn't promise to save it later
     {const {p,st}=await page();
-      await seed(p,A,0);await p.evaluate(()=>{openSettings('about');renderAbout()});
+      await seed(p,A,0);await p.evaluate(()=>{openSettings('about');HOOK.renderAbout()});
       await p.fill('#fb-text','Nice app');await p.evaluate(()=>{HOOK.sendFeedback();setTimeout(HOOK.sendFeedback,60)});
       await p.waitForTimeout(600);const s=await p.textContent('#fb-status');
       ok(/Thank you/.test(s)&&st.log.filter(l=>/^POST \/feedback/.test(l)).length===1,`a double tap on Send sends once and keeps "Thank you" ("${s}")`);
@@ -470,7 +470,7 @@ const endedpics=async({ok,chromium,url})=>{
     const r2=await p.evaluate(async()=>{await workerList(true);const ended=localStorage.getItem('invite_ended');HOOK.renderTried.clear();await fetchItemPic({id:'s2',type:'belt',primaryColor:'black',pattern:'solid'});return {ended,base:workerBase()}});
     ok(r2.ended==='offcode'&&r2.base===null&&hits.filter(h=>h.startsWith('/render')).length===1,`a refused list ('invite off') ends the invitation; no picture is asked for after it (${hits.join(' ')})`);
     // the owner's mistyped code (forbidden token, not a tester): not ended, but the pieces aren't asked one by one either
-    await p.evaluate(()=>{localStorage.removeItem('invite_ended');localStorage.setItem('app_token','typo');remoteKeys=null;HOOK.remoteListed=false});listAnswer={status:403,body:{error:'forbidden token'}};hits.length=0;
+    await p.evaluate(()=>{localStorage.removeItem('invite_ended');localStorage.setItem('app_token','typo');HOOK.remoteKeys=null;HOOK.remoteListed=false});listAnswer={status:403,body:{error:'forbidden token'}};hits.length=0;
     const r3=await p.evaluate(async()=>{HOOK.renderTried.clear();await fetchItemPic({id:'s3',type:'socks',primaryColor:'navy',pattern:'solid'});await fetchItemPic({id:'s4',type:'socks',primaryColor:'grey',pattern:'solid'});return {ended:localStorage.getItem('invite_ended')}});
     ok(!r3.ended&&hits.length===1&&hits[0]==='/render?list=1',`a refused code that isn't an ended invitation holds the picture asks for that code (${hits.join(' ')})`);
     // the daily limit in the question
@@ -479,7 +479,7 @@ const endedpics=async({ok,chromium,url})=>{
       acct.me={caps:{item:20},used:{item:20},day};return {a,b,old,owner,up:HOOK.itemPicsUsedUp()}});
     ok(/You can make 2 more today, of your daily 40\. The first 2 are made now/.test(t.a)&&/2 more today/.test(t.b)&&!/first/.test(t.b)&&/40 more today/.test(t.old)&&t.owner===''&&t.up===20,
       `the Generate question says the day's limit ("${t.a.trim()}"); yesterday's count starts again; the owner has none`);
-    const st=await p.evaluate(async()=>{if(!$('#itempic-status')){const d=document.createElement('div');d.id='itempic-status';document.body.append(d)}items=[{id:'z1',type:'shoes',primaryColor:'black',pattern:'solid'}];
+    const st=await p.evaluate(async()=>{if(!$('#itempic-status')){const d=document.createElement('div');d.id='itempic-status';document.body.append(d)}HOOK.items=[{id:'z1',type:'shoes',primaryColor:'black',pattern:'solid'}];
       let over=false;const run=HOOK.startItemPics().finally(()=>{over=true});while(!over&&!asking)await new Promise(r=>setTimeout(r,10));const asked=!!asking;if(asked)askAnswer(false);await run;return {asked,t:$('#itempic-status').textContent}});
     ok(!st.asked&&/item pictures are used up/.test(st.t),`with the day's pictures used up it says so instead of asking ("${st.t}")`);
     ok(!errs.length,'no page errors ('+errs.join('; ')+')');

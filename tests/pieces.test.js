@@ -9,9 +9,9 @@ const daypieces=async({ok,chromium,url,settle})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'pink'}),
+      HOOK.items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'pink'}),
         I('watch','grey',{metal:'silver'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};listOpen=false;show('today')});
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};HOOK.listOpen=false;show('today')});
     const c=await p.evaluate(()=>{const box=$('#ibox'),o=planFor()[key(sel)],side=[...document.querySelector('.side').children].map(e=>e.id||e.className.split(' ')[0]);
       const n=['top','shirt','tie','clip','watch','belt','socks','shoes','links','coat'].filter(s=>o[s]).length+(o.vest?1:0)+(!o.suitDay&&o.bot?1:0);
       return {open:box.classList.contains('open'),chips:box.querySelectorAll('.pchip').length,n,h:Math.round($('#ipanel').getBoundingClientRect().height),txt:box.querySelector('.mltxt').textContent,
@@ -30,15 +30,15 @@ const daypieces=async({ok,chromium,url,settle})=>{
     await p.click('#ibox .month-link');await settle(p,600);
     ok(await p.evaluate(()=>!$('#ibox').classList.contains('open')&&$('#ipanel').getBoundingClientRect().height<1),'tapping again folds it away');
     // back to today: no button in the date bar (2026-11-14, the owner); the Today tab does it
-    await p.evaluate(()=>{sel=new Date(2026,11,8);view={y:2026,m:11};renderToday()});
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,11,8);HOOK.view={y:2026,m:11};renderToday()});
     ok(await p.evaluate(()=>!document.querySelector('.gotoday')&&/December 8/.test($('#today .day h2').textContent)),'on another day the date bar has no Today / Next outfit button');
-    await p.evaluate(()=>{sel=new Date(2026,11,15);view={y:2026,m:11};show('wardrobe')});await p.click('#n-today');
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,11,15);HOOK.view={y:2026,m:11};show('wardrobe')});await p.click('#n-today');
     ok(await p.evaluate(()=>key(sel)==='2026-11-9'&&view.m===10&&!$('#today').hidden),'the Today tab returns to today\'s outfit');
-    await p.evaluate(()=>{sel=new Date(2026,11,8);view={y:2026,m:11};renderToday()});await p.click('#n-today');
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,11,8);HOOK.view={y:2026,m:11};renderToday()});await p.click('#n-today');
     ok(await p.evaluate(()=>key(sel)==='2026-11-9'),'also when Today is already the tab on screen');
-    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-13T12:00:00';cache={};sel=new Date(2026,11,8);renderToday()});await p.click('#n-today');
+    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-13T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,11,8);renderToday()});await p.click('#n-today');
     ok(await p.evaluate(()=>key(sel)==='2026-11-15'),'when today is a day off the Today tab goes to the next outfit');
-    await p.evaluate(()=>{TODAY_OVERRIDE=null;cache={}});
+    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE=null;HOOK.cache={}});
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
@@ -52,9 +52,9 @@ const listphoto=async({ok,chromium,url,settle})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(ph=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy',{photo:ph}),I('suit','charcoal',{photo:ph}),I('shirt','white',{photo:ph}),I('shirt','lightblue',{photo:ph}),I('tie','burgundy'),I('tie','green'),
+      HOOK.items=[I('suit','navy',{photo:ph}),I('suit','charcoal',{photo:ph}),I('shirt','white',{photo:ph}),I('shirt','lightblue',{photo:ph}),I('tie','burgundy'),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.planRules=PLAN_RULES;dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};listOpen=true;HOOK.openRow=null;show('today')},PH);
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.planRules=PLAN_RULES;HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.listOpen=true;HOOK.openRow=null;show('today')},PH);
     const h=s=>p.evaluate(s=>Math.round(document.querySelector('#rp-'+s).getBoundingClientRect().height),s);
     ok(await h('shirt')===0&&await p.evaluate(()=>document.querySelector('#ri-shirt .rowtap').getAttribute('aria-expanded'))==='false','pieces start closed');
     await p.click('#ri-shirt .rowtap .cap');await settle(p,600);

@@ -70,10 +70,10 @@ async function run(eng,browser,{ok,url,settle}){
   const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   await p.evaluate(([FN,VIA])=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-    items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white'),I('shirt','lightblue'),
+    HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white'),I('shirt','lightblue'),
       I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','grey'),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf'})];
-    dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';settings.setupDone=1;settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.location=null;
-    cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today');
+    HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';settings.setupDone=1;settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.location=null;
+    HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today');
     /* what ran: each wrapped function says its name and arguments; document and window say when a click or a key reached them */
     window.__calls=[];
     // "Use my location" runs the real useMyLocation (weather.js): the phone's location service is stood in for, and never answers
@@ -159,7 +159,7 @@ async function run(eng,browser,{ok,url,settle}){
       await step('a file picked with "Restore file" is restored',()=>p.setInputFiles('#sp-backup input[type=file]',{name:'wardrobe.json',mimeType:'application/json',buffer:Buffer.from('{}')}),C('restoreBackup','file:wardrobe.json'));
       ok(await p.evaluate(()=>{const i=document.querySelector('#sp-backup input[type=file]');return i.value===''&&i.files.length===0}),T+'and the field is emptied, so the same file can be picked again');
       await p.evaluate(()=>{if(document.activeElement)document.activeElement.blur()});
-      await step('the Daily backups list loads its days when it gets the focus',()=>p.focus('#snap-list'),'loadSnapshots()');
+      await step('the Daily backups list loads its days when it gets the focus',()=>p.focus('#snap-list'),C('loadSnapshots'));
       await p.evaluate(()=>document.activeElement.blur());
       await step('a tap on "Roll back" rolls back',()=>tap('#snap-btn'),C('rollBack'))}
     if(k==='connection'){

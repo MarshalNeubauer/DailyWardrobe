@@ -106,7 +106,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(await p.evaluate(()=>queue[0].sett&&queue[0].sett.src!=='claude+pixels'),'when Claude can\'t read it, the pixel reader\'s pattern is used');
     // the Wardrobe editor's "Read pattern from photo" asks Claude too
     patternReply=()=>[200,{...SPEC,across:{bands:dir.bands.map(b=>({...b,w:b.widthPct/100}))},along:{bands:dir.bands.map(b=>({...b,w:b.widthPct/100}))},model:'m'}];
-    const before=calls.length;await p.evaluate(async()=>{queue=[];const it=items[0];delete it.sett;delete it.patternSpec;await rereadSett(it.id)});
+    const before=calls.length;await p.evaluate(async()=>{HOOK.queue=[];const it=items[0];delete it.sett;delete it.patternSpec;await rereadSett(it.id)});
     ok(calls.length===before+1&&calls.at(-1).closeup&&await p.evaluate(()=>items[0].sett.src==='claude+pixels'&&!!items[0].patternSpec),'"Read pattern from photo" in the Wardrobe asks Claude and keeps its reading');
     // (the 2026-11-24 review's R1 N1, pattern-read.js) the reading lands a moment later: Settings opened meanwhile (the sheet closed, the
     // gear tapped) stays open, and the Wardrobe is drawn once it closes; with the item's sheet still open the sheet shows the new reading

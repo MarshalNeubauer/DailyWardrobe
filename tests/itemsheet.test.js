@@ -41,7 +41,7 @@ const itemfix=async({ok,chromium,url})=>{
     ok(/leather/.test(d[0])&&!/calf/.test(d[0]),`a sneaker's caption says leather (${d[0]})`);
     ok(!/weather/.test(d[1]),`no season in the caption of a type without one (${d[1]})`);
     // a type change drops stale fields
-    const t=await p.evaluate(async()=>{const it={id:'rc',type:'raincoat',primaryColor:'olive',secondaryColor:'khaki',season:'warm',material:'waxed cotton',pattern:'solid',added:1};items=[it];await put(it);
+    const t=await p.evaluate(async()=>{const it={id:'rc',type:'raincoat',primaryColor:'olive',secondaryColor:'khaki',season:'warm',material:'waxed cotton',pattern:'solid',added:1};HOOK.items=[it];await put(it);
       await sete('rc','type','cufflinks');const a={...items[0],title:itemTitle(items[0])};await sete('rc','type','socks');const b={...items[0]};return {a,b}});
     ok(!t.a.season&&!t.a.material&&!t.a.secondaryColor&&t.a.metal==='silver'&&!/weather|·\s*$/.test(t.a.title),`a raincoat made cufflinks loses its season, material and second color and gets a metal (${t.a.title})`);
     ok(!t.b.metal&&!t.b.season,'made socks it has no metal');
@@ -49,7 +49,7 @@ const itemfix=async({ok,chromium,url})=>{
     const own=await p.evaluate(async()=>{const r=[];for(const n of ['Navy','light blue','Very dark navy'])try{await addCustomColor({name:n,hex:'#e3a5b4',base:'pink',types:['tie']});r.push('added '+n)}catch(e){r.push(e.message)}return r});
     ok(own.every(m=>/already a color/.test(m)),`an own color can't take a built-in color's name (${own.join(' | ')})`);
     const it={id:'tie1',type:'tie',primaryColor:'navy',pattern:'solid',added:1};
-    await p.evaluate(async it=>{items=[it];await put(it);show('wardrobe');openItem(it.id);openColPick('e',it.id,'primaryColor')},it);
+    await p.evaluate(async it=>{HOOK.items=[it];await put(it);show('wardrobe');openItem(it.id);openColPick('e',it.id,'primaryColor')},it);
     // (2026-11-15: "+ A colour of my own" became the "+ New colour" sheet: a shade picked by hand and a name)
     await p.click('#cn-open');await p.fill('#cn-name','Navy');await p.dispatchEvent('#cn-name','change');await p.click('#cn-add');
     const err=await p.textContent('#cn-error');ok(/already a color/.test(err),`the new-colour sheet says so too (${err})`);
@@ -57,7 +57,7 @@ const itemfix=async({ok,chromium,url})=>{
     const sg=await p.evaluate(()=>({col:items[0].primaryColor,custom:(settings.custom.colors||[]).map(c=>c.name+':'+c.hex+':'+c.types.join('/')),open:document.querySelector('#col-sheet').classList.contains('on')}));
     ok(sg.col==='ownsage'&&sg.custom.includes('Sage:#9caf88:tie/pocketsquare')&&!sg.open,`"+ New color" by hand adds Sage for ties (and pocket squares) and uses it (${JSON.stringify(sg)})`);
     // no "add a close-up" advice where there is no close-up; no Read pattern from photo without a photo
-    const adv=await p.evaluate(async()=>{const sh={id:'sh1',type:'shoes',primaryColor:'black',leather:'calf',pattern:'solid',added:1},tt={id:'tt1',type:'shirt',primaryColor:'white',pattern:'tattersall',added:1};items=[sh,tt];await put(sh);await put(tt);
+    const adv=await p.evaluate(async()=>{const sh={id:'sh1',type:'shoes',primaryColor:'black',leather:'calf',pattern:'solid',added:1},tt={id:'tt1',type:'shirt',primaryColor:'white',pattern:'tattersall',added:1};HOOK.items=[sh,tt];await put(sh);await put(tt);
       openItem('sh1');openColPick('e','sh1','primaryColor');const a=$('#col-sheet').textContent;closeColPick();openItem('tt1');const b=$('#ivbody').innerHTML;
       openColPick('e','tt1','primaryColor');const c=$('#col-sheet').textContent;closeColPick();return {a,b,c}});
     ok(!/close-up/.test(adv.a),'a shoe\'s color list doesn\'t ask for a fabric close-up');
@@ -70,7 +70,7 @@ const itemfix=async({ok,chromium,url})=>{
     ok(!g.pin,'no grain lines run under a pinstripe on the figure');
     ok(g.wp<=8,`a windowpane swatch shows about two panes (tile ${g.wp} of 16)`);
     // a name typed and the app killed straight after is kept
-    await p.evaluate(async()=>{const s={id:'nm1',type:'suit',primaryColor:'grey',pattern:'solid',added:1};items=[s];await put(s);show('wardrobe');openItem('nm1')});
+    await p.evaluate(async()=>{const s={id:'nm1',type:'suit',primaryColor:'grey',pattern:'solid',added:1};HOOK.items=[s];await put(s);show('wardrobe');openItem('nm1')});
     await p.fill('#ivbody .wf-name','My lucky suit');
     const kept=await p.evaluate(()=>localStorage.getItem('ward_pending'));
     await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
@@ -99,8 +99,8 @@ const compare=async({ok,chromium,url,settle})=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
-    await p.evaluate(ph=>{items=[{id:'a',type:'blazer',primaryColor:'tan',secondaryColor:'lightblue',pattern:'windowpane',photo:ph,texture:ph,added:3},
-      {id:'b',type:'pants',primaryColor:'navy',pattern:'solid',photo:ph,added:2}];flt='all';editing=null;show('wardrobe')},PH);
+    await p.evaluate(ph=>{HOOK.items=[{id:'a',type:'blazer',primaryColor:'tan',secondaryColor:'lightblue',pattern:'windowpane',photo:ph,texture:ph,added:3},
+      {id:'b',type:'pants',primaryColor:'navy',pattern:'solid',photo:ph,added:2}];HOOK.flt='all';HOOK.editing=null;show('wardrobe')},PH);
     await p.tap('#gi-a .giopen');await settle(p,500);
     const look=()=>p.evaluate(()=>{const pics=document.querySelector('#item-view .ivpics'),pair=pics&&pics.querySelector('.ivhero .pair');if(!pair)return null;
       return {old:!!document.querySelector('#ivpair,.cmpable,.cmpdraw,.cmpbox'),tap:[...pair.querySelectorAll('*')].some(e=>e.hasAttribute('onclick')||e.getAttribute('role')==='button'||e.hasAttribute('tabindex')),

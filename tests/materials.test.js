@@ -34,8 +34,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(e.label.join()==='Material,Material'&&e.belt.includes('braided')&&e.belt.includes('canvas')&&e.boot.includes('nubuck')&&e.derby.includes('nubuck')&&!e.oxford.includes('nubuck')&&!e.loafer.includes('nubuck'),'belts are labeled Material, with braided leather and canvas; nubuck for boots, derbies and sneakers');
     ok(e.bands.join()==='bracelet,integrated,leather,rubber,nato'&&e.metals.includes('two-tone')&&e.links.includes('silk:silk knot')&&!e.watchM.includes('silk'),'watch bands rubber and NATO, a two-tone metal, silk knots for cufflinks only');
     // ---- stored names off the lists keep working: shown, searched, seasoned, painted
-    e=await p.evaluate(()=>{items=[{id:'s1',type:'shirt',primaryColor:'white',pattern:'solid',material:'twill',added:3},{id:'t1',type:'tie',primaryColor:'navy',pattern:'knit',material:'knitted silk',added:2},
-      {id:'p1',type:'pants',primaryColor:'grey',pattern:'solid',material:'tropical wool',added:1},{id:'so',type:'socks',primaryColor:'navy',pattern:'solid',material:'Merino',added:4}];flt='all';editing=null;HOOK.wardQ='';show('wardrobe');
+    e=await p.evaluate(()=>{HOOK.items=[{id:'s1',type:'shirt',primaryColor:'white',pattern:'solid',material:'twill',added:3},{id:'t1',type:'tie',primaryColor:'navy',pattern:'knit',material:'knitted silk',added:2},
+      {id:'p1',type:'pants',primaryColor:'grey',pattern:'solid',material:'tropical wool',added:1},{id:'so',type:'socks',primaryColor:'navy',pattern:'solid',material:'Merino',added:4}];HOOK.flt='all';HOOK.editing=null;HOOK.wardQ='';show('wardrobe');
       openItem('s1');const sel=document.querySelector('#item-view .wmat'),tx=document.querySelector('#item-view .wmat-t');const r={sel:sel&&sel.value,tx:tx&&tx.value};HOOK.closeItem();
       const find=q=>{HOOK.wardQ=q;const l=wardFresh().map(i=>i.id).join();HOOK.wardQ='';return l};
       return {...r,twill:find('twill'),knitted:find('knitted'),fresco:find('fresco'),highTwist:find('high-twist'),merino:find('merino wool'),silkT:find('silk'),mat:HOOK.asmCmMat(items[1],'tie').join(),sea:itemSeason({type:'shirt',material:'twill'})}});
@@ -62,7 +62,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     // ---- the owner's stretch shirts: renamed once, through the normal save and sync
     e=await p.evaluate(async()=>{const mk=(id,type,material)=>({id,type,primaryColor:'white',pattern:'solid',material,added:1,updated:1});
       const list=[mk('a','shirt','nylon/spandex'),mk('b','shirt','Nylon/Spandex'),mk('c','shirt','nylon'),mk('d','raincoat','nylon'),mk('e','shirt','nylon spandex blend'),mk('f','shirt','cotton'),mk('g','socks','nylon/spandex')];
-      for(const i of list)await putRaw(i);items=list.map(i=>({...i}));let syncs=0;const was=window.setTimeout;window.setTimeout=(f,...a)=>{if(f===syncNow){syncs++;return 0}return was.call(window,f,...a)};
+      for(const i of list)await putRaw(i);HOOK.items=list.map(i=>({...i}));let syncs=0;const was=window.setTimeout;window.setTimeout=(f,...a)=>{if(f===syncNow){syncs++;return 0}return was.call(window,f,...a)};
       const n=await matMigrate(),again=await matMigrate();window.setTimeout=was;const st=await tx('readonly',s=>s.getAll());const m=id=>st.find(x=>x.id===id);
       return {n,again,syncs,mats:['a','b','c','d','e','f','g'].map(id=>m(id).material).join('|'),mem:items.find(i=>i.id==='a').material,stamped:m('a').updated>1&&m('f').updated===1,syn:HOOK.wardHay({type:'shirt',material:'performance stretch'}).includes('nylon')}});
     ok(e.n===3&&e.mats==='performance stretch|performance stretch|performance stretch|nylon|nylon spandex blend|cotton|nylon/spandex','exactly "nylon/spandex" (any case) and "nylon" on shirts become performance stretch; a raincoat\'s nylon, other words and socks are left: '+e.mats);
@@ -95,7 +95,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     // ---- the close-up reader's material card
     const CU='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
     await p.evaluate(cu=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');HOOK.rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
-      items=[{id:'r1',type:'suit',primaryColor:'grey',pattern:'solid',texture:cu,added:2,name:'Grey suit'},{id:'r2',type:'suit',primaryColor:'grey',pattern:'solid',texture:cu,material:'wool',added:1,name:'Wool suit'}];show('wardrobe')},CU);
+      HOOK.items=[{id:'r1',type:'suit',primaryColor:'grey',pattern:'solid',texture:cu,added:2,name:'Grey suit'},{id:'r2',type:'suit',primaryColor:'grey',pattern:'solid',texture:cu,material:'wool',added:1,name:'Wool suit'}];show('wardrobe')},CU);
     const COL={kind:'colour',match:'existing',existing:'grey',dE:1,name:'grey',hex:'#8b8f96',plansAs:'grey',fitsType:true,confidence:'high',why:'',ask:null};
     const PAT={kind:'pattern',match:'existing',existing:'solid',name:'solid',description:'',plansAs:'solid',look:{layout:'none',tr:10},colourHint:null,confidence:'high',why:'',ask:null};
     const reply=m=>({colour:COL,pattern:{...PAT,...(m?{material:m}:{})},model:'stub',lookups:2});

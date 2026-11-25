@@ -15,14 +15,14 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t');localStorage.setItem('last_sync',String(Date.now()))},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;window.I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
-      items=[I('suit','black'),I('suit','navy'),I('suit','charcoal'),I('suit','lightgrey'),I('suit','brown'),I('suit','tan'),I('blazer','navy'),I('pants','grey'),I('pants','tan'),I('pants','navy'),
+      HOOK.items=[I('suit','black'),I('suit','navy'),I('suit','charcoal'),I('suit','lightgrey'),I('suit','brown'),I('suit','tan'),I('blazer','navy'),I('pants','grey'),I('pants','tan'),I('pants','navy'),
         I('shirt','white'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','navy'),
         I('tie','black'),I('tie','burgundy'),I('tie','navy'),I('tie','silver',{pattern:'paisley',secondaryColor:'lightblue'}),I('tie','pink'),I('tie','green'),I('tieclip','silver',{metal:'silver'}),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('shoes','brown',{leather:'suede'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'suede',metal:'silver'}),
         I('socks','navy'),I('socks','charcoal'),I('socks','black'),I('watch','silver',{metal:'silver'})];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';dayRecs={};weather={};climate=null;TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';HOOK.dayRecs={};HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today')});
     // ---- the planner ----
-    const r=await p.evaluate(()=>{const day=(k,occ)=>{dayRecs={};if(occ)dayRecs[k]=occ==='formal'?{date:k,formal:true}:{date:k,occasion:occ};cache={};const pl=planMonth(2026,10),o=pl[k],ra=rateOutfit(o);
+    const r=await p.evaluate(()=>{const day=(k,occ)=>{HOOK.dayRecs={};if(occ)dayRecs[k]=occ==='formal'?{date:k,formal:true}:{date:k,occasion:occ};HOOK.cache={};const pl=planMonth(2026,10),o=pl[k],ra=rateOutfit(o);
         const prevK=Object.keys(pl).filter(x=>keyDate(x)<keyDate(k)).pop();
         return {top:o.top&&o.top.primaryColor,kind:o.top&&o.top.type,suitDay:o.suitDay,bot:o.bot&&o.bot.type,shirt:o.shirt&&o.shirt.primaryColor,tie:o.tie&&o.tie.primaryColor,tiePat:o.tie&&o.tie.pattern,shoes:o.shoes&&o.shoes.primaryColor+' '+o.shoes.leather,
           clip:!!o.clip,vest:o.vest,occ:o.occasion,formal:o.formal,score:ra.score,checks:Object.fromEntries(ra.checks.map(c=>[c.label,c.pts+'/'+c.max])),notes:o.notes,prevTop:pl[prevK].top&&pl[prevK].top.primaryColor}};
@@ -38,8 +38,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(r.cas.every(o=>!('Tie and shirt' in o.checks)&&'Shirt and pants' in o.checks),'its score judges the shirt against the pants instead of the tie and jacket');
     ok(r.formal.formal&&r.formal.occ==='formal'&&['navy','charcoal','black'].includes(r.formal.top)&&r.formal.shirt==='white'&&r.formal.shoes==='black calf','a formal day still works as before');
     ok(r.plain.occ===null&&r.plain.kind==='blazer','a day without an occasion is unchanged');
-    const gaps=await p.evaluate(()=>{const keep=items;items=items.filter(i=>!(i.type==='tie'&&i.primaryColor==='black')&&!(i.type==='suit'&&['black','navy','charcoal'].includes(i.primaryColor)));dayRecs={'2026-11-12':{date:'2026-11-12',occasion:'funeral'}};cache={};
-      const o=planMonth(2026,10)['2026-11-12'];items=keep.filter(i=>i.type!=='pants');dayRecs={'2026-11-12':{date:'2026-11-12',occasion:'casual'}};cache={};const c=planMonth(2026,10)['2026-11-12'];items=keep;dayRecs={};cache={};
+    const gaps=await p.evaluate(()=>{const keep=items;HOOK.items=items.filter(i=>!(i.type==='tie'&&i.primaryColor==='black')&&!(i.type==='suit'&&['black','navy','charcoal'].includes(i.primaryColor)));HOOK.dayRecs={'2026-11-12':{date:'2026-11-12',occasion:'funeral'}};HOOK.cache={};
+      const o=planMonth(2026,10)['2026-11-12'];HOOK.items=keep.filter(i=>i.type!=='pants');HOOK.dayRecs={'2026-11-12':{date:'2026-11-12',occasion:'casual'}};HOOK.cache={};const c=planMonth(2026,10)['2026-11-12'];HOOK.items=keep;HOOK.dayRecs={};HOOK.cache={};
       return {notes:o.notes.join(' / '),tie:o.tie.primaryColor,casual:c.notes.join(' / '),cshirt:!!c.shirt}});
     ok(/No black tie/.test(gaps.notes)&&/No black, charcoal or navy suit/.test(gaps.notes)&&gaps.tie==='navy',`without a black tie or dark suit it picks the darkest and says so (${gaps.tie})`);
     ok(/No separate pants/.test(gaps.casual)&&gaps.cshirt,'a no-jacket day without odd pants says so');
@@ -54,9 +54,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/already a funeral day/.test(await p.textContent('#formal-msg')),'adding the same occasion again says so');
     await p.evaluate(()=>closeSettings());
     // ---- Today ----
-    const t=await p.evaluate(()=>{const go=d=>{sel=new Date(2026,10,d);view={y:2026,m:10};listOpen=true;renderToday();return {tag:(document.querySelector('.ftag')||{}).textContent,rows:[...document.querySelectorAll('#ibox .row > .mut:first-child')].map(e=>e.textContent).join(),
+    const t=await p.evaluate(()=>{const go=d=>{HOOK.sel=new Date(2026,10,d);HOOK.view={y:2026,m:10};HOOK.listOpen=true;renderToday();return {tag:(document.querySelector('.ftag')||{}).textContent,rows:[...document.querySelectorAll('#ibox .row > .mut:first-child')].map(e=>e.textContent).join(),
           lapels:/href="#[^"]*lapL"/.test(document.querySelector('#mannequin-container').innerHTML),label:document.querySelector('#mannequin-container svg').getAttribute('aria-label'),sum:document.querySelector('#ibox .mltxt small').textContent}};
-      const w=go(17),c=go(18),f=go(19);monthOpen=false;toggleMonth();const cell=[...document.querySelectorAll('#mpanel .mc')].find(x=>/November 18/.test(x.getAttribute('aria-label')));
+      const w=go(17),c=go(18),f=go(19);HOOK.monthOpen=false;toggleMonth();const cell=[...document.querySelectorAll('#mpanel .mc')].find(x=>/November 18/.test(x.getAttribute('aria-label')));
       const o=planFor()['2026-11-18'],o2={...o,bot:items.find(i=>i.type==='pants'&&i.id!==o.bot.id)};
       return {w,c,f,cellCls:cell.className,cellLabel:cell.getAttribute('aria-label'),stack:!!cell.querySelector('svg.stack'),keyDiff:comboKey(o)!==comboKey(o2)}});
     ok(t.w.tag==='Wedding'&&t.f.tag==='Funeral'&&t.c.tag==='No jacket','Today shows the day\'s occasion');
@@ -64,7 +64,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/planned/.test(t.cellCls)&&t.stack&&/No jacket/.test(t.cellLabel),`the month shows it as an outfit (${t.cellLabel})`);
     ok(t.keyDiff,'without a jacket the pants are part of the look (its photo key)');
     // re-planning keeps the occasions; × makes a day regular again
-    const keep=await p.evaluate(async()=>{await HOOK.swapSlot('shirt');await HOOK.replanFuture();cache={};return [17,18,19].map(d=>occOf(dayRecs['2026-11-'+d])).join()});
+    const keep=await p.evaluate(async()=>{await HOOK.swapSlot('shirt');await HOOK.replanFuture();HOOK.cache={};return [17,18,19].map(d=>occOf(dayRecs['2026-11-'+d])).join()});
     ok(keep==='wedding,casual,funeral','re-planning upcoming days keeps their occasions');
     await p.evaluate(()=>openSettings('daysoff'));await p.click('#formal-list .fchip button');await p.waitForFunction(()=>!occOf(dayRecs['2026-11-17'])&&document.querySelectorAll('#formal-list .fchip').length===2);
     ok(await p.evaluate(()=>{closeSettings();return planFor()['2026-11-17'].occasion===null&&document.querySelectorAll('#formal-list .fchip').length===2}),'× makes it a regular day again');

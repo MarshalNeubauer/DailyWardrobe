@@ -11,13 +11,13 @@ const rotationPause=async({ok,chromium,url,settle})=>{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(()=>{let k=0;const I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',added:1,...x});
-      items=[I('navy','suit','navy'),I('grey','suit','grey'),I('char','suit','charcoal'),I('sh1','shirt','white'),I('sh2','shirt','lightblue'),I('t1','tie','burgundy'),I('t2','tie','navy'),
+      HOOK.items=[I('navy','suit','navy'),I('grey','suit','grey'),I('char','suit','charcoal'),I('sh1','shirt','white'),I('sh2','shirt','lightblue'),I('t1','tie','burgundy'),I('t2','tie','navy'),
         I('bs','shoes','black',{leather:'calf'}),I('bb','belt','black',{leather:'calf',metal:'silver'}),I('so','socks','charcoal')];
-      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};
+      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={};
       // the navy suit was worn last Monday (a frozen past day) and is pinned by a swap to next Monday
-      dayRecs={'2026-11-9':{date:'2026-11-9',ids:{top:'navy',shirt:'sh1',tie:'t1',shoes:'bs',belt:'bb',socks:'so'},suitDay:true,worn:true},
+      HOOK.dayRecs={'2026-11-9':{date:'2026-11-9',ids:{top:'navy',shirt:'sh1',tie:'t1',shoes:'bs',belt:'bb',socks:'so'},suitDay:true,worn:true},
         '2026-11-16':{date:'2026-11-16',force:{top:'navy'}}};
-      sel=new Date(2026,10,11);view={y:2026,m:10};editing=null;flt='all';show('wardrobe')});
+      HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.editing=null;HOOK.flt='all';show('wardrobe')});
     // (the real planner, buildPlan: planMonth gives tests/fixedplan.js's outfits, which only shows that file filters inRotation; CR-10-05)
     const tops=()=>p.evaluate(()=>{const out=[];for(const [k,o] of Object.entries(buildPlan(2026,11)))if(keyDate(k)>=todayDate()&&o.top)out.push(o.top.id);return out});
     const before=await tops();
@@ -39,7 +39,7 @@ const rotationPause=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>HOOK.closeItem());await settle(p,500);
     ok(await p.evaluate(()=>{const g=document.querySelector('#gi-navy');return g.classList.contains('paused')&&/Out of rotation/.test(g.textContent)}),'its box in the grid is dimmed and tagged "Out of rotation"');
     // picker and Suggest another on today leave it out; correcting a past day offers it
-    const pick=await p.evaluate(async()=>{sel=new Date(2026,10,11);show('today');const o=planFor()[key(sel)],today=slotPool('top',o).map(i=>i.id);
+    const pick=await p.evaluate(async()=>{HOOK.sel=new Date(2026,10,11);show('today');const o=planFor()[key(sel)],today=slotPool('top',o).map(i=>i.id);
       const pastO=planFor()['2026-11-9'],pastPool=slotPool('top',pastO).map(i=>i.id);
       const seen=new Set([o.top.id]);for(let n=0;n<4;n++){await HOOK.swapSlot('top');seen.add(planFor()[key(sel)].top.id)}return {today,pastPool,seen:[...seen]}});
     ok(!pick.today.includes('navy')&&pick.today.length===2,`the picker doesn't offer it for today (${pick.today})`);
@@ -52,7 +52,7 @@ const rotationPause=async({ok,chromium,url,settle})=>{
     const back=await tops();
     ok(back.includes('navy')&&await p.evaluate(()=>!document.querySelector('#item-view .rotnote')&&document.querySelector('#item-view .rotbtn').textContent==='Take out of rotation'),`"Put back in rotation" brings it back into the plan (${back.filter(x=>x==='navy').length} days)`);
     // the only belt out of rotation: no belt, and no complaint about belts in the score
-    const belt=await p.evaluate(()=>{items.find(i=>i.id==='bb').paused=true;cache={};const o=planFor()['2026-11-12'];return {belt:o.belt,checks:rateOutfit(o).checks.map(c=>c.label)}});
+    const belt=await p.evaluate(()=>{items.find(i=>i.id==='bb').paused=true;HOOK.cache={};const o=planFor()['2026-11-12'];return {belt:o.belt,checks:rateOutfit(o).checks.map(c=>c.label)}});
     ok(belt.belt===null,'with its only belt out of rotation, the outfit has no belt rather than the paused one');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
@@ -66,13 +66,13 @@ const rotation=async({ok,chromium,url})=>{
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   const r=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+String(k++).padStart(3,'0'),type,primaryColor,pattern:'solid',...x});
     const shirts=[['paleyellow','solid'],['midgrey','fine-texture'],['lightblue','solid'],['white','dobby'],['pink','solid'],['white','woven'],['lavender','solid'],['periwinkle','end-on-end'],['ivory','solid'],['white','textured'],['beige','solid']];
-    items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','charcoal'),I('suit','grey'),I('suit','navy'),I('blazer','navy'),I('pants','grey'),
+    HOOK.items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','charcoal'),I('suit','grey'),I('suit','navy'),I('blazer','navy'),I('pants','grey'),
       ...shirts.map(([c,pa])=>I('shirt',c,{pattern:pa})),
       I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('tie','green'),I('tie','navy'),I('tie','grey'),I('tie','purple'),I('tie','brown'),
       I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('watch','black',{metal:'silver'}),I('socks','navy'),I('socks','charcoal')];
-    settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-08T12:00:00';
+    settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';
     const cnt={};for(const s of items.filter(i=>i.type==='shirt'))cnt[s.id]=0;let sum=0,n=0,min=100,maxRun=0;
-    for(const m of [10,11]){cache={};const P=buildPlan(2026,m);for(const [kk,o] of Object.entries(P)){if(keyDate(kk)<new Date(2026,10,8)||keyDate(kk).getMonth()!==m)continue;
+    for(const m of [10,11]){HOOK.cache={};const P=buildPlan(2026,m);for(const [kk,o] of Object.entries(P)){if(keyDate(kk)<new Date(2026,10,8)||keyDate(kk).getMonth()!==m)continue;
       if(o.shirt)cnt[o.shirt.id]++;const sc=rateOutfit(o).score;sum+=sc;n++;min=Math.min(min,sc)}}
     const c=Object.values(cnt);return {min:Math.min(...c),max:Math.max(...c),avg:sum/n,low:min,days:n,
       byName:Object.entries(cnt).map(([id,v])=>items.find(i=>i.id===id).primaryColor+'='+v).join(' ')}});

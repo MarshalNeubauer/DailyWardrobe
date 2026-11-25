@@ -30,7 +30,7 @@ module.exports=async({ok,chromium,url})=>{
     const n0=await p.evaluate(()=>items.length);await p.click('#qconf-0');await p.waitForFunction(n=>items.length===n+1,n0);
     ok(await p.evaluate(()=>JSON.stringify(items[items.length-1].accents)==='["gold","green","red","pink"]'),'Confirm keeps them on the saved item');
     // ---- the item sheet
-    await p.evaluate(async()=>{const t={id:'acc-tie',type:'tie',primaryColor:'navy',secondaryColor:'burgundy',pattern:'paisley',accents:['gold','navy','red','teal'],added:1};items=[t];await put(t);cache={};HOOK.npsClose();show('wardrobe');openItem('acc-tie')});
+    await p.evaluate(async()=>{const t={id:'acc-tie',type:'tie',primaryColor:'navy',secondaryColor:'burgundy',pattern:'paisley',accents:['gold','navy','red','teal'],added:1};HOOK.items=[t];await put(t);HOOK.cache={};HOOK.npsClose();show('wardrobe');openItem('acc-tie')});
     await p.waitForSelector('#item-view .cks[data-ck="color"] .accrow');
     s=await p.evaluate(()=>{const sec=document.querySelector('#item-view .cks[data-ck="color"]');return {chips:[...sec.querySelectorAll('.accchip')].map(x=>x.dataset.c),sum:sec.querySelector('.ckh small').textContent}});
     ok(s.chips.join()==='gold,red'&&/also gold, red/.test(s.sum),'the item sheet shows its accents as read (a main colour and an unknown key left out) and says them in the summary ('+s.chips+' | '+s.sum+')');
@@ -41,7 +41,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(await p.waitForFunction(()=>[...document.querySelectorAll('#item-view .accchip')].map(x=>x.dataset.c).join()==='red,gold',null,{timeout:3000}).then(()=>true,()=>false),'"Add a color" on the sheet adds and redraws');
     await p.evaluate(()=>{closeColPick();if('closeItem' in HOOK&&typeof HOOK.closeItem==='function')HOOK.closeItem()});
     // ---- search
-    s=await p.evaluate(async()=>{const o={id:'acc-plain',type:'tie',primaryColor:'navy',pattern:'solid',added:2};items.push(o);await put(o);cache={};show('wardrobe');HOOK.wardSearch('gold');
+    s=await p.evaluate(async()=>{const o={id:'acc-plain',type:'tie',primaryColor:'navy',pattern:'solid',added:2};items.push(o);await put(o);HOOK.cache={};show('wardrobe');HOOK.wardSearch('gold');
       const ids=[...document.querySelectorAll('#wardrobe [data-id]')].map(e=>e.dataset.id);HOOK.wardSearch('');return {ids,m:HOOK.wardMatch(items[0],'gold'),n:HOOK.wardMatch(o,'gold')}});
     ok(s.m&&!s.n,'search: "gold" finds the tie with a gold accent, not the plain one');
     // ---- Claude's tag and the import fill them
@@ -79,7 +79,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(s.frac.every(v=>v>.02)&&s.sw,'its swatch draws all 5 distinct colours (share of pixels: '+s.frac.join(', ')+')');
     ok(s.pl===5&&s.pl0&&s.pl1,'one without accents is drawn as before');
     // ---- the close-up reader: a colour half of kind pattern is several colours, not a failure; several offers the main colour and accents
-    s=await p.evaluate(async()=>{const it={id:'rd-camo',type:'pants',primaryColor:'khaki',pattern:'camouflage',added:3};items=[it];await put(it);cache={};
+    s=await p.evaluate(async()=>{const it={id:'rd-camo',type:'pants',primaryColor:'khaki',pattern:'camouflage',added:3};HOOK.items=[it];await put(it);HOOK.cache={};
       const col={kind:'pattern',ask:'That sounds like a pattern.',accents:['olive','brown','black']};
       HOOK.rd={src:'e',id:'rd-camo',run:7,state:'result',c:HOOK.rdColOf(col),p:{na:'fail'},m:null,a:HOOK.rdAccOf(it,col),sent:{wb:true}};HOOK.rdOpen();HOOK.rdRender(true);
       const t=document.querySelector('#rd-sheet').textContent;return {sev:!!document.querySelector('#rd-several'),fail:/couldn’t read the color/.test(t),chips:[...document.querySelectorAll('#rd-acc .accchip')].length,bar:document.querySelector('#rd-both').textContent}});

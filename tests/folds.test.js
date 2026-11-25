@@ -12,9 +12,9 @@ const boxfold=async({ok,chromium,url,settle})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('watch','grey',{metal:'silver'})];
-      settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};scoreOpen=listOpen=false;show('today')});
+      settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.scoreOpen=HOOK.listOpen=false;show('today')});
     let cdp=null;try{cdp=await ctx.newCDPSession(p);await cdp.send('Performance.enable')}catch{cdp=null}   // the layout count is Chromium's (CDP); on WebKit (npm run test:webkit) it isn't counted
     const lay=async()=>cdp?(await cdp.send('Performance.getMetrics')).metrics.find(m=>m.name==='LayoutCount').value:0;
     const laid=n=>cdp?`${n} times`:'(not counted on WebKit)';
@@ -55,9 +55,9 @@ const picfold=async({ok,chromium,url,settle})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{const c=document.createElement('canvas');c.width=600;c.height=800;const x=c.getContext('2d');x.fillStyle='#ccd';x.fillRect(0,0,600,800);x.fillStyle='#335';x.fillRect(100,100,400,600);const photo=c.toDataURL('image/jpeg',.8);
       let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy',{photo}),I('suit','charcoal',{photo}),I('shirt','white',{photo}),I('shirt','lightblue',{photo}),I('tie','burgundy',{photo}),I('tie','navy',{pattern:'stripe',secondaryColor:'white',photo}),
+      HOOK.items=[I('suit','navy',{photo}),I('suit','charcoal',{photo}),I('shirt','white',{photo}),I('shirt','lightblue',{photo}),I('tie','burgundy',{photo}),I('tie','navy',{pattern:'stripe',secondaryColor:'white',photo}),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('watch','grey',{metal:'silver'})];
-      settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};scoreOpen=listOpen=false;HOOK.openRow=null;HOOK.belowOpen=null;show('today')});
+      settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.scoreOpen=HOOK.listOpen=false;HOOK.openRow=null;HOOK.belowOpen=null;show('today')});
     let cdp=null;try{cdp=await ctx.newCDPSession(p);await cdp.send('Performance.enable')}catch{cdp=null}   // the layout count is Chromium's (CDP); on WebKit (npm run test:webkit) it isn't counted
     const lay=async()=>cdp?(await cdp.send('Performance.getMetrics')).metrics.find(m=>m.name==='LayoutCount').value:0;
     const laid=n=>cdp?`${n} times`:'(not counted on WebKit)';
@@ -117,9 +117,9 @@ const foldtap=async({ok,chromium,url,settle})=>{
     const ctx=await browser.newContext({viewport:{width:390,height:664},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const setup=(x={})=>p.evaluate(async x=>{let k=0;const I=(type,primaryColor,y={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...y});
-      items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown'),I('tie','burgundy'),I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','brown'),I('watch','silver',{metal:'silver'})];
-      settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};
-      listOpen=!!x.list;monthOpen=!!x.month;scoreOpen=!!x.score;HOOK.belowOpen=null;HOOK.openRow=null;show('today');scrollTo(0,0);await new Promise(r=>setTimeout(r,200))},x);
+      HOOK.items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown'),I('tie','burgundy'),I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','brown'),I('watch','silver',{metal:'silver'})];
+      settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};
+      HOOK.listOpen=!!x.list;HOOK.monthOpen=!!x.month;HOOK.scoreOpen=!!x.score;HOOK.belowOpen=null;HOOK.openRow=null;show('today');scrollTo(0,0);await new Promise(r=>setTimeout(r,200))},x);
     const into=s=>p.evaluate(s=>{const e=document.querySelector(s);scrollBy(0,e.getBoundingClientRect().top-100)},s);
     const open=s=>p.evaluate(s=>document.querySelector(s).classList.contains('open'),s);
     // pieces list: open a piece's photo, tap the photo: it folds, the list stays open
@@ -128,7 +128,7 @@ const foldtap=async({ok,chromium,url,settle})=>{
     ok(o1&&!(await open('#ri-shirt'))&&await open('#ibox'),'a piece\'s photo in the list folds when the photo is tapped (the list stays open)');
     // tapping the name on the left folds the whole list; ⇄ and the item still do their own thing
     await into('#ri-tie');await p.tap('#ri-tie .row>.mut');await settle(p,600);
-    ok(!(await open('#ibox'))&&await p.evaluate(()=>!listOpen&&document.querySelector('#ibox .month-link').getAttribute('aria-expanded')==='false'),'tapping a name on the left of the open list folds the list');
+    ok(!(await open('#ibox'))&&await p.evaluate(()=>!HOOK.listOpen&&document.querySelector('#ibox .month-link').getAttribute('aria-expanded')==='false'),'tapping a name on the left of the open list folds the list');
     await setup({list:true});await into('#ri-tie');await p.tap('#ri-tie .rowtap');await settle(p,500);
     ok(await open('#ibox')&&await open('#ri-tie'),'tapping the item itself still opens its photo, not folding the list');
     await p.tap('#ri-tie .swap');await settle(p,400);
@@ -169,9 +169,9 @@ const reveal=async({ok,chromium,url,settle})=>{
     const ctx=await browser.newContext({viewport:{width:390,height:664},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const setup=()=>p.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
-      items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown',{pattern:'stripe',secondaryColor:'cream'}),I('tie','burgundy'),
+      HOOK.items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown',{pattern:'stripe',secondaryColor:'cream'}),I('tie','burgundy'),
         I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','brown'),I('watch','silver',{metal:'silver'})];
-      settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};listOpen=false;monthOpen=false;HOOK.belowOpen=null;scoreOpen=false;
+      settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.listOpen=false;HOOK.monthOpen=false;HOOK.belowOpen=null;HOOK.scoreOpen=false;
       const o=planFor()[key(sel)];HOOK.renderTried.add(comboKey(o));renders[comboKey(o)]={sig:'x',img:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#5f5449"/></svg>'),model:'x',t:1};
       show('today');scrollTo(0,0);await new Promise(r=>setTimeout(r,300))});
     const navTop=()=>p.evaluate(()=>document.querySelector('body>nav').getBoundingClientRect().top);
@@ -187,7 +187,7 @@ const reveal=async({ok,chromium,url,settle})=>{
       ok(fits?after.bottom<=nt-11&&after.top>=7:Math.abs(after.top-8)<=2,`${name}: unfolds and scrolls until its top reaches the top of the screen (top ${before.top} → ${after.top}px)`);
     }
     // a small reveal: a row in the open pieces list only scrolls as much as its photo needs, not to the top
-    await setup();await p.evaluate(()=>{listOpen=true;renderToday()});
+    await setup();await p.evaluate(()=>{HOOK.listOpen=true;renderToday()});
     await p.evaluate(()=>{const r=document.querySelector('#ibox').getBoundingClientRect();scrollBy(0,r.top-60)});
     const row=await p.evaluate(()=>{const rows=[...document.querySelectorAll('#ibox .ritem')];const nav=document.querySelector('body>nav').getBoundingClientRect().top;
       const r=rows.find(x=>{const b=x.getBoundingClientRect();return b.top>nav-160&&b.bottom<nav&&x.querySelector('.rowtap')});return r&&r.id});
@@ -226,9 +226,9 @@ const pagescroll=async({ok,chromium,url,settle})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tie','green'),
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};scoreOpen=listOpen=monthOpen=false;show('today');scrollTo(0,0)});
+      settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.scoreOpen=HOOK.listOpen=HOOK.monthOpen=false;show('today');scrollTo(0,0)});
     await p.waitForFunction(()=>{const el=$('#mpanel-in');return el&&el.querySelectorAll('.mc[data-k]').length>=28},null,{timeout:5000});await settle(p,300);
     const quiet=()=>p.waitForFunction(()=>!document.getAnimations().some(a=>a.playState==='running'&&a.effect&&a.effect.getComputedTiming().endTime!==Infinity),null,{timeout:4000});
     // watch one tap: how often the page is scrolled, whether Today slides, and the card's top on screen every frame

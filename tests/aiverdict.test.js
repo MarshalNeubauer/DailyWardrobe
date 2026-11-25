@@ -12,7 +12,7 @@ module.exports=async({ok,chromium,url})=>{
 
     // ---- 1. the card's verdicts with mocked Claude answers (a navy-tagged suit whose close-up measures charcoal)
     const r=await p.evaluate(()=>{const keep=items;const S=(id,c,lab)=>({id,type:'suit',primaryColor:c,pattern:'solid',meas:{lab,ref:true,src:'closeup'}});
-      items=[S('n1','navy',[20,3,-22]),S('n2','navy',[21,3,-21]),S('c1','charcoal',[28,0,-2]),S('c2','charcoal',[27,0,-3])];show('add');
+      HOOK.items=[S('n1','navy',[20,3,-22]),S('n2','navy',[21,3,-21]),S('c1','charcoal',[28,0,-2]),S('c2','charcoal',[27,0,-3])];show('add');
       // sharp/spread/ref set the measurement's confidence: (.3,2,no ref) about 0.6, (.25,10,no ref) about 0.45, (.5,2,no ref) about 0.8
       const mk=(ai,{sharp=.3,spread=2,ref=false}={})=>{queue.length=0;HOOK.addManual();const q=queue[0];q.manual=false;
         Object.assign(q,{type:'suit',primaryColor:'navy',pattern:'solid',meas:{lab:[27.5,0,-2.5],hex:'#3f4143',ref,src:'closeup',sharp,spread}});
@@ -37,7 +37,7 @@ module.exports=async({ok,chromium,url})=>{
       const h=mk({c:'low',alt:'charcoal'});queue.length=0;HOOK.addManual();const hq=queue[0];hq.manual=false;
       Object.assign(hq,{type:'suit',primaryColor:'navy',pattern:'solid',edited:{primaryColor:true},tagAI:h.q.tagAI,meas:{lab:[27.5,0,-2.5],hex:'#3f4143',ref:false,src:'closeup',sharp:.3,spread:2}});
       hq.measV=colourVerdicts(hq);HOOK.applyMeasured(hq);renderAdd();out.hand={col:hq.primaryColor,notes:!!document.querySelector('#nps-q .measauto,#nps-q .measalt')};
-      out.k={AI_LOW_AUTO:HOOK.AI_LOW_AUTO,AI_HIGH_FLAG:HOOK.AI_HIGH_FLAG,MEAS_AUTO:HOOK.MEAS_AUTO};queue.length=0;items=keep;renderAdd();return out});
+      out.k={AI_LOW_AUTO:HOOK.AI_LOW_AUTO,AI_HIGH_FLAG:HOOK.AI_HIGH_FLAG,MEAS_AUTO:HOOK.MEAS_AUTO};queue.length=0;HOOK.items=keep;renderAdd();return out});
     ok(r.none.mode==='flag'&&r.none.col==='navy'&&r.none.conf>=r.k.AI_LOW_AUTO&&r.none.conf<r.k.MEAS_AUTO,`without Claude's signals a ${r.none.conf} measurement only asks, as before`);
     ok(r.low.col==='charcoal'&&/Changed navy → charcoal \(measured from your close-up; Claude wasn’t sure\)Undo/.test(r.low.auto),`Claude unsure of navy, its runner-up charcoal = measured: changed by itself: "${r.low.auto}"`);
     ok(r.undo.col==='navy'&&r.undo.edited&&r.undo.again==='navy','Undo puts navy back, and it is not changed again');

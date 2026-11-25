@@ -33,14 +33,14 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const c=document.createElement('canvas');c.width=1200;c.height=900;const g=c.getContext('2d');g.fillStyle='#444';g.fillRect(0,0,1200,900);g.fillStyle='#666';for(let x=0;x<1200;x+=20)g.fillRect(x,0,4,900);
       const list=[I('suit','navy',{vest:'yes'}),I('suit','charcoal',{vest:'yes',pattern:'twill',photo:c.toDataURL('image/jpeg',.8)}),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf'}),I('socks','charcoal'),I('suit','grey',{vest:'no'})];
-      for(const it of list){await put(it);items.push(it)}cache={};refreshToday();return list.map(i=>i.id)});
+      for(const it of list){await put(it);items.push(it)}HOOK.cache={};refreshToday();return list.map(i=>i.id)});
     await A.p.waitForFunction(()=>Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>todayDate()),null,{timeout:15000});
     await A.p.evaluate(()=>syncNow());await B.p.evaluate(()=>syncNow());
     const day=await B.p.evaluate(()=>Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).map(r=>r.date).sort()[0]);
     ok(!!day&&await A.p.evaluate(d=>dayRecs[d].lockOnly===1&&typeof dayRecs[d].base==='number',day),`the app's lock of a coming day is marked as its own (lockOnly, base) (${day})`);
     // on B: the day pinned to the other suit, a tag fixed, the grey suit deleted
     const pin=await B.p.evaluate(async([d,ids])=>{const r=dayRecs[d],other=r.lock.top===ids[0]?ids[1]:ids[0];await saveDay({...r,force:{top:other,bot:other},kind:'suit',vest:true});
-      const it=items.find(i=>i.id===ids[1]);it.pattern='pinstripe';await put(it);await del(ids[9]);items=items.filter(i=>i.id!==ids[9]);await syncNow();return other},[day,ids]);
+      const it=items.find(i=>i.id===ids[1]);it.pattern='pinstripe';await put(it);await del(ids[9]);HOOK.items=items.filter(i=>i.id!==ids[9]);await syncNow();return other},[day,ids]);
     // A starts again, still behind: its downloads are held while its start-up runs
     hold={};hold.p=new Promise(r=>hold.go=r);
     const before=await A.p.evaluate(d=>dayRecs[d].updated,day),itemBefore=await A.p.evaluate(id=>{const i=items.find(x=>x.id===id);return [i.updated,!!i.photoSm]},ids[1]);

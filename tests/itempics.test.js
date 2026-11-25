@@ -33,9 +33,9 @@ const itempics=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),
         I('belt','black',{leather:'calf',metal:'silver'}),I('belt','oxblood',{leather:'cordovan',metal:'silver'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
-      settings.workdays=[0,1,2,3,4];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')});
+      settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};show('today')});
     const d=await p.evaluate(()=>({desc:items.filter(i=>HOOK.ITEM_PIC_TYPES.includes(i.type)).map(HOOK.itemDesc),same:itemKey(items[6])===itemKey(items[8]),diff:itemKey(items[4])!==itemKey(items[5]),missing:HOOK.missingItemPics().length,
       drawn:document.querySelectorAll('.below .tile .item-pic').length}));
     ok(/oxblood cordovan leather cap-toe oxford/.test(d.desc[1])&&/black calf leather dress belt.*silver buckle/.test(d.desc[2])&&/single charcoal fine-knit mid-calf dress sock in side profile/.test(d.desc[5]),'each item is described from its tags (colour, leather, buckle metal)');
@@ -52,25 +52,25 @@ const itempics=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(()=>localStorage.setItem('last_sync',Date.now()+864e5));   // no background sync when the first page becomes visible again
     const p2=await ctx.newPage();await p2.goto(url);await p2.waitForFunction(()=>window.appReady);
     const fetched=await p2.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
+      HOOK.items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
       for(const x of Object.keys(renders))delete renders[x];for(const x of [...HOOK.renderTried])HOOK.renderTried.delete(x);
-      settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today');
+      settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};show('today');
       const n=()=>document.querySelectorAll('.below .tile img.item-pic').length;await new Promise(r=>setTimeout(r,800));
       for(let k=0;k<80&&n()<3;k++)await new Promise(r=>setTimeout(r,50));return n()});   // (longer on a busy machine, where the three downloads can take more than 0.8 s)
     ok(fetched===3&&gens.length===6,'another device shows the pictures from the worker without generating again');
     // day actions: one row (set the first page up again: a second page in the same context can make it reload via the service worker)
     await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      if(!items.some(i=>i.id==='shoes5'))items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),
+      if(!items.some(i=>i.id==='shoes5'))HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),
         I('belt','black',{leather:'calf',metal:'silver'}),I('belt','oxblood',{leather:'cordovan',metal:'silver'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
-      settings.workdays=[0,1,2,3,4];TODAY_OVERRIDE='2026-11-09T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,9);view={y:2026,m:10};listOpen=false;show('today')});
+      settings.workdays=[0,1,2,3,4];HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};HOOK.listOpen=false;show('today')});
     const row=await p.evaluate(()=>({dayact:!!document.querySelector('.dayact'),pill:(document.querySelector('#wpill')||{}).textContent,formal:!!document.querySelector('.tog')}));
     ok(!row.dayact&&row.pill==='✓ Wore'&&!row.formal,`worn is the date bar's pill (${row.pill}); no other day buttons on a plain day`);
     await p.click('#wpill');await p.waitForFunction(()=>planFor()[key(sel)].worn===false);
     ok(await p.evaluate(()=>document.querySelector('#wpill').textContent==="✕ Didn't"),'tapping it marks it not worn');
     await p.click('#wpill');await p.waitForFunction(()=>planFor()[key(sel)].worn===undefined);
     ok(true,'tapping it again goes back to worn');
-    await p.evaluate(()=>{sel=new Date(2026,10,10);renderToday()});
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,10);renderToday()});
     await p.evaluate(()=>HOOK.setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal===true);
     await p.evaluate(()=>HOOK.swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides);
     const r2=await p.evaluate(()=>{const r=document.querySelector('.dayact'),tops=new Set([...r.children].map(k=>(b=>Math.round((b.top+b.bottom)/2))(k.getBoundingClientRect())));return {kids:[...r.children].map(k=>k.className).join(),one:tops.size===1,label:r.querySelector('.ftag').textContent}});
@@ -79,7 +79,7 @@ const itempics=async({ok,chromium,url,ROOT})=>{
     await p.click('[aria-label="Reset changes"]');await p.waitForFunction(()=>!planFor()[key(sel)].overrides&&!document.querySelector('#rbox'),null,{timeout:5000}).catch(()=>{});
     ok(await p.evaluate(()=>!document.querySelector('#rbox')),'Reset clears the changes and the card goes away');
     // today with a change: worn toggle, Formal and the reset icon fit one row even on narrow phones
-    await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.evaluate(()=>HOOK.swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides&&document.querySelector('#rbox'));
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,9);renderToday()});await p.evaluate(()=>HOOK.swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides&&document.querySelector('#rbox'));
     await p.evaluate(()=>HOOK.setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal);await p.evaluate(()=>HOOK.swapSlot('shoes'));await p.waitForFunction(()=>document.querySelector('#rbox')&&document.querySelector('.dayact .ftag'));
     for(const [w,fs] of [[320,16],[360,16],[390,16]]){await p.setViewportSize({width:w,height:900});
       const f=await p.evaluate(fs=>{document.body.style.fontSize=fs+'px';const r=document.querySelector('.dayact'),kids=[...r.children],btns=[...r.querySelectorAll('button')];
@@ -90,7 +90,7 @@ const itempics=async({ok,chromium,url,ROOT})=>{
       ok(f.kids==='ftag'&&f.one&&f.out&&!f.clipped.length,`${w}px wide: the day's row fits, nothing cut off (${JSON.stringify(f)})`)}
     await p.setViewportSize({width:390,height:900});
     // three tiles on a suit day span the column like the score card; pictures keep their size, the tile takes the photo's backdrop
-    await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.waitForFunction(()=>document.querySelectorAll('.below .tile.has-pic').length===3);
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,9);renderToday()});await p.waitForFunction(()=>document.querySelectorAll('.below .tile.has-pic').length===3);
     const lay=await p.evaluate(()=>{const b=document.querySelector('.below').getBoundingClientRect(),sc=document.querySelector('.score').getBoundingClientRect(),t=[...document.querySelectorAll('.below .tile')],im=t.map(x=>x.querySelector('img').getBoundingClientRect());
       return {n:t.length,left:Math.round(b.left-sc.left),right:Math.round(b.right-sc.right),tileW:Math.round(t[0].getBoundingClientRect().width),imgW:Math.round(im[0].width),square:Math.abs(im[0].width/im[0].height-4/3)<.02,fit:getComputedStyle(t[0].querySelector('img')).objectFit,
         expect:Math.round((b.width-24)/4-8),bg:t[0].style.background,centred:Math.abs((im[0].left+im[0].right)/2-(t[0].getBoundingClientRect().left+t[0].getBoundingClientRect().right)/2)<1}});
@@ -114,12 +114,12 @@ const wardpic=async({ok,chromium,url})=>{
   const PIC='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const r=await p.evaluate(pic=>{items=[{id:'s',type:'shoes',primaryColor:'black',pattern:'solid',leather:'calf',added:3},{id:'b',type:'belt',primaryColor:'brown',pattern:'solid',leather:'calf',metal:'silver',added:2},
+    const r=await p.evaluate(pic=>{HOOK.items=[{id:'s',type:'shoes',primaryColor:'black',pattern:'solid',leather:'calf',added:3},{id:'b',type:'belt',primaryColor:'brown',pattern:'solid',leather:'calf',metal:'silver',added:2},
         {id:'k',type:'socks',primaryColor:'navy',pattern:'solid',added:1},{id:'t',type:'tie',primaryColor:'navy',pattern:'solid',added:4}];
       renders[itemKey(items[0])]={sig:'item',img:pic};renders[itemKey(items[1])]={sig:'item',img:pic};HOOK.renderTried.add(itemKey(items[2]));
-      flt='all';editing=null;show('wardrobe');const src=id=>{const im=document.querySelector(`#gi-${id} .giopen img.ph`);return im&&im.getAttribute('src')};
+      HOOK.flt='all';HOOK.editing=null;show('wardrobe');const src=id=>{const im=document.querySelector(`#gi-${id} .giopen img.ph`);return im&&im.getAttribute('src')};
       const a={shoes:src('s'),belt:src('b'),socks:src('k'),tie:src('t'),sockDrawn:!!document.querySelector('#gi-k .thumb')};
-      editing='s';renderWardrobe();a.open=!!document.querySelector('#item-view .pair img.ph')&&document.querySelector('#item-view .pair img.ph').getAttribute('src')===pic;HOOK.closeItem();return a},PIC);
+      HOOK.editing='s';renderWardrobe();a.open=!!document.querySelector('#item-view .pair img.ph')&&document.querySelector('#item-view .pair img.ph').getAttribute('src')===pic;HOOK.closeItem();return a},PIC);
     ok(r.shoes===PIC&&r.belt===PIC,'shoes and belts with a product picture show it in the Wardrobe');
     ok(!r.socks&&r.sockDrawn,'without a picture they keep their drawing');
     ok(!r.tie,'other types are unchanged');
@@ -143,7 +143,7 @@ const wardpicwait=async({ok,chromium,url,settle})=>{
   const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const fresh=()=>p.evaluate(()=>{items=[{id:'b',type:'belt',primaryColor:'brown',pattern:'solid',leather:'calf',metal:'silver',added:2}];const k=itemKey(items[0]);delete renders[k];HOOK.renderTried.delete(k);flt='all';return k});
+    const fresh=()=>p.evaluate(()=>{HOOK.items=[{id:'b',type:'belt',primaryColor:'brown',pattern:'solid',leather:'calf',metal:'silver',added:2}];const k=itemKey(items[0]);delete renders[k];HOOK.renderTried.delete(k);HOOK.flt='all';return k});
     const got=k=>p.waitForFunction(k=>!!renders[k],k,{timeout:10000}).then(()=>true,()=>false);
     const tile=()=>p.evaluate(()=>!!document.querySelector('#gi-b img.item-pic, #gi-b .giopen img.ph'));
     // Settings opened while the picture is on its way

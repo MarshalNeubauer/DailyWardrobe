@@ -14,12 +14,12 @@ module.exports=async({ok,chromium,url})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const FIX=path.join(__dirname,'fixtures','cm','suit'),recs=fs.readdirSync(FIX).map(f=>[f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/'),`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,f)).toString('base64')]);
-    await p.evaluate(async recs=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=512;ASM_ON=true;HOOK.asmAheadSoon=()=>{};
+    await p.evaluate(async recs=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=512;HOOK.ASM_ON=true;HOOK.asmAheadSoon=()=>{};
       for(const [n,img] of recs)renders[asmCmKey('suit',n)]={sig:'asm/cm test',img,model:'colormaster',t:1000};
       let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
-      items=[I('watch','silver',{metal:'silver'}),I('blazer','khaki',{pattern:'windowpane'}),I('blazer','navy'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('tie','navy',{pattern:'stripe',secondaryColor:'pink'}),I('tie','burgundy'),I('tie','green'),
+      HOOK.items=[I('watch','silver',{metal:'silver'}),I('blazer','khaki',{pattern:'windowpane'}),I('blazer','navy'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('tie','navy',{pattern:'stripe',secondaryColor:'pink'}),I('tie','burgundy'),I('tie','green'),
         I('pants','grey'),I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[1,2,3,4,5];settings.blazerDays=[1,2,3,4,5];settings.vestMode='never';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};
+      settings.workdays=[1,2,3,4,5];settings.blazerDays=[1,2,3,4,5];settings.vestMode='never';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};
       const st=HOOK.asmWorker();await new Promise(ok=>{const t=setInterval(()=>{if(!st||st.ok!=null){clearInterval(t);ok()}},20)});
       // at most how many pictures are at the worker at once (waiting or being painted), and whether a pass says it is running
       window.__mx=0;window.__on=false;setInterval(()=>{const n=HOOK.asmQ.length+(HOOK.asmW&&HOOK.asmW.busy?1:0);if(n>__mx)__mx=n;if(HOOK.asmAheadOn)__on=true},1);
@@ -29,11 +29,11 @@ module.exports=async({ok,chromium,url})=>{
     ok(ready,'the painting worker is ready');
     // one pass by itself
     const one=await p.evaluate(async()=>{__mx=0;__on=false;await HOOK.asmAhead();for(let i=0;i<600&&!__done();i++)await new Promise(r=>setTimeout(r,50));
-      return {keys:Object.keys(asmOut).sort(),status:await __status(),mx:__mx,on:__on}});
+      return {keys:Object.keys(HOOK.asmOut).sort(),status:await __status(),mx:__mx,on:__on}});
     // two passes started together, from nothing kept
-    const two=await p.evaluate(async()=>{for(const k of Object.keys(asmOut))delete asmOut[k];__mx=0;__on=false;
+    const two=await p.evaluate(async()=>{for(const k of Object.keys(HOOK.asmOut))delete HOOK.asmOut[k];__mx=0;__on=false;
       await Promise.all([HOOK.asmAhead(),HOOK.asmAhead()]);for(let i=0;i<600&&!__done();i++)await new Promise(r=>setTimeout(r,50));
-      return {keys:Object.keys(asmOut).sort(),status:await __status(),mx:__mx,on:__on}});
+      return {keys:Object.keys(HOOK.asmOut).sort(),status:await __status(),mx:__mx,on:__on}});
     ok(one.keys.length>=3,`one pass paints the coming looks (${one.keys.length} looks: ${one.status})`);
     ok(two.on&&two.mx===1,`two passes started together run one at a time: a pass says it is running (${two.on}) and the worker never holds more than one of their pictures (${two.mx} at most)`);
     ok(JSON.stringify(two.keys)===JSON.stringify(one.keys),`and they keep the same looks under the same keys as one pass (${two.keys.length} and ${one.keys.length})`);
