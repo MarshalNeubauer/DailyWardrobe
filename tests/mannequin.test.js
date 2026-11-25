@@ -59,10 +59,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       ok(gz<48000,`${kind}: the pose ships at about 40 KB gzip (${(gz/1024).toFixed(1)} KB)`);
     }
     // the painter's stripe lift: the line takes Claude's named colour part of the way from the ground
-    const lift=await p.evaluate(()=>{const s=items[0],l=figStripeLift(s),lum=h=>{const v=[1,3,5].map(k=>parseInt(h.slice(k,k+2),16));return .2126*v[0]+.7152*v[1]+.0722*v[2]};
+    const lift=await p.evaluate(()=>{const s=items[0],l=HOOK.figStripeLift(s),lum=h=>{const v=[1,3,5].map(k=>parseInt(h.slice(k,k+2),16));return .2126*v[0]+.7152*v[1]+.0722*v[2]};
       const o={suitDay:true,top:s,bot:s,shirt:items[1],tie:items[2],belt:items[6],vest:true},svg=figureSvg(o,'l-');
       return {grey:l.sett.bands[1][0],was:s.sett.bands[1][0],brighter:lum(l.sett.bands[1][0])>lum(s.sett.bands[1][0])+20&&lum(l.sett.bands[3][0])>lum(s.sett.bands[3][0]),ground:l.sett.bands[0][0]===s.sett.bands[0][0],
-        inFig:svg.toLowerCase().includes(l.sett.bands[1][0]),plain:figStripeLift(items[1])===items[1]}});
+        inFig:svg.toLowerCase().includes(l.sett.bands[1][0]),plain:HOOK.figStripeLift(items[1])===items[1]}});
     ok(lift.brighter&&lift.ground&&lift.inFig&&lift.plain,`a pinstripe's lines are lifted toward the reading's named colours as the painter draws them (${lift.was} -> ${lift.grey}); the ground and other cloths are unchanged`);
     // Today: a waistcoat day shows the mannequin when no painted picture is ready
     const t=await p.evaluate(()=>{const P=planFor();const k=Object.keys(P).find(k=>keyDate(k)>=new Date(2026,10,16)&&P[k].suitDay&&P[k].vest);sel=keyDate(k);renderToday();
@@ -73,7 +73,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // a day with no colour-coded master still gets the nearest mannequin (the earlier drawing is gone): no belt on a shirt day, no shirt
     const nm0=await p.evaluate(()=>{const g=t=>items.find(i=>i.type===t),r={};
       const a={suitDay:false,top:null,bot:g('pants'),shirt:g('shirt'),tie:null,belt:null,watch:g('watch')},b={suitDay:true,top:g('suit'),bot:g('suit'),shirt:null,tie:g('tie'),vest:false};
-      for(const [n,o] of [['noBelt',a],['noShirt',b]]){const s=figureSvg(o,'n'+n+'-');r[n]={master:asmCmKind(o),kind:figKind(o),sq:/viewBox="0 0 390 390"/.test(s)&&s.includes('fig-skin')}}
+      for(const [n,o] of [['noBelt',a],['noShirt',b]]){const s=figureSvg(o,'n'+n+'-');r[n]={master:asmCmKind(o),kind:HOOK.figKind(o),sq:/viewBox="0 0 390 390"/.test(s)&&s.includes('fig-skin')}}
       r.old=typeof outfitFigureSvg==='undefined';return r});
     ok(nm0.noBelt.master===null&&nm0.noBelt.kind==='shirt-open'&&nm0.noBelt.sq&&nm0.noShirt.master===null&&nm0.noShirt.kind==='suit'&&nm0.noShirt.sq&&nm0.old,
       `an outfit with no colour-coded master is drawn on the nearest mannequin (${JSON.stringify(nm0)}); the earlier drawing is gone`);
@@ -110,9 +110,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     for(const kind of KINDS){ok(bg[kind].first,`${kind}: the office is behind the figure, a 200-pixel picture in the pose's data (no fetch: offline with the pose)`);
       ok(bg[kind].noWall,`${kind}: the mannequin itself has no opaque wall layer: outside the figure it is clear (corner alpha ${bg[kind].wall})`)}
     ok(bg.shadow.corner<=12&&bg.shadow.most>=30&&bg.shadow.depth.every(v=>v>.18&&v<=.22),`each pose's soft wall shadow is in its office (22% deep as the painter's: ${bg.shadow.depth}; poses differ by up to ${bg.shadow.most}, top left ${bg.shadow.corner})`);
-    const dk=await p.evaluate(async()=>{const was=document.documentElement.dataset.theme;document.documentElement.dataset.theme='dark';figBgMemo=null;renderToday();
+    const dk=await p.evaluate(async()=>{const was=document.documentElement.dataset.theme;document.documentElement.dataset.theme='dark';HOOK.figBgMemo=null;renderToday();
       const c=document.querySelector('#mannequin-container'),im=c&&c.querySelector(':scope > svg image.fig-office'),dark=getComputedStyle(document.body).backgroundColor;
-      document.documentElement.dataset.theme=was||'';figBgMemo=null;renderToday();return {office:!!im&&/^data:image\/jpeg/.test(im.getAttribute('href')),dark}});
+      document.documentElement.dataset.theme=was||'';HOOK.figBgMemo=null;renderToday();return {office:!!im&&/^data:image\/jpeg/.test(im.getAttribute('href')),dark}});
     ok(dk.office,`the dark theme shows the office too, as the painted pictures do (page ${dk.dark})`);
     // shipped with the app: in the cache list and the page, nothing fetched for it
     const sw=fs.readFileSync(path.join(ROOT,'sw.js'),'utf8'),html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');

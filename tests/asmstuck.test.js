@@ -5,11 +5,11 @@ module.exports=async({ok,chromium,url})=>{
   try{await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(async()=>{const posted=[];
       // a worker that takes jobs and never answers
-      const st={w:{postMessage:m=>posted.push(m.id),terminate:()=>{st.dead=true}},ok:true,busy:null};asmW=st;
-      const out={run:typeof ASM_RUN_MS==='number'&&ASM_RUN_MS>=60e3};
+      const st={w:{postMessage:m=>posted.push(m.id),terminate:()=>{st.dead=true}},ok:true,busy:null};HOOK.asmW=st;
+      const out={run:'ASM_RUN_MS' in HOOK&&typeof HOOK.ASM_RUN_MS==='number'&&HOOK.ASM_RUN_MS>=60e3};
       const a=asmRun({x:1}).then(()=>'ok',e=>'failed: '+e.message),b=asmRun({x:2}).then(()=>'ok',e=>'failed: '+e.message);
-      out.waiting=asmQ.length;out.busy=st.busy&&st.busy.id;
-      asmStuck(st,st.busy);out.first=await a;out.dead=!!st.dead;out.replaced=asmW!==st&&asmW!==null;
+      out.waiting=HOOK.asmQ.length;out.busy=st.busy&&st.busy.id;
+      HOOK.asmStuck(st,st.busy);out.first=await a;out.dead=!!st.dead;out.replaced=HOOK.asmW!==st&&HOOK.asmW!==null;
       // the next one goes to the new worker (here a real one: it fails on the bad job and says so, it doesn't hang)
       out.second=await Promise.race([b,new Promise(r=>setTimeout(()=>r('still waiting'),20000))]);
       out.posted=posted.length;return out});

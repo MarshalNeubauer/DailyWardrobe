@@ -73,7 +73,7 @@ async function run(eng,browser,{ok,url,settle}){
   ok(await p.evaluate(()=>!document.querySelector('#kitsheet.on')&&!kit),T+'✕ closes the import sheet');
 
   /* ---- the setup, step by step ---- */
-  await p.evaluate(()=>{show('today');setupOpen(false)});await settle(p,300);
+  await p.evaluate(()=>{show('today');HOOK.setupOpen(false)});await settle(p,300);
   ok(await step()==='welcome'&&await p.evaluate(()=>!!document.querySelector('#su-skip')&&!document.querySelector('#su-back')),T+'the setup opens on Welcome, with Skip and no Back');
   await tap('#su-next');await calm();
   ok(await step()==='week',T+'Get started goes to Your week');
@@ -151,7 +151,7 @@ async function run(eng,browser,{ok,url,settle}){
   const sid=await p.evaluate(()=>{CK_OPEN['*']=undefined;const i=items.find(x=>x.sample&&x.type==='tie');openItem(i.id);return i.id});await settle(p,600);
   await tap('#iv-keep');await p.waitForFunction(id=>!items.find(i=>i.id===id).sample,sid).catch(()=>{});
   ok(await p.evaluate(id=>!items.find(i=>i.id===id).sample,sid),T+'"Keep it as mine" on a sample piece makes it his');
-  await p.evaluate(()=>{closeItem();toastDrop&&toastDrop();show('today')});await settle(p,500);
+  await p.evaluate(()=>{HOOK.closeItem();toastDrop&&toastDrop();show('today')});await settle(p,500);
   await tap('#kit-sample .btns button:nth-child(1)');await settle(p,400);
   ok(await p.evaluate(()=>!document.querySelector('#add').hidden),T+'the note’s "Add my own" opens Add');
   await p.evaluate(()=>show('today'));await settle(p,400);
@@ -163,28 +163,28 @@ async function run(eng,browser,{ok,url,settle}){
   await tap('#firstrun #kit-sample-link');await yes();
   await p.waitForFunction(()=>items.filter(i=>i.sample).length>10).catch(()=>{});await settle(p,500);
   ok(await p.evaluate(()=>items.filter(i=>i.sample).length>10),T+'the checklist’s "Try a sample wardrobe" loads it again, after asking');
-  await p.evaluate(async()=>{await kitSampleRemove(true);toastDrop&&toastDrop();show('today')});await settle(p,500);
+  await p.evaluate(async()=>{await HOOK.kitSampleRemove(true);toastDrop&&toastDrop();show('today')});await settle(p,500);
   await tap('#firstrun #kit-tour-link');await settle(p,300);
   ok(await card()==='score',T+'the checklist’s tour link opens the tour');
   await p.evaluate(()=>kitClose());await settle(p,300);
   await tap('#fr-add');await settle(p,400);
   ok(await p.evaluate(()=>!document.querySelector('#add').hidden),T+'the checklist’s "Add an item" opens Add');
-  await p.evaluate(async()=>{await kitDelMany(items.map(i=>i.id));toastDrop&&toastDrop();show('wardrobe')});await settle(p,400);
+  await p.evaluate(async()=>{await HOOK.kitDelMany(items.map(i=>i.id));toastDrop&&toastDrop();show('wardrobe')});await settle(p,400);
   await tap('#wempty-add');await settle(p,400);
   ok(await p.evaluate(()=>!document.querySelector('#add').hidden),T+'the empty Wardrobe’s "Add your first item" opens Add');
   await p.evaluate(()=>show('wardrobe'));await settle(p,400);
   await tap('#wempty .kit-start .linkbtn:nth-of-type(2)');
   await p.waitForFunction(()=>items.filter(i=>i.sample).length>10).catch(()=>{});await settle(p,500);
   ok(await p.evaluate(()=>items.filter(i=>i.sample).length>10&&!document.querySelector('#today').hidden),T+'the empty Wardrobe’s "Try a sample wardrobe" loads it and shows Today');
-  await p.evaluate(async()=>{await kitSampleRemove(true);toastDrop&&toastDrop()});await settle(p,400);
+  await p.evaluate(async()=>{await HOOK.kitSampleRemove(true);toastDrop&&toastDrop()});await settle(p,400);
 
   /* ---- "Run setup again": Cancel puts the answers back; Skip on a first setup ---- */
-  await p.evaluate(()=>{settings.setupDone=1;settings.workdays=[0,1,2,3,4];show('today');setupOpen(true)});await settle(p,300);
+  await p.evaluate(()=>{settings.setupDone=1;settings.workdays=[0,1,2,3,4];show('today');HOOK.setupOpen(true)});await settle(p,300);
   await tap('#su-next');await calm();await tap('#su-workdays .su-day:nth-child(7)');await settle(p,200);
   ok(await p.evaluate(()=>settings.workdays.includes(6)&&!!document.querySelector('#su-cancel')),T+'run again: a workday is changed, Cancel is offered');
   await tap('#su-cancel');await settle(p,400);
   ok(await p.evaluate(()=>!setupShown()&&!settings.workdays.includes(6)&&/canceled/.test(document.querySelector('#toast').textContent)),T+'Cancel closes it and the workdays are as they were');
-  await p.evaluate(()=>{toastDrop&&toastDrop();delete settings.setupDone;setupOpen(false)});await settle(p,600);
+  await p.evaluate(()=>{toastDrop&&toastDrop();delete settings.setupDone;HOOK.setupOpen(false)});await settle(p,600);
   await calm();await tap('#su-skip');await settle(p,400);   // (Skip is where Cancel was: a tap there within 350 ms of Cancel's is dropped as a double tap's second)
   const sk=await p.evaluate(()=>({shown:setupShown(),done:!!settings.setupDone,today:!document.querySelector('#today').hidden}));
   ok(!sk.shown&&sk.done&&sk.today,T+`Skip finishes a first setup and shows Today (${JSON.stringify(sk)})`);

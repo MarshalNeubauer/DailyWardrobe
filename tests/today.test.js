@@ -66,7 +66,7 @@ const todaycards=async({ok,chromium,url})=>{
         settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};listOpen=false;monthOpen=false;
         // a stand-in photo for the day's look; a background refresh (weather, holidays) can re-plan the day, so set it again until it shows
         const img='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#5f5449"/></svg>');
-        show('today');for(let n=0;n<40;n++){const o=planFor()[key(sel)];if(!renders[comboKey(o)]){renderTried.add(comboKey(o));renders[comboKey(o)]={sig:'x',img,model:'x',t:1};renderToday()}
+        show('today');for(let n=0;n<40;n++){const o=planFor()[key(sel)];if(!renders[comboKey(o)]){HOOK.renderTried.add(comboKey(o));renders[comboKey(o)]={sig:'x',img,model:'x',t:1};renderToday()}
           await new Promise(r=>setTimeout(r,100));if(document.querySelector('.fig.photo img')&&n>=3)break}
         const R=s=>document.querySelector(s).getBoundingClientRect(),seq=['#mannequin-container','.below','.score','#ibox','#mbox'].map(R);
         const cards=['.score','#ibox','#mbox'].map(R),text=[...document.querySelectorAll('#ibox .mltxt,#mbox .mltxt')].map(e=>Math.round(e.getBoundingClientRect().left));
@@ -80,7 +80,7 @@ const todaycards=async({ok,chromium,url})=>{
         return {grew:d.getBoundingClientRect().height>h+40,turned:getComputedStyle(d.querySelector('.chev')).transform!=='none'}});
       ok(o.grew&&o.turned,`${name}: the score card opens with its chevron turned, like the other cards`);
       // an unfolded tile photo is spaced like everything else; folded it takes no space
-      const b=await p.evaluate(async()=>{pickPiece('belt');await new Promise(r=>setTimeout(r,500));const t=document.querySelector('.below').getBoundingClientRect(),x=document.querySelector('#bbox').getBoundingClientRect();return Math.round(x.top-t.bottom)});
+      const b=await p.evaluate(async()=>{HOOK.pickPiece('belt');await new Promise(r=>setTimeout(r,500));const t=document.querySelector('.below').getBoundingClientRect(),x=document.querySelector('#bbox').getBoundingClientRect();return Math.round(x.top-t.bottom)});
       ok(b===12,`${name}: an unfolded tile photo sits the same 12px below the tiles (${b})`);
       ok(errs.length===0,`${name}: no page errors (${errs.join('; ')})`);
     }

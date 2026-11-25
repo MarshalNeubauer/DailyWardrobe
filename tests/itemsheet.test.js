@@ -28,7 +28,7 @@ const itemfix=async({ok,chromium,url})=>{
     ok(f.suit.length===3,'patterned cloth keeps its second and third colors');
     // cufflinks: named and drawn in their colour, and the metal "other" is gunmetal
     const c=await p.evaluate(()=>{const l={id:'l1',type:'cufflinks',primaryColor:'lightblue',metal:'other',pattern:'solid'},s={id:'l2',type:'cufflinks',primaryColor:'silver',metal:'silver',pattern:'solid'};
-      return {d:desc(l),ds:desc(s),th:itemThumb(l),ths:itemThumb(s),sw:swatchSVG(l),opts:METAL_OPTS.map(x=>x[1]).join(',')}});
+      return {d:desc(l),ds:desc(s),th:itemThumb(l),ths:itemThumb(s),sw:swatchSVG(l),opts:HOOK.METAL_OPTS.map(x=>x[1]).join(',')}});
     ok(c.d==='light blue · gunmetal'&&c.ds==='silver',`cufflinks are named by color and metal (${c.d} | ${c.ds})`);
     ok(c.th.includes('class="link-face"')&&c.th.toLowerCase().includes(await p.evaluate(()=>COLORS.lightblue))&&!c.ths.includes('link-face'),'enamel cufflinks are drawn with a face in their color; silver ones stay all metal');
     ok(c.sw.toLowerCase().includes(await p.evaluate(()=>COLORS.lightblue)),'their swatch shows the color');

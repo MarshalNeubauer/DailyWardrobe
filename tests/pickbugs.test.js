@@ -17,7 +17,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ';
       return route.fulfill({status:503,headers:{'content-type':'application/json','access-control-allow-origin':'*'},body:'{"error":"server"}'})});
     await ctx.addInitScript(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');localStorage.setItem('tour_seen','1')});
     const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{CK_OPEN['*']=true;rememberRole({role:'owner'});if(document.querySelector('#setup.on')&&typeof setupClose==='function')setupClose();
+    await p.evaluate(()=>{CK_OPEN['*']=true;HOOK.rememberRole({role:'owner'});if(document.querySelector('#setup.on')&&'setupClose' in HOOK&&typeof HOOK.setupClose==='function')HOOK.setupClose();
       const I=(id,type,x={})=>({id,type,primaryColor:'navy',pattern:'solid',added:1,...x});
       items=[I('t1','tie'),I('t2','tie',{primaryColor:'red'}),I('s1','suit',{primaryColor:'grey'}),I('k1','socks'),I('q1','pocketsquare',{primaryColor:'white'}),I('e1','tee',{primaryColor:'white'}),
         I('w1','sweater'),I('c1','chore'),I('p1','pants',{primaryColor:'khaki',trouserKind:'cargo'})];cache={};flt='all';editing=null;show('wardrobe')});
@@ -90,7 +90,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ';
     let e2=await p.evaluate(()=>{const s=document.querySelector('#item-view.on .ivpics'),b=s&&s.querySelector('.pt-closeup'),r=b&&b.getBoundingClientRect();
       return {sheet:document.querySelector('#col-sheet').classList.contains('on'),open:!!(s&&s.classList.contains('open')),seen:!!r&&r.height>0&&r.top>=0&&r.bottom<=innerHeight}});
     ok(!e2.sheet&&e2.open&&e2.seen,T+`the link closes the picker, opens Pictures and shows its Close-up button (${JSON.stringify(e2)})`);
-    e2=await p.evaluate(()=>{const c=colPick;colPick={src:'q'};try{return cpAskHint('name the pattern')}finally{colPick=c}});
+    e2=await p.evaluate(()=>{const c=colPick;colPick={src:'q'};try{return HOOK.cpAskHint('name the pattern')}finally{colPick=c}});
     ok(/Add a close-up and Claude can name the pattern/.test(e2)&&!/cpgopics|Pictures/.test(e2),T+'on the Add card the hint names no place and has no link');
     // ================= (4) cargo pants =================
     await p.evaluate(()=>{closeColPick();openItem('p1')});await settle(p,150);
@@ -99,7 +99,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ';
       return {v:s&&s.value,shown:s&&s.selectedOptions[0].textContent,opts:s&&[...s.options].map(o=>o.value),sum:d&&d.querySelector('.ckt small').textContent,plan:trouserKind(items.find(x=>x.id==='p1'))}});
     ok(e2.v==='cargo'&&e2.shown==='Cargo pants'&&e2.opts.join()==='dress,chinos,jeans,cargo'&&/cargo pants/.test(e2.sum)&&!/chinos/.test(e2.sum),T+`cargo pants: the item sheet's Kind reads "Cargo pants" and Details says cargo (${JSON.stringify(e2)})`);
     ok(e2.plan==='chinos',T+'the planner still reads cargo pants as chinos (trouserKind)');
-    e2=await p.evaluate(()=>{if(typeof closeItem==='function')closeItem();renderWardrobe();const g=document.querySelector('#gi-p1 .gtype');return g&&g.textContent});
+    e2=await p.evaluate(()=>{if('closeItem' in HOOK&&typeof HOOK.closeItem==='function')HOOK.closeItem();renderWardrobe();const g=document.querySelector('#gi-p1 .gtype');return g&&g.textContent});
     ok(e2==='Cargo pants',T+`the Wardrobe grid labels them "Cargo pants" (${e2})`);
     ok(!errs.length,T+'no page errors (mouse) '+errs.join(' | '));
     await ctx.close()}
