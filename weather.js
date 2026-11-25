@@ -1,5 +1,6 @@
 /* Daily Wardrobe: the weather: units, the location and its search, the 16-day forecast and the usual weather by month
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
+import {on} from './bus.js';
 /* ---- settings: schedule, weather location, units ---- */
 /* °F where the country uses it (audit 2026-11-15: a Kuwait user on an English (US) iPhone got °F): the chosen location's country, else the
    time zone's (setup.js tzCountry, which falls back on the phone's region), else the phone's language as before */
@@ -72,6 +73,9 @@ async function loadWeather(force){
    setUnits, setLocation, useMyLocation, findCity), today.js (wxChip, loadWeather), start.js and safety.js (loadWeather) use these as
    globals (setup.js is a module too, as is scorecard.js: temp); geoName is read by tests/setup.test.js only */
 Object.assign(globalThis,{unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,findCity,loadWeather});
+/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
+on('settings-draw',()=>{renderWxLoc();if($('#cfg-units'))$('#cfg-units').value=unit()});
+on('settings-summaries',S=>{S.unit=unit});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,geoName};
 export {unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,geoName,findCity,loadWeather};

@@ -4,6 +4,7 @@
    accepts the code. Settings → Connection then says who is connected: a tester sees today's use against each daily limit, the
    owner gets "Invite testers" (make a link, see each tester's use today, revoke one).
    Server API used here: GET /me, GET/POST/DELETE /invites. An older server answers these 404 or 405: the box then stays empty. */
+import {on} from './bus.js';
 const ACCT_CAPS=[['item','Item pictures'],['tag','Photo readings'],['pattern','Pattern readings'],['describe','Color & pattern lookups']];
 let acct={me:null,state:'',invites:null,link:null,busy:false,msg:'',at:0};   // state: '' not asked, 'wait', 'ok', 'old' (a server without accounts), 'no' (refused), 'off' (unreachable)
 const acctEsc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
@@ -303,6 +304,9 @@ function acctEndedUI(){acct={...acct,me:null,state:'',invites:null};try{applyRol
    as globals. Above the file's first top-level call that can throw (acctStart, then acts): the names are then still the page's */
 Object.assign(globalThis,{acctEsc,acctBase,acctCall,hasInviteHash,acctFailText,connectFromLink,acctTyped,iosInSafari,myInviteLink,acctRole,isTester,applyRole,limitNote,acctEndedUI});
 Object.defineProperties(globalThis,{acctWhy:{get:()=>acctWhy},acct:{get:()=>acct,set:v=>{acct=v}},inviteChecking:{get:()=>inviteChecking,set:v=>{inviteChecking=v}}});
+/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
+on('settings-summaries',()=>applyRole());
+on('connection-typed',(url,code)=>acctTyped(url,code).catch(e=>console.warn('connection not changed',e)));   // another address or code typed in Settings → Connection
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get acctLinkRun(){return acctLinkRun},acctPending,dropInviteHash,homeScreenGuide,loadAccount,rememberRole,renderAccountUI};
 export {acct,acctEsc,acctBase,acctCall,dropInviteHash,hasInviteHash,acctWhy,inviteChecking,acctLinkRun,acctFailText,connectFromLink,acctTyped,acctPending,iosInSafari,myInviteLink,homeScreenGuide,rememberRole,acctRole,isTester,applyRole,limitNote,loadAccount,renderAccountUI,acctEndedUI};

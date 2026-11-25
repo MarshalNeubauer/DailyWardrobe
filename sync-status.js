@@ -1,5 +1,6 @@
 /* Daily Wardrobe: what Backup & sync says (split from sync.js, 2026-11-17): the status line, the pause until the next UTC day,
    an invitation that has ended, and the backup words for Connection and the setup. Loaded right before sync.js. */
+import {on} from './bus.js';
 // a tester reads a server set-up error in plain words (plainErr, ui.js); the owner, or a connection whose role isn't known yet, the server's sentence
 function setSyncStatus(t){if(typeof isTester==='function'&&isTester()){const p=plainErr(t);if(p!==t)t='Backup failed: '+p}localStorage.setItem('sync_status',t);showSyncStatus()}
 /* a backup already made is said while the next one runs: synced() clears sync_status while `syncing` is still true, and this line read
@@ -70,4 +71,6 @@ function backedUpWords(){const p=+localStorage.getItem('sync_pause')||0;if(p<=no
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): sync.js and the screens that say how the backup stands (app, photos, settings, snapshots, backupfile, account, about,
    ui, setup), classic scripts, call these; the clock, rollback, backup-storage, server-limits and addcards tests too. */
 Object.assign(globalThis,{setSyncStatus,showSyncStatus,ENDED,inviteEnded,endedAnswer,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords});
+/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
+on('settings-open',()=>showSyncStatus());   // the Backup line, as Settings opens
 export {setSyncStatus,showSyncStatus,ENDED,inviteEnded,endedAnswer,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords};

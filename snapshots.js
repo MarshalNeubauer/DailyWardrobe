@@ -1,4 +1,5 @@
 /* Daily Wardrobe: the server's daily backups and Roll back (split from sync.js, 2026-11-17). */
+import {on} from './bus.js';
 /* ---- daily backups on the worker (snap:<day> / snap:<month> / snap:before-restore) ---- */
 /* a copy is named by the day it is for (the wardrobe at that day's start), with how many items it holds when the server says (W2-14-03,
    W1-6-07: labelled by the time its content was saved, Monday's copy and Sunday's both read "Sun, Nov 15, 7:30 AM", one full, one empty) */
@@ -71,7 +72,9 @@ function rollBackTap(){rollBack()}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): settings.js, a classic script, calls loadSnapshots; the tests call it and the
    other three (actsindex, backup-storage, clock, rollback, sample); a module imports them */
 Object.assign(globalThis,{loadSnapshots});
+/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
+on('settings-category',k=>{if(k==='backup')loadSnapshots()});   // the daily backups list is read as Backup opens
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,rollBack,rollBackState,snapLabel};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,rollBack,rollBackState,snapLabel,loadSnapshots};
 export {snapLabel,loadSnapshots,rollBackState,rollBack};
 acts({snapFocus,rollBackTap});

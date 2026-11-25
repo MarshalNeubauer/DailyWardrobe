@@ -7,6 +7,7 @@
    switch follows the morning reminder's until it is set by itself (remindPrefs().care: undefined = as the morning reminder).
    Needs the connection, a phone that can receive Web Push (on an iPhone: the app on the Home Screen, iOS 16.4 or later) and the
    VAPID keys on the server. The choice is this phone's own (localStorage.remind {on, care, time}); each phone subscribes for itself. */
+import {on} from './bus.js';
 const REMIND_CACHE='dw-keep-remind',REMIND_URL='remind.json',CARE_URL='care.json',REMIND_DAYS=14,REMIND_POST_MS=20*3600000;
 const REMIND_CHECK_MS=12*3600000;   // how often a phone already told asks the server whether it still has its subscription
 let remindMsg='',remindBusy=false,remindTimer=null;
@@ -85,6 +86,8 @@ async function remindTime(v){if(!/^\d\d:\d\d$/.test(v))return;const p={...remind
    that can throw (settingsPart, then acts): history.js, settings.js, start.js and care.js, classic scripts, call remindSoon; the rest
    are read by the remind, connkeep and restacts tests, remindBusy too, which only this file writes: a getter */
 Object.assign(globalThis,{remindSoon});
+/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
+on('settings-summaries',()=>remindSoon());
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,outfitLine,get remindBusy(){return remindBusy},remindCareOn,remindKeep,remindPrefs,remindRefresh,remindSave,remindSig,renderRemindUI};
 export {remindBusy,remindPrefs,remindCareOn,remindSave,outfitLine,remindKeep,remindSig,remindSoon,remindRefresh,renderRemindUI};

@@ -1,5 +1,6 @@
 /* Daily Wardrobe: Settings → About. The app's version and updates, feedback, deleting one's data, the privacy note.
    Loaded last (index.html's final file before startUp); an ES module since 2026-11-23. */
+import {on} from './bus.js';
 
 /* ---- version ----
    The version is the number in the service worker's cache name (sw.js: const CACHE='dw-v<n>'), bumped with every release.
@@ -271,8 +272,10 @@ function aboutStart(){
    a setter (tests assign it). Above the file's top-level calls (aboutStart, then acts): the names are then still the page's. One
    statement each: tools and tests cut this file's `^const` lines */
 Object.assign(globalThis,{appVersion,ABOUT_NOTE,wipeDevice,renderAbout});
+/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
+on('settings-category',k=>{if(k==='about')renderAbout()});   // only as About opens (CR-7-06)
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,ABOUT_KEYS,aboutAsk,aboutDeleteAccount,get aboutNew(){return aboutNew},aboutResetAt,get aboutUpdating(){return aboutUpdating},set aboutUpdating(v){aboutUpdating=v},askDelete,checkForUpdate,fbWithErrs,sendFeedback,updateNow};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,ABOUT_KEYS,aboutAsk,aboutDeleteAccount,get aboutNew(){return aboutNew},aboutResetAt,get aboutUpdating(){return aboutUpdating},set aboutUpdating(v){aboutUpdating=v},askDelete,checkForUpdate,fbWithErrs,sendFeedback,updateNow,renderAbout};
 export {aboutNew,aboutUpdating,appVersion,aboutAsk,checkForUpdate,updateNow,fbWithErrs,sendFeedback,aboutResetAt,ABOUT_KEYS,ABOUT_NOTE,askDelete,wipeDevice,aboutDeleteAccount,renderAbout};
 aboutStart();
 /* index.html's (act.js): About's "Check for updates", Update, the feedback's Send and "Delete my data" */

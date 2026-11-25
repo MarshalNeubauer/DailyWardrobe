@@ -3,6 +3,7 @@
    - tell(message): a plain notice (a toast that stays long enough to read)
    - isConnected(), needConn(): what the buttons that need the server show while the app is not connected
    - advToggle(button), advClose(): the "Advanced" folds in Settings */
+import {on} from './bus.js';
 const ASK_NONE={ok:'OK',cancel:'Cancel',danger:false};
 const ASK_SETTLE=450;   // ms after a question opens in which a real tap outside it doesn't cancel it: it is the double tap's second tap (re-audit 2026-11-15)
 let asking=null;   // the question on screen: {done(answer), last (what had the focus)}
@@ -31,6 +32,10 @@ function askBack(){if(asking)askAnswer(false,true)}
    `let` when asked, so the ones declared below are here too; the consts declared below are handed over above acts({…}) */
 Object.assign(globalThis,{askAnswer,askConfirm,closeupBtn,cuGot,closeupPick,tell,layerInert,layerOpen,layerClose,plainErr,needConn,connSummary,renderConnUI,addGate,advClose});
 Object.defineProperties(globalThis,{asking:{get:()=>asking},cuOpen:{get:()=>cuOpen}});
+/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
+on('settings-open',()=>advClose());   // the Advanced folds start closed every time Settings opens
+on('settings-draw',()=>renderConnUI());
+on('settings-summaries',S=>{S.connected=isConnected;S.conn=connSummary});
 backOn('ask',()=>askBack());
 /* the first paragraph of the message is the question (bold), the rest the explanation; a question asked while another is up answers that one no */
 function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)askAnswer(false);
@@ -225,6 +230,6 @@ function connOffTap(){goConnect()}
 function addConnTap(){openSettings('connection');goConnect()}
 Object.assign(globalThis,{cuTouch,layerFrom,netErr,NEED_CONN,inviteOver,isConnected});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,closeupClose,get connBusy(){return connBusy},get connMsg(){return connMsg},set connMsg(v){connMsg=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,closeupClose,get connBusy(){return connBusy},get connMsg(){return connMsg},set connMsg(v){connMsg=v},advClose};
 export {asking,askAnswer,askConfirm,cuTouch,cuOpen,closeupBtn,cuGot,closeupPick,closeupClose,tell,layerFrom,layerInert,layerOpen,layerClose,netErr,plainErr,NEED_CONN,inviteOver,isConnected,needConn,connSummary,connMsg,connBusy,renderConnUI,addGate,advClose};
 acts({advTap,askNoTap,askYesTap,cuBtnTap,connOwnTap,connLinkKey,connGoTap,connOffTap,addConnTap});

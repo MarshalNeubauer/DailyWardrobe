@@ -15,7 +15,8 @@
 //   tests/deps.json by hand (`--update --add` does it) and say why in the pull request;
 // - an edge that went away fails too, until it is taken off (`node tests/deps.test.js --update`): the list only shrinks, so it
 //   stays the true picture;
-// - LEAVES must use no other file: merge.js (the server imports it), srgb.js (asm-worker.js loads it first), back.js, locale.js.
+// - LEAVES must use no other file: merge.js (the server imports it), bus.js (the notice board: any file may pin or announce on
+//   it, so it can't read any), srgb.js (asm-worker.js loads it first), back.js, locale.js.
 // Merging two branches that changed one file's line: take either side, then `node tests/deps.test.js --update`.
 //
 //   node tests/deps.test.js                    the summary: files, edges, the largest cycle, the leaves; what differs from deps.json
@@ -27,7 +28,7 @@ const acorn=require('acorn'),escope=require('eslint-scope');
 const {scriptList,scriptTags}=require('./scriptlist');
 const modscope=require('./modscope');
 const LEDGER='tests/deps.json';
-const LEAVES=['merge.js','srgb.js','back.js','locale.js'];
+const LEAVES=['merge.js','bus.js','srgb.js','back.js','locale.js'];
 const WORKERS=['asm-worker.js','analysis-worker.js'];
 
 /* the scopes, as eslint.config.mjs and tests/typecheck.js find them: [{name, files (in load order), rows (the files that get a row)}] */
