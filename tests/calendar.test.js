@@ -113,7 +113,7 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
       await r.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.location={name:'Kuwait City, KW',lat:29.37,lon:47.98};dayRecs={};TODAY_OVERRIDE='2026-11-20T09:00:00';cache={};sel=new Date(2026,10,22);show('today')});
+    await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.location={name:'Kuwait City, KW',lat:29.37,lon:47.98};HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-20T09:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,22);show('today')});
     // spies on the app's own functions: keeping an event goes through them
     await p.evaluate(()=>{window.__calls=[];for(const f of ['setOccasion','dayOffAdd','packSetTrip']){const o=window[f];window[f]=function(...a){__calls.push([f,...a]);return o.apply(this,a)}}});
     await p.evaluate(()=>openSettings('calendar'));await settle(p,300);
@@ -142,7 +142,7 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
     ok(offw.a==='a day off (Made-up Founders Day): no outfit to plan'&&offw.b==='a day off (your day off): no outfit to plan'&&offw.c==='Saturday isn’t a workday: no outfit to plan'&&!offw.can,
       `an occasion on a weekday that is a day off says why: the holiday's name, or "your day off"; a Saturday still says it isn't a workday (${JSON.stringify(offw)})`);
     // Today's banner, before anything is kept
-    await p.evaluate(()=>{closeSettings();sel=new Date(2026,10,22);renderToday()});
+    await p.evaluate(()=>{closeSettings();HOOK.sel=new Date(2026,10,22);renderToday()});
     const ban=await p.evaluate(()=>($('#cal-new')||{}).textContent||'');
     ok(/^\d+ new calendar events?Review$/.test(ban),`Today shows a small banner with the new events ("${ban}")`);
     await p.click('#cal-new button');await settle(p,300);
@@ -163,11 +163,11 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
     const st=await p.evaluate(()=>$('#cal-status').textContent);
     ok(/ · 5 events used$/.test(st),`the status counts the events used ("${st}")`);
     // Today on a trip day: the note; the banner counts what is left
-    await p.evaluate(()=>{closeSettings();sel=new Date(2026,11,8);renderToday()});
+    await p.evaluate(()=>{closeSettings();HOOK.sel=new Date(2026,11,8);renderToday()});
     ok(/^Trip: Retail conference · Packing list$/.test(await p.evaluate(()=>($('#cal-trip')||{}).textContent||'')),'a day of a kept trip says so on Today, with the Packing list');
     // after a restart: the link, the kept and the dismissed are still there (settings stored), the last read on this phone
     await p.reload();await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];TODAY_OVERRIDE='2026-11-20T09:00:00';cache={};openSettings('calendar')});await settle(p,300);
+    await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];HOOK.TODAY_OVERRIDE='2026-11-20T09:00:00';HOOK.cache={};openSettings('calendar')});await settle(p,300);
     const r1=await p.evaluate(id=>({seen:settings.calSeen&&settings.calSeen[id],url:settings.calendar&&settings.calendar.url,gone:[...document.querySelectorAll('.cal-row.gone')].map(r=>r.querySelector('b').textContent),
       newIds:HOOK.calNew().map(x=>x.ev.id)}),dId);
     ok(r1.seen==='x'&&r1.url===LINK&&r1.gone.includes('Dress down Thursday')&&!r1.newIds.includes(dId),'after a restart the dismissal is remembered and the event isn\'t offered again');
@@ -194,7 +194,7 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
         ok(last==='Done'&&await p.evaluate(()=>!kit&&settingsOpen()&&$('#sc-calendar').classList.contains('open')),`the ${g} guide ends with "Done" and goes back to Settings → Calendar`)}}
     if(shots){await p.setViewportSize({width:390,height:860});for(const theme of ['light','dark']){await p.emulateMedia({colorScheme:theme});await p.evaluate(()=>openSettings('calendar'));await settle(p,300);
       await p.screenshot({path:path.join(shots,`settings-${theme}.png`),fullPage:false});
-      await p.evaluate(()=>{closeSettings();sel=new Date(2026,11,8);renderToday()});await p.screenshot({path:path.join(shots,`today-trip-${theme}.png`)})}}
+      await p.evaluate(()=>{closeSettings();HOOK.sel=new Date(2026,11,8);renderToday()});await p.screenshot({path:path.join(shots,`today-trip-${theme}.png`)})}}
     const guideText=await p.evaluate(()=>Object.values(HOOK.CAL_GUIDES).flat().map(c=>c.title+' '+c.body).join(' '));
     ok(/Public Calendar/.test(guideText)&&/Share Link/.test(guideText)&&/Secret address in iCal format/.test(guideText)&&/Publish a calendar/.test(guideText)&&/ICS/.test(guideText)&&/slightly differently/.test(guideText),'the walkthrough names the real menu items (Public Calendar → Share Link, Secret address in iCal format, Publish a calendar → ICS) and says menus may differ');
     ok(!/\b(worker|Cloudflare|KV|token)\b/i.test(guideText+await p.evaluate(()=>{openSettings('calendar');return $('#sc-calendar').textContent})),'no word a tester mustn\'t read (worker, Cloudflare, KV, token)');

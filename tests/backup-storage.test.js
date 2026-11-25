@@ -232,7 +232,7 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
   // an edit is made on a quiet device: made while the device's own background sync ran (the older app's, just started), that sync
   // took the edit into its mark without sending it, and the counted sync then saw nothing to send ("and still saves the whole backup
   // … 0.0 KB up, 1 requests", after main's #554 changed the timing)
-  const edit=async(d,id,f)=>{await quiet(d);return d.p.evaluate(async([id,f])=>{const it={...items.find(i=>i.id===id),...f,updated:Date.now()};await put(it);items=items.map(i=>i.id===id?it:i)},[id,f])};
+  const edit=async(d,id,f)=>{await quiet(d);return d.p.evaluate(async([id,f])=>{const it={...items.find(i=>i.id===id),...f,updated:Date.now()};await put(it);HOOK.items=items.map(i=>i.id===id?it:i)},[id,f])};
   const stored=()=>JSON.parse(store.get('wardrobe:v1'));
   // the backup whole, photos inline, as an older app downloads it (since 2026-11-13 the stored value keeps its photos by reference)
   const full=async()=>JSON.parse(await (await W.fetch(new Request(HOST+'sync',{headers:{'x-app-token':'secret'}}),env)).text());
@@ -260,7 +260,7 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
     ok(up3.ok&&up3.up>150e3&&up3.up<300e3&&(await full()).data.items.find(i=>i.id==='it9').photo===np,`a replaced photo is sent once (${kb(up3)})`);
     ok(down3.ok&&down3.down>150e3&&down3.down<300e3&&down3.t.some(x=>x.q.startsWith('?ph='))&&(await itemOf(B,'it9')).photo===np,`and downloaded alone by the other device (${kb(down3)})`);
     // a deletion (tombstone)
-    await A.p.evaluate(async()=>{const t=Date.now();await del('it3');await metaPut('tombstones',{...(await metaGet('tombstones')||{}),it3:t});items=items.filter(i=>i.id!=='it3')});
+    await A.p.evaluate(async()=>{const t=Date.now();await del('it3');await metaPut('tombstones',{...(await metaGet('tombstones')||{}),it3:t});HOOK.items=items.filter(i=>i.id!=='it3')});
     await sync(A);await sync(B);
     ok(!(await itemOf(B,'it3'))&&!stored().data.items.some(i=>i.id==='it3')&&stored().data.tombstones.it3,'a deletion reaches the backup and the other device');
     // both devices change something before either syncs: the second is refused (409), asks again and merges
@@ -274,7 +274,7 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
     const q=await measured(A);
     ok(q.ok&&q.n===1&&q.down<200,`nothing new: one small request (${kb(q)})`);
     // a device whose storage was cleared but kept its marker gets everything back
-    await B.p.evaluate(async()=>{for(const i of await tx('readonly',s=>s.getAll()))await tx('readwrite',s=>s.delete(i.id));items=[]});
+    await B.p.evaluate(async()=>{for(const i of await tx('readonly',s=>s.getAll()))await tx('readwrite',s=>s.delete(i.id));HOOK.items=[]});
     await sync(B);
     ok((await B.p.evaluate(()=>items.length))===(await A.p.evaluate(()=>items.length))&&(await itemOf(B,'it7')).photo===seed.items[7].photo&&stored().data.items.length>30,'a device that lost its wardrobe gets it back, photos and all, and the backup is not emptied');
 
@@ -295,7 +295,7 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
     const anySnap=[...store.keys()].filter(k=>/^snap:\d{4}-\d{2}-\d{2}$/.test(k));
     const sv=anySnap.length&&(await (await W.fetch(new Request(HOST+'sync?snap='+anySnap[0].slice(5),{headers:{'x-app-token':'secret'}}),env)).json());
     ok(anySnap.length>=1&&sv&&sv.data.items.find(i=>i.id==='it7').photo===seed.items[7].photo,`the day's first change keeps the backup as it was (${anySnap.join(', ')}), photos inline`);
-    await A.p.evaluate(()=>openSettings&&openSettings());await A.p.evaluate(()=>loadSnapshots());
+    await A.p.evaluate(()=>openSettings&&openSettings());await A.p.evaluate(()=>HOOK.loadSnapshots());
     await A.p.evaluate(async d=>{$('#snap-list').value=d;const r=HOOK.rollBack();$('#ask-ok').click();await r},anySnap[0].slice(5));
     const rb=await A.p.evaluate(()=>({st:$('#snap-status').textContent,c5:items.find(i=>i.id==='it5').primaryColor,n:items.length}));
     await sync(B);
@@ -368,7 +368,7 @@ const inlineswatch=async({ok,chromium,url,ROOT})=>{
     await A.p.evaluate(()=>syncNow());
     // an edit of an old item: its PNG swatch now rides inline; nothing is written but the backup (and the day's copy)
     writes.length=0;
-    await A.p.evaluate(async()=>{const it={...items.find(i=>i.id==='it0'),primaryColor:'charcoal'};await put(it);items=items.map(i=>i.id==='it0'?it:i)});
+    await A.p.evaluate(async()=>{const it={...items.find(i=>i.id==='it0'),primaryColor:'charcoal'};await put(it);HOOK.items=items.map(i=>i.id==='it0'?it:i)});
     ok(await A.p.evaluate(()=>syncNow())&&!writes.some(k=>k.startsWith('ph:'))&&stored().data.items.find(i=>i.id==='it0').swatch===oldSw&&store.has('ph:'+hashOf(oldSw)),
       `an edited old item goes up with no photo written (${writes.join(', ')}); its swatch is inline, the old value stays for the clean-up`);
     // a new item: the swatch is cut as a JPEG of a few KB from a real close-up
@@ -376,7 +376,7 @@ const inlineswatch=async({ok,chromium,url,ROOT})=>{
       const s=HOOK.cropSwatch(c,1,.5,.5,'#1f2a44');return {s,min:HOOK.PH_MIN}});
     ok(sw.s.startsWith('data:image/jpeg;base64,')&&sw.s.length<sw.min*.75,`the swatch is a JPEG of ${(sw.s.length/1024).toFixed(1)} KB of text (a PNG was about 38 KB), under PH_MIN (${sw.min})`);
     const np=pic(60e3),nt=pic(70e3);writes.length=0;
-    await A.p.evaluate(async([sw,np,nt])=>{const it={id:'new1',type:'suit',primaryColor:'grey',pattern:'solid',added:Date.now(),photo:np,texture:nt,swatch:sw,swSrc:'tex'};await put(it);items=[...items,it]},[sw.s,np,nt]);
+    await A.p.evaluate(async([sw,np,nt])=>{const it={id:'new1',type:'suit',primaryColor:'grey',pattern:'solid',added:Date.now(),photo:np,texture:nt,swatch:sw,swSrc:'tex'};await put(it);HOOK.items=[...items,it]},[sw.s,np,nt]);
     ok(await A.p.evaluate(()=>syncNow())&&writes.filter(k=>k.startsWith('ph:')).length===2&&stored().data.items.find(i=>i.id==='new1').swatch===sw.s&&!store.has('ph:'+hashOf(sw.s)),
       `a new item with a photo and a close-up writes 2 photos and the backup (${writes.join(', ')}), its swatch inline: one write less than before`);
     // another device takes both, the old reference and the inline swatch
@@ -393,7 +393,7 @@ const inlineswatch=async({ok,chromium,url,ROOT})=>{
       ok(/const PH_MIN = 256,/.test(fs.readFileSync(path.join(dir,'worker','backup.js'),'utf8')),'(the worker from before: PH_MIN 256)');
       const Old=(await import(pathToFileURL(path.join(dir,'worker.js')).href)).default;const cur=worker;worker=Old;
       const sw2=sw.s.replace(/.$/,c=>c==='A'?'B':'A'),np2=pic(50e3);writes.length=0;
-      await A.p.evaluate(async([sw,np])=>{const it={id:'new2',type:'shirt',primaryColor:'white',pattern:'solid',added:Date.now(),photo:np,swatch:sw,swSrc:'photo'};await put(it);items=[...items,it]},[sw2,np2]);
+      await A.p.evaluate(async([sw,np])=>{const it={id:'new2',type:'shirt',primaryColor:'white',pattern:'solid',added:Date.now(),photo:np,swatch:sw,swSrc:'photo'};await put(it);HOOK.items=[...items,it]},[sw2,np2]);
       const okA=await A.p.evaluate(()=>syncNow()),st=await A.p.evaluate(()=>localStorage.getItem('sync_status'));
       const C=await device();const okC=await C.p.evaluate(()=>syncNow());const got=await itemOf(C,'new2');worker=cur;try{fs.rmSync(dir,{recursive:true,force:true})}catch{}
       ok(okA&&!st&&store.has('ph:'+hashOf(sw2))&&okC&&got&&got.swatch===sw2&&got.photo===np2,`against the worker from before, a new inline swatch is saved (stored separately by it, as before) and read back on another device (${writes.join(', ')})`);}
@@ -537,7 +537,7 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
     const fullR=await B.evaluate(async()=>{const P=IDBObjectStore.prototype,o=P.put;P.put=function(){throw new DOMException('The quota has been exceeded.','QuotaExceededError')};
       // (the lead's re-run on final main: a start-up write had failed a moment before, its toast already replaced by "Connected as …",
       // and saveFailed's once-in-1.5 s skipped the sync's: the sync's own toast is said every time)
-      let e1=null;try{await addTombstones({zz:1})}catch(e){e1=e}storeToldAt=Date.now();toast('Connected as Fay');const ok=await syncNow();P.put=o;
+      let e1=null;try{await addTombstones({zz:1})}catch(e){e1=e}HOOK.storeToldAt=Date.now();toast('Connected as Fay');const ok=await syncNow();P.put=o;
       return {name:e1&&e1.name,store:!!(e1&&e1.dwStore),ok,st:localStorage.getItem('sync_status'),toast:document.querySelector('#toast').textContent}});
     ok(fullR.name==='QuotaExceededError'&&fullR.store,`a put that throws aborts with its own error (${fullR.name})`);
     ok(!fullR.ok&&/storage is full/.test(fullR.st)&&/^Backup failed/.test(fullR.st)&&/storage is full/.test(fullR.toast),`the sync says the phone's storage is full, in a toast too (“${fullR.st}”)`);

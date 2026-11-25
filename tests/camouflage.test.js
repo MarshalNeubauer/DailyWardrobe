@@ -72,7 +72,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // the owner's camouflage shirt (2026-11-16): no photo, a close-up, no reading of its own: the item sheet opened on nothing (it described
     // i.sett), so it couldn't be opened or deleted
     e=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=240;const x=c.getContext('2d');x.fillStyle='#81613c';x.fillRect(0,0,240,240);x.fillStyle='#3f2600';x.fillRect(40,40,120,80);
-      const sh={id:'cs1',type:'shirt',primaryColor:'brown',pattern:'camouflage',cuff:'button',added:1,texture:c.toDataURL('image/jpeg',.9)};items=[sh];await put(sh);cache={};show('wardrobe');openItem('cs1');await new Promise(r=>setTimeout(r,500));
+      const sh={id:'cs1',type:'shirt',primaryColor:'brown',pattern:'camouflage',cuff:'button',added:1,texture:c.toDataURL('image/jpeg',.9)};HOOK.items=[sh];await put(sh);HOOK.cache={};show('wardrobe');openItem('cs1');await new Promise(r=>setTimeout(r,500));
       const v=document.querySelector('#item-view'),txt=v&&v.textContent||'';return {open:!!v&&!v.hidden&&/Delete/i.test(txt),says:/camouflage drawn in its own colors/.test(txt),sum:patSummary(sh),gen:settSummary(null)}});
     ok(e.open&&e.says,'a camouflage shirt with no reading opens, its Delete there, and says its camouflage is drawn in its own colors ('+e.sum+')');
     ok(e.gen==='generic','settSummary of no reading is "generic", never an error');

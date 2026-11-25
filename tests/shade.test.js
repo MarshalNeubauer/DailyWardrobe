@@ -27,7 +27,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(async()=>{queue[0].id='mink';await save(0)});
     ok(await p.evaluate(()=>items.find(i=>i.id==='mink').shade===-2),'saving keeps the shade on the item');
     // the Wardrobe editor
-    await p.evaluate(()=>{flt='all';editing=null;show('wardrobe');openItem('mink')});await settle(p,500);
+    await p.evaluate(()=>{HOOK.flt='all';HOOK.editing=null;show('wardrobe');openItem('mink')});await settle(p,500);
     ok(/Darker 2/.test(await p.textContent('#item-view .shaderow')),'the open item shows its shade');
     await p.click('#item-view .shaderow .shbtn[aria-label="Lighter"]');await p.waitForFunction(()=>items.find(i=>i.id==='mink').shade===-1);
     await p.evaluate(()=>{const it=items.find(i=>i.id==='mink');delete it.meas});   // the close-up measured afresh from the item's own picture

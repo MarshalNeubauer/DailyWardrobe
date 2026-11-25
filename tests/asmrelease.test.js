@@ -28,7 +28,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const FIX=path.join(__dirname,'fixtures','cm','suit'),recs={};
     for(const f of fs.readdirSync(FIX)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');recs[n]=`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,f)).toString('base64')}
-    await p.evaluate(async recs=>{ASM_ON=true;self.ASM_CM_SIZE=512;HOOK.asmAheadSoon=()=>{};HOOK.asmAhead=async()=>{};HOOK.asmCmSrcSig();HOOK.asmCmCodeSig();
+    await p.evaluate(async recs=>{HOOK.ASM_ON=true;self.ASM_CM_SIZE=512;HOOK.asmAheadSoon=()=>{};HOOK.asmAhead=async()=>{};HOOK.asmCmSrcSig();HOOK.asmCmCodeSig();
       for(const [n,img] of Object.entries(recs))renders[asmCmKey('suit',n)]={img,t:1000,sig:'asm/cm test',model:'colormaster'};
       const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');x.fillStyle='#e6e2dc';x.fillRect(0,0,512,512);
       renders[asmCmBgKey()]={img:c.toDataURL('image/png'),t:4242,sig:'asm/cm-bg test'};
@@ -51,7 +51,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const h=await p.evaluate(()=>({asmW:HOOK.asmW,glPage:!!asmGlState}));
     ok(a.url&&a.alive&&gone&&h.asmW===null,`CR-8-01: the worker that painted (gl ${a.gl}) is ended when the app is hidden (closed ${gone}, asmW ${h.asmW})`);
     await p.evaluate(()=>__hide(false));await p.evaluate(()=>__ready());
-    const w2=workers[workers.length-1];await w2.evaluate(()=>{HOOK.asmCmSrcSig();self.__prep=0;const f=asmCmPrep;asmCmPrep=async(...x)=>{self.__prep++;return f(...x)}});
+    const w2=workers[workers.length-1];await w2.evaluate(()=>{HOOK.asmCmSrcSig();self.__prep=0;const f=asmCmPrep;HOOK.asmCmPrep=async(...x)=>{self.__prep++;return f(...x)}});
     const b=await p.evaluate(async()=>{const r=await asmRun(await HOOK.asmJob(__L[0]),true);return {gl:r.gl,diff:await __diff(r.url,__ref)}});
     const prepB=await w2.evaluate(()=>self.__prep);
     ok(workers.length===nw0+1&&prepB===0&&b.diff<=2,`the next picture starts a new worker that reads the setup from disk (${prepB} worked out) and paints the same picture (largest difference ${b.diff})`);
@@ -66,13 +66,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(t.saving===0&&t.busy===0&&t.queued===0&&t.idle===1&&t.after===null,`not while a setup is being saved, a picture is under way or one is waiting (${JSON.stringify(t)})`);
     // ---- CR-8-02: a worker without WebGL2 ----
     const pg=await p.evaluate(async()=>{const st=await __ready();const ref=await asmRun(await HOOK.asmJob(__L[2]),true);
-      asmGlFree();asmCmMem=null;st.gl=false;
-      const n={prep:0,build:0,setup:0},wrap=(k,f)=>(...x)=>{n[k]++;return f(...x)};const P0=asmCmPrep,B0=asmCmBuild,S0=asmCmSetup;asmCmPrep=wrap('prep',P0);asmCmBuild=wrap('build',B0);asmCmSetup=wrap('setup',S0);
+      asmGlFree();HOOK.asmCmMem=null;st.gl=false;
+      const n={prep:0,build:0,setup:0},wrap=(k,f)=>(...x)=>{n[k]++;return f(...x)};const P0=asmCmPrep,B0=asmCmBuild,S0=asmCmSetup;HOOK.asmCmPrep=wrap('prep',P0);HOOK.asmCmBuild=wrap('build',B0);HOOK.asmCmSetup=wrap('setup',S0);
       const job=await HOOK.asmJob(__L[2]),onPage=asmGlOnPage(job,st),r=await asmRun(job,true);
       const out={onPage,gl:r.gl,diff:await __diff(r.url,ref.url),pageSetup:asmCmMem,pageGl:!!asmGlState,n:{...n}};
       // the page's graphics chip fails: the worker's CPU paints the look, not the page's
-      const G0=asmGlPage;asmGlPage=async()=>null;const f=await asmRun(await HOOK.asmJob(__L[3]),true);asmGlPage=G0;
-      out.fail={gl:f.gl,url:!!f.url,n:{...n}};asmCmPrep=P0;asmCmBuild=B0;asmCmSetup=S0;return out});
+      const G0=asmGlPage;HOOK.asmGlPage=async()=>null;const f=await asmRun(await HOOK.asmJob(__L[3]),true);HOOK.asmGlPage=G0;
+      out.fail={gl:f.gl,url:!!f.url,n:{...n}};HOOK.asmCmPrep=P0;HOOK.asmCmBuild=B0;HOOK.asmCmSetup=S0;return out});
     ok(pg.onPage&&pg.gl===true&&pg.diff<=2,`CR-8-02: with no WebGL2 in the worker the page draws the look on its graphics chip, the same picture as the worker's (largest difference ${pg.diff})`);
     ok(pg.n.prep===0&&pg.n.build===0&&pg.n.setup===0&&pg.pageSetup===null&&pg.pageGl,`the page works no setup out, paints nothing on its CPU and keeps no setup (${JSON.stringify(pg.n)}, page setup ${pg.pageSetup})`);
     ok(pg.fail.gl===false&&pg.fail.url&&pg.fail.n.prep===0&&pg.fail.n.build===0,`a failed draw on the page is painted by the worker's CPU, never the page's (${JSON.stringify(pg.fail)})`);
@@ -82,9 +82,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(()=>__hide(false));
     // ---- CR-8-03: one ordinary error keeps the context ----
     const ge=await p.evaluate(async()=>{const job={...(await HOOK.asmJob(__L[4])),diskCache:false,gl:true};HOOK.asmGlReset();
-      const first=(await asmCmBuild(job)).gl,G1=asmGlState;const real=asmGlPaint;let n=1;asmGlPaint=async(...q)=>{if(n-->0)throw new TypeError('a bug in a look');return real(...q)};
+      const first=(await asmCmBuild(job)).gl,G1=asmGlState;const real=asmGlPaint;let n=1;HOOK.asmGlPaint=async(...q)=>{if(n-->0)throw new TypeError('a bug in a look');return real(...q)};
       const second=(await asmCmBuild(job)).gl,kept=asmGlState===G1&&!G1.gl.isContextLost(),third=(await asmCmBuild(job)).gl,same=asmGlState===G1;
-      n=2;const e1=(await asmCmBuild(job)).gl,e2=(await asmCmBuild(job)).gl,released=asmGlState===null&&G1.freed&&G1.gl.isContextLost();asmGlPaint=real;HOOK.asmGlReset();
+      n=2;const e1=(await asmCmBuild(job)).gl,e2=(await asmCmBuild(job)).gl,released=asmGlState===null&&G1.freed&&G1.gl.isContextLost();HOOK.asmGlPaint=real;HOOK.asmGlReset();
       return {first,second,kept,third,same,e1,e2,released}});
     ok(ge.first===true&&ge.second===false&&ge.kept&&ge.third===true&&ge.same,`CR-8-03: one ordinary graphics error paints that look on the CPU and keeps the context for the next (${JSON.stringify(ge)})`);
     ok(ge.e1===false&&ge.e2===false&&ge.released,'the same error again lets the context go properly (textures deleted, context given back)');

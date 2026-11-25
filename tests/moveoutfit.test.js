@@ -6,8 +6,8 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const setup=()=>p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];TODAY_OVERRIDE='2026-11-11T12:00:00';
-      dayRecs={'2026-11-09':{date:'2026-11-9'}};delete dayRecs['2026-11-09'];dayRecs['2026-11-30']={date:'2026-11-30',occasion:'wedding'};cache={};sel=new Date(2026,10,11);view={y:2026,m:10};monthOpen=true;show('today');
+    const setup=()=>p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';
+      HOOK.dayRecs={'2026-11-09':{date:'2026-11-9'}};delete dayRecs['2026-11-09'];dayRecs['2026-11-30']={date:'2026-11-30',occasion:'wedding'};HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.monthOpen=true;show('today');
       const b=document.querySelector('#mbox');scrollTo(0,b.getBoundingClientRect().top+scrollY-60)})()`);
     await setup();await settle(p,400);
     const pt=k=>p.evaluate(k=>{const r=document.querySelector(`#mpanel-in .mc[data-k="${k}"]`).getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}},k);
@@ -60,7 +60,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     // with a mouse on a computer: hold the button, drag, release
     const dctx=await browser.newContext({viewport:{width:1000,height:900}}),d=await dctx.newPage();
     await d.goto(url);await d.waitForFunction(()=>window.appReady);
-    await d.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,11);view={y:2026,m:10};monthOpen=true;show('today');
+    await d.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.monthOpen=true;show('today');
       const b=document.querySelector('#mbox');scrollTo(0,b.getBoundingClientRect().top+scrollY-60)})()`);await settle(d,400);
     const dp=k=>d.evaluate(k=>{const r=document.querySelector(`#mpanel-in .mc[data-k="${k}"]`).getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}},k);
     const b1=await dp('2026-11-18'),b2=await dp('2026-11-17');

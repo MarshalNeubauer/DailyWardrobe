@@ -28,8 +28,8 @@ async function run(eng,browser,{ok,url,settle}){
       const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
       const cv=(im,k)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9)};
       HOOK.rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
-      window.PH0=cv(pi,1);items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:PH0,texture:cv(ci,3),added:2,name:'Mink suit'},{id:'m2',type:'suit',primaryColor:'navy',pattern:'solid',photo:PH0,added:1,name:'Navy suit'}];
-      settings.workdays=[0,1,2,3,4];settings.setupDone=1;cache={};flt='all';editing=null;show('wardrobe')});
+      window.PH0=cv(pi,1);HOOK.items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:PH0,texture:cv(ci,3),added:2,name:'Mink suit'},{id:'m2',type:'suit',primaryColor:'navy',pattern:'solid',photo:PH0,added:1,name:'Navy suit'}];
+      settings.workdays=[0,1,2,3,4];settings.setupDone=1;HOOK.cache={};HOOK.flt='all';HOOK.editing=null;show('wardrobe')});
     await settle(p,400);
     const ev=(f,a)=>p.evaluate(f,a);
     const cdp=await ctx.newCDPSession(p);let clock=0;

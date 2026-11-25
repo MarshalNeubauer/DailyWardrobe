@@ -89,7 +89,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(/^Tagging again from the close-up didn’t work: The server had a problem just now\. The first tags stay\.$/.test(c.note)&&!/Fill in the details/.test(c.note),`a failed tagging again keeps the tags and says why in its own words (${c.note})`);
     S.tags.push({status:503,body:{error:'mock',message:'The server had a problem just now.'},delay:500},{fail:true});
     const both=await p.evaluate(async img=>{const a={},b={};await Promise.all([ask(img,{out:a}),ask(img,{out:b})]);
-      tagWhy='someone else’s reason';tagNetLast=false;const qa={id:'a'},qb={id:'b'};tagFailed(qa,a.err);tagFailed(qb,b.err);return {a:qa.tagErr,an:!!qa.tagNet,b:qb.tagErr,bn:!!qb.tagNet}},F.photo);
+      HOOK.tagWhy='someone else’s reason';HOOK.tagNetLast=false;const qa={id:'a'},qb={id:'b'};tagFailed(qa,a.err);tagFailed(qb,b.err);return {a:qa.tagErr,an:!!qa.tagNet,b:qb.tagErr,bn:!!qb.tagNet}},F.photo);
     ok(/server had a problem/.test(both.a)&&!both.an&&/couldn’t be reached|offline/.test(both.b)&&both.bn,`two readings failing at once each keep their own reason, whatever the last one was (${JSON.stringify(both)})`);
 
     // ---- CR-2-01: camouflage pants, the pattern read by the worker: Claude's reading is kept and gives the blotch size
@@ -116,7 +116,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
 
     // ---- CR-2-12: the black-backdrop fix within the day's remakes, done once nothing is left
     const bb=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=120;const x=c.getContext('2d');x.fillStyle='#000';x.fillRect(0,0,120,120);x.fillStyle='#e8e4dc';x.fillRect(30,30,60,60);
-      const ph=c.toDataURL('image/png');localStorage.removeItem('black_bd');items=[{id:'s1',type:'socks',primaryColor:'cream',pattern:'solid',photo:ph,added:1}];
+      const ph=c.toDataURL('image/png');localStorage.removeItem('black_bd');HOOK.items=[{id:'s1',type:'socks',primaryColor:'cream',pattern:'solid',photo:ph,added:1}];
       localStorage.setItem('remake_day',JSON.stringify({d:isoKey(new Date()),n:HOOK.REMAKE_DAY}));
       const n0=await fixBlackBackdrops(),f0=localStorage.getItem('black_bd'),same=items[0].photo===ph;
       localStorage.removeItem('remake_day');const n1=await fixBlackBackdrops(),f1=localStorage.getItem('black_bd'),spent=JSON.parse(localStorage.getItem('remake_day')||'{}').n;

@@ -32,8 +32,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(!/<image/.test(plain)&&/<pattern/.test(plain),'an item without a close-up stays drawn (never cut from its photo)');
     // Today's pieces list shows it
     const today=await p.evaluate(id=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});const s=items.find(x=>x.id===id);
-      items=[s,I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today');
+      HOOK.items=[s,I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today');
       const row=document.querySelector('#ri-top .dot'),chip=document.querySelector('.pchip');
       return {row:!!row&&!row.querySelector('image')&&!!row.querySelector('pattern'),chip:!!chip&&!chip.querySelector('image'),size:row&&Math.round(row.getBoundingClientRect().width),
         elsewhere:/<image/.test(swatchSVG(s))}},it.id);
@@ -75,7 +75,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       const before=q.swatch;setq(0,'primaryColor','navy');return {changed:q.swatch!==before,same:q.swatch===HOOK.cropSwatch(q.texCanvas,q.zoom,q.cx,q.cy,colOf(q))}});
     ok(card.changed&&card.same,'changing the colour on the Add card re-cuts the close-up swatch to match');
     const clip=await p.evaluate(()=>{const lab=()=>[...document.querySelectorAll('#today .list .row .mut')].map(m=>m.textContent);const o=planFor()[key(sel)];const none=!o.clip&&!lab().includes('Tie clip');
-      items.push({id:'clip1',type:'tieclip',primaryColor:'silver',metal:'silver',pattern:'solid'});items.find(i=>i.type==='suit').vest='no';cache={};renderToday();const o2=planFor()[key(sel)];return {none,has:!!o2.clip&&lab().includes('Tie clip')}});
+      items.push({id:'clip1',type:'tieclip',primaryColor:'silver',metal:'silver',pattern:'solid'});items.find(i=>i.type==='suit').vest='no';HOOK.cache={};renderToday();const o2=planFor()[key(sel)];return {none,has:!!o2.clip&&lab().includes('Tie clip')}});
     ok(clip.none&&clip.has,'a day without a tie clip (a vest day) has no Tie clip row; with one, the row is there');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();

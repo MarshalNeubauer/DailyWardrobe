@@ -40,7 +40,7 @@ module.exports=async({ok,chromium,url})=>{
       asmMicroGrid('houndstooth').filter(v=>v<0).length,HOOK.asmCmWeaveTag('jacket',{id:'m',type:'suit',primaryColor:'grey',pattern:'birdseye'}).startsWith('/mbirdseye')]);
     ok(mk.join()==='houndstooth,sharkskin,birdseye,nailhead,houndstooth,knit,paisley,houndstooth,32,true',`houndstooth, sharkskin, birdseye and nailhead jackets and trousers, knit and paisley ties are painted (${mk})`);
     // the item sheet says so, and Settings lists it with one tap to read
-    const ui=await p.evaluate(()=>{items=[{id:'g1',type:'suit',primaryColor:'navy',pattern:'pinstripe'},{id:'g2',type:'blazer',primaryColor:'navy',pattern:'other'},{id:'g3',type:'suit',primaryColor:'navy',pattern:'solid'}];
+    const ui=await p.evaluate(()=>{HOOK.items=[{id:'g1',type:'suit',primaryColor:'navy',pattern:'pinstripe'},{id:'g2',type:'blazer',primaryColor:'navy',pattern:'other'},{id:'g3',type:'suit',primaryColor:'navy',pattern:'solid'}];
       const note=asmGapNote(items[0]),none=asmGapNote(items[2]),gaps=HOOK.asmCmGaps().map(x=>x.i.id+':'+x.r.gap);
       const host=document.createElement('div');host.id='asm-group';document.body.appendChild(host);asmCmUI();const html=$('#cm-gaps').innerHTML;host.remove();
       return {note,none,gaps,list:/Painted plain \(2\)/.test(html),btn:/Read 1 pattern/.test(html)}});

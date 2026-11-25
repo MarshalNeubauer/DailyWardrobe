@@ -21,7 +21,7 @@ async function run(eng,browser,{ok,url,settle}){
   await ctx.addInitScript(()=>{localStorage.setItem('tour_seen','1');window.DW_STANDALONE=true});
   const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
-  await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-16T12:00:00';settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.location=null;delete settings.setupDone;delete settings.dress;cache={};show('today')});
+  await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-16T12:00:00';settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.location=null;delete settings.setupDone;delete settings.dress;HOOK.cache={};show('today')});
   await settle(p,300);
   const tap=async sel=>{const l=p.locator(sel).first();await l.scrollIntoViewIfNeeded();await l.tap()};
   const calm=()=>p.waitForTimeout(420);   // (a tap within 350 ms of the last at the same spot is a double tap's second: SETUP_TAP_MS, KIT_TAP_MS)
@@ -192,7 +192,7 @@ async function run(eng,browser,{ok,url,settle}){
   /* ---- the checklist sections on the item sheet: a header, "Also has" × and +, Match close-up and Undo ---- */
   const id=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.fillStyle='#5a6f9a';x.fillRect(0,0,64,64);
     const it={id:'tapsuit',type:'suit',primaryColor:'navy',pattern:'stripe',secondaryColor:'white',accents:['red','green'],texture:c.toDataURL('image/jpeg',.9),meas:{src:'closeup',lab:[48,2,-26]},added:Date.now(),updated:Date.now()};
-    await put(it);items=[it];planDirty();CK_OPEN['*']=undefined;for(const k of Object.keys(CK_OPEN))delete CK_OPEN[k];show('wardrobe');openItem(it.id);return it.id});
+    await put(it);HOOK.items=[it];planDirty();CK_OPEN['*']=undefined;for(const k of Object.keys(CK_OPEN))delete CK_OPEN[k];show('wardrobe');openItem(it.id);return it.id});
   await settle(p,700);
   const sec=k=>p.evaluate(k=>{const s=document.querySelector(`#item-view .cks[data-ck="${k}"]`);return s?{open:s.classList.contains('open'),ex:s.querySelector('.ckh').getAttribute('aria-expanded')}:null},k);
   const c0=await sec('color');
