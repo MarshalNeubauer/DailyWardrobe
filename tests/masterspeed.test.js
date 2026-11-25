@@ -21,12 +21,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);
     await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner-code')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{self.ASM_CM_SIZE=512;asmAheadSoon=()=>{};asmAhead=async()=>{}});return {ctx,p,errs}};
+    await p.evaluate(()=>{self.ASM_CM_SIZE=512;HOOK.asmAheadSoon=()=>{};HOOK.asmAhead=async()=>{}});return {ctx,p,errs}};
   try{
     // the fixtures as the worker's records, with the masters' manifest; a stale 2048 copy and a shared setup left on the worker, as the
     // PC builder left them: a phone must ask for neither
     const A=await device();
-    const keys=await A.p.evaluate(()=>({assets:asmCmAssets('suit'),mf:asmCmMfKey(),copy:asmCmKey('suit','master2048')}));
+    const keys=await A.p.evaluate(()=>({assets:HOOK.asmCmAssets('suit'),mf:HOOK.asmCmMfKey(),copy:asmCmKey('suit','master2048')}));
     const files=fs.readdirSync(FIX),put=(k,img,t,model='colormaster',sig='asm/cm test')=>store.set('render:'+k,JSON.stringify({sig,img,model,t}));
     const nameOf=await A.p.evaluate(()=>{const o={};o[asmCmKey('suit','master')]='master.jpg';for(const z of ASM_CM_KINDS.suit.zones)o[asmCmKey('suit','mask/'+z)]='mask-'+z+'.png';for(const s of ['sleeveR','sleeveL','lapelR','lapelL'])o[asmCmKey('suit','part/'+s)]='part-'+s+'.png';return o});
     const mf={};for(const [k,f] of Object.entries(nameOf)){if(!files.includes(f))continue;put(k,`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,f)).toString('base64'),1000);mf[k]=1000}
@@ -34,7 +34,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     put(keys.copy,store.get('render:'+keys.assets[0])&&JSON.parse(store.get('render:'+keys.assets[0])).img,1000,'copy','asm/cm-copy 1000');
     // a phone: the master downloaded, its setup worked out once and kept; read back afterwards instead of worked out again
     renderGets=[];blobGets=0;
-    const r=await A.p.evaluate(async()=>{asmCmSrcSig();let prep=0;const p0=asmCmPrep;asmCmPrep=async(...a)=>{prep++;return p0(...a)};   // (fingerprinted first: a wrapped asmCmPrep is other source)
+    const r=await A.p.evaluate(async()=>{HOOK.asmCmSrcSig();let prep=0;const p0=asmCmPrep;asmCmPrep=async(...a)=>{prep++;return p0(...a)};   // (fingerprinted first: a wrapped asmCmPrep is other source)
       const got=await asmCmGet('suit'),m=renders[asmCmKey('suit','master')],job=asmCmBaseJob('suit');
       await asmCmSetup(job);for(let i=0;i<100&&!(await asmCmDiskGet(asmCmDiskKey(job)));i++)await new Promise(ok=>setTimeout(ok,50));   // (saved while the picture is painted)
       const kept=!!(await asmCmDiskGet(asmCmDiskKey(job)));const prep1=prep;
@@ -44,9 +44,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(!renderGets.includes(keys.copy)&&blobGets===0,`and never asks for the PC builder's 2048 copy or shared setup (${renderGets.filter(k=>k===keys.copy).length} copy, ${blobGets} setup requests)`);
     ok(r.prep1===1&&r.kept&&r.prep2===0&&r.zones,`it works the setup out once, keeps it, and reads it back instead of working it out again (${JSON.stringify(r)})`);
     // the disk key the phone uses is the one the setup is kept under, and the Web Worker that paints finds that same setup
-    const dk=await A.p.evaluate(async()=>{const job=asmCmBaseJob('suit');const db=await asmCmDb();const all=await new Promise(ok=>{const q=db.transaction('p').objectStore('p').getAllKeys();q.onsuccess=()=>ok(q.result)});db.close();return {mine:asmCmDiskKey(job),all}});
+    const dk=await A.p.evaluate(async()=>{const job=asmCmBaseJob('suit');const db=await HOOK.asmCmDb();const all=await new Promise(ok=>{const q=db.transaction('p').objectStore('p').getAllKeys();q.onsuccess=()=>ok(q.result)});db.close();return {mine:asmCmDiskKey(job),all}});
     ok(dk.all.includes(dk.mine),'the key it computes is the one asmCmSetup reads');
-    const wk=await A.p.evaluate(async()=>{const job=asmCmBaseJob('suit');await asmRun({...job,setupOnly:true},false);const db=await asmCmDb();const all=await new Promise(ok=>{const q=db.transaction('p').objectStore('p').getAllKeys();q.onsuccess=()=>ok(q.result)});db.close();return {worker:asmOffPage(),all,mine:asmCmDiskKey(job)}});
+    const wk=await A.p.evaluate(async()=>{const job=asmCmBaseJob('suit');await asmRun({...job,setupOnly:true},false);const db=await HOOK.asmCmDb();const all=await new Promise(ok=>{const q=db.transaction('p').objectStore('p').getAllKeys();q.onsuccess=()=>ok(q.result)});db.close();return {worker:HOOK.asmOffPage(),all,mine:asmCmDiskKey(job)}});
     ok(wk.worker&&wk.all.length===1&&wk.all[0]===wk.mine,`the Web Worker that paints finds that same setup: it keeps no other (${wk.all.length} kept)`);
     // warming: a phone without the setup sets the master up in the background, once
     const D=await device();

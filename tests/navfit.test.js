@@ -37,7 +37,7 @@ const navfit=async({ok,chromium,url,settle})=>{
       await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
         items=[I('suit','grey'),I('shirt','lightblue'),I('tie','navy',{pattern:'stripe',secondaryColor:'grey'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
         settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-08T12:00:00';cache={};sel=new Date(2026,10,8);view={y:2026,m:10};
-        const o=planFor()[key(sel)];renders[comboKey(o)]={sig:comboSig(o),img:'https://slow.test/p.jpg',model:'m',t:1};show('today');fitNav()});
+        const o=planFor()[key(sel)];renders[comboKey(o)]={sig:comboSig(o),img:'https://slow.test/p.jpg',model:'m',t:1};show('today');HOOK.fitNav()});
       await p.waitForTimeout(400);const early=await nx();
       await p.waitForFunction(()=>{const i=document.querySelector('#mannequin-container img');return i&&i.complete&&i.naturalHeight>0},null,{timeout:8000});await p.waitForTimeout(400);
       const late=await nx(),gap=await p.evaluate(()=>Math.round(document.querySelector('body>nav').getBoundingClientRect().top-document.querySelector('.below').getBoundingClientRect().bottom));
@@ -49,7 +49,7 @@ const navfit=async({ok,chromium,url,settle})=>{
       const day=async(blazer)=>{await p.evaluate(b=>{localStorage.clear();let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
         items=b?[I('blazer','navy'),I('pants','grey')]:[I('suit','grey')];items.push(I('shirt','lightblue'),I('tie','navy',{pattern:'stripe',secondaryColor:'grey'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal'));
         // product pictures, like the user's: a picture tile's picture follows its width, so four of them are shorter than three
-        const pc=document.createElement('canvas');pc.width=pc.height=200;pc.getContext('2d').fillRect(0,0,9,9);const pu=pc.toDataURL('image/jpeg',.6);for(const it of items)if(ITEM_PIC_TYPES.includes(it.type))renders[itemKey(it)]={sig:'item',img:pu,model:'m',t:1,grey:1};
+        const pc=document.createElement('canvas');pc.width=pc.height=200;pc.getContext('2d').fillRect(0,0,9,9);const pu=pc.toDataURL('image/jpeg',.6);for(const it of items)if(HOOK.ITEM_PIC_TYPES.includes(it.type))renders[itemKey(it)]={sig:'item',img:pu,model:'m',t:1,grey:1};
         settings.workdays=[0,1,2,3,4];settings.blazerDays=b?[0]:[];dayRecs={};TODAY_OVERRIDE='2026-11-08T12:00:00';cache={};sel=new Date(2026,10,8);view={y:2026,m:10};
         const c=document.createElement('canvas');c.width=c.height=1024;c.getContext('2d').fillRect(0,0,9,9);const o=planFor()[key(sel)];renders[comboKey(o)]={sig:comboSig(o),img:c.toDataURL('image/jpeg',.6),model:'m',t:1};
         document.documentElement.style.setProperty('--navx','0px');show('today')},blazer);

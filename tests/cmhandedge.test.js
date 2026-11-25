@@ -24,7 +24,7 @@ const cmhandedge=async({ok,chromium,url})=>{
           if(!edge&&A.shirt[y*S+x]+A.tie[y*S+x]+A.skin[y*S+x]>=250)band.push(y*S+x)}}   // (the hand's own soft outline, within 4 px of it, is left to the hand-edge rule; the belt below is not the band)
       const strayRaw=band.filter(k=>raw[4*k]>0&&raw[4*k]<=127).length,skinAfter=band.filter(k=>A.skin[k]>0).length;
       // a skin share with no skin over half a pixel within ASM_CM_HAND_STRAY: none left
-      const R=Math.round((typeof ASM_CM_HAND_STRAY==='number'?ASM_CM_HAND_STRAY:24)*S/2048);const solid=new Float32Array(N);for(let k=0;k<N;k++)solid[k]=A.skin[k]>127?1:0;const near=asmCmBlur(solid,S,R);
+      const R=Math.round(('ASM_CM_HAND_STRAY' in HOOK?HOOK.ASM_CM_HAND_STRAY:24)*S/2048);const solid=new Float32Array(N);for(let k=0;k<N;k++)solid[k]=A.skin[k]>127?1:0;const near=HOOK.asmCmBlur(solid,S,R);
       let orphan=0;for(let k=0;k<N;k++)if(A.skin[k]&&!near[k])orphan++;
       let sum=0;for(let k=0;k<N;k++){let s=0;for(const z of P.names)s+=A[z][k];if(s&&s!==255)sum++}
       // painted with a blue shirt and a black tie: no pixel of that band keeps the master's colour (it reads blue or dark, never pinkish)
@@ -63,7 +63,7 @@ const cmcuffsteel=async({ok,chromium,url})=>{
       for(let d=0;d<6&&q.length;d++){const nx=[];for(const k of q)for(const n of [k-1,k+1,k-S,k+S])if(n>=0&&n<N&&D[n]<0&&A.watch[n]>127){D[n]=d+1;nx.push(n)}q=nx}
       let y0=S,y1=-1;for(let k=0;k<N;k++)if(D[k]>=0){const y=k/S|0;y0=Math.min(y0,y);y1=Math.max(y1,y)}const mid=(y0+y1)/2;
       const warm=[],cool=[];for(let k=0;k<N;k++)if(D[k]>=0){const j=4*k;if((k/S|0)<mid){M[j]=150;M[j+1]=145;M[j+2]=138;warm.push(k)}else{M[j]=236;M[j+1]=236;M[j+2]=240;cool.push(k)}}
-      const w0=new Uint8Array(A.watch);asmCmHandEdge(A,M,S,N);
+      const w0=new Uint8Array(A.watch);HOOK.asmCmHandEdge(A,M,S,N);
       const took=ks=>ks.filter(k=>w0[k]>127&&A.watch[k]===0).length;
       let sum=0;for(let k=0;k<N;k++){let s=0;for(const z of Object.keys(A))s+=A[z][k];if(s&&s!==255)sum++}
       return {warm:warm.length,cool:cool.length,warmTaken:took(warm),coolTaken:took(cool),sum}},f);

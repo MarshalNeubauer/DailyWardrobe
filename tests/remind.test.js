@@ -53,7 +53,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       if(u.pathname==='/sync')return j({rev:0,saved:0,data:null});return j({ok:true})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');rememberRole({role:'owner'});
+    await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');HOOK.rememberRole({role:'owner'});
       let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'})];
       settings.workdays=[0,1,2,3,4];TODAY_OVERRIDE='2026-11-12T08:00:00';dayRecs={};cache={};
@@ -64,7 +64,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       Object.defineProperty(navigator.serviceWorker,'ready',{get:()=>Promise.resolve(reg),configurable:true});navigator.serviceWorker.getRegistration=async()=>reg},HOST);
     await p.evaluate(()=>openSettings('schedule'));await p.waitForSelector('#remind-sw');
     const box=await p.textContent('#remind-box');
-    await p.click('#remind-sw');await p.waitForFunction(()=>remindPrefs().on&&!remindBusy);
+    await p.click('#remind-sw');await p.waitForFunction(()=>HOOK.remindPrefs().on&&!HOOK.remindBusy);
     const after=await p.evaluate(async()=>{const c=await caches.open('dw-keep-remind'),j=await (await c.match('remind.json')).json();return {lines:j,msg:document.querySelector('.remind-msg').textContent,key:window.__appKey,sw:document.querySelector('#remind-sw').getAttribute('aria-checked')}});
     const ps=posted[0]||{},days=Object.keys(after.lines);
     ok(/Morning reminder/.test(box)&&/Remind me/.test(box),'Settings → Schedule has the Morning reminder switch');
@@ -72,51 +72,51 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(days.length>=8&&days.every(d=>{const w=new Date(d+'T12:00').getDay();return w<=4})&&/^[A-Z][a-z]+ (suit|blazer) · [a-z]+ shirt · .+ tie$/.test(after.lines[days[0]]),`the app keeps the line for each workday for the service worker ("${after.lines[days[0]]}")`);
     await p.fill('#remind-time','06:45');await p.dispatchEvent('#remind-time','change');await p.waitForFunction(n=>window.__n=n,posted.length);await p.waitForTimeout(400);
     ok(posted.at(-1).time==='06:45','changing the time tells the server');
-    await p.click('#remind-sw');await p.waitForFunction(()=>!remindPrefs().on&&!remindBusy);
+    await p.click('#remind-sw');await p.waitForFunction(()=>!HOOK.remindPrefs().on&&!HOOK.remindBusy);
     ok(posted.at(-1).off===true,'switching it off tells the server');
     // cleaning reminders (care.js careReminders): with the morning reminder off they follow it (off); switched on by themselves they
     // subscribe, keep care.json and send only their dates; a suit worn up to its limit is reminded once, the next workday morning
-    {const c0=await p.evaluate(()=>({care:remindCareOn(remindPrefs()),sw:document.querySelector('#care-rem-sw').getAttribute('aria-checked')}));
+    {const c0=await p.evaluate(()=>({care:HOOK.remindCareOn(HOOK.remindPrefs()),sw:document.querySelector('#care-rem-sw').getAttribute('aria-checked')}));
       ok(c0.care===false&&c0.sw==='false','with the morning reminder off, the cleaning reminders are off too (they follow it until set)');
       await p.evaluate(()=>{const ids={top:'suit0',bot:'suit0',shirt:'shirt2',tie:'tie4',shoes:'shoes6'};
         for(const d of [2,3,4,5,8])dayRecs[key(new Date(2026,10,d))]={date:key(new Date(2026,10,d)),ids,suitDay:true,worn:true};localStorage.removeItem('care_told');cache={}});
-      const n0=posted.length;await p.click('#care-rem-sw');await p.waitForFunction(()=>remindCareOn(remindPrefs())&&!remindBusy);
+      const n0=posted.length;await p.click('#care-rem-sw');await p.waitForFunction(()=>HOOK.remindCareOn(HOOK.remindPrefs())&&!HOOK.remindBusy);
       const c1=await p.evaluate(async()=>{const c=await caches.open('dw-keep-remind');return {care:await (await c.match('care.json')).json(),lines:await (await c.match('remind.json')).json(),msg:document.querySelector('.remind-msg').textContent}});
       const ps2=posted.slice(n0).at(-1)||{},cd=Object.keys(c1.care).sort();
       ok(ps2.endpoint&&ps2.dates&&ps2.dates.join()===cd.join()&&cd.length>=1&&Object.values(c1.care).filter(t=>/^The navy suit is due for the cleaner\.$/.test(t)).length===1&&!Object.keys(c1.lines).length,
         `switched on by itself: the server gets only the cleaning reminders' dates (${cd.length}: the navy suit's 'due' once, then its overdue mornings and the grey suit's last wear), no outfit lines`);
       ok(/when a suit or blazer is due for the cleaner/.test(c1.msg),`it says what it does ("${c1.msg}")`);
-      await p.click('#care-rem-sw');await p.waitForFunction(()=>!remindCareOn(remindPrefs())&&!remindBusy);
+      await p.click('#care-rem-sw');await p.waitForFunction(()=>!HOOK.remindCareOn(HOOK.remindPrefs())&&!HOOK.remindBusy);
       ok(posted.at(-1).off===true,'switched off with nothing else on: the subscription is switched off')}
     // fix round A (2026-11-17; the code review's CR-4-09 and CR-4-10): a change just before the app is closed reaches the kept lines at
     // once (iOS suspends a page within seconds, before the 3 s refresh); a phone the server no longer has is told again; a phone that
     // lost its push subscription says so and its switches go off, instead of reading On
-    {await p.click('#remind-sw');await p.waitForFunction(()=>remindPrefs().on&&!remindBusy);await p.evaluate(()=>closeSettings());
+    {await p.click('#remind-sw');await p.waitForFunction(()=>HOOK.remindPrefs().on&&!HOOK.remindBusy);await p.evaluate(()=>closeSettings());
       const kept=iso=>p.evaluate(async iso=>{const c=await caches.open('dw-keep-remind');return (await (await c.match('remind.json')).json())[iso]||''},iso);
       const nx=await p.evaluate(()=>{const T=todayDate();for(let i=1;i<10;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(isWorkday(d)){sel=d;view={y:d.getFullYear(),m:d.getMonth()};listOpen=false;show('today');return isoKey(d)}}});
       const line0=await kept(nx);
       await p.click('#ibox .month-link');await p.click('#ibox .row button[aria-label="Change tie"]');await p.click('#pick-next');await p.waitForFunction(()=>planFor()[key(sel)].overrides);
-      const want=await p.evaluate(()=>outfitLine(planFor()[key(sel)]));
+      const want=await p.evaluate(()=>HOOK.outfitLine(planFor()[key(sel)]));
       await p.evaluate(()=>{Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});document.dispatchEvent(new Event('visibilitychange'))});
       const t0=Date.now();let line1='';while(Date.now()-t0<1500){line1=await kept(nx);if(line1===want)break;await p.waitForTimeout(50)}
       await p.evaluate(()=>{delete document.visibilityState});
       ok(line0&&want!==line0&&line1===want,`a swap just before the app goes to the background is in the kept line at once ("${line0}" → "${line1}")`);
       // told already, but the server has lost this phone (its GET /push says on:false): about twice a day it asks, and tells it again
       const n0=posted.length;
-      await p.evaluate(async()=>{const p=remindPrefs(),dates=await remindKeep(p);localStorage.setItem('remind_sent',JSON.stringify({sig:remindSig(dates,p),at:Date.now()-13*3600e3}));await remindRefresh()});
+      await p.evaluate(async()=>{const p=HOOK.remindPrefs(),dates=await HOOK.remindKeep(p);localStorage.setItem('remind_sent',JSON.stringify({sig:HOOK.remindSig(dates,p),at:Date.now()-13*3600e3}));await HOOK.remindRefresh()});
       ok(posted.length===n0+1&&posted.at(-1).endpoint==='https://web.push.apple.com/me','a phone the server no longer has (GET /push says off) is told again');
-      await p.evaluate(async()=>{await remindRefresh()});
+      await p.evaluate(async()=>{await HOOK.remindRefresh()});
       ok(posted.length===n0+1,'…and then not again: it was asked and told just now');
       // the subscription is gone (the Home Screen app removed and added again, notifications switched off)
-      await p.evaluate(async()=>{navigator.serviceWorker.getRegistration=async()=>({pushManager:{getSubscription:async()=>null}});await remindRefresh();openSettings('schedule')});
-      const lost=await p.evaluate(()=>({on:remindPrefs().on,sw:document.querySelector('#remind-sw').getAttribute('aria-checked'),msg:document.querySelector('.remind-msg').textContent}));
+      await p.evaluate(async()=>{navigator.serviceWorker.getRegistration=async()=>({pushManager:{getSubscription:async()=>null}});await HOOK.remindRefresh();openSettings('schedule')});
+      const lost=await p.evaluate(()=>({on:HOOK.remindPrefs().on,sw:document.querySelector('#remind-sw').getAttribute('aria-checked'),msg:document.querySelector('.remind-msg').textContent}));
       ok(!lost.on&&lost.sw==='false'&&/Reminders stopped on this phone/.test(lost.msg),`with no push subscription any more the switch goes off and says so ("${lost.msg}")`)}
     // Round D (2026-11-24, after the code review's R3 N2): a cleaning reminder that throws never stops the morning reminder's lines
     // from being kept (careReminders was called outside remindKeep's try, so one bad day left remind.json as it was)
     {const r=await p.evaluate(async()=>{const P={on:true,care:true,time:'07:00'},c=await caches.open('dw-keep-remind');
-        await remindKeep(P);await c.put('remind.json',new Response('{}',{headers:{'content-type':'application/json'}}));   // the plan is worked out; the kept lines emptied
+        await HOOK.remindKeep(P);await c.put('remind.json',new Response('{}',{headers:{'content-type':'application/json'}}));   // the plan is worked out; the kept lines emptied
         const trap={type:'suit',get id(){throw new Error('a piece that cannot be read')}};items.push(trap);
-        let err='',dates=null;try{dates=await remindKeep(P)}catch(e){err=e.message}items.splice(items.indexOf(trap),1);
+        let err='',dates=null;try{dates=await HOOK.remindKeep(P)}catch(e){err=e.message}items.splice(items.indexOf(trap),1);
         const lines=await (await c.match('remind.json')).json(),care=await (await c.match('care.json')).json();
         return {err,dates,lines:Object.keys(lines).length,care:Object.keys(care).length}});
       ok(!r.err&&r.lines>0&&r.dates&&r.dates.length===r.lines&&r.care===0,`a cleaning reminder that throws: the morning reminder's lines are kept anyway and their dates sent (${r.err||r.lines+' lines, '+(r.dates||[]).length+' dates, '+r.care+' cleaning'})`)}

@@ -19,7 +19,7 @@ module.exports=async({ok,engines,url})=>{
           const spin=()=>{if(performance.now()<end)s.get('lab-hold').onsuccess=spin};spin();t.oncomplete=()=>d.close();yes()}}),ms);return h};
       const restart=async(o,ms=1200)=>{const h=await hold(o.ctx,ms);await o.p.reload();await o.p.waitForFunction(()=>window.appReady);await o.p.evaluate(()=>connRestored);await o.p.waitForTimeout(150);await h.close()};
       for(const role of ['tester','owner']){const o=await open(role),p=o.p;
-        await p.evaluate(async([h,role])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','lab-code');await connKeep();rememberRole({role,id:'u1'})},[HOST,role]);
+        await p.evaluate(async([h,role])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','lab-code');await connKeep();HOOK.rememberRole({role,id:'u1'})},[HOST,role]);
         await restart(o);
         ok(await classes(p)===role,T+`a ${role}'s phone that kept its connection starts as ${role} (${await classes(p)})`);
         await p.evaluate(()=>{for(const k of ['worker_url','app_token'])localStorage.removeItem(k)});

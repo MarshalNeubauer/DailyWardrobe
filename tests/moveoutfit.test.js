@@ -17,23 +17,23 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       fut:!!document.querySelector('#mpanel-in .mc[data-k="2026-11-18"][data-mv]'),occ:!!document.querySelector('#mpanel-in .mc[data-k="2026-11-30"][data-mv]'),wkend:!!document.querySelector('#mpanel-in .mc[data-k="2026-11-14"][data-mv]')}));
     ok(!mv.past&&mv.today&&mv.fut&&!mv.occ&&!mv.wkend,'today and later workdays can be moved; past days, occasion days and weekends can\'t');
     // the preview helper leaves the real plan alone
-    const pure=await p.evaluate(()=>{const before=JSON.stringify(dayRecs),b0=planFor()['2026-11-16'].top.id,recs=moveRecs('2026-11-18','2026-11-16',planMonth(2026,10)),pl=planWith(recs,2026,10);
+    const pure=await p.evaluate(()=>{const before=JSON.stringify(dayRecs),b0=planFor()['2026-11-16'].top.id,recs=HOOK.moveRecs('2026-11-18','2026-11-16',planMonth(2026,10)),pl=planWith(recs,2026,10);
       return {same:JSON.stringify(dayRecs)===before&&planFor()['2026-11-16'].top.id===b0,moved:pl['2026-11-16'].top.id===planMonth(2026,10)['2026-11-18'].top.id,kind:recs['2026-11-16'].kind,force:Object.keys(recs['2026-11-16'].force).join()}});
     ok(pure.same&&pure.moved,'a preview re-plans a copy: the moved outfit lands on the target, the real records and plan are untouched');
     ok(/top/.test(pure.force)&&/shirt/.test(pure.force)&&/tie/.test(pure.force)&&!/coat/.test(pure.force)&&pure.kind,'the target pins the outfit\'s pieces (not the weather\'s coat) and keeps its kind');
     // a suit outfit moved onto a blazer day stays a suit day
-    const kind=await p.evaluate(()=>{const base=planMonth(2026,10),src=Object.keys(base).find(k=>keyDate(k)>todayDate()&&base[k].suitDay&&base[k].top),recs=moveRecs(src,'2026-11-19',base),pl=planWith(recs,2026,10);
+    const kind=await p.evaluate(()=>{const base=planMonth(2026,10),src=Object.keys(base).find(k=>keyDate(k)>todayDate()&&base[k].suitDay&&base[k].top),recs=HOOK.moveRecs(src,'2026-11-19',base),pl=planWith(recs,2026,10);
       return pl['2026-11-19'].suitDay&&pl['2026-11-19'].top.type==='suit'&&pl['2026-11-19'].top.id===base[src].top.id});
     ok(kind,'a suit outfit dropped on a blazer day (Thursday) stays a suit day');
     // a long press lifts it; dragging over another day re-plans the month live
     const a=await pt('2026-11-18'),z=await pt('2026-11-16');
     const before=await p.evaluate(()=>Object.fromEntries([...document.querySelectorAll('#mpanel-in .mc[data-sig]')].map(c=>[c.dataset.k,c.dataset.sig])));
     await T('touchStart',a.x,a.y);await p.waitForTimeout(500);
-    const lifted=await p.evaluate(()=>({mv:!!outfitMove,ghost:!!document.querySelector('.mv-ghost .stack pattern'),cls:document.querySelector('#mpanel-in .mc[data-k="2026-11-18"]').classList.contains('lifted'),wig:document.querySelector('#mpanel-in').classList.contains('mv-on')}));
+    const lifted=await p.evaluate(()=>({mv:!!HOOK.outfitMove,ghost:!!document.querySelector('.mv-ghost .stack pattern'),cls:document.querySelector('#mpanel-in .mc[data-k="2026-11-18"]').classList.contains('lifted'),wig:document.querySelector('#mpanel-in').classList.contains('mv-on')}));
     ok(lifted.mv&&lifted.ghost&&lifted.cls&&lifted.wig,'a long press lifts the outfit: it follows the finger (its own drawing), the day it left is outlined, the others wiggle');
     for(let k=1;k<=10;k++){await T('touchMove',a.x+(z.x-a.x)*k/10,a.y+(z.y-a.y)*k/10);await p.waitForTimeout(25)}
     await p.waitForTimeout(100);
-    const mid=await p.evaluate(()=>({over:outfitMove&&outfitMove.over,drop:document.querySelector('#mpanel-in .mc[data-k="2026-11-16"]').classList.contains('drop'),
+    const mid=await p.evaluate(()=>({over:HOOK.outfitMove&&HOOK.outfitMove.over,drop:document.querySelector('#mpanel-in .mc[data-k="2026-11-16"]').classList.contains('drop'),
       sig16:document.querySelector('#mpanel-in .mc[data-k="2026-11-16"]').dataset.sig,cells:Object.fromEntries([...document.querySelectorAll('#mpanel-in .mc[data-sig]')].map(c=>[c.dataset.k,c.dataset.sig])),sel:key(sel),saved:!!(dayRecs['2026-11-16']&&dayRecs['2026-11-16'].force)}));
     ok(mid.over==='2026-11-16'&&mid.drop&&mid.sig16===before['2026-11-18'],'held over Monday, Monday shows the moved outfit');
     const changed=Object.keys(mid.cells).filter(k=>mid.cells[k]!==before[k]);
@@ -48,10 +48,10 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     // dropping somewhere that isn't a day cancels
     await setup();await settle(p,300);const a2=await pt('2026-11-18');
     await T('touchStart',a2.x,a2.y);await p.waitForTimeout(500);await T('touchMove',a2.x,a2.y-300);await T('touchMove',a2.x,a2.y-320);await T('touchEnd');await settle(p,400);
-    ok(await p.evaluate(()=>!outfitMove&&Object.keys(dayRecs).every(k=>!dayRecs[k].force)&&!document.querySelector('.mv-ghost')),'dropping off the days cancels: nothing changes');
+    ok(await p.evaluate(()=>!HOOK.outfitMove&&Object.keys(dayRecs).every(k=>!dayRecs[k].force)&&!document.querySelector('.mv-ghost')),'dropping off the days cancels: nothing changes');
     // moving before the hold ends is a scroll or a swipe, not a move; a quick tap opens the day
     await T('touchStart',a2.x,a2.y);await T('touchMove',a2.x,a2.y-40);await p.waitForTimeout(500);
-    ok(await p.evaluate(()=>!outfitMove),'moving the finger before the hold ends doesn\'t lift anything');
+    ok(await p.evaluate(()=>!HOOK.outfitMove),'moving the finger before the hold ends doesn\'t lift anything');
     await T('touchEnd');await setup();await settle(p,300);
     await p.tap('#mpanel-in .mc[data-k="2026-11-18"]');await settle(p,400);
     ok(await p.evaluate(()=>key(sel)==='2026-11-18'),'a quick tap still opens the day');

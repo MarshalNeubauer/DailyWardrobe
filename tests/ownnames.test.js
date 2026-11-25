@@ -24,7 +24,7 @@ const ownnames=async({ok,chromium,url,settle})=>{
     await settle(p,200);
     await p.evaluate(()=>openItem('t1'));await settle(p,500);
     let e=await p.evaluate(()=>({imgs:document.querySelectorAll('#item-view .colbtn img').length,col:(document.querySelector('#item-view .colbtn[data-k="primaryColor"] .colnm')||{}).textContent,
-      pat:(document.querySelector('#item-view .patbtn .colnm')||{}).textContent,name:COLOR_NAMES.ownimgsrcxonerror,pname:CUSTOM_PAT['own-bad'].name,desc:CUSTOM_PAT['own-bad'].desc}));
+      pat:(document.querySelector('#item-view .patbtn .colnm')||{}).textContent,name:HOOK.COLOR_NAMES.ownimgsrcxonerror,pname:CUSTOM_PAT['own-bad'].name,desc:CUSTOM_PAT['own-bad'].desc}));
     ok(e.imgs===0&&!/[<>=]/.test(e.col+e.pat+e.name+e.pname)&&!/[<>]/.test(e.desc)&&/img src x onerror/i.test(e.col)&&/img src y onerror/i.test(e.pat),
       `a synced name with HTML is cleaned and shown as text on the item sheet (color "${e.col}", pattern "${e.pat}", desc "${e.desc}")`);
     await p.evaluate(()=>openColPick('e','t1','primaryColor'));await settle(p,200);
@@ -33,7 +33,7 @@ const ownnames=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{closeColPick();openColPick('e','t1','pattern')});await settle(p,200);
     e=await p.evaluate(()=>({imgs:document.querySelectorAll('#col-sheet .cnown img').length,own:[...document.querySelectorAll('#col-sheet .cnown .cpnm')].map(x=>x.textContent)}));
     ok(e.imgs===0&&e.own.some(t=>/img src y/i.test(t)),`the pattern sheet's own tiles show it as text (${e.own.join(' | ')})`);
-    await p.evaluate(()=>{closeColPick();closeItem()});await settle(p,500);
+    await p.evaluate(()=>{closeColPick();HOOK.closeItem()});await settle(p,500);
     await p.evaluate(()=>{openSettings();renderCustomUI()});await settle(p,200);
     ok(await p.evaluate(()=>document.querySelectorAll('#custom-list img').length===0),'Settings\' list of own colors and patterns shows them as text');
     await p.evaluate(()=>closeSettings());
@@ -70,10 +70,10 @@ const ownnames=async({ok,chromium,url,settle})=>{
     ok(await p.evaluate(()=>!colPick&&editing==='t2'),'… and the next Back closes the color sheet, the item still open');
     // "Use" after that changes nothing hidden: the sheet is gone, the tie still navy
     ok(await p.evaluate(()=>items.find(x=>x.id==='t2').primaryColor==='navy'),'the item keeps its color');
-    await p.evaluate(()=>closeItem());await settle(p,500);
+    await p.evaluate(()=>HOOK.closeItem());await settle(p,500);
     // ---- the Add page
     await p.evaluate(()=>{show('wardrobe');openAdd()});await settle(p,300);
-    await p.evaluate(()=>{addManual();renderAdd()});await settle(p,200);
+    await p.evaluate(()=>{HOOK.addManual();renderAdd()});await settle(p,200);
     await p.click('#add .colbtn[data-k="primaryColor"]');await settle(p,200);
     await p.evaluate(()=>history.back());await settle(p,400);
     e=await p.evaluate(()=>({sheet:!!colPick,add:!document.querySelector('#add').hidden}));
@@ -153,7 +153,7 @@ const w3ownnames=async({ok,chromium,url,settle})=>{
     ok(/taupe basketweave tie/.test(e.nm)&&!/own/.test(e.nm+e.line),`an own pattern is named by its name ("${e.nm}", "${e.line}")`);
     // ---- right-to-left names keep their place (W2-16-04, W2-16-10)
     e=await p.evaluate(()=>{const suit={id:'a1',type:'suit',primaryColor:'navy',pattern:'solid',name:'بدلة كحلي رسمية'},shirt={id:'a2',type:'shirt',primaryColor:'lightblue',pattern:'solid',name:'قميص سماوي'};
-      const box=piecesBox({top:suit,suitDay:true,shirt});return {box:(box.match(/<small class="cap">(.*?)<\/small>/)||[])[1],iso:nameIso('بدلة'),lat:nameHtml('Grey suit'),toast:savedTitle(suit)}});
+      const box=HOOK.piecesBox({top:suit,suitDay:true,shirt});return {box:(box.match(/<small class="cap">(.*?)<\/small>/)||[])[1],iso:nameIso('بدلة'),lat:nameHtml('Grey suit'),toast:savedTitle(suit)}});
     ok(/^<bdi>بدلة كحلي رسمية<\/bdi> · <bdi>قميص سماوي<\/bdi>$/.test(e.box||'')&&e.iso==='⁨بدلة⁩'&&e.lat==='Grey suit'&&e.toast==='⁨بدلة كحلي رسمية⁩',`Today's pieces line isolates each Arabic name (${e.box}); Latin names unchanged`);
     await p.evaluate(()=>{items=[{id:'p1',type:'suit',primaryColor:'navy',pattern:'solid',name:'بدلة سوداء ٢',added:1},{id:'p2',type:'shirt',primaryColor:'white',pattern:'solid',name:'قميص أبيض',added:2},
       {id:'p3',type:'tie',primaryColor:'burgundy',pattern:'solid',added:3},{id:'p4',type:'shoes',primaryColor:'black',added:4},{id:'p5',type:'belt',primaryColor:'black',added:5}];cache={};openPack()});
@@ -167,26 +167,26 @@ const w3ownnames=async({ok,chromium,url,settle})=>{
     ok(e.length>=2&&e.every(r=>r.after&&r.days&&r.line),`the day count stays after the Arabic name (${JSON.stringify(e)})`);
     await p.evaluate(()=>{if(typeof subBack==='function')subBack();show('wardrobe')});await settle(p,300);
     // ---- Arabic search (W2-16-07)
-    e=await p.evaluate(()=>({h:wardNorm('أبيض')===wardNorm('ابيض'),t:wardNorm('بدلة')===wardNorm('بدله'),d:wardNorm('سوداء ٢').endsWith('2'),y:wardNorm('على')===wardNorm('علي'),lat:wardNorm('Café  Crème')}));
+    e=await p.evaluate(()=>({h:HOOK.wardNorm('أبيض')===HOOK.wardNorm('ابيض'),t:HOOK.wardNorm('بدلة')===HOOK.wardNorm('بدله'),d:HOOK.wardNorm('سوداء ٢').endsWith('2'),y:HOOK.wardNorm('على')===HOOK.wardNorm('علي'),lat:HOOK.wardNorm('Café  Crème')}));
     ok(e.h&&e.t&&e.d&&e.y&&e.lat==='cafe creme',`search treats hamza, ة/ه, ى/ي and Arabic digits alike (${JSON.stringify(e)})`);
-    await p.evaluate(()=>{wardSearch('2');renderWardrobe()});await settle(p,200);
-    ok(await p.evaluate(()=>wardList().some(i=>i.id==='p1')),'searching 2 finds "بدلة سوداء ٢"');
-    await p.evaluate(()=>{wardClear()});
+    await p.evaluate(()=>{HOOK.wardSearch('2');renderWardrobe()});await settle(p,200);
+    ok(await p.evaluate(()=>HOOK.wardList().some(i=>i.id==='p1')),'searching 2 finds "بدلة سوداء ٢"');
+    await p.evaluate(()=>{HOOK.wardClear()});
     // ---- colors (W2-16-11, W2-16-12, W2-17-05)
-    e=await p.evaluate(()=>({fam:colFamily('deepblue'),lav:colFamily('lavender'),base:colBaseFor('#1f4e5a','tie'),hex:newColHex({primaryColor:'cream',newColor:{name:'dusty pink'},meas:null}),
+    e=await p.evaluate(()=>({fam:HOOK.colFamily('deepblue'),lav:HOOK.colFamily('lavender'),base:colBaseFor('#1f4e5a','tie'),hex:newColHex({primaryColor:'cream',newColor:{name:'dusty pink'},meas:null}),
       hex2:newColHex({primaryColor:'cream',newColor:{name:'heather'},meas:null}),hex3:newColHex({primaryColor:'cream',newColor:{name:'dusty pink'},meas:{hex:'#e0d0c0',src:'closeup'}})}));
     ok(e.fam===3&&e.lav===4,`deep blue is listed with the blues (family ${e.fam}), lavender with the purples`);
     ok(e.base!=='lightblue'&&['slate','steelblue','navy','darknavy','deepblue'].includes(e.base),`a dark petrol tie behaves like a dark blue, not light blue (${e.base})`);
     ok(e.hex===COLORS_PINK&&e.hex2===COLORS_CREAM&&e.hex3==='#e0d0c0',`"Add as a new color" opens on the named shade (${e.hex}), the tagged one when the name has no color, a close-up's measurement first`);
     // ---- the new color sheet's error is in its sticky bar, wholly on screen (W2-16-05)
     await p.evaluate(()=>{openSettings();openCustomNew('colour')});await settle(p,300);
-    await p.fill('#cn-name','<x>');await p.evaluate(()=>{cnName('<x>');colNewAdd()});await settle(p,300);
+    await p.fill('#cn-name','<x>');await p.evaluate(()=>{HOOK.cnName('<x>');HOOK.colNewAdd()});await settle(p,300);
     e=await p.evaluate(()=>{const er=document.querySelector('#cn-error'),bar=document.querySelector('#col-sheet .cpbar'),r=er&&er.getBoundingClientRect(),b=bar&&bar.getBoundingClientRect();
       const at=r&&document.elementFromPoint(r.left+Math.min(20,r.width/2),r.top+r.height/2);return {t:er&&er.textContent,in:!!(er&&bar.contains(er)),top:r&&r.top,bt:b&&b.top,vh:innerHeight,bottom:r&&r.bottom,hit:!!(at&&er.contains(at))}});
     ok(e.in&&e.top>=e.bt&&e.bottom<=e.vh&&e.hit&&/Use only letters/.test(e.t),`the error shows whole in the sheet's bar (${JSON.stringify(e)})`);
     await p.evaluate(()=>closeColPick());
     // ---- a long day-off name (W2-12-02)
-    await p.evaluate(()=>{const d=new Date(todayDate());d.setDate(d.getDate()+20);const v=isoKey(d);$('#cfg-off-from').value=v;$('#cfg-off-to').value=v;$('#cfg-off-name').value='https://intranet.example.com/hr/leave/requests/2026/12/21/extra';return addDayOff()});await settle(p,300);
+    await p.evaluate(()=>{const d=new Date(todayDate());d.setDate(d.getDate()+20);const v=isoKey(d);$('#cfg-off-from').value=v;$('#cfg-off-to').value=v;$('#cfg-off-name').value='https://intranet.example.com/hr/leave/requests/2026/12/21/extra';return HOOK.addDayOff()});await settle(p,300);
     e=await p.evaluate(()=>{const c=document.querySelector('#off-list .fchip'),b=c&&c.querySelector('button'),r=b&&b.getBoundingClientRect();
       return {n:settings.daysOff.map(x=>x.n),max:$('#cfg-off-name').maxLength,right:r&&r.right,vw:document.documentElement.clientWidth}});
     ok(e.max===40&&e.n.every(n=>[...n].length<=40)&&e.right<=e.vw,`a long day-off name is cut to 40 and its × stays on screen (${JSON.stringify(e)})`);

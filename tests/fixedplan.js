@@ -35,7 +35,7 @@ window.TEST_PLAN={
       let top=casual?null:pick('top',suitDay?'suit':'blazer',0);
       if(!top&&!casual)top=pick('top',suitDay?'blazer':'suit',0);
       const sd=top?top.type==='suit':suitDay,shirt=pick('shirt','shirt',1);
-      const tie=casual||(typeof casualTop==='function'&&casualTop({shirt}))?null:pick('tie','tie',2);   // (a T-shirt picked by hand: no tie)
+      const tie=casual||('casualTop' in HOOK&&HOOK.casualTop({shirt}))?null:pick('tie','tie',2);   // (a T-shirt picked by hand: no tie)
       const vov=rec&&typeof rec.vest==='boolean'?rec.vest:null;
       const vest=!!(sd&&top&&hasVest(top)&&(vov!==null?vov:settings.vestMode==='always'));
       out[k]={suitDay:sd,top,bot:sd&&top?top:pick('bot','pants',3),shirt,tie,

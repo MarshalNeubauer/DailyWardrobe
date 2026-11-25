@@ -56,11 +56,11 @@ const uipages=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(op.btn.join()==='44'&&op.inp.join()==='44'&&op.over<=0,`the item sheet uses the same 44px buttons and dropdowns and doesn't scroll sideways (${op.btn} / ${op.inp})`);
     ok(op.pt.length===1&&op.pt[0]===58,`the photo tools under the pictures are one size, 58px tall (icon over label) (${op.pt})`);
     // ---- Add
-    await p.evaluate(()=>{closeItem();show('add')});await settle(p,400);
+    await p.evaluate(()=>{HOOK.closeItem();show('add')});await settle(p,400);
     const ad=await p.evaluate(()=>({head:document.querySelector('#add .phead h2').textContent,picks:[...document.querySelectorAll('#add .addpick label')].map(l=>l.querySelector('span').textContent),
       more:!!document.querySelector('#add .addmore #photo-url')&&!!document.querySelector('#add .addmore .addrow')}));
     ok(ad.head==='Add to wardrobe'&&ad.picks.join()==='One item,Several items'&&ad.more,'Add: a page header, the two ways in, and the other ways in one card');
-    await p.evaluate(()=>{addManual();setq(0,'type','suit')});
+    await p.evaluate(()=>{HOOK.addManual();setq(0,'type','suit')});
     const lab=await p.evaluate(()=>[...document.querySelectorAll('#nps-q .card .ckb>label')].map(l=>l.firstChild.textContent.trim()).slice(0,4).join(','));
     ok(lab==='Type,Color,Second color,Third color','the item card and the Wardrobe editor use the same labels');
     ok(await p.evaluate(()=>[...document.querySelectorAll('#nps-q select')].every(s=>[...s.options].every(o=>!/^[a-z]/.test(o.textContent)))),'dropdown choices start with a capital');
@@ -68,7 +68,7 @@ const uipages=async({ok,chromium,url,WARDROBES,settle})=>{
     const sz=await p.evaluate(async()=>{const out={btn:new Set(),inp:new Set()},take=root=>{for(const b of root.querySelectorAll('button:not(.giopen):not(.chip):not(.chipbtn):not(.linkbtn):not(.dtog):not(.addrow):not(.addlong):not(.pback):not(.fchip button):not(.month-link):not(.slink):not(.adv-head):not(.wbstcard):not(.ckh):not(.ckpt):not(.ckreadadd):not(.cmplv)'))if(b.offsetParent)out.btn.add(Math.round(b.getBoundingClientRect().height));
         for(const i of root.querySelectorAll('select,input[type=text],input[type=url],input[type=date]'))if(i.offsetParent)out.inp.add(Math.round(i.getBoundingClientRect().height))};
       take(document.querySelector('#add'));openSettings();for(const k of SET_CATS)setCatOpen(k,true,true);take(document.querySelector('#settings-modal'));closeSettings();
-      const titles=[];for(const s of ['add']){show(s);titles.push(getComputedStyle(document.querySelector(`#${s} .phead h2`)).fontSize)}openStats();titles.push(getComputedStyle(document.querySelector('#stats .phead h2')).fontSize);
+      const titles=[];for(const s of ['add']){show(s);titles.push(getComputedStyle(document.querySelector(`#${s} .phead h2`)).fontSize)}HOOK.openStats();titles.push(getComputedStyle(document.querySelector('#stats .phead h2')).fontSize);
       return {btn:[...out.btn],inp:[...out.inp],titles}});
     ok(sz.btn.every(h=>h===44),`buttons are 44px tall on Add and in Settings (${sz.btn})`);
     // ("Add without a photo" is a two-line row like the tiles: at least 44 px)
