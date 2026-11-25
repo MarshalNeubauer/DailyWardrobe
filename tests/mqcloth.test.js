@@ -73,8 +73,8 @@ module.exports=async({ok,chromium,url})=>{
     ok(inh.blue[2]>200&&inh.blue[0]<60&&inh.red[0]>200&&inh.red[2]<60,`pattern href inheritance renders: the copy repeats the base's image at the base's size (${JSON.stringify(inh)})`);
     // Today: drawn first, then swapped in place once the block is made (drawing only: no request at all)
     const reqs=[];
-    const td=await p.evaluate(()=>{const Q=__Q;items=[Q.brown,Q.shirt,Q.tie,{id:'qshoes',type:'shoes',primaryColor:'black',leather:'calf'},{id:'qbelt',type:'belt',primaryColor:'black',leather:'calf',metal:'silver'},{id:'qsocks',type:'socks',primaryColor:'navy'}];
-      settings.pictures='drawn';settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-16T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};
+    const td=await p.evaluate(()=>{const Q=__Q;HOOK.items=[Q.brown,Q.shirt,Q.tie,{id:'qshoes',type:'shoes',primaryColor:'black',leather:'calf'},{id:'qbelt',type:'belt',primaryColor:'black',leather:'calf',metal:'silver'},{id:'qsocks',type:'socks',primaryColor:'navy'}];
+      settings.pictures='drawn';settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-16T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};
       HOOK.FIG_CU.clear();show('today');const c=document.querySelector('#mannequin-container'),s=c&&c.querySelector(':scope > svg');return {top:(planFor()[key(sel)]||{}).top&&planFor()[key(sel)].top.id,svg:!!s,cu:!!(s&&s.querySelector('pattern[id$="cuT"]'))}});
     p.on('request',r=>{if(!/^(data|blob):/.test(r.url()))reqs.push(r.url())});
     await p.waitForFunction(()=>{const s=document.querySelector('#mannequin-container > svg');return s&&s.querySelector('pattern#fig-cuT')},null,{timeout:15000}).catch(()=>{});

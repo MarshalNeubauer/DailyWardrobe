@@ -31,12 +31,12 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(d0.pictures===undefined&&d0.drawn===false&&log.some(l=>/list=1/.test(l)),`the default is painted pictures, and painted, start-up reads the server's list of pictures (${log.length} picture requests)`);
     // a suit wardrobe, its day's look painted on the suit master; an outfit photo kept for that very look from the retired photo path
     const wardrobe=()=>p.evaluate(()=>{let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
-      items=[I('watch','silver',{metal:'silver'}),I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      HOOK.items=[I('watch','silver',{metal:'silver'}),I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       for(const i of items)if(HOOK.ITEM_PIC_TYPES.includes(i.type))HOOK.renderTried.add(itemKey(i));   // (item pictures are their own feature, not the painter's)
-      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];settings.vestMode='never';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};
+      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];settings.vestMode='never';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};
       const o=planFor()[key(sel)];renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,/9j/KEPTPHOTO',model:'gpt',t:500};   // (older than the master: painting wins)
       window.__paint=0;window.__ahead=0;if(!window.__P0){window.__P0=asmPhoto;window.__A0=HOOK.asmAhead}
-      asmPhoto=async(...a)=>{__paint++;return __P0(...a)};HOOK.asmAhead=async()=>{__ahead++};   // (building ahead counted, not run)
+      HOOK.asmPhoto=async(...a)=>{__paint++;return __P0(...a)};HOOK.asmAhead=async()=>{__ahead++};   // (building ahead counted, not run)
       show('today')});
     // Settings (the wardrobe comes after the switch: painted, its first drawing would start painting): the choice is there for everyone, outside the Advanced fold
     await p.evaluate(()=>{document.body.classList.add('owner');openSettings('photos')});await settle(p,300);

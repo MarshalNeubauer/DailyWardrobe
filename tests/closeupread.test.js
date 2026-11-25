@@ -35,8 +35,8 @@ async function run(eng,browser,{ok,url,settle}){
     const paper=(c,x)=>{x.fillStyle='#f4f3ef';x.fillRect(0,c.height*.8,c.width,c.height*.2)};
     const J=c=>c.toDataURL('image/jpeg',.9),f={plain:J(cv(ci,3)),paper:J(cv(ci,3,paper)),photo:J(cv(pi,1))};
     HOOK.rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
-    items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,texture:f.plain,added:1,name:'Mink suit'},
-      {id:'m2',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,added:2,name:'Bare suit'}];flt='all';editing=null;show('wardrobe');return f});
+    HOOK.items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,texture:f.plain,added:1,name:'Mink suit'},
+      {id:'m2',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,added:2,name:'Bare suit'}];HOOK.flt='all';HOOK.editing=null;show('wardrobe');return f});
   const file=(name,u)=>({name,mimeType:'image/jpeg',buffer:Buffer.from(u.split(',')[1],'base64')});
   const item=id=>p.evaluate(id=>{const it=items.find(x=>x.id===id);return {c:it.primaryColor,p:it.pattern,cols:(settings.custom.colors||[]).length,pats:(settings.custom.patterns||[]).length}},id);
   const result=async()=>{await p.waitForSelector('#rd-sheet.on #rd-both');await settle(p,300)};

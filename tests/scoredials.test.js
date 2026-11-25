@@ -10,13 +10,13 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844}}),p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const setup=(d,extra='')=>p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.holidays=null;settings.daysOff=[];weather={};climate=null;TODAY_OVERRIDE='2026-11-17T09:00:00';dayRecs={};${extra};cache={};sel=new Date(2026,10,${d});view={y:2026,m:10};scoreOpen=false;monthOpen=false;listOpen=false;show('today')})()`);
+    const setup=(d,extra='')=>p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.holidays=null;settings.daysOff=[];HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-17T09:00:00';HOOK.dayRecs={};${extra};HOOK.cache={};HOOK.sel=new Date(2026,10,${d});HOOK.view={y:2026,m:10};HOOK.scoreOpen=false;HOOK.monthOpen=false;HOOK.listOpen=false;show('today')})()`);
     // ---- the dials over a month (computed as the card does)
     await setup(17);
     const M=await p.evaluate(()=>{const out={h:[],t:[],f:[],v:[],o:[],i:[]},ranks=[],gains=[];
-      for(let d=new Date(2026,10,2);d<=new Date(2026,10,30);d.setDate(d.getDate()+1)){if(!isWorkday(d))continue;sel=new Date(d);const o=planFor()[key(sel)];if(!o)continue;
+      for(let d=new Date(2026,10,2);d<=new Date(2026,10,30);d.setDate(d.getDate()+1)){if(!isWorkday(d))continue;HOOK.sel=new Date(d);const o=planFor()[key(sel)];if(!o)continue;
         const D=HOOK.dialsFor(o);for(const k of DIAL_KEYS)out[k].push(D[k].v);const R=rankLooks(HOOK.rankPools(o),o);ranks.push(R.rank);for(const s of R.swaps)gains.push(R.rank-s.rank)}
-      sel=new Date(2026,10,17);return {out,ranks,gains}});
+      HOOK.sel=new Date(2026,10,17);return {out,ranks,gains}});
     const all=Object.values(M.out).flat();
     ok(all.length>=100&&all.every(v=>Number.isInteger(v)&&v>=0&&v<=100),`${eng}: every dial reads 0-100 on every workday of November (${all.length} readings)`);
     const span=k=>Math.max(...M.out[k])-Math.min(...M.out[k]);
@@ -49,11 +49,11 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
     // ---- a broken rule rings its own dial
     const B=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:'z'+type+(k++),type,primaryColor,pattern:'solid',...x});
       const navy=I('suit','navy'),wh=I('shirt','white'),bu=I('tie','burgundy'),bl=I('shoes','black',{leather:'calf'}),bb=I('belt','black',{leather:'calf',metal:'silver'}),br=I('belt','brown',{leather:'calf',metal:'silver'});
-      const base={suitDay:true,top:navy,bot:navy,shirt:wh,tie:bu,shoes:bl,belt:bb,notes:[]},keep=items;items=[...keep,navy,wh,bu,bl,bb,br];
+      const base={suitDay:true,top:navy,bot:navy,shirt:wh,tie:bu,shoes:bl,belt:bb,notes:[]},keep=items;HOOK.items=[...keep,navy,wh,bu,bl,bb,br];
       const ring=o=>{const r=rateOutfit(o);return [...new Set(r.hard.map(c=>DIAL_OF_CHECK[c]))].join()};
       const out={belt:ring({...base,belt:br}),shoes:ring({...base,top:I('suit','brown'),bot:null}),pats:ring({...base,top:I('suit','navy',{pattern:'pinstripe'}),shirt:I('shirt','white',{pattern:'stripe',secondaryColor:'blue'}),tie:I('tie','burgundy',{pattern:'stripe',secondaryColor:'navy'})}),
         shirt:ring({...base,shirt:I('shirt','navy')}),clean:ring(base),lightSocks:ring({...base,socks:I('socks','white')}),
-        argyle:dialTexture({...base,socks:I('socks','navy',{pattern:'argyle',secondaryColor:'burgundy'})}).why,ribbed:dialTexture({...base,socks:I('socks','navy',{pattern:'ribbed'})}).why};out.shoes=ring({...base,top:out.br=I('suit','brown'),bot:out.br});delete out.br;items=keep;return out});
+        argyle:dialTexture({...base,socks:I('socks','navy',{pattern:'argyle',secondaryColor:'burgundy'})}).why,ribbed:dialTexture({...base,socks:I('socks','navy',{pattern:'ribbed'})}).why};out.shoes=ring({...base,top:out.br=I('suit','brown'),bot:out.br});delete out.br;HOOK.items=keep;return out});
     ok(B.belt==='o'&&B.shoes==='o'&&B.pats==='t'&&/h/.test(B.shirt)&&B.clean===''&&B.lightSocks==='h'&&/argyle socks/.test(B.argyle)&&!/socks/.test(B.ribbed),`${eng}: light socks with dark pants ring Harmony, argyle socks are a pattern for Texture and ribbed ones are not;`+` ${eng}: a belt that doesn't match and shoes that don't suit ring Occasion, clashing patterns Texture, a shirt the jacket's color Harmony (${JSON.stringify(B)})`);
     // the same on the card: a brown belt picked with black shoes
     await setup(18);
@@ -78,18 +78,18 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
     // (the 900 ms is at this machine's pace, measured before the throttling: tests/pace.js; a flat 900 failed a cloud run at 1039 ms)
     if(eng==='Chromium'){const k=await pace(p),cdp=await ctx.newCDPSession(p);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});
       const t=await p.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:'b'+type+(k++),type,primaryColor,pattern:'solid',...x});
-        items=[...['navy','charcoal','grey','darkgrey','lightgrey','navy','brown','charcoal','black','darknavy','grey','tan'].map(c=>I('suit',c)),...['navy','tan','brown','olive','grey','burgundy'].map(c=>I('blazer',c)),...['grey','charcoal','tan','cream','navy','olive','lightgrey','brown'].map(c=>I('pants',c)),
+        HOOK.items=[...['navy','charcoal','grey','darkgrey','lightgrey','navy','brown','charcoal','black','darknavy','grey','tan'].map(c=>I('suit',c)),...['navy','tan','brown','olive','grey','burgundy'].map(c=>I('blazer',c)),...['grey','charcoal','tan','cream','navy','olive','lightgrey','brown'].map(c=>I('pants',c)),
           ...Array.from({length:25},(_,n)=>I('shirt',['white','lightblue','pink','lavender','cream'][n%5],{pattern:['solid','oxford','stripe','end-on-end','gingham'][n%5],secondaryColor:'blue'})),
           ...Array.from({length:35},(_,n)=>I('tie',['navy','burgundy','green','purple','gold','charcoal','red','brown'][n%8],{pattern:['solid','stripe','paisley','polka-dot','knit'][n%5],secondaryColor:'white'})),
           I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),I('shoes','brown',{leather:'suede',shoeStyle:'loafer'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('belt','burgundy',{leather:'calf',metal:'silver'}),I('watch','grey',{metal:'silver'})];
-        cache={};const out=[];
-        for(const d of [new Date(2026,10,19),new Date(2026,10,18)]){sel=d;view={y:2026,m:10};const t0=performance.now();renderToday();const drawn=performance.now()-t0;
+        HOOK.cache={};const out=[];
+        for(const d of [new Date(2026,10,19),new Date(2026,10,18)]){HOOK.sel=d;HOOK.view={y:2026,m:10};const t0=performance.now();renderToday();const drawn=performance.now()-t0;
           await new Promise(res=>{const f=()=>HOOK.rankMemo.v?res():setTimeout(f,10);f()});out.push({drawn:Math.round(drawn),wall:HOOK.rankMemo.v.wall,n:HOOK.rankMemo.v.n})}return out});
       await cdp.send('Emulation.setCPUThrottlingRate',{rate:1});
       console.log('    rank at 4x CPU: '+t.map(x=>`${x.n} outfits ${x.wall} ms (Today drawn in ${x.drawn} ms)`).join('; '));
       ok(t.every(x=>x.wall<900*k&&x.n>1000),`${eng}: at 4x CPU a large wardrobe's rank comes in ${t.map(x=>x.wall+' ms ('+x.n+' outfits)').join(', ')} (${(900*k).toFixed(0)} allowed: 900 at this machine's pace ×${k.toFixed(2)}) while Today is drawn without waiting for it`)}
     // ---- the calendar: gold for a shirt-and-tie repeat, red for a broken rule, today in ink
-    await setup(17,`const pl0=(()=>{cache={};return planMonth(2026,10)})(),a=pl0['2026-11-9'],ids=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
+    await setup(17,`const pl0=(()=>{HOOK.cache={};return planMonth(2026,10)})(),a=pl0['2026-11-9'],ids=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
       dayRecs['2026-11-9']={date:'2026-11-9',ids:ids(a),suitDay:a.suitDay,worn:true};const b=pl0['2026-11-12'];dayRecs['2026-11-12']={date:'2026-11-12',ids:{...ids(b),shirt:a.shirt.id,tie:a.tie.id},suitDay:b.suitDay,worn:true};
       const c=pl0['2026-11-13'],bad=items.find(i=>i.type==='belt'&&c.shoes&&beltFit(c.shoes,i)===null);dayRecs['2026-11-13']={date:'2026-11-13',ids:{...ids(c),belt:bad.id},suitDay:c.suitDay,worn:true}`);
     await p.evaluate(()=>toggleMonth());await settle(p,1500);
@@ -100,11 +100,11 @@ module.exports=async({ok,engines,url,WARDROBES,settle})=>{
     ok(C.bad&&C.reds===1&&/rule broken/.test(C.badLabel),`${eng}: the day worn with a belt that doesn't match its shoes is ringed in red, and only that day`);
     const rgb=h=>{const n=parseInt(h.slice(1),16);return `rgb(${n>>16}, ${n>>8&255}, ${n&255})`};
     ok(C.today.includes(rgb(C.ink))&&!/rgb\(217, 162, 27\)/.test(C.today),`${eng}: today is ringed in ink, not the gold accent (${C.today})`);
-    const S=await p.evaluate(()=>{toggleMonth();sel=new Date(2026,10,12);view={y:2026,m:10};renderToday();return [...document.querySelectorAll('#mbox .mli')].map(e=>e.className)});
+    const S=await p.evaluate(()=>{toggleMonth();HOOK.sel=new Date(2026,10,12);HOOK.view={y:2026,m:10};renderToday();return [...document.querySelectorAll('#mbox .mli')].map(e=>e.className)});
     ok(S[0]&&/\brep\b/.test(S[0])&&S.some(c=>/\bbad\b/.test(c)),`${eng}: the closed card's five-day strip has the same marks (${S.join(' / ')})`);
     // ---- the folded card keeps the cards' height, in both themes, at 390 and 320 px, with no sideways scroll
     for(const theme of ['light','dark'])for(const w of [390,320]){await p.setViewportSize({width:w,height:800});
-      await p.evaluate(t=>{document.documentElement.dataset.theme=t;sel=new Date(2026,10,17);scoreOpen=false;renderToday()},theme);await settle(p,300);
+      await p.evaluate(t=>{document.documentElement.dataset.theme=t;HOOK.sel=new Date(2026,10,17);HOOK.scoreOpen=false;renderToday()},theme);await settle(p,300);
       const L=await p.evaluate(()=>{const R=s=>document.querySelector(s).getBoundingClientRect(),b=R('#sbox'),d=[...document.querySelectorAll('#sbox .dial')].map(e=>e.getBoundingClientRect()),lab=[...document.querySelectorAll('#sbox .dial small')].map(e=>e.getBoundingClientRect());
         return {h:Math.round(b.height),ib:Math.round(R('#ibox').height),mb:Math.round(R('#mbox').height),inside:d.every(r=>r.left>=b.left&&r.right<=b.right&&r.top>=b.top&&r.bottom<=b.bottom),
           apart:lab.every((r,i)=>!i||r.left>=lab[i-1].right-1),over:document.documentElement.scrollWidth-document.documentElement.clientWidth,
