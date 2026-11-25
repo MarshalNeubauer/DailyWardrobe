@@ -57,7 +57,7 @@ const planahead=async({ok,chromium,url,WARDROBES})=>{
     // as a drag in the month does: the outfit pinned on the next workday (moveRecs), the day it left planned afresh (planWith)
     const r=await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};
       const base=planMonth(2026,10),out=[];
-      for(const [a,b] of [['2026-11-16','2026-11-17'],['2026-11-23','2026-11-24'],['2026-11-24','2026-11-25']]){const pl=planWith(moveRecs(a,b,base),2026,10),prev=pl[a],fixed=pl[b];
+      for(const [a,b] of [['2026-11-16','2026-11-17'],['2026-11-23','2026-11-24'],['2026-11-24','2026-11-25']]){const pl=planWith(HOOK.moveRecs(a,b,base),2026,10),prev=pl[a],fixed=pl[b];
         out.push({a,held:fixed.tie.id===base[a].tie.id,tie:prev.tie.id===fixed.tie.id,tieGroup:tieGroup(prev.tie)===tieGroup(fixed.tie),shirt:prev.shirt.id===fixed.shirt.id,
           was:base[a].tie.id+'/'+base[a].shirt.id,now:prev.tie.id+'/'+prev.shirt.id})}
       // the case that repeated on the owner's wardrobe: the next day fixed to exactly the tie and shirt this day would choose (its best
@@ -122,8 +122,8 @@ const planaudit=async({ok,chromium,url,WARDROBES})=>{
       const N=planMonth(2026,10);out.notWornPrev=N['2026-11-17'].ctx.prev.some(p=>p&&p.n===di(new Date(2026,10,16)));
       const R=rateOutfit(N['2026-11-17']);out.goneLabel=R.label;out.goneHard=R.hard.join();
       // 5. the what-to-buy signature
-      const s0=shopSig();settings.laundryDays=3;const s1=shopSig();settings.darkShirts='often';const s2=shopSig();
-      dayRecs['2026-12-1']={date:'2026-12-1',occasion:'wedding'};const s4=shopSig();settings.daysOff=[{d:'2026-12-3',n:'x'}];const s5=shopSig();settings.dress={jeans:true};const s6=shopSig();
+      const s0=HOOK.shopSig();settings.laundryDays=3;const s1=HOOK.shopSig();settings.darkShirts='often';const s2=HOOK.shopSig();
+      dayRecs['2026-12-1']={date:'2026-12-1',occasion:'wedding'};const s4=HOOK.shopSig();settings.daysOff=[{d:'2026-12-3',n:'x'}];const s5=HOOK.shopSig();settings.dress={jeans:true};const s6=HOOK.shopSig();
       out.sigs=new Set([s0,s1,s2,s4,s5,s6]).size;
       base();return out})()`);
     ok(r.tie2===0&&r.tie3===0,`a tie fixed two or three workdays ahead is not planned the day before (${r.tie2} and ${r.tie3} of 10; before 20 of 20 each)`);
@@ -155,7 +155,7 @@ const reviewfixes=async({ok,chromium,url,settle:settleFor})=>{
       items=base();settings.workdays=[0,1,2,3,4];settings.blazerDays=[];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
     await settle();await p.evaluate(()=>renderToday());await settle();
     // deleting the tie planned for today: Today must plan again without it
-    const del=await p.evaluate(async()=>{const id=planFor()[key(sel)].tie.id;await rm(id);await new Promise(r=>setTimeout(r,300));show('today');const o=planFor()[key(sel)];
+    const del=await p.evaluate(async()=>{const id=planFor()[key(sel)].tie.id;await HOOK.rm(id);await new Promise(r=>setTimeout(r,300));show('today');const o=planFor()[key(sel)];
       return {gone:!items.some(i=>i.id===id),planned:o.tie&&o.tie.id!==id,shown:!Object.values(planFor()).some(x=>x.tie&&x.tie.id===id&&!x.frozen)}});
     ok(del.gone&&del.planned&&del.shown,'after deleting an item, Today plans again without it');
     // adding an item: the plan is built again, and the new piece gets worn
@@ -207,7 +207,7 @@ const reviewfixes=async({ok,chromium,url,settle:settleFor})=>{
     ok(lw.real==='2026-9-3'&&lw.warm===null,`"Last worn" ignores days from before the pieces were in the wardrobe (${lw.real}, ${lw.warm})`);
     // the what-to-buy analysis gets the tags, not the pictures
     const pay=await p.evaluate(()=>{items[0].photo='data:image/jpeg;base64,AAAA';items[0].swatch='data:image/png;base64,BBBB';let sent=null;const W=window.Worker;
-      window.Worker=function(){this.postMessage=d=>{sent=d};this.terminate=()=>{}};analyzeWardrobe();window.Worker=W;shopBusy=null;
+      window.Worker=function(){this.postMessage=d=>{sent=d};this.terminate=()=>{}};HOOK.analyzeWardrobe();window.Worker=W;HOOK.shopBusy=null;
       return {n:sent.list.length,pics:sent.list.some(i=>i.photo||i.swatch),kept:!!items[0].photo,tags:sent.list.every(i=>i.type&&i.primaryColor)}});
     ok(pay.n>0&&!pay.pics&&pay.kept&&pay.tags,'the what-to-buy analysis is sent the tags only, no pictures');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

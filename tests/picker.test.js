@@ -44,7 +44,7 @@ const picker=async({ok,chromium,url,settle:settleFor})=>{
     // ---- no learning: a swap and a hand pick change only their own day, and record nothing in the settings ----
     const nl=await p.evaluate(async()=>{dayRecs={};cache={};sel=new Date(2026,10,17);view={y:2026,m:10};renderToday();
       const st0=JSON.stringify((await metaGet('settings'))||{});
-      await swapSlot('tie');const ch=items.find(i=>i.type==='tie'&&i.id!==planFor()[key(sel)].tie.id);
+      await HOOK.swapSlot('tie');const ch=items.find(i=>i.type==='tie'&&i.id!==planFor()[key(sel)].tie.id);
       const k2=Object.keys(planMonth(2026,11)).find(k=>keyDate(k)>todayDate());sel=keyDate(k2);view={y:sel.getFullYear(),m:sel.getMonth()};renderToday();await pickItem('tie',ch.id);
       const st1=(await metaGet('settings'))||{};
       return {msg:document.querySelector('#today').textContent,learn:'learn' in settings||'learn' in st1,settings:JSON.stringify(st1)===st0,picked:planFor()[k2].tie.id===ch.id}});
@@ -102,11 +102,11 @@ const beltswap=async({ok,chromium,url,settle})=>{
     // a navy suit: black, brown and oxblood shoes all suit it
     await setup(['navy']);await settle(p,200);
     const a=await st();
-    await p.evaluate(()=>swapSlot('belt'));await settle(p,300);
+    await p.evaluate(()=>HOOK.swapSlot('belt'));await settle(p,300);
     const b=await st();
     ok(a.belt&&b.belt&&b.belt!==a.belt&&b.fit!==null&&b.shoes!==a.shoes,`swapping the belt brings another belt and shoes that match it (${a.belt}/${a.shoes} -> ${b.belt}/${b.shoes})`);
     ok(['top','shirt','tie','watch'].every(s=>b.ids[s]===a.ids[s])&&!/None of your belts/.test(b.notes),'the rest of the outfit stays, and no "None of your belts match" note');
-    await p.evaluate(()=>swapSlot('belt'));await settle(p,300);
+    await p.evaluate(()=>HOOK.swapSlot('belt'));await settle(p,300);
     const c=await st();
     ok(c.belt&&c.belt!==b.belt&&c.belt!==a.belt&&c.fit!==null,`swapping again brings the third belt, with its shoes (${c.belt}/${c.shoes})`);
     // choosing a belt by hand from the list: its shoes follow too
@@ -117,7 +117,7 @@ const beltswap=async({ok,chromium,url,settle})=>{
     // a black suit: only black shoes suit it, so only the black belt can be worn: the swap changes nothing and says why
     await setup(['black']);await settle(p,200);
     const e=await st();
-    await p.evaluate(()=>swapSlot('belt'));await settle(p,300);
+    await p.evaluate(()=>HOOK.swapSlot('belt'));await settle(p,300);
     const f=await st();
     ok(e.belt==='black'&&f.belt==='black'&&f.shoes==='black'&&f.saved===e.saved&&/belt stays/.test(f.msg),`with a black suit the black belt stays, nothing is saved, and Today says why ("${f.msg}")`);
     const brown=await p.evaluate(()=>items.find(i=>i.type==='belt'&&i.primaryColor==='brown').id);

@@ -24,11 +24,11 @@ async function run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX}){
   const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   const ev=(f,a)=>p.evaluate(f,a);
-  await ev(([ph,tx])=>{rememberRole({role:'owner'});settings.setupDone=1;
+  await ev(([ph,tx])=>{HOOK.rememberRole({role:'owner'});settings.setupDone=1;
     // the cloth measured as navy, the drawing two steps lighter; white paper found in the close-up (tagging.js PAPER, as paperOf keeps it)
     items=[{id:'a',type:'suit',primaryColor:'navy',secondaryColor:'white',pattern:'pinstripe',photo:ph,texture:tx,material:'wool',season:'cold',shade:2,meas:{lab:labOf('navy'),ref:true,src:'closeup'},added:3},
       {id:'b',type:'pants',primaryColor:'charcoal',pattern:'solid',photo:ph,added:2},{id:'c',type:'shoes',primaryColor:'brown',added:1}];
-    PAPER[paperKey(items[0])]={ref:true,warm:false};
+    HOOK.PAPER[paperKey(items[0])]={ref:true,warm:false};
     cache={};queue.length=0;flt='all';editing=null;show('wardrobe')},[PH,TX]);
   await settle(p,400);
   const tap=async s=>{await p.click(s);await settle(p,450)};
@@ -165,7 +165,7 @@ async function run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX}){
   ok(await ev(n=>items.length===n+1&&items.some(i=>i.id==='q1')&&!queue.length,n0),T+'Confirm saves the item with parts still unchecked');
 
   // ---- the no-photo sheet: its bar says what is left; the progress pinned in its scroll area; Back closes the sheet only
-  await ev(()=>addManual());await settle(p,500);
+  await ev(()=>HOOK.addManual());await settle(p,500);
   e=await ev(()=>({left:(document.querySelector('#nps-bar .ckleft')||{}).textContent,conf:document.querySelector('#nps-bar .pri').disabled}));
   ok(/left to check · you can still confirm$/.test(e.left)&&e.conf===false,T+`the no-photo sheet's bar: "${e.left}" over an enabled Confirm`);
   await ev(()=>{for(const s of document.querySelectorAll('#nps-q .cks:not(.open) .ckh'))s.click();const b=document.querySelector('#nps-q');b.scrollTop=b.scrollHeight});await settle(p,250);

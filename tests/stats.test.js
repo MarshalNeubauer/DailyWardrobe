@@ -27,7 +27,7 @@ const stats=async({ok,chromium,url})=>{
     const wait=await p.evaluate(()=>!!document.querySelector('#stats .st-wait'));await p.waitForFunction(()=>!!document.querySelector('#stats .st-tiles'),null,{timeout:20000});
     ok(wait,'the tab shows at once, saying it is planning the next six months, and the stats follow (planned in idle slices, stats.js statsShow)');
     ok(await p.evaluate(()=>!$('#stats').hidden&&$('#today').hidden&&$('#settings-modal').style.display==='none'&&/Insights/.test($('#stats h2').textContent)&&!$('#stats .pback')&&$('#n-stats').classList.contains('on')),'it opens Insights, a tab with no ‹');
-    const s=await p.evaluate(()=>{const S=buildStats(),row=id=>S.rows.find(r=>r.i.id===id);
+    const s=await p.evaluate(()=>{const S=HOOK.buildStats(),row=id=>S.rows.find(r=>r.i.id===id);
       return {worn:S.worn.map(w=>w.date).join(),navy:row('suit0').worn,ch:row('suit1').worn,tie:row('tie11').worn,last:row('suit0').last&&key(row('suit0').last),plan:S.plan.length,planNavy:row('suit0').planned,next:!!row('suit0').next,
         unused:S.unused.map(r=>r.i.id).sort().join(),avg:S.avg,miss:Object.keys(S.miss),looks:S.looks,minRest:S.minRest,tiles:[...document.querySelectorAll('.st-tile b')].map(b=>b.textContent).join(),
         firstPlan:S.plan[0][0],lastPlan:S.plan[S.plan.length-1][0],sumTop:S.rows.filter(r=>r.i.type==='suit'||r.i.type==='blazer').reduce((a,r)=>a+r.planned,0)}});
@@ -62,7 +62,7 @@ const stats=async({ok,chromium,url})=>{
     // lowest days link back to Today; back button; an empty wardrobe
     await p.click('#n-today');
     ok(await p.evaluate(()=>!$('#today').hidden&&$('#stats').hidden),'the Today tab returns to Today');
-    ok(await p.evaluate(()=>{const keep=items;items=[];openStats();const t=$('#stats').textContent;items=keep;cache={};show('today');return /wardrobe is empty/i.test(t)}),'an empty wardrobe gets a plain message');
+    ok(await p.evaluate(()=>{const keep=items;items=[];HOOK.openStats();const t=$('#stats').textContent;items=keep;cache={};show('today');return /wardrobe is empty/i.test(t)}),'an empty wardrobe gets a plain message');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
@@ -86,7 +86,7 @@ const nu2fix7=async({ok,chromium,url,settle})=>{
       settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];delete settings.dress;dayRecs={};weather={};cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')});
     await full();await quiet();
     // ---- Insights and What to buy: the same days
-    const c=await p.evaluate(()=>{const ins=plannedDays(),ev=evalPlan(items,todayDate(),SHOP_WEEKS),ks=horizonKeys(todayDate(),SHOP_WEEKS);
+    const c=await p.evaluate(()=>{const ins=HOOK.plannedDays(),ev=HOOK.evalPlan(items,todayDate(),SHOP_WEEKS),ks=horizonKeys(todayDate(),SHOP_WEEKS);
       return {ins:ins.length,shop:ev.days,first:ks[0],today:key(todayDate()),same:ins.every(([k],n)=>k===ks[n])}});
     ok(c.ins===c.shop&&c.same&&c.ins>100,`Insights and What to buy count the same planned outfits (${c.ins} and ${c.shop})`);
     ok(c.first==='2026-11-17',`both start tomorrow, not today (${c.first}, today ${c.today})`);
@@ -156,7 +156,7 @@ const nufix7=async({ok,chromium,url,settle})=>{
       settings.workdays=[0,1,2,3,4];settings.blazerDays=[];dayRecs={};weather={};cache={}});
     // ---- H8: shown on a Friday (a day off, as the calendar day), brought back on Sunday: Sunday's outfit
     const fire=()=>p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
-    const at=async(today,s,v)=>{await p.evaluate(([t,s,v])=>{TODAY_OVERRIDE=t;cache={};dayRecs={};sel=new Date(...s);view={y:v[0],m:v[1]};dayShown=null;show('today')},[today,s,v]);await quiet();
+    const at=async(today,s,v)=>{await p.evaluate(([t,s,v])=>{TODAY_OVERRIDE=t;cache={};dayRecs={};sel=new Date(...s);view={y:v[0],m:v[1]};HOOK.dayShown=null;show('today')},[today,s,v]);await quiet();
     };
     await at('2026-11-20T07:30:00',[2026,10,20],[2026,10]);await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-22T07:30:00'});await fire();await quiet();
     const fri=await p.evaluate(()=>key(sel));
@@ -172,7 +172,7 @@ const nufix7=async({ok,chromium,url,settle})=>{
     // ---- Settings: a workday taken away moves Today on, units redraw the location line and Today
     await at('2026-11-16T09:00:00',[2026,10,16],[2026,10]);
     const st=await p.evaluate(()=>{settings.units='F';settings.location={lat:29.4,lon:48,name:'Kuwait City'};climate=Array.from({length:12},(_,m)=>({tmax:20+m*2}));weather={'2026-11-17':{code:0,tmax:25,tmin:15}};renderToday();
-      openSettings('schedule');toggleDay('#cfg-workdays',1);const stale=todayStale;saveSettings();const r={stale,sel:key(sel),h2:$('#today .day h2 .dlong').textContent};
+      openSettings('schedule');toggleDay('#cfg-workdays',1);const stale=HOOK.todayStale;saveSettings();const r={stale,sel:key(sel),h2:$('#today .day h2 .dlong').textContent};
       openSettings('weather');setUnits('C');r.loc=$('#wx-loc').textContent;saveSettings();r.wx=$('#today .wxc').textContent;settings.workdays=[0,1,2,3,4];settings.location=null;climate=null;weather={};delete settings.units;cache={};return r});
     await quiet();
     ok(st.stale&&st.sel==='2026-11-17'&&/Tuesday/.test(st.h2),`a workday taken away in Settings moves Today on when Settings closes (${st.sel}, ${st.h2})`);
@@ -181,7 +181,7 @@ const nufix7=async({ok,chromium,url,settle})=>{
     // ---- days before the wardrobe existed; Trousers; Add one; a deleted piece on a past day
     await p.evaluate(()=>{items[0].sample=true});   // (with the sample's banner above it too: it hid the note on the phone)
     await at('2026-11-16T09:00:00',[2026,10,5],[2026,10]);
-    const d=await p.evaluate(()=>{const r={pre:($('#prewd')||{}).textContent||'',score:!!$('#sbox'),banner:!!$('#kit-sample')};delete items[0].sample;      settings.blazerDays=[1];sel=new Date(2026,10,16);dayRecs={};cache={};renderToday();if(!listOpen)toggleList();
+    const d=await p.evaluate(()=>{const r={pre:($('#prewd')||{}).textContent||'',score:!!$('#sbox'),banner:!!$('#kit-sample')};delete items[0].sample;      settings.blazerDays=[1];sel=new Date(2026,10,16);dayRecs={};cache={};renderToday();if(!listOpen)HOOK.toggleList();
       r.rows=[...document.querySelectorAll('#ibox .row > span.mut:first-child')].map(e=>e.textContent);r.add=[...document.querySelectorAll('#ibox .addone')].map(b=>b.textContent+'|'+b.dataset.act+'|'+b.dataset.type);
       r.html=$('#today').innerHTML;settings.blazerDays=[];
       dayRecs={'2026-11-12':{date:'2026-11-12',ids:{top:'gone1',bot:'gone1',shirt:'shirt5',tie:'tie6',shoes:'shoes8',belt:'belt9',socks:'socks10'},suitDay:true}};cache={};sel=new Date(2026,10,12);renderToday();
@@ -213,17 +213,17 @@ const nufix7=async({ok,chromium,url,settle})=>{
     ok(/My charcoal pinstripe/.test(s.names),'Insights uses the name the user gave');
     ok(s.weeks===2,`"Your scores" leaves out the weeks before the wardrobe existed (${s.weeks} weeks shown)`);
     // ---- the empty pages have a way to start
-    const e=await p.evaluate(()=>{const keep=items;items=[];renderStats();const a=$('#stats').innerHTML;renderPack();const b=$('#pack').innerHTML;items=keep;cache={};return [a,b]});
+    const e=await p.evaluate(()=>{const keep=items;items=[];renderStats();const a=$('#stats').innerHTML;HOOK.renderPack();const b=$('#pack').innerHTML;items=keep;cache={};return [a,b]});
     ok(e.every(h=>/<button[^>]*>Add your first item<\/button>/.test(h)&&/<button[^>]*>Try a sample wardrobe<\/button>/.test(h)),'empty Insights and Packing list offer Add your first item and the sample');
     // ---- packing: a kept trip outlasts a Settings change; a suit arriving after the trip starts isn't packed
     const pk=await p.evaluate(async()=>{cache={};dayRecs={};localStorage.removeItem('pack_trip');
-      packT={a:'2026-11-29',b:'2026-12-3',j:0,s:0};show('pack');await packLock();const before=packLockState(packNow.days);await clearLocks();renderPack();const after=packLockState(packNow.days);
-      await packRelease();
+      HOOK.packT={a:'2026-11-29',b:'2026-12-3',j:0,s:0};show('pack');await HOOK.packLock();const before=HOOK.packLockState(HOOK.packNow.days);await clearLocks();HOOK.renderPack();const after=HOOK.packLockState(HOOK.packNow.days);
+      await HOOK.packRelease();
       // the navy suit bought, arriving Nov 30: not in the trip from Nov 29
-      Object.assign(items[0],{paused:true,order:true,arrives:'2026-11-30'});cache={};renderPack();
-      const used=packNow.days.some(x=>x.o&&x.o.top&&x.o.top.id==='suit0'),note=($('#pk-late')||{}).textContent||'';
-      packT={a:'2026-12-2',b:'2026-12-3',j:0,s:0};cache={};renderPack();const later=!$('#pk-late');
-      delete items[0].paused;delete items[0].order;delete items[0].arrives;cache={};packT=null;dayRecs={};show('today');return {before,after,used,note,later}});
+      Object.assign(items[0],{paused:true,order:true,arrives:'2026-11-30'});cache={};HOOK.renderPack();
+      const used=HOOK.packNow.days.some(x=>x.o&&x.o.top&&x.o.top.id==='suit0'),note=($('#pk-late')||{}).textContent||'';
+      HOOK.packT={a:'2026-12-2',b:'2026-12-3',j:0,s:0};cache={};HOOK.renderPack();const later=!$('#pk-late');
+      delete items[0].paused;delete items[0].order;delete items[0].arrives;cache={};HOOK.packT=null;dayRecs={};show('today');return {before,after,used,note,later}});
     await quiet();
     ok(pk.before.n===pk.before.of&&pk.after.n===pk.after.of&&pk.after.of>0,`a kept trip stays locked through a Settings change (clearLocks): ${pk.after.n} of ${pk.after.of}`);
     ok(!pk.used&&/arrives .*after you leave/.test(pk.note),`a suit arriving after the trip starts is left out, and the page says why (${pk.note})`);

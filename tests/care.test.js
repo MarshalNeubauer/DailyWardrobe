@@ -21,10 +21,10 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
   try{
     const {p,errs}=await open();
     // ---- wears since cleaning, from the history
-    const c=await p.evaluate(()=>{const w=careCounts();return {navy:w.navy,char:w.char,grey:w.grey,bz:w.bz,p1:w.p1,p2:w.p2||0,sh1:w.sh1,st:careState(items.find(i=>i.id==='navy')),nr:careState(items.find(i=>i.id==='char')),tie:careState(items.find(i=>i.id==='t1'))}});
+    const c=await p.evaluate(()=>{const w=HOOK.careCounts();return {navy:w.navy,char:w.char,grey:w.grey,bz:w.bz,p1:w.p1,p2:w.p2||0,sh1:w.sh1,st:careState(items.find(i=>i.id==='navy')),nr:careState(items.find(i=>i.id==='char')),tie:careState(items.find(i=>i.id==='t1'))}});
     ok(c.navy===5&&c.char===4&&c.grey===1&&c.bz===3&&c.p1===3&&c.p2===0&&c.sh1===5,`wears are counted from the days really worn; a day marked not worn doesn't count (navy ${c.navy}, charcoal ${c.char}, grey ${c.grey}, blazer ${c.bz}, trousers ${c.p1})`);
     ok(c.st.limit===5&&c.st.due&&!c.st.near&&c.nr.near&&!c.nr.due&&c.tie.limit===0&&!c.tie.due,'defaults: a suit is due after 5 wears and nearly due at 4; a tie is never due');
-    const cl=await p.evaluate(()=>{items.find(i=>i.id==='char').cleaned='2026-10-29';cache={};const a=careCounts().char;delete items.find(i=>i.id==='char').cleaned;cache={};return a});
+    const cl=await p.evaluate(()=>{items.find(i=>i.id==='char').cleaned='2026-10-29';cache={};const a=HOOK.careCounts().char;delete items.find(i=>i.id==='char').cleaned;cache={};return a});
     ok(cl===2,'only the wears after the day it was cleaned count ('+cl+')');
     // ---- Today: the cleaning frame and banner on the picture (careFrame, the owner's design 2026-11-14): yellow one wear short, red on
     // the last wear and past it; on today and coming days, the wears planned in between counted; suits and blazers only
@@ -55,12 +55,12 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       const t0=await lay([2026,10,11]),t1=await lay([2026,10,11],'shirt');
       ok(t0.photo&&t0.cut>0&&Math.abs(t0.cut-(t0.swRight+5+9))<1.5,`today: the banner cuts round the tie swatch (cut at ${t0.cut}, swatch edge ${Math.round(t0.swRight)})`);
       ok(t1.cut>0&&Math.abs(t1.cut-(t1.swRight+5+9))<1.5,`a swatch tapped on today: the stack comes down and the banner cuts round the tie swatch (cut at ${t1.cut}, swatch edge ${Math.round(t1.swRight)})`);
-      await p.evaluate(()=>{delete dayRecs['2026-11-11'];swOpen=null});
+      await p.evaluate(()=>{delete dayRecs['2026-11-11'];HOOK.swOpen=null});
       const f0=await lay([2026,10,20]),f1=await lay([2026,10,20],'top');
       ok(f0.cut>0&&Math.abs(f0.cut-(f0.swRight+5+9))<1.5&&f0.sw>60,`a coming day: the cut follows the ${Math.round(f0.sw)} px tie swatch (at ${f0.cut})`);
       {const seen=await p.evaluate(()=>[...window.__bandSeen]);ok(seen.length===1,`while the swatches shrink, the banner's words keep one size and one layout (${seen.length} seen: ${seen.map(x=>x.split('|')[0]).join(', ')})`)}
       ok(f1.cut>0&&f1.sw<f0.sw-4&&Math.abs(f1.cut-(f1.swRight+5+9))<1.5,`a swatch tapped: the swatches shrink to ${Math.round(f1.sw)} px and the cut moves with them (at ${f1.cut})`)}
-    await p.evaluate(()=>{delete dayRecs['2026-11-11'];swOpen=null;renders={};sel=new Date(2026,10,11);cache={}});
+    await p.evaluate(()=>{delete dayRecs['2026-11-11'];HOOK.swOpen=null;renders={};sel=new Date(2026,10,11);cache={}});
     // ---- cleaning reminders for the phone (careReminders, sent by the morning reminder's push): the last wear and a wear past it on
     // the morning planned; a piece due, once, the next morning to come, and not again until it is cleaned
     {const rem=await p.evaluate(()=>{localStorage.removeItem('care_told');cache={};const r=careReminders(14,'07:00'),told=JSON.parse(localStorage.getItem('care_told')||'{}');
@@ -90,7 +90,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
         let tap='';try{ACTS.careBandTap()}catch(e){tap='throws: '+e.message}
         const q=document.querySelector('#ask-title');asked=q?q.textContent:null;const no=document.querySelector('#ask-cancel');if(no&&asked)no.click();
         delete dayRecs['2026-11-11'];cache={};localStorage.removeItem('care_told');
-        return {state:careDayState(P[k],sel),rem,asked,tap}});
+        return {state:HOOK.careDayState(P[k],sel),rem,asked,tap}});
       ok(off.state&&off.state.k==='over'&&typeof off.rem==='object'&&Object.values(off.rem).some(t=>/The navy suit is overdue for cleaning: today is wear 6 of 5/.test(t)),`the suit worn with its jacket off on an overdue wear: the cleaning reminders name it (${typeof off.rem==='string'?off.rem:JSON.stringify(off.rem)})`);
       ok(!off.tap&&/^Overdue: Suit/.test(off.asked||''),`and the banner's tap asks whether it was cleaned (${off.tap||off.asked})`)}
     // ---- the Wardrobe grid: a quiet tag on due pieces only
@@ -110,7 +110,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     ok((await p.evaluate(()=>[...document.querySelectorAll('#care-due .care-row')].map(r=>r.id).join()))==='care-bz,care-navy','the most overdue comes first (a blazer worn 3 times with a limit of 2, before the suit at its limit)');
     await p.evaluate(()=>{delete settings.care;cache={};renderCare()});
     await p.click('#care-navy .caredone');await p.waitForFunction(()=>!document.querySelector('#care-navy')&&/Undo/.test(document.querySelector('#toast').textContent));
-    const cd=await p.evaluate(()=>({cleaned:items.find(i=>i.id==='navy').cleaned,w:careCounts().navy||0,toast:document.querySelector('#toast').textContent}));
+    const cd=await p.evaluate(()=>({cleaned:items.find(i=>i.id==='navy').cleaned,w:HOOK.careCounts().navy||0,toast:document.querySelector('#toast').textContent}));
     ok(cd.cleaned==='2026-11-11'&&cd.w===0&&/Cleaned today/.test(cd.toast)&&/Undo/.test(cd.toast),'"Cleaned today" sets the day and starts the count again, with Undo');
     await p.click('#care-char .caresend');await p.waitForFunction(()=>document.querySelector('#care-away #care-char'));
     const sent=await p.evaluate(()=>{const i=items.find(x=>x.id==='char');return {away:i.away,paused:i.paused,near:!!document.querySelector('#care-near #care-char'),row:document.querySelector('#care-away #care-char').textContent}});
@@ -134,7 +134,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.click('#ivcare .caresend[data-why=cleaner]');await p.waitForFunction(id=>!!items.find(i=>i.id===id).away&&document.querySelector('#gi-'+id+' .pausetag')&&document.querySelector('#ivcare .careitsback'),lk.id);
     const aw=await p.evaluate(({k,id})=>{const used=[];for(const m of [10,11])for(const [d,o] of Object.entries(planMonth(2026,m)))if(keyDate(d)>=todayDate()&&o.top&&o.top.id===id)used.push(d);
       sel=keyDate(k);const o=planFor()[k];sel=new Date(2026,10,11);
-      return {used,lockTop:planMonth(2026,10)[k].top.id,pool:slotPool('top',o).map(i=>i.id),tag:document.querySelector('#gi-'+id+' .pausetag').textContent,why:whyUnused(items.find(i=>i.id===id)),
+      return {used,lockTop:planMonth(2026,10)[k].top.id,pool:slotPool('top',o).map(i=>i.id),tag:document.querySelector('#gi-'+id+' .pausetag').textContent,why:HOOK.whyUnused(items.find(i=>i.id===id)),
         rot:!!document.querySelector('#item-view .ivrot .rotbtn'),where:document.querySelector('#ivcare .carewhere').textContent,back:!!document.querySelector('#ivcare .careitsback')}},lk);
     ok(aw.used.length===0&&aw.lockTop!==lk.id,'sent away, no coming day is planned with it, and the locked day that held it lets go');
     ok(!aw.pool.includes(lk.id),'the picker does not offer it');
@@ -149,7 +149,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       const r={a,b,away:'away' in i,paused:'paused' in i,arrives:'arrives' in i,cleaned:i.cleaned,toast:document.querySelector('#toast').textContent};TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};return r},lk.id);
     ok(ret.a===0&&ret.b===1&&!ret.away&&!ret.paused&&!ret.arrives&&ret.cleaned==='2026-11-20'&&/is back: it's in rotation again/.test(ret.toast),'the day after its date it is back in rotation by itself, cleaned on that date, and the app says so');
     // in the laundry, and Undo
-    await p.evaluate(()=>{closeItem();openItem('sh2')});await settle(p,500);
+    await p.evaluate(()=>{HOOK.closeItem();openItem('sh2')});await settle(p,500);
     ok((await p.evaluate(()=>document.querySelector('#ivcare .caresend').dataset.why))==='laundry','a shirt offers the laundry first');
     await p.click('#ivcare .caresend[data-why=laundry]');await p.waitForFunction(()=>!!items.find(i=>i.id==='sh2').away&&document.querySelector('#gi-sh2 .pausetag')&&/Undo/.test(document.querySelector('#toast').textContent));
     const la=await p.evaluate(()=>({tag:document.querySelector('#gi-sh2 .pausetag').textContent,why:items.find(i=>i.id==='sh2').away.why,used:Object.entries(planMonth(2026,10)).some(([d,o])=>keyDate(d)>=todayDate()&&o.shirt&&o.shirt.id==='sh2'),toast:document.querySelector('#toast').textContent}));
@@ -157,12 +157,12 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.click('#toast button');await p.waitForFunction(()=>!items.find(i=>i.id==='sh2').away);
     ok(await p.evaluate(()=>{const i=items.find(x=>x.id==='sh2');return !i.paused&&!i.cleaned}),'Undo puts it back as it was (not counted as cleaned)');
     // a pinned day lets go; a past outfit keeps the piece; what-to-buy still counts it as owned
-    const pin=await p.evaluate(async()=>{dayRecs['2026-11-12']={date:'2026-11-12',force:{top:'grey'}};cache={};await careSend('grey','cleaner');
-      const past=planMonth(2026,10)['2026-11-10'];return {force:!!(dayRecs['2026-11-12']||{}).force,top:planMonth(2026,10)['2026-11-12'].top.id,past:past.top&&past.top.id,shop:shopList(items).some(i=>i.id==='grey'&&!i.paused)}});
+    const pin=await p.evaluate(async()=>{dayRecs['2026-11-12']={date:'2026-11-12',force:{top:'grey'}};cache={};await HOOK.careSend('grey','cleaner');
+      const past=planMonth(2026,10)['2026-11-10'];return {force:!!(dayRecs['2026-11-12']||{}).force,top:planMonth(2026,10)['2026-11-12'].top.id,past:past.top&&past.top.id,shop:HOOK.shopList(items).some(i=>i.id==='grey'&&!i.paused)}});
     ok(!pin.force&&pin.top!=='grey','an upcoming day pinned to the piece is planned again without it');
     ok(pin.past==='grey','an outfit already worn keeps showing it');
     ok(pin.shop,'what-to-buy counts a piece that is away as owned');
-    await p.evaluate(()=>careBack('grey'));
+    await p.evaluate(()=>HOOK.careBack('grey'));
 
     // ---- shirts and the washing cycle
     const sh=await p.evaluate(()=>{dayRecs={};const run=ld=>{if(ld==null)delete settings.laundryDays;else settings.laundryDays=ld;cache={};const out=[];
@@ -191,18 +191,18 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     ok(/Suits after 5 wears/.test(s0.sum)&&/a worn shirt waits 1 day/.test(s0.sum),'its summary says so in words ("'+s0.sum+'")');
     await p.selectOption('#care-lim-suit','4');await p.waitForFunction(()=>settings.care&&settings.care.suit===4&&/after 4 wears/.test(document.querySelector('#sum-care').textContent));
     await p.selectOption('#cfg-laundry','3');await p.waitForFunction(()=>settings.laundryDays===3&&/waits 3 days/.test(document.querySelector('#sum-care').textContent));
-    const s1=await p.evaluate(()=>{const L=careLists();return {due:L.due.map(x=>x.i.id).join(),near:L.near.map(x=>x.i.id).join(),sum:document.querySelector('#sum-care').textContent,open:document.querySelector('#settings-modal').style.display}});
+    const s1=await p.evaluate(()=>{const L=HOOK.careLists();return {due:L.due.map(x=>x.i.id).join(),near:L.near.map(x=>x.i.id).join(),sum:document.querySelector('#sum-care').textContent,open:document.querySelector('#settings-modal').style.display}});
     ok(s1.due==='navy,char'&&s1.near==='p1','a limit of 4 makes the charcoal suit due as well');
     ok(/after 4 wears/.test(s1.sum)&&/waits 3 days/.test(s1.sum)&&s1.open==='block','the summary follows, and Settings stays open');
     await p.selectOption('#care-lim-suit','0');await p.waitForFunction(()=>settings.care.suit===0);
-    ok(await p.evaluate(()=>careLists().due.length===0&&careBadge(items.find(i=>i.id==='navy'))===''),'"Never" turns the limit off: nothing is due');
+    ok(await p.evaluate(()=>HOOK.careLists().due.length===0&&careBadge(items.find(i=>i.id==='navy'))===''),'"Never" turns the limit off: nothing is due');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await p.context().close();
 
     // ---- sizes, no sideways scroll, both themes
     for(const w of [320,390,626])for(const th of ['light','dark']){
       const {p:q,errs:e2}=await open({width:w,height:800});
-      await q.evaluate(async th=>{document.documentElement.dataset.theme=th;await careSend('char','cleaner','2026-11-20');openCare()},th);await q.waitForFunction(()=>document.querySelector('#care-away'));await settle(q,300);
+      await q.evaluate(async th=>{document.documentElement.dataset.theme=th;await HOOK.careSend('char','cleaner','2026-11-20');HOOK.openCare()},th);await q.waitForFunction(()=>document.querySelector('#care-away'));await settle(q,300);
       const m=await q.evaluate(()=>{const h=s=>[...document.querySelectorAll(s)].map(b=>Math.round(b.getBoundingClientRect().height)),cs=e=>getComputedStyle(e);
         const lum=c=>{const [r,g,b]=c.match(/[\d.]+/g).map(Number);return .2126*r+.7152*g+.0722*b};
         const card=document.querySelector('#care-in .care-card'),row=document.querySelector('#care-in .care-nm'),mr=document.querySelector('#settings-modal').getBoundingClientRect(),M=document.querySelector('#settings-modal');
@@ -218,7 +218,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
           side:v.scrollWidth-v.clientWidth,inside:r.left>=vr.left-.5&&r.right<=vr.right+.5,tagIn:!!tg&&tg.right<=gi.right+.5,page:document.documentElement.scrollWidth-innerWidth}});
       ok(iv.btn.length&&iv.btn.every(x=>x>=44)&&iv.inp>=44,`item sheet Care card at ${w}px, ${th}: 44px button and date field`);
       ok(iv.side<=0&&iv.inside&&iv.tagIn&&iv.page<=0,`item sheet and grid at ${w}px, ${th}: the card and the "Due" tag stay inside, no sideways scroll`);
-      await q.evaluate(()=>{closeItem();show('today');openSettings('care')});await q.waitForFunction(()=>document.querySelector('#sc-care').classList.contains('open')&&document.querySelector('#care-lim-suit'));await settle(q,300);
+      await q.evaluate(()=>{HOOK.closeItem();show('today');openSettings('care')});await q.waitForFunction(()=>document.querySelector('#sc-care').classList.contains('open')&&document.querySelector('#care-lim-suit'));await settle(q,300);
       const st=await q.evaluate(()=>{const m=document.querySelector('#settings-modal'),mr=m.getBoundingClientRect();return {sel:[...document.querySelectorAll('#sc-care select')].map(s=>Math.round(s.getBoundingClientRect().height)),side:m.scrollWidth-m.clientWidth,
         out:[...document.querySelectorAll('#sc-care *, #care-btn')].filter(x=>{const r=x.getBoundingClientRect();return r.width&&(r.right>mr.right+.5||r.left<mr.left-.5)}).length,link:Math.round(document.querySelector('#care-btn').getBoundingClientRect().height)}});
       ok(st.sel.length===9&&st.sel.every(x=>x===44)&&st.link>=44&&st.side<=0&&st.out===0,`Settings → Care at ${w}px, ${th}: 44px dropdowns, nothing past the edge`);
@@ -244,10 +244,10 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     const A=await device(),B=await device();
     await A.evaluate(async()=>{for(const it of [{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',vest:'no',added:1},{id:'s2',type:'suit',primaryColor:'grey',pattern:'solid',vest:'no',added:1}]){await put(it);items.push(it)}});
     await sync(A);await sync(B);
-    await A.evaluate(()=>careSend('s1','cleaner','2026-11-20'));await sync(A);await sync(B);
+    await A.evaluate(()=>HOOK.careSend('s1','cleaner','2026-11-20'));await sync(A);await sync(B);
     const b1=await get(B);
     ok(b1&&b1.away&&b1.away.why==='cleaner'&&b1.away.since==='2026-11-11'&&b1.away.back==='2026-11-20'&&b1.paused&&b1.arrives==='2026-11-20','a piece sent away on one device is away on the other, with its date');
-    await B.evaluate(()=>careBack('s1'));await sync(B);await sync(A);
+    await B.evaluate(()=>HOOK.careBack('s1'));await sync(B);await sync(A);
     const a1=await get(A);
     ok(a1&&!a1.away&&!a1.paused&&a1.cleaned==='2026-11-11','marked back on the second device: back in rotation on the first, with the day it was cleaned');
     await A.evaluate(async()=>{settings.care={suit:3};settings.laundryDays=2;await saveUserSettings()});await sync(A);await sync(B);

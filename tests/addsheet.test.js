@@ -20,7 +20,7 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
   await ctx.addInitScript(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');localStorage.setItem('tour_seen','1')});
   const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
   await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
-  await p.evaluate(W=>{rememberRole({role:'owner'});const w=(0,eval)(W);items=w.realistic.map(i=>({...i}));settings.setupDone=1;cache={};queue.length=0;show('wardrobe');openAdd()},WARDROBES);
+  await p.evaluate(W=>{HOOK.rememberRole({role:'owner'});const w=(0,eval)(W);items=w.realistic.map(i=>({...i}));settings.setupDone=1;cache={};queue.length=0;show('wardrobe');openAdd()},WARDROBES);
   await settle(p,400);
   const ev=(f,a)=>p.evaluate(f,a);
   const tap=async s=>{await p.click(s);await settle(p,350)};

@@ -14,11 +14,11 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(a.src==='photo'&&/^data:image\/jpeg/.test(a.sw)&&!a.note,'without a close-up the precision swatch is cut from the item photo (a small JPEG: option A, 2026-11-15)');
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
     await p.waitForFunction(()=>queue[0].swSrc==='tex',null,{timeout:20000});
-    const b=await p.evaluate(()=>{const q=queue[0],el=document.querySelector('#swatch-img-0');return {src:q.swSrc,changed:q.swatch,same:q.swatch===cropSwatch(q.texCanvas,q.zoom,q.cx,q.cy,colOf(q)),
+    const b=await p.evaluate(()=>{const q=queue[0],el=document.querySelector('#swatch-img-0');return {src:q.swSrc,changed:q.swatch,same:q.swatch===HOOK.cropSwatch(q.texCanvas,q.zoom,q.cx,q.cy,colOf(q)),
       shown:el&&el.style.backgroundImage.includes(q.swatch.slice(30,80)),note:/From the fabric close-up/.test(document.querySelector('#queue').textContent)}});
     ok(b.src==='tex'&&b.changed!==a.sw&&b.same,'adding the close-up cuts the precision swatch from it');
     ok(b.shown&&b.note,'the inspector shows it and says it comes from the close-up');
-    const z=await p.evaluate(()=>{updateSwatchParam(0,'zoom',3);updateSwatchParam(0,'cx',.2);const q=queue[0];return {same:q.swatch===cropSwatch(q.texCanvas,3,.2,q.cy,colOf(q)),src:q.swSrc}});
+    const z=await p.evaluate(()=>{updateSwatchParam(0,'zoom',3);updateSwatchParam(0,'cx',.2);const q=queue[0];return {same:q.swatch===HOOK.cropSwatch(q.texCanvas,3,.2,q.cy,colOf(q)),src:q.swSrc}});
     ok(z.same&&z.src==='tex','the zoom and position sliders work on the close-up');
     await p.evaluate(()=>{dropTexture(0)});
     ok(await p.evaluate(()=>queue[0].swSrc==='photo'),'removing the close-up goes back to the item photo');
@@ -39,7 +39,7 @@ module.exports=async({ok,chromium,url,settle})=>{
         elsewhere:/<image/.test(swatchSVG(s))}},it.id);
     ok(today.row&&today.chip&&today.elsewhere,'Today\'s pieces list and chips show the drawn swatch; elsewhere it is the close-up');
     ok(today.size===40,`Today's piece swatches are 40px, so the pattern reads (${today.size}px)`);
-    const rows=await p.evaluate(()=>{toggleList();const hs=()=>[...document.querySelectorAll('#today .list .ritem>.row')].map(r=>Math.round(r.getBoundingClientRect().height));
+    const rows=await p.evaluate(()=>{HOOK.toggleList();const hs=()=>[...document.querySelectorAll('#today .list .ritem>.row')].map(r=>Math.round(r.getBoundingClientRect().height));
       const big=hs(),st=document.createElement('style');st.textContent='#today .row .dot{width:30px!important;height:30px!important}';document.head.appendChild(st);const small=hs();st.remove();return {big,small}});
     ok(rows.big.length>3&&rows.big.every((h,k)=>h===rows.small[k]),`the larger swatches leave every row the same height (${rows.big.join(',')} px, as with 30px squares)`);
     const legible=await p.evaluate(()=>{const w={id:'w',type:'suit',primaryColor:'khaki',pattern:'windowpane',sett:{v:2,a:0,bands:[['#b0a084',.95],['#9db3cf',.05]],cross:{d:90,bands:[[null,.95],['#9db3cf',.05]],r:1},cr:3.5,tr:9}};
@@ -48,12 +48,12 @@ module.exports=async({ok,chromium,url,settle})=>{
       return {wp:tile(swatchSVG(w,true)),tex:tile(swatchSVG(sh,true))}});
     ok(legible.wp===8&&Math.abs(legible.tex-6.4)<.01,`drawn at a readable scale: two windowpane panes across the square (${legible.wp} of 16), two and a half weave repeats (${legible.tex})`);
     // ---- Wardrobe editor: removing, re-adding and undoing the close-up re-cut the swatch
-    const ed=await p.evaluate(async id=>{const it=items.find(x=>x.id===id),tex=it.texture;await setTexture(id,null);const off={src:it.swSrc,img:/<image/.test(swatchSVG(it))};
-      await setTexture(id,tex);const on={src:it.swSrc,img:/<image/.test(swatchSVG(it))};await undoPhoto(id);const undo={src:it.swSrc,tex:!!it.texture};return {off,on,undo}},it.id);
+    const ed=await p.evaluate(async id=>{const it=items.find(x=>x.id===id),tex=it.texture;await HOOK.setTexture(id,null);const off={src:it.swSrc,img:/<image/.test(swatchSVG(it))};
+      await HOOK.setTexture(id,tex);const on={src:it.swSrc,img:/<image/.test(swatchSVG(it))};await HOOK.undoPhoto(id);const undo={src:it.swSrc,tex:!!it.texture};return {off,on,undo}},it.id);
     ok(ed.off.src==='photo'&&!ed.off.img&&ed.on.src==='tex'&&ed.on.img,'the editor re-cuts the swatch when the close-up is removed or added');
     ok(ed.undo.src==='photo'&&!ed.undo.tex,'undo restores the close-up and the swatch with it (back to no close-up here)');
     // ---- once: an item that already had a close-up gets its swatch cut from it
-    const mig=await p.evaluate(async id=>{const it=items.find(x=>x.id===id);await setTexture(id,(await (async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();
+    const mig=await p.evaluate(async id=>{const it=items.find(x=>x.id===id);await HOOK.setTexture(id,(await (async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();
         return await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)})})()));
       it.swatch='data:image/png;base64,OLD';delete it.swSrc;localStorage.removeItem('tex_swatch2');const n=await texSwatches(),again=await texSwatches();
       return {n,again,src:it.swSrc,changed:it.swatch!=='data:image/png;base64,OLD'}},it.id);
@@ -63,7 +63,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       const stat=async url=>{const im=await imgOf(url),c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,128,128).data,L=[];
         for(let i=0;i<d.length;i+=4)L.push(rgbLab(d[i],d[i+1],d[i+2])[0]);L.sort((a,b)=>a-b);return {med:L[L.length>>1],swing:L[Math.floor(L.length*.9)]-L[Math.floor(L.length*.1)],top:L[Math.floor(L.length*.99)]}};
       const tex=await rd('tests/fixtures/shirt-diamond-closeup.jpg'),sh={id:'sw1',type:'shirt',primaryColor:'white',pattern:'woven',texture:tex,photo:'data:image/png;base64,PHOTO'};
-      const raw=await stat(cropSwatch(await (async()=>{const im=await imgOf(tex),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c})()));
+      const raw=await stat(HOOK.cropSwatch(await (async()=>{const im=await imgOf(tex),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c})()));
       await refreshSwatch(sh);const w=await stat(sh.swatch),white=rgbLab(...hexRgb(colOf(sh)))[0];
       sh.primaryColor='lightblue';await refreshSwatch(sh);const lb=await stat(sh.swatch),lbL=rgbLab(...hexRgb(colOf(sh)))[0];
       return {raw,w,white,lb,lbL}});
@@ -72,7 +72,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(Math.abs(lt.lb.med-lt.lbL)<4,`tagged another colour, the swatch takes that colour's lightness (L* ${lt.lb.med.toFixed(0)} for ${lt.lbL.toFixed(0)})`);
     const card=await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})]);setq(0,'type','blazer');
       const q=queue[0];const c=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([c],'c.jpg',{type:'image/jpeg'}));
-      const before=q.swatch;setq(0,'primaryColor','navy');return {changed:q.swatch!==before,same:q.swatch===cropSwatch(q.texCanvas,q.zoom,q.cx,q.cy,colOf(q))}});
+      const before=q.swatch;setq(0,'primaryColor','navy');return {changed:q.swatch!==before,same:q.swatch===HOOK.cropSwatch(q.texCanvas,q.zoom,q.cx,q.cy,colOf(q))}});
     ok(card.changed&&card.same,'changing the colour on the Add card re-cuts the close-up swatch to match');
     const clip=await p.evaluate(()=>{const lab=()=>[...document.querySelectorAll('#today .list .row .mut')].map(m=>m.textContent);const o=planFor()[key(sel)];const none=!o.clip&&!lab().includes('Tie clip');
       items.push({id:'clip1',type:'tieclip',primaryColor:'silver',metal:'silver',pattern:'solid'});items.find(i=>i.type==='suit').vest='no';cache={};renderToday();const o2=planFor()[key(sel)];return {none,has:!!o2.clip&&lab().includes('Tie clip')}});

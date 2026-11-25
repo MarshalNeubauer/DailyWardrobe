@@ -41,7 +41,7 @@ async function paste(t) {
   await ph.page.fill('#kit-paste', ''); await ph.tap('#kit-paste'); await ph.page.keyboard.insertText(t); await sleep(900);
   const prev = await ph.page.locator('#kit-prev').innerText();
   const btn = await ph.page.locator('#kit-imp').innerText();
-  const rows = await ph.page.evaluate(() => kitImp ? kitImp.rows.map(r => r.ok ? { line: r.line, type: r.card.type, c: r.card.primaryColor, c2: r.card.secondaryColor, p: r.card.pattern, on: r.on, dup: !!r.dup } : { line: r.line, bad: r.why }) : null);
+  const rows = await ph.page.evaluate(() => HOOK.kitImp ? HOOK.kitImp.rows.map(r => r.ok ? { line: r.line, type: r.card.type, c: r.card.primaryColor, c2: r.card.secondaryColor, p: r.card.pattern, on: r.on, dup: !!r.dup } : { line: r.line, bad: r.why }) : null);
   return { prev, btn, rows };
 }
 async function addItems() { await ph.tap('#kit-imp'); await sleep(2500) }

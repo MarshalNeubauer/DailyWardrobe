@@ -151,7 +151,7 @@ module.exports=async({ok,chromium,url})=>{
       const keys=await p.evaluate(([kind,ns])=>Object.fromEntries(ns.map(n=>[n,asmCmKey(kind,n)])),[kind,Object.keys(recs)]);
       for(const [n,r] of Object.entries(recs))served[keys[n]]=r}
     // the masters, a stand-in background (a cream wall, a window, a desk and laptop, fixed noise, blurred), the jobs and the stand-in maps
-    const setup=await p.evaluate(async([h,LOOKS,SIZE])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=SIZE;asmAheadSoon=()=>{};asmAhead=async()=>{};
+    const setup=await p.evaluate(async([h,LOOKS,SIZE])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=SIZE;HOOK.asmAheadSoon=()=>{};HOOK.asmAhead=async()=>{};
       if(!await asmCmGet('suit')||!await asmCmGet('shirt-tie'))return {err:'no master'};
       // (stage 5) stand-in masters derived from the two (no real masters downloaded): suit-open = the suit master with its tie's share given
       // to the shirt; vest = the suit master with the lower part of the shirt's front in the V as the waistcoat; vest-open = the vest master
@@ -189,7 +189,7 @@ module.exports=async({ok,chromium,url})=>{
         const j=await asmCmJob(o);if(!j)return {err:'no job for '+L.name+' ('+asmCmKind(o)+')'};Object.assign(j,L.jx||{});j.diskCache=false;__jobs.push(j);__its.push({sh,tie,bot})}
       // stand-in solved positions at the maps' 2048: the body piece 1, sleeve parts 10+, lapels 40+ (from the master's own parts at 512), each
       // position a smooth bend of the picture's, encoded as asmGeoPrep reads them; one set per master
-      const G=ASM_GEO_PX,pcs={};
+      const G=HOOK.ASM_GEO_PX,pcs={};
       for(const kind of [...new Set(__jobs.map(j=>j.cm))]){const ix=LOOKS.map((L,i)=>i).filter(i=>__jobs[i].cm===kind);if(!ix.some(i=>LOOKS[i].geo))continue;
         const hit=await asmCmSetup(__jobs[ix[0]]),P=hit.P,A=P.A,f=G/P.S,pc=pcs[kind]={tie:0,cuff:0,front:0,sleeve:0,legs:0,other:0},on=(z,k)=>!!(A[z]&&A[z][k]);
         const enc=fn=>{const cv=document.createElement('canvas');cv.width=cv.height=G;const cx=cv.getContext('2d'),d=cx.createImageData(G,G);
@@ -212,7 +212,7 @@ module.exports=async({ok,chromium,url})=>{
       // quarter-pixel points the float rule (asmTubePart) would put in the other part
       const cr=P.geo.segs.filter(g=>g&&g.crease);let pts=0,moved=0;
       for(const g of cr)for(let k=0;k<P.N;k+=7){if(!P.A.jacket[k]||P.geo.segs[P.geo.seg[k]]!==g)continue;const X=k%P.S+.25,Y=(k-k%P.S)/P.S+.75;pts++;if(asmTubePartQ(g,X,Y)!==asmTubePart(g,X,Y))moved++}
-      return {renderer:(()=>{const G2=asmGlInit(SIZE);return G2?G2.renderer:null})(),bg:!!__jobs[0].bg,crease:cr.length,pts,moved,pcs,cuffs:asmGlCuffs(P).n,kinds:[...new Set(__jobs.map(j=>j.cm))].join()}},[HOST,LOOKS,SIZE]);
+      return {renderer:(()=>{const G2=HOOK.asmGlInit(SIZE);return G2?G2.renderer:null})(),bg:!!__jobs[0].bg,crease:cr.length,pts,moved,pcs,cuffs:HOOK.asmGlCuffs(P).n,kinds:[...new Set(__jobs.map(j=>j.cm))].join()}},[HOST,LOOKS,SIZE]);
     ok(!setup.err&&setup.bg,`the masters (${setup.kinds}), their masks and a background are on the page (${setup.err||'ok'})`);
     ok(!!setup.renderer,`WebGL2 here: ${setup.renderer}`);
     ok(setup.crease>=1&&setup.pts>100&&setup.moved<=setup.pts/1000,`the master has a creased sleeve (${setup.crease}), whose part the whole-number rule chooses as the float rule did (${setup.moved} of ${setup.pts} points moved)`);
@@ -232,7 +232,7 @@ module.exports=async({ok,chromium,url})=>{
           SH?'shirt-tile':'',SH&&SH.fine?'fine':'',SH&&asmHbShirt(it.sh)?'hbs':'',SH&&ss&&ss.motif?'shirt-motif':'',
           cm!=='suit'?'m-'+cm:'',P.A.waistcoat&&P.A.waistcoat.some(v=>v>127)?'wc':'',P.geo&&P.geo.gar==='shirt'?'gs':'',P.legs?'legs':'',P.A.belt?'belt':'',P.A.buckle?'buckle':'',
           cl.trousers&&cl.trousers.tile?'tr-tile':'',it.bot&&it.bot.type==='suit'?'suitbot':''].filter(Boolean).join(',');
-        const B=asmGlBytes(asmGlState);
+        const B=HOOK.asmGlBytes(asmGlState);
         return {cpu:c.r.gl,gl:g.r.gl,why,max:mx,mean:sum/(3*N),over,cms:c.r.ms,gms:g.r.ms,has:has2,tkb:B&&B.tiles?Math.round(B.tiles/1024):0,mb:B?(B.all/1048576).toFixed(1):'?',cm}},i);
       if(L.has)ok(r.has===L.has,`${L.name}: the cloth is what the row means (${r.has}, wanted ${L.has})`);
       if(L.gl){ok(r.cpu===false&&r.gl===true,`${L.name}: the graphics chip paints it (switch on), the CPU with the switch off (${r.why||'covered'})`);
@@ -240,9 +240,9 @@ module.exports=async({ok,chromium,url})=>{
       else ok(r.gl===false&&L.why.test(r.why)&&r.max===0,`${L.name}: not covered (${r.why}): painted on the CPU either way, the same picture`)}
     // an own pattern's look in the look's key: changing an item to it, or re-describing it, gives a new key (phones and the PC repaint)
     const ks=await p.evaluate(async()=>{const w=items[0],sh={id:'k1',type:'shirt',primaryColor:'white',pattern:'solid'},tie={id:'k2',type:'tie',primaryColor:'navy',pattern:'solid'},top={id:'k3',type:'blazer',primaryColor:'navy',pattern:'nailhead'};
-      const o=()=>({top,shirt:sh,tie,watch:w}),k0=asmCmSig(o());top.pattern='own-hopsack';const k1=asmCmSig(o()),route=asmCmRoute(top,'jacket').how,j=await asmCmJob(o()),T=j.cloth.jacket.suit;
+      const o=()=>({top,shirt:sh,tie,watch:w}),k0=HOOK.asmCmSig(o());top.pattern='own-hopsack';const k1=HOOK.asmCmSig(o()),route=asmCmRoute(top,'jacket').how,j=await asmCmJob(o()),T=j.cloth.jacket.suit;
       let lo=1,hi=0;for(let k=0;k<T.t.length;k+=3){lo=Math.min(lo,T.t[k]);hi=Math.max(hi,T.t[k])}
-      const all=Object.values(CUSTOM_PAT),was=CUSTOM_PAT['own-hopsack'];applyCustom({patterns:all.map(q=>q.key==='own-hopsack'?{...q,look:{...q.look,tr:40}}:q)});const k2=asmCmSig(o()),mm2=(await asmCmJob(o())).cloth.jacket.suit.mm;
+      const all=Object.values(CUSTOM_PAT),was=CUSTOM_PAT['own-hopsack'];applyCustom({patterns:all.map(q=>q.key==='own-hopsack'?{...q,look:{...q.look,tr:40}}:q)});const k2=HOOK.asmCmSig(o()),mm2=(await asmCmJob(o())).cloth.jacket.suit.mm;
       applyCustom({patterns:all.map(q=>q.key==='own-hopsack'?was:q)});return {k0,k1,k2,route,tw:T.TW,swing:(hi-lo)/T.c[0],mm:T.mm,mm2,lk:/\/lk1l/.test(k1)}});
     ok(ks.k0!==ks.k1&&ks.k1!==ks.k2&&ks.lk,'an item changed to an own pattern, and the pattern re-described, each give the look a new key (/lk…)');
     ok(ks.route==='look'&&ks.tw===48&&ks.swing>.08&&ks.swing<.2&&Math.abs(ks.mm-550/70)<.01&&Math.abs(ks.mm2-550/40)<.01,`the jacket is painted from the look's weave map: one 4x4 repeat, 550 mm / its repeats across (${ks.mm.toFixed(2)} mm, swing ${ks.swing.toFixed(3)} of its colour)`);
@@ -250,12 +250,12 @@ module.exports=async({ok,chromium,url})=>{
     const fb=await p.evaluate(async()=>{const i=0,out={};
       const oc=OffscreenCanvas.prototype.getContext,hc=HTMLCanvasElement.prototype.getContext;
       OffscreenCanvas.prototype.getContext=function(t,...a){return t==='webgl2'?null:oc.call(this,t,...a)};HTMLCanvasElement.prototype.getContext=function(t,...a){return t==='webgl2'?null:hc.call(this,t,...a)};
-      asmGlReset();out.none=(await __paint(i,true)).r.gl;out.probe=asmGlProbe();out.onPage=asmGlOnPage(__jobs[i],{ok:true,gl:false});
-      OffscreenCanvas.prototype.getContext=oc;HTMLCanvasElement.prototype.getContext=hc;asmGlReset();
+      HOOK.asmGlReset();out.none=(await __paint(i,true)).r.gl;out.probe=asmGlProbe();out.onPage=asmGlOnPage(__jobs[i],{ok:true,gl:false});
+      OffscreenCanvas.prototype.getContext=oc;HTMLCanvasElement.prototype.getContext=hc;HOOK.asmGlReset();
       out.back=(await __paint(i,true)).r.gl;
       asmGlState.gl.getExtension('WEBGL_lose_context').loseContext();await new Promise(r=>setTimeout(r,50));
-      const lost=await __paint(i,true);out.lost=lost.r.gl;out.lostPx=!!lost.px&&lost.px.some(v=>v>0);out.waiting=asmGlRetry>Date.now();
-      asmGlRetry=0;out.again=(await __paint(i,true)).r.gl;return out});
+      const lost=await __paint(i,true);out.lost=lost.r.gl;out.lostPx=!!lost.px&&lost.px.some(v=>v>0);out.waiting=HOOK.asmGlRetry>Date.now();
+      HOOK.asmGlRetry=0;out.again=(await __paint(i,true)).r.gl;return out});
     ok(fb.none===false&&fb.probe===false&&fb.onPage===false,`no WebGL2: painted on the CPU, and the page doesn't take the look either (${JSON.stringify(fb)})`);
     ok(fb.back===true,'WebGL2 back: the graphics chip paints again');
     ok(fb.lost===false&&fb.lostPx&&fb.waiting,'a lost context: that look is painted on the CPU (a whole picture), and the graphics chip waits ASM_GL_RETRY_MS');
@@ -275,7 +275,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(rt.ready.ready===true&&rt.ready.gl===true&&rt.res.gl===true&&rt.res.url,`the app's worker says it has WebGL2 and paints a covered look on the graphics chip (${JSON.stringify(rt.res)})`);
     // Settings: the owner's switch
     const ui=await p.evaluate(()=>{const b=document.createElement('div');document.body.appendChild(b);asmGlNote({gl:true,ms:91});asmGlUI(b);const s=document.getElementById('cfg-gl'),out={v:s.value,txt:document.getElementById('gl-status').textContent};
-      s.value='off';s.dispatchEvent(new Event('change',{bubbles:true}));out.ls=localStorage.getItem('asm_gl');out.txt2=document.getElementById('gl-status').textContent;asmGlSet('on');out.ls2=localStorage.getItem('asm_gl');b.remove();return out});
+      s.value='off';s.dispatchEvent(new Event('change',{bubbles:true}));out.ls=localStorage.getItem('asm_gl');out.txt2=document.getElementById('gl-status').textContent;HOOK.asmGlSet('on');out.ls2=localStorage.getItem('asm_gl');b.remove();return out});
     ok(ui.v==='on'&&/graphics chip, 91 ms/.test(ui.txt)&&ui.ls==='0'&&/Off on this phone/.test(ui.txt2)&&ui.ls2===null,`Settings → Outfit pictures → Advanced: "Graphics-chip painting" on by default, off kept in localStorage, the last picture's way shown (${ui.txt.slice(-60)})`);
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}

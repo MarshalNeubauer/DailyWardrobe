@@ -80,7 +80,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     ok(await p.evaluate(()=>!document.querySelector('#add-group').offsetParent&&!!document.querySelector('#add-one').offsetParent),'Add: "Several items" is not shown; "One item" is');
     await p.evaluate(()=>{const s=items.find(i=>i.type==='shirt');s.pattern='herringbone';s.texture='data:image/png;base64,iVBORw0KGgo=';show('wardrobe');openItem(s.id)});await settle(p,500);
     ok(await p.evaluate(()=>!document.querySelector('#readpat-btn')&&!document.querySelector('.ivpat .connnote')),'the item sheet: no "Read pattern from photo" for a weave only the server can read');
-    await p.evaluate(()=>closeItem());
+    await p.evaluate(()=>HOOK.closeItem());
     // connected: everything is there again
     await p.evaluate(s=>{localStorage.setItem('worker_url',s);localStorage.setItem('app_token','tok-1');closeSettings();show('today')},SRV);
     const on=await p.evaluate(()=>{const b=document.querySelector('.render-btn');openSettings('photos');const r={gen:!b&&!document.querySelector('#regen-btn'),msg:!!document.querySelector('#render-msg'),
@@ -141,7 +141,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       ok(!errs.length,`${w}px: no page errors ${errs.slice(0,2).join(' | ')}`);
       await ctx.close();
       // the setup flow, every step
-      const s=await open({width:w,height:844},{setup:true});await s.p.evaluate(()=>{items=[];delete settings.setupDone;setupOpen(false)});const sb=[];
+      const s=await open({width:w,height:844},{setup:true});await s.p.evaluate(()=>{items=[];delete settings.setupDone;HOOK.setupOpen(false)});const sb=[];
       for(const k of ['welcome','week','wear','weather','connect','done'])for(const theme of ['light','dark']){
         await s.p.waitForFunction(k=>document.querySelector('#su-step')&&document.querySelector('#su-step').dataset.step===k,k);
         sb.push(await s.p.evaluate(([k,theme])=>{document.documentElement.dataset.theme=theme;const el=document.querySelector('#setup'),b=[...el.querySelectorAll('button')].filter(x=>x.offsetParent),i=[...el.querySelectorAll('select,input[type=text]')].filter(x=>x.offsetParent),body=el.querySelector('.su-body');
@@ -151,7 +151,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
           if(theme==='dark'&&k!=='done')document.querySelector('#su-next').click();return r},[k,theme]))}
       const sbad=sb.filter(o=>o.min<44||o.minw<44||(o.inp&&o.inp!=='44')||o.h2!=='22px'||o.over>0||o.wide>0||o.dark!==(o.theme==='dark'));
       ok(sb.length===12&&!sbad.length,`${w}px: every setup step has 44px controls, a 22px title, follows the theme and doesn't scroll sideways${sbad.length?' — '+JSON.stringify(sbad[0]):''}`);
-      if(w===390)ok(await s.p.evaluate(()=>{document.documentElement.dataset.theme='light';setupGo(-3);const k=document.querySelector('.su-sw[aria-checked=true] .su-knob'),d=document.createElement('i');d.style.color='var(--ink)';document.body.append(d);const ink=getComputedStyle(d).color;d.remove();return !!k&&getComputedStyle(k).backgroundColor===ink}),'the setup\'s switches are ink when on, like the dress-code switches in Settings');
+      if(w===390)ok(await s.p.evaluate(()=>{document.documentElement.dataset.theme='light';HOOK.setupGo(-3);const k=document.querySelector('.su-sw[aria-checked=true] .su-knob'),d=document.createElement('i');d.style.color='var(--ink)';document.body.append(d);const ink=getComputedStyle(d).color;d.remove();return !!k&&getComputedStyle(k).backgroundColor===ink}),'the setup\'s switches are ink when on, like the dress-code switches in Settings');
       await s.ctx.close()}
   }finally{await browser.close()}
 };

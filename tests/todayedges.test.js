@@ -45,9 +45,9 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     const cdp=await ctx.newCDPSession(p);const T=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
     const st=await p.evaluate(()=>{const b=document.querySelector('#stage').getBoundingClientRect();window.__slide=document.querySelector('#slide');return {x:b.x+b.width/2,y:b.y+Math.min(b.height/2,300)}});
     await T('touchStart',st.x,st.y);
-    const during=await p.evaluate(()=>{syncRedraw('today');return {same:document.querySelector('#slide')===window.__slide,wait:syncLater}});
-    await T('touchEnd');await p.waitForFunction(()=>syncLater===null&&document.querySelector('#slide')!==window.__slide,null,{timeout:5000}).catch(()=>{});
-    const after=await p.evaluate(()=>({redrawn:document.querySelector('#slide')!==window.__slide,wait:syncLater}));
+    const during=await p.evaluate(()=>{syncRedraw('today');return {same:document.querySelector('#slide')===window.__slide,wait:HOOK.syncLater}});
+    await T('touchEnd');await p.waitForFunction(()=>HOOK.syncLater===null&&document.querySelector('#slide')!==window.__slide,null,{timeout:5000}).catch(()=>{});
+    const after=await p.evaluate(()=>({redrawn:document.querySelector('#slide')!==window.__slide,wait:HOOK.syncLater}));
     ok(during.same&&during.wait==='today','a sync arriving while a finger is on Today waits (the element the touch began on stays)');
     ok(after.redrawn&&after.wait===null,'…and Today is drawn again once the finger lifts');
     ok(!errs.length,'no page errors ('+errs.join(' | ')+')');

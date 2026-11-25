@@ -38,7 +38,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
         return await route.fulfill({status:503,headers:H,body:'{"error":"server"}'})}catch{}});   // (a request the app called off can't be answered)
     await ctx.addInitScript(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');localStorage.setItem('tour_seen','1')});
     const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{CK_OPEN['*']=true;rememberRole({role:'owner'});window.__sig=[];const f=window.fetch;window.fetch=(u,o)=>{if(o&&o.signal)__sig.push({u:String(u),s:o.signal});return f(u,o)}});
+    await p.evaluate(()=>{CK_OPEN['*']=true;HOOK.rememberRole({role:'owner'});window.__sig=[];const f=window.fetch;window.fetch=(u,o)=>{if(o&&o.signal)__sig.push({u:String(u),s:o.signal});return f(u,o)}});
     const F=await p.evaluate(async()=>{const load=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
       const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
       const cv=(im,k)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9)};
@@ -111,13 +111,13 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     }
 
     // ---- CR-2-09: the busy pill during "Read color and texture"
-    const lab=await p.evaluate(()=>[busyLabelFor('https://w.test/describe',{method:'POST',body:JSON.stringify({what:'both',type:'suit'})}),busyLabelFor('https://w.test/describe',{method:'POST',body:JSON.stringify({what:'pattern'})})]);
+    const lab=await p.evaluate(()=>[HOOK.busyLabelFor('https://w.test/describe',{method:'POST',body:JSON.stringify({what:'both',type:'suit'})}),HOOK.busyLabelFor('https://w.test/describe',{method:'POST',body:JSON.stringify({what:'pattern'})})]);
     ok(lab[0]==='Claude is reading the color and texture…'&&lab[1]==='Claude is working out the weave…',`the busy pill names the reading (${lab.join(' / ')})`);
 
     // ---- CR-2-12: the black-backdrop fix within the day's remakes, done once nothing is left
     const bb=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=120;const x=c.getContext('2d');x.fillStyle='#000';x.fillRect(0,0,120,120);x.fillStyle='#e8e4dc';x.fillRect(30,30,60,60);
       const ph=c.toDataURL('image/png');localStorage.removeItem('black_bd');items=[{id:'s1',type:'socks',primaryColor:'cream',pattern:'solid',photo:ph,added:1}];
-      localStorage.setItem('remake_day',JSON.stringify({d:isoKey(new Date()),n:REMAKE_DAY}));
+      localStorage.setItem('remake_day',JSON.stringify({d:isoKey(new Date()),n:HOOK.REMAKE_DAY}));
       const n0=await fixBlackBackdrops(),f0=localStorage.getItem('black_bd'),same=items[0].photo===ph;
       localStorage.removeItem('remake_day');const n1=await fixBlackBackdrops(),f1=localStorage.getItem('black_bd'),spent=JSON.parse(localStorage.getItem('remake_day')||'{}').n;
       return {n0,f0,same,n1,f1,spent,changed:items[0].photo!==ph}});

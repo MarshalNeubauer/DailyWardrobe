@@ -24,12 +24,12 @@ V.run('W1-8-05',async(phones)=>{
   // send the two suits that the next days' locks hold (not today's) to the cleaner
   const sent=await ph.page.evaluate(async()=>{const T=todayDate(),tk=key(T),todayTop=planFor()[tk].top.id;const ids=[];
     for(const r of Object.values(dayRecs).sort((a,b)=>keyDate(a.date)-keyDate(b.date)))if(keyDate(r.date)>T&&r.lock&&r.lock.top&&r.lock.top!==todayTop&&!ids.includes(r.lock.top)&&items.find(i=>i.id===r.lock.top).type==='suit')ids.push(r.lock.top);
-    const pick=ids.slice(0,2);for(const id of pick)await careSend(id,'cleaner');return pick.map(id=>itemTitle(items.find(i=>i.id===id)))});
+    const pick=ids.slice(0,2);for(const id of pick)await HOOK.careSend(id,'cleaner');return pick.map(id=>itemTitle(items.find(i=>i.id===id)))});
   console.log('sent to cleaner:',sent);await V.sleep(800);
   console.log('Dec 13 after sending:',JSON.stringify(await plan(days)));
   await V.setWorldTime(ph,V.PORT,'2026-12-14T07:30:00+03:00');await ph.reopen(V.URL);await ph.ready();await V.sleep(1800);
   const before=await plan(days);console.log('Dec 14 open, before back:',JSON.stringify(before));
-  await ph.page.evaluate(async()=>{for(const i of items.filter(x=>x.away))await careBack(i.id)});await V.sleep(800);
+  await ph.page.evaluate(async()=>{for(const i of items.filter(x=>x.away))await HOOK.careBack(i.id)});await V.sleep(800);
   await ph.tapText(/^Today$/,'nav button').catch(()=>{});await V.sleep(1000);
   const after=await plan(days);console.log('Dec 14 after "It\'s back":',JSON.stringify(after));
   await V.setWorldTime(ph,V.PORT,'2026-12-15T07:30:00+03:00');await ph.reopen(V.URL);await ph.ready();await V.sleep(1800);

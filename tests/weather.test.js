@@ -54,7 +54,7 @@ const weather=async({ok,chromium,url})=>{
      (WebKit's IndexedDB: about 80 ms later), so wait for the list too, as the add above does, then check both */
   await p.waitForFunction(()=>!document.querySelector('#formal-list .fchip'),null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(()=>!planFor()['2026-11-19'].formal&&!document.querySelector('#formal-list .fchip')&&/No occasions coming up/.test($('#formal-list').textContent)),'the × on a formal day in Settings makes it regular again');
-  await p.evaluate(()=>{closeSettings();setFormal(true,'2026-11-19')});await p.waitForFunction(()=>planFor()['2026-11-19'].formal);
+  await p.evaluate(()=>{closeSettings();HOOK.setFormal(true,'2026-11-19')});await p.waitForFunction(()=>planFor()['2026-11-19'].formal);
   // French cuffs with no cufflinks owned
   const nl=await p.evaluate(()=>{const keep=items;items=items.filter(i=>i.type!=='cufflinks');cache={};const o=planFor()['2026-11-19'];const n=o.notes.join(' ');items=keep;cache={};return {cuff:o.shirt.cuff,n}});
   ok(nl.cuff!=='french'||nl.n.includes('cufflinks'),'without cufflinks the French-cuff shirt is avoided or flagged');
@@ -140,7 +140,7 @@ const climate=async({ok,chromium,url})=>{
     await p.waitForFunction(()=>Array.isArray(climate)&&climate.length===12,null,{timeout:5000}).catch(()=>{});   // the request is made before its answer fills the climate in
     ok(calls===2,'changing the location fetches that place\'s climate');
     // the what-to-buy analysis plans with it too
-    const pay=await p.evaluate(()=>{let sent=null;const W=window.Worker;window.Worker=function(){this.postMessage=d=>{sent=d};this.terminate=()=>{}};analyzeWardrobe();window.Worker=W;shopBusy=null;return Array.isArray(sent.climate)&&sent.climate.length});
+    const pay=await p.evaluate(()=>{let sent=null;const W=window.Worker;window.Worker=function(){this.postMessage=d=>{sent=d};this.terminate=()=>{}};HOOK.analyzeWardrobe();window.Worker=W;HOOK.shopBusy=null;return Array.isArray(sent.climate)&&sent.climate.length});
     ok(pay===12,'the what-to-buy analysis is given the climate too');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

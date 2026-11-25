@@ -67,15 +67,15 @@ const raincoat=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(()=>{const it=c=>({id:'r'+c,type:'raincoat',primaryColor:c,pattern:'solid'});
       const blk=itemThumb(it('black')),tan=itemThumb(it('tan')),oc=itemThumb({id:'o1',type:'overcoat',primaryColor:'charcoal',pattern:'solid'});
-      const nums=Object.values(RAIN_D).join(' ').match(/-?[\d.]+/g).map(Number);
+      const nums=Object.values(HOOK.RAIN_D).join(' ').match(/-?[\d.]+/g).map(Number);
       const ids=[...blk.matchAll(/ id="([^"]+)"/g)].map(m=>m[1]);
       const host=document.createElement('div');host.innerHTML=blk;document.body.appendChild(host);const bb=host.querySelector('svg').getBBox();host.remove();
-      return {coat:blk.includes(RAIN_D.coat)&&blk.includes(RAIN_D.head)&&blk.includes(RAIN_D.shirt)&&blk.includes(RAIN_D.hbL),
-        cloth:[blk,tan].every(s=>s.includes(`<path d="${RAIN_D.coat}" fill="url(#`))&&blk.replace(/th\d+-/g,'')!==tan.replace(/th\d+-/g,''),
+      return {coat:blk.includes(HOOK.RAIN_D.coat)&&blk.includes(HOOK.RAIN_D.head)&&blk.includes(HOOK.RAIN_D.shirt)&&blk.includes(HOOK.RAIN_D.hbL),
+        cloth:[blk,tan].every(s=>s.includes(`<path d="${HOOK.RAIN_D.coat}" fill="url(#`))&&blk.replace(/th\d+-/g,'')!==tan.replace(/th\d+-/g,''),
         fixed:blk.includes('#a86a48')&&tan.includes('#a86a48')&&blk.includes('#7f9aae')&&tan.includes('#7f9aae'),
         eyes:/<clipPath id="th\d+-ey0">/.test(blk)&&/<clipPath id="th\d+-ey1">/.test(blk),
         inBox:nums.every(v=>v>=-1&&v<=101),unique:new Set(ids).size===ids.length,
-        overcoat:oc.includes(COAT_D.coat)&&!oc.includes(RAIN_D.coat),bb:[bb.x,bb.y,bb.width,bb.height]}});
+        overcoat:oc.includes(HOOK.COAT_D.coat)&&!oc.includes(HOOK.RAIN_D.coat),bb:[bb.x,bb.y,bb.width,bb.height]}});
     ok(r.coat,'a raincoat is drawn as the traced coat on its model (coat, head, shirt, herringbone facing)');
     ok(r.cloth,'the coat takes the item\'s cloth and colour');
     ok(r.fixed,'skin and shirt keep their tones whatever the coat\'s colour');

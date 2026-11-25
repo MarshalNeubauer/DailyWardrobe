@@ -57,7 +57,7 @@ async function run(eng,browser,{ok,url,settle}){
   await p.waitForFunction(()=>document.querySelectorAll('#missbox .missbtns:not(.missdays) button').length===2).catch(()=>{});
   await tap('#missbox .missbtns button:last-child');
   ok(await ev(k=>!document.querySelector('#missbox')&&localStorage.getItem('missed_ok')===k,k8)&&(await rec(k8)).worn!==false,T+'"Keep as worn" takes the card away and the day stays worn');
-  await ev(()=>{localStorage.removeItem('missed_ok');missedPut()});await settle(p,300);
+  await ev(()=>{localStorage.removeItem('missed_ok');HOOK.missedPut()});await settle(p,300);
   await tap('#missbox .missbtns button:first-child',600);
   ok((await rec(k8)).worn===false,T+'"I didn’t wear it" marks the day left not worn');
 
@@ -156,13 +156,13 @@ async function run(eng,browser,{ok,url,settle}){
   await tapAt('#ri-shirt .row > .mut',900);
   ok(await ev(()=>!listOpen&&!document.querySelector('#ibox').classList.contains('open')),T+'a tap on the open list’s own ground (a piece’s label) folds the list');
   await tap('#today .below .tile',800);
-  r=await ev(()=>({open:document.querySelector('#bbox').classList.contains('open'),s:belowOpen,exp:document.querySelector('#today .below .tile').getAttribute('aria-expanded'),others:[...document.querySelectorAll('#today .below .tile')].slice(1).every(t=>t.getAttribute('aria-expanded')==='false'),label:document.querySelector('#today .below .tile').getAttribute('aria-label')}));
+  r=await ev(()=>({open:document.querySelector('#bbox').classList.contains('open'),s:HOOK.belowOpen,exp:document.querySelector('#today .below .tile').getAttribute('aria-expanded'),others:[...document.querySelectorAll('#today .below .tile')].slice(1).every(t=>t.getAttribute('aria-expanded')==='false'),label:document.querySelector('#today .below .tile').getAttribute('aria-label')}));
   ok(r.open&&!!r.s&&r.exp==='true'&&r.others&&/Hide the photo/.test(r.label),T+'a tap on a tile under the figure unfolds its picture and marks that tile open ('+r.s+')');
   await tap('#today .below .tile >> nth=1',700);
-  const r2=await ev(()=>({s:belowOpen,exp:[...document.querySelectorAll('#today .below .tile')].map(t=>t.getAttribute('aria-expanded')).join()}));
+  const r2=await ev(()=>({s:HOOK.belowOpen,exp:[...document.querySelectorAll('#today .below .tile')].map(t=>t.getAttribute('aria-expanded')).join()}));
   ok(r2.s!==r.s&&/^false,true/.test(r2.exp),T+'a tap on the next tile shows its picture instead ('+r2.s+', '+r2.exp+')');
   await tapAt('#bpanel .rpanel-in',800);
-  ok(await ev(()=>!belowOpen&&!document.querySelector('#bbox').classList.contains('open')),T+'a tap on that picture folds it');
+  ok(await ev(()=>!HOOK.belowOpen&&!document.querySelector('#bbox').classList.contains('open')),T+'a tap on that picture folds it');
 
   // Safari on a phone sends a tap's click only to a control or to an element with a click handler of its own: Today's <div>s that take a tap
   const divs=await ev(()=>['#rp-shirt .rpanel-in','#bpanel .rpanel-in','#ipanel .mpanel-in','#spanel .mpanel-in','#sswaps'].map(s=>{const e=document.querySelector(s);return s+(e?(__ownClick(e)?'':' has no click handler of its own'):' is missing')}).filter(s=>/ (has|is) /.test(s)));
@@ -178,9 +178,9 @@ async function run(eng,browser,{ok,url,settle}){
   const f1=await ev(()=>window.__fit);
   ok(f0.photo&&f0.fit>=2&&f1===1,T+'when the day’s picture has loaded the tab bar is fitted again ('+JSON.stringify([f0.fit,f1])+')');
   await tap('#mannequin-container .ovsw',700);
-  const s1=await ev(()=>({open:swOpen&&swOpen.s,pressed:document.querySelector('#mannequin-container .ovsw').getAttribute('aria-pressed')}));
+  const s1=await ev(()=>({open:HOOK.swOpen&&HOOK.swOpen.s,pressed:document.querySelector('#mannequin-container .ovsw').getAttribute('aria-pressed')}));
   await tap('#mannequin-container .ovsw',700);
-  const s2=await ev(()=>({open:swOpen&&swOpen.s,pressed:document.querySelector('#mannequin-container .ovsw').getAttribute('aria-pressed')}));
+  const s2=await ev(()=>({open:HOOK.swOpen&&HOOK.swOpen.s,pressed:document.querySelector('#mannequin-container .ovsw').getAttribute('aria-pressed')}));
   ok(f0.sw===3&&s1.open==='top'&&s1.pressed==='true'&&!s2.open&&s2.pressed==='false',T+'a tap on a cloth swatch opens that piece up close, and a second tap closes it ('+JSON.stringify([s1,s2])+')');
 
   /* ---- a past day: Correct this day, and "None: I didn't wear one" ---- */
@@ -207,7 +207,7 @@ async function run(eng,browser,{ok,url,settle}){
   ok(st1.style==='boot'&&st1.ok,T+'picked by keyboard, the new Style dropdown keeps the focus ('+JSON.stringify(st1)+')');
 
   /* ---- "Today couldn't be shown": Try again loads the app again ---- */
-  await ev(()=>{queue.length=0;if(typeof npsClose==='function')npsClose();window.__mark=1;startPlain()});await settle(p,300);
+  await ev(()=>{queue.length=0;if('npsClose' in HOOK&&typeof HOOK.npsClose==='function')HOOK.npsClose();window.__mark=1;HOOK.startPlain()});await settle(p,300);
   ok(await ev(()=>/couldn’t be shown/.test(document.querySelector('#today').textContent)&&!document.querySelector('#today').hidden),T+'the plain card says Today couldn’t be shown');
   ok(!errs.length,T+`no page errors (${errs.join(' | ')})`);
   await Promise.all([p.waitForFunction(()=>!window.__mark&&window.appReady,null,{timeout:15000}).catch(()=>{}),p.locator('#today .sactions button').first().tap()]);

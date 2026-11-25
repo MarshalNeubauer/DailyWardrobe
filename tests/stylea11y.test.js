@@ -77,7 +77,7 @@ module.exports=async({ok,chromium,url,settle})=>{
 
     // CR-9-04: What to buy: Insights drawn again while it is up; Escape gives the focus to the new What to buy button
     await p.evaluate(()=>{show('stats');const cat=n=>({key:'c'+n,title:'Section '+n,verdict:'covered',own:null,notes:['A note'],recs:[]});
-      shop={sig:shopSig(),at:Date.now(),res:{v:2,base:null,cats:[0,1].map(cat),top:[],occasions:[],checked:0,sims:1,months:6}};renderStats()});await settle(p,300);
+      HOOK.shop={sig:HOOK.shopSig(),at:Date.now(),res:{v:2,base:null,cats:[0,1].map(cat),top:[],occasions:[],checked:0,sims:1,months:6}};renderStats()});await settle(p,300);
     await p.evaluate(()=>{window.__f10b=document.querySelector('#shop-btn')});
     await p.focus('#shop-btn');await p.keyboard.press('Enter');await settle(p,400);
     await p.evaluate(()=>renderStats());   // what analyzeWardrobe does when it finishes while the sheet is up
@@ -86,11 +86,11 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(gone&&await act()==='BUTTON#shop-btn',`What to buy closed by Escape: the focus is on the What to buy button drawn while it was up (${gone}, ${await act()})`);
 
     // and the real check: opened with nothing kept, closed while it still runs; when it finishes and draws the button again, the focus stays on it
-    await p.evaluate(()=>{shop=null;renderStats()});await settle(p,300);
+    await p.evaluate(()=>{HOOK.shop=null;renderStats()});await settle(p,300);
     await p.focus('#shop-btn');await p.keyboard.press('Enter');
     await p.keyboard.press('Escape');
-    const ran=await p.evaluate(()=>{window.__f10b=document.querySelector('#shop-btn');return !!shopBusy});
-    await p.waitForFunction(()=>!shopBusy,null,{timeout:60000});await settle(p,300);
+    const ran=await p.evaluate(()=>{window.__f10b=document.querySelector('#shop-btn');return !!HOOK.shopBusy});
+    await p.waitForFunction(()=>!HOOK.shopBusy,null,{timeout:60000});await settle(p,300);
     const redrawn=await p.evaluate(()=>!window.__f10b.isConnected);
     ok(ran&&redrawn&&await act()==='BUTTON#shop-btn',`What to buy closed while it checks: when the check finishes and draws the button again, the focus is still on it (${ran}, ${redrawn}, ${await act()})`);
 
@@ -121,7 +121,7 @@ module.exports=async({ok,chromium,url,settle})=>{
         return {addSub:ratio(document.querySelector('#add-manual .addlong-t small')),confMedium:probe('<span class="conf medium">Medium</span>','#add'),connTick:probe('<span class="conn-tick">✓</span>','#add')}}));
       Object.assign(m.c,await step(()=>{show('wardrobe');openItem(items[0].id)},()=>{const {probe}=__f10m();
         return {pill:probe('<span class="ivpill">Clean in 5 wears</span>','#item-view .ivpills,#item-view'),pillGood:probe('<span class="ivpill good">In rotation</span>','#item-view .ivpills,#item-view')}}));
-      m.t.dtog=await step(()=>{closeItem();openSettings('schedule')},()=>{const {hit,vis}=__f10m(),dt=vis('#settings-modal .dtog');return dt.length?Math.min(...dt.map(e=>hit(e)[1])):null});
+      m.t.dtog=await step(()=>{HOOK.closeItem();openSettings('schedule')},()=>{const {hit,vis}=__f10m(),dt=vis('#settings-modal .dtog');return dt.length?Math.min(...dt.map(e=>hit(e)[1])):null});
       await p.evaluate(()=>{closeSettings();show('today')});await settle(p,400);return m};
     for(const theme of ['light','dark']){
       await p.emulateMedia({colorScheme:theme});await settle(p,200);

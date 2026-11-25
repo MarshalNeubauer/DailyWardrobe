@@ -19,7 +19,7 @@ module.exports=async({ok,chromium,url})=>{
       recs[kind+'|'+n]={sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(d,f)).toString('base64'),model:'colormaster',t:1000}}}
     const keys=await p.evaluate(rs=>{const o={};for(const k of Object.keys(rs)){const [kind,n]=k.split('|');o[k]=asmCmKey(kind,n)}return o},Object.fromEntries(Object.keys(recs).map(k=>[k,1])));
     for(const [k,r] of Object.entries(recs))served[keys[k]]=r;
-    const res=await p.evaluate(async h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=512;asmAheadSoon=()=>{};asmAhead=async()=>{};
+    const res=await p.evaluate(async h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=512;HOOK.asmAheadSoon=()=>{};HOOK.asmAhead=async()=>{};
       let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
       const pin={v:2,a:0,bands:[['#1b2a4a',.97],['#c8cbd2',.03]],tr:30,src:'claude+pixels'},stripe={v:2,a:-.785,bands:[['#7a2335',.6],['#1b2a4a',.4]],tr:6,src:'claude+pixels'};
       const fig={v:3,motif:{grid:'square',ground:'#f2f2f2',figs:[{shape:'dot',place:'centre',size:.3,cols:['#4a5a8a']}]},a:0,cr:40,tr:60,src:'claude+pixels'};
@@ -51,9 +51,9 @@ module.exports=async({ok,chromium,url})=>{
         looks.push({name:'watch '+w.metal+' '+w.dial+' '+w.band+' (open shirt)',o:{shirt:shirts[0],bot:pants[0],belt,shoes,watch:w}})});
       const out=[];await asmListGet(true);
       for(const L of looks){const k=asmCmKind(L.o);let r={name:L.name,kind:k};
-        try{await asmCmLook(L.o);if(!await asmCmGet(k)){r.err='master not here';out.push(r);continue}const job=await asmJob(L.o);if(!job){r.err='no job';out.push(r);continue}
+        try{await HOOK.asmCmLook(L.o);if(!await asmCmGet(k)){r.err='master not here';out.push(r);continue}const job=await HOOK.asmJob(L.o);if(!job){r.err='no job';out.push(r);continue}
           const t0=performance.now(),b=await asmRun(job,true);r.ok=!!(b&&(b.url||b.px));r.ms=Math.round(performance.now()-t0);r.watch=!!job.watch}catch(e){r.err=String(e&&e.message||e)}out.push(r)}
-      return {offPage:asmOffPage(),out}},HOST);
+      return {offPage:HOOK.asmOffPage(),out}},HOST);
     const bad=res.out.filter(r=>!r.ok);
     ok(res.offPage,'the looks are built in the Web Worker');
     const kinds=[...new Set(res.out.map(r=>r.kind))].sort().join(',');

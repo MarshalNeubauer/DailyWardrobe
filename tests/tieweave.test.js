@@ -26,7 +26,7 @@ const tieweave=async({ok,chromium,url})=>{
       const tc={id:'tc',type:'tie',primaryColor:'black',secondaryColor:'charcoal',pattern:'tonal-check',sett:tex},st={id:'st',type:'tie',primaryColor:'navy',pattern:'stripe',sett:tex},
         sh={id:'sh',type:'shirt',primaryColor:'white',pattern:'dobby',sett:tex};
       const f=await asmTieFor(tc),spec={layout:'texture',texture:{kind:'diamond',grid:tex.tex.grid,raised:{hex:'#333333'},ground:{hex:'#111111'},contrast:'medium',aspect:1},repeatsInCloseup:40,repeatsAcrossItem:32};
-      const fromSpec=specSett(spec,{type:'tie'}),dTie=fabricDef('a',tc,'tie','asmtie'),dPlain=fabricDef('b',tc,'tie');
+      const fromSpec=HOOK.specSett(spec,{type:'tie'}),dTie=fabricDef('a',tc,'tie','asmtie'),dPlain=fabricDef('b',tc,'tie');
       const tone=d=>(d.match(/fill="(#[0-9a-f]{6})"/)||[])[1];
       return {usable:[!!usableSett(tc),!!usableSett(st),!!usableSett(sh)],tile:!!f.c&&f.TW>0&&f.across===Math.min(32,ASM_TIE_FIG_MAX),spec:!!(fromSpec&&fromSpec.tex),
         stronger:tone(dTie)!==tone(dPlain),sig:asmTieSig(tc)!==asmTieSig({...tc,sett:null})}});
@@ -64,7 +64,7 @@ const tiewoven=async({ok,chromium,url,ROOT})=>{
       const w=fabricDef('a',T({pattern:'woven'}),'tie'),s=fabricDef('b',T(),'tie'),w1=fabricDef('c',T({pattern:'woven',secondaryColor:null}),'tie');
       return {list:PATS_BY.tie.includes('woven'),alias:['Textured','basket weave','Basketweave','oxford','grenadine','micro check','woven'].map(x=>normPat('tie',x)).join(),
         draws:w!==s&&w.includes(COLORS.blue)&&w.includes(COLORS.navy),one:w1!==s&&!w1.includes(COLORS.blue),solidRule:patInfo(T({pattern:'woven'}),'tie')===null,
-        lum:Math.round(tieLum(T({pattern:'woven'})))===Math.round(LUM(T())),label:desc(T({pattern:'woven'}))}});
+        lum:Math.round(HOOK.tieLum(T({pattern:'woven'})))===Math.round(LUM(T())),label:desc(T({pattern:'woven'}))}});
     ok(r.list,'ties can be tagged woven');
     ok(r.alias==='woven,woven,woven,woven,woven,woven,woven',`textured, basket weave, oxford, grenadine and micro-check ties map to woven (${r.alias})`);
     ok(r.draws,'a woven tie with a second colour draws as a two-tone weave in both colours');

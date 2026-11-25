@@ -54,7 +54,7 @@ const rollback=async({ok,chromium,url,ROOT})=>{
     const B=await device();await sync(B);
     ok(await B.evaluate(()=>!!settings.daysOff&&settings.daysOff.length===1&&settings.holidays.country==='DE'),'phone B has the day off and the holidays');
     const day=await A.evaluate(()=>isoKey(new Date()));
-    const rb=async(p,id,hush)=>p.evaluate(async([id,hush])=>{openSettings('backup');delete $('#snap-list').dataset.loaded;await loadSnapshots();$('#snap-list').value=id;const r=rollBack();await new Promise(r=>setTimeout(r,50));$('#ask-ok').click();await r;
+    const rb=async(p,id,hush)=>p.evaluate(async([id,hush])=>{openSettings('backup');delete $('#snap-list').dataset.loaded;await loadSnapshots();$('#snap-list').value=id;const r=HOOK.rollBack();await new Promise(r=>setTimeout(r,50));$('#ask-ok').click();await r;
       if(hush){clearTimeout(syncTimer);window.__rbMid={flag:localStorage.getItem('sync_restore'),n:items.length,st:localStorage.getItem('sync_status')}}return $('#snap-status').textContent},[id,!!hush]);
     const said=await rb(A,day);
     const memA=()=>A.evaluate(()=>({off:settings.daysOff||null,hol:settings.holidays||null,lau:settings.laundryDays??null,vest:settings.vestMode,n:items.length,sum:document.querySelector('#sum-daysoff').textContent}));
@@ -118,7 +118,7 @@ const rollback=async({ok,chromium,url,ROOT})=>{
       if(u.pathname==='/sync'){if(q.method()==='GET')return j({rev:0,saved:0,data:null});posts.push(JSON.parse(q.postData()||'{}'));return j({rev:1,saved:Date.now()})}
       return j({ok:true})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(async([h,a])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',a);localStorage.setItem('last_sync',String(Date.now()-864e5));rememberRole({role:'tester'});
+    await p.evaluate(async([h,a])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',a);localStorage.setItem('last_sync',String(Date.now()-864e5));HOOK.rememberRole({role:'tester'});
       const it={id:'mine1',type:'tie',primaryColor:'navy',pattern:'solid',added:1};await put(it);items.push(it)},[HOST,CA]);
     const lost=await p.evaluate(async()=>{const r=await syncNow();settingsSummaries();return {r,st:localStorage.getItem('sync_status'),line:(openSettings('backup'),$('#sync-status').textContent),sum:$('#sum-backup').textContent,toast:$('#toast').textContent,flag:localStorage.getItem('invite_lost'),tok:localStorage.getItem('app_token')}});
     ok(!lost.r&&lost.st===ENDED_TXT&&lost.line===ENDED_TXT&&/invitation has ended/.test(lost.sum)&&/backup on the server was deleted/.test(lost.toast)&&lost.flag===lost.tok,`a code the server lost: the invitation-ended sentence everywhere, the one-time message saying the backup was deleted (W1-6-03), marked as lost so a new link can keep the wardrobe (${JSON.stringify(lost).slice(0,260)})`);
@@ -129,16 +129,16 @@ const rollback=async({ok,chromium,url,ROOT})=>{
     const after=await p.evaluate(()=>({tok:localStorage.getItem('app_token'),n:items.length,flag:localStorage.getItem('invite_lost')}));
     ok(okc===true&&/old invitation has ended/.test(ask)&&after.tok===CB&&after.n===1&&!after.flag&&posts.some(b=>JSON.stringify(b).includes('mine1')),`a new invitation then keeps this phone's wardrobe and backs it up there (${JSON.stringify(after)}, ${posts.length} upload(s))`);
     // feedback refused for a daily limit: the server's sentence, not its code
-    const fb=await p.evaluate(async()=>{openSettings('about');$('#fb-text').value='hello';await sendFeedback();return {s:$('#fb-status').textContent,t:$('#fb-text').value}});
+    const fb=await p.evaluate(async()=>{openSettings('about');$('#fb-text').value='hello';await HOOK.sendFeedback();return {s:$('#fb-status').textContent,t:$('#fb-text').value}});
     ok(/limit of 20 messages is used up/.test(fb.s)&&!/: limit\./.test(fb.s)&&fb.t==='hello',`feedback over the day's limit says so in words and keeps the text ("${fb.s}")`);
     await p.evaluate(()=>closeSettings());
     // a name typed in the item sheet, the page going before the save's timer: saved at once
-    const nm=await p.evaluate(async()=>{itemFieldSoon('mine1','name','My lucky tie');dispatchEvent(new Event('pagehide'));await new Promise(r=>setTimeout(r,100));const st=await tx('readonly',s=>s.get('mine1'));return st&&st.name});
+    const nm=await p.evaluate(async()=>{HOOK.itemFieldSoon('mine1','name','My lucky tie');dispatchEvent(new Event('pagehide'));await new Promise(r=>setTimeout(r,100));const st=await tx('readonly',s=>s.get('mine1'));return st&&st.name});
     ok(nm==='My lucky tie','a name typed just before the page goes is saved when it goes, not 0.6 s later');
     // a second phone's setup: the account's vest choice (stamped) is kept; a new install's default still becomes "No vest"
     const vs=await p.evaluate(()=>{const was=JSON.stringify(settings),s0=setup;setup={...setup,first:true,vestSet:false};
-      settings=keySettings({workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',updated:0});const fresh=!setupVestChosen();
-      settings.vestMode='always';stampSettings(settings);const chosen=!setupVestChosen();setup=s0;settings=JSON.parse(was);return {fresh,chosen}});
+      settings=keySettings({workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',updated:0});const fresh=!HOOK.setupVestChosen();
+      settings.vestMode='always';stampSettings(settings);const chosen=!HOOK.setupVestChosen();setup=s0;settings=JSON.parse(was);return {fresh,chosen}});
     ok(vs.fresh===true&&vs.chosen===false,`the setup sets "No vest" only while the vest is still the app's default (${JSON.stringify(vs)})`);
     ok(!errs.length,'no page errors: '+errs.join(' | '))}
   finally{await b2.close()}
@@ -170,7 +170,7 @@ const rollbackwhere=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>syncNow());
     // the setup done, a location, three pieces, backed up: today's daily copy is the one from before
-    await p.evaluate(async()=>{if(typeof setupShown==='function'&&setupShown())setupClose();settings.setupDone=Date.now();settings.workdays=[0,1,2,3];settings.location={name:'Kuwait City',lat:29.37,lon:47.98};await saveUserSettings();
+    await p.evaluate(async()=>{if(typeof setupShown==='function'&&setupShown())HOOK.setupClose();settings.setupDone=Date.now();settings.workdays=[0,1,2,3];settings.location={name:'Kuwait City',lat:29.37,lon:47.98};await saveUserSettings();
       for(const [id,type,c] of [['r1','suit','navy'],['r2','shirt','white'],['r3','tie','burgundy']]){const it={id,type,primaryColor:c,pattern:'solid',added:Date.now()};await put(it);items.push(it)}});
     await p.evaluate(()=>syncNow());
     const day=await p.evaluate(()=>isoKey(new Date()));
@@ -185,7 +185,7 @@ const rollbackwhere=async({ok,chromium,url,ROOT})=>{
     ok(lists===1,`opening it again or focusing the dropdown doesn't list again (${lists})`);
 
     // Roll back, and Settings goes (Back) while its question is up; the question is then answered
-    const run=p.evaluate(d=>{$('#snap-list').value=d;window.__rb=rollBack();return true},day);await run;
+    const run=p.evaluate(d=>{$('#snap-list').value=d;window.__rb=HOOK.rollBack();return true},day);await run;
     await p.waitForSelector('#ask-ok',{state:'visible'});
     await p.evaluate(()=>closeSettings());
     await p.click('#ask-ok');await p.evaluate(()=>window.__rb);
@@ -207,7 +207,7 @@ const rollbackwhere=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(()=>{toastDrop&&toastDrop();$('#toast').classList.remove('on');openSettings('backup')});
     await p.waitForFunction(()=>!document.querySelector('#snap-list').dataset.loaded||document.querySelectorAll('#snap-list option').length>1);
     await p.evaluate(()=>loadSnapshots());
-    const inS=await p.evaluate(async()=>{$('#snap-list').value='';await rollBack();return {st:$('#snap-status').textContent,on:$('#toast').classList.contains('on')}});
+    const inS=await p.evaluate(async()=>{$('#snap-list').value='';await HOOK.rollBack();return {st:$('#snap-status').textContent,on:$('#toast').classList.contains('on')}});
     ok(inS.st==='Choose a day first.'&&!inS.on,`in open Settings the line answers and no toast (${JSON.stringify(inS)})`);
     await p.evaluate(()=>closeSettings());
 
@@ -318,7 +318,7 @@ const snapshots=async({ok,chromium,url,ROOT})=>{
   // records the day and locks the week and schedules another backup; one landing after the roll-back sent the damaged copy's settings
   // up again (the flaky "roll back restores …" and "the other device follows …")
   const quiet=p=>p.evaluate(async()=>{let last='',same=0;const end=Date.now()+6000;
-    while(Date.now()<end){await recordRun;const s=stateSig(await localState());same=!syncing&&s===last?same+1:0;last=s;if(same>=3)return true;await new Promise(r=>setTimeout(r,120))}return false});
+    while(Date.now()<end){await recordRun;const s=stateSig(await localState());same=!HOOK.syncing&&s===last?same+1:0;last=s;if(same>=3)return true;await new Promise(r=>setTimeout(r,120))}return false});
   const hush=async(...ps)=>{for(const p of ps){await quiet(p);await p.evaluate(()=>clearTimeout(syncTimer))}};
   const why=async()=>` [A ${await sig(A.p)}; good ${good}; A's workdays ${JSON.stringify(await A.p.evaluate(()=>settings.workdays))}; B ${await sig(B.p)}]`;
   await A.p.evaluate(async()=>{for(const [id,c] of [['t1','navy'],['t2','burgundy'],['t3','green']]){const it={id,type:'tie',primaryColor:c,pattern:'solid',added:Date.now()};await put(it);items.push(it)}
@@ -338,7 +338,7 @@ const snapshots=async({ok,chromium,url,ROOT})=>{
   const opts=await A.p.evaluate(()=>[...document.querySelectorAll('#snap-list option')].map(o=>o.value).filter(Boolean));
   ok(opts.includes('2026-11-09'),`Settings lists the daily backups (${opts.join(', ')})`);
   await hush(A.p,B.p);
-  await A.p.evaluate(async()=>{$('#snap-list').value='2026-11-09';const r=rollBack();$('#ask-ok').click();await r});   // the app's own question: answered yes
+  await A.p.evaluate(async()=>{$('#snap-list').value='2026-11-09';const r=HOOK.rollBack();$('#ask-ok').click();await r});   // the app's own question: answered yes
   const a=await A.p.evaluate(()=>({st:$('#snap-status').textContent,wd:settings.workdays.length}));
   const back=await sig(A.p)===good&&a.wd===5;
   ok(back,`roll back restores the deleted tie, the old colour, drops the junk and the settings (${a.st})`+(back?'':await why()));
@@ -348,7 +348,7 @@ const snapshots=async({ok,chromium,url,ROOT})=>{
   ok(follows,'the other device follows the roll-back on its next sync'+(follows?'':await why()));
   ok(store.has('snap:before-restore')&&JSON.parse(store.get('snap:before-restore')).data.items.some(i=>i.id==='junk'),'the damaged state is kept as "before the last roll-back", so the roll-back can be undone');
   // and undo it
-  await A.p.evaluate(async()=>{delete $('#snap-list').dataset.loaded;await loadSnapshots();$('#snap-list').value='before-restore';const r=rollBack();$('#ask-ok').click();await r});
+  await A.p.evaluate(async()=>{delete $('#snap-list').dataset.loaded;await loadSnapshots();$('#snap-list').value='before-restore';const r=HOOK.rollBack();$('#ask-ok').click();await r});
   ok((await sig(A.p)).includes('junk'),'rolling back to "before the last roll-back" undoes it');
   ok(A.errs.length===0&&B.errs.length===0,'no page errors ('+[...A.errs,...B.errs].join('; ')+')');
   await browser.close();

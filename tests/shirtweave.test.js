@@ -34,11 +34,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
     const sp=await p.evaluate(async TEX=>{const im=new Image();im.src='tests/fixtures/shirt-diamond-closeup.jpg';await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);
-      const s=texFromSpec(TEX,{tex:c,type:'shirt'}),plain=document.createElement('canvas');plain.width=plain.height=300;const x=plain.getContext('2d');x.fillStyle='#9a9a98';x.fillRect(0,0,300,300);
+      const s=HOOK.texFromSpec(TEX,{tex:c,type:'shirt'}),plain=document.createElement('canvas');plain.width=plain.height=300;const x=plain.getContext('2d');x.fillStyle='#9a9a98';x.fillRect(0,0,300,300);
       // light falloff alone (a smooth gradient) is no texture
       const gr=x.createLinearGradient(0,0,300,0);gr.addColorStop(0,'#707070');gr.addColorStop(1,'#c0c0c0');x.fillStyle=gr;x.fillRect(0,0,300,300);
-      const flat=texContrast(plain,12),it={id:'w1',type:'shirt',primaryColor:'white',pattern:'woven',sett:s};
-      const def=fabricDef('sw',it,'shirt'),fig=fabricDef('fg',it,'shirt','fig'),asStripe={...it,pattern:'stripe'},spec2=specSett(TEX,{tex:c,type:'suit'});   // a woven or tonal-check tie keeps one since 2026-11-13 (tieweave.test.js)
+      const flat=HOOK.texContrast(plain,12),it={id:'w1',type:'shirt',primaryColor:'white',pattern:'woven',sett:s};
+      const def=fabricDef('sw',it,'shirt'),fig=fabricDef('fg',it,'shirt','fig'),asStripe={...it,pattern:'stripe'},spec2=HOOK.specSett(TEX,{tex:c,type:'suit'});   // a woven or tonal-check tie keeps one since 2026-11-13 (tieweave.test.js)
       const L=h=>rgbLab(...hexRgb(h))[0],tn=texTones(colOf(it),s.tex).map(L),f1=s.tex.grid.join('').split('').filter(v=>v==='1').length/96,nv=texTones('#1b2a4a',{...s.tex,lighter:false}).map(L);
       return {s,flat,def,fig,tones:tn,mean:tn[0]*(1-f1)+tn[1]*f1,whiteL:L(colOf(it)),navy:nv,usable:!!usableSett(it),stripeUsable:!!usableSett(asStripe),summary:settSummary(s),sig:settSig(s),spec2}},TEX);
     ok(sp.s&&sp.s.v===4&&sp.s.tex.kind==='diamond'&&sp.s.tex.grid.length===12&&sp.s.tex.lighter&&sp.s.tex.measured&&sp.s.cr===12&&sp.s.tr===150&&sp.s.src==='claude+pixels','Claude\'s diamond bitmap becomes the shirt\'s pattern reading, with the repeats in the close-up and across the shirt');
@@ -73,7 +73,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(async()=>{const it=items.find(i=>i.type==='shirt');delete it.sett;delete it.patternSpec;await put(it);show('settings')});
     const ui=await p.evaluate(()=>{asmCmUI();return document.querySelector('#cm-gaps').textContent});
     ok(/Painted plain \(1\)/.test(ui)&&/Read 1 pattern/.test(ui),'Painted plain lists the one textured shirt without a weave reading, with a button to read it: '+ui.slice(0,120));
-    const before=calls.length;await p.evaluate(()=>asmReadGaps());
+    const before=calls.length;await p.evaluate(()=>HOOK.asmReadGaps());
     const after=await p.evaluate(()=>({tex:!!items.find(i=>i.type==='shirt').sett.tex,ui:document.querySelector('#cm-gaps').textContent}));
     ok(calls.length===before+1&&after.tex&&/Every patterned piece/.test(after.ui),'"Read 1 pattern" reads it and the list empties');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

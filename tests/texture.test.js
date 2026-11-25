@@ -73,7 +73,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
   await settle(p,350);await p.click('#item-view .phtools .cubtn');await p.waitForSelector('#cu-sheet.on');
   ok(await p.evaluate(id=>!!document.querySelector(`#item-view .swtex`)&&document.querySelector(`#item-view .phtools .cubtn`).getAttribute('aria-label')==='Replace close-up'&&!!document.querySelector('#cu-rm'),tieId),'adding one shows it in the swatch, with Remove close-up in the close-up chooser');
   await p.click('#cu-cancel');await settle(p,350);
-  await p.evaluate(id=>undoPhoto(id),tieId);
+  await p.evaluate(id=>HOOK.undoPhoto(id),tieId);
   ok(await p.evaluate(id=>!items.find(i=>i.id===id).texture,tieId),'Undo takes the close-up back off');
 
   ok(/\{photo,swatch,stripes,texture,sett,patternText,weave,pbox,patternSpec,meas,tagAI,\.\.\.i\}/.test(require('fs').readFileSync(path.join(ROOT,'shop.js'),'utf8')),'the planner worker is not sent the close-ups');

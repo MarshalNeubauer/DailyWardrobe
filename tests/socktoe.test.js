@@ -31,8 +31,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
     const a=await p.evaluate(async()=>{const s={id:'sk1',type:'socks',primaryColor:'black',secondaryColor:'lightgrey',pattern:'solid',added:1},plain={id:'sk2',type:'socks',primaryColor:'black',pattern:'solid',added:1};
       const th=itemThumb(s,true),th0=itemThumb(plain,true);items=[s,plain];
-      await renderItemPic(s);
-      return {d:itemDesc(s),d0:itemDesc(plain),desc:desc(s),desc0:desc(plain),toe:/class="sock-toe"[^>]*fill="#[0-9a-f]{6}"/i.test(th)&&th.includes(COLORS.lightgrey),toe0:/sock-toe/.test(th0),traced:th.includes(SOCK_D.back)&&th.includes(SOCK_D.front)&&th.includes(SOCK_D.cuff)&&/<clipPath id="[^"]+cb">/.test(th)&&/<clipPath id="[^"]+cf">/.test(th)&&/clip-path="url\(#[^)]+cf\)"/.test(th),
+      await HOOK.renderItemPic(s);
+      return {d:HOOK.itemDesc(s),d0:HOOK.itemDesc(plain),desc:desc(s),desc0:desc(plain),toe:/class="sock-toe"[^>]*fill="#[0-9a-f]{6}"/i.test(th)&&th.includes(COLORS.lightgrey),toe0:/sock-toe/.test(th0),traced:th.includes(HOOK.SOCK_D.back)&&th.includes(HOOK.SOCK_D.front)&&th.includes(HOOK.SOCK_D.cuff)&&/<clipPath id="[^"]+cb">/.test(th)&&/<clipPath id="[^"]+cf">/.test(th)&&/clip-path="url\(#[^)]+cf\)"/.test(th),
         keys:itemKey(s)!==itemKey(plain),form:itemBody(s),form0:itemBody({id:'t1',type:'tie',primaryColor:'navy',pattern:'solid'})}});
     ok(/single black .*dress sock in side profile/.test(a.d)&&/light grey knitted toe cap/.test(a.d)&&/heel stays black/.test(a.d),`the picture description is one sock in profile with its toe cap (${a.d.slice(0,60)}…)`);
     ok(!/toe cap/.test(a.d0)&&/toe and heel the same colour/.test(a.d0)&&a.keys,'a plain sock has no toe cap, and gets its own picture');

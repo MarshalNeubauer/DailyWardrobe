@@ -33,7 +33,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(t.n==='argyle,burgundy,gold,lightgrey'&&t.o==='solid,,,lightgrey'&&!t.tie,`an argyle answer keeps its colours and toe cap (${t.n}); an older worker's toe cap moves to toeColor (${t.o}); other types get none`);
     // ---- the Add card: a photo tagged as an argyle sock through the (mocked) worker
     await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{if(document.querySelector('#setup.on'))setupClose();openAdd()});
+    await p.evaluate(()=>{if(document.querySelector('#setup.on'))HOOK.setupClose();openAdd()});
     await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=480;const x=c.getContext('2d');x.fillStyle='#f2f0ec';x.fillRect(0,0,480,480);
       x.save();x.beginPath();x.moveTo(170,40);x.lineTo(300,40);x.lineTo(300,330);x.quadraticCurveTo(300,430,200,440);x.lineTo(90,440);x.quadraticCurveTo(60,380,170,330);x.closePath();x.clip();
       x.fillStyle='#1b2a4a';x.fillRect(0,0,480,480);for(let r=0;r<8;r++)for(let k=0;k<5;k++){const cx=150+k*40+(r%2)*20,cy=60+r*48;x.fillStyle='#6d1f2c';x.beginPath();x.moveTo(cx,cy-24);x.lineTo(cx+20,cy);x.lineTo(cx,cy+24);x.lineTo(cx-20,cy);x.fill()}
@@ -69,14 +69,14 @@ module.exports=async({ok,chromium,url,settle})=>{
         legacy:rows({type:'socks',primaryColor:'black',secondaryColor:'lightgrey',pattern:'solid'})}});
     ok(f.plain==='Color|Toe cap'&&f.ribbed==='Color|Second color|Toe cap'&&f.dot==='Color|Second color|Toe cap'&&f.stripe==='Color|Second color|Third color|Toe cap'&&f.legacy==='Color|Toe cap',`colour fields by pattern: ${JSON.stringify(f)}`);
     // ---- drawing: every pattern on the traced pair, in the item's colours; a plain sock as on main
-    const d=await p.evaluate(()=>{const out={};for(const pat of PATS_BY.socks){thumbN=0;swN=0;const i={id:'d'+pat,type:'socks',primaryColor:'navy',secondaryColor:'burgundy',tertiaryColor:'gold',pattern:pat,toeColor:'lightgrey'};
+    const d=await p.evaluate(()=>{const out={};for(const pat of PATS_BY.socks){HOOK.thumbN=0;HOOK.swN=0;const i={id:'d'+pat,type:'socks',primaryColor:'navy',secondaryColor:'burgundy',tertiaryColor:'gold',pattern:pat,toeColor:'lightgrey'};
         out[pat]={th:itemThumb(i),sw:swatchSVG(i,true)}}
       const fnv=t=>{let h=0x811c9dc5;for(const c of new TextEncoder().encode(t))h=Math.imul(h^c,16777619)>>>0;return h.toString(16)};
       const legacy=[{id:'a',type:'socks',primaryColor:'navy',pattern:'solid'},{id:'b',type:'socks',primaryColor:'black',secondaryColor:'lightgrey',pattern:'solid'},{id:'c',type:'socks',primaryColor:'burgundy',secondaryColor:'grey',pattern:'solid',shade:-2}];
-      const h=[];for(const i of legacy){thumbN=0;swN=0;h.push(fnv(itemThumb(i)),fnv(swatchSVG(i,true)),fnv(desc(i)))}
+      const h=[];for(const i of legacy){HOOK.thumbN=0;HOOK.swN=0;h.push(fnv(itemThumb(i)),fnv(swatchSVG(i,true)),fnv(desc(i)))}
       // the same socks after the move of the toe cap: drawn the same
       const moved=[{id:'a',type:'socks',primaryColor:'navy',pattern:'solid',toeColor:'none'},{id:'b',type:'socks',primaryColor:'black',toeColor:'lightgrey',pattern:'solid'},{id:'c',type:'socks',primaryColor:'burgundy',toeColor:'grey',pattern:'solid',shade:-2}];
-      const h2=[];for(const i of moved){thumbN=0;swN=0;h2.push(fnv(itemThumb(i)),fnv(swatchSVG(i,true)),fnv(desc(i)))}
+      const h2=[];for(const i of moved){HOOK.thumbN=0;HOOK.swN=0;h2.push(fnv(itemThumb(i)),fnv(swatchSVG(i,true)),fnv(desc(i)))}
       return {out,h:h.join(' '),h2:h2.join(' '),burg:COLORS.burgundy,gold:COLORS.gold,grey:COLORS.lightgrey}});
     const bold=['argyle','stripe','polka-dot','other'],all=Object.keys(d.out).filter(x=>x!=='solid');
     ok(all.every(x=>d.out[x].th!==d.out.solid.th)&&new Set(all.map(x=>d.out[x].th.replace(/d[a-z-]+|th\d+-/g,''))).size===all.length,'every pattern draws differently from plain and from each other');
@@ -96,7 +96,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     // ---- the move of the toe cap: once, stamped field by field, idempotent, again for a sock an older app syncs in
     const m=await p.evaluate(async()=>{const mk=(id,x)=>({id,type:'socks',primaryColor:'black',pattern:'solid',added:1,updated:5,...x});
       const list=[mk('m1',{secondaryColor:'lightgrey'}),mk('m2',{}),mk('m3',{secondaryColor:'grey',tertiaryColor:'red'}),mk('m4',{toeColor:'none',pattern:'argyle',secondaryColor:'red'}),{id:'m5',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',added:1,updated:5}];
-      for(const i of list)await putRaw(i);items=list.map(i=>({...i}));const fnv=i=>{thumbN=0;return itemThumb(i)},before=items.slice(0,3).map(fnv);
+      for(const i of list)await putRaw(i);items=list.map(i=>({...i}));const fnv=i=>{HOOK.thumbN=0;return itemThumb(i)},before=items.slice(0,3).map(fnv);
       let syncs=0;const was=window.setTimeout;window.setTimeout=(f,...a)=>{if(f===syncNow){syncs++;return 0}return was.call(window,f,...a)};const n=await sockToeMigrate(),again=await sockToeMigrate();
       const st=await tx('readonly',s=>s.getAll()),g=id=>st.find(x=>x.id===id);const after=['m1','m2','m3'].map(id=>fnv(items.find(x=>x.id===id)));
       // a sock from an older app, synced in
@@ -131,7 +131,7 @@ module.exports=async({ok,chromium,url,settle})=>{
         light:ck({...casual,bot:charcoal},creamArgyle,'Socks'),lightHard:rate({...casual,bot:charcoal},creamArgyle).hard.join(),
         plainPat:ck(casual,plainBrown,'Patterns'),rules:PLAN_RULES,
         // bright plain socks (the owner, 2026-11-17): marked down on formal days, weddings and funerals; dark ones are not
-        bright:['red','pink','purple','gold','rust','blue','tan','khaki','burgundy','wine','navy','charcoal','brown','olive','green','grey','slate','deepblue'].map(c=>c+':'+(sockBright({type:'socks',primaryColor:c})?1:0)).join(),
+        bright:['red','pink','purple','gold','rust','blue','tan','khaki','burgundy','wine','navy','charcoal','brown','olive','green','grey','slate','deepblue'].map(c=>c+':'+(HOOK.sockBright({type:'socks',primaryColor:c})?1:0)).join(),
         redSuit:[sc(I('socks','red',{toeColor:'none'}),{...suit,formal:true,occasion:'formal'}),sc(plainNavy,{...suit,formal:true,occasion:'formal'}),sc(I('socks','red',{toeColor:'none'}),suit)],
         redCk:ck({...suit,formal:true,occasion:'formal'},I('socks','burgundy',{toeColor:'none'}),'Socks'),redCk2:ck({...suit,occasion:'funeral'},I('socks','red',{toeColor:'none'}),'Socks'),
         // the material by season
@@ -160,8 +160,8 @@ module.exports=async({ok,chromium,url,settle})=>{
       dayRecs={'2026-11-17':{date:'2026-11-17',occasion:'funeral'},'2026-11-18':{date:'2026-11-18',formal:true},'2026-11-24':{date:'2026-11-24',occasion:'wedding'}};cache={};
       const P=planSim(new Date(2026,10,1)).upTo(new Date(2026,11,31)),days=Object.entries(P).filter(([,o])=>o.socks),arg=days.filter(([,o])=>o.socks.id==='argyle');
       const special=['2026-11-17','2026-11-18','2026-11-24'].map(k=>P[k]&&P[k].socks&&P[k].socks.id).join();
-      const busy=arg.filter(([,o])=>patsOf([[o.top,'top'],[o.suitDay?null:o.bot,'bot'],[o.shirt,'shirt'],[o.tie,'tie']]).length>=2).length;
-      const hard=arg.filter(([,o])=>rateOutfit(o).hard.includes('Socks')).length,echo=arg.filter(([,o])=>sockPatScore(o.socks,{top:o.top,bot:o.bot,shirt:o.shirt,tie:o.tie}).echo).length;
+      const busy=arg.filter(([,o])=>HOOK.patsOf([[o.top,'top'],[o.suitDay?null:o.bot,'bot'],[o.shirt,'shirt'],[o.tie,'tie']]).length>=2).length;
+      const hard=arg.filter(([,o])=>rateOutfit(o).hard.includes('Socks')).length,echo=arg.filter(([,o])=>HOOK.sockPatScore(o.socks,{top:o.top,bot:o.bot,shirt:o.shirt,tie:o.tie}).echo).length;
       dayRecs={};cache={};return {days:days.length,arg:arg.length,special,busy,hard,echo}});
     ok(plan.arg>0&&plan.arg<plan.days,`the argyle pair is planned on some days (${plan.arg} of ${plan.days}), ${plan.echo} of them picking up the tie or shirt`);
     ok(!plan.special.includes('argyle'),`never on the funeral, the formal day or the wedding (${plan.special})`);

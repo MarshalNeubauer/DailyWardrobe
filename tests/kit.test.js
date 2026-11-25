@@ -9,7 +9,7 @@ const kit=async({ok,chromium,url})=>{
   const browser=await chromium.launch();
   const open=async(w=390)=>{const ctx=await browser.newContext({viewport:{width:w,height:844}});const p=await ctx.newPage();p.errs=[];
     p.on('pageerror',e=>p.errs.push(e.message));p.on('dialog',d=>d.accept());await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
-    await p.evaluate(()=>{if(typeof setupClose==='function'&&document.querySelector('#setup.on'))setupClose()});return p};
+    await p.evaluate(()=>{if('setupClose' in HOOK&&typeof HOOK.setupClose==='function'&&document.querySelector('#setup.on'))HOOK.setupClose()});return p};
   const fits=p=>p.evaluate(()=>{const s=document.querySelector('#kitsheet'),out=[...s.querySelectorAll('button,label,textarea,li,svg')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&(r.left<-0.5||r.right>innerWidth+0.5)});
     return document.documentElement.scrollWidth<=innerWidth&&!out.length});
   try{
@@ -25,7 +25,7 @@ const kit=async({ok,chromium,url})=>{
     await p.keyboard.press('Escape');
     ok(await p.evaluate(()=>!document.querySelector('#kitsheet.on')&&!document.querySelector('main').inert&&tourSeen()),'Escape closes it, the page usable again, and it is marked seen');
     /* ---- the close-up guide, from the Add card's close-up step ---- */
-    await p.evaluate(()=>{openAdd();addManual()});
+    await p.evaluate(()=>{openAdd();HOOK.addManual()});
     ok(await p.evaluate(()=>{const c=document.querySelector('#nps-q [data-ck="tex"] .wbstcard');return !!c&&/True color in 3 steps/i.test(c.textContent)&&/Paper on an edge/.test(c.textContent)&&/Tap the paper/.test(c.textContent)&&/Take the photo/.test(c.textContent)&&!document.querySelector('#nps-q .texguide')}),'the close-up step shows "True color in 3 steps": paper on an edge, tap the paper, take the photo');
     await p.click('#nps-q .wbstcard');
     ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='White paper, true colors'),'the card opens the short white-paper tip');
@@ -43,7 +43,7 @@ const kit=async({ok,chromium,url})=>{
     const u2=await p.evaluate(async id=>({gone:!items.some(i=>i.id===id),card:queue[0].id===id&&queue[0].name==='Undo me',inDb:!!(await tx('readonly',s=>s.get(id))),tomb:true,shown:!!document.querySelector('#queue .card')}),u.id);
     ok(u2.gone&&!u2.inDb&&u2.card&&u2.shown,'Undo takes it out of the wardrobe and the store and puts its card back on Add, as it was');
     /* cards saved together are one Undo */
-    const u3=await p.evaluate(async()=>{queue.length=0;addManual();queue.unshift({id:'k2',err:'open'});errToHand('k2');queue[0].type='shirt';queue[1].type='tie';   // (a second card: one filled in by hand from a photo that couldn't be opened; "Add without a photo" holds one card at a time)
+    const u3=await p.evaluate(async()=>{queue.length=0;HOOK.addManual();queue.unshift({id:'k2',err:'open'});errToHand('k2');queue[0].type='shirt';queue[1].type='tie';   // (a second card: one filled in by hand from a photo that couldn't be opened; "Add without a photo" holds one card at a time)
 const n0=items.length;await save(0);await save(0);
       return {n:items.length-n0,toast:document.querySelector('#toast').textContent}});
     ok(u3.n===2&&/Saved 2 items/.test(u3.toast),'two cards saved one after the other: "Saved 2 items" with one Undo');
@@ -57,10 +57,10 @@ const n0=items.length;await save(0);await save(0);
     const d2=await p.evaluate(()=>{const c=items.filter(i=>i.name==='Navy chalk'&&i.id!=='dup-src');const x=c[0]||{};
       return {n:c.length,same:x.type==='suit'&&x.primaryColor==='navy'&&x.pattern==='pinstripe'&&x.brand==='X',fresh:!x.paused&&!x.cleaned&&x.added>1,opened:editing===x.id||document.querySelector('#item-view')&&!document.querySelector('#item-view').hidden}});
     ok(d2.n===1&&d2.same&&d2.fresh&&d2.opened,'it makes one copy with the same tags, name and brand, no history (in rotation, not cleaned), and opens it');
-    await p.evaluate(()=>{if(typeof closeItem==='function')closeItem();show('today')});
+    await p.evaluate(()=>{if('closeItem' in HOOK&&typeof HOOK.closeItem==='function')HOOK.closeItem();show('today')});
     /* ---- import ---- */
-    const r=await p.evaluate(()=>{const a=kitRead('Item;Color;Pattern;Name;Vest\nSuit;Navy blue;Pin stripe;Office;yes\nTrousers;Mid gray;;;\nchinos;stone;;;\nLoafers;Brown;;;\nNecktie;Burgundy;checks;;\nScarf;Red;;;\nShirt;Mauve-ish;;;\n');
-      const b=kitRead('Type\tColour\nShirt\tLight blue\n'),c=kitRead('Name,Brand\nx,y'),q=kitRead('Type,Colour,Notes\nTie,Navy,"Silk, ""repp"" stripe"\n');
+    const r=await p.evaluate(()=>{const a=HOOK.kitRead('Item;Color;Pattern;Name;Vest\nSuit;Navy blue;Pin stripe;Office;yes\nTrousers;Mid gray;;;\nchinos;stone;;;\nLoafers;Brown;;;\nNecktie;Burgundy;checks;;\nScarf;Red;;;\nShirt;Mauve-ish;;;\n');
+      const b=HOOK.kitRead('Type\tColour\nShirt\tLight blue\n'),c=HOOK.kitRead('Name,Brand\nx,y'),q=HOOK.kitRead('Type,Colour,Notes\nTie,Navy,"Silk, ""repp"" stripe"\n');
       return {rows:a.rows.map(x=>x.ok?[x.card.type,x.card.primaryColor,x.card.pattern,x.card.vest||x.card.trouserKind||x.card.shoeStyle||'',x.card.name||''].join(':'):'bad:'+x.line+':'+x.why),
         tab:b.rows&&b.rows[0].card.primaryColor,err:c.err,quote:q.rows[0].card.notes}});
     ok(r.rows[0]==='suit:navy:pinstripe:yes:Office'&&r.rows[1]==='pants:midgrey:solid:dress:'&&r.rows[2]==='pants:stone:solid:chinos:'&&r.rows[3]==='shoes:brown:solid:loafer:'&&r.rows[4]==='tie:burgundy:check::',
@@ -113,21 +113,21 @@ const kitfix=async({ok,chromium,url})=>{
   const browser=await chromium.launch();
   const open=async(o={})=>{const ctx=await browser.newContext({viewport:{width:390,height:844},timezoneId:'Asia/Kuwait'});const p=await ctx.newPage();p.errs=[];
     p.on('pageerror',e=>p.errs.push(e.message));if(o.init)await p.addInitScript(o.init);await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{if(typeof setupClose==='function'&&document.querySelector('#setup.on'))setupClose()});return p};
-  const dups=p=>p.evaluate(async()=>{const st=await tx('readonly',s=>s.getAll()),sig=st.filter(i=>i.sample).map(kitSampleSig);
+    await p.evaluate(()=>{if('setupClose' in HOOK&&typeof HOOK.setupClose==='function'&&document.querySelector('#setup.on'))HOOK.setupClose()});return p};
+  const dups=p=>p.evaluate(async()=>{const st=await tx('readonly',s=>s.getAll()),sig=st.filter(i=>i.sample).map(HOOK.kitSampleSig);
     return {mem:items.length,disk:st.length,sample:sig.length,dupSig:sig.length-new Set(sig).size,dupId:items.length-new Set(items.map(i=>i.id)).size}});
   try{
     /* ---- the sample tapped twice ---- */
     const p=await open();
     await p.evaluate(()=>{show('today');renderToday()});
     await p.evaluate(()=>{const b=document.querySelector('#firstrun #kit-sample-link');b.click();b.click();setTimeout(()=>b.click(),150)});
-    await p.waitForFunction(()=>items.length>=24&&!kitSampling);await p.waitForTimeout(400);
+    await p.waitForFunction(()=>items.length>=24&&!HOOK.kitSampling);await p.waitForTimeout(400);
     const a=await dups(p);
     ok(a.mem===24&&a.disk===24&&a.sample===24&&!a.dupSig&&!a.dupId,`a double (and triple) tap on "Try a sample wardrobe" loads it once (${JSON.stringify(a)})`);
     const again=await p.evaluate(async()=>{await kitSampleLoad();return {n:items.length,t:document.querySelector('#toast').textContent}});
     ok(again.n===24&&/already here/.test(again.t),'tapping it again later adds nothing and says the sample is already here');
     /* a partial sample (cut off by iOS before this fix) is completed, not doubled */
-    const part=await p.evaluate(async()=>{const s=items.filter(i=>i.sample).slice(9);await kitDelMany(s.map(i=>i.id));const n0=items.length;await kitSampleLoad();
+    const part=await p.evaluate(async()=>{const s=items.filter(i=>i.sample).slice(9);await HOOK.kitDelMany(s.map(i=>i.id));const n0=items.length;await kitSampleLoad();
       return {n0,t:document.querySelector('#toast').textContent}});
     const a2=await dups(p);
     ok(part.n0===9&&a2.mem===24&&a2.disk===24&&!a2.dupSig&&/rest of the sample/.test(part.t),`a partial sample (9 pieces) is completed to 24 with no piece twice (${JSON.stringify(a2)}, "${part.t}")`);
@@ -139,12 +139,12 @@ const kitfix=async({ok,chromium,url})=>{
     await p.click('#iv-keep');await p.waitForFunction(()=>!items[0].sample&&/yours now/.test(document.querySelector('#toast').textContent)).catch(()=>{});
     const kp=await p.evaluate(()=>({note:!!document.querySelector('#item-view .ivsample'),tag:!!document.querySelector('#gi-'+items[0].id+' .sampletag'),grid:!!document.querySelector('#gi-'+items[0].id),ward:!document.querySelector('#wardrobe').hidden,ed:editing}));
     ok(!kp.note&&!kp.tag,'"Keep it as mine" makes it his: the note and the tag go '+JSON.stringify(kp));
-    await p.evaluate(()=>closeItem());
+    await p.evaluate(()=>HOOK.closeItem());
     /* item pictures leave the sample out */
-    ok(await p.evaluate(()=>missingItemPics().every(i=>!i.sample)&&missingItemPics().length<=1),'"Generate item pictures" offers none of the sample\'s pieces');
+    ok(await p.evaluate(()=>HOOK.missingItemPics().every(i=>!i.sample)&&HOOK.missingItemPics().length<=1),'"Generate item pictures" offers none of the sample\'s pieces');
     /* ---- removing the sample: day records, a piece he changed, one write ---- */
     const rm=await p.evaluate(async()=>{const s=items.filter(i=>i.sample),shirt=s.find(i=>i.type==='shirt');
-      openItem(shirt.id);await setItemField(shirt.id,'name','My white shirt');closeItem();   // renamed in the item sheet
+      openItem(shirt.id);await setItemField(shirt.id,'name','My white shirt');HOOK.closeItem();   // renamed in the item sheet
       const suit=s.find(i=>i.type==='suit');
       await saveDay({date:'2026-11-10',ids:{top:suit.id,shirt:shirt.id},suitDay:true,worn:true});
       await saveDay({date:'2026-11-12',ids:{top:suit.id},occasion:'wedding',force:{top:suit.id}});
@@ -154,7 +154,7 @@ const kitfix=async({ok,chromium,url})=>{
     await p.click('#kit-sample button:has-text("Remove the sample")');await p.waitForSelector('#ask-ok');
     const q=await p.textContent('#ask-title');
     ok(/Remove the 22 sample pieces/.test(q)&&/the sample piece you changed: it is yours now/.test(await p.textContent('#ask-sheet')),'it asks to remove the pieces he didn\'t change and says the one he changed stays ('+q+')');
-    await p.click('#ask-ok');await p.waitForFunction(()=>!items.some(i=>i.sample)&&!kitSampling);
+    await p.click('#ask-ok');await p.waitForFunction(()=>!items.some(i=>i.sample)&&!HOOK.kitSampling);
     const r=await p.evaluate(async({kept,mine,gone})=>{const st=await tx('readonly',s=>s.getAll()),days=await txs('days','readonly',s=>s.getAll()),d=k=>days.find(x=>x.date===k)||{},tomb=await metaGet('tombstones');
       const left=JSON.stringify(days)+JSON.stringify(dayRecs);
       return {refs:gone.filter(id=>left.includes(id)).length,n:st.length,ids:st.map(i=>i.id).sort().join(),want:[kept,mine].sort().join(),flag:st.some(i=>i.sample),d10:d('2026-11-10'),d12:d('2026-11-12'),d13:d('2026-11-13'),mem:JSON.stringify(dayRecs['2026-11-10']),tombs:Object.keys(tomb||{}).length}},rm);
@@ -164,8 +164,8 @@ const kitfix=async({ok,chromium,url})=>{
     ok(!p.errs.length,'no page errors: '+p.errs.join(' | '));await p.context().close();
     /* ---- the sample from the setup's last step finishes the setup ---- */
     const s=await open({init:()=>{localStorage.setItem('tour_seen','1')}});
-    await s.evaluate(()=>{setupOpen(false);setup.at=SETUP_STEPS.length-1;setupDraw()});
-    await s.click('#setup #kit-sample-link');await s.waitForFunction(()=>items.length===24&&!kitSampling);
+    await s.evaluate(()=>{HOOK.setupOpen(false);setup.at=SETUP_STEPS.length-1;setupDraw()});
+    await s.click('#setup #kit-sample-link');await s.waitForFunction(()=>items.length===24&&!HOOK.kitSampling);
     await s.waitForFunction(()=>settings.holidays&&settings.holidays.country,null,{timeout:8000}).catch(()=>{});
     const st=await s.evaluate(async()=>{const m=await metaGet('settings');return {shown:setupShown(),done:!!(m&&m.setupDone),vest:settings.vestMode,hol:settings.holidays&&settings.holidays.country,today:!document.querySelector('#today').hidden}});
     ok(!st.shown&&st.done&&st.vest==='never'&&st.hol==='KW'&&st.today,`from the setup's last step the setup is finished first: done stored, no vest, the time zone's holidays (${JSON.stringify(st)})`);
@@ -177,7 +177,7 @@ const kitfix=async({ok,chromium,url})=>{
     await d.context().close();
     /* ---- import ---- */
     const m=await open();
-    const rd=await m.evaluate(()=>{const R=t=>kitRead(t).rows.map(x=>x.ok?[x.card.type,x.card.primaryColor,x.card.pattern,x.card.trouserKind||x.card.shoeStyle||'',x.card.material||x.card.leather||'',x.probs.join('/')].join(':'):'bad:'+x.why);
+    const rd=await m.evaluate(()=>{const R=t=>HOOK.kitRead(t).rows.map(x=>x.ok?[x.card.type,x.card.primaryColor,x.card.pattern,x.card.trouserKind||x.card.shoeStyle||'',x.card.material||x.card.leather||'',x.probs.join('/')].join(':'):'bad:'+x.why);
       return {col:R('Type,Colour\nShirt,Charcoal grey\nSuit,Medium grey\nShoes,Dark brown\nShirt,Pale blue\nShirt,Sky blue\nTie,Maroon\nSuit,Midnight blue\nBelt,Cognac\nShirt,light-blue\nShirt,Heather grey\n'),
         typ:R('Type,Colour\nBlazers,Navy\nJackets,Navy\nBelts,Black\nWatches,Silver\nTie clips,Silver\nOvercoats,Navy\nRaincoats,Khaki\nDress shirts,White\nCufflink,Silver\nScarf,Navy\n'),
         fit:R('Type,Colour\nShoes,Pink\nSuit,Pink\nShirt,Red\n'),
@@ -192,8 +192,8 @@ const kitfix=async({ok,chromium,url})=>{
     ok(rd.empty[0]==='bad:Type is empty'&&rd.empty[1]==='bad:Color is empty','an empty cell says which: '+rd.empty.join(' | '));
     /* files: Windows-1252 and an empty file; the template is a data link */
     const fl=await m.evaluate(async()=>{kitImportOpen();const b=new Uint8Array([...new TextEncoder().encode('Type,Colour,Name\nSuit,Navy,Costume bleu fonc'),0xE9,10]);
-      await kitImportFile(new File([b],'x.csv'));const n1=kitImp&&kitImp.rows[0].card.name;await kitImportFile(new File([''],'e.csv'));const e=document.querySelector('#kit-prev').textContent;
-      let href='';const ck=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){href=this.href};kitTemplate();HTMLAnchorElement.prototype.click=ck;return {n1,e,href,tpl:kitRead(KIT_TEMPLATE).rows.every(x=>x.ok&&!x.probs.length)}});
+      await HOOK.kitImportFile(new File([b],'x.csv'));const n1=HOOK.kitImp&&HOOK.kitImp.rows[0].card.name;await HOOK.kitImportFile(new File([''],'e.csv'));const e=document.querySelector('#kit-prev').textContent;
+      let href='';const ck=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){href=this.href};HOOK.kitTemplate();HTMLAnchorElement.prototype.click=ck;return {n1,e,href,tpl:HOOK.kitRead(HOOK.KIT_TEMPLATE).rows.every(x=>x.ok&&!x.probs.length)}});
     ok(fl.n1==='Costume bleu foncé','a Windows-1252 CSV (Excel\'s "CSV (Comma delimited)") keeps its accents');
     ok(/The file is empty/.test(fl.e),'an empty file says so');
     ok(fl.href.startsWith('data:text/csv')&&fl.tpl,'the template downloads from a data link (nothing revoked) and every row of it imports cleanly');
@@ -202,7 +202,7 @@ const kitfix=async({ok,chromium,url})=>{
     await m.fill('#kit-paste',rows);
     ok(await m.textContent('#kit-imp')==='Add 6 items','the preview offers 6 items');
     await m.evaluate(()=>{const b=document.querySelector('#kit-imp');b.click();b.click();b.click()});
-    await m.waitForFunction(()=>items.length>=6&&!kitImpBusy);await m.waitForTimeout(300);
+    await m.waitForFunction(()=>items.length>=6&&!HOOK.kitImpBusy);await m.waitForTimeout(300);
     const im=await m.evaluate(async()=>({mem:items.length,disk:(await tx('readonly',s=>s.getAll())).length,uniq:new Set(items.map(i=>i.id)).size,sheet:!!document.querySelector('#kitsheet.on'),toast:document.querySelector('#toast').textContent}));
     ok(im.mem===6&&im.disk===6&&im.uniq===6&&!im.sheet&&/Imported 6 items/.test(im.toast),`a triple tap on "Add 6 items" imports once (${JSON.stringify(im)})`);
     await m.evaluate(()=>{kitImportOpen()});await m.fill('#kit-paste',rows+'Belt,Black,\n');
@@ -212,17 +212,17 @@ const kitfix=async({ok,chromium,url})=>{
     await m.click('.kit-rows li.dup .kit-row');ok(await m.textContent('#kit-imp')==='Add 2 items','ticking one adds it');
     /* a write that fails part-way stores nothing */
     const fail=await m.evaluate(async()=>{const P=IDBObjectStore.prototype.put;let n=0;IDBObjectStore.prototype.put=function(...a){if(this.name==='items'&&++n===2)throw new DOMException('disk full','QuotaExceededError');return P.apply(this,a)};
-      const n0=items.length;await kitImportGo();IDBObjectStore.prototype.put=P;await new Promise(r=>setTimeout(r,300));
+      const n0=items.length;await HOOK.kitImportGo();IDBObjectStore.prototype.put=P;await new Promise(r=>setTimeout(r,300));
       return {n0,mem:items.length,disk:(await tx('readonly',s=>s.getAll())).length,open:!!document.querySelector('#kitsheet.on'),btn:document.querySelector('#kit-imp').disabled}});
     ok(fail.mem===fail.n0&&fail.disk===fail.n0&&fail.open&&!fail.btn,`a write that fails part-way stores none of it and the sheet stays to try again (${JSON.stringify(fail)})`);
     await m.click('#kit-last button');await m.waitForSelector('#ask-ok');await m.click('#ask-ok');await m.waitForFunction(()=>!items.length);
     ok(await m.evaluate(async()=>!(await tx('readonly',s=>s.getAll())).length&&!document.querySelector('#kit-last')&&document.querySelectorAll('.kit-rows li.dup').length===0),'"Take them out" removes the last import, and the rows are no longer marked as there');
     /* Undo of a big import: quick, offered for 20 s */
     const big='Type,Colour\n'+Array.from({length:300},(_,k)=>['Shirt,White','Tie,Navy','Socks,Black'][k%3]).join('\n');
-    const u=await m.evaluate(async t=>{kitImportText(t);const t0=performance.now();await kitImportGo();const add=performance.now()-t0;const n=items.length;
-      const t1=performance.now();await kitUnsave({its:items.map(i=>i.id),qs:[]});return {add,n,undo:performance.now()-t1,after:items.length,disk:(await tx('readonly',s=>s.getAll())).length}},big);
+    const u=await m.evaluate(async t=>{HOOK.kitImportText(t);const t0=performance.now();await HOOK.kitImportGo();const add=performance.now()-t0;const n=items.length;
+      const t1=performance.now();await HOOK.kitUnsave({its:items.map(i=>i.id),qs:[]});return {add,n,undo:performance.now()-t1,after:items.length,disk:(await tx('readonly',s=>s.getAll())).length}},big);
     ok(u.n===300&&u.after===0&&u.disk===0&&u.add<15000&&u.undo<15000,`300 rows import and Undo in one go each (${Math.round(u.add)} ms, ${Math.round(u.undo)} ms)`);
-    ok(await m.evaluate(()=>KIT_IMP_UNDO_MS>=20000),'the import\'s Undo is offered for 20 s');
+    ok(await m.evaluate(()=>HOOK.KIT_IMP_UNDO_MS>=20000),'the import\'s Undo is offered for 20 s');
     ok(!m.errs.length,'no page errors: '+m.errs.join(' | '));await m.context().close();
   }finally{await browser.close()}
 };
@@ -239,10 +239,10 @@ const importfix3=async({ok,chromium,url})=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},timezoneId:'Asia/Kuwait'});const p=await ctx.newPage();p.errs=[];
     p.on('pageerror',e=>p.errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{if(typeof setupClose==='function'&&document.querySelector('#setup.on'))setupClose()});
+    await p.evaluate(()=>{if('setupClose' in HOOK&&typeof HOOK.setupClose==='function'&&document.querySelector('#setup.on'))HOOK.setupClose()});
     /* ---- W2-15-01: the Description column ---- */
-    const d=await p.evaluate(()=>{const r=kitRead('Category\tDescription\tColor\tBrand\tSize\nSuit\tcharcoal pinstripe\tcharcoal\tM&S\t40R\nShirt\tpink gingham\tpink/white\t\t\nShirt\tbengal stripe\tblue & white\tHilditch\t\nTie\tknit\tnavy\t\t\nTie\trepp stripe\tburgundy & navy\tDrake\'s\t\nTie\tpaisley\tgold\t\t\nTie\tpolka dot\tnavy\t\t\nTrousers\tchinos\tkhaki\tGap\t\nShoes\tpenny loafers\toxblood\t\t\nShoes\tbrogues\ttan\t\t\nSuit\tnavy three-piece\tnavy\t\t\n');
-      kitImportOpen();kitImportText('Category\tDescription\tColor\tSize\nTie\tknit\tnavy\tM\n');const prev=document.querySelector('#kit-prev').textContent;kitClose();
+    const d=await p.evaluate(()=>{const r=HOOK.kitRead('Category\tDescription\tColor\tBrand\tSize\nSuit\tcharcoal pinstripe\tcharcoal\tM&S\t40R\nShirt\tpink gingham\tpink/white\t\t\nShirt\tbengal stripe\tblue & white\tHilditch\t\nTie\tknit\tnavy\t\t\nTie\trepp stripe\tburgundy & navy\tDrake\'s\t\nTie\tpaisley\tgold\t\t\nTie\tpolka dot\tnavy\t\t\nTrousers\tchinos\tkhaki\tGap\t\nShoes\tpenny loafers\toxblood\t\t\nShoes\tbrogues\ttan\t\t\nSuit\tnavy three-piece\tnavy\t\t\n');
+      kitImportOpen();HOOK.kitImportText('Category\tDescription\tColor\tSize\nTie\tknit\tnavy\tM\n');const prev=document.querySelector('#kit-prev').textContent;kitClose();
       return {rows:r.rows.map(x=>[x.card.type,x.card.pattern,x.card.trouserKind||x.card.shoeStyle||x.card.vest||'',x.card.name||''].join(':')),unused:r.unused,desc:r.descCols,prev}});
     ok(d.rows.join('|')==='suit:pinstripe:no:|shirt:gingham::|shirt:stripe::|tie:knit::|tie:stripe::|tie:paisley::|tie:polka-dot::|pants:solid:chinos:|shoes:solid:loafer:Penny loafers|shoes:solid:oxford:Brogues|suit:solid:yes:',
       'a Description column gives the pattern, the trousers\' kind, the shoes\' style, a three-piece suit, and its other words the name: '+d.rows.join(' | '));
@@ -250,11 +250,11 @@ const importfix3=async({ok,chromium,url})=>{
     /* ---- W2-15-02: the same sheet again with a Pattern column updates the pieces, keeping their ids ---- */
     const B=[['Suit','charcoal','M&S','pinstripe'],['Shirt','pink/white','','gingham'],['Tie','navy','','knit'],['Tie','navy','','polka dot'],['Tie','gold','','paisley'],['Shoes','tan','','']];
     const first='Category\tColor\tBrand\n'+B.map(r=>r.slice(0,3).join('\t')).join('\n'),second='Category\tColor\tBrand\tPattern\n'+B.map(r=>r.join('\t')).join('\n')+'\nBelt\tblack\t\t';
-    const u=await p.evaluate(async([a,b])=>{kitImportOpen();kitImportText(a);await kitImportGo();const ids=items.map(i=>i.id).sort().join();
+    const u=await p.evaluate(async([a,b])=>{kitImportOpen();HOOK.kitImportText(a);await HOOK.kitImportGo();const ids=items.map(i=>i.id).sort().join();
       const tie=items.find(i=>i.type==='tie'&&i.primaryColor==='navy');tie.name='Office';tie.updated=Date.now();
-      kitImportOpen();kitImportText(b);const sum=document.querySelector('.kit-sum').textContent,btn=document.querySelector('#kit-imp').textContent,upd=document.querySelectorAll('.kit-rows li.upd').length,
+      kitImportOpen();HOOK.kitImportText(b);const sum=document.querySelector('.kit-sum').textContent,btn=document.querySelector('#kit-imp').textContent,upd=document.querySelectorAll('.kit-rows li.upd').length,
         info=[...document.querySelectorAll('.kit-rows li.upd small')].map(x=>x.textContent);
-      await kitImportGo();
+      await HOOK.kitImportGo();
       const canon=v=>v&&typeof v==='object'&&!Array.isArray(v)?'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canon(v[k])).join(',')+'}':JSON.stringify(v);
       const stored=await tx('readonly',s=>s.getAll()),clean=stored.every(i=>{const c=cleanRecord(i);return c&&canon(c)===canon(i)}),
         fsOk=stored.filter(i=>i.type==='tie').every(i=>i.fs&&i.fs.u===i.updated&&i.fs.s.pattern===i.updated&&!('brand' in i.fs.s));
@@ -265,11 +265,11 @@ const importfix3=async({ok,chromium,url})=>{
     ok(u.after===7&&u.same&&u.pats==='knit,paisley,polka-dot'&&/Imported 1 item and updated 5 pieces/.test(u.t),`the pieces keep their ids (and so their history) and get the patterns; only the new belt is added (${JSON.stringify(u)})`);
     ok(u.clean&&u.fsOk,`imported and updated pieces pass the record check unchanged, and an update stamps only the fields it changed, as an edit does (${u.clean}, ${u.fsOk})`);
     ok(u.undone==='solid,solid,solid'&&u.n===6,'Undo puts the updated pieces back as they were and takes the belt out: '+u.undone);
-    const an=await p.evaluate(()=>{kitImportOpen();kitImportText('Type,Colour,Pattern\nTie,Navy,Paisley\n');const b0=document.querySelector('#kit-imp').textContent;document.querySelector('.kit-asnew').click();
-      const b1=document.querySelector('#kit-imp').textContent;kitImportText('Type,Colour\nTie,Navy\nTie,Navy\nTie,Navy\n');const b2=document.querySelector('#kit-imp').textContent;kitImportText('Type,Colour,Name\nTie,Navy,Sheet tie\n');const b3=document.querySelector('#kit-imp').textContent;kitClose();return {b0,b1,b2,b3}});
+    const an=await p.evaluate(()=>{kitImportOpen();HOOK.kitImportText('Type,Colour,Pattern\nTie,Navy,Paisley\n');const b0=document.querySelector('#kit-imp').textContent;document.querySelector('.kit-asnew').click();
+      const b1=document.querySelector('#kit-imp').textContent;HOOK.kitImportText('Type,Colour\nTie,Navy\nTie,Navy\nTie,Navy\n');const b2=document.querySelector('#kit-imp').textContent;HOOK.kitImportText('Type,Colour,Name\nTie,Navy,Sheet tie\n');const b3=document.querySelector('#kit-imp').textContent;kitClose();return {b0,b1,b2,b3}});
     ok(an.b0==='Update 1 piece'&&an.b1==='Add 1 item'&&an.b2==='Add 1 item'&&an.b3==='Add 1 item',`"Add as new" adds the row instead of updating; rows that say nothing new are the pieces already there; a name for an unnamed piece, or another name, is a new piece (${JSON.stringify(an)})`);
     /* ---- W2-15-03, -04, -05, -06, -07, W2-12-05, W2-16-06, W2-18-04 ---- */
-    const w=await p.evaluate(()=>{const R=t=>{const r=kitRead(t);return r.err?['ERR']:r.rows.map(x=>x.ok?[x.card.type,x.card.primaryColor,x.card.secondaryColor||'',x.qty,x.probs.join('/')].join(':'):'bad:'+x.line+':'+x.why)};
+    const w=await p.evaluate(()=>{const R=t=>{const r=HOOK.kitRead(t);return r.err?['ERR']:r.rows.map(x=>x.ok?[x.card.type,x.card.primaryColor,x.card.secondaryColor||'',x.qty,x.probs.join('/')].join(':'):'bad:'+x.line+':'+x.why)};
       return {lt:R('Type\tColour\nShirt\tlt. blue\nShirt\tlt blue\nTrousers\tdk grey\nTrousers\tmed grey\nSocks\theather grey\n'),
         line:R('Type\tColour\nSuit\tnavy\nTie\tnavy\n\t\nScarf\twhite\nBelt\tbrown'),   // (a pocket square is a type since 2026-11-16: a scarf is the row left out)
         title:R('My clothes (updated Oct)\nType\tColour\nSuit\tnavy\nShirt\twhite'),list:R('Navy suit\nWhite shirt x3\nBurgundy tie\nCharcoal pinstripe suit\nNavy and white striped tie'),
@@ -287,21 +287,21 @@ const importfix3=async({ok,chromium,url})=>{
     ok(w.qty[0]==='shirt:white::3:'&&/bad:3:Quantity is 0/.test(w.qty[1])&&/^socks:black::12:40 asked for/.test(w.qty[2])&&/shirt:blue::1:quantity “some” left out/.test(w.qty[3]),'a Qty column makes that many pieces, at most 12, and says what it couldn\'t read: '+w.qty.join(' | '));
     ok(w.typo[0].startsWith('shoes:brown:')&&w.typo[1].startsWith('shirt:blue:white:')&&/^shirt:lightblue::1:“Shrit” read as dress shirt/.test(w.typo[2])&&w.typo[3].startsWith('shoes:tan:')&&w.typo[4].startsWith('shoes:black:')&&/isn't a type the app plans.*“brnx” isn't a color the app knows either/.test(w.typo[5]),
       'short forms (brn, wht, sky), a typo in the type, Brogues and Monk straps are read; an unknown type and color are both said: '+w.typo.join(' | '));
-    const lr=await p.evaluate(()=>kitRead('Type,Colour,Name,Notes\nTie,Navy,'+'n'.repeat(80)+','+'z'.repeat(600)+'\n').rows[0].card);
+    const lr=await p.evaluate(()=>HOOK.kitRead('Type,Colour,Name,Notes\nTie,Navy,'+'n'.repeat(80)+','+'z'.repeat(600)+'\n').rows[0].card);
     ok(lr.name.length===60&&lr.notes.length===500&&/name cut to 60 characters\/notes cut to 500 characters/.test(w.long[0]),'long text is cut to what is kept, and the preview says so: '+w.long[0].slice(-80));
     ok(w.ar.slice(0,4).map(x=>x.split(':').slice(0,2).join(':')).join()==='suit:black,shirt:white,tie:lightblue,shoes:brown'&&/write the type in English/.test(w.ar[4]),'Arabic type and color words are read; an unknown one asks for English: '+w.ar.join(' | '));
     ok(w.slate.every(x=>/^tie:slate::1:$/.test(x)),'the app\'s own color name with its hyphen is no "read as": '+w.slate.join(' | '));
     /* ---- W2-20-01: a file that can't be read ---- */
     const f=await p.evaluate(async()=>{kitImportOpen();const bad={arrayBuffer:()=>Promise.reject(new DOMException('The I/O read operation failed.','NotReadableError')),text:()=>Promise.reject(new DOMException('The I/O read operation failed.','NotReadableError'))};
-      await kitImportFile(bad);const t=document.querySelector('#kit-prev').textContent;kitClose();return t});
+      await HOOK.kitImportFile(bad);const t=document.querySelector('#kit-prev').textContent;kitClose();return t});
     ok(/This file couldn’t be read/.test(f),'a file that can\'t be read says so: '+f);
     /* ---- W1-2-01 and W1-2-02: own colours from the 14 Nov version ---- */
-    const o=await p.evaluate(async()=>{for(const i of items.slice())await kitDelMany([i.id]);
+    const o=await p.evaluate(async()=>{for(const i of items.slice())await HOOK.kitDelMany([i.id]);
       settings.custom={colors:[{key:'ownmocha',name:'Mocha',hex:'#6f4e37',base:'brown',types:['suit']},{key:'owngray',name:'Gray',hex:'#eeeeee',base:'white',types:['shirt']},{key:'ownnavy',name:'Navy',hex:'#7a7f88',base:'grey',types:['suit','blazer','pants']}],patterns:[]};applyCustom(settings.custom);
       const mk=(id,type,c,name)=>({id,type,primaryColor:c,secondaryColor:null,pattern:'solid',name,added:1,updated:1});
       const old=[mk('o1','tie','1','Gray tie'),mk('o2','pants','2','Navy trousers'),mk('o3','suit','0','Mocha two'),{...mk('o4','shirt','white','Two'),secondaryColor:'2'}];
-      await kitStore(old);const n=await kitFixOldImports();const disk=await tx('readonly',s=>s.getAll());const again=await kitFixOldImports();
-      const imp=kitRead('Type,Colour\nSuit,Navy\nTie,Navy\nTrousers,Gray\nShirt,Gray\nSuit,Grey\nSuit,Mocha\n').rows.map(x=>x.card.primaryColor);
+      await HOOK.kitStore(old);const n=await kitFixOldImports();const disk=await tx('readonly',s=>s.getAll());const again=await kitFixOldImports();
+      const imp=HOOK.kitRead('Type,Colour\nSuit,Navy\nTie,Navy\nTrousers,Gray\nShirt,Gray\nSuit,Grey\nSuit,Mocha\n').rows.map(x=>x.card.primaryColor);
       return {n,again,cols:disk.sort((a,b)=>a.id<b.id?-1:1).map(i=>[i.primaryColor,i.secondaryColor].filter(Boolean).join('+')),stamped:disk.every(i=>i.updated>1),imp}});
     ok(o.n===4&&o.again===0&&o.cols.join()==='grey,navy,ownmocha,white+navy'&&o.stamped,`a list number saved as a color by the 14 Nov import becomes the color its own colour's name means, stamped to sync, once (${JSON.stringify(o)})`);
     ok(o.imp.join()==='navy,navy,grey,grey,grey,ownmocha','the app\'s own color names come before own colours named alike ("Navy", "Gray"); other own colours still read by name: '+o.imp.join());

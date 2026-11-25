@@ -219,7 +219,7 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
   // machine the older app's scheduled sync (C: the whole backup, down and up) came due during B's count on the new worker:
   // "still takes the small sync (10425.2 KB up, 20886.1 KB down, 5 requests)", the nightly run of 2026-11-17
   const quiet=d=>d.p.evaluate(async()=>{let last='',same=0;const end=Date.now()+6000;
-    while(Date.now()<end){await recordRun;const sig=stateSig(await localState());same=!syncing&&sig===last?same+1:0;last=sig;if(same>=3)break;await new Promise(r=>setTimeout(r,120))}
+    while(Date.now()<end){await recordRun;const sig=stateSig(await localState());same=!HOOK.syncing&&sig===last?same+1:0;last=sig;if(same>=3)break;await new Promise(r=>setTimeout(r,120))}
     clearTimeout(syncTimer)});
   // one sync on d, with what it sent and received (d's own requests: each is noted with its device)
   const counted=(d,r)=>{const t=traffic.filter(x=>x.who===d.n);return {ok:r,up:t.reduce((a,x)=>a+x.up,0),down:t.reduce((a,x)=>a+x.down,0),n:t.length,t,big:t.some(x=>x.up>1e6||x.down>1e6)}};
@@ -296,7 +296,7 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
     const sv=anySnap.length&&(await (await W.fetch(new Request(HOST+'sync?snap='+anySnap[0].slice(5),{headers:{'x-app-token':'secret'}}),env)).json());
     ok(anySnap.length>=1&&sv&&sv.data.items.find(i=>i.id==='it7').photo===seed.items[7].photo,`the day's first change keeps the backup as it was (${anySnap.join(', ')}), photos inline`);
     await A.p.evaluate(()=>openSettings&&openSettings());await A.p.evaluate(()=>loadSnapshots());
-    await A.p.evaluate(async d=>{$('#snap-list').value=d;const r=rollBack();$('#ask-ok').click();await r},anySnap[0].slice(5));
+    await A.p.evaluate(async d=>{$('#snap-list').value=d;const r=HOOK.rollBack();$('#ask-ok').click();await r},anySnap[0].slice(5));
     const rb=await A.p.evaluate(()=>({st:$('#snap-status').textContent,c5:items.find(i=>i.id==='it5').primaryColor,n:items.length}));
     await sync(B);
     ok(/Rolled back\./.test(rb.st)&&rb.c5==='navy'&&(await itemOf(B,'it5')).primaryColor==='navy'&&(await itemOf(B,'it5')).photo===seed.items[5].photo&&store.has('snap:before-restore'),`Roll back goes through the small sync and reaches the other device (${rb.st})`);
@@ -373,7 +373,7 @@ const inlineswatch=async({ok,chromium,url,ROOT})=>{
       `an edited old item goes up with no photo written (${writes.join(', ')}); its swatch is inline, the old value stays for the clean-up`);
     // a new item: the swatch is cut as a JPEG of a few KB from a real close-up
     const sw=await A.p.evaluate(async()=>{const im=await imgOf('tests/fixtures/blazer-windowpane-closeup.jpg'),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);
-      const s=cropSwatch(c,1,.5,.5,'#1f2a44');return {s,min:PH_MIN}});
+      const s=HOOK.cropSwatch(c,1,.5,.5,'#1f2a44');return {s,min:HOOK.PH_MIN}});
     ok(sw.s.startsWith('data:image/jpeg;base64,')&&sw.s.length<sw.min*.75,`the swatch is a JPEG of ${(sw.s.length/1024).toFixed(1)} KB of text (a PNG was about 38 KB), under PH_MIN (${sw.min})`);
     const np=pic(60e3),nt=pic(70e3);writes.length=0;
     await A.p.evaluate(async([sw,np,nt])=>{const it={id:'new1',type:'suit',primaryColor:'grey',pattern:'solid',added:Date.now(),photo:np,texture:nt,swatch:sw,swSrc:'tex'};await put(it);items=[...items,it]},[sw.s,np,nt]);
@@ -513,21 +513,21 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
     ok(atRe.test(pz.a)&&/^Paused until tomorrow/.test(pz.b),`"Paused until" says the real time when it is today (“${pz.a}” / “${pz.b}”, ${pz.at} expected)`);
     ok(/paused until/.test(pz.w)&&/only on this phone/.test(pz.w)&&pz.w2==='your wardrobe is backed up',`while paused, Connection's words say so (“${pz.w}”)`);
     // W2-14-03: the labels
-    const lab=await A.evaluate(()=>({d:snapLabel({id:'2026-11-16',saved:Date.parse('2026-11-15T04:30:00Z'),n:5}),e:snapLabel({id:'2026-11-15',saved:Date.parse('2026-11-15T04:30:00Z'),n:0}),
-      m:snapLabel({id:'2026-11',saved:1,n:0}),o:snapLabel({id:'2026-11-14',saved:1})}));
+    const lab=await A.evaluate(()=>({d:HOOK.snapLabel({id:'2026-11-16',saved:Date.parse('2026-11-15T04:30:00Z'),n:5}),e:HOOK.snapLabel({id:'2026-11-15',saved:Date.parse('2026-11-15T04:30:00Z'),n:0}),
+      m:HOOK.snapLabel({id:'2026-11',saved:1,n:0}),o:HOOK.snapLabel({id:'2026-11-14',saved:1})}));
     ok(lab.d==='Mon, Nov 16, start of the day · 5 items'&&lab.e==='Sun, Nov 15, start of the day · empty'&&lab.m==='Start of November 2026 · empty'&&lab.o==='Sat, Nov 14, start of the day',
       `daily backups named by their day, with counts (${JSON.stringify(lab)})`);
     const askQ=await A.evaluate(async()=>{const sel=document.querySelector('#snap-list');sel.innerHTML='<option value="2026-11-15" data-n="0">Sun, Nov 15, start of the day · empty</option>';sel.value='2026-11-15';
-      const run=rollBack();for(let i=0;i<300&&!asking;i++)await new Promise(r=>setTimeout(r,10));const txt=document.querySelector('#ask-sheet.on')?document.querySelector('#ask-sheet').textContent:'';askAnswer(false);await run;return txt});
+      const run=HOOK.rollBack();for(let i=0;i<300&&!asking;i++)await new Promise(r=>setTimeout(r,10));const txt=document.querySelector('#ask-sheet.on')?document.querySelector('#ask-sheet').textContent:'';askAnswer(false);await run;return txt});
     ok(/no items: rolling back to it empties the wardrobe/.test(askQ),'the roll-back question says an empty copy empties the wardrobe');
     // W1-10-01 in the app: the server's saves used up says nothing was deleted, with the local time
     const del=await A.evaluate(async()=>{const f0=window.fetch;window.fetch=async()=>new Response('{"error":"kv-limit","what":"write","message":"x"}',{status:429});
-      const r=await aboutDeleteAccount({w:localStorage.getItem('worker_url'),t:'secret'});window.fetch=f0;return r});
+      const r=await HOOK.aboutDeleteAccount({w:localStorage.getItem('worker_url'),t:'secret'});window.fetch=f0;return r});
     ok(del.fail&&/can’t delete anything more today, so nothing was deleted\. Try again after \d/.test(del.fail),`Delete everything refused for the day's saves: said in the app's words (“${del.fail}”)`);
     // W1-1-02: the day's remakes
     const rm=await A.evaluate(async()=>{localStorage.removeItem('remake_day');const a=remakeLeft();remakeSpend(10);const b=remakeLeft();
       const cv=document.createElement('canvas');cv.width=cv.height=8;const cx=cv.getContext('2d');items.forEach((it,k)=>{cx.fillStyle='rgb(40,'+(60+k)+',90)';cx.fillRect(0,0,8,8);it.photo=cv.toDataURL('image/png')});   // real pictures: the real makeSmall runs
-      for(const it of items)delete it.photoSm;const n0=await smallPhotos();localStorage.removeItem('remake_day');remakeSpend(7);const n1=await smallPhotos(),made=items.filter(it=>it.photoSm&&it.phSig===phSigOf(it.photo)).length;return {a,b,n0,n1,made}});
+      for(const it of items)delete it.photoSm;const n0=await smallPhotos();localStorage.removeItem('remake_day');remakeSpend(7);const n1=await smallPhotos(),made=items.filter(it=>it.photoSm&&it.phSig===HOOK.phSigOf(it.photo)).length;return {a,b,n0,n1,made}});
     ok(rm.a===10&&rm.b===0&&rm.n0===0&&rm.n1===3&&rm.made===3,`a connected phone remakes at most 10 pictures a day, the rest on the next days (${JSON.stringify(rm)})`);
     ok(!A.errs.length,'no page errors: '+A.errs.join('; '));
     await A.ctx.close();

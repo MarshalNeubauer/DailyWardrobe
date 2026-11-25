@@ -28,7 +28,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   // quiet = no recording or sync running, and the stored wardrobe (stateSig) the same over three checks 120 ms apart (any background
   // writer, not only recordRun: arrivals, migrations, a redraw the sync scheduled), for at most 6 s
   const quiet=p=>p.evaluate(async()=>{let last='',same=0;const end=Date.now()+6000;
-    while(Date.now()<end){await recordRun;const sig=stateSig(await localState());same=!syncing&&sig===last?same+1:0;last=sig;if(same>=3)return true;await new Promise(r=>setTimeout(r,120))}return false});
+    while(Date.now()<end){await recordRun;const sig=stateSig(await localState());same=!HOOK.syncing&&sig===last?same+1:0;last=sig;if(same>=3)return true;await new Promise(r=>setTimeout(r,120))}return false});
   const syncQ=async p=>{await quiet(p);return p.evaluate(()=>{clearTimeout(syncTimer);return syncNow()})};
   // before a counted sync the OTHER device must be still too: a late lock it writes after its own sync goes up with its scheduled backup,
   // and landing during the count that changed the server under the counted device (the last flaky failure: 2.9 KB down, then an upload).
@@ -67,8 +67,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const so=await B.p.evaluate(()=>{const n=()=>document.querySelectorAll('#wardrobe .gi').length,open=settingsOpen(),before=n();closeSettings();return {open,before,ward:n(),items:items.length}});
   await B.p.evaluate(()=>show('today'));await add(A.p,{type:'belt',primaryColor:'brown'});await sync(A.p);
   await B.p.evaluate(()=>openSettings('backup'));await sync(B.p);
-  const st=await B.p.evaluate(()=>({open:settingsOpen(),stale:todayStale}));await B.p.evaluate(()=>closeSettings());
-  const after=await B.p.evaluate(()=>({stale:todayStale,today:!$('#today').hidden}));
+  const st=await B.p.evaluate(()=>({open:settingsOpen(),stale:HOOK.todayStale}));await B.p.evaluate(()=>closeSettings());
+  const after=await B.p.evaluate(()=>({stale:HOOK.todayStale,today:!$('#today').hidden}));
   ok(so.open&&so.ward===so.items&&so.before===so.items-1&&st.open&&st.stale&&!after.stale&&after.today,`a sync that brings changes while Settings is open leaves it open; the tab on screen (Wardrobe, Today) is redrawn when it closes (${JSON.stringify({so,st,after})})`);
 
   // a delete and an edit made while a sync is still in flight must not be undone by that sync
