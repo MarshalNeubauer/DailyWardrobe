@@ -14,9 +14,9 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
   const browser=await chromium.launch();const p=await browser.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const r=await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic.map(i=>({...i}));
-      settings={...settings,workdays:[1,2,3,4,5],blazerDays:[4],vestMode:'auto',darkShirts:'some',holidays:null,daysOff:[],laundryDays:1};delete settings.dress;
-      weather={};climate=null;TODAY_OVERRIDE='2026-11-01T12:00:00';dayRecs={};cache={};
+    const r=await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic.map(i=>({...i}));
+      HOOK.settings={...settings,workdays:[1,2,3,4,5],blazerDays:[4],vestMode:'auto',darkShirts:'some',holidays:null,daysOff:[],laundryDays:1};delete settings.dress;
+      HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-01T12:00:00';HOOK.dayRecs={};HOOK.cache={};
       const plan=planSim(new Date(2026,10,2)).upTo(new Date(2027,1,0)),ks=Object.keys(plan).sort((a,b)=>keyDate(a)-keyDate(b));
       const pct=[],seq=[],worn={};let top10=0,same=0;
       for(const k of ks){const o=plan[k],n=di(keyDate(k)),pool=t=>items.filter(i=>i.type===t&&inRotation(i,n)).sort((a,b)=>a.id<b.id?-1:1);

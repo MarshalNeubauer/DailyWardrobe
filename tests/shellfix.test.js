@@ -17,7 +17,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);return {p,ctx,errs,calls}};
   const seed=p=>p.evaluate(async()=>{const mk=(id,type,c)=>({id,type,primaryColor:c,pattern:'solid',added:Date.now()});
     for(const it of [mk('s1','suit','navy'),mk('h1','shirt','white'),mk('t1','tie','burgundy'),mk('p1','shoes','black')]){await put(it);items.push(it)}
-    settings.setupDone=Date.now();await saveUserSettings();cache={};show('today')});
+    settings.setupDone=Date.now();await saveUserSettings();HOOK.cache={};show('today')});
   const stored=p=>p.evaluate(async()=>(await tx('readonly',s=>s.getAll())).length);
   const gear='header button[aria-label="Settings"]';
   const toAbout=async p=>{await p.click(gear);await p.waitForFunction(()=>settingsOpen());await p.click('#sc-about .scat-head');await settle(p,300)};

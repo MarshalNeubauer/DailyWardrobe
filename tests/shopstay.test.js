@@ -7,9 +7,9 @@ module.exports=async({ok,chromium,url,settle})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++).toString().padStart(3,'0'),type,primaryColor,pattern:'solid',updated:1,...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white'),I('shirt','cream'),
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white'),I('shirt','cream'),
         I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','gold'),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'})];
-      settings.holidays={country:'KW',list:[{d:'2026-12-01',n:'Holiday'}],skip:[],fetched:1};settings.daysOff=[];dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};
+      settings.holidays={country:'KW',list:[{d:'2026-12-01',n:'Holiday'}],skip:[],fetched:1};settings.daysOff=[];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};
       HOOK.shopBusy={i:-1,n:1,label:'',t0:Date.now()};HOOK.shop=null;show('stats')});   // (a check "already running", so none starts)
     await p.click('#shop-btn');await settle(p,500);
     ok(await p.evaluate(()=>shopOpen&&$('#shop-sheet').classList.contains('on')),'What to buy opens from Insights');

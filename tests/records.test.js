@@ -62,7 +62,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(r.marks===0&&!r.hits.length&&r.stored===0,`a crafted backup file puts nothing into the page on Today, the Wardrobe or the item sheets, and nothing crafted is stored (marks ${r.marks}, calls ${r.hits.join()}, stored ${r.stored})`);
 
     // ---- the second lock: a crafted record that skipped the check (in memory) is still escaped at the sinks
-    const s2=await p.evaluate(async([PNG,B,S])=>{window.__rxs=[];items=[{id:'z1'+S,type:'suit',primaryColor:'navy',pattern:'solid',added:1},{id:'z2',type:'shirt',primaryColor:'white',pattern:'solid',photo:PNG+B,photoSm:PNG+B,added:1}];cache={};
+    const s2=await p.evaluate(async([PNG,B,S])=>{window.__rxs=[];HOOK.items=[{id:'z1'+S,type:'suit',primaryColor:'navy',pattern:'solid',added:1},{id:'z2',type:'shirt',primaryColor:'white',pattern:'solid',photo:PNG+B,photoSm:PNG+B,added:1}];HOOK.cache={};
       show('wardrobe');await new Promise(r=>setTimeout(r,200));document.querySelector('#wardrobe .giopen').click();await new Promise(r=>setTimeout(r,300));
       const sheet=!!document.querySelector('#item-view.on, body.iv-on');HOOK.closeItem();openItem('z2');await new Promise(r=>setTimeout(r,200));HOOK.closeItem();
       return {marks:document.querySelectorAll('[data-rx]').length,hits:window.__rxs,sheet}},[PNG,B('sink'),S(7)]);
@@ -72,7 +72,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // (the step above put a crafted item straight into memory, skipping the check; the app's week lock can write its id into day records,
     // which the start-up check then rightly sets aside: found by looping this test on WebKit, 1 run in 24. Those days are cleared first,
     // so what follows sees only the records planted here; a real phone never holds an item that skipped the check)
-    await p.evaluate(async()=>{items=[];cache={};await new Promise(r=>setTimeout(r,800));await txs('days','readwrite',s=>s.clear());dayRecs={}});
+    await p.evaluate(async()=>{HOOK.items=[];HOOK.cache={};await new Promise(r=>setTimeout(r,800));await txs('days','readwrite',s=>s.clear());HOOK.dayRecs={}});
     await p.evaluate(async([PNG,B])=>{await putRaw({id:'old1',type:'shirt',primaryColor:'white',pattern:'solid',photo:PNG+B,added:1,updated:5});await putRaw({id:'old2'+B,type:'tie',primaryColor:'navy',pattern:'solid',added:1,updated:5});localStorage.removeItem('rec_clean')},[PNG,B('old')]);
     await p.reload();await p.waitForFunction(()=>window.appReady);await p.waitForTimeout(500);
     await p.waitForTimeout(1500);
@@ -91,7 +91,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(ct==='Color: low confidence · Pattern: medium confidence'||(!/</.test(ct)&&/low confidence/.test(ct)),'confTxt shows only the words high, medium and low ('+ct+')');
 
     // ---- W2-12-06: a name typed with right-to-left overrides is saved without them
-    const nm=await p.evaluate(async()=>{const i={id:'n1',type:'suit',primaryColor:'navy',pattern:'solid',added:1};items=[i];await setItemField('n1','name','‮epyt‬ blazer');return items[0].name});
+    const nm=await p.evaluate(async()=>{const i={id:'n1',type:'suit',primaryColor:'navy',pattern:'solid',added:1};HOOK.items=[i];await setItemField('n1','name','‮epyt‬ blazer');return items[0].name});
     ok(nm==='epyt blazer','an item name is saved without bidi override characters ('+JSON.stringify(nm)+')');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await p.close();

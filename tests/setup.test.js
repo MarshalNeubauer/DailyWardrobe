@@ -124,8 +124,8 @@ const setup=async({ok,chromium,url,settle})=>{
 
     /* ---- the checklist on Today ---- */
     const rows=()=>s.evaluate(()=>[...document.querySelectorAll('#firstrun .fr-it')].map(e=>e.dataset.need+(e.classList.contains('done')?'+':'-')).join(' '));
-    const add=(...its)=>s.evaluate(`(()=>{const I=${I};items.push(${its.map(a=>`I(${a.map(x=>JSON.stringify(x)).join(',')})`).join(',')});cache={};show('today')})()`);
-    await s.evaluate(()=>{TODAY_OVERRIDE='2026-11-11T12:00:00';settings.workdays=[1,2,3,4,5];settings.blazerDays=[];delete settings.dress;dayRecs={};cache={};sel=new Date(2026,10,11);view={y:2026,m:10};show('today')});
+    const add=(...its)=>s.evaluate(`(()=>{const I=${I};items.push(${its.map(a=>`I(${a.map(x=>JSON.stringify(x)).join(',')})`).join(',')});HOOK.cache={};show('today')})()`);
+    await s.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';settings.workdays=[1,2,3,4,5];settings.blazerDays=[];delete settings.dress;HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};show('today')});
     ok(await rows()==='jacket- shirt- tie- pants- shoes-'&&/Get your first outfit/.test(await s.textContent('#firstrun h3')),'suit-and-tie person, empty wardrobe: "Get your first outfit" lists a jacket, shirt, tie, pants and shoes');
     ok(await s.evaluate(()=>!document.querySelector('.fig')&&!/wardrobe is empty/i.test(document.querySelector('#today').textContent)),'in place of the gray sentence');
     await add(['sh1','shirt','white']);
@@ -137,20 +137,20 @@ const setup=async({ok,chromium,url,settle})=>{
     await add(['bs','shoes','black',{leather:'calf'}]);
     ok(await s.evaluate(()=>!document.querySelector('#firstrun')&&!!document.querySelector('.fig')),'with shoes a day can be planned: the checklist is gone and the outfit shows');
     // a blazer needs trousers
-    await s.evaluate(`(()=>{const I=${I};items=[I('bz','blazer','navy'),I('sh1','shirt','white'),I('t1','tie','burgundy'),I('bs','shoes','black',{leather:'calf'})];cache={};show('today')})()`);
+    await s.evaluate(`(()=>{const I=${I};HOOK.items=[I('bz','blazer','navy'),I('sh1','shirt','white'),I('t1','tie','burgundy'),I('bs','shoes','black',{leather:'calf'})];HOOK.cache={};show('today')})()`);
     ok(await rows()==='jacket+ shirt+ tie+ pants- shoes+','a blazer and no suit: pants are still needed');
     // an item out of rotation doesn't count
-    await s.evaluate(`(()=>{const I=${I};items=[I('su1','suit','navy'),I('sh1','shirt','white'),I('t1','tie','burgundy'),I('bs','shoes','black',{leather:'calf',paused:true})];cache={};show('today')})()`);
+    await s.evaluate(`(()=>{const I=${I};HOOK.items=[I('su1','suit','navy'),I('sh1','shirt','white'),I('t1','tie','burgundy'),I('bs','shoes','black',{leather:'calf',paused:true})];HOOK.cache={};show('today')})()`);
     ok(await rows()==='jacket+ shirt+ tie+ shoes-','shoes taken out of rotation don\'t tick the row');
     // no jackets, no ties
-    await s.evaluate(()=>{items=[];settings.dress={jacket:false,tie:false};cache={};show('today')});
+    await s.evaluate(()=>{HOOK.items=[];settings.dress={jacket:false,tie:false};HOOK.cache={};show('today')});
     ok(await rows()==='shirt- pants- shoes-','no-jacket, no-tie person: only a shirt, pants and shoes are asked for');
     await add(['sh1','shirt','white']);await add(['p1','pants','grey']);
     ok(await rows()==='shirt+ pants+ shoes-','ticking as they are added');
     await add(['bs','shoes','brown',{leather:'calf'}]);
     ok(await s.evaluate(()=>!document.querySelector('#firstrun')&&!!document.querySelector('.fig')),'and gone once that person has all three');
     // the button, and a day that is not a workday
-    await s.evaluate(()=>{items=[];delete settings.dress;settings.workdays=[1,2,3,4];cache={};sel=new Date(2026,10,14);show('today')});
+    await s.evaluate(()=>{HOOK.items=[];delete settings.dress;settings.workdays=[1,2,3,4];HOOK.cache={};HOOK.sel=new Date(2026,10,14);show('today')});
     ok(await s.evaluate(()=>!!document.querySelector('#stage #firstrun')&&/isn.t a workday/.test(document.querySelector('#today').textContent)),'on a day that is not a workday the checklist sits above the note');   // ui pass: the checklist comes first
     await s.click('#fr-add');
     ok(await s.evaluate(()=>!document.querySelector('#add').hidden),'its button opens the Add tab');
@@ -197,7 +197,7 @@ const setup=async({ok,chromium,url,settle})=>{
     /* ---- it steps aside when the app is driven past it ---- */
     const y=await open();
     ok(await shown(y),'fresh install: the setup');
-    await y.evaluate(`(()=>{const I=${I};items=[I('su1','suit','navy')];cache={};show('today')})()`);
+    await y.evaluate(`(()=>{const I=${I};HOOK.items=[I('su1','suit','navy')];HOOK.cache={};show('today')})()`);
     ok(!await shown(y)&&await y.evaluate(()=>!settings.setupDone&&!document.querySelector('main').inert),'items arriving (a sync, a restore) close a setup that opened by itself, without marking it done');
     await y.context().close();
     const y2=await open();
@@ -337,9 +337,9 @@ const setupfix=async({ok,chromium,url,settle})=>{
     await h.evaluate(()=>{HOOK.setupClose();HOOK.homeScreenGuide()});await h.waitForSelector('#kitsheet.on');
     const steps=await h.evaluate(()=>[...document.querySelectorAll('#kitsheet .home-steps li')].map(l=>l.textContent));
     ok(steps.length===4&&/⋯/.test(steps[0])&&/Open as Web App/.test(steps[2]),'elsewhere it is the kit sheet, its steps one per line ('+steps.length+')');
-    await h.evaluate(()=>{items=[{id:'i1',type:'tie',primaryColor:'navy',pattern:'solid',added:1}];HOOK.kitDraw()});
+    await h.evaluate(()=>{HOOK.items=[{id:'i1',type:'tie',primaryColor:'navy',pattern:'solid',added:1}];HOOK.kitDraw()});
     ok(/Your wardrobe stays here in Safari/.test(await h.textContent('#kitsheet'))&&/Download backup/.test(await h.textContent('#kitsheet')),'not connected with a wardrobe: it says the wardrobe stays in Safari and how to take it along');
-    await h.evaluate(()=>{items=[];kitClose();delete settings.setupDone;HOOK.setupOpen(false)});await h.waitForSelector('#setup.on');
+    await h.evaluate(()=>{HOOK.items=[];kitClose();delete settings.setupDone;HOOK.setupOpen(false)});await h.waitForSelector('#setup.on');
     ok(!h.errs.length,'no page errors: '+h.errs.join(' | '));await h.context().close();
 
     /* ---- units follow the country ---- */
@@ -356,7 +356,7 @@ const setupfix=async({ok,chromium,url,settle})=>{
     ok(hol.fr[0]==="New Year's Day",'elsewhere the English name');
     const kd=Object.fromEntries(hol.kw.map(x=>[x.d,x.n]));
     ok(kd['2026-02-25']==='National Day'&&kd['2026-03-20']==='Eid al-Fitr'&&kd['2026-05-26']==='Arafat Day'&&kd['2026-05-27']==='Eid al-Adha'&&kd['2026-06-16']==='Islamic New Year'&&kd['2027-03-09']==='Eid al-Fitr',`Kuwait's holidays are worked out on the phone, Islamic days from the Umm al-Qura calendar (${hol.kw.length} days)`);
-    await u.evaluate(()=>{TODAY_OVERRIDE='2026-11-15T12:00:00';cache={}});
+    await u.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={}});
     await u.evaluate(()=>setHolidayCountry('KW'));
     ok(await u.evaluate(()=>settings.holidays.country==='KW'&&settings.holidays.list.some(h=>h.n==='Liberation Day')),'not connected, picking Kuwait gives its list (none came before)');
     await u.evaluate(()=>setHolidayCountry('KP'));
@@ -386,7 +386,7 @@ const setupfix=async({ok,chromium,url,settle})=>{
     const a=await open({locale:'ar-KW',timezoneId:'Asia/Kuwait'},null,false);
     const ad=await a.evaluate(()=>({d:shortDate(new Date(2026,10,15)),l:new Date(2026,10,15).toLocaleDateString(undefined,{month:'long',year:'numeric'})}));
     ok(/^Sun/.test(ad.d)&&/15/.test(ad.d)&&/November 2026/.test(ad.l)&&!/[؀-ۿ٠-٩]/.test(ad.d+ad.l),`an Arabic-language phone gets dates in English with Latin digits (${ad.d}; ${ad.l})`);
-    const wk=await a.evaluate(()=>{settings.workdays=[1,2,3,4,5];monthPanel={y:2026,m:10};const g1=HOOK.monthGridHtml();settings.workdays=[0,1,2,3,4];const g2=HOOK.monthGridHtml();
+    const wk=await a.evaluate(()=>{settings.workdays=[1,2,3,4,5];HOOK.monthPanel={y:2026,m:10};const g1=HOOK.monthGridHtml();settings.workdays=[0,1,2,3,4];const g2=HOOK.monthGridHtml();
       const head=g=>g.match(/mdow[^>]*>(.*?)<\/div>/)[1].replace(/<[^>]+>/g,''),blanks=g=>(g.match(/mc blank/g)||[]).length;return {h1:head(g1),b1:blanks(g1),h2:head(g2),b2:blanks(g2)}});
     ok(wk.h1==='MTWTFSS'&&wk.b1===6&&wk.h2==='SMTWTFS'&&wk.b2===0,`the month starts on Monday for a Mon–Fri week and on Sunday for Sun–Thu (${JSON.stringify(wk)})`);
     ok(!a.errs.length,'no page errors: '+a.errs.join(' | '));await a.context().close();
@@ -435,12 +435,12 @@ const nufix8=async({ok,chromium,url,settle})=>{
   try{
     /* ---- N6: holidays fetched on 31 December in Sydney and 15 January in London include the coming year ---- */
     const h=await open({timezoneId:'Australia/Sydney',locale:'en-AU'});
-    const au=await h.evaluate(async()=>{TODAY_OVERRIDE='2026-12-31T23:55:00';settings.workdays=[1,2,3,4,5];cache={};await setHolidayCountry('AU');
-      const l=settings.holidays.list.map(x=>x.d);TODAY_OVERRIDE='2027-01-01T08:00:00';cache={};return {l,ny:isWorkday(new Date(2027,0,1)),home:isoKey(homeDay())}});
+    const au=await h.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2026-12-31T23:55:00';settings.workdays=[1,2,3,4,5];HOOK.cache={};await setHolidayCountry('AU');
+      const l=settings.holidays.list.map(x=>x.d);HOOK.TODAY_OVERRIDE='2027-01-01T08:00:00';HOOK.cache={};return {l,ny:isWorkday(new Date(2027,0,1)),home:isoKey(homeDay())}});
     ok(h.years.filter(y=>/AU/.test(y)).sort().join()==='2026AU,2027AU,2028AU','on 31 December every year of the window is asked: 2026, 2027 and 2028 ('+h.years.join()+')');
     ok(au.l.includes('2027-01-01')&&au.l.includes('2027-01-26')&&!au.ny&&au.home==='2027-01-04',`Sydney: New Year's Day and Australia Day 2027 are in the list, 1 January is no workday and Today opens on Monday 4 January (${au.l.join(' ')}; ${au.home})`);
     h.years.length=0;
-    const gb=await h.evaluate(async()=>{TODAY_OVERRIDE='2027-01-15T12:00:00';cache={};await setHolidayCountry('GB');return settings.holidays.list.map(x=>x.d)});
+    const gb=await h.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2027-01-15T12:00:00';HOOK.cache={};await setHolidayCountry('GB');return settings.holidays.list.map(x=>x.d)});
     ok(gb.includes('2027-03-29')&&gb.includes('2027-12-25')&&gb.includes('2026-12-25')&&gb.includes('2028-01-01')&&!gb.includes('2028-03-29'),`London on 15 January: 2027's holidays are there, from a month back to 13 months ahead (${gb.join(' ')})`);
     ok(await h.evaluate(()=>JSON.stringify(HOOK.holYears('2026-11-30','2028-01-31'))==='[2026,2027,2028]'&&JSON.stringify(HOOK.holYears('2027-01-15','2028-02-15'))==='[2027,2028]'),'holYears lists every calendar year from one date to the other');
     ok(!h.errs.length,'no page errors: '+h.errs.join(' | '));await h.context().close();
@@ -448,7 +448,7 @@ const nufix8=async({ok,chromium,url,settle})=>{
     /* ---- a country picked in Settings is kept before its list arrives; schedule taps are stored before the locks are released ---- */
     let release;const fr=new Promise(r=>release=r);
     const s=await open({timezoneId:'Europe/Paris'},null,{hold:{FR:fr}});
-    await s.evaluate(()=>{TODAY_OVERRIDE='2026-11-16T12:00:00';cache={};openSettings('daysoff')});
+    await s.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-16T12:00:00';HOOK.cache={};openSettings('daysoff')});
     await s.selectOption('#cfg-country','FR');
     ok(await stored(s,`s=>s.holidays&&s.holidays.country==='FR'&&s.holidays.fetched===0`),'the country picked is stored at once, its list to come (swiped away before it arrived, it was lost)');
     ok(await s.evaluate(()=>/Loading the public holidays of France/.test(document.querySelector('#holiday-msg').textContent)&&!document.querySelector('#holiday-list').textContent.trim()),'while loading it says so, with no "no list yet" line under it');

@@ -13,7 +13,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const ev=(f,a)=>p.evaluate(f,a);
     const tap=async s=>{await p.locator(s).first().click();await settle(p,300)};
-    await ev(()=>{CK_OPEN['*']=true;settings.setupDone=1;items=[];cache={};queue.length=0;show('add')});
+    await ev(()=>{CK_OPEN['*']=true;settings.setupDone=1;HOOK.items=[];HOOK.cache={};queue.length=0;show('add')});
     /* two list cards by hand (a second card for a test: queue.unshift({id,err:'open'});errToHand(id)): A a navy suit, B a tie */
     const card=(id,type,c)=>ev(([id,type,c])=>{queue.unshift({id,err:'open'});errToHand(id);setq(id,'type',type);setq(id,'primaryColor',c)},[id,type,c]);
     await card('cA','suit','navy');await card('cB','tie','burgundy');await settle(p,300);   // queue: [cB, cA]
@@ -65,8 +65,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     await ev(()=>{queue.length=0;renderAdd()});
 
     // CR-1-05: the Wardrobe on its Suit chip, a suit made a blazer in the item sheet (the real Type dropdown)
-    await ev(()=>{items=[{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid'},{id:'s2',type:'suit',primaryColor:'grey',pattern:'solid'},{id:'s3',type:'suit',primaryColor:'charcoal',pattern:'solid'},{id:'t1',type:'tie',primaryColor:'navy',pattern:'solid'}];
-      cache={};flt='suit';show('wardrobe');openItem('s2')});await settle(p,500);
+    await ev(()=>{HOOK.items=[{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid'},{id:'s2',type:'suit',primaryColor:'grey',pattern:'solid'},{id:'s3',type:'suit',primaryColor:'charcoal',pattern:'solid'},{id:'t1',type:'tie',primaryColor:'navy',pattern:'solid'}];
+      HOOK.cache={};HOOK.flt='suit';show('wardrobe');openItem('s2')});await settle(p,500);
     await p.locator('#ivbody select[data-act-change="itemPick"][data-id="s2"][data-f="type"]').selectOption('blazer');await settle(p,400);
     const nav=await ev(()=>({n:(document.querySelector('#ivhead .pcount')||{}).textContent||'',prev:document.querySelector('#iv-prev').disabled,next:document.querySelector('#iv-next').disabled,type:items.find(i=>i.id==='s2').type}));
     ok(nav.type==='blazer'&&nav.n==='2 of 3'&&!nav.prev&&!nav.next,`under the Suit chip, a suit made a blazer keeps "n of m" and ‹ › (${JSON.stringify(nav)})`);

@@ -7,7 +7,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // a kept result, so opening the sheet runs no check; long enough to scroll
-    await p.evaluate(()=>{items=[...'abc'].map(c=>({id:'s'+c,type:'suit',primaryColor:'navy',pattern:'solid'})).concat([...'abcde'].map(c=>({id:'h'+c,type:'shirt',primaryColor:'white',pattern:'solid'})),[...'abcd'].map(c=>({id:'t'+c,type:'tie',primaryColor:'navy',pattern:'solid'})),[...'ab'].map(c=>({id:'f'+c,type:'shoes',primaryColor:'black',pattern:'solid',leather:'calf'})));dayRecs={};cache={};show('stats');
+    await p.evaluate(()=>{HOOK.items=[...'abc'].map(c=>({id:'s'+c,type:'suit',primaryColor:'navy',pattern:'solid'})).concat([...'abcde'].map(c=>({id:'h'+c,type:'shirt',primaryColor:'white',pattern:'solid'})),[...'abcd'].map(c=>({id:'t'+c,type:'tie',primaryColor:'navy',pattern:'solid'})),[...'ab'].map(c=>({id:'f'+c,type:'shoes',primaryColor:'black',pattern:'solid',leather:'calf'})));HOOK.dayRecs={};HOOK.cache={};show('stats');
       const cat=n=>({key:'c'+n,title:'Section '+n,verdict:'covered',own:null,notes:[...Array(8)].map((_,k)=>`Note ${k} of section ${n}`),recs:[]});
       HOOK.shop={sig:HOOK.shopSig(),at:Date.now(),res:{v:2,base:null,cats:[...Array(8)].map((_,n)=>cat(n)),top:[],occasions:[],checked:0,sims:1,months:6}}});
     const view=()=>p.evaluate(()=>{const v=document.querySelector('#shop-sheet'),r=v.getBoundingClientRect(),bd=getComputedStyle(document.querySelector('#shop-backdrop'));

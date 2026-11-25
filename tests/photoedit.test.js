@@ -13,8 +13,8 @@ const photoedit=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     const photo=await mk(300,200,"x.fillStyle='#f00';x.fillRect(0,0,w/2,h);x.fillStyle='#00f';x.fillRect(w/2,0,w/2,h)");
     await p.evaluate(ph=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:k,...x});
-      items=[I('suit','navy',{photo:ph}),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];settings.planRules=PLAN_RULES;dayRecs={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};view={y:2026,m:10};flt='all';editing='suit0';show('wardrobe')},photo);
+      HOOK.items=[I('suit','navy',{photo:ph}),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[0,1,2,3,4];settings.planRules=PLAN_RULES;HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.view={y:2026,m:10};HOOK.flt='all';HOOK.editing='suit0';show('wardrobe')},photo);
     const before=await p.evaluate(()=>({plan:JSON.stringify(Object.values(planFor()).map(o=>o.top&&o.top.id)),tags:JSON.stringify(Object.entries({...items[0],photo:0,updated:0,photoSm:0,phSig:0,fs:0}).sort())}));
     const dims=()=>p.evaluate(()=>new Promise(r=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);
       const px=(a,b)=>[...x.getImageData(Math.floor(a*im.width),Math.floor(b*im.height),1,1).data].slice(0,3).map(v=>v>128?1:0).join('');r({w:im.width,h:im.height,tl:px(.1,.1),tr:px(.9,.1),bl:px(.1,.9)})};im.src=items[0].photo}));
@@ -40,7 +40,7 @@ const photoedit=async({ok,chromium,url})=>{
     const file=path.join(os.tmpdir(),'dw-green.png');fs.writeFileSync(file,Buffer.from(green.split(',')[1],'base64'));
     await p.setInputFiles('.phtools input[type=file]',file);await p.waitForFunction(()=>items[0].photo&&items[0].photo.length>0&&document.querySelector('#toast').textContent.includes('replaced'));
     d=await dims();ok(d.tl==='010'&&Math.max(d.w,d.h)===800,'Replace photo takes a new picture (kept whole up to 1536 px: PH_MAX, 2026-11-13; it was 720)');
-    const after=await p.evaluate(()=>{cache={};return {plan:JSON.stringify(Object.values(planFor()).map(o=>o.top&&o.top.id)),tags:JSON.stringify(Object.entries({...items[0],photo:0,updated:0,photoSm:0,phSig:0,fs:0}).sort()),id:items[0].id,n:items.length}});
+    const after=await p.evaluate(()=>{HOOK.cache={};return {plan:JSON.stringify(Object.values(planFor()).map(o=>o.top&&o.top.id)),tags:JSON.stringify(Object.entries({...items[0],photo:0,updated:0,photoSm:0,phSig:0,fs:0}).sort()),id:items[0].id,n:items.length}});
     ok(after.plan===before.plan&&after.tags===before.tags&&after.id==='suit0'&&after.n===7,'the item keeps its id and tags, and the plan does not change'+(after.tags===before.tags?'':' TAGS '+before.tags+' | '+after.tags)+(after.plan===before.plan?'':' PLAN'));
     ok(await p.evaluate(async()=>{const s=await tx('readonly',st=>st.get('suit0'));return s&&s.photo===items[0].photo}),'the new photo is saved (and syncs with the item)');
     // Add keeps an item's photo at 720px, as Replace does (it was 360px: a suit cropped later went to the photo generator at 270px)
@@ -61,13 +61,13 @@ const photoedit=async({ok,chromium,url})=>{
     ok(w3>=60&&w3<=70,`a sharp copy of another picture (a replaced photo) is not used: the crop comes from the photo itself (${w3})`);
     // a big photo has a small copy (PH_SM) for the wardrobe grid, made again when the photo changes
     const big=await mk(1536,1152,"x.fillStyle='#246';x.fillRect(0,0,w,h);x.fillStyle='#fc0';x.fillRect(0,0,w/2,h/2)");
-    const sm=await p.evaluate(async u=>{await HOOK.setPhoto('suit0',u);const it=items[0],im=await imgOf(it.photoSm);editing=null;renderWardrobe();const g=document.querySelector('#gi-suit0 img.ph');
+    const sm=await p.evaluate(async u=>{await HOOK.setPhoto('suit0',u);const it=items[0],im=await imgOf(it.photoSm);HOOK.editing=null;renderWardrobe();const g=document.querySelector('#gi-suit0 img.ph');
       return {w:im.naturalWidth,h:im.naturalHeight,sig:it.phSig===HOOK.phSigOf(it.photo),grid:!!g&&g.getAttribute('src')===it.photoSm,stored:!!(await tx('readonly',st=>st.get('suit0'))).photoSm}},big);
     ok(sm.w===480&&sm.h===360&&sm.sig&&sm.grid&&sm.stored,`a 1536 px photo has a 480 px copy, shown in the wardrobe grid and saved with the item (${sm.w}x${sm.h})`);
     // photos saved at 720 before: made again at 1536 from this device's sharp copy of the same picture, in the old photo's colour, once
     const up=await p.evaluate(async([sharp,other])=>{const shrinkTo=(u,w,h)=>new Promise(r=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.filter='brightness(.85)';x.drawImage(im,0,0,w,h);r(c.toDataURL('image/jpeg',.85))};im.src=u});
       const a={id:'pa',type:'shirt',primaryColor:'white',pattern:'solid',photo:await shrinkTo(sharp,720,540)},b={id:'pb',type:'shirt',primaryColor:'white',pattern:'solid',photo:await shrinkTo(sharp,720,540)};
-      items=[a,b];await keepTagImg('pa',sharp);await keepTagImg('pb',other);localStorage.removeItem('photo_up');const av=async u=>{const i=await imgOf(u),c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.drawImage(i,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let s=[0,0,0];for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)s[q]+=d[k+q];return s.map(v=>Math.round(v/256))};
+      HOOK.items=[a,b];await keepTagImg('pa',sharp);await keepTagImg('pb',other);localStorage.removeItem('photo_up');const av=async u=>{const i=await imgOf(u),c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.drawImage(i,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let s=[0,0,0];for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)s[q]+=d[k+q];return s.map(v=>Math.round(v/256))};
       const old=await av(a.photo),n=await upgradePhotos(),im=await imgOf(a.photo);return {n,w:im.naturalWidth,old,now:await av(a.photo),small:!!a.photoSm&&a.phSig===HOOK.phSigOf(a.photo),otherKept:(await imgOf(b.photo)).naturalWidth===720,again:await upgradePhotos()}},[sharp,other]);
     ok(up.n===1&&up.w===1536&&up.small&&up.otherKept,`a 720 px photo is made again at 1536 px from the sharp copy of the same picture, with its small copy; one whose sharp copy shows another picture is left (${up.n}, ${up.w})`);
     ok(up.old.every((v,q)=>Math.abs(v-up.now[q])<=8)&&up.again===0,`it keeps the old photo's colour (${up.old} -> ${up.now}) and runs once`);
@@ -94,7 +94,7 @@ const photobackdrop=async({ok,chromium,url})=>{
       const sock={id:'bs1',type:'socks',primaryColor:'beige',photo:old},dark={id:'bs2',type:'socks',primaryColor:'black',photo:old};
       const wall=document.createElement('canvas');wall.width=wall.height=200;const w=wall.getContext('2d');w.fillStyle='#d8d4ce';w.fillRect(0,0,200,200);w.drawImage(im,0,0);
       const real={id:'bs3',type:'socks',primaryColor:'beige',photo:wall.toDataURL('image/jpeg',.85)},realBefore=real.photo;
-      items=[sock,dark,real];localStorage.removeItem('black_bd');
+      HOOK.items=[sock,dark,real];localStorage.removeItem('black_bd');
       const n=await fixBlackBackdrops(),again=await fixBlackBackdrops();
       return {newCorner,newMid,n,again,corner:await px(sock.photo,3,3),mid:await px(sock.photo,100,100),small:!!sock.photoSm&&sock.phSig===HOOK.phSigOf(sock.photo),
         darkKept:dark.photo===old,realKept:real.photo===realBefore}});

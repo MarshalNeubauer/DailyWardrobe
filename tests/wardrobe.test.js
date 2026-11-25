@@ -8,16 +8,16 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     let dialogs=0;p.on('dialog',d=>{dialogs++;d.accept()});
     await p.goto(url);await p.evaluate(()=>{try{localStorage.removeItem('ward_sort')}catch{}});await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     await p.evaluate(()=>{const I=(id,type,primaryColor,added,x={})=>({id,type,primaryColor,pattern:'solid',added,...x});
-      items=[I('be1','belt','black',1,{leather:'calf',metal:'silver'}),I('so1','socks','charcoal',2,{material:'merino wool'}),
+      HOOK.items=[I('be1','belt','black',1,{leather:'calf',metal:'silver'}),I('so1','socks','charcoal',2,{material:'merino wool'}),
         I('ti1','tie','burgundy',3,{pattern:'stripe',secondaryColor:'navy',material:'grenadine',brand:'Marlowe & Finch'}),I('ti2','tie','navy',9),
         I('sh1','shirt','white',4,{material:'poplin'}),I('sh2','shirt','lightblue',8,{notes:'Slim fit, bought for the spring conference'}),
         I('su1','suit','navy',5,{name:'Wedding suit',brand:'Halden',material:'wool'}),I('su2','suit','charcoal',6,{pattern:'pinstripe'}),I('su3','suit','lightgrey',7),
         I('bl1','blazer','brown',10,{pattern:'tweed'}),I('sx1','shoes','black',11,{leather:'calf'}),I('sx2','shoes','brown',12,{leather:'suede'})];
-      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};sel=new Date(2026,10,11);view={y:2026,m:10};
+      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};
       const D=(date,ids)=>({date,ids,suitDay:true,worn:true});
-      dayRecs={'2026-11-2':D('2026-11-2',{top:'su2',shirt:'sh1',tie:'ti1',shoes:'sx1',belt:'be1',socks:'so1'}),'2026-11-3':D('2026-11-3',{top:'su1',shirt:'sh1',tie:'ti2',shoes:'sx1',belt:'be1',socks:'so1'}),
+      HOOK.dayRecs={'2026-11-2':D('2026-11-2',{top:'su2',shirt:'sh1',tie:'ti1',shoes:'sx1',belt:'be1',socks:'so1'}),'2026-11-3':D('2026-11-3',{top:'su1',shirt:'sh1',tie:'ti2',shoes:'sx1',belt:'be1',socks:'so1'}),
         '2026-11-9':D('2026-11-9',{top:'su2',shirt:'sh2',tie:'ti1',shoes:'sx1',belt:'be1',socks:'so1'})};
-      editing=null;flt='all';show('wardrobe')});
+      HOOK.editing=null;HOOK.flt='all';show('wardrobe')});
     const ids=()=>p.evaluate(()=>[...document.querySelectorAll('#wardrobe .grid .gi')].map(g=>g.id.slice(3)));
     const type=async t=>{await p.fill('#wsearch',t);await p.waitForFunction(v=>HOOK.wardQ===v,t)};
     const count=()=>p.textContent('#wcount');
@@ -61,7 +61,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await type('navy');await p.click('#wardrobe .chip:has-text("Tie")');await p.waitForFunction(()=>flt==='tie');
     ok((await ids()).join()==='ti2,ti1'&&(await count())==='2 of 12 items'&&(await p.inputValue('#wsearch'))==='navy','a type chip narrows the search results, and the search stays when the chip changes');
     // ---- the sheet steps through the filtered list
-    await p.evaluate(()=>{flt='all';renderWardrobe();openItem('su1')});await settle(p,500);
+    await p.evaluate(()=>{HOOK.flt='all';renderWardrobe();openItem('su1')});await settle(p,500);
     const st0=await p.evaluate(()=>({n:document.querySelector('#ivhead .pcount').textContent,list:HOOK.wardList().map(i=>i.id).join(),prev:document.querySelector('#iv-prev').disabled}));
     ok(st0.list==='su1,ti2,ti1'&&st0.n==='1 of 3'&&st0.prev,`the open item counts within the filtered list (${st0.n}; ${st0.list})`);
     await p.click('#iv-next');await p.waitForFunction(()=>editing==='ti2');await p.click('#iv-next');await p.waitForFunction(()=>editing==='ti1');
@@ -74,7 +74,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await type('zzzq');
     const none=await p.evaluate(()=>{const n=document.querySelector('#wnone');return n&&{t:n.textContent,btn:[...n.querySelectorAll('button')].map(b=>b.textContent).join('|'),grid:document.querySelectorAll('#wardrobe .gi').length}});
     ok(none&&/Nothing matches “zzzq”/.test(none.t)&&none.btn==='Clear search'&&none.grid===0&&(await count())==='0 of 12 items',`a search with no result says so and offers to clear it (${none&&none.btn})`);
-    await p.evaluate(()=>{flt='belt';renderWardrobe()});await type('navy');
+    await p.evaluate(()=>{HOOK.flt='belt';renderWardrobe()});await type('navy');
     const none2=await p.evaluate(()=>{const n=document.querySelector('#wnone');return n&&{t:n.textContent,btn:[...n.querySelectorAll('button')].map(b=>b.textContent).join('|')}});
     ok(none2&&/in belt/.test(none2.t)&&/3 items match in the rest/.test(none2.t)&&none2.btn==='Search all types|Clear search','with a chip on, it says how many match elsewhere and offers to search all types');
     await p.click('#wnone button.pri');await p.waitForFunction(()=>flt==='all');
@@ -105,8 +105,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
 
     // ---- the fields: item sheet
     await p.evaluate(()=>{const I=(id,type,primaryColor,added,x={})=>({id,type,primaryColor,pattern:'solid',added,...x});
-      items=[I('su1','suit','navy',5),I('su2','suit','charcoal',6),I('sh1','shirt','white',4),I('sh2','shirt','lightblue',4),I('ti1','tie','burgundy',3),I('ti2','tie','navy',3),I('sx1','shoes','black',11,{leather:'calf'}),I('be1','belt','black',1,{leather:'calf',metal:'silver'}),I('so1','socks','charcoal',2),I('wa1','watch','black',2,{metal:'silver'}),I('co1','overcoat','navy',2)];
-      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,11);view={y:2026,m:10};flt='all';show('wardrobe');openItem('su1')});
+      HOOK.items=[I('su1','suit','navy',5),I('su2','suit','charcoal',6),I('sh1','shirt','white',4),I('sh2','shirt','lightblue',4),I('ti1','tie','burgundy',3),I('ti2','tie','navy',3),I('sx1','shoes','black',11,{leather:'calf'}),I('be1','belt','black',1,{leather:'calf',metal:'silver'}),I('so1','socks','charcoal',2),I('wa1','watch','black',2,{metal:'silver'}),I('co1','overcoat','navy',2)];
+      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.flt='all';show('wardrobe');openItem('su1')});
     await settle(p,500);
     const mats=()=>p.evaluate(()=>{const s=document.querySelector('#item-view .wmat');return s?[...s.options].map(o=>o.textContent):null});
     const mSuit=await mats();
@@ -146,7 +146,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await type('halden');ok((await ids()).join()==='su1','the new brand is found by the search');await p.evaluate(()=>HOOK.wardClear());
 
     // ---- the name on Today: pieces list and picker; the planner's texts keep the description
-    await p.evaluate(()=>{sel=new Date(2026,10,11);show('today');const o=planFor()[key(sel)];window.__top=o.top.id;for(const i of items)delete i.name;const it=items.find(i=>i.id===o.top.id);it.name='Wedding suit';cache={};renderToday()});
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,11);show('today');const o=planFor()[key(sel)];window.__top=o.top.id;for(const i of items)delete i.name;const it=items.find(i=>i.id===o.top.id);it.name='Wedding suit';HOOK.cache={};renderToday()});
     await p.evaluate(()=>{if('toggleList' in HOOK&&typeof HOOK.toggleList==='function'&&!document.querySelector('#ri-top'))HOOK.toggleList()});
     const row=await p.evaluate(()=>{const r=document.querySelector('#ri-top .rowtap');return r&&{t:r.querySelector('span:not(.dot)').textContent,a:r.getAttribute('aria-label')}});
     ok(row&&row.t==='Wedding suit'&&/Wedding suit/.test(row.a),`Today's pieces list shows the name (${row&&row.t})`);
@@ -212,8 +212,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       const c=await browser.newContext({viewport:{width:w,height:800},colorScheme:scheme,isMobile:true,hasTouch:true});const q=await c.newPage();
       await q.goto(url);await q.waitForFunction(()=>window.appReady);await q.evaluate(()=>{CK_OPEN['*']=true});
       await q.evaluate(()=>{const I=(id,type,primaryColor,added,x={})=>({id,type,primaryColor,pattern:'solid',added,...x});
-        items=[I('su1','suit','navy',5,{name:'The very long name of a suit that was bought for a wedding in May',brand:'Halden',material:'wool',notes:'n'}),I('sh1','shirt','white',4),I('ti1','tie','burgundy',3),I('sx1','shoes','black',11,{leather:'calf'})];
-        settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};flt='all';show('wardrobe')});
+        HOOK.items=[I('su1','suit','navy',5,{name:'The very long name of a suit that was bought for a wedding in May',brand:'Halden',material:'wool',notes:'n'}),I('sh1','shirt','white',4),I('ti1','tie','burgundy',3),I('sx1','shoes','black',11,{leather:'calf'})];
+        settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.flt='all';show('wardrobe')});
       await q.waitForFunction(()=>!document.querySelector('#wardrobe').getAnimations().length);   // the page has eased in (pageIn): measured where it rests
       const m=await q.evaluate(()=>{const r=s=>document.querySelector(s).getBoundingClientRect(),inp=r('#wsearch'),so=r('#wsort'),cs=getComputedStyle(document.querySelector('#wsearch')),chips=r('#wardrobe .chips'),lum=c=>{const v=c.match(/[\d.]+/g).map(Number);return v[0]*.3+v[1]*.59+v[2]*.11};
         return {ih:Math.round(inp.height),sh:Math.round(so.height),iw:Math.round(inp.width),above:inp.bottom<=chips.top,row:Math.abs(inp.top-so.top)<1,rad:cs.borderRadius,over:document.documentElement.scrollWidth-innerWidth,

@@ -24,18 +24,18 @@ module.exports=async({ok,chromium,url})=>{
     const masterKeys=new Set(ck);Object.assign(served,cmRecs);
     await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=512;
       let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
-      items=[I('watch','silver',{metal:'silver'}),I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];settings.vestMode='never';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};
+      HOOK.items=[I('watch','silver',{metal:'silver'}),I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];settings.vestMode='never';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};
       HOOK.asmAheadSoon=()=>{};HOOK.asmAhead=async()=>{}},HOST);   // (nothing built in the background during the test)
     // the look's key and the signature a picture on the worker carries
     const pre=await p.evaluate(async()=>{await asmListGet(true);const o=planFor()[key(sel)];await HOOK.asmCmLook(o);await asmCmGet(asmCmKind(o));return {key:asmOutKey(o),sig:`asm/out/cm${ASM_CMV}/${asmStamp(o)}`,kind:asmCmUse(o)}});
     ok(pre.kind==='suit'&&/\/1000$/.test(pre.sig),`the day's look is painted on the suit master, its stamp the newest record's date (${pre.sig})`);
     // a phone holding nothing takes the worker's picture: it downloads no master record and paints nothing
     served[pre.key]={sig:pre.sig,img:'data:image/jpeg;base64,/9j/BUILT',model:'assembled',t:5};
-    const phone=async()=>p.evaluate(async()=>{for(const k of Object.keys(renders))if(/^c/.test(k))delete renders[k];asmOut={};asmTried.clear();HOOK.asmPreNo.clear();await asmListGet(true);const o=planFor()[key(sel)];
-      let built=0;const real=asmPhoto,idle=async()=>{for(let i=0;i<200&&(asmBusy.size||HOOK.asmPreGetting.size);i++)await new Promise(r=>setTimeout(r,50))};asmPhoto=async(...a)=>{built++;return real(...a)};
-      try{await asmEnsure(o);await idle()}finally{asmPhoto=real}
-      const a=asmFor(o);return {img:a&&a.img.slice(0,40),built,blob:!!(asmOut[asmOutKey(o)]||{}).blob}});
+    const phone=async()=>p.evaluate(async()=>{for(const k of Object.keys(renders))if(/^c/.test(k))delete renders[k];HOOK.asmOut={};asmTried.clear();HOOK.asmPreNo.clear();await asmListGet(true);const o=planFor()[key(sel)];
+      let built=0;const real=asmPhoto,idle=async()=>{for(let i=0;i<200&&(asmBusy.size||HOOK.asmPreGetting.size);i++)await new Promise(r=>setTimeout(r,50))};HOOK.asmPhoto=async(...a)=>{built++;return real(...a)};
+      try{await asmEnsure(o);await idle()}finally{HOOK.asmPhoto=real}
+      const a=asmFor(o);return {img:a&&a.img.slice(0,40),built,blob:!!(HOOK.asmOut[asmOutKey(o)]||{}).blob}});
     got.length=0;const a=await phone();
     ok(a.built===0&&a.img==='data:image/jpeg;base64,/9j/BUILT'&&!got.some(k=>masterKeys.has(k)),`a phone takes the worker's picture before asking for the master, and paints nothing (${got.length} keys asked for, none of them a master record)`);
     // signed another way (the earlier assembler's zones, or another masters' version): not used, painted here
