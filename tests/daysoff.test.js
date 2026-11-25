@@ -87,7 +87,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       localStorage.setItem('sync_mark',JSON.stringify({url:syncUrl(),v:'1:1',sig:stateSig(mergeState(await localState(),{}))}));
       window.fetch=async(u,o)=>{if(!/\/sync(\?|$)/.test(String(u)))return f0(u,o);window.__synced++;if(!up)throw new TypeError('Failed to fetch');return new Response('{"same":true}',{status:200,headers:{'content-type':'application/json'}})}};
       window.__syncOff=()=>{if(window.__f0)window.fetch=window.__f0;for(const k of ['sync_mark','sync_status'])localStorage.removeItem(k)}});
-    const again=await p.evaluate(async()=>{await toggleHoliday('2027-02-25',false);settings.holidays={...settings.holidays,fetched:Date.now()-40*864e5,list:settings.holidays.list.slice(0,2)};await metaPut('settings',settings);
+    const again=await p.evaluate(async()=>{await HOOK.toggleHoliday('2027-02-25',false);settings.holidays={...settings.holidays,fetched:Date.now()-40*864e5,list:settings.holidays.list.slice(0,2)};await metaPut('settings',settings);
       await __syncAs(true);let synced=0;try{await refreshHolidays();synced=__synced}finally{__syncOff()}
       return {n:settings.holidays.list.length,skip:settings.holidays.skip.join(),fresh:Date.now()-settings.holidays.fetched<60000,synced}});
     ok(again.n===4&&again.skip==='2027-02-25'&&again.fresh&&again.synced===1,'the holiday list refreshes after a month, after a sync, and keeps the days you unticked');

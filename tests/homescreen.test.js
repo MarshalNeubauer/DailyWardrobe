@@ -23,7 +23,7 @@ const homescreen=async({ok,chromium,url})=>{
     ok(h.fit,'it fits the phone');
     await p.waitForTimeout(400);await p.click('#su-next');ok(await step(p)==='week','Next carries on with the setup in Safari');
     // Settings → About
-    await p.evaluate(()=>{setupClose();openSettings('about')});
+    await p.evaluate(()=>{HOOK.setupClose();openSettings('about')});
     const a=await p.waitForFunction(()=>(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&getComputedStyle(b).display!=='none'})(),null,{timeout:5000}).then(()=>true,()=>false);   // (displayed, not only the attribute)
     ok(a,'Settings → About offers "Add to Home Screen" on the iPhone');
     await p.evaluate(()=>{document.querySelector('#home-again').scrollIntoView()});await p.click('#home-again');await p.waitForFunction(()=>!!document.querySelector('#kitsheet.on'));
@@ -32,11 +32,11 @@ const homescreen=async({ok,chromium,url})=>{
     // the app opened from the Home Screen: no step, no button
     const s=await open({ua:IPHONE,standalone:true});
     ok(await s.evaluate(()=>SETUP_STEPS.join(',')==='welcome,week,wear,weather,connect,done'),'opened from the Home Screen: no Home Screen step');
-    await s.evaluate(()=>{setupClose();openSettings('about')});await s.waitForTimeout(300);ok(await s.evaluate(()=>!(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&getComputedStyle(b).display!=='none'})()),'and no button in About (nothing displayed)');await s.context().close();
+    await s.evaluate(()=>{HOOK.setupClose();openSettings('about')});await s.waitForTimeout(300);ok(await s.evaluate(()=>!(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&getComputedStyle(b).display!=='none'})()),'and no button in About (nothing displayed)');await s.context().close();
     // another device: as before
     const d=await open();
     ok(await d.evaluate(()=>SETUP_STEPS.join(',')==='welcome,week,wear,weather,connect,done'),'on a computer the setup is as before');
-    await d.evaluate(()=>{setupClose();openSettings('about')});await d.waitForTimeout(300);ok(await d.evaluate(()=>!(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&getComputedStyle(b).display!=='none'})()),'and About has no Home Screen button (nothing displayed)');await d.context().close();
+    await d.evaluate(()=>{HOOK.setupClose();openSettings('about')});await d.waitForTimeout(300);ok(await d.evaluate(()=>!(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&getComputedStyle(b).display!=='none'})()),'and About has no Home Screen button (nothing displayed)');await d.context().close();
     // 320 px
     const n=await open({ua:IPHONE,w:320});await n.click('#su-next');await n.waitForFunction(()=>document.querySelector('#su-step').dataset.step==='home');
     ok(await n.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&[...document.querySelectorAll('#su-step .home-steps li')].every(l=>l.getBoundingClientRect().right<=innerWidth+.5)),'the step fits a 320 px phone');
@@ -56,7 +56,7 @@ const homescreen=async({ok,chromium,url})=>{
     await g.click('#su-step .home-install');await g.waitForFunction(()=>window._prompted===1);
     ok(await g.waitForFunction(()=>/Installing/.test((document.querySelector('#toast')||{}).textContent||'')).then(()=>true,()=>false),'Install opens the browser\'s install dialog and says it is installing');
     ok(!(await vis('#su-step .home-install'))&&await vis('#su-step .home-manual'),'the offer is used once: the menu steps come back');
-    await g.evaluate(()=>{setupClose();openSettings('about')});await g.waitForTimeout(300);
+    await g.evaluate(()=>{HOOK.setupClose();openSettings('about')});await g.waitForTimeout(300);
     ok(await g.evaluate(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&b.textContent==='Install the app'}),'Settings → About offers "Install the app" on Android');
     await g.evaluate(()=>{document.querySelector('#home-again').scrollIntoView()});await g.click('#home-again');await g.waitForFunction(()=>!!document.querySelector('#kitsheet.on'));
     ok(await g.evaluate(()=>document.querySelector('#kit-title').textContent==='Install the app'&&!!document.querySelector('.kit-body .home-manual')),'and opens the same instructions');

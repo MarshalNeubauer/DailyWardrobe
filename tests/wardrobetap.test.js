@@ -93,7 +93,7 @@ const wardrobetap=async({ok,chromium,url,settle})=>{
     await swipe(310,90,sy);ok((await view()).ed==='s7','a swipe to the left goes to the next item, even when it starts on a dropdown');
     await swipe(90,310);ok((await view()).ed==='s8','a swipe to the right goes back');
     await p.evaluate(()=>document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true})));ok((await view()).ed==='s7','the right arrow key goes to the next item');
-    await p.evaluate(()=>{for(let k=0;k<8;k++)stepItem(1)});await settle(p,400);v=await view();
+    await p.evaluate(()=>{for(let k=0;k<8;k++)HOOK.stepItem(1)});await settle(p,400);v=await view();
     ok(v.ed==='t'&&v.next&&v.count==='11 of 11'&&v.top===0,'on the last item, next is switched off');
     ok(await p.evaluate(()=>!document.querySelector('#item-view .pair')&&!!document.querySelector('#item-view .ivdraw svg')),'an item without a photo shows its drawing');
     await swipe(310,90);ok((await view()).ed==='t','a swipe past the last item springs back');
@@ -102,7 +102,7 @@ const wardrobetap=async({ok,chromium,url,settle})=>{
     const tt=await p.evaluate(()=>{const r=document.querySelector('#gi-t').getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight});
     ok(v.ed===null&&!v.shown,'Esc closes the sheet');ok(tt&&v.sy!==y0,'closing on another item than the one opened scrolls the Wardrobe to that item\'s box');
     // open → close → open at once: the history entry of the first doesn't close the second
-    await p.evaluate(()=>{openItem('s5');closeItem();openItem('s4')});await settle(p,500);await p.waitForTimeout(100);
+    await p.evaluate(()=>{openItem('s5');HOOK.closeItem();openItem('s4')});await settle(p,500);await p.waitForTimeout(100);
     ok((await view()).ed==='s4','closing one item and opening another straight away keeps the second open');
     await p.goBack();await settle(p,500);ok((await view()).ed===null,'and Back still closes it');
     // editing keeps the page and its scroll position
@@ -112,7 +112,7 @@ const wardrobetap=async({ok,chromium,url,settle})=>{
     ok(v.ed==='s3'&&v.on&&v.top===yS&&yS>=160&&/pink/i.test(v.title),`changing a tag redraws the sheet in place: still open, still scrolled, the header follows (${v.title}, ${v.top} of ${yS})`);
     ok(/pink/i.test(await p.textContent('#gi-s3')),'and the box in the grid behind is up to date');
     // while cropping, Esc leaves the crop first
-    await p.evaluate(()=>startCrop('s3'));await p.waitForSelector('#item-view #cropbox');
+    await p.evaluate(()=>HOOK.startCrop('s3'));await p.waitForSelector('#item-view #cropbox');
     ok(await p.evaluate(()=>!document.querySelector('#item-view .phtools')&&document.querySelector('#ivbody').scrollTop===0&&document.querySelector('#cropbox').getBoundingClientRect().top>0),'cropping scrolls the page to the picture; the photo tools step aside');
     await p.evaluate(()=>document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true})));
     ok(await p.evaluate(()=>editing==='s3'&&!document.querySelector('#cropbox')),'Esc leaves the crop, not the sheet');
@@ -122,9 +122,9 @@ const wardrobetap=async({ok,chromium,url,settle})=>{
     await p.tap('#item-view .ivin > :last-child button');await p.waitForFunction(()=>!items.some(i=>i.id==='s2'));v=await view();
     ok(v.ed===null&&!v.shown&&!await p.$('#gi-s2'),'Delete removes the item and closes its sheet');
     // while cropping, the picture is dragged, not the sheet
-    await p.tap('#gi-s1 .giopen');await settle(p,500);await p.evaluate(()=>startCrop('s1'));await p.waitForSelector('#item-view #cropbox');
+    await p.tap('#gi-s1 .giopen');await settle(p,500);await p.evaluate(()=>HOOK.startCrop('s1'));await p.waitForSelector('#item-view #cropbox');
     await drag(200,500,740,8);ok((await view()).ed==='s1','while cropping, a swipe down does not close the sheet');
-    await p.evaluate(()=>{phEdit.crop=null;closeItem()});await settle(p,500);
+    await p.evaluate(()=>{phEdit.crop=null;HOOK.closeItem()});await settle(p,500);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
     // a wide screen: a centred panel over a backdrop, which closes it
@@ -165,7 +165,7 @@ const sheetswipe=async({ok,chromium,url,settle})=>{
       const at=()=>p.evaluate(()=>({top:document.querySelector('#item-view').getBoundingClientRect().top,dim:+getComputedStyle(document.querySelector('#item-backdrop')).opacity,ed:editing}));
       const touch=async(x,y0,y1,n=8,ms=16)=>{let mid;await T('touchStart',x,y0);for(let k=1;k<=n;k++){await T('touchMove',x,y0+(y1-y0)*k/n,ms);await p.waitForTimeout(ms);if(k===n)mid=await at()}await T('touchEnd',x,y1);await settle(p,500);return mid};
       const mouse=async(x,y0,y1,n=10)=>{let mid;await p.mouse.move(x,y0);await p.mouse.down();for(let k=1;k<=n;k++){await p.mouse.move(x,y0+(y1-y0)*k/n);await p.waitForTimeout(30);if(k===n)mid=await at()}await p.mouse.up();await settle(p,500);return mid};
-      const open=async()=>{await p.evaluate(()=>{if(editing)closeItem()});await settle(p,500);await p.evaluate(()=>openItem('s3'));await settle(p,600);
+      const open=async()=>{await p.evaluate(()=>{if(editing)HOOK.closeItem()});await settle(p,500);await p.evaluate(()=>openItem('s3'));await settle(p,600);
         return p.evaluate(()=>{const v=document.querySelector('#item-view').getBoundingClientRect(),hd=document.querySelector('#ivhead').getBoundingClientRect(),t=document.querySelector('#iv-title').getBoundingClientRect();
           return {top:v.top,left:v.left,w:v.width,h:v.height,hb:hd.bottom,tx:t.left+10,ty:t.top+t.height/2}})};
       // under a status bar: the sheet (panel or not) and so its grabber start below it
@@ -194,7 +194,7 @@ const sheetswipe=async({ok,chromium,url,settle})=>{
       ok(s.ed==='s3'&&Math.abs(s.top-g.top)<1,`${tag}: a short mouse drag springs back`);
       await mouse(g.left+g.w/2,g.hb+60,g.hb+60+g.h*.5);s=await at();
       ok(s.ed==='s3'&&Math.abs(s.top-g.top)<1,`${tag}: a mouse drag on the content doesn't move the sheet`);
-      await p.evaluate(()=>closeItem());await settle(p,500);
+      await p.evaluate(()=>HOOK.closeItem());await settle(p,500);
       ok(!errs.length,`${tag}: no page errors (${errs.join('; ')})`);
       await ctx.close();
     }

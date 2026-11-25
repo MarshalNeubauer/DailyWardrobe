@@ -14,7 +14,7 @@ module.exports=async({ok,chromium,url})=>{
       const p=await ctx.newPage();p.on('pageerror',e=>errs.push(e.message));
       const mine=r=>r.url().startsWith(HOST);p.on('request',r=>{if(mine(r))busy++});for(const ev of ['requestfinished','requestfailed'])p.on(ev,r=>{if(mine(r))busy--});
       // no request to the server under way and no sync running or due, three looks in a row: a reload can't cut one off
-      const quiet=async()=>{let still=0;await until(p,async()=>{const idle=busy===0&&await p.evaluate(()=>{if(syncing)return false;clearTimeout(syncTimer);return true});still=idle?still+1:0;if(still<3)await p.waitForTimeout(100);return still>=3})};
+      const quiet=async()=>{let still=0;await until(p,async()=>{const idle=busy===0&&await p.evaluate(()=>{if(HOOK.syncing)return false;clearTimeout(syncTimer);return true});still=idle?still+1:0;if(still<3)await p.waitForTimeout(100);return still>=3})};
       await p.goto(url);await p.waitForFunction(()=>window.appReady);return {ctx,p,quiet}};
     const copy=p=>p.evaluate(async()=>await metaGet('conn')||null);
     const start=async p=>{await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>connRestored)};
@@ -31,7 +31,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.evaluate(async()=>{localStorage.setItem('remind',JSON.stringify({on:true,time:'06:30'}));await connKeep()});
     await p.evaluate(()=>{for(const k of ['worker_url','app_token','remind'])localStorage.removeItem(k)});
     syncs=0;await start(p);await until(p,()=>syncs>0);await o.quiet();
-    const a=await p.evaluate(()=>{openSettings('connection');return {url:localStorage.getItem('worker_url'),tok:localStorage.getItem('app_token'),remind:remindPrefs(),field:document.querySelector('#cfg-url').value,code:document.querySelector('#cfg-token').value}});
+    const a=await p.evaluate(()=>{openSettings('connection');return {url:localStorage.getItem('worker_url'),tok:localStorage.getItem('app_token'),remind:HOOK.remindPrefs(),field:document.querySelector('#cfg-url').value,code:document.querySelector('#cfg-token').value}});
     ok(a.url===HOST&&a.tok==='owner-code'&&a.field===HOST&&a.code==='owner-code',`lost from localStorage, the address and the code are put back at the next start (Settings shows ${a.field})`);
     ok(syncs>0,`and the first sync goes out with them (${syncs} sync request${syncs===1?'':'s'})`);
     ok(a.remind.on===true&&a.remind.time==='06:30','the morning reminder\'s choice is put back too');

@@ -53,7 +53,7 @@ async function run(eng,browser,{ok,url,settle}){
   await check('Add without a photo, Arrives',ds,'2099-01-15','touch');
   await check('Add without a photo, Arrives by keyboard',ds,'2099-01-20','key');
   ok(await p.evaluate(()=>queue[0].arrives==='2099-01-20'),`${T}the card took the Arrives date`);
-  await p.evaluate(()=>{npsClose();queue.length=0;show('wardrobe')});await settle(p,400);
+  await p.evaluate(()=>{HOOK.npsClose();queue.length=0;show('wardrobe')});await settle(p,400);
 
   // the item sheet: Type, Material, and the Arrives date of a piece on the way
   await p.evaluate(()=>openItem('suit0'));await settle(p,500);
@@ -64,7 +64,7 @@ async function run(eng,browser,{ok,url,settle}){
   const imat=await p.evaluate(s=>{const e=document.querySelector(s);return e?[...e.options].map(o=>o.value).filter(v=>v&&v!==e.value&&v!=='other'):[]},im);
   ok(imat.length>=2,`${T}the item sheet has a Material dropdown (${imat.join(', ')})`);
   if(imat.length>=2){await check('the item sheet, Material',im,imat[0],'touch');await check('the item sheet, Material by keyboard',im,imat[1],'key')}
-  await p.evaluate(()=>{closeItem();openItem('tie4')});await settle(p,500);
+  await p.evaluate(()=>{HOOK.closeItem();openItem('tie4')});await settle(p,500);
   const id='#ivbody .ordrow input[type="date"]';
   await check('the item sheet, Arrives',id,'2099-02-01','touch');
   await check('the item sheet, Arrives by keyboard',id,'2099-02-03','key');

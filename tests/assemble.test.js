@@ -11,7 +11,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const dr=await p.evaluate(()=>{const W=1024,N=W*W,tie=new Uint8Array(N),o=new Uint8ClampedArray(4*N);
       for(let y=200;y<900;y++){const half=40+(y-200)*.03,cx=500+(y-200)*.02;for(let x=Math.round(cx-half);x<=Math.round(cx+half);x++)tie[y*W+x]=1}   // a tie, widening and leaning a little
       for(let i=0;i<N;i++){const v=tie[i]?60:200;o[4*i]=o[4*i+1]=v;o[4*i+2]=tie[i]?110:200;o[4*i+3]=255}const before=new Uint8ClampedArray(o);
-      const m=asmBarDraw(o,tie,W,'silver',null),L=asmLab(new ImageData(o,W,W)),L0=asmLab(new ImageData(before,W,W));let n=0,off=0,Lmax=0,y0=W,y1=0;
+      const m=asmBarDraw(o,tie,W,'silver',null),L=HOOK.asmLab(new ImageData(o,W,W)),L0=HOOK.asmLab(new ImageData(before,W,W));let n=0,off=0,Lmax=0,y0=W,y1=0;
       for(let i=0;i<N;i++)if(m&&m[i]){n++;if(!tie[i])off++;Lmax=Math.max(Lmax,L[3*i]);const y=(i/W)|0;y0=Math.min(y0,y);y1=Math.max(y1,y)}
       let sh=0,sn=0;if(n){const y=y1+2;for(let x=0;x<W;x++){const i=y*W+x;if(tie[i]&&!m[i]){sn++;sh+=L0[3*i]-L[3*i]}}}
       const metals=[{type:'tieclip',primaryColor:'silver',metal:'other'},{type:'tieclip',primaryColor:'rosegold'},{type:'tieclip',primaryColor:'black',metal:'gold'}].map(c=>asmBarRgb(c).join('.')).join(' ');
@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(dr.metals===dr.want&&/^b\d+[\d.]+$/.test(dr.sig),`a tie clip is drawn in its colour, the metal field ignored (${dr.metals}; ${dr.sig})`);
     // ---- the earlier assembler is gone ----
     const gone=await p.evaluate(()=>({fns:['asmCompose','asmZones','asmParts','asmNeeds','asmPieceJob','asmMasterJob','asmMakeMissing','asmQueueOutfit','asmPending','asmComposeP2','asmP2Set','asmPaint','asmSuitPaint','asmTiePaint','asmAtlasBuild','asmDrift','asmCan'].filter(n=>typeof window[n]!=='undefined'),
-      ui:['#asm-status','#asm-btn'].filter(s=>document.querySelector(s)).join(),ver:ASM_VER,on:ASM_ON}));
+      ui:['#asm-status','#asm-btn'].filter(s=>document.querySelector(s)).join(),ver:HOOK.ASM_VER,on:ASM_ON}));
     ok(!gone.fns.length&&!gone.ui&&gone.ver===3,`the earlier photo-per-item assembler and the atlas-painting trial are gone, and Settings has no Item photos (left: ${gone.fns.join(', ')||'none'}${gone.ui?'; '+gone.ui:''})`);
     // ---- which picture Today shows for a look painted on a colour-coded master ----
     const t=await p.evaluate(async()=>{let n=0;const I=(type,primaryColor,x={})=>({id:'t'+type+(n++),type,primaryColor,pattern:'solid',...x});
@@ -31,14 +31,14 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         r.kind=asmCmUse(o);const k=asmOutKey(o);asmOut[k]={img:'data:image/jpeg;base64,ASM',stamp:asmStamp(o),t:9};
         r.over=renderFor(o).img;
         // switched off (ASM_ON false): the outfit's own photo, nothing asked of the worker, Settings hides the group
-        ASM_ON=false;r.off={wants:asmWants(o),for:asmFor(o),shown:renderFor(o).img};await asmEnsure(o);await asmSync(true);openSettings('photos');renderAsmUI();
+        ASM_ON=false;r.off={wants:HOOK.asmWants(o),for:asmFor(o),shown:renderFor(o).img};await asmEnsure(o);await asmSync(true);openSettings('photos');renderAsmUI();
         r.off.calls=calls.filter(u=>!/\/me$/.test(u)).length;r.off.hidden=document.querySelector('#asm-group').hidden;ASM_ON=true;renderAsmUI();r.onShown=!document.querySelector('#asm-group').hidden;closeSettings&&closeSettings();
         // a photo made for this outfit after its master (Settings: Regenerate) wins, and nothing is painted or redrawn for it
         renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,NEW',model:'gpt',t:2000};r.under=renderFor(o).model;
         let made=0,redraws=0;const p0=asmPhoto,drew=l=>l.filter(x=>x.addedNodes.length).length,mo=new MutationObserver(l=>{redraws+=drew(l)});mo.observe($('#today'),{childList:true});asmPhoto=async x=>{made++;return p0(x)};
         try{asmTried.clear();await asmEnsure(o);await asmEnsure(o)}finally{asmPhoto=p0}redraws+=drew(mo.takeRecords());mo.disconnect();r.loop={made,redraws};
         // a look with no colour-coded master: no picture, no job
-        const o2={...o,top:null,bot:null};r.none={use:asmCmUse(o2),key:asmOutKey(o2),job:await asmJob(o2)};
+        const o2={...o,top:null,bot:null};r.none={use:asmCmUse(o2),key:asmOutKey(o2),job:await HOOK.asmJob(o2)};
         delete asmOut[k]}
       finally{window.fetch=f0;localStorage.removeItem('worker_url');localStorage.removeItem('app_token');delete renders[mk];delete renders[comboKey(o)]}
       return r});

@@ -57,8 +57,8 @@ module.exports=async({ok,ROOT})=>{
       const t=await J(await call(env,'POST','render',{mode:'item',item:'brown suede loafers',key:'c0000000000000002'},{'x-app-token':'t'}));
       ok(t.s===502&&/over 5 minutes/.test(t.error),'and says so when it runs out');}
     // ---- a link to a dead domain answers a plain 502, not an uncaught error
-    {globalThis.fetch=async()=>{throw new TypeError('fetch failed: getaddrinfo ENOTFOUND shop.example')};
-      const r=await J(await call({APP_TOKEN:'t'},'GET','fetch?url='+encodeURIComponent('https://shop.example/p.jpg'),undefined,{'x-app-token':'t'}));
+    {globalThis.fetch=async()=>{throw new TypeError('fetch failed: getaddrinfo ENOTFOUND store.example')};
+      const r=await J(await call({APP_TOKEN:'t'},'GET','fetch?url='+encodeURIComponent('https://store.example/p.jpg'),undefined,{'x-app-token':'t'}));
       ok(r.s===502&&/could not be reached/.test(r.error),`a link that can't be reached answers 502 with a reason (${r.s})`);}
     // ---- reminders: every time of day fires once, across midnight and where the clocks go forward or back
     {const kp=await crypto.webcrypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);

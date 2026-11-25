@@ -45,12 +45,12 @@ const photoedit=async({ok,chromium,url})=>{
     ok(await p.evaluate(async()=>{const s=await tx('readonly',st=>st.get('suit0'));return s&&s.photo===items[0].photo}),'the new photo is saved (and syncs with the item)');
     // Add keeps an item's photo at 720px, as Replace does (it was 360px: a suit cropped later went to the photo generator at 270px)
     const added=await p.evaluate(()=>{const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');x.fillStyle='#888';x.fillRect(0,0,800,600);
-      const q={raw:{big:c},wb:null,wbOff:true,zoom:1,cx:.5,cy:.5};cardPics(q);return new Promise(r=>{const im=new Image();im.onload=()=>r([im.width,im.height]);im.src=q.photo})});
+      const q={raw:{big:c},wb:null,wbOff:true,zoom:1,cx:.5,cy:.5};HOOK.cardPics(q);return new Promise(r=>{const im=new Image();im.onload=()=>r([im.width,im.height]);im.src=q.photo})});
     ok(added[0]===800&&added[1]===600,`Add keeps the photo whole up to 1536px (${added.join('x')})`);
     // crop from the best copy: the sharp copy kept when the photo was read (1600x1200), when it is the same picture as the photo
     const sharp=await mk(1600,1200,"x.fillStyle='#f00';x.fillRect(0,0,w/2,h);x.fillStyle='#00f';x.fillRect(w/2,0,w/2,h);x.fillStyle='#ff0';x.fillRect(0,0,w/4,h/4)");
     const crop=async(photo,keep)=>p.evaluate(async([photo,keep])=>{await keepTagImg('suit0',keep);items[0].photo=photo;phEdit.undo=[];renderWardrobe();
-      await startCrop('suit0');await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));phEdit.crop.z=4;layoutCrop();await applyCrop('suit0');
+      await HOOK.startCrop('suit0');await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));phEdit.crop.z=4;HOOK.layoutCrop();await HOOK.applyCrop('suit0');
       return new Promise(r=>{const im=new Image();im.onload=()=>r(im.width);im.src=items[0].photo})},[photo,keep]);
     const small=await p.evaluate(u=>new Promise(r=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=360;c.height=270;c.getContext('2d').drawImage(im,0,0,360,270);r(c.toDataURL('image/jpeg',.8))};im.src=u}),sharp);
     const turned=await p.evaluate(u=>new Promise(r=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.height;c.height=im.width;const x=c.getContext('2d');x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,0,0);r(c.toDataURL('image/jpeg',.9))};im.src=u}),small);
@@ -61,14 +61,14 @@ const photoedit=async({ok,chromium,url})=>{
     ok(w3>=60&&w3<=70,`a sharp copy of another picture (a replaced photo) is not used: the crop comes from the photo itself (${w3})`);
     // a big photo has a small copy (PH_SM) for the wardrobe grid, made again when the photo changes
     const big=await mk(1536,1152,"x.fillStyle='#246';x.fillRect(0,0,w,h);x.fillStyle='#fc0';x.fillRect(0,0,w/2,h/2)");
-    const sm=await p.evaluate(async u=>{await setPhoto('suit0',u);const it=items[0],im=await imgOf(it.photoSm);editing=null;renderWardrobe();const g=document.querySelector('#gi-suit0 img.ph');
-      return {w:im.naturalWidth,h:im.naturalHeight,sig:it.phSig===phSigOf(it.photo),grid:!!g&&g.getAttribute('src')===it.photoSm,stored:!!(await tx('readonly',st=>st.get('suit0'))).photoSm}},big);
+    const sm=await p.evaluate(async u=>{await HOOK.setPhoto('suit0',u);const it=items[0],im=await imgOf(it.photoSm);editing=null;renderWardrobe();const g=document.querySelector('#gi-suit0 img.ph');
+      return {w:im.naturalWidth,h:im.naturalHeight,sig:it.phSig===HOOK.phSigOf(it.photo),grid:!!g&&g.getAttribute('src')===it.photoSm,stored:!!(await tx('readonly',st=>st.get('suit0'))).photoSm}},big);
     ok(sm.w===480&&sm.h===360&&sm.sig&&sm.grid&&sm.stored,`a 1536 px photo has a 480 px copy, shown in the wardrobe grid and saved with the item (${sm.w}x${sm.h})`);
     // photos saved at 720 before: made again at 1536 from this device's sharp copy of the same picture, in the old photo's colour, once
     const up=await p.evaluate(async([sharp,other])=>{const shrinkTo=(u,w,h)=>new Promise(r=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.filter='brightness(.85)';x.drawImage(im,0,0,w,h);r(c.toDataURL('image/jpeg',.85))};im.src=u});
       const a={id:'pa',type:'shirt',primaryColor:'white',pattern:'solid',photo:await shrinkTo(sharp,720,540)},b={id:'pb',type:'shirt',primaryColor:'white',pattern:'solid',photo:await shrinkTo(sharp,720,540)};
       items=[a,b];await keepTagImg('pa',sharp);await keepTagImg('pb',other);localStorage.removeItem('photo_up');const av=async u=>{const i=await imgOf(u),c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.drawImage(i,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let s=[0,0,0];for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)s[q]+=d[k+q];return s.map(v=>Math.round(v/256))};
-      const old=await av(a.photo),n=await upgradePhotos(),im=await imgOf(a.photo);return {n,w:im.naturalWidth,old,now:await av(a.photo),small:!!a.photoSm&&a.phSig===phSigOf(a.photo),otherKept:(await imgOf(b.photo)).naturalWidth===720,again:await upgradePhotos()}},[sharp,other]);
+      const old=await av(a.photo),n=await upgradePhotos(),im=await imgOf(a.photo);return {n,w:im.naturalWidth,old,now:await av(a.photo),small:!!a.photoSm&&a.phSig===HOOK.phSigOf(a.photo),otherKept:(await imgOf(b.photo)).naturalWidth===720,again:await upgradePhotos()}},[sharp,other]);
     ok(up.n===1&&up.w===1536&&up.small&&up.otherKept,`a 720 px photo is made again at 1536 px from the sharp copy of the same picture, with its small copy; one whose sharp copy shows another picture is left (${up.n}, ${up.w})`);
     ok(up.old.every((v,q)=>Math.abs(v-up.now[q])<=8)&&up.again===0,`it keeps the old photo's colour (${up.old} -> ${up.now}) and runs once`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
@@ -96,7 +96,7 @@ const photobackdrop=async({ok,chromium,url})=>{
       const real={id:'bs3',type:'socks',primaryColor:'beige',photo:wall.toDataURL('image/jpeg',.85)},realBefore=real.photo;
       items=[sock,dark,real];localStorage.removeItem('black_bd');
       const n=await fixBlackBackdrops(),again=await fixBlackBackdrops();
-      return {newCorner,newMid,n,again,corner:await px(sock.photo,3,3),mid:await px(sock.photo,100,100),small:!!sock.photoSm&&sock.phSig===phSigOf(sock.photo),
+      return {newCorner,newMid,n,again,corner:await px(sock.photo,3,3),mid:await px(sock.photo,100,100),small:!!sock.photoSm&&sock.phSig===HOOK.phSigOf(sock.photo),
         darkKept:dark.photo===old,realKept:real.photo===realBefore}});
     ok(r.newCorner.every(v=>v>=250)&&Math.abs(r.newMid[0]-0xb8)<8,`a transparent picture is saved on white (corner ${r.newCorner}, the item ${r.newMid} kept)`);
     ok(r.n===1&&r.corner.every(v=>v>=250)&&Math.abs(r.mid[0]-0xb8)<8&&r.small,`a photo saved before with a black backdrop is made white once (corner ${r.corner}, the item ${r.mid}; its small copy made again)`);

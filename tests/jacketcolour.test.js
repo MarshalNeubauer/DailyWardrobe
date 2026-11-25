@@ -73,17 +73,17 @@ const jacketcolour=async({ok,chromium,url})=>{
       return {n17:t('2026-11-17')===navyA.id,n18:t('2026-11-18')!==navyB.id&&t('2026-11-16')!==navyB.id,n22:pl2['2026-11-22'].top.primaryColor,n23:pl2['2026-11-23'].top.id===navyB.id}});
     ok(c.n17&&c.n18,'a navy suit left unworn for weeks still does not come right before or after the other navy');
     ok(c.n23&&c.n22!=='navy',`the day before a pinned navy day is not navy (${c.n22})`);
-    const JKT_SAME_T=await p.evaluate(()=>JKT_SAME);
+    const JKT_SAME_T=await p.evaluate(()=>HOOK.JKT_SAME);
     const dk=await p.evaluate(()=>{const J=c=>({id:'j'+c,type:'suit',primaryColor:c,pattern:'solid'}),P=c=>({g:jacketGroup(J(c)),c});
-      return {bc:colourRepeat(J('black'),[P('charcoal')]),bd:colourRepeat(J('darkgrey'),[P('black')]),gl:colourRepeat(J('lightgrey'),[P('darkgrey')]),bn:colourRepeat(J('black'),[P('navy')])}});
+      return {bc:HOOK.colourRepeat(J('black'),[P('charcoal')]),bd:HOOK.colourRepeat(J('darkgrey'),[P('black')]),gl:HOOK.colourRepeat(J('lightgrey'),[P('darkgrey')]),bn:HOOK.colourRepeat(J('black'),[P('navy')])}});
     ok(dk.gl===JKT_SAME_T&&dk.bc>=20&&dk.bd>=20&&dk.bn===0,`dark grey then light grey is a repeat; black next to charcoal or dark grey nearly one; black next to navy is fine (${JSON.stringify(dk)})`);
     // your Dec 1 / Dec 3 case: grey suit, black shirt, grey woven tie; then a light grey blazer with a dark navy shirt and a black check tie
     const lk=await p.evaluate(()=>{const I=(type,primaryColor,x={})=>({id:type+primaryColor,type,primaryColor,pattern:'solid',...x});
       const d1={top:I('suit','midgrey',{pattern:'twill'}),shirt:I('shirt','black'),tie:I('tie','grey',{pattern:'woven',secondaryColor:'black'})};
       const prev=[{jg:'navy',sl:'white',tl:'red'},{jg:jacketGroup(d1.top),sl:shirtLook(d1.shirt),tl:tieLook(d1.tie)}],bl=I('blazer','lightgrey');
-      return {same:lookRepeat(bl,I('shirt','darknavy'),I('tie','black',{pattern:'check',secondaryColor:'grey'}),prev),half:lookRepeat(bl,I('shirt','slate'),I('tie','navy'),prev),
-        white:lookRepeat(bl,I('shirt','white'),I('tie','black'),prev),looks:[shirtLook(I('shirt','navy')),shirtLook(I('shirt','charcoal')),shirtLook(I('shirt','lightblue')),tieLook(I('tie','silver')),tieLook(I('tie','charcoal')),tieLook(I('tie','navy'))].join(),
-        sr:shirtRepeat(I('shirt','darknavy'),[{sg:'black',sl:'dark'}]),tr:tieRepeat(I('tie','black'),[{tg:'grey',tl:'mono',tid:'z'}])}});
+      return {same:HOOK.lookRepeat(bl,I('shirt','darknavy'),I('tie','black',{pattern:'check',secondaryColor:'grey'}),prev),half:HOOK.lookRepeat(bl,I('shirt','slate'),I('tie','navy'),prev),
+        white:HOOK.lookRepeat(bl,I('shirt','white'),I('tie','black'),prev),looks:[shirtLook(I('shirt','navy')),shirtLook(I('shirt','charcoal')),shirtLook(I('shirt','lightblue')),tieLook(I('tie','silver')),tieLook(I('tie','charcoal')),tieLook(I('tie','navy'))].join(),
+        sr:HOOK.shirtRepeat(I('shirt','darknavy'),[{sg:'black',sl:'dark'}]),tr:HOOK.tieRepeat(I('tie','black'),[{tg:'grey',tl:'mono',tid:'z'}])}});
     ok(lk.same>=20&&lk.half>0&&lk.half<lk.same&&lk.white===0,`a grey jacket, dark shirt and grey/black tie two workdays after the same look is a repeat; another tie is half one; a white shirt is fine (${JSON.stringify(lk)})`);
     ok(lk.looks==='dark,dark,lightblue,mono,mono,navy'&&lk.sr>0&&lk.tr>0,`dark shirts read as one look, black/charcoal/grey/silver ties as one (${lk.looks}; shirt ${lk.sr}, tie ${lk.tr})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

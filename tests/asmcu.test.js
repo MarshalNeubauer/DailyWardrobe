@@ -13,16 +13,16 @@ module.exports=async({ok,chromium,url})=>{
       g.putImageData(im,0,0);const tex=c.toDataURL('image/png');
       const mk=(col,pattern)=>({id:'cu'+col+pattern,type:'suit',primaryColor:col,pattern,texture:tex});
       const grey=mk('grey','twill'),fine=mk('grey','own-fine-worsted-melange-twill'),black=mk('black','twill');
-      const T=await asmCuTile1(grey),F=await asmCuTile1(fine),n=T.TW*T.TH;let m=0;for(let k=0;k<n;k++)m+=T.t[3*k+1];m/=n;
+      const T=await HOOK.asmCuTile1(grey),F=await HOOK.asmCuTile1(fine),n=T.TW*T.TH;let m=0;for(let k=0;k<n;k++)m+=T.t[3*k+1];m/=n;
       // what is left of anything broad: the tile's 32-texel block means against its mean
       let lo=9,hi=0;for(let by=0;by<T.TH;by+=32)for(let bx=0;bx<T.TW;bx+=32){let a=0;for(let y=0;y<32;y++)for(let x=0;x<32;x++)a+=T.t[3*((by+y)*T.TW+bx+x)+1];a/=1024;if(a<lo)lo=a;if(a>hi)hi=a}
       // a well-lit light grey cloth with no paper: its light threads are not paper
-      for(let k=0;k<W*W;k++){const v=150+90*rnd();im.data[4*k]=im.data[4*k+1]=im.data[4*k+2]=v}g.putImageData(im,0,0);const B=await asmCuTile1({...mk('grey','twill'),id:'cubright',texture:c.toDataURL('image/png')});
+      for(let k=0;k<W*W;k++){const v=150+90*rnd();im.data[4*k]=im.data[4*k+1]=im.data[4*k+2]=v}g.putImageData(im,0,0);const B=await HOOK.asmCuTile1({...mk('grey','twill'),id:'cubright',texture:c.toDataURL('image/png')});
       // and with a strip of white paper along one edge the patch keeps off it
-      g.fillStyle='#fbfbfb';g.fillRect(0,0,W,150);const Pp=await asmCuTile1({...mk('grey','twill'),id:'cupaper',texture:c.toDataURL('image/png')});
-      const hbI={...mk('grey','herringbone'),id:'cuhb',texture:tex},HB=await asmCuTile1(hbI);
+      g.fillStyle='#fbfbfb';g.fillRect(0,0,W,150);const Pp=await HOOK.asmCuTile1({...mk('grey','twill'),id:'cupaper',texture:c.toDataURL('image/png')});
+      const hbI={...mk('grey','herringbone'),id:'cuhb',texture:tex},HB=await HOOK.asmCuTile1(hbI);
       return {hb:asmCuWants(hbI,asmCmRoute(hbI,'jacket').how)&&HB.cu.gain===ASM_CU.hb&&ASM_CU.hb===3&&Math.abs(HB.slv-2/3)<1e-6&&T.slv===undefined,bright:!!B,offPaper:!!Pp&&Pp.cu.y*2>=150,wantsGrey:asmCuWants(grey,'twill'),wantsBlack:asmCuWants(black,'twill'),wantsBands:asmCuWants(grey,'bands'),noTex:asmCuWants({...grey,texture:''},'twill'),
-        mean:m/T.c[1],broad:(hi-lo)/m,gain:T.cu.gain,shown:T.cu.shown,fgain:F.cu.gain,isFine:asmCuFine(fine)&&!asmCuFine(grey),tagDiff:asmCuTag('jacket',grey)!==''&&asmCuTag('jacket',black)===''}});
+        mean:m/T.c[1],broad:(hi-lo)/m,gain:T.cu.gain,shown:T.cu.shown,fgain:F.cu.gain,isFine:HOOK.asmCuFine(fine)&&!HOOK.asmCuFine(grey),tagDiff:HOOK.asmCuTag('jacket',grey)!==''&&HOOK.asmCuTag('jacket',black)===''}});
     ok(r.wantsGrey&&!r.wantsBands&&!r.noTex,'a plain or twill cloth with a close-up takes its cloth from it; a jacket read in bands, or one without a close-up, does not');
     ok(!r.wantsBlack&&r.tagDiff,'near-black cloth stays on the current painter, and its key carries no close-up tag');
     ok(Math.abs(r.mean-1)<.03,`the tile's mean is the item's colour (${r.mean.toFixed(3)} of it)`);
@@ -38,8 +38,8 @@ module.exports=async({ok,chromium,url})=>{
       const dc=(a,b)=>{let s=0;for(let y=0;y<T.TH;y++)s+=Math.abs(T.t[3*(y*T.TW+a)+1]-T.t[3*(y*T.TW+b)+1]);return s/T.TH},dEdge=dc(T.TW-1,0),dIn=(dc(100,101)+dc(30,31)+dc(200,201))/3;
       // rising to the right: the pattern matches itself one rib along (kx,ky)'s perpendicular
       const at=(x,y)=>T.t[3*(((y%T.TH)+T.TH)%T.TH*T.TW+((x%T.TW)+T.TW)%T.TW)+1];let up=0,dn=0;for(let y=0;y<T.TH;y+=3)for(let x=0;x<T.TW;x+=3){up+=Math.abs(at(x,y)-at(x+8,y-14));dn+=Math.abs(at(x,y)-at(x+8,y+14))}
-      return {mean:m/T.c[1],seam:dEdge<=1.5*dIn,rise:up<dn,tag:asmWtTag('jacket',blk),hb:asmWtWants({...blk,pattern:'herringbone'},'jacket'),jeans:asmWtWants({id:'j',type:'pants',primaryColor:'navy',pattern:'twill',trouserKind:'jeans'},'trousers'),
-        cuTag:asmWtTag('jacket',{id:'g',type:'suit',primaryColor:'grey',pattern:'twill',texture:'x'})}});
+      return {mean:m/T.c[1],seam:dEdge<=1.5*dIn,rise:up<dn,tag:HOOK.asmWtTag('jacket',blk),hb:asmWtWants({...blk,pattern:'herringbone'},'jacket'),jeans:asmWtWants({id:'j',type:'pants',primaryColor:'navy',pattern:'twill',trouserKind:'jeans'},'trousers'),
+        cuTag:HOOK.asmWtTag('jacket',{id:'g',type:'suit',primaryColor:'grey',pattern:'twill',texture:'x'})}});
     ok(Math.abs(w.mean-1)<.1&&w.seam&&w.rise,`a black twill without close-up cloth gets the worsted tile: mean ${w.mean.toFixed(3)} of its colour (the deepest grooves stop at black), no seam (${w.seam}), ribs rising to the right (${w.rise})`);
     ok(w.tag==='/wt1'&&!w.hb&&!w.jeans&&w.cuTag==='','only those looks get a new key: herringbone and jeans keep their painters, a twill painted from its close-up is unchanged');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

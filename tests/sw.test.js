@@ -26,7 +26,7 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
   let s=await seen();
   ok(!s.h&&!s.core&&s.v===v0,'a reload stays on the installed version: no file of a newer release is mixed in');
   bump=1;slow=/app\.js$/;   // the release gets its number, and one of its files is slow to come (the old 4 s race served a mix here)
-  await page.evaluate(()=>{window.__same=1;return checkForUpdate()});
+  await page.evaluate(()=>{window.__same=1;return HOOK.checkForUpdate()});
   await page.waitForFunction(()=>document.querySelector('#toast').classList.contains('on')&&/A new version is ready/.test(document.querySelector('#toast').textContent),null,{timeout:10000}).catch(()=>{});
   ok(await page.evaluate(()=>/A new version is ready/.test(document.querySelector('#toast').textContent)&&!!document.querySelector('#toast button')),'a bumped sw.js raises "A new version is ready" with Update');
   await page.evaluate(async()=>{window.__reg=await navigator.serviceWorker.getRegistration()});await page.waitForFunction(()=>!!window.__reg.waiting,null,{timeout:30000}).catch(()=>{});
@@ -35,13 +35,13 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
     'the new version downloads and waits: the page is not reloaded and keeps its service worker');
   await page.reload();await page.waitForFunction(()=>window.appReady&&appVersion()!=null);s=await seen();
   ok(!s.h&&!s.core&&s.v===v0,'a plain reload while it waits is still the old version, whole');
-  slow=null;await page.evaluate(()=>{window.__same=1;return checkForUpdate()});
-  await page.evaluate(()=>updateNow());
+  slow=null;await page.evaluate(()=>{window.__same=1;return HOOK.checkForUpdate()});
+  await page.evaluate(()=>HOOK.updateNow());
   await page.waitForFunction(()=>window.__same===undefined&&window.appReady&&appVersion()!=null,null,{timeout:20000}).catch(()=>{});s=await seen();
   ok(s.h&&s.core==='v2'&&s.v===v0+1,`Update switches to the new service worker and reloads: every file is the new release (version ${s.v})`);
   ok(await page.evaluate(async()=>{const ks=await caches.keys();return ks.filter(k=>/^dw-v/.test(k)).length===1&&navigator.serviceWorker.getRegistration().then(g=>!g.waiting&&!g.installing)}),'the old version\'s cache is gone');
   // a version that was left waiting takes over when the app is next started
-  marker='v3';bump=2;await page.evaluate(()=>checkForUpdate());
+  marker='v3';bump=2;await page.evaluate(()=>HOOK.checkForUpdate());
   await page.evaluate(async()=>{window.__reg=await navigator.serviceWorker.getRegistration()});await page.waitForFunction(()=>!!window.__reg.waiting,null,{timeout:30000}).catch(()=>{});
   await page.close();page=await ctx.newPage();
   let v3=false;for(let i=0;i<20&&!v3;i++){await page.goto(url);await page.waitForFunction(()=>window.appReady&&appVersion()!=null);v3=await page.evaluate(()=>/v3/.test(document.querySelector('h1').textContent)&&window.__core==='v3');
@@ -79,7 +79,7 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
     await p2.goto(url);await p2.waitForFunction(()=>!!navigator.serviceWorker.controller,null,{timeout:10000}).catch(()=>{});
     legacy=false;await p2.reload();await p2.waitForFunction(()=>window.appReady&&appVersion()!=null);
     await p2.evaluate(()=>{window.__same=1});
-    const took=await p2.evaluate(async()=>{const t0=Date.now();while(Date.now()-t0<30000){const c=navigator.serviceWorker.controller;if(c&&await aboutAsk(c)===appVersion())return true;await new Promise(r=>setTimeout(r,200))}return false});
+    const took=await p2.evaluate(async()=>{const t0=Date.now();while(Date.now()-t0<30000){const c=navigator.serviceWorker.controller;if(c&&await HOOK.aboutAsk(c)===appVersion())return true;await new Promise(r=>setTimeout(r,200))}return false});
     ok(took&&await p2.evaluate(()=>window.__same===1&&!/new version/.test(document.querySelector('#toast').textContent)),'after the earlier service worker, the new one of the same version takes over without a prompt or a reload');
     await c2.close()}
   await browser.close();srv.close();

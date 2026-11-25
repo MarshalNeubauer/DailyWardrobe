@@ -36,17 +36,17 @@ const rotationPause=async({ok,chromium,url,settle})=>{
     const past=await p.evaluate(()=>{const o=planMonth(2026,10)['2026-11-9'];return o&&o.top&&o.top.id});
     ok(past==='navy','the outfit already worn still shows the navy suit');
     // closed: the box says so
-    await p.evaluate(()=>closeItem());await settle(p,500);
+    await p.evaluate(()=>HOOK.closeItem());await settle(p,500);
     ok(await p.evaluate(()=>{const g=document.querySelector('#gi-navy');return g.classList.contains('paused')&&/Out of rotation/.test(g.textContent)}),'its box in the grid is dimmed and tagged "Out of rotation"');
     // picker and Suggest another on today leave it out; correcting a past day offers it
     const pick=await p.evaluate(async()=>{sel=new Date(2026,10,11);show('today');const o=planFor()[key(sel)],today=slotPool('top',o).map(i=>i.id);
       const pastO=planFor()['2026-11-9'],pastPool=slotPool('top',pastO).map(i=>i.id);
-      const seen=new Set([o.top.id]);for(let n=0;n<4;n++){await swapSlot('top');seen.add(planFor()[key(sel)].top.id)}return {today,pastPool,seen:[...seen]}});
+      const seen=new Set([o.top.id]);for(let n=0;n<4;n++){await HOOK.swapSlot('top');seen.add(planFor()[key(sel)].top.id)}return {today,pastPool,seen:[...seen]}});
     ok(!pick.today.includes('navy')&&pick.today.length===2,`the picker doesn't offer it for today (${pick.today})`);
     ok(pick.pastPool.includes('navy'),'correcting a past day still offers it (it may have been worn then)');
     ok(!pick.seen.includes('navy'),`"Suggest another" cycles without it (${pick.seen})`);
     // stats explain it
-    ok(await p.evaluate(()=>whyUnused(items.find(i=>i.id==='navy'))==='You took it out of rotation, so the planner leaves it out.'),'the stats page gives the reason it is not planned');
+    ok(await p.evaluate(()=>HOOK.whyUnused(items.find(i=>i.id==='navy'))==='You took it out of rotation, so the planner leaves it out.'),'the stats page gives the reason it is not planned');
     // put it back
     await p.evaluate(()=>{show('wardrobe');openItem('navy')});await settle(p,500);await p.click('#item-view .rotbtn');await p.waitForFunction(()=>!('paused' in items.find(i=>i.id==='navy'))&&document.querySelector('#item-view .rotbtn').textContent==='Take out of rotation');
     const back=await tops();

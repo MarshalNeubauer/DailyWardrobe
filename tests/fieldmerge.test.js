@@ -129,23 +129,23 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await B.evaluate(async()=>{const it=items.find(i=>i.id==='b1');it.paused=true;await put(it)});await sync(B);await sync(A);
     const lab=await A.evaluate(()=>document.querySelector('#item-view .rotbtn').textContent);
     ok(/Put back/.test(lab),'the open item sheet is drawn again with the other phone\'s change: '+lab);
-    await A.evaluate(()=>togglePause('b1',true));
+    await A.evaluate(()=>HOOK.togglePause('b1',true));
     ok(await A.evaluate(()=>!!items.find(i=>i.id==='b1').paused),'a button drawn before the change does what it said ("Take out" never puts it back in)');
-    await A.evaluate(()=>closeItem());
+    await A.evaluate(()=>HOOK.closeItem());
     // W1-6-02: the piece deleted on A while its sheet is open on B
     await B.evaluate(()=>{show('wardrobe');openItem('t1')});
-    await A.evaluate(()=>wardDeleteNow('t1'));await sync(A);await sync(B);
+    await A.evaluate(()=>HOOK.wardDeleteNow('t1'));await sync(A);await sync(B);
     const gone=await B.evaluate(()=>({toast:document.querySelector('#toast').textContent,note:!!document.querySelector('#item-view .ivgone'),open:!!editing}));
     ok(/deleted on another phone/.test(gone.toast)&&gone.note&&gone.open,'the open sheet of a piece deleted on another phone says so '+JSON.stringify(gone));
     await B.evaluate(()=>setItemField('t1','name','Green tie (fav)'));
     ok(/wasn’t kept/.test(await B.evaluate(()=>document.querySelector('#toast').textContent)),'a change typed into it says it wasn\'t kept');
-    await B.evaluate(()=>closeItem());
+    await B.evaluate(()=>HOOK.closeItem());
     // W1-6-05: "Take them out" on A, not synced since B renamed an imported piece: A syncs first, and the renamed piece stays
     await A.evaluate(async()=>{const at=Date.now()-60000;for(const id of ['x1','x2']){const it={id,type:'tie',primaryColor:'navy',pattern:'solid',name:'Imported '+id,added:at,updated:at+500};await putRaw(it);items.push(it)}
       localStorage.setItem('kit_import_last',JSON.stringify({ids:['x1','x2'],at}))});
     await sync(A);await sync(B);
     await B.evaluate(async()=>{const it=items.find(i=>i.id==='x2');it.name='Gift tie';await put(it)});await sync(B);
-    const un=A.evaluate(()=>kitUnimport());await A.waitForFunction(()=>asking);
+    const un=A.evaluate(()=>HOOK.kitUnimport());await A.waitForFunction(()=>asking);
     const uq=await A.evaluate(()=>document.querySelector('.ask-q').textContent+' '+[...document.querySelectorAll('.ask-more')].map(e=>e.textContent).join(' '));
     await A.evaluate(()=>askAnswer(true));await un;
     const ua=await A.evaluate(()=>items.filter(i=>/^x/.test(i.id)).map(i=>i.name));
@@ -159,7 +159,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(cs.every(c=>c==='Dusty teal,Mossy fern'),'own colors made on two phones: both on both phones and the server '+JSON.stringify(cs));
     // W1-11-03: Restore file keeps the file's settings
     const file=JSON.parse(await A.evaluate(async()=>JSON.stringify({app:'daily-wardrobe',version:1,...await localState()})));file.settings.vestMode='always';file.settings.units='F';   // (the file's stamps are older than the change below)
-    await A.evaluate(async f=>{await new Promise(r=>setTimeout(r,5));settings.vestMode='never';settings.units='C';await saveUserSettings();await restoreBackup(new File([f],'b.json'))},JSON.stringify(file));
+    await A.evaluate(async f=>{await new Promise(r=>setTimeout(r,5));settings.vestMode='never';settings.units='C';await saveUserSettings();await HOOK.restoreBackup(new File([f],'b.json'))},JSON.stringify(file));
     const after=await A.evaluate(()=>[settings.vestMode,settings.units]);
     ok(JSON.stringify(after)==='["always","F"]','Restore file: the file\'s settings win over newer ones on the phone '+JSON.stringify(after));
     // W1-6-01: the owner's Delete everything on A, held on B
@@ -172,8 +172,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(held===false&&!store.has('wardrobe:v1')&&/deleted from the server on another device/.test(q.q)&&q.ok==='Back it up again','the other owner phone puts nothing back and asks '+JSON.stringify(q));
     await B.evaluate(()=>askAnswer(false));await B.evaluate(()=>syncNow());
     ok(!store.has('wardrobe:v1')&&!(await B.evaluate(()=>!!asking)),'"Not now": nothing sent, not asked again at every sync');
-    await B.evaluate(()=>syncTap());await B.waitForFunction(()=>asking);await B.evaluate(()=>askAnswer(true));
-    await B.waitForFunction(()=>!syncing&&localStorage.getItem('wipe_seen'));await B.evaluate(()=>syncNow());
+    await B.evaluate(()=>HOOK.syncTap());await B.waitForFunction(()=>asking);await B.evaluate(()=>askAnswer(true));
+    await B.waitForFunction(()=>!HOOK.syncing&&localStorage.getItem('wipe_seen'));await B.evaluate(()=>syncNow());
     ok(store.has('wardrobe:v1')&&data().items.length===await B.evaluate(()=>items.length),'"Back it up again" (from Sync now) puts this phone\'s copy back');
     ok(!A.errs.length&&!B.errs.length,'no page errors: '+[...A.errs,...B.errs].join(' | '));
   }finally{await browser.close()}

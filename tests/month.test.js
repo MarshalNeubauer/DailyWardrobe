@@ -76,7 +76,7 @@ const month=async({ok,chromium,url,ROOT,settle})=>{
     // (the days between are marked not worn: the missed days after the first real use are recorded before Today is drawn, fix round 3,
     // and one of them could be this look)
     await p.evaluate(()=>{for(const d=new Date(2026,9,28);d<todayDate();d.setDate(d.getDate()+1)){const k=key(d);if(!dayRecs[k])dayRecs[k]={date:k,ids:{},worn:false}}cache={};
-      const o=planFor()['2026-11-16'];renderTried.add(comboKey(o));/* a stand-in photo: keep it off the worker */renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};renderToday()});
+      const o=planFor()['2026-11-16'];HOOK.renderTried.add(comboKey(o));/* a stand-in photo: keep it off the worker */renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};renderToday()});
     ok(/^This look last worn Mon, Nov 2$/.test(await p.textContent('.fig.photo .lastworn')),'the photo caption is just the last-worn date');
     // no paid outfit photo is offered at all (the owner: no month batch 2026-11-13; the day's photo retired 2026-11-14)
     await p.evaluate(()=>{for(const k of Object.keys(renders))delete renders[k];dayRecs={};cache={};openSettings('photos')});
@@ -167,7 +167,7 @@ const monthunfold=async({ok,chromium,url,settle})=>{
     // the card's edge is a strip that slides (app.js foldEdge), not a clip-path: Safari repaints a clip every frame on the page's thread
     // while it slides the cards below on its own, and the two drifted apart
     ok(during.an.includes('edge transform')&&!during.an.some(x=>/clipPath/.test(x))&&during.an.includes('opacity')&&during.heightAnim==='0s'&&!during.inert,`unfolding is the card's edge sliding down (no clip-path) and a fade of the days, the height is not animated (${[...new Set(during.an)].join(', ')})`);
-    const drop=await p.evaluate(async()=>{await new Promise(r=>setTimeout(r,1100));const gone=!$('#mbox').classList.contains('mdrop');monthStep(1);const again=getComputedStyle(document.querySelector('#mbox .mc:not(.blank)')).animationName;monthStep(-1);return {gone,again}});
+    const drop=await p.evaluate(async()=>{await new Promise(r=>setTimeout(r,1100));const gone=!$('#mbox').classList.contains('mdrop');HOOK.monthStep(1);const again=getComputedStyle(document.querySelector('#mbox .mc:not(.blank)')).animationName;HOOK.monthStep(-1);return {gone,again}});
     ok(during.drop==='mcDrop'&&drop.gone&&drop.again==='none',`the days drop in only while the box unfolds: not again on a month swiped to (${during.drop}, then ${drop.again})`);
     ok(layouts<=8,`unfolding lays the page out ${laid(layouts)} (it was about 30, once a frame)`);
     ok(opened.open&&!opened.inert&&opened.clip==='none'&&!opened.edge&&opened.fold&&opened.top,'unfolded: the whole month shows, scrolled so "Fold away" is above the tab bar, with no clip or edge strip left');

@@ -80,14 +80,14 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
         await p.click(gear);await p.waitForFunction(()=>settingsOpen());
         if(how==='Done')await p.click('.sdone');else await p.evaluate(()=>history.back());
         await p.waitForFunction(()=>!settingsOpen());await settle(p,500);
-        const r={add:await p.evaluate(()=>!$('#add').hidden),hist:await p.evaluate(()=>appHist)};
+        const r={add:await p.evaluate(()=>!$('#add').hidden),hist:await p.evaluate(()=>HOOK.appHist)};
         await p.evaluate(()=>history.back());await settle(p,800);
         r.ward=await p.evaluate(()=>!$('#wardrobe').hidden&&$('#add').hidden);r.url=p.url();
         ok(r.add&&r.hist&&r.ward&&r.url.startsWith(url.split('#')[0]),`Settings over Add closed by ${how}: Add keeps its Back entry, and the next Back goes to the Wardrobe (${JSON.stringify(r)})`)}
       // and from Settings over Add, a tab leaves no entry behind
       await p.click('#ward-add');await p.waitForFunction(()=>!$('#add').hidden);await p.click(gear);await p.waitForFunction(()=>settingsOpen());
       await p.evaluate(()=>show('today'));await settle(p,600);
-      ok(await p.evaluate(()=>!appHist&&!$('#today').hidden&&!settingsOpen()),'Settings over Add, then a tab: no Back entry is left behind');
+      ok(await p.evaluate(()=>!HOOK.appHist&&!$('#today').hidden&&!settingsOpen()),'Settings over Add, then a tab: no Back entry is left behind');
       await ctx.close()}
 
     /* CR-7-05: an Arabic-language phone: the backup-pause time is in the app's language, like its dates */
@@ -95,7 +95,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       await p.evaluate(s=>{localStorage.setItem('worker_url',s);localStorage.setItem('app_token','x');localStorage.setItem('last_sync',String(Date.now()-864e5));
         const t=new Date();t.setHours(23,0,0,0);localStorage.setItem('sync_pause',String(Math.max(t.getTime(),Date.now()+60e3)))},SRV);
       await p.click(gear);await p.waitForFunction(()=>settingsOpen());
-      const s=await p.evaluate(()=>({sum:$('#sum-backup').textContent,reset:aboutResetAt(),sync:new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}));
+      const s=await p.evaluate(()=>({sum:$('#sum-backup').textContent,reset:HOOK.aboutResetAt(),sync:new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}));
       const arabic=/[؀-ۿ٠-٩]/;
       ok(/^Paused until /.test(s.sum)&&!arabic.test(s.sum)&&!arabic.test(s.reset)&&!arabic.test(s.sync),`times are in the app's language on an Arabic phone (${JSON.stringify(s)})`);await ctx.close()}
 

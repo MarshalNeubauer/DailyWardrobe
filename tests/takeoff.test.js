@@ -58,14 +58,14 @@ const takeoff=async({ok,chromium,url,settle})=>{
     ok(!rest.includes('2026-11-11'),`the blazer taken off is not counted as worn that day (${rest.join(', ')})`);
     // the painter: a suit's read stripes paint its trousers with the jacket's own cloth, at the shirt master's scale
     const r=await p.evaluate(()=>{const s={...items[0],sett:{v:2,a:0,bands:[['#1b2440',8],['#e8e8e8',1]],cr:4,tr:30}};
-      return {how:asmCmRoute(s,'trousers').how,pants:asmCmRoute({...items[3],sett:s.sett},'trousers').how,tag:asmCmTrSc('trousers',s),jtag:asmCmTrSc('jacket',s),
-        z:Object.keys(asmCmItems({shirt:items[4],bot:s,belt:items[11],tie:items[6]},'shirt-tie')).sort().join(),zo:Object.keys(asmCmItems({shirt:items[4],top:s,vest:true},'vest-open')).sort().join()}});
+      return {how:asmCmRoute(s,'trousers').how,pants:asmCmRoute({...items[3],sett:s.sett},'trousers').how,tag:HOOK.asmCmTrSc('trousers',s),jtag:HOOK.asmCmTrSc('jacket',s),
+        z:Object.keys(HOOK.asmCmItems({shirt:items[4],bot:s,belt:items[11],tie:items[6]},'shirt-tie')).sort().join(),zo:Object.keys(HOOK.asmCmItems({shirt:items[4],top:s,vest:true},'vest-open')).sort().join()}});
     ok(r.how==='bands'&&r.pants==='tile'&&/^\/sc\/lg\d+$/.test(r.tag)&&r.jtag==='',`a suit's pants are painted with its jacket's cloth (${r.how}; odd pants keep ${r.pants}), and such looks get a new key`);
     ok(r.z==='belt,shirt,tie,trousers'&&r.zo==='jacket,shirt,waistcoat',`the masters' garments: ${r.z} / ${r.zo}`);
     // the trousers' lines follow the legs (asmLegsPrep/asmLegsAt): a synthetic pair, hips above the crotch at row 120, two legs below
     const lg=await p.evaluate(()=>{const S=256,N=S*S,T=new Uint8Array(N),SH=new Uint16Array(N).fill(30000),sk=new Uint8Array(N);
       for(let y=40;y<S;y++)for(let x=60;x<196;x++){if(y>=120&&x>=124&&x<132)continue;T[y*S+x]=255}
-      const G=asmLegsPrep({trousers:T,skin:sk},SH,S,N),u=(x,y)=>asmLegsAt(G,x,y,y*S+Math.floor(x))[0],d=(x,y)=>u(x+.5,y)-u(x-.5,y);
+      const G=HOOK.asmLegsPrep({trousers:T,skin:sk},SH,S,N),u=(x,y)=>HOOK.asmLegsAt(G,x,y,y*S+Math.floor(x))[0],d=(x,y)=>u(x+.5,y)-u(x-.5,y);
       let mono=true;for(const y of [60,200])for(let x=61;x<195;x++)if(T[y*S+x]&&T[y*S+x-1]&&u(x+.5,y)<u(x-.5,y))mono=false;   // (within the cloth: the gap between the legs isn't painted)
       return {yc:G.yc,fly:Math.round(G.xf[200]),midHip:d(128,60),edgeHip:d(62,60),legMid:d(94,200),legIn:d(122,200),legOut:d(62,200),mono}});
     ok(lg.yc>=118&&lg.yc<=122&&lg.fly===128,`the crotch and the fly are found (row ${lg.yc}, x ${lg.fly})`);
@@ -122,7 +122,7 @@ const todaypants=async({ok,chromium,url,settle})=>{
     ok(c.kind==='shirt-tie','the picture is the shirt-and-tie master with the grey pants');
     ok(await suitRest()===2,'the suit is not counted as worn today (rested 2 days on Tuesday)');
     // the plan keeps the pick: new planning rules (replanFuture(true)), a plan from scratch
-    const kept=await p.evaluate(async()=>{await replanFuture(true);cache={};renderToday();const o=planFor()[key(sel)];return {bot:o.bot&&o.bot.id,top:o.top&&o.top.id}});
+    const kept=await p.evaluate(async()=>{await HOOK.replanFuture(true);cache={};renderToday();const o=planFor()[key(sel)];return {bot:o.bot&&o.bot.id,top:o.top&&o.top.id}});
     ok(kept.bot===GREY&&!kept.top,`re-planning keeps the grey pants (${JSON.stringify(kept)})`);
     // the record written for today holds the grey pants, not the suit
     await p.waitForFunction(g=>{const r=dayRecs[key(sel)];return r&&r.ids&&r.ids.bot===g},GREY,{timeout:5000}).catch(()=>{});
@@ -159,16 +159,16 @@ const todaypants=async({ok,chromium,url,settle})=>{
     await p.click('#ibox button[aria-label="Change pants"]');await settle(p,300);
     await tap(`#pick-sheet button[data-id="${CHAR}"]`);
     // (the day is locked again from what Today then shows, lockUpcoming: the pick wins over a lock either way)
-    const l=await p.evaluate(async()=>{const k=key(sel);await replanFuture(true);cache={};const o=planFor()[k];return {bot:o.bot&&o.bot.id,top:o.top&&o.top.id,force:dayRecs[k].force}});
+    const l=await p.evaluate(async()=>{const k=key(sel);await HOOK.replanFuture(true);cache={};const o=planFor()[k];return {bot:o.bot&&o.bot.id,top:o.top&&o.top.id,force:dayRecs[k].force}});
     ok(l.bot===CHAR&&!l.top&&l.force.bot===CHAR,`a locked coming day: the pick is kept over the lock and through re-planning (${JSON.stringify(l)})`);
     // marked worn: counted for the grey pants, not the suit; the day can't be changed any more
     await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await settle(p,300);
     await tap('#ibox button[aria-label="Take off the suit jacket"]');
     await p.click('#ibox button[aria-label="Change pants"]');await settle(p,300);
     await tap(`#pick-sheet button[data-id="${GREY}"]`);
-    const w0=await p.evaluate(()=>({...careCounts()}));
+    const w0=await p.evaluate(()=>({...HOOK.careCounts()}));
     await p.evaluate(()=>setWorn(true));await settle(p,400);
-    const w=await p.evaluate(()=>{cache={};const c=careCounts(),o=planFor()[key(sel)];return {c:{...c},frozen:!!o.frozen,bot:o.bot&&o.bot.id,offKind:o.offKind||null,
+    const w=await p.evaluate(()=>{cache={};const c=HOOK.careCounts(),o=planFor()[key(sel)];return {c:{...c},frozen:!!o.frozen,bot:o.bot&&o.bot.id,offKind:o.offKind||null,
       btns:[...document.querySelectorAll('#ibox .row button[aria-label]')].map(b=>b.getAttribute('aria-label')),rows:[...document.querySelectorAll('#ibox .row')].map(e=>e.textContent.replace(/\s+/g,' ').trim())}});
     ok((w.c[GREY]||0)===(w0[GREY]||0)+1&&(w.c[SUIT]||0)===(w0[SUIT]||0),`marked worn: the grey pants get a wear before cleaning, the suit none (grey ${w0[GREY]||0} → ${w.c[GREY]||0}, suit ${w0[SUIT]||0} → ${w.c[SUIT]||0})`);
     ok(w.frozen&&w.bot===GREY&&w.offKind==='suit'&&!w.btns.includes('Change pants')&&!w.btns.some(x=>/Take off|back on/.test(x))&&w.rows.some(t=>/^SuitTaken off/.test(t)),`a day marked worn: the suit taken off, the grey pants, nothing to change (${w.btns.join(', ')})`);
@@ -200,11 +200,11 @@ const sepnotes=async({ok,chromium,url,settle})=>{
       const d=key(sel),SUIT='suit0',CAMO='pants3',TEE='tee7',BOOTS='shoes11';
       const day=(off,bot)=>{dayRecs={[d]:{date:d,force:{top:SUIT,shirt:TEE,shoes:BOOTS,...(bot?{bot}:{})},...(off?{off:{top:true}}:{})}};cache={};return planFor()[d]};
       const on=day(false),own=day(true),o=day(true,CAMO);show('today');
-      const D=dialsFor(o),hard=rateOutfit(o).hard,dials=[...document.querySelectorAll('#sbox .dial')].map(e=>({txt:e.querySelector('text').textContent,arc:!!e.querySelector('.darc'),bad:!!e.querySelector('.dbad'),name:e.querySelector('small').textContent}));
+      const D=HOOK.dialsFor(o),hard=rateOutfit(o).hard,dials=[...document.querySelectorAll('#sbox .dial')].map(e=>({txt:e.querySelector('text').textContent,arc:!!e.querySelector('.darc'),bad:!!e.querySelector('.dbad'),name:e.querySelector('small').textContent}));
       // a broken Harmony rule: the navy shirt under the navy blazer (the shirt the jacket's color)
       const box=document.createElement('div');box.innerHTML=scoreCard({...o,top:items.find(i=>i.id==='blazer2'),shirt:items.find(i=>i.id==='shirt6'),off:null});
       const hb=box.querySelector('.dial'),hbad={name:hb.querySelector('small').textContent,txt:hb.querySelector('text').textContent,ring:!!hb.querySelector('.dbad')};
-      const h0=document.createElement('div');h0.innerHTML=dialHtml('h',{v:0},false)+dialHtml('h',{v:0},true)+dialHtml('h',{v:3},false);
+      const h0=document.createElement('div');h0.innerHTML=HOOK.dialHtml('h',{v:0},false)+HOOK.dialHtml('h',{v:0},true)+HOOK.dialHtml('h',{v:3},false);
       const z=[...h0.querySelectorAll('.dial')].map(e=>({txt:e.querySelector('text').textContent,arc:!!e.querySelector('.darc'),bad:!!e.querySelector('.dbad')}));
       const shown=[...document.querySelectorAll('#today p.warn')].map(e=>e.textContent).join(' | ');
       return {on:{suitDay:!!on.suitDay,bot:on.bot&&on.bot.id,notes:on.notes},own:{bot:own.bot&&own.bot.id,notes:own.notes},o:{bot:o.bot&&o.bot.id,top:!!o.top,shoes:o.shoes&&o.shoes.id,belt:o.belt&&o.belt.id,notes:o.notes},
@@ -241,7 +241,7 @@ const offpins=async({ok,chromium,url,WARDROBES})=>{
       TODAY_OVERRIDE='2026-11-11T09:00:00';dayRecs={};cache={};try{await recordRun}catch{}view={y:2026,m:10}},WARDROBES);
     await setup();
     const occ=await p.evaluate(async()=>{const k='2026-11-19',out={};   // Thursday 19 November, a blazer day
-      for(const o of ['funeral','wedding','formal']){dayRecs={};cache={};sel=keyDate(k);renderToday();await setOff('tie',true);const kind=dayRecs[k].kind;
+      for(const o of ['funeral','wedding','formal']){dayRecs={};cache={};sel=keyDate(k);renderToday();await HOOK.setOff('tie',true);const kind=dayRecs[k].kind;
         await setOccasion(o,k);const top=planFor()[k].top;
         dayRecs={[k]:{date:k,...(o==='formal'?{formal:true}:{occasion:o})}};cache={};const fresh=planFor()[k].top;
         out[o]={kind,type:top&&top.type,fresh:fresh&&fresh.type}}
@@ -249,9 +249,9 @@ const offpins=async({ok,chromium,url,WARDROBES})=>{
     for(const [o,v] of Object.entries(occ))ok(v.kind==='blazer'&&v.type==='suit'&&v.fresh==='suit',`a ${o} set on a blazer day whose tie was taken off is a suit day, as a fresh ${o} day (${v.type}, fresh ${v.fresh}; the tie off pinned ${v.kind})`);
     await setup();
     const mv=await p.evaluate(async()=>{const src='2026-11-13',dst='2026-11-16';   // Friday 13 November (a suit day) moved to Monday 16 November
-      sel=keyDate(src);renderToday();await setOff('top',true);await setOff('tie',true);
+      sel=keyDate(src);renderToday();await HOOK.setOff('top',true);await HOOK.setOff('tie',true);
       const ids=x=>({top:x.top&&x.top.id,bot:x.bot&&x.bot.id,shirt:x.shirt&&x.shirt.id,tie:x.tie&&x.tie.id});
-      const shown=ids(planFor()[src]);const recs=moveRecs(src,dst,planFor());const preview=ids(planWith(recs,2026,10)[dst]);
+      const shown=ids(planFor()[src]);const recs=HOOK.moveRecs(src,dst,planFor());const preview=ids(planWith(recs,2026,10)[dst]);
       await saveDay(recs[dst]);if(recs[src])await saveDay(recs[src]);else await saveDay({date:src});planDirty();
       const left=planFor()[src];return {shown,preview,moved:ids(planFor()[dst]),left:{...ids(left),off:!!left.off},srcRec:dayRecs[src]||null}});
     const same=(a,b)=>a.top===b.top&&a.bot===b.bot&&a.shirt===b.shirt&&a.tie===b.tie;
@@ -259,9 +259,9 @@ const offpins=async({ok,chromium,url,WARDROBES})=>{
     ok(mv.left.top&&mv.left.tie&&!mv.left.off&&!(mv.srcRec&&mv.srcRec.off),`the day it left is planned afresh, its jacket and tie on (${JSON.stringify(mv.left)})`);
     await setup();
     const rev=await p.evaluate(async()=>{const src='2026-11-13',dst='2026-11-16';
-      sel=keyDate(dst);renderToday();await setOff('tie',true);
+      sel=keyDate(dst);renderToday();await HOOK.setOff('tie',true);
       const ids=x=>({top:x.top&&x.top.id,bot:x.bot&&x.bot.id,shirt:x.shirt&&x.shirt.id,tie:x.tie&&x.tie.id});
-      const shown=ids(planFor()[src]);const recs=moveRecs(src,dst,planFor());
+      const shown=ids(planFor()[src]);const recs=HOOK.moveRecs(src,dst,planFor());
       await saveDay(recs[dst]);if(recs[src])await saveDay(recs[src]);else await saveDay({date:src});planDirty();
       return {shown,moved:ids(planFor()[dst])}});
     ok(rev.shown.tie&&same(rev.moved,rev.shown),`an outfit moved onto a day whose tie was taken off keeps its tie (${JSON.stringify(rev.shown)} → ${JSON.stringify(rev.moved)})`);
