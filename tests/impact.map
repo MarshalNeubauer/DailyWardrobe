@@ -654,7 +654,7 @@ additemacts.test.js	add-sheet.js	<loaded>	addManual	addManualTap	get	npsCancel	n
 additemacts.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	dropTexture	errToHand	get	measureGuess	multiMsg	multiNote	needType	renderAdd	saveAllTap	skipCard	stopRead	wbNote
 additemacts.test.js	analysis.js	<loaded>
 additemacts.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	keepFocus	loadImg	metaGet	metaPut	put	refreshSwatch	set	setFlt	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
-additemacts.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmCuDark	asmCuPatch	asmCuTile	asmCuTile1	asmCuWants	asmCuWrap	asmGapNote	asmPileKind
+additemacts.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmCuDark	asmCuPatch	asmCuTile	asmCuTile1	asmCuWants	asmCuWrap	asmGapNote	asmPileKind	asmWtWants
 additemacts.test.js	asm-gl.js	<loaded>
 additemacts.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 additemacts.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -673,7 +673,7 @@ additemacts.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 additemacts.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSum	cpwSym
 additemacts.test.js	daysoff.js	<loaded>	refreshHolidays
 additemacts.test.js	detect.js	<loaded>	@	analyzeStripes	boxBlur	camoLook	detectPattern	detectQueued	lookOf	lumGrid	ownSett	settToTag	sobel	texPat	tieWeave	usableSett
-additemacts.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	drawWatchTraced	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figFabric	figKind	figLiftK	figLin	figLum	figScale	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
+additemacts.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	drawWatchTraced	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figScale	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 additemacts.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests	newSuitVest
 additemacts.test.js	fav.js	<loaded>	favChip	favItemRow	favLookFrom	favMark	favOff	favPillSeg	favWhy	get
 additemacts.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	get	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
@@ -748,7 +748,7 @@ addsheet.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{con
 addsheet.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 addsheet.test.js	asm-pocket.js	<loaded>
 addsheet.test.js	asm-watch.js	<loaded>
-addsheet.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
+addsheet.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave	get
 addsheet.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backTop	backWanted	inviteInUrl
 addsheet.test.js	backupfile.js	<loaded>
 addsheet.test.js	boxfold.js	<loaded>
@@ -12996,7 +12996,7 @@ rollback.test.js	pack.js	<loaded>	packShow
 rollback.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 rollback.test.js	photos.js	<loaded>	asmLive	comboKey	comboSig	esc	fetchRemoteRender	fixItemBackdrops	fnv64	get	jsq	listPaused	loadRenders	lookSig	missingItemPics	picsDrawn	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shareLocalPics	shirtPatterned	shirtTextured	workerBase	workerList
 rollback.test.js	pickscore.js	<loaded>
-rollback.test.js	planner.js	<loaded>	favLookOf	favRead	idsAhead	lockStale	pairSeen	shirtGroup
+rollback.test.js	planner.js	<loaded>	idsAhead	lockStale	pairSeen	shirtGroup
 rollback.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 rollback.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errList	errReport	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 rollback.test.js	scorecard.js	<loaded>	recentWork
@@ -14381,7 +14381,7 @@ safety.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 safety.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwQRow	cpwRegion	cpwSaveFields	cpwSym
 safety.test.js	daysoff.js	<loaded>	refreshHolidays
 safety.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
-safety.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	trouserMarks
+safety.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	trouserMarks
 safety.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests	newSuitVest
 safety.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy
 safety.test.js	history.js	<loaded>	checkPlanRules	dayActions	dropLearn	get	idsOf	keyDate	recordDays	resetCard	saveDay	whenPulled
@@ -15236,7 +15236,7 @@ settingsin.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 settingsin.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwPriced	cpwRegion	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSym	cpwWashLine	cpwWashed
 settingsin.test.js	daysoff.js	<loaded>	@onsettingsdraw	@onsettingssummaries	countryName	countryPick	daysOffListen	fetchHolidays	holPast	holYears	isoDate	isoToDate	nagerKeep	offNameCut	refreshHolidays	removeDaysOff	renderDaysOffUI	renderFormalUI	setHolidayCountry	shortDate	toggleHoliday	yearDate
 settingsin.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
-settingsin.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
+settingsin.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG
 settingsin.test.js	dress.js	<loaded>	@onsettingsdraw	@onsettingssummaries	dressOn	dressSynced	legacyVest	migrateVests	renderDressUI
 settingsin.test.js	fav.js	<loaded>	favAny	favLookFrom	favPillSeg	favStatsCard	favWhy
 settingsin.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	get	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	whenPulled
@@ -15304,7 +15304,7 @@ settingsmerge.test.js	add-save.js	<loaded>
 settingsmerge.test.js	add-sheet.js	<loaded>	get
 settingsmerge.test.js	add.js	<loaded>
 settingsmerge.test.js	analysis.js	<loaded>
-settingsmerge.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
+settingsmerge.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	keepFocus	metaGet	metaPut	set	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 settingsmerge.test.js	asm-color.js	<loaded>
 settingsmerge.test.js	asm-gl.js	<loaded>
 settingsmerge.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -15503,11 +15503,11 @@ setup.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@onsettings
 setup.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careTimes	careTop	careWashed	laundryDays	renderCareUI
 setup.test.js	checklist.js	<loaded>	cmpMount
 setup.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	get
-setup.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	accentsOf	applyCustom	arriveN	camoPat	casualTop	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colorDesc	dayClimate	dayFields	desc	di	dressOut	get	hasPat	hasVest	hexRgb	holidays	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	leatherWord	lum	mergeSettings	mergeState	metalWord	mix	nameHtml	needsJacket	needsTie	nextStamp	nm	noBidi	now	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	patOf	planCol	primaryCol	recClean	recCol	recFree	rgbHex	sentence	set	set TODAY_OVERRIDE	set dayRecs	set items	setClimate	setDays	setFields	setList	setStr	setWardrobe	setWeather	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	stampSettings	strapBand	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
+setup.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	accentsOf	applyCustom	arriveN	camoPat	casualTop	cleanRecord	cleanSettings	cleanState	colBase	colName	colOf	colorDesc	dayClimate	dayFields	desc	di	dressOut	get	hasPat	hasVest	hexRgb	holidays	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	leatherWord	lum	mergeSettings	mergeState	metalWord	mix	nameHtml	needsJacket	needsTie	nextStamp	nm	noBidi	now	nowMs	occOf	offDays	offName	ownMats	patBase	patLabel	patName	patOf	planCol	primaryCol	recClean	recCol	recFree	rgbHex	sentence	set	set TODAY_OVERRIDE	set dayRecs	set items	setClimate	setDays	setFields	setList	setStr	setWardrobe	setWeather	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	stampSettings	strapBand	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
 setup.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed
 setup.test.js	daysoff.js	<loaded>	@onsettingsdraw	@onsettingssummaries	addDayOff	builtinHolidays	countryName	countryPick	dayOffAdd	dayOffAddTap	daysOffListen	fetchHolidays	get holidayMsg	holPast	holYears	isoDate	isoToDate	nagerKeep	offNameCut	refreshHolidays	renderDaysOffUI	renderFormalUI	setHolidayCountry	shortDate	yearDate
 setup.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
-setup.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
+setup.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
 setup.test.js	dress.js	<loaded>	@onsettingsdraw	@onsettingssummaries	dressNewItem	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI
 setup.test.js	fav.js	<loaded>	favChip	favLastIcon	favLookFrom	favPillSeg	favWhy	get
 setup.test.js	history.js	<loaded>	checkPlanRules	dayActions	dayChanged	dropLearn	get	idsOf	keyDate	recordDays	renderReplanUI	replanCount	resetCard	saveDay	set	setTodayPullWait	whenPulled
