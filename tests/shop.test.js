@@ -6,14 +6,14 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   try{
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++).toString().padStart(3,'0'),type,primaryColor,pattern:'solid',...x});
-    items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','grey'),I('shirt','lightblue'),I('shirt','pink'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),
+    HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','grey'),I('shirt','lightblue'),I('shirt','pink'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),
       I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('watch','grey',{metal:'silver'}),I('socks','navy')];
-    dayRecs={};settings.shopSkip=[];TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};HOOK.shop=null;show('stats')});
+    HOOK.dayRecs={};settings.shopSkip=[];HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.shop=null;show('stats')});
   // it waits for a wardrobe big enough to judge: this one has 2 shirts and 2 ties
   const gate=await p.evaluate(()=>({t:document.querySelector('#stats #shop-btn').textContent,btn:document.querySelector('#shop-btn').tagName,open:(HOOK.openShop(),shopOpen)}));
   ok(/Add 3 more shirts and 2 more ties to get advice/.test(gate.t)&&gate.btn!=='BUTTON'&&!gate.open,`What to buy waits until the wardrobe is big enough, and says what to add ("${gate.t}")`);
   await p.evaluate(()=>{let k=50;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-    items.push(I('shirt','white'),I('shirt','white',{pattern:'stripe',secondaryColor:'blue'}),I('shirt','lavender'),I('tie','green'),I('tie','silver'));cache={};HOOK.shop=null;show('stats')});
+    items.push(I('shirt','white'),I('shirt','white',{pattern:'stripe',secondaryColor:'blue'}),I('shirt','lavender'),I('tie','green'),I('tie','silver'));HOOK.cache={};HOOK.shop=null;show('stats')});
   ok(await p.$('#stats #shop-btn')&&await p.evaluate(()=>document.querySelector('#shop-btn').tagName==='BUTTON')&&!await p.$('#wardrobe #shop-btn'),'then Insights has a "What to buy" button (no longer on the Wardrobe)');
   const t0=Date.now();
   await p.click('#shop-btn');

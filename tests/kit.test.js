@@ -83,7 +83,7 @@ const n0=items.length;await save(0);await save(0);
     await p.click('#toast button');
     ok(await p.waitForFunction(n=>items.length===n,n0,{timeout:5000}).then(()=>true,()=>false),'Undo takes the imported items out again '+await p.evaluate(n=>items.length+'/'+n+' '+document.querySelector('#toast').textContent+' inert:'+document.querySelector('main').inert,n0));
     /* ---- the sample wardrobe ---- */
-    await p.evaluate(()=>{for(const i of items.slice())del(i.id);items=[];cache={};show('today')});
+    await p.evaluate(()=>{for(const i of items.slice())del(i.id);HOOK.items=[];HOOK.cache={};show('today')});
     await p.evaluate(()=>{renderToday()});
     ok(await p.evaluate(()=>!!document.querySelector('#firstrun #kit-sample-link')),'Today\'s first-outfit checklist offers the tour and a sample wardrobe');
     await p.click('#firstrun #kit-sample-link');

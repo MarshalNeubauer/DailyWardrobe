@@ -55,8 +55,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');HOOK.rememberRole({role:'owner'});
       let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
-      items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'})];
-      settings.workdays=[0,1,2,3,4];TODAY_OVERRIDE='2026-11-12T08:00:00';dayRecs={};cache={};
+      HOOK.items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'})];
+      settings.workdays=[0,1,2,3,4];HOOK.TODAY_OVERRIDE='2026-11-12T08:00:00';HOOK.dayRecs={};HOOK.cache={};
       // a phone that can receive pushes, without a real push service
       const sub={endpoint:'https://web.push.apple.com/me',unsubscribe:async()=>true};let have=null;
       window.Notification.requestPermission=async()=>'granted';
@@ -79,7 +79,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     {const c0=await p.evaluate(()=>({care:HOOK.remindCareOn(HOOK.remindPrefs()),sw:document.querySelector('#care-rem-sw').getAttribute('aria-checked')}));
       ok(c0.care===false&&c0.sw==='false','with the morning reminder off, the cleaning reminders are off too (they follow it until set)');
       await p.evaluate(()=>{const ids={top:'suit0',bot:'suit0',shirt:'shirt2',tie:'tie4',shoes:'shoes6'};
-        for(const d of [2,3,4,5,8])dayRecs[key(new Date(2026,10,d))]={date:key(new Date(2026,10,d)),ids,suitDay:true,worn:true};localStorage.removeItem('care_told');cache={}});
+        for(const d of [2,3,4,5,8])dayRecs[key(new Date(2026,10,d))]={date:key(new Date(2026,10,d)),ids,suitDay:true,worn:true};localStorage.removeItem('care_told');HOOK.cache={}});
       const n0=posted.length;await p.click('#care-rem-sw');await p.waitForFunction(()=>HOOK.remindCareOn(HOOK.remindPrefs())&&!HOOK.remindBusy);
       const c1=await p.evaluate(async()=>{const c=await caches.open('dw-keep-remind');return {care:await (await c.match('care.json')).json(),lines:await (await c.match('remind.json')).json(),msg:document.querySelector('.remind-msg').textContent}});
       const ps2=posted.slice(n0).at(-1)||{},cd=Object.keys(c1.care).sort();
@@ -93,7 +93,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // lost its push subscription says so and its switches go off, instead of reading On
     {await p.click('#remind-sw');await p.waitForFunction(()=>HOOK.remindPrefs().on&&!HOOK.remindBusy);await p.evaluate(()=>closeSettings());
       const kept=iso=>p.evaluate(async iso=>{const c=await caches.open('dw-keep-remind');return (await (await c.match('remind.json')).json())[iso]||''},iso);
-      const nx=await p.evaluate(()=>{const T=todayDate();for(let i=1;i<10;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(isWorkday(d)){sel=d;view={y:d.getFullYear(),m:d.getMonth()};listOpen=false;show('today');return isoKey(d)}}});
+      const nx=await p.evaluate(()=>{const T=todayDate();for(let i=1;i<10;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(isWorkday(d)){HOOK.sel=d;HOOK.view={y:d.getFullYear(),m:d.getMonth()};HOOK.listOpen=false;show('today');return isoKey(d)}}});
       const line0=await kept(nx);
       await p.click('#ibox .month-link');await p.click('#ibox .row button[aria-label="Change tie"]');await p.click('#pick-next');await p.waitForFunction(()=>planFor()[key(sel)].overrides);
       const want=await p.evaluate(()=>HOOK.outfitLine(planFor()[key(sel)]));

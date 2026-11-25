@@ -138,7 +138,7 @@ const app=async({ok,engines,url,ROOT})=>{
           await r.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body})});
         const p=await ctx.newPage();p.setDefaultTimeout(30000);const errs=[];p.on('pageerror',e=>errs.push(e.message));
         await p.goto(url);await p.waitForFunction(()=>window.appReady);
-        await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.location={name:'Kuwait City, KW',lat:29.37,lon:47.98};dayRecs={};TODAY_OVERRIDE='2026-11-20T09:00:00';cache={};openSettings('calendar')});
+        await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.location={name:'Kuwait City, KW',lat:29.37,lon:47.98};HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-20T09:00:00';HOOK.cache={};openSettings('calendar')});
         await p.waitForSelector('#cal-link');
         // Connect a 6 MB work calendar; a frame clock runs meanwhile, so a long stall of the page shows
         // (and when the relay's answer reached the page: Playwright's WebKit hands a mocked body over on the page's own thread, before fetch()
@@ -163,7 +163,7 @@ const app=async({ok,engines,url,ROOT})=>{
         const r1=await p.evaluate(()=>JSON.parse(localStorage.getItem('cal_last')).events.length);
         ok(net.feed.length===1&&net.feed[0].s===204&&net.feed[0].bytes===0&&r1===last.events.length,T+`a read with no change downloads nothing (${net.feed.map(x=>x.s+':'+x.bytes+' bytes').join(',')}), the events stay (${r1})`);
         // the next day, unchanged: the kept copy is read for the new window
-        await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-21T09:00:00';cache={}});net.feed=[];await p.click('#cal-read');await p.waitForFunction(()=>!HOOK.calBusy&&JSON.parse(localStorage.getItem('cal_last')).from==='2026-11-21');
+        await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-21T09:00:00';HOOK.cache={}});net.feed=[];await p.click('#cal-read');await p.waitForFunction(()=>!HOOK.calBusy&&JSON.parse(localStorage.getItem('cal_last')).from==='2026-11-21');
         const d2=await p.evaluate(()=>localStorage.getItem('cal_last'));
         ok(JSON.stringify(JSON.parse(d2).events)===want(TEXT,'2026-11-21')&&net.feed[0].bytes===0,T+`the next day the unchanged calendar costs no data and its window moves on a day (${JSON.parse(d2).from}..${JSON.parse(d2).to})`);
         // a change: the whole feed again, the new event in it
@@ -173,17 +173,17 @@ const app=async({ok,engines,url,ROOT})=>{
         const d3=await p.evaluate(()=>localStorage.getItem('cal_last'));
         ok(JSON.stringify(JSON.parse(d3).events)===want(T2,'2026-11-21')&&net.feed[0].s===200&&net.feed[0].bytes===T2.length,T+`a changed calendar is downloaded whole once (${net.feed[0].bytes} bytes) and read again`);
         // offline: the kept copy, for today's window, and the words say the read failed
-        await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-22T09:00:00';cache={}});net.down=true;await p.click('#cal-read');
+        await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-22T09:00:00';HOOK.cache={}});net.down=true;await p.click('#cal-read');
         await p.waitForFunction(()=>!HOOK.calBusy&&/couldn’t be reached|couldn’t be read/.test(($('#cal-msg')||{}).textContent||''));
         const off=await p.evaluate(()=>({l:localStorage.getItem('cal_last'),msg:$('#cal-msg').textContent,rows:[...document.querySelectorAll('#cal-review .cal-row b')].map(b=>b.textContent)}));
         const ol=JSON.parse(off.l);
         ok(JSON.stringify(ol.events)===want(T2,'2026-11-22')&&ol.from==='2026-11-22'&&ol.err&&off.rows.includes('Awards dinner'),T+`offline the last good copy is used for today's window (${ol.events.length} events from ${ol.from}; "${off.msg}")`);
         net.down=false;
         // the Settings line and summary read as they did from the server's answer
-        const line=await p.evaluate(async()=>{const a=localStorage.getItem('cal_last'),s=[calSummary(),$('#cal-status').textContent];return {a,s}});
+        const line=await p.evaluate(async()=>{const a=localStorage.getItem('cal_last'),s=[HOOK.calSummary(),$('#cal-status').textContent];return {a,s}});
         ok(/^Last read .* · \d+ events? used · /.test(line.s[1])&&/^(Couldn’t read it last time|\d+ new events? to check)$/.test(line.s[0]),T+`the Settings line ("${line.s[1]}") and summary ("${line.s[0]}") as before`);
         // an older server (no relay): the app asks it to read the calendar, as before
-        net.noFeed=true;net.old=0;FEEDS[HREF]={b:new TextEncoder().encode(FIX('personal.ics'))};await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-20T09:00:00';cache={}});
+        net.noFeed=true;net.old=0;FEEDS[HREF]={b:new TextEncoder().encode(FIX('personal.ics'))};await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-20T09:00:00';HOOK.cache={}});
         await p.click('#cal-read');await p.waitForFunction(()=>!HOOK.calBusy&&!JSON.parse(localStorage.getItem('cal_last')).err);
         const ol2=JSON.parse(await p.evaluate(()=>localStorage.getItem('cal_last')));
         ok(net.old===1&&ol2.events.length===17,T+`with a server from before the relay the app reads through POST /calendar as before (${ol2.events.length} events)`);
@@ -202,7 +202,7 @@ const app=async({ok,engines,url,ROOT})=>{
           await r.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
         FEEDS[HREF]={b:new TextEncoder().encode(feed(1.4)),etag:'"w"'};
         const q=await c2.newPage();await q.goto(url);await q.waitForFunction(()=>window.appReady);
-        await q.evaluate(()=>{settings.workdays=[0,1,2,3,4];TODAY_OVERRIDE='2026-11-20T09:00:00';cache={};openSettings('calendar')});await q.waitForSelector('#cal-link');
+        await q.evaluate(()=>{settings.workdays=[0,1,2,3,4];HOOK.TODAY_OVERRIDE='2026-11-20T09:00:00';HOOK.cache={};openSettings('calendar')});await q.waitForSelector('#cal-link');
         await q.fill('#cal-link',LINK);await q.click('#cal-connect');await q.waitForFunction(()=>/^Connected\./.test(($('#cal-msg')||{}).textContent||''),null,{timeout:60000});
         ok(JSON.stringify(JSON.parse(await q.evaluate(()=>localStorage.getItem('cal_last'))).events)===want(feed(1.4),'2026-11-20'),T+'where no Worker can start, the page reads the calendar itself: the same events');
         // nothing kept (or a host with neither ETag nor Last-Modified): every read is the whole feed, so it reads by itself at most every 12 h, not 3

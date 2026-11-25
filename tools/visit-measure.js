@@ -71,7 +71,7 @@ async function open(ctx,label){
       const until=Date.now()+60000;while(Date.now()<until){if(window.__vis.slice(n0).some(x=>x.d===d&&x.s==='photo'))break;await new Promise(r=>setTimeout(r,50))}
       const L=window.__vis.slice(n0).filter(x=>x.d===d).map(x=>({...x,t:Math.round(x.t-t)}));const shown=L.find(x=>x.s==='photo');
       let st={};try{const o=planFor()[key(sel)],k=asmCmKind(o),ok=asmOutKey(o),t=x=>x?x.type+':'+x.primaryColor:null;st={o:o?{top:t(o.top),shirt:t(o.shirt),tie:t(o.tie),vest:o.vest,suitDay:o.suitDay}:null,
-        dress:JSON.stringify(settings.dress),items:items.length,masterKinds:Object.keys(ASM_CM_KINDS).join(),ready:Object.keys(ASM_CM_KINDS).map(x=>x+':'+('asmCmHeld' in HOOK&&HOOK.asmCmHeld(x))).join(),kind:k,held:HOOK.asmCmHeld(k),use:asmCmUse(o),list:asmList?asmList.size:null,key:ok,kept:!!asmOut[ok],listed:asmList&&ok?asmList.has(ok):null,busy:asmBusy.size,
+        dress:JSON.stringify(settings.dress),items:items.length,masterKinds:Object.keys(ASM_CM_KINDS).join(),ready:Object.keys(ASM_CM_KINDS).map(x=>x+':'+('asmCmHeld' in HOOK&&HOOK.asmCmHeld(x))).join(),kind:k,held:HOOK.asmCmHeld(k),use:asmCmUse(o),list:asmList?asmList.size:null,key:ok,kept:!!HOOK.asmOut[ok],listed:asmList&&ok?asmList.has(ok):null,busy:asmBusy.size,
         queue:'asmQ' in HOOK?HOOK.asmQ.length:null,ahead:HOOK.asmAheadOn,shown:!!renderFor(o),pre:ok?HOOK.asmPreGetting.has(ok):null,tried:ok?asmTried.has('pre:'+ok):null,retry:ok?HOOK.asmRetryAt.get('pre:'+ok)||0:null}}catch(e){st={err:String(e)}}
       return {d,firstState:(L[0]||{}).s,drew:L.some(x=>x.s==='drawing'),ms:shown?shown.t:null,how:shown?shown.m:'',log:L,st}},null);
     swipes.push(r);await page.waitForTimeout(1200)}

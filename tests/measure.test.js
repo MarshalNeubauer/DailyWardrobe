@@ -54,20 +54,20 @@ const measure=async({ok,chromium,url})=>{
 
     // ---- 4. the wardrobe's own colours are learned from plain cloth only, never from the item itself
     const cal=await p.evaluate(()=>{const keep=items;const I=(id,pat,lab,x={})=>({id,type:'tie',primaryColor:'navy',pattern:pat,meas:{lab,ref:false,src:'closeup'},...x});
-      items=[I('a','stripe',[40,5,-20],{secondaryColor:'white'}),I('b','paisley',[38,8,-18],{secondaryColor:'gold'})];const none=HOOK.calibLab('navy','tie');
-      items.push(I('c','solid',[18,4,-22]),I('d','woven',[16,5,-24]));const two=HOOK.calibLab('navy','tie'),self=HOOK.calibLab('navy','tie','d');items=keep;return {none,two,self}});
+      HOOK.items=[I('a','stripe',[40,5,-20],{secondaryColor:'white'}),I('b','paisley',[38,8,-18],{secondaryColor:'gold'})];const none=HOOK.calibLab('navy','tie');
+      items.push(I('c','solid',[18,4,-22]),I('d','woven',[16,5,-24]));const two=HOOK.calibLab('navy','tie'),self=HOOK.calibLab('navy','tie','d');HOOK.items=keep;return {none,two,self}});
     ok(cal.none===null,'two patterned navy ties teach "navy" nothing (the walkthrough\'s plain brown tie then measured nearest navy)');
     ok(cal.two&&cal.two[0]===18&&cal.self===null,`plain and one-colour woven ties do (navy L* ${cal.two&&cal.two[0]}), and an item never teaches its own measurement`);
 
     // ---- 5. confident and disagreeing: changed, with Undo; unsure: asked; set by hand: left alone
     const card=await p.evaluate(()=>{const keep=items;const S=(id,c,lab)=>({id,type:'suit',primaryColor:c,pattern:'solid',meas:{lab,ref:true,src:'closeup'}});
-      items=[S('n1','navy',[20,3,-22]),S('n2','navy',[21,3,-21]),S('c1','charcoal',[28,0,-2]),S('c2','charcoal',[27,0,-3])];
+      HOOK.items=[S('n1','navy',[20,3,-22]),S('n2','navy',[21,3,-21]),S('c1','charcoal',[28,0,-2]),S('c2','charcoal',[27,0,-3])];
       const mk=(sharp,ref)=>{queue.length=0;HOOK.addManual();const q=queue[0];q.manual=false;Object.assign(q,{type:'suit',primaryColor:'navy',pattern:'solid',meas:{lab:[27.5,0,-2.5],hex:'#3f4143',ref,src:'closeup',sharp,spread:2}});q.measV=colourVerdicts(q);return q};
       const out={};let q=mk(.6,true);out.conf=q.measV[0].conf;HOOK.applyMeasured(q);renderAdd();const el=document.querySelector('#nps-q .measauto');
       out.auto={col:q.primaryColor,txt:el&&el.textContent};el&&el.querySelector('button').click();q=queue[0];out.undo={col:q.primaryColor,edited:!!(q.edited&&q.edited.primaryColor)};HOOK.applyMeasured(q);out.undo.after=q.primaryColor;
       q=mk(.3,false);out.flagConf=q.measV[0].conf;HOOK.applyMeasured(q);renderAdd();const fl=document.querySelector('#nps-q .measalt');out.flag={col:q.primaryColor,txt:fl&&fl.textContent,mode:q.measV[0].mode};
       q=mk(.6,true);q.edited={primaryColor:true};HOOK.applyMeasured(q);renderAdd();out.hand={col:q.primaryColor,notes:!!document.querySelector('#nps-q .measauto,#nps-q .measalt')};
-      queue.length=0;items=keep;renderAdd();return out});
+      queue.length=0;HOOK.items=keep;renderAdd();return out});
     ok(card.auto.col==='charcoal'&&/Changed navy → charcoal \(measured from your close-up\)Undo/.test(card.auto.txt),`a confident measurement (${card.conf}) changes the colour and says so: "${card.auto.txt}"`);
     ok(card.undo.col==='navy'&&card.undo.edited&&card.undo.after==='navy','Undo puts the tag back, and it is not changed again');
     ok(card.flag.col==='navy'&&card.flag.mode==='flag'&&/Measured: charcoal\?Use charcoal/.test(card.flag.txt),`an unsure one (${card.flagConf}: no white reference, a soft close-up) only asks: "${card.flag.txt}"`);

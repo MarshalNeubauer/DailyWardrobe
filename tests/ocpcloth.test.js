@@ -42,7 +42,7 @@ module.exports=async({ok,chromium,url})=>{
     mode='ok';await p.evaluate(()=>HOOK.asmRetryAt.clear());const c=await look();   // (the 30 s retry wait passed, the connection is back)
     ok(c.job==='his cloth'&&c.kept&&c.held&&c.sig===a.sig&&c.keptDiff<=2,`once the download works the look is painted in his own cloth and kept under the same key (${JSON.stringify(c)}; asked ${asked} times)`);
     // a device that can't have it (a 404, a tester): the made-up OCP cloth, as before
-    mode='404';await p.evaluate(async ck=>{delete renders[ck];asmTried.delete(ck);HOOK.asmRetryAt.clear();asmOut={}},clothKey);const d=await look();
+    mode='404';await p.evaluate(async ck=>{delete renders[ck];asmTried.delete(ck);HOOK.asmRetryAt.clear();HOOK.asmOut={}},clothKey);const d=await look();
     ok(d.job==='made-up cloth'&&d.kept&&d.tried&&d.keptDiff<=2,`a 404 for his cloth: painted in the made-up OCP cloth, as before (${JSON.stringify(d)})`);
     ok(!errs.length,`no page errors (${errs.join(' | ')})`);
   }finally{await browser.close()}};

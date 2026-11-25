@@ -36,8 +36,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t');localStorage.setItem('last_sync',String(Date.now()))},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-23T12:00:00';cache={};sel=new Date(2026,10,23);view={y:2026,m:10};show('today')});
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-23T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,23);HOOK.view={y:2026,m:10};show('today')});
     const before=await p.evaluate(()=>!!planFor()['2026-11-26']&&isWorkday(new Date(2026,10,26)));
     await p.evaluate(()=>openSettings('daysoff'));
     ok(await p.locator('#cfg-country option').count()>200&&await p.evaluate(()=>[...document.querySelectorAll('#cfg-country option')].some(o=>o.value==='KW'&&o.textContent==='Kuwait')),'Settings has a country selector for public holidays');
@@ -47,14 +47,14 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(rows.length===4&&/Thanksgiving Day/.test(rows[0])&&/Thu, Nov 26/.test(rows[0])&&!rows.some(r=>/State Day|Christmas Eve/.test(r)),`the country's upcoming public holidays are listed (national public holidays only): ${rows.join(' | ')}`);
     ok(/4 public holidays of United States count as days off/.test(await p.textContent('#holiday-msg')),'and it says they count as days off');
     await p.evaluate(()=>closeSettings());
-    const off=await p.evaluate(()=>{const d=new Date(2026,10,26);sel=new Date(2026,10,25);renderToday();stepDay(1);const next=key(sel);
-      monthOpen=false;toggleMonth();const cell=[...document.querySelectorAll('#mpanel .mc')].find(c=>/November 26/.test(c.getAttribute('aria-label')));
+    const off=await p.evaluate(()=>{const d=new Date(2026,10,26);HOOK.sel=new Date(2026,10,25);renderToday();stepDay(1);const next=key(sel);
+      HOOK.monthOpen=false;toggleMonth();const cell=[...document.querySelectorAll('#mpanel .mc')].find(c=>/November 26/.test(c.getAttribute('aria-label')));
       openDay(+d);return {work:isWorkday(d),planned:!!planFor()['2026-11-26'],next,cls:cell.className,label:cell.getAttribute('aria-label'),msg:document.querySelector('#today .empty').textContent,name:offName(d)}});
     ok(before&&!off.work&&!off.planned,'a public holiday gets no outfit (it was a workday before)');
     ok(off.next==='2026-11-27','stepping through the days skips it');
     ok(/hol/.test(off.cls)&&/day off: Thanksgiving Day/.test(off.label)&&/A day off: Thanksgiving Day/.test(off.msg),`the month marks it and the day says why ("${off.msg}")`);
     // rotation: the suit planned for the day before is not held back for a holiday, and nothing is recorded as worn on it
-    const rot=await p.evaluate(async()=>{TODAY_OVERRIDE='2026-11-30T12:00:00';cache={};sel=new Date(2026,10,30);view={y:2026,m:10};renderToday();
+    const rot=await p.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2026-11-30T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,30);HOOK.view={y:2026,m:10};renderToday();
       // a day recorded as worn has its pieces (ids) or worn:true; a record with only a lock is the week lock (lockUpcoming), which on a
       // busy machine was put on the 26th before the holiday list came in: the planner skips the day all the same
       const worn=k=>{const r=dayRecs[k];return !!(r&&(r.ids||r.worn))};
@@ -62,7 +62,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return {rec:worn('2026-11-26'),wed:worn('2026-11-25')}});
     ok(!rot.rec&&rot.wed,'nothing is recorded as worn on the holiday (the workday before it is)');
     // untick a holiday you work: it is planned again
-    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-23T12:00:00';cache={};dayRecs={};sel=new Date(2026,10,23);view={y:2026,m:10};renderToday();openSettings('daysoff')});
+    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-23T12:00:00';HOOK.cache={};HOOK.dayRecs={};HOOK.sel=new Date(2026,10,23);HOOK.view={y:2026,m:10};renderToday();openSettings('daysoff')});
     await p.locator('#holiday-list .hrow input').first().uncheck();await p.waitForFunction(()=>settings.holidays.skip.length===1);
     ok(await p.evaluate(()=>{closeSettings();return isWorkday(new Date(2026,10,26))&&!!planFor()['2026-11-26']&&!isWorkday(new Date(2026,11,25))}),'unticking a holiday makes it a workday again; the others stay off');
     // your own days off: a range with a name, shown as one chip, removable
@@ -77,7 +77,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(()=>saveUserSettings());await p.reload();await p.waitForFunction(()=>window.appReady);   // (the save from the last tap has finished)
     ok(await p.evaluate(()=>settings.holidays&&settings.holidays.country==='US'&&settings.holidays.skip.length===1&&settings.daysOff.length===1),'days off are saved with the settings');
     // a country Nager lacks comes from the worker
-    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-23T12:00:00';cache={};openSettings('daysoff')});const n0=nager;
+    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-23T12:00:00';HOOK.cache={};openSettings('daysoff')});const n0=nager;
     await p.selectOption('#cfg-country','KW');await p.waitForFunction(()=>settings.holidays&&settings.holidays.country==='KW'&&settings.holidays.list.length>0,null,{timeout:8000});
     ok(nager===n0&&await p.evaluate(()=>settings.holidays.list.some(h=>h.d==='2027-02-25'&&h.n==='National Day')&&settings.holidays.list.some(h=>/tentative/.test(h.n))&&!isWorkday(new Date(2027,1,25))&&settings.holidays.skip.length===0),'a country the first source lacks (Kuwait) is loaded through the worker, without asking that source (a 404 on every start)');
     // the list is fetched again after a month, keeping what was unticked

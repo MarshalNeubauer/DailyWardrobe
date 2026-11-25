@@ -10,7 +10,7 @@ const uipages=async({ok,chromium,url,WARDROBES,settle})=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
-    await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};sel=new Date(2026,10,11);view={y:2026,m:10};flt='all'})()`);
+    await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.flt='all'})()`);
     // ---- Settings
     await p.evaluate(()=>openSettings());
     const s0=await p.evaluate(()=>{const m=document.querySelector('#settings-modal').getBoundingClientRect(),cats=[...document.querySelectorAll('#settings-modal .scat')];
