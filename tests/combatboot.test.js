@@ -10,11 +10,11 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('blazer','tan'),I('pants','grey'),I('pants','khaki',{trouserKind:'chinos'}),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),
+      HOOK.items=[I('suit','navy'),I('blazer','tan'),I('pants','grey'),I('pants','khaki',{trouserKind:'chinos'}),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),
         I('watch','grey',{metal:'silver'}),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy'),
         I('tee','tan'),I('pants','khaki',{trouserKind:'cargo',pattern:'camouflage',secondaryColor:'olive',tertiaryColor:'brown'}),
         I('shoes','coyote',{shoeStyle:'combat',leather:'suede'})];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[3];settings.vestMode='never';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};listOpen=true;show('today')});
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[3];settings.vestMode='never';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};HOOK.listOpen=true;show('today')});
     const BOOT='shoes16',CAMO='pants15';
     // core: the style, the hand-pick rule, the materials, the colour
     const c=await p.evaluate(B=>{const b=items.find(i=>i.id===B);return {hp:isHandPick(b),slot:handPickSlot(b),style:shoeStyle(b),word:typeWord(b),mats:leathersFor(b).map(l=>leatherWord(b,l)).join('|'),
@@ -27,8 +27,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(c.camo&&!c.chinos,'camoPants: the camouflage cargo pants, not chinos');
     ok(/coyote/i.test(c.title)&&/combat boots/i.test(c.title),`the title (${c.title})`);
     // a combat boot added by hand is suede and nylon (the owner, 2026-11-18); a material chosen first is kept
-    const hand=await p.evaluate(()=>{const keep=queue;queue=[{id:'cbq',manual:true,type:'shoes',primaryColor:'coyote',pattern:'solid',leather:'calf'},{id:'cbq2',manual:true,type:'shoes',primaryColor:'coyote',pattern:'solid',leather:'calf'}];
-      setq('cbq','shoeStyle','combat');setq('cbq2','leather','nubuck');setq('cbq2','shoeStyle','combat');const r=[queue[0].leather,queue[1].leather];queue=keep;return r});
+    const hand=await p.evaluate(()=>{const keep=queue;HOOK.queue=[{id:'cbq',manual:true,type:'shoes',primaryColor:'coyote',pattern:'solid',leather:'calf'},{id:'cbq2',manual:true,type:'shoes',primaryColor:'coyote',pattern:'solid',leather:'calf'}];
+      setq('cbq','shoeStyle','combat');setq('cbq2','leather','nubuck');setq('cbq2','shoeStyle','combat');const r=[queue[0].leather,queue[1].leather];HOOK.queue=keep;return r});
     ok(hand[0]==='suede'&&hand[1]==='nubuck',`by hand: Combat boot makes the material suede and nylon; a material chosen first stays (${hand})`);    // never planned
     const pl=await p.evaluate(B=>{const s=planSim(new Date(2026,9,1)),pl=s.upTo(new Date(2027,0,31));let n=0,hit=0;for(const o of Object.values(pl)){if(!o)continue;n++;if(o.shoes&&o.shoes.id===B)hit++}return {n,hit}},BOOT);
     ok(pl.n>50&&!pl.hit,`never planned over ${pl.n} days`);
@@ -38,7 +38,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(!a.boot&&/camouflage pants/.test(a.away),`not offered with the day's pants; the line says why (${a.away})`);
     await p.evaluate(()=>closePicker());
     // pick the camouflage pants (a blazer day: Wednesday), then the boots are offered by hand
-    await p.evaluate(()=>{sel=new Date(2026,10,11);cache={};renderToday()});await settle(p,300);
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,11);HOOK.cache={};renderToday()});await settle(p,300);
     await p.evaluate(C=>pickItem('bot',C),CAMO);await settle(p,400);
     await p.evaluate(()=>openPicker('shoes'));await settle(p,300);
     const g=await p.evaluate(B=>{const s=document.querySelector('#pick-sheet'),h=s.querySelector('.pick-hand');return {inHand:!!(h&&h.querySelector(`[data-id="${B}"]`)),note:h&&h.textContent,main:!!s.querySelector(`#pick-sheet > .pick-grid [data-id="${B}"]`)}},BOOT);
@@ -50,7 +50,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     // a belt swapped with the boots on: the boots stay (2026-11-18, the owner's coyote belt was refused: the swap freed the shoes, the planner
     // took calf shoes that suit neither the camo pants nor a canvas belt, and dropped the belt)
     const bs=await p.evaluate(async B=>{const k=key(sel),o=planFor()[k],nb=items.find(i=>i.type==='belt'&&(!o.belt||i.id!==o.belt.id));await pickItem('belt',nb.id);await new Promise(r=>setTimeout(r,300));
-      const o2=planFor()[k];return {shoes:o2.shoes&&o2.shoes.id,belt:o2.belt&&o2.belt.id,want:nb.id,msg:swapMsg}},BOOT);
+      const o2=planFor()[k];return {shoes:o2.shoes&&o2.shoes.id,belt:o2.belt&&o2.belt.id,want:nb.id,msg:HOOK.swapMsg}},BOOT);
     ok(bs.shoes===BOOT&&bs.belt===bs.want&&!/stays as it was/.test(bs.msg),`a belt swap with the boots on keeps the boots and takes the belt (${JSON.stringify(bs)})`);
     // other pants picked: the boots come off
     await p.evaluate(()=>pickItem('bot','pants3'));await settle(p,400);

@@ -48,7 +48,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   ok((await names(B.p))==='tie:burgundy','device B receives it');
   await B.p.evaluate(async id=>{const it=items.find(i=>i.id===id);it.primaryColor='green';await put(it)},id);await sync(B.p);await sync(A.p);
   ok((await names(A.p))==='tie:green','an edit on B reaches A');
-  await A.p.evaluate(async id=>{await del(id);items=items.filter(i=>i.id!==id)},id);await sync(A.p);await sync(B.p);
+  await A.p.evaluate(async id=>{await del(id);HOOK.items=items.filter(i=>i.id!==id)},id);await sync(A.p);await sync(B.p);
   {const nb=await names(B.p);if(nb!==''&&process.env.SYNC_DEBUG)console.log('DEBUG B:',nb,'A:',await names(A.p),'statusA:',await A.p.evaluate(()=>localStorage.getItem('sync_status')),'statusB:',await B.p.evaluate(()=>localStorage.getItem('sync_status')),'kv:',JSON.stringify(JSON.parse(store.get('wardrobe:v1')).data.tombstones),JSON.stringify(JSON.parse(store.get('wardrobe:v1')).data.items.map(i=>[i.id.slice(0,4),i.updated])));
   ok(nb==='','a deletion on A reaches B (and stays deleted)');}
   // both devices edit while out of touch, then sync: nothing is lost
@@ -73,7 +73,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
 
   // a delete and an edit made while a sync is still in flight must not be undone by that sync
   const [d1,e1]=[await add(A.p,{type:'tie',primaryColor:'gold'}),await add(A.p,{type:'tie',primaryColor:'purple'})];await sync(A.p);
-  await A.p.evaluate(async([d1,e1])=>{const run=syncNow();await del(d1);items=items.filter(i=>i.id!==d1);const it=items.find(i=>i.id===e1);it.primaryColor='pink';await put(it);await run;await syncNow()},[d1,e1]);
+  await A.p.evaluate(async([d1,e1])=>{const run=syncNow();await del(d1);HOOK.items=items.filter(i=>i.id!==d1);const it=items.find(i=>i.id===e1);it.primaryColor='pink';await put(it);await run;await syncNow()},[d1,e1]);
   await sync(B.p);
   const race=await Promise.all([names(A.p),names(B.p)]);
   ok(!race[0].includes('tie:gold')&&race[0].includes('tie:pink')&&race[1]===race[0],'a delete and an edit made during a sync survive it, on both devices');
@@ -87,7 +87,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await settle(A.p,B.p);await add(A.p,{type:'socks',primaryColor:'brown'});traffic.length=0;await syncQ(A.p);const t2=[...traffic];await hush(A.p);await hush(B.p);traffic.length=0;await syncQ(A.p);
   ok(t2.some(t=>t.m==='POST')&&JSON.parse(store.get('wardrobe:v1')).data.items.some(i=>i.primaryColor==='brown')&&traffic.length===1&&traffic[0].down<200,'a local change is uploaded; the sync after it is quick again');
   // the wardrobe is lost on the device (storage cleared) but the marker survives: the backup must come back, not be emptied
-  await A.p.evaluate(async()=>{for(const i of await tx('readonly',s=>s.getAll()))await tx('readwrite',s=>s.delete(i.id));items=[]});await sync(A.p);
+  await A.p.evaluate(async()=>{for(const i of await tx('readonly',s=>s.getAll()))await tx('readwrite',s=>s.delete(i.id));HOOK.items=[]});await sync(A.p);
   ok((await names(A.p)).includes('socks:brown')&&JSON.parse(store.get('wardrobe:v1')).data.items.length>0,'a device that lost its wardrobe gets it back from the backup (the backup is never overwritten with nothing)');
   await sync(B.p);
   // a backup saved by an older worker (no version kept beside it): everything still syncs, just without the shortcut

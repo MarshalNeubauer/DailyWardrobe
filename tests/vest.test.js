@@ -4,31 +4,31 @@ module.exports=async({ok,chromium,url})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-    items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','charcoal'),I('suit','grey',{vest:'no'}),I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),
+    HOOK.items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','charcoal'),I('suit','grey',{vest:'no'}),I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),
       I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tieclip','silver',{metal:'silver'}),I('watch','black',{metal:'silver'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-    settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';weather={};dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')});
+    settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';HOOK.weather={};HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')});
   const plan=await p.evaluate(()=>{const P=buildPlan(2026,10);return Object.entries(P).filter(([k])=>keyDate(k)>=new Date(2026,10,15)).map(([k,o])=>({k,suit:o.suitDay,vestOk:hasVest(o.top),vest:o.vest,clip:!!o.clip}))});
   ok(plan.filter(d=>d.suit&&d.vestOk).every(d=>d.vest),'November (not hot): every suit day with a vest-suit wears the vest');
   ok(plan.filter(d=>d.vest).every(d=>!d.clip),'no tie clip on a vest day');
   ok(plan.filter(d=>!d.suit).every(d=>!d.vest&&d.clip),'blazer days: no vest, tie clip as usual');
   ok(plan.filter(d=>d.suit&&!d.vestOk).every(d=>!d.vest&&d.clip),'a suit marked "No vest" never gets one, and keeps the clip');
   // hot weather: no vest unless formal
-  const hot=await p.evaluate(()=>{const ks=[];for(let d=16;d<=20;d++)ks.push(key(new Date(2026,10,d)));weather=Object.fromEntries(ks.map(k=>[k,{tmax:31,tmin:24,pop:0,rain:0,code:0}]));cache={};
+  const hot=await p.evaluate(()=>{const ks=[];for(let d=16;d<=20;d++)ks.push(key(new Date(2026,10,d)));HOOK.weather=Object.fromEntries(ks.map(k=>[k,{tmax:31,tmin:24,pop:0,rain:0,code:0}]));HOOK.cache={};
     const P=buildPlan(2026,10);const a=ks.map(k=>P[k]).filter(o=>o&&o.suitDay&&hasVest(o.top));
-    dayRecs['2026-11-17']={date:'2026-11-17',formal:true};cache={};const f=buildPlan(2026,10)['2026-11-17'];delete dayRecs['2026-11-17'];
-    const r={none:a.every(o=>!o.vest),formalVest:f.vest||!hasVest(f.top)};weather={};cache={};return r});
+    dayRecs['2026-11-17']={date:'2026-11-17',formal:true};HOOK.cache={};const f=buildPlan(2026,10)['2026-11-17'];delete dayRecs['2026-11-17'];
+    const r={none:a.every(o=>!o.vest),formalVest:f.vest||!hasVest(f.top)};HOOK.weather={};HOOK.cache={};return r});
   ok(hot.none,'on a hot day the vest is left off');
   ok(hot.formalVest,'a formal day wears the vest even when hot');
   // settings: always / never
-  const modes=await p.evaluate(()=>{const r={};for(const m of ['always','never']){settings.vestMode=m;cache={};const P=buildPlan(2026,10);r[m]=Object.values(P).filter(o=>o.suitDay&&hasVest(o.top)&&!o.frozen).map(o=>o.vest)}settings.vestMode='auto';cache={};return r});
+  const modes=await p.evaluate(()=>{const r={};for(const m of ['always','never']){settings.vestMode=m;HOOK.cache={};const P=buildPlan(2026,10);r[m]=Object.values(P).filter(o=>o.suitDay&&hasVest(o.top)&&!o.frozen).map(o=>o.vest)}settings.vestMode='auto';HOOK.cache={};return r});
   ok(modes.always.every(Boolean)&&modes.never.every(v=>!v),'the vest setting (every suit day / never) is followed');
   // Today: list row, figure, per-day toggle
-  await p.evaluate(()=>{const P=planFor();const k=Object.keys(P).find(k=>keyDate(k)>=new Date(2026,10,16)&&P[k].suitDay&&P[k].vest);sel=keyDate(k);renderToday()});
+  await p.evaluate(()=>{const P=planFor();const k=Object.keys(P).find(k=>keyDate(k)>=new Date(2026,10,16)&&P[k].suitDay&&P[k].vest);HOOK.sel=keyDate(k);renderToday()});
   const t=await p.evaluate(()=>({row:document.querySelector('.vest-row').textContent,clipRow:!![...document.querySelectorAll('#today .list .row')].find(r=>r.querySelector('.mut').textContent==='Tie clip'),
     fig:!!document.querySelector('.fig .fig-vest'),figClip:!!document.querySelector('.fig .fig-clip'),label:document.querySelector('.fig svg').getAttribute('aria-label')}));
   ok(/Matching vest/.test(t.row)&&!t.clipRow,'the list shows the vest, and no tie clip row (none that day)');
   ok(t.fig&&!t.figClip&&/with matching vest/.test(t.label),'the figure draws the vest (no clip)');
-  await p.evaluate(()=>{listOpen=true;renderToday()});
+  await p.evaluate(()=>{HOOK.listOpen=true;renderToday()});
   await p.click('.vest-row .swap');await p.waitForFunction(()=>planFor()[key(sel)].vest===false&&/Not today/.test(document.querySelector('.vest-row').textContent),null,{timeout:5000}).catch(()=>{});
   const off=await p.evaluate(()=>{const o=planFor()[key(sel)];return {vest:o.vest,clip:!!o.clip,row:document.querySelector('.vest-row').textContent,fig:!!document.querySelector('.fig .fig-vest'),reset:!!document.querySelector('#rbox [aria-label="Reset changes"]')}});
   ok(!off.vest&&off.clip&&/Not today/.test(off.row)&&!off.fig,'leaving the vest off for the day brings the tie clip back');
@@ -36,7 +36,7 @@ module.exports=async({ok,chromium,url})=>{
   await p.click('.vest-row .swap');await p.waitForFunction(()=>planFor()[key(sel)].vest===true,null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(()=>planFor()[key(sel)].vest),'and it can be put back on');
   // suits: vest option in the editor; new suits default to having one
-  ok(await p.evaluate(()=>{editing='suit0';show('wardrobe');const sel=[...document.querySelectorAll('#item-view select')].find(s=>[...s.options].some(o=>o.textContent==='Matching vest'));HOOK.closeItem();return !!sel&&sel.value==='yes'}),'a suit\'s editor has a Vest option (Matching vest / No vest)');
+  ok(await p.evaluate(()=>{HOOK.editing='suit0';show('wardrobe');const sel=[...document.querySelectorAll('#item-view select')].find(s=>[...s.options].some(o=>o.textContent==='Matching vest'));HOOK.closeItem();return !!sel&&sel.value==='yes'}),'a suit\'s editor has a Vest option (Matching vest / No vest)');
   // past days keep what was worn
   const fz=await p.evaluate(()=>{const o=HOOK.frozenOutfit({date:'2026-11-10',ids:{top:'suit0',shirt:'shirt5',tie:'tie7'},suitDay:true,vestOn:true},0,{});return o.vest});
   ok(fz,'a past day remembers that the vest was worn');

@@ -16,7 +16,7 @@ V.run(async () => {
   let mistake = null;
   for (let i = 0; i < 5 && !mistake; i++) {
     await V.openRowPicker(ph, 'Shirt'); await V.tapLoc(ph, ph.page.locator('#pick-next'));
-    const s = await ph.page.evaluate(k => { const d = __day(k); return { shirt: (d.o.match(/shirt=([^,]+)/) || [])[1], score: d.score, hard: d.hard, msg: swapMsg } }, K);
+    const s = await ph.page.evaluate(k => { const d = __day(k); return { shirt: (d.o.match(/shirt=([^,]+)/) || [])[1], score: d.score, hard: d.hard, msg: HOOK.swapMsg } }, K);
     seq.push(s);
     if (s.hard.length) {   // were clean shirts left that hadn't been shown?
       const seen = seq.map(x => x.shirt);

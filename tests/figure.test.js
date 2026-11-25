@@ -4,10 +4,10 @@ module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-    items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('shirt','lightblue'),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('tieclip','gold',{metal:'gold'}),
+    HOOK.items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('shirt','lightblue'),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('tieclip','gold',{metal:'gold'}),
       I('watch','black',{metal:'gold',dial:'white',band:'leather'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'gold'}),I('socks','navy'),
       I('blazer','navy'),I('pants','grey')];
-    settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='never';dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')});
+    settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='never';HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')});
   const f=await p.evaluate(()=>{const c=document.querySelector('#mannequin-container'),svg=c.querySelector('svg'),o=planFor()[key(sel)],G=mqData(HOOK.figKind(o));
     const pat=id=>svg.querySelector(`pattern[id="${id}"]`),lap=G.parts.find(x=>x.id==='lapL'),fills=[...svg.querySelectorAll('.fig-watch path')].map(e=>e.getAttribute('fill'));
     return {fig:c.classList.contains('fig'),kind:HOOK.figKind(o),vb:svg.getAttribute('viewBox'),role:svg.getAttribute('role'),label:svg.getAttribute('aria-label'),
@@ -38,7 +38,7 @@ module.exports=async({ok,chromium,url,settle})=>{
   ok(await p.evaluate(()=>!document.querySelector('#piece')),'there is no swap card under the score any more');
   ok((await p.$$eval('.below .tile small',e=>e.map(x=>x.textContent))).join()==='Belt,Shoes,Socks','below the waist: belt, shoes, socks on a suit day');
   // blazer day: trousers tile; no tie => no tie or clip drawn
-  const bz=await p.evaluate(()=>{sel=new Date(2026,10,19);renderToday();const t=[...document.querySelectorAll('.below .tile small')].map(x=>x.textContent).join();
+  const bz=await p.evaluate(()=>{HOOK.sel=new Date(2026,10,19);renderToday();const t=[...document.querySelectorAll('.below .tile small')].map(x=>x.textContent).join();
     const o=planFor()[key(sel)];return {t,blazer:!o.suitDay}});
   ok(bz.blazer&&bz.t.startsWith('Pants'),'on a blazer day the pants are a tile');
   const nt=await p.evaluate(()=>{const o={...planFor()[key(sel)],tie:null,clip:null,watch:null};const d=document.createElement('div');d.innerHTML=figureSvg(o,'x-');

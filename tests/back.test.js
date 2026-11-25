@@ -13,8 +13,8 @@ const subback=async({ok,chromium,url,settle})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10}});
+      HOOK.items=[I('suit','navy'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10}});
     for(const [name,btn,page] of [['Packing list','#pack-btn','pack']]){   // (Laundry & cleaning is a fold of Settings since 2026-11-17)
       // the Wardrobe under Settings, scrolled; Settings with two categories open and scrolled to its end (the link tapped from there)
       await p.evaluate(()=>{show('wardrobe');document.querySelector('main').style.minHeight='3000px';scrollTo(0,300)});await settle(p,400);
@@ -66,7 +66,7 @@ const subback=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{document.querySelector('main').style.minHeight=''});
     // left for the Wardrobe and an item opened at once: the step back that drops the page's entry doesn't shut the item; its own Back does
     await p.evaluate(()=>{closeSettings();show('today');openPack()});await settle(p,200);
-    await p.evaluate(()=>{flt='all';show('wardrobe');openItem(items[0].id)});await settle(p,600);
+    await p.evaluate(()=>{HOOK.flt='all';show('wardrobe');openItem(items[0].id)});await settle(p,600);
     const it=await p.evaluate(()=>({open:!!editing,state:history.state}));
     await p.evaluate(()=>history.back());await p.waitForFunction(()=>!editing,null,{timeout:3000}).catch(()=>{});
     ok(it.open&&it.state&&it.state.item===1&&await p.evaluate(()=>!editing),`an item opened right after leaving the packing list stays open with its own Back entry, and Back shuts it (${JSON.stringify(it)})`);
@@ -102,7 +102,7 @@ const nufix9=async({ok,chromium,url,WARDROBES,settle})=>{
     const st=()=>p.evaluate(()=>history.state&&history.state.app||'');
     const ask=(q='Remove it?')=>p.evaluate(q=>{window._ans=undefined;askConfirm(q,{ok:'Remove',danger:true}).then(v=>{window._ans=v})},q);
     const asked=()=>p.evaluate(()=>!!document.querySelector('#ask-sheet.on'));
-    await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic.map(i=>({...i}));settings.workdays=[0,1,2,3,4];settings.setupDone=1;TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')})()`);await settle(p,300);
+    await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic.map(i=>({...i}));settings.workdays=[0,1,2,3,4];settings.setupDone=1;HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')})()`);await settle(p,300);
     // ---- a question with nothing under it: its own entry
     await ask();await settle(p,200);
     ok(await st()==='ask','a question over Today takes a Back entry');
@@ -189,7 +189,7 @@ const backzoom=async({ok,chromium,url,WARDROBES,settle})=>{
     const back=async()=>{await p.goBack({timeout:3000}).catch(()=>{});await settle(p,300)};
     const stateApp=()=>p.evaluate(()=>history.state&&history.state.app||'');
     // ---- the setup
-    await p.evaluate(()=>{items=[];delete settings.setupDone;HOOK.setupOpen(false)});await settle(p,300);
+    await p.evaluate(()=>{HOOK.items=[];delete settings.setupDone;HOOK.setupOpen(false)});await settle(p,300);
     await p.evaluate(()=>{HOOK.setupGo(1);HOOK.setupGo(1)});await settle(p,200);
     ok(await stateApp()==='setup','the setup has a Back entry');
     await back();
@@ -214,7 +214,7 @@ const backzoom=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(await stateApp()==='setup'&&await p.evaluate(()=>!location.hash),'the entry is made once the invitation leaves the address');
     await p.evaluate(()=>setupFinish(false));await settle(p,300);
     // ---- the picker and What to buy
-    await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;settings.workdays=[0,1,2,3,4];settings.setupDone=1;TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')})()`);await settle(p,300);
+    await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;settings.workdays=[0,1,2,3,4];settings.setupDone=1;HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')})()`);await settle(p,300);
     await p.evaluate(()=>openPicker('shirt'));await settle(p,300);
     ok(await stateApp()==='pick','the picker has a Back entry');
     await back();
@@ -243,7 +243,7 @@ const backzoom=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(tm.ms>=8000,'a toast with Undo stays at least 8 s (asked for 5)');
     ok(tm.top&&tm.bot&&tm.h+16>=44,'a toast’s Undo takes taps over 44px');
     // ---- the empty checklist: rings in the dark theme, link tap height
-    await p.evaluate(()=>{items=[];cache={};document.documentElement.dataset.theme='dark';show('today')});await settle(p,300);
+    await p.evaluate(()=>{HOOK.items=[];HOOK.cache={};document.documentElement.dataset.theme='dark';show('today')});await settle(p,300);
     const ring=await p.evaluate(()=>{const t=document.querySelector('.fr-it:not(.done) .fr-tick');if(!t)return null;const c=getComputedStyle(t).borderTopColor;
       let e=t.parentElement,bg='';while(e){bg=getComputedStyle(e).backgroundColor;if(!/rgba\(0, 0, 0, 0\)|transparent/.test(bg))break;e=e.parentElement}
       const lum=s=>{const v=s.match(/[\d.]+/g).slice(0,3).map(n=>{n/=255;return n<=.03928?n/12.92:((n+.055)/1.055)**2.4});return .2126*v[0]+.7152*v[1]+.0722*v[2]};
@@ -253,7 +253,7 @@ const backzoom=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(lk,'a text link takes taps 9px above and below (44px)');
     await p.evaluate(()=>{document.documentElement.dataset.theme='light'});
     // ---- narrow screens (Safari page zoom 150% on this phone = 268 CSS px)
-    await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;cache={};show('today');if(!document.querySelector('#ibox.open'))HOOK.toggleList()})()`);await settle(p,400);
+    await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.cache={};show('today');if(!document.querySelector('#ibox.open'))HOOK.toggleList()})()`);await settle(p,400);
     const rows=()=>p.evaluate(()=>[...document.querySelectorAll('#today .rowtap')].map(t=>{const n=t.lastElementChild,l=t.parentElement.firstElementChild;return {w:n.getBoundingClientRect().width,stacked:l.getBoundingClientRect().bottom<=t.getBoundingClientRect().top+1}}));
     let r=await rows();ok(r.length>2&&r.every(x=>!x.stacked),'390 px: each piece’s slot name beside it, as before');
     await p.setViewportSize({width:268,height:454});await settle(p,300);

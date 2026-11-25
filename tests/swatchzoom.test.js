@@ -8,9 +8,9 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const PH='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
-    await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};
+    await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};
       for(const d of [new Date(2026,10,11),new Date(2026,10,12)]){const o=planOn(d);renders[comboKey(o)]={img:'${PH}',sig:comboSig(o)}}   // a kept photo for each day, so the picture is drawn
-      sel=new Date(2026,10,11);view={y:2026,m:10};show('today')})()`);
+      HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};show('today')})()`);
     await p.waitForSelector('#mannequin-container.photo .swstack .ovsw');
     const st=()=>p.evaluate(()=>{const c=$('#mannequin-container'),R=c.getBoundingClientRect(),rel=e=>{if(!e)return null;const b=e.getBoundingClientRect();return {l:b.left-R.left,t:b.top-R.top,r:b.right-R.left,b:b.bottom-R.top}};
       const sws=[...c.querySelectorAll('.swstack .ovsw')];return {W:R.width,open:c.classList.contains('swopen'),t:HOOK.zoomTarget().style.transform,lens:rel(c.querySelector('.swlens')),lab:rel(c.querySelector('.swlab')),

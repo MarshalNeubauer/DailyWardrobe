@@ -19,9 +19,9 @@ const WARD=`(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++).toSt
   small:[I('suit','navy'),I('suit','brown',{pattern:'chalk-stripe',secondaryColor:'white'}),I('blazer','grey',{pattern:'glen-check'}),I('pants','grey'),I('pants','navy'),I('shirt','white'),I('shirt','lightblue',{pattern:'stripe',secondaryColor:'white'}),I('shirt','pink'),
    I('tie','navy'),I('tie','red',{pattern:'stripe',secondaryColor:'gold'}),I('tie','silver'),...common()]}})()`;
 /* the plan of three months as one signature: every day's pieces, vest, score, label and number of notes */
-const PLAN_SIG=`(W,n)=>{items=W[n];settings={...settings,workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',darkShirts:'some',holidays:null,daysOff:[]};weather={};climate=null;
-  TODAY_OVERRIDE='2026-11-08T12:00:00';dayRecs={'2026-11-12':{date:'2026-11-12',formal:true},'2026-11-18':{date:'2026-11-18',occasion:'casual'},'2026-11-24':{date:'2026-11-24',occasion:'wedding'},'2026-12-2':{date:'2026-12-2',occasion:'funeral'},
-    '2026-11-16':{date:'2026-11-16',force:{tie:items.find(i=>i.type==='tie').id}},'2026-11-17':{date:'2026-11-17',vest:false}};cache={};
+const PLAN_SIG=`(W,n)=>{HOOK.items=W[n];HOOK.settings={...settings,workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',darkShirts:'some',holidays:null,daysOff:[]};HOOK.weather={};HOOK.climate=null;
+  HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';HOOK.dayRecs={'2026-11-12':{date:'2026-11-12',formal:true},'2026-11-18':{date:'2026-11-18',occasion:'casual'},'2026-11-24':{date:'2026-11-24',occasion:'wedding'},'2026-12-2':{date:'2026-12-2',occasion:'funeral'},
+    '2026-11-16':{date:'2026-11-16',force:{tie:items.find(i=>i.type==='tie').id}},'2026-11-17':{date:'2026-11-17',vest:false}};HOOK.cache={};
   const lines=[];for(const [y,m] of [[2026,10],[2026,11],[2027,0]]){const P=buildPlan(y,m);for(const k of Object.keys(P).sort()){if(!k.startsWith(y+'-'+(m+1)+'-'))continue;const o=P[k],r=rateOutfit(o);
     lines.push(k+' '+(o.suitDay?'S':'B')+(o.vest?'V':'')+' '+SLOTS.filter(s=>s!=='pocket').map(s=>o[s]?o[s].id:'-').join(',')+' '+r.score+r.label+' '+r.checks.map(c=>(c.label==='Pants'?'T':c.label[0])+c.pts).join('')+' '+o.notes.length)}}
   let h=0x811c9dc5;for(const c of lines.join('\\n'))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return {n:lines.length,h:h.toString(16),first:lines[0]}}`;
@@ -51,7 +51,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
 
     // ---- 2. the four combinations ----
     const combos=await p.evaluate(`(()=>{const out={};
-      for(const [j,t] of [[true,true],[true,false],[false,true],[false,false]]){(${PLAN_SIG})(${WARD},'full');settings.dress={jacket:j,tie:t};cache={};
+      for(const [j,t] of [[true,true],[true,false],[false,true],[false,false]]){(${PLAN_SIG})(${WARD},'full');settings.dress={jacket:j,tie:t};HOOK.cache={};
         const P={...buildPlan(2026,10),...buildPlan(2026,11)},ks=Object.keys(P).filter(k=>keyDate(k)>=todayDate()&&!P[k].frozen).sort((a,b)=>keyDate(a)-keyDate(b)),occ=k=>P[k].occasion,plain=ks.filter(k=>!occ(k));
         const R=k=>rateOutfit(P[k]),sh=plain.map(k=>P[k].shirt&&P[k].shirt.id),ti=plain.map(k=>P[k].tie&&P[k].tie.id);
         out[(j?'J':'-')+(t?'T':'-')]={days:plain.length,
@@ -65,7 +65,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
           shirts:new Set(sh).size,shRep:sh.filter((s,n)=>n&&s===sh[n-1]).length,tieRep:ti.filter((s,n)=>n&&s&&s===ti[n-1]&&plain[n]!=='2026-11-16').length,trousers:new Set(plain.map(k=>P[k].bot&&P[k].bot.id)).size,
           formal:['2026-11-12','2026-11-24','2026-12-2'].map(k=>(P[k].top?'J':'-')+(P[k].tie?'T':'-')+(P[k].suitDay?'S':'')).join(),casual:(P['2026-11-18'].top?'J':'-')+(P['2026-11-18'].tie?'T':'-'),
           forced:!!P['2026-11-16'].tie}}
-      delete settings.dress;cache={};return out})()`);
+      delete settings.dress;HOOK.cache={};return out})()`);
     const c=combos,say=x=>JSON.stringify(x);
     ok(c.JT.jackets===c.JT.days&&c.JT.ties===c.JT.days&&c.JT.vests>0&&c.JT.clips>0&&c.JT.incomplete===0,`jackets and ties: every day has both (${say(c.JT)})`);
     ok(c['J-'].jackets===c['J-'].days&&c['J-'].ties===0&&c['J-'].clips===0&&c['J-'].tieChecks===0&&c['J-'].tieNotes===0&&!c['J-'].forced,`jackets, no ties: a jacket every day, never a tie or a tie clip, no tie rule applied, a pinned tie ignored (${say(c['J-'])})`);
@@ -86,8 +86,8 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(sc.noJackets[1].l!=='Incomplete'&&/no tie/.test(sc.noJackets[0].miss)&&sc.none[0].l!=='Incomplete'&&/^no shoes/.test(sc.none[1].miss),`without jackets a jacketless outfit is complete; other missing pieces still count (${sc.none[1].miss})`);
 
     // ---- 4. Today, the drawing and the photo ----
-    const today=async(dress,d)=>p.evaluate(`(async()=>{(${PLAN_SIG})(${WARD},'full');settings.dress=${JSON.stringify(dress)};if(!settings.dress)delete settings.dress;cache={};sel=new Date(2026,10,${d});view={y:2026,m:10};listOpen=true;scoreOpen=true;show('today');
-      const o=planFor()[key(sel)],fig=document.querySelector('#mannequin-container'),a=rankLooks(HOOK.rankPools(o),o);monthOpen=false;toggleMonth();
+    const today=async(dress,d)=>p.evaluate(`(async()=>{(${PLAN_SIG})(${WARD},'full');settings.dress=${JSON.stringify(dress)};if(!settings.dress)delete settings.dress;HOOK.cache={};HOOK.sel=new Date(2026,10,${d});HOOK.view={y:2026,m:10};HOOK.listOpen=true;HOOK.scoreOpen=true;show('today');
+      const o=planFor()[key(sel)],fig=document.querySelector('#mannequin-container'),a=rankLooks(HOOK.rankPools(o),o);HOOK.monthOpen=false;toggleMonth();
       const cell=[...document.querySelectorAll('#mpanel .mc')].find(x=>x.getAttribute('aria-label')&&new RegExp('November ${d}\\\\b').test(x.getAttribute('aria-label')));
       const r={rows:[...document.querySelectorAll('#ibox .row > .mut:first-child')].map(e=>e.textContent).join(),none:[...document.querySelectorAll('#ibox .none')].map(e=>e.textContent).join(),sum:document.querySelector('#ibox .mltxt small').textContent,
         open:!!fig.querySelector('.fig-open'),blade:/href="#[^"]*bladeP"/.test(fig.innerHTML),clip:!!fig.querySelector('.fig-clip'),lapels:/href="#[^"]*lapL"/.test(fig.innerHTML),label:fig.querySelector('svg').getAttribute('aria-label'),
@@ -108,16 +108,16 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(tN.nojacket&&tN.key!==tN.keyTie,'shirt sleeves without a tie likewise');
 
     // ---- 5. stats and what to buy ----
-    const st=await p.evaluate(`(()=>{(${PLAN_SIG})(${WARD},'full');settings.dress={jacket:true,tie:false};cache={};dayRecs={};const S=HOOK.buildStats(),tie=items.find(i=>i.type==='tie');
+    const st=await p.evaluate(`(()=>{(${PLAN_SIG})(${WARD},'full');settings.dress={jacket:true,tie:false};HOOK.cache={};HOOK.dayRecs={};const S=HOOK.buildStats(),tie=items.find(i=>i.type==='tie');
       const r={unused:S.unused.map(x=>x.i.type).join(),ties:S.ties.length,pairs:S.pairs.length,why:HOOK.whyUnused(tie)};
-      settings.dress={jacket:false,tie:false};cache={};const S2=HOOK.buildStats();r.unused2=[...new Set(S2.unused.map(x=>x.i.type))].join();r.jackets2=S2.jackets.length;r.whySuit=HOOK.whyUnused(items.find(i=>i.type==='suit'));r.whyAll=S2.unused.map(x=>HOOK.whyUnused(x.i)).join('|');
-      delete settings.dress;cache={};return r})()`);
+      settings.dress={jacket:false,tie:false};HOOK.cache={};const S2=HOOK.buildStats();r.unused2=[...new Set(S2.unused.map(x=>x.i.type))].join();r.jackets2=S2.jackets.length;r.whySuit=HOOK.whyUnused(items.find(i=>i.type==='suit'));r.whyAll=S2.unused.map(x=>HOOK.whyUnused(x.i)).join('|');
+      delete settings.dress;HOOK.cache={};return r})()`);
     ok(!/tie/.test(st.unused)&&st.ties===0&&st.pairs===0&&/dress code leaves out ties/.test(st.why),`without ties the stats don't count ties or tie clips as never worn (${st.unused||'none'})`);
     ok(!/suit|blazer|tie/.test(st.unused2)&&st.jackets2===0&&/dress code leaves out jackets/.test(st.whySuit)&&!/Infinity|NaN|blazer|jacket/.test(st.whyAll),`without jackets they don't count suits and blazers either (${st.unused2||'none'}: ${st.whyAll})`);
-    const shop=await p.evaluate(`(()=>{(${PLAN_SIG})(${WARD},'small');dayRecs={};const T=todayDate(),out={};
+    const shop=await p.evaluate(`(()=>{(${PLAN_SIG})(${WARD},'small');HOOK.dayRecs={};const T=todayDate(),out={};
       for(const [n,d] of [['def',null],['noTie',{jacket:true,tie:false}],['none',{jacket:false,tie:false}],['noJacket',{jacket:false,tie:true}]]){if(d)settings.dress=d;else delete settings.dress;const r=runAnalysis(items,T,6),recs=r.cats.flatMap(c=>c.recs);
         out[n]={cats:r.cats.map(c=>c.key).join(),types:[...new Set(recs.flatMap(x=>x.items.map(i=>i.type)))].join(),why:recs.flatMap(x=>x.why).join(' '),idle:r.base.idle.map(i=>i.type).join(),avg:r.base.avg,sig:HOOK.shopSig().split('|').slice(-2).join('|')}}
-      delete settings.dress;cache={};return out})()`);
+      delete settings.dress;HOOK.cache={};return out})()`);
     ok(/tie/.test(shop.def.cats)&&/suit/.test(shop.def.cats)&&!/nojacket|notie/.test(shop.def.sig),`by default the what-to-buy check covers suits and ties (${shop.def.cats})`);
     ok(!/\btie\b/.test(shop.noTie.cats)&&!/tie/.test(shop.noTie.types)&&!/\bties?\b|tie clip/.test(shop.noTie.why)&&!/tie/.test(shop.noTie.idle)&&/suit/.test(shop.noTie.cats)&&/shirt/.test(shop.noTie.types)&&/notie/.test(shop.noTie.sig),`without ties it suggests no tie or tie clip and names none in its reasons (${shop.noTie.types})`);
     ok(!/suit|blazer|\btie\b/.test(shop.none.cats)&&!/suit|blazer|tie/.test(shop.none.types)&&!/suit|blazer|tie/.test(shop.none.idle)&&shop.none.avg>=85&&/nojacket\|notie/.test(shop.none.sig),`without jackets it suggests no suit or blazer, and checks again (${shop.none.cats}; ${shop.none.types||'no ideas'})`);
@@ -125,7 +125,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(/shirt/.test(shop.noJacket.types)&&/tie/.test(shop.noJacket.cats)&&/pants/.test(shop.noJacket.cats)&&!/suit|blazer/.test(shop.noJacket.types),`without jackets but with ties: shirts, ties and pants (${shop.noJacket.types}; ${shop.noJacket.cats})`);
 
     // ---- 6. Settings ----
-    await p.evaluate(`(async()=>{(${PLAN_SIG})(${WARD},'full');dayRecs={};delete settings.dress;cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')})()`);
+    await p.evaluate(`(async()=>{(${PLAN_SIG})(${WARD},'full');HOOK.dayRecs={};delete settings.dress;HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};show('today')})()`);
     await p.waitForFunction(()=>['2026-11-10','2026-11-11','2026-11-12'].every(k=>dayRecs[k]&&dayRecs[k].lock),null,{timeout:8000});
     await p.evaluate(()=>openSettings('schedule'));await settle(p,400);
     const s0=await p.evaluate(()=>({sw:[...document.querySelectorAll('#cfg-dress .dress-sw')].map(b=>b.getAttribute('role')+':'+b.getAttribute('aria-checked')+':'+Math.round(b.getBoundingClientRect().height)).join(),
@@ -177,18 +177,18 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       ok(m.vests==='yes,no,yes'&&m.has==='true,false,true'&&m.stamped&&m.s2===0&&m.s3===2000&&m.b1,`the suits of a wardrobe from before keep their waistcoat: each with no value is saved as "Matching vest" with a new stamp, the others are untouched (${m.vests})`);
       ok(m.flag===1&&m.units==='C'&&m.newer&&m.again===0,'the wardrobe is marked in its synced settings, which keep their other values, and it is not done twice');
       // a suit added on the Add card, and one bought from the what-to-buy sheet
-      await q.evaluate(()=>{queue=[{id:'n1',type:'suit',primaryColor:'brown',pattern:'solid',manual:true}];show('add')});
+      await q.evaluate(()=>{HOOK.queue=[{id:'n1',type:'suit',primaryColor:'brown',pattern:'solid',manual:true}];show('add')});
       await q.waitForFunction(()=>!!document.querySelector('#queue select'));
       const sel0=await q.evaluate(()=>{const s=[...document.querySelectorAll('#queue label')].find(l=>/^Vest/.test(l.textContent)).querySelector('select');return s.selectedOptions[0].textContent});
       await q.evaluate(()=>save(0));await q.waitForFunction(()=>items.some(i=>i.id==='n1'));
       const n1=await q.evaluate(()=>{const i=items.find(x=>x.id==='n1');return {vest:i.vest,has:hasVest(i)}});
       ok(sel0==='No vest'&&n1.vest==='no'&&!n1.has,`a suit added afterwards is two-piece, and the Add card's Vest choice shows it (${sel0})`);
-      await q.evaluate(()=>{queue=[{id:'n2',type:'suit',primaryColor:'tan',pattern:'solid',manual:true,vest:'yes'}];return save(0)});await q.waitForFunction(()=>items.some(i=>i.id==='n2'));
+      await q.evaluate(()=>{HOOK.queue=[{id:'n2',type:'suit',primaryColor:'tan',pattern:'solid',manual:true,vest:'yes'}];return save(0)});await q.waitForFunction(()=>items.some(i=>i.id==='n2'));
       await q.evaluate(()=>{show('wardrobe');openItem('n1')});await q.waitForFunction(()=>!!document.querySelector('#item-view select'));
       const ed=await q.evaluate(()=>{const pick=()=>{const s=[...document.querySelectorAll('#item-view select')].find(s=>[...s.options].some(o=>o.textContent==='Matching vest'));return s?s.selectedOptions[0].textContent:''};
         const a=pick();openItem('s1');const b=pick();HOOK.closeItem();return {a,b,n2:hasVest(items.find(i=>i.id==='n2'))}});
       ok(ed.a==='No vest'&&ed.b==='Matching vest'&&ed.n2,`the editor shows each suit's own answer (${ed.a} / ${ed.b}); "Matching vest" on the Add card is kept`);
-      const pl=await q.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[];weather={};climate=null;dayRecs={};TODAY_OVERRIDE='2026-11-08T12:00:00';for(const i of items)if(i.type==='suit')delete i.paused;cache={};
+      const pl=await q.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[];HOOK.weather={};HOOK.climate=null;HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';for(const i of items)if(i.type==='suit')delete i.paused;HOOK.cache={};
         const P=buildPlan(2026,10),o=Object.entries(P).filter(([k,o])=>k.startsWith('2026-11-')&&o.suitDay&&!o.frozen).map(x=>x[1]);return {yes:o.filter(x=>['s1','s3','n2'].includes(x.top.id)).every(x=>x.vest),no:o.filter(x=>['s2','n1'].includes(x.top.id)).every(x=>!x.vest),n:o.length,
           both:o.some(x=>x.vest)&&o.some(x=>!x.vest)}});
       ok(pl.yes&&pl.no&&pl.both,`the planner wears the waistcoat with the three-piece suits only (${pl.n} suit days)`);
@@ -200,7 +200,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     // a new wardrobe: marked when its first item is added, without stamping the settings
     {const c3=await browser.newContext({viewport:{width:390,height:900}}),q=await c3.newPage();await q.goto(url);await q.waitForFunction(()=>window.appReady);
       await q.waitForFunction(async()=>(await metaGet('plan_rules'))===PLAN_RULES);const u0=await q.evaluate(()=>settings.updated);
-      await q.evaluate(()=>{queue=[{id:'f1',type:'suit',primaryColor:'navy',pattern:'solid',manual:true}];return save(0)});await q.waitForFunction(()=>items.some(i=>i.id==='f1'));
+      await q.evaluate(()=>{HOOK.queue=[{id:'f1',type:'suit',primaryColor:'navy',pattern:'solid',manual:true}];return save(0)});await q.waitForFunction(()=>items.some(i=>i.id==='f1'));
       const f=await q.evaluate(async u0=>{const st=await metaGet('settings');return {flag:settings.vestDef,stored:st&&st.vestDef,updated:st.updated!==u0,vest:items[0].vest,has:hasVest(items[0]),has2:hasVest({type:'suit'})}},u0);
       ok(f.flag===1&&f.stored===1&&!f.updated&&f.vest==='no'&&!f.has&&!f.has2,'a new wardrobe is marked when its first item is added (the settings get no new stamp for it), and its suits are two-piece');
       await c3.close()}
@@ -239,11 +239,11 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       const a1=await state(A.q),same=await A.q.evaluate(()=>items.filter(i=>i.type==='suit').map(i=>i.updated).sort().join()),sameB=await B.q.evaluate(()=>items.filter(i=>i.type==='suit').map(i=>i.updated).sort().join());
       ok(a1.suits===b1.suits&&a1.flag===1&&a1.units==='F'&&same===sameB,'the other device receives the suits and the mark and changes nothing itself');
       // a suit added on A now is two-piece on both
-      await A.q.evaluate(()=>{queue=[{id:'n9',type:'suit',primaryColor:'tan',pattern:'solid',manual:true}];return save(0)});await A.q.waitForFunction(()=>items.some(i=>i.id==='n9'));await A.q.evaluate(()=>syncNow());await B.q.evaluate(()=>syncNow());
+      await A.q.evaluate(()=>{HOOK.queue=[{id:'n9',type:'suit',primaryColor:'tan',pattern:'solid',manual:true}];return save(0)});await A.q.waitForFunction(()=>items.some(i=>i.id==='n9'));await A.q.evaluate(()=>syncNow());await B.q.evaluate(()=>syncNow());
       const b2=await B.q.evaluate(()=>items.filter(i=>i.type==='suit').map(i=>i.id+':'+hasVest(i)).sort().join());
       ok(b2==='n9:false,s1:true,s2:true',`a suit added after that is two-piece on both devices (${b2})`);
       // a device with a newer mark that receives older, unmarked settings and suits from before drops the mark and gives them their value
-      const C=await device();await C.q.evaluate(async()=>{settings.vestDef=1;items=[{id:'x1',type:'suit',primaryColor:'black',pattern:'solid',added:1}];await putRaw(items[0]);dressSynced({settings:{updated:1}})});
+      const C=await device();await C.q.evaluate(async()=>{settings.vestDef=1;HOOK.items=[{id:'x1',type:'suit',primaryColor:'black',pattern:'solid',added:1}];await putRaw(items[0]);dressSynced({settings:{updated:1}})});
       await C.q.waitForFunction(()=>settings.vestDef===1&&items[0].vest==='yes'&&!HOOK.vestMigrating);
       ok(await C.q.evaluate(()=>hasVest(items[0])),'settings that arrive by sync without the mark are taken as they are: the suits that came with them keep their waistcoat');
       await A.c.close();await B.c.close();await C.c.close()}

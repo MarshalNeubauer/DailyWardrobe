@@ -32,7 +32,7 @@ module.exports=async({ok,chromium,url})=>{
       const pants=[I('pants','khaki'),I('pants','grey',{pattern:'twill'}),I('pants','navy',{pattern:'pinstripe',secondaryColor:'white',sett:pin})],belt=I('belt','brown',{leather:'calf'}),shoes=I('shoes','brown',{leather:'calf'});
       const watches=[I('watch','silver',{metal:'silver',dial:'white',band:'integrated'}),I('watch','brown',{metal:'gold',dial:'charcoal',band:'leather'}),I('watch','silver',{metal:'silver',dial:'black',band:'bracelet'}),I('watch','rosegold',{metal:'gold',dial:'cream',band:'bracelet'})];
       const clips=[I('tieclip','silver'),I('tieclip','blue'),I('tieclip','red')];
-      items=[...jackets,...shirts,...ties,...pants,belt,shoes,...watches,...clips];
+      HOOK.items=[...jackets,...shirts,...ties,...pants,belt,shoes,...watches,...clips];
       const looks=[];
       jackets.forEach((j,i)=>looks.push({name:'jacket '+j.pattern+' '+j.primaryColor,o:{top:j,shirt:shirts[i%shirts.length],tie:ties[i%ties.length],watch:watches[0]}}));
       shirts.forEach((s,i)=>looks.push({name:'shirt '+s.pattern+(s.sett?' (read)':''),o:{top:jackets[0],shirt:s,tie:ties[0],watch:watches[0]}}));

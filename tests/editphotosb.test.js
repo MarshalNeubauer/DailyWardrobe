@@ -23,8 +23,8 @@ async function run(eng,browser,{ok,url,settle}){
       const cv=(im,k)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9)};
       HOOK.rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
       const f={photo:cv(pi,1),close:cv(ci,3)};
-      items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,texture:f.close,added:2,name:'Mink suit'},{id:'k1',type:'shoes',primaryColor:'black',leather:'calf',photo:f.photo,added:1}];
-      settings.workdays=[0,1,2,3,4];settings.setupDone=1;cache={};flt='all';editing=null;show('wardrobe');return f});
+      HOOK.items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,texture:f.close,added:2,name:'Mink suit'},{id:'k1',type:'shoes',primaryColor:'black',leather:'calf',photo:f.photo,added:1}];
+      settings.workdays=[0,1,2,3,4];settings.setupDone=1;HOOK.cache={};HOOK.flt='all';HOOK.editing=null;show('wardrobe');return f});
     await settle(p,300);await p.evaluate(()=>openItem('m1'));await settle(p,500);
     const T=`${eng} ${w}×${h}: `,ev=(f,a)=>p.evaluate(f,a);
     const file=(name,u)=>({name,mimeType:'image/jpeg',buffer:Buffer.from(u.split(',')[1],'base64')});

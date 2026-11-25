@@ -14,8 +14,8 @@ const weeklock=async({ok,chromium,url,WARDROBES,settle})=>{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // today is Monday 9 November 2026: the lock runs to Friday 13
-    const setup=()=>p.evaluate(`(async()=>{const W=${WARDROBES};items=W.realistic.map(i=>({...i}));settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];delete settings.darkShirts;weather={};climate=null;TODAY_OVERRIDE='2026-11-09T12:00:00';
-      dayRecs={};cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today');
+    const setup=()=>p.evaluate(`(async()=>{const W=${WARDROBES};HOOK.items=W.realistic.map(i=>({...i}));settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];delete settings.darkShirts;HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';
+      HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};show('today');
       window.sig=o=>o?SLOTS.filter(s=>s!=='coat').map(s=>o[s]?o[s].id:'').join('|'):'';
       window.snap=()=>{const out={};for(const m of [10,11])for(const [k,o] of Object.entries(planMonth(2026,m)))if(keyDate(k)>=todayDate()&&o.top)out[k]=sig(o);return out};
       window.diff=(a,b)=>Object.keys(a).filter(k=>a[k]!==b[k])})()`);
@@ -35,32 +35,32 @@ const weeklock=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(a1.today&&a1.inLock.join()==='2026-11-9'&&a1.relocked,`a different tie today changes today only inside the lock (changed: ${a1.inLock.join()}), and today is locked as it now shows`);
     ok(a1.d.some(k=>keyDate2(k)>=+new Date(2026,10,14)),`days after the lock are planned again (${a1.d.length-1} of them changed)`);
     // without the lock the same change reshuffles the week
-    const un=await p.evaluate(`(b=>{const keep=dayRecs;dayRecs=Object.fromEntries(Object.entries(keep).map(([k,r])=>{const c={...r};delete c.lock;return [k,c]}));cache={};const d=diff(b,snap()).filter(k=>keyDate(k)<${AFTER}&&k!=='2026-11-9');dayRecs=keep;cache={};return d})(${JSON.stringify(before)})`);
+    const un=await p.evaluate(`(b=>{const keep=dayRecs;HOOK.dayRecs=Object.fromEntries(Object.entries(keep).map(([k,r])=>{const c={...r};delete c.lock;return [k,c]}));HOOK.cache={};const d=diff(b,snap()).filter(k=>keyDate(k)<${AFTER}&&k!=='2026-11-9');HOOK.dayRecs=keep;HOOK.cache={};return d})(${JSON.stringify(before)})`);
     ok(un.length>=1,`(without the lock the same change would have moved ${un.length} of the four other days this week)`);
     // a new item joins after the lock
     const b2=await p.evaluate(()=>snap());
-    const a2=await p.evaluate(`(b=>{items.push({id:'newtie',type:'tie',primaryColor:'green',pattern:'paisley',secondaryColor:'navy'});cache={};const pl={...planMonth(2026,10),...planMonth(2026,11)},first=Object.keys(pl).filter(k=>pl[k].tie&&pl[k].tie.id==='newtie').sort((x,y)=>keyDate(x)-keyDate(y))[0];
+    const a2=await p.evaluate(`(b=>{items.push({id:'newtie',type:'tie',primaryColor:'green',pattern:'paisley',secondaryColor:'navy'});HOOK.cache={};const pl={...planMonth(2026,10),...planMonth(2026,11)},first=Object.keys(pl).filter(k=>pl[k].tie&&pl[k].tie.id==='newtie').sort((x,y)=>keyDate(x)-keyDate(y))[0];
       return {inLock:diff(b,snap()).filter(k=>keyDate(k)<${AFTER}),first}})(${JSON.stringify(b2)})`);
     ok(a2.inLock.length===0&&a2.first&&keyDate2(a2.first)>=+new Date(2026,10,14),`a new tie leaves the locked week alone and is first planned after it (${a2.first})`);
     // a locked piece that goes away releases only its own day
     const b3=await p.evaluate(()=>snap());
-    const a3=await p.evaluate(`(b=>{const gone=planFor()['2026-11-12'].shirt.id;items=items.filter(i=>i.id!==gone);cache={};const n=snap(),d=diff(b,n).filter(k=>keyDate(k)<${AFTER});return {d,ok:!!planFor()['2026-11-12'].shirt&&planFor()['2026-11-12'].shirt.id!==gone}})(${JSON.stringify(b3)})`);
+    const a3=await p.evaluate(`(b=>{const gone=planFor()['2026-11-12'].shirt.id;HOOK.items=items.filter(i=>i.id!==gone);HOOK.cache={};const n=snap(),d=diff(b,n).filter(k=>keyDate(k)<${AFTER});return {d,ok:!!planFor()['2026-11-12'].shirt&&planFor()['2026-11-12'].shirt.id!==gone}})(${JSON.stringify(b3)})`);
     ok(a3.d.join()==='2026-11-12'&&a3.ok,`deleting a shirt planned for Thursday re-plans Thursday only (changed in the lock: ${a3.d.join()})`);
     await p.evaluate(()=>renderToday());await p.waitForFunction(()=>dayRecs['2026-11-12'].lock.shirt===planFor()['2026-11-12'].shirt.id,null,{timeout:8000});
     ok(true,'Thursday is then locked as it now shows');
     // "Suggest another" on a locked day re-plans that day, and its followers, not the others
-    await p.evaluate(()=>{sel=new Date(2026,10,13);renderToday()});const b4=await p.evaluate(()=>snap());
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,13);renderToday()});const b4=await p.evaluate(()=>snap());
     await p.evaluate(()=>HOOK.swapSlot('shoes'));await settle(p,300);
     const a4=await p.evaluate(`(b=>{const n=snap(),d=diff(b,n).filter(k=>keyDate(k)<${AFTER}),o=planFor()['2026-11-13'];return {d,belt:!o.belt||beltFit(o.shoes,o.belt)!==null,top:n['2026-11-13'].split('|')[0]===b['2026-11-13'].split('|')[0]}})(${JSON.stringify(b4)})`);
     ok(a4.d.join()==='2026-11-13'&&a4.belt&&a4.top,'another pair of shoes on Friday: its belt follows, the suit stays, and no other locked day moves');
     // rain on a locked day with suede shoes: the lock lets go
     const rn=await p.evaluate(()=>{const sue={id:'suede1',type:'shoes',primaryColor:'brown',pattern:'solid',leather:'suede'};items.push(sue);const k='2026-11-10';
-      dayRecs[k]={date:k,lock:{...dayRecs[k].lock,shoes:'suede1',belt:null}};cache={};const dry=planFor()[k].shoes.id;weather[k]={tmax:15,tmin:8,pop:90,rain:6};cache={};const wet=planFor()[k].shoes.id;delete weather[k];items.pop();cache={};return {dry,wet}});
+      dayRecs[k]={date:k,lock:{...dayRecs[k].lock,shoes:'suede1',belt:null}};HOOK.cache={};const dry=planFor()[k].shoes.id;weather[k]={tmax:15,tmin:8,pop:90,rain:6};HOOK.cache={};const wet=planFor()[k].shoes.id;delete weather[k];items.pop();HOOK.cache={};return {dry,wet}});
     ok(rn.dry==='suede1'&&rn.wet!=='suede1','locked suede shoes are kept on a dry day and let go when rain is forecast');
-    const hot=await p.evaluate(()=>{const k='2026-11-10',o=planFor()[k],top=items.find(i=>i.id===o.top.id);top.season='cold';cache={};const mild=planFor()[k].top.id===top.id;weather[k]={tmax:33,tmin:22,pop:0,rain:0};cache={};const warm=planFor()[k].top.id!==top.id;delete weather[k];delete top.season;cache={};return {mild,warm}});
+    const hot=await p.evaluate(()=>{const k='2026-11-10',o=planFor()[k],top=items.find(i=>i.id===o.top.id);top.season='cold';HOOK.cache={};const mild=planFor()[k].top.id===top.id;weather[k]={tmax:33,tmin:22,pop:0,rain:0};HOOK.cache={};const warm=planFor()[k].top.id!==top.id;delete weather[k];delete top.season;HOOK.cache={};return {mild,warm}});
     ok(hot.mild&&hot.warm,'a locked cold-weather suit is kept on a mild day and let go when the forecast turns hot');
     // Re-plan releases the lock; so does a planner setting
-    await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await locked();
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,9);renderToday()});await locked();
     const r1=await p.evaluate(async()=>{await HOOK.replanFuture();return Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length});
     ok(r1===0,'Re-plan upcoming days releases the locks after today');
     await p.evaluate(()=>renderToday());await locked();
@@ -77,7 +77,7 @@ const weeklock=async({ok,chromium,url,WARDROBES,settle})=>{
     // only the lock, so they never counted as worn and their outfits could still change)
     await setup();await locked();
     const lk=await p.evaluate(()=>Object.fromEntries(['2026-11-10','2026-11-11','2026-11-12','2026-11-13'].map(k=>[k,JSON.stringify(dayRecs[k].lock)])));
-    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-16T12:00:00';cache={};sel=new Date(2026,10,16);renderToday()});
+    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-16T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);renderToday()});
     await p.waitForFunction(()=>['2026-11-10','2026-11-11','2026-11-12','2026-11-13'].every(k=>dayRecs[k]&&dayRecs[k].ids),null,{timeout:8000}).catch(()=>{});
     const past=await p.evaluate(lk=>{const strip=x=>{const c={...x};delete c.coat;return JSON.stringify(c)},ks=Object.keys(lk);
       return {ids:ks.every(k=>dayRecs[k].ids&&strip(dayRecs[k].ids)===lk[k]),worn:ks.every(k=>wornDays().some(w=>w.date===k))}},lk);
@@ -96,10 +96,10 @@ const replan=async({ok,chromium,url})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const setup=()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','lightgrey'),I('suit','brown'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','green'),
+      HOOK.items=[I('suit','navy'),I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','lightgrey'),I('suit','brown'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};
-      dayRecs={'2026-11-5':{date:'2026-11-5',ids:{top:'suit0'},force:{top:'suit0'},worn:true},
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};
+      HOOK.dayRecs={'2026-11-5':{date:'2026-11-5',ids:{top:'suit0'},force:{top:'suit0'},worn:true},
         '2026-11-9':{date:'2026-11-9',force:{top:'suit1'},skip:{shirt:['shirt4']}},
         '2026-11-10':{date:'2026-11-10',lock:{top:'suit2',tie:'tie7'}},
         '2026-11-17':{date:'2026-11-17',force:{top:'suit1',tie:'tie6'},skip:{top:['suit0']},ids:{top:'suit1'},vest:true,lock:{top:'suit1',tie:'tie6',shirt:'shirt5'}},
@@ -125,7 +125,7 @@ const replan=async({ok,chromium,url})=>{
       dayRecs['2026-11-19']={date:'2026-11-19',off:{top:true},force:{top:'suit1'},kind:'suit'};
       dayRecs['2026-11-20']={date:'2026-11-20',occasion:'wedding',force:{top:'suit2'},lock:{top:'suit2'}};
       dayRecs['2026-11-12']={date:'2026-11-12',lock:{top:'suit3'},lockOnly:1,base:0};
-      dayRecs['2026-11-13']={date:'2026-11-13',force:{top:'suit3'},worn:true};cache={}});
+      dayRecs['2026-11-13']={date:'2026-11-13',force:{top:'suit3'},worn:true};HOOK.cache={}});
     await p.evaluate(()=>openSettings('schedule'));
     const st=await p.textContent('#replan-status'),vis=await p.evaluate(()=>{const b=document.querySelector('#replan-btn');return !!b&&!b.closest('.adv')&&b.getBoundingClientRect().height>=44&&b.textContent==='Start the plan over'});
     ok(/^4 days have your changes/.test(st)&&vis,`Settings → Schedule shows "Start the plan over" outside the Advanced fold, with how many days have changes, today included ("${st.slice(0,60)}")`);
@@ -159,16 +159,16 @@ const w3plan=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;window.I=(type,primaryColor,x={})=>({id:type+(k++).toString().padStart(3,'0'),type,primaryColor,pattern:'solid',added:1,...x});
       window.fresh=(t='2026-11-15T07:30:00')=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';delete settings.darkShirts;delete settings.dress;delete settings.location;settings.holidays=null;settings.daysOff=[];settings.laundryDays=1;
-        dayRecs={};weather={};climate=null;TODAY_OVERRIDE=t;cache={};sel=todayDate();view={y:sel.getFullYear(),m:sel.getMonth()};pastEdit=null};
-      window.ward=()=>{items=[I('suit','navy'),I('suit','charcoal'),I('suit','brown'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','silver'),
+        HOOK.dayRecs={};HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE=t;HOOK.cache={};HOOK.sel=todayDate();HOOK.view={y:sel.getFullYear(),m:sel.getMonth()};HOOK.pastEdit=null};
+      window.ward=()=>{HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','brown'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','silver'),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'})];return items};
-      window.at=(t,k)=>{TODAY_OVERRIDE=t;cache={};sel=k?keyDate(k):todayDate();view={y:sel.getFullYear(),m:sel.getMonth()}}});
+      window.at=(t,k)=>{HOOK.TODAY_OVERRIDE=t;HOOK.cache={};HOOK.sel=k?keyDate(k):todayDate();HOOK.view={y:sel.getFullYear(),m:sel.getMonth()}}});
 
     // ---- W2-17-01: a tie picked on Sunday for Monday, the app not opened on Monday
     const pk=await p.evaluate(async()=>{fresh();ward();dayRecs['2026-11-12']={date:'2026-11-12',ids:{top:'suit000'},suitDay:true,updated:+new Date(2026,10,12,8)};   // used for real before
       at('2026-11-15T07:30:00','2026-11-16');const was=planFor()['2026-11-16'].tie.id,pick=items.find(i=>i.type==='tie'&&i.id!==was).id;
       await pickItem('tie',pick);const r1={...dayRecs['2026-11-16']};
-      at('2026-11-18T07:30:00');await recordDays(planMonth(2026,10));const r2=dayRecs['2026-11-16'];cache={};const shown=planMonth(2026,10)['2026-11-16'];
+      at('2026-11-18T07:30:00');await recordDays(planMonth(2026,10));const r2=dayRecs['2026-11-16'];HOOK.cache={};const shown=planMonth(2026,10)['2026-11-16'];
       return {ahead:'ids' in r1,force:r1.force&&r1.force.tie===pick,tie:r2.ids&&r2.ids.tie===pick,auto:!!r2.auto,frozen:!!shown.frozen&&shown.tie.id===pick,miss:HOOK.missedOpen().includes('2026-11-16')}});
     ok(!pk.ahead&&pk.force,'a pick for a coming day saves the pick and no pieces ahead of the day');
     ok(pk.tie&&pk.frozen,'once the day is past without the app being opened, the picked tie is what is recorded as worn');
@@ -180,7 +180,7 @@ const w3plan=async({ok,chromium,url})=>{
       at('2026-11-18T07:30:00');const P=planMonth(2026,10);await recordDays(P);return {tie:dayRecs['2026-11-16'].ids.tie===pick,kept:dayRecs['2026-11-17'].ids.top==='suit001'&&!dayRecs['2026-11-17'].auto}});
     ok(old.tie&&old.kept,'a record an earlier version wrote ahead of the day is recorded again with the pick; one saved on its day stays');
     const sw=await p.evaluate(async()=>{fresh();ward();at('2026-11-15T07:30:00','2026-11-16');await HOOK.swapSlot('shirt');const r=dayRecs['2026-11-16'];
-      const r0={...r};sel=keyDate('2026-11-16');await HOOK.resetDay();return {swap:!('ids' in r0)&&!!r0.force,reset:!('ids' in dayRecs['2026-11-16'])}});
+      const r0={...r};HOOK.sel=keyDate('2026-11-16');await HOOK.resetDay();return {swap:!('ids' in r0)&&!!r0.force,reset:!('ids' in dayRecs['2026-11-16'])}});
     ok(sw.swap&&sw.reset,'"Suggest another" and Reset on a coming day keep no pieces ahead either');
 
     // ---- W1-1-01 = W1-4-01 = W1-2-06: the synced settings' old number doesn't re-plan this phone
@@ -201,16 +201,16 @@ const w3plan=async({ok,chromium,url})=>{
     ok(hol.b&&hol.c,'so do another country and "No public holidays": only the coming holidays change');
 
     // ---- W1-1-05 = W2-16-03: a location with no climate history
-    const cl=await p.evaluate(()=>{fresh();settings.location={lat:29.37,lon:47.98,name:'Kuwait City',cc:'KW'};climate=null;weather={};
+    const cl=await p.evaluate(()=>{fresh();settings.location={lat:29.37,lon:47.98,name:'Kuwait City',cc:'KW'};HOOK.climate=null;HOOK.weather={};
       const r=[dayClimate(new Date(2026,11,20)).season,dayClimate(new Date(2027,0,10)).season,dayClimate(new Date(2027,6,10)).season];delete settings.location;return r});
     ok(cl.join()==='mild,mild,warm',`Kuwait with a location but no climate history is mild in December and January (${cl.join()})`);
 
     // ---- W2-17-06: yesterday corrected to the suit locked today
     const cp=await p.evaluate(async()=>{fresh();const W=ward(),id=n=>W[n].id;at('2026-11-18T07:30:00');
       dayRecs['2026-11-17']={date:'2026-11-17',ids:{top:id(0),bot:id(0),shirt:id(3),tie:id(6),shoes:id(10),belt:id(12)},suitDay:true,updated:+new Date(2026,10,17,8)};
-      dayRecs['2026-11-18']={date:'2026-11-18',lock:{top:id(1),bot:id(1),shirt:id(4),tie:id(7),shoes:id(10),belt:id(12)},lockAt:Date.now(),updated:Date.now()};cache={};
-      const before=planMonth(2026,10)['2026-11-18'].top.id;sel=keyDate('2026-11-17');view={y:2026,m:10};pastEdit='2026-11-17';await HOOK.correctPast('top',W[1]);
-      cache={};return {want:id(1),before,lock:!!dayRecs['2026-11-18'].lock&&dayRecs['2026-11-18'].lock.top===id(1),after:planMonth(2026,10)['2026-11-18'].top.id}});
+      dayRecs['2026-11-18']={date:'2026-11-18',lock:{top:id(1),bot:id(1),shirt:id(4),tie:id(7),shoes:id(10),belt:id(12)},lockAt:Date.now(),updated:Date.now()};HOOK.cache={};
+      const before=planMonth(2026,10)['2026-11-18'].top.id;HOOK.sel=keyDate('2026-11-17');HOOK.view={y:2026,m:10};HOOK.pastEdit='2026-11-17';await HOOK.correctPast('top',W[1]);
+      HOOK.cache={};return {want:id(1),before,lock:!!dayRecs['2026-11-18'].lock&&dayRecs['2026-11-18'].lock.top===id(1),after:planMonth(2026,10)['2026-11-18'].top.id}});
     ok(cp.before===cp.want&&!cp.lock&&cp.after!==cp.want,`correcting yesterday to today's locked suit lets today go: another suit today (${JSON.stringify(cp)})`);
 
     // ---- W1-8-05: sent to the cleaner from a locked week, and back
@@ -224,13 +224,13 @@ const w3plan=async({ok,chromium,url})=>{
 
     // ---- the missed-days card
     const mc=await p.evaluate(async()=>{fresh('2026-11-26T08:00:00');ward();for(const i of items)i.added=+new Date(2026,10,10);try{localStorage.removeItem('missed_ok');localStorage.removeItem('missed_seen')}catch{}
-      for(const k of ['2026-11-18','2026-11-19'])dayRecs[k]={date:k,ids:{top:'suit000',shirt:'shirt003',tie:'tie006',shoes:'shoes010'},suitDay:true,updated:+keyDate(k)+8*3600e3};cache={};
+      for(const k of ['2026-11-18','2026-11-19'])dayRecs[k]={date:k,ids:{top:'suit000',shirt:'shirt003',tie:'tie006',shoes:'shoes010'},suitDay:true,updated:+keyDate(k)+8*3600e3};HOOK.cache={};
       $('#toast').textContent='';show('today');renderToday();
       const sync=Object.values(dayRecs).filter(r=>r.auto&&keyDate(r.date)>keyDate('2026-11-19')).length;   // (W2-14-12: in memory before the drawing)
       await recordRun;await new Promise(r=>setTimeout(r,700));const card=()=>{const c=document.querySelector('#missbox');return c?c.innerText.replace(/\s+/g,' '):''};
       const first=card(),toastTxt=$('#toast').textContent;
       HOOK.missedPickToggle();const days=[...document.querySelectorAll('#missbox .missone')].length;await HOOK.missedOne('2026-11-23');const one=HOOK.missedOpen().join();
-      const shown=[];for(const t of ['2026-11-27','2026-11-29','2026-11-30']){at(t+'T08:00:00');sel=homeDay();renderToday();shown.push(!!card());await recordRun}
+      const shown=[];for(const t of ['2026-11-27','2026-11-29','2026-11-30']){at(t+'T08:00:00');HOOK.sel=homeDay();renderToday();shown.push(!!card());await recordRun}
       return {sync,first,toastTxt,days,one,shown}});
     ok(mc.sync===4,`the days missed are recorded in memory before Today is drawn, so its "last worn" and cleaning frame count them at once (${mc.sync})`);
     ok(/4 workdays you didn’t open the app/.test(mc.first)&&!/didn’t open the app/.test(mc.toastTxt),`the card says it, and no toast says it again ("${mc.toastTxt}")`);
@@ -238,8 +238,8 @@ const w3plan=async({ok,chromium,url})=>{
     ok(mc.shown.join()==='true,true,false',`the card shows on three days at most for the same missed days (${mc.shown.join()})`);
 
     // ---- W2-16-09: a holiday today
-    const ho=await p.evaluate(()=>{fresh('2027-02-25T07:30:00');ward();settings.holidays={country:'KW',list:[{d:'2027-02-25',n:'National Day'},{d:'2027-02-26',n:'Liberation Day'}],skip:[],fetched:Date.now()};cache={};
-      sel=homeDay();view={y:sel.getFullYear(),m:sel.getMonth()};show('today');renderToday();const t=document.querySelector('#offtoday');return t?t.textContent:''});
+    const ho=await p.evaluate(()=>{fresh('2027-02-25T07:30:00');ward();settings.holidays={country:'KW',list:[{d:'2027-02-25',n:'National Day'},{d:'2027-02-26',n:'Liberation Day'}],skip:[],fetched:Date.now()};HOOK.cache={};
+      HOOK.sel=homeDay();HOOK.view={y:sel.getFullYear(),m:sel.getMonth()};show('today');renderToday();const t=document.querySelector('#offtoday');return t?t.textContent:''});
     ok(/Today is National Day, a day off\. This is Sunday’s outfit\./.test(ho),`Today says today is a holiday ("${ho}")`);
 
     ok(!errs.length,'no page errors: '+errs.join('; '));

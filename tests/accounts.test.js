@@ -239,8 +239,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       if(vp.width===390){
         // a limit reaches the user: Add card, pattern reading, item picture (the app makes no outfit photo since 2026-11-14)
         await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-          items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-          settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
+          HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+          settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today')});
         const itemErr=await p.evaluate(()=>HOOK.renderItemPic(items.find(i=>i.type==='shoes')).then(()=>'',e=>e.message));
         ok(/limit of 0 item pictures is used up/.test(itemErr),`an item picture over the cap fails with the sentence (${itemErr})`);
         await p.evaluate(()=>show('add'));

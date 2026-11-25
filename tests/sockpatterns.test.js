@@ -38,7 +38,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       x.save();x.beginPath();x.moveTo(170,40);x.lineTo(300,40);x.lineTo(300,330);x.quadraticCurveTo(300,430,200,440);x.lineTo(90,440);x.quadraticCurveTo(60,380,170,330);x.closePath();x.clip();
       x.fillStyle='#1b2a4a';x.fillRect(0,0,480,480);for(let r=0;r<8;r++)for(let k=0;k<5;k++){const cx=150+k*40+(r%2)*20,cy=60+r*48;x.fillStyle='#6d1f2c';x.beginPath();x.moveTo(cx,cy-24);x.lineTo(cx+20,cy);x.lineTo(cx,cy+24);x.lineTo(cx-20,cy);x.fill()}
       x.fillStyle='#babdc2';x.fillRect(60,400,120,60);x.restore();
-      const f=new File([await new Promise(r=>c.toBlob(r,'image/jpeg',.9))],'argyle.jpg',{type:'image/jpeg'});queue=[];await addFiles([f])});
+      const f=new File([await new Promise(r=>c.toBlob(r,'image/jpeg',.9))],'argyle.jpg',{type:'image/jpeg'});HOOK.queue=[];await addFiles([f])});
     await p.waitForFunction(()=>queue[0]&&queue[0].type==='socks'&&!queue[0].busy,null,{timeout:15000});await settle(p,500);
     const sentTypes=posts[0]&&posts[0].types||[];
     const card=await p.evaluate(()=>{const q=queue[0],txt=document.querySelector('#queue').textContent;return {q:[q.type,q.pattern,q.secondaryColor,q.tertiaryColor,q.toeColor].join(),toe:/Toe cap/.test(txt),second:/Second color/.test(txt),third:/Third color/.test(txt),pat:/Argyle/.test(txt),alt:/Polka dot/.test(txt)}});
@@ -96,7 +96,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     // ---- the move of the toe cap: once, stamped field by field, idempotent, again for a sock an older app syncs in
     const m=await p.evaluate(async()=>{const mk=(id,x)=>({id,type:'socks',primaryColor:'black',pattern:'solid',added:1,updated:5,...x});
       const list=[mk('m1',{secondaryColor:'lightgrey'}),mk('m2',{}),mk('m3',{secondaryColor:'grey',tertiaryColor:'red'}),mk('m4',{toeColor:'none',pattern:'argyle',secondaryColor:'red'}),{id:'m5',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',added:1,updated:5}];
-      for(const i of list)await putRaw(i);items=list.map(i=>({...i}));const fnv=i=>{HOOK.thumbN=0;return itemThumb(i)},before=items.slice(0,3).map(fnv);
+      for(const i of list)await putRaw(i);HOOK.items=list.map(i=>({...i}));const fnv=i=>{HOOK.thumbN=0;return itemThumb(i)},before=items.slice(0,3).map(fnv);
       let syncs=0;const was=window.setTimeout;window.setTimeout=(f,...a)=>{if(f===syncNow){syncs++;return 0}return was.call(window,f,...a)};const n=await sockToeMigrate(),again=await sockToeMigrate();
       const st=await tx('readonly',s=>s.getAll()),g=id=>st.find(x=>x.id===id);const after=['m1','m2','m3'].map(id=>fnv(items.find(x=>x.id===id)));
       // a sock from an older app, synced in
@@ -152,17 +152,17 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(r.rules>=25,`PLAN_RULES bumped (${r.rules})`);
     // ---- the planner over two months: a made-up wardrobe with a plain and an argyle pair
     const plan=await p.evaluate(()=>{let n=0;const I=(type,primaryColor,x={})=>({id:type+String(n++).padStart(2,'0'),type,primaryColor,pattern:'solid',added:1,...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','khaki',{trouserKind:'chinos'}),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','white',{pattern:'stripe',secondaryColor:'blue'}),
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','khaki',{trouserKind:'chinos'}),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','white',{pattern:'stripe',secondaryColor:'blue'}),
         I('tie','burgundy'),I('tie','navy',{pattern:'polka-dot',secondaryColor:'white'}),I('tie','green',{pattern:'paisley',secondaryColor:'gold'}),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf'}),I('belt','brown',{leather:'calf'}),
         I('socks','navy',{toeColor:'none'}),I('socks','charcoal',{toeColor:'none'}),I('socks','navy',{pattern:'argyle',secondaryColor:'burgundy',tertiaryColor:'gold',toeColor:'none',id:'argyle'})];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[3];settings.vestMode='never';settings.dress=undefined;weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';
-      dayRecs={'2026-11-17':{date:'2026-11-17',occasion:'funeral'},'2026-11-18':{date:'2026-11-18',formal:true},'2026-11-24':{date:'2026-11-24',occasion:'wedding'}};cache={};
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[3];settings.vestMode='never';settings.dress=undefined;HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';
+      HOOK.dayRecs={'2026-11-17':{date:'2026-11-17',occasion:'funeral'},'2026-11-18':{date:'2026-11-18',formal:true},'2026-11-24':{date:'2026-11-24',occasion:'wedding'}};HOOK.cache={};
       const P=planSim(new Date(2026,10,1)).upTo(new Date(2026,11,31)),days=Object.entries(P).filter(([,o])=>o.socks),arg=days.filter(([,o])=>o.socks.id==='argyle');
       const special=['2026-11-17','2026-11-18','2026-11-24'].map(k=>P[k]&&P[k].socks&&P[k].socks.id).join();
       const busy=arg.filter(([,o])=>HOOK.patsOf([[o.top,'top'],[o.suitDay?null:o.bot,'bot'],[o.shirt,'shirt'],[o.tie,'tie']]).length>=2).length;
       const hard=arg.filter(([,o])=>rateOutfit(o).hard.includes('Socks')).length,echo=arg.filter(([,o])=>HOOK.sockPatScore(o.socks,{top:o.top,bot:o.bot,shirt:o.shirt,tie:o.tie}).echo).length;
-      dayRecs={};cache={};return {days:days.length,arg:arg.length,special,busy,hard,echo}});
+      HOOK.dayRecs={};HOOK.cache={};return {days:days.length,arg:arg.length,special,busy,hard,echo}});
     ok(plan.arg>0&&plan.arg<plan.days,`the argyle pair is planned on some days (${plan.arg} of ${plan.days}), ${plan.echo} of them picking up the tie or shirt`);
     ok(!plan.special.includes('argyle'),`never on the funeral, the formal day or the wedding (${plan.special})`);
     if(shots)fs.writeFileSync(path.join(shots,'plan.json'),JSON.stringify({r,plan}));
@@ -174,7 +174,7 @@ module.exports=async({ok,chromium,url,settle})=>{
         I('tie','burgundy'),I('tie','burgundy',{pattern:'stripe',secondaryColor:'navy'}),I('tie','green'),I('tie','navy',{pattern:'polka-dot',secondaryColor:'burgundy'}),I('tie','green',{pattern:'paisley',secondaryColor:'gold'}),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('watch','grey',{metal:'silver'}),
         I('socks','navy',{toeColor:'none'}),I('socks','charcoal',{toeColor:'none'}),I('socks','brown',{toeColor:'none'})];
-      settings.blazerDays=[3,4];dayRecs={};settings.shopSkip=[];TODAY_OVERRIDE='2026-11-15T12:00:00';
+      settings.blazerDays=[3,4];HOOK.dayRecs={};settings.shopSkip=[];HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';
       const ideas=r=>r.cats.flatMap(c=>c.recs).filter(x=>x.type==='socks'&&x.items[0].pattern!=='solid').map(x=>({name:x.name,tier:x.tier,why:x.why.join(' ')}));
       const a=ideas(runAnalysis(W,todayDate())),b=ideas(runAnalysis(W.filter(i=>!i.trouserKind),todayDate()));settings.blazerDays=[3];return {a,b}});
     ok(shopR.a.length>=1&&shopR.a.every(x=>x.tier==='variety')&&/argyle|stripe/.test(shopR.a.map(x=>x.name).join())&&/picks? up your (burgundy|green) ties/.test(shopR.a[0].why),`What to buy suggests a patterned pair for the chinos days, as an idea (${JSON.stringify(shopR.a)})`);

@@ -50,9 +50,9 @@ const deadcanvas=async({ok,chromium,url})=>{
     const tex=await mk(400,400,"for(let y=0;y<h;y+=4)for(let X=0;X<w;X+=4){x.fillStyle=((X+y)/4)%2?'#654':'#432';x.fillRect(X,y,4,4)}");
     // a dark but real picture: near-black cloth with texture up to about 20
     const dark=await mk(300,300,"for(let y=0;y<h;y+=3)for(let X=0;X<w;X+=3){const v=4+((X*7+y*13)%17);x.fillStyle=`rgb(${v},${v},${v+2})`;x.fillRect(X,y,3,3)}");
-    await p.evaluate(([ph,tx])=>{items=[{id:'s1',type:'suit',primaryColor:'brown',pattern:'solid',added:1,photo:ph,texture:tx},{id:'t1',type:'tie',primaryColor:'navy',pattern:'solid',added:2},{id:'h1',type:'shirt',primaryColor:'white',pattern:'solid',added:3}];
-      settings.workdays=[0,1,2,3,4];settings.planRules=PLAN_RULES;dayRecs={};cache={};flt='all'},[photo,tex]);
-    await p.evaluate(async()=>{const it=items[0];await refreshSwatch(it);await makeSmall(it);await put(it);editing='s1';show('wardrobe')});
+    await p.evaluate(([ph,tx])=>{HOOK.items=[{id:'s1',type:'suit',primaryColor:'brown',pattern:'solid',added:1,photo:ph,texture:tx},{id:'t1',type:'tie',primaryColor:'navy',pattern:'solid',added:2},{id:'h1',type:'shirt',primaryColor:'white',pattern:'solid',added:3}];
+      settings.workdays=[0,1,2,3,4];settings.planRules=PLAN_RULES;HOOK.dayRecs={};HOOK.cache={};HOOK.flt='all'},[photo,tex]);
+    await p.evaluate(async()=>{const it=items[0];await refreshSwatch(it);await makeSmall(it);await put(it);HOOK.editing='s1';show('wardrobe')});
     const keep=await p.evaluate(()=>({photo:items[0].photo,swatch:items[0].swatch,sm:items[0].photoSm}));
     ok(await p.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=8;const x=c.getContext('2d');x.fillStyle='#345';x.fillRect(0,0,8,8);
       const b=document.createElement('canvas');b.width=b.height=8;const y=b.getContext('2d');y.fillStyle='#000';y.fillRect(0,0,8,8);return !deadCanvas(c)&&deadCanvas(b)}),'a colored picture is not taken for a dead one; a pure black one is');

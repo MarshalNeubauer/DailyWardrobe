@@ -67,7 +67,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       await ev(()=>save('q2'));await p.waitForFunction(n=>items.length===n+1,n0);
       ok(await ev(()=>{const i=items.find(x=>x.type==='pants');return !!i&&!i.material}),T+'Confirm still works with the material empty');
       // ---- the item sheet's dropdown, Settings
-      await ev(()=>{items.push({id:'s1',type:'shirt',primaryColor:'white',pattern:'solid',material:'cupro',added:5},{id:'t1',type:'tie',primaryColor:'navy',pattern:'solid',added:4});flt='all';editing=null;show('wardrobe')});
+      await ev(()=>{items.push({id:'s1',type:'shirt',primaryColor:'white',pattern:'solid',material:'cupro',added:5},{id:'t1',type:'tie',primaryColor:'navy',pattern:'solid',added:4});HOOK.flt='all';HOOK.editing=null;show('wardrobe')});
       await ev(()=>openItem('s1'));await settle(p,400);
       e=await ev(()=>({sel:document.querySelector('#item-view .wmat').value,other:!!document.querySelector('#item-view .wmat-o')}));
       ok(e.sel==='cupro'&&!e.other,T+'the item sheet lists the shirt\'s own material, chosen');
@@ -96,7 +96,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       await p.waitForSelector('#rd-mat.done');ok(true,T+'its own tap adds it to the shirt materials and sets it');
       await ev(()=>HOOK.rdClose());await ev(()=>HOOK.rdUndoAll());await p.waitForFunction(()=>!items.find(i=>i.id==='r1').material);
       ok(await ev(()=>ownMats('shirt').includes('cupro')),T+'Undo takes it off the item; it stays in the list while another shirt still uses it');
-      await ev(async()=>{items=items.filter(i=>i.id!=='s1');await removeOwnMaterial('shirt','cupro')});
+      await ev(async()=>{HOOK.items=items.filter(i=>i.id!=='s1');await removeOwnMaterial('shirt','cupro')});
       await ev(()=>addOwnMaterial('shirt','cupro'));
       S.reply=reply({key:'cupro',confidence:'high',why:''});await read();e=await sheet();
       ok(/Material: Cupro/.test(e.mat)&&S.sent[0]&&JSON.stringify(S.sent[0].ownMaterials)==='{"shirt":["cupro"]}',T+'once added, the reading sends it and a cupro answer is a normal material card');

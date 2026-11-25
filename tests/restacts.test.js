@@ -47,9 +47,9 @@ async function open(browser,eng,url,settle,o={}){
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   await p.evaluate(()=>{CK_OPEN['*']=true;
     window.__pic=(w,h,c)=>{const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d');x.fillStyle=c;x.fillRect(0,0,w,h);return cv.toDataURL('image/jpeg',.9)};
-    items=[{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',photo:__pic(300,300,'#234')},{id:'s2',type:'suit',primaryColor:'charcoal',pattern:'solid',photo:__pic(300,300,'#444'),texture:__pic(200,200,'#444')},
+    HOOK.items=[{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',photo:__pic(300,300,'#234')},{id:'s2',type:'suit',primaryColor:'charcoal',pattern:'solid',photo:__pic(300,300,'#444'),texture:__pic(200,200,'#444')},
       {id:'t1',type:'tie',primaryColor:'burgundy',pattern:'solid'},{id:'h1',type:'shirt',primaryColor:'white',pattern:'solid'},{id:'p1',type:'pants',primaryColor:'grey',pattern:'solid'},{id:'o1',type:'shoes',primaryColor:'black',pattern:'solid',leather:'calf'}];
-    settings.setupDone=1;settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-20T09:00:00';cache={};queue.length=0;
+    settings.setupDone=1;settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-20T09:00:00';HOOK.cache={};queue.length=0;
     window.__calls=[];window.__spy=(...names)=>{for(const f of names)window[f]=(...a)=>{__calls.push([f,...a.map(x=>x instanceof File?'file:'+x.name:x)])}};
     /* a function of a file that is an ES module (remind.js: remindSwitch) is called inside its module, where a replaced window.<name>
        isn't seen (tests/bridge.test.js; tests/actsindex.test.js VIA): it is replaced one step earlier, at the handlers the markup names
@@ -158,11 +158,11 @@ async function linked(eng,browser,{ok,url,settle}){
   await tap('#ask-ok',300);await p.waitForFunction(()=>!document.querySelector('#acct-list .acct-inv[data-id="inv2"]'),null,{timeout:8000}).catch(()=>{});
   c=await ev(()=>[...document.querySelectorAll('#acct-list .acct-inv')].map(r=>r.dataset.id));
   ok(/Delete Kim/.test(q3||'')&&c.join()==='inv1'&&S.invites.length===1,T+'Delete their data asks first, then takes Kim off the server and the list ('+JSON.stringify([q3,c])+')');
-  await ev(()=>{toastDrop&&toastDrop();acct={...acct,me:{id:'t',role:'tester',name:'Tess',used:{},caps:{}},state:'ok'};HOOK.renderAccountUI()});await settle(p,200);
+  await ev(()=>{toastDrop&&toastDrop();HOOK.acct={...acct,me:{id:'t',role:'tester',name:'Tess',used:{},caps:{}},state:'ok'};HOOK.renderAccountUI()});await settle(p,200);
   await tap('#acct-box .sactions button',500);
   c=await ev(()=>document.querySelector('#toast').textContent);
   ok(/Your invitation link is copied|Copy the link shown under the button/.test(c),T+'a tester’s "Copy my invitation link" copies it, or shows it to copy ('+c+')');
-  await ev(()=>{acct={...acct,me:{id:'own',role:'owner',name:'Owner'}};HOOK.renderAccountUI()});
+  await ev(()=>{HOOK.acct={...acct,me:{id:'own',role:'owner',name:'Owner'}};HOOK.renderAccountUI()});
 
   // About: the delete card (the deletion itself is replaced: it would empty this test's app)
   await ev(()=>{__via('deleteMyData',{delAllTap:()=>[true],delDeviceTap:()=>[false]});openSettings('about')});await settle(p,600);   // (at the two handlers: about.js is a module; about.test.js and shellfix.test.js tap them for real)
@@ -217,7 +217,7 @@ async function linked(eng,browser,{ok,url,settle}){
   await p.waitForFunction(()=>/^Connected/.test((document.querySelector('#cal-msg')||{}).textContent||''),null,{timeout:10000}).catch(()=>{});
   c=await ev(()=>({msg:document.querySelector('#cal-msg').textContent,rows:[...document.querySelectorAll('#cal-new-list .cal-row b')].map(b=>b.textContent),url:settings.calendar&&settings.calendar.url}));
   ok(/doesn’t look like a calendar link/.test(k0)&&/^Connected\. 3 events/.test(c.msg)&&c.rows.length===3&&/^webcal:/.test(c.url||'')&&S.reads===1,T+'the calendar: Connect turns down a text that isn’t a link, then reads the link and lists its events ('+JSON.stringify([k0,c])+')');
-  await ev(()=>{closeSettings();show('today');sel=homeDay();renderToday()});await settle(p,400);
+  await ev(()=>{closeSettings();show('today');HOOK.sel=homeDay();renderToday()});await settle(p,400);
   const ban=await ev(()=>(document.querySelector('#cal-new')||{}).textContent||'');
   await tap('#cal-new button',700);
   c=await ev(()=>settingsOpen()&&document.querySelector('#sc-calendar').classList.contains('open'));
@@ -238,7 +238,7 @@ async function linked(eng,browser,{ok,url,settle}){
   await tap('#toast button',700);
   c=await ev(()=>({pack:!document.querySelector('#pack').hidden,set:settingsOpen()}));
   ok(c.pack,T+'the toast’s Open opens the Packing list ('+JSON.stringify(c)+')');
-  await ev(()=>{closeSettings();show('today');sel=new Date(2026,11,8);renderToday()});await settle(p,400);
+  await ev(()=>{closeSettings();show('today');HOOK.sel=new Date(2026,11,8);renderToday()});await settle(p,400);
   const trip=await ev(()=>(document.querySelector('#cal-trip')||{}).textContent||'');
   await tap('#cal-trip button',700);
   c=await ev(()=>!document.querySelector('#pack').hidden);

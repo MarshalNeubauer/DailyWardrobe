@@ -11,10 +11,10 @@ module.exports=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // the wardrobe started today: no outfit on the days before (a day with a record keeps its outfit)
     const past=await p.evaluate(()=>{const now=Date.now();let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:now,...x});
-      items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];dayRecs={'2026-11-3':{date:'2026-11-3',ids:{top:'suit0',bot:'suit0',shirt:'shirt1',tie:'tie2'},suitDay:true,worn:true}};cache={};
+      HOOK.items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[0,1,2,3,4];HOOK.dayRecs={'2026-11-3':{date:'2026-11-3',ids:{top:'suit0',bot:'suit0',shirt:'shirt1',tie:'tie2'},suitDay:true,worn:true}};HOOK.cache={};
       const pl=planMonth(2026,10),ks=Object.keys(pl).filter(k=>pl[k]&&hasOutfit(pl[k]));
-      const old=items.map(i=>({...i}));items.forEach(i=>delete i.added);cache={};const all=Object.keys(planMonth(2026,10)).length;items=old;cache={};
+      const old=items.map(i=>({...i}));items.forEach(i=>delete i.added);HOOK.cache={};const all=Object.keys(planMonth(2026,10)).length;HOOK.items=old;HOOK.cache={};
       return {before:ks.filter(k=>keyDate(k)<todayDate()),today:!!pl['2026-11-16'],all,rec:pl['2026-11-3']?JSON.stringify(idsOf(pl['2026-11-3'])):'none',keys:Object.keys(pl).slice(0,5).join()}});
     ok(past.before.join()==='2026-11-3'&&past.today,`no planned outfit before the first item was added, except a day really recorded (${past.before.join()}; ${past.rec}; ${past.keys})`);
     ok(past.all>past.before.length+10,'items from before `added` existed keep every planned day');
@@ -29,7 +29,7 @@ module.exports=async({ok,chromium,url})=>{
     // no 404 for every day without a photo: the worker's list says which it has
     const asks=[];await p.route('https://w.test/**',r=>{const u=r.request().url();asks.push(u.replace('https://w.test/',''));
       if(/list=1/.test(u))return r.fulfill({status:200,contentType:'application/json',body:'{"keys":[]}'});return r.fulfill({status:404,contentType:'application/json',body:'{"error":"none"}'})});
-    await p.evaluate(async()=>{HOOK.rememberRole({role:'tester'});HOOK.renderTried.clear();remoteKeys=null;for(let i=0;i<4;i++){stepDay(1);await new Promise(r=>setTimeout(r,80))}await new Promise(r=>setTimeout(r,400))});
+    await p.evaluate(async()=>{HOOK.rememberRole({role:'tester'});HOOK.renderTried.clear();HOOK.remoteKeys=null;for(let i=0;i<4;i++){stepDay(1);await new Promise(r=>setTimeout(r,80))}await new Promise(r=>setTimeout(r,400))});
     ok(asks.filter(a=>/key=|day=/.test(a)).length===0&&asks.some(a=>/list=1/.test(a)),`days without a photo on the worker are not asked about one by one (${asks.length} requests: ${[...new Set(asks.map(a=>a.replace(/=.*/,'')))].join(', ')})`);
     await p.unroute('https://w.test/**');
     // no "· silver" where no metal applies
@@ -38,7 +38,7 @@ module.exports=async({ok,chromium,url})=>{
     // "Several items" without a connection
     const sev=await p.evaluate(()=>{localStorage.removeItem('worker_url');localStorage.removeItem('app_token');openAdd();const n=document.querySelector('#add-group-off');return {hidden:!document.querySelector('#add-group').offsetParent,note:n&&!n.hidden?n.textContent:''}});
     ok(sev.hidden&&/needs a connection/.test(sev.note),`without a connection Add says that Several items needs one, before any photo is picked (${sev.note})`);
-    await p.evaluate(()=>{items=[];cache={};show('today')});
+    await p.evaluate(()=>{HOOK.items=[];HOOK.cache={};show('today')});
     // the setup: an unfinished city search, and the time zone's holidays
     await p.route('https://geocoding-api.open-meteo.com/**',async r=>{await new Promise(z=>setTimeout(z,1500));r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({results:[{latitude:29.4,longitude:47.9,name:'Kuwait City',country_code:'KW'}]})})});
     await p.route('https://date.nager.at/**',r=>r.fulfill({status:404,body:''}));

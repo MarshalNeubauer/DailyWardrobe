@@ -67,7 +67,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/shirt-diamond-closeup.jpg')).blob();await addFiles([new File([b],'s.jpg',{type:'image/jpeg'})]);await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
     await p.waitForFunction(()=>queue[0]&&!queue[0].patternReading&&queue[0].specFailed,null,{timeout:20000});
     ok(await p.evaluate(()=>!queue[0].sett),'when Claude can\'t read the weave, the shirt keeps its generic drawing (the band reader is not used on a weave)');
-    await p.evaluate(()=>{queue=[];renderAdd()});
+    await p.evaluate(()=>{HOOK.queue=[];renderAdd()});
     // Settings → Outfit pictures → Painted plain (one list since 2026-11-13, with the former "Shirt weaves"): a textured shirt with no reading is listed and read
     patternReply=()=>[200,{...TEX,model:'m'}];
     await p.evaluate(async()=>{const it=items.find(i=>i.type==='shirt');delete it.sett;delete it.patternSpec;await put(it);show('settings')});
