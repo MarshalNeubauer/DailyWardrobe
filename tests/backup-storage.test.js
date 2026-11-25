@@ -388,7 +388,7 @@ const inlineswatch=async({ok,chromium,url,ROOT})=>{
     // the worker from before (this worker with PH_MIN 256, as main had it), as between the app's deploy and the worker's: it splits the
     // inline swatch out itself, so the save goes through (no 400 missing) and another device still gets it
     {const fs=require('fs'),os=require('os'),dir=fs.mkdtempSync(path.join(os.tmpdir(),'dw-ph256-'));fs.mkdirSync(path.join(dir,'worker'));
-      fs.copyFileSync(path.join(ROOT,'worker.js'),path.join(dir,'worker.js'));fs.copyFileSync(path.join(ROOT,'merge.js'),path.join(dir,'merge.js'));   // (the merge rules it imports)
+      fs.copyFileSync(path.join(ROOT,'worker.js'),path.join(dir,'worker.js'));fs.copyFileSync(path.join(ROOT,'merge.js'),path.join(dir,'merge.js'));fs.copyFileSync(path.join(ROOT,'calparse.js'),path.join(dir,'calparse.js'));   // (the merge rules and the calendar parser it imports)
       for(const n of fs.readdirSync(path.join(ROOT,'worker')))if(n.endsWith('.js')){let s=fs.readFileSync(path.join(ROOT,'worker',n),'utf8');if(n==='backup.js')s=s.replace('const PH_MIN = 16384,','const PH_MIN = 256,');fs.writeFileSync(path.join(dir,'worker',n),s)}
       ok(/const PH_MIN = 256,/.test(fs.readFileSync(path.join(dir,'worker','backup.js'),'utf8')),'(the worker from before: PH_MIN 256)');
       const Old=(await import(pathToFileURL(path.join(dir,'worker.js')).href)).default;const cur=worker;worker=Old;
