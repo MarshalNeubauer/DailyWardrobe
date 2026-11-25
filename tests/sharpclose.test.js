@@ -9,7 +9,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.route('**/fakeworker/**',async r=>{const b=r.request().postDataJSON()||{};sent.push({path:new URL(r.request().url()).pathname,closeup:b.closeup||null});
       await r.fulfill({json:{model:'m',...({type:'blazer',primaryColor:'midgrey',secondaryColor:'none',tertiaryColor:'none',pattern:'solid',confidence:{type:'high',primaryColor:'high',pattern:'high'},altColor:'none',altPattern:'none',newColor:null,newPattern:null})}})});
     await p.evaluate(()=>{localStorage.setItem('worker_url',location.origin+'/fakeworker/');localStorage.setItem('app_token','t');
-      items=[{id:'b1',type:'blazer',primaryColor:'midgrey',pattern:'solid',photo:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC',added:1}];flt='all';editing='b1';show('wardrobe')});
+      HOOK.items=[{id:'b1',type:'blazer',primaryColor:'midgrey',pattern:'solid',photo:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC',added:1}];HOOK.flt='all';HOOK.editing='b1';show('wardrobe')});
     // a 1932x2576 close-up, added from the editor
     const add=()=>p.evaluate(async()=>{const c=document.createElement('canvas');c.width=1932;c.height=2576;const x=c.getContext('2d');for(let y=0;y<c.height;y+=6){x.fillStyle=y%12?'#777':'#999';x.fillRect(0,y,c.width,3)}
       const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.9));await replaceTexture('b1',new File([b],'c.jpg',{type:'image/jpeg'}))});
@@ -34,7 +34,7 @@ module.exports=async({ok,chromium,url})=>{
     // a close-up saved at 640 before, with its sharp copy on this device: made again from the sharp copy once, in the old one's colour
     const up=await p.evaluate(async()=>{const mk=(w,h,fill)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle=fill;x.fillRect(0,0,w,h);
         for(let y=0;y<h;y+=Math.max(2,h/160|0)){x.fillStyle='rgba(0,0,0,.25)';x.fillRect(0,y,w,1)}return c.toDataURL('image/jpeg',.9)};
-      const old=mk(480,640,'#6a7f9c'),sharp=mk(1152,1536,'#8aa0c0');items=[{id:'u1',type:'blazer',primaryColor:'steelblue',pattern:'solid',texture:old,added:1},{id:'u2',type:'blazer',primaryColor:'navy',pattern:'solid',texture:old,added:1}];
+      const old=mk(480,640,'#6a7f9c'),sharp=mk(1152,1536,'#8aa0c0');HOOK.items=[{id:'u1',type:'blazer',primaryColor:'steelblue',pattern:'solid',texture:old,added:1},{id:'u2',type:'blazer',primaryColor:'navy',pattern:'solid',texture:old,added:1}];
       await keepCloseImg('u1',sharp,old);localStorage.removeItem('tex_up');const n=await upgradeCloseups(),it=items[0],im=await imgOf(it.texture),av=async u=>{const i=await imgOf(u),c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.drawImage(i,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let s=[0,0,0];for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)s[q]+=d[k+q];return s.map(v=>Math.round(v/256))};
       return {n,w:im.naturalWidth,h:im.naturalHeight,oldAv:await av(old),newAv:await av(it.texture),kept:(await sharpCloseOf(it))===sharp,other:items[1].texture===old,again:await upgradeCloseups(),flag:localStorage.getItem('tex_up')}});
     ok(up.n===1&&up.w===1152&&up.h===1536&&up.kept&&up.other,`an old 640 px close-up is made again at 1536 px from this device's sharp copy, which is kept for it; one with no sharp copy is left (${up.n}, ${up.w}x${up.h})`);

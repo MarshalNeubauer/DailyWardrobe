@@ -9,11 +9,11 @@ const picker=async({ok,chromium,url,settle:settleFor})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;window.I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('suit','brown'),I('blazer','navy'),I('pants','grey'),I('pants','tan'),
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('suit','brown'),I('blazer','navy'),I('pants','grey'),I('pants','tan'),
         I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','lavender'),I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','gold'),I('tie','purple'),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy'),I('socks','charcoal'),I('watch','silver',{metal:'silver'})];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';dayRecs={};weather={};climate=null;TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};
-      sel=new Date(2026,10,17);view={y:2026,m:10};listOpen=true;show('today')});
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';HOOK.dayRecs={};HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};
+      HOOK.sel=new Date(2026,10,17);HOOK.view={y:2026,m:10};HOOK.listOpen=true;show('today')});
     await settle();
     // ---- the sheet ----
     const before=await p.evaluate(()=>idsOf(planFor()[key(sel)]));
@@ -34,7 +34,7 @@ const picker=async({ok,chromium,url,settle:settleFor})=>{
     const cyc=await p.evaluate(()=>idsOf(planFor()[key(sel)]));
     ok(cyc.shirt!==after.ids.shirt&&cyc.tie===want,'"Suggest another" gives a different shirt and keeps the chosen tie');
     // picking the jacket re-picks what must follow it; closing the sheet changes nothing
-    await p.evaluate(()=>{const k=Object.entries(planFor()).find(([d,o])=>keyDate(d)>todayDate()&&o.top&&o.top.primaryColor!=='brown')[0];sel=keyDate(k);renderToday()});await settle();
+    await p.evaluate(()=>{const k=Object.entries(planFor()).find(([d,o])=>keyDate(d)>todayDate()&&o.top&&o.top.primaryColor!=='brown')[0];HOOK.sel=keyDate(k);renderToday()});await settle();
     await p.click('#ri-top .swap');const topWant=await p.evaluate(()=>{const o=planFor()[key(sel)];return items.find(i=>i.type==='suit'&&i.primaryColor==='brown').id});
     await p.click(`.pick-it[data-id="${topWant}"]`);await settle();
     const tp=await p.evaluate(()=>{const o=planFor()[key(sel)];return {top:o.top.id,shoes:o.shoes.primaryColor,score:rateOutfit(o).score}});
@@ -42,17 +42,17 @@ const picker=async({ok,chromium,url,settle:settleFor})=>{
     await p.click('#ri-tie .swap');await p.click('.pick-x');await settle();
     ok(await p.evaluate(()=>!document.querySelector('#pick-sheet').classList.contains('on')&&planFor()[key(sel)].top.id)===topWant,'closing the sheet changes nothing');
     // ---- no learning: a swap and a hand pick change only their own day, and record nothing in the settings ----
-    const nl=await p.evaluate(async()=>{dayRecs={};cache={};sel=new Date(2026,10,17);view={y:2026,m:10};renderToday();
+    const nl=await p.evaluate(async()=>{HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,17);HOOK.view={y:2026,m:10};renderToday();
       const st0=JSON.stringify((await metaGet('settings'))||{});
       await HOOK.swapSlot('tie');const ch=items.find(i=>i.type==='tie'&&i.id!==planFor()[key(sel)].tie.id);
-      const k2=Object.keys(planMonth(2026,11)).find(k=>keyDate(k)>todayDate());sel=keyDate(k2);view={y:sel.getFullYear(),m:sel.getMonth()};renderToday();await pickItem('tie',ch.id);
+      const k2=Object.keys(planMonth(2026,11)).find(k=>keyDate(k)>todayDate());HOOK.sel=keyDate(k2);HOOK.view={y:sel.getFullYear(),m:sel.getMonth()};renderToday();await pickItem('tie',ch.id);
       const st1=(await metaGet('settings'))||{};
       return {msg:document.querySelector('#today').textContent,learn:'learn' in settings||'learn' in st1,settings:JSON.stringify(st1)===st0,picked:planFor()[k2].tie.id===ch.id}});
     ok(!nl.learn&&nl.settings&&!/Noted|the planner will/.test(nl.msg),'a swap and a hand pick record no votes and leave the stored settings as they were');
     ok(nl.picked,'the pick holds on its day');
     // ---- correcting a past day ----
-    const past=await p.evaluate(async()=>{dayRecs={};cache={};TODAY_OVERRIDE='2026-11-10T12:00:00';sel=new Date(2026,10,10);view={y:2026,m:10};pastEdit=null;renderToday();await new Promise(r=>setTimeout(r,400));
-      sel=new Date(2026,10,9);renderToday();const o=planFor()[key(sel)];return {frozen:!!o.frozen,btn:!!document.querySelector('.pastedit'),swaps:document.querySelectorAll('#ibox .swap').length,top:o.top.id,tie:o.tie.id,shirt:o.shirt.id,future:JSON.stringify(idsOf(planFor()['2026-11-11']))}});
+    const past=await p.evaluate(async()=>{HOOK.dayRecs={};HOOK.cache={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.pastEdit=null;renderToday();await new Promise(r=>setTimeout(r,400));
+      HOOK.sel=new Date(2026,10,9);renderToday();const o=planFor()[key(sel)];return {frozen:!!o.frozen,btn:!!document.querySelector('.pastedit'),swaps:document.querySelectorAll('#ibox .swap').length,top:o.top.id,tie:o.tie.id,shirt:o.shirt.id,future:JSON.stringify(idsOf(planFor()['2026-11-11']))}});
     ok(past.frozen&&past.btn&&past.swaps===0,'a past day has a "Correct this day" button and no change buttons until it is pressed');
     await p.click('.pastedit');await settle();
     ok(await p.evaluate(()=>document.querySelectorAll('#ibox .swap').length>=6&&document.querySelector('#ibox').classList.contains('open')&&/what you really wore/.test(document.querySelector('#today').textContent)),'pressing it opens the list with a change button on every piece');
@@ -93,12 +93,12 @@ const beltswap=async({ok,chromium,url,settle})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const setup=suits=>p.evaluate(suits=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[...suits.map(c=>I('suit',c)),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('watch','grey',{metal:'silver'}),
+      HOOK.items=[...suits.map(c=>I('suit',c)),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('watch','grey',{metal:'silver'}),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),
         I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('belt','oxblood',{leather:'cordovan',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};listOpen=true;swapMsg='';show('today')},suits);
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};HOOK.listOpen=true;HOOK.swapMsg='';show('today')},suits);
     const st=()=>p.evaluate(()=>{const o=planFor()[key(sel)];return {ids:idsOf(o),belt:o.belt&&o.belt.primaryColor,shoes:o.shoes&&o.shoes.primaryColor,fit:o.belt&&o.shoes?beltFit(o.shoes,o.belt):null,
-      msg:swapMsg,saved:(dayRecs[key(sel)]||{}).updated||0,notes:(o.notes||[]).join(' | ')}});
+      msg:HOOK.swapMsg,saved:(dayRecs[key(sel)]||{}).updated||0,notes:(o.notes||[]).join(' | ')}});
     // a navy suit: black, brown and oxblood shoes all suit it
     await setup(['navy']);await settle(p,200);
     const a=await st();

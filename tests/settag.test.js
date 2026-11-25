@@ -16,7 +16,7 @@ module.exports=async({ok,chromium,url})=>{
       const near={id:'p2',type:'pants',primaryColor:'charcoal',pattern:'check',sett:{...sett,bands:[[COLORS.charcoal,.78],['#7a808a',.22]],cross:{d:90,bands:[[null,.78],['#7a808a',.22]],r:1}},added:2};
       const tie={id:'t1',type:'tie',primaryColor:'navy',pattern:'stripe',sett:{v:2,a:45,bands:[['#2a2a43',.5],['#6498d1',.5]],cr:6,tr:20},added:3};
       const shirt={id:'s1',type:'shirt',primaryColor:'blue',pattern:'stripe',sett:{v:2,a:0,bands:[['#ffffff',.6],['#888888',.4]],cr:8,tr:60},added:4};
-      items=[pants,near,tie,shirt];
+      HOOK.items=[pants,near,tie,shirt];
       const lin=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},gam=v=>Math.round(255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055));
       const hex=s=>'#'+s.map(v=>gam(v).toString(16).padStart(2,'0')).join('');
       const img=src=>new Promise((res,rej)=>{const m=new Image();m.onload=()=>res(m);m.onerror=rej;m.src=src});

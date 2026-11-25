@@ -40,7 +40,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{items=[];show('add')});
+    await p.evaluate(()=>{HOOK.items=[];show('add')});
     // a 3000x2000 photo: a taupe-ish suit on a white wall
     reply=()=>({...base,...extra,newColor:{name:'mushroom',why:'grayer than taupe'}});
     await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=3000;c.height=2000;const x=c.getContext('2d');x.fillStyle='#f0f0ee';x.fillRect(0,0,3000,2000);x.fillStyle='rgb(128,116,104)';x.fillRect(800,300,1400,1700);
@@ -109,7 +109,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(await p.evaluate(()=>!COLORS.ownsage&&settings.custom.colors.length===1),'an unused one can be removed');
     // calibration: two measured items of a colour set that colour's reference
     const cal=await p.evaluate(()=>{items.push({id:'a',type:'suit',primaryColor:'navy',meas:{lab:[20,2,-20],ref:true}},{id:'b',type:'suit',primaryColor:'navy',meas:{lab:[22,2,-18],ref:true}});
-      const c=HOOK.calibLab('navy','blazer'),n=nearestCols('suit',[21,2,-19],true);items=items.filter(i=>!['a','b'].includes(i.id));return {c,n}});
+      const c=HOOK.calibLab('navy','blazer'),n=nearestCols('suit',[21,2,-19],true);HOOK.items=items.filter(i=>!['a','b'].includes(i.id));return {c,n}});
     ok(cal.c&&cal.c[0]===20||cal.c[0]===22,'two measured navy items set what navy looks like in this wardrobe');
     ok(cal.n[0].c==='navy'&&cal.n[0].d<3,`a new measurement close to them matches navy (ΔE ${cal.n[0].d})`);
     // ---- an item is never shown its own corrections (the colour picker's Ask Claude passes skipId; the accuracy check that did too was removed 2026-11-13)

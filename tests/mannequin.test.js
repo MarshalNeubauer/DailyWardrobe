@@ -12,9 +12,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       const sett={v:2,a:0,bands:[['#211d26',.47],['#2d282f',.03],['#211d26',.47],['#421320',.03]],cross:null,cr:4,tr:22,src:'claude+pixels'},
         spec={across:{bands:[{role:'ground',hex:'#211d26',w:.47},{role:'line',hex:'#9a979e',w:.03},{role:'ground',hex:'#211d26',w:.47},{role:'line',hex:'#6e2a3c',w:.03}]}};
-      items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'grey',sett,patternSpec:spec}),I('shirt','pink'),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('tieclip','gold',{metal:'gold'}),
+      HOOK.items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'grey',sett,patternSpec:spec}),I('shirt','pink'),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('tieclip','gold',{metal:'gold'}),
         I('watch','brown',{metal:'gold',band:'leather'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'gold'}),I('socks','navy'),I('pants','grey')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='always';weather={};dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')});
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='always';HOOK.weather={};HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')});
     const outfit=k=>p.evaluate(k=>{const g=t=>items.find(i=>i.type===t),top=g('suit');
       return ({vest:{suitDay:true,top,bot:top,shirt:g('shirt'),tie:g('tie'),clip:g('tieclip'),watch:g('watch'),belt:g('belt'),vest:true},
         suit:{suitDay:true,top,bot:top,shirt:g('shirt'),tie:g('tie'),clip:g('tieclip'),watch:g('watch'),belt:g('belt'),vest:false},
@@ -65,7 +65,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         inFig:svg.toLowerCase().includes(l.sett.bands[1][0]),plain:HOOK.figStripeLift(items[1])===items[1]}});
     ok(lift.brighter&&lift.ground&&lift.inFig&&lift.plain,`a pinstripe's lines are lifted toward the reading's named colours as the painter draws them (${lift.was} -> ${lift.grey}); the ground and other cloths are unchanged`);
     // Today: a waistcoat day shows the mannequin when no painted picture is ready
-    const t=await p.evaluate(()=>{const P=planFor();const k=Object.keys(P).find(k=>keyDate(k)>=new Date(2026,10,16)&&P[k].suitDay&&P[k].vest);sel=keyDate(k);renderToday();
+    const t=await p.evaluate(()=>{const P=planFor();const k=Object.keys(P).find(k=>keyDate(k)>=new Date(2026,10,16)&&P[k].suitDay&&P[k].vest);HOOK.sel=keyDate(k);renderToday();
       const c=document.querySelector('#mannequin-container');return {svg:!!c.querySelector(':scope > svg .fig-skin'),vest:!!c.querySelector('.fig-vest'),ids:new Set([...c.querySelectorAll('[id]')].map(e=>e.id)).size===c.querySelectorAll('[id]').length}});
     ok(t.svg&&t.vest&&t.ids,'Today draws a waistcoat day as the waistcoat mannequin');
     // two on a page don't share ids

@@ -19,7 +19,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady&&appVersion()!=null);
     if(o.connect!==false)await p.evaluate(s=>{localStorage.setItem('worker_url',s);localStorage.setItem('app_token','tok-1')},SRV);
     return {p,ctx,calls,errs}};
-  const about=async p=>{await p.evaluate(()=>{openSettings('about');renderAbout()});await settle(p,600)};
+  const about=async p=>{await p.evaluate(()=>{openSettings('about');HOOK.renderAbout()});await settle(p,600)};
   const text=(p,s)=>p.evaluate(s=>(document.querySelector(s)||{}).textContent||'',s);
   try{
     /* version */
@@ -48,11 +48,11 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       await about(p);
       ok(await p.evaluate(()=>window.__same===1&&appVersion()<HOOK.aboutNew&&!$('#about-update').hidden)&&(await text(p,'#about-status')).includes(`Version ${swVer+5} is ready`),'nothing reloads by itself; About offers Update for the new version');
       // photos still being read on Add: asked first (cards that are only waiting come back after the restart: no question for them)
-      await p.evaluate(()=>{queue=[{busy:1},{busy:1},{manual:true}]});
+      await p.evaluate(()=>{HOOK.queue=[{busy:1},{busy:1},{manual:true}]});
       await p.click('#about-update');await p.waitForFunction(()=>document.querySelector('#ask-sheet.on'));const asked=await text(p,'#ask-sheet');   // the app's own question (ui.js), not a browser dialog
       await p.click('#ask-cancel');await p.waitForFunction(()=>!HOOK.aboutUpdating&&!document.querySelector('#ask-sheet.on'));
       ok(/2 photos on the Add page are still being read/.test(asked)&&!/will be lost/.test(asked)&&await p.evaluate(()=>window.__same===1),'with photos still being read on Add, Update asks first, and No leaves the page as it is');
-      await p.evaluate(()=>{queue=[]});
+      await p.evaluate(()=>{HOOK.queue=[]});
       await Promise.all([p.waitForFunction(()=>window.__same===undefined&&window.appReady,null,{timeout:20000}),p.click('#about-update')]);
       ok(true,'Update reloads the page');
       await ctx.close()}
@@ -75,7 +75,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       fb={status:429,body:{error:'too many messages today'}};await p.click('#fb-send');
       await p.waitForFunction(()=>/too many messages today/.test($('#fb-status').textContent));
       ok(await p.evaluate(()=>$('#fb-status').classList.contains('about-bad')&&!$('#fb-send').disabled),'a failure shows the server’s reason');
-      me={role:'owner'};await p.evaluate(()=>renderAbout());await p.waitForFunction(()=>!$('#fb-list').hidden);
+      me={role:'owner'};await p.evaluate(()=>HOOK.renderAbout());await p.waitForFunction(()=>!$('#fb-list').hidden);
       const list=await p.evaluate(()=>({t:[...document.querySelectorAll('.fb-item p')].map(e=>e.textContent),h:[...document.querySelectorAll('.fb-item small')].map(e=>e.textContent),html:!!$('#fb-list').querySelector('b')}));
       ok(list.t.length===2&&list.t[0]==='newest note'&&list.t[1]==='older <b>note</b>'&&!list.html,'the owner sees the feedback received, newest first, as plain text');
       ok(/Tester B/.test(list.h[0])&&/version 142/.test(list.h[0]),'each with who, when and the version');

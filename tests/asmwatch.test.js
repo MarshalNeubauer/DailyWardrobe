@@ -24,8 +24,8 @@ module.exports=async({ok,chromium,url})=>{
       const back=await asmData(r2.url),q2=4*(Math.round(g.cy*f)*S+Math.round(g.cx*f)),dial2=[back.data[q2],back.data[q2+1],back.data[q2+2]];
       // the planner: clips with a gold watch and a silver buckle, and with a gold buckle
       const cl=metal=>{const w=I('watch','brown',{metal:'gold',dial:'charcoal',band:'leather'}),belt=I('belt','brown',{leather:'calf',metal}),gc=I('tieclip','gold'),sc=I('tieclip','silver');
-        items=[I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('tie','burgundy'),I('shoes','brown',{leather:'calf'}),belt,I('socks','navy'),w,gc,sc];
-        settings.workdays=[0,1,2,3,4];settings.blazerDays=[0,1,2,3,4];settings.vestMode='never';weather={};climate=null;dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};
+        HOOK.items=[I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('tie','burgundy'),I('shoes','brown',{leather:'calf'}),belt,I('socks','navy'),w,gc,sc];
+        settings.workdays=[0,1,2,3,4];settings.blazerDays=[0,1,2,3,4];settings.vestMode='never';HOOK.weather={};HOOK.climate=null;HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};
         const n={};for(const [d,o2] of Object.entries(planMonth(2026,10)))if(keyDate(d)>=todayDate()&&o2.clip)n[o2.clip.primaryColor]=(n[o2.clip.primaryColor]||0)+1;return n};
       return {paints,sigS:/watch:/.test(sigS),sigG:/watch:/.test(sigG),sigGtxt:(sigG.match(/watch:[^|]*/)||[''])[0],Wo:Wo&&Wo.k,Wn,dial,bez,strapUp,wasDial:was(g.cx,g.cy),outside,inside,dial2,lumDial:lum(dial),
         silverBuckle:cl('silver'),goldBuckle:cl('gold')}});

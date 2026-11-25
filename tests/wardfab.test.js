@@ -12,7 +12,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     for(const [w,h] of [[390,844],[690,960],[1280,900]]){const tag=`${w}×${h}`;
       const ctx=await browser.newContext({viewport:{width:w,height:h},hasTouch:true,...(WK?{}:{isMobile:true})});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
       await p.goto(url);await p.waitForFunction(()=>window.appReady);
-      await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};sel=new Date(2026,10,11);view={y:2026,m:10};flt='all';show('wardrobe')})()`);
+      await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.flt='all';show('wardrobe')})()`);
       await settle(p,600);
       const fab=()=>p.evaluate(()=>{const b=document.querySelector('#ward-add'),r=b.getBoundingClientRect(),cs=getComputedStyle(b),nav=document.querySelector('body>nav').getBoundingClientRect(),m=document.querySelector('main').getBoundingClientRect();
         return {shown:cs.display!=='none'&&r.width>0,x:r.left,y:r.top,w:r.width,h:r.height,right:r.right,bottom:r.bottom,pos:cs.position,rad:cs.borderRadius,navTop:nav.top,mainRight:m.right,vw:innerWidth,
@@ -95,7 +95,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     // reduced motion: no pop-in
     for(const rm of ['no-preference','reduce']){const ctx=await browser.newContext({viewport:{width:390,height:844},reducedMotion:rm});const p=await ctx.newPage();
       await p.goto(url);await p.waitForFunction(()=>window.appReady);
-      await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;cache={};show('wardrobe')})()`);
+      await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.cache={};show('wardrobe')})()`);
       const an=await p.evaluate(()=>getComputedStyle(document.querySelector('#ward-add')).animationName);
       ok(rm==='reduce'?an==='none':an==='fabIn',`reduced motion ${rm}: ${rm==='reduce'?'the button appears at once':'the button pops in'} (${an})`);
       await ctx.close()}

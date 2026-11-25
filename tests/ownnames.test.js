@@ -19,8 +19,8 @@ const ownnames=async({ok,chromium,url,settle})=>{
       settings.custom={colors:[{key:'ownimgsrcxonerror',name:'<img src=x onerror=__pwned++>',hex:'#c06080',base:'pink',types:['tie'],accent:false}],
         patterns:[{key:'own-bad',name:'<img src=y onerror=__pwned++>',desc:'<b onmouseover=x>hi</b>',base:'woven',types:['tie']}]};
       applyCustom(settings.custom);
-      items=[{id:'t1',type:'tie',primaryColor:'ownimgsrcxonerror',pattern:'own-bad',added:1},{id:'t2',type:'tie',primaryColor:'navy',pattern:'solid',added:2},{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',added:3}];
-      cache={};show('wardrobe');renderWardrobe()});
+      HOOK.items=[{id:'t1',type:'tie',primaryColor:'ownimgsrcxonerror',pattern:'own-bad',added:1},{id:'t2',type:'tie',primaryColor:'navy',pattern:'solid',added:2},{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',added:3}];
+      HOOK.cache={};show('wardrobe');renderWardrobe()});
     await settle(p,200);
     await p.evaluate(()=>openItem('t1'));await settle(p,500);
     let e=await p.evaluate(()=>({imgs:document.querySelectorAll('#item-view .colbtn img').length,col:(document.querySelector('#item-view .colbtn[data-k="primaryColor"] .colnm')||{}).textContent,
@@ -155,8 +155,8 @@ const w3ownnames=async({ok,chromium,url,settle})=>{
     e=await p.evaluate(()=>{const suit={id:'a1',type:'suit',primaryColor:'navy',pattern:'solid',name:'بدلة كحلي رسمية'},shirt={id:'a2',type:'shirt',primaryColor:'lightblue',pattern:'solid',name:'قميص سماوي'};
       const box=HOOK.piecesBox({top:suit,suitDay:true,shirt});return {box:(box.match(/<small class="cap">(.*?)<\/small>/)||[])[1],iso:nameIso('بدلة'),lat:nameHtml('Grey suit'),toast:savedTitle(suit)}});
     ok(/^<bdi>بدلة كحلي رسمية<\/bdi> · <bdi>قميص سماوي<\/bdi>$/.test(e.box||'')&&e.iso==='⁨بدلة⁩'&&e.lat==='Grey suit'&&e.toast==='⁨بدلة كحلي رسمية⁩',`Today's pieces line isolates each Arabic name (${e.box}); Latin names unchanged`);
-    await p.evaluate(()=>{items=[{id:'p1',type:'suit',primaryColor:'navy',pattern:'solid',name:'بدلة سوداء ٢',added:1},{id:'p2',type:'shirt',primaryColor:'white',pattern:'solid',name:'قميص أبيض',added:2},
-      {id:'p3',type:'tie',primaryColor:'burgundy',pattern:'solid',added:3},{id:'p4',type:'shoes',primaryColor:'black',added:4},{id:'p5',type:'belt',primaryColor:'black',added:5}];cache={};openPack()});
+    await p.evaluate(()=>{HOOK.items=[{id:'p1',type:'suit',primaryColor:'navy',pattern:'solid',name:'بدلة سوداء ٢',added:1},{id:'p2',type:'shirt',primaryColor:'white',pattern:'solid',name:'قميص أبيض',added:2},
+      {id:'p3',type:'tie',primaryColor:'burgundy',pattern:'solid',added:3},{id:'p4',type:'shoes',primaryColor:'black',added:4},{id:'p5',type:'belt',primaryColor:'black',added:5}];HOOK.cache={};openPack()});
     await settle(p,600);
     e=await p.evaluate(()=>[...document.querySelectorAll('#pack .pk-nm')].map(x=>x.innerHTML));
     ok(e.some(h=>/^<bdi>⁨?(بدلة سوداء ٢|قميص أبيض)⁩?<\/bdi> <small>· /.test(h)),`the packing list's Arabic names are in <bdi> (${e.slice(0,3).join(' | ')})`);
@@ -192,7 +192,7 @@ const w3ownnames=async({ok,chromium,url,settle})=>{
     ok(e.max===40&&e.n.every(n=>[...n].length<=40)&&e.right<=e.vw,`a long day-off name is cut to 40 and its × stays on screen (${JSON.stringify(e)})`);
     await p.evaluate(()=>closeSettings());
     // ---- a watch's Details has a limit (W2-12-04)
-    await p.evaluate(()=>{items.push({id:'w1',type:'watch',primaryColor:'black',metal:'silver',details:'x'.repeat(300),added:9});cache={};show('wardrobe');renderWardrobe();openItem('w1')});await settle(p,500);
+    await p.evaluate(()=>{items.push({id:'w1',type:'watch',primaryColor:'black',metal:'silver',details:'x'.repeat(300),added:9});HOOK.cache={};show('wardrobe');renderWardrobe();openItem('w1')});await settle(p,500);
     e=await p.evaluate(()=>{const i=document.querySelector('#item-view .wdetails input');return {max:i&&i.maxLength,len:i&&i.value.length}});
     ok(e.max===120&&e.len===120,`a watch's Details field takes at most 120 letters (${JSON.stringify(e)})`);
     ok(!errs.length,'no page errors ('+errs.join(' | ')+')');

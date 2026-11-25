@@ -26,7 +26,7 @@ const colnew=async({ok,chromium,url,settle})=>{
   const sheet=()=>p.evaluate(()=>{const s=document.querySelector('#col-sheet');return {on:s.classList.contains('on'),title:(s.querySelector('#col-title')||{}).textContent,text:s.textContent,bar:(s.querySelector('.cpbar button')||{}).textContent,disabled:!!(s.querySelector('.cpbar button')||{}).disabled}});
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{HOOK.rememberRole({role:'owner'});items=[{id:'t1',type:'tie',primaryColor:'navy',pattern:'solid',added:1},{id:'t2',type:'tie',primaryColor:'red',pattern:'solid',added:2},
+    await p.evaluate(()=>{HOOK.rememberRole({role:'owner'});HOOK.items=[{id:'t1',type:'tie',primaryColor:'navy',pattern:'solid',added:1},{id:'t2',type:'tie',primaryColor:'red',pattern:'solid',added:2},
       {id:'s1',type:'suit',primaryColor:'grey',pattern:'solid',added:3},{id:'b1',type:'blazer',primaryColor:'navy',pattern:'solid',added:4}]});
     // ---- the picker's entry tile
     await p.evaluate(()=>openColPick('e','t1','primaryColor'));
@@ -230,7 +230,7 @@ const colpicklive=async({ok,chromium,url,settle})=>{
   const frame=()=>p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{HOOK.rememberRole({role:'owner'});items=[{id:'s1',type:'suit',primaryColor:'grey',pattern:'solid',added:1}];openColPick('e','s1','primaryColor')});
+    await p.evaluate(()=>{HOOK.rememberRole({role:'owner'});HOOK.items=[{id:'s1',type:'suit',primaryColor:'grey',pattern:'solid',added:1}];openColPick('e','s1','primaryColor')});
     await p.click('#cn-open');
     ok(await p.evaluate(()=>/Your suit, drawn/.test(document.querySelector('#col-sheet .cpph figcaption').textContent)&&getComputedStyle(document.querySelector('#cn-sq')).touchAction==='none'&&getComputedStyle(document.querySelector('#cn-hue')).touchAction==='none'),
       'the sheet shows "Your suit, drawn"; the square and the hue bar don\'t scroll the sheet (touch-action none)');

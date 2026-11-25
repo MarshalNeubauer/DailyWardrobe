@@ -20,8 +20,8 @@ const wardrobetap=async({ok,chromium,url,settle})=>{
         barBottom:Math.round(bar.bottom),top:b.scrollTop,sy:Math.round(scrollY),inert:document.querySelector('main').inert,prev:v.querySelector('#iv-prev').disabled,next:v.querySelector('#iv-next').disabled}});
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
     // ten shirts in a two-column grid, newest first: s9 s8 / s7 s6 / s5 s4 / ...; then a tie without a photo
-    await p.evaluate(ph=>{items=[...Array(10)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:n%2?'white':'lightblue',pattern:'solid',photo:ph,added:n}));
-      items.push({id:'t',type:'tie',primaryColor:'navy',pattern:'solid',added:0});flt='all';editing=null;show('wardrobe')},PH);
+    await p.evaluate(ph=>{HOOK.items=[...Array(10)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:n%2?'white':'lightblue',pattern:'solid',photo:ph,added:n}));
+      items.push({id:'t',type:'tie',primaryColor:'navy',pattern:'solid',added:0});HOOK.flt='all';HOOK.editing=null;show('wardrobe')},PH);
     await p.waitForFunction(()=>!document.querySelector('#wardrobe').getAnimations().length);   // the page has eased in (pageIn)
     await p.evaluate(()=>window.scrollTo(0,document.getElementById('gi-s7').getBoundingClientRect().top+scrollY-120));
     const y0=await p.evaluate(()=>Math.round(scrollY)),b6=await rect('s6'),b7=await rect('s7');
@@ -129,7 +129,7 @@ const wardrobetap=async({ok,chromium,url,settle})=>{
     await ctx.close();
     // a wide screen: a centred panel over a backdrop, which closes it
     const c2=await browser.newContext({viewport:{width:1000,height:800}});const q=await c2.newPage();await q.goto(url);await q.waitForFunction(()=>window.appReady);await q.evaluate(()=>{CK_OPEN['*']=true});
-    await q.evaluate(ph=>{items=[...Array(6)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:'white',pattern:'solid',photo:ph,added:n}));flt='all';editing=null;show('wardrobe')},PH);
+    await q.evaluate(ph=>{HOOK.items=[...Array(6)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:'white',pattern:'solid',photo:ph,added:n}));HOOK.flt='all';HOOK.editing=null;show('wardrobe')},PH);
     await q.click('#gi-s3 .giopen');await settle(q,500);
     const wide=await q.evaluate(()=>{const r=document.querySelector('#item-view').getBoundingClientRect();return {w:Math.round(r.width),mid:Math.round(r.left+r.width/2),h:Math.round(r.height),bd:getComputedStyle(document.querySelector('#item-backdrop')).display}});
     ok(wide.w===900&&wide.mid===500&&wide.h<800&&wide.bd==='block',`from 600px wide the item opens as a centred panel over a backdrop, 900px wide for its two columns since the checklist redesign (${wide.w}px wide)`);
@@ -159,7 +159,7 @@ const sheetswipe=async({ok,chromium,url,settle})=>{
       const tag=`${w}×${h}`;
       const ctx=await browser.newContext({viewport:{width:w,height:h},hasTouch:true,...(WK?{}:{isMobile:true})});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
       await p.goto(url);await p.waitForFunction(()=>window.appReady);
-      await p.evaluate(ph=>{items=[...Array(6)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:'white',pattern:'solid',photo:ph,added:n}));flt='all';editing=null;show('wardrobe')},PH);
+      await p.evaluate(ph=>{HOOK.items=[...Array(6)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:'white',pattern:'solid',photo:ph,added:n}));HOOK.flt='all';HOOK.editing=null;show('wardrobe')},PH);
       await settle(p,600);
       const cdp=await ctx.newCDPSession(p);let clock=0;const T=(type,x,y,ms=16)=>{clock=type==='touchStart'?Math.max(clock+ms,Date.now()):clock+ms;return cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}],timestamp:clock/1000})};
       const at=()=>p.evaluate(()=>({top:document.querySelector('#item-view').getBoundingClientRect().top,dim:+getComputedStyle(document.querySelector('#item-backdrop')).opacity,ed:editing}));

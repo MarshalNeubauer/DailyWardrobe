@@ -26,10 +26,10 @@ async function run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX}){
   const ev=(f,a)=>p.evaluate(f,a);
   await ev(([ph,tx])=>{HOOK.rememberRole({role:'owner'});settings.setupDone=1;
     // the cloth measured as navy, the drawing two steps lighter; white paper found in the close-up (tagging.js PAPER, as paperOf keeps it)
-    items=[{id:'a',type:'suit',primaryColor:'navy',secondaryColor:'white',pattern:'pinstripe',photo:ph,texture:tx,material:'wool',season:'cold',shade:2,meas:{lab:labOf('navy'),ref:true,src:'closeup'},added:3},
+    HOOK.items=[{id:'a',type:'suit',primaryColor:'navy',secondaryColor:'white',pattern:'pinstripe',photo:ph,texture:tx,material:'wool',season:'cold',shade:2,meas:{lab:labOf('navy'),ref:true,src:'closeup'},added:3},
       {id:'b',type:'pants',primaryColor:'charcoal',pattern:'solid',photo:ph,added:2},{id:'c',type:'shoes',primaryColor:'brown',added:1}];
     HOOK.PAPER[paperKey(items[0])]={ref:true,warm:false};
-    cache={};queue.length=0;flt='all';editing=null;show('wardrobe')},[PH,TX]);
+    HOOK.cache={};queue.length=0;HOOK.flt='all';HOOK.editing=null;show('wardrobe')},[PH,TX]);
   await settle(p,400);
   const tap=async s=>{await p.click(s);await settle(p,450)};
   const rect=s=>ev(s=>{const e=document.querySelector(s);if(!e)return null;const r=e.getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,bottom:r.bottom,w:r.width,h:r.height}},s);

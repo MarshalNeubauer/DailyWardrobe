@@ -6,7 +6,7 @@ module.exports=async({ok,chromium,url})=>{
   const PH='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
-    await p.evaluate(ph=>{items=[{id:'s1',type:'suit',primaryColor:'black',pattern:'solid',photo:ph,texture:ph,added:1,meas:{src:'closeup',lab:labOf('deeptaupe'),ref:false}}];flt='all';editing='s1';show('wardrobe')},PH);
+    await p.evaluate(ph=>{HOOK.items=[{id:'s1',type:'suit',primaryColor:'black',pattern:'solid',photo:ph,texture:ph,added:1,meas:{src:'closeup',lab:labOf('deeptaupe'),ref:false}}];HOOK.flt='all';HOOK.editing='s1';show('wardrobe')},PH);
     const a=await p.evaluate(()=>{const b=document.querySelector('#item-view .colbtn[data-k="primaryColor"]');return {txt:b&&b.textContent,chip:b&&b.querySelector('.colchip').style.background,sel:!!document.querySelector('#item-view select[onchange*="primaryColor"],#item-view select[data-f="primaryColor"]')}});
     ok(a.txt==='Black'&&/22, 26|#16161a/i.test(a.chip)&&!a.sel,`the editor's color is a chip and a name, not a dropdown (${a.txt}, ${a.chip})`);
     await p.click('#item-view .colbtn[data-k="primaryColor"]');
@@ -28,13 +28,13 @@ module.exports=async({ok,chromium,url})=>{
     const lv=await p.evaluate(()=>{items.push({id:'sh1',type:'shoes',primaryColor:'grey',pattern:'solid',leather:'calf',added:9});openColPick('e','sh1','primaryColor');
       const draw=()=>document.querySelector('#col-sheet .cpdraw').innerHTML.replace(/th\d+-/g,''),before=draw();document.querySelector('#col-sheet .cptile[data-c="tan"]').click();
       const after=draw(),r={cap:document.querySelector('#col-sheet .cpph figcaption').textContent,grey:before.includes(colOf({primaryColor:'grey'})),tan:after.includes(colOf({primaryColor:'tan'}))&&!after.includes(colOf({primaryColor:'grey'})),saved:items.find(x=>x.id==='sh1').primaryColor};
-      document.querySelector('#col-sheet .cptile[data-c="grey"]').click();r.back=draw()===before;closeColPick();items=items.filter(x=>x.id!=='sh1');return r});
+      document.querySelector('#col-sheet .cptile[data-c="grey"]').click();r.back=draw()===before;closeColPick();HOOK.items=items.filter(x=>x.id!=='sh1');return r});
     ok(lv.cap==='As drawn'&&lv.grey&&lv.tan&&lv.saved==='grey'&&lv.back,'without a photo the drawing follows the color tapped (gray to tan and back), and nothing is saved until Use');
     // the pattern sheet too: without a photo the item is drawn (its shape) in the pattern tapped, nothing saved until Use
     const pv=await p.evaluate(()=>{items.push({id:'t8',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'solid',added:9});openColPick('e','t8','pattern');
       const draw=()=>document.querySelector('#col-sheet .cpdraw').innerHTML.replace(/th\d+-/g,''),strip=s=>{const t=document.createElement('div');t.innerHTML=s;return t.innerHTML.replace(/th\d+-/g,'')},before=draw();document.querySelector('#col-sheet .cptile[data-c="stripe"]').click();
       const r={cap:document.querySelector('#col-sheet .cpph figcaption').textContent,shape:before===strip(itemThumb(items.find(x=>x.id==='t8'))),striped:draw()===strip(itemThumb(patVar(items.find(x=>x.id==='t8'),'stripe')))&&draw()!==before,saved:items.find(x=>x.id==='t8').pattern};
-      closeColPick();items=items.filter(x=>x.id!=='t8');return r});
+      closeColPick();HOOK.items=items.filter(x=>x.id!=='t8');return r});
     ok(pv.cap==='As drawn'&&pv.shape&&pv.striped&&pv.saved==='solid','without a photo the pattern sheet draws the tie (its shape) in the pattern tapped, and nothing is saved until Use');
     // suits and blazers are their traced figure (SUIT_D, BLAZER_D) in the colour or pattern tapped: in place of the swatch without a
     // photo, and as the "Drawing" view beside a photo; redrawn on every tap, nothing saved until Use
@@ -49,14 +49,14 @@ module.exports=async({ok,chromium,url})=>{
       HOOK.colPickView('draw');document.querySelector('#col-sheet .cptile[data-c="tan"]').click();r.drawn=!document.querySelector('#col-sheet .cpph img')&&draw()===strip(itemThumb({...items.find(x=>x.id==='bz2'),primaryColor:'tan'}));
       r.segs=segs.join('|');r.saved=items.find(x=>x.id==='bz1').primaryColor+'/'+items.find(x=>x.id==='bz1').pattern+'/'+items.find(x=>x.id==='bz2').primaryColor;closeColPick();
       openColPick('e','s1','pattern');r.suit=[...document.querySelectorAll('#col-sheet .cpseg button')].some(e=>e.textContent==='Drawing');HOOK.colPickView('draw');r.suitFig=draw().includes(strip(HOOK.SUIT_D.out).slice(0,60));closeColPick();
-      items=items.filter(x=>!x.id.startsWith('bz'));return r});
+      HOOK.items=items.filter(x=>!x.id.startsWith('bz'));return r});
     ok(fg.fig&&fg.col&&fg.seg0===0,'a blazer without a photo is drawn as its traced figure in the color tapped, with no view switch');
     ok(fg.pat,'the pattern sheet redraws the figure in the pattern tapped');
     ok(fg.photo&&fg.segs==='Whole photo|Drawing'&&fg.drawn,'with a photo it starts on the photo; "Drawing" shows the figure in the color tapped ('+fg.segs+')');
     ok(fg.suit&&fg.suitFig,'a suit gets the Drawing view too, drawn as its traced suit');
     ok(fg.saved==='steelblue/solid/steelblue','nothing is saved by looking ('+fg.saved+')');
     // Add card: the second colour offers None
-    await p.evaluate(ph=>{editing=null;HOOK.closeItem&&HOOK.closeItem();queue.length=0;queue.push({id:'q1',type:'tie',primaryColor:'navy',secondaryColor:'red',tertiaryColor:null,pattern:'solid',photo:ph,manual:true});show('add')},PH);
+    await p.evaluate(ph=>{HOOK.editing=null;HOOK.closeItem&&HOOK.closeItem();queue.length=0;queue.push({id:'q1',type:'tie',primaryColor:'navy',secondaryColor:'red',tertiaryColor:null,pattern:'solid',photo:ph,manual:true});show('add')},PH);
     await p.click('#queue .colbtn[data-k="secondaryColor"]');await p.click('#col-sheet .cptile:has-text("None")');await p.click('#col-sheet .cpbar button');
     ok(await p.evaluate(()=>queue[0].secondaryColor===null&&document.querySelector('#queue .colbtn[data-k="secondaryColor"]').textContent==='None'),'on the Add card a second color can be set back to None');
     // Ask Claude: the close-up, the photo and the close-up's measurement go to the tagger; its pick is selected, its colours can all be taken
@@ -67,7 +67,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.route('**/fakeworker/**',async r=>{if(notTag(r))return r.fulfill({status:503,body:'{}'});const b=r.request().postDataJSON();asked.push(b);await new Promise(z=>setTimeout(z,300));
       await r.fulfill({json:{model:'m',...({type:'tie',primaryColor:'burgundy',secondaryColor:'navy',tertiaryColor:'none',pattern:'solid',confidence:{type:'high',primaryColor:'medium',pattern:'high'},altColor:'wine',altPattern:'none',newColor:null,newPattern:null})}})});
     await p.evaluate(()=>{localStorage.setItem('worker_url',location.origin+'/fakeworker/');localStorage.setItem('app_token','t')});
-    await p.evaluate(ph=>{queue.length=0;show('wardrobe');items=[{id:'t1',type:'tie',primaryColor:'red',secondaryColor:null,pattern:'solid',photo:ph,texture:ph,added:3}];editing='t1';renderWardrobe()},PH);
+    await p.evaluate(ph=>{queue.length=0;show('wardrobe');HOOK.items=[{id:'t1',type:'tie',primaryColor:'red',secondaryColor:null,pattern:'solid',photo:ph,texture:ph,added:3}];HOOK.editing='t1';renderWardrobe()},PH);
     await p.click('#item-view .colbtn[data-k="primaryColor"]');
     ok(await p.evaluate(()=>/About \d+¢/.test(document.querySelector('#col-sheet .cpask').textContent)),'with a close-up the sheet offers to ask Claude, with the cost');
     await p.click('#col-sheet .cpaskbtn');
@@ -125,7 +125,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.route('**/fakeworker/**',async r=>{if(notTag(r))return r.fulfill({status:503,body:'{}'});asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',...({type:'blazer',primaryColor:'midgrey',secondaryColor:'none',tertiaryColor:'none',pattern:'twill',
       confidence:{type:'high',primaryColor:'high',pattern:'medium'},altColor:'none',altPattern:'windowpane',newColor:null,newPattern:null,ownColors:null,
       ownPattern:{name:'broken twill',description:'A fine twill whose ribs reverse every few threads.',fits:false}})}})});
-    await p.evaluate(ph=>{items.push({id:'b1',type:'blazer',primaryColor:'midgrey',pattern:'other',photo:ph,texture:ph,added:5});editing='b1';renderWardrobe()},PH);
+    await p.evaluate(ph=>{items.push({id:'b1',type:'blazer',primaryColor:'midgrey',pattern:'other',photo:ph,texture:ph,added:5});HOOK.editing='b1';renderWardrobe()},PH);
     const pb=await p.evaluate(()=>{const b=document.querySelector('#item-view .patbtn');return {txt:b&&b.textContent,svg:!!(b&&b.querySelector('svg')),sel:!!document.querySelector('#item-view select[onchange*="\'pattern\'"],#item-view select[data-f="pattern"]')}});
     ok(pb.txt==='Other'&&pb.svg&&!pb.sel,'the pattern field is a drawn swatch and a name, not a dropdown');
     await p.click('#item-view .patbtn');
@@ -143,7 +143,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.click('#item-view .patbtn');
     ok(await p.evaluate(()=>!document.querySelector('#col-sheet .cptile[data-c="+new"]')&&!!document.querySelector('#col-sheet .cpgrid:not(.cpai) .cptile[data-c="own-broken-twill"]')),'once added it is a normal pattern in the list');
     await p.keyboard.press('Escape');
-    await p.evaluate(()=>{items.push({id:'t2',type:'tie',primaryColor:'red',pattern:'solid',photo:'x',added:4});editing='t2';renderWardrobe()});
+    await p.evaluate(()=>{items.push({id:'t2',type:'tie',primaryColor:'red',pattern:'solid',photo:'x',added:4});HOOK.editing='t2';renderWardrobe()});
     await p.click('#item-view .colbtn[data-k="primaryColor"]');
     ok(await p.evaluate(()=>/Add a close-up/.test(document.querySelector('#col-sheet .cpask').textContent)&&!document.querySelector('#col-sheet .cpaskbtn')),'without a close-up it says to add one first');
     ok(!errs.length,'no page errors: '+errs.join('; '));

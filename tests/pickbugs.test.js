@@ -19,8 +19,8 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ';
     const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{CK_OPEN['*']=true;HOOK.rememberRole({role:'owner'});if(document.querySelector('#setup.on')&&'setupClose' in HOOK&&typeof HOOK.setupClose==='function')HOOK.setupClose();
       const I=(id,type,x={})=>({id,type,primaryColor:'navy',pattern:'solid',added:1,...x});
-      items=[I('t1','tie'),I('t2','tie',{primaryColor:'red'}),I('s1','suit',{primaryColor:'grey'}),I('k1','socks'),I('q1','pocketsquare',{primaryColor:'white'}),I('e1','tee',{primaryColor:'white'}),
-        I('w1','sweater'),I('c1','chore'),I('p1','pants',{primaryColor:'khaki',trouserKind:'cargo'})];cache={};flt='all';editing=null;show('wardrobe')});
+      HOOK.items=[I('t1','tie'),I('t2','tie',{primaryColor:'red'}),I('s1','suit',{primaryColor:'grey'}),I('k1','socks'),I('q1','pocketsquare',{primaryColor:'white'}),I('e1','tee',{primaryColor:'white'}),
+        I('w1','sweater'),I('c1','chore'),I('p1','pants',{primaryColor:'khaki',trouserKind:'cargo'})];HOOK.cache={};HOOK.flt='all';HOOK.editing=null;show('wardrobe')});
     return {ctx,p,errs}};
   const sheetOn=p=>p.evaluate(()=>document.querySelector('#col-sheet').classList.contains('on'));
   const openItemPick=async(p,id,k,tap)=>{await p.evaluate(id=>{closeColPick();openItem(id)},id);await settle(p,150);
@@ -90,7 +90,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ';
     let e2=await p.evaluate(()=>{const s=document.querySelector('#item-view.on .ivpics'),b=s&&s.querySelector('.pt-closeup'),r=b&&b.getBoundingClientRect();
       return {sheet:document.querySelector('#col-sheet').classList.contains('on'),open:!!(s&&s.classList.contains('open')),seen:!!r&&r.height>0&&r.top>=0&&r.bottom<=innerHeight}});
     ok(!e2.sheet&&e2.open&&e2.seen,T+`the link closes the picker, opens Pictures and shows its Close-up button (${JSON.stringify(e2)})`);
-    e2=await p.evaluate(()=>{const c=colPick;colPick={src:'q'};try{return HOOK.cpAskHint('name the pattern')}finally{colPick=c}});
+    e2=await p.evaluate(()=>{const c=colPick;HOOK.colPick={src:'q'};try{return HOOK.cpAskHint('name the pattern')}finally{HOOK.colPick=c}});
     ok(/Add a close-up and Claude can name the pattern/.test(e2)&&!/cpgopics|Pictures/.test(e2),T+'on the Add card the hint names no place and has no link');
     // ================= (4) cargo pants =================
     await p.evaluate(()=>{closeColPick();openItem('p1')});await settle(p,150);
