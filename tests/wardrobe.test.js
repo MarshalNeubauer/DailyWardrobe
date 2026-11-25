@@ -19,7 +19,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
         '2026-11-9':D('2026-11-9',{top:'su2',shirt:'sh2',tie:'ti1',shoes:'sx1',belt:'be1',socks:'so1'})};
       editing=null;flt='all';show('wardrobe')});
     const ids=()=>p.evaluate(()=>[...document.querySelectorAll('#wardrobe .grid .gi')].map(g=>g.id.slice(3)));
-    const type=async t=>{await p.fill('#wsearch',t);await p.waitForFunction(v=>wardQ===v,t)};
+    const type=async t=>{await p.fill('#wsearch',t);await p.waitForFunction(v=>HOOK.wardQ===v,t)};
     const count=()=>p.textContent('#wcount');
 
     // ---- By type: the chips' order, suits first
@@ -47,14 +47,14 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await finds('navy tie',['ti1','ti2'],'several words, all of which must match');
     ok((await count())==='2 of 12 items'&&await p.evaluate(()=>!document.querySelector('#wclear').hidden),'the count reads "n of m items" and the clear button shows');
     // typing keeps the field, its focus and the caret
-    await p.evaluate(()=>{wardClear();window.__ws=document.querySelector('#wsearch')});
-    await p.click('#wsearch');await p.keyboard.type('sui',{delay:20});await p.waitForFunction(()=>wardQ==='sui');
+    await p.evaluate(()=>{HOOK.wardClear();window.__ws=document.querySelector('#wsearch')});
+    await p.click('#wsearch');await p.keyboard.type('sui',{delay:20});await p.waitForFunction(()=>HOOK.wardQ==='sui');
     const f1=await p.evaluate(()=>({same:document.querySelector('#wsearch')===window.__ws,foc:document.activeElement&&document.activeElement.id,val:document.querySelector('#wsearch').value,n:document.querySelectorAll('#wardrobe .gi').length}));
     ok(f1.same&&f1.foc==='wsearch'&&f1.val==='sui'&&f1.n===3,`typing filters as you type without replacing the field or losing focus (${JSON.stringify(f1)})`);
     await p.evaluate(()=>renderWardrobe());
     const f2=await p.evaluate(()=>({foc:document.activeElement&&document.activeElement.id,val:document.querySelector('#wsearch').value,caret:document.querySelector('#wsearch').selectionStart,n:document.querySelectorAll('#wardrobe .gi').length}));
     ok(f2.foc==='wsearch'&&f2.val==='sui'&&f2.caret===3&&f2.n===3,'a full redraw of the Wardrobe (a sync arriving) puts the focus and the caret back');
-    await p.keyboard.type('t');await p.waitForFunction(()=>wardQ==='suit');
+    await p.keyboard.type('t');await p.waitForFunction(()=>HOOK.wardQ==='suit');
     ok((await ids()).join()==='su3,su2,su1','and typing carries on');
 
     // ---- search with a chip
@@ -62,13 +62,13 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok((await ids()).join()==='ti2,ti1'&&(await count())==='2 of 12 items'&&(await p.inputValue('#wsearch'))==='navy','a type chip narrows the search results, and the search stays when the chip changes');
     // ---- the sheet steps through the filtered list
     await p.evaluate(()=>{flt='all';renderWardrobe();openItem('su1')});await settle(p,500);
-    const st0=await p.evaluate(()=>({n:document.querySelector('#ivhead .pcount').textContent,list:wardList().map(i=>i.id).join(),prev:document.querySelector('#iv-prev').disabled}));
+    const st0=await p.evaluate(()=>({n:document.querySelector('#ivhead .pcount').textContent,list:HOOK.wardList().map(i=>i.id).join(),prev:document.querySelector('#iv-prev').disabled}));
     ok(st0.list==='su1,ti2,ti1'&&st0.n==='1 of 3'&&st0.prev,`the open item counts within the filtered list (${st0.n}; ${st0.list})`);
     await p.click('#iv-next');await p.waitForFunction(()=>editing==='ti2');await p.click('#iv-next');await p.waitForFunction(()=>editing==='ti1');
     ok(await p.evaluate(()=>document.querySelector('#iv-next').disabled&&document.querySelector('#ivhead .pcount').textContent==='3 of 3'),'› steps through the filtered, sorted list and stops at its end');
-    await p.evaluate(()=>stepItem(-1));
+    await p.evaluate(()=>HOOK.stepItem(-1));
     ok(await p.evaluate(()=>editing==='ti2'),'‹ steps back through it');
-    await p.evaluate(()=>closeItem());await settle(p,500);
+    await p.evaluate(()=>HOOK.closeItem());await settle(p,500);
 
     // ---- nothing matches
     await type('zzzq');
@@ -79,11 +79,11 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(none2&&/in belt/.test(none2.t)&&/3 items match in the rest/.test(none2.t)&&none2.btn==='Search all types|Clear search','with a chip on, it says how many match elsewhere and offers to search all types');
     await p.click('#wnone button.pri');await p.waitForFunction(()=>flt==='all');
     ok((await ids()).length===3,'"Search all types" shows them');
-    await p.click('#wclear');await p.waitForFunction(()=>wardQ==='');
+    await p.click('#wclear');await p.waitForFunction(()=>HOOK.wardQ==='');
     ok((await ids()).length===12&&(await p.inputValue('#wsearch'))===''&&await p.evaluate(()=>document.activeElement.id==='wsearch'&&document.querySelector('#wclear').hidden),'the clear button empties the search, shows everything and keeps the field in use');
 
     // ---- sort orders
-    const sortBy=async s=>{await p.selectOption('#wsort',s);await p.waitForFunction(v=>wardSort()===v,s);return ids()};
+    const sortBy=async s=>{await p.selectOption('#wsort',s);await p.waitForFunction(v=>HOOK.wardSort()===v,s);return ids()};
     const sNew=await sortBy('new');
     ok(sNew.join()==='sx2,sx1,bl1,ti2,sh2,su3,su2,su1,sh1,ti1,so1,be1',`Newest first (${sNew.join(' ')})`);
     const sWorn=await sortBy('worn');
@@ -100,8 +100,8 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const names=await p.evaluate(()=>[...document.querySelectorAll('#wardrobe .gi .gimeta b')].map(b=>b.textContent.toLowerCase()));
     ok(names.join('|')===names.slice().sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base',numeric:true})).join('|')&&names.includes('wedding suit')&&sAz.length===12,`A to Z by the title shown, a name included (…${names.slice(-2).join(', ')})`);
     await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
-    ok(await p.evaluate(()=>{show('wardrobe');const s=document.querySelector('#wsort');return (s?s.value:wardSort())==='az'&&/* an empty wardrobe (after the reload) has no sort control */localStorage.getItem('ward_sort')==='az'}),'the sort order is remembered on the device');
-    await p.evaluate(()=>{setWardSort('type')});
+    ok(await p.evaluate(()=>{show('wardrobe');const s=document.querySelector('#wsort');return (s?s.value:HOOK.wardSort())==='az'&&/* an empty wardrobe (after the reload) has no sort control */localStorage.getItem('ward_sort')==='az'}),'the sort order is remembered on the device');
+    await p.evaluate(()=>{HOOK.setWardSort('type')});
 
     // ---- the fields: item sheet
     await p.evaluate(()=>{const I=(id,type,primaryColor,added,x={})=>({id,type,primaryColor,pattern:'solid',added,...x});
@@ -141,13 +141,13 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(per.sx1===null&&per.wa1===null&&await p.evaluate(()=>!!document.querySelector('#item-view .wf-name')&&!!document.querySelector('#item-view .wf-notes')),'shoes and watches (leather, band and metal) have no material list, but a name, brand and notes');
     const lists=await p.evaluate(()=>Object.entries(MATERIALS_BY).map(([t,l])=>[t,l.length,new Set(l).size===l.length&&l.every(m=>m===m.toLowerCase()&&m.length<=40),!!TYPES[t]]));
     ok(lists.length>=8&&lists.every(l=>l[1]>=5&&l[2]&&l[3])&&!lists.some(l=>['shoes','belt','watch'].includes(l[0])),`MATERIALS_BY lists materials for ${lists.map(l=>l[0]).join(', ')}`);
-    await p.evaluate(()=>closeItem());await settle(p,500);
+    await p.evaluate(()=>HOOK.closeItem());await settle(p,500);
     // found by search right away
-    await type('halden');ok((await ids()).join()==='su1','the new brand is found by the search');await p.evaluate(()=>wardClear());
+    await type('halden');ok((await ids()).join()==='su1','the new brand is found by the search');await p.evaluate(()=>HOOK.wardClear());
 
     // ---- the name on Today: pieces list and picker; the planner's texts keep the description
     await p.evaluate(()=>{sel=new Date(2026,10,11);show('today');const o=planFor()[key(sel)];window.__top=o.top.id;for(const i of items)delete i.name;const it=items.find(i=>i.id===o.top.id);it.name='Wedding suit';cache={};renderToday()});
-    await p.evaluate(()=>{if(typeof toggleList==='function'&&!document.querySelector('#ri-top'))toggleList()});
+    await p.evaluate(()=>{if('toggleList' in HOOK&&typeof HOOK.toggleList==='function'&&!document.querySelector('#ri-top'))HOOK.toggleList()});
     const row=await p.evaluate(()=>{const r=document.querySelector('#ri-top .rowtap');return r&&{t:r.querySelector('span:not(.dot)').textContent,a:r.getAttribute('aria-label')}});
     ok(row&&row.t==='Wedding suit'&&/Wedding suit/.test(row.a),`Today's pieces list shows the name (${row&&row.t})`);
     await p.evaluate(()=>openPicker('top'));
@@ -159,7 +159,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
 
     // ---- the Add card: Name, Brand and Notes in "More", a section folded until asked for (the checklist redesign, 2026-11-16; sections
     // start as the card sets them here, not all open)
-    await p.evaluate(()=>{delete CK_OPEN['*'];show('add');addManual();setq(0,'type','tie')});
+    await p.evaluate(()=>{delete CK_OPEN['*'];show('add');HOOK.addManual();setq(0,'type','tie')});
     const sec=k=>`#nps-q [data-ck="${k}"]`,isOpen=k=>p.evaluate(s=>document.querySelector(s).classList.contains('open'),sec(k));
     const add0=await p.evaluate(()=>{const m=document.querySelector('#nps-q [data-ck="more"]');return {t:m.querySelector('.ckt b').textContent,exp:m.querySelector('.ckh').getAttribute('aria-expanded'),open:m.classList.contains('open'),
       last:[...document.querySelectorAll('#nps-q .cks')].pop()===m,labs:[...document.querySelectorAll('#nps-q .ckb>label')].map(l=>l.firstChild.textContent.trim()).slice(0,4).join()}});
@@ -176,7 +176,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await p.click('#nps-bar .pri');await p.waitForFunction(()=>items.some(i=>i.name==='Club tie'));
     const saved=await p.evaluate(()=>{const i=items.find(x=>x.name==='Club tie');return [i.type,i.brand,i.material,i.notes].join('|')});
     ok(saved==='tie|Marlowe|shantung|A gift',`Confirm saves them with the item (${saved})`);
-    await p.evaluate(()=>{addManual();setq(0,'type','shoes')});
+    await p.evaluate(()=>{HOOK.addManual();setq(0,'type','shoes')});
     ok(await p.evaluate(()=>!document.querySelector('#nps-q .wmat')&&!!document.querySelector('#nps-q .wf-name')),'the Add card offers no material for shoes');
     await p.evaluate(()=>{queue.length=0;renderAdd();CK_OPEN['*']=true});
 
@@ -190,7 +190,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const gone=await p.evaluate(async()=>({sheet:document.querySelector('#item-view').classList.contains('on'),grid:!!document.querySelector('#gi-su1'),db:!!(await tx('readonly',s=>s.get('su1'))),tomb:!!((await metaGet('tombstones'))||{}).su1,
       toast:document.querySelector('#undo-fab').getAttribute('aria-label'),on:document.querySelector('#undo-fab').classList.contains('on'),btn:document.querySelector('#undo-fab').textContent.trim(),dur:getComputedStyle(document.querySelector('#undo-fab .ufc')).animationDuration}));
     ok(dialogs===0&&!gone.sheet&&!gone.grid&&!gone.db&&gone.tomb,'Delete removes the item at once, without asking, and closes the sheet');
-    ok(gone.on&&/^Undo: Deleted Wedding suit/.test(gone.toast)&&gone.btn==='Undo'&&gone.dur==='8s'&&await p.evaluate(()=>WARD_UNDO_MS===8000),`the round Undo above the + comes up for 8 seconds, "Deleted Wedding suit" in its label (${gone.toast})`);
+    ok(gone.on&&/^Undo: Deleted Wedding suit/.test(gone.toast)&&gone.btn==='Undo'&&gone.dur==='8s'&&await p.evaluate(()=>HOOK.WARD_UNDO_MS===8000),`the round Undo above the + comes up for 8 seconds, "Deleted Wedding suit" in its label (${gone.toast})`);
     await p.waitForTimeout(300);await p.click('#undo-fab');await p.waitForFunction(()=>items.some(i=>i.id==='su1'));
     const back=await p.evaluate(async()=>{const strip=o=>{const c={...o};delete c.updated;return JSON.stringify(c)},it=items.find(i=>i.id==='su1'),db=await tx('readonly',s=>s.get('su1')),tomb=(await metaGet('tombstones')).su1;
       return {same:strip(it)===strip(JSON.parse(window.__before)),db:strip(db)===strip(JSON.parse(window.__before)),newer:it.updated>tomb,order:items.map(i=>i.id).join()===window.__order,grid:!!document.querySelector('#gi-su1'),
@@ -223,13 +223,13 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       await q.fill('#wsearch','zzzq');await q.waitForSelector('#wnone');
       const e=await q.evaluate(()=>({over:document.documentElement.scrollWidth-innerWidth,btn:[...document.querySelectorAll('#wnone button,#wclear')].map(b=>Math.round(b.getBoundingClientRect().height)).join()}));
       ok(e.over<=0&&e.btn==='44,44',`${w}px ${scheme}: the "nothing matches" state fits, its buttons 44px (${e.btn})`);
-      await q.evaluate(()=>{wardClear();openItem('su1')});await settle(q,500);
+      await q.evaluate(()=>{HOOK.wardClear();openItem('su1')});await settle(q,500);
       const iv=await q.evaluate(()=>{const v=document.querySelector('#item-view'),b=v.querySelector('#ivbody'),h=s=>[...v.querySelectorAll(s)].map(x=>Math.round(x.getBoundingClientRect().height));
         const ta=v.querySelector('.wf-notes'),tr=ta.getBoundingClientRect(),card=ta.closest('.cks').getBoundingClientRect(),t=v.querySelector('#iv-title').getBoundingClientRect();
         return {inp:[...new Set(h('select,input[type=text]'))].join(),over:b.scrollWidth-b.clientWidth,ta:tr.height>=60&&tr.left>=card.left&&tr.right<=card.right,title:t.right<=innerWidth,del:h('.ivdel button').join(),
           grid:[...document.querySelectorAll('#wardrobe .gi')].every(g=>g.getBoundingClientRect().right<=innerWidth+.5)}});
       ok(iv.inp==='44'&&iv.over<=0&&iv.ta&&iv.title&&iv.del==='44'&&iv.grid,`${w}px ${scheme}: the sheet's new fields are 44px, the notes box fits its card, a long name doesn't push anything sideways (${JSON.stringify(iv)})`);
-      await q.evaluate(()=>{closeItem();show('add');addManual();const s=document.querySelector('#nps-q section[data-ck="more"]');if(s&&!s.classList.contains('open'))s.querySelector('.ckh').click()});
+      await q.evaluate(()=>{HOOK.closeItem();show('add');HOOK.addManual();const s=document.querySelector('#nps-q section[data-ck="more"]');if(s&&!s.classList.contains('open'))s.querySelector('.ckh').click()});
       const ad=await q.evaluate(()=>({n:document.querySelectorAll('#nps-q section[data-ck="more"].open .morein input').length,over:document.documentElement.scrollWidth-innerWidth,h:[...new Set([...document.querySelectorAll('#nps-q section[data-ck="more"] .morein input')].map(x=>Math.round(x.getBoundingClientRect().height)))].join()}));
       ok(ad.n===2&&ad.over<=0&&ad.h==='44',`${w}px ${scheme}: the Add card's More section (name, brand) fits, its fields 44px (${JSON.stringify(ad)})`);
       await c.close()}
@@ -255,13 +255,13 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     await sync(A.p);await sync(B.p);
     ok((await fields(B.p,'s-tie'))==='Club tie|Marlowe|grenadine|A gift','name, brand, material and notes reach the other device with the item');
     await B.p.evaluate(()=>{show('wardrobe');openItem('s-tie')});await B.p.fill('#item-view .wf-notes','A gift, 2024');await B.p.locator('#item-view .wf-notes').blur();
-    await B.p.waitForFunction(()=>items.find(i=>i.id==='s-tie').notes==='A gift, 2024');await B.p.evaluate(()=>closeItem());
+    await B.p.waitForFunction(()=>items.find(i=>i.id==='s-tie').notes==='A gift, 2024');await B.p.evaluate(()=>HOOK.closeItem());
     await sync(B.p);await sync(A.p);
     ok((await fields(A.p,'s-tie'))==='Club tie|Marlowe|grenadine|A gift, 2024','an edit to one of them on the second device comes back to the first');
     // backup file → an empty device
     const file=await A.p.evaluate(async()=>JSON.stringify({app:'daily-wardrobe',version:1,exported:new Date().toISOString(),...await localState()}));
     const C=await device(false);
-    await C.p.evaluate(async f=>{await restoreBackup(new File([f],'backup.json',{type:'application/json'}))},file);
+    await C.p.evaluate(async f=>{await HOOK.restoreBackup(new File([f],'backup.json',{type:'application/json'}))},file);
     ok((await fields(C.p,'s-tie'))==='Club tie|Marlowe|grenadine|A gift, 2024','a backup file carries them, and restoring it on an empty device brings them back');
     await C.c.close();
     // delete then Undo: the item survives a sync, on both devices

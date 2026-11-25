@@ -115,7 +115,7 @@ async function wardrobePhone(tag, iso) {
   await ph.page.evaluate(async () => { await addCustomColor({ name: 'Dusty pink', hex: '#D8A1A8', base: 'tan', types: ['suit'] }); settings.vestMode = 'always'; await saveUserSettings() });
   await ph.tap('#fr-add'); await sleep(800); await ph.tap('#add-import'); await sleep(800);
   await ph.page.fill('#kit-paste', ''); await ph.tap('#kit-paste'); await ph.page.keyboard.insertText(WARDROBE); await sleep(1200);
-  const bad = await ph.page.evaluate(() => kitImp ? kitImp.rows.filter(r => !r.ok || (r.probs && r.probs.length)).map(r => r.line + ':' + (r.why || r.probs.join('; '))) : ['no import']);
+  const bad = await ph.page.evaluate(() => HOOK.kitImp ? HOOK.kitImp.rows.filter(r => !r.ok || (r.probs && r.probs.length)).map(r => r.line + ':' + (r.why || r.probs.join('; '))) : ['no import']);
   await ph.tap('#kit-imp'); await sleep(3000);
   for (let i = 0; i < 3; i++) await tapText(ph, /^(Keep it|OK|Got it|Close|Done)$/);
   await ph.page.evaluate(async () => { const w = items.find(i => i.type === 'watch'); w.band = 'leather'; w.primaryColor = 'brown'; w.metal = 'gold'; w.updated = Date.now(); await txs('items', 'readwrite', s => s.put(w)); cache = {} });

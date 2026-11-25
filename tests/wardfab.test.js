@@ -63,7 +63,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       // hidden under the item sheet, Settings and What to buy
       await p.evaluate(()=>openItem(items[3].id));await settle(p,600);
       ok(!(await fab()).shown,'  hidden while the item sheet is open');
-      await p.evaluate(()=>closeItem());await settle(p,600);
+      await p.evaluate(()=>HOOK.closeItem());await settle(p,600);
       ok((await fab()).shown,'  back when it closes');
       await p.evaluate(()=>openSettings());await settle(p,300);
       ok(!(await fab()).shown,'  hidden under Settings');

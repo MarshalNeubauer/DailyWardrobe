@@ -48,9 +48,9 @@ const colouraudit=async({ok,chromium,url,ROOT})=>{
     const miss=Object.entries(LIVE).flatMap(([t,{p:pp,a}])=>[...pp.filter(c=>!app.by[t][0].includes(c)).map(c=>t+':'+c),...a.filter(c=>!app.by[t][1].includes(c)).map(c=>t+'/'+c)]);
     ok(miss.length===0,'every colour in the current wardrobe is still on its type\'s list ('+miss.join()+')');
     // the Add form uses the type's list
-    const add=await p.evaluate(()=>{show('add');addManual();const q=queue[0];setq(0,'type','tieclip');document.querySelector('#nps-q .colbtn[data-k="primaryColor"]').click();
+    const add=await p.evaluate(()=>{show('add');HOOK.addManual();const q=queue[0];setq(0,'type','tieclip');document.querySelector('#nps-q .colbtn[data-k="primaryColor"]').click();
       const l=[...document.querySelectorAll('#col-sheet .cpgrid:not(.cpnear):not(.cnown) .cptile')].map(b=>b.dataset.c);closeColPick();
-      return l.length===new Set(l).size&&l.slice().sort().join()===colChoices(queue[0],'primaryColor').slice().sort().join()?colChoices(queue[0],'primaryColor').join():l.join()});
+      return l.length===new Set(l).size&&l.slice().sort().join()===HOOK.colChoices(queue[0],'primaryColor').slice().sort().join()?HOOK.colChoices(queue[0],'primaryColor').join():l.join()});
     ok(add==='silver,gold,rosegold,gunmetal,grey,black,white,red,blue,navy','the Add form shows a tie clip its finishes');
     const nm=await p.evaluate(()=>{show('add');const q=queue[0];return {metal:document.querySelectorAll('#nps-q select[data-f="metal"]').length,word:colName(primaryCol({type:'tieclip',primaryColor:'rosegold'})),
       m:[{type:'tieclip',primaryColor:'rosegold'},{type:'tieclip',primaryColor:'silver',metal:'gold'},{type:'tieclip',primaryColor:'gunmetal'},{type:'tieclip',primaryColor:'red'}].map(metalOf).join()}});
@@ -65,11 +65,11 @@ const colours=async({ok,chromium,url})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext()).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   const NEW={midgrey:'mid gray',steelblue:'steel blue',deepblue:'deep blue',darknavy:'very dark navy',slate:'dark slate blue-gray',wine:'wine',cream:'cream'};
-  const r=await p.evaluate(N=>{show('add');addManual();
+  const r=await p.evaluate(N=>{show('add');HOOK.addManual();
     const allOpts=[...document.querySelectorAll('#nps-q select')].flatMap(s=>[...s.options].map(o=>o.value+'='+o.textContent)).concat(Object.keys(TYPES).flatMap(t=>COLOR_OPTS(t).map(x=>x[0]+'='+x[1])));
-    return {opts:allOpts,keys:Object.keys(N).filter(k=>COLORS[k]),alias:['Denim Blue','Wine Red','Light Grey','Navy Blue','Dark Blue','Beige','slate grey','very dark navy','mid gray','deep blue'].map(c=>{const k=normCol(c);return SHIRT_ONLY.includes(k)?SHIRT_FALLBACK[k]:k}),
+    return {opts:allOpts,keys:Object.keys(N).filter(k=>COLORS[k]),alias:['Denim Blue','Wine Red','Light Grey','Navy Blue','Dark Blue','Beige','slate grey','very dark navy','mid gray','deep blue'].map(c=>{const k=normCol(c);return HOOK.SHIRT_ONLY.includes(k)?HOOK.SHIRT_FALLBACK[k]:k}),
       pretty:prettyCols('a darknavy shirt with a steelblue tie, slate suit, midgrey pants, deepblue socks'),
-      lum:['lightgrey','midgrey','grey'].map(lumOf)}},NEW);
+      lum:['lightgrey','midgrey','grey'].map(HOOK.lumOf)}},NEW);
   ok(r.keys.length===7,'all seven colors exist');
   ok(Object.entries(NEW).every(([k,v])=>r.opts.includes(`${k}=${v}`)),'the color dropdowns offer them with readable names');
   ok(r.alias.join()==='steelblue,wine,lightgrey,navy,navy,tan,slate,darknavy,midgrey,deepblue',`AI / shop color names map to them (${r.alias.join()})`);
@@ -82,7 +82,7 @@ const colours=async({ok,chromium,url})=>{
       slateShirt:shirtScore(I('suit','navy'),I('shirt','slate'))<=-10,
       fam:['wine','deepblue','darknavy','steelblue','midgrey','slate'].map(c=>fam(c)).join(),
       wineBelt:leatherGroup('wine')===leatherGroup('burgundy'),
-      steelTie:tieScore(I('tie','navy'),I('shirt','steelblue'),I('tie','navy'))!==tieScore(I('tie','navy'),I('shirt','steelblue'),I('tie','pink'))}});
+      steelTie:HOOK.tieScore(I('tie','navy'),I('shirt','steelblue'),I('tie','navy'))!==HOOK.tieScore(I('tie','navy'),I('shirt','steelblue'),I('tie','pink'))}});
   ok(rules.darkShirt&&rules.slateShirt,'very dark navy and dark slate are dark shirts: kept out under dark jackets, allowed under a light one');
   ok(rules.fam==='burgundy,navy,navy,blue,grey,charcoal','each new colour follows its family in the outfit rules');
   ok(rules.wineBelt,'wine shoes and belts match the burgundy leather group');
@@ -115,7 +115,7 @@ const shirts=async({ok,chromium,url,ROOT})=>{
       tex:TEX.every(t=>PATS_BY.shirt.includes(t)),texNotSuit:['end-on-end','chambray','fine-texture'].every(t=>!PATS_BY.suit.includes(t)),
       labels:['fine-stripe','fine-texture','royal-oxford'].map(patLabel).join(','),
       normPat:[normPat('shirt','Fine Texture'),normPat('shirt','hairline'),normPat('shirt','fil-a-fil'),normPat('shirt','texture'),normPat('shirt','poplin')].join(','),
-      lums:['white','ivory','cream','paleyellow'].map(lumOf)}},[NEW,TEX]);
+      lums:['white','ivory','cream','paleyellow'].map(HOOK.lumOf)}},[NEW,TEX]);
   ok(r.shirtHas,'shirts can be pale yellow, ivory, beige, lavender, periwinkle (and light blue, mid grey)');
   ok(r.othersLack,'suits do not get the shirt colours; ties get lavender only');
   ok(r.names==='pale yellow,ivory,beige,lavender,periwinkle','readable names ("pale yellow")');
@@ -134,7 +134,7 @@ const shirts=async({ok,chromium,url,ROOT})=>{
   // planner: new shirt colours get sensible scores and tie pairings
   const pl=await p.evaluate(()=>{const S=c=>({id:'s',type:'shirt',primaryColor:c,pattern:'solid'}),suit={id:'t',type:'suit',primaryColor:'navy',pattern:'solid'},T=c=>({id:'x'+c,type:'tie',primaryColor:c,pattern:'solid'});
     return {ivoryOk:shirtScore(suit,S('ivory'))>=shirtScore(suit,S('cream')),periDark:shirtScore({...suit,primaryColor:'lightgrey'},S('periwinkle'))<shirtScore({...suit,primaryColor:'lightgrey'},S('white')),
-      lavTie:tieScore(T('purple'),S('lavender'),T('purple'))>tieScore(T('tan'),S('lavender'),T('tan')),
+      lavTie:HOOK.tieScore(T('purple'),S('lavender'),T('purple'))>HOOK.tieScore(T('tan'),S('lavender'),T('tan')),
       rate:rateOutfit({suitDay:true,top:suit,shirt:S('paleyellow'),tie:T('navy')}).checks.find(c=>c.label==='Shirt').pts}});
   ok(pl.ivoryOk&&pl.periDark,'shirt scores: ivory at least as good as cream; periwinkle is darker than white under a light suit');
   ok(pl.lavTie,'a lavender shirt prefers a purple tie over a tan one');
@@ -143,7 +143,7 @@ const shirts=async({ok,chromium,url,ROOT})=>{
   const ed=await p.evaluate(async()=>{items=[{id:'sh1',type:'shirt',primaryColor:'periwinkle',pattern:'end-on-end'}];editing='sh1';show('wardrobe');
     const pb=document.querySelector('#item-view .patbtn');pb.click();const texOk=!!document.querySelector('#col-sheet .cptile[data-c="royal-oxford"]');closeColPick();const tex={value:/end on end/i.test(pb.textContent)?'end-on-end':pb.textContent};
     const btn=document.querySelector('#item-view .colbtn[data-k="primaryColor"]');btn.click();const prim=!!document.querySelector('#col-sheet .cptile[data-c="lavender"]');closeColPick();
-    const a=prim&&texOk&&/periwinkle/i.test(btn.textContent)&&tex.value==='end-on-end';await sete('sh1','type','tie');const it=items[0];closeItem();return {a,col:it.primaryColor,pat:it.pattern}});
+    const a=prim&&texOk&&/periwinkle/i.test(btn.textContent)&&tex.value==='end-on-end';await sete('sh1','type','tie');const it=items[0];HOOK.closeItem();return {a,col:it.primaryColor,pat:it.pattern}});
   ok(ed.a,'the shirt editor offers the new colours and textures');
   ok(ed.col==='blue'&&ed.pat==='solid','changing a periwinkle end-on-end shirt into a tie gives a blue solid tie');
   // the figure draws a new-colour shirt
@@ -180,7 +180,7 @@ const display=async({ok,chromium,url})=>{
   await p.click('#sbox .month-link');
   const texts=await p.evaluate(()=>{const t=[document.querySelector('#today').innerText];
     sel=new Date(2026,10,16);items.push({id:'x1',type:'shoes',primaryColor:'brown',leather:'suede'});cache={};renderToday();t.push(document.querySelector('#today').innerText);
-    show('add');addManual();t.push([...document.querySelectorAll('#nps-q select option')].map(o=>o.textContent).join(' '));
+    show('add');HOOK.addManual();t.push([...document.querySelectorAll('#nps-q select option')].map(o=>o.textContent).join(' '));
     t.push(runAnalysis(items,todayDate(),2).cats.map(c=>c.notes.join(' ')+' '+(c.own?c.own.groups.map(g=>g[0]).join(' '):'')+' '+c.recs.map(r=>r.name+' '+r.detail+' '+r.why.join(' ')).join(' ')).join(' '));
     return t.join('\n')});
   ok(!/lightblue|lightgrey|darkgrey/i.test(texts),'no run-together color names on Today, in the score, notes, dropdowns or recommendations');
@@ -198,8 +198,8 @@ const khaki=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(()=>({pants:COLOR_OPTS('pants').some(x=>x[0]==='khaki'),shirt:COLOR_OPTS('shirt').some(x=>x[0]==='khaki'),
       norm:['Khaki','chino','stone'].map(c=>normColFor('pants',c)).join(),camel:normCol('camel'),
-      lighter:lumOf('khaki')>lumOf('tan')+10,fam:fam('khaki'),belt:leatherGroup('khaki'),
-      desc:itemDesc({type:'pants',primaryColor:'khaki',pattern:'solid'}),wool:itemDesc({type:'pants',primaryColor:'tan',pattern:'solid'})}));
+      lighter:HOOK.lumOf('khaki')>HOOK.lumOf('tan')+10,fam:fam('khaki'),belt:leatherGroup('khaki'),
+      desc:HOOK.itemDesc({type:'pants',primaryColor:'khaki',pattern:'solid'}),wool:HOOK.itemDesc({type:'pants',primaryColor:'tan',pattern:'solid'})}));
     ok(r.pants&&!r.shirt,'khaki is offered for trousers (not dress shirts)');
     ok(r.norm==='khaki,khaki,stone'&&r.camel==='tan','khaki and chino tag as khaki, stone is its own trouser colour now (chinos); camel stays tan');
     ok(r.lighter&&r.fam==='tan'&&r.belt==='tan','khaki is lighter than tan and follows the tan rules');
@@ -232,7 +232,7 @@ const deeptaupe=async({ok,chromium,url,ROOT})=>{
         notTie:!o('tie').includes('deeptaupe')&&!o('shirt').includes('deeptaupe'),
         hex:COLORS.deeptaupe,name:colName('deeptaupe'),pretty:prettyCols('a deeptaupe suit'),
         keep:normColFor('suit','deeptaupe'),alias:['Deep Taupe','dark taupe','mink','taupe'].map(c=>normColFor('suit',c)).join(),
-        lum:[lumOf('taupe'),lumOf('deeptaupe'),lumOf('black')],
+        lum:[HOOK.lumOf('taupe'),HOOK.lumOf('deeptaupe'),HOOK.lumOf('black')],
         fam:fam('deeptaupe'),grp:jacketGroup(dt),
         shoes:['brown','black'].map(c=>shoeScore(dt,dt,Sh(c)))}});
     ok(r.suit&&r.blazer&&r.pants,'deep taupe is offered for suits, blazers and trousers');

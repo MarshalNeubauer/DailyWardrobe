@@ -87,7 +87,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
 
     // ---- 4. Today, the drawing and the photo ----
     const today=async(dress,d)=>p.evaluate(`(async()=>{(${PLAN_SIG})(${WARD},'full');settings.dress=${JSON.stringify(dress)};if(!settings.dress)delete settings.dress;cache={};sel=new Date(2026,10,${d});view={y:2026,m:10};listOpen=true;scoreOpen=true;show('today');
-      const o=planFor()[key(sel)],fig=document.querySelector('#mannequin-container'),a=rankLooks(rankPools(o),o);monthOpen=false;toggleMonth();
+      const o=planFor()[key(sel)],fig=document.querySelector('#mannequin-container'),a=rankLooks(HOOK.rankPools(o),o);monthOpen=false;toggleMonth();
       const cell=[...document.querySelectorAll('#mpanel .mc')].find(x=>x.getAttribute('aria-label')&&new RegExp('November ${d}\\\\b').test(x.getAttribute('aria-label')));
       const r={rows:[...document.querySelectorAll('#ibox .row > .mut:first-child')].map(e=>e.textContent).join(),none:[...document.querySelectorAll('#ibox .none')].map(e=>e.textContent).join(),sum:document.querySelector('#ibox .mltxt small').textContent,
         open:!!fig.querySelector('.fig-open'),blade:/href="#[^"]*bladeP"/.test(fig.innerHTML),clip:!!fig.querySelector('.fig-clip'),lapels:/href="#[^"]*lapL"/.test(fig.innerHTML),label:fig.querySelector('svg').getAttribute('aria-label'),
@@ -108,15 +108,15 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
     ok(tN.nojacket&&tN.key!==tN.keyTie,'shirt sleeves without a tie likewise');
 
     // ---- 5. stats and what to buy ----
-    const st=await p.evaluate(`(()=>{(${PLAN_SIG})(${WARD},'full');settings.dress={jacket:true,tie:false};cache={};dayRecs={};const S=buildStats(),tie=items.find(i=>i.type==='tie');
-      const r={unused:S.unused.map(x=>x.i.type).join(),ties:S.ties.length,pairs:S.pairs.length,why:whyUnused(tie)};
-      settings.dress={jacket:false,tie:false};cache={};const S2=buildStats();r.unused2=[...new Set(S2.unused.map(x=>x.i.type))].join();r.jackets2=S2.jackets.length;r.whySuit=whyUnused(items.find(i=>i.type==='suit'));r.whyAll=S2.unused.map(x=>whyUnused(x.i)).join('|');
+    const st=await p.evaluate(`(()=>{(${PLAN_SIG})(${WARD},'full');settings.dress={jacket:true,tie:false};cache={};dayRecs={};const S=HOOK.buildStats(),tie=items.find(i=>i.type==='tie');
+      const r={unused:S.unused.map(x=>x.i.type).join(),ties:S.ties.length,pairs:S.pairs.length,why:HOOK.whyUnused(tie)};
+      settings.dress={jacket:false,tie:false};cache={};const S2=HOOK.buildStats();r.unused2=[...new Set(S2.unused.map(x=>x.i.type))].join();r.jackets2=S2.jackets.length;r.whySuit=HOOK.whyUnused(items.find(i=>i.type==='suit'));r.whyAll=S2.unused.map(x=>HOOK.whyUnused(x.i)).join('|');
       delete settings.dress;cache={};return r})()`);
     ok(!/tie/.test(st.unused)&&st.ties===0&&st.pairs===0&&/dress code leaves out ties/.test(st.why),`without ties the stats don't count ties or tie clips as never worn (${st.unused||'none'})`);
     ok(!/suit|blazer|tie/.test(st.unused2)&&st.jackets2===0&&/dress code leaves out jackets/.test(st.whySuit)&&!/Infinity|NaN|blazer|jacket/.test(st.whyAll),`without jackets they don't count suits and blazers either (${st.unused2||'none'}: ${st.whyAll})`);
     const shop=await p.evaluate(`(()=>{(${PLAN_SIG})(${WARD},'small');dayRecs={};const T=todayDate(),out={};
       for(const [n,d] of [['def',null],['noTie',{jacket:true,tie:false}],['none',{jacket:false,tie:false}],['noJacket',{jacket:false,tie:true}]]){if(d)settings.dress=d;else delete settings.dress;const r=runAnalysis(items,T,6),recs=r.cats.flatMap(c=>c.recs);
-        out[n]={cats:r.cats.map(c=>c.key).join(),types:[...new Set(recs.flatMap(x=>x.items.map(i=>i.type)))].join(),why:recs.flatMap(x=>x.why).join(' '),idle:r.base.idle.map(i=>i.type).join(),avg:r.base.avg,sig:shopSig().split('|').slice(-2).join('|')}}
+        out[n]={cats:r.cats.map(c=>c.key).join(),types:[...new Set(recs.flatMap(x=>x.items.map(i=>i.type)))].join(),why:recs.flatMap(x=>x.why).join(' '),idle:r.base.idle.map(i=>i.type).join(),avg:r.base.avg,sig:HOOK.shopSig().split('|').slice(-2).join('|')}}
       delete settings.dress;cache={};return out})()`);
     ok(/tie/.test(shop.def.cats)&&/suit/.test(shop.def.cats)&&!/nojacket|notie/.test(shop.def.sig),`by default the what-to-buy check covers suits and ties (${shop.def.cats})`);
     ok(!/\btie\b/.test(shop.noTie.cats)&&!/tie/.test(shop.noTie.types)&&!/\bties?\b|tie clip/.test(shop.noTie.why)&&!/tie/.test(shop.noTie.idle)&&/suit/.test(shop.noTie.cats)&&/shirt/.test(shop.noTie.types)&&/notie/.test(shop.noTie.sig),`without ties it suggests no tie or tie clip and names none in its reasons (${shop.noTie.types})`);
@@ -186,14 +186,14 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       await q.evaluate(()=>{queue=[{id:'n2',type:'suit',primaryColor:'tan',pattern:'solid',manual:true,vest:'yes'}];return save(0)});await q.waitForFunction(()=>items.some(i=>i.id==='n2'));
       await q.evaluate(()=>{show('wardrobe');openItem('n1')});await q.waitForFunction(()=>!!document.querySelector('#item-view select'));
       const ed=await q.evaluate(()=>{const pick=()=>{const s=[...document.querySelectorAll('#item-view select')].find(s=>[...s.options].some(o=>o.textContent==='Matching vest'));return s?s.selectedOptions[0].textContent:''};
-        const a=pick();openItem('s1');const b=pick();closeItem();return {a,b,n2:hasVest(items.find(i=>i.id==='n2'))}});
+        const a=pick();openItem('s1');const b=pick();HOOK.closeItem();return {a,b,n2:hasVest(items.find(i=>i.id==='n2'))}});
       ok(ed.a==='No vest'&&ed.b==='Matching vest'&&ed.n2,`the editor shows each suit's own answer (${ed.a} / ${ed.b}); "Matching vest" on the Add card is kept`);
       const pl=await q.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[];weather={};climate=null;dayRecs={};TODAY_OVERRIDE='2026-11-08T12:00:00';for(const i of items)if(i.type==='suit')delete i.paused;cache={};
         const P=buildPlan(2026,10),o=Object.entries(P).filter(([k,o])=>k.startsWith('2026-11-')&&o.suitDay&&!o.frozen).map(x=>x[1]);return {yes:o.filter(x=>['s1','s3','n2'].includes(x.top.id)).every(x=>x.vest),no:o.filter(x=>['s2','n1'].includes(x.top.id)).every(x=>!x.vest),n:o.length,
           both:o.some(x=>x.vest)&&o.some(x=>!x.vest)}});
       ok(pl.yes&&pl.no&&pl.both,`the planner wears the waistcoat with the three-piece suits only (${pl.n} suit days)`);
       const bought=await q.evaluate(async()=>{shop={sig:'x',at:Date.now(),res:{cats:[{key:'suit',recs:[{key:'suit|k',name:'plain olive suit',items:[{id:'cand-1',type:'suit',primaryColor:'olive',pattern:'solid',added:0}],why:[]}]}],top:[]}};
-        await shopBought('suit|k');if(shopWorker){shopWorker.terminate();shopWorker=null}const i=items.find(x=>x.primaryColor==='olive');return i?{vest:i.vest,has:hasVest(i),order:!!i.order}:null});
+        await HOOK.shopBought('suit|k');if(HOOK.shopWorker){HOOK.shopWorker.terminate();HOOK.shopWorker=null}const i=items.find(x=>x.primaryColor==='olive');return i?{vest:i.vest,has:hasVest(i),order:!!i.order}:null});
       ok(bought&&bought.vest==='no'&&!bought.has&&bought.order,'a suit added with "Bought it" is two-piece too');
       ok(e2.length===0,'no page errors ('+e2.join('; ')+')');await c2.close()}
 
@@ -225,17 +225,17 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       await A.q.evaluate(async()=>{await putRaw({id:'s1',type:'suit',primaryColor:'charcoal',pattern:'solid',added:1000,updated:Date.now()-60000});await metaPut('settings',{workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',units:'F',planRules:PLAN_RULES,updated:Date.now()-60000})});
       store.set('wardrobe:v1',JSON.stringify({rev:1,saved:Date.now()-50000,data:await A.q.evaluate(()=>localState())}));meta.set('wardrobe:v1',{rev:1,saved:Date.now()-50000});
       // B opens first, with the backup out of reach: nothing is changed, and its suits still read as three-piece
-      online=false;await connect(B.q);await B.q.reload();await B.q.waitForFunction(()=>window.appReady);await B.q.waitForFunction(()=>!syncing&&!vestMigrating&&/failed|^Not backed up:/i.test(localStorage.getItem('sync_status')||''),null,{timeout:15000});
+      online=false;await connect(B.q);await B.q.reload();await B.q.waitForFunction(()=>window.appReady);await B.q.waitForFunction(()=>!HOOK.syncing&&!HOOK.vestMigrating&&/failed|^Not backed up:/i.test(localStorage.getItem('sync_status')||''),null,{timeout:15000});
       const b0=await state(B.q);
       ok(b0.suits==='s1:navy:undefined,s2:grey:undefined'&&!b0.flag&&b0.has==='true,true',`a device that can't reach the backup changes nothing yet, and its suits stay three-piece (${b0.suits})`);
       // back online: it takes the other device's newer suit and settings first, then gives the suits their value
       online=true;await B.q.reload();await B.q.waitForFunction(()=>window.appReady&&settings.vestDef===1,null,{timeout:15000});
-      await B.q.waitForFunction(()=>!syncing&&!vestMigrating);await B.q.evaluate(()=>syncNow());
+      await B.q.waitForFunction(()=>!HOOK.syncing&&!HOOK.vestMigrating);await B.q.evaluate(()=>syncNow());
       const b1=await state(B.q),kv=JSON.parse(store.get('wardrobe:v1')).data;
       ok(b1.suits==='s1:charcoal:yes,s2:grey:yes'&&b1.flag===1&&b1.units==='F'&&b1.has==='true,true',`with the backup in reach it syncs first, so the other device's newer suit and settings are kept (${b1.suits}, °${b1.units})`);
       ok(kv.settings.vestDef===1&&kv.items.filter(i=>i.type==='suit').every(i=>i.vest==='yes'),'the suits and the mark are in the backup');
       // A opens afterwards: it receives both and has nothing to do
-      await connect(A.q);await A.q.reload();await A.q.waitForFunction(()=>window.appReady&&settings.vestDef===1,null,{timeout:15000});await A.q.waitForFunction(()=>!syncing&&!vestMigrating);
+      await connect(A.q);await A.q.reload();await A.q.waitForFunction(()=>window.appReady&&settings.vestDef===1,null,{timeout:15000});await A.q.waitForFunction(()=>!HOOK.syncing&&!HOOK.vestMigrating);
       const a1=await state(A.q),same=await A.q.evaluate(()=>items.filter(i=>i.type==='suit').map(i=>i.updated).sort().join()),sameB=await B.q.evaluate(()=>items.filter(i=>i.type==='suit').map(i=>i.updated).sort().join());
       ok(a1.suits===b1.suits&&a1.flag===1&&a1.units==='F'&&same===sameB,'the other device receives the suits and the mark and changes nothing itself');
       // a suit added on A now is two-piece on both
@@ -244,7 +244,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
       ok(b2==='n9:false,s1:true,s2:true',`a suit added after that is two-piece on both devices (${b2})`);
       // a device with a newer mark that receives older, unmarked settings and suits from before drops the mark and gives them their value
       const C=await device();await C.q.evaluate(async()=>{settings.vestDef=1;items=[{id:'x1',type:'suit',primaryColor:'black',pattern:'solid',added:1}];await putRaw(items[0]);dressSynced({settings:{updated:1}})});
-      await C.q.waitForFunction(()=>settings.vestDef===1&&items[0].vest==='yes'&&!vestMigrating);
+      await C.q.waitForFunction(()=>settings.vestDef===1&&items[0].vest==='yes'&&!HOOK.vestMigrating);
       ok(await C.q.evaluate(()=>hasVest(items[0])),'settings that arrive by sync without the mark are taken as they are: the suits that came with them keep their waistcoat');
       await A.c.close();await B.c.close();await C.c.close()}
   }finally{await browser.close()}

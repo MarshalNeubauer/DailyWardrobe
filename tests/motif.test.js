@@ -46,7 +46,7 @@ const motif=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
     const m=await p.evaluate(async spec=>{const ld=async s=>{const im=new Image();im.src=s;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);return c};
       const ph=await ld('tests/fixtures/tie-neat.jpg'),tx=await ld('tests/fixtures/tie-neat-closeup.jpg'),L=h=>rgbLab(...hexRgb(h));
-      const s=motifFromSpec(spec,{tex:tx,full:ph,box:{x:340,y:150,w:240,h:550},type:'tie'}),noBox=motifFromSpec(spec,{tex:tx,full:ph,type:'tie'});
+      const s=HOOK.motifFromSpec(spec,{tex:tx,full:ph,box:{x:340,y:150,w:240,h:550},type:'tie'}),noBox=HOOK.motifFromSpec(spec,{tex:tx,full:ph,type:'tie'});
       const mm=s.motif,lab={ground:L(mm.ground),purple:L(mm.figs[0].cols[0]),navy:L(mm.figs[0].cols[1]),white:L(mm.figs[1].cols[0]),centre:L(mm.figs[1].centre)};
       const it={id:'t1',type:'tie',primaryColor:'purple',secondaryColor:'navy',tertiaryColor:'white',pattern:'foulard',sett:s};
       const def=fabricDef('q',it,'tie'),fig=fabricDef('q',it,'tie','fig');
@@ -132,12 +132,12 @@ const figuremotif=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
     const m=await p.evaluate(async spec=>{const im=new Image();im.src='tests/fixtures/shirt-chevron-closeup.png';await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);
-      const s=specSett(spec,{tex:c,type:'shirt'}),L=h=>rgbLab(...hexRgb(h))[0],it={id:'sh',type:'shirt',primaryColor:'white',secondaryColor:'grey',pattern:'dobby',sett:s};
+      const s=HOOK.specSett(spec,{tex:c,type:'shirt'}),L=h=>rgbLab(...hexRgb(h))[0],it={id:'sh',type:'shirt',primaryColor:'white',secondaryColor:'grey',pattern:'dobby',sett:s};
       const def=fabricDef('q',it,'shirt'),W=+def.match(/width="([\d.]+)"/)[1],H=+def.match(/height="([\d.]+)"/)[1];
       const off=fabricDef('q',{...it,sett:{...s,motif:{...s.motif,off:1}}},'shirt');
       const o={suitDay:true,top:{id:'t',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:it,tie:{id:'x',type:'tie',primaryColor:'burgundy',pattern:'solid'}};
       return {s,ground:L(s.motif.ground),fig:L(s.motif.figs[0].cols[0]),rects:(def.match(/<rect /g)||[]).length,ratio:H/W,figCol:def.includes(s.motif.figs[0].cols[0]),
-        offDiff:off!==def,usable:!!usableSett(it),band:usableSett({...it,sett:{v:2,bands:[['#fff',.5],['#888',.5]]}}),patterned:shirtPatterned(it),
+        offDiff:off!==def,usable:!!usableSett(it),band:usableSett({...it,sett:{v:2,bands:[['#fff',.5],['#888',.5]]}}),patterned:HOOK.shirtPatterned(it),
         key:comboKey(o)!==comboKey({...o,shirt:{...it,sett:null}})}},spec);
     ok(m.s.v===3&&m.s.motif.figs[0].bmp.join()===CHEV.join()&&m.s.motif.aspect===.82&&m.s.cr===8&&m.s.tr===40,'the reading keeps the figure\'s bitmap, the cell shape and the scale');
     ok(m.ground>85&&m.fig>35&&m.fig<65,`colors come from the close-up, at full contrast: white ground L* ${m.ground.toFixed(0)}, gray figures L* ${m.fig.toFixed(0)}`);
@@ -152,7 +152,7 @@ const figuremotif=async({ok,chromium,url,ROOT})=>{
     ok(calls.length===1&&calls[0].type==='shirt'&&/read by Claude/.test(await p.textContent('#queue')),'a dobby shirt\'s close-up asks Claude for the pattern on the Add card');
     await p.evaluate(()=>save(0));
     const sv=await p.evaluate(async()=>{const it=items[0];
-      return {motif:!!(it.sett&&it.sett.motif),pool:asmCmGaps().filter(x=>x.i.id===it.id).length}});
+      return {motif:!!(it.sett&&it.sett.motif),pool:HOOK.asmCmGaps().filter(x=>x.i.id===it.id).length}});
     ok(sv.motif&&sv.pool===0,'saved with its reading; Settings → Painted plain doesn\'t list it to read again');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}

@@ -55,7 +55,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(await p.evaluate(()=>!zoom&&!document.querySelector('#mannequin-container.zoomed')),'changing the day zooms back out');
     await p.evaluate(()=>stepDay(-1));
     // ---- a swipe folds every open box, while the drag is still going
-    await p.evaluate(()=>{toggleScore();toggleList();toggleRow('tie');pickPiece('shoes');toggleMonth()});await settle(p,400);
+    await p.evaluate(()=>{toggleScore();HOOK.toggleList();HOOK.toggleRow('tie');HOOK.pickPiece('shoes');toggleMonth()});await settle(p,400);
     const open=()=>p.evaluate(()=>['#sbox','#ibox','#mbox','#bbox'].filter(s=>{const e=document.querySelector(s);return e&&e.classList.contains('open')}).length+document.querySelectorAll('.ritem.open').length);
     ok(await open()>=5,'score, pieces list, a piece, a below-the-waist photo and the month are open');
     await p.evaluate(()=>scrollTo(0,0));const st=await p.evaluate(()=>{const b=document.querySelector('#stage').getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+Math.min(b.height/2,300)}});
@@ -63,29 +63,29 @@ module.exports=async({ok,chromium,url,settle})=>{
     await T('touchStart',st.x+80,st.y);for(let k=1;k<=3;k++)await T('touchMove',st.x+80-20*k,st.y+2);
     const mid=await open();
     for(let k=4;k<=8;k++)await T('touchMove',st.x+80-25*k,st.y+2);await T('touchEnd');await settle(p,500);
-    const after=await p.evaluate(()=>({scoreOpen,listOpen,monthOpen,belowOpen,openRow}));
+    const after=await p.evaluate(()=>({scoreOpen,listOpen,monthOpen,belowOpen:HOOK.belowOpen,openRow:HOOK.openRow}));
     ok(mid===0,'the boxes fold as soon as the drag is known to be sideways (during the swipe)');
     ok(await day()!==d1&&await open()===0&&!after.scoreOpen&&!after.listOpen&&!after.monthOpen&&!after.belowOpen&&!after.openRow,'the next day comes in with everything folded');
     // the arrow buttons too
-    await p.evaluate(()=>{toggleScore();toggleList()});await settle(p,300);await p.evaluate(()=>stepDay(1));
+    await p.evaluate(()=>{toggleScore();HOOK.toggleList()});await settle(p,300);await p.evaluate(()=>stepDay(1));
     ok(await open()===0,'stepping with the arrows folds them as well');
     // ---- working on it
     delay=600;
     const busy=()=>p.evaluate(()=>{const b=document.querySelector('#busy');return b&&b.classList.contains('on')?b.textContent:''});
-    const pr=p.evaluate(()=>claudePattern({image:'data:image/png;base64,AA',type:'tie'}));await p.waitForFunction(()=>/Claude is reading/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});
+    const pr=p.evaluate(()=>HOOK.claudePattern({image:'data:image/png;base64,AA',type:'tie'}));await p.waitForFunction(()=>/Claude is reading/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});
     const during=await busy();await pr;await p.waitForFunction(()=>!document.querySelector('#busy.on'),null,{timeout:5000}).catch(()=>{});
     ok(/Claude is reading the pattern/.test(during)&&await p.evaluate(()=>!!document.querySelector('#busy .spin')),`a spinning pill shows while Claude works ("${during}")`);
     ok(await busy()==='','it goes away when the answer comes');
     const tg=p.evaluate(()=>ask('data:image/png;base64,AA',{}));await p.waitForFunction(()=>/tagging/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const tagging=await busy();await tg;
     const iq=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({mode:'item',key:'c2'})}));await p.waitForFunction(()=>/item picture/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const itemPic=await busy();await iq;
     ok(/tagging/.test(tagging)&&/item picture/.test(itemPic),`tagging and making an item picture each say so ("${tagging}", "${itemPic}")`);
-    const two=[p.evaluate(()=>claudePattern({image:'data:image/png;base64,AA',type:'tie'})),p.evaluate(()=>ask('data:image/png;base64,AA',{}))];await p.waitForFunction(()=>/\+1/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const both=await busy();await Promise.all(two);
+    const two=[p.evaluate(()=>HOOK.claudePattern({image:'data:image/png;base64,AA',type:'tie'})),p.evaluate(()=>ask('data:image/png;base64,AA',{}))];await p.waitForFunction(()=>/\+1/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const both=await busy();await Promise.all(two);
     ok(/\+1/.test(both),`two at once: the latest, with a count of the rest ("${both}")`);
     const qd=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({image:'x',key:'c3'})}));await p.waitForTimeout(250);const other=await busy();await qd;
     const syncs=p.evaluate(()=>fetch('https://w.test/sync',{method:'GET'}));await p.waitForTimeout(250);const sync=await busy();await syncs;
     ok(other===''&&sync==='','a POST /render that is not an item picture (the retired outfit photo) or a sync shows nothing');
     delay=0;
-    const dz=await p.evaluate(()=>{const o=planFor()[key(sel)];delete renders[comboKey(o)];renderToday();const t=zoomTarget(),r=t.getBoundingClientRect();toggleZoom(r.x+r.width/2,r.y+r.height/3);
+    const dz=await p.evaluate(()=>{const o=planFor()[key(sel)];delete renders[comboKey(o)];renderToday();const t=HOOK.zoomTarget(),r=t.getBoundingClientRect();HOOK.toggleZoom(r.x+r.width/2,r.y+r.height/3);
       const out={tag:t.tagName,tf:t.style.transform};zoomOut();return out});
     ok(dz.tag==='svg'&&/translate\(-?[\d.]+px, ?-?[\d.]+px\) scale\(2\.5\)/.test(dz.tf),`the drawing (no photo yet) zooms too (${dz.tf})`);
     // ---- a textured shirt's photo key

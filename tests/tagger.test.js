@@ -55,7 +55,7 @@ const claude=async({ok,chromium,url,ROOT})=>{
     const pic=`(async()=>{const c=document.createElement('canvas');c.width=c.height=200;c.getContext('2d').fillRect(0,0,200,200);return new File([await new Promise(r=>c.toBlob(r,'image/png'))],'x.png',{type:'image/png'})})()`;   // (large enough to read: add.js ADD_MIN_PX)
     await p.evaluate(`(async()=>{show('add');await addFiles([await ${pic}])})()`);
     ok(/Photo tagging failed: Reading photos isn’t available on this server yet/.test(await p.textContent('#note')),'the Add screen shows why tagging failed, in plain words (a connection whose role is not known yet: ui.js plainErr)');
-    ok(await p.evaluate(()=>{rememberRole({role:'owner'});return /ANTHROPIC_API_KEY/.test(tagFailText(500,{},'invalid x-api-key: add an ANTHROPIC_API_KEY secret'))}),'the owner reads the technical reason');
+    ok(await p.evaluate(()=>{HOOK.rememberRole({role:'owner'});return /ANTHROPIC_API_KEY/.test(tagFailText(500,{},'invalid x-api-key: add an ANTHROPIC_API_KEY secret'))}),'the owner reads the technical reason');
     reply=()=>[200,{model:'claude-opus-5-5',stop_reason:'end_turn',usage:{input_tokens:1,output_tokens:1},content:[{type:'text',text:JSON.stringify(answer)}]}];
     await ctx.unroute('https://w.test/**');
     await ctx.route('https://w.test/**',async route=>{const q=route.request();const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.postData()}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});

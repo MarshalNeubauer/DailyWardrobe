@@ -9,7 +9,7 @@ V.run(async () => {
   const B1 = await V.item(B, id);
   await V.bgfg(B);
   await A.background(); await V.sleep(800); await A.advance(61000); await A.foreground();
-  await V.sleep(1000); await A.page.waitForFunction(() => !syncing, null, { timeout: 20000 }); await V.sleep(800);
+  await V.sleep(1000); await A.page.waitForFunction(() => !HOOK.syncing, null, { timeout: 20000 }); await V.sleep(800);
   const pulled = { item: await V.item(A, id), label: await A.page.locator('#item-view .rotbtn').innerText(), sheetOpen: await A.page.evaluate(() => !!editing) };
   await A.shot('w04-stale');
   await V.rot(A);

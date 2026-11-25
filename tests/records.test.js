@@ -53,9 +53,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // ---- Restore file with crafted records: nothing runs anywhere; the plain message says what was left out
     const file={app:'daily-wardrobe',version:1,items:crafted(),days:[],tombstones:{}};
     const r=await p.evaluate(async f=>{window.__rx=n=>(window.__rxs=window.__rxs||[]).push(n);
-      await restoreBackup(new File([JSON.stringify(f)],'b.json'));const msg=document.querySelector('#toast').textContent;
+      await HOOK.restoreBackup(new File([JSON.stringify(f)],'b.json'));const msg=document.querySelector('#toast').textContent;
       closeSettings&&closeSettings();show('today');await new Promise(r=>setTimeout(r,300));show('wardrobe');await new Promise(r=>setTimeout(r,300));
-      for(const i of items){openItem(i.id);await new Promise(r=>setTimeout(r,150));closeItem()}
+      for(const i of items){openItem(i.id);await new Promise(r=>setTimeout(r,150));HOOK.closeItem()}
       const st=await tx('readonly',s=>s.getAll());
       return {msg,n:items.length,marks:document.querySelectorAll('[data-rx],[data-q]').length,hits:window.__rxs||[],stored:st.filter(i=>/[<>"']/.test(i.id)||/[<>"]/.test(String(i.photo||'')+String(i.photoSm||'')+String(i.primaryColor||''))).length}},file);
     ok(/Restored\. Your wardrobe now has 6 items\. 2 items in the file weren’t a Daily Wardrobe item and were left out\./.test(r.msg),'Restore file says how many items were left out ('+r.msg+')');
@@ -64,7 +64,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // ---- the second lock: a crafted record that skipped the check (in memory) is still escaped at the sinks
     const s2=await p.evaluate(async([PNG,B,S])=>{window.__rxs=[];items=[{id:'z1'+S,type:'suit',primaryColor:'navy',pattern:'solid',added:1},{id:'z2',type:'shirt',primaryColor:'white',pattern:'solid',photo:PNG+B,photoSm:PNG+B,added:1}];cache={};
       show('wardrobe');await new Promise(r=>setTimeout(r,200));document.querySelector('#wardrobe .giopen').click();await new Promise(r=>setTimeout(r,300));
-      const sheet=!!document.querySelector('#item-view.on, body.iv-on');closeItem();openItem('z2');await new Promise(r=>setTimeout(r,200));closeItem();
+      const sheet=!!document.querySelector('#item-view.on, body.iv-on');HOOK.closeItem();openItem('z2');await new Promise(r=>setTimeout(r,200));HOOK.closeItem();
       return {marks:document.querySelectorAll('[data-rx]').length,hits:window.__rxs,sheet}},[PNG,B('sink'),S(7)]);
     ok(s2.marks===0&&!s2.hits.length&&s2.sheet,`ids in inline handlers and photo sources are escaped even for a record that skipped the check, and the item still opens (marks ${s2.marks}, calls ${s2.hits.join()}, opened ${s2.sheet})`);
 
@@ -87,7 +87,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(await p.evaluate(()=>!/set aside/.test(document.querySelector('#toast').textContent)),'the message is said once, not at the next start');
 
     // ---- W2-13-05: the photo reader's confidence is shown only as high/medium/low
-    const ct=await p.evaluate(()=>confTxt({type:'high<img src=x onerror=__rx(5)>',primaryColor:'low',pattern:'medium'}));
+    const ct=await p.evaluate(()=>HOOK.confTxt({type:'high<img src=x onerror=__rx(5)>',primaryColor:'low',pattern:'medium'}));
     ok(ct==='Color: low confidence · Pattern: medium confidence'||(!/</.test(ct)&&/low confidence/.test(ct)),'confTxt shows only the words high, medium and low ('+ct+')');
 
     // ---- W2-12-06: a name typed with right-to-left overrides is saved without them
@@ -126,7 +126,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await q.addInitScript(()=>{window.__rx=n=>(window.__rxs=window.__rxs||[]).push(n)});
     await q.reload();await q.waitForFunction(()=>window.appReady);
     const sy=await q.evaluate(async()=>{const a=await syncNow();show('today');await new Promise(r=>setTimeout(r,300));show('wardrobe');await new Promise(r=>setTimeout(r,300));
-      for(const i of items){openItem(i.id);await new Promise(r=>setTimeout(r,100));closeItem()}
+      for(const i of items){openItem(i.id);await new Promise(r=>setTimeout(r,100));HOOK.closeItem()}
       return {a,ids:items.map(i=>i.id).sort().join(),marks:document.querySelectorAll('[data-rx],[data-q]').length,hits:window.__rxs||[],st:localStorage.getItem('sync_status')}});
     gets=0;const again=await q.evaluate(()=>syncNow());
     ok(sy.a===true&&sy.marks===0&&!sy.hits.length,`a sync that brings crafted records puts nothing into the page (ok ${sy.a}, marks ${sy.marks}, calls ${sy.hits.join()}, ${sy.st})`);

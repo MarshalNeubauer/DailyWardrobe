@@ -4,9 +4,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   const worker=(await import(pathToFileURL(path.join(ROOT,'worker.js')).href)).default;
   const PNG=require('fs').readFileSync(require('path').join(__dirname,'fixtures','shirt-chevron-closeup.png'));   // (a picture large enough to read: add.js ADD_MIN_PX)
   // the outside web as the worker sees it
-  const web={'https://shop.test/product/42':{type:'text/html',body:'<html><head><meta property="og:image" content="/img/tie.png?x=1&amp;y=2"></head></html>'},
-    'https://shop.test/img/tie.png?x=1&y=2':{type:'image/png',body:PNG},'https://nocors.test/a.png':{type:'image/png',body:PNG},
-    'https://shop.test/plain':{type:'text/html',body:'<html>nothing</html>'},'https://shop.test/doc.pdf':{type:'application/pdf',body:'%PDF'}};
+  const web={'https://store.test/product/42':{type:'text/html',body:'<html><head><meta property="og:image" content="/img/tie.png?x=1&amp;y=2"></head></html>'},
+    'https://store.test/img/tie.png?x=1&y=2':{type:'image/png',body:PNG},'https://nocors.test/a.png':{type:'image/png',body:PNG},
+    'https://store.test/plain':{type:'text/html',body:'<html>nothing</html>'},'https://store.test/doc.pdf':{type:'application/pdf',body:'%PDF'}};
   const realFetch=globalThis.fetch;const seen=[];
   globalThis.fetch=async(href)=>{seen.push(String(href));const w=web[String(href)];return w?new Response(w.body,{status:200,headers:{'content-type':w.type}}):new Response('nope',{status:404})};
   let env={APP_TOKEN:'secret'};const HOST='https://wardrobevision.test/';
@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await ctx.route('https://cors.test/**',r=>{directHits++;r.fulfill({status:200,headers:{'content-type':'image/png','access-control-allow-origin':'*'},body:PNG})});
   // a browser fetch blocked by CORS fails with a network error; route.fulfill would bypass the CORS check, so abort
   await ctx.route('https://nocors.test/**',r=>r.abort('failed'));
-  await ctx.route('https://shop.test/**',r=>r.abort('failed'));
+  await ctx.route('https://store.test/**',r=>r.abort('failed'));
   const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   const photos=()=>p.evaluate(()=>queue.filter(q=>q.photo&&!q.busy).length);
@@ -45,22 +45,22 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   ok(/Connect in/.test(await status())&&(await photos())===2,`without a worker, a blocked link explains the options ("${await status()}")`);
 
   // with the worker: blocked sites go through /fetch, shop pages give their og:image
-  await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret');pasteMsg('')},HOST);
+  await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret');HOOK.pasteMsg('')},HOST);
   await p.fill('#photo-url','https://nocors.test/a.png');await p.click('.paste-box >> text=Add');await settle(3);
   ok((await photos())===3&&seen.includes('https://nocors.test/a.png'),'a link from a site without CORS is fetched through the worker');
-  await p.evaluate(()=>pasteMsg(''));
+  await p.evaluate(()=>HOOK.pasteMsg(''));
   // pasting a link while the Add screen is open adds it straight away
-  await p.evaluate(()=>{const dt=new DataTransfer();dt.setData('text/plain','https://shop.test/product/42');document.body.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true}))});
+  await p.evaluate(()=>{const dt=new DataTransfer();dt.setData('text/plain','https://store.test/product/42');document.body.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true}))});
   await settle(4);
-  ok((await photos())===4&&seen.includes('https://shop.test/img/tie.png?x=1&y=2'),'a pasted shop product link adds the page\'s photo (og:image)');
+  ok((await photos())===4&&seen.includes('https://store.test/img/tie.png?x=1&y=2'),'a pasted shop product link adds the page\'s photo (og:image)');
   // errors from the worker are shown
-  for(const [u,re,label] of [['https://shop.test/plain',/No photo found/,'a page with no photo'],['https://shop.test/doc.pdf',/not a photo/,'a link that is not an image']]){
-    await p.evaluate(()=>pasteMsg(''));await p.fill('#photo-url',u);await p.click('.paste-box >> text=Add');await settle(99);
+  for(const [u,re,label] of [['https://store.test/plain',/No photo found/,'a page with no photo'],['https://store.test/doc.pdf',/not a photo/,'a link that is not an image']]){
+    await p.evaluate(()=>HOOK.pasteMsg(''));await p.fill('#photo-url',u);await p.click('.paste-box >> text=Add');await settle(99);
     ok(re.test(await status()),`${label} is reported ("${await status()}")`)}
-  await p.evaluate(()=>pasteMsg(''));await p.fill('#photo-url','not a link');await p.click('.paste-box >> text=Add');
+  await p.evaluate(()=>HOOK.pasteMsg(''));await p.fill('#photo-url','not a link');await p.click('.paste-box >> text=Add');
   ok(/doesn’t look like a link/.test(await status()),'text that isn\'t a link is rejected');
   // an old worker without /fetch: tells you to redeploy
-  await p.evaluate(()=>pasteMsg(''));
+  await p.evaluate(()=>HOOK.pasteMsg(''));
   await ctx.route(HOST+'fetch**',r=>r.fulfill({status:405,contentType:'application/json',body:'{"error":"method not allowed"}'}));
   await p.fill('#photo-url','https://nocors.test/a.png');await p.click('.paste-box >> text=Add');await settle(99);
   ok(/needs an update/.test(await status()),'an old worker without photo links says to redeploy it');
@@ -68,7 +68,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
 
   // the Paste button reads the clipboard
   await p.evaluate(b=>{window.__png=b},PNG.toString('base64'));
-  await p.evaluate(()=>{pasteMsg('');navigator.clipboard.read=async()=>[{types:['image/png'],getType:async()=>new Blob([Uint8Array.from(atob(window.__png),c=>c.charCodeAt(0))],{type:'image/png'})}]});
+  await p.evaluate(()=>{HOOK.pasteMsg('');navigator.clipboard.read=async()=>[{types:['image/png'],getType:async()=>new Blob([Uint8Array.from(atob(window.__png),c=>c.charCodeAt(0))],{type:'image/png'})}]});
   await p.click('.paste-box >> text=Paste');await settle(5);
   ok((await photos())===5,'the Paste button adds an image from the clipboard');
   await p.evaluate(()=>{navigator.clipboard.read=async()=>{throw new Error('denied')}});await p.click('.paste-box >> text=Paste');

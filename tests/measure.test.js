@@ -40,11 +40,11 @@ const measure=async({ok,chromium,url})=>{
     ok(st.hint.near[0].c==='white','the tagger is told the ground\'s measurement, not the grey average');
 
     // ---- 3. a stripe reading that contradicts the tag is not used; a blurry close-up is called out
-    const pin=await p.evaluate(async()=>{const chk=(t,pat,s)=>{const r=settCheck(t,pat,s);return r.reject||(r.s&&r.s.a)};const B=[['#333333',.9],['#cccccc',.1]];
+    const pin=await p.evaluate(async()=>{const chk=(t,pat,s)=>{const r=HOOK.settCheck(t,pat,s);return r.reject||(r.s&&r.s.a)};const B=[['#333333',.9],['#cccccc',.1]];
       const unit={cross:chk('suit','pinstripe',{v:2,a:0,bands:B,cross:{d:90,bands:[['#999999',.1],[null,.9]],r:1},src:'closeup'}),level:chk('suit','pinstripe',{v:2,a:-84,bands:B,cross:null,src:'photo'}),
         turned:chk('suit','pinstripe',{v:2,a:88,bands:B,cross:null,src:'closeup'}),tie:chk('tie','stripe',{v:2,a:-45,bands:B,cross:{d:90,bands:[['#999999',.1],[null,.9]],r:1},src:'photo'}),check:chk('suit','windowpane',{v:2,a:0,bands:B,cross:{d:90,bands:[['#999999',.1],[null,.9]],r:1},src:'photo'}),
-        shirt:settCheck('shirt','stripe',{v:2,a:0,bands:B,cross:{d:90,bands:[['#999999',.1],[null,.9]],r:1},src:'closeup'}).s.cross};
-      show('add');addManual();const q=queue[0];q.manual=false;Object.assign(q,{type:'suit',primaryColor:'charcoal',secondaryColor:'lightgrey',pattern:'pinstripe',raw:{tex:await ld('tests/fixtures/walk-suit-pinstripe-closeup.jpg')},wb:null});
+        shirt:HOOK.settCheck('shirt','stripe',{v:2,a:0,bands:B,cross:{d:90,bands:[['#999999',.1],[null,.9]],r:1},src:'closeup'}).s.cross};
+      show('add');HOOK.addManual();const q=queue[0];q.manual=false;Object.assign(q,{type:'suit',primaryColor:'charcoal',secondaryColor:'lightgrey',pattern:'pinstripe',raw:{tex:await ld('tests/fixtures/walk-suit-pinstripe-closeup.jpg')},wb:null});
       readSett(q);measureCard(q);renderAdd();const card=document.querySelector('#nps-q .card').textContent;
       return {unit,sett:q.sett&&{a:q.sett.a,cross:!!q.sett.cross},rej:q.settReject,sharp:q.meas.sharp,blur:/too blurry to read the weave: retake it\?/.test(card),rejNote:/which isn.t pinstripe: drawn with the simple pattern/.test(card)}});
     ok(pin.unit.cross==='cross'&&pin.unit.level==='level'&&pin.unit.turned===0&&pin.unit.tie===-45&&pin.unit.check===0&&pin.unit.shirt===null,`a pinstripe with crossing lines or read level in the photo is turned down; read level in a close-up it is turned upright; a tie keeps any reading (a plaid tie is often tagged stripe), a windowpane its crossing lines; a shirt's crossing lines are dropped (${JSON.stringify(pin.unit)})`);
@@ -54,19 +54,19 @@ const measure=async({ok,chromium,url})=>{
 
     // ---- 4. the wardrobe's own colours are learned from plain cloth only, never from the item itself
     const cal=await p.evaluate(()=>{const keep=items;const I=(id,pat,lab,x={})=>({id,type:'tie',primaryColor:'navy',pattern:pat,meas:{lab,ref:false,src:'closeup'},...x});
-      items=[I('a','stripe',[40,5,-20],{secondaryColor:'white'}),I('b','paisley',[38,8,-18],{secondaryColor:'gold'})];const none=calibLab('navy','tie');
-      items.push(I('c','solid',[18,4,-22]),I('d','woven',[16,5,-24]));const two=calibLab('navy','tie'),self=calibLab('navy','tie','d');items=keep;return {none,two,self}});
+      items=[I('a','stripe',[40,5,-20],{secondaryColor:'white'}),I('b','paisley',[38,8,-18],{secondaryColor:'gold'})];const none=HOOK.calibLab('navy','tie');
+      items.push(I('c','solid',[18,4,-22]),I('d','woven',[16,5,-24]));const two=HOOK.calibLab('navy','tie'),self=HOOK.calibLab('navy','tie','d');items=keep;return {none,two,self}});
     ok(cal.none===null,'two patterned navy ties teach "navy" nothing (the walkthrough\'s plain brown tie then measured nearest navy)');
     ok(cal.two&&cal.two[0]===18&&cal.self===null,`plain and one-colour woven ties do (navy L* ${cal.two&&cal.two[0]}), and an item never teaches its own measurement`);
 
     // ---- 5. confident and disagreeing: changed, with Undo; unsure: asked; set by hand: left alone
     const card=await p.evaluate(()=>{const keep=items;const S=(id,c,lab)=>({id,type:'suit',primaryColor:c,pattern:'solid',meas:{lab,ref:true,src:'closeup'}});
       items=[S('n1','navy',[20,3,-22]),S('n2','navy',[21,3,-21]),S('c1','charcoal',[28,0,-2]),S('c2','charcoal',[27,0,-3])];
-      const mk=(sharp,ref)=>{queue.length=0;addManual();const q=queue[0];q.manual=false;Object.assign(q,{type:'suit',primaryColor:'navy',pattern:'solid',meas:{lab:[27.5,0,-2.5],hex:'#3f4143',ref,src:'closeup',sharp,spread:2}});q.measV=colourVerdicts(q);return q};
-      const out={};let q=mk(.6,true);out.conf=q.measV[0].conf;applyMeasured(q);renderAdd();const el=document.querySelector('#nps-q .measauto');
-      out.auto={col:q.primaryColor,txt:el&&el.textContent};el&&el.querySelector('button').click();q=queue[0];out.undo={col:q.primaryColor,edited:!!(q.edited&&q.edited.primaryColor)};applyMeasured(q);out.undo.after=q.primaryColor;
-      q=mk(.3,false);out.flagConf=q.measV[0].conf;applyMeasured(q);renderAdd();const fl=document.querySelector('#nps-q .measalt');out.flag={col:q.primaryColor,txt:fl&&fl.textContent,mode:q.measV[0].mode};
-      q=mk(.6,true);q.edited={primaryColor:true};applyMeasured(q);renderAdd();out.hand={col:q.primaryColor,notes:!!document.querySelector('#nps-q .measauto,#nps-q .measalt')};
+      const mk=(sharp,ref)=>{queue.length=0;HOOK.addManual();const q=queue[0];q.manual=false;Object.assign(q,{type:'suit',primaryColor:'navy',pattern:'solid',meas:{lab:[27.5,0,-2.5],hex:'#3f4143',ref,src:'closeup',sharp,spread:2}});q.measV=colourVerdicts(q);return q};
+      const out={};let q=mk(.6,true);out.conf=q.measV[0].conf;HOOK.applyMeasured(q);renderAdd();const el=document.querySelector('#nps-q .measauto');
+      out.auto={col:q.primaryColor,txt:el&&el.textContent};el&&el.querySelector('button').click();q=queue[0];out.undo={col:q.primaryColor,edited:!!(q.edited&&q.edited.primaryColor)};HOOK.applyMeasured(q);out.undo.after=q.primaryColor;
+      q=mk(.3,false);out.flagConf=q.measV[0].conf;HOOK.applyMeasured(q);renderAdd();const fl=document.querySelector('#nps-q .measalt');out.flag={col:q.primaryColor,txt:fl&&fl.textContent,mode:q.measV[0].mode};
+      q=mk(.6,true);q.edited={primaryColor:true};HOOK.applyMeasured(q);renderAdd();out.hand={col:q.primaryColor,notes:!!document.querySelector('#nps-q .measauto,#nps-q .measalt')};
       queue.length=0;items=keep;renderAdd();return out});
     ok(card.auto.col==='charcoal'&&/Changed navy → charcoal \(measured from your close-up\)Undo/.test(card.auto.txt),`a confident measurement (${card.conf}) changes the colour and says so: "${card.auto.txt}"`);
     ok(card.undo.col==='navy'&&card.undo.edited&&card.undo.after==='navy','Undo puts the tag back, and it is not changed again');
@@ -90,7 +90,7 @@ const measure=async({ok,chromium,url})=>{
       const file=async n=>new File([await new Promise(r=>cloth(60,40,()=>[n*40,90,120]).toBlob(r,'image/png'))],`p${n}.png`,{type:'image/png'});
       const fs=[];for(let n=0;n<5;n++)fs.push(await file(n));show('add');const t0=performance.now();await addFiles(fs,false);const ms=performance.now()-t0;window.fetch=was;localStorage.removeItem('worker_url');
       let pat=null;const f0=window.fetch;localStorage.setItem('worker_url','https://w.test/');window.fetch=async(u,o)=>{pat=JSON.parse(o.body);return new Response('{}',{status:500})};
-      await claudePattern({image:'data:image/jpeg;base64,AA',type:'tie',wb:false});window.fetch=f0;localStorage.removeItem('worker_url');
+      await HOOK.claudePattern({image:'data:image/jpeg;base64,AA',type:'tie',wb:false});window.fetch=f0;localStorage.removeItem('worker_url');
       const ex=tagExtras({wb:true}),cards=queue.length;window.patWb=pat&&pat.wb;queue.length=0;renderAdd();return {max,sent,cards,ms,ex:ex.wb,none:'wb' in tagExtras({}),pat:window.patWb}});
     ok(par.max===3&&par.cards===5,`five photos get five cards and are tagged three at a time (at most ${par.max} at once, ${Math.round(par.ms)} ms)`);
     ok(par.sent.length===5&&par.sent.every(v=>typeof v==='boolean')&&par.ex===true&&!par.none&&par.pat===false,'every tag request, and a pattern reading, says whether its pictures were white-balanced (wb)');
@@ -124,7 +124,7 @@ const measalt=async({ok,chromium,url,ROOT})=>{
       return {m:{lab:r.lab,near:r.near,brown:Math.round(dE00(r.lab,labOf('brown'),2)*10)/10},ph:{lab:q.lab,near:q.near}}});
     ok(m.near[0].c==='deeptaupe'&&m.near[0].d<=5&&m.brown-m.near[0].d>=4,`the close-up measures closest to deep taupe (ΔE ${m.near[0].d}), far from brown (ΔE ${m.brown}); L* ${m.lab[0]}, a* ${m.lab[1]}, b* ${m.lab[2]}`);
     // the card (2026-11-14: one verdict per colour; not sure enough to change it, the card asks "Measured: deep taupe?")
-    const card=await p.evaluate(m=>{show('add');addManual();const q=queue[0];q.manual=false;setq(0,'type','suit');q.primaryColor='brown';q.meas={...m,hex:'#3c3631',ref:false,src:'closeup',sharp:.5,spread:2};renderAdd();
+    const card=await p.evaluate(m=>{show('add');HOOK.addManual();const q=queue[0];q.manual=false;setq(0,'type','suit');q.primaryColor='brown';q.meas={...m,hex:'#3c3631',ref:false,src:'closeup',sharp:.5,spread:2};renderAdd();
       const o=document.querySelector('#nps-q .measalt'),v=q.measV.find(x=>x.f==='primaryColor');return o&&{txt:o.textContent,btn:o.querySelector('button').textContent,v,brown:q.primaryColor}},{lab:m.lab,near:m.near});
     ok(card&&/Measured: deep taupe\?/.test(card.txt)&&card.btn==='Use deep taupe'&&card.brown==='brown',`the card asks about the measured color and leaves the tag (${card&&card.txt}; confidence ${card&&card.v.conf})`);
     await p.click('#nps-q .measalt button');

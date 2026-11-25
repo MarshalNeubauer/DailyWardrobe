@@ -76,7 +76,7 @@ async function startTwo(tag, { bOffsetMs = 0 } = {}) {
 // back up: the app to the background and back (a tester's phone backs up as it goes to the background)
 async function bgfg(ph) { await ph.background(); await sleep(2500); await ph.foreground(); await sleep(1200) }
 // the Settings -> Backup "Sync now" button's own function (syncTap), then wait for it
-async function sync(ph) { await ph.page.evaluate(() => syncTap()); await ph.page.waitForFunction(() => !syncing, null, { timeout: 20000 }); await sleep(600); return ph.page.evaluate(() => localStorage.sync_status || 'ok') }
+async function sync(ph) { await ph.page.evaluate(() => HOOK.syncTap()); await ph.page.waitForFunction(() => !HOOK.syncing, null, { timeout: 20000 }); await sleep(600); return ph.page.evaluate(() => localStorage.sync_status || 'ok') }
 async function goTab(ph, t) { await tapL(ph, btn(ph, new RegExp('^' + t + '$'))); await sleep(600) }
 async function openItem(ph, name) {
   if (await ph.page.evaluate(() => !!editing)) await closeItem(ph);

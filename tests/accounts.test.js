@@ -198,14 +198,14 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(big.status===413&&s2.status===413&&pulled<40&&claude===c0,`POST / refuses a body over 15 MB and stops reading it (${pulled} MB read of 400)`)}
     {const f=async u=>(await call('GET','fetch?url='+encodeURIComponent(u),O)).status,seen=[];
       const img=()=>new Response(Buffer.from(PNG.split(',')[1],'base64'),{headers:{'content-type':'image/png'}});
-      web={'https://shop.test/a.png':()=>{seen.push('a');return img()},'https://shop.test/go':()=>new Response('',{status:302,headers:{location:'http://169.254.169.254/latest/meta-data'}}),
-        'https://shop.test/hop':()=>new Response('',{status:301,headers:{location:'/a.png'}}),
-        'https://shop.test/page':()=>new Response('<meta property="og:image" content="http://localhost/x.png">',{headers:{'content-type':'text/html'}}),
-        'https://shop.test/big.png':()=>{pulled=0;return new Response(new ReadableStream({pull(c){pulled++;if(pulled>300)c.close();else c.enqueue(new Uint8Array(1e6))}}),{headers:{'content-type':'image/png'}})}};
+      web={'https://store.test/a.png':()=>{seen.push('a');return img()},'https://store.test/go':()=>new Response('',{status:302,headers:{location:'http://169.254.169.254/latest/meta-data'}}),
+        'https://store.test/hop':()=>new Response('',{status:301,headers:{location:'/a.png'}}),
+        'https://store.test/page':()=>new Response('<meta property="og:image" content="http://localhost/x.png">',{headers:{'content-type':'text/html'}}),
+        'https://store.test/big.png':()=>{pulled=0;return new Response(new ReadableStream({pull(c){pulled++;if(pulled>300)c.close();else c.enqueue(new Uint8Array(1e6))}}),{headers:{'content-type':'image/png'}})}};
       const bad=[];for(const u of ['http://127.0.0.1/a.png','http://localhost:8080/a.png','http://[::1]/a.png','http://2130706433/a.png','http://0x7f.1/a.png','http://10.0.0.5/a.png','http://printer.local/a.png','http://intranet/a.png','http://db.internal/a.png','http://router.lan/a.png'])bad.push(await f(u));
-      ok(bad.every(s=>s===400)&&(await f('https://shop.test/a.png'))===200&&seen.length===1,`/fetch refuses IP addresses, localhost and internal names (${bad.join()}) and still fetches a public photo`);
-      ok((await f('https://shop.test/go'))===400&&(await f('https://shop.test/page'))===422&&(await f('https://shop.test/hop'))===200,'a redirect or a share image that leads inside is refused; a redirect that stays outside is followed');
-      ok((await f('https://shop.test/big.png'))===413&&pulled<40,`/fetch stops reading at its 15 MB cap (${pulled} MB read of 300)`);web={}}
+      ok(bad.every(s=>s===400)&&(await f('https://store.test/a.png'))===200&&seen.length===1,`/fetch refuses IP addresses, localhost and internal names (${bad.join()}) and still fetches a public photo`);
+      ok((await f('https://store.test/go'))===400&&(await f('https://store.test/page'))===422&&(await f('https://store.test/hop'))===200,'a redirect or a share image that leads inside is refused; a redirect that stays outside is followed');
+      ok((await f('https://store.test/big.png'))===413&&pulled<40,`/fetch stops reading at its 15 MB cap (${pulled} MB read of 300)`);web={}}
     {const e2={...env,ALLOWED_ORIGIN:'https://one.test, https://two.test'},g=o=>call('GET','me',O,undefined,e2,o?{Origin:o}:{});
       const a=await g('https://two.test'),b=await g('https://one.test'),c=await g('https://evil.test'),e1={...env,ALLOWED_ORIGIN:'https://one.test'};
       ok(a.status===200&&a.headers.get('access-control-allow-origin')==='https://two.test'&&b.headers.get('access-control-allow-origin')==='https://one.test'&&a.headers.get('vary')==='Origin'&&c.status===403&&(await g('')).status===403,'ALLOWED_ORIGIN may list several origins: the one that asks is echoed, others are refused');
@@ -241,7 +241,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
         await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
           items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
           settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
-        const itemErr=await p.evaluate(()=>renderItemPic(items.find(i=>i.type==='shoes')).then(()=>'',e=>e.message));
+        const itemErr=await p.evaluate(()=>HOOK.renderItemPic(items.find(i=>i.type==='shoes')).then(()=>'',e=>e.message));
         ok(/limit of 0 item pictures is used up/.test(itemErr),`an item picture over the cap fails with the sentence (${itemErr})`);
         await p.evaluate(()=>show('add'));
         const add=async()=>{await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=300;const x=c.getContext('2d');x.fillStyle='#234';x.fillRect(0,0,300,300);
@@ -249,7 +249,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
         await add();await add();
         await p.waitForFunction(()=>/limit of 1 photo readings is used up/.test(document.querySelector('#note').textContent),null,{timeout:15000});
         ok(await p.evaluate(()=>document.querySelector('#note').textContent.includes('Today’s limit of 1 photo readings is used up. It starts again at midnight UTC.')&&/limit of 1 photo readings/.test(document.querySelector('#queue').textContent)),'the Add card says a reading limit in the server\'s words');
-        await p.evaluate(u=>{document.querySelector('#toast').textContent='';claudePattern({image:u,type:'tie'})},PNG);
+        await p.evaluate(u=>{document.querySelector('#toast').textContent='';HOOK.claudePattern({image:u,type:'tie'})},PNG);
         ok(await until(p,()=>/limit of 0 pattern readings is used up/.test(document.querySelector('#toast').textContent)&&document.querySelector('#toast').classList.contains('on')),'a pattern reading over the cap says so in a toast');
         await p.evaluate(()=>openSettings('connection'));
         ok(await until(p,()=>/Photo readings today: 1 of 1/.test(document.querySelector('#acct-box').innerText.replace(/\s+/g,' '))),'and Settings shows the day\'s use going up')}

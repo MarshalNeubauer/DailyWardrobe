@@ -28,7 +28,7 @@ const invitefix=async({ok,chromium,url})=>{
   try{
     // ---- C1: a cold start on another invitation's link, with a wardrobe stored: the question comes (it never did)
     {const {p,errs,st}=await page();
-      await p.evaluate(async([h,a])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',a);rememberRole({role:'tester'});
+      await p.evaluate(async([h,a])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',a);HOOK.rememberRole({role:'tester'});
         const big='data:image/jpeg;base64,'+'A'.repeat(400000);   // a wardrobe with photos: read from the database after the link is checked
         for(let n=0;n<40;n++){const it={id:'own'+n,type:'tie',primaryColor:'navy',pattern:'solid',added:1,updated:1,photo:big+n};await put(it)}},[HOST,A]);
       // a slow phone: the wardrobe is read from the database a moment after the page has loaded (on the testers' iPhones the
@@ -57,13 +57,13 @@ const invitefix=async({ok,chromium,url})=>{
     // ---- offline: the paste field says offline, not "check that you copied all of it"; a link from the address is retried once online
     {const {p,st}=await page();st.mode='down';
       await p.evaluate(()=>openSettings('connection'));await p.fill('#conn-link',url+link(A));await p.click('#conn-go');
-      await p.waitForFunction(()=>!connBusy);const msg=await p.textContent('#conn-msg');
+      await p.waitForFunction(()=>!HOOK.connBusy);const msg=await p.textContent('#conn-msg');
       ok(/offline/.test(msg)&&!/copied/.test(msg),`connecting offline says so ("${msg}")`);
       // (Settings' step back lands first: landing after the link is set, it takes the link out of the address. acctWhy is still 'offline'
       // from the typed try above, so the wait is for this link's own attempt: the app has started on it, and it has ended)
       await p.evaluate(async()=>{closeSettings();await backSettled()});
       await p.evaluate(l=>new Promise(r=>{addEventListener('hashchange',()=>r(),{once:true});location.hash=l}),link(A));
-      await p.waitForFunction(()=>acctWhy==='offline'&&!acctLinkRun&&!inviteChecking,null,{timeout:8000});
+      await p.waitForFunction(()=>acctWhy==='offline'&&!HOOK.acctLinkRun&&!inviteChecking,null,{timeout:8000});
       const kept=await p.evaluate(()=>location.hash);
       await p.evaluate(()=>openSettings('connection'));
       const w=await p.evaluate(()=>({st:document.querySelector('#conn-state').textContent,f:document.querySelector('#conn-link').value}));
@@ -83,11 +83,11 @@ const invitefix=async({ok,chromium,url})=>{
       // (fix round 3, W1-7-03) his own piece is asked about, the sample pieces aren't counted
       const run=p.evaluate(l=>connectFromLink(l),link(A));await p.waitForSelector('#ask-ok',{state:'visible',timeout:8000});const q=await p.textContent('#ask-sheet');await p.click('#ask-ok');const res=await run;
       ok(/Add this phone’s 1 piece to/.test(q),'connecting with the sample and one piece of his own asks about that one piece only ('+q.slice(0,60)+')');
-      const s=await p.evaluate(async()=>({ask:!!document.querySelector('#ask-sheet.on'),ids:items.map(i=>i.id).sort().join(),stored:(await tx('readonly',x=>x.getAll())).map(i=>i.id).sort().join(),tok:localStorage.getItem('app_token'),share:kitShareFilter({items,days:[]},null,syncJoinAt()).items.map(i=>i.id).join()}));
+      const s=await p.evaluate(async()=>({ask:!!document.querySelector('#ask-sheet.on'),ids:items.map(i=>i.id).sort().join(),stored:(await tx('readonly',x=>x.getAll())).map(i=>i.id).sort().join(),tok:localStorage.getItem('app_token'),share:kitShareFilter({items,days:[]},null,HOOK.syncJoinAt()).items.map(i=>i.id).join()}));
       ok(!s.ask&&res===true&&s.ids==='mine,s1,s2'&&s.stored==='mine,s1,s2'&&s.tok===A&&s.share==='mine',`connecting with the sample loaded keeps it on the phone; only his own pieces are ever backed up (${JSON.stringify(s)})`)}
     // ---- an ended invitation: nothing says Connected or backed up; a deleted account (forbidden token) counts as ended for a tester
     {const {p,st,errs}=await page();
-      await p.evaluate(([h,a])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',a);localStorage.setItem('last_sync',String(Date.now()));rememberRole({role:'tester'})},[HOST,A]);
+      await p.evaluate(([h,a])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',a);localStorage.setItem('last_sync',String(Date.now()));HOOK.rememberRole({role:'tester'})},[HOST,A]);
       st.mode='off';await p.evaluate(()=>syncNow());await p.waitForFunction(a=>localStorage.getItem('invite_ended')===a,A);
       await p.evaluate(()=>openSettings('connection'));
       const e=await p.evaluate(()=>({conn:isConnected(),sum:document.querySelector('#sum-connection').textContent,box:document.querySelector('#conn-state').textContent,bk:document.querySelector('#sum-backup').textContent,line:document.querySelector('#sync-status').textContent,nocon:document.body.classList.contains('nocon')}));
@@ -98,14 +98,14 @@ const invitefix=async({ok,chromium,url})=>{
       await p.evaluate(()=>{openSettings('about');renderAbout()});const fb=await p.evaluate(()=>({off:document.querySelector('#fb-send').disabled,t:document.querySelector('#fb-status').textContent}));
       ok(fb.off&&/invitation has ended/.test(fb.t)&&!/invite off/.test(fb.t),`Feedback says the invitation ended ("${fb.t}")`);
       // the account deleted on another phone: 403 forbidden token, said as ended, not "Backups aren't available on this server yet"
-      await p.evaluate(b=>{closeSettings();localStorage.setItem('app_token',b);localStorage.removeItem('invite_ended');rememberRole({role:'tester'})},B);delete st.who[B];
+      await p.evaluate(b=>{closeSettings();localStorage.setItem('app_token',b);localStorage.removeItem('invite_ended');HOOK.rememberRole({role:'tester'})},B);delete st.who[B];
       await p.evaluate(()=>syncNow());await p.waitForFunction(b=>localStorage.getItem('invite_ended')===b,B,{timeout:5000});
       const d=await p.evaluate(()=>localStorage.getItem('sync_status'));
       ok(/invitation has ended/.test(d)&&!/available/.test(d),`a deleted account counts as ended for a tester ("${d}")`);
       ok(errs.length===0,'no page errors ('+errs.join('; ')+')');st.who[B]={id:'bbbbbbbbbb',name:'Bea',role:'tester'}}
     // ---- Delete everything: says it ends the invitation; a kill before the answer is finished at the next start
     {const {p,st}=await page();
-      await p.evaluate(([h,a])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',a);rememberRole({role:'tester'});openSettings('about');askDelete()},[HOST,A]);
+      await p.evaluate(([h,a])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',a);HOOK.rememberRole({role:'tester'});openSettings('about');HOOK.askDelete()},[HOST,A]);
       ok(/ends it, so its link stops working/.test(await p.textContent('#del-confirm')),'a tester\'s "Delete everything" says it ends the invitation');
       await p.evaluate(async([h,a])=>{closeSettings();localStorage.setItem('del_pending',JSON.stringify({w:h,t:a}));localStorage.removeItem('worker_url');localStorage.removeItem('app_token');
         await metaPut('conn',{worker_url:h,app_token:a});const it={id:'k1',type:'tie',primaryColor:'navy',pattern:'solid',added:1,updated:1};await put(it)},[HOST,A]);   // as if killed mid-request
@@ -113,8 +113,8 @@ const invitefix=async({ok,chromium,url})=>{
       const k=await p.evaluate(async()=>({n:(await tx('readonly',x=>x.getAll())).length,tok:localStorage.getItem('app_token'),t:document.querySelector('#toast').textContent}));
       ok(st.log.includes('DELETE /account')&&k.n===0&&!k.tok&&/deleted/.test(k.t),`a "Delete everything" cut off by a kill is finished when the app opens again (${JSON.stringify(k)})`);
       // already deleted on the server (forbidden token): the device is cleared and told so, no "forbidden token"
-      await p.evaluate(b=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token',b);rememberRole({role:'tester'})},B);delete st.who[B];
-      await p.evaluate(()=>{openSettings('about');askDelete()});const nav=p.waitForNavigation();await p.click('#del-all');await nav;
+      await p.evaluate(b=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token',b);HOOK.rememberRole({role:'tester'})},B);delete st.who[B];
+      await p.evaluate(()=>{openSettings('about');HOOK.askDelete()});const nav=p.waitForNavigation();await p.click('#del-all');await nav;
       await p.waitForFunction(()=>window.appReady,null,{timeout:15000});const t2=await p.textContent('#toast');
       ok(/already been deleted/.test(t2)&&!/token/.test(t2),`a second phone's Delete everything after the account was deleted clears it and says so ("${t2}")`);st.who[B]={id:'bbbbbbbbbb',name:'Bea',role:'tester'}}
     // ---- (every localStorage key the app uses through a constant is one Delete removes: tests/sourcerules.test.js, CR-10-07)
@@ -124,7 +124,7 @@ const invitefix=async({ok,chromium,url})=>{
       ok(!h&&await p.isVisible('#cfg-url'),'a phone that isn\'t connected doesn\'t show "Advanced · For the person who runs the server" until "I run the server" is tapped')}
     // ---- two tabs: a stale tab's settings change doesn't put back the other tab's older settings
     {const one=await page(),two=await page({ctx:one.ctx,st:one.st});
-      await one.p.evaluate(async()=>{settings.workdays=[0,1,2,3,4,5];await saveUserSettings()});await two.p.waitForFunction(()=>setOther,null,{timeout:3000}).catch(()=>{});   // (the other tab hears of it a moment later)
+      await one.p.evaluate(async()=>{settings.workdays=[0,1,2,3,4,5];await saveUserSettings()});await two.p.waitForFunction(()=>HOOK.setOther,null,{timeout:3000}).catch(()=>{});   // (the other tab hears of it a moment later)
       await two.p.evaluate(async()=>{settings.units='C';await saveUserSettings()});
       await one.p.reload();await one.p.waitForFunction(()=>window.appReady);
       const s=await one.p.evaluate(()=>({wd:settings.workdays.join(''),u:settings.units}));
@@ -183,7 +183,7 @@ const invitelink=async({ok,chromium,url})=>{
     const clip=await I.p.evaluate(()=>navigator.clipboard.readText());
     ok(/Home Screen/.test(guide)&&/paste your invitation link/.test(guide)&&/Safari is connected already/.test(guide)&&clip.includes('#invite='+A)&&clip.includes('w='+encodeURIComponent(HOST)),`a tester connected in Safari on an iPhone is shown how to add the app to the Home Screen, and Copy my invitation link copies their link`);
     await I.p.click('#kit-next');await I.p.waitForFunction(()=>!document.querySelector('#kitsheet.on'));
-    await I.p.evaluate(()=>{openSettings('connection');loadAccount()});await I.p.waitForSelector('#acct-box .acct-ios');
+    await I.p.evaluate(()=>{openSettings('connection');HOOK.loadAccount()});await I.p.waitForSelector('#acct-box .acct-ios');
     const box=await I.p.textContent('#acct-box');
     ok(/Copy my invitation link/.test(box)&&/Home Screen/.test(box),'Connection says so too, with a button to copy the link');
     ok(I.errs.length===0,'no page errors ('+I.errs.join('; ')+')');
@@ -193,7 +193,7 @@ const invitelink=async({ok,chromium,url})=>{
     // ---- the owner deletes a switched-off tester's data
     const log=[],Ow=await page({},log);
     await Ow.p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner')},HOST);
-    await Ow.p.evaluate(()=>{openSettings('connection');loadAccount()});await Ow.p.waitForSelector('text=Delete their data');
+    await Ow.p.evaluate(()=>{openSettings('connection');HOOK.loadAccount()});await Ow.p.waitForSelector('text=Delete their data');
     const del=Ow.p.click('text=Delete their data');await Ow.p.waitForSelector('#ask-ok',{state:'visible'});const q=await Ow.p.textContent('#ask-sheet');await Ow.p.click('#ask-ok');await del;
     await Ow.p.waitForFunction(()=>!/Cal/.test(document.querySelector('#acct-box').textContent));
     ok(/can’t be undone/.test(q)&&log.includes('DELETE /invites?id=cccccccccc&purge=1'),'a switched-off invitation has "Delete their data": it asks, then deletes it on the server and takes it off the list');
@@ -225,7 +225,7 @@ const inviteswitch=async({ok,chromium,url})=>{
       return j({ok:true})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);return {ctx,p,errs,st}};
   const link=t=>'#invite='+t+'&w='+encodeURIComponent(HOST);
-  const seed=(p,tok,n=3,ended=false)=>p.evaluate(async([h,t,n,ended])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',t);rememberRole({role:'tester'});
+  const seed=(p,tok,n=3,ended=false)=>p.evaluate(async([h,t,n,ended])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',t);HOOK.rememberRole({role:'tester'});
     if(ended)localStorage.setItem('invite_ended',t);
     for(let k=0;k<n;k++){const it={id:'own'+k,type:'tie',primaryColor:'navy',pattern:'solid',added:1,updated:Date.now()};await put(it);items.push(it)}},[HOST,tok,n,ended]);
   const askText=async p=>{await p.waitForSelector('#ask-ok',{state:'visible',timeout:10000});return {t:await p.textContent('#ask-sheet'),ok:await p.textContent('#ask-ok')}};
@@ -240,7 +240,7 @@ const inviteswitch=async({ok,chromium,url})=>{
       ok(res===false&&c.tok===A&&c.n===3&&c.ended,`Cancel changes nothing (${JSON.stringify(c)})`);
       res=p.evaluate(l=>connectFromLink(l),link(B));await askText(p);await p.click('#ask-ok');res=await res;
       await p.waitForFunction(b=>!!document&&localStorage.getItem('last_sync')&&localStorage.getItem('app_token')===b,B,{timeout:8000});
-      await p.waitForFunction(()=>!syncing,null,{timeout:8000});
+      await p.waitForFunction(()=>!HOOK.syncing,null,{timeout:8000});
       const k=await p.evaluate(async()=>({tok:localStorage.getItem('app_token'),n:items.length,stored:(await tx('readonly',s=>s.getAll())).length,ended:localStorage.getItem('invite_ended')}));
       const up=(st.puts[B]&&st.puts[B].items||[]).map(i=>i.id).sort().join();
       ok(res===true&&k.tok===B&&k.n===3&&k.stored===3&&!k.ended&&up==='own0,own1,own2',`"Keep it and back it up": the phone keeps its 3 pieces and they are backed up with the new invitation (${JSON.stringify(k)}, uploaded ${up})`);
@@ -249,7 +249,7 @@ const inviteswitch=async({ok,chromium,url})=>{
     {const {p,st}=await page();
       await seed(p,A,2,true);delete st.who[A];
       const res=p.evaluate(l=>connectFromLink(l),link(B));const a=await askText(p);await p.click('#ask-ok');await res;
-      await p.waitForFunction(()=>localStorage.getItem('last_sync')&&!syncing,null,{timeout:8000});
+      await p.waitForFunction(()=>localStorage.getItem('last_sync')&&!HOOK.syncing,null,{timeout:8000});
       ok(/Back up this phone’s wardrobe/.test(a.t)&&await p.evaluate(()=>items.length)===2&&(st.puts[B]&&st.puts[B].items||[]).length===2,'switched off and then deleted: the same, the wardrobe is kept and backed up with the new invitation')}
     // ---- a live switch with changes no backup took: backed up first, then the plain question
     {const {p,st}=await page();
@@ -276,21 +276,21 @@ const inviteswitch=async({ok,chromium,url})=>{
       const r2=await p.evaluate(async a=>{const c=document.createElement('canvas');c.width=c.height=8;const x=await ask(c.toDataURL('image/jpeg'),{});const q={tagImg:'x',photo:'x'};tagFailed(q);return {x,err:q.tagErr||'',ended:localStorage.getItem('invite_ended')===a}},A);
       ok(r2.x===null&&!r2.err&&r2.ended,`a photo refused as switched off marks the invitation ended and leaves no Try again (${JSON.stringify(r2)})`);
       // the Delete card speaks of this device only
-      await p.evaluate(()=>{openSettings('about');askDelete()});const d=await p.evaluate(()=>({t:document.querySelector('#del-confirm').textContent,all:!!document.querySelector('#del-all')}));
+      await p.evaluate(()=>{openSettings('about');HOOK.askDelete()});const d=await p.evaluate(()=>({t:document.querySelector('#del-confirm').textContent,all:!!document.querySelector('#del-all')}));
       ok(!d.all&&!/backup, its daily copies|connect again to get it back|ends it/.test(d.t)&&/invitation has ended/.test(d.t),`an ended invitation's Delete card promises nothing on the server ("${d.t.replace(/\s+/g,' ').slice(0,160)}…")`);
       ok(errs.length===0,'no page errors ('+errs.join('; ')+')')}
     // ---- Feedback: a double tap leaves "Thank you"; the day's saves used up doesn't promise to save it later
     {const {p,st}=await page();
       await seed(p,A,0);await p.evaluate(()=>{openSettings('about');renderAbout()});
-      await p.fill('#fb-text','Nice app');await p.evaluate(()=>{sendFeedback();setTimeout(sendFeedback,60)});
+      await p.fill('#fb-text','Nice app');await p.evaluate(()=>{HOOK.sendFeedback();setTimeout(HOOK.sendFeedback,60)});
       await p.waitForTimeout(600);const s=await p.textContent('#fb-status');
       ok(/Thank you/.test(s)&&st.log.filter(l=>/^POST \/feedback/.test(l)).length===1,`a double tap on Send sends once and keeps "Thank you" ("${s}")`);
-      st.fb='full';await p.fill('#fb-text','Again');await p.evaluate(()=>sendFeedback());await p.waitForFunction(()=>!/Sending/.test(document.querySelector('#fb-status').textContent));
+      st.fb='full';await p.fill('#fb-text','Again');await p.evaluate(()=>HOOK.sendFeedback());await p.waitForFunction(()=>!/Sending/.test(document.querySelector('#fb-status').textContent));
       const f=await p.evaluate(()=>({s:document.querySelector('#fb-status').textContent,v:document.querySelector('#fb-text').value}));
       ok(/Send it again after/.test(f.s)&&!/kept on this device|saved after/.test(f.s)&&f.v==='Again',`feedback refused for the day's saves says to send it again, not that it is kept ("${f.s}")`)}
     // ---- Update: cards on Add come back, so only a photo still being read is asked about
     {const {p}=await page();
-      await p.evaluate(()=>{queue.push({id:'r1',busy:1})});const u=p.evaluate(()=>updateNow());const a=await askText(p);await p.click('#ask-cancel');await u;
+      await p.evaluate(()=>{queue.push({id:'r1',busy:1})});const u=p.evaluate(()=>HOOK.updateNow());const a=await askText(p);await p.click('#ask-cancel');await u;
       ok(/still being read/.test(a.t)&&!/will be lost/.test(a.t),`Update asks only about a photo still being read ("${a.t.replace(/\s+/g,' ')}")`);
       // (the question just canceled must be gone first: on a busy machine it was still fading out 300 ms later and was read as a new
       // one, CR-10-03; then either the restart or a question comes, whichever is first, instead of a look after a fixed pause)
@@ -299,7 +299,7 @@ const inviteswitch=async({ok,chromium,url})=>{
       const seen=()=>{const s=document.querySelector('#ask-sheet.on');return !!(s&&/Update now/.test(s.textContent))};
       await p.waitForFunction(()=>!document.querySelector('#ask-sheet.on'),null,{timeout:5000}).catch(()=>{});
       // (the cards are set in the same step as the tap: on a busy machine the page's own start-up could change them in between)
-      const nav=p.waitForNavigation({timeout:8000}).catch(()=>null);const q0=await p.evaluate(()=>{queue.length=0;queue.push({id:'k1',manual:true,type:'tie'});aboutUpdating=false;const q=JSON.stringify(queue.map(q=>[q.id,!!q.busy,!!q.multiBusy]));updateNow();return q});
+      const nav=p.waitForNavigation({timeout:8000}).catch(()=>null);const q0=await p.evaluate(()=>{queue.length=0;queue.push({id:'k1',manual:true,type:'tie'});HOOK.aboutUpdating=false;const q=JSON.stringify(queue.map(q=>[q.id,!!q.busy,!!q.multiBusy]));HOOK.updateNow();return q});
       const asked=await Promise.race([nav.then(()=>false),p.waitForFunction(seen,null,{timeout:8000}).then(()=>true,()=>false)]);await nav;
       ok(!asked,'a card that comes back after the restart is not a reason to ask'+(asked?` (asked, with the cards ${q0} at the tap)`:''))}
     // ---- "Delete everything" cut off by a kill on a slow server: the server deleted it; the next start finishes the job and says so
@@ -364,7 +364,7 @@ const linkfix=async({ok,chromium,url,ROOT})=>{
       return j({ok:true})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);return {ctx,p,errs,st}};
   const link=(t,w=HOST)=>'#invite='+t+'&w='+encodeURIComponent(w);
-  const seed=(p,tok,n=3,m={role:'tester'})=>p.evaluate(async([h,t,n,m])=>{if(t){localStorage.setItem('worker_url',h);localStorage.setItem('app_token',t);rememberRole(m)}
+  const seed=(p,tok,n=3,m={role:'tester'})=>p.evaluate(async([h,t,n,m])=>{if(t){localStorage.setItem('worker_url',h);localStorage.setItem('app_token',t);HOOK.rememberRole(m)}
     for(let k=0;k<n;k++){const it={id:'own'+k,type:'tie',primaryColor:'navy',pattern:'solid',added:1,updated:Date.now()};await put(it);items.push(it)}},[HOST,tok,n,m]);
   const ask=async p=>{try{await p.waitForSelector('#ask-ok',{state:'visible',timeout:6000})}catch{return null}return {t:await p.textContent('#ask-sheet'),ok:await p.textContent('#ask-ok')}};
   const state=p=>p.evaluate(()=>({url:localStorage.getItem('worker_url'),tok:localStorage.getItem('app_token'),n:items.length,toast:(window.__toasts&&__toasts.length?__toasts[__toasts.length-1]:'')||(document.querySelector('#toast')||{}).textContent||''}));
@@ -405,7 +405,7 @@ const noteToasts=p=>p.evaluate(()=>{if(window.__toasts)return;window.__toasts=[]
     // CR-5-07: a first connection typed under Advanced goes through the same check and question as a link
     {const {p,st}=await page();await seed(p,null,2);
       await p.evaluate(h=>{openSettings('connection');document.querySelector('#cfg-url').value=h;document.querySelector('#cfg-token').value='z'.repeat(32);saveSettings()},HOST);
-      await p.waitForFunction(()=>!acctLinkRun,null,{timeout:6000});const s0=await state(p);
+      await p.waitForFunction(()=>!HOOK.acctLinkRun,null,{timeout:6000});const s0=await state(p);
       ok(!s0.tok&&!s0.url&&!st.log.some(l=>/\/sync/.test(l)),`CR-5-07: a mistyped code typed on a phone not connected is checked and not stored (${JSON.stringify(s0)})`);
       await p.evaluate(([h,a])=>{openSettings('connection');document.querySelector('#cfg-url').value=h;document.querySelector('#cfg-token').value=a;saveSettings()},[HOST,A]);
       const q=await ask(p);
@@ -443,7 +443,7 @@ const noteToasts=p=>p.evaluate(()=>{if(window.__toasts)return;window.__toasts=[]
       ok(q2&&/Switch this phone back to your own wardrobe/.test(q2.t),`typing the owner's code back asks first (${q2&&q2.t.slice(0,80)})`);
       await p.click('#ask-cancel');await p.waitForTimeout(200);ok((await state(p)).tok===B,'Cancel keeps the tester connection')}
     // W1-11-01: the Welcome says the backup comes back with the link
-    {const {p}=await page();await p.evaluate(()=>{if(typeof setupOpen==='function')setupOpen(false)});await p.waitForTimeout(300);
+    {const {p}=await page();await p.evaluate(()=>{if('setupOpen' in HOOK&&typeof HOOK.setupOpen==='function')HOOK.setupOpen(false)});await p.waitForTimeout(300);
       ok(/Open that link again/.test(await p.evaluate(()=>(document.querySelector('#su-before')||{}).textContent||'')),'W1-11-01: the Welcome says the invitation link brings the backed-up wardrobe back')}
   }finally{await browser.close()}
 };
@@ -467,20 +467,20 @@ const endedpics=async({ok,chromium,url})=>{
     ok(r.base===null&&r.L===null&&!hits.some(h=>h.startsWith('/render')),`with the invitation ended no picture request goes out (${hits.join(' ')||'none'})`);
     // a code the server refuses while this phone doesn't know yet: the list's 403 ends it, and nothing more is asked
     await p.evaluate(()=>{localStorage.removeItem('invite_ended');localStorage.setItem('app_token','offcode');localStorage.removeItem('list_pause')});hits.length=0;
-    const r2=await p.evaluate(async()=>{await workerList(true);const ended=localStorage.getItem('invite_ended');renderTried.clear();await fetchItemPic({id:'s2',type:'belt',primaryColor:'black',pattern:'solid'});return {ended,base:workerBase()}});
+    const r2=await p.evaluate(async()=>{await workerList(true);const ended=localStorage.getItem('invite_ended');HOOK.renderTried.clear();await fetchItemPic({id:'s2',type:'belt',primaryColor:'black',pattern:'solid'});return {ended,base:workerBase()}});
     ok(r2.ended==='offcode'&&r2.base===null&&hits.filter(h=>h.startsWith('/render')).length===1,`a refused list ('invite off') ends the invitation; no picture is asked for after it (${hits.join(' ')})`);
     // the owner's mistyped code (forbidden token, not a tester): not ended, but the pieces aren't asked one by one either
-    await p.evaluate(()=>{localStorage.removeItem('invite_ended');localStorage.setItem('app_token','typo');remoteKeys=null;remoteListed=false});listAnswer={status:403,body:{error:'forbidden token'}};hits.length=0;
-    const r3=await p.evaluate(async()=>{renderTried.clear();await fetchItemPic({id:'s3',type:'socks',primaryColor:'navy',pattern:'solid'});await fetchItemPic({id:'s4',type:'socks',primaryColor:'grey',pattern:'solid'});return {ended:localStorage.getItem('invite_ended')}});
+    await p.evaluate(()=>{localStorage.removeItem('invite_ended');localStorage.setItem('app_token','typo');remoteKeys=null;HOOK.remoteListed=false});listAnswer={status:403,body:{error:'forbidden token'}};hits.length=0;
+    const r3=await p.evaluate(async()=>{HOOK.renderTried.clear();await fetchItemPic({id:'s3',type:'socks',primaryColor:'navy',pattern:'solid'});await fetchItemPic({id:'s4',type:'socks',primaryColor:'grey',pattern:'solid'});return {ended:localStorage.getItem('invite_ended')}});
     ok(!r3.ended&&hits.length===1&&hits[0]==='/render?list=1',`a refused code that isn't an ended invitation holds the picture asks for that code (${hits.join(' ')})`);
     // the daily limit in the question
-    const t=await p.evaluate(()=>{const day=new Date().toISOString().slice(0,10);acct.me={caps:{item:40},used:{item:38},day};const a=itemPicLimitText(5),b=itemPicLimitText(2);
-      acct.me={caps:{item:40},used:{item:40},day:'2000-01-01'};const old=itemPicLimitText(3);acct.me={caps:null,used:{}};const owner=itemPicLimitText(3);
-      acct.me={caps:{item:20},used:{item:20},day};return {a,b,old,owner,up:itemPicsUsedUp()}});
+    const t=await p.evaluate(()=>{const day=new Date().toISOString().slice(0,10);acct.me={caps:{item:40},used:{item:38},day};const a=HOOK.itemPicLimitText(5),b=HOOK.itemPicLimitText(2);
+      acct.me={caps:{item:40},used:{item:40},day:'2000-01-01'};const old=HOOK.itemPicLimitText(3);acct.me={caps:null,used:{}};const owner=HOOK.itemPicLimitText(3);
+      acct.me={caps:{item:20},used:{item:20},day};return {a,b,old,owner,up:HOOK.itemPicsUsedUp()}});
     ok(/You can make 2 more today, of your daily 40\. The first 2 are made now/.test(t.a)&&/2 more today/.test(t.b)&&!/first/.test(t.b)&&/40 more today/.test(t.old)&&t.owner===''&&t.up===20,
       `the Generate question says the day's limit ("${t.a.trim()}"); yesterday's count starts again; the owner has none`);
     const st=await p.evaluate(async()=>{if(!$('#itempic-status')){const d=document.createElement('div');d.id='itempic-status';document.body.append(d)}items=[{id:'z1',type:'shoes',primaryColor:'black',pattern:'solid'}];
-      let over=false;const run=startItemPics().finally(()=>{over=true});while(!over&&!asking)await new Promise(r=>setTimeout(r,10));const asked=!!asking;if(asked)askAnswer(false);await run;return {asked,t:$('#itempic-status').textContent}});
+      let over=false;const run=HOOK.startItemPics().finally(()=>{over=true});while(!over&&!asking)await new Promise(r=>setTimeout(r,10));const asked=!!asking;if(asked)askAnswer(false);await run;return {asked,t:$('#itempic-status').textContent}});
     ok(!st.asked&&/item pictures are used up/.test(st.t),`with the day's pictures used up it says so instead of asking ("${st.t}")`);
     ok(!errs.length,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

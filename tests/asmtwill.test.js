@@ -19,7 +19,7 @@ module.exports=async({ok,chromium,url})=>{
     // the owner's own patterns: a weave named in the pattern counts though its base is solid; a plain own pattern stays flat; the colour-coded key marks them
     const own=await p.evaluate(()=>{const mk=(id,pattern)=>({id,type:'suit',primaryColor:'black',pattern});
       const a=mk('o1','own-fine-worsted-twill'),h=mk('o2','own-fine-tonal-herringbone'),m=mk('o3','own-worsted-melange-plain-weave'),t=mk('o4','twill');
-      return {w:[a,h,m,t].map(asmSuitWeave),tw:[a,h,m,t].map(asmSuitTwill),tag:[a,h,m,t].map(i=>asmCmWeaveTag('jacket',i)),shirt:asmCmWeaveTag('shirt',a)}});
+      return {w:[a,h,m,t].map(asmSuitWeave),tw:[a,h,m,t].map(asmSuitTwill),tag:[a,h,m,t].map(i=>HOOK.asmCmWeaveTag('jacket',i)),shirt:HOOK.asmCmWeaveTag('shirt',a)}});
     ok(own.w.join()==='twill,herringbone,,twill'&&own.tw.join()==='true,true,false,true',`own patterns named twill or herringbone get their weave (${own.w})`);
     ok(own.tag[0]==='/tw'&&own.tag[1].startsWith('/hb')&&own.tag[2]===''&&own.tag[3]===''&&own.shirt==='',`only the looks the audit changed get a new key (${own.tag})`);
     ok(r.tile.TW===1&&r.tile.kind==='twill'&&r.tile.ss&&r.tile.c2&&r.tile.mix>0&&r.tile.amp<.16&&r.tile.fleck<.08,`the tile is one colour with fine, supersampled twill ribs, fainter than under a stripe (${JSON.stringify(r.tile)})`);

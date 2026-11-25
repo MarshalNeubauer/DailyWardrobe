@@ -81,9 +81,9 @@ const sett=async({ok,chromium,url,ROOT,settle})=>{
     await p.waitForFunction(()=>items[0].sett);
     ok(await p.evaluate(()=>items[0].sett.src==='photo'&&items[0].sett.bands.length>=10),'"Read pattern from photo" reads it again from the kept sharp copy');
     // Claude's own reading when the app can't read the photo; a close-up's angle comes from Claude
-    const fb=await p.evaluate(()=>{const s=settFrom({weave:{direction:'lower-left to upper-right',repeatsAcross:2,colours:[{hex:'#112233',width:'wide'},{hex:'#ddeeff',width:'narrow'}]}});
+    const fb=await p.evaluate(()=>{const s=HOOK.settFrom({weave:{direction:'lower-left to upper-right',repeatsAcross:2,colours:[{hex:'#112233',width:'wide'},{hex:'#ddeeff',width:'narrow'}]}});
       const c=document.createElement('canvas');c.width=c.height=400;const x=c.getContext('2d');for(let i=0;i<400;i+=40){x.fillStyle=i%80?'#203040':'#c0b090';x.fillRect(i,0,40,400)}
-      const s2=settFrom({tex:c,weave:{direction:'upper-left to lower-right',repeatsAcross:3}});return {s,s2}});
+      const s2=HOOK.settFrom({tex:c,weave:{direction:'upper-left to lower-right',repeatsAcross:3}});return {s,s2}});
     ok(fb.s.src==='claude'&&fb.s.a===45&&fb.s.bands.length===2&&fb.s.bands[0][1]>fb.s.bands[1][1],'with nothing readable, Claude\'s colors and widths are drawn');
     ok(fb.s2.src==='closeup'&&fb.s2.a===-45&&fb.s2.tr===3,'a close-up\'s bands are used with Claude\'s direction and scale');
     // ---- suits and shirts: photographed-like synthetic cloth (soft edges, weave noise, light falloff)
@@ -112,7 +112,7 @@ const sett=async({ok,chromium,url,ROOT,settle})=>{
     const comb=await p.evaluate(()=>{const mk=(step,w,S=900)=>{const c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');x.fillStyle='#1f2a44';x.fillRect(0,0,S,S);
         for(let o=0;o<S;o+=step){x.fillStyle='#c8ccd4';x.fillRect(o,0,w,S)}return c};
       const full=mk(12,1),tex=mk(150,10),x=full.getContext('2d');x.filter='blur(1.2px)';x.drawImage(full,0,0);
-      const s=settFrom({full,box:{x:100,y:100,w:800,h:800},tex,weave:{repeatsAcross:30,direction:'vertical'}});return s});
+      const s=HOOK.settFrom({full,box:{x:100,y:100,w:800,h:800},tex,weave:{repeatsAcross:30,direction:'vertical'}});return s});
     ok(comb.src==='photo+closeup'&&comb.tr===30&&comb.a===0&&comb.bands.length===2,`the whole-jacket reading keeps its direction and scale and takes the close-up's sharper bands (${comb.src}, ${comb.bands.map(b=>b.join(':')).join(' ')})`);
     const fig=await p.evaluate(()=>{const it={id:'p1',type:'suit',primaryColor:'navy',pattern:'pinstripe',sett:{v:2,a:3,bands:[['#1f2a44',.94],['#c8ccd4',.06]],cross:null,cr:28,tr:30}};
       const d=fabricDef('f',it,'top','fig'),sw=fabricDef('s',it,'top');return {w:+d.match(/width="([\d.]+)"/)[1],rot:/patternTransform/.test(d),ws:+sw.match(/width="([\d.]+)"/)[1]}});
@@ -134,7 +134,7 @@ const sett=async({ok,chromium,url,ROOT,settle})=>{
         x.fillStyle='rgba(240,240,235,.5)';for(let o=step*.3+lw+1;o<S;o+=step){x.fillRect(o,0,lw*.6,S);x.fillRect(0,o,S,lw*.6)}
         const d=x.getImageData(0,0,S,S);for(let i=0;i<d.data.length;i+=4){const px=(i/4)%S,py=Math.floor(i/4/S),sh=1-.15*((px/S-.3)**2+(py/S-.5)**2)*4,n=(Math.random()-.5)*16;for(let q=0;q<3;q++)d.data[i+q]=d.data[i+q]*sh+n}x.putImageData(d,0,0);return c};
       const close=linen(1100,420,6,7),jacket=linen(1400,95,2,9),blue=h=>rgbLab(...hexRgb(h))[2]<-4;
-      const c=settFromCanvas(close,null,{straight:true}),j=settFromCanvas(jacket,{x:200,y:200,w:600,h:600},{straight:true}),both=settFrom({full:jacket,box:{x:200,y:200,w:600,h:600},tex:close,type:'blazer',weave:{repeatsAcross:9}});
+      const c=settFromCanvas(close,null,{straight:true}),j=settFromCanvas(jacket,{x:200,y:200,w:600,h:600},{straight:true}),both=HOOK.settFrom({full:jacket,box:{x:200,y:200,w:600,h:600},tex:close,type:'blazer',weave:{repeatsAcross:9}});
       const info=s=>s&&{cr:s.cr,a:s.a,blueBand:s.bands.some(b=>blue(b[0])),blueCross:!!s.cross&&s.cross.bands.some(b=>b[0]&&blue(b[0])),r:s.cross&&s.cross.r,n:s.bands.length};
       return {c:info(c),j:info(j),both:both&&{src:both.src,a:both.a,tr:both.tr,blue:both.bands.some(b=>blue(b[0])),ground:(()=>{const g=rgbLab(...hexRgb(both.bands[0][0])),k=rgbLab(...hexRgb('#b9ad92')),C=l=>Math.hypot(l[1],l[2]),h=l=>Math.atan2(l[2],l[1])*180/Math.PI;return {chroma:C(g)/C(k),hue:Math.abs(h(g)-h(k))}})()},noRef:!wbRead(close).ref}});
     ok(wp.c&&wp.c.blueBand&&wp.c.blueCross&&Math.abs(wp.c.cr-2.36)<.3&&Math.abs(wp.c.r-1)<.1,`a linen windowpane close-up: its light-blue lines both ways, square panes, the right repeat (${JSON.stringify(wp.c)})`);
@@ -145,7 +145,7 @@ const sett=async({ok,chromium,url,ROOT,settle})=>{
     // its panes run 135-175px, which defeated matching the repeat; the lines are found one by one in strips instead
     const real=await p.evaluate(async()=>{const ld=async s=>{const im=new Image();im.src=s;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);return c};
       const ph=await ld('tests/fixtures/blazer-windowpane.jpg'),tx=await ld('tests/fixtures/blazer-windowpane-closeup.jpg');
-      const s=settFrom({full:ph,box:{x:220,y:420,w:180,h:280},tex:tx,type:'blazer',weave:{repeatsAcross:9}}),L=h=>rgbLab(...hexRgb(h));
+      const s=HOOK.settFrom({full:ph,box:{x:220,y:420,w:180,h:280},tex:tx,type:'blazer',weave:{repeatsAcross:9}}),L=h=>rgbLab(...hexRgb(h));
       const ground=s.bands.reduce((x,y)=>y[1]>x[1]?y:x),line=s.bands.filter(b=>b!==ground).map(b=>L(b[0])).sort((a,b)=>a[2]-b[2])[0];
       return {src:s.src,cr:s.cr,tr:s.tr,ground:L(ground[0]),line,cross:!!s.cross&&s.cross.bands.some(b=>b[0])}});
     ok(real.src==='photo+closeup'&&Math.abs(real.cr-3.5)<.6&&real.tr===9,`the real blazer: the close-up's lines are found (${real.cr} panes across it) and used, the jacket at 9 panes across`);
@@ -166,7 +166,7 @@ const patternphoto=async({ok,chromium,url})=>{
     {name:'cream',hex:'#e6e1cf',width:'medium'},{name:'steel blue',hex:'#8a9ab2',width:'medium'},{name:'pale blue',hex:'#dce6ee',width:'narrow'},{name:'beige',hex:'#c2b8a6',width:'wide'}],crossing:'',description:CLAUDE};
   const r=await p.evaluate(async([weave])=>{
     const im=new Image();im.src='tests/fixtures/tie-plaid.jpg';await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);
-    const plain=settFromCanvas(applyWb(c,wbGains(c)),{x:293,y:272,w:339,h:543}),sett=settFrom({full:c,box:{x:293,y:272,w:339,h:543},weave,type:'tie'});
+    const plain=settFromCanvas(applyWb(c,wbGains(c)),{x:293,y:272,w:339,h:543}),sett=HOOK.settFrom({full:c,box:{x:293,y:272,w:339,h:543},weave,type:'tie'});
     const L=s=>Math.max(...s.bands.map(b=>rgbLab(...hexRgb(b[0]))[0]));
     return {tr:sett.tr,lighter:L(sett)-L(plain)}},[weave]);
   ok(r.lighter>5,`an underexposed photo is brightened from its white reference before the pattern is read (lightest band +${r.lighter.toFixed(0)} L*)`);

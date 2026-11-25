@@ -14,20 +14,20 @@ module.exports=async({ok,chromium,url,settle})=>{
       return {name:TYPES.pocketsquare,order:Object.keys(TYPES).indexOf('pocketsquare')===Object.keys(TYPES).indexOf('tieclip')+1,cols:COLS_BY.pocketsquare.p[0],pats:PATS_BY.pocketsquare.join(),mats:MATERIALS_BY.pocketsquare.join(),
         slot:SLOTS.includes('pocket')&&SLOT_TYPE('pocket')==='pocketsquare',alias:['contrast border','dots','plaid','rolled edge'].map(w=>normPat('pocketsquare',w)).join(),hasPat:hasPat('pocketsquare')&&!hasPat('tieclip'),
         tag:[tag.type,tag.pattern,tag.secondaryColor,tag.material&&tag.material.key].join(),flag:JSON.stringify(tagExtras().types),dress:(()=>{const d=settings.dress;settings.dress={jacket:false};const r=dressOut('pocketsquare');settings.dress=d;return r})(),
-        desc:desc(q),nm:nm(q),cols2:colShows(q,'secondaryColor')&&colShows(q,'tertiaryColor'),search:['pocket square','hank','handkerchief','pochette','border','linen','navy'].every(w=>wardMatch(q,wardNorm(w))),
-        care:CARE_ABLE.includes('pocketsquare')&&careWashed('pocketsquare'),pack:PACK_TITLE.pocketsquare}});
+        desc:desc(q),nm:nm(q),cols2:colShows(q,'secondaryColor')&&colShows(q,'tertiaryColor'),search:['pocket square','hank','handkerchief','pochette','border','linen','navy'].every(w=>HOOK.wardMatch(q,HOOK.wardNorm(w))),
+        care:CARE_ABLE.includes('pocketsquare')&&careWashed('pocketsquare'),pack:HOOK.PACK_TITLE.pocketsquare}});
     ok(t.name==='Pocket square'&&t.order&&t.cols==='white'&&t.pats==='solid,border,polka-dot,paisley,stripe,check,foulard,woven,other'&&t.mats==='silk,linen,cotton,wool,silk blend,polyester',`the type "Pocket square" after the tie clip, white first, its patterns (border too) and materials (${t.pats}; ${t.mats})`);
     ok(t.slot&&t.alias==='border,polka-dot,check,border'&&t.hasPat,`a slot "pocket"; pattern words read (${t.alias}); it has a pattern and colours to pick (hasPat)`);
     ok(t.tag==='pocketsquare,border,navy,linen'&&JSON.parse(t.flag)[0]==='pocketsquare',`a tag answers a pocket square, and the app asks for the type (types: ${t.flag})`);
     ok(t.dress&&t.cols2&&/border/.test(t.desc)&&/pocket square$/.test(t.nm),`without jackets it is left out by the dress code; second and third colours shown; named "${t.nm}"`);
     ok(t.search&&t.care&&t.pack==='Pocket squares','the Wardrobe search finds it as pocket square, hank, handkerchief, pochette, its pattern, material and colours; it can go to the laundry; the packing list has it');
     // the spreadsheet import's words
-    const k=await p.evaluate(()=>{const r=kitRead('Type,Color,Pattern\nPocket square,White,Contrast border\nHank,Navy,Paisley\nhandkerchief,Burgundy,Dots\npochette,white,\npocket-square,light blue,\nWhite linen pocket square,White,\n');
+    const k=await p.evaluate(()=>{const r=HOOK.kitRead('Type,Color,Pattern\nPocket square,White,Contrast border\nHank,Navy,Paisley\nhandkerchief,Burgundy,Dots\npochette,white,\npocket-square,light blue,\nWhite linen pocket square,White,\n');
       return (r.rows||[]).map(x=>x.ok?x.card.type+'/'+x.card.pattern+'/'+x.card.primaryColor:'x:'+x.why).join(' | ')});
     ok(k==='pocketsquare/border/white | pocketsquare/paisley/navy | pocketsquare/polka-dot/burgundy | pocketsquare/solid/white | pocketsquare/solid/lightblue | pocketsquare/solid/white',`import: pocket square, hank, handkerchief, pochette, pocket-square and "white linen pocket square" (${k})`);
     // the Add card: its pattern section and colours
     await p.evaluate(()=>{queue.unshift({id:'pq-card',manual:true,type:'pocketsquare',primaryColor:'white',secondaryColor:'navy',tertiaryColor:null,pattern:'border',metal:'silver',leather:'calf'});show('add');renderAdd()});await settle(p,300);
-    const add=await p.evaluate(()=>{const s=addCkSecs(queue[0],0);return {titles:s.map(x=>x.title).join(','),pat:(s.find(x=>x.k==='pattern')||{}).sum,thumb:/ps-front/.test(itemThumb(queue[0]))}});
+    const add=await p.evaluate(()=>{const s=HOOK.addCkSecs(queue[0],0);return {titles:s.map(x=>x.title).join(','),pat:(s.find(x=>x.k==='pattern')||{}).sum,thumb:/ps-front/.test(itemThumb(queue[0]))}});
     ok(/Pattern/.test(add.titles)&&/Border/.test(add.pat)&&add.thumb,`the Add card asks for its pattern (${add.pat}) and draws it folded`);
     await p.evaluate(()=>{queue.shift();renderAdd()});
     // ---- the drawings ----
@@ -44,7 +44,7 @@ module.exports=async({ok,chromium,url,settle})=>{
         I('pocketsquare','navy',{pattern:'polka-dot',secondaryColor:'white'}),I('pocketsquare','olive',{pattern:'check',secondaryColor:'rust'})];
       settings.workdays=[0,1,2,3,4];settings.blazerDays=[3];settings.vestMode='never';settings.dress=undefined;dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};
       const P=planSim(new Date(2026,10,1)).upTo(new Date(2026,11,31)),days=Object.values(P),withJ=days.filter(o=>o.top),ps=days.filter(o=>o.pocket);
-      const same=ps.filter(o=>psSameTie(o.pocket,o.tie)),noJ=ps.filter(o=>!o.top),bad=ps.filter(o=>!psWhite(o.pocket)&&!psEcho(o.pocket,o.top,o.shirt,o.tie).hit);
+      const same=ps.filter(o=>HOOK.psSameTie(o.pocket,o.tie)),noJ=ps.filter(o=>!o.top),bad=ps.filter(o=>!HOOK.psWhite(o.pocket)&&!HOOK.psEcho(o.pocket,o.top,o.shirt,o.tie).hit);
       const used={};for(const o of ps)used[o.pocket.id]=(used[o.pocket.id]||0)+1;
       const r=rateOutfit(ps[0]);
       // only colored squares that pick nothing up: no square
@@ -100,17 +100,17 @@ module.exports=async({ok,chromium,url,settle})=>{
     const g=await st();ok(g.top&&g.pocket===b.pocket,'the jacket back on brings the same square');
     // ---- the drawn figure ----
     const fig=await p.evaluate(()=>{const o=planFor()[key(sel)],sv=figureSvg(o,'pt-'),m=sv.match(/<g class="fig-pocket">([\s\S]*?)<\/g>/),pts=m&&m[1].match(/points="([^"]+)"/g);
-      const no=figureSvg({...o,pocket:null},'pt2-'),open=figureSvg({...o,top:null,pocket:o.pocket},'pt3-');return {has:!!m,n:pts&&pts.length,first:pts&&pts[1],no:/fig-pocket/.test(no),open:/fig-pocket/.test(open),kind:figKind(o)}});
+      const no=figureSvg({...o,pocket:null},'pt2-'),open=figureSvg({...o,top:null,pocket:o.pocket},'pt3-');return {has:!!m,n:pts&&pts.length,first:pts&&pts[1],no:/fig-pocket/.test(no),open:/fig-pocket/.test(open),kind:HOOK.figKind(o)}});
     ok(fig.has&&!fig.no&&!fig.open,`the drawn figure shows the square's strip (${fig.kind}: ${fig.first}), only with a square and a jacket`);
     // ---- the painted overlay and the picture key ----
     const pk2=await p.evaluate(()=>{for(const k of ['suit','suit-open','vest','shirt-tie'])renders[asmCmKey(k,'master')]={t:1,img:'',sig:''};
       const o=planFor()[key(sel)],kind=asmCmKind(o),bare={...o,pocket:null},dots={...o,pocket:{...o.pocket,primaryColor:'navy',pattern:'polka-dot',secondaryColor:'white'}};
       const k1=asmOutKey(o),k0=asmOutKey(bare),k2=asmOutKey(dots),k0b=asmOutKey({...bare});
-      const sig0=asmCmSig(bare),code=asmCmCodeText(asmCmCode()),inCode=['asmPocketDo','asmPocketQuad','asmPocketPaint','ASM_POCKET_GEO'].some(n=>new RegExp('\\b'+n+'\\b').test(code));
+      const sig0=HOOK.asmCmSig(bare),code=asmCmCodeText(HOOK.asmCmCode()),inCode=['asmPocketDo','asmPocketQuad','asmPocketPaint','ASM_POCKET_GEO'].some(n=>new RegExp('\\b'+n+'\\b').test(code));
       const open=asmPocketJob({...o,tie:null},'suit-open'),shirt=asmPocketJob({...o,top:null},'shirt-open'),none=asmPocketJob(bare,kind);
       // the overlay on a plain navy picture: the strip turns white where the square is, nothing far from it changes
       const S=512,px=new Uint8ClampedArray(S*S*4);for(let i=0;i<S*S;i++){px[4*i]=27;px[4*i+1]=42;px[4*i+2]=74;px[4*i+3]=255}const before=px.slice();
-      const J=asmPocketJob({...o,pocket:{id:'w',type:'pocketsquare',primaryColor:'white',pattern:'solid'}},'suit');asmPocketDo(px,S,J);
+      const J=asmPocketJob({...o,pocket:{id:'w',type:'pocketsquare',primaryColor:'white',pattern:'solid'}},'suit');HOOK.asmPocketDo(px,S,J);
       const f=S/2048,Q=asmPocketQuad('suit'),at=(x,y)=>{const i=4*(Math.round(y*f)*S+Math.round(x*f));return [px[i],px[i+1],px[i+2]]},mid=at((Q.b0[0]+Q.b1[0])/2,(Q.b0[1]+Q.b1[1]+Q.t0[1]+Q.t1[1])/4);
       let changed=0,far=0;for(let i=0;i<S*S;i++)if(px[4*i]!==before[4*i]||px[4*i+1]!==before[4*i+1]){changed++;const x=i%S/f,y=Math.floor(i/S)/f;if(x<Q.b0[0]-20||x>Q.b1[0]+30||y<Q.t1[1]-10||y>Q.b0[1]+20)far++}
       return {kind,k1,k0,k2,k0b,sig0,inCode,open:!!open,shirt,none,mid,changed,far,Q}});

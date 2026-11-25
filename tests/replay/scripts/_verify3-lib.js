@@ -66,7 +66,8 @@ async function buildLegacy(id){
   const workdays=await A.page.evaluate(()=>settings.workdays);
   await A.advance(5000);
   const suitId=await openItemByName(A,'Navy suit');await setField(A,'name','My navy suit');await done(A);
-  const old=await A.page.evaluate(id=>{const i=items.find(x=>x.id===id);return {name:i.name,sample:!!i.sample,editedOldRule:kitEdited(i),own:items.filter(i=>!i.sample||kitEdited(i)).length,all:items.length}},suitId);
+  // (on the old build, which has no HOOK: its kitEdited is a classic script's global)
+  const old=await A.page.evaluate(id=>{const ke=typeof HOOK==='undefined'?kitEdited:HOOK.kitEdited,i=items.find(x=>x.id===id);return {name:i.name,sample:!!i.sample,editedOldRule:ke(i),own:items.filter(i=>!i.sample||ke(i)).length,all:items.length}},suitId);
   await today(A);await backup(A);
   for(const t of ['2026-11-04T08:00:00+03:00','2026-11-05T08:00:00+03:00']){await setWorld(t,A);await reopen(A);await sleep(1500);await backup(A)}
   await sleep(1500);const bk=await serverBackup();

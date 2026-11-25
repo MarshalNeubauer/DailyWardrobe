@@ -8,9 +8,9 @@ module.exports=async({ok,chromium,url,settle})=>{
       I('watch','black',{metal:'gold',dial:'white',band:'leather'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'gold'}),I('socks','navy'),
       I('blazer','navy'),I('pants','grey')];
     settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='never';dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')});
-  const f=await p.evaluate(()=>{const c=document.querySelector('#mannequin-container'),svg=c.querySelector('svg'),o=planFor()[key(sel)],G=mqData(figKind(o));
+  const f=await p.evaluate(()=>{const c=document.querySelector('#mannequin-container'),svg=c.querySelector('svg'),o=planFor()[key(sel)],G=mqData(HOOK.figKind(o));
     const pat=id=>svg.querySelector(`pattern[id="${id}"]`),lap=G.parts.find(x=>x.id==='lapL'),fills=[...svg.querySelectorAll('.fig-watch path')].map(e=>e.getAttribute('fill'));
-    return {fig:c.classList.contains('fig'),kind:figKind(o),vb:svg.getAttribute('viewBox'),role:svg.getAttribute('role'),label:svg.getAttribute('aria-label'),
+    return {fig:c.classList.contains('fig'),kind:HOOK.figKind(o),vb:svg.getAttribute('viewBox'),role:svg.getAttribute('role'),label:svg.getAttribute('aria-label'),
       noImg:!svg.querySelector('image:not(.fig-shade):not(.fig-office)'),suitHex:pat('fig-suitB').innerHTML.includes(COLORS[o.top.primaryColor]),lapel:pat('fig-suitL').getAttribute('patternTransform').includes(`rotate(${lap.rot})`),
       tieDots:pat('fig-tie').querySelectorAll('circle').length>0,clip:!!svg.querySelector('.fig-clip'),clipGold:svg.querySelector('.fig-clip rect:nth-child(2)').getAttribute('fill')===METAL.gold,
       watch:fills.length>3&&fills.every(x=>G.watch.some(b=>b.c===x)),hot:c.querySelectorAll('.hot').length,skin:!!svg.querySelector('.fig-skin'),useInClip:!!svg.querySelector('clipPath use'),
@@ -27,12 +27,12 @@ module.exports=async({ok,chromium,url,settle})=>{
   // a tile unfolds that item's photo in a box below the tiles; tapping it again, or the photo, folds it back
   await p.click('.below .tile >> nth=1');await settle(p,600);
   const bo=await p.evaluate(()=>{const b=$('#bbox'),o=planFor()[key(sel)],t=[...document.querySelectorAll('.below .tile')];
-    return {open:b.classList.contains('open'),h:b.querySelector('.rpanel').getBoundingClientRect().height,exp:t.map(x=>x.getAttribute('aria-expanded')).join(),label:t[1].getAttribute('aria-label'),pic:!!b.querySelector('.rpic'),below:b.getBoundingClientRect().top>=document.querySelector('.below').getBoundingClientRect().bottom-1,shoes:o.shoes&&o.shoes.id,shown:belowOpen}});
+    return {open:b.classList.contains('open'),h:b.querySelector('.rpanel').getBoundingClientRect().height,exp:t.map(x=>x.getAttribute('aria-expanded')).join(),label:t[1].getAttribute('aria-label'),pic:!!b.querySelector('.rpic'),below:b.getBoundingClientRect().top>=document.querySelector('.below').getBoundingClientRect().bottom-1,shoes:o.shoes&&o.shoes.id,shown:HOOK.belowOpen}});
   ok(bo.open&&bo.h>60&&bo.pic&&bo.below&&bo.shown==='shoes'&&bo.exp==='false,true,false'&&/Hide the photo/.test(bo.label),`tapping the shoes tile unfolds their photo below the tiles (${bo.h|0}px, ${bo.exp})`);
-  await p.click('.below .tile >> nth=0');await p.waitForFunction(()=>belowOpen==='belt',null,{timeout:5000}).catch(()=>{});
-  ok(await p.evaluate(()=>belowOpen==='belt'&&$('#bbox').classList.contains('open')&&document.querySelectorAll('.below .tile[aria-expanded="true"]').length===1),'tapping another tile switches the box to that item');
+  await p.click('.below .tile >> nth=0');await p.waitForFunction(()=>HOOK.belowOpen==='belt',null,{timeout:5000}).catch(()=>{});
+  ok(await p.evaluate(()=>HOOK.belowOpen==='belt'&&$('#bbox').classList.contains('open')&&document.querySelectorAll('.below .tile[aria-expanded="true"]').length===1),'tapping another tile switches the box to that item');
   await p.click('#bbox .rpanel-in');await settle(p,600);
-  ok(await p.evaluate(()=>!$('#bbox').classList.contains('open')&&belowOpen===null&&$('#bbox .rpanel').getBoundingClientRect().height<1),'tapping the photo folds it back');
+  ok(await p.evaluate(()=>!$('#bbox').classList.contains('open')&&HOOK.belowOpen===null&&$('#bbox .rpanel').getBoundingClientRect().height<1),'tapping the photo folds it back');
   await p.click('.below .tile >> nth=2');await p.click('.below .tile >> nth=2');await settle(p,600);
   ok(await p.evaluate(()=>!$('#bbox').classList.contains('open')&&$('#bbox .rpanel').getBoundingClientRect().height<1),'tapping the same tile again folds it back');
   ok(await p.evaluate(()=>!document.querySelector('#piece')),'there is no swap card under the score any more');

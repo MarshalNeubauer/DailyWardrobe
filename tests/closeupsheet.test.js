@@ -24,7 +24,7 @@ async function run(eng,browser,{ok,url,settle}){
       const cv=(im,k,f)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);if(f)f(c,x);return c};
       const paper=(c,x)=>{x.fillStyle='#f4f3ef';x.fillRect(0,c.height*.8,c.width,c.height*.2)};
       const J=c=>c.toDataURL('image/jpeg',.9),f={plain:J(cv(ci,3)),paper:J(cv(ci,3,paper)),photo:J(cv(pi,1))};
-      rememberRole({role:'owner'});
+      HOOK.rememberRole({role:'owner'});
       items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,texture:f.plain,added:1,name:'Mink suit'},
         {id:'m2',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,added:2,name:'Bare suit'}];flt='all';editing=null;show('wardrobe');return f});
     return {ctx,p,errs,F}};
@@ -120,9 +120,9 @@ async function run(eng,browser,{ok,url,settle}){
     await p.waitForFunction(()=>/White paper found/.test((document.querySelector('#cn-paper')||{}).textContent||''));
     ok(true,T+'a close-up taken from it reaches cnRetake: the line turns to "White paper found"');
     await p.evaluate(()=>closeColPick());await settle(p,200);
-    await p.evaluate(()=>closeItem&&closeItem());await settle(p,300);
+    await p.evaluate(()=>HOOK.closeItem&&HOOK.closeItem());await settle(p,300);
     // ---- the Add card
-    await p.evaluate(()=>{openAdd();addManual();queue[0].type='suit';queue[0].primaryColor='deeptaupe';renderAdd()});await settle(p,300);
+    await p.evaluate(()=>{openAdd();HOOK.addManual();queue[0].type='suit';queue[0].primaryColor='deeptaupe';renderAdd()});await settle(p,300);
     for(const theme of ['light','dark']){await p.evaluate(t=>{document.documentElement.dataset.theme=t},theme);await settle(p,100);
       e=await p.evaluate(()=>{const c=document.querySelector('#nps-q [data-ck="tex"] .wbstcard'),r=c&&c.getBoundingClientRect(),cs=c&&getComputedStyle(c);
         return c&&{h:Math.round(r.height),right:r.right,bg:cs.backgroundColor,ink:cs.color,text:c.textContent,old:!!document.querySelector('#nps-q .texguide,#nps-q .texpaper'),fit:document.documentElement.scrollWidth<=390}});
@@ -167,8 +167,8 @@ async function run(eng,browser,{ok,url,settle}){
     ok(/Close-up removed\..*Undo/.test(tt),T+`without touch: Remove close-up removes it, with Undo in the toast (${tt})`);
     await p.click('#toast button');await p.waitForFunction(t1=>items[0].texture&&texSig(items[0].texture)===t1,t1);
     ok(true,T+'…and the toast’s Undo brings it back');
-    await p.evaluate(()=>closeItem&&closeItem());await settle(p,300);
-    await p.evaluate(F=>{openAdd();addManual();queue[0].type='suit';queue[0].primaryColor='deeptaupe';renderAdd()},F);await settle(p,300);
+    await p.evaluate(()=>HOOK.closeItem&&HOOK.closeItem());await settle(p,300);
+    await p.evaluate(F=>{openAdd();HOOK.addManual();queue[0].type='suit';queue[0].primaryColor='deeptaupe';renderAdd()},F);await settle(p,300);
     await (await p.$('#nps-q [data-ck="tex"] label input[type=file]')).setInputFiles(file('a.jpg',F.paper));
     await p.waitForFunction(()=>queue[0]&&queue[0].texture&&!queue[0].refining&&!!document.querySelector('#nps-q [data-ck="tex"].cktexon'));await settle(p,200);
     e=await p.evaluate(()=>[...document.querySelectorAll('#nps-q [data-ck="tex"].cktexon button,#nps-q [data-ck="tex"].cktexon label')].map(x=>x.textContent.trim()));

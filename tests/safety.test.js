@@ -21,7 +21,7 @@ const safety=async({ok,chromium,url,settle})=>{
   const hung2=await p.evaluate(()=>Promise.race([atomic('items','abort-me',()=>{throw new Error('x')}).then(()=>'saved',()=>'rejected'),new Promise(r=>setTimeout(()=>r('never settled'),1500))]));
   ok(hung2==='rejected',`a read-and-write that is aborted fails too (${hung2})`);
   // the phone's storage is full: the browser aborts the transaction with a QuotaExceededError
-  await p.evaluate(()=>{show('add');addManual();window.realPut=IDBObjectStore.prototype.put;
+  await p.evaluate(()=>{show('add');HOOK.addManual();window.realPut=IDBObjectStore.prototype.put;
     IDBObjectStore.prototype.put=function(){const r=window.realPut.apply(this,arguments),t=this.transaction;Object.defineProperty(t,'error',{get:()=>new DOMException('The quota has been exceeded.','QuotaExceededError')});t.abort();return r}});
   ok(await p.evaluate(()=>window.persistCalls)===0,'nothing is asked of the browser before an item is saved');
   await p.click('#nps-bar .pri');await saveToast(p);
@@ -29,7 +29,7 @@ const safety=async({ok,chromium,url,settle})=>{
   ok(/Couldn.t save: your phone.s storage is full/.test(full),`a save that fails for lack of space says so (“${full}”)`);
   ok(await p.evaluate(()=>queue.length===1&&items.length===0&&!!document.querySelector('#nps-bar .pri')),'the card stays, so it can be saved again');
   // any other rejection with no tap before it stays quiet (one right after a tap says so: errnet.test.js); a storage failure nobody caught is shown
-  await p.evaluate(()=>{errTapAt=0;document.querySelector('#toast').classList.remove('on');Promise.reject(new Error('something else'))});
+  await p.evaluate(()=>{HOOK.errTapAt=0;document.querySelector('#toast').classList.remove('on');Promise.reject(new Error('something else'))});
   await p.evaluate(()=>new Promise(r=>setTimeout(r,300)));   // waits to see that nothing appears
   ok(await toastText(p)==='','a rejection that is not about storage, with no tap before it, shows nothing');
   await p.evaluate(()=>{storeToldAt=0;metaPut('probe',1)});await saveToast(p);   // (storeToldAt: one failure is said once, so the earlier toast is forgotten first)
@@ -61,14 +61,14 @@ const safety=async({ok,chromium,url,settle})=>{
   /* ---- unsaved Add cards guard the page ---- */
   const leave=()=>p.evaluate(()=>{const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);return e.defaultPrevented});
   ok(await leave()===false,'leaving the page is not questioned when nothing is unsaved');
-  await p.evaluate(()=>{show('add');addManual()});
+  await p.evaluate(()=>{show('add');HOOK.addManual()});
   ok(await leave()===true,'with an unsaved Add card, leaving the page asks first');
   await p.evaluate(()=>{queue.length=0;renderAdd()});
   ok(await leave()===false,'and no longer once the card is saved or skipped');
 
   /* ---- wording ---- */
   const words=await p.evaluate(()=>{const I=(id,type,primaryColor)=>({id,type,primaryColor,pattern:'solid'});const sh=I('s1','shirt','white'),t=I('t1','tie','navy');
-    const b=o=>(/<b>([^<]*)<\/b>/.exec(piecesBox(o))||[])[1];return [b({shirt:sh}),b({shirt:sh,tie:t})]});
+    const b=o=>(/<b>([^<]*)<\/b>/.exec(HOOK.piecesBox(o))||[])[1];return [b({shirt:sh}),b({shirt:sh,tie:t})]});
   ok(words[0]==='1 piece'&&words[1]==='2 pieces',`Today's pieces card counts in the singular too (${words})`);
   {const bad=errs.filter(e=>e!=='x'&&e!=='something else');   // the two this test threw itself
   ok(bad.length===0,'no page errors'+(bad.length?': '+bad.join(' | '):''))}

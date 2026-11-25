@@ -22,7 +22,7 @@ module.exports=async({ok,chromium,url})=>{
       const seq=days.map(d=>({d,top:pl[d].top&&pl[d].top.id,sh:pl[d].shirt.name||pl[d].shirt.primaryColor,g:shirtGroup(pl[d].shirt),t:pl[d].tie.id,tn:pl[d].tie.name||pl[d].tie.primaryColor}));
       const reps=[];seq.forEach((x,i)=>{for(let j=Math.max(0,i-10);j<i;j++)if(seq[j].t===x.t&&seq[j].g===x.g){reps.push(x.d+' '+x.sh+'+'+x.tn+' after '+seq[j].d);break}});
       const pinkX=seq.map((x,i)=>x.t===X.id&&x.g==='pink'?i:-1).filter(i=>i>=0);
-      return {reps,pinkX,pinkXd:pinkX.map(i=>seq[i].d+' '+seq[i].top),pinkB:seq.findIndex(x=>x.sh==='Pink B'),rules:PLAN_RULES,gap:typeof PAIR_GAP!=='undefined'&&PAIR_GAP,n:seq.length}});
+      return {reps,pinkX,pinkXd:pinkX.map(i=>seq[i].d+' '+seq[i].top),pinkB:seq.findIndex(x=>x.sh==='Pink B'),rules:PLAN_RULES,gap:'PAIR_GAP' in HOOK&&HOOK.PAIR_GAP,n:seq.length}});
     ok(r.gap===5&&r.rules>=23,`PAIR_GAP 5, PLAN_RULES 23 or later (${r.gap}, ${r.rules})`);
     ok(r.pinkX[0]===0&&r.pinkX.slice(1).every((x,i)=>x-r.pinkX[i]>10),`the pink shirt and navy-pink tie never come back within 10 workdays, under any suit (${r.pinkXd.join(', ')})`);
     ok(r.pinkX.length>=2,`the pair still comes round after its 10 workdays (${r.pinkXd.join(', ')})`);
