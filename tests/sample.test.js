@@ -149,7 +149,7 @@ const nu2fix3=async({ok,chromium,url,ROOT})=>{
       return {past,own:own.id,shoes:shoes.id,paused:HOOK.kitEdited(items.find(i=>i.id===shoes.id))}});
     ok(!set.paused,'taking a sample piece out of rotation doesn\'t make it his (kitEdited stays false)');
     await p.evaluate(()=>HOOK.kitSampleRemove(true));
-    await p.evaluate(async()=>{cache={};show('today');renderToday();if(typeof recordRun!=='undefined')await recordRun;await new Promise(r=>setTimeout(r,300));if(typeof recordRun!=='undefined')await recordRun});
+    await p.evaluate(async()=>{HOOK.cache={};show('today');renderToday();if(typeof recordRun!=='undefined')await recordRun;await new Promise(r=>setTimeout(r,300));if(typeof recordRun!=='undefined')await recordRun});
     const r=await p.evaluate(({past,own,shoes})=>{const R=k=>dayRecs[k]||{},P=planMonth(+past[1].slice(0,4),+past[1].slice(5,7)-1);
       const f0=planMonth(+past[0].slice(0,4),+past[0].slice(5,7)-1)[past[0]];
       return {n:items.length,shoes:items.some(i=>i.id===shoes),d0:R(past[0]),d1:R(past[1]),d2:R(past[2]),today:R(key(todayDate())),plan1:!!P[past[1]],dbg:P[past[1]]?{fr:P[past[1]].frozen,top:!!P[past[1]].top,rec:dayRecs[past[1]]}:null,
@@ -160,7 +160,7 @@ const nu2fix3=async({ok,chromium,url,ROOT})=>{
     ok(r.d1.noOutfit&&!r.d1.ids&&r.d1.edited&&!r.plan1,`a day of sample pieces only keeps no outfit and is not filled again from today's plan (${JSON.stringify([r.d1,r.dbg])})`);
     ok(r.d2.ids&&r.d2.ids.shirt===set.own&&r.d2.worn===undefined&&r.worn.includes(set.past[2])&&!r.worn.includes(set.past[1])&&!r.worn.includes(set.past[0]),`Insights counts the day his shirt was worn, not the sample-only day or the "Didn't" day (${r.worn.join(',')})`);
     ok(!Object.values(r.today.lock||{}).some(v=>v&&v!==set.own)&&!r.today.force&&!Object.values(r.today.ids||{}).some(v=>v&&v!==set.own),`today loses its sample lock, pick and pieces and is planned again from what is left (${JSON.stringify(r.today)})`);
-    const nd=await p.evaluate(k=>{sel=keyDate(k);renderToday();return {t:(document.querySelector('#nooutfit')||{}).textContent||'',score:!!document.querySelector('#sbox')}},set.past[1]);
+    const nd=await p.evaluate(k=>{HOOK.sel=keyDate(k);renderToday();return {t:(document.querySelector('#nooutfit')||{}).textContent||'',score:!!document.querySelector('#sbox')}},set.past[1]);
     ok(/No outfit recorded/.test(nd.t)&&!nd.score,'Today on that day says no outfit was recorded, with no score: '+nd.t);
     ok(!p.errs.length,'no page errors: '+p.errs.join(' | '));
     /* ---- N5 and the import's words ---- */

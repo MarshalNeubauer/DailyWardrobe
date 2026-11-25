@@ -38,7 +38,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
       I('b1','belt',{primaryColor:'brown',leather:'calf',metal:'silver'}),I('w1','watch',{primaryColor:'brown',metal:'silver',dial:'white',band:'leather',photo}),I('w2','watch',{primaryColor:'silver',metal:'gold',dial:'black',band:'bracelet'}),
       I('c1','tieclip',{primaryColor:'gold'}),I('c2','tieclip',{primaryColor:'navy',metal:'silver'}),I('cl','cufflinks',{primaryColor:'silver',metal:'silver'}),
       I('o1','overcoat',{primaryColor:'charcoal',pattern:'herringbone'}),I('r1','raincoat',{primaryColor:'khaki'}),I('q1','pocketsquare',{primaryColor:'white'}),I('t1','tie')]};
-  const load=(p,photo)=>p.evaluate(([w])=>{items=w;cache={};flt='all';editing=null;show('wardrobe')},[WARD(photo)]);
+  const load=(p,photo)=>p.evaluate(([w])=>{HOOK.items=w;HOOK.cache={};HOOK.flt='all';HOOK.editing=null;show('wardrobe')},[WARD(photo)]);
   const look=(p,id)=>p.evaluate(async id=>{closeColPick();openItem(id);await new Promise(r=>setTimeout(r,40));const s=document.querySelector('#item-view .cklook');
     return s?{open:s.classList.contains('open'),rows:[...s.querySelectorAll('.lkrow')].map(r=>r.querySelector('small').textContent+(r.classList.contains('off')?' [off]':'')),
       text:s.innerText.replace(/\s+/g,' '),mark:s.querySelector('.ckm').className}:null},id);
@@ -203,11 +203,11 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
           I('a7','shoes',{primaryColor:'black',leather:'calf'}),I('a8','belt',{primaryColor:'black',leather:'calf',metal:'silver'}),I('a9','watch',{primaryColor:'black',metal:'silver',band:'leather'}),
           I('k1','tieclip',{primaryColor:'gold'}),I('k2','tieclip',{primaryColor:'navy'}),I('k3','tieclip',{primaryColor:'silver'}),I('a10','socks',{toeColor:'none'})]};
       const sig=()=>JSON.stringify(Object.entries(buildPlan(2026,10)).sort().map(([k,o])=>[k,o.clip&&o.clip.id,o.top&&o.top.id,o.tie&&o.tie.id]));
-      items=mk();cache={};const A=sig();
+      HOOK.items=mk();HOOK.cache={};const A=sig();
       // the same clips edited through the beta (plain gold → metal silver → gold again; navy enamel on a silver clip: enamel none, then navy again)
-      items=mk();cache={};await HOOK.lookSetMat('e','k1','metal','silver');await HOOK.lookSetMat('e','k1','metal','gold');await lookSetEnamel('e','k2','none');await lookSetEnamel('e','k2','navy');await HOOK.lookSetMat('e','k3','metal','silver');
-      const pcs=items.filter(x=>x.type==='tieclip').map(x=>x.primaryColor).join(),metals=items.filter(x=>x.type==='tieclip').map(x=>String(clipMetal(x))).join();cache={};const B=sig();
-      items=was;cache={};return {same:A===B,pcs,metals,n:JSON.parse(A).length}});
+      HOOK.items=mk();HOOK.cache={};await HOOK.lookSetMat('e','k1','metal','silver');await HOOK.lookSetMat('e','k1','metal','gold');await lookSetEnamel('e','k2','none');await lookSetEnamel('e','k2','navy');await HOOK.lookSetMat('e','k3','metal','silver');
+      const pcs=items.filter(x=>x.type==='tieclip').map(x=>x.primaryColor).join(),metals=items.filter(x=>x.type==='tieclip').map(x=>String(clipMetal(x))).join();HOOK.cache={};const B=sig();
+      HOOK.items=was;HOOK.cache={};return {same:A===B,pcs,metals,n:JSON.parse(A).length}});
     ok(e.same&&e.pcs==='gold,navy,silver'&&e.metals==='gold,null,silver'&&e.n>10,T+`tie clips edited in the beta keep the planner's input (their colors ${e.pcs}, clipMetal ${e.metals}) and plan exactly the same month`)}
 
   // ================= the new fields are kept by the record check (sync, restore) and by the field-by-field merge =================

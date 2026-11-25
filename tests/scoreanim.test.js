@@ -8,8 +8,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
-      items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','pink'),I('tie','burgundy'),I('tie','green'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
-      settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};scoreOpen=false;show('today')});
+      HOOK.items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','pink'),I('tie','burgundy'),I('tie','green'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
+      settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.scoreOpen=false;show('today')});
     const r0=await p.evaluate(()=>{const b=document.querySelector('#sbox');return {tag:b.tagName,btn:b.querySelector('button.month-link').getAttribute('aria-expanded'),h:b.getBoundingClientRect().height,
       panel:document.querySelector('#spanel').getBoundingClientRect().height,same:['#ibox','#mbox'].every(s=>Math.round(document.querySelector(s).getBoundingClientRect().height)===Math.round(b.getBoundingClientRect().height))}});
     ok(r0.tag==='SECTION'&&r0.btn==='false'&&r0.panel===0&&r0.same,'folded: a button with the same size as the other cards, the breakdown hidden');

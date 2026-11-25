@@ -29,9 +29,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white'),I('shirt','lightblue'),
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white'),I('shirt','lightblue'),
         I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','grey'),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('socks','navy'),I('belt','black',{leather:'calf'})];
-      settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-16T18:00:00';sel=new Date(2026,10,16);view={y:2026,m:10};cache={};show('today')});
+      settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-16T18:00:00';HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.cache={};show('today')});
     await settle(p,300);
     const act=()=>p.evaluate(()=>{const a=document.activeElement;return !a||a===document.body?'BODY':a.tagName+(a.id?'#'+a.id:'')});
     const inside=q=>p.evaluate(q=>{const e=document.querySelector(q);return !!e&&e.contains(document.activeElement)},q);

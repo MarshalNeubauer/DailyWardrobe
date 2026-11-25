@@ -32,7 +32,7 @@ const safety=async({ok,chromium,url,settle})=>{
   await p.evaluate(()=>{HOOK.errTapAt=0;document.querySelector('#toast').classList.remove('on');Promise.reject(new Error('something else'))});
   await p.evaluate(()=>new Promise(r=>setTimeout(r,300)));   // waits to see that nothing appears
   ok(await toastText(p)==='','a rejection that is not about storage, with no tap before it, shows nothing');
-  await p.evaluate(()=>{storeToldAt=0;metaPut('probe',1)});await saveToast(p);   // (storeToldAt: one failure is said once, so the earlier toast is forgotten first)
+  await p.evaluate(()=>{HOOK.storeToldAt=0;metaPut('probe',1)});await saveToast(p);   // (storeToldAt: one failure is said once, so the earlier toast is forgotten first)
   ok(/Couldn.t save/.test(await toastText(p)),'a failed save that nothing caught is still shown');
   // with room again, the same card saves
   await p.evaluate(()=>{IDBObjectStore.prototype.put=window.realPut});

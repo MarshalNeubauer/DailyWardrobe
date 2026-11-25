@@ -7,8 +7,8 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},locale:'en-US'});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const setup=()=>p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic.map(i=>({...i}));settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.daysOff=[];delete settings.darkShirts;weather={};climate=null;TODAY_OVERRIDE='2026-11-11T12:00:00';
-      localStorage.removeItem('pack_trip');localStorage.removeItem('pack_marks');HOOK.packT=null;dayRecs={};cache={};sel=new Date(2026,10,11);view={y:2026,m:10};show('today');
+    const setup=()=>p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic.map(i=>({...i}));settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.daysOff=[];delete settings.darkShirts;HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';
+      localStorage.removeItem('pack_trip');localStorage.removeItem('pack_marks');HOOK.packT=null;HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};show('today');
       window.sigOf=o=>o?SLOTS.filter(s=>s!=='coat').map(s=>o[s]?o[s].id:'').join('|'):'';
       window.trip=(a,b)=>{const out={};for(let d=a;d<=b;d++){const k='2026-11-'+d,o=planMonth(2026,10)[k];if(o)out[k]=sigOf(o)}return out};
       window.lines=()=>[...document.querySelectorAll('#pk-list .pk-group:not(.pk-travel) .pk-line')].map(l=>l.querySelector('.pk-nm').textContent.trim());
@@ -31,7 +31,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.evaluate(()=>closeSettings());
     await p.evaluate(()=>{if(!monthOpen)toggleMonth()});await p.waitForSelector('#mpanel-in .mhead');await settle(p,600);
     ok(await p.evaluate(()=>!document.querySelector('#mpanel-in .pack-open')&&!/Packing list/.test(document.querySelector('#mpanel-in').textContent)),'the open month on Today has no packing-list button (the owner took it out); the page is in Settings');
-    await p.evaluate(()=>{monthOpen=false;openPack()});await p.waitForFunction(()=>!document.querySelector('#pack').hidden);
+    await p.evaluate(()=>{HOOK.monthOpen=false;openPack()});await p.waitForFunction(()=>!document.querySelector('#pack').hidden);
 
     // ---- the days and the list for a fixed wardrobe and range
     const d1=await p.evaluate(()=>({rows:[...document.querySelectorAll('#pk-days .pk-day')].map(r=>({t:r.querySelector('.pk-dn').textContent,stack:!!r.querySelector('svg.stack'),what:r.querySelector('.pk-what').textContent})),
@@ -51,7 +51,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(await p.evaluate(()=>HOOK.packNow.list.groups.some(g=>g.type==='watch')&&document.querySelectorAll('#pk-list .pk-line input[type=checkbox]').length===HOOK.packNow.list.total),'the watch is on the list, and every line has a checkbox');
 
     // ---- a piece worn twice appears once, with "2 days"
-    const tw=await p.evaluate(()=>{const s=items.find(i=>i.type==='suit'&&i.primaryColor==='navy'&&i.pattern==='solid');dayRecs['2026-11-16']={date:'2026-11-16',force:{top:s.id}};dayRecs['2026-11-18']={date:'2026-11-18',force:{top:s.id}};cache={};HOOK.renderPack();
+    const tw=await p.evaluate(()=>{const s=items.find(i=>i.type==='suit'&&i.primaryColor==='navy'&&i.pattern==='solid');dayRecs['2026-11-16']={date:'2026-11-16',force:{top:s.id}};dayRecs['2026-11-18']={date:'2026-11-18',force:{top:s.id}};HOOK.cache={};HOOK.renderPack();
       const hit=lines().filter(t=>/^Navy suit/.test(t));return {hit,copy:HOOK.packNow.text.split('\n').filter(t=>/^- Navy suit/.test(t))}});
     ok(tw.hit.length===1&&/^Navy suit( with its vest)? · 2 days$/.test(tw.hit[0]),`a suit worn on two days is one line: "${tw.hit[0]}"`);
 
@@ -66,7 +66,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.evaluate(()=>{navigator.share=d=>{window.shared=d;return Promise.resolve()};HOOK.renderPack()});
     await p.click('#pk-share');await p.waitForFunction(()=>window.shared);
     ok(await p.evaluate(()=>window.shared.text===HOOK.packNow.text),'where the device can share, Share hands over the same text');
-    await p.evaluate(()=>{delete navigator.share;dayRecs={};cache={};HOOK.renderPack()});
+    await p.evaluate(()=>{delete navigator.share;HOOK.dayRecs={};HOOK.cache={};HOOK.renderPack()});
 
     // ---- ticks are remembered for the trip
     await p.click('#pk-list .pk-group .pk-line:nth-of-type(1) input');await p.click('#pk-list .pk-group:nth-of-type(3) .pk-line input');
@@ -94,7 +94,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(await p.evaluate(()=>HOOK.packNow.list.worn.length===0),'and the same button packs them again');
 
     // ---- days off
-    const off=await p.evaluate(()=>{settings.daysOff=[{d:'2026-11-17',n:'Founders day'}];cache={};HOOK.packSetDate('a','2026-11-14');const rows=[...document.querySelectorAll('#pk-days .pk-day')].map(r=>r.textContent);
+    const off=await p.evaluate(()=>{settings.daysOff=[{d:'2026-11-17',n:'Founders day'}];HOOK.cache={};HOOK.packSetDate('a','2026-11-14');const rows=[...document.querySelectorAll('#pk-days .pk-day')].map(r=>r.textContent);
       const e=expect(14,20),all=HOOK.packNow.list.groups.flatMap(g=>g.lines).filter(l=>l.type!=='belt');
       return {rows,n:rows.length,off:[...document.querySelectorAll('#pk-days .pk-day.off')].length,same:all.map(l=>l.key).sort().join()===Object.keys(e.n).sort().join(),text:HOOK.packNow.text,count:document.querySelector('#pack .pcount').textContent}});
     ok(off.n===7&&off.off===3&&/Day off$/.test(off.rows[0])&&/Day off$/.test(off.rows[1])&&/Day off: Founders day/.test(off.rows[3])&&off.count==='7 days',`a weekend and a day off inside the trip are listed as days off (${off.rows[3]})`);
@@ -105,7 +105,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(lim.b==='2026-12-14'&&lim.n===31,'a trip is at most 31 days');
 
     // ---- pack lighter
-    await p.evaluate(()=>{settings.daysOff=[];cache={};HOOK.packSetDate('a','2026-11-16');HOOK.packSetDate('b','2026-11-20')});
+    await p.evaluate(()=>{settings.daysOff=[];HOOK.cache={};HOOK.packSetDate('a','2026-11-16');HOOK.packSetDate('b','2026-11-20')});
     const g0=await p.evaluate(()=>({j:HOOK.packUses(HOOK.packNow.days,'top'),s:HOOK.packUses(HOOK.packNow.days,'shoes'),msg:document.querySelector('#pk-light').textContent,before:trip(16,20),keep:!!document.querySelector('#pk-keep')}));
     ok(g0.j>=4&&g0.s>=2&&!g0.keep&&g0.msg.includes(`${g0.j} jackets and ${g0.s} pairs of shoes`),`with no limit the page says what the trip uses (${g0.msg})`);
     const t0=Date.now();
@@ -137,8 +137,8 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     const k0=await p.evaluate(()=>({msg:document.querySelector('#pk-lockmsg').textContent,btn:!!document.querySelector('#pk-lockbtn'),rel:!!document.querySelector('#pk-release'),before:trip(23,27)}));
     ok(/^Not locked\./.test(k0.msg)&&k0.btn&&!k0.rel,'a trip beyond the coming week says it is not locked');
     // the change on an earlier day: Friday the 20th takes the suit planned for the trip's Monday
-    const change=()=>p.evaluate(()=>{const o=planMonth(2026,10)['2026-11-23'];dayRecs['2026-11-20']={date:'2026-11-20',force:{top:o.top.id}};cache={};return trip(23,27)});
-    const undo=()=>p.evaluate(()=>{delete dayRecs['2026-11-20'];cache={};return trip(23,27)});
+    const change=()=>p.evaluate(()=>{const o=planMonth(2026,10)['2026-11-23'];dayRecs['2026-11-20']={date:'2026-11-20',force:{top:o.top.id}};HOOK.cache={};return trip(23,27)});
+    const undo=()=>p.evaluate(()=>{delete dayRecs['2026-11-20'];HOOK.cache={};return trip(23,27)});
     const free=await change();await undo();
     const moved=(a,b)=>Object.keys(a).filter(k=>a[k]!==b[k]);
     ok(moved(k0.before,free).length>=1,`(unlocked, a change on the Friday before moves ${moved(k0.before,free).length} of the trip's outfits)`);
@@ -153,12 +153,12 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.click('#pk-release');await p.waitForFunction(()=>/^Not locked\./.test((document.querySelector('#pk-lockmsg')||{}).textContent||''));
     const k2=await p.evaluate(()=>({locks:[23,24,25,26,27].some(d=>dayRecs['2026-11-'+d]&&dayRecs['2026-11-'+d].lock),now:trip(23,27)}));
     ok(!k2.locks&&moved(k0.before,k2.now).length>=1,`released, the outfits move again (${moved(k0.before,k2.now).length} changed)`);
-    const part=await p.evaluate(()=>{delete dayRecs['2026-11-20'];cache={};const o=planMonth(2026,10)['2026-11-24'];dayRecs['2026-11-24']={date:'2026-11-24',lock:lockIds(o)};cache={};HOOK.renderPack();return document.querySelector('#pk-lockmsg').textContent});
+    const part=await p.evaluate(()=>{delete dayRecs['2026-11-20'];HOOK.cache={};const o=planMonth(2026,10)['2026-11-24'];dayRecs['2026-11-24']={date:'2026-11-24',lock:lockIds(o)};HOOK.cache={};HOOK.renderPack();return document.querySelector('#pk-lockmsg').textContent});
     ok(/^1 of 5 days locked\./.test(part),`a trip locked in part says so (${part.slice(0,24)})`);
 
     // ---- an item out of rotation, an empty wardrobe
-    const pz=await p.evaluate(()=>{const o=planMonth(2026,10)['2026-11-23'],id=o.shirt.id;items.find(i=>i.id===id).paused=true;cache={};HOOK.renderPack();
-      const r={gone:!HOOK.packNow.list.groups.flatMap(g=>g.lines).some(l=>l.key===id),days:HOOK.packNow.days.filter(x=>x.o&&x.o.shirt).length};items=[];cache={};HOOK.renderPack();r.empty=document.querySelector('#pack .empty').textContent;return r});
+    const pz=await p.evaluate(()=>{const o=planMonth(2026,10)['2026-11-23'],id=o.shirt.id;items.find(i=>i.id===id).paused=true;HOOK.cache={};HOOK.renderPack();
+      const r={gone:!HOOK.packNow.list.groups.flatMap(g=>g.lines).some(l=>l.key===id),days:HOOK.packNow.days.filter(x=>x.o&&x.o.shirt).length};HOOK.items=[];HOOK.cache={};HOOK.renderPack();r.empty=document.querySelector('#pack .empty').textContent;return r});
     ok(pz.gone&&pz.days===5&&/empty/.test(pz.empty),'a piece taken out of rotation drops off the list and the days stay dressed; an empty wardrobe says so');
 
     // ---- sizes, both themes, no sideways scroll

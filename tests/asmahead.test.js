@@ -14,8 +14,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(async recs=>{self.ASM_CM_SIZE=512;for(const [n,img] of recs)renders[asmCmKey('suit',n)]={sig:'asm/cm test',img,model:'colormaster',t:1000};
       let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
       const watch=I('watch','silver',{metal:'silver'}),jk=I('blazer','khaki',{pattern:'windowpane'}),black=I('shirt','black'),white=I('shirt','white'),t1=I('tie','navy',{pattern:'stripe',secondaryColor:'pink'}),t2=I('tie','burgundy');
-      items=[watch,jk,black,white,t1,t2,I('pants','grey'),I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[1,2,3,4,5];settings.blazerDays=[1,2,3,4,5];settings.vestMode='never';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};
+      HOOK.items=[watch,jk,black,white,t1,t2,I('pants','grey'),I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[1,2,3,4,5];settings.blazerDays=[1,2,3,4,5];settings.vestMode='never';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};
       window.__lt=[];new PerformanceObserver(l=>{for(const e of l.getEntries())__lt.push(Math.round(e.duration))}).observe({type:'longtask'});
       show('today')},recs);
     // the worker and the page make the same picture
@@ -27,7 +27,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{__lt=[]});
     await p.waitForFunction(()=>{if(HOOK.asmAheadOn)return false;const T=todayDate();for(let i=0;i<ASM_AHEAD;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;const o=planOn(d);if(o&&HOOK.asmWants(o)&&!asmFor(o))return false}return true},null,{timeout:60000,polling:250});
     const built=await p.evaluate(()=>{const T=todayDate(),looks=new Set();let days=0;for(let i=0;i<ASM_AHEAD;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;const o=planOn(d);if(o&&HOOK.asmWants(o)){days++;looks.add(asmOutKey(o))}}
-      return {days,looks:looks.size,kept:Object.keys(asmOut).length,lt:Math.max(0,...__lt)}});
+      return {days,looks:looks.size,kept:Object.keys(HOOK.asmOut).length,lt:Math.max(0,...__lt)}});
     ok(built.days>=40&&built.looks>=2&&built.kept>=built.looks,`the next 60 days are built in the background: ${built.days} workdays, ${built.looks} looks, all kept`);
     ok(built.lt<400,`building them ahead never holds the page for long (longest task ${built.lt} ms)`);
     // swiping to a day never looked at: its picture is there on the first drawing, no drawing first
@@ -43,8 +43,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     const after=await p.evaluate(()=>{const n=__drawn();__mo.disconnect();return n});
     ok(during===0&&after===1,`a picture ready while a finger is down is shown when it lifts (${during} redraws during, ${after} after)`);
     // without a worker nothing is built ahead (on the page it would freeze swiping); the day on screen still is
-    const nw=await p.evaluate(async()=>{HOOK.asmWorkerDown();window.ASM_NO_WORKER=true;HOOK.asmW=null;for(const k of Object.keys(asmOut))delete asmOut[k];
-      await HOOK.asmAhead();const T=todayDate(),d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+7),o=planOn(d),aheadNone=!Object.keys(asmOut).length;
+    const nw=await p.evaluate(async()=>{HOOK.asmWorkerDown();window.ASM_NO_WORKER=true;HOOK.asmW=null;for(const k of Object.keys(HOOK.asmOut))delete HOOK.asmOut[k];
+      await HOOK.asmAhead();const T=todayDate(),d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+7),o=planOn(d),aheadNone=!Object.keys(HOOK.asmOut).length;
       const cur=planFor()[key(sel)];await asmEnsure(cur);return {off:!HOOK.asmOffPage(),aheadNone,cur:!!asmFor(cur),later:!asmFor(o)||+d===+sel}});
     ok(nw.off&&nw.aheadNone&&nw.cur,'without a worker nothing is built ahead, and the day on screen is still put together (on the page)');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

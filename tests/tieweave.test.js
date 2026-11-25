@@ -14,7 +14,7 @@ const tieweave=async({ok,chromium,url})=>{
       shirt:claudeOnly('shirt','woven'),solid:claudeOnly('tie','solid'),suit:claudeOnly('suit','tweed')}));
     ok(r.tie.every(Boolean)&&r.shirt&&!r.solid&&!r.suit,'a woven or tonal-check tie is read by Claude; a plain tie and other items are unchanged');
     const btn=await p.evaluate(ph=>{localStorage.setItem('worker_url',location.origin+'/w/');localStorage.setItem('app_token','t');
-      items=[{id:'t1',type:'tie',primaryColor:'charcoal',secondaryColor:'grey',pattern:'woven',photo:ph,texture:ph,added:1}];flt='all';editing='t1';show('wardrobe');
+      HOOK.items=[{id:'t1',type:'tie',primaryColor:'charcoal',secondaryColor:'grey',pattern:'woven',photo:ph,texture:ph,added:1}];HOOK.flt='all';HOOK.editing='t1';show('wardrobe');
       const b=document.querySelector('#readpat-btn');return b&&b.textContent},PH);
     ok(btn==='Read pattern from photo','the item sheet offers to read the woven tie\'s pattern');
     // a motif reading (as Claude gave it for the owner's tie) gives the tie painter a tile

@@ -10,18 +10,18 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const day=()=>p.evaluate(()=>isoKey(sel));
     // ---- a vacation of own days off, Sunday 22 November to Thursday 3 December: two work weeks and the weekends around them
-    await p.evaluate(W=>{W=eval(W);const t0=new Date(2026,9,1).getTime();items=W.realistic.map(i=>({...i,added:t0}));settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.holidays=null;
+    await p.evaluate(W=>{W=eval(W);const t0=new Date(2026,9,1).getTime();HOOK.items=W.realistic.map(i=>({...i,added:t0}));settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.holidays=null;
       const off=[];for(let d=new Date(2026,10,22);d<=new Date(2026,11,3);d.setDate(d.getDate()+1))off.push({d:isoKey(d),n:'Vacation'});settings.daysOff=off;
-      TODAY_OVERRIDE='2026-11-21T09:00:00';dayRecs={};cache={};sel=new Date(2026,10,19);view={y:2026,m:10};show('wardrobe')},WARDROBES);
+      HOOK.TODAY_OVERRIDE='2026-11-21T09:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,19);HOOK.view={y:2026,m:10};show('wardrobe')},WARDROBES);
     await p.click('#n-today');await settle(p,400);
     ok(await day()==='2026-12-06'&&!!(await p.$('#mannequin-container')),`the Today tab opens on the first workday after a 12-day break (${await day()}), with its outfit`);
-    await p.evaluate(()=>{sel=new Date(2026,10,19);view={y:2026,m:10};renderToday()});
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,19);HOOK.view={y:2026,m:10};renderToday()});
     await p.click('#today .nav.day button[aria-label="Next day"]');await settle(p,400);
     ok(await day()==='2026-12-06','› from the Thursday before the break goes to the Sunday after it');
     await p.click('#today .nav.day button[aria-label="Previous day"]');await settle(p,400);
     ok(await day()==='2026-11-19','‹ from there goes back to that Thursday');
     // ---- Reset: a swap, then the blazer taken off (which fixes the day as a blazer day), then Reset
-    await p.evaluate(()=>{settings.daysOff=[];TODAY_OVERRIDE='2026-11-22T09:00:00';dayRecs={};cache={};sel=new Date(2026,10,26);view={y:2026,m:10};listOpen=false;renderToday()});   // Thursday 26 November, a blazer day
+    await p.evaluate(()=>{settings.daysOff=[];HOOK.TODAY_OVERRIDE='2026-11-22T09:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,26);HOOK.view={y:2026,m:10};HOOK.listOpen=false;renderToday()});   // Thursday 26 November, a blazer day
     await p.click('#ibox .month-link');await settle(p,400);
     await p.click('#ibox .row button[aria-label="Change tie"]');await p.click('#pick-next');await p.waitForFunction(()=>planFor()[key(sel)].overrides);
     await p.click('#ibox button[aria-label="Take off the blazer"]');await p.waitForFunction(()=>{const r=dayRecs[key(sel)];return r&&r.off&&r.off.top});

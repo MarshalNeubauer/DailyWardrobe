@@ -34,11 +34,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     put(keys.copy,store.get('render:'+keys.assets[0])&&JSON.parse(store.get('render:'+keys.assets[0])).img,1000,'copy','asm/cm-copy 1000');
     // a phone: the master downloaded, its setup worked out once and kept; read back afterwards instead of worked out again
     renderGets=[];blobGets=0;
-    const r=await A.p.evaluate(async()=>{HOOK.asmCmSrcSig();let prep=0;const p0=asmCmPrep;asmCmPrep=async(...a)=>{prep++;return p0(...a)};   // (fingerprinted first: a wrapped asmCmPrep is other source)
+    const r=await A.p.evaluate(async()=>{HOOK.asmCmSrcSig();let prep=0;const p0=asmCmPrep;HOOK.asmCmPrep=async(...a)=>{prep++;return p0(...a)};   // (fingerprinted first: a wrapped asmCmPrep is other source)
       const got=await asmCmGet('suit'),m=renders[asmCmKey('suit','master')],job=asmCmBaseJob('suit');
       await asmCmSetup(job);for(let i=0;i<100&&!(await asmCmDiskGet(asmCmDiskKey(job)));i++)await new Promise(ok=>setTimeout(ok,50));   // (saved while the picture is painted)
       const kept=!!(await asmCmDiskGet(asmCmDiskKey(job)));const prep1=prep;
-      asmCmMem=null;const hit=await asmCmSetup(job);asmCmPrep=p0;
+      HOOK.asmCmMem=null;const hit=await asmCmSetup(job);HOOK.asmCmPrep=p0;
       return {got,model:m&&m.model,kept,prep1,prep2:prep-prep1,zones:!!(hit&&hit.P&&hit.P.A)}});
     ok(r.got&&r.model==='colormaster'&&renderGets.includes(keys.assets[0]),`a phone downloads the master itself (${r.model})`);
     ok(!renderGets.includes(keys.copy)&&blobGets===0,`and never asks for the PC builder's 2048 copy or shared setup (${renderGets.filter(k=>k===keys.copy).length} copy, ${blobGets} setup requests)`);

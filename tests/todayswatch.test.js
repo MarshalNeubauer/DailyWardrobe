@@ -6,13 +6,13 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const PH='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
-    const r=await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic;TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};
+    const r=await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};
       const pin={id:'pin',type:'suit',primaryColor:'navy',secondaryColor:'lightgrey',pattern:'pinstripe',sett:{v:2,a:0,bands:[['#1b2a4a',.97],['#2d3550',.03]],tr:30,src:'claude+pixels'},
         patternSpec:{across:{bands:[{role:'ground',hex:'#1b2a4a',w:.97},{role:'line',hex:'#c8cbd2',w:.03}]}}};
       const tie={id:'tt',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'polka-dot'},shirt={id:'sh',type:'shirt',primaryColor:'lightblue',pattern:'solid'};
       const ov=HOOK.ovlItem(pin),line=ov.sett.bands.find(b=>b[0]!=='#1b2a4a'),tsv=HOOK.ovlSvg(tie),plain=swatchSVG(tie,true);
       const full=HOOK.swatchStack({top:pin,shirt,tie},false),noTie=HOOK.swatchStack({top:pin,shirt,tie:null},true),none=HOOK.swatchStack({},false);
-      const shot=d=>{sel=d;const o=planOn(d);renders[comboKey(o)]={img:'${PH}',sig:comboSig(o)};return HOOK.figureStage(o)};   // a kept photo for the day, so the picture is drawn
+      const shot=d=>{HOOK.sel=d;const o=planOn(d);renders[comboKey(o)]={img:'${PH}',sig:comboSig(o)};return HOOK.figureStage(o)};   // a kept photo for the day, so the picture is drawn
       const past=shot(new Date(2026,10,10)),fut=shot(new Date(2026,10,16));
       return {lineHex:line&&line[0],lineW:line&&line[1],sum:ov.sett.bands.reduce((a,b)=>a+b[1],0),orig:pin.sett.bands[1][0],scaled:/scale\\(\\.5\\)/.test(tsv)&&!/scale\\(\\.5\\)/.test(plain),
         n:(full.match(/class="ovsw"/g)||[]).length,nNo:(noTie.match(/class="ovsw"/g)||[]).length,up:/swstack up/.test(noTie)&&!/swstack up/.test(full),none,label:/Tie: /.test(full)&&!/Tie: /.test(noTie),

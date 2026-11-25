@@ -7,12 +7,12 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // a day whose score card offers a swap, its outfit pinned (a pick on every slot) so it stays the same when the swap's piece goes
-    const s=await p.evaluate(async W=>{W=eval(W);items=W.awkward.map(i=>({...i}));settings.holidays=null;settings.daysOff=[];weather={};climate=null;
-      dayRecs={};let k=null,fx=null;
+    const s=await p.evaluate(async W=>{W=eval(W);HOOK.items=W.awkward.map(i=>({...i}));settings.holidays=null;settings.daysOff=[];HOOK.weather={};HOOK.climate=null;
+      HOOK.dayRecs={};let k=null,fx=null;
       // (the day is today: the Today tab comes back to it after the item sheet)
-      for(let d=new Date(2026,10,16);d<new Date(2026,11,31)&&!fx;d.setDate(d.getDate()+1)){if(!isWorkday(d))continue;TODAY_OVERRIDE=isoKey(d)+'T09:00:00';cache={};sel=new Date(d);view={y:d.getFullYear(),m:d.getMonth()};const o=planFor()[key(sel)],a=o&&rankLooks(HOOK.rankPools(o),o);if(a&&a.swaps.length){k=key(sel);fx=a.swaps[0]}}
+      for(let d=new Date(2026,10,16);d<new Date(2026,11,31)&&!fx;d.setDate(d.getDate()+1)){if(!isWorkday(d))continue;HOOK.TODAY_OVERRIDE=isoKey(d)+'T09:00:00';HOOK.cache={};HOOK.sel=new Date(d);HOOK.view={y:d.getFullYear(),m:d.getMonth()};const o=planFor()[key(sel)],a=o&&rankLooks(HOOK.rankPools(o),o);if(a&&a.swaps.length){k=key(sel);fx=a.swaps[0]}}
       if(!fx)return null;const o=planFor()[k],f={};for(const sl of SLOTS)if(o[sl]&&!(sl==='bot'&&o.suitDay))f[sl]=o[sl].id;
-      await saveDay({date:k,force:f,kind:o.suitDay?'suit':'blazer'});cache={};scoreOpen=false;show('today');return {k,id:fx.id}},WARDROBES);
+      await saveDay({date:k,force:f,kind:o.suitDay?'suit':'blazer'});HOOK.cache={};HOOK.scoreOpen=false;show('today');return {k,id:fx.id}},WARDROBES);
     ok(!!s,'a day with a suggested swap is found');if(!s)return;
     // (the rank comes from the worker; a plan cache cleared meanwhile, by the day's record being saved, asks again)
     const offered=async()=>{await p.waitForFunction(()=>document.querySelector('#sbox.ranked')&&HOOK.rankFor(planFor()[key(sel)]),null,{timeout:10000}).catch(()=>{});

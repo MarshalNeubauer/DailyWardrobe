@@ -86,9 +86,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(bl.shirt&&Math.abs(bl.shirt.mean[0]-160)<45&&bl.shirt.mean[0]>bl.shirt.mean[2],`the T-shirt at the collar is painted tan (${bl.shirt&&bl.shirt.mean})`);
     // ---- Today: the Sleeves row and taking the blouse off; the picker ----
     const td=await p.evaluate(async()=>{let n=0;const I=(type,primaryColor,x={})=>({id:'t'+type+(n++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('blazer','tan'),I('pants','grey'),I('shirt','white'),I('tie','burgundy'),I('watch','grey',{metal:'silver'}),I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy'),
+      HOOK.items=[I('suit','navy'),I('blazer','tan'),I('pants','grey'),I('shirt','white'),I('tie','burgundy'),I('watch','grey',{metal:'silver'}),I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy'),
         I('blouse','khaki',{pattern:'camouflage'}),I('tee','tan'),I('pants','khaki',{pattern:'camouflage',camo:'ocp',trouserKind:'cargo'})];
-      settings.workdays=[0,1,2,3,4];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};listOpen=true;show('today');
+      settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};HOOK.listOpen=true;show('today');
       const B=items[9].id,T=items[10].id,P=items[11].id;
       // the pants picker first is grey dress pants: the blouse is listed last with the reason
       openPicker('top');const g=document.querySelector('#pick-sheet .pick-hand'),cards=g?[...g.querySelectorAll('.pick-it')]:[];const last=cards[cards.length-1];
