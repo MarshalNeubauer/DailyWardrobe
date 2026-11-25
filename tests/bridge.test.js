@@ -48,6 +48,9 @@ const modscope=require('./modscope');
    A row's note may still name tests as readers of names that have since left; what is left is read by the app's files, the Web
    Workers, lab/, or by a test that runs older builds as well (syncing, kitEdited, asmCmMf, asmCmCodeSig, asmCmSig, asmCmSrcSig). */
 const BRIDGE={
+  // the notice board (restructure step 0's pilot, 2026-11-25): every file that pins or announces on it imports it, nothing reads it as a global
+  'bus.js':[],
+
   // nearly every page script, classic or module, and analysis-worker.js and its other files read these as globals (no page module imports
   // another); 184 test files read items; items (analysis.js, analysis-worker.js), dayRecs (today, pack), settings (snapshots),
   // weather and climate (today, weather), clockSkew (sync), TODAY_OVERRIDE (the worker) and the tests assign seven lets: setters;

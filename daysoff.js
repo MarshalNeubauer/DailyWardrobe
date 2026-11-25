@@ -1,5 +1,6 @@
 /* Daily Wardrobe: Settings → Days off: public holidays, your own days off and the occasions (formal days)
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
+import {on} from './bus.js';
 /* ---- Settings: days off. A country's public holidays (each can be unticked if you work that day) and your own days
    off (a single day or a range, e.g. a holiday trip). They are planned like weekends: no outfit, nothing counted as worn. ---- */
 const COUNTRY_CODES='AD AE AF AG AI AL AM AO AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BW BY BZ CA CD CF CG CH CI CK CL CM CN CO CR CU CV CW CY CZ DE DJ DK DM DO DZ EC EE EG ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GT GU GW GY HK HN HR HT HU ID IE IL IM IN IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VG VI VN VU WS YE YT ZA ZM ZW'.split(' ');
@@ -152,6 +153,9 @@ function occAddTap(){addFormalDay()}
    start, calendar, history and missed; the rest are read by tests; holidayMsg is a let only this file writes: a getter. Above the
    file's one top-level call (acts, when act.js did not load): the names are then still the page's */
 Object.assign(globalThis,{COUNTRY_CODES,countryName,setHolidayCountry,refreshHolidays,isoToDate,dayOffAdd,renderDaysOffUI,shortDate,yearDate,renderFormalUI});
+/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
+on('settings-draw',()=>{renderFormalUI();renderDaysOffUI()});
+on('settings-summaries',S=>{S.country=countryName});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addDayOff,builtinHolidays,holYears,get holidayMsg(){return holidayMsg},nagerKeep,toggleHoliday};
 export {COUNTRY_CODES,countryName,holidayMsg,nagerKeep,builtinHolidays,holYears,setHolidayCountry,refreshHolidays,toggleHoliday,isoToDate,addDayOff,dayOffAdd,renderDaysOffUI,shortDate,yearDate,renderFormalUI};

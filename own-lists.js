@@ -1,5 +1,6 @@
 /* Daily Wardrobe: photo tagging, the person's own lists (split from tagging.js, Round B CR-2-17): adding a colour or a pattern the lists
    lack, own materials from Claude's offers, and their Settings lists. */
+import {on} from './bus.js';
 
 /* ---- adding a colour or a pattern (settings.custom, synced; see applyCustom in core.js) ---- */
 /* the kinds a new colour is offered for at first ("Offer it for"): the casual tops together and the casual jackets together (2026-11-16,
@@ -106,6 +107,8 @@ function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[]
    call: colpick.js, look.js, settings.js and add-card.js, classic scripts, and tagging.js (openColForm, openPatForm, read as globals: it
    comes before this file in the list) use these; guessPatBase is called by tests/asmroute.test.js only */
 Object.assign(globalThis,{groupOf,typePl,ownColOffer,newColHex,openColForm,addCustomColor,openPatForm,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI});
+/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
+on('settings-draw',()=>{renderCustomUI();renderOwnMatUI()});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,guessPatBase};
 export {groupOf,typePl,ownColOffer,newColHex,openColForm,addCustomColor,guessPatBase,openPatForm,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI};

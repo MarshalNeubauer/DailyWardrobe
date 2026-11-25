@@ -4,6 +4,7 @@
    (outfit: without jackets every workday is a shirt and trousers, without ties none is picked; a formal day, a wedding
    or a funeral is still dressed in full from what is owned). This file holds the Settings switches and the one-time
    change of the waistcoat default. */
+import {on} from './bus.js';
 
 /* ---- Settings → Schedule → Dress code: two switches ---- */
 const DRESS_ROWS=[['jacket','Jackets (suits and blazers)','Off if you don\'t wear a suit or blazer to work: workdays are planned as a shirt and pants.'],
@@ -76,6 +77,9 @@ function dressSwTap(el){setDress(el.dataset.k,el.getAttribute('aria-checked')!==
    tests/bridge.test.js lists it): settings.js, stats.js, start.js, add-card.js, add-save.js, shop.js, kit.js and the dress, sockpatterns
    and planner-rules tests. vestMigrating is read by the dress test only, and only this file writes it: a getter and no setter. */
 Object.assign(globalThis,{renderDressUI,newSuitVest,dressSummary,dressWhyUnused,migrateVests,dressNewItem,dressSynced});
+/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
+on('settings-draw',()=>renderDressUI());
+on('settings-summaries',S=>{S.dress=dressSummary});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get vestMigrating(){return vestMigrating}};
 export {renderDressUI,newSuitVest,dressSummary,dressWhyUnused,vestMigrating,migrateVests,dressNewItem,dressSynced};

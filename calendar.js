@@ -14,6 +14,7 @@
    - read again at start-up and on coming back at most every CAL_EVERY, and by Read now; new matches are a small banner on Today
      ("2 new calendar events"), never applied by themselves
    - the last answer is kept on this phone only (localStorage cal_last), for the review list and Today's trip note */
+import {on} from './bus.js';
 const CAL_EVERY=3*3600e3;   // read again at most this often by itself
 // ... and this often when the calendar's host sends neither an ETag nor a Last-Modified, or nothing could be kept: then every read
 // downloads the whole feed (at most twice a day by itself: 2.8 MB a day for a 1.4 MB calendar, 12 MB for 6 MB; Read now still reads it)
@@ -153,6 +154,8 @@ const calAuto=()=>{if(calLink())calSync(false).catch(e=>console.warn('calendar n
    Above the file's first call that can throw (whenPulled, when history.js did not load; then settingsPart and acts): the names are
    then still the page's, as a classic script's were. CAL_GUIDES, declared further down, is the tests' alone (on HOOK). */
 Object.assign(globalThis,{calSummary,calBanner});
+/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
+on('settings-summaries',S=>{S.calendar=calSummary});
 whenPulled(()=>afterScripts(calAuto));
 addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')calAuto()});
 
@@ -284,6 +287,6 @@ function calUndoTap(el){calUndoSeen(el.dataset.id)}
 function calReviewTap(){openSettings('calendar')}
 function calPackTap(){openPack()}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,CAL_GUIDES,CAL_X,get calBusy(){return calBusy},calGuide,calNew,calPlan,renderCalUI};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,CAL_GUIDES,CAL_X,get calBusy(){return calBusy},calGuide,calNew,calPlan,renderCalUI,calSummary};
 export {calBusy,CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,CAL_GUIDES,calGuide};
 acts({calConnectTap,calReadTap,calOffTap,calGuideTap,calKeepTap,calDismissTap,calUndoTap,calReviewTap,calPackTap});

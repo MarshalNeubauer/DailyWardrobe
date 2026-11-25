@@ -1,5 +1,6 @@
 /* Daily Wardrobe: moving between pages (show) and the start-up chain: the wardrobe from IndexedDB, then Today; the service worker
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
+import {on} from './bus.js';
 /* moving between pages: the page arriving eases in from the side its tab is on (Today, Wardrobe, Add left to right), a short slide and a
    fade on the cards' curve; a page opened from Settings (stats, packing, care) rises in instead. The tab bar's marker slides to the tab
    (styles.css nav::before, --ti). Only the page arriving moves: the one leaving goes at once, so nothing is laid out twice. */
@@ -26,6 +27,8 @@ function pageBack(kind){if(kind==='sub'&&subShown())subBack();else if(settingsOp
    as globals. Above the file's first top-level call that can throw (backOn, when back.js didn't load) */
 Object.assign(globalThis,{subShown,subOpen,subBack,openAdd,show,startUp,onSyncedData});
 Object.defineProperties(globalThis,{pagesOn:{get:()=>pagesOn}});
+/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
+on('settings-closed',v=>{if(v&&!$('#'+v).hidden)show(v)});   // the Wardrobe or stats page a sync changed while Settings was open
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,startPlain,tabTap};
 export {subShown,subOpen,subBack,openAdd,pagesOn,show,startPlain,startUp,onSyncedData,tabTap};
