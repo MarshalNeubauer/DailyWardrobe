@@ -36,16 +36,16 @@ const itempics=async({ok,chromium,url,ROOT})=>{
       items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),
         I('belt','black',{leather:'calf',metal:'silver'}),I('belt','oxblood',{leather:'cordovan',metal:'silver'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
       settings.workdays=[0,1,2,3,4];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')});
-    const d=await p.evaluate(()=>({desc:items.filter(i=>ITEM_PIC_TYPES.includes(i.type)).map(itemDesc),same:itemKey(items[6])===itemKey(items[8]),diff:itemKey(items[4])!==itemKey(items[5]),missing:missingItemPics().length,
+    const d=await p.evaluate(()=>({desc:items.filter(i=>HOOK.ITEM_PIC_TYPES.includes(i.type)).map(HOOK.itemDesc),same:itemKey(items[6])===itemKey(items[8]),diff:itemKey(items[4])!==itemKey(items[5]),missing:HOOK.missingItemPics().length,
       drawn:document.querySelectorAll('.below .tile .item-pic').length}));
     ok(/oxblood cordovan leather cap-toe oxford/.test(d.desc[1])&&/black calf leather dress belt.*silver buckle/.test(d.desc[2])&&/single charcoal fine-knit mid-calf dress sock in side profile/.test(d.desc[5]),'each item is described from its tags (colour, leather, buckle metal)');
     ok(d.same&&d.diff&&d.missing===5,'identical items share a picture (5 distinct of 6)');
     ok(d.drawn===0,'without pictures the tiles keep their drawings');
     await p.evaluate(()=>openSettings('photos'));
     ok(/^Generate 5 item pictures$/.test(await p.textContent('#itempic-btn')),'Settings offers to generate the missing item pictures');
-    await p.click('#itempic-btn');await p.click('#ask-ok');await p.waitForFunction(()=>!itemBatch&&!missingItemPics().length,null,{timeout:20000}).catch(()=>{});
-    const after=await p.evaluate(()=>{closeSettings();renderToday();return {left:missingItemPics().length,status:$('#itempic-status').textContent,
-      tiles:[...document.querySelectorAll('.below .tile')].map(t=>!!t.querySelector('img.item-pic')),piece:(pickPiece('shoes'),!!document.querySelector('#bbox.open .rpic'))}});
+    await p.click('#itempic-btn');await p.click('#ask-ok');await p.waitForFunction(()=>!HOOK.itemBatch&&!HOOK.missingItemPics().length,null,{timeout:20000}).catch(()=>{});
+    const after=await p.evaluate(()=>{closeSettings();renderToday();return {left:HOOK.missingItemPics().length,status:$('#itempic-status').textContent,
+      tiles:[...document.querySelectorAll('.below .tile')].map(t=>!!t.querySelector('img.item-pic')),piece:(HOOK.pickPiece('shoes'),!!document.querySelector('#bbox.open .rpic'))}});
     ok(gens.length===6&&after.left===0&&/Done: 5 pictures ready/.test(after.status),'five pictures generated, nothing left');
     ok(after.tiles.length>=3&&after.tiles.every(Boolean)&&after.piece,'belt, shoes and socks tiles now show the pictures, and a tapped tile unfolds its picture');
     // another device fetches them instead of generating
@@ -53,7 +53,7 @@ const itempics=async({ok,chromium,url,ROOT})=>{
     const p2=await ctx.newPage();await p2.goto(url);await p2.waitForFunction(()=>window.appReady);
     const fetched=await p2.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
-      for(const x of Object.keys(renders))delete renders[x];for(const x of [...renderTried])renderTried.delete(x);
+      for(const x of Object.keys(renders))delete renders[x];for(const x of [...HOOK.renderTried])HOOK.renderTried.delete(x);
       settings.workdays=[0,1,2,3,4];dayRecs={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today');
       const n=()=>document.querySelectorAll('.below .tile img.item-pic').length;await new Promise(r=>setTimeout(r,800));
       for(let k=0;k<80&&n()<3;k++)await new Promise(r=>setTimeout(r,50));return n()});   // (longer on a busy machine, where the three downloads can take more than 0.8 s)
@@ -71,16 +71,16 @@ const itempics=async({ok,chromium,url,ROOT})=>{
     await p.click('#wpill');await p.waitForFunction(()=>planFor()[key(sel)].worn===undefined);
     ok(true,'tapping it again goes back to worn');
     await p.evaluate(()=>{sel=new Date(2026,10,10);renderToday()});
-    await p.evaluate(()=>setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal===true);
-    await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides);
+    await p.evaluate(()=>HOOK.setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal===true);
+    await p.evaluate(()=>HOOK.swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides);
     const r2=await p.evaluate(()=>{const r=document.querySelector('.dayact'),tops=new Set([...r.children].map(k=>(b=>Math.round((b.top+b.bottom)/2))(k.getBoundingClientRect())));return {kids:[...r.children].map(k=>k.className).join(),one:tops.size===1,label:r.querySelector('.ftag').textContent}});
     const rc=await p.evaluate(()=>{const b=document.querySelector('#rbox'),m=document.querySelector('#mbox');return {after:!!b&&!!m&&b.previousElementSibling===m,h:b&&Math.round(b.getBoundingClientRect().height),w:b&&Math.round(b.getBoundingClientRect().width),mw:m&&Math.round(m.getBoundingClientRect().width),text:b&&b.textContent.trim()}});
     ok(r2.kids==='ftag'&&r2.label==='Formal day'&&rc.after&&rc.h>=76&&rc.w===rc.mw&&/Reset/.test(rc.text),`after a swap, a Reset card under the month, the size of the other cards (${JSON.stringify(rc)}); the Formal day tag stays in its row`);
     await p.click('[aria-label="Reset changes"]');await p.waitForFunction(()=>!planFor()[key(sel)].overrides&&!document.querySelector('#rbox'),null,{timeout:5000}).catch(()=>{});
     ok(await p.evaluate(()=>!document.querySelector('#rbox')),'Reset clears the changes and the card goes away');
     // today with a change: worn toggle, Formal and the reset icon fit one row even on narrow phones
-    await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides&&document.querySelector('#rbox'));
-    await p.evaluate(()=>setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal);await p.evaluate(()=>swapSlot('shoes'));await p.waitForFunction(()=>document.querySelector('#rbox')&&document.querySelector('.dayact .ftag'));
+    await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await p.evaluate(()=>HOOK.swapSlot('shoes'));await p.waitForFunction(()=>planFor()[key(sel)].overrides&&document.querySelector('#rbox'));
+    await p.evaluate(()=>HOOK.setFormal(true));await p.waitForFunction(()=>planFor()[key(sel)].formal);await p.evaluate(()=>HOOK.swapSlot('shoes'));await p.waitForFunction(()=>document.querySelector('#rbox')&&document.querySelector('.dayact .ftag'));
     for(const [w,fs] of [[320,16],[360,16],[390,16]]){await p.setViewportSize({width:w,height:900});
       const f=await p.evaluate(fs=>{document.body.style.fontSize=fs+'px';const r=document.querySelector('.dayact'),kids=[...r.children],btns=[...r.querySelectorAll('button')];
         const mids=new Set(kids.map(k=>{const b=k.getBoundingClientRect();return Math.round((b.top+b.bottom)/2)}));
@@ -116,10 +116,10 @@ const wardpic=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(pic=>{items=[{id:'s',type:'shoes',primaryColor:'black',pattern:'solid',leather:'calf',added:3},{id:'b',type:'belt',primaryColor:'brown',pattern:'solid',leather:'calf',metal:'silver',added:2},
         {id:'k',type:'socks',primaryColor:'navy',pattern:'solid',added:1},{id:'t',type:'tie',primaryColor:'navy',pattern:'solid',added:4}];
-      renders[itemKey(items[0])]={sig:'item',img:pic};renders[itemKey(items[1])]={sig:'item',img:pic};renderTried.add(itemKey(items[2]));
+      renders[itemKey(items[0])]={sig:'item',img:pic};renders[itemKey(items[1])]={sig:'item',img:pic};HOOK.renderTried.add(itemKey(items[2]));
       flt='all';editing=null;show('wardrobe');const src=id=>{const im=document.querySelector(`#gi-${id} .giopen img.ph`);return im&&im.getAttribute('src')};
       const a={shoes:src('s'),belt:src('b'),socks:src('k'),tie:src('t'),sockDrawn:!!document.querySelector('#gi-k .thumb')};
-      editing='s';renderWardrobe();a.open=!!document.querySelector('#item-view .pair img.ph')&&document.querySelector('#item-view .pair img.ph').getAttribute('src')===pic;closeItem();return a},PIC);
+      editing='s';renderWardrobe();a.open=!!document.querySelector('#item-view .pair img.ph')&&document.querySelector('#item-view .pair img.ph').getAttribute('src')===pic;HOOK.closeItem();return a},PIC);
     ok(r.shoes===PIC&&r.belt===PIC,'shoes and belts with a product picture show it in the Wardrobe');
     ok(!r.socks&&r.sockDrawn,'without a picture they keep their drawing');
     ok(!r.tie,'other types are unchanged');
@@ -143,11 +143,11 @@ const wardpicwait=async({ok,chromium,url,settle})=>{
   const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const fresh=()=>p.evaluate(()=>{items=[{id:'b',type:'belt',primaryColor:'brown',pattern:'solid',leather:'calf',metal:'silver',added:2}];const k=itemKey(items[0]);delete renders[k];renderTried.delete(k);flt='all';return k});
+    const fresh=()=>p.evaluate(()=>{items=[{id:'b',type:'belt',primaryColor:'brown',pattern:'solid',leather:'calf',metal:'silver',added:2}];const k=itemKey(items[0]);delete renders[k];HOOK.renderTried.delete(k);flt='all';return k});
     const got=k=>p.waitForFunction(k=>!!renders[k],k,{timeout:10000}).then(()=>true,()=>false);
     const tile=()=>p.evaluate(()=>!!document.querySelector('#gi-b img.item-pic, #gi-b .giopen img.ph'));
     // Settings opened while the picture is on its way
-    let k=await fresh();await p.evaluate(()=>{closeItem();show('wardrobe');openSettings()});
+    let k=await fresh();await p.evaluate(()=>{HOOK.closeItem();show('wardrobe');openSettings()});
     const before=await p.evaluate(()=>settingsOpen()),had=await got(k);await settle(p,300);
     const still=await p.evaluate(()=>settingsOpen());
     ok(had&&before&&still,`a product picture arriving while Settings is open leaves Settings open (open before ${before}, after ${still}, picture ${had})`);
@@ -158,7 +158,7 @@ const wardpicwait=async({ok,chromium,url,settle})=>{
     const had2=await got(k);await settle(p,300);
     const kept=await p.evaluate(()=>!!document.querySelector('#ivbody [data-mark="1"]')&&editing==='b');
     ok(had2&&kept,`a product picture arriving while the item's sheet is open doesn't draw the sheet again (picture ${had2}, sheet as it was ${kept})`);
-    await p.evaluate(()=>closeItem());await settle(p,600);
+    await p.evaluate(()=>HOOK.closeItem());await settle(p,600);
     ok(await tile(),'…and the Wardrobe shows the picture once the sheet closes');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

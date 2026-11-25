@@ -64,7 +64,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(/planned/.test(t.cellCls)&&t.stack&&/No jacket/.test(t.cellLabel),`the month shows it as an outfit (${t.cellLabel})`);
     ok(t.keyDiff,'without a jacket the pants are part of the look (its photo key)');
     // re-planning keeps the occasions; × makes a day regular again
-    const keep=await p.evaluate(async()=>{await swapSlot('shirt');await replanFuture();cache={};return [17,18,19].map(d=>occOf(dayRecs['2026-11-'+d])).join()});
+    const keep=await p.evaluate(async()=>{await HOOK.swapSlot('shirt');await HOOK.replanFuture();cache={};return [17,18,19].map(d=>occOf(dayRecs['2026-11-'+d])).join()});
     ok(keep==='wedding,casual,funeral','re-planning upcoming days keeps their occasions');
     await p.evaluate(()=>openSettings('daysoff'));await p.click('#formal-list .fchip button');await p.waitForFunction(()=>!occOf(dayRecs['2026-11-17'])&&document.querySelectorAll('#formal-list .fchip').length===2);
     ok(await p.evaluate(()=>{closeSettings();return planFor()['2026-11-17'].occasion===null&&document.querySelectorAll('#formal-list .fchip').length===2}),'× makes it a regular day again');

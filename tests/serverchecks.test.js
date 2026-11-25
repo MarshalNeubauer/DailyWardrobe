@@ -91,12 +91,12 @@ module.exports=async({ok,ROOT})=>{
       ok(d.s===200&&!w.store.has('blob:c0000000000000003')&&!w.store.has('cm:shared')&&!w.store.has('render:c0000000000000003'),'"Delete everything" (the owner) deletes blob: and cm:shared with the rest');}
     // ---- CR-6-11: a tester's photo links are counted, and only photo types come back
     {const w=world(),t=await w.tester('Links');
-      globalThis.fetch=async u=>{u=String(u);if(u==='https://shop.test/a.jpg')return new Response(Buffer.from(JPG.split(',')[1],'base64'),{headers:{'content-type':'image/jpeg'}});
-        if(u==='https://shop.test/x.svg')return new Response('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',{headers:{'content-type':'image/svg+xml'}});throw new Error('no network in tests')};
+      globalThis.fetch=async u=>{u=String(u);if(u==='https://store.test/a.jpg')return new Response(Buffer.from(JPG.split(',')[1],'base64'),{headers:{'content-type':'image/jpeg'}});
+        if(u==='https://store.test/x.svg')return new Response('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',{headers:{'content-type':'image/svg+xml'}});throw new Error('no network in tests')};
       const f=(u,tok=t.code)=>w.call('fetch?url='+encodeURIComponent(u),{},tok);
-      const svg=await f('https://shop.test/x.svg');
-      let n=1,st=200;for(;n<120&&st===200;n++)st=(await f('https://shop.test/a.jpg')).s;
-      const last=await f('https://shop.test/a.jpg'),own=await f('https://shop.test/a.jpg','own');
+      const svg=await f('https://store.test/x.svg');
+      let n=1,st=200;for(;n<120&&st===200;n++)st=(await f('https://store.test/a.jpg')).s;
+      const last=await f('https://store.test/a.jpg'),own=await f('https://store.test/a.jpg','own');
       globalThis.fetch=realFetch;
       ok(svg.s===415&&/not a photo/.test(svg.j.error),`an SVG is not taken as a photo (${svg.s} ${svg.j.error})`);
       ok(st===429&&n===101&&/limit of 100 photo links is used up/.test(last.j.error)&&own.s===200,`a tester's photo links are counted, 100 a day, refused in words the app shows (${n}: ${last.j.error}); the owner's are not`);}

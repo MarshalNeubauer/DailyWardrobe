@@ -30,17 +30,17 @@ const a11yfix=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>!!picker&&document.querySelector('#pick-sheet').contains(document.activeElement))&&await inertMain(),'the piece picker: the focus moves in and the page behind is inert');
     // a sync's redraw waits for the picker
     await p.evaluate(()=>syncRedraw('today'));
-    ok(await p.evaluate(()=>!!picker&&document.querySelector('#pick-sheet').classList.contains('on')&&syncLater==='today'),'a sync arriving leaves the picker open; Today is redrawn once it closes');
+    ok(await p.evaluate(()=>!!picker&&document.querySelector('#pick-sheet').classList.contains('on')&&HOOK.syncLater==='today'),'a sync arriving leaves the picker open; Today is redrawn once it closes');
     await p.keyboard.press('Escape');
-    ok(await p.evaluate(()=>!picker&&syncLater===null&&!document.querySelector('main').inert),'Escape closes the picker, and the waiting redraw runs');
+    ok(await p.evaluate(()=>!picker&&HOOK.syncLater===null&&!document.querySelector('main').inert),'Escape closes the picker, and the waiting redraw runs');
     // What to buy (enough pieces for its gate, for this one step; a check "already running", so none starts)
-    const sh=await p.evaluate(()=>{const keep=items,I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',...x});items=[...keep,I('sx1','suit','grey'),I('sx2','shirt','white'),I('sx3','shirt','pink'),I('sx4','shirt','cream'),I('sx5','tie','green'),I('sx6','tie','gold'),I('sx7','shoes','brown',{leather:'calf'})];shopBusy={i:-1,n:1,label:'',t0:Date.now()};openShop();const r={inside:document.querySelector('#shop-sheet').contains(document.activeElement),inert:document.querySelector('main').inert};
-      closeShop();r.after=document.querySelector('main').inert;items=keep;shopBusy=null;return r});
+    const sh=await p.evaluate(()=>{const keep=items,I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',...x});items=[...keep,I('sx1','suit','grey'),I('sx2','shirt','white'),I('sx3','shirt','pink'),I('sx4','shirt','cream'),I('sx5','tie','green'),I('sx6','tie','gold'),I('sx7','shoes','brown',{leather:'calf'})];HOOK.shopBusy={i:-1,n:1,label:'',t0:Date.now()};HOOK.openShop();const r={inside:document.querySelector('#shop-sheet').contains(document.activeElement),inert:document.querySelector('main').inert};
+      closeShop();r.after=document.querySelector('main').inert;items=keep;HOOK.shopBusy=null;return r});
     ok(sh.inside&&sh.inert&&!sh.after,`What to buy: the focus moves in, the page behind is inert while it is up (${JSON.stringify(sh)})`);
     // the item sheet: a sync doesn't wipe what is being typed
     const iv=await p.evaluate(async()=>{show('wardrobe');openItem(items[2].id);await new Promise(r=>setTimeout(r,50));const f=document.querySelector('#item-view textarea,#item-view input[type=text]');if(!f)return {none:true};
-      f.focus();f.value='typed by hand';syncRedraw('wardrobe');const g=document.querySelector('#item-view textarea,#item-view input[type=text]');const r={same:g===f,val:g.value,focus:document.activeElement===g,wait:syncLater};
-      closeItem();await new Promise(r=>setTimeout(r,500));r.ran=syncLater===null;return r});
+      f.focus();f.value='typed by hand';syncRedraw('wardrobe');const g=document.querySelector('#item-view textarea,#item-view input[type=text]');const r={same:g===f,val:g.value,focus:document.activeElement===g,wait:HOOK.syncLater};
+      HOOK.closeItem();await new Promise(r=>setTimeout(r,500));r.ran=HOOK.syncLater===null;return r});
     ok(iv.same&&iv.val==='typed by hand'&&iv.focus&&iv.wait==='wardrobe'&&iv.ran,`a sync arriving while the item sheet is open waits for it to close (${JSON.stringify(iv)})`);
     // full or blocked storage
     const st=await p.evaluate(()=>{show('today');const set=Storage.prototype.setItem,get=Storage.prototype.getItem;const r={};
@@ -66,7 +66,7 @@ const a11yfix=async({ok,chromium,url})=>{
     ok(sc&&sc.light>=4.5&&sc.dark>=4.5,`the score's points are at least 4.5:1 in both themes (${sc&&sc.light}, ${sc&&sc.dark})`);
     // reduced motion: the score's checks, the pieces list and a day step don't animate
     await p.emulateMedia({reducedMotion:'reduce'});await p.waitForTimeout(500);   // (the page slide of the show() above ends first)
-    const rm=await p.evaluate(async()=>{show('today');toggleScore();toggleList();await new Promise(r=>setTimeout(r,60));const a=document.querySelector('#today').getAnimations({subtree:true}).filter(x=>x.effect&&x.effect.getComputedTiming().duration>50).map(x=>(x.animationName||x.transitionProperty||'js')+'@'+(x.effect.target.closest('[id]')||{}).id+'/'+(x.effect.target.id||x.effect.target.className||x.effect.target.tagName)+':'+Object.keys(x.effect.getKeyframes()[0]||{}).join('/'));
+    const rm=await p.evaluate(async()=>{show('today');toggleScore();HOOK.toggleList();await new Promise(r=>setTimeout(r,60));const a=document.querySelector('#today').getAnimations({subtree:true}).filter(x=>x.effect&&x.effect.getComputedTiming().duration>50).map(x=>(x.animationName||x.transitionProperty||'js')+'@'+(x.effect.target.closest('[id]')||{}).id+'/'+(x.effect.target.id||x.effect.target.className||x.effect.target.tagName)+':'+Object.keys(x.effect.getKeyframes()[0]||{}).join('/'));
       stepDay(1);const sl=document.querySelector('#slide');const moved=sl&&(sl.style.transform||'')!=='';return {a,moved}});
     ok(rm.a.length===0&&!rm.moved,`with reduced motion the score's checks, the pieces and a day step don't animate (${JSON.stringify(rm)})`);
     await p.emulateMedia({reducedMotion:null});
@@ -148,16 +148,16 @@ const a11yround3=async({ok,chromium,url})=>{
         document.querySelector('#item-view .colbtn[data-k=primaryColor]').click();await new Promise(r=>setTimeout(r,300));
         const sh=document.querySelector('#col-sheet'),bar=sh.querySelector('.cpbar').getBoundingClientRect().top;
         const first=[...sh.querySelectorAll('.cpgrid:not(.cnown) .cptile')][0].getBoundingClientRect();
-        const own=sh.querySelector('#cn-open').getBoundingClientRect().top,std=first.top;closeColPick();closeItem();await new Promise(r=>setTimeout(r,500));
+        const own=sh.querySelector('#cn-open').getBoundingClientRect().top,std=first.top;closeColPick();HOOK.closeItem();await new Promise(r=>setTimeout(r,500));
         document.documentElement.style.removeProperty('--tscale');return {bar:Math.round(bar),std:Math.round(std),bottom:Math.round(first.bottom),own:Math.round(own)}},ts);
       ok(m.bottom<=m.bar&&m.own<m.std,`text at ${ts}: the first color to pick is whole above the Keep button, under the slim "Your colors" line (${JSON.stringify(m)})`);
     }
 
     // W2-19-06: a faded toast is gone for the keyboard and VoiceOver
-    const tt=await p.evaluate(async()=>{show('today');toast('Saved: test.',300,{label:'Undo',fn:()=>{window.__undone=1}});await new Promise(r=>setTimeout(r,TOAST_ACT_MS+800));const t=document.querySelector('#toast');
+    const tt=await p.evaluate(async()=>{show('today');toast('Saved: test.',300,{label:'Undo',fn:()=>{window.__undone=1}});await new Promise(r=>setTimeout(r,HOOK.TOAST_ACT_MS+800));const t=document.querySelector('#toast');
       return {text:t.textContent,btn:!!t.querySelector('button'),vis:getComputedStyle(t).visibility}});
     ok(tt.text===''&&!tt.btn&&tt.vis==='hidden',`a toast that has faded holds no words or Undo, and is hidden (${JSON.stringify(tt)})`);
-    const tk=await p.evaluate(async()=>{toast('Saved: kept.',300,{label:'Undo',fn:()=>{}});document.querySelector('#toast button').focus();await new Promise(r=>setTimeout(r,TOAST_ACT_MS+800));
+    const tk=await p.evaluate(async()=>{toast('Saved: kept.',300,{label:'Undo',fn:()=>{}});document.querySelector('#toast button').focus();await new Promise(r=>setTimeout(r,HOOK.TOAST_ACT_MS+800));
       const r=!!document.querySelector('#toast.on button');document.activeElement.blur();await new Promise(r=>setTimeout(r,2000));return {kept:r,gone:!document.querySelector('#toast button')}});
     ok(tk.kept&&tk.gone,`while the keyboard is on its Undo the toast stays, and goes once the focus leaves (${JSON.stringify(tk)})`);
 
@@ -175,14 +175,14 @@ const a11yround3=async({ok,chromium,url})=>{
     ok(['light','dark'].every(t=>con[t].danger>=4.5&&con[t].field>=3&&con[t].green>=4.5),`the danger button 4.5:1, field edges 3:1 and green words 4.5:1 in both themes (${JSON.stringify(con)})`);
 
     // W2-14-01: Today's "Add one" beside a belt opens Add for a belt, and "Add without a photo" starts as a belt
-    await p.evaluate(()=>{show('today');if(!listOpen)toggleList()});await p.waitForTimeout(400);
+    await p.evaluate(()=>{show('today');if(!listOpen)HOOK.toggleList()});await p.waitForTimeout(400);
     await p.evaluate(()=>document.querySelector('button.addone[aria-label^="Belt"]').click());await p.waitForTimeout(300);
     const af=await p.evaluate(()=>({add:!document.querySelector('#add').hidden,note:document.querySelector('#add-for').textContent,shown:!document.querySelector('#add-for').hidden}));
     ok(af.add&&af.shown&&/a belt/.test(af.note),`"Add one" beside Belt opens Add, which says a belt is being added (${JSON.stringify(af)})`);
-    await p.evaluate(()=>addManual());await p.waitForTimeout(300);
+    await p.evaluate(()=>HOOK.addManual());await p.waitForTimeout(300);
     const ty=await p.evaluate(()=>{const q=queue.find(x=>x.id===npsId);return q&&q.type});
     ok(ty==='belt',`its card without a photo starts as a belt (${ty})`);
-    await p.evaluate(()=>{npsClose();queue.splice(0,queue.length);show('today')});
+    await p.evaluate(()=>{HOOK.npsClose();queue.splice(0,queue.length);show('today')});
     await p.evaluate(()=>openAdd());
     ok(await p.evaluate(()=>addFor===null&&document.querySelector('#add-for').hidden),"Add from the Wardrobe's + asks for no type");
     // W2-14-10: the pieces list says what ⇄ and − do
@@ -201,7 +201,7 @@ const a11yround3=async({ok,chromium,url})=>{
     await p.evaluate(()=>{settings.location=null;renderToday()});
 
     // W2-14-13: the theme button's first tap changes what is on screen and says so
-    const th=await p.evaluate(()=>{try{localStorage.removeItem('theme')}catch{}applyTheme('auto');cycleTheme();const r={t:document.documentElement.dataset.theme,msg:document.querySelector('#toast').textContent};cycleTheme();r.t2=document.documentElement.dataset.theme;cycleTheme();r.t3=document.documentElement.dataset.theme||'auto';return r});
+    const th=await p.evaluate(()=>{try{localStorage.removeItem('theme')}catch{}HOOK.applyTheme('auto');HOOK.cycleTheme();const r={t:document.documentElement.dataset.theme,msg:document.querySelector('#toast').textContent};HOOK.cycleTheme();r.t2=document.documentElement.dataset.theme;HOOK.cycleTheme();r.t3=document.documentElement.dataset.theme||'auto';return r});
     ok(th.t==='dark'&&/Dark theme/.test(th.msg)&&th.t2==='light'&&th.t3==='auto',`on a light phone the first tap goes dark, then light, then automatic (${JSON.stringify(th)})`);
 
     // W2-14-06 and W2-14-07: a double tap on the tour's Next moves one card; after the setup the first card says what comes

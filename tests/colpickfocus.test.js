@@ -56,14 +56,14 @@ async function run(eng,browser,{ok,url,settle}){
   await p.evaluate(()=>{const i=items[0];delete i.photo;delete i.texture;closeColPick()});await settle(p,250);
 
   // ---- 3. the Shade steps (the Look beta)
-  await p.evaluate(()=>{lookSet(true);openColPick('e','s1','primaryColor')});await settle(p,300);
+  await p.evaluate(()=>{HOOK.lookSet(true);openColPick('e','s1','primaryColor')});await settle(p,300);
   r=await press('#col-sheet .lkshade button[data-d="1"]');e=await p.evaluate(()=>colPick.shade);
   ok(e===1&&kept(r),T+`Enter on "Lighter +" moves the shade a step and the focus stays on it (${JSON.stringify(r)})`);
   r=await press('#col-sheet .lkshade button[data-d="1"]');e=await p.evaluate(()=>colPick.shade);
   ok(e===2&&kept(r),T+`again: two steps, the focus still on it (${JSON.stringify(r)})`);
   r=await press('#col-sheet .lkshade button[data-d="-1"]');e=await p.evaluate(()=>colPick.shade);
   ok(e===1&&kept(r),T+`Enter on "− Darker" moves it back a step and the focus stays on Darker (${JSON.stringify(r)})`);
-  await p.evaluate(()=>{closeColPick();lookSet(false)});await settle(p,250);
+  await p.evaluate(()=>{closeColPick();HOOK.lookSet(false)});await settle(p,250);
 
   // ---- 4. an "Offer it for" chip of the New color sheet, and its switch
   await p.evaluate(()=>{openColPick('e','s1','primaryColor');document.querySelector('#cn-open').focus();openColNew()});await settle(p,300);

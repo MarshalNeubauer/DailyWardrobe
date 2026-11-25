@@ -26,7 +26,7 @@ const colnew=async({ok,chromium,url,settle})=>{
   const sheet=()=>p.evaluate(()=>{const s=document.querySelector('#col-sheet');return {on:s.classList.contains('on'),title:(s.querySelector('#col-title')||{}).textContent,text:s.textContent,bar:(s.querySelector('.cpbar button')||{}).textContent,disabled:!!(s.querySelector('.cpbar button')||{}).disabled}});
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{rememberRole({role:'owner'});items=[{id:'t1',type:'tie',primaryColor:'navy',pattern:'solid',added:1},{id:'t2',type:'tie',primaryColor:'red',pattern:'solid',added:2},
+    await p.evaluate(()=>{HOOK.rememberRole({role:'owner'});items=[{id:'t1',type:'tie',primaryColor:'navy',pattern:'solid',added:1},{id:'t2',type:'tie',primaryColor:'red',pattern:'solid',added:2},
       {id:'s1',type:'suit',primaryColor:'grey',pattern:'solid',added:3},{id:'b1',type:'blazer',primaryColor:'navy',pattern:'solid',added:4}]});
     // ---- the picker's entry tile
     await p.evaluate(()=>openColPick('e','t1','primaryColor'));
@@ -92,7 +92,7 @@ const colnew=async({ok,chromium,url,settle})=>{
     e=await p.evaluate(()=>({on:document.querySelector('#col-sheet').classList.contains('on'),newc:!!colPick.newc}));await p.keyboard.press('Escape');
     ok(e.on&&!e.newc&&await p.evaluate(()=>!colPick&&!document.querySelector('#col-sheet').classList.contains('on')),'Escape on the new sheet goes back to the list first, then closes');
     // a tester: lookups left, the limit
-    await p.evaluate(()=>{rememberRole({role:'tester'});acct.me={role:'tester',caps:{describe:40},used:{describe:39}};openColPick('e','t1','primaryColor')});await p.click('#cn-open');
+    await p.evaluate(()=>{HOOK.rememberRole({role:'tester'});acct.me={role:'tester',caps:{describe:40},used:{describe:39}};openColPick('e','t1','primaryColor')});await p.click('#cn-open');
     ok(await p.evaluate(()=>document.querySelector('#cn-cost').textContent==='1 of 40 lookups left today'&&!/¢/.test(document.querySelector('#col-sheet').textContent)),'a tester sees the lookups left today, no cost');
     reply=()=>[429,{error:'limit',what:'describe',message:'Today’s limit of 40 color and pattern lookups is used up. It starts again at midnight UTC.'}];
     await p.fill('#cn-text','faded burgundy');await p.click('#cn-ask');await p.waitForSelector('#col-sheet .cnlim');
@@ -100,7 +100,7 @@ const colnew=async({ok,chromium,url,settle})=>{
     ok(await p.evaluate(()=>!/worker|Cloudflare|KV|token/i.test(document.querySelector('#col-sheet').textContent)),'no worker, Cloudflare, KV or token in what a tester reads');
     await p.evaluate(()=>{closeColPick();acct.me={role:'tester',caps:{describe:40},used:{describe:40}};openColPick('e','t1','primaryColor')});await p.click('#cn-open');
     ok(await p.evaluate(()=>document.querySelector('#cn-ask').disabled&&/0 of 40/.test(document.querySelector('#cn-cost').textContent)&&!!document.querySelector('#col-sheet .cnlim')),'with none left, Ask is off before asking');
-    await p.evaluate(()=>{closeColPick();rememberRole({role:'owner'});acct.me=null;localStorage.removeItem('worker_url');openColPick('e','t1','primaryColor')});await p.click('#cn-open');
+    await p.evaluate(()=>{closeColPick();HOOK.rememberRole({role:'owner'});acct.me=null;localStorage.removeItem('worker_url');openColPick('e','t1','primaryColor')});await p.click('#cn-open');
     ok(await p.evaluate(()=>document.querySelector('#cn-ask').disabled&&document.querySelector('#cn-cost').textContent===NEED_CONN),'not connected: Ask is off and says to connect');
     await p.evaluate(()=>{closeColPick();localStorage.setItem('worker_url','https://w.test/')});
     // ---- the pattern sheet: hopsack on a blazer
@@ -151,7 +151,7 @@ const colnew=async({ok,chromium,url,settle})=>{
     ok(/^data:image\/jpeg;base64,/.test(b.closeup||'')&&b.wb===true&&b.what==='colour','the colour request carries the close-up and wb:true');
     ok(await p.evaluate(()=>!document.querySelector('#cn-warm')),'no light note on the answer when the close-up had paper');
     await colSheet('mx');b=await askCol('mink');
-    e=await p.evaluate(async([sent,id])=>{const it=items.find(x=>x.id===id),m=async u=>{const c=await urlCanvas(u),d=c.getContext('2d').getImageData(0,0,c.width,Math.round(c.height*.7)).data;let r=0,bb=0;for(let i=0;i<d.length;i+=4){r+=d[i];bb+=d[i+2]}return bb/r};
+    e=await p.evaluate(async([sent,id])=>{const it=items.find(x=>x.id===id),m=async u=>{const c=await HOOK.urlCanvas(u),d=c.getContext('2d').getImageData(0,0,c.width,Math.round(c.height*.7)).data;let r=0,bb=0;for(let i=0;i<d.length;i+=4){r+=d[i];bb+=d[i+2]}return bb/r};
       return {same:sent===it.texture,stored:+(await m(it.texture)).toFixed(3),sent:+(await m(sent)).toFixed(3)}},[b.closeup,'mx']);
     ok(b.wb===true&&!e.same&&e.sent>e.stored*1.1,`with paper the copy sent is white-balanced from it (the cloth's blue/red ${e.stored} stored → ${e.sent} sent), not the close-up as stored`);
     await colSheet('mw');e=await pbox();
@@ -230,7 +230,7 @@ const colpicklive=async({ok,chromium,url,settle})=>{
   const frame=()=>p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{rememberRole({role:'owner'});items=[{id:'s1',type:'suit',primaryColor:'grey',pattern:'solid',added:1}];openColPick('e','s1','primaryColor')});
+    await p.evaluate(()=>{HOOK.rememberRole({role:'owner'});items=[{id:'s1',type:'suit',primaryColor:'grey',pattern:'solid',added:1}];openColPick('e','s1','primaryColor')});
     await p.click('#cn-open');
     ok(await p.evaluate(()=>/Your suit, drawn/.test(document.querySelector('#col-sheet .cpph figcaption').textContent)&&getComputedStyle(document.querySelector('#cn-sq')).touchAction==='none'&&getComputedStyle(document.querySelector('#cn-hue')).touchAction==='none'),
       'the sheet shows "Your suit, drawn"; the square and the hue bar don\'t scroll the sheet (touch-action none)');
@@ -278,7 +278,7 @@ const colpicklive=async({ok,chromium,url,settle})=>{
     const k=await pace(p);
     let cdp=null;try{cdp=await ctx.newCDPSession(p);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4})}catch{cdp=null}
     const cost=await p.evaluate(async()=>{const d=document.querySelector('#col-sheet .cpph.cpfig .cpdraw'),it=colTarget(),t=[];
-      for(let i=0;i<40;i++){const t0=performance.now();d.innerHTML=cnDrawn(it,cnFromHsv(i*9,60,55),'primaryColor');d.getBoundingClientRect();t.push(performance.now()-t0);await new Promise(r=>requestAnimationFrame(r))}
+      for(let i=0;i<40;i++){const t0=performance.now();d.innerHTML=HOOK.cnDrawn(it,HOOK.cnFromHsv(i*9,60,55),'primaryColor');d.getBoundingClientRect();t.push(performance.now()-t0);await new Promise(r=>requestAnimationFrame(r))}
       t.sort((a,b)=>a-b);return {med:t[20],p90:t[36]}});
     if(cdp)await cdp.send('Emulation.setCPUThrottlingRate',{rate:1});
     console.log(`    redraw per frame${cdp?' (4× CPU throttling)':''}: median ${cost.med.toFixed(1)} ms, 90th ${cost.p90.toFixed(1)} ms`);

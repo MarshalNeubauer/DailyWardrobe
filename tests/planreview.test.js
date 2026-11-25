@@ -130,7 +130,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       // a suit worn with its jacket off counts toward its cleaning limit and gets the frame (careDayState)
       items=[suit,I('sh','shirt','white'),I('ti','tie','navy'),I('bs','shoes','black',{leather:'calf'})];settings.care={suit:2};
       TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};const d=new Date(2026,10,11);
-      const st=careDayState({suitDay:false,top:null,bot:suit,suitBot:true,shirt:items[1]},d);delete settings.care;
+      const st=HOOK.careDayState({suitDay:false,top:null,bot:suit,suitBot:true,shirt:items[1]},d);delete settings.care;
       // a past day corrected by hand with a piece added after it still counts as worn
       const late=I('s2','suit','grey',{added:+new Date(2026,10,10,12)});items.push(late);
       dayRecs={'2026-11-3':{date:'2026-11-3',ids:{top:'s2',shirt:'sh',tie:'ti',shoes:'bs'},suitDay:true,worn:true,edited:true},
@@ -138,7 +138,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       const wd=wornDays().map(x=>x.date);
       // a day without a jacket (taken off, or none in the dress code) is a complete packed day
       const o={suitDay:false,top:null,bot:pants,shirt:items[1],shoes:items[3],off:{top:true}};
-      return {st:st&&st.k,corrected:wd.includes('2026-11-3'),warm:wd.includes('2026-11-4'),pack:packComplete(o),packJ:packComplete({...o,off:null})}});
+      return {st:st&&st.k,corrected:wd.includes('2026-11-3'),warm:wd.includes('2026-11-4'),pack:HOOK.packComplete(o),packJ:HOOK.packComplete({...o,off:null})}});
     ok(!!lows.st,`a suit worn with its jacket off is in the cleaning frame (${lows.st})`);
     ok(lows.corrected&&!lows.warm,'a past day corrected with a piece added later counts as worn; an app-recorded warm-up day still does not');
     ok(lows.pack&&!lows.packJ,'"Pack lighter" counts a day with the jacket taken off as complete (a jacket day without one is not)');
@@ -146,13 +146,13 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     // ---- CR-3-05: a kept trip survives a pick on Today that clashes with a later lock (the real Packing list and picker)
     await p.evaluate(`(()=>{const W=${WARDROBES};items=W.realistic.map(i=>({...i}));settings.workdays=[1,2,3,4,5];settings.blazerDays=[];settings.holidays=null;settings.daysOff=[];
       weather={};climate=null;TODAY_OVERRIDE='2026-11-23T09:00:00';dayRecs={};cache={};localStorage.removeItem('pack_trip');
-      packT={a:'2026-11-25',b:'2026-11-27',j:0,s:0};show('pack')})()`);await settle(p,500);
+      HOOK.packT={a:'2026-11-25',b:'2026-11-27',j:0,s:0};show('pack')})()`);await settle(p,500);
     await p.click('#pk-lockbtn');await p.waitForFunction(()=>['2026-11-25','2026-11-26','2026-11-27'].every(k=>dayRecs[k]&&dayRecs[k].trip&&dayRecs[k].lock));
     const tie=await p.evaluate(async()=>{await lockUpcoming();sel=new Date(2026,10,23);view={y:2026,m:10};listOpen=true;show('today');const t=dayRecs['2026-11-25'].lock.tie,o=planFor()[key(sel)];return o.tie&&o.tie.id===t?null:t});
     ok(!!tie,'the trip\'s first day wears a tie other than today\'s');
     await settle(p,300);await p.click('#ri-tie button.swap');await p.waitForSelector('#pick-sheet.on');
     await p.click(`#pick-sheet .pick-it[data-id="${tie}"]`);await p.waitForFunction(t=>dayRecs['2026-11-23']&&dayRecs['2026-11-23'].force&&dayRecs['2026-11-23'].force.tie===t,tie);await settle(p,500);
-    const tr=await p.evaluate(()=>{show('pack');const s=packLockState(packNow.days);return {n:s.n,of:s.of,locks:['2026-11-25','2026-11-26','2026-11-27'].map(k=>!!dayRecs[k].lock).join(),msg:(document.querySelector('#pk-lockmsg')||{}).textContent||''}});
+    const tr=await p.evaluate(()=>{show('pack');const s=HOOK.packLockState(HOOK.packNow.days);return {n:s.n,of:s.of,locks:['2026-11-25','2026-11-26','2026-11-27'].map(k=>!!dayRecs[k].lock).join(),msg:(document.querySelector('#pk-lockmsg')||{}).textContent||''}});
     ok(tr.locks==='true,true,true'&&tr.n===tr.of&&/Locked\./.test(tr.msg),`a pick today of the trip's tie leaves the kept trip locked (${tr.locks}; ${tr.msg.slice(0,40)})`);
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}

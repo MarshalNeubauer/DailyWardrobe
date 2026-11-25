@@ -8,12 +8,12 @@ module.exports=async({ok,chromium,url})=>{
       const pink={id:'hp',type:'shirt',primaryColor:'pink',pattern:'herringbone',sett:{v:4,tex:{kind:'herringbone',grid,lighter:true,contrast:'medium',rel:.35,aspect:.6},a:0,cr:20,tr:80,src:'claude+pixels'}};
       const plainHb={id:'hq',type:'shirt',primaryColor:'lightblue',pattern:'herringbone'},dobby={id:'hd',type:'shirt',primaryColor:'white',pattern:'dobby'};
       const first=ovlPiece(pink),host=document.createElement('div');host.innerHTML=first;document.body.appendChild(host);   // the placeholder where it shows
-      const e=OVL_HB.get(ovlHbKey(pink));await e.p;const swapped=host.innerHTML,then=ovlPiece(pink);host.remove();
+      const e=HOOK.OVL_HB.get(HOOK.ovlHbKey(pink));await e.p;const swapped=host.innerHTML,then=ovlPiece(pink);host.remove();
       const im=await new Promise(res=>{const m=new Image();m.onload=()=>res(m);m.src=e.url});
       const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,Y=[];let rr=0,gg=0,bb=0;
       for(let k=0;k<d.length;k+=4){Y.push(.2126*d[k]+.7152*d[k+1]+.0722*d[k+2]);rr+=d[k];gg+=d[k+1];bb+=d[k+2]}Y.sort((a,b)=>a-b);const n=Y.length;
       const drawn=swatchSVG(pink,true);
-      const pq=ovlPiece(plainHb);await (OVL_HB.get(ovlHbKey(plainHb))||{}).p;
+      const pq=ovlPiece(plainHb);await (HOOK.OVL_HB.get(HOOK.ovlHbKey(plainHb))||{}).p;
       return {placeholder:/data-hb=/.test(first)&&/<rect[^>]*fill=/.test(first),swapped:/^<img src="data:image\/png/.test(swapped),cached:then===`<img src="${e.url}" alt="">`,size:[im.naturalWidth,im.naturalHeight],
         p5:Y[Math.floor(n*.05)],p95:Y[Math.floor(n*.95)],pinkish:rr/n>gg/n+6&&bb/n>gg/n,drawnDark:/stroke-opacity="0\.[6-9]/.test(drawn),
         plainHb:/^<img/.test(ovlPiece(plainHb))||/data-hb=/.test(pq),dobby:!/data-hb=|^<img src="data:image\/png/.test(ovlPiece(dobby))}});
