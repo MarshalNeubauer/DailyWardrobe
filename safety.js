@@ -27,12 +27,12 @@ function setStoreToldAt(v){storeToldAt=v}
    start.js calls safetyStart and storageDown, add-save.js and kit.js storeFailure, saveFailed and askPersist, sync.js storeFailure,
    storeFailText and adoptBackupSettings, add.js, add-card.js and app.js the tagging failure's (tagFailText, tagFailed, retryTag),
    add-keep.js guardUnsaved, seven page scripts errNote; pruneTagImgs is called by tests only. dbDown is read by sync.js and only this
-   file assigns it: a getter; sync.js and tests set storeToldAt, tests set errTapAt, tagWhy and tagNetLast: a getter and a setter
+   file assigns it: a getter; sync.js sets storeToldAt with setStoreToldAt (the tests through HOOK), tests set errTapAt, tagWhy and tagNetLast: a getter and a setter
    each (the three declared further down can't be read before their own line has run, as in the classic script); a module imports them.
    Above the file's first call that can throw (db, when app.js did not load; then acts): the names are then still the page's, as a
    classic script's were; the five consts declared further down are handed over above the handler */
 Object.assign(globalThis,{storeFailure,storeFailText,saveFailed,errNote,storageDown,askPersist,safetyStart,tagFailText,tagFailed,retryTag,guardUnsaved,adoptBackupSettings,setStoreToldAt});
-Object.defineProperties(globalThis,{dbDown:{get:()=>dbDown},storeToldAt:{get:()=>storeToldAt,set:v=>{storeToldAt=v}},tagWhy:{get:()=>tagWhy,set:v=>{tagWhy=v}},tagNetLast:{get:()=>tagNetLast,set:v=>{tagNetLast=v}}});
+Object.defineProperties(globalThis,{dbDown:{get:()=>dbDown},tagWhy:{get:()=>tagWhy,set:v=>{tagWhy=v}},tagNetLast:{get:()=>tagNetLast,set:v=>{tagNetLast=v}}});
 db.then(()=>{dbDown=false},e=>{dbDown=true;dbErr=e});
 /* a storage failure nobody caught is shown; every other rejection is left alone */
 addEventListener('unhandledrejection',ev=>{const e=ev.reason;errNote(e);
