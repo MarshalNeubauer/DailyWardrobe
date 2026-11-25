@@ -33,8 +33,8 @@ async function run(eng,browser,{ok,url,settle}){
     const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
     const cv=(im,k)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9)};
     HOOK.rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
-    items=[{id:'s1',type:'suit',primaryColor:'grey',pattern:'solid',photo:cv(pi,1),texture:cv(ci,3),added:1,name:'Mink suit'},
-      {id:'t1',type:'tie',primaryColor:'red',pattern:'solid',added:2,name:'Bare tie'}];flt='all';editing=null;show('wardrobe');
+    HOOK.items=[{id:'s1',type:'suit',primaryColor:'grey',pattern:'solid',photo:cv(pi,1),texture:cv(ci,3),added:1,name:'Mink suit'},
+      {id:'t1',type:'tie',primaryColor:'red',pattern:'solid',added:2,name:'Bare tie'}];HOOK.flt='all';HOOK.editing=null;show('wardrobe');
     // the order of a tap: document's capture listeners, the control's own function, window's listeners
     window.__o=[];document.addEventListener('click',()=>window.__o.push('document capture'),true);window.addEventListener('click',()=>window.__o.push('window'));
     // (colpick.js is a module: its handlers call these inside it, so each is watched at the handler the markup names)

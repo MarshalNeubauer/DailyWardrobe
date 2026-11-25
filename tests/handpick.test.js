@@ -7,11 +7,11 @@ module.exports=async({ok,chromium,url,settle})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('blazer','tan'),I('pants','grey'),I('pants','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('blazer','tan'),I('pants','grey'),I('pants','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),
         I('tieclip','silver'),I('watch','grey',{metal:'silver'}),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),
         I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy'),
         I('tee','white'),I('sweater','navy',{pattern:'cable',material:'lambswool'}),I('polo','navy'),I('cardigan','charcoal'),I('chore','olive'),I('pants','khaki',{trouserKind:'cargo'})];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[3];settings.vestMode='never';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};listOpen=true;show('today')});
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[3];settings.vestMode='never';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};HOOK.listOpen=true;show('today')});
     const HP=['tee16','sweater17','polo18','cardigan19','chore20','pants21'];
     // never planned: every workday of three months
     const planned=await p.evaluate(HP=>{const s=planSim(new Date(2026,9,1)),pl=s.upTo(new Date(2027,0,31)),seen=new Set();let n=0;
@@ -21,7 +21,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     // Suggest another never brings one: swap the shirt and the pants a few times
     const sugg=await p.evaluate(async HP=>{const got=new Set();for(let r=0;r<4;r++)for(const s of ['shirt','bot','top']){await HOOK.swapSlot(s);const o=planFor()[key(sel)];if(o&&o[s])got.add(o[s].id)}return HP.filter(id=>got.has(id))},HP);
     ok(!sugg.length,`Suggest another never brings a hand-pick piece (${sugg.join(',')||'none'})`);
-    await p.evaluate(()=>{HOOK.resetDay&&dayRecs[key(sel)]&&delete dayRecs[key(sel)];cache={};renderToday()});await settle(p,300);
+    await p.evaluate(()=>{HOOK.resetDay&&dayRecs[key(sel)]&&delete dayRecs[key(sel)];HOOK.cache={};renderToday()});await settle(p,300);
     // the picker: a "Casual · pick by hand" group with the tops, not in the scored grid
     await p.evaluate(()=>openPicker('shirt'));await settle(p,300);
     const pk=await p.evaluate(()=>{const s=document.querySelector('#pick-sheet'),g=s.querySelector('.pick-hand'),ids=el=>[...el.querySelectorAll('.pick-it')].map(c=>(c.dataset.slot==='shirt'?c.dataset.id:undefined));
@@ -43,14 +43,14 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>closePicker());
     // recorded as worn: the day's record, care counts
     await p.evaluate(()=>setWorn(true));await settle(p,300);
-    const w=await p.evaluate(()=>{cache={};const r=dayRecs[key(sel)];return {ids:r&&r.ids,care:HOOK.careCounts()['tee16']||0}});
+    const w=await p.evaluate(()=>{HOOK.cache={};const r=dayRecs[key(sel)];return {ids:r&&r.ids,care:HOOK.careCounts()['tee16']||0}});
     ok(w.ids&&w.ids.shirt==='tee16'&&!w.ids.tie&&w.care===1,`worn: the record holds the T-shirt (care count ${w.care})`);
     // not in the rotation stats or What to buy
     const st=await p.evaluate(()=>{const S=HOOK.buildStats();return {rows:S.rows?S.rows.map(r=>r.i.id):null,shop:HOOK.shopList(items).map(i=>i.id)}});
     ok(st.shop.length&&!st.shop.some(id=>/tee|sweater|polo|cardigan|chore|pants21/.test(id)),'What to buy plans without the hand-pick pieces');
     ok(!st.rows||!st.rows.some(id=>/tee|sweater|polo|cardigan|chore|pants21/.test(id)),'the rotation stats leave them out');
     // Wednesday (a blazer day): pick the cardigan as the jacket; Monday (a suit day) the chore jacket: a blazer day with odd pants
-    await p.evaluate(()=>{sel=new Date(2026,10,10);cache={};renderToday()});await settle(p,300);
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,10);HOOK.cache={};renderToday()});await settle(p,300);
     await p.evaluate(()=>openPicker('top'));await settle(p,300);
     const tp=await p.evaluate(()=>[...document.querySelectorAll('#pick-sheet .pick-hand .pick-it')].map(c=>(c.dataset.slot==='top'?c.dataset.id:undefined)));
     ok(tp.includes('cardigan19')&&tp.includes('chore20')&&tp.length===2,`the jacket picker's hand-pick group: cardigan and chore jacket (${tp})`);

@@ -39,7 +39,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(r.pic&&/three-quarter view/.test(r.desc),'watches get product pictures');
     ok(r.key,'changing the watch style or details gives a new outfit photo key');
     // editor
-    await p.evaluate(()=>{items=[{id:'w1',type:'watch',primaryColor:'silver',pattern:'solid',metal:'silver',dial:'white',band:'integrated',bezel:'engraved',watchStyle:'chronograph'}];flt='all';editing='w1';show('wardrobe')});
+    await p.evaluate(()=>{HOOK.items=[{id:'w1',type:'watch',primaryColor:'silver',pattern:'solid',metal:'silver',dial:'white',band:'integrated',bezel:'engraved',watchStyle:'chronograph'}];HOOK.flt='all';HOOK.editing='w1';show('wardrobe')});
     await p.fill('.wdetails input','blue mark at 45');await p.press('.wdetails input','Tab');
     ok(await p.evaluate(()=>items[0].details==='blue mark at 45'),'the watch editor has a Details field');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

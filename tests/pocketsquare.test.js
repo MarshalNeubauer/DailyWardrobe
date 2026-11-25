@@ -37,27 +37,27 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(/stroke="#1b2a4a"/i.test(d.sw)&&/stroke="#1b2a4a"/i.test(d.full),'its swatch and full sample show the edge round its cloth');
     // ---- the planner ----
     const plan=await p.evaluate(()=>{let n=0;const I=(type,primaryColor,x={})=>({id:type+String(n++).padStart(2,'0'),type,primaryColor,pattern:'solid',added:1,...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('blazer','tan'),I('pants','grey'),I('pants','navy'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('blazer','tan'),I('pants','grey'),I('pants','navy'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),
         I('tie','burgundy',{pattern:'stripe',secondaryColor:'navy'}),I('tie','navy',{pattern:'polka-dot',secondaryColor:'white'}),I('tie','green',{pattern:'paisley',secondaryColor:'gold'}),I('tie','purple'),
         I('watch','grey',{metal:'silver'}),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy'),
         I('pocketsquare','white',{material:'linen'}),I('pocketsquare','burgundy',{pattern:'paisley',secondaryColor:'gold'}),I('pocketsquare','gold',{pattern:'polka-dot',secondaryColor:'navy'}),
         I('pocketsquare','navy',{pattern:'polka-dot',secondaryColor:'white'}),I('pocketsquare','olive',{pattern:'check',secondaryColor:'rust'})];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[3];settings.vestMode='never';settings.dress=undefined;dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[3];settings.vestMode='never';settings.dress=undefined;HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};
       const P=planSim(new Date(2026,10,1)).upTo(new Date(2026,11,31)),days=Object.values(P),withJ=days.filter(o=>o.top),ps=days.filter(o=>o.pocket);
       const same=ps.filter(o=>HOOK.psSameTie(o.pocket,o.tie)),noJ=ps.filter(o=>!o.top),bad=ps.filter(o=>!HOOK.psWhite(o.pocket)&&!HOOK.psEcho(o.pocket,o.top,o.shirt,o.tie).hit);
       const used={};for(const o of ps)used[o.pocket.id]=(used[o.pocket.id]||0)+1;
       const r=rateOutfit(ps[0]);
       // only colored squares that pick nothing up: no square
-      const keep=items;items=items.filter(i=>i.type!=='pocketsquare').concat([I('pocketsquare','rust',{pattern:'check',secondaryColor:'olive'})]);   // (nothing rust or olive in these outfits)cache={};
-      const P2=planSim(new Date(2026,10,1)).upTo(new Date(2026,10,30)),none=Object.values(P2).filter(o=>o.pocket).length;items=keep;cache={};
+      const keep=items;HOOK.items=items.filter(i=>i.type!=='pocketsquare').concat([I('pocketsquare','rust',{pattern:'check',secondaryColor:'olive'})]);   // (nothing rust or olive in these outfits)cache={};
+      const P2=planSim(new Date(2026,10,1)).upTo(new Date(2026,10,30)),none=Object.values(P2).filter(o=>o.pocket).length;HOOK.items=keep;HOOK.cache={};
       // the same square as the tie, alone: never
-      items=items.filter(i=>i.type!=='pocketsquare').concat([I('pocketsquare','navy',{pattern:'polka-dot',secondaryColor:'white',id:'twin'})]);
-      const P3=planSim(new Date(2026,10,1)).upTo(new Date(2026,10,30)),twin=Object.values(P3).filter(o=>o.pocket);items=keep;cache={};
+      HOOK.items=items.filter(i=>i.type!=='pocketsquare').concat([I('pocketsquare','navy',{pattern:'polka-dot',secondaryColor:'white',id:'twin'})]);
+      const P3=planSim(new Date(2026,10,1)).upTo(new Date(2026,10,30)),twin=Object.values(P3).filter(o=>o.pocket);HOOK.items=keep;HOOK.cache={};
       // without jackets (the dress code): none
-      settings.dress={jacket:false,tie:true};const P4=planSim(new Date(2026,10,1)).upTo(new Date(2026,10,30)),nj=Object.values(P4).filter(o=>o.pocket).length;settings.dress=undefined;cache={};
+      settings.dress={jacket:false,tie:true};const P4=planSim(new Date(2026,10,1)).upTo(new Date(2026,10,30)),nj=Object.values(P4).filter(o=>o.pocket).length;settings.dress=undefined;HOOK.cache={};
       // a funeral: a plain white one or none; a formal day: white
-      dayRecs={'2026-11-17':{date:'2026-11-17',occasion:'funeral'},'2026-11-18':{date:'2026-11-18',formal:true}};cache={};
-      const P5=planSim(new Date(2026,10,1)).upTo(new Date(2026,10,30)),fu=P5['2026-11-17'].pocket,fo=P5['2026-11-18'].pocket;dayRecs={};cache={};
+      HOOK.dayRecs={'2026-11-17':{date:'2026-11-17',occasion:'funeral'},'2026-11-18':{date:'2026-11-18',formal:true}};HOOK.cache={};
+      const P5=planSim(new Date(2026,10,1)).upTo(new Date(2026,10,30)),fu=P5['2026-11-17'].pocket,fo=P5['2026-11-18'].pocket;HOOK.dayRecs={};HOOK.cache={};
       return {jdays:withJ.length,ps:ps.length,same:same.length,noJ:noJ.length,bad:bad.length,used,score:r.checks.find(c=>c.label==='Pocket square'),none,twin:twin.map(o=>o.tie&&o.tie.id).join(),nj,
         fu:fu&&{c:fu.primaryColor,p:fu.pattern},fo:fo&&fo.primaryColor,rules:PLAN_RULES}});
     ok(plan.ps>=plan.jdays*.9&&plan.noJ===0,`with a white square owned nearly every jacket day has a square (${plan.ps} of ${plan.jdays}), and never a day without a jacket`);
@@ -70,7 +70,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(plan.fu&&plan.fu.c==='white'&&plan.fu.p==='solid'&&plan.fo==='white',`a funeral takes the plain white square (${JSON.stringify(plan.fu)}), a formal day white (${plan.fo})`);
     ok(plan.rules>=21,`PLAN_RULES bumped to 21 or later (${plan.rules})`);
     // ---- Today: the row, its ⇄ − +, the picker, the jacket off ----
-    await p.evaluate(()=>{settings.dress=undefined;dayRecs={};cache={};sel=new Date(2026,10,9);view={y:2026,m:10};listOpen=true;show('today');renderToday()});await settle(p,400);
+    await p.evaluate(()=>{settings.dress=undefined;HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};HOOK.listOpen=true;show('today');renderToday()});await settle(p,400);
     const tap=async s=>{const t0=await p.evaluate(()=>(dayRecs[key(sel)]||{}).updated||0);await p.click(s);await p.waitForFunction(t=>((dayRecs[key(sel)]||{}).updated||0)>t,t0,{timeout:5000}).catch(()=>{});await settle(p,400)};
     const st=()=>p.evaluate(()=>{const o=planFor()[key(sel)];return {top:o.top&&o.top.id,pocket:o.pocket&&o.pocket.id,off:o.off||null,rows:[...document.querySelectorAll('#ibox .row')].map(e=>e.textContent.replace(/\s+/g,' ').trim()).filter(t=>/^Pocket square/.test(t)),
       btns:[...document.querySelectorAll('#ri-pocket button[aria-label]')].map(b=>b.getAttribute('aria-label'))}});

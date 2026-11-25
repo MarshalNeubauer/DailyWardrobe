@@ -8,10 +8,10 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
   try{
     const run=async(tz,fn,arg)=>{const ctx=await browser.newContext({viewport:{width:390,height:844},...(tz?{timezoneId:tz}:{})}),p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
       await p.goto(url);await p.waitForFunction(()=>window.appReady);
-      await p.evaluate(`(async()=>{const W=${WARDROBES};items=W.realistic.map(i=>({...i}));settings.holidays=null;settings.daysOff=[];weather={};climate=null;
+      await p.evaluate(`(async()=>{const W=${WARDROBES};HOOK.items=W.realistic.map(i=>({...i}));settings.holidays=null;settings.daysOff=[];HOOK.weather={};HOOK.climate=null;
         try{await recordRun}catch{}
         // lock from a given day (iso) with the given workdays; returns the locked days (key format) in order
-        window.lockFrom=async(iso,wd,recs)=>{settings.workdays=wd;TODAY_OVERRIDE=iso+'T12:00:00';dayRecs=recs||{};cache={};await lockUpcoming();
+        window.lockFrom=async(iso,wd,recs)=>{settings.workdays=wd;HOOK.TODAY_OVERRIDE=iso+'T12:00:00';HOOK.dayRecs=recs||{};HOOK.cache={};await lockUpcoming();
           return Object.values(dayRecs).filter(r=>r.lock).map(r=>r.date).sort((a,b)=>keyDate(a)-keyDate(b)).join()}})()`);
       const out=await p.evaluate(fn,arg);await ctx.close();return {out,errs}};
     // the week of Sunday 15 November 2026 to Saturday 21 November
