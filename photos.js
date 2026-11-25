@@ -247,12 +247,12 @@ function setRemoteKeys(v){remoteKeys=v}
    itemPicHtml, itemKey, picBgs, PIC_BG, figureLabel, lastWorn and fetchRemoteRender; start.js loads and mends (loadRenders,
    fixItemBackdrops, asmLive); settings.js draws the item pictures' line (renderItemPicUI, schedulePrefetch); history.js and
    daysoff.js word with aAn; itemsheet.js asks for a piece's picture (fetchItemPic); the rest are called or read by tests only.
-   renders is replaced by tests (care, navfit, socktoe), remoteKeys by today.js and tests, remoteListed, listKeys and listAt by
-   tests: a getter and a setter each; itemBatch is a let only this file writes: a getter. A module imports them.
+   renders is replaced by tests (care, navfit, socktoe), remoteListed, listKeys and listAt by tests: a getter and a setter each
+   (remoteKeys: today.js calls setRemoteKeys, the tests use HOOK); itemBatch is a let only this file writes: a getter. A module imports them.
    Above acts(), the file's one top-level call that can throw (act.js not loaded): the names are then still the page's, as a
    classic script's were */
 Object.assign(globalThis,{esc,jsq,srcOk,figureLabel,comboSig,fnv64,comboKey,keepRender,workerBase,asmLive,picsDrawn,renderFor,fetchRemoteRender,workerList,schedulePrefetch,loadRenders,lastWorn,aAn,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,fetchItemPic,renderItemPicUI,setRemoteKeys});
-Object.defineProperties(globalThis,{renders:{get:()=>renders,set:v=>{renders=v}},remoteKeys:{get:()=>remoteKeys,set:v=>{remoteKeys=v}},listAt:{get:()=>listAt,set:v=>{listAt=v}}});
+Object.defineProperties(globalThis,{renders:{get:()=>renders,set:v=>{renders=v}},listAt:{get:()=>listAt,set:v=>{listAt=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,ITEM_PIC_TYPES,get itemBatch(){return itemBatch},itemDesc,itemPicLimitText,itemPicsUsedUp,get listKeys(){return listKeys},set listKeys(v){listKeys=v},missingItemPics,prefetchRenders,remoteList,get remoteListed(){return remoteListed},set remoteListed(v){remoteListed=v},renderItemPic,renderTried,shareLocalPics,shirtPatterned,startItemPics,get renders(){return renders},set renders(v){renders=v},get remoteKeys(){return remoteKeys},set remoteKeys(v){remoteKeys=v},get listAt(){return listAt},set listAt(v){listAt=v}};
 export {renders,esc,jsq,srcOk,figureLabel,comboSig,fnv64,comboKey,keepRender,workerBase,asmLive,picsDrawn,renderFor,renderTried,fetchRemoteRender,remoteKeys,remoteListed,listKeys,listAt,workerList,remoteList,prefetchRenders,schedulePrefetch,loadRenders,shirtPatterned,lastWorn,ITEM_PIC_TYPES,aAn,itemDesc,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,fetchItemPic,renderItemPic,shareLocalPics,missingItemPics,itemPicLimitText,itemPicsUsedUp,itemBatch,renderItemPicUI,startItemPics,setRemoteKeys};

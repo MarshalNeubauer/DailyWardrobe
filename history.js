@@ -95,7 +95,7 @@ function setSwapMsg(v){swapMsg=v}
 function setTodayPullWait(v){todayPullWait=v}
 /* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. keyDate is read by 17 page scripts and
    saveDay by 8; today.js draws and records with recordDays, openPicker, closePicker, setWorn, setVest, resetCard and dayActions and
-   sets swapMsg, todayPullWait and pastEdit (a getter and a setter each; tests set swapMsg and pastEdit too); picker is read by
+   sets todayPullWait and pastEdit (a getter and a setter each; tests set pastEdit too, and swapMsg through HOOK); picker is read by
    today.js, today-gestures.js and sync.js and only this file assigns it: a getter; start.js, safety.js, wardrobe.js and calendar.js
    wait with whenPulled; start.js calls dropLearn and checkPlanRules, settings.js renderReplanUI, daysoff.js and calendar.js
    setOccasion, fav.js wearFav, scorecard.js pickItem, pickscore.js notAhead and idsOf; swapSlot, togglePastEdit, correctPast,
@@ -103,7 +103,7 @@ function setTodayPullWait(v){todayPullWait=v}
    Above the file's first call that can throw (backOn, when back.js did not load; then acts): the names are then still the page's,
    as a classic script's were; setFormal, a const declared further down, is the tests' alone (on HOOK) */
 Object.assign(globalThis,{idsOf,keyDate,saveDay,whenPulled,recordDays,dropLearn,openPicker,closePicker,pickItem,wearFav,setOccasion,notAhead,setWorn,checkPlanRules,renderReplanUI,setVest,resetCard,dayActions,setPastEdit,setSwapMsg,setTodayPullWait});
-Object.defineProperties(globalThis,{picker:{get:()=>picker},swapMsg:{get:()=>swapMsg,set:v=>{swapMsg=v}},todayPullWait:{get:()=>todayPullWait,set:v=>{todayPullWait=v}},pastEdit:{get:()=>pastEdit,set:v=>{pastEdit=v}}});
+Object.defineProperties(globalThis,{picker:{get:()=>picker},todayPullWait:{get:()=>todayPullWait,set:v=>{todayPullWait=v}},pastEdit:{get:()=>pastEdit,set:v=>{pastEdit=v}}});
 backOn('pick',()=>closePicker());
 function pickNext(){const s=picker&&picker.slot;closePicker();if(s)swapSlot(s)}
 async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;closePicker();
