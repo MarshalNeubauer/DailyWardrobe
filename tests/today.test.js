@@ -11,8 +11,8 @@ const todaytight=async({ok,chromium,url,settle})=>{
     const ctx=await browser.newContext({viewport:{width:430,height:900},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
-      items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
-      settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
+      HOOK.items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
+      settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today')});
     const g=await p.evaluate(()=>{const R=s=>document.querySelector(s).getBoundingClientRect(),h=R('header'),t=R('header h1'),b=[...document.querySelectorAll('header button')].map(x=>x.getBoundingClientRect()).filter(x=>x.height>0);
       const sc=getComputedStyle(document.querySelector('.score'));
       return {h:h.height,slack:h.height-Math.max(t.height,...b.map(x=>x.height)),btn:Math.min(...b.map(x=>x.height)),day:R('.nav.day').height,
@@ -41,9 +41,9 @@ const todaytight=async({ok,chromium,url,settle})=>{
     const lw2=await p.evaluate(()=>{for(const r of Object.values(dayRecs))if(r.ids&&keyDate(r.date)<sel)r.worn=false;renderToday();return !document.querySelector('.lastworn')});   // (every earlier day, the week's locks recorded too: each counts unless marked)
     ok(lw2,'a day marked "Didn\'t" is not a last wear');
     // a future day: no pill (it can't have been worn yet), the weather centred
-    const fut=await p.evaluate(()=>{sel=new Date(2026,10,12);renderToday();return {pill:!!document.querySelector('#wpill'),cls:document.querySelector('.day h2 .wx').className}});
+    const fut=await p.evaluate(()=>{HOOK.sel=new Date(2026,10,12);renderToday();return {pill:!!document.querySelector('#wpill'),cls:document.querySelector('.day h2 .wx').className}});
     ok(!fut.pill&&fut.cls==='wx','future days have no pill');
-    for(const w of [320,360]){await p.setViewportSize({width:w,height:800});await p.evaluate(()=>{settings.location=null;sel=new Date(2026,10,10);renderToday()});
+    for(const w of [320,360]){await p.setViewportSize({width:w,height:800});await p.evaluate(()=>{settings.location=null;HOOK.sel=new Date(2026,10,10);renderToday()});
       const n=await p.evaluate(()=>{const a=document.querySelector('.day h2 .wx a'),pl=document.querySelector('#wpill');return {fit:a.scrollWidth<=a.clientWidth+1,t:a.textContent,over:document.documentElement.scrollWidth>innerWidth,pr:pl.getBoundingClientRect().right<=document.querySelector('.day h2').getBoundingClientRect().right+1}});
       ok(n.fit&&n.t==='Set location'&&!n.over&&n.pr,`${w}px, no location: "Set location" fits beside the pill, nothing scrolls sideways`)}
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
@@ -61,9 +61,9 @@ const todaycards=async({ok,chromium,url})=>{
       const p=await (await browser.newContext({viewport:{width:w,height:1400}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
       await p.goto(url);await p.waitForFunction(()=>window.appReady);
       const r=await p.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
-        items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown',{pattern:'stripe',secondaryColor:'cream'}),I('tie','burgundy'),
+        HOOK.items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown',{pattern:'stripe',secondaryColor:'cream'}),I('tie','burgundy'),
           I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','brown'),I('watch','silver',{metal:'silver'})];
-        settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};listOpen=false;monthOpen=false;
+        settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.listOpen=false;HOOK.monthOpen=false;
         // a stand-in photo for the day's look; a background refresh (weather, holidays) can re-plan the day, so set it again until it shows
         const img='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#5f5449"/></svg>');
         show('today');for(let n=0;n<40;n++){const o=planFor()[key(sel)];if(!renders[comboKey(o)]){HOOK.renderTried.add(comboKey(o));renders[comboKey(o)]={sig:'x',img,model:'x',t:1};renderToday()}

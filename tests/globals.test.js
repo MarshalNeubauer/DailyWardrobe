@@ -12,36 +12,7 @@ const acorn=require('acorn'),escope=require('eslint-scope');
 const modscope=require('./modscope');
 
 /* name -> {writing file: number of writes}: the writes on main when this test came (2026-11-17), lowered as owners take them over */
-const ALLOW={
-  items:{'analysis.js':4},
-  aiModel:{'add.js':1},
-  aiError:{'add.js':2},
-  kitNoMine:{'itemsheet.js':2},
-  flt:{'itemsheet.js':1},
-  listOpen:{'history.js':1},
-  climate:{'weather.js':4,'today.js':1},
-  weather:{'weather.js':3,'today.js':1},
-  swapMsg:{'today.js':1},
-  sel:{'month.js':1,'start.js':1,'today.js':4},
-  view:{'month.js':1,'start.js':1,'today.js':4},
-  monthOpen:{'today.js':4},
-  remoteKeys:{'today.js':1},
-  pastEdit:{'today.js':1},
-  todayPullWait:{'today.js':2},
-  scoreOpen:{'today.js':1},
-  dayRecs:{'pack.js':2,'today.js':2},
-  addFor:{'start.js':2},
-  setSeen:{'start.js':2},
-  asmOut:{'asm-color.js':2},
-  viewStale:{'sync.js':1},
-  clockSkew:{'sync.js':1},
-  storeToldAt:{'sync.js':1},
-  restoring:{'snapshots.js':1},
-  dbWiping:{'about.js':2},
-  connReady:{'about.js':2},
-  dbConn:{'about.js':1},
-  dbCur:{'about.js':1},
-};
+const ALLOW={};   // (empty since restructure S1a, 2026-11-25: every owner exports a setter, setSel(), setMonthOpen() …, and the others call it)
 
 /* {files, owner: name -> file, seen: name -> {writing file: n}, where: 'name file' -> [lines]} for the app in ROOT */
 function measure(ROOT){
@@ -90,7 +61,8 @@ module.exports=async({ok,ROOT})=>{
   ok(!over.length,'no allowed writer writes more often than it did'+(over.length?': '+over.join('; '):''));
   ok(!under.length,'the allow-list only shrinks: every allowance is still used'+(under.length?' (lower or remove in tests/globals.test.js: '+under.join('; ')+')':''));
   ok(!seen.cache&&!seen.todayStale,'the plan cache and "redraw Today later" are written only by their owners (today.js planDirty, settings.js todayDirty)');
-  ok(!seen.settings&&Object.keys(seen.items||{}).join()==='analysis.js'&&Object.keys(seen.dayRecs||{}).sort().join()==='pack.js,today.js','the wardrobe, history and settings are set through core.js setWardrobe (only the planner\'s brief swaps in analysis.js, pack.js packPlanOf and today.js planWith remain)');
+  ok(!seen.settings&&!seen.items&&!seen.dayRecs,'the wardrobe, history and settings are set through core.js setWardrobe (the planner\'s brief swaps in analysis.js, pack.js packPlanOf and today.js planWith too, since S1a)');
+  ok(!Object.keys(seen).length,'no app file assigns another file\'s top-level name: it calls the owner\'s setter (restructure S1a: once files import each other an imported binding is read-only)'+(Object.keys(seen).length?': '+Object.keys(seen).join(', '):''));
   ok(!seen.renderSettingsExtras,'no script replaces another\'s function (account.js and remind.js register their parts of Settings with settingsPart)');
 };
 module.exports.measure=measure;

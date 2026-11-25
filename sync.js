@@ -63,7 +63,7 @@ function syncSettingsRedraw(){if(!settingsOpen())return;
    piece picker is (the redraw closed it): the redraw waits for it to close (syncLater, run by syncLaterRun from itemShown / closePicker) */
 let syncLater=null;
 function syncRedraw(v){if(!v||v==='add')return;
-  if(settingsOpen()){if(v==='today')todayDirty();else viewStale=v;return}
+  if(settingsOpen()){if(v==='today')todayDirty();else setViewStale(v);return}
   if((v==='wardrobe'&&editing)||(v==='today'&&(picker||todayBusy()))){syncLater=v;return}   // (a finger on Today: today.js todayFree runs it when the gesture ends)
   return show(v)}
 function syncLaterRun(v){if(syncLater!==v)return;syncLater=null;if($('#'+v).hidden)return;
@@ -114,7 +114,7 @@ const synced=()=>{syncDue=0;localStorage.setItem('last_sync',String(nowMs()));lo
    learned from each sync's request (the middle of the request taken as the server's moment) and kept (localStorage clock_skew) ---- */
 function clockLearn(r,t0,t1){const srv=+(r&&r.headers&&r.headers.get('x-now'))||0;if(!(srv>1e12)||t1-t0>15000)return false;
   const s=Math.round(srv-(t0+t1)/2),v=Math.abs(s)<CLOCK_MIN?0:s;let had=null;try{had=localStorage.getItem('clock_skew')}catch{}
-  if(had==null||Math.abs(v-clockSkew)>1000){clockSkew=v;try{localStorage.setItem('clock_skew',String(v))}catch{}}
+  if(had==null||Math.abs(v-clockSkew)>1000){setClockSkew(v);try{localStorage.setItem('clock_skew',String(v))}catch{}}
   clockTell();return true}
 /* said once for each gap of an hour or more (localStorage clock_told: the gap last said), in words a person can act on */
 const CLOCK_TELL=3600e3;
@@ -211,7 +211,7 @@ async function syncSaved(p,pr,token,now){
   return true}
 /* this phone's storage failed during a sync: said in a toast every time (safety.js storeFailText), unless the full-page message already says it */
 function syncStoreTell(e){console.warn('storage failure during sync',e);if(dbDown)return;
-  try{storeToldAt=Date.now()}catch{}toast(storeFailText(e),9000)}
+  try{setStoreToldAt(Date.now())}catch{}toast(storeFailText(e),9000)}
 async function syncOnce(){
   const url=syncUrl(),token=localStorage.getItem('app_token')||'';
   if(!url){setSyncStatus('Not connected.');return false}
@@ -267,16 +267,18 @@ const TESTER_SYNC_MS=15*60000;
 function scheduleSync(){clearTimeout(syncTimer);try{if(!localStorage.getItem('sync_wait'))localStorage.setItem('sync_wait',String(nowMs()))}catch{}
   if(typeof isTester==='function'&&isTester()){if(!syncDue)syncDue=nowMs();syncTimer=setTimeout(syncNow,Math.max(1000,syncDue+TESTER_SYNC_MS-nowMs()));return}
   syncTimer=setTimeout(syncNow,2500)}
+/* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
+function setRestoring(v){restoring=v}
 /* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. Above the file's top-level set-up, whose connRestored.then and acts({…}) throw when app.js or act.js didn't load */
-Object.assign(globalThis,{syncUrl,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,scheduleSync});
+Object.assign(globalThis,{syncUrl,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,scheduleSync,setRestoring});
 Object.defineProperties(globalThis,{syncTimer:{get:()=>syncTimer},syncRun:{get:()=>syncRun},restoring:{get:()=>restoring,set:v=>{restoring=v}},syncing:{get:()=>syncing,set:v=>{syncing=v}}});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-saved',()=>scheduleSync());   // a backup soon after the settings were saved
 on('connection-saved',()=>{syncNow().catch(e=>console.warn('sync not started',e))});   // Settings' Done: a backup now
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,TESTER_SYNC_MS,get syncDue(){return syncDue},set syncDue(v){syncDue=v},syncJoinAt,syncJoinMark,get syncLater(){return syncLater},syncTap,get syncing(){return syncing},set syncing(v){syncing=v}};
-export {restoring,syncing,syncTimer,syncRun,syncDue,syncUrl,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync};
+export {restoring,syncing,syncTimer,syncRun,syncDue,syncUrl,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync,setRestoring};
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&syncDue)syncNow();   // a tester's waiting changes, as the app closes
   else if(document.visibilityState==='visible'&&nowMs()-(+localStorage.getItem('last_sync')||0)>60000)syncNow()});

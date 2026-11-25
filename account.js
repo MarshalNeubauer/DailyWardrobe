@@ -308,7 +308,7 @@ Object.defineProperties(globalThis,{acctWhy:{get:()=>acctWhy},acct:{get:()=>acct
 on('settings-summaries',()=>applyRole());
 on('connection-typed',(url,code)=>acctTyped(url,code).catch(e=>console.warn('connection not changed',e)));   // another address or code typed in Settings → Connection
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,get acctLinkRun(){return acctLinkRun},acctPending,dropInviteHash,homeScreenGuide,loadAccount,rememberRole,renderAccountUI};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,get acctLinkRun(){return acctLinkRun},acctPending,dropInviteHash,homeScreenGuide,loadAccount,rememberRole,renderAccountUI,get inviteChecking(){return inviteChecking},set inviteChecking(v){inviteChecking=v},get acct(){return acct},set acct(v){acct=v}};
 export {acct,acctEsc,acctBase,acctCall,dropInviteHash,hasInviteHash,acctWhy,inviteChecking,acctLinkRun,acctFailText,connectFromLink,acctTyped,acctPending,iosInSafari,myInviteLink,homeScreenGuide,rememberRole,acctRole,isTester,applyRole,limitNote,loadAccount,renderAccountUI,acctEndedUI};
 acctStart();
 /* what Settings' account controls do (act.js): a tester's "Copy my invitation link"; the owner's Create, a new link's field (focus selects

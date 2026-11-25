@@ -89,6 +89,10 @@ function handGroup(slot,o,hand,cur){if(!hand.length)return '';
 function closePicker(){const was=!!picker;picker=null;const s=$('#pick-sheet'),b=$('#pick-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');
   if(was&&typeof layerClose==='function')layerClose(s);if(was)backDrop('pick');
   if(typeof syncLaterRun==='function')syncLaterRun('today')}   // a sync's redraw that waited for the picker (sync.js)
+/* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
+function setPastEdit(v){pastEdit=v}
+function setSwapMsg(v){swapMsg=v}
+function setTodayPullWait(v){todayPullWait=v}
 /* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. keyDate is read by 17 page scripts and
    saveDay by 8; today.js draws and records with recordDays, openPicker, closePicker, setWorn, setVest, resetCard and dayActions and
    sets swapMsg, todayPullWait and pastEdit (a getter and a setter each; tests set swapMsg and pastEdit too); picker is read by
@@ -98,7 +102,7 @@ function closePicker(){const was=!!picker;picker=null;const s=$('#pick-sheet'),b
    resetDay, replanFuture and planRulesNote are called by tests only; a module imports them.
    Above the file's first call that can throw (backOn, when back.js did not load; then acts): the names are then still the page's,
    as a classic script's were; setFormal, a const declared further down, is the tests' alone (on HOOK) */
-Object.assign(globalThis,{idsOf,keyDate,saveDay,whenPulled,recordDays,dropLearn,openPicker,closePicker,pickItem,wearFav,setOccasion,notAhead,setWorn,checkPlanRules,renderReplanUI,setVest,resetCard,dayActions});
+Object.assign(globalThis,{idsOf,keyDate,saveDay,whenPulled,recordDays,dropLearn,openPicker,closePicker,pickItem,wearFav,setOccasion,notAhead,setWorn,checkPlanRules,renderReplanUI,setVest,resetCard,dayActions,setPastEdit,setSwapMsg,setTodayPullWait});
 Object.defineProperties(globalThis,{picker:{get:()=>picker},swapMsg:{get:()=>swapMsg,set:v=>{swapMsg=v}},todayPullWait:{get:()=>todayPullWait,set:v=>{todayPullWait=v}},pastEdit:{get:()=>pastEdit,set:v=>{pastEdit=v}}});
 backOn('pick',()=>closePicker());
 function pickNext(){const s=picker&&picker.slot;closePicker();if(s)swapSlot(s)}
@@ -123,7 +127,7 @@ async function wearFav(k){const dk=key(sel),o=planFor()[dk],l=favLooks().find(x=
   swapMsg='';await saveDay(rec);await unlockClash(dk);renderToday();
   toast(`Wearing a favorite look ${dayWord()==='today'?'today':'on '+shortDate(sel)}.`,FAV_UNDO_MS,{label:'Undo',fn:async()=>{await saveDay({...was});renderToday()}})}
 /* ---- correcting a past day: what was really worn replaces what was planned, so rest and "last worn" stay true ---- */
-function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)listOpen=true;swapMsg='';renderToday()}
+function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)setListOpen(true);swapMsg='';renderToday()}
 async function correctPast(slot,it,picked){const k=key(sel),r=dayRecs[k],o=planFor()[k];if(!r||!r.ids||!o||(pastEdit!==k&&!picked))return;   // (picked: from the picker, pickItem)
   const ids={...r.ids};let suitDay=!!r.suitDay;
   if(slot==='top'){if(!it)return;ids.top=it.id;if(it.type==='suit'){suitDay=true;ids.bot=it.id}else{if(suitDay||ids.bot===r.ids.top)ids.bot=null;suitDay=false}}
@@ -206,8 +210,8 @@ function dayActions(o){
   return offNote+(h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&pastEdit===key(sel)?'<p class="mut"><small>Tap ⇄ beside a piece to set what you really wore. The planner then counts that, not what was planned.</small></p>':past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
 }
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,correctPast,planRulesNote,replanFuture,resetDay,setFormal,swapSlot,togglePastEdit};
-export {idsOf,keyDate,swapMsg,saveDay,todayPullWait,whenPulled,recordDays,swapSlot,dropLearn,picker,pastEdit,openPicker,closePicker,pickItem,wearFav,togglePastEdit,correctPast,setFormal,setOccasion,resetDay,notAhead,setWorn,replanFuture,checkPlanRules,planRulesNote,renderReplanUI,setVest,resetCard,dayActions};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,correctPast,planRulesNote,replanFuture,resetDay,setFormal,swapSlot,togglePastEdit,get pastEdit(){return pastEdit},set pastEdit(v){pastEdit=v},get swapMsg(){return swapMsg},set swapMsg(v){swapMsg=v}};
+export {idsOf,keyDate,swapMsg,saveDay,todayPullWait,whenPulled,recordDays,swapSlot,dropLearn,picker,pastEdit,openPicker,closePicker,pickItem,wearFav,togglePastEdit,correctPast,setFormal,setOccasion,resetDay,notAhead,setWorn,replanFuture,checkPlanRules,planRulesNote,renderReplanUI,setVest,resetCard,dayActions,setPastEdit,setSwapMsg,setTodayPullWait};
 /* index.html's (act.js): the piece picker's backdrop, and Settings' "Start the plan over" */
 function pickBackdropTap(){closePicker()}
 function replanTap(){replanButton()}

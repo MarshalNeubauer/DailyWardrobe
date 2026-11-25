@@ -31,7 +31,7 @@ const CLOTHES=['suit','blazer','pants','shirt','tie'];
 
 /* plan the horizon with a given wardrobe and measure it */
 function evalPlan(list,T,weeks){
-  const keep=items;items=list;
+  const keep=items;setWardrobe({items:list});
   try{
     const ks=horizonKeys(T,weeks),inH=new Set(ks),end=keyDate2(ks[ks.length-1]||key(T));
     const plans=planSim(planStart(T.getFullYear(),T.getMonth())).upTo(end),order=Object.keys(plans).sort((a,b)=>keyDate2(a)-keyDate2(b));
@@ -52,7 +52,7 @@ function evalPlan(list,T,weeks){
       if(s){prev2=prev;prev=s}if(o.shoes){pShoe=o.shoes.id;pN=dn}}
     const idle=list.filter(i=>[...CLOTHES,'shoes'].includes(i.type)&&!dressOut(i.type)&&!isHandPick(i)&&inRotation(i)&&!use[i.id]).map(i=>i.id);
     return {days:n,avg:n?sum/n:0,avgSuit:nS?sumS/nS:0,avgOdd:n-nS?(sum-sumS)/(n-nS):0,problems,rest,jrep,trep,lrep,b2b,first,looks:looks.size,idle,use,when,lost,marked,kinds,want,score,plans};
-  }finally{items=keep}
+  }finally{setWardrobe({items:keep})}
 }
 
 /* ---- how a piece reads: its colour group and its pattern class ---- */
@@ -368,7 +368,7 @@ function shoeNotes(L,B,base){
 }
 /* one formal day, one wedding, one funeral and one day without a jacket, dressed from the wardrobe: what is missing? */
 function occasionCheck(L,season){
-  const keep=items;items=L;
+  const keep=items;setWardrobe({items:L});
   try{const by=t=>L.filter(i=>i.type===t&&inRotation(i)).sort((a,b)=>a.id<b.id?-1:1),n=di(todayDate())+30,out=[];
     for(const [occ,label] of OCCASIONS){const casual=occ==='casual';
       const o=outfit(!casual,n,by,{},null,{formal:occ==='formal',occ:occ==='formal'?null:occ,clim:{season,rain:false,cold:false},hasLinks:by('cufflinks').length>0,prev:[]});
@@ -379,7 +379,7 @@ function occasionCheck(L,season){
       const gaps=[...o.notes,...r2.map(c=>c.why.replace(/^./,x=>x.toUpperCase())+'.')];
       out.push({occ,label,score:r.score,ready:r.score>=90&&!o.notes.length&&!(own&&own.pts<own.max),pieces:[o.top,o.suitDay?null:o.bot,o.shirt,o.tie,o.shoes].filter(Boolean).map(i=>prettyCols(nm(i))),gaps:[...new Set(gaps)].map(prettyCols)})}
     return out}
-  finally{items=keep}
+  finally{setWardrobe({items:keep})}
 }
 /* the bridge (an ES module since 2026-11-24): what stats.js, shop.js, analysis-worker.js and the tests still use as globals (tests/bridge.test.js) */
 Object.assign(globalThis,{SHOP_WEEKS,horizonKeys,CLASS_NAMES,groupLabel,TYPE_WORD,listAnd,runAnalysis});

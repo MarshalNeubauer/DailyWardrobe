@@ -21,10 +21,10 @@ const month=async({ok,chromium,url,ROOT,settle})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','charcoal'),I('suit','grey'),I('blazer','navy'),I('pants','grey'),I('shirt','lightblue'),I('shirt','white'),
+      HOOK.items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','charcoal'),I('suit','grey'),I('blazer','navy'),I('pants','grey'),I('shirt','lightblue'),I('shirt','white'),
         I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,9);view={y:2026,m:10};show('today')});
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};show('today')});
     const t=await p.evaluate(()=>({link:!!document.querySelector('#mbox .month-link'),strip:document.querySelectorAll('#mbox .month-link .mli').length,old:!!document.querySelector('#today .pl'),
       txt:document.querySelector('#mbox .month-link').textContent}));
     ok(t.link&&t.strip===5&&!t.old,'Today has a box with the next 5 outfits instead of the month list');
@@ -60,12 +60,12 @@ const month=async({ok,chromium,url,ROOT,settle})=>{
     ok(await p.evaluate(()=>!$('#today').hidden&&key(sel)==='2026-11-16'&&!monthOpen),'tapping a day shows it on Today and folds the month');
     // caption: last worn
     const cap=await p.evaluate(async()=>{const o=planFor()['2026-11-16'];
-      dayRecs={};   // only the history planted here
+      HOOK.dayRecs={};   // only the history planted here
       dayRecs['2026-11-2']={date:'2026-11-2',ids:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id,clip:null,watch:null},suitDay:true,vestOn:!!o.vest,worn:true};
       dayRecs['2026-10-27']={date:'2026-10-27',ids:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id},suitDay:true,vestOn:!!o.vest,worn:true};
       // keep Nov 16 on that look (the planner may otherwise move it once Nov 2 is recorded)
       dayRecs['2026-11-16']={date:'2026-11-16',force:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id,...(o.clip?{clip:o.clip.id}:{}),...(o.watch?{watch:o.watch.id}:{})},vest:!!o.vest};
-      cache={};const o2=planFor()['2026-11-16'];const d=lastWorn(o2);
+      HOOK.cache={};const o2=planFor()['2026-11-16'];const d=lastWorn(o2);
       // a white shirt instead of light blue is a different look; another light blue shirt would be the same
       const diff=lastWorn({...o2,shirt:{...o2.shirt,primaryColor:'pink'}});
       // a later day with the same look that nobody marked worn was only planned: it doesn't count
@@ -75,11 +75,11 @@ const month=async({ok,chromium,url,ROOT,settle})=>{
     ok(cap.unmarked==='2026-11-2',`a day never marked worn isn't "last worn" (${cap.unmarked})`);
     // (the days between are marked not worn: the missed days after the first real use are recorded before Today is drawn, fix round 3,
     // and one of them could be this look)
-    await p.evaluate(()=>{for(const d=new Date(2026,9,28);d<todayDate();d.setDate(d.getDate()+1)){const k=key(d);if(!dayRecs[k])dayRecs[k]={date:k,ids:{},worn:false}}cache={};
+    await p.evaluate(()=>{for(const d=new Date(2026,9,28);d<todayDate();d.setDate(d.getDate()+1)){const k=key(d);if(!dayRecs[k])dayRecs[k]={date:k,ids:{},worn:false}}HOOK.cache={};
       const o=planFor()['2026-11-16'];HOOK.renderTried.add(comboKey(o));/* a stand-in photo: keep it off the worker */renders[comboKey(o)]={sig:'x',img:'data:image/jpeg;base64,'+document.title.length,model:'gpt-image-2',t:1};renderToday()});
     ok(/^This look last worn Mon, Nov 2$/.test(await p.textContent('.fig.photo .lastworn')),'the photo caption is just the last-worn date');
     // no paid outfit photo is offered at all (the owner: no month batch 2026-11-13; the day's photo retired 2026-11-14)
-    await p.evaluate(()=>{for(const k of Object.keys(renders))delete renders[k];dayRecs={};cache={};openSettings('photos')});
+    await p.evaluate(()=>{for(const k of Object.keys(renders))delete renders[k];HOOK.dayRecs={};HOOK.cache={};openSettings('photos')});
     const st=await p.evaluate(()=>({batch:!!document.querySelector('#batch-btn'),fn:typeof startBatch,regen:!!document.querySelector('#regen-btn')}));
     ok(!st.batch&&st.fn==='undefined'&&!st.regen&&calls===0,'Settings has no "Generate photos for this month" and no day\'s photo; nothing was made');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
@@ -95,8 +95,8 @@ const monthswipe=async({ok,chromium,url,settle})=>{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-12-10T12:00:00';cache={};sel=new Date(2026,11,10);view={y:2026,m:11};show('today');toggleScore();toggleMonth()});
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-12-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,11,10);HOOK.view={y:2026,m:11};show('today');toggleScore();toggleMonth()});
     await settle(p,700);
     const cdp=await ctx.newCDPSession(p);const T=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
     const title=()=>p.evaluate(()=>document.querySelector('#mbox .mhead h3').textContent);
@@ -146,9 +146,9 @@ const monthunfold=async({ok,chromium,url,settle})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tie','green'),
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};show('today')});
+      settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today')});
     // folded: the days are put in while idle, and can't be tapped or reached with the keyboard
     await p.waitForFunction(()=>{const el=$('#mpanel-in');return el&&el.querySelectorAll('.mc[data-k]').length>=28},null,{timeout:5000});
     const folded=await p.evaluate(()=>({inert:$('#mpanel-in').inert,open:$('#mbox').classList.contains('open'),h:$('#mpanel').offsetHeight}));
@@ -172,7 +172,7 @@ const monthunfold=async({ok,chromium,url,settle})=>{
     ok(layouts<=8,`unfolding lays the page out ${laid(layouts)} (it was about 30, once a frame)`);
     ok(opened.open&&!opened.inert&&opened.clip==='none'&&!opened.edge&&opened.fold&&opened.top,'unfolded: the whole month shows, scrolled so "Fold away" is above the tab bar, with no clip or edge strip left');
     // what lies under the box slides with it: the Reset card on a changed day
-    await p.evaluate(async()=>{toggleMonth();await new Promise(r=>setTimeout(r,600));const o=planFor()[key(sel)];await saveDay({...(dayRecs[key(sel)]||{date:key(sel)}),force:{tie:items.find(i=>i.type==='tie'&&i.id!==o.tie.id).id}});cache={};renderToday();scrollTo(0,0)});
+    await p.evaluate(async()=>{toggleMonth();await new Promise(r=>setTimeout(r,600));const o=planFor()[key(sel)];await saveDay({...(dayRecs[key(sel)]||{date:key(sel)}),force:{tie:items.find(i=>i.type==='tie'&&i.id!==o.tie.id).id}});HOOK.cache={};renderToday();scrollTo(0,0)});
     const slide=await p.evaluate(()=>{const r=$('#rbox');if(!r)return null;const y0=r.getBoundingClientRect().top;toggleMonth();const a=r.getAnimations()[0];const y1=r.getBoundingClientRect().top;
       return {anim:!!a&&/translateY\(-\d/.test(a.effect.getKeyframes()[0].transform),still:Math.abs(y1-y0)<2}});
     ok(slide&&slide.anim&&slide.still,'the Reset card under the box starts where it was and slides down with the unfolding');

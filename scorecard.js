@@ -140,15 +140,17 @@ function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;
   const b=box.querySelector('.month-link');b.setAttribute('aria-expanded',scoreOpen);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show why/,scoreOpen?'Fold away':'Show why'));
   if(scoreOpen)boxUnfold(box);else boxFold(box,'#spanel .sli, #spanel .sfixbtn')}
+/* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
+function setScoreOpen(v){scoreOpen=v}
 /* the bridge (tests/bridge.test.js): today.js draws and folds the card (scoreCard, toggleScore) and sets scoreOpen, as five tests do: a
    setter; history.js and fav.js say dayWord, month.js reads recentWork; the tests call dialsFor, dialHtml, rankPools and rankFor and
    read rankMemo and rankW, which only this file writes: getters; a module imports them.
    Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the page's, as a classic script's were */
-Object.assign(globalThis,{dayWord,recentWork,scoreCard,toggleScore});
+Object.assign(globalThis,{dayWord,recentWork,scoreCard,toggleScore,setScoreOpen});
 Object.defineProperties(globalThis,{scoreOpen:{get:()=>scoreOpen,set:v=>{scoreOpen=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,dialHtml,dialsFor,rankFor,get rankMemo(){return rankMemo},rankPools,get rankW(){return rankW}};
-export {scoreOpen,dayWord,recentWork,dialsFor,rankMemo,rankW,rankPools,rankFor,dialHtml,scoreCard,toggleScore};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,dialHtml,dialsFor,rankFor,get rankMemo(){return rankMemo},rankPools,get rankW(){return rankW},get scoreOpen(){return scoreOpen},set scoreOpen(v){scoreOpen=v}};
+export {scoreOpen,dayWord,recentWork,dialsFor,rankMemo,rankW,rankPools,rankFor,dialHtml,scoreCard,toggleScore,setScoreOpen};
 /* the markup's handlers (act.js): the card's head and its unfolded panel fold and unfold it; a swap wears its piece; a tap among the swaps
    (between two buttons) does nothing and goes no further, so the panel around them doesn't fold. The panel and the swaps are <div>s:
    today.js renderToday calls actTaps(#today) after writing the card, so a phone's tap on them is a click */

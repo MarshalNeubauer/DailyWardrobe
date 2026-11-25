@@ -21,6 +21,8 @@ function saveFailed(e){console.warn('storage failure',e);if(dbDown)return;const 
 
 /* whether the wardrobe's storage opened: known before any later script's own wait on it fails */
 let dbDown=null,dbErr=null;
+/* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
+function setStoreToldAt(v){storeToldAt=v}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals:
    start.js calls safetyStart and storageDown, add-save.js and kit.js storeFailure, saveFailed and askPersist, sync.js storeFailure,
    storeFailText and adoptBackupSettings, add.js, add-card.js and app.js the tagging failure's (tagFailText, tagFailed, retryTag),
@@ -29,7 +31,7 @@ let dbDown=null,dbErr=null;
    each (the three declared further down can't be read before their own line has run, as in the classic script); a module imports them.
    Above the file's first call that can throw (db, when app.js did not load; then acts): the names are then still the page's, as a
    classic script's were; the five consts declared further down are handed over above the handler */
-Object.assign(globalThis,{storeFailure,storeFailText,saveFailed,errNote,storageDown,askPersist,safetyStart,tagFailText,tagFailed,retryTag,guardUnsaved,adoptBackupSettings});
+Object.assign(globalThis,{storeFailure,storeFailText,saveFailed,errNote,storageDown,askPersist,safetyStart,tagFailText,tagFailed,retryTag,guardUnsaved,adoptBackupSettings,setStoreToldAt});
 Object.defineProperties(globalThis,{dbDown:{get:()=>dbDown},storeToldAt:{get:()=>storeToldAt,set:v=>{storeToldAt=v}},tagWhy:{get:()=>tagWhy,set:v=>{tagWhy=v}},tagNetLast:{get:()=>tagNetLast,set:v=>{tagNetLast=v}}});
 db.then(()=>{dbDown=false},e=>{dbDown=true;dbErr=e});
 /* a storage failure nobody caught is shown; every other rejection is left alone */
@@ -169,8 +171,8 @@ async function adoptBackupSettings(local,data){
    tagFailNote; tests/errreport.test.js: errList) */
 Object.assign(globalThis,{errReport,oneStop,tagNetText,tagFailNote});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,errList,get errTapAt(){return errTapAt},set errTapAt(v){errTapAt=v},pruneTagImgs};
-export {storeFailure,storeFailText,storeToldAt,saveFailed,dbDown,errTapAt,errList,errNote,errReport,storageDown,askPersist,pruneTagImgs,safetyStart,tagWhy,tagNetLast,oneStop,tagFailText,tagNetText,tagFailed,tagFailNote,retryTag,guardUnsaved,adoptBackupSettings};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,errList,get errTapAt(){return errTapAt},set errTapAt(v){errTapAt=v},pruneTagImgs,get storeToldAt(){return storeToldAt},set storeToldAt(v){storeToldAt=v},get tagWhy(){return tagWhy},set tagWhy(v){tagWhy=v},get tagNetLast(){return tagNetLast},set tagNetLast(v){tagNetLast=v}};
+export {storeFailure,storeFailText,storeToldAt,saveFailed,dbDown,errTapAt,errList,errNote,errReport,storageDown,askPersist,pruneTagImgs,safetyStart,tagWhy,tagNetLast,oneStop,tagFailText,tagNetText,tagFailed,tagFailNote,retryTag,guardUnsaved,adoptBackupSettings,setStoreToldAt};
 /* "Try again" on the page shown when the wardrobe can't be opened (act.js) */
 function nostoreAgainTap(){location.reload()}
 acts({nostoreAgainTap});
