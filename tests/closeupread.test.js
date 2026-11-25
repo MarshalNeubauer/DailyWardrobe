@@ -34,7 +34,7 @@ async function run(eng,browser,{ok,url,settle}){
     const cv=(im,k,f)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);if(f)f(c,x);return c};
     const paper=(c,x)=>{x.fillStyle='#f4f3ef';x.fillRect(0,c.height*.8,c.width,c.height*.2)};
     const J=c=>c.toDataURL('image/jpeg',.9),f={plain:J(cv(ci,3)),paper:J(cv(ci,3,paper)),photo:J(cv(pi,1))};
-    rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
+    HOOK.rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
     items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,texture:f.plain,added:1,name:'Mink suit'},
       {id:'m2',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,added:2,name:'Bare suit'}];flt='all';editing=null;show('wardrobe');return f});
   const file=(name,u)=>({name,mimeType:'image/jpeg',buffer:Buffer.from(u.split(',')[1],'base64')});
@@ -94,7 +94,7 @@ async function run(eng,browser,{ok,url,settle}){
   e=await item('m1');ok(e.c==='taupe'&&e.p==='twill'&&!e.cols&&!e.pats,T+`Use both sets your Taupe and Twill, adding nothing (${JSON.stringify(e)})`);
   await p.click('#rd-undo');await p.waitForFunction(()=>items.find(x=>x.id==='m1').primaryColor==='deeptaupe');await settle(p,200);
   // ---- warm light, no paper: the note with Retake; the paper line
-  S.reply=NEW;await p.evaluate(()=>{PAPER[paperKey(items.find(x=>x.id==='m1'))]={ref:false,warm:true}});
+  S.reply=NEW;await p.evaluate(()=>{HOOK.PAPER[paperKey(items.find(x=>x.id==='m1'))]={ref:false,warm:true}});
   S.sent=[];await p.click('#iv-read');await result();
   e=await p.evaluate(()=>{const w=document.querySelector('#rd-warm');return {w:w&&w.textContent,retake:!!(w&&w.querySelector('.wbretake')),paper:(document.querySelector('#rd-paper')||{}).textContent,pat:document.querySelector('#rd-pat').textContent}});
   ok(S.sent[0]&&S.sent[0].wb===false&&/Taken in warm light — the color may be yellower than the cloth/.test(e.w)&&e.retake&&/No white paper, warm light/.test(e.paper),T+`no paper in warm light: the color card's note with Retake close-up, and the paper line (${e.paper})`);
@@ -129,10 +129,10 @@ async function run(eng,browser,{ok,url,settle}){
   e=await p.evaluate(()=>document.querySelector('#iv-read').getAttribute('aria-disabled'));
   await p.click('#iv-read',{force:true});await settle(p,200);const t3=await toast();   // (aria-disabled: still tappable, it says why)
   ok(e==='true'&&!S.sent.length&&/takes 2 lookups and you have 1 left today/.test(t3)&&!(await p.$('#rd-sheet.on')),T+`with 1 left the button is grayed and says why, nothing asked (${t3})`);
-  await p.evaluate(()=>{acct.me={id:'owner',role:'owner',caps:null,used:{}};closeItem&&closeItem()});await settle(p,300);
+  await p.evaluate(()=>{acct.me={id:'owner',role:'owner',caps:null,used:{}};HOOK.closeItem&&HOOK.closeItem()});await settle(p,300);
   // ---- the Add card (the checklist redesign, 2026-11-16): in Texture match, "Add close-up and read color, texture & material" (primary,
   // its cost inside) over the outlined "Add close-up"; chooser -> reading, with no re-tag
-  await p.evaluate(F=>{openAdd();addManual();const q=queue[0];q.type='suit';q.primaryColor='deeptaupe';q.pattern='solid';q.tagImg=F.photo;renderAdd()},F);await settle(p,300);
+  await p.evaluate(F=>{openAdd();HOOK.addManual();const q=queue[0];q.type='suit';q.primaryColor='deeptaupe';q.pattern='solid';q.tagImg=F.photo;renderAdd()},F);await settle(p,300);
   for(const theme of ['light','dark']){await p.evaluate(t=>{document.documentElement.dataset.theme=t},theme);await settle(p,100);
     e=await p.evaluate(()=>{const s=document.querySelector('#nps-q [data-ck="tex"]'),a=s.querySelector('.ckadd.cubtn'),b=s.querySelector('.ckreadadd'),ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect(),ca=getComputedStyle(a),cb=getComputedStyle(b);
       return {a:a.textContent,b:b.querySelector('span').textContent,cost:b.querySelector('.rdcost').textContent,above:rb.bottom<=ra.top+1,h:[Math.round(ra.height),Math.round(rb.height)],r:[ca.borderRadius,cb.borderRadius],in:rb.right<=s.getBoundingClientRect().right+1,fit:document.documentElement.scrollWidth<=390,bg:[ca.backgroundColor,cb.backgroundColor],ink:cb.color}});

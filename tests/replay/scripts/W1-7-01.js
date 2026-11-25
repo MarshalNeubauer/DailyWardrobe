@@ -15,9 +15,9 @@ L.main(async () => {
   const info = await L.startLab('W1-7-01-' + V);
   const E = await L.open('01-' + V);
   await L.joinAndFill(E, info.inviteLink);
-  if (V === 'clean') for (let k = 0; k < 4 && await E.page.evaluate(() => acctPending()); k++) { await E.advance(61000); await L.bgfg(E) }
+  if (V === 'clean') for (let k = 0; k < 4 && await E.page.evaluate(() => HOOK.acctPending()); k++) { await E.advance(61000); await L.bgfg(E) }
   if (V === 'pending') { await L.tapL(E, L.btn(E, /Wore/)); await L.sleep(800) }   // a change made after the last backup ("✕ Didn't")
-  const pend0 =await E.page.evaluate(() => acctPending());   // (read only)
+  const pend0 =await E.page.evaluate(() => HOOK.acctPending());   // (read only)
   const s0 = await L.phoneState(E); L.log('before', s0, 'pending', pend0, 'kv', await L.kvItems());
   const r = await L.revokeAndRenew(info.inviteCode); L.log('owner: revoked', r.revoked, 'new invitation made');
   await L.mock('count-reset');

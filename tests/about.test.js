@@ -34,7 +34,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(await p.evaluate(()=>{const b=$('#about-check').getBoundingClientRect();return b.height>=44&&document.documentElement.scrollWidth<=innerWidth}),'44px controls, no sideways scroll');
       ok(await p.evaluate(()=>{const d=$('#about-privacy');const shut=!d.open;d.querySelector('summary').click();return shut&&d.open&&/Anthropic/.test(d.textContent)&&/OpenAI/.test(d.textContent)&&/Nothing else leaves your phone/.test(d.textContent)&&/person who invited you/.test(d.textContent)&&/Open-Meteo/.test(d.textContent)&&/Nager\.Date/.test(d.textContent)&&/cloud hosting company/.test(d.textContent)&&!/Cloudflare/.test(d.textContent)}),'the privacy note is a fold naming everyone who gets something: the server’s owner, its hosting company (not named: W1-10-06), GitHub Pages, Anthropic, OpenAI, Open-Meteo, Nager.Date');
       ok(/^Sending feedback needs a connection/.test(await text(p,'#fb-conn'))&&!(await p.isVisible('#fb-send'))&&!(await p.isVisible('#fb-text')),'not connected: Feedback says it needs a connection, with no form to fill');
-      await p.evaluate(()=>{document.querySelector('#fb-text').value='hello';return sendFeedback()});
+      await p.evaluate(()=>{document.querySelector('#fb-text').value='hello';return HOOK.sendFeedback()});
       ok(/needs a connection/.test(await text(p,'#fb-status'))&&await p.inputValue('#fb-text')==='hello','sending without a connection says so and keeps the text');
       ok(errs.length===0,'no page errors ('+errs.join('; ')+')');await ctx.close()}
 
@@ -43,14 +43,14 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       await p.waitForFunction(()=>$('#toast').classList.contains('on')&&/A new version is ready/.test($('#toast').textContent));
       ok(await p.evaluate(()=>{const b=$('#toast button');return !!b&&b.textContent==='Update'}),'a newer sw.js raises the toast "A new version is ready" with Update');
       const again=await p.evaluate(async()=>{window.__same=1;let n=0;const mo=new MutationObserver(l=>{for(const r of l)if(r.addedNodes.length)n++});mo.observe($('#toast'),{childList:true});   /* (a toast raised writes its words into #toast) */
-        await checkForUpdate();await checkForUpdate(true);document.dispatchEvent(new Event('visibilitychange'));await checkForUpdate();await new Promise(r=>setTimeout(r,50));mo.disconnect();return n});
+        await HOOK.checkForUpdate();await HOOK.checkForUpdate(true);document.dispatchEvent(new Event('visibilitychange'));await HOOK.checkForUpdate();await new Promise(r=>setTimeout(r,50));mo.disconnect();return n});
       ok(again===0,'the prompt is raised once for a version, however often it is checked');
       await about(p);
-      ok(await p.evaluate(()=>window.__same===1&&appVersion()<aboutNew&&!$('#about-update').hidden)&&(await text(p,'#about-status')).includes(`Version ${swVer+5} is ready`),'nothing reloads by itself; About offers Update for the new version');
+      ok(await p.evaluate(()=>window.__same===1&&appVersion()<HOOK.aboutNew&&!$('#about-update').hidden)&&(await text(p,'#about-status')).includes(`Version ${swVer+5} is ready`),'nothing reloads by itself; About offers Update for the new version');
       // photos still being read on Add: asked first (cards that are only waiting come back after the restart: no question for them)
       await p.evaluate(()=>{queue=[{busy:1},{busy:1},{manual:true}]});
       await p.click('#about-update');await p.waitForFunction(()=>document.querySelector('#ask-sheet.on'));const asked=await text(p,'#ask-sheet');   // the app's own question (ui.js), not a browser dialog
-      await p.click('#ask-cancel');await p.waitForFunction(()=>!aboutUpdating&&!document.querySelector('#ask-sheet.on'));
+      await p.click('#ask-cancel');await p.waitForFunction(()=>!HOOK.aboutUpdating&&!document.querySelector('#ask-sheet.on'));
       ok(/2 photos on the Add page are still being read/.test(asked)&&!/will be lost/.test(asked)&&await p.evaluate(()=>window.__same===1),'with photos still being read on Add, Update asks first, and No leaves the page as it is');
       await p.evaluate(()=>{queue=[]});
       await Promise.all([p.waitForFunction(()=>window.__same===undefined&&window.appReady,null,{timeout:20000}),p.click('#about-update')]);
@@ -89,7 +89,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       await put({id:'tie1',type:'tie',primaryColor:'navy',pattern:'solid'});await put({id:'shirt1',type:'shirt',primaryColor:'white',pattern:'solid'});
       await txs('days','readwrite',s=>s.put({date:'2026-11-02',worn:true}));await metaPut('settings',{...settings,workdays:[1,2]});await metaPut('render:c0000000000000001',{img:'x'});
       const c=await caches.open('dw-keep-tagimg');await c.put(new Request('tagimg/tie1'),new Response('x'));
-      for(const k of ABOUT_KEYS)if(k!=='worker_url'&&k!=='app_token')localStorage.setItem(k,'SEED');
+      for(const k of HOOK.ABOUT_KEYS)if(k!=='worker_url'&&k!=='app_token')localStorage.setItem(k,'SEED');
       localStorage.setItem('nav_fit2:390x844','SEED');localStorage.setItem('someone_elses_key','keep');clearTimeout(syncTimer)});
     const state=p=>p.evaluate(async()=>({items:items.length,db:[(await tx('readonly',s=>s.getAll())).length,(await txs('days','readonly',s=>s.getAll())).length,(await txs('meta','readonly',s=>s.getAll())).map(r=>r.k)],
       kept:(await caches.keys()).filter(k=>k.startsWith('dw-keep-')),seeded:Object.keys(localStorage).filter(k=>localStorage.getItem(k)==='SEED'),

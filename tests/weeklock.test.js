@@ -50,7 +50,7 @@ const weeklock=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(true,'Thursday is then locked as it now shows');
     // "Suggest another" on a locked day re-plans that day, and its followers, not the others
     await p.evaluate(()=>{sel=new Date(2026,10,13);renderToday()});const b4=await p.evaluate(()=>snap());
-    await p.evaluate(()=>swapSlot('shoes'));await settle(p,300);
+    await p.evaluate(()=>HOOK.swapSlot('shoes'));await settle(p,300);
     const a4=await p.evaluate(`(b=>{const n=snap(),d=diff(b,n).filter(k=>keyDate(k)<${AFTER}),o=planFor()['2026-11-13'];return {d,belt:!o.belt||beltFit(o.shoes,o.belt)!==null,top:n['2026-11-13'].split('|')[0]===b['2026-11-13'].split('|')[0]}})(${JSON.stringify(b4)})`);
     ok(a4.d.join()==='2026-11-13'&&a4.belt&&a4.top,'another pair of shoes on Friday: its belt follows, the suit stays, and no other locked day moves');
     // rain on a locked day with suede shoes: the lock lets go
@@ -61,7 +61,7 @@ const weeklock=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(hot.mild&&hot.warm,'a locked cold-weather suit is kept on a mild day and let go when the forecast turns hot');
     // Re-plan releases the lock; so does a planner setting
     await p.evaluate(()=>{sel=new Date(2026,10,9);renderToday()});await locked();
-    const r1=await p.evaluate(async()=>{await replanFuture();return Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length});
+    const r1=await p.evaluate(async()=>{await HOOK.replanFuture();return Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length});
     ok(r1===0,'Re-plan upcoming days releases the locks after today');
     await p.evaluate(()=>renderToday());await locked();
     await p.evaluate(()=>{openSettings('schedule')});await settle(p,400);
@@ -169,7 +169,7 @@ const w3plan=async({ok,chromium,url})=>{
       at('2026-11-15T07:30:00','2026-11-16');const was=planFor()['2026-11-16'].tie.id,pick=items.find(i=>i.type==='tie'&&i.id!==was).id;
       await pickItem('tie',pick);const r1={...dayRecs['2026-11-16']};
       at('2026-11-18T07:30:00');await recordDays(planMonth(2026,10));const r2=dayRecs['2026-11-16'];cache={};const shown=planMonth(2026,10)['2026-11-16'];
-      return {ahead:'ids' in r1,force:r1.force&&r1.force.tie===pick,tie:r2.ids&&r2.ids.tie===pick,auto:!!r2.auto,frozen:!!shown.frozen&&shown.tie.id===pick,miss:missedOpen().includes('2026-11-16')}});
+      return {ahead:'ids' in r1,force:r1.force&&r1.force.tie===pick,tie:r2.ids&&r2.ids.tie===pick,auto:!!r2.auto,frozen:!!shown.frozen&&shown.tie.id===pick,miss:HOOK.missedOpen().includes('2026-11-16')}});
     ok(!pk.ahead&&pk.force,'a pick for a coming day saves the pick and no pieces ahead of the day');
     ok(pk.tie&&pk.frozen,'once the day is past without the app being opened, the picked tie is what is recorded as worn');
     ok(pk.auto&&pk.miss,'and the day is listed among the days the app recorded by itself');
@@ -179,14 +179,14 @@ const w3plan=async({ok,chromium,url})=>{
       dayRecs['2026-11-17']={date:'2026-11-17',ids:{top:'suit001',tie:'tie007'},suitDay:true,force:{tie:'tie007'},updated:+new Date(2026,10,17,7)};
       at('2026-11-18T07:30:00');const P=planMonth(2026,10);await recordDays(P);return {tie:dayRecs['2026-11-16'].ids.tie===pick,kept:dayRecs['2026-11-17'].ids.top==='suit001'&&!dayRecs['2026-11-17'].auto}});
     ok(old.tie&&old.kept,'a record an earlier version wrote ahead of the day is recorded again with the pick; one saved on its day stays');
-    const sw=await p.evaluate(async()=>{fresh();ward();at('2026-11-15T07:30:00','2026-11-16');await swapSlot('shirt');const r=dayRecs['2026-11-16'];
-      const r0={...r};sel=keyDate('2026-11-16');await resetDay();return {swap:!('ids' in r0)&&!!r0.force,reset:!('ids' in dayRecs['2026-11-16'])}});
+    const sw=await p.evaluate(async()=>{fresh();ward();at('2026-11-15T07:30:00','2026-11-16');await HOOK.swapSlot('shirt');const r=dayRecs['2026-11-16'];
+      const r0={...r};sel=keyDate('2026-11-16');await HOOK.resetDay();return {swap:!('ids' in r0)&&!!r0.force,reset:!('ids' in dayRecs['2026-11-16'])}});
     ok(sw.swap&&sw.reset,'"Suggest another" and Reset on a coming day keep no pieces ahead either');
 
     // ---- W1-1-01 = W1-4-01 = W1-2-06: the synced settings' old number doesn't re-plan this phone
-    const pr=await p.evaluate(async()=>{fresh();ward();at('2026-11-15T07:30:00');await lockUpcoming();await planRulesNote(PLAN_RULES);settings.planRules=PLAN_RULES-4;
+    const pr=await p.evaluate(async()=>{fresh();ward();at('2026-11-15T07:30:00');await lockUpcoming();await HOOK.planRulesNote(PLAN_RULES);settings.planRules=PLAN_RULES-4;
       const locks=()=>Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length,a=locks();await checkPlanRules();const b=locks();
-      await planRulesNote(PLAN_RULES-1);await checkPlanRules();return {a,b,c:locks(),mine:await metaGet('plan_rules')}});
+      await HOOK.planRulesNote(PLAN_RULES-1);await checkPlanRules();return {a,b,c:locks(),mine:await metaGet('plan_rules')}});
     ok(pr.a>0&&pr.b===pr.a,`a lower planner number in the synced settings (another phone, a roll-back, an old backup) re-plans nothing (${pr.a} locks kept)`);
     ok(pr.c===0&&pr.mine===await p.evaluate(()=>PLAN_RULES),'the phone\'s own older number still re-plans once, and is noted on the phone');
 
@@ -209,16 +209,16 @@ const w3plan=async({ok,chromium,url})=>{
     const cp=await p.evaluate(async()=>{fresh();const W=ward(),id=n=>W[n].id;at('2026-11-18T07:30:00');
       dayRecs['2026-11-17']={date:'2026-11-17',ids:{top:id(0),bot:id(0),shirt:id(3),tie:id(6),shoes:id(10),belt:id(12)},suitDay:true,updated:+new Date(2026,10,17,8)};
       dayRecs['2026-11-18']={date:'2026-11-18',lock:{top:id(1),bot:id(1),shirt:id(4),tie:id(7),shoes:id(10),belt:id(12)},lockAt:Date.now(),updated:Date.now()};cache={};
-      const before=planMonth(2026,10)['2026-11-18'].top.id;sel=keyDate('2026-11-17');view={y:2026,m:10};pastEdit='2026-11-17';await correctPast('top',W[1]);
+      const before=planMonth(2026,10)['2026-11-18'].top.id;sel=keyDate('2026-11-17');view={y:2026,m:10};pastEdit='2026-11-17';await HOOK.correctPast('top',W[1]);
       cache={};return {want:id(1),before,lock:!!dayRecs['2026-11-18'].lock&&dayRecs['2026-11-18'].lock.top===id(1),after:planMonth(2026,10)['2026-11-18'].top.id}});
     ok(cp.before===cp.want&&!cp.lock&&cp.after!==cp.want,`correcting yesterday to today's locked suit lets today go: another suit today (${JSON.stringify(cp)})`);
 
     // ---- W1-8-05: sent to the cleaner from a locked week, and back
     const cr=await p.evaluate(async()=>{fresh();ward();show('wardrobe');at('2026-12-09T07:30:00');await lockUpcoming();const locked=Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate());
-      const sid=locked[0].lock.top;await careSend(sid,'cleaner');const a=Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length;
+      const sid=locked[0].lock.top;await HOOK.careSend(sid,'cleaner');const a=Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length;
       items.find(i=>i.id===sid).away.since=isoKey(new Date());   // (locks carry the real clock's time; the test's clock is TODAY_OVERRIDE)
       at('2026-12-13T07:30:00');await lockUpcoming();const b=Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length;
-      await careBack(sid);const c=Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length;return {n:locked.length,a,b,c}});
+      await HOOK.careBack(sid);const c=Object.values(dayRecs).filter(r=>r.lock&&keyDate(r.date)>todayDate()).length;return {n:locked.length,a,b,c}});
     ok(cr.n>0&&cr.a===0,'a suit held by the week\'s locks sent to the cleaner lets the week be planned again around the others');
     ok(cr.b>0&&cr.c===0,'"It\'s back" lets go of the locks made while it was away, so it rejoins the week');
 
@@ -229,7 +229,7 @@ const w3plan=async({ok,chromium,url})=>{
       const sync=Object.values(dayRecs).filter(r=>r.auto&&keyDate(r.date)>keyDate('2026-11-19')).length;   // (W2-14-12: in memory before the drawing)
       await recordRun;await new Promise(r=>setTimeout(r,700));const card=()=>{const c=document.querySelector('#missbox');return c?c.innerText.replace(/\s+/g,' '):''};
       const first=card(),toastTxt=$('#toast').textContent;
-      missedPickToggle();const days=[...document.querySelectorAll('#missbox .missone')].length;await missedOne('2026-11-23');const one=missedOpen().join();
+      HOOK.missedPickToggle();const days=[...document.querySelectorAll('#missbox .missone')].length;await HOOK.missedOne('2026-11-23');const one=HOOK.missedOpen().join();
       const shown=[];for(const t of ['2026-11-27','2026-11-29','2026-11-30']){at(t+'T08:00:00');sel=homeDay();renderToday();shown.push(!!card());await recordRun}
       return {sync,first,toastTxt,days,one,shown}});
     ok(mc.sync===4,`the days missed are recorded in memory before Today is drawn, so its "last worn" and cleaning frame count them at once (${mc.sync})`);
