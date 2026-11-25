@@ -159,7 +159,7 @@ function stepType(n,from){
    redetect, clearStripes), wardrobe.js (setFlt); togglePause and rm are called by tests only; a module imports them.
    Above the file's first call that can throw ($ and the Wardrobe page's own element, then acts): the names are then still the page's,
    as a classic script's were; wardPic, a const declared further down, is handed over above acts */
-Object.assign(globalThis,{itemBody,optLab,sete,matTidy,patSummary,redetect,togglePause,clearStripes,rm,setFlt,renderWardrobe});
+Object.assign(globalThis,{itemBody,optLab,sete,matTidy,patSummary,redetect,clearStripes,setFlt,renderWardrobe});
 Object.defineProperties(globalThis,{phEdit:{get:()=>phEdit}});
 (()=>{const el=$('#wardrobe');let st=null;const slide=()=>$('#wslide');
   el.addEventListener('touchstart',e=>{const t=e.touches[0];

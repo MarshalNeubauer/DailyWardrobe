@@ -114,7 +114,7 @@ function tagNotes(q){if(q.manual)return '';const out=[];if(q.meas)q.measV=colour
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level
    call: add.js, add-card.js, measure.js, pattern-read.js, colpick.js and safety.js, classic scripts, and the modules add-save.js and
    tag-request.js (fieldLabel, valName), which read them as globals (they come before this file in the list), use these; confTxt is read by tests/records.test.js only */
-Object.assign(globalThis,{fieldLabel,valName,aiFields,takeExtras,closeTagImg,readBegin,readEnd,readAbort,refineFromCloseup,confTxt,tagNotes});
+Object.assign(globalThis,{fieldLabel,valName,aiFields,takeExtras,closeTagImg,readBegin,readEnd,readAbort,refineFromCloseup,tagNotes});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,confTxt};
 export {fieldLabel,valName,aiFields,takeExtras,closeTagImg,readBegin,readEnd,readAbort,refineFromCloseup,confTxt,tagNotes};

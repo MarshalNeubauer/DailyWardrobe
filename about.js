@@ -270,8 +270,7 @@ function aboutStart(){
    account (ABOUT_NOTE, wipeDevice), settings (renderAbout); the rest are read by tests; aboutNew is a getter, aboutUpdating a getter and
    a setter (tests assign it). Above the file's top-level calls (aboutStart, then acts): the names are then still the page's. One
    statement each: tools and tests cut this file's `^const` lines */
-Object.assign(globalThis,{appVersion,aboutAsk,checkForUpdate,updateNow,fbWithErrs,sendFeedback,aboutResetAt,ABOUT_KEYS,ABOUT_NOTE,askDelete,wipeDevice,aboutDeleteAccount,renderAbout});
-Object.defineProperties(globalThis,{aboutNew:{get:()=>aboutNew},aboutUpdating:{get:()=>aboutUpdating,set:v=>{aboutUpdating=v}}});
+Object.assign(globalThis,{appVersion,ABOUT_NOTE,wipeDevice,renderAbout});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,ABOUT_KEYS,aboutAsk,aboutDeleteAccount,get aboutNew(){return aboutNew},aboutResetAt,get aboutUpdating(){return aboutUpdating},set aboutUpdating(v){aboutUpdating=v},askDelete,checkForUpdate,fbWithErrs,sendFeedback,updateNow};
 export {aboutNew,aboutUpdating,appVersion,aboutAsk,checkForUpdate,updateNow,fbWithErrs,sendFeedback,aboutResetAt,ABOUT_KEYS,ABOUT_NOTE,askDelete,wipeDevice,aboutDeleteAccount,renderAbout};

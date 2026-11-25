@@ -206,8 +206,7 @@ function statsShow(){const el=$('#stats');if(!el)return;
    as globals: start.js (renderStats, statsShow), wardrobe, care and cost (wornDays), dress (shoesWhyUnused), fav (statName, statDate,
    statPic), cost (statName1, statPic), care (statPic), pack (emptyAdd); the rest are read by tests; statsOpen and fitMemo are lets only
    this file writes: getters. Above the file's first call that can throw (afterScripts, then acts): the names are then still the page's */
-Object.assign(globalThis,{wornDays,plannedDays,whyUnused,shoesWhyUnused,buildStats,statName,statName1,emptyAdd,statDate,statPic,groupName,renderStats,statsToggle,openStats,statsShow});
-Object.defineProperties(globalThis,{statsOpen:{get:()=>statsOpen},fitMemo:{get:()=>fitMemo}});
+Object.assign(globalThis,{wornDays,shoesWhyUnused,statName,statName1,emptyAdd,statDate,statPic,renderStats,statsShow});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,buildStats,get fitMemo(){return fitMemo},groupName,openStats,plannedDays,get statsOpen(){return statsOpen},statsToggle,whyUnused};
 export {statsOpen,wornDays,plannedDays,whyUnused,shoesWhyUnused,fitMemo,buildStats,statName,statName1,emptyAdd,statDate,statPic,groupName,renderStats,statsToggle,openStats,statsShow};

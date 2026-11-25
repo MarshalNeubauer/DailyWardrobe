@@ -29,8 +29,8 @@ let dbDown=null,dbErr=null;
    each (the three declared further down can't be read before their own line has run, as in the classic script); a module imports them.
    Above the file's first call that can throw (db, when app.js did not load; then acts): the names are then still the page's, as a
    classic script's were; the five consts declared further down are handed over above the handler */
-Object.assign(globalThis,{storeFailure,storeFailText,saveFailed,errNote,storageDown,askPersist,pruneTagImgs,safetyStart,tagFailText,tagFailed,retryTag,guardUnsaved,adoptBackupSettings});
-Object.defineProperties(globalThis,{dbDown:{get:()=>dbDown},storeToldAt:{get:()=>storeToldAt,set:v=>{storeToldAt=v}},errTapAt:{get:()=>errTapAt,set:v=>{errTapAt=v}},tagWhy:{get:()=>tagWhy,set:v=>{tagWhy=v}},tagNetLast:{get:()=>tagNetLast,set:v=>{tagNetLast=v}}});
+Object.assign(globalThis,{storeFailure,storeFailText,saveFailed,errNote,storageDown,askPersist,safetyStart,tagFailText,tagFailed,retryTag,guardUnsaved,adoptBackupSettings});
+Object.defineProperties(globalThis,{dbDown:{get:()=>dbDown},storeToldAt:{get:()=>storeToldAt,set:v=>{storeToldAt=v}},tagWhy:{get:()=>tagWhy,set:v=>{tagWhy=v}},tagNetLast:{get:()=>tagNetLast,set:v=>{tagNetLast=v}}});
 db.then(()=>{dbDown=false},e=>{dbDown=true;dbErr=e});
 /* a storage failure nobody caught is shown; every other rejection is left alone */
 addEventListener('unhandledrejection',ev=>{const e=ev.reason;errNote(e);
@@ -167,7 +167,7 @@ async function adoptBackupSettings(local,data){
   if(!$('#today').hidden)refreshToday();return true}
 /* the rest of the bridge: the consts declared above (about.js: errReport; tagging.js: oneStop; add.js: tagNetText; add-card.js:
    tagFailNote; tests/errreport.test.js: errList) */
-Object.assign(globalThis,{errList,errReport,oneStop,tagNetText,tagFailNote});
+Object.assign(globalThis,{errReport,oneStop,tagNetText,tagFailNote});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,errList,get errTapAt(){return errTapAt},set errTapAt(v){errTapAt=v},pruneTagImgs};
 export {storeFailure,storeFailText,storeToldAt,saveFailed,dbDown,errTapAt,errList,errNote,errReport,storageDown,askPersist,pruneTagImgs,safetyStart,tagWhy,tagNetLast,oneStop,tagFailText,tagNetText,tagFailed,tagFailNote,retryTag,guardUnsaved,adoptBackupSettings};

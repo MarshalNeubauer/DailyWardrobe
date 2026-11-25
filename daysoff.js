@@ -151,8 +151,7 @@ function occAddTap(){addFormalDay()}
 /* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals: settings, setup,
    start, calendar, history and missed; the rest are read by tests; holidayMsg is a let only this file writes: a getter. Above the
    file's one top-level call (acts, when act.js did not load): the names are then still the page's */
-Object.assign(globalThis,{COUNTRY_CODES,countryName,nagerKeep,builtinHolidays,holYears,setHolidayCountry,refreshHolidays,toggleHoliday,isoToDate,addDayOff,dayOffAdd,renderDaysOffUI,shortDate,yearDate,renderFormalUI});
-Object.defineProperties(globalThis,{holidayMsg:{get:()=>holidayMsg}});
+Object.assign(globalThis,{COUNTRY_CODES,countryName,setHolidayCountry,refreshHolidays,isoToDate,dayOffAdd,renderDaysOffUI,shortDate,yearDate,renderFormalUI});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addDayOff,builtinHolidays,holYears,get holidayMsg(){return holidayMsg},nagerKeep,toggleHoliday};
 export {COUNTRY_CODES,countryName,holidayMsg,nagerKeep,builtinHolidays,holYears,setHolidayCountry,refreshHolidays,toggleHoliday,isoToDate,addDayOff,dayOffAdd,renderDaysOffUI,shortDate,yearDate,renderFormalUI};

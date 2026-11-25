@@ -22,7 +22,7 @@ let itemFrom=null;   // the item the sheet was opened on: closing on another one
    nine files; closeItem, stepItem and wardList are called by tests only; a module imports them.
    Above the file's first call that can throw (backLand, when back.js did not load; then $ and acts): the names are then still the
    page's, as a classic script's were */
-Object.assign(globalThis,{wardList,noMotion,itemSynced,itemGoneTell,renderItem,openItem,closeItem,dropItem,stepItem});
+Object.assign(globalThis,{noMotion,itemSynced,itemGoneTell,renderItem,openItem,dropItem});
 Object.defineProperties(globalThis,{editing:{get:()=>editing,set:v=>{editing=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,closeItem,stepItem,wardList};

@@ -671,8 +671,8 @@ function asmGlSet(v){try{if(v==='off')localStorage.setItem(ASM_GL,'0');else loca
 /* a picture came back from the painter (asmRun): remember which way it was made, for the line above */
 function asmGlNote(r){if(!r||!('gl' in r))return;asmGlLast={gl:!!r.gl,ms:r.ms!=null?r.ms:null};asmGlStatus()}
 /* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
-Object.assign(globalThis,{asmGlCuffs,asmGlPref,ASM_GL_KINDS,asmGlWhy,asmGlFree,asmGlProbe,asmGlOnPage,asmGlInit,asmGlReset,asmGlBytes,asmGlTry,asmGlPrepOff,asmGlFinOff,asmGlUI,asmGlSet,asmGlNote,asmGlContext,asmGlProgram,asmGlRenderer,asmGlPack,asmGlUpload,asmGlUploadGeo});
-Object.defineProperties(globalThis,{asmGlNot:{get:()=>asmGlNot},asmGlState:{get:()=>asmGlState,set:v=>{asmGlState=v}},asmGlRetry:{get:()=>asmGlRetry,set:v=>{asmGlRetry=v}},asmGlPaint:{get:()=>asmGlPaint,set:v=>{asmGlPaint=v}},asmGlPage:{get:()=>asmGlPage,set:v=>{asmGlPage=v}}});
+Object.assign(globalThis,{asmGlPref,ASM_GL_KINDS,asmGlWhy,asmGlFree,asmGlProbe,asmGlOnPage,asmGlTry,asmGlPrepOff,asmGlFinOff,asmGlUI,asmGlNote,asmGlContext,asmGlProgram,asmGlRenderer,asmGlPack,asmGlUpload,asmGlUploadGeo});
+Object.defineProperties(globalThis,{asmGlNot:{get:()=>asmGlNot},asmGlState:{get:()=>asmGlState,set:v=>{asmGlState=v}},asmGlPaint:{get:()=>asmGlPaint,set:v=>{asmGlPaint=v}},asmGlPage:{get:()=>asmGlPage,set:v=>{asmGlPage=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,asmGlBytes,asmGlCuffs,asmGlInit,asmGlReset,get asmGlRetry(){return asmGlRetry},set asmGlRetry(v){asmGlRetry=v},asmGlSet};
 export {asmGlCuffs,asmGlPref,ASM_GL_KINDS,asmGlWhy,asmGlFree,asmGlProbe,asmGlOnPage,asmGlInit,asmGlReset,asmGlBytes,asmGlTry,asmGlPrepOff,asmGlFinOff,asmGlUI,asmGlSet,asmGlNote,asmGlState,asmGlRetry,asmGlPaint,asmGlPage,asmGlContext,asmGlProgram,asmGlRenderer,asmGlPack,asmGlUpload,asmGlUploadGeo,asmGlNot};

@@ -62,7 +62,7 @@ function npsBack(){if(npsId)npsCancel(true)}
    npsId and npsAsking are written here only: getters. start.js assigns addFor (openAdd, show): a setter too. Before backOn() and
    acts(), the file's two calls that can throw (back.js or act.js not loaded): the names are then still the page's, as a classic
    script's were (every one is a function, or a let declared above) */
-Object.assign(globalThis,{addManual,renderAddFor,npsInert,npsDraw,npsClose,npsCancel,npsLeave});
+Object.assign(globalThis,{renderAddFor,npsInert,npsDraw,npsCancel,npsLeave});
 Object.defineProperties(globalThis,{npsId:{get:()=>npsId},npsAsking:{get:()=>npsAsking},addFor:{get:()=>addFor,set:v=>{addFor=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addManual,npsClose};

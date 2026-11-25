@@ -125,8 +125,7 @@ function showPlan(p){const grid=document.querySelector('#mpanel-in .mgrid:not(.m
 })();
 /* the bridge (tests/bridge.test.js): sync.js, a classic script, asks todayBusy before it redraws; month.js signs a day's outfit with
    mvSig; tests/moveoutfit.test.js calls moveRecs and reads outfitMove, which only this file writes: a getter; a module imports them */
-Object.assign(globalThis,{todayBusy,mvSig,moveRecs});
-Object.defineProperties(globalThis,{outfitMove:{get:()=>outfitMove}});
+Object.assign(globalThis,{todayBusy,mvSig});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,moveRecs,get outfitMove(){return outfitMove}};
 export {todayBusy,outfitMove,mvSig,moveRecs};

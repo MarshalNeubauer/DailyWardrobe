@@ -29,8 +29,8 @@ function askBack(){if(asking)askAnswer(false,true)}
 /* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. Above the file's first top-level call that can throw (backOn): its functions are then still the page's. A getter reads its
    `let` when asked, so the ones declared below are here too; the consts declared below are handed over above acts({…}) */
-Object.assign(globalThis,{askAnswer,askConfirm,closeupBtn,cuGot,closeupPick,closeupClose,tell,layerInert,layerOpen,layerClose,plainErr,needConn,connSummary,renderConnUI,addGate,advClose});
-Object.defineProperties(globalThis,{asking:{get:()=>asking},cuOpen:{get:()=>cuOpen},connBusy:{get:()=>connBusy},connMsg:{get:()=>connMsg,set:v=>{connMsg=v}}});
+Object.assign(globalThis,{askAnswer,askConfirm,closeupBtn,cuGot,closeupPick,tell,layerInert,layerOpen,layerClose,plainErr,needConn,connSummary,renderConnUI,addGate,advClose});
+Object.defineProperties(globalThis,{asking:{get:()=>asking},cuOpen:{get:()=>cuOpen}});
 backOn('ask',()=>askBack());
 /* the first paragraph of the message is the question (bold), the rest the explanation; a question asked while another is up answers that one no */
 function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)askAnswer(false);

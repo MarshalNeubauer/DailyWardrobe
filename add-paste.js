@@ -64,8 +64,7 @@ document.addEventListener('drop',e=>{const dt=e.dataTransfer;if(!dt)return;docum
 function linkKey(el,ev){if(ev.key==='Enter'){ev.preventDefault();addLink()}}
 function pasteTap(){pasteFromClipboard()}
 function linkAddTap(){addLink()}
-/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): only tests/paste.test.js still calls pasteMsg as a global; a module imports it */
-Object.assign(globalThis,{pasteMsg});
+/* An ES module since 2026-11-23. No bridge since T2 phase 3 (2026-11-25): pasteMsg is the tests' alone (tests/paste.test.js, through HOOK); a module imports it */
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,pasteMsg};
 export {pasteMsg};

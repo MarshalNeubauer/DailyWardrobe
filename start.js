@@ -24,7 +24,7 @@ const subShown=()=>SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden});
 function pageBack(kind){if(kind==='sub'&&subShown())subBack();else if(settingsOpen())saveSettings()}
 /* The bridge (tests/bridge.test.js): what the classic scripts, the other modules, index.html's last script (startUp) and the tests still use
    as globals. Above the file's first top-level call that can throw (backOn, when back.js didn't load) */
-Object.assign(globalThis,{subShown,subOpen,subBack,openAdd,show,startPlain,startUp,onSyncedData,tabTap});
+Object.assign(globalThis,{subShown,subOpen,subBack,openAdd,show,startUp,onSyncedData});
 Object.defineProperties(globalThis,{pagesOn:{get:()=>pagesOn}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,startPlain,tabTap};

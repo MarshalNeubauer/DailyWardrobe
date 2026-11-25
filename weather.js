@@ -71,7 +71,7 @@ async function loadWeather(force){
 /* the bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level call: settings.js and setup.js (unit, renderWxLoc,
    setUnits, setLocation, useMyLocation, findCity), today.js (wxChip, loadWeather), start.js and safety.js (loadWeather) use these as
    globals (setup.js is a module too, as is scorecard.js: temp); geoName is read by tests/setup.test.js only */
-Object.assign(globalThis,{unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,geoName,findCity,loadWeather});
+Object.assign(globalThis,{unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,findCity,loadWeather});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,geoName};
 export {unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,geoName,findCity,loadWeather};

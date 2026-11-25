@@ -175,8 +175,7 @@ async function matMigrate(){if(matMigrating)return 0;matMigrating=true;let n=0;
    getter and a setter; a module imports them.
    Above the file's first call that can throw (whenPulled, when history.js did not load; then acts): the names are then still the
    page's, as a classic script's were; the four consts declared further down are handed over above acts */
-Object.assign(globalThis,{WARD_MAX,WATCH_DETAILS_MAX,wardNorm,wardHay,wardMatch,wardSort,setWardSort,wardOrder,wardFlt,wardView,wardFresh,wardCount,wardBar,wardGrid,wardSearch,wardClear,wardKeep,wardBack,matLabel,matRow,fldRow,notesRow,itemFieldSoon,wardPendingRestore,ivOn,matOn,matOnItem,wardFieldsTop,setItemField,setQField,matRenameTo,matMigrate,sockToeMigrate,wardSaveFields,wardDeleteNow});
-Object.defineProperties(globalThis,{wardQ:{get:()=>wardQ,set:v=>{wardQ=v}}});
+Object.assign(globalThis,{WARD_MAX,WATCH_DETAILS_MAX,wardFlt,wardView,wardFresh,wardCount,wardBar,wardGrid,wardKeep,wardBack,matLabel,matRow,fldRow,notesRow,wardPendingRestore,ivOn,matOn,matOnItem,wardFieldsTop,setItemField,setQField,matRenameTo,matMigrate,sockToeMigrate,wardSaveFields});
 whenPulled(()=>matMigrate());
 /* ---- a sock's toe cap moves to its own field (2026-11-17, sock patterns) ----
    Until now a sock's secondaryColor was its toe cap; now the second and third colours are the pattern's (an argyle's diamonds and lines) and
@@ -222,7 +221,7 @@ async function wardUndelete(it,k,days,at){
   const v=['today','wardrobe','stats'].find(t=>$('#'+t)&&!$('#'+t).hidden);if(v)show(v);
   toast(`${nameIso(cap1(itemName(it)||nm(it)))} is back`)}
 /* the rest of the bridge: the consts declared above (dress.js: sockLegacy; itemsheet.js: wardDuplicate, wardDelete; tests/wardrobe.test.js: WARD_UNDO_MS) */
-Object.assign(globalThis,{sockLegacy,WARD_UNDO_MS,wardDuplicate,wardDelete});
+Object.assign(globalThis,{sockLegacy,wardDuplicate,wardDelete});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,WARD_UNDO_MS,itemFieldSoon,setWardSort,wardClear,wardDeleteNow,wardHay,wardMatch,wardNorm,wardOrder,get wardQ(){return wardQ},set wardQ(v){wardQ=v},wardSearch,wardSort};
 export {WARD_MAX,WATCH_DETAILS_MAX,wardQ,wardNorm,wardHay,wardMatch,wardSort,setWardSort,wardOrder,wardFlt,wardView,wardFresh,wardCount,wardBar,wardGrid,wardSearch,wardClear,wardKeep,wardBack,matLabel,matRow,fldRow,notesRow,itemFieldSoon,wardPendingRestore,ivOn,matOn,matOnItem,wardFieldsTop,setItemField,setQField,matRenameTo,matMigrate,sockLegacy,sockToeMigrate,wardSaveFields,WARD_UNDO_MS,wardDuplicate,wardDelete,wardDeleteNow};

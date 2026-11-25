@@ -26,8 +26,8 @@ const shopFind=key=>{const r=shopPart||(shop&&shop.res);if(!r)return null;for(co
    as globals: stats (shopButton), start (closeShop), today-gestures (shopOpen); the rest are read by tests. Above the file's first call
    that can throw (db.then, then backOn and acts): the names are then still the page's. shopBusyText, a const declared further down, is
    handed over above acts({…}), where the one export is */
-Object.assign(globalThis,{shopSig,shopFresh,shopButton,openShop,closeShop,analyzeWardrobe,renderShop,shopGo,shopBought});
-Object.defineProperties(globalThis,{shopPart:{get:()=>shopPart},shopOpen:{get:()=>shopOpen},shopForm:{get:()=>shopForm},shopDrag:{get:()=>shopDrag},shopStale:{get:()=>shopStale},shopSwipeOn:{get:()=>shopSwipeOn},shop:{get:()=>shop,set:v=>{shop=v}},shopBusy:{get:()=>shopBusy,set:v=>{shopBusy=v}},shopWorker:{get:()=>shopWorker,set:v=>{shopWorker=v}},shopShown:{get:()=>shopShown,set:v=>{shopShown=v}}});
+Object.assign(globalThis,{shopButton,closeShop});
+Object.defineProperties(globalThis,{shopOpen:{get:()=>shopOpen}});
 db.then(()=>metaGet('shop')).then(v=>{if(v&&v.res&&v.res.v===2&&!shop){shop=v;if(!$('#wardrobe').hidden&&!editing)renderWardrobe()}}).catch(()=>{});
 
 /* the button on the Wardrobe tab */
@@ -197,7 +197,6 @@ function shopFormTap(el){shopForm=el.dataset.rec;renderShop()}
 function shopCancelTap(){shopForm=null;renderShop()}
 function shopBoughtTap(el){shopBought(el.dataset.rec)}
 function shopHideTap(el){shopHide(el.dataset.rec)}
-Object.assign(globalThis,{shopBusyText});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,analyzeWardrobe,openShop,renderShop,get shop(){return shop},set shop(v){shop=v},shopBought,get shopBusy(){return shopBusy},set shopBusy(v){shopBusy=v},shopBusyText,get shopDrag(){return shopDrag},get shopForm(){return shopForm},shopFresh,shopGo,get shopPart(){return shopPart},get shopShown(){return shopShown},set shopShown(v){shopShown=v},shopSig,get shopStale(){return shopStale},get shopSwipeOn(){return shopSwipeOn},get shopWorker(){return shopWorker},set shopWorker(v){shopWorker=v}};
 export {shop,shopBusy,shopPart,shopWorker,shopOpen,shopShown,shopForm,shopSig,shopFresh,shopButton,openShop,closeShop,shopDrag,shopStale,shopSwipeOn,analyzeWardrobe,shopBusyText,renderShop,shopGo,shopBought};

@@ -151,9 +151,8 @@ const calAuto=()=>{if(calLink())calSync(false).catch(e=>console.warn('calendar n
    tests/bridge.test.js lists it): settings.js (calSummary), today.js (calBanner) and the calendar and restacts tests. calBusy is read by
    the restacts test only, and only this file writes it: a getter and no setter.
    Above the file's first call that can throw (whenPulled, when history.js did not load; then settingsPart and acts): the names are
-   then still the page's, as a classic script's were. CAL_GUIDES is declared further down and handed over there. */
-Object.assign(globalThis,{CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,calGuide});
-Object.defineProperties(globalThis,{calBusy:{get:()=>calBusy}});
+   then still the page's, as a classic script's were. CAL_GUIDES, declared further down, is the tests' alone (on HOOK). */
+Object.assign(globalThis,{calSummary,calBanner});
 whenPulled(()=>afterScripts(calAuto));
 addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')calAuto()});
 
@@ -284,8 +283,6 @@ function calDismissTap(el){calDismiss(el.dataset.id)}
 function calUndoTap(el){calUndoSeen(el.dataset.id)}
 function calReviewTap(){openSettings('calendar')}
 function calPackTap(){openPack()}
-/* the rest of the bridge: CAL_GUIDES, declared above (tests/calendar.test.js reads it) */
-Object.assign(globalThis,{CAL_GUIDES});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,CAL_GUIDES,CAL_X,get calBusy(){return calBusy},calGuide,calNew,calPlan,renderCalUI};
 export {calBusy,CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,CAL_GUIDES,calGuide};

@@ -21,11 +21,11 @@ const boxfold=async({ok,chromium,url,settle})=>{
     for(const [name,id,toggle,items] of [['score','#sbox','toggleScore','#spanel .sli'],['pieces list','#ibox','toggleList','#ipanel .list>*']]){
       await p.evaluate(()=>scrollTo(0,0));await settle(p,300);
       const l0=await lay();
-      const u=await p.evaluate(([id,toggle])=>{window[toggle]();const b=$(id);return {clip:b.getAnimations({subtree:true}).some(a=>a.effect.target.closest('.fedge'))&&!b.getAnimations().some(a=>a.effect.getKeyframes()[0].clipPath),trans:getComputedStyle(b.querySelector('.mpanel')).transitionDuration}},[id,toggle]);
+      const u=await p.evaluate(([id,toggle])=>{(toggle in HOOK?HOOK:window)[toggle]();const b=$(id);return {clip:b.getAnimations({subtree:true}).some(a=>a.effect.target.closest('.fedge'))&&!b.getAnimations().some(a=>a.effect.getKeyframes()[0].clipPath),trans:getComputedStyle(b.querySelector('.mpanel')).transitionDuration}},[id,toggle]);
       await p.waitForFunction(id=>!$(id).getAnimations({subtree:true}).some(a=>a.playState==='running'&&a.effect.getComputedTiming().endTime!==Infinity),id,{timeout:3000});await settle(p,800);
       const layouts=await lay()-l0;
       ok(u.clip&&u.trans==='0s'&&layouts<=8,`the ${name} unfolds with its edge sliding down (a strip, not a clip-path), its height not animated, the page laid out ${laid(layouts)}`);
-      const f=await p.evaluate(([id,toggle,items])=>new Promise(res=>{const b=$(id),its=[...b.querySelectorAll(items)];window[toggle]();
+      const f=await p.evaluate(([id,toggle,items])=>new Promise(res=>{const b=$(id),its=[...b.querySelectorAll(items)];(toggle in HOOK?HOOK:window)[toggle]();
         const cs=its.map(e=>getComputedStyle(e)),lift={name:cs[0].animationName,d0:parseFloat(cs[0].animationDelay),dn:parseFloat(cs[cs.length-1].animationDelay),n:its.length},chev=b.classList.contains('bshut');
         const tops=[];const f=()=>{tops.push(Math.round(b.getBoundingClientRect().top));if(b.getAnimations({subtree:true}).some(a=>a.playState==='running'&&a.effect.getComputedTiming().endTime!==Infinity)||tops.length<5)requestAnimationFrame(f);else res({lift,chev,tops,open:b.classList.contains('open'),h:b.querySelector('.mpanel').offsetHeight})};requestAnimationFrame(f)}),[id,toggle,items]);
       let jump=0;for(let i=1;i<f.tops.length;i++)jump=Math.max(jump,Math.abs(f.tops[i]-f.tops[i-1]));

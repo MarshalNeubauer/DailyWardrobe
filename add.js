@@ -202,7 +202,7 @@ function saveAllTap(){saveAll()}
 function addPhotosPick(el){addFiles([...el.files],el.dataset.multi==='1');el.value=''}
 /* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
    one top-level call that can throw (acts, when act.js did not load): the names are then still the page's */
-Object.assign(globalThis,{applyWb,cardPics,TEX_MIN_PX,TEX_MAX,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,refineAgain,patternAgain,needType,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,countWord,multiAgain,addNoteText,renderAdd,addBackOnline});
+Object.assign(globalThis,{applyWb,TEX_MIN_PX,TEX_MAX,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,refineAgain,patternAgain,needType,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,multiAgain,renderAdd,addBackOnline});
 Object.defineProperties(globalThis,{addCalm:{get:()=>addCalm}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addNoteText,cardPics,countWord};

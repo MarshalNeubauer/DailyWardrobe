@@ -70,7 +70,7 @@ function snapFocus(){loadSnapshots()}
 function rollBackTap(){rollBack()}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): settings.js, a classic script, calls loadSnapshots; the tests call it and the
    other three (actsindex, backup-storage, clock, rollback, sample); a module imports them */
-Object.assign(globalThis,{snapLabel,loadSnapshots,rollBackState,rollBack});
+Object.assign(globalThis,{loadSnapshots});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,rollBack,rollBackState,snapLabel};
 export {snapLabel,loadSnapshots,rollBackState,rollBack};
