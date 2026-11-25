@@ -9,9 +9,9 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await p.route(SRV+'**',r=>r.fulfill({status:503,headers:{'access-control-allow-origin':'*'},contentType:'application/json',body:'{}'}));   // a server that answers nothing: no sync merges the wardrobe away
     if(o.setup)await p.addInitScript(()=>{window.SETUP_AUTO=true});
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
-    await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-11T12:00:00';sel=new Date(2026,10,11);view={y:2026,m:10};settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.setupDone=1;cache={}});
+    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.setupDone=1;HOOK.cache={}});
     return {p,ctx,errs,dialogs}};
-  const fill=(p,which)=>p.evaluate(`(()=>{const W=${WARDROBES};items=${which};cache={};flt='all';show('today')})()`);
+  const fill=(p,which)=>p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=${which};HOOK.cache={};HOOK.flt='all';show('today')})()`);
   try{
     /* ---- (no browser dialogs left in the app's scripts, and ui.js loaded and kept: tests/sourcerules.test.js, CR-10-07) ---- */
 
@@ -35,7 +35,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     ok(await p.evaluate(()=>{const t=document.querySelector('#toast');return t.classList.contains('on')&&/not a Daily Wardrobe backup/.test(t.textContent)&&+getComputedStyle(t).zIndex>+getComputedStyle(document.querySelector('#settings-modal')).zIndex&&t.getBoundingClientRect().height<50}),'tell() is a toast, on one line, shown above Settings too');
 
     /* ---- Settings: wording, the top group, Advanced folds ---- */
-    await p.evaluate(()=>{show('today');openSettings();renderAbout()});await settle(p,400);
+    await p.evaluate(()=>{show('today');openSettings();HOOK.renderAbout()});await settle(p,400);
     const st=await p.evaluate(()=>{const m=document.querySelector('#settings-modal'),bad=/worker|cloudflare|\bKV\b|token|benchmark/i;
       for(const k of SET_CATS)setCatOpen(k,true,true);for(const f of m.querySelectorAll('.adv'))f.classList.add('open');
       const text=m.innerText+' '+[...m.querySelectorAll('[placeholder],[title],[aria-label]')].map(e=>(e.placeholder||'')+' '+(e.title||'')+' '+(e.getAttribute('aria-label')||'')).join(' ');
@@ -98,7 +98,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       const bg=probe('var(--bg)'),card=probe('var(--card)'),acc=probe('var(--acc)'),out={acc:+Math.min(ratio(acc,bg),ratio(acc,card)).toFixed(2),els:{}};
       for(const [s,on] of [['.day h2 .wx a',bg],['.mhead .eyebrow',card],['#care-in .linkbtn',card],['.sicw',card]]){const e=document.querySelector(s);if(e)out.els[s]={r:+ratio(getComputedStyle(e).color,on).toFixed(2),same:getComputedStyle(e).color===acc}}
       return out},theme);
-    await p.evaluate(()=>{renderCare()});   // (Laundry & cleaning's panel, drawn without opening Settings)
+    await p.evaluate(()=>{HOOK.renderCare()});   // (Laundry & cleaning's panel, drawn without opening Settings)
     const cl=await contrast('light'),cd=await contrast('dark');
     ok(cl.acc<4.5&&Object.keys(cl.els).length>=3&&Object.values(cl.els).every(e=>e.r>=4.5),`light theme: accent-coloured text is at least 4.5:1 on its background (${Object.entries(cl.els).map(([s,e])=>s+' '+e.r).join(', ')}; the fill color itself is ${cl.acc})`);
     ok(Object.values(cd.els).every(e=>e.same&&e.r>=4.5),`dark theme: it stays the accent color (${Object.values(cd.els).map(e=>e.r).join(', ')}:1)`);
@@ -108,11 +108,11 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await fill(p,'[W.realistic.find(i=>i.type==="shirt")]');
     const fr=await p.evaluate(()=>{const f=document.querySelector('#firstrun'),g=document.querySelector('#mannequin-container');return f&&g?{first:!!(f.compareDocumentPosition(g)&Node.DOCUMENT_POSITION_FOLLOWING),top:f.getBoundingClientRect().top<g.getBoundingClientRect().top,stage:!!f.closest('#stage'),n:document.querySelectorAll('#firstrun').length}:null});
     ok(fr&&fr.first&&fr.top&&fr.stage&&fr.n===1,'one shirt: "Get your first outfit" sits above the drawn figure');
-    await p.evaluate(()=>{sel=new Date(2026,10,14);show('today')});
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,14);show('today')});
     ok(await p.evaluate(()=>{const f=document.querySelector('#firstrun'),e=document.querySelector('#stage .empty');return !!f&&!!e&&f.getBoundingClientRect().top<e.getBoundingClientRect().top}),'on a day off it is above the day\'s note too');
-    await p.evaluate(()=>{sel=new Date(2026,10,11)});await fill(p,'W.realistic');
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,11)});await fill(p,'W.realistic');
     ok(await p.evaluate(()=>!document.querySelector('#firstrun')&&!!document.querySelector('#mannequin-container')),'gone once an outfit can be planned');
-    await p.evaluate(()=>{items=[];cache={};show('wardrobe')});
+    await p.evaluate(()=>{HOOK.items=[];HOOK.cache={};show('wardrobe')});
     ok(await p.evaluate(()=>!!document.querySelector('#wempty')&&!document.querySelector('#wardrobe .wfind')&&!document.querySelector('#wardrobe .chips')),'an empty Wardrobe shows its empty card without the search field and the type chips');
 
     ok(!errs.length&&!dialogs.length,`no page errors and no browser dialog (${errs.concat(dialogs).slice(0,2).join(' | ')})`);
@@ -141,7 +141,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       ok(!errs.length,`${w}px: no page errors ${errs.slice(0,2).join(' | ')}`);
       await ctx.close();
       // the setup flow, every step
-      const s=await open({width:w,height:844},{setup:true});await s.p.evaluate(()=>{items=[];delete settings.setupDone;HOOK.setupOpen(false)});const sb=[];
+      const s=await open({width:w,height:844},{setup:true});await s.p.evaluate(()=>{HOOK.items=[];delete settings.setupDone;HOOK.setupOpen(false)});const sb=[];
       for(const k of ['welcome','week','wear','weather','connect','done'])for(const theme of ['light','dark']){
         await s.p.waitForFunction(k=>document.querySelector('#su-step')&&document.querySelector('#su-step').dataset.step===k,k);
         sb.push(await s.p.evaluate(([k,theme])=>{document.documentElement.dataset.theme=theme;const el=document.querySelector('#setup'),b=[...el.querySelectorAll('button')].filter(x=>x.offsetParent),i=[...el.querySelectorAll('select,input[type=text]')].filter(x=>x.offsetParent),body=el.querySelector('.su-body');

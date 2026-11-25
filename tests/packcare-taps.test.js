@@ -13,17 +13,17 @@ module.exports.realPlanner=true;   // the Packing list and Insights show the pla
 // a wardrobe with a worn history (Oct 22 to Nov 10): navy 5 wears (due at 5), charcoal 4 (nearly due), grey 1, the blazer 3 with its
 // gray pants (nearly due at 4) and once with the tan ones; the shirts worn; the suits and the blazer priced
 const SETUP=`(()=>{const I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',added:+new Date(2026,9,20,12),...x});
-  items=[I('navy','suit','navy',{price:600}),I('char','suit','charcoal'),I('grey','suit','grey',{price:450}),I('bz','blazer','navy',{price:300}),I('p1','pants','grey'),I('p2','pants','tan'),
+  HOOK.items=[I('navy','suit','navy',{price:600}),I('char','suit','charcoal'),I('grey','suit','grey',{price:450}),I('bz','blazer','navy',{price:300}),I('p1','pants','grey'),I('p2','pants','tan'),
     I('sh1','shirt','white'),I('sh2','shirt','lightblue'),I('sh3','shirt','pink'),I('sh4','shirt','white',{pattern:'stripe',secondaryColor:'blue'}),I('sh5','shirt','lightblue',{pattern:'check',secondaryColor:'white'}),
     I('t1','tie','burgundy'),I('t2','tie','navy'),I('t3','tie','green'),I('t4','tie','grey'),
     I('bs','shoes','black',{leather:'calf'}),I('br','shoes','brown',{leather:'calf'}),I('bb','belt','black',{leather:'calf',metal:'silver'}),I('bn','belt','brown',{leather:'calf',metal:'silver'}),I('so','socks','charcoal')];
   settings.workdays=[1,2,3,4,5];settings.blazerDays=[5];settings.daysOff=[];settings.setupDone=1;delete settings.care;delete settings.laundryDays;delete settings.cleanCost;delete settings.currency;delete settings.shopSkip;
-  settings.holidays={country:'US',list:[],skip:[]};weather={};climate=null;TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};
+  settings.holidays={country:'US',list:[],skip:[]};HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};
   const W=(m,d,top,sh,bot)=>{const k=key(new Date(2026,m,d)),suit=top!=='bz';dayRecs[k]={date:k,ids:{top,bot:suit?null:bot||'p1',shirt:sh,tie:'t1',shoes:'bs',belt:'bb',socks:'so'},suitDay:suit,worn:true}};
   W(9,22,'bz','sh3','p2');W(9,23,'bz','sh3');W(9,26,'navy','sh1');W(9,27,'char','sh2');W(9,28,'navy','sh1');W(9,29,'char','sh2');W(9,30,'bz','sh3');
   W(10,2,'char','sh2');W(10,3,'navy','sh1');W(10,4,'char','sh2');W(10,5,'navy','sh1');W(10,6,'bz','sh3');W(10,9,'navy','sh1');W(10,10,'grey','sh3');
   for(const k of ['pack_trip','pack_marks','ward_sort','ward_pending','care_told'])localStorage.removeItem(k);HOOK.packT=null;
-  cache={};sel=new Date(2026,10,11);view={y:2026,m:10};CK_OPEN['*']=true})()`;
+  HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};CK_OPEN['*']=true})()`;
 async function run(eng,browser,{ok,url,settle}){
   const T=eng+': ';
   const ctx=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:eng==='Chromium',locale:'en-US'});
@@ -137,24 +137,24 @@ async function run(eng,browser,{ok,url,settle}){
   await ev(()=>closeSettings());await settle(p,500);if(await ev(()=>!!editing)){await ev(()=>HOOK.closeItem());await settle(p,500)}
 
   /* ---- Today: the cleaning banner (a tap, Enter, Space) and "See what is due" ---- */
-  await ev(()=>{settings.care={...settings.care,suit:2};dayRecs['2026-11-11']={date:'2026-11-11',force:{top:'grey'}};cache={};sel=new Date(2026,10,11);show('today');renderToday()});await settle(p,700);
+  await ev(()=>{settings.care={...settings.care,suit:2};dayRecs['2026-11-11']={date:'2026-11-11',force:{top:'grey'}};HOOK.cache={};HOOK.sel=new Date(2026,10,11);show('today');renderToday()});await settle(p,700);
   const asked=()=>ev(()=>!!(typeof asking!=='undefined'&&asking));
   const bnd=await ev(()=>({txt:(document.querySelector('#cband')||{}).textContent||'',top:(o=>o&&o.top&&o.top.id)(planFor()[key(sel)]),n:HOOK.careCounts().grey,sel:key(sel),today:!document.querySelector('#today').hidden}));
   ok(/Last wear|Overdue/.test(bnd.txt),T+'Today’s picture has the cleaning banner on a suit at its limit ('+J(bnd)+')');
   await tap('#cband',600);const a1=await asked();
   await ev(()=>askAnswer(true));await until(d=>(items.find(i=>i.id==='grey')||{}).cleaned===d,TODAY);it=await item('grey');
   ok(a1&&it.cleaned===TODAY,T+'a tap on the banner asks whether it was cleaned, and "Cleaned today" starts its count again');
-  await settle(p,500);await ev(()=>{const g=items.find(i=>i.id==='grey');delete g.cleaned;delete g.cleans;cache={};renderToday()});await settle(p,600);   // (due again, for the keys)
+  await settle(p,500);await ev(()=>{const g=items.find(i=>i.id==='grey');delete g.cleaned;delete g.cleans;HOOK.cache={};renderToday()});await settle(p,600);   // (due again, for the keys)
   const still=await has('#cband');
   if(still){await p.locator('#cband').focus();await p.keyboard.press('Enter');await settle(p,500)}const a2=await asked();if(a2){await ev(()=>askAnswer(false));await settle(p,400)}
   if(still){await p.locator('#cband').focus();await p.keyboard.press(' ');await settle(p,500)}const a3=await asked();if(a3){await ev(()=>askAnswer(false));await settle(p,400)}
   ok(still&&a2&&a3,T+'Enter and Space on the banner ask too ('+J([still,a2,a3])+')');
-  await ev(()=>{settings.care={...settings.care,pants:2};settings.blazerDays=[3,5];dayRecs['2026-11-11']={date:'2026-11-11',force:{top:'bz',bot:'p2'}};cache={};show('today');renderToday()});await settle(p,700);
+  await ev(()=>{settings.care={...settings.care,pants:2};settings.blazerDays=[3,5];dayRecs['2026-11-11']={date:'2026-11-11',force:{top:'bz',bot:'p2'}};HOOK.cache={};show('today');renderToday()});await settle(p,700);
   const note=await has('#carenote a');
   if(note)await tap('#carenote a',700);
   w=await ev(()=>({open:settingsOpen(),cat:document.querySelector('#sc-laundry').classList.contains('open'),href:location.href}));
   ok(note&&w.open&&w.cat&&!/#$/.test(w.href),T+'"See what is due" under Today’s outfit opens Laundry & cleaning, and the link goes nowhere else ('+J(w)+')');
-  await ev(()=>{closeSettings();delete dayRecs['2026-11-11'];settings.blazerDays=[5];delete settings.care;cache={}});await settle(p,500);
+  await ev(()=>{closeSettings();delete dayRecs['2026-11-11'];settings.blazerDays=[5];delete settings.care;HOOK.cache={}});await settle(p,500);
 
   /* ---- the Packing list ---- */
   await ev(()=>{show('today');openPack()});await settle(p,700);
@@ -195,7 +195,7 @@ async function run(eng,browser,{ok,url,settle}){
   if(cap3.keep){await tap('#pk-keep',900);await until(()=>!document.querySelector('#pk-keep'))}
   const l3=await ev(()=>({l:HOOK.packLockState(HOOK.packNow.days),shoes:HOOK.packUses(HOOK.packNow.days,'shoes')}));
   ok(cap3.s===1&&cap3.keep&&l3.l.of>0&&l3.l.n===l3.l.of&&l3.shoes===1,T+'a limit on shoes offers a lighter plan and "Keep this plan" locks it in ('+J([cap3,l3])+')');
-  await ev(()=>{for(const k of Object.keys(dayRecs))if(k>'2026-11-11')delete dayRecs[k];localStorage.removeItem('pack_trip');HOOK.packT=null;cache={};show('today')});await settle(p,500);
+  await ev(()=>{for(const k of Object.keys(dayRecs))if(k>'2026-11-11')delete dayRecs[k];localStorage.removeItem('pack_trip');HOOK.packT=null;HOOK.cache={};show('today')});await settle(p,500);
 
   /* ---- What to buy ---- */
   await ev(()=>{window.__an=0;const W=window.Worker;window.Worker=function(u,o){if(!/analysis-worker/.test(u))return new W(u,o);window.__an++;   // (the real analyzeWardrobe runs; its worker is counted and hands back the result it has)
@@ -231,7 +231,7 @@ async function run(eng,browser,{ok,url,settle}){
   ok(await ev(()=>!shopOpen&&!document.querySelector('#shop-sheet').classList.contains('on')),T+'the sheet’s × closes it');
 
   /* ---- Insights: a Wear counts section, a Cost per wear row, a lowest-scoring day, the buttons of a short and an empty wardrobe ---- */
-  await ev(()=>{items=items.filter(i=>!i.order);cache={};show('stats');renderStats()});await settle(p,700);
+  await ev(()=>{HOOK.items=items.filter(i=>!i.order);HOOK.cache={};show('stats');renderStats()});await settle(p,700);
   const fold='#st-wear details.st-type[data-type="shirt"] summary';
   await tap(fold,500);const o1=await ev(()=>({open:HOOK.statsOpen.shirt,rows:document.querySelectorAll('#st-wear details.st-type[open] .st-row').length}));
   await tap(fold,500);const o2=await ev(()=>({open:HOOK.statsOpen.shirt}));
@@ -243,17 +243,17 @@ async function run(eng,browser,{ok,url,settle}){
   await ev(()=>HOOK.closeItem());await settle(p,500);
   // black shoes under a brown and a tan suit: every planned day scores low, so the lowest days are listed
   await ev(()=>{const I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',added:+new Date(2026,9,20,12),...x});window.__keep=items;
-    items=[I('b1','suit','brown'),I('b2','suit','tan'),I('w1','shirt','white'),I('n1','tie','navy'),I('k1','shoes','black',{leather:'calf'})];dayRecs={};cache={};show('stats');renderStats()});await settle(p,700);
+    HOOK.items=[I('b1','suit','brown'),I('b2','suit','tan'),I('w1','shirt','white'),I('n1','tie','navy'),I('k1','shoes','black',{leather:'calf'})];HOOK.dayRecs={};HOOK.cache={};show('stats');renderStats()});await settle(p,700);
   const low=await ev(()=>{const a=document.querySelector('#st-points a');return a?{k:HOOK.buildStats().lowest[0][0],txt:a.textContent}:null});
   if(low)await tap('#st-points a',900);
   w=await ev(()=>({today:!document.querySelector('#today').hidden,sel:key(sel),href:location.href}));
   ok(!!low&&w.today&&w.sel===low.k&&!/#$/.test(w.href),T+'a lowest-scoring day’s link opens that day on Today, and goes nowhere else ('+J([low,w])+')');
-  await ev(()=>{items=items.filter(i=>i.id==='b1');cache={};show('stats');renderStats()});await settle(p,600);
+  await ev(()=>{HOOK.items=items.filter(i=>i.id==='b1');HOOK.cache={};show('stats');renderStats()});await settle(p,600);
   const short=await has('#st-short .btns .pri');if(short)await tap('#st-short .btns .pri',700);
   ok(short&&await ev(()=>!document.querySelector('#add').hidden),T+'"Add an item" under "Not a full outfit yet" opens Add');
-  await ev(()=>{items=[];cache={};show('stats');renderStats()});await settle(p,600);
+  await ev(()=>{HOOK.items=[];HOOK.cache={};show('stats');renderStats()});await settle(p,600);
   await tap('#stats .emptyadd button:not(.pri)',400);await p.waitForFunction(()=>!!document.querySelector('#ask-sheet.on #ask-ok')||!HOOK.kitSampling&&items.some(i=>i.sample));if(await has('#ask-sheet.on #ask-ok'))await tap('#ask-sheet.on #ask-ok',300);await p.waitForFunction(()=>!HOOK.kitSampling&&items.some(i=>i.sample));const smp=await ev(()=>items.filter(i=>i.sample).length);
-  await ev(async()=>{await HOOK.kitSampleRemove(true);items=[];cache={};show('stats');renderStats()});await settle(p,600);
+  await ev(async()=>{await HOOK.kitSampleRemove(true);HOOK.items=[];HOOK.cache={};show('stats');renderStats()});await settle(p,600);
   await tap('#stats .emptyadd .pri',700);
   ok(smp>0&&await ev(()=>!document.querySelector('#add').hidden),T+'an empty wardrobe’s Insights: "Try a sample wardrobe" loads it and "Add your first item" opens Add ('+smp+')');
   await ev(()=>{show('today');openPack()});await settle(p,600);
@@ -261,7 +261,7 @@ async function run(eng,browser,{ok,url,settle}){
   ok(pe&&await ev(()=>!document.querySelector('#add').hidden),T+'the empty Packing list has the same way to start');
 
   /* ---- an Add card: Price, Bought and Material ---- */
-  await ev(()=>{items=window.__keep;cache={};queue.length=0;openAdd()});await settle(p,400);await tap('#add-manual',600);
+  await ev(()=>{HOOK.items=window.__keep;HOOK.cache={};queue.length=0;openAdd()});await settle(p,400);await tap('#add-manual',600);
   await pick('#nps-q section[data-ck="type"] select','suit');
   const unfold=()=>ev(()=>{for(const k of Object.keys(CK_OPEN))if(k!=='*')delete CK_OPEN[k];renderAdd()});   // (a checked section folds: every section open again)
   await unfold();await settle(p,300);

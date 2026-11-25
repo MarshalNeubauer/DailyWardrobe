@@ -181,7 +181,7 @@ module.exports=async({ok,chromium,url})=>{
       const b=document.createElement('canvas');b.width=b.height=512;const bx=b.getContext('2d');bx.filter='blur(3px)';bx.drawImage(c,0,0);
       renders[asmCmBgKey()]={img:b.toDataURL('image/png'),t:4242,sig:'asm/cm-bg test'};
       {const own=[];for(const L of LOOKS)for(const q of L.own||[])if(!own.some(x=>x.key===q.key))own.push(q);if(own.length)applyCustom({patterns:own})}   // (own patterns with a look)
-      let n=0;const I=(type,c,x={})=>({id:type+(n++),type,primaryColor:c,pattern:'solid',...x}),watch=I('watch','silver',{metal:'silver'});items=[watch];
+      let n=0;const I=(type,c,x={})=>({id:type+(n++),type,primaryColor:c,pattern:'solid',...x}),watch=I('watch','silver',{metal:'silver'});HOOK.items=[watch];
       window.__jobs=[];window.__its=[];for(const L of LOOKS){const it=([t,c,x])=>I(t,c,x||{}),top=L.top?it(L.top):null,bot=L.bot?it(L.bot):null,belt=L.belt?I('belt',L.belt):null;
         const sh=Array.isArray(L.shirt)?I('shirt',L.shirt[0],L.shirt[1]):I('shirt',L.shirt),tie=L.tie==null?null:Array.isArray(L.tie)?I('tie',L.tie[0],L.tie[1]):I('tie',L.tie);
         items.push(...[top,bot,belt,sh,tie].filter(Boolean));const clip=L.clip?I('tieclip',L.clip,{metal:L.clip}):null;
@@ -206,7 +206,7 @@ module.exports=async({ok,chromium,url})=>{
       // the picture as asmCmBuild hands it to its JPEG encoder (raw pixels, not the JPEG)
       // (stage 6) over a phone's size (ASMGL_SIZE=2880, the PC's) the picture before its scaling to 2048 (both painters scale it the same way)
       const pid=OffscreenCanvasRenderingContext2D.prototype.putImageData;OffscreenCanvasRenderingContext2D.prototype.putImageData=function(img,...a){if(SIZE>ASM_SIZE&&img.width===SIZE)window.__big=new Uint8ClampedArray(img.data);return pid.call(this,img,...a)};
-      window.__cap=null;asmJpeg=async img=>{__cap=SIZE>ASM_SIZE?window.__big:new Uint8ClampedArray(img.data);window.__capW=img.width;return 'data:image/jpeg;base64,'};
+      window.__cap=null;HOOK.asmJpeg=async img=>{__cap=SIZE>ASM_SIZE?window.__big:new Uint8ClampedArray(img.data);window.__capW=img.width;return 'data:image/jpeg;base64,'};
       window.__paint=async(i,gl)=>{const j={...__jobs[i],gl};const r=await asmCmBuild(j);return {r,px:__cap}};
       // the creased sleeves (the tube path's choice of upper arm or forearm, asmTubePartQ, in whole numbers on both painters): how many
       // quarter-pixel points the float rule (asmTubePart) would put in the other part

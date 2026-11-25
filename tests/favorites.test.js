@@ -10,13 +10,13 @@ module.exports=async({ok,engines,url,settle})=>{
     try{await run(eng,browser,{ok,url,settle})}finally{await browser.close()}}
 };
 const SETUP=()=>{const I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',added:+new Date(2026,9,1),...x});
-  items=[I('s1','suit','navy'),I('s2','suit','charcoal'),I('b1','blazer','tan'),I('p1','pants','grey'),I('h1','shirt','white'),I('h2','shirt','lightblue'),I('h3','shirt','pink'),
+  HOOK.items=[I('s1','suit','navy'),I('s2','suit','charcoal'),I('b1','blazer','tan'),I('p1','pants','grey'),I('h1','shirt','white'),I('h2','shirt','lightblue'),I('h3','shirt','pink'),
     I('t1','tie','burgundy'),I('t2','tie','navy'),I('t3','tie','green'),I('bs','shoes','black',{leather:'calf'}),I('bb','belt','black',{leather:'calf',metal:'silver'}),I('so','socks','charcoal')];
-  settings.workdays=[1,2,3,4,5];settings.blazerDays=[5];settings.setupDone=1;delete settings.fav;TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};CK_OPEN['*']=true;
-  cache={};sel=new Date(2026,10,11);view={y:2026,m:10};
+  settings.workdays=[1,2,3,4,5];settings.blazerDays=[5];settings.setupDone=1;delete settings.fav;HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};CK_OPEN['*']=true;
+  HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};
   // the same look worn a week before, so "This look last worn" shows; Nov 10 marked "Didn't"
   const o=planFor()['2026-11-11'];dayRecs['2026-11-4']={date:'2026-11-4',ids:idsOf(o),suitDay:o.suitDay,worn:true};
-  const y=planFor()['2026-11-10'];dayRecs['2026-11-10']={date:'2026-11-10',ids:idsOf(y),suitDay:y.suitDay,worn:false};cache={};show('today')};
+  const y=planFor()['2026-11-10'];dayRecs['2026-11-10']={date:'2026-11-10',ids:idsOf(y),suitDay:y.suitDay,worn:false};HOOK.cache={};show('today')};
 async function run(eng,browser,{ok,url,settle}){
   const T=eng+': ',ctx=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:eng==='Chromium'});
   await ctx.addInitScript(()=>{localStorage.setItem('tour_seen','1')});
@@ -26,12 +26,12 @@ async function run(eng,browser,{ok,url,settle}){
 
   // ---- nothing is a favorite: the ♡ is on the pill, nothing else shows
   const none=await p.evaluate(async()=>{const r={heart:!!$('#wpfav'),pressed:$('#wpfav')&&$('#wpfav').getAttribute('aria-pressed'),lw:!!document.querySelector('.lastworn'),lwfav:!!document.querySelector('.lwfav')};
-    sel=new Date(2026,10,12);renderToday();openPicker('tie');r.strip=!!document.querySelector('#pick-sheet .favpick');r.mark=!!document.querySelector('#pick-sheet .favmark');closePicker();
+    HOOK.sel=new Date(2026,10,12);renderToday();openPicker('tie');r.strip=!!document.querySelector('#pick-sheet .favpick');r.mark=!!document.querySelector('#pick-sheet .favmark');closePicker();
     show('wardrobe');r.chip=!!document.querySelector('.favchip');r.tiles=document.querySelectorAll('#wardrobe .favmark').length;
-    show('stats');r.card=!!document.querySelector('#st-fav');sel=new Date(2026,10,11);show('today');return r});
+    show('stats');r.card=!!document.querySelector('#st-fav');HOOK.sel=new Date(2026,10,11);show('today');return r});
   ok(none.heart&&none.pressed==='false'&&none.lw&&!none.lwfav,`${T}a worn day's pill carries the ♡, not pressed; "This look last worn" has no heart (${JSON.stringify(none)})`);
   ok(!none.strip&&!none.mark&&!none.chip&&!none.tiles&&!none.card,`${T}with no favorites: no picker strip, no tile marks, no Wardrobe chip, no Insights card`);
-  const days=await p.evaluate(()=>{const at=d=>{sel=d;renderToday();return !!$('#wpfav')};const r={ahead:at(new Date(2026,10,13)),didnt:at(new Date(2026,10,10)),past:at(new Date(2026,10,9))};sel=new Date(2026,10,11);renderToday();return r});
+  const days=await p.evaluate(()=>{const at=d=>{HOOK.sel=d;renderToday();return !!$('#wpfav')};const r={ahead:at(new Date(2026,10,13)),didnt:at(new Date(2026,10,10)),past:at(new Date(2026,10,9))};HOOK.sel=new Date(2026,10,11);renderToday();return r});
   ok(!days.ahead&&!days.didnt&&days.past,`${T}the ♡ shows on worn days only: not on a coming day (${days.ahead}), not on a day marked "Didn't" (${days.didnt}), on a past worn day (${days.past})`);
 
   // ---- love today's look, Undo, love it again
@@ -51,7 +51,7 @@ async function run(eng,browser,{ok,url,settle}){
   await p.locator('#wpfav').tap();await pressed('true');await settle(p,200);
 
   // ---- the picker's strip wears it on another day
-  await p.evaluate(()=>{sel=new Date(2026,10,12);renderToday();openPicker('shirt')});await settle(p,300);
+  await p.evaluate(()=>{HOOK.sel=new Date(2026,10,12);renderToday();openPicker('shirt')});await settle(p,300);
   const st=await p.evaluate(()=>({n:document.querySelectorAll('#pick-sheet .favpick .favlook').length,first:document.querySelector('#pick-sheet .favpick').nextElementSibling.tagName,label:document.querySelector('.favlook').getAttribute('aria-label')}));
   ok(st.n===1&&/^Wear this favorite look: /.test(st.label),`${T}once a favorite exists, the picker opens with a "Favorite looks" strip (${st.n} look: ${st.label})`);
   await p.locator('#pick-sheet .favlook').first().tap();await p.waitForFunction(()=>dayRecs['2026-11-12']&&dayRecs['2026-11-12'].force&&dayRecs['2026-11-12'].force.shirt&&/Wearing a favorite/.test($('#toast').textContent));await settle(p,200);
@@ -62,7 +62,7 @@ async function run(eng,browser,{ok,url,settle}){
   ok(true,`${T}Undo puts the day back as it was`);
 
   // ---- a favorite piece: the item sheet's switch, the tile's ♥, the chip, Insights
-  await p.evaluate(()=>{sel=new Date(2026,10,11);show('wardrobe');openItem('t2')});await p.waitForSelector('.favtog');await settle(p,300);
+  await p.evaluate(()=>{HOOK.sel=new Date(2026,10,11);show('wardrobe');openItem('t2')});await p.waitForSelector('.favtog');await settle(p,300);
   const tg=await p.evaluate(()=>{const b=document.querySelector('.favtog'),r=b.getBoundingClientRect();return {h:Math.round(r.height),checked:b.getAttribute('aria-checked'),role:b.getAttribute('role'),inCare:!!b.closest('.ivrot')}});
   ok(tg.role==='switch'&&tg.checked==='false'&&tg.h>=44&&tg.inCare,`${T}the item sheet's Planning & care has a "Favorite, wear it more" switch, off, ${tg.h}px tall`);
   const sw=v=>p.waitForFunction(v=>{const b=document.querySelector('.favtog');return b&&b.getAttribute('aria-checked')===v&&(settings.fav.items||[]).includes('t2')===(v==='true')&&(v==='false'||/favorite now/.test($('#toast').textContent))},v);
@@ -74,7 +74,7 @@ async function run(eng,browser,{ok,url,settle}){
   await p.locator('.favtog').tap();await sw('true');await settle(p,200);
   const wd=await p.evaluate(()=>{HOOK.closeItem();show('wardrobe');const r={mark:!!document.querySelector('#gi-t2 .favmark'),others:document.querySelectorAll('#wardrobe .favmark').length,chip:(document.querySelector('.favchip')||{}).textContent,label:document.querySelector('#gi-t2 .giopen').getAttribute('aria-label')};
     document.querySelector('.favchip').click();r.shown=[...document.querySelectorAll('#wardrobe .gi')].map(g=>g.id).join();
-    sel=new Date(2026,10,12);show('today');openPicker('tie');r.pick=!!document.querySelector('#pick-sheet .pick-it .favmark');closePicker();
+    HOOK.sel=new Date(2026,10,12);show('today');openPicker('tie');r.pick=!!document.querySelector('#pick-sheet .pick-it .favmark');closePicker();
     show('stats');const c=document.querySelector('#st-fav');r.card=c?c.textContent.replace(/\s+/g,' ').trim():'';return r});
   ok(wd.mark&&wd.others===1&&/favorite$/.test(wd.label),`${T}its Wardrobe tile has the ♥ (and says so: ${wd.label})`);
   ok(/Favorites 1/.test(wd.chip||'')&&wd.shown==='gi-t2',`${T}Wardrobe's "♥ Favorites" chip shows only the favorites (${wd.chip}: ${wd.shown})`);
@@ -87,11 +87,11 @@ async function run(eng,browser,{ok,url,settle}){
   // ---- 390 and 320 px, light and dark: the pill and its ♡, the strip, the switch stay inside
   for(const w of [390,320])for(const th of ['light','dark']){
     await p.setViewportSize({width:w,height:780});
-    const L=await p.evaluate(async th=>{document.documentElement.dataset.theme=th;HOOK.closeItem();sel=new Date(2026,10,11);show('today');await new Promise(r=>setTimeout(r,120));
+    const L=await p.evaluate(async th=>{document.documentElement.dataset.theme=th;HOOK.closeItem();HOOK.sel=new Date(2026,10,11);show('today');await new Promise(r=>setTimeout(r,120));
       const g=document.querySelector('.wpgrp'),h=document.querySelector('#today .day h2'),gr=g.getBoundingClientRect(),hr=h.getBoundingClientRect(),hb=$('#wpfav').getBoundingClientRect(),wx=document.querySelector('#today .day h2 .wxc');
       const r={pill:gr.right<=hr.right+.5&&gr.left>=hr.left-.5,heartW:Math.round(hb.width),heartH:Math.round(hb.height),wxCut:wx?wx.scrollWidth>wx.clientWidth+1&&!document.querySelector('.wx.wxwrap'):false,wrap:!!document.querySelector('#today .wx.wxwrap'),side:document.documentElement.scrollWidth-innerWidth,
         bg:getComputedStyle($('#wpfav')).backgroundColor};
-      sel=new Date(2026,10,12);renderToday();openPicker('tie');await new Promise(r=>setTimeout(r,350));const s=$('#pick-sheet').getBoundingClientRect(),f=document.querySelector('.favlook').getBoundingClientRect();
+      HOOK.sel=new Date(2026,10,12);renderToday();openPicker('tie');await new Promise(r=>setTimeout(r,350));const s=$('#pick-sheet').getBoundingClientRect(),f=document.querySelector('.favlook').getBoundingClientRect();
       r.strip=f.left>=s.left-.5&&f.height>=44&&document.querySelector('.favstrip').getBoundingClientRect().right<=s.right+.5;closePicker();
       show('wardrobe');openItem('t2');await new Promise(r=>setTimeout(r,300));const t=document.querySelector('.favtog').getBoundingClientRect();r.tog=t.height>=44&&t.right<=innerWidth+.5;r.side2=document.documentElement.scrollWidth-innerWidth;HOOK.closeItem();return r},th);
     ok(L.pill&&L.heartH>=24&&L.heartW>=20&&(w<390||!L.wrap)&&!L.wxCut&&L.side<=0,`${T}${w}px ${th}: the ✓ Wore pill and its ♡ fit the date bar (♡ ${L.heartW}×${L.heartH}, the weather ${L.wxCut?'cut':'whole'}${L.wrap?', the pill under it':', one line'})`);
