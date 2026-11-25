@@ -13,7 +13,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       sel=new Date(2026,10,11);view={y:2026,m:10};show('today')})()`);
     await p.waitForSelector('#mannequin-container.photo .swstack .ovsw');
     const st=()=>p.evaluate(()=>{const c=$('#mannequin-container'),R=c.getBoundingClientRect(),rel=e=>{if(!e)return null;const b=e.getBoundingClientRect();return {l:b.left-R.left,t:b.top-R.top,r:b.right-R.left,b:b.bottom-R.top}};
-      const sws=[...c.querySelectorAll('.swstack .ovsw')];return {W:R.width,open:c.classList.contains('swopen'),t:zoomTarget().style.transform,lens:rel(c.querySelector('.swlens')),lab:rel(c.querySelector('.swlab')),
+      const sws=[...c.querySelectorAll('.swstack .ovsw')];return {W:R.width,open:c.classList.contains('swopen'),t:HOOK.zoomTarget().style.transform,lens:rel(c.querySelector('.swlens')),lab:rel(c.querySelector('.swlab')),
         labText:(c.querySelector('.swlab')||{}).textContent||'',ring:rel(c.querySelector('.swring')),scroll:c.scrollTop+c.scrollLeft,stack:rel(c.querySelector('.swstack')),sw:sws.map(rel),on:sws.filter(b=>b.classList.contains('on')).map(b=>b.dataset.s),
         pressed:sws.map(b=>b.getAttribute('aria-pressed')),slots:sws.map(b=>b.dataset.s),painted:/as painted/i.test(c.textContent),onShadow:(()=>{const b=sws.find(x=>x.classList.contains('on'));return b?getComputedStyle(b).boxShadow:''})(),share:c.querySelector('.wshare')?'1':'0'}});
     const a=await st();

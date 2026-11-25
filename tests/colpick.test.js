@@ -40,15 +40,15 @@ module.exports=async({ok,chromium,url})=>{
     // photo, and as the "Drawing" view beside a photo; redrawn on every tap, nothing saved until Use
     const fg=await p.evaluate(()=>{const draw=()=>document.querySelector('#col-sheet .cpdraw').innerHTML.replace(/th\d+-/g,''),strip=s=>{const t=document.createElement('div');t.innerHTML=s;return t.innerHTML.replace(/th\d+-/g,'')},r={};
       items.push({id:'bz1',type:'blazer',primaryColor:'steelblue',pattern:'solid',added:9},{id:'bz2',type:'blazer',primaryColor:'steelblue',pattern:'solid',photo:'x',added:9});
-      openColPick('e','bz1','primaryColor');r.fig=draw().includes(strip(BLAZER_D.head))&&!!document.querySelector('#col-sheet .cpph.cpfig');
+      openColPick('e','bz1','primaryColor');r.fig=draw().includes(strip(HOOK.BLAZER_D.head))&&!!document.querySelector('#col-sheet .cpph.cpfig');
       document.querySelector('#col-sheet .cptile[data-c="charcoal"]').click();r.col=draw()===strip(itemThumb({...items.find(x=>x.id==='bz1'),primaryColor:'charcoal'}));
       r.seg0=document.querySelectorAll('#col-sheet .cpseg button').length;closeColPick();
       openColPick('e','bz1','pattern');document.querySelector('#col-sheet .cptile[data-c="windowpane"]').click();
-      r.pat=draw()===strip(itemThumb(patVar(items.find(x=>x.id==='bz1'),'windowpane')))&&draw().includes(strip(BLAZER_D.coat));closeColPick();
+      r.pat=draw()===strip(itemThumb(patVar(items.find(x=>x.id==='bz1'),'windowpane')))&&draw().includes(strip(HOOK.BLAZER_D.coat));closeColPick();
       openColPick('e','bz2','primaryColor');const segs=[...document.querySelectorAll('#col-sheet .cpseg button')].map(e=>e.textContent);r.photo=!!document.querySelector('#col-sheet .cpph img');
-      colPickView('draw');document.querySelector('#col-sheet .cptile[data-c="tan"]').click();r.drawn=!document.querySelector('#col-sheet .cpph img')&&draw()===strip(itemThumb({...items.find(x=>x.id==='bz2'),primaryColor:'tan'}));
+      HOOK.colPickView('draw');document.querySelector('#col-sheet .cptile[data-c="tan"]').click();r.drawn=!document.querySelector('#col-sheet .cpph img')&&draw()===strip(itemThumb({...items.find(x=>x.id==='bz2'),primaryColor:'tan'}));
       r.segs=segs.join('|');r.saved=items.find(x=>x.id==='bz1').primaryColor+'/'+items.find(x=>x.id==='bz1').pattern+'/'+items.find(x=>x.id==='bz2').primaryColor;closeColPick();
-      openColPick('e','s1','pattern');r.suit=[...document.querySelectorAll('#col-sheet .cpseg button')].some(e=>e.textContent==='Drawing');colPickView('draw');r.suitFig=draw().includes(strip(SUIT_D.out).slice(0,60));closeColPick();
+      openColPick('e','s1','pattern');r.suit=[...document.querySelectorAll('#col-sheet .cpseg button')].some(e=>e.textContent==='Drawing');HOOK.colPickView('draw');r.suitFig=draw().includes(strip(HOOK.SUIT_D.out).slice(0,60));closeColPick();
       items=items.filter(x=>!x.id.startsWith('bz'));return r});
     ok(fg.fig&&fg.col&&fg.seg0===0,'a blazer without a photo is drawn as its traced figure in the color tapped, with no view switch');
     ok(fg.pat,'the pattern sheet redraws the figure in the pattern tapped');
@@ -56,7 +56,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(fg.suit&&fg.suitFig,'a suit gets the Drawing view too, drawn as its traced suit');
     ok(fg.saved==='steelblue/solid/steelblue','nothing is saved by looking ('+fg.saved+')');
     // Add card: the second colour offers None
-    await p.evaluate(ph=>{editing=null;closeItem&&closeItem();queue.length=0;queue.push({id:'q1',type:'tie',primaryColor:'navy',secondaryColor:'red',tertiaryColor:null,pattern:'solid',photo:ph,manual:true});show('add')},PH);
+    await p.evaluate(ph=>{editing=null;HOOK.closeItem&&HOOK.closeItem();queue.length=0;queue.push({id:'q1',type:'tie',primaryColor:'navy',secondaryColor:'red',tertiaryColor:null,pattern:'solid',photo:ph,manual:true});show('add')},PH);
     await p.click('#queue .colbtn[data-k="secondaryColor"]');await p.click('#col-sheet .cptile:has-text("None")');await p.click('#col-sheet .cpbar button');
     ok(await p.evaluate(()=>queue[0].secondaryColor===null&&document.querySelector('#queue .colbtn[data-k="secondaryColor"]').textContent==='None'),'on the Add card a second color can be set back to None');
     // Ask Claude: the close-up, the photo and the close-up's measurement go to the tagger; its pick is selected, its colours can all be taken
@@ -89,7 +89,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.route('**/fakeworker/**',async r=>{if(notTag(r))return r.fulfill({status:503,body:'{}'});asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',...({type:'tie',primaryColor:'green',secondaryColor:'navy',tertiaryColor:'none',pattern:'solid',
       confidence:{type:'high',primaryColor:'low',pattern:'high'},altColor:'olive',altPattern:'none',newColor:{name:'bottle green',why:'darker and bluer than green'},newPattern:null,
       ownColors:{primary:{name:'bottle green',hex:'#1f4a3a'},secondary:{name:'navy',hex:'#1b2a4a'},tertiary:null}})}})});
-    await p.evaluate(()=>{delete colAsk['t1|c']});await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cpaskbtn');
+    await p.evaluate(()=>{delete HOOK.colAsk['t1|c']});await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cpaskbtn');
     await p.waitForFunction(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent));
     const n=await p.evaluate(()=>({flag:true,said:document.querySelector('#col-sheet .cpask b').textContent,tiles:[...document.querySelectorAll('#col-sheet .cpai .cptile')].map(b=>b.dataset.c+':'+b.textContent),
       sw:document.querySelector('#col-sheet .cptile[data-c="+new"] .cpsw').style.background,note:(document.querySelector('#col-sheet .cpnewtx')||{}).textContent||''}));
@@ -109,7 +109,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.route('**/fakeworker/**',async r=>{if(notTag(r))return r.fulfill({status:503,body:'{}'});asked.push(r.request().postDataJSON());await r.fulfill({json:{model:'m',...({type:'tie',primaryColor:'purple',secondaryColor:'tan',tertiaryColor:'navy',pattern:'solid',
       confidence:{type:'high',primaryColor:'medium',pattern:'high'},altColor:'none',altPattern:'none',newColor:{name:'smoky plum',why:'grayer than purple'},newPattern:null,
       ownColors:{primary:{name:'smoky plum',hex:'#5a3f55'},secondary:{name:'mushroom',hex:'#a39383'},tertiary:{name:'navy',hex:'#1b2a4a'}}})}})});
-    await p.evaluate(()=>{delete colAsk['t1|c']});await p.click('#item-view .colbtn[data-k="secondaryColor"]');await p.click('#col-sheet .cpaskbtn');
+    await p.evaluate(()=>{delete HOOK.colAsk['t1|c']});await p.click('#item-view .colbtn[data-k="secondaryColor"]');await p.click('#col-sheet .cpaskbtn');
     await p.waitForFunction(()=>/reads it as/.test(document.querySelector('#col-sheet .cpask').textContent));
     ok(await p.evaluate(()=>(document.querySelector('#col-sheet .cpall')||{}).textContent==='Use all 3 colors'),'three colors named: "Use all 3 colors" is offered');
     await p.click('#col-sheet .cpall');await p.waitForTimeout(300);

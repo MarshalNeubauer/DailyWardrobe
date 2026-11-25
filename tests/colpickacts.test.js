@@ -32,7 +32,7 @@ async function run(eng,browser,{ok,url,settle}){
   await p.evaluate(async()=>{const load=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
     const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
     const cv=(im,k)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9)};
-    rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
+    HOOK.rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
     items=[{id:'s1',type:'suit',primaryColor:'grey',pattern:'solid',photo:cv(pi,1),texture:cv(ci,3),added:1,name:'Mink suit'},
       {id:'t1',type:'tie',primaryColor:'red',pattern:'solid',added:2,name:'Bare tie'}];flt='all';editing=null;show('wardrobe');
     // the order of a tap: document's capture listeners, the control's own function, window's listeners
@@ -172,16 +172,16 @@ async function run(eng,browser,{ok,url,settle}){
   await tap('#rd-sheet .rdx');await closed();
 
   // ---- the Look beta's Shade steps, inside the sheet
-  await p.evaluate(()=>{lookSet(true);openItem('s1');openColPick('e','s1','primaryColor')});await settle(p,300);
+  await p.evaluate(()=>{HOOK.lookSet(true);openItem('s1');openColPick('e','s1','primaryColor')});await settle(p,300);
   await tap('#col-sheet .lkshade button[data-d="1"]');await tap('#col-sheet .lkshade button[data-d="1"]');await tap('#col-sheet .lkshade button[data-d="-1"]');
   e=await p.evaluate(()=>({shade:colPick.shade,out:document.querySelector('#lk-shade').textContent,bar:document.querySelector('#col-sheet .cpbar button').textContent}));
   ok(e.shade===1&&/^Use Wine · /.test(e.bar),T+`two taps on Lighter and one on Darker leave the shade one step lighter (${JSON.stringify(e)})`);
   await tap('#col-sheet .cpbar button');await p.waitForFunction(()=>items.find(x=>x.id==='s1').shade===1,null,{timeout:5000}).catch(()=>{});await shut();
   ok((await it('s1')).shade===1,T+'Use saves the shade');
-  await p.evaluate(()=>{lookSet(false);closeItem()});await settle(p,300);
+  await p.evaluate(()=>{HOOK.lookSet(false);HOOK.closeItem()});await settle(p,300);
 
   // ---- the Add card's color button (a card filled in by hand)
-  await p.evaluate(()=>{openAdd();addManual()});await settle(p,500);await order();
+  await p.evaluate(()=>{openAdd();HOOK.addManual()});await settle(p,500);await order();
   await tap('#nps-q .colbtn[data-k="primaryColor"]');await settle(p,250);e=await sheet();const qid=await p.evaluate(()=>queue[queue.length-1].id);
   ok(e.on&&e.src==='q'&&e.ref===qid&&e.k==='primaryColor',T+`a tap on the Add card's Color button opens the sheet for that card (${JSON.stringify(e)})`);
   e=await p.evaluate(()=>{const b=[...document.querySelectorAll('#col-sheet .cptile')].find(b=>b.dataset.c!==colPick.cur&&b.dataset.c!=='none'&&!b.id);return b.dataset.c});

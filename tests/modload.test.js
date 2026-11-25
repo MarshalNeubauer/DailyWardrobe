@@ -42,7 +42,7 @@ async function run(eng,browser,{ok,url,settle}){
       if(c.hold&&name===c.held)await c.hold;await route.continue().catch(()=>{})});
     c.p=await ctx.newPage();c.p.on('pageerror',e=>c.errs.push(e.message));
     await c.p.goto(url);await c.p.waitForFunction(()=>window.appReady);
-    await c.p.evaluate(async()=>{if(document.querySelector('#setup.on'))setupClose();settings.setupDone=1;settings.laundryDays=3;await saveUserSettings();
+    await c.p.evaluate(async()=>{if(document.querySelector('#setup.on'))HOOK.setupClose();settings.setupDone=1;settings.laundryDays=3;await saveUserSettings();
       await put({id:'ml-shirt',type:'shirt',primaryColor:'white',pattern:'solid',added:1});await put({id:'ml-tie',type:'tie',primaryColor:'navy',pattern:'solid',added:2});await put({id:'ml-suit',type:'suit',primaryColor:'navy',pattern:'solid',added:3})});
     return c};
   // loads the page with one script held: every script before it has run, none after
@@ -70,11 +70,11 @@ async function run(eng,browser,{ok,url,settle}){
   ok(early===0&&await c.p.evaluate(()=>window.__ad)===1,T+'afterDom waits for the last script: its function didn\'t run while they were loading, and ran once after');
   ok(await c.p.evaluate(()=>{let r=0;afterDom(()=>{r++});return r})===1,T+'after that afterDom runs its function at once');
   ok(await shown(c)==='today'&&c.errs.length===0&&await c.p.evaluate(()=>items.length===3&&!settingsOpen()),T+`those taps are dropped: the app starts on Today with its wardrobe, no page error (${c.errs.join(' | ')||'none'})`);
-  await held(c,'start.js',()=>typeof todayTabTap==='function'&&typeof setOpenTap==='function'&&typeof themeTap==='function');
+  await held(c,'start.js',()=>'todayTabTap' in HOOK&&typeof HOOK.todayTabTap==='function'&&'setOpenTap' in HOOK&&typeof HOOK.setOpenTap==='function'&&'themeTap' in HOOK&&typeof HOOK.themeTap==='function');
   await tap(c,CTRL.Today);await tap(c,CTRL.Wardrobe);await tap(c,CTRL.Insights);
   ok(c.errs.length===0,T+`the tabs tapped with today.js in and start.js not: no page error (${c.errs.join(' | ')||'none'})`);
   await go(c);ok(await shown(c)==='today'&&c.errs.length===0,T+'and the app starts on Today');
-  await held(c,'ui.js',()=>typeof tabTap==='function');
+  await held(c,'ui.js',()=>'tabTap' in HOOK&&typeof HOOK.tabTap==='function');
   await tap(c,CTRL['the gear']);const setEarly=await c.p.evaluate(()=>settingsOpen());await tap(c,CTRL['the theme button']);
   const themed=await c.p.evaluate(()=>document.documentElement.dataset.theme||'');
   ok(c.errs.length===0,T+`the gear and the theme button tapped with their scripts in and the later ones not: no page error (${c.errs.join(' | ')||'none'}; theme "${themed}")`);
@@ -130,10 +130,10 @@ async function run(eng,browser,{ok,url,settle}){
   md.own=await c.p.evaluate('[typeof BACK,typeof backPop,typeof appLocale].join()');   // (as text: these are not the page's names, and the checkers would take a function's use of them for one)
   ok(md.own==='undefined,undefined,undefined'&&md.fns&&md.loc==='en-US'&&md.patched,T+`back.js and locale.js run as modules: their own names (BACK, backPop, appLocale) are not the page's, the bridged functions and APP_LOC are, and the Date patch is in (${JSON.stringify(md)})`);
   ok(md.get==='function/undefined,function/undefined,function/undefined'&&md.strict==='throws/true',T+'the three Back flags are getters with no setter, and back.js\'s functions are strict (reading a function\'s caller throws) where a classic script\'s are not');
-  const flags=()=>c.p.evaluate(()=>appHist+'/'+appKind+'/'+itemHist+'/'+backKind());
+  const flags=()=>c.p.evaluate(()=>HOOK.appHist+'/'+HOOK.appKind+'/'+HOOK.itemHist+'/'+backKind());
   const live=[await flags()];
   await c.p.evaluate(()=>openSettings());await settle(c.p,300);live.push(await flags());
-  const kept=await c.p.evaluate(()=>Reflect.set(globalThis,'appKind','zz')+'/'+appKind);
+  const kept=await c.p.evaluate(()=>Reflect.set(globalThis,'appKind','zz')+'/'+HOOK.appKind);
   await c.p.evaluate(()=>closeSettings());await settle(c.p,500);live.push(await flags());
   ok(live.join(' ')==='false//false/ true/set/false/set false//false/'&&kept==='false/set'&&c.errs.length===0,T+`a getter gives the module's value of the moment: no entry, Settings' entry, none again (${live.join(' ')}); a write from outside is refused and changes nothing (${kept})`);
   // the pattern for a `let` the tests assign: a getter and a setter, so a bare assignment in the page reaches the module's own variable
@@ -167,7 +167,7 @@ async function run(eng,browser,{ok,url,settle}){
   /* ---- an Arabic-language phone: dates are drawn after locale.js's patch ---- */
   const a=await open({locale:'ar-KW',timezoneId:'Asia/Kuwait'});
   ok(await a.p.evaluate(()=>/^ar/.test(navigator.language)),T+'the phone\'s language is Arabic');
-  await held(a,'locale.js',()=>typeof todayTabTap==='function');
+  await held(a,'locale.js',()=>'todayTabTap' in HOOK&&typeof HOOK.todayTabTap==='function');
   const raw=await a.p.evaluate(()=>({patched:!!Date.prototype._dwLoc,sample:new Date(2026,10,15).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}),drawn:document.querySelector('#today').textContent.length}));
   ok(!raw.patched&&/[؀-ۿ]/.test(raw.sample)&&raw.drawn===0,T+`with locale.js held the patch is not in (a date would read "${raw.sample}") and nothing is drawn yet`);
   await tap(a,CTRL.Today);await tap(a,CTRL.Wardrobe);
@@ -177,7 +177,7 @@ async function run(eng,browser,{ok,url,settle}){
   const txt=await a.p.evaluate(()=>({all:document.querySelector('#today').innerText,head:(document.querySelector('#today .dlong')||document.querySelector('#today')).textContent.slice(0,60),sample:new Date(2026,10,15).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}));
   ok(!/[؀-ۿ]/.test(txt.all)&&/(January|February|March|April|May|June|July|August|September|October|November|December)/.test(txt.all)&&txt.sample==='Sunday, November 15',
     T+`after start-up Today's dates are in English with Latin digits ("${txt.head.replace(/\s+/g,' ').trim()}"; a date reads "${txt.sample}")`);
-  await held(a,'ui.js',()=>typeof tabTap==='function');await tap(a,CTRL.Insights);await go(a);
+  await held(a,'ui.js',()=>'tabTap' in HOOK&&typeof HOOK.tabTap==='function');await tap(a,CTRL.Insights);await go(a);
   ok(!/[؀-ۿ]/.test(await a.p.evaluate(()=>document.body.innerText))&&await shown(a)==='stats'&&a.errs.length===0,T+'a tab tapped during loading, then Insights after start-up: no Arabic date anywhere, no page error');
   await a.ctx.close();
 

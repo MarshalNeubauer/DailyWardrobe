@@ -33,7 +33,7 @@ const boxfold=async({ok,chromium,url,settle})=>{
       ok(!f.open&&f.h===0&&jump<120,`the ${name} ends shut, with no jump (largest step ${jump}px)`);
     }
     // a tap in the middle of a fold finishes it and opens again cleanly
-    const mid=await p.evaluate(async()=>{toggleList();await new Promise(r=>setTimeout(r,500));toggleList();await new Promise(r=>setTimeout(r,120));toggleList();await new Promise(r=>setTimeout(r,60));
+    const mid=await p.evaluate(async()=>{HOOK.toggleList();await new Promise(r=>setTimeout(r,500));HOOK.toggleList();await new Promise(r=>setTimeout(r,120));HOOK.toggleList();await new Promise(r=>setTimeout(r,60));
       const b=$('#ibox');return {open:b.classList.contains('open'),lift:b.classList.contains('blift')}});
     await p.waitForFunction(()=>!$('#ibox').getAnimations({subtree:true}).some(a=>a.playState==='running'&&a.effect.getComputedTiming().endTime!==Infinity),null,{timeout:3000});
     ok(mid.open&&!mid.lift&&await p.evaluate(()=>getComputedStyle($('#ibox')).clipPath==='none'&&!document.querySelector('#ibox .fedge')),'opening the list in the middle of its fold stops the fold and opens it fully');
@@ -57,15 +57,15 @@ const picfold=async({ok,chromium,url,settle})=>{
       let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       items=[I('suit','navy',{photo}),I('suit','charcoal',{photo}),I('shirt','white',{photo}),I('shirt','lightblue',{photo}),I('tie','burgundy',{photo}),I('tie','navy',{pattern:'stripe',secondaryColor:'white',photo}),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('watch','grey',{metal:'silver'})];
-      settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};scoreOpen=listOpen=false;openRow=null;belowOpen=null;show('today')});
+      settings.workdays=[1,2,3,4,5];dayRecs={};TODAY_OVERRIDE='2026-11-10T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};scoreOpen=listOpen=false;HOOK.openRow=null;HOOK.belowOpen=null;show('today')});
     let cdp=null;try{cdp=await ctx.newCDPSession(p);await cdp.send('Performance.enable')}catch{cdp=null}   // the layout count is Chromium's (CDP); on WebKit (npm run test:webkit) it isn't counted
     const lay=async()=>cdp?(await cdp.send('Performance.getMetrics')).metrics.find(m=>m.name==='LayoutCount').value:0;
     const laid=n=>cdp?`${n} times`:'(not counted on WebKit)';
     const quiet=()=>p.waitForFunction(()=>!document.getAnimations().some(a=>a.playState==='running'&&a.effect&&a.effect.getComputedTiming().endTime!==Infinity),null,{timeout:4000});
-    await p.evaluate(()=>toggleList());await quiet();await settle(p,400);
+    await p.evaluate(()=>HOOK.toggleList());await quiet();await settle(p,400);
     // a row's photo opens: clipped open, the card grows with it, the rows below slide, the photo drops in with a bounce
     const l0=await lay();
-    const o=await p.evaluate(async()=>{const el=$('#ri-shirt'),seen=new Set(),hs=[];toggleRow('shirt');
+    const o=await p.evaluate(async()=>{const el=$('#ri-shirt'),seen=new Set(),hs=[];HOOK.toggleRow('shirt');
       const t0=performance.now();while(performance.now()-t0<700){for(const a of document.getAnimations()){const k=a.effect.getKeyframes()[0],t=a.effect.target;
           const eg=t.closest('.fedge');if(eg&&eg.parentElement===el)seen.add('row edge');if(eg&&eg.parentElement.id==='ibox')seen.add('card edge');if(k.clipPath)seen.add('a clip-path');if(/translateY\(-/.test(k.transform||'')&&t.matches('.ritem')&&t!==el)seen.add('rows below slide');
           if(t.classList.contains('rpanel-in')&&/cubic-bezier\(0\.34, 1\.56/.test(a.effect.getTiming().easing))seen.add('photo bounce')}
@@ -77,13 +77,13 @@ const picfold=async({ok,chromium,url,settle})=>{
     ok(o.open&&o.img>0&&o.last>o.first+100&&o.late===1&&o.clip==='none',`the photo was decoded before it opened: its height (${o.last}px) is right at once and doesn't change after (no late jump)`);
     ok(layouts<=10,`opening it lays the page out ${laid(layouts)} (an animated height did it every frame)`);
     // another row while one above is open: the tapped row stays under the finger
-    const keep=await p.evaluate(async()=>{const t=$('#ri-tie').getBoundingClientRect().top;toggleRow('tie');   // read right after the tap: the photo's own reveal scroll starts after it
+    const keep=await p.evaluate(async()=>{const t=$('#ri-tie').getBoundingClientRect().top;HOOK.toggleRow('tie');   // read right after the tap: the photo's own reveal scroll starts after it
       
       return {before:Math.round(t),after:Math.round($('#ri-tie').getBoundingClientRect().top),shirt:$('#ri-shirt').classList.contains('open')}});
     await quiet();
     ok(!keep.shirt&&Math.abs(keep.after-keep.before)<=2,`opening the tie's photo shuts the shirt's above it and the tie's row stays where it was under the finger (${keep.before} → ${keep.after}px)`);
     // shutting: the photo lifts out with a dip, then the space closes; it ends shut, nothing jumps
-    const s=await p.evaluate(()=>new Promise(res=>{const el=$('#ri-tie');toggleRow('tie');const an=document.getAnimations(),pin=an.find(a=>a.effect.target.classList.contains('rpanel-in')),clip=an.find(a=>{const eg=a.effect.target.closest('.fedge');return eg&&eg.parentElement===el});
+    const s=await p.evaluate(()=>new Promise(res=>{const el=$('#ri-tie');HOOK.toggleRow('tie');const an=document.getAnimations(),pin=an.find(a=>a.effect.target.classList.contains('rpanel-in')),clip=an.find(a=>{const eg=a.effect.target.closest('.fedge');return eg&&eg.parentElement===el});
       const r={dip:!!pin&&/cubic-bezier\(0\.36, 0, 0\.66, -0\.56\)/.test(pin.effect.getTiming().easing),clipDelay:clip?clip.effect.getTiming().delay:-1},tops=[];const ib=$('#ibox');
       const vis=b=>{const e=[...b.querySelectorAll(':scope>.fedge>i')][0];return e?e.getBoundingClientRect().top+parseFloat(e.style.getPropertyValue('--fh')):b.getBoundingClientRect().bottom};
       const f=()=>{tops.push(Math.round(vis(ib)));if(document.getAnimations().some(a=>a.playState==='running'&&a.effect.getComputedTiming().endTime!==Infinity)||tops.length<5)requestAnimationFrame(f);
@@ -92,15 +92,15 @@ const picfold=async({ok,chromium,url,settle})=>{
     ok(s.dip&&s.clipDelay>=100&&!s.open&&s.h===0,`shutting lifts the photo out with a dip and closes the space after it (from ${s.clipDelay} ms); the row ends shut`);
     ok(jump<90,`the card's edge closes up smoothly, no jump at the end (largest step ${jump}px: ${s.tops.join(' ')})`);
     // a tile's photo: the cards under the stage slide; another tile swaps the photo; it shuts again
-    await p.evaluate(()=>{toggleList();scrollTo(0,0)});await quiet();await settle(p,300);
-    const t=await p.evaluate(async()=>{const el=$('#bbox');pickPiece('shoes');await new Promise(r=>setTimeout(r,40));
+    await p.evaluate(()=>{HOOK.toggleList();scrollTo(0,0)});await quiet();await settle(p,300);
+    const t=await p.evaluate(async()=>{const el=$('#bbox');HOOK.pickPiece('shoes');await new Promise(r=>setTimeout(r,40));
       const an=document.getAnimations(),r={clip:an.some(a=>{const eg=a.effect.target.closest('.fedge');return eg&&eg.parentElement===el}),side:an.some(a=>a.effect.target.classList.contains('side')&&/translateY\(-/.test(a.effect.getKeyframes()[0].transform||''))};
-      await new Promise(r=>setTimeout(r,700));pickPiece('belt');r.swap=el.classList.contains('open')&&belowOpen==='belt'&&/belt/i.test(el.querySelector('.rpanel-in').innerHTML);
-      await new Promise(r=>setTimeout(r,300));pickPiece('belt');await new Promise(r=>setTimeout(r,900));r.shut=!el.classList.contains('open')&&belowOpen===null;return r});
+      await new Promise(r=>setTimeout(r,700));HOOK.pickPiece('belt');r.swap=el.classList.contains('open')&&HOOK.belowOpen==='belt'&&/belt/i.test(el.querySelector('.rpanel-in').innerHTML);
+      await new Promise(r=>setTimeout(r,300));HOOK.pickPiece('belt');await new Promise(r=>setTimeout(r,900));r.shut=!el.classList.contains('open')&&HOOK.belowOpen===null;return r});
     ok(t.clip&&t.side&&t.swap&&t.shut,`a tile's photo opens by a clip with the cards below sliding; another tile swaps the photo in place; tapping it again shuts it (${JSON.stringify(t)})`);
     // reduced motion: no animation
     await p.emulateMedia({reducedMotion:'reduce'});
-    const rm=await p.evaluate(()=>{toggleList();const own=()=>document.getAnimations().filter(x=>!(x instanceof CSSTransition)&&!(x instanceof CSSAnimation)).length;toggleRow('top');const a=own();toggleRow('top');return {a,b:own(),shut:!$('#ri-top').classList.contains('open')}});
+    const rm=await p.evaluate(()=>{HOOK.toggleList();const own=()=>document.getAnimations().filter(x=>!(x instanceof CSSTransition)&&!(x instanceof CSSAnimation)).length;HOOK.toggleRow('top');const a=own();HOOK.toggleRow('top');return {a,b:own(),shut:!$('#ri-top').classList.contains('open')}});
     ok(rm.b===0&&rm.shut,'with reduced motion a photo opens and shuts at once');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
@@ -119,7 +119,7 @@ const foldtap=async({ok,chromium,url,settle})=>{
     const setup=(x={})=>p.evaluate(async x=>{let k=0;const I=(type,primaryColor,y={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...y});
       items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown'),I('tie','burgundy'),I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','brown'),I('watch','silver',{metal:'silver'})];
       settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};
-      listOpen=!!x.list;monthOpen=!!x.month;scoreOpen=!!x.score;belowOpen=null;openRow=null;show('today');scrollTo(0,0);await new Promise(r=>setTimeout(r,200))},x);
+      listOpen=!!x.list;monthOpen=!!x.month;scoreOpen=!!x.score;HOOK.belowOpen=null;HOOK.openRow=null;show('today');scrollTo(0,0);await new Promise(r=>setTimeout(r,200))},x);
     const into=s=>p.evaluate(s=>{const e=document.querySelector(s);scrollBy(0,e.getBoundingClientRect().top-100)},s);
     const open=s=>p.evaluate(s=>document.querySelector(s).classList.contains('open'),s);
     // pieces list: open a piece's photo, tap the photo: it folds, the list stays open
@@ -137,7 +137,7 @@ const foldtap=async({ok,chromium,url,settle})=>{
     // a tile's photo folds when tapped
     await setup();await into('.below');await p.tap('.below .tile');await settle(p,600);const b1=await open('#bbox');
     await p.tap('#bbox .rpanel-in');await settle(p,600);
-    ok(b1&&!(await open('#bbox'))&&await p.evaluate(()=>belowOpen===null),'a tile\'s photo folds when the photo is tapped');
+    ok(b1&&!(await open('#bbox'))&&await p.evaluate(()=>HOOK.belowOpen===null),'a tile\'s photo folds when the photo is tapped');
     // score: a tap on the breakdown folds it
     await setup();await into('#sbox');await p.tap('#sbox .month-link');await settle(p,900);const s1=await open('#sbox');
     await p.tap('#sbox .sdl >> nth=1');await settle(p,700);
@@ -171,8 +171,8 @@ const reveal=async({ok,chromium,url,settle})=>{
     const setup=()=>p.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown',{pattern:'stripe',secondaryColor:'cream'}),I('tie','burgundy'),
         I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','brown'),I('watch','silver',{metal:'silver'})];
-      settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};listOpen=false;monthOpen=false;belowOpen=null;scoreOpen=false;
-      const o=planFor()[key(sel)];renderTried.add(comboKey(o));renders[comboKey(o)]={sig:'x',img:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#5f5449"/></svg>'),model:'x',t:1};
+      settings.workdays=[1,2,3,4,5];TODAY_OVERRIDE='2026-11-10T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,10);view={y:2026,m:10};listOpen=false;monthOpen=false;HOOK.belowOpen=null;scoreOpen=false;
+      const o=planFor()[key(sel)];HOOK.renderTried.add(comboKey(o));renders[comboKey(o)]={sig:'x',img:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#5f5449"/></svg>'),model:'x',t:1};
       show('today');scrollTo(0,0);await new Promise(r=>setTimeout(r,300))});
     const navTop=()=>p.evaluate(()=>document.querySelector('body>nav').getBoundingClientRect().top);
     const at=s=>p.evaluate(s=>{const b=document.querySelector(s).getBoundingClientRect();return {top:Math.round(b.top),bottom:Math.round(b.bottom)}},s);
@@ -238,7 +238,7 @@ const pagescroll=async({ok,chromium,url,settle})=>{
         else setTimeout(()=>{removeEventListener('scroll',on);res({scrolls,tr,tops,moved:scrollY-y0,left:getComputedStyle($('#today')).transform})},50)};requestAnimationFrame(f)}),{tap,el});
     const smooth=w=>{let jump=0,moving=0;for(let i=1;i<w.tops.length;i++){const d=Math.abs(w.tops[i]-w.tops[i-1]);jump=Math.max(jump,d);if(d>2)moving++}
       const way=Math.abs(w.tops[w.tops.length-1]-w.tops[0]);return {jump,moving,way,ok:way<4||(jump<=Math.max(way*.4,40)&&moving>=5)}};
-    for(const [name,tap,el] of [['calendar','toggleMonth()','#mbox'],['pieces list','toggleList()','#ibox'],['score','toggleScore()','#sbox']]){
+    for(const [name,tap,el] of [['calendar','toggleMonth()','#mbox'],['pieces list','HOOK.toggleList()','#ibox'],['score','toggleScore()','#sbox']]){
       // the card's head near the bottom of the screen, so unfolding has to scroll to show it
       await p.evaluate(el=>{const b=$(el);scrollTo(0,0);scrollBy(0,b.getBoundingClientRect().top-innerHeight+200)},el);await settle(p,200);
       const u=await watch(tap,el),su=smooth(u);

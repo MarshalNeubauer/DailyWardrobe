@@ -29,7 +29,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
       return route.fulfill({status:503,headers:h,body:'{"error":"server"}'})});
     await ctx.addInitScript(on=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');localStorage.setItem('tour_seen','1');if(on)localStorage.setItem('beta_look','1')},o.off?0:1);
     const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{rememberRole({role:'owner'});if(document.querySelector('#setup.on')&&typeof setupClose==='function')setupClose()});
+    await p.evaluate(()=>{HOOK.rememberRole({role:'owner'});if(document.querySelector('#setup.on')&&'setupClose' in HOOK&&typeof HOOK.setupClose==='function')HOOK.setupClose()});
     return {ctx,p,errs,sent}};
   const WARD=photo=>{const I=(id,type,x={})=>({id,type,primaryColor:'navy',pattern:'solid',added:1,...x});
     return [I('s1','suit',{pattern:'pinstripe',secondaryColor:'white',material:'wool',photo,tagAI:{col:'navy',alt:'darknavy',altPat:'chalk-stripe'}}),I('s2','suit',{primaryColor:'charcoal'}),
@@ -105,7 +105,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
     await p.evaluate(()=>{const b=document.querySelector('#toast.on button');if(b)b.click()});await settle(p,150);
     e=await p.evaluate(()=>{const s=items.find(x=>x.id==='s1');return {c:s.primaryColor,h:s.lookHint}});
     ok(e.c==='navy'&&e.h.c==='charcoal',T+`Undo puts the color and the hint back (${JSON.stringify(e)})`);
-    await p.evaluate(()=>lookCheck('s1'));await settle(p,100);
+    await p.evaluate(()=>HOOK.lookCheck('s1'));await settle(p,100);
     e=await p.evaluate(()=>({ok:items.find(x=>x.id==='s1').lookOk,chips:document.querySelectorAll('#item-view .lkchip').length,mark:document.querySelector('#item-view .cklook .ckm').className}));
     ok(e.ok===1&&e.chips===0&&/ck-good/.test(e.mark),T+`Looks right: kept on the item, the chips go, the mark is ✓ (${JSON.stringify(e)})`);
     await p.evaluate(()=>sete('s1','pattern','chalk-stripe'));
@@ -119,7 +119,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
       out.order=[...document.querySelectorAll('#col-sheet .cph')].map(h=>h.textContent).filter(t=>['Suggested','Yours','New'].includes(t)).join(',');
       colPickSel('silver');out.metalShade=!!document.querySelector('#col-sheet .lkshade');closeColPick();
       openItem('cl');openColPick('e','cl','primaryColor');out.clip=!!document.querySelector('#col-sheet .lkshade');closeColPick();
-      openItem('s2');openColPick('e','s2','primaryColor');lookShadeStep(-1);lookShadeStep(-1);colPickSel('slate');out.bar=document.querySelector('#col-sheet .cpbar button').textContent;await useColPick();
+      openItem('s2');openColPick('e','s2','primaryColor');HOOK.lookShadeStep(-1);HOOK.lookShadeStep(-1);colPickSel('slate');out.bar=document.querySelector('#col-sheet .cpbar button').textContent;await useColPick();
       const s=items.find(x=>x.id==='s2');out.after=[s.primaryColor,s.shade];return out});
     ok(e.shade&&!e.ask&&e.order==='Yours,New'&&!e.clip,T+`color sheet: Shade under the preview, no Ask Claude, Yours then "+ New" at the end; no Shade for silver cufflinks (${JSON.stringify(e)})`);
     ok(e.bar==='Use Dark slate blue-gray · Darker 2'&&e.after[0]==='slate'&&e.after[1]===-2,T+`the shade is kept with the color (${e.bar}, ${e.after})`);
@@ -137,9 +137,9 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
     e=await p.evaluate(()=>{openItem('b1');openColPick('e','b1','leather');const t=[...document.querySelectorAll('#col-sheet .cnown .cptile')].map(x=>x.dataset.c);closeColPick();return t});
     ok(e.includes('own:shell cordovan'),T+'an own leather made on shoes is offered for belts (one group, as own colors)');
     // Other typed and kept as one of yours
-    await p.evaluate(()=>{openItem('o1');openColPick('e','o1','material');colPickSel(LOOK_OTHER)});await p.fill('#lk-other','boiled wool');
+    await p.evaluate(()=>{openItem('o1');openColPick('e','o1','material');colPickSel(HOOK.LOOK_OTHER)});await p.fill('#lk-other','boiled wool');
     await p.click('#col-sheet .cpbar button');await settle(p,200);
-    e=await p.evaluate(()=>({m:items.find(x=>x.id==='o1').material,own:settings.ownMaterials&&settings.ownMaterials.overcoat,shared:lookOwnMats({type:'raincoat'},'material')}));
+    e=await p.evaluate(()=>({m:items.find(x=>x.id==='o1').material,own:settings.ownMaterials&&settings.ownMaterials.overcoat,shared:HOOK.lookOwnMats({type:'raincoat'},'material')}));
     ok(e.m==='boiled wool'&&JSON.stringify(e.own)==='["boiled wool"]'&&e.shared.includes('boiled wool'),T+`a typed Other is kept as your own (and offered for raincoats too) (${JSON.stringify(e)})`);
     // metal, buckle, dial, enamel
     e=await p.evaluate(async()=>{const o={};openItem('w2');openColPick('e','w2','metal');colPickSel('two-tone');await useColPick();o.watch=items.find(x=>x.id==='w2').metal;
@@ -178,7 +178,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
     ok(e.c==='black'&&e.m==='gold'&&e.d==='navy',T+`a strap watch: strap color, case metal and dial (${JSON.stringify(e)})`)}
 
   // ================= the Add card: one Look section, chips, Looks right, the hints kept on the saved item =================
-  {let e=await p.evaluate(async()=>{closeItem();show('add');addManual();await new Promise(r=>setTimeout(r,80));const q=queue[0];
+  {let e=await p.evaluate(async()=>{HOOK.closeItem();show('add');HOOK.addManual();await new Promise(r=>setTimeout(r,80));const q=queue[0];
       Object.assign(q,{type:'suit',primaryColor:'navy',pattern:'pinstripe',secondaryColor:'white',manual:false,ai:true,altColor:'darknavy',altPattern:'chalk-stripe',matGuess:{key:'flannel',conf:'low',why:'soft nap'}});renderAdd();
       await new Promise(r=>setTimeout(r,80));return {secs:[...document.querySelectorAll('#nps-q .cks')].map(s=>s.dataset.ck).join(),chips:[...document.querySelectorAll('#nps-q .lkchip')].map(c=>c.dataset.chip).join(),id:q.id}});
     ok(/type,lk,/.test(e.secs)&&!/colors|pattern/.test(e.secs)&&e.chips==='primaryColor,pattern,material',T+`Add card: Type, then one Look section with Claude's chips on the color, pattern and material rows (${JSON.stringify(e)})`);
@@ -187,14 +187,14 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
     ok(e.p==='chalk-stripe'&&e.left==='primaryColor,material',T+`a chip applies at once (${JSON.stringify(e)})`);
     e=await p.evaluate(async()=>{const q=queue[0];await save(q.id);await new Promise(r=>setTimeout(r,150));const it=items.find(x=>x.id===q.id);return it&&{h:it.lookHint,ok:it.lookOk||0}});
     ok(e&&e.h&&e.h.c==='darknavy'&&e.h.mat&&e.h.mat.key==='flannel'&&!e.ok,T+`saved unchecked, Claude's runner-ups are kept on the item for the item sheet (${JSON.stringify(e)})`);
-    e=await p.evaluate(async()=>{show('add');addManual();await new Promise(r=>setTimeout(r,80));const q=queue[0];Object.assign(q,{type:'tieclip',primaryColor:'silver'});renderAdd();
-      await lookSetMat('q',q.id,'metal','gold');await lookSetEnamel('q',q.id,'navy');ckCheck(qAt(q.id),'lk');await save(q.id);await new Promise(r=>setTimeout(r,150));const it=items.find(x=>x.id===q.id);return it&&{pc:it.primaryColor,m:it.metal,ok:it.lookOk}});
+    e=await p.evaluate(async()=>{show('add');HOOK.addManual();await new Promise(r=>setTimeout(r,80));const q=queue[0];Object.assign(q,{type:'tieclip',primaryColor:'silver'});renderAdd();
+      await HOOK.lookSetMat('q',q.id,'metal','gold');await lookSetEnamel('q',q.id,'navy');HOOK.ckCheck(qAt(q.id),'lk');await save(q.id);await new Promise(r=>setTimeout(r,150));const it=items.find(x=>x.id===q.id);return it&&{pc:it.primaryColor,m:it.metal,ok:it.lookOk}});
     ok(e&&e.pc==='navy'&&e.m==='gold'&&e.ok===1,T+`a tie clip made on the Add card: navy enamel on gold, checked (${JSON.stringify(e)})`);
     // a combat boot added by hand is "Suede and nylon" (the owner, 2026-11-18), as on the old card; a leather picked in Look first is kept
     e=await p.evaluate(async()=>{const row=()=>[...document.querySelectorAll('#nps-q .cklook .lkrow')].map(r=>r.textContent.replace(/\s+/g,' ').trim());
-      show('add');addManual();await new Promise(r=>setTimeout(r,80));let q=queue[0];setq(qAt(q.id),'type','shoes');setq(qAt(q.id),'shoeStyle','combat');await new Promise(r=>setTimeout(r,60));
-      const a={l:q.leather,rows:row()};skipCard(q.id);addManual();await new Promise(r=>setTimeout(r,80));q=queue[0];setq(qAt(q.id),'type','shoes');setq(qAt(q.id),'shoeStyle','boot');
-      await lookSetMat('q',q.id,'leather','calf');setq(qAt(q.id),'shoeStyle','combat');a.kept=q.leather;skipCard(q.id);return a});
+      show('add');HOOK.addManual();await new Promise(r=>setTimeout(r,80));let q=queue[0];setq(qAt(q.id),'type','shoes');setq(qAt(q.id),'shoeStyle','combat');await new Promise(r=>setTimeout(r,60));
+      const a={l:q.leather,rows:row()};skipCard(q.id);HOOK.addManual();await new Promise(r=>setTimeout(r,80));q=queue[0];setq(qAt(q.id),'type','shoes');setq(qAt(q.id),'shoeStyle','boot');
+      await HOOK.lookSetMat('q',q.id,'leather','calf');setq(qAt(q.id),'shoeStyle','combat');a.kept=q.leather;skipCard(q.id);return a});
     ok(e.l==='suede'&&e.rows.some(t=>/Material · Leather\s*Suede and nylon/.test(t))&&e.rows.some(t=>/^Sole/.test(t))&&e.kept==='calf',T+`a combat boot added by hand is Suede and nylon in Look (with its Sole row); a leather picked first stays (${JSON.stringify(e)})`)}
 
   // ================= the tie clip's planner input is unchanged: the same colour field the old UI wrote, the same plans =================
@@ -205,7 +205,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
       const sig=()=>JSON.stringify(Object.entries(buildPlan(2026,10)).sort().map(([k,o])=>[k,o.clip&&o.clip.id,o.top&&o.top.id,o.tie&&o.tie.id]));
       items=mk();cache={};const A=sig();
       // the same clips edited through the beta (plain gold → metal silver → gold again; navy enamel on a silver clip: enamel none, then navy again)
-      items=mk();cache={};await lookSetMat('e','k1','metal','silver');await lookSetMat('e','k1','metal','gold');await lookSetEnamel('e','k2','none');await lookSetEnamel('e','k2','navy');await lookSetMat('e','k3','metal','silver');
+      items=mk();cache={};await HOOK.lookSetMat('e','k1','metal','silver');await HOOK.lookSetMat('e','k1','metal','gold');await lookSetEnamel('e','k2','none');await lookSetEnamel('e','k2','navy');await HOOK.lookSetMat('e','k3','metal','silver');
       const pcs=items.filter(x=>x.type==='tieclip').map(x=>x.primaryColor).join(),metals=items.filter(x=>x.type==='tieclip').map(x=>String(clipMetal(x))).join();cache={};const B=sig();
       items=was;cache={};return {same:A===B,pcs,metals,n:JSON.parse(A).length}});
     ok(e.same&&e.pcs==='gold,navy,silver'&&e.metals==='gold,null,silver'&&e.n>10,T+`tie clips edited in the beta keep the planner's input (their colors ${e.pcs}, clipMetal ${e.metals}) and plan exactly the same month`)}
@@ -216,15 +216,15 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
     ok(e.own==='shell cordovan'&&e.m==='titanium'&&e.ok===1&&e.h==='tan'&&/matte/.test(e.why||''),T+`cleanRecord keeps lookOk, lookHint, leatherOwn and metalOwn (${JSON.stringify(e)})`)}
 
   // ================= the switch round trip loses nothing: the old UI shows what the beta set =================
-  {const e=await p.evaluate(()=>{lookSet(false);openItem('o1');const sel=[...document.querySelectorAll('#item-view select.wmat')].map(s=>s.value).join(),other=(document.querySelector('#item-view .wmat-t')||{}).value;
-      openItem('sk');const lea=[...document.querySelectorAll('#item-view select')].map(s=>s.value);const keep=JSON.stringify(items.find(x=>x.id==='o1'));lookSet(true);
+  {const e=await p.evaluate(()=>{HOOK.lookSet(false);openItem('o1');const sel=[...document.querySelectorAll('#item-view select.wmat')].map(s=>s.value).join(),other=(document.querySelector('#item-view .wmat-t')||{}).value;
+      openItem('sk');const lea=[...document.querySelectorAll('#item-view select')].map(s=>s.value);const keep=JSON.stringify(items.find(x=>x.id==='o1'));HOOK.lookSet(true);
       return {sel,other,lea,same:keep===JSON.stringify(items.find(x=>x.id==='o1')),look:!!document.querySelector('#item-view .cklook')}});
     ok(e.sel==='boiled wool'&&e.lea.includes('suede')&&e.same&&e.look,T+`switched off, the old sheet shows the beta's values (material "boiled wool", one of the overcoat's own materials now, in its dropdown; leather suede) and on again nothing moved (${JSON.stringify(e)})`)}
 
   // ================= Settings: + New material (beta) =================
-  {await p.evaluate(()=>{closeItem();openSettings('tagging')});await p.click('#ownmat-new');await p.waitForSelector('#ownmat-name');
+  {await p.evaluate(()=>{HOOK.closeItem();openSettings('tagging')});await p.click('#ownmat-new');await p.waitForSelector('#ownmat-name');
     await p.selectOption('#ownmat-for','watch');await p.fill('#ownmat-name','titanium');await p.click('#ownmat-add');await settle(p,150);
-    const e=await p.evaluate(()=>({w:settings.ownMaterials&&settings.ownMaterials.watch,row:[...document.querySelectorAll('#ownmat-list .ownmatrow')].some(r=>r.dataset.m==='titanium'),shared:lookOwnMats({type:'cufflinks'},'metal')}));
+    const e=await p.evaluate(()=>({w:settings.ownMaterials&&settings.ownMaterials.watch,row:[...document.querySelectorAll('#ownmat-list .ownmatrow')].some(r=>r.dataset.m==='titanium'),shared:HOOK.lookOwnMats({type:'cufflinks'},'metal')}));
     ok(JSON.stringify(e.w)==='["titanium"]'&&e.row&&e.shared.includes('titanium'),T+`Settings → Your materials → "+ New material" adds one (a metal shared by watches, clips and cufflinks) (${JSON.stringify(e)})`);
     await p.evaluate(()=>closeSettings())}
 
@@ -233,7 +233,7 @@ async function run(eng,browser,{ok,url,settle}){const T=eng+': ',full=eng==='Chr
     const r=await o.p.evaluate(async()=>{const out=[];const x=()=>Math.max(document.documentElement.scrollWidth-innerWidth,(document.querySelector('#ivbody')||{scrollWidth:0,clientWidth:0}).scrollWidth-(document.querySelector('#ivbody')||{clientWidth:0}).clientWidth);
       for(const id of ['s1','so','w1','b1','c2']){openItem(id);await new Promise(r=>setTimeout(r,30));out.push(x())}
       for(const k of ['primaryColor','material','pattern']){openItem('s1');openColPick('e','s1',k);await new Promise(r=>setTimeout(r,30));const s=document.querySelector('#col-sheet');out.push(s.scrollWidth-s.clientWidth);closeColPick()}
-      closeItem();show('add');addManual();await new Promise(r=>setTimeout(r,60));Object.assign(queue[0],{type:'socks',pattern:'argyle'});renderAdd();await new Promise(r=>setTimeout(r,60));const n=document.querySelector('#nps-q');out.push(n.scrollWidth-n.clientWidth);
+      HOOK.closeItem();show('add');HOOK.addManual();await new Promise(r=>setTimeout(r,60));Object.assign(queue[0],{type:'socks',pattern:'argyle'});renderAdd();await new Promise(r=>setTimeout(r,60));const n=document.querySelector('#nps-q');out.push(n.scrollWidth-n.clientWidth);
       return out});
     ok(r.every(v=>v<=1),T+`${w} px ${dark?'dark':'light'}: no sideways scroll on the item sheets, pickers or the Add card (${r.join(',')})`);
     ok(o.errs.length===0,T+`${w} px ${dark?'dark':'light'}: no page errors (${o.errs.join('; ')})`);await o.ctx.close()}

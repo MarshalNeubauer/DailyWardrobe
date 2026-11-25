@@ -18,7 +18,7 @@ const plannerfix=async({ok,chromium,url})=>{
       window.months=n=>{const T=todayDate(),pl=planSim(planStart(T.getFullYear(),T.getMonth())).upTo(new Date(T.getFullYear(),T.getMonth()+n,0));return Object.entries(pl).filter(([k,o])=>keyDate(k)>=T)};
       window.uses=(pl,slot)=>{const u={};for(const [k,o] of pl)if(o[slot]&&!(slot==='bot'&&o.suitDay))u[o[slot].id]=(u[o[slot].id]||0)+1;return u}});
     // ---- rule tables
-    const t=await p.evaluate(()=>{const J=c=>I('suit',c),X=c=>I('tie',c),W=I('shirt','white'),h=(j,x)=>HARM[pcol(J(j))].includes(pcol(X(x)));
+    const t=await p.evaluate(()=>{const J=c=>I('suit',c),X=c=>I('tie',c),W=I('shirt','white'),h=(j,x)=>HOOK.HARM[pcol(J(j))].includes(pcol(X(x)));
       const rate=(j,x)=>rateOutfit({suitDay:true,top:J(j),bot:null,shirt:W,tie:X(x),notes:[]}).checks.find(c=>c.label==='Tie and jacket').pts;
       return {ok:[['navy','black'],['navy','charcoal'],['navy','silver'],['charcoal','black'],['charcoal','silver'],['charcoal','grey'],['grey','charcoal'],['grey','red'],['black','charcoal'],['brown','charcoal'],['darknavy','darkgrey']].filter(([j,x])=>!h(j,x)).join(' '),
         no:[['brown','black'],['tan','black'],['olive','black']].filter(([j,x])=>h(j,x)).join(' '),navyBlack:rate('navy','black'),charSilver:rate('charcoal','silver'),brownBlack:rate('brown','black'),
@@ -58,9 +58,9 @@ const plannerfix=async({ok,chromium,url})=>{
       items=[I('suit','lightgrey'),I('suit','midgrey'),I('suit','darkgrey'),I('suit','navy'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','black'),I('shirt','navy'),I('shirt','charcoal'),
         I('tie','silver'),I('tie','lightgrey'),I('tie','burgundy'),I('tie','navy'),I('tie','charcoal',{pattern:'check',secondaryColor:'lightgrey'}),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'})];
       const n=()=>{cache={};return months(4).filter(([k,o])=>o.shirt&&darkShirt(o.shirt)).length},some=n();settings.darkShirts='often';const often=n(),
-        under=darkUnderLight(items[2],items.find(i=>i.type==='shirt'&&i.primaryColor==='black')),sc=rateOutfit({suitDay:true,top:items[0],bot:null,shirt:items[7],tie:items[10],notes:[]}).checks.find(c=>c.label==='Shirt');
-      settings.darkShirts='never';const never=n(),underNever=darkUnderLight(items[0],items[7]);delete settings.darkShirts;
-      return {some,often,never,under,underSome:darkUnderLight(items[2],items[7]),underNever,shirtPts:sc.pts}});
+        under=HOOK.darkUnderLight(items[2],items.find(i=>i.type==='shirt'&&i.primaryColor==='black')),sc=rateOutfit({suitDay:true,top:items[0],bot:null,shirt:items[7],tie:items[10],notes:[]}).checks.find(c=>c.label==='Shirt');
+      settings.darkShirts='never';const never=n(),underNever=HOOK.darkUnderLight(items[0],items[7]);delete settings.darkShirts;
+      return {some,often,never,under,underSome:HOOK.darkUnderLight(items[2],items[7]),underNever,shirtPts:sc.pts}});
     ok(dk.often>dk.some&&dk.never===0,`dark shirts: "often" plans them more than the default (${dk.often} against ${dk.some} days in four months), "never" not at all (${dk.never})`);
     ok(dk.under&&!dk.underSome&&!dk.underNever,'with "often" a dark shirt also goes under a mid-tone jacket that is clearly lighter (black under dark grey); by default only under a light one');
     // ---- no jacket in the wardrobe
@@ -92,9 +92,9 @@ const darkshirts=async({ok,chromium,url})=>{
     const stripe=I('tie','navy',{pattern:'stripe',secondaryColor:'white',tertiaryColor:'grey'}),navyTie=I('tie','navy'),silver=I('tie','silver');
     const o={suitDay:true,top:lightSuit,shirt:navyShirt,tie:stripe},o2={...o,tie:navyTie},rate=x=>rateOutfit(x).checks.reduce((m,c)=>(m[c.label]=c.pts+'/'+c.max,m),{});
     return {allowed:shirtScore(lightSuit,navyShirt)>0&&shirtScore(tan,navyShirt)>0,kept:shirtScore(navySuit,navyShirt)<=-20,
-      tieStripe:tieScore(lightSuit,navyShirt,stripe)>tieScore(lightSuit,navyShirt,navyTie),tieSilver:tieScore(lightSuit,navyShirt,silver)>tieScore(lightSuit,navyShirt,navyTie),
-      tieLum:Math.round(tieLum(stripe)),lightRule:tieScore(lightSuit,white,navyTie)>tieScore(lightSuit,white,silver),
-      rate:rate(o),rate2:rate(o2),notes:[...new Set([o,o2].flatMap(x=>{const P=[];if(darkShirt(x.shirt)&&tieLum(x.tie)-LUM(x.shirt)<25)P.push('not lighter');return P}))]}});
+      tieStripe:HOOK.tieScore(lightSuit,navyShirt,stripe)>HOOK.tieScore(lightSuit,navyShirt,navyTie),tieSilver:HOOK.tieScore(lightSuit,navyShirt,silver)>HOOK.tieScore(lightSuit,navyShirt,navyTie),
+      tieLum:Math.round(HOOK.tieLum(stripe)),lightRule:HOOK.tieScore(lightSuit,white,navyTie)>HOOK.tieScore(lightSuit,white,silver),
+      rate:rate(o),rate2:rate(o2),notes:[...new Set([o,o2].flatMap(x=>{const P=[];if(darkShirt(x.shirt)&&HOOK.tieLum(x.tie)-LUM(x.shirt)<25)P.push('not lighter');return P}))]}});
   ok(r.allowed,'a navy shirt is allowed under a light grey or tan suit');
   ok(r.kept,'and still kept out under a navy suit');
   ok(r.tieStripe&&r.tieSilver,`on a dark shirt a lighter tie wins: silver, or navy with white stripes (reads as ${r.tieLum})`);
@@ -109,7 +109,7 @@ const darkshirts=async({ok,chromium,url})=>{
       I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
     settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';dayRecs={};weather={};TODAY_OVERRIDE='2026-11-08T12:00:00';
     const cnt={};let bad=0,dkDays=0,days=0;for(const m of [10,11]){cache={};for(const [kk,o] of Object.entries(buildPlan(2026,m))){if(keyDate(kk)<new Date(2026,10,8)||keyDate(kk).getMonth()!==m)continue;days++;
-      if(o.shirt){cnt[o.shirt.primaryColor]=(cnt[o.shirt.primaryColor]||0)+1;if(darkShirt(o.shirt)){dkDays++;if(!lightTop(o.top))bad++;if(o.tie&&tieLum(o.tie)-LUM(o.shirt)<25)bad++}}}}
+      if(o.shirt){cnt[o.shirt.primaryColor]=(cnt[o.shirt.primaryColor]||0)+1;if(darkShirt(o.shirt)){dkDays++;if(!HOOK.lightTop(o.top))bad++;if(o.tie&&HOOK.tieLum(o.tie)-LUM(o.shirt)<25)bad++}}}}
     return {cnt,bad,dkDays,days}});
   ok(['navy','charcoal','black','burgundy'].every(c=>rot.cnt[c]>=1),`every dark shirt is worn in 8 weeks (${JSON.stringify(rot.cnt)})`);
   ok(rot.bad===0,'dark shirts only ever appear under a light jacket with a lighter tie');

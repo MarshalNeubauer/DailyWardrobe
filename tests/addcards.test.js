@@ -24,7 +24,7 @@ const addcards=async({ok,chromium,url})=>{
     const ctx=await browser.newContext({viewport:{width:390,height:844}});await ctx.route(HOST+'**',route);
     const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{if(document.querySelector('#setup.on'))setupClose();openAdd()});
+    await p.evaluate(()=>{if(document.querySelector('#setup.on'))HOOK.setupClose();openAdd()});
 
     // ---- C2: a double tap on Confirm saves the card once, and the next card stays
     await p.evaluate(()=>{queue=[{id:'c1',manual:true,type:'tie',primaryColor:'navy',pattern:'solid'},{id:'c2',manual:true,type:'tie',primaryColor:'gold',pattern:'solid'}];renderAdd()});
@@ -53,7 +53,7 @@ const addcards=async({ok,chromium,url})=>{
       return {r,n,saved:items.filter(i=>i.type==='socks').length,disk:(await tx('readonly',st=>st.getAll())).filter(i=>i.type==='socks').length}});
     ok(s.r===true&&s.n===1&&s.saved===12&&s.disk===12,`"Confirm 12" writes all twelve in one transaction (${JSON.stringify(s)})`);
     // ---- a past arrival date is refused
-    await p.evaluate(()=>{queue=[{id:'o1',manual:true,type:'tie',primaryColor:'navy',pattern:'solid',order:true}];renderAdd();setArrives(0,'2020-01-01')});
+    await p.evaluate(()=>{queue=[{id:'o1',manual:true,type:'tie',primaryColor:'navy',pattern:'solid',order:true}];renderAdd();HOOK.setArrives(0,'2020-01-01')});
     ok(await p.evaluate(()=>!queue[0].arrives&&/passed/.test(document.querySelector('#toast').textContent)),'"Bought, on the way" refuses a day already gone');
 
     // ---- not connected: a photo card asks for its type; Confirm is refused until then; the colour is then measured from the photo
@@ -109,7 +109,7 @@ const addcards=async({ok,chromium,url})=>{
     ok(await p.evaluate(()=>queue[0].pattern==='solid'&&queue[0].edited.pattern),'Undo puts the first tags back');
 
     // ---- the waiting cards survive a kill: a typed name, a read photo, a reading cut off; a saved card doesn't come back
-    await p.evaluate(()=>{queue=[];renderAdd();addManual();setq(0,'type','tie');setQField(0,'name','My red tie')});
+    await p.evaluate(()=>{queue=[];renderAdd();HOOK.addManual();setq(0,'type','tie');setQField(0,'name','My red tie')});
     answer={type:'shirt',primaryColor:'white',secondaryColor:'none',tertiaryColor:'none',pattern:'solid'};
     await p.evaluate(`(async()=>{await addFiles([await ${pic(300,300,'#f4f4f4')}])})()`);
     mode='slow';await p.evaluate(`(async()=>{window._sl=addFiles([await ${pic(300,300,'#333333')}])})()`);
@@ -119,7 +119,7 @@ const addcards=async({ok,chromium,url})=>{
     // the kill: nothing the page does from here on is kept (addKeep keeps only once restored). A reload is not a kill: the page going
     // away cut the slow reading off, and on a busy WebKit its error handler still ran and kept "The server couldn't be reached" over
     // the cut card (the full --webkit run of 2026-11-17)
-    await p.evaluate(()=>{clearTimeout(addKeepT);addRestoreState='killed'});
+    await p.evaluate(()=>{clearTimeout(HOOK.addKeepT);addRestoreState='killed'});
     await p.reload();await p.waitForFunction(()=>window.appReady);mode='ok';
     await p.waitForFunction(()=>addRestoreState==='done'&&queue.length===3&&queue.some(q=>!q.ai&&!q.manual&&q.tagErr),null,{timeout:20000}).catch(()=>{});
     s=await p.evaluate(()=>({n:queue.length,name:(queue.find(q=>q.manual)||{}).name,read:(queue.find(q=>q.ai)||{}).type,cut:(queue.find(q=>!q.ai&&!q.manual)||{}).tagErr,photo:queue.filter(q=>q.photo).length,toast:document.querySelector('#toast').textContent}));
@@ -147,7 +147,7 @@ const addqty=async({ok,chromium,url})=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844}}),p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
-    await p.evaluate(()=>{if(document.querySelector('#setup.on'))setupClose();openAdd();addManual();setq(0,'type','shirt');setq(0,'primaryColor','white')});
+    await p.evaluate(()=>{if(document.querySelector('#setup.on'))HOOK.setupClose();openAdd();HOOK.addManual();setq(0,'type','shirt');setq(0,'primaryColor','white')});
     const s0=await p.evaluate(()=>({row:!!document.querySelector('#nps-q .qtyrow'),n:document.querySelector('#qty-n-0').textContent,minus:document.querySelector('#qty-m-0').disabled,conf:document.querySelector('#qconf-0').textContent}));
     ok(s0.row&&s0.n==='1'&&s0.minus&&s0.conf==='Confirm','a shirt card has "How many": 1, minus off, Confirm');
     const box=await p.evaluate(()=>{const b=document.querySelector('#qty-p-0').getBoundingClientRect(),r=document.querySelector('#nps-q .qtyrow').getBoundingClientRect();return {h:Math.round(b.height),w:Math.round(b.width),fit:r.right<=innerWidth+0.5&&document.documentElement.scrollWidth<=innerWidth}});
@@ -247,13 +247,13 @@ const nu2fix2=async({ok,chromium,url})=>{
   // a kill: nothing the page does from here on is kept (addKeep keeps only once restored). A reload alone is not a kill: the page going
   // away cut the slow reading off, and on a busy WebKit its error handler still ran and kept the card without refineCut (the full
   // --webkit run of 2026-11-17: "it comes back saying the reading was cut off" failed with "Tagging again…" and no button)
-  const restart=async p=>{await p.evaluate(()=>{clearTimeout(addKeepT);addRestoreState='killed'});await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});await p.waitForFunction(()=>addRestoreState==='done',null,{timeout:20000}).catch(()=>{});
-    await p.evaluate(()=>{if(document.querySelector('#setup.on'))setupClose();openAdd()});await p.waitForTimeout(100)};
+  const restart=async p=>{await p.evaluate(()=>{clearTimeout(HOOK.addKeepT);addRestoreState='killed'});await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});await p.waitForFunction(()=>addRestoreState==='done',null,{timeout:20000}).catch(()=>{});
+    await p.evaluate(()=>{if(document.querySelector('#setup.on'))HOOK.setupClose();openAdd()});await p.waitForTimeout(100)};
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844}});await ctx.route(HOST+'**',route);
     const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
-    await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t');if(document.querySelector('#setup.on'))setupClose();openAdd()},HOST);
+    await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t');if(document.querySelector('#setup.on'))HOOK.setupClose();openAdd()},HOST);
 
     // ---- N3: killed while the close-up is read
     await p.evaluate(`(async()=>{queue=[];await addFiles([await ${pic(400,400,'#1b2a4a')}])})()`);
@@ -264,7 +264,7 @@ const nu2fix2=async({ok,chromium,url})=>{
     await restart(p);mode='ok';await p.waitForFunction(()=>queue.length>0&&!!document.querySelector('#qconf-0'),null,{timeout:20000}).catch(()=>{});   // (slow under load)
     let s=await p.evaluate(()=>({n:queue.length,reading:queue.some(cardReading),tex:!!queue[0].texture,cut:!!document.querySelector('#queue .refcut'),stuck:/Tagging again/.test(document.querySelector('#queue').textContent),conf:!document.querySelector('#qconf-0').disabled}));
     ok(s.n===1&&!s.reading&&s.tex&&s.cut&&!s.stuck&&s.conf,`it comes back saying the reading was cut off, Confirm on (${JSON.stringify(s)})`);
-    await p.evaluate(()=>{addManual();setq(0,'type','tie')});
+    await p.evaluate(()=>{HOOK.addManual();setq(0,'type','tie')});
     ok(await p.evaluate(()=>{const b=document.querySelector('#save-all button');return !!b&&!b.disabled}),'Save all works for the other cards');
     const p0=posts;await p.evaluate(()=>{const b=[...document.querySelectorAll('#queue .refcut button')][0];b.click()});
     await p.waitForFunction(()=>queue.some(q=>q.refineNote)&&!queue.some(q=>q.refining),null,{timeout:8000}).catch(()=>{});
@@ -280,15 +280,15 @@ const nu2fix2=async({ok,chromium,url})=>{
     await p.evaluate(()=>closeSettings());
 
     // ---- Undo of "Saved", then a kill at once: the item is in the wardrobe or back on Add, never lost
-    await p.evaluate(()=>{queue=[];addManual();setq(0,'type','tie');setQField(0,'name','Undo kill')});
+    await p.evaluate(()=>{queue=[];HOOK.addManual();setq(0,'type','tie');setQField(0,'name','Undo kill')});
     const uid=await p.evaluate(async()=>{const id=queue[0].id;await save(id);return id});
     await p.click('#toast button');await p.reload();await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});await p.waitForFunction(()=>addRestoreState==='done',null,{timeout:8000}).catch(()=>{});
     s=await p.evaluate(id=>({item:items.some(i=>i.id===id),card:queue.some(q=>q.id===id)}),uid);
     ok(s.item!==s.card,`Undo then a kill: the item stays or its card is back, exactly one (${JSON.stringify(s)})`);
-    await p.evaluate(()=>{if(document.querySelector('#setup.on'))setupClose();openAdd();queue=[];renderAdd()});
+    await p.evaluate(()=>{if(document.querySelector('#setup.on'))HOOK.setupClose();openAdd();queue=[];renderAdd()});
 
     // ---- "How many": a kill right after the last + keeps it
-    await p.evaluate(()=>{addManual();setq(0,'type','socks')});await p.click('#qty-p-0');await p.click('#qty-p-0');
+    await p.evaluate(()=>{HOOK.addManual();setq(0,'type','socks')});await p.click('#qty-p-0');await p.click('#qty-p-0');
     ok(await kept(p,async()=>{const r=await metaGet('addq');return !!(r&&r[0]&&r[0].qty===3)}),'the last + is kept at once');
     await p.evaluate(()=>{queue=[];renderAdd()});
 
@@ -338,10 +338,10 @@ const nu2fix2=async({ok,chromium,url})=>{
     // (how far the page moves depends on the cards and the phone: the import row is brought under the finger, as on the tester's phone)
     const under=await p.evaluate(b=>{const r=document.querySelector('#add-import').getBoundingClientRect();scrollBy(0,r.y+r.height/2-b.y);const e=document.elementFromPoint(b.x,b.y);return e?(e.closest('button')||e).id:''},b);
     await p.mouse.click(b.x,b.y);await p.waitForTimeout(300);
-    s=await p.evaluate(n=>({saved:items.length-n,kit:typeof kitEl==='function'&&kitEl().classList.contains('on')}),n0);
+    s=await p.evaluate(n=>({saved:items.length-n,kit:'kitEl' in HOOK&&typeof HOOK.kitEl==='function'&&HOOK.kitEl().classList.contains('on')}),n0);
     ok(under==='add-import'&&s.saved===1&&!s.kit,`a double tap saves once and doesn't open the import that moved under the finger (${JSON.stringify(s)}, under it: ${under})`);
     await p.waitForTimeout(500);await p.mouse.click(b.x,b.y);await p.waitForTimeout(200);
-    ok(await p.evaluate(()=>kitEl().classList.contains('on')),'a tap there a moment later works as usual');await p.evaluate(()=>{kitClose();document.querySelector('#add').style.paddingBottom=''});
+    ok(await p.evaluate(()=>HOOK.kitEl().classList.contains('on')),'a tap there a moment later works as usual');await p.evaluate(()=>{kitClose();document.querySelector('#add').style.paddingBottom=''});
 
     // ---- texts: a hand card's close-up, a restored card's correction, the note while the invitation is checked
     await p.evaluate(()=>{queue=[{id:'h1',manual:true,type:'tie',primaryColor:'navy',pattern:'solid',texture:'data:image/png;base64,iVBORw0KGgo=',meas:{src:'closeup',sharp:.1,lab:[20,0,-10]}},
@@ -349,9 +349,9 @@ const nu2fix2=async({ok,chromium,url})=>{
     s=await p.evaluate(()=>({h:document.querySelector('#queue [data-q="h1"]').textContent,w:document.querySelector('#queue [data-q="w1"]').textContent}));
     ok(!/right half/.test(s.h)&&/too blurry/.test(s.h),`a hand card's close-up doesn't mention a swatch it lacks, and a blurry one is flagged (${s.h.slice(0,120)})`);
     ok(/Colors corrected for the light/.test(s.w)&&!/Show original/.test(s.w),'a restored card still says its colors were corrected');
-    s=await p.evaluate(()=>{localStorage.removeItem('worker_url');inviteChecking=true;const a=addNoteText();inviteChecking=false;const b=addNoteText();return {a,b}});
+    s=await p.evaluate(()=>{localStorage.removeItem('worker_url');inviteChecking=true;const a=HOOK.addNoteText();inviteChecking=false;const b=HOOK.addNoteText();return {a,b}});
     ok(/Checking your invitation/.test(s.a)&&!/won’t be read/.test(s.a)&&/won’t be read/.test(s.b),`while the invitation is checked Add says so (${s.a})`);
-    ok(await p.evaluate(()=>countWord('watch',4)==='4 watches'&&countWord('tie',2)==='2 ties'&&countWord('shoes',2)==='2 pairs of shoes'),'plurals: watches, ties, pairs of shoes');
+    ok(await p.evaluate(()=>HOOK.countWord('watch',4)==='4 watches'&&HOOK.countWord('tie',2)==='2 ties'&&HOOK.countWord('shoes',2)==='2 pairs of shoes'),'plurals: watches, ties, pairs of shoes');
     ok(!errs.length,'no page errors: '+errs.join(' | '));
     await ctx.close();
   }finally{await browser.close()}
@@ -375,11 +375,11 @@ const auditfix=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // the photo from the sharp copy
     const dims=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=3000;c.height=2000;const x=c.getContext('2d');x.fillStyle='#345';x.fillRect(0,0,3000,2000);
-      const q={raw:{big:shrink(c,800),full:shrink(c,TAG_MAX)},wb:null};cardPics(q);const im=new Image();im.src=q.photo;await im.decode();return [im.width,im.height,PH_MAX]});
+      const q={raw:{big:shrink(c,800),full:shrink(c,TAG_MAX)},wb:null};HOOK.cardPics(q);const im=new Image();im.src=q.photo;await im.decode();return [im.width,im.height,PH_MAX]});
     ok(dims[0]===dims[2]&&dims[1]===1024,`a new item's photo is ${dims[2]} px across, not the 800 px measuring copy (${dims[0]}×${dims[1]})`);
     // Confirm and Save all wait for Claude
     // (the first card is in the "Add without a photo" sheet, its Confirm in the sheet's bar; the second a card of the list)
-    const r=await p.evaluate(async()=>{show('add');addManual();queue.push({id:'h1',err:'open'});errToHand('h1');queue[0].refining=1;renderAdd();
+    const r=await p.evaluate(async()=>{show('add');HOOK.addManual();queue.push({id:'h1',err:'open'});errToHand('h1');queue[0].refining=1;renderAdd();
       const conf=['#nps-bar .pri','#queue .btns button.pri'].map(s=>document.querySelector(s).disabled),all=document.querySelector('#save-all button');
       const before=items.length;await save(0);await saveAll();const kept=queue.length,after=items.length;
       let called=0;const was=window.fetch;window.fetch=(u,o)=>{if(/\/pattern$/.test(String(u))){called++;return Promise.resolve(new Response('{}',{status:200}))}return was(u,o)};
@@ -392,18 +392,18 @@ const auditfix=async({ok,chromium,url})=>{
     ok(r.called===0,'a card no longer in the queue (saved or skipped) sends no pattern request');
     // the kept sharp close-ups of deleted items go too
     const pr=await p.evaluate(async()=>{const was=items;items=[{id:'keep1',type:'tie',primaryColor:'navy',pattern:'solid'}];const c=await caches.open(TAGIMG_CACHE);for(const n of ['tagimg/gone1','closeimg/gone2','closeimg/keep1'])await c.put(new Request(n),new Response('x'));
-      const n=await pruneTagImgs();items=was;const left=(await c.keys()).map(k=>k.url.replace(/^.*\/(\w+img\/)/,'$1'));return {n,left}});
+      const n=await HOOK.pruneTagImgs();items=was;const left=(await c.keys()).map(k=>k.url.replace(/^.*\/(\w+img\/)/,'$1'));return {n,left}});
     ok(pr.n===2&&pr.left.includes('closeimg/keep1')&&!pr.left.some(u=>/gone/.test(u)),`kept close-ups of deleted items are removed with the tagging copies (${JSON.stringify(pr)})`);
     // the Backup line inside Settings while a backup runs
-    const b=await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t');localStorage.setItem('last_sync',String(Date.now()));localStorage.removeItem('sync_status');syncing=true;openSettings('backup');const a=document.querySelector('#sync-status').textContent,s=document.querySelector('#sum-backup').textContent;
-      syncing=false;localStorage.setItem('sync_status','Syncing…');showSyncStatus();const c=document.querySelector('#sync-status').textContent;for(const k of ['sync_status','worker_url','app_token','last_sync'])localStorage.removeItem(k);closeSettings();return {a,s,c}});
+    const b=await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t');localStorage.setItem('last_sync',String(Date.now()));localStorage.removeItem('sync_status');HOOK.syncing=true;openSettings('backup');const a=document.querySelector('#sync-status').textContent,s=document.querySelector('#sum-backup').textContent;
+      HOOK.syncing=false;localStorage.setItem('sync_status','Syncing…');showSyncStatus();const c=document.querySelector('#sync-status').textContent;for(const k of ['sync_status','worker_url','app_token','last_sync'])localStorage.removeItem(k);closeSettings();return {a,s,c}});
     ok(/^Backed up /.test(b.a)&&/^Backed up today$/.test(b.s)&&/^Backed up .* · syncing…$/.test(b.c),`the Backup line inside agrees with its summary while a backup runs (${JSON.stringify(b)})`);
     // the checklist's trousers row with jackets on and no suit
     const t=await p.evaluate(()=>{const was=items;items=[];const h=setupToday();items=was;const d=document.createElement('div');d.innerHTML=h;const li=d.querySelector('[data-need="pants"]');return li&&li.textContent});
     ok(/not needed with a suit/.test(t)&&/If no suit/.test(t)&&!/Needed/.test(t),`the trousers row isn't marked "Needed" beside "not needed with a suit" (${t})`);
     // the Days off summary follows an added day; the schedule summary starts with the week's first day
     const o=await p.evaluate(async()=>{openSettings('daysoff');const s0=document.querySelector('#sum-daysoff').textContent;const T=todayDate(),d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+3);
-      document.querySelector('#cfg-off-from').value=isoKey(d);await addDayOff();const s1=document.querySelector('#sum-daysoff').textContent;
+      document.querySelector('#cfg-off-from').value=isoKey(d);await HOOK.addDayOff();const s1=document.querySelector('#sum-daysoff').textContent;
       const w=settings.workdays;settings.workdays=[0,1,2,3,4];settingsSummaries();const a=document.querySelector('#sum-schedule').textContent;settings.workdays=[6,0];settingsSummaries();const c=document.querySelector('#sum-schedule').textContent;
       settings.workdays=[1,3,5];settingsSummaries();const e=document.querySelector('#sum-schedule').textContent;settings.workdays=w;closeSettings();return {s0,s1,a,c,e}});
     ok(/0 days off/.test(o.s0)&&/1 day off/.test(o.s1),`the Days off summary follows a day added (${o.s0} → ${o.s1})`);

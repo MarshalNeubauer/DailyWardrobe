@@ -20,7 +20,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const out={rules:[hb30,hb80,hbNone,dia,fine,eoe,ox,solid].map(w).join(' '),mmDia:await asmTexMm(dia),mmFine:await asmTexMm(fine)};
       // which way the threads run: a shirt's big front and a narrow upright cuff
       const W=120,N=W*W,A=new Float32Array(N),idx=[];for(let k=0;k<N;k++){const x=k%W,y=(k/W)|0;if((x>=10&&x<70&&y>=10&&y<110)||(x>=90&&x<100&&y>=20&&y<100)){A[k]=1;idx.push(k)}}
-      const ang=asmShirtAngles(A,idx,W,W),at=(x,y)=>ang[idx.indexOf(y*W+x)];out.ang=[at(40,60),at(95,60)];
+      const ang=HOOK.asmShirtAngles(A,idx,W,W),at=(x,y)=>ang[idx.indexOf(y*W+x)];out.ang=[at(40,60),at(95,60)];
       return out},closeup);
     ok(r.rules==='tile:18.3 tile:12.2 tile:12.2 tile tile fleck fleck plain',`herringbone is sized by Claude's count (30 across: 18 mm), 12 mm at the cap or without one; read figured weaves are tiles; end-on-end and unread weaves fleck; solid is plain (${r.rules})`);
     ok(Math.abs(r.mmDia-2.9)<.4&&r.mmFine===2.9,`a figured weave's repeat is measured in its close-up (the owner's white diamond: ${r.mmDia.toFixed(2)} mm), never finer than 2.9 mm (no close-up: ${r.mmFine} mm)`);

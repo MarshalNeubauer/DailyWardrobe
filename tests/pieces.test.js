@@ -54,7 +54,7 @@ const listphoto=async({ok,chromium,url,settle})=>{
     await p.evaluate(ph=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       items=[I('suit','navy',{photo:ph}),I('suit','charcoal',{photo:ph}),I('shirt','white',{photo:ph}),I('shirt','lightblue',{photo:ph}),I('tie','burgundy'),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.planRules=PLAN_RULES;dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};listOpen=true;openRow=null;show('today')},PH);
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.planRules=PLAN_RULES;dayRecs={};weather={};TODAY_OVERRIDE='2026-11-09T12:00:00';cache={};sel=new Date(2026,10,10);view={y:2026,m:10};listOpen=true;HOOK.openRow=null;show('today')},PH);
     const h=s=>p.evaluate(s=>Math.round(document.querySelector('#rp-'+s).getBoundingClientRect().height),s);
     ok(await h('shirt')===0&&await p.evaluate(()=>document.querySelector('#ri-shirt .rowtap').getAttribute('aria-expanded'))==='false','pieces start closed');
     await p.click('#ri-shirt .rowtap .cap');await settle(p,600);
@@ -63,7 +63,7 @@ const listphoto=async({ok,chromium,url,settle})=>{
     await p.click('#ri-top .rowtap .dot');await settle(p,600);
     ok(await h('top')>150&&await h('shirt')===0,'tapping the suit swatch opens the suit and closes the shirt');
     await p.click('#ri-top .rowtap');await settle(p,600);
-    ok(await h('top')===0&&await p.evaluate(()=>openRow===null),'tapping it again folds it away');
+    ok(await h('top')===0&&await p.evaluate(()=>HOOK.openRow===null),'tapping it again folds it away');
     await p.click('#ri-tie .rowtap');await settle(p,600);
     ok(await p.evaluate(()=>!!document.querySelector('#rp-tie .rpic.draw svg')&&/No photo of this item yet/.test(document.querySelector('#rp-tie').textContent)),'a piece without a photo shows its drawing and says so');
     await p.click('#ri-tie .swap');await p.click('#pick-next');await settle(p,300);
@@ -83,7 +83,7 @@ const piecesname=async({ok,chromium,url})=>{
     const r=await p.evaluate(()=>{const I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',...x});
       const top=I('s','suit','midgrey',{name:'Medium Grey suit'}),shirt=I('h','shirt','lavender'),tie=I('t','tie','black',{name:'<b>My</b> tie'});
       const o={suitDay:true,top,shirt,tie},named=piecesLine(o),plain=piecesLine({suitDay:true,top:{...top,name:''},shirt,tie:{...tie,name:undefined}});
-      const box=document.createElement('div');box.innerHTML=piecesBox({...o,bot:top,shoes:null});const small=box.querySelector('.mltxt small');
+      const box=document.createElement('div');box.innerHTML=HOOK.piecesBox({...o,bot:top,shoes:null});const small=box.querySelector('.mltxt small');
       return {named,plain,shown:small&&small.textContent,markup:!!(small&&small.querySelector('b'))}});
     ok(/^Medium Grey suit · lavender shirt · <b>My<\/b> tie$/.test(r.named),`a named suit and tie are called by their names, as typed ("${r.named}")`);
     ok(/^mid gray suit · lavender shirt · black tie$/i.test(r.plain),`unnamed pieces keep the color wording ("${r.plain}")`);

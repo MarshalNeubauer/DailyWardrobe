@@ -18,7 +18,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const BOOT='shoes16',CAMO='pants15';
     // core: the style, the hand-pick rule, the materials, the colour
     const c=await p.evaluate(B=>{const b=items.find(i=>i.id===B);return {hp:isHandPick(b),slot:handPickSlot(b),style:shoeStyle(b),word:typeWord(b),mats:leathersFor(b).map(l=>leatherWord(b,l)).join('|'),
-      styles:SHOE_STYLES.map(s=>s[0]).join(),cols:COLS_BY.shoes.p.includes('coyote')&&COLS_BY.shoes.a.includes('coyote'),hex:COLORS.coyote,sole:colFieldLabel(b,'secondaryColor'),shows:colShows(b,'secondaryColor'),
+      styles:SHOE_STYLES.map(s=>s[0]).join(),cols:COLS_BY.shoes.p.includes('coyote')&&COLS_BY.shoes.a.includes('coyote'),hex:COLORS.coyote,sole:HOOK.colFieldLabel(b,'secondaryColor'),shows:colShows(b,'secondaryColor'),
       camo:camoPants(items.find(i=>i.id==='pants15')),chinos:camoPants(items.find(i=>i.id==='pants3')),title:nm(b)}},BOOT);
     ok(c.hp&&c.slot==='shoes'&&c.style==='combat'&&c.word==='combat boots','combat boots: hand-pick only, worn in the shoes slot');
     ok(c.styles==='oxford,derby,loafer,boot,combat,sneaker','the style list: Combat boot after Boot');
@@ -63,7 +63,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     const d=await p.evaluate(()=>{const host=document.createElement('div');host.style.cssText='position:fixed;left:0;top:0;width:260px';document.body.appendChild(host);
       const mk=x=>{host.innerHTML=itemThumb({id:'t',type:'shoes',shoeStyle:'combat',primaryColor:'coyote',leather:'suede',...x});const svg=host.querySelector('svg'),r=svg.getBoundingClientRect(),b=svg.getBBox();return {svg:svg.outerHTML,b:[b.x,b.y,b.x+b.width,b.y+b.height]}};
       const plain=mk({}),black=mk({secondaryColor:'black'});host.remove();
-      return {b:plain.b,text:/<text/i.test(plain.svg),soleDef:plain.svg.includes(mix('#8f6a3c','#000',CB_SOLE_DARK)),soleBlack:black.svg.includes(COLORS.black),hooks:SHOE_CB.fhooks.length,grom:SHOE_CB.fgrom.length,laces:SHOE_CB.flacel.split('M').length-1,len:plain.svg.length}});
+      return {b:plain.b,text:/<text/i.test(plain.svg),soleDef:plain.svg.includes(mix('#8f6a3c','#000',HOOK.CB_SOLE_DARK)),soleBlack:black.svg.includes(COLORS.black),hooks:HOOK.SHOE_CB.fhooks.length,grom:HOOK.SHOE_CB.fgrom.length,laces:HOOK.SHOE_CB.flacel.split('M').length-1,len:plain.svg.length}});
     ok(d.b[0]>=0&&d.b[1]>=0&&d.b[2]<=100&&d.b[3]<=100,`the pair stays in the 100 box (${d.b.map(v=>v.toFixed(1))})`);
     ok(!d.text&&d.soleDef&&d.soleBlack,'no text or marks; the sole is the second colour, else the upper a smidge darker');
     ok(d.hooks===4&&d.grom===4&&d.laces>=12,`hooks ${d.hooks}, grommets ${d.grom}, lace runs ${d.laces}`);

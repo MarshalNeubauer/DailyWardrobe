@@ -81,7 +81,7 @@ async function run(eng,browser,{ok,url,settle,ROOT}){
   ok(!errs.length,T+'no page errors from the controls'+(errs.length?': '+errs.join(' | '):''));
 
   /* ---- part 2: the mechanism against inline handlers ---- */
-  const has=await p.evaluate(()=>typeof acts==='function'&&typeof actsFirst==='function'&&typeof ACTS==='object');
+  const has=await p.evaluate(()=>typeof acts==='function'&&'actsFirst' in HOOK&&typeof HOOK.actsFirst==='function'&&typeof ACTS==='object');
   ok(has,T+'act.js is loaded (acts, actsFirst, ACTS)');
   if(!has){await ctx.close();return}
   const own=await p.evaluate(()=>Object.keys(ACTS));
@@ -90,7 +90,7 @@ async function run(eng,browser,{ok,url,settle,ROOT}){
     /* what a test handler does: says who ran, then what its element asks (o) */
     window.__t=(n,el,ev,o)=>{L(n,el.className,ev.type);if(o==='stop')ev.stopPropagation();if(o==='prevent')ev.preventDefault();if(o==='gone')el.remove();if(o==='throw')throw new Error('act-test throw '+n);if(o==='false')return false};
     acts({tLog:(el,ev)=>window.__t(el.dataset.n,el,ev,el.dataset.o)});
-    actsFirst({tFirst:(el,ev)=>window.__t('first',el,ev,el.dataset.o)});
+    HOOK.actsFirst({tFirst:(el,ev)=>window.__t('first',el,ev,el.dataset.o)});
     const box=document.createElement('div');box.id='act-fx';box.style.cssText='position:fixed;left:0;top:0;width:390px;height:400px;z-index:99999;background:#fff;overflow:hidden';document.body.appendChild(box);
     const inFx=e=>e.target&&e.target.closest&&e.target.closest('#act-fx');
     for(const t of ['click','change','input','keydown','keyup','pointerdown']){document.addEventListener(t,e=>{if(inFx(e))L('doc','',e.type)});window.addEventListener(t,e=>{if(inFx(e))L('win','',e.type)})}
@@ -156,7 +156,7 @@ async function run(eng,browser,{ok,url,settle,ROOT}){
   await p.evaluate(()=>{window.__fx('act','nested');document.querySelector('#act-fx .c-in').setAttribute('data-act','tNope')});
   const nope=await clickIn(),nopeErr=await p.evaluate(n=>window.__werr.slice(n),w1);
   ok(nopeErr.length===1&&/no handler named "tNope"/.test(nopeErr[0])&&JSON.stringify(nope)===JSON.stringify(['mid:c-mid:click','outer:c-out:click','doc::click','win::click']),T+'a name nothing registered is a page error, and the outer handlers still run ('+nopeErr.join(' | ')+')');
-  const dup=await p.evaluate(()=>{const r=[];try{acts({tLog(){}})}catch(e){r.push(e.message)}try{acts({tNotFn:1})}catch(e){r.push(e.message)}try{actsFirst({dayTap(){}})}catch(e){r.push(e.message)}return r.concat(typeof ACTS.tNotFn,String(ACT_FIRST.has('dayTap')))});
+  const dup=await p.evaluate(()=>{const r=[];try{acts({tLog(){}})}catch(e){r.push(e.message)}try{acts({tNotFn:1})}catch(e){r.push(e.message)}try{HOOK.actsFirst({dayTap(){}})}catch(e){r.push(e.message)}return r.concat(typeof ACTS.tNotFn,String(HOOK.ACT_FIRST.has('dayTap')))});
   ok(dup.length===5&&/two handlers named "tLog"/.test(dup[0])&&/"tNotFn" is not a function/.test(dup[1])&&/two handlers named "dayTap"/.test(dup[2])&&dup[3]==='undefined'&&dup[4]==='false',T+'a name can’t be registered twice, and only a function can be ('+dup.join(' | ')+')');
   /* a listener on an element between the control and document: it runs before a data-act handler and can stop it (the one difference
      from an inline handler); a handler registered with actsFirst runs before it */

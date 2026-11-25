@@ -36,7 +36,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
   await p.click('[aria-label="Reset changes"]');await p.waitForFunction(()=>!planFor()['2026-11-18'].overrides,null,{timeout:5000}).catch(()=>{});
   ok(!(await p.evaluate(()=>planFor()['2026-11-18'].overrides)),'Reset changes clears the swaps');
   // only one of a type: no swap, a message instead
-  const msg=await p.evaluate(async()=>{const keep=items;items=items.filter(i=>i.type!=='watch'||i.id===items.find(x=>x.type==='watch').id);cache={};await swapSlot('watch');const t=document.querySelector('#today').textContent;items=keep;cache={};return t});
+  const msg=await p.evaluate(async()=>{const keep=items;items=items.filter(i=>i.type!=='watch'||i.id===items.find(x=>x.type==='watch').id);cache={};await HOOK.swapSlot('watch');const t=document.querySelector('#today').textContent;items=keep;cache={};return t});
   ok(msg.includes('only watch'),'swapping your only watch explains there is nothing to swap');
 
   // worn log: "didn't wear" frees the suit for rotation sooner
