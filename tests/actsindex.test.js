@@ -159,7 +159,7 @@ async function run(eng,browser,{ok,url,settle}){
       await step('a file picked with "Restore file" is restored',()=>p.setInputFiles('#sp-backup input[type=file]',{name:'wardrobe.json',mimeType:'application/json',buffer:Buffer.from('{}')}),C('restoreBackup','file:wardrobe.json'));
       ok(await p.evaluate(()=>{const i=document.querySelector('#sp-backup input[type=file]');return i.value===''&&i.files.length===0}),T+'and the field is emptied, so the same file can be picked again');
       await p.evaluate(()=>{if(document.activeElement)document.activeElement.blur()});
-      await step('the Daily backups list loads its days when it gets the focus',()=>p.focus('#snap-list'),'HOOK.loadSnapshots()');
+      await step('the Daily backups list loads its days when it gets the focus',()=>p.focus('#snap-list'),C('loadSnapshots'));
       await p.evaluate(()=>document.activeElement.blur());
       await step('a tap on "Roll back" rolls back',()=>tap('#snap-btn'),C('rollBack'))}
     if(k==='connection'){
