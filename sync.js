@@ -268,8 +268,8 @@ function scheduleSync(){clearTimeout(syncTimer);try{if(!localStorage.getItem('sy
   syncTimer=setTimeout(syncNow,2500)}
 /* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. Above the file's top-level set-up, whose connRestored.then and acts({…}) throw when app.js or act.js didn't load */
-Object.assign(globalThis,{syncUrl,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync});
-Object.defineProperties(globalThis,{syncTimer:{get:()=>syncTimer},syncRun:{get:()=>syncRun},syncLater:{get:()=>syncLater},restoring:{get:()=>restoring,set:v=>{restoring=v}},syncing:{get:()=>syncing,set:v=>{syncing=v}},syncDue:{get:()=>syncDue,set:v=>{syncDue=v}}});
+Object.assign(globalThis,{syncUrl,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,scheduleSync});
+Object.defineProperties(globalThis,{syncTimer:{get:()=>syncTimer},syncRun:{get:()=>syncRun},restoring:{get:()=>restoring,set:v=>{restoring=v}},syncing:{get:()=>syncing,set:v=>{syncing=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,TESTER_SYNC_MS,get syncDue(){return syncDue},set syncDue(v){syncDue=v},syncJoinAt,syncJoinMark,get syncLater(){return syncLater},syncTap,get syncing(){return syncing},set syncing(v){syncing=v}};
 export {restoring,syncing,syncTimer,syncRun,syncDue,syncUrl,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync};

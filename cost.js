@@ -167,7 +167,7 @@ function cpwCostDone(el){cpwSetCost(el.dataset.f,el.value)}
 function cpwCurPick(el){cpwSetCurrency(el.value)}
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): the item sheet, the Add card, Insights and Laundry & cleaning, classic scripts, call these; the rest are read by
    tests/costwear.test.js. */
-Object.assign(globalThis,{cpwCur,cpwMoney,cpwParse,cpwOf,cpwCleanYear,cpwText,cpwHint,cpwSum,cpwBlock,cpwSetPrice,cpwQRow,cpwQSet,cpwSaveFields,cpwStatsCard,cpwSettingsUI});
+Object.assign(globalThis,{cpwSum,cpwBlock,cpwQRow,cpwSaveFields,cpwStatsCard,cpwSettingsUI});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,cpwCleanYear,cpwCur,cpwHint,cpwMoney,cpwOf,cpwParse,cpwQSet,cpwSetPrice,cpwText};
 export {cpwCur,cpwMoney,cpwParse,cpwOf,cpwCleanYear,cpwText,cpwHint,cpwSum,cpwBlock,cpwSetPrice,cpwQRow,cpwQSet,cpwSaveFields,cpwStatsCard,cpwSettingsUI};

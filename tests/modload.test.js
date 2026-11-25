@@ -114,7 +114,7 @@ async function run(eng,browser,{ok,url,settle}){
   // are only when its bridge is above that statement (missed.js's below it left Today undrawn: today.js draws with missedCard)
   k=await fail({'act.js':{status:404}},()=>window.appReady);await wait(5200);k=await card();
   const noAct=await c.p.evaluate(()=>({ready:!!window.appReady,n:items.length,mbox:!!document.querySelector('#today #mbox'),
-    gone:['pasteMsg','firstReal','missedCard','scoreCard','toggleMonth','cycleTheme','renderDressUI','CK_OPEN','cpwSum','favStrip','loadSnapshots','downloadBackup','calSummary'].filter(n=>typeof globalThis[n]==='undefined').join()}));
+    gone:['pasteMsg','firstReal','missedCard','scoreCard','toggleMonth','cycleTheme','renderDressUI','CK_OPEN','cpwSum','favStrip','loadSnapshots','downloadBackup','calSummary'].filter(n=>typeof globalThis[n]==='undefined'&&!(n in HOOK)).join()}));   // (a name only the tests use is handed over on HOOK: T2 phase 3)
   ok(!k&&noAct.ready&&noAct.n===3&&noAct.mbox&&noAct.gone==='',T+`act.js can't be loaded: the modules that end with acts({…}) still hand over their names, and Today is drawn down to its month box, no start-up card (names missing: ${noAct.gone||'none'}; month box ${noAct.mbox})`);
   /* ---- a page script that is an ES module (back.js: every page and sheet registers its Back there while loading) ---- */
   // it can't be loaded, doesn't parse, or asks another module for a name that one doesn't export (the graph doesn't link, none of it runs)
@@ -124,7 +124,9 @@ async function run(eng,browser,{ok,url,settle}){
     ok(k&&/The app couldn’t start\./.test(k.text)&&/nothing was deleted/.test(k.text)&&k.btn&&k.vis&&await stored()==='ml-shirt,ml-suit,ml-tie',T+`back.js, a module, ${what}: the start-up card says so with Try again, and the stored wardrobe is untouched (${k?'shown':'not shown'}; ${c.errs.slice(0,2).join(' | ').slice(0,160)})`)}
   // loaded: its names are its own, the bridge is what the page sees
   c.refuse=null;c.errs.length=0;await c.p.goto('about:blank');await c.p.goto(url);await c.p.waitForFunction(()=>window.appReady);await settle(c.p,300);
-  const md=await c.p.evaluate(()=>{const d=n=>Object.getOwnPropertyDescriptor(globalThis,n)||{},has=(f,n)=>{try{return f[n]===null}catch(e){return 'throws'}};
+  // (the three Back flags are the tests' alone, so back.js hands them over on HOOK, not the bridge: T2 phase 3; d finds a name's
+  // accessor in HOOK's chain, which ends in the runner's root before any module's object: it is never reached for these)
+  const md=await c.p.evaluate(()=>{const d=n=>{for(let o=HOOK;o;o=Object.getPrototypeOf(o)){const x=n in o&&Object.getOwnPropertyDescriptor(o,n);if(x)return x}return {}},has=(f,n)=>{try{return f[n]===null}catch(e){return 'throws'}};
     return {fns:['backKind','backOn','backOver','backLand','backPush','backDrop','backBorrow','backReturn','backHold','backSettled','backWanted','histPush','histDrop'].every(n=>typeof globalThis[n]==='function'),
       loc:APP_LOC,get:['appHist','appKind','itemHist'].map(n=>typeof d(n).get+'/'+typeof d(n).set).join(),strict:has(backPush,'caller')+'/'+has(mergeItem,'caller'),patched:!!Date.prototype._dwLoc}});
   md.own=await c.p.evaluate('[typeof BACK,typeof backPop,typeof appLocale].join()');   // (as text: these are not the page's names, and the checkers would take a function's use of them for one)
@@ -133,7 +135,7 @@ async function run(eng,browser,{ok,url,settle}){
   const flags=()=>c.p.evaluate(()=>HOOK.appHist+'/'+HOOK.appKind+'/'+HOOK.itemHist+'/'+backKind());
   const live=[await flags()];
   await c.p.evaluate(()=>openSettings());await settle(c.p,300);live.push(await flags());
-  const kept=await c.p.evaluate(()=>Reflect.set(globalThis,'appKind','zz')+'/'+HOOK.appKind);
+  const kept=await c.p.evaluate(()=>Reflect.set(HOOK,'appKind','zz')+'/'+HOOK.appKind);
   await c.p.evaluate(()=>closeSettings());await settle(c.p,500);live.push(await flags());
   ok(live.join(' ')==='false//false/ true/set/false/set false//false/'&&kept==='false/set'&&c.errs.length===0,T+`a getter gives the module's value of the moment: no entry, Settings' entry, none again (${live.join(' ')}); a write from outside is refused and changes nothing (${kept})`);
   // the pattern for a `let` the tests assign: a getter and a setter, so a bare assignment in the page reaches the module's own variable

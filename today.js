@@ -283,8 +283,8 @@ function listFoldTap(el,ev){foldListTap(ev)}   // the open list's own ground
 function dayStepTap(el){stepDay(+el.dataset.n)}   // the date bar's ‹ and ›
 /* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above acts({…}),
    the file's only top-level call that can throw: without act.js its names are still the page's */
-Object.assign(globalThis,{wxPreload,hasOutfit,canPick,setOff,setRoll,restWarn,toggleRow,slotLabel,swatchStack,wardShort,figureStage,figCuDone,keepHome,pickPiece,homeDay,goToday,piecesBox,keepInView,toggleList,renderToday,foldAll,stepDay,planWith,todayTabTap});
-Object.defineProperties(globalThis,{recordRun:{get:()=>recordRun},foldQuiet:{get:()=>foldQuiet},openRow:{get:()=>openRow,set:v=>{openRow=v}},BLOUSE_ROLL_ON:{get:()=>BLOUSE_ROLL_ON,set:v=>{BLOUSE_ROLL_ON=v}},belowOpen:{get:()=>belowOpen,set:v=>{belowOpen=v}},dayShown:{get:()=>dayShown,set:v=>{dayShown=v}},listOpen:{get:()=>listOpen,set:v=>{listOpen=v}}});
+Object.assign(globalThis,{wxPreload,hasOutfit,canPick,slotLabel,wardShort,figCuDone,keepHome,homeDay,goToday,keepInView,renderToday,foldAll,stepDay,planWith});
+Object.defineProperties(globalThis,{recordRun:{get:()=>recordRun},foldQuiet:{get:()=>foldQuiet},listOpen:{get:()=>listOpen,set:v=>{listOpen=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get BLOUSE_ROLL_ON(){return BLOUSE_ROLL_ON},set BLOUSE_ROLL_ON(v){BLOUSE_ROLL_ON=v},get belowOpen(){return belowOpen},set belowOpen(v){belowOpen=v},get dayShown(){return dayShown},set dayShown(v){dayShown=v},figureStage,get openRow(){return openRow},set openRow(v){openRow=v},pickPiece,piecesBox,restWarn,setOff,setRoll,swatchStack,todayTabTap,toggleList,toggleRow};
 export {recordRun,wxPreload,hasOutfit,canPick,openRow,setOff,BLOUSE_ROLL_ON,setRoll,restWarn,toggleRow,belowOpen,slotLabel,swatchStack,wardShort,figureStage,figCuDone,dayShown,keepHome,pickPiece,homeDay,goToday,listOpen,piecesBox,keepInView,toggleList,renderToday,foldQuiet,foldAll,stepDay,planWith,todayTabTap};

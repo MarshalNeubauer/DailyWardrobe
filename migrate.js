@@ -102,7 +102,7 @@ async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='3
    start.js runs the four remakes (upgradeCloseups, upgradePhotos, fixBlackBackdrops, recolourSpecSetts), item-photo.js counts its
    own remake within the day's (remakeLeft, remakeSpend); REMAKE_DAY is read by tests/tagreads.test.js. A module imports them.
    At the file's end: nothing runs at load (declarations only), so nothing above can throw */
-Object.assign(globalThis,{upgradeCloseups,REMAKE_DAY,remakeLeft,remakeSpend,upgradePhotos,fixBlackBackdrops,recolourSpecSetts});
+Object.assign(globalThis,{upgradeCloseups,remakeLeft,remakeSpend,upgradePhotos,fixBlackBackdrops,recolourSpecSetts});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,REMAKE_DAY};
 export {upgradeCloseups,REMAKE_DAY,remakeLeft,remakeSpend,upgradePhotos,fixBlackBackdrops,recolourSpecSetts};

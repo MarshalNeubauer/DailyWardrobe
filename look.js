@@ -27,7 +27,7 @@ function renderLookSetting(){const el=document.querySelector('#beta-list');if(!e
    called by tests only. A module imports them.
    Above the file's first call that can throw (settingsPart, when settings.js did not load; then acts): the functions are then still
    the page's, as a classic script's were; the consts declared further down are handed over above acts */
-Object.assign(globalThis,{lookOn,lookSet,lookOwnMats,lookCur,lookClipMetal,lookWrite,lookOwnMatUI,lookSetMat,lookSetEnamel,renderLookPick,lookUsePick,lookShadeHtml,lookShadeStep,lookSugCols,lookSugPats,lookSection,lookCheck,lookOpenFresh,lookSave});
+Object.assign(globalThis,{lookOn,lookCur,lookClipMetal,lookWrite,lookOwnMatUI,lookSetEnamel,renderLookPick,lookUsePick,lookShadeHtml,lookSugCols,lookSugPats,lookSection,lookOpenFresh,lookSave});
 settingsPart(renderLookSetting);
 
 /* ---- which types have what ---- */
@@ -474,7 +474,7 @@ function lkCuFileQ(el,ev,f){cuGot(el,f,x=>addTexture(cardIx(el),x,true))}   // (
 /* the rest of the bridge: the consts declared above (colpick.js: the coat, metal and enamel lists, LOOK_PK, LOOK_KS, lookHasPat,
    lookShadeOk, LOOK_PAT_GROUPS, lookPatGroupOf; add-card.js, item-photo.js and itemsheet.js: lookCu; checklist.js: lookHasPat;
    tests/lookbeta.test.js: LOOK_OTHER) */
-Object.assign(globalThis,{LOOK_COATS,LOOK_METALT,LOOK_ENAMEL,LOOK_METAL_COLS,lookCu,lookHasPat,LOOK_OTHER,LOOK_PK,LOOK_KS,lookShadeOk,LOOK_PAT_GROUPS,lookPatGroupOf});
+Object.assign(globalThis,{LOOK_COATS,LOOK_METALT,LOOK_ENAMEL,LOOK_METAL_COLS,lookCu,lookHasPat,LOOK_PK,LOOK_KS,lookShadeOk,LOOK_PAT_GROUPS,lookPatGroupOf});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,LOOK_OTHER,lookCheck,lookOwnMats,lookSet,lookSetMat,lookShadeStep};
 export {lookOn,lookSet,LOOK_COATS,LOOK_METALT,LOOK_ENAMEL,LOOK_METAL_COLS,lookCu,lookHasPat,lookOwnMats,lookCur,lookClipMetal,LOOK_OTHER,lookWrite,lookOwnMatUI,lookSetMat,lookSetEnamel,LOOK_PK,LOOK_KS,renderLookPick,lookUsePick,lookShadeHtml,lookShadeStep,lookShadeOk,lookSugCols,lookSugPats,LOOK_PAT_GROUPS,lookPatGroupOf,lookSection,lookCheck,lookOpenFresh,lookSave};

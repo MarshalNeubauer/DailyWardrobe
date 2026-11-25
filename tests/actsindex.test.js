@@ -110,10 +110,11 @@ async function run(eng,browser,{ok,url,settle}){
     const good=fn[0]===want&&(d<0||i<d)&&!!done;
     ok(good,T+what+' ('+(fn[0]||'nothing ran')+(eff?', effect '+!!done:'')+')'+(good?'':' ['+c.join(' ')+']'));return c};
   const E=(f,a)=>({f,a});
+  const C=(n,...a)=>n+'('+a.join(',')+')';   // a call as the wrappers record it: C('stepItem','1') is 'stepItem(1)'
 
   /* ---- the header ---- */
   const th0=await p.evaluate(()=>document.querySelector('#theme-btn').getAttribute('aria-label'));
-  await step('a tap on the header’s theme button changes the theme',()=>tap('#theme-btn'),'cycleTheme()',E(t=>document.querySelector('#theme-btn').getAttribute('aria-label')!==t,th0));
+  await step('a tap on the header’s theme button changes the theme',()=>tap('#theme-btn'),C('cycleTheme'),E(t=>document.querySelector('#theme-btn').getAttribute('aria-label')!==t,th0));
   await step('a tap on the header’s gear opens Settings',()=>tap('header .hbtns button:nth-child(2)'),'openSettings()',E(()=>settingsOpen()));
   await settle(p,500);
 
@@ -123,7 +124,7 @@ async function run(eng,browser,{ok,url,settle}){
     await settle(p,550);
     if(k==='schedule'){
       await step('choosing "Every suit day" for the Suit vest sets it',()=>p.selectOption('#cfg-vest','always'),'setVestMode("always")',E(()=>settings.vestMode==='always'));
-      await step('choosing "Often" for Dark shirts sets it',()=>p.selectOption('#cfg-dark','often'),'setDarkShirts("often")',E(()=>settings.darkShirts==='often'));
+      await step('choosing "Often" for Dark shirts sets it',()=>p.selectOption('#cfg-dark','often'),C('setDarkShirts','"often"'),E(()=>settings.darkShirts==='often'));
       // (the real one runs: it asks, or says there is nothing to start over; the question is answered with Cancel, so nothing is planned again)
       await step('a tap on "Start the plan over" asks to start it over',()=>tap('#replan-btn'),'replanButton()',E(()=>document.querySelector('#ask-sheet').classList.contains('on')||/^Nothing to start over/.test(document.querySelector('#replan-status').textContent)));
       if(await p.evaluate(()=>!!document.querySelector('#ask-sheet.on #ask-cancel'))){await tap('#ask-cancel');await until(()=>!document.querySelector('#ask-sheet').classList.contains('on'));await settle(p,300)}}
@@ -131,7 +132,7 @@ async function run(eng,browser,{ok,url,settle}){
       const cc=await p.evaluate(()=>{const o=[...document.querySelector('#cfg-country').options].find(o=>o.value);return o&&o.value});
       await step(`choosing a country (${cc}) for public holidays sets it`,()=>p.selectOption('#cfg-country',cc),`setHolidayCountry("${cc}")`,E(c=>!!settings.holidays&&settings.holidays.country===c,cc));
       await p.fill('#cfg-off-from','2026-12-24');
-      await step('a tap on Add under "Your own days off" adds the day',()=>tap('#sp-daysoff .offadd button'),'addDayOff()',E(()=>(settings.daysOff||[]).some(x=>x.d==='2026-12-24')&&!!document.querySelector('#off-list button')));
+      await step('a tap on Add under "Your own days off" adds the day',()=>tap('#sp-daysoff .offadd button'),C('addDayOff'),E(()=>(settings.daysOff||[]).some(x=>x.d==='2026-12-24')&&!!document.querySelector('#off-list button')));
       await p.fill('#cfg-formal-date','2026-11-18');
       await step('a tap on Add under Occasions makes the date a formal day',()=>tap('#occ-add'),'addFormalDay()',E(()=>!!(dayRecs['2026-11-18']&&dayRecs['2026-11-18'].formal)&&document.querySelectorAll('#formal-list .fchip').length===1))}
     if(k==='weather'){
@@ -149,41 +150,41 @@ async function run(eng,browser,{ok,url,settle}){
       await step(`choosing ${v} days for "A worn shirt waits" sets it`,()=>p.selectOption('#cfg-laundry',v),`setLaundryDays("${v}")`,E(v=>settings.laundryDays===+v,v))}
     if(k==='photos'){
       await p.evaluate(()=>{document.querySelector('#itempic-btn').disabled=false});
-      await step('a tap on "Generate item pictures" starts them',()=>tap('#itempic-btn'),'startItemPics()');
+      await step('a tap on "Generate item pictures" starts them',()=>tap('#itempic-btn'),C('startItemPics'));
       await step('a tap on Outfit pictures’ Advanced head opens the fold',()=>tap('#adv-photos .adv-head'),'advToggle(<button.adv-head>)',E(()=>document.querySelector('#adv-photos').classList.contains('open')&&document.querySelector('#adv-photos .adv-head').getAttribute('aria-expanded')==='true'))}
     if(k==='backup'){
       await p.evaluate(()=>{document.querySelector('#snap-btn').disabled=false});
-      await step('a tap on "Sync now" syncs',()=>tap('#sp-backup button.conn-only'),'syncTap()');
+      await step('a tap on "Sync now" syncs',()=>tap('#sp-backup button.conn-only'),C('syncTap'));
       await step('a tap on "Download backup" makes the file',()=>tap('#sp-backup .sactions button:not(.conn-only)'),'downloadBackup()');
-      await step('a file picked with "Restore file" is restored',()=>p.setInputFiles('#sp-backup input[type=file]',{name:'wardrobe.json',mimeType:'application/json',buffer:Buffer.from('{}')}),'restoreBackup(file:wardrobe.json)');
+      await step('a file picked with "Restore file" is restored',()=>p.setInputFiles('#sp-backup input[type=file]',{name:'wardrobe.json',mimeType:'application/json',buffer:Buffer.from('{}')}),C('restoreBackup','file:wardrobe.json'));
       ok(await p.evaluate(()=>{const i=document.querySelector('#sp-backup input[type=file]');return i.value===''&&i.files.length===0}),T+'and the field is emptied, so the same file can be picked again');
       await p.evaluate(()=>{if(document.activeElement)document.activeElement.blur()});
       await step('the Daily backups list loads its days when it gets the focus',()=>p.focus('#snap-list'),'loadSnapshots()');
       await p.evaluate(()=>document.activeElement.blur());
-      await step('a tap on "Roll back" rolls back',()=>tap('#snap-btn'),'rollBack()')}
+      await step('a tap on "Roll back" rolls back',()=>tap('#snap-btn'),C('rollBack'))}
     if(k==='connection'){
       await step('a tap on Connection’s Advanced head opens the fold',()=>tap('#adv-connection .adv-head'),'advToggle(<button.adv-head>)',E(()=>document.querySelector('#adv-connection').classList.contains('open')));
       await settle(p,300);
       await step('and a second tap closes it',()=>tap('#adv-connection .adv-head'),'advToggle(<button.adv-head>)',E(()=>!document.querySelector('#adv-connection').classList.contains('open')))}
     if(k==='about'){
       await p.evaluate(()=>{document.querySelector('#about-update').hidden=false;document.querySelector('#fb-send').disabled=false});
-      await step('a tap on "Check for updates" checks',()=>tap('#about-check'),'checkForUpdate(true)');
+      await step('a tap on "Check for updates" checks',()=>tap('#about-check'),C('checkForUpdate','true'));
       await until(()=>document.querySelector('#about-status').textContent!=='Checking…');   // (the real check's answer redraws the Update button)
       await p.evaluate(()=>{document.querySelector('#about-update').hidden=false;HOOK.aboutUpdating=true});   // the real updateNow returns at once: it would restart the page
-      await step('a tap on Update updates',()=>tap('#about-update'),'updateNow()');
+      await step('a tap on Update updates',()=>tap('#about-update'),C('updateNow'));
       await p.evaluate(()=>{HOOK.aboutUpdating=false});
       await p.fill('#fb-text','A note');
-      await step('a tap on the feedback’s Send sends it',()=>tap('#fb-send'),'sendFeedback()');
-      await step('a tap on "Delete my data" asks first',()=>tap('#del-open'),'askDelete()',E(()=>!document.querySelector('#del-confirm').hidden));
+      await step('a tap on the feedback’s Send sends it',()=>tap('#fb-send'),C('sendFeedback'));
+      await step('a tap on "Delete my data" asks first',()=>tap('#del-open'),C('askDelete'),E(()=>!document.querySelector('#del-confirm').hidden));
       await p.evaluate(()=>{document.querySelector('#del-confirm').hidden=true;document.querySelector('#del-confirm').innerHTML='';document.querySelector('#del-open').hidden=false})}
     await step(`a second tap on the ${k} category’s head closes it`,()=>tap(`#sc-${k} .scat-head`),`toggleCat("${k}")`,E(k=>{const s=document.querySelector('#sc-'+k);return !s.classList.contains('open')&&s.querySelector('.scat-head').getAttribute('aria-expanded')==='false'},k));
     await settle(p,550)}
 
   /* ---- Settings: the buttons under the categories, the Packing list link, Done and the backdrop ---- */
   await p.evaluate(()=>{document.querySelector('#home-again').hidden=false});
-  await step('a tap on "Run setup again" opens the setup',()=>tap('#setup-again'),'setupOpen(true)');
-  await step('a tap on "Take the tour" opens the tour',()=>tap('#tour-again'),'tourAgain()');
-  await step('a tap on "Add to Home Screen" shows how',()=>tap('#home-again'),'homeAgain()');
+  await step('a tap on "Run setup again" opens the setup',()=>tap('#setup-again'),C('setupOpen','true'));
+  await step('a tap on "Take the tour" opens the tour',()=>tap('#tour-again'),C('tourAgain'));
+  await step('a tap on "Add to Home Screen" shows how',()=>tap('#home-again'),C('homeAgain'));
   await step('a tap on the Packing list link opens the Packing list over Settings’ place',()=>tap('#pack-btn'),'openPack()',E(()=>!settingsOpen()&&!document.querySelector('#pack').hidden));
   await settle(p,400);
   await tap('header .hbtns button:nth-child(2)');await until(()=>settingsOpen());await settle(p,500);
@@ -221,7 +222,7 @@ async function run(eng,browser,{ok,url,settle}){
   await step('a tap on Add beside the field adds the link',()=>tap('#add .paste-box .btn.pri'),'addLink()');
   await step('a tap on "Import from a spreadsheet" opens the import',()=>tap('#add-import'),'kitImportOpen()');
   await settle(p,700);   // (Add's guard against a second tap in the same place)
-  await step('a tap on "Add without a photo" opens its sheet',()=>tap('#add-manual'),'addManual()',E(()=>document.querySelector('#nps-sheet').classList.contains('on')));
+  await step('a tap on "Add without a photo" opens its sheet',()=>tap('#add-manual'),C('addManual'),E(()=>document.querySelector('#nps-sheet').classList.contains('on')));
   await settle(p,700);
   await step('a tap on the sheet’s ✕ closes it',()=>tap('#nps-sheet .nps-x'),'npsCancel()',E(()=>!document.querySelector('#nps-sheet').classList.contains('on')));
   await settle(p,700);
@@ -243,20 +244,20 @@ async function run(eng,browser,{ok,url,settle}){
   await tap('#n-wardrobe');await until(()=>!document.querySelector('#wardrobe').hidden);await settle(p,400);
   await p.evaluate(()=>{CK_OPEN['*']=true;openItem(items[0].id)});await until(()=>document.body.classList.contains('iv-on'));await settle(p,700);
   const t0=await p.evaluate(()=>document.querySelector('#iv-title').textContent);
-  await step('a tap on the item sheet’s next button shows the next item',()=>tap('#iv-next'),'stepItem(1)',E(t=>document.querySelector('#iv-title').textContent!==t,t0));
+  await step('a tap on the item sheet’s next button shows the next item',()=>tap('#iv-next'),C('stepItem','1'),E(t=>document.querySelector('#iv-title').textContent!==t,t0));
   await settle(p,600);
-  await step('a tap on its previous button goes back to the first',()=>tap('#iv-prev'),'stepItem(-1)',E(t=>document.querySelector('#iv-title').textContent===t,t0));
+  await step('a tap on its previous button goes back to the first',()=>tap('#iv-prev'),C('stepItem','-1'),E(t=>document.querySelector('#iv-title').textContent===t,t0));
   await settle(p,600);
   await tap('#item-view .colbtn[data-k="primaryColor"]');await until(()=>document.querySelector('#col-sheet').classList.contains('on'));await settle(p,600);
   const colAt=await p.evaluate(()=>document.querySelector('#col-sheet').classList.contains('on')&&document.elementFromPoint(195,20).id);
   ok(colAt==='col-backdrop',T+'the color sheet opens with its backdrop showing above it ('+colAt+')');
   await step('a tap on the color sheet’s backdrop closes it',()=>tapAt('#col-backdrop',195,20),'closeColPick()',E(()=>!document.querySelector('#col-sheet').classList.contains('on')&&document.body.classList.contains('iv-on')));
   await settle(p,500);
-  await step('a tap on the item sheet’s Done closes it',()=>tap('#item-view .ivdone'),'closeItem()',E(()=>!document.body.classList.contains('iv-on')));
+  await step('a tap on the item sheet’s Done closes it',()=>tap('#item-view .ivdone'),C('closeItem'),E(()=>!document.body.classList.contains('iv-on')));
   await settle(p,600);
   await p.evaluate(()=>openItem(items[0].id));await until(()=>document.body.classList.contains('iv-on'));await settle(p,700);
   ok(await p.evaluate(()=>document.elementFromPoint(195,4).id)==='item-backdrop',T+'the item sheet’s backdrop shows above it');
-  await step('a tap on the item sheet’s backdrop closes it',()=>tapAt('#item-backdrop',195,5),'closeItem()',E(()=>!document.body.classList.contains('iv-on')));
+  await step('a tap on the item sheet’s backdrop closes it',()=>tapAt('#item-backdrop',195,5),C('closeItem'),E(()=>!document.body.classList.contains('iv-on')));
   await settle(p,400);
   ok(!errs.length,T+'no page errors'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close();

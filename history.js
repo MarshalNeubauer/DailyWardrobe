@@ -97,8 +97,8 @@ function closePicker(){const was=!!picker;picker=null;const s=$('#pick-sheet'),b
    setOccasion, fav.js wearFav, scorecard.js pickItem, pickscore.js notAhead and idsOf; swapSlot, togglePastEdit, correctPast,
    resetDay, replanFuture and planRulesNote are called by tests only; a module imports them.
    Above the file's first call that can throw (backOn, when back.js did not load; then acts): the names are then still the page's,
-   as a classic script's were; setFormal, a const declared further down, is handed over above the handlers */
-Object.assign(globalThis,{idsOf,keyDate,saveDay,whenPulled,recordDays,swapSlot,dropLearn,openPicker,closePicker,pickItem,wearFav,togglePastEdit,correctPast,setOccasion,resetDay,notAhead,setWorn,replanFuture,checkPlanRules,planRulesNote,renderReplanUI,setVest,resetCard,dayActions});
+   as a classic script's were; setFormal, a const declared further down, is the tests' alone (on HOOK) */
+Object.assign(globalThis,{idsOf,keyDate,saveDay,whenPulled,recordDays,dropLearn,openPicker,closePicker,pickItem,wearFav,setOccasion,notAhead,setWorn,checkPlanRules,renderReplanUI,setVest,resetCard,dayActions});
 Object.defineProperties(globalThis,{picker:{get:()=>picker},swapMsg:{get:()=>swapMsg,set:v=>{swapMsg=v}},todayPullWait:{get:()=>todayPullWait,set:v=>{todayPullWait=v}},pastEdit:{get:()=>pastEdit,set:v=>{pastEdit=v}}});
 backOn('pick',()=>closePicker());
 function pickNext(){const s=picker&&picker.slot;closePicker();if(s)swapSlot(s)}
@@ -205,8 +205,6 @@ function dayActions(o){
   if(past&&o.frozen)h+=`<button class="pastedit${pastEdit===key(sel)?' on':''}" data-act="pastEditTap" aria-pressed="${pastEdit===key(sel)}">${pastEdit===key(sel)?'Done':'Correct this day'}</button>`;
   return offNote+(h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&pastEdit===key(sel)?'<p class="mut"><small>Tap ⇄ beside a piece to set what you really wore. The planner then counts that, not what was planned.</small></p>':past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
 }
-/* the rest of the bridge: setFormal, declared above (tests/itempics.test.js and tests/weather.test.js call it) */
-Object.assign(globalThis,{setFormal});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,correctPast,planRulesNote,replanFuture,resetDay,setFormal,swapSlot,togglePastEdit};
 export {idsOf,keyDate,swapMsg,saveDay,todayPullWait,whenPulled,recordDays,swapSlot,dropLearn,picker,pastEdit,openPicker,closePicker,pickItem,wearFav,togglePastEdit,correctPast,setFormal,setOccasion,resetDay,notAhead,setWorn,replanFuture,checkPlanRules,planRulesNote,renderReplanUI,setVest,resetCard,dayActions};

@@ -164,7 +164,7 @@ function cardField(el){setQField(cardIx(el),el.dataset.f,el.value)}
    itemsheet.js, look.js, tagging.js, colpick.js and checklist.js draw and change cards with these; setq, cardSafe, ckCheck and addCkSecs
    are also called by the tests. Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the
    page's, as a classic script's were */
-Object.assign(globalThis,{shirtColFix,setq,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckCheck,addCkSecs,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard});
+Object.assign(globalThis,{shirtColFix,setq,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addCkSecs,ckCheck};
 export {shirtColFix,setq,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckCheck,addCkSecs,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard};

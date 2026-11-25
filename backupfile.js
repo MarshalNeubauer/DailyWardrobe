@@ -30,7 +30,7 @@ function backupSaveTap(){downloadBackup()}
 function backupFilePick(el){restoreBackup(el.files[0]);el.value=''}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): kit.js, a classic script, calls downloadBackup; the tests call restoreBackup
    (actsindex, fieldmerge, records, wardrobe); a module imports them */
-Object.assign(globalThis,{downloadBackup,restoreBackup});
+Object.assign(globalThis,{downloadBackup});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,restoreBackup};
 export {downloadBackup,restoreBackup};

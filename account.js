@@ -301,8 +301,8 @@ function acctRetryLink(){if(acctWhy==='offline'&&hasInviteHash()&&!acctLinkRun)c
 function acctEndedUI(){acct={...acct,me:null,state:'',invites:null};try{applyRole();renderAccountUI();acctLinkDrawn();addGate()}catch(e){console.warn(e)}}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. Above the file's first top-level call that can throw (acctStart, then acts): the names are then still the page's */
-Object.assign(globalThis,{acctEsc,acctBase,acctCall,dropInviteHash,hasInviteHash,acctFailText,connectFromLink,acctTyped,acctPending,iosInSafari,myInviteLink,homeScreenGuide,rememberRole,acctRole,isTester,applyRole,limitNote,loadAccount,renderAccountUI,acctEndedUI});
-Object.defineProperties(globalThis,{acctWhy:{get:()=>acctWhy},acctLinkRun:{get:()=>acctLinkRun},acct:{get:()=>acct,set:v=>{acct=v}},inviteChecking:{get:()=>inviteChecking,set:v=>{inviteChecking=v}}});
+Object.assign(globalThis,{acctEsc,acctBase,acctCall,hasInviteHash,acctFailText,connectFromLink,acctTyped,iosInSafari,myInviteLink,acctRole,isTester,applyRole,limitNote,acctEndedUI});
+Object.defineProperties(globalThis,{acctWhy:{get:()=>acctWhy},acct:{get:()=>acct,set:v=>{acct=v}},inviteChecking:{get:()=>inviteChecking,set:v=>{inviteChecking=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get acctLinkRun(){return acctLinkRun},acctPending,dropInviteHash,homeScreenGuide,loadAccount,rememberRole,renderAccountUI};
 export {acct,acctEsc,acctBase,acctCall,dropInviteHash,hasInviteHash,acctWhy,inviteChecking,acctLinkRun,acctFailText,connectFromLink,acctTyped,acctPending,iosInSafari,myInviteLink,homeScreenGuide,rememberRole,acctRole,isTester,applyRole,limitNote,loadAccount,renderAccountUI,acctEndedUI};

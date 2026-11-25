@@ -85,8 +85,8 @@ function closeColPick(){const c=colPick;colPick=null;const s=$('#col-sheet'),b=$
 /* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
    first top-level call that can throw (backOver, when back.js did not load): the functions are then still the page's. The consts
    declared below this line are handed over above acts({…}), with the one export */
-Object.assign(globalThis,{colFamily,colHas,SOCK_THIRD,colShows,colFieldLabel,colTidy,colRows,colTarget,colChoices,accDel,colNear,openColPick,closeColPick,colPickSel,colPickView,useColPick,renderColPick,colAskImgs,cpAskHint,cnDrawn,cnLeft,openColNew,openPatNew,openCustomNew,cnName,colNewAdd,rdOff,rdCost,rdEditorBtn,rdStart,rdRetake,rdRun,rdColOf,rdOpen,rdClose,rdAccOf,rdRender,rdUndoAll,rdDoneHtml});
-Object.defineProperties(globalThis,{rdLast:{get:()=>rdLast},colPick:{get:()=>colPick,set:v=>{colPick=v}},rd:{get:()=>rd,set:v=>{rd=v}}});
+Object.assign(globalThis,{colHas,SOCK_THIRD,colShows,colTidy,colRows,colTarget,accDel,colNear,openColPick,closeColPick,colPickSel,useColPick,renderColPick,cnLeft,openColNew,openPatNew,openCustomNew,rdOff,rdCost,rdEditorBtn,rdStart,rdDoneHtml});
+Object.defineProperties(globalThis,{colPick:{get:()=>colPick,set:v=>{colPick=v}}});
 backOver(top=>{if(!colPick||top==='ask'||top==='cu'||top==='rd')return false;
   if(colPick.newc&&colPick.newc.from==='pick')colNewBack();else closeColPick();return true});
 /* ---- swiping a sheet down closes it (2026-11-15, the owner: "When I click on color or texture, the sheet comes up, but I can't swipe it
@@ -812,7 +812,7 @@ function colBackdropTap(){closeColPick()}
 /* a close-up retaken from the New color sheet and from the reading sheet (ui.js closeupBtn, cuGot) */
 function cnRetakeFile(el,ev,f){cuGot(el,f,x=>cnRetake(x))}
 function rdRetakeFile(el,ev,f){cuGot(el,f,x=>rdRetake(x))}
-Object.assign(globalThis,{SW_GRAB,colAsk,NEW_COL,colNameTaken,patChoices,patVar,patBtn,EP,cnHex,cnFromHsv,RD_LOOKUPS,rdCostLine,rdAddBtn});
+Object.assign(globalThis,{SW_GRAB,NEW_COL,colNameTaken,patChoices,patVar,patBtn,EP,cnHex,RD_LOOKUPS,rdCostLine,rdAddBtn});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,cnDrawn,cnFromHsv,cnName,colAsk,colAskImgs,colChoices,colFamily,colFieldLabel,colNewAdd,colPickView,cpAskHint,get rd(){return rd},set rd(v){rd=v},rdAccOf,rdClose,rdColOf,get rdLast(){return rdLast},rdOpen,rdRender,rdRetake,rdRun,rdUndoAll};
 export {colPick,colFamily,colHas,SOCK_THIRD,colShows,colFieldLabel,colTidy,colRows,colTarget,colChoices,accDel,colNear,openColPick,closeColPick,SW_GRAB,colPickSel,colPickView,useColPick,renderColPick,colAsk,colAskImgs,NEW_COL,colNameTaken,cpAskHint,patChoices,patVar,patBtn,EP,cnHex,cnFromHsv,cnDrawn,cnLeft,openColNew,openPatNew,openCustomNew,cnName,colNewAdd,rd,rdLast,RD_LOOKUPS,rdOff,rdCost,rdCostLine,rdEditorBtn,rdAddBtn,rdStart,rdRetake,rdRun,rdColOf,rdOpen,rdClose,rdAccOf,rdRender,rdUndoAll,rdDoneHtml};

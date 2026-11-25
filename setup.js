@@ -72,7 +72,7 @@ function setupBack(){if(!setupShown())return;if(setup.at>0){setupGo(-1);backPush
    setter; a module imports them.
    Above the file's first call that can throw (backOn, when back.js did not load; then acts): the names are then still the page's, as
    a classic script's were */
-Object.assign(globalThis,{setupDress,setupShown,setupStart,setupVestChosen,setupOpen,setupClose,setupCancel,setupFinish,tzCountry,setupYield,setupGo,setupSample,setupDraw,setupSearch,setupNeeds,setupToday,setupWardEmpty});
+Object.assign(globalThis,{setupShown,setupStart,setupFinish,tzCountry,setupYield,setupSample,setupDraw,setupNeeds,setupToday,setupWardEmpty});
 Object.defineProperties(globalThis,{SETUP_STEPS:{get:()=>SETUP_STEPS},setup:{get:()=>setup,set:v=>{setup=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,setupCancel,setupClose,setupDress,setupGo,setupOpen,setupSearch,setupVestChosen};

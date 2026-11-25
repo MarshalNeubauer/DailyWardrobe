@@ -105,7 +105,7 @@ function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[]
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level
    call: colpick.js, look.js, settings.js and add-card.js, classic scripts, and tagging.js (openColForm, openPatForm, read as globals: it
    comes before this file in the list) use these; guessPatBase is called by tests/asmroute.test.js only */
-Object.assign(globalThis,{groupOf,typePl,ownColOffer,newColHex,openColForm,addCustomColor,guessPatBase,openPatForm,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI});
+Object.assign(globalThis,{groupOf,typePl,ownColOffer,newColHex,openColForm,addCustomColor,openPatForm,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,guessPatBase};
 export {groupOf,typePl,ownColOffer,newColHex,openColForm,addCustomColor,guessPatBase,openPatForm,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI};

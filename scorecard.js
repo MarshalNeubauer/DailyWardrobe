@@ -144,8 +144,8 @@ function toggleScore(){const box=$('#sbox');if(!box)return;scoreOpen=!scoreOpen;
    setter; history.js and fav.js say dayWord, month.js reads recentWork; the tests call dialsFor, dialHtml, rankPools and rankFor and
    read rankMemo and rankW, which only this file writes: getters; a module imports them.
    Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the page's, as a classic script's were */
-Object.assign(globalThis,{dayWord,recentWork,dialsFor,rankPools,rankFor,dialHtml,scoreCard,toggleScore});
-Object.defineProperties(globalThis,{rankMemo:{get:()=>rankMemo},rankW:{get:()=>rankW},scoreOpen:{get:()=>scoreOpen,set:v=>{scoreOpen=v}}});
+Object.assign(globalThis,{dayWord,recentWork,scoreCard,toggleScore});
+Object.defineProperties(globalThis,{scoreOpen:{get:()=>scoreOpen,set:v=>{scoreOpen=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,dialHtml,dialsFor,rankFor,get rankMemo(){return rankMemo},rankPools,get rankW(){return rankW}};
 export {scoreOpen,dayWord,recentWork,dialsFor,rankMemo,rankW,rankPools,rankFor,dialHtml,scoreCard,toggleScore};
