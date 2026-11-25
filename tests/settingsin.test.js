@@ -70,19 +70,19 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>closeSettings());await settle(p,300);await p.click('#n-stats');await settle(p,300);
     ok(await p.evaluate(()=>!__rxs.length&&!document.querySelector('#stats [data-rx]')&&/Photo tagging/.test(document.querySelector('#stats').textContent)),'Insights draws the tagging card from the file\'s settings with nothing running');
     await p.evaluate(()=>{const rec={key:'tie|green|plain',name:'green tie',tier:'variety',why:['Adds a color','And another'],items:[{id:'n1',type:'tie',primaryColor:'green',pattern:'solid'}],samples:[]};
-      shop={sig:shopSig(),at:Date.now(),res:{v:2,cats:[{key:'tie',title:'Ties',verdict:'worth',own:null,notes:[],recs:[rec]}],top:[],occasions:[],base:{idle:[],days:100,avg:95,looks:10,problems:0,rest:0},months:6,checked:10,sims:3}}});
+      HOOK.shop={sig:HOOK.shopSig(),at:Date.now(),res:{v:2,cats:[{key:'tie',title:'Ties',verdict:'worth',own:null,notes:[],recs:[rec]}],top:[],occasions:[],base:{idle:[],days:100,avg:95,looks:10,problems:0,rest:0},months:6,checked:10,sims:3}}});
     await p.click('#shop-btn');await p.waitForSelector('#shop-c-hidden button');
     const hid=await p.evaluate(()=>[...document.querySelectorAll('#shop-c-hidden button')].map(b=>[b.dataset.unhide,b.getAttribute('onclick')]));
     await p.click('#shop-c-hidden button');await p.waitForFunction(()=>!(settings.shopSkip||[]).length&&[...document.querySelectorAll('#shop-sheet .shop-rec')].some(e=>e.dataset.key==='tie|green|plain'));
     ok(JSON.stringify(hid)==='[["tie|green|plain",null]]'&&!await p.evaluate(()=>__rxs.length),`What to buy lists only the file's own hidden idea, and Show again brings it back (CR-4-01: ${JSON.stringify(hid)})`);
     // ---- the second lock: a value that got past the check (put straight into memory) runs nothing when tapped
     const lock=await p.evaluate(async([ks,hd,od])=>{const W=window.Worker;window.Worker=function(u,o){return /analysis-worker/.test(u)?{postMessage(){},terminate(){}}:new W(u,o)};   // (the real analyzeWardrobe runs; its worker is a stand-in that never answers)
-      try{settings.shopSkip=[ks];renderShop();document.querySelector('#shop-c-hidden button').click();await new Promise(r=>setTimeout(r,200));
+      try{settings.shopSkip=[ks];HOOK.renderShop();document.querySelector('#shop-c-hidden button').click();await new Promise(r=>setTimeout(r,200));
         const shopOut=!(settings.shopSkip||[]).length;closeShop();
         settings.holidays={...settings.holidays,list:[{d:hd,n:'Crafted'}],skip:[]};settings.daysOff=[{d:od,n:'Crafted'}];
         openSettings('daysoff');await new Promise(r=>setTimeout(r,300));document.querySelector('#holiday-list input').click();await new Promise(r=>setTimeout(r,200));
         const holSkip=settings.holidays.skip[0]===hd;document.querySelector('#off-list button').click();await new Promise(r=>setTimeout(r,200));
-        return {hits:__rxs.slice(),shopOut,holSkip,offOut:!settings.daysOff.length}}finally{window.Worker=W;shopWorker=null;shopBusy=null;closeSettings()}},['suit|grey|plain'+S('lock-shop'),H1+S('lock-hol'),H1+S('lock-off')]).catch(e=>({err:String(e)}));
+        return {hits:__rxs.slice(),shopOut,holSkip,offOut:!settings.daysOff.length}}finally{window.Worker=W;HOOK.shopWorker=null;HOOK.shopBusy=null;closeSettings()}},['suit|grey|plain'+S('lock-shop'),H1+S('lock-hol'),H1+S('lock-off')]).catch(e=>({err:String(e)}));
     ok(lock&&!lock.err&&!(lock.hits||[]).length&&lock.shopOut&&lock.holSkip&&lock.offOut,'a crafted key or date in memory reaches its handler as plain data: nothing runs, and Show again, the checkbox and × act on that exact value ('+JSON.stringify(lock)+')');
     // ---- start-up: a copy stored before the check is cleaned once, its original kept, and the person told
     await p.evaluate(async c=>{const s={...settings,...c,ks:undefined,kh:undefined,kse:undefined,khe:undefined};for(const k of ['ks','kh','kse','khe'])delete s[k];

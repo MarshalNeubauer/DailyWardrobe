@@ -11,7 +11,7 @@ module.exports=async({ok,chromium,url,settle})=>{
         I('bs','shoes','black',{leather:'calf'}),I('bb','belt','black',{leather:'calf',metal:'silver'}),I('so','socks','charcoal')];
       settings.workdays=[1,2,3,4,5];settings.blazerDays=[];TODAY_OVERRIDE='2026-11-11T12:00:00';dayRecs={};cache={};sel=new Date(2026,10,11);view={y:2026,m:10}});
     // the Add card
-    await p.evaluate(()=>{show('add');addManual();setq(0,'type','suit');setq(0,'primaryColor','grey')});
+    await p.evaluate(()=>{show('add');HOOK.addManual();setq(0,'type','suit');setq(0,'primaryColor','grey')});
     const c0=await p.evaluate(()=>({btn:document.querySelector('.ordrow .rotbtn').textContent,date:!!document.querySelector('.ordrow input[type=date]')}));
     ok(c0.btn==='Bought, on the way'&&!c0.date,'the Add card has a "Bought, on the way" button; the date only shows once it is on');
     await p.click('.ordrow .rotbtn');
@@ -40,9 +40,9 @@ module.exports=async({ok,chromium,url,settle})=>{
       const i=items.find(x=>x.id==='grey');return {a,b,paused:'paused' in i,order:'order' in i,arrives:'arrives' in i,toast:(document.querySelector('#toast')||{}).textContent||''}});
     ok(ar.a===0&&ar.b===1&&!ar.paused&&!ar.order&&!ar.arrives&&/has arrived: it's in rotation now/.test(ar.toast),'on its arrival day it still waits; the day after, it is put in rotation and the app says so');
     // no date: stays out until put back by hand
-    await p.evaluate(async()=>{TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};show('add');addManual();setq(0,'type','tie');setOrder(0,true);queue[0].id='tnew';await save(0)});
+    await p.evaluate(async()=>{TODAY_OVERRIDE='2026-11-11T12:00:00';cache={};show('add');HOOK.addManual();setq(0,'type','tie');HOOK.setOrder(0,true);queue[0].id='tnew';await save(0)});
     const nd=await p.evaluate(async()=>{TODAY_OVERRIDE='2027-02-01T12:00:00';const n=await checkArrivals();cache={};const used=Object.values(planMonth(2027,1)).some(o=>o.tie&&o.tie.id==='tnew');
-      return {n,used,why:whyUnused(items.find(i=>i.id==='tnew'))}});
+      return {n,used,why:HOOK.whyUnused(items.find(i=>i.id==='tnew'))}});
     ok(nd.n===0&&!nd.used&&/on the way: put it back in rotation once it arrives/.test(nd.why),'without a date it stays out of the plan until put back by hand (months later too), and the stats say why');
     await p.evaluate(()=>{TODAY_OVERRIDE='2026-11-11T12:00:00';flt='all';show('wardrobe');openItem('tnew')});await settle(p,500);
     await p.click('#item-view .rotbtn');await p.waitForFunction(()=>!('paused' in items.find(i=>i.id==='tnew'))&&!('order' in items.find(i=>i.id==='tnew')));

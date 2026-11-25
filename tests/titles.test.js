@@ -19,7 +19,7 @@ module.exports=async({ok,chromium,url})=>{
         I('cufflinks','lightblue',{metal:'silver'}),I('cufflinks','silver',{metal:'silk'}),I('tieclip','rosegold'),I('overcoat','tan',{season:'cold'}),I('raincoat','khaki'),
         I('tee','white',{secondaryColor:'navy',pattern:'stripe'}),I('sweater','cream',{pattern:'cable'}),I('pants','olive',{trouserKind:'cargo'}),I('chore','navy'),
         I('suit','charcoal',{name:'My grandfather’s charcoal flannel three-piece & waistcoat'})];
-      const rows=W.map(i=>({type:i.type,title:itemTitle(i),saved:savedTitle(i),nm:nm(i),care:careName(i).replace(/<[^>]+>/g,''),stat:statName(i),desc:desc(i)}));
+      const rows=W.map(i=>({type:i.type,title:itemTitle(i),saved:savedTitle(i),nm:nm(i),care:HOOK.careName(i).replace(/<[^>]+>/g,''),stat:statName(i),desc:desc(i)}));
       return {rows,named:rows[rows.length-1]}});
     const gen=r.rows.slice(0,-1),twice=t=>{const w=t.toLowerCase().replace(/end on end/g,'endonend').split(/[^a-z]+/).filter(x=>x.length>2);return w.some((x,i)=>w.indexOf(x)!==i)};
     const long=gen.filter(x=>x.title.length>TITLE_MAX||x.saved.length>SAVED_MAX||x.nm.length>NM_MAX);

@@ -169,9 +169,9 @@ async function run(eng,browser,{ok,url,settle}){
       await p.evaluate(()=>{document.querySelector('#about-update').hidden=false;document.querySelector('#fb-send').disabled=false});
       await step('a tap on "Check for updates" checks',()=>tap('#about-check'),'checkForUpdate(true)');
       await until(()=>document.querySelector('#about-status').textContent!=='Checking…');   // (the real check's answer redraws the Update button)
-      await p.evaluate(()=>{document.querySelector('#about-update').hidden=false;aboutUpdating=true});   // the real updateNow returns at once: it would restart the page
+      await p.evaluate(()=>{document.querySelector('#about-update').hidden=false;HOOK.aboutUpdating=true});   // the real updateNow returns at once: it would restart the page
       await step('a tap on Update updates',()=>tap('#about-update'),'updateNow()');
-      await p.evaluate(()=>{aboutUpdating=false});
+      await p.evaluate(()=>{HOOK.aboutUpdating=false});
       await p.fill('#fb-text','A note');
       await step('a tap on the feedback’s Send sends it',()=>tap('#fb-send'),'sendFeedback()');
       await step('a tap on "Delete my data" asks first',()=>tap('#del-open'),'askDelete()',E(()=>!document.querySelector('#del-confirm').hidden));
@@ -235,7 +235,7 @@ async function run(eng,browser,{ok,url,settle}){
   await p.evaluate(()=>openPicker('tie'));await until(()=>document.querySelector('#pick-sheet').classList.contains('on'));await settle(p,500);
   await step('a tap on the piece picker’s backdrop closes the picker',()=>tapAt('#pick-backdrop',195,20),'closePicker()',E(()=>!document.querySelector('#pick-sheet').classList.contains('on')));
   await settle(p,400);
-  await p.evaluate(()=>openShop());await until(()=>document.querySelector('#shop-sheet').classList.contains('on'));await settle(p,600);
+  await p.evaluate(()=>HOOK.openShop());await until(()=>document.querySelector('#shop-sheet').classList.contains('on'));await settle(p,600);
   const shopAt=await p.evaluate(()=>document.querySelector('#shop-sheet').classList.contains('on')&&document.elementFromPoint(195,4).id);
   ok(shopAt==='shop-backdrop',T+'What to buy opens with its backdrop showing above it ('+shopAt+')');
   await step('a tap on What to buy’s backdrop closes it',()=>tapAt('#shop-backdrop',195,5),'closeShop()',E(()=>!document.querySelector('#shop-sheet').classList.contains('on')));

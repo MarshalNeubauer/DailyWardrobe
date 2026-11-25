@@ -33,20 +33,20 @@ async function run(eng,browser,parts,{ok,url,WARDROBES,settle}){
     await p.evaluate(async W=>{const load=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
       const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
       const cv=(im,k)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9)};
-      rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
+      HOOK.rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
       const w=(0,eval)(W);items=[...w.realistic.map(i=>({...i})),{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:cv(pi,1),texture:cv(ci,3),added:1,name:'Mink suit'}];
       settings.workdays=[0,1,2,3,4];settings.setupDone=1;TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};flt='all';editing=null;show('today')},WARDROBES);
     await settle(p,300)};
   await seed();
   const back=async()=>{await p.evaluate(()=>history.back());await p.waitForTimeout(120);await settle(p,350)};
-  const flags=()=>p.evaluate(()=>({ah:appHist,ak:appHist?appKind:'',ih:itemHist,st:!!history.state,len:history.length,href:location.href}));
+  const flags=()=>p.evaluate(()=>({ah:HOOK.appHist,ak:HOOK.appHist?HOOK.appKind:'',ih:HOOK.itemHist,st:!!history.state,len:history.length,href:location.href}));
   const same=(a,b)=>a.ah===b.ah&&a.ak===b.ak&&a.ih===b.ih&&a.st===b.st&&a.href===b.href;
   const fl=f=>`${f.ah?'app:'+f.ak:'-'}/${f.ih?'item':'-'}/${f.st?'state':'none'}/len ${f.len}`;
   const ev=f=>p.evaluate(f);
   const tap=async s=>{await p.click(s);await settle(p,300)};
   /* everything closed, Today, no entry of ours left: else a fresh page */
-  const home=async()=>{await ev(()=>{if(asking)askAnswer(false);if(cuOpen)closeupClose();if(rd)rdClose();if(colPick)closeColPick();if(kit)kitClose();if(picker)closePicker();closeShop();
-      if(setupShown())setupFinish(false);phEdit.crop=null;if(editing)closeItem();closeSettings();show('today')}).catch(()=>{});await settle(p,400);
+  const home=async()=>{await ev(()=>{if(asking)askAnswer(false);if(cuOpen)HOOK.closeupClose();if(HOOK.rd)HOOK.rdClose();if(colPick)closeColPick();if(kit)kitClose();if(picker)closePicker();closeShop();
+      if(setupShown())setupFinish(false);phEdit.crop=null;if(editing)HOOK.closeItem();closeSettings();show('today')}).catch(()=>{});await settle(p,400);
     const f=await flags().catch(()=>({ah:true}));if(f.ah||f.ih||f.st)await seed()};
   /* one layer: base() puts up what is under it; open() opens it; on() says it is up; x() closes it with its own ×; under() says the
      base is still as it was */
@@ -86,26 +86,26 @@ async function run(eng,browser,parts,{ok,url,WARDROBES,settle}){
   await layer('Add',{base:()=>ev(()=>show('wardrobe')),open:()=>ev(()=>openAdd()),on:()=>!document.querySelector('#add').hidden,x:()=>tap('#add .pback'),under:()=>!document.querySelector('#wardrobe').hidden});
   await layer('the item sheet',{base:()=>ev(()=>show('wardrobe')),open:()=>ev(()=>openItem('m1')),on:()=>!!editing,x:()=>tap('#item-view .ivdone'),under:()=>!document.querySelector('#wardrobe').hidden});
   await layer('the piece picker',{base:()=>ev(()=>show('today')),open:()=>ev(()=>openPicker('shirt')),on:()=>!!picker,x:()=>tap('#pick-sheet .pick-x'),under:today});
-  await layer('What to buy',{base:()=>ev(()=>{show('wardrobe');shopBusy={i:-1,n:1,label:'',t0:Date.now()}}),open:()=>ev(()=>openShop()),on:()=>shopOpen,x:()=>tap('#shop-sheet .pick-x'),under:()=>!document.querySelector('#wardrobe').hidden});
+  await layer('What to buy',{base:()=>ev(()=>{show('wardrobe');HOOK.shopBusy={i:-1,n:1,label:'',t0:Date.now()}}),open:()=>ev(()=>HOOK.openShop()),on:()=>shopOpen,x:()=>tap('#shop-sheet .pick-x'),under:()=>!document.querySelector('#wardrobe').hidden});
   await layer('a question',{base:()=>ev(()=>show('today')),open:()=>ev(()=>{askConfirm('Remove it?',{ok:'Remove',danger:true})}),on:()=>!!asking,x:()=>tap('#ask-cancel'),under:today});
   await layer('the tour',{base:()=>ev(()=>show('today')),open:()=>ev(()=>tourOpen()),on:()=>!!kit,x:()=>tap('#kitsheet .kit-x'),under:today});
   await layer('the close-up chooser',{base:()=>ev(()=>show('today')),open:()=>ev(()=>closeupPick({mode:'add',file:()=>{}})),on:()=>!!cuOpen,x:()=>tap('#cu-cancel'),under:today});
   // "Run setup again": Back steps back through it, and on its first step closes it as its Cancel (a first setup stays open there: backzoom)
-  await layer('Run setup again',{base:()=>ev(()=>show('today')),open:()=>ev(()=>setupOpen(true)),on:()=>setupShown(),x:()=>ev(()=>setupCancel()),under:today,reps:1});
+  await layer('Run setup again',{base:()=>ev(()=>show('today')),open:()=>ev(()=>HOOK.setupOpen(true)),on:()=>setupShown(),x:()=>ev(()=>HOOK.setupCancel()),under:today,reps:1});
 
   }
   if(parts.includes('settings')){
   // ---- over Settings
   await layer('a question over Settings',{base:()=>ev(()=>openSettings('backup')),open:()=>ev(()=>{askConfirm('Roll back?')}),on:()=>!!asking,x:()=>tap('#ask-cancel'),under:setUp});
   await layer('New color over Settings',{base:()=>ev(()=>openSettings()),open:()=>ev(()=>openCustomNew('colour')),on:()=>!!colPick,x:()=>tap('#col-sheet .pick-x'),under:setUp});
-  await layer('Add to Home Screen from Settings',{base:()=>ev(()=>openSettings('about')),open:()=>ev(()=>homeAgain()),on:()=>!!kit,x:()=>tap('#kitsheet .kit-x'),under:setUp});
+  await layer('Add to Home Screen from Settings',{base:()=>ev(()=>openSettings('about')),open:()=>ev(()=>HOOK.homeAgain()),on:()=>!!kit,x:()=>tap('#kitsheet .kit-x'),under:setUp});
 
   }
   if(parts.includes('add')){
   // ---- over Add
   await layer('the import sheet over Add',{base:()=>ev(()=>{show('wardrobe');openAdd()}),open:()=>ev(()=>kitImportOpen()),on:()=>!!kit,x:()=>tap('#kit-cancel'),under:()=>!document.querySelector('#add').hidden});
   await layer('the color sheet over an Add card',{base:addCard,open:()=>tap('#add .colbtn[data-k="primaryColor"]'),on:()=>!!colPick,x:()=>tap('#col-sheet .pick-x'),under:addUp});
-  await layer('the reading sheet over an Add card',{base:addCard,open:()=>ev(()=>rdRun('q',queue[0].id)),on:()=>!!document.querySelector('#rd-sheet.on'),x:()=>tap('#rd-sheet .rdx'),under:addUp});
+  await layer('the reading sheet over an Add card',{base:addCard,open:()=>ev(()=>HOOK.rdRun('q',queue[0].id)),on:()=>!!document.querySelector('#rd-sheet.on'),x:()=>tap('#rd-sheet .rdx'),under:addUp});
   // "Add without a photo" (2026-11-15): its sheet over Add, the color sheet and the discard question over it
   // (on/under run in the page: each names only the page's own globals)
   const nps=async(change)=>{await ev(()=>{show('wardrobe');openAdd();queue.length=0;renderAdd()});await settle(p,300);await tap('#add-manual');
@@ -138,9 +138,9 @@ async function run(eng,browser,parts,{ok,url,WARDROBES,settle}){
   await layer('New pattern (from the list) over the item sheet',{base:async()=>{await item();await tap('#item-view .patbtn')},open:()=>tap('#pn-open'),on:()=>!!(colPick&&colPick.newc),x:()=>tap('#col-sheet .cnback'),under:()=>!!colPick&&!colPick.newc&&editing==='m1'});
   await layer('the reading sheet over the item sheet',{base:item,open:()=>tap('#iv-read'),on:()=>!!document.querySelector('#rd-sheet.on'),x:()=>tap('#rd-sheet .rdx'),under:itemUp});
   await layer('the close-up chooser over the item sheet',{base:item,open:()=>ev(()=>closeupPick({mode:'replace',file:()=>{}})),on:()=>!!cuOpen,x:()=>tap('#cu-cancel'),under:itemUp});
-  await layer('the white-paper tip over the item sheet',{base:item,open:()=>ev(()=>paperTip()),on:()=>!!kit,x:()=>tap('#kitsheet .kit-x'),under:itemUp});
+  await layer('the white-paper tip over the item sheet',{base:item,open:()=>ev(()=>HOOK.paperTip()),on:()=>!!kit,x:()=>tap('#kitsheet .kit-x'),under:itemUp});
   await layer('a question over the item sheet',{base:item,open:()=>ev(()=>{askConfirm('Delete it?',{ok:'Delete',danger:true})}),on:()=>!!asking,x:()=>tap('#ask-cancel'),under:itemUp});
-  await layer('zoom & crop in the item sheet',{base:item,open:async()=>{await ev(()=>startCrop('m1'));await p.waitForSelector('#cropbox')},on:()=>!!phEdit.crop,x:()=>p.evaluate(()=>[...document.querySelectorAll('#item-view .cropwrap button')].find(b=>b.textContent==='Discard').click()),under:itemUp});
+  await layer('zoom & crop in the item sheet',{base:item,open:async()=>{await ev(()=>HOOK.startCrop('m1'));await p.waitForSelector('#cropbox')},on:()=>!!phEdit.crop,x:()=>p.evaluate(()=>[...document.querySelectorAll('#item-view .cropwrap button')].find(b=>b.textContent==='Discard').click()),under:itemUp});
   // a name being typed, Back at once: kept (the field saves itself; a sheet closed by Back never tells it it was left)
   await step('a name being typed',async()=>{await home();await item();await p.click('#item-view .wf-name');await p.keyboard.type('Brown');await back();
     await p.waitForTimeout(900);
@@ -158,7 +158,7 @@ async function run(eng,browser,parts,{ok,url,WARDROBES,settle}){
     e=await flags();ok(!e.ah&&!e.ih,T+`…and leaves no entry behind (${fl(e)})`)});
   // the reading sheet: the close-up chooser over it (Retake), over the item sheet
   await step('chooser > reading > item',async()=>{await home();await item();await tap('#iv-read');await p.waitForSelector('#rd-sheet.on #rd-both');await settle(p,200);
-    await ev(()=>closeupPick({mode:'retake',file:f=>rdRetake(f)}));await settle(p,200);
+    await ev(()=>closeupPick({mode:'retake',file:f=>HOOK.rdRetake(f)}));await settle(p,200);
     const rstack=()=>ev(()=>[cuOpen?'chooser':'',document.querySelector('#rd-sheet.on')?'reading':'',editing?'item':''].filter(Boolean).join(' > ')||'none');
     const rs=[await rstack()];for(let k=0;k<3;k++){await back();rs.push(await rstack())}
     ok(rs.join(' | ')==='chooser > reading > item | reading > item | item | none',T+`the close-up chooser over the reading sheet over the item sheet: one Back each, top first (${rs.join(' | ')})`);
@@ -175,12 +175,12 @@ async function run(eng,browser,parts,{ok,url,WARDROBES,settle}){
     ok(!e.rd&&e.item==='m1'&&e.aborted&&e.c==='deeptaupe',T+`Back while Claude is reading closes the sheet and calls the reading off, the item unchanged and still open (${JSON.stringify(e)})`);
     await ev(()=>{window.fetch=window._fetch})});
   // crop, then Back: leaves the crop first (a frame left as it opened changes nothing), then closes the sheet
-  await step('crop then Back',async()=>{await home();await item();await ev(()=>{window._ph0=items.find(x=>x.id==='m1').photo});await ev(()=>startCrop('m1'));await p.waitForSelector('#cropbox');await back();
+  await step('crop then Back',async()=>{await home();await item();await ev(()=>{window._ph0=items.find(x=>x.id==='m1').photo});await ev(()=>HOOK.startCrop('m1'));await p.waitForSelector('#cropbox');await back();
     e=await ev(()=>({crop:!!phEdit.crop,item:editing,frame:!!document.querySelector('#item-view #cropbox'),same:items.find(x=>x.id==='m1').photo===window._ph0}));
     await back();const e2=await ev(()=>({item:editing}));
     ok(!e.crop&&e.item==='m1'&&!e.frame&&e.same&&!e2.item,T+`Back in an untouched crop frame leaves the crop (the photo unchanged), the next one closes the item sheet (${JSON.stringify([e,e2])})`)});
   // zoomed, then Back: the crop is kept and left (2026-11-15, the owner: closing the crop saves it), the sheet stays; Undo puts the photo back
-  await step('zoomed crop then Back',async()=>{await home();await item();await ev(()=>{window._ph0=items.find(x=>x.id==='m1').photo});await ev(()=>startCrop('m1'));await p.waitForSelector('#cropbox');
+  await step('zoomed crop then Back',async()=>{await home();await item();await ev(()=>{window._ph0=items.find(x=>x.id==='m1').photo});await ev(()=>HOOK.startCrop('m1'));await p.waitForSelector('#cropbox');
     await ev(()=>{const r=document.querySelector('#item-view .cropzoom input');r.value='2';r.dispatchEvent(new Event('input',{bubbles:true}))});await back();
     await p.waitForFunction(()=>items.find(x=>x.id==='m1').photo!==window._ph0);await settle(p,300);
     e=await ev(()=>({crop:!!phEdit.crop,item:editing,frame:!!document.querySelector('#item-view #cropbox'),undo:phEdit.undo.length}));
