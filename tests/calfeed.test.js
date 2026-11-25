@@ -153,7 +153,7 @@ const app=async({ok,engines,url,ROOT})=>{
         ok(JSON.stringify(last.events)===want(TEXT,'2026-11-20')&&last.from==='2026-11-20'&&last.to==='2027-01-19',T+`Connect with a 6 MB work calendar keeps every event of the 60 days, byte for byte as the server's parser reads the whole feed (${(last.events||[]).length} events)`);
         ok(["Embassy gala, black tie","Cousin's wedding","Vacation"].every(t=>c.rows.includes(t)),T+`its occasions, listed last in the feed, are found and offered (${c.rows.join(', ')})`);
         ok(/^Connected\. \d+ events in the next 60 days; 3 could set up your outfits: check them below\.$/.test(c.msg)&&!/very large|only part/.test(c.msg),T+`the words are today's ("${c.msg}")`);
-        ok(net.feed.length===1&&net.feed[0].s===200&&net.feed[0].bytes===FEEDS[HREF].b.length&&net.old===0,T+`it read the feed through the relay once (${net.feed.map(x=>x.s+':'+x.bytes).join(',')}; POST /calendar ${net.old})`);
+        ok(!last.whole&&net.feed.length===1&&net.feed[0].s===200&&net.feed[0].bytes===FEEDS[HREF].b.length&&net.old===0,T+`it read the feed through the relay once (${net.feed.map(x=>x.s+':'+x.bytes).join(',')}; POST /calendar ${net.old})`);
         ok(after<100,T+`the page kept drawing while the 6 MB calendar was taken in and parsed (longest frame gap once the answer had come ${after} ms; ${gap} ms counting the test's hand-over of the mocked answer; the read took ${took} ms)`);
         ok(!c.html.includes('AppS3cret')&&!c.ls.includes('AppS3cret'),T+'the secret part of the link is not on the page or in what the phone keeps of the last read');
         const kept=await p.evaluate(async()=>{const c=await caches.open('dw-keep-cal'),k=await c.keys();return {n:k.length,urls:k.map(r=>r.url).join(),len:k.length?(await (await c.match(k[0])).text()).length:0}});
@@ -197,7 +197,7 @@ const app=async({ok,engines,url,ROOT})=>{
         // no Worker (one that can't start): the same events, read on the page
         const c2=await browser.newContext({viewport:{width:390,height:860},locale:'en-US',timezoneId:'Asia/Kuwait',serviceWorkers:'block'});
         await c2.addInitScript(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','o');localStorage.setItem('tour_seen','1');window.Worker=function(){throw new Error('no workers')}},HOST);
-        await c2.route(HOST+'**',async r=>{const q=r.request(),u=new URL(q.url());if(u.pathname!=='/calendar/feed')return r.fulfill({status:503,contentType:'application/json',body:'{}'});
+        let asks2=0;await c2.route(HOST+'**',async r=>{const q=r.request(),u=new URL(q.url());if(u.pathname!=='/calendar/feed')return r.fulfill({status:503,contentType:'application/json',body:'{}'});asks2++;
           Date.now=()=>NOW;cm.calReset();let res;try{res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.postData()}),env)}finally{Date.now=realNow}
           await r.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
         FEEDS[HREF]={b:new TextEncoder().encode(feed(1.4)),etag:'"w"'};
@@ -205,6 +205,12 @@ const app=async({ok,engines,url,ROOT})=>{
         await q.evaluate(()=>{settings.workdays=[0,1,2,3,4];TODAY_OVERRIDE='2026-11-20T09:00:00';cache={};openSettings('calendar')});await q.waitForSelector('#cal-link');
         await q.fill('#cal-link',LINK);await q.click('#cal-connect');await q.waitForFunction(()=>/^Connected\./.test(($('#cal-msg')||{}).textContent||''),null,{timeout:60000});
         ok(JSON.stringify(JSON.parse(await q.evaluate(()=>localStorage.getItem('cal_last'))).events)===want(feed(1.4),'2026-11-20'),T+'where no Worker can start, the page reads the calendar itself: the same events');
+        // nothing kept (or a host with neither ETag nor Last-Modified): every read is the whole feed, so it reads by itself at most every 12 h, not 3
+        const every=await q.evaluate(async()=>{const l=JSON.parse(localStorage.getItem('cal_last'));const at=h=>{localStorage.setItem('cal_last',JSON.stringify({...l,t:Date.now()-h*3600e3}))};
+          const back=()=>dispatchEvent(new Event('visibilitychange')),wait=ms=>new Promise(r=>setTimeout(r,ms));   // (coming back to the app: calAuto)
+          at(4);back();await wait(1500);const a=JSON.parse(localStorage.getItem('cal_last')).t;at(13);back();for(let i=0;i<100&&JSON.parse(localStorage.getItem('cal_last')).t<Date.now()-3600e3;i++)await wait(100);
+          return {whole:l.whole,a:a<Date.now()-3*3600e3,b:JSON.parse(localStorage.getItem('cal_last')).t>Date.now()-60e3}});
+        ok(every.whole===1&&every.a&&every.b&&asks2===2,T+`a calendar that comes whole each time is read by itself at most every 12 hours (${JSON.stringify(every)}, ${asks2} reads)`);
         await c2.close();
       }catch(e){ok(false,T+'threw: '+e.message.split('\n')[0])}
       finally{await browser.close()}}

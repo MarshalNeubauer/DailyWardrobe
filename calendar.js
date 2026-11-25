@@ -15,6 +15,9 @@
      ("2 new calendar events"), never applied by themselves
    - the last answer is kept on this phone only (localStorage cal_last), for the review list and Today's trip note */
 const CAL_EVERY=3*3600e3;   // read again at most this often by itself
+// ... and this often when the calendar's host sends neither an ETag nor a Last-Modified, or nothing could be kept: then every read
+// downloads the whole feed (at most twice a day by itself: 2.8 MB a day for a 1.4 MB calendar, 12 MB for 6 MB; Read now still reads it)
+const CAL_EVERY_WHOLE=12*3600e3;
 const CAL_KEY='cal_last';    // {t, from, to, events, err} on this phone
 let calBusy=false,calMsg='';
 
@@ -107,7 +110,7 @@ const calAsk=(m,tr)=>{const w=calWorker();return w?w.ask(m,tr):Promise.resolve({
 const calWin=()=>({from:isoKey(todayDate()),days:60,tz:calTz()});
 /* no Worker: the same parser on the page (nothing is kept, so the next read downloads the feed again) */
 async function calHere(buf,win){const P=await import('./calparse.js'),to=P.isoAdd(win.from,win.days);
-  return {from:win.from,to,events:P.calEvents(new TextDecoder().decode(buf),win.tz,win.from,to)}}
+  return {from:win.from,to,events:P.calEvents(new TextDecoder().decode(buf),win.tz,win.from,to),whole:true}}
 async function calFeed(url){const w=(localStorage.getItem('worker_url')||'').trim(),tok=(localStorage.getItem('app_token')||'').trim();
   if(!w||!tok||!isConnected())throw new Error('Reading a calendar needs a connection: Connect in ⚙ Settings first.');
   const win=calWin(),m=await calAsk({op:'meta',url}),base=new URL('calendar/feed',w.replace(/\/*$/,'/')).href;
@@ -126,7 +129,7 @@ async function calFeed(url){const w=(localStorage.getItem('worker_url')||'').tri
   try{for(;;){const {done,value}=await rd.read();if(done)break;const b=value.byteOffset||value.byteLength!==value.buffer.byteLength?value.slice().buffer:value.buffer;calW.post({op:'part',buf:b},[b])}}
   catch{throw cant()}
   const k=await calAsk({op:'read',url,parts:true,etag,lm,tk,...win});
-  if(k.events)return k;
+  if(k.events)return {...k,whole:!(etag||lm)||!k.kept};   // (whole: the next read downloads it all again)
   if(k.error)throw cant();
   r=await ask(false);if(!r.ok)throw cant();   // the Worker failed with the feed: again, read here
   return calHere(await r.arrayBuffer(),win)}
@@ -134,9 +137,9 @@ async function calFeed(url){const w=(localStorage.getItem('worker_url')||'').tri
 async function calKept(url){try{const k=await calAsk({op:'read',url,...calWin()});return k&&k.events?k:null}catch{return null}}
 /* reads the saved link (on demand, or by itself when the last read is older than CAL_EVERY) -> the list of new matches, or null */
 async function calSync(force){const url=calLink();if(!url||calBusy||!isConnected())return null;const last=calRead();
-  if(!force&&last&&last.url===calMask(url)&&Date.now()-(last.t||0)<CAL_EVERY)return null;
+  if(!force&&last&&last.url===calMask(url)&&Date.now()-(last.t||0)<(last.whole?CAL_EVERY_WHOLE:CAL_EVERY))return null;
   calBusy=true;const before=calNew().length;
-  try{const j=await calFeed(url);calWrite({t:Date.now(),url:calMask(url),from:j.from,to:j.to,events:j.events||[],err:''});calMsg=''}
+  try{const j=await calFeed(url);calWrite({t:Date.now(),url:calMask(url),from:j.from,to:j.to,events:j.events||[],err:'',...(j.whole?{whole:1}:{})});calMsg=''}
   catch(e){const o=calRead()||{},k=await calKept(url);
     calWrite({...o,...(k?{from:k.from,to:k.to,events:k.events}:{}),url:calMask(url),err:e.message||'The calendar couldn’t be read.',errAt:Date.now()});calMsg=e.message||''}
   finally{calBusy=false}
@@ -161,7 +164,7 @@ async function calConnect(){const inp=$('#cal-link'),v=(inp&&inp.value||'').trim
   if(calBusy)return;calBusy=true;say('Reading your calendar…');
   try{const j=await calFeed(v);
     settings.calendar={url:v,at:Date.now()};await saveUserSettings();
-    calWrite({t:Date.now(),url:calMask(v),from:j.from,to:j.to,events:j.events||[],err:''});
+    calWrite({t:Date.now(),url:calMask(v),from:j.from,to:j.to,events:j.events||[],err:'',...(j.whole?{whole:1}:{})});
     const n=calFound().filter(x=>!calSeen()[x.ev.id]).length;
     calMsg=`Connected. ${(j.events||[]).length} event${(j.events||[]).length===1?'':'s'} in the next 60 days${n?`; ${n} could set up your outfits: check them below.`:'; none that change what you wear.'}`;
     announce(calMsg)}
