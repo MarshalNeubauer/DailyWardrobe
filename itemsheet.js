@@ -197,6 +197,8 @@ function renderWardrobe(){
 }
 /* the rest of the bridge: wardPic, declared above (wardrobe.js and colpick.js draw a piece's product picture with it) */
 Object.assign(globalThis,{wardPic});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,rm,togglePause};
 export {phEdit,itemBody,optLab,sete,matTidy,patSummary,redetect,togglePause,clearStripes,rm,setFlt,wardPic,renderWardrobe};
 /* what the item page's and the Wardrobe's controls do (act.js; the item by its id in data-id) */
 function itemPick(el){sete(el.dataset.id,el.dataset.f,el.value)}

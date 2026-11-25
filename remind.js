@@ -86,6 +86,8 @@ async function remindTime(v){if(!/^\d\d:\d\d$/.test(v))return;const p={...remind
    are read by the remind, connkeep and restacts tests, remindBusy too, which only this file writes: a getter */
 Object.assign(globalThis,{remindPrefs,remindCareOn,remindSave,outfitLine,remindKeep,remindSig,remindSoon,remindRefresh,renderRemindUI});
 Object.defineProperties(globalThis,{remindBusy:{get:()=>remindBusy}});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,outfitLine,get remindBusy(){return remindBusy},remindCareOn,remindKeep,remindPrefs,remindRefresh,remindSave,remindSig,renderRemindUI};
 export {remindBusy,remindPrefs,remindCareOn,remindSave,outfitLine,remindKeep,remindSig,remindSoon,remindRefresh,renderRemindUI};
 /* start-up: draw with Settings' extras, and refresh once the app is up */
 (function remindStart(){

@@ -56,5 +56,7 @@ function missOkTap(){missedCardOk()}
 /* An ES module (2026-11-23): its names are its own, and this is what the other scripts and the tests still use as globals (the bridge;
    tests/bridge.test.js lists it): history.js (firstReal, missedNote), today.js (missedCard) and the todayacts and weeklock tests. */
 Object.assign(globalThis,{firstReal,missedNote,missedPut,missedOpen,missedCard,missedPickToggle,missedOne});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,missedOne,missedOpen,missedPickToggle,missedPut};
 export {firstReal,missedNote,missedPut,missedOpen,missedCard,missedPickToggle,missedOne};
 acts({missNoTap,missPickTap,missOneTap,missOkTap});

@@ -813,6 +813,8 @@ function colBackdropTap(){closeColPick()}
 function cnRetakeFile(el,ev,f){cuGot(el,f,x=>cnRetake(x))}
 function rdRetakeFile(el,ev,f){cuGot(el,f,x=>rdRetake(x))}
 Object.assign(globalThis,{SW_GRAB,colAsk,NEW_COL,colNameTaken,patChoices,patVar,patBtn,EP,cnHex,cnFromHsv,RD_LOOKUPS,rdCostLine,rdAddBtn});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,cnDrawn,cnFromHsv,cnName,colAsk,colAskImgs,colChoices,colFamily,colFieldLabel,colNewAdd,colPickView,cpAskHint,get rd(){return rd},set rd(v){rd=v},rdAccOf,rdClose,rdColOf,get rdLast(){return rdLast},rdOpen,rdRender,rdRetake,rdRun,rdUndoAll};
 export {colPick,colFamily,colHas,SOCK_THIRD,colShows,colFieldLabel,colTidy,colRows,colTarget,colChoices,accDel,colNear,openColPick,closeColPick,SW_GRAB,colPickSel,colPickView,useColPick,renderColPick,colAsk,colAskImgs,NEW_COL,colNameTaken,cpAskHint,patChoices,patVar,patBtn,EP,cnHex,cnFromHsv,cnDrawn,cnLeft,openColNew,openPatNew,openCustomNew,cnName,colNewAdd,rd,rdLast,RD_LOOKUPS,rdOff,rdCost,rdCostLine,rdEditorBtn,rdAddBtn,rdStart,rdRetake,rdRun,rdColOf,rdOpen,rdClose,rdAccOf,rdRender,rdUndoAll,rdDoneHtml};
 acts({colBtnTap,cpViewTap,cpTileTap,cpCloseTap,cpUseTap,cpPicsTap,cpAskTap,cpAskAllTap,cnOpenTap,pnOpenTap,cnBackTap,cnCloseupTap,cnAskTap,cnDescType,cnDescKey,
   cnKindTap,cnAddTap,cnUseOldTap,pnAnywayTap,cnBasePick,cnTypeTap,cnAccentTap,cnForPick,cnSqPress,cnHuePress,cnSqKey,cnHueKey,cnSlideUp,cnHexType,cnHexDone,cnNameType,

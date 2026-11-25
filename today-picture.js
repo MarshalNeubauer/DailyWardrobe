@@ -154,6 +154,8 @@ function swClose(){if(swOpen){swOpen=null;swApply(true)}}
    page's, as a classic script's were */
 Object.assign(globalThis,{ovlItem,ovlWeave,ovlSvg,ovlGrain,ovlSuitPng,OVL_HB,ovlHbKey,ovlHbShirt,OVL_CU,ovlCuKey,ovlPiece,zoomTarget,applyZoom,toggleZoom,zoomOut,swApply,swTap,swClose});
 Object.defineProperties(globalThis,{zoom:{get:()=>zoom},swOpen:{get:()=>swOpen,set:v=>{swOpen=v}}});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,OVL_CU,OVL_HB,ovlCuKey,ovlGrain,ovlHbKey,ovlHbShirt,ovlItem,ovlSuitPng,ovlSvg,ovlWeave,get swOpen(){return swOpen},set swOpen(v){swOpen=v},toggleZoom,zoomTarget};
 export {ovlItem,ovlWeave,ovlSvg,ovlGrain,ovlSuitPng,OVL_HB,ovlHbKey,ovlHbShirt,OVL_CU,ovlCuKey,ovlPiece,zoom,zoomTarget,applyZoom,toggleZoom,zoomOut,swOpen,swApply,swTap,swClose};
 // a tap on the picture (not on a swatch or another button) closes it
 $('#today').addEventListener('click',e=>{if(!swOpen)return;const c=e.target.closest&&e.target.closest('#mannequin-container');if(c&&!e.target.closest('button,a'))swClose()});

@@ -224,5 +224,7 @@ function careBandKey(el,ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault
    as globals: itemsheet, cost, wardrobe, add-more, settings, today, today-picture and remind; the rest are read by tests. Above the
    file's last top-level call (acts, when act.js did not load): the names are then still the page's */
 Object.assign(globalThis,{CARE_ABLE,CARE_DEF,careLimit,careWashed,careWord,careTimes,careName,careCounts,careState,careTag,careBadge,careBackText,careLog,careCard,careSend,careBack,careCleaned,careLists,renderCare,openCare,careNote,careDayState,careFrame,careBandSoon,careReminders,renderCareUI});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,CARE_DEF,careBack,careCleaned,careCounts,careDayState,careLists,careName,careSend,openCare};
 export {CARE_ABLE,CARE_DEF,careLimit,careWashed,careWord,careTimes,careName,careCounts,careState,careTag,careBadge,careBackText,careLog,careCard,careSend,careBack,careCleaned,careLists,renderCare,openCare,careNote,careDayState,careFrame,careBandSoon,careReminders,renderCareUI};
 acts({laundryPick,careSendTap,careDoneTap,careBackDate,careBackTap,careTypeDone,careLimitsTap,careLimitPick,careDueTap,careBandTap,careBandKey});

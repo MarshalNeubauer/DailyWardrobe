@@ -261,6 +261,8 @@ const label=key=>key.startsWith('run.js: ')?key.slice(8):key;
    (below) has its own set of these, so no two tests ever share a server, a browser, a recorder or Node's coverage. */
 const FIXED_PLAN=path.join(__dirname,'fixedplan.js');
 const ASM_OFF={content:'window.ASM_TEST_OFF=true'};   // assembled pictures off in a test page (assemble.js ASM_ON)
+// the tests' access point (tests/hook.js): in every page a test gets, HOOK.name throws for a name no module put there, as a bare name would
+const HOOK_ROOT={content:require('./hook').INIT};
 const SW_BLOCK='block';   // service workers off in a Chromium test context (`sw` in `file` below)
 const REAL_SUITES=new Set(['renders the outfit without errors','planner: independent outfit checklist','planner: shoes, belts, leather and metals','outfit score']);
 const bench=async(eager=true)=>{
@@ -276,11 +278,11 @@ const bench=async(eager=true)=>{
   // the built-in suites get the fixed plan too, except those about the planner and the start-up check, which keeps the real
   // planner so a planner change that breaks start-up is caught by it
   const builtin=async name=>{const browser=await browserOf(),fn=suites.find(([n])=>n===name)[1],fixed=!REAL_SUITES.has(name);
-    const ctx=await browser.newContext({serviceWorkers:SW_BLOCK,...devices['iPhone 13']});if(fixed)await ctx.addInitScript({path:FIXED_PLAN});await ctx.addInitScript(ASM_OFF);if(rec)rec.context(ctx);const page=await ctx.newPage();const errs=[];
+    const ctx=await browser.newContext({serviceWorkers:SW_BLOCK,...devices['iPhone 13']});if(fixed)await ctx.addInitScript({path:FIXED_PLAN});await ctx.addInitScript(ASM_OFF);await ctx.addInitScript(HOOK_ROOT);if(rec)rec.context(ctx);const page=await ctx.newPage();const errs=[];
     page.on('pageerror',e=>errs.push(e.message));page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
     await page.goto(url);await page.waitForFunction(()=>window.appReady);
     // a suite's own contexts are recorded too
-    const b=new Proxy(browser,{get:(t,k)=>k==='newContext'?async o=>{const c=await t.newContext({serviceWorkers:SW_BLOCK,...(o||{})});if(fixed)await c.addInitScript({path:FIXED_PLAN});await c.addInitScript(ASM_OFF);if(rec)rec.context(c);return c}:typeof t[k]==='function'?t[k].bind(t):t[k]});
+    const b=new Proxy(browser,{get:(t,k)=>k==='newContext'?async o=>{const c=await t.newContext({serviceWorkers:SW_BLOCK,...(o||{})});if(fixed)await c.addInitScript({path:FIXED_PLAN});await c.addInitScript(ASM_OFF);await c.addInitScript(HOOK_ROOT);if(rec)rec.context(c);return c}:typeof t[k]==='function'?t[k].bind(t):t[k]});
     try{await fn({page,ctx,browser:b,url,errs})}catch(e){failures++;console.log('  ✗ threw: '+e.message)}
     if(errs.length&&name!=='renders the outfit without errors'){failures++;console.log('  ✗ console errors: '+errs.join('; '))}
     await ctx.close()};
@@ -295,7 +297,7 @@ const bench=async(eager=true)=>{
     // swaps a page file never sees the request (tabload's reloads were all finished pages, 2026-11-24). A context's own option wins
     const sw=mod.serviceWorkers?{}:{serviceWorkers:SW_BLOCK};
     // (the recorder is Chromium's: CDP coverage; a WebKit context gets the fixed plan and the painter off, as Chromium's does: CR-10-02)
-    const track=async(c,wk)=>{c=await c;if(fixed)await c.addInitScript({path:FIXED_PLAN});if(asmOff)await c.addInitScript(ASM_OFF);if(rec&&!wk&&!WEBKIT)rec.context(c);mine.add(c);return c};
+    const track=async(c,wk)=>{c=await c;if(fixed)await c.addInitScript({path:FIXED_PLAN});if(asmOff)await c.addInitScript(ASM_OFF);await c.addInitScript(HOOK_ROOT);if(rec&&!wk&&!WEBKIT)rec.context(c);mine.add(c);return c};
     const view=(t,wk)=>new Proxy(t,{get:(t,k)=>k==='close'?async()=>{for(const c of mine)await c.close().catch(()=>{});mine.clear()}
       :k==='newContext'?o=>track(t.newContext(wk?o:{...sw,...(o||{})}),wk):k==='newPage'?async o=>{const c=await track(t.newContext(wk?o:{...sw,...(o||{})}),wk);return c.newPage()}
       :typeof t[k]==='function'?t[k].bind(t):t[k]});

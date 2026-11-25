@@ -139,6 +139,21 @@ module.exports=async({ok,ROOT})=>{
   vm.runInContext(appSrc(FIX,'a.js','lib/n.js','m.js','c.js')+';this.K={show,reset,read:()=>[cache.n,count],px,UNIT}',ctx);
   const first=ctx.K.show();ctx.K.reset();
   ok(first==='2px/3 2px 2'&&JSON.stringify(ctx.K.read())==='[0,5]'&&ctx.cache.n===0&&ctx.K.UNIT==='px','the made-up app\'s scripts and modules run together in one vm context, imported names and the bridge working ('+first+')');
+  /* ---- the tests' access point (tests/hook.js, T2) in a vm context: a vm test loads an app file alone (colormath.test.js: core.js) ---- */
+  {const {vmHook}=require('./hook'),err=f=>{try{f();return ''}catch(e){return e.name}};
+    const c=vmHook(vm.createContext({console,localStorage:{getItem(){return null},setItem(){}},document:{querySelector(){return null}}}));
+    vm.runInContext(appSrc(ROOT,'core.js')+';this.K={COLOR_NAMES,casualTop}',c);
+    // (the made-up names through an alias, H: tests/bridge.test.js reads `HOOK.name` as a use of the app's access point)
+    const H=c.HOOK;
+    ok(c.HOOK.COLOR_NAMES===c.K.COLOR_NAMES&&typeof c.HOOK.casualTop==='function'&&c.HOOK.casualTop===c.K.casualTop&&'casualTop' in H&&!('noSuchName' in H)
+      &&err(()=>H.noSuchName)==='ReferenceError'&&err(()=>{H.noSuchName=1})==='ReferenceError',
+      'core.js run alone in a vm context puts its names for the tests on HOOK (the very values of its own scope); after vmHook a name no module put there throws, a read or a write, as a bare name would');
+    const m=vmHook(vm.createContext({}));
+    vm.runInContext(asScript('let n=1;const C=2;function f(){return n}\nObject.assign(globalThis,{f});\nglobalThis.HOOK={__proto__:globalThis.HOOK||null,C,f,get n(){return n},set n(v){n=v}};\nexport {f,C,n};','h.js')
+      +asScript('let k=0;\nglobalThis.HOOK={__proto__:globalThis.HOOK||null,get k(){return k}};\nexport {k};','g.js')+';this.T={bump:()=>{k++}}',m);
+    const M=m.HOOK,n0=M.n;M.n=5;const n1=M.f();m.T.bump();const k1=M.k;err(()=>{M.k=9});
+    ok(n0===1&&n1===5&&M.C===2&&k1===1&&M.k===1,
+      'two modules\' HOOK statements chain: a value, a getter that gives the `let` of the moment, a setter that reaches the module\'s own `let` (and a getter alone leaves it as it is)')}
   const thrown=s=>{try{asScript(s,'x.js');return ''}catch(e){return e.message}};
   ok([['export default function(){}','a default export'],['import d from "./a.js"','a default import'],['import * as n from "./a.js"','a namespace import'],['import {a as b} from "./a.js"','an import under another name'],
     ['const a=1;export {a as b}','an export under another name'],['export * from "./a.js"','export \\* from'],['export {a} from "./a.js"','export … from']].every(([s,why])=>new RegExp("can't run x\\.js as a script: "+why).test(thrown(s))),

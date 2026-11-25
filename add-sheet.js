@@ -64,6 +64,8 @@ function npsBack(){if(npsId)npsCancel(true)}
    script's were (every one is a function, or a let declared above) */
 Object.assign(globalThis,{addManual,renderAddFor,npsInert,npsDraw,npsClose,npsCancel,npsLeave});
 Object.defineProperties(globalThis,{npsId:{get:()=>npsId},npsAsking:{get:()=>npsAsking},addFor:{get:()=>addFor,set:v=>{addFor=v}}});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,addManual,npsClose};
 export {addManual,addFor,renderAddFor,npsId,npsAsking,npsInert,npsDraw,npsClose,npsCancel,npsLeave};
 backOn('nps',()=>npsBack());
 /* Add left while the sheet is up (start.js show): the sheet closes; a card with changes stays on Add as a card of the list, an

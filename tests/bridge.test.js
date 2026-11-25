@@ -33,6 +33,12 @@
 //   module missing fails the whole graph).
 // Not checked here: that a bridged name is still needed by someone (a test's page.evaluate may be its only reader); that comes
 // with the bridge's removal (step 5). A write inside a string handed to page.evaluate('…') isn't seen either.
+// The tests' access point, HOOK (T2, 2026-11-25; tests/hook.js): each module puts the names only the tests use on HOOK too, so the
+// tests can stop using them as globals and those names can come off the bridge. Checked here: each HOOK statement (one per module,
+// names of its own, a `let` behind a getter, a setter for what a test assigns), every name only the tests use is on HOOK, every
+// HOOK.name a test uses is there, the app never reads HOOK. The tests' uses (testUses) count strings too: the code inside a string
+// (page.evaluate('…'), a SETUP template), and a sentence's words (safe side; not an ok() message). `--hook` lists the names the
+// tests use through HOOK alone (they can come off BRIDGE) and the files still using the rest as globals; `--to-hook <file>` rewrites one.
 const fs=require('fs'),path=require('path');
 const acorn=require('acorn'),escope=require('eslint-scope');
 const modscope=require('./modscope');
@@ -304,6 +310,166 @@ function writesOf(src,module){
   return out;
 }
 
+/* the names a text uses without declaring them (reads, calls, typeof guards, writes), or null when it doesn't parse */
+function freeNames(src,module){
+  let ast;const o={ecmaVersion:'latest',ranges:true,allowReturnOutsideFunction:!module,allowHashBang:true};
+  try{ast=acorn.parse(src,{...o,sourceType:module?'module':'script'})}catch(e){try{ast=acorn.parse(src,{...o,sourceType:'module',allowReturnOutsideFunction:false});module=true}catch(e2){return null}}
+  const g=escope.analyze(ast,{ecmaVersion:2024,sourceType:module?'module':'script'}).globalScope,own=new Set(g.variables.filter(v=>v.defs.length).map(v=>v.name));
+  return [...new Set(g.through.map(r=>r.identifier.name))].filter(n=>!own.has(n));
+}
+const ON_GLOBAL=/\b(?:window|self|globalThis)\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*)['"]\s*\])/g;
+const VIA_HOOK=/\bHOOK\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*)['"]\s*\])/g;
+const HOOK_WRITE=/\bHOOK\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*)['"]\s*\])\s*(?:=(?!=)|\+\+|--|[-+*\/%&|^]=|\*\*=|<<=|>>>?=|&&=|\|\|=|\?\?=)/g;
+/* A test's or tool's uses of page names (T2, 2026-11-25): {global: Set (bare or on window/self/globalThis), hook: Set (`HOOK.name`),
+   globalWrites: Set, hookWrites: Set}. Its code (the functions handed to page.evaluate are code like any other) and the code inside
+   its strings (page.evaluate('…'), addInitScript, a SETUP template: a string is parsed as JS, a template with each ${…} as 0; one that
+   doesn't parse is read word by word, a word after a dot left out, so a name in an ok() message counts too: the safe side). Not a
+   string joined after appSrc(…)/asScript(…): the vm tests run that in the files' own scope, where no bridge is involved. */
+function testUses(src,words){
+  const out={global:new Set(),hook:new Set(),globalWrites:new Set(),hookWrites:new Set()};
+  const take=(text,code)=>{if(!code&&/^\s*[A-Za-z_$][\w$]*\s*$/.test(text))return;   // (one word alone is a key: metaGet('shop'); no test evaluates one)
+    const f=freeNames(text,false);
+    if(f){for(const n of f)if(words.has(n))out.global.add(n);for(const [n] of writesOf(text,false)||[])if(words.has(n))out.globalWrites.add(n)}
+    else if(!code)for(const m of text.matchAll(/(?<![\w$.#-])[A-Za-z_$][\w$]*(?![\w$-])/g))if(words.has(m[0]))out.global.add(m[0]);   // (not a CSS name: #shop-btn)
+    for(const m of text.matchAll(ON_GLOBAL))if(words.has(m[1]||m[2]))out.global.add(m[1]||m[2])};
+  take(src,true);
+  let ast=null,cm=[];const o={ecmaVersion:'latest',ranges:true,allowHashBang:true,onComment:(b,t,a,z)=>cm.push([a,z])};
+  try{ast=acorn.parse(src,{...o,sourceType:'script',allowReturnOutsideFunction:true})}catch(e){cm=[];try{ast=acorn.parse(src,{...o,sourceType:'module'})}catch(e2){cm=[]}}
+  let code=src;for(const [a,z] of cm)code=code.slice(0,a)+code.slice(a,z).replace(/[^\r\n]/g,' ')+code.slice(z);   // (HOOK.name in a comment is no use)
+  for(const m of code.matchAll(VIA_HOOK))out.hook.add(m[1]||m[2]);
+  for(const m of code.matchAll(HOOK_WRITE))out.hookWrites.add(m[1]||m[2]);
+  if(!ast)return out;
+  const lexical=new Set(),strs=[];
+  const left=e=>{while(e&&e.type==='BinaryExpression'&&e.operator==='+')e=e.left;return e};
+  const prose=n=>{if(!n||typeof n.type!=='string')return;if(n.type==='Literal'||n.type==='TemplateQuasi'||n.type==='TemplateLiteral')lexical.add(n);
+    for(const k in n){if(k==='range'||k==='loc')continue;const v=n[k];if(Array.isArray(v))v.forEach(prose);else if(v&&typeof v.type==='string')prose(v)}};
+  const walk=n=>{if(!n||typeof n.type!=='string')return;
+    // (an ok() message is words for a person: tests/run.js ok(cond, message))
+    if(n.type==='CallExpression'&&n.callee.type==='Identifier'&&n.callee.name==='ok'&&n.arguments[1])prose(n.arguments[1]);
+    if(n.type==='BinaryExpression'&&n.operator==='+'){const l=left(n);
+      if(l&&l.type==='CallExpression'&&l.callee.type==='Identifier'&&/^(?:appSrc|asScript)$/.test(l.callee.name)){let e=n;while(e.type==='BinaryExpression'&&e.operator==='+'){lexical.add(e.right);e=e.left}}}
+    if(n.type==='Literal'&&typeof n.value==='string')strs.push([n,n.value]);
+    else if(n.type==='TemplateLiteral')strs.push([n,n.quasis.map(q=>q.value.cooked==null?q.value.raw:q.value.cooked).join('0')]);
+    for(const k in n){if(k==='range'||k==='loc')continue;const v=n[k];if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v.type==='string')walk(v)}};
+  walk(ast);
+  for(const [n,text] of strs){if(lexical.has(n)||text.length<2)continue;
+    let any=false;for(const m of text.matchAll(/[A-Za-z_$][\w$]*/g))if(words.has(m[0])){any=true;break}
+    if(any)take(text,false)}
+  return out;
+}
+/* T2 phase 2's rewrite of one test or tool file: each global use of a name in `names` (a bare name, `window.name`, in the code and in
+   the code of its strings, as testUses reads them) becomes `HOOK.name` (`{name}` becomes `{name:HOOK.name}`). {out, n (uses
+   rewritten), manual: [text]}: what it leaves for a person: a `typeof name` (HOOK.name throws for a missing name in a test's page;
+   write `'name' in HOOK`), a string with an escape in it, a string that isn't code (a sentence: reword it, or leave it, the name then
+   stays on BRIDGE). `node tests/bridge.test.js --to-hook <file> [--write]` runs it with the names only the tests use. */
+function toHook(src,names){
+  const edits=[],manual=[];
+  const line=at=>src.slice(0,at).split('\n').length;
+  const code=(text,base,top)=>{let ast;const o={ecmaVersion:'latest',ranges:true,allowHashBang:true};
+    try{ast=acorn.parse(text,{...o,sourceType:'script',allowReturnOutsideFunction:true})}catch(e){try{ast=acorn.parse(text,{...o,sourceType:'module'})}catch(e2){return null}}
+    const short=new Set(),tyof=new Set(),strs=[],skip=new Set();
+    const mark=n=>{if(!n||typeof n.type!=='string')return;if(n.type==='Literal'||n.type==='TemplateLiteral')skip.add(n);for(const k in n){if(k==='range'||k==='loc')continue;const v=n[k];if(Array.isArray(v))v.forEach(mark);else if(v&&typeof v.type==='string')mark(v)}};
+    const walk=n=>{if(!n||typeof n.type!=='string')return;
+      if(n.type==='Property'&&n.shorthand&&n.value.type==='Identifier')short.add(n.value);
+      if(n.type==='UnaryExpression'&&n.operator==='typeof'&&n.argument.type==='Identifier')tyof.add(n.argument);
+      if(top&&n.type==='CallExpression'&&n.callee.type==='Identifier'&&n.callee.name==='ok'&&n.arguments[1])mark(n.arguments[1]);
+      if(top&&n.type==='BinaryExpression'&&n.operator==='+'){let l=n;while(l.type==='BinaryExpression'&&l.operator==='+')l=l.left;
+        if(l.type==='CallExpression'&&l.callee.type==='Identifier'&&/^(?:appSrc|asScript)$/.test(l.callee.name)){let e=n;while(e.type==='BinaryExpression'&&e.operator==='+'){mark(e.right);e=e.left}}}
+      if(top&&(n.type==='Literal'&&typeof n.value==='string'||n.type==='TemplateLiteral'))strs.push(n);
+      for(const k in n){if(k==='range'||k==='loc')continue;const v=n[k];if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v.type==='string')walk(v)}};
+    walk(ast);
+    const g=escope.analyze(ast,{ecmaVersion:2024,sourceType:ast.sourceType}).globalScope,own=new Set(g.variables.filter(v=>v.defs.length).map(v=>v.name));
+    for(const r of g.through){const id=r.identifier,n=id.name;if(!names.has(n)||own.has(n))continue;
+      if(tyof.has(id)){manual.push(`line ${line(base+id.range[0])}: typeof ${n} (write '${n}' in HOOK, or HOOK.${n} where it must be there)`);continue}
+      edits.push([base+id.range[0],base+id.range[1],short.has(id)?`${n}:HOOK.${n}`:`HOOK.${n}`])}
+    for(const m of text.matchAll(/\b(?:window|self|globalThis)\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*(['"])([A-Za-z_$][\w$]*)\2\s*\])/g)){const n=m[1]||m[3];
+      if(names.has(n))edits.push([base+m.index,base+m.index+m[0].length,`HOOK.${n}`])}
+    return {strs,skip}};
+  const t=code(src,0,true);if(!t)return {out:src,n:0,manual:['the file does not parse']};
+  for(const s of t.strs){if(t.skip.has(s))continue;let text,base;
+    if(s.type==='Literal'){const raw=src.slice(s.range[0]+1,s.range[1]-1);if(!/[A-Za-z_$]/.test(raw))continue;
+      let hit=false;for(const m of raw.matchAll(/[A-Za-z_$][\w$]*/g))if(names.has(m[0])){hit=true;break}if(!hit)continue;
+      if(raw!==s.value){manual.push(`line ${line(s.range[0])}: a string with an escape in it uses ${[...raw.matchAll(/[A-Za-z_$][\w$]*/g)].map(m=>m[0]).filter(w=>names.has(w)).join(', ')}`);continue}
+      if(/^\s*[A-Za-z_$][\w$]*\s*$/.test(raw))continue;
+      text=raw;base=s.range[0]+1}
+    else{const a=s.range[0]+1,b=s.range[1]-1,q=s.quasis;text=src.slice(a,b);
+      for(let i=0;i+1<q.length;i++){const x=q[i].range[1]-a,y=q[i+1].range[0]-a;text=text.slice(0,x)+'0'.padEnd(y-x,' ')+text.slice(y)}   // (each ${…} a 0, the same length)
+      let hit=false;for(const m of text.matchAll(/[A-Za-z_$][\w$]*/g))if(names.has(m[0])){hit=true;break}if(!hit)continue;
+      base=a}
+    if(!code(text,base,false)){const w=[...new Set([...text.matchAll(/(?<![\w$.#-])[A-Za-z_$][\w$]*(?![\w$-])/g)].map(m=>m[0]).filter(x=>names.has(x)))];
+      if(w.length)manual.push(`line ${line(s.range[0])}: a string that isn't code uses ${w.join(', ')} (reword it if it is a sentence)`)}}
+  edits.sort((x,y)=>y[0]-x[0]);let out=src,last=Infinity,n=0;
+  for(const [a,b,r] of edits){if(b>last)continue;out=out.slice(0,a)+r+out.slice(b);last=a;n++}
+  return {out,n,manual};
+}
+/* T2 (2026-11-25): who uses each bridged name.{name: {file, app: [files], tests: [files], hook: [files], testWrites: [files],
+   hookWrites: [files]}}. The app: the page scripts but the name's own file, index.html's inline scripts, the Web Workers' own files
+   and lab/ (a read, a call, a typeof guard, a write, `window.name`). The tests: tests/ and tools/ (testUses). A name the app doesn't
+   use and the tests use only through HOOK can come off BRIDGE (T2 phase 3); one the tests still use as a global can't yet. */
+function readers(ROOT,m){
+  m=m||measure(ROOT);const rd=f=>fs.readFileSync(path.join(ROOT,f),'utf8'),owner=new Map(),out={},viaHook={},hookWrites={};
+  for(const [f,l] of Object.entries(m.bridge))for(const n of l){owner.set(n,f);out[n]={file:f,app:[],tests:[],hook:[],testWrites:[],hookWrites:[]}}
+  const words=new Set(owner.keys());
+  const app=(f,src,module)=>{const s=new Set(freeNames(src,module)||[]);for(const x of src.matchAll(ON_GLOBAL))s.add(x[1]||x[2]);
+    for(const n of s)if(words.has(n)&&owner.get(n)!==f)out[n].app.push(f)};
+  const tags=modscope.pageScripts(ROOT);
+  for(const t of tags)app(t.src,rd(t.src),t.module);
+  const html=rd('index.html');let i=0;
+  for(const x of html.replace(/<!--[\s\S]*?-->/g,'').matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi))app('index.html (inline script '+(++i)+')',x[1],false);
+  for(const w of [...WORKERS,'cal-worker.js'])if(fs.existsSync(path.join(ROOT,w)))app(w,rd(w),true);
+  let lab=[];try{lab=fs.readdirSync(path.join(ROOT,'lab'))}catch(e){}
+  for(const f of lab){const p='lab/'+f;
+    if(f.endsWith('.js'))app(p,rd(p),false);
+    else if(f.endsWith('.html')){let j=0;for(const x of rd(p).matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi))app(p+' (inline script '+(++j)+')',x[1],false)}}
+  for(const f of nodeFiles(ROOT)){if(f==='tests/bridge.test.js'||f==='tests/hook.js')continue;   // (its rows name every bridged name as a string; the access point's own root)
+    const u=testUses(rd(f),words);
+    for(const n of u.global)out[n].tests.push(f);
+    for(const n of u.globalWrites)out[n].testWrites.push(f);
+    for(const n of u.hook){if(out[n])out[n].hook.push(f);(viaHook[n]=viaHook[n]||[]).push(f)}
+    for(const n of u.hookWrites){if(out[n])out[n].hookWrites.push(f);(hookWrites[n]=hookWrites[n]||[]).push(f)}}
+  Object.defineProperties(out,{viaHook:{value:viaHook},hookWrites:{value:hookWrites}});   // (every name a test reads or writes as HOOK.name, bridged or not)
+  return out;
+}
+/* T2: every module's HOOK statement checked against what the tests use. {hooked: {file: Map name -> {value, get, set}}, problems,
+   missing: names only the tests use that their file doesn't put on HOOK, ready: those the tests use through HOOK alone (they can
+   come off BRIDGE), testOnly: [names]} */
+function hookCheck(ROOT,m,r){
+  const rd=f=>fs.readFileSync(path.join(ROOT,f),'utf8'),tags=modscope.pageScripts(ROOT),problems=[],hooked={},where=new Map();
+  const blankHook=(src,ranges)=>{let s=src;for(const [a,b] of ranges)s=s.slice(0,a)+s.slice(a,b).replace(/[^\r\n]/g,' ')+s.slice(b);return s};
+  const noHook=(f,src)=>{if(/\bHOOK\b/.test(src.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,'')))problems.push(`${f} reads HOOK: the app must not depend on the tests' access point`)};
+  for(const t of tags){const f=t.src,src=rd(f);let ast;try{ast=modscope.parse(src,t.module)}catch(e){continue}
+    const h=modscope.hooked(ast,src);noHook(f,blankHook(src,h.ranges));
+    if(!h.count)continue;
+    if(!t.module){problems.push(`${f} is a classic script: its top-level names are the page's already, it has no HOOK statement`);continue}
+    if(h.count>1)problems.push(`${f} has ${h.count} HOOK statements: one, after its bridge`);
+    for(const o of h.odd)problems.push(`${f}: a HOOK property the checkers can't read: ${o}`);
+    hooked[f]=h.names;
+    const at=h.ranges[0][0],decl=new Map();
+    for(const st of ast.body){const s=st.type==='ExportNamedDeclaration'&&st.declaration?st.declaration:st;
+      for(const d of modscope.declared({body:[s]}))if(!decl.has(d.name))decl.set(d.name,{kind:d.kind,at:st.range[0]})}
+    for(const [n,x] of h.names){const d=decl.get(n),mut=d&&/^(?:let|var)$/.test(d.kind);
+      if(where.has(n))problems.push(`${n} is on HOOK from ${where.get(n)} and ${f}`);else where.set(n,f);
+      if(!d){problems.push(`${f} puts ${n} on HOOK, but ${n} is not one of its top-level names`);continue}
+      if(x.value&&(x.get||x.set))problems.push(`${f}: ${n} is on HOOK twice (a value and an accessor)`);
+      if(x.value&&mut)problems.push(`${f}: ${n} is a \`${d.kind}\` put on HOOK as a value (the copy keeps the value of that moment): write \`get ${n}(){return ${n}}\``);
+      if((x.get||x.set)&&!mut)problems.push(`${f}: ${n} has a HOOK accessor but is not a \`let\` of ${f}: write it as \`${n}\``);
+      if(x.set&&!x.get)problems.push(`${f}: ${n} has a HOOK setter and no getter`);
+      if(x.value&&d.kind!=='function'&&d.at>at)problems.push(`${f}: ${n} is declared after the HOOK statement, which would throw at load: put the statement after the bridge, at the end`)}}
+  for(const w of [...WORKERS,'cal-worker.js'])if(fs.existsSync(path.join(ROOT,w)))noHook(w,rd(w));
+  const html=rd('index.html').replace(/<!--[\s\S]*?-->/g,'');for(const x of html.matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi))noHook('index.html (an inline script)',x[1]);
+  let lab=[];try{lab=fs.readdirSync(path.join(ROOT,'lab')).filter(f=>/\.(?:js|html)$/.test(f))}catch(e){}
+  for(const f of lab)noHook('lab/'+f,rd('lab/'+f));
+  const testOnly=Object.keys(r).filter(n=>!r[n].app.length&&(r[n].tests.length||r[n].hook.length)).sort();
+  const on=n=>where.has(n)?hooked[where.get(n)].get(n):null;
+  const missing=testOnly.filter(n=>!on(n)).map(n=>`${r[n].file}: ${n}`);
+  const ready=testOnly.filter(n=>on(n)&&!r[n].tests.length);
+  for(const [n,l] of Object.entries(r.viaHook))if(!on(n))problems.push(`${[...new Set(l)].join(', ')} ${l.length>1?'read':'reads'} HOOK.${n}, which no module puts on HOOK`);
+  for(const n of testOnly){const h=on(n),w=[...new Set([...r[n].testWrites,...r[n].hookWrites])];if(h&&w.length&&!h.set)problems.push(`${n} is assigned by ${w.join(', ')}, but ${where.get(n)} puts it on HOOK without \`set ${n}(v){${n}=v}\``)}
+  for(const [n,l] of Object.entries(r.hookWrites)){const h=on(n);if(h&&!h.set)problems.push(`${[...new Set(l)].join(', ')} assign${l.length>1?'':'s'} HOOK.${n}, which ${where.get(n)} puts on HOOK without a setter (the write would only hide it)`)}
+  for(const [n,f] of where)if(!(r[n]&&(r[n].tests.length||r[n].hook.length))&&!r.viaHook[n])problems.push(`${f} puts ${n} on HOOK, but no test uses it: take it off`);
+  return {hooked,problems,missing,ready,testOnly};
+}
+
 /* {page, mods, bridge: {file: [names]}, problems: [text], unbridged: [text], unseen: [text], assets: [text]} for the app in ROOT */
 function measure(ROOT){
   const tags=modscope.pageScripts(ROOT),page=tags.map(t=>t.src),mods=tags.filter(t=>t.module).map(t=>t.src),isMod=new Set(mods);
@@ -424,8 +590,25 @@ module.exports=async({ok,ROOT})=>{
   ok(!m.problems.length,'every module has module syntax, a bridge the checkers can read (a function or constant assigned, a `let` behind `get: () => name`), plain relative imports of other page modules, and no Web Worker importScripts it'+(m.problems.length?': '+m.problems.join('; '):''));
   ok(!m.unseen.length,'no page script, test or tool assigns a bridged name that has no setter'+(m.unseen.length?': '+m.unseen.join('; '):''));
   ok(!m.assets.length,'every module is in sw.js ASSETS under the spelling of its tag and of each import of it'+(m.assets.length?': '+m.assets.join('; '):''));
+
+  /* the tests' access point (T2, 2026-11-25; tests/hook.js): HOOK, on made-up files, then on the app */
+  {const P=s=>modscope.hooked(modscope.parse(s,true),s);
+    let h=P('let a=1;function f(){}const C=2;\nObject.assign(globalThis,{f});\nglobalThis.HOOK={__proto__:globalThis.HOOK||null,f,C,get a(){return a},set a(v){a=v}};\nexport {f};');
+    ok(h.count===1&&!h.odd.length&&JSON.stringify([...h.names].map(([n,x])=>[n,x.value,x.get,x.set]))==='[["f",true,false,false],["C",true,false,false],["a",false,true,true]]'
+      &&!modscope.bridged(modscope.parse('globalThis.HOOK={__proto__:globalThis.HOOK||null,f};',true)).names.size,
+      'a HOOK statement is read name by name (a value, a getter, a setter), and it isn\'t a bridge: HOOK is not a page name');
+    h=P('globalThis.HOOK={f};globalThis.HOOK={__proto__:globalThis.HOOK||null,get a(){return b},[k]:1,set a(v){a=v+1}};');
+    ok(h.count===2&&h.odd.length===4,'a HOOK statement without its __proto__ first, a getter giving back another name, a computed key or a setter that doesn\'t plainly assign is named');
+    const u=testUses("await p.evaluate(()=>{HOOK.a=1;b();window.c=2});p.evaluate('d(HOOK.e)');log('f is gone');ok(1,`h ${1} too`);vm.runInContext(appSrc(R,'x.js')+';this.K={g}',ctx);",new Set('abcdefgh'));
+    ok([...u.global].sort().join()==='b,c,d,f'&&[...u.hook].sort().join()==='a,e'&&[...u.hookWrites].join()==='a'&&[...u.globalWrites].join()==='c',
+      'a test\'s uses: bare names and window.name in its code and in the code of its strings (a word of a sentence counts, the safe side, but not an ok() message) are global, HOOK.name is the access point, a string joined after appSrc is the files\' own scope')}
+  const rs=readers(ROOT,m),hk=hookCheck(ROOT,m,rs);
+  ok(!hk.problems.length,'every HOOK statement is in a module, once, after its bridge, with names of the file\'s own (a `let` behind a getter, a setter for what a test assigns), none twice; no test uses a name that isn\'t on HOOK through it; the app never reads HOOK'+(hk.problems.length?': '+hk.problems.join('; '):''));
+  ok(!hk.missing.length,`every name only the tests use is on its file's HOOK (${hk.testOnly.length} names)`+(hk.missing.length?': add '+hk.missing.join('; '):''));
+  ok(true,`${hk.ready.length} of the ${hk.testOnly.length} names only the tests use are used through HOOK alone and can come off BRIDGE (T2 phase 3; \`node tests/bridge.test.js --hook\` lists them and the tests still using the rest as globals)`);
 };
 module.exports.measure=measure;module.exports.compare=compare;module.exports.grew=grew;module.exports.writesOf=writesOf;
+module.exports.readers=readers;module.exports.testUses=testUses;module.exports.toHook=toHook;module.exports.hookCheck=hookCheck;
 
 /* `node tests/bridge.test.js --plan file.js`: what a page script would have to bridge if it became a module today. For each of its
    top-level names: the page scripts that use it (a read, a call, a `typeof` guard), the tests and tools that do, and who assigns it.
@@ -458,6 +641,23 @@ function plan(ROOT,file){
 module.exports.plan=plan;
 if(require.main===module){
   const ROOT=path.join(__dirname,'..'),i=process.argv.indexOf('--plan'),file=i>0&&process.argv[i+1];
+  /* `node tests/bridge.test.js --hook [--json]`: the names only the tests use, those ready to come off BRIDGE (used through HOOK alone),
+     and per test file the names it still uses as globals */
+  const th=process.argv.indexOf('--to-hook');
+  if(th>0){const f=process.argv[th+1],m=measure(ROOT),r=readers(ROOT,m),hk=hookCheck(ROOT,m,r),p=path.resolve(f);
+    const x=toHook(fs.readFileSync(p,'utf8'),new Set(hk.testOnly));
+    if(process.argv.includes('--write'))fs.writeFileSync(p,x.out);
+    console.log(`${f}: ${x.n} use${x.n===1?'':'s'} ${process.argv.includes('--write')?'rewritten':'to rewrite (--write writes them)'} to HOOK.name`+(x.manual.length?'\nLeft for you:\n  '+x.manual.join('\n  '):''));
+    process.exit(0)}
+  if(process.argv.includes('--hook')){const m=measure(ROOT),r=readers(ROOT,m),hk=hookCheck(ROOT,m,r),files={};
+    for(const n of hk.testOnly)for(const f of r[n].tests)(files[f]=files[f]||[]).push(n);
+    if(process.argv.includes('--json')){console.log(JSON.stringify({ready:hk.ready,testOnly:hk.testOnly,missing:hk.missing,problems:hk.problems,files},null,1));process.exit(0)}
+    console.log(`${hk.testOnly.length} bridged names are used by the tests only; ${hk.ready.length} of them through HOOK alone (ready to come off BRIDGE)`+(hk.ready.length?':\n  '+hk.ready.join(', '):''));
+    if(hk.missing.length)console.log('\nNot on HOOK yet: '+hk.missing.join('; '));
+    if(hk.problems.length)console.log('\nProblems:\n  '+hk.problems.join('\n  '));
+    const l=Object.entries(files).sort((a,b)=>a[0]<b[0]?-1:1);
+    console.log(`\n${l.length} test and tool files still use some of them as globals:`);for(const [f,n] of l)console.log(`  ${f}: ${n.join(', ')}`);
+    process.exit(0)}
   if(!file){console.log('node tests/bridge.test.js --plan <file.js>   what the file would bridge as a module (the test itself runs with: node tests/run.js bridge.test)');process.exit(1)}
   const p=plan(ROOT,file),short=l=>l.length>6?l.slice(0,6).join(', ')+' and '+(l.length-6)+' more':l.join(', ');
   console.log(`${file}: ${p.names.length} top-level names, ${p.used.length} used outside it, ${p.kept.length} it can keep to itself`);

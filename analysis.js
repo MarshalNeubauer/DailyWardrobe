@@ -383,4 +383,6 @@ function occasionCheck(L,season){
 }
 /* the bridge (an ES module since 2026-11-24): what stats.js, shop.js, analysis-worker.js and the tests still use as globals (tests/bridge.test.js) */
 Object.assign(globalThis,{SHOP_WEEKS,horizonKeys,shopList,evalPlan,CLASS_NAMES,groupLabel,TYPE_WORD,listAnd,shopShelved,runAnalysis,occasionCheck});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,evalPlan,occasionCheck,shopList,shopShelved};
 export {SHOP_WEEKS,horizonKeys,shopList,evalPlan,CLASS_NAMES,groupLabel,TYPE_WORD,listAnd,shopShelved,runAnalysis,occasionCheck};

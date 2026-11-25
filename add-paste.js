@@ -66,5 +66,7 @@ function pasteTap(){pasteFromClipboard()}
 function linkAddTap(){addLink()}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): only tests/paste.test.js still calls pasteMsg as a global; a module imports it */
 Object.assign(globalThis,{pasteMsg});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,pasteMsg};
 export {pasteMsg};
 acts({linkKey,pasteTap,linkAddTap});

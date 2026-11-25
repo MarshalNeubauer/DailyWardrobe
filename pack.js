@@ -229,6 +229,8 @@ function renderPack(){
    Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the page's, as a classic script's were */
 Object.assign(globalThis,{PACK_TITLE,packDefault,packTrip,packMark,packUses,packComplete,packLockState,packLock,packRelease,packSetDate,packSetTrip,packSetCap,packWear,packShow,openPack,renderPack});
 Object.defineProperties(globalThis,{packT:{get:()=>packT,set:v=>{packT=v}},packNow:{get:()=>packNow,set:v=>{packNow=v}}});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,PACK_TITLE,packComplete,packDefault,packLock,packLockState,packMark,get packNow(){return packNow},set packNow(v){packNow=v},packRelease,packSetCap,packSetDate,get packT(){return packT},set packT(v){packT=v},packTrip,packUses,packWear,renderPack};
 export {PACK_TITLE,packT,packNow,packDefault,packTrip,packMark,packUses,packComplete,packLockState,packLock,packRelease,packSetDate,packSetTrip,packSetCap,packWear,packShow,openPack,renderPack};
 /* what the controls do (act.js). index.html's: Settings' Packing list link */
 function packOpenTap(){openPack()}

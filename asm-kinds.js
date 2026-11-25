@@ -124,6 +124,8 @@ let asmNkH=null;
 const asmNkSig=()=>asmNkH||(asmNkH=asmCmHash(asmCmCodeText(asmNkCode())));
 /* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
 Object.assign(globalThis,{ASM_NK,ASM_NK_KNIT,asmNkBase,ASM_JF_BASES,asmJfKey,asmJfWants,asmCmKindOf,asmNkGet,asmNkLin,asmNkKnitTile,asmNkCloth,asmNkJob,asmNkSig});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,ASM_JF_BASES,ASM_NK_KNIT,asmJfKey,asmNkCloth,asmNkKnitTile,asmNkLin};
 export {ASM_NK,ASM_NK_KNIT,asmNkBase,ASM_JF_BASES,asmJfKey,asmJfWants,asmCmKindOf,asmNkGet,asmNkLin,asmNkKnitTile,asmNkCloth,asmNkJob,asmNkSig};
 /* (below the bridge: it reads asm-color.js's and asm-gl.js's tables at load, and throws without them) */
 /* the kinds into the painter's tables, invisibly to its fingerprint (runs on the page and in the worker) */

@@ -456,4 +456,6 @@ function settFromCanvas(c,box,opt){if(box){const b={x:box.x/1000*c.width,y:box.y
   return analyzeSett(c,c.width*.05,c.height*.05,c.width*.9,c.height*.9,opt)}
 /* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
 Object.assign(globalThis,{STRIPE_PATS,CHECK_PATS,DETECT_PATS,MOTIF_PATS,TEXTURE_PATS,texPat,tieWeave,usableSett,CAMO_TR,camoTag,settToTag,settSig,detectPattern,detectQueued,settFromCanvas});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,camoTag,settToTag};
 export {STRIPE_PATS,CHECK_PATS,DETECT_PATS,MOTIF_PATS,TEXTURE_PATS,texPat,tieWeave,usableSett,CAMO_TR,camoTag,settToTag,settSig,detectPattern,detectQueued,settFromCanvas};

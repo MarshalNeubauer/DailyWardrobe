@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	582f22b14b153a859b05
+# tested	fb9505361362f486f8ac
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -77,7 +77,6 @@ a11y.test.js	sync.js	<loaded>	@connRestored.then	afterPull	get	pulledYet	schedul
 a11y.test.js	tag-request.js	<loaded>
 a11y.test.js	tagging.js	<loaded>	tagNotes
 a11y.test.js	tests/fixedplan.js	<any>
-a11y.test.js	tests/webkit.js	<any>
 a11y.test.js	theme.js	<loaded>	applyTheme	cycleTheme
 a11y.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoHere	undoOff
 a11y.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>cancelHold	mvSig	todayCovered
@@ -2870,7 +2869,6 @@ backgesture.test.js	tests/backgesture-parts.js	<any>
 backgesture.test.js	tests/fixedplan.js	<any>
 backgesture.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture.test.js	tests/webkit.js	<any>
 backgesture.test.js	theme.js	<loaded>	applyTheme
 backgesture.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 backgesture.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -3012,6 +3010,7 @@ bridge.test.js	assemble.js	<any>
 bridge.test.js	back.js	<any>
 bridge.test.js	backupfile.js	<any>
 bridge.test.js	boxfold.js	<any>
+bridge.test.js	cal-worker.js	<any>
 bridge.test.js	calendar.js	<any>
 bridge.test.js	care.js	<any>
 bridge.test.js	checklist.js	<any>
@@ -3029,6 +3028,9 @@ bridge.test.js	item-photo.js	<any>
 bridge.test.js	item-view.js	<any>
 bridge.test.js	itemsheet.js	<any>
 bridge.test.js	kit.js	<any>
+bridge.test.js	lab/gl-bench-run.js	<any>
+bridge.test.js	lab/gl-bench.html	<any>
+bridge.test.js	lab/gl-bench.js	<any>
 bridge.test.js	locale.js	<any>
 bridge.test.js	locks.js	<any>
 bridge.test.js	look.js	<any>
@@ -3156,6 +3158,7 @@ bridge.test.js	tests/hbswatch.test.js	<any>
 bridge.test.js	tests/herringbone.test.js	<any>
 bridge.test.js	tests/history.test.js	<any>
 bridge.test.js	tests/homescreen.test.js	<any>
+bridge.test.js	tests/hook.js	<any>
 bridge.test.js	tests/impact.js	<any>
 bridge.test.js	tests/impact.test.js	<any>
 bridge.test.js	tests/inlinehandlers.test.js	<any>
@@ -8027,7 +8030,6 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
-invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -8493,7 +8495,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	handleSync
+keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
@@ -9529,6 +9531,7 @@ modtools.test.js	tests/hbswatch.test.js	<any>
 modtools.test.js	tests/herringbone.test.js	<any>
 modtools.test.js	tests/history.test.js	<any>
 modtools.test.js	tests/homescreen.test.js	<any>
+modtools.test.js	tests/hook.js	<any>
 modtools.test.js	tests/impact.js	<any>
 modtools.test.js	tests/impact.test.js	<any>
 modtools.test.js	tests/inlinehandlers.test.js	<any>
@@ -12704,7 +12707,6 @@ restacts.test.js	tag-request.js	<loaded>	describeEstimate	keepCloseImg	readEstim
 restacts.test.js	tagging.js	<loaded>	confTxt	readAbort	tagLive	tagMeasUndo	tagNewCol	tagNewPat	tagNotes	tagPatternAgain	tagRefineAgain	tagRefineUndo	tagSet	undoRefine
 restacts.test.js	tests/fixedplan.js	<any>
 restacts.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<any>
-restacts.test.js	tests/webkit.js	<any>
 restacts.test.js	theme.js	<loaded>	applyTheme
 restacts.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoHere	undoOff
 restacts.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	mvSig	todayBusy	todayFree
@@ -13848,6 +13850,7 @@ safeport.test.js	tests/hbswatch.test.js	<any>
 safeport.test.js	tests/herringbone.test.js	<any>
 safeport.test.js	tests/history.test.js	<any>
 safeport.test.js	tests/homescreen.test.js	<any>
+safeport.test.js	tests/hook.js	<any>
 safeport.test.js	tests/impact.js	<any>
 safeport.test.js	tests/impact.test.js	<any>
 safeport.test.js	tests/inlinehandlers.test.js	<any>
@@ -15442,6 +15445,7 @@ shard.test.js	tests/backgesture.test.js	<any>
 shard.test.js	tests/backup-storage.test.js	<any>
 shard.test.js	tests/bridge.test.js	<any>
 shard.test.js	tests/calendar.test.js	<any>
+shard.test.js	tests/calfeed.test.js	<any>
 shard.test.js	tests/camouflage.test.js	<any>
 shard.test.js	tests/canvasrefuse.test.js	<any>
 shard.test.js	tests/cardid.test.js	<any>
@@ -15490,6 +15494,7 @@ shard.test.js	tests/hbswatch.test.js	<any>
 shard.test.js	tests/herringbone.test.js	<any>
 shard.test.js	tests/history.test.js	<any>
 shard.test.js	tests/homescreen.test.js	<any>
+shard.test.js	tests/hook.js	<any>
 shard.test.js	tests/impact.js	<any>
 shard.test.js	tests/impact.test.js	<any>
 shard.test.js	tests/inlinehandlers.test.js	<any>
@@ -15551,6 +15556,7 @@ shard.test.js	tests/safeport.test.js	<any>
 shard.test.js	tests/safety.test.js	<any>
 shard.test.js	tests/safetysync.test.js	<any>
 shard.test.js	tests/sample.test.js	<any>
+shard.test.js	tests/savelease.test.js	<any>
 shard.test.js	tests/savelock.test.js	<any>
 shard.test.js	tests/scoreanim.test.js	<any>
 shard.test.js	tests/scoredials.test.js	<any>
@@ -16053,7 +16059,7 @@ shop.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	
 shop.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setWanted	settingsOpen	settingsPart	weekFirst
 shop.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 shop.test.js	sheet-swipe.js	<loaded>
-shop.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	@document.addEventListenerkeydown	analyzeWardrobe	closeShop	get	openShop	renderShop	set	shopBought	shopBoughtTap	shopBusyText	shopButton	shopCat	shopFind	shopFindIn	shopFormTap	shopFresh	shopGate	shopGo	shopHid	shopHide	shopHideTap	shopKeep	shopKeyName	shopLeft	shopOpenTap	shopOutfit	shopPlanned	shopRec	shopRecs	shopSamples	shopSig	shopSwipe
+shop.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	@document.addEventListenerkeydown	analyzeWardrobe	closeShop	get	get shop	get shopBusy	get shopPart	get shopShown	openShop	renderShop	set	set shop	shopBought	shopBoughtTap	shopBusyText	shopButton	shopCat	shopFind	shopFindIn	shopFormTap	shopFresh	shopGate	shopGo	shopHid	shopHide	shopHideTap	shopKeep	shopKeyName	shopLeft	shopOpenTap	shopOutfit	shopPlanned	shopRec	shopRecs	shopSamples	shopSig	shopSwipe
 shop.test.js	snapshots.js	<loaded>
 shop.test.js	srgb.js	<loaded>	linSrgb	srgbLin	srgbLin8
 shop.test.js	start.js	<loaded>	applyStored	loadStored	pageIn	show	showWanted	startChecks	startJobs	startUp

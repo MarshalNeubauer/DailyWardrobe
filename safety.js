@@ -168,6 +168,8 @@ async function adoptBackupSettings(local,data){
 /* the rest of the bridge: the consts declared above (about.js: errReport; tagging.js: oneStop; add.js: tagNetText; add-card.js:
    tagFailNote; tests/errreport.test.js: errList) */
 Object.assign(globalThis,{errList,errReport,oneStop,tagNetText,tagFailNote});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,errList,get errTapAt(){return errTapAt},set errTapAt(v){errTapAt=v},pruneTagImgs};
 export {storeFailure,storeFailText,storeToldAt,saveFailed,dbDown,errTapAt,errList,errNote,errReport,storageDown,askPersist,pruneTagImgs,safetyStart,tagWhy,tagNetLast,oneStop,tagFailText,tagNetText,tagFailed,tagFailNote,retryTag,guardUnsaved,adoptBackupSettings};
 /* "Try again" on the page shown when the wardrobe can't be opened (act.js) */
 function nostoreAgainTap(){location.reload()}

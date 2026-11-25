@@ -160,6 +160,8 @@ function monthLink(){
    Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the page's, as a classic script's were */
 Object.assign(globalThis,{stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthPlan,monthGridHtml,revealNeed,toggleMonth,pageScroll,MONTH_MS,MONTH_EASE,monthBelow,monthStep,monthDrag,monthRelease,openDay,monthLink});
 Object.defineProperties(globalThis,{monthOpen:{get:()=>monthOpen,set:v=>{monthOpen=v}},monthPanel:{get:()=>monthPanel,set:v=>{monthPanel=v}}});
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,monthGridHtml,monthStep};
 export {stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthOpen,monthPanel,monthPlan,monthGridHtml,revealNeed,toggleMonth,pageScroll,MONTH_MS,MONTH_EASE,monthBelow,monthStep,monthDrag,monthRelease,openDay,monthLink};
 /* the markup's handlers (act.js): the month box's head and its "Fold away" bar, and a day of the month (data-t: its time) */
 function monthTap(){toggleMonth()}

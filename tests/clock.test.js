@@ -95,7 +95,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const pz=await A.p.evaluate(()=>{localStorage.setItem('sync_pause',String(Date.now()+400*864e5));const a=syncPaused();return {a,left:localStorage.getItem('sync_pause')}});
     ok(pz.a===false&&pz.left===null,'a backup pause dated far ahead (set by a clock that was ahead) is let go');
     // a roll-back stamps every restored piece above this phone's deletion mark for it (W2-13-03)
-    const rb=await A.p.evaluate(()=>{const n=nowMs(),r=rollBackState({items:[{id:'x',updated:n}],tombstones:{y:n+5000},days:[{date:'2026-11-16',updated:n+3000}],settings:null},{items:[{id:'y',updated:1}],days:[{date:'2026-11-16',updated:1}],tombstones:{}},n);
+    const rb=await A.p.evaluate(()=>{const n=nowMs(),r=HOOK.rollBackState({items:[{id:'x',updated:n}],tombstones:{y:n+5000},days:[{date:'2026-11-16',updated:n+3000}],settings:null},{items:[{id:'y',updated:1}],days:[{date:'2026-11-16',updated:1}],tombstones:{}},n);
       return {y:r.items[0].updated,yt:n+5000,x:r.tombstones.x,n,d:r.days[0].updated}});
     ok(rb.y>rb.yt&&rb.x>rb.n&&rb.d>rb.n+3000,'a roll-back\'s pieces and days are stamped above the marks and copies they replace');
     // a phone a year ahead records no days that haven't come and locks no week of them (W1-9-03)
