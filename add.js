@@ -159,7 +159,7 @@ async function addMulti(f,agg,again){
     q.raw={big:cropBox(raw,it.box,800),full:cropBox(raw,it.box,TAG_MAX)};q.wb=wb;cardPics(q);
     const tg=normTag(it,j.model);fill(q,tg);q.aiTag={...aiFields(tg)};q.tagAI=aiSignals({...tg,confidence:it.confidence},false);return q});
   queue.splice(at,0,...made);   // where the photo's card was
-  aiModel=j.model||aiModel;aiError='';
+  setAiModel(j.model||aiModel);setAiError('');
   // two photos picked at once: one summary for both (the second photo's line replaced the first's)
   agg=agg||{n:0,counts:{},capped:false};agg.n+=list.length;if(list.length>=MULTI_CAP)agg.capped=true;
   for(const it of list){const t=TYPES[it.type]?it.type:'item';agg.counts[t]=(agg.counts[t]||0)+1}
@@ -190,7 +190,7 @@ function renderAdd(){
   if(npsId)npsDraw();
   if(typeof colPick!=='undefined'&&colPick&&colPick.src==='q'&&!cardOf(colPick.ref))closeColPick();   // the color or pattern sheet of a card that went (CR-1-02)
 }
-function addBackOnline(){if(typeof tagNetText==='function'&&tagNetText(aiError))aiError='';
+function addBackOnline(){if(typeof tagNetText==='function'&&tagNetText(aiError))setAiError('');
   for(const q of queue.slice())if(q.tagNet&&q.tagErr&&!q.busy&&q.tagImg)retryTag(queue.indexOf(q));
   for(const q of queue.slice())if(q.multiNet&&q.multiErr&&!q.busy&&q.file)multiAgain(q.id);   // "Several items" too (it waited for a tap)
   const a=$('#add');if(a&&!a.hidden)renderAdd()}

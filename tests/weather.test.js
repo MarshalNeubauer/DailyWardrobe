@@ -16,23 +16,23 @@ const weather=async({ok,chromium,url})=>{
   const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++).toString().padStart(3,'0'),type,primaryColor,pattern:'solid',...x});
-    items=[I('suit','lightgrey'),I('suit','tan'),I('suit','navy'),I('suit','charcoal'),I('suit','navy',{season:'warm'}),I('suit','grey',{season:'cold'}),I('blazer','navy'),I('pants','grey'),
+    HOOK.items=[I('suit','lightgrey'),I('suit','tan'),I('suit','navy'),I('suit','charcoal'),I('suit','navy',{season:'warm'}),I('suit','grey',{season:'cold'}),I('blazer','navy'),I('pants','grey'),
       I('shirt','white',{cuff:'french'}),I('shirt','lightblue'),I('shirt','pink',{pattern:'stripe',secondaryColor:'white'}),
       I('tie','burgundy'),I('tie','pink',{pattern:'paisley',secondaryColor:'gold'}),I('tie','black',{pattern:'knit'}),
       I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'suede'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'gold'}),I('belt','brown',{leather:'suede',metal:'gold'}),I('belt','brown',{leather:'calf',metal:'gold'}),
       I('watch','grey',{metal:'gold'}),I('cufflinks','gold',{metal:'gold'}),I('cufflinks','grey',{metal:'silver'}),I('overcoat','charcoal'),I('raincoat','tan'),I('socks','navy')];
-    dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,16);view={y:2026,m:10};show('today')});
+    HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')});
 
   // ---- workdays ----
-  const wd=await p.evaluate(()=>{settings.workdays=[1,2,3,4,5];settings.blazerDays=[5];cache={};const P=buildPlan(2026,10);
+  const wd=await p.evaluate(()=>{settings.workdays=[1,2,3,4,5];settings.blazerDays=[5];HOOK.cache={};const P=buildPlan(2026,10);
     const dows=[...new Set(Object.keys(P).map(k=>keyDate(k).getDay()))].sort().join(',');const fri=P['2026-11-20'];
-    sel=new Date(2026,10,20);stepDay(1);const next=key(sel);return {dows,friBlazer:fri&&!fri.suitDay,next}});
+    HOOK.sel=new Date(2026,10,20);stepDay(1);const next=key(sel);return {dows,friBlazer:fri&&!fri.suitDay,next}});
   ok(wd.dows==='1,2,3,4,5','custom workdays (Mon–Fri) are the only planned days');
   ok(wd.friBlazer,'Friday is a blazer day when set as one');
   ok(wd.next==='2026-11-23','the next-day arrow skips the weekend');
 
   // ---- formal day via Settings: pick a date, Make formal ----
-  await p.evaluate(()=>{sel=new Date(2026,10,19);view={y:2026,m:10};renderToday();openSettings('daysoff')});
+  await p.evaluate(()=>{HOOK.sel=new Date(2026,10,19);HOOK.view={y:2026,m:10};renderToday();openSettings('daysoff')});
   ok(await p.evaluate(()=>!document.querySelector('#today [aria-label="Make formal"]')&&!document.querySelector('#today .tog')),'the formal option is not on Today');
   await p.fill('#cfg-formal-date','2026-11-19');await p.click('#occ-add');await p.waitForFunction(()=>planFor()['2026-11-19'].formal&&document.querySelectorAll('#formal-list .fchip').length===1);   // (Settings lists it a moment after the day is saved)
   const fl=await p.evaluate(()=>({msg:$('#formal-msg').textContent,list:[...document.querySelectorAll('#formal-list .fchip')].map(c=>c.textContent)}));
@@ -56,7 +56,7 @@ const weather=async({ok,chromium,url})=>{
   ok(await p.evaluate(()=>!planFor()['2026-11-19'].formal&&!document.querySelector('#formal-list .fchip')&&/No occasions coming up/.test($('#formal-list').textContent)),'the × on a formal day in Settings makes it regular again');
   await p.evaluate(()=>{closeSettings();HOOK.setFormal(true,'2026-11-19')});await p.waitForFunction(()=>planFor()['2026-11-19'].formal);
   // French cuffs with no cufflinks owned
-  const nl=await p.evaluate(()=>{const keep=items;items=items.filter(i=>i.type!=='cufflinks');cache={};const o=planFor()['2026-11-19'];const n=o.notes.join(' ');items=keep;cache={};return {cuff:o.shirt.cuff,n}});
+  const nl=await p.evaluate(()=>{const keep=items;HOOK.items=items.filter(i=>i.type!=='cufflinks');HOOK.cache={};const o=planFor()['2026-11-19'];const n=o.notes.join(' ');HOOK.items=keep;HOOK.cache={};return {cuff:o.shirt.cuff,n}});
   ok(nl.cuff!=='french'||nl.n.includes('cufflinks'),'without cufflinks the French-cuff shirt is avoided or flagged');
 
   // ---- no location yet: a link in the date bar opens Settings at the weather section ----
@@ -70,7 +70,7 @@ const weather=async({ok,chromium,url})=>{
   await p.fill('#cfg-city','Austin');await p.click('text=Search');
   await p.click('#city-results button');await p.waitForFunction(()=>Object.keys(weather).length>0);
   ok(wxCalls>=1,'choosing a city fetches the forecast');
-  const w=await p.evaluate(()=>{closeSettings();cache={};const P=buildPlan(2026,10),g=k=>P[k];return {
+  const w=await p.evaluate(()=>{closeSettings();HOOK.cache={};const P=buildPlan(2026,10),g=k=>P[k];return {
     loc:settings.location&&settings.location.name,
     rain:{coat:g('2026-11-16').coat&&g('2026-11-16').coat.type,shoes:g('2026-11-16').shoes.leather},
     hot:{coat:g('2026-11-17').coat,top:g('2026-11-17').top.season||'all'},
@@ -79,16 +79,16 @@ const weather=async({ok,chromium,url})=>{
   ok(w.rain.coat==='raincoat'&&w.rain.shoes!=='suede','cold rain: raincoat, and no suede shoes');
   ok(!w.hot.coat&&w.hot.top!=='cold','hot day: no coat, no cold-weather suit');
   ok(w.freezing.coat==='overcoat'&&w.freezing.top!=='warm','freezing day: overcoat, no warm-weather suit');
-  await p.evaluate(()=>{sel=new Date(2026,10,16);renderToday()});
+  await p.evaluate(()=>{HOOK.sel=new Date(2026,10,16);renderToday()});
   const chipF=await p.textContent('.day .wx');
   ok(chipF.includes('43°')&&chipF.includes('☂ 90%'),`weather chip on the date bar (${chipF.trim()})`);
   ok((await p.textContent('#today .list')).includes('Raincoat'),'the raincoat is listed with the outfit');
   ok(await p.evaluate(()=>{const t=document.querySelector('.coat-tile');return !!t&&t.dataset.coat==='raincoat'}),'on the rainy day the raincoat tile is shown');
-  await p.evaluate(()=>{sel=new Date(2026,10,18);renderToday()});
+  await p.evaluate(()=>{HOOK.sel=new Date(2026,10,18);renderToday()});
   ok(await p.evaluate(()=>{const t=document.querySelector('.coat-tile');return !!t&&t.dataset.coat==='overcoat'}),'on the freezing day the overcoat tile is shown');
-  await p.evaluate(()=>{sel=new Date(2026,10,19);renderToday()});
+  await p.evaluate(()=>{HOOK.sel=new Date(2026,10,19);renderToday()});
   ok(await p.evaluate(()=>!document.querySelector('.coat-tile')&&!/Raincoat|Overcoat|Coat/.test(document.querySelector('#today .list').textContent)),'on a mild dry day there is no coat, in the figure or in the list');
-  await p.evaluate(()=>{sel=new Date(2026,10,16);renderToday()});
+  await p.evaluate(()=>{HOOK.sel=new Date(2026,10,16);renderToday()});
   await p.evaluate(()=>setUnits('C'));await p.evaluate(()=>renderToday());
   ok((await p.textContent('.day .wx')).includes('6°'),'switching to °C converts the chip');
 
@@ -116,8 +116,8 @@ const climate=async({ok,chromium,url})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
-      items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='auto';dayRecs={};TODAY_OVERRIDE='2026-11-15T12:00:00';cache={};sel=new Date(2026,10,15);view={y:2026,m:10}});
+      HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
+      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='auto';HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,15);HOOK.view={y:2026,m:10}});
     // before a location is set: the calendar decides, so mid-January is "cold" and warns about the missing overcoat
     const cal=await p.evaluate(()=>{const o=planMonth(2027,0)['2027-1-12'];return {season:o.clim.season,note:(o.notes||[]).some(n=>/overcoat/.test(n))}});
     ok(cal.season==='cold'&&cal.note,'without climate history, January follows the calendar: cold, and a missing overcoat is flagged');

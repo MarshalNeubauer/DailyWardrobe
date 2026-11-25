@@ -239,6 +239,8 @@ async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();
   // what wasn't tried after a stop is said as such: "failed" read as if each had been tried (and paid for)
   const left=todo.length-done-fail,why=err?(typeof plainErr==='function'?plainErr(err):err):'';
   itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed`:''}${left?`, ${left} not made`:''}${kept||fail||left?` (${why})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
+/* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
+function setRemoteKeys(v){remoteKeys=v}
 /* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. esc is called by 35 page scripts,
    srcOk by nine, jsq by add-save.js and look.js; the painter, which stays classic, reads the kept pictures and their keys (renders,
    comboSig, comboKey, fnv64, keepRender, workerBase, workerList, listAt, picsDrawn); today.js draws with renderFor, itemPic,
@@ -249,11 +251,11 @@ async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();
    tests: a getter and a setter each; itemBatch is a let only this file writes: a getter. A module imports them.
    Above acts(), the file's one top-level call that can throw (act.js not loaded): the names are then still the page's, as a
    classic script's were */
-Object.assign(globalThis,{esc,jsq,srcOk,figureLabel,comboSig,fnv64,comboKey,keepRender,workerBase,asmLive,picsDrawn,renderFor,fetchRemoteRender,workerList,schedulePrefetch,loadRenders,lastWorn,aAn,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,fetchItemPic,renderItemPicUI});
+Object.assign(globalThis,{esc,jsq,srcOk,figureLabel,comboSig,fnv64,comboKey,keepRender,workerBase,asmLive,picsDrawn,renderFor,fetchRemoteRender,workerList,schedulePrefetch,loadRenders,lastWorn,aAn,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,fetchItemPic,renderItemPicUI,setRemoteKeys});
 Object.defineProperties(globalThis,{renders:{get:()=>renders,set:v=>{renders=v}},remoteKeys:{get:()=>remoteKeys,set:v=>{remoteKeys=v}},listAt:{get:()=>listAt,set:v=>{listAt=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,ITEM_PIC_TYPES,get itemBatch(){return itemBatch},itemDesc,itemPicLimitText,itemPicsUsedUp,get listKeys(){return listKeys},set listKeys(v){listKeys=v},missingItemPics,prefetchRenders,remoteList,get remoteListed(){return remoteListed},set remoteListed(v){remoteListed=v},renderItemPic,renderTried,shareLocalPics,shirtPatterned,startItemPics};
-export {renders,esc,jsq,srcOk,figureLabel,comboSig,fnv64,comboKey,keepRender,workerBase,asmLive,picsDrawn,renderFor,renderTried,fetchRemoteRender,remoteKeys,remoteListed,listKeys,listAt,workerList,remoteList,prefetchRenders,schedulePrefetch,loadRenders,shirtPatterned,lastWorn,ITEM_PIC_TYPES,aAn,itemDesc,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,fetchItemPic,renderItemPic,shareLocalPics,missingItemPics,itemPicLimitText,itemPicsUsedUp,itemBatch,renderItemPicUI,startItemPics};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,ITEM_PIC_TYPES,get itemBatch(){return itemBatch},itemDesc,itemPicLimitText,itemPicsUsedUp,get listKeys(){return listKeys},set listKeys(v){listKeys=v},missingItemPics,prefetchRenders,remoteList,get remoteListed(){return remoteListed},set remoteListed(v){remoteListed=v},renderItemPic,renderTried,shareLocalPics,shirtPatterned,startItemPics,get renders(){return renders},set renders(v){renders=v},get remoteKeys(){return remoteKeys},set remoteKeys(v){remoteKeys=v},get listAt(){return listAt},set listAt(v){listAt=v}};
+export {renders,esc,jsq,srcOk,figureLabel,comboSig,fnv64,comboKey,keepRender,workerBase,asmLive,picsDrawn,renderFor,renderTried,fetchRemoteRender,remoteKeys,remoteListed,listKeys,listAt,workerList,remoteList,prefetchRenders,schedulePrefetch,loadRenders,shirtPatterned,lastWorn,ITEM_PIC_TYPES,aAn,itemDesc,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,fetchItemPic,renderItemPic,shareLocalPics,missingItemPics,itemPicLimitText,itemPicsUsedUp,itemBatch,renderItemPicUI,startItemPics,setRemoteKeys};
 /* index.html's (act.js): Settings' "Generate item pictures" */
 function itemPicsTap(){startItemPics()}
 /* an item picture has loaded (data-act-load; its key in data-k): its background color is read from it once */

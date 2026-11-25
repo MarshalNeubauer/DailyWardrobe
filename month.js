@@ -142,7 +142,7 @@ function monthRelease(dx,ms){const sw=$('#mswipe');if(!sw)return false;const fas
     sw.style.transition='transform .16s ease-in,opacity .16s';sw.style.transform=`translateX(${dx<0?-w:w}px)`;sw.style.opacity='0';
     setTimeout(()=>monthStep(n,(dx<0?1:-1)*w*.6),160);return true}
   sw.style.transition='transform .2s ease-out,opacity .2s';sw.style.transform='translateX(0)';sw.style.opacity='1';return false}
-function openDay(t){sel=new Date(t);view={y:sel.getFullYear(),m:sel.getMonth()};monthOpen=false;renderToday();scrollTo({top:0,behavior:'smooth'})}
+function openDay(t){setSel(new Date(t));setView({y:sel.getFullYear(),m:sel.getMonth()});setMonthOpen(false);renderToday();scrollTo({top:0,behavior:'smooth'})}
 /* the box on Today: the next few workdays as small stacks; tap it and the month unfolds below */
 function monthLink(){
   const days=[];for(let d=new Date(sel),g=0;days.length<5&&g<14;g++,d.setDate(d.getDate()+1))if(isWorkday(d)){const o=planOn(d);if(hasOutfit(o))days.push([new Date(d),o])}
@@ -153,16 +153,18 @@ function monthLink(){
     <span class="mltxt"><b>${f.toLocaleDateString(undefined,{month:'long'})} wear plan</b><small>${wardShort()?'pieces still missing':`${n} outfit${n===1?'':'s'}`} · ${monthOpen?'tap to fold away':'tap to see the month'}</small></span><span class="chev" aria-hidden="true">›</span></button>
     <div class="mpanel" id="mpanel"><div class="mpanel-in" id="mpanel-in"${monthOpen?` data-fill="${monthPanel.y+'-'+monthPanel.m+'|'+key(sel)}">${monthGridHtml()}`:' inert>'}</div></div></section>`;
 }
+/* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
+function setMonthOpen(v){monthOpen=v}
 /* the bridge (tests/bridge.test.js): the classic scripts that draw with the month's pieces: today.js (the box, the pieces line, the home
    day), today-gestures.js and today-photofold.js (the drags, the scroll), boxfold.js, scorecard.js, history.js, fav.js, daysoff.js,
    pack.js, remind.js, stats.js, start.js and the painter (planOn); monthGridHtml and monthStep are called by tests only. today.js and
    the tests set monthOpen, tests/setup.test.js sets monthPanel: setters; a module imports them.
    Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the page's, as a classic script's were */
-Object.assign(globalThis,{stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthPlan,revealNeed,toggleMonth,pageScroll,MONTH_MS,MONTH_EASE,monthBelow,monthDrag,monthRelease,openDay,monthLink});
+Object.assign(globalThis,{stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthPlan,revealNeed,toggleMonth,pageScroll,MONTH_MS,MONTH_EASE,monthBelow,monthDrag,monthRelease,openDay,monthLink,setMonthOpen});
 Object.defineProperties(globalThis,{monthOpen:{get:()=>monthOpen,set:v=>{monthOpen=v}},monthPanel:{get:()=>monthPanel,set:v=>{monthPanel=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,monthGridHtml,monthStep};
-export {stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthOpen,monthPanel,monthPlan,monthGridHtml,revealNeed,toggleMonth,pageScroll,MONTH_MS,MONTH_EASE,monthBelow,monthStep,monthDrag,monthRelease,openDay,monthLink};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,monthGridHtml,monthStep,get monthOpen(){return monthOpen},set monthOpen(v){monthOpen=v},get monthPanel(){return monthPanel},set monthPanel(v){monthPanel=v}};
+export {stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthOpen,monthPanel,monthPlan,monthGridHtml,revealNeed,toggleMonth,pageScroll,MONTH_MS,MONTH_EASE,monthBelow,monthStep,monthDrag,monthRelease,openDay,monthLink,setMonthOpen};
 /* the markup's handlers (act.js): the month box's head and its "Fold away" bar, and a day of the month (data-t: its time) */
 function monthTap(){toggleMonth()}
 function dayCellTap(el){openDay(+el.dataset.t)}

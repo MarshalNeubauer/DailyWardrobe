@@ -59,7 +59,7 @@ async function rollBack(pick){const sel=$('#snap-list'),id=pick&&pick.id||sel&&s
     if(!j.data||!Array.isArray(j.data.items))throw new Error('that backup is empty');
     j.data=cleanState(j.data);   // records from outside (core.js)
     const local=await localState(),pre=snapPreSetup(local,j.data),next=rollBackState(local,j.data);
-    restoring=true;localStorage.setItem('sync_restore',token);   // before the phone's copy changes: a kill from here on still uploads it as a restore
+    setRestoring(true);localStorage.setItem('sync_restore',token);   // before the phone's copy changes: a kill from here on still uploads it as a restore
     await applyMerged(local,next);
     const ok=await syncNow();if(sel)delete sel.dataset.loaded;
     const n=`${items.length} item${items.length===1?'':'s'}`,kept=pre?' Your settings were kept: that copy is from before the setup.':'';

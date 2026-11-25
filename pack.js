@@ -41,7 +41,7 @@ function packSetMark(f){const M=packRead('pack_marks')||{},k=packMarkKey(),m={t:
   for(const x of Object.keys(M).sort((p,q)=>(M[q].at||0)-(M[p].at||0)).slice(PACK_TRIPS))delete M[x];packWrite('pack_marks',M)}
 
 /* the plan up to a day as it would be with these day records (the real records and the cache stay as they are) */
-function packPlanOf(recs,end){const T=todayDate(),keep=dayRecs;dayRecs=recs;try{return planSim(planStart(T.getFullYear(),T.getMonth())).upTo(end)}finally{dayRecs=keep}}
+function packPlanOf(recs,end){const T=todayDate(),keep=dayRecs;setWardrobe({days:recs});try{return planSim(planStart(T.getFullYear(),T.getMonth())).upTo(end)}finally{setWardrobe({days:keep})}}
 /* every day of the trip: {d, k, o (its outfit, or null on a day off or a day with nothing planned), wd, off} */
 function packDays(t,plan){const out=[],a=keyDate(t.a),E=di(keyDate(t.b));
   for(const d=new Date(a);di(d)<=E&&out.length<PACK_MAX;d.setDate(d.getDate()+1)){const k=key(d),o=(plan||planMonth(d.getFullYear(),d.getMonth()))[k],wd=isWorkday(d);

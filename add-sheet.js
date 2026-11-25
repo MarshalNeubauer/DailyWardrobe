@@ -57,16 +57,18 @@ async function npsCancel(fromBack){const q=npsCard();if(!npsId||npsAsking)return
     if(!go||npsCard()!==q)return false;npsClose();skipCard(q.id);return true}
   const id=npsId;npsClose(fromBack);if(q)skipCard(id);return true}
 function npsBack(){if(npsId)npsCancel(true)}
+/* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
+function setAddFor(v){addFor=v}
 /* An ES module since 2026-11-23: its other names are its own. The bridge (tests/bridge.test.js lists it): add.js (renderAddFor, npsDraw,
    npsId), ui.js (npsId, npsAsking, npsInert, npsCancel) and start.js (npsLeave, addFor); addManual and npsClose are called by the tests.
    npsId and npsAsking are written here only: getters. start.js assigns addFor (openAdd, show): a setter too. Before backOn() and
    acts(), the file's two calls that can throw (back.js or act.js not loaded): the names are then still the page's, as a classic
    script's were (every one is a function, or a let declared above) */
-Object.assign(globalThis,{renderAddFor,npsInert,npsDraw,npsCancel,npsLeave});
+Object.assign(globalThis,{renderAddFor,npsInert,npsDraw,npsCancel,npsLeave,setAddFor});
 Object.defineProperties(globalThis,{npsId:{get:()=>npsId},npsAsking:{get:()=>npsAsking},addFor:{get:()=>addFor,set:v=>{addFor=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,addManual,npsClose};
-export {addManual,addFor,renderAddFor,npsId,npsAsking,npsInert,npsDraw,npsClose,npsCancel,npsLeave};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,addManual,npsClose,get addFor(){return addFor}};
+export {addManual,addFor,renderAddFor,npsId,npsAsking,npsInert,npsDraw,npsClose,npsCancel,npsLeave,setAddFor};
 backOn('nps',()=>npsBack());
 /* Add left while the sheet is up (start.js show): the sheet closes; a card with changes stays on Add as a card of the list, an
    untouched one goes */

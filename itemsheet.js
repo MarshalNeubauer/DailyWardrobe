@@ -137,7 +137,7 @@ async function togglePause(id,want){const it=items.find(x=>x.id===id);if(!it){it
       for(const [s,v] of Object.entries(f))if(v===id){delete f[s];hit=true}
       if(hit){const nr={...r,force:f};if(!Object.keys(f).length)delete nr.force;delete nr.ids;await saveDay(nr,true);n++}}}
   // out of rotation doesn't make a sample piece his (kit.js kitNoMine; put reads it at once)
-  const kn=typeof kitNoMine!=='undefined';if(kn)kitNoMine=true;const pw=put(it);if(kn)kitNoMine=false;await pw;planDirty();renderWardrobe();
+  const kn=typeof kitNoMine!=='undefined';if(kn)setKitNoMine(true);const pw=put(it);if(kn)setKitNoMine(false);await pw;planDirty();renderWardrobe();
   toast(it.paused?`Out of rotation: the planner won't pick it${n?`, and ${n} upcoming day${n===1?' was':'s were'} planned again without it`:''}.`:'Back in rotation.')}
 async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);planDirty();renderWardrobe()}
 async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast (wardrobe.js)
@@ -145,7 +145,6 @@ async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast 
 
 /* swiping the Wardrobe moves between the type filters (All, Suit, Blazer, …) in chip order, skipping types with no items;
    only the grid slides. Not while an item is open (its editor has sliders and the photo crop), nor on the chips row itself. */
-function setFlt(t){flt=t}   // the Wardrobe's type filter (app.js flt): the one place it is set here
 const wardTypes=()=>['all',...Object.keys(TYPES).filter(t=>items.some(i=>i.type===t))];
 function stepType(n,from){
   const l=wardTypes();let k=l.indexOf(flt);if(k<0)k=0;const j=k+n;if(j<0||j>=l.length)return false;
@@ -159,7 +158,7 @@ function stepType(n,from){
    redetect, clearStripes), wardrobe.js (setFlt); togglePause and rm are called by tests only; a module imports them.
    Above the file's first call that can throw ($ and the Wardrobe page's own element, then acts): the names are then still the page's,
    as a classic script's were; wardPic, a const declared further down, is handed over above acts */
-Object.assign(globalThis,{itemBody,optLab,sete,matTidy,patSummary,redetect,clearStripes,setFlt,renderWardrobe});
+Object.assign(globalThis,{itemBody,optLab,sete,matTidy,patSummary,redetect,clearStripes,renderWardrobe});
 Object.defineProperties(globalThis,{phEdit:{get:()=>phEdit}});
 (()=>{const el=$('#wardrobe');let st=null;const slide=()=>$('#wslide');
   el.addEventListener('touchstart',e=>{const t=e.touches[0];
@@ -199,7 +198,7 @@ function renderWardrobe(){
 Object.assign(globalThis,{wardPic});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,rm,togglePause};
-export {phEdit,itemBody,optLab,sete,matTidy,patSummary,redetect,togglePause,clearStripes,rm,setFlt,wardPic,renderWardrobe};
+export {phEdit,itemBody,optLab,sete,matTidy,patSummary,redetect,togglePause,clearStripes,rm,wardPic,renderWardrobe};
 /* what the item page's and the Wardrobe's controls do (act.js; the item by its id in data-id) */
 function itemPick(el){sete(el.dataset.id,el.dataset.f,el.value)}
 function itemDetails(el){sete(el.dataset.id,'details',el.value.trim().slice(0,WATCH_DETAILS_MAX)||'none')}

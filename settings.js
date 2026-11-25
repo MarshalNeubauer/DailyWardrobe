@@ -206,11 +206,14 @@ function setDoneTap(){saveSettings()}
 function catTap(el){toggleCat(el.dataset.cat)}
 function vestPick(el){setVestMode(el.value)}
 function darkPick(el){setDarkShirts(el.value)}
+/* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
+function setSetSeen(v){setSeen=v}
+function setViewStale(v){viewStale=v}
 /* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above acts({…}),
    the file's only top-level call that can throw: without act.js its names are still the page's */
-Object.assign(globalThis,{SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayDirty,settingsOpen,refreshToday,closeSettings,saveSettings,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,picsSwitched,setVestMode,toggleDay,setWanted});
+Object.assign(globalThis,{SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayDirty,settingsOpen,refreshToday,closeSettings,saveSettings,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,picsSwitched,setVestMode,toggleDay,setWanted,setSetSeen,setViewStale});
 Object.defineProperties(globalThis,{viewStale:{get:()=>viewStale,set:v=>{viewStale=v}},setSeen:{get:()=>setSeen,set:v=>{setSeen=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,setDarkShirts,setOpenTap,get setOther(){return setOther},setPictures,get todayStale(){return todayStale}};
-export {SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayStale,todayDirty,viewStale,settingsOpen,refreshToday,closeSettings,saveSettings,setSeen,setOther,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,setPictures,picsSwitched,setVestMode,setDarkShirts,toggleDay,setWanted,setOpenTap};
+export {SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayStale,todayDirty,viewStale,settingsOpen,refreshToday,closeSettings,saveSettings,setSeen,setOther,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,setPictures,picsSwitched,setVestMode,setDarkShirts,toggleDay,setWanted,setOpenTap,setSetSeen,setViewStale};
 acts({dayTap,picsPick,setOpenTap,setBackdropTap,setDoneTap,catTap,vestPick,darkPick});

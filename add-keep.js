@@ -67,5 +67,5 @@ function addWatch(){if(addWatchOn)return;addWatchOn=true;if(typeof guardUnsaved=
 Object.assign(globalThis,{addKeepSoon,addCardRec,addKeep,addRevive,addRestore,addWatch});
 Object.defineProperties(globalThis,{addRestoreState:{get:()=>addRestoreState,set:v=>{addRestoreState=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,get addKeepT(){return addKeepT}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,get addKeepT(){return addKeepT},get addRestoreState(){return addRestoreState},set addRestoreState(v){addRestoreState=v}};
 export {addKeepT,addRestoreState,addKeepSoon,addCardRec,addKeep,addRevive,addRestore,addWatch};

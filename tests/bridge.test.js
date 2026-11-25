@@ -56,7 +56,7 @@ const BRIDGE={
   // weather and climate (today, weather), clockSkew (sync), TODAY_OVERRIDE (the worker) and the tests assign seven lets: setters;
   // CUSTOM_COL and CUSTOM_PAT are lets only core.js writes (applyCustom): getters
 
-  'core.js':['$','ACCENT_MAX','BANDS','BELT_MATS','BEZELS','BLOUSE_TAPE_MAX','CAMO_V','CASUAL_JACKETS','CASUAL_TOPS','CLOCK_AHEAD','CLOCK_MIN','COLORS','COLOR_OPTS','COLS_BY','COL_ALIAS','COOL','CUFFS','CUSTOM_COL','CUSTOM_PAT','DAY_NAMES','DIAL_COLS','DIAL_OPTS','FABRIC','HANDPICK_TYPES','LEATHERS','LUM','LUMS','MATERIALS_BY','MAT_ALIAS','METAL','METAL_TONES','METAL_TYPES','OCCASIONS','OCP_CAMO','OCP_RANKS','OCP_V','OWN_COL_RE','OWN_MAT_MAX','OWN_PAT_RE','PATS_BY','PAT_ALIAS','REC_PHOTO','SEASONS','SEASON_TYPES','SHADE_MAX','SHIRT_WEAVE_MAT','SHOE_NAP','SHOE_STYLES','SHOE_TEXTILES','SLOTS','SLOT_TYPE','STRAP_BANDS','TAG_TYPES','TEXTURE_TYPES','TODAY_OVERRIDE','TROUSER_KINDS','TYPES','VESTS','WATCH_STYLES','accentOf','accentsFor','accentsOf','applyCustom','arriveN','avgText','blouseTapes','camoImage','camoPants','camoPat','cleanDay','cleanRecord','cleanSettings','cleanState','climate','clipMetal','clockSkew','colBase','colBaseFor','colName','colOf','colorDesc','colsFor','dE00','dayClimate','dayFields','dayRecs','desc','di','dressOut','fitCol','handPickSlot','hasPat','hasVest','hexRgb','inRotation','isCargo','isHandPick','isOcp','isWorkday','isoKey','itemFields','itemName','itemSeason','itemTitle','items','key','keySettings','labHex','labOf','leatherLabel','leatherWord','leathersFor','linkFace','lum','lumCol','matAlias','matTypeOne','matTypeWord','matsFor','mergeSettings','mergeState','metalOptsFor','metalWord','mix','nameHtml','nameIso','needsJacket','needsTie','nextStamp','nm','noBidi','normCol','normColFor','normPat','nowMs','occLabel','occOf','ocpImage','offDays','offName','ownColFind','ownColKey','ownDescClean','ownFreeKey','ownKeyNorm','ownMatName','ownMats','ownNameBad','ownNameClean','ownNameShort','ownPatFind','ownPatKey','patBase','patLabel','patName','patNameTaken','patOf','planCol','prettyCols','primaryCol','pw','rgbLab','seasonFit','sentence','setStr','setWardrobe','settings','shadeFor','shadeHex','shadeName','shoeStyle','shortCol','shortDesc','sockPatterned','sockToe','sockToeKey','soleStyle','stampAllSettings','stampSettings','strapBand','styleWord','tagTypesNow','takeSettings','tapeText','thirdOf','titleCls','todayDate','trouserKind','trouserKindShown','trueToday','typeWord','watchOpts','watchText','wearsJacket','wearsTie','weather'],
+  'core.js':['$','ACCENT_MAX','BANDS','BELT_MATS','BEZELS','BLOUSE_TAPE_MAX','CAMO_V','CASUAL_JACKETS','CASUAL_TOPS','CLOCK_AHEAD','CLOCK_MIN','COLORS','COLOR_OPTS','COLS_BY','COL_ALIAS','COOL','CUFFS','CUSTOM_COL','CUSTOM_PAT','DAY_NAMES','DIAL_COLS','DIAL_OPTS','FABRIC','HANDPICK_TYPES','LEATHERS','LUM','LUMS','MATERIALS_BY','MAT_ALIAS','METAL','METAL_TONES','METAL_TYPES','OCCASIONS','OCP_CAMO','OCP_RANKS','OCP_V','OWN_COL_RE','OWN_MAT_MAX','OWN_PAT_RE','PATS_BY','PAT_ALIAS','REC_PHOTO','SEASONS','SEASON_TYPES','SHADE_MAX','SHIRT_WEAVE_MAT','SHOE_NAP','SHOE_STYLES','SHOE_TEXTILES','SLOTS','SLOT_TYPE','STRAP_BANDS','TAG_TYPES','TEXTURE_TYPES','TODAY_OVERRIDE','TROUSER_KINDS','TYPES','VESTS','WATCH_STYLES','accentOf','accentsFor','accentsOf','applyCustom','arriveN','avgText','blouseTapes','camoImage','camoPants','camoPat','cleanDay','cleanRecord','cleanSettings','cleanState','climate','clipMetal','clockSkew','colBase','colBaseFor','colName','colOf','colorDesc','colsFor','dE00','dayClimate','dayFields','dayRecs','desc','di','dressOut','fitCol','handPickSlot','hasPat','hasVest','hexRgb','inRotation','isCargo','isHandPick','isOcp','isWorkday','isoKey','itemFields','itemName','itemSeason','itemTitle','items','key','keySettings','labHex','labOf','leatherLabel','leatherWord','leathersFor','linkFace','lum','lumCol','matAlias','matTypeOne','matTypeWord','matsFor','mergeSettings','mergeState','metalOptsFor','metalWord','mix','nameHtml','nameIso','needsJacket','needsTie','nextStamp','nm','noBidi','normCol','normColFor','normPat','nowMs','occLabel','occOf','ocpImage','offDays','offName','ownColFind','ownColKey','ownDescClean','ownFreeKey','ownKeyNorm','ownMatName','ownMats','ownNameBad','ownNameClean','ownNameShort','ownPatFind','ownPatKey','patBase','patLabel','patName','patNameTaken','patOf','planCol','prettyCols','primaryCol','pw','rgbLab','seasonFit','sentence','setClimate','setClockSkew','setStr','setWardrobe','setWeather','settings','shadeFor','shadeHex','shadeName','shoeStyle','shortCol','shortDesc','sockPatterned','sockToe','sockToeKey','soleStyle','stampAllSettings','stampSettings','strapBand','styleWord','tagTypesNow','takeSettings','tapeText','thirdOf','titleCls','todayDate','trouserKind','trouserKindShown','trueToday','typeWord','watchOpts','watchText','wearsJacket','wearsTie','weather'],
   // analysis.js (in the page and the worker), history, pickscore, scorecard, today-plan, today, month, stats, pack, fav, wardrobe,
   // itemsheet, locks, dress and shop plan and score with these; analysis-worker.js ranks with rankLooks; the rest: tests (LOOK_K, lookLeather and planLook
   // only inside a string tests/lookplan.test.js runs in the page)
@@ -80,8 +80,9 @@ const BRIDGE={
 // the painter (C3, 2026-11-24): the drawings for every screen (itemThumb, swatchSVG, figureSvg, fabricDef), the tiles the painter's shirts and ties are made from, the mannequin's cloth (figCuKey, figWay, FIG_CU); swN, thumbN and figBgMemo have setters (tests assign them); the rest: tests
   'draw.js':['OCP_RANK_SVG','TIE_DARK_L','TIE_DARK_X','TIE_TEX_K','fabricDef','figureSvg','itemThumb','swatchSVG','texPlainBand','texTileSmooth','texTileUrl','texTones'],
   // the app's state, storage and shared helpers for nearly every file and the tests; flt, queue, view, sel, the database's and the
-  // connection copy's flags, aiError and aiModel have setters (other files and tests assign them)
-  'app.js':['DEAD_MSG','S','addTombstones','afterDom','afterScripts','aiError','aiLabel','aiModel','announce','ask','atomic','cap1','cleanStored','cleanStoredSettings','connKeep','connReady','connRestored','db','dbConn','dbCur','dbGone','dbMark','dbRetry','dbUnhold','dbWiping','deadCanvas','deadPic','del','fill','fitNavSoon','fixupRedraw','flt','generateSwatch','keepFocus','loadImg','metaGet','metaPut','normTag','put','putRaw','queue','refreshSwatch','sel','shrink','stillCur','texSwatches','tx','txFail','txs','updateSwatchParam','view'],
+  // connection copy's flags, aiError and aiModel have setters (tests assign flt,
+  // queue, view and sel; since S1a the other files call setSel, setView, setFlt …, the owner's setters)
+  'app.js':['DEAD_MSG','S','addTombstones','afterDom','afterScripts','aiError','aiLabel','aiModel','announce','ask','atomic','cap1','cleanStored','cleanStoredSettings','connKeep','connReady','connRestored','db','dbConn','dbCur','dbGone','dbMark','dbRetry','dbUnhold','dbWiping','deadCanvas','deadPic','del','fill','fitNavSoon','fixupRedraw','flt','generateSwatch','keepFocus','loadImg','metaGet','metaPut','normTag','put','putRaw','queue','refreshSwatch','sel','setAiError','setAiModel','setConnReady','setDbConn','setDbCur','setDbWiping','setFlt','setSel','setView','shrink','stillCur','texSwatches','tx','txFail','txs','updateSwatchParam','view'],
   // the pages and sheets that Back closes are classic scripts: add-sheet, colpick, history, item-view, kit, settings, setup, shop,
   // start, ui and account call these. appHist, appKind and itemHist are read by the tests only (back, backgesture, shellfix): getters
   'back.js':['backBorrow','backDrop','backHold','backKind','backLand','backOn','backOver','backPush','backReturn','backSettled','backWanted','histDrop','histPush'],
@@ -99,7 +100,7 @@ const BRIDGE={
   'add-more.js':['ARRIVE_PAST','arriveVal','checkArrivals','fmtDay','orderHint','orderRow','qtyLabel','qtyOf','qtyRow'],
   // add (renderAddFor, npsDraw, npsId), ui (npsId, npsAsking, npsInert, npsCancel), start (npsLeave; it assigns addFor: a setter);
   // addManual and npsClose by tests only; npsId and npsAsking are lets only add-sheet.js writes: getters
-  'add-sheet.js':['addFor','npsAsking','npsCancel','npsDraw','npsId','npsInert','npsLeave','renderAddFor'],
+  'add-sheet.js':['addFor','npsAsking','npsCancel','npsDraw','npsId','npsInert','npsLeave','renderAddFor','setAddFor'],
   // the sheets that close on a swipe down are classic scripts: add-sheet, item-view, colpick and kit call it
   'sheet-swipe.js':['sheetSwipe'],
   // add, look, kit, wardrobe, colpick, safety, tagging, pattern-read and the other Add files find a card and save it with these;
@@ -116,14 +117,14 @@ const BRIDGE={
   'item-view.js':['dropItem','editing','itemGoneTell','itemSynced','noMotion','openItem','renderItem'],
   // renderWardrobe is called by 16 page scripts and 15 tests; item-view draws the sheet with itemBody and reads phEdit, as item-photo
   // and photos do (a getter: only itemsheet.js assigns it); add-card (optLab, matTidy), add-save (matTidy), colpick and look (sete,
-  // patSummary, redetect, clearStripes), wardrobe (setFlt, wardPic), colpick (wardPic); rm and togglePause: tests only
-  'itemsheet.js':['clearStripes','itemBody','matTidy','optLab','patSummary','phEdit','redetect','renderWardrobe','setFlt','sete','wardPic'],
+  // patSummary, redetect, clearStripes), wardrobe (wardPic), colpick (wardPic); rm and togglePause: tests only
+  'itemsheet.js':['clearStripes','itemBody','matTidy','optLab','patSummary','phEdit','redetect','renderWardrobe','sete','wardPic'],
   // keyDate is read by 17 classic page scripts, saveDay by 8; today.js draws and records with recordDays, openPicker, closePicker,
   // setWorn, setVest, resetCard and dayActions and sets swapMsg, todayPullWait and pastEdit (setters; tests set swapMsg and pastEdit
   // too); picker is a getter (today, today-gestures and sync read it); whenPulled: start, safety, wardrobe, calendar; dropLearn and
   // checkPlanRules: start; renderReplanUI: settings; setOccasion: daysoff, calendar; wearFav: fav; pickItem: scorecard; notAhead and
   // idsOf: pickscore; swapSlot, togglePastEdit, correctPast, setFormal, resetDay, replanFuture and planRulesNote: tests only
-  'history.js':['checkPlanRules','closePicker','dayActions','dropLearn','idsOf','keyDate','notAhead','openPicker','pastEdit','pickItem','picker','recordDays','renderReplanUI','resetCard','saveDay','setOccasion','setVest','setWorn','swapMsg','todayPullWait','wearFav','whenPulled'],
+  'history.js':['checkPlanRules','closePicker','dayActions','dropLearn','idsOf','keyDate','notAhead','openPicker','pastEdit','pickItem','picker','recordDays','renderReplanUI','resetCard','saveDay','setOccasion','setPastEdit','setSwapMsg','setTodayPullWait','setVest','setWorn','swapMsg','todayPullWait','wearFav','whenPulled'],
   // history.js (firstReal, missedNote) and today.js (missedCard) are classic scripts; the rest are called by the todayacts and weeklock tests
   'missed.js':['firstReal','missedCard','missedNote'],
   // history, settings, dress, care, setup and kit (clearLocks), pack (lockIds), today (lockUpcoming), add-more and care (careUnlock), history (unlockClash)
@@ -134,7 +135,7 @@ const BRIDGE={
   // today.js draws and folds the card (scoreCard, toggleScore) and sets scoreOpen, as the advicefresh, folds, scoreanim and scoredials
   // tests do (a setter); history.js and fav.js say dayWord; month.js reads recentWork; dialHtml, dialsFor, rankFor and rankPools are
   // called by tests only (advicefresh, scoredials, takeoff), which also read rankMemo and rankW (getters: only scorecard.js writes them)
-  'scorecard.js':['dayWord','recentWork','scoreCard','scoreOpen','toggleScore'],
+  'scorecard.js':['dayWord','recentWork','scoreCard','scoreOpen','setScoreOpen','toggleScore'],
   // today.js is a classic script (boxFold, boxUnfold); scorecard.js (boxFold, boxUnfold), today-photofold.js and month.js (foldEdge)
   // are modules that still read these as globals: boxfold.js comes after scorecard.js in the list, and an import would run it first
   'boxfold.js':['boxFold','boxUnfold','foldEdge'],
@@ -144,7 +145,7 @@ const BRIDGE={
   'today-plan.js':['PLAN_SNAP','cache','outSig','planDirty','planFor','planMonth','planSnapSoon','planSnapUse','planStartDay','planTrim','strHash'],
   // Today's names for the screens that step, fold and pick (history, scorecard, today-gestures, month, settings, start, kit, …) and the
   // tests; openRow, belowOpen, listOpen (history.js too), dayShown and BLOUSE_ROLL_ON have setters (tests assign them), recordRun and foldQuiet are getters; figureStage: tests/todayswatch.test.js, inside a string run in the page
-  'today.js':['canPick','figCuDone','foldAll','foldQuiet','goToday','hasOutfit','homeDay','keepHome','keepInView','listOpen','planWith','recordRun','renderToday','slotLabel','stepDay','wardShort','wxPreload'],
+  'today.js':['canPick','figCuDone','foldAll','foldQuiet','goToday','hasOutfit','homeDay','keepHome','keepInView','listOpen','planWith','recordRun','renderToday','setListOpen','slotLabel','stepDay','wardShort','wxPreload'],
   // today.js opens and shuts a piece's photo with these
   'today-photofold.js':['picOpenReady','picShut','picSnap','picStop'],
   // today.js lays out the swatches with ovlPiece and calls applyZoom, zoomOut, swApply, swTap and swClose; zoom is a getter
@@ -159,18 +160,18 @@ const BRIDGE={
   // remind, start, stats and the painter (assemble.js, asm-color.js: planOn) are classic scripts; boxfold, fav,
   // scorecard, today-gestures and today-photofold are modules earlier in the list that read these as globals; monthGridHtml and
   // monthStep are called by tests only (month, setup); tests/setup.test.js sets monthPanel (a setter)
-  'month.js':['MONTH_EASE','MONTH_MS','dayOnly','monthBelow','monthDrag','monthLink','monthOpen','monthPanel','monthPlan','monthRelease','nextWorkday','openDay','pageScroll','piecesLine','piecesParts','planOn','revealNeed','shortRest','shortTop','stackSVG','toggleMonth'],
+  'month.js':['MONTH_EASE','MONTH_MS','dayOnly','monthBelow','monthDrag','monthLink','monthOpen','monthPanel','monthPlan','monthRelease','nextWorkday','openDay','pageScroll','piecesLine','piecesParts','planOn','revealNeed','setMonthOpen','shortRest','shortTop','stackSVG','toggleMonth'],
   // esc is called by 35 page scripts, srcOk by nine; the painter (assemble, asm-color, asm-kinds, asm-ocp: classic) reads the kept
   // pictures and their keys; today, start, settings, daysoff and stats (classic), history, today-picture and itemsheet (modules that
   // read them as globals) draw with the rest; 15 names are read by
   // tests only. renders (tests), remoteKeys (today.js, tests), remoteListed, listKeys and listAt (tests) are assigned from outside:
   // a getter and a setter each; itemBatch is a let only photos.js writes: a getter
-  'photos.js':['PIC_BG','aAn','asmLive','comboKey','comboSig','esc','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','fnv64','itemKey','itemPic','itemPicHtml','jsq','keepRender','lastWorn','listAt','loadRenders','picBgs','picsDrawn','remoteKeys','renderFor','renderItemPicUI','renders','schedulePrefetch','srcOk','workerBase','workerList'],
+  'photos.js':['PIC_BG','aAn','asmLive','comboKey','comboSig','esc','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','fnv64','itemKey','itemPic','itemPicHtml','jsq','keepRender','lastWorn','listAt','loadRenders','picBgs','picsDrawn','remoteKeys','renderFor','renderItemPicUI','renders','schedulePrefetch','setRemoteKeys','srcOk','workerBase','workerList'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
   // nearly every page script opens, closes or saves through these; settingsPart is called at load by look, account, calendar and remind.
   // viewStale (sync.js) and setSeen (start.js) have setters, todayStale and setOther are getters
-  'settings.js':['SET_CATS','backupSummary','closeSettings','openSettings','picsSwitched','refreshToday','renderPicturesUI','renderSettingsExtras','saveSettings','saveUserSettings','setCatOpen','setSeen','setVestMode','setWanted','settingsOpen','settingsPart','settingsSummaries','showCost','todayDirty','toggleCat','toggleDay','viewStale','weekFirst'],
+  'settings.js':['SET_CATS','backupSummary','closeSettings','openSettings','picsSwitched','refreshToday','renderPicturesUI','renderSettingsExtras','saveSettings','saveUserSettings','setCatOpen','setSeen','setSetSeen','setVestMode','setViewStale','setWanted','settingsOpen','settingsPart','settingsSummaries','showCost','todayDirty','toggleCat','toggleDay','viewStale','weekFirst'],
   // settings (countryName, renderDaysOffUI, renderFormalUI), setup (COUNTRY_CODES, setHolidayCountry), start (refreshHolidays), calendar
   // (isoToDate, dayOffAdd, yearDate), history and missed (shortDate, renderFormalUI); the rest: tests; holidayMsg is a getter
   'daysoff.js':['COUNTRY_CODES','countryName','dayOffAdd','isoToDate','refreshHolidays','renderDaysOffUI','renderFormalUI','setHolidayCountry','shortDate','yearDate'],
@@ -192,7 +193,7 @@ const BRIDGE={
   // (tagFailText, tagFailed, tagFailNote, tagNetText, retryTag; tagWhy and tagNetLast have setters for the errreport and tagreads
   // tests); add-keep guardUnsaved; tagging oneStop; about errReport; seven page scripts errNote; dbDown is a getter (sync reads it);
   // errTapAt (a setter), errList and pruneTagImgs: tests only
-  'safety.js':['adoptBackupSettings','askPersist','dbDown','errNote','errReport','guardUnsaved','oneStop','retryTag','safetyStart','saveFailed','storageDown','storeFailText','storeFailure','storeToldAt','tagFailNote','tagFailText','tagFailed','tagNetLast','tagNetText','tagWhy'],
+  'safety.js':['adoptBackupSettings','askPersist','dbDown','errNote','errReport','guardUnsaved','oneStop','retryTag','safetyStart','saveFailed','setStoreToldAt','storageDown','storeFailText','storeFailure','storeToldAt','tagFailNote','tagFailText','tagFailed','tagNetLast','tagNetText','tagWhy'],
   // settings.js, stats.js, start.js, add-card.js, add-save.js, shop.js and kit.js are classic scripts; vestMigrating is read by the
   // dress test only: a getter
   'dress.js':['dressNewItem','dressSummary','dressSynced','dressWhyUnused','migrateVests','newSuitVest','renderDressUI'],
@@ -214,7 +215,7 @@ const BRIDGE={
   // add, add-card, add-save, tagging, itemsheet, look, measure, migrate and asm-color; the rest: tests
   'pattern-read.js':['TEX_WORDS','claudeOnly','missedPattern','readPatternWithClaude','readSett','readable','rereadSett','settFromSpec','settNote','settSummary','settable'],
 // the painter (C3, 2026-11-24): Today (asmFor, asmShown, asmEnsure), photos, settings, start, today-picture, colpick and the other painter files read these; asm-worker.js replaces asmData and asmJpeg and the tests stub asmAhead, asmAheadSoon and asmPhoto (lets with setters); ASM_ON, ASM_IDLE_MS, asmList, asmOut and asmW are assigned by tests (setters)
-  'assemble.js':['ASM_AHEAD','ASM_BAR_AT','ASM_BAR_LEN','ASM_BAR_MM','ASM_CLOSEUP_MM','ASM_CREASE_DEG','ASM_FLOW','ASM_FORE_K','ASM_HB_AMP','ASM_HB_BREAK','ASM_HB_FLECK','ASM_HB_FLOAT','ASM_HB_FLOATL','ASM_HB_GRAIN','ASM_HB_MM','ASM_HB_MOTTLE','ASM_HB_PBRK','ASM_HB_RIB','ASM_HB_SNAP','ASM_HB_SOFT','ASM_HB_THIN','ASM_HB_TR','ASM_HB_YARN','ASM_LIN','ASM_LINE_PX','ASM_METAL','ASM_MICRO','ASM_MICRO_KINDS','ASM_ON','ASM_PX_MM','ASM_RETRY_MS','ASM_SHIRT_MM','ASM_SIZE','ASM_SLEEVE_FLOW','ASM_STRIPE','ASM_STRIPE_PX','ASM_SUITV','ASM_TEX_MIN_MM','ASM_TIEV','ASM_TIE_FIG_MAX','ASM_TIE_TEX_MAX','ASM_TR_CAP','ASM_TUBE_K','ASM_TWEED','ASM_TWILL','asmAreas','asmBarDraw','asmBarRgb','asmBarSig','asmBodyFlow','asmBuild','asmBuildAfter','asmBusy','asmClothOf','asmCmUse','asmData','asmDrawn','asmEnsure','asmFlowAt','asmFor','asmFullWins','asmGet','asmGetPre','asmHbCw','asmImg','asmJpeg','asmKeepOut','asmKey','asmLinen','asmLinenTile','asmList','asmListAt','asmListGet','asmLoad','asmLookId','asmMicroGrid','asmMicroKind','asmMicroTex','asmMotif','asmOut','asmOutKey','asmPhoto','asmPolyAt','asmRepeatPx','asmRun','asmShow','asmShown','asmSleeveFlow','asmSleeveSegs','asmStamp','asmStripeCount','asmSuitBands','asmSuitSig','asmSuitTex','asmSuitTweed','asmSuitTwill','asmSuitWeave','asmSync','asmTexMm','asmTieFor','asmTieSig','asmTieTile','asmTq','asmTqn','asmTqr','asmTried','asmTubeAt','asmTubePart','asmTubePartQ','asmTubeRaw','asmTubeTabs','asmTweedTex','asmTweedTile','asmTwillTex','asmWeave','renderAsmUI'],
+  'assemble.js':['ASM_AHEAD','ASM_BAR_AT','ASM_BAR_LEN','ASM_BAR_MM','ASM_CLOSEUP_MM','ASM_CREASE_DEG','ASM_FLOW','ASM_FORE_K','ASM_HB_AMP','ASM_HB_BREAK','ASM_HB_FLECK','ASM_HB_FLOAT','ASM_HB_FLOATL','ASM_HB_GRAIN','ASM_HB_MM','ASM_HB_MOTTLE','ASM_HB_PBRK','ASM_HB_RIB','ASM_HB_SNAP','ASM_HB_SOFT','ASM_HB_THIN','ASM_HB_TR','ASM_HB_YARN','ASM_LIN','ASM_LINE_PX','ASM_METAL','ASM_MICRO','ASM_MICRO_KINDS','ASM_ON','ASM_PX_MM','ASM_RETRY_MS','ASM_SHIRT_MM','ASM_SIZE','ASM_SLEEVE_FLOW','ASM_STRIPE','ASM_STRIPE_PX','ASM_SUITV','ASM_TEX_MIN_MM','ASM_TIEV','ASM_TIE_FIG_MAX','ASM_TIE_TEX_MAX','ASM_TR_CAP','ASM_TUBE_K','ASM_TWEED','ASM_TWILL','asmAreas','asmBarDraw','asmBarRgb','asmBarSig','asmBodyFlow','asmBuild','asmBuildAfter','asmBusy','asmClothOf','asmCmUse','asmData','asmDrawn','asmEnsure','asmFlowAt','asmFor','asmFullWins','asmGet','asmGetPre','asmHbCw','asmImg','asmJpeg','asmKeepOut','asmKey','asmLinen','asmLinenTile','asmList','asmListAt','asmListGet','asmLoad','asmLookId','asmMicroGrid','asmMicroKind','asmMicroTex','asmMotif','asmOut','asmOutKey','asmPhoto','asmPolyAt','asmRepeatPx','asmRun','asmShow','asmShown','asmSleeveFlow','asmSleeveSegs','asmStamp','asmStripeCount','asmSuitBands','asmSuitSig','asmSuitTex','asmSuitTweed','asmSuitTwill','asmSuitWeave','asmSync','asmTexMm','asmTieFor','asmTieSig','asmTieTile','asmTq','asmTqn','asmTqr','asmTried','asmTubeAt','asmTubePart','asmTubePartQ','asmTubeRaw','asmTubeTabs','asmTweedTex','asmTweedTile','asmTwillTex','asmWeave','renderAsmUI','setAsmOut'],
 // the painter (C3, 2026-11-24): the item sheet (asmGapNote), Settings (asmCmUI), today-picture (asmCmTile, asmCuTile) and the other painter files; asm-worker.js wraps asmCmPack and asmCmDiskPut, the tests stub asmCmPrep, asmCmSetup, asmCmBuild and asmCmHandEdge and clear asmCmMem, asmCmMf, asmCmCodeH and asmCmSrc (lets with setters)
   'asm-color.js':['ASM_CELL_FADE','ASM_CMV','ASM_CM_AA','ASM_CM_AA_CUT','ASM_CM_AA_FADE','ASM_CM_BG_SHADOW','ASM_CM_BTN','ASM_CM_KINDS','ASM_CM_LIGHT','ASM_CM_LOD0','ASM_CM_LOOK','ASM_CM_MIPS','ASM_CM_U16','ASM_CM_WINK','ASM_CM_WLIGHT','ASM_CU','ASM_HB_COL_LIFT','ASM_HB_SHIRT_Y','ASM_TIE_LIT','ASM_WT','asmCmBaseJob','asmCmBgGet','asmCmBgKey','asmCmBtnCol','asmCmBuild','asmCmButtons','asmCmCanvas','asmCmCodeSig','asmCmCodeText','asmCmDiskGet','asmCmDiskKey','asmCmDiskPut','asmCmEnsure','asmCmFinish','asmCmGet','asmCmHash','asmCmJob','asmCmKey','asmCmKind','asmCmLightKeys','asmCmLightPrep','asmCmMem','asmCmMf','asmCmMfGet','asmCmMfNow','asmCmMips','asmCmMp','asmCmOutKey','asmCmPack','asmCmPrep','asmCmRoute','asmCmSetup','asmCmSig','asmCmSrcSig','asmCmStamp','asmCmTile','asmCmUI','asmCmWarm','asmCmWarming','asmCuTile','asmCuWants','asmGapNote','asmHbShirt','asmKindOf','asmNkBaseOf','asmTieSheenK','asmWorstedTile','asmWtWants'],
 // the painter (C3, 2026-11-24): assemble.js and asm-color.js paint the watch through these; the rest: tests
@@ -260,7 +261,7 @@ const BRIDGE={
   'sync-status.js':['ENDED','backedUpWords','backupFullMsg','endedAnswer','inviteEnded','pauseTillTomorrow','setSyncStatus','showSyncStatus','syncNetText','syncPaused','syncWaiting'],
   // the backup for every screen that saves (scheduleSync, syncNow) and the tests; restoring (snapshots.js), syncing and syncDue (tests)
   // have setters, syncTimer, syncRun and syncLater are getters
-  'sync.js':['SYNC_SEND_MAX','WIPED_SYNC','afterPull','applyMerged','localState','pulledYet','restoring','scheduleSync','syncLaterRun','syncMark','syncNeedsPull','syncNow','syncRedraw','syncRun','syncTimer','syncUrl','syncing'],
+  'sync.js':['SYNC_SEND_MAX','WIPED_SYNC','afterPull','applyMerged','localState','pulledYet','restoring','scheduleSync','setRestoring','syncLaterRun','syncMark','syncNeedsPull','syncNow','syncRedraw','syncRun','syncTimer','syncUrl','syncing'],
   // sync.js calls phIn, phOut and phBatch; PH_MIN, isPh, phMap and phStrings are read by tests only (backup-storage, lib-verify18)
   'sync-photos.js':['phBatch','phIn','phOut'],
   // settings.js lists the daily backups when Backup opens (loadSnapshots); the tests call the four (actsindex, backup-storage, clock,
@@ -278,7 +279,7 @@ const BRIDGE={
   'setup.js':['SETUP_STEPS','setup','setupDraw','setupFinish','setupNeeds','setupSample','setupShown','setupStart','setupToday','setupWardEmpty','setupYield','tzCountry'],
   // account, setup, item-photo, calendar, add-save, add-keep, app, itemsheet, wardrobe, start, stats, sync, sync-status, today, remind, safety,
   // about use it; the rest: tests. kitNoMine (itemsheet.js) and kitSdNew (tests/sample.test.js) have setters, the other lets are getters
-  'kit.js':['HOME_CARD','PAPER_CARD','homeAbout','homeAndroid','homeBrowser','homeCopyBtn','homeIOS','homeNeeded','homeOpen','homeShareShort','homeStandalone','homeSteps','homeTester','kit','kitClose','kitDuplicate','kitEdited','kitFixOldImports','kitImportOpen','kitNoMine','kitOpen','kitQuiet','kitSampleBanner','kitSampleLoad','kitSampleMigrate','kitSampleNote','kitSampleTag','kitSaved','kitSentStamp','kitShareDone','kitShareFilter','kitStartRow','kitUserEdit','safariRemind','tourOpen','tourSeen'],
+  'kit.js':['HOME_CARD','PAPER_CARD','homeAbout','homeAndroid','homeBrowser','homeCopyBtn','homeIOS','homeNeeded','homeOpen','homeShareShort','homeStandalone','homeSteps','homeTester','kit','kitClose','kitDuplicate','kitEdited','kitFixOldImports','kitImportOpen','kitNoMine','kitOpen','kitQuiet','kitSampleBanner','kitSampleLoad','kitSampleMigrate','kitSampleNote','kitSampleTag','kitSaved','kitSentStamp','kitShareDone','kitShareFilter','kitStartRow','kitUserEdit','safariRemind','setKitNoMine','tourOpen','tourSeen'],
   // settings.js (calSummary) and today.js (calBanner) are classic scripts; the rest are read by the calendar test, calBusy by the
   // restacts test only: a getter
   'calendar.js':['calBanner','calSummary'],
@@ -290,6 +291,21 @@ const BRIDGE={
 };
 /* file -> names its row gained after its conversion (each with the reason beside it); every one is in BRIDGE too */
 const GROWN={
+  // restructure S1a (2026-11-25): the setters other files call instead of assigning the owner's let (once files import each other an
+  // imported binding is read-only); setFlt moved here from itemsheet.js
+  'core.js':['setClimate','setClockSkew','setWeather'],
+  'app.js':['setAiError','setAiModel','setConnReady','setDbConn','setDbCur','setDbWiping','setFlt','setSel','setView'],
+  'add-sheet.js':['setAddFor'],
+  'history.js':['setPastEdit','setSwapMsg','setTodayPullWait'],
+  'scorecard.js':['setScoreOpen'],
+  'today.js':['setListOpen'],
+  'month.js':['setMonthOpen'],
+  'photos.js':['setRemoteKeys'],
+  'settings.js':['setSetSeen','setViewStale'],
+  'safety.js':['setStoreToldAt'],
+  'assemble.js':['setAsmOut'],
+  'sync.js':['setRestoring'],
+  'kit.js':['setKitNoMine'],
 };
 const WORKERS=['asm-worker.js','analysis-worker.js'];
 let PLATFORM=null;
@@ -325,6 +341,7 @@ function freeNames(src,module){
 }
 const ON_GLOBAL=/\b(?:window|self|globalThis)\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*)['"]\s*\])/g;
 const VIA_HOOK=/\bHOOK\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*)['"]\s*\])/g;
+const ASSIGN_AFTER=/^\s*(?:=(?!=)|\+\+|--|[-+*\/%&|^]=|\*\*=|<<=|>>>?=|&&=|\|\|=|\?\?=)/;   // (what follows window.name when it is assigned)
 const HOOK_WRITE=/\bHOOK\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*)['"]\s*\])\s*(?:=(?!=)|\+\+|--|[-+*\/%&|^]=|\*\*=|<<=|>>>?=|&&=|\|\|=|\?\?=)/g;
 /* T2 phase 3 (2026-11-25): strings that are not code though they parse as code: a file name ('shop.js' is `shop.js`), a host name
    ('shop.test'), an id or key ('rd-camo' is `rd - camo`; a whole string of words joined by hyphens, no space); and in a string that
@@ -333,7 +350,8 @@ const HOOK_WRITE=/\bHOOK\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*
 const FILE_NAME=/^[\w$.\/*-]*\.(?:m?js|cjs|html?|css|json|png|jpe?g|webp|gif|svg|ico|txt|md|csv|ics|webmanifest|wasm|ya?ml|toml|ps1|sh)$/i;
 const HOST_NAME=/^(?:[\w-]+\.)+(?:test|localhost|invalid|example|com|org|net)(?::\d+)?$/i;
 const ID_LIKE=/^[\w$]+(?:-[\w$]+)+$/;
-const notCode=t=>FILE_NAME.test(t)||HOST_NAME.test(t)||ID_LIKE.test(t);
+const CLI_FLAG=/^--[A-Za-z][\w-]*(?:=\S*)?$/;   // (a command-line flag: '--show' parses as a decrement of show, '--save-times' as save less times; S1a)
+const notCode=t=>FILE_NAME.test(t)||HOST_NAME.test(t)||ID_LIKE.test(t)||CLI_FLAG.test(t);
 const ATTR_SEL=/\[\s*[\w-]+\s*[~|^$*]?=\s*(?:"[^"]*"|'[^']*'|[^\]\s]*)\s*\]/g;
 const markup=t=>/\t/.test(t)?'':t.replace(ATTR_SEL,s=>' '.repeat(s.length));   // (a non-code string's words, the markup and data blanked)
 /* A test's or tool's uses of page names (T2, 2026-11-25): {global: Set (bare or on window/self/globalThis), hook: Set (`HOOK.name`),
@@ -378,8 +396,8 @@ function testUses(src,words){
    rewritten), manual: [text]}: what it leaves for a person: a `typeof name` (HOOK.name throws for a missing name in a test's page;
    write `'name' in HOOK`), a string with an escape in it, a string that isn't code (a sentence: reword it, or leave it, the name then
    stays on BRIDGE). `node tests/bridge.test.js --to-hook <file> [--write]` runs it with the names only the tests use. */
-function toHook(src,names){
-  const edits=[],manual=[];
+function toHook(src,names,writes=new Set(),noSet=new Set()){
+  const edits=[],manual=[],any=w=>names.has(w)||writes.has(w)||noSet.has(w);
   const line=at=>src.slice(0,at).split('\n').length;
   const code=(text,base,top)=>{let ast;const o={ecmaVersion:'latest',ranges:true,allowHashBang:true};
     try{ast=acorn.parse(text,{...o,sourceType:'script',allowReturnOutsideFunction:true})}catch(e){try{ast=acorn.parse(text,{...o,sourceType:'module'})}catch(e2){return null}}
@@ -387,6 +405,7 @@ function toHook(src,names){
     const mark=n=>{if(!n||typeof n.type!=='string')return;if(n.type==='Literal'||n.type==='TemplateLiteral')skip.add(n);for(const k in n){if(k==='range'||k==='loc')continue;const v=n[k];if(Array.isArray(v))v.forEach(mark);else if(v&&typeof v.type==='string')mark(v)}};
     const walk=n=>{if(!n||typeof n.type!=='string')return;
       if(n.type==='Property'&&n.shorthand&&n.value.type==='Identifier')short.add(n.value);
+      if(n.type==='Property'&&n.shorthand&&n.value.type==='AssignmentPattern'&&n.value.left.type==='Identifier')short.add(n.value.left);   // ({x=1}=o)
       if(n.type==='UnaryExpression'&&n.operator==='typeof'&&n.argument.type==='Identifier')tyof.add(n.argument);
       if(top&&n.type==='CallExpression'&&n.callee.type==='Identifier'&&n.callee.name==='ok'&&n.arguments[1])mark(n.arguments[1]);
       if(top&&n.type==='BinaryExpression'&&n.operator==='+'){let l=n;while(l.type==='BinaryExpression'&&l.operator==='+')l=l.left;
@@ -395,23 +414,31 @@ function toHook(src,names){
       for(const k in n){if(k==='range'||k==='loc')continue;const v=n[k];if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v.type==='string')walk(v)}};
     walk(ast);
     const g=escope.analyze(ast,{ecmaVersion:2024,sourceType:ast.sourceType}).globalScope,own=new Set(g.variables.filter(v=>v.defs.length).map(v=>v.name));
-    for(const r of g.through){const id=r.identifier,n=id.name;if(!names.has(n)||own.has(n))continue;
+    for(const r of g.through){const id=r.identifier,n=id.name;if(own.has(n))continue;
+      // (a name the tests assign, S1a: only where it is assigned, `x=`, `x+=`, `x++`, a destructuring target; a read, `x.y=` and `x[k]=`
+      // (a change to the object, not the name) stay as they are)
+      if(!names.has(n)){if(!r.isWrite()||r.init)continue;
+        if(noSet.has(n)){manual.push(`line ${line(base+id.range[0])}: assigns ${n}, which has no HOOK setter (not a \`let\`: replace the function another way)`);continue}
+        if(!writes.has(n))continue}
       if(tyof.has(id)){manual.push(`line ${line(base+id.range[0])}: typeof ${n} (write '${n}' in HOOK, or HOOK.${n} where it must be there)`);continue}
       edits.push([base+id.range[0],base+id.range[1],short.has(id)?`${n}:HOOK.${n}`:`HOOK.${n}`])}
     for(const m of text.matchAll(/\b(?:window|self|globalThis)\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*(['"])([A-Za-z_$][\w$]*)\2\s*\])/g)){const n=m[1]||m[3];
-      if(names.has(n))edits.push([base+m.index,base+m.index+m[0].length,`HOOK.${n}`])}
+      const set=()=>ASSIGN_AFTER.test(text.slice(m.index+m[0].length));
+      if(names.has(n)||writes.has(n)&&set())edits.push([base+m.index,base+m.index+m[0].length,`HOOK.${n}`]);
+      else if(noSet.has(n)&&set())manual.push(`line ${line(base+m.index)}: assigns ${m[0]}, which has no HOOK setter (not a \`let\`: replace the function another way)`)}
     return {strs,skip}};
   const t=code(src,0,true);if(!t)return {out:src,n:0,manual:['the file does not parse']};
   for(const s of t.strs){if(t.skip.has(s))continue;let text,base;
     if(s.type==='Literal'){const raw=src.slice(s.range[0]+1,s.range[1]-1);if(!/[A-Za-z_$]/.test(raw))continue;
-      let hit=false;for(const m of raw.matchAll(/[A-Za-z_$][\w$]*/g))if(names.has(m[0])){hit=true;break}if(!hit)continue;
+      let hit=false;for(const m of raw.matchAll(/[A-Za-z_$][\w$]*/g))if(any(m[0])){hit=true;break}if(!hit)continue;
       if(raw!==s.value&&/\t/.test(s.value)&&freeNames(s.value,false)==null)continue;   // (a tab-separated record: data)
-      if(raw!==s.value){manual.push(`line ${line(s.range[0])}: a string with an escape in it uses ${[...raw.matchAll(/[A-Za-z_$][\w$]*/g)].map(m=>m[0]).filter(w=>names.has(w)).join(', ')}`);continue}
+      if(raw!==s.value){const u=[...raw.matchAll(/[A-Za-z_$][\w$]*/g)].map(m=>m[0]).filter(w=>names.has(w)),wr=[...(writesOf(s.value,false)||[]).keys()].filter(w=>writes.has(w)||noSet.has(w));
+        if(u.length||wr.length)manual.push(`line ${line(s.range[0])}: a string with an escape in it `+(u.length?`uses ${u.join(', ')}`:`assigns ${wr.join(', ')}`));continue}
       if(/^\s*[A-Za-z_$][\w$]*\s*$/.test(raw)||notCode(raw))continue;
       text=raw;base=s.range[0]+1}
     else{const a=s.range[0]+1,b=s.range[1]-1,q=s.quasis;text=src.slice(a,b);
       for(let i=0;i+1<q.length;i++){const x=q[i].range[1]-a,y=q[i+1].range[0]-a;text=text.slice(0,x)+'0'.padEnd(y-x,' ')+text.slice(y)}   // (each ${…} a 0, the same length)
-      let hit=false;for(const m of text.matchAll(/[A-Za-z_$][\w$]*/g))if(names.has(m[0])){hit=true;break}if(!hit||notCode(text))continue;
+      let hit=false;for(const m of text.matchAll(/[A-Za-z_$][\w$]*/g))if(any(m[0])){hit=true;break}if(!hit||notCode(text))continue;
       base=a}
     if(!code(text,base,false)){const w=[...new Set([...markup(text).matchAll(/(?<![\w$.#-])[A-Za-z_$][\w$]*(?![\w$-])/g)].map(m=>m[0]).filter(x=>names.has(x)))];
       if(w.length)manual.push(`line ${line(s.range[0])}: a string that isn't code uses ${w.join(', ')} (reword it if it is a sentence)`)}}
@@ -447,6 +474,14 @@ function readers(ROOT,m){
   Object.defineProperties(out,{viaHook:{value:viaHook},hookWrites:{value:hookWrites}});   // (every name a test reads or writes as HOOK.name, bridged or not)
   return out;
 }
+/* S1a (2026-11-25): the bridged names --to-hook rewrites where a test assigns them: {writes: those a module puts on HOOK with a setter,
+   noSet: those a test assigns that have none (a function: the rewrite names them for a person)} */
+function writeSets(r,hk){const writes=new Set(),noSet=new Set();
+  for(const l of Object.values(hk.hooked))for(const [n,x] of l)if(x.set&&r[n]&&!OLD_BUILD.has(n))writes.add(n);
+  for(const n of Object.keys(r))if(r[n].testWrites.length&&!writes.has(n)&&!OLD_BUILD.has(n))noSet.add(n);
+  return {names:new Set(hk.testOnly.filter(n=>!OLD_BUILD.has(n))),writes,noSet}}
+/* the names a test also uses on an older build, which has no HOOK (T2 phase 3): they stay globals there, so --to-hook leaves them */
+const OLD_BUILD=new Set(['syncing','kitEdited','asmCmMf','asmCmCodeSig','asmCmSig','asmCmSrcSig']);
 /* T2: every module's HOOK statement checked against what the tests use. {hooked: {file: Map name -> {value, get, set}}, problems,
    missing: names only the tests use that their file doesn't put on HOOK, ready: those the tests use through HOOK alone (they can
    come off BRIDGE), testOnly: [names]} */
@@ -623,18 +658,41 @@ module.exports=async({ok,ROOT})=>{
     const W=new Set(['shop','rd','setOpenTap','tieScore','a']);
     const NOT={'a file name':"src('shop.js');p.route('**/shop.js',r=>r.abort());",'an id':"p.click('#'+'rd-camo');tapAt('shop-backdrop');S('lock-shop');",
       'a data-act selector':"p.click('header .hbtns button[data-act=\"setOpenTap\"]');p.tap(`[data-act=setOpenTap]`);",'a host name':"p.goto('http://x/'+'shop.test');fetch(`shop.test:9210`);",
-      'a tab-separated record':"fs.writeFileSync(f,'a.test.js\\tplanner.js\\t'+L+'\\toutfit\\ttieScore');"};
+      'a tab-separated record':"fs.writeFileSync(f,'a.test.js\\tplanner.js\\t'+L+'\\toutfit\\ttieScore');",
+      'a command-line flag':"if(argv.includes('--shop'))go(arg('--rd-x'));flag('--a=1');"};
     for(const [what,s] of Object.entries(NOT)){const u=testUses(s,W),x=toHook(s,W);
       ok(!u.global.size&&x.out===s&&!x.n&&!x.manual.length,`${what} in a string is not a use of a page name, and --to-hook leaves it alone`+(u.global.size||x.out!==s||x.manual.length?` (counted: ${[...u.global]}; rewritten: ${x.out!==s}; left: ${x.manual.join('; ')})`:''))}
     const y=testUses("p.evaluate('shop.x+1');p.evaluate('rd()');p.evaluate('setOpenTap(a)');log('the shop is open');",W),z=toHook("p.evaluate('rd()');p.evaluate(`shop.x-1`)",W);
     ok([...y.global].sort().join()==='a,rd,setOpenTap,shop'&&z.out==="p.evaluate('HOOK.rd()');p.evaluate(`HOOK.shop.x-1`)",'and code in a string, or a sentence, still counts and is still rewritten (the same names: shop.x+1, rd(), setOpenTap(a), "the shop is open")')}
+  /* S1a (2026-11-25): --to-hook rewrites a name the tests assign (one with a HOOK setter) where it is assigned, and only there */
+  {const Wn=new Set(['x','cache']),NS=new Set(['f']),T=s=>toHook(s,new Set(),Wn,NS);
+    const CASES=[
+      ['a plain assignment','cache={};x=1;','HOOK.cache={};HOOK.x=1;'],
+      ['a compound assignment, ++ and --','x+=2;x++;--x;cache??={};','HOOK.x+=2;HOOK.x++;--HOOK.x;HOOK.cache??={};'],
+      ['a destructuring target','[a,x]=l;({x}=o);({x=1}=o);','[a,HOOK.x]=l;({x:HOOK.x}=o);({x:HOOK.x=1}=o);'],
+      ['window.name assigned','window.x=1;globalThis.cache={};self.x++;','HOOK.x=1;HOOK.cache={};HOOK.x++;'],
+      ['an assignment in the code of a string',"p.evaluate('cache={};f(x)');p.evaluate(`x=${1}`)","p.evaluate('HOOK.cache={};f(x)');p.evaluate(`HOOK.x=${1}`)"],
+      ['a read stays a read','f(x);g(cache.y);const z=window.x;','f(x);g(cache.y);const z=window.x;'],
+      ['x.y= and x[k]= change the object, not the name','cache.y=1;cache[k]=2;x.a.b=3;window.cache.y=4;delete cache[k];',
+        'cache.y=1;cache[k]=2;x.a.b=3;window.cache.y=4;delete cache[k];'],
+      ['a local of the same name','let x;x=1;function g(cache){cache={}}for(const x of l)x;','let x;x=1;function g(cache){cache={}}for(const x of l)x;'],
+      ['an ok() message and a sentence',"ok(1,'cache={} is set');log('x= is the width')","ok(1,'cache={} is set');log('x= is the width')"],
+    ];
+    for(const [what,src,want] of CASES){const r=T(src);ok(r.out===want&&!r.manual.length,`--to-hook, a name the tests assign: ${what}`+(r.out===want?'':` (got ${r.out})`)+(r.manual.length?` (left: ${r.manual})`:''))}
+    const a=T("f=()=>1;window.f=g;p.evaluate('f=h')"),b=T("p.evaluate('cache={}\\n')"),c=T('typeof x;x=1');
+    ok(a.out==="f=()=>1;window.f=g;p.evaluate('f=h')"&&a.manual.length===3&&b.out==="p.evaluate('cache={}\\n')"&&b.manual.length===1&&/assigns cache/.test(b.manual[0])&&c.out==='typeof x;HOOK.x=1'&&!c.manual.length,
+      '--to-hook leaves for a person an assigned name with no HOOK setter (a function) and a string with an escape that assigns one; a typeof of a name only assigned is no use to rewrite');
+    const m2=measure(ROOT),r2=readers(ROOT,m2),w2=writeSets(r2,hookCheck(ROOT,m2,r2));
+    ok(['items','dayRecs','TODAY_OVERRIDE','cache','sel','view','weather','monthOpen','listOpen','editing'].every(n=>w2.writes.has(n))&&[...w2.noSet].every(n=>!w2.writes.has(n)),
+      `every let the tests assign has a HOOK setter, so --to-hook can rewrite it (${w2.writes.size} names; without one: ${[...w2.noSet].sort().join(', ')||'none'})`);
+    ok([...OLD_BUILD].every(n=>!w2.writes.has(n)&&!w2.names.has(n)&&!w2.noSet.has(n)),`--to-hook leaves the names a test also uses on an older build, which has no HOOK (${[...OLD_BUILD].join(', ')})`)}
   const rs=readers(ROOT,m),hk=hookCheck(ROOT,m,rs);
   ok(!hk.problems.length,'every HOOK statement is in a module, once, after its bridge, with names of the file\'s own (a `let` behind a getter, a setter for what a test assigns), none twice; no test uses a name that isn\'t on HOOK through it; the app never reads HOOK'+(hk.problems.length?': '+hk.problems.join('; '):''));
   ok(!hk.missing.length,`every name only the tests use is on its file's HOOK (${hk.testOnly.length} names)`+(hk.missing.length?': add '+hk.missing.join('; '):''));
   ok(true,`${hk.ready.length} of the ${hk.testOnly.length} names only the tests use are used through HOOK alone and can come off BRIDGE (T2 phase 3; \`node tests/bridge.test.js --hook\` lists them and the tests still using the rest as globals)`);
 };
 module.exports.measure=measure;module.exports.compare=compare;module.exports.grew=grew;module.exports.writesOf=writesOf;
-module.exports.readers=readers;module.exports.testUses=testUses;module.exports.toHook=toHook;module.exports.hookCheck=hookCheck;
+module.exports.readers=readers;module.exports.testUses=testUses;module.exports.toHook=toHook;module.exports.hookCheck=hookCheck;module.exports.writeSets=writeSets;
 
 /* `node tests/bridge.test.js --plan file.js`: what a page script would have to bridge if it became a module today. For each of its
    top-level names: the page scripts that use it (a read, a call, a `typeof` guard), the tests and tools that do, and who assigns it.
@@ -671,7 +729,7 @@ if(require.main===module){
      and per test file the names it still uses as globals */
   const th=process.argv.indexOf('--to-hook');
   if(th>0){const f=process.argv[th+1],m=measure(ROOT),r=readers(ROOT,m),hk=hookCheck(ROOT,m,r),p=path.resolve(f);
-    const x=toHook(fs.readFileSync(p,'utf8'),new Set(hk.testOnly));
+    const w=writeSets(r,hk),x=toHook(fs.readFileSync(p,'utf8'),w.names,w.writes,w.noSet);
     if(process.argv.includes('--write'))fs.writeFileSync(p,x.out);
     console.log(`${f}: ${x.n} use${x.n===1?'':'s'} ${process.argv.includes('--write')?'rewritten':'to rewrite (--write writes them)'} to HOOK.name`+(x.manual.length?'\nLeft for you:\n  '+x.manual.join('\n  '):''));
     process.exit(0)}

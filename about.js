@@ -184,14 +184,14 @@ async function aboutDbLeft(){
         t.oncomplete=()=>{d.close();res(c)};t.onerror=t.onabort=()=>{d.close();res(-1)}}catch{d.close();res(-1)}}}catch{res(-1)}}),ABOUT_WIPE_MS,-1);
   if(n===0)await aboutTimeout(aboutDbDelete(),ABOUT_WIPE_MS);return n}
 async function wipeDevice(){
-  dbWiping=true;connReady=false;   // (app.js: no new connection, no connection copy written)
+  setDbWiping(true);setConnReady(false);   // (app.js: no new connection, no connection copy written)
   clearTimeout(syncTimer);
   if(syncRun)await aboutTimeout(syncRun.catch(()=>{}),ABOUT_WIPE_MS);   // a backup under way finishes (or fails) first
   for(const d of [await db.catch(()=>null),dbConn])try{if(d)d.close()}catch{}
-  dbConn=null;dbCur=null;
+  setDbConn(null);setDbCur(null);
   let gone=false;
   try{gone=await aboutDbDelete(()=>aboutSay('#del-status',ABOUT_WIPE_WAIT))&&await aboutDbLeft()===0}catch(e){console.warn('database not deleted',e)}
-  if(!gone){console.warn('database not deleted');dbWiping=false;connReady=true;dbUnhold();return false}   // the app keeps working with what it has (app.js reopens it)
+  if(!gone){console.warn('database not deleted');setDbWiping(false);setConnReady(true);dbUnhold();return false}   // the app keeps working with what it has (app.js reopens it)
   const online=navigator.onLine!==false;   // offline, the app's own files stay, or the restart would find nothing
   try{if(self.caches)for(const k of await caches.keys())if(k.startsWith('dw-keep-')||(online&&k.startsWith('dw-')))await caches.delete(k)}catch{}
   try{if(online){const reg=await aboutReg();if(reg)await reg.unregister()}}catch{}

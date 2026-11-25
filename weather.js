@@ -15,7 +15,7 @@ function wxChip(d){const w=weather[key(d)];if(!w)return '';return `${wxIcon(w.co
 function renderWxLoc(){
   if($('#wx-loc'))$('#wx-loc').textContent=settings.location?`Weather for ${settings.location.name}.`+(climate?` Beyond the 16-day forecast, days are planned from the usual weather there: highs of about ${temp(Math.min(...climate.map(m=>m.tmax)))}° in the coolest month and ${temp(Math.max(...climate.map(m=>m.tmax)))}° in the hottest.`:' Beyond the 16-day forecast, days follow the calendar season.'):'No location set: outfits follow the calendar season.'}
 function setUnits(v){settings.units=v;saveUserSettings();todayDirty();renderWxLoc();settingsSummaries()}
-function setLocation(loc){const fromList=!!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#city-results'));if(loc&&loc.alt!==undefined){loc={...loc};delete loc.alt}settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');weather={};climate=null;saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML='';if(loc)announce('Location set to '+loc.name);if(fromList&&$('#cfg-city'))try{$('#cfg-city').focus({preventScroll:true})}catch{}}   // (the result pressed is gone: the field keeps the keyboard)
+function setLocation(loc){const fromList=!!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#city-results'));if(loc&&loc.alt!==undefined){loc={...loc};delete loc.alt}settings.location=loc;localStorage.removeItem('wx');localStorage.removeItem('wx_norm');setWeather({});setClimate(null);saveUserSettings().then(()=>loadWeather(true));renderSettingsExtras();if($('#city-results'))$('#city-results').innerHTML='';if(loc)announce('Location set to '+loc.name);if(fromList&&$('#cfg-city'))try{$('#cfg-city').focus({preventScroll:true})}catch{}}   // (the result pressed is gone: the field keeps the keyboard)
 function useMyLocation(){if(!navigator.geolocation){tell('Location is not available on this device.');return}
   navigator.geolocation.getCurrentPosition(p=>setLocation({lat:+p.coords.latitude.toFixed(3),lon:+p.coords.longitude.toFixed(3),name:geoName(p.coords.latitude,p.coords.longitude)}),()=>tell('Location permission was denied. Search for your city instead.'))}
 /* "Use my location" has no place name (Open-Meteo can't look one up): the spot itself, so it doesn't read "your current location" after a trip */
@@ -45,9 +45,9 @@ async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').tri
 /* the location's usual weather by month, from Open-Meteo's archive (free, no key): the last two full years' daily highs,
    lows and rain, averaged per month. Kept for four months per location; days beyond the 16-day forecast are planned from it. */
 async function loadClimate(){
-  const L=settings.location;if(!L){climate=null;return}
+  const L=settings.location;if(!L){setClimate(null);return}
   try{const c=JSON.parse(localStorage.getItem('wx_norm')||'null');
-    if(c&&c.lat===L.lat&&c.lon===L.lon&&Array.isArray(c.months)){const fresh=Date.now()-c.t<120*864e5;if(JSON.stringify(climate)!==JSON.stringify(c.months)){climate=c.months;planDirty();if(!$('#today').hidden)refreshToday()}if(fresh)return}}catch{}
+    if(c&&c.lat===L.lat&&c.lon===L.lon&&Array.isArray(c.months)){const fresh=Date.now()-c.t<120*864e5;if(JSON.stringify(climate)!==JSON.stringify(c.months)){setClimate(c.months);planDirty();if(!$('#today').hidden)refreshToday()}if(fresh)return}}catch{}
   try{const y=new Date().getFullYear(),r=await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${L.lat}&longitude=${L.lon}&start_date=${y-2}-01-01&end_date=${y-1}-12-31&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`);
     const d=r.ok&&(await r.json()).daily;if(!d||!d.time||!d.temperature_2m_max)return;
     const m=[...Array(12)].map(()=>({n:0,tx:0,tn:0,r:0}));
@@ -55,18 +55,18 @@ async function loadClimate(){
     if(m.some(x=>x.n<20))return;   // a month with hardly any readings: keep what we had
     const months=m.map(x=>({tmax:+(x.tx/x.n).toFixed(1),tmin:+(x.tn/x.n).toFixed(1),rainDays:+(x.r/x.n*30).toFixed(1)}));
     const N=settings.location;if(!N||N.lat!==L.lat||N.lon!==L.lon)return;   // the location changed meanwhile
-    climate=months;localStorage.setItem('wx_norm',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),months}));planDirty();if(!$('#today').hidden)refreshToday();if(settingsOpen())renderSettingsExtras()}
+    setClimate(months);localStorage.setItem('wx_norm',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),months}));planDirty();if(!$('#today').hidden)refreshToday();if(settingsOpen())renderSettingsExtras()}
   catch(e){console.warn('climate history unavailable',e)}
 }
 async function loadWeather(force){
   const L=settings.location;if(!L)return;loadClimate();
   try{const c=JSON.parse(localStorage.getItem('wx')||'null');
     if(!force&&c&&c.lat===L.lat&&c.lon===L.lon&&Date.now()-c.t<3*3600e3){if(JSON.stringify(weather)===JSON.stringify(c.days))return;   // already read (wxPreload): the plan stands
-      weather=c.days;planDirty();if(!$('#today').hidden)refreshToday();return}}catch{}
+      setWeather(c.days);planDirty();if(!$('#today').hidden)refreshToday();return}}catch{}
   try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${L.lat}&longitude=${L.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,weather_code&timezone=auto&forecast_days=16`);
     const d=(await r.json()).daily;if(!d||!d.time)return;const days={};
     d.time.forEach((t,i)=>{const [y,m,dd]=t.split('-').map(Number);days[key(new Date(y,m-1,dd))]={tmax:d.temperature_2m_max[i],tmin:d.temperature_2m_min[i],pop:d.precipitation_probability_max[i]??0,rain:d.precipitation_sum[i]??0,code:d.weather_code[i]??0}});
-    weather=days;localStorage.setItem('wx',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),days}));planDirty();if(!$('#today').hidden)refreshToday()}
+    setWeather(days);localStorage.setItem('wx',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),days}));planDirty();if(!$('#today').hidden)refreshToday()}
   catch(e){console.warn('weather unavailable',e)}
 }
 /* the bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level call: settings.js and setup.js (unit, renderWxLoc,
