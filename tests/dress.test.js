@@ -192,7 +192,7 @@ module.exports=async({ok,chromium,url,ROOT,settle})=>{
         const P=buildPlan(2026,10),o=Object.entries(P).filter(([k,o])=>k.startsWith('2026-11-')&&o.suitDay&&!o.frozen).map(x=>x[1]);return {yes:o.filter(x=>['s1','s3','n2'].includes(x.top.id)).every(x=>x.vest),no:o.filter(x=>['s2','n1'].includes(x.top.id)).every(x=>!x.vest),n:o.length,
           both:o.some(x=>x.vest)&&o.some(x=>!x.vest)}});
       ok(pl.yes&&pl.no&&pl.both,`the planner wears the waistcoat with the three-piece suits only (${pl.n} suit days)`);
-      const bought=await q.evaluate(async()=>{shop={sig:'x',at:Date.now(),res:{cats:[{key:'suit',recs:[{key:'suit|k',name:'plain olive suit',items:[{id:'cand-1',type:'suit',primaryColor:'olive',pattern:'solid',added:0}],why:[]}]}],top:[]}};
+      const bought=await q.evaluate(async()=>{HOOK.shop={sig:'x',at:Date.now(),res:{cats:[{key:'suit',recs:[{key:'suit|k',name:'plain olive suit',items:[{id:'cand-1',type:'suit',primaryColor:'olive',pattern:'solid',added:0}],why:[]}]}],top:[]}};
         await HOOK.shopBought('suit|k');if(HOOK.shopWorker){HOOK.shopWorker.terminate();HOOK.shopWorker=null}const i=items.find(x=>x.primaryColor==='olive');return i?{vest:i.vest,has:hasVest(i),order:!!i.order}:null});
       ok(bought&&bought.vest==='no'&&!bought.has&&bought.order,'a suit added with "Bought it" is two-piece too');
       ok(e2.length===0,'no page errors ('+e2.join('; ')+')');await c2.close()}
