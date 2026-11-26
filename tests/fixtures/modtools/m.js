@@ -4,7 +4,7 @@ let cache={n:0};
 const SECRET=7;
 export function label(n){cache.n++;return px(bump()+n)+'/'+LIMIT}
 function hidden(){return SECRET}
-export {hidden};
+export {hidden,cache};
 count=0;                                  // a write to a.js's `let`: counted by the cross-file write check
 // three mistakes on purpose, each to be reported:
 undeclared=1;                             // 1: an assignment to a name nothing declares (throws in a module)

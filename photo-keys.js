@@ -5,6 +5,7 @@
    right after srgb.js, before the painter, which reads the keys, and before every screen. */
 /* ---- kept outfit photos (made by the retired photo generator, worker /render): saved per outfit combination, not per day, so any
    day that wears the same pieces shows the photo; the worker keeps a copy (KV) so every device can show it. ---- */
+import {REC_PHOTO,patBase,primaryCol,settings} from './core.js';
 let renders={};   // kept pictures by key: outfit photos made before 2026-11-14 (renderFor shows them), item pictures, assembled pictures
 const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');   // ' too: some go into onclick='…'
 /* (fix round 3, W2-13-02) a value inside a quoted JS string inside an inline handler (an onclick calling f('…')): the browser decodes the attribute

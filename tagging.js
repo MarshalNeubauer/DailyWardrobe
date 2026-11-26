@@ -5,6 +5,12 @@
    pattern-read.js (pattern readings, camouflage). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit} from './bus.js';
+import {COLORS,COLS_BY,FABRIC,PATS_BY,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colName,colsFor,dE00,matsFor,normColFor,normPat,ownMatName,patBase,patName} from './core.js';
+import {BLUR_SHARP,FAR_DE,MEAS_GAP,aiSignals,applyWb,closeRead,colRef,colourVerdicts,measHint,measKL,measureAndApply,measureCard,undoMeasured} from './measure.js';
+import {TAG_Q} from './tag-request.js';
+import {ask,generateSwatch,queue} from './app.js';
+import {cardAt,cardIx,cardOf} from './add-ids.js';
+import {esc} from './photo-keys.js';
 
 /* ---- tagging again once the close-up is in: both photos and the measurement go to the tagger; fields the owner has set by
    hand stay, the rest take the new answer, and the card says what changed ---- */

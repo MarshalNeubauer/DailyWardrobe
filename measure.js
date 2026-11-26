@@ -3,6 +3,11 @@
    signals. sRGB <-> linear is srgb.js's (srgbLin8, linSrgb8). */
 /* an Add card changed (undoMeasured): add.js redraws Add on it (bus.js 'card-changed'; this file loads before add.js) */
 import {emit} from './bus.js';
+import {COLORS,colsFor,dE00,hexRgb,items,labHex,labOf,patBase,primaryCol,rgbLab} from './core.js';
+import {TAG_Q,sharpCloseOf,texSig} from './tag-request.js';
+import {linSrgb8,srgbLin8} from './srgb.js';
+import {CHECK_PATS,MOTIF_PATS,STRIPE_PATS} from './detect.js';
+import {generateSwatch,queue} from './app.js';
 
 /* ---- the light reading of a picture: white-balance gains from its brightest near-neutral pixels, whether such a white
    reference is there at all, and how bright it is once corrected (for the exposure of a close-up with white paper in it) ---- */
@@ -260,5 +265,5 @@ function measureAndApply(q){measureCard(q);missedPattern(q);return applyMeasured
    as globals. The file has no top-level call, so the bridge is its last lines */
 Object.assign(globalThis,{wbRead,wbGains,applyWb,closeRead,paperKey,paperOf,paperNow,paperCopy,measureCloth,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,colourVerdicts,aiSignals,undoMeasured,measureAndApply});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,AI_HIGH_FLAG,AI_LOW_AUTO,MEAS_AUTO,PAPER,applyMeasured,calibLab,urlCanvas};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,AI_HIGH_FLAG,AI_LOW_AUTO,MEAS_AUTO,PAPER,applyMeasured,calibLab,urlCanvas,wbRead};
 export {wbRead,wbGains,applyWb,closeRead,PAPER,paperKey,urlCanvas,paperOf,paperNow,paperCopy,measureCloth,calibLab,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,MEAS_AUTO,colourVerdicts,AI_LOW_AUTO,AI_HIGH_FLAG,aiSignals,applyMeasured,undoMeasured,measureAndApply};

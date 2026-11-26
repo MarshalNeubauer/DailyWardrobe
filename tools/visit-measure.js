@@ -24,6 +24,8 @@ if(!TOKEN||!WORKER.startsWith('http')){console.error('DW_WORKER / DW_TOKEN missi
 const TRACED=['renderToday','planSnapCheck','refreshToday','onSyncedData','replanFuture','clearLocks','checkPlanRules','syncRedraw','mergeState','planSnapUse'];
 const UNTRACED=(()=>{const out=[];let html='';try{html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8')}catch{return out}
   for(const m of html.matchAll(/<script type="module" src="([^"]+)"/g)){let s='';try{s=fs.readFileSync(path.join(ROOT,m[1]),'utf8')}catch{continue}
+    // (an import of it reaches the owner's own binding, not window.<name>: restructure S5a, 2026-11-26)
+    for(const n of TRACED)if(new RegExp('^import\\s*\\{[^}]*(?<![\\w$])'+n+'(?![\\w$])[^}]*\\}\\s*from','m').test(s))out.push(`${n} (${m[1]} imports it)`);
     for(const n of TRACED){if(!new RegExp('(?:^|[^.\\w$])(?:async\\s+)?function\\s+'+n+'\\s*\\(|(?:^|[^.\\w$])(?:const|let|var)\\s+'+n+'\\s*=','m').test(s))continue;
       const calls=(s.match(new RegExp('(?<![.\\w$])'+n+'\\s*\\(','g'))||[]).length-(s.match(new RegExp('function\\s+'+n+'\\s*\\(','g'))||[]).length;
       if(calls>0)out.push(`${n} (${m[1]} calls it ${calls} time${calls===1?'':'s'} itself)`);

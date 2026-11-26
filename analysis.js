@@ -10,6 +10,8 @@
    3. Shoes, belts, socks, tie clip, cufflinks and coats: few options and a direct effect, so each is simulated and
       ranked by that effect (problem days fixed, checks no longer marked down, first-choice shoes, pairs worn two days running).
    4. Formal, wedding, funeral and no-jacket days are dressed once each to see what is missing. */
+import {COLORS,COLS_BY,COOL,CUSTOM_COL,OCCASIONS,SLOTS,TROUSER_KINDS,colName,dayClimate,di,dressOut,inRotation,isHandPick,isWorkday,items,key,nm,patBase,patName,patOf,planCol,prettyCols,primaryCol,setWardrobe,settings,sockPatterned,todayDate,trouserKind,wearsJacket,wearsTie} from './core.js';
+import {QWIN,SH,beltFit,clothesScore,colsOf,fam,finish,jacketGroup,leatherGroup,metalOf,outfit,pairScore,patInfo,patternScore,pcol,planSim,planStart,rateOutfit,shirtGroup,shirtLook,shoeSuits,sockBold,tieGroup,tieLook,withColRun} from './planner.js';
 const SHOP_WEEKS=26,SHOP_PER_CAT=5,SHOP_TOP=10;
 const keyDate2=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
 /* the workdays of the next `weeks` weeks, from tomorrow (today is worn or about to be: it isn't "the next 6 months"). Insights counts

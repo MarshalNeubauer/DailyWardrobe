@@ -5,6 +5,8 @@
    chain), ui.js and the rest, about.js last.
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
 import {emit} from './bus.js';   // the Wardrobe's redraw: itemsheet.js pins renderWardrobe for 'wardrobe-changed'
+import {$,ACCENT_MAX,BELT_MATS,COLORS,FABRIC,LEATHERS,MATERIALS_BY,METAL,PATS_BY,SHOE_NAP,SHOE_STYLES,SHOE_TEXTILES,TEXTURE_TYPES,TYPES,accentsFor,cleanDay,cleanRecord,cleanSettings,colOf,hexRgb,itemFields,items,labHex,matsFor,nextStamp,normCol,normColFor,normPat,ownMatName,rgbLab,watchOpts} from './core.js';
+import {esc} from './photo-keys.js';
 let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 
 /* storage */
@@ -392,5 +394,5 @@ function setDbWiping(v){dbWiping=v}
 Object.assign(globalThis,{dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,imgOf,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping});
 Object.defineProperties(globalThis,{flt:{get:()=>flt,set:v=>{flt=v}},queue:{get:()=>queue,set:v=>{queue=v}},view:{get:()=>view,set:v=>{view=v}},sel:{get:()=>sel,set:v=>{sel=v}},dbCur:{get:()=>dbCur,set:v=>{dbCur=v}},dbConn:{get:()=>dbConn,set:v=>{dbConn=v}},dbWiping:{get:()=>dbWiping,set:v=>{dbWiping=v}},connReady:{get:()=>connReady,set:v=>{connReady=v}},aiError:{get:()=>aiError,set:v=>{aiError=v}},aiModel:{get:()=>aiModel,set:v=>{aiModel=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,busyLabelFor,cropSwatch,fitNav,get sel(){return sel},set sel(v){sel=v},get view(){return view},set view(v){view=v},get flt(){return flt},set flt(v){flt=v},get queue(){return queue},set queue(v){queue=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,busyLabelFor,cropSwatch,fitNav,get sel(){return sel},set sel(v){sel=v},get view(){return view},set view(v){view=v},get flt(){return flt},set flt(v){flt=v},get queue(){return queue},set queue(v){queue=v},addTombstones};
 export {flt,queue,view,sel,dbCur,dbConn,dbWiping,dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connReady,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,cropSwatch,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,aiError,aiModel,busyLabelFor,fitNav,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,imgOf,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping};

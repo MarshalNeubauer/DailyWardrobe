@@ -4,6 +4,9 @@
    file since the restructure S3b, which moved the pause and the status here and an ended invitation to who.js), sync-photos.js (photos as references, batches), snapshots.js (daily backups, Roll back),
    backupfile.js (download and restore a file); what of the sample wardrobe goes up is kit.js kitShareFilter. */
 import {on,emit,serve} from './bus.js';
+import {$,CLOCK_AHEAD,CLOCK_MIN,cleanState,clockSkew,isoKey,itemName,items,mergeSettings,mergeState,nm,nowMs,setClockSkew,setWardrobe} from './core.js';
+import {addTombstones,atomic,connRestored,metaGet,metaPut,tx,txs} from './app.js';
+import {planDirty} from './today-plan.js';
 let restoring=false,syncing=false,syncTimer=null,syncAgain=null,syncRun=null,syncDue=0;
 /* a roll-back waiting for its upload (2026-11-15, the audit: Safari killed 200 ms after "Roll back" left the rolled-back wardrobe on the
    phone, and the next start's sync uploaded it as an ordinary save, so the server never kept "Before the last roll-back" and 24 pieces

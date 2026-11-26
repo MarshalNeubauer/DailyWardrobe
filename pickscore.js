@@ -2,6 +2,11 @@
    (slotPool, handPool, pickScores, fitOf, fitRule, fitTag, pickSub) and Suggest another stays clean (suggestClean)
    (An ES module since 2026-11-23; split out of history.js, Round C 2026-11-17, and loaded after it.) */
 /* a piece taken off (rec.off) stays pinned through a swap or a pick of another piece, so putting it back brings the same one */
+import {SLOTS,SLOT_TYPE,TYPES,camoPants,dayClimate,dayRecs,di,handPickSlot,inRotation,isHandPick,itemTitle,items,key,nm,seasonFit,shoeStyle} from './core.js';
+import {cache,planDirty,planFor} from './today-plan.js';
+import {cap1,sel} from './app.js';
+import {idsOf,notAhead} from './days.js';
+import {QWIN,accMetal,beltFit,clothesScore,formalTop,planSim,planStart,pocketScore,rateOutfit,shoeFormality,shoeScore,sockEcho,sockScore,watchFit} from './planner.js';
 const keepOff=(force,k,slot)=>{const r=dayRecs[k];if(!r||!r.off||!r.force)return;for(const s of ['top','tie','clip','pocket'])if(s!==slot&&r.off[s==='clip'?'tie':s]&&r.force[s])force[s]=r.force[s]};
 // (the pocket square follows the jacket, the tie and the shirt it is chosen against: 2026-11-16)
 const FOLLOW={top:['bot','shirt','tie','shoes','belt','socks','watch','clip','pocket'],shoes:['belt','socks'],belt:['shoes','socks'],tie:['pocket'],shirt:['pocket']};   // (a belt swap brings shoes that match it, as a shoe swap brings a belt: the owner's ask, 2026-11-14)

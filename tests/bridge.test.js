@@ -611,6 +611,9 @@ function measure(ROOT){
     const b=modscope.bridged(ast,src),kind=new Map(modscope.declared(ast).map(d=>[d.name,d.kind]));bridge[f]=[...b.names.keys()].sort();
     for(const o of b.odd)problems.push(`${f}: a bridge statement the checkers can't read (name each property plainly): ${o}`);
     if(!modscope.hasModuleSyntax(ast))problems.push(`${f} is loaded as a module but has no import or export: add \`export {}\`, so TypeScript and tests/appsrc.js see a module too`);
+    /* restructure S5a (2026-11-26): every name a module bridges is exported too, so another page file can import it in place of the bridge */
+    {const ex=new Set();for(const st of ast.body)if(st.type==='ExportNamedDeclaration'){for(const s of st.specifiers)ex.add(s.exported.name||s.exported.value);if(st.declaration)for(const d of modscope.declared({body:[st.declaration]}))ex.add(d.name)}
+      const miss=bridge[f].filter(n=>kind.has(n)&&!ex.has(n));if(miss.length)problems.push(`${f} bridges ${miss.join(', ')} without exporting ${miss.length>1?'them':'it'}: add ${miss.length>1?'them':'it'} to its \`export {…}\``)}
     /* each name is handed over the way its declaration needs */
     for(const [n,k] of b.names){const a=b.acc.get(n),mut=/^(?:let|var)$/.test(kind.get(n)||'');how[n]={file:f,set:!!(a&&a.set),assign:k==='assign',own:kind.has(n)};
       if(k==='assign'){if(mut)problems.push(`${f}: ${n} is a \`${kind.get(n)}\` handed over with Object.assign, so the global keeps the value it had then: bridge it with a getter (Object.defineProperties(globalThis, {${n}: {get: () => ${n}}}))`);continue}
