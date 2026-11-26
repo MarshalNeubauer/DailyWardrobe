@@ -314,7 +314,7 @@ Object.defineProperties(globalThis,{syncTimer:{get:()=>syncTimer},syncRun:{get:(
 on('settings-saved',()=>scheduleSync());   // a backup soon after the settings were saved
 on('connection-saved',()=>{syncNow().catch(e=>console.warn('sync not started',e))});   // Settings' Done: a backup now
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,TESTER_SYNC_MS,get syncDue(){return syncDue},set syncDue(v){syncDue=v},syncJoinAt,syncJoinMark,get syncLater(){return syncLater},syncTap,get syncing(){return syncing},set syncing(v){syncing=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,TESTER_SYNC_MS,backupFullMsg,get syncDue(){return syncDue},set syncDue(v){syncDue=v},syncJoinAt,syncJoinMark,get syncLater(){return syncLater},syncTap,get syncing(){return syncing},set syncing(v){syncing=v}};
 export {setSyncStatus,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords,tabBrowser,safariTab,restoring,syncing,syncTimer,syncRun,syncDue,syncUrl,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync,setRestoring};
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&syncDue)syncNow();   // a tester's waiting changes, as the app closes
