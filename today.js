@@ -4,6 +4,22 @@
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14, and on
    2026-11-17 (Round C) into today-plan.js, today.js, today-photofold.js, today-picture.js and today-gestures.js, in that order.) */
 import {on,emit} from './bus.js';
+import {cache,hasOutfit,outSig,planDirty,planFor,planMonth,planSnapSoon,planStartDay,planTrim} from './today-plan.js';
+import {$,COOL,DAY_NAMES,SLOTS,TYPES,dayRecs,desc,di,hasVest,inRotation,isHandPick,isWorkday,isoKey,itemTitle,items,key,nameHtml,needsJacket,needsTie,nm,offName,sentence,setClimate,setWardrobe,setWeather,settings,shortDesc,titleCls,todayDate} from './core.js';
+import {canPick,closePicker,dayActions,openPicker,pastEdit,picker,recordDays,resetCard,setPastEdit,setSwapMsg,setTodayPullWait,setVest,setWorn,slotLabel,todayPullWait,whenPulled} from './history.js';
+import {itemThumb,swatchSVG} from './draw.js';
+import {esc,srcOk} from './photo-keys.js';
+import {PIC_BG,asmLive,fetchRemoteRender,figureLabel,itemKey,itemPic,itemPicHtml,lastWorn,picBgs,renderFor,schedulePrefetch,setRemoteKeys} from './photos.js';
+import {announce,fitNavSoon,keepFocus,sel,setSel,setView} from './app.js';
+import {saveDay} from './days.js';
+import {dayOnly,homeDay,monthLink,monthOpen,nextWorkday,piecesParts,setMonthOpen,toggleMonth,wardShort} from './month.js';
+import {toast} from './toast.js';
+import {asmEnsure} from './assemble.js';
+import {openAdd} from './nav.js';
+import {scoreCard,scoreOpen,setScoreOpen,toggleScore} from './scorecard.js';
+import {missedCard} from './missed.js';
+import {actTaps,acts} from './act.js';
+import {buildPlan} from './planner.js';
 on('figure-cloth',figCuDone);   // draw.js figCuGet: the mannequin's cloth for an item is ready
 /* the day records and the week's locks a drawing of Today writes (recordDays, lockUpcoming) run in the background; recordRun is the latest
    run, so a test can wait until a device has finished writing before it counts its syncs (tests/sync.test.js quiet) */
@@ -281,7 +297,7 @@ function setListOpen(v){listOpen=v}
 Object.assign(globalThis,{wxPreload,figCuDone,keepHome,goToday,renderToday,foldAll,stepDay,planWith,setListOpen});
 Object.defineProperties(globalThis,{recordRun:{get:()=>recordRun}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,get BLOUSE_ROLL_ON(){return BLOUSE_ROLL_ON},set BLOUSE_ROLL_ON(v){BLOUSE_ROLL_ON=v},get belowOpen(){return belowOpen},set belowOpen(v){belowOpen=v},get dayShown(){return dayShown},set dayShown(v){dayShown=v},figureStage,get openRow(){return openRow},set openRow(v){openRow=v},pickPiece,piecesBox,restWarn,setOff,setRoll,swatchStack,todayTabTap,toggleList,toggleRow,get listOpen(){return listOpen},set listOpen(v){listOpen=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,get BLOUSE_ROLL_ON(){return BLOUSE_ROLL_ON},set BLOUSE_ROLL_ON(v){BLOUSE_ROLL_ON=v},get belowOpen(){return belowOpen},set belowOpen(v){belowOpen=v},get dayShown(){return dayShown},set dayShown(v){dayShown=v},figureStage,get openRow(){return openRow},set openRow(v){openRow=v},pickPiece,piecesBox,restWarn,setOff,setRoll,swatchStack,todayTabTap,toggleList,toggleRow,get listOpen(){return listOpen},set listOpen(v){listOpen=v},foldAll,planWith,stepDay};
 /* history.js (a swap, a pick, a mark, an occasion, Reset …) and month.js (a day opened) announce 'day-changed': Today is drawn again
    (bus.js; the restructure S3e, 2026-11-26: they run before this file). Above acts({…}), as the bridge */
 on('day-changed',()=>renderToday());

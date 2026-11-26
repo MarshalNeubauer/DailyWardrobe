@@ -2,6 +2,12 @@
    since the restructure S3b, 2026-11-26)
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14.) */
 import {emit} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {$,COLORS,colName,dayRecs,isCargo,items,key,nm,patLabel,patName,primaryCol,shoeStyle,sockPatterned,sockToe,todayDate,trouserKind,watchText} from './core.js';
+import {comboKey,comboSig,fnv64,keepRender,listPaused,picsDrawn,renders,shareRender,srcOk,workerBase,workerList} from './photo-keys.js';
+import {hasOutfit,planFor,planMonth} from './today-plan.js';
+import {sel,view} from './app.js';
+import {keyDate} from './days.js';
+import {acts} from './act.js';
 const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=>nm(i)).join(', ');
 // assembled pictures (assemble.js) are in use: ASM_ON, which a test switches off unless it tests them; nothing of assemble.js is
 // called while they are off, so a change there selects only the tests that use them
@@ -191,7 +197,7 @@ function setRemoteKeys(v){remoteKeys=v}
    classic script's were */
 Object.assign(globalThis,{figureLabel,asmLive,renderFor,fetchRemoteRender,schedulePrefetch,lastWorn,aAn,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,wardPic,fetchItemPic,renderItemPicUI,setRemoteKeys});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,ITEM_PIC_TYPES,fetchItemPic,get itemBatch(){return itemBatch},itemDesc,itemPicLimitText,itemPicsUsedUp,missingItemPics,prefetchRenders,remoteList,get remoteListed(){return remoteListed},set remoteListed(v){remoteListed=v},renderItemPic,renderTried,shareLocalPics,startItemPics,get remoteKeys(){return remoteKeys},set remoteKeys(v){remoteKeys=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,ITEM_PIC_TYPES,fetchItemPic,get itemBatch(){return itemBatch},itemDesc,itemPicLimitText,itemPicsUsedUp,missingItemPics,prefetchRenders,remoteList,get remoteListed(){return remoteListed},set remoteListed(v){remoteListed=v},renderItemPic,renderTried,shareLocalPics,startItemPics,get remoteKeys(){return remoteKeys},set remoteKeys(v){remoteKeys=v},fetchRemoteRender,itemKey,itemPicHtml,lastWorn,picBgs,renderFor};
 export {figureLabel,asmLive,renderFor,renderTried,fetchRemoteRender,remoteKeys,remoteListed,remoteList,prefetchRenders,schedulePrefetch,lastWorn,ITEM_PIC_TYPES,aAn,itemDesc,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,wardPic,fetchItemPic,renderItemPic,shareLocalPics,missingItemPics,itemPicLimitText,itemPicsUsedUp,itemBatch,renderItemPicUI,startItemPics,setRemoteKeys};
 /* index.html's (act.js): Settings' "Generate item pictures" */
 function itemPicsTap(){startItemPics()}

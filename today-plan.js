@@ -58,5 +58,5 @@ function planSnapSoon(){clearTimeout(planSnapT);planSnapT=setTimeout(()=>{const 
 Object.assign(globalThis,{planDirty,planMonth,planStartDay,planTrim,planFor,hasOutfit,PLAN_SNAP,strHash,planSnapUse,outSig,planSnapSoon});
 Object.defineProperties(globalThis,{cache:{get:()=>cache,set:v=>{cache=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,planRuns,planSig,get planSnapUsed(){return planSnapUsed},get cache(){return cache},set cache(v){cache=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,planRuns,planSig,get planSnapUsed(){return planSnapUsed},get cache(){return cache},set cache(v){cache=v},planStartDay};
 export {cache,planDirty,planRuns,planMonth,planStartDay,planTrim,planFor,hasOutfit,PLAN_SNAP,strHash,planSig,planSnapUse,planSnapUsed,outSig,planSnapSoon};

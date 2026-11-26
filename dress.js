@@ -5,6 +5,12 @@
    or a funeral is still dressed in full from what is owned). This file holds the Settings switches and the one-time
    change of the waistcoat default. */
 import {on} from './bus.js';
+import {$,items,settings,wearsJacket,wearsTie} from './core.js';
+import {saveUserSettings,settingsSummaries,todayDirty} from './settings.js';
+import {planDirty} from './today-plan.js';
+import {shoeSuits} from './planner.js';
+import {metaPut,put,tx} from './app.js';
+import {acts} from './act.js';
 
 /* ---- Settings → Schedule → Dress code: two switches ---- */
 const DRESS_ROWS=[['jacket','Jackets (suits and blazers)','Off if you don\'t wear a suit or blazer to work: workdays are planned as a shirt and pants.'],

@@ -109,8 +109,7 @@
   "act.js": {
    "class": "required",
    "group": "base",
-   "on404": "picture",
-   "note": "required by the owner's choice (c): as toast.js; Settings does not open without it"
+   "note": "required by the owner's choice (c): as toast.js"
   },
   "days.js": {
    "class": "today-no-picture",
@@ -232,8 +231,7 @@
   "toast.js": {
    "class": "required",
    "group": "base",
-   "on404": "picture",
-   "note": "required by the owner's choice (c), 2026-11-25: a later import of it may show the start-up card; today its 404 shows Today with its picture"
+   "note": "required by the owner's choice (c), 2026-11-25: its 404 shows the start-up card since the restructure S5e (start.js imports it); before, Today with its picture"
   },
   "theme.js": {
    "class": "optional",

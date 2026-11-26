@@ -1,5 +1,10 @@
 /* Daily Wardrobe: past workdays the app recorded by itself as worn (the app wasn't opened): the toast and Today's card to undo them
    (An ES module since 2026-11-23, the bridge in its last lines; split out of history.js, Round C 2026-11-17, and loaded right after it.) */
+import {dayRecs,isoKey,todayDate} from './core.js';
+import {keyDate,saveDay} from './days.js';
+import {sel} from './app.js';
+import {esc} from './photo-keys.js';
+import {acts} from './act.js';
 /* past workdays the app was not opened on are recorded as planned and count as worn: say so once, with a way to mark them not worn
    (2026-11-15, the audit: back after a week away, every missed workday was silently counted as worn, toward the cleaning counts too) */
 let missedDays=[],missedT=0;
