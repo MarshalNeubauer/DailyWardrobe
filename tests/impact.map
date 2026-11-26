@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	c86be817fd04f49f1870
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -658,7 +659,7 @@ addcards.test.js	weather.js	<loaded>	@onsettingsdraw	@onsettingssummaries	loadWe
 additemacts.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 additemacts.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	get	hasInviteHash	isTester
 additemacts.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
-additemacts.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardCheck	cardField	cardMatGuess	cardSafe	cardSave	cardSel	cardTypePick	ckCheck	ckLeftLine	ckLr	confBtn	errCard	formCard	matExtras	matGuessOf	matNewOf	matOn	multiErrCard	photoPair	setQField	setq	shadeRow	shadeStep	shirtColFix	stepShadeE	stepShadeQ	tagSwInner	typeCard	unreadNote
+additemacts.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardCheck	cardCuRemove	cardField	cardMatGuess	cardSafe	cardSave	cardSel	cardTypePick	ckCheck	ckLeftLine	ckLr	confBtn	errCard	formCard	matExtras	matGuessOf	matNewOf	matOn	multiErrCard	photoPair	setQField	setq	shadeRow	shadeStep	shirtColFix	stepShadeE	stepShadeQ	tagSwInner	typeCard	unreadNote
 additemacts.test.js	add-ids.js	<loaded>	cardAt	cardIx	cardOf	cardReading	needType	qAt	qh
 additemacts.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 additemacts.test.js	add-more.js	<loaded>	arriveVal	cardArrives	cardOrder	cardQty	checkArrivals	fmtDay	orderHint	orderRow	qtyLabel	qtyOf	qtyRow	setArrives	setOrder	stepQty
@@ -4479,7 +4480,7 @@ clock.test.js	worker/render.js	<loaded>	hubOf
 closeupread.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 closeupread.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	get	hasInviteHash	isTester	rememberRole
 closeupread.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
-closeupread.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardRdStart	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matOn	photoPair	setq	shadeRow	tagSwInner	unreadNote
+closeupread.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardCuFile	cardRdStart	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matOn	photoPair	setq	shadeRow	tagSwInner	unreadNote
 closeupread.test.js	add-ids.js	<loaded>	cardAt	cardIx	cardOf	cardReading	needType	qAt	qh
 closeupread.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 closeupread.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
@@ -4571,7 +4572,7 @@ closeupread.test.js	weather.js	<loaded>	loadWeather
 closeupsheet.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 closeupsheet.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
 closeupsheet.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
-closeupsheet.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matOn	photoPair	shadeRow	tagSwInner	unreadNote
+closeupsheet.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardCuFile	cardCuRemove	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matOn	photoPair	shadeRow	tagSwInner	unreadNote
 closeupsheet.test.js	add-ids.js	<loaded>	cardAt	cardIx	cardOf	cardReading	needType	qAt	qh
 closeupsheet.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch
 closeupsheet.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
@@ -8846,7 +8847,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	handleSync
+keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
@@ -13166,7 +13167,7 @@ remind.test.js	worker/render.js	<loaded>	hubOf	logHub
 restacts.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	askDelete	cancelDelete	checkForUpdate	delAllTap	delAskTap	delCancelTap	delDeviceTap	loadFeedback	renderAbout	swVersionOf
 restacts.test.js	account.js	<loaded>	@onsettingssummaries	acctBase	acctCall	acctCopyTap	acctCreateTap	acctEsc	acctLinkFocus	acctMyLinkTap	acctPurgeTap	acctReissueTap	acctRevokeTap	acctRole	acctSettingsPart	acctStart	acctToast	acctUse	applyRole	copyInvite	copyInviteLink	createInvite	get	hasInviteHash	inviteLink	iosDevice	iosInSafari	isTester	loadAccount	myInviteLink	purgeInvite	reissueInvite	rememberRole	renderAccountUI	revokeInvite	set	set acct
 restacts.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFileGone	actFire	actListen	actPath	actTaps	acts	addEventListener.once
-restacts.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardRetryTag	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matOn	photoPair	setq	shadeRow	shirtColFix	tagSwInner	unreadNote
+restacts.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	cardCuFile	cardCuRemove	cardRetryTag	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matOn	photoPair	setq	shadeRow	shirtColFix	tagSwInner	unreadNote
 restacts.test.js	add-ids.js	<loaded>	cardAt	cardIx	cardOf	cardReading	needType	qAt	qh
 restacts.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore
 restacts.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
@@ -18325,7 +18326,7 @@ tagging.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanCustom	cl
 tagreads.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 tagreads.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	hasInviteHash	isTester	rememberRole
 tagreads.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
-tagreads.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matOn	photoPair	shadeRow	tagSwInner	unreadNote
+tagreads.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardCuFile	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matOn	photoPair	shadeRow	tagSwInner	unreadNote
 tagreads.test.js	add-ids.js	<loaded>	cardAt	cardIx	cardOf	cardReading	needType	qAt	qh
 tagreads.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 tagreads.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
@@ -18701,7 +18702,7 @@ texswatch.test.js	weather.js	<loaded>	loadWeather
 texture.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 texture.test.js	account.js	<loaded>	acctBase	acctRole	acctStart	applyRole	get	hasInviteHash	isTester
 texture.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
-texture.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matOn	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
+texture.test.js	add-card.js	<loaded>	addCkCount	addCkSecs	busyCard	cardCuFile	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matOn	photoPair	setq	shadeRow	shirtColFix	tagSwInner	typeCard	unreadNote
 texture.test.js	add-ids.js	<loaded>	cardAt	cardIx	cardOf	cardReading	needType	qAt	qh
 texture.test.js	add-keep.js	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	get
 texture.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
