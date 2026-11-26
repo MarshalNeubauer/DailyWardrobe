@@ -2,6 +2,8 @@
    date (keyDate), the pieces of an outfit as a record holds them (idsOf), saving a day's record (saveDay) and keeping a coming day's
    record free of pieces (notAhead). Data only: nothing is drawn here. Loaded right after act.js (app.js, back.js and act.js keep their places), before the files that read them
    (pickscore, add-more, itemsheet, history, locks, today-plan, today, fav and the others); planner.js, earlier, reads keyDate. */
+import {SLOTS,dayFields,dayRecs,nextStamp,todayDate} from './core.js';
+import {atomic,txs} from './app.js';
 const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
 const keyDate=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
 async function saveDay(rec,quiet,auto){rec.updated=nextStamp(rec.updated);if(!auto){delete rec.lockOnly;delete rec.base}const was=dayRecs[rec.date];dayRecs[rec.date]=rec;   /* (core.js dayFields: the fields changed since the copy before get this save's stamp; the one in memory, or, changed in place, the stored one) */

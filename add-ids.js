@@ -1,6 +1,8 @@
 /* Daily Wardrobe: Add, a card found by its id, and what state it is in (the restructure S3c, 2026-11-26: moved here from add-save.js and
    add.js, so the files that draw and read a card, loaded before those two, find it in a file that ran before them). Nothing here draws. */
 /* a card by its id (Confirm, Save all) or, as before, its place (the sample, the import, tests) */
+import {queue} from './app.js';
+import {esc,jsq} from './photo-keys.js';
 const cardOf=k=>typeof k==='string'?queue.find(q=>q.id===k):queue[k];
 /* every handler drawn on a card finds it by its id when tapped (CR-1-08): qAt(id) is the card's place in the list at that moment (-1 once
    gone), qh(q) writes that call into the markup; a place written in when the card was drawn pointed at another card once the list moved */

@@ -5,6 +5,10 @@
 
 /* ---- storage failures ---- */
 // is this error (or IndexedDB error event) a failure of the device's storage: marked by txs/atomic in app.js, a full disk, or a failed request
+import {ask,db,dbGone,fill,metaPut,queue} from './app.js';
+import {esc} from './photo-keys.js';
+import {$,applyCustom,items,setWardrobe,settings,takeSettings} from './core.js';
+import {planDirty} from './today-plan.js';
 function storeFailure(e){if(!e)return false;if(e.dwStore||e.name==='QuotaExceededError')return true;const t=e.target;
   return !!(t&&typeof IDBRequest!=='undefined'&&(t instanceof IDBRequest||t instanceof IDBTransaction))}
 const storeErr=e=>e&&(e.name||e.message?e:e.target&&e.target.error)||{};

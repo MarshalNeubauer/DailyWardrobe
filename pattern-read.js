@@ -2,6 +2,15 @@
    reading (POST /pattern) coloured from the pixels, motifs, a dress shirt's weave texture and camouflage. */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit} from './bus.js';
+import {CAMO_TR,CHECK_PATS,MOTIF_PATS,STRIPE_PATS,TEXTURE_PATS,settFromCanvas,texPat,tieWeave} from './detect.js';
+import {FABRIC,PATS_BY,camoPat,dE00,hexRgb,items,labHex,patBase,patName,rgbLab} from './core.js';
+import {BLUR_SHARP,applyWb,closeRead,measureAndApply,sharpness,wbRead} from './measure.js';
+import {linSrgb8,srgbLin8} from './srgb.js';
+import {imgOf,put,queue} from './app.js';
+import {esc} from './photo-keys.js';
+import {cardAt,cardIx} from './add-ids.js';
+import {sharpCloseOf,tagImgOf} from './tag-request.js';
+import {planDirty} from './today-plan.js';
 
 /* ---- the full pattern (detect.js analyzeSett): read in colour from the sharp item photo (Claude's patternBox: the largest
    area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's

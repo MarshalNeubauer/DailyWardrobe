@@ -10,6 +10,12 @@
    reads it (planner.js favLooks, favItemSet: a look comes back about every three weeks, a piece rests a fifth less). Nothing is learned:
    only what is marked counts.
    (An ES module, run in index.html's order; what the classic scripts still use of it is bridged in its last lines.) */
+import {TYPES,dayRecs,di,inRotation,isHandPick,itemTitle,items,key,nm,sentence,settings,shortDesc,titleCls,todayDate} from './core.js';
+import {favItemSet,favKey,favLookKey,favLookOf,favLooks,isFavItem} from './planner.js';
+import {planFor} from './today-plan.js';
+import {sel} from './app.js';
+import {esc} from './photo-keys.js';
+import {keyDate} from './days.js';
 const FAV_HEART='<svg class="favic" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.3C1 8.4 3 5 6.4 5c2.1 0 3.6 1.2 4.4 2.5h2.4C14 6.2 15.5 5 17.6 5 21 5 23 8.4 21.6 11.7 19.5 16.4 12 21 12 21z"/></svg>';
 const FAV_HEART0='<svg class="favic" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" d="M12 20s-7-4.3-9-8.7C1.7 8.3 3.5 6 6.4 6c2 0 3.4 1.2 4.2 2.5h2.8C14.2 7.2 15.6 6 17.6 6c2.9 0 4.7 2.3 3.4 5.3C19 15.7 12 20 12 20z"/></svg>';
 const FAV_UNDO_MS=5000;   // (toast.js keeps a toast with Undo up at least TOAST_ACT_MS)

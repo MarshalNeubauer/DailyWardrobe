@@ -2,6 +2,8 @@
    photo, the fabric close-up, the owner's own colours, patterns and materials, the corrections the owner made before), the sharp copies
    kept on this device, what the tagger learns from the corrections, and what one tagging call costs. */
 
+import {CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,TAG_TYPES,TYPES,hasPat,ownMats,settings,tagTypesNow} from './core.js';
+import {esc} from './photo-keys.js';
 const TAG_MAX=2048,CLOSE_MAX=1536,TAG_Q=.92;
 /* a close-up under TEX_MIN_PX on its short side is refused (the Add card, the item sheet); TEX_MAX is the synced close-up (2026-11-13,
    the owner: "the zoom-in pictures are still stored at 640"): as sharp as the device-only copy (CLOSE_MAX), now that photos are stored

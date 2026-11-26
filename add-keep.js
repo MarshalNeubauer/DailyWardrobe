@@ -2,6 +2,8 @@
    pictures in the database's meta store, brought back at the next start (addRestore, addRevive), and the listeners that keep them. */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit} from './bus.js';
+import {fill,generateSwatch,imgOf,metaGet,queue,shrink,txs} from './app.js';
+import {$,items} from './core.js';
 
 /* ---- waiting cards survive iOS closing Safari (audit 2026-11-15, H1: they lived only in memory, beforeunload never fires on an iPhone,
    and reading them again was paid again). Every card on Add is kept in the database's meta store, never synced: the form as `addq`, each
