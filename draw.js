@@ -1,5 +1,8 @@
 /* Daily Wardrobe: SVG drawings (procedural fabrics, accessories, thumbnails, glue for the torso figure) */
 import {emit} from './bus.js';
+import {CAMO_V,COLORS,FABRIC,HANDPICK_TYPES,METAL_TONES,OCP_CAMO,OCP_V,STRAP_BANDS,TEXTURE_TYPES,TYPES,accentOf,blouseTapes,camoImage,clipMetal,colOf,hexRgb,isCargo,labHex,linkFace,lum,mix,nm,ocpImage,patBase,rgbLab,shoeStyle,sockPatterned,sockToe,strapBand,thirdOf,trouserKind,watchOpts} from './core.js';
+import {CAMO_TR,CHECK_PATS,STRIPE_PATS} from './detect.js';
+import {linSrgb,srgbLin8} from './srgb.js';
 
 /* a herringbone stripe's plain band, read from Claude's one-repeat bitmap: columns the same all the way down (all 1: a shiny satin
    line; all 0: plain ground) are not twill. Its share of the repeat, and whether it shines; null for plain herringbone. */

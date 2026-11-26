@@ -11,6 +11,7 @@
    pose's soft wall shadow baked in, scaled up smoothly), in the light and dark themes alike, so the switch to the painted picture is
    seamless; nothing of the mannequin's own covers the wall (office:false draws the plain bg colour instead). WebKit-safe: no <use>
    inside <clipPath>. */
+import {linSrgb,srgbLin8} from './srgb.js';
 (function(){
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 const hex = (c, fallback) => (/^#[0-9a-fA-F]{3,8}$/.test(String(c)) ? c : fallback);

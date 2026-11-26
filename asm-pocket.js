@@ -17,6 +17,8 @@
    - the cloth: the square's colour, its border along the top edge (the contrast edge folded to show), dots, a stripe, a check or a small
      figure in its second and third colours, a faint slub for white linen and woven squares
    Nothing of core.js may be read at load time (the picture worker has none): asmPocketJob works the colours out on the page. */
+import {asmData,asmJpeg} from './assemble.js';
+import {linSrgb8,srgbLin8} from './srgb.js';
 const ASM_POCKETV=2;   // 2: folded cloth (a rolled, slightly uneven crease, two layers at the ends, relaxed creases, corner tucks, silk sheen / weave)
 const ASM_POCKET_GEO={suit:{l:[1325,532],r:[1559,506]},vest:{l:[1323,532],r:[1558,504]}};   // the welt's top edge (its opening), left and right ends, at 2048
 const ASM_POCKET_MASTER={'suit-open':'suit','vest-open':'vest'};

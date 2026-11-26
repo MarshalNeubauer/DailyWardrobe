@@ -97,11 +97,15 @@ var GLB_WORKER_SRC='',GLB_APP_VERSION=null;
     await Promise.all(PAGE.map(async function(u){var r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(u+': HTTP '+r.status);src[u]=await r.text()}));
     try{var sw=await (await fetch('../sw.js',{cache:'no-store'})).text(),m=/const CACHE='([^']+)'/.exec(sw);GLB_APP_VERSION=m?m[1]:null}catch(e){}
     // (the Worker runs them joined as one plain script: an ES module's `export {…}` line, the painter's since C3, 2026-11-24, is left out there; its bridge above it is plain code)
-    GLB_WORKER_SRC=WORKER.map(function(u){return src[u].replace(/^export \{[^\n]*\};?[ \t]*$/mg,'')+'\n;\n'}).join('');
+    // (its `import {…} from './x.js';` lines too, the painter's since the restructure S5c: the files before it in the one script already gave those names)
+    GLB_WORKER_SRC=WORKER.map(function(u){return src[u].replace(/^export \{[^\n]*\};?[ \t]*$/mg,'').replace(/^import [^\n]*? from '\.\/[^']+';[ \t]*$/mg,'')+'\n;\n'}).join('');
+    var blob={};
     for(var i=0;i<PAGE.length;i++){var u=PAGE[i];
-      // (a blob's module can't resolve './bus.js': an app file's import of another, draw.js's of bus.js since the restructure S4, is given the file's own address)
-      var text=src[u].replace(/^(import [^\n]*? from )'\.\/([^']+)';/mg,function(m,a,f){return a+"'"+new URL(u.replace(/[^\/]*$/,'')+f,location.href).href+"';"});
-      await new Promise(function(ok,no){var s=document.createElement('script');s.src=URL.createObjectURL(new Blob([text+'\n//# sourceURL='+u.replace('../','')],{type:'text/javascript'}));
+      // (a blob's module can't resolve './bus.js': an app file's import of another, draw.js's of bus.js since the restructure S4, is given the file's own address;
+      //  an import of a file this page already ran from a blob, the painter's of core.js, srgb.js … since the restructure S5c, is given that blob, so no second copy runs)
+      var text=src[u].replace(/^(import [^\n]*? from )'\.\/([^']+)';/mg,function(m,a,f){var d=u.replace(/[^\/]*$/,'')+f;return a+"'"+(blob[d]||new URL(d,location.href).href)+"';"});
+      blob[u]=URL.createObjectURL(new Blob([text+'\n//# sourceURL='+u.replace('../','')],{type:'text/javascript'}));
+      await new Promise(function(ok,no){var s=document.createElement('script');s.src=blob[u];
         if(/^export \{/m.test(src[u]))s.type='module';   // (an app file that is an ES module, core.js since 2026-11-24: its bridge hands the others its names; 'load' comes after it ran)
         s.onload=ok;s.onerror=function(){no(new Error('could not run '+u))};document.head.appendChild(s)})}
   }catch(e){document.getElementById('boot').textContent='Could not load the bench: '+(e&&e.message||e);glbErrors.push(String(e&&e.message||e))}
