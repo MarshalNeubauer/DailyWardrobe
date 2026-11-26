@@ -1,5 +1,7 @@
 /* Daily Wardrobe: photo tagging, pattern readings (split from tagging.js, Round B CR-2-17): the full pattern (sett) from the pixels, Claude's
    reading (POST /pattern) coloured from the pixels, motifs, a dress shirt's weave texture and camouflage. */
+/* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
+import {emit} from './bus.js';
 
 /* ---- the full pattern (detect.js analyzeSett): read in colour from the sharp item photo (Claude's patternBox: the largest
    area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's
@@ -84,7 +86,7 @@ function missedPattern(q){if(!q||!q.raw||!q.raw.tex||(patBase(q.pattern)||'solid
       if(con>=12)p=cross?(jacket?(line<.15?'windowpane':'glen-check'):'check'):(jacket?(line<.15?'pinstripe':'chalk-stripe'):q.type==='shirt'&&line<.15?'fine-stripe':'stripe');
       if(p&&!(PATS_BY[q.type]||[]).includes(p))p=null}}
   q.missed={c:q.raw.tex,p};return p}
-function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);if(q.meas)measureAndApply(q);renderAdd()}
+function toggleSett(i){const q=queue[i];q.settOff=!q.settOff;readSett(q);if(q.meas)measureAndApply(q);emit('card-changed')}
 const settSummary=s=>!s?'generic':s.camo?`camouflage in its tagged colors${s.src==='claude+pixels'?', laid out as Claude and the photo read it':s.src==='pixels'?', laid out as the photo shows it':''}`:s.tex?`a ${TEX_WORDS[s.tex.kind]||'woven texture'} (${s.tex.grid[0].length}×${s.tex.grid.length} repeat), read by Claude with the contrast from the close-up`:s.motif?`${s.motif.figs.length===1?'one figure':s.motif.figs.length+' figures'} on a ${s.motif.grid} grid, read by Claude with the colors from the photo`:s.src==='claude+pixels'?`${s.bands.length} band${s.bands.length===1?'':'s'}${s.cross?' and lines the other way':''}, read by Claude with the colors from the photo`:`${s.bands.length} color band${s.bands.length===1?'':'s'}${s.cross?' with lines crossing the other way':''}, read from ${s.src==='photo'?'the photo':s.src==='closeup'?'the close-up':s.src==='photo+closeup'?'the photo and the close-up':'Claude\'s description'}`;
 function settNote(q){if(!readable(q.type,q.pattern,q.weave))return '';
   if(q.patternReading)return '<p class="tagnote mut"><small><span class="spin" aria-hidden="true"></span>Claude is reading the pattern…</small></p>';
@@ -168,7 +170,7 @@ function settFromSpec(spec,{tex,full,box,wb,type}){
   return {v:2,a,bands,cross:along&&along.some(b=>b[0])?{d:90,bands:along,r:+spec.paneAspect.toFixed(2)}:null,cr:+(+spec.repeatsInCloseup).toFixed(2),tr:+(+spec.repeatsAcrossItem).toFixed(2),src:'claude+pixels'}}
 /* ask Claude for a card's pattern once it has a close-up (the noise it strips is what the pixel reader can't) */
 async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.raw.tex||!q.tagImg||!readable(q.type,q.pattern,q.weave)||!localStorage.getItem('worker_url'))return;   // a card saved or skipped meanwhile: no paid call
-  const me=readBegin(q,'pattern');q.patternReading=1;renderAdd();let spec=null;
+  const me=readBegin(q,'pattern');q.patternReading=1;emit('card-changed');let spec=null;
   try{const closeup=await closeTagImg(q);if(!queue.includes(q)){readEnd(q,'pattern',me);q.patternReading=0;return}
     spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff),...(me.ac?{signal:me.ac.signal}:{})})}catch(e){console.warn('pattern reading failed',e);errNote(e,'Pattern reading')}   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
   if(!readEnd(q,'pattern',me))return;   // called off (a newer close-up, Skip): its answer is not used
@@ -176,7 +178,7 @@ async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.ra
   // the card is drawn again however the answer goes (a step that threw here left Confirm switched off: refineFromCloseup)
   try{if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
     readSett(q);if(q.meas)measureAndApply(q)}catch(e){console.warn('pattern answer not applied',e);q.specFailed=1;errNote(e,'Pattern answer not applied ('+q.type+')')}
-  finally{if(queue.includes(q)){renderAdd();addKeep()}}}
+  finally{if(queue.includes(q)){emit('card-changed');addKeep()}}}
 
 /* ---- camouflage (2026-11-16, the owner's MultiCam pants): irregular blotches, no grid to read. Its colours come from the pixels: the
    close-up (else the pattern's box in the photo, else the photo's middle) sampled at about CAMO_SAMPLE px and clustered in Lab (k-means,

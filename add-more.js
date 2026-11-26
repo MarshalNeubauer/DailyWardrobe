@@ -1,5 +1,7 @@
 /* Daily Wardrobe: Add, the More section's rows (split from add.js, Round C 2026-11-17): How many, Bought on the way and its
    Arrives date (one rule with the item sheet), and checkArrivals, which puts items back in rotation once they arrive or are back. */
+/* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
+import {emit} from './bus.js';
 /* bought but not here yet: the item goes into the wardrobe out of rotation; with an arrival date it joins the outfits from the day
    after (inRotation in core.js), and once that day comes it is put back in rotation for good (checkArrivals) */
 const fmtDay=s=>{const [y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString(undefined,{month:'short',day:'numeric'})};
@@ -16,7 +18,7 @@ function qtyRow(q,i){if(!QTY_TYPES.includes(q.type))return '';const n=qtyOf(q);
 function stepQty(i,d){const q=cardOf(i);if(!q)return;i=queue.indexOf(q);q.qty=Math.min(QTY_MAX,Math.max(1,qtyOf(q)+d));const n=q.qty;queueMicrotask(addKeep);
   const o=$('#qty-n-'+i),m=$('#qty-m-'+i),p=$('#qty-p-'+i),c=$('#qconf-'+i);if(o)o.textContent=n;if(m)m.disabled=n<=1;if(p)p.disabled=n>=QTY_MAX;if(c)c.textContent=qtyLabel(q)}
 function orderRow(q,i){return `<div class="ordrow"><button type="button" class="rotbtn${q.order?' on':''}" aria-pressed="${!!q.order}" data-act="cardOrder" ${cardAt(q)} data-on="${q.order?0:1}">${q.order?'✓ ':''}Bought, on the way</button>${q.order?`<label class="ordate">Arrives (optional) <input type="date" value="${q.arrives||''}" min="${isoKey(todayDate())}" data-act-change="cardArrives" ${cardAt(q)}></label><small class="mut ordhint">${orderHint(q.arrives)}</small>`:''}</div>`}
-function setOrder(i,on){const q=cardOf(i);if(!q)return;q.order=!!on;if(!on)delete q.arrives;renderAdd()}
+function setOrder(i,on){const q=cardOf(i);if(!q)return;q.order=!!on;if(!on)delete q.arrives;emit('card-changed')}
 /* a day already gone isn't an arrival date (the date field's min only limits its picker: 2020-01-01 typed in read "joins your outfits
    from the day after Jan 1") */
 /* one rule for the Add card and the item sheet (CR-1-07: the sheet took a past day and put the piece in rotation at once): '' (no date),
@@ -24,8 +26,8 @@ function setOrder(i,on){const q=cardOf(i);if(!q)return;q.order=!!on;if(!on)delet
 const arriveVal=v=>!/^\d{4}-\d{2}-\d{2}$/.test(v||'')?'':v<isoKey(todayDate())?'past':v;
 const ARRIVE_PAST='That day has passed. Pick today or a later day, or leave it empty.';
 function setArrives(i,v){const q=cardOf(i);if(!q)return;const a=arriveVal(v);
-  if(a==='past'){delete q.arrives;renderAdd();toast(ARRIVE_PAST,4500);return}
-  if(a)q.arrives=a;else delete q.arrives;renderAdd()}
+  if(a==='past'){delete q.arrives;emit('card-changed');toast(ARRIVE_PAST,4500);return}
+  if(a)q.arrives=a;else delete q.arrives;emit('card-changed')}
 async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.paused&&arriveN(i)!=null&&T>arriveN(i));
   const cb=done.filter(i=>i.away);   // back from the cleaner's or the laundry (care.js): cleaned on the day it was due back
   if(cb.length&&typeof careUnlock==='function')await careUnlock(null,Math.min(...cb.map(i=>+keyDate(i.away.since||isoKey(todayDate())))));   // the locks made while away let go (history.js)

@@ -2,6 +2,8 @@
    card (add-card.js formCard). 2026-11-16, the owner's approved redesign: direction "2B Checklist" with the side-by-side compare of
    C:\code\audit-2026-11-13\item-redesign\prototype\compare-side.html (DESIGN.md, INVENTORY.md beside it).
    (An ES module, run in index.html's order; what the classic scripts still use of it is bridged in its last lines; nothing else runs at load.) */
+/* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
+import {emit} from './bus.js';
 
 /* ---- sections: a status mark (✓ done, ! worth a look, ○ optional or not checked yet, ✦ Claude suggests), a title and a one-line summary;
    a tap on the header folds or unfolds it. Which are open is kept in memory while the app runs (CK_OPEN, by sheet and section): the item
@@ -133,7 +135,7 @@ function cmpPaint(w){const key=w.dataset.cmp,s=cmpSt(key),P=CMP_PIC[key];if(!P)r
    once from the close-up here (then the sheet is drawn again) */
 function cmpLab(src,it){const m=it.meas;if(m&&m.src==='closeup'&&m.lab)return m.lab;if(!it.texture)return null;
   const k=texSig(it.texture);if(CMP_LAB[k]!==undefined)return CMP_LAB[k];CMP_LAB[k]=null;const id=it.id;
-  const redraw=()=>{if(src==='q'){if(queue.some(q=>q.id===id))renderAdd()}else if(editing===id)renderItem()};
+  const redraw=()=>{if(src==='q'){if(queue.some(q=>q.id===id))emit('card-changed')}else if(editing===id)renderItem()};
   // false: it couldn't be measured (the picture didn't load, the phone refused a canvas, no color came out); the line then says so
   // instead of "Measuring the close-up…" for good (CR-4-13)
   imgOf(it.texture).then(im=>{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');if(!x)throw new Error('no canvas');x.drawImage(im,0,0);
@@ -155,11 +157,11 @@ function cmpUndoTap(el){cmpMatchUndo(el.dataset.s,el.dataset.k)}
 function cmpMatchGo(src,ref){const it=src==='q'?cardOf(ref):items.find(x=>x.id===ref);if(!it)return;CMP_UNDO[src==='q'?it.id:ref]=it.shade||0;
   if(src==='q'){it.checked={...it.checked,tex:1};matchShadeQ(ref)}else matchShadeE(ref)}
 async function cmpMatchUndo(src,ref){const it=src==='q'?cardOf(ref):items.find(x=>x.id===ref);if(!it)return;const key=src==='q'?it.id:ref,v=CMP_UNDO[key];if(v===undefined)return;delete CMP_UNDO[key];
-  if(v)it.shade=v;else delete it.shade;if(src==='q'){renderAdd();return}await put(it);planDirty();renderWardrobe()}
+  if(v)it.shade=v;else delete it.shade;if(src==='q'){emit('card-changed');return}await put(it);planDirty();renderWardrobe()}
 /* whether the close-up has white paper: {ref, warm} (measure.js paperOf, kept in memory by the pictures' signatures), worked out once and
    then drawn again; an Add card's measurement says it at once */
 function cmpPaper(src,it){const n=paperNow(it);if(n)return n;if(src==='q'&&it.meas&&it.meas.src==='closeup')return {ref:!!it.meas.ref,warm:false};
-  const k=paperKey(it);if(k&&!CMP_ASKED[k]){CMP_ASKED[k]=1;const id=it.id;paperOf(it).then(r=>{if(!r)return;if(src==='q'){if(queue.some(x=>x.id===id))renderAdd()}else if(editing===id)renderItem()}).catch(()=>{})}
+  const k=paperKey(it);if(k&&!CMP_ASKED[k]){CMP_ASKED[k]=1;const id=it.id;paperOf(it).then(r=>{if(!r)return;if(src==='q'){if(queue.some(x=>x.id===id))emit('card-changed')}else if(editing===id)renderItem()}).catch(()=>{})}
   return null}
 /* the white-paper line under the comparison (retake: the Retake close-up button's HTML) */
 function cmpPaperLine(p,retake){if(!p)return '';

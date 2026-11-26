@@ -1,34 +1,24 @@
-/* Daily Wardrobe: Add, saving (split from add.js, Round C 2026-11-17): Save all, the Saved toast's title, a card found by its id
-   (cardOf, qAt, qh), and Confirm (save, saveCard). */
+/* Daily Wardrobe: Add, saving (split from add.js, Round C 2026-11-17): Save all, the Saved toast's title and Confirm (save, saveCard).
+   (A card found by its id, and whether Claude is still reading it, are add-ids.js's since the restructure S3c.) */
+/* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
+import {emit} from './bus.js';
 /* save every finished card in the queue (Skip the ones you don't want first) */
-/* a card Claude is still reading (tagging again with the close-up, or its pattern) can't be saved yet: saved meanwhile it kept the
-   weaker reading and the pattern call was paid for anyway (audit 2026-11-13); Confirm and Save all wait for it */
-const cardReading=q=>!!(q&&(q.refining||q.patternReading));
 /* a card that can be saved now (Save all and its count) */
 const cardReady=q=>!!q&&!q.busy&&!q.err&&!q.multiErr&&!q.saving&&!needType(q);
 /* one Save all at a time: a double tap ran two loops over the same cards, and the Wardrobe showed every piece twice (deleting the
    "copy" deleted the only real one); each card is saved by its id, last first, so Undo puts them back in their places */
 let saveAllOn=false;
-async function saveAll(){if(saveAllOn||queue.some(cardReading))return;saveAllOn=true;renderAdd();let n=0;
+async function saveAll(){if(saveAllOn||queue.some(cardReading))return;saveAllOn=true;emit('card-changed');let n=0;
   try{const cards=queue.filter(cardReady);for(let k=cards.length-1;k>=0;k--){const q=cards[k];if(queue.includes(q)&&await save(q.id)===true)n++}}
   finally{saveAllOn=false}
   const left=queue.filter(needType).length;
-  if(n||left)multiMsg(`${n?`Saved ${n} item${n===1?'':'s'} to your wardrobe.`:''}${left?`${n?' ':''}${left===1?'One card needs its type':`${left} cards need their type`} first.`:''}`);renderAdd()}
+  if(n||left)multiMsg(`${n?`Saved ${n} item${n===1?'':'s'} to your wardrobe.`:''}${left?`${n?' ':''}${left===1?'One card needs its type':`${left} cards need their type`} first.`:''}`);emit('card-changed')}
 /* Confirm (and the sample, the import, Save all): a failure is said and the card stays (a tester's Confirm did nothing at all, 2026-11-14) */
 /* (2026-11-17, the title audit) the short title, shortDesc: "Saved: Navy argyle socks." */
 /* what the Saved toast calls the item: its own name, else its colours with what it is ("Grey suit", "Navy tie", "Gold watch · white dial
    · bracelet"; it said "Saved: Grey." for a suit and "Saved: Navy." for a tie and for socks) */
 function savedTitle(it){const nm=itemName(it);if(nm)return nameIso(nm);const sw=styleWord(it).trim(),d=String(shortDesc(it)||'').trim(),t=sw||(TYPES[it.type]||'item').toLowerCase();   // (a shoe's style or a trouser's kind as the noun: "Oxblood scotch grain loafers", not "… shoes")
   if(!d)return sentence(t);const k=d.indexOf(' · ');return sentence(k<0?`${d} ${t}`:`${d.slice(0,k)} ${t}${d.slice(k)}`)}
-/* a card by its id (Confirm, Save all) or, as before, its place (the sample, the import, tests) */
-const cardOf=k=>typeof k==='string'?queue.find(q=>q.id===k):queue[k];
-/* every handler drawn on a card finds it by its id when tapped (CR-1-08): qAt(id) is the card's place in the list at that moment (-1 once
-   gone), qh(q) writes that call into the markup; a place written in when the card was drawn pointed at another card once the list moved */
-const qAt=id=>queue.findIndex(q=>q.id===id);
-const qh=q=>`qAt('${jsq(q.id)}')`;
-/* a data-act control (act.js) carries its card's id as data-card (cardAt(q) writes it); cardIx(el) is that card's place, as qAt('id') was */
-const cardAt=q=>`data-card="${esc(q.id)}"`;
-const cardIx=el=>qAt(el.dataset.card);
 /* one save per card (audit 2026-11-15, C2: a double tap on Confirm saved the card twice and, the list having moved up, threw away the
    next card unsaved): the card is found by its id, marked while it saves (a second tap does nothing) and its Confirm switched off;
    -> true once saved, false when it couldn't be */
@@ -38,7 +28,7 @@ async function save(k){const q=cardOf(k);if(!q||q.saving||cardReading(q))return 
   if(!saveAllOn)await addKeep();   // the card as it is now (a kill right after Confirm brought back How many one lower: the last + waited for the timer)
   try{return await saveCard(q)}catch(e){console.warn('save failed',e);if(typeof errNote==='function')errNote(e,'Confirm on Add ('+q.type+')');
     if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}
-  finally{delete q.saving;if(queue.includes(q)&&$('#add')&&!$('#add').hidden)renderAdd()}}
+  finally{delete q.saving;if(queue.includes(q)&&$('#add')&&!$('#add').hidden)emit('card-changed')}}
 async function saveCard(q){
   if(!q||cardReading(q))return false;
   const f=FABRIC.includes(q.type);
@@ -80,16 +70,15 @@ async function saveCard(q){
   const all=[it,...copies],at=nowMs();for(const x of all)x.updated=at;
   await txs('items','readwrite',s=>{for(const x of all)s.put(x)});if(window.scheduleSync)scheduleSync();
   items.push(...all);
-  const i=queue.indexOf(q);planDirty();if(i>=0)queue.splice(i,1);if(addCalm)addCalm.ok=1;renderAdd();   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
+  const i=queue.indexOf(q);planDirty();if(i>=0)queue.splice(i,1);if(addCalm)addCalm.ok=1;emit('card-changed');   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
   if(typeof kitSaved==='function')kitSaved(it,q,Math.max(0,i),copies);   // Saved, with Undo for all of them (kit.js)
   if(q.tagImg)for(const x of all)keepTagImg(x.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tag-request.js: the sharp copy (signed with the photo), for every copy too (CR-1-04); what the tagger got wrong
   if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>{for(const x of all)keepCloseImg(x.id,u,it.texture)}).catch(()=>{});   // the sharp close-up for later readings (tag-request.js)
   q.raw=null;q.big=null;q.texCanvas=null;   // the card's canvases (a 2048 px photo, its 800 px copy, the close-up) go now, not when the last reply about the card comes back
   return true;
 }
-/* An ES module since 2026-11-23: saveCard is its own. The bridge (tests/bridge.test.js lists it): add.js, add-card.js, add-more.js,
-   add-sheet.js, look.js, kit.js and every file whose handlers find a card by its id (cardOf, cardAt, cardIx, qAt, qh) read these as
-   globals; save, saveAll, cardOf and qAt are also called by the tests. saveAllOn is written here only: a getter */
-Object.assign(globalThis,{cardReading,cardReady,saveAll,savedTitle,cardOf,qAt,qh,cardAt,cardIx,save});
+/* An ES module since 2026-11-23: saveCard is its own. The bridge (tests/bridge.test.js lists it): add.js, add-card.js, add-sheet.js,
+   kit.js and the tests read these as globals (save, saveAll). saveAllOn is written here only: a getter */
+Object.assign(globalThis,{cardReady,saveAll,savedTitle,save});
 Object.defineProperties(globalThis,{saveAllOn:{get:()=>saveAllOn}});
-export {cardReading,cardReady,saveAllOn,saveAll,savedTitle,cardOf,qAt,qh,cardAt,cardIx,save};
+export {cardReady,saveAllOn,saveAll,savedTitle,save};
