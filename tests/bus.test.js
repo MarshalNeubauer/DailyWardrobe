@@ -18,6 +18,7 @@ const TOPICS={
   'connection-typed':{emit:['settings.js'],on:['account.js'],what:'another address or code typed in Connection: the account decides'},
   'folding-all':{emit:['today.js'],on:['boxfold.js'],what:'a swipe to another day folds everything at once (true), and is done (false): the folds are quiet meanwhile'},
   'backup-changed':{emit:['sync.js'],on:['sync-status.js'],what:'the backup\'s status changed (a sync ran, failed, paused or was held): the Backup line is written again'},
+  'figure-cloth':{emit:['draw.js'],on:['today.js'],what:'the mannequin\'s cloth for an item is ready (draw.js figCuGet): Today\'s figure is drawn again with it'},
   'invite-ended':{emit:['who.js'],on:['sync-status.js','account.js'],what:'the invitation this phone uses has ended: the Backup line, then the account box, say so'},
 };
 

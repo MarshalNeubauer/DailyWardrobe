@@ -8,6 +8,7 @@
    asmCmDiskPut through the bridge's setters (the files' own calls then reach the replacements, as when they shared one global scope).
    (asm-gl.js: the looks the graphics chip covers are painted there, WebGL2 on an OffscreenCanvas) */
 import './srgb.js';
+import './asm-keys.js';
 import './assemble.js';
 import './asm-color.js';
 import './asm-gl.js';

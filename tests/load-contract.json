@@ -281,6 +281,11 @@
    "class": "optional",
    "group": "add"
   },
+  "asm-keys.js": {
+   "class": "today-no-picture",
+   "group": "painter",
+   "note": "the color-coded masters' version, kinds and keys (from asm-color.js, the restructure S4): assemble.js and draw.js read it, and without it Today has no outfit picture (measured on both engines)"
+  },
   "assemble.js": {
    "class": "today-no-picture",
    "group": "painter"
