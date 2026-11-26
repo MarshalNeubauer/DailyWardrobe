@@ -8,10 +8,11 @@
    A request sent with cache:'no-store' is left to the network (about.js checks for a newer sw.js that way).
    Cross-origin requests (the AI worker, weather) are never cached. Caches named dw-keep-* hold the app's own data
    (the sharp tagging copies, tag-request.js) and survive updates. */
-const CACHE='dw-v531';
+const CACHE='dw-v532';
 const ASSETS=['./','index.html','styles.css','merge.js','bus.js','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','srgb.js','photo-keys.js','mannequin.js','mq/vest.js','mq/suit.js','mq/suit-open.js','mq/shirt-tie.js','mq/shirt-open.js','draw.js','app.js','days.js','back.js','act.js','add.js','add-ids.js','fields.js','add-paste.js','add-card.js','add-more.js','add-sheet.js','sheet-swipe.js','add-save.js','add-keep.js','item-photo.js','item-view.js','itemsheet.js','history.js','missed.js','locks.js','pickscore.js','scorecard.js','boxfold.js','today-plan.js','today.js','today-photofold.js','today-picture.js','today-gestures.js','month.js','photos.js','locale.js','settings.js','daysoff.js','weather.js','toast.js','who.js','theme.js','start.js','nav.js','ui.js','safety.js','dress.js','tag-request.js','migrate.js','measure.js','tagging.js','own-lists.js','pattern-read.js','asm-keys.js','assemble.js','asm-color.js','asm-watch.js','asm-pocket.js','asm-kinds.js','asm-ocp.js','watch/suit.png','watch/vest.png','watch/shirt-tie.png','watch/shirt-open.png','watch/leather.jpg','asm-gl.js','asm-worker.js','stats.js','care.js','cost.js','fav.js','wardrobe.js','colpick.js','checklist.js','look.js','pack.js','shop.js','sync-status.js','sync.js','sync-photos.js','snapshots.js','backupfile.js','account.js','remind.js','setup.js','kit.js','calendar.js','calparse.js','cal-worker.js','about.js','sw.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 // cache:'no-cache' revalidates each file with the server (ETag / Last-Modified): an unchanged file comes back as a small 304 instead of
 // being downloaded in full on every release ('reload' fetched all of them, about 1 MB, and twice on a first visit) (audit 2026-11-13)
+const ROOT=new URL('./',location.href),SCOPE=ROOT.pathname;   // the app's root, sw.js's folder (start.js registers it with that scope): '/DailyWardrobe/' on GitHub Pages, '/' in the tests
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(u=>new Request(u,{cache:'no-cache'})))))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&!k.startsWith('dw-keep-')).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('message',e=>{const d=e.data||{};
@@ -24,17 +25,26 @@ self.addEventListener('fetch',e=>{
     const cache=await caches.open(CACHE);
     const hit=await cache.match(req,{ignoreSearch:true});
     if(hit)return hit;
+    // a page asked for under another folder (…/app/some/path) goes to the app's root instead, keeping its query (its #… stays
+    // too: a redirect without one keeps the link's), so the page and every module it imports have one address each: index.html
+    // at the deep path ran a module twice (its tag's copy there, the root's for the imports, whose base is the cached file's
+    // address; the restructure's S5-0); a page that is there (lab/) is shown as before, so only a 404 or no connection redirects
+    const deep=req.mode==='navigate'&&url.pathname.startsWith(SCOPE)&&url.pathname.slice(SCOPE.length).includes('/');
+    const root=()=>Response.redirect(ROOT.href+url.search,302);
     // a deep link (…/app/some/path) is answered with index.html offline, whose styles.css and scripts then resolve under that path:
     // one of this version's files asked for under another folder is that file (the page came up unstyled, audit 2026-11-13); matched by
     // the end of the path, so the files in sub-folders (mq/, watch/) are found too (CR-5-05: offline, the figure's poses didn't load)
     const name=ASSETS.find(a=>a!=='./'&&url.pathname.endsWith('/'+a));
+    if(deep&&name==='index.html')return root();
     if(name){const same=await cache.match(name);if(same)return same}
     // not one of this version's files (or the cache was cleared): the network, kept for offline use
     try{
       const res=await fetch(req,{cache:'no-cache'});
       if(res&&res.ok)cache.put(req,res.clone());
+      if(deep&&!(res&&res.ok))return root();
       return res;
     }catch(err){
+      if(deep)return root();
       const page=req.mode==='navigate'&&await cache.match('index.html');
       if(page)return page;
       throw err;
