@@ -6,13 +6,13 @@
    "Add one" type and the "Add without a photo" sheet), sheet-swipe.js (sheetSwipe: the swipe down of every sheet), add-save.js (Confirm
    and Save all) and add-keep.js (the cards kept when the app is closed). This file keeps the photos (white balance, close-ups, One
    item, Several items, reading again once online), the double-tap guard and renderAdd. */
-/* ---- automatic white balance (wbRead/wbGains in measure.js): the light's colour is read from the brightest near-neutral pixels (a white wall, backdrop,
+/* the parts loaded before it announce a changed card on the notice board (bus.js 'card-changed'), and Add is drawn again here:
+   they never call renderAdd (the restructure S3c, 2026-11-26) */
+import {on} from './bus.js';
+/* ---- automatic white balance (wbRead/wbGains/applyWb in measure.js): the light's colour is read from the brightest near-neutral pixels (a white wall, backdrop,
    shirt or label), which should be grey, and every pixel is scaled to make them so. Conservative: no correction when there
    are too few of them, when they fill nearly the whole photo (then they are the item itself, e.g. a close-up of a cream
    shirt; a white backdrop behind an item is fine), or when the cast is under 2%; each channel moves at most -15%/+18%. ---- */
-function applyWb(c,g){const o=document.createElement('canvas');o.width=c.width;o.height=c.height;const x=o.getContext('2d',{willReadFrequently:true});x.drawImage(c,0,0);
-  if(!g)return o;const D=x.getImageData(0,0,o.width,o.height),d=D.data;
-  for(let i=0;i<d.length;i+=4){d[i]=Math.min(255,d[i]*g.r);d[i+1]=Math.min(255,d[i+1]*g.g);d[i+2]=Math.min(255,d[i+2]*g.b)}x.putImageData(D,0,0);return o}
 /* an Add card's pictures from its uncorrected originals, with or without the correction (Show original toggles it) */
 /* an item's photo is kept at PH_MAX (JPEG .85), the size Replace photo keeps: at 360px (JPEG .8) a suit sent to the photo
    generator was a 270px crop of a mirror selfie. It is made from the sharp copy (raw.full, TAG_MAX), not the 800px q.big the
@@ -26,8 +26,7 @@ function texGains(q){if(q.texDone)return null;const r=closeRead(q.raw.tex);retur
 function toggleWb(i){const q=cardOf(i);if(!q||!q.raw)return;q.wbOff=!q.wbOff;cardPics(q);renderAdd()}
 /* a picture too small to read (an 8×8 thumbnail was sent to Claude and became the item's photo: audit 2026-11-15): refused before any reading */
 const ADD_MIN_PX=32;
-const TEX_MIN_PX=200;
-const TEX_MAX=1536;   // the synced close-up (2026-11-13, the owner: "the zoom-in pictures are still stored at 640"): as sharp as the device-only copy (CLOSE_MAX), now that photos are stored one by one on the server and fetched when needed (it was 640)
+/* (TEX_MIN_PX and TEX_MAX, the close-up's least and kept sizes, are tag-request.js's) */
 /* the fabric close-up for an Add card: corrected with the same light reading as the card's item photo (taken together) */
 /* read: the close-up came through "Add close-up and read texture/color" (colpick.js rdStart), whose reading replaces the automatic
    re-tag (the owner: no second paid call); the color is still measured from it (measureCard) */
@@ -74,11 +73,7 @@ const ADD_PAR=3;
 const STOPPED='You stopped the reading.';
 /* Stop on a card being read (one item, or Try again): the request is called off and the card keeps its photo */
 function stopRead(id){const q=queue.find(x=>x.id===id);if(!q||!q.abort||q.multiBusy)return;q.stopped=1;try{q.abort.abort()}catch{}}
-/* a reading cut off by a kill (addRevive: refineCut, patternCut), read again on a tap */
-function refineAgain(i){const q=cardOf(i);if(!q)return;if(!(isConnected())){toast('Connect in ⚙ Settings first.',4000);return}
-  delete q.refineCut;delete q.patternCut;refineFromCloseup(queue.indexOf(q))}
-function patternAgain(i){const q=cardOf(i);if(!q)return;if(!(isConnected())){toast('Connect in ⚙ Settings first.',4000);return}
-  delete q.patternCut;readPatternWithClaude(q)}
+/* (a reading cut off by a kill, read again on a tap: tagging.js refineAgain, patternAgain) */
 /* a double tap on Confirm: the card saves once, then the list closes up under the finger and the second tap landed on what moved
    there (the last card's: "Import from a spreadsheet", whose sheet then covered Add). A tap within ADD_CALM ms of a Confirm and near
    the same spot is let go */
@@ -89,9 +84,7 @@ document.addEventListener('click',e=>{const t=e.target&&e.target.closest?e.targe
 /* a new card is brought into view (it used to land below the One item / Several items buttons, out of sight under the tab bar) */
 function addShowCard(id){requestAnimationFrame(()=>{const a=$('#add'),el=document.querySelector(`#queue [data-q="${id}"]`);if(!a||a.hidden||!el)return;
   el.scrollIntoView({behavior:typeof noMotion==='function'&&noMotion()?'auto':'smooth',block:'start'})})}
-/* a card not read by Claude (not connected, or the reading failed) doesn't pretend to know the type: it asks for it first (it said
-   "Suit · Grey" for a photo of a white shirt, and Confirm saved a grey suit); a type chosen by hand ends it */
-const needType=q=>!!q&&!!q.unread&&!q.manual&&!q.ai&&!q.busy&&!q.err&&!q.multiBusy&&!q.multiErr&&!(q.edited&&q.edited.type);
+/* (a card not read by Claude asks for its type first: add-ids.js needType) */
 /* the colour is then measured from the middle of the photo (measureCloth, measure.js) once the type is known */
 function measureGuess(q){if(!q||!q.raw||!q.raw.big||(q.edited&&q.edited.primaryColor)||typeof measureCloth!=='function')return;
   try{const m=measureCloth(q.raw.big,q.clothBox||null,{gains:q.wbOff?null:q.wb}),n=nearestCols(q.type,m.lab,false)[0];if(n&&COLORS[n.c])q.primaryColor=n.c}catch(e){console.warn('color not measured',e)}}
@@ -190,21 +183,28 @@ function renderAdd(){
   if(npsId)npsDraw();
   if(typeof colPick!=='undefined'&&colPick&&colPick.src==='q'&&!cardOf(colPick.ref))closeColPick();   // the color or pattern sheet of a card that went (CR-1-02)
 }
+on('card-changed',renderAdd);
 function addBackOnline(){if(typeof tagNetText==='function'&&tagNetText(aiError))setAiError('');
   for(const q of queue.slice())if(q.tagNet&&q.tagErr&&!q.busy&&q.tagImg)retryTag(queue.indexOf(q));
   for(const q of queue.slice())if(q.multiNet&&q.multiErr&&!q.busy&&q.file)multiAgain(q.id);   // "Several items" too (it waited for a tap)
   const a=$('#add');if(a&&!a.hidden)renderAdd()}
 /* what its controls do (act.js): a card's "Show original" / "Correct them" (the card by its id: add-save.js cardIx), and Save all */
 function cardWb(el){toggleWb(cardIx(el))}
+/* a card's Skip, Stop, Try again ("Several items") and "Fill it in by hand": drawn by add-card.js, the card by its id (moved here from
+   add-card.js beside what they call, the restructure S3c, 2026-11-26) */
+function cardSkip(el){skipCard(el.dataset.card)}
+function cardStop(el){stopRead(el.dataset.card)}
+function cardMultiAgain(el){multiAgain(el.dataset.card)}
+function cardByHand(el){errToHand(el.dataset.card)}
 function saveAllTap(){saveAll()}
 /* the markup's handler (act.js): the photos picked with "One item" or "Several items" (data-multi), the field emptied so the same
    photo can be picked again */
 function addPhotosPick(el){addFiles([...el.files],el.dataset.multi==='1');el.value=''}
 /* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
    one top-level call that can throw (acts, when act.js did not load): the names are then still the page's */
-Object.assign(globalThis,{applyWb,TEX_MIN_PX,TEX_MAX,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,refineAgain,patternAgain,needType,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,multiAgain,renderAdd,addBackOnline});
+Object.assign(globalThis,{addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,multiAgain,renderAdd,addBackOnline});
 Object.defineProperties(globalThis,{addCalm:{get:()=>addCalm}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,addNoteText,cardPics,countWord};
-export {applyWb,cardPics,TEX_MIN_PX,TEX_MAX,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,refineAgain,patternAgain,addCalm,needType,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,countWord,multiAgain,addNoteText,renderAdd,addBackOnline};
-acts({cardWb,saveAllTap,addPhotosPick});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,addNoteText,cardPics,countWord,errToHand,multiAgain};
+export {cardPics,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,addCalm,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,countWord,multiAgain,addNoteText,renderAdd,addBackOnline};
+acts({cardWb,cardSkip,cardStop,cardMultiAgain,cardByHand,saveAllTap,addPhotosPick});

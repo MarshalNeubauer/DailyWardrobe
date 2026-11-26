@@ -53,8 +53,7 @@ scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type
   return `<div class="ivin ivck"><div class="ivcols"><div class="ivcl">${top}${sample}${look||pics}</div><div class="ivcr">${lkSec}${color}${pattern}${mat}${details}${care}${names}${look?pics:''}</div></div>${ends}</div>`;
 }
 /* the summary line at the top of the item sheet: the photo (or the drawing), "In rotation" / "Out of rotation" / "On the way", how many
-   wears are left before cleaning (or "Due for cleaning"), the material and the season */
-const optLab=(list,v)=>{const o=list.find(x=>x[0]===v);return o?cap1(o[1]):''};
+   wears are left before cleaning (or "Due for cleaning"), the material and the season (a choice's label: fields.js optLab) */
 function ivSummary(i,pic){const s=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null,left=s?s.limit-s.wears:0;
   const rot=i.paused?`<span class="ivpill${i.order?'':' warn'}">${i.order?'On the way':i.away?(i.away.why==='laundry'?'In the laundry':'At the cleaner’s'):'Out of rotation'}</span>`:'<span class="ivpill good">In rotation</span>';
   const care=s&&!i.away&&s.limit>1?(s.due?`<span class="ivpill warn">Due for ${careWord(i.type)}</span>`:`<span class="ivpill">${careWashed(i.type)?'Wash':'Clean'} in ${left} wear${left===1?'':'s'}</span>`):'';
@@ -91,9 +90,7 @@ async function sete(id,k,v){
    the watch's options, and a second or third colour it can't show; the photos stay */
 const TYPE_FIELDS={season:t=>SEASON_TYPES.includes(t),metal:t=>METAL_TYPES.includes(t),leather:t=>t==='shoes'||t==='belt',cuff:t=>t==='shirt',vest:t=>t==='suit',
   trouserKind:t=>t==='pants',shoeStyle:t=>t==='shoes',tapeName:t=>t==='blouse',tapeService:t=>t==='blouse',rank:t=>t==='blouse',dial:t=>t==='watch',band:t=>t==='watch',bezel:t=>t==='watch',watchStyle:t=>t==='watch',details:t=>t==='watch',toeColor:t=>t==='socks'};
-/* a material its type can't have goes; a typed "Other" material stays where the type has a list (an own material of another type goes, like a
-   listed one). Also the Add card's type change and save (CR-1-06: a jacket read as tweed and changed to a tie was saved "Other · tweed") */
-function matTidy(it){const ml=matsFor(it.type);if(it.material&&!(ml&&(ml.includes(it.material)||!Object.keys(MATERIALS_BY).some(x=>matsFor(x).includes(it.material)))))delete it.material;return it}
+/* (a material its type can't have goes: fields.js matTidy, also the Add card's) */
 function typeTidy(it){const t=it.type;for(const [f,ok] of Object.entries(TYPE_FIELDS))if(f in it&&!ok(t))delete it[f];
   matTidy(it);
   if(t==='shoes'&&it.leather&&!leathersFor(it).includes(it.leather))it.leather='calf';
@@ -154,11 +151,11 @@ function stepType(n,from){
   sl.style.transition='transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease-out';sl.style.transform='translateX(0)';sl.style.opacity='1';return true}
 /* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. renderWardrobe is called by 16 page
    scripts and 15 tests; item-view.js draws the sheet with itemBody; phEdit is read by item-photo.js, item-view.js and photos.js and
-   only this file assigns it: a getter; add-card.js (optLab, matTidy), add-save.js (matTidy), colpick.js and look.js (sete, patSummary,
+   only this file assigns it: a getter; colpick.js and look.js (sete, patSummary,
    redetect, clearStripes), wardrobe.js (setFlt); togglePause and rm are called by tests only; a module imports them.
    Above the file's first call that can throw ($ and the Wardrobe page's own element, then acts): the names are then still the page's,
    as a classic script's were; wardPic, a const declared further down, is handed over above acts */
-Object.assign(globalThis,{itemBody,optLab,sete,matTidy,patSummary,redetect,clearStripes,renderWardrobe});
+Object.assign(globalThis,{itemBody,sete,patSummary,redetect,clearStripes,renderWardrobe});
 Object.defineProperties(globalThis,{phEdit:{get:()=>phEdit}});
 (()=>{const el=$('#wardrobe');let st=null;const slide=()=>$('#wslide');
   el.addEventListener('touchstart',e=>{const t=e.touches[0];
@@ -198,7 +195,7 @@ function renderWardrobe(){
 Object.assign(globalThis,{wardPic});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,rm,togglePause};
-export {phEdit,itemBody,optLab,sete,matTidy,patSummary,redetect,togglePause,clearStripes,rm,wardPic,renderWardrobe};
+export {phEdit,itemBody,sete,patSummary,redetect,togglePause,clearStripes,rm,wardPic,renderWardrobe};
 /* what the item page's and the Wardrobe's controls do (act.js; the item by its id in data-id) */
 function itemPick(el){sete(el.dataset.id,el.dataset.f,el.value)}
 function itemDetails(el){sete(el.dataset.id,'details',el.value.trim().slice(0,WATCH_DETAILS_MAX)||'none')}

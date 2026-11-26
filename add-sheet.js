@@ -1,5 +1,7 @@
 /* Daily Wardrobe: Add without a photo (split from add.js, Round C 2026-11-17): addManual, the type Today's "Add one" asked for
    (addFor), and the bottom sheet the card opens in (#nps-sheet: open, draw, close, Back, swipe). */
+/* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
+import {emit} from './bus.js';
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */
 /* "Add without a photo" (2026-11-15, the owner's choice: variant A of add-page-mockups) opens the card in a sheet from the bottom over Add,
    not in the list; a second call while the sheet holds a card shows that card again */
@@ -30,7 +32,7 @@ const npsSig=q=>{if(!q)return '';const o=addCardRec(q);delete o.swatch;delete o.
 const npsCard=()=>npsId?queue.find(q=>q.id===npsId):null;
 function npsOpen(id){const s=$('#nps-sheet'),b=$('#nps-backdrop');if(!s)return;const again=!!npsId;npsId=id;
   if(!again){npsFrom=document.activeElement;npsWas=backBorrow('nps')}
-  renderAdd();npsSnap=npsSig(npsCard());npsSwipe();
+  emit('card-changed');npsSnap=npsSig(npsCard());npsSwipe();
   s.classList.add('on');b.classList.add('on');document.body.classList.add('nps-on');npsInert(true);
   const body=$('#nps-q');if(body&&!again)body.scrollTop=0;
   if(!again)try{s.focus({preventScroll:true})}catch{}}

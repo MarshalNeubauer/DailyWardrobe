@@ -17,6 +17,7 @@ const TOPICS={
   'connection-saved':{emit:['settings.js'],on:['sync.js'],what:'Done stored the connection: a backup now'},
   'connection-typed':{emit:['settings.js'],on:['account.js'],what:'another address or code typed in Connection: the account decides'},
   'folding-all':{emit:['today.js'],on:['boxfold.js'],what:'a swipe to another day folds everything at once (true), and is done (false): the folds are quiet meanwhile'},
+  'card-changed':{emit:['measure.js','pattern-read.js','tagging.js','checklist.js','add-keep.js','own-lists.js','colpick.js','add-more.js','add-save.js','add-card.js','add-sheet.js'],on:['add.js'],what:'an Add card changed (a field, a reading, a measurement): Add is drawn again (the restructure S3c: the files loaded before add.js never call renderAdd)'},
 };
 
 /* name -> {serve: files that serve it (one), ask: files that ask for it (in load order), what: what it does}. A socket is how a

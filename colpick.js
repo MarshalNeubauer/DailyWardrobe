@@ -3,6 +3,8 @@
    looked at (the two touch, so their edges can be compared), the colours nearest the measured cloth first, then every colour the item
    type allows as a chip with its name, grouped by family and light to dark. A tap on a chip only shows it beside the photo; "Use …"
    saves it (setq on the Add card, sete in the editor). */
+/* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
+import {emit} from './bus.js';
 let colPick=null;   // {src:'q'|'e', ref: queue index or item id, k: field, cur, sel, view:'tex'|'photo'}
 const COL_FAMS=['Whites, grays & blacks','Creams, tans & browns','Greens & olives','Blues','Reds, pinks & purples'];
 function colFamily(c){const [,a,b]=labOf(c),C=Math.hypot(a,b);let h=Math.atan2(b,a)*180/Math.PI;if(h<0)h+=360;
@@ -47,7 +49,7 @@ const accChoices=it=>{const main=[primaryCol(it),it.secondaryColor,it.tertiaryCo
   return Object.keys(COLORS).filter(c=>!main.includes(c)&&!have.includes(c)&&c!=='cnprev'&&ok(c))};   // (cnprev: a preview's stand-in, never a colour)
 const accItem=(src,ref)=>src==='q'?cardOf(ref):items.find(x=>x.id===ref);
 async function accSet(src,ref,list){const it=accItem(src,ref);if(!it)return;const a=accentsFor(it,list);if(a.length)it.accents=a;else delete it.accents;
-  if(src==='q'){it.edited={...it.edited,accents:true};it.checked={...it.checked,colors:1};queueMicrotask(addKeep);renderAdd();return}
+  if(src==='q'){it.edited={...it.edited,accents:true};it.checked={...it.checked,colors:1};queueMicrotask(addKeep);emit('card-changed');return}
   await put(it);planDirty();renderWardrobe()}
 function accDel(src,ref,c){const it=accItem(src,ref);if(it)return accSet(src,ref,accentsOf(it).filter(x=>x!==c))}
 /* the three colours nearest the measured cloth (main colour only) */
@@ -108,7 +110,7 @@ async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick
   // the beta's Shade (picked in this sheet): kept with the colour, none for a metal
   const sh=colPick.shade!=null&&k==='primaryColor'&&lookOn()?(lookShadeOk(k,v)?colPick.shade:0):null,shCh=sh!==null&&sh!==(it.shade||0);
   closeColPick();if(v===cur&&!shCh)return;
-  if(shCh){if(sh)it.shade=sh;else delete it.shade;if(v===cur){if(src==='q'){queueMicrotask(addKeep);renderAdd()}else{await put(it);planDirty();renderWardrobe()}return}}
+  if(shCh){if(sh)it.shade=sh;else delete it.shade;if(v===cur){if(src==='q'){queueMicrotask(addKeep);emit('card-changed')}else{await put(it);planDirty();renderWardrobe()}return}}
   // one of the owner's colours not offered for this kind yet ("Your other colors", or "Use …" from New color): offered for it from now on
   const off=k!=='pattern'&&v&&CUSTOM_COL[v]&&it?await ownColOffer(v,it.type,k!=='primaryColor'):null;
   if(src==='q')setq(ref,k,v);else await sete(ref,k,v);
@@ -639,7 +641,7 @@ function rdClose(fromBack){const me=rd;rd=null;if(me&&me.state==='busy'&&me.ac)t
   if(me)rdRefresh(me.src,me.id)}
 function rdBack(){if(rdHist!==undefined||rd)rdClose(true)}
 /* the page under it, redrawn (the done card, the cost line) */
-function rdRefresh(src,id){if(src==='q'){renderAdd()}else if(editing===id)renderWardrobe()}
+function rdRefresh(src,id){if(src==='q'){emit('card-changed')}else if(editing===id)renderWardrobe()}
 const rdPaperHtml=pr=>!pr?'':pr.ref?'<span class="rdpaper ok" id="rd-paper">✓ White paper found: true color</span>':`<span class="rdpaper no" id="rd-paper">! No white paper${pr.warm?', warm light':''}</span>`;
 const rdRetakeHtml=it=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',act:' data-act-change="rdRetakeFile"',cloth:paperCloth(it)});
 function rdLightNote(it,me){const s=me.sent;if(!s||s.wb!==false)return '';
