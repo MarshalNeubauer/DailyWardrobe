@@ -7,6 +7,8 @@
 /* The motion helpers the month, the cards and the piece photos share (the restructure S3a, 2026-11-26: revealNeed, pageScroll and
    monthBelow from month.js, keepInView and foldQuiet from today.js; their timing, MONTH_MS and MONTH_EASE, is core.js's) */
 import {on} from './bus.js';
+import {$,MONTH_EASE,MONTH_MS} from './core.js';
+import {noMotion} from './ui.js';
 /* how far to scroll so el shows above the tab bar, without the top of `top` going past the top of the screen (sat: the notch's inset) */
 function revealNeed(el,top,sat){if(sat===undefined){const probe=document.createElement('div');probe.style.cssText='position:fixed;top:0;height:0;padding-top:env(safe-area-inset-top);visibility:hidden';document.body.appendChild(probe);sat=parseFloat(getComputedStyle(probe).paddingTop)||0;probe.remove()}
   const nav=document.querySelector('body>nav'),bottom=(nav?nav.getBoundingClientRect().top:innerHeight)-12,need=el.getBoundingClientRect().bottom-bottom,cap=(top||el).getBoundingClientRect().top-(sat+8);return Math.max(0,Math.min(need,cap))}

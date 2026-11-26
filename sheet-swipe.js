@@ -10,6 +10,7 @@
    o: {head, body(), backdrop(), live(target, onHead): it may start, skip, close(d), slide: it slides away from where it was let go after
    close (the sheet's state goes at once), spring: an animation back (else the sheet's own transition), fadeBack: the backdrop fades back
    in by an animation (else by its own transition, held while the sheet follows), drag(on): told when the sheet starts and stops following} ---- */
+import {noMotion} from './ui.js';
 function sheetSwipe(v,o){if(!v||v.dataset.swipe)return;v.dataset.swipe='1';let st=null;
   const bd=()=>o.backdrop?o.backdrop():null,dim=d=>String(Math.max(.15,1-d/v.offsetHeight));
   const put=d=>{v.style.transform=d?`translateY(${d}px)`:'';const b=bd();if(b)b.style.opacity=d?dim(d):''};

@@ -1,6 +1,7 @@
 /* Daily Wardrobe: toasts and the Wardrobe's round Undo button
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
 import {ask} from './bus.js';   // the piece open in the item sheet (item-view.js serves it). (This file reads nothing of app.js's ask())
+import {$} from './core.js';
 let toastTimer=null;
 const TOAST_ACT_MS=8000;   // a toast with Undo stays at least this long (audit 2026-11-14: gone after 5 s, and Delete has no question)
 /* on the Wardrobe, where the + is, an Undo is a round button above it, a glowing ring running down its seconds, instead of the toast

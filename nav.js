@@ -2,6 +2,8 @@
    page be shown yet (pagesOn). The router, split out of start.js (the restructure S3f, 2026-11-26; the owner's choice of 2026-11-25):
    start.js keeps the start-up chain. An ES module in the ui kit, before the screens that move between pages. */
 import {on,emit,ask} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
+import {$,MONTH_EASE,TYPES} from './core.js';
+import {backDrop,backHold,backPush} from './back.js';
 /* moving between pages: the page arriving eases in from the side its tab is on (Today, Wardrobe, Add left to right), a short slide and a
    fade on the cards' curve; a page opened from Settings (stats, packing, care) rises in instead. The tab bar's marker slides to the tab
    (styles.css nav::before, --ti). Only the page arriving moves: the one leaving goes at once, so nothing is laid out twice. */
