@@ -80,8 +80,11 @@ function favChipTap(){favWard=true;renderWardrobe()}
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): Today, the picker, the item sheet, the Wardrobe, the score card and Insights, classic scripts, call these; favData, favSave and
    favToggleItem are read by the favorites tests. favWard is a `let` only this file writes (wardrobe.js reads it): a getter, no setter. */
 Object.assign(globalThis,{FAV_UNDO_MS,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favMark,favChip,favWhy,favStatsCard,favOff});
+/* the socket Insights asks for its favorites card (bus.js; stats.js no longer names this file) */
+import {serve} from './bus.js';
+serve('fav-stats-card',favStatsCard);
 Object.defineProperties(globalThis,{favWard:{get:()=>favWard}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,favData,favSave,favToggleItem};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,favData,favStatsCard,favSave,favToggleItem};
 export {FAV_UNDO_MS,favData,favSave,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favToggleItem,favMark,favChip,favWhy,favStatsCard,favWard,favOff};
 acts({favLookTap,favWearTap,favItemTap,favChipTap});
