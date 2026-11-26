@@ -7,6 +7,16 @@
    the rules line, a Why sentence, swaps that rank higher (a tap wears one: applyFix → pickItem), each dial's reason, the week's variety and
    the month's weeks, the weather and the rules. No swaps on past or worn days. It replaced the 0-100 checklist score (nearly always 99-100:
    the planner optimizes the same rateOutfit checks); rateOutfit stays for the rules, the planner and Insights */
+import {$,SLOTS,dayRecs,di,inRotation,isHandPick,isWorkday,items,key,nm,sentence,settings,shortDesc,todayDate,wearsJacket} from './core.js';
+import {sel} from './app.js';
+import {idsOf} from './days.js';
+import {cache,hasOutfit,planFor} from './today-plan.js';
+import {dayOnly,dayWord,planOn,recentWork} from './month.js';
+import {DIAL_KEYS,DIAL_NAMES,DIAL_OF_CHECK,DIAL_RULES,dCol,dialFreshness,dialHarmony,dialInterest,dialOccasion,dialTexture,dialVariety,jacketGroup,pairSeen,rankLooks,rateOutfit,shirtGroup,tieGroup} from './planner.js';
+import {canPick,pickItem,slotLabel} from './history.js';
+import {esc} from './photo-keys.js';
+import {swatchSVG} from './draw.js';
+import {acts} from './act.js';
 let scoreOpen=false;
 const dialTone=v=>v>=80?'good':v>=60?'ok':'low';
 const ordinal=n=>{const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
@@ -146,7 +156,7 @@ function setScoreOpen(v){scoreOpen=v}
 Object.assign(globalThis,{scoreCard,toggleScore,setScoreOpen});
 Object.defineProperties(globalThis,{scoreOpen:{get:()=>scoreOpen,set:v=>{scoreOpen=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,dialHtml,dialsFor,rankFor,get rankMemo(){return rankMemo},rankPools,get rankW(){return rankW},get scoreOpen(){return scoreOpen},set scoreOpen(v){scoreOpen=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,dialHtml,dialsFor,rankFor,get rankMemo(){return rankMemo},rankPools,get rankW(){return rankW},get scoreOpen(){return scoreOpen},set scoreOpen(v){scoreOpen=v},scoreCard,toggleScore};
 export {scoreOpen,dialsFor,rankMemo,rankW,rankPools,rankFor,dialHtml,scoreCard,toggleScore,setScoreOpen};
 /* the markup's handlers (act.js): the card's head and its unfolded panel fold and unfold it; a swap wears its piece; a tap among the swaps
    (between two buttons) does nothing and goes no further, so the panel around them doesn't fold. The panel and the swaps are <div>s:

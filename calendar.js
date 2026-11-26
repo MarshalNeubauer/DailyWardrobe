@@ -15,6 +15,14 @@
      ("2 new calendar events"), never applied by themselves
    - the last answer is kept on this phone only (localStorage cal_last), for the review list and Today's trip note */
 import {on} from './bus.js';
+import {$,DAY_NAMES,dayRecs,isWorkday,isoKey,key,occOf,offName,todayDate} from './core.js';
+import {closeSettings,openSettings,refreshToday,saveUserSettings,settingsOpen,settingsPart,settingsSummaries,todayDirty} from './settings.js';
+import {setOccasion,whenPulled} from './history.js';
+import {afterScripts,announce} from './app.js';
+import {esc} from './photo-keys.js';
+import {toast} from './toast.js';
+import {homeDay} from './month.js';
+import {acts} from './act.js';
 const CAL_EVERY=3*3600e3;   // read again at most this often by itself
 // ... and this often when the calendar's host sends neither an ETag nor a Last-Modified, or nothing could be kept: then every read
 // downloads the whole feed (at most twice a day by itself: 2.8 MB a day for a 1.4 MB calendar, 12 MB for 6 MB; Read now still reads it)

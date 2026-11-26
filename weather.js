@@ -1,6 +1,12 @@
 /* Daily Wardrobe: the weather: units, the location and its search, the 16-day forecast and the usual weather by month
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
 import {on} from './bus.js';
+import {$,climate,key,setClimate,setWeather,settings,weather} from './core.js';
+import {refreshToday,renderSettingsExtras,saveUserSettings,settingsOpen,settingsSummaries,todayDirty} from './settings.js';
+import {announce} from './app.js';
+import {esc} from './photo-keys.js';
+import {planDirty} from './today-plan.js';
+import {acts} from './act.js';
 /* ---- settings: schedule, weather location, units ---- */
 /* °F where the country uses it (audit 2026-11-15: a Kuwait user on an English (US) iPhone got °F): the chosen location's country, else the
    time zone's (setup.js tzCountry, which falls back on the phone's region), else the phone's language as before */

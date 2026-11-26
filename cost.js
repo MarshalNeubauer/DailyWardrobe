@@ -8,6 +8,15 @@
    cleaner or the laundry, or was marked cleaned; item.cleaned from before the log), plus, for wears before the first recorded one that
    were more than one cleaning's worth, the ones that must have come before; with none recorded, about wears ÷ wears per cleaning (care.js
    careLimit). Nothing is shown for an item without a price. */
+import {$,TYPES,isoKey,items,settings,titleCls,todayDate} from './core.js';
+import {cache} from './today-plan.js';
+import {statName1,statPic,wornDays} from './stats.js';
+import {esc} from './photo-keys.js';
+import {toast} from './toast.js';
+import {put} from './app.js';
+import {show} from './nav.js';
+import {openSettings,saveUserSettings} from './settings.js';
+import {acts} from './act.js';
 const CPW_MIN=3;   // priced items before Insights shows its card
 const CPW_EVERY={socks:1};   // wears per cleaning where the care limits have none: socks are washed after every wear
 const CPW_DRY_SHOW=['suit','blazer','pants','overcoat'];   // dry-cleaning costs offered always; the others when the wardrobe has one

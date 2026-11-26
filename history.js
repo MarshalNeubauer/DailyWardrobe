@@ -6,6 +6,19 @@
 /* a change to the day shown says emit('day-changed') (bus.js; the restructure S3e, 2026-11-26): today.js pins renderToday for it, so
    this file, which runs before today.js, no longer calls it */
 import {emit} from './bus.js';
+import {afterScripts,metaGet,metaPut,sel} from './app.js';
+import {$,CASUAL_JACKETS,CASUAL_TOPS,DAY_NAMES,SLOTS,SLOT_TYPE,TYPES,dayRecs,di,handPickSlot,hasVest,inRotation,isCargo,isHandPick,isWorkday,itemTitle,items,key,nm,occLabel,offName,sentence,settings,titleCls,todayDate,trueToday} from './core.js';
+import {firstReal,missedNote} from './missed.js';
+import {idsOf,keyDate,notAhead,saveDay} from './days.js';
+import {PLAN_RULES,favLookKey,favLooks,idsAhead} from './planner.js';
+import {cache,planDirty,planFor} from './today-plan.js';
+import {esc,srcOk} from './photo-keys.js';
+import {aAn,itemPic} from './photos.js';
+import {itemThumb} from './draw.js';
+import {backDrop,backOn,backPush} from './back.js';
+import {toast} from './toast.js';
+import {dayOnly,dayWord,homeDay} from './month.js';
+import {acts} from './act.js';
 /* ---- outfit history: freeze past days, swap pieces, record what was worn ---- */
 /* (the day records, idsOf, keyDate, saveDay and notAhead, are days.js's since the restructure S3b, 2026-11-26: read here as globals) */
 let swapMsg='';
@@ -210,7 +223,7 @@ function dayActions(o){
   return offNote+(h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&pastEdit===key(sel)?'<p class="mut"><small>Tap ⇄ beside a piece to set what you really wore. The planner then counts that, not what was planned.</small></p>':past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
 }
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,correctPast,planRulesNote,replanFuture,resetDay,setFormal,swapSlot,togglePastEdit,get pastEdit(){return pastEdit},set pastEdit(v){pastEdit=v},get swapMsg(){return swapMsg},set swapMsg(v){swapMsg=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,correctPast,planRulesNote,replanFuture,resetDay,setFormal,swapSlot,togglePastEdit,get pastEdit(){return pastEdit},set pastEdit(v){pastEdit=v},get swapMsg(){return swapMsg},set swapMsg(v){swapMsg=v},openPicker,pickItem,recordDays,setOccasion,setWorn};
 export {swapMsg,todayPullWait,whenPulled,recordDays,swapSlot,dropLearn,picker,pastEdit,canPick,slotLabel,openPicker,closePicker,pickItem,wearFav,togglePastEdit,correctPast,setFormal,setOccasion,resetDay,setWorn,replanFuture,checkPlanRules,planRulesNote,renderReplanUI,setVest,resetCard,dayActions,setPastEdit,setSwapMsg,setTodayPullWait};
 /* index.html's (act.js): the piece picker's backdrop, and Settings' "Start the plan over" */
 function pickBackdropTap(){closePicker()}

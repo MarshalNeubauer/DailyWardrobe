@@ -2,6 +2,12 @@
    subOpen, openAdd, pagesOn) is nav.js's since the restructure S3f (2026-11-26); this file keeps the tabs' and Add's handlers, so a tap
    on a tab during loading counts from where it always did (this file's place in the list)
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
+import {backOn} from './back.js';
+import {PAGES,openAdd,pageBack,setPageWant,setPagesOn,show,showWanted,subBack} from './nav.js';
+import {$,applyCustom,cleanDay,cleanRecord,key,setWardrobe,settings,takeSettings,todayDate} from './core.js';
+import {toast} from './toast.js';
+import {openSettings,picsSwitched,refreshToday,renderPicturesUI,setSetSeen,setWanted,settingsOpen} from './settings.js';
+import {acts} from './act.js';
 /* The bridge (tests/bridge.test.js): what index.html's last script (startUp), sync.js (onSyncedData) and the tests still use as globals */
 Object.assign(globalThis,{startUp,onSyncedData});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
