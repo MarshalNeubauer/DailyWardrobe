@@ -274,6 +274,14 @@
    "class": "optional",
    "group": "add"
   },
+  "add-ids.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "fields.js": {
+   "class": "optional",
+   "group": "add"
+  },
   "tagging.js": {
    "class": "optional",
    "group": "add"

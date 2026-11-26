@@ -2,9 +2,7 @@
    Loaded after app.js and stats.js (an ES module since 2026-11-23); app.js calls in here from renderWardrobe, wardList,
    itemBody, save and rm. */
 
-/* ---- an item's own name ---- */
-const WARD_FIELDS=['name','brand','material','notes'];
-const WARD_MAX={name:60,brand:40,material:40,notes:500};
+/* ---- an item's own name (its fields, sizes and rows are fields.js's since the restructure S3c: WARD_FIELDS, WARD_MAX) ---- */
 const WATCH_DETAILS_MAX=120;   // a watch's Details (itemsheet.js; W2-12-04: 5,036 letters were kept and synced)
 /* itemName / itemTitle / titleCls are in core.js: Today is drawn at start-up, which can be before this file has loaded */
 
@@ -99,19 +97,7 @@ function wardClear(){wardQ='';const el=$('#wsearch');if(el){el.value='';el.focus
 function wardKeep(){const el=document.activeElement;return el&&el.id==='wsearch'?{s:el.selectionStart,e:el.selectionEnd}:null}
 function wardBack(f){if(!f)return;const el=$('#wsearch');if(!el)return;el.focus({preventScroll:true});try{el.setSelectionRange(f.s,f.e)}catch{}}
 
-/* ---- name, brand, material, notes ---- */
-const matLabel=m=>m==='other'?'Other':cap1(m);
-/* the Material dropdown for a type (none for types without a list): its own materials, then Other (with a field to say which) and None */
-/* ai: Claude's suggestion on an Add card (tagging.js takeMaterial: {key, conf, why}), said under the field while the field still holds it */
-// (2026-11-16) the list is the type's own plus the person's own materials (core.js matsFor); one removed from those shows as Other with its name
-// on: the control's own attributes (the Add card's matOn(q), the item sheet's matOnItem(id)); its change is matCardPick or matItemPick
-function matRow(type,cur,on,ai){
-  const l=matsFor(type);if(!l)return '';const m=String(cur||'').trim(),other=!!m&&!l.includes(m),sug=ai&&ai.key&&ai.key===m;
-  return `<label>Material <select class="wmat" ${on}>${[['','None'],...l.map(x=>[x,x]),['other','Other']].map(([v,t])=>`<option value="${v}"${v===(other?'other':m)?' selected':''}>${cap1(t)}</option>`).join('')}</select></label>`+
-    (sug?`<p class="tagnote matai"><small>Material suggested by Claude (${esc(ai.conf||'medium')} confidence)${ai.why?`: ${esc(String(ai.why).replace(/[.\s]+$/,''))}`:''}. Change it if it’s wrong.</small></p>`:'')+
-    (other?`<label class="wmat-o">Which material? <input type="text" class="wfld wmat-t" dir="auto" maxlength="${WARD_MAX.material}" value="${esc(m==='other'?'':m)}" placeholder="e.g. alpaca" ${on}></label>`:'')}
-const fldRow=(k,lab,v,on,ph)=>`<label>${lab} <input type="text" class="wfld wf-${k}" dir="auto" maxlength="${WARD_MAX[k]}" value="${esc(v||'')}" placeholder="${ph}" autocomplete="off" ${on(k)}></label>`;
-const notesRow=(v,on)=>`<label class="wnotes">Notes <textarea class="wf-notes" dir="auto" rows="2" maxlength="${WARD_MAX.notes}" placeholder="Size, where it came from, how it fits…" ${on('notes')}>${esc(v||'').replace(/>/g,'&gt;')}</textarea></label>`;
+/* ---- name, brand, material, notes (their rows: fields.js matLabel, matRow, fldRow, notesRow) ---- */
 /* the item sheet's Details card: name and brand at its top, material and notes at its end. A text field saves when it is left,
    and a moment after the last keystroke too (a sheet swiped away never tells a field it was left) */
 /* what is typed is also kept at once in localStorage (ward_pending {id,k,v,at}) until it is saved, and saved straight away when the page goes
@@ -134,10 +120,8 @@ async function wardPendingRestore(){let p=null;try{p=JSON.parse(localStorage.get
   if(!it||cur===String(p.v).trim()||cur!==String(p.was??''))return false;   // saved already, or changed since (on another device): left alone
   await setItemField(p.id,p.k,p.v);return true}
 const ivOn=id=>k=>`data-id="${esc(id)}" data-f="${k}" data-act-input="itemFieldType" data-act-change="itemFieldDone"`;
-/* the Material control's attributes, for matRow: on an Add card (its card's id, add-save.js cardAt) and on the item sheet (the item's id) */
-const matOn=q=>`${cardAt(q)} data-act-change="matCardPick"`,matOnItem=id=>`data-id="${esc(id)}" data-act-change="matItemPick"`;
-/* what the dropdown or its "Which material?" field says: the choice, or what was typed (nothing typed stays Other) */
-const matPicked=el=>el.matches('select')?el.value:el.value.trim()||'other';
+/* the Material control's attributes, for matRow, on the item sheet (the item's id; an Add card's: add-card.js matOn) */
+const matOnItem=id=>`data-id="${esc(id)}" data-act-change="matItemPick"`;
 function wardFieldsTop(i){return fldRow('name','Name',i.name,ivOn(i.id),'Optional')+fldRow('brand','Brand',i.brand,ivOn(i.id),'Optional')}
 function wardFieldsEnd(i){return matRow(i.type,i.material,matOnItem(i.id))+notesRow(i.notes,ivOn(i.id))}
 /* saving one of them. Text fields don't redraw the sheet (the next field tapped would lose its focus): only the title and the grid follow */
@@ -147,10 +131,7 @@ async function setItemField(id,k,v){
   await put(it);
   if(k==='material')return renderWardrobe();   // Other shows or hides its field
   wardRefresh();const h=$('#iv-title');if(h&&editing===id){h.textContent=itemTitle(it)||TYPES[it.type]||'Item';h.className=titleCls(it)}}
-/* the Add card's name, brand and notes (its More section) and Material: each keystroke is kept on the card (nothing is redrawn); i: the card's id or place */
-function setQField(i,k,v){const q=cardOf(i);if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];
-  if(k==='material'){delete q.matAI;q.matSet=1;q.checked={...q.checked,fabric:1}}   // chosen by hand (and so its checklist section is checked, add-card.js addCkSecs): no longer Claude's suggestion, and a later reading leaves it (tagging.js takeMaterial)
-  addKeepSoon();if(k==='material')renderAdd()}
+/* (the Add card's name, brand, notes and Material are kept on the card by add-card.js setQField) */
 
 /* ---- one-time rename of the owner's stretch shirts (2026-11-15, his decision on the materials audit) ----
    He typed his 10 stretch shirts (74% nylon, 26% spandex) as "nylon/spandex", and they were then moved to "nylon"; the list's entry is now
@@ -167,15 +148,14 @@ async function matMigrate(){if(matMigrating)return 0;matMigrating=true;let n=0;
   catch(e){console.warn('material rename',e)}finally{matMigrating=false}
   return n}
 /* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. itemsheet.js draws the Wardrobe and
-   the item sheet with 16 of them (wardFlt, wardFresh, wardCount, wardBar, wardGrid, wardKeep, wardBack, matRow, notesRow, ivOn …),
-   item-view.js lists with wardView, add-card.js draws its fields (matLabel, matRow, fldRow, notesRow, matOn, setQField), add-save.js
-   and kit.js save them (wardSaveFields), colpick.js and own-lists.js set a field (setItemField, setQField), dress.js runs the one-time
+   the item sheet with them (wardFlt, wardFresh, wardCount, wardBar, wardGrid, wardKeep, wardBack, ivOn …), item-view.js lists with
+   wardView, colpick.js sets a field (setItemField), dress.js runs the one-time
    renames (matMigrate, matRenameTo, sockToeMigrate, sockLegacy), safety.js asks wardPendingRestore, fav.js reads wardFlt; the search
    and sort names, itemFieldSoon, wardDeleteNow and WARD_UNDO_MS are read by tests only. wardQ is set by tests/materials.test.js: a
    getter and a setter; a module imports them.
    Above the file's first call that can throw (whenPulled, when history.js did not load; then acts): the names are then still the
    page's, as a classic script's were; the four consts declared further down are handed over above acts */
-Object.assign(globalThis,{WARD_MAX,WATCH_DETAILS_MAX,wardFlt,wardView,wardFresh,wardCount,wardBar,wardGrid,wardKeep,wardBack,matLabel,matRow,fldRow,notesRow,wardPendingRestore,ivOn,matOn,matOnItem,wardFieldsTop,setItemField,setQField,matRenameTo,matMigrate,sockToeMigrate,wardSaveFields});
+Object.assign(globalThis,{WATCH_DETAILS_MAX,wardFlt,wardView,wardFresh,wardCount,wardBar,wardGrid,wardKeep,wardBack,wardPendingRestore,ivOn,matOnItem,wardFieldsTop,setItemField,matRenameTo,matMigrate,sockToeMigrate});
 whenPulled(()=>matMigrate());
 /* ---- a sock's toe cap moves to its own field (2026-11-17, sock patterns) ----
    Until now a sock's secondaryColor was its toe cap; now the second and third colours are the pattern's (an argyle's diamonds and lines) and
@@ -195,8 +175,7 @@ async function sockToeMigrate(){if(sockMigrating)return 0;sockMigrating=true;let
   catch(e){console.warn('sock toe move',e)}finally{sockMigrating=false}
   return n}
 whenPulled(()=>sockToeMigrate());
-/* copies them from the Add card onto the item being saved */
-function wardSaveFields(q,it){for(const k of WARD_FIELDS){const v=noBidi(q[k]).trim().slice(0,WARD_MAX[k]);if(v&&(k!=='material'||MATERIALS_BY[it.type]))it[k]=v}}
+/* (copying them from the Add card onto the item being saved: fields.js wardSaveFields) */
 
 /* ---- Delete, with Undo ----
    Delete removes the item at once (a tombstone, so it goes from every device) and offers Undo for WARD_UNDO_MS. Undo writes the
@@ -224,7 +203,7 @@ async function wardUndelete(it,k,days,at){
 Object.assign(globalThis,{sockLegacy,wardDuplicate,wardDelete});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,WARD_UNDO_MS,itemFieldSoon,setWardSort,wardClear,wardDeleteNow,wardHay,wardMatch,wardNorm,wardOrder,get wardQ(){return wardQ},set wardQ(v){wardQ=v},wardSearch,wardSort};
-export {WARD_MAX,WATCH_DETAILS_MAX,wardQ,wardNorm,wardHay,wardMatch,wardSort,setWardSort,wardOrder,wardFlt,wardView,wardFresh,wardCount,wardBar,wardGrid,wardSearch,wardClear,wardKeep,wardBack,matLabel,matRow,fldRow,notesRow,itemFieldSoon,wardPendingRestore,ivOn,matOn,matOnItem,wardFieldsTop,setItemField,setQField,matRenameTo,matMigrate,sockLegacy,sockToeMigrate,wardSaveFields,WARD_UNDO_MS,wardDuplicate,wardDelete,wardDeleteNow};
+export {WATCH_DETAILS_MAX,wardQ,wardNorm,wardHay,wardMatch,wardSort,setWardSort,wardOrder,wardFlt,wardView,wardFresh,wardCount,wardBar,wardGrid,wardSearch,wardClear,wardKeep,wardBack,itemFieldSoon,wardPendingRestore,ivOn,matOnItem,wardFieldsTop,setItemField,matRenameTo,matMigrate,sockLegacy,sockToeMigrate,WARD_UNDO_MS,wardDuplicate,wardDelete,wardDeleteNow};
 /* what the controls do (act.js). The Wardrobe's top and grid: the search field (typing; Escape empties a field that holds something, and goes no
    further), its ×, the sort, a piece's box (data-id), and the two buttons under "Nothing matches" */
 function wardSearchType(el){wardSearch(el.value)}
@@ -233,9 +212,9 @@ function wardClearTap(){wardClear()}
 function wardSortPick(el){setWardSort(el.value)}
 function wardOpenTap(el){openItem(el.dataset.id)}
 function wardAllTap(){setFlt('all');renderWardrobe()}   // (setFlt: itemsheet.js, the one place the type filter is set)
-/* the item sheet's Name, Brand and Notes (ivOn: data-id, data-f), as they are typed and when the field is left; Material on the item sheet and on an Add card */
+/* the item sheet's Name, Brand and Notes (ivOn: data-id, data-f), as they are typed and when the field is left; Material on the item sheet
+   (fields.js matPicked; an Add card's: add-card.js matCardPick) */
 function itemFieldType(el){itemFieldSoon(el.dataset.id,el.dataset.f,el.value)}
 function itemFieldDone(el){itemFieldNow(el.dataset.id,el.dataset.f,el.value)}
 function matItemPick(el){setItemField(el.dataset.id,'material',matPicked(el))}
-function matCardPick(el){setQField(cardIx(el),'material',matPicked(el))}
-acts({wardSearchType,wardSearchKey,wardClearTap,wardSortPick,wardOpenTap,wardAllTap,itemFieldType,itemFieldDone,matItemPick,matCardPick});
+acts({wardSearchType,wardSearchKey,wardClearTap,wardSortPick,wardOpenTap,wardAllTap,itemFieldType,itemFieldDone,matItemPick});

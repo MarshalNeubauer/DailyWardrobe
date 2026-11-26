@@ -50,23 +50,23 @@ function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;
 /* Add is a page of the Wardrobe (its round + button, #ward-add), with a ‹ back to where it was opened from (subBack) */
 /* type: Today's "Add one" beside a missing piece passes its type (fix round 3, W2-14-01: "Belt: Add one" then "Add without a photo"
    saved a suit): Add says what is being added and the next card without a photo starts as that type (add-sheet.js addFor) */
-function openAdd(type){setAddFor(typeof type==='string'&&TYPES[type]?type:null);subOpen();show('add');scrollTo({top:0})}
+function openAdd(type){ask('add-for',typeof type==='string'&&TYPES[type]?type:null);subOpen();show('add');scrollTo({top:0})}
 function showWanted(){const t=pageWant;pageWant=null;if(t&&t!=='today'&&TABS.includes(t))show(t)}   // (then start.js opens Settings when the gear was tapped)
 /* the setup, What to buy and the packing list are reached through bus.js sockets (setup.js, shop.js and pack.js serve them): without
    the file nothing is asked, as the `typeof f==='function'` guards did */
 function show(t){
   if(!pagesOn){pageWant=t;return}
   const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
-  if(from==='add'&&t!=='add')npsLeave();   // the "Add without a photo" sheet goes with the page, its entry handed back first (add-sheet.js)
+  if(from==='add'&&t!=='add')ask('nps-leave');   // the "Add without a photo" sheet goes with the page, its entry handed back first (add-sheet.js, a socket since the restructure S3c)
   if(!SUBS.includes(t))backDrop('sub');   // a page left by the ‹ (to Today) or a tab: its Back entry goes
-  if(from==='add'&&t!=='add')setAddFor(null);   // (what Today's "Add one" asked for goes with the page)
+  if(from==='add'&&t!=='add')ask('add-for',null);   // (what Today's "Add one" asked for goes with the page)
   if(from==='add'&&t!=='add')toastDrop();   // Add's "Saved … Undo" goes with the page: it lay over Today's month card for 8 s
   ask('setup-yield',t);
   emit('page-showing',t);if(!SUBS.includes(t))backDrop('sub');   // Settings closes (settings.js); (again: Settings over Add hands Add's entry back as it closes, CR-7-04)
   if(from!==t)ask('shop-close');if(t!=='wardrobe'&&editing)dropItem();   // (What to buy stays open over its own tab redrawn by a sync, CR-4-04)
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn){btn.classList.toggle('on',s===t);if(s===t)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current')}}   // (spoken, not only shown: W2-19-05)
   if(from==='wardrobe'&&t!=='wardrobe'&&!editing){const w=$('#wardrobe');if(w)w.textContent=''}   // the grid (about 4,900 elements at 107 items) is drawn again on coming back: kept, it stayed in memory and in every style recalculation (audit 2026-11-13)
-  const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>typeof statsShow==='function'?statsShow():renderStats()};if(f[t])f[t]();
+  const f={today:renderToday,wardrobe:renderWardrobe,add:()=>ask('add-draw'),stats:()=>typeof statsShow==='function'?statsShow():renderStats()};if(f[t])f[t]();
   ask('pack-show',t);   // the packing list page (pack.js)
   if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
   pageIn(t,from);

@@ -1,6 +1,8 @@
 /* Daily Wardrobe: photo tagging, measuring (split from tagging.js, Round B CR-2-17): white balance and white paper, the cloth's
    measured colour (a patterned cloth colour by colour), the close-up's sharpness, and the verdict on each colour with Claude's own
    signals. sRGB <-> linear is srgb.js's (srgbLin8, linSrgb8). */
+/* an Add card changed (undoMeasured): add.js redraws Add on it (bus.js 'card-changed'; this file loads before add.js) */
+import {emit} from './bus.js';
 
 /* ---- the light reading of a picture: white-balance gains from its brightest near-neutral pixels, whether such a white
    reference is there at all, and how bright it is once corrected (for the exposure of a close-up with white paper in it) ---- */
@@ -25,6 +27,11 @@ function wbRead(c,{strict=false}={}){
   const sig=Math.max(...Object.values(gains).map(v=>Math.abs(v-1)))>=.02;
   return {gains:sig?gains:null,ref:true,refLum:(R/m*gains.r+G/m*gains.g+B/m*gains.b)/3,frac:m/n,...(st?{st}:{})}}
 const wbGains=c=>wbRead(c).gains;
+/* a copy of the picture with the gains applied (none: as it is); every pixel scaled, each channel kept at 255 at most (here since the
+   restructure S3c, 2026-11-26: it was add.js's, and this file, tagging.js and pattern-read.js, loaded before add.js, use it) */
+function applyWb(c,g){const o=document.createElement('canvas');o.width=c.width;o.height=c.height;const x=o.getContext('2d',{willReadFrequently:true});x.drawImage(c,0,0);
+  if(!g)return o;const D=x.getImageData(0,0,o.width,o.height),d=D.data;
+  for(let i=0;i<d.length;i+=4){d[i]=Math.min(255,d[i]*g.r);d[i+1]=Math.min(255,d[i+1]*g.g);d[i+2]=Math.min(255,d[i+2]*g.b)}x.putImageData(D,0,0);return o}
 /* a close-up's white reference must be a real patch of paper (or a white shirt's front), not the cloth's own light parts (2026-11-14,
    the new-user walkthrough: "white paper" was found in close-ups of a light blue shirt, cream trousers, a white/blue stripe and a check
    blazer, and their exposure was corrected the wrong way). Three tests on the reference pixels (isRef, at most 200 px):
@@ -246,12 +253,12 @@ function applyMeasured(q){if(!q||q.manual)return [];const done=[];q.auto=q.auto|
   if(done.length){if(q.texCanvas)generateSwatch(q);q.measV=colourVerdicts(q)}
   return done}
 function undoMeasured(i,f){const q=queue[i];if(!q||!q.auto||!q.auto[f])return;const a=q.auto[f];q[f]=a.from;delete q.auto[f];q.autoUndo={...q.autoUndo,[f]:a.to};q.edited={...q.edited,[f]:true};
-  if(q.texCanvas)generateSwatch(q);q.measV=colourVerdicts(q);renderAdd()}
+  if(q.texCanvas)generateSwatch(q);q.measV=colourVerdicts(q);emit('card-changed')}
 /* measure the card and take what is sure (the first tag, tagging again from the close-up, Try again) */
 function measureAndApply(q){measureCard(q);missedPattern(q);return applyMeasured(q)}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. The file has no top-level call, so the bridge is its last lines */
-Object.assign(globalThis,{wbRead,wbGains,closeRead,paperKey,paperOf,paperNow,paperCopy,measureCloth,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,colourVerdicts,aiSignals,undoMeasured,measureAndApply});
+Object.assign(globalThis,{wbRead,wbGains,applyWb,closeRead,paperKey,paperOf,paperNow,paperCopy,measureCloth,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,colourVerdicts,aiSignals,undoMeasured,measureAndApply});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,AI_HIGH_FLAG,AI_LOW_AUTO,MEAS_AUTO,PAPER,applyMeasured,calibLab,urlCanvas};
-export {wbRead,wbGains,closeRead,PAPER,paperKey,urlCanvas,paperOf,paperNow,paperCopy,measureCloth,calibLab,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,MEAS_AUTO,colourVerdicts,AI_LOW_AUTO,AI_HIGH_FLAG,aiSignals,applyMeasured,undoMeasured,measureAndApply};
+export {wbRead,wbGains,applyWb,closeRead,PAPER,paperKey,urlCanvas,paperOf,paperNow,paperCopy,measureCloth,calibLab,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,MEAS_AUTO,colourVerdicts,AI_LOW_AUTO,AI_HIGH_FLAG,aiSignals,applyMeasured,undoMeasured,measureAndApply};
