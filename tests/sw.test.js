@@ -10,6 +10,7 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
     fs.readFile(f,(e,d)=>{if(e){r.writeHead(404);r.end();return}
       if(u==='/index.html'&&marker)d=Buffer.from(String(d).replace('<h1>Daily Wardrobe</h1>',`<h1>Daily Wardrobe ${marker}</h1>`));
       if(u==='/core.js'&&marker)d=Buffer.from(String(d)+`\n;window.__core='${marker}';`);   // a second file of the same release
+      if(/\.js$/.test(u)&&u!=='/sw.js')d=Buffer.from(String(d)+`\n;(globalThis.__runs=globalThis.__runs||{})[${JSON.stringify(u)}]=(globalThis.__runs[${JSON.stringify(u)}]||0)+1;`);   // each script counts its runs (a deep link ran a module twice)
       if(u==='/sw.js'&&legacy)d=Buffer.from(LEGACY);
       if(u==='/sw.js'&&bump)d=Buffer.from(String(d).replace(/dw-v(\d+)/,(m,n)=>'dw-v'+(+n+bump)));
       if(slow&&slow.test(u)){setTimeout(()=>{r.writeHead(200,{'content-type':T[path.extname(f)]||'application/octet-stream'});r.end(d)},6000);return}
@@ -47,13 +48,26 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
   let v3=false;for(let i=0;i<20&&!v3;i++){await page.goto(url);await page.waitForFunction(()=>window.appReady&&appVersion()!=null);v3=await page.evaluate(()=>/v3/.test(document.querySelector('h1').textContent)&&window.__core==='v3');
     if(!v3){await page.goto('about:blank');await new Promise(r=>setTimeout(r,250))}}   // the browser activates the waiting worker shortly after the last page went
   ok(v3&&await page.evaluate(v=>appVersion()===v,v0+2),'a version left waiting is the one running after the app was closed and opened again');
+  // a deep link (…/app/some/path) goes to the app's root, its query and #… kept, and every script runs once there (the restructure's
+  // S5-0): index.html answered at the deep path ran a module twice, its tag's copy under the deep path and the root's for the imports
+  const DEEP='some/deep/link?from=deep#x=1',deepRun=async()=>{const q=await ctx.newPage();await q.goto(url+DEEP).catch(()=>{});
+    const r=await q.waitForFunction(()=>window.appReady,null,{timeout:15000}).then(()=>q.evaluate(()=>({href:location.href,runs:globalThis.__runs||{},
+      nav:getComputedStyle(document.querySelector('nav')).position,today:!!document.querySelector('#n-today')}))).catch(e=>({href:q.url(),runs:{},err:e.message.slice(0,60)}));
+    await q.close();const twice=Object.entries(r.runs).filter(([,n])=>n!==1).map(([f,n])=>f+' x'+n);
+    return {...r,twice,n:Object.keys(r.runs).length}};
+  const pageScripts=[...require('fs').readFileSync(require('path').join(ROOT,'index.html'),'utf8').matchAll(/<script[^>]*\ssrc="([^"]+)"/g)].map(m=>'/'+m[1]);
+  const deepOk=r=>r.href===url+'?from=deep#x=1'&&r.nav==='fixed'&&r.today&&!r.twice.length&&pageScripts.every(f=>r.runs[f]===1)&&r.runs['/bus.js']===1;
+  {const q=await ctx.newPage();const res=await q.goto(url+'lab/gl-bench.html?x=1',{waitUntil:'commit'}).catch(()=>null);const at=q.url(),st=res&&res.status();await q.close();
+    ok(at===url+'lab/gl-bench.html?x=1'&&st===200,`a page that is there under a folder (lab/gl-bench.html) is shown, not sent to the root (${at}, ${st})`)}
+  {const r=await deepRun();ok(deepOk(r),`online, a deep link goes to the app's root with its query and #… and every page script runs once (${r.href}, ${r.n} scripts, twice: ${r.twice.join(' ')||'none'}${r.err?', '+r.err:''})`)}
   // offline: the app shell still loads and renders
-  await ctx.setOffline(true);await page.reload();await page.waitForSelector('#n-today',{timeout:5000}).catch(()=>{});
+  await ctx.setOffline(true);
+  {const r=await deepRun();ok(deepOk(r),`offline, a deep link goes to the app's root with its query and #… and every page script runs once (${r.href}, ${r.n} scripts, twice: ${r.twice.join(' ')||'none'}${r.err?', '+r.err:''})`)}await page.reload();await page.waitForSelector('#n-today',{timeout:5000}).catch(()=>{});
   ok((await page.textContent('h1')).includes('Daily Wardrobe')&&await page.$('#n-today')!==null,'app loads offline from the cache');
   ok(await page.evaluate(()=>typeof buildPlan==='function'&&typeof figureSvg==='function'&&typeof outfitMannequinSvg==='function'),'all scripts available offline');
   ok(await page.evaluate(()=>{const s=outfitMannequinSvg({kind:'vest',suit:{color:'#333'},shirt:{color:'#eee'},tie:{color:'#a00'}});return /viewBox="0 0 390 390"/.test(s)&&s.includes('fig-skin')}),'the traced mannequin\'s pose data comes from the cache offline (nothing fetched)');
   ok(await page.evaluate(()=>{const s=outfitMannequinSvg({kind:'vest',suit:{color:'#333'},shirt:{color:'#eee'},tie:{color:'#a00'}}),m=/class="fig-office" href="(data:image\/jpeg[^"]+)"/.exec(s);return m&&new Promise(r=>{const im=new Image();im.onload=()=>r(im.naturalWidth===200);im.onerror=()=>r(false);im.src=m[1]})}),'the office behind the mannequin comes with its pose offline (nothing fetched)');
-  // a deep link offline: index.html, with its styles and scripts (asked for under the deep path) from this version's files
+  // a deep link offline: the app at its root, with its styles and scripts from this version's files
   {const q=await ctx.newPage();await q.goto(url+'some/deep/link').catch(()=>{});const st=await q.waitForFunction(()=>window.appReady,null,{timeout:15000}).then(()=>q.evaluate(()=>getComputedStyle(document.querySelector('nav')).position)).catch(e=>'failed: '+e.message.slice(0,60));await q.close();
     ok(st==='fixed',`offline, a deep link comes up styled and running (${st})`)}
   // (CR-5-05) the files in sub-folders too: the figure's poses (mq/*.js) and the watch pictures under a deep path
