@@ -1,4 +1,5 @@
 /* Daily Wardrobe: SVG drawings (procedural fabrics, accessories, thumbnails, glue for the torso figure) */
+import {emit} from './bus.js';
 
 /* a herringbone stripe's plain band, read from Claude's one-repeat bitmap: columns the same all the way down (all 1: a shiny satin
    line; all 0: plain ground) are not twill. Its share of the repeat, and whether it shines; null for plain herringbone. */
@@ -1215,7 +1216,7 @@ function figureSvg(o,prefix='fig-'){
    (FIG_LIFT, calibrated on the Black, Grey Herringbone and Darkest Brown painted jackets), as the painter's dark-cloth look lifts it.
    Striped, checked and figured cloth, shirts and ties keep their drawn tiles. Making a block takes about 0.6 s at 4x CPU, so it never
    holds the drawing up: the drawn tile (lifted when dark) shows at once, the block is made when the page is idle, kept (FIG_CU), and
-   Today's figure is drawn again with it (today.js figCuDone). Only the item's own close-up is read (a data URL): nothing is fetched. */
+   Today's figure is drawn again with it (the announcement 'figure-cloth': today.js figCuDone). Only the item's own close-up is read (a data URL): nothing is fetched. */
 const FIG_DARK=.035;
 const FIG_LIFT=[[.008,2.6],[.023,1.5],[.030,1.35],[.035,1]];   // [tagged luminance, k], linear between; none from FIG_DARK
 const FIG_HB={ncol:24,nrib:48,amp:.8,yarn:.35,damp:.3,R:12};   // H2: columns and ribs a tile, rib swing, the close-up's yarn share, its slubs kept, their radius
@@ -1274,7 +1275,7 @@ function figCuGet(i,way,k,kind){if(typeof document==='undefined')return null;con
   let e=FIG_CU.get(key);if(e)return e.blk;
   e={blk:null};FIG_CU.set(key,e);if(FIG_CU.size>24)FIG_CU.delete(FIG_CU.keys().next().value);
   const idle=self.requestIdleCallback||(f=>setTimeout(f,60));
-  e.p=new Promise(res=>idle(res,{timeout:1500})).then(()=>figCuMake(i,way,k,kp,sc)).then(b=>{e.blk=b;if(b&&typeof figCuDone==='function')figCuDone(i.id)},err=>console.warn('mannequin cloth not made',err));
+  e.p=new Promise(res=>idle(res,{timeout:1500})).then(()=>figCuMake(i,way,k,kp,sc)).then(b=>{e.blk=b;if(b)emit('figure-cloth',i.id)},err=>console.warn('mannequin cloth not made',err));
   return null}
 /* a figFabric-like spec whose patterns all inherit one base <pattern> holding the block (pattern href inheritance, which WebKit renders:
    the image is written once per figure, twice for a herringbone, whose sleeves have their own image) */
