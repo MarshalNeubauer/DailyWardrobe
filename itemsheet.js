@@ -1,13 +1,14 @@
 /* Daily Wardrobe: the Wardrobe page: the item page's body (the checklist sections, the summary line) and the edits made in it (a field,
    the type and what it drops, rotation, the Arrives date, the pattern read again), the swipe between type chips and renderWardrobe.
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14, and by
-   job on 2026-11-17: item-photo.js the photo tools, item-view.js the sheet itself, loaded right before it.) */
+   job on 2026-11-17: item-photo.js the photo tools, item-view.js the sheet itself. Since the restructure S3d, 2026-11-26, it loads after
+   wardrobe.js, care.js and cost.js, whose parts it draws.) */
+import {on,serve} from './bus.js';
 const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Color':k==='secondaryColor'?'Second color':k==='tertiaryColor'?'Third color':k==='watchStyle'||k==='shoeStyle'?'Style':k==='trouserKind'?'Kind':k[0].toUpperCase()+k.slice(1)} <select data-act-change="itemPick" data-id="${esc(id)}" data-f="${k}">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select></label>`;
-let phEdit={id:null,undo:[],crop:null};
 /* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with the row of photo tools under it, the
    "Color & texture" card (fabrics), then a card for the tags, one for rotation, and Delete on its own at the very end */
 function itemBody(i){
-  if(phEdit.id!==i.id)phEdit={id:i.id,undo:[],crop:null};
+  if(phEdit.id!==i.id)setPhEdit({id:i.id,undo:[],crop:null});
   const pic=i.photo||wardPic(i);
   // the photo beside the split swatch (drawing | close-up), plain pictures: the comparison lives in Look & compare (2026-11-16, the
   // owner took the old tap-to-compare out of Pictures)
@@ -149,14 +150,16 @@ function stepType(n,from){
   const x=from===undefined?(n>0?1:-1)*Math.min(innerWidth*.35,140):from;if(!x)return true;
   sl.style.transition='none';sl.style.transform=`translateX(${x}px)`;sl.style.opacity='0';void sl.offsetWidth;
   sl.style.transition='transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease-out';sl.style.transform='translateX(0)';sl.style.opacity='1';return true}
-/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. renderWardrobe is called by 16 page
-   scripts and 15 tests; item-view.js draws the sheet with itemBody; phEdit is read by item-photo.js, item-view.js and photos.js and
-   only this file assigns it: a getter; colpick.js and look.js (sete, patSummary,
-   redetect, clearStripes), wardrobe.js (setFlt); togglePause and rm are called by tests only; a module imports them.
+/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. renderWardrobe is called by the files
+   loaded after this one (kit.js, shop.js, sync.js) and 15 tests (the earlier files announce 'wardrobe-changed'); item-view.js draws the
+   sheet with itemBody; colpick.js and look.js (sete, patSummary, redetect, clearStripes); togglePause and rm are called by tests only; a
+   module imports them. (phEdit is item-photo.js's and wardPic photos.js's since the restructure S3d.)
    Above the file's first call that can throw ($ and the Wardrobe page's own element, then acts): the names are then still the page's,
-   as a classic script's were; wardPic, a const declared further down, is handed over above acts */
+   as a classic script's were */
 Object.assign(globalThis,{itemBody,sete,patSummary,redetect,clearStripes,renderWardrobe});
-Object.defineProperties(globalThis,{phEdit:{get:()=>phEdit}});
+/* the Wardrobe's redraw for the files loaded before this one (bus.js: they announce 'wardrobe-changed'; nav.js asks 'wardrobe-draw' when
+   the page shows), the restructure S3d */
+on('wardrobe-changed',renderWardrobe);serve('wardrobe-draw',renderWardrobe);
 (()=>{const el=$('#wardrobe');let st=null;const slide=()=>$('#wslide');
   el.addEventListener('touchstart',e=>{const t=e.touches[0];
     st=e.touches.length>1||editing||t.clientX<24||t.clientX>innerWidth-24||e.target.closest('.chips,input,select,textarea,.cropwrap')?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0}},{passive:true});
@@ -177,11 +180,8 @@ Object.defineProperties(globalThis,{phEdit:{get:()=>phEdit}});
   el.addEventListener('touchend',end,{passive:true});el.addEventListener('touchcancel',end,{passive:true});
   document.addEventListener('keydown',e=>{if(el.hidden||editing||e.target.closest('input,select,textarea'))return;if(e.key==='ArrowRight')stepType(1);if(e.key==='ArrowLeft')stepType(-1)});
 })();
-/* in the Wardrobe, shoes, belts and socks show their realistic product picture when there is one */
-const WARD_PIC_TYPES=['shoes','belt','socks'];
-const wardPic=i=>{if(!WARD_PIC_TYPES.includes(i.type))return null;const p=itemPic(i);if(p)return p.img;setTimeout(()=>fetchItemPic(i),0);return null};
 function renderWardrobe(){
-  closeSettings();if(editing!==phEdit.id)phEdit={id:null,undo:[],crop:null};   // undo lasts while the item stays open
+  closeSettings();if(editing!==phEdit.id)setPhEdit({id:null,undo:[],crop:null});   // undo lasts while the item stays open
   const wf=wardKeep();
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   // (2026-11-16) a casual type's chip shows once one is owned (or its chip is the one chosen)
@@ -191,11 +191,9 @@ function renderWardrobe(){
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
   renderItem();wardBack(wf);
 }
-/* the rest of the bridge: wardPic, declared above (wardrobe.js and colpick.js draw a piece's product picture with it) */
-Object.assign(globalThis,{wardPic});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,rm,togglePause};
-export {phEdit,itemBody,sete,patSummary,redetect,togglePause,clearStripes,rm,wardPic,renderWardrobe};
+export {itemBody,sete,patSummary,redetect,togglePause,clearStripes,rm,renderWardrobe};
 /* what the item page's and the Wardrobe's controls do (act.js; the item by its id in data-id) */
 function itemPick(el){sete(el.dataset.id,el.dataset.f,el.value)}
 function itemDetails(el){sete(el.dataset.id,'details',el.value.trim().slice(0,WATCH_DETAILS_MAX)||'none')}

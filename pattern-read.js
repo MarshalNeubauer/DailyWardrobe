@@ -105,7 +105,7 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   if(!chk.s){toast(spec===null&&patternFail?'Claude couldn’t read the pattern right now (the server had a problem). Try again later.':'No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.',6000);return}
   // drawn again at once, the open sheet included (it shows the reading); with Settings opened while Claude read it waits for Settings to
   // close (renderWardrobe closes Settings: the 2026-11-24 review's R1 N1)
-  it.sett=chk.s;delete it.stripes;await put(it);planDirty();if(settingsOpen())syncRedraw('wardrobe');else renderWardrobe();toast(`Pattern read: ${settSummary(s)}.`)}
+  it.sett=chk.s;delete it.stripes;await put(it);planDirty();if(settingsOpen())syncRedraw('wardrobe');else emit('wardrobe-changed');toast(`Pattern read: ${settSummary(s)}.`)}
 
 /* ---- the pattern read by Claude (worker POST /pattern) and coloured from the pixels. The pixel reader alone is thrown by the
    noise in a photo (a seam, moire, panes made uneven by drape); Claude reports the pattern as woven: every band of a repeat each

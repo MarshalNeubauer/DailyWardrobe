@@ -5,6 +5,7 @@
    (Photo tagging → Beta features) turns it on for this phone only (localStorage beta_look, not synced); off, the app is exactly as before.
    Both UIs read and write the same item fields; the beta's own fields (lookOk, lookHint, leatherOwn, metalOwn) are ignored by the old UI.
    Loaded after checklist.js (an ES module since 2026-11-23); nothing runs at load but Settings' registration. */
+import {emit} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
 
 /* ---- the switch ---- */
 const LOOK_LS='beta_look';
@@ -14,7 +15,7 @@ function lookOn(){if(lookBetaMemo===null){try{lookBetaMemo=localStorage.getItem(
 function lookSet(on){on=!!on;try{if(on)localStorage.setItem(LOOK_LS,'1');else localStorage.removeItem(LOOK_LS)}catch{}lookBetaMemo=on;
   try{if(colPick)closeColPick()}catch{}
   try{renderAdd()}catch{}
-  try{if(editing)renderWardrobe()}catch{}
+  try{if(editing)emit('wardrobe-changed')}catch{}
   try{renderLookSetting();renderOwnMatUI()}catch{}
   announce(on?'New Look editor on.':'New Look editor off.')}
 function renderLookSetting(){const el=document.querySelector('#beta-list');if(!el)return;const on=lookOn();
@@ -185,13 +186,13 @@ const lookSnap=(it,fs)=>Object.fromEntries(fs.map(f=>[f,it[f]===undefined?undefi
 async function lookRestore(src,id,snap){const it=lookItem(src,id);if(!it)return;const pat=it.pattern,col=it.primaryColor;
   for(const [k,v] of Object.entries(snap)){if(v===undefined)delete it[k];else it[k]=v}
   if(src==='q'){if(it.pattern!==pat)try{readSett(it)}catch{}if(it.primaryColor!==col&&it.texCanvas)try{generateSwatch(it)}catch{}queueMicrotask(addKeep);renderAdd()}
-  else{if(it.sample)it.sampleMine=1;if(it.primaryColor!==col&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();renderWardrobe()}}
+  else{if(it.sample)it.sampleMine=1;if(it.primaryColor!==col&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();emit('wardrobe-changed')}}
 /* o: {field: value} (undefined or null: the field goes) */
 async function lookWrite(src,id,o){const it=lookItem(src,id);if(!it){if(src==='e')itemGoneTell(id);return null}
   for(const [k,v] of Object.entries(o)){if(v===undefined||v===null)delete it[k];else it[k]=v}
   if('primaryColor' in o)delete it.color;
   if(src==='q'){it.edited={...it.edited,...Object.fromEntries(Object.keys(o).map(k=>[k,true]))};queueMicrotask(addKeep);renderAdd()}
-  else{if(it.sample)it.sampleMine=1;await put(it);planDirty();renderWardrobe()}
+  else{if(it.sample)it.sampleMine=1;await put(it);planDirty();emit('wardrobe-changed')}
   return it}
 const LOOK_UNDO_F=['primaryColor','color','shade','secondaryColor','tertiaryColor','pattern','sett','stripes','patternSpec','weave','material','matSet','matAI','matGuess','matNew','leather','leatherOwn','leatherNone','metal','metalOwn','dial','lookHint','newColor','newPattern'];
 const LOOK_FIELD_WORD={primaryColor:'Color',pattern:'Pattern',material:'Material',leather:'Leather',metal:'Metal',buckle:'Buckle',dial:'Dial',enamel:'Enamel'};
@@ -377,7 +378,7 @@ function lookPatExtras(i){const id=i.id,fab=FABRIC.includes(i.type);
   const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" data-id="${esc(id)}" data-how="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?'reread':'detect'}" data-act="lkReread">Read pattern from photo</button>`}${i.stripes||i.sett?`<button data-id="${esc(id)}" data-act="lkClearStripes">Use generic</button>`:''}</div></div>`:'';
   return layout+(typeof asmGapNote==='function'?asmGapNote(i):'')}
 /* the item sheet's "Looks right": kept on the item (lookOk, synced); a later edit leaves it (the owner's question 4: it stays) */
-async function lookCheck(id){const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}if(it.lookOk)delete it.lookOk;else it.lookOk=1;await put(it);renderWardrobe()}
+async function lookCheck(id){const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}if(it.lookOk)delete it.lookOk;else it.lookOk=1;await put(it);emit('wardrobe-changed')}
 /* the item sheet opens Look unfolded every time an item is opened (itemsheet.js itemBody, a new phEdit) */
 function lookOpenFresh(){CK_OPEN['e|lk']=true}
 
@@ -391,7 +392,7 @@ function lookSave(q,it){if(!lookOn())return;const t=q.type;
   if(t==='tieclip'&&LOOK_CLIP_METALS.includes(q.metal)&&!LOOK_CLIP_METALS.includes(it.primaryColor))it.metal=q.metal}
 
 /* ---- Read with Claude ---- */
-function lookRedraw(src,id){if(src==='q')renderAdd();else if(editing===id)renderWardrobe()}
+function lookRedraw(src,id){if(src==='q')renderAdd();else if(editing===id)emit('wardrobe-changed')}
 function lookReadStop(src,id){const me=LOOK_RD[src+'|'+id];if(me&&me.ac)try{me.ac.abort()}catch{}delete LOOK_RD[src+'|'+id];lookRedraw(src,id)}
 async function lookRead(src,id){const it=lookItem(src,id);if(!it)return;const key=src+'|'+id;if(LOOK_RD[key]&&LOOK_RD[key].busy)return;
   if(src==='q'&&cardReading(it)){tell('Claude is still reading this card.');return}
@@ -439,7 +440,7 @@ async function lookApplyRead(src,id,j,me){const it=lookItem(src,id);if(!it)retur
   if(Object.keys(h).length)it.lookHint=h;else delete it.lookHint;
   me.by=by;
   if(src==='q'){if(normPat(t,it.pattern)!==pat0)try{readSett(it)}catch{}if(it.primaryColor!==pc0&&it.texCanvas)try{generateSwatch(it)}catch{}queueMicrotask(addKeep);renderAdd()}
-  else{if(it.sample)it.sampleMine=1;if(it.primaryColor!==pc0&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();renderWardrobe()}
+  else{if(it.sample)it.sampleMine=1;if(it.primaryColor!==pc0&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();emit('wardrobe-changed')}
   const words=said.filter(Boolean).map(s=>String(s).toLowerCase());
   toast(words.length?`Claude read it: ${words.join(', ')}.${changed?'':' Nothing changed.'}`:'Claude couldn’t tell this time: nothing changed.',8000,changed?{label:'Undo',fn:async()=>{await lookRestore(src,id,snap);const x=LOOK_RD[src+'|'+id];if(x)delete x.by;lookRedraw(src,id)}}:undefined)}
 

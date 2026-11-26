@@ -18,10 +18,10 @@ function shadeStep(el){const {src,id,d}=el.dataset;if(src==='q')stepShadeQ(qAt(i
 function shadeMatch(el){const {src,id}=el.dataset;if(src==='q')matchShadeQ(qAt(id));else matchShadeE(id)}
 function stepShadeQ(i,d){const q=cardOf(i);if(!q)return;q.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(q.shade||0)+d));if(!q.shade)delete q.shade;emit('card-changed')}
 function matchShadeQ(i){const q=cardOf(i);if(!q||!q.meas)return;q.shade=shadeFor(q,q.meas.lab);if(!q.shade)delete q.shade;emit('card-changed');toast(q.shade?`Swatch set ${shadeName(q.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
-async function stepShadeE(id,d){const it=items.find(x=>x.id===id);if(!it)return;it.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(it.shade||0)+d));if(!it.shade)delete it.shade;await put(it);planDirty();renderWardrobe()}
+async function stepShadeE(id,d){const it=items.find(x=>x.id===id);if(!it)return;it.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(it.shade||0)+d));if(!it.shade)delete it.shade;await put(it);planDirty();emit('wardrobe-changed')}
 async function matchShadeE(id){const it=items.find(x=>x.id===id);if(!it)return;let lab=it.meas&&it.meas.src==='closeup'?it.meas.lab:null;
   if(!lab&&it.texture)try{const im=await imgOf(it.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);lab=measureCloth(c,null,{}).lab}catch{}
-  if(!lab)return;it.shade=shadeFor(it,lab);if(!it.shade)delete it.shade;await put(it);planDirty();renderWardrobe();toast(it.shade?`Swatch set ${shadeName(it.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
+  if(!lab)return;it.shade=shadeFor(it,lab);if(!it.shade)delete it.shade;await put(it);planDirty();emit('wardrobe-changed');toast(it.shade?`Swatch set ${shadeName(it.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
 const photoPair=(photo,i,id)=>`<div class="pair"><figure class="phfig"><img class="ph" src="${srcOk(photo)}" alt="Photo"><figcaption>Photo</figcaption></figure>${needType(i)?'':`<figure class="tagsw" id="${esc(id)}" aria-live="polite">${tagSwInner(i)}</figure>`}</div>`;
 /* one card drawn on its own (2026-11-16, a tester's first item: her iPhone, out of picture memory, refused a canvas while the card's swatch
    was drawn, so the whole redraw stopped and Confirm stayed switched off): a card that can't be drawn becomes a plain one that still

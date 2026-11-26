@@ -9,7 +9,7 @@
      one: the Care page shows them as one line with "All washed today".
    - the Care page (#care, from Settings), a quiet tag in the Wardrobe grid and one line on Today when today's wear reaches the limit.
    The shirt rule (settings.laundryDays) is in planner.js outfit(). */
-import {on} from './bus.js';
+import {on,emit} from './bus.js';
 const CARE_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];   // the types with a wear limit in Settings
 const CARE_ABLE=['suit','blazer','pants','shirt','tie','overcoat','raincoat','socks','pocketsquare',...HANDPICK_TYPES];   // what can be sent away (a pocket square: worn count, laundry; the casual garments too, 2026-11-16)
 // wears before cleaning; a type not listed is never due. The casual garments (2026-11-16, not in Settings' limits): T-shirts, polos and
@@ -55,7 +55,7 @@ function careCard(i){if(!CARE_ABLE.includes(i.type)||i.order)return '';
     :`<div class="btns">${i.paused?'':first.map(w=>`<button type="button" class="caresend" data-why="${w}" data-act="careSendTap" data-id="${esc(id)}">${lab[w]}</button>`).join('')}${s.wears?`<button type="button" class="caredone" data-act="careDoneTap" data-id="${esc(id)}">${careWashed(i.type)?'Washed':'Cleaned'} today</button>`:''}</div>`;
   return `<section class="card ivsec ivcare" id="ivcare"><h3>Care</h3><p class="shelp carecount${s.due?' due':''}">${careWornLine(i)}${s.due?' · due now':''}</p>${body}</section>`}
 /* redraw whichever page the change was made on */
-function careRedraw(){remindSoon();/* the cleaning reminders follow a piece sent away or cleaned */careSum();const c=$('#sc-laundry');if(c&&c.classList.contains('open'))renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();else if($('#today')&&!$('#today').hidden)refreshToday()}
+function careRedraw(){remindSoon();/* the cleaning reminders follow a piece sent away or cleaned */careSum();const c=$('#sc-laundry');if(c&&c.classList.contains('open'))renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');else if($('#today')&&!$('#today').hidden)refreshToday()}
 /* upcoming days the piece was pinned to (a swap, a hand pick) let go of it, as when it is taken out of rotation: they are planned again */
 async function careRelease(id){const T=todayDate();let n=0;
   for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<T||r.worn===true||!r.force)continue;const f={...r.force};let hit=false;

@@ -1,12 +1,13 @@
 /* Daily Wardrobe: toasts and the Wardrobe's round Undo button
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
+import {ask} from './bus.js';   // the piece open in the item sheet (item-view.js serves it). (This file reads nothing of app.js's ask())
 let toastTimer=null;
 const TOAST_ACT_MS=8000;   // a toast with Undo stays at least this long (audit 2026-11-14: gone after 5 s, and Delete has no question)
 /* on the Wardrobe, where the + is, an Undo is a round button above it, a glowing ring running down its seconds, instead of the toast
    (2026-11-17, the owner's pick "A with the glowing countdown", no line saying what it undoes): its words are read out (announce) and
    are its label ("Undo: Deleted …"); another Undo replaces it; it goes with the toast's rules (toastDrop, the keyboard on it keeps it up) */
 let undoTimer=null;
-const undoHere=()=>{const w=$('#wardrobe'),m=document.querySelector('main');return !!w&&!w.hidden&&!(m&&m.inert)&&!editing&&!!$('#undo-fab')};   // (not while the item sheet is open: an Undo made there is the toast over it)
+const undoHere=()=>{const w=$('#wardrobe'),m=document.querySelector('main');return !!w&&!w.hidden&&!(m&&m.inert)&&!ask('item-open')&&!!$('#undo-fab')};   // (not while the item sheet is open: an Undo made there is the toast over it)
 function undoFab(t,ms,act){const b=$('#undo-fab'),e=$('#toast');if(e&&e.classList.contains('act')){clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent=''}
   announce(t+'. Undo is above the add button.');
   b.setAttribute('aria-label','Undo: '+t);b.tabIndex=0;b.style.setProperty('--ud',ms+'ms');b.classList.remove('on');void b.offsetWidth;b.classList.add('on');

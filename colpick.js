@@ -50,7 +50,7 @@ const accChoices=it=>{const main=[primaryCol(it),it.secondaryColor,it.tertiaryCo
 const accItem=(src,ref)=>src==='q'?cardOf(ref):items.find(x=>x.id===ref);
 async function accSet(src,ref,list){const it=accItem(src,ref);if(!it)return;const a=accentsFor(it,list);if(a.length)it.accents=a;else delete it.accents;
   if(src==='q'){it.edited={...it.edited,accents:true};it.checked={...it.checked,colors:1};queueMicrotask(addKeep);emit('card-changed');return}
-  await put(it);planDirty();renderWardrobe()}
+  await put(it);planDirty();emit('wardrobe-changed')}
 function accDel(src,ref,c){const it=accItem(src,ref);if(it)return accSet(src,ref,accentsOf(it).filter(x=>x!==c))}
 /* the three colours nearest the measured cloth (main colour only) */
 /* (2026-11-14) a patterned cloth's colours one by one: its ground for the main colour, its stripe for the second (measureParts); with no
@@ -110,7 +110,7 @@ async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick
   // the beta's Shade (picked in this sheet): kept with the colour, none for a metal
   const sh=colPick.shade!=null&&k==='primaryColor'&&lookOn()?(lookShadeOk(k,v)?colPick.shade:0):null,shCh=sh!==null&&sh!==(it.shade||0);
   closeColPick();if(v===cur&&!shCh)return;
-  if(shCh){if(sh)it.shade=sh;else delete it.shade;if(v===cur){if(src==='q'){queueMicrotask(addKeep);emit('card-changed')}else{await put(it);planDirty();renderWardrobe()}return}}
+  if(shCh){if(sh)it.shade=sh;else delete it.shade;if(v===cur){if(src==='q'){queueMicrotask(addKeep);emit('card-changed')}else{await put(it);planDirty();emit('wardrobe-changed')}return}}
   // one of the owner's colours not offered for this kind yet ("Your other colors", or "Use …" from New color): offered for it from now on
   const off=k!=='pattern'&&v&&CUSTOM_COL[v]&&it?await ownColOffer(v,it.type,k!=='primaryColor'):null;
   if(src==='q')setq(ref,k,v);else await sete(ref,k,v);
@@ -217,7 +217,7 @@ async function colAskUseAll(){const it=colTarget(),a=it&&colAsk[it.id+'|c'];if(!
   const offs=[];for(const f of ch)if(w[f]&&CUSTOM_COL[w[f]]){const o=await ownColOffer(w[f],it.type,f!=='primaryColor');if(o)offs.push(o.msg)}   // an own colour of another kind: offered for this one too
   if(src==='q'){for(const f of ch)setq(ref,f,w[f]||'none');if(offs.length)toast(offs.join(' '),4000);return}
   for(const f of ch)it[f]=w[f];delete it.color;
-  if(ch.includes('primaryColor')&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();renderWardrobe();toast(['Saved Claude’s colors.',...offs].join(' '),offs.length?4000:2500)}
+  if(ch.includes('primaryColor')&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();emit('wardrobe-changed');toast(['Saved Claude’s colors.',...offs].join(' '),offs.length?4000:2500)}
 /* "Not sure? Add a close-up": in the item sheet the close-up is added from Pictures, the last section (folded; the checklist redesign
    moved the photos there, so "under the photos" pointed nowhere: picker audit 2026-11-17 #3); the link closes the picker, opens
    Pictures and brings its Close-up button into view. On the Add card the close-up button is on the card itself. */
@@ -641,7 +641,7 @@ function rdClose(fromBack){const me=rd;rd=null;if(me&&me.state==='busy'&&me.ac)t
   if(me)rdRefresh(me.src,me.id)}
 function rdBack(){if(rdHist!==undefined||rd)rdClose(true)}
 /* the page under it, redrawn (the done card, the cost line) */
-function rdRefresh(src,id){if(src==='q'){emit('card-changed')}else if(editing===id)renderWardrobe()}
+function rdRefresh(src,id){if(src==='q'){emit('card-changed')}else if(editing===id)emit('wardrobe-changed')}
 const rdPaperHtml=pr=>!pr?'':pr.ref?'<span class="rdpaper ok" id="rd-paper">✓ White paper found: true color</span>':`<span class="rdpaper no" id="rd-paper">! No white paper${pr.warm?', warm light':''}</span>`;
 const rdRetakeHtml=it=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',act:' data-act-change="rdRetakeFile"',cloth:paperCloth(it)});
 function rdLightNote(it,me){const s=me.sent;if(!s||s.wb!==false)return '';

@@ -1,5 +1,6 @@
 /* Daily Wardrobe: the item sheet itself: open, close, swipe down, ‹ › and the sideways swipe, the phone's Back, the focus back, and a
    sync's change to the piece open. (An ES module since 2026-11-23; split out of itemsheet.js on 2026-11-17, no behavior change.) */
+import {emit,serve} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); serve: the piece open, its redraw and its drop
 let editing=null;
 /* ---- Wardrobe item sheet ----
    Tapping an item opens it in a sheet that slides up over the Wardrobe: the full width of a phone, to just under the top of the
@@ -13,25 +14,24 @@ const WARD_EASE='cubic-bezier(.2,.8,.2,1)',WARD_MS=320;
 let ivAt=0;
 const wardList=()=>{const l=wardView();if(!editing||l.some(x=>x.id===editing))return l;const it=items.find(x=>x.id===editing);if(!it)return l;
   const c=l.slice();c.splice(Math.min(ivAt,c.length),0,it);return c};
-const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate;
 let itemFrom=null;   // the item the sheet was opened on: closing on another one brings that one's box into view first
 /* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. editing is read by twelve page scripts
    (item-photo, itemsheet, toast, start, wardrobe, colpick, look, kit …) and set by 31 tests: a getter and a setter; wardrobe.js, cost.js
    and kit.js open a piece (openItem), start.js and wardrobe.js drop the sheet (dropItem), sync.js says a sync changed the piece open
-   (itemSynced), itemsheet.js, start.js and checklist.js redraw it (renderItem); itemGoneTell: itemsheet, wardrobe, look, cost; noMotion:
-   nine files; closeItem, stepItem and wardList are called by tests only; a module imports them.
+   (itemSynced), itemsheet.js and start.js redraw it (renderItem; nav.js and checklist.js through the socket below); itemGoneTell: itemsheet, wardrobe,
+   look, cost (noMotion is ui.js's since the restructure S3d); closeItem, stepItem and wardList are called by tests only; a module imports them.
    Above the file's first call that can throw (backLand, when back.js did not load; then $ and acts): the names are then still the
    page's, as a classic script's were */
-Object.assign(globalThis,{noMotion,itemSynced,itemGoneTell,renderItem,openItem,dropItem});
+Object.assign(globalThis,{itemSynced,itemGoneTell,renderItem,openItem,dropItem});
 Object.defineProperties(globalThis,{editing:{get:()=>editing,set:v=>{editing=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,closeItem,stepItem,wardList,get editing(){return editing},set editing(v){editing=v}};
-export {editing,wardList,noMotion,itemSynced,itemGoneTell,renderItem,openItem,closeItem,dropItem,stepItem};
+export {editing,wardList,itemSynced,itemGoneTell,renderItem,openItem,closeItem,dropItem,stepItem};
 /* the phone's Back closes the sheet: it has its own history entry while it is open (back.js histPush/histDrop, kind 'item'); one asked for
    while a step back of ours was on its way is made once it lands. Back in the crop frame keeps the crop (cropKeep: when moved or zoomed)
    and leaves it, and the sheet keeps its entry (the Back audit, 2026-11-15: it closed the sheet) */
 backLand(()=>{if(editing)histPush()});
-backOn('item',()=>{if(editing&&phEdit.crop){cropKeep();renderWardrobe();histPush()}else if(editing)closeItem(true)});
+backOn('item',()=>{if(editing&&phEdit.crop){cropKeep();emit('wardrobe-changed');histPush()}else if(editing)closeItem(true)});
 /* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
 function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;const was=v.classList.contains('on');
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
@@ -132,11 +132,14 @@ function stepItem(n,from){
       el.style.transition='transform .2s ease-out,opacity .2s';el.style.transform='translateX(0)';el.style.opacity='1'}};
   b.addEventListener('touchend',end,{passive:true});b.addEventListener('touchcancel',end,{passive:true});
   document.addEventListener('keydown',e=>{if(!editing)return;
-    if(e.key==='Escape'){if(phEdit.crop){cropKeep();renderWardrobe()}else closeItem();return}   // Esc leaves the crop as Back does: a moved frame is kept
+    if(e.key==='Escape'){if(phEdit.crop){cropKeep();emit('wardrobe-changed')}else closeItem();return}   // Esc leaves the crop as Back does: a moved frame is kept
     if(e.target.closest&&e.target.closest('input,select,textarea'))return;
     if(e.key==='ArrowRight')stepItem(1);if(e.key==='ArrowLeft')stepItem(-1)});
 })();
 /* the markup's handlers (act.js): the item sheet's backdrop and Done, and its previous and next buttons (data-n: -1 or 1) */
 function itemCloseTap(){closeItem()}
 function itemStepTap(el){stepItem(+el.dataset.n)}
+/* the sockets (bus.js): nav.js (required), toast.js (required), checklist.js and item-photo.js ask which piece is open (its id, or null), and
+   nav.js has the sheet drawn again or dropped when another page shows (the restructure S3d) */
+serve('item-open',()=>editing);serve('item-draw',renderItem);serve('item-drop',dropItem);
 acts({itemCloseTap,itemStepTap});
