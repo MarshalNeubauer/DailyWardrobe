@@ -73,9 +73,12 @@ function setupBack(){if(!setupShown())return;if(setup.at>0){setupGo(-1);backPush
    Above the file's first call that can throw (backOn, when back.js did not load; then acts): the names are then still the page's, as
    a classic script's were */
 Object.assign(globalThis,{setupShown,setupStart,setupFinish,tzCountry,setupYield,setupSample,setupDraw,setupNeeds,setupToday,setupWardEmpty});
+/* the socket nav.js asks as a page is shown (bus.js): a setup that opened by itself steps aside */
+import {serve} from './bus.js';
+serve('setup-yield',setupYield);serve('setup-needs',setupNeeds);   // (and what the wardrobe still needs, for Insights: stats.js)
 Object.defineProperties(globalThis,{SETUP_STEPS:{get:()=>SETUP_STEPS},setup:{get:()=>setup,set:v=>{setup=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,setupCancel,setupClose,setupDress,setupGo,setupOpen,setupSearch,setupVestChosen,get setup(){return setup},set setup(v){setup=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,setupCancel,setupClose,setupDress,setupGo,setupOpen,setupSearch,setupVestChosen,setupYield,get setup(){return setup},set setup(v){setup=v}};
 export {SETUP_STEPS,setup,setupDress,setupShown,setupStart,setupVestChosen,setupOpen,setupClose,setupCancel,setupFinish,tzCountry,setupYield,setupGo,setupSample,setupDraw,setupSearch,setupNeeds,setupToday,setupWardEmpty};
 backOn('setup',()=>setupBack());
 function setupClose(){

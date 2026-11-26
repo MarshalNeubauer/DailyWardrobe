@@ -13,16 +13,28 @@ const TOPICS={
   'settings-parts':{emit:['settings.js'],on:['look.js','account.js','calendar.js','remind.js'],what:'the parts drawn last (settingsPart)'},
   'settings-category':{emit:['settings.js'],on:['care.js','snapshots.js','about.js'],what:'a category opened (its key)'},
   'settings-saved':{emit:['settings.js'],on:['sync.js'],what:'the settings were stored: a backup soon'},
-  'settings-closed':{emit:['settings.js'],on:['start.js'],what:'Settings closed (the page a sync changed meanwhile, or null)'},
+  'settings-closed':{emit:['settings.js'],on:['nav.js'],what:'Settings closed (the page a sync changed meanwhile, or null)'},
   'connection-saved':{emit:['settings.js'],on:['sync.js'],what:'Done stored the connection: a backup now'},
   'connection-typed':{emit:['settings.js'],on:['account.js'],what:'another address or code typed in Connection: the account decides'},
   'folding-all':{emit:['today.js'],on:['boxfold.js'],what:'a swipe to another day folds everything at once (true), and is done (false): the folds are quiet meanwhile'},
+  'page-showing':{emit:['nav.js'],on:['settings.js'],what:'a page is being shown (its name): Settings closes'},
+  'page-back':{emit:['nav.js'],on:['settings.js'],what:'the phone\'s Back with no page over Settings: Settings, when open, does what Done does'},
+  'sub-opening':{emit:['nav.js'],on:['settings.js'],what:'a page opens over another (subOpen): Settings, when open, fills in S.set, its open categories and scroll'},
+  'sub-back':{emit:['nav.js'],on:['settings.js'],what:'that page goes back to Settings (subBack, with what S.set held): Settings opens as it was'},
+  'sample-asked':{emit:['stats.js'],on:['kit.js'],what:'"Try a sample wardrobe" tapped on an empty Insights or Packing list (heard: whether the button is offered)'},
 };
 
 /* name -> {serve: files that serve it (one), ask: files that ask for it (in load order), what: what it does}. A socket is how a
-   required file calls into an optional one without importing it (tests/load-contract.json); none is used yet (step 3 converts
-   the callers) */
-const SOCKETS={};
+   required (or today-no-picture) file calls into an optional one without importing it (tests/load-contract.json) */
+const SOCKETS={
+  'setup-yield':{serve:'setup.js',ask:['nav.js'],what:'a page is shown: a setup that opened by itself steps aside (setupYield)'},
+  'shop-close':{serve:'shop.js',ask:['nav.js'],what:'another page is shown: What to buy closes (closeShop)'},
+  'pack-show':{serve:'pack.js',ask:['nav.js'],what:'a page is shown: the packing list page shows or hides (packShow)'},
+  'setup-needs':{serve:'setup.js',ask:['stats.js'],what:'what the wardrobe still needs before a day can be dressed (setupNeeds), for Insights'},
+  'shop-button':{serve:'shop.js',ask:['stats.js'],what:'What to buy\'s button on Insights (shopButton)'},
+  'fav-stats-card':{serve:'fav.js',ask:['stats.js'],what:'the favorites card on Insights (favStatsCard)'},
+  'cpw-stats-card':{serve:'cost.js',ask:['stats.js'],what:'the cost-per-wear card on Insights (cpwStatsCard)'},
+};
 
 module.exports=async({ok,ROOT})=>{
   /* bus.js itself, run as a script with its export blanked */
