@@ -1,6 +1,10 @@
 /* Daily Wardrobe: Settings → About. The app's version and updates, feedback, deleting one's data, the privacy note.
    Loaded last (index.html's final file before startUp); an ES module since 2026-11-23. */
 import {on} from './bus.js';
+import {$,noBidi} from './core.js';
+import {toast} from './toast.js';
+import {connKeep,connRestored,db,dbConn,dbUnhold,queue,setConnReady,setDbConn,setDbCur,setDbWiping} from './app.js';
+import {acts} from './act.js';
 
 /* ---- version ----
    The version is the number in the service worker's cache name (sw.js: const CACHE='dw-v<n>'), bumped with every release.

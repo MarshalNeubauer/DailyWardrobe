@@ -4,6 +4,13 @@
 /* fast swipes one after another (audit 2026-11-14: five quick swipes moved three days): a swipe made while the last one's fly-out is still
    running is added to it (fly.n), and the day is drawn only once no finger is down: drawing Today removes the element a touch started on,
    and the browser then stops sending that touch's moves and its end, so the swipe under way was lost */
+import {foldAll,planWith,renderToday,stepDay} from './today.js';
+import {picker} from './history.js';
+import {$,dayRecs} from './core.js';
+import {monthDrag,monthPanel,monthRelease,mvSig,stackSVG} from './month.js';
+import {hasOutfit,planDirty,planFor,planMonth} from './today-plan.js';
+import {idsOf,keyDate,saveDay} from './days.js';
+import {toast} from './toast.js';
 const fly={n:0,t:null,wait:false,from:0};
 function flyGo(){clearTimeout(fly.t);fly.t=null;fly.wait=false;const n=fly.n;fly.n=0;if(n)stepDay(Math.sign(n),fly.from,Math.abs(n));todayFree()}
 /* a layer over Today: Settings, the piece picker, What to buy, or anything that makes main inert (a sheet, a question) */

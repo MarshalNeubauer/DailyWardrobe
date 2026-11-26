@@ -212,7 +212,7 @@ async function run(eng,browser,{ok,url,settle}){
   // a late script missing: the app starts without that feature, and no card
   k=await fail({'about.js':{status:404}},()=>window.appReady);await wait(5200);k=await card();
   ok(!k&&await shown(c)==='today'&&await c.p.evaluate(()=>window.appReady&&items.length===3&&document.querySelector('#today').children.length>0),T+'about.js can\'t be loaded: the app still starts on Today with its wardrobe, and no start-up card covers it');
-  // act.js missing: settings.js (required) imports acts since the restructure S5d, so the graph doesn't link and the start-up card shows
+  // act.js missing: settings.js and start.js (required) import acts since the restructure S5d and S5e, so the graph doesn't link and the start-up card shows
   // (the owner's choice (c), 2026-11-25: act.js counts as required; before, Today was drawn down to its month box)
   k=await fail({'act.js':{status:404}},()=>!!document.querySelector('#start-fail'),12000);
   ok(k&&/The app couldn’t start\./.test(k.text)&&k.btn&&await stored()==='ml-shirt,ml-suit,ml-tie',T+`act.js can't be loaded: the start-up card says so with Try again, and the stored wardrobe is untouched (${k?'shown':'not shown'})`);

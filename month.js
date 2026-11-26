@@ -3,6 +3,14 @@
 /* a day opened from the month says emit('day-changed') (bus.js; the restructure S3e, 2026-11-26): today.js, which runs after this file,
    pins renderToday for it */
 import {emit} from './bus.js';
+import {fabricDef} from './draw.js';
+import {$,MONTH_EASE,MONTH_MS,colName,dayRecs,isWorkday,itemName,key,occOf,offName,patName,primaryCol,shortCol,todayDate,wearsJacket} from './core.js';
+import {cache,hasOutfit,planFor,planMonth} from './today-plan.js';
+import {PAIR_DAYS,pairSeen,rateOutfit} from './planner.js';
+import {sel,setSel,setView,view} from './app.js';
+import {esc} from './photo-keys.js';
+import {keyDate} from './days.js';
+import {acts} from './act.js';
 /* ---- month view (wear plan): a calendar of fabric stacks, from the design concept ---- */
 /* stacked bands for one outfit: jacket, trousers on blazer days, shirt, tie (drawn from the tagged fabrics) */
 let stkN=0;
@@ -162,7 +170,7 @@ function setMonthOpen(v){monthOpen=v}
 Object.assign(globalThis,{stackSVG,planOn,nextWorkday,homeDay,dayWord,recentWork,mvSig,wardShort,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthPlan,toggleMonth,monthDrag,monthRelease,openDay,monthLink,setMonthOpen});
 Object.defineProperties(globalThis,{monthOpen:{get:()=>monthOpen,set:v=>{monthOpen=v}},monthPanel:{get:()=>monthPanel,set:v=>{monthPanel=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,monthGridHtml,monthStep,get monthOpen(){return monthOpen},set monthOpen(v){monthOpen=v},get monthPanel(){return monthPanel},set monthPanel(v){monthPanel=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,monthGridHtml,monthStep,get monthOpen(){return monthOpen},set monthOpen(v){monthOpen=v},get monthPanel(){return monthPanel},set monthPanel(v){monthPanel=v},monthPlan,openDay,shortRest,shortTop,toggleMonth};
 export {stackSVG,planOn,nextWorkday,homeDay,dayWord,recentWork,mvSig,wardShort,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthOpen,monthPanel,monthPlan,monthGridHtml,toggleMonth,monthStep,monthDrag,monthRelease,openDay,monthLink,setMonthOpen};
 /* the markup's handlers (act.js): the month box's head and its "Fold away" bar, and a day of the month (data-t: its time) */
 function monthTap(){toggleMonth()}

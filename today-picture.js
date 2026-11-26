@@ -5,6 +5,12 @@
    bottom, 52 px, no rim, no names, above ✕ on days that show it; the app's drawn swatches, with a jacket's or shirt's stripes in Claude's
    own colours as the painter draws them (measured from the photo a thin stripe blurs into the ground and nearly vanishes) and at least
    OVL_LINE of a repeat, and a tie's pattern at half size (more repeats). Pictures only; it takes no touches and fades while zoomed. */
+import {CHECK_PATS,MOTIF_PATS,STRIPE_PATS,usableSett} from './detect.js';
+import {$,TEXTURE_TYPES,colOf,hexRgb,key,patBase} from './core.js';
+import {swatchSVG} from './draw.js';
+import {srcOk} from './photo-keys.js';
+import {sel} from './app.js';
+import {planFor} from './today-plan.js';
 const OVL_LINE=.1;
 function ovlItem(i){const s=usableSett(i),sp=i.patternSpec&&i.patternSpec.across;if(!s||!s.bands||i.type==='tie')return i;
   let b=s.bands.map(x=>[x[0],x[1]]);if(sp&&sp.bands&&sp.bands.length===b.length)b=b.map((x,k)=>[sp.bands[k].hex||x[0],x[1]]);

@@ -37,6 +37,7 @@ function setPageWant(v){pageWant=v}
    pageBack for the phone's Back) */
 Object.assign(globalThis,{PAGES,pageBack,subShown,subOpen,subBack,openAdd,show,showWanted,setPagesOn,setPageWant});
 Object.defineProperties(globalThis,{pagesOn:{get:()=>pagesOn}});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,subBack,subOpen};
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-closed',v=>{if(v&&!$('#'+v).hidden)show(v)});   // the Wardrobe or stats page a sync changed while Settings was open
 export {PAGES,pageBack,subShown,subOpen,subBack,openAdd,pagesOn,setPagesOn,setPageWant,show,showWanted};

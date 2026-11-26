@@ -7,6 +7,16 @@
      the wardrobe changed since (shopSig) or it is over a week old
    - "Bought it" adds the piece as bought, on the way (item.order + item.paused, optional arrival date)
    - "Not for me" hides that colour and pattern for good (settings.shopSkip: keys type|colour group|pattern class, synced) */
+import {$,COOL,SLOTS,TODAY_OVERRIDE,avgText,climate,dayRecs,inRotation,isHandPick,isoKey,items,nm,nowMs,offDays,prettyCols,sentence,settings,todayDate,wearsJacket,wearsTie,weather} from './core.js';
+import {keyDate} from './days.js';
+import {planDirty,strHash} from './today-plan.js';
+import {darkMode} from './planner.js';
+import {db,keepFocus,metaGet,metaPut,put} from './app.js';
+import {esc} from './photo-keys.js';
+import {backDrop,backOn,backPush} from './back.js';
+import {itemThumb} from './draw.js';
+import {saveUserSettings} from './settings.js';
+import {acts} from './act.js';
 let shop=null,shopBusy=null,shopPart=null,shopWorker=null,shopOpen=false,shopShown={},shopForm=null,shopMsg='',shopFigN=0;
 const SHOP_STALE=7*864e5;
 // (also every setting the planner reads: laundry days, dark shirts, jeans with a blazer, holidays, days off, and

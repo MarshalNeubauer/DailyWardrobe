@@ -231,7 +231,7 @@
   "toast.js": {
    "class": "required",
    "group": "base",
-   "note": "required by the owner's choice (c), 2026-11-25: its 404 shows the start-up card since the restructure S5d (settings.js imports it); before, Today with its picture"
+   "note": "required by the owner's choice (c), 2026-11-25: its 404 shows the start-up card since the restructure S5d and S5e (settings.js and start.js import it); before, Today with its picture"
   },
   "theme.js": {
    "class": "optional",
