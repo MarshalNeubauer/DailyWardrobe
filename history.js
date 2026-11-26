@@ -4,11 +4,8 @@
    2026-11-17: the missed days are in missed.js, the week's locks in locks.js, the picker's scoring in pickscore.js, the score card in
    scorecard.js and the cards' fold motion in boxfold.js, loaded right after this file.) */
 /* ---- outfit history: freeze past days, swap pieces, record what was worn ---- */
-const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
-const keyDate=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+/* (the day records, idsOf, keyDate, saveDay and notAhead, are days.js's since the restructure S3b, 2026-11-26: read here as globals) */
 let swapMsg='';
-async function saveDay(rec,quiet,auto){rec.updated=nextStamp(rec.updated);if(!auto){delete rec.lockOnly;delete rec.base}const was=dayRecs[rec.date];dayRecs[rec.date]=rec;   /* (core.js dayFields: the fields changed since the copy before get this save's stamp; the one in memory, or, changed in place, the stored one) */
-  if(was!==rec){dayFields(rec,was);await txs('days','readwrite',s=>s.put(rec))}else await atomic('days',rec.date,cur=>{dayFields(rec,cur);return {put:rec}});planDirty();if(!quiet&&window.scheduleSync)scheduleSync();if(typeof remindSoon==='function')remindSoon()}
 /* start-up writers wait for the first pull (sync.js afterPull; sync.js loads after this file, so through afterScripts) */
 let todayPullWait=false;
 const whenPulled=f=>afterScripts(()=>afterPull(f));
@@ -93,16 +90,16 @@ function closePicker(){const was=!!picker;picker=null;const s=$('#pick-sheet'),b
 function setPastEdit(v){pastEdit=v}
 function setSwapMsg(v){swapMsg=v}
 function setTodayPullWait(v){todayPullWait=v}
-/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. keyDate is read by 17 page scripts and
-   saveDay by 8; today.js draws and records with recordDays, openPicker, closePicker, setWorn, setVest, resetCard and dayActions and
+/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals (keyDate, saveDay, idsOf and notAhead
+   went to days.js, restructure S3b); today.js draws and records with recordDays, openPicker, closePicker, setWorn, setVest, resetCard and dayActions and
    sets todayPullWait and pastEdit (a getter and a setter each; tests set pastEdit too, and swapMsg through HOOK); picker is read by
    today.js, today-gestures.js and sync.js and only this file assigns it: a getter; start.js, safety.js, wardrobe.js and calendar.js
    wait with whenPulled; start.js calls dropLearn and checkPlanRules, settings.js renderReplanUI, daysoff.js and calendar.js
-   setOccasion, fav.js wearFav, scorecard.js pickItem, pickscore.js notAhead and idsOf; swapSlot, togglePastEdit, correctPast,
+   setOccasion, fav.js wearFav, scorecard.js pickItem; swapSlot, togglePastEdit, correctPast,
    resetDay, replanFuture and planRulesNote are called by tests only; a module imports them.
    Above the file's first call that can throw (backOn, when back.js did not load; then acts): the names are then still the page's,
    as a classic script's were; setFormal, a const declared further down, is the tests' alone (on HOOK) */
-Object.assign(globalThis,{idsOf,keyDate,saveDay,whenPulled,recordDays,dropLearn,openPicker,closePicker,pickItem,wearFav,setOccasion,notAhead,setWorn,checkPlanRules,renderReplanUI,setVest,resetCard,dayActions,setPastEdit,setSwapMsg,setTodayPullWait});
+Object.assign(globalThis,{whenPulled,recordDays,dropLearn,openPicker,closePicker,pickItem,wearFav,setOccasion,setWorn,checkPlanRules,renderReplanUI,setVest,resetCard,dayActions,setPastEdit,setSwapMsg,setTodayPullWait});
 Object.defineProperties(globalThis,{picker:{get:()=>picker},todayPullWait:{get:()=>todayPullWait,set:v=>{todayPullWait=v}},pastEdit:{get:()=>pastEdit,set:v=>{pastEdit=v}}});
 backOn('pick',()=>closePicker());
 function pickNext(){const s=picker&&picker.slot;closePicker();if(s)swapSlot(s)}
@@ -143,10 +140,6 @@ const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
    released so they are planned around it (the suit that is right for the occasion may be locked on the day before) */
 async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.roll;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;delete r.kind;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){todayDirty();renderFormalUI()}else renderToday()}   // (kind too: a piece taken off, a moved outfit or a favorite worn pinned the blazer, and a funeral set later stayed a blazer day, the 2026-11-24 review's R4 N-1)
 async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.roll;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;delete n.kind;notAhead(n,k);swapMsg='';await saveDay(n);renderToday()}   // (kind too: a piece taken off or a moved outfit pinned the suit or blazer, CR-4-07)
-/* a coming day's record holds no pieces (ids): they are written when the day is shown (recordDays, today) or once it is past. A pick or
-   swap ahead used to write the outfit from before it, which then stood as worn in place of the pick when the app wasn't opened that day
-   (fix round 3, W2-17-01); today's record is rewritten from the screen right after (recordDays) */
-function notAhead(rec,k){if(keyDate(k)>todayDate()){delete rec.ids;delete rec.suitDay;delete rec.vestOn;delete rec.auto}}
 async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});renderToday()}
 /* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay.
    rules (new PLAN_RULES): only what the app chose goes, the week's locks (rec.lock) and pieces it recorded by itself (rec.auto);
@@ -211,7 +204,7 @@ function dayActions(o){
 }
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,correctPast,planRulesNote,replanFuture,resetDay,setFormal,swapSlot,togglePastEdit,get pastEdit(){return pastEdit},set pastEdit(v){pastEdit=v},get swapMsg(){return swapMsg},set swapMsg(v){swapMsg=v}};
-export {idsOf,keyDate,swapMsg,saveDay,todayPullWait,whenPulled,recordDays,swapSlot,dropLearn,picker,pastEdit,openPicker,closePicker,pickItem,wearFav,togglePastEdit,correctPast,setFormal,setOccasion,resetDay,notAhead,setWorn,replanFuture,checkPlanRules,planRulesNote,renderReplanUI,setVest,resetCard,dayActions,setPastEdit,setSwapMsg,setTodayPullWait};
+export {swapMsg,todayPullWait,whenPulled,recordDays,swapSlot,dropLearn,picker,pastEdit,openPicker,closePicker,pickItem,wearFav,togglePastEdit,correctPast,setFormal,setOccasion,resetDay,setWorn,replanFuture,checkPlanRules,planRulesNote,renderReplanUI,setVest,resetCard,dayActions,setPastEdit,setSwapMsg,setTodayPullWait};
 /* index.html's (act.js): the piece picker's backdrop, and Settings' "Start the plan over" */
 function pickBackdropTap(){closePicker()}
 function replanTap(){replanButton()}

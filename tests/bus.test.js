@@ -17,6 +17,8 @@ const TOPICS={
   'connection-saved':{emit:['settings.js'],on:['sync.js'],what:'Done stored the connection: a backup now'},
   'connection-typed':{emit:['settings.js'],on:['account.js'],what:'another address or code typed in Connection: the account decides'},
   'folding-all':{emit:['today.js'],on:['boxfold.js'],what:'a swipe to another day folds everything at once (true), and is done (false): the folds are quiet meanwhile'},
+  'backup-changed':{emit:['sync.js'],on:['sync-status.js'],what:'the backup\'s status changed (a sync ran, failed, paused or was held): the Backup line is written again'},
+  'invite-ended':{emit:['who.js'],on:['sync-status.js','account.js'],what:'the invitation this phone uses has ended: the Backup line, then the account box, say so'},
 };
 
 /* name -> {serve: files that serve it (one), ask: files that ask for it (in load order), what: what it does}. A socket is how a

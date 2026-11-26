@@ -101,7 +101,7 @@ const rollback=async({ok,chromium,url,ROOT})=>{
     await B.waitForFunction(()=>!localStorage.getItem('sync_status')&&!localStorage.getItem('sync_wait'),null,{timeout:10000}).catch(()=>{});
     ok(await B.evaluate(()=>!localStorage.getItem('sync_status'))&&JSON.parse(store.get('wardrobe:v1')).data.items.some(i=>i.id==='k3'),'back online, the waiting change is backed up without a tap');
     // the write ceiling, everyone's or the tester's own
-    const full=await B.evaluate(()=>[backupFullMsg({error:'limit',what:'backup',write:true,all:true,message:'Today’s room on the server for your backups is used up (0 of 6 new photos are saved).'}),backupFullMsg({error:'limit',what:'backup',write:true})]);
+    const full=await B.evaluate(()=>[HOOK.backupFullMsg({error:'limit',what:'backup',write:true,all:true,message:'Today’s room on the server for your backups is used up (0 of 6 new photos are saved).'}),HOOK.backupFullMsg({error:'limit',what:'backup',write:true})]);
     ok(/everyone’s backups/.test(full[0])&&!/0 of 6/.test(full[0])&&/for your backups/.test(full[1]),`the write ceiling says whose room is used up (${full.join(' | ')})`);
     ok(!A.errs.length&&!B.errs.length,'no page errors: '+[...A.errs,...B.errs].join(' | '));
   }finally{await browser.close()}
