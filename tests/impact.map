@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	689b0d5578fa493034f2
-# tested	9dfbc9bd10975a8c677d
+# tested	881d35baba854983684a
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	acctSettingsPart	acctStart	get	iosDevice	iosInSafari	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -2513,8 +2512,8 @@ asmwatch.test.js	start.js	<loaded>	@tocolnavigator.serviceWorker.registersw.js.c
 asmwatch.test.js	stats.js	<loaded>	@afterScripts
 asmwatch.test.js	styles.css	#add	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .empty	.stage .firstrun	.vh	.wxc.wxlk	.wxl	:root	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
 asmwatch.test.js	sync-photos.js	<loaded>
-asmwatch.test.js	sync-status.js	<loaded>	showSyncStatus
-asmwatch.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	syncNeedsPull	syncNow	syncOnce	syncUrl
+asmwatch.test.js	sync-status.js	<loaded>	@onbackupchanged	showSyncStatus
+asmwatch.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	setSyncStatus	syncNeedsPull	syncNow	syncOnce	syncPaused	syncUrl	syncWaiting
 asmwatch.test.js	tag-request.js	<loaded>
 asmwatch.test.js	tagging.js	<loaded>
 asmwatch.test.js	tests/fixtures/cm/suit/master.jpg	<loaded>
@@ -2530,7 +2529,7 @@ asmwatch.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	ward
 asmwatch.test.js	watch/leather.jpg	<loaded>
 asmwatch.test.js	watch/suit.png	<loaded>
 asmwatch.test.js	weather.js	<loaded>	loadWeather
-asmwatch.test.js	who.js	<loaded>	acctBase	acctRole	applyRole	hasInviteHash
+asmwatch.test.js	who.js	<loaded>	acctBase	acctRole	applyRole	hasInviteHash	isTester
 asmweave.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 asmweave.test.js	account.js	<loaded>	acctStart
 asmweave.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -8782,7 +8781,6 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
-invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -10139,8 +10137,7 @@ modload.test.js	add.js	<any>	<loaded>	@document.addEventListenerclick	addNoteTex
 modload.test.js	analysis-worker.js	<any>
 modload.test.js	analysis.js	<any>	<loaded>	listAnd
 modload.test.js	app.js	<any>	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	fixupRedraw	focusWatch	get	keepFocus	metaGet	metaPut	put	set	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
-modload.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBuild	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetup	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWarm	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmHbShirt	asmKindOf	asmLookTag	asmNkBaseOf	asmPileKind	asmTieSheenK	asmWtTag	asmWtWants	get
-modload.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBuild	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmEnsure	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKind	asmCmLightKeys	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetup	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmHbShirt	asmKindOf	asmLookTag	asmNkBaseOf	asmPileKind	asmTieSheenK	asmWtTag	asmWtWants	get
+modload.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBuild	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKind	asmCmLightKeys	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetup	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWarm	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmHbShirt	asmKindOf	asmLookTag	asmNkBaseOf	asmPileKind	asmTieSheenK	asmWtTag	asmWtWants	get
 modload.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlUI
 modload.test.js	asm-keys.js	<any>	<loaded>	asmCmKey
 modload.test.js	asm-kinds.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmCmKindOf	asmJfWants	asmNkBase	asmNkGet	asmNkJob
@@ -17808,7 +17805,7 @@ sockpatterns.test.js	today.js	<loaded>	@document.addEventListenervisibilitychang
 sockpatterns.test.js	ui.js	<loaded>	addGate	inviteOver	isConnected	layerInert	layerOpen	layerUp	netErr
 sockpatterns.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	giNote	giTag	ivOn	matMigrate	matOnItem	matRenameTo	sockLegacy	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsTop	wardFlt	wardFlush	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
 sockpatterns.test.js	weather.js	<loaded>	loadWeather
-sockpatterns.test.js	who.js	<loaded>	acctBase	acctRole	applyRole	endedAnswer	hasInviteHash	isTester
+sockpatterns.test.js	who.js	<loaded>	acctBase	acctCall	acctRole	applyRole	endedAnswer	get	hasInviteHash	isTester
 socktoe.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 socktoe.test.js	account.js	<loaded>	acctStart	loadAccount	renderAccountUI
 socktoe.test.js	act.js	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -20961,7 +20958,6 @@ wardfab.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedule
 wardfab.test.js	tag-request.js	<loaded>	tagStatsCard
 wardfab.test.js	tagging.js	<loaded>
 wardfab.test.js	tests/fixedplan.js	<any>
-wardfab.test.js	tests/webkit.js	<any>
 wardfab.test.js	theme.js	<loaded>	applyTheme
 wardfab.test.js	toast.js	<loaded>	toast	toastDrop	undoFab	undoHere	undoOff
 wardfab.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -21067,7 +21063,7 @@ wardrobe.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	ad
 wardrobe.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	addGate	closeupBtn	closeupPick	cuEls	cuTouch	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	netErr	tell	uiEsc
 wardrobe.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	get wardQ	giNote	giTag	itemFieldDone	itemFieldNow	itemFieldSoon	itemFieldType	ivOn	matItemPick	matMigrate	matOnItem	matRenameTo	matSyn	setItemField	setWardSort	sockLegacy	sockToeMigrate	wardAllTap	wardBack	wardBar	wardClear	wardClearTap	wardCount	wardDelete	wardDeleteNow	wardFam	wardFieldsEnd	wardFieldsTop	wardFlt	wardFlush	wardFresh	wardGrid	wardHay	wardKeep	wardMatch	wardNoCol	wardNorm	wardOnce	wardOrder	wardPendSet	wardPendingRestore	wardRefresh	wardSearch	wardSearchKey	wardSearchType	wardSort	wardSortPick	wardUndelete	wardView	wardWear
 wardrobe.test.js	weather.js	<loaded>	loadWeather
-wardrobe.test.js	who.js	<loaded>	acctBase	acctRole	applyRole	endedAnswer	hasInviteHash	isTester
+wardrobe.test.js	who.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	applyRole	endedAnswer	get	hasInviteHash	isTester	rememberRole
 wardrobe.test.js	worker.js	<loaded>	corsFor	fetch	serve
 wardrobe.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	give	hold	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
 wardrobe.test.js	worker/people.js	<loaded>	countWrites	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendUpTo	unspend	usedOf	utcDay	whoIs
