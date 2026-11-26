@@ -4,6 +4,32 @@
    edge (a strip, foldEdge) and what is under it slide; their own entry cascades (the checks and their bars, the pieces) still play.
    Folding is that cascade backwards: the last check or piece lifts out first (BOX_LIFT ms apart, styles.css .blift), the card closes
    once about half are gone. A box's running animations are kept on it (box._fa) so a tap in the middle finishes the last move. */
+/* The motion helpers the month, the cards and the piece photos share (the restructure S3a, 2026-11-26: revealNeed, pageScroll and
+   monthBelow from month.js, keepInView and foldQuiet from today.js; their timing, MONTH_MS and MONTH_EASE, is core.js's) */
+import {on} from './bus.js';
+/* how far to scroll so el shows above the tab bar, without the top of `top` going past the top of the screen (sat: the notch's inset) */
+function revealNeed(el,top,sat){if(sat===undefined){const probe=document.createElement('div');probe.style.cssText='position:fixed;top:0;height:0;padding-top:env(safe-area-inset-top);visibility:hidden';document.body.appendChild(probe);sat=parseFloat(getComputedStyle(probe).paddingTop)||0;probe.remove()}
+  const nav=document.querySelector('body>nav'),bottom=(nav?nav.getBoundingClientRect().top:innerHeight)-12,need=el.getBoundingClientRect().bottom-bottom,cap=(top||el).getBoundingClientRect().top-(sat+8);return Math.max(0,Math.min(need,cap))}
+/* the page's scroll during an unfold or a fold, on the animations' own curve (MONTH_EASE), duration and delay, so the page and the clip
+   move together. The page is scrolled once, at the start, and Today is slid back by the same amount and eased to rest with the cards:
+   one more animation the browser runs with the others, no script on any frame. (The browser's own smooth scroll kept its own pace, and
+   WebKit covered a 1,000 px scroll in one frame; a scrollTo on every frame from script, the next try, ran out of step with the clip and
+   the slide on an iPhone, whose scrolling and animations aren't drawn by the page's script, and the cards juddered.) A second call while
+   one runs starts from where the page is drawn, so nothing jumps. */
+function pageScroll(to,ms,delay=0){const pg=$('#today'),from=scrollY;
+  let left=0;if(pg&&pg._ps){const m=/matrix.*,\s*([-\d.e]+)\)$/.exec(getComputedStyle(pg).transform);left=m?+m[1]:0;pg._ps.cancel();pg._ps=null}
+  scrollTo(0,to);const off=scrollY-from+left;   // the browser stops at the page's end: slide by what it really scrolled
+  if(!pg||noMotion()||Math.abs(off)<1||pg.hidden)return;
+  const a=pg._ps=pg.animate([{transform:`translateY(${off}px)`},{transform:'none'}],{duration:ms,delay,easing:MONTH_EASE,fill:'backwards'});
+  a.finished.then(()=>{if(pg._ps===a)pg._ps=null},()=>{})}
+/* what lies after a card in its column (it slides with the card's edge) */
+const monthBelow=box=>{const k=[...box.parentNode.children];return k.slice(k.indexOf(box)+1)};
+/* while a swipe to another day folds everything at once (today.js foldAll), the folds are quiet: no animation, no scroll. foldAll says
+   so through bus.js ('folding-all': true, then false), so a day still steps when this file didn't load */
+let foldQuiet=false;
+on('folding-all',v=>{foldQuiet=v});
+/* folding a box whose top is above the screen (folded from its bottom): bring the card back into view */
+function keepInView(box){if(foldQuiet)return;const r=box.getBoundingClientRect();if(r.top<8)scrollBy({top:r.top-8,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
 const BOX_LIFT=20;
 function boxStop(box){const a=box._fa;box._fa=null;if(!a)return;for(const x of a.list)x.cancel();if(a.end)a.end()}
 function boxUnfold(box){boxStop(box);const pan=box.querySelector('.mpanel');box.classList.remove('instant','bshut','blift');box.classList.add('bfast','open');
@@ -42,7 +68,8 @@ function boxFold(box,items){boxStop(box);const pan=box.querySelector('.mpanel'),
   if(want<scrollY-.5)pageScroll(want,o.duration,o.delay);
   const end=()=>{c.drop();if(scrollY>max)scrollTo(0,max);close()},a=box._fa={list,end};
   list[0].finished.then(()=>{if(box._fa!==a)return;box._fa=null;end();for(const x of list)x.cancel()},()=>{})}
-/* the bridge (tests/bridge.test.js): scorecard.js and today.js (boxUnfold, boxFold), today-photofold.js and month.js (foldEdge) are classic
-   scripts; a module imports them */
-Object.assign(globalThis,{boxUnfold,foldEdge,boxFold});
-export {boxUnfold,foldEdge,boxFold};
+/* the bridge (tests/bridge.test.js): scorecard.js and today.js (boxUnfold, boxFold), today-photofold.js and month.js (foldEdge, revealNeed,
+   pageScroll, monthBelow, keepInView, foldQuiet) read them as globals; a module imports them */
+Object.assign(globalThis,{boxUnfold,foldEdge,boxFold,revealNeed,pageScroll,monthBelow,keepInView});
+Object.defineProperties(globalThis,{foldQuiet:{get:()=>foldQuiet}});
+export {boxUnfold,foldEdge,boxFold,revealNeed,pageScroll,monthBelow,keepInView,foldQuiet};

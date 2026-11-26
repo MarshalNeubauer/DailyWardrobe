@@ -56,7 +56,7 @@ const BRIDGE={
   // weather and climate (today, weather), clockSkew (sync), TODAY_OVERRIDE (the worker) and the tests assign seven lets: setters;
   // CUSTOM_COL and CUSTOM_PAT are lets only core.js writes (applyCustom): getters
 
-  'core.js':['$','ACCENT_MAX','BANDS','BELT_MATS','BEZELS','BLOUSE_TAPE_MAX','CAMO_V','CASUAL_JACKETS','CASUAL_TOPS','CLOCK_AHEAD','CLOCK_MIN','COLORS','COLOR_OPTS','COLS_BY','COL_ALIAS','COOL','CUFFS','CUSTOM_COL','CUSTOM_PAT','DAY_NAMES','DIAL_COLS','DIAL_OPTS','FABRIC','HANDPICK_TYPES','LEATHERS','LUM','LUMS','MATERIALS_BY','MAT_ALIAS','METAL','METAL_TONES','METAL_TYPES','OCCASIONS','OCP_CAMO','OCP_RANKS','OCP_V','OWN_COL_RE','OWN_MAT_MAX','OWN_PAT_RE','PATS_BY','PAT_ALIAS','REC_PHOTO','SEASONS','SEASON_TYPES','SHADE_MAX','SHIRT_WEAVE_MAT','SHOE_NAP','SHOE_STYLES','SHOE_TEXTILES','SLOTS','SLOT_TYPE','STRAP_BANDS','TAG_TYPES','TEXTURE_TYPES','TODAY_OVERRIDE','TROUSER_KINDS','TYPES','VESTS','WATCH_STYLES','accentOf','accentsFor','accentsOf','applyCustom','arriveN','avgText','blouseTapes','camoImage','camoPants','camoPat','cleanDay','cleanRecord','cleanSettings','cleanState','climate','clipMetal','clockSkew','colBase','colBaseFor','colName','colOf','colorDesc','colsFor','dE00','dayClimate','dayFields','dayRecs','desc','di','dressOut','fitCol','handPickSlot','hasPat','hasVest','hexRgb','inRotation','isCargo','isHandPick','isOcp','isWorkday','isoKey','itemFields','itemName','itemSeason','itemTitle','items','key','keySettings','labHex','labOf','leatherLabel','leatherWord','leathersFor','linkFace','lum','lumCol','matAlias','matTypeOne','matTypeWord','matsFor','mergeSettings','mergeState','metalOptsFor','metalWord','mix','nameHtml','nameIso','needsJacket','needsTie','nextStamp','nm','noBidi','normCol','normColFor','normPat','nowMs','occLabel','occOf','ocpImage','offDays','offName','ownColFind','ownColKey','ownDescClean','ownFreeKey','ownKeyNorm','ownMatName','ownMats','ownNameBad','ownNameClean','ownNameShort','ownPatFind','ownPatKey','patBase','patLabel','patName','patNameTaken','patOf','planCol','prettyCols','primaryCol','pw','rgbLab','seasonFit','sentence','setClimate','setClockSkew','setStr','setWardrobe','setWeather','settings','shadeFor','shadeHex','shadeName','shoeStyle','shortCol','shortDesc','sockPatterned','sockToe','sockToeKey','soleStyle','stampAllSettings','stampSettings','strapBand','styleWord','tagTypesNow','takeSettings','tapeText','thirdOf','titleCls','todayDate','trouserKind','trouserKindShown','trueToday','typeWord','watchOpts','watchText','wearsJacket','wearsTie','weather'],
+  'core.js':['$','ACCENT_MAX','BANDS','BELT_MATS','BEZELS','BLOUSE_TAPE_MAX','CAMO_V','CASUAL_JACKETS','CASUAL_TOPS','CLOCK_AHEAD','CLOCK_MIN','COLORS','COLOR_OPTS','COLS_BY','COL_ALIAS','COOL','CUFFS','CUSTOM_COL','CUSTOM_PAT','DAY_NAMES','DIAL_COLS','DIAL_OPTS','FABRIC','HANDPICK_TYPES','LEATHERS','LUM','LUMS','MATERIALS_BY','MAT_ALIAS','METAL','METAL_TONES','METAL_TYPES','MONTH_EASE','MONTH_MS','OCCASIONS','OCP_CAMO','OCP_RANKS','OCP_V','OWN_COL_RE','OWN_MAT_MAX','OWN_PAT_RE','PATS_BY','PAT_ALIAS','REC_PHOTO','SEASONS','SEASON_TYPES','SHADE_MAX','SHIRT_WEAVE_MAT','SHOE_NAP','SHOE_STYLES','SHOE_TEXTILES','SLOTS','SLOT_TYPE','STRAP_BANDS','TAG_TYPES','TEXTURE_TYPES','TODAY_OVERRIDE','TROUSER_KINDS','TYPES','VESTS','WATCH_STYLES','accentOf','accentsFor','accentsOf','applyCustom','arriveN','avgText','blouseTapes','camoImage','camoPants','camoPat','cleanDay','cleanRecord','cleanSettings','cleanState','climate','clipMetal','clockSkew','colBase','colBaseFor','colName','colOf','colorDesc','colsFor','dE00','dayClimate','dayFields','dayRecs','desc','di','dressOut','fitCol','handPickSlot','hasPat','hasVest','hexRgb','inRotation','isCargo','isHandPick','isOcp','isWorkday','isoKey','itemFields','itemName','itemSeason','itemTitle','items','key','keySettings','labHex','labOf','leatherLabel','leatherWord','leathersFor','linkFace','lum','lumCol','matAlias','matTypeOne','matTypeWord','matsFor','mergeSettings','mergeState','metalOptsFor','metalWord','mix','nameHtml','nameIso','needsJacket','needsTie','nextStamp','nm','noBidi','normCol','normColFor','normPat','nowMs','occLabel','occOf','ocpImage','offDays','offName','ownColFind','ownColKey','ownDescClean','ownFreeKey','ownKeyNorm','ownMatName','ownMats','ownNameBad','ownNameClean','ownNameShort','ownPatFind','ownPatKey','patBase','patLabel','patName','patNameTaken','patOf','planCol','prettyCols','primaryCol','pw','rgbLab','seasonFit','sentence','setClimate','setClockSkew','setStr','setWardrobe','setWeather','settings','shadeFor','shadeHex','shadeName','shoeStyle','shortCol','shortDesc','sockPatterned','sockToe','sockToeKey','soleStyle','stampAllSettings','stampSettings','strapBand','styleWord','tagTypesNow','takeSettings','tapeText','thirdOf','titleCls','todayDate','trouserKind','trouserKindShown','trueToday','typeWord','watchOpts','watchText','wearsJacket','wearsTie','weather'],
   // analysis.js (in the page and the worker), history, pickscore, scorecard, today-plan, today, month, stats, pack, fav, wardrobe,
   // itemsheet, locks, dress and shop plan and score with these; analysis-worker.js ranks with rankLooks; the rest: tests (LOOK_K, lookLeather and planLook
   // only inside a string tests/lookplan.test.js runs in the page)
@@ -70,6 +70,9 @@ const BRIDGE={
   'detect.js':['CAMO_TR','CHECK_PATS','DETECT_PATS','MOTIF_PATS','STRIPE_PATS','TEXTURE_PATS','detectPattern','detectQueued','settFromCanvas','settSig','texPat','tieWeave','usableSett'],
 // the painter (C3, 2026-11-24): the sRGB conversions for draw.js, mannequin.js, the painter (asm-worker.js too), tagging, measure, migrate and pattern-read; the colormath test
   'srgb.js':['linSrgb','linSrgb8','srgbLin','srgbLin8'],
+  // the photo-tagging request: app, add, item-photo, migrate, measure, pattern-read, colpick, look, safety and stats are classic
+  // scripts; add-keep.js, add-save.js, tagging.js (TAG_Q) and checklist.js (texSig) are modules that read these as globals
+  'tag-request.js':['CLOSE_MAX','TAGIMG_CACHE','TAG_MAX','TAG_Q','benchEstimate','customForTag','describeEstimate','keepCloseImg','keepTagImg','readEstimate','recordTagResult','resignTagImg','sharpCloseOf','tagExtras','tagFixes','tagImgOf','tagStatsCard','texSig'],
 // the painter (C3, 2026-11-24): mannequin.js puts outfitMannequinSvg and mqData on self itself, and each pose file its MQ_RAW entry: nothing to bridge
   'mannequin.js':[],
   'mq/vest.js':[],
@@ -88,6 +91,18 @@ const BRIDGE={
   'back.js':['backBorrow','backDrop','backHold','backKind','backLand','backOn','backOver','backPush','backReturn','backSettled','backWanted','histDrop','histPush'],
   // every file registers its handlers with acts; today.js and care.js call actTaps; ui.js and tests read ACTS
   'act.js':['ACTS','actTaps','acts'],
+  // toast: 34 page scripts; toastDrop: start; TOAST_ACT_MS: tests/a11y.test.js
+  'toast.js':['toast','toastDrop'],
+  // the question, the close-up chooser, the layers' focus, the connection's state and plain errors, for nearly every page script;
+  // connMsg has a setter (tests/restacts.test.js), asking, cuOpen and connBusy are getters
+  'ui.js':['NEED_CONN','addGate','advClose','askAnswer','askConfirm','asking','closeupBtn','closeupPick','connSummary','cuGot','cuOpen','cuTouch','inviteOver','isConnected','layerClose','layerFrom','layerInert','layerOpen','needConn','netErr','plainErr','renderConnUI','tell'],
+  // the sheets that close on a swipe down are classic scripts: add-sheet, item-view, colpick and kit call it
+  'sheet-swipe.js':['sheetSwipe'],
+  // add, add-card, tagging, pattern-read, safety, colpick, checklist, look and item-photo; the rest: tests
+  'measure.js':['BLUR_SHARP','FAR_DE','MEAS_GAP','aiSignals','closeRead','colRef','colourVerdicts','measHint','measKL','measureAndApply','measureCard','measureCloth','measureParts','multiCol','nearestCols','paperCopy','paperKey','paperNow','paperOf','sharpness','undoMeasured','wbGains','wbRead'],
+  // history.js, a classic script, swaps, picks and draws the picker with these; slotPool, fitOf, fitTag and pickSub are also called by
+  // the care, onorder, planner-rules and rotation-pause tests
+  'pickscore.js':['BELT_STUCK','FOLLOW','beltless','bootsOff','fitOf','fitTag','handPool','handWhy','keepHand','keepOff','pickSub','pocketOn','slotPool','suggestClean','suitPants'],
   // the other Add files, tagging, pattern-read, measure, item-photo, migrate, safety, settings, kit and others draw and read cards with these; addCalm is a let only add.js writes (add-save reads it): a getter; the rest: tests
   'add.js':['PAIR_TYPES','STOPPED','TEX_MAX','TEX_MIN_PX','addBackOnline','addCalm','addFiles','addTexture','applyWb','dropTexture','errToHand','measureGuess','multiAgain','multiMsg','needType','patternAgain','refineAgain','renderAdd','skipCard','stopRead','wbNote'],
   // tests/paste.test.js clears the line under the "Photo or link" field with it
@@ -101,8 +116,6 @@ const BRIDGE={
   // add (renderAddFor, npsDraw, npsId), ui (npsId, npsAsking, npsInert, npsCancel), start (npsLeave; it sets addFor with setAddFor, S1a);
   // addManual and npsClose by tests only; npsId and npsAsking are lets only add-sheet.js writes: getters
   'add-sheet.js':['npsAsking','npsCancel','npsDraw','npsId','npsInert','npsLeave','renderAddFor','setAddFor'],
-  // the sheets that close on a swipe down are classic scripts: add-sheet, item-view, colpick and kit call it
-  'sheet-swipe.js':['sheetSwipe'],
   // add, look, kit, wardrobe, colpick, safety, tagging, pattern-read and the other Add files find a card and save it with these;
   // saveAllOn is a let only add-save.js writes (add and add-card read it): a getter
   'add-save.js':['cardAt','cardIx','cardOf','cardReading','cardReady','qAt','qh','save','saveAll','saveAllOn','savedTitle'],
@@ -129,23 +142,22 @@ const BRIDGE={
   'missed.js':['firstReal','missedCard','missedNote'],
   // history, settings, dress, care, setup and kit (clearLocks), pack (lockIds), today (lockUpcoming), add-more and care (careUnlock), history (unlockClash)
   'locks.js':['careUnlock','clearLocks','lockIds','lockUpcoming','unlockClash'],
-  // history.js, a classic script, swaps, picks and draws the picker with these; slotPool, fitOf, fitTag and pickSub are also called by
-  // the care, onorder, planner-rules and rotation-pause tests
-  'pickscore.js':['BELT_STUCK','FOLLOW','beltless','bootsOff','fitOf','fitTag','handPool','handWhy','keepHand','keepOff','pickSub','pocketOn','slotPool','suggestClean','suitPants'],
+  // scorecard.js and today.js fold and unfold the cards (boxFold, boxUnfold); today-photofold.js (foldEdge, revealNeed, pageScroll,
+  // keepInView, foldQuiet) and month.js (foldEdge, revealNeed, pageScroll, monthBelow) slide with these: modules that read them as
+  // globals (no page module imports another yet); foldQuiet is a let only boxfold.js writes (today.js foldAll tells it through bus.js):
+  // a getter. revealNeed, pageScroll and monthBelow came from month.js, keepInView and foldQuiet from today.js (restructure S3a)
+  'boxfold.js':['boxFold','boxUnfold','foldEdge','foldQuiet','keepInView','monthBelow','pageScroll','revealNeed'],
   // today.js draws and folds the card (scoreCard, toggleScore) and sets scoreOpen, as the advicefresh, folds, scoreanim and scoredials
   // tests do (a setter); history.js and fav.js say dayWord; month.js reads recentWork; dialHtml, dialsFor, rankFor and rankPools are
   // called by tests only (advicefresh, scoredials, takeoff), which also read rankMemo and rankW (getters: only scorecard.js writes them)
   'scorecard.js':['dayWord','recentWork','scoreCard','scoreOpen','setScoreOpen','toggleScore'],
-  // today.js is a classic script (boxFold, boxUnfold); scorecard.js (boxFold, boxUnfold), today-photofold.js and month.js (foldEdge)
-  // are modules that still read these as globals: boxfold.js comes after scorecard.js in the list, and an import would run it first
-  'boxfold.js':['boxFold','boxUnfold','foldEdge'],
   // planDirty is called by 25 classic page scripts, planFor by 14, planMonth by 9; cache is read by nine and set by 95 tests (a
   // setter); today and stats ask planStartDay, today planTrim, outSig and planSnapSoon, start PLAN_SNAP and planSnapUse, shop strHash;
   // planRuns, planSig and planSnapUsed (a getter): tests/speed.test.js
   'today-plan.js':['PLAN_SNAP','cache','outSig','planDirty','planFor','planMonth','planSnapSoon','planSnapUse','planStartDay','planTrim','strHash'],
   // Today's names for the screens that step, fold and pick (history, scorecard, today-gestures, month, settings, start, kit, …) and the
-  // tests; openRow, belowOpen, dayShown and BLOUSE_ROLL_ON have setters (tests assign them), recordRun and foldQuiet are getters; figureStage: tests/todayswatch.test.js, inside a string run in the page
-  'today.js':['canPick','figCuDone','foldAll','foldQuiet','goToday','hasOutfit','homeDay','keepHome','keepInView','planWith','recordRun','renderToday','setListOpen','slotLabel','stepDay','wardShort','wxPreload'],
+  // tests; openRow, belowOpen, dayShown and BLOUSE_ROLL_ON have setters (tests assign them), recordRun is a getter; figureStage: tests/todayswatch.test.js, inside a string run in the page
+  'today.js':['canPick','figCuDone','foldAll','goToday','hasOutfit','homeDay','keepHome','planWith','recordRun','renderToday','setListOpen','slotLabel','stepDay','wardShort','wxPreload'],
   // today.js opens and shuts a piece's photo with these
   'today-photofold.js':['picOpenReady','picShut','picSnap','picStop'],
   // today.js lays out the swatches with ovlPiece and calls applyZoom, zoomOut, swApply, swTap and swClose; zoom is a getter
@@ -157,10 +169,11 @@ const BRIDGE={
   // tests/moveoutfit.test.js calls moveRecs and reads outfitMove (a getter: only today-gestures.js writes it)
   'today-gestures.js':['mvSig','todayBusy'],
   // today.js (the month box, the pieces line, the home day; it sets monthOpen, as nine tests do: a setter), daysoff, history, pack,
-  // remind, start, stats and the painter (assemble.js, asm-color.js: planOn) are classic scripts; boxfold, fav,
-  // scorecard, today-gestures and today-photofold are modules earlier in the list that read these as globals; monthGridHtml and
+  // remind, start, stats and the painter (assemble.js, asm-color.js: planOn) are classic scripts; scorecard
+  // and today-gestures, modules earlier in the list, and fav, one later, read these as globals (the motion helpers went to boxfold.js
+  // and core.js in the restructure S3a); monthGridHtml and
   // monthStep are called by tests only (month, setup); tests/setup.test.js sets monthPanel (a setter)
-  'month.js':['MONTH_EASE','MONTH_MS','dayOnly','monthBelow','monthDrag','monthLink','monthOpen','monthPanel','monthPlan','monthRelease','nextWorkday','openDay','pageScroll','piecesLine','piecesParts','planOn','revealNeed','setMonthOpen','shortRest','shortTop','stackSVG','toggleMonth'],
+  'month.js':['dayOnly','monthDrag','monthLink','monthOpen','monthPanel','monthPlan','monthRelease','nextWorkday','openDay','piecesLine','piecesParts','planOn','setMonthOpen','shortRest','shortTop','stackSVG','toggleMonth'],
   // esc is called by 35 page scripts, srcOk by nine; the painter (assemble, asm-color, asm-kinds, asm-ocp: classic) reads the kept
   // pictures and their keys; today, start, settings, daysoff and stats (classic), history, today-picture and itemsheet (modules that
   // read them as globals) draw with the rest; 15 names are read by
@@ -179,15 +192,10 @@ const BRIDGE={
   // and safety.js (loadWeather) read these as globals (setup.js is a module later in the list); scorecard.js, a module earlier in the list, reads temp; geoName is read
   // by tests/setup.test.js only
   'weather.js':['findCity','loadWeather','renderWxLoc','setLocation','setUnits','temp','unit','useMyLocation','wxChip'],
-  // toast: 34 page scripts; toastDrop: start; TOAST_ACT_MS: tests/a11y.test.js
-  'toast.js':['toast','toastDrop'],
   // read by the tests only: a11y (applyTheme, cycleTheme), actsindex (cycleTheme), modload (themeTap)
   'theme.js':[],
   // moving between pages and start-up: index.html's last script calls startUp; pagesOn is a getter
   'start.js':['onSyncedData','openAdd','pagesOn','show','startUp','subBack','subOpen','subShown'],
-  // the question, the close-up chooser, the layers' focus, the connection's state and plain errors, for nearly every page script;
-  // connMsg has a setter (tests/restacts.test.js), asking, cuOpen and connBusy are getters
-  'ui.js':['NEED_CONN','addGate','advClose','askAnswer','askConfirm','asking','closeupBtn','closeupPick','connSummary','cuGot','cuOpen','cuTouch','inviteOver','isConnected','layerClose','layerFrom','layerInert','layerOpen','needConn','netErr','plainErr','renderConnUI','tell'],
   // start.js calls safetyStart and storageDown; add-save and kit storeFailure, saveFailed and askPersist; sync storeFailure,
   // storeFailText and adoptBackupSettings and sets storeToldAt with setStoreToldAt (S1a); add, add-card and app the tagging failure's
   // (tagFailText, tagFailed, tagFailNote, tagNetText, retryTag; tagWhy and tagNetLast have setters for the errreport and tagreads
@@ -197,21 +205,16 @@ const BRIDGE={
   // settings.js, stats.js, start.js, add-card.js, add-save.js, shop.js and kit.js are classic scripts; vestMigrating is read by the
   // dress test only: a getter
   'dress.js':['dressNewItem','dressSummary','dressSynced','dressWhyUnused','migrateVests','newSuitVest','renderDressUI'],
-  // the photo-tagging request: app, add, item-photo, migrate, measure, pattern-read, colpick, look, safety and stats are classic
-  // scripts; add-keep.js, add-save.js, tagging.js (TAG_Q) and checklist.js (texSig) are modules that read these as globals
-  'tag-request.js':['CLOSE_MAX','TAGIMG_CACHE','TAG_MAX','TAG_Q','benchEstimate','customForTag','describeEstimate','keepCloseImg','keepTagImg','readEstimate','recordTagResult','resignTagImg','sharpCloseOf','tagExtras','tagFixes','tagImgOf','tagStatsCard','texSig'],
   // start.js runs the four remakes, item-photo.js counts its own within the day's (remakeLeft, remakeSpend); REMAKE_DAY is read by
   // tests/tagreads.test.js only
   'migrate.js':['fixBlackBackdrops','recolourSpecSetts','remakeLeft','remakeSpend','upgradeCloseups','upgradePhotos'],
-  // add, add-card, tagging, pattern-read, safety, colpick, checklist, look and item-photo; the rest: tests
-  'measure.js':['BLUR_SHARP','FAR_DE','MEAS_GAP','aiSignals','closeRead','colRef','colourVerdicts','measHint','measKL','measureAndApply','measureCard','measureCloth','measureParts','multiCol','nearestCols','paperCopy','paperKey','paperNow','paperOf','sharpness','undoMeasured','wbGains','wbRead'],
-  // add, add-card, measure, pattern-read, colpick and safety are classic scripts; add-save.js and tag-request.js (fieldLabel, valName),
-  // modules earlier in the list, read these as globals; confTxt is read by tests/records.test.js only
-  'tagging.js':['aiFields','closeTagImg','fieldLabel','readAbort','readBegin','readEnd','refineFromCloseup','tagNotes','takeExtras','valName'],
   // colpick, look, settings and add-card are classic scripts; tagging.js, a module earlier in the list, reads openColForm and openPatForm
   // as globals (tests/restacts.test.js replaces those two on window, which reaches tagging.js's calls); guessPatBase is called by
   // tests/asmroute.test.js only
   'own-lists.js':['addCustomColor','addCustomPattern','addOwnMaterial','groupOf','matGuessUse','matOffer','newColHex','openColForm','openPatForm','ownColOffer','removeCustom','removeOwnMaterial','renderCustomUI','renderOwnMatUI','typePl'],
+  // add, add-card, measure, pattern-read, colpick and safety are classic scripts; add-save.js and tag-request.js (fieldLabel, valName),
+  // modules earlier in the list, read these as globals; confTxt is read by tests/records.test.js only
+  'tagging.js':['aiFields','closeTagImg','fieldLabel','readAbort','readBegin','readEnd','refineFromCloseup','tagNotes','takeExtras','valName'],
   // add, add-card, add-save, tagging, itemsheet, look, measure, migrate and asm-color; the rest: tests
   'pattern-read.js':['TEX_WORDS','claudeOnly','missedPattern','readPatternWithClaude','readSett','readable','rereadSett','settFromSpec','settNote','settSummary','settable'],
 // the painter (C3, 2026-11-24): Today (asmFor, asmShown, asmEnsure), photos, settings, start, today-picture, colpick and the other painter files read these; asm-worker.js replaces asmData and asmJpeg and the tests stub asmAhead, asmAheadSoon and asmPhoto (lets with setters); ASM_ON, ASM_IDLE_MS, asmList, asmOut and asmW are assigned by tests (setters)
@@ -230,6 +233,9 @@ const BRIDGE={
   'asm-ocp.js':['asmOcpBase','asmOcpJob','asmOcpPaint','asmOcpSig'],
   // start (renderStats, statsShow), wardrobe, care and cost (wornDays), dress (shoesWhyUnused), fav, cost, care and pack (the names and pictures); the rest: tests; statsOpen and fitMemo are getters (only stats.js writes them)
   'stats.js':['emptyAdd','renderStats','shoesWhyUnused','statDate','statName','statName1','statPic','statsShow','wornDays'],
+  // history, today, itemsheet, wardrobe, scorecard and stats; favData, favSave and favToggleItem by the favorites tests only;
+  // favWard is a let only fav.js writes (wardrobe.js reads it): a getter
+  'fav.js':['FAV_UNDO_MS','favChip','favItemRow','favLastIcon','favMark','favOff','favPieces','favPillSeg','favStatsCard','favStrip','favWard','favWhy'],
   // calendar.js opens the page and sets the trip (openPack, packSetTrip), start.js shows it (packShow); the rest are called or read by
   // the pack, packcare-taps, planreview, stats, calendar, restacts and pocketsquare tests, which set packT and packNow (setters)
   'pack.js':['openPack','packSetTrip','packShow'],
@@ -251,9 +257,6 @@ const BRIDGE={
   // itemsheet (cpwSum, cpwBlock), add-card (cpwQRow), add-save (cpwSaveFields), stats (cpwStatsCard), care (cpwSettingsUI); the
   // other nine are read by tests/costwear.test.js only
   'cost.js':['cpwBlock','cpwQRow','cpwSaveFields','cpwSettingsUI','cpwStatsCard','cpwSum'],
-  // history, today, itemsheet, wardrobe, scorecard and stats; favData, favSave and favToggleItem by the favorites tests only;
-  // favWard is a let only fav.js writes (wardrobe.js reads it): a getter
-  'fav.js':['FAV_UNDO_MS','favChip','favItemRow','favLastIcon','favMark','favOff','favPieces','favPillSeg','favStatsCard','favStrip','favWard','favWhy'],
   // stats (shopButton), start (closeShop), today-gestures (shopOpen); the rest: tests, which assign shop, shopBusy, shopWorker and shopShown (getters and setters)
   'shop.js':['closeShop','shopButton','shopOpen'],
   // sync.js and the screens that say how the backup stands: app, photos, settings, snapshots, backupfile, account, about, ui, setup;
@@ -293,7 +296,11 @@ const BRIDGE={
 const GROWN={
   // restructure S1a (2026-11-25): the setters other files call instead of assigning the owner's let (once files import each other an
   // imported binding is read-only); setFlt moved here from itemsheet.js
-  'core.js':['setClimate','setClockSkew','setWeather'],
+  // and restructure S3a (2026-11-26): the motion helpers moved down out of the screens (RESTRUCTURE-PLAN.md section 3): MONTH_MS and
+  // MONTH_EASE from month.js into core.js (start.js, a required file, eases the pages on them), revealNeed, pageScroll and monthBelow
+  // from month.js and keepInView and foldQuiet from today.js into boxfold.js
+  'core.js':['MONTH_EASE','MONTH_MS','setClimate','setClockSkew','setWeather'],
+  'boxfold.js':['foldQuiet','keepInView','monthBelow','pageScroll','revealNeed'],
   'app.js':['setAiError','setAiModel','setConnReady','setDbConn','setDbCur','setDbWiping','setFlt','setSel','setView'],
   'add-sheet.js':['setAddFor'],
   'history.js':['setPastEdit','setSwapMsg','setTodayPullWait'],

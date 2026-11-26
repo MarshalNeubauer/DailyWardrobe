@@ -230,6 +230,6 @@ function connOffTap(){goConnect()}
 function addConnTap(){openSettings('connection');goConnect()}
 Object.assign(globalThis,{cuTouch,layerFrom,netErr,NEED_CONN,inviteOver,isConnected});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,closeupClose,get connBusy(){return connBusy},get connMsg(){return connMsg},set connMsg(v){connMsg=v},advClose};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,closeupClose,get connBusy(){return connBusy},get connMsg(){return connMsg},set connMsg(v){connMsg=v}};
 export {asking,askAnswer,askConfirm,cuTouch,cuOpen,closeupBtn,cuGot,closeupPick,closeupClose,tell,layerFrom,layerInert,layerOpen,layerClose,netErr,plainErr,NEED_CONN,inviteOver,isConnected,needConn,connSummary,connMsg,connBusy,renderConnUI,addGate,advClose};
 acts({advTap,askNoTap,askYesTap,cuBtnTap,connOwnTap,connLinkKey,connGoTap,connOffTap,addConnTap});
