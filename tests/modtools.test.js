@@ -72,8 +72,8 @@ module.exports=async({ok,ROOT})=>{
       'a wrong use of a bridged name\'s type is an error: label(1) is m.js\'s export, a string, so .toFixed is caught ('+of('c.js').join(' | ')+')');
     const decl=Object.fromEntries(r.dts.split('\n').map(l=>/^declare var (\S+): (.*);$/.exec(l)).filter(Boolean).map(m=>[m[1],m[2]])),dts=Object.keys(decl);
     ok(['cache','label','px'].every(n=>dts.includes(n))&&!['hidden','SECRET','UNIT','bump','count'].some(n=>dts.includes(n)),'globals.d.ts would declare the bridged names, and not a module\'s own names or a classic script\'s ('+dts.join(', ')+')');
-    ok(decl.label==="typeof import('../m.js').label"&&decl.px==="typeof import('../lib/n.js').px"&&decl.cache==='any',
-      'a bridged name has its module\'s export\'s type, and one the module doesn\'t export (cache) stays any ('+JSON.stringify(decl)+')');
+    ok(decl.label==="typeof import('../m.js').label"&&decl.px==="typeof import('../lib/n.js').px"&&decl.cache==="typeof import('../m.js').cache",
+      'a bridged name has its module\'s export\'s type, a `let` too (cache; since S5a every bridged name is exported, tests/bridge.test.js) ('+JSON.stringify(decl)+')');
   }
 
   /* ---- the cross-file write check, the ledger and the bridge ---- */
@@ -107,7 +107,7 @@ module.exports=async({ok,ROOT})=>{
     put('s.js','import {deep} from "./lib/u.js";\nlet n=0,open=false,w=0,seen=1,kept=2;const K=1;function f(){return deep}function stub(){}\n'
       +'Object.assign(globalThis,{n,f,stub});\n'
       +'Object.defineProperties(globalThis,{open:{get:()=>open},K:{get:()=>K},g:{get:()=>n+1},w:{get:()=>w,set:v=>{n=v}},seen:{get(){return seen},set(v){seen=v}},kept:{get:()=>kept}});\n'
-      +'Object.defineProperty(globalThis,"late",{set:v=>{w=v}});\nexport {f};');
+      +'Object.defineProperty(globalThis,"late",{set:v=>{w=v}});\nexport {f,n,stub,open,K,w,seen,kept};');
     put('lib/u.js','export const deep=1;');
     put('t.js','function go(){open=true;seen=2;stub=null;return kept}');
     put('tests/x.test.js','const local=()=>{let seen=0;seen++;return seen};\nmodule.exports=async p=>{await p.evaluate(()=>{open=false;seen=3;window.stub=()=>1;f();bump()});local()};');
@@ -122,6 +122,10 @@ module.exports=async({ok,ROOT})=>{
     const acc=modscope.bridged(modscope.parse(fs.readFileSync(path.join(tmp,'s.js'),'utf8'),true)).acc;
     ok(JSON.stringify(acc.get('open'))==='{"get":true,"set":false,"reads":"open","writes":null}'&&JSON.stringify(acc.get('seen'))==='{"get":true,"set":true,"reads":"seen","writes":"seen"}'&&acc.get('g').reads===null&&acc.get('w').writes==='n',
       'tests/modscope.js reads each accessor as written: whether it has a getter and a setter, and the name each hands on');
+    /* restructure S5a: a bridged name of the file's own must be exported too (g and late are no names of s.js) */
+    put('s.js',fs.readFileSync(path.join(tmp,'s.js'),'utf8').replace('export {f,n,stub,open,K,w,seen,kept};','export {f,n,open,K,w,seen};'));
+    const x=B.measure(tmp).problems.filter(t=>/without exporting/.test(t));
+    ok(x.join()==='s.js bridges kept, stub without exporting them: add them to its `export {…}`','a bridged name the module doesn\'t export is named ('+x.join(' | ')+')');
   }finally{fs.rmSync(tmp,{recursive:true,force:true})}
 
   /* ---- tests/appsrc.js: app files as scripts for the Node vm tests ---- */
