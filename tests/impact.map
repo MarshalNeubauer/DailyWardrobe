@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	a6d36a5ece08181fcc4d
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	acctSettingsPart	acctStart	get	iosDevice	iosInSafari	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -3706,7 +3707,6 @@ bus.test.js	sync.js	<any>
 bus.test.js	tag-request.js	<any>
 bus.test.js	tagging.js	<any>
 bus.test.js	tests/appsrc.js	<any>
-bus.test.js	tests/webkit.js	<any>
 bus.test.js	theme.js	<any>
 bus.test.js	toast.js	<any>
 bus.test.js	today-gestures.js	<any>
@@ -5760,8 +5760,8 @@ connrole.test.js	start.js	<loaded>	@onsettingsclosed	applyStored	loadStored	page
 connrole.test.js	stats.js	<loaded>	@afterScripts
 connrole.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pri	.slide	.stage	.stage .firstrun	.vh	.wxc.wxlk	.wxl	:root	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
 connrole.test.js	sync-photos.js	<loaded>
-connrole.test.js	sync-status.js	<loaded>	showSyncStatus
-connrole.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	pulledYet	syncNeedsPull	syncNow	syncOnce	syncUrl
+connrole.test.js	sync-status.js	<loaded>	@onbackupchanged	showSyncStatus
+connrole.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	pulledYet	setSyncStatus	syncNeedsPull	syncNow	syncOnce	syncPaused	syncUrl	syncWaiting
 connrole.test.js	tag-request.js	<loaded>
 connrole.test.js	tagging.js	<loaded>
 connrole.test.js	tests/fixedplan.js	<any>
@@ -5775,7 +5775,7 @@ connrole.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	ha
 connrole.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 connrole.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	matMigrate	sockToeMigrate	wardFlush	wardPendingRestore
 connrole.test.js	weather.js	<loaded>	loadWeather
-connrole.test.js	who.js	<loaded>	acctBase	acctRole	applyRole	hasInviteHash	rememberRole
+connrole.test.js	who.js	<loaded>	acctBase	acctRole	applyRole	hasInviteHash	isTester	rememberRole
 costwear.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 costwear.test.js	account.js	<loaded>	@onsettingssummaries	acctSettingsPart	acctStart	get	iosDevice	iosInSafari	loadAccount	renderAccountUI
 costwear.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -8615,6 +8615,7 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
+invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -9111,7 +9112,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
+keptphotos.test.js	worker/photostore.js	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
@@ -10732,7 +10733,7 @@ motif.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	hasOu
 motif.test.js	ui.js	<loaded>	addGate	closeupBtn	cuTouch	inviteOver	isConnected	layerInert	layerUp	needConn	netErr
 motif.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	giNote	giTag	itemFieldNow	matMigrate	sockToeMigrate	wardBack	wardBar	wardCount	wardFlt	wardFlush	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
 motif.test.js	weather.js	<loaded>	loadWeather
-motif.test.js	who.js	<loaded>	acctBase	acctRole	applyRole	endedAnswer	hasInviteHash	isTester
+motif.test.js	who.js	<loaded>	acctBase	acctCall	acctRole	applyRole	endedAnswer	get	hasInviteHash	isTester
 motif.test.js	worker.js	<any>	<loaded>	corsFor	fetch	serve
 motif.test.js	worker/backup.js	<any>	<loaded>
 motif.test.js	worker/calendar.js	<any>	<loaded>
@@ -11576,7 +11577,7 @@ ocpcloth.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	ha
 ocpcloth.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
 ocpcloth.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	matMigrate	sockToeMigrate	wardFlush	wardPendingRestore
 ocpcloth.test.js	weather.js	<loaded>	loadWeather
-ocpcloth.test.js	who.js	<loaded>	acctBase	acctRole	applyRole	endedAnswer	hasInviteHash	isTester
+ocpcloth.test.js	who.js	<loaded>	acctBase	acctCall	acctEsc	acctRole	applyRole	endedAnswer	get	hasInviteHash	isTester	rememberRole
 onorder.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 onorder.test.js	account.js	<loaded>	acctStart	get
 onorder.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -15784,7 +15785,7 @@ server-limits.test.js	stats.js	<loaded>	@afterScripts	statsPlan	statsPlanned
 server-limits.test.js	styles.css	#add	#adv-photos:has(#asm-group[hidden]),body:not(.owner) #adv-photos	#ask-backdrop	#ask-backdrop.on	#ask-sheet	#ask-sheet.on	#busy	#busy.on	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#itempic-btn[disabled]	#mbox .mhead	#mbox .mswipe	#modal-backdrop	#modal-backdrop,#settings-modal	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#photos-conn	#photos-conn:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal .cpwset .cpwin input[type="text"]	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .dtog::after	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox:is(.instant,.bfast) .mpanel-in	#settings-modal .mpanel-in	#settings-modal .mpanel-in::after	#settings-modal .mpanel-in::before	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date],#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal .sgroup:has(>.days)	#settings-modal .srow	#settings-modal .srow select	#settings-modal button.adv-head	#settings-modal button.dress-sw	#settings-modal label.btn	#settings-modal,#setup,#kitsheet	#setup button.pri,.ask-btns button.pri	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast.on	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.about-confirm	.about-fold summary	.about-fold summary::after	.about-note	.about-text	.acct-box .acct-h	.adv	.adv-head .chev	.adv-in	.adv-t	.adv-t small	.ask-btns	.ask-btns button	.ask-more	.ask-q	.btn	.cal-form input[type=url]	.cal-guides button	.cal-howh	.cal-priv	.cap	.conn-msg	.conn-off-note .linkbtn	.conn-off-note:empty	.conn-tick	.cpw-h	.cpwin	.cpwin input[type="text"]	.cpwset	.cpwset input[type="number"]	.cpwsym	.custadd	.custadd button	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.daygrid	.daygrid .side	.daygrid .stage	.days	.dress-row	.dress-row:first-child	.dress-sw i	.dress-sw i::after	.dress-sw.on i	.dress-sw.on i::after	.dress-txt	.dress-txt b	.dress-txt small	.dtog	.dtog.on	.fb-list	.fchips	.firstrun	.firstrun h3	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it.done .fr-t	.fr-it.done .fr-tick	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.hlist	.hlist:empty	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mc	.mc .dn	.mc.rest	.mc.today	.mdow	.mgrid	.mhead	.mhead h3	.mlstrip	.mlstrip,.pstrip	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.offadd input[type=date]	.pack-link	.pri	.sactions	.sactions:empty	.sbody	.scat-h	.setup-again	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgh.sgh-first	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.sic	.sicw	.side>.mbox:last-child	.side>.score,.side>.mbox,.side>.dayact,.side>p	.side>:first-child	.slabel	.slide	.slink	.slink .chev	.slinks	.slinks .slink	.spin	.srow	.srow select	.stack	.stack.none	.stack.rest	.stage	.stage .firstrun	.vfile	.vh	.wxc.wxlk	.wxl	::placeholder	:focus-visible	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:where(#today) .mbox	:where(#today) .mltxt b	:where(#today) .mltxt small	:where(#today) .month-link	:where(#today) .mpanel-in	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.busy-on #toast	body.nocon .conn-only,.connhide	body.tester:not(.srv-open) #adv-connection,body.nocon:not(.srv-open) #adv-connection	button	button,.btn,select,input	button:focus-visible,select:focus-visible,input:focus-visible	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	html.set-lock,html.set-lock body	label:has(>.vfile)	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav::before	select,input[type="text"],input[type="range"]
 server-limits.test.js	sync-photos.js	<loaded>	isPh	phBatch	phIn	phMap	phOut	phStrings
 server-limits.test.js	sync-status.js	<loaded>	@onbackupchanged	@oninviteended	@onsettingsopen	safariWord	showSyncStatus
-server-limits.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	backedUpWords	backupFullMsg	clockFix	clockLearn	clockTell	get	get syncDue	get syncing	localState	nextUtcDay	pauseTillTomorrow	pullDone	pulledYet	restoreDone	restoreWanted	safariTab	scheduleSync	set	set syncDue	setSyncMark	setSyncStatus	syncJoinAt	syncJoinMark	syncLite	syncMark	syncNeedsPull	syncNow	syncOnce	syncPaused	syncRedraw	syncSaved	syncSettingsRedraw	syncTap	syncUrl	syncWaiting	synced
+server-limits.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	applyMerged	backedUpWords	backupFullMsg	clockFix	clockLearn	clockTell	get	get syncDue	get syncing	localState	nextUtcDay	pauseTillTomorrow	pullDone	pulledYet	restoreDone	restoreWanted	safariTab	scheduleSync	set	set syncDue	setSyncMark	setSyncStatus	syncJoinAt	syncJoinMark	syncLite	syncMark	syncNeedsPull	syncNetText	syncNow	syncOnce	syncPaused	syncRedraw	syncSaved	syncSettingsRedraw	syncTap	syncUrl	syncWaiting	synced
 server-limits.test.js	tag-request.js	<loaded>
 server-limits.test.js	tagging.js	<loaded>
 server-limits.test.js	tests/fixedplan.js	<any>
@@ -18756,7 +18757,7 @@ tagger.test.js	worker/colormath.js	<loaded>	dE00	hexLab	hexRgb	rgbLab
 tagger.test.js	worker/describe.js	<loaded>	askOf	cleanDesc	cleanDescribeColour	cleanDescribePattern	cleanLook	colWord	colourSchema	descTables	describeBoth	guessBase	handleDescribe	lookPhoto	num	ownLists	ownerText	patternSchema	patternSchemaOf	perCall	say
 tagger.test.js	worker/links.js	<loaded>	readCapped
 tagger.test.js	worker/people.js	<loaded>	sameText	sha256Hex	spend	unspend	utcDay	whoIs
-tagger.test.js	worker/photostore.js	handleSync
+tagger.test.js	worker/photostore.js	<loaded>	handleSync
 tagger.test.js	worker/tag.js	<loaded>	accOpts	badPics	claudeCall	cleanAccents	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	handleTagMany	knownOf	knownTypes	knowsCoat	knowsCombat	knowsSock	lightText	matCap	matName	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	notMaterial	orNull	ownMaterialsText	ownTxt	promptFor	promptOf	readAiBody	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	tagWithWorkersAi	txt	wbOf
 tagging.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 tagging.test.js	account.js	<loaded>	@onsettingssummaries	acctSettingsPart	acctStart	get	iosDevice	iosInSafari	loadAccount	renderAccountUI
@@ -20564,7 +20565,6 @@ wardfab.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedule
 wardfab.test.js	tag-request.js	<loaded>	tagStatsCard
 wardfab.test.js	tagging.js	<loaded>
 wardfab.test.js	tests/fixedplan.js	<any>
-wardfab.test.js	tests/webkit.js	<any>
 wardfab.test.js	theme.js	<loaded>	applyTheme
 wardfab.test.js	toast.js	<loaded>	toast	toastDrop	undoFab	undoHere	undoOff
 wardfab.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	mvSig
@@ -20954,7 +20954,7 @@ watchmatch.test.js	today.js	<loaded>	hasOutfit	homeDay	renderToday	todaySay	worn
 watchmatch.test.js	ui.js	<loaded>	@window.addEventListenerkeydown	inviteOver	isConnected	layerFocusables	layerInert	layerUp
 watchmatch.test.js	wardrobe.js	<loaded>	@whenPulled	giNote	giTag	ivOn	matMigrate	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
 watchmatch.test.js	weather.js	<loaded>	loadWeather
-watchmatch.test.js	who.js	<loaded>	acctBase	acctRole	applyRole	hasInviteHash
+watchmatch.test.js	who.js	<loaded>	acctBase	acctRole	applyRole	hasInviteHash	isTester
 watchmatch.test.js	worker.js	<loaded>	corsFor	fetch	queue	serve
 watchmatch.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_PROMPT	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 watchmatch.test.js	worker/links.js	<loaded>	readCapped
