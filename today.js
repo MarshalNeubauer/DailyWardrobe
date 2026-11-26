@@ -3,8 +3,8 @@
    on a swipe (foldAll), stepping a day (stepDay) and the month planned with other records (planWith)
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14, and on
    2026-11-17 (Round C) into today-plan.js, today.js, today-photofold.js, today-picture.js and today-gestures.js, in that order.) */
-import {emit} from './bus.js';
-import {on} from './bus.js';on('figure-cloth',figCuDone);   // draw.js figCuGet: the mannequin's cloth for an item is ready
+import {on,emit} from './bus.js';
+on('figure-cloth',figCuDone);   // draw.js figCuGet: the mannequin's cloth for an item is ready
 /* the day records and the week's locks a drawing of Today writes (recordDays, lockUpcoming) run in the background; recordRun is the latest
    run, so a test can wait until a device has finished writing before it counts its syncs (tests/sync.test.js quiet) */
 let recordRun=Promise.resolve();
@@ -20,8 +20,8 @@ function wxPreload(){const L=settings.location;if(!L)return;
   try{const c=JSON.parse(localStorage.getItem('wx')||'null');if(c&&c.lat===L.lat&&c.lon===L.lon&&Date.now()-c.t<3*3600e3)setWeather(c.days)}catch{}}
 
 /* views */
-const hasOutfit=o=>!!o&&!!(o.top||o.shirt);   // a day without a jacket (the no-jacket occasion) still has an outfit
-const canPick=o=>!o.frozen||pastEdit===key(sel);   // a past day only while it is being corrected
+/* (hasOutfit is today-plan.js's, canPick and slotLabel history.js's and homeDay month.js's since the restructure S3e, 2026-11-26: read
+   here as globals) */
 // no waistcoat without a tie: the vest row (and its +) goes with the tie
 const vestRow=o=>!(o.suitDay&&hasVest(o.top)&&o.tie)?'':`<div class="row vest-row"><span class="mut">Vest</span>${o.vest?`<span class="dot">${swatchSVG(o.top,true)}</span><span class="cap">Matching vest</span>`:'<span class="mut none">Not today</span>'}${!canPick(o)?'':`<button class="swap" data-act="vestTap" data-on="${o.vest?0:1}" aria-label="${o.vest?'Leave off the vest':'Wear the vest'}" title="${o.vest?'Leave off the vest':'Wear the vest'}">${o.vest?'−':'+'}</button>`}</div>`;
 /* the outfit list: tapping a piece's swatch or name unfolds its photo inside the list (the actual item, so you can see
@@ -92,8 +92,6 @@ function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[
 /* ---- Today figure: torso in the day's fabrics, tap targets, selected-piece card, below-the-waist tiles ---- */
 /* a tile under the figure unfolds the item's photo below the tiles, like the pieces list; tap it again (or the photo) to fold it */
 let belowOpen=null;
-// (2026-11-16) a casual piece picked by hand is called by its type: "T-shirt" in the shirt's row, "Cardigan" in the jacket's
-const slotLabel=(s,o)=>({top:o.top&&CASUAL_JACKETS.includes(o.top.type)?TYPES[o.top.type]:o.suitDay?'Suit':'Blazer',bot:'Pants',shirt:o.shirt&&CASUAL_TOPS.includes(o.shirt.type)?TYPES[o.shirt.type]:'Shirt',tie:'Tie',clip:'Tie clip',vest:'Vest',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks',pocket:'Pocket square'})[s]||s;
 const belowBox=(o,below)=>{const i=below.some(([s])=>s===belowOpen)&&o[belowOpen];if(!i)belowOpen=null;
   return `<div class="ritem bbox${i?' open instant':''}" id="bbox"><div class="rpanel" id="bpanel"><div class="rpanel-in" data-act="belowPicTap">${i?rowPanel(i):''}</div></div></div>`};
 /* did you wear it: ✗ and ✓ over the picture's bottom corners (today and past days); tapping the chosen one again clears it.
@@ -102,10 +100,7 @@ const belowBox=(o,below)=>{const i=below.some(([s])=>s===belowOpen)&&o[belowOpen
 function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.tie]].filter(([,i])=>i);if(!ps.length)return '';
   // each swatch is a button: it opens that piece up close (swTap)
   return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" data-act="swatchTap" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${ovlPiece(i)}</button>`).join('')}</div>`}
-/* the wardrobe can't dress a day yet (setup.js setupNeeds: the "Get your first outfit" checklist shows): a half-outfit gets no score,
-   no "This look last worn" and no outfit count (after removing the sample a suit and a shirt showed a red "50 Incomplete", "last worn
-   Thu, Nov 19" and "12 outfits", re-audit 2026-11-15) */
-const wardShort=()=>typeof setupNeeds==='function'&&setupNeeds().some(r=>!r.ok);
+/* (wardShort, the wardrobe can't dress a day yet, is month.js's since the restructure S3e, 2026-11-26: read here as a global) */
 function wornBar(o){if(wardShort())return '';
   const lw=lastWorn(o);
   // "This look": the same jacket, shirt colour and tie (lastWorn), not the suit alone; "Last worn" read as the suit's own last wear, beside a
@@ -180,8 +175,6 @@ function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||
   const inn=el.querySelector('.rpanel-in');
   if(opening&&was){picStop(el);inn.innerHTML=rowPanel(o[s]);if(!noMotion())inn.animate([{opacity:0},{opacity:1}],{duration:200});return}   // another tile while one is open: its photo takes the place
   if(opening){inn.innerHTML=rowPanel(o[s]);picOpenReady(el,$('.below'),()=>belowOpen===s)}else picShut(el)}
-/* ---- back to today: the day to return to is today, or the next workday when today is off ---- */
-const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)||T};   // (no workday at all: today)
 /* where to add a piece (there is no Add tab: Add is the round + on the Wardrobe) */
 /* a location is set but the day within the forecast's 16 days has no weather (it couldn't be fetched): say so, with a way to try again
    (fix round 3, W2-14-14: "Set location" went and the line stayed blank) */
@@ -285,9 +278,12 @@ function dayStepTap(el){stepDay(+el.dataset.n)}   // the date bar's ‹ and ›
 function setListOpen(v){listOpen=v}
 /* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above acts({…}),
    the file's only top-level call that can throw: without act.js its names are still the page's */
-Object.assign(globalThis,{wxPreload,hasOutfit,canPick,slotLabel,wardShort,figCuDone,keepHome,homeDay,goToday,renderToday,foldAll,stepDay,planWith,setListOpen});
+Object.assign(globalThis,{wxPreload,figCuDone,keepHome,goToday,renderToday,foldAll,stepDay,planWith,setListOpen});
 Object.defineProperties(globalThis,{recordRun:{get:()=>recordRun}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get BLOUSE_ROLL_ON(){return BLOUSE_ROLL_ON},set BLOUSE_ROLL_ON(v){BLOUSE_ROLL_ON=v},get belowOpen(){return belowOpen},set belowOpen(v){belowOpen=v},get dayShown(){return dayShown},set dayShown(v){dayShown=v},figureStage,get openRow(){return openRow},set openRow(v){openRow=v},pickPiece,piecesBox,restWarn,setOff,setRoll,swatchStack,todayTabTap,toggleList,toggleRow,get listOpen(){return listOpen},set listOpen(v){listOpen=v}};
-export {recordRun,wxPreload,hasOutfit,canPick,openRow,setOff,BLOUSE_ROLL_ON,setRoll,restWarn,toggleRow,belowOpen,slotLabel,swatchStack,wardShort,figureStage,figCuDone,dayShown,keepHome,pickPiece,homeDay,goToday,listOpen,piecesBox,toggleList,renderToday,foldAll,stepDay,planWith,todayTabTap,setListOpen};
+/* history.js (a swap, a pick, a mark, an occasion, Reset …) and month.js (a day opened) announce 'day-changed': Today is drawn again
+   (bus.js; the restructure S3e, 2026-11-26: they run before this file). Above acts({…}), as the bridge */
+on('day-changed',()=>renderToday());
+export {recordRun,wxPreload,openRow,setOff,BLOUSE_ROLL_ON,setRoll,restWarn,toggleRow,belowOpen,swatchStack,figureStage,figCuDone,dayShown,keepHome,pickPiece,goToday,listOpen,piecesBox,toggleList,renderToday,foldAll,stepDay,planWith,todayTabTap,setListOpen};
 acts({rollTap,todayTabTap,vestTap,offTap,pickTap,rowTap,addOneTap,belowPicTap,tileTap,swatchTap,wornTap,figLoad,wxRetryTap,wxSetTap,listTap,listFoldTap,dayStepTap});

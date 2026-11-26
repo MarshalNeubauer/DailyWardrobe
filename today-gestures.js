@@ -63,7 +63,7 @@ const todayFree=()=>{if(!todayBusy()&&typeof syncLaterRun==='function')setTimeou
    keep it (the target day gets the outfit's pieces as pins, `kind` keeps it a suit or blazer day), drop anywhere else to cancel.
    Only today and later workdays that aren't worn and have no occasion take part. ---- */
 let outfitMove=null;
-const mvSig=o=>o?[o.top&&o.top.id,o.bot&&o.bot.id,o.shirt&&o.shirt.id,o.tie&&o.tie.id].join('|'):'';
+/* (mvSig, a day's outfit signed for the cells, is month.js's since the restructure S3e, 2026-11-26: read here as a global) */
 const MOVE_HOLD=380,MOVE_SLOP=8;
 function moveRecs(src,dst,plan){const o=(plan||planFor())[src];if(!o)return null;const ids=idsOf(o),force={};
   for(const [s,v] of Object.entries(ids))if(v&&s!=='coat')force[s]=v;   // the coat is the weather's choice
@@ -123,9 +123,9 @@ function showPlan(p){const grid=document.querySelector('#mpanel-in .mgrid:not(.m
   root.addEventListener('click',e=>{if(noClick&&e.target.closest('#mpanel-in')){e.stopPropagation();e.preventDefault()}},true);
   root.addEventListener('contextmenu',e=>{if(e.target.closest('#mpanel-in .mc[data-mv]'))e.preventDefault()});
 })();
-/* the bridge (tests/bridge.test.js): sync.js, a classic script, asks todayBusy before it redraws; month.js signs a day's outfit with
-   mvSig; tests/moveoutfit.test.js calls moveRecs and reads outfitMove, which only this file writes: a getter; a module imports them */
-Object.assign(globalThis,{todayBusy,mvSig});
+/* the bridge (tests/bridge.test.js): sync.js, a classic script, asks todayBusy before it redraws (mvSig went to month.js, restructure
+   S3e); tests/moveoutfit.test.js calls moveRecs and reads outfitMove, which only this file writes: a getter; a module imports them */
+Object.assign(globalThis,{todayBusy});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,moveRecs,get outfitMove(){return outfitMove}};
-export {todayBusy,outfitMove,mvSig,moveRecs};
+export {todayBusy,outfitMove,moveRecs};
