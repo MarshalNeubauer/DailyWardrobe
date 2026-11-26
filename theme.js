@@ -1,6 +1,9 @@
 /* Daily Wardrobe: the theme (Auto, Light, Dark), applied at load
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
 /* ---- theme: Auto (follow the device) → Light → Dark; saved per device ---- */
+import {$} from './core.js';
+import {toast} from './toast.js';
+import {cap1} from './app.js';
 const THEMES={auto:['◐','automatic'],light:['☀︎','light'],dark:['☾','dark']};
 function applyTheme(t){
   if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else{delete document.documentElement.dataset.theme;t='auto'}
