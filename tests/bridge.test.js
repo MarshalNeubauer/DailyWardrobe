@@ -114,6 +114,11 @@ const BRIDGE={
   // history.js, a classic script, swaps, picks and draws the picker with these; slotPool, fitOf, fitTag and pickSub are also called by
   // the care, onorder, planner-rules and rotation-pause tests
   'pickscore.js':['BELT_STUCK','FOLLOW','beltless','bootsOff','fitOf','fitTag','handPool','handWhy','keepHand','keepOff','pickSub','pocketOn','slotPool','suggestClean','suitPants'],
+  // the router (the restructure S3f, 2026-11-26, out of start.js): the screens move between pages (show, subOpen, subBack, openAdd),
+  // add-paste and settings ask whether start-up lets a page be shown yet (pagesOn, a getter), settings whether a page is over it
+  // (subShown); start.js sets pagesOn and drops a page asked for too early (setPagesOn, setPageWant), shows it (showWanted) and
+  // draws the plain card over PAGES and pins pageBack for the phone's Back
+  'nav.js':['PAGES','openAdd','pageBack','pagesOn','setPageWant','setPagesOn','show','showWanted','subBack','subOpen','subShown'],
   // the other Add files, tagging, pattern-read, measure, item-photo, migrate, safety, settings, kit and others draw and read cards with these; addCalm is a let only add.js writes (add-save reads it): a getter; the rest: tests
   'add.js':['PAIR_TYPES','STOPPED','TEX_MAX','TEX_MIN_PX','addBackOnline','addCalm','addFiles','addTexture','applyWb','dropTexture','errToHand','measureGuess','multiAgain','multiMsg','needType','patternAgain','refineAgain','renderAdd','skipCard','stopRead','wbNote'],
   // tests/paste.test.js clears the line under the "Photo or link" field with it
@@ -202,8 +207,8 @@ const BRIDGE={
   'weather.js':['findCity','loadWeather','renderWxLoc','setLocation','setUnits','temp','unit','useMyLocation','wxChip'],
   // read by the tests only: a11y (applyTheme, cycleTheme), actsindex (cycleTheme), modload (themeTap)
   'theme.js':[],
-  // moving between pages and start-up: index.html's last script calls startUp; pagesOn is a getter
-  'start.js':['onSyncedData','openAdd','pagesOn','show','startUp','subBack','subOpen','subShown'],
+  // start-up: index.html's last script calls startUp, sync.js onSyncedData (moving between pages is nav.js's since the restructure S3f)
+  'start.js':['onSyncedData','startUp'],
   // start.js calls safetyStart and storageDown; add-save and kit storeFailure, saveFailed and askPersist; sync storeFailure,
   // storeFailText and adoptBackupSettings and sets storeToldAt with setStoreToldAt (S1a); add, add-card and app the tagging failure's
   // (tagFailText, tagFailed, tagFailNote, tagNetText, retryTag; tagWhy and tagNetLast have setters for the errreport and tagreads
@@ -283,14 +288,14 @@ const BRIDGE={
   // ui, add, setup and pattern-read read the invitation link's state (who is connected is who.js's since the restructure S3b), kit and
   // remind iosInSafari and myInviteLink; the rest: tests. inviteChecking has a setter (tests assign it); acctWhy and acctLinkRun are getters
   'account.js':['acctFailText','acctTyped','acctWhy','connectFromLink','inviteChecking','iosInSafari','limitNote','myInviteLink'],
-  // start.js starts and yields the setup (setupStart, setupYield), account and kit read and redraw it (setup, SETUP_STEPS, setupShown,
-  // setupDraw, setupFinish, setupSample), today, stats and wardrobe draw the empty states (setupNeeds, setupToday, setupWardEmpty),
+  // account, setup, item-photo, calendar, add-save, add-keep, app, itemsheet, wardrobe, start, sync, sync-status, today, remind, safety,
+  // about use it; the rest: tests. kitNoMine (itemsheet.js) and kitSdNew (tests/sample.test.js) have setters, the other lets are getters
+  'kit.js':['HOME_CARD','PAPER_CARD','homeAbout','homeAndroid','homeBrowser','homeCopyBtn','homeIOS','homeNeeded','homeOpen','homeShareShort','homeStandalone','homeSteps','homeTester','kit','kitClose','kitDuplicate','kitEdited','kitFixOldImports','kitImportOpen','kitNoMine','kitOpen','kitQuiet','kitSampleBanner','kitSampleLoad','kitSampleMigrate','kitSampleNote','kitSampleTag','kitSaved','kitSentStamp','kitShareDone','kitShareFilter','kitStartRow','kitUserEdit','safariRemind','setKitNoMine','tourOpen','tourSeen'],
+  // start.js starts the setup (setupStart; nav.js yields it through the bus.js socket 'setup-yield'), account and kit read and redraw it (setup, SETUP_STEPS, setupShown,
+  // setupDraw, setupFinish, setupSample), today and wardrobe draw the empty states (stats through the socket 'setup-needs') (setupNeeds, setupToday, setupWardEmpty),
   // weather asks tzCountry; the rest: tests only. SETUP_STEPS is a getter (only setup.js writes it), setup has a setter
   // (tests/rollback.test.js)
   'setup.js':['SETUP_STEPS','setup','setupDraw','setupFinish','setupNeeds','setupSample','setupShown','setupStart','setupToday','setupWardEmpty','setupYield','tzCountry'],
-  // account, setup, item-photo, calendar, add-save, add-keep, app, itemsheet, wardrobe, start, stats, sync, sync-status, today, remind, safety,
-  // about use it; the rest: tests. kitNoMine (itemsheet.js) and kitSdNew (tests/sample.test.js) have setters, the other lets are getters
-  'kit.js':['HOME_CARD','PAPER_CARD','homeAbout','homeAndroid','homeBrowser','homeCopyBtn','homeIOS','homeNeeded','homeOpen','homeShareShort','homeStandalone','homeSteps','homeTester','kit','kitClose','kitDuplicate','kitEdited','kitFixOldImports','kitImportOpen','kitNoMine','kitOpen','kitQuiet','kitSampleBanner','kitSampleLoad','kitSampleMigrate','kitSampleNote','kitSampleTag','kitSaved','kitSentStamp','kitShareDone','kitShareFilter','kitStartRow','kitUserEdit','safariRemind','setKitNoMine','tourOpen','tourSeen'],
   // settings.js (calSummary) and today.js (calBanner) are classic scripts; the rest are read by the calendar test, calBusy by the
   // restacts test only: a getter
   'calendar.js':['calBanner','calSummary'],

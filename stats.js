@@ -2,7 +2,10 @@
    Two sources: what was really worn (the day history from the first day the wardrobe existed; days marked "Not worn" and
    the planner's warm-up days are left out) and what is planned for the next six months. From them: wear counts per item,
    the pieces that never get worn and why, what costs outfits points, the colour balance, the most-worn pairings, rest
-   between wears. */
+   between wears.
+   The page's parts in other files (the setup's checklist, the sample wardrobe, What to buy's button, the favorites and cost-per-wear
+   cards) are reached through bus.js (the restructure S3f): without the file nothing is asked, as the `typeof f==='function'` guards did. */
+import {emit,heard,ask} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
 const STATS_MONTHS=6,TREND_WEEKS=8;
 let statsOpen={};   // which item-type sections are unfolded
 /* the workdays really worn so far: [{date, d, ids, suitDay, vestOn}] */
@@ -21,7 +24,7 @@ function plannedDays(){const out=[];
   return out}
 /* the wardrobe can't dress a day yet (Today shows the "Get your first outfit" checklist, setup.js setupNeeds): the plan's numbers would
    score half-outfits ("121 outfits planned, 50.0 average", re-audit 2026-11-15), so Insights leaves them out and says what is missing */
-const statsShort=()=>typeof setupNeeds==='function'?setupNeeds().filter(r=>!r.ok).map(r=>r.short):[];
+const statsShort=()=>{const n=ask('setup-needs');return n?n.filter(r=>!r.ok).map(r=>r.short):[]};
 /* why a piece is never worn, in a sentence (by the planner's own rules) */
 function whyUnused(i){
   if(i.paused&&i.away)return (i.away.why==='laundry'?'It\'s in the laundry':'It\'s at the cleaner\'s')+(i.away.back?`: it joins your outfits again after ${fmtDay(i.away.back)}.`:': it joins your outfits again once you mark it back.');
@@ -106,7 +109,7 @@ function buildStats(){
    "My charcoal pinstripe", audit 2026-11-14) */
 const statName=i=>itemName(i)||sentence(shortDesc(i)||nm(i)),statName1=i=>itemName(i)||sentence(nm(i)),statName2=i=>itemName(i)||nm(i);   // (statName1/2: with the type, "Navy suit"; statName2 later in a line, not capitalised)
 /* an empty wardrobe's pages (Insights, Packing list, Laundry & cleaning): the way to start, as on the empty Wardrobe */
-const emptyAdd=()=>`<div class="btns emptyadd"><button type="button" class="pri" data-act="emptyAddTap">Add your first item</button>${typeof kitSampleLoad==='function'?'<button type="button" data-act="emptySampleTap">Try a sample wardrobe</button>':''}</div>`;
+const emptyAdd=()=>`<div class="btns emptyadd"><button type="button" class="pri" data-act="emptyAddTap">Add your first item</button>${heard('sample-asked')?'<button type="button" data-act="emptySampleTap">Try a sample wardrobe</button>':''}</div>`;
 const statDate=d=>d?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
 const statPic=i=>`<span class="st-pic">${i.photo?`<img src="${phSm(i)}" alt="">`:itemPic(i)?`<img src="${srcOk(itemPic(i).img)}" alt="">`:itemThumb(i,true)}</span>`;
 const GROUP_NAMES={grey:'Gray',navy:'Navy',blue:'Blue',brown:'Brown',tan:'Tan',black:'Black',green:'Green',red:'Burgundy / red',white:'White',lightblue:'Light blue',pink:'Pink',purple:'Purple',yellow:'Yellow',beige:'Beige',gold:'Gold',cream:'Cream',charcoal:'Charcoal'};
@@ -139,9 +142,9 @@ function statsDraw(){
   const mix=(title,list)=>!list.length?'':`<div class="st-mix"><small class="mut">${title}</small>${list.slice(0,7).map(([g,n])=>`<div class="st-mixrow"><span class="st-dot" style="background:${groupCol(g)}"></span><span class="st-mixnm">${esc(groupName(g))}</span>${bar(n,list[0][1])}<small class="mut">${Math.round(100*n/nPlan)}%</small></div>`).join('')}</div>`;
   const missList=Object.entries(S.miss).sort((a,b)=>b[1].lost-a[1].lost).slice(0,6);
   const planLine=S.short.length?'':` The plan for the next ${STATS_MONTHS} months averages ${nPlan?avgText(S.avg):'–'}${S.planHard?`, with ${S.planHard} day${S.planHard===1?'':'s'} your wardrobe can't get right`:''}.`;
-  el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${typeof shopButton==='function'?shopButton():''}
+  el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${ask('shop-button')||''}
   <div class="st-tiles">${tile(items.length,items.length===1?'item':'items')}${tile(S.worn.length,`day${S.worn.length===1?'':'s'} worn${first?' since '+statDate(first):''}`)}${S.short.length?'':tile(nPlan,`outfit${nPlan===1?'':'s'} planned, next ${STATS_MONTHS} months`)+tile(S.looks,`different outfit${S.looks===1?'':'s'} planned`)+tile(nPlan?avgText(S.avg):'–','average outfit score')+tile(S.unused.length,`item${S.unused.length===1?'':'s'} never worn`)}</div>
-  ${typeof favStatsCard==='function'?favStatsCard(S):''}
+  ${ask('fav-stats-card',S)||''}
   ${S.short.length?`<section class="card st-card" id="st-short"><h3>Not a full outfit yet</h3><p class="mut"><small>Your wardrobe still needs ${listAnd(S.short)} for a complete outfit. The plan for the next ${STATS_MONTHS} months, its scores and what is never worn show here once Today can dress a workday.</small></p><div class="btns"><button type="button" class="pri" data-act="emptyAddTap">Add an item</button></div></section>`:`
 
   <section class="card st-card" id="st-unused"><h3>Never worn</h3>
@@ -157,7 +160,7 @@ function statsDraw(){
 
   <section class="card st-card" id="st-wear"><h3>Wear counts</h3>
   <p class="mut"><small><span class="st-key w"></span>worn so far <span class="st-key p"></span>planned for the next ${STATS_MONTHS} months</small></p>${types.map(sect).join('')}</section>
-  ${typeof cpwStatsCard==='function'?cpwStatsCard():''}
+  ${ask('cpw-stats-card')||''}
 ${S.short.length?'':`
   <section class="card st-card" id="st-points"><h3>Small deductions</h3>
   ${missList.length?`<p class="mut"><small>Over the ${nPlan} planned outfits: where the score is marked down most, and the usual reason.</small></p>${missList.map(([l,m])=>{const why=Object.entries(m.why).sort((a,b)=>b[1]-a[1])[0];
@@ -200,7 +203,7 @@ function statsPlan(){if(statsWarm)return statsWarm;if(statsPlanned())return Prom
     idle(step)};idle(step)})}
 function statsShow(){const el=$('#stats');if(!el)return;
   if(!items.length||statsPlanned())return renderStats();
-  el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${typeof shopButton==='function'?shopButton():''}<p class="mut st-wait" role="status"><span class="spin" aria-hidden="true"></span> Planning your next ${STATS_MONTHS} months…</p>`;
+  el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${ask('shop-button')||''}<p class="mut st-wait" role="status"><span class="spin" aria-hidden="true"></span> Planning your next ${STATS_MONTHS} months…</p>`;
   statsPlan().then(()=>{if(!el.hidden&&el.querySelector('.st-wait'))renderStats()})}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals: start.js (renderStats, statsShow), wardrobe, care and cost (wornDays), dress (shoesWhyUnused), fav (statName, statDate,
@@ -215,7 +218,7 @@ afterScripts(()=>setTimeout(()=>{if(items.length&&!document.hidden)statsPlan()},
 /* what the controls do (act.js): an empty page's two buttons and "Add an item" (emptyAdd: Insights, the Packing list), a Wear counts section folded
    or unfolded, and a lowest-scoring day's link (data-t: the day; a link: its jump to # is called off) */
 function emptyAddTap(){openAdd()}
-function emptySampleTap(){kitSampleLoad()}
+function emptySampleTap(){emit('sample-asked')}   // (kit.js loads it)
 function statsFold(el){statsToggle(el)}
 function statsDayTap(el,ev){openDay(+el.dataset.t);show('today');ev.preventDefault()}
 acts({emptyAddTap,emptySampleTap,statsFold,statsDayTap});
