@@ -4,6 +4,7 @@
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14, and on
    2026-11-17 (Round C) into today-plan.js, today.js, today-photofold.js, today-picture.js and today-gestures.js, in that order.) */
 import {on,emit} from './bus.js';
+on('figure-cloth',figCuDone);   // draw.js figCuGet: the mannequin's cloth for an item is ready
 /* the day records and the week's locks a drawing of Today writes (recordDays, lockUpcoming) run in the background; recordRun is the latest
    run, so a test can wait until a device has finished writing before it counts its syncs (tests/sync.test.js quiet) */
 let recordRun=Promise.resolve();

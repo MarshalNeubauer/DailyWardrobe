@@ -83,7 +83,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   for(const f of fs.readdirSync(FIX)){if(f.startsWith('mask-'))fs.copyFileSync(path.join(FIX,f),path.join(d,'alpha-'+f.slice(5)));if(f.startsWith('part-'))fs.copyFileSync(path.join(FIX,f),path.join(d,(f.includes('lapel')?'lapel-':'sleeve-')+f.slice(5)))}
   const run=args=>new Promise(r=>{const ch=require('child_process').spawn(process.execPath,[path.join(ROOT,'tools','asm-cm-upload.js'),...args],{env:{...process.env,DW_WORKER:W,DW_TOKEN:O,DW_UPLOAD_LEDGER:ledger}});let out='';ch.stdout.on('data',x=>out+=x);ch.stderr.on('data',x=>out+=x);ch.on('close',code=>r({code,out}))});
   const fnv=t=>{let h=0xcbf29ce484222325n;for(const c of Buffer.from(t,'utf8')){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}return h.toString(16).padStart(16,'0')};
-  const ver=/const ASM_VER=(\d+)/.exec(fs.readFileSync(path.join(ROOT,'assemble.js'),'utf8'))[1],cmv=/const ASM_CMV=(\d+)/.exec(fs.readFileSync(path.join(ROOT,'asm-color.js'),'utf8'))[1],ck=(k,n)=>'c'+fnv(`asm/${ver}/cm${cmv}/${k}/${n}`);
+  const ver=/const ASM_VER=(\d+)/.exec(fs.readFileSync(path.join(ROOT,'assemble.js'),'utf8'))[1],cmv=/const ASM_CMV=(\d+)/.exec(fs.readFileSync(path.join(ROOT,'asm-keys.js'),'utf8'))[1],ck=(k,n)=>'c'+fnv(`asm/${ver}/cm${cmv}/${k}/${n}`);
   let code='';
   try{const u1=await run(['--dir',tmp,'--kinds','suit']),w1=puts.filter(k=>k==='cm:shared').length,sh=store.has('cm:shared')&&JSON.parse(store.get('cm:shared')).keys;
     const renderKeys=[...store.keys()].filter(k=>k.startsWith('render:')).map(k=>k.slice(7));

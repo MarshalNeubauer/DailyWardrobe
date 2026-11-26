@@ -25,7 +25,7 @@ if((!DIR&&!BG)||(DIR&&!fs.existsSync(DIR))||(BG&&!fs.existsSync(BG))||(!DRY&&(!W
   console.log('Usage: DW_WORKER=https://<worker>/ DW_TOKEN=<owner code> npm run cm-upload -- --dir <colormaster folder> [--dry] [--kinds suit,vest] [--bg <background file>]');process.exit(1)}
 // the app's keys: asmKey = 'c' + fnv64('asm/' + ASM_VER + '/' + t) (app.js fnv64, assemble.js ASM_VER), asmCmKey = asmKey('cm' + ASM_CMV + '/' + kind + '/' + name)
 const src=f=>fs.readFileSync(path.join(ROOT,f),'utf8');
-const ASM_VER=+/const ASM_VER=(\d+)/.exec(src('assemble.js'))[1],ASM_CMV=+/const ASM_CMV=(\d+)/.exec(src('asm-color.js'))[1];
+const ASM_VER=+/const ASM_VER=(\d+)/.exec(src('assemble.js'))[1],ASM_CMV=+/const ASM_CMV=(\d+)/.exec(src('asm-keys.js'))[1];
 const fnv64=t=>{let h=0xcbf29ce484222325n;for(const c of Buffer.from(t,'utf8')){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}return h.toString(16).padStart(16,'0')};
 const cmKey=(kind,name)=>'c'+fnv64('asm/'+ASM_VER+'/cm'+ASM_CMV+'/'+kind+'/'+name);
 const ZONES={suit:['jacket','tie','background','skin','shirt','dark','watch'],vest:['jacket','waistcoat','tie','background','skin','shirt','dark','watch'],
