@@ -21,6 +21,8 @@ function planStartDay(){let s=Infinity;for(const i of items){if(!i.added)return 
 function planTrim(plan){const s=planStartDay();if(!s)return plan;const T=todayDate();
   for(const k of Object.keys(plan)){const d=keyDate(k);if(d<s&&d<T&&!(dayRecs[k]&&dayRecs[k].ids))delete plan[k]}return plan}
 const planFor=()=>planMonth(view.y,view.m);
+/* (from today.js, the restructure S3e, 2026-11-26: Today, the month, the score card, the pictures and the rest ask it of a planned day) */
+const hasOutfit=o=>!!o&&!!(o.top||o.shirt);   // a day without a jacket (the no-jacket occasion) still has an outfit
 /* ---- Today's month as last planned, kept in IndexedDB (meta PLAN_SNAP), so start-up draws Today without waiting for the planner
    (200-390 ms frozen at phone speed, audit 2026-11-13). Used only when nothing it depends on changed (planSig: the day, the items' and
    day records' stamps, the settings' stamp, the forecast and climate); the month is planned again as soon as the phone is idle
@@ -50,8 +52,8 @@ function planSnapSoon(){clearTimeout(planSnapT);planSnapT=setTimeout(()=>{const 
    setter; today.js and stats.js ask planStartDay, today.js planTrim, outSig and planSnapSoon, start.js PLAN_SNAP and planSnapUse,
    shop.js strHash; planRuns, planSig and planSnapUsed (a let only this file writes: a getter) are read by tests/speed.test.js; a
    module imports them. The file has no top-level call, so the bridge is its last lines */
-Object.assign(globalThis,{planDirty,planMonth,planStartDay,planTrim,planFor,PLAN_SNAP,strHash,planSnapUse,outSig,planSnapSoon});
+Object.assign(globalThis,{planDirty,planMonth,planStartDay,planTrim,planFor,hasOutfit,PLAN_SNAP,strHash,planSnapUse,outSig,planSnapSoon});
 Object.defineProperties(globalThis,{cache:{get:()=>cache,set:v=>{cache=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,planRuns,planSig,get planSnapUsed(){return planSnapUsed},get cache(){return cache},set cache(v){cache=v}};
-export {cache,planDirty,planRuns,planMonth,planStartDay,planTrim,planFor,PLAN_SNAP,strHash,planSig,planSnapUse,planSnapUsed,outSig,planSnapSoon};
+export {cache,planDirty,planRuns,planMonth,planStartDay,planTrim,planFor,hasOutfit,PLAN_SNAP,strHash,planSig,planSnapUse,planSnapUsed,outSig,planSnapSoon};

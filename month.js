@@ -1,5 +1,8 @@
 /* Daily Wardrobe: the month view (wear plan): the calendar of fabric stacks
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14.) */
+/* a day opened from the month says emit('day-changed') (bus.js; the restructure S3e, 2026-11-26): today.js, which runs after this file,
+   pins renderToday for it */
+import {emit} from './bus.js';
 /* ---- month view (wear plan): a calendar of fabric stacks, from the design concept ---- */
 /* stacked bands for one outfit: jacket, trousers on blazer days, shirt, tie (drawn from the tagged fabrics) */
 let stkN=0;
@@ -23,6 +26,20 @@ const planOn=d=>planMonth(d.getFullYear(),d.getMonth())[key(d)];
    own days off opened Today on a day off and stopped › inside it) */
 const NEXT_CAP=400;
 const nextWorkday=(d,dir=1)=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());for(let g=0;g<NEXT_CAP;g++){x.setDate(x.getDate()+dir);if(isWorkday(x))return x}return null};
+/* ---- back to today: the day to return to is today, or the next workday when today is off (from today.js, the restructure S3e,
+   2026-11-26: history.js, missed.js, today.js, start.js and calendar.js ask it) ---- */
+const homeDay=()=>{const T=todayDate();return isWorkday(T)?T:nextWorkday(T)||T};   // (no workday at all: today)
+/* (dayWord and recentWork from scorecard.js, mvSig from today-gestures.js and wardShort from today.js, the restructure S3e,
+   2026-11-26: the month, the score card, the picker's favorites, the move and Today read them) */
+const dayWord=()=>key(sel)===key(todayDate())?'today':'this day';
+/* the latest workdays before d with an outfit (a day marked not worn left out, as the planner's history does), latest first: [{d, o}] */
+function recentWork(d,n=PAIR_DAYS){const out=[],x=dayOnly(d);for(let g=0;g<n*3+14&&out.length<n;g++){x.setDate(x.getDate()-1);if(!isWorkday(x))continue;
+  const r=dayRecs[key(x)];if(r&&r.worn===false)continue;const o=planOn(x);if(o&&hasOutfit(o))out.push({d:new Date(x),o})}return out}
+const mvSig=o=>o?[o.top&&o.top.id,o.bot&&o.bot.id,o.shirt&&o.shirt.id,o.tie&&o.tie.id].join('|'):'';
+/* the wardrobe can't dress a day yet (setup.js setupNeeds: the "Get your first outfit" checklist shows): a half-outfit gets no score,
+   no "This look last worn" and no outfit count (after removing the sample a suit and a shirt showed a red "50 Incomplete", "last worn
+   Thu, Nov 19" and "12 outfits", re-audit 2026-11-15) */
+const wardShort=()=>typeof setupNeeds==='function'&&setupNeeds().some(r=>!r.ok);
 /* a date's calendar day, at midnight */
 const dayOnly=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
 const shortTop=o=>{const t=o.top;if(!t)return o.bot?(wearsJacket()?`No jacket: ${colName(primaryCol(o.bot))} pants`:`${colName(primaryCol(o.bot))} pants`.replace(/^./,c=>c.toUpperCase())):'No jacket';const p=t.pattern&&t.pattern!=='solid'&&t.pattern!=='other'?' '+patName(t.pattern):'',n=colName(primaryCol(t))+p;
@@ -124,7 +141,7 @@ function monthRelease(dx,ms){const sw=$('#mswipe');if(!sw)return false;const fas
     sw.style.transition='transform .16s ease-in,opacity .16s';sw.style.transform=`translateX(${dx<0?-w:w}px)`;sw.style.opacity='0';
     setTimeout(()=>monthStep(n,(dx<0?1:-1)*w*.6),160);return true}
   sw.style.transition='transform .2s ease-out,opacity .2s';sw.style.transform='translateX(0)';sw.style.opacity='1';return false}
-function openDay(t){setSel(new Date(t));setView({y:sel.getFullYear(),m:sel.getMonth()});setMonthOpen(false);renderToday();scrollTo({top:0,behavior:'smooth'})}
+function openDay(t){setSel(new Date(t));setView({y:sel.getFullYear(),m:sel.getMonth()});setMonthOpen(false);emit('day-changed');scrollTo({top:0,behavior:'smooth'})}
 /* the box on Today: the next few workdays as small stacks; tap it and the month unfolds below */
 function monthLink(){
   const days=[];for(let d=new Date(sel),g=0;days.length<5&&g<14;g++,d.setDate(d.getDate()+1))if(isWorkday(d)){const o=planOn(d);if(hasOutfit(o))days.push([new Date(d),o])}
@@ -142,11 +159,11 @@ function setMonthOpen(v){monthOpen=v}
    pack.js, remind.js, stats.js, start.js and the painter (planOn); monthGridHtml and monthStep are called by tests only. today.js and
    the tests set monthOpen, tests/setup.test.js sets monthPanel: setters; a module imports them.
    Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the page's, as a classic script's were */
-Object.assign(globalThis,{stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthPlan,toggleMonth,monthDrag,monthRelease,openDay,monthLink,setMonthOpen});
+Object.assign(globalThis,{stackSVG,planOn,nextWorkday,homeDay,dayWord,recentWork,mvSig,wardShort,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthPlan,toggleMonth,monthDrag,monthRelease,openDay,monthLink,setMonthOpen});
 Object.defineProperties(globalThis,{monthOpen:{get:()=>monthOpen,set:v=>{monthOpen=v}},monthPanel:{get:()=>monthPanel,set:v=>{monthPanel=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,monthGridHtml,monthStep,get monthOpen(){return monthOpen},set monthOpen(v){monthOpen=v},get monthPanel(){return monthPanel},set monthPanel(v){monthPanel=v}};
-export {stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthOpen,monthPanel,monthPlan,monthGridHtml,toggleMonth,monthStep,monthDrag,monthRelease,openDay,monthLink,setMonthOpen};
+export {stackSVG,planOn,nextWorkday,homeDay,dayWord,recentWork,mvSig,wardShort,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthOpen,monthPanel,monthPlan,monthGridHtml,toggleMonth,monthStep,monthDrag,monthRelease,openDay,monthLink,setMonthOpen};
 /* the markup's handlers (act.js): the month box's head and its "Fold away" bar, and a day of the month (data-t: its time) */
 function monthTap(){toggleMonth()}
 function dayCellTap(el){openDay(+el.dataset.t)}

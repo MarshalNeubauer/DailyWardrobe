@@ -93,6 +93,13 @@ const BRIDGE={
   // the day records (the restructure S3b, 2026-11-26, from history.js): keyDate is read by 18 page scripts (planner.js, earlier in the
   // list, too), saveDay by 9, idsOf by six (pickscore, history, locks, scorecard, today-plan, today-gestures), notAhead by pickscore and history
   'days.js':['idsOf','keyDate','notAhead','saveDay'],
+  // planDirty is called by 25 classic page scripts, planFor by 14, planMonth by 9; cache is read by nine and set by 95 tests (a
+  // setter); today and stats ask planStartDay, today planTrim, outSig and planSnapSoon, start PLAN_SNAP and planSnapUse, shop strHash;
+  // planRuns, planSig and planSnapUsed (a getter): tests/speed.test.js; hasOutfit (from today.js, restructure S3e): today, month,
+  // scorecard, photos, settings, stats, pack and tests
+  'today-plan.js':['PLAN_SNAP','cache','hasOutfit','outSig','planDirty','planFor','planMonth','planSnapSoon','planSnapUse','planStartDay','planTrim','strHash'],
+  // history, settings, dress, care, setup and kit (clearLocks), pack (lockIds), today (lockUpcoming), add-more and care (careUnlock), history (unlockClash)
+  'locks.js':['careUnlock','clearLocks','lockIds','lockUpcoming','unlockClash'],
   // toast: 34 page scripts; toastDrop: start; TOAST_ACT_MS: tests/a11y.test.js
   'toast.js':['toast','toastDrop'],
   // the question, the close-up chooser, the layers' focus, the connection's state and plain errors, for nearly every page script;
@@ -157,31 +164,35 @@ const BRIDGE={
   // it (renderItem; nav and checklist through the socket 'item-draw', restructure S3d); itemGoneTell: itemsheet, wardrobe, look, cost;
   // closeItem, stepItem and wardList: tests only (noMotion went to ui.js, S3d)
   'item-view.js':['dropItem','editing','itemGoneTell','itemSynced','openItem','renderItem'],
-  // (keyDate, saveDay, idsOf and notAhead went to days.js, restructure S3b) today.js draws and records with recordDays, openPicker, closePicker,
-  // setWorn, setVest, resetCard and dayActions and sets todayPullWait and pastEdit (setters; tests set pastEdit too; swapMsg: HOOK,
-  // S1f); picker is a getter (today, today-gestures and sync read it); whenPulled: start, safety, wardrobe, calendar; dropLearn and
-  // checkPlanRules: start; renderReplanUI: settings; setOccasion: daysoff, calendar; wearFav: fav; pickItem: scorecard; swapSlot, togglePastEdit, correctPast, setFormal, resetDay, replanFuture and planRulesNote: tests only
-  'history.js':['checkPlanRules','closePicker','dayActions','dropLearn','openPicker','pastEdit','pickItem','picker','recordDays','renderReplanUI','resetCard','setOccasion','setPastEdit','setSwapMsg','setTodayPullWait','setVest','setWorn','todayPullWait','wearFav','whenPulled'],
-  // history.js (firstReal, missedNote) and today.js (missedCard) are classic scripts; the rest are called by the todayacts and weeklock tests
-  'missed.js':['firstReal','missedCard','missedNote'],
-  // history, settings, dress, care, setup and kit (clearLocks), pack (lockIds), today (lockUpcoming), add-more and care (careUnlock), history (unlockClash)
-  'locks.js':['careUnlock','clearLocks','lockIds','lockUpcoming','unlockClash'],
+  // (the photo keys, the kept pictures and esc, jsq and srcOk went to photo-keys.js, restructure S3b) today, start, settings, daysoff and stats (classic), history, today-picture and itemsheet (modules that
+  // read them as globals) draw with the rest; 15 names are read by
+  // tests only. remoteListed is assigned from outside (tests): a getter and a setter; itemBatch is a let only photos.js writes: a getter
+  'photos.js':['PIC_BG','aAn','asmLive','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','itemKey','itemPic','itemPicHtml','lastWorn','picBgs','renderFor','renderItemPicUI','schedulePrefetch','setRemoteKeys','wardPic'],
   // scorecard.js and today.js fold and unfold the cards (boxFold, boxUnfold); today-photofold.js (foldEdge, revealNeed, pageScroll,
   // keepInView, foldQuiet) and month.js (foldEdge, revealNeed, pageScroll, monthBelow) slide with these: modules that read them as
   // globals (no page module imports another yet); foldQuiet is a let only boxfold.js writes (today.js foldAll tells it through bus.js):
   // a getter. revealNeed, pageScroll and monthBelow came from month.js, keepInView and foldQuiet from today.js (restructure S3a)
   'boxfold.js':['boxFold','boxUnfold','foldEdge','foldQuiet','keepInView','monthBelow','pageScroll','revealNeed'],
+  // today.js (the month box, the pieces line, the home day; it sets monthOpen, as nine tests do: a setter), daysoff, history, pack,
+  // remind, start, stats and the painter (assemble.js, asm-color.js: planOn) are classic scripts; scorecard
+  // and today-gestures, modules earlier in the list, and fav, one later, read these as globals (the motion helpers went to boxfold.js
+  // and core.js in the restructure S3a); monthGridHtml and
+  // monthStep are called by tests only (month, setup); tests/setup.test.js sets monthPanel (a setter). Since the restructure S3e the
+  // shared day helpers too: homeDay (history, missed, today, start, calendar, tests), dayWord (history, scorecard, fav), recentWork
+  // (scorecard), mvSig (today-gestures), wardShort (today)
+  'month.js':['dayOnly','dayWord','homeDay','monthDrag','monthLink','monthOpen','monthPanel','monthPlan','monthRelease','mvSig','nextWorkday','openDay','piecesLine','piecesParts','planOn','recentWork','setMonthOpen','shortRest','shortTop','stackSVG','toggleMonth','wardShort'],
+  // history.js (firstReal, missedNote) and today.js (missedCard) are classic scripts; the rest are called by the todayacts and weeklock tests
+  'missed.js':['firstReal','missedCard','missedNote'],
+  // (keyDate, saveDay, idsOf and notAhead went to days.js, restructure S3b) today.js draws and records with recordDays, openPicker, closePicker,
+  // setWorn, setVest, resetCard and dayActions and sets todayPullWait and pastEdit (setters; tests set pastEdit too; swapMsg: HOOK,
+  // S1f); picker is a getter (today, today-gestures and sync read it); whenPulled: start, safety, wardrobe, calendar; dropLearn and
+  // checkPlanRules: start; renderReplanUI: settings; setOccasion: daysoff, calendar; wearFav: fav; pickItem: scorecard; swapSlot, togglePastEdit, correctPast, setFormal, resetDay, replanFuture and planRulesNote: tests only;
+  // canPick and slotLabel (from today.js, restructure S3e): today, scorecard
+  'history.js':['canPick','checkPlanRules','closePicker','dayActions','dropLearn','openPicker','pastEdit','pickItem','picker','recordDays','renderReplanUI','resetCard','setOccasion','setPastEdit','setSwapMsg','setTodayPullWait','setVest','setWorn','slotLabel','todayPullWait','wearFav','whenPulled'],
   // today.js draws and folds the card (scoreCard, toggleScore) and sets scoreOpen, as the advicefresh, folds, scoreanim and scoredials
-  // tests do (a setter); history.js and fav.js say dayWord; month.js reads recentWork; dialHtml, dialsFor, rankFor and rankPools are
+  // tests do (a setter; dayWord and recentWork went to month.js, restructure S3e); dialHtml, dialsFor, rankFor and rankPools are
   // called by tests only (advicefresh, scoredials, takeoff), which also read rankMemo and rankW (getters: only scorecard.js writes them)
-  'scorecard.js':['dayWord','recentWork','scoreCard','scoreOpen','setScoreOpen','toggleScore'],
-  // planDirty is called by 25 classic page scripts, planFor by 14, planMonth by 9; cache is read by nine and set by 95 tests (a
-  // setter); today and stats ask planStartDay, today planTrim, outSig and planSnapSoon, start PLAN_SNAP and planSnapUse, shop strHash;
-  // planRuns, planSig and planSnapUsed (a getter): tests/speed.test.js
-  'today-plan.js':['PLAN_SNAP','cache','outSig','planDirty','planFor','planMonth','planSnapSoon','planSnapUse','planStartDay','planTrim','strHash'],
-  // Today's names for the screens that step, fold and pick (history, scorecard, today-gestures, month, settings, start, kit, …) and the
-  // tests; openRow, belowOpen, dayShown and BLOUSE_ROLL_ON have setters (tests assign them), recordRun is a getter; figureStage: tests/todayswatch.test.js, inside a string run in the page
-  'today.js':['canPick','figCuDone','foldAll','goToday','hasOutfit','homeDay','keepHome','planWith','recordRun','renderToday','setListOpen','slotLabel','stepDay','wardShort','wxPreload'],
+  'scorecard.js':['scoreCard','scoreOpen','setScoreOpen','toggleScore'],
   // today.js opens and shuts a piece's photo with these
   'today-photofold.js':['picOpenReady','picShut','picSnap','picStop'],
   // today.js lays out the swatches with ovlPiece and calls applyZoom, zoomOut, swApply, swTap and swClose; zoom is a getter
@@ -189,19 +200,12 @@ const BRIDGE={
   // toggleZoom: the todayswatch, hbswatch, twillswatch, asmrelease, materials, todayzoom and swatchzoom tests (ovlItem only inside a
   // string tests/todayswatch.test.js runs in the page, which --plan can't see)
   'today-picture.js':['applyZoom','ovlPiece','swApply','swClose','swTap','zoom','zoomOut'],
-  // sync.js asks todayBusy before a redraw; month.js signs a day's outfit with mvSig (it comes after in the list, read as a global);
+  // Today's names for the screens that step, fold and pick (history, scorecard, today-gestures, month, settings, start, kit, …) and the
+  // tests; openRow, belowOpen, dayShown and BLOUSE_ROLL_ON have setters (tests assign them), recordRun is a getter; figureStage: tests/todayswatch.test.js, inside a string run in the page
+  'today.js':['figCuDone','foldAll','goToday','keepHome','planWith','recordRun','renderToday','setListOpen','stepDay','wxPreload'],
+  // sync.js asks todayBusy before a redraw (mvSig went to month.js, restructure S3e);
   // tests/moveoutfit.test.js calls moveRecs and reads outfitMove (a getter: only today-gestures.js writes it)
-  'today-gestures.js':['mvSig','todayBusy'],
-  // today.js (the month box, the pieces line, the home day; it sets monthOpen, as nine tests do: a setter), daysoff, history, pack,
-  // remind, start, stats and the painter (assemble.js, asm-color.js: planOn) are classic scripts; scorecard
-  // and today-gestures, modules earlier in the list, and fav, one later, read these as globals (the motion helpers went to boxfold.js
-  // and core.js in the restructure S3a); monthGridHtml and
-  // monthStep are called by tests only (month, setup); tests/setup.test.js sets monthPanel (a setter)
-  'month.js':['dayOnly','monthDrag','monthLink','monthOpen','monthPanel','monthPlan','monthRelease','nextWorkday','openDay','piecesLine','piecesParts','planOn','setMonthOpen','shortRest','shortTop','stackSVG','toggleMonth'],
-  // (the photo keys, the kept pictures and esc, jsq and srcOk went to photo-keys.js, restructure S3b) today, start, settings, daysoff and stats (classic), history, today-picture and itemsheet (modules that
-  // read them as globals) draw with the rest; 15 names are read by
-  // tests only. remoteListed is assigned from outside (tests): a getter and a setter; itemBatch is a let only photos.js writes: a getter
-  'photos.js':['PIC_BG','aAn','asmLive','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','itemKey','itemPic','itemPicHtml','lastWorn','picBgs','renderFor','renderItemPicUI','schedulePrefetch','setRemoteKeys','wardPic'],
+  'today-gestures.js':['todayBusy'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
   // nearly every page script opens, closes or saves through these; settingsPart is called at load by look, account, calendar and remind.
@@ -338,10 +342,10 @@ const GROWN={
   'boxfold.js':['foldQuiet','keepInView','monthBelow','pageScroll','revealNeed'],
   'app.js':['imgOf','setAiError','setAiModel','setConnReady','setDbConn','setDbCur','setDbWiping','setFlt','setSel','setView'],
   'add-sheet.js':['setAddFor'],
-  'history.js':['setPastEdit','setSwapMsg','setTodayPullWait'],
+  'history.js':['setPastEdit','setSwapMsg','setTodayPullWait','canPick','slotLabel'],
   'scorecard.js':['setScoreOpen'],
   'today.js':['setListOpen'],
-  'month.js':['setMonthOpen'],
+  'month.js':['setMonthOpen','dayWord','homeDay','mvSig','recentWork','wardShort'],
   'photos.js':['setRemoteKeys','wardPic'],
   'settings.js':['setSetSeen','setViewStale'],
   'safety.js':['setStoreToldAt'],
@@ -349,6 +353,10 @@ const GROWN={
   // and restructure S3b (2026-11-26): the backup's state (the pause, the status words) moved down from sync-status.js into sync.js
   'sync.js':['backedUpWords','safariTab','setRestoring','syncPaused','syncWaiting','tabBrowser'],
   'kit.js':['setKitNoMine'],
+  // and restructure S3e (2026-11-26): the Today group's shared parts moved down into the files that run first: hasOutfit from today.js
+  // into today-plan.js; canPick and slotLabel from today.js into history.js; homeDay and wardShort from today.js, dayWord and recentWork
+  // from scorecard.js and mvSig from today-gestures.js into month.js (history.js's and month.js's rows above have them too)
+  'today-plan.js':['hasOutfit'],
 };
 const WORKERS=['asm-worker.js','analysis-worker.js'];
 let PLATFORM=null;
