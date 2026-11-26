@@ -21,6 +21,11 @@
      adds the rank and puts OCP pants in the OCP cloth (on any master that shows pants)
    - the keys: a blouse look's carries its kind, 'nk' + asmNkSig, the items (T-shirt, pants, belt) and the rank (asmOcpSig); OCP pants'
      sett signatures carry OCP_V (detect.js ocpSett): bump core.js OCP_V whenever the OCP cloth changes */
+import {ASM_LIN,asmData,asmGet,asmJpeg,asmTried} from './assemble.js';
+import {ASM_CM_KINDS,asmCmKey} from './asm-keys.js';
+import {asmCmMfNow} from './asm-color.js';
+import {linSrgb8,srgbLin8} from './srgb.js';
+import {ASM_NK} from './asm-kinds.js';
 const ASM_OCP_KINDS={blouse:{base:'shirt-open',lapels:0,cloth:'jersey'}};
 /* the outfit the base job is built from: a blouse look's without the blouse (the open-shirt master's items), any other as it is */
 const asmOcpBase=(o,k)=>ASM_OCP_KINDS[k]&&o?{...o,top:null}:o;

@@ -20,6 +20,9 @@
    Jeans (trousers kind 'jeans') on a master that shows trousers (shirt-open, shirt-tie and the seven tops) are painted on a faded copy of
    that master (record 'master-jeans': only the master's trousers pixels differ, lifted at the thigh fronts and knees, the mockup's
    jeansfade.py): only those looks' keys take 'jf' + the record's date, and only once the manifest lists it. */
+import {ASM_CM_KINDS,asmCmKey} from './asm-keys.js';
+import {ASM_CM_BTN,asmCmBaseJob,asmCmCodeText,asmCmGet,asmCmHash,asmCmKind,asmCmLightKeys,asmCmMfNow} from './asm-color.js';
+import {ASM_LIN,asmGet} from './assemble.js';
 const ASM_NKV=1;
 /* the new kinds: their base master, lapels (the jacket masters), the shirt's or top's drawn buttons ([x, y, radius] at 2048, from each
    trace's report.json; the jackets keep the open shirt's), and the cloth family: jersey (T-shirt, polo, henley), fleece (sweatshirt,
@@ -125,7 +128,7 @@ const asmNkSig=()=>asmNkH||(asmNkH=asmCmHash(asmCmCodeText(asmNkCode())));
 /* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
 Object.assign(globalThis,{ASM_NK,asmNkBase,asmJfWants,asmCmKindOf,asmNkGet,asmNkJob,asmNkSig});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,ASM_JF_BASES,ASM_NK_KNIT,asmJfKey,asmNkCloth,asmNkKnitTile,asmNkLin};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,ASM_JF_BASES,ASM_NK_KNIT,asmJfKey,asmNkCloth,asmNkKnitTile,asmNkLin,ASM_NK};
 export {ASM_NK,ASM_NK_KNIT,asmNkBase,ASM_JF_BASES,asmJfKey,asmJfWants,asmCmKindOf,asmNkGet,asmNkLin,asmNkKnitTile,asmNkCloth,asmNkJob,asmNkSig};
 /* (below the bridge: it reads asm-color.js's and asm-gl.js's tables at load, and throws without them) */
 /* the kinds into the painter's tables, invisibly to its fingerprint (runs on the page and in the worker) */

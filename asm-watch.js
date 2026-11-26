@@ -11,6 +11,8 @@
    its colour (on a dark dial the printing turned light), and a leather strap (the scan's grain along the strap, a broad calf sheen,
    darker painted edges, a stitch line) or a metal bracelet in the case's metal. The open-collar masters share their buttoned masters'
    watch. Its own version (ASM_WATCHV) is in the look's key (asmWatchSig in asm-color.js asmCmSig). */
+import {ASM_LIN,asmData,asmJpeg} from './assemble.js';
+import {linSrgb8} from './srgb.js';
 const ASM_WATCHV=1;
 const ASM_WATCH_GEO={suit:{x:1129,y:1049,n:255,cx:1274,cy:1177,ax:[.312,-.9501]},vest:{x:1123,y:1052,n:267,cx:1275,cy:1180,ax:[.319,-.9478]},
   'shirt-tie':{x:1164,y:630,n:193,cx:1276,cy:742,ax:[.3947,-.9188]},'shirt-open':{x:1171,y:682,n:189,cx:1279,cy:784,ax:[.4391,-.8984]}};
