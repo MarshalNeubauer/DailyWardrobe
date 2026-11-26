@@ -4,6 +4,22 @@
    job on 2026-11-17: item-photo.js the photo tools, item-view.js the sheet itself. Since the restructure S3d, 2026-11-26, it loads after
    wardrobe.js, care.js and cost.js, whose parts it draws.) */
 import {on,serve} from './bus.js';
+import {esc,srcOk} from './photo-keys.js';
+import {cap1,flt,keepFocus,put,refreshSwatch,setFlt} from './app.js';
+import {cropEditor,paperCloth,paperHint,paperLine,paperRetake,phEdit,phSm,photoTools,setPhEdit} from './item-photo.js';
+import {wardPic} from './photos.js';
+import {itemThumb} from './draw.js';
+import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,COLORS,CUFFS,DIAL_OPTS,FABRIC,HANDPICK_TYPES,MATERIALS_BY,METAL_TYPES,OCP_RANKS,SEASONS,SEASON_TYPES,SHOE_STYLES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,dayRecs,hasPat,hasVest,isoKey,items,leatherLabel,leatherWord,leathersFor,metalOptsFor,normPat,patBase,patName,primaryCol,shadeName,shoeStyle,tapeText,todayDate,trouserKindShown,watchOpts} from './core.js';
+import {closeupBtn,isConnected,tell} from './ui.js';
+import {DETECT_PATS,detectPattern,usableSett} from './detect.js';
+import {WATCH_DETAILS_MAX,ivOn,matOnItem,wardBack,wardBar,wardCount,wardDelete,wardDuplicate,wardFieldsTop,wardFlt,wardFresh,wardGrid,wardKeep} from './wardrobe.js';
+import {isFavItem} from './planner.js';
+import {editing,itemGoneTell,renderItem} from './item-view.js';
+import {planDirty} from './today-plan.js';
+import {toast} from './toast.js';
+import {keyDate,saveDay} from './days.js';
+import {closeSettings} from './settings.js';
+import {acts} from './act.js';
 const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Color':k==='secondaryColor'?'Second color':k==='tertiaryColor'?'Third color':k==='watchStyle'||k==='shoeStyle'?'Style':k==='trouserKind'?'Kind':k[0].toUpperCase()+k.slice(1)} <select data-act-change="itemPick" data-id="${esc(id)}" data-f="${k}">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select></label>`;
 /* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with the row of photo tools under it, the
    "Color & texture" card (fabrics), then a card for the tags, one for rotation, and Delete on its own at the very end */
@@ -157,6 +173,8 @@ function stepType(n,from){
    Above the file's first call that can throw ($ and the Wardrobe page's own element, then acts): the names are then still the page's,
    as a classic script's were */
 Object.assign(globalThis,{itemBody,sete,patSummary,redetect,clearStripes,renderWardrobe});
+/* an item's edits, asked for by colpick.js and look.js (loaded before this file, of the Add group: tests/bus.test.js SOCKETS) */
+serve('item-set',sete);serve('pat-summary',patSummary);serve('pat-redetect',redetect);serve('pat-clear',clearStripes);
 /* the Wardrobe's redraw for the files loaded before this one (bus.js: they announce 'wardrobe-changed'; nav.js asks 'wardrobe-draw' when
    the page shows), the restructure S3d */
 on('wardrobe-changed',renderWardrobe);serve('wardrobe-draw',renderWardrobe);
@@ -192,7 +210,7 @@ function renderWardrobe(){
   renderItem();wardBack(wf);
 }
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,rm,togglePause};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,rm,togglePause,clearStripes,patSummary,redetect,sete};
 export {itemBody,sete,patSummary,redetect,togglePause,clearStripes,rm,renderWardrobe};
 /* what the item page's and the Wardrobe's controls do (act.js; the item by its id in data-id) */
 function itemPick(el){sete(el.dataset.id,el.dataset.f,el.value)}

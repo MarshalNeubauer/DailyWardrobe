@@ -1,6 +1,7 @@
 /* Daily Wardrobe: download and restore a backup file (split from sync.js, 2026-11-17); works without a connection (saves to Files on
    iPhone) */
 import {cleanState,itemName,items,nm,nowMs,stampAllSettings} from './core.js';
+import {applyMerged,localState,scheduleSync} from './sync.js';
 async function downloadBackup(){
   const data={app:'daily-wardrobe',version:1,exported:new Date().toISOString(),...await localState()};
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));

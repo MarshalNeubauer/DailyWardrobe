@@ -3,6 +3,15 @@
 /* (2026-11-14, the owner) on an iPhone or iPad in a browser tab, a "Home Screen" step right after Welcome: the Home Screen app keeps its
    own storage, apart from Safari's, so what is set up in Safari stays there; it is shown before anything is set up. Not in the app opened
    from the Home Screen, not on other devices (the steps are then as before). SETUP_STEPS is worked out when the setup opens. */
+import {$,DAY_NAMES,dayRecs,inRotation,isHandPick,items,settings} from './core.js';
+import {inviteOver,isConnected,layerInert,tell} from './ui.js';
+import {closeSettings,saveUserSettings,setVestMode,settingsOpen,todayDirty,toggleDay} from './settings.js';
+import {backDrop,backOn,backPush} from './back.js';
+import {renderToday} from './today.js';
+import {openAdd,show} from './nav.js';
+import {announce,keepFocus} from './app.js';
+import {esc} from './photo-keys.js';
+import {acts} from './act.js';
 const SETUP_BASE=['welcome','week','wear','weather','connect','done'];
 let SETUP_STEPS=SETUP_BASE.slice();
 const setupStepsNow=()=>typeof homeNeeded==='function'&&homeNeeded()?['welcome','home',...SETUP_BASE.slice(1)]:SETUP_BASE.slice();

@@ -9,6 +9,21 @@
 /* the parts loaded before it announce a changed card on the notice board (bus.js 'card-changed'), and Add is drawn again here:
    they never call renderAdd (the restructure S3c, 2026-11-26) */
 import {on,serve} from './bus.js';
+import {aiSignals,applyWb,closeRead,measureAndApply,measureCard,measureCloth,nearestCols,wbGains} from './measure.js';
+import {aiError,aiModel,ask,fill,generateSwatch,imgOf,keepFocus,loadImg,normTag,queue,setAiError,setAiModel,shrink} from './app.js';
+import {CLOSE_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,customForTag,tagFixes} from './tag-request.js';
+import {cardAt,cardIx,cardOf,cardReading,needType} from './add-ids.js';
+import {toast} from './toast.js';
+import {addKeep,addKeepSoon,addRestoreState,addWatch} from './add-keep.js';
+import {aiFields,readAbort,refineFromCloseup,takeExtras} from './tagging.js';
+import {$,COLORS,TYPES,tagTypesNow,watchOpts} from './core.js';
+import {addGate,inviteOver,isConnected,noMotion,plainErr} from './ui.js';
+import {npsDraw,npsId,renderAddFor} from './add-sheet.js';
+import {cardReady,saveAll,saveAllOn} from './add-save.js';
+import {busyCard,cardSafe,errCard,formCard,multiErrCard,typeCard} from './add-card.js';
+import {cmpMount} from './checklist.js';
+import {closeColPick,colPick} from './colpick.js';
+import {acts} from './act.js';
 /* ---- automatic white balance (wbRead/wbGains/applyWb in measure.js): the light's colour is read from the brightest near-neutral pixels (a white wall, backdrop,
    shirt or label), which should be grey, and every pixel is scaled to make them so. Conservative: no correction when there
    are too few of them, when they fill nearly the whole photo (then they are the item itself, e.g. a close-up of a cream
@@ -207,6 +222,6 @@ function addPhotosPick(el){addFiles([...el.files],el.dataset.multi==='1');el.val
 Object.assign(globalThis,{addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,multiAgain,renderAdd,addBackOnline});
 Object.defineProperties(globalThis,{addCalm:{get:()=>addCalm}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,addNoteText,cardPics,countWord,errToHand,multiAgain};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,addNoteText,cardPics,countWord,errToHand,multiAgain,addFiles};
 export {cardPics,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,addCalm,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,countWord,multiAgain,addNoteText,renderAdd,addBackOnline};
 acts({cardWb,cardSkip,cardStop,cardMultiAgain,cardByHand,saveAllTap,addPhotosPick});

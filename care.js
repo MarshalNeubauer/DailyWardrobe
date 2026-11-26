@@ -9,7 +9,16 @@
      one: the Care page shows them as one line with "All washed today".
    - the Care page (#care, from Settings), a quiet tag in the Wardrobe grid and one line on Today when today's wear reaches the limit.
    The shirt rule (settings.laundryDays) is in planner.js outfit(). */
-import {on,emit} from './bus.js';
+import {on,emit,serve} from './bus.js';
+import {$,HANDPICK_TYPES,TYPES,dayRecs,isWorkday,isoKey,items,key,nameHtml,sentence,settings,shortDesc,todayDate} from './core.js';
+import {cache,planDirty,planFor,planMonth} from './today-plan.js';
+import {esc} from './photo-keys.js';
+import {openSettings,refreshToday,saveUserSettings,todayDirty} from './settings.js';
+import {keyDate,saveDay} from './days.js';
+import {cap1,put,sel} from './app.js';
+import {toast} from './toast.js';
+import {askConfirm} from './ui.js';
+import {actTaps,acts} from './act.js';
 const CARE_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];   // the types with a wear limit in Settings
 const CARE_ABLE=['suit','blazer','pants','shirt','tie','overcoat','raincoat','socks','pocketsquare',...HANDPICK_TYPES];   // what can be sent away (a pocket square: worn count, laundry; the casual garments too, 2026-11-16)
 // wears before cleaning; a type not listed is never due. The casual garments (2026-11-16, not in Settings' limits): T-shirts, polos and
@@ -225,10 +234,12 @@ function careBandKey(el,ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault
    as globals: itemsheet, cost, wardrobe, add-more, settings, today, today-picture and remind; the rest are read by tests. Above the
    file's last top-level call (acts, when act.js did not load): the names are then still the page's */
 Object.assign(globalThis,{CARE_ABLE,careLimit,careWashed,careWord,careTimes,careState,careTag,careBadge,careBackText,careLog,careCard,renderCare,careNote,careFrame,careBandSoon,careReminders,renderCareUI});
+/* the laundry's words and record, asked for by wardrobe.js and add-more.js (loaded before this file, of other groups: tests/bus.test.js SOCKETS) */
+serve('care-tag',careTag);serve('care-badge',careBadge);serve('care-log',careLog);serve('care-back-text',careBackText);
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-draw',()=>renderCareUI());
 on('settings-category',k=>{if(k==='laundry')renderCare()});   // Laundry & cleaning's lists, as it opens
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,CARE_DEF,careBack,careCleaned,careCounts,careDayState,careLists,careName,careSend,openCare,renderCare};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,CARE_DEF,careBack,careCleaned,careCounts,careDayState,careLists,careName,careSend,openCare,renderCare,careBackText,careBadge,careLog,careTag};
 export {CARE_ABLE,CARE_DEF,careLimit,careWashed,careWord,careTimes,careName,careCounts,careState,careTag,careBadge,careBackText,careLog,careCard,careSend,careBack,careCleaned,careLists,renderCare,openCare,careNote,careDayState,careFrame,careBandSoon,careReminders,renderCareUI};
 acts({laundryPick,careSendTap,careDoneTap,careBackDate,careBackTap,careTypeDone,careLimitsTap,careLimitPick,careDueTap,careBandTap,careBandKey});

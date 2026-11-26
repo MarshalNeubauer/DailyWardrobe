@@ -153,6 +153,8 @@ const BRIDGE={
   // the restructure S3c (2026-11-26): the field rows the Add card and the item sheet share, moved here from wardrobe.js and itemsheet.js:
   // add-card, add-save, wardrobe, itemsheet and kit draw, save and size them; the tests call matRow
   'fields.js':['WARD_FIELDS','WARD_MAX','fldRow','matLabel','matPicked','matRow','matTidy','notesRow','optLab','wardSaveFields'],
+  // the Look beta's base (the restructure S5d, out of look.js): core.js, item-view, itemsheet, item-photo and tagging ask lookOn (and lookCu) as globals; the rest: tests
+  'look-base.js':['LOOK_COATS','LOOK_ENAMEL','LOOK_KS','LOOK_METALT','LOOK_METAL_COLS','LOOK_PAT_GROUPS','LOOK_PK','lookClipMetal','lookCu','lookCur','lookHasPat','lookOn','lookPatGroupOf'],
   // add-card, itemsheet, colpick, look, add, add-sheet and item-view draw their sections and the close-up comparison with these;
   // CK_OPEN is also how 53 test files open the sections
   'checklist.js':['CK_OPEN','accRow','ckChip','ckColSum','ckIsOpen','ckSec','ckSure','ckToggle','cmpDiff','cmpDiffText','cmpDrawn','cmpHtml','cmpLab','cmpMatchHtml','cmpMount','cmpPaper','cmpPaperLine','cmpSteps'],
@@ -239,7 +241,7 @@ const BRIDGE={
   // tests/asmroute.test.js only
   'own-lists.js':['addCustomColor','addCustomPattern','addOwnMaterial','groupOf','matGuessUse','matOffer','newColHex','openColForm','openPatForm','ownColOffer','removeCustom','removeOwnMaterial','renderCustomUI','renderOwnMatUI','typePl'],
   // add, add-card, add-save, itemsheet, look, checklist and own-lists; colPick (a test assigns it) and rd (tests assign it) have setters, rdLast a getter; the rest: tests
-  'colpick.js':['EP','NEW_COL','RD_LOOKUPS','SOCK_THIRD','SW_GRAB','accDel','closeColPick','cnHex','cnLeft','colHas','colNameTaken','colNear','colPick','colPickSel','colRows','colShows','colTarget','colTidy','openColNew','openColPick','openCustomNew','openPatNew','patBtn','patChoices','patVar','rdAddBtn','rdCost','rdCostLine','rdDoneHtml','rdEditorBtn','rdOff','rdStart','renderColPick','useColPick'],
+  'colpick.js':['EP','NEW_COL','RD_LOOKUPS','SOCK_THIRD','SW_GRAB','accDel','closeColPick','cnHex','cnLeft','colHas','colNameTaken','colNear','colPick','colPickSel','colRows','colShows','colTarget','colTidy','lookShadeOk','openColNew','openColPick','openCustomNew','openPatNew','patBtn','patChoices','patVar','rdAddBtn','rdCost','rdCostLine','rdDoneHtml','rdEditorBtn','rdOff','rdStart','renderColPick','useColPick'],
   // itemsheet (orderHint, arriveVal, ARRIVE_PAST, checkArrivals), stats, wardrobe, care and shop (fmtDay), today, start and care
   // (checkArrivals); add-card and add-save read the rows; setOrder and setArrives are called by tests only
   'add-more.js':['ARRIVE_PAST','arriveVal','checkArrivals','fmtDay','orderHint','orderRow','qtyLabel','qtyOf','qtyRow'],
@@ -258,7 +260,7 @@ const BRIDGE={
   'add-paste.js':[],
   // core, item-photo and colpick are classic scripts; add-card, item-view, itemsheet, tagging, own-lists, add-save and checklist
   // are modules that read these as globals; LOOK_OTHER, lookSet, lookOwnMats, lookSetMat, lookShadeStep and lookCheck by tests only
-  'look.js':['LOOK_COATS','LOOK_ENAMEL','LOOK_KS','LOOK_METALT','LOOK_METAL_COLS','LOOK_PAT_GROUPS','LOOK_PK','lookClipMetal','lookCu','lookCur','lookHasPat','lookOn','lookOpenFresh','lookOwnMatUI','lookPatGroupOf','lookSave','lookSection','lookSetEnamel','lookShadeHtml','lookShadeOk','lookSugCols','lookSugPats','lookUsePick','lookWrite','renderLookPick'],
+  'look.js':['lookOpenFresh','lookOwnMatUI','lookSave','lookSection','lookSetEnamel','lookShadeHtml','lookSugCols','lookSugPats','lookUsePick','lookWrite','renderLookPick'],
   // start.js runs the four remakes, item-photo.js counts its own within the day's (remakeLeft, remakeSpend); REMAKE_DAY is read by
   // tests/tagreads.test.js only
   'migrate.js':['fixBlackBackdrops','recolourSpecSetts','remakeLeft','remakeSpend','upgradeCloseups','upgradePhotos'],
@@ -321,6 +323,8 @@ const BRIDGE={
 };
 /* file -> names its row gained after its conversion (each with the reason beside it); every one is in BRIDGE too */
 const GROWN={
+  // restructure S5d (2026-11-26): lookShadeOk moved from look.js into colpick.js (it reads colpick.js's NEW_COL; look.js imports it back)
+  'colpick.js':['lookShadeOk'],
   // restructure S3d (2026-11-26): helpers moved down out of the item sheet to the files loaded before their readers: noMotion from
   // item-view.js into ui.js (nav, sheet-swipe, boxfold, today, month …), imgOf from item-photo.js into app.js (app, pattern-read,
   // checklist), wardPic from itemsheet.js into photos.js (wardrobe, colpick, itemsheet), phEdit from itemsheet.js into item-photo.js

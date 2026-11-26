@@ -212,12 +212,10 @@ async function run(eng,browser,{ok,url,settle}){
   // a late script missing: the app starts without that feature, and no card
   k=await fail({'about.js':{status:404}},()=>window.appReady);await wait(5200);k=await card();
   ok(!k&&await shown(c)==='today'&&await c.p.evaluate(()=>window.appReady&&items.length===3&&document.querySelector('#today').children.length>0),T+'about.js can\'t be loaded: the app still starts on Today with its wardrobe, and no start-up card covers it');
-  // act.js missing: every file's last statement, acts({…}), throws. A classic script's names were the page's all the same; a module's
-  // are only when its bridge is above that statement (missed.js's below it left Today undrawn: today.js draws with missedCard)
-  k=await fail({'act.js':{status:404}},()=>window.appReady);await wait(5200);k=await card();
-  const noAct=await c.p.evaluate(()=>({ready:!!window.appReady,n:items.length,mbox:!!document.querySelector('#today #mbox'),
-    gone:['pasteMsg','firstReal','missedCard','scoreCard','toggleMonth','cycleTheme','renderDressUI','CK_OPEN','cpwSum','favStrip','loadSnapshots','downloadBackup','calSummary'].filter(n=>typeof globalThis[n]==='undefined'&&!(n in HOOK)).join()}));   // (a name only the tests use is handed over on HOOK: T2 phase 3)
-  ok(!k&&noAct.ready&&noAct.n===3&&noAct.mbox&&noAct.gone==='',T+`act.js can't be loaded: the modules that end with acts({…}) still hand over their names, and Today is drawn down to its month box, no start-up card (names missing: ${noAct.gone||'none'}; month box ${noAct.mbox})`);
+  // act.js missing: settings.js (required) imports acts since the restructure S5d, so the graph doesn't link and the start-up card shows
+  // (the owner's choice (c), 2026-11-25: act.js counts as required; before, Today was drawn down to its month box)
+  k=await fail({'act.js':{status:404}},()=>!!document.querySelector('#start-fail'),12000);
+  ok(k&&/The app couldn’t start\./.test(k.text)&&k.btn&&await stored()==='ml-shirt,ml-suit,ml-tie',T+`act.js can't be loaded: the start-up card says so with Try again, and the stored wardrobe is untouched (${k?'shown':'not shown'})`);
   /* ---- a page script that is an ES module (back.js: every page and sheet registers its Back there while loading) ---- */
   // it can't be loaded, doesn't parse, or asks another module for a name that one doesn't export (the graph doesn't link, none of it runs)
   const backSrc=fs.readFileSync(path.join(ROOT,'back.js'),'utf8');

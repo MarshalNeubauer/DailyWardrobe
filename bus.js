@@ -32,4 +32,5 @@ function emit(topic,...args){const l=BOARD.get(topic);if(!l)return 0;let err,bad
 const SOCKETS=new Map();   // name -> fn
 function serve(name,fn){if(typeof fn==='function')SOCKETS.set(name,fn)}
 function ask(name,...args){const fn=SOCKETS.get(name);return fn?fn(...args):undefined}
-export {on,heard,emit,serve,ask};
+const askFor=ask;   // the same, for a file that also uses app.js's own ask() (the server request): colpick.js
+export {on,heard,emit,serve,ask,askFor};

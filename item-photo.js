@@ -3,6 +3,13 @@
 /* ---- Wardrobe editor: replace, rotate, zoom-crop the item's photo. Only the picture changes: the tags (colour, pattern...)
    and the item itself stay, so the plan and the outfit history are untouched. Each change's toast has Undo (picUndo; phEdit.undo holds the editor's steps). ---- */
 import {emit,ask} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); ask: the piece open (item-view.js). (No app.js ask() here)
+import {DEAD_MSG,deadCanvas,deadPic,fixupRedraw,imgOf,loadImg,put,refreshSwatch,shrink,stillCur} from './app.js';
+import {$,COLORS,colOf,items,primaryCol} from './core.js';
+import {esc,srcOk} from './photo-keys.js';
+import {closeupBtn,cuGot,cuTouch} from './ui.js';
+import {toast} from './toast.js';
+import {planDirty} from './today-plan.js';
+import {acts} from './act.js';
 /* the photo editor's state for the piece open: its Undo steps and the crop frame (moved here from itemsheet.js, the restructure S3d; only
    itemsheet.js starts it again, with setPhEdit) */
 let phEdit={id:null,undo:[],crop:null};
