@@ -3,6 +3,7 @@
    on a swipe (foldAll), stepping a day (stepDay) and the month planned with other records (planWith)
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14, and on
    2026-11-17 (Round C) into today-plan.js, today.js, today-photofold.js, today-picture.js and today-gestures.js, in that order.) */
+import {emit} from './bus.js';
 /* the day records and the week's locks a drawing of Today writes (recordDays, lockUpcoming) run in the background; recordRun is the latest
    run, so a test can wait until a device has finished writing before it counts its syncs (tests/sync.test.js quiet) */
 let recordRun=Promise.resolve();
@@ -207,8 +208,6 @@ function piecesBox(o){
     <div class="mpanel" id="ipanel"><div class="mpanel-in" data-act="listFoldTap"><div class="list">${slots(o)}</div>${canPick(o)&&!o.frozen?`<p class="plegend" aria-hidden="true"><span>⇄</span> choose another${offOn(o)&&(o.top||o.tie||o.pocket)?' · <span>−</span> take off for today':''}</p>`:''}</div></div></section>`}   // (the icons in words, W2-14-10; the buttons have their names already)
 /* a tap inside the open pieces list that is not on a button, a link or a photo (e.g. on the names on the left) folds the list */
 function foldListTap(e){if(!listOpen||e.target.closest('button,a,input,select,label,.rpanel'))return;toggleList()}
-/* folding a box whose top is above the screen (folded from its bottom): bring the card back into view */
-function keepInView(box){if(foldQuiet)return;const r=box.getBoundingClientRect();if(r.top<8)scrollBy({top:r.top-8,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
 function toggleList(){const box=$('#ibox');if(!box)return;listOpen=!listOpen;
   const b=$('#ibox .month-link');b.setAttribute('aria-expanded',listOpen);b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/Fold away|Show the list/,listOpen?'Fold away':'Show the list'));
   if(listOpen)boxUnfold(box);else boxFold(box,'#ipanel .list>*')}
@@ -246,10 +245,10 @@ function todaySay(o){const k=key(sel),h=$('#today .day h2 .dlong'),e=$('#slide .
   const was=todaySaid;todaySaid={k,s};if(!was||!$('#today')||$('#today').hidden)return;
   if(was.k!==k)announce(`${h?h.textContent:''}: ${s}`);else if(was.s!==s&&s)announce('Now: '+s)}
 /* a swipe to another day folds whatever is open (score, pieces list and its rows, a below-the-waist photo, the month) and zooms
-   the picture back out: it starts as soon as the drag is known to be sideways, so the boxes fold while the day slides */
-let foldQuiet=false;
-function foldAll(){foldQuiet=true;try{if(openRow)toggleRow(openRow);if(belowOpen)pickPiece(belowOpen);if(scoreOpen)toggleScore();if(listOpen)toggleList();if(monthOpen)toggleMonth()}
-  catch(e){console.warn(e)}finally{foldQuiet=false}setMonthOpen(false);listOpen=false;setScoreOpen(false);belowOpen=openRow=null;zoomOut();if(typeof swClose==='function')swClose()}
+   the picture back out: it starts as soon as the drag is known to be sideways, so the boxes fold while the day slides; meanwhile the folds
+   are quiet (boxfold.js foldQuiet, told through bus.js: without boxfold.js the day still steps) */
+function foldAll(){emit('folding-all',true);try{if(openRow)toggleRow(openRow);if(belowOpen)pickPiece(belowOpen);if(scoreOpen)toggleScore();if(listOpen)toggleList();if(monthOpen)toggleMonth()}
+  catch(e){console.warn(e)}finally{emit('folding-all',false)}setMonthOpen(false);listOpen=false;setScoreOpen(false);belowOpen=openRow=null;zoomOut();if(typeof swClose==='function')swClose()}
 /* move to the next/previous scheduled day (Sunday-Thursday), crossing months as needed (month.js nextWorkday).
    from: where the new day's outfit slides in from (px, sign = side); 0 = no animation */
 function stepDay(n,from,times=1){
@@ -285,9 +284,9 @@ function dayStepTap(el){stepDay(+el.dataset.n)}   // the date bar's ‹ and ›
 function setListOpen(v){listOpen=v}
 /* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above acts({…}),
    the file's only top-level call that can throw: without act.js its names are still the page's */
-Object.assign(globalThis,{wxPreload,hasOutfit,canPick,slotLabel,wardShort,figCuDone,keepHome,homeDay,goToday,keepInView,renderToday,foldAll,stepDay,planWith,setListOpen});
-Object.defineProperties(globalThis,{recordRun:{get:()=>recordRun},foldQuiet:{get:()=>foldQuiet}});
+Object.assign(globalThis,{wxPreload,hasOutfit,canPick,slotLabel,wardShort,figCuDone,keepHome,homeDay,goToday,renderToday,foldAll,stepDay,planWith,setListOpen});
+Object.defineProperties(globalThis,{recordRun:{get:()=>recordRun}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get BLOUSE_ROLL_ON(){return BLOUSE_ROLL_ON},set BLOUSE_ROLL_ON(v){BLOUSE_ROLL_ON=v},get belowOpen(){return belowOpen},set belowOpen(v){belowOpen=v},get dayShown(){return dayShown},set dayShown(v){dayShown=v},figureStage,get openRow(){return openRow},set openRow(v){openRow=v},pickPiece,piecesBox,restWarn,setOff,setRoll,swatchStack,todayTabTap,toggleList,toggleRow,get listOpen(){return listOpen},set listOpen(v){listOpen=v}};
-export {recordRun,wxPreload,hasOutfit,canPick,openRow,setOff,BLOUSE_ROLL_ON,setRoll,restWarn,toggleRow,belowOpen,slotLabel,swatchStack,wardShort,figureStage,figCuDone,dayShown,keepHome,pickPiece,homeDay,goToday,listOpen,piecesBox,keepInView,toggleList,renderToday,foldQuiet,foldAll,stepDay,planWith,todayTabTap,setListOpen};
+export {recordRun,wxPreload,hasOutfit,canPick,openRow,setOff,BLOUSE_ROLL_ON,setRoll,restWarn,toggleRow,belowOpen,slotLabel,swatchStack,wardShort,figureStage,figCuDone,dayShown,keepHome,pickPiece,homeDay,goToday,listOpen,piecesBox,toggleList,renderToday,foldAll,stepDay,planWith,todayTabTap,setListOpen};
 acts({rollTap,todayTabTap,vestTap,offTap,pickTap,rowTap,addOneTap,belowPicTap,tileTap,swatchTap,wornTap,figLoad,wxRetryTap,wxSetTap,listTap,listFoldTap,dayStepTap});

@@ -158,9 +158,12 @@ async function run(eng,browser,{ok,url,settle}){
   const c=await open();
   const sw=await c.p.evaluate(async()=>({root:(await fetch('./',{cache:'no-store'})).status,ctl:!!(navigator.serviceWorker&&navigator.serviceWorker.controller),reg:!!(navigator.serviceWorker&&await navigator.serviceWorker.getRegistration())}));
   ok(sw.root===200&&!sw.ctl&&!sw.reg,T+`the test server serves the folder's address (./, ${sw.root}) as on every system, and no service worker is in the way of the routes (controlled ${sw.ctl}, registered ${sw.reg})`);
-  await held(c,'add.js',()=>typeof ACTS==='object');
+  // the script right after act.js (add.js until the restructure S3a moved the ui kit and logic there), and the one after start.js
+  const order=[...fs.readFileSync(path.join(ROOT,'index.html'),'utf8').replace(/<!--[\s\S]*?-->/g,'').matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map(m=>m[1]);
+  const afterAct=order[order.indexOf('act.js')+1],afterStart=order[order.indexOf('start.js')+1];
+  await held(c,afterAct,()=>typeof ACTS==='object');
   const st0=await c.p.evaluate(()=>({n:Object.keys(ACTS).length,rs:document.readyState,nav:!!document.querySelector('#n-stats'),late:typeof show==='undefined'&&typeof startUp==='undefined'}));
-  ok(st0.n===0&&st0.late&&st0.nav,T+`with add.js held the page is drawn and act.js listens, but no script has registered a handler yet (${JSON.stringify(st0)})`);
+  ok(st0.n===0&&st0.late&&st0.nav,T+`with ${afterAct}, the script after act.js, held the page is drawn and act.js listens, but no script has registered a handler yet (${JSON.stringify(st0)})`);
   ok(st0.rs==='interactive',T+`document.readyState is already "interactive" while the deferred scripts run (${st0.rs}): afterDom can't go by it`);
   const early=await c.p.evaluate(()=>{window.__ad=0;afterDom(()=>{window.__ad++});return window.__ad});
   for(const sel of Object.values(CTRL))await tap(c,sel);
@@ -173,7 +176,7 @@ async function run(eng,browser,{ok,url,settle}){
   await tap(c,CTRL.Today);await tap(c,CTRL.Wardrobe);await tap(c,CTRL.Insights);
   ok(c.errs.length===0,T+`the tabs tapped with today.js in and start.js not: no page error (${c.errs.join(' | ')||'none'})`);
   await go(c);ok(await shown(c)==='today'&&c.errs.length===0,T+'and the app starts on Today');
-  await held(c,'ui.js',()=>'tabTap' in HOOK&&typeof HOOK.tabTap==='function');
+  await held(c,afterStart,()=>'tabTap' in HOOK&&typeof HOOK.tabTap==='function');
   await tap(c,CTRL['the gear']);const setEarly=await c.p.evaluate(()=>settingsOpen());await tap(c,CTRL['the theme button']);
   const themed=await c.p.evaluate(()=>document.documentElement.dataset.theme||'');
   ok(c.errs.length===0,T+`the gear and the theme button tapped with their scripts in and the later ones not: no page error (${c.errs.join(' | ')||'none'}; theme "${themed}")`);
@@ -278,7 +281,7 @@ async function run(eng,browser,{ok,url,settle}){
   const txt=await a.p.evaluate(()=>({all:document.querySelector('#today').innerText,head:(document.querySelector('#today .dlong')||document.querySelector('#today')).textContent.slice(0,60),sample:new Date(2026,10,15).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}));
   ok(!/[؀-ۿ]/.test(txt.all)&&/(January|February|March|April|May|June|July|August|September|October|November|December)/.test(txt.all)&&txt.sample==='Sunday, November 15',
     T+`after start-up Today's dates are in English with Latin digits ("${txt.head.replace(/\s+/g,' ').trim()}"; a date reads "${txt.sample}")`);
-  await held(a,'ui.js',()=>'tabTap' in HOOK&&typeof HOOK.tabTap==='function');await tap(a,CTRL.Insights);await go(a);
+  await held(a,afterStart,()=>'tabTap' in HOOK&&typeof HOOK.tabTap==='function');await tap(a,CTRL.Insights);await go(a);
   ok(!/[؀-ۿ]/.test(await a.p.evaluate(()=>document.body.innerText))&&await shown(a)==='stats'&&a.errs.length===0,T+'a tab tapped during loading, then Insights after start-up: no Arabic date anywhere, no page error');
   await a.ctx.close();
 

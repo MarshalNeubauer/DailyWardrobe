@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	59fdc64859ccb12af1a7
+# tested	8b1d4be68e061ffdd919
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	acctBase	acctRole	acctSettingsPart	acctStart	applyRole	get	hasInviteHash	iosDevice	iosInSafari	isTester	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -21,7 +21,7 @@ a11y.test.js	asm-watch.js	<loaded>
 a11y.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 a11y.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backWanted	histDrop	histPush	inviteInUrl
 a11y.test.js	backupfile.js	<loaded>
-a11y.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge
+a11y.test.js	boxfold.js	<loaded>	@onfoldingall	boxFold	boxStop	boxUnfold	foldEdge	keepInView	monthBelow	pageScroll	revealNeed
 a11y.test.js	bus.js	<loaded>	emit	heard	on
 a11y.test.js	calendar.js	<loaded>	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 a11y.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBadge	careBandFit	careBandSoon	careBandTap	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTimes	careTop	careWashed	careWord	careWornLine	laundryDays	renderCareUI
@@ -48,7 +48,7 @@ a11y.test.js	measure.js	<loaded>
 a11y.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 a11y.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 a11y.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-a11y.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord
+a11y.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord
 a11y.test.js	mq/shirt-open.js	<loaded>
 a11y.test.js	mq/shirt-tie.js	<loaded>
 a11y.test.js	mq/suit-open.js	<loaded>
@@ -84,7 +84,7 @@ a11y.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEv
 a11y.test.js	today-photofold.js	<loaded>
 a11y.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	applyZoom	swApply	swClose	zoomOut	zoomTarget
 a11y.test.js	today-plan.js	<loaded>	get	planDirty	planFor	planMonth	planSnapSoon	planSnapUse	set	set cache
-a11y.test.js	today.js	<loaded>	addForSlot	addOneTap	belowBox	canPick	dayStepTap	figureStage	foldAll	foldListTap	get	get listOpen	goneNote	hasOutfit	homeDay	keepInView	listFoldTap	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	stepDay	todaySay	toggleList	toggleWorn	vestRow	wardShort	wornBar	wornPill	wornTap	wxFit	wxMissing	wxPreload
+a11y.test.js	today.js	<loaded>	addForSlot	addOneTap	belowBox	canPick	dayStepTap	figureStage	foldAll	foldListTap	get	get listOpen	goneNote	hasOutfit	homeDay	listFoldTap	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	stepDay	todaySay	toggleList	toggleWorn	vestRow	wardShort	wornBar	wornPill	wornTap	wxFit	wxMissing	wxPreload
 a11y.test.js	ui.js	<loaded>	@onsettingsdraw	@onsettingsopen	@onsettingssummaries	@window.addEventListenerkeydown	addGate	advClose	askAnswer	askConfirm	askEls	closeupBtn	connLinkKey	connSummary	cuTouch	inviteOver	isConnected	layerClose	layerFocusables	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 a11y.test.js	wardrobe.js	<loaded>	@whenPulled	fldRow	giNote	giTag	ivOn	matMigrate	matOn	matOnItem	matRow	notesRow	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOpenTap	wardOrder	wardPendingRestore	wardSort	wardView
 a11y.test.js	weather.js	<loaded>	@onsettingsdraw	@onsettingssummaries	cityEnglish	cityKey	cityLang	cityList	findCity	loadWeather	locCC	renderWxLoc	unit	unitCC	wxChip
@@ -840,7 +840,7 @@ advicefresh.test.js	asm-watch.js	<loaded>
 advicefresh.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 advicefresh.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backSync	histDrop	histPush
 advicefresh.test.js	backupfile.js	<loaded>
-advicefresh.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge
+advicefresh.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge	monthBelow	pageScroll	revealNeed
 advicefresh.test.js	bus.js	<loaded>	emit	on
 advicefresh.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 advicefresh.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTimes	careTop	careWashed	careWord	careWornLine
@@ -867,7 +867,7 @@ advicefresh.test.js	measure.js	<loaded>
 advicefresh.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 advicefresh.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 advicefresh.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-advicefresh.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord
+advicefresh.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord
 advicefresh.test.js	mq/shirt-open.js	<loaded>
 advicefresh.test.js	mq/shirt-tie.js	<loaded>
 advicefresh.test.js	mq/suit-open.js	<loaded>
@@ -1016,7 +1016,7 @@ asmahead.test.js	asm-worker.js	<any>
 asmahead.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAhead	asmAheadDays	asmAheadSoon	asmAreas	asmBlobUp	asmBuild	asmBuildAfter	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmData	asmDrawn	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmGetPre	asmGetPre1	asmIdleArm	asmImg	asmImgOf	asmJob	asmJpeg	asmKeepOut	asmKey	asmLab	asmListGet	asmLoad	asmLookId	asmMicroKind	asmMotif	asmOffPage	asmOutKey	asmPhoto	asmPost	asmPump	asmRun	asmShirtAngles	asmShow	asmShown	asmStale	asmStamp	asmSuitBands	asmSuitTweed	asmSuitTwill	asmSuitWeave	asmSync	asmTieFor	asmTieSig	asmTouchWatch	asmTrim	asmWants	asmWeave	asmWorker	asmWorkerDown	get	get asmAhead	get asmAheadOn	get asmOut	get asmW	set	set asmW
 asmahead.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 asmahead.test.js	backupfile.js	<loaded>
-asmahead.test.js	boxfold.js	<loaded>
+asmahead.test.js	boxfold.js	<loaded>	@onfoldingall
 asmahead.test.js	bus.js	<loaded>	emit	on
 asmahead.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 asmahead.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careTimes	careTop
@@ -2566,7 +2566,7 @@ back.test.js	asm-watch.js	<loaded>
 back.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 back.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backHold	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backTop	backWanted	get appKind	histDrop	histPush	inviteInUrl
 back.test.js	backupfile.js	<loaded>
-back.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge
+back.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge	monthBelow	pageScroll	revealNeed
 back.test.js	bus.js	<loaded>	emit	heard	on
 back.test.js	calendar.js	<loaded>	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 back.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careLists	careNote	careState	careSum	careTimes	careTop	careWashed	careWord	careWornLine	laundryDays	openCare	renderCare	renderCareUI
@@ -2593,7 +2593,7 @@ back.test.js	measure.js	<loaded>
 back.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 back.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 back.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-back.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+back.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
 back.test.js	mq/shirt-open.js	<loaded>
 back.test.js	mq/shirt-tie.js	<loaded>
 back.test.js	mq/suit-open.js	<loaded>
@@ -4884,7 +4884,7 @@ colors.test.js	asm-watch.js	<loaded>
 colors.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 colors.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSync	backWanted	histDrop	inviteInUrl
 colors.test.js	backupfile.js	<loaded>
-colors.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge
+colors.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge	monthBelow	pageScroll	revealNeed
 colors.test.js	bus.js	<loaded>	emit	on
 colors.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 colors.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTop	careWashed	careWord	careWornLine
@@ -4911,7 +4911,7 @@ colors.test.js	measure.js	<loaded>
 colors.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 colors.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 colors.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedTell
-colors.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+colors.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
 colors.test.js	mq/shirt-open.js	<loaded>
 colors.test.js	mq/shirt-tie.js	<loaded>
 colors.test.js	mq/suit-open.js	<loaded>
@@ -5617,7 +5617,7 @@ daysoff.test.js	asm-watch.js	<loaded>
 daysoff.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 daysoff.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 daysoff.test.js	backupfile.js	<loaded>
-daysoff.test.js	boxfold.js	<loaded>	foldEdge
+daysoff.test.js	boxfold.js	<loaded>	@onfoldingall	foldEdge	monthBelow	pageScroll	revealNeed
 daysoff.test.js	bus.js	<loaded>	emit	on
 daysoff.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 daysoff.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careTimes	careTop	careWashed	laundryDays	renderCareUI
@@ -5644,7 +5644,7 @@ daysoff.test.js	measure.js	<loaded>
 daysoff.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk
 daysoff.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 daysoff.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedPut	missedSeen	missedSpan	missedTell
-daysoff.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	openDay	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	set monthOpen	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+daysoff.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	openDay	piecesLine	piecesParts	planOn	set	set monthOpen	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 daysoff.test.js	mq/shirt-open.js	<loaded>
 daysoff.test.js	mq/shirt-tie.js	<loaded>
 daysoff.test.js	mq/suit-open.js	<loaded>
@@ -5834,7 +5834,7 @@ drawnonly.test.js	asm-worker.js	<any>
 drawnonly.test.js	assemble.js	<any>	<loaded>	@	@defineddocument.addEventListenervisibilitychange	ASM_OUT_RANGE	asmAhead	asmAheadSoon	asmBlobUp	asmCmAny	asmCmHeld	asmCmLook	asmCmSeen	asmCmUse	asmDrawn	asmEnsure	asmFor	asmFresh	asmFullWins	asmGet	asmGetOnce	asmIdleArm	asmImgOf	asmJob	asmKeepOut	asmKey	asmListGet	asmLoad	asmLookId	asmMicroKind	asmOutKey	asmPhoto	asmPost	asmPump	asmRun	asmShow	asmShown	asmStamp	asmSuitBands	asmSuitTwill	asmSuitWeave	asmSync	asmTouchWatch	asmTrim	asmWants	asmWorker	get	get asmAhead	get asmSyncing	renderAsmUI	set	set asmAhead	set asmPhoto
 drawnonly.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 drawnonly.test.js	backupfile.js	<loaded>
-drawnonly.test.js	boxfold.js	<loaded>
+drawnonly.test.js	boxfold.js	<loaded>	@onfoldingall
 drawnonly.test.js	bus.js	<loaded>	emit	on
 drawnonly.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 drawnonly.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop	careWashed	laundryDays	renderCareUI
@@ -5941,7 +5941,7 @@ dress.test.js	asm-watch.js	<loaded>
 dress.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 dress.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	histDrop	histPush	inviteInUrl
 dress.test.js	backupfile.js	<loaded>
-dress.test.js	boxfold.js	<loaded>	foldEdge
+dress.test.js	boxfold.js	<loaded>	foldEdge	get	monthBelow	pageScroll	revealNeed
 dress.test.js	bus.js	<loaded>	emit	heard	on
 dress.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 dress.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careState	careTimes	careTop	careWashed	careWord	careWornLine	laundryDays	renderCareUI
@@ -5968,7 +5968,7 @@ dress.test.js	measure.js	<loaded>
 dress.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
 dress.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 dress.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-dress.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	set monthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+dress.test.js	month.js	<loaded>	dayMarks	dayOnly	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	piecesLine	piecesParts	planOn	set	set monthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 dress.test.js	mq/shirt-open.js	<loaded>
 dress.test.js	mq/shirt-tie.js	<loaded>
 dress.test.js	mq/suit-open.js	<loaded>
@@ -6672,7 +6672,7 @@ figure.test.js	asm-watch.js	<loaded>
 figure.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 figure.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 figure.test.js	backupfile.js	<loaded>
-figure.test.js	boxfold.js	<loaded>	foldEdge
+figure.test.js	boxfold.js	<loaded>	foldEdge	get	pageScroll	revealNeed
 figure.test.js	bus.js	<loaded>	emit	on
 figure.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 figure.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop
@@ -6699,7 +6699,7 @@ figure.test.js	measure.js	<loaded>
 figure.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 figure.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 figure.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedTell
-figure.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+figure.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
 figure.test.js	mq/shirt-open.js	<loaded>
 figure.test.js	mq/shirt-tie.js	<loaded>
 figure.test.js	mq/suit-open.js	<loaded>
@@ -6762,7 +6762,7 @@ folds.test.js	asm-watch.js	<loaded>
 folds.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 folds.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 folds.test.js	backupfile.js	<loaded>
-folds.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge
+folds.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge	get	keepInView	monthBelow	pageScroll	revealNeed
 folds.test.js	bus.js	<loaded>	emit	on
 folds.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 folds.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop
@@ -6789,7 +6789,7 @@ folds.test.js	measure.js	<loaded>
 folds.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 folds.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 folds.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-folds.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthTap	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	set monthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+folds.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthTap	monthUnfold	nextWorkday	piecesLine	piecesParts	planOn	set	set monthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 folds.test.js	mq/shirt-open.js	<loaded>
 folds.test.js	mq/shirt-tie.js	<loaded>
 folds.test.js	mq/suit-open.js	<loaded>
@@ -6825,7 +6825,7 @@ folds.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addE
 folds.test.js	today-photofold.js	<loaded>	picBelow	picCards	picOpen	picOpenReady	picShut	picSnap	picStop
 folds.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	@{constel$todayinPice}>@el.addEventListenertouchend	@{constel$todayinPice}>@el.addEventListenertouchstart	@{constel$todayinPice}>inPic	applyZoom	get	ovlCloseup	ovlCuSuit	ovlCuWants	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitOld	ovlSuitPng	ovlSvg	ovlWeave	swApply	zoomTarget
 folds.test.js	today-plan.js	<loaded>	get	planDirty	planFor	planMonth	planSnapSoon	planSnapUse	set	set cache
-folds.test.js	today.js	<loaded>	addForSlot	belowBox	belowPicTap	canPick	figureStage	foldListTap	get	get belowOpen	get listOpen	goneNote	hasOutfit	homeDay	keepInView	listFoldTap	listTap	offBtn	offOn	pickPiece	pickTap	piecesBox	pocketRow	renderToday	restWarn	rollRow	rolledOf	rowPanel	rowPic	rowTap	set belowOpen	set listOpen	set openRow	slotLabel	slots	swatchStack	tileTap	todaySay	toggleList	toggleRow	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
+folds.test.js	today.js	<loaded>	addForSlot	belowBox	belowPicTap	canPick	figureStage	foldListTap	get	get belowOpen	get listOpen	goneNote	hasOutfit	homeDay	listFoldTap	listTap	offBtn	offOn	pickPiece	pickTap	piecesBox	pocketRow	renderToday	restWarn	rollRow	rolledOf	rowPanel	rowPic	rowTap	set belowOpen	set listOpen	set openRow	slotLabel	slots	swatchStack	tileTap	todaySay	toggleList	toggleRow	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 folds.test.js	ui.js	<loaded>	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp
 folds.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 folds.test.js	weather.js	<loaded>	loadWeather
@@ -8239,7 +8239,7 @@ itempics.test.js	asm-watch.js	<loaded>
 itempics.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 itempics.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backWanted	histDrop	histPush	inviteInUrl
 itempics.test.js	backupfile.js	<loaded>
-itempics.test.js	boxfold.js	<loaded>	foldEdge
+itempics.test.js	boxfold.js	<loaded>	foldEdge	pageScroll	revealNeed
 itempics.test.js	bus.js	<loaded>	emit	on
 itempics.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 itempics.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBadge	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careState	careTimes	careTop	careWashed	laundryDays	renderCareUI
@@ -8266,7 +8266,7 @@ itempics.test.js	measure.js	<loaded>
 itempics.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 itempics.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 itempics.test.js	missed.js	<loaded>	firstReal	missedCard	missedOpen
-itempics.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+itempics.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
 itempics.test.js	mq/shirt-open.js	<loaded>
 itempics.test.js	mq/shirt-tie.js	<loaded>
 itempics.test.js	mq/suit-open.js	<loaded>
@@ -9526,7 +9526,7 @@ modload.test.js	stats.js	<any>	<loaded>	@afterScripts	buildStats	renderStats	sta
 modload.test.js	styles.css	#adv-photos:has(#asm-group[hidden]),body:not(.owner) #adv-photos	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#itempic-btn[disabled]	#mannequin-container	#mbox .mhead	#mbox .mswipe	#modal-backdrop	#modal-backdrop,#settings-modal	#mpanel-in .mc[data-mv]	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#photos-conn	#photos-conn:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#sbox .month-link	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#settings-modal .cpwset .cpwin input[type="text"]	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .dtog::after	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox:is(.instant,.bfast) .mpanel-in	#settings-modal .mpanel-in	#settings-modal .mpanel-in::after	#settings-modal .mpanel-in::before	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date],#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal .sgroup:has(>.days)	#settings-modal .srow	#settings-modal .srow select	#settings-modal button.adv-head	#settings-modal button.dress-sw	#settings-modal label.btn	#settings-modal,#setup,#kitsheet	#shop-sheet	#spanel .mpanel-in	#stats .card	#stats .shopbtn	#stats .st-card h3	#stats .st-tile	#stats .st-tiles	#stats .st-wait	#toast	#toast,body.iv-on #toast	#toast.on	#toast:not(.on)	#today	#today .plegend	#today .plegend span	#today .row	#today .row .dot	#today .row>.mut:first-child	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.about-confirm	.about-fold summary	.about-fold summary::after	.about-note	.about-text	.adv	.adv-head .chev	.adv-in	.adv-t	.adv-t small	.b-good	.b-low,.b-bad	.b-ok	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.btns	.c-good	.c-low,.c-bad	.c-ok	.cal-form input[type=url]	.cal-guides button	.cal-howh	.cal-priv	.cap	.conn-msg	.conn-off-note .linkbtn	.conn-off-note:empty	.cpw-h	.cpwin	.cpwin input[type="text"]	.cpwset	.cpwset input[type="number"]	.cpwsym	.custadd	.custadd button	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.day h2 .wx.haspill	.day h2 .wx.haspill .wxc	.day h2 .wx.haspill:has(.wpgrp)	.days	.dial	.dial .darc	.dial .dtrack	.dial small	.dial svg	.dial text	.dial.d-good	.dial.d-low,.dial.d-bad	.dialrow	.dot	.dot svg	.dot,.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb,.st-pic,.pick-pic	.dress-row	.dress-row:first-child	.dress-sw i	.dress-sw i::after	.dress-sw.on i	.dress-sw.on i::after	.dress-txt	.dress-txt b	.dress-txt small	.dtog	.dtog.on	.favic	.fb-list	.fchips	.fig	.fig .cband	.fig .cband .cdots	.fig .cband .cdots em	.fig .cband .cdots i	.fig .cband .cdots i.on	.fig .cband .crow	.fig .cband .ctxt	.fig .cband .ctxt b	.fig .cband path	.fig .cband svg	.fig .cframe	.fig .swstack	.fig .swstack .ovsw	.fig .swstack .ovsw svg,.fig .swstack .ovsw img	.fig.cb	.fig.cb.care-last,.fig.cb.care-over	.fig.photo	.fig.photo img	.fig>svg	.firstrun	.firstrun h3	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it.done .fr-t	.fr-it.done .fr-tick	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi,.card	.hbtns	.hgear	.hlist	.hlist:empty	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mc	.mc .dn	.mc.bad,.mc.bad.today,.mc.bad.sel	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead h3	.mli	.mli .stack	.mli small	.mli.bad .stack	.mlstrip	.mlstrip,.pstrip	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.offadd input[type=date]	.pack-link	.pchip	.pchip svg	.pchip.vest	.phead	.phead h2	.pick-pic .ph.thumb,.st-pic .ph.thumb	.pri	.pstrip	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.row:last-child	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sactions	.sactions:empty	.sbody	.scat-h	.score	.score .srank	.score .srules	.score .ssec	.score .ssec b	.score .swhy	.score .swx	.sdb	.sdb i	.sdh	.sdh b	.sdl	.sdl small	.setup-again	.sfixbtn	.sfixbtn .dot	.sfixbtn .dot>*	.sfixbtn .sfixnm	.sfixbtn b	.sfixbtn b small	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgh.sgh-first	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.shopbtn-t	.shopbtn-t b	.shopbtn-t small	.shopbtn.locked	.shopbtn.locked small	.sic	.sicw	.side>.mbox:last-child	.side>.score,.side>.mbox,.side>.dayact,.side>p	.slabel	.slide	.slink	.slink .chev	.slinks	.slinks .slink	.spin	.srl	.srl li	.srl li::before	.srow	.srow select	.srules.ok	.ssec+.sdl	.sswaps	.sswaps .ssec	.st-bar	.st-bar i	.st-bar.p i	.st-bar.w i	.st-bars	.st-bars .st-bar	.st-card h3	.st-card>p	.st-col	.st-col i	.st-col i.low	.st-key	.st-key.p	.st-key.w	.st-main	.st-main small	.st-nm	.st-pic	.st-pic svg	.st-row	.st-tile	.st-tile b	.st-tile small	.st-tiles	.st-trend	.st-type	.st-type summary	.st-type summary b	.st-type summary::after	.st-type[open] summary::after	.st-wk	.st-wk b	.st-wk small	.stack	.stack .strep	.stack.rest	.stage	.stage .firstrun	.sweeks	.sweeks .wn	.sweeks li	.sweeks li.cur	.sweeks li:first-child	.sweeks li>span:last-child	.sweeks small	.swhy::before	.thumb	.thumb svg	.vfile	.vh	.warn	.wpfav	.wpfav::after	.wpgrp	.wpgrp .wpill	.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav	.wpill	.wpill.yes	.wpill::after	.wxc.wxlk	.wxl	::placeholder	:focus-visible	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#stats) .shopbtn	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:root:not([data-theme=light])	:root[data-theme=dark]	:root[data-theme=dark] :is(.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav)	:root[data-theme=light]	:where(#today) .mbox	:where(#today) .mltxt b	:where(#today) .mltxt small	:where(#today) .month-link	:where(#today) .mpanel-in	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.nocon .conn-only,.connhide	body.tester:not(.srv-open) #adv-connection,body.nocon:not(.srv-open) #adv-connection	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	html.set-lock,html.set-lock body	label:has(>.vfile)	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav::before	select,input[type="text"],input[type="range"]
 modload.test.js	sync-photos.js	<any>	<loaded>
 modload.test.js	sync-status.js	<any>	<loaded>	@onsettingsopen	endedAnswer	setSyncStatus	showSyncStatus	syncNetText	syncPaused	syncWaiting
-modload.test.js	sync.js	<any>	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	@onsettingssaved	afterPull	applyMerged	clockLearn	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	syncJoinAt	syncJoinMark	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncSaved	syncUrl	synced
+modload.test.js	sync.js	<any>	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	@onsettingssaved	afterPull	applyMerged	clockLearn	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	syncJoinAt	syncJoinMark	syncMark	syncNeedsPull	syncNow	syncOnce	syncRedraw	syncSaved	syncSettingsRedraw	syncUrl	synced
 modload.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 modload.test.js	tagging.js	<any>	<loaded>
 modload.test.js	tests/fixtures/cm/shirt-open/mask-background.png	<any>
@@ -9597,7 +9597,7 @@ modload.test.js	today-photofold.js	<any>	<loaded>
 modload.test.js	today-picture.js	<any>	<loaded>	@{constel$todayinPice}	applyZoom	ovlCloseup	ovlCuSuit	ovlCuWants	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitOld	ovlSuitPng	ovlSvg	ovlWeave	swApply	zoomTarget
 modload.test.js	today-plan.js	<any>	<loaded>	get	outSig	planDirty	planFor	planMonth	planSig	planSnapSoon	planSnapUse	planStartDay	planTrim	snapIn	snapOut	strHash
 modload.test.js	today.js	<any>	<loaded>	@document.addEventListenervisibilitychange	addForSlot	belowBox	canPick	figLoad	figureStage	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	planSnapCheck	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	swatchStack	todaySay	todayTabTap	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
-modload.test.js	ui.js	<any>	<loaded>	@onsettingsdraw	@onsettingsopen	@onsettingssummaries	advClose	connSummary	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	netErr	renderConnUI	uiEsc
+modload.test.js	ui.js	<any>	<loaded>	@onsettingsdraw	@onsettingsopen	@onsettingssummaries	@window.addEventListenerkeydown	advClose	connSummary	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	netErr	renderConnUI	uiEsc
 modload.test.js	wardrobe.js	<any>	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	matMigrate	matRenameTo	sockLegacy	sockToeMigrate	wardFlush	wardPendingRestore
 modload.test.js	weather.js	<any>	<loaded>	@onsettingsdraw	@onsettingssummaries	loadWeather	locCC	renderWxLoc	unit	unitCC
 modtools.test.js	about.js	<any>
@@ -10068,7 +10068,7 @@ month.test.js	asm-watch.js	<loaded>
 month.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 month.test.js	back.js	<loaded>	backApp	backDrop	backItem	backKind	backLand	backOn	backOver	backPush	backSync	inviteInUrl
 month.test.js	backupfile.js	<loaded>
-month.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge
+month.test.js	boxfold.js	<loaded>	@onfoldingall	boxFold	boxStop	boxUnfold	foldEdge	get	keepInView	monthBelow	pageScroll	revealNeed
 month.test.js	bus.js	<loaded>	emit	on
 month.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 month.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop	careWashed	laundryDays	renderCareUI
@@ -10095,7 +10095,7 @@ month.test.js	measure.js	<loaded>
 month.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk
 month.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 month.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-month.test.js	month.js	<loaded>	dayCellTap	dayMarks	dayOnly	get	monthBelow	monthDrag	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthRelease	monthStep	monthStop	monthTap	monthUnfold	nextWorkday	openDay	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+month.test.js	month.js	<loaded>	dayCellTap	dayMarks	dayOnly	get	monthDrag	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthRelease	monthStep	monthStop	monthTap	monthUnfold	nextWorkday	openDay	piecesLine	piecesParts	planOn	set	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 month.test.js	mq/shirt-open.js	<loaded>
 month.test.js	mq/shirt-tie.js	<loaded>
 month.test.js	mq/suit-open.js	<loaded>
@@ -10131,7 +10131,7 @@ month.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addE
 month.test.js	today-photofold.js	<loaded>
 month.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	@{constel$todayinPice}>@el.addEventListenertouchend	@{constel$todayinPice}>@el.addEventListenertouchmove	@{constel$todayinPice}>@el.addEventListenertouchstart	@{constel$todayinPice}>inPic	applyZoom	get	ovlCloseup	ovlCuSuit	ovlCuWants	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitOld	ovlSuitPng	ovlSvg	ovlWeave	swApply	swClose	zoomOut	zoomTarget
 month.test.js	today-plan.js	<loaded>	get	planDirty	planFor	planMonth	planSnapSoon	planSnapUse	set	set cache
-month.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	addForSlot	belowBox	canPick	figureStage	foldAll	get	goneNote	hasOutfit	homeDay	keepInView	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	stepDay	swatchStack	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
+month.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	addForSlot	belowBox	canPick	figureStage	foldAll	get	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	stepDay	swatchStack	todaySay	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 month.test.js	ui.js	<loaded>	@onsettingsdraw	@onsettingsopen	@onsettingssummaries	advClose	askAnswer	askConfirm	askEls	connSummary	inviteOver	isConnected	layerInert	layerOpen	layerUp	needConn	netErr	renderConnUI	uiEsc
 month.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	itemFieldNow	matMigrate	sockToeMigrate	wardFlush	wardPendingRestore
 month.test.js	weather.js	<loaded>	@onsettingsdraw	@onsettingssummaries	loadWeather	locCC	renderWxLoc	unit	unitCC
@@ -10632,7 +10632,7 @@ newuser.test.js	asm-watch.js	<loaded>
 newuser.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 newuser.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 newuser.test.js	backupfile.js	<loaded>
-newuser.test.js	boxfold.js	<loaded>
+newuser.test.js	boxfold.js	<loaded>	@onfoldingall
 newuser.test.js	bus.js	<loaded>	emit	on
 newuser.test.js	calendar.js	<loaded>	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 newuser.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop	careWashed	laundryDays	renderCareUI
@@ -10720,7 +10720,7 @@ occasions.test.js	asm-watch.js	<loaded>
 occasions.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 occasions.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 occasions.test.js	backupfile.js	<loaded>
-occasions.test.js	boxfold.js	<loaded>	foldEdge
+occasions.test.js	boxfold.js	<loaded>	foldEdge	monthBelow	pageScroll	revealNeed
 occasions.test.js	bus.js	<loaded>	emit	on
 occasions.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 occasions.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careTimes	careTop	careWashed	laundryDays	renderCareUI
@@ -10747,7 +10747,7 @@ occasions.test.js	measure.js	<loaded>
 occasions.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 occasions.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 occasions.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-occasions.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	set monthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+occasions.test.js	month.js	<loaded>	dayMarks	dayOnly	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	piecesLine	piecesParts	planOn	set	set monthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 occasions.test.js	mq/shirt-open.js	<loaded>
 occasions.test.js	mq/shirt-tie.js	<loaded>
 occasions.test.js	mq/suit-open.js	<loaded>
@@ -11413,7 +11413,7 @@ pack.test.js	asm-watch.js	<loaded>
 pack.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 pack.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backHold	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 pack.test.js	backupfile.js	<loaded>
-pack.test.js	boxfold.js	<loaded>	foldEdge
+pack.test.js	boxfold.js	<loaded>	foldEdge	monthBelow	pageScroll	revealNeed
 pack.test.js	bus.js	<loaded>	emit	on
 pack.test.js	calendar.js	<loaded>	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 pack.test.js	care.js	<loaded>	@onsettingsdraw	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careTimes	careTop	careWashed	laundryDays	renderCareUI
@@ -11440,7 +11440,7 @@ pack.test.js	measure.js	<loaded>
 pack.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 pack.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 pack.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-pack.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	set monthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+pack.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	piecesLine	piecesParts	planOn	set	set monthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 pack.test.js	mq/shirt-open.js	<loaded>
 pack.test.js	mq/shirt-tie.js	<loaded>
 pack.test.js	mq/suit-open.js	<loaded>
@@ -12034,7 +12034,7 @@ picker.test.js	asm-watch.js	<loaded>
 picker.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 picker.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 picker.test.js	backupfile.js	<loaded>
-picker.test.js	boxfold.js	<loaded>	boxFold	boxStop
+picker.test.js	boxfold.js	<loaded>	@onfoldingall	boxFold	boxStop	keepInView
 picker.test.js	bus.js	<loaded>	emit	on
 picker.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 picker.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop
@@ -12096,7 +12096,7 @@ picker.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@add
 picker.test.js	today-photofold.js	<loaded>
 picker.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	applyZoom	swApply	swClose	zoomOut	zoomTarget
 picker.test.js	today-plan.js	<loaded>	get	planDirty	planFor	planMonth	planSig	planSnapSoon	planSnapUse	planStartDay	planTrim	set	set cache	snapOut	strHash
-picker.test.js	today.js	<loaded>	belowBox	canPick	figureStage	foldAll	foldListTap	get	goneNote	hasOutfit	homeDay	keepInView	listFoldTap	offBtn	offOn	pickTap	piecesBox	pocketRow	renderToday	restWarn	rollRow	set listOpen	setListOpen	slotLabel	slots	stepDay	todaySay	toggleList	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
+picker.test.js	today.js	<loaded>	belowBox	canPick	figureStage	foldAll	foldListTap	get	goneNote	hasOutfit	homeDay	listFoldTap	offBtn	offOn	pickTap	piecesBox	pocketRow	renderToday	restWarn	rollRow	set listOpen	setListOpen	slotLabel	slots	stepDay	todaySay	toggleList	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 picker.test.js	ui.js	<loaded>	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp
 picker.test.js	wardrobe.js	<loaded>	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
 picker.test.js	weather.js	<loaded>	loadWeather
@@ -12209,7 +12209,7 @@ pieces.test.js	asm-watch.js	<loaded>
 pieces.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 pieces.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 pieces.test.js	backupfile.js	<loaded>
-pieces.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge
+pieces.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge	get	monthBelow	pageScroll	revealNeed
 pieces.test.js	bus.js	<loaded>	emit	on
 pieces.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 pieces.test.js	care.js	<loaded>	careBadge	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTop	careWashed	careWord
@@ -12236,7 +12236,7 @@ pieces.test.js	measure.js	<loaded>
 pieces.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 pieces.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 pieces.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedSeen	missedSpan	missedTell
-pieces.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord
+pieces.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord
 pieces.test.js	mq/shirt-open.js	<loaded>
 pieces.test.js	mq/shirt-tie.js	<loaded>
 pieces.test.js	mq/suit-open.js	<loaded>
@@ -12474,7 +12474,7 @@ planner-rules.test.js	asm-watch.js	<loaded>
 planner-rules.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 planner-rules.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSync	backWanted	inviteInUrl
 planner-rules.test.js	backupfile.js	<loaded>
-planner-rules.test.js	boxfold.js	<loaded>
+planner-rules.test.js	boxfold.js	<loaded>	@onfoldingall
 planner-rules.test.js	bus.js	<loaded>	emit	on
 planner-rules.test.js	calendar.js	<loaded>	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 planner-rules.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBadge	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTop	careWashed	laundryDays	renderCareUI
@@ -12833,7 +12833,7 @@ remind.test.js	asm-watch.js	<loaded>
 remind.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 remind.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 remind.test.js	backupfile.js	<loaded>
-remind.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge
+remind.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge	monthBelow	pageScroll	revealNeed
 remind.test.js	bus.js	<loaded>	emit	on
 remind.test.js	calendar.js	<loaded>	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 remind.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careReminders	careTop	careWashed	laundryDays	renderCareUI
@@ -12860,7 +12860,7 @@ remind.test.js	measure.js	<loaded>
 remind.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk
 remind.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 remind.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedPut	missedSpan	missedTell
-remind.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+remind.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
 remind.test.js	mq/shirt-open.js	<loaded>
 remind.test.js	mq/shirt-tie.js	<loaded>
 remind.test.js	mq/suit-open.js	<loaded>
@@ -13819,7 +13819,7 @@ run.js: swipe edge cases and month crossing	asm-watch.js	<loaded>
 run.js: swipe edge cases and month crossing	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 run.js: swipe edge cases and month crossing	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 run.js: swipe edge cases and month crossing	backupfile.js	<loaded>
-run.js: swipe edge cases and month crossing	boxfold.js	<loaded>
+run.js: swipe edge cases and month crossing	boxfold.js	<loaded>	@onfoldingall
 run.js: swipe edge cases and month crossing	bus.js	<loaded>	emit	on
 run.js: swipe edge cases and month crossing	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 run.js: swipe edge cases and month crossing	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop
@@ -13907,7 +13907,7 @@ run.js: swipe moves only the outfit, across viewports	asm-watch.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 run.js: swipe moves only the outfit, across viewports	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 run.js: swipe moves only the outfit, across viewports	backupfile.js	<loaded>
-run.js: swipe moves only the outfit, across viewports	boxfold.js	<loaded>
+run.js: swipe moves only the outfit, across viewports	boxfold.js	<loaded>	@onfoldingall
 run.js: swipe moves only the outfit, across viewports	bus.js	<loaded>	emit	on
 run.js: swipe moves only the outfit, across viewports	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 run.js: swipe moves only the outfit, across viewports	care.js	<loaded>	careBandSoon	careDayState	careFrame	careLimit	careNote	careTop
@@ -14723,7 +14723,7 @@ scoreanim.test.js	asm-watch.js	<loaded>
 scoreanim.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 scoreanim.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 scoreanim.test.js	backupfile.js	<loaded>
-scoreanim.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge
+scoreanim.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge	monthBelow	pageScroll	revealNeed
 scoreanim.test.js	bus.js	<loaded>	emit	on
 scoreanim.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 scoreanim.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careTimes	careTop
@@ -14750,7 +14750,7 @@ scoreanim.test.js	measure.js	<loaded>
 scoreanim.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 scoreanim.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 scoreanim.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-scoreanim.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+scoreanim.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
 scoreanim.test.js	mq/shirt-open.js	<loaded>
 scoreanim.test.js	mq/shirt-tie.js	<loaded>
 scoreanim.test.js	mq/suit-open.js	<loaded>
@@ -14811,7 +14811,7 @@ scoredials.test.js	asm-watch.js	<loaded>
 scoredials.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 scoredials.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 scoredials.test.js	backupfile.js	<loaded>
-scoredials.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge
+scoredials.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge	get	monthBelow	pageScroll	revealNeed
 scoredials.test.js	bus.js	<loaded>	emit	on
 scoredials.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 scoredials.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop
@@ -14838,7 +14838,7 @@ scoredials.test.js	measure.js	<loaded>
 scoredials.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 scoredials.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 scoredials.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedPut	missedSeen	missedSpan	missedTell
-scoredials.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	set monthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+scoredials.test.js	month.js	<loaded>	dayMarks	dayOnly	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	piecesLine	piecesParts	planOn	set	set monthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 scoredials.test.js	mq/shirt-open.js	<loaded>
 scoredials.test.js	mq/shirt-tie.js	<loaded>
 scoredials.test.js	mq/suit-open.js	<loaded>
@@ -14900,7 +14900,7 @@ scorefix.test.js	asm-watch.js	<loaded>
 scorefix.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave	get
 scorefix.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 scorefix.test.js	backupfile.js	<loaded>
-scorefix.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge
+scorefix.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge	monthBelow	pageScroll	revealNeed
 scorefix.test.js	bus.js	<loaded>	emit	on
 scorefix.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 scorefix.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop
@@ -14927,7 +14927,7 @@ scorefix.test.js	measure.js	<loaded>
 scorefix.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 scorefix.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 scorefix.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedTell
-scorefix.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+scorefix.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
 scorefix.test.js	mq/shirt-open.js	<loaded>
 scorefix.test.js	mq/shirt-tie.js	<loaded>
 scorefix.test.js	mq/suit-open.js	<loaded>
@@ -17061,7 +17061,7 @@ stats.test.js	asm-watch.js	<loaded>
 stats.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 stats.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 stats.test.js	backupfile.js	<loaded>
-stats.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge
+stats.test.js	boxfold.js	<loaded>	@onfoldingall	boxStop	boxUnfold	foldEdge	get	monthBelow	pageScroll	revealNeed
 stats.test.js	bus.js	<loaded>	emit	heard	on
 stats.test.js	calendar.js	<loaded>	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 stats.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop	careWashed	laundryDays	renderCareUI
@@ -17088,7 +17088,7 @@ stats.test.js	measure.js	<loaded>
 stats.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeSettingsBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 stats.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 stats.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedPut	missedSeen	missedSpan	missedTell
-stats.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	set monthOpen	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+stats.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	piecesLine	piecesParts	planOn	set	set monthOpen	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 stats.test.js	mq/shirt-open.js	<loaded>
 stats.test.js	mq/shirt-tie.js	<loaded>
 stats.test.js	mq/suit-open.js	<loaded>
@@ -17150,7 +17150,7 @@ stylea11y.test.js	asm-worker.js	<any>
 stylea11y.test.js	assemble.js	<any>	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 stylea11y.test.js	back.js	<any>	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSync	backWanted	histDrop	histPush	inviteInUrl
 stylea11y.test.js	backupfile.js	<any>	<loaded>
-stylea11y.test.js	boxfold.js	<any>	<loaded>	boxStop	boxUnfold	foldEdge
+stylea11y.test.js	boxfold.js	<any>	<loaded>	boxStop	boxUnfold	foldEdge	monthBelow	pageScroll	revealNeed
 stylea11y.test.js	bus.js	<any>	<loaded>	emit	on
 stylea11y.test.js	cal-worker.js	<any>
 stylea11y.test.js	calendar.js	<any>	<loaded>	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
@@ -17179,7 +17179,7 @@ stylea11y.test.js	measure.js	<any>	<loaded>
 stylea11y.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 stylea11y.test.js	migrate.js	<any>	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 stylea11y.test.js	missed.js	<any>	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-stylea11y.test.js	month.js	<any>	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthTap	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+stylea11y.test.js	month.js	<any>	<loaded>	dayMarks	dayOnly	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthTap	monthUnfold	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 stylea11y.test.js	mq/shirt-open.js	<any>	<loaded>
 stylea11y.test.js	mq/shirt-tie.js	<any>	<loaded>
 stylea11y.test.js	mq/suit-open.js	<any>	<loaded>
@@ -17345,7 +17345,7 @@ swatchzoom.test.js	asm-watch.js	<loaded>
 swatchzoom.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 swatchzoom.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 swatchzoom.test.js	backupfile.js	<loaded>
-swatchzoom.test.js	boxfold.js	<loaded>
+swatchzoom.test.js	boxfold.js	<loaded>	@onfoldingall
 swatchzoom.test.js	bus.js	<loaded>	emit	on
 swatchzoom.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 swatchzoom.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careTimes	careTop
@@ -18265,7 +18265,7 @@ texswatch.test.js	asm-watch.js	<loaded>
 texswatch.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 texswatch.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 texswatch.test.js	backupfile.js	<loaded>
-texswatch.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge
+texswatch.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge	monthBelow	pageScroll	revealNeed
 texswatch.test.js	bus.js	<loaded>	emit	on
 texswatch.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 texswatch.test.js	care.js	<loaded>	careBadge	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTop
@@ -18292,7 +18292,7 @@ texswatch.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	calibLab	clamp01	closeRea
 texswatch.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 texswatch.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 texswatch.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-texswatch.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord
+texswatch.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord
 texswatch.test.js	mq/shirt-open.js	<loaded>
 texswatch.test.js	mq/shirt-tie.js	<loaded>
 texswatch.test.js	mq/suit-open.js	<loaded>
@@ -18730,7 +18730,7 @@ today.test.js	asm-watch.js	<loaded>
 today.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get
 today.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 today.test.js	backupfile.js	<loaded>
-today.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge
+today.test.js	boxfold.js	<loaded>	boxStop	boxUnfold	foldEdge	monthBelow	pageScroll	revealNeed
 today.test.js	bus.js	<loaded>	emit	on
 today.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 today.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop
@@ -18757,7 +18757,7 @@ today.test.js	measure.js	<loaded>
 today.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 today.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 today.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedSeen	missedSpan	missedTell
-today.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	set monthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord
+today.test.js	month.js	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	set monthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord
 today.test.js	mq/shirt-open.js	<loaded>
 today.test.js	mq/shirt-tie.js	<loaded>
 today.test.js	mq/suit-open.js	<loaded>
@@ -18846,7 +18846,7 @@ todayacts.test.js	measure.js	<loaded>
 todayacts.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 todayacts.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 todayacts.test.js	missed.js	<loaded>	firstReal	missNoTap	missOkTap	missOneTap	missPickTap	missedCard	missedCardNo	missedCardOk	missedNotWorn	missedNote	missedOne	missedOpen	missedPickToggle	missedPut	missedSeen	missedSpan	missedTell
-todayacts.test.js	month.js	<loaded>	dayCellTap	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthTap	monthUnfold	nextWorkday	openDay	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+todayacts.test.js	month.js	<loaded>	dayCellTap	dayMarks	dayOnly	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthTap	monthUnfold	nextWorkday	openDay	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 todayacts.test.js	mq/shirt-open.js	<loaded>
 todayacts.test.js	mq/shirt-tie.js	<loaded>
 todayacts.test.js	mq/suit-open.js	<loaded>
@@ -18906,7 +18906,7 @@ todayedges.test.js	asm-watch.js	<loaded>
 todayedges.test.js	assemble.js	<loaded>	@	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 todayedges.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 todayedges.test.js	backupfile.js	<loaded>
-todayedges.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge
+todayedges.test.js	boxfold.js	<loaded>	@onfoldingall	boxFold	boxStop	boxUnfold	foldEdge	keepInView	monthBelow	pageScroll	revealNeed
 todayedges.test.js	bus.js	<loaded>	emit	on
 todayedges.test.js	calendar.js	<loaded>	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 todayedges.test.js	care.js	<loaded>	@onsettingsdraw	careBadge	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careState	careTop	careWashed	laundryDays	renderCareUI
@@ -18933,7 +18933,7 @@ todayedges.test.js	measure.js	<loaded>
 todayedges.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 todayedges.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 todayedges.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-todayedges.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord
+todayedges.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	set	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord
 todayedges.test.js	mq/shirt-open.js	<loaded>
 todayedges.test.js	mq/shirt-tie.js	<loaded>
 todayedges.test.js	mq/suit-open.js	<loaded>
@@ -18969,7 +18969,7 @@ todayedges.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>
 todayedges.test.js	today-photofold.js	<loaded>
 todayedges.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	@{constel$todayinPice}>@el.addEventListenertouchend	@{constel$todayinPice}>@el.addEventListenertouchstart	@{constel$todayinPice}>inPic	applyZoom	get	swApply	swClose	zoomOut	zoomTarget
 todayedges.test.js	today-plan.js	<loaded>	get	planDirty	planFor	planMonth	planSnapSoon	planSnapUse	set	set cache
-todayedges.test.js	today.js	<loaded>	addForSlot	belowBox	canPick	dayStepTap	figureStage	foldAll	foldListTap	get	goToday	goneNote	hasOutfit	homeDay	keepInView	listFoldTap	listTap	offBtn	offOn	offTap	pickTap	piecesBox	pocketRow	renderToday	restWarn	rollRow	set listOpen	setOff	slotLabel	slots	stepDay	todaySay	todayTabTap	toggleList	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
+todayedges.test.js	today.js	<loaded>	addForSlot	belowBox	canPick	dayStepTap	figureStage	foldAll	foldListTap	get	goToday	goneNote	hasOutfit	homeDay	listFoldTap	listTap	offBtn	offOn	offTap	pickTap	piecesBox	pocketRow	renderToday	restWarn	rollRow	set listOpen	setOff	slotLabel	slots	stepDay	todaySay	todayTabTap	toggleList	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 todayedges.test.js	ui.js	<loaded>	@onsettingsdraw	@onsettingsopen	@onsettingssummaries	@window.addEventListenerkeydown	advClose	connSummary	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	renderConnUI	uiEsc
 todayedges.test.js	wardrobe.js	<loaded>	@whenPulled	giNote	giTag	matMigrate	sockToeMigrate	wardBack	wardBar	wardCount	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
 todayedges.test.js	weather.js	<loaded>	@onsettingsdraw	@onsettingssummaries	loadWeather	locCC	renderWxLoc	unit	unitCC
@@ -19082,7 +19082,7 @@ todayzoom.test.js	asm-watch.js	<loaded>
 todayzoom.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	asmMicroKind	asmSuitBands	asmSuitWeave	get
 todayzoom.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 todayzoom.test.js	backupfile.js	<loaded>
-todayzoom.test.js	boxfold.js	<loaded>	boxFold	boxStop	boxUnfold	foldEdge
+todayzoom.test.js	boxfold.js	<loaded>	@onfoldingall	boxFold	boxStop	boxUnfold	foldEdge	get	keepInView	monthBelow	pageScroll	revealNeed
 todayzoom.test.js	bus.js	<loaded>	emit	on
 todayzoom.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calLink
 todayzoom.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careNoun	careTimes	careTop
@@ -19109,7 +19109,7 @@ todayzoom.test.js	measure.js	<loaded>
 todayzoom.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
 todayzoom.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 todayzoom.test.js	missed.js	<loaded>	firstReal	missedCard	missedOpen
-todayzoom.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthBelow	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	set	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+todayzoom.test.js	month.js	<loaded>	dayMarks	dayOnly	get	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	piecesLine	piecesParts	planOn	set	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 todayzoom.test.js	mq/shirt-open.js	<loaded>
 todayzoom.test.js	mq/shirt-tie.js	<loaded>
 todayzoom.test.js	mq/suit-open.js	<loaded>
@@ -19145,7 +19145,7 @@ todayzoom.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@
 todayzoom.test.js	today-photofold.js	<loaded>	picBelow	picCards	picOpen	picOpenReady	picShut	picSnap	picStop
 todayzoom.test.js	today-picture.js	<loaded>	@$today.addEventListenerclick	@{constel$todayinPice}	@{constel$todayinPice}>@el.addEventListenerdblclick	@{constel$todayinPice}>@el.addEventListenertouchend	@{constel$todayinPice}>@el.addEventListenertouchmove	@{constel$todayinPice}>@el.addEventListenertouchstart	@{constel$todayinPice}>inPic	applyZoom	clampZoom	get	ovlCloseup	ovlCuSuit	ovlCuWants	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitOld	ovlSuitPng	ovlSvg	ovlWeave	swApply	swClose	toggleZoom	zoomOut	zoomTarget
 todayzoom.test.js	today-plan.js	<loaded>	get	planFor	planMonth	planSnapUse	set	set cache
-todayzoom.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	addForSlot	belowBox	canPick	figLoad	figureStage	foldAll	get	get belowOpen	get listOpen	get openRow	goneNote	hasOutfit	homeDay	keepInView	offBtn	offOn	pickPiece	piecesBox	pocketRow	renderToday	restWarn	rollRow	rolledOf	rowPanel	rowPic	slotLabel	slots	stepDay	swatchStack	todaySay	toggleList	toggleRow	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
+todayzoom.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	addForSlot	belowBox	canPick	figLoad	figureStage	foldAll	get	get belowOpen	get listOpen	get openRow	goneNote	hasOutfit	homeDay	offBtn	offOn	pickPiece	piecesBox	pocketRow	renderToday	restWarn	rollRow	rolledOf	rowPanel	rowPic	slotLabel	slots	stepDay	swatchStack	todaySay	toggleList	toggleRow	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
 todayzoom.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp	needConn	netErr
 todayzoom.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	itemFieldNow	matMigrate	sockToeMigrate	wardFlush	wardPendingRestore
 todayzoom.test.js	weather.js	<loaded>	loadWeather
@@ -19262,7 +19262,7 @@ ui.test.js	asm-watch.js	<loaded>
 ui.test.js	assemble.js	<loaded>	@	asmSuitBands	asmSuitWeave	get	renderAsmUI
 ui.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSettled	backSync	backWanted	histDrop	histPush	inviteInUrl
 ui.test.js	backupfile.js	<loaded>
-ui.test.js	boxfold.js	<loaded>	foldEdge
+ui.test.js	boxfold.js	<loaded>	foldEdge	monthBelow	pageScroll	revealNeed
 ui.test.js	bus.js	<loaded>	emit	on
 ui.test.js	calendar.js	<loaded>	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 ui.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLimit	careLists	careName	careNote	careNoun	careState	careSum	careTag	careTimes	careTop	careWashed	careWord	careWornLine	laundryDays	openCare	renderCare	renderCareUI
@@ -19289,7 +19289,7 @@ ui.test.js	measure.js	<loaded>	paperKey	paperNow	paperOf	urlCanvas
 ui.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 ui.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 ui.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedPut	missedSpan	missedTell
-ui.test.js	month.js	<loaded>	dayMarks	dayOnly	monthBelow	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	pageScroll	piecesLine	piecesParts	planOn	revealNeed	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
+ui.test.js	month.js	<loaded>	dayMarks	dayOnly	monthDrop	monthFill	monthFillSoon	monthGridHtml	monthLink	monthStop	monthUnfold	nextWorkday	piecesLine	piecesParts	planOn	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth
 ui.test.js	mq/shirt-open.js	<loaded>
 ui.test.js	mq/shirt-tie.js	<loaded>
 ui.test.js	mq/suit-open.js	<loaded>
@@ -19984,7 +19984,7 @@ weather.test.js	asm-watch.js	<loaded>
 weather.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm	asmMicroKind	asmSuitBands	asmSuitWeave	get	renderAsmUI
 weather.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 weather.test.js	backupfile.js	<loaded>
-weather.test.js	boxfold.js	<loaded>
+weather.test.js	boxfold.js	<loaded>	@onfoldingall
 weather.test.js	bus.js	<loaded>	emit	on
 weather.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@onsettingssummaries	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI
 weather.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careLimit	careNote	careTop	careWashed	laundryDays	renderCareUI

@@ -16,6 +16,7 @@ const TOPICS={
   'settings-closed':{emit:['settings.js'],on:['start.js'],what:'Settings closed (the page a sync changed meanwhile, or null)'},
   'connection-saved':{emit:['settings.js'],on:['sync.js'],what:'Done stored the connection: a backup now'},
   'connection-typed':{emit:['settings.js'],on:['account.js'],what:'another address or code typed in Connection: the account decides'},
+  'folding-all':{emit:['today.js'],on:['boxfold.js'],what:'a swipe to another day folds everything at once (true), and is done (false): the folds are quiet meanwhile'},
 };
 
 /* name -> {serve: files that serve it (one), ask: files that ask for it (in load order), what: what it does}. A socket is how a

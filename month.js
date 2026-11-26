@@ -61,38 +61,20 @@ function monthGridHtml(){
     <div class="mgrid">${cells.join('')}</div></div>
     <button class="foldbar" data-act="monthTap" aria-label="Fold away the month"><span class="fchev" aria-hidden="true">›</span>Fold away</button>`;
 }
-/* how far to scroll so el shows above the tab bar, without the top of `top` going past the top of the screen (sat: the notch's inset) */
-function revealNeed(el,top,sat){if(sat===undefined){const probe=document.createElement('div');probe.style.cssText='position:fixed;top:0;height:0;padding-top:env(safe-area-inset-top);visibility:hidden';document.body.appendChild(probe);sat=parseFloat(getComputedStyle(probe).paddingTop)||0;probe.remove()}
-  const nav=document.querySelector('body>nav'),bottom=(nav?nav.getBoundingClientRect().top:innerHeight)-12,need=el.getBoundingClientRect().bottom-bottom,cap=(top||el).getBoundingClientRect().top-(sat+8);return Math.max(0,Math.min(need,cap))}
 function toggleMonth(){const box=$('#mbox');if(!box)return;monthOpen=!monthOpen;const pin=$('#mpanel-in');
   if(monthOpen){monthPanel={y:sel.getFullYear(),m:sel.getMonth()};monthFill();box.classList.remove('instant')}
   if(pin)pin.inert=!monthOpen;
   $('#mbox .month-link').setAttribute('aria-expanded',monthOpen);
   const sm=$('#mbox .mltxt small');if(sm)sm.textContent=sm.textContent.replace(/tap to .*/,monthOpen?'tap to fold away':'tap to see the month');
   if(monthOpen)monthUnfold(box);else monthFold(box)}
-/* the page's scroll during an unfold or a fold, on the animations' own curve (MONTH_EASE), duration and delay, so the page and the clip
-   move together. The page is scrolled once, at the start, and Today is slid back by the same amount and eased to rest with the cards:
-   one more animation the browser runs with the others, no script on any frame. (The browser's own smooth scroll kept its own pace, and
-   WebKit covered a 1,000 px scroll in one frame; a scrollTo on every frame from script, the next try, ran out of step with the clip and
-   the slide on an iPhone, whose scrolling and animations aren't drawn by the page's script, and the cards juddered.) A second call while
-   one runs starts from where the page is drawn, so nothing jumps. */
-function pageScroll(to,ms,delay=0){const pg=$('#today'),from=scrollY;
-  let left=0;if(pg&&pg._ps){const m=/matrix.*,\s*([-\d.e]+)\)$/.exec(getComputedStyle(pg).transform);left=m?+m[1]:0;pg._ps.cancel();pg._ps=null}
-  scrollTo(0,to);const off=scrollY-from+left;   // the browser stops at the page's end: slide by what it really scrolled
-  if(!pg||noMotion()||Math.abs(off)<1||pg.hidden)return;
-  const a=pg._ps=pg.animate([{transform:`translateY(${off}px)`},{transform:'none'}],{duration:ms,delay,easing:MONTH_EASE,fill:'backwards'});
-  a.finished.then(()=>{if(pg._ps===a)pg._ps=null},()=>{})}
 /* Unfolding and folding the month without animating its height: an animated height laid the page out and repainted every day's
    drawing on every frame (30 layouts and 285 paints for one unfold), which was choppy on a phone. The page is laid out once, at the
    start of an unfold or the end of a fold, and the movement is the card's edge sliding (a strip, foldEdge: a clip-path here was
    repainted every frame by Safari and drifted from the slides), a slide for whatever is below it and a fade of the days, all of which
-   the GPU draws; the scroll is pageScroll's. */
-const MONTH_MS=420;
-const MONTH_EASE='cubic-bezier(.2,.8,.2,1)';
-const MONTH_LIFT=8;   // ms between the days lifting out when the month folds
+   the GPU draws; the scroll is pageScroll's (boxfold.js, with revealNeed and monthBelow; MONTH_MS and MONTH_EASE are core.js's). */
+const MONTH_LIFT=8;  // ms between the days lifting out when the month folds
 let monthAnim=null;   // {list: running animations, end: what finishing early must still do}
 function monthStop(){const a=monthAnim;monthAnim=null;if(!a)return;for(const x of a.list)x.cancel();if(a.end)a.end()}
-const monthBelow=box=>{const k=[...box.parentNode.children];return k.slice(k.indexOf(box)+1)};
 function monthUnfold(box){monthStop();const pan=$('#mpanel'),pin=$('#mpanel-in');box.classList.remove('mshut');box.classList.add('mfast','open');
   const g=pan?pan.offsetHeight:0,d=revealNeed(box,box);
   if(noMotion()||!g){if(d>.5)scrollBy(0,d);return}
@@ -160,11 +142,11 @@ function setMonthOpen(v){monthOpen=v}
    pack.js, remind.js, stats.js, start.js and the painter (planOn); monthGridHtml and monthStep are called by tests only. today.js and
    the tests set monthOpen, tests/setup.test.js sets monthPanel: setters; a module imports them.
    Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the page's, as a classic script's were */
-Object.assign(globalThis,{stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthPlan,revealNeed,toggleMonth,pageScroll,MONTH_MS,MONTH_EASE,monthBelow,monthDrag,monthRelease,openDay,monthLink,setMonthOpen});
+Object.assign(globalThis,{stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthPlan,toggleMonth,monthDrag,monthRelease,openDay,monthLink,setMonthOpen});
 Object.defineProperties(globalThis,{monthOpen:{get:()=>monthOpen,set:v=>{monthOpen=v}},monthPanel:{get:()=>monthPanel,set:v=>{monthPanel=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,monthGridHtml,monthStep,get monthOpen(){return monthOpen},set monthOpen(v){monthOpen=v},get monthPanel(){return monthPanel},set monthPanel(v){monthPanel=v}};
-export {stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthOpen,monthPanel,monthPlan,monthGridHtml,revealNeed,toggleMonth,pageScroll,MONTH_MS,MONTH_EASE,monthBelow,monthStep,monthDrag,monthRelease,openDay,monthLink,setMonthOpen};
+export {stackSVG,planOn,nextWorkday,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthOpen,monthPanel,monthPlan,monthGridHtml,toggleMonth,monthStep,monthDrag,monthRelease,openDay,monthLink,setMonthOpen};
 /* the markup's handlers (act.js): the month box's head and its "Fold away" bar, and a day of the month (data-t: its time) */
 function monthTap(){toggleMonth()}
 function dayCellTap(el){openDay(+el.dataset.t)}
