@@ -5,6 +5,7 @@
 // the page, the pictures kept on the device, looks' pictures already on the worker, building ahead and Today's hook (asmFor / asmEnsure).
 // (2026-11-14, the owner's order after the audit: the earlier photo-per-item assembler, its master, calibration photos, pieces, zones
 // and the atlas-painting trial were deleted; a look with no colour-coded master shows its own photo or the drawing.)
+import {srgbLin8} from './srgb.js';
 const ASM_VER=3;   // in every key (asmKey): the colour-coded masters' keys too, so it never changes
 const ASM_SIZE=2048;   // a phone paints at 2048 (a larger ASM_CM_SIZE, as some tests set, paints larger and scales to this)
 /* ASM_ON: are assembled pictures in use? Off, Today shows each outfit's own photo or drawing and nothing is fetched or painted */

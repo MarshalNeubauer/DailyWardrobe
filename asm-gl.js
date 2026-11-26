@@ -33,6 +33,10 @@
    The master-only arrays (shares, light, contact shadows, rim, sleeve cells, the kept zones' colours) are packed once per master on the
    CPU (asmGlPack) and uploaded as textures (asmGlUpload); each look sets a few uniforms, draws one full-screen triangle and reads the
    picture back. A lost context (webglcontextlost) paints on the CPU and tries the graphics chip again after ASM_GL_RETRY_MS. */
+import {ASM_CM_KINDS} from './asm-keys.js';
+import {ASM_FLOW,ASM_LIN,ASM_PX_MM,ASM_SIZE,ASM_TUBE_K,asmBarDraw,asmBuildAfter,asmData,asmJpeg,asmLinenTile,asmTq,asmTqn,asmTqr,asmTweedTile} from './assemble.js';
+import {ASM_CELL_FADE,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,ASM_CM_BG_SHADOW,ASM_CM_LIGHT,ASM_CM_LOD0,ASM_CM_LOOK,ASM_CM_MIPS,ASM_CM_U16,ASM_CM_WINK,ASM_CM_WLIGHT,ASM_TIE_LIT,asmCmButtons,asmCmCanvas,asmCmFinish,asmCmMips,asmCmMp,asmCmSetup,asmTieSheenK} from './asm-color.js';
+import {linSrgb8} from './srgb.js';
 const ASM_GL_SEGS=7;   // body + two sleeves + two lapels (and room)
 const ASM_GL_TILE=4096;   // a band tile larger than this either way stays on the CPU (asmSuitTex's are about 256 across)
 const ASM_GL_CUFFS=15;   // (stage 4) turned shirt parts (P.cuffAng not 0) the shader takes: their index in the lighting texture's high byte
