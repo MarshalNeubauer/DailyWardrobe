@@ -3,7 +3,7 @@
    on a swipe (foldAll), stepping a day (stepDay) and the month planned with other records (planWith)
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14, and on
    2026-11-17 (Round C) into today-plan.js, today.js, today-photofold.js, today-picture.js and today-gestures.js, in that order.) */
-import {on,emit,serve} from './bus.js';
+import {on,emit} from './bus.js';
 /* the day records and the week's locks a drawing of Today writes (recordDays, lockUpcoming) run in the background; recordRun is the latest
    run, so a test can wait until a device has finished writing before it counts its syncs (tests/sync.test.js quiet) */
 let recordRun=Promise.resolve();
@@ -284,7 +284,5 @@ globalThis.HOOK={__proto__:globalThis.HOOK||null,get BLOUSE_ROLL_ON(){return BLO
 /* history.js (a swap, a pick, a mark, an occasion, Reset …) and month.js (a day opened) announce 'day-changed': Today is drawn again
    (bus.js; the restructure S3e, 2026-11-26: they run before this file). Above acts({…}), as the bridge */
 on('day-changed',()=>renderToday());
-/* nav.js (required, it runs before this file) draws Today when it is shown through the socket 'today-show' (the restructure S3e) */
-serve('today-show',renderToday);
 export {recordRun,wxPreload,openRow,setOff,BLOUSE_ROLL_ON,setRoll,restWarn,toggleRow,belowOpen,swatchStack,figureStage,figCuDone,dayShown,keepHome,pickPiece,goToday,listOpen,piecesBox,toggleList,renderToday,foldAll,stepDay,planWith,todayTabTap,setListOpen};
 acts({rollTap,todayTabTap,vestTap,offTap,pickTap,rowTap,addOneTap,belowPicTap,tileTap,swatchTap,wornTap,figLoad,wxRetryTap,wxSetTap,listTap,listFoldTap,dayStepTap});

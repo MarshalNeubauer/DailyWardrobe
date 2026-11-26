@@ -30,7 +30,6 @@ const TOPICS={
 /* name -> {serve: files that serve it (one), ask: files that ask for it (in load order), what: what it does}. A socket is how a
    required (or today-no-picture) file calls into an optional one without importing it (tests/load-contract.json) */
 const SOCKETS={
-  'today-show':{serve:'today.js',ask:['nav.js'],what:'Today is shown: it is drawn (renderToday; the restructure S3e, 2026-11-26)'},
   'setup-yield':{serve:'setup.js',ask:['nav.js'],what:'a page is shown: a setup that opened by itself steps aside (setupYield)'},
   'shop-close':{serve:'shop.js',ask:['nav.js'],what:'another page is shown: What to buy closes (closeShop)'},
   'pack-show':{serve:'pack.js',ask:['nav.js'],what:'a page is shown: the packing list page shows or hides (packShow)'},

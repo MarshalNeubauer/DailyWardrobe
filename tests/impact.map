@@ -1,6 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	fc073aa1dd28e4e447d7
-# tested	2972f210a0709c370711
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	acctSettingsPart	acctStart	get	iosDevice	iosInSafari	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -67,8 +65,6 @@ a11y.test.js	planner.js	<loaded>	accFams	clothesScore	colsOf	colsOf0	dCol	darkSh
 a11y.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 a11y.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 a11y.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	scoreCard	set	setScoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
-a11y.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	scheduleWear	set	setCatOpen	setLock	setOpenTap	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
-a11y.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	setScoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 a11y.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	scheduleWear	set	setCatOpen	setLock	setOpenTap	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 a11y.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 a11y.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -345,8 +341,6 @@ accounts.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	pairSeen
 accounts.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 accounts.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errWhere	get	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote	tagFailText	tagFailed
 accounts.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-accounts.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	weekFirst
-accounts.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 accounts.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	weekFirst
 accounts.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 accounts.test.js	sheet-swipe.js	<loaded>
@@ -454,8 +448,6 @@ acts.test.js	planner.js	<any>	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockSt
 acts.test.js	remind.js	<any>	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 acts.test.js	safety.js	<any>	<loaded>	@addEventListenererror	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errMsg	errNoise	errNote	errSoon	errTell	errWhere	pruneTagImgs	safetyStart
 acts.test.js	scorecard.js	<any>	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-acts.test.js	settings.js	<any>	<loaded>	@constsetChan{try}	backupSummary	closeSettings	dayTap	openSettings	picsPick	picsSwitched	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setPictures	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleDay	weekFirst
-acts.test.js	scorecard.js	<any>	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 acts.test.js	settings.js	<any>	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	dayTap	openSettings	picsPick	picsSwitched	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setPictures	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleDay	weekFirst
 acts.test.js	setup.js	<any>	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 acts.test.js	sheet-swipe.js	<any>	<loaded>
@@ -554,8 +546,6 @@ actsindex.test.js	planner.js	<any>	<loaded>	accFams	beltFit	blackOnBlack	clothes
 actsindex.test.js	remind.js	<any>	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 actsindex.test.js	safety.js	<any>	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 actsindex.test.js	scorecard.js	<any>	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-actsindex.test.js	settings.js	<any>	<loaded>	@constsetChan{try}	backupSummary	catTap	closeSettings	darkPick	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setBackdropTap	setCatOpen	setDarkShirts	setDoneTap	setLock	setOpenTap	setSetSeen	setVestMode	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleCat	vestPick	weekFirst
-actsindex.test.js	scorecard.js	<any>	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 actsindex.test.js	settings.js	<any>	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	catTap	closeSettings	darkPick	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setBackdropTap	setCatOpen	setDarkShirts	setDoneTap	setLock	setOpenTap	setSetSeen	setVestMode	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleCat	vestPick	weekFirst
 actsindex.test.js	setup.js	<any>	<loaded>	setupAgainTap	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 actsindex.test.js	sheet-swipe.js	<any>	<loaded>	sheetSwipe
@@ -650,8 +640,6 @@ addcards.test.js	planner.js	<loaded>	favLookOf	favRead	pairSeen	shirtGroup
 addcards.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 addcards.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errWhere	get	guardUnsaved	oneStop	pruneTagImgs	retryTag	safetyStart	storeFailure	tagFailNote	tagFailText	tagFailed	tagNetText	tagReason
 addcards.test.js	scorecard.js	<loaded>
-addcards.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
-addcards.test.js	scorecard.js	<loaded>	recentWork
 addcards.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 addcards.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 addcards.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -747,8 +735,6 @@ additemacts.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	isFavI
 additemacts.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 additemacts.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 additemacts.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-additemacts.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	todayDirty	weekFirst
-additemacts.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 additemacts.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	todayDirty	weekFirst
 additemacts.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 additemacts.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -841,8 +827,6 @@ addsheet.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	isFavItem
 addsheet.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
 addsheet.test.js	safety.js	<loaded>	@addEventListenererror	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 addsheet.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-addsheet.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	todayDirty	weekFirst
-addsheet.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 addsheet.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	todayDirty	weekFirst
 addsheet.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 addsheet.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -936,8 +920,6 @@ advicefresh.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFi
 advicefresh.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 advicefresh.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 advicefresh.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	scoreTap	set	set scoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
-advicefresh.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-advicefresh.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	scoreTap	set	set scoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 advicefresh.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 advicefresh.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 advicefresh.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -1122,8 +1104,6 @@ asmahead.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStal
 asmahead.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 asmahead.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 asmahead.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-asmahead.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-asmahead.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 asmahead.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 asmahead.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 asmahead.test.js	sheet-swipe.js	<loaded>
@@ -1229,8 +1209,6 @@ asmaheadonce.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lock
 asmaheadonce.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 asmaheadonce.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 asmaheadonce.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-asmaheadonce.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
-asmaheadonce.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 asmaheadonce.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 asmaheadonce.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 asmaheadonce.test.js	sheet-swipe.js	<loaded>
@@ -1520,8 +1498,6 @@ asmcolor.test.js	planner.js	<loaded>	favLookOf	favRead	pairSeen	shirtGroup
 asmcolor.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 asmcolor.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 asmcolor.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-asmcolor.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
-asmcolor.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 asmcolor.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
 asmcolor.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 asmcolor.test.js	sheet-swipe.js	<loaded>
@@ -2160,8 +2136,6 @@ asmserverpic.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lock
 asmserverpic.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 asmserverpic.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 asmserverpic.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-asmserverpic.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-asmserverpic.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 asmserverpic.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 asmserverpic.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 asmserverpic.test.js	sheet-swipe.js	<loaded>
@@ -2744,8 +2718,6 @@ back.test.js	planner.js	<loaded>	accFams	beltFit	beltWait	blackOnBlack	clothesSc
 back.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 back.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 back.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-back.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setDoneTap	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
-back.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 back.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageback	@onpageshowing	@onsubback	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setDoneTap	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 back.test.js	setup.js	<loaded>	@backOnsetup	get	setupAuto	setupBack	setupBefore	setupCityOpen	setupClose	setupConnected	setupDays	setupDraw	setupDress	setupEl	setupFinish	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupNeeds	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupSwitch	setupTapGuard	setupToday	setupVestChosen	setupWardEmpty	setupYield	tzCountry
 back.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -2839,8 +2811,6 @@ backgesture-item.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	i
 backgesture-item.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
 backgesture-item.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 backgesture-item.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-backgesture-item.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	weekFirst
-backgesture-item.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 backgesture-item.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	weekFirst
 backgesture-item.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 backgesture-item.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -2938,8 +2908,6 @@ backgesture-over.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	i
 backgesture-over.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 backgesture-over.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 backgesture-over.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-backgesture-over.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	weekFirst
-backgesture-over.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 backgesture-over.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	weekFirst
 backgesture-over.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 backgesture-over.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -2958,7 +2926,6 @@ backgesture-over.test.js	tests/backgesture-parts.js	<any>
 backgesture-over.test.js	tests/fixedplan.js	<any>
 backgesture-over.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-over.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-over.test.js	tests/webkit.js	<any>
 backgesture-over.test.js	theme.js	<loaded>	applyTheme
 backgesture-over.test.js	toast.js	<loaded>	toastDrop	undoOff
 backgesture-over.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -3036,8 +3003,6 @@ backgesture.test.js	planner.js	<loaded>	accFams	beltFit	blackOnBlack	clothesScor
 backgesture.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 backgesture.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 backgesture.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-backgesture.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	scheduleWear	set	setCatOpen	setDoneTap	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	weekFirst
-backgesture.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 backgesture.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageback	@onpageshowing	@onsubback	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	scheduleWear	set	setCatOpen	setDoneTap	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	weekFirst
 backgesture.test.js	setup.js	<loaded>	@backOnsetup	setupAuto	setupBack	setupBefore	setupCancel	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupHtml	setupInert	setupKeep	setupNeeds	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupYield	tzCountry
 backgesture.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -3133,8 +3098,6 @@ backup-storage.test.js	planner.js	<loaded>	favLookOf	favRead	idsAhead	lockStale	
 backup-storage.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 backup-storage.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errReporting	errSend	errSoon	get	pruneTagImgs	safetyStart	set	set storeToldAt	setStoreToldAt	storeErr	storeFailText	storeFailure	storeFull
 backup-storage.test.js	scorecard.js	<loaded>
-backup-storage.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	pausedUntil	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
-backup-storage.test.js	scorecard.js	<loaded>	recentWork
 backup-storage.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	pausedUntil	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
 backup-storage.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 backup-storage.test.js	sheet-swipe.js	<loaded>
@@ -4178,8 +4141,6 @@ cardid.test.js	planner.js	<loaded>	favItemSet	favRead	isFavItem	pairSeen
 cardid.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 cardid.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote	tagFailed
 cardid.test.js	scorecard.js	<loaded>
-cardid.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	todayDirty	weekFirst
-cardid.test.js	scorecard.js	<loaded>	recentWork
 cardid.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	todayDirty	weekFirst
 cardid.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 cardid.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -4272,8 +4233,6 @@ care.test.js	planner.js	<loaded>	accFams	aheadShirt	aheadTie	beltFit	blackOnBlac
 care.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 care.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 care.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-care.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	catTap	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	toggleCat	weekFirst
-care.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 care.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	catTap	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	toggleCat	weekFirst
 care.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 care.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -4569,8 +4528,6 @@ clock.test.js	planner.js	<loaded>	favLookOf	favRead	idsAhead	lockStale	pairSeen
 clock.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 clock.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 clock.test.js	scorecard.js	<loaded>
-clock.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-clock.test.js	scorecard.js	<loaded>	recentWork
 clock.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 clock.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 clock.test.js	sheet-swipe.js	<loaded>
@@ -5162,8 +5119,6 @@ colors.test.js	planner.js	<loaded>	accFams	accMetal	aheadShirt	aheadTie	beltFit	
 colors.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 colors.test.js	safety.js	<loaded>	@addEventListenererror	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errMsg	errNoise	errNote	errSoon	errTell	errWhere	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 colors.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	scoreTap	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
-colors.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-colors.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	scoreTap	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 colors.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 colors.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 colors.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -5553,8 +5508,6 @@ combatboot.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit
 combatboot.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 combatboot.test.js	safety.js	<loaded>	db.then.dbDown	errSoon	pruneTagImgs	safetyStart	tagFailNote
 combatboot.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-combatboot.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-combatboot.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 combatboot.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 combatboot.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 combatboot.test.js	sheet-swipe.js	<loaded>
@@ -5832,8 +5785,6 @@ costwear.test.js	planner.js	<loaded>	beltFit	beltWait	blackOnBlack	dCol	darkShir
 costwear.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 costwear.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 costwear.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-costwear.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
-costwear.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 costwear.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 costwear.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 costwear.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -5933,8 +5884,6 @@ daysoff.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	
 daysoff.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 daysoff.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storeFailure
 daysoff.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
-daysoff.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 daysoff.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 daysoff.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield	tzCountry
 daysoff.test.js	sheet-swipe.js	<loaded>
@@ -6160,8 +6109,6 @@ drawnonly.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	pairSee
 drawnonly.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 drawnonly.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 drawnonly.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-drawnonly.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	picsPick	picsSwitched	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setPictures	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
-drawnonly.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 drawnonly.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	picsPick	picsSwitched	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setPictures	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
 drawnonly.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 drawnonly.test.js	sheet-swipe.js	<loaded>
@@ -6273,8 +6220,6 @@ dress.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	bel
 dress.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 dress.test.js	safety.js	<loaded>	@addEventListenererror	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 dress.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	set	set scoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-dress.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
-dress.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	set scoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 dress.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 dress.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 dress.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -6749,8 +6694,6 @@ favorites.test.js	planner.js	<loaded>	accFams	beltFit	beltWait	blackOnBlack	clot
 favorites.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 favorites.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 favorites.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-favorites.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-favorites.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 favorites.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 favorites.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 favorites.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -6843,8 +6786,6 @@ favplan.test.js	planner.js	<loaded>	accFams	aheadShirt	aheadTie	beltFit	blackOnB
 favplan.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 favplan.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 favplan.test.js	scorecard.js	<loaded>
-favplan.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart
-favplan.test.js	scorecard.js	<loaded>	recentWork
 favplan.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart
 favplan.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 favplan.test.js	sheet-swipe.js	<loaded>
@@ -6942,8 +6883,6 @@ fieldmerge.test.js	planner.js	<loaded>	favItemSet	favLookOf	favRead	idsAhead	isF
 fieldmerge.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 fieldmerge.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 fieldmerge.test.js	scorecard.js	<loaded>
-fieldmerge.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	todayDirty	weekFirst
-fieldmerge.test.js	scorecard.js	<loaded>	recentWork
 fieldmerge.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	todayDirty	weekFirst
 fieldmerge.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 fieldmerge.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -7044,8 +6983,6 @@ figure.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	
 figure.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 figure.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 figure.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-figure.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-figure.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 figure.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 figure.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield
 figure.test.js	sheet-swipe.js	<loaded>
@@ -7140,8 +7077,6 @@ folds.test.js	planner.js	<loaded>	accFams	clothesScore	colsOf	colsOf0	dCol	darkS
 folds.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 folds.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 folds.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	scoreCard	scoreTap	set	set scoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
-folds.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-folds.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	scoreTap	set	set scoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 folds.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 folds.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 folds.test.js	sheet-swipe.js	<loaded>
@@ -7819,8 +7754,6 @@ handpick.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	
 handpick.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 handpick.test.js	safety.js	<loaded>	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 handpick.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-handpick.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-handpick.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 handpick.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 handpick.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 handpick.test.js	sheet-swipe.js	<loaded>
@@ -8206,8 +8139,6 @@ history.test.js	planner.js	<loaded>	accFams	aheadShirt	aheadTie	beltFit	blackOnB
 history.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 history.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 history.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-history.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-history.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 history.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 history.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield
 history.test.js	sheet-swipe.js	<loaded>
@@ -8599,7 +8530,6 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
-invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -8684,8 +8614,6 @@ itempics.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	isFavItem
 itempics.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 itempics.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storageDown	storeFailure
 itempics.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-itempics.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setViewStale	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
-itempics.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 itempics.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setViewStale	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 itempics.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield	tzCountry
 itempics.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -8879,8 +8807,6 @@ itemsheet.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	idsAhead
 itemsheet.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 itemsheet.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 itemsheet.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-itemsheet.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	todayDirty	weekFirst
-itemsheet.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 itemsheet.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	todayDirty	weekFirst
 itemsheet.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 itemsheet.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -9065,8 +8991,6 @@ keptphotos.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	pairSe
 keptphotos.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 keptphotos.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 keptphotos.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-keptphotos.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
-keptphotos.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 keptphotos.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 keptphotos.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 keptphotos.test.js	sheet-swipe.js	<loaded>
@@ -9097,7 +9021,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
+keptphotos.test.js	worker/photostore.js	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
@@ -9167,8 +9091,6 @@ kit.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	isFavItem	jack
 kit.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 kit.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	saveFailed	storeErr	storeFailText	storeFailure	storeFull	tagFailNote
 kit.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-kit.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	todayDirty	weekFirst
-kit.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 kit.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	todayDirty	weekFirst
 kit.test.js	setup.js	<loaded>	get	setupAuto	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupNeeds	setupOpen	setupResume	setupSample	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupVestChosen	setupWardEmpty	setupYield	tzCountry
 kit.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -9261,8 +9183,6 @@ kitsetup-taps.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	isFa
 kitsetup-taps.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 kitsetup-taps.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 kitsetup-taps.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-kitsetup-taps.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setLock	setSetSeen	setVestMode	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleDay	weekFirst
-kitsetup-taps.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 kitsetup-taps.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setLock	setSetSeen	setVestMode	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleDay	weekFirst
 kitsetup-taps.test.js	setup.js	<loaded>	get	setupAddTap	setupAuto	setupBackTap	setupBefore	setupCancel	setupCancelTap	setupCityKey	setupCityOpen	setupCityTap	setupCityType	setupClose	setupConnect	setupConnectTap	setupConnected	setupDay	setupDayTap	setupDays	setupDraw	setupDress	setupEl	setupFindTap	setupFinish	setupGeoTap	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkKey	setupLinkWaiting	setupLocate	setupNeeds	setupNextTap	setupOpen	setupPick	setupResume	setupSample	setupSave	setupSearch	setupSetDress	setupShown	setupSkipTap	setupStart	setupStep	setupStepsNow	setupSwTap	setupSwitch	setupTapGuard	setupToday	setupUnitTap	setupUnits	setupVest	setupVestChosen	setupVestPick	setupWardEmpty	setupYield	tzCountry	wemptyImportTap	wemptySampleTap
 kitsetup-taps.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -9559,8 +9479,6 @@ mannequin.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	
 mannequin.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 mannequin.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	db.then.dbDown	errSoon	pruneTagImgs	safetyStart	storeFailure
 mannequin.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-mannequin.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-mannequin.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 mannequin.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 mannequin.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 mannequin.test.js	sheet-swipe.js	<loaded>
@@ -9927,7 +9845,7 @@ modload.test.js	add.js	<any>	<loaded>	@document.addEventListenerclick	addNoteTex
 modload.test.js	analysis-worker.js	<any>
 modload.test.js	analysis.js	<any>	<loaded>	listAnd
 modload.test.js	app.js	<any>	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	fixupRedraw	focusWatch	get	keepFocus	metaGet	metaPut	put	set	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
-modload.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBuild	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmEnsure	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetup	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmHbShirt	asmKindOf	asmLookTag	asmNkBaseOf	asmPileKind	asmTieSheenK	asmWtTag	asmWtWants	get
+modload.test.js	asm-color.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmBlur	asmCmBuild	asmCmCode	asmCmCodeSig	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmEnsure	asmCmGaps	asmCmGeoKeys	asmCmGet	asmCmHandEdge	asmCmHash	asmCmItems	asmCmJob	asmCmKey	asmCmKind	asmCmLightKeys	asmCmMat	asmCmMfGet	asmCmMfGet1	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRev	asmCmRoute	asmCmSetup	asmCmSig	asmCmSrcSig	asmCmStamp	asmCmStatus	asmCmTieTag	asmCmTrSc	asmCmUI	asmCmUnpack	asmCmWarm	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapUI	asmHbShirt	asmKindOf	asmLookTag	asmNkBaseOf	asmPileKind	asmTieSheenK	asmWtTag	asmWtWants	get
 modload.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlUI
 modload.test.js	asm-kinds.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmCmKindOf	asmJfWants	asmNkBase	asmNkGet	asmNkJob
 modload.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpBase	asmOcpJob	asmOcpSig
@@ -9965,8 +9883,7 @@ modload.test.js	measure.js	<any>	<loaded>
 modload.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
 modload.test.js	migrate.js	<any>	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 modload.test.js	missed.js	<any>	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-modload.test.js	month.js	<any>	<loaded>	dayMarks	dayOnly	dayWord	homeDay	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	piecesLine	piecesParts	planOn	recentWork	shirtWords	shortRest	shortTop	stackSVG	tieWord	wardShort
-modload.test.js	month.js	<any>	<loaded>	dayMarks	dayOnly	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord
+modload.test.js	month.js	<any>	<loaded>	dayMarks	dayOnly	dayWord	homeDay	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	piecesLine	piecesParts	planOn	recentWork	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	wardShort
 modload.test.js	mq/shirt-open.js	<any>	<loaded>
 modload.test.js	mq/shirt-tie.js	<any>	<loaded>
 modload.test.js	mq/suit-open.js	<any>	<loaded>
@@ -9983,8 +9900,6 @@ modload.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	b
 modload.test.js	remind.js	<any>	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 modload.test.js	safety.js	<any>	<loaded>	@addEventListenererror	@addEventListenerunhandledrejection	adoptBackupSettings	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storageDown	storeFailure
 modload.test.js	scorecard.js	<any>	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-modload.test.js	settings.js	<any>	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setDoneTap	setLock	setOpenTap	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
-modload.test.js	scorecard.js	<any>	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 modload.test.js	settings.js	<any>	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setDoneTap	setLock	setOpenTap	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 modload.test.js	setup.js	<any>	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 modload.test.js	sheet-swipe.js	<any>	<loaded>
@@ -10061,14 +9976,12 @@ modload.test.js	tests/fixtures/cm/vest/part-sleeveR.png	<any>
 modload.test.js	tests/load-contract.json	<any>
 modload.test.js	tests/webkit.js	<any>
 modload.test.js	theme.js	<any>	<loaded>	applyTheme	cycleTheme	themeTap
-modload.test.js	toast.js	<any>	<loaded>	toast
+modload.test.js	toast.js	<any>	<loaded>	toast	toastOff
 modload.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	todayBusy	todayCovered
 modload.test.js	today-photofold.js	<any>	<loaded>
 modload.test.js	today-picture.js	<any>	<loaded>	@{constel$todayinPice}	applyZoom	ovlCloseup	ovlCuSuit	ovlCuWants	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitOld	ovlSuitPng	ovlSvg	ovlWeave	swApply	zoomTarget
 modload.test.js	today-plan.js	<any>	<loaded>	get	hasOutfit	outSig	planDirty	planFor	planMonth	planSig	planSnapSoon	planSnapUse	planStartDay	planTrim	snapIn	snapOut	strHash
-modload.test.js	today.js	<any>	<loaded>	@document.addEventListenervisibilitychange	addForSlot	belowBox	figLoad	figureStage	goneNote	offBtn	offOn	piecesBox	planSnapCheck	pocketRow	renderToday	restWarn	rollRow	slots	swatchStack	todaySay	todayTabTap	vestRow	wornBar	wornPill	wxFit	wxPreload
-modload.test.js	today-plan.js	<any>	<loaded>	get	outSig	planDirty	planFor	planMonth	planSig	planSnapSoon	planSnapUse	planStartDay	planTrim	snapIn	snapOut	strHash
-modload.test.js	today.js	<any>	<loaded>	@document.addEventListenervisibilitychange	addForSlot	belowBox	canPick	figLoad	figureStage	goToday	goneNote	hasOutfit	homeDay	offBtn	offOn	piecesBox	planSnapCheck	pocketRow	renderToday	restWarn	rollRow	slotLabel	slots	swatchStack	todaySay	todayTabTap	vestRow	wardShort	wornBar	wornPill	wxFit	wxPreload
+modload.test.js	today.js	<any>	<loaded>	@document.addEventListenervisibilitychange	addForSlot	belowBox	figLoad	figureStage	goToday	goneNote	offBtn	offOn	piecesBox	planSnapCheck	pocketRow	renderToday	restWarn	rollRow	slots	swatchStack	todaySay	todayTabTap	vestRow	wornBar	wornPill	wxFit	wxPreload
 modload.test.js	ui.js	<any>	<loaded>	@onsettingsdraw	@onsettingsopen	@onsettingssummaries	@window.addEventListenerkeydown	advClose	connSummary	inviteOver	isConnected	layerClose	layerInert	layerOpen	layerUp	needConn	netErr	renderConnUI	uiEsc
 modload.test.js	wardrobe.js	<any>	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@whenPulled	matMigrate	matRenameTo	sockLegacy	sockToeMigrate	wardFlush	wardPendingRestore
 modload.test.js	weather.js	<any>	<loaded>	@onsettingsdraw	@onsettingssummaries	loadWeather	locCC	renderWxLoc	unit	unitCC
@@ -10590,8 +10503,6 @@ month.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	lo
 month.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 month.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 month.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	scoreCard	set	setScoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
-month.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	weekFirst
-month.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	setScoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 month.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	weekFirst
 month.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 month.test.js	sheet-swipe.js	<loaded>
@@ -10803,8 +10714,6 @@ moveoutfit.test.js	planner.js	<loaded>	accFams	aheadShirt	aheadTie	beltFit	black
 moveoutfit.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 moveoutfit.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 moveoutfit.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-moveoutfit.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-moveoutfit.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 moveoutfit.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 moveoutfit.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield
 moveoutfit.test.js	sheet-swipe.js	<loaded>
@@ -10897,8 +10806,6 @@ mqcloth.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	pairSeen	
 mqcloth.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 mqcloth.test.js	safety.js	<loaded>	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 mqcloth.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-mqcloth.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	get	get todayStale	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
-mqcloth.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 mqcloth.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	get	get todayStale	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
 mqcloth.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 mqcloth.test.js	sheet-swipe.js	<loaded>
@@ -11090,8 +10997,6 @@ navfit.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	
 navfit.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 navfit.test.js	safety.js	<loaded>	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 navfit.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-navfit.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-navfit.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 navfit.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 navfit.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield
 navfit.test.js	sheet-swipe.js	<loaded>
@@ -11186,8 +11091,6 @@ newuser.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	bl
 newuser.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 newuser.test.js	safety.js	<loaded>	db.then.dbDown	errSoon	oneStop	pruneTagImgs	safetyStart	storeFailure	tagFailText	tagReason
 newuser.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	get	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-newuser.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
-newuser.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	get	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 newuser.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 newuser.test.js	setup.js	<loaded>	get	setupAuto	setupCityOpen	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkWaiting	setupNeeds	setupOpen	setupResume	setupSave	setupSearch	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupVestChosen	setupYield	tzCountry
 newuser.test.js	sheet-swipe.js	<loaded>
@@ -11280,8 +11183,6 @@ occasions.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie
 occasions.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 occasions.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 occasions.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-occasions.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
-occasions.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 occasions.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 occasions.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield	tzCountry
 occasions.test.js	sheet-swipe.js	<loaded>
@@ -11363,7 +11264,7 @@ ocpblouse.test.js	measure.js	<loaded>
 ocpblouse.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 ocpblouse.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 ocpblouse.test.js	missed.js	<loaded>	firstReal	missedCard	missedOpen
-ocpblouse.test.js	month.js	<loaded>	dayMarks	dayOnly	dayWord	homeDay	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	recentWork	shirtWords	shortRest	shortTop	stackSVG	tieWord	wardShort
+ocpblouse.test.js	month.js	<loaded>	dayMarks	dayOnly	dayWord	homeDay	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	piecesLine	piecesParts	planOn	recentWork	shirtWords	shortRest	shortTop	stackSVG	tieWord	wardShort
 ocpblouse.test.js	mq/shirt-open.js	<loaded>
 ocpblouse.test.js	mq/shirt-tie.js	<loaded>
 ocpblouse.test.js	mq/suit-open.js	<loaded>
@@ -11380,8 +11281,6 @@ ocpblouse.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	
 ocpblouse.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 ocpblouse.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 ocpblouse.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	failText	lowFirst	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-ocpblouse.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-ocpblouse.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	failText	lowFirst	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 ocpblouse.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 ocpblouse.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 ocpblouse.test.js	sheet-swipe.js	<loaded>
@@ -11910,8 +11809,6 @@ ownnames.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	isFavItem
 ownnames.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 ownnames.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 ownnames.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-ownnames.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
-ownnames.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 ownnames.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 ownnames.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 ownnames.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -12007,8 +11904,6 @@ pack.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	beltW
 pack.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 pack.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 pack.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-pack.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	weekFirst
-pack.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 pack.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubback	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	weekFirst
 pack.test.js	setup.js	<loaded>	setupAuto	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield	tzCountry
 pack.test.js	sheet-swipe.js	<loaded>
@@ -12101,8 +11996,6 @@ packcare-taps.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	belt
 packcare-taps.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 packcare-taps.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 packcare-taps.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-packcare-taps.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
-packcare-taps.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 packcare-taps.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
 packcare-taps.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 packcare-taps.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -12660,8 +12553,6 @@ picker.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	bel
 picker.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 picker.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 picker.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	get	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-picker.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-picker.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	get	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 picker.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 picker.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield
 picker.test.js	sheet-swipe.js	<loaded>
@@ -12845,8 +12736,6 @@ pieces.test.js	planner.js	<loaded>	accFams	clothesScore	colsOf	colsOf0	dCol	dark
 pieces.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 pieces.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 pieces.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-pieces.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-pieces.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 pieces.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 pieces.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 pieces.test.js	sheet-swipe.js	<loaded>
@@ -13032,8 +12921,6 @@ planner-repeats.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	ah
 planner-repeats.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 planner-repeats.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 planner-repeats.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-planner-repeats.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-planner-repeats.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 planner-repeats.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 planner-repeats.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 planner-repeats.test.js	sheet-swipe.js	<loaded>
@@ -13126,8 +13013,6 @@ planner-rules.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	ahea
 planner-rules.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 planner-rules.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 planner-rules.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	failText	get	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-planner-rules.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
-planner-rules.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	failText	get	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 planner-rules.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
 planner-rules.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 planner-rules.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -13220,8 +13105,6 @@ planreview.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit
 planreview.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 planreview.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 planreview.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-planreview.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-planreview.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 planreview.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 planreview.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 planreview.test.js	sheet-swipe.js	<loaded>
@@ -13314,8 +13197,6 @@ pocketsquare.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltF
 pocketsquare.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 pocketsquare.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	tagFailNote
 pocketsquare.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-pocketsquare.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-pocketsquare.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 pocketsquare.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 pocketsquare.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 pocketsquare.test.js	sheet-swipe.js	<loaded>
@@ -13407,8 +13288,6 @@ records.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	idsAhead	i
 records.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 records.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errSoon	pruneTagImgs	safetyStart	storeFailure
 records.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-records.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	weekFirst
-records.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 records.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	weekFirst
 records.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 records.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -13492,7 +13371,7 @@ remind.test.js	measure.js	<loaded>
 remind.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk
 remind.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 remind.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedPut	missedSpan	missedTell
-remind.test.js	month.js	<loaded>	dayMarks	dayOnly	dayWord	homeDay	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	recentWork	shirtWords	shortRest	shortTop	stackSVG	tieWord	wardShort
+remind.test.js	month.js	<loaded>	dayMarks	dayOnly	dayWord	homeDay	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	piecesLine	piecesParts	planOn	recentWork	shirtWords	shortRest	shortTop	stackSVG	tieWord	wardShort
 remind.test.js	mq/shirt-open.js	<loaded>
 remind.test.js	mq/shirt-tie.js	<loaded>
 remind.test.js	mq/suit-open.js	<loaded>
@@ -13509,8 +13388,6 @@ remind.test.js	planner.js	<loaded>	accFams	clothesScore	colsOf	colsOf0	dCol	dark
 remind.test.js	remind.js	<loaded>	@onsettingssummaries	careRemSwTap	careRemindOff	careRemindOn	get remindBusy	outfitLine	remindAny	remindCall	remindCan	remindCareOn	remindHidden	remindKeep	remindKey	remindLines	remindLost	remindOff	remindOn	remindPost	remindPrefs	remindRefresh	remindSave	remindSig	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindSub	remindSwTap	remindSwitch	remindTime	remindTimePick	remindTz	renderRemindUI
 remind.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 remind.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-remind.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
-remind.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 remind.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 remind.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 remind.test.js	sheet-swipe.js	<loaded>
@@ -13611,8 +13488,6 @@ restacts.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	isFavItem
 restacts.test.js	remind.js	<loaded>	@onsettingssummaries	careRemSwTap	careRemindOff	careRemindOn	get remindBusy	outfitLine	remindAny	remindCall	remindCan	remindCareOn	remindHidden	remindKeep	remindKey	remindLines	remindOff	remindOn	remindPost	remindPrefs	remindRefresh	remindSave	remindSig	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	remindSub	remindSwTap	remindSwitch	remindTime	remindTimePick	remindTz	renderRemindUI
 restacts.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 restacts.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-restacts.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
-restacts.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 restacts.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 restacts.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 restacts.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -13706,8 +13581,6 @@ rollback.test.js	planner.js	<loaded>	idsAhead	lockStale	pairSeen	shirtGroup
 rollback.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 rollback.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errList	errReport	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 rollback.test.js	scorecard.js	<loaded>
-rollback.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleCat	weekFirst
-rollback.test.js	scorecard.js	<loaded>	recentWork
 rollback.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleCat	weekFirst
 rollback.test.js	setup.js	<loaded>	get	set	set setup	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupVestChosen	setupYield	tzCountry
 rollback.test.js	sheet-swipe.js	<loaded>
@@ -13807,8 +13680,6 @@ rotation-pause.test.js	planner.js	<loaded>	accFams	aheadShirt	aheadTie	beltFit	b
 rotation-pause.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 rotation-pause.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 rotation-pause.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-rotation-pause.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-rotation-pause.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 rotation-pause.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 rotation-pause.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 rotation-pause.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -14456,8 +14327,6 @@ run.js: renders the outfit without errors	planner.js	<any>	<loaded>	accFams	ahea
 run.js: renders the outfit without errors	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 run.js: renders the outfit without errors	safety.js	<loaded>	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 run.js: renders the outfit without errors	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-run.js: renders the outfit without errors	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-run.js: renders the outfit without errors	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 run.js: renders the outfit without errors	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 run.js: renders the outfit without errors	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 run.js: renders the outfit without errors	sheet-swipe.js	<loaded>
@@ -14549,8 +14418,6 @@ run.js: swipe edge cases and month crossing	planner.js	<loaded>	dCol	favLookOf	f
 run.js: swipe edge cases and month crossing	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindSoon	remindStart{}	remindStart{}>go
 run.js: swipe edge cases and month crossing	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 run.js: swipe edge cases and month crossing	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-run.js: swipe edge cases and month crossing	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-run.js: swipe edge cases and month crossing	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 run.js: swipe edge cases and month crossing	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 run.js: swipe edge cases and month crossing	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield
 run.js: swipe edge cases and month crossing	sheet-swipe.js	<loaded>
@@ -14643,8 +14510,6 @@ run.js: swipe moves only the outfit, across viewports	planner.js	<loaded>	dCol	f
 run.js: swipe moves only the outfit, across viewports	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 run.js: swipe moves only the outfit, across viewports	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 run.js: swipe moves only the outfit, across viewports	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-run.js: swipe moves only the outfit, across viewports	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-run.js: swipe moves only the outfit, across viewports	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 run.js: swipe moves only the outfit, across viewports	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 run.js: swipe moves only the outfit, across viewports	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 run.js: swipe moves only the outfit, across viewports	sheet-swipe.js	<loaded>
@@ -15177,8 +15042,6 @@ safety.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	l
 safety.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 safety.test.js	safety.js	<loaded>	@	@addEventListenererror	@addEventListenerunhandledrejection	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	errSoon	errTell	errWhere	get	guardUnsaved	pruneTagImgs	retryTag	safetyStart	saveFailed	set	set errTapAt	set storeToldAt	storageDown	storeErr	storeFailText	storeFailure	storeFull	tagFailNote	tagFailText	tagFailed
 safety.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-safety.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	todayDirty	weekFirst
-safety.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 safety.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	todayDirty	weekFirst
 safety.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 safety.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -15369,8 +15232,6 @@ sample.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	bel
 sample.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 sample.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 sample.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-sample.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	todayDirty	weekFirst
-sample.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 sample.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	todayDirty	weekFirst
 sample.test.js	setup.js	<loaded>	get	setupAuto	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupNeeds	setupOpen	setupResume	setupSample	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupVestChosen	setupYield	tzCountry
 sample.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -15485,8 +15346,6 @@ scoreanim.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	
 scoreanim.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 scoreanim.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 scoreanim.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	scoreTap	set	set scoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
-scoreanim.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-scoreanim.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	scoreTap	set	set scoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 scoreanim.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 scoreanim.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield
 scoreanim.test.js	sheet-swipe.js	<loaded>
@@ -15579,8 +15438,6 @@ scoredials.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit
 scoredials.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 scoredials.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storageDown	storeFailure
 scoredials.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	get	get rankMemo	get rankW	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	set	set scoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
-scoredials.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-scoredials.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	get	get rankMemo	get rankW	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	set scoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 scoredials.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 scoredials.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 scoredials.test.js	sheet-swipe.js	<loaded>
@@ -15674,8 +15531,6 @@ scorefix.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	b
 scorefix.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 scorefix.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 scorefix.test.js	scorecard.js	<loaded>	applyFix	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	scoreFixTap	scoreTap	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
-scorefix.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-scorefix.test.js	scorecard.js	<loaded>	applyFix	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	scoreFixTap	scoreTap	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 scorefix.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 scorefix.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield
 scorefix.test.js	sheet-swipe.js	<loaded>
@@ -16078,8 +15933,6 @@ settingsin.test.js	planner.js	<loaded>	beltFit	blackOnBlack	dCol	darkMode	darkSh
 settingsin.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 settingsin.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 settingsin.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-settingsin.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	catTap	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setOpenTap	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleCat	weekFirst
-settingsin.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 settingsin.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	catTap	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setOpenTap	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleCat	weekFirst
 settingsin.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 settingsin.test.js	sheet-swipe.js	<loaded>
@@ -16271,8 +16124,6 @@ settingsui.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	pairSe
 settingsui.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 settingsui.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 settingsui.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-settingsui.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	scheduleWear	set	setCatOpen	setDoneTap	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleCat	weekFirst
-settingsui.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 settingsui.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	scheduleWear	set	setCatOpen	setDoneTap	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleCat	weekFirst
 settingsui.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 settingsui.test.js	sheet-swipe.js	<loaded>
@@ -16366,8 +16217,6 @@ setup.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	idsAhead	jac
 setup.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 setup.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 setup.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-setup.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	dayTap	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setDarkShirts	setLock	setOpenTap	setSetSeen	setVestMode	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleDay	weekFirst
-setup.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 setup.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	dayTap	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setDarkShirts	setLock	setOpenTap	setSetSeen	setVestMode	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	toggleDay	weekFirst
 setup.test.js	setup.js	<loaded>	get	setupAddTap	setupAgainTap	setupAuto	setupBackTap	setupBefore	setupCancel	setupCancelTap	setupCityOpen	setupCityTap	setupCityType	setupClose	setupConnect	setupConnectTap	setupConnected	setupDay	setupDayTap	setupDays	setupDraw	setupDress	setupEl	setupFindTap	setupFinish	setupGeoTap	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHomeLink	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkWaiting	setupLocate	setupNeeds	setupNextTap	setupOpen	setupPick	setupResume	setupSample	setupSave	setupSearch	setupSetDress	setupShown	setupSkipTap	setupStart	setupStep	setupStepsNow	setupSwTap	setupSwitch	setupTapGuard	setupToday	setupUnitTap	setupUnits	setupVest	setupVestChosen	setupVestPick	setupWardEmpty	setupYield	tzCountry
 setup.test.js	sheet-swipe.js	<loaded>
@@ -16969,8 +16818,6 @@ shellfix.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	isFavItem
 shellfix.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 shellfix.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storageDown	storeFailure
 shellfix.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-shellfix.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	catTap	closeSettings	openSettings	pausedUntil	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setDoneTap	setLock	setOpenTap	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	toggleCat	weekFirst
-shellfix.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 shellfix.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageback	@onpageshowing	@onsubopening	backupSummary	catTap	closeSettings	openSettings	pausedUntil	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setDoneTap	setLock	setOpenTap	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	toggleCat	weekFirst
 shellfix.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 shellfix.test.js	sheet-swipe.js	<loaded>
@@ -17063,8 +16910,6 @@ shirtweave.test.js	planner.js	<loaded>	favItemSet	favRead	isFavItem	pairSeen
 shirtweave.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 shirtweave.test.js	safety.js	<loaded>	@addEventListenerunhandledrejection	askPersist	db.then.dbDown	errSoon	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 shirtweave.test.js	scorecard.js	<loaded>
-shirtweave.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost
-shirtweave.test.js	scorecard.js	<loaded>	recentWork
 shirtweave.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost
 shirtweave.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 shirtweave.test.js	sheet-swipe.js	<loaded>
@@ -17165,8 +17010,6 @@ shop.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	belt
 shop.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 shop.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 shop.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-shop.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-shop.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 shop.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 shop.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 shop.test.js	sheet-swipe.js	<loaded>
@@ -17743,8 +17586,6 @@ speed.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	belt
 speed.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 speed.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 speed.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-speed.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-speed.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 speed.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 speed.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 speed.test.js	sheet-swipe.js	<loaded>
@@ -17836,8 +17677,6 @@ staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockS
 staledevice.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 staledevice.test.js	safety.js	<loaded>	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 staledevice.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-staledevice.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-staledevice.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 staledevice.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 staledevice.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 staledevice.test.js	sheet-swipe.js	<loaded>
@@ -17937,8 +17776,6 @@ stats.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	belt
 stats.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 stats.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 stats.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	get	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-stats.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	get	get todayStale	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	toggleDay	weekFirst
-stats.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	get	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 stats.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	get	get todayStale	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	toggleDay	weekFirst
 stats.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield	tzCountry
 stats.test.js	sheet-swipe.js	<loaded>
@@ -18034,8 +17871,6 @@ stylea11y.test.js	planner.js	<any>	<loaded>	beltFit	blackOnBlack	dCol	darkMode	d
 stylea11y.test.js	remind.js	<any>	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 stylea11y.test.js	safety.js	<any>	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 stylea11y.test.js	scorecard.js	<any>	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	scoreTap	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
-stylea11y.test.js	settings.js	<any>	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
-stylea11y.test.js	scorecard.js	<any>	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	scoreTap	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 stylea11y.test.js	settings.js	<any>	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 stylea11y.test.js	setup.js	<any>	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 stylea11y.test.js	sheet-swipe.js	<any>	<loaded>	sheetSwipe
@@ -18237,8 +18072,6 @@ swatchzoom.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockSt
 swatchzoom.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 swatchzoom.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 swatchzoom.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-swatchzoom.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-swatchzoom.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 swatchzoom.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 swatchzoom.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 swatchzoom.test.js	sheet-swipe.js	<loaded>
@@ -18331,8 +18164,6 @@ sync.test.js	planner.js	<loaded>	favItemSet	favLookOf	favRead	idsAhead	isFavItem
 sync.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 sync.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 sync.test.js	scorecard.js	<loaded>
-sync.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	get	get todayStale	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setViewStale	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
-sync.test.js	scorecard.js	<loaded>	recentWork
 sync.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	get	get todayStale	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setViewStale	setWanted	settingsOpen	settingsPart	settingsSummaries	todayDirty	weekFirst
 sync.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 sync.test.js	sheet-swipe.js	<loaded>
@@ -18431,8 +18262,6 @@ syncwrite.test.js	planner.js	<loaded>	lockStale	pairSeen
 syncwrite.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 syncwrite.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 syncwrite.test.js	scorecard.js	<loaded>
-syncwrite.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
-syncwrite.test.js	scorecard.js	<loaded>	recentWork
 syncwrite.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 syncwrite.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 syncwrite.test.js	sheet-swipe.js	<loaded>
@@ -18531,8 +18360,6 @@ tabload.test.js	planner.js	<loaded>	darkShirt	darkUnderLight	fam	favItemSet	favL
 tabload.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 tabload.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 tabload.test.js	scorecard.js	<loaded>
-tabload.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-tabload.test.js	scorecard.js	<loaded>	recentWork
 tabload.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 tabload.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 tabload.test.js	sheet-swipe.js	<loaded>
@@ -18818,8 +18645,6 @@ tagging.test.js	planner.js	<loaded>	favItemSet	favLooks	favRead	pairSeen
 tagging.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 tagging.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errSoon	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 tagging.test.js	scorecard.js	<loaded>
-tagging.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
-tagging.test.js	scorecard.js	<loaded>	recentWork
 tagging.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 tagging.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupKeep	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield	tzCountry
 tagging.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -19116,8 +18941,6 @@ takeoff.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	b
 takeoff.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 takeoff.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	askPersist	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 takeoff.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-takeoff.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-takeoff.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 takeoff.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 takeoff.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 takeoff.test.js	sheet-swipe.js	<loaded>
@@ -19192,7 +19015,7 @@ texswatch.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	calibLab	clamp01	closeRea
 texswatch.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
 texswatch.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
 texswatch.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-texswatch.test.js	month.js	<loaded>	dayMarks	dayOnly	dayWord	homeDay	monthFill	monthFillSoon	monthGridHtml	monthLink	nextWorkday	piecesLine	piecesParts	planOn	recentWork	shirtWords	shortRest	shortTop	stackSVG	tieWord	wardShort
+texswatch.test.js	month.js	<loaded>	dayMarks	dayOnly	dayWord	homeDay	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	piecesLine	piecesParts	planOn	recentWork	shirtWords	shortRest	shortTop	stackSVG	tieWord	wardShort
 texswatch.test.js	mq/shirt-open.js	<loaded>
 texswatch.test.js	mq/shirt-tie.js	<loaded>
 texswatch.test.js	mq/suit-open.js	<loaded>
@@ -19209,8 +19032,6 @@ texswatch.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	isFavIte
 texswatch.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 texswatch.test.js	safety.js	<loaded>	askPersist	db.then.dbDown	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote	tagFailed
 texswatch.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-texswatch.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-texswatch.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 texswatch.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 texswatch.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 texswatch.test.js	sheet-swipe.js	<loaded>
@@ -19696,8 +19517,6 @@ today.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	p
 today.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 today.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 today.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
-today.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-today.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 today.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 today.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 today.test.js	sheet-swipe.js	<loaded>
@@ -19791,8 +19610,6 @@ todayacts.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	
 todayacts.test.js	remind.js	<loaded>	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 todayacts.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 todayacts.test.js	scorecard.js	<loaded>	applyFix	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	scoreFixTap	scoreSwapsTap	scoreTap	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
-todayacts.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
-todayacts.test.js	scorecard.js	<loaded>	applyFix	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	scoreFixTap	scoreSwapsTap	scoreTap	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 todayacts.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 todayacts.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 todayacts.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -19884,8 +19701,6 @@ todayedges.test.js	planner.js	<loaded>	accFams	clothesScore	colsOf	colsOf0	dCol	
 todayedges.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 todayedges.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 todayedges.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-todayedges.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setOpenTap	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
-todayedges.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 todayedges.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setOpenTap	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 todayedges.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 todayedges.test.js	sheet-swipe.js	<loaded>
@@ -20070,8 +19885,6 @@ todayzoom.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	pairSee
 todayzoom.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 todayzoom.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure	tagFailText	tagReason
 todayzoom.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	scoreCard	set	setScoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
-todayzoom.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-todayzoom.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	get	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	set	setScoreOpen	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
 todayzoom.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 todayzoom.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 todayzoom.test.js	sheet-swipe.js	<loaded>
@@ -20260,8 +20073,6 @@ ui.test.js	planner.js	<loaded>	dCol	favItemSet	favLookOf	favRead	isFavItem	jacke
 ui.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 ui.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 ui.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-ui.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	toggleCat	weekFirst
-ui.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 ui.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	toggleCat	weekFirst
 ui.test.js	setup.js	<loaded>	setupAuto	setupCityOpen	setupConnected	setupDays	setupDraw	setupDress	setupEl	setupGo	setupGoDouble	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkWaiting	setupNeeds	setupNextTap	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupSwitch	setupToday	setupVestChosen	setupWardEmpty	setupYield	tzCountry
 ui.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -20354,8 +20165,6 @@ uipages.test.js	planner.js	<loaded>	beltFit	blackOnBlack	dCol	darkShirt	darkUnde
 uipages.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 uipages.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailNote
 uipages.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-uipages.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	catTap	closeSettings	dayTap	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setDoneTap	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	toggleCat	toggleDay	weekFirst
-uipages.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 uipages.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	catTap	closeSettings	dayTap	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setDoneTap	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	toggleCat	toggleDay	weekFirst
 uipages.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 uipages.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -20450,8 +20259,6 @@ vest.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	belt
 vest.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
 vest.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 vest.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-vest.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
-vest.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 vest.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	weekFirst
 vest.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield
 vest.test.js	sheet-swipe.js	<loaded>
@@ -20544,8 +20351,6 @@ wardfab.test.js	planner.js	<loaded>	accFams	beltFit	blackOnBlack	clothesScore	co
 wardfab.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 wardfab.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 wardfab.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-wardfab.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
-wardfab.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 wardfab.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	weekFirst
 wardfab.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 wardfab.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -20638,8 +20443,6 @@ wardrobe.test.js	planner.js	<loaded>	accFams	beltFit	blackOnBlack	clothesScore	c
 wardrobe.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 wardrobe.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	storeFailure	tagFailNote
 wardrobe.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-wardrobe.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	weekFirst
-wardrobe.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 wardrobe.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	set	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	showCost	weekFirst
 wardrobe.test.js	setup.js	<loaded>	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupWardEmpty	setupYield
 wardrobe.test.js	sheet-swipe.js	<loaded>	sheetSwipe
@@ -21023,8 +20826,6 @@ weather.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	b
 weather.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 weather.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 weather.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	get	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-weather.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
-weather.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	get	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	set	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 weather.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	set	setCatOpen	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
 weather.test.js	setup.js	<loaded>	setupAuto	setupClose	setupDraw	setupDress	setupEl	setupInert	setupNeeds	setupOpen	setupResume	setupShown	setupStart	setupStep	setupToday	setupYield	tzCountry
 weather.test.js	sheet-swipe.js	<loaded>
@@ -21117,8 +20918,6 @@ weeklock.test.js	planner.js	<any>	<loaded>	accFams	aheadShirt	aheadTie	beltFit	b
 weeklock.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI
 weeklock.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 weeklock.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-weeklock.test.js	settings.js	<loaded>	@constsetChan{try}	backupSummary	closeSettings	darkPick	dayTap	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setDarkShirts	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	toggleDay	weekFirst
-weeklock.test.js	scorecard.js	<loaded>	cardLabel	dayWord	dialCycle	dialHtml	dialTone	dialsFor	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	recentWork	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 weeklock.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	darkPick	dayTap	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	set	setCatOpen	setDarkShirts	setLock	setSetSeen	setWanted	settingsOpen	settingsPart	settingsSummaries	showCost	todayDirty	toggleDay	weekFirst
 weeklock.test.js	setup.js	<loaded>	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	tzCountry
 weeklock.test.js	sheet-swipe.js	<loaded>
