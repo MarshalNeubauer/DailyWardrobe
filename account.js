@@ -1,4 +1,5 @@
-/* Who the app is connected as (loaded after sync.js). The server knows two kinds of people: the owner, and testers the owner
+/* Who the app is connected as (loaded after sync.js; the account itself, the connection's address and the role are who.js's since
+   the restructure S3b, 2026-11-26, and this file assigns acct with its setAcct). The server knows two kinds of people: the owner, and testers the owner
    invited. A tester connects by opening an invitation link, <app url>#invite=<code>&w=<server url>: connectFromLink() stores the
    server's address and the code (localStorage.worker_url / app_token, the same two the Connection fields hold) once the server
    accepts the code. Settings → Connection then says who is connected: a tester sees today's use against each daily limit, the
@@ -6,14 +7,6 @@
    Server API used here: GET /me, GET/POST/DELETE /invites. An older server answers these 404 or 405: the box then stays empty. */
 import {on} from './bus.js';
 const ACCT_CAPS=[['item','Item pictures'],['tag','Photo readings'],['pattern','Pattern readings'],['describe','Color & pattern lookups']];
-let acct={me:null,state:'',invites:null,link:null,busy:false,msg:'',at:0};   // state: '' not asked, 'wait', 'ok', 'old' (a server without accounts), 'no' (refused), 'off' (unreachable)
-const acctEsc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-function acctBase(){const w=(localStorage.getItem('worker_url')||'').trim();if(!w)return null;return {url:w.replace(/\/*$/,'/'),tok:localStorage.getItem('app_token')||''}}
-/* one request to the server with the connection's header -> {status, j}; status 0 = could not be reached */
-async function acctCall(path,opt={},base=acctBase()){if(!base)return {status:0,j:{}};
-  try{const r=await fetch(new URL(path,base.url).href,{...opt,headers:{'x-app-token':base.tok,...(opt.body?{'content-type':'application/json'}:{})},cache:'no-store'});
-    return {status:r.status,j:await r.json().catch(()=>({}))}}
-  catch{return {status:0,j:{}}}}
 /* the parts of an invitation link, or null: the text may be the whole link or only what follows the #. A full stop, comma or bracket
    a mail or chat app put right after the link is not part of it */
 function inviteParts(text){const s=String(text||'').trim().replace(/[.,;:!?)\]>'"”’]+$/,''),h=s.includes('#')?s.slice(s.indexOf('#')+1):s,p=new URLSearchParams(h),code=(p.get('invite')||'').trim().replace(/[.,;:!?)\]>'"”’]+$/,''),w=(p.get('w')||'').trim();
@@ -40,7 +33,6 @@ function acctOwnServer(url){let u;try{u=new URL(url)}catch{return false}
 const INVITE_STRANGER='That invitation link points to a server this app doesn’t use, so it wasn’t opened and nothing was sent. Only open invitation links from the person who invited you.';
 const inviteLink=code=>{const b=acctBase();return location.origin+location.pathname+'#invite='+code+'&w='+encodeURIComponent(b?b.url:'')};
 function dropInviteHash(){try{if(/(^#|&)invite=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search)}catch{}backWanted()}   // (a Back entry that waited for the address to lose the invitation: back.js)
-const hasInviteHash=()=>/(^#|&)invite=/.test(location.hash);
 /* why the last connectFromLink didn't connect, for the place that asked (Settings' and the setup's paste fields say it in a line of
    their own): 'bad' a link that can't be read (cut short, no server part), 'refused' the server said no (acctWhyMsg: its sentence),
    'offline' the server couldn't be reached, 'kept' the person kept things as they were. inviteChecking: a link from the address is
@@ -132,7 +124,7 @@ async function acctJoin(p,opt){const say=t=>{if((opt.address||opt.typed)&&t)acct
     if(!await askConfirm(`Add this phone’s ${pcs} to ${r.j.role==='owner'?'your':r.j.name?r.j.name+'’s':'the invitation’s'} wardrobe?\n\nThis phone has ${pcs} of its own. Connecting adds ${n===1?'it':'them'} to the wardrobe backed up with this ${r.j.role==='owner'?'server':'invitation'}, next to anything already there. If ${n===1?'it is a piece':'they are pieces'} the backup already has, tap Cancel, delete ${n===1?'it':'them'} on this phone, then open the link again.`,{ok:'Add and connect'}))return kept('Not connected: nothing was sent, and this phone’s wardrobe stays as it is.');
   }
   localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);for(const k of ['sync_pause','sync_pause_msg','invite_ended','invite_lost','list_pause'])localStorage.removeItem(k);connKeep();
-  acct={...acct,me:r.j,state:'ok',invites:null,link:null,msg:''};rememberRole(r.j);
+  setAcct({...acct,me:r.j,state:'ok',invites:null,link:null,msg:''});rememberRole(r.j);
   if(document.querySelector('#cfg-url'))document.querySelector('#cfg-url').value=p.url;
   if(document.querySelector('#cfg-token'))document.querySelector('#cfg-token').value=p.code;
   acctToast(r.j.role==='owner'?'Connected as the owner':'Connected as '+name+(toldSame?': the same wardrobe as before':''));
@@ -200,17 +192,6 @@ function homeScreenGuide(){if(typeof setupShown==='function'&&setupShown())retur
   if(typeof homeOpen==='function'){homeTold(true);homeOpen()}}
 /* the Home Screen sheet was shown after a link on this phone (localStorage.home_told); About's button still opens it any time */
 function homeTold(set){try{if(set)localStorage.setItem('home_told','1');return localStorage.getItem('home_told')==='1'}catch{return false}}
-/* who this device is connected as, remembered for the connection's code ({tok, role} in localStorage.acct_role), so the app
-   knows it at start-up without asking the server: testers see no costs (showCost in app.js) */
-function rememberRole(m){try{const b=acctBase();if(b&&m&&m.role)localStorage.setItem('acct_role',JSON.stringify({tok:b.tok,role:m.role,...(m.id?{id:String(m.id)}:{})}))}catch{}applyRole()}   // (id: a new link for the same account is known as such, acctJoin)
-function acctRole(){if(acct.me&&acct.me.role)return acct.me.role;
-  try{const r=JSON.parse(localStorage.getItem('acct_role')||'null'),b=acctBase();return r&&b&&r.tok===b.tok?r.role:null}catch{return null}}
-const isTester=()=>acctRole()==='tester';
-/* body classes for what to show: owner (the Advanced sections, the owner's tools), tester, nocon (not connected: the parts that
-   need the server are hidden, styles.css). The owner's server address and code (Connection → Advanced) stay reachable while
-   not connected, so the owner can connect a new phone; a tester never sees them. */
-function applyRole(){const b=document.body;if(!b)return;const r=acctRole(),on=isConnected();
-  b.classList.toggle('owner',on&&r==='owner');b.classList.toggle('tester',on&&r==='tester');b.classList.toggle('nocon',!on)}
 function acctToast(t,ms){toast(t,ms)}
 /* a daily limit was reached where the app has no place of its own to say so (a pattern reading falls back to the pixel reader
    and toasts its own result): the server's sentence is shown, and once more if another toast replaced it right away */
@@ -218,7 +199,7 @@ function limitNote(message){acctToast(message,6000);
   setTimeout(()=>{const e=document.querySelector('#toast');if(e&&!(e.classList.contains('on')&&e.textContent===message))acctToast(message,6000)},1500)}
 /* ask the server who this is (and, for the owner, the invitations), then draw */
 async function loadAccount(){const b=acctBase();
-  if(!b||inviteOver()){acct={...acct,me:null,state:'',invites:null};renderAccountUI();return}
+  if(!b||inviteOver()){setAcct({...acct,me:null,state:'',invites:null});renderAccountUI();return}
   if(Date.now()-acct.at<3000)return;acct.at=Date.now();   // Settings redraws its extras more than once in a row
   if(!acct.me){acct.state='wait';renderAccountUI()}
   const r=await acctCall('me');
@@ -298,18 +279,19 @@ function acctStart(){applyRole();
   addEventListener('online',acctRetryLink);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')acctRetryLink()})}
 function acctRetryLink(){if(acctWhy==='offline'&&hasInviteHash()&&!acctLinkRun)connectFromLink(location.href,{address:true})}
-/* the invitation has ended (switched off, or the account deleted; sync-status.js inviteEnded): what said "Connected" is drawn again */
-function acctEndedUI(){acct={...acct,me:null,state:'',invites:null};try{applyRole();renderAccountUI();acctLinkDrawn();addGate()}catch(e){console.warn(e)}}
+/* the invitation has ended (switched off, or the account deleted; who.js inviteEnded announces 'invite-ended'): what said "Connected" is drawn again */
+function acctEndedUI(){setAcct({...acct,me:null,state:'',invites:null});try{applyRole();renderAccountUI();acctLinkDrawn();addGate()}catch(e){console.warn(e)}}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. Above the file's first top-level call that can throw (acctStart, then acts): the names are then still the page's */
-Object.assign(globalThis,{acctEsc,acctBase,acctCall,hasInviteHash,acctFailText,connectFromLink,acctTyped,iosInSafari,myInviteLink,acctRole,isTester,applyRole,limitNote,acctEndedUI});
-Object.defineProperties(globalThis,{acctWhy:{get:()=>acctWhy},acct:{get:()=>acct,set:v=>{acct=v}},inviteChecking:{get:()=>inviteChecking,set:v=>{inviteChecking=v}}});
+Object.assign(globalThis,{acctFailText,connectFromLink,acctTyped,iosInSafari,myInviteLink,limitNote});
+Object.defineProperties(globalThis,{acctWhy:{get:()=>acctWhy},inviteChecking:{get:()=>inviteChecking,set:v=>{inviteChecking=v}}});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-summaries',()=>applyRole());
+on('invite-ended',()=>acctEndedUI());   // an ended invitation (who.js inviteEnded): what said "Connected" is drawn again
 on('connection-typed',(url,code)=>acctTyped(url,code).catch(e=>console.warn('connection not changed',e)));   // another address or code typed in Settings → Connection
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,get acctLinkRun(){return acctLinkRun},acctPending,dropInviteHash,homeScreenGuide,loadAccount,rememberRole,renderAccountUI,get inviteChecking(){return inviteChecking},set inviteChecking(v){inviteChecking=v},get acct(){return acct},set acct(v){acct=v}};
-export {acct,acctEsc,acctBase,acctCall,dropInviteHash,hasInviteHash,acctWhy,inviteChecking,acctLinkRun,acctFailText,connectFromLink,acctTyped,acctPending,iosInSafari,myInviteLink,homeScreenGuide,rememberRole,acctRole,isTester,applyRole,limitNote,loadAccount,renderAccountUI,acctEndedUI};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,get acctLinkRun(){return acctLinkRun},acctPending,dropInviteHash,homeScreenGuide,loadAccount,renderAccountUI,get inviteChecking(){return inviteChecking},set inviteChecking(v){inviteChecking=v}};
+export {dropInviteHash,acctWhy,inviteChecking,acctLinkRun,acctFailText,connectFromLink,acctTyped,acctPending,iosInSafari,myInviteLink,homeScreenGuide,limitNote,loadAccount,renderAccountUI,acctEndedUI};
 acctStart();
 /* what Settings' account controls do (act.js): a tester's "Copy my invitation link"; the owner's Create, a new link's field (focus selects
    it) and Copy, and a tester's New link, Revoke and Delete their data (the invitation's id in data-id) */

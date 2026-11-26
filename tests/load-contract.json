@@ -56,6 +56,16 @@
    "class": "today-no-picture",
    "group": "today"
   },
+  "who.js": {
+   "class": "optional",
+   "group": "who",
+   "note": "who is connected (from account.js and sync-status.js, the restructure S3b)"
+  },
+  "photo-keys.js": {
+   "class": "today-no-picture",
+   "group": "today",
+   "note": "the photo keys and the kept pictures (from photos.js, the restructure S3b): as photos.js, without it Today has no outfit picture"
+  },
   "mannequin.js": {
    "class": "optional",
    "group": "painter",
@@ -101,6 +111,11 @@
    "group": "base",
    "on404": "picture",
    "note": "required by the owner's choice (c): as toast.js; Settings does not open without it"
+  },
+  "days.js": {
+   "class": "today-no-picture",
+   "group": "today",
+   "note": "the day records (from history.js, the restructure S3b): as history.js, without it Today has no outfit picture"
   },
   "add.js": {
    "class": "optional",
