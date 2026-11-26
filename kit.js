@@ -10,6 +10,18 @@
    - a sample wardrobe to try the app with (kitSampleLoad): 22 pieces marked sample, a note on Today while they are there, removed in one tap */
 
 /* ---- one sheet for the tour and the guide: cards with a picture, Back and Next, the last one closes it ---- */
+import {$,COLORS,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,METAL_TYPES,PATS_BY,PAT_ALIAS,SEASON_TYPES,SHIRT_WEAVE_MAT,TYPES,accentsFor,accentsOf,colName,colsFor,dayRecs,dressOut,fitCol,hasPat,itemFields,itemName,itemTitle,items,leatherWord,leathersFor,matAlias,mergeState,metalWord,nextStamp,normCol,nowMs,patLabel,patName,sentence,setWardrobe,settings,shortDesc,todayDate,typeWord,watchOpts,wearsJacket,wearsTie} from './core.js';
+import {askConfirm,inviteOver,isConnected,layerInert,noMotion} from './ui.js';
+import {backBorrow,backOn,backPush,backReturn} from './back.js';
+import {closeSettings,openSettings,refreshToday,todayDirty} from './settings.js';
+import {toast} from './toast.js';
+import {cap1,dbMark,dbRetry,metaGet,put,queue,tx,txFail} from './app.js';
+import {planDirty} from './today-plan.js';
+import {esc} from './photo-keys.js';
+import {swatchSVG} from './draw.js';
+import {openAdd,show} from './nav.js';
+import {keyDate} from './days.js';
+import {acts} from './act.js';
 let kit=null;   // {cards, at, then}
 let kitImpBusy=false;   // an import being written (kitImportGo)
 const KIT_TOUR='tour_seen';

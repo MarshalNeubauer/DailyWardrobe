@@ -1,7 +1,22 @@
 /* Daily Wardrobe: the Wardrobe tab's search and sort, an item's own name, brand, material and notes, and Delete with Undo.
    Loaded after app.js and stats.js (an ES module since 2026-11-23); app.js calls in here from renderWardrobe, wardList,
    itemBody, save and rm. */
-import {emit} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {emit,ask} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {$,MATERIALS_BY,MAT_ALIAS,TYPES,accentsOf,colName,colorDesc,dayRecs,desc,hasPat,isCargo,itemFields,itemName,itemTitle,items,lumCol,matAlias,nameIso,nextStamp,nm,noBidi,patName,planCol,primaryCol,setWardrobe,sockPatterned,sockToeKey,strapBand,titleCls,trouserKind} from './core.js';
+import {fam,favItemSet,isFavItem} from './planner.js';
+import {wornDays} from './stats.js';
+import {atomic,cap1,del,fixupRedraw,flt,put,putRaw,setFlt,tx} from './app.js';
+import {esc,srcOk} from './photo-keys.js';
+import {wardPic} from './photos.js';
+import {phSm} from './item-photo.js';
+import {itemThumb} from './draw.js';
+import {dropItem,editing,itemGoneTell,openItem} from './item-view.js';
+import {whenPulled} from './history.js';
+import {planDirty} from './today-plan.js';
+import {toast} from './toast.js';
+import {saveDay} from './days.js';
+import {show} from './nav.js';
+import {acts} from './act.js';
 
 /* ---- an item's own name (its fields, sizes and rows are fields.js's since the restructure S3c: WARD_FIELDS, WARD_MAX) ---- */
 const WATCH_DETAILS_MAX=120;   // a watch's Details (itemsheet.js; W2-12-04: 5,036 letters were kept and synced)
@@ -74,7 +89,7 @@ function wardBar(){
     `<button type="button" class="wclear" id="wclear" aria-label="Clear search" data-act="wardClearTap"${wardQ?'':' hidden'}>×</button></div>`+
     `<select class="wsort" id="wsort" aria-label="Sort the wardrobe" data-act-change="wardSortPick">${WARD_SORTS.map(([k,l])=>`<option value="${k}"${k===s?' selected':''}>${l}</option>`).join('')}</select></div>`}
 /* a box's tag: Sample, Out of rotation, On the way, away being cleaned, due for cleaning */
-function giTag(i){return i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:i.away&&typeof careTag==='function'?careTag(i):'Out of rotation'}</span>`:i.sample&&typeof kitSampleTag==='function'?kitSampleTag(i):typeof careBadge==='function'?careBadge(i):''}
+function giTag(i){return i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:i.away?ask('care-tag',i)??'Out of rotation':'Out of rotation'}</span>`:i.sample&&typeof kitSampleTag==='function'?kitSampleTag(i):ask('care-badge',i)??''}
 /* ...read out with the box's name: the aria-label took its place, so a sample piece sounded like one's own (re-audit 2026-11-15) */
 function giNote(tag){const t=String(tag||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();return t?', '+t:''}
 /* the grid, or what to say when there is nothing to show */
@@ -203,7 +218,7 @@ async function wardUndelete(it,k,days,at){
 /* the rest of the bridge: the consts declared above (dress.js: sockLegacy; itemsheet.js: wardDuplicate, wardDelete; tests/wardrobe.test.js: WARD_UNDO_MS) */
 Object.assign(globalThis,{sockLegacy,wardDuplicate,wardDelete});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,WARD_UNDO_MS,itemFieldSoon,setWardSort,wardClear,wardDeleteNow,wardHay,wardMatch,wardNorm,wardOrder,get wardQ(){return wardQ},set wardQ(v){wardQ=v},wardSearch,wardSort};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,WARD_UNDO_MS,itemFieldSoon,setWardSort,wardClear,wardDeleteNow,wardHay,wardMatch,wardNorm,wardOrder,get wardQ(){return wardQ},set wardQ(v){wardQ=v},wardSearch,wardSort,wardFresh,wardKeep};
 export {WATCH_DETAILS_MAX,wardQ,wardNorm,wardHay,wardMatch,wardSort,setWardSort,wardOrder,wardFlt,wardView,wardFresh,wardCount,wardBar,wardGrid,wardSearch,wardClear,wardKeep,wardBack,itemFieldSoon,wardPendingRestore,ivOn,matOnItem,wardFieldsTop,setItemField,matRenameTo,matMigrate,sockLegacy,sockToeMigrate,WARD_UNDO_MS,wardDuplicate,wardDelete,wardDeleteNow};
 /* what the controls do (act.js). The Wardrobe's top and grid: the search field (typing; Escape empties a field that holds something, and goes no
    further), its ×, the sort, a piece's box (data-id), and the two buttons under "Nothing matches" */

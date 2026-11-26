@@ -2,6 +2,16 @@
    (addFor), and the bottom sheet the card opens in (#nps-sheet: open, draw, close, Back, swipe). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit,serve} from './bus.js';   // serve: nav.js (required) sets and drops what Today's "Add one" asked for, and leaves the sheet, through sockets
+import {addCardRec,addWatch} from './add-keep.js';
+import {keepFocus,queue} from './app.js';
+import {$,TYPES,normPat,watchOpts} from './core.js';
+import {cardSafe,ckLeftLine,confBtn,formCard,shirtColFix} from './add-card.js';
+import {esc} from './photo-keys.js';
+import {backBorrow,backOn,backPush,backReturn} from './back.js';
+import {cmpMount} from './checklist.js';
+import {askAnswer,askConfirm,asking,layerInert} from './ui.js';
+import {cardReading} from './add-ids.js';
+import {acts} from './act.js';
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */
 /* "Add without a photo" (2026-11-15, the owner's choice: variant A of add-page-mockups) opens the card in a sheet from the bottom over Add,
    not in the list; a second call while the sheet holds a card shows that card again */

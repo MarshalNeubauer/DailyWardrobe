@@ -3,6 +3,26 @@
    cards that are not a form yet (being read, couldn't be read, asking for the type). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit} from './bus.js';
+import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,COLORS,CUFFS,DIAL_OPTS,FABRIC,MATERIALS_BY,METAL_TYPES,OCP_RANKS,PATS_BY,SEASONS,SEASON_TYPES,SHADE_MAX,SHOE_STYLES,TEXTURE_TYPES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,desc,hasPat,items,leatherLabel,leatherWord,leathersFor,matTypeOne,matsFor,metalOptsFor,normColFor,normPat,patName,sentence,shadeFor,shadeName,tapeText,watchOpts} from './core.js';
+import {cardAt,cardIx,cardOf,cardReading,needType,qAt,qh} from './add-ids.js';
+import {S,aiLabel,cap1,generateSwatch,imgOf,put,queue,updateSwatchParam} from './app.js';
+import {WARD_FIELDS,WARD_MAX,fldRow,matLabel,matPicked,matRow,matTidy,notesRow,optLab} from './fields.js';
+import {addKeep,addKeepSoon} from './add-keep.js';
+import {BLUR_SHARP,measureCloth,nearestCols} from './measure.js';
+import {readSett} from './pattern-read.js';
+import {itemThumb,swatchSVG} from './draw.js';
+import {esc,srcOk} from './photo-keys.js';
+import {toast} from './toast.js';
+import {planDirty} from './today-plan.js';
+import {CK_OPEN,accRow,ckColSum,ckIsOpen,ckSec,ckSure,cmpDiff,cmpDiffText,cmpDrawn,cmpHtml,cmpLab,cmpMatchHtml,cmpPaper,cmpPaperLine} from './checklist.js';
+import {closeupBtn,cuGot,cuTouch,inviteOver,isConnected} from './ui.js';
+import {colRows,colShows,patBtn,patVar,rdAddBtn,rdCost,rdCostLine,rdDoneHtml,rdOff,rdStart} from './colpick.js';
+import {orderRow,qtyLabel,qtyOf,qtyRow} from './add-more.js';
+import {save,saveAllOn,savedTitle} from './add-save.js';
+import {tagNotes} from './tagging.js';
+import {matGuessUse,matOffer} from './own-lists.js';
+import {acts} from './act.js';
+import {lookCu,lookOn} from './look-base.js';
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
 const setq=(i,k,v)=>{const q=cardOf(i);if(!q)return;i=queue.indexOf(q);const asked=k==='type'&&needType(q);q[k]=v==='none'?null:v;if(k==='type')matTidy(q);q.edited={...q.edited,[k]:true};const ck=CK_FIELD[k]&&!(q.checked&&q.checked[CK_FIELD[k]]);if(ck)q.checked={...q.checked,[CK_FIELD[k]]:1};queueMicrotask(addKeep);
   if(asked){measureGuess(q);q.pattern=normPat(v,q.pattern);shirtColFix(q);emit('card-changed');return}   /* the type asked for (needType): the colour measured, the full card */
@@ -172,6 +192,6 @@ function matCardPick(el){setQField(cardIx(el),'material',matPicked(el))}   // (t
    page's, as a classic script's were */
 Object.assign(globalThis,{shirtColFix,setq,setQField,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,addCkSecs,ckCheck};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,addCkSecs,ckCheck,cardSafe};
 export {shirtColFix,setq,setQField,matOn,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckCheck,addCkSecs,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard};
 acts({shadeStep,shadeMatch,cardSave,cardRetryTag,cardMatOffer,cardMatGuess,cardCheck,cardCuRemove,cardCuFile,cardRdStart,cardPatTile,cardTypePick,cardSel,cardSwatch,cardField,matCardPick,tapeQ});

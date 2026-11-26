@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	00e530478c5e547ee958
+# tested	aacd0b64cc6bd55793a4
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	acctSettingsPart	acctStart	get	iosDevice	iosInSafari	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -46,7 +46,8 @@ a11y.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@docu
 a11y.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	get body	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitBs	kitClose	kitClothPic	kitDraw	kitEl	kitFixOldImports	kitGo	kitHasSample	kitHist	kitInert	kitNextTap	kitOpen	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitScorePic	kitShadePic	kitStartRow	kitUserEdit	kitWears	pic	tourOpen
 a11y.test.js	locale.js	<loaded>	appLocale
 a11y.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-a11y.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+a11y.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+a11y.test.js	look.js	<loaded>	renderLookSetting
 a11y.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 a11y.test.js	measure.js	<loaded>
 a11y.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -141,7 +142,8 @@ about.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 about.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
 about.test.js	locale.js	<loaded>	appLocale
 about.test.js	locks.js	<loaded>
-about.test.js	look.js	<loaded>	lookOn	renderLookSetting
+about.test.js	look-base.js	<loaded>	lookOn
+about.test.js	look.js	<loaded>	renderLookSetting
 about.test.js	mannequin.js	<loaded>	@{}
 about.test.js	measure.js	<loaded>
 about.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -236,7 +238,8 @@ accents.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	i
 accents.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitColour	kitCols	kitFixOldImports	kitHasSample	kitHead	kitItem	kitLeft	kitNear	kitNorm	kitPatWords	kitPattern	kitQtyIn	kitRead	kitRow	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitSplit	kitStartRow	kitType	kitTypeOne	kitUserEdit	kitWords
 accents.test.js	locale.js	<loaded>	appLocale
 accents.test.js	locks.js	<loaded>
-accents.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+accents.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+accents.test.js	look.js	<loaded>	lookSave
 accents.test.js	mannequin.js	<loaded>	@{}
 accents.test.js	measure.js	<loaded>	paperKey	paperNow
 accents.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	mergeItem	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -331,7 +334,8 @@ accounts.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 accounts.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 accounts.test.js	locale.js	<loaded>	appLocale
 accounts.test.js	locks.js	<loaded>
-accounts.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+accounts.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+accounts.test.js	look.js	<loaded>	renderLookSetting
 accounts.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 accounts.test.js	measure.js	<loaded>	aiSignals	applyMeasured	applyWb	measureAndApply	measureCard	wbGains	wbRead
 accounts.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -441,7 +445,8 @@ acts.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}
 acts.test.js	kit.js	<any>	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 acts.test.js	locale.js	<any>	<loaded>	appLocale
 acts.test.js	locks.js	<any>	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-acts.test.js	look.js	<any>	<loaded>	lookOn	renderLookSetting
+acts.test.js	look-base.js	<any>	<loaded>	lookOn
+acts.test.js	look.js	<any>	<loaded>	renderLookSetting
 acts.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 acts.test.js	measure.js	<any>	<loaded>
 acts.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -542,7 +547,8 @@ actsindex.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	@{constel$ward
 actsindex.test.js	kit.js	<any>	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAgainTap	homeAndroid	homeIOS	homeLabel	homeNeeded	importOpenTap	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	tourAgainTap
 actsindex.test.js	locale.js	<any>	<loaded>	appLocale
 actsindex.test.js	locks.js	<any>	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-actsindex.test.js	look.js	<any>	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+actsindex.test.js	look-base.js	<any>	<loaded>	lookCu	lookHasPat	lookOn
+actsindex.test.js	look.js	<any>	<loaded>	renderLookSetting
 actsindex.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 actsindex.test.js	measure.js	<any>	<loaded>
 actsindex.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -639,7 +645,8 @@ addcards.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 addcards.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	importOpenTap	kitBd	kitBs	kitBsAway	kitClose	kitDelMany	kitEl	kitFixOldImports	kitHasSample	kitHist	kitImportOpen	kitImportSwipe	kitInert	kitLastImp	kitLastRow	kitSampleBanner	kitSampleMigrate	kitSaved	kitSends	kitShareDone	kitShareFilter	kitStartRow	kitTombs	kitTx	kitUnsave
 addcards.test.js	locale.js	<loaded>	appLocale
 addcards.test.js	locks.js	<loaded>
-addcards.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave	renderLookSetting
+addcards.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+addcards.test.js	look.js	<loaded>	lookSave	renderLookSetting
 addcards.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 addcards.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	aiSignals	applyMeasured	applyWb	calibLab	clamp01	closeRead	colRef	colourVerdicts	measConf	measEdgeCut	measHint	measKL	measSplit	measureAndApply	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	plainCloth	sharpness	urlCanvas	verdictMode	wbGains	wbRead
 addcards.test.js	merge.js	<loaded>	mergeList	mergeSettingsBy	mergeStateBy	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -737,7 +744,8 @@ additemacts.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe
 additemacts.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitBs	kitClose	kitClothPic	kitDraw	kitDuplicate	kitEl	kitFixOldImports	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitUserEdit	pic	set	setKitNoMine
 additemacts.test.js	locale.js	<loaded>	appLocale
 additemacts.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-additemacts.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+additemacts.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+additemacts.test.js	look.js	<loaded>	lookSave
 additemacts.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 additemacts.test.js	measure.js	<loaded>	closeRead	measEdgeCut	measureCard	measureCloth	paperKey	paperNow	paperOf	urlCanvas	wbRead
 additemacts.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -832,7 +840,8 @@ addsheet.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 addsheet.test.js	kit.js	<loaded>	@backOnkit	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	importOpenTap	kitAdds	kitApply	kitBd	kitBs	kitBsAway	kitClose	kitColour	kitCols	kitDelMany	kitDiff	kitDiffText	kitDupKey	kitDupMark	kitEl	kitHasSample	kitHead	kitHist	kitImpBtn	kitImpTap	kitImportGo	kitImportOpen	kitImportSwipe	kitImportText	kitInert	kitItem	kitLastImp	kitLastRow	kitLeft	kitNorm	kitPasteFocus	kitPasteShow	kitPasteType	kitPatWords	kitPattern	kitPrevDraw	kitQtyIn	kitQtyOut	kitRead	kitRow	kitSampleBanner	kitSaved	kitShut	kitSplit	kitStartRow	kitStore	kitTombs	kitTx	kitType	kitTypeOne	kitUnsave	kitUpds	kitWords
 addsheet.test.js	locale.js	<loaded>	appLocale
 addsheet.test.js	locks.js	<loaded>
-addsheet.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+addsheet.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+addsheet.test.js	look.js	<loaded>	lookSave
 addsheet.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 addsheet.test.js	measure.js	<loaded>
 addsheet.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -928,7 +937,8 @@ advicefresh.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	itemPau
 advicefresh.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit	set	setKitNoMine
 advicefresh.test.js	locale.js	<loaded>	appLocale
 advicefresh.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-advicefresh.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+advicefresh.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+advicefresh.test.js	look.js	<loaded>
 advicefresh.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 advicefresh.test.js	measure.js	<loaded>
 advicefresh.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -1022,7 +1032,8 @@ aiverdict.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 aiverdict.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow
 aiverdict.test.js	locale.js	<loaded>	appLocale
 aiverdict.test.js	locks.js	<loaded>
-aiverdict.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+aiverdict.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+aiverdict.test.js	look.js	<loaded>	lookSave
 aiverdict.test.js	mannequin.js	<loaded>	@{}
 aiverdict.test.js	measure.js	<loaded>	aiFor	aiSignals	applyMeasured	applyWb	calibLab	clamp01	colRef	colourVerdicts	measConf	measKL	measureAndApply	measureCard	nearestCols	plainCloth	typeGroup	undoMeasured	verdictMode	wbGains	wbRead
 aiverdict.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -1118,6 +1129,7 @@ asmahead.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmahead.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 asmahead.test.js	locale.js	<loaded>	appLocale
 asmahead.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+asmahead.test.js	look-base.js	<loaded>
 asmahead.test.js	look.js	<loaded>
 asmahead.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 asmahead.test.js	measure.js	<loaded>
@@ -1226,7 +1238,8 @@ asmaheadonce.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmaheadonce.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 asmaheadonce.test.js	locale.js	<loaded>	appLocale
 asmaheadonce.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-asmaheadonce.test.js	look.js	<loaded>	lookOn	renderLookSetting
+asmaheadonce.test.js	look-base.js	<loaded>	lookOn
+asmaheadonce.test.js	look.js	<loaded>	renderLookSetting
 asmaheadonce.test.js	mannequin.js	<loaded>	@{}
 asmaheadonce.test.js	measure.js	<loaded>
 asmaheadonce.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk
@@ -1333,6 +1346,7 @@ asmcloth.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmcloth.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 asmcloth.test.js	locale.js	<loaded>	appLocale
 asmcloth.test.js	locks.js	<loaded>
+asmcloth.test.js	look-base.js	<loaded>
 asmcloth.test.js	look.js	<loaded>
 asmcloth.test.js	mannequin.js	<loaded>	@{}
 asmcloth.test.js	measure.js	<loaded>
@@ -1428,6 +1442,7 @@ asmcode.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmcode.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 asmcode.test.js	locale.js	<loaded>	appLocale
 asmcode.test.js	locks.js	<loaded>
+asmcode.test.js	look-base.js	<loaded>
 asmcode.test.js	look.js	<loaded>
 asmcode.test.js	mannequin.js	<loaded>	@{}
 asmcode.test.js	measure.js	<loaded>
@@ -1524,7 +1539,8 @@ asmcolor.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmcolor.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 asmcolor.test.js	locale.js	<loaded>	appLocale
 asmcolor.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming	releaseLocks
-asmcolor.test.js	look.js	<loaded>	lookOn	renderLookSetting
+asmcolor.test.js	look-base.js	<loaded>	lookOn
+asmcolor.test.js	look.js	<loaded>	renderLookSetting
 asmcolor.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 asmcolor.test.js	measure.js	<loaded>
 asmcolor.test.js	merge.js	<loaded>	mergeList	mergeStateBy	setEntries	setHash	setKeys	setStampOf	stateSig	subOk
@@ -1646,6 +1662,7 @@ asmcr.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmcr.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 asmcr.test.js	locale.js	<loaded>	appLocale
 asmcr.test.js	locks.js	<loaded>
+asmcr.test.js	look-base.js	<loaded>
 asmcr.test.js	look.js	<loaded>
 asmcr.test.js	mannequin.js	<loaded>	@{}
 asmcr.test.js	measure.js	<loaded>
@@ -1741,6 +1758,7 @@ asmcu.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmcu.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 asmcu.test.js	locale.js	<loaded>	appLocale
 asmcu.test.js	locks.js	<loaded>
+asmcu.test.js	look-base.js	<loaded>
 asmcu.test.js	look.js	<loaded>
 asmcu.test.js	mannequin.js	<loaded>	@{}
 asmcu.test.js	measure.js	<loaded>
@@ -1837,6 +1855,7 @@ asmgl.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmgl.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 asmgl.test.js	locale.js	<loaded>	appLocale
 asmgl.test.js	locks.js	<loaded>
+asmgl.test.js	look-base.js	<loaded>
 asmgl.test.js	look.js	<loaded>
 asmgl.test.js	mannequin.js	<loaded>	@{}
 asmgl.test.js	measure.js	<loaded>
@@ -1958,6 +1977,7 @@ asmrelease.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmrelease.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 asmrelease.test.js	locale.js	<loaded>	appLocale
 asmrelease.test.js	locks.js	<loaded>
+asmrelease.test.js	look-base.js	<loaded>
 asmrelease.test.js	look.js	<loaded>
 asmrelease.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 asmrelease.test.js	measure.js	<loaded>
@@ -2066,6 +2086,7 @@ asmroute.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmroute.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 asmroute.test.js	locale.js	<loaded>	appLocale
 asmroute.test.js	locks.js	<loaded>
+asmroute.test.js	look-base.js	<loaded>
 asmroute.test.js	look.js	<loaded>
 asmroute.test.js	mannequin.js	<loaded>	@{}
 asmroute.test.js	measure.js	<loaded>
@@ -2180,6 +2201,7 @@ asmserverpic.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmserverpic.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 asmserverpic.test.js	locale.js	<loaded>	appLocale
 asmserverpic.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+asmserverpic.test.js	look-base.js	<loaded>
 asmserverpic.test.js	look.js	<loaded>
 asmserverpic.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 asmserverpic.test.js	measure.js	<loaded>
@@ -2288,6 +2310,7 @@ asmstuck.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmstuck.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 asmstuck.test.js	locale.js	<loaded>	appLocale
 asmstuck.test.js	locks.js	<loaded>
+asmstuck.test.js	look-base.js	<loaded>
 asmstuck.test.js	look.js	<loaded>
 asmstuck.test.js	mannequin.js	<loaded>	@{}
 asmstuck.test.js	measure.js	<loaded>
@@ -2383,6 +2406,7 @@ asmtwill.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmtwill.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 asmtwill.test.js	locale.js	<loaded>	appLocale
 asmtwill.test.js	locks.js	<loaded>
+asmtwill.test.js	look-base.js	<loaded>
 asmtwill.test.js	look.js	<loaded>
 asmtwill.test.js	mannequin.js	<loaded>	@{}
 asmtwill.test.js	measure.js	<loaded>
@@ -2479,6 +2503,7 @@ asmwatch.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmwatch.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 asmwatch.test.js	locale.js	<loaded>	appLocale
 asmwatch.test.js	locks.js	<loaded>
+asmwatch.test.js	look-base.js	<loaded>
 asmwatch.test.js	look.js	<loaded>
 asmwatch.test.js	mannequin.js	<loaded>	@{}
 asmwatch.test.js	measure.js	<loaded>
@@ -2576,6 +2601,7 @@ asmweave.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 asmweave.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 asmweave.test.js	locale.js	<loaded>	appLocale
 asmweave.test.js	locks.js	<loaded>
+asmweave.test.js	look-base.js	<loaded>
 asmweave.test.js	look.js	<loaded>
 asmweave.test.js	mannequin.js	<loaded>	@{}
 asmweave.test.js	measure.js	<loaded>
@@ -2672,7 +2698,8 @@ assemble.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 assemble.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 assemble.test.js	locale.js	<loaded>	appLocale
 assemble.test.js	locks.js	<loaded>
-assemble.test.js	look.js	<loaded>	lookOn	renderLookSetting
+assemble.test.js	look-base.js	<loaded>	lookOn
+assemble.test.js	look.js	<loaded>	renderLookSetting
 assemble.test.js	mannequin.js	<loaded>	@{}
 assemble.test.js	measure.js	<loaded>
 assemble.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -2780,7 +2807,8 @@ back.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDe
 back.test.js	kit.js	<loaded>	@backOnkit	get	get body	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitBs	kitClose	kitDraw	kitEdited	kitEl	kitFixOldImports	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSampleTag	kitScorePic	kitStartRow	kitWears	tourAgain	tourOpen
 back.test.js	locale.js	<loaded>	appLocale
 back.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-back.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+back.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+back.test.js	look.js	<loaded>	renderLookSetting
 back.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 back.test.js	measure.js	<loaded>
 back.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -2876,7 +2904,8 @@ backgesture-item.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$war
 backgesture-item.test.js	kit.js	<loaded>	@addEventListenerkeydown	@backOnkit	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitBs	kitClose	kitClothPic	kitDraw	kitEl	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleNote	kitShut	kitStartRow	kitUserEdit	pic
 backgesture-item.test.js	locale.js	<loaded>	appLocale
 backgesture-item.test.js	locks.js	<loaded>
-backgesture-item.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+backgesture-item.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+backgesture-item.test.js	look.js	<loaded>
 backgesture-item.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 backgesture-item.test.js	measure.js	<loaded>	closeRead	measEdgeCut	measureCloth	paperCopy	paperKey	paperNow	paperOf	urlCanvas	wbRead
 backgesture-item.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -2976,7 +3005,8 @@ backgesture-over.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrob
 backgesture-over.test.js	kit.js	<loaded>	@backOnkit	get	get body	get title	homeAbout	homeAgain	homeAndroid	homeBrowser	homeIOS	homeIPad	homeLabel	homeNeeded	homeNote	homePic	homeRisk	homeShareStep	homeSteps	homeTester	kitBd	kitBs	kitBsAway	kitClose	kitDraw	kitEl	kitHasSample	kitHist	kitImportOpen	kitImportSwipe	kitInert	kitLastImp	kitLastRow	kitOpen	kitSampleBanner	kitShut	kitStartRow	pic
 backgesture-over.test.js	locale.js	<loaded>	appLocale
 backgesture-over.test.js	locks.js	<loaded>
-backgesture-over.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+backgesture-over.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+backgesture-over.test.js	look.js	<loaded>	renderLookSetting
 backgesture-over.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 backgesture-over.test.js	measure.js	<loaded>	closeRead	measEdgeCut	measureCloth	paperCopy	paperKey	paperNow	paperOf	urlCanvas	wbRead
 backgesture-over.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -3075,7 +3105,8 @@ backgesture.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe
 backgesture.test.js	kit.js	<loaded>	@addEventListenerkeydown	@backOnkit	get	get body	get title	homeAbout	homeAgain	homeAndroid	homeBrowser	homeIOS	homeIPad	homeLabel	homeNeeded	homeNote	homePic	homeRisk	homeShareStep	homeSteps	homeTester	kitBd	kitBs	kitBsAway	kitClose	kitClothPic	kitDraw	kitEl	kitHasSample	kitHist	kitImportOpen	kitImportSwipe	kitInert	kitLastImp	kitLastRow	kitOpen	kitSampleBanner	kitSampleNote	kitScorePic	kitShut	kitStartRow	kitUserEdit	kitWears	pic	tourOpen
 backgesture.test.js	locale.js	<loaded>	appLocale
 backgesture.test.js	locks.js	<loaded>	lockIds
-backgesture.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+backgesture.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+backgesture.test.js	look.js	<loaded>	renderLookSetting
 backgesture.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 backgesture.test.js	measure.js	<loaded>	closeRead	measEdgeCut	measureCloth	paperCopy	paperKey	paperNow	paperOf	urlCanvas	wbRead
 backgesture.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -3173,7 +3204,8 @@ backup-storage.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 backup-storage.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeBrowser	homeIOS	homeIPad	homeLabel	homeNeeded	homeNote	homePic	homeRisk	homeShareStep	homeStandalone	homeSteps	homeTester	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	safariRemind
 backup-storage.test.js	locale.js	<loaded>	appLocale
 backup-storage.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-backup-storage.test.js	look.js	<loaded>	lookOn	renderLookSetting
+backup-storage.test.js	look-base.js	<loaded>	lookOn
+backup-storage.test.js	look.js	<loaded>	renderLookSetting
 backup-storage.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 backup-storage.test.js	measure.js	<loaded>
 backup-storage.test.js	merge.js	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	itemBase	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeSplit	mergeStateBy	sameVal	setEntries	setHash	setJoin	setKeys	setStampOf	stamp	stateSig	subOk	subStampOf	tombWins
@@ -3294,6 +3326,7 @@ bridge.test.js	lab/gl-bench.html	<any>
 bridge.test.js	lab/gl-bench.js	<any>
 bridge.test.js	locale.js	<any>
 bridge.test.js	locks.js	<any>
+bridge.test.js	look-base.js	<any>
 bridge.test.js	look.js	<any>
 bridge.test.js	mannequin.js	<any>
 bridge.test.js	measure.js	<any>
@@ -3737,6 +3770,7 @@ bus.test.js	itemsheet.js	<any>
 bus.test.js	kit.js	<any>
 bus.test.js	locale.js	<any>
 bus.test.js	locks.js	<any>
+bus.test.js	look-base.js	<any>
 bus.test.js	look.js	<any>
 bus.test.js	mannequin.js	<any>
 bus.test.js	measure.js	<any>
@@ -3834,7 +3868,8 @@ calendar.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 calendar.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitBs	kitClose	kitDraw	kitEl	kitGo	kitHasSample	kitHist	kitInert	kitNextTap	kitOpen	kitSampleBanner	kitStartRow
 calendar.test.js	locale.js	<loaded>	appLocale
 calendar.test.js	locks.js	<loaded>	clearLocks	releaseLocks
-calendar.test.js	look.js	<loaded>	lookOn	renderLookSetting
+calendar.test.js	look-base.js	<loaded>	lookOn
+calendar.test.js	look.js	<loaded>	renderLookSetting
 calendar.test.js	mannequin.js	<loaded>	@{}
 calendar.test.js	measure.js	<loaded>
 calendar.test.js	merge.js	<loaded>	mergeSettingsBy	mergeSplit	setEntries	setHash	setJoin	setKeys	setStampOf	subOk	subStampOf
@@ -3937,7 +3972,8 @@ calfeed.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 calfeed.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
 calfeed.test.js	locale.js	<loaded>	appLocale
 calfeed.test.js	locks.js	<loaded>
-calfeed.test.js	look.js	<loaded>	lookOn	renderLookSetting
+calfeed.test.js	look-base.js	<loaded>	lookOn
+calfeed.test.js	look.js	<loaded>	renderLookSetting
 calfeed.test.js	mannequin.js	<loaded>	@{}
 calfeed.test.js	measure.js	<loaded>
 calfeed.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -4040,7 +4076,8 @@ camouflage.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSu
 camouflage.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 camouflage.test.js	locale.js	<loaded>	appLocale
 camouflage.test.js	locks.js	<loaded>
-camouflage.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+camouflage.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+camouflage.test.js	look.js	<loaded>
 camouflage.test.js	mannequin.js	<loaded>	@{}
 camouflage.test.js	measure.js	<loaded>	closeRead	measEdgeCut	measureCloth	paperKey	paperNow	paperOf	urlCanvas	wbRead
 camouflage.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -4140,7 +4177,8 @@ canvasrefuse.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCare
 canvasrefuse.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitSends	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 canvasrefuse.test.js	locale.js	<loaded>	appLocale
 canvasrefuse.test.js	locks.js	<loaded>
-canvasrefuse.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+canvasrefuse.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+canvasrefuse.test.js	look.js	<loaded>	lookSave
 canvasrefuse.test.js	mannequin.js	<loaded>	@{}
 canvasrefuse.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	aiSignals	applyMeasured	applyWb	calibLab	clamp01	closeRead	colRef	colourVerdicts	measConf	measEdgeCut	measHint	measKL	measureAndApply	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	sharpness	urlCanvas	verdictMode	wbGains	wbRead
 canvasrefuse.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -4237,7 +4275,8 @@ cardid.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	itemPick	ivC
 cardid.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDelMany	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitTombs	kitTx	kitUnsave	kitUserEdit
 cardid.test.js	locale.js	<loaded>	appLocale
 cardid.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-cardid.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+cardid.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+cardid.test.js	look.js	<loaded>	lookSave
 cardid.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 cardid.test.js	measure.js	<loaded>	applyWb	calibLab	colRef	measEdgeCut	measureCloth	nearestCols	wbGains	wbRead
 cardid.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -4332,7 +4371,8 @@ care.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDe
 care.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 care.test.js	locale.js	<loaded>	appLocale
 care.test.js	locks.js	<loaded>	careUnlock	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-care.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+care.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+care.test.js	look.js	<loaded>	renderLookSetting
 care.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 care.test.js	measure.js	<loaded>
 care.test.js	merge.js	<loaded>	dayFlat	dayStamp	dayUnflat	dayWins	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -4433,7 +4473,8 @@ casual.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	iv
 casual.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 casual.test.js	locale.js	<loaded>	appLocale
 casual.test.js	locks.js	<loaded>
-casual.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+casual.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+casual.test.js	look.js	<loaded>
 casual.test.js	mannequin.js	<loaded>	@{}
 casual.test.js	measure.js	<loaded>
 casual.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -4532,7 +4573,8 @@ claudepattern.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCar
 claudepattern.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 claudepattern.test.js	locale.js	<loaded>	appLocale
 claudepattern.test.js	locks.js	<loaded>
-claudepattern.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave	renderLookSetting
+claudepattern.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+claudepattern.test.js	look.js	<loaded>	lookSave	renderLookSetting
 claudepattern.test.js	mannequin.js	<loaded>	@{}
 claudepattern.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	aiSignals	applyMeasured	applyWb	calibLab	clamp01	closeRead	colRef	colourVerdicts	measConf	measEdgeCut	measHint	measKL	measSplit	measureAndApply	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	plainCloth	sharpness	urlCanvas	verdictMode	wbGains	wbRead	wbSolidOk	wbSolidStats
 claudepattern.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -4636,6 +4678,7 @@ clock.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 clock.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	safariRemind
 clock.test.js	locale.js	<loaded>	appLocale
 clock.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+clock.test.js	look-base.js	<loaded>
 clock.test.js	look.js	<loaded>
 clock.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 clock.test.js	measure.js	<loaded>
@@ -4738,7 +4781,8 @@ closeupread.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareS
 closeupread.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 closeupread.test.js	locale.js	<loaded>	appLocale
 closeupread.test.js	locks.js	<loaded>
-closeupread.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+closeupread.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+closeupread.test.js	look.js	<loaded>
 closeupread.test.js	mannequin.js	<loaded>	@{}
 closeupread.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	applyWb	calibLab	closeRead	colRef	colourVerdicts	measEdgeCut	measHint	measKL	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperCopy	paperKey	paperNow	paperOf	sharpness	urlCanvas	verdictMode	wbRead	wbSolidOk	wbSolidStats
 closeupread.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -4835,7 +4879,8 @@ closeupsheet.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCare
 closeupsheet.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitBs	kitClose	kitClothPic	kitDraw	kitEl	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleNote	kitShut	kitStartRow	kitUserEdit	pic
 closeupsheet.test.js	locale.js	<loaded>	appLocale
 closeupsheet.test.js	locks.js	<loaded>
-closeupsheet.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+closeupsheet.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+closeupsheet.test.js	look.js	<loaded>
 closeupsheet.test.js	mannequin.js	<loaded>	@{}
 closeupsheet.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	applyWb	calibLab	closeRead	colRef	colourVerdicts	measEdgeCut	measKL	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	sharpness	urlCanvas	verdictMode	wbRead	wbSolidOk	wbSolidStats
 closeupsheet.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -4932,6 +4977,7 @@ cmhandedge.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 cmhandedge.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 cmhandedge.test.js	locale.js	<loaded>	appLocale
 cmhandedge.test.js	locks.js	<loaded>
+cmhandedge.test.js	look-base.js	<loaded>
 cmhandedge.test.js	look.js	<loaded>
 cmhandedge.test.js	mannequin.js	<loaded>	@{}
 cmhandedge.test.js	measure.js	<loaded>
@@ -5039,7 +5085,8 @@ cmpmeasure.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSu
 cmpmeasure.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 cmpmeasure.test.js	locale.js	<loaded>	appLocale
 cmpmeasure.test.js	locks.js	<loaded>
-cmpmeasure.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+cmpmeasure.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+cmpmeasure.test.js	look.js	<loaded>
 cmpmeasure.test.js	mannequin.js	<loaded>	@{}
 cmpmeasure.test.js	measure.js	<loaded>	paperKey	paperNow	paperOf	urlCanvas
 cmpmeasure.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -5134,7 +5181,8 @@ colnew.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe	sete
 colnew.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 colnew.test.js	locale.js	<loaded>	appLocale
 colnew.test.js	locks.js	<loaded>
-colnew.test.js	look.js	<loaded>	lookOn	renderLookSetting
+colnew.test.js	look-base.js	<loaded>	lookOn
+colnew.test.js	look.js	<loaded>	renderLookSetting
 colnew.test.js	mannequin.js	<loaded>	@{}
 colnew.test.js	measure.js	<loaded>	applyWb	closeRead	paperCopy	paperKey	paperNow	paperOf	urlCanvas	wbRead	wbSolidOk	wbSolidStats
 colnew.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -5245,7 +5293,8 @@ colors.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	iv
 colors.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 colors.test.js	locale.js	<loaded>	appLocale
 colors.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-colors.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+colors.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+colors.test.js	look.js	<loaded>
 colors.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 colors.test.js	measure.js	<loaded>
 colors.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -5358,7 +5407,8 @@ colpick.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	i
 colpick.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 colpick.test.js	locale.js	<loaded>	appLocale
 colpick.test.js	locks.js	<loaded>
-colpick.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+colpick.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+colpick.test.js	look.js	<loaded>
 colpick.test.js	mannequin.js	<loaded>	@{}
 colpick.test.js	measure.js	<loaded>	MULTI_PATS	calibLab	closeRead	colRef	measEdgeCut	measHint	measKL	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	urlCanvas	wbRead
 colpick.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -5435,7 +5485,7 @@ colpickacts.test.js	bus.js	<loaded>	ask	emit	on	serve
 colpickacts.test.js	calendar.js	<loaded>	calBanner	calLink
 colpickacts.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 colpickacts.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
-colpickacts.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	COL_FIELDS	EP	closeColPick	cnAccentTap	cnAddTap	cnAskBox	cnAskTap	cnBackTap	cnBaseLive	cnBasePick	cnCloseupTap	cnColBase	cnCost	cnDWord	cnDescKey	cnDescType	cnDone	cnDrag	cnDrawn	cnFigLive	cnForPick	cnFromHsv	cnHasClose	cnHex	cnHexDone	cnHexIn	cnHexType	cnHsv	cnHueKey	cnHuePress	cnKindCard	cnKindTap	cnLightNote	cnLive	cnName	cnNameType	cnOpenTap	cnPaperDefault	cnPaperLine	cnPatBase	cnRetakeHtml	cnSetHsv	cnSetType	cnSlideUp	cnSqKey	cnSqPress	cnSwitch	cnToggleClose	cnToggleType	cnTypeTap	cnUseExisting	cnUseOldTap	cnWithPat	colAllDiff	colAllOf	colAskHtml	colAskImgs	colAskRun	colAskUseAll	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewBack	colNewFor	colPickDraw	colPickSel	colPickView	colRows	colShows	colSwipe	colTarget	cpAskAllTap	cpAskHint	cpAskTap	cpCloseTap	cpFig	cpGoPics	cpPicsTap	cpSeg	cpSwipe	cpTileTap	cpTyping	cpUseTap	cpViewTap	cpViews	describeAsk	get	openColNew	openColPick	openCustomNew	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	pnAnywayTap	pnOpenTap	rdAccCard	rdAccOf	rdAddCol	rdAddPat	rdAfter	rdAgainTap	rdBar	rdBoth	rdBothTap	rdChange	rdChangeTap	rdClose	rdCloseTap	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneCard	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdKeep	rdKeepTap	rdLightNote	rdMain	rdMatCard	rdMatMain	rdMatOf	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPick	rdPreview	rdReadTap	rdRefresh	rdRender	rdRestore	rdRetakeHtml	rdRun	rdSet	rdSetMat	rdStart	rdUndo	rdUndoAll	rdUndoAllTap	rdUndoTap	rdUse	rdUseTap	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
+colpickacts.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	COL_FIELDS	EP	closeColPick	cnAccentTap	cnAddTap	cnAskBox	cnAskTap	cnBackTap	cnBaseLive	cnBasePick	cnCloseupTap	cnColBase	cnCost	cnDWord	cnDescKey	cnDescType	cnDone	cnDrag	cnDrawn	cnFigLive	cnForPick	cnFromHsv	cnHasClose	cnHex	cnHexDone	cnHexIn	cnHexType	cnHsv	cnHueKey	cnHuePress	cnKindCard	cnKindTap	cnLightNote	cnLive	cnName	cnNameType	cnOpenTap	cnPaperDefault	cnPaperLine	cnPatBase	cnRetakeHtml	cnSetHsv	cnSetType	cnSlideUp	cnSqKey	cnSqPress	cnSwitch	cnToggleClose	cnToggleType	cnTypeTap	cnUseExisting	cnUseOldTap	cnWithPat	colAllDiff	colAllOf	colAskHtml	colAskImgs	colAskRun	colAskUseAll	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewBack	colNewFor	colPickDraw	colPickSel	colPickView	colRows	colShows	colSwipe	colTarget	cpAskAllTap	cpAskHint	cpAskTap	cpCloseTap	cpFig	cpGoPics	cpPicsTap	cpSeg	cpSwipe	cpTileTap	cpTyping	cpUseTap	cpViewTap	cpViews	describeAsk	get	lookShadeOk	openColNew	openColPick	openCustomNew	openPatNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	pnAnywayTap	pnOpenTap	rdAccCard	rdAccOf	rdAddCol	rdAddPat	rdAfter	rdAgainTap	rdBar	rdBoth	rdBothTap	rdChange	rdChangeTap	rdClose	rdCloseTap	rdColBase	rdColCard	rdColMain	rdColOf	rdCost	rdCostLine	rdDoneCard	rdDoneHtml	rdDraw	rdEditorBtn	rdEls	rdItem	rdKeep	rdKeepTap	rdLightNote	rdMain	rdMatCard	rdMatMain	rdMatOf	rdOff	rdOpen	rdPaperHtml	rdPatBase	rdPatCard	rdPatMain	rdPatOf	rdPick	rdPreview	rdReadTap	rdRefresh	rdRender	rdRestore	rdRetakeHtml	rdRun	rdSet	rdSetMat	rdStart	rdUndo	rdUndoAll	rdUndoAllTap	rdUndoTap	rdUse	rdUseTap	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
 colpickacts.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	get	hasPat	hasVest	hexRgb	isCargo	isHandPick	isOcp	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	nextStamp	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatFind	ownPatKey	patBase	patLabel	patLetters	patName	patNameTaken	primaryCol	rgbHex	rgbLab	sentence	set	set items	setWardrobe	shadeFor	shadeHex	shadeName	sockPatterned	stampSettings	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	watchOpts
 colpickacts.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSum	cpwSym
 colpickacts.test.js	days.js	<loaded>
@@ -5453,7 +5503,8 @@ colpickacts.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe
 colpickacts.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 colpickacts.test.js	locale.js	<loaded>	appLocale
 colpickacts.test.js	locks.js	<loaded>
-colpickacts.test.js	look.js	<loaded>	lkShade	lookAi	lookBuiltins	lookChipSw	lookChips	lookChipsHtml	lookColOk	lookColRows	lookCu	lookHasPat	lookMatKind	lookMatRows	lookMatSw	lookNeed	lookOn	lookOpenFresh	lookOwnMatUI	lookOwnRaw	lookPatExtras	lookPatOf	lookPatRow	lookReadBox	lookReadCost	lookRow	lookSection	lookSet	lookShadeHtml	lookShadeOk	lookShadeStep	lookSugCols	lookSum	lookVal	renderLookSetting
+colpickacts.test.js	look-base.js	<loaded>	lookBuiltins	lookCu	lookHasPat	lookOn	lookVal	setLookMemo
+colpickacts.test.js	look.js	<loaded>	lkShade	lookAi	lookChipSw	lookChips	lookChipsHtml	lookColOk	lookColRows	lookMatKind	lookMatRows	lookMatSw	lookNeed	lookOpenFresh	lookOwnMatUI	lookOwnRaw	lookPatExtras	lookPatOf	lookPatRow	lookReadBox	lookReadCost	lookRow	lookSection	lookSet	lookShadeHtml	lookShadeStep	lookSugCols	lookSum	renderLookSetting
 colpickacts.test.js	mannequin.js	<loaded>	@{}
 colpickacts.test.js	measure.js	<loaded>	MULTI_PATS	calibLab	closeRead	colRef	measEdgeCut	measHint	measKL	measureCloth	measureParts	multiCol	nearestCols	paperCopy	paperKey	paperNow	paperOf	urlCanvas	wbRead
 colpickacts.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -5532,7 +5583,7 @@ colpickfocus.test.js	bus.js	<loaded>	ask	emit	on	serve
 colpickfocus.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 colpickfocus.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine
 colpickfocus.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	cmpMount
-colpickfocus.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	closeColPick	cnAccentTap	cnAskBox	cnBasePick	cnColBase	cnCost	cnDescKey	cnDescType	cnDrag	cnDrawn	cnFigLive	cnFromHsv	cnHasClose	cnHex	cnHsv	cnLive	cnName	cnNameType	cnPaperDefault	cnSetHsv	cnSqPress	cnToggleType	cnTypeTap	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewFor	colPickDraw	colPickSel	colPickView	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpTileTap	cpTyping	cpViewTap	cpViews	get	openColNew	openColPick	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatPick
+colpickfocus.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	closeColPick	cnAccentTap	cnAskBox	cnBasePick	cnColBase	cnCost	cnDescKey	cnDescType	cnDrag	cnDrawn	cnFigLive	cnFromHsv	cnHasClose	cnHex	cnHsv	cnLive	cnName	cnNameType	cnPaperDefault	cnSetHsv	cnSqPress	cnToggleType	cnTypeTap	colAskHtml	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewFor	colPickDraw	colPickSel	colPickView	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpTileTap	cpTyping	cpViewTap	cpViews	get	lookShadeOk	openColNew	openColPick	patAskHtml	patBtn	patChoices	patGroupOf	patNewFor	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatPick
 colpickfocus.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	colBaseFor	colName	colOf	colsFor	dE00	dayClimate	di	get	hasPat	hasVest	hexRgb	isCargo	isHandPick	isOcp	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matsFor	metalWord	mix	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownFreeKey	ownKeyNorm	ownKeyOther	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	patBase	patLabel	patName	primaryCol	rgbHex	rgbLab	set	set items	setWardrobe	shadeHex	shadeName	stampSettings	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate
 colpickfocus.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym
 colpickfocus.test.js	days.js	<loaded>
@@ -5550,7 +5601,8 @@ colpickfocus.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrob
 colpickfocus.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 colpickfocus.test.js	locale.js	<loaded>	appLocale
 colpickfocus.test.js	locks.js	<loaded>
-colpickfocus.test.js	look.js	<loaded>	lkShade	lookAi	lookBuiltins	lookChipSw	lookChips	lookChipsHtml	lookColOk	lookColRows	lookCu	lookHasPat	lookMatKind	lookMatRows	lookMatSw	lookNeed	lookOn	lookOwnMatUI	lookOwnRaw	lookPatExtras	lookPatOf	lookPatRow	lookReadBox	lookRow	lookSection	lookSet	lookShadeHtml	lookShadeOk	lookShadeStep	lookSugCols	lookSum	lookVal	renderLookSetting
+colpickfocus.test.js	look-base.js	<loaded>	lookBuiltins	lookCu	lookHasPat	lookOn	lookVal	setLookMemo
+colpickfocus.test.js	look.js	<loaded>	lkShade	lookAi	lookChipSw	lookChips	lookChipsHtml	lookColOk	lookColRows	lookMatKind	lookMatRows	lookMatSw	lookNeed	lookOwnMatUI	lookOwnRaw	lookPatExtras	lookPatOf	lookPatRow	lookReadBox	lookRow	lookSection	lookSet	lookShadeHtml	lookShadeStep	lookSugCols	lookSum	renderLookSetting
 colpickfocus.test.js	mannequin.js	<loaded>	@{}
 colpickfocus.test.js	measure.js	<loaded>
 colpickfocus.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -5646,7 +5698,8 @@ combatboot.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 combatboot.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 combatboot.test.js	locale.js	<loaded>	appLocale
 combatboot.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
-combatboot.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+combatboot.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+combatboot.test.js	look.js	<loaded>
 combatboot.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 combatboot.test.js	measure.js	<loaded>
 combatboot.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -5741,7 +5794,8 @@ connkeep.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 connkeep.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 connkeep.test.js	locale.js	<loaded>	appLocale
 connkeep.test.js	locks.js	<loaded>
-connkeep.test.js	look.js	<loaded>	lookOn	renderLookSetting
+connkeep.test.js	look-base.js	<loaded>	lookOn
+connkeep.test.js	look.js	<loaded>	renderLookSetting
 connkeep.test.js	mannequin.js	<loaded>	@{}
 connkeep.test.js	measure.js	<loaded>
 connkeep.test.js	merge.js	<loaded>	mergeList	mergeStateBy	setEntries	setHash	setKeys	setStampOf	stateSig	subOk
@@ -5837,6 +5891,7 @@ connrole.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 connrole.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 connrole.test.js	locale.js	<loaded>	appLocale
 connrole.test.js	locks.js	<loaded>
+connrole.test.js	look-base.js	<loaded>
 connrole.test.js	look.js	<loaded>
 connrole.test.js	mannequin.js	<loaded>	@{}
 connrole.test.js	measure.js	<loaded>
@@ -5932,7 +5987,8 @@ costwear.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@
 costwear.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 costwear.test.js	locale.js	<loaded>	appLocale
 costwear.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-costwear.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave	renderLookSetting
+costwear.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+costwear.test.js	look.js	<loaded>	lookSave	renderLookSetting
 costwear.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 costwear.test.js	measure.js	<loaded>
 costwear.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -6034,7 +6090,8 @@ daysoff.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 daysoff.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitStartRow
 daysoff.test.js	locale.js	<loaded>	appLocale
 daysoff.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-daysoff.test.js	look.js	<loaded>	lookOn	renderLookSetting
+daysoff.test.js	look-base.js	<loaded>	lookOn
+daysoff.test.js	look.js	<loaded>	renderLookSetting
 daysoff.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 daysoff.test.js	measure.js	<loaded>
 daysoff.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk
@@ -6159,6 +6216,7 @@ deps.test.js	itemsheet.js	<any>
 deps.test.js	kit.js	<any>
 deps.test.js	locale.js	<any>
 deps.test.js	locks.js	<any>
+deps.test.js	look-base.js	<any>
 deps.test.js	look.js	<any>
 deps.test.js	mannequin.js	<any>
 deps.test.js	measure.js	<any>
@@ -6265,7 +6323,8 @@ drawnonly.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 drawnonly.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 drawnonly.test.js	locale.js	<loaded>	appLocale
 drawnonly.test.js	locks.js	<loaded>
-drawnonly.test.js	look.js	<loaded>	lookOn	renderLookSetting
+drawnonly.test.js	look-base.js	<loaded>	lookOn
+drawnonly.test.js	look.js	<loaded>	renderLookSetting
 drawnonly.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 drawnonly.test.js	measure.js	<loaded>
 drawnonly.test.js	merge.js	<loaded>	mergeList	mergeSettingsBy	mergeStateBy	setEntries	setHash	setKeys	setStampOf	stateSig	subOk
@@ -6379,7 +6438,8 @@ dress.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivD
 dress.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	safariRemind
 dress.test.js	locale.js	<loaded>	appLocale
 dress.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-dress.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave	renderLookSetting
+dress.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+dress.test.js	look.js	<loaded>	lookSave	renderLookSetting
 dress.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 dress.test.js	measure.js	<loaded>
 dress.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -6479,7 +6539,8 @@ editorrework.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrob
 editorrework.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 editorrework.test.js	locale.js	<loaded>	appLocale
 editorrework.test.js	locks.js	<loaded>
-editorrework.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+editorrework.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+editorrework.test.js	look.js	<loaded>
 editorrework.test.js	mannequin.js	<loaded>	@{}
 editorrework.test.js	measure.js	<loaded>	closeRead	measEdgeCut	measureCloth	paperKey	paperNow	paperOf	urlCanvas	wbRead
 editorrework.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -6577,7 +6638,8 @@ editphotosb.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareS
 editphotosb.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 editphotosb.test.js	locale.js	<loaded>	appLocale
 editphotosb.test.js	locks.js	<loaded>
-editphotosb.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+editphotosb.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+editphotosb.test.js	look.js	<loaded>
 editphotosb.test.js	mannequin.js	<loaded>	@{}
 editphotosb.test.js	measure.js	<loaded>	closeRead	measEdgeCut	measureCloth	paperKey	paperNow	paperOf	urlCanvas	wbRead
 editphotosb.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -6674,6 +6736,7 @@ errnet.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 errnet.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 errnet.test.js	locale.js	<loaded>	appLocale
 errnet.test.js	locks.js	<loaded>
+errnet.test.js	look-base.js	<loaded>
 errnet.test.js	look.js	<loaded>
 errnet.test.js	mannequin.js	<loaded>	@{}
 errnet.test.js	measure.js	<loaded>
@@ -6769,6 +6832,7 @@ errreport.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 errreport.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 errreport.test.js	locale.js	<loaded>	appLocale
 errreport.test.js	locks.js	<loaded>
+errreport.test.js	look-base.js	<loaded>
 errreport.test.js	look.js	<loaded>
 errreport.test.js	mannequin.js	<loaded>	@{}
 errreport.test.js	measure.js	<loaded>
@@ -6868,7 +6932,8 @@ favorites.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum
 favorites.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 favorites.test.js	locale.js	<loaded>	appLocale
 favorites.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
-favorites.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+favorites.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+favorites.test.js	look.js	<loaded>
 favorites.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 favorites.test.js	measure.js	<loaded>
 favorites.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -6963,6 +7028,7 @@ favplan.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 favplan.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 favplan.test.js	locale.js	<loaded>	appLocale
 favplan.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+favplan.test.js	look-base.js	<loaded>
 favplan.test.js	look.js	<loaded>
 favplan.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 favplan.test.js	measure.js	<loaded>
@@ -7063,7 +7129,8 @@ fieldmerge.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSu
 fieldmerge.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDelMany	kitFixOldImports	kitHasSample	kitLastImp	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitTombs	kitTx	kitUnimport	kitUserEdit	safariRemind
 fieldmerge.test.js	locale.js	<loaded>	appLocale
 fieldmerge.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-fieldmerge.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+fieldmerge.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+fieldmerge.test.js	look.js	<loaded>
 fieldmerge.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 fieldmerge.test.js	measure.js	<loaded>
 fieldmerge.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	dayUnflat	dayWins	fieldStamp	fsOk	fsPack	itemBase	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeSplit	mergeStateBy	sameVal	setEntries	setHash	setJoin	setKeys	setStampOf	stamp	stateSig	subOk	subStampOf	tombWins
@@ -7166,6 +7233,7 @@ figure.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 figure.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 figure.test.js	locale.js	<loaded>	appLocale
 figure.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+figure.test.js	look-base.js	<loaded>
 figure.test.js	look.js	<loaded>
 figure.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 figure.test.js	measure.js	<loaded>
@@ -7263,6 +7331,7 @@ folds.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 folds.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 folds.test.js	locale.js	<loaded>	appLocale
 folds.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+folds.test.js	look-base.js	<loaded>
 folds.test.js	look.js	<loaded>
 folds.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 folds.test.js	measure.js	<loaded>
@@ -7358,6 +7427,7 @@ freshrest.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 freshrest.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 freshrest.test.js	locale.js	<loaded>	appLocale
 freshrest.test.js	locks.js	<loaded>
+freshrest.test.js	look-base.js	<loaded>
 freshrest.test.js	look.js	<loaded>
 freshrest.test.js	mannequin.js	<loaded>	@{}
 freshrest.test.js	measure.js	<loaded>
@@ -7452,6 +7522,7 @@ garmentdraw.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 garmentdraw.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 garmentdraw.test.js	locale.js	<loaded>	appLocale
 garmentdraw.test.js	locks.js	<loaded>
+garmentdraw.test.js	look-base.js	<loaded>
 garmentdraw.test.js	look.js	<loaded>
 garmentdraw.test.js	mannequin.js	<loaded>	@{}
 garmentdraw.test.js	measure.js	<loaded>
@@ -7549,6 +7620,7 @@ garmentpaint.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 garmentpaint.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 garmentpaint.test.js	locale.js	<loaded>	appLocale
 garmentpaint.test.js	locks.js	<loaded>
+garmentpaint.test.js	look-base.js	<loaded>
 garmentpaint.test.js	look.js	<loaded>
 garmentpaint.test.js	mannequin.js	<loaded>	@{}
 garmentpaint.test.js	measure.js	<loaded>
@@ -7767,6 +7839,7 @@ geomaps.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 geomaps.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 geomaps.test.js	locale.js	<loaded>	appLocale
 geomaps.test.js	locks.js	<loaded>
+geomaps.test.js	look-base.js	<loaded>
 geomaps.test.js	look.js	<loaded>
 geomaps.test.js	mannequin.js	<loaded>	@{}
 geomaps.test.js	measure.js	<loaded>
@@ -7862,6 +7935,7 @@ globals.test.js	itemsheet.js	<any>
 globals.test.js	kit.js	<any>
 globals.test.js	locale.js	<any>
 globals.test.js	locks.js	<any>
+globals.test.js	look-base.js	<any>
 globals.test.js	look.js	<any>
 globals.test.js	mannequin.js	<any>
 globals.test.js	measure.js	<any>
@@ -7958,6 +8032,7 @@ handpick.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 handpick.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitType	kitTypeOne
 handpick.test.js	locale.js	<loaded>	appLocale
 handpick.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
+handpick.test.js	look-base.js	<loaded>
 handpick.test.js	look.js	<loaded>
 handpick.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 handpick.test.js	measure.js	<loaded>
@@ -8052,6 +8127,7 @@ hbshirt.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 hbshirt.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 hbshirt.test.js	locale.js	<loaded>	appLocale
 hbshirt.test.js	locks.js	<loaded>
+hbshirt.test.js	look-base.js	<loaded>
 hbshirt.test.js	look.js	<loaded>
 hbshirt.test.js	mannequin.js	<loaded>	@{}
 hbshirt.test.js	measure.js	<loaded>
@@ -8147,6 +8223,7 @@ hbswatch.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 hbswatch.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 hbswatch.test.js	locale.js	<loaded>	appLocale
 hbswatch.test.js	locks.js	<loaded>
+hbswatch.test.js	look-base.js	<loaded>
 hbswatch.test.js	look.js	<loaded>
 hbswatch.test.js	mannequin.js	<loaded>	@{}
 hbswatch.test.js	measure.js	<loaded>
@@ -8242,6 +8319,7 @@ herringbone.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 herringbone.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 herringbone.test.js	locale.js	<loaded>	appLocale
 herringbone.test.js	locks.js	<loaded>
+herringbone.test.js	look-base.js	<loaded>
 herringbone.test.js	look.js	<loaded>
 herringbone.test.js	mannequin.js	<loaded>	@{}
 herringbone.test.js	measure.js	<loaded>
@@ -8355,6 +8433,7 @@ history.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 history.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 history.test.js	locale.js	<loaded>	appLocale
 history.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
+history.test.js	look-base.js	<loaded>
 history.test.js	look.js	<loaded>
 history.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 history.test.js	measure.js	<loaded>
@@ -8451,7 +8530,8 @@ homescreen.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 homescreen.test.js	kit.js	<loaded>	@addEventListenerbeforeinstallprompt	get	get body	get title	homeAbout	homeAgain	homeAgainTap	homeAndroid	homeBrowser	homeCopyBtn	homeIOS	homeIPad	homeInstall	homeInstallTap	homeLabel	homeNeeded	homeNote	homeOpen	homePic	homeRisk	homeShareShort	homeShareStep	homeStandalone	homeSteps	homeStepsAndroid	homeSync	homeTester	kitBs	kitClose	kitDraw	kitEl	kitFixOldImports	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleMigrate	kitStartRow	pic
 homescreen.test.js	locale.js	<loaded>	appLocale
 homescreen.test.js	locks.js	<loaded>
-homescreen.test.js	look.js	<loaded>	lookOn	renderLookSetting
+homescreen.test.js	look-base.js	<loaded>	lookOn
+homescreen.test.js	look.js	<loaded>	renderLookSetting
 homescreen.test.js	mannequin.js	<loaded>	@{}
 homescreen.test.js	measure.js	<loaded>
 homescreen.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -8547,6 +8627,7 @@ impact.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@do
 impact.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 impact.test.js	locale.js	<loaded>	appLocale
 impact.test.js	locks.js	<loaded>
+impact.test.js	look-base.js	<loaded>
 impact.test.js	look.js	<loaded>
 impact.test.js	mannequin.js	<loaded>	@{}
 impact.test.js	measure.js	<loaded>
@@ -8652,6 +8733,7 @@ inlinehandlers.test.js	itemsheet.js	<any>
 inlinehandlers.test.js	kit.js	<any>
 inlinehandlers.test.js	locale.js	<any>
 inlinehandlers.test.js	locks.js	<any>
+inlinehandlers.test.js	look-base.js	<any>
 inlinehandlers.test.js	look.js	<any>
 inlinehandlers.test.js	mannequin.js	<any>
 inlinehandlers.test.js	measure.js	<any>
@@ -8743,7 +8825,8 @@ invite.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 invite.test.js	kit.js	<loaded>	get	get body	get title	homeAbout	homeAndroid	homeBrowser	homeCopy	homeCopyBtn	homeCopyTap	homeIOS	homeIPad	homeLabel	homeNeeded	homeNote	homeOpen	homePic	homeRisk	homeShareShort	homeShareStep	homeStandalone	homeSteps	homeTester	kitBs	kitClose	kitDraw	kitEdited	kitEl	kitFixOldImports	kitGo	kitHasSample	kitHist	kitInert	kitNextTap	kitOpen	kitSampleBanner	kitSampleMigrate	kitSdGet	kitSends	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	pic	safariRemind
 invite.test.js	locale.js	<loaded>	appLocale
 invite.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-invite.test.js	look.js	<loaded>	lookOn	renderLookSetting
+invite.test.js	look-base.js	<loaded>	lookOn
+invite.test.js	look.js	<loaded>	renderLookSetting
 invite.test.js	mannequin.js	<loaded>	@{}
 invite.test.js	measure.js	<loaded>
 invite.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	mergeItem	mergeList	mergeSettingsBy	mergeSplit	mergeStateBy	sameVal	setEntries	setHash	setJoin	setKeys	setStampOf	stamp	stateSig	subOk	subStampOf	tombWins
@@ -8781,6 +8864,7 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
+invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -8845,7 +8929,8 @@ itempics.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	
 itempics.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 itempics.test.js	locale.js	<loaded>	appLocale
 itempics.test.js	locks.js	<loaded>	clearLocks	releaseLocks	unlockClash
-itempics.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+itempics.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+itempics.test.js	look.js	<loaded>	renderLookSetting
 itempics.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 itempics.test.js	measure.js	<loaded>
 itempics.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -8947,7 +9032,8 @@ itemredesign.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCare
 itemredesign.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow
 itemredesign.test.js	locale.js	<loaded>	appLocale
 itemredesign.test.js	locks.js	<loaded>
-itemredesign.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+itemredesign.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+itemredesign.test.js	look.js	<loaded>	lookSave
 itemredesign.test.js	mannequin.js	<loaded>	@{}
 itemredesign.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	calibLab	clamp01	colRef	colourVerdicts	measConf	measKL	multiCol	nearestCols	paperKey	paperNow	plainCloth	verdictMode
 itemredesign.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -9044,7 +9130,8 @@ itemsheet.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>
 itemsheet.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDuplicate	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 itemsheet.test.js	locale.js	<loaded>	appLocale
 itemsheet.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-itemsheet.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+itemsheet.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+itemsheet.test.js	look.js	<loaded>
 itemsheet.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 itemsheet.test.js	measure.js	<loaded>	closeRead	measEdgeCut	measureCloth	paperKey	paperNow	paperOf	urlCanvas	wbRead
 itemsheet.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -9139,6 +9226,7 @@ jacketcolour.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 jacketcolour.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 jacketcolour.test.js	locale.js	<loaded>	appLocale
 jacketcolour.test.js	locks.js	<loaded>
+jacketcolour.test.js	look-base.js	<loaded>
 jacketcolour.test.js	look.js	<loaded>
 jacketcolour.test.js	mannequin.js	<loaded>	@{}
 jacketcolour.test.js	measure.js	<loaded>
@@ -9234,7 +9322,8 @@ keptphotos.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 keptphotos.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
 keptphotos.test.js	locale.js	<loaded>	appLocale
 keptphotos.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-keptphotos.test.js	look.js	<loaded>	lookOn	renderLookSetting
+keptphotos.test.js	look-base.js	<loaded>	lookOn
+keptphotos.test.js	look.js	<loaded>	renderLookSetting
 keptphotos.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 keptphotos.test.js	measure.js	<loaded>
 keptphotos.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -9337,7 +9426,8 @@ kit.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@docum
 kit.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	get body	get kitImp	get kitImpBusy	get kitSampling	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	importOpenTap	kitAdds	kitAdopt	kitApply	kitAsNew	kitAsNewTap	kitBackTap	kitBd	kitBs	kitBsAway	kitClose	kitCloseupGuide	kitClothPic	kitColList	kitColour	kitCols	kitDayOwn	kitDecode	kitDelMany	kitDiff	kitDiffText	kitDraw	kitDupKey	kitDupMark	kitDuplicate	kitEdited	kitEl	kitFail	kitFixOldImports	kitFree	kitGo	kitGuideTap	kitHasSample	kitHead	kitHist	kitImpBtn	kitImpTap	kitImpTick	kitImportFile	kitImportGo	kitImportOpen	kitImportSwipe	kitImportText	kitInert	kitItem	kitKeepSample	kitKeepTap	kitLastImp	kitLastRow	kitLeather	kitLeft	kitMaterial	kitMetal	kitNear	kitNextTap	kitNorm	kitOpen	kitPasteFocus	kitPasteShow	kitPasteType	kitPatWords	kitPattern	kitPatternPic	kitPrevDraw	kitQtyIn	kitQtyOut	kitRead	kitReadList	kitRow	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleRemoveTap	kitSampleSig	kitSampleTag	kitSampleTap	kitSaved	kitScorePic	kitSetupSampleTap	kitShadePic	kitSplit	kitStartRow	kitStore	kitTemplate	kitTickPick	kitTombs	kitTx	kitType	kitTypeNear	kitTypeOne	kitUnimport	kitUnimportTap	kitUnsave	kitUpds	kitUserEdit	kitWears	kitWords	pic	tourOpen	tourSeen
 kit.test.js	locale.js	<loaded>	appLocale
 kit.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-kit.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+kit.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+kit.test.js	look.js	<loaded>	lookSave
 kit.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 kit.test.js	measure.js	<loaded>
 kit.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -9432,7 +9522,8 @@ kitsetup-taps.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardro
 kitsetup-taps.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	get body	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAddOwnTap	kitAdds	kitAdopt	kitAsNew	kitAsNewTap	kitBackTap	kitBd	kitBs	kitBsAway	kitClose	kitCloseupGuide	kitClothPic	kitColList	kitColour	kitCols	kitDayOwn	kitDecode	kitDelMany	kitDiff	kitDiffText	kitDraw	kitDupKey	kitDupMark	kitEdited	kitEl	kitFilePick	kitFixOldImports	kitFree	kitGo	kitGuideTap	kitHasSample	kitHead	kitHist	kitImpBtn	kitImpTap	kitImpTick	kitImportFile	kitImportGo	kitImportOpen	kitImportSwipe	kitImportText	kitInert	kitItem	kitKeepSample	kitKeepTap	kitLastImp	kitLastRow	kitLeft	kitNear	kitNextTap	kitNorm	kitOpen	kitPasteFocus	kitPasteShow	kitPasteType	kitPatWords	kitPattern	kitPrevDraw	kitQtyIn	kitQtyOut	kitRead	kitReadList	kitRow	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleRemoveTap	kitSampleSig	kitSampleTap	kitScorePic	kitSetupSampleTap	kitShut	kitSplit	kitStartRow	kitStore	kitTemplate	kitTemplateTap	kitTickPick	kitTombs	kitTourTap	kitTx	kitType	kitTypeNear	kitTypeOne	kitUnimport	kitUnimportTap	kitUpds	kitUserEdit	kitWears	kitWords	pic	tourOpen
 kitsetup-taps.test.js	locale.js	<loaded>	appLocale
 kitsetup-taps.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-kitsetup-taps.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+kitsetup-taps.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+kitsetup-taps.test.js	look.js	<loaded>	renderLookSetting
 kitsetup-taps.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 kitsetup-taps.test.js	measure.js	<loaded>	closeRead	paperKey	paperNow	paperOf	urlCanvas	wbRead
 kitsetup-taps.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -9523,7 +9614,7 @@ lookbeta.test.js	bus.js	<loaded>	ask	emit	on	serve
 lookbeta.test.js	calendar.js	<loaded>	@onsettingssummaries	calBanner	calLink	calSummary	renderCalUI
 lookbeta.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBadge	careCard	careCounts	careLimit	careState	careWashed	careWord	careWornLine	laundryDays	renderCareUI
 lookbeta.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
-lookbeta.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	accChoices	closeColPick	cnAddTap	cnAskBox	cnColBase	cnCost	cnDone	cnDrawn	cnHasClose	cnHex	cnHsv	cnLeft	cnName	cnNameType	cnPaperDefault	cnPatBase	cnWithPat	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colPickDraw	colPickSel	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSwipe	cpTyping	cpViews	get	openColNew	openColPick	openPatNew	patBtn	patChoices	patNewFor	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
+lookbeta.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	accChoices	closeColPick	cnAddTap	cnAskBox	cnColBase	cnCost	cnDone	cnDrawn	cnHasClose	cnHex	cnHsv	cnLeft	cnName	cnNameType	cnPaperDefault	cnPatBase	cnWithPat	colBtn	colChoices	colFamily	colFieldLabel	colHas	colLetters	colNameTaken	colNear	colNewAdd	colNewFor	colPickDraw	colPickSel	colRows	colShows	colSwipe	colTarget	colTidy	cpFig	cpSeg	cpSwipe	cpTyping	cpViews	get	lookShadeOk	openColNew	openColPick	openPatNew	patBtn	patChoices	patNewFor	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColNew	renderColPick	renderPatNew	renderPatPick	useColPick
 lookbeta.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LINK_METAL_OPTS	LUM	accentOf	accentsOf	applyCustom	camoField	camoImage	camoPat	casualTop	cleanRecord	clipMetal	colBase	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	get	hasPat	hasVest	hexRgb	isCargo	isHandPick	isOcp	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keySettings	keySplit	labHex	labOf	leatherLabel	leatherWord	leathersFor	linkFace	lum	lumCol	matSeason	matTypeWord	matsFor	metalOptsFor	metalWord	mix	nextStamp	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMatName	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatKey	patBase	patLabel	patLetters	patName	patNameTaken	patOf	planCol	primaryCol	pw	recClean	recCol	recFree	rgbHex	rgbLab	seasonFit	sentence	set	set items	setWardrobe	shadeHex	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	soleStyle	stampSettings	strapBand	styleWord	subHashes	subStamp	takeSettings	thirdOf	titleCls	todayDate	watchOpts	watchText	wearsJacket	wearsTie
 lookbeta.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed
 lookbeta.test.js	days.js	<loaded>
@@ -9541,7 +9632,8 @@ lookbeta.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@
 lookbeta.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 lookbeta.test.js	locale.js	<loaded>	appLocale
 lookbeta.test.js	locks.js	<loaded>
-lookbeta.test.js	look.js	<loaded>	lkNewAdd	lkNewCol	lkNewName	lkNewOpen	lkNewPat	lkOther	lkOwnAdd	lkOwnOpen	lkRead	lkSI	lkSwitch	lkUse	lkUsePick	lookAddOwn	lookAi	lookApplyRead	lookBuiltins	lookCheck	lookChipHtml	lookChipSw	lookChips	lookChipsHtml	lookClipMetal	lookColOk	lookColRows	lookCu	lookCur	lookFiber	lookGroup	lookHasPat	lookHintOf	lookItem	lookMatGroups	lookMatKind	lookMatRows	lookMatSw	lookName	lookNeed	lookNewAdd	lookNewOpen	lookNoun	lookOn	lookOpenFresh	lookOwnAddForm	lookOwnKey	lookOwnMatUI	lookOwnMats	lookOwnRaw	lookPatExtras	lookPatGroupOf	lookPatOf	lookPatRow	lookPickTitle	lookPkKind	lookRead	lookReadBox	lookReadCost	lookRedraw	lookRestore	lookRow	lookSave	lookSection	lookSet	lookSetEnamel	lookSetMat	lookShadeHtml	lookShadeOk	lookShadeStep	lookSnap	lookSugCols	lookSugMat	lookSugPats	lookSum	lookUse	lookUsePick	lookVal	lookWrite	renderLookPick	renderLookSetting
+lookbeta.test.js	look-base.js	<loaded>	lookBuiltins	lookClipMetal	lookCu	lookCur	lookHasPat	lookOn	lookPatGroupOf	lookVal	setLookMemo
+lookbeta.test.js	look.js	<loaded>	lkNewAdd	lkNewCol	lkNewName	lkNewOpen	lkNewPat	lkOther	lkOwnAdd	lkOwnOpen	lkRead	lkSI	lkSwitch	lkUse	lkUsePick	lookAddOwn	lookAi	lookApplyRead	lookCheck	lookChipHtml	lookChipSw	lookChips	lookChipsHtml	lookColOk	lookColRows	lookFiber	lookGroup	lookHintOf	lookItem	lookMatGroups	lookMatKind	lookMatRows	lookMatSw	lookName	lookNeed	lookNewAdd	lookNewOpen	lookNoun	lookOpenFresh	lookOwnAddForm	lookOwnKey	lookOwnMatUI	lookOwnMats	lookOwnRaw	lookPatExtras	lookPatOf	lookPatRow	lookPickTitle	lookPkKind	lookRead	lookReadBox	lookReadCost	lookRedraw	lookRestore	lookRow	lookSave	lookSection	lookSet	lookSetEnamel	lookSetMat	lookShadeHtml	lookShadeStep	lookSnap	lookSugCols	lookSugMat	lookSugPats	lookSum	lookUse	lookUsePick	lookWrite	renderLookPick	renderLookSetting
 lookbeta.test.js	mannequin.js	<loaded>	@{}
 lookbeta.test.js	measure.js	<loaded>
 lookbeta.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -9636,6 +9728,7 @@ lookplan.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 lookplan.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 lookplan.test.js	locale.js	<loaded>	appLocale
 lookplan.test.js	locks.js	<loaded>
+lookplan.test.js	look-base.js	<loaded>
 lookplan.test.js	look.js	<loaded>
 lookplan.test.js	mannequin.js	<loaded>	@{}
 lookplan.test.js	measure.js	<loaded>
@@ -9738,6 +9831,7 @@ mannequin.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 mannequin.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 mannequin.test.js	locale.js	<loaded>	appLocale
 mannequin.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+mannequin.test.js	look-base.js	<loaded>
 mannequin.test.js	look.js	<loaded>
 mannequin.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 mannequin.test.js	measure.js	<loaded>
@@ -9835,6 +9929,7 @@ masterspeed.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 masterspeed.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareFilter	kitStartRow
 masterspeed.test.js	locale.js	<loaded>	appLocale
 masterspeed.test.js	locks.js	<loaded>
+masterspeed.test.js	look-base.js	<loaded>
 masterspeed.test.js	look.js	<loaded>
 masterspeed.test.js	mannequin.js	<loaded>	@{}
 masterspeed.test.js	measure.js	<loaded>
@@ -9947,7 +10042,8 @@ materials.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum
 materials.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitColour	kitCols	kitFixOldImports	kitHasSample	kitHead	kitLeather	kitLeft	kitMaterial	kitNorm	kitPatWords	kitPattern	kitQtyIn	kitRead	kitRow	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSplit	kitStartRow	kitType	kitTypeOne	kitUserEdit	kitWords
 materials.test.js	locale.js	<loaded>	appLocale
 materials.test.js	locks.js	<loaded>
-materials.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+materials.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+materials.test.js	look.js	<loaded>
 materials.test.js	mannequin.js	<loaded>	@{}
 materials.test.js	measure.js	<loaded>	aiSignals	closeRead	paperCopy	paperKey	paperNow	paperOf	urlCanvas	wbRead
 materials.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -10042,7 +10138,8 @@ measure.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 measure.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 measure.test.js	locale.js	<loaded>	appLocale
 measure.test.js	locks.js	<loaded>
-measure.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+measure.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+measure.test.js	look.js	<loaded>
 measure.test.js	mannequin.js	<loaded>	@{}
 measure.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	applyMeasured	applyWb	calibLab	clamp01	closeRead	colRef	colourVerdicts	measConf	measEdgeCut	measHint	measKL	measSplit	measureCard	measureCloth	measureParts	multiCol	nearestCols	plainCloth	sharpness	typeGroup	undoMeasured	verdictMode	wbGains	wbRead	wbSolidOk	wbSolidStats
 measure.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -10171,7 +10268,8 @@ modload.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	@{constel$wardro
 modload.test.js	kit.js	<any>	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSends	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	safariRemind
 modload.test.js	locale.js	<any>	<loaded>	appLocale
 modload.test.js	locks.js	<any>	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-modload.test.js	look.js	<any>	<loaded>	lookOn	renderLookSetting
+modload.test.js	look-base.js	<any>	<loaded>	lookOn
+modload.test.js	look.js	<any>	<loaded>	renderLookSetting
 modload.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 modload.test.js	measure.js	<any>	<loaded>
 modload.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -10329,6 +10427,7 @@ modtools.test.js	itemsheet.js	<any>
 modtools.test.js	kit.js	<any>
 modtools.test.js	locale.js	<any>
 modtools.test.js	locks.js	<any>
+modtools.test.js	look-base.js	<any>
 modtools.test.js	look.js	<any>
 modtools.test.js	mannequin.js	<any>
 modtools.test.js	measure.js	<any>
@@ -10780,7 +10879,8 @@ month.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 month.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 month.test.js	locale.js	<loaded>	appLocale
 month.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-month.test.js	look.js	<loaded>	lookOn	renderLookSetting
+month.test.js	look-base.js	<loaded>	lookOn
+month.test.js	look.js	<loaded>	renderLookSetting
 month.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 month.test.js	measure.js	<loaded>
 month.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk
@@ -10881,7 +10981,8 @@ motif.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	patSummary	renderWardrob
 motif.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow	kitUserEdit
 motif.test.js	locale.js	<loaded>	appLocale
 motif.test.js	locks.js	<loaded>
-motif.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+motif.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+motif.test.js	look.js	<loaded>	lookSave
 motif.test.js	mannequin.js	<loaded>	@{}
 motif.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	aiSignals	applyMeasured	applyWb	calibLab	clamp01	closeRead	colRef	colourVerdicts	measConf	measEdgeCut	measHint	measKL	measSplit	measureAndApply	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	sharpness	urlCanvas	verdictMode	wbGains	wbRead	wbSolidOk	wbSolidStats
 motif.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -10997,6 +11098,7 @@ moveoutfit.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 moveoutfit.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 moveoutfit.test.js	locale.js	<loaded>	appLocale
 moveoutfit.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+moveoutfit.test.js	look-base.js	<loaded>
 moveoutfit.test.js	look.js	<loaded>
 moveoutfit.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 moveoutfit.test.js	measure.js	<loaded>
@@ -11092,7 +11194,8 @@ mqcloth.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 mqcloth.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 mqcloth.test.js	locale.js	<loaded>	appLocale
 mqcloth.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-mqcloth.test.js	look.js	<loaded>	lookOn	renderLookSetting
+mqcloth.test.js	look-base.js	<loaded>	lookOn
+mqcloth.test.js	look.js	<loaded>	renderLookSetting
 mqcloth.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 mqcloth.test.js	measure.js	<loaded>
 mqcloth.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -11189,7 +11292,8 @@ multi.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 multi.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow
 multi.test.js	locale.js	<loaded>	appLocale
 multi.test.js	locks.js	<loaded>
-multi.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+multi.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+multi.test.js	look.js	<loaded>	lookSave
 multi.test.js	mannequin.js	<loaded>	@{}
 multi.test.js	measure.js	<loaded>	aiSignals	applyWb	wbGains	wbRead
 multi.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -11289,6 +11393,7 @@ navfit.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 navfit.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	homeStandalone	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 navfit.test.js	locale.js	<loaded>	appLocale
 navfit.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+navfit.test.js	look-base.js	<loaded>
 navfit.test.js	look.js	<loaded>
 navfit.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 navfit.test.js	measure.js	<loaded>
@@ -11386,7 +11491,8 @@ newuser.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 newuser.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 newuser.test.js	locale.js	<loaded>	appLocale
 newuser.test.js	locks.js	<loaded>
-newuser.test.js	look.js	<loaded>	lookOn	renderLookSetting
+newuser.test.js	look-base.js	<loaded>	lookOn
+newuser.test.js	look.js	<loaded>	renderLookSetting
 newuser.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 newuser.test.js	measure.js	<loaded>
 newuser.test.js	merge.js	<any>	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -11481,7 +11587,8 @@ occasions.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 occasions.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitStartRow
 occasions.test.js	locale.js	<loaded>	appLocale
 occasions.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
-occasions.test.js	look.js	<loaded>	lookOn	renderLookSetting
+occasions.test.js	look-base.js	<loaded>	lookOn
+occasions.test.js	look.js	<loaded>	renderLookSetting
 occasions.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 occasions.test.js	measure.js	<loaded>
 occasions.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -11582,6 +11689,7 @@ ocpblouse.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 ocpblouse.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 ocpblouse.test.js	locale.js	<loaded>	appLocale
 ocpblouse.test.js	locks.js	<loaded>	unlockClash
+ocpblouse.test.js	look-base.js	<loaded>
 ocpblouse.test.js	look.js	<loaded>
 ocpblouse.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 ocpblouse.test.js	measure.js	<loaded>
@@ -11723,6 +11831,7 @@ ocpcloth.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 ocpcloth.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 ocpcloth.test.js	locale.js	<loaded>	appLocale
 ocpcloth.test.js	locks.js	<loaded>
+ocpcloth.test.js	look-base.js	<loaded>
 ocpcloth.test.js	look.js	<loaded>
 ocpcloth.test.js	mannequin.js	<loaded>	@{}
 ocpcloth.test.js	measure.js	<loaded>
@@ -11840,7 +11949,8 @@ onorder.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	itemPause	i
 onorder.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitUserEdit	set	setKitNoMine
 onorder.test.js	locale.js	<loaded>	appLocale
 onorder.test.js	locks.js	<loaded>
-onorder.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+onorder.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+onorder.test.js	look.js	<loaded>	lookSave
 onorder.test.js	mannequin.js	<loaded>	@{}
 onorder.test.js	measure.js	<loaded>
 onorder.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -11935,7 +12045,8 @@ owncolany.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe	sete
 owncolany.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 owncolany.test.js	locale.js	<loaded>	appLocale
 owncolany.test.js	locks.js	<loaded>
-owncolany.test.js	look.js	<loaded>	lookOn
+owncolany.test.js	look-base.js	<loaded>	lookOn
+owncolany.test.js	look.js	<loaded>
 owncolany.test.js	mannequin.js	<loaded>	@{}
 owncolany.test.js	measure.js	<loaded>
 owncolany.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -12030,7 +12141,8 @@ ownmaterials.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCare
 ownmaterials.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 ownmaterials.test.js	locale.js	<loaded>	appLocale
 ownmaterials.test.js	locks.js	<loaded>
-ownmaterials.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave	renderLookSetting
+ownmaterials.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+ownmaterials.test.js	look.js	<loaded>	lookSave	renderLookSetting
 ownmaterials.test.js	mannequin.js	<loaded>	@{}
 ownmaterials.test.js	measure.js	<loaded>	aiSignals	closeRead	paperCopy	paperKey	paperNow	paperOf	urlCanvas	wbRead
 ownmaterials.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -12125,7 +12237,8 @@ ownnames.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	
 ownnames.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 ownnames.test.js	locale.js	<loaded>	appLocale
 ownnames.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-ownnames.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+ownnames.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+ownnames.test.js	look.js	<loaded>	renderLookSetting
 ownnames.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 ownnames.test.js	measure.js	<loaded>
 ownnames.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -12223,7 +12336,8 @@ pack.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 pack.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 pack.test.js	locale.js	<loaded>	appLocale
 pack.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-pack.test.js	look.js	<loaded>	lookOn	renderLookSetting
+pack.test.js	look-base.js	<loaded>	lookOn
+pack.test.js	look.js	<loaded>	renderLookSetting
 pack.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 pack.test.js	measure.js	<loaded>
 pack.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -12318,7 +12432,8 @@ packcare-taps.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardro
 packcare-taps.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	get kitSampling	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAdopt	kitDayOwn	kitDelMany	kitEdited	kitFixOldImports	kitHasSample	kitItem	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleSig	kitStartRow	kitStore	kitTombs	kitTx	kitUserEdit
 packcare-taps.test.js	locale.js	<loaded>	appLocale
 packcare-taps.test.js	locks.js	<loaded>	careUnlock	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-packcare-taps.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+packcare-taps.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+packcare-taps.test.js	look.js	<loaded>	renderLookSetting
 packcare-taps.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 packcare-taps.test.js	measure.js	<loaded>
 packcare-taps.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -12412,6 +12527,7 @@ pairrepeat.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 pairrepeat.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 pairrepeat.test.js	locale.js	<loaded>	appLocale
 pairrepeat.test.js	locks.js	<loaded>
+pairrepeat.test.js	look-base.js	<loaded>
 pairrepeat.test.js	look.js	<loaded>
 pairrepeat.test.js	mannequin.js	<loaded>	@{}
 pairrepeat.test.js	measure.js	<loaded>
@@ -12506,7 +12622,8 @@ paperstatus.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareS
 paperstatus.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitBs	kitClose	kitCloseupGuide	kitClothPic	kitDraw	kitEl	kitGuideTap	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleNote	kitShut	kitStartRow	kitUserEdit	pic
 paperstatus.test.js	locale.js	<loaded>	appLocale
 paperstatus.test.js	locks.js	<loaded>
-paperstatus.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+paperstatus.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+paperstatus.test.js	look.js	<loaded>
 paperstatus.test.js	mannequin.js	<loaded>	@{}
 paperstatus.test.js	measure.js	<loaded>	closeRead	measEdgeCut	measureCloth	paperKey	paperNow	paperOf	urlCanvas	wbRead	wbSolidOk	wbSolidStats
 paperstatus.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -12603,7 +12720,8 @@ paste.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@doc
 paste.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow
 paste.test.js	locale.js	<loaded>	appLocale
 paste.test.js	locks.js	<loaded>
-paste.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave	renderLookSetting
+paste.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+paste.test.js	look.js	<loaded>	lookSave	renderLookSetting
 paste.test.js	mannequin.js	<loaded>	@{}
 paste.test.js	measure.js	<loaded>	applyWb	calibLab	colRef	measEdgeCut	measureCloth	nearestCols	wbGains	wbRead
 paste.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -12702,7 +12820,8 @@ photoedit.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum
 photoedit.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 photoedit.test.js	locale.js	<loaded>	appLocale
 photoedit.test.js	locks.js	<loaded>
-photoedit.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+photoedit.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+photoedit.test.js	look.js	<loaded>
 photoedit.test.js	mannequin.js	<loaded>	@{}
 photoedit.test.js	measure.js	<loaded>	applyWb
 photoedit.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -12797,7 +12916,8 @@ pickbugs.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@
 pickbugs.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 pickbugs.test.js	locale.js	<loaded>	appLocale
 pickbugs.test.js	locks.js	<loaded>
-pickbugs.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+pickbugs.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+pickbugs.test.js	look.js	<loaded>	renderLookSetting
 pickbugs.test.js	mannequin.js	<loaded>	@{}
 pickbugs.test.js	measure.js	<loaded>
 pickbugs.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -12893,6 +13013,7 @@ picker.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 picker.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 picker.test.js	locale.js	<loaded>	appLocale
 picker.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
+picker.test.js	look-base.js	<loaded>
 picker.test.js	look.js	<loaded>
 picker.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 picker.test.js	measure.js	<loaded>
@@ -12987,7 +13108,8 @@ pickerfocus.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe
 pickerfocus.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 pickerfocus.test.js	locale.js	<loaded>	appLocale
 pickerfocus.test.js	locks.js	<loaded>
-pickerfocus.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+pickerfocus.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+pickerfocus.test.js	look.js	<loaded>
 pickerfocus.test.js	mannequin.js	<loaded>	@{}
 pickerfocus.test.js	measure.js	<loaded>
 pickerfocus.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -13082,6 +13204,7 @@ pieces.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 pieces.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 pieces.test.js	locale.js	<loaded>	appLocale
 pieces.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
+pieces.test.js	look-base.js	<loaded>
 pieces.test.js	look.js	<loaded>
 pieces.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 pieces.test.js	measure.js	<loaded>
@@ -13177,6 +13300,7 @@ planner-pairs.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 planner-pairs.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 planner-pairs.test.js	locale.js	<loaded>	appLocale
 planner-pairs.test.js	locks.js	<loaded>
+planner-pairs.test.js	look-base.js	<loaded>
 planner-pairs.test.js	look.js	<loaded>
 planner-pairs.test.js	mannequin.js	<loaded>	@{}
 planner-pairs.test.js	measure.js	<loaded>
@@ -13273,7 +13397,8 @@ planner-repeats.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 planner-repeats.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow
 planner-repeats.test.js	locale.js	<loaded>	appLocale
 planner-repeats.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-planner-repeats.test.js	look.js	<loaded>	lookOn	lookSave
+planner-repeats.test.js	look-base.js	<loaded>	lookOn
+planner-repeats.test.js	look.js	<loaded>	lookSave
 planner-repeats.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 planner-repeats.test.js	measure.js	<loaded>
 planner-repeats.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -13368,7 +13493,8 @@ planner-rules.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 planner-rules.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 planner-rules.test.js	locale.js	<loaded>	appLocale
 planner-rules.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
-planner-rules.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+planner-rules.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+planner-rules.test.js	look.js	<loaded>	renderLookSetting
 planner-rules.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 planner-rules.test.js	measure.js	<loaded>
 planner-rules.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -13463,6 +13589,7 @@ planreview.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 planreview.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 planreview.test.js	locale.js	<loaded>	appLocale
 planreview.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
+planreview.test.js	look-base.js	<loaded>
 planreview.test.js	look.js	<loaded>
 planreview.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 planreview.test.js	measure.js	<loaded>
@@ -13558,7 +13685,8 @@ pocketsquare.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 pocketsquare.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitColour	kitCols	kitFixOldImports	kitHasSample	kitHead	kitLeft	kitNorm	kitPatWords	kitPattern	kitQtyIn	kitRead	kitRow	kitSampleBanner	kitSampleMigrate	kitSplit	kitStartRow	kitType	kitTypeOne	kitWords
 pocketsquare.test.js	locale.js	<loaded>	appLocale
 pocketsquare.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
-pocketsquare.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+pocketsquare.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+pocketsquare.test.js	look.js	<loaded>
 pocketsquare.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 pocketsquare.test.js	measure.js	<loaded>
 pocketsquare.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -13652,7 +13780,8 @@ records.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	i
 records.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 records.test.js	locale.js	<loaded>	appLocale
 records.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-records.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+records.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+records.test.js	look.js	<loaded>
 records.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 records.test.js	measure.js	<loaded>
 records.test.js	merge.js	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -13755,7 +13884,8 @@ remind.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 remind.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 remind.test.js	locale.js	<loaded>	appLocale
 remind.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
-remind.test.js	look.js	<loaded>	lookOn	renderLookSetting
+remind.test.js	look-base.js	<loaded>	lookOn
+remind.test.js	look.js	<loaded>	renderLookSetting
 remind.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 remind.test.js	measure.js	<loaded>
 remind.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk
@@ -13858,7 +13988,8 @@ restacts.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@
 restacts.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitBs	kitClose	kitDraw	kitEl	kitFixOldImports	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 restacts.test.js	locale.js	<loaded>	appLocale
 restacts.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-restacts.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+restacts.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+restacts.test.js	look.js	<loaded>	renderLookSetting
 restacts.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 restacts.test.js	measure.js	<loaded>	closeRead	colourVerdicts	measEdgeCut	measureCard	measureCloth	paperKey	paperNow	paperOf	undoMeasured	urlCanvas	wbRead
 restacts.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -13954,7 +14085,8 @@ rollback.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 rollback.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 rollback.test.js	locale.js	<loaded>	appLocale
 rollback.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-rollback.test.js	look.js	<loaded>	lookOn	renderLookSetting
+rollback.test.js	look-base.js	<loaded>	lookOn
+rollback.test.js	look.js	<loaded>	renderLookSetting
 rollback.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 rollback.test.js	measure.js	<loaded>
 rollback.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	itemBase	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeSplit	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	subStampOf	tombWins
@@ -14056,7 +14188,8 @@ rotation-pause.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	item
 rotation-pause.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit	set	setKitNoMine
 rotation-pause.test.js	locale.js	<loaded>	appLocale
 rotation-pause.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
-rotation-pause.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+rotation-pause.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+rotation-pause.test.js	look.js	<loaded>
 rotation-pause.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 rotation-pause.test.js	measure.js	<loaded>
 rotation-pause.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -14155,7 +14288,8 @@ run.js: add an item without a photo; it persists	itemsheet.js	<loaded>	@{constel
 run.js: add an item without a photo; it persists	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	homeStandalone	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow
 run.js: add an item without a photo; it persists	locale.js	<loaded>	appLocale
 run.js: add an item without a photo; it persists	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-run.js: add an item without a photo; it persists	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+run.js: add an item without a photo; it persists	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+run.js: add an item without a photo; it persists	look.js	<loaded>	lookSave
 run.js: add an item without a photo; it persists	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 run.js: add an item without a photo; it persists	measure.js	<loaded>
 run.js: add an item without a photo; it persists	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -14250,6 +14384,7 @@ run.js: figure draws the tie, and the shirt when there is no jacket	itemsheet.js
 run.js: figure draws the tie, and the shirt when there is no jacket	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	homeStandalone	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 run.js: figure draws the tie, and the shirt when there is no jacket	locale.js	<loaded>	appLocale
 run.js: figure draws the tie, and the shirt when there is no jacket	locks.js	<loaded>
+run.js: figure draws the tie, and the shirt when there is no jacket	look-base.js	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	look.js	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 run.js: figure draws the tie, and the shirt when there is no jacket	measure.js	<loaded>
@@ -14345,6 +14480,7 @@ run.js: outfit score	itemsheet.js	<loaded>	@{constel$wardrobe}
 run.js: outfit score	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	homeStandalone	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 run.js: outfit score	locale.js	<loaded>	appLocale
 run.js: outfit score	locks.js	<loaded>
+run.js: outfit score	look-base.js	<loaded>
 run.js: outfit score	look.js	<loaded>
 run.js: outfit score	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern
 run.js: outfit score	measure.js	<loaded>
@@ -14439,6 +14575,7 @@ run.js: pattern detection on synthetic fabric photos	itemsheet.js	<loaded>	@{con
 run.js: pattern detection on synthetic fabric photos	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	homeStandalone	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 run.js: pattern detection on synthetic fabric photos	locale.js	<loaded>	appLocale
 run.js: pattern detection on synthetic fabric photos	locks.js	<loaded>
+run.js: pattern detection on synthetic fabric photos	look-base.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	look.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	mannequin.js	<loaded>	@{}
 run.js: pattern detection on synthetic fabric photos	measure.js	<loaded>
@@ -14534,6 +14671,7 @@ run.js: planner: independent outfit checklist	itemsheet.js	<loaded>	@{constel$wa
 run.js: planner: independent outfit checklist	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	homeStandalone	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 run.js: planner: independent outfit checklist	locale.js	<loaded>	appLocale
 run.js: planner: independent outfit checklist	locks.js	<loaded>
+run.js: planner: independent outfit checklist	look-base.js	<loaded>
 run.js: planner: independent outfit checklist	look.js	<loaded>
 run.js: planner: independent outfit checklist	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern
 run.js: planner: independent outfit checklist	measure.js	<loaded>
@@ -14628,6 +14766,7 @@ run.js: planner: shoes, belts, leather and metals	itemsheet.js	<loaded>	@{conste
 run.js: planner: shoes, belts, leather and metals	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	homeStandalone	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 run.js: planner: shoes, belts, leather and metals	locale.js	<loaded>	appLocale
 run.js: planner: shoes, belts, leather and metals	locks.js	<loaded>
+run.js: planner: shoes, belts, leather and metals	look-base.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	look.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>shirtButton
 run.js: planner: shoes, belts, leather and metals	measure.js	<loaded>
@@ -14724,6 +14863,7 @@ run.js: renders the outfit without errors	itemsheet.js	<loaded>	@{constel$wardro
 run.js: renders the outfit without errors	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	homeStandalone	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 run.js: renders the outfit without errors	locale.js	<loaded>	appLocale
 run.js: renders the outfit without errors	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+run.js: renders the outfit without errors	look-base.js	<loaded>
 run.js: renders the outfit without errors	look.js	<loaded>
 run.js: renders the outfit without errors	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 run.js: renders the outfit without errors	measure.js	<loaded>
@@ -14818,6 +14958,7 @@ run.js: swipe edge cases and month crossing	itemsheet.js	<loaded>	@{constel$ward
 run.js: swipe edge cases and month crossing	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	homeStandalone	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 run.js: swipe edge cases and month crossing	locale.js	<loaded>	appLocale
 run.js: swipe edge cases and month crossing	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+run.js: swipe edge cases and month crossing	look-base.js	<loaded>
 run.js: swipe edge cases and month crossing	look.js	<loaded>
 run.js: swipe edge cases and month crossing	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 run.js: swipe edge cases and month crossing	measure.js	<loaded>
@@ -14913,6 +15054,7 @@ run.js: swipe moves only the outfit, across viewports	itemsheet.js	<loaded>	@{co
 run.js: swipe moves only the outfit, across viewports	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	homeStandalone	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 run.js: swipe moves only the outfit, across viewports	locale.js	<loaded>	appLocale
 run.js: swipe moves only the outfit, across viewports	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+run.js: swipe moves only the outfit, across viewports	look-base.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	look.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 run.js: swipe moves only the outfit, across viewports	measure.js	<loaded>
@@ -15008,6 +15150,7 @@ safeport.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 safeport.test.js	kit.js	<loaded>	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 safeport.test.js	locale.js	<loaded>	appLocale
 safeport.test.js	locks.js	<loaded>
+safeport.test.js	look-base.js	<loaded>
 safeport.test.js	look.js	<loaded>
 safeport.test.js	mannequin.js	<loaded>	@{}
 safeport.test.js	measure.js	<loaded>
@@ -15451,7 +15594,8 @@ safety.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 safety.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAdopt	kitEdited	kitFail	kitFixOldImports	kitHasSample	kitItem	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleSig	kitSaved	kitStartRow	kitStore	kitTx
 safety.test.js	locale.js	<loaded>	appLocale
 safety.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-safety.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+safety.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+safety.test.js	look.js	<loaded>	lookSave
 safety.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 safety.test.js	measure.js	<loaded>	aiSignals	applyMeasured	applyWb	measureAndApply	measureCard	wbGains	wbRead
 safety.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -15546,6 +15690,7 @@ safetysync.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 safetysync.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 safetysync.test.js	locale.js	<loaded>	appLocale
 safetysync.test.js	locks.js	<loaded>
+safetysync.test.js	look-base.js	<loaded>
 safetysync.test.js	look.js	<loaded>
 safetysync.test.js	mannequin.js	<loaded>	@{}
 safetysync.test.js	measure.js	<loaded>
@@ -15647,7 +15792,8 @@ sample.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@do
 sample.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	get kitImp	get kitSampling	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitAdds	kitAdopt	kitBd	kitBs	kitBsAway	kitClose	kitColour	kitCols	kitDayOwn	kitDelMany	kitDupKey	kitDupMark	kitEdited	kitEl	kitFixOldImports	kitHasSample	kitHead	kitHist	kitImpBtn	kitImportGo	kitImportOpen	kitImportSwipe	kitImportText	kitInert	kitItem	kitLastImp	kitLastRow	kitLeft	kitMetal	kitNorm	kitOldMine	kitPasteFocus	kitPasteShow	kitPatWords	kitPattern	kitPrevDraw	kitQtyIn	kitQtyOut	kitRead	kitRow	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleSig	kitSampleTag	kitSampleUndo	kitSdGet	kitSdSig	kitSends	kitSentStamp	kitSetupSampleTap	kitShareDone	kitShareFilter	kitSplit	kitStartRow	kitStore	kitTombs	kitTx	kitType	kitTypeOne	kitUpds	kitUserEdit	kitWords	set	set kitSdNew	setKitNoMine
 sample.test.js	locale.js	<loaded>	appLocale
 sample.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-sample.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+sample.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+sample.test.js	look.js	<loaded>
 sample.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 sample.test.js	measure.js	<loaded>
 sample.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -15765,6 +15911,7 @@ scoreanim.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>
 scoreanim.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 scoreanim.test.js	locale.js	<loaded>	appLocale
 scoreanim.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+scoreanim.test.js	look-base.js	<loaded>
 scoreanim.test.js	look.js	<loaded>
 scoreanim.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 scoreanim.test.js	measure.js	<loaded>
@@ -15860,6 +16007,7 @@ scoredials.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 scoredials.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 scoredials.test.js	locale.js	<loaded>	appLocale
 scoredials.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
+scoredials.test.js	look-base.js	<loaded>
 scoredials.test.js	look.js	<loaded>
 scoredials.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 scoredials.test.js	measure.js	<loaded>
@@ -15956,6 +16104,7 @@ scorefix.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 scorefix.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 scorefix.test.js	locale.js	<loaded>	appLocale
 scorefix.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
+scorefix.test.js	look-base.js	<loaded>
 scorefix.test.js	look.js	<loaded>
 scorefix.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 scorefix.test.js	measure.js	<loaded>
@@ -16050,7 +16199,8 @@ server-limits.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 server-limits.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 server-limits.test.js	locale.js	<loaded>	appLocale
 server-limits.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-server-limits.test.js	look.js	<loaded>	lookOn	renderLookSetting
+server-limits.test.js	look-base.js	<loaded>	lookOn
+server-limits.test.js	look.js	<loaded>	renderLookSetting
 server-limits.test.js	mannequin.js	<loaded>	@{}
 server-limits.test.js	measure.js	<loaded>
 server-limits.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -16173,7 +16323,8 @@ sett.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	itemReadPat	iv
 sett.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitSends	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 sett.test.js	locale.js	<loaded>	appLocale
 sett.test.js	locks.js	<loaded>
-sett.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+sett.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+sett.test.js	look.js	<loaded>	lookSave
 sett.test.js	mannequin.js	<loaded>	@{}
 sett.test.js	measure.js	<loaded>	aiSignals	applyMeasured	applyWb	closeRead	measureAndApply	measureCard	wbGains	wbRead	wbSolidOk	wbSolidStats
 sett.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -16275,6 +16426,7 @@ settag.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 settag.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 settag.test.js	locale.js	<loaded>	appLocale
 settag.test.js	locks.js	<loaded>
+settag.test.js	look-base.js	<loaded>
 settag.test.js	look.js	<loaded>
 settag.test.js	mannequin.js	<loaded>	@{}
 settag.test.js	measure.js	<loaded>
@@ -16370,7 +16522,8 @@ settingsin.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 settingsin.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit	safariRemind
 settingsin.test.js	locale.js	<loaded>	appLocale
 settingsin.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-settingsin.test.js	look.js	<loaded>	lookOn	renderLookSetting
+settingsin.test.js	look-base.js	<loaded>	lookOn
+settingsin.test.js	look.js	<loaded>	renderLookSetting
 settingsin.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 settingsin.test.js	measure.js	<loaded>
 settingsin.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -16465,6 +16618,7 @@ settingsmerge.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 settingsmerge.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 settingsmerge.test.js	locale.js	<loaded>	appLocale
 settingsmerge.test.js	locks.js	<loaded>
+settingsmerge.test.js	look-base.js	<loaded>
 settingsmerge.test.js	look.js	<loaded>
 settingsmerge.test.js	mannequin.js	<loaded>	@{}
 settingsmerge.test.js	measure.js	<loaded>
@@ -16567,7 +16721,8 @@ settingsui.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 settingsui.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 settingsui.test.js	locale.js	<loaded>	appLocale
 settingsui.test.js	locks.js	<loaded>
-settingsui.test.js	look.js	<loaded>	lookOn	renderLookSetting
+settingsui.test.js	look-base.js	<loaded>	lookOn
+settingsui.test.js	look.js	<loaded>	renderLookSetting
 settingsui.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 settingsui.test.js	measure.js	<loaded>
 settingsui.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -16663,7 +16818,8 @@ setup.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@doc
 setup.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	get body	get title	homeAbout	homeAndroid	homeBrowser	homeCopyBtn	homeIOS	homeIPad	homeLabel	homeNeeded	homeNote	homeOpen	homePic	homeRisk	homeShareStep	homeStandalone	homeSteps	homeTester	kitAdopt	kitBs	kitClose	kitClothPic	kitDraw	kitEdited	kitEl	kitFixOldImports	kitGo	kitHasSample	kitHist	kitInert	kitItem	kitNextTap	kitOpen	kitPatternPic	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleSig	kitScorePic	kitSends	kitSetupSampleTap	kitShadePic	kitShareDone	kitShareFilter	kitStartRow	kitStore	kitTx	kitUserEdit	kitWears	pic	safariRemind	tourAgain	tourAgainTap	tourOpen	tourSeen
 setup.test.js	locale.js	<loaded>	appLocale
 setup.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-setup.test.js	look.js	<loaded>	lookOn	renderLookSetting
+setup.test.js	look-base.js	<loaded>	lookOn
+setup.test.js	look.js	<loaded>	renderLookSetting
 setup.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 setup.test.js	measure.js	<loaded>
 setup.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -16759,7 +16915,8 @@ shade.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivD
 shade.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 shade.test.js	locale.js	<loaded>	appLocale
 shade.test.js	locks.js	<loaded>
-shade.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+shade.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+shade.test.js	look.js	<loaded>	lookSave
 shade.test.js	mannequin.js	<loaded>	@{}
 shade.test.js	measure.js	<loaded>	aiFor	calibLab	closeRead	colRef	colourVerdicts	measEdgeCut	measKL	measureCloth	nearestCols	paperKey	paperNow	paperOf	urlCanvas	verdictMode	wbRead
 shade.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -17074,6 +17231,7 @@ sharedmasters.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 sharedmasters.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow
 sharedmasters.test.js	locale.js	<loaded>	appLocale
 sharedmasters.test.js	locks.js	<loaded>
+sharedmasters.test.js	look-base.js	<loaded>
 sharedmasters.test.js	look.js	<loaded>
 sharedmasters.test.js	mannequin.js	<loaded>	@{}
 sharedmasters.test.js	measure.js	<loaded>
@@ -17181,7 +17339,8 @@ sharpclose.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSu
 sharpclose.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSends	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 sharpclose.test.js	locale.js	<loaded>	appLocale
 sharpclose.test.js	locks.js	<loaded>
-sharpclose.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+sharpclose.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+sharpclose.test.js	look.js	<loaded>
 sharpclose.test.js	mannequin.js	<loaded>	@{}
 sharpclose.test.js	measure.js	<loaded>	MULTI_PATS	applyWb	calibLab	closeRead	colRef	measEdgeCut	measHint	measKL	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	urlCanvas	wbRead	wbSolidOk	wbSolidStats
 sharpclose.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -17276,7 +17435,8 @@ shellfix.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 shellfix.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
 shellfix.test.js	locale.js	<loaded>	appLocale
 shellfix.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-shellfix.test.js	look.js	<loaded>	lookOn	renderLookSetting
+shellfix.test.js	look-base.js	<loaded>	lookOn
+shellfix.test.js	look.js	<loaded>	renderLookSetting
 shellfix.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 shellfix.test.js	measure.js	<loaded>
 shellfix.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -17371,7 +17531,8 @@ shirtweave.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 shirtweave.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow	kitUserEdit
 shirtweave.test.js	locale.js	<loaded>	appLocale
 shirtweave.test.js	locks.js	<loaded>
-shirtweave.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+shirtweave.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+shirtweave.test.js	look.js	<loaded>	lookSave
 shirtweave.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 shirtweave.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	aiSignals	applyMeasured	applyWb	calibLab	clamp01	closeRead	colRef	colourVerdicts	measConf	measEdgeCut	measHint	measKL	measureAndApply	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	plainCloth	sharpness	typeGroup	urlCanvas	verdictMode	wbGains	wbRead
 shirtweave.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -17474,6 +17635,7 @@ shop.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@docu
 shop.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
 shop.test.js	locale.js	<loaded>	appLocale
 shop.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+shop.test.js	look-base.js	<loaded>
 shop.test.js	look.js	<loaded>
 shop.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 shop.test.js	measure.js	<loaded>
@@ -17569,6 +17731,7 @@ shopstay.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 shopstay.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 shopstay.test.js	locale.js	<loaded>	appLocale
 shopstay.test.js	locks.js	<loaded>
+shopstay.test.js	look-base.js	<loaded>
 shopstay.test.js	look.js	<loaded>
 shopstay.test.js	mannequin.js	<loaded>	@{}
 shopstay.test.js	measure.js	<loaded>
@@ -17664,6 +17827,7 @@ shopswipe.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 shopswipe.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 shopswipe.test.js	locale.js	<loaded>	appLocale
 shopswipe.test.js	locks.js	<loaded>
+shopswipe.test.js	look-base.js	<loaded>
 shopswipe.test.js	look.js	<loaded>
 shopswipe.test.js	mannequin.js	<loaded>	@{}
 shopswipe.test.js	measure.js	<loaded>
@@ -17759,7 +17923,8 @@ sockpatterns.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCare
 sockpatterns.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 sockpatterns.test.js	locale.js	<loaded>	appLocale
 sockpatterns.test.js	locks.js	<loaded>
-sockpatterns.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+sockpatterns.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+sockpatterns.test.js	look.js	<loaded>	lookSave
 sockpatterns.test.js	mannequin.js	<loaded>	@{}
 sockpatterns.test.js	measure.js	<loaded>	aiSignals	applyMeasured	applyWb	measureAndApply	measureCard	wbGains	wbRead
 sockpatterns.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -17853,7 +18018,8 @@ socktoe.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	i
 socktoe.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitShareFilter	kitStartRow
 socktoe.test.js	locale.js	<loaded>	appLocale
 socktoe.test.js	locks.js	<loaded>
-socktoe.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+socktoe.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+socktoe.test.js	look.js	<loaded>
 socktoe.test.js	mannequin.js	<loaded>	@{}
 socktoe.test.js	measure.js	<loaded>
 socktoe.test.js	merge.js	<loaded>	mergeList	mergeStateBy	setEntries	setHash	setKeys	setStampOf	stateSig	subOk
@@ -17975,6 +18141,7 @@ sourcerules.test.js	itemsheet.js	<any>
 sourcerules.test.js	kit.js	<any>
 sourcerules.test.js	locale.js	<any>
 sourcerules.test.js	locks.js	<any>
+sourcerules.test.js	look-base.js	<any>
 sourcerules.test.js	look.js	<any>
 sourcerules.test.js	mannequin.js	<any>
 sourcerules.test.js	measure.js	<any>
@@ -18067,6 +18234,7 @@ speed.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 speed.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit	safariRemind
 speed.test.js	locale.js	<loaded>	appLocale
 speed.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+speed.test.js	look-base.js	<loaded>
 speed.test.js	look.js	<loaded>
 speed.test.js	manifest.webmanifest	<any>
 speed.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
@@ -18162,6 +18330,7 @@ staledevice.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 staledevice.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	safariRemind
 staledevice.test.js	locale.js	<loaded>	appLocale
 staledevice.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+staledevice.test.js	look-base.js	<loaded>
 staledevice.test.js	look.js	<loaded>
 staledevice.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 staledevice.test.js	measure.js	<loaded>
@@ -18264,7 +18433,8 @@ stats.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 stats.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitEdited	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 stats.test.js	locale.js	<loaded>	appLocale
 stats.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-stats.test.js	look.js	<loaded>	lookOn	renderLookSetting
+stats.test.js	look-base.js	<loaded>	lookOn
+stats.test.js	look.js	<loaded>	renderLookSetting
 stats.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 stats.test.js	measure.js	<loaded>
 stats.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeSettingsBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -18362,7 +18532,8 @@ stylea11y.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	@{constel$ward
 stylea11y.test.js	kit.js	<any>	<loaded>	@addEventListenerkeydown	get	get body	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	importOpenTap	kitBd	kitBs	kitBsAway	kitClose	kitDraw	kitEl	kitFixOldImports	kitHasSample	kitHist	kitImportOpen	kitImportSwipe	kitInert	kitLastImp	kitLastRow	kitOpen	kitPasteFocus	kitPasteShow	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitScorePic	kitStartRow	kitWears	tourAgain	tourAgainTap	tourOpen
 stylea11y.test.js	locale.js	<any>	<loaded>	appLocale
 stylea11y.test.js	locks.js	<any>	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-stylea11y.test.js	look.js	<any>	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+stylea11y.test.js	look-base.js	<any>	<loaded>	lookCu	lookHasPat	lookOn
+stylea11y.test.js	look.js	<any>	<loaded>	renderLookSetting
 stylea11y.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 stylea11y.test.js	measure.js	<any>	<loaded>
 stylea11y.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -18469,6 +18640,7 @@ sw.test.js	lab/gl-bench.html	<any>
 sw.test.js	lab/gl-bench.js	<any>
 sw.test.js	locale.js	<any>	<loaded>	appLocale
 sw.test.js	locks.js	<any>	<loaded>
+sw.test.js	look-base.js	<any>	<loaded>
 sw.test.js	look.js	<any>	<loaded>
 sw.test.js	manifest.webmanifest	<any>
 sw.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
@@ -18572,6 +18744,7 @@ swatchzoom.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 swatchzoom.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 swatchzoom.test.js	locale.js	<loaded>	appLocale
 swatchzoom.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+swatchzoom.test.js	look-base.js	<loaded>
 swatchzoom.test.js	look.js	<loaded>
 swatchzoom.test.js	mannequin.js	<loaded>	@{}
 swatchzoom.test.js	measure.js	<loaded>
@@ -18667,7 +18840,8 @@ sync.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 sync.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	safariRemind
 sync.test.js	locale.js	<loaded>	appLocale
 sync.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-sync.test.js	look.js	<loaded>	lookOn	renderLookSetting
+sync.test.js	look-base.js	<loaded>	lookOn
+sync.test.js	look.js	<loaded>	renderLookSetting
 sync.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 sync.test.js	measure.js	<loaded>
 sync.test.js	merge.js	<loaded>	dayFlat	dayStamp	dayUnflat	dayWins	fieldStamp	fsOk	fsPack	itemBase	mergeDay	mergeItem	mergeList	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -18768,7 +18942,8 @@ syncwrite.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 syncwrite.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	safariRemind
 syncwrite.test.js	locale.js	<loaded>	appLocale
 syncwrite.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-syncwrite.test.js	look.js	<loaded>	lookOn	renderLookSetting
+syncwrite.test.js	look-base.js	<loaded>	lookOn
+syncwrite.test.js	look.js	<loaded>	renderLookSetting
 syncwrite.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 syncwrite.test.js	measure.js	<loaded>
 syncwrite.test.js	merge.js	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	itemBase	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -18869,6 +19044,7 @@ tabload.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 tabload.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
 tabload.test.js	locale.js	<loaded>	appLocale
 tabload.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+tabload.test.js	look-base.js	<loaded>
 tabload.test.js	look.js	<loaded>
 tabload.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 tabload.test.js	measure.js	<loaded>
@@ -18964,6 +19140,7 @@ tabmove.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 tabmove.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 tabmove.test.js	locale.js	<loaded>	appLocale
 tabmove.test.js	locks.js	<loaded>
+tabmove.test.js	look-base.js	<loaded>
 tabmove.test.js	look.js	<loaded>
 tabmove.test.js	mannequin.js	<loaded>	@{}
 tabmove.test.js	measure.js	<loaded>
@@ -19059,7 +19236,8 @@ tagger.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 tagger.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 tagger.test.js	locale.js	<loaded>	appLocale
 tagger.test.js	locks.js	<loaded>
-tagger.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+tagger.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+tagger.test.js	look.js	<loaded>
 tagger.test.js	mannequin.js	<loaded>	@{}
 tagger.test.js	measure.js	<loaded>	aiSignals	applyMeasured	applyWb	measureAndApply	measureCard	wbGains	wbRead
 tagger.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -19163,7 +19341,8 @@ tagging.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 tagging.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow
 tagging.test.js	locale.js	<loaded>	appLocale
 tagging.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-tagging.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave	renderLookSetting
+tagging.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+tagging.test.js	look.js	<loaded>	lookSave	renderLookSetting
 tagging.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 tagging.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	aiSignals	applyMeasured	applyWb	calibLab	clamp01	closeRead	colRef	colourVerdicts	measConf	measEdgeCut	measHint	measKL	measureAndApply	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	plainCloth	sharpness	typeGroup	urlCanvas	verdictMode	wbGains	wbRead	wbSolidOk	wbSolidStats
 tagging.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -19264,7 +19443,8 @@ tagreads.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 tagreads.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitHasSample	kitSampleBanner	kitStartRow	kitUserEdit
 tagreads.test.js	locale.js	<loaded>	appLocale
 tagreads.test.js	locks.js	<loaded>
-tagreads.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+tagreads.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+tagreads.test.js	look.js	<loaded>
 tagreads.test.js	mannequin.js	<loaded>	@{}
 tagreads.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	aiSignals	applyMeasured	applyWb	calibLab	clamp01	closeRead	colRef	colourVerdicts	measConf	measEdgeCut	measHint	measKL	measSplit	measureAndApply	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	sharpness	urlCanvas	verdictMode	wbGains	wbRead
 tagreads.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -19372,7 +19552,8 @@ tagswatch.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum
 tagswatch.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 tagswatch.test.js	locale.js	<loaded>	appLocale
 tagswatch.test.js	locks.js	<loaded>
-tagswatch.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+tagswatch.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+tagswatch.test.js	look.js	<loaded>
 tagswatch.test.js	mannequin.js	<loaded>	@{}
 tagswatch.test.js	measure.js	<loaded>
 tagswatch.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -19468,6 +19649,7 @@ takeoff.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 takeoff.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
 takeoff.test.js	locale.js	<loaded>	appLocale
 takeoff.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
+takeoff.test.js	look-base.js	<loaded>
 takeoff.test.js	look.js	<loaded>
 takeoff.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 takeoff.test.js	measure.js	<loaded>
@@ -19562,7 +19744,8 @@ texswatch.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 texswatch.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow	kitUserEdit
 texswatch.test.js	locale.js	<loaded>	appLocale
 texswatch.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-texswatch.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+texswatch.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+texswatch.test.js	look.js	<loaded>	lookSave
 texswatch.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 texswatch.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	applyWb	calibLab	clamp01	closeRead	colRef	colourVerdicts	measConf	measEdgeCut	measKL	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	plainCloth	sharpness	typeGroup	urlCanvas	verdictMode	wbGains	wbRead
 texswatch.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -19660,7 +19843,8 @@ texture.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	i
 texture.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 texture.test.js	locale.js	<loaded>	appLocale
 texture.test.js	locks.js	<loaded>
-texture.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+texture.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+texture.test.js	look.js	<loaded>	lookSave
 texture.test.js	mannequin.js	<loaded>	@{}
 texture.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	applyWb	calibLab	clamp01	closeRead	colRef	colourVerdicts	measConf	measEdgeCut	measKL	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	sharpness	urlCanvas	verdictMode	wbGains	wbRead
 texture.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -19759,6 +19943,7 @@ theme.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 theme.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 theme.test.js	locale.js	<loaded>	appLocale
 theme.test.js	locks.js	<loaded>
+theme.test.js	look-base.js	<loaded>
 theme.test.js	look.js	<loaded>
 theme.test.js	mannequin.js	<loaded>	@{}
 theme.test.js	measure.js	<loaded>
@@ -19854,7 +20039,8 @@ tieweave.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	
 tieweave.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 tieweave.test.js	locale.js	<loaded>	appLocale
 tieweave.test.js	locks.js	<loaded>
-tieweave.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+tieweave.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+tieweave.test.js	look.js	<loaded>
 tieweave.test.js	mannequin.js	<loaded>	@{}
 tieweave.test.js	measure.js	<loaded>	closeRead	measEdgeCut	measureCloth	paperKey	paperNow	paperOf	urlCanvas	wbRead
 tieweave.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -19967,6 +20153,7 @@ titles.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 titles.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 titles.test.js	locale.js	<loaded>	appLocale
 titles.test.js	locks.js	<loaded>
+titles.test.js	look-base.js	<loaded>
 titles.test.js	look.js	<loaded>
 titles.test.js	mannequin.js	<loaded>	@{}
 titles.test.js	measure.js	<loaded>
@@ -20062,6 +20249,7 @@ today.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 today.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 today.test.js	locale.js	<loaded>	appLocale
 today.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+today.test.js	look-base.js	<loaded>
 today.test.js	look.js	<loaded>
 today.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 today.test.js	measure.js	<loaded>
@@ -20158,7 +20346,8 @@ todayacts.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>
 todayacts.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 todayacts.test.js	locale.js	<loaded>	appLocale
 todayacts.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
-todayacts.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+todayacts.test.js	look-base.js	<loaded>
+todayacts.test.js	look.js	<loaded>	renderLookSetting
 todayacts.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 todayacts.test.js	measure.js	<loaded>
 todayacts.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -20252,7 +20441,8 @@ todayedges.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}
 todayedges.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 todayedges.test.js	locale.js	<loaded>	appLocale
 todayedges.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
-todayedges.test.js	look.js	<loaded>	lookOn	renderLookSetting
+todayedges.test.js	look-base.js	<loaded>	lookOn
+todayedges.test.js	look.js	<loaded>	renderLookSetting
 todayedges.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 todayedges.test.js	measure.js	<loaded>
 todayedges.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -20347,6 +20537,7 @@ todayswatch.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 todayswatch.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 todayswatch.test.js	locale.js	<loaded>	appLocale
 todayswatch.test.js	locks.js	<loaded>
+todayswatch.test.js	look-base.js	<loaded>
 todayswatch.test.js	look.js	<loaded>
 todayswatch.test.js	mannequin.js	<loaded>	@{}
 todayswatch.test.js	measure.js	<loaded>
@@ -20442,7 +20633,8 @@ todayzoom.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 todayzoom.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 todayzoom.test.js	locale.js	<loaded>	appLocale
 todayzoom.test.js	locks.js	<loaded>
-todayzoom.test.js	look.js	<loaded>	lookOn
+todayzoom.test.js	look-base.js	<loaded>	lookOn
+todayzoom.test.js	look.js	<loaded>
 todayzoom.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 todayzoom.test.js	measure.js	<loaded>
 todayzoom.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -20537,6 +20729,7 @@ twillswatch.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 twillswatch.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 twillswatch.test.js	locale.js	<loaded>	appLocale
 twillswatch.test.js	locks.js	<loaded>
+twillswatch.test.js	look-base.js	<loaded>
 twillswatch.test.js	look.js	<loaded>
 twillswatch.test.js	mannequin.js	<loaded>	@{}
 twillswatch.test.js	measure.js	<loaded>
@@ -20637,7 +20830,8 @@ ui.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDeta
 ui.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 ui.test.js	locale.js	<loaded>	appLocale
 ui.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-ui.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+ui.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+ui.test.js	look.js	<loaded>	renderLookSetting
 ui.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 ui.test.js	measure.js	<loaded>	paperKey	paperNow	paperOf	urlCanvas
 ui.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -20732,7 +20926,8 @@ uipages.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	i
 uipages.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 uipages.test.js	locale.js	<loaded>	appLocale
 uipages.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-uipages.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+uipages.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+uipages.test.js	look.js	<loaded>	renderLookSetting
 uipages.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 uipages.test.js	measure.js	<loaded>
 uipages.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -20829,7 +21024,8 @@ vest.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDe
 vest.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 vest.test.js	locale.js	<loaded>	appLocale
 vest.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-vest.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+vest.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+vest.test.js	look.js	<loaded>
 vest.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 vest.test.js	measure.js	<loaded>
 vest.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -20924,7 +21120,8 @@ wardfab.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@d
 wardfab.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 wardfab.test.js	locale.js	<loaded>	appLocale
 wardfab.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-wardfab.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	renderLookSetting
+wardfab.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+wardfab.test.js	look.js	<loaded>	renderLookSetting
 wardfab.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 wardfab.test.js	measure.js	<loaded>
 wardfab.test.js	merge.js	<loaded>	dayFlat	dayStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -21019,7 +21216,8 @@ wardrobe.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@
 wardrobe.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDuplicate	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 wardrobe.test.js	locale.js	<loaded>	appLocale
 wardrobe.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-wardrobe.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn	lookSave
+wardrobe.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+wardrobe.test.js	look.js	<loaded>	lookSave
 wardrobe.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 wardrobe.test.js	measure.js	<loaded>	paperKey	paperNow	paperOf	urlCanvas
 wardrobe.test.js	merge.js	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	itemBase	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
@@ -21120,7 +21318,8 @@ wardrobetap.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe
 wardrobetap.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitDuplicate	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 wardrobetap.test.js	locale.js	<loaded>	appLocale
 wardrobetap.test.js	locks.js	<loaded>
-wardrobetap.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+wardrobetap.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+wardrobetap.test.js	look.js	<loaded>
 wardrobetap.test.js	mannequin.js	<loaded>	@{}
 wardrobetap.test.js	measure.js	<loaded>
 wardrobetap.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -21216,7 +21415,8 @@ wardswipe.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>
 wardswipe.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 wardswipe.test.js	locale.js	<loaded>	appLocale
 wardswipe.test.js	locks.js	<loaded>
-wardswipe.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+wardswipe.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+wardswipe.test.js	look.js	<loaded>
 wardswipe.test.js	mannequin.js	<loaded>	@{}
 wardswipe.test.js	measure.js	<loaded>
 wardswipe.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
@@ -21311,7 +21511,8 @@ watchmatch.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}
 watchmatch.test.js	kit.js	<loaded>	@addEventListenerkeydown	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 watchmatch.test.js	locale.js	<loaded>	appLocale
 watchmatch.test.js	locks.js	<loaded>
-watchmatch.test.js	look.js	<loaded>	lookCu	lookHasPat	lookOn
+watchmatch.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
+watchmatch.test.js	look.js	<loaded>
 watchmatch.test.js	mannequin.js	<loaded>	@{}
 watchmatch.test.js	measure.js	<loaded>
 watchmatch.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -21414,7 +21615,8 @@ weather.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 weather.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 weather.test.js	locale.js	<loaded>	appLocale
 weather.test.js	locks.js	<loaded>	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
-weather.test.js	look.js	<loaded>	lookOn	renderLookSetting
+weather.test.js	look-base.js	<loaded>	lookOn
+weather.test.js	look.js	<loaded>	renderLookSetting
 weather.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 weather.test.js	measure.js	<loaded>
 weather.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -21509,7 +21711,8 @@ weeklock.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
 weeklock.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
 weeklock.test.js	locale.js	<loaded>	appLocale
 weeklock.test.js	locks.js	<loaded>	careUnlock	clearLocks	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks	unlockClash
-weeklock.test.js	look.js	<loaded>	lookOn	renderLookSetting
+weeklock.test.js	look-base.js	<loaded>	lookOn
+weeklock.test.js	look.js	<loaded>	renderLookSetting
 weeklock.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 weeklock.test.js	measure.js	<loaded>
 weeklock.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
@@ -21603,6 +21806,7 @@ weeklockdays.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 weeklockdays.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 weeklockdays.test.js	locale.js	<loaded>	appLocale
 weeklockdays.test.js	locks.js	<loaded>	lockIds	lockPast	lockSpan	lockUpcoming	releaseLocks
+weeklockdays.test.js	look-base.js	<loaded>
 weeklockdays.test.js	look.js	<loaded>
 weeklockdays.test.js	mannequin.js	<loaded>	@{}
 weeklockdays.test.js	measure.js	<loaded>
@@ -21712,6 +21916,7 @@ workersweep.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
 workersweep.test.js	kit.js	<loaded>	get	homeAbout	homeAndroid	homeIOS	homeLabel	homeNeeded	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitShareDone	kitShareFilter	kitStartRow
 workersweep.test.js	locale.js	<loaded>	appLocale
 workersweep.test.js	locks.js	<loaded>
+workersweep.test.js	look-base.js	<loaded>
 workersweep.test.js	look.js	<loaded>
 workersweep.test.js	mannequin.js	<loaded>	@{}
 workersweep.test.js	measure.js	<loaded>

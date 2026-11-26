@@ -1,7 +1,15 @@
 /* Daily Wardrobe: Add, the More section's rows (split from add.js, Round C 2026-11-17): How many, Bought on the way and its
    Arrives date (one rule with the item sheet), and checkArrivals, which puts items back in rotation once they arrive or are back. */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit} from './bus.js';
+import {emit,ask} from './bus.js';
+import {cardAt,cardIx,cardOf} from './add-ids.js';
+import {put,queue} from './app.js';
+import {addKeep} from './add-keep.js';
+import {$,TYPES,arriveN,di,isoKey,items,todayDate} from './core.js';
+import {toast} from './toast.js';
+import {keyDate} from './days.js';
+import {planDirty} from './today-plan.js';
+import {acts} from './act.js';
 /* bought but not here yet: the item goes into the wardrobe out of rotation; with an arrival date it joins the outfits from the day
    after (inRotation in core.js), and once that day comes it is put back in rotation for good (checkArrivals) */
 const fmtDay=s=>{const [y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString(undefined,{month:'short',day:'numeric'})};
@@ -31,8 +39,8 @@ function setArrives(i,v){const q=cardOf(i);if(!q)return;const a=arriveVal(v);
 async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.paused&&arriveN(i)!=null&&T>arriveN(i));
   const cb=done.filter(i=>i.away);   // back from the cleaner's or the laundry (care.js): cleaned on the day it was due back
   if(cb.length&&typeof careUnlock==='function')await careUnlock(null,Math.min(...cb.map(i=>+keyDate(i.away.since||isoKey(todayDate())))));   // the locks made while away let go (history.js)
-  for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());if(typeof careLog==='function')careLog(it,it.cleaned);delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
-  if(done.length){planDirty();toast(cb.length===done.length&&typeof careBackText==='function'?careBackText(cb):done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`,4000)}return done.length}
+  for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());ask('care-log',it,it.cleaned);delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
+  if(done.length){planDirty();toast((cb.length===done.length?ask('care-back-text',cb):undefined)??(done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`),4000)}return done.length}
 /* what the More section's controls do (act.js; the card by its id in data-card: add-save.js cardAt, cardIx) */
 function cardQty(el){stepQty(cardIx(el),+el.dataset.d)}
 function cardOrder(el){setOrder(cardIx(el),el.dataset.on==='1')}

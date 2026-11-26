@@ -48,6 +48,21 @@ const SOCKETS={
   'item-drop':{serve:'item-view.js',ask:['nav.js'],what:'another page is shown: the item sheet goes without sliding (dropItem)'},
   'wardrobe-draw':{serve:'itemsheet.js',ask:['nav.js'],what:'the Wardrobe is shown: it is drawn (renderWardrobe)'},
   'backed-up-words':{serve:'sync.js',ask:['setup.js'],what:'how the backup stands, in words, for the setup\'s Connection step (backedUpWords)'},
+  'look-use-pick':{serve:'look.js',ask:['colpick.js'],what:'the color sheet\'s Use on a material, leather, metal or buckle (lookUsePick; the restructure S5d: colpick.js loads before look.js)'},
+  'look-set-enamel':{serve:'look.js',ask:['colpick.js'],what:'a tie clip\'s enamel set from the color sheet (lookSetEnamel)'},
+  'look-write':{serve:'look.js',ask:['colpick.js'],what:'a field written from the color sheet: a watch\'s dial (lookWrite)'},
+  'look-pick-draw':{serve:'look.js',ask:['colpick.js'],what:'the color sheet drawn as the material, leather, metal or buckle picker (renderLookPick)'},
+  'look-sug-cols':{serve:'look.js',ask:['colpick.js'],what:'the color sheet\'s Suggested colors in the beta (lookSugCols)'},
+  'look-sug-pats':{serve:'look.js',ask:['colpick.js'],what:'the pattern sheet\'s Suggested patterns in the beta (lookSugPats)'},
+  'look-shade-html':{serve:'look.js',ask:['colpick.js'],what:'the beta\'s Shade under the color sheet\'s preview (lookShadeHtml)'},
+  'item-set':{serve:'itemsheet.js',ask:['colpick.js','look.js'],what:'a saved piece\'s field set as the item sheet sets it (sete; the restructure S5d: both load before itemsheet.js)'},
+  'pat-summary':{serve:'itemsheet.js',ask:['look.js'],what:'the item sheet\'s pattern layout in words, under the Look beta\'s Pattern row (patSummary)'},
+  'pat-redetect':{serve:'itemsheet.js',ask:['look.js'],what:'Read pattern from photo, from the Look beta\'s Pattern row (redetect)'},
+  'pat-clear':{serve:'itemsheet.js',ask:['look.js'],what:'Use generic, from the Look beta\'s Pattern row (clearStripes)'},
+  'care-tag':{serve:'care.js',ask:['wardrobe.js'],what:'a piece away being cleaned, in words, on its Wardrobe tile (careTag; the restructure S5d: wardrobe.js loads before care.js)'},
+  'care-badge':{serve:'care.js',ask:['wardrobe.js'],what:'"Due for cleaning" on a Wardrobe tile (careBadge)'},
+  'care-log':{serve:'care.js',ask:['add-more.js'],what:'a piece back from the cleaner noted in its record (careLog)'},
+  'care-back-text':{serve:'care.js',ask:['add-more.js'],what:'the toast for pieces back from the cleaner (careBackText)'},
 };
 
 module.exports=async({ok,ROOT})=>{
@@ -77,12 +92,12 @@ module.exports=async({ok,ROOT})=>{
   const acorn=require('acorn');
   for(const f of page){if(f==='bus.js')continue;const src=fs.readFileSync(path.join(ROOT,f),'utf8');let ast;
     try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'module'})}catch(e){try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'script'})}catch(e2){continue}}
-    // local name -> bus.js's name (a file that also reads app.js's own ask() imports bus.js's as another name: {ask as askFor})
+    // local name -> bus.js's name (a file that also reads app.js's own ask() imports bus.js's second name for it, askFor)
     const imp=new Map(ast.body.filter(s=>s.type==='ImportDeclaration'&&s.source.value==='./bus.js').flatMap(s=>s.specifiers.map(x=>[x.local.name,x.imported?x.imported.name:x.local.name])));
     const add=(k,t)=>{const u=used[t]=used[t]||{emit:[],on:[],heard:[]};if(!u[k].includes(f))u[k].push(f)};
     const sock=(k,t)=>{const u=sockUsed[t]=sockUsed[t]||{serve:[],ask:[]};if(!u[k].includes(f))u[k].push(f)};
     const walk=n=>{if(!n||typeof n.type!=='string')return;
-      if(n.type==='CallExpression'&&n.callee.type==='Identifier'){const c=imp.get(n.callee.name)||null,a=n.arguments[0],lit=a&&a.type==='Literal'&&typeof a.value==='string';
+      if(n.type==='CallExpression'&&n.callee.type==='Identifier'){const c0=imp.get(n.callee.name)||null,c=c0==='askFor'?'ask':c0,a=n.arguments[0],lit=a&&a.type==='Literal'&&typeof a.value==='string';
         // (settingsPart(fn) is settings.js's own way to pin for 'settings-parts': counted as the caller's pin)
         if(n.callee.name==='settingsPart'&&f!=='settings.js')add('on','settings-parts');
         else if(c&&/^(?:emit|on|heard)$/.test(c)&&lit&&!(f==='settings.js'&&c==='on'&&a.value==='settings-parts'))add(c,a.value);

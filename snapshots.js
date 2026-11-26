@@ -2,6 +2,7 @@
 import {on} from './bus.js';
 import {$,cleanState,items,nowMs,stampAllSettings} from './core.js';
 import {esc} from './photo-keys.js';
+import {applyMerged,localState,setRestoring,syncNow,syncUrl} from './sync.js';
 /* ---- daily backups on the worker (snap:<day> / snap:<month> / snap:before-restore) ---- */
 /* a copy is named by the day it is for (the wardrobe at that day's start), with how many items it holds when the server says (W2-14-03,
    W1-6-07: labelled by the time its content was saved, Monday's copy and Sunday's both read "Sun, Nov 15, 7:30 AM", one full, one empty) */

@@ -76,5 +76,5 @@ addEventListener('popstate',()=>{try{backPop()}finally{backSync()}});
    writes them, so they have a getter and no setter. A script that is a module too imports them instead (the export below). */
 Object.assign(globalThis,{backKind,backOn,backOver,backLand,backPush,backDrop,backBorrow,backReturn,backHold,backSettled,backWanted,histPush,histDrop});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,get appHist(){return appHist},get appKind(){return appKind},get itemHist(){return itemHist},backSettled};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,get appHist(){return appHist},get appKind(){return appKind},get itemHist(){return itemHist},backSettled,backKind,backPush};
 export {backKind,backOn,backOver,backLand,backPush,backDrop,backBorrow,backReturn,backHold,backSettled,backWanted,histPush,histDrop,appHist,appKind,itemHist};

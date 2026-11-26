@@ -4,6 +4,7 @@
    own server value; a shorter one (the 128 px JPEG swatch, a few KB) stays inline in the record, so an item added costs one write less.
    Strings from PH_OLD (the rule before) may still be references in records saved by an older app or worker (a PNG swatch): they are
    still matched to this device's copy and taken when downloaded. worker/backup.js has the same two numbers */
+import {SYNC_SEND_MAX} from './sync.js';
 const PH_MIN=16384,PH_OLD=256,PH_RE=/^dwph:[0-9a-f]{20}$/,PH_BATCH=40;
 const isPh=s=>typeof s==='string'&&s.length>=PH_MIN&&s.startsWith('data:');
 const isPhOld=s=>typeof s==='string'&&s.length>=PH_OLD&&s.startsWith('data:');

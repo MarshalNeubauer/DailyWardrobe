@@ -4,6 +4,16 @@
    (An ES module, run in index.html's order; what the classic scripts still use of it is bridged in its last lines; nothing else runs at load.) */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit,ask} from './bus.js';
+import {esc} from './photo-keys.js';
+import {ACCENT_MAX,COLORS,SHADE_MAX,accentsOf,colName,items,primaryCol,shadeFor,sockPatterned,sockToeKey} from './core.js';
+import {cap1,imgOf,put,queue} from './app.js';
+import {itemThumb} from './draw.js';
+import {texSig} from './tag-request.js';
+import {measureCloth,paperKey,paperNow,paperOf} from './measure.js';
+import {cardOf} from './add-ids.js';
+import {planDirty} from './today-plan.js';
+import {acts} from './act.js';
+import {lookHasPat} from './look-base.js';
 
 /* ---- sections: a status mark (✓ done, ! worth a look, ○ optional or not checked yet, ✦ Claude suggests), a title and a one-line summary;
    a tap on the header folds or unfolds it. Which are open is kept in memory while the app runs (CK_OPEN, by sheet and section): the item
@@ -170,5 +180,6 @@ function cmpPaperLine(p,retake){if(!p)return '';
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): the Add card, the item sheet, the color sheet and the Look beta, classic scripts, draw their sections and the close-up comparison with
    these; CK_OPEN is also what most tests open the sections with. */
 Object.assign(globalThis,{CK_OPEN,ckIsOpen,ckSec,ckToggle,ckChip,ckColSum,accRow,ckSure,cmpDrawn,cmpHtml,cmpMount,cmpLab,cmpDiff,cmpSteps,cmpDiffText,cmpMatchHtml,cmpPaper,cmpPaperLine});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,CK_OPEN};
 export {CK_OPEN,ckIsOpen,ckSec,ckToggle,ckChip,ckColSum,accRow,ckSure,cmpDrawn,cmpHtml,cmpMount,cmpLab,cmpDiff,cmpSteps,cmpDiffText,cmpMatchHtml,cmpPaper,cmpPaperLine};
 acts({ckHeadTap,accDelTap,accAddTap,cmpGoTap,cmpUndoTap});

@@ -3,6 +3,9 @@
    dropdown, a choice's label, and a material its type can't have. Drawing only: what a change does is the caller's (the Add card's
    setQField, add-card.js; the item sheet's setItemField, wardrobe.js). */
 /* ---- an item's own name, brand, material and notes ---- */
+import {cap1} from './app.js';
+import {MATERIALS_BY,matsFor,noBidi} from './core.js';
+import {esc} from './photo-keys.js';
 const WARD_FIELDS=['name','brand','material','notes'];
 const WARD_MAX={name:60,brand:40,material:40,notes:500};
 const matLabel=m=>m==='other'?'Other':cap1(m);

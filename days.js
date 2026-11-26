@@ -16,5 +16,5 @@ function notAhead(rec,k){if(keyDate(k)>todayDate()){delete rec.ids;delete rec.su
    itemsheet, pack, care and the tests); idsOf by pickscore, history, locks, scorecard, today-plan and today-gestures; notAhead by
    pickscore and history. Nothing here runs at load */
 Object.assign(globalThis,{idsOf,keyDate,saveDay,notAhead});
-globalThis.HOOK={__proto__:globalThis.HOOK||null,idsOf};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,idsOf,saveDay};
 export {idsOf,keyDate,saveDay,notAhead};

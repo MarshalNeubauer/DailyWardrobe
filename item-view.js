@@ -1,6 +1,13 @@
 /* Daily Wardrobe: the item sheet itself: open, close, swipe down, ‹ › and the sideways swipe, the phone's Back, the focus back, and a
    sync's change to the piece open. (An ES module since 2026-11-23; split out of itemsheet.js on 2026-11-17, no behavior change.) */
 import {emit,serve} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); serve: the piece open, its redraw and its drop
+import {$,TYPES,itemName,itemTitle,items,nm,titleCls} from './core.js';
+import {backLand,backOn,histDrop,histPush} from './back.js';
+import {cropKeep,phEdit} from './item-photo.js';
+import {layerFrom,layerInert,layerOpen,noMotion,tell} from './ui.js';
+import {esc} from './photo-keys.js';
+import {keepFocus} from './app.js';
+import {acts} from './act.js';
 let editing=null;
 /* ---- Wardrobe item sheet ----
    Tapping an item opens it in a sheet that slides up over the Wardrobe: the full width of a phone, to just under the top of the
@@ -25,7 +32,7 @@ let itemFrom=null;   // the item the sheet was opened on: closing on another one
 Object.assign(globalThis,{itemSynced,itemGoneTell,renderItem,openItem,dropItem});
 Object.defineProperties(globalThis,{editing:{get:()=>editing,set:v=>{editing=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,closeItem,stepItem,wardList,get editing(){return editing},set editing(v){editing=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,closeItem,stepItem,wardList,get editing(){return editing},set editing(v){editing=v},dropItem,renderItem};
 export {editing,wardList,itemSynced,itemGoneTell,renderItem,openItem,closeItem,dropItem,stepItem};
 /* the phone's Back closes the sheet: it has its own history entry while it is open (back.js histPush/histDrop, kind 'item'); one asked for
    while a step back of ours was on its way is made once it lands. Back in the crop frame keeps the crop (cropKeep: when moved or zoomed)

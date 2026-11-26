@@ -2,6 +2,19 @@
    (A card found by its id, and whether Claude is still reading it, are add-ids.js's since the restructure S3c.) */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit} from './bus.js';
+import {cardOf,cardReading,needType} from './add-ids.js';
+import {generateSwatch,queue,txs} from './app.js';
+import {$,COLORS,FABRIC,METAL_TYPES,SEASON_TYPES,TEXTURE_TYPES,TYPES,accentsOf,blouseTapes,hasPat,itemName,items,nameIso,nowMs,patBase,sentence,shortDesc,styleWord,watchOpts} from './core.js';
+import {toast} from './toast.js';
+import {addKeep} from './add-keep.js';
+import {matTidy,wardSaveFields} from './fields.js';
+import {readable} from './pattern-read.js';
+import {detectQueued} from './detect.js';
+import {colTidy} from './colpick.js';
+import {qtyOf} from './add-more.js';
+import {planDirty} from './today-plan.js';
+import {keepCloseImg,keepTagImg,recordTagResult} from './tag-request.js';
+import {closeTagImg} from './tagging.js';
 /* save every finished card in the queue (Skip the ones you don't want first) */
 /* a card that can be saved now (Save all and its count) */
 const cardReady=q=>!!q&&!q.busy&&!q.err&&!q.multiErr&&!q.saving&&!needType(q);
@@ -81,4 +94,5 @@ async function saveCard(q){
    kit.js and the tests read these as globals (save, saveAll). saveAllOn is written here only: a getter */
 Object.assign(globalThis,{cardReady,saveAll,savedTitle,save});
 Object.defineProperties(globalThis,{saveAllOn:{get:()=>saveAllOn}});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,save,saveAll,get saveAllOn(){return saveAllOn}};
 export {cardReady,saveAllOn,saveAll,savedTitle,save};

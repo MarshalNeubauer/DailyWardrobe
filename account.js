@@ -6,6 +6,13 @@
    owner gets "Invite testers" (make a link, see each tester's use today, revoke one).
    Server API used here: GET /me, GET/POST/DELETE /invites. An older server answers these 404 or 405: the box then stays empty. */
 import {on} from './bus.js';
+import {backWanted} from './back.js';
+import {addGate,askConfirm,inviteOver,renderConnUI} from './ui.js';
+import {settingsOpen,settingsPart,settingsSummaries} from './settings.js';
+import {connKeep,connRestored,tx,txs} from './app.js';
+import {dayRecs,items,mergeState} from './core.js';
+import {toast} from './toast.js';
+import {acts} from './act.js';
 const ACCT_CAPS=[['item','Item pictures'],['tag','Photo readings'],['pattern','Pattern readings'],['describe','Color & pattern lookups']];
 /* the parts of an invitation link, or null: the text may be the whole link or only what follows the #. A full stop, comma or bracket
    a mail or chat app put right after the link is not part of it */

@@ -5,14 +5,32 @@
    (Photo tagging → Beta features) turns it on for this phone only (localStorage beta_look, not synced); off, the app is exactly as before.
    Both UIs read and write the same item fields; the beta's own fields (lookOk, lookHint, leatherOwn, metalOwn) are ignored by the old UI.
    Loaded after checklist.js (an ES module since 2026-11-23); nothing runs at load but Settings' registration. */
-import {emit} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {emit,serve,ask} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {RD_LOOKUPS,SOCK_THIRD,SW_GRAB,closeColPick,cnHex,cnLeft,colHas,colNear,colPick,colPickSel,colTarget,lookShadeOk,openColNew,openColPick,openPatNew,patChoices,patVar,rdCost,rdOff,renderColPick,useColPick} from './colpick.js';
+import {addTexture,renderAdd} from './add.js';
+import {addOwnMaterial,groupOf,matOffer,newColHex,openColForm,openPatForm,removeOwnMaterial,renderOwnMatUI} from './own-lists.js';
+import {announce,cap1,generateSwatch,put,queue,refreshSwatch} from './app.js';
+import {saveUserSettings,settingsPart,showCost} from './settings.js';
+import {$,COLORS,CUSTOM_COL,DIAL_COLS,FABRIC,MATERIALS_BY,METAL,METAL_TONES,OWN_MAT_MAX,PATS_BY,SHADE_MAX,TYPES,clipMetal,colName,colsFor,items,leatherWord,leathersFor,matTypeWord,matsFor,metalWord,normPat,ownMatName,patBase,patName,primaryCol,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand,watchOpts} from './core.js';
+import {colourVerdicts,paperCopy,paperOf,undoMeasured} from './measure.js';
+import {ckLr,matGuessOf,matNewOf,setq} from './add-card.js';
+import {esc,jsq} from './photo-keys.js';
+import {itemThumb,swatchSVG} from './draw.js';
+import {claudeOnly,readSett,rereadSett,settable} from './pattern-read.js';
+import {addKeep} from './add-keep.js';
+import {planDirty} from './today-plan.js';
+import {cardAt,cardIx,cardReading,qAt} from './add-ids.js';
+import {toast} from './toast.js';
+import {closeupBtn,cuGot,isConnected,tell} from './ui.js';
+import {CK_OPEN,accRow,ckChip} from './checklist.js';
+import {DETECT_PATS} from './detect.js';
+import {tagImgOf} from './tag-request.js';
+import {acts} from './act.js';
+import {LOOK_CLIP_METALS,LOOK_COATS,LOOK_CU,LOOK_ENAMEL,LOOK_LS,LOOK_METALT,LOOK_SHIRT_AS,LOOK_SHIRT_CLOTHS,LOOK_SHIRT_FIBERS,lookBuiltins,lookClipMetal,lookCu,lookCur,lookHasPat,lookOn,lookVal,setLookMemo} from './look-base.js';
 
 /* ---- the switch ---- */
-const LOOK_LS='beta_look';
-let lookBetaMemo=null;
-function lookOn(){if(lookBetaMemo===null){try{lookBetaMemo=localStorage.getItem(LOOK_LS)==='1'}catch{lookBetaMemo=false}}return lookBetaMemo}
 /* flipping it redraws what is open (Add, the no-photo sheet, the item sheet); nothing is saved or lost either way */
-function lookSet(on){on=!!on;try{if(on)localStorage.setItem(LOOK_LS,'1');else localStorage.removeItem(LOOK_LS)}catch{}lookBetaMemo=on;
+function lookSet(on){on=!!on;try{if(on)localStorage.setItem(LOOK_LS,'1');else localStorage.removeItem(LOOK_LS)}catch{}setLookMemo(on);
   try{if(colPick)closeColPick()}catch{}
   try{renderAdd()}catch{}
   try{if(editing)emit('wardrobe-changed')}catch{}
@@ -28,19 +46,14 @@ function renderLookSetting(){const el=document.querySelector('#beta-list');if(!e
    called by tests only. A module imports them.
    Above the file's first call that can throw (settingsPart, when settings.js did not load; then acts): the functions are then still
    the page's, as a classic script's were; the consts declared further down are handed over above acts */
-Object.assign(globalThis,{lookOn,lookCur,lookClipMetal,lookWrite,lookOwnMatUI,lookSetEnamel,renderLookPick,lookUsePick,lookShadeHtml,lookSugCols,lookSugPats,lookSection,lookOpenFresh,lookSave});
+Object.assign(globalThis,{lookWrite,lookOwnMatUI,lookSetEnamel,renderLookPick,lookUsePick,lookShadeHtml,lookSugCols,lookSugPats,lookSection,lookOpenFresh,lookSave});
+/* the color sheet's beta parts, asked for by colpick.js (loaded before this file: tests/bus.test.js SOCKETS) */
+serve('look-use-pick',lookUsePick);serve('look-set-enamel',lookSetEnamel);serve('look-write',lookWrite);serve('look-pick-draw',renderLookPick);
+serve('look-sug-cols',lookSugCols);serve('look-sug-pats',lookSugPats);serve('look-shade-html',lookShadeHtml);
 settingsPart(renderLookSetting);
 
 /* ---- which types have what ---- */
-const LOOK_CU=['sweater','qzip','cardigan','polo','socks','pocketsquare','overcoat','raincoat'];   // also take a close-up in the beta
-const LOOK_COATS=['overcoat','raincoat'];   // patterns and a second color in the beta (core.js PATS_BY)
 const LOOK_NOPAT=['shoes','belt','watch','tieclip','cufflinks'];   // the Pattern row is there, dimmed, so the three rows never move
-const LOOK_METALT=['watch','tieclip','cufflinks'];
-const LOOK_CLIP_METALS=['silver','gold','rosegold','gunmetal'];   // a tie clip's metal: its colour key when it has no enamel (planner.js clipMetal reads it)
-const LOOK_ENAMEL=['black','red','blue','navy'];   // the clip colours clipMetal reads as enamel (null): the planner's enamelPref
-const LOOK_METAL_COLS=['silver','gold','rosegold','gunmetal'];   // no shade for a metal
-const lookCu=t=>TEXTURE_TYPES.includes(t)||(lookOn()&&LOOK_CU.includes(t));
-const lookHasPat=t=>hasPat(t)||(lookOn()&&LOOK_COATS.includes(t));
 const lookMatKind=t=>t==='shoes'||t==='belt'?'leather':LOOK_METALT.includes(t)?'metal':'fabric';
 const lookItem=(src,id)=>src==='q'?queue.find(x=>x&&x.id===id):items.find(x=>x.id===id);
 const lookNoun=t=>({shoes:'shoes',belt:'belts',watch:'watches',tieclip:'tie clips',cufflinks:'cufflinks'})[t]||'this item';
@@ -64,44 +77,19 @@ function lookNeed(it){const t=it.type,p=lookPatOf(it);
 /* a shirt's material is its fiber (the owner's question 2 on the mockup); the weaves are its patterns. The cotton cloths that plan a season
    (flannel and corduroy cold, seersucker warm: core.js MAT_SEASON) or name a cloth a pattern can't (denim, jersey) stay pickable as cloths.
    A shirt saved as poplin (a cotton weave: solid in PAT_ALIAS) shows as Cotton until a material is picked; nothing is rewritten */
-const LOOK_SHIRT_FIBERS=['cotton','cotton blend','linen','linen blend','silk','wool','polyester','polyester blend','performance stretch','rayon','modal','lyocell','bamboo'];
-const LOOK_SHIRT_CLOTHS=['flannel','seersucker','corduroy','denim','jersey'];
-const LOOK_SHIRT_AS={poplin:'cotton'};
 const LOOK_LEATHER_G=[['Smooth and grained',['calf','cordovan','patent','pebble-grain','scotch-grain','braided']],['Suede and textiles',['suede','nubuck','canvas','knit']]];
 /* the own list a kind keeps its names under (settings.ownMaterials {key: [name]}, synced entry by entry), and the group that shares them
    (own-lists.js COL_GROUPS, as own colours; the metals of watches, tie clips, cufflinks and buckles together) */
 const lookOwnKey=(t,k)=>k==='buckle'?'buckle':t;
 const lookGroup=key=>key==='buckle'||LOOK_METALT.includes(key)?['watch','tieclip','cufflinks','buckle']:groupOf(key);
 const lookOwnRaw=key=>{const o=settings&&settings.ownMaterials,l=o&&typeof o==='object'&&Array.isArray(o[key])?o[key]:[];return l.map(ownMatName).filter(Boolean)};
-function lookBuiltins(it,k){const t=it.type;
-  if(k==='material')return t==='shirt'?[...LOOK_SHIRT_FIBERS,...LOOK_SHIRT_CLOTHS]:(MATERIALS_BY[t]||[]).slice();
-  if(k==='leather')return leathersFor(it).slice();
-  if(t==='tieclip')return LOOK_CLIP_METALS.slice();
-  return [...Object.keys(METAL),...(t==='cufflinks'&&k==='metal'?['silk']:[])]}
 function lookOwnMats(it,k){const key=lookOwnKey(it.type,k),std=lookBuiltins(it,k),out=[];
   for(const g of lookGroup(key))for(const n of lookOwnRaw(g))if(!std.includes(n)&&!out.includes(n))out.push(n);return out}
 /* the kind of the picker for a field key */
 const lookPkKind=(it,k)=>k==='material'?'fabric':k==='leather'?'leather':'metal';
 /* the value shown for a field: {v (the picker's key: a built-in key, 'own:<name>', 'none'), name, note} */
-function lookCur(it,k){
-  if(k==='enamel'){const c=it.primaryColor;return LOOK_ENAMEL.includes(c)?c:'none'}
-  if(k==='dial')return watchOpts(it).dial;
-  return lookVal(it,k).v}
-function lookVal(it,k){const t=it.type;
-  if(k==='material'){const m=String(it.material||'').trim(),l=lookBuiltins(it,'material');if(!m)return {v:'none',name:'Not set'};
-    if(t==='shirt'&&LOOK_SHIRT_AS[m.toLowerCase()])return {v:LOOK_SHIRT_AS[m.toLowerCase()],name:cap1(LOOK_SHIRT_AS[m.toLowerCase()]),note:`saved as ${m.toLowerCase()}`};
-    if(l.includes(m))return {v:m,name:cap1(m)};return {v:'own:'+m,name:cap1(m)}}
-  if(k==='leather'){if(it.leatherOwn)return {v:'own:'+it.leatherOwn,name:cap1(it.leatherOwn)};
-    // (an Add card with none yet is saved as calf, add.js saveCard, unless None was picked: leatherNone)
-    const l=it.leather||(it.leatherNone||items.some(x=>x.id===it.id)?'':'calf');if(!l)return {v:'none',name:'Not set'};
-    return {v:l,name:cap1(leatherWord(it,l))}}
-  if(t==='tieclip'){if(it.metalOwn)return {v:'own:'+it.metalOwn,name:cap1(it.metalOwn)};const m=lookClipMetal(it),pc=it.primaryColor;
-    return {v:m,name:cap1(colName(m)),note:pc&&!LOOK_CLIP_METALS.includes(pc)&&!LOOK_ENAMEL.includes(pc)?`saved as ${colName(pc)}`:''}}
-  if(it.metalOwn)return {v:'own:'+it.metalOwn,name:cap1(it.metalOwn)};const m=it.metal||'silver';return {v:m,name:cap1(metalWord(m))}}
 /* a tie clip's metal: its colour when that is a metal (a plain clip), the colours the planner reads as silver or gunmetal, else (an enamel
    clip) the metal kept beside it (it.metal; silver when none) */
-function lookClipMetal(it){const pc=it.primaryColor;if(LOOK_CLIP_METALS.includes(pc))return pc;const cm=clipMetal(it);if(cm==='silver')return 'silver';if(cm==='other')return 'gunmetal';
-  return LOOK_CLIP_METALS.includes(it.metal)?it.metal:'silver'}
 const LOOK_OTHER='+other';   // the picker's Other tile (not the metal key 'other', which is gunmetal)
 const lookName=(it,k,v)=>v==='none'?(k==='enamel'?'None':'Not set'):v===LOOK_OTHER?'Other':String(v).startsWith('own:')?cap1(String(v).slice(4)):k==='leather'?cap1(leatherWord(it,v)):LOOK_METALT.includes(it.type)||k==='buckle'||k==='metal'?cap1(it.type==='tieclip'?colName(v):metalWord(v)):cap1(v);
 
@@ -200,7 +188,7 @@ const LOOK_FIELD_WORD={primaryColor:'Color',pattern:'Pattern',material:'Material
 async function lookUse(src,id,f,v,hk){const it=lookItem(src,id);if(!it)return;const snap=lookSnap(it,LOOK_UNDO_F);
   if(src==='e'&&hk&&it.lookHint){const h={...it.lookHint};delete h[hk];it.lookHint=h}
   const name=lookName(it,f,v);
-  if(f==='primaryColor'||f==='pattern'){if(src==='q'){const i=qAt(id);if(i<0)return;setq(i,f,v)}else await sete(id,f,v)}
+  if(f==='primaryColor'||f==='pattern'){if(src==='q'){const i=qAt(id);if(i<0)return;setq(i,f,v)}else await ask('item-set',id,f,v)}
   else if(f==='material'){if(src==='q'){if(it.matGuess&&lookFiber(it,it.matGuess.key)===v)delete it.matGuess;await lookWrite('q',id,{material:v,matSet:1,matAI:undefined})}else await lookWrite('e',id,{material:v})}
   else await lookSetMat(src,id,f,v,true);
   toast(`${LOOK_FIELD_WORD[f]||'Look'}: ${f==='primaryColor'?cap1(colName(v)):f==='pattern'?cap1(patName(v)):name}.`,6000,{label:'Undo',fn:()=>lookRestore(src,id,snap)})}
@@ -254,8 +242,6 @@ async function lookSetEnamel(src,id,v){const it=lookItem(src,id);if(!it)return;c
 /* ---- the picker for a material, a leather, a metal or a buckle: the colour sheet's layout (#col-sheet, colPick with k one of LOOK_PK):
    the item drawn beside a large swatch, Suggested (Claude), Yours, the full list by groups, None / Other, then "+ New" (its name field
    never redraws the sheet, so the first tap on Add works) ---- */
-const LOOK_PK=['material','leather','metal','buckle'];
-const LOOK_KS=[...LOOK_PK,'enamel','dial'];
 function lookPick(src,id,k){openColPick(src,id,k)}
 function lookMatGroups(it,k){const t=it.type,l=lookBuiltins(it,k);
   if(k==='material')return t==='shirt'?[['Fibers',LOOK_SHIRT_FIBERS],['Cotton cloths',LOOK_SHIRT_CLOTHS]]:[['Materials',l]];
@@ -304,7 +290,6 @@ async function lookUsePick(){const {src,ref,k,sel,cur}=colPick,it=colTarget();if
 function lookShadeHtml(){if(!colPick)return '';const s=colPick.shade||0;
   return `<div class="lkshade" role="group" aria-label="Shade"><button type="button" data-d="-1" data-act="lkShade"${s<=-SHADE_MAX?' disabled':''} aria-label="Darker">− Darker</button><output id="lk-shade">${s?esc(shadeName(s)):'As the color'}</output><button type="button" data-d="1" data-act="lkShade"${s>=SHADE_MAX?' disabled':''} aria-label="Lighter">Lighter +</button></div>`}
 function lookShadeStep(d){if(!colPick)return;colPick.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(colPick.shade||0)+d));renderColPick(true)}
-const lookShadeOk=(k,sel)=>k==='primaryColor'&&!!sel&&sel!=='none'&&sel!==NEW_COL&&!LOOK_METAL_COLS.includes(sel)&&!!COLORS[sel];
 function lookSugCols(it,k){if(k!=='primaryColor'||!colPick)return [];const src=colPick.src,ch=lookChips(src==='s'?'e':src,it).col.filter(x=>!x.add),out=ch.map(x=>[x.v,x.lab]);
   const ai=src==='q'?it.aiTag&&it.aiTag.primaryColor:it.tagAI&&it.tagAI.col;if(ai&&COLORS[ai]&&!out.some(x=>x[0]===ai))out.unshift([ai,'Claude’s pick']);
   const near=colNear(it,k);if(near.length&&!out.some(x=>x[0]===near[0].c))out.push([near[0].c,'Measured']);
@@ -315,10 +300,6 @@ function lookSugPats(it){if(!colPick)return [];const src=colPick.src==='s'?'e':c
   const rb=LOOK_RD[src+'|'+it.id];if(rb&&rb.by&&rb.by.pat){const p=normPat(it.type,it.pattern);if(!out.some(x=>x[0]===p))out.push([p,'Read by Claude'])}
   return out.filter(x=>ch.includes(x[0]))}
 /* the beta's pattern groups: heather with the plain ones, the knits together, a pocket square's border with the figures */
-const LOOK_PAT_GROUPS=[[['solid','heather'],'Plain'],[['pinstripe','chalk-stripe','stripe','fine-stripe'],'Stripes'],[['glen-check','windowpane','check','gingham','tattersall','tonal-check','houndstooth'],'Checks'],
-  [['herringbone','birdseye','nailhead','sharkskin','twill','tweed','oxford','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture'],'Weaves'],[['knit','ribbed','cable'],'Knits'],
-  [['polka-dot','paisley','foulard','camouflage','argyle','clock','border'],'Figures']];
-const lookPatGroupOf=p=>{const b=patBase(p);const g=LOOK_PAT_GROUPS.findIndex(([l])=>l.includes(b));return g<0?LOOK_PAT_GROUPS.length:g};
 
 /* ---- the Look section (both surfaces): {mark, title, sum, body} ---- */
 const LOOK_CHEV='<svg class="lkchev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
@@ -375,7 +356,7 @@ function lookSection(src,it,i){const ch=lookChips(src,it),any=ch.col.length+ch.p
   return {mark:ok?'good':any?'warn':'todo',title:'Look',sum:lookSum(src,it,any&&!ok),body,warn:any&&!ok}}
 /* the item sheet's pattern reading (Pattern layout, Read pattern from photo) and the outfit pictures' note stay under the Pattern row */
 function lookPatExtras(i){const id=i.id,fab=FABRIC.includes(i.type);
-  const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" data-id="${esc(id)}" data-how="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?'reread':'detect'}" data-act="lkReread">Read pattern from photo</button>`}${i.stripes||i.sett?`<button data-id="${esc(id)}" data-act="lkClearStripes">Use generic</button>`:''}</div></div>`:'';
+  const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${ask('pat-summary',i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" data-id="${esc(id)}" data-how="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?'reread':'detect'}" data-act="lkReread">Read pattern from photo</button>`}${i.stripes||i.sett?`<button data-id="${esc(id)}" data-act="lkClearStripes">Use generic</button>`:''}</div></div>`:'';
   return layout+(typeof asmGapNote==='function'?asmGapNote(i):'')}
 /* the item sheet's "Looks right": kept on the item (lookOk, synced); a later edit leaves it (the owner's question 4: it stays) */
 async function lookCheck(id){const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}if(it.lookOk)delete it.lookOk;else it.lookOk=1;await put(it);emit('wardrobe-changed')}
@@ -467,16 +448,15 @@ function lkUndoMeas(el){undoMeasured(qAt(el.dataset.id),'primaryColor')}
 function lkStop(el){lookReadStop(...lkSI(el))}
 function lkRead(el){lookRead(...lkSI(el))}
 function lkCheck(el){lookCheck(el.dataset.id)}
-function lkReread(el){if(el.dataset.how==='reread')rereadSett(el.dataset.id);else redetect(el.dataset.id)}
-function lkClearStripes(el){clearStripes(el.dataset.id)}
+function lkReread(el){if(el.dataset.how==='reread')rereadSett(el.dataset.id);else ask('pat-redetect',el.dataset.id)}
+function lkClearStripes(el){ask('pat-clear',el.dataset.id)}
 function lkNewCol(){openColNew()}
 function lkNewPat(){openPatNew()}
 function lkCuFileQ(el,ev,f){cuGot(el,f,x=>addTexture(cardIx(el),x,true))}   // (the Add card's "Add a close-up for a truer color": read at once)
 /* the rest of the bridge: the consts declared above (colpick.js: the coat, metal and enamel lists, LOOK_PK, LOOK_KS, lookHasPat,
    lookShadeOk, LOOK_PAT_GROUPS, lookPatGroupOf; add-card.js, item-photo.js and itemsheet.js: lookCu; checklist.js: lookHasPat;
    tests/lookbeta.test.js: LOOK_OTHER) */
-Object.assign(globalThis,{LOOK_COATS,LOOK_METALT,LOOK_ENAMEL,LOOK_METAL_COLS,lookCu,lookHasPat,LOOK_PK,LOOK_KS,lookShadeOk,LOOK_PAT_GROUPS,lookPatGroupOf});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,LOOK_OTHER,lookCheck,lookOwnMats,lookSet,lookSetMat,lookShadeStep};
-export {lookOn,lookSet,LOOK_COATS,LOOK_METALT,LOOK_ENAMEL,LOOK_METAL_COLS,lookCu,lookHasPat,lookOwnMats,lookCur,lookClipMetal,LOOK_OTHER,lookWrite,lookOwnMatUI,lookSetMat,lookSetEnamel,LOOK_PK,LOOK_KS,renderLookPick,lookUsePick,lookShadeHtml,lookShadeStep,lookShadeOk,lookSugCols,lookSugPats,LOOK_PAT_GROUPS,lookPatGroupOf,lookSection,lookCheck,lookOpenFresh,lookSave};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,LOOK_OTHER,lookCheck,lookOwnMats,lookSet,lookSetMat,lookShadeStep,lookSetEnamel,lookShadeHtml,lookSugCols,lookSugPats,lookUsePick,lookWrite,renderLookPick};
+export {lookSet,lookOwnMats,LOOK_OTHER,lookWrite,lookOwnMatUI,lookSetMat,lookSetEnamel,renderLookPick,lookUsePick,lookShadeHtml,lookShadeStep,lookSugCols,lookSugPats,lookSection,lookCheck,lookOpenFresh,lookSave};
 acts({lkSwitch,lkAddChip,lkUse,lkOwnRm,lkOwnAdd,lkOwnCancel,lkOwnOpen,lkSel,lkClose,lkOther,lkSaveOther,lkNewName,lkNewAdd,lkNewOpen,lkUsePick,lkShade,lkRow,lkUndoMeas,lkStop,lkRead,lkCheck,lkReread,lkClearStripes,lkNewCol,lkNewPat,lkCuFileQ});

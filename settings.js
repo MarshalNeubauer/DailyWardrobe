@@ -9,6 +9,12 @@
    answers a file asked for under another folder with the root's copy, so an import resolved against the root ran the file a second
    time; bus.js keeps nothing on the page, so a second copy of it is harmless). Everything else it still reads as globals. */
 import {on,heard,emit} from './bus.js';
+import {$,DAY_NAMES,MATERIALS_BY,applyCustom,dayRecs,isoKey,key,keySettings,mergeSettings,nowMs,occOf,ownMats,setWardrobe,settings,stampSettings,todayDate,wearsJacket,wearsTie} from './core.js';
+import {inviteOver,layerClose,layerOpen,tell} from './ui.js';
+import {backDrop,backKind,backPush} from './back.js';
+import {pagesOn,subShown} from './nav.js';
+import {toast} from './toast.js';
+import {acts} from './act.js';
 /* settings management */
 /* Settings: a full-screen page of categories that unfold like Today's cards; openSettings('weather') opens one directly */
 const SET_CATS=['laundry','schedule','daysoff','calendar','weather','care','photos','tagging','backup','connection','about'];
@@ -214,7 +220,7 @@ function setViewStale(v){viewStale=v}
 Object.assign(globalThis,{SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayDirty,settingsOpen,refreshToday,closeSettings,saveSettings,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,picsSwitched,setVestMode,toggleDay,setWanted,setSetSeen,setViewStale});
 Object.defineProperties(globalThis,{viewStale:{get:()=>viewStale,set:v=>{viewStale=v}},setSeen:{get:()=>setSeen,set:v=>{setSeen=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,SET_CATS,saveSettings,setCatOpen,setDarkShirts,setOpenTap,get setOther(){return setOther},setPictures,get todayStale(){return todayStale}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,SET_CATS,saveSettings,setCatOpen,setDarkShirts,setOpenTap,get setOther(){return setOther},setPictures,get todayStale(){return todayStale},backupSummary,toggleDay,settingsPart,settingsSummaries};
 export {SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayStale,todayDirty,viewStale,settingsOpen,refreshToday,closeSettings,saveSettings,setSeen,setOther,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,setPictures,picsSwitched,setVestMode,setDarkShirts,toggleDay,setWanted,setOpenTap,setSetSeen,setViewStale};
 /* the notice board (bus.js): what Settings does when the router announces it (nav.js no longer names this file; the restructure S3f) */
 on('page-showing',()=>closeSettings());   // another page is shown: Settings closes
