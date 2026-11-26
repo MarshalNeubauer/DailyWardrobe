@@ -1,0 +1,397 @@
+{
+ "about": [
+  "The load-failure contract (the restructure, step 2, 2026-11-26; RESTRUCTURE-PLAN.md section 6): what one page file that cannot be loaded may take down.",
+  "Every page script in index.html is listed with its class and its feature group; tests/modload.test.js checks it (404 of each file on Chromium and WebKit, and the imports read from the files).",
+  "on404: what its 404 shows where that is not its class's usual: \"card\" (the start-up card), \"no-picture\" (Today drawn without its outfit figure) or \"picture\" (Today drawn with it); a string for both engines, or {chromium, webkit}."
+ ],
+ "classes": {
+  "required": {
+   "on404": "card",
+   "what": "the app cannot start without it: its failure may show the start-up card. It may import only required files."
+  },
+  "today-no-picture": {
+   "on404": "no-picture",
+   "what": "without it Today is drawn with no outfit picture, never the start-up card. It may import required and today-no-picture files, never an optional one."
+  },
+  "optional": {
+   "on404": "picture",
+   "what": "only its feature is lost (its group may fail together); Today is drawn with its picture. It may import required and today-no-picture files and the files of its own group. No required or today-no-picture file imports it: they reach it through bus.js (an announcement, or a socket: serve/ask)."
+  }
+ },
+ "groups": {
+  "base": "the required files",
+  "today": "Today and the plan behind it",
+  "painter": "the outfit picture: drawn figure, mannequin poses, the painter",
+  "add": "the Add page and its readings",
+  "item-sheet": "the item sheet and the Wardrobe grid",
+  "backup": "sync, its photos and status, snapshots, backup files",
+  "(a file's own name)": "a feature that is one file"
+ },
+ "files": {
+  "merge.js": {
+   "class": "optional",
+   "group": "merge"
+  },
+  "bus.js": {
+   "class": "required",
+   "group": "base"
+  },
+  "core.js": {
+   "class": "required",
+   "group": "base"
+  },
+  "planner.js": {
+   "class": "today-no-picture",
+   "group": "today"
+  },
+  "analysis.js": {
+   "class": "optional",
+   "group": "analysis"
+  },
+  "detect.js": {
+   "class": "today-no-picture",
+   "group": "today"
+  },
+  "srgb.js": {
+   "class": "today-no-picture",
+   "group": "today"
+  },
+  "mannequin.js": {
+   "class": "optional",
+   "group": "painter",
+   "on404": {
+    "webkit": "no-picture"
+   },
+   "note": "on WebKit Today has no figure without it (the painted picture is not there yet)"
+  },
+  "mq/vest.js": {
+   "class": "optional",
+   "group": "painter",
+   "on404": {
+    "webkit": "no-picture"
+   },
+   "note": "on WebKit the missing pose of the day's outfit leaves no figure: modload holds the day on Monday 2026-11-16, whose outfit has a vest (on Thursday 2026-11-26 it is mq/suit.js)"
+  },
+  "mq/suit.js": {
+   "class": "optional",
+   "group": "painter"
+  },
+  "mq/suit-open.js": {
+   "class": "optional",
+   "group": "painter"
+  },
+  "mq/shirt-tie.js": {
+   "class": "optional",
+   "group": "painter"
+  },
+  "mq/shirt-open.js": {
+   "class": "optional",
+   "group": "painter"
+  },
+  "draw.js": {
+   "class": "today-no-picture",
+   "group": "painter"
+  },
+  "app.js": {
+   "class": "today-no-picture",
+   "group": "today"
+  },
+  "back.js": {
+   "class": "required",
+   "group": "base"
+  },
+  "act.js": {
+   "class": "required",
+   "group": "base",
+   "on404": "picture",
+   "note": "required by the owner's choice (c): as toast.js; Settings does not open without it"
+  },
+  "add.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "add-paste.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "add-card.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "add-more.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "add-sheet.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "sheet-swipe.js": {
+   "class": "optional",
+   "group": "sheet-swipe"
+  },
+  "add-save.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "add-keep.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "item-photo.js": {
+   "class": "optional",
+   "group": "item-sheet"
+  },
+  "item-view.js": {
+   "class": "optional",
+   "group": "item-sheet"
+  },
+  "itemsheet.js": {
+   "class": "optional",
+   "group": "item-sheet"
+  },
+  "history.js": {
+   "class": "today-no-picture",
+   "group": "today"
+  },
+  "missed.js": {
+   "class": "today-no-picture",
+   "group": "today"
+  },
+  "locks.js": {
+   "class": "optional",
+   "group": "locks"
+  },
+  "pickscore.js": {
+   "class": "optional",
+   "group": "pickscore"
+  },
+  "scorecard.js": {
+   "class": "today-no-picture",
+   "group": "today"
+  },
+  "boxfold.js": {
+   "class": "optional",
+   "group": "boxfold"
+  },
+  "today-plan.js": {
+   "class": "today-no-picture",
+   "group": "today"
+  },
+  "today.js": {
+   "class": "today-no-picture",
+   "group": "today"
+  },
+  "today-photofold.js": {
+   "class": "optional",
+   "group": "today-photofold"
+  },
+  "today-picture.js": {
+   "class": "optional",
+   "group": "today-picture"
+  },
+  "today-gestures.js": {
+   "class": "optional",
+   "group": "today-gestures"
+  },
+  "month.js": {
+   "class": "today-no-picture",
+   "group": "today"
+  },
+  "photos.js": {
+   "class": "today-no-picture",
+   "group": "today"
+  },
+  "locale.js": {
+   "class": "optional",
+   "group": "locale"
+  },
+  "settings.js": {
+   "class": "required",
+   "group": "base"
+  },
+  "daysoff.js": {
+   "class": "optional",
+   "group": "daysoff"
+  },
+  "weather.js": {
+   "class": "optional",
+   "group": "weather"
+  },
+  "toast.js": {
+   "class": "required",
+   "group": "base",
+   "on404": "picture",
+   "note": "required by the owner's choice (c), 2026-11-25: a later import of it may show the start-up card; today its 404 shows Today with its picture"
+  },
+  "theme.js": {
+   "class": "optional",
+   "group": "theme"
+  },
+  "start.js": {
+   "class": "required",
+   "group": "base"
+  },
+  "ui.js": {
+   "class": "required",
+   "group": "base",
+   "on404": "picture",
+   "note": "required by the owner's choice (c) (its questions): as toast.js"
+  },
+  "safety.js": {
+   "class": "optional",
+   "group": "safety"
+  },
+  "dress.js": {
+   "class": "optional",
+   "group": "dress"
+  },
+  "tag-request.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "migrate.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "measure.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "tagging.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "own-lists.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "pattern-read.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "assemble.js": {
+   "class": "today-no-picture",
+   "group": "painter"
+  },
+  "asm-color.js": {
+   "class": "optional",
+   "group": "painter"
+  },
+  "asm-watch.js": {
+   "class": "optional",
+   "group": "painter"
+  },
+  "asm-pocket.js": {
+   "class": "optional",
+   "group": "painter"
+  },
+  "asm-gl.js": {
+   "class": "optional",
+   "group": "painter"
+  },
+  "asm-kinds.js": {
+   "class": "optional",
+   "group": "painter"
+  },
+  "asm-ocp.js": {
+   "class": "optional",
+   "group": "painter"
+  },
+  "stats.js": {
+   "class": "today-no-picture",
+   "group": "stats"
+  },
+  "pack.js": {
+   "class": "optional",
+   "group": "pack"
+  },
+  "wardrobe.js": {
+   "class": "optional",
+   "group": "item-sheet"
+  },
+  "colpick.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "checklist.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "look.js": {
+   "class": "optional",
+   "group": "add"
+  },
+  "care.js": {
+   "class": "optional",
+   "group": "care"
+  },
+  "cost.js": {
+   "class": "optional",
+   "group": "cost"
+  },
+  "fav.js": {
+   "class": "optional",
+   "group": "fav"
+  },
+  "shop.js": {
+   "class": "optional",
+   "group": "shop"
+  },
+  "sync-status.js": {
+   "class": "optional",
+   "group": "backup"
+  },
+  "sync.js": {
+   "class": "optional",
+   "group": "backup",
+   "on404": {
+    "webkit": "no-picture"
+   },
+   "note": "on WebKit Today has no figure without it"
+  },
+  "sync-photos.js": {
+   "class": "optional",
+   "group": "backup"
+  },
+  "snapshots.js": {
+   "class": "optional",
+   "group": "backup"
+  },
+  "backupfile.js": {
+   "class": "optional",
+   "group": "backup"
+  },
+  "account.js": {
+   "class": "optional",
+   "group": "account"
+  },
+  "setup.js": {
+   "class": "optional",
+   "group": "setup"
+  },
+  "kit.js": {
+   "class": "optional",
+   "group": "kit"
+  },
+  "calendar.js": {
+   "class": "optional",
+   "group": "calendar"
+  },
+  "remind.js": {
+   "class": "optional",
+   "group": "remind"
+  },
+  "about.js": {
+   "class": "optional",
+   "group": "about"
+  }
+ },
+ "lazy": {
+  "calparse.js": {
+   "class": "optional",
+   "group": "calendar",
+   "note": "not a page script: calendar.js imports it with import() when a calendar is read"
+  }
+ }
+}

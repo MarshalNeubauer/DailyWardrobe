@@ -18,10 +18,24 @@ const TOPICS={
   'connection-typed':{emit:['settings.js'],on:['account.js'],what:'another address or code typed in Connection: the account decides'},
 };
 
+/* name -> {serve: files that serve it (one), ask: files that ask for it (in load order), what: what it does}. A socket is how a
+   required file calls into an optional one without importing it (tests/load-contract.json); none is used yet (step 3 converts
+   the callers) */
+const SOCKETS={};
+
 module.exports=async({ok,ROOT})=>{
   /* bus.js itself, run as a script with its export blanked */
-  const ctx=vm.createContext({});vm.runInContext(appSrc(ROOT,'bus.js')+';this.B={on,emit,heard}',ctx);
-  const {on,emit,heard}=ctx.B,log=[];
+  const ctx=vm.createContext({});vm.runInContext(appSrc(ROOT,'bus.js')+';this.B={on,emit,heard,serve,ask}',ctx);
+  const {on,emit,heard,serve,ask}=ctx.B,log=[];
+  /* the sockets */
+  ok(ask('nobody',1,2)===undefined,'ask for a name nobody serves: nothing is called and the answer is undefined (the old typeof guard)');
+  const seen=[];serve('sum',(a,b)=>{seen.push([a,b]);return a+b});
+  ok(ask('sum',2,3)===5&&seen.length===1&&seen[0].join()==='2,3','ask calls what is served once, with the arguments, and gives back its answer');
+  serve('sum',(a,b)=>a*b);ok(ask('sum',2,3)===6,'the last fn served under a name is the one asked');
+  serve('nofn',undefined);ok(ask('nofn')===undefined,'serving something that is not a function serves nothing');
+  const sboom=new Error('sboom');serve('throws',()=>{throw sboom});let sgot=null;try{ask('throws')}catch(e){sgot=e}
+  ok(sgot===sboom,'an error the served fn throws reaches the one who asked, as a direct call\'s would');
+  on('pinned',()=>'heard');ok(emit('sum')===0&&!heard('sum')&&ask('pinned')===undefined&&emit('pinned')===1,'sockets and topics are apart: a served name is no topic, a pinned topic no socket');
   ok(emit('nobody')===0&&!heard('nobody'),'a topic nobody pinned: emit calls nothing and says 0, heard is false');
   const a=x=>log.push('a'+x),b=x=>log.push('b'+x);on('t',a);on('t',b);on('t',a);
   ok(emit('t',1)===2&&log.join()==='a1,b1'&&heard('t'),'each pinned fn is called once, in pin order, with the arguments');
@@ -32,20 +46,31 @@ module.exports=async({ok,ROOT})=>{
   ok(log.join()==='first','a fn pinned while the topic is being announced is called from the next announcement on');
   /* the topics the app uses */
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8'),page=[...html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)].map(m=>m[1]);
-  const used={};
+  const used={},sockUsed={};
   const acorn=require('acorn');
   for(const f of page){if(f==='bus.js')continue;const src=fs.readFileSync(path.join(ROOT,f),'utf8');let ast;
     try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'module'})}catch(e){try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'script'})}catch(e2){continue}}
-    const imp=new Set(ast.body.filter(s=>s.type==='ImportDeclaration'&&s.source.value==='./bus.js').flatMap(s=>s.specifiers.map(x=>x.local.name)));
+    // local name -> bus.js's name (a file that also reads app.js's own ask() imports bus.js's as another name: {ask as askFor})
+    const imp=new Map(ast.body.filter(s=>s.type==='ImportDeclaration'&&s.source.value==='./bus.js').flatMap(s=>s.specifiers.map(x=>[x.local.name,x.imported?x.imported.name:x.local.name])));
     const add=(k,t)=>{const u=used[t]=used[t]||{emit:[],on:[],heard:[]};if(!u[k].includes(f))u[k].push(f)};
+    const sock=(k,t)=>{const u=sockUsed[t]=sockUsed[t]||{serve:[],ask:[]};if(!u[k].includes(f))u[k].push(f)};
     const walk=n=>{if(!n||typeof n.type!=='string')return;
-      if(n.type==='CallExpression'&&n.callee.type==='Identifier'){const c=n.callee.name,a=n.arguments[0];
+      if(n.type==='CallExpression'&&n.callee.type==='Identifier'){const c=imp.get(n.callee.name)||null,a=n.arguments[0],lit=a&&a.type==='Literal'&&typeof a.value==='string';
         // (settingsPart(fn) is settings.js's own way to pin for 'settings-parts': counted as the caller's pin)
-        if(c==='settingsPart'&&f!=='settings.js')add('on','settings-parts');
-        else if(/^(?:emit|on|heard)$/.test(c)&&imp.has(c)&&a&&a.type==='Literal'&&typeof a.value==='string'&&!(f==='settings.js'&&c==='on'&&a.value==='settings-parts'))add(c,a.value);
-        else if(/^(?:emit|heard)$/.test(c)&&!imp.has(c))ok(false,`${f} calls ${c}() without importing it from './bus.js'`)}
+        if(n.callee.name==='settingsPart'&&f!=='settings.js')add('on','settings-parts');
+        else if(c&&/^(?:emit|on|heard)$/.test(c)&&lit&&!(f==='settings.js'&&c==='on'&&a.value==='settings-parts'))add(c,a.value);
+        else if(c&&/^(?:serve|ask)$/.test(c)){if(lit)sock(c,a.value);else ok(false,`${f} calls ${n.callee.name}() of bus.js with a name that is not a plain string`)}
+        else if(!c&&/^(?:emit|heard|serve)$/.test(n.callee.name))ok(false,`${f} calls ${n.callee.name}() without importing it from './bus.js'`)}
       for(const k in n){const v=n[k];if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v.type==='string')walk(v)}};
     walk(ast)}
+  const sockNotListed=Object.keys(sockUsed).filter(t=>!SOCKETS[t]);
+  ok(!sockNotListed.length,`every socket the files use is in SOCKETS${sockNotListed.length?': not '+sockNotListed.join(', '):''}`);
+  const sbad=[];
+  for(const [t,d] of Object.entries(SOCKETS)){const u=sockUsed[t]||{serve:[],ask:[]};
+    if(u.serve.length!==1||u.serve[0]!==d.serve)sbad.push(`${t}: served by ${u.serve.join(', ')||'nobody'}, listed ${d.serve}`);
+    const order=[...u.ask].sort((x,y)=>page.indexOf(x)-page.indexOf(y));
+    if(order.join()!==[...d.ask].sort((x,y)=>page.indexOf(x)-page.indexOf(y)).join()||!order.length)sbad.push(`${t}: asked by ${order.join(', ')||'nobody'}, listed ${d.ask.join(', ')}`)}
+  ok(!sbad.length,`each socket is served by the one file SOCKETS lists and asked by the files it lists (${Object.keys(SOCKETS).length} sockets)${sbad.length?': '+sbad.join('; '):''}`);
   const notListed=Object.keys(used).filter(t=>!TOPICS[t]);
   ok(!notListed.length,`every topic the files use is in TOPICS${notListed.length?': not '+notListed.join(', '):''}`);
   const bad=[];
@@ -66,3 +91,4 @@ module.exports=async({ok,ROOT})=>{
   ok(/'bus\.js'/.test(sw),'bus.js is in sw.js ASSETS (offline)');
 };
 module.exports.TOPICS=TOPICS;
+module.exports.SOCKETS=SOCKETS;
