@@ -1,4 +1,4 @@
-// A tab tapped while the page's later scripts are still loading (2026-11-22). start.js `show` then called names of scripts that had not
+// A tab tapped while the page's later scripts are still loading (2026-11-22). start.js `show` (nav.js's since the restructure S3f) then called names of scripts that had not
 // run yet (renderWardrobe needs wardrobe.js's wardKeep, the Insights page stats.js), so the tap threw a page error, and start-up went
 // to Today whatever was tapped. Now such a tap is only noted, and start-up shows the tab once Today is up.
 // The later scripts are held back here by the routes (safety.js, the script after start.js since the restructure S3a moved ui.js, waits for the test: a classic script blocks
