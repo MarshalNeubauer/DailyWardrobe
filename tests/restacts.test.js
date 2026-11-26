@@ -259,7 +259,9 @@ async function linked(eng,browser,{ok,url,settle}){
 
   // the Add card's notes: three cards, so a control must find its own card
   await ev(()=>{closeSettings();const other=PATS_BY.suit.find(x=>x!=='pinstripe'&&x!=='solid'&&x!=='other');window.__other=other;
-    __spy('retryTag','patternAgain','refineAgain','openColForm','openPatForm','addTexture');
+    __spy('retryTag','openColForm','openPatForm','addTexture');
+    // (patternAgain and refineAgain are tagging.js's own since the restructure S3c: watched at the handlers the markup names)
+    __via('patternAgain',{tagPatternAgain:el=>[cardIx(el)]});__via('refineAgain',{tagRefineAgain:el=>[cardIx(el)]});
     queue.length=0;queue.push({id:'k0',manual:true,type:'tie',primaryColor:'navy',pattern:'solid'},
       {id:'k1',type:'suit',primaryColor:'navy',pattern:'pinstripe',ai:{},tagErr:'It failed.',patternCut:true,refineNote:'Tagged again from the close-up.',refineUndo:{brand:'Was'},
         refineType:'blazer',refineKept:{c:'grey'},altColor:'charcoal',altPattern:other,auto:{secondaryColor:{from:'grey',to:'blue',src:'photo'}},secondaryColor:'blue',

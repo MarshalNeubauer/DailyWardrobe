@@ -25,11 +25,15 @@ const TOPICS={
   'sub-opening':{emit:['nav.js'],on:['settings.js'],what:'a page opens over another (subOpen): Settings, when open, fills in S.set, its open categories and scroll'},
   'sub-back':{emit:['nav.js'],on:['settings.js'],what:'that page goes back to Settings (subBack, with what S.set held): Settings opens as it was'},
   'sample-asked':{emit:['stats.js'],on:['kit.js'],what:'"Try a sample wardrobe" tapped on an empty Insights or Packing list (heard: whether the button is offered)'},
+  'card-changed':{emit:['measure.js','pattern-read.js','tagging.js','checklist.js','add-keep.js','own-lists.js','colpick.js','add-more.js','add-save.js','add-card.js','add-sheet.js'],on:['add.js'],what:'an Add card changed (a field, a reading, a measurement): Add is drawn again (the restructure S3c: the files loaded before add.js never call renderAdd)'},
 };
 
 /* name -> {serve: files that serve it (one), ask: files that ask for it (in load order), what: what it does}. A socket is how a
    required (or today-no-picture) file calls into an optional one without importing it (tests/load-contract.json) */
 const SOCKETS={
+  'add-for':{serve:'add-sheet.js',ask:['nav.js'],what:'Add opened with the type Today\'s "Add one" asked for, or that type dropped when Add is left (setAddFor; the restructure S3c)'},
+  'nps-leave':{serve:'add-sheet.js',ask:['nav.js'],what:'Add is left with the "Add without a photo" sheet open: it goes, its Back entry handed back first (npsLeave)'},
+  'add-draw':{serve:'add.js',ask:['nav.js'],what:'Add is shown: it is drawn (renderAdd)'},
   'setup-yield':{serve:'setup.js',ask:['nav.js'],what:'a page is shown: a setup that opened by itself steps aside (setupYield)'},
   'shop-close':{serve:'shop.js',ask:['nav.js'],what:'another page is shown: What to buy closes (closeShop)'},
   'pack-show':{serve:'pack.js',ask:['nav.js'],what:'a page is shown: the packing list page shows or hides (packShow)'},

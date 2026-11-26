@@ -3,6 +3,12 @@
    kept on this device, what the tagger learns from the corrections, and what one tagging call costs. */
 
 const TAG_MAX=2048,CLOSE_MAX=1536,TAG_Q=.92;
+/* a close-up under TEX_MIN_PX on its short side is refused (the Add card, the item sheet); TEX_MAX is the synced close-up (2026-11-13,
+   the owner: "the zoom-in pictures are still stored at 640"): as sharp as the device-only copy (CLOSE_MAX), now that photos are stored
+   one by one on the server and fetched when needed (it was 640). (Here since the restructure S3c, 2026-11-26: they were add.js's, and
+   migrate.js and item-photo.js read them too) */
+const TEX_MIN_PX=200;
+const TEX_MAX=1536;
 /* the colours and patterns the owner added, when there are any (the worker adds them to what the tagger may answer) */
 const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length||(c.patterns||[]).length?{colors:c.colors||[],patterns:c.patterns||[]}:undefined};
 /* the latest corrections (another item's only: the benchmark must not hand an item its own answer) */
@@ -74,5 +80,5 @@ const readEstimate=()=>describeEstimate('colour',true)+describeEstimate('pattern
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it; the file has no top-level call): app.js,
    add.js, item-photo.js, migrate.js, measure.js, pattern-read.js, colpick.js, look.js, safety.js and stats.js, classic scripts, and
    add-keep.js, add-save.js, tagging.js (TAG_Q) and checklist.js (texSig), modules that read them as globals, use these */
-Object.assign(globalThis,{TAG_MAX,CLOSE_MAX,TAG_Q,customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,texSig,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate});
-export {TAG_MAX,CLOSE_MAX,TAG_Q,customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,texSig,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate};
+Object.assign(globalThis,{TAG_MAX,CLOSE_MAX,TAG_Q,TEX_MIN_PX,TEX_MAX,customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,texSig,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate});
+export {TAG_MAX,CLOSE_MAX,TAG_Q,TEX_MIN_PX,TEX_MAX,customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,texSig,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate};

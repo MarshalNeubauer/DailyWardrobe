@@ -80,7 +80,7 @@ const BRIDGE={
   'photo-keys.js':['comboKey','comboSig','esc','fnv64','jsq','keepRender','listAt','listPaused','loadRenders','picsDrawn','renders','shareRender','srcOk','workerBase','workerList'],
   // the photo-tagging request: app, add, item-photo, migrate, measure, pattern-read, colpick, look, safety and stats are classic
   // scripts; add-keep.js, add-save.js, tagging.js (TAG_Q) and checklist.js (texSig) are modules that read these as globals
-  'tag-request.js':['CLOSE_MAX','TAGIMG_CACHE','TAG_MAX','TAG_Q','benchEstimate','customForTag','describeEstimate','keepCloseImg','keepTagImg','readEstimate','recordTagResult','resignTagImg','sharpCloseOf','tagExtras','tagFixes','tagImgOf','tagStatsCard','texSig'],
+  'tag-request.js':['CLOSE_MAX','TAGIMG_CACHE','TAG_MAX','TAG_Q','TEX_MAX','TEX_MIN_PX','benchEstimate','customForTag','describeEstimate','keepCloseImg','keepTagImg','readEstimate','recordTagResult','resignTagImg','sharpCloseOf','tagExtras','tagFixes','tagImgOf','tagStatsCard','texSig'],
   // the app's state, storage and shared helpers for nearly every file and the tests; flt, queue, view, sel, the database's and the
   // connection copy's flags, aiError and aiModel have setters (tests assign flt,
   // queue, view and sel; since S1a the other files call setSel, setView, setFlt …, the owner's setters)
@@ -101,7 +101,15 @@ const BRIDGE={
   // the sheets that close on a swipe down are classic scripts: add-sheet, item-view, colpick and kit call it
   'sheet-swipe.js':['sheetSwipe'],
   // add, add-card, tagging, pattern-read, safety, colpick, checklist, look and item-photo; the rest: tests
-  'measure.js':['BLUR_SHARP','FAR_DE','MEAS_GAP','aiSignals','closeRead','colRef','colourVerdicts','measHint','measKL','measureAndApply','measureCard','measureCloth','measureParts','multiCol','nearestCols','paperCopy','paperKey','paperNow','paperOf','sharpness','undoMeasured','wbGains','wbRead'],
+  'measure.js':['BLUR_SHARP','FAR_DE','MEAS_GAP','aiSignals','applyWb','closeRead','colRef','colourVerdicts','measHint','measKL','measureAndApply','measureCard','measureCloth','measureParts','multiCol','nearestCols','paperCopy','paperKey','paperNow','paperOf','sharpness','undoMeasured','wbGains','wbRead'],
+  // the restructure S3c (2026-11-26): a card by its id and its state, moved here from add-save.js and add.js; every Add file, tagging,
+  // pattern-read, colpick, look, checklist and own-lists find a card with these, and the tests call cardOf, qAt, needType and cardReading
+  'add-ids.js':['cardAt','cardIx','cardOf','cardReading','needType','qAt','qh'],
+  // add, add-card, add-save, tagging, itemsheet, look, measure, migrate and asm-color; the rest: tests
+  'pattern-read.js':['TEX_WORDS','claudeOnly','missedPattern','readPatternWithClaude','readSett','readable','rereadSett','settFromSpec','settNote','settSummary','settable'],
+  // add, add-card, measure, pattern-read, colpick and safety are classic scripts; add-save.js and tag-request.js (fieldLabel, valName),
+  // modules earlier in the list, read these as globals; confTxt is read by tests/records.test.js only
+  'tagging.js':['aiFields','closeTagImg','fieldLabel','readAbort','readBegin','readEnd','refineFromCloseup','tagNotes','takeExtras','valName'],
   // history.js, a classic script, swaps, picks and draws the picker with these; slotPool, fitOf, fitTag and pickSub are also called by
   // the care, onorder, planner-rules and rotation-pause tests
   'pickscore.js':['BELT_STUCK','FOLLOW','beltless','bootsOff','fitOf','fitTag','handPool','handWhy','keepHand','keepOff','pickSub','pocketOn','slotPool','suggestClean','suitPants'],
@@ -135,25 +143,12 @@ const BRIDGE={
   // (subShown); start.js sets pagesOn and drops a page asked for too early (setPagesOn, setPageWant), shows it (showWanted) and
   // draws the plain card over PAGES and pins pageBack for the phone's Back
   'nav.js':['PAGES','openAdd','pageBack','pagesOn','setPageWant','setPagesOn','show','showWanted','subBack','subOpen','subShown'],
-  // the other Add files, tagging, pattern-read, measure, item-photo, migrate, safety, settings, kit and others draw and read cards with these; addCalm is a let only add.js writes (add-save reads it): a getter; the rest: tests
-  'add.js':['PAIR_TYPES','STOPPED','TEX_MAX','TEX_MIN_PX','addBackOnline','addCalm','addFiles','addTexture','applyWb','dropTexture','errToHand','measureGuess','multiAgain','multiMsg','needType','patternAgain','refineAgain','renderAdd','skipCard','stopRead','wbNote'],
-  // tests/paste.test.js clears the line under the "Photo or link" field with it
-  'add-paste.js':[],
-  // add, itemsheet, look, tagging and colpick are classic scripts; add-sheet, add-more and checklist read these as globals too (no
-  // page module imports another yet); setq, cardSafe, ckCheck and addCkSecs are also called by tests
-  'add-card.js':['busyCard','cardSafe','ckLeftLine','ckLr','confBtn','errCard','formCard','matGuessOf','matNewOf','matchShadeE','matchShadeQ','multiErrCard','photoPair','setq','shadeRow','shirtColFix','typeCard'],
-  // itemsheet (orderHint, arriveVal, ARRIVE_PAST, checkArrivals), stats, wardrobe, care and shop (fmtDay), today, start and care
-  // (checkArrivals); add-card and add-save read the rows; setOrder and setArrives are called by tests only
-  'add-more.js':['ARRIVE_PAST','arriveVal','checkArrivals','fmtDay','orderHint','orderRow','qtyLabel','qtyOf','qtyRow'],
-  // add (renderAddFor, npsDraw, npsId), ui (npsId, npsAsking, npsInert, npsCancel), start (npsLeave; it sets addFor with setAddFor, S1a);
-  // addManual and npsClose by tests only; npsId and npsAsking are lets only add-sheet.js writes: getters
-  'add-sheet.js':['npsAsking','npsCancel','npsDraw','npsId','npsInert','npsLeave','renderAddFor','setAddFor'],
-  // add, look, kit, wardrobe, colpick, safety, tagging, pattern-read and the other Add files find a card and save it with these;
-  // saveAllOn is a let only add-save.js writes (add and add-card read it): a getter
-  'add-save.js':['cardAt','cardIx','cardOf','cardReading','cardReady','qAt','qh','save','saveAll','saveAllOn','savedTitle'],
-  // every file that changes a card keeps it (addKeep, addKeepSoon); add and add-sheet (addWatch, addCardRec), kit (addRevive),
-  // safety (addRestore); addKeepT is read by tests/addcards.test.js, which also assigns addRestoreState (add.js reads it): a setter
-  'add-keep.js':['addCardRec','addKeep','addKeepSoon','addRestore','addRestoreState','addRevive','addWatch'],
+  // the restructure S3c (2026-11-26): the field rows the Add card and the item sheet share, moved here from wardrobe.js and itemsheet.js:
+  // add-card, add-save, wardrobe, itemsheet and kit draw, save and size them; the tests call matRow
+  'fields.js':['WARD_FIELDS','WARD_MAX','fldRow','matLabel','matPicked','matRow','matTidy','notesRow','optLab','wardSaveFields'],
+  // add-card, itemsheet, colpick, look, add, add-sheet and item-view draw their sections and the close-up comparison with these;
+  // CK_OPEN is also how 53 test files open the sections
+  'checklist.js':['CK_OPEN','accRow','ckChip','ckColSum','ckIsOpen','ckSec','ckSure','ckToggle','cmpDiff','cmpDiffText','cmpDrawn','cmpHtml','cmpLab','cmpMatchHtml','cmpMount','cmpPaper','cmpPaperLine','cmpSteps'],
   // add, add-card, add-keep, add-save, itemsheet, item-view, history, stats, wardrobe, colpick, look, migrate, measure, pattern-read and app draw and edit with these; the rest: tests
   'item-photo.js':['PH_MAX','cropEditor','cropKeep','cropSource','imgOf','makeSmall','paperCloth','paperHint','paperLine','paperRetake','paperSteps','phSm','photoTools','replaceTexture','smallPhotos'],
   // editing is read by twelve classic page scripts and set by 31 tests (a setter); wardrobe, cost and kit open a piece (openItem), start
@@ -163,7 +158,7 @@ const BRIDGE={
   // renderWardrobe is called by 16 page scripts and 15 tests; item-view draws the sheet with itemBody and reads phEdit, as item-photo
   // and photos do (a getter: only itemsheet.js assigns it); add-card (optLab, matTidy), add-save (matTidy), colpick and look (sete,
   // patSummary, redetect, clearStripes), wardrobe (wardPic), colpick (wardPic); rm and togglePause: tests only
-  'itemsheet.js':['clearStripes','itemBody','matTidy','optLab','patSummary','phEdit','redetect','renderWardrobe','sete','wardPic'],
+  'itemsheet.js':['clearStripes','itemBody','patSummary','phEdit','redetect','renderWardrobe','sete','wardPic'],
   // (keyDate, saveDay, idsOf and notAhead went to days.js, restructure S3b) today.js draws and records with recordDays, openPicker, closePicker,
   // setWorn, setVest, resetCard and dayActions and sets todayPullWait and pastEdit (setters; tests set pastEdit too; swapMsg: HOOK,
   // S1f); picker is a getter (today, today-gestures and sync read it); whenPulled: start, safety, wardrobe, calendar; dropLearn and
@@ -234,18 +229,37 @@ const BRIDGE={
   // settings.js, stats.js, start.js, add-card.js, add-save.js, shop.js and kit.js are classic scripts; vestMigrating is read by the
   // dress test only: a getter
   'dress.js':['dressNewItem','dressSummary','dressSynced','dressWhyUnused','migrateVests','newSuitVest','renderDressUI'],
-  // start.js runs the four remakes, item-photo.js counts its own within the day's (remakeLeft, remakeSpend); REMAKE_DAY is read by
-  // tests/tagreads.test.js only
-  'migrate.js':['fixBlackBackdrops','recolourSpecSetts','remakeLeft','remakeSpend','upgradeCloseups','upgradePhotos'],
+  // every file that changes a card keeps it (addKeep, addKeepSoon); add and add-sheet (addWatch, addCardRec), kit (addRevive),
+  // safety (addRestore); addKeepT is read by tests/addcards.test.js, which also assigns addRestoreState (add.js reads it): a setter
+  'add-keep.js':['addCardRec','addKeep','addKeepSoon','addRestore','addRestoreState','addRevive','addWatch'],
   // colpick, look, settings and add-card are classic scripts; tagging.js, a module earlier in the list, reads openColForm and openPatForm
   // as globals (tests/restacts.test.js replaces those two on window, which reaches tagging.js's calls); guessPatBase is called by
   // tests/asmroute.test.js only
   'own-lists.js':['addCustomColor','addCustomPattern','addOwnMaterial','groupOf','matGuessUse','matOffer','newColHex','openColForm','openPatForm','ownColOffer','removeCustom','removeOwnMaterial','renderCustomUI','renderOwnMatUI','typePl'],
-  // add, add-card, measure, pattern-read, colpick and safety are classic scripts; add-save.js and tag-request.js (fieldLabel, valName),
-  // modules earlier in the list, read these as globals; confTxt is read by tests/records.test.js only
-  'tagging.js':['aiFields','closeTagImg','fieldLabel','readAbort','readBegin','readEnd','refineFromCloseup','tagNotes','takeExtras','valName'],
-  // add, add-card, add-save, tagging, itemsheet, look, measure, migrate and asm-color; the rest: tests
-  'pattern-read.js':['TEX_WORDS','claudeOnly','missedPattern','readPatternWithClaude','readSett','readable','rereadSett','settFromSpec','settNote','settSummary','settable'],
+  // add, add-card, add-save, itemsheet, look, checklist and own-lists; colPick (a test assigns it) and rd (tests assign it) have setters, rdLast a getter; the rest: tests
+  'colpick.js':['EP','NEW_COL','RD_LOOKUPS','SOCK_THIRD','SW_GRAB','accDel','closeColPick','cnHex','cnLeft','colHas','colNameTaken','colNear','colPick','colPickSel','colRows','colShows','colTarget','colTidy','openColNew','openColPick','openCustomNew','openPatNew','patBtn','patChoices','patVar','rdAddBtn','rdCost','rdCostLine','rdDoneHtml','rdEditorBtn','rdOff','rdStart','renderColPick','useColPick'],
+  // itemsheet (orderHint, arriveVal, ARRIVE_PAST, checkArrivals), stats, wardrobe, care and shop (fmtDay), today, start and care
+  // (checkArrivals); add-card and add-save read the rows; setOrder and setArrives are called by tests only
+  'add-more.js':['ARRIVE_PAST','arriveVal','checkArrivals','fmtDay','orderHint','orderRow','qtyLabel','qtyOf','qtyRow'],
+  // add, look, kit, wardrobe, colpick, safety, tagging, pattern-read and the other Add files find a card and save it with these;
+  // saveAllOn is a let only add-save.js writes (add and add-card read it): a getter
+  'add-save.js':['cardReady','save','saveAll','saveAllOn','savedTitle'],
+  // add, itemsheet, look, tagging and colpick are classic scripts; add-sheet, add-more and checklist read these as globals too (no
+  // page module imports another yet); setq, cardSafe, ckCheck and addCkSecs are also called by tests
+  'add-card.js':['busyCard','cardSafe','ckLeftLine','ckLr','confBtn','errCard','formCard','matGuessOf','matNewOf','matchShadeE','matchShadeQ','multiErrCard','photoPair','setQField','setq','shadeRow','shirtColFix','typeCard'],
+  // add (renderAddFor, npsDraw, npsId), ui (npsId, npsAsking, npsInert, npsCancel), start (npsLeave; it sets addFor with setAddFor, S1a);
+  // addManual and npsClose by tests only; npsId and npsAsking are lets only add-sheet.js writes: getters
+  'add-sheet.js':['npsAsking','npsCancel','npsDraw','npsId','npsInert','npsLeave','renderAddFor','setAddFor'],
+  // the other Add files, tagging, pattern-read, measure, item-photo, migrate, safety, settings, kit and others draw and read cards with these; addCalm is a let only add.js writes (add-save reads it): a getter; the rest: tests
+  'add.js':['PAIR_TYPES','STOPPED','addBackOnline','addCalm','addFiles','addTexture','dropTexture','errToHand','measureGuess','multiAgain','multiMsg','renderAdd','skipCard','stopRead','wbNote'],
+  // tests/paste.test.js clears the line under the "Photo or link" field with it
+  'add-paste.js':[],
+  // core, item-photo and colpick are classic scripts; add-card, item-view, itemsheet, tagging, own-lists, add-save and checklist
+  // are modules that read these as globals; LOOK_OTHER, lookSet, lookOwnMats, lookSetMat, lookShadeStep and lookCheck by tests only
+  'look.js':['LOOK_COATS','LOOK_ENAMEL','LOOK_KS','LOOK_METALT','LOOK_METAL_COLS','LOOK_PAT_GROUPS','LOOK_PK','lookClipMetal','lookCu','lookCur','lookHasPat','lookOn','lookOpenFresh','lookOwnMatUI','lookPatGroupOf','lookSave','lookSection','lookSetEnamel','lookShadeHtml','lookShadeOk','lookSugCols','lookSugPats','lookUsePick','lookWrite','renderLookPick'],
+  // start.js runs the four remakes, item-photo.js counts its own within the day's (remakeLeft, remakeSpend); REMAKE_DAY is read by
+  // tests/tagreads.test.js only
+  'migrate.js':['fixBlackBackdrops','recolourSpecSetts','remakeLeft','remakeSpend','upgradeCloseups','upgradePhotos'],
   // start (renderStats, statsShow), wardrobe, care and cost (wornDays), dress (shoesWhyUnused), fav, cost, care and pack (the names and pictures); the rest: tests; statsOpen and fitMemo are getters (only stats.js writes them)
   'stats.js':['emptyAdd','renderStats','shoesWhyUnused','statDate','statName','statName1','statPic','statsShow','wornDays'],
   // history, today, itemsheet, wardrobe, scorecard and stats; favData, favSave and favToggleItem by the favorites tests only;
@@ -258,15 +272,7 @@ const BRIDGE={
   // kit save them (wardSaveFields), colpick and own-lists set a field, dress.js runs the one-time renames (matMigrate, matRenameTo,
   // sockToeMigrate, sockLegacy), safety asks wardPendingRestore, fav reads wardFlt; the search and sort names, itemFieldSoon,
   // wardDeleteNow and WARD_UNDO_MS: tests only; tests/materials.test.js sets wardQ (a setter)
-  'wardrobe.js':['WARD_MAX','WATCH_DETAILS_MAX','fldRow','ivOn','matLabel','matMigrate','matOn','matOnItem','matRenameTo','matRow','notesRow','setItemField','setQField','sockLegacy','sockToeMigrate','wardBack','wardBar','wardCount','wardDelete','wardDuplicate','wardFieldsTop','wardFlt','wardFresh','wardGrid','wardKeep','wardPendingRestore','wardSaveFields','wardView'],
-  // add, add-card, add-save, itemsheet, look, checklist and own-lists; colPick (a test assigns it) and rd (tests assign it) have setters, rdLast a getter; the rest: tests
-  'colpick.js':['EP','NEW_COL','RD_LOOKUPS','SOCK_THIRD','SW_GRAB','accDel','closeColPick','cnHex','cnLeft','colHas','colNameTaken','colNear','colPick','colPickSel','colRows','colShows','colTarget','colTidy','openColNew','openColPick','openCustomNew','openPatNew','patBtn','patChoices','patVar','rdAddBtn','rdCost','rdCostLine','rdDoneHtml','rdEditorBtn','rdOff','rdStart','renderColPick','useColPick'],
-  // add-card, itemsheet, colpick, look, add, add-sheet and item-view draw their sections and the close-up comparison with these;
-  // CK_OPEN is also how 53 test files open the sections
-  'checklist.js':['CK_OPEN','accRow','ckChip','ckColSum','ckIsOpen','ckSec','ckSure','ckToggle','cmpDiff','cmpDiffText','cmpDrawn','cmpHtml','cmpLab','cmpMatchHtml','cmpMount','cmpPaper','cmpPaperLine','cmpSteps'],
-  // core, item-photo and colpick are classic scripts; add-card, item-view, itemsheet, tagging, own-lists, add-save and checklist
-  // are modules that read these as globals; LOOK_OTHER, lookSet, lookOwnMats, lookSetMat, lookShadeStep and lookCheck by tests only
-  'look.js':['LOOK_COATS','LOOK_ENAMEL','LOOK_KS','LOOK_METALT','LOOK_METAL_COLS','LOOK_PAT_GROUPS','LOOK_PK','lookClipMetal','lookCu','lookCur','lookHasPat','lookOn','lookOpenFresh','lookOwnMatUI','lookPatGroupOf','lookSave','lookSection','lookSetEnamel','lookShadeHtml','lookShadeOk','lookSugCols','lookSugPats','lookUsePick','lookWrite','renderLookPick'],
+  'wardrobe.js':['WATCH_DETAILS_MAX','ivOn','matMigrate','matOnItem','matRenameTo','setItemField','sockLegacy','sockToeMigrate','wardBack','wardBar','wardCount','wardDelete','wardDuplicate','wardFieldsTop','wardFlt','wardFresh','wardGrid','wardKeep','wardPendingRestore','wardView'],
   // itemsheet, cost, wardrobe, add-more, settings, today, today-picture and remind; the rest: tests
   'care.js':['CARE_ABLE','careBackText','careBadge','careBandSoon','careCard','careFrame','careLimit','careLog','careNote','careReminders','careState','careTag','careTimes','careWashed','careWord','renderCare','renderCareUI'],
   // itemsheet (cpwSum, cpwBlock), add-card (cpwQRow), add-save (cpwSaveFields), stats (cpwStatsCard), care (cpwSettingsUI); the
@@ -309,6 +315,12 @@ const BRIDGE={
 };
 /* file -> names its row gained after its conversion (each with the reason beside it); every one is in BRIDGE too */
 const GROWN={
+  // restructure S3c (2026-11-26): what the files loaded before add.js read moved down out of it: applyWb into measure.js, TEX_MIN_PX and
+  // TEX_MAX into tag-request.js (beside CLOSE_MAX; migrate.js and item-photo.js read them too); the Add card's setQField from wardrobe.js
+  // into add-card.js
+  'tag-request.js':['TEX_MAX','TEX_MIN_PX'],
+  'measure.js':['applyWb'],
+  'add-card.js':['setQField'],
   // restructure S1a (2026-11-25): the setters other files call instead of assigning the owner's let (once files import each other an
   // imported binding is read-only); setFlt moved here from itemsheet.js
   // and restructure S3a (2026-11-26): the motion helpers moved down out of the screens (RESTRUCTURE-PLAN.md section 3): MONTH_MS and

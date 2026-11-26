@@ -1,6 +1,6 @@
 /* Daily Wardrobe: photo tagging, the person's own lists (split from tagging.js, Round B CR-2-17): adding a colour or a pattern the lists
    lack, own materials from Claude's offers, and their Settings lists. */
-import {on} from './bus.js';
+import {on,emit} from './bus.js';   // emit: a card changed (add.js redraws Add on 'card-changed'; this file loads before add.js since the restructure S3c)
 
 /* ---- adding a colour or a pattern (settings.custom, synced; see applyCustom in core.js) ---- */
 /* the kinds a new colour is offered for at first ("Offer it for"): the casual tops together and the casual jackets together (2026-11-16,
@@ -90,9 +90,9 @@ async function removeOwnMaterial(type,name){const o=settings.ownMaterials&&typeo
 async function matOffer(i){const q=queue[i];if(!q||!q.matNew)return;const nm=q.matNew,was=q.material,had=matsFor(q.type).includes(nm.key);
   const n=await addOwnMaterial(q.type,nm.key);if(!n)return;
   const qq=queue.find(x=>x.id===q.id);if(!qq)return;delete qq.matNew;delete qq.matAI;qq.material=n;qq.matSet=1;qq.matAdded=n;qq.checked={...qq.checked,fabric:1};
-  addKeepSoon();renderAdd();
+  addKeepSoon();emit('card-changed');
   toast(`${cap1(n)} added to your ${matTypeWord(q.type)} materials.`,6000,{label:'Undo',fn:async()=>{const c=queue.find(x=>x.id===q.id);
-    if(c&&c.material===n){if(was)c.material=was;else delete c.material;delete c.matAdded;c.matNew=nm}if(!had)await removeOwnMaterial(q.type,n);renderAdd()}})}
+    if(c&&c.material===n){if(was)c.material=was;else delete c.material;delete c.matAdded;c.matNew=nm}if(!had)await removeOwnMaterial(q.type,n);emit('card-changed')}})}
 /* the Add card's "Use wool" on Claude's low-confidence guess: chosen by hand (matSet, Fabric & fit checked) */
 function matGuessUse(i){const q=queue[i];if(!q||!q.matGuess)return;const k=q.matGuess.key;delete q.matGuess;setQField(i,'material',k)}
 /* Settings → Your materials: the materials added from Claude's offers, per type; each can be removed (items already using it keep it: it

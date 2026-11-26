@@ -1,5 +1,7 @@
 /* Daily Wardrobe: Add, the cards kept when the app is closed (split from add.js, Round C 2026-11-17): every card's form and
    pictures in the database's meta store, brought back at the next start (addRestore, addRevive), and the listeners that keep them. */
+/* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
+import {emit} from './bus.js';
 
 /* ---- waiting cards survive iOS closing Safari (audit 2026-11-15, H1: they lived only in memory, beforeunload never fires on an iPhone,
    and reading them again was paid again). Every card on Add is kept in the database's meta store, never synced: the form as `addq`, each
@@ -51,7 +53,7 @@ async function addRestore(){if(addRestoreState)return;addRestoreState='busy';let
   addRestoreState='done';
   if(!n){addKeep();return 0}
   addWatch();addKeepSoon();
-  const a=$('#add');if(a&&!a.hidden)renderAdd();
+  const a=$('#add');if(a&&!a.hidden)emit('card-changed');
   toast(n===1?'The card you hadn’t saved is back on Add.':`The ${n} cards you hadn’t saved are back on Add.`,8000,a&&!a.hidden?null:{label:'Open',fn:()=>openAdd()});
   return n}
 /* installed with the first card: keep the cards when the app goes to the background (iOS may close it there), ask before a desktop

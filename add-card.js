@@ -1,11 +1,13 @@
 /* Daily Wardrobe: Add, one card (split from add.js, Round C 2026-11-17): a field changed (setq), the "As tagged" swatch and the
    photo pair, the shade rows (the Add card's and the item sheet's), and the card's drawing: the checklist's sections, formCard, and the
    cards that are not a form yet (being read, couldn't be read, asking for the type). */
+/* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
+import {emit} from './bus.js';
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
 const setq=(i,k,v)=>{const q=cardOf(i);if(!q)return;i=queue.indexOf(q);const asked=k==='type'&&needType(q);q[k]=v==='none'?null:v;if(k==='type')matTidy(q);q.edited={...q.edited,[k]:true};const ck=CK_FIELD[k]&&!(q.checked&&q.checked[CK_FIELD[k]]);if(ck)q.checked={...q.checked,[CK_FIELD[k]]:1};queueMicrotask(addKeep);
-  if(asked){measureGuess(q);q.pattern=normPat(v,q.pattern);shirtColFix(q);renderAdd();return}   /* the type asked for (needType): the colour measured, the full card */
+  if(asked){measureGuess(q);q.pattern=normPat(v,q.pattern);shirtColFix(q);emit('card-changed');return}   /* the type asked for (needType): the colour measured, the full card */
 if(k==='shoeStyle'&&v==='combat'&&!(q.edited&&q.edited.leather)&&(q.manual||!q.leather||q.leather==='calf'))q.leather='suede';   /* a combat boot added by hand is suede and nylon (the owner, 2026-11-18) */
-if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'||k==='band'){renderAdd();return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);renderAdd()}else if(ck)renderAdd();else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};   // (a section newly checked: its mark and the count follow)
+if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'||k==='band'){emit('card-changed');return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);emit('card-changed')}else if(ck)emit('card-changed');else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};   // (a section newly checked: its mark and the count follow)
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
 /* with a fabric close-up: the drawn swatch on the left half, the close-up on the right, to compare colour and weave */
 const tagSwInner=i=>`<div class="swsplit">${itemThumb(i,true)}${i.texture&&TEXTURE_TYPES.includes(i.type)?`<img class="swtex" src="${srcOk(i.texture)}" alt="Fabric close-up">`:''}</div><figcaption>${i.texture&&TEXTURE_TYPES.includes(i.type)?'As tagged · Close-up':'As tagged'}<br><b class="cap">${sentence(desc(i))||TYPES[i.type]||''}</b></figcaption>`;
@@ -14,8 +16,8 @@ const tagSwInner=i=>`<div class="swsplit">${itemThumb(i,true)}${i.texture&&TEXTU
 const shadeRow=(o,src,id,canMatch)=>{const at=`data-src="${src}" data-id="${esc(id)}"`;return `<div class="shaderow"><span class="shlab">Shade</span><div class="shctl"><button type="button" class="shbtn" aria-label="Darker" data-act="shadeStep" ${at} data-d="-1"${(o.shade||0)<=-SHADE_MAX?' disabled':''}>−</button><span class="shval">${shadeName(o.shade||0)}</span><button type="button" class="shbtn" aria-label="Lighter" data-act="shadeStep" ${at} data-d="1"${(o.shade||0)>=SHADE_MAX?' disabled':''}>+</button></div>${canMatch?`<button type="button" class="chipbtn" data-act="shadeMatch" ${at}>Match close-up</button>`:''}</div>`};
 function shadeStep(el){const {src,id,d}=el.dataset;if(src==='q')stepShadeQ(qAt(id),+d);else stepShadeE(id,+d)}
 function shadeMatch(el){const {src,id}=el.dataset;if(src==='q')matchShadeQ(qAt(id));else matchShadeE(id)}
-function stepShadeQ(i,d){const q=cardOf(i);if(!q)return;q.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(q.shade||0)+d));if(!q.shade)delete q.shade;renderAdd()}
-function matchShadeQ(i){const q=cardOf(i);if(!q||!q.meas)return;q.shade=shadeFor(q,q.meas.lab);if(!q.shade)delete q.shade;renderAdd();toast(q.shade?`Swatch set ${shadeName(q.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
+function stepShadeQ(i,d){const q=cardOf(i);if(!q)return;q.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(q.shade||0)+d));if(!q.shade)delete q.shade;emit('card-changed')}
+function matchShadeQ(i){const q=cardOf(i);if(!q||!q.meas)return;q.shade=shadeFor(q,q.meas.lab);if(!q.shade)delete q.shade;emit('card-changed');toast(q.shade?`Swatch set ${shadeName(q.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
 async function stepShadeE(id,d){const it=items.find(x=>x.id===id);if(!it)return;it.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(it.shade||0)+d));if(!it.shade)delete it.shade;await put(it);planDirty();renderWardrobe()}
 async function matchShadeE(id){const it=items.find(x=>x.id===id);if(!it)return;let lab=it.meas&&it.meas.src==='closeup'?it.meas.lab:null;
   if(!lab&&it.texture)try{const im=await imgOf(it.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);lab=measureCloth(c,null,{}).lab}catch{}
@@ -57,7 +59,7 @@ const ckLr=(q,i,k)=>{const on=!!(q.checked&&q.checked[k]);return `<button type="
 /* "Looks right": the section checked (or not again); checked, it folds and the next unchecked one opens */
 function ckCheck(i,k){const q=cardOf(i);if(!q)return;i=queue.indexOf(q);const on=!(q.checked&&q.checked[k]);q.checked={...q.checked,[k]:on?1:0};
   if(on){const sc='q|'+q.id;CK_OPEN[sc+'|'+k]=false;const nx=addCkSecs(q,i).find(s=>s.n&&!q.checked[s.k]);if(nx)CK_OPEN[sc+'|'+nx.k]=true}
-  queueMicrotask(addKeep);renderAdd()}
+  queueMicrotask(addKeep);emit('card-changed')}
 /* the card's sections: [{k, n (counted), mark, title, sum, body, warn}] */
 function addCkSecs(q,i){const man=!!q.manual||!q.ai,c=q.conf||{},chk=q.checked||{},tex=lookCu(q.type),fab=FABRIC.includes(q.type),hasCu=tex&&!!q.texture,L=lookOn();   // (lookCu: TEXTURE_TYPES, and with the Look beta on knits, polos, socks, pocket squares and coats too: look.js)
   const unsure=v=>!man&&!!v&&v!=='high',out=[];
@@ -140,13 +142,16 @@ function typeCard(q,i){const none=typeof isConnected==='function'?!isConnected()
 <div class="btns"><button data-act="cardSkip" ${cardAt(q)}>Skip</button></div></div>`}
 /* a photo added while the app wasn't connected yet (an invitation still being checked): once it is, the card offers the reading */
 const unreadNote=(q,i)=>!q.ai&&!q.manual&&!q.tagErr&&!q.busy&&q.tagImg&&(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))?`<div class="tagfail"><p>This photo was added before the app was connected, so it wasn’t read.</p><button type="button" class="tagfail-btn" data-act="cardRetryTag" ${cardAt(q)}>Read it now</button></div>`:'';
+/* the card's name, brand and notes (its More section) and Material (fields.js fldRow, notesRow, matRow): each keystroke is kept on the
+   card (nothing is redrawn); i: the card's id or place (moved here from wardrobe.js, the restructure S3c, 2026-11-26) */
+function setQField(i,k,v){const q=cardOf(i);if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];
+  if(k==='material'){delete q.matAI;q.matSet=1;q.checked={...q.checked,fabric:1}}   // chosen by hand (and so its checklist section is checked, addCkSecs): no longer Claude's suggestion, and a later reading leaves it (tagging.js takeMaterial)
+  addKeepSoon();if(k==='material')emit('card-changed')}
+/* the Material control's attributes on an Add card (its card's id, add-ids.js cardAt), for fields.js matRow */
+const matOn=q=>`${cardAt(q)} data-act-change="matCardPick"`;
 /* ---- what the card's controls do (act.js): each finds its card by the id in data-card, as the inline handlers did by qAt('id')
-   (add-save.js cardAt, cardIx) ---- */
-function cardSkip(el){skipCard(el.dataset.card)}
+   (add-ids.js cardAt, cardIx). Skip, Stop, Try again and Fill it in by hand are add.js's, beside what they do ---- */
 function cardSave(el){save(el.dataset.card)}
-function cardStop(el){stopRead(el.dataset.card)}
-function cardMultiAgain(el){multiAgain(el.dataset.card)}
-function cardByHand(el){errToHand(el.dataset.card)}
 function cardRetryTag(el){retryTag(cardIx(el))}
 function cardMatOffer(el){matOffer(cardIx(el))}
 function cardMatGuess(el){matGuessUse(cardIx(el))}
@@ -160,12 +165,13 @@ function cardSel(el){setq(cardIx(el),el.dataset.f,el.value)}   // one of the car
 function cardSwatch(el){updateSwatchParam(cardIx(el),el.dataset.f,el.value)}
 function tapeQ(el){setq(qAt(el.dataset.q),el.dataset.k,tapeText(el.value)||'none')}   // (the Add card's tape fields)
 function cardField(el){setQField(cardIx(el),el.dataset.f,el.value)}
+function matCardPick(el){setQField(cardIx(el),'material',matPicked(el))}   // (the Material dropdown or its "Which material?" field: fields.js matPicked)
 /* An ES module since 2026-11-23: its other names are its own. The bridge (tests/bridge.test.js lists it): add.js, add-sheet.js, add-more.js,
    itemsheet.js, look.js, tagging.js, colpick.js and checklist.js draw and change cards with these; setq, cardSafe, ckCheck and addCkSecs
    are also called by the tests. Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the
    page's, as a classic script's were */
-Object.assign(globalThis,{shirtColFix,setq,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard});
+Object.assign(globalThis,{shirtColFix,setq,setQField,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addCkSecs,ckCheck};
-export {shirtColFix,setq,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckCheck,addCkSecs,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard};
-acts({shadeStep,shadeMatch,cardSkip,cardSave,cardStop,cardMultiAgain,cardByHand,cardRetryTag,cardMatOffer,cardMatGuess,cardCheck,cardCuRemove,cardCuFile,cardRdStart,cardPatTile,cardTypePick,cardSel,cardSwatch,cardField,tapeQ});
+export {shirtColFix,setq,setQField,matOn,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckCheck,addCkSecs,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard};
+acts({shadeStep,shadeMatch,cardSave,cardRetryTag,cardMatOffer,cardMatGuess,cardCheck,cardCuRemove,cardCuFile,cardRdStart,cardPatTile,cardTypePick,cardSel,cardSwatch,cardField,matCardPick,tapeQ});
