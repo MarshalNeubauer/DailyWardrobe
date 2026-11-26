@@ -17,6 +17,8 @@ const TOPICS={
   'connection-saved':{emit:['settings.js'],on:['sync.js'],what:'Done stored the connection: a backup now'},
   'connection-typed':{emit:['settings.js'],on:['account.js'],what:'another address or code typed in Connection: the account decides'},
   'folding-all':{emit:['today.js'],on:['boxfold.js'],what:'a swipe to another day folds everything at once (true), and is done (false): the folds are quiet meanwhile'},
+  'backup-changed':{emit:['sync.js'],on:['sync-status.js'],what:'the backup\'s status changed (a sync ran, failed, paused or was held): the Backup line is written again'},
+  'invite-ended':{emit:['who.js'],on:['sync-status.js','account.js'],what:'the invitation this phone uses has ended: the Backup line, then the account box, say so'},
   'page-showing':{emit:['nav.js'],on:['settings.js'],what:'a page is being shown (its name): Settings closes'},
   'page-back':{emit:['nav.js'],on:['settings.js'],what:'the phone\'s Back with no page over Settings: Settings, when open, does what Done does'},
   'sub-opening':{emit:['nav.js'],on:['settings.js'],what:'a page opens over another (subOpen): Settings, when open, fills in S.set, its open categories and scroll'},
@@ -34,6 +36,7 @@ const SOCKETS={
   'shop-button':{serve:'shop.js',ask:['stats.js'],what:'What to buy\'s button on Insights (shopButton)'},
   'fav-stats-card':{serve:'fav.js',ask:['stats.js'],what:'the favorites card on Insights (favStatsCard)'},
   'cpw-stats-card':{serve:'cost.js',ask:['stats.js'],what:'the cost-per-wear card on Insights (cpwStatsCard)'},
+  'backed-up-words':{serve:'sync.js',ask:['setup.js'],what:'how the backup stands, in words, for the setup\'s Connection step (backedUpWords)'},
 };
 
 module.exports=async({ok,ROOT})=>{

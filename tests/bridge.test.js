@@ -70,6 +70,14 @@ const BRIDGE={
   'detect.js':['CAMO_TR','CHECK_PATS','DETECT_PATS','MOTIF_PATS','STRIPE_PATS','TEXTURE_PATS','detectPattern','detectQueued','settFromCanvas','settSig','texPat','tieWeave','usableSett'],
 // the painter (C3, 2026-11-24): the sRGB conversions for draw.js, mannequin.js, the painter (asm-worker.js too), tagging, measure, migrate and pattern-read; the colormath test
   'srgb.js':['linSrgb','linSrgb8','srgbLin','srgbLin8'],
+  // who is connected (the restructure S3b, 2026-11-26, from account.js and sync-status.js): ui, photos, colpick, look, add, settings,
+  // safety, sync, sync-status, about, remind, kit and account read the account and the role; app, photos, account, sync, snapshots and
+  // about hear an ended invitation; account.js assigns acct with setAcct and remembers the role (rememberRole); acct has a setter (tests)
+  'who.js':['ENDED','acct','acctBase','acctCall','acctEsc','acctRole','applyRole','endedAnswer','hasInviteHash','inviteEnded','isTester','rememberRole','setAcct'],
+  // the photo keys (the restructure S3b, 2026-11-26, from photos.js): esc is called by 36 page scripts, srcOk by ten, jsq by add-save and
+  // look; the painter (assemble, asm-color, asm-kinds, asm-ocp) reads the kept pictures and their keys; photos.js draws and fetches with
+  // them (shareRender, listPaused), start.js loads them (loadRenders); renders and listAt have setters (tests assign them)
+  'photo-keys.js':['comboKey','comboSig','esc','fnv64','jsq','keepRender','listAt','listPaused','loadRenders','picsDrawn','renders','shareRender','srcOk','workerBase','workerList'],
   // the photo-tagging request: app, add, item-photo, migrate, measure, pattern-read, colpick, look, safety and stats are classic
   // scripts; add-keep.js, add-save.js, tagging.js (TAG_Q) and checklist.js (texSig) are modules that read these as globals
   'tag-request.js':['CLOSE_MAX','TAGIMG_CACHE','TAG_MAX','TAG_Q','benchEstimate','customForTag','describeEstimate','keepCloseImg','keepTagImg','readEstimate','recordTagResult','resignTagImg','sharpCloseOf','tagExtras','tagFixes','tagImgOf','tagStatsCard','texSig'],
@@ -91,6 +99,9 @@ const BRIDGE={
   'back.js':['backBorrow','backDrop','backHold','backKind','backLand','backOn','backOver','backPush','backReturn','backSettled','backWanted','histDrop','histPush'],
   // every file registers its handlers with acts; today.js and care.js call actTaps; ui.js and tests read ACTS
   'act.js':['ACTS','actTaps','acts'],
+  // the day records (the restructure S3b, 2026-11-26, from history.js): keyDate is read by 18 page scripts (planner.js, earlier in the
+  // list, too), saveDay by 9, idsOf by six (pickscore, history, locks, scorecard, today-plan, today-gestures), notAhead by pickscore and history
+  'days.js':['idsOf','keyDate','notAhead','saveDay'],
   // toast: 34 page scripts; toastDrop: start; TOAST_ACT_MS: tests/a11y.test.js
   'toast.js':['toast','toastDrop'],
   // the question, the close-up chooser, the layers' focus, the connection's state and plain errors, for nearly every page script;
@@ -106,8 +117,8 @@ const BRIDGE={
   // the router (the restructure S3f, 2026-11-26, out of start.js): the screens move between pages (show, subOpen, subBack, openAdd),
   // add-paste and settings ask whether start-up lets a page be shown yet (pagesOn, a getter), settings whether a page is over it
   // (subShown); start.js sets pagesOn and drops a page asked for too early (setPagesOn, setPageWant), shows it (showWanted) and
-  // draws the plain card over PAGES
-  'nav.js':['PAGES','openAdd','pagesOn','setPageWant','setPagesOn','show','showWanted','subBack','subOpen','subShown'],
+  // draws the plain card over PAGES and pins pageBack for the phone's Back
+  'nav.js':['PAGES','openAdd','pageBack','pagesOn','setPageWant','setPagesOn','show','showWanted','subBack','subOpen','subShown'],
   // the other Add files, tagging, pattern-read, measure, item-photo, migrate, safety, settings, kit and others draw and read cards with these; addCalm is a let only add.js writes (add-save reads it): a getter; the rest: tests
   'add.js':['PAIR_TYPES','STOPPED','TEX_MAX','TEX_MIN_PX','addBackOnline','addCalm','addFiles','addTexture','applyWb','dropTexture','errToHand','measureGuess','multiAgain','multiMsg','needType','patternAgain','refineAgain','renderAdd','skipCard','stopRead','wbNote'],
   // tests/paste.test.js clears the line under the "Photo or link" field with it
@@ -137,12 +148,11 @@ const BRIDGE={
   // and photos do (a getter: only itemsheet.js assigns it); add-card (optLab, matTidy), add-save (matTidy), colpick and look (sete,
   // patSummary, redetect, clearStripes), wardrobe (wardPic), colpick (wardPic); rm and togglePause: tests only
   'itemsheet.js':['clearStripes','itemBody','matTidy','optLab','patSummary','phEdit','redetect','renderWardrobe','sete','wardPic'],
-  // keyDate is read by 17 classic page scripts, saveDay by 8; today.js draws and records with recordDays, openPicker, closePicker,
+  // (keyDate, saveDay, idsOf and notAhead went to days.js, restructure S3b) today.js draws and records with recordDays, openPicker, closePicker,
   // setWorn, setVest, resetCard and dayActions and sets todayPullWait and pastEdit (setters; tests set pastEdit too; swapMsg: HOOK,
   // S1f); picker is a getter (today, today-gestures and sync read it); whenPulled: start, safety, wardrobe, calendar; dropLearn and
-  // checkPlanRules: start; renderReplanUI: settings; setOccasion: daysoff, calendar; wearFav: fav; pickItem: scorecard; notAhead and
-  // idsOf: pickscore; swapSlot, togglePastEdit, correctPast, setFormal, resetDay, replanFuture and planRulesNote: tests only
-  'history.js':['checkPlanRules','closePicker','dayActions','dropLearn','idsOf','keyDate','notAhead','openPicker','pastEdit','pickItem','picker','recordDays','renderReplanUI','resetCard','saveDay','setOccasion','setPastEdit','setSwapMsg','setTodayPullWait','setVest','setWorn','todayPullWait','wearFav','whenPulled'],
+  // checkPlanRules: start; renderReplanUI: settings; setOccasion: daysoff, calendar; wearFav: fav; pickItem: scorecard; swapSlot, togglePastEdit, correctPast, setFormal, resetDay, replanFuture and planRulesNote: tests only
+  'history.js':['checkPlanRules','closePicker','dayActions','dropLearn','openPicker','pastEdit','pickItem','picker','recordDays','renderReplanUI','resetCard','setOccasion','setPastEdit','setSwapMsg','setTodayPullWait','setVest','setWorn','todayPullWait','wearFav','whenPulled'],
   // history.js (firstReal, missedNote) and today.js (missedCard) are classic scripts; the rest are called by the todayacts and weeklock tests
   'missed.js':['firstReal','missedCard','missedNote'],
   // history, settings, dress, care, setup and kit (clearLocks), pack (lockIds), today (lockUpcoming), add-more and care (careUnlock), history (unlockClash)
@@ -179,12 +189,10 @@ const BRIDGE={
   // and core.js in the restructure S3a); monthGridHtml and
   // monthStep are called by tests only (month, setup); tests/setup.test.js sets monthPanel (a setter)
   'month.js':['dayOnly','monthDrag','monthLink','monthOpen','monthPanel','monthPlan','monthRelease','nextWorkday','openDay','piecesLine','piecesParts','planOn','setMonthOpen','shortRest','shortTop','stackSVG','toggleMonth'],
-  // esc is called by 35 page scripts, srcOk by nine; the painter (assemble, asm-color, asm-kinds, asm-ocp: classic) reads the kept
-  // pictures and their keys; today, start, settings, daysoff and stats (classic), history, today-picture and itemsheet (modules that
+  // (the photo keys, the kept pictures and esc, jsq and srcOk went to photo-keys.js, restructure S3b) today, start, settings, daysoff and stats (classic), history, today-picture and itemsheet (modules that
   // read them as globals) draw with the rest; 15 names are read by
-  // tests only. renders (tests), remoteListed, listKeys and listAt (tests) are assigned from outside:
-  // a getter and a setter each; itemBatch is a let only photos.js writes: a getter
-  'photos.js':['PIC_BG','aAn','asmLive','comboKey','comboSig','esc','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','fnv64','itemKey','itemPic','itemPicHtml','jsq','keepRender','lastWorn','listAt','loadRenders','picBgs','picsDrawn','renderFor','renderItemPicUI','renders','schedulePrefetch','setRemoteKeys','srcOk','workerBase','workerList'],
+  // tests only. remoteListed is assigned from outside (tests): a getter and a setter; itemBatch is a let only photos.js writes: a getter
+  'photos.js':['PIC_BG','aAn','asmLive','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','itemKey','itemPic','itemPicHtml','lastWorn','picBgs','renderFor','renderItemPicUI','schedulePrefetch','setRemoteKeys'],
   // cost.js formats money in the app's language
   'locale.js':['APP_LOC'],
   // nearly every page script opens, closes or saves through these; settingsPart is called at load by look, account, calendar and remind.
@@ -264,12 +272,12 @@ const BRIDGE={
   'cost.js':['cpwBlock','cpwQRow','cpwSaveFields','cpwSettingsUI','cpwStatsCard','cpwSum'],
   // stats (shopButton), start (closeShop), today-gestures (shopOpen); the rest: tests, which assign shop, shopBusy, shopWorker and shopShown (getters and setters)
   'shop.js':['closeShop','shopButton','shopOpen'],
-  // sync.js and the screens that say how the backup stands: app, photos, settings, snapshots, backupfile, account, about, ui, setup;
-  // the clock, rollback, backup-storage, server-limits and addcards tests
-  'sync-status.js':['ENDED','backedUpWords','backupFullMsg','endedAnswer','inviteEnded','pauseTillTomorrow','setSyncStatus','showSyncStatus','syncNetText','syncPaused','syncWaiting'],
   // the backup for every screen that saves (scheduleSync, syncNow) and the tests; restoring (snapshots.js), syncing and syncDue (tests)
   // have setters, syncTimer, syncRun and syncLater are getters
-  'sync.js':['SYNC_SEND_MAX','WIPED_SYNC','afterPull','applyMerged','localState','pulledYet','restoring','scheduleSync','setRestoring','syncLaterRun','syncMark','syncNeedsPull','syncNow','syncRedraw','syncRun','syncTimer','syncUrl','syncing'],
+  'sync.js':['SYNC_SEND_MAX','WIPED_SYNC','afterPull','applyMerged','backedUpWords','localState','pulledYet','restoring','safariTab','scheduleSync','setRestoring','syncLaterRun','syncMark','syncNeedsPull','syncNow','syncPaused','syncRedraw','syncRun','syncTimer','syncUrl','syncWaiting','syncing','tabBrowser'],
+  // backupfile.js draws the Backup line after a restore (showSyncStatus); the addcards and backup-storage tests too. Since the
+  // restructure S3b the backup's state is sync.js's and an ended invitation who.js's
+  'sync-status.js':['showSyncStatus'],
   // sync.js calls phIn, phOut and phBatch; PH_MIN, isPh, phMap and phStrings are read by tests only (backup-storage, lib-verify18)
   'sync-photos.js':['phBatch','phIn','phOut'],
   // settings.js lists the daily backups when Backup opens (loadSnapshots); the tests call the four (actsindex, backup-storage, clock,
@@ -277,9 +285,9 @@ const BRIDGE={
   'snapshots.js':['loadSnapshots'],
   // kit.js offers the backup file (downloadBackup); the tests restore one (restoreBackup: actsindex, fieldmerge, records, wardrobe)
   'backupfile.js':['downloadBackup'],
-  // photos, ui, colpick, look, add, setup, settings, safety, sync-status, sync, about, remind, kit, pattern-read read who is connected and
-  // the link's state; the rest: tests. acct and inviteChecking have setters (tests assign them); acctWhy and acctLinkRun are getters
-  'account.js':['acct','acctBase','acctCall','acctEndedUI','acctEsc','acctFailText','acctRole','acctTyped','acctWhy','applyRole','connectFromLink','hasInviteHash','inviteChecking','iosInSafari','isTester','limitNote','myInviteLink'],
+  // ui, add, setup and pattern-read read the invitation link's state (who is connected is who.js's since the restructure S3b), kit and
+  // remind iosInSafari and myInviteLink; the rest: tests. inviteChecking has a setter (tests assign it); acctWhy and acctLinkRun are getters
+  'account.js':['acctFailText','acctTyped','acctWhy','connectFromLink','inviteChecking','iosInSafari','limitNote','myInviteLink'],
   // account, setup, item-photo, calendar, add-save, add-keep, app, itemsheet, wardrobe, start, sync, sync-status, today, remind, safety,
   // about use it; the rest: tests. kitNoMine (itemsheet.js) and kitSdNew (tests/sample.test.js) have setters, the other lets are getters
   'kit.js':['HOME_CARD','PAPER_CARD','homeAbout','homeAndroid','homeBrowser','homeCopyBtn','homeIOS','homeNeeded','homeOpen','homeShareShort','homeStandalone','homeSteps','homeTester','kit','kitClose','kitDuplicate','kitEdited','kitFixOldImports','kitImportOpen','kitNoMine','kitOpen','kitQuiet','kitSampleBanner','kitSampleLoad','kitSampleMigrate','kitSampleNote','kitSampleTag','kitSaved','kitSentStamp','kitShareDone','kitShareFilter','kitStartRow','kitUserEdit','safariRemind','setKitNoMine','tourOpen','tourSeen'],
@@ -316,7 +324,8 @@ const GROWN={
   'settings.js':['setSetSeen','setViewStale'],
   'safety.js':['setStoreToldAt'],
   'assemble.js':['setAsmOut'],
-  'sync.js':['setRestoring'],
+  // and restructure S3b (2026-11-26): the backup's state (the pause, the status words) moved down from sync-status.js into sync.js
+  'sync.js':['backedUpWords','safariTab','setRestoring','syncPaused','syncWaiting','tabBrowser'],
   'kit.js':['setKitNoMine'],
 };
 const WORKERS=['asm-worker.js','analysis-worker.js'];
