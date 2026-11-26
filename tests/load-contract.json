@@ -2,7 +2,7 @@
  "about": [
   "The load-failure contract (the restructure, step 2, 2026-11-26; RESTRUCTURE-PLAN.md section 6): what one page file that cannot be loaded may take down.",
   "Every page script in index.html is listed with its class and its feature group; tests/modload.test.js checks it (404 of each file on Chromium and WebKit, and the imports read from the files).",
-  "on404: what its 404 shows where that is not its class's usual: \"card\" (the start-up card), \"no-picture\" (Today drawn without its outfit figure) or \"picture\" (Today drawn with it); a string for both engines, or {chromium, webkit}."
+  "on404: what its 404 shows where that is not its class's usual: \"card\" (the start-up card), \"no-picture\" (Today drawn without its outfit figure), \"picture\" (Today drawn with it: the mannequin or the painted picture) or \"painted\" (Today drawn, its only figure the painted picture: \"picture\" once painted, \"no-picture\" where the painter is late or does not paint); a string for both engines, or {chromium, webkit}."
  ],
  "classes": {
   "required": {
@@ -59,18 +59,14 @@
   "mannequin.js": {
    "class": "optional",
    "group": "painter",
-   "on404": {
-    "webkit": "no-picture"
-   },
-   "note": "on WebKit Today has no figure without it (the painted picture is not there yet)"
+   "on404": "painted",
+   "note": "without it Today has no mannequin: its only figure is the painted picture, there once the painter has painted (late on a busy machine; not on Windows WebKit, whose healthy page showed no painted picture in the lab survey)"
   },
   "mq/vest.js": {
    "class": "optional",
    "group": "painter",
-   "on404": {
-    "webkit": "no-picture"
-   },
-   "note": "on WebKit the missing pose of the day's outfit leaves no figure: modload holds the day on Monday 2026-11-16, whose outfit has a vest (on Thursday 2026-11-26 it is mq/suit.js)"
+   "on404": "painted",
+   "note": "as mannequin.js: without the pose of the day's outfit Today has only the painted picture; modload holds the day on Monday 2026-11-16, whose outfit has a vest (on Thursday 2026-11-26 it is mq/suit.js)"
   },
   "mq/suit.js": {
    "class": "optional",
@@ -345,10 +341,8 @@
   "sync.js": {
    "class": "optional",
    "group": "backup",
-   "on404": {
-    "webkit": "no-picture"
-   },
-   "note": "on WebKit Today has no figure without it"
+   "on404": "painted",
+   "note": "as mannequin.js: without it Today has only the painted picture"
   },
   "sync-photos.js": {
    "class": "optional",

@@ -120,9 +120,12 @@ async function survey(eng,browser,{ok,url,C,page}){
   await Promise.all([0,1,2,3].map(async()=>{for(let f;(f=queue.shift())!==undefined;){const t=Date.now();got[f]=await one(f==='(none)'?null:f);ms[f]=Date.now()-t}}));
   ok(n===50&&got['(none)']==='picture',T+`with every file there, the seeded wardrobe (${n} pieces) shows Today with its picture (${got['(none)']})`);
   if(process.env.MODLOAD_OUT)fs.writeFileSync(process.env.MODLOAD_OUT+'-'+E+'.json',JSON.stringify({got,ms},null,1));   // (each file's outcome and how long it took, for a lab)
-  const off=page.filter(f=>got[f]!==expected(C,f,E));
+  // ("painted": the file's loss leaves Today only the painted picture, which comes when the painter has painted: late on a busy
+  // runner, not on Windows' WebKit (no painted picture there in the lab survey), on Linux's WebKit and Chromium within seconds; so either, but never the card or no Today)
+  const fits=(f,g)=>{const x=expected(C,f,E);return x==='painted'?g==='picture'||g==='no-picture':g===x};
+  const off=page.filter(f=>!fits(f,got[f]));
   const tally={};for(const f of page)tally[got[f]]=(tally[got[f]]||0)+1;
-  ok(!off.length,T+`each of the ${page.length} page scripts, when it can't be loaded (404), shows what the contract says (${Object.entries(tally).map(([k,v])=>k+' '+v).join(', ')})${off.length?': '+off.map(f=>`${f} shows ${got[f]}, the contract says ${expected(C,f,E)}`).join('; '):''}`);
+  ok(!off.length,T+`each of the ${page.length} page scripts, when it can't be loaded (404), shows what the contract says (${Object.entries(tally).map(([k,v])=>k+' '+v).join(', ')}; painted only: ${page.filter(f=>expected(C,f,E)==='painted').map(f=>f+' '+got[f]).join(', ')})${off.length?': '+off.map(f=>`${f} shows ${got[f]}, the contract says ${expected(C,f,E)}`).join('; '):''}`);
 }
 async function run(eng,browser,{ok,url,settle}){
   const T=eng+': ',origin=new URL(url).origin,wait=ms=>new Promise(r=>setTimeout(r,ms));
