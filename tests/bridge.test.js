@@ -84,7 +84,7 @@ const BRIDGE={
   // the app's state, storage and shared helpers for nearly every file and the tests; flt, queue, view, sel, the database's and the
   // connection copy's flags, aiError and aiModel have setters (tests assign flt,
   // queue, view and sel; since S1a the other files call setSel, setView, setFlt …, the owner's setters)
-  'app.js':['DEAD_MSG','S','addTombstones','afterDom','afterScripts','aiError','aiLabel','aiModel','announce','ask','atomic','cap1','cleanStored','cleanStoredSettings','connKeep','connReady','connRestored','db','dbConn','dbCur','dbGone','dbMark','dbRetry','dbUnhold','dbWiping','deadCanvas','deadPic','del','fill','fitNavSoon','fixupRedraw','flt','generateSwatch','keepFocus','loadImg','metaGet','metaPut','normTag','put','putRaw','queue','refreshSwatch','sel','setAiError','setAiModel','setConnReady','setDbConn','setDbCur','setDbWiping','setFlt','setSel','setView','shrink','stillCur','texSwatches','tx','txFail','txs','updateSwatchParam','view'],
+  'app.js':['DEAD_MSG','S','addTombstones','afterDom','afterScripts','aiError','aiLabel','aiModel','announce','ask','atomic','cap1','cleanStored','cleanStoredSettings','connKeep','connReady','connRestored','db','dbConn','dbCur','dbGone','dbMark','dbRetry','dbUnhold','dbWiping','deadCanvas','deadPic','del','fill','fitNavSoon','fixupRedraw','flt','generateSwatch','imgOf','keepFocus','loadImg','metaGet','metaPut','normTag','put','putRaw','queue','refreshSwatch','sel','setAiError','setAiModel','setConnReady','setDbConn','setDbCur','setDbWiping','setFlt','setSel','setView','shrink','stillCur','texSwatches','tx','txFail','txs','updateSwatchParam','view'],
   // the pages and sheets that Back closes are classic scripts: add-sheet, colpick, history, item-view, kit, settings, setup, shop,
   // start, ui and account call these. appHist, appKind and itemHist are read by the tests only (back, backgesture, shellfix): getters
   'back.js':['backBorrow','backDrop','backHold','backKind','backLand','backOn','backOver','backPush','backReturn','backSettled','backWanted','histDrop','histPush'],
@@ -104,7 +104,7 @@ const BRIDGE={
   'toast.js':['toast','toastDrop'],
   // the question, the close-up chooser, the layers' focus, the connection's state and plain errors, for nearly every page script;
   // connMsg has a setter (tests/restacts.test.js), asking, cuOpen and connBusy are getters
-  'ui.js':['NEED_CONN','addGate','advClose','askAnswer','askConfirm','asking','closeupBtn','closeupPick','connSummary','cuGot','cuOpen','cuTouch','inviteOver','isConnected','layerClose','layerFrom','layerInert','layerOpen','needConn','netErr','plainErr','renderConnUI','tell'],
+  'ui.js':['NEED_CONN','addGate','advClose','askAnswer','askConfirm','asking','closeupBtn','closeupPick','connSummary','cuGot','cuOpen','cuTouch','inviteOver','isConnected','layerClose','layerFrom','layerInert','layerOpen','needConn','netErr','noMotion','plainErr','renderConnUI','tell'],
   // the sheets that close on a swipe down are classic scripts: add-sheet, item-view, colpick and kit call it
   'sheet-swipe.js':['sheetSwipe'],
   // add, add-card, tagging, pattern-read, safety, colpick, checklist, look and item-photo; the rest: tests
@@ -156,20 +156,18 @@ const BRIDGE={
   // add-card, itemsheet, colpick, look, add, add-sheet and item-view draw their sections and the close-up comparison with these;
   // CK_OPEN is also how 53 test files open the sections
   'checklist.js':['CK_OPEN','accRow','ckChip','ckColSum','ckIsOpen','ckSec','ckSure','ckToggle','cmpDiff','cmpDiffText','cmpDrawn','cmpHtml','cmpLab','cmpMatchHtml','cmpMount','cmpPaper','cmpPaperLine','cmpSteps'],
-  // add, add-card, add-keep, add-save, itemsheet, item-view, history, stats, wardrobe, colpick, look, migrate, measure, pattern-read and app draw and edit with these; the rest: tests
-  'item-photo.js':['PH_MAX','cropEditor','cropKeep','cropSource','imgOf','makeSmall','paperCloth','paperHint','paperLine','paperRetake','paperSteps','phSm','photoTools','replaceTexture','smallPhotos'],
+  // add, add-card, add-keep, add-save, itemsheet, item-view, history, stats, wardrobe, colpick, look, migrate, measure, pattern-read and app draw and edit with these; the rest: tests.
+  // phEdit (the photo editor's state, a getter; moved here from itemsheet.js, S3d) is read by item-view, itemsheet, photos and tests; itemsheet starts it again (setPhEdit)
+  'item-photo.js':['PH_MAX','cropEditor','cropKeep','cropSource','makeSmall','paperCloth','paperHint','paperLine','paperRetake','paperSteps','phEdit','phSm','photoTools','replaceTexture','setPhEdit','smallPhotos'],
   // editing is read by twelve classic page scripts and set by 31 tests (a setter); wardrobe, cost and kit open a piece (openItem), start
   // and wardrobe drop the sheet (dropItem), sync says a sync changed the open piece (itemSynced), itemsheet, start and checklist redraw
-  // it (renderItem); itemGoneTell: itemsheet, wardrobe, look, cost; noMotion: nine files; closeItem, stepItem and wardList: tests only
-  'item-view.js':['dropItem','editing','itemGoneTell','itemSynced','noMotion','openItem','renderItem'],
+  // it (renderItem; nav and checklist through the socket 'item-draw', restructure S3d); itemGoneTell: itemsheet, wardrobe, look, cost;
+  // closeItem, stepItem and wardList: tests only (noMotion went to ui.js, S3d)
+  'item-view.js':['dropItem','editing','itemGoneTell','itemSynced','openItem','renderItem'],
   // (the photo keys, the kept pictures and esc, jsq and srcOk went to photo-keys.js, restructure S3b) today, start, settings, daysoff and stats (classic), history, today-picture and itemsheet (modules that
   // read them as globals) draw with the rest; 15 names are read by
   // tests only. remoteListed is assigned from outside (tests): a getter and a setter; itemBatch is a let only photos.js writes: a getter
-  'photos.js':['PIC_BG','aAn','asmLive','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','itemKey','itemPic','itemPicHtml','lastWorn','picBgs','renderFor','renderItemPicUI','schedulePrefetch','setRemoteKeys'],
-  // renderWardrobe is called by 16 page scripts and 15 tests; item-view draws the sheet with itemBody and reads phEdit, as item-photo
-  // and photos do (a getter: only itemsheet.js assigns it); add-card (optLab, matTidy), add-save (matTidy), colpick and look (sete,
-  // patSummary, redetect, clearStripes), wardrobe (wardPic), colpick (wardPic); rm and togglePause: tests only
-  'itemsheet.js':['clearStripes','itemBody','patSummary','phEdit','redetect','renderWardrobe','sete','wardPic'],
+  'photos.js':['PIC_BG','aAn','asmLive','fetchItemPic','fetchRemoteRender','figureLabel','fixItemBackdrops','itemKey','itemPic','itemPicHtml','lastWorn','picBgs','renderFor','renderItemPicUI','schedulePrefetch','setRemoteKeys','wardPic'],
   // scorecard.js and today.js fold and unfold the cards (boxFold, boxUnfold); today-photofold.js (foldEdge, revealNeed, pageScroll,
   // keepInView, foldQuiet) and month.js (foldEdge, revealNeed, pageScroll, monthBelow) slide with these: modules that read them as
   // globals (no page module imports another yet); foldQuiet is a let only boxfold.js writes (today.js foldAll tells it through bus.js):
@@ -282,6 +280,10 @@ const BRIDGE={
   // itemsheet (cpwSum, cpwBlock), add-card (cpwQRow), add-save (cpwSaveFields), stats (cpwStatsCard), care (cpwSettingsUI); the
   // other nine are read by tests/costwear.test.js only
   'cost.js':['cpwBlock','cpwQRow','cpwSaveFields','cpwSettingsUI','cpwStatsCard','cpwSum'],
+  // renderWardrobe is called by the files after this one (kit, shop, sync) and 15 tests (the files before it announce 'wardrobe-changed'
+  // and nav.js asks the socket 'wardrobe-draw', restructure S3d); item-view draws the sheet with itemBody; colpick and look (sete,
+  // patSummary, redetect, clearStripes); rm and togglePause: tests only. Its tag is after cost.js since S3d
+  'itemsheet.js':['clearStripes','itemBody','patSummary','redetect','renderWardrobe','sete'],
   // stats (shopButton), start (closeShop), today-gestures (shopOpen); the rest: tests, which assign shop, shopBusy, shopWorker and shopShown (getters and setters)
   'shop.js':['closeShop','shopButton','shopOpen'],
   // the backup for every screen that saves (scheduleSync, syncNow) and the tests; restoring (snapshots.js), syncing and syncDue (tests)
@@ -319,6 +321,12 @@ const BRIDGE={
 };
 /* file -> names its row gained after its conversion (each with the reason beside it); every one is in BRIDGE too */
 const GROWN={
+  // restructure S3d (2026-11-26): helpers moved down out of the item sheet to the files loaded before their readers: noMotion from
+  // item-view.js into ui.js (nav, sheet-swipe, boxfold, today, month …), imgOf from item-photo.js into app.js (app, pattern-read,
+  // checklist), wardPic from itemsheet.js into photos.js (wardrobe, colpick, itemsheet), phEdit from itemsheet.js into item-photo.js
+  // (with setPhEdit for itemsheet.js, which starts it again)
+  'ui.js':['noMotion'],
+  'item-photo.js':['phEdit','setPhEdit'],
   // restructure S3c (2026-11-26): what the files loaded before add.js read moved down out of it: applyWb into measure.js, TEX_MIN_PX and
   // TEX_MAX into tag-request.js (beside CLOSE_MAX; migrate.js and item-photo.js read them too); the Add card's setQField from wardrobe.js
   // into add-card.js
@@ -332,13 +340,13 @@ const GROWN={
   // from month.js and keepInView and foldQuiet from today.js into boxfold.js
   'core.js':['MONTH_EASE','MONTH_MS','setClimate','setClockSkew','setWeather'],
   'boxfold.js':['foldQuiet','keepInView','monthBelow','pageScroll','revealNeed'],
-  'app.js':['setAiError','setAiModel','setConnReady','setDbConn','setDbCur','setDbWiping','setFlt','setSel','setView'],
+  'app.js':['imgOf','setAiError','setAiModel','setConnReady','setDbConn','setDbCur','setDbWiping','setFlt','setSel','setView'],
   'add-sheet.js':['setAddFor'],
   'history.js':['setPastEdit','setSwapMsg','setTodayPullWait','canPick','slotLabel'],
   'scorecard.js':['setScoreOpen'],
   'today.js':['setListOpen'],
   'month.js':['setMonthOpen','dayWord','homeDay','mvSig','recentWork','wardShort'],
-  'photos.js':['setRemoteKeys'],
+  'photos.js':['setRemoteKeys','wardPic'],
   'settings.js':['setSetSeen','setViewStale'],
   'safety.js':['setStoreToldAt'],
   'assemble.js':['setAsmOut'],

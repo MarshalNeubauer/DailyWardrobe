@@ -27,6 +27,7 @@ const TOPICS={
   'sub-back':{emit:['nav.js'],on:['settings.js'],what:'that page goes back to Settings (subBack, with what S.set held): Settings opens as it was'},
   'sample-asked':{emit:['stats.js'],on:['kit.js'],what:'"Try a sample wardrobe" tapped on an empty Insights or Packing list (heard: whether the button is offered)'},
   'card-changed':{emit:['measure.js','pattern-read.js','tagging.js','checklist.js','add-keep.js','own-lists.js','colpick.js','add-more.js','add-save.js','add-card.js','add-sheet.js'],on:['add.js'],what:'an Add card changed (a field, a reading, a measurement): Add is drawn again (the restructure S3c: the files loaded before add.js never call renderAdd)'},
+  'wardrobe-changed':{emit:['app.js','pattern-read.js','checklist.js','item-photo.js','item-view.js','photos.js','colpick.js','add-card.js','look.js','fav.js','wardrobe.js','care.js'],on:['itemsheet.js'],what:'a piece changed (or the Wardrobe\'s filter): the Wardrobe and the item sheet are drawn again (renderWardrobe; the restructure S3d: the files loaded before itemsheet.js never call it)'},
 };
 
 /* name -> {serve: files that serve it (one), ask: files that ask for it (in load order), what: what it does}. A socket is how a
@@ -42,6 +43,10 @@ const SOCKETS={
   'shop-button':{serve:'shop.js',ask:['stats.js'],what:'What to buy\'s button on Insights (shopButton)'},
   'fav-stats-card':{serve:'fav.js',ask:['stats.js'],what:'the favorites card on Insights (favStatsCard)'},
   'cpw-stats-card':{serve:'cost.js',ask:['stats.js'],what:'the cost-per-wear card on Insights (cpwStatsCard)'},
+  'item-open':{serve:'item-view.js',ask:['toast.js','nav.js','checklist.js','item-photo.js'],what:'which piece the item sheet has open: its id, or null (editing; the restructure S3d)'},
+  'item-draw':{serve:'item-view.js',ask:['nav.js','checklist.js'],what:'the item sheet is drawn again, or put away when nothing is open (renderItem)'},
+  'item-drop':{serve:'item-view.js',ask:['nav.js'],what:'another page is shown: the item sheet goes without sliding (dropItem)'},
+  'wardrobe-draw':{serve:'itemsheet.js',ask:['nav.js'],what:'the Wardrobe is shown: it is drawn (renderWardrobe)'},
   'backed-up-words':{serve:'sync.js',ask:['setup.js'],what:'how the backup stands, in words, for the setup\'s Connection step (backedUpWords)'},
 };
 

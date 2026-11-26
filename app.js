@@ -4,6 +4,7 @@
    photos.js, settings.js, start.js (the start-up
    chain), ui.js and the rest, about.js last.
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
+import {emit} from './bus.js';   // the Wardrobe's redraw: itemsheet.js pins renderWardrobe for 'wardrobe-changed'
 let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 
 /* storage */
@@ -116,7 +117,7 @@ const putRaw=i=>tx('readwrite',s=>s.put(i));
 const stillCur=it=>items.find(x=>x.id===it.id)===it;
 /* and redraws the Wardrobe only when it is on screen and Settings is not open (renderWardrobe closes Settings; these now run after the first
    pull, which can be while Settings is open); the Wardrobe is drawn afresh when it is opened */
-const fixupRedraw=()=>{if(settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)renderWardrobe()};
+const fixupRedraw=()=>{if(settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)emit('wardrobe-changed')};
 const put=i=>{i.updated=nextStamp(stamp(i));if(typeof kitUserEdit==='function')kitUserEdit(i);   // (an edit in the item sheet makes a sample piece his: kit.js)
 // the fields changed since the stored copy get the edit's stamp, in the same transaction (core.js itemFields: two phones' changes to
 // different fields of one piece both stay, fix round 3; the stamp is nextStamp's, made one above the stored copy's only when it isn't)
@@ -297,6 +298,8 @@ function sockTag(ft,parsed,t){if(ft!=='socks')return t;
   return {...t,toeColor:t.secondaryColor,secondaryColor:null,tertiaryColor:null}}
 
 /* the picture of a file; its object URL is let go once it has loaded (each one held the file's bytes until the page closed) */
+/* a picture from its address, loaded (moved here from item-photo.js, the restructure S3d: app.js, the readings and the photo tools load with it) */
+const imgOf=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
 const loadImg=f=>new Promise((ok,no)=>{const i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=e=>{URL.revokeObjectURL(u);no(e)};i.src=u});
 // on white: a transparent picture (a product cut-out) is saved as a JPEG, which has no transparency, and its clear parts turned black
 // (2026-11-14, the owner's socks); white is what such a cut-out is meant to sit on, and reads as the white reference it is
@@ -386,8 +389,8 @@ function setDbCur(v){dbCur=v}
 function setDbWiping(v){dbWiping=v}
 /* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. At the end: nothing
    above it can throw at load (the database's failures are its promises'), and the consts it hands over are declared all the way down */
-Object.assign(globalThis,{dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping});
+Object.assign(globalThis,{dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,imgOf,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping});
 Object.defineProperties(globalThis,{flt:{get:()=>flt,set:v=>{flt=v}},queue:{get:()=>queue,set:v=>{queue=v}},view:{get:()=>view,set:v=>{view=v}},sel:{get:()=>sel,set:v=>{sel=v}},dbCur:{get:()=>dbCur,set:v=>{dbCur=v}},dbConn:{get:()=>dbConn,set:v=>{dbConn=v}},dbWiping:{get:()=>dbWiping,set:v=>{dbWiping=v}},connReady:{get:()=>connReady,set:v=>{connReady=v}},aiError:{get:()=>aiError,set:v=>{aiError=v}},aiModel:{get:()=>aiModel,set:v=>{aiModel=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,busyLabelFor,cropSwatch,fitNav,get sel(){return sel},set sel(v){sel=v},get view(){return view},set view(v){view=v},get flt(){return flt},set flt(v){flt=v},get queue(){return queue},set queue(v){queue=v}};
-export {flt,queue,view,sel,dbCur,dbConn,dbWiping,dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connReady,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,cropSwatch,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,aiError,aiModel,busyLabelFor,fitNav,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping};
+export {flt,queue,view,sel,dbCur,dbConn,dbWiping,dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connReady,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,cropSwatch,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,aiError,aiModel,busyLabelFor,fitNav,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,imgOf,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping};

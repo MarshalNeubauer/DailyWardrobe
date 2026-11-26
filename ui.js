@@ -4,6 +4,9 @@
    - isConnected(), needConn(): what the buttons that need the server show while the app is not connected
    - advToggle(button), advClose(): the "Advanced" folds in Settings */
 import {on} from './bus.js';
+/* the person asked for less motion, or the browser can't animate (moved here from item-view.js, the restructure S3d: the pages, sheets
+   and cards all ask it) */
+const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate;
 const ASK_NONE={ok:'OK',cancel:'Cancel',danger:false};
 const ASK_SETTLE=450;   // ms after a question opens in which a real tap outside it doesn't cancel it: it is the double tap's second tap (re-audit 2026-11-15)
 let asking=null;   // the question on screen: {done(answer), last (what had the focus)}
@@ -30,7 +33,7 @@ function askBack(){if(asking)askAnswer(false,true)}
 /* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. Above the file's first top-level call that can throw (backOn): its functions are then still the page's. A getter reads its
    `let` when asked, so the ones declared below are here too; the consts declared below are handed over above acts({…}) */
-Object.assign(globalThis,{askAnswer,askConfirm,closeupBtn,cuGot,closeupPick,tell,layerInert,layerOpen,layerClose,plainErr,needConn,connSummary,renderConnUI,addGate,advClose});
+Object.assign(globalThis,{noMotion,askAnswer,askConfirm,closeupBtn,cuGot,closeupPick,tell,layerInert,layerOpen,layerClose,plainErr,needConn,connSummary,renderConnUI,addGate,advClose});
 Object.defineProperties(globalThis,{asking:{get:()=>asking},cuOpen:{get:()=>cuOpen}});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-open',()=>advClose());   // the Advanced folds start closed every time Settings opens
@@ -231,5 +234,5 @@ function addConnTap(){openSettings('connection');goConnect()}
 Object.assign(globalThis,{cuTouch,layerFrom,netErr,NEED_CONN,inviteOver,isConnected});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,closeupClose,get connBusy(){return connBusy},get connMsg(){return connMsg},set connMsg(v){connMsg=v}};
-export {asking,askAnswer,askConfirm,cuTouch,cuOpen,closeupBtn,cuGot,closeupPick,closeupClose,tell,layerFrom,layerInert,layerOpen,layerClose,netErr,plainErr,NEED_CONN,inviteOver,isConnected,needConn,connSummary,connMsg,connBusy,renderConnUI,addGate,advClose};
+export {noMotion,asking,askAnswer,askConfirm,cuTouch,cuOpen,closeupBtn,cuGot,closeupPick,closeupClose,tell,layerFrom,layerInert,layerOpen,layerClose,netErr,plainErr,NEED_CONN,inviteOver,isConnected,needConn,connSummary,connMsg,connBusy,renderConnUI,addGate,advClose};
 acts({advTap,askNoTap,askYesTap,cuBtnTap,connOwnTap,connLinkKey,connGoTap,connOffTap,addConnTap});

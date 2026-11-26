@@ -1,6 +1,7 @@
 /* Daily Wardrobe: outfit photos: kept photos and item pictures (the keys, the kept pictures' store and the escapes are photo-keys.js's
    since the restructure S3b, 2026-11-26)
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14.) */
+import {emit} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
 const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=>nm(i)).join(', ');
 // assembled pictures (assemble.js) are in use: ASM_ON, which a test switches off unless it tests them; nothing of assemble.js is
 // called while they are off, so a change there selects only the tests that use them
@@ -121,6 +122,10 @@ function picBg(img,k){if(picBgs[k]!==undefined)return;picBgs[k]=null;
   readPicBg(img.src).then(c=>{if(!c)return;picBgs[k]=c;document.querySelectorAll(`img.item-pic[data-k="${k}"]`).forEach(i=>{const t=i.closest('.tile');if(t)t.style.background=c})})}
 const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${srcOk(p.img)}" alt="" data-k="${itemKey(i)}" data-act-load="itemPicLoad">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
 /* sure: asked before paying for a new picture (startItemPics), so without a list the key is asked for even while lists are paused */
+/* in the Wardrobe, shoes, belts and socks show their realistic product picture when there is one (moved here from itemsheet.js, the
+   restructure S3d: wardrobe.js, colpick.js and itemsheet.js draw it) */
+const WARD_PIC_TYPES=['shoes','belt','socks'];
+const wardPic=i=>{if(!WARD_PIC_TYPES.includes(i.type))return null;const p=itemPic(i);if(p)return p.img;setTimeout(()=>fetchItemPic(i),0);return null};
 async function fetchItemPic(i,sure){const W=workerBase(),k=itemKey(i);if(!W||renderTried.has(k)||renders[k])return;renderTried.add(k);
   try{await remoteList();if(remoteListed&&!remoteKeys.has(k)||!sure&&remoteHold())return;   // not on the worker: no 404 to ask for
     const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!j||!j.img)return;
@@ -128,7 +133,7 @@ async function fetchItemPic(i,sure){const W=workerBase(),k=itemKey(i);if(!W||ren
 /* the Wardrobe drawn again for a picture that arrived in the background: while Settings or an item's sheet is open it waits for it to close,
    as a sync's redraw does (syncRedraw: viewStale, syncLater); renderWardrobe closes Settings and redraws the sheet (the 2026-11-24 review's
    R1 N1: Settings snapped shut by itself) */
-function wardRefresh(){if(settingsOpen()||editing)syncRedraw('wardrobe');else renderWardrobe()}
+function wardRefresh(){if(settingsOpen()||editing)syncRedraw('wardrobe');else emit('wardrobe-changed')}
 async function renderItemPic(i){
   const W=workerBase();if(!W)throw new Error('Connect in ⚙ Settings first.');
   const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'item',item:itemDesc(i),key:itemKey(i),...(i.photo?{ref:i.photo}:{})})});   // the item's own photo, when there is one, is the model to copy
@@ -184,10 +189,10 @@ function setRemoteKeys(v){remoteKeys=v}
    (remoteKeys: today.js calls setRemoteKeys, the tests use HOOK); itemBatch is a let only this file writes: a getter. A module imports them.
    Above acts(), the file's one top-level call that can throw (act.js not loaded): the names are then still the page's, as a
    classic script's were */
-Object.assign(globalThis,{figureLabel,asmLive,renderFor,fetchRemoteRender,schedulePrefetch,lastWorn,aAn,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,fetchItemPic,renderItemPicUI,setRemoteKeys});
+Object.assign(globalThis,{figureLabel,asmLive,renderFor,fetchRemoteRender,schedulePrefetch,lastWorn,aAn,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,wardPic,fetchItemPic,renderItemPicUI,setRemoteKeys});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,ITEM_PIC_TYPES,get itemBatch(){return itemBatch},itemDesc,itemPicLimitText,itemPicsUsedUp,missingItemPics,prefetchRenders,remoteList,get remoteListed(){return remoteListed},set remoteListed(v){remoteListed=v},renderItemPic,renderTried,shareLocalPics,startItemPics,get remoteKeys(){return remoteKeys},set remoteKeys(v){remoteKeys=v}};
-export {figureLabel,asmLive,renderFor,renderTried,fetchRemoteRender,remoteKeys,remoteListed,remoteList,prefetchRenders,schedulePrefetch,lastWorn,ITEM_PIC_TYPES,aAn,itemDesc,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,fetchItemPic,renderItemPic,shareLocalPics,missingItemPics,itemPicLimitText,itemPicsUsedUp,itemBatch,renderItemPicUI,startItemPics,setRemoteKeys};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,ITEM_PIC_TYPES,fetchItemPic,get itemBatch(){return itemBatch},itemDesc,itemPicLimitText,itemPicsUsedUp,missingItemPics,prefetchRenders,remoteList,get remoteListed(){return remoteListed},set remoteListed(v){remoteListed=v},renderItemPic,renderTried,shareLocalPics,startItemPics,get remoteKeys(){return remoteKeys},set remoteKeys(v){remoteKeys=v}};
+export {figureLabel,asmLive,renderFor,renderTried,fetchRemoteRender,remoteKeys,remoteListed,remoteList,prefetchRenders,schedulePrefetch,lastWorn,ITEM_PIC_TYPES,aAn,itemDesc,itemKey,itemPic,picBgs,PIC_BG,fixItemBackdrops,itemPicHtml,wardPic,fetchItemPic,renderItemPic,shareLocalPics,missingItemPics,itemPicLimitText,itemPicsUsedUp,itemBatch,renderItemPicUI,startItemPics,setRemoteKeys};
 /* index.html's (act.js): Settings' "Generate item pictures" */
 function itemPicsTap(){startItemPics()}
 /* an item picture has loaded (data-act-load; its key in data-k): its background color is read from it once */

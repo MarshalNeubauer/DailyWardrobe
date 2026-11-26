@@ -1,6 +1,7 @@
 /* Daily Wardrobe: the Wardrobe tab's search and sort, an item's own name, brand, material and notes, and Delete with Undo.
    Loaded after app.js and stats.js (an ES module since 2026-11-23); app.js calls in here from renderWardrobe, wardList,
    itemBody, save and rm. */
+import {emit} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
 
 /* ---- an item's own name (its fields, sizes and rows are fields.js's since the restructure S3c: WARD_FIELDS, WARD_MAX) ---- */
 const WATCH_DETAILS_MAX=120;   // a watch's Details (itemsheet.js; W2-12-04: 5,036 letters were kept and synced)
@@ -129,7 +130,7 @@ async function setItemField(id,k,v){
   const it=items.find(x=>x.id===id);if((!it)&&itemGoneTell(id))return;if(!it||!WARD_FIELDS.includes(k))return;v=noBidi(v).trim().slice(0,WARD_MAX[k]);if((it[k]||'')===v)return;   // (noBidi: no right-to-left overrides, W2-12-06, core.js)
   if(v)it[k]=v;else delete it[k];if(it.sample)it.sampleMine=1;   // his edit (also when typed text is saved after the sheet closed: kit.js kitEdited)
   await put(it);
-  if(k==='material')return renderWardrobe();   // Other shows or hides its field
+  if(k==='material'){emit('wardrobe-changed');return}   // Other shows or hides its field
   wardRefresh();const h=$('#iv-title');if(h&&editing===id){h.textContent=itemTitle(it)||TYPES[it.type]||'Item';h.className=titleCls(it)}}
 /* (the Add card's name, brand, notes and Material are kept on the card by add-card.js setQField) */
 
@@ -189,7 +190,7 @@ const wardDelete=id=>wardOnce('del:'+id,()=>wardDeleteNow(id));
 async function wardDeleteNow(id){
   const k=items.findIndex(i=>i.id===id);if(k<0)return;const it=items[k],snap=JSON.parse(JSON.stringify(it));
   const days=Object.values(dayRecs).filter(r=>JSON.stringify(r).includes(id)).map(r=>JSON.parse(JSON.stringify(r)));   // the days that refer to it, as they are now
-  const at=await del(id);setWardrobe({items:items.filter(i=>i.id!==id)});planDirty();if(editing===id)dropItem();renderWardrobe();
+  const at=await del(id);setWardrobe({items:items.filter(i=>i.id!==id)});planDirty();if(editing===id)dropItem();emit('wardrobe-changed');
   toast(`Deleted ${nameIso(itemName(it)||nm(it))}`,WARD_UNDO_MS,{label:'Undo',fn:()=>wardUndelete(snap,k,days,at)})}
 async function wardUndelete(it,k,days,at){
   if(items.some(i=>i.id===it.id))return;
@@ -211,7 +212,7 @@ function wardSearchKey(el,ev){if(ev.key==='Escape'&&el.value){ev.stopPropagation
 function wardClearTap(){wardClear()}
 function wardSortPick(el){setWardSort(el.value)}
 function wardOpenTap(el){openItem(el.dataset.id)}
-function wardAllTap(){setFlt('all');renderWardrobe()}   // (setFlt: itemsheet.js, the one place the type filter is set)
+function wardAllTap(){setFlt('all');emit('wardrobe-changed')}   // (setFlt: itemsheet.js, the one place the type filter is set)
 /* the item sheet's Name, Brand and Notes (ivOn: data-id, data-f), as they are typed and when the field is left; Material on the item sheet
    (fields.js matPicked; an Add card's: add-card.js matCardPick) */
 function itemFieldType(el){itemFieldSoon(el.dataset.id,el.dataset.f,el.value)}

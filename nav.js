@@ -63,11 +63,11 @@ function show(t){
   if(from==='add'&&t!=='add')toastDrop();   // Add's "Saved … Undo" goes with the page: it lay over Today's month card for 8 s
   ask('setup-yield',t);
   emit('page-showing',t);if(!SUBS.includes(t))backDrop('sub');   // Settings closes (settings.js); (again: Settings over Add hands Add's entry back as it closes, CR-7-04)
-  if(from!==t)ask('shop-close');if(t!=='wardrobe'&&editing)dropItem();   // (What to buy stays open over its own tab redrawn by a sync, CR-4-04)
+  if(from!==t)ask('shop-close');if(t!=='wardrobe'&&ask('item-open'))ask('item-drop');   // (What to buy stays open over its own tab redrawn by a sync, CR-4-04)
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn){btn.classList.toggle('on',s===t);if(s===t)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current')}}   // (spoken, not only shown: W2-19-05)
-  if(from==='wardrobe'&&t!=='wardrobe'&&!editing){const w=$('#wardrobe');if(w)w.textContent=''}   // the grid (about 4,900 elements at 107 items) is drawn again on coming back: kept, it stayed in memory and in every style recalculation (audit 2026-11-13)
-  const f={today:renderToday,wardrobe:renderWardrobe,add:()=>ask('add-draw'),stats:()=>typeof statsShow==='function'?statsShow():renderStats()};if(f[t])f[t]();
+  if(from==='wardrobe'&&t!=='wardrobe'&&!ask('item-open')){const w=$('#wardrobe');if(w)w.textContent=''}   // the grid (about 4,900 elements at 107 items) is drawn again on coming back: kept, it stayed in memory and in every style recalculation (audit 2026-11-13)
+  const f={today:renderToday,wardrobe:()=>ask('wardrobe-draw'),add:()=>ask('add-draw'),stats:()=>typeof statsShow==='function'?statsShow():renderStats()};if(f[t])f[t]();
   ask('pack-show',t);   // the packing list page (pack.js)
-  if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
+  if(t!=='wardrobe')ask('item-draw');   // the item page belongs to the Wardrobe
   pageIn(t,from);
 }

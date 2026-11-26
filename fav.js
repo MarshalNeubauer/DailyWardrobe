@@ -43,7 +43,7 @@ function favLastWorn(){const out={},T=todayDate(),K=new Set(favLooks().map(favLo
 /* ---- favorite pieces: the item sheet's switch, the tiles' ♥, Wardrobe's chip ---- */
 function favItemRow(i){if(isHandPick(i))return '';const on=isFavItem(i.id);
   return `<button type="button" class="favtog${on?' on':''}" role="switch" aria-checked="${on}" aria-describedby="favhint" data-act="favItemTap" data-id="${esc(i.id)}">${on?FAV_HEART:FAV_HEART0}<span class="favtog-t">Favorite, wear it more</span><span class="favsw2" aria-hidden="true"></span></button><p class="shelp favhint" id="favhint">${on?'It comes round about a fifth sooner, and wins when outfits tie.':'A shorter rest, and it wins when outfits tie.'}</p>`}
-async function favToggleItem(id){const it=items.find(i=>i.id===id);if(!it)return;const set=async on=>{const n=favData();n.items=n.items.filter(x=>x!==id);if(on)n.items.push(id);await favSave(n);renderWardrobe()};
+async function favToggleItem(id){const it=items.find(i=>i.id===id);if(!it)return;const set=async on=>{const n=favData();n.items=n.items.filter(x=>x!==id);if(on)n.items.push(id);await favSave(n);emit('wardrobe-changed')};
   const had=isFavItem(id),name=sentence(itemTitle(it)||nm(it));await set(!had);
   toast(had?`${name} is no longer a favorite.`:`${name} is a favorite now.`,FAV_UNDO_MS,{label:'Undo',fn:()=>set(had)})}
 const favMark=i=>isFavItem(i.id)?`<span class="favmark" role="img" aria-label="Favorite">${FAV_HEART}</span>`:'';
@@ -76,12 +76,12 @@ const favOff=()=>{favWard=false};
 function favLookTap(){favToggleLook()}
 function favWearTap(el){wearFav(el.dataset.k)}
 function favItemTap(el){favToggleItem(el.dataset.id)}
-function favChipTap(){favWard=true;renderWardrobe()}
+function favChipTap(){favWard=true;emit('wardrobe-changed')}
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): Today, the picker, the item sheet, the Wardrobe, the score card and Insights, classic scripts, call these; favData, favSave and
    favToggleItem are read by the favorites tests. favWard is a `let` only this file writes (wardrobe.js reads it): a getter, no setter. */
 Object.assign(globalThis,{FAV_UNDO_MS,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favMark,favChip,favWhy,favStatsCard,favOff});
 /* the socket Insights asks for its favorites card (bus.js; stats.js no longer names this file) */
-import {serve} from './bus.js';
+import {serve,emit} from './bus.js';
 serve('fav-stats-card',favStatsCard);
 Object.defineProperties(globalThis,{favWard:{get:()=>favWard}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
