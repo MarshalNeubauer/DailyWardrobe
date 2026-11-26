@@ -109,7 +109,7 @@ function closeSettings(){const was=settingsOpen();
   setLock(false);
   if(was&&typeof layerClose==='function')layerClose($('#settings-modal'));
   if(todayStale){todayStale=false;keepHome();renderToday()}   // (Today on the home day follows a workday taken away)
-  // the Wardrobe or stats page a sync changed while Settings was open is drawn again if it is the page under Settings (start.js show)
+  // the Wardrobe or stats page a sync changed while Settings was open is drawn again if it is the page under Settings (nav.js show)
   const v=viewStale;viewStale=null;emit('settings-closed',v)
 }
 function saveSettings(){
@@ -214,6 +214,11 @@ function setViewStale(v){viewStale=v}
 Object.assign(globalThis,{SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayDirty,settingsOpen,refreshToday,closeSettings,saveSettings,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,picsSwitched,setVestMode,toggleDay,setWanted,setSetSeen,setViewStale});
 Object.defineProperties(globalThis,{viewStale:{get:()=>viewStale,set:v=>{viewStale=v}},setSeen:{get:()=>setSeen,set:v=>{setSeen=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,setDarkShirts,setOpenTap,get setOther(){return setOther},setPictures,get todayStale(){return todayStale}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,SET_CATS,saveSettings,setCatOpen,setDarkShirts,setOpenTap,get setOther(){return setOther},setPictures,get todayStale(){return todayStale}};
 export {SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayStale,todayDirty,viewStale,settingsOpen,refreshToday,closeSettings,saveSettings,setSeen,setOther,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,setPictures,picsSwitched,setVestMode,setDarkShirts,toggleDay,setWanted,setOpenTap,setSetSeen,setViewStale};
+/* the notice board (bus.js): what Settings does when the router announces it (nav.js no longer names this file; the restructure S3f) */
+on('page-showing',()=>closeSettings());   // another page is shown: Settings closes
+on('page-back',()=>{if(settingsOpen())saveSettings()});   // the phone's Back with no page over Settings: what Done does
+on('sub-opening',S=>{const m=$('#settings-modal');if(settingsOpen()&&m)S.set={cats:SET_CATS.filter(k=>{const e=$('#sc-'+k);return e&&e.classList.contains('open')}),top:m.scrollTop}});   // a page opened from Settings: how Settings was
+on('sub-back',set=>{openSettings();for(const k of set.cats)setCatOpen(k,true,true);settingsSummaries();const m=$('#settings-modal');if(m)m.scrollTop=set.top});   // and back to Settings as it was
 acts({dayTap,picsPick,setOpenTap,setBackdropTap,setDoneTap,catTap,vestPick,darkPick});

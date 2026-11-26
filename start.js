@@ -1,72 +1,16 @@
-/* Daily Wardrobe: moving between pages (show) and the start-up chain: the wardrobe from IndexedDB, then Today; the service worker
+/* Daily Wardrobe: the start-up chain: the wardrobe from IndexedDB, then Today; the service worker. Moving between pages (show,
+   subOpen, openAdd, pagesOn) is nav.js's since the restructure S3f (2026-11-26); this file keeps the tabs' and Add's handlers, so a tap
+   on a tab during loading counts from where it always did (this file's place in the list)
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
-import {on} from './bus.js';
-/* moving between pages: the page arriving eases in from the side its tab is on (Today, Wardrobe, Add left to right), a short slide and a
-   fade on the cards' curve; a page opened from Settings (stats, packing, care) rises in instead. The tab bar's marker slides to the tab
-   (styles.css nav::before, --ti). Only the page arriving moves: the one leaving goes at once, so nothing is laid out twice. */
-const PAGES=['today','wardrobe','add','stats','pack'],TABS=['today','wardrobe','stats'],PAGE_MS=320;
-function pageIn(t,from){const el=$('#'+t),nav=document.querySelector('body>nav'),ti=TABS.indexOf(t);
-  if(nav){nav.style.setProperty('--ti',Math.max(0,ti));nav.classList.toggle('tab-none',ti<0)}
-  if(!el||!from||from===t||noMotion())return;
-  if(el._ps){el._ps.cancel();el._ps=null}   // a scroll slide left from an unfold (pageScroll) on Today
-  const a=TABS.indexOf(from),dx=a>=0&&ti>=0?(ti>a?28:-28):0;if(el._pg)el._pg.cancel();
-  const an=el._pg=el.animate([{opacity:0,transform:dx?`translateX(${dx}px)`:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:PAGE_MS,easing:MONTH_EASE});
-  an.finished.then(()=>{if(el._pg===an)el._pg=null},()=>{})}
-/* a page opened from Settings or from Today (stats, packing, care: openStats, openPack, openCare call subOpen first) goes back with its ‹
-   (subBack) to where it was opened from: Settings as it was, the same categories open and scrolled the same, over the page under it; or
-   the page it came from, scrolled where it was. (The ‹ always went to Today, out of Settings entirely.) */
-let subFrom=null;
-/* The phone's Back (button or swipe) steps back one level: on one of these pages it does what the ‹ does, in Settings what Done does.
-   Settings and such a page share the one app entry (back.js, kind 'set' or 'sub'): opening a page from Settings hands Settings' entry on
-   to the page ('set' → 'sub') and its ‹ hands it back (backHold), so Back never needs two presses; left any other way (Done, a tab, the ‹
-   to Today) the entry goes (backDrop). */
-const SUBS=['add','pack'];
-const subShown=()=>SUBS.some(s=>{const e=$('#'+s);return e&&!e.hidden});
-function pageBack(kind){if(kind==='sub'&&subShown())subBack();else if(settingsOpen())saveSettings()}
-/* The bridge (tests/bridge.test.js): what the classic scripts, the other modules, index.html's last script (startUp) and the tests still use
-   as globals. Above the file's first top-level call that can throw (backOn, when back.js didn't load) */
-Object.assign(globalThis,{subShown,subOpen,subBack,openAdd,show,startUp,onSyncedData});
-Object.defineProperties(globalThis,{pagesOn:{get:()=>pagesOn}});
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-closed',v=>{if(v&&!$('#'+v).hidden)show(v)});   // the Wardrobe or stats page a sync changed while Settings was open
+/* The bridge (tests/bridge.test.js): what index.html's last script (startUp), sync.js (onSyncedData) and the tests still use as globals */
+Object.assign(globalThis,{startUp,onSyncedData});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,startPlain,tabTap};
-export {subShown,subOpen,subBack,openAdd,pagesOn,show,startPlain,startUp,onSyncedData,tabTap};
-backOn('sub',k=>pageBack(k));backOn('set',k=>pageBack(k));
-function subOpen(){backPush('sub');
-  const m=$('#settings-modal');let page=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden})||'today';
-  if(!TABS.includes(page))page='today';   // one of these pages opened from another: its ‹ goes to Today
-  subFrom={page,y:scrollY,set:settingsOpen()&&m?{cats:SET_CATS.filter(k=>{const e=$('#sc-'+k);return e&&e.classList.contains('open')}),top:m.scrollTop}:null}}
-function subBack(){const f=subFrom||{page:'today',y:0,set:null};subFrom=null;
-  backHold(!!f.set,()=>show(f.page));scrollTo(0,f.y);   // back to Settings: the entry stays, for Settings now
-  if(!f.set)return;openSettings();for(const k of f.set.cats)setCatOpen(k,true,true);settingsSummaries();const m=$('#settings-modal');if(m)m.scrollTop=f.set.top}
-/* Add is a page of the Wardrobe (its round + button, #ward-add), with a ‹ back to where it was opened from (subBack) */
-/* type: Today's "Add one" beside a missing piece passes its type (fix round 3, W2-14-01: "Belt: Add one" then "Add without a photo"
-   saved a suit): Add says what is being added and the next card without a photo starts as that type (add-sheet.js addFor) */
-function openAdd(type){setAddFor(typeof type==='string'&&TYPES[type]?type:null);subOpen();show('add');scrollTo({top:0})}
-/* a page asked for before start-up has drawn Today (a tap on a tab while later scripts are still loading: renderWardrobe needs
-   wardrobe.js, the Insights page stats.js, and the stored wardrobe isn't read yet) is only noted; start-up shows it once Today is up
-   (showWanted). It threw before, and start-up then went to Today whatever was tapped. */
-let pagesOn=false,pageWant=null;
-function showWanted(){const t=pageWant;pageWant=null;if(t&&t!=='today'&&TABS.includes(t))show(t);
-  if(setWanted())openSettings()}   // the gear tapped during loading (settings.js setOpenTap): Settings opens now, with the stored settings read
-function show(t){
-  if(!pagesOn){pageWant=t;return}
-  const from=PAGES.find(s=>{const e=$('#'+s);return e&&!e.hidden});
-  if(from==='add'&&t!=='add')npsLeave();   // the "Add without a photo" sheet goes with the page, its entry handed back first (add-sheet.js)
-  if(!SUBS.includes(t))backDrop('sub');   // a page left by the ‹ (to Today) or a tab: its Back entry goes
-  if(from==='add'&&t!=='add')setAddFor(null);   // (what Today's "Add one" asked for goes with the page)
-  if(from==='add'&&t!=='add')toastDrop();   // Add's "Saved … Undo" goes with the page: it lay over Today's month card for 8 s
-  if(typeof setupYield==='function')setupYield(t);
-  closeSettings();if(!SUBS.includes(t))backDrop('sub');   // (again: Settings over Add hands Add's entry back as it closes, CR-7-04)
-  if(from!==t&&typeof closeShop==='function')closeShop();if(t!=='wardrobe'&&editing)dropItem();   // (What to buy stays open over its own tab redrawn by a sync, CR-4-04)
-  for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn){btn.classList.toggle('on',s===t);if(s===t)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current')}}   // (spoken, not only shown: W2-19-05)
-  if(from==='wardrobe'&&t!=='wardrobe'&&!editing){const w=$('#wardrobe');if(w)w.textContent=''}   // the grid (about 4,900 elements at 107 items) is drawn again on coming back: kept, it stayed in memory and in every style recalculation (audit 2026-11-13)
-  const f={today:renderToday,wardrobe:renderWardrobe,add:renderAdd,stats:()=>typeof statsShow==='function'?statsShow():renderStats()};if(f[t])f[t]();
-  if(typeof packShow==='function')packShow(t);   // the packing list page (pack.js)
-  if(t!=='wardrobe')renderItem();   // the item page belongs to the Wardrobe
-  pageIn(t,from);
-}
+export {startPlain,startUp,onSyncedData,tabTap};
+/* the phone's Back on a page opened over another, or in Settings (nav.js pageBack), pinned at this file's place in the list as before.
+   Without back.js or nav.js this line throws, and this file stops before its declarations below: startUp can't run and the start-up
+   card shows (both are required files: tests/load-contract.json) */
+backOn('sub',pageBack);backOn('set',pageBack);
 
 /* a start-up that fails (CR-7-03, the code review 2026-11-16: any error in the chain below emptied the wardrobe in memory and drew
    "Get your first outfit", with no word and no error note, so a person re-added pieces and got duplicates). Only stores that couldn't be
@@ -81,7 +25,7 @@ function startFailed(e){console.warn(e);
   if(!startRead)setWardrobe({items:[]});
   else{afterScripts(()=>errNote(e,'Start-up'));
     setTimeout(()=>toast('Something went wrong while the app was starting. Your wardrobe is safe on this phone: nothing was deleted. Close the app fully and open it again; if this keeps happening, tell us in Settings → About → Feedback.',15000),0)}
-  pagesOn=true;pageWant=null;setWanted();   // (a failed start-up stays on Today, where its message is)
+  setPagesOn(true);setPageWant(null);setWanted();   // (a failed start-up stays on Today, where its message is)
   try{show('today')}catch(e2){console.warn(e2);if(startRead)afterScripts(()=>errNote(e2,'Start-up: Today'));startPlain()}
   window.appReady=true;afterScripts(()=>storageDown(e));
   if(startRead)afterScripts(()=>{try{safetyStart()}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
@@ -96,7 +40,8 @@ function startPlain(){const t=$('#today');if(!t)return;for(const s of PAGES){con
 /* window.startBusy: start-up is under way (index.html's start-up catcher waits for it while the stored wardrobe is being read, however
    long that takes); false again only when startFailed itself couldn't finish, which leaves nobody else to say so */
 async function startUp(){window.startBusy=true;
-  try{const [r,d,st,sn]=await loadStored();applyStored(r,d,st,sn);startChecks();pagesOn=true;show('today');startJobs();showWanted()}
+  try{const [r,d,st,sn]=await loadStored();applyStored(r,d,st,sn);startChecks();setPagesOn(true);show('today');startJobs();showWanted();
+    if(setWanted())openSettings()}   // the gear tapped during loading (settings.js setOpenTap): Settings opens now, with the stored settings read
   catch(e){try{startFailed(e)}catch(e2){window.startBusy=false;throw e2}}}
 /* the four reads: items, days, settings and the plan snapshot */
 const loadStored=()=>connRestored.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings'),metaGet(PLAN_SNAP).catch(()=>null)]));

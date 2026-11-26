@@ -243,6 +243,11 @@
    "class": "required",
    "group": "base"
   },
+  "nav.js": {
+   "class": "required",
+   "group": "base",
+   "note": "the router (show, subOpen, openAdd, pagesOn), split out of start.js (the restructure S3f): start-up cannot show Today without it"
+  },
   "ui.js": {
    "class": "required",
    "group": "base",

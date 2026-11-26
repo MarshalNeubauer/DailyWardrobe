@@ -8,7 +8,7 @@
    item, Several items, reading again once online), the double-tap guard and renderAdd. */
 /* the parts loaded before it announce a changed card on the notice board (bus.js 'card-changed'), and Add is drawn again here:
    they never call renderAdd (the restructure S3c, 2026-11-26) */
-import {on} from './bus.js';
+import {on,serve} from './bus.js';
 /* ---- automatic white balance (wbRead/wbGains/applyWb in measure.js): the light's colour is read from the brightest near-neutral pixels (a white wall, backdrop,
    shirt or label), which should be grey, and every pixel is scaled to make them so. Conservative: no correction when there
    are too few of them, when they fill nearly the whole photo (then they are the item itself, e.g. a close-up of a cream
@@ -184,6 +184,8 @@ function renderAdd(){
   if(typeof colPick!=='undefined'&&colPick&&colPick.src==='q'&&!cardOf(colPick.ref))closeColPick();   // the color or pattern sheet of a card that went (CR-1-02)
 }
 on('card-changed',renderAdd);
+/* the router (nav.js, required, loaded before this file) draws Add when it is shown through a socket ('add-draw'): without this file, nothing */
+serve('add-draw',renderAdd);
 function addBackOnline(){if(typeof tagNetText==='function'&&tagNetText(aiError))setAiError('');
   for(const q of queue.slice())if(q.tagNet&&q.tagErr&&!q.busy&&q.tagImg)retryTag(queue.indexOf(q));
   for(const q of queue.slice())if(q.multiNet&&q.multiErr&&!q.busy&&q.file)multiAgain(q.id);   // "Several items" too (it waited for a tap)

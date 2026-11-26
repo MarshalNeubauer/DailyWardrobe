@@ -1,4 +1,4 @@
-/* Daily Wardrobe: getting started (2026-11-14, the owner's ask after the audit's new-user walkthrough). Loaded after setup.js.
+/* Daily Wardrobe: getting started (2026-11-14, the owner's ask after the audit's new-user walkthrough). Loaded before setup.js (the restructure S3f, 2026-11-26: setup.js draws its Home Screen step and its last step from this file).
    - the quick tour: four short cards on the score, the close-up, Shade and patterns (tourOpen); shown once to a new user between the
      setup and the first Add, offered on the setup's last step, on Today's first-outfit checklist and in Settings → About
    - the close-up guide: how to take a good close-up, with white paper along one edge (kitCloseupGuide), from the Add card's close-up step
@@ -26,6 +26,9 @@ function setKitNoMine(v){kitNoMine=v}
    `let` when asked, so the ones declared below are here too; the consts declared below are handed over above homeAbout() */
 Object.assign(globalThis,{tourSeen,kitOpen,kitClose,tourOpen,kitSaved,kitDuplicate,kitImportOpen,kitFixOldImports,kitSampleMigrate,kitSampleLoad,kitShareDone,kitShareFilter,kitSampleBanner,homeSteps,safariRemind,homeOpen,homeAbout,setKitNoMine});
 Object.defineProperties(globalThis,{kit:{get:()=>kit},kitQuiet:{get:()=>kitQuiet},kitNoMine:{get:()=>kitNoMine,set:v=>{kitNoMine=v}}});
+/* the notice board (bus.js): "Try a sample wardrobe" on an empty Insights or Packing list (stats.js no longer names this file) */
+import {on} from './bus.js';
+on('sample-asked',kitSampleLoad);
 backOn('kit',()=>{if(kit)kitClose(true)});
 function kitOpen(cards,then){const prev=kit?kit.hist:undefined;kit={cards,at:0,then:then||null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitBs(false);kitDraw();kitEl().classList.add('on');kitInert(true);kitHist();
   const t=$('#kit-next');if(t)t.focus({preventScroll:true})}

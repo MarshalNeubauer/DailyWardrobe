@@ -1,7 +1,7 @@
 /* Daily Wardrobe: Add without a photo (split from add.js, Round C 2026-11-17): addManual, the type Today's "Add one" asked for
    (addFor), and the bottom sheet the card opens in (#nps-sheet: open, draw, close, Back, swipe). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit} from './bus.js';
+import {emit,serve} from './bus.js';   // serve: nav.js (required) sets and drops what Today's "Add one" asked for, and leaves the sheet, through sockets
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */
 /* "Add without a photo" (2026-11-15, the owner's choice: variant A of add-page-mockups) opens the card in a sheet from the bottom over Add,
    not in the list; a second call while the sheet holds a card shows that card again */
@@ -69,8 +69,11 @@ function setAddFor(v){addFor=v}
 Object.assign(globalThis,{renderAddFor,npsInert,npsDraw,npsCancel,npsLeave,setAddFor});
 Object.defineProperties(globalThis,{npsId:{get:()=>npsId},npsAsking:{get:()=>npsAsking}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,addManual,npsClose,get addFor(){return addFor}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,addManual,npsClose,npsLeave,setAddFor,get addFor(){return addFor}};
 export {addManual,addFor,renderAddFor,npsId,npsAsking,npsInert,npsDraw,npsClose,npsCancel,npsLeave,setAddFor};
+/* the router (nav.js, a required file loaded before this one) reaches these through bus.js sockets (the restructure S3c): opening Add
+   with a type ('add-for'), and leaving Add with the sheet open ('nps-leave'); without this file they do nothing */
+serve('add-for',setAddFor);serve('nps-leave',npsLeave);
 backOn('nps',()=>npsBack());
 /* Add left while the sheet is up (start.js show): the sheet closes; a card with changes stays on Add as a card of the list, an
    untouched one goes */
