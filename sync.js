@@ -1,9 +1,9 @@
 /* Daily Wardrobe: backup and sync through the Cloudflare worker (KV).
    Runs at start-up, a few seconds after any change, when the app comes back to the foreground, and on demand.
-   Its other parts (split 2026-11-17, the code review's sync plan): sync-status.js (what Backup & sync says, the pause, an ended
-   invitation; loaded right before this file), sync-photos.js (photos as references, batches), snapshots.js (daily backups, Roll back),
+   Its other parts (split 2026-11-17, the code review's sync plan): sync-status.js (what Backup & sync says; loaded right after this
+   file since the restructure S3b, which moved the pause and the status here and an ended invitation to who.js), sync-photos.js (photos as references, batches), snapshots.js (daily backups, Roll back),
    backupfile.js (download and restore a file); what of the sample wardrobe goes up is kit.js kitShareFilter. */
-import {on} from './bus.js';
+import {on,emit} from './bus.js';
 let restoring=false,syncing=false,syncTimer=null,syncAgain=null,syncRun=null,syncDue=0;
 /* a roll-back waiting for its upload (2026-11-15, the audit: Safari killed 200 ms after "Roll back" left the rolled-back wardrobe on the
    phone, and the next start's sync uploaded it as an ordinary save, so the server never kept "Before the last roll-back" and 24 pieces
@@ -11,6 +11,43 @@ let restoring=false,syncing=false,syncTimer=null,syncAgain=null,syncRun=null,syn
    one goes through carries reason 'restore' and the worker keeps the copy it replaces, after a kill or reload too */
 const restoreWanted=()=>{if(restoring)return true;try{const t=localStorage.getItem('sync_restore');return !!t&&t===localStorage.getItem('app_token')}catch{return false}};
 function restoreDone(){restoring=false;try{localStorage.removeItem('sync_restore')}catch{}}
+/* the backup's own state (the restructure S3b, 2026-11-26: moved here from sync-status.js, which draws the Backup line from it and comes
+   right after this file): the status kept in localStorage sync_status, the pause until the next UTC day, the words for an offline or
+   unreachable server, and what Connection and the setup say about backups. A change of the status announces 'backup-changed' (bus.js) */
+// a tester reads a server set-up error in plain words (plainErr, ui.js); the owner, or a connection whose role isn't known yet, the server's sentence
+function setSyncStatus(t){if(typeof isTester==='function'&&isTester()){const p=plainErr(t);if(p!==t)t='Backup failed: '+p}localStorage.setItem('sync_status',t);emit('backup-changed')}   // (the Backup line: sync-status.js, through bus.js)
+const tabBrowser=()=>typeof homeBrowser==='function'?homeBrowser():'Safari';
+/* a backup that couldn't reach the server (Safari's "Load failed", Chrome's "Failed to fetch"): plain words, not the browser's -> text or null.
+   (2026-11-15, the audit: "Backup failed: Load failed") */
+function syncNetText(e){const m=String(e&&e.message||e||'');if(!netErr(m))return null;
+  return navigator.onLine===false?OFFLINE_SYNC:UNREACHED_SYNC}
+const OFFLINE_SYNC='Not backed up: you’re offline. Your changes are kept on this phone and back up when you’re online again.';
+const UNREACHED_SYNC='Not backed up: the server couldn’t be reached. Your changes are kept on this phone and back up later.';
+const syncWaiting=st=>/^Not backed up:/.test(st||'');
+/* a tester's backups for the day are used up (the server's limit): no more uploads until the next UTC day, by the corrected time (core.js
+   nowMs); a pause further off than a day and a bit was set by a clock that was ahead (the audit's W1-9-06: a year-long pause) and is let go */
+const nextUtcDay=()=>{const d=new Date(nowMs());return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)};
+/* uploads paused until the next UTC day, with the sentence that says why (CR-5-13: written four times) -> false, what syncOnce returns */
+function pauseTillTomorrow(m){localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
+function syncPaused(){const p=+localStorage.getItem('sync_pause')||0;if(!p)return false;const t=nowMs();
+  if(p>t+26*3600e3){localStorage.removeItem('sync_pause');localStorage.removeItem('sync_pause_msg');return false}return p>t}
+/* why uploads pause until the next UTC day: a tester's own daily backups used up (the server's message), or the server's whole allowance of
+   saves for the day (2026-11-14, error 'kv-limit': Cloudflare's 1,000 writes a day), said in words with the local time it resets */
+/* the server's room for new photos used up (pr.write): everyone's (pr.all) or this tester's own, said as such, without the server's
+   "(0 of 6 new photos are saved)" (2026-11-15, the audit: the shared ceiling read "your backups") */
+/* in a Safari tab on an iPhone or iPad (kit.js), where Safari may clear a site's data: the pause adds a word about the backup file (W1-11-06) */
+const safariTab=()=>typeof homeIOS==='function'&&homeIOS()&&!homeStandalone();
+const SAFARI_KEEP=()=>` ${tabBrowser()} can clear a website’s data, so Download backup in Settings → Backup & sync keeps a copy meanwhile.`;
+const backupFullMsg=pr=>{let at='';try{at=new Date(nextUtcDay()).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
+  const after=`Your changes are kept on this phone and back up after ${at||'midnight UTC'}.${safariTab()?SAFARI_KEEP():''}`;
+  if(pr&&pr.error==='kv-limit')return `Today’s backups are used up on the server. ${after}`;
+  if(pr&&pr.write)return pr.all?`Today’s room on the server for everyone’s backups is used up. ${after}`:`Today’s room on the server for your backups is used up. ${after}`;
+  return (pr&&pr.message)||'Today’s backups are used up.'};
+/* what Connection and the setup say about backups: "is backed up", unless backups are paused (W1-10-04, W1-11-06: "✓ Connected … and your
+   wardrobe is backed up" while the server held none of the day's items) */
+function backedUpWords(){const p=+localStorage.getItem('sync_pause')||0;if(p<=nowMs())return 'your wardrobe is backed up';
+  let at='';try{at=new Date(p).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
+  return `your wardrobe is backed up, though not right now: backups are paused until ${at||'tomorrow'}, and your newest changes are only on this phone until then`}
 const syncUrl=()=>{const u=(localStorage.getItem('worker_url')||'').trim();if(!u)return null;try{return new URL('sync',u.endsWith('/')?u:u+'/').href}catch{return null}};
 async function localState(){
   const [its,days,tombstones,settings]=await Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('tombstones'),metaGet('settings')]);
@@ -55,7 +92,7 @@ function syncSettingsRedraw(){if(!settingsOpen())return;
   const a=document.activeElement,m=$('#settings-modal');
   if(a&&m&&m.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!/^(button|checkbox|radio)$/.test(a.type||'')){a.addEventListener('blur',()=>setTimeout(syncSettingsRedraw,0),{once:true});return}
   try{renderSettingsExtras()}catch(e){console.warn('Settings not redrawn',e)}
-  try{showSyncStatus()}catch{}}
+  try{emit('backup-changed')}catch{}}
 /* after a sync brought changes: redraw the tab on screen. show() and renderToday() close Settings, which snapped shut when it was
    opened in the first seconds after launch and the start-up sync (scheduleSync, 2.5 s) came back with changes; while it is open,
    the tab waits for it to close (todayStale, viewStale) */
@@ -109,7 +146,7 @@ const syncMark=()=>{try{const m=JSON.parse(localStorage.getItem('sync_mark')||'n
 const setSyncMark=(rev,saved,sig)=>{try{localStorage.setItem('sync_mark',JSON.stringify({url:syncUrl(),v:rev+':'+saved,sig}))}catch{}};
 /* last_sync by the corrected time (core.js nowMs), as the server's times it is compared with (CR-5-06: syncWiped held the backups of a phone
    whose clock was behind, its last_sync read as before the server's wipe) */
-const synced=()=>{syncDue=0;localStorage.setItem('last_sync',String(nowMs()));localStorage.removeItem('sync_status');localStorage.removeItem('sync_wait');showSyncStatus()};
+const synced=()=>{syncDue=0;localStorage.setItem('last_sync',String(nowMs()));localStorage.removeItem('sync_status');localStorage.removeItem('sync_wait');emit('backup-changed')};
 /* ---- the phone's clock (fix round 3, the audit's W1-9; core.js nowMs): the server sends its time with every answer (x-now); the gap is
    learned from each sync's request (the middle of the request taken as the server's moment) and kept (localStorage clock_skew) ---- */
 function clockLearn(r,t0,t1){const srv=+(r&&r.headers&&r.headers.get('x-now'))||0;if(!(srv>1e12)||t1-t0>15000)return false;
@@ -271,14 +308,14 @@ function scheduleSync(){clearTimeout(syncTimer);try{if(!localStorage.getItem('sy
 function setRestoring(v){restoring=v}
 /* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. Above the file's top-level set-up, whose connRestored.then and acts({…}) throw when app.js or act.js didn't load */
-Object.assign(globalThis,{syncUrl,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,scheduleSync,setRestoring});
+Object.assign(globalThis,{syncPaused,syncWaiting,backedUpWords,tabBrowser,safariTab,syncUrl,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,scheduleSync,setRestoring});
 Object.defineProperties(globalThis,{syncTimer:{get:()=>syncTimer},syncRun:{get:()=>syncRun},restoring:{get:()=>restoring,set:v=>{restoring=v}},syncing:{get:()=>syncing,set:v=>{syncing=v}}});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-saved',()=>scheduleSync());   // a backup soon after the settings were saved
 on('connection-saved',()=>{syncNow().catch(e=>console.warn('sync not started',e))});   // Settings' Done: a backup now
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,TESTER_SYNC_MS,get syncDue(){return syncDue},set syncDue(v){syncDue=v},syncJoinAt,syncJoinMark,get syncLater(){return syncLater},syncTap,get syncing(){return syncing},set syncing(v){syncing=v}};
-export {restoring,syncing,syncTimer,syncRun,syncDue,syncUrl,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync,setRestoring};
+export {setSyncStatus,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords,tabBrowser,safariTab,restoring,syncing,syncTimer,syncRun,syncDue,syncUrl,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync,setRestoring};
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&syncDue)syncNow();   // a tester's waiting changes, as the app closes
   else if(document.visibilityState==='visible'&&nowMs()-(+localStorage.getItem('last_sync')||0)>60000)syncNow()});
