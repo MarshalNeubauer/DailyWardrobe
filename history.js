@@ -25,7 +25,7 @@ import {askConfirm,layerClose,layerOpen} from './ui.js';
 let swapMsg='';
 /* start-up writers wait for the first pull (sync.js afterPull; sync.js loads after this file, so through afterScripts) */
 let todayPullWait=false;
-const whenPulled=f=>afterScripts(()=>need('after-pull',f));
+const whenPulled=f=>afterScripts(()=>served('after-pull')?need('after-pull',f):Promise.resolve().then(f));   // (without sync.js nothing is pulled: f runs as when not connected, the restructure S6h)
 /* remember what each day showed: past days become fixed, and today's record follows the screen until the day ends */
 async function recordDays(p){
   const T=todayDate(),tk=key(T),mine=dayRecs,out=[],first=firstReal();
@@ -148,7 +148,7 @@ async function correctPast(slot,it,picked){const k=key(sel),r=dayRecs[k],o=planF
 const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
 /* give a day an occasion (or none): its swaps are dropped, since the outfit is chosen afresh for the occasion, and the coming days are
    released so they are planned around it (the suit that is right for the occasion may be locked on the day before) */
-async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.roll;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;delete r.kind;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){need('today-dirty');need('formal-ui')}else emit('day-changed')}   // (kind too: a piece taken off, a moved outfit or a favorite worn pinned the blazer, and a funeral set later stayed a blazer day, the 2026-11-24 review's R4 N-1)
+async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.roll;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;delete r.kind;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){need('today-dirty');ask('formal-ui')}else emit('day-changed')}   // (kind too: a piece taken off, a moved outfit or a favorite worn pinned the blazer, and a funeral set later stayed a blazer day, the 2026-11-24 review's R4 N-1)
 async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.roll;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;delete n.kind;notAhead(n,k);swapMsg='';await saveDay(n);emit('day-changed')}   // (kind too: a piece taken off or a moved outfit pinned the suit or blazer, CR-4-07)
 async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});emit('day-changed')}
 /* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay.

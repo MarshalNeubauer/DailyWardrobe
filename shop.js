@@ -131,7 +131,7 @@ function shopSamples(rec){
   if(!rec.samples||!rec.samples.length)return '';
   return `<div class="shop-figs">${rec.samples.map(s=>{const o=shopOutfit(rec,s),mine=rec.items.map(i=>i.id);
     const withs=[o.top,o.suitDay?null:o.bot,o.shirt,o.tie,o.shoes].filter(i=>i&&!mine.includes(i.id)).map(i=>prettyCols(nm(i)));
-    return `<figure class="shop-fig">${FIG_TYPES.includes(rec.type)&&(o.top||o.shirt)?figureSvg(o,'shopf'+(shopFigN++)+'-'):''}<figcaption><small>With your ${esc(withs.join(', '))}${s.score!=null?` · score ${s.score}`:''}</small></figcaption></figure>`}).join('')}</div>`;
+    return `<figure class="shop-fig">${FIG_TYPES.includes(rec.type)&&(o.top||o.shirt)&&typeof outfitMannequinSvg==='function'?figureSvg(o,'shopf'+(shopFigN++)+'-'):''}<figcaption><small>With your ${esc(withs.join(', '))}${s.score!=null?` · score ${s.score}`:''}</small></figcaption></figure>`}).join('')}</div>`;
 }
 /* one idea: folded to its picture, name and first reason; a tap unfolds every reason, sample outfits and the two actions */
 function shopRec(x){

@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	a8114d4bf64b52bc84a4
+# tested	cf59db911ecf915a998a
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -2889,7 +2889,7 @@ back.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindC
 back.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 back.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 back.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageback	@onpageshowing	@onsubback	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	setCatOpen	setDoneTap	setLock	setSetSeen	setWanted	settingsPart	settingsSummaries	weekFirst
-back.test.js	setup.js	<loaded>	@backOnsetup	get SETUP_STEPS	get setup	setupAuto	setupBack	setupBefore	setupCityOpen	setupClose	setupConnected	setupDays	setupDraw	setupDress	setupEl	setupFinish	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupNeeds	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupSwitch	setupTapGuard	setupToday	setupVestChosen	setupWardEmpty	setupYield	tzCountry
+back.test.js	setup.js	<loaded>	@backOnsetup	get SETUP_STEPS	get setup	setupAuto	setupBack	setupBefore	setupCityOpen	setupClose	setupConnected	setupDays	setupDraw	setupDress	setupEl	setupFinish	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupNeeds	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupSwitch	setupTapGuard	setupToday	setupVestChosen	setupWardEmpty	setupWx	setupYield	tzCountry
 back.test.js	shop.js	<loaded>	@backOnshop	@db.then	@db.thenmetaGetshop.then	closeShop	get shopOpen	openShop	renderShop	set shopBusy	shopBusyText	shopButton	shopFresh	shopGate	shopRecs	shopSwipe
 back.test.js	snapshots.js	<loaded>	@onsettingscategory	loadSnapshots	snapsRead
 back.test.js	srgb.js	<loaded>	linSrgb	srgbLin	srgbLin8
@@ -3193,7 +3193,7 @@ backgesture.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	
 backgesture.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart
 backgesture.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 backgesture.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageback	@onpageshowing	@onsubback	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	scheduleWear	setCatOpen	setDoneTap	setLock	setSetSeen	setWanted	settingsPart	settingsSummaries	showCost	weekFirst
-backgesture.test.js	setup.js	<loaded>	@backOnsetup	setupAuto	setupBack	setupBefore	setupCancel	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupHtml	setupInert	setupKeep	setupNeeds	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupYield	tzCountry
+backgesture.test.js	setup.js	<loaded>	@backOnsetup	setupAuto	setupBack	setupBefore	setupCancel	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupHtml	setupInert	setupKeep	setupNeeds	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupWx	setupYield	tzCountry
 backgesture.test.js	shop.js	<loaded>	@backOnshop	@db.then	@db.thenmetaGetshop.then	@document.addEventListenerkeydown	closeShop	get shopOpen	openShop	renderShop	set shopBusy	shopBusyText	shopButton	shopCloseTap	shopFresh	shopGate	shopRecs	shopSwipe
 backgesture.test.js	snapshots.js	<loaded>	errWords	loadSnapshots	snapsRead
 backgesture.test.js	srgb.js	<loaded>	linSrgb	linSrgb8	srgbLin	srgbLin8
@@ -8716,7 +8716,7 @@ homescreen.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	r
 homescreen.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errSoon	pruneTagImgs	safetyStart
 homescreen.test.js	scorecard.js	<loaded>
 homescreen.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	scheduleWear	setCatOpen	setLock	setSetSeen	setWanted	settingsPart	settingsSummaries	weekFirst
-homescreen.test.js	setup.js	<loaded>	get SETUP_STEPS	get home	setupAuto	setupCityOpen	setupClose	setupConnected	setupDays	setupDraw	setupDress	setupEl	setupGo	setupGoDouble	setupHtml	setupInert	setupKeep	setupNeeds	setupNextTap	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupToday	setupYield	tzCountry
+homescreen.test.js	setup.js	<loaded>	get SETUP_STEPS	get home	setupAuto	setupCityOpen	setupClose	setupConnected	setupDays	setupDraw	setupDress	setupEl	setupGo	setupGoDouble	setupHtml	setupInert	setupKeep	setupNeeds	setupNextTap	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupToday	setupWx	setupYield	tzCountry
 homescreen.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 homescreen.test.js	snapshots.js	<loaded>	@onsettingscategory
 homescreen.test.js	srgb.js	<loaded>	srgbLin	srgbLin8
@@ -9017,7 +9017,7 @@ invite.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remin
 invite.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errReport	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	tagFailed
 invite.test.js	scorecard.js	<loaded>
 invite.test.js	settings.js	<loaded>	@constsetChan{try}	@constsetChan{try}>@c.onmessage	@onpageshowing	backupSummary	closeSettings	get setOther	openSettings	pausedUntil	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	setCatOpen	setLock	setSetSeen	setWanted	settingsPart	settingsSummaries	todayDirty	weekFirst
-invite.test.js	setup.js	<loaded>	@servesetupconndraw	setupAuto	setupConnected	setupDraw	setupDress	setupEl	setupHtml	setupInert	setupKeep	setupNeeds	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupToday	setupYield	tzCountry
+invite.test.js	setup.js	<loaded>	@servesetupconndraw	setupAuto	setupConnected	setupDraw	setupDress	setupEl	setupHtml	setupInert	setupKeep	setupNeeds	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupToday	setupWx	setupYield	tzCountry
 invite.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 invite.test.js	snapshots.js	<loaded>	@onsettingscategory
 invite.test.js	srgb.js	<loaded>	srgbLin	srgbLin8
@@ -9552,7 +9552,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	handleSync
+keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
@@ -9630,7 +9630,7 @@ kit.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	
 kit.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	guardUnsaved	pruneTagImgs	safetyStart	saveFailed
 kit.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 kit.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	refreshToday	saveUserSettings	setLock	setSetSeen	setWanted	settingsPart	todayDirty	weekFirst
-kit.test.js	setup.js	<loaded>	get SETUP_STEPS	get setup	setupAuto	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupNeeds	setupOpen	setupResume	setupSample	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupVestChosen	setupWardEmpty	setupYield	tzCountry
+kit.test.js	setup.js	<loaded>	get SETUP_STEPS	get setup	setupAuto	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupNeeds	setupOpen	setupResume	setupSample	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupVestChosen	setupWardEmpty	setupWx	setupYield	tzCountry
 kit.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	@document.addEventListenerkeydown	@serveshopopen	closeShop
 kit.test.js	snapshots.js	<loaded>
 kit.test.js	srgb.js	<loaded>	linSrgb	srgbLin	srgbLin8
@@ -9728,7 +9728,7 @@ kitsetup-taps.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCa
 kitsetup-taps.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 kitsetup-taps.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 kitsetup-taps.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	setLock	setSetSeen	setVestMode	setWanted	settingsPart	settingsSummaries	todayDirty	toggleDay	weekFirst
-kitsetup-taps.test.js	setup.js	<loaded>	get setup	setupAddTap	setupAuto	setupBackTap	setupBefore	setupCancel	setupCancelTap	setupCityKey	setupCityOpen	setupCityTap	setupCityType	setupClose	setupConnect	setupConnectTap	setupConnected	setupDay	setupDayTap	setupDays	setupDraw	setupDress	setupEl	setupFindTap	setupFinish	setupGeoTap	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkKey	setupLinkWaiting	setupLocate	setupNeeds	setupNextTap	setupOpen	setupPick	setupResume	setupSample	setupSave	setupSearch	setupSetDress	setupShown	setupSkipTap	setupStart	setupStep	setupStepsNow	setupSwTap	setupSwitch	setupTapGuard	setupToday	setupUnitTap	setupUnits	setupVest	setupVestChosen	setupVestPick	setupWardEmpty	setupYield	tzCountry	wemptyImportTap	wemptySampleTap
+kitsetup-taps.test.js	setup.js	<loaded>	get setup	setupAddTap	setupAuto	setupBackTap	setupBefore	setupCancel	setupCancelTap	setupCityKey	setupCityOpen	setupCityTap	setupCityType	setupClose	setupConnect	setupConnectTap	setupConnected	setupDay	setupDayTap	setupDays	setupDraw	setupDress	setupEl	setupFindTap	setupFinish	setupGeoTap	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkKey	setupLinkWaiting	setupLocate	setupNeeds	setupNextTap	setupOpen	setupPick	setupResume	setupSample	setupSave	setupSearch	setupSetDress	setupShown	setupSkipTap	setupStart	setupStep	setupStepsNow	setupSwTap	setupSwitch	setupTapGuard	setupToday	setupUnitTap	setupUnits	setupVest	setupVestChosen	setupVestPick	setupWardEmpty	setupWx	setupYield	tzCountry	wemptyImportTap	wemptySampleTap
 kitsetup-taps.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	@document.addEventListenerkeydown	@serveshopopen	closeShop
 kitsetup-taps.test.js	snapshots.js	<loaded>
 kitsetup-taps.test.js	srgb.js	<loaded>	linSrgb	srgbLin	srgbLin8
@@ -9750,7 +9750,7 @@ kitsetup-taps.test.js	today-plan.js	<loaded>	@serveplansnap	hasOutfit	planDirty	
 kitsetup-taps.test.js	today.js	<loaded>	addForSlot	belowBox	figureStage	goToday	goneNote	keepHome	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slots	todaySay	vestRow	wornBar	wornPill	wxFit	wxMissing	wxPreload
 kitsetup-taps.test.js	ui.js	<loaded>	@onsettingsdraw	@onsettingssummaries	@window.addEventListenerkeydown	addGate	askAnswer	askConfirm	askEls	askYesTap	closeupBtn	connSummary	cuTouch	layerInert	layerOpen	layerUp	needConn	noMotion	renderConnUI	sheetSwipe	tell	uiEsc
 kitsetup-taps.test.js	wardrobe.js	<loaded>	@servewardpendingrestore	@whenPulled	giNote	giTag	ivOn	matMigrate	matOnItem	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
-kitsetup-taps.test.js	weather.js	<loaded>	@onsettingsdraw	@onsettingssummaries	cityEnglish	cityLang	cityList	findCity	loadClimate	loadWeather	locCC	renderWxLoc	setCityFound	setLocation	setUnits	temp	unit	unitCC	useMyLocation	wxChip	wxIcon
+kitsetup-taps.test.js	weather.js	<loaded>	@onsettingsdraw	@onsettingssummaries	@servewxcityfound	cityEnglish	cityLang	cityList	findCity	loadClimate	loadWeather	locCC	renderWxLoc	setCityFound	setLocation	setUnits	temp	unit	unitCC	useMyLocation	wxChip	wxIcon
 kitsetup-taps.test.js	who.js	<loaded>	acctRole	applyRole	isTester	setAcct
 labbench.test.js	lab/gl-bench.html	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/mask-background.png	<loaded>
@@ -11726,7 +11726,7 @@ newuser.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remi
 newuser.test.js	safety.js	<loaded>	db.then.dbDown	errSoon	pruneTagImgs	safetyStart	tagFailText	tagReason
 newuser.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	setScoreOpen	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 newuser.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	setCatOpen	setLock	setSetSeen	setWanted	settingsPart	settingsSummaries	showCost	todayDirty	weekFirst
-newuser.test.js	setup.js	<loaded>	get SETUP_STEPS	get setup	setupAuto	setupCityOpen	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkWaiting	setupNeeds	setupOpen	setupResume	setupSave	setupSearch	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupVestChosen	setupYield	tzCountry
+newuser.test.js	setup.js	<loaded>	get SETUP_STEPS	get setup	setupAuto	setupCityOpen	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkWaiting	setupNeeds	setupOpen	setupResume	setupSave	setupSearch	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupVestChosen	setupWx	setupYield	tzCountry
 newuser.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop
 newuser.test.js	snapshots.js	<loaded>	@onsettingscategory
 newuser.test.js	srgb.js	<loaded>	linSrgb	srgbLin	srgbLin8
@@ -11747,7 +11747,7 @@ newuser.test.js	today-plan.js	<loaded>	@serveplansnap	hasOutfit	planDirty	planFo
 newuser.test.js	today.js	<loaded>	addForSlot	belowBox	figureStage	foldAll	goneNote	keepHome	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slots	stepDay	todaySay	vestRow	wornBar	wornPill	wxFit	wxPreload
 newuser.test.js	ui.js	<loaded>	@onfoldingall	@onsettingsdraw	@onsettingsopen	@onsettingssummaries	addGate	advClose	connSummary	layerClose	layerInert	layerOpen	layerUp	needConn	netErr	noMotion	ownerHere	plainErr	renderConnUI	uiEsc
 newuser.test.js	wardrobe.js	<loaded>	@servewardpendingrestore	@whenPulled	matMigrate	sockToeMigrate	wardPendingRestore
-newuser.test.js	weather.js	<loaded>	@onsettingsdraw	@onsettingssummaries	cityEnglish	cityLang	cityList	findCity	loadWeather	locCC	renderWxLoc	setCityFound	unit	unitCC
+newuser.test.js	weather.js	<loaded>	@onsettingsdraw	@onsettingssummaries	@servewxcityfound	cityEnglish	cityLang	cityList	findCity	loadWeather	locCC	renderWxLoc	setCityFound	unit	unitCC
 newuser.test.js	who.js	<loaded>	acctRole	applyRole	isTester	rememberRole	setAcct
 occasions.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 occasions.test.js	account.js	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
@@ -16107,7 +16107,7 @@ sample.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPref
 sample.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 sample.test.js	scorecard.js	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	failText	itemWord	lowFirst	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 sample.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	setLock	setSetSeen	setWanted	settingsPart	todayDirty	weekFirst
-sample.test.js	setup.js	<loaded>	get SETUP_STEPS	get setup	setupAuto	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupNeeds	setupOpen	setupResume	setupSample	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupVestChosen	setupYield	tzCountry
+sample.test.js	setup.js	<loaded>	get SETUP_STEPS	get setup	setupAuto	setupClose	setupConnected	setupDraw	setupDress	setupEl	setupFinish	setupHolCountry	setupHolidays	setupHtml	setupInert	setupKeep	setupLinkChecking	setupNeeds	setupOpen	setupResume	setupSample	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupTapGuard	setupToday	setupVestChosen	setupWx	setupYield	tzCountry
 sample.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	@document.addEventListenerkeydown	@serveshopopen
 sample.test.js	snapshots.js	<loaded>	rollBackState	snapPreSetup
 sample.test.js	srgb.js	<loaded>	linSrgb	srgbLin	srgbLin8
@@ -17152,7 +17152,7 @@ setup.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remind
 setup.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 setup.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 setup.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	dayTap	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	setCatOpen	setDarkShirts	setLock	setOpenTap	setSetSeen	setVestMode	setWanted	settingsPart	settingsSummaries	todayDirty	toggleDay	weekFirst
-setup.test.js	setup.js	<loaded>	@servesetupconndraw	setupAddTap	setupAgainTap	setupAuto	setupBackTap	setupBefore	setupCancel	setupCancelTap	setupCityOpen	setupCityTap	setupCityType	setupClose	setupConnect	setupConnectTap	setupConnected	setupDay	setupDayTap	setupDays	setupDraw	setupDress	setupEl	setupFindTap	setupFinish	setupGeoTap	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHomeLink	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkWaiting	setupLocate	setupNeeds	setupNextTap	setupOpen	setupPick	setupResume	setupSample	setupSave	setupSearch	setupSetDress	setupShown	setupSkipTap	setupStart	setupStep	setupStepsNow	setupSwTap	setupSwitch	setupTapGuard	setupToday	setupUnitTap	setupUnits	setupVest	setupVestChosen	setupVestPick	setupWardEmpty	setupYield	tzCountry
+setup.test.js	setup.js	<loaded>	@servesetupconndraw	setupAddTap	setupAgainTap	setupAuto	setupBackTap	setupBefore	setupCancel	setupCancelTap	setupCityOpen	setupCityTap	setupCityType	setupClose	setupConnect	setupConnectTap	setupConnected	setupDay	setupDayTap	setupDays	setupDraw	setupDress	setupEl	setupFindTap	setupFinish	setupGeoTap	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHomeLink	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkWaiting	setupLocate	setupNeeds	setupNextTap	setupOpen	setupPick	setupResume	setupSample	setupSave	setupSearch	setupSetDress	setupShown	setupSkipTap	setupStart	setupStep	setupStepsNow	setupSwTap	setupSwitch	setupTapGuard	setupToday	setupUnitTap	setupUnits	setupVest	setupVestChosen	setupVestPick	setupWardEmpty	setupWx	setupYield	tzCountry
 setup.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	@document.addEventListenerkeydown	@serveshopopen	closeShop	shopButton
 setup.test.js	snapshots.js	<loaded>	@onsettingscategory
 setup.test.js	srgb.js	<loaded>	linSrgb	srgbLin	srgbLin8
@@ -17175,7 +17175,7 @@ setup.test.js	today-plan.js	<loaded>	@serveplansnap	hasOutfit	planDirty	planFor	
 setup.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	addForSlot	belowBox	figureStage	goToday	goneNote	keepHome	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slots	todaySay	vestRow	wornBar	wornPill	wxFit	wxMissing	wxPreload
 setup.test.js	ui.js	<loaded>	@onsettingsdraw	@onsettingsopen	@onsettingssummaries	@window.addEventListenerkeydown	addGate	advClose	connSummary	layerClose	layerInert	layerOpen	layerUp	needConn	netErr	noMotion	plainErr	renderConnUI	tell	uiEsc
 setup.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@servewardpendingrestore	@servewardsynced	@whenPulled	itemFieldNow	matMigrate	matRenameTo	sockLegacy	sockToeMigrate	wardBack	wardBar	wardCount	wardFlt	wardFlush	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
-setup.test.js	weather.js	<loaded>	@onsettingsdraw	@onsettingssummaries	cityEnglish	cityKey	cityLang	cityList	cityPick	findCity	geoName	loadClimate	loadWeather	locCC	renderWxLoc	setCityFound	setLocation	setUnits	unit	unitCC	useMyLocation	wxChip
+setup.test.js	weather.js	<loaded>	@onsettingsdraw	@onsettingssummaries	@servewxcityfound	cityEnglish	cityKey	cityLang	cityList	cityPick	findCity	geoName	loadClimate	loadWeather	locCC	renderWxLoc	setCityFound	setLocation	setUnits	unit	unitCC	useMyLocation	wxChip
 setup.test.js	who.js	<loaded>	@serveacctme	acctRole	applyRole	isTester	rememberRole	setAcct
 shade.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 shade.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctStart
@@ -21239,7 +21239,7 @@ ui.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCar
 ui.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 ui.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 ui.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	setCatOpen	setLock	setSetSeen	setWanted	settingsPart	settingsSummaries	showCost	toggleCat	weekFirst
-ui.test.js	setup.js	<loaded>	setupAuto	setupCityOpen	setupConnected	setupDays	setupDraw	setupDress	setupEl	setupGo	setupGoDouble	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkWaiting	setupNeeds	setupNextTap	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupSwitch	setupToday	setupVestChosen	setupWardEmpty	setupYield	tzCountry
+ui.test.js	setup.js	<loaded>	setupAuto	setupCityOpen	setupConnected	setupDays	setupDraw	setupDress	setupEl	setupGo	setupGoDouble	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkWaiting	setupNeeds	setupNextTap	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupSwitch	setupToday	setupVestChosen	setupWardEmpty	setupWx	setupYield	tzCountry
 ui.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	closeShop	shopButton	shopGate	shopRecs
 ui.test.js	snapshots.js	<loaded>	@onsettingscategory	loadSnapshots	snapsRead
 ui.test.js	srgb.js	<loaded>	linSrgb	srgbLin	srgbLin8

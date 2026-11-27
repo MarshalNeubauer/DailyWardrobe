@@ -43,4 +43,7 @@ function served(name){return SOCKETS.has(name)}
 function need(name,...args){const fn=SOCKETS.get(name);if(!fn)throw new ReferenceError(name+' is not served');return fn(...args)}
 function needFn(name){if(!SOCKETS.has(name))throw new ReferenceError(name+' is not served');return (...args)=>ask(name,...args)}
 const askFor=ask;   // the same, for a file that also uses app.js's own ask() (the server request): colpick.js
-export {on,heard,emit,serve,ask,askFor,served,need,needFn};
+/* the settings' stamps, never a setting (merge.js's SET_META, the same table): core.js cleanSettings and takeSettings skip them, also when
+   merge.js didn't load (the restructure S6h, 2026-11-27: its 404 failed start-up and the stored settings weren't applied) */
+const SET_META=['updated','ks','kh','kse','khe'];
+export {on,heard,emit,serve,ask,askFor,served,need,needFn,SET_META};

@@ -57,7 +57,7 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
   const T=isoKey(todayDate()),h=settings.holidays,offs=(settings.daysOff||[]).filter(x=>x.d>=T).length,occ=Object.values(dayRecs).filter(r=>r.date&&keyDate(r.date)>=todayDate()&&occOf(r)).length;
   set('daysoff',[h&&h.country?((h.list||[]).length?`${h.country} holidays`:`${S.country?S.country(h.country):h.country}: no holiday list`):'No holidays',`${offs} day${offs===1?'':'s'} off`,`${occ} occasion${occ===1?'':'s'}`].join(' · '));
   if(S.calendar)set('calendar',S.calendar());   // (calendar.js)
-  set('weather',`${settings.location?settings.location.name:'No location set'} · °${S.unit()}`);   // (weather.js; without it this line throws, as unit() did)
+  if(S.unit)set('weather',`${settings.location?settings.location.name:'No location set'} · °${S.unit()}`);   // (weather.js; without it no line: the restructure S6h)
   set('photos',need('pics-drawn')?'Drawing only':S.connected&&!S.connected()?'Painted pictures · needs a connection':'Painted pictures');   // (the masters come from the server)
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
   const om=Object.keys(MATERIALS_BY).reduce((n,t)=>n+ownMats(t).length,0);   // (own materials, 2026-11-16)

@@ -114,7 +114,7 @@ const belowBox=(o,below)=>{const i=below.some(([s])=>s===belowOpen)&&o[belowOpen
 /* did you wear it: ✗ and ✓ over the picture's bottom corners (today and past days); tapping the chosen one again clears it.
    Between them, a small pill says when this look was last worn (nothing when it never was). */
 /* (no share button on the picture: the owner, 2026-11-14, "the user can just send a screenshot") */
-function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.tie]].filter(([,i])=>i);if(!ps.length)return '';
+function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.tie]].filter(([,i])=>i);if(!ps.length||!served('ovl-piece'))return '';   // (without today-picture.js none: S6h)
   // each swatch is a button: it opens that piece up close (swTap)
   return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" data-act="swatchTap" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${need('ovl-piece',i)}</button>`).join('')}</div>`}
 /* (wardShort, the wardrobe can't dress a day yet, is month.js's since the restructure S3e, 2026-11-26: read here as a global) */
@@ -158,7 +158,7 @@ function figureStage(o){
   // Nothing paid is ever made from here (the drawn-figure photo was retired 2026-11-14)
   const cf=served('care-frame')?ask('care-frame',o):null,cc=cf?cf.cls:'',ch=cf?cf.html:'';   // a suit or blazer coming due for cleaning (care.js)
   return (photo?`<div class="fig photo${cc}" id="mannequin-container"><img data-act-load="figLoad" src="${srcOk(r.img)}" alt="Photo of ${esc(figureLabel(o))}">${swatchStack(o)}${wornBar(o)}${ch}</div>`
-    :`<div class="fig${cc}" id="mannequin-container">${figureSvg(o)}${wornBar(o)}${ch}</div>`)+
+    :`<div class="fig${cc}" id="mannequin-container">${typeof outfitMannequinSvg==='function'?figureSvg(o):''}${wornBar(o)}${ch}</div>`)+   // (without mannequin.js no figure until the painted picture: S6h)
     (tiles?`<div class="below" style="--n:${below.length}" aria-label="${o.coat?'Coat and below the waist':'Below the waist'}" role="group">${tiles}</div>`+belowBox(o,below):'');
 }
 /* the painter's cloth for an item's mannequin is ready (draw.js figCuGet): Today's figure is drawn again with it, only while the day shown
@@ -166,7 +166,7 @@ function figureStage(o){
 function figCuDone(id){const o=planFor()[key(sel)];if(!o||!((o.top&&o.top.id===id)||(!o.top&&o.bot&&o.bot.id===id)))return;
   if(settingsOpen()){need('today-dirty');return}
   const t=$('#today'),c=$('#mannequin-container'),svg=c&&c.querySelector(':scope > svg');if(!t||t.hidden||!svg||c.classList.contains('photo'))return;
-  svg.outerHTML=figureSvg(o);need('zoom-apply',false)}
+  svg.outerHTML=figureSvg(o);ask('zoom-apply',false)}
 
 let dayShown=null;   // the calendar day the app last drew, and whether it was showing "today's" outfit then
 /* a new calendar day (the app brought back from the background, or left open past midnight): Today moves on to the new day's outfit (or the
@@ -178,7 +178,7 @@ function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:t
   const h=homeDay();if(home||isoKey(sel)<=isoKey(h)){setSel(new Date(h));setView({y:h.getFullYear(),m:h.getMonth()});setMonthOpen(false)}
   if(!$('#today').hidden)need('refresh-today')}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;
-  newDayCheck();try{const c=JSON.parse(localStorage.getItem('wx')||'null');if(settings.location&&(!c||Date.now()-c.t>3*3600e3))need('weather-load')}catch{}
+  newDayCheck();try{const c=JSON.parse(localStorage.getItem('wx')||'null');if(settings.location&&(!c||Date.now()-c.t>3*3600e3))ask('weather-load')}catch{}
   setRemoteKeys(null);schedulePrefetch()});   // photos made on another device meanwhile
 setInterval(()=>{if(document.visibilityState==='visible'&&window.appReady)newDayCheck()},60e3);   // left open across midnight: no visibility event comes
 /* Today showing the home day (today, or the next workday) when a Settings change moves it (a workday or day off taken away): it follows
@@ -227,9 +227,9 @@ function renderToday(){
   const p=planFor(),snapped=!!(cache.snap&&p===cache[cache.snap]);
   // the day records are written before the drawing (recordDays puts them in memory at once, then saves): the missed days it records count
   // in this drawing's "last worn" and cleaning frame (fix round 3, W2-14-12: they changed a moment after opening)
-  if(!snapped&&items.length&&served('pulled-yet')&&ask('pulled-yet'))recordRun=recordDays(p).then(needFn('lock-upcoming')).then(()=>{planSnapSoon()});
+  if(!snapped&&items.length&&(!served('pulled-yet')||ask('pulled-yet')))recordRun=recordDays(p).then(needFn('lock-upcoming')).then(()=>{planSnapSoon()});
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
-  const nav=`<div class="nav day"><button data-act="dayStepTap" data-n="-1" aria-label="Previous day">‹</button><h2 aria-label="${esc(sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))}"><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc${settings.location?'':' wxlk'}">${settings.location?(need('wx-chip',sel)||wxMissing(sel,wp)):`<a href="#" class="wxl" data-act="wxSetTap">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button data-act="dayStepTap" data-n="1" aria-label="Next day">›</button></div>`;
+  const nav=`<div class="nav day"><button data-act="dayStepTap" data-n="-1" aria-label="Previous day">‹</button><h2 aria-label="${esc(sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))}"><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc${settings.location?'':' wxlk'}">${!served('wx-chip')?'':settings.location?(need('wx-chip',sel)||wxMissing(sel,wp)):`<a href="#" class="wxl" data-act="wxSetTap">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button data-act="dayStepTap" data-n="1" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
   let stage='',side='';const first=(served('setup-today')?ask('setup-today'):'')+(served('kit-sample-banner')?ask('kit-sample-banner'):'');   // what is still needed for a first outfit (setup.js)
   if(!isWorkday(sel))stage=first+(offName(sel)&&settings.workdays.includes(sel.getDay())?`<p class="mut empty">A day off: ${esc(offName(sel))}. You can change your days off in Settings.</p>`
@@ -241,10 +241,10 @@ function renderToday(){
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${wardShort()?'':scoreCard(o)}${piecesBox(o)}${dayActions(o)}${goneNote(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${restWarn(o)}${served('care-note')?ask('care-note',o):''}`}
   if(served('cal-banner'))stage=ask('cal-banner',sel)+stage;   // new calendar events, a trip kept (calendar.js)
-  keepFocus($('#today'),()=>{$('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+missedCard()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;actTaps($('#today'))});need('zoom-apply',false);need('sw-apply',false);fitNavSoon();wxFit();
+  keepFocus($('#today'),()=>{$('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+missedCard()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;actTaps($('#today'))});ask('zoom-apply',false);ask('sw-apply',false);fitNavSoon();wxFit();
   todaySay(o);
   if(snapped){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
-  else if(items.length&&!(served('pulled-yet')&&ask('pulled-yet'))&&!todayPullWait){setTodayPullWait(true);whenPulled(()=>{setTodayPullWait(false);if(!$('#today').hidden)need('refresh-today')})}   // (recorded above when pulled; else drawn again once the backup is merged, and recorded then)
+  else if(items.length&&served('pulled-yet')&&!ask('pulled-yet')&&!todayPullWait){setTodayPullWait(true);whenPulled(()=>{setTodayPullWait(false);if(!$('#today').hidden)need('refresh-today')})}   // (recorded above when pulled; else drawn again once the backup is merged, and recorded then; without sync.js nothing is pulled: recorded at once, the restructure S6h)
 }
 
 /* what a screen reader hears after Today is drawn again (fix round 3, W2-19-01): another day, its date and outfit ("Tuesday, November 17:
@@ -259,7 +259,7 @@ function todaySay(o){const k=key(sel),h=$('#today .day h2 .dlong'),e=$('#slide .
    the picture back out: it starts as soon as the drag is known to be sideways, so the boxes fold while the day slides; meanwhile the folds
    are quiet (boxfold.js foldQuiet, told through bus.js: without boxfold.js the day still steps) */
 function foldAll(){emit('folding-all',true);try{if(openRow)toggleRow(openRow);if(belowOpen)pickPiece(belowOpen);if(scoreOpen)toggleScore();if(listOpen)toggleList();if(monthOpen)toggleMonth()}
-  catch(e){console.warn(e)}finally{emit('folding-all',false)}setMonthOpen(false);listOpen=false;setScoreOpen(false);belowOpen=openRow=null;need('zoom-out');ask('sw-close')}
+  catch(e){console.warn(e)}finally{emit('folding-all',false)}setMonthOpen(false);listOpen=false;setScoreOpen(false);belowOpen=openRow=null;ask('zoom-out');ask('sw-close')}
 /* move to the next/previous scheduled day (Sunday-Thursday), crossing months as needed (month.js nextWorkday).
    from: where the new day's outfit slides in from (px, sign = side); 0 = no animation */
 function stepDay(n,from,times=1){
@@ -283,10 +283,10 @@ function rowTap(el){toggleRow(el.dataset.s)}   // a row's swatch and name, and i
 function addOneTap(el){openAdd(el.dataset.type)}   // a missing piece's "Add one" (data-type: the type to add, '' when none)
 function belowPicTap(){pickPiece(belowOpen)}   // the photo unfolded under the tiles
 function tileTap(el){pickPiece(el.dataset.s)}   // a tile under the figure
-function swatchTap(el){need('sw-tap',el.dataset.s)}   // a cloth swatch on the picture (today-picture.js)
+function swatchTap(el){ask('sw-tap',el.dataset.s)}   // a cloth swatch on the picture (today-picture.js)
 function wornTap(){toggleWorn()}   // the date bar's Wore pill
 function figLoad(){fitNavSoon()}   // the day's picture has loaded (data-act-load)
-function wxRetryTap(el,ev){need('weather-load',true);ev.preventDefault()}   // "No forecast · retry" (a link: it goes nowhere)
+function wxRetryTap(el,ev){ask('weather-load',true);ev.preventDefault()}   // "No forecast · retry" (a link: it goes nowhere)
 function wxSetTap(el,ev){need('settings-open','weather');ev.preventDefault()}   // "Set location"
 function listTap(){toggleList()}   // the pieces box's head
 function listFoldTap(el,ev){foldListTap(ev)}   // the open list's own ground

@@ -13,7 +13,9 @@ import {announce,keepFocus} from './app.js';
 import {acts} from './act.js';
 const SETUP_BASE=['welcome','week','wear','weather','connect','done'];
 let SETUP_STEPS=SETUP_BASE.slice();
-const setupStepsNow=()=>typeof homeNeeded==='function'&&homeNeeded()?['welcome','home',...SETUP_BASE.slice(1)]:SETUP_BASE.slice();
+/* without weather.js the Weather step is left out, and the setup goes on without it (the restructure S6h, the owner's choice of 2026-11-27) */
+const setupWx=()=>served('wx-unit');
+const setupStepsNow=()=>{const s=typeof homeNeeded==='function'&&homeNeeded()?['welcome','home',...SETUP_BASE.slice(1)]:SETUP_BASE.slice();return setupWx()?s:s.filter(k=>k!=='weather')};
 const SETUP_TITLES={welcome:'Welcome',get home(){return typeof homeAndroid==='function'&&homeAndroid()?'Install the app':'Home Screen'},week:'Your week',wear:'What you wear',weather:'Weather',connect:'Connection',done:'All set'};
 /* the flow's state: at = the step shown (-1 = closed); first = it opened by itself on a new install (not "Run setup again") */
 let setup={at:-1,first:false,vestSet:false,q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null};
@@ -65,7 +67,7 @@ function setupOpen(again,resume){
   closeSettings();
   askFor('kit-home-close');   // the setup has its own Home Screen step (one explanation)
   setup={at:0,first:!again,vestSet:!!(resume&&resume.vestSet),q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null,before:again?(resume&&resume.before)||setupBefore():null};SETUP_STEPS=setupStepsNow();
-  if(resume){const i=SETUP_STEPS.indexOf(resume.k);if(i>0)setup.at=i}
+  if(resume){const i=SETUP_STEPS.indexOf(resume.k==='weather'&&!setupWx()?'connect':resume.k);if(i>0)setup.at=i}
   setupInert(true);setupEl().classList.add('on');setupDraw();setupSave();setupEl().focus({preventScroll:true});
   backPush('setup');   // the phone's Back steps back through the setup instead of leaving the app (setupBack)
 }
@@ -77,7 +79,6 @@ function setupBack(){if(!setupShown())return;if(setup.at>0){setupGo(-1);backPush
    this file reads nothing of app.js's own ask(), the server request) */
 import {serve,ask,askFor,served} from './bus.js';
 import {clearLocks} from './days.js';
-import {cityFound,findCity,setCityFound,setLocation,setUnits,unit,useMyLocation} from './weather.js';
 serve('setup-yield',setupYield);serve('setup-needs',setupNeeds);   // (and what the wardrobe still needs, for Insights: stats.js)
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,setupCancel,setupClose,setupDress,setupGo,setupOpen,setupSearch,setupVestChosen,get setup(){return setup},set setup(v){setup=v},get SETUP_STEPS(){return SETUP_STEPS},setupDraw,setupFinish,setupShown,setupToday,tzCountry};
@@ -99,7 +100,7 @@ function setupTapGuard(e){if(!e||!e.detail)return;setupTap={x:e.clientX,y:e.clie
 function setupCancel(e){setupTapGuard(e);const b=setup.before||{},changed=SETUP_UNDO.filter(k=>JSON.stringify(settings[k]===undefined?null:settings[k])!==JSON.stringify(b[k]===undefined?null:b[k]));
   setupClose();if(!changed.length)return;
   for(const k of changed){if(k==='location')continue;if(b[k]===null||b[k]===undefined)delete settings[k];else settings[k]=b[k]}
-  if(changed.includes('location'))setLocation(b.location||null);
+  if(changed.includes('location'))askFor('wx-location-set',b.location||null);
   saveUserSettings().then(clearLocks);todayDirty(false);renderToday();tell('Setup canceled: your answers are as they were.')}
 /* Skip (stay on Today) and Done (go and add the first item) both finish it for good.
    A new person who didn't choose gets no vest: the stored default is the three-piece suit on cooler days. */
@@ -168,7 +169,7 @@ function setupStep(k){const d=setupDress();
     // the vest only with ties, as Settings (a waistcoat is never planned without a tie; audit 2026-11-15)
     return `<p class="su-help">Outfits are planned around what you actually wear to work.</p>${setupSwitch('jacket',d.jacket,'Jackets','A suit or a blazer on workdays')}${setupSwitch('tie',d.tie,'Ties','A tie with every outfit')}`+
     (d.jacket&&d.tie?`<label class="su-row">Suit vest <select id="su-vest" data-act-change="setupVestPick">${[['never','No vest'],['auto','On cooler suit days'],['always','Every suit day']].map(o=>`<option value="${o[0]}"${o[0]===v?' selected':''}>${o[1]}</option>`).join('')}</select></label>`:'')}
-  if(k==='weather'){const u=unit(),loc=settings.location;
+  if(k==='weather'){const u=askFor('wx-unit'),loc=settings.location;
     return `<div class="su-group"><div class="su-label">Where you are</div><p class="su-help" id="su-loc">${loc?`<span class="su-tick" aria-hidden="true">✓</span> Weather for ${esc(loc.name)}.`:'With a location, outfits follow the forecast: lighter cloth on hot days, no suede in the rain. Without one they follow the calendar season.'}</p>
 <div class="su-acts"><button type="button" id="su-geo" data-act="setupGeoTap">Use my location</button></div>
 <div class="su-form"><input type="text" id="su-city" placeholder="Search a city" aria-label="City" value="${esc(setup.q)}" data-act-input="setupCityType" data-act-keydown="setupCityKey"><button type="button" id="su-find" data-act="setupFindTap">Search</button></div>
@@ -189,7 +190,7 @@ ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
   const wear=[d.jacket?'jackets':'no jackets',d.tie?'ties':'no ties',...(d.jacket&&d.tie?[vest]:[])].join(', ');
   const bl=settings.blazerDays.filter(x=>settings.workdays.includes(x));
   return `<p class="su-lead">${items.length?'That’s everything.':'That’s everything. Now add your clothes.'}</p>
-<ul class="su-sum"><li><span>Workdays</span><b>${days(settings.workdays)}</b></li>${d.jacket?`<li><span>Blazer days</span><b>${bl.length?days(bl):'none: a suit every day'}</b></li>`:''}<li><span>You wear</span><b>${wear}</b></li><li><span>Weather</span><b>${settings.location?esc(settings.location.name):'by the calendar'} · °${unit()}</b></li><li><span>Connection</span><b>${setupConnected()?'connected':setupLinkChecking()?'checking your invitation…':inviteOver()?'invitation ended':'not connected'}</b></li></ul>
+<ul class="su-sum"><li><span>Workdays</span><b>${days(settings.workdays)}</b></li>${d.jacket?`<li><span>Blazer days</span><b>${bl.length?days(bl):'none: a suit every day'}</b></li>`:''}<li><span>You wear</span><b>${wear}</b></li>${setupWx()?`<li><span>Weather</span><b>${settings.location?esc(settings.location.name):'by the calendar'} · °${askFor('wx-unit')}</b></li>`:''}<li><span>Connection</span><b>${setupConnected()?'connected':setupLinkChecking()?'checking your invitation…':inviteOver()?'invitation ended':'not connected'}</b></li></ul>
 ${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus pants if you wear a blazer rather than a suit':''}.</p>${askFor('kit-start-row',true)??''}`}`;
 }
 /* connected at the Connection step in Safari on an iPhone: the Home Screen app needs the link too (kit.js homeCopy) */
@@ -211,15 +212,15 @@ function setupDay(kind,i){toggleDay(kind==='workdays'?'#cfg-workdays':'#cfg-blaz
 /* the rest of the dress code stays (audit 2026-11-15: "Run setup again" erased "Jeans with a blazer") */
 function setupSetDress(k){const d=setupDress();d[k]=!d[k];settings.dress={...(settings.dress||{}),...d};saveUserSettings().then(clearLocks);setupDraw();const b=$('#su-sw-'+k);if(b)b.focus({preventScroll:true})}   // saved first (fix round 2: swiped away at once, it was lost)
 function setupVest(v){setup.vestSet=true;setVestMode(v);setupSave()}
-function setupUnits(v){setUnits(v);setupDraw()}
-/* the city search is the Settings one (findCity reads Settings' own field and keeps its answers in weather.js's cityFound) */
+function setupUnits(v){askFor('wx-units-set',v);setupDraw()}
+/* the city search is the Settings one (weather.js findCity reads Settings' own field and keeps its answers in its cityFound: the wx-city-* sockets) */
 async function setupSearch(){const q=(setup.q||'').trim();if(!q&&(setup.cities||setup.cityMsg)){setup.cities=null;setup.cityMsg='';setupDraw();return}if(!q||!$('#cfg-city'))return;
-  $('#cfg-city').value=q;setCityFound(null);setup.cities=null;setup.cityMsg='Searching…';setupDraw();
-  await findCity();if($('#city-results'))$('#city-results').innerHTML='';$('#cfg-city').value='';
-  const res=cityFound;setup.cities=res||null;setup.cityMsg=!res?'City search is unavailable right now.':res.length?'':'No matches. Try the name in English or a nearby larger city, or Use my location.';setupDraw();announce(setup.cityMsg||`${res.length} place${res.length===1?'':'s'} found`)}
-function setupPick(i){const c=(setup.cities||[])[i];if(!c)return;setup.cities=null;setup.cityMsg='';setup.q='';setLocation(c);setupDraw()}
+  $('#cfg-city').value=q;askFor('wx-city-found-set',null);setup.cities=null;setup.cityMsg='Searching…';setupDraw();
+  await askFor('wx-city-find');if($('#city-results'))$('#city-results').innerHTML='';$('#cfg-city').value='';
+  const res=askFor('wx-city-found');setup.cities=res||null;setup.cityMsg=!res?'City search is unavailable right now.':res.length?'':'No matches. Try the name in English or a nearby larger city, or Use my location.';setupDraw();announce(setup.cityMsg||`${res.length} place${res.length===1?'':'s'} found`)}
+function setupPick(i){const c=(setup.cities||[])[i];if(!c)return;setup.cities=null;setup.cityMsg='';setup.q='';askFor('wx-location-set',c);setupDraw()}
 /* useMyLocation answers later (the permission prompt): the step is drawn again once the location has changed */
-function setupLocate(){const was=JSON.stringify(settings.location);useMyLocation();
+function setupLocate(){const was=JSON.stringify(settings.location);askFor('wx-locate');
   if(setup.watch)clearInterval(setup.watch);let n=0;
   setup.watch=setInterval(()=>{if(!setupShown()||++n>400){clearInterval(setup.watch);setup.watch=null;return}
     if(JSON.stringify(settings.location)!==was){clearInterval(setup.watch);setup.watch=null;setup.cities=null;setup.cityMsg='';setupDraw()}},150)}
