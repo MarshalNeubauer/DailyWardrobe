@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	71a905dd4292f936b155
+# tested	c499cf2ca9682859161b
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	acctSettingsPart	acctStart	get	iosDevice	iosInSafari	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -784,6 +784,7 @@ additemacts.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	sche
 additemacts.test.js	tag-request.js	<loaded>	keepTagImg	recordTagResult	resignTagImg	tagImgOf	texSig
 additemacts.test.js	tagging.js	<loaded>	confTxt	readAbort	tagNotes
 additemacts.test.js	tests/fixedplan.js	<any>
+additemacts.test.js	tests/webkit.js	<any>
 additemacts.test.js	theme.js	<loaded>	applyTheme
 additemacts.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoFab	undoHere	undoOff
 additemacts.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -1605,6 +1606,7 @@ asmcolor.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmcolor.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmcolor.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
 asmcolor.test.js	tests/safeport.js	<any>
+asmcolor.test.js	tests/webkit.js	<any>
 asmcolor.test.js	theme.js	<loaded>	applyTheme
 asmcolor.test.js	toast.js	<loaded>
 asmcolor.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2031,6 +2033,7 @@ asmrelease.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmrelease.test.js	tests/webkit.js	<any>
 asmrelease.test.js	theme.js	<loaded>	applyTheme
 asmrelease.test.js	toast.js	<loaded>
 asmrelease.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -5229,7 +5232,6 @@ colnew.test.js	tests/fixedplan.js	<any>
 colnew.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 colnew.test.js	tests/fixtures/suit-mink.jpg	<loaded>
 colnew.test.js	tests/pace.js	<any>
-colnew.test.js	tests/webkit.js	<any>
 colnew.test.js	theme.js	<loaded>	applyTheme
 colnew.test.js	toast.js	<loaded>	toast	toastOff	undoHere
 colnew.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -5551,6 +5553,7 @@ colpickacts.test.js	tagging.js	<loaded>	tagNotes
 colpickacts.test.js	tests/fixedplan.js	<any>
 colpickacts.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 colpickacts.test.js	tests/fixtures/suit-mink.jpg	<loaded>
+colpickacts.test.js	tests/webkit.js	<any>
 colpickacts.test.js	theme.js	<loaded>	applyTheme
 colpickacts.test.js	toast.js	<loaded>	toast	toastOff	undoHere
 colpickacts.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -9680,6 +9683,7 @@ lookbeta.test.js	sync.js	<loaded>	@connRestored.then	@onsettingssaved	afterPull	
 lookbeta.test.js	tag-request.js	<loaded>	describeEstimate	readEstimate	recordTagResult	tagImgOf	visTok
 lookbeta.test.js	tagging.js	<loaded>	confTxt	readAbort	tagNotes
 lookbeta.test.js	tests/fixedplan.js	<any>
+lookbeta.test.js	tests/webkit.js	<any>
 lookbeta.test.js	theme.js	<loaded>	applyTheme
 lookbeta.test.js	toast.js	<loaded>	toast	toastOff	undoHere
 lookbeta.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
