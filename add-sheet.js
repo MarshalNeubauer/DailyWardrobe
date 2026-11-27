@@ -79,7 +79,7 @@ function setAddFor(v){addFor=v}
 Object.assign(globalThis,{renderAddFor,npsInert,npsDraw,npsCancel,npsLeave,setAddFor});
 Object.defineProperties(globalThis,{npsId:{get:()=>npsId},npsAsking:{get:()=>npsAsking}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,addManual,npsClose,npsLeave,setAddFor,get addFor(){return addFor}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,addManual,npsClose,get addFor(){return addFor},npsCancel,get npsId(){return npsId}};
 export {addManual,addFor,renderAddFor,npsId,npsAsking,npsInert,npsDraw,npsClose,npsCancel,npsLeave,setAddFor};
 /* the router (nav.js, a required file loaded before this one) reaches these through bus.js sockets (the restructure S3c): opening Add
    with a type ('add-for'), and leaving Add with the sheet open ('nps-leave'); without this file they do nothing */

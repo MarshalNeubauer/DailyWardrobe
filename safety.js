@@ -175,7 +175,7 @@ async function adoptBackupSettings(local,data){
    tagFailNote; tests/errreport.test.js: errList) */
 Object.assign(globalThis,{errReport,oneStop,tagNetText,tagFailNote});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,errList,get errTapAt(){return errTapAt},set errTapAt(v){errTapAt=v},pruneTagImgs,get storeToldAt(){return storeToldAt},set storeToldAt(v){storeToldAt=v},get tagWhy(){return tagWhy},set tagWhy(v){tagWhy=v},get tagNetLast(){return tagNetLast},set tagNetLast(v){tagNetLast=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,errList,get errTapAt(){return errTapAt},set errTapAt(v){errTapAt=v},pruneTagImgs,get storeToldAt(){return storeToldAt},set storeToldAt(v){storeToldAt=v},get tagWhy(){return tagWhy},set tagWhy(v){tagWhy=v},get tagNetLast(){return tagNetLast},set tagNetLast(v){tagNetLast=v},errNote,storageDown,tagFailNote,tagFailText,tagFailed};
 export {storeFailure,storeFailText,storeToldAt,saveFailed,dbDown,errTapAt,errList,errNote,errReport,storageDown,askPersist,pruneTagImgs,safetyStart,tagWhy,tagNetLast,oneStop,tagFailText,tagNetText,tagFailed,tagFailNote,retryTag,guardUnsaved,adoptBackupSettings,setStoreToldAt};
 /* "Try again" on the page shown when the wardrobe can't be opened (act.js) */
 function nostoreAgainTap(){location.reload()}

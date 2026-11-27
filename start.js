@@ -11,7 +11,7 @@ import {acts} from './act.js';
 /* The bridge (tests/bridge.test.js): what index.html's last script (startUp), sync.js (onSyncedData) and the tests still use as globals */
 Object.assign(globalThis,{startUp,onSyncedData});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,startPlain,tabTap};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,startPlain,tabTap,startUp};
 export {startPlain,startUp,onSyncedData,tabTap};
 /* the phone's Back on a page opened over another, or in Settings (nav.js pageBack), pinned at this file's place in the list as before.
    Without back.js or nav.js this line throws, and this file stops before its declarations below: startUp can't run and the start-up

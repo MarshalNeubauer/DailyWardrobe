@@ -108,5 +108,5 @@ function asmPocketDo(px,S,J){const Q=asmPocketQuad(J.kind);if(!Q)return;const f=
 /* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
 Object.assign(globalThis,{asmPocketQuad,asmPocketSig,asmPocketJob,asmPocketPaint});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,asmPocketDo};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,asmPocketDo,asmPocketJob,asmPocketQuad};
 export {asmPocketQuad,asmPocketSig,asmPocketJob,asmPocketPaint,asmPocketDo};

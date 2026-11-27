@@ -91,6 +91,6 @@ import {serve,emit} from './bus.js';
 serve('fav-stats-card',favStatsCard);
 Object.defineProperties(globalThis,{favWard:{get:()=>favWard}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,favData,favStatsCard,favSave,favToggleItem};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,favData,favSave,favToggleItem,favWhy};
 export {FAV_UNDO_MS,favData,favSave,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favToggleItem,favMark,favChip,favWhy,favStatsCard,favWard,favOff};
 acts({favLookTap,favWearTap,favItemTap,favChipTap});

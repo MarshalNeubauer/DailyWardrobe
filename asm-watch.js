@@ -92,5 +92,5 @@ function asmWatchDo(px,S,W,M,T){const L=ASM_LIN,f=S/2048,g=W.g,pad=Math.ceil(14*
 /* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
 Object.assign(globalThis,{asmWatchPaints,asmWatchSig,asmWatchJob,asmWatchPaint});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,ASM_WATCH_GEO};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,ASM_WATCH_GEO,asmWatchJob,asmWatchPaint,asmWatchPaints};
 export {ASM_WATCH_GEO,asmWatchPaints,asmWatchSig,asmWatchJob,asmWatchPaint};

@@ -52,5 +52,5 @@ function setAcct(v){acct=v}
 Object.assign(globalThis,{acctEsc,acctBase,acctCall,hasInviteHash,rememberRole,acctRole,isTester,applyRole,setAcct,ENDED,inviteEnded,endedAnswer});
 Object.defineProperties(globalThis,{acct:{get:()=>acct,set:v=>{acct=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,rememberRole,get acct(){return acct},set acct(v){acct=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,rememberRole,get acct(){return acct},set acct(v){acct=v},acctRole,applyRole,isTester};
 export {acct,acctEsc,acctBase,acctCall,hasInviteHash,rememberRole,acctRole,isTester,applyRole,setAcct,ENDED,inviteEnded,endedAnswer};

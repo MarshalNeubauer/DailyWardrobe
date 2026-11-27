@@ -7,7 +7,7 @@ module.exports=async({ok,chromium,url})=>{
       // a worker that takes jobs and never answers
       const st={w:{postMessage:m=>posted.push(m.id),terminate:()=>{st.dead=true}},ok:true,busy:null};HOOK.asmW=st;
       const out={run:'ASM_RUN_MS' in HOOK&&typeof HOOK.ASM_RUN_MS==='number'&&HOOK.ASM_RUN_MS>=60e3};
-      const a=asmRun({x:1}).then(()=>'ok',e=>'failed: '+e.message),b=asmRun({x:2}).then(()=>'ok',e=>'failed: '+e.message);
+      const a=HOOK.asmRun({x:1}).then(()=>'ok',e=>'failed: '+e.message),b=HOOK.asmRun({x:2}).then(()=>'ok',e=>'failed: '+e.message);
       out.waiting=HOOK.asmQ.length;out.busy=st.busy&&st.busy.id;
       HOOK.asmStuck(st,st.busy);out.first=await a;out.dead=!!st.dead;out.replaced=HOOK.asmW!==st&&HOOK.asmW!==null;
       // the next one goes to the new worker (here a real one: it fails on the bad job and says so, it doesn't hang)

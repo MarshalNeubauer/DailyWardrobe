@@ -66,7 +66,7 @@ function actListen(){if(actOn)return;actOn=true;
    handed over before this file's first top-level call */
 Object.assign(globalThis,{ACTS,acts,actTaps});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,ACT_FIRST,actsFirst};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,ACT_FIRST,actsFirst,ACTS,acts};
 export {ACTS,ACT_FIRST,acts,actsFirst,actTaps};
 actListen();
 /* A file field's picker stays open for as long as the person takes, and the page may redraw the field away meanwhile (a card read, a

@@ -83,4 +83,5 @@ const readEstimate=()=>describeEstimate('colour',true)+describeEstimate('pattern
    add.js, item-photo.js, migrate.js, measure.js, pattern-read.js, colpick.js, look.js, safety.js and stats.js, classic scripts, and
    add-keep.js, add-save.js, tagging.js (TAG_Q) and checklist.js (texSig), modules that read them as globals, use these */
 Object.assign(globalThis,{TAG_MAX,CLOSE_MAX,TAG_Q,TEX_MIN_PX,TEX_MAX,customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,texSig,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,TAGIMG_CACHE,TAG_MAX,TEX_MAX,keepCloseImg,keepTagImg,resignTagImg,sharpCloseOf,tagExtras,tagImgOf,texSig};
 export {TAG_MAX,CLOSE_MAX,TAG_Q,TEX_MIN_PX,TEX_MAX,customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,texSig,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate};

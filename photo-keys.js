@@ -79,5 +79,5 @@ const shirtTextured=i=>!!i&&!shirtPatterned(i)&&!!(usableSett(i)||{}).tex;
 Object.assign(globalThis,{esc,jsq,srcOk,comboSig,fnv64,comboKey,keepRender,shareRender,workerBase,picsDrawn,workerList,listPaused,loadRenders});
 Object.defineProperties(globalThis,{renders:{get:()=>renders,set:v=>{renders=v}},listAt:{get:()=>listAt,set:v=>{listAt=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,get listKeys(){return listKeys},set listKeys(v){listKeys=v},get renders(){return renders},set renders(v){renders=v},get listAt(){return listAt},set listAt(v){listAt=v},shirtPatterned,jsq};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,get listKeys(){return listKeys},set listKeys(v){listKeys=v},get renders(){return renders},set renders(v){renders=v},get listAt(){return listAt},set listAt(v){listAt=v},shirtPatterned,comboKey,comboSig,esc,keepRender,picsDrawn,workerBase,workerList};
 export {renders,esc,jsq,srcOk,comboSig,fnv64,comboKey,keepRender,shareRender,workerBase,picsDrawn,listKeys,listAt,workerList,listPaused,loadRenders,shirtPatterned,shirtTextured};

@@ -15,4 +15,5 @@ const ASM_CM_KINDS={
 const asmCmKey=(kind,name)=>asmKey('cm'+ASM_CMV+'/'+kind+'/'+name);
 /* the bridge: what the other files, asm-worker.js and the tests use as globals (tests/bridge.test.js lists who) */
 Object.assign(globalThis,{ASM_CMV,ASM_CM_KINDS,asmCmKey});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,ASM_CMV,ASM_CM_KINDS,asmCmKey};
 export {ASM_CMV,ASM_CM_KINDS,asmCmKey};

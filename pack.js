@@ -244,7 +244,7 @@ Object.assign(globalThis,{packSetTrip,packShow,openPack});
 import {serve} from './bus.js';
 serve('pack-show',packShow);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,PACK_TITLE,packComplete,packShow,packDefault,packLock,packLockState,packMark,get packNow(){return packNow},set packNow(v){packNow=v},packRelease,packSetCap,packSetDate,get packT(){return packT},set packT(v){packT=v},packTrip,packUses,packWear,renderPack};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,PACK_TITLE,packComplete,packDefault,packLock,packLockState,packMark,get packNow(){return packNow},set packNow(v){packNow=v},packRelease,packSetCap,packSetDate,get packT(){return packT},set packT(v){packT=v},packTrip,packUses,packWear,renderPack,openPack};
 export {PACK_TITLE,packT,packNow,packDefault,packTrip,packMark,packUses,packComplete,packLockState,packLock,packRelease,packSetDate,packSetTrip,packSetCap,packWear,packShow,openPack,renderPack};
 /* what the controls do (act.js). index.html's: Settings' Packing list link */
 function packOpenTap(){openPack()}

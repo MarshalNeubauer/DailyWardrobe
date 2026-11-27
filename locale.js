@@ -9,4 +9,5 @@ function appLocale(){if(Date.prototype._dwLoc)return;for(const m of ['toLocaleDa
 appLocale();
 /* the bridge (tests/bridge.test.js): cost.js, a classic script, reads APP_LOC as a global; a module imports it */
 Object.assign(globalThis,{APP_LOC});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,APP_LOC};
 export {APP_LOC};

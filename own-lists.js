@@ -120,7 +120,7 @@ Object.assign(globalThis,{groupOf,typePl,ownColOffer,newColHex,openColForm,addCu
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-draw',()=>{renderCustomUI();renderOwnMatUI()});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,guessPatBase,addCustomColor,addCustomPattern,addOwnMaterial,groupOf,newColHex,removeCustom,removeOwnMaterial,renderCustomUI};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,guessPatBase,addCustomColor,addCustomPattern,addOwnMaterial,groupOf,newColHex,removeOwnMaterial,renderCustomUI};
 export {groupOf,typePl,ownColOffer,newColHex,openColForm,addCustomColor,guessPatBase,openPatForm,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI};
 /* what Settings' own lists do (act.js): "+ New color" / "+ New pattern" (data-kind), and a material's Remove (its type and name in
    data-t and data-m) */

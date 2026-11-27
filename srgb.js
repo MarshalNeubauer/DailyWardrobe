@@ -11,5 +11,5 @@ const linSrgb8=v=>255*linSrgb(v<0?0:v>1?1:v);   // linear, clamped to 0..1 -> a 
 /* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
 Object.assign(globalThis,{srgbLin,linSrgb,srgbLin8,linSrgb8});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,linSrgb};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,linSrgb,linSrgb8,srgbLin8};
 export {srgbLin,linSrgb,srgbLin8,linSrgb8};

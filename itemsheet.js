@@ -210,7 +210,7 @@ function renderWardrobe(){
   renderItem();wardBack(wf);
 }
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,rm,togglePause,clearStripes,patSummary,redetect,sete};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,rm,togglePause,patSummary,sete,itemBody,renderWardrobe};
 export {itemBody,sete,patSummary,redetect,togglePause,clearStripes,rm,renderWardrobe};
 /* what the item page's and the Wardrobe's controls do (act.js; the item by its id in data-id) */
 function itemPick(el){sete(el.dataset.id,el.dataset.f,el.value)}
