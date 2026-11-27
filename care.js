@@ -10,30 +10,21 @@
    - the Care page (#care, from Settings), a quiet tag in the Wardrobe grid and one line on Today when today's wear reaches the limit.
    The shirt rule (settings.laundryDays) is in planner.js outfit(). */
 import {on,emit,serve} from './bus.js';
-import {$,HANDPICK_TYPES,TYPES,dayRecs,isWorkday,isoKey,items,key,nameHtml,sentence,settings,shortDesc,todayDate} from './core.js';
+import {$,CARE_ABLE,CARE_MAX,HANDPICK_TYPES,TYPES,careLimit,careTimes,careWashed,careWord,dayRecs,fmtDay,isWorkday,isoKey,items,key,keyDate,nameHtml,sentence,settings,shortDesc,todayDate} from './core.js';
 import {cache,planDirty,planFor,planMonth} from './today-plan.js';
 import {esc} from './photo-keys.js';
 import {openSettings,refreshToday,saveUserSettings,todayDirty} from './settings.js';
-import {keyDate,saveDay} from './days.js';
+import {clearLocks,saveDay} from './days.js';
 import {cap1,put,sel} from './app.js';
 import {toast} from './toast.js';
 import {askConfirm} from './ui.js';
 import {actTaps,acts} from './act.js';
 const CARE_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];   // the types with a wear limit in Settings
-const CARE_ABLE=['suit','blazer','pants','shirt','tie','overcoat','raincoat','socks','pocketsquare',...HANDPICK_TYPES];   // what can be sent away (a pocket square: worn count, laundry; the casual garments too, 2026-11-16)
-// wears before cleaning; a type not listed is never due. The casual garments (2026-11-16, not in Settings' limits): T-shirts, polos and
-// henleys washed after every wear, sweatshirts and hoodies after 3, knitwear after 4, a chore jacket after 6
-const CARE_DEF={suit:5,blazer:6,pants:4,shirt:1,tee:1,polo:1,henley:1,sweatshirt:3,hoodie:3,sweater:4,qzip:4,cardigan:4,chore:6,blouse:3};   // (the uniform blouse: washed after 3 wears, the owner, 2026-11-17)
 const CARE_PLURAL={suit:'Suits',blazer:'Blazers',pants:'Pants',shirt:'Shirts',tie:'Ties',overcoat:'Overcoats',raincoat:'Raincoats',socks:'Socks',
   tee:'T-shirts',polo:'Polos',henley:'Henleys',sweater:'Sweaters',sweatshirt:'Sweatshirts',hoodie:'Hoodies',qzip:'Quarter-zips',cardigan:'Cardigans',chore:'Chore jackets',blouse:'Uniform blouses'};
-const CARE_MAX=10;
 const LAUNDRY_OPTS=[0,1,2,3,5,7];
-const careLimit=t=>{const v=(settings.care||{})[t];return v==null?(CARE_DEF[t]||0):Math.max(0,Math.min(CARE_MAX,Math.round(+v)||0))};
 const laundryDays=()=>Math.max(0,+(settings.laundryDays??1)||0);
-const careWashed=t=>t==='shirt'||t==='socks'||t==='pocketsquare'||['tee','polo','henley','sweatshirt','hoodie'].includes(t);   // washed at home rather than cleaned: the wording, and which way "send" goes
-const careWord=t=>careWashed(t)?'washing':'cleaning';
 const careNoun=i=>i.type==='pants'?'pants':(TYPES[i.type]||'item').toLowerCase().replace('dress ','');
-const careTimes=n=>n===1?'once':n===2?'twice':n+' times';
 const careName=i=>`${TYPES[i.type]||'Item'}: ${String(i.name||'').trim()?nameHtml(String(i.name).trim()):sentence(shortDesc(i)||careNoun(i))}`;
 /* wears since cleaning for every item: {id: count}. Kept on the plan cache, which is dropped whenever items, days or settings change */
 function careCounts(){if(cache.careW)return cache.careW;const w={},by=Object.fromEntries(items.map(i=>[i.id,i]));
@@ -233,13 +224,13 @@ function careBandKey(el,ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals: itemsheet, cost, wardrobe, add-more, settings, today, today-picture and remind; the rest are read by tests. Above the
    file's last top-level call (acts, when act.js did not load): the names are then still the page's */
-Object.assign(globalThis,{CARE_ABLE,careLimit,careWashed,careWord,careTimes,careState,careTag,careBadge,careBackText,careLog,careCard,renderCare,careNote,careFrame,careBandSoon,careReminders,renderCareUI});
+Object.assign(globalThis,{careState,careTag,careBadge,careBackText,careLog,careCard,renderCare,careNote,careFrame,careBandSoon,careReminders,renderCareUI});
 /* the laundry's words and record, asked for by wardrobe.js and add-more.js (loaded before this file, of other groups: tests/bus.test.js SOCKETS) */
 serve('care-tag',careTag);serve('care-badge',careBadge);serve('care-log',careLog);serve('care-back-text',careBackText);
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-draw',()=>renderCareUI());
 on('settings-category',k=>{if(k==='laundry')renderCare()});   // Laundry & cleaning's lists, as it opens
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,CARE_DEF,careBack,careCleaned,careCounts,careDayState,careLists,careName,careSend,openCare,renderCare,careBadge,CARE_ABLE,careReminders,careState,careWashed};
-export {CARE_ABLE,CARE_DEF,careLimit,careWashed,careWord,careTimes,careName,careCounts,careState,careTag,careBadge,careBackText,careLog,careCard,careSend,careBack,careCleaned,careLists,renderCare,openCare,careNote,careDayState,careFrame,careBandSoon,careReminders,renderCareUI};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,careBack,careCleaned,careCounts,careDayState,careLists,careName,careSend,openCare,renderCare,careBadge,careReminders,careState};
+export {careName,careCounts,careState,careTag,careBadge,careBackText,careLog,careCard,careSend,careBack,careCleaned,careLists,renderCare,openCare,careNote,careDayState,careFrame,careBandSoon,careReminders,renderCareUI};
 acts({laundryPick,careSendTap,careDoneTap,careBackDate,careBackTap,careTypeDone,careLimitsTap,careLimitPick,careDueTap,careBandTap,careBandKey});

@@ -1,8 +1,9 @@
 /* Daily Wardrobe: the server's daily backups and Roll back (split from sync.js, 2026-11-17). */
 import {on} from './bus.js';
-import {$,cleanState,items,nowMs,stampAllSettings} from './core.js';
+import {$,cleanState,items,nowMs,stampAllSettings,syncUrl} from './core.js';
 import {esc} from './photo-keys.js';
-import {applyMerged,localState,setRestoring,syncNow,syncUrl} from './sync.js';
+import {applyMerged,localState,setRestoring,syncNow} from './sync.js';
+import {ENDED,endedAnswer,inviteEnded} from './app.js';
 /* ---- daily backups on the worker (snap:<day> / snap:<month> / snap:before-restore) ---- */
 /* a copy is named by the day it is for (the wardrobe at that day's start), with how many items it holds when the server says (W2-14-03,
    W1-6-07: labelled by the time its content was saved, Monday's copy and Sunday's both read "Sun, Nov 15, 7:30 AM", one full, one empty) */

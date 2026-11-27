@@ -3,7 +3,7 @@
 /* (2026-11-14, the owner) on an iPhone or iPad in a browser tab, a "Home Screen" step right after Welcome: the Home Screen app keeps its
    own storage, apart from Safari's, so what is set up in Safari stays there; it is shown before anything is set up. Not in the app opened
    from the Home Screen, not on other devices (the steps are then as before). SETUP_STEPS is worked out when the setup opens. */
-import {$,DAY_NAMES,dayRecs,inRotation,isHandPick,items,settings} from './core.js';
+import {$,DAY_NAMES,dayRecs,hasInviteHash,inRotation,isHandPick,items,settings} from './core.js';
 import {inviteOver,isConnected,layerInert,tell} from './ui.js';
 import {closeSettings,saveUserSettings,setVestMode,settingsOpen,todayDirty,toggleDay} from './settings.js';
 import {backDrop,backOn,backPush} from './back.js';
@@ -86,6 +86,7 @@ Object.assign(globalThis,{setupShown,setupStart,setupFinish,tzCountry,setupYield
    Connection step, which sync.js serves (without sync.js the step says the wardrobe is backed up, as ui.js's Connection line does;
    this file reads nothing of app.js's own ask(), the server request) */
 import {serve,ask} from './bus.js';
+import {clearLocks} from './days.js';
 serve('setup-yield',setupYield);serve('setup-needs',setupNeeds);   // (and what the wardrobe still needs, for Insights: stats.js)
 Object.defineProperties(globalThis,{SETUP_STEPS:{get:()=>SETUP_STEPS},setup:{get:()=>setup,set:v=>{setup=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */

@@ -3,8 +3,8 @@
    signals. sRGB <-> linear is srgb.js's (srgbLin8, linSrgb8). */
 /* an Add card changed (undoMeasured): add.js redraws Add on it (bus.js 'card-changed'; this file loads before add.js) */
 import {emit} from './bus.js';
-import {COLORS,colsFor,dE00,hexRgb,items,labHex,labOf,patBase,primaryCol,rgbLab} from './core.js';
-import {TAG_Q,sharpCloseOf,texSig} from './tag-request.js';
+import {COLORS,TAG_Q,colsFor,dE00,hexRgb,items,labHex,labOf,patBase,phSm,primaryCol,rgbLab,texSig} from './core.js';
+import {sharpCloseOf} from './tag-request.js';
 import {linSrgb8,srgbLin8} from './srgb.js';
 import {CHECK_PATS,MOTIF_PATS,STRIPE_PATS} from './detect.js';
 import {generateSwatch,queue} from './app.js';

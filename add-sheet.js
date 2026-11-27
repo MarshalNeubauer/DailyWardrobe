@@ -9,7 +9,7 @@ import {cardSafe,ckLeftLine,confBtn,formCard,shirtColFix} from './add-card.js';
 import {esc} from './photo-keys.js';
 import {backBorrow,backOn,backPush,backReturn} from './back.js';
 import {cmpMount} from './checklist.js';
-import {askAnswer,askConfirm,asking,layerInert} from './ui.js';
+import {askAnswer,askConfirm,asking,layerInert,sheetSwipe} from './ui.js';
 import {cardReading} from './add-ids.js';
 import {acts} from './act.js';
 /* an item described with the dropdowns only; the wardrobe shows a drawn thumbnail instead of a photo */

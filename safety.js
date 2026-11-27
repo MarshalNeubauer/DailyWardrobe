@@ -5,20 +5,10 @@
 
 /* ---- storage failures ---- */
 // is this error (or IndexedDB error event) a failure of the device's storage: marked by txs/atomic in app.js, a full disk, or a failed request
-import {ask,db,dbGone,fill,metaPut,queue} from './app.js';
+import {ask,cardAt,db,dbGone,fill,metaPut,queue,storeErr,storeFailText,storeFailure} from './app.js';
 import {esc} from './photo-keys.js';
-import {$,applyCustom,items,setWardrobe,settings,takeSettings} from './core.js';
+import {$,applyCustom,askPersist,items,setWardrobe,settings,takeSettings} from './core.js';
 import {planDirty} from './today-plan.js';
-function storeFailure(e){if(!e)return false;if(e.dwStore||e.name==='QuotaExceededError')return true;const t=e.target;
-  return !!(t&&typeof IDBRequest!=='undefined'&&(t instanceof IDBRequest||t instanceof IDBTransaction))}
-const storeErr=e=>e&&(e.name||e.message?e:e.target&&e.target.error)||{};
-const storeFull=e=>{const x=storeErr(e);return x.name==='QuotaExceededError'||/quota|disk is full|no space/i.test(x.message||'')};
-// the sentence a person reads
-function storeFailText(e){const x=storeErr(e),why=String(x.message||'').trim().replace(/\.$/,'');
-  if(storeFull(e))return 'Couldn’t save: your phone’s storage is full. Free some space, then try again.';
-  if(dbGone(x))return 'Couldn’t save: your phone closed the app’s storage. Close the app fully and open it again.';
-  if(e&&e.dwStore==='read')return `Couldn’t read your wardrobe${why?': '+why:''}. Close the app and open it again.`;
-  return `Couldn’t save: ${why||'the browser stopped it'}. Try again.`}
 let storeToldAt=0;
 // tell the person a save failed (one failed save can reject more than one promise: said once)
 function saveFailed(e){console.warn('storage failure',e);if(dbDown)return;const now=Date.now();if(now-storeToldAt<1500)return;storeToldAt=now;toast(storeFailText(e),7000)}
@@ -35,7 +25,7 @@ function setStoreToldAt(v){storeToldAt=v}
    each (the three declared further down can't be read before their own line has run, as in the classic script); a module imports them.
    Above the file's first call that can throw (db, when app.js did not load; then acts): the names are then still the page's, as a
    classic script's were; the five consts declared further down are handed over above the handler */
-Object.assign(globalThis,{storeFailure,storeFailText,saveFailed,errNote,storageDown,askPersist,safetyStart,tagFailText,tagFailed,retryTag,guardUnsaved,adoptBackupSettings,setStoreToldAt});
+Object.assign(globalThis,{saveFailed,errNote,storageDown,safetyStart,tagFailText,tagFailed,retryTag,guardUnsaved,adoptBackupSettings,setStoreToldAt});
 Object.defineProperties(globalThis,{dbDown:{get:()=>dbDown},tagWhy:{get:()=>tagWhy,set:v=>{tagWhy=v}},tagNetLast:{get:()=>tagNetLast,set:v=>{tagNetLast=v}}});
 db.then(()=>{dbDown=false},e=>{dbDown=true;dbErr=e});
 /* a storage failure nobody caught is shown; every other rejection is left alone */
@@ -97,14 +87,6 @@ ${x.message?`<p class="nostore-why">What the browser said: ${esc(String(x.messag
   const t=document.getElementById('toast');if(t)t.classList.remove('on','act');
   el.querySelector('button').focus();return true}
 
-/* ---- keep the wardrobe: without this the browser may clear a site's storage when the device runs short. Asked once,
-   after the first item is saved (or at the next start of a wardrobe that already has items). ---- */
-async function askPersist(){
-  try{if(localStorage.getItem('persist_asked')||!navigator.storage||!navigator.storage.persist)return null;
-    localStorage.setItem('persist_asked',Date.now());
-    const kept=(navigator.storage.persisted&&await navigator.storage.persisted())||await navigator.storage.persist();
-    localStorage.setItem('persist_ok',kept?'1':'0');return kept}
-  catch(e){console.warn('storage not made persistent',e);return null}}
 
 /* ---- the sharp tagging copies and sharp close-ups (tag-request.js keeps them in Cache Storage as tagimg/<id>, closeimg/<id>) of items that no longer exist are
    removed at start-up, not when an item is deleted: a deletion can be undone for a few seconds. Never with an empty
@@ -176,7 +158,7 @@ async function adoptBackupSettings(local,data){
 Object.assign(globalThis,{errReport,oneStop,tagNetText,tagFailNote});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,errList,get errTapAt(){return errTapAt},set errTapAt(v){errTapAt=v},pruneTagImgs,get storeToldAt(){return storeToldAt},set storeToldAt(v){storeToldAt=v},get tagWhy(){return tagWhy},set tagWhy(v){tagWhy=v},get tagNetLast(){return tagNetLast},set tagNetLast(v){tagNetLast=v},errNote,storageDown,tagFailNote,tagFailText,tagFailed};
-export {storeFailure,storeFailText,storeToldAt,saveFailed,dbDown,errTapAt,errList,errNote,errReport,storageDown,askPersist,pruneTagImgs,safetyStart,tagWhy,tagNetLast,oneStop,tagFailText,tagNetText,tagFailed,tagFailNote,retryTag,guardUnsaved,adoptBackupSettings,setStoreToldAt};
+export {storeToldAt,saveFailed,dbDown,errTapAt,errList,errNote,errReport,storageDown,pruneTagImgs,safetyStart,tagWhy,tagNetLast,oneStop,tagFailText,tagNetText,tagFailed,tagFailNote,retryTag,guardUnsaved,adoptBackupSettings,setStoreToldAt};
 /* "Try again" on the page shown when the wardrobe can't be opened (act.js) */
 function nostoreAgainTap(){location.reload()}
 acts({nostoreAgainTap});

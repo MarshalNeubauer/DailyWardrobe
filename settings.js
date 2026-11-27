@@ -9,7 +9,7 @@
    answers a file asked for under another folder with the root's copy, so an import resolved against the root ran the file a second
    time; bus.js keeps nothing on the page, so a second copy of it is harmless). Everything else it still reads as globals. */
 import {on,heard,emit} from './bus.js';
-import {$,DAY_NAMES,MATERIALS_BY,applyCustom,dayRecs,isoKey,key,keySettings,mergeSettings,nowMs,occOf,ownMats,setWardrobe,settings,stampSettings,todayDate,wearsJacket,wearsTie} from './core.js';
+import {$,DAY_NAMES,MATERIALS_BY,applyCustom,dayRecs,isoKey,key,keyDate,keySettings,mergeSettings,nowMs,occOf,ownMats,setWardrobe,settings,stampSettings,todayDate,wearsJacket,wearsTie} from './core.js';
 import {inviteOver,layerClose,layerOpen,tell} from './ui.js';
 import {backDrop,backKind,backPush} from './back.js';
 import {pagesOn,subShown} from './nav.js';

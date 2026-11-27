@@ -5,12 +5,10 @@
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit,ask} from './bus.js';
 import {esc} from './photo-keys.js';
-import {ACCENT_MAX,COLORS,SHADE_MAX,accentsOf,colName,items,primaryCol,shadeFor,sockPatterned,sockToeKey} from './core.js';
-import {cap1,imgOf,put,queue} from './app.js';
+import {ACCENT_MAX,COLORS,SHADE_MAX,accentsOf,colName,items,primaryCol,shadeFor,sockPatterned,sockToeKey,texSig} from './core.js';
+import {cap1,cardOf,imgOf,put,queue} from './app.js';
 import {itemThumb} from './draw.js';
-import {texSig} from './tag-request.js';
 import {measureCloth,paperKey,paperNow,paperOf} from './measure.js';
-import {cardOf} from './add-ids.js';
 import {planDirty} from './today-plan.js';
 import {acts} from './act.js';
 import {lookHasPat} from './look-base.js';

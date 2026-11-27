@@ -9,8 +9,8 @@ import {on} from './bus.js';
 import {backWanted} from './back.js';
 import {addGate,askConfirm,inviteOver,renderConnUI} from './ui.js';
 import {settingsOpen,settingsPart,settingsSummaries} from './settings.js';
-import {connKeep,connRestored,tx,txs} from './app.js';
-import {dayRecs,items,mergeState} from './core.js';
+import {connKeep,connRestored,endedAnswer,inviteEnded,tx,txs} from './app.js';
+import {acctBase,acctCall,acctEsc,dayRecs,hasInviteHash,iosInSafari,items,mergeState,myInviteLink,syncMark} from './core.js';
 import {toast} from './toast.js';
 import {acts} from './act.js';
 const ACCT_CAPS=[['item','Item pictures'],['tag','Photo readings'],['pattern','Pattern readings'],['describe','Color & pattern lookups']];
@@ -187,10 +187,6 @@ async function acctLocal(){let n=0,d=0,s=0;
   return {items:n,days:d,sample:s,any:n>0||d>0}}
 /* ---- iPhone: an invitation opens in Safari, but a Home Screen app keeps storage of its own, so it starts unconnected. Testers are
    told to add the app to the Home Screen and paste their link there; the link can be copied from Connection any time. ---- */
-const iosDevice=()=>/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-const standaloneApp=()=>navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
-const iosInSafari=()=>iosDevice()&&!standaloneApp();
-const myInviteLink=()=>{const b=acctBase();return b&&b.tok?location.origin+location.pathname+'#invite='+b.tok+'&w='+encodeURIComponent(b.url):''};
 async function copyInviteLink(){const l=myInviteLink();if(!l)return false;
   try{await navigator.clipboard.writeText(l);acctToast('Your invitation link is copied.');return true}
   catch{const f=document.querySelector('#acct-mylink');if(f){f.hidden=false;f.value=l;f.select()}acctToast('Copy the link shown under the button.',5000);return false}}
@@ -290,7 +286,7 @@ function acctRetryLink(){if(acctWhy==='offline'&&hasInviteHash()&&!acctLinkRun)c
 function acctEndedUI(){setAcct({...acct,me:null,state:'',invites:null});try{applyRole();renderAccountUI();acctLinkDrawn();addGate()}catch(e){console.warn(e)}}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. Above the file's first top-level call that can throw (acctStart, then acts): the names are then still the page's */
-Object.assign(globalThis,{acctFailText,connectFromLink,acctTyped,iosInSafari,myInviteLink,limitNote});
+Object.assign(globalThis,{acctFailText,connectFromLink,acctTyped,limitNote});
 Object.defineProperties(globalThis,{acctWhy:{get:()=>acctWhy},inviteChecking:{get:()=>inviteChecking,set:v=>{inviteChecking=v}}});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-summaries',()=>applyRole());
@@ -298,7 +294,7 @@ on('invite-ended',()=>acctEndedUI());   // an ended invitation (who.js inviteEnd
 on('connection-typed',(url,code)=>acctTyped(url,code).catch(e=>console.warn('connection not changed',e)));   // another address or code typed in Settings → Connection
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get acctLinkRun(){return acctLinkRun},acctPending,dropInviteHash,homeScreenGuide,loadAccount,renderAccountUI,get inviteChecking(){return inviteChecking},set inviteChecking(v){inviteChecking=v},get acctWhy(){return acctWhy},connectFromLink};
-export {dropInviteHash,acctWhy,inviteChecking,acctLinkRun,acctFailText,connectFromLink,acctTyped,acctPending,iosInSafari,myInviteLink,homeScreenGuide,limitNote,loadAccount,renderAccountUI,acctEndedUI};
+export {dropInviteHash,acctWhy,inviteChecking,acctLinkRun,acctFailText,connectFromLink,acctTyped,acctPending,homeScreenGuide,limitNote,loadAccount,renderAccountUI,acctEndedUI};
 acctStart();
 /* what Settings' account controls do (act.js): a tester's "Copy my invitation link"; the owner's Create, a new link's field (focus selects
    it) and Copy, and a tester's New link, Revoke and Delete their data (the invitation's id in data-id) */

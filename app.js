@@ -5,7 +5,7 @@
    chain), ui.js and the rest, about.js last.
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
 import {emit} from './bus.js';   // the Wardrobe's redraw: itemsheet.js pins renderWardrobe for 'wardrobe-changed'
-import {$,ACCENT_MAX,BELT_MATS,COLORS,FABRIC,LEATHERS,MATERIALS_BY,METAL,PATS_BY,SHOE_NAP,SHOE_STYLES,SHOE_TEXTILES,TEXTURE_TYPES,TYPES,accentsFor,cleanDay,cleanRecord,cleanSettings,colOf,hexRgb,itemFields,items,labHex,matsFor,nextStamp,normCol,normColFor,normPat,ownMatName,rgbLab,watchOpts} from './core.js';
+import {$,ACCENT_MAX,BELT_MATS,COLORS,FABRIC,LEATHERS,MATERIALS_BY,METAL,PATS_BY,SHOE_NAP,SHOE_STYLES,SHOE_TEXTILES,TAG_Q,TEXTURE_TYPES,TYPES,accentsFor,cleanDay,cleanRecord,cleanSettings,colOf,hexRgb,itemFields,items,labHex,matsFor,nextStamp,normCol,normColFor,normPat,ownMatName,rgbLab,watchOpts} from './core.js';
 import {esc} from './photo-keys.js';
 let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 
@@ -389,10 +389,53 @@ function setConnReady(v){connReady=v}
 function setDbConn(v){dbConn=v}
 function setDbCur(v){dbCur=v}
 function setDbWiping(v){dbWiping=v}
+/* (moved from add-ids.js with its text unchanged, the restructure S6a) */
+/* a card by its id (Confirm, Save all) or, as before, its place (the sample, the import, tests) */
+const cardOf=k=>typeof k==='string'?queue.find(q=>q.id===k):queue[k];
+/* every handler drawn on a card finds it by its id when tapped (CR-1-08): qAt(id) is the card's place in the list at that moment (-1 once
+   gone), qh(q) writes that call into the markup; a place written in when the card was drawn pointed at another card once the list moved */
+const qAt=id=>queue.findIndex(q=>q.id===id);
+/* a data-act control (act.js) carries its card's id as data-card (cardAt(q) writes it); cardIx(el) is that card's place, as qAt('id') was */
+const cardAt=q=>`data-card="${esc(q.id)}"`;
+const cardIx=el=>qAt(el.dataset.card);
+/* (moved from who.js with its text unchanged, the restructure S6a) */
+/* an invitation that was switched off: said once, and the app stops trying (localStorage.invite_ended holds that code) */
+const ENDED='Your invitation has ended. Your wardrobe stays on this phone, and the app keeps working without a connection.';
+/* (j: the server's answer) a tester's code the server doesn't know at all (403 'forbidden token': its storage was lost, or the account
+   deleted) is also marked invite_lost: the server holds no copy of this phone's wardrobe, so a new invitation link keeps the wardrobe and
+   backs it up there instead of clearing it (account.js connectFromLink; 2026-11-15, the audit: nothing said how to recover) */
+function inviteEnded(token,j){if(j&&j.error==='forbidden token')try{localStorage.setItem('invite_lost',token)}catch{}
+  if(localStorage.getItem('invite_ended')===token)return;localStorage.setItem('invite_ended',token);tell(endedTold(j));
+  emit('invite-ended')}   // what said "Connected" and "backed up" says so too: the Backup line (sync-status.js) and the account box (account.js), through bus.js
+/* what the one-time message says (fix round 3): a link the owner replaced with a new one (worker/people.js, 'invite off' with replaced) says the
+   new link opens the same wardrobe; an account deleted (W1-6-03: after Delete everything on another phone this phone only heard "Your
+   invitation has ended") says the backup was deleted; else ENDED */
+const ENDED_NEW='Your invitation link was replaced by a new one. Ask the person who invited you for it: it opens the same wardrobe. Until then your wardrobe stays on this phone.';
+const ENDED_GONE='Your wardrobe’s backup on the server was deleted, from another phone or by the person who invited you, so this invitation no longer works. Your wardrobe stays on this phone, and the app keeps working without a connection.';
+const endedTold=j=>j&&j.replaced?ENDED_NEW:j&&j.error==='forbidden token'?ENDED_GONE:ENDED;
+/* the server's answer means this invitation is over: switched off (403 'invite off'), or, for a tester, deleted (the account deleted
+   on another phone, or its data deleted by the owner: the code is unknown, 403 'forbidden token'). A tester's phone said "Backups aren't
+   available on this server yet" and kept trying. For the owner a refused code is a typing mistake, said as it is. */
+const endedAnswer=(status,j)=>status===403&&!!j&&(j.error==='invite off'||j.error==='forbidden token'&&typeof isTester==='function'&&isTester());
+/* (moved from safety.js with its text unchanged, the restructure S6a) */
+function storeFailure(e){if(!e)return false;if(e.dwStore||e.name==='QuotaExceededError')return true;const t=e.target;
+  return !!(t&&typeof IDBRequest!=='undefined'&&(t instanceof IDBRequest||t instanceof IDBTransaction))}
+const storeErr=e=>e&&(e.name||e.message?e:e.target&&e.target.error)||{};
+const storeFull=e=>{const x=storeErr(e);return x.name==='QuotaExceededError'||/quota|disk is full|no space/i.test(x.message||'')};
+// the sentence a person reads
+function storeFailText(e){const x=storeErr(e),why=String(x.message||'').trim().replace(/\.$/,'');
+  if(storeFull(e))return 'Couldn’t save: your phone’s storage is full. Free some space, then try again.';
+  if(dbGone(x))return 'Couldn’t save: your phone closed the app’s storage. Close the app fully and open it again.';
+  if(e&&e.dwStore==='read')return `Couldn’t read your wardrobe${why?': '+why:''}. Close the app and open it again.`;
+  return `Couldn’t save: ${why||'the browser stopped it'}. Try again.`}
+/* (moved from item-view.js with its text unchanged, the restructure S6a) */
+let editing=null;
+/* the setter item-view.js calls to assign editing (it opens, steps and closes the sheet) */
+function setEditing(v){editing=v}
 /* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. At the end: nothing
    above it can throw at load (the database's failures are its promises'), and the consts it hands over are declared all the way down */
-Object.assign(globalThis,{dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,imgOf,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping});
-Object.defineProperties(globalThis,{flt:{get:()=>flt,set:v=>{flt=v}},queue:{get:()=>queue,set:v=>{queue=v}},view:{get:()=>view,set:v=>{view=v}},sel:{get:()=>sel,set:v=>{sel=v}},dbCur:{get:()=>dbCur,set:v=>{dbCur=v}},dbConn:{get:()=>dbConn,set:v=>{dbConn=v}},dbWiping:{get:()=>dbWiping,set:v=>{dbWiping=v}},connReady:{get:()=>connReady,set:v=>{connReady=v}},aiError:{get:()=>aiError,set:v=>{aiError=v}},aiModel:{get:()=>aiModel,set:v=>{aiModel=v}}});
+Object.assign(globalThis,{dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,imgOf,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping,ENDED,inviteEnded,endedAnswer,storeFailure,storeFailText,cardOf,qAt,cardAt,cardIx,setEditing});
+Object.defineProperties(globalThis,{flt:{get:()=>flt,set:v=>{flt=v}},queue:{get:()=>queue,set:v=>{queue=v}},view:{get:()=>view,set:v=>{view=v}},sel:{get:()=>sel,set:v=>{sel=v}},dbCur:{get:()=>dbCur,set:v=>{dbCur=v}},dbConn:{get:()=>dbConn,set:v=>{dbConn=v}},dbWiping:{get:()=>dbWiping,set:v=>{dbWiping=v}},connReady:{get:()=>connReady,set:v=>{connReady=v}},aiError:{get:()=>aiError,set:v=>{aiError=v}},aiModel:{get:()=>aiModel,set:v=>{aiModel=v}},editing:{get:()=>editing,set:v=>{editing=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,busyLabelFor,cropSwatch,fitNav,get sel(){return sel},set sel(v){sel=v},get view(){return view},set view(v){view=v},get flt(){return flt},set flt(v){flt=v},get queue(){return queue},set queue(v){queue=v},addTombstones,S,ask,atomic,deadCanvas,deadPic,del,fill,generateSwatch,imgOf,normTag,putRaw,refreshSwatch,shrink,updateSwatchParam,db,get dbConn(){return dbConn},put,afterDom,connKeep,connRestored,metaGet,metaPut,texSwatches,tx,txs};
-export {flt,queue,view,sel,dbCur,dbConn,dbWiping,dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connReady,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,cropSwatch,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,aiError,aiModel,busyLabelFor,fitNav,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,imgOf,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,busyLabelFor,cropSwatch,fitNav,get sel(){return sel},set sel(v){sel=v},get view(){return view},set view(v){view=v},get flt(){return flt},set flt(v){flt=v},get queue(){return queue},set queue(v){queue=v},addTombstones,S,ask,atomic,deadCanvas,deadPic,del,fill,generateSwatch,imgOf,normTag,putRaw,refreshSwatch,shrink,updateSwatchParam,db,get dbConn(){return dbConn},put,afterDom,connKeep,connRestored,metaGet,metaPut,texSwatches,tx,txs,qAt,cardIx,cardOf,get editing(){return editing},set editing(v){editing=v}};
+export {flt,queue,view,sel,dbCur,dbConn,dbWiping,dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connReady,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,cropSwatch,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,aiError,aiModel,busyLabelFor,fitNav,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,imgOf,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping,ENDED,inviteEnded,endedAnswer,storeFailure,storeFailText,cardOf,qAt,cardAt,cardIx,editing,ENDED_NEW,ENDED_GONE,endedTold,storeErr,storeFull,setEditing};

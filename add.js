@@ -10,13 +10,13 @@
    they never call renderAdd (the restructure S3c, 2026-11-26) */
 import {on,serve} from './bus.js';
 import {aiSignals,applyWb,closeRead,measureAndApply,measureCard,measureCloth,nearestCols,wbGains} from './measure.js';
-import {aiError,aiModel,ask,fill,generateSwatch,imgOf,keepFocus,loadImg,normTag,queue,setAiError,setAiModel,shrink} from './app.js';
-import {CLOSE_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,customForTag,tagFixes} from './tag-request.js';
-import {cardAt,cardIx,cardOf,cardReading,needType} from './add-ids.js';
+import {aiError,aiModel,ask,cardAt,cardIx,cardOf,fill,generateSwatch,imgOf,keepFocus,loadImg,normTag,queue,setAiError,setAiModel,shrink} from './app.js';
+import {customForTag,tagFixes} from './tag-request.js';
+import {cardReading,needType} from './add-ids.js';
 import {toast} from './toast.js';
 import {addKeep,addKeepSoon,addRestoreState,addWatch} from './add-keep.js';
 import {aiFields,readAbort,refineFromCloseup,takeExtras} from './tagging.js';
-import {$,COLORS,TYPES,tagTypesNow,watchOpts} from './core.js';
+import {$,CLOSE_MAX,COLORS,PH_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,TYPES,tagTypesNow,watchOpts} from './core.js';
 import {addGate,inviteOver,isConnected,noMotion,plainErr} from './ui.js';
 import {npsDraw,npsId,renderAddFor} from './add-sheet.js';
 import {cardReady,saveAll,saveAllOn} from './add-save.js';

@@ -2,17 +2,14 @@
    Arrives date (one rule with the item sheet), and checkArrivals, which puts items back in rotation once they arrive or are back. */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit,ask} from './bus.js';
-import {cardAt,cardIx,cardOf} from './add-ids.js';
-import {put,queue} from './app.js';
+import {cardAt,cardIx,cardOf,put,queue} from './app.js';
 import {addKeep} from './add-keep.js';
-import {$,TYPES,arriveN,di,isoKey,items,todayDate} from './core.js';
+import {$,TYPES,arriveN,di,fmtDay,isoKey,items,keyDate,todayDate} from './core.js';
 import {toast} from './toast.js';
-import {keyDate} from './days.js';
 import {planDirty} from './today-plan.js';
 import {acts} from './act.js';
 /* bought but not here yet: the item goes into the wardrobe out of rotation; with an arrival date it joins the outfits from the day
    after (inRotation in core.js), and once that day comes it is put back in rotation for good (checkArrivals) */
-const fmtDay=s=>{const [y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString(undefined,{month:'short',day:'numeric'})};
 const orderHint=a=>a?`It joins your outfits from the day after ${fmtDay(a)}.`:'It stays out of your outfits until you put it back in rotation from the Wardrobe. Add a date to have that happen by itself.';
 /* how many: shirts and socks can be added several at once (2026-11-14, the owner: "white shirts: tap a plus or minus for the amount
    before I add"). Each is an item of its own (its own id, so the planner rotates and the laundry counts them apart), the same tags and
@@ -49,8 +46,8 @@ function cardArrives(el){setArrives(cardIx(el),el.value)}
    How many and On the way rows), itemsheet.js (the Arrives rule), stats, wardrobe, care and shop (fmtDay), and today, start and care
    (checkArrivals); setOrder, setArrives and checkArrivals are also called by the tests. Before acts(), the file's one call that can
    throw (act.js not loaded): the names are then still the page's, as a classic script's were (start-up calls checkArrivals) */
-Object.assign(globalThis,{fmtDay,orderHint,qtyOf,qtyLabel,qtyRow,orderRow,arriveVal,ARRIVE_PAST,checkArrivals});
+Object.assign(globalThis,{orderHint,qtyOf,qtyLabel,qtyRow,orderRow,arriveVal,ARRIVE_PAST,checkArrivals});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,setArrives,setOrder,checkArrivals};
-export {fmtDay,orderHint,qtyOf,qtyLabel,qtyRow,orderRow,setOrder,arriveVal,ARRIVE_PAST,setArrives,checkArrivals};
+export {orderHint,qtyOf,qtyLabel,qtyRow,orderRow,setOrder,arriveVal,ARRIVE_PAST,setArrives,checkArrivals};
 acts({cardQty,cardOrder,cardArrives});

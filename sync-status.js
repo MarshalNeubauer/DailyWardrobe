@@ -2,10 +2,11 @@
    restructure S3b (2026-11-26), which moved the backup's state (the status, the pause until the next UTC day, the words for an offline
    server and for Connection and the setup) into sync.js and an ended invitation into who.js; this file draws the line from them. */
 import {on} from './bus.js';
-import {$,items} from './core.js';
+import {$,items,syncUrl} from './core.js';
 import {backupSummary} from './settings.js';
 import {inviteOver} from './ui.js';
-import {WIPED_SYNC,safariTab,syncPaused,syncUrl,syncWaiting,tabBrowser} from './sync.js';
+import {WIPED_SYNC,safariTab,syncPaused,syncWaiting,tabBrowser} from './sync.js';
+import {ENDED} from './app.js';
 /* a backup already made is said while the next one runs: synced() clears sync_status while `syncing` is still true, and this line read
    "Not backed up yet." under a summary saying "Backed up today" (audit 2026-11-13) */
 function showSyncStatus(){const sum=$('#sum-backup');if(sum)try{sum.textContent=backupSummary(localStorage.getItem('worker_url'))}catch{}   // the Backup category's summary follows (it read "Backed up today" while offline)

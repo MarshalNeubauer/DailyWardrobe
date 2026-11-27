@@ -5,14 +5,13 @@
    saves it (setq on the Add card, sete in the editor). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit,askFor} from './bus.js';
-import {$,COLORS,COLOR_OPTS,COLS_BY,COL_ALIAS,CUSTOM_COL,CUSTOM_PAT,DIAL_COLS,LUMS,PATS_BY,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colBaseFor,colName,colsFor,dE00,hexRgb,items,labOf,matTypeOne,matTypeWord,matsFor,normPat,ownColFind,ownKeyNorm,ownMatName,ownMats,ownNameClean,ownNameShort,ownPatFind,patBase,patName,patNameTaken,patOf,primaryCol,rgbLab,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand} from './core.js';
+import {$,COLORS,COLOR_OPTS,COLS_BY,COL_ALIAS,CUSTOM_COL,CUSTOM_PAT,DIAL_COLS,LUMS,PATS_BY,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colBaseFor,colName,colsFor,dE00,hexRgb,items,labOf,matTypeOne,matTypeWord,matsFor,normPat,ownColFind,ownKeyNorm,ownMatName,ownMats,ownNameClean,ownNameShort,ownPatFind,paperCloth,patBase,patName,patNameTaken,patOf,primaryCol,rgbLab,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand} from './core.js';
 import {esc,srcOk} from './photo-keys.js';
-import {ask,cap1,generateSwatch,imgOf,keepFocus,put,queue,refreshSwatch} from './app.js';
-import {cardOf} from './add-ids.js';
+import {ask,cap1,cardOf,editing,generateSwatch,imgOf,keepFocus,put,queue,refreshSwatch} from './app.js';
 import {addKeep} from './add-keep.js';
 import {planDirty} from './today-plan.js';
 import {closeRead,measHint,measKL,measureCard,measureCloth,measureParts,multiCol,nearestCols,paperCopy,paperNow,paperOf} from './measure.js';
-import {NEED_CONN,closeupBtn,closeupPick,cuGot,cuOpen,cuTouch,isConnected,layerClose,layerInert,layerOpen,tell} from './ui.js';
+import {NEED_CONN,closeupBtn,closeupPick,cuGot,cuOpen,cuTouch,isConnected,layerClose,layerInert,layerOpen,sheetSwipe,tell} from './ui.js';
 import {backBorrow,backOn,backOver,backReturn} from './back.js';
 import {toast} from './toast.js';
 import {addCustomColor,addCustomPattern,addOwnMaterial,groupOf,ownColOffer,removeCustom,removeOwnMaterial,renderCustomUI,typePl} from './own-lists.js';

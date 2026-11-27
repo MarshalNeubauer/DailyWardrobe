@@ -4,13 +4,13 @@
    pins renderToday for it */
 import {emit} from './bus.js';
 import {fabricDef} from './draw.js';
-import {$,MONTH_EASE,MONTH_MS,colName,dayRecs,isWorkday,itemName,key,occOf,offName,patName,primaryCol,shortCol,todayDate,wearsJacket} from './core.js';
+import {$,MONTH_EASE,MONTH_MS,colName,dayRecs,isWorkday,itemName,key,keyDate,occOf,offName,patName,primaryCol,shortCol,todayDate,wearsJacket} from './core.js';
 import {cache,hasOutfit,planFor,planMonth} from './today-plan.js';
 import {PAIR_DAYS,pairSeen,rateOutfit} from './planner.js';
 import {sel,setSel,setView,view} from './app.js';
 import {esc} from './photo-keys.js';
-import {keyDate} from './days.js';
 import {acts} from './act.js';
+import {foldEdge,foldQuiet,keepInView,monthBelow,pageScroll,revealNeed} from './ui.js';
 /* ---- month view (wear plan): a calendar of fabric stacks, from the design concept ---- */
 /* stacked bands for one outfit: jacket, trousers on blazer days, shirt, tie (drawn from the tagged fabrics) */
 let stkN=0;
