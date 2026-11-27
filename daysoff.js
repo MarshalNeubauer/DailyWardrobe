@@ -164,3 +164,4 @@ acts({occClear,countryPick,dayOffAddTap,occAddTap});
 serve('day-off-add',dayOffAdd);
 serve('holidays-refresh',refreshHolidays);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
 serve('formal-ui',renderFormalUI);   // the restructure S6f: history.js redraws Settings' occasions
+serve('country-codes',()=>COUNTRY_CODES);serve('holiday-country-set',setHolidayCountry);   // the restructure S6g: setup.js's holidays (without this file the setup fetches none)

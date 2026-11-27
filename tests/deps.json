@@ -1,6 +1,6 @@
 {
  "note": "Which file uses which other file's top-level names (tests/deps.test.js). It may only shrink: `node tests/deps.test.js --update` takes off what went away; a new edge is added by hand, with the reason in the pull request.",
- "edges": 684,
+ "edges": 683,
  "files": {
   "about.js": ["act.js","app.js","bus.js","core.js","toast.js","ui.js"],
   "account.js": ["act.js","app.js","back.js","bus.js","core.js","merge.js","settings.js","sync.js","toast.js","ui.js","who.js"],
@@ -77,7 +77,7 @@
   "safety.js": ["act.js","app.js","bus.js","core.js","toast.js","ui.js"],
   "scorecard.js": ["act.js","app.js","bus.js","core.js","days.js","draw.js","history.js","month.js","planner.js","today-plan.js","ui.js"],
   "settings.js": ["act.js","back.js","bus.js","core.js","nav.js","toast.js","ui.js"],
-  "setup.js": ["act.js","app.js","back.js","bus.js","core.js","days.js","daysoff.js","merge.js","nav.js","settings.js","today.js","ui.js","weather.js"],
+  "setup.js": ["act.js","app.js","back.js","bus.js","core.js","days.js","merge.js","nav.js","settings.js","today.js","ui.js","weather.js"],
   "shop.js": ["act.js","analysis.js","app.js","back.js","bus.js","core.js","draw.js","planner.js","settings.js","today-plan.js","ui.js"],
   "snapshots.js": ["act.js","app.js","bus.js","core.js","merge.js","sync.js","toast.js","ui.js"],
   "srgb.js": [],

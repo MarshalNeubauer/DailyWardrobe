@@ -33,7 +33,7 @@
   "kit": ["add"],
   "account": ["backup", "who"],
   "shop": ["analysis"],
-  "setup": ["weather", "daysoff"],
+  "setup": ["weather"],
   "cost": ["locale"]
  },
  "files": {
@@ -228,7 +228,7 @@
   "daysoff.js": {
    "class": "optional",
    "group": "daysoff",
-   "startFails": "setup.js needs daysoff.js, and start-up asks setup.js setup-start (need): start.js startFailed (the toast \"Something went wrong while the app was starting\"), measured on main 4b84222 (the restructure S6f), for the owner to choose"
+   "startFails": "start-up asks daysoff.js holidays-refresh (need): start.js startFailed (the toast \"Something went wrong while the app was starting\"), measured on main 4b84222 (the restructure S6f) and again after S6g (setup.js no longer needs daysoff.js: the setup runs and fetches no holidays), for the owner to choose"
   },
   "weather.js": {
    "class": "optional",
