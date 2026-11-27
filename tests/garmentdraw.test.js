@@ -8,7 +8,12 @@ const {execSync}=require('child_process');
 // (cargoPockets), and the existing types' drawings byte for byte as on origin/main.
 const garmentdraw=async({ok,chromium,url,ROOT})=>{
   // (main's draw.js is a module since C3: its export line blanked, as the vm tests read a module: tests/appsrc.js)
-  let old='';try{old=require('./appsrc').asScript(execSync('git show origin/main:draw.js',{cwd:ROOT,encoding:'utf8',maxBuffer:64e6}))}catch(e){}
+  // its imports are handed in as the app loads them: each named file's exports, imported in the page (the page's own instances);
+  // bus.js's serve, on and emit are stand-ins, so the old copy never takes over the page's sockets or tells its screens anything
+  // (since S6p draw.js imports bus.js and the painter's files, which put nothing on globalThis)
+  let old='',imps=[];try{const raw=execSync('git show origin/main:draw.js',{cwd:ROOT,encoding:'utf8',maxBuffer:64e6});old=require('./appsrc').asScript(raw);
+    if(old!==raw)imps=require('acorn').parse(raw,{ecmaVersion:'latest',sourceType:'module'}).body.filter(st=>st.type==='ImportDeclaration')
+      .map(st=>({from:st.source.value,names:st.specifiers.map(s=>s.local.name)}))}catch(e){old=''}
   const browser=await chromium.launch();const p=await browser.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
@@ -42,14 +47,16 @@ const garmentdraw=async({ok,chromium,url,ROOT})=>{
     ok(r.boot.includes('<svg')&&r.sneaker.includes('<svg'),'boots and sneakers already draw (shoe styles boot and sneaker)');
     // the existing types' drawings are unchanged (origin/main's draw.js evaluated in a scope of its own)
     // (its bridge goes to a stand-in globalThis, so the page's own draw.js names stay as they are)
-    if(old){const same=await p.evaluate(src=>{const O=new Function('globalThis',src+'\n;return {itemThumb,swatchSVG}')({});
+    if(old){const same=await p.evaluate(async([src,imps])=>{const I={},STAND={serve(){},on(){},emit(){return 0}};
+        for(const m of imps){const M=await import(new URL(m.from,location.href).href);for(const n of m.names)I[n]=m.from==='./bus.js'&&n in STAND?STAND[n]:M[n]}
+        const K=Object.keys(I),O=new Function('globalThis',...K,src+'\n;return {itemThumb,swatchSVG}')({},...K.map(k=>I[k]));
         const L=[{id:'a',type:'shirt',primaryColor:'lightblue',pattern:'solid'},{id:'b',type:'shirt',primaryColor:'white',secondaryColor:'navy',pattern:'stripe'},{id:'c',type:'blazer',primaryColor:'navy',pattern:'solid'},
           {id:'d',type:'suit',primaryColor:'charcoal',pattern:'pinstripe'},{id:'e',type:'pants',primaryColor:'grey',pattern:'solid'},{id:'f',type:'pants',primaryColor:'stone',pattern:'solid',trouserKind:'chinos'},
           {id:'g',type:'pants',primaryColor:'denim',pattern:'solid',trouserKind:'jeans'},{id:'h',type:'tie',primaryColor:'burgundy',secondaryColor:'navy',pattern:'stripe'},{id:'i',type:'shoes',primaryColor:'brown',shoeStyle:'loafer'},
           {id:'j',type:'overcoat',primaryColor:'charcoal'},{id:'k',type:'watch',primaryColor:'black',band:'leather'}];
         const z=s=>s.replace(/(th|sw)\d+-/g,'$1-');const bad=[];
         for(const it of L){if(z(O.itemThumb(it))!==z(HOOK.itemThumb(it)))bad.push(it.id+' thumb');if(z(O.itemThumb(it,true))!==z(HOOK.itemThumb(it,true)))bad.push(it.id+' full');if(z(O.swatchSVG(it,true))!==z(HOOK.swatchSVG(it,true)))bad.push(it.id+' swatch')}
-        return bad},old);
+        return bad},[old,imps]);
       ok(!same.length,'the existing types draw exactly as on origin/main (shirts, blazer, suit, dress pants, chinos, jeans, tie, shoes, coat, watch)'+(same.length?': '+same.join(', '):''))}
     else ok(true,'(origin/main not available: the old drawings were not compared)');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
