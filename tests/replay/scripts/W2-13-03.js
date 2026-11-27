@@ -24,11 +24,11 @@ L.run(async () => {
   await ph.kill(); // reopen the SAME phone/profile (storage kept), like Fay opening the app next day
   const ph2 = await L.P.openPhone({ profile: 'verify13-03', fresh: false, time: '2026-11-17T06:10:00+03:00' });
   await ph2.page.goto(lab.appUrl); await ph2.ready(); await L.sleep(5000);
-  const afterAttack = await ph2.page.evaluate(() => (typeof items !== 'undefined' ? items.map(i => i.id) : null));
+  const afterAttack = await ph2.page.evaluate(() => ('items' in HOOK ? HOOK.items.map(i => i.id) : null));
 
   // Fay rolls back to the copy kept before today's first change
   await ph2.tap(L.gear); await L.sleep(500);
-  await ph2.page.evaluate(() => { if (typeof setCatOpen === 'function') setCatOpen('backup', true); else if (typeof toggleCat === 'function') toggleCat('backup'); }); await L.sleep(2500);
+  await ph2.page.evaluate(() => { if ('setCatOpen' in HOOK && typeof HOOK.setCatOpen === 'function') HOOK.setCatOpen('backup', true); else if ('toggleCat' in HOOK && typeof HOOK.toggleCat === 'function') HOOK.toggleCat('backup'); }); await L.sleep(2500);
   // the copies list loads from the server; wait for it, and roll back only when there is a copy (none listed: nothing to roll back to)
   let opts = [];
   for (let i = 0; i < 20 && !opts.length; i++) { opts = await ph2.page.evaluate(() => [...document.querySelectorAll('#snap-list option')].map(o => o.value).filter(Boolean)); if (!opts.length) await L.sleep(500) }
@@ -40,7 +40,7 @@ L.run(async () => {
   await ph2.page.evaluate(() => { const b = document.querySelector('#ask-ok'); if (b) b.click(); }); await L.sleep(5000);
   }
   const status = await ph2.page.evaluate(() => (document.querySelector('#snap-status') || {}).innerText || '');
-  const afterRoll = await ph2.page.evaluate(() => (typeof items !== 'undefined' ? items.map(i => i.id) : null));
+  const afterRoll = await ph2.page.evaluate(() => ('items' in HOOK ? HOOK.items.map(i => i.id) : null));
   const srv = await L.call('GET', 'sync?lite=1', F.code);
   await ph2.kill();
   const ok = (afterAttack || []).length === 0 && (afterRoll || []).length === 0;

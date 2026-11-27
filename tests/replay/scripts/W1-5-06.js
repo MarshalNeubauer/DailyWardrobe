@@ -11,15 +11,15 @@ async function useColour(ph, name, key) {
 }
 V.run(async () => {
   const { A, B } = await V.startTwo('w06');
-  const cols = ph => ph.page.evaluate(() => ((settings.custom || {}).colors || []).map(c => c.name).join(','));
+  const cols = ph => ph.page.evaluate(() => ((HOOK.settings.custom || {}).colors || []).map(c => c.name).join(','));
   await V.offline(B, true);
-  const kB = await B.page.evaluate(() => addCustomColor({ name: 'Mossy fern', hex: '#0f3d2a', base: 'green', types: ['tie'], accent: false }));
+  const kB = await B.page.evaluate(() => HOOK.addCustomColor({ name: 'Mossy fern', hex: '#0f3d2a', base: 'green', types: ['tie'], accent: false }));
   await useColour(B, 'Green tie', kB);
-  const kA = await A.page.evaluate(() => addCustomColor({ name: 'Dusty teal', hex: '#2f6f73', base: 'blue', types: ['tie'], accent: false }));
+  const kA = await A.page.evaluate(() => HOOK.addCustomColor({ name: 'Dusty teal', hex: '#2f6f73', base: 'blue', types: ['tie'], accent: false }));
   await useColour(A, 'Navy dot tie', kA);
   const before = { colsA: await cols(A), colsB: await cols(B), tieA: await V.item(A, 'Navy dot tie'), tieB: await V.item(B, 'Green tie') };
   await V.sync(A); await V.offline(B, false); await V.sync(B); await V.sync(A);
-  const show = ph => ph.page.evaluate(() => items.filter(i => /Navy dot tie|Green tie/.test(i.name)).map(i => ({ n: i.name, p: i.primaryColor, known: !!COLORS[i.primaryColor], label: colName(i.primaryColor) })));
+  const show = ph => ph.page.evaluate(() => HOOK.items.filter(i => /Navy dot tie|Green tie/.test(i.name)).map(i => ({ n: i.name, p: i.primaryColor, known: !!HOOK.COLORS[i.primaryColor], label: HOOK.colName(i.primaryColor) })));
   const s = (await V.kvData()).settings;
   const after = { colsA: await cols(A), colsB: await cols(B), server: ((s.custom || {}).colors || []).map(c => c.name).join(','), tiesA: await show(A), tiesB: await show(B) };
   await V.openItem(B, 'Green tie'); const sheetColour = await B.page.locator('#item-view .colbtn[data-k="primaryColor"]').innerText(); await B.shot('w06-sheet');
