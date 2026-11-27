@@ -8,17 +8,19 @@
    A request sent with cache:'no-store' is left to the network (about.js checks for a newer sw.js that way).
    Cross-origin requests (the AI worker, weather) are never cached. Caches named dw-keep-* hold the app's own data
    (the sharp tagging copies, tag-request.js) and survive updates. */
-const CACHE='dw-v546';
+const CACHE='dw-v547';
 const ASSETS=['./','index.html','styles.css','merge.js','bus.js','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','srgb.js','photo-keys.js','mannequin.js','mq/vest.js','mq/suit.js','mq/suit-open.js','mq/shirt-tie.js','mq/shirt-open.js','draw.js','app.js','days.js','back.js','act.js','add.js','add-ids.js','fields.js','look-base.js','add-paste.js','add-card.js','add-more.js','add-sheet.js','add-save.js','add-keep.js','item-photo.js','item-view.js','itemsheet.js','history.js','missed.js','locks.js','pickscore.js','scorecard.js','today-plan.js','today.js','today-photofold.js','today-picture.js','today-gestures.js','month.js','photos.js','locale.js','settings.js','daysoff.js','weather.js','toast.js','who.js','theme.js','start.js','nav.js','ui.js','safety.js','dress.js','tag-request.js','migrate.js','measure.js','tagging.js','own-lists.js','pattern-read.js','asm-keys.js','assemble.js','asm-color.js','asm-watch.js','asm-pocket.js','asm-kinds.js','asm-ocp.js','asm-look.js','asm-cm-job.js','asm-today.js','asm-cm-page.js','watch/suit.png','watch/vest.png','watch/shirt-tie.png','watch/shirt-open.png','watch/leather.jpg','asm-gl.js','asm-worker.js','stats.js','care.js','cost.js','fav.js','wardrobe.js','colpick.js','checklist.js','look.js','pack.js','shop.js','sync-status.js','sync.js','sync-photos.js','snapshots.js','backupfile.js','account.js','remind.js','setup.js','kit.js','calendar.js','calparse.js','cal-worker.js','about.js','sw.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 // cache:'no-cache' revalidates each file with the server (ETag / Last-Modified): an unchanged file comes back as a small 304 instead of
 // being downloaded in full on every release ('reload' fetched all of them, about 1 MB, and twice on a first visit) (audit 2026-11-13)
+// (self, typed as what it is: a service worker's global scope, for the type check; the same object)
+const sw=/** @type {ServiceWorkerGlobalScope} */(/** @type {unknown} */(self));
 const ROOT=new URL('./',location.href),SCOPE=ROOT.pathname;   // the app's root, sw.js's folder (start.js registers it with that scope): '/DailyWardrobe/' on GitHub Pages, '/' in the tests
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(u=>new Request(u,{cache:'no-cache'})))))});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&!k.startsWith('dw-keep-')).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
-self.addEventListener('message',e=>{const d=e.data||{};
-  if(d.type==='skipWaiting')self.skipWaiting();
+sw.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(u=>new Request(u,{cache:'no-cache'})))))});
+sw.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&!k.startsWith('dw-keep-')).map(k=>caches.delete(k)))).then(()=>sw.clients.claim()))});
+sw.addEventListener('message',e=>{const d=e.data||{};
+  if(d.type==='skipWaiting')sw.skipWaiting();
   else if(d.type==='version'&&e.ports&&e.ports[0])e.ports[0].postMessage({version:+CACHE.replace(/\D+/g,'')||null})});
-self.addEventListener('fetch',e=>{
+sw.addEventListener('fetch',e=>{
   const req=e.request,url=new URL(req.url);
   if(req.method!=='GET'||url.origin!==location.origin||req.cache==='no-store')return;   // let the browser handle it
   e.respondWith((async()=>{
@@ -58,8 +60,8 @@ const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${
    morning reminder is off */
 async function reminderNote(){let line='',care='';const k=dayKey(new Date());
   try{const c=await caches.open('dw-keep-remind'),r=await c.match('remind.json'),q=await c.match('care.json');if(r)line=(await r.json())[k]||'';if(q)care=(await q.json())[k]||''}catch{}
-  if(care&&!line)return self.registration.showNotification('Due for cleaning',{body:care,icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'});
-  return self.registration.showNotification('Today’s outfit',{body:(line||'Open the app to see what to wear today.')+(care?'\n'+care:''),icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'})}
-self.addEventListener('push',e=>{e.waitUntil(reminderNote())});
-self.addEventListener('notificationclick',e=>{e.notification.close();
-  e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{const c=cs.find(x=>'focus' in x);return c?c.focus():self.clients.openWindow('./')}))});
+  if(care&&!line)return sw.registration.showNotification('Due for cleaning',{body:care,icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'});
+  return sw.registration.showNotification('Today’s outfit',{body:(line||'Open the app to see what to wear today.')+(care?'\n'+care:''),icon:'icon-192.png',badge:'icon-192.png',tag:'dw-morning'})}
+sw.addEventListener('push',e=>{e.waitUntil(reminderNote())});
+sw.addEventListener('notificationclick',e=>{e.notification.close();
+  e.waitUntil(sw.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{const c=cs.find(x=>'focus' in x);return c?c.focus():sw.clients.openWindow('./')}))});

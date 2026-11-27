@@ -2777,6 +2777,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - icons are 256-colour palette PNGs; the manifest has `id` "./" and separate `any`/`maskable` entries; one `theme_color` (#101820, the dark header in both themes)
 - `tests/assets.test.js`: every `ASSETS` file exists and every needed file is listed (one missing breaks every update)
 - `tests/sw.test.js`: reload stays put, a bump prompts and waits, Update switches, a waiting version runs on next open, takeover from the old network-first worker
+- sw.js reaches its scope through `sw`, `self` typed as `ServiceWorkerGlobalScope` in JSDoc (the same object): the type check's `sw` scope reads lib WebWorker, where `self` is a plain `WorkerGlobalScope` and `clients`, `skipWaiting`, `registration` and the events' `waitUntil`/`respondWith` were 17 errors (TCc, 2026-11-27); write `sw.`, not `self.`, in new code there
 
 ### `worker.js`
 
@@ -2799,6 +2800,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - a Worker may make 1,000 calls to Cloudflare's own services (KV, Durable Objects, queues) a request on the free plan, and 50 fetches to the outside (the "about 50 KV calls" written here before was the outside cap; CR-6-04, 2026-11-17); the free plan allows 1,000 KV writes and 1,000 lists a day for everyone together, which shapes the caps and the list-free reads below
 - not done (CR-6-04, Low): Roll back (`?snap=`), an older app's `GET /sync` and the clean-up's `refsInUse` read one KV value per photo in one request, so they break above about 1,000 photos (about 330 items with a photo, a small photo and a close-up); a "lite" Roll back that fetches photos with `?ph=` would lift it
 - every handler takes `(req, env, json, who, cors)`; `'* /sync'` and `GET /fetch` are in `ROUTES` without wrappers (2026-11-17)
+- the type check's `server` scope has no errors (TCc, 2026-11-27): JSDoc types only (backup.js's `SaveLock` typedef for `saveLock`, `putParted` and photostore.js `putWhole`; tables of pairs typed `[a, b][]`; worker/tag.js `tagSchema`'s `props` typed `typeof TAG_SCHEMA.properties & Record<string, object>`); the deployed code is the same: main's and the branch's files parse to the same ESTree (`C:\code\tcc-lab\astsame.js`, comments and parentheses dropped)
 
 #### Deploy
 

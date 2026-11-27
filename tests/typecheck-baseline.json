@@ -1,6 +1,6 @@
 {
  "note": "Type errors per file and scope (tests/typecheck.js). May only go down: fix errors, then `node tests/typecheck.js --update`.",
- "total": 114,
+ "total": 79,
  "files": {
   "page": {
    "asm-cm-job.js": 8,
@@ -26,15 +26,7 @@
   },
   "asm": {},
   "analysis": {},
-  "sw": {
-   "sw.js": 17
-  },
-  "server": {
-   "worker/backup.js": 4,
-   "worker/describe.js": 3,
-   "worker/people.js": 1,
-   "worker/photostore.js": 3,
-   "worker/tag.js": 7
-  }
+  "sw": {},
+  "server": {}
  }
 }

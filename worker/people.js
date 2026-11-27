@@ -360,7 +360,7 @@ async function dropTesterExtras(env, id) {
   if (log && Array.isArray(log.items) && log.items.some(m => m.id === id)) await env.WARDROBE.put(FEEDBACK_KEY, JSON.stringify({ items: log.items.filter(m => m.id !== id) }), { expirationTtl: FEEDBACK_MS / 1000 });
   const er = await env.WARDROBE.get(ERRORS_KEY, 'json');   // their error reports go with the account too
   if (er && Array.isArray(er.items) && er.items.some(m => m.id === id)) await env.WARDROBE.put(ERRORS_KEY, JSON.stringify({ items: er.items.filter(m => m.id !== id) }), { expirationTtl: ERR_DAYS * 86400 });
-  if (logHub(env)) for (const [kind, ms] of [['fb', FEEDBACK_MS], ['er', ERR_DAYS * 864e5]]) await hubLog(env, { op: 'drop', kind, id, days: Math.ceil(ms / 864e5) });   // (and from the logs object)
+  if (logHub(env)) for (const [kind, ms] of /** @type {[string, number][]} */ ([['fb', FEEDBACK_MS], ['er', ERR_DAYS * 864e5]])) await hubLog(env, { op: 'drop', kind, id, days: Math.ceil(ms / 864e5) });   // (and from the logs object)
   const use =`use:${id}:${utcDay()}`; if (await env.WARDROBE.get(use)) await env.WARDROBE.delete(use);
 }
 async function handleAccount(req, env, json, who) {

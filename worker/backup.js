@@ -95,6 +95,7 @@ async function keepSnapshots(env, m, body, ns = '', oldPv = null, n = null) {
   // W1-9-07; one behind kept copies under 2020-01-01, two writes for each date it sent: CR-6-08)
   const today = new Date().toISOString().slice(0, 10), near = SNAP_DAY.test(body.day || '') && Math.abs(Date.parse(body.day) - Date.parse(today)) <= 864e5;
   const day = near ? body.day : today, month = day.slice(0, 7);
+  /** @type {[string, number][]} the copy's key and how many days it is kept */
   const want = [[`${ns}snap:${day}`, SNAP_DAYS], [`${ns}snap:${month}`, SNAP_MONTHS]];
   // which of the two are already kept: asked for by a read each where KV can; else by one list, as before
   let have = new Set();
@@ -128,6 +129,7 @@ async function listSnapshots(env, ns = '') {
    are plain base64). lk: the save lock (saveLock) */
 const BIG_HEAD = /^\{"baseRev":(-?\d+),"day":("(?:[^"\\]|\\.)*")(?:,"reason":"(restore)")?,"data":/;
 const TOO_BIG_OLD = 'backup too large for this version of the app: update the app (Settings → About)', TOO_BIG_TEXT = 'backup too large: over 20 MB without its photos';
+/** @param {SaveLock} [lk] */
 async function putParted(env, json, cors, who, all, lk = NO_LOCK) {
   const ns = who.ns, KEY = ns + SYNC_KEY, h = BIG_HEAD.exec(new TextDecoder().decode(all.subarray(0, 300)));
   if (!h || all[all.length - 1] !== 0x7d) return json({ error: TOO_BIG_OLD }, 413);
@@ -159,6 +161,9 @@ const LOCK_WAIT = [60, 120, 200, 300, 400, 500, 600, 700];
 const HOLD_MS = 10000;   // (a third of LOCK_MS)
 const NO_LOCK = { ok: true, last: null, ver: null, give: async () => { }, hold: async () => true };
 const nap = ms => new Promise(r => setTimeout(r, ms));
+/** @typedef {{ ok?: boolean, last?: any, ver?: any, give?: () => Promise<void>, hold?: () => Promise<boolean>, busy?: boolean }} SaveLock
+    a save's lock (NO_LOCK's shape), or only `{ busy: true }` when another save of this person's held it all the wait */
+/** @returns {Promise<SaveLock>} */
 async function saveLock(env, ns) {
   const hub = hubOf(env, ns);
   if (!hub) return { ...NO_LOCK };
