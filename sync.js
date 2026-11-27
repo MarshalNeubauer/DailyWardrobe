@@ -108,11 +108,11 @@ function syncSettingsRedraw(){if(!settingsOpen())return;
 /* likewise while the item sheet is open (redrawing it blanked the field being typed in, and further typing replaced what was saved) or the
    piece picker is (the redraw closed it): the redraw waits for it to close (syncLater, run by syncLaterRun from itemShown / closePicker) */
 let syncLater=null;
-function syncRedraw(v){if(!v||v==='add')return;
+/** @param {*} v */ function syncRedraw(v){if(!v||v==='add')return;
   if(settingsOpen()){if(v==='today')todayDirty();else setViewStale(v);return}
   if((v==='wardrobe'&&editing)||(v==='today'&&(picker||askFor('today-busy')))){syncLater=v;return}   // (a finger on Today: today.js todayFree runs it when the gesture ends)
   return show(v)}
-function syncLaterRun(v){if(syncLater!==v)return;syncLater=null;if($('#'+v).hidden)return;
+/** @param {*} v */ function syncLaterRun(v){if(syncLater!==v)return;syncLater=null;if($('#'+v).hidden)return;
   if(v==='today')refreshToday();else if(v==='wardrobe'&&!editing)emit('wardrobe-changed')}
 /* ---- the first pull (2026-11-14): a connected device saves nothing at start-up until it has merged the backup once. On the owner's
    phone, two days behind, the week's locks (stamped 07:00) and the one-time photo upgrade (82 items re-saved at 07:45) were written on
@@ -123,7 +123,7 @@ let syncPulled=false;const pullWait=[];
 const syncNeedsPull=()=>{const t=localStorage.getItem('app_token');return !!(syncUrl()&&t&&localStorage.getItem('invite_ended')!==t)};
 const pulledYet=()=>syncPulled||!syncNeedsPull();
 function pullDone(){if(syncPulled)return;syncPulled=true;for(const f of pullWait.splice(0))try{f()}catch(e){console.warn(e)}}
-function afterPull(f){if(pulledYet())return Promise.resolve().then(f);return new Promise((ok,no)=>pullWait.push(()=>{try{ok(f())}catch(e){no(e)}}))}
+/** @param {*} f */ function afterPull(f){if(pulledYet())return Promise.resolve().then(f);return new Promise((ok,no)=>pullWait.push(()=>{try{ok(f())}catch(e){no(e)}}))}
 /* a sync requested while one is running waits for it and then runs again, so nothing changed meanwhile is missed */
 /* the Sync now button: a tap always tries, a pause from the day's saves being used up included (the server's allowance may have been raised
    since: the owner upgraded Cloudflare's plan); if the server still refuses, the pause comes back with its message */

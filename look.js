@@ -167,7 +167,7 @@ async function lookRestore(src,id,snap){const it=lookItem(src,id);if(!it)return;
   if(src==='q'){if(it.pattern!==pat)try{readSett(it)}catch{}if(it.primaryColor!==col&&it.texCanvas)try{generateSwatch(it)}catch{}queueMicrotask(addKeep);renderAdd()}
   else{if(it.sample)it.sampleMine=1;if(it.primaryColor!==col&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();emit('wardrobe-changed')}}
 /* o: {field: value} (undefined or null: the field goes) */
-async function lookWrite(src,id,o){const it=lookItem(src,id);if(!it){if(src==='e')itemGoneTell(id);return null}
+/** @param {*} src @param {*} id @param {*} o */ async function lookWrite(src,id,o){const it=lookItem(src,id);if(!it){if(src==='e')itemGoneTell(id);return null}
   for(const [k,v] of Object.entries(o)){if(v===undefined||v===null)delete it[k];else it[k]=v}
   if('primaryColor' in o)delete it.color;
   if(src==='q'){it.edited={...it.edited,...Object.fromEntries(Object.keys(o).map(k=>[k,true]))};queueMicrotask(addKeep);renderAdd()}
@@ -227,7 +227,7 @@ async function lookSetMat(src,id,k,v,quiet){const it=lookItem(src,id);if(!it)ret
     // Color field did; an enamel clip keeps its enamel colour and the metal beside it (it.metal, which the planner never reads for a clip)
     return lookWrite(src,id,lookCur(it,'enamel')==='none'?{primaryColor:v,metal:v,metalOwn:undefined}:{metal:v,metalOwn:undefined})}
   if(own!==null)return lookWrite(src,id,{metalOwn:own,metal:it.metal||'silver'});return lookWrite(src,id,{metal:v,metalOwn:undefined})}
-async function lookSetEnamel(src,id,v){const it=lookItem(src,id);if(!it)return;const m=lookClipMetal(it);
+/** @param {*} src @param {*} id @param {*} v */ async function lookSetEnamel(src,id,v){const it=lookItem(src,id);if(!it)return;const m=lookClipMetal(it);
   return lookWrite(src,id,v==='none'||!LOOK_ENAMEL.includes(v)?{primaryColor:m,metal:m}:{primaryColor:v,metal:m})}
 
 /* ---- the picker for a material, a leather, a metal or a buckle: the colour sheet's layout (#col-sheet, colPick with k one of LOOK_PK):
@@ -245,7 +245,7 @@ function lookSugMat(it,k){const out=[],src=colPick?colPick.src:'e';
   else{const h=it.lookHint&&it.lookHint.mat;if(h&&!h.isNew&&h.key)out.push([lookFiber(it,h.key),'Claude'])}
   const rb=LOOK_RD[src+'|'+it.id];if(rb&&rb.by&&rb.by.mat){const v=lookVal(it,k).v;if(!out.some(x=>x[0]===v))out.push([v,'Read by Claude'])}
   return out.filter((x,j,a)=>a.findIndex(y=>y[0]===x[0])===j)}
-function renderLookPick(keep){const el=$('#col-sheet'),it=colTarget();if(!el||!it||!colPick)return;const {k,sel,cur}=colPick,y=el.scrollTop,kind=lookPkKind(it,k),hex=COLORS[primaryCol(it)]||'#8b8f96';
+/** @param {*} keep */ function renderLookPick(keep){const el=$('#col-sheet'),it=colTarget();if(!el||!it||!colPick)return;const {k,sel,cur}=colPick,y=el.scrollTop,kind=lookPkKind(it,k),hex=COLORS[primaryCol(it)]||'#8b8f96';
   const nm=v=>lookName(it,k,v);
   const tile=(v,extra='')=>`<button type="button" class="cptile${v===sel?' sel':''}" data-c="${esc(v)}" data-c2="${esc(v)}" data-act="lkSel" aria-pressed="${v===sel}"><span class="cpsw lkmsw">${lookMatSw(kind,v,hex)}${v===cur?'<i class="cpnow" aria-hidden="true">Now</i>':''}</span><span class="cpnm">${esc(nm(v))}</span>${v===cur?'<span class="vh">, now</span>':''}${extra}</button>`;
   const sug=lookSugMat(it,k),own=lookOwnMats(it,k),groups=lookMatGroups(it,k);
@@ -281,12 +281,12 @@ async function lookUsePick(){const {src,ref,k,sel,cur}=colPick,it=colTarget();if
 function lookShadeHtml(){if(!colPick)return '';const s=colPick.shade||0;
   return `<div class="lkshade" role="group" aria-label="Shade"><button type="button" data-d="-1" data-act="lkShade"${s<=-SHADE_MAX?' disabled':''} aria-label="Darker">− Darker</button><output id="lk-shade">${s?esc(shadeName(s)):'As the color'}</output><button type="button" data-d="1" data-act="lkShade"${s>=SHADE_MAX?' disabled':''} aria-label="Lighter">Lighter +</button></div>`}
 function lookShadeStep(d){if(!colPick)return;colPick.shade=Math.max(-SHADE_MAX,Math.min(SHADE_MAX,(colPick.shade||0)+d));renderColPick(true)}
-function lookSugCols(it,k){if(k!=='primaryColor'||!colPick)return [];const src=colPick.src,ch=lookChips(src==='s'?'e':src,it).col.filter(x=>!x.add),out=ch.map(x=>[x.v,x.lab]);
+/** @param {*} it @param {*} k */ function lookSugCols(it,k){if(k!=='primaryColor'||!colPick)return [];const src=colPick.src,ch=lookChips(src==='s'?'e':src,it).col.filter(x=>!x.add),out=ch.map(x=>[x.v,x.lab]);
   const ai=src==='q'?it.aiTag&&it.aiTag.primaryColor:it.tagAI&&it.tagAI.col;if(ai&&COLORS[ai]&&!out.some(x=>x[0]===ai))out.unshift([ai,'Claude’s pick']);
   const near=colNear(it,k);if(near.length&&!out.some(x=>x[0]===near[0].c))out.push([near[0].c,'Measured']);
   const rb=LOOK_RD[src+'|'+it.id];if(rb&&rb.by&&rb.by.col&&!out.some(x=>x[0]===primaryCol(it)))out.push([primaryCol(it),'Read by Claude']);
   return out.filter(x=>COLORS[x[0]])}
-function lookSugPats(it){if(!colPick)return [];const src=colPick.src==='s'?'e':colPick.src,out=lookChips(src,it).pat.filter(x=>!x.add).map(x=>[x.v,x.lab]),ch=patChoices(it);
+/** @param {*} it */ function lookSugPats(it){if(!colPick)return [];const src=colPick.src==='s'?'e':colPick.src,out=lookChips(src,it).pat.filter(x=>!x.add).map(x=>[x.v,x.lab]),ch=patChoices(it);
   const ai=src==='q'?it.aiTag&&it.aiTag.pattern:null;if(ai&&ch.includes(ai)&&!out.some(x=>x[0]===ai))out.unshift([ai,'Claude’s pick']);
   const rb=LOOK_RD[src+'|'+it.id];if(rb&&rb.by&&rb.by.pat){const p=normPat(it.type,it.pattern);if(!out.some(x=>x[0]===p))out.push([p,'Read by Claude'])}
   return out.filter(x=>ch.includes(x[0]))}
@@ -341,7 +341,7 @@ function lookSum(src,it,ch){const t=it.type,en=t==='tieclip'?lookCur(it,'enamel'
   if(!LOOK_NOPAT.includes(t)&&lookHasPat(t))bits.push(esc(cap1(patName(normPat(t,it.pattern)))));
   bits.push(esc(mv.v==='none'?`no ${kind==='fabric'?'material':kind} yet`:mv.name));
   return bits.join(' · ')+(ch?' · Claude has a suggestion':'')}
-function lookSection(src,it,i){const ch=lookChips(src,it),any=ch.col.length+ch.pat.length+ch.mat.length>0,ok=src==='q'?!!(it.checked&&it.checked.lk):!!it.lookOk;
+/** @param {*} src @param {*} it @param {*} [i] */ function lookSection(src,it,i){const ch=lookChips(src,it),any=ch.col.length+ch.pat.length+ch.mat.length>0,ok=src==='q'?!!(it.checked&&it.checked.lk):!!it.lookOk;
   const lr=src==='q'?ckLr(it,i,'lk'):`<button type="button" class="cklr" aria-pressed="${ok}" data-id="${esc(it.id)}" data-act="lkCheck">${ok?'<span aria-hidden="true">✓ </span>Checked':'Looks right'}</button>`;
   const body=`<div class="lkbody">${lookReadBox(src,it)}${lookColRows(src,it)}${accRow(src,it.id,it)}${lookPatRow(src,it)}${src==='e'?lookPatExtras(it):''}${lookMatRows(src,it)}</div>${lr}`;
   return {mark:ok?'good':any?'warn':'todo',title:'Look',sum:lookSum(src,it,any&&!ok),body,warn:any&&!ok}}

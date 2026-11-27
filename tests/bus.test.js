@@ -2,6 +2,9 @@
 // Node only. bus.js itself (pin order, one throw doesn't stop the rest, the first error thrown on, heard), and the topics the app
 // uses: TOPICS lists each with who announces it and who listens, and the test fails on a topic the files use that isn't listed, a
 // listed announcer or listener that no longer does it, a listener with nobody announcing, or an announcement nobody hears.
+// The typed registry (types/sockets.d.ts, N1, 2026-11-27): it fails on a socket the files use that it doesn't declare, a declared one
+// nobody asks, an index signature, a need of a name outside Needs, a hook outside Hooks, and a copy that tools/sockets-dts.js wouldn't
+// write; the hooks (register, runHooks, runHooksSeq, registered) are checked as bus.js runs them.
 const fs=require('fs'),path=require('path'),vm=require('vm');
 const {appSrc}=require('./appsrc');
 
@@ -374,8 +377,25 @@ const SOCKETS={
 
 module.exports=async({ok,ROOT})=>{
   /* bus.js itself, run as a script with its export blanked */
-  const ctx=vm.createContext({});vm.runInContext(appSrc(ROOT,'bus.js')+';this.B={on,emit,heard,serve,ask,served,need,needFn}',ctx);
-  const {on,emit,heard,serve,ask,served,need,needFn}=ctx.B,log=[];
+  const ctx=vm.createContext({});vm.runInContext(appSrc(ROOT,'bus.js')+';this.B={on,emit,heard,serve,ask,served,need,needFn,register,runHooks,runHooksSeq,registered}',ctx);
+  const {on,emit,heard,serve,ask,served,need,needFn,register,runHooks,runHooksSeq,registered}=ctx.B,log=[];
+  /* the hooks (N1; owner decision D1: a feature that didn't load registered nothing and is absent, nothing throws) */
+  {const got=[];
+    ok(Array.isArray(runHooks('nobody',1))&&!runHooks('nobody').length&&!registered('weather'),'runHooks for a moment nobody registered for calls nothing and answers [] (a missing feature is just absent)');
+    register('weather',{'today-parts':(P,o)=>{got.push('w');P.wx=o;return 'w'}});register('care',{'settings-draw':()=>got.push('c-draw')});
+    register('cal',{'today-parts':P=>{got.push('c');P.cal=1;return 'c'}});
+    const P={},ans=runHooks('today-parts',P,'o1');
+    ok(ans.join()==='w,c'&&got.join()==='w,c'&&P.wx==='o1'&&P.cal===1,'runHooks calls each registered feature\'s hook in load order with the arguments, skips a feature without that hook, and gives back their answers');
+    register('weather',{'settings-draw':()=>got.push('w-draw')});got.length=0;runHooks('settings-draw');
+    ok(got.join()==='w-draw,c-draw'&&registered('weather')&&registered('care')&&!registered('kit'),'registering again adds hooks at the feature\'s first place (load order), and registered says which features registered');
+    register('weather',{'today-parts':()=>'w2'});ok(runHooks('today-parts',{}).join()==='w2,c','registering a hook again replaces that feature\'s hook');
+    const hb=new Error('hb');got.length=0;register('kit',{'sync-send':()=>{got.push('k');throw hb}});register('fav',{'sync-send':()=>got.push('f')});let hg=null;try{runHooks('sync-send',{})}catch(e){hg=e}
+    ok(hg===hb&&got.join()==='k,f','a hook that throws does not stop the others, and the first error is thrown on once all have run (as emit)');
+    got.length=0;register('kit',{'after-pull-fixups':async()=>{await null;got.push('k1');return 1}});register('fav',{'after-pull-fixups':()=>{got.push('f1');return 2}});
+    const seq=await runHooksSeq('after-pull-fixups');
+    ok(seq.join()==='1,2'&&got.join()==='k1,f1','runHooksSeq awaits each hook before the next, in load order, and answers their results');
+    const sb=new Error('sb');got.length=0;register('cal',{'after-pull-fixups':()=>{throw sb}});let sg=null;try{await runHooksSeq('after-pull-fixups')}catch(e){sg=e}
+    ok(sg===sb&&!got.length,'runHooksSeq stops at the first hook that throws: the later ones never run (a .then chain)')}
   /* the sockets */
   ok(ask('nobody',1,2)===undefined,'ask for a name nobody serves: nothing is called and the answer is undefined (the old typeof guard)');
   const seen=[];serve('sum',(a,b)=>{seen.push([a,b]);return a+b});
@@ -400,7 +420,7 @@ module.exports=async({ok,ROOT})=>{
   ok(log.join()==='first','a fn pinned while the topic is being announced is called from the next announcement on');
   /* the topics the app uses */
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8'),page=[...html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)].map(m=>m[1]);
-  const used={},sockUsed={};
+  const used={},sockUsed={},needUsed=new Set(),hookUsed=new Set();
   const acorn=require('acorn');
   for(const f of page){if(f==='bus.js')continue;const src=fs.readFileSync(path.join(ROOT,f),'utf8');let ast;
     try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'module'})}catch(e){try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'script'})}catch(e2){continue}}
@@ -413,7 +433,10 @@ module.exports=async({ok,ROOT})=>{
         // (settingsPart(fn) is settings.js's own way to pin for 'settings-parts': counted as the caller's pin)
         if(n.callee.name==='settingsPart'&&f!=='settings.js')add('on','settings-parts');
         else if(c&&/^(?:emit|on|heard)$/.test(c)&&lit&&!(f==='settings.js'&&c==='on'&&a.value==='settings-parts'))add(c,a.value);
-        else if(c&&/^(?:serve|ask)$/.test(c)){if(lit)sock(c,a.value);else ok(false,`${f} calls ${n.callee.name}() of bus.js with a name that is not a plain string`)}
+        else if(c&&/^(?:serve|ask)$/.test(c)){if(lit){sock(c,a.value);if(c0==='need'||c0==='needFn')needUsed.add(a.value)}else ok(false,`${f} calls ${n.callee.name}() of bus.js with a name that is not a plain string`)}
+        // (the hooks: runHooks/runHooksSeq's name, and each key of register's object)
+        else if(c0==='runHooks'||c0==='runHooksSeq'){if(lit)hookUsed.add(a.value);else ok(false,`${f} calls ${n.callee.name}() of bus.js with a name that is not a plain string`)}
+        else if(c0==='register'){const o=n.arguments[1];if(o&&o.type==='ObjectExpression')for(const p of o.properties){const k=p.key&&(p.key.type==='Literal'?p.key.value:p.key.name);if(k)hookUsed.add(k)}}
         else if(!c&&/^(?:emit|heard|serve)$/.test(n.callee.name))ok(false,`${f} calls ${n.callee.name}() without importing it from './bus.js'`)}
       for(const k in n){const v=n[k];if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v.type==='string')walk(v)}};
     walk(ast)}
@@ -425,6 +448,21 @@ module.exports=async({ok,ROOT})=>{
     const order=[...u.ask].sort((x,y)=>page.indexOf(x)-page.indexOf(y));
     if(order.join()!==[...d.ask].sort((x,y)=>page.indexOf(x)-page.indexOf(y)).join()||!order.length)sbad.push(`${t}: asked by ${order.join(', ')||'nobody'}, listed ${d.ask.join(', ')}`)}
   ok(!sbad.length,`each socket is served by the one file SOCKETS lists and asked by the files it lists (${Object.keys(SOCKETS).length} sockets)${sbad.length?': '+sbad.join('; '):''}`);
+  /* the typed registry (types/sockets.d.ts, N1): every socket declared with its type, written from the serve lines */
+  {const dts=fs.readFileSync(path.join(ROOT,'types','sockets.d.ts'),'utf8').replace(/\r\n/g,'\n');
+    const block=n=>{const m=dts.match(new RegExp(`^export interface ${n} \\{\\n([\\s\\S]*?)^\\}`,'m'));return m?m[1]:''};
+    const keys=n=>[...block(n).matchAll(/^  '([^']+)':/gm)].map(m=>m[1]);
+    const decl=new Set(keys('Sockets')),needs=new Set(keys('Needs')),hooks=new Set(keys('Hooks'));
+    const undeclared=Object.keys(sockUsed).filter(t=>!decl.has(t)),unused=[...decl].filter(t=>!sockUsed[t]||!sockUsed[t].ask.length);
+    ok(decl.size&&!undeclared.length,`every socket the files use is declared in types/sockets.d.ts (Sockets, ${decl.size})${undeclared.length?': not '+undeclared.join(', '):''}`);
+    ok(!unused.length,`every socket types/sockets.d.ts declares is served and asked${unused.length?': not '+unused.join(', '):''}`);
+    ok(!['Sockets','Needs','Hooks'].some(n=>/^\s*\[/m.test(block(n))),'Sockets, Needs and Hooks have no index signature (an undeclared name is a type error)');
+    const needOut=[...needUsed].filter(t=>!needs.has(t)),needIn=[...needs].filter(t=>!needUsed.has(t));
+    ok(!needOut.length&&!needIn.length,`Needs is exactly the sockets asked with need or needFn (${needs.size})${needOut.length?': not in Needs '+needOut.join(', '):''}${needIn.length?': never needed '+needIn.join(', '):''}`);
+    const hookOut=[...hookUsed].filter(t=>!hooks.has(t));
+    ok(hooks.size&&!hookOut.length,`every hook the files register or run is declared in types/sockets.d.ts (Hooks, ${hooks.size})${hookOut.length?': not '+hookOut.join(', '):''}`);
+    const gen=require(path.join(ROOT,'tools','sockets-dts.js')).generate(ROOT);
+    ok(!gen.errs&&gen.text===dts,`types/sockets.d.ts is what tools/sockets-dts.js writes from the serve lines${gen.errs?': '+gen.errs.join('; '):gen.text!==dts?' (run `node tools/sockets-dts.js` and commit it)':''}`)}
   const notListed=Object.keys(used).filter(t=>!TOPICS[t]);
   ok(!notListed.length,`every topic the files use is in TOPICS${notListed.length?': not '+notListed.join(', '):''}`);
   const bad=[];

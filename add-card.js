@@ -23,7 +23,7 @@ import {matGuessUse,matOffer} from './own-lists.js';
 import {acts} from './act.js';
 import {lookCu,lookOn} from './look-base.js';
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
-const setq=(i,k,v)=>{const q=cardOf(i);if(!q)return;i=queue.indexOf(q);const asked=k==='type'&&needType(q);q[k]=v==='none'?null:v;if(k==='type')matTidy(q);q.edited={...q.edited,[k]:true};const ck=CK_FIELD[k]&&!(q.checked&&q.checked[CK_FIELD[k]]);if(ck)q.checked={...q.checked,[CK_FIELD[k]]:1};queueMicrotask(addKeep);
+/** @param {*} i @param {*} k @param {*} v */ const setq=(i,k,v)=>{const q=cardOf(i);if(!q)return;i=queue.indexOf(q);const asked=k==='type'&&needType(q);q[k]=v==='none'?null:v;if(k==='type')matTidy(q);q.edited={...q.edited,[k]:true};const ck=CK_FIELD[k]&&!(q.checked&&q.checked[CK_FIELD[k]]);if(ck)q.checked={...q.checked,[CK_FIELD[k]]:1};queueMicrotask(addKeep);
   if(asked){askFor('measure-guess',q);q.pattern=normPat(v,q.pattern);shirtColFix(q);emit('card-changed');return}   /* the type asked for (needType): the colour measured, the full card */
 if(k==='shoeStyle'&&v==='combat'&&!(q.edited&&q.edited.leather)&&(q.manual||!q.leather||q.leather==='calf'))q.leather='suede';   /* a combat boot added by hand is suede and nylon (the owner, 2026-11-18) */
 if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'||k==='band'){emit('card-changed');return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);emit('card-changed')}else if(ck)emit('card-changed');else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};   // (a section newly checked: its mark and the count follow)
@@ -159,7 +159,7 @@ function typeCard(q,i){const none=typeof isConnected==='function'?!isConnected()
 const unreadNote=(q,i)=>!q.ai&&!q.manual&&!q.tagErr&&!q.busy&&q.tagImg&&(typeof isConnected==='function'?isConnected():localStorage.getItem('worker_url'))?`<div class="tagfail"><p>This photo was added before the app was connected, so it wasn’t read.</p><button type="button" class="tagfail-btn" data-act="cardRetryTag" ${cardAt(q)}>Read it now</button></div>`:'';
 /* the card's name, brand and notes (its More section) and Material (fields.js fldRow, notesRow, matRow): each keystroke is kept on the
    card (nothing is redrawn); i: the card's id or place (moved here from wardrobe.js, the restructure S3c, 2026-11-26) */
-function setQField(i,k,v){const q=cardOf(i);if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];
+/** @param {*} i @param {*} k @param {*} v */ function setQField(i,k,v){const q=cardOf(i);if(!q||!WARD_FIELDS.includes(k))return;v=String(v??'').slice(0,WARD_MAX[k]);if(v.trim())q[k]=v;else delete q[k];
   if(k==='material'){delete q.matAI;q.matSet=1;q.checked={...q.checked,fabric:1}}   // chosen by hand (and so its checklist section is checked, addCkSecs): no longer Claude's suggestion, and a later reading leaves it (tagging.js takeMaterial)
   addKeepSoon();if(k==='material')emit('card-changed')}
 /* the Material control's attributes on an Add card (its card's id, add-ids.js cardAt), for fields.js matRow */

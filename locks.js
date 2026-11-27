@@ -40,7 +40,7 @@ async function lockPast(end,mine){return releaseLocks(r=>di(keyDate(r.date))>end
    again around each other (two suits left, and the one still locked for Tuesday was held back on Sunday and Monday: the other suit on
    both), and again when it is back, for the locks made while it was away (`since`: when it left, ms), so it rejoins the week (fix
    round 3, W1-8-05: "It's back" left the same suit locked on two workdays running) */
-async function careUnlock(id,since){const T=todayDate();
+/** @param {*} id @param {*} [since] */ async function careUnlock(id,since){const T=todayDate();
   const hit=Object.values(dayRecs).some(r=>r.lock&&keyDate(r.date)>T&&r.worn!==true&&(id?Object.values(r.lock).includes(id):(+r.lockAt||0)>=since));
   return hit?clearLocks():0}
 /* after a change by hand on a day: when a lock on the next workdays holds the piece the day now has (its tie on any of the next three
@@ -48,7 +48,7 @@ async function careUnlock(id,since){const T=todayDate();
    (2026-11-15, the audit: two ties, today's swapped, and the next two locked days kept that same tie: three workdays running; letting
    go of the clashing days alone left the next lock's tie to tie with it). No clash, nothing changes */
 /* (past: a corrected past day, correctPast) */
-async function unlockClash(k,past){const o=planFor()[k];if(!o||(o.frozen&&!past))return 0;const x=keyDate(k),T=todayDate();let w=0,clash=false;
+/** @param {*} k @param {*} [past] */ async function unlockClash(k,past){const o=planFor()[k];if(!o||(o.frozen&&!past))return 0;const x=keyDate(k),T=todayDate();let w=0,clash=false;
   for(let g=0;g<10&&w<3&&!clash;g++){x.setDate(x.getDate()+1);if(!isWorkday(x))continue;const r=dayRecs[key(x)],l=r&&r.lock;
     if(l&&r.worn!==true&&((o.tie&&l.tie===o.tie.id)||(!w&&o.shirt&&l.shirt===o.shirt.id)||(!w&&o.top&&l.top===o.top.id)))clash=true;
     w++}

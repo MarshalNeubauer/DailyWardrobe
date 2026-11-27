@@ -51,7 +51,7 @@ function asmWeave(i){if(i&&i.type==='shirt'&&asmMotif(i)){const s=usableSett(i);
   if(k==='herringbone'||(!t&&p==='herringbone')){const tr=+(s&&s.tr)||0;return {f:'tile',hb:true,mm:ASM_SHIRT_MM/(tr>0&&tr<ASM_TR_CAP?tr:ASM_HB_TR)}}
   if(!t||k==='end-on-end')return {f:'fleck'};
   return {f:'tile',mm:0}}
-const asmSuitWeave=i=>{if(!i)return '';const b=patBase(i.pattern);if(b==='herringbone')return 'herringbone';if(b==='twill')return 'twill';
+/** @param {*} i */ const asmSuitWeave=i=>{if(!i)return '';const b=patBase(i.pattern);if(b==='herringbone')return 'herringbone';if(b==='twill')return 'twill';
   if(b!=='solid'&&!/^own/.test(i.pattern||''))return '';
   const t=(i.pattern||'')+' '+((i.patternSpec&&i.patternSpec.description)||i.patternText||'');
   return /herringbone/i.test(t)?'herringbone':/twill|serge|gabardine/i.test(t)?'twill':''};

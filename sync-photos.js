@@ -18,7 +18,7 @@ function phStrings(x,test,out=new Set()){if(typeof x==='string'){if(test(x))out.
 function phMap(x,f){if(typeof x==='string')return f(x);if(Array.isArray(x))return x.map(v=>phMap(v,f));if(x&&typeof x==='object'){const o={};for(const k in x)o[k]=phMap(x[k],f);return o}return x}
 /* the references in records from the backup, replaced by the photos: this device's own copy when it has it (the same item's photos are
    compared), else downloaded, PH_BATCH at a time */
-async function phIn(recs,local,url,token){
+/** @param {*} recs @param {*} local @param {*} url @param {*} token */ async function phIn(recs,local,url,token){
   const refs=[...phStrings(recs,s=>PH_RE.test(s))].map(s=>s.slice(5));if(!refs.length)return recs;
   const ids=new Set((recs.items||[]).map(i=>i.id)),known=new Map();
   for(const s of phStrings([local.items.filter(i=>ids.has(i.id)),local.days,local.settings],isPhOld))known.set(await phHash(s),s);
@@ -28,14 +28,14 @@ async function phIn(recs,local,url,token){
   if(refs.some(h=>!known.has(h)))throw new Error('a photo is missing from the backup');
   return phMap(recs,s=>PH_RE.test(s)?known.get(s.slice(5)):s)}
 /* records to send: photos as references, and the photos the backup doesn't have (have: its hashes) */
-async function phOut(recs,have){const strs=[...phStrings(recs,isPh)],by=new Map(),photos={};
+/** @param {*} recs @param {*} have */ async function phOut(recs,have){const strs=[...phStrings(recs,isPh)],by=new Map(),photos={};
   for(const s of strs){const h=await phHash(s);by.set(s,h);if(!have.has(h))photos[h]=s}
   return {recs:by.size?phMap(recs,s=>by.has(s)?'dwph:'+by.get(s):s):recs,photos}}
 /* (2026-11-16, the audit's W2-18-01) photos go up in batches: one POST carries at most SYNC_SEND_MAX of photos and records (the worker
    refuses a body over 48 MB, BACKUP_MAX, and a phone restoring a file onto a new account sent 61 MB at every close, storing nothing).
    The day records, settings and deletions always go in the first batch (small, and the day's wear is what matters most); items go in
    their order until the next one's new photos would pass the budget (one item always goes). -> {up: the batch, left: items held back} */
-async function phBatch(up,have,max=SYNC_SEND_MAX){
+/** @param {*} up @param {*} have */ async function phBatch(up,have,max=SYNC_SEND_MAX){
   let size=JSON.stringify({...up,items:[]}).length;const pick=[],taken=new Set(have);
   for(let k=0;k<up.items.length;k++){const it=up.items[k];let add=0;const hs=[];
     for(const s of phStrings(it,isPh)){const h=await phHash(s);if(!taken.has(h)){hs.push(h);add+=s.length}}

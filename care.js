@@ -32,21 +32,21 @@ function careCounts(){if(cache.careW)return cache.careW;const w={},by=Object.fro
   return cache.careW=w}
 /* where a piece stands: wears, its type's limit, and due (at the limit) / near (one wear short, for limits of 3 and more).
    each = washed after every wear: counted, but never flagged by itself */
-function careState(i){const wears=careCounts()[i.id]||0,limit=careLimit(i.type),each=limit===1,live=limit>1&&!i.away&&!i.order;
+/** @param {*} i */ function careState(i){const wears=careCounts()[i.id]||0,limit=careLimit(i.type),each=limit===1,live=limit>1&&!i.away&&!i.order;
   return {wears,limit,each,due:live&&wears>=limit,near:live&&limit>2&&wears===limit-1,over:wears-limit}}
 const careWornLine=i=>{const s=careState(i),w=careWord(i.type),since=i.cleaned?` since ${w} (${fmtDay(i.cleaned)})`:'';
   return (s.wears?`Worn ${careTimes(s.wears)}${since}`:i.cleaned?`Not worn${since}`:'Not worn yet')+(s.each?` · ${careWashed(i.type)?'washed':'cleaned'} after every wear`:s.limit?` · due after ${s.limit}`:'')};
 /* the Wardrobe grid: the tag of a piece that is away, and a quiet one on a piece that is due */
-const careTag=i=>i.away?(i.away.why==='laundry'?'In the laundry':'At the cleaner\'s')+(i.away.back?' · back '+fmtDay(i.away.back):''):'';
-const careBadge=i=>careState(i).due?`<span class="caretag">Due for ${careWord(i.type)}</span>`:'';
+/** @param {*} i */ const careTag=i=>i.away?(i.away.why==='laundry'?'In the laundry':'At the cleaner\'s')+(i.away.back?' · back '+fmtDay(i.away.back):''):'';
+/** @param {*} i */ const careBadge=i=>careState(i).due?`<span class="caretag">Due for ${careWord(i.type)}</span>`:'';
 const careBackHint=b=>b?`It joins your outfits again from the day after ${fmtDay(b)}.`:'It stays out of your outfits until you tap "It\'s back". Add a date to have that happen by itself.';
-const careBackText=l=>l.length===1?`Your ${careNoun(l[0])} is back: it's in rotation again.`:`${l.length} pieces are back: they're in rotation again.`;
+/** @param {*} l */ const careBackText=l=>l.length===1?`Your ${careNoun(l[0])} is back: it's in rotation again.`:`${l.length} pieces are back: they're in rotation again.`;
 /* the cleanings recorded (item.cleans, YYYY-MM-DD, oldest first, the last CARE_LOG): the days a piece came back from the cleaner or the
    laundry or was marked cleaned; cost per wear counts them (cost.js) */
 const CARE_LOG=100;
-function careLog(it,d){if(!it||!/^\d{4}-\d{2}-\d{2}$/.test(d||''))return;it.cleans=[...new Set([...(Array.isArray(it.cleans)?it.cleans:[]),d])].sort().slice(-CARE_LOG)}
+/** @param {*} it @param {*} d */ function careLog(it,d){if(!it||!/^\d{4}-\d{2}-\d{2}$/.test(d||''))return;it.cleans=[...new Set([...(Array.isArray(it.cleans)?it.cleans:[]),d])].sort().slice(-CARE_LOG)}
 /* the item sheet's Care card (after the Rotation card) */
-function careCard(i){if(!CARE_ABLE.includes(i.type)||i.order)return '';
+/** @param {*} i */ function careCard(i){if(!CARE_ABLE.includes(i.type)||i.order)return '';
   const id=i.id,a=i.away,first=careWashed(i.type)?['laundry','cleaner']:['cleaner','laundry'],lab={cleaner:'Send to the dry cleaner',laundry:'In the laundry'},s=careState(i);
   const body=a?`<p class="shelp carewhere">${a.why==='laundry'?'In the laundry':'At the cleaner\'s'} since ${fmtDay(a.since)}: it is out of your outfits.</p>`+
       `<div class="ordrow careback"><label class="ordate">Back on (optional) <input type="date" value="${a.back||''}" min="${isoKey(todayDate())}" data-act-change="careBackDate" data-id="${esc(id)}"></label><small class="mut ordhint">${careBackHint(a.back)}</small></div>`+
@@ -109,7 +109,7 @@ function renderCare(){const el=$('#care-in');if(!el)return;careSum();const head=
     `<p class="care-foot"><button type="button" class="linkbtn" data-act="careLimitsTap">Change how many wears each piece takes</button></p>`}
 function openCare(){openSettings('laundry')}   // (Today's "See what is due")
 /* Today: one quiet line when today's suit, blazer or odd trousers reaches its limit with this wear (or is past it) */
-function careNote(o){if(!o||!isWorkday(sel)||key(sel)!==key(todayDate()))return '';
+/** @param {*} o */ function careNote(o){if(!o||!isWorkday(sel)||key(sel)!==key(todayDate()))return '';
   const r=dayRecs[key(sel)],counted=!!(r&&r.worn===true),w=careCounts(),out=[];
   for(const p of o.bot&&o.top&&o.bot.id===o.top.id?[o.top]:[o.top,o.bot]){if(!p||p.type!=='pants')continue;const limit=careLimit(p.type);if(limit<2)continue;   // (suits and blazers: the frame on the picture, careFrame)
     const n=(w[p.id]||0)+(counted?0:1);if(n<limit)continue;
@@ -136,7 +136,7 @@ function careDayState(o,d){const p=careTop(o);if(!p||!CARE_FRAME.includes(p.type
   return n===limit-1?{k:'near',n,limit,bold:'1 wear left',rest:`${what} – wear ${n} of ${limit}`}
     :n===limit?{k:'last',n,limit,bold:'Last wear',rest:`${what} – to the cleaner today`}:{k:'over',n,limit,bold:'Overdue',rest:`${what} – worn ${n} of ${limit}`}}
 /* what figureStage (today.js) puts in the picture's frame: {cls, html}, or null */
-function careFrame(o){const s=careDayState(o,sel);if(!s)return null;
+/** @param {*} o */ function careFrame(o){const s=careDayState(o,sel);if(!s)return null;
   const dots=Array.from({length:s.limit},(_,i)=>`<i${i<s.n?' class="on"':''}></i>`).join('')+(s.n>s.limit?`<em>+${s.n-s.limit}</em>`:'');
   return {cls:` cb care-${s.k}`,html:`<div class="cframe" aria-hidden="true"></div><div class="cband" id="cband" role="button" tabindex="0" aria-label="${esc(s.bold+': '+s.rest)}. Tap if it was cleaned" data-act="careBandTap" data-act-keydown="careBandKey"><svg aria-hidden="true"><path/></svg><div class="crow"><span class="cdots" aria-hidden="true">${dots}</span><span class="ctxt"><b>${s.bold}</b> · ${esc(s.rest)}</span></div></div>`,s}}
 /* a tap on the banner (fix round 3, W2-14-05: the red "Overdue" came back every morning and a tap did nothing; the way to clear it was

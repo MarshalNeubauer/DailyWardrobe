@@ -232,7 +232,7 @@ async function calUndoSeen(id){const was=calSeen()[id];await calSetSeen(id,null)
   calMsg=was==='k'?'It is offered again. What it set stays: change it in Days off & occasions or the Packing list.':'';todayDirty();renderCalUI()}
 
 /* ---- Today: "2 new calendar events" and, on a day of a trip kept, the trip ---- */
-function calBanner(day){if(!calLink())return '';let h='';const n=calNew().length,home=!day||key(day)===key(homeDay());
+/** @param {*} day */ function calBanner(day){if(!calLink())return '';let h='';const n=calNew().length,home=!day||key(day)===key(homeDay());
   if(n&&home)h+=`<div class="cal-banner" id="cal-new"><span>${n} new calendar event${n===1?'':'s'}</span><button type="button" class="linkbtn" data-act="calReviewTap">Review</button></div>`;
   if(day){const k=isoKey(day),s=calSeen(),t=calFound().find(x=>x.k==='trip'&&s[x.ev.id]==='k'&&x.ev.start<=k&&x.ev.end>=k);
     if(t)h+=`<p class="cal-trip" id="cal-trip">Trip: <span dir="auto">${esc(t.ev.title)}</span> · <button type="button" class="linkbtn" data-act="calPackTap">Packing list</button></p>`}

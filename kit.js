@@ -40,7 +40,7 @@ import {WARD_MAX,wardSaveFields} from './fields.js';
 import {goToday,recordRun} from './today.js';
 on('sample-asked',kitSampleLoad);
 backOn('kit',()=>{if(kit)kitClose(true)});
-function kitOpen(cards,then){const prev=kit?kit.hist:undefined;kit={cards,at:0,then:then||null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitBs(false);kitDraw();kitEl().classList.add('on');kitInert(true);kitHist();
+/** @param {*} cards @param {*} [then] */ function kitOpen(cards,then){const prev=kit?kit.hist:undefined;kit={cards,at:0,then:then||null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitBs(false);kitDraw();kitEl().classList.add('on');kitInert(true);kitHist();
   const t=$('#kit-next');if(t)t.focus({preventScroll:true})}
 /* fromBack: the phone's Back did it (its entry is gone already) */
 function kitClose(fromBack){if(kitImpBusy){if(fromBack)backPush('kit');return}   // (the import is being written: a moment, then the sheet closes itself; Back keeps it, with its entry made again)
@@ -117,7 +117,7 @@ const PAPER_CARD={key:'paper',title:'White paper, true colors',pic:()=>kitClothP
    does) and puts their cards back on Add, in their places */
 let kitBatch=null,kitQuiet=false;
 const KIT_UNDO_MS=8000;
-function kitSaved(it,q,i,copies){if(kitQuiet)return;const now=Date.now(),more=(copies||[]).map(c=>c.id);
+/** @param {*} it @param {*} q @param {*} i @param {*} copies */ function kitSaved(it,q,i,copies){if(kitQuiet)return;const now=Date.now(),more=(copies||[]).map(c=>c.id);
   if(!kitBatch||now-kitBatch.at>1500)kitBatch={its:[],qs:[],at:now};kitBatch.its.push(it.id,...more);kitBatch.qs.push({q,i});kitBatch.at=now;const b=kitBatch,n=b.its.length;
   // one card with copies (add-more.js qtyRow): "Saved 3: White."
   const t=savedTitle(it);   // "Saved: Grey suit." (it said "Saved: Grey.": add-save.js)
@@ -177,7 +177,7 @@ async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=no
 
 /* ---- Duplicate (the item sheet): the same piece again, with a new id and no history, opened for any difference ---- */
 const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cleaned','cleans','sample','sampleMine'];
-async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;const c=JSON.parse(JSON.stringify(it));for(const k of KIT_NO_COPY)delete c[k];
+/** @param {*} id */ async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;const c=JSON.parse(JSON.stringify(it));for(const k of KIT_NO_COPY)delete c[k];
   c.id=crypto.randomUUID();c.added=nowMs();await put(c);items.push(c);planDirty();todayDirty();
   if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');
   askFor('item-show',c.id);toast('Duplicated. Change anything that differs, like its name.',3500)}
@@ -571,7 +571,7 @@ const kitHasSample=()=>items.some(i=>i.sample&&!kitEdited(i));   // (pieces he m
    untouched sample piece, which was then uploaded and kept on Remove the sample), nor does out of rotation (itemsheet.js togglePause sets
    kitNoMine around its save: paused sample shoes stayed after Remove the sample) */
 let kitNoMine=false;
-const kitUserEdit=i=>{if(i&&i.sample&&!kitNoMine&&editing===i.id)i.sampleMine=1};
+/** @param {*} i */ const kitUserEdit=i=>{if(i&&i.sample&&!kitNoMine&&editing===i.id)i.sampleMine=1};
 const kitEdited=i=>!!i.sample&&!!i.sampleMine;
 /* the sample pieces the earlier rule counted as his (fix round 3, W1-3-01: an edit, a pause or a cleaning on 14-15 Nov builds made a piece
    his, updated more than KIT_EDIT_MS after added; the rule above turned them back into sample, and Remove the sample took them with their
@@ -696,7 +696,7 @@ function kitShareDone(){const n=kitSdNew;kitSdNew={};if(!Object.keys(n).length)r
    stamp KIT_YIELD: the backup takes it only where it has no record of that day, or only the app's lock built on nothing (core.js dayWins,
    base 0); any real record of the day, another phone's, wins. kitOrig: the record's own stamp, which decides whether it is sent */
 const KIT_SD_DAYS=60,kitOrig=new WeakMap();
-const kitSentStamp=d=>kitOrig.has(d)?kitOrig.get(d):(d.updated||0);
+/** @param {*} d */ const kitSentStamp=d=>kitOrig.has(d)?kitOrig.get(d):(d.updated||0);
 /* a piece that goes up: his own, or a sample piece he made his */
 const kitSends=i=>!(i&&i.sample)||kitEdited(i);
 /* st as sent (the merge and this phone's copy are unchanged); remote: the whole backup (PUT only), else null; join: when this phone joined
@@ -720,7 +720,7 @@ async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.s
   if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');toast('It’s yours now: Remove the sample keeps it.',3000)}
 /* marks: the Wardrobe grid's tag and the item sheet's note */
 const kitSampleTag=i=>i.sample&&!kitEdited(i)?'<span class="pausetag sampletag">Sample</span>':'';
-const kitSampleNote=i=>i.sample&&!kitEdited(i)?`<section class="card ivsec ivsample"><p class="shelp">A piece of the sample wardrobe: Remove the sample takes it away. Change anything on it, or keep it, and it stays as yours.</p><div class="btns"><button type="button" id="iv-keep" data-act="kitKeepTap" data-id="${esc(i.id)}">Keep it as mine</button></div></section>`:'';
+/** @param {*} i */ const kitSampleNote=i=>i.sample&&!kitEdited(i)?`<section class="card ivsec ivsample"><p class="shelp">A piece of the sample wardrobe: Remove the sample takes it away. Change anything on it, or keep it, and it stays as yours.</p><div class="btns"><button type="button" id="iv-keep" data-act="kitKeepTap" data-id="${esc(i.id)}">Keep it as mine</button></div></section>`:'';
 /* Today, while sample pieces are there */
 function kitSampleBanner(){if(!kitHasSample())return '';const own=items.filter(i=>!i.sample||kitEdited(i)).length;
   return `<div class="kit-banner" id="kit-sample"><b>You're trying a sample wardrobe</b><small>${own?`Your ${own} own piece${own===1?' is':'s are'} mixed in. `:''}Swipe through the days, tap the score, try a swap. Add your own clothes whenever you like.</small>
@@ -778,7 +778,7 @@ function homeNote(){const conn=isConnected(),b=homeBrowser();
   if(conn)return '<p class="su-note home-note"><b>'+b+' is connected already.</b> The Home Screen app keeps its own storage, apart from '+b+'\'s: connect it too, in its Settings → Connection.</p>';
   if(items.length)return '<p class="su-note home-note"><b>Your wardrobe stays here in '+b+'.</b> The Home Screen app keeps its own storage and starts empty. To take your wardrobe along, tap <b>Download backup</b> in Settings → Backup &amp; sync here, then <b>Restore file</b> in the Home Screen app.</p>';
   return '<p class="su-note home-note"><b>The Home Screen app keeps its own storage</b>, apart from '+b+'\'s: if you add it now, set it up there rather than here.</p>'}
-function homeSteps(inSetup){if(homeAndroid())return homeStepsAndroid(inSetup);const pad=homeIPad(),t=homeTester();
+/** @param {*} inSetup */ function homeSteps(inSetup){if(homeAndroid())return homeStepsAndroid(inSetup);const pad=homeIPad(),t=homeTester();
   return '<div class="home-wrap">'+homePic()+'<p class="su-lead home-lead">Put Daily Wardrobe on your Home Screen: it opens full screen like an app, and it is the only way your '+(pad?'iPad':'iPhone')+' lets it send the morning reminder.</p>'+
     '<ol class="home-steps">'+homeShareStep(pad)+
     '<li><span class="home-n">2</span><span>Tap <b>Add to Home Screen</b> '+HOME_ADD+'.<small>Not in the list? Scroll down, or tap '+(homeBrowser()==='Safari'?'View More':'Edit Actions')+'.</small></span></li>'+

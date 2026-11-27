@@ -17,13 +17,13 @@ import {asmCmAssets,asmCmBaseJob,asmCmBgGet,asmCmGaps,asmCmMf,asmCmMfKey,asmJfWa
 import {asmFor,asmGetPre,asmKeepOut,asmShow} from './asm-today.js';
 import {ask,serve} from './bus.js';
 /* bring the kind's master, masks and parts onto the device (true when all are here); the background too, when the worker has one */
-async function asmCmGet(kind){if(!asmCmAssets(kind).length)return false;await asmCmMfGet();const keys=asmCmAssets(kind);if(!await asmGet(keys[0],true))return false;   // (keys after the manifest: it says whether the master has solved positions)
+/** @param {*} kind */ async function asmCmGet(kind){if(!asmCmAssets(kind).length)return false;await asmCmMfGet();const keys=asmCmAssets(kind);if(!await asmGet(keys[0],true))return false;   // (keys after the manifest: it says whether the master has solved positions)
   await asmCmBgGet();return (await Promise.all(keys.slice(1).map(k=>asmGet(k)))).every(Boolean)}   // (CR-8-06: the PC builder's shared setup and 2048 copy, which nothing uploads since 2026-11-16, are no longer asked for)
 let asmCmMfAt=null,asmCmMfGetting=null,asmCmMfRetry=0;
 /* read the manifest when the worker's list was read again since (or once a session without a list) and drop the photos it outdates;
    it never asks for the list itself (a list is a scarce request on the worker's plan). force: read it now (Settings' forced look,
    asmSync(true): one small read) */
-function asmCmMfGet(force){if(asmCmMfGetting)return asmCmMfGetting;asmCmMfGetting=asmCmMfGet1(force).finally(()=>{asmCmMfGetting=null});return asmCmMfGetting}
+/** @param {*} [force] */ function asmCmMfGet(force){if(asmCmMfGetting)return asmCmMfGetting;asmCmMfGetting=asmCmMfGet1(force).finally(()=>{asmCmMfGetting=null});return asmCmMfGetting}
 async function asmCmMfGet1(force){const W=workerBase();if(!W||(!force&&Date.now()<asmCmMfRetry))return;const L=asmList,at=L?asmListAt:0;if(!force&&asmCmMfAt===at)return;
   if(!force&&L&&!L.has(asmCmMfKey())){asmCmMfAt=at;return}   // the list says there is none: nothing to ask
   try{const r=await fetch(W.url+'?key='+asmCmMfKey(),{headers:{'x-app-token':W.tok},cache:'no-store'});
@@ -35,7 +35,7 @@ async function asmCmMfApply(keys){let n=0;
   for(const [k,t] of Object.entries(keys)){const r=renders[k];if(r&&(+r.t||0)<+t){delete renders[k];asmTried.delete(k);n++;try{await txs('meta','readwrite',st=>st.delete('render:'+k))}catch{}}}
   setAsmCmMf({keys});try{localStorage.setItem(ASM_CM_MF,JSON.stringify(asmCmMf))}catch{}
   if(n)console.info(`manifest: ${n} master photo${n===1?'':'s'} uploaded again, downloading them afresh`);return n}
-async function asmCmWarm(looks){if(asmCmWarming||(self.ASM_CM_SIZE||ASM_SIZE)>ASM_SIZE||typeof indexedDB==='undefined')return 0;
+/** @param {*} looks */ async function asmCmWarm(looks){if(asmCmWarming||(self.ASM_CM_SIZE||ASM_SIZE)>ASM_SIZE||typeof indexedDB==='undefined')return 0;
   const cn=/** @type {any} */(navigator).connection;if(cn&&(cn.saveData||/(^|-)2g$/.test(cn.effectiveType||'')))return 0;
   const kinds=[...new Set((looks||[]).map(o=>asmKindOf(o)).filter(k=>k&&!asmCmWarmed.has(k)))];if(!kinds.length)return 0;setAsmCmWarming(true);let n=0;
   try{for(const kind of kinds){if(document.hidden)break;asmCmWarmed.add(kind);if(!await asmCmGet(kind))continue;const job=asmCmBaseJob(kind);if(!job)continue;

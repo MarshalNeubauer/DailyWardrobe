@@ -39,9 +39,9 @@ async function dbRetry(m,run){const d=await dbLive();try{return await run(d)}cat
 const dbMark=(e,m)=>{try{if(e&&typeof e==='object'&&!e.dwStore)e.dwStore=m==='readonly'?'read':'write'}catch{}return e};
 /* a transaction that fails or is aborted (storage full) rejects with the browser's error, marked as a storage failure (safety.js shows it) */
 const txFail=(t,no,m)=>ev=>{let e=t.error||(ev&&ev.target&&ev.target.error)||new Error('the browser stopped it');try{e.dwStore=m==='readonly'?'read':'write'}catch{}no(e)};
-const txs=(store,m,f)=>dbRetry(m,d=>new Promise((ok,no)=>{const t=d.transaction(store,m);t.onerror=t.onabort=txFail(t,no,m);const q=f(t.objectStore(store));t.oncomplete=()=>ok(q&&q.result)}));
-const tx=(m,f)=>txs('items',m,f);
-const metaGet=async k=>{const r=await txs('meta','readonly',s=>s.get(k));return r?r.v:undefined},metaPut=(k,v)=>txs('meta','readwrite',s=>s.put({k,v}));
+/** @param {*} store @param {*} m @param {*} f */ const txs=(store,m,f)=>dbRetry(m,d=>new Promise((ok,no)=>{const t=d.transaction(store,m);t.onerror=t.onabort=txFail(t,no,m);const q=f(t.objectStore(store));t.oncomplete=()=>ok(q&&q.result)}));
+/** @param {*} m @param {*} f */ const tx=(m,f)=>txs('items',m,f);
+/** @param {*} k */ const metaGet=async k=>{const r=await txs('meta','readonly',s=>s.get(k));return r?r.v:undefined},metaPut=/** @param {*} k @param {*} v */ (k,v)=>txs('meta','readwrite',s=>s.put({k,v}));
 /* ---- the connection kept in the database too (2026-11-14: on the owner's iPhone the Home Screen app's localStorage lost the server
    address and the code after the app was force-closed during an update; the database, with the wardrobe, was untouched; Safari kept
    both). A copy of these keys is kept in meta 'conn' and put back at start-up where localStorage lost them, before anything reads them
@@ -53,7 +53,7 @@ const metaGet=async k=>{const r=await txs('meta','readonly',s=>s.get(k));return 
 const CONN_KEEP=['worker_url','app_token','remind'];
 let connReady=false;
 const connNow=()=>{const v={};for(const k of CONN_KEEP){const x=localStorage.getItem(k);if(x!=null)v[k]=x}return v};
-async function connKeep(addOnly){if(!connReady)return;try{if(addOnly===true)await atomic('meta','conn',r=>({put:{k:'conn',v:{...(r&&r.v||{}),...connNow()}}}));else await metaPut('conn',connNow())}catch(e){console.warn('connection copy not kept',e)}}
+/** @param {*} [addOnly] */ async function connKeep(addOnly){if(!connReady)return;try{if(addOnly===true)await atomic('meta','conn',r=>({put:{k:'conn',v:{...(r&&r.v||{}),...connNow()}}}));else await metaPut('conn',connNow())}catch(e){console.warn('connection copy not kept',e)}}
 const connRestored=db.then(async()=>{let n=0,del=false;
   // (not during a "Delete everything" that was cut off: about.js aboutResumeDelete; its copy is replaced, so the connection stays gone)
   try{del=!!localStorage.getItem('del_pending');const v=del?null:await metaGet('conn');if(v)for(const k of CONN_KEEP)if(v[k]&&!localStorage.getItem(k)){localStorage.setItem(k,v[k]);n++}}catch(e){console.warn('connection copy not read',e)}
@@ -75,7 +75,7 @@ const addTombstones=add=>atomic('meta','tombstones',r=>{const v={...(r&&r.v||{})
 const REC_CLEAN='1';
 const recSame=(a,b)=>{if(!b)return false;const ka=Object.keys(a),kb=Object.keys(b);if(ka.length!==kb.length)return false;
   return ka.every(k=>a[k]===b[k]||(a[k]&&typeof a[k]==='object'&&JSON.stringify(a[k])===JSON.stringify(b[k])))};
-function cleanStored(its,days){its=its||[];days=days||[];
+/** @param {*} its @param {*} days */ function cleanStored(its,days){its=its||[];days=days||[];
   try{if(localStorage.getItem('rec_clean')===REC_CLEAN)return {items:its,days}}catch{}
   const ci=its.map(cleanRecord),cd=days.map(cleanDay),same=(a,b)=>!!a&&typeof a==='object'&&recSame(a,b);
   // nothing is changed in storage before every original the check would change is kept on this phone (meta rec_kept, added to, never
@@ -97,7 +97,7 @@ function cleanStored(its,days){its=its||[];days=days||[];
    one read (no upload of its own; the next change stamps the cleaned settings and syncs them); the person is told once.
    -> the cleaned copy for start-up */
 const SET_CLEAN_V='1';
-function cleanStoredSettings(st){if(!st||typeof st!=='object')return st;const c=cleanSettings(st);
+/** @param {*} st */ function cleanStoredSettings(st){if(!st||typeof st!=='object')return st;const c=cleanSettings(st);
   try{if(localStorage.getItem('set_clean')===SET_CLEAN_V)return c}catch{}
   const flag=()=>{try{localStorage.setItem('set_clean',SET_CLEAN_V)}catch{}};
   if(c===st){flag();return c}
@@ -223,7 +223,7 @@ const afterScripts=f=>document.readyState==='complete'?f():addEventListener('loa
 // Its own flag, not document.readyState: the page's scripts are deferred, and while deferred scripts run readyState is already
 // 'interactive' (it was 'loading' while plain scripts ran), so reading it would run f before the later scripts.
 let domDone=false;addEventListener('DOMContentLoaded',()=>{domDone=true},{once:true});
-const afterDom=f=>domDone?f():addEventListener('DOMContentLoaded',()=>f(),{once:true});
+/** @param {*} f */ const afterDom=f=>domDone?f():addEventListener('DOMContentLoaded',()=>f(),{once:true});
 const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':/^claude/.test(q.model||'')?'Tagged by Claude.':'Tagged by AI.';   // (no model name: a tester read "Tagged by Claude (claude-mock)")
 /* tag one item: its photo (a data URL, or a canvas), plus the close-up, the measurement and the rest (tagExtras in tag-request.js).
    forType: fit the colours and pattern to this type (the card's own, when tagging again or Ask Claude) instead of the one Claude answers
@@ -343,7 +343,7 @@ const S=(list,v,k,at)=>`<select data-act-change="cardSel" ${at} data-f="${k}">${
    id, or else the same handler (onclick / onchange / oninput, or data-act and its data-* arguments) and data-k / data-c, gets it back (the same words first when there are
    several). Here, not in ui.js: Today is drawn by the start-up chain, which can run before ui.js has loaded. */
 let srLiveT=0;
-function announce(text){const el=document.querySelector('#sr-live');if(!el)return;const t=String(text||'').replace(/\s+/g,' ').trim();clearTimeout(srLiveT);el.textContent='';
+/** @param {*} text */ function announce(text){const el=document.querySelector('#sr-live');if(!el)return;const t=String(text||'').replace(/\s+/g,' ').trim();clearTimeout(srLiveT);el.textContent='';
   if(t)srLiveT=setTimeout(()=>{el.textContent=t},60)}
 const FOCUS_ATTRS=['onclick','onchange','oninput','data-k','data-c','data-s'];
 /* a control that names its handler with data-act (act.js) is told apart as an inline one was by its handler's text (the function and its
@@ -380,7 +380,7 @@ function keepFocus(root,draw){focusWatch();const a=document.activeElement,k=root
   return r}
 /* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
 function setSel(v){sel=v}
-function setView(v){view=v}
+/** @param {*} v */ function setView(v){view=v}
 function setFlt(v){flt=v}
 function setAiError(v){aiError=v}
 function setAiModel(v){aiModel=v}

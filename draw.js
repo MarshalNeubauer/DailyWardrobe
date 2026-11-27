@@ -552,7 +552,7 @@ let swN=0;
 /* drawn: Today's pieces list, vest row and outfit chips show the drawn swatch (the pattern and weave readings) even for an item with
    a close-up. Every drawn swatch is scaled to read at this size ('dot' in fabricDef): two repeats of a stripe or windowpane, three
    motif cells, two and a half weave repeats with their contrast raised. */
-function swatchSVG(i,drawn){
+/** @param {*} i @param {*} [drawn] */ function swatchSVG(i,drawn){
   const P='sw'+(swN++)+'-';let body;
   if(!drawn&&FABRIC.includes(i.type)&&i.swatch&&i.swSrc==='tex'&&i.texture&&TEXTURE_TYPES.includes(i.type))body=`<image href="${i.swatch}" width="16" height="16" preserveAspectRatio="xMidYMid slice"/>`;
   else if(FABRIC.includes(i.type)||HANDPICK_TYPES.includes(i.type)){const role=i.type==='tie'?'tie':i.type==='shirt'?'shirt':i.type==='pants'?'bot':'top';   // (the casual garments' stripe, heather or cable too, 2026-11-16)

@@ -59,7 +59,7 @@ async function picUndo(id,k,prev){const it=items.find(x=>x.id===id);if(!it)retur
 const setPhoto=(id,url,msg)=>setPic(id,'photo',url,msg),setTexture=(id,url,msg)=>setPic(id,'texture',url,msg);
 /* a close-up added later stays as taken: the item photo's light reading may not hold for another moment */
 /* a close-up under TEX_MIN_PX on its short side is refused, as on the Add card (2026-11-15, the re-audit: the editor took a 40×40 one) */
-async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f);
+/** @param {*} id @param {*} f */ async function replaceTexture(id,f){if(!f)return;try{const img=await loadImg(f);
   if(Math.min(img.width,img.height)<TEX_MIN_PX){toast(`That close-up is too small to show the weave (${img.width}×${img.height} pixels). Take it close to the cloth, at full size.`,6000);return}
   const sharp=shrink(img,CLOSE_MAX).toDataURL('image/jpeg',TAG_Q),tex=shrink(img,TEX_MAX).toDataURL('image/jpeg',.85),cur=items.find(x=>x.id===id);
   if(cur){await paperOf({texture:tex,photo:cur.photo,photoSm:cur.photoSm,phSig:cur.phSig});if(phEdit.id===id)phEdit.paper=texSig(tex)}   // the paper line under the photos (paperLine)

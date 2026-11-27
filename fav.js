@@ -24,18 +24,18 @@ const favAny=()=>favLooks().length>0||!!favItemSet();
 const favLookFrom=o=>o&&o.shirt&&(o.top||o.tie)?{j:o.top?o.top.id:null,sh:o.shirt.id,tie:o.tie?o.tie.id:null}:null;
 async function favSave(next){settings.fav={looks:next.looks,items:next.items};await saveUserSettings()}   // (stamped and synced; the plan cache cleared)
 /* the look's pieces as items (a piece deleted since: null) */
-const favPieces=l=>{const g=id=>id&&items.find(i=>i.id===id)||null;return {j:g(l.j),sh:g(l.sh),tie:g(l.tie)}};
+/** @param {*} l */ const favPieces=l=>{const g=id=>id&&items.find(i=>i.id===id)||null;return {j:g(l.j),sh:g(l.sh),tie:g(l.tie)}};
 const favLookName=l=>{const p=favPieces(l);return [p.j,p.sh,p.tie].filter(Boolean).map(i=>shortDesc(i)||nm(i)).join(', ')};
 /* ---- Today: the ♡ on the Wore pill, the ♥ in the last-worn pill ---- */
-function favPillSeg(o){const l=favLookFrom(o);if(!l||o.worn===false)return '';const on=!!favLookOf(o);
+/** @param {*} o */ function favPillSeg(o){const l=favLookFrom(o);if(!l||o.worn===false)return '';const on=!!favLookOf(o);
   return `<button type="button" class="wpfav${on?' on':''}" id="wpfav" aria-pressed="${on}" data-act="favLookTap" aria-label="Love this look">${on?FAV_HEART:FAV_HEART0}</button>`}
-const favLastIcon=o=>favLookOf(o)?`<span class="lwfav" role="img" aria-label="Favorite look">${FAV_HEART}</span>`:'';
+/** @param {*} o */ const favLastIcon=o=>favLookOf(o)?`<span class="lwfav" role="img" aria-label="Favorite look">${FAV_HEART}</span>`:'';
 async function favToggleLook(){const o=planFor()[key(sel)],l=favLookFrom(o);if(!l)return;
   const k=favLookKey(l),had=favLooks().find(x=>favLookKey(x)===k),set=async on=>{const n=favData();n.looks=n.looks.filter(x=>favLookKey(x)!==k);if(on)n.looks.push(had?{...had}:{...l,at:Date.now()});await favSave(n);renderToday()};
   await set(!had);
   toast(had?'Taken out of your favorite looks.':'Added to your favorite looks. The plan brings it back about every three weeks.',FAV_UNDO_MS,{label:'Undo',fn:()=>set(!!had)})}
 /* ---- the ⇄ picker: "Favorite looks", one row at its top, once one exists; a tap wears it on the day shown ---- */
-function favStrip(o){if(!o||o.frozen)return '';const n=di(sel),ok=i=>i&&inRotation(i,n);
+/** @param {*} o */ function favStrip(o){if(!o||o.frozen)return '';const n=di(sel),ok=i=>i&&inRotation(i,n);
   const L=favLooks().filter(l=>{const p=favPieces(l);return ok(p.sh)&&(!l.j||ok(p.j))&&(!l.tie||ok(p.tie))});if(!L.length)return '';
   const cur=favLookOf(o),last=favLastWorn(),card=l=>{const p=favPieces(l),k=favLookKey(l),on=!!cur&&favLookKey(cur)===k,lw=last[k];
     return `<button type="button" class="favlook${on?' cur':''}" data-act="favWearTap" data-k="${esc(k)}" aria-label="Wear this favorite look${dayWord()==='today'?' today':''}: ${esc(favLookName(l))}${on?', wearing':''}"><span class="favsw" aria-hidden="true">${[p.j,p.sh,p.tie].filter(Boolean).map(i=>`<i>${ask('swatch-svg',i,true)||''}</i>`).join('')}</span><span class="favnm">${esc(sentence(favLookName(l)))}<small>${on?'Wearing':lw?'Last worn '+statDate(lw):'Not worn yet'}</small></span></button>`};
@@ -45,24 +45,24 @@ function favLastWorn(){const out={},T=todayDate(),K=new Set(favLooks().map(favLo
   for(const r of Object.values(dayRecs)){if(!r.ids||r.worn===false)continue;const d=keyDate(r.date);if(d>=T)continue;const k=favKey(r.ids.top,r.ids.shirt,r.ids.tie);if(K.has(k)&&!(out[k]>=d))out[k]=d}
   return out}
 /* ---- favorite pieces: the item sheet's switch, the tiles' ♥, Wardrobe's chip ---- */
-function favItemRow(i){if(isHandPick(i))return '';const on=isFavItem(i.id);
+/** @param {*} i */ function favItemRow(i){if(isHandPick(i))return '';const on=isFavItem(i.id);
   return `<button type="button" class="favtog${on?' on':''}" role="switch" aria-checked="${on}" aria-describedby="favhint" data-act="favItemTap" data-id="${esc(i.id)}">${on?FAV_HEART:FAV_HEART0}<span class="favtog-t">Favorite, wear it more</span><span class="favsw2" aria-hidden="true"></span></button><p class="shelp favhint" id="favhint">${on?'It comes round about a fifth sooner, and wins when outfits tie.':'A shorter rest, and it wins when outfits tie.'}</p>`}
 async function favToggleItem(id){const it=items.find(i=>i.id===id);if(!it)return;const set=async on=>{const n=favData();n.items=n.items.filter(x=>x!==id);if(on)n.items.push(id);await favSave(n);emit('wardrobe-changed')};
   const had=isFavItem(id),name=sentence(itemTitle(it)||nm(it));await set(!had);
   toast(had?`${name} is no longer a favorite.`:`${name} is a favorite now.`,FAV_UNDO_MS,{label:'Undo',fn:()=>set(had)})}
-const favMark=i=>isFavItem(i.id)?`<span class="favmark" role="img" aria-label="Favorite">${FAV_HEART}</span>`:'';
+/** @param {*} i */ const favMark=i=>isFavItem(i.id)?`<span class="favmark" role="img" aria-label="Favorite">${FAV_HEART}</span>`:'';
 /* (the chip shows only while a piece is a favorite; with none left the Wardrobe shows everything: wardFlt) */
 const favChip=()=>{const s=favItemSet();if(!s)return '';const n=items.filter(i=>s.has(i.id)).length,on=!!(favWard&&favItemSet());
   return `<button class="chip favchip ${on?'on':''}" aria-pressed="${on}" data-act="favChipTap"><span aria-hidden="true">♥</span> Favorites ${n}</button>`};
 /* ---- the score card's Why: "One of your favorites, last worn 23 days ago (Oct 22). Everything in it has rested." (the last sentence
    when the jacket, shirt and tie have each rested FAV_RESTED days: the planner's rest written on the pieces) ---- */
 const FAV_RESTED=10;
-function favWhy(o){const l=favLookOf(o);if(!l)return '';const d=dayOnly(sel),k=favLookKey(l);let best=null;
+/** @param {*} o */ function favWhy(o){const l=favLookOf(o);if(!l)return '';const d=dayOnly(sel),k=favLookKey(l);let best=null;
   for(const r of Object.values(dayRecs)){if(!r.ids||r.worn===false)continue;const x=keyDate(r.date);if(x>=d||(best&&x<=best))continue;if(favKey(r.ids.top,r.ids.shirt,r.ids.tie)===k)best=x}
   const n=best?Math.round((+d-+best)/864e5):0,rested=[o.top,o.shirt,o.tie].filter(Boolean).every(i=>typeof i.rest==='number'&&i.rest>=FAV_RESTED)?' Everything in it has rested.':'';
   return best?`One of your favorites, last worn ${n} day${n===1?'':'s'} ago (${statDate(best)}).${rested}`:`One of your favorite looks.${rested}`}
 /* ---- Insights: "Your favorites", only when one exists ---- */
-function favStatsCard(S){if(!favAny())return '';const L=favLooks(),F=favItemSet(),T=todayDate(),m0=new Date(T.getFullYear(),T.getMonth(),1);
+/** @param {*} S */ function favStatsCard(S){if(!favAny())return '';const L=favLooks(),F=favItemSet(),T=todayDate(),m0=new Date(T.getFullYear(),T.getMonth(),1);
   const wornN={},next={},pw={},pn={};let month=0;
   for(const w of S.worn){const k=favKey(w.ids.top,w.ids.shirt,w.ids.tie);if(L.some(l=>favLookKey(l)===k)){wornN[k]=(wornN[k]||0)+1;if(w.d>=m0)month++}}
   for(const [k,o] of S.plan){const f=favLookOf(o);if(f&&!next[favLookKey(f)])next[favLookKey(f)]=keyDate(k)}

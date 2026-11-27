@@ -48,7 +48,7 @@ const ASM_OCP_CLOTH={name:'ocp-cloth',mm:211};
 const ASM_OCP_BOX={tab:[1050,529,161,166],rank:[1090,559,80,80]},ASM_OCP_INK='#55352B',ASM_OCP_DECV=3,ASM_OCP_MASTER_RANK='maj';
 /* lay the masks on the picture: the ink takes the tape's light (the pixel's lightness over the tape's mean in the box); a cover box is
    filled with the box's own cloth colour (the mean of its lighter half: the tab's cloth, not the leaf) */
-async function asmOcpPaint(res,D){if(!res||!D||!D.boxes)return res;let img=null,px,S;
+/** @param {*} res @param {*} D */ async function asmOcpPaint(res,D){if(!res||!D||!D.boxes)return res;let img=null,px,S;
   if(res.px){px=res.px;S=res.S}else if(res.url){img=await asmData(res.url);px=img.data;S=img.width}else return res;
   const L=srgbLin8,G=linSrgb8,ink=[1,3,5].map(i=>L(parseInt(D.ink.slice(i,i+2),16))),f=S/2048,Y=i=>.2126*L(px[i])+.7152*L(px[i+1])+.0722*L(px[i+2]);
   for(const b of D.boxes){const m=await asmData(b.img),MW=m.width,MH=m.height,x0=Math.floor(b.x*f),y0=Math.floor(b.y*f),x1=Math.ceil((b.x+b.w)*f),y1=Math.ceil((b.y+b.h)*f);

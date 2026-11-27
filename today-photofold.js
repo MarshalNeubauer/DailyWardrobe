@@ -9,12 +9,12 @@ import {serve} from './bus.js';
 import {$,MONTH_EASE} from './core.js';
 import {foldEdge,foldQuiet,keepInView,noMotion,pageScroll,revealNeed} from './ui.js';
 const PIC_MS=380;
-function picStop(el){const a=el._pa;el._pa=null;if(!a)return;for(const x of a.list)x.cancel();if(a.end)a.end()}
+/** @param {*} el */ function picStop(el){const a=el._pa;el._pa=null;if(!a)return;for(const x of a.list)x.cancel();if(a.end)a.end()}
 /* what lies below el on Today (top at or under `bottom`), and the cards el sits in */
 function picBelow(el,bottom){const out=[],root=$('#today');for(let n=el;n&&n!==root&&n.parentElement;n=n.parentElement)for(let s=n.nextElementSibling;s;s=s.nextElementSibling)if(s.getBoundingClientRect().top>=bottom-1)out.push(s);return out}
 function picCards(el){const out=[],root=$('#today');for(let n=el.parentElement;n&&n!==root;n=n.parentElement)if(n.classList.contains('mbox'))out.push(n);return out}
 /* the photo must be decoded first, or its height isn't known yet and the rest of it would jump in afterwards */
-async function picOpenReady(el,top,still){const im=el.querySelector('.rpanel-in img');
+/** @param {*} el @param {*} top @param {*} still */ async function picOpenReady(el,top,still){const im=el.querySelector('.rpanel-in img');
   if(im&&!(im.complete&&im.naturalWidth))await Promise.race([im.decode().catch(()=>{}),new Promise(r=>setTimeout(r,300))]);
   if(el.isConnected&&still())picOpen(el,top)}
 function picOpen(el,top){picStop(el);const b0=el.getBoundingClientRect(),below=picBelow(el,b0.bottom),cards=picCards(el),c0=cards.map(c=>c.getBoundingClientRect().height);
@@ -28,7 +28,7 @@ function picOpen(el,top){picStop(el);const b0=el.getBoundingClientRect(),below=p
   const pin=el.querySelector('.rpanel-in');if(pin)list.push(pin.animate([{opacity:0,transform:'translateY(-10px) scale(.96)'},{opacity:1,transform:'none'}],{duration:440,delay:40,easing:'cubic-bezier(.34,1.56,.64,1)',fill:'backwards'}));
   const a=el._pa={list,end:drop};list[0].finished.then(()=>{if(el._pa===a){el._pa=null;drop()}},()=>{});
   if(d>.5)pageScroll(scrollY+d,o.duration)}
-function picShut(el){picStop(el);const close=()=>{el.classList.add('pfast');el.classList.remove('open','instant')};
+/** @param {*} el */ function picShut(el){picStop(el);const close=()=>{el.classList.add('pfast');el.classList.remove('open','instant')};
   if(noMotion()||foldQuiet||!el.classList.contains('open')){close();keepInView(el);return}
   // the sizes shut, read before anything moves (two layouts, nothing drawn in between)
   const b1=el.getBoundingClientRect(),below=picBelow(el,b1.bottom),cards=picCards(el),c1=cards.map(c=>c.getBoundingClientRect().height);
@@ -44,7 +44,7 @@ function picShut(el){picStop(el);const close=()=>{el.classList.add('pfast');el.c
   const end=()=>{edges.forEach(e=>e.drop());if(scrollY>max)scrollTo(0,max);close()},a=el._pa={list,end};
   list[0].finished.then(()=>{if(el._pa!==a)return;el._pa=null;end();for(const x of list)x.cancel()},()=>{})}
 /* shut at once (another photo is opening): when it lay above `keep`, scroll by what it gave back, so `keep` doesn't move */
-function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().bottom<=keep.getBoundingClientRect().top+1,h0=r.getBoundingClientRect().height;
+/** @param {*} r @param {*} keep */ function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().bottom<=keep.getBoundingClientRect().top+1,h0=r.getBoundingClientRect().height;
   r.classList.add('pfast');r.classList.remove('open','instant');if(above){const dh=h0-r.getBoundingClientRect().height;if(dh>0)scrollBy(0,-dh)}}
 export {picStop,picOpenReady,picShut,picSnap};
 serve('pic-open-ready',picOpenReady);serve('pic-shut',picShut);serve('pic-snap',picSnap);serve('pic-stop',picStop);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

@@ -16,7 +16,7 @@ import {QWIN,SH,beltFit,clothesScore,colsOf,fam,finish,jacketGroup,leatherGroup,
 const keyDate2=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
 /* the workdays of the next `weeks` weeks, from tomorrow (today is worn or about to be: it isn't "the next 6 months"). Insights counts
    the same days (stats.js plannedDays), so both say the same number of outfits (they said 122 and 126, re-audit 2026-11-15) */
-function horizonKeys(T,weeks){const out=[],end=new Date(T.getFullYear(),T.getMonth(),T.getDate()+weeks*7);
+/** @param {*} T @param {*} weeks */ function horizonKeys(T,weeks){const out=[],end=new Date(T.getFullYear(),T.getMonth(),T.getDate()+weeks*7);
   for(const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+1);d<=end;d.setDate(d.getDate()+1))if(isWorkday(d))out.push(key(d));return out}
 
 /* what kind of problem a planner note describes */

@@ -13,7 +13,7 @@ import {plainErr} from './ui.js';
 import {acts} from './act.js';
 let storeToldAt=0;
 // tell the person a save failed (one failed save can reject more than one promise: said once)
-function saveFailed(e){console.warn('storage failure',e);if(dbDown)return;const now=Date.now();if(now-storeToldAt<1500)return;storeToldAt=now;toast(storeFailText(e),7000)}
+/** @param {*} e */ function saveFailed(e){console.warn('storage failure',e);if(dbDown)return;const now=Date.now();if(now-storeToldAt<1500)return;storeToldAt=now;toast(storeFailText(e),7000)}
 
 /* whether the wardrobe's storage opened: known before any later script's own wait on it fails */
 let dbDown=null,dbErr=null;
@@ -21,7 +21,7 @@ let dbDown=null,dbErr=null;
 function setStoreToldAt(v){storeToldAt=v}
 /* (moved from sync.js with its text unchanged, the restructure S6c) */
 /* this phone's storage failed during a sync: said in a toast every time (safety.js storeFailText), unless the full-page message already says it */
-function syncStoreTell(e){console.warn('storage failure during sync',e);if(dbDown)return;
+/** @param {*} e */ function syncStoreTell(e){console.warn('storage failure during sync',e);if(dbDown)return;
   try{setStoreToldAt(Date.now())}catch{}toast(storeFailText(e),9000)}
 db.then(()=>{dbDown=false},e=>{dbDown=true;dbErr=e});
 /* a storage failure nobody caught is shown; every other rejection is left alone */
@@ -42,7 +42,7 @@ const errMsg=e=>{const x=e&&e.error||e;return String(x&&x.message||x||'').trim()
 const errNoise=e=>{const m=errMsg(e),n=e&&e.name;return !m||n==='AbortError'||/^ResizeObserver loop|^Script error\.?$/.test(m)};
 const errList=()=>{try{const L=JSON.parse(localStorage.getItem(ERR_KEY)||'[]');return Array.isArray(L)?L:[]}catch{return []}};
 /* ctx: what was going on, for a failure the app caught and handled ("Close-up reading": the card still works, but the owner should hear) */
-function errNote(e,ctx){try{if(errNoise(e))return;const x=e&&e.error||e,at=String(x&&x.stack||'').split('\n').find(l=>/\.js/.test(l))||'';
+/** @param {*} e @param {*} [ctx] */ function errNote(e,ctx){try{if(errNoise(e))return;const x=e&&e.error||e,at=String(x&&x.stack||'').split('\n').find(l=>/\.js/.test(l))||'';
   const L=errList();L.push({t:Date.now(),m:(ctx?ctx+': ':'')+errMsg(e),at:at.trim().slice(0,160),v:served('app-version')?String(askFor('app-version')):'',w:errWhere()});
   localStorage.setItem(ERR_KEY,JSON.stringify(L.slice(-ERR_MAX)));errSoon()}catch{}}
 /* the page it happened on (Add, Today, …; Settings over it) */
@@ -70,7 +70,7 @@ const errReport=()=>errList().filter(x=>x&&x.t>Date.now()-7*86400000).slice(-8).
 
 /* storage can't be opened (a private window in some browsers, storage switched off for websites): a page that says so,
    over everything. Called from the start-up chain's catch, which also catches other errors: those show nothing here. */
-async function storageDown(e){
+/** @param {*} e */ async function storageDown(e){
   const open=await db.then(()=>true,()=>false);if(open&&!storeFailure(e))return false;
   if(document.getElementById('nostore'))return true;dbDown=true;
   const x=storeErr(e||dbErr),el=document.createElement('div');el.id='nostore';el.className='nostore';el.setAttribute('role','alertdialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','nostore-h');
@@ -107,7 +107,7 @@ function tagReason(status,j,e){const m=j&&typeof j.message==='string'&&j.message
   const t=pe&&/\s/.test(String(pe).trim())?oneStop(String(pe).replace(/\s*Try again later\b[^.]*\.?\s*$/i,'')):'';
   return t||'The photo couldn’t be read just now'}
 // called by ask() (app.js) when the server couldn't be asked or refused: returns the Add page's note and keeps the reason for the card
-function tagFailText(status,j,e){tagNetLast=false;
+/** @param {*} status @param {*} j @param {*} e */ function tagFailText(status,j,e){tagNetLast=false;
   if(!status){const off=navigator.onLine===false,net=off||e instanceof TypeError;tagNetLast=net;
     tagWhy=off?'You’re offline.':net?'The server couldn’t be reached. Check your connection.':'Something went wrong while reading it.';
     return `Photo tagging failed: ${off?'you’re offline':net?'the server couldn’t be reached':'something went wrong'}. Fill in the details below.`}

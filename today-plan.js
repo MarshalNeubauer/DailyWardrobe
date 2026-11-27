@@ -26,7 +26,7 @@ function planTrim(plan){const s=planStartDay();if(!s)return plan;const T=todayDa
   for(const k of Object.keys(plan)){const d=keyDate(k);if(d<s&&d<T&&!(dayRecs[k]&&dayRecs[k].ids))delete plan[k]}return plan}
 const planFor=()=>planMonth(view.y,view.m);
 /* (from today.js, the restructure S3e, 2026-11-26: Today, the month, the score card, the pictures and the rest ask it of a planned day) */
-const hasOutfit=o=>!!o&&!!(o.top||o.shirt);   // a day without a jacket (the no-jacket occasion) still has an outfit
+/** @param {*} o */ const hasOutfit=o=>!!o&&!!(o.top||o.shirt);   // a day without a jacket (the no-jacket occasion) still has an outfit
 /* ---- Today's month as last planned, kept in IndexedDB (meta PLAN_SNAP), so start-up draws Today without waiting for the planner
    (200-390 ms frozen at phone speed, audit 2026-11-13). Used only when nothing it depends on changed (planSig: the day, the items' and
    day records' stamps, the settings' stamp, the forecast and climate); the month is planned again as soon as the phone is idle
@@ -44,7 +44,7 @@ function snapIn(x,byId){if(!x||typeof x!=='object'||x instanceof Date)return x;
   if(x.$i!=null&&x.$x){const it=byId.get(x.$i);if(!it)throw new Error('kept plan names a missing item');const r={...it};for(const k of Object.keys(x.$x))r[k]=snapIn(x.$x[k],byId);return r}
   for(const k of Object.keys(x))x[k]=snapIn(x[k],byId);return x}
 // at start-up, before Today is first drawn: the kept month, if it still holds
-function planSnapUse(s){try{if(!s||!s.plan||s.sig!==planSig()||window.TEST_PLAN)return false;const byId=new Map(items.map(i=>[i.id,i]));
+/** @param {*} s */ function planSnapUse(s){try{if(!s||!s.plan||s.sig!==planSig()||window.TEST_PLAN)return false;const byId=new Map(items.map(i=>[i.id,i]));
     cache[s.k]=snapIn(s.plan,byId);cache.snap=s.k;planSnapUsed=s.k;return true}catch(e){console.warn('kept plan not used',e);return false}}
 let planSnapUsed=null;   // the month start-up drew from the kept plan (read by tests/speed.test.js)
 const outSig=o=>o&&JSON.stringify([idsOf(o),!!o.vest,!!o.suitDay,o.notes||[]]);

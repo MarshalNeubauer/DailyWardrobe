@@ -163,7 +163,7 @@ function packSetDate(which,v){if(!/^\d{4}-\d\d-\d\d$/.test(v||''))return renderP
   if(t.b>isoKey(last)){t.b=isoKey(last);toast(`A trip can be up to ${PACK_MAX} days here.`)}
   packT=t;packWrite('pack_trip',t);renderPack()}
 /* a whole trip at once (a trip found in the calendar and kept, calendar.js): its first and last day, at most PACK_MAX days, no limits */
-function packSetTrip(a,b){if(!/^\d{4}-\d\d-\d\d$/.test(a||'')||!/^\d{4}-\d\d-\d\d$/.test(b||''))return null;if(b<a)b=a;
+/** @param {*} a @param {*} b */ function packSetTrip(a,b){if(!/^\d{4}-\d\d-\d\d$/.test(a||'')||!/^\d{4}-\d\d-\d\d$/.test(b||''))return null;if(b<a)b=a;
   const last=new Date(keyDate(a));last.setDate(last.getDate()+PACK_MAX-1);if(b>isoKey(last))b=isoKey(last);
   packT={a,b,j:0,s:0};packWrite('pack_trip',packT);const pg=$('#pack');if(pg&&!pg.hidden)renderPack();return packT}
 function packSetCap(which,v){packT={...packTrip(),[which]:+v||0};packWrite('pack_trip',packT);renderPack()}
@@ -195,7 +195,7 @@ async function packCopy(){if(!packNow)return;const text=packNow.text;let ok=fals
 async function packShare(){if(!packNow||!navigator.share)return;try{await navigator.share({title:'Packing list',text:packNow.text})}catch(e){}}
 
 /* ---- the page ---- */
-function packShow(t){const el=$('#pack');if(!el)return;el.hidden=t!=='pack';if(t==='pack')renderPack()}
+/** @param {*} t */ function packShow(t){const el=$('#pack');if(!el)return;el.hidden=t!=='pack';if(t==='pack')renderPack()}
 function openPack(){subOpen();closeSettings();show('pack');scrollTo({top:0})}
 function renderPack(){
   const el=$('#pack');if(!el)return;

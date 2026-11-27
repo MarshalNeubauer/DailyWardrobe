@@ -60,7 +60,7 @@ async function fetchHolidays(cc){
    off when they came, so they stay days off whatever list or country comes next; Settings lists only the coming ones */
 function holPast(){const h=settings.holidays,T=isoKey(trueToday());/* (the corrected date: core.js) */if(!h)return {list:[],skip:[]};
   const list=(h.list||[]).filter(x=>x&&x.d<T);return {list,skip:(h.skip||[]).filter(d=>d<T&&list.some(x=>x.d===d))}}
-async function setHolidayCountry(cc,quiet){
+/** @param {*} cc @param {*} [quiet] */ async function setHolidayCountry(cc,quiet){
   // "No public holidays": none from now on; the past ones stay (country '': nothing is fetched)
   if(!cc){const past=holPast();settings.holidays=past.list.length?{country:'',list:past.list,skip:past.skip,fetched:0}:null;holidayMsg='';await saveUserSettings();todayDirty();renderDaysOffUI();return}
   if(!quiet){holidayMsg=`Loading the public holidays of ${countryName(cc)}…`;
@@ -99,7 +99,7 @@ async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off
   const r=await dayOffAdd(f,t,n);if(r.ok)for(const id of ['#cfg-off-from','#cfg-off-to','#cfg-off-name'])if($(id))$(id).value=''}
 /* days off from f to t (YYYY-MM-DD, t empty: one day) named n, from the form above or a calendar event kept (calendar.js) -> {ok, msg};
    the message goes under Days off either way */
-async function dayOffAdd(f,t,n){t=t||f;n=offNameCut(n);
+/** @param {*} f @param {*} t @param {*} n */ async function dayOffAdd(f,t,n){t=t||f;n=offNameCut(n);
   const say=m=>{holidayMsg=m;renderDaysOffUI();return {ok:false,msg:m}};if(!f)return say('Pick a date first.');
   const a=isoToDate(f),b=isoToDate(t),T=todayDate();if(b<a)return say('The last day is before the first.');if((+b-+a)/864e5>92)return say('That is more than three months: add it in parts.');
   // a typed date isn't held back by the field's min (audit 2026-11-15: "1 day off added." for a past day that never showed)
@@ -132,7 +132,7 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
 async function removeDaysOff(csv){const ds=new Set(csv.split(','));settings.daysOff=(settings.daysOff||[]).filter(x=>!ds.has(x.d));holidayMsg='';await saveUserSettings();todayDirty();renderDaysOffUI()}
 /* ---- Settings: formal days (any upcoming workday) ---- */
 const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-function renderFormalUI(msg){const list=$('#formal-list'),inp=$('#cfg-formal-date');if(!list)return;
+/** @param {*} [msg] */ function renderFormalUI(msg){const list=$('#formal-list'),inp=$('#cfg-formal-date');if(!list)return;
   const T=todayDate();if(inp){inp.min=isoDate(T);if(!inp.value)inp.value=isoDate(nextWorkday(T)||T)}
   const up=Object.values(dayRecs).filter(r=>occOf(r)&&keyDate(r.date)>=T).sort((a,b)=>keyDate(a.date).getTime()-keyDate(b.date).getTime());
   list.innerHTML=up.length?up.map(r=>{const l=shortDate(keyDate(r.date));return `<span class="fchip">${l} · ${occLabel(occOf(r))}<button type="button" aria-label="Make ${l} a regular day" data-act="occClear" data-day="${esc(r.date)}">×</button></span>`}).join(''):'<small class="mut">No occasions coming up.</small>';

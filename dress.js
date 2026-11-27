@@ -36,7 +36,7 @@ const newSuitVest=()=>settings.vestMode==='always'&&wearsJacket()&&wearsTie()?'y
 /* the Schedule category's one-line summary, when the dress code is not the usual one ('' otherwise: app.js writes its own) */
 function dressSummary(){const j=wearsJacket(),t=wearsTie();return j&&t?'':j?'no ties':t?'no jackets':'no jackets or ties'}
 /* why a piece is never worn, for a wardrobe without jackets (stats.js whyUnused; null = its usual answer) */
-function dressWhyUnused(i){
+/** @param {*} i */ function dressWhyUnused(i){
   if(i.type==='pants')return 'Your other pants go better with your shirts, or have rested longer.';
   if(i.type==='shirt')return 'Your other shirts go better with your pants, or have rested longer.';
   if(i.type==='shoes')return shoesWhyUnused(i,items.some(b=>b.type==='pants'&&shoeSuits(null,b,i)),'pants',false);   // (stats.js)
@@ -56,7 +56,7 @@ function dressWhyUnused(i){
    or from a backup file. */
 const legacyVest=i=>i.type==='suit'&&i.vest==null;
 let vestMigrating=false;
-async function migrateVests(synced){
+/** @param {*} [synced] */ async function migrateVests(synced){
   if(settings.vestDef||vestMigrating)return 0;
   // (the stored wardrobe is what counts: it is what syncs)
   const old=((await tx('readonly',s=>s.getAll()))||[]).filter(legacyVest);if(!old.length||settings.vestDef||vestMigrating)return 0;
@@ -73,7 +73,7 @@ async function migrateVests(synced){
 function dressNewItem(){if(settings.vestDef||vestMigrating||items.some(legacyVest))return;settings.vestDef=1;metaPut('settings',settings).catch(()=>{})}
 /* after a sync brought data in (app.js onSyncedData): the stored settings are the merged ones, so a flag or a dress code
    they don't have is dropped from memory too; then the suits that came in are looked at */
-function dressSynced(m){
+/** @param {*} m */ function dressSynced(m){
   if(m&&m.settings){if(!m.settings.vestDef)delete settings.vestDef;if(!m.settings.dress)delete settings.dress}
   if(!vestMigrating)migrateVests(true);
   askFor('ward-synced',m)}   // a sock from an older app: its toe cap to toeColor (wardrobe.js)   // a shirt still "nylon/spandex" or "nylon" from another device (wardrobe.js)

@@ -104,7 +104,7 @@ function setupCancel(e){setupTapGuard(e);const b=setup.before||{},changed=SETUP_
   saveUserSettings().then(clearLocks);todayDirty(false);renderToday();tell('Setup canceled: your answers are as they were.')}
 /* Skip (stay on Today) and Done (go and add the first item) both finish it for good.
    A new person who didn't choose gets no vest: the stored default is the three-piece suit on cooler days. */
-function setupFinish(toAdd,e){setupTapGuard(e);
+/** @param {*} toAdd @param {*} [e] */ function setupFinish(toAdd,e){setupTapGuard(e);
   if(setup.first&&!setupVestChosen())settings.vestMode='never';
   // (fix round 2) the time zone's country is stored with setupDone, its list to come (fetched 0): swiped away right after, the setup was
   // done with no holidays and nothing tried again; now the next start's refreshHolidays fetches it
@@ -127,7 +127,7 @@ async function setupHolidays(){if(!served('holiday-country-set'))return;const h=
   if(!(settings.holidays&&settings.holidays.country)){settings.holidays={country:cc,list:[],skip:[],fetched:0};await saveUserSettings()}}
 /* the app is being driven past a setup that opened by itself (items came in from a sync or a restore, another page was
    opened): it steps aside without being marked as done. One the user started from Settings stays. */
-function setupYield(t){
+/** @param {*} [t] */ function setupYield(t){
   if(!setupShown()){if(items.length||(t&&t!=='today'))setupNo=true;return}
   if(!setup.first)return;
   if(t&&t!=='today'){setupClose();return}
@@ -197,7 +197,7 @@ ${items.length?'':`<p class="su-help">Today shows your first outfit once you hav
 const setupHomeLink=()=>setup.joined&&typeof homeIOS==='function'&&homeIOS()&&homeNeeded()&&askFor('home-tester')?`<p class="su-help">For the app on your Home Screen: copy your invitation link here and paste it at its Connection step.</p>${askFor('home-copy-btn')??''}`:'';
 /* "Try a sample wardrobe" on the last step loads it, and the setup finishes (holidays, the vest) once it is stored (kit.js kitSampleDone;
    audit 2026-11-15); finished first, a kill before the sample was stored left the setup done and no sample (re-audit 2026-11-15) */
-function setupSample(e){setupTapGuard(e);askFor('kit-sample-load')}
+/** @param {*} e */ function setupSample(e){setupTapGuard(e);askFor('kit-sample-load')}
 function setupDraw(){if(!setupShown())return;const k=SETUP_STEPS[setup.at],n=SETUP_STEPS.length,last=setup.at===n-1;
   keepFocus(setupEl(),()=>setupHtml(k,n,last))}
 function setupHtml(k,n,last){

@@ -1115,7 +1115,7 @@ function frozenOutfit(rec,n,last){
 /* One simulation, resumable: planSim(start).upTo(day) plans every workday from start to that day and can be asked again
    for a later day, continuing where it stopped (the app keeps one for all the months it shows, so stepping to another
    month only plans the days that are new). The wardrobe, history and settings must not change in between: start a new one. */
-function planSim(start){const lists={},by=t=>lists[t]||(lists[t]=items.filter(i=>i.type===t&&!isHandPick(i)&&(!i.paused||arriveN(i)!=null)).sort((a,b)=>a.id<b.id?-1:1)),last={},plan={},T=todayDate();   // (never a hand-pick piece: core.js isHandPick; outfit() takes one only from the day's pick)
+/** @param {*} start */ function planSim(start){const lists={},by=t=>lists[t]||(lists[t]=items.filter(i=>i.type===t&&!isHandPick(i)&&(!i.paused||arriveN(i)!=null)).sort((a,b)=>a.id<b.id?-1:1)),last={},plan={},T=todayDate();   // (never a hand-pick piece: core.js isHandPick; outfit() takes one only from the day's pick)
 const hasLinks=by('cufflinks').length>0,W0=wardStart();let prev=[],prev3=null;
 const lockOf=(r,n)=>r&&r.lock&&!lockStale(r,byOn(n))?r.lock:null;   // a day's lock, unless the wardrobe has outgrown it (lockStale)   // prev3: the workday before those two (only its tie is used: tieRepeat)   // the previous workdays (latest first): jacket, shirt and tie colour groups, and the tie
 // jackets already fixed on the next workdays (worn, or picked by the user): the next one's colour group, and the ids of
@@ -1202,8 +1202,8 @@ const peek=(k,rec)=>withColRun(()=>{const t=keyDate(k);upTo0(new Date(t.getFullY
 return {plan,upTo:end=>withColRun(()=>upTo0(end)),peek}}
 /* every month from two months back onward is simulated from one shared start, so neighbouring months agree on the days they
    share (the plan depends on what came before: rest and the previous workdays' jacket colours) */
-const planStart=(y,m)=>{const T=todayDate();return new Date(Math.min(+new Date(y,m,-13),+new Date(T.getFullYear(),T.getMonth()-2,-13)))};
-function buildPlan(y,m){return planSim(planStart(y,m)).upTo(new Date(y,m+1,0))}
+/** @param {*} y @param {*} m */ const planStart=(y,m)=>{const T=todayDate();return new Date(Math.min(+new Date(y,m,-13),+new Date(T.getFullYear(),T.getMonth()-2,-13)))};
+/** @param {*} y @param {*} m */ function buildPlan(y,m){return planSim(planStart(y,m)).upTo(new Date(y,m+1,0))}
 
 /* (moved from stats.js with its text unchanged, the restructure S6c) */
 /* never-worn shoes, in a sentence: whyUnused, and dress.js dressWhyUnused for a wardrobe without jackets (ok: they suit some of the

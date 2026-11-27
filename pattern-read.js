@@ -63,7 +63,7 @@ const motifPat=p=>MOTIF_PATS.includes(patBase(p)||'');
    tiny light dots, which Claude reads as a motif (the tie painter draws motifs and bands; a pure weave, layout texture, stays plain) */
 const claudeOnly=(t,p)=>motifPat(p)||texPat(t,p)||tieWeave(t,p)||camoPat(p);   // (a camouflage: Claude's reading, else its colours clustered from the pixels, camoFromPixels; never the band reader)
 /* a card's pattern can be read: a band pattern, a weave Claude described, or a pattern only Claude can read (a motif, a shirt's weave) */
-const readable=(t,p,w)=>settable(t,p,w)||claudeOnly(t,p);
+/** @param {*} t @param {*} p @param {*} w */ const readable=(t,p,w)=>settable(t,p,w)||claudeOnly(t,p);
 /* Claude's reading drawn with the photo's colours: bands (stripes, checks, plaids) or a motif (small figures on a grid) */
 /* an answer of a shape it can't draw (2026-11-16: across without bands threw, and the Add card's Confirm stayed off) gives null: the
    pixel reader takes over, as when Claude sent nothing */
@@ -103,7 +103,7 @@ function settNote(q){if(!readable(q.type,q.pattern,q.weave))return '';
   if(q.settReject)return `<p class="tagnote settrej"><small>The pattern reader saw ${q.settReject==='cross'?'lines crossing the stripes':'level bands'}, which isn't ${esc(patName(q.pattern).toLowerCase())}: drawn with the simple pattern.</small></p>`;
   return q.sett?`<p class="tagnote"><small>Pattern: ${settSummary(q.sett)}.</small><button type="button" class="chipbtn" data-act="settTap" ${cardAt(q)}>Use the simple pattern</button></p>`:''}
 /* Wardrobe editor: read it again from the kept sharp copy (or the close-up) */
-async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
+/** @param {*} id */ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   const toCanvas=async src=>{if(!src)return null;try{const im=await imgOf(src),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);return c}catch{return null}};
   const full=it.pbox?await toCanvas(await tagImgOf(it.id,it)):null,tex=await toCanvas(it.texture);
   let spec=null;const img=await tagImgOf(it.id,it)||it.photo;if(localStorage.getItem('worker_url')&&img){toast('Claude is reading the pattern…');spec=await claudePattern({image:img,closeup:await sharpCloseOf(it),type:it.type})}

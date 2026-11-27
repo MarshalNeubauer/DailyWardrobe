@@ -106,7 +106,7 @@ function ovlCuSuit(i){if(!ovlCuWants(i))return null;const k=ovlCuKey(i);let e=OV
       .catch(err=>{if(String(err&&err.message)!=='no tile')console.warn('twill swatch not made',err);e.fail=true;put(ovlSuitOld(i))})}
   if(e.url)return `<img src="${e.url}" alt="">`;if(e.fail)return null;
   return `<svg data-hb="${e.id}" viewBox="0 0 16 16" aria-hidden="true"><rect width="16" height="16" fill="${colOf(i)}"/></svg>`}
-const ovlPiece=i=>{if(i.type==='suit'||i.type==='blazer')return ovlCuSuit(i)||ovlSuitOld(i);
+/** @param {*} i */ const ovlPiece=i=>{if(i.type==='suit'||i.type==='blazer')return ovlCuSuit(i)||ovlSuitOld(i);
   if(i.type==='shirt'){const h=ovlHbShirt(i);if(h)return h}
   return ovlCloseup(i)&&!ovlDrawn(i)?`<img src="${srcOk(i.swatch)}" alt="">`:ovlSvg(i)};
 /* ---- double-tap the Today picture (the photo, or the drawing) to zoom in on the tie and shirt, again to zoom back out; while
@@ -114,7 +114,7 @@ const ovlPiece=i=>{if(i.type==='suit'||i.type==='blazer')return ovlCuSuit(i)||ov
    so 2.5x shows it at about its own resolution (any more is only blur), with a collar, tie knot or shirt front filling the frame. ---- */
 const ZOOM=2.5;let zoom=null,zoomPan=null,lastTap=null,zoomTouchAt=0;
 const zoomTarget=()=>{const c=$('#mannequin-container');return c&&c.querySelector(':scope > img, :scope > svg')};
-function applyZoom(anim){const c=$('#mannequin-container'),t=zoomTarget();if(!c||!t)return;const on=!!zoom&&zoom.k===key(sel);if(!on)zoom=null;
+/** @param {*} anim */ function applyZoom(anim){const c=$('#mannequin-container'),t=zoomTarget();if(!c||!t)return;const on=!!zoom&&zoom.k===key(sel);if(!on)zoom=null;
   c.classList.toggle('zoomed',on);t.style.transformOrigin='0 0';t.style.transition=anim&&!matchMedia('(prefers-reduced-motion: reduce)').matches?'transform .28s cubic-bezier(.2,.8,.2,1)':'none';
   t.style.transform=on?`translate(${zoom.x.toFixed(1)}px,${zoom.y.toFixed(1)}px) scale(${ZOOM})`:''}
 function clampZoom(){const c=$('#mannequin-container');if(!c||!zoom)return;const W=c.clientWidth,H=c.clientHeight;   // the frame, which the picture fills (an <svg> has no offsetWidth)
@@ -139,7 +139,7 @@ const SW_SPOT={suit:{top:[.341,.606,.106],shirt:[.419,.12,.043],tie:[.481,.315,.
 let swOpen=null;
 const swKind=o=>{let k=null;try{k=typeof asmCmUse==='function'&&typeof ASM_ON!=='undefined'&&ASM_ON?asmCmUse(o):null}catch(e){}return SW_SPOT[k]?k:o.top?(o.vest?'vest':'suit'):o.tie?'shirt-tie':'shirt-open'};
 const swSpot=(o,s)=>(SW_SPOT[swKind(o)]||{})[s]||SW_SPOT.suit[s]||SW_SPOT['shirt-tie'][s];
-function swApply(anim){const c=$('#mannequin-container'),t=zoomTarget(),o=planFor()[key(sel)];if(!c)return;
+/** @param {*} anim */ function swApply(anim){const c=$('#mannequin-container'),t=zoomTarget(),o=planFor()[key(sel)];if(!c)return;
   askFor('care-band-soon');   // the cleaning banner's cut follows the swatches as they move (care.js)
   const on=!!(swOpen&&swOpen.k===key(sel)&&t&&o&&o[swOpen.s]&&c.classList.contains('photo')&&c.querySelector('.swstack'));if(!on)swOpen=null;
   c.scrollTop=0;c.scrollLeft=0;   // (a zoomed photo made the frame scrollable, and the tapped swatch's focus scrolled it: styles.css clips it too)
@@ -153,7 +153,7 @@ function swApply(anim){const c=$('#mannequin-container'),t=zoomTarget(),o=planFo
   const it=o[swOpen.s],mk=(cls,html)=>{let e=c.querySelector(':scope > .'+cls);if(!e){e=document.createElement('div');e.className=cls;e.setAttribute('aria-hidden','true');c.appendChild(e)}if(html!=null)e.innerHTML=html;return e};
   mk('swlens',ovlPiece(it));   // (no name under it: the owner's ask, 2026-11-13, so the small swatches keep more of their size)
   const ring=mk('swring'),d=cl(2*r*SW_Z,.16,.26)*W;ring.style.width=ring.style.height=d+'px';ring.style.left=(tx+SW_Z*fx*W)+'px';ring.style.top=(ty+SW_Z*fy*H)+'px'}
-function swTap(s){const k=key(sel);if(zoom){zoom=null;applyZoom(false)}swOpen=swOpen&&swOpen.k===k&&swOpen.s===s?null:{k,s};swApply(true)}
+/** @param {*} s */ function swTap(s){const k=key(sel);if(zoom){zoom=null;applyZoom(false)}swOpen=swOpen&&swOpen.k===k&&swOpen.s===s?null:{k,s};swApply(true)}
 function swClose(){if(swOpen){swOpen=null;swApply(true)}}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,OVL_CU,OVL_HB,ovlCuKey,ovlGrain,ovlHbKey,ovlHbShirt,ovlItem,ovlSuitPng,ovlSvg,ovlWeave,get swOpen(){return swOpen},set swOpen(v){swOpen=v},toggleZoom,zoomTarget,ovlPiece,swTap,get zoom(){return zoom},zoomOut};
