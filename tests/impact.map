@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	a8114d4bf64b52bc84a4
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -3877,6 +3876,7 @@ bus.test.js	sync.js	<any>
 bus.test.js	tag-request.js	<any>
 bus.test.js	tagging.js	<any>
 bus.test.js	tests/appsrc.js	<any>
+bus.test.js	tests/webkit.js	<any>
 bus.test.js	theme.js	<any>
 bus.test.js	toast.js	<any>
 bus.test.js	today-gestures.js	<any>
@@ -4804,6 +4804,7 @@ clock.test.js	tag-request.js	<loaded>
 clock.test.js	tagging.js	<loaded>
 clock.test.js	tests/appsrc.js	<any>
 clock.test.js	tests/fixedplan.js	<any>
+clock.test.js	tests/webkit.js	<any>
 clock.test.js	theme.js	<loaded>	applyTheme
 clock.test.js	toast.js	<loaded>	toast	toastOff
 clock.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>todayTouch	@{constroot$today}	todayBusy
@@ -6372,6 +6373,7 @@ deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
 deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
+deps.test.js	tests/webkit.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
 deps.test.js	today-gestures.js	<any>
@@ -7303,6 +7305,7 @@ fieldmerge.test.js	tag-request.js	<loaded>	describeEstimate	readEstimate	visTok
 fieldmerge.test.js	tagging.js	<loaded>
 fieldmerge.test.js	tests/appsrc.js	<any>
 fieldmerge.test.js	tests/fixedplan.js	<any>
+fieldmerge.test.js	tests/webkit.js	<any>
 fieldmerge.test.js	theme.js	<loaded>	applyTheme
 fieldmerge.test.js	toast.js	<loaded>	toast	undoFab	undoHere
 fieldmerge.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>todayTouch	@{constroot$today}	todayBusy
@@ -10410,6 +10413,7 @@ mergeshared.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	dayUnflat	dayWins	f
 mergeshared.test.js	tests/appsrc.js	<any>
 mergeshared.test.js	tests/modscope.js	<any>
 mergeshared.test.js	tests/scriptlist.js	<any>
+mergeshared.test.js	tests/webkit.js	<any>
 mergeshared.test.js	worker/backup.js	<any>	<loaded>	mergeLite	now	sampleOnly
 modload.test.js	about.js	<any>	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 modload.test.js	account.js	<any>	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
@@ -14386,6 +14390,7 @@ rollback.test.js	tag-request.js	<loaded>
 rollback.test.js	tagging.js	<loaded>
 rollback.test.js	tests/appsrc.js	<any>
 rollback.test.js	tests/fixedplan.js	<any>
+rollback.test.js	tests/webkit.js	<any>
 rollback.test.js	theme.js	<loaded>	applyTheme
 rollback.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 rollback.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	todayBusy
@@ -16962,6 +16967,7 @@ settingsmerge.test.js	tag-request.js	<loaded>
 settingsmerge.test.js	tagging.js	<loaded>
 settingsmerge.test.js	tests/appsrc.js	<any>
 settingsmerge.test.js	tests/fixedplan.js	<any>
+settingsmerge.test.js	tests/webkit.js	<any>
 settingsmerge.test.js	theme.js	<loaded>	applyTheme
 settingsmerge.test.js	toast.js	<loaded>
 settingsmerge.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>todayTouch	@{constroot$today}	todayBusy
@@ -17152,7 +17158,7 @@ setup.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remind
 setup.test.js	safety.js	<loaded>	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 setup.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 setup.test.js	settings.js	<loaded>	@constsetChan{try}	@onpageshowing	@onsubopening	backupSummary	closeSettings	dayTap	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	setCatOpen	setDarkShirts	setLock	setOpenTap	setSetSeen	setVestMode	setWanted	settingsPart	settingsSummaries	todayDirty	toggleDay	weekFirst
-setup.test.js	setup.js	<loaded>	@servesetupconndraw	setupAddTap	setupAgainTap	setupAuto	setupBackTap	setupBefore	setupCancel	setupCancelTap	setupCityOpen	setupCityTap	setupCityType	setupClose	setupConnect	setupConnectTap	setupConnected	setupDay	setupDayTap	setupDays	setupDraw	setupDress	setupEl	setupFindTap	setupFinish	setupGeoTap	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHomeLink	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkWaiting	setupLocate	setupNeeds	setupNextTap	setupOpen	setupPick	setupResume	setupSample	setupSave	setupSearch	setupSetDress	setupShown	setupSkipTap	setupStart	setupStep	setupStepsNow	setupSwTap	setupSwitch	setupTapGuard	setupToday	setupUnitTap	setupUnits	setupVest	setupVestChosen	setupVestPick	setupWardEmpty	setupYield	tzCountry
+setup.test.js	setup.js	<loaded>	@servesetupconndraw	setupAddTap	setupAgainTap	setupAuto	setupBackTap	setupBefore	setupCancel	setupCancelTap	setupCityOpen	setupCityTap	setupCityType	setupClose	setupConnect	setupConnectTap	setupConnected	setupDay	setupDayTap	setupDays	setupDraw	setupDress	setupEl	setupFindTap	setupFinish	setupGeoTap	setupGo	setupGoDouble	setupHolCountry	setupHolidays	setupHomeLink	setupHtml	setupInert	setupKeep	setupLinkChecking	setupLinkWaiting	setupLocate	setupNeeds	setupNextTap	setupOpen	setupPick	setupResume	setupSample	setupSave	setupSearch	setupSetDress	setupShown	setupSkipTap	setupStart	setupStep	setupStepsNow	setupSwTap	setupSwitch	setupTapGuard	setupToday	setupUnitTap	setupUnits	setupVest	setupVestChosen	setupVestPick	setupWardEmpty	setupWx	setupYield	tzCountry
 setup.test.js	shop.js	<loaded>	@db.then	@db.thenmetaGetshop.then	@document.addEventListenerkeydown	@serveshopopen	closeShop	shopButton
 setup.test.js	snapshots.js	<loaded>	@onsettingscategory
 setup.test.js	srgb.js	<loaded>	linSrgb	srgbLin	srgbLin8
@@ -17175,7 +17181,7 @@ setup.test.js	today-plan.js	<loaded>	@serveplansnap	hasOutfit	planDirty	planFor	
 setup.test.js	today.js	<loaded>	@document.addEventListenervisibilitychange	addForSlot	belowBox	figureStage	goToday	goneNote	keepHome	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slots	todaySay	vestRow	wornBar	wornPill	wxFit	wxMissing	wxPreload
 setup.test.js	ui.js	<loaded>	@onsettingsdraw	@onsettingsopen	@onsettingssummaries	@window.addEventListenerkeydown	addGate	advClose	connSummary	layerClose	layerInert	layerOpen	layerUp	needConn	netErr	noMotion	plainErr	renderConnUI	tell	uiEsc
 setup.test.js	wardrobe.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	@servewardpendingrestore	@servewardsynced	@whenPulled	itemFieldNow	matMigrate	matRenameTo	sockLegacy	sockToeMigrate	wardBack	wardBar	wardCount	wardFlt	wardFlush	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
-setup.test.js	weather.js	<loaded>	@onsettingsdraw	@onsettingssummaries	cityEnglish	cityKey	cityLang	cityList	cityPick	findCity	geoName	loadClimate	loadWeather	locCC	renderWxLoc	setCityFound	setLocation	setUnits	unit	unitCC	useMyLocation	wxChip
+setup.test.js	weather.js	<loaded>	@onsettingsdraw	@onsettingssummaries	@servewxcityfound	cityEnglish	cityKey	cityLang	cityList	cityPick	findCity	geoName	loadClimate	loadWeather	locCC	renderWxLoc	setCityFound	setLocation	setUnits	unit	unitCC	useMyLocation	wxChip
 setup.test.js	who.js	<loaded>	@serveacctme	acctRole	applyRole	isTester	rememberRole	setAcct
 shade.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 shade.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctStart
@@ -22053,6 +22059,7 @@ weather.test.js	sync-status.js	<loaded>	@onbackupchanged	@onsettingsopen	safariW
 weather.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	@onsettingssaved	afterPull	localState	pulledYet	safariTab	scheduleSync	setSyncStatus	syncNeedsPull	syncNow	syncOnce	syncPaused	syncWaiting
 weather.test.js	tag-request.js	<loaded>
 weather.test.js	tagging.js	<loaded>
+weather.test.js	tests/webkit.js	<any>
 weather.test.js	theme.js	<loaded>	applyTheme
 weather.test.js	toast.js	<loaded>
 weather.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold

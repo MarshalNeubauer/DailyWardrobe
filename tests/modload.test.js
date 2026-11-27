@@ -96,7 +96,7 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
   const FIX=path.join(ROOT,'tests','fixtures','cm'),data=f=>`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(f).toString('base64');
   const recs={};for(const kind of ['suit','vest','suit-open','shirt-tie','shirt-open']){const d=path.join(FIX,kind);for(const f of fs.readdirSync(d)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');recs[kind+'|'+n]=data(path.join(d,f))}}
   const served={};
-  const ctxFor=async(state,fail)=>{const ctx=await browser.newContext({viewport:{width:402,height:874},serviceWorkers:'block',...(state?{storageState:state}:{})});
+  const ctxFor=async(state,fail,swap)=>{const ctx=await browser.newContext({viewport:{width:402,height:874},serviceWorkers:'block',...(state?{storageState:state}:{})});
     await ctx.route(u=>!u.href.startsWith(origin)&&!u.href.startsWith(HOST)&&/^https?:/.test(u.href),route=>route.fulfill({status:503,headers:{'content-type':'application/json','access-control-allow-origin':'*'},body:'{"error":"server"}'}));
     await ctx.route(HOST+'**',route=>{const u=new URL(route.request().url()),k=u.searchParams.get('key');const j=(x,st=200)=>route.fulfill({status:st,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(x)});
       if(route.request().method()!=='GET')return j({ok:true,rev:1,saved:Date.now()});
@@ -109,6 +109,7 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
       for(let k=0;k<3;k++)try{const r=await route.fetch({timeout:30000});const body=await r.text();await route.fulfill({response:r,body:body+`\n;(globalThis.__ran||(globalThis.__ran=[])).push(${JSON.stringify(f)});\n`});return}catch(e){}
       ctx.unmarked.add(f);await route.continue().catch(()=>{})})}
     if(fail)await ctx.route(u=>u.href.startsWith(origin)&&u.pathname==='/'+fail,route=>route.fulfill({status:404,contentType:'text/plain',body:''}));
+    if(swap)await ctx.route(u=>u.href.startsWith(origin)&&u.pathname==='/'+swap.f,route=>route.fulfill({status:200,contentType:'text/javascript',body:swap.body+`\n;(globalThis.__ran||(globalThis.__ran=[])).push(${JSON.stringify(swap.f)});\n`}));
     await ctx.addInitScript(()=>{self.ASM_CM_SIZE=512});await ctx.clock.setFixedTime(DAY);return ctx};
   // the seeded wardrobe, the masters' keys and the server address, once: every case starts from this stored state
   const s=await ctxFor(null,null),sp=await s.newPage();await sp.goto(url);await sp.waitForFunction(()=>window.appReady,null,{timeout:90000});
@@ -135,12 +136,12 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
     failed:/went wrong while the app was starting/.test((q('#toast')||{}).textContent||'')}});   // (start.js startFailed's toast: the restructure S6f)
   const failedBy={};
   const ranBy={};
-  const one=async f=>{const ctx=await ctxFor(state,f||'');try{const p=await ctx.newPage();await p.goto(url,{waitUntil:'load'});const t0=Date.now();let r;
+  const one=async(f,swap,label)=>{const ctx=await ctxFor(state,f||'',swap);try{const p=await ctx.newPage();await p.goto(url,{waitUntil:'load'});const t0=Date.now();let r;
       let drawn=0,failed=false;for(;;){r=await look(p);failed=failed||r.failed;if(r.today&&!drawn)drawn=Date.now();if(r.card||(r.today&&r.fig)||(drawn&&Date.now()-drawn>8000)||Date.now()-t0>20000)break;await wait(250)}
       // (the notes read once they stop coming: a second without a new one)
       for(let i=0,was=-1,still=0;i<40&&still<4;i++){const n=await p.evaluate(()=>(globalThis.__ran||[]).length);still=n===was?still+1:0;was=n;await wait(250)}
-      r.ran=await p.evaluate(()=>(globalThis.__ran||[]).slice());failedBy[f||'(none)']=failed||(await look(p)).failed;
-      ranBy[f||'(none)']=r.ran.concat([...(ctx.unmarked||[])]);return r.card?'card':!r.today?'no-today':r.fig?'picture':'no-picture'}
+      r.ran=await p.evaluate(()=>(globalThis.__ran||[]).slice());failedBy[label||f||'(none)']=failed||(await look(p)).failed;
+      ranBy[label||f||'(none)']=r.ran.concat([...(ctx.unmarked||[])]);return r.card?'card':!r.today?'no-today':r.fig?'picture':'no-picture'}
     catch(e){return 'error: '+e.message.split('\n')[0].slice(0,80)}finally{await ctx.close().catch(()=>{})}};
   const got={},ms={},queue=['(none)',...page];
   await Promise.all([0,1,2,3].map(async()=>{for(let f;(f=queue.shift())!==undefined;){const t=Date.now();got[f]=await one(f==='(none)'?null:f);ms[f]=Date.now()-t}}));
@@ -150,11 +151,18 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
   // runner, not on Windows' WebKit (no painted picture there in the lab survey), on Linux's WebKit and Chromium within seconds; so either, but never the card or no Today)
   const fits=(f,g)=>{const x=expected(C,f,E);return x==='painted'?g==='picture'||g==='no-picture':g===x};
   const off=page.filter(f=>!fits(f,got[f]));
-  /* the restructure S6f: an optional file's 404 loses only its feature, so start-up itself never fails (start.js startFailed: its toast,
-     the stored settings not applied), unless the contract records that it does (startFails, with the reason). On main merge.js's 404 failed
-     start-up and still drew the figure on the held Monday, so the figure alone let it pass (S6x, #666) */
-  const startBad=page.filter(f=>C.files[f].class==='optional'&&failedBy[f]&&!C.files[f].startFails),startStale=page.filter(f=>C.files[f].startFails&&got[f]&&!/^error/.test(got[f])&&!failedBy[f]);
-  ok(!failedBy['(none)']&&!startBad.length&&!startStale.length,T+`an optional file's 404 doesn't fail start-up, but where the contract says so (${page.filter(f=>C.files[f].startFails).join(', ')||'none'})`+(failedBy['(none)']?': start-up failed with every file there':'')+(startBad.length?': start-up failed without '+startBad.join(', '):'')+(startStale.length?'; the contract says start-up fails without '+startStale.join(', ')+', and it no longer does':''));
+  /* an optional file's 404 loses only its feature, so start-up itself never fails (start.js startFailed: its toast, the stored settings
+     not applied): the restructure S6h, the owner's "Do it" of 2026-11-27 (S6f had recorded eight files that did, `startFails`, now gone).
+     On main merge.js's 404 failed start-up and still drew the figure on the held Monday, so the figure alone let it pass (S6x, #666) */
+  const startBad=fb=>page.filter(f=>C.files[f].class==='optional'&&fb[f]);
+  ok(!failedBy['(none)']&&!startBad(failedBy).length,T+`no optional file's 404 fails start-up (${page.filter(f=>C.files[f].class==='optional').length} optional files)`+(failedBy['(none)']?': start-up failed with every file there':'')+(startBad(failedBy).length?': start-up failed without '+startBad(failedBy).join(', '):''));
+  // the check itself: start.js made to need a socket about.js serves (as start-up needed setup.js's and daysoff.js's before S6h), with
+  // about.js missing: start-up fails, and the check names about.js
+  const startSrc=fs.readFileSync(path.join(ROOT,'start.js'),'utf8'),planted=startSrc.replace('function startJobs(){',"function startJobs(){need('app-version');");
+  ok(planted!==startSrc,T+'(start.js can be planted with a need of about.js)');
+  await one('about.js',{f:'start.js',body:planted},'(planted)');
+  const pb=startBad({...failedBy,'about.js':failedBy['(planted)']});
+  ok(failedBy['(planted)']&&pb.length===1&&pb[0]==='about.js'&&!failedBy['about.js'],T+`planted: with start.js needing about.js's app-version and about.js missing, start-up fails and the check names it (${pb.join(', ')||'nothing caught'}; about.js alone ${failedBy['about.js']?'fails':'starts'})`);
   const tally={};for(const f of page)tally[got[f]]=(tally[got[f]]||0)+1;
   // what else each optional file's 404 takes down: exactly the files that import it, directly or through others (its own group, or a
   // group that needs its group: they fail together), and every other page script still runs to its end

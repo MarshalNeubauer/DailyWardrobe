@@ -1,5 +1,5 @@
 /* Daily Wardrobe: shared constants and item helpers (no DOM access; also loaded by the analysis worker) */
-import {ask,served} from './bus.js';   // (the Look beta's switch, look-base.js, for tagTypesNow: the restructure S6f)
+import {ask,served,SET_META} from './bus.js';   // (the Look beta's switch, look-base.js, for tagTypesNow: the restructure S6f; the settings' stamps, S6h)
 const TYPES={suit:'Suit',blazer:'Blazer',pants:'Pants',shirt:'Dress shirt',tie:'Tie',tieclip:'Tie clip',pocketsquare:'Pocket square',watch:'Watch',shoes:'Shoes',belt:'Belt',socks:'Socks',cufflinks:'Cufflinks',overcoat:'Overcoat',raincoat:'Raincoat',
   // the casual garments (2026-11-16, the owner's approved new types): worn only when picked by hand on Today (isHandPick)
   tee:'T-shirt',polo:'Polo',henley:'Henley',sweater:'Sweater',sweatshirt:'Sweatshirt',hoodie:'Hoodie',qzip:'Quarter-zip',cardigan:'Cardigan',chore:'Chore jacket',
@@ -657,6 +657,7 @@ function stampSettings(s,t){t=t||nowMs();if(!s)return s;
    the app has a default for it, back to that default with stamp 0, so it never wins over the removal (2026-11-15, the audit: a roll-back's
    removed day off and holidays stayed in memory, and the next change on that phone stamped them back for every device) */
 function takeSettings(cur,st){if(st&&typeof st==='object')st=cleanSettings(st);const s={...cur,...st};   // (cleanSettings: a setting of the wrong shape is left out, so memory keeps its own)
+  if(typeof setHash!=='function')return s;   // (without merge.js, the restructure S6h: taken as they are, not keyed: the stamps are merge.js's)
   if(st&&st.kh){let ks=null,kh=null;
     for(const k of Object.keys(st.kh))if(st.kh[k]==='-'&&!(k in st)&&!SET_META.includes(k)){
       if(k in SET_DEFAULTS){if(!ks){ks={...st.ks};kh={...st.kh}}s[k]=JSON.parse(JSON.stringify(SET_DEFAULTS[k]));ks[k]=0;kh[k]=setHash(s[k])}else delete s[k]}
@@ -774,7 +775,7 @@ const SET_CLEAN={workdays:setDays,blazerDays:setDays,
 function cleanSettings(s){if(!s||typeof s!=='object'||Array.isArray(s))return null;let o=null;
   for(const [k,v] of Object.entries(s)){if(SET_META.includes(k))continue;
     const c=k==='__proto__'||!REC_WORD.test(k)?undefined:(SET_CLEAN[k]||recFree)(v);
-    if(c!==undefined&&setHash(c)===setHash(v))continue;   // already clean: kept as it is
+    if(c!==undefined&&(typeof setHash==='function'?setHash(c)===setHash(v):JSON.stringify(c)===JSON.stringify(v)))continue;   // already clean: kept as it is (without merge.js the same text, S6h)
     o=o||{...s};if(c===undefined)delete o[k];else o[k]=c}
   return o||s}
 /* the cards' motion: how long the month, a card's or a photo's unfold takes and its curve, which the pages' slide also eases on (start.js

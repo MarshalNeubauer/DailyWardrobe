@@ -42,7 +42,7 @@ function whyUnused(i){
   if(i.paused&&i.order)return i.arrives?`It's on the way: it joins your outfits after ${fmtDay(i.arrives)}.`:'It\'s on the way: put it back in rotation once it arrives.';
   if(i.paused)return 'You took it out of rotation, so the planner leaves it out.';
   if(dressOut(i.type))return `Your dress code leaves out ${i.type==='tie'||i.type==='tieclip'?'ties':'jackets'} (Settings, Schedule), so it is planned only for a formal day, a wedding or a funeral.`;
-  if(!wearsJacket()){const w=need('dress-why-unused',i);if(w)return w}
+  if(!wearsJacket()){const w=ask('dress-why-unused',i);if(w)return w}
   const by=t=>items.filter(x=>x.type===t),suitDays=settings.workdays.some(d=>!settings.blazerDays.includes(d)),blazerDays=settings.workdays.some(d=>settings.blazerDays.includes(d));
   const day={formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:by('cufflinks').length>0},jackets=[...(suitDays||!by('blazer').length?by('suit'):[]),...(blazerDays||!by('suit').length?by('blazer'):[])];
   // each jacket's best outfit, and its best with the one shirt or tie asked about, worked out only for the pieces that need a reason and
