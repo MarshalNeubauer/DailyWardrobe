@@ -11,9 +11,9 @@ async function tryAdd(btn, name, hex) {
   const btnTxt = await pg.$eval('#cn-add', b => b.innerText.trim()), disabled = await pg.$eval('#cn-add', b => b.disabled);
   if (!disabled) { await V.ph.tap('#cn-add'); await V.sleep(1000) }
   const r = await pg.evaluate(n => ({ error: ((document.querySelector('#cn-error') || {}).innerText || '').trim() || null,
-    saved: [...(settings.custom?.colors || []), ...(settings.custom?.patterns || [])].filter(c => c.name === n).map(c => c.key),
-    keyWouldBe: [ownColKey(n), ownPatKey(n)] }), name);
-  await pg.evaluate(() => typeof closeColPick === 'function' && closeColPick()); await V.sleep(400);
+    saved: [...(HOOK.settings.custom?.colors || []), ...(HOOK.settings.custom?.patterns || [])].filter(c => c.name === n).map(c => c.key),
+    keyWouldBe: [HOOK.ownColKey(n), HOOK.ownPatKey(n)] }), name);
+  await pg.evaluate(() => 'closeColPick' in HOOK && HOOK.closeColPick()); await V.sleep(400);
   return { button: btnTxt, disabled, ...r };
 }
 V.run(async () => {

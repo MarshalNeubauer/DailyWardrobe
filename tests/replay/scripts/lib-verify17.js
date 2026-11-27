@@ -54,8 +54,8 @@ const dateShown = ph => ph.page.evaluate(() => (document.body.innerText.match(/(
 const step = async (ph, dir) => { await tapText(ph, dir > 0 ? /^›$/ : /^‹$/); await sleep(700) };
 // a slot row's text in the pieces box ("Tie: Silver" etc.)
 const rowText = (ph, label) => ph.page.evaluate(lb => { const r = [...document.querySelectorAll('#ibox .row')].find(r => new RegExp('^' + lb + '(?! clip)').test(r.textContent.trim())); return r ? r.textContent.replace(/[⇄−+↻]/g, ' ').replace(/\s+/g, ' ').trim() : 'none' }, label);
-const planned = (ph, k, slot) => ph.page.evaluate(([k, slot]) => { const d = keyDate(k), o = planMonth(d.getFullYear(), d.getMonth())[k]; return o && o[slot] ? { id: o[slot].id, n: nm(o[slot]) } : null }, [k, slot]);
-const rec = (ph, k) => ph.page.evaluate(k => dayRecs[k] ? JSON.parse(JSON.stringify(dayRecs[k])) : null, k);
+const planned = (ph, k, slot) => ph.page.evaluate(([k, slot]) => { const d = HOOK.keyDate(k), o = HOOK.planMonth(d.getFullYear(), d.getMonth())[k]; return o && o[slot] ? { id: o[slot].id, n: HOOK.nm(o[slot]) } : null }, [k, slot]);
+const rec = (ph, k) => ph.page.evaluate(k => HOOK.dayRecs[k] ? JSON.parse(JSON.stringify(HOOK.dayRecs[k])) : null, k);
 // open the picker of a slot on the day shown and tap a card that isn't the current one (the last listed); returns its item id
 async function pickOther(ph, slot, label) {
   const open = await ph.page.$eval('#ibox', e => e.classList.contains('open')).catch(() => false);
@@ -112,27 +112,27 @@ async function wardrobePhone(tag, iso) {
   await mock('clock', { at: new Date(iso).toISOString() });
   await ph.page.goto(L.appUrl); await ph.ready(); await sleep(1500); await checkUrl(ph);
   await tapText(ph, /^Skip$/); await sleep(800);
-  await ph.page.evaluate(async () => { await addCustomColor({ name: 'Dusty pink', hex: '#D8A1A8', base: 'tan', types: ['suit'] }); settings.vestMode = 'always'; await saveUserSettings() });
+  await ph.page.evaluate(async () => { await HOOK.addCustomColor({ name: 'Dusty pink', hex: '#D8A1A8', base: 'tan', types: ['suit'] }); HOOK.settings.vestMode = 'always'; await HOOK.saveUserSettings() });
   await ph.tap('#fr-add'); await sleep(800); await ph.tap('#add-import'); await sleep(800);
   await ph.page.fill('#kit-paste', ''); await ph.tap('#kit-paste'); await ph.page.keyboard.insertText(WARDROBE); await sleep(1200);
   const bad = await ph.page.evaluate(() => HOOK.kitImp ? HOOK.kitImp.rows.filter(r => !r.ok || (r.probs && r.probs.length)).map(r => r.line + ':' + (r.why || r.probs.join('; '))) : ['no import']);
   await ph.tap('#kit-imp'); await sleep(3000);
   for (let i = 0; i < 3; i++) await tapText(ph, /^(Keep it|OK|Got it|Close|Done)$/);
-  await ph.page.evaluate(async () => { const w = items.find(i => i.type === 'watch'); w.band = 'leather'; w.primaryColor = 'brown'; w.metal = 'gold'; w.updated = Date.now(); await txs('items', 'readwrite', s => s.put(w)); HOOK.cache = {} });
+  await ph.page.evaluate(async () => { const w = HOOK.items.find(i => i.type === 'watch'); w.band = 'leather'; w.primaryColor = 'brown'; w.metal = 'gold'; w.updated = Date.now(); await HOOK.txs('items', 'readwrite', s => s.put(w)); HOOK.cache = {} });
   await ph.page.locator('#n-today').click(); await sleep(1500);
-  return { ph, importNotes: bad, n: await ph.page.evaluate(() => items.length) };
+  return { ph, importNotes: bad, n: await ph.page.evaluate(() => HOOK.items.length) };
 }
 // read-only helpers put in the page (inspection only): a day's outfit and score, the picker's labels next to the score each
 // piece would give if picked (planned with the pick in memory only, as history.js beltless does; nothing saved)
 const INPAGE = `
-window.__pm=k=>{const d=keyDate(k);return planMonth(d.getFullYear(),d.getMonth())[k]};   // the day in its own month, whatever month Today shows
-window.__sim=(k,slot,id)=>{const o=__pm(k);const prev=dayRecs[k];const rec={...(prev||{date:k})},follow=FOLLOW[slot]||[],force={};
- for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;force[slot]=id;rec.force=force;delete rec.lock;
- dayRecs[k]=rec;HOOK.cache={};let r;try{const n=__pm(k);const rr=rateOutfit(n);r={score:rr.score,hard:rr.hard,o:__sum(n)}}finally{if(prev)dayRecs[k]=prev;else delete dayRecs[k];HOOK.cache={}}return r};
-window.__sum=o=>o?SLOTS.filter(s=>o[s]).map(s=>s+'='+(o[s].name||nm(o[s]))).join(', '):null;
-window.__day=k=>{const o=__pm(k);if(!o||!SLOTS.some(s=>o[s]))return null;const r=rateOutfit(o);return {k,frozen:!!o.frozen,top:o.top&&(o.top.name||nm(o.top)),o:__sum(o),score:r.score,hard:r.hard,miss:r.checks.filter(c=>c.pts<c.max).map(c=>c.label+' '+c.pts+'/'+c.max+': '+(c.why||''))}};
-window.__picker=(k,slot)=>{const s0=sel;HOOK.sel=keyDate(k);try{const o=__pm(k);const pool=slotPool(slot,o);const sc=pool.map(i=>[fitOf(slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1));const best=sc[0][0];
- return sc.map(([f,i])=>({n:i.name||nm(i),tag:fitTag(best-f)[1],cur:!!(o[slot]&&o[slot].id===i.id),score:o[slot]&&o[slot].id===i.id?rateOutfit(o).score:(__sim(k,slot,i.id)||{}).score}))}finally{HOOK.sel=s0}};
+window.__pm=k=>{const d=HOOK.keyDate(k);return HOOK.planMonth(d.getFullYear(),d.getMonth())[k]};   // the day in its own month, whatever month Today shows
+window.__sim=(k,slot,id)=>{const o=__pm(k);const prev=HOOK.dayRecs[k];const rec={...(prev||{date:k})},follow=HOOK.FOLLOW[slot]||[],force={};
+ for(const s of HOOK.SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;force[slot]=id;rec.force=force;delete rec.lock;
+ HOOK.dayRecs[k]=rec;HOOK.cache={};let r;try{const n=__pm(k);const rr=HOOK.rateOutfit(n);r={score:rr.score,hard:rr.hard,o:__sum(n)}}finally{if(prev)HOOK.dayRecs[k]=prev;else delete HOOK.dayRecs[k];HOOK.cache={}}return r};
+window.__sum=o=>o?HOOK.SLOTS.filter(s=>o[s]).map(s=>s+'='+(o[s].name||HOOK.nm(o[s]))).join(', '):null;
+window.__day=k=>{const o=__pm(k);if(!o||!HOOK.SLOTS.some(s=>o[s]))return null;const r=HOOK.rateOutfit(o);return {k,frozen:!!o.frozen,top:o.top&&(o.top.name||HOOK.nm(o.top)),o:__sum(o),score:r.score,hard:r.hard,miss:r.checks.filter(c=>c.pts<c.max).map(c=>c.label+' '+c.pts+'/'+c.max+': '+(c.why||''))}};
+window.__picker=(k,slot)=>{const s0=HOOK.sel;HOOK.sel=HOOK.keyDate(k);try{const o=__pm(k);const pool=HOOK.slotPool(slot,o);const sc=pool.map(i=>[HOOK.fitOf(slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1));const best=sc[0][0];
+ return sc.map(([f,i])=>({n:i.name||HOOK.nm(i),tag:HOOK.fitTag(best-f)[1],cur:!!(o[slot]&&o[slot].id===i.id),score:o[slot]&&o[slot].id===i.id?HOOK.rateOutfit(o).score:(__sim(k,slot,i.id)||{}).score}))}finally{HOOK.sel=s0}};
 `;
 const inpage = ph => ph.page.evaluate(INPAGE);
 async function openRowPicker(ph, label) {
@@ -149,7 +149,7 @@ async function tapLoc(ph, l) { await l.evaluate(e => e.scrollIntoView({ block: '
   await ph.tapAt(b.x + b.width / 2, y); await sleep(1200) }
 async function pickByName(ph, label, re) { const list = await openRowPicker(ph, label); await tapLoc(ph, ph.page.locator('#pick-sheet .pick-it').filter({ has: ph.page.locator('.pick-nm', { hasText: re }) }).first()); return list }
 const scoreBox = ph => ph.page.evaluate(() => { const b = document.querySelector('#sbox'); if (!b) return null; const fix = b.querySelector('.sfix small'); return { head: b.querySelector('.month-link').getAttribute('aria-label'), fix: fix && fix.textContent, fixes: [...b.querySelectorAll('.sfixbtn')].map(x => x.textContent.replace(/\s+/g, ' ').trim()), why: [...b.querySelectorAll('li')].map(l => l.textContent.replace(/\s+/g, ' ').trim()).filter(t => !t.startsWith('✓')) } });
-async function goDay(ph, k) { await ph.page.evaluate(k => { HOOK.sel = keyDate(k); renderToday() }, k); await sleep(800) }   // (stands in for tapping › several times)
+async function goDay(ph, k) { await ph.page.evaluate(k => { HOOK.sel = HOOK.keyDate(k); HOOK.renderToday() }, k); await sleep(800) }   // (stands in for tapping › several times)
 function verdict(ok, ev) { console.log(ok ? 'REPRODUCED' : 'NOT REPRODUCED'); console.log(JSON.stringify(ev, null, 1)) }
 async function run(fn) { let code = 0; try { await fn() } catch (e) { console.log('ERROR', e && e.stack || e); code = 2 } finally { await stopAll() } process.exit(code) }
 module.exports = { PORT, sleep, mock, world, startLab, wardrobePhone, useLab: l => { L = l }, get lab() { return L }, inpage, openRowPicker, tapLoc, pickByName, scoreBox, goDay, phone, reopen, tapText, dateShown, step, rowText, planned, rec, pickOther, verdict, run };

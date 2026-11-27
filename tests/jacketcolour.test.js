@@ -14,12 +14,12 @@ const jacketcolour=async({ok,chromium,url})=>{
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy'),I('socks','charcoal')];
       const jackets=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','navy'),I('suit','lightgrey'),I('suit','midgrey'),I('suit','grey',{pattern:'herringbone'}),I('suit','brown'),I('suit','black'),I('suit','tan'),
         I('blazer','lightgrey'),I('blazer','steelblue'),I('blazer','tan'),I('pants','charcoal'),I('pants','grey'),I('pants','khaki')];
-      HOOK.items=[...base,...jackets];settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];HOOK.weather={};HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';
+      HOOK.items=[...base,...jackets];HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[4];HOOK.weather={};HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';
       // shirts and ties like the real wardrobe: staples plus a few greys, and several navy and black ties
       base.push(I('shirt','white'),I('shirt','white'),I('shirt','lightblue'),I('shirt','charcoal'),I('shirt','midgrey'),I('shirt','lightgrey'),I('shirt','periwinkle'),I('shirt','lavender'),
         I('tie','navy'),I('tie','black'),I('tie','black',{pattern:'check',secondaryColor:'grey'}),I('tie','deepblue'),I('tie','brown',{pattern:'stripe',secondaryColor:'cream'}));
       HOOK.items=[...base,...jackets];
-      const seq=[];for(let m=10;m<16;m++){const pl=buildPlan(2026+Math.floor(m/12),m%12);for(const [d,o] of Object.entries(pl))if(keyDate(d).getMonth()===m%12&&o.top)seq.push([d,o.top.id,jacketGroup(o.top),shirtGroup(o.shirt),o.tie.id,tieGroup(o.tie),rateOutfit(o).score,jacketGroup(o.top)+'/'+shirtLook(o.shirt)+'/'+tieLook(o.tie)])}
+      const seq=[];for(let m=10;m<16;m++){const pl=HOOK.buildPlan(2026+Math.floor(m/12),m%12);for(const [d,o] of Object.entries(pl))if(HOOK.keyDate(d).getMonth()===m%12&&o.top)seq.push([d,o.top.id,HOOK.jacketGroup(o.top),HOOK.shirtGroup(o.shirt),o.tie.id,HOOK.tieGroup(o.tie),HOOK.rateOutfit(o).score,HOOK.jacketGroup(o.top)+'/'+HOOK.shirtLook(o.shirt)+'/'+HOOK.tieLook(o.tie)])}
       const after=f=>seq.filter((s,n)=>n&&f(seq[n-1],s)).map(s=>s[0]);
       const shirtRep=after((a,b)=>a[3]===b[3]&&!['white','lightblue'].includes(b[3])),tieSame=after((a,b)=>a[4]===b[4]),tieGroupRep=after((a,b)=>a[5]===b[5]);
       // the same look (jacket colour, shirt look, tie look) within two workdays
@@ -33,14 +33,14 @@ const jacketcolour=async({ok,chromium,url})=>{
       const jk=jackets.filter(j=>j.type!=='pants');
       // a one-colour wardrobe still gets planned (repeats allowed)
       HOOK.items=[...base,I('suit','lightgrey'),I('suit','midgrey'),I('suit','grey'),I('blazer','grey'),I('pants','charcoal')];
-      const grey=buildPlan(2026,11),greyDays=Object.entries(grey).filter(([d,o])=>keyDate(d).getMonth()===11&&o.top).length;
+      const grey=HOOK.buildPlan(2026,11),greyDays=Object.entries(grey).filter(([d,o])=>HOOK.keyDate(d).getMonth()===11&&o.top).length;
       // consistency: neighbouring months agree; recording past days leaves the future alone
       HOOK.items=[...base,...jackets];HOOK.dayRecs={};
-      const N=buildPlan(2026,10),D=buildPlan(2026,11);const dis=Object.keys(D).filter(k=>N[k]&&D[k].top&&JSON.stringify(idsOf(N[k]))!==JSON.stringify(idsOf(D[k])));
-      const T=todayDate();for(const [d,o] of Object.entries(N))if(keyDate(d)<T&&o.top)dayRecs[d]={date:d,ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest};
-      const N2=buildPlan(2026,10),moved=Object.keys(N2).filter(k=>keyDate(k)>=T&&N2[k].top&&JSON.stringify(idsOf(N[k]))!==JSON.stringify(idsOf(N2[k])));
+      const N=HOOK.buildPlan(2026,10),D=HOOK.buildPlan(2026,11);const dis=Object.keys(D).filter(k=>N[k]&&D[k].top&&JSON.stringify(HOOK.idsOf(N[k]))!==JSON.stringify(HOOK.idsOf(D[k])));
+      const T=HOOK.todayDate();for(const [d,o] of Object.entries(N))if(HOOK.keyDate(d)<T&&o.top)HOOK.dayRecs[d]={date:d,ids:HOOK.idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest};
+      const N2=HOOK.buildPlan(2026,10),moved=Object.keys(N2).filter(k=>HOOK.keyDate(k)>=T&&N2[k].top&&JSON.stringify(HOOK.idsOf(N[k]))!==JSON.stringify(HOOK.idsOf(N2[k])));
       return {lookRep,comboRep,wear,distinct,shirtRep,tieSame,tieGroupRep,tiesUnused:tieIds.filter(t=>!tieUse[t]).length,minScore:Math.min(...seq.map(x=>x[6])),n:seq.length,same,unused:jk.filter(j=>!used[j.id]).map(j=>j.primaryColor),maxSuit:Math.max(...jk.filter(j=>j.type==='suit').map(j=>gap[j.id]||0)),maxBlazer:Math.max(...jk.filter(j=>j.type==='blazer').map(j=>gap[j.id]||0)),greyDays,dis,moved,
-        groups:['lightgrey','midgrey','grey','darkgrey','charcoal','navy','darknavy','deepblue','steelblue','tan','khaki','brown'].map(c=>jacketGroup({primaryColor:c})).join()}});
+        groups:['lightgrey','midgrey','grey','darkgrey','charcoal','navy','darknavy','deepblue','steelblue','tan','khaki','brown'].map(c=>HOOK.jacketGroup({primaryColor:c})).join()}});
     ok(r.groups==='grey,grey,grey,grey,grey,navy,navy,navy,blue,tan,tan,brown',`colour groups read like the eye does: every grey from light grey to charcoal is one (${r.groups})`);
     ok(r.n>100&&r.same.length===0,`over six months no two consecutive workdays share a jacket colour group (${r.same.length} of ${r.n}: ${r.same.slice(0,4).join(' ')})`);
     ok(r.shirtRep.length===0,`no shirt colour group (e.g. dark grey then light grey) on consecutive workdays, apart from white and light blue (${r.shirtRep.join(' ')})`);
@@ -61,28 +61,28 @@ const jacketcolour=async({ok,chromium,url})=>{
       const navyA=I('suit','navy',{pattern:'pinstripe',secondaryColor:'white'}),navyB=I('suit','navy'),g1=I('suit','lightgrey'),br=I('suit','brown'),bl=I('suit','black'),tn=I('suit','tan');
       HOOK.items=[navyA,navyB,g1,br,bl,tn,I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','green'),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),
         I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[];HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';
       // history: navy B last worn in September; the others in early November; navy A pinned for Nov 17
       HOOK.dayRecs={'2026-9-29':{date:'2026-9-29',ids:{top:navyB.id},suitDay:true,worn:true},'2026-11-17':{date:'2026-11-17',force:{top:navyA.id}}};
-      ['2026-11-1','2026-11-2','2026-11-3','2026-11-4','2026-11-5','2026-11-8'].forEach((d,n)=>dayRecs[d]={date:d,ids:{top:[g1,br,bl,tn,g1,br][n].id},suitDay:true,worn:true});
+      ['2026-11-1','2026-11-2','2026-11-3','2026-11-4','2026-11-5','2026-11-8'].forEach((d,n)=>HOOK.dayRecs[d]={date:d,ids:{top:[g1,br,bl,tn,g1,br][n].id},suitDay:true,worn:true});
       // the days before are pinned to the other suits (swaps), so navy B builds up weeks of rest
-      ['2026-11-9','2026-11-10','2026-11-11','2026-11-12','2026-11-15','2026-11-16'].forEach((d,n)=>dayRecs[d]={date:d,force:{top:[bl,tn,g1,br,bl,tn][n].id}});
-      const pl=buildPlan(2026,10),t=d=>pl[d]&&pl[d].top&&pl[d].top.id;
+      ['2026-11-9','2026-11-10','2026-11-11','2026-11-12','2026-11-15','2026-11-16'].forEach((d,n)=>HOOK.dayRecs[d]={date:d,force:{top:[bl,tn,g1,br,bl,tn][n].id}});
+      const pl=HOOK.buildPlan(2026,10),t=d=>pl[d]&&pl[d].top&&pl[d].top.id;
       // a pinned navy on Nov 23: the Sunday before must not be navy
-      dayRecs['2026-11-23']={date:'2026-11-23',force:{top:navyB.id}};const pl2=buildPlan(2026,10);
+      HOOK.dayRecs['2026-11-23']={date:'2026-11-23',force:{top:navyB.id}};const pl2=HOOK.buildPlan(2026,10);
       return {n17:t('2026-11-17')===navyA.id,n18:t('2026-11-18')!==navyB.id&&t('2026-11-16')!==navyB.id,n22:pl2['2026-11-22'].top.primaryColor,n23:pl2['2026-11-23'].top.id===navyB.id}});
     ok(c.n17&&c.n18,'a navy suit left unworn for weeks still does not come right before or after the other navy');
     ok(c.n23&&c.n22!=='navy',`the day before a pinned navy day is not navy (${c.n22})`);
     const JKT_SAME_T=await p.evaluate(()=>HOOK.JKT_SAME);
-    const dk=await p.evaluate(()=>{const J=c=>({id:'j'+c,type:'suit',primaryColor:c,pattern:'solid'}),P=c=>({g:jacketGroup(J(c)),c});
+    const dk=await p.evaluate(()=>{const J=c=>({id:'j'+c,type:'suit',primaryColor:c,pattern:'solid'}),P=c=>({g:HOOK.jacketGroup(J(c)),c});
       return {bc:HOOK.colourRepeat(J('black'),[P('charcoal')]),bd:HOOK.colourRepeat(J('darkgrey'),[P('black')]),gl:HOOK.colourRepeat(J('lightgrey'),[P('darkgrey')]),bn:HOOK.colourRepeat(J('black'),[P('navy')])}});
     ok(dk.gl===JKT_SAME_T&&dk.bc>=20&&dk.bd>=20&&dk.bn===0,`dark grey then light grey is a repeat; black next to charcoal or dark grey nearly one; black next to navy is fine (${JSON.stringify(dk)})`);
     // your Dec 1 / Dec 3 case: grey suit, black shirt, grey woven tie; then a light grey blazer with a dark navy shirt and a black check tie
     const lk=await p.evaluate(()=>{const I=(type,primaryColor,x={})=>({id:type+primaryColor,type,primaryColor,pattern:'solid',...x});
       const d1={top:I('suit','midgrey',{pattern:'twill'}),shirt:I('shirt','black'),tie:I('tie','grey',{pattern:'woven',secondaryColor:'black'})};
-      const prev=[{jg:'navy',sl:'white',tl:'red'},{jg:jacketGroup(d1.top),sl:shirtLook(d1.shirt),tl:tieLook(d1.tie)}],bl=I('blazer','lightgrey');
+      const prev=[{jg:'navy',sl:'white',tl:'red'},{jg:HOOK.jacketGroup(d1.top),sl:HOOK.shirtLook(d1.shirt),tl:HOOK.tieLook(d1.tie)}],bl=I('blazer','lightgrey');
       return {same:HOOK.lookRepeat(bl,I('shirt','darknavy'),I('tie','black',{pattern:'check',secondaryColor:'grey'}),prev),half:HOOK.lookRepeat(bl,I('shirt','slate'),I('tie','navy'),prev),
-        white:HOOK.lookRepeat(bl,I('shirt','white'),I('tie','black'),prev),looks:[shirtLook(I('shirt','navy')),shirtLook(I('shirt','charcoal')),shirtLook(I('shirt','lightblue')),tieLook(I('tie','silver')),tieLook(I('tie','charcoal')),tieLook(I('tie','navy'))].join(),
+        white:HOOK.lookRepeat(bl,I('shirt','white'),I('tie','black'),prev),looks:[HOOK.shirtLook(I('shirt','navy')),HOOK.shirtLook(I('shirt','charcoal')),HOOK.shirtLook(I('shirt','lightblue')),HOOK.tieLook(I('tie','silver')),HOOK.tieLook(I('tie','charcoal')),HOOK.tieLook(I('tie','navy'))].join(),
         sr:HOOK.shirtRepeat(I('shirt','darknavy'),[{sg:'black',sl:'dark'}]),tr:HOOK.tieRepeat(I('tie','black'),[{tg:'grey',tl:'mono',tid:'z'}])}});
     ok(lk.same>=20&&lk.half>0&&lk.half<lk.same&&lk.white===0,`a grey jacket, dark shirt and grey/black tie two workdays after the same look is a repeat; another tie is half one; a white shirt is fine (${JSON.stringify(lk)})`);
     ok(lk.looks==='dark,dark,lightblue,mono,mono,navy'&&lk.sr>0&&lk.tr>0,`dark shirts read as one look, black/charcoal/grey/silver ties as one (${lk.looks}; shirt ${lk.sr}, tie ${lk.tr})`);
@@ -102,9 +102,9 @@ const jacketshare=async({ok,chromium,url})=>{
     const r=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       const base=[I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tie','green'),I('tie','gold'),I('tie','silver'),
         I('shoes','black',{leather:'calf'}),I('shoes','black',{leather:'calf',shoeStyle:'derby'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy'),I('socks','charcoal')];
-      const run=jk=>{HOOK.items=[...base,...jk];settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';HOOK.weather={};HOOK.climate=null;HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};
-        const seq=[];for(let m=10;m<16;m++){const pl=buildPlan(2026+Math.floor(m/12),m%12);for(const [d,o] of Object.entries(pl))if(keyDate(d).getMonth()===m%12&&keyDate(d)>=todayDate()&&o.top)seq.push(o.top)}
-        const n={};seq.forEach(t=>n[t.id]=(n[t.id]||0)+1);const groupRep=seq.filter((t,i)=>i&&jacketGroup(seq[i-1])===jacketGroup(t)).length;
+      const run=jk=>{HOOK.items=[...base,...jk];HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[];HOOK.settings.vestMode='never';HOOK.weather={};HOOK.climate=null;HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};
+        const seq=[];for(let m=10;m<16;m++){const pl=HOOK.buildPlan(2026+Math.floor(m/12),m%12);for(const [d,o] of Object.entries(pl))if(HOOK.keyDate(d).getMonth()===m%12&&HOOK.keyDate(d)>=HOOK.todayDate()&&o.top)seq.push(o.top)}
+        const n={};seq.forEach(t=>n[t.id]=(n[t.id]||0)+1);const groupRep=seq.filter((t,i)=>i&&HOOK.jacketGroup(seq[i-1])===HOOK.jacketGroup(t)).length;
         return {n:jk.map(j=>n[j.id]||0),days:seq.length,groupRep,gap:Math.min(...jk.map(j=>{let g=1e9,l=-1;seq.forEach((t,i)=>{if(t.id===j.id){if(l>=0)g=Math.min(g,i-l);l=i}});return g}))}};
       // the walkthrough's suits: brown chalk-stripe, charcoal pinstripe, grey herringbone, charcoal plain
       const lop=run([I('suit','brown',{pattern:'chalk-stripe',secondaryColor:'cream'}),I('suit','charcoal',{pattern:'pinstripe',secondaryColor:'white'}),I('suit','grey',{pattern:'herringbone'}),I('suit','charcoal')]);

@@ -12,7 +12,7 @@ const KV = RP.SCRATCH + '/kv/verify2-w1-2-04.json', T = '2026-11-14T10:00:00+03:
   info = await v.startLab(v.NEW, KV);
   ph.offset = new Date('2026-11-15T08:00:00+03:00').getTime() - Date.now(); await v.mock('clock', { at: '2026-11-15T05:00:00.000Z' });
   await v.reopenNew(ph, info.appUrl);
-  const tie = await ph.page.evaluate(() => { const i = items.find(x => /^own-/.test(x.pattern || '')); return { pattern: i.pattern, patName: patName(i.pattern), nm: nm(i) } });
+  const tie = await ph.page.evaluate(() => { const i = HOOK.items.find(x => /^own-/.test(x.pattern || '')); return { pattern: i.pattern, patName: HOOK.patName(i.pattern), nm: HOOK.nm(i) } });
   console.log('own-pattern tie', JSON.stringify(tie));
   await v.tap(ph, /^Today$/, 'nav button'); await v.sleep(800);
   let hit = null;

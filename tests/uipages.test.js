@@ -9,10 +9,10 @@ const uipages=async({ok,chromium,url,WARDROBES,settle})=>{
   const browser=await chromium.launch();
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
-    await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.flt='all'})()`);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{HOOK.CK_OPEN['*']=true});
+    await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[4];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.flt='all'})()`);
     // ---- Settings
-    await p.evaluate(()=>openSettings());
+    await p.evaluate(()=>HOOK.openSettings());
     const s0=await p.evaluate(()=>{const m=document.querySelector('#settings-modal').getBoundingClientRect(),cats=[...document.querySelectorAll('#settings-modal .scat')];
       return {full:m.width>=389&&m.height>=843,cats:cats.map(c=>c.id),open:cats.filter(c=>c.classList.contains('open')).length,sums:cats.map(c=>c.querySelector('.mltxt small').textContent),
         stats:!document.querySelector('#settings-modal #stats-btn')&&!!document.querySelector('#settings-modal #pack-btn'),done:(document.querySelector('.shead .sdone')||{}).textContent,
@@ -29,13 +29,13 @@ const uipages=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.click('#cfg-workdays .dtog:has-text("Sat")');
     await p.click('#sc-schedule .scat-head');await settle(p,600);
     ok(await p.evaluate(()=>!document.querySelector('#sc-schedule').classList.contains('open')),'tapping it again folds it');
-    await p.evaluate(()=>{closeSettings();openSettings('weather')});await settle(p,300);
+    await p.evaluate(()=>{HOOK.closeSettings();HOOK.openSettings('weather')});await settle(p,300);
     const w=await p.evaluate(()=>({open:[...document.querySelectorAll('#settings-modal .scat.open')].map(c=>c.id),top:document.querySelector('#sc-weather').getBoundingClientRect().top}));
     ok(w.open.join()==='sc-weather'&&w.top<200,`openSettings('weather') opens just Weather, scrolled into view (top ${Math.round(w.top)}px)`);
-    await p.evaluate(()=>openSettings('connection'));await p.click('#conn-own button');await p.fill('#cfg-url','https://new.example.dev/');await p.click('.shead .sdone');
-    ok(await p.evaluate(()=>localStorage.getItem('worker_url')==='https://new.example.dev/'&&!settingsOpen()),'Done saves the connection and closes Settings');
+    await p.evaluate(()=>HOOK.openSettings('connection'));await p.click('#conn-own button');await p.fill('#cfg-url','https://new.example.dev/');await p.click('.shead .sdone');
+    ok(await p.evaluate(()=>localStorage.getItem('worker_url')==='https://new.example.dev/'&&!HOOK.settingsOpen()),'Done saves the connection and closes Settings');
     // ---- Wardrobe
-    await p.evaluate(()=>show('wardrobe'));
+    await p.evaluate(()=>HOOK.show('wardrobe'));
     const wd=await p.evaluate(()=>({head:document.querySelector('#wardrobe h2.vh').textContent,count:document.querySelector('#wardrobe #wcount.vh').textContent,phead:!!document.querySelector('#wardrobe .phead'),
       btns:document.querySelectorAll('#wardrobe .grid .gi .btns').length,tiles:document.querySelectorAll('#wardrobe .grid .giopen').length,type:(document.querySelector('.gimeta .gtype')||{}).textContent}));
     ok(wd.head==='Wardrobe'&&/^\d+ items$/.test(wd.count)&&!wd.phead&&wd.btns===0&&wd.tiles>10&&wd.type,'Wardrobe: no header row (its title and item count are for screen readers); each box is the item, with no Edit/Delete buttons on it');
@@ -56,29 +56,29 @@ const uipages=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(op.btn.join()==='44'&&op.inp.join()==='44'&&op.over<=0,`the item sheet uses the same 44px buttons and dropdowns and doesn't scroll sideways (${op.btn} / ${op.inp})`);
     ok(op.pt.length===1&&op.pt[0]===58,`the photo tools under the pictures are one size, 58px tall (icon over label) (${op.pt})`);
     // ---- Add
-    await p.evaluate(()=>{HOOK.closeItem();show('add')});await settle(p,400);
+    await p.evaluate(()=>{HOOK.closeItem();HOOK.show('add')});await settle(p,400);
     const ad=await p.evaluate(()=>({head:document.querySelector('#add .phead h2').textContent,picks:[...document.querySelectorAll('#add .addpick label')].map(l=>l.querySelector('span').textContent),
       more:!!document.querySelector('#add .addmore #photo-url')&&!!document.querySelector('#add .addmore .addrow')}));
     ok(ad.head==='Add to wardrobe'&&ad.picks.join()==='One item,Several items'&&ad.more,'Add: a page header, the two ways in, and the other ways in one card');
-    await p.evaluate(()=>{HOOK.addManual();setq(0,'type','suit')});
+    await p.evaluate(()=>{HOOK.addManual();HOOK.setq(0,'type','suit')});
     const lab=await p.evaluate(()=>[...document.querySelectorAll('#nps-q .card .ckb>label')].map(l=>l.firstChild.textContent.trim()).slice(0,4).join(','));
     ok(lab==='Type,Color,Second color,Third color','the item card and the Wardrobe editor use the same labels');
     ok(await p.evaluate(()=>[...document.querySelectorAll('#nps-q select')].every(s=>[...s.options].every(o=>!/^[a-z]/.test(o.textContent)))),'dropdown choices start with a capital');
     // ---- one size for controls, one style for page titles
     const sz=await p.evaluate(async()=>{const out={btn:new Set(),inp:new Set()},take=root=>{for(const b of root.querySelectorAll('button:not(.giopen):not(.chip):not(.chipbtn):not(.linkbtn):not(.dtog):not(.addrow):not(.addlong):not(.pback):not(.fchip button):not(.month-link):not(.slink):not(.adv-head):not(.wbstcard):not(.ckh):not(.ckpt):not(.ckreadadd):not(.cmplv)'))if(b.offsetParent)out.btn.add(Math.round(b.getBoundingClientRect().height));
         for(const i of root.querySelectorAll('select,input[type=text],input[type=url],input[type=date]'))if(i.offsetParent)out.inp.add(Math.round(i.getBoundingClientRect().height))};
-      take(document.querySelector('#add'));openSettings();for(const k of SET_CATS)setCatOpen(k,true,true);take(document.querySelector('#settings-modal'));closeSettings();
-      const titles=[];for(const s of ['add']){show(s);titles.push(getComputedStyle(document.querySelector(`#${s} .phead h2`)).fontSize)}HOOK.openStats();titles.push(getComputedStyle(document.querySelector('#stats .phead h2')).fontSize);
+      take(document.querySelector('#add'));HOOK.openSettings();for(const k of HOOK.SET_CATS)HOOK.setCatOpen(k,true,true);take(document.querySelector('#settings-modal'));HOOK.closeSettings();
+      const titles=[];for(const s of ['add']){HOOK.show(s);titles.push(getComputedStyle(document.querySelector(`#${s} .phead h2`)).fontSize)}HOOK.openStats();titles.push(getComputedStyle(document.querySelector('#stats .phead h2')).fontSize);
       return {btn:[...out.btn],inp:[...out.inp],titles}});
     ok(sz.btn.every(h=>h===44),`buttons are 44px tall on Add and in Settings (${sz.btn})`);
     // ("Add without a photo" is a two-line row like the tiles: at least 44 px)
-    ok(await p.evaluate(()=>{show('add');const b=document.querySelector('#add-manual');return !!b&&b.getBoundingClientRect().height>=44}),'the long "Add without a photo" button is at least 44 px tall');
+    ok(await p.evaluate(()=>{HOOK.show('add');const b=document.querySelector('#add-manual');return !!b&&b.getBoundingClientRect().height>=44}),'the long "Add without a photo" button is at least 44 px tall');
     ok(sz.inp.every(h=>h===44),`inputs and dropdowns are 44px too, so a button beside one lines up (${sz.inp})`);
     ok(new Set(sz.titles).size===1&&sz.titles[0]==='22px','Add and Stats share one page title style');
     // ---- nothing scrolls sideways, on a small phone and on the Duo
     for(const w of [320,466,626]){await p.setViewportSize({width:w,height:800});
-      const over=await p.evaluate(async()=>{const r={};for(const s of ['wardrobe','add']){show(s);await new Promise(x=>setTimeout(x,50));r[s]=document.documentElement.scrollWidth-innerWidth}
-        openSettings();for(const k of SET_CATS)setCatOpen(k,true,true);const m=document.querySelector('#settings-modal');r.settings=m.scrollWidth-m.clientWidth;closeSettings();return r});
+      const over=await p.evaluate(async()=>{const r={};for(const s of ['wardrobe','add']){HOOK.show(s);await new Promise(x=>setTimeout(x,50));r[s]=document.documentElement.scrollWidth-innerWidth}
+        HOOK.openSettings();for(const k of HOOK.SET_CATS)HOOK.setCatOpen(k,true,true);const m=document.querySelector('#settings-modal');r.settings=m.scrollWidth-m.clientWidth;HOOK.closeSettings();return r});
       ok(Object.values(over).every(v=>v<=0),`${w}px wide: no page scrolls sideways (${JSON.stringify(over)})`)}
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
@@ -94,8 +94,8 @@ const wardgrid=async({ok,chromium,url})=>{
     const p=await browser.newPage({viewport:{width:w,height:800}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=800;c.height=600;const g=c.getContext('2d');g.fillStyle='#777';g.fillRect(0,0,800,600);const ph=c.toDataURL('image/jpeg',.7);
-      for(let k=0;k<30;k++){const it={id:'w'+k,type:k%2?'suit':'shirt',primaryColor:'grey',pattern:'solid',photo:ph,name:'A long name for a piece of clothing number '+k,added:Date.now()};await put(it);items.push(it)}
-      show('wardrobe');await new Promise(r=>setTimeout(r,400));const grid=document.querySelector('#wardrobe .grid').getBoundingClientRect();
+      for(let k=0;k<30;k++){const it={id:'w'+k,type:k%2?'suit':'shirt',primaryColor:'grey',pattern:'solid',photo:ph,name:'A long name for a piece of clothing number '+k,added:Date.now()};await HOOK.put(it);HOOK.items.push(it)}
+      HOOK.show('wardrobe');await new Promise(r=>setTimeout(r,400));const grid=document.querySelector('#wardrobe .grid').getBoundingClientRect();
       const boxes=[...document.querySelectorAll('#wardrobe .gi')].map(e=>e.getBoundingClientRect());
       return {n:boxes.length,gridR:Math.round(grid.right),maxR:Math.round(Math.max(...boxes.map(b=>b.right))),cols:new Set(boxes.map(b=>Math.round(b.left))).size}});
     ok(r.n===30&&r.maxR<=r.gridR+1&&r.cols>=2&&errs.length===0,`at ${w} px the Wardrobe's boxes fit inside the grid, ${r.cols} across (rightmost ${r.maxR}, grid ${r.gridR})`);

@@ -13,11 +13,11 @@ const cmhandedge=async({ok,chromium,url})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const f={};for(const n of fs.readdirSync(FIX))f[n]=`data:image/${n.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,n)).toString('base64');
-    const r=await p.evaluate(async f=>{const K=ASM_CM_KINDS['shirt-tie'],S=512,N=S*S,masks={};for(const z of K.zones)if(f['mask-'+z+'.png'])masks[z]=f['mask-'+z+'.png'];
+    const r=await p.evaluate(async f=>{const K=HOOK.ASM_CM_KINDS['shirt-tie'],S=512,N=S*S,masks={};for(const z of K.zones)if(f['mask-'+z+'.png'])masks[z]=f['mask-'+z+'.png'];
       const job={cm:'shirt-tie',size:S,mk:'t',mt:1,rev:'t',master:f['master.jpg'],masks,parts:{sleeveR:f['part-sleeveR.png'],sleeveL:f['part-sleeveL.png']},cloth:{},gl:false,diskCache:false};
-      const P=await asmCmPrep(job),A=P.A;
+      const P=await HOOK.asmCmPrep(job),A=P.A;
       // the raw skin mask: its shares beside the tie (pixels within 4 px right of the tie's edge, between the knot and the hand)
-      const raw=(await asmData(masks.skin,S)).data,tie=A.tie,band=[];
+      const raw=(await HOOK.asmData(masks.skin,S)).data,tie=A.tie,band=[];
       for(let y=0;y<S;y++){let xe=-1;for(let x=S-1;x>S/3;x--)if(tie[y*S+x]>127){xe=x;break}if(xe<0||xe>S*.7)continue;
         let hand=false;for(let x=xe+1;x<=xe+12&&x<S;x++)if(raw[4*(y*S+x)]>127)hand=true;if(hand)continue;   // the hand gripping the tie
         for(let x=xe+1;x<=xe+4;x++){let edge=false;for(let dy=-4;dy<=4&&!edge;dy++)for(let dx=-4;dx<=4;dx++){const yy=y+dy,xx=x+dx;if(yy>=0&&yy<S&&raw[4*(yy*S+xx)]>127){edge=true;break}}
@@ -29,7 +29,7 @@ const cmhandedge=async({ok,chromium,url})=>{
       let sum=0;for(let k=0;k<N;k++){let s=0;for(const z of P.names)s+=A[z][k];if(s&&s!==255)sum++}
       // painted with a blue shirt and a black tie: no pixel of that band keeps the master's colour (it reads blue or dark, never pinkish)
       const cl={shirt:{hex:'#3f6fb5'},tie:{hex:'#16161a'},trousers:{hex:'#3a3d44'},belt:{hex:'#5a3a22'}};
-      const out=await asmCmBuild({...job,cloth:cl});const im=new Image();im.src=out.url;await im.decode();const c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,S,S).data;
+      const out=await HOOK.asmCmBuild({...job,cloth:cl});const im=new Image();im.src=out.url;await im.decode();const c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,S,S).data;
       let pink=0;for(const k of band){const j=4*k;if(d[j]>d[j+2]+4&&d[j]>60)pink++}
       return {band:band.length,strayRaw,skinAfter,orphan,sum,pink}},f);
     ok(r.band>100&&r.strayRaw>0,`the fixture's skin mask has stray shares beside the tie (${r.strayRaw} of ${r.band} pixels in the band)`);
@@ -52,9 +52,9 @@ const cmcuffsteel=async({ok,chromium,url})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const f={};for(const n of fs.readdirSync(FIX))f[n]=`data:image/${n.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,n)).toString('base64');
-    const r=await p.evaluate(async f=>{const K=ASM_CM_KINDS['shirt-tie'],S=512,N=S*S;
-      const M=new Uint8ClampedArray((await asmData(f['master.jpg'],S)).data),A={};
-      for(const z of K.zones)if(f['mask-'+z+'.png']){const d=(await asmData(f['mask-'+z+'.png'],S)).data,a=new Uint8Array(N);for(let k=0;k<N;k++)a[k]=d[4*k];A[z]=a}
+    const r=await p.evaluate(async f=>{const K=HOOK.ASM_CM_KINDS['shirt-tie'],S=512,N=S*S;
+      const M=new Uint8ClampedArray((await HOOK.asmData(f['master.jpg'],S)).data),A={};
+      for(const z of K.zones)if(f['mask-'+z+'.png']){const d=(await HOOK.asmData(f['mask-'+z+'.png'],S)).data,a=new Uint8Array(N);for(let k=0;k<N;k++)a[k]=d[4*k];A[z]=a}
       // shares made to add up to 255, as asmCmPrep does before the hand's edge
       const names=Object.keys(A);for(let k=0;k<N;k++){let s=0;for(const z of names)s+=A[z][k];if(s&&s!==255){let left=255;for(let i=0;i<names.length;i++){const z=names[i],v=i===names.length-1?left:Math.round(A[z][k]*255/s);A[z][k]=Math.max(0,Math.min(left,v));left-=A[z][k]}}}
       // the watch pixels within 6 px (through the watch) of the shirt's edge
