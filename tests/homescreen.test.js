@@ -13,7 +13,7 @@ const homescreen=async({ok,chromium,url})=>{
   const step=p=>p.evaluate(()=>document.querySelector('#su-step').dataset.step);
   try{
     const p=await open({ua:IPHONE});
-    const s0=await p.evaluate(()=>({steps:SETUP_STEPS.join(','),count:document.querySelector('#su-count').textContent}));
+    const s0=await p.evaluate(()=>({steps:HOOK.SETUP_STEPS.join(','),count:document.querySelector('#su-count').textContent}));
     ok(s0.steps==='welcome,home,week,wear,weather,connect,done'&&/of 7/.test(s0.count),`on an iPhone in Safari the setup has a Home Screen step after Welcome (${s0.steps})`);
     await p.click('#su-next');await p.waitForFunction(()=>document.querySelector('#su-step').dataset.step==='home');
     const h=await p.evaluate(()=>{const t=document.querySelector('#su-step').textContent;return {title:document.querySelector('#su-title').textContent,share:/Tap ⋯ at the bottom right of Safari, then Share/.test(t),add:/Add to Home Screen/.test(t),webapp:/Leave Open as Web App on and tap Add/.test(t),n:document.querySelectorAll('#su-step .home-steps li').length,before:/set it up there rather than here/.test(t)&&!/before you set anything up/.test(t),icons:document.querySelectorAll('#su-step .home-ico').length,pic:!!document.querySelector('#su-step .home-pic'),copy:!!document.querySelector('#su-step .home-copy'),
@@ -23,7 +23,7 @@ const homescreen=async({ok,chromium,url})=>{
     ok(h.fit,'it fits the phone');
     await p.waitForTimeout(400);await p.click('#su-next');ok(await step(p)==='week','Next carries on with the setup in Safari');
     // Settings → About
-    await p.evaluate(()=>{HOOK.setupClose();openSettings('about')});
+    await p.evaluate(()=>{HOOK.setupClose();HOOK.openSettings('about')});
     const a=await p.waitForFunction(()=>(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&getComputedStyle(b).display!=='none'})(),null,{timeout:5000}).then(()=>true,()=>false);   // (displayed, not only the attribute)
     ok(a,'Settings → About offers "Add to Home Screen" on the iPhone');
     await p.evaluate(()=>{document.querySelector('#home-again').scrollIntoView()});await p.click('#home-again');await p.waitForFunction(()=>!!document.querySelector('#kitsheet.on'));
@@ -31,12 +31,12 @@ const homescreen=async({ok,chromium,url})=>{
     ok(!p.errs.length,'no page errors: '+p.errs.join(' | '));await p.context().close();
     // the app opened from the Home Screen: no step, no button
     const s=await open({ua:IPHONE,standalone:true});
-    ok(await s.evaluate(()=>SETUP_STEPS.join(',')==='welcome,week,wear,weather,connect,done'),'opened from the Home Screen: no Home Screen step');
-    await s.evaluate(()=>{HOOK.setupClose();openSettings('about')});await s.waitForTimeout(300);ok(await s.evaluate(()=>!(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&getComputedStyle(b).display!=='none'})()),'and no button in About (nothing displayed)');await s.context().close();
+    ok(await s.evaluate(()=>HOOK.SETUP_STEPS.join(',')==='welcome,week,wear,weather,connect,done'),'opened from the Home Screen: no Home Screen step');
+    await s.evaluate(()=>{HOOK.setupClose();HOOK.openSettings('about')});await s.waitForTimeout(300);ok(await s.evaluate(()=>!(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&getComputedStyle(b).display!=='none'})()),'and no button in About (nothing displayed)');await s.context().close();
     // another device: as before
     const d=await open();
-    ok(await d.evaluate(()=>SETUP_STEPS.join(',')==='welcome,week,wear,weather,connect,done'),'on a computer the setup is as before');
-    await d.evaluate(()=>{HOOK.setupClose();openSettings('about')});await d.waitForTimeout(300);ok(await d.evaluate(()=>!(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&getComputedStyle(b).display!=='none'})()),'and About has no Home Screen button (nothing displayed)');await d.context().close();
+    ok(await d.evaluate(()=>HOOK.SETUP_STEPS.join(',')==='welcome,week,wear,weather,connect,done'),'on a computer the setup is as before');
+    await d.evaluate(()=>{HOOK.setupClose();HOOK.openSettings('about')});await d.waitForTimeout(300);ok(await d.evaluate(()=>!(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&getComputedStyle(b).display!=='none'})()),'and About has no Home Screen button (nothing displayed)');await d.context().close();
     // 320 px
     const n=await open({ua:IPHONE,w:320});await n.click('#su-next');await n.waitForFunction(()=>document.querySelector('#su-step').dataset.step==='home');
     ok(await n.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&[...document.querySelectorAll('#su-step .home-steps li')].every(l=>l.getBoundingClientRect().right<=innerWidth+.5)),'the step fits a 320 px phone');
@@ -44,7 +44,7 @@ const homescreen=async({ok,chromium,url})=>{
     // Android: the step with an Install button when the browser offers the install, the menu steps when it doesn't
     const ANDROID='Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36';
     const g=await open({ua:ANDROID,w:320});
-    ok(await g.evaluate(()=>SETUP_STEPS.join(',')==='welcome,home,week,wear,weather,connect,done'),'on Android in the browser the setup has the install step after Welcome');
+    ok(await g.evaluate(()=>HOOK.SETUP_STEPS.join(',')==='welcome,home,week,wear,weather,connect,done'),'on Android in the browser the setup has the install step after Welcome');
     await g.click('#su-next');await g.waitForFunction(()=>document.querySelector('#su-step').dataset.step==='home');
     const vis=sel=>g.evaluate(s=>{const e=document.querySelector(s);return !!e&&e.getBoundingClientRect().height>0},sel);
     const g0=await g.evaluate(()=>({title:document.querySelector('#su-title').textContent,t:document.querySelector('#su-step').textContent}));
@@ -56,13 +56,13 @@ const homescreen=async({ok,chromium,url})=>{
     await g.click('#su-step .home-install');await g.waitForFunction(()=>window._prompted===1);
     ok(await g.waitForFunction(()=>/Installing/.test((document.querySelector('#toast')||{}).textContent||'')).then(()=>true,()=>false),'Install opens the browser\'s install dialog and says it is installing');
     ok(!(await vis('#su-step .home-install'))&&await vis('#su-step .home-manual'),'the offer is used once: the menu steps come back');
-    await g.evaluate(()=>{HOOK.setupClose();openSettings('about')});await g.waitForTimeout(300);
+    await g.evaluate(()=>{HOOK.setupClose();HOOK.openSettings('about')});await g.waitForTimeout(300);
     ok(await g.evaluate(()=>{const b=document.querySelector('#home-again');return !!b&&b.getBoundingClientRect().height>0&&b.textContent==='Install the app'}),'Settings → About offers "Install the app" on Android');
     await g.evaluate(()=>{document.querySelector('#home-again').scrollIntoView()});await g.click('#home-again');await g.waitForFunction(()=>!!document.querySelector('#kitsheet.on'));
     ok(await g.evaluate(()=>document.querySelector('#kit-title').textContent==='Install the app'&&!!document.querySelector('.kit-body .home-manual')),'and opens the same instructions');
     ok(!g.errs.length,'no page errors on Android: '+g.errs.join(' | '));await g.context().close();
     const ga=await open({ua:ANDROID,standalone:true});
-    ok(await ga.evaluate(()=>SETUP_STEPS.join(',')==='welcome,week,wear,weather,connect,done'),'the installed app on Android: no install step');await ga.context().close();
+    ok(await ga.evaluate(()=>HOOK.SETUP_STEPS.join(',')==='welcome,week,wear,weather,connect,done'),'the installed app on Android: no install step');await ga.context().close();
   }finally{await browser.close()}
 };
 
@@ -75,10 +75,10 @@ const homechrome=async({ok,chromium,url})=>{
   const SAFARI='Mozilla/5.0 (iPhone; CPU iPhone OS 26_6_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6 Mobile/15E148 Safari/604.1';
   const open=async ua=>{const ctx=await browser.newContext({viewport:{width:390,height:844},userAgent:ua});const p=await ctx.newPage();p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);return p};
-  const sheet=p=>p.evaluate(()=>{homeOpen();const t=document.querySelector('.kit-body').textContent;kitClose();return t});
+  const sheet=p=>p.evaluate(()=>{HOOK.homeOpen();const t=document.querySelector('.kit-body').textContent;HOOK.kitClose();return t});
   try{
     const c=await open(CHROME);
-    ok(await c.evaluate(()=>homeBrowser())==='Chrome','Chrome on an iPhone is recognized (CriOS)');
+    ok(await c.evaluate(()=>HOOK.homeBrowser())==='Chrome','Chrome on an iPhone is recognized (CriOS)');
     let t=await sheet(c);
     ok(/Tap Share\s+at the right end of Chrome's address bar/.test(t)&&/Not there\? Tap ⋯, then Share/.test(t)&&!/Safari/.test(t),'the sheet gives Chrome\'s steps and never says Safari');
     ok(/Edit Actions/.test(t)&&/Leave Open as Web App on and tap Add/.test(t),'Add to Home Screen\'s hint names Chrome\'s Edit Actions; the rest of the steps stay');
@@ -87,11 +87,11 @@ const homechrome=async({ok,chromium,url})=>{
     await c.evaluate(()=>{localStorage.setItem('worker_url','https://wv.test/');localStorage.setItem('app_token','tok');localStorage.setItem('acct_role',JSON.stringify({tok:'tok',role:'tester'}))});
     t=await sheet(c);
     ok(/Chrome is connected already\./.test(t)&&/apart from Chrome's, so it starts empty/.test(t)&&await c.evaluate(()=>!!document.querySelector('.home-copy')||true),'a tester connected in Chrome is told Chrome is connected, and the Home Screen app starts empty');
-    ok(await c.evaluate(()=>/tap Share in Chrome’s address bar, then “Add to Home Screen”/.test(homeShareShort())),'the reminder line\'s short version names Chrome\'s address bar');
+    ok(await c.evaluate(()=>/tap Share in Chrome’s address bar, then “Add to Home Screen”/.test(HOOK.homeShareShort())),'the reminder line\'s short version names Chrome\'s address bar');
     ok(!c.errs.length,'no page errors in Chrome: '+c.errs.join(' | '));await c.context().close();
     const s=await open(SAFARI);
     t=await sheet(s);
-    ok(await s.evaluate(()=>homeBrowser())==='Safari'&&/Tap ⋯ at the bottom right of Safari, then Share/.test(t)&&/View More/.test(t)&&!/Chrome/.test(t),'Safari keeps its own steps (⋯ then Share, View More)');
+    ok(await s.evaluate(()=>HOOK.homeBrowser())==='Safari'&&/Tap ⋯ at the bottom right of Safari, then Share/.test(t)&&/View More/.test(t)&&!/Chrome/.test(t),'Safari keeps its own steps (⋯ then Share, View More)');
     ok(!s.errs.length,'no page errors in Safari: '+s.errs.join(' | '));await s.context().close();
   }finally{await browser.close()}};
 

@@ -94,5 +94,5 @@ async function saveCard(q){
    kit.js and the tests read these as globals (save, saveAll). saveAllOn is written here only: a getter */
 Object.assign(globalThis,{cardReady,saveAll,savedTitle,save});
 Object.defineProperties(globalThis,{saveAllOn:{get:()=>saveAllOn}});
-globalThis.HOOK={__proto__:globalThis.HOOK||null,save,saveAll,get saveAllOn(){return saveAllOn}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,save,saveAll,get saveAllOn(){return saveAllOn},savedTitle};
 export {cardReady,saveAllOn,saveAll,savedTitle,save};

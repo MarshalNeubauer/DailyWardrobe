@@ -282,6 +282,6 @@ function settTap(el){toggleSett(cardIx(el))}
 Object.assign(globalThis,{settable,claudeOnly,readable,settSummary,TEX_WORDS});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 serve('pattern-readable',readable);serve('pattern-reread',rereadSett);   // (the restructure S6p: the painter, asm-cm-job.js asmCmRoute and asm-cm-page.js Read N patterns, may not import this file)
-globalThis.HOOK={__proto__:globalThis.HOOK||null,camoFromPixels,claudePattern,motifFromSpec,motifPat,settCheck,settFrom,specSett,texContrast,texFromSpec,readable};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,camoFromPixels,claudePattern,motifFromSpec,motifPat,settCheck,settFrom,specSett,texContrast,texFromSpec,readable,claudeOnly,missedPattern,readPatternWithClaude,readSett,rereadSett,settFromSpec,settSummary,settable};
 export {settable,motifPat,claudeOnly,readable,specSett,settSummary,TEX_WORDS,settFrom,readSett,settCheck,missedPattern,settNote,rereadSett,claudePattern,settFromSpec,readPatternWithClaude,camoFromPixels,motifFromSpec,texContrast,texFromSpec};
 acts({settTap});

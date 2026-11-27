@@ -192,6 +192,6 @@ function matCardPick(el){setQField(cardIx(el),'material',matPicked(el))}   // (t
    page's, as a classic script's were */
 Object.assign(globalThis,{shirtColFix,setq,setQField,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,addCkSecs,ckCheck,cardSafe};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,addCkSecs,ckCheck,cardSafe,setQField,setq};
 export {shirtColFix,setq,setQField,matOn,shadeRow,matchShadeQ,matchShadeE,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckCheck,addCkSecs,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard};
 acts({shadeStep,shadeMatch,cardSave,cardRetryTag,cardMatOffer,cardMatGuess,cardCheck,cardCuRemove,cardCuFile,cardRdStart,cardPatTile,cardTypePick,cardSel,cardSwatch,cardField,matCardPick,tapeQ});

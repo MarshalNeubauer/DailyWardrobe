@@ -113,7 +113,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const f=HOOK.asmFor(o),r=HOOK.asmOut[HOOK.asmOutKey(o)];let px=null;
       if(f){const im=new Image();im.src=f.img;await im.decode();const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);px=[...x.getImageData(Math.round(im.width*.5),Math.round(im.width*.62),1,1).data].slice(0,3)}
       // (2026-11-14, a tester's gold watch) the same look with a gold watch on leather: painted on the tester's phone too, its dial dark
-      const gw=I('watch','brown',{metal:'gold',dial:'charcoal',band:'leather'});items.push(gw);const o2={...o,watch:gw};let g2=null,gerr=null;
+      const gw=I('watch','brown',{metal:'gold',dial:'charcoal',band:'leather'});HOOK.items.push(gw);const o2={...o,watch:gw};let g2=null,gerr=null;
       try{await HOOK.asmEnsure(o2);for(let i=0;i<200&&(HOOK.asmBusy.size||HOOK.asmPreGetting.size);i++)await new Promise(r=>setTimeout(r,50));
         const f2=HOOK.asmFor(o2);if(f2){const im=new Image();im.src=f2.img;await im.decode();const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);
           const g=HOOK.ASM_WATCH_GEO.suit,k=im.width/2048;g2={w:im.width,dial:[...x.getImageData(Math.round(g.cx*k),Math.round(g.cy*k),1,1).data].slice(0,3)}}

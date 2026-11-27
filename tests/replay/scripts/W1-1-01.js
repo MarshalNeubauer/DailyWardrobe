@@ -18,19 +18,19 @@ const out = {};
   await a.page.goto(APP); await a.ready().catch(() => {}); await sleep(6000);
   await a.reopen(APP); await a.ready().catch(() => {});
   out.aToastsAfterUpdate = await toastWatch(a, 8000);
-  out.aVersion = await a.page.evaluate(() => typeof appVersion === 'function' ? appVersion() : '?');
+  out.aVersion = await a.page.evaluate(() => typeof HOOK === 'object' && 'appVersion' in HOOK ? HOOK.appVersion() : '?');
   await a.background(); await sleep(4000); await a.foreground();
-  out.aPlanRules = await a.page.evaluate(() => settings.planRules);
+  out.aPlanRules = await a.page.evaluate(() => HOOK.settings.planRules);
   out.serverAfterAUpdate = await serverSettings();
   // phone c joins the same account with the same invitation link, on today's code, then is closed and reopened
   await mock('clock', { at: '2026-11-22T05:00:00.000Z' });
   const c = await openPhone({ profile: 'verify1-r01-c', fresh: true, time: '2026-11-22T08:00:00+03:00' });
   await c.page.goto(link); await c.ready().catch(() => {}); await sleep(12000);
-  out.cJoined = await c.page.evaluate(() => ({ planRules: settings.planRules, items: items.length }));
+  out.cJoined = await c.page.evaluate(() => ({ planRules: HOOK.settings.planRules, items: HOOK.items.length }));
   await c.background(); await sleep(3000); await mock('count-reset', {});
   await c.reopen(APP); await c.ready().catch(() => {});
   out.cToastsOnReopen = await toastWatch(c, 9000);
-  out.cAfterReopen = await c.page.evaluate(() => settings.planRules);
+  out.cAfterReopen = await c.page.evaluate(() => HOOK.settings.planRules);
   await c.background(); await sleep(3000);
   out.kvWritesAfterCReopen = (await mock('log')).kvByPrefix;
   out.serverAfterC = await serverSettings();
@@ -41,7 +41,7 @@ const out = {};
   out.cLater = [];
   for (let i = 0; i < 4; i++) {
     await c.reopen(APP); await c.ready().catch(() => {});
-    const t = await toastWatch(c, 7000); const pr = await c.page.evaluate(() => settings.planRules);
+    const t = await toastWatch(c, 7000); const pr = await c.page.evaluate(() => HOOK.settings.planRules);
     await c.background(); await sleep(3000);
     out.cLater.push({ replanToast: t.some(x => /planner was updated/.test(x)), planRulesAfter: pr });
   }

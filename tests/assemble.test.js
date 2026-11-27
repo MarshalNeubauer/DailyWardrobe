@@ -27,20 +27,20 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const o={top:I('suit','navy'),shirt:I('shirt','white'),tie:I('tie','burgundy'),watch:I('watch','silver',{metal:'silver'}),suitDay:true},mk=HOOK.asmCmKey('suit','master');
       const calls=[],f0=window.fetch;window.fetch=async(...a)=>{calls.push(String(a[0]));return new Response('{}',{status:404})};localStorage.setItem('worker_url','https://off.test/');localStorage.setItem('app_token','t');
       const r={};try{
-        renders[mk]={sig:'asm/cm test',img:'data:image/jpeg;base64,AAAA',model:'colormaster',t:1000};renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,OWN',model:'gpt',t:500};
+        HOOK.renders[mk]={sig:'asm/cm test',img:'data:image/jpeg;base64,AAAA',model:'colormaster',t:1000};HOOK.renders[HOOK.comboKey(o)]={sig:HOOK.comboSig(o),img:'data:image/jpeg;base64,OWN',model:'gpt',t:500};
         r.kind=HOOK.asmCmUse(o);const k=HOOK.asmOutKey(o);HOOK.asmOut[k]={img:'data:image/jpeg;base64,ASM',stamp:HOOK.asmStamp(o),t:9};
-        r.over=renderFor(o).img;
+        r.over=HOOK.renderFor(o).img;
         // switched off (ASM_ON false): the outfit's own photo, nothing asked of the worker, Settings hides the group
-        HOOK.ASM_ON=false;r.off={wants:HOOK.asmWants(o),for:HOOK.asmFor(o),shown:renderFor(o).img};await HOOK.asmEnsure(o);await HOOK.asmSync(true);openSettings('photos');HOOK.renderAsmUI();
-        r.off.calls=calls.filter(u=>!/\/me$/.test(u)).length;r.off.hidden=document.querySelector('#asm-group').hidden;HOOK.ASM_ON=true;HOOK.renderAsmUI();r.onShown=!document.querySelector('#asm-group').hidden;closeSettings&&closeSettings();
+        HOOK.ASM_ON=false;r.off={wants:HOOK.asmWants(o),for:HOOK.asmFor(o),shown:HOOK.renderFor(o).img};await HOOK.asmEnsure(o);await HOOK.asmSync(true);HOOK.openSettings('photos');HOOK.renderAsmUI();
+        r.off.calls=calls.filter(u=>!/\/me$/.test(u)).length;r.off.hidden=document.querySelector('#asm-group').hidden;HOOK.ASM_ON=true;HOOK.renderAsmUI();r.onShown=!document.querySelector('#asm-group').hidden;HOOK.closeSettings&&HOOK.closeSettings();
         // a photo made for this outfit after its master (Settings: Regenerate) wins, and nothing is painted or redrawn for it
-        renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,NEW',model:'gpt',t:2000};r.under=renderFor(o).model;
-        let made=0,redraws=0;const p0=HOOK.asmPhoto,drew=l=>l.filter(x=>x.addedNodes.length).length,mo=new MutationObserver(l=>{redraws+=drew(l)});mo.observe($('#today'),{childList:true});HOOK.asmPhoto=async x=>{made++;return p0(x)};
+        HOOK.renders[HOOK.comboKey(o)]={sig:HOOK.comboSig(o),img:'data:image/jpeg;base64,NEW',model:'gpt',t:2000};r.under=HOOK.renderFor(o).model;
+        let made=0,redraws=0;const p0=HOOK.asmPhoto,drew=l=>l.filter(x=>x.addedNodes.length).length,mo=new MutationObserver(l=>{redraws+=drew(l)});mo.observe(HOOK.$('#today'),{childList:true});HOOK.asmPhoto=async x=>{made++;return p0(x)};
         try{HOOK.asmTried.clear();await HOOK.asmEnsure(o);await HOOK.asmEnsure(o)}finally{HOOK.asmPhoto=p0}redraws+=drew(mo.takeRecords());mo.disconnect();r.loop={made,redraws};
         // a look with no colour-coded master: no picture, no job
         const o2={...o,top:null,bot:null};r.none={use:HOOK.asmCmUse(o2),key:HOOK.asmOutKey(o2),job:await HOOK.asmJob(o2)};
         delete HOOK.asmOut[k]}
-      finally{window.fetch=f0;localStorage.removeItem('worker_url');localStorage.removeItem('app_token');delete renders[mk];delete renders[comboKey(o)]}
+      finally{window.fetch=f0;localStorage.removeItem('worker_url');localStorage.removeItem('app_token');delete HOOK.renders[mk];delete HOOK.renders[HOOK.comboKey(o)]}
       return r});
     ok(t.kind==='suit'&&t.over==='data:image/jpeg;base64,ASM','Today shows the painted picture (kept on the device) over an older photo of the outfit');
     ok(t.off.wants===false&&t.off.for===null&&t.off.shown==='data:image/jpeg;base64,OWN'&&t.off.calls===0&&t.off.hidden&&t.onShown,`switched off (ASM_ON), Today shows the outfit's own photo, nothing is asked of the worker (${t.off.calls} requests) and Settings hides the group; switched on it shows again`);

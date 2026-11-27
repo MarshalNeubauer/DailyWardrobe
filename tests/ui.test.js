@@ -8,40 +8,40 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>{dialogs.push(d.message());d.dismiss()});
     await p.route(SRV+'**',r=>r.fulfill({status:503,headers:{'access-control-allow-origin':'*'},contentType:'application/json',body:'{}'}));   // a server that answers nothing: no sync merges the wardrobe away
     if(o.setup)await p.addInitScript(()=>{window.SETUP_AUTO=true});
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
-    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];settings.setupDone=1;HOOK.cache={}});
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{HOOK.CK_OPEN['*']=true});
+    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[4];HOOK.settings.setupDone=1;HOOK.cache={}});
     return {p,ctx,errs,dialogs}};
-  const fill=(p,which)=>p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=${which};HOOK.cache={};HOOK.flt='all';show('today')})()`);
+  const fill=(p,which)=>p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=${which};HOOK.cache={};HOOK.flt='all';HOOK.show('today')})()`);
   try{
     /* ---- (no browser dialogs left in the app's scripts, and ui.js loaded and kept: tests/sourcerules.test.js, CR-10-07) ---- */
 
     const {p,ctx,errs,dialogs}=await open();
     await fill(p,'W.realistic');
     /* ---- askConfirm ---- */
-    const ask=async(how,opt)=>{await p.evaluate(o=>{window._ans=undefined;askConfirm('Do the thing?\n\nIt can be undone.',o).then(v=>{window._ans=v})},opt||{});
+    const ask=async(how,opt)=>{await p.evaluate(o=>{window._ans=undefined;HOOK.askConfirm('Do the thing?\n\nIt can be undone.',o).then(v=>{window._ans=v})},opt||{});
       await p.waitForFunction(()=>document.querySelector('#ask-sheet.on'));await settle(p,400);const before=await p.evaluate(()=>window._ans);
       if(how==='esc')await p.keyboard.press('Escape');else if(how==='back')await p.evaluate(()=>document.querySelector('#ask-backdrop').click());else await p.click(how);
       await p.waitForFunction(()=>window._ans!==undefined);return {before,ans:await p.evaluate(()=>window._ans),shut:await p.evaluate(()=>!document.querySelector('#ask-sheet').classList.contains('on')&&!document.querySelector('#ask-backdrop').classList.contains('on'))}};
-    await p.evaluate(()=>{askConfirm('Do the thing?\n\nIt can be undone.',{ok:'Do it',danger:true})});await p.waitForFunction(()=>document.querySelector('#ask-sheet.on'));await settle(p,400);
+    await p.evaluate(()=>{HOOK.askConfirm('Do the thing?\n\nIt can be undone.',{ok:'Do it',danger:true})});await p.waitForFunction(()=>document.querySelector('#ask-sheet.on'));await settle(p,400);
     const sh=await p.evaluate(()=>{const s=document.querySelector('#ask-sheet'),r=s.getBoundingClientRect(),b=[...s.querySelectorAll('button')];
       return {bottom:Math.round(r.bottom),w:Math.round(r.width),q:s.querySelector('.ask-q').textContent,more:s.querySelector('.ask-more').textContent,btn:b.map(x=>x.textContent+':'+Math.round(x.getBoundingClientRect().height)).join(),
         z:+getComputedStyle(s).zIndex,set:+getComputedStyle(document.querySelector('#settings-modal')).zIndex,role:s.getAttribute('role'),focus:document.activeElement.id,red:getComputedStyle(s.querySelector('#ask-ok')).backgroundColor}});
     ok(sh.bottom===844&&sh.w===390&&sh.q==='Do the thing?'&&sh.more==='It can be undone.'&&sh.role==='alertdialog',`askConfirm shows a sheet at the bottom of the screen with the question and its explanation`);
     ok(sh.btn==='Cancel:44,Do it:44'&&sh.z>sh.set&&sh.focus==='ask-cancel'&&/19[0-9], 7\d, 6\d/.test(sh.red),`two 44px buttons, above Settings; a destructive one is red and the focus starts on Cancel (${sh.btn}, ${sh.red})`);
-    await p.evaluate(()=>askAnswer(false));
+    await p.evaluate(()=>HOOK.askAnswer(false));
     const a1=await ask('#ask-ok'),a2=await ask('#ask-cancel'),a3=await ask('esc'),a4=await ask('back');
     ok(a1.before===undefined&&a1.ans===true&&a1.shut&&a2.ans===false&&a3.ans===false&&a4.ans===false&&a4.shut,'it answers true on OK, false on Cancel, Escape and a tap outside, and closes');
-    await p.evaluate(()=>{tell('That file is not a Daily Wardrobe backup.')});
+    await p.evaluate(()=>{HOOK.tell('That file is not a Daily Wardrobe backup.')});
     ok(await p.evaluate(()=>{const t=document.querySelector('#toast');return t.classList.contains('on')&&/not a Daily Wardrobe backup/.test(t.textContent)&&+getComputedStyle(t).zIndex>+getComputedStyle(document.querySelector('#settings-modal')).zIndex&&t.getBoundingClientRect().height<50}),'tell() is a toast, on one line, shown above Settings too');
 
     /* ---- Settings: wording, the top group, Advanced folds ---- */
-    await p.evaluate(()=>{show('today');openSettings();HOOK.renderAbout()});await settle(p,400);
+    await p.evaluate(()=>{HOOK.show('today');HOOK.openSettings();HOOK.renderAbout()});await settle(p,400);
     const st=await p.evaluate(()=>{const m=document.querySelector('#settings-modal'),bad=/worker|cloudflare|\bKV\b|token|benchmark/i;
-      for(const k of SET_CATS)setCatOpen(k,true,true);for(const f of m.querySelectorAll('.adv'))f.classList.add('open');
+      for(const k of HOOK.SET_CATS)HOOK.setCatOpen(k,true,true);for(const f of m.querySelectorAll('.adv'))f.classList.add('open');
       const text=m.innerText+' '+[...m.querySelectorAll('[placeholder],[title],[aria-label]')].map(e=>(e.placeholder||'')+' '+(e.title||'')+' '+(e.getAttribute('aria-label')||'')).join(' ');
-      const hit=bad.exec(text);for(const f of m.querySelectorAll('.adv'))f.classList.remove('open');for(const k of SET_CATS)setCatOpen(k,false,true);
+      const hit=bad.exec(text);for(const f of m.querySelectorAll('.adv'))f.classList.remove('open');for(const k of HOOK.SET_CATS)HOOK.setCatOpen(k,false,true);
       const links=m.querySelector('#slinks'),first=m.querySelector('.sbody').firstElementChild;
-      return {hit:hit?text.slice(Math.max(0,hit.index-30),hit.index+30):'',sums:SET_CATS.map(k=>document.querySelector('#sum-'+k).textContent),
+      return {hit:hit?text.slice(Math.max(0,hit.index-30),hit.index+30):'',sums:HOOK.SET_CATS.map(k=>document.querySelector('#sum-'+k).textContent),
         links:[...links.querySelectorAll('.slink b')].map(b=>b.textContent).join(),one:links.querySelectorAll('.slink').length===links.children.length,head:first.textContent,
         gaps:[...links.querySelectorAll('.slink')].map(b=>Math.round(b.getBoundingClientRect().height)),radius:getComputedStyle(links).borderTopLeftRadius}});
     ok(!st.hit,`nothing in Settings says worker, Cloudflare, KV, token or benchmark${st.hit?' (“…'+st.hit+'…”)':''}`);
@@ -54,43 +54,43 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
         label:[...document.querySelector('#adv-connection .adv-t').childNodes].map(n=>n.textContent.trim()).join(' ')}});   // (textContent: not connected, the fold is out of sight)
     ok(adv.ids==='adv-photos,adv-connection'&&adv.shut,'Outfit pictures and Connection each have an Advanced fold, closed when Settings opens (Schedule\'s held only Re-plan, now Start the plan over, for everyone)');
     ok(adv.inside&&adv.gone&&adv.out&&/^Advanced For the person who runs the server/.test(adv.label),'the server address and code and the item-photo tools are inside them (shirt weaves and the accuracy check are gone); the everyday controls, Start the plan over among them, are not');
-    await p.evaluate(()=>openSettings('connection'));await settle(p,300);
+    await p.evaluate(()=>HOOK.openSettings('connection'));await settle(p,300);
     ok(!(await p.isVisible('#cfg-url'))&&await p.isVisible('#conn-link'),'Connection shows a field for the invite link; the address and code stay folded away');
     await p.click('#conn-own button');   // not connected, the owner's fold shows after "I run the server" (ui.js connOwn)
     const ao=await p.evaluate(()=>({vis:!!document.querySelector('#cfg-url').offsetParent,exp:document.querySelector('#adv-connection .adv-head').getAttribute('aria-expanded'),h:Math.round(document.querySelector('#adv-connection .adv-head').getBoundingClientRect().height),
       labels:[...document.querySelectorAll('#advin-connection label')].map(l=>l.firstChild.textContent.trim()).join()}));
     ok(ao.vis&&ao.exp==='true'&&ao.h>=44&&ao.labels==='Server address,Code',`a tap unfolds it (${ao.labels}; a ${ao.h}px row)`);
-    await p.evaluate(()=>{closeSettings();openSettings('connection')});
+    await p.evaluate(()=>{HOOK.closeSettings();HOOK.openSettings('connection')});
     ok(await p.evaluate(()=>!document.querySelector('#settings-modal .adv.open')),'opening Settings again folds it');
     await p.fill('#conn-link','not a link');await p.click('#conn-go');await p.waitForFunction(()=>/didn’t work/.test(document.querySelector('#conn-msg').textContent));
     ok(await p.evaluate(()=>!localStorage.getItem('worker_url')),'a link that is no invite link says so and connects nothing');
 
     /* ---- what needs a connection: not shown until the app is connected (a switched-off button looked broken) ---- */
-    await p.evaluate(()=>{openSettings('photos')});await settle(p,300);
+    await p.evaluate(()=>{HOOK.openSettings('photos')});await settle(p,300);
     const off=await p.evaluate(()=>({vis:['#itempic-btn'].map(s=>!!document.querySelector(s).offsetParent),note:document.querySelector('#photos-conn').textContent,noteVis:!!document.querySelector('#photos-conn').offsetParent,
-      go:!!document.querySelector('#photos-conn button'),backup:(openSettings('backup'),{sync:!!document.querySelector('#sp-backup button[data-act="syncNowTap"]').offsetParent,snaps:!!document.querySelector('#snap-list').offsetParent,file:!!document.querySelector('#sp-backup button[data-act="backupSaveTap"]').offsetParent,note:document.querySelector('#backup-conn').textContent})}));
+      go:!!document.querySelector('#photos-conn button'),backup:(HOOK.openSettings('backup'),{sync:!!document.querySelector('#sp-backup button[data-act="syncNowTap"]').offsetParent,snaps:!!document.querySelector('#snap-list').offsetParent,file:!!document.querySelector('#sp-backup button[data-act="backupSaveTap"]').offsetParent,note:document.querySelector('#backup-conn').textContent})}));
     ok(off.vis.every(v=>!v)&&/^Making item pictures needs a connection/.test(off.note)&&off.noteVis&&off.go,`not connected: Outfit pictures shows one line saying what connecting turns on, with a Connect button, and none of its buttons (“${off.note}”)`);
     ok(!off.backup.sync&&!off.backup.snaps&&off.backup.file&&/^Backing up and syncing needs a connection/.test(off.backup.note),'Backup: no Sync now or daily backups; the backup file still works');
-    await p.evaluate(()=>{openSettings('photos');document.querySelector('#photos-conn button').click()});await settle(p,600);
+    await p.evaluate(()=>{HOOK.openSettings('photos');document.querySelector('#photos-conn button').click()});await settle(p,600);
     ok(await p.evaluate(()=>document.querySelector('#sc-connection').classList.contains('open')&&document.activeElement===document.querySelector('#conn-link')),'Connect opens Connection with the cursor in the invite-link field');
-    await p.evaluate(()=>{closeSettings();show('today')});
+    await p.evaluate(()=>{HOOK.closeSettings();HOOK.show('today')});
     const g0=await p.evaluate(()=>({btn:!!document.querySelector('.render-btn'),msg:!!document.querySelector('#render-msg'),refresh:!!document.querySelector('#refresh-btn')}));
     ok(!g0.btn&&!g0.msg&&!g0.refresh,'Today: no Generate button and no "needs a connection" under the figure; no Refresh in the header');
-    await p.evaluate(()=>openAdd());
+    await p.evaluate(()=>HOOK.openAdd());
     ok(await p.evaluate(()=>!document.querySelector('#add-group').offsetParent&&!!document.querySelector('#add-one').offsetParent),'Add: "Several items" is not shown; "One item" is');
-    await p.evaluate(()=>{const s=items.find(i=>i.type==='shirt');s.pattern='herringbone';s.texture='data:image/png;base64,iVBORw0KGgo=';show('wardrobe');openItem(s.id)});await settle(p,500);
+    await p.evaluate(()=>{const s=HOOK.items.find(i=>i.type==='shirt');s.pattern='herringbone';s.texture='data:image/png;base64,iVBORw0KGgo=';HOOK.show('wardrobe');HOOK.openItem(s.id)});await settle(p,500);
     ok(await p.evaluate(()=>!document.querySelector('#readpat-btn')&&!document.querySelector('.ivpat .connnote')),'the item sheet: no "Read pattern from photo" for a weave only the server can read');
     await p.evaluate(()=>HOOK.closeItem());
     // connected: everything is there again
-    await p.evaluate(s=>{localStorage.setItem('worker_url',s);localStorage.setItem('app_token','tok-1');closeSettings();show('today')},SRV);
-    const on=await p.evaluate(()=>{const b=document.querySelector('.render-btn');openSettings('photos');const r={gen:!b&&!document.querySelector('#regen-btn'),msg:!!document.querySelector('#render-msg'),
+    await p.evaluate(s=>{localStorage.setItem('worker_url',s);localStorage.setItem('app_token','tok-1');HOOK.closeSettings();HOOK.show('today')},SRV);
+    const on=await p.evaluate(()=>{const b=document.querySelector('.render-btn');HOOK.openSettings('photos');const r={gen:!b&&!document.querySelector('#regen-btn'),msg:!!document.querySelector('#render-msg'),
       batch:!document.querySelector('#batch-btn'),items:!!document.querySelector('#itempic-btn').offsetParent,note:document.querySelector('#photos-conn').textContent,sum:document.querySelector('#sum-photos').textContent,conn:document.querySelector('#sum-connection').textContent};
-      closeSettings();openAdd();r.group=!!document.querySelector('#add-group').offsetParent&&!document.querySelector('#add-group input').disabled;return r});
+      HOOK.closeSettings();HOOK.openAdd();r.group=!!document.querySelector('#add-group').offsetParent&&!document.querySelector('#add-group input').disabled;return r});
     ok(on.gen&&!on.msg&&on.batch&&on.items&&!on.note&&on.group&&/^Painted pictures$/.test(on.sum)&&/^Connected/.test(on.conn),`connected: the item pictures are there; no outfit photo to make anywhere (the day's photo was retired 2026-11-14) (${on.conn})`);
     await p.evaluate(()=>{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')});
 
     /* ---- the accent as text ---- */
-    await p.evaluate(()=>{settings.location=null;show('today');toggleMonth()});await settle(p,600);
+    await p.evaluate(()=>{HOOK.settings.location=null;HOOK.show('today');HOOK.toggleMonth()});await settle(p,600);
     const contrast=theme=>p.evaluate(theme=>{document.documentElement.dataset.theme=theme;
       const lum=c=>{const [r,g,b]=c.match(/[\d.]+/g).slice(0,3).map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4});return .2126*r+.7152*g+.0722*b};
       const probe=v=>{const d=document.createElement('i');d.style.color=v;document.body.append(d);const c=getComputedStyle(d).color;d.remove();return c};
@@ -108,11 +108,11 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     await fill(p,'[W.realistic.find(i=>i.type==="shirt")]');
     const fr=await p.evaluate(()=>{const f=document.querySelector('#firstrun'),g=document.querySelector('#mannequin-container');return f&&g?{first:!!(f.compareDocumentPosition(g)&Node.DOCUMENT_POSITION_FOLLOWING),top:f.getBoundingClientRect().top<g.getBoundingClientRect().top,stage:!!f.closest('#stage'),n:document.querySelectorAll('#firstrun').length}:null});
     ok(fr&&fr.first&&fr.top&&fr.stage&&fr.n===1,'one shirt: "Get your first outfit" sits above the drawn figure');
-    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,14);show('today')});
+    await p.evaluate(()=>{HOOK.sel=new Date(2026,10,14);HOOK.show('today')});
     ok(await p.evaluate(()=>{const f=document.querySelector('#firstrun'),e=document.querySelector('#stage .empty');return !!f&&!!e&&f.getBoundingClientRect().top<e.getBoundingClientRect().top}),'on a day off it is above the day\'s note too');
     await p.evaluate(()=>{HOOK.sel=new Date(2026,10,11)});await fill(p,'W.realistic');
     ok(await p.evaluate(()=>!document.querySelector('#firstrun')&&!!document.querySelector('#mannequin-container')),'gone once an outfit can be planned');
-    await p.evaluate(()=>{HOOK.items=[];HOOK.cache={};show('wardrobe')});
+    await p.evaluate(()=>{HOOK.items=[];HOOK.cache={};HOOK.show('wardrobe')});
     ok(await p.evaluate(()=>!!document.querySelector('#wempty')&&!document.querySelector('#wardrobe .wfind')&&!document.querySelector('#wardrobe .chips')),'an empty Wardrobe shows its empty card without the search field and the type chips');
 
     ok(!errs.length&&!dialogs.length,`no page errors and no browser dialog (${errs.concat(dialogs).slice(0,2).join(' | ')})`);
@@ -121,11 +121,11 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
     /* ---- the new pages: sizes and no sideways scroll at 320 / 390 / 626, both themes ---- */
     for(const w of [320,390,626]){const {p,ctx,errs}=await open({width:w,height:844});
       await fill(p,'W.realistic');
-      await p.evaluate(()=>{const T=todayDate(),P=planFor();for(const [k,o] of Object.entries(P))if(keyDate(k)<T&&o&&o.shirt)dayRecs[k]={date:k,worn:true,ids:lockIds(o)};
-        settings.care={suit:2,blazer:2,pants:2,shirt:1};items[1].away={why:'cleaner',since:'2026-11-09',back:'2026-11-13'};Object.assign(items[0],{name:'A suit with quite a long name that has to wrap or be cut somewhere'})});
+      await p.evaluate(()=>{const T=HOOK.todayDate(),P=HOOK.planFor();for(const [k,o] of Object.entries(P))if(HOOK.keyDate(k)<T&&o&&o.shirt)HOOK.dayRecs[k]={date:k,worn:true,ids:HOOK.lockIds(o)};
+        HOOK.settings.care={suit:2,blazer:2,pants:2,shirt:1};HOOK.items[1].away={why:'cleaner',since:'2026-11-09',back:'2026-11-13'};Object.assign(HOOK.items[0],{name:'A suit with quite a long name that has to wrap or be cut somewhere'})});
       const out=[];
       for(const pg of ['pack'])for(const theme of ['light','dark']){   // (Laundry & cleaning is a fold of Settings since 2026-11-17: tests/care.test.js)
-        await p.evaluate(([pg,theme])=>{document.documentElement.dataset.theme=theme;show(pg)},[pg,theme]);await settle(p,300);
+        await p.evaluate(([pg,theme])=>{document.documentElement.dataset.theme=theme;HOOK.show(pg)},[pg,theme]);await settle(p,300);
         out.push(await p.evaluate(pg=>{const el=document.querySelector('#'+pg),b=[...el.querySelectorAll('button:not(.linkbtn):not(.pback)')].filter(x=>x.offsetParent),i=[...el.querySelectorAll('select,input[type=date],input[type=text]')].filter(x=>x.offsetParent),card=el.querySelector('.card');
           const cs=getComputedStyle(card),probe=v=>{const d=document.createElement('i');d.style.color=v;document.body.append(d);const c=getComputedStyle(d).color;d.remove();return c};
           return {pg,n:b.length,btn:[...new Set(b.map(x=>Math.round(x.getBoundingClientRect().height)))].join(),rad:[...new Set(b.map(x=>getComputedStyle(x).borderTopLeftRadius))].join(),inp:[...new Set(i.map(x=>Math.round(x.getBoundingClientRect().height)))].join(),
@@ -134,14 +134,14 @@ module.exports=async({ok,chromium,url,WARDROBES,settle,ROOT})=>{
       const bad=out.filter(o=>o.n<2||o.btn!=='44'||o.rad!=='12px'||(o.inp&&o.inp!=='44')||o.h2!=='22px'||o.back!==44||o.card!=='14px true true'||o.over>0||o.wide>0);
       ok(!bad.length,`${w}px: the Packing list and Laundry pages use 44px buttons and inputs, 12px corners, 14px bordered cards, a 22px title, and nothing scrolls sideways, light and dark${bad.length?' — '+JSON.stringify(bad[0]):''}`);
       // the item sheet's new fields and Care card
-      await p.evaluate(()=>{document.documentElement.dataset.theme='light';show('wardrobe');openItem(items[0].id)});await settle(p,600);
+      await p.evaluate(()=>{document.documentElement.dataset.theme='light';HOOK.show('wardrobe');HOOK.openItem(HOOK.items[0].id)});await settle(p,600);
       const iv=await p.evaluate(()=>{const v=document.querySelector('#item-view'),b=v.querySelector('#ivbody');return {h:[...v.querySelectorAll('.ivsec h3')].map(x=>x.textContent).join(),over:b.scrollWidth-b.clientWidth,
         btn:[...new Set([...v.querySelectorAll('.ivcare button')].map(x=>Math.round(x.getBoundingClientRect().height)))].join(),fld:[...new Set([...v.querySelectorAll('.wfld')].map(x=>Math.round(x.getBoundingClientRect().height)))].join()}});
       ok(/Care/.test(iv.h)&&iv.over<=0&&iv.btn==='44'&&iv.fld==='44',`${w}px: the item sheet's name and brand fields and its Care buttons are 44px and it doesn't scroll sideways (${iv.h})`);
       ok(!errs.length,`${w}px: no page errors ${errs.slice(0,2).join(' | ')}`);
       await ctx.close();
       // the setup flow, every step
-      const s=await open({width:w,height:844},{setup:true});await s.p.evaluate(()=>{HOOK.items=[];delete settings.setupDone;HOOK.setupOpen(false)});const sb=[];
+      const s=await open({width:w,height:844},{setup:true});await s.p.evaluate(()=>{HOOK.items=[];delete HOOK.settings.setupDone;HOOK.setupOpen(false)});const sb=[];
       for(const k of ['welcome','week','wear','weather','connect','done'])for(const theme of ['light','dark']){
         await s.p.waitForFunction(k=>document.querySelector('#su-step')&&document.querySelector('#su-step').dataset.step===k,k);
         sb.push(await s.p.evaluate(([k,theme])=>{document.documentElement.dataset.theme=theme;const el=document.querySelector('#setup'),b=[...el.querySelectorAll('button')].filter(x=>x.offsetParent),i=[...el.querySelectorAll('select,input[type=text]')].filter(x=>x.offsetParent),body=el.querySelector('.su-body');

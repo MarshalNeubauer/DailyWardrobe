@@ -24,6 +24,7 @@ const safariWord=()=>safariTab()?` ${tabBrowser()} can clear a website’s data 
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): backupfile.js draws the line after a
    restore; the addcards and backup-storage tests too. */
 Object.assign(globalThis,{showSyncStatus});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,showSyncStatus};
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-open',()=>showSyncStatus());   // the Backup line, as Settings opens
 on('backup-changed',()=>showSyncStatus());   // the backup's status changed (sync.js)

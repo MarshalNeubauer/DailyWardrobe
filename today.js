@@ -297,7 +297,7 @@ function setListOpen(v){listOpen=v}
 Object.assign(globalThis,{wxPreload,figCuDone,keepHome,goToday,renderToday,foldAll,stepDay,planWith,setListOpen});
 Object.defineProperties(globalThis,{recordRun:{get:()=>recordRun}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,get BLOUSE_ROLL_ON(){return BLOUSE_ROLL_ON},set BLOUSE_ROLL_ON(v){BLOUSE_ROLL_ON=v},get belowOpen(){return belowOpen},set belowOpen(v){belowOpen=v},get dayShown(){return dayShown},set dayShown(v){dayShown=v},figureStage,get openRow(){return openRow},set openRow(v){openRow=v},pickPiece,piecesBox,restWarn,setOff,setRoll,swatchStack,todayTabTap,toggleList,toggleRow,get listOpen(){return listOpen},set listOpen(v){listOpen=v},foldAll,planWith,stepDay};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,get BLOUSE_ROLL_ON(){return BLOUSE_ROLL_ON},set BLOUSE_ROLL_ON(v){BLOUSE_ROLL_ON=v},get belowOpen(){return belowOpen},set belowOpen(v){belowOpen=v},get dayShown(){return dayShown},set dayShown(v){dayShown=v},figureStage,get openRow(){return openRow},set openRow(v){openRow=v},pickPiece,piecesBox,restWarn,setOff,setRoll,swatchStack,todayTabTap,toggleList,toggleRow,get listOpen(){return listOpen},set listOpen(v){listOpen=v},foldAll,planWith,stepDay,goToday,get recordRun(){return recordRun},renderToday};
 /* history.js (a swap, a pick, a mark, an occasion, Reset …) and month.js (a day opened) announce 'day-changed': Today is drawn again
    (bus.js; the restructure S3e, 2026-11-26: they run before this file). Above acts({…}), as the bridge */
 on('day-changed',()=>renderToday());

@@ -107,5 +107,5 @@ async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='3
    At the file's end: nothing runs at load (declarations only), so nothing above can throw */
 Object.assign(globalThis,{upgradeCloseups,remakeLeft,remakeSpend,upgradePhotos,fixBlackBackdrops,recolourSpecSetts});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,REMAKE_DAY};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,REMAKE_DAY,fixBlackBackdrops,recolourSpecSetts,remakeLeft,remakeSpend,upgradeCloseups,upgradePhotos};
 export {upgradeCloseups,REMAKE_DAY,remakeLeft,remakeSpend,upgradePhotos,fixBlackBackdrops,recolourSpecSetts};

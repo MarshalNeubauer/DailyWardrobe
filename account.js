@@ -297,7 +297,7 @@ on('settings-summaries',()=>applyRole());
 on('invite-ended',()=>acctEndedUI());   // an ended invitation (who.js inviteEnded): what said "Connected" is drawn again
 on('connection-typed',(url,code)=>acctTyped(url,code).catch(e=>console.warn('connection not changed',e)));   // another address or code typed in Settings → Connection
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,get acctLinkRun(){return acctLinkRun},acctPending,dropInviteHash,homeScreenGuide,loadAccount,renderAccountUI,get inviteChecking(){return inviteChecking},set inviteChecking(v){inviteChecking=v}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,get acctLinkRun(){return acctLinkRun},acctPending,dropInviteHash,homeScreenGuide,loadAccount,renderAccountUI,get inviteChecking(){return inviteChecking},set inviteChecking(v){inviteChecking=v},get acctWhy(){return acctWhy},connectFromLink};
 export {dropInviteHash,acctWhy,inviteChecking,acctLinkRun,acctFailText,connectFromLink,acctTyped,acctPending,iosInSafari,myInviteLink,homeScreenGuide,limitNote,loadAccount,renderAccountUI,acctEndedUI};
 acctStart();
 /* what Settings' account controls do (act.js): a tester's "Copy my invitation link"; the owner's Create, a new link's field (focus selects

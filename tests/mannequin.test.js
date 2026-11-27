@@ -14,8 +14,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         spec={across:{bands:[{role:'ground',hex:'#211d26',w:.47},{role:'line',hex:'#9a979e',w:.03},{role:'ground',hex:'#211d26',w:.47},{role:'line',hex:'#6e2a3c',w:.03}]}};
       HOOK.items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'grey',sett,patternSpec:spec}),I('shirt','pink'),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('tieclip','gold',{metal:'gold'}),
         I('watch','brown',{metal:'gold',band:'leather'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'gold'}),I('socks','navy'),I('pants','grey')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='always';HOOK.weather={};HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')});
-    const outfit=k=>p.evaluate(k=>{const g=t=>items.find(i=>i.type===t),top=g('suit');
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[];HOOK.settings.vestMode='always';HOOK.weather={};HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.show('today')});
+    const outfit=k=>p.evaluate(k=>{const g=t=>HOOK.items.find(i=>i.type===t),top=g('suit');
       return ({vest:{suitDay:true,top,bot:top,shirt:g('shirt'),tie:g('tie'),clip:g('tieclip'),watch:g('watch'),belt:g('belt'),vest:true},
         suit:{suitDay:true,top,bot:top,shirt:g('shirt'),tie:g('tie'),clip:g('tieclip'),watch:g('watch'),belt:g('belt'),vest:false},
         'suit-open':{suitDay:true,top,bot:top,shirt:g('shirt'),tie:null,clip:null,watch:g('watch'),belt:g('belt'),vest:false},
@@ -27,12 +27,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         const s=d.querySelector('svg'),G=mqData(kind),pat=id=>s.querySelector(`pattern[id="k-${id}"]`),hasCol=(id,c)=>!!pat(id)&&pat(id).outerHTML.toLowerCase().includes(String(c).toLowerCase());
         const lap=G.parts.find(x=>x.id==='lapL'),watchFill=[...s.querySelectorAll('.fig-watch path')].map(e=>e.getAttribute('fill'));
         const out={kind:HOOK.asmCmKind(o),vb:s.getAttribute('viewBox'),skin:!!s.querySelector('.fig-skin path'),handsOld:!!s.querySelector('.fig-hand-l,.fig-hand-r'),
-          shirt:hasCol('shirt',colOf(o.shirt)),tie:!o.tie||(hasCol('tie',colOf(o.tie))&&!!s.querySelector('use[href="#k-bladeP"]')),
+          shirt:hasCol('shirt',HOOK.colOf(o.shirt)),tie:!o.tie||(hasCol('tie',HOOK.colOf(o.tie))&&!!s.querySelector('use[href="#k-bladeP"]')),
           suit:!o.top||hasCol('suitB','#211d26'),lapel:!lap||(pat('suitL')&&pat('suitL').getAttribute('patternTransform').includes(`rotate(${lap.rot})`)),
-          watch:watchFill.length>3&&watchFill.every(c=>G.watch.some(b=>b.c===c))&&!s.innerHTML.includes(METAL_TONES.gold[1]),
+          watch:watchFill.length>3&&watchFill.every(c=>G.watch.some(b=>b.c===c))&&!s.innerHTML.includes(HOOK.METAL_TONES.gold[1]),
           vest:!!s.querySelector('.fig-vest')===!!o.vest,clip:!!s.querySelector('.fig-clip')===!!(o.clip&&o.tie&&!o.vest&&G.clip),
           useInClip:!!s.querySelector('clipPath use'),fade:!!s.querySelector('[id$="gFade"]'),shade:!!s.querySelector('image.fig-shade'),
-          legs:!G.legs||(G.legs.length===2&&G.legs.every((l,i)=>hasCol('leg'+i,colOf(o.bot))&&pat('leg'+i).getAttribute('patternTransform').includes(`rotate(${l.rot})`))&&!!s.querySelector('.fig-belt')&&s.querySelector('.fig-belt').getAttribute('fill')===colOf(o.belt)&&s.querySelectorAll('.fig-buckle path').length>2),
+          legs:!G.legs||(G.legs.length===2&&G.legs.every((l,i)=>hasCol('leg'+i,HOOK.colOf(o.bot))&&pat('leg'+i).getAttribute('patternTransform').includes(`rotate(${l.rot})`))&&!!s.querySelector('.fig-belt')&&s.querySelector('.fig-belt').getAttribute('fill')===HOOK.colOf(o.belt)&&s.querySelectorAll('.fig-buckle path').length>2),
           open:!/-open$/.test(kind)||(!!s.querySelector('.fig-open')&&G.btn.length>0&&s.querySelectorAll('.fig-shirtbtn circle').length===G.btn.length*7),
           label:s.getAttribute('aria-label'),h:Math.round(s.getBoundingClientRect().height)};
         d.remove();return out},[o,kind]);
@@ -59,19 +59,19 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       ok(gz<48000,`${kind}: the pose ships at about 40 KB gzip (${(gz/1024).toFixed(1)} KB)`);
     }
     // the painter's stripe lift: the line takes Claude's named colour part of the way from the ground
-    const lift=await p.evaluate(()=>{const s=items[0],l=HOOK.figStripeLift(s),lum=h=>{const v=[1,3,5].map(k=>parseInt(h.slice(k,k+2),16));return .2126*v[0]+.7152*v[1]+.0722*v[2]};
-      const o={suitDay:true,top:s,bot:s,shirt:items[1],tie:items[2],belt:items[6],vest:true},svg=HOOK.figureSvg(o,'l-');
+    const lift=await p.evaluate(()=>{const s=HOOK.items[0],l=HOOK.figStripeLift(s),lum=h=>{const v=[1,3,5].map(k=>parseInt(h.slice(k,k+2),16));return .2126*v[0]+.7152*v[1]+.0722*v[2]};
+      const o={suitDay:true,top:s,bot:s,shirt:HOOK.items[1],tie:HOOK.items[2],belt:HOOK.items[6],vest:true},svg=HOOK.figureSvg(o,'l-');
       return {grey:l.sett.bands[1][0],was:s.sett.bands[1][0],brighter:lum(l.sett.bands[1][0])>lum(s.sett.bands[1][0])+20&&lum(l.sett.bands[3][0])>lum(s.sett.bands[3][0]),ground:l.sett.bands[0][0]===s.sett.bands[0][0],
-        inFig:svg.toLowerCase().includes(l.sett.bands[1][0]),plain:HOOK.figStripeLift(items[1])===items[1]}});
+        inFig:svg.toLowerCase().includes(l.sett.bands[1][0]),plain:HOOK.figStripeLift(HOOK.items[1])===HOOK.items[1]}});
     ok(lift.brighter&&lift.ground&&lift.inFig&&lift.plain,`a pinstripe's lines are lifted toward the reading's named colours as the painter draws them (${lift.was} -> ${lift.grey}); the ground and other cloths are unchanged`);
     // Today: a waistcoat day shows the mannequin when no painted picture is ready
-    const t=await p.evaluate(()=>{const P=planFor();const k=Object.keys(P).find(k=>keyDate(k)>=new Date(2026,10,16)&&P[k].suitDay&&P[k].vest);HOOK.sel=keyDate(k);renderToday();
+    const t=await p.evaluate(()=>{const P=HOOK.planFor();const k=Object.keys(P).find(k=>HOOK.keyDate(k)>=new Date(2026,10,16)&&P[k].suitDay&&P[k].vest);HOOK.sel=HOOK.keyDate(k);HOOK.renderToday();
       const c=document.querySelector('#mannequin-container');return {svg:!!c.querySelector(':scope > svg .fig-skin'),vest:!!c.querySelector('.fig-vest'),ids:new Set([...c.querySelectorAll('[id]')].map(e=>e.id)).size===c.querySelectorAll('[id]').length}});
     ok(t.svg&&t.vest&&t.ids,'Today draws a waistcoat day as the waistcoat mannequin');
     // two on a page don't share ids
-    ok(await p.evaluate(()=>{const o=planFor()[key(sel)],a=HOOK.figureSvg(o,'a-'),b=HOOK.figureSvg(o,'b-'),A=new Set([...a.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));return ![...b.matchAll(/id="([^"]+)"/g)].some(m=>A.has(m[1]))}),'two figures on a page use distinct ids');
+    ok(await p.evaluate(()=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)],a=HOOK.figureSvg(o,'a-'),b=HOOK.figureSvg(o,'b-'),A=new Set([...a.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));return ![...b.matchAll(/id="([^"]+)"/g)].some(m=>A.has(m[1]))}),'two figures on a page use distinct ids');
     // a day with no colour-coded master still gets the nearest mannequin (the earlier drawing is gone): no belt on a shirt day, no shirt
-    const nm0=await p.evaluate(()=>{const g=t=>items.find(i=>i.type===t),r={};
+    const nm0=await p.evaluate(()=>{const g=t=>HOOK.items.find(i=>i.type===t),r={};
       const a={suitDay:false,top:null,bot:g('pants'),shirt:g('shirt'),tie:null,belt:null,watch:g('watch')},b={suitDay:true,top:g('suit'),bot:g('suit'),shirt:null,tie:g('tie'),vest:false};
       for(const [n,o] of [['noBelt',a],['noShirt',b]]){const s=HOOK.figureSvg(o,'n'+n+'-');r[n]={master:HOOK.asmCmKind(o),kind:HOOK.figKind(o),sq:/viewBox="0 0 390 390"/.test(s)&&s.includes('fig-skin')}}
       r.old=typeof outfitFigureSvg==='undefined';return r});
@@ -83,7 +83,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // (the 150 ms is this machine's when quiet; times how much slower the machine running it is right now, tests/pace.js: GitHub's 4-core
     // runner took 217 ms against a flat 150, CR-10-03)
     const k=await pace(p);
-    const sp=await p.evaluate(async()=>{const o=planFor()[key(sel)],neu=HOOK.figureSvg(o,'s-');
+    const sp=await p.evaluate(async()=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)],neu=HOOK.figureSvg(o,'s-');
       const t=async s=>{const c=document.createElement('canvas');c.width=1170;c.height=1200;const g=c.getContext('2d');const r=[];
         for(let i=0;i<5;i++){const x=s.replace('width="100%"','width="1170"').replace(/(id="|url\(#|href="#)([a-z]+-)/g,(m,a,b)=>a+'r'+i+b),t0=performance.now(),im=new Image();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(x);await im.decode();g.drawImage(im,0,0);g.getImageData(0,0,1,1);r.push(performance.now()-t0)}
         return r.sort((a,b)=>a-b)[2]};
@@ -110,9 +110,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     for(const kind of KINDS){ok(bg[kind].first,`${kind}: the office is behind the figure, a 200-pixel picture in the pose's data (no fetch: offline with the pose)`);
       ok(bg[kind].noWall,`${kind}: the mannequin itself has no opaque wall layer: outside the figure it is clear (corner alpha ${bg[kind].wall})`)}
     ok(bg.shadow.corner<=12&&bg.shadow.most>=30&&bg.shadow.depth.every(v=>v>.18&&v<=.22),`each pose's soft wall shadow is in its office (22% deep as the painter's: ${bg.shadow.depth}; poses differ by up to ${bg.shadow.most}, top left ${bg.shadow.corner})`);
-    const dk=await p.evaluate(async()=>{const was=document.documentElement.dataset.theme;document.documentElement.dataset.theme='dark';HOOK.figBgMemo=null;renderToday();
+    const dk=await p.evaluate(async()=>{const was=document.documentElement.dataset.theme;document.documentElement.dataset.theme='dark';HOOK.figBgMemo=null;HOOK.renderToday();
       const c=document.querySelector('#mannequin-container'),im=c&&c.querySelector(':scope > svg image.fig-office'),dark=getComputedStyle(document.body).backgroundColor;
-      document.documentElement.dataset.theme=was||'';HOOK.figBgMemo=null;renderToday();return {office:!!im&&/^data:image\/jpeg/.test(im.getAttribute('href')),dark}});
+      document.documentElement.dataset.theme=was||'';HOOK.figBgMemo=null;HOOK.renderToday();return {office:!!im&&/^data:image\/jpeg/.test(im.getAttribute('href')),dark}});
     ok(dk.office,`the dark theme shows the office too, as the painted pictures do (page ${dk.dark})`);
     // shipped with the app: in the cache list and the page, nothing fetched for it
     const sw=fs.readFileSync(path.join(ROOT,'sw.js'),'utf8'),html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');

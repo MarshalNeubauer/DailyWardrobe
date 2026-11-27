@@ -6,7 +6,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     const ctx=await browser.newContext({viewport:{width:390,height:844}});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);await settle(p,300);
-    const go=t=>p.evaluate(t=>{const nav=document.querySelector('body>nav');show(t);const el=document.querySelector('#'+t),a=el.getAnimations()[0];
+    const go=t=>p.evaluate(t=>{const nav=document.querySelector('body>nav');HOOK.show(t);const el=document.querySelector('#'+t),a=el.getAnimations()[0];
       const k=a?a.effect.getKeyframes():[];return {t,from:k[0]?k[0].transform:'',op:k[0]?k[0].opacity:null,ms:a?a.effect.getTiming().duration:0,ti:nav.style.getPropertyValue('--ti'),none:nav.classList.contains('tab-none'),
         shown:['today','wardrobe','add','stats'].filter(s=>!document.querySelector('#'+s).hidden)}},t);
     const w=await go('wardrobe');
@@ -21,10 +21,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     await settle(p,400);
     const s=await go('add');ok(s.from==='translateY(14px)'&&s.none,`Add (a page opened from the Wardrobe) rises in, and the marker fades as no tab is showing (${s.from})`);
     await settle(p,400);
-    const same=await p.evaluate(()=>{show('add');return document.querySelector('#add').getAnimations().length});
+    const same=await p.evaluate(()=>{HOOK.show('add');return document.querySelector('#add').getAnimations().length});
     ok(same===0,'showing the page that is already there doesn\'t move it');
     // a tap during the move: the page takes it (it is never covered)
-    await p.evaluate(()=>show('today'));await p.click('#n-wardrobe',{timeout:2000});
+    await p.evaluate(()=>HOOK.show('today'));await p.click('#n-wardrobe',{timeout:2000});
     ok(await p.evaluate(()=>!document.querySelector('#wardrobe').hidden),'a tab tapped while the page is still easing in works at once');
     await settle(p,400);
     await p.emulateMedia({reducedMotion:'reduce'});

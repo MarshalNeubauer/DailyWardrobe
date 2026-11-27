@@ -32,7 +32,7 @@ let itemFrom=null;   // the item the sheet was opened on: closing on another one
 Object.assign(globalThis,{itemSynced,itemGoneTell,renderItem,openItem,dropItem});
 Object.defineProperties(globalThis,{editing:{get:()=>editing,set:v=>{editing=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,closeItem,stepItem,wardList,get editing(){return editing},set editing(v){editing=v},dropItem,renderItem};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,closeItem,stepItem,wardList,get editing(){return editing},set editing(v){editing=v},dropItem,renderItem,openItem};
 export {editing,wardList,itemSynced,itemGoneTell,renderItem,openItem,closeItem,dropItem,stepItem};
 /* the phone's Back closes the sheet: it has its own history entry while it is open (back.js histPush/histDrop, kind 'item'); one asked for
    while a step back of ours was on its way is made once it lands. Back in the crop frame keeps the crop (cropKeep: when moved or zoomed)

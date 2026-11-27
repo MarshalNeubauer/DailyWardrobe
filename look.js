@@ -457,6 +457,6 @@ function lkCuFileQ(el,ev,f){cuGot(el,f,x=>addTexture(cardIx(el),x,true))}   // (
    lookShadeOk, LOOK_PAT_GROUPS, lookPatGroupOf; add-card.js, item-photo.js and itemsheet.js: lookCu; checklist.js: lookHasPat;
    tests/lookbeta.test.js: LOOK_OTHER) */
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,LOOK_OTHER,lookCheck,lookOwnMats,lookSet,lookSetMat,lookShadeStep,lookSetEnamel,lookShadeHtml,lookSugCols,lookSugPats,lookUsePick,lookWrite,renderLookPick};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,LOOK_OTHER,lookCheck,lookOwnMats,lookSet,lookSetMat,lookShadeStep,lookSetEnamel};
 export {lookSet,lookOwnMats,LOOK_OTHER,lookWrite,lookOwnMatUI,lookSetMat,lookSetEnamel,renderLookPick,lookUsePick,lookShadeHtml,lookShadeStep,lookSugCols,lookSugPats,lookSection,lookCheck,lookOpenFresh,lookSave};
 acts({lkSwitch,lkAddChip,lkUse,lkOwnRm,lkOwnAdd,lkOwnCancel,lkOwnOpen,lkSel,lkClose,lkOther,lkSaveOther,lkNewName,lkNewAdd,lkNewOpen,lkUsePick,lkShade,lkRow,lkUndoMeas,lkStop,lkRead,lkCheck,lkReread,lkClearStripes,lkNewCol,lkNewPat,lkCuFileQ});

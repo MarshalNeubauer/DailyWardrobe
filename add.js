@@ -222,6 +222,6 @@ function addPhotosPick(el){addFiles([...el.files],el.dataset.multi==='1');el.val
 Object.assign(globalThis,{addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,multiAgain,renderAdd,addBackOnline});
 Object.defineProperties(globalThis,{addCalm:{get:()=>addCalm}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,addNoteText,cardPics,countWord,errToHand,multiAgain,addFiles};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,addNoteText,cardPics,countWord,errToHand,multiAgain,addFiles,addTexture,dropTexture,renderAdd,skipCard};
 export {cardPics,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,addCalm,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,countWord,multiAgain,addNoteText,renderAdd,addBackOnline};
 acts({cardWb,cardSkip,cardStop,cardMultiAgain,cardByHand,saveAllTap,addPhotosPick});

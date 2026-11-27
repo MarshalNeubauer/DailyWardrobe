@@ -223,7 +223,7 @@ function dayActions(o){
   return offNote+(h?`<div class="dayact">${h}</div>`:'')+(past&&o.frozen&&pastEdit===key(sel)?'<p class="mut"><small>Tap ⇄ beside a piece to set what you really wore. The planner then counts that, not what was planned.</small></p>':past&&o.frozen&&o.worn!==true?'<p class="mut"><small>Past day: kept as it was planned.</small></p>':'')+(swapMsg?`<p class="mut"><small>${swapMsg}</small></p>`:'');
 }
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,correctPast,planRulesNote,replanFuture,resetDay,setFormal,swapSlot,togglePastEdit,get pastEdit(){return pastEdit},set pastEdit(v){pastEdit=v},get swapMsg(){return swapMsg},set swapMsg(v){swapMsg=v},openPicker,pickItem,recordDays,setOccasion,setWorn};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,correctPast,planRulesNote,replanFuture,resetDay,setFormal,swapSlot,togglePastEdit,get pastEdit(){return pastEdit},set pastEdit(v){pastEdit=v},get swapMsg(){return swapMsg},set swapMsg(v){swapMsg=v},openPicker,pickItem,recordDays,setOccasion,setWorn,checkPlanRules,closePicker,dropLearn,get picker(){return picker},whenPulled};
 export {swapMsg,todayPullWait,whenPulled,recordDays,swapSlot,dropLearn,picker,pastEdit,canPick,slotLabel,openPicker,closePicker,pickItem,wearFav,togglePastEdit,correctPast,setFormal,setOccasion,resetDay,setWorn,replanFuture,checkPlanRules,planRulesNote,renderReplanUI,setVest,resetCard,dayActions,setPastEdit,setSwapMsg,setTodayPullWait};
 /* index.html's (act.js): the piece picker's backdrop, and Settings' "Start the plan over" */
 function pickBackdropTap(){closePicker()}

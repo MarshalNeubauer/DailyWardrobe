@@ -171,7 +171,7 @@ Object.assign(globalThis,{stackSVG,planOn,nextWorkday,homeDay,dayWord,recentWork
 Object.defineProperties(globalThis,{monthOpen:{get:()=>monthOpen,set:v=>{monthOpen=v}},monthPanel:{get:()=>monthPanel,set:v=>{monthPanel=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 serve('plan-on',planOn);   // (the restructure S6p: the painter's building ahead and Pictures ahead, asm-today.js and asm-cm-page.js, load before this file)
-globalThis.HOOK={__proto__:globalThis.HOOK||null,monthGridHtml,monthStep,get monthOpen(){return monthOpen},set monthOpen(v){monthOpen=v},get monthPanel(){return monthPanel},set monthPanel(v){monthPanel=v},monthPlan,openDay,shortRest,shortTop,toggleMonth,planOn};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,monthGridHtml,monthStep,get monthOpen(){return monthOpen},set monthOpen(v){monthOpen=v},get monthPanel(){return monthPanel},set monthPanel(v){monthPanel=v},monthPlan,openDay,shortRest,shortTop,toggleMonth,planOn,homeDay,piecesLine};
 export {stackSVG,planOn,nextWorkday,homeDay,dayWord,recentWork,mvSig,wardShort,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthOpen,monthPanel,monthPlan,monthGridHtml,toggleMonth,monthStep,monthDrag,monthRelease,openDay,monthLink,setMonthOpen};
 /* the markup's handlers (act.js): the month box's head and its "Fold away" bar, and a day of the month (data-t: its time) */
 function monthTap(){toggleMonth()}

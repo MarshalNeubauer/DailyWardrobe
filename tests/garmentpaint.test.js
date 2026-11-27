@@ -32,6 +32,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const mctx=await browser.newContext({viewport:{width:390,height:844}});
     await mctx.route(origin+'/**',route=>{const f=decodeURIComponent(new URL(route.request().url()).pathname.slice(1))||'index.html';
       if(mainSrc[f]!=null)return route.fulfill({status:200,contentType:f.endsWith('.html')?'text/html':'text/javascript',body:mainSrc[f]});return route.continue()});
+    // the fixed plan (tests/fixedplan.js) reads the page through HOOK, which BASE's files don't fill: on this page its names are the
+    // page's globals, handed to HOOK before the app runs (a getter, read when the plan is made)
+    await mctx.addInitScript(()=>{globalThis.HOOK={__proto__:globalThis.HOOK||null,get todayDate(){return todayDate},get items(){return items},get inRotation(){return inRotation},
+      get isWorkday(){return isWorkday},get key(){return key},get dayRecs(){return dayRecs},get di(){return di},get occOf(){return occOf},get SLOTS(){return SLOTS},
+      get hasVest(){return hasVest},get settings(){return settings},get dayClimate(){return dayClimate}}});
     const mp=await mctx.newPage(),bp=await browser.newPage(),errs=[];bp.on('pageerror',e=>errs.push(e.message));
     await mp.goto(url);await mp.waitForFunction(()=>window.appReady);await bp.goto(url);await bp.waitForFunction(()=>window.appReady);
     // mp runs the files of BASE, from before HOOK (tests/hook.js): there the six names keysOf reaches through HOOK are still the
@@ -65,7 +70,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const kn=await bp.evaluate(()=>{const ac=(T,dx,dy)=>{const {TW,TH,t}=T;let s=0,s2=0,c=0,n=TW*TH,y=new Float32Array(n);for(let k=0;k<n;k++){y[k]=t[3*k]+t[3*k+1]+t[3*k+2];s+=y[k];s2+=y[k]*y[k]}
         const m=s/n,v=s2/n-m*m;for(let yy=0;yy<TH;yy++)for(let x=0;x<TW;x++)c+=(y[yy*TW+x]-m)*(y[((yy+dy)%TH)*TW+(x+dx)%TW]-m);return c/n/v};
       const K=HOOK.ASM_NK_KNIT,it={id:'s',type:'sweater',primaryColor:'navy',pattern:'solid',material:'merino wool'},T=HOOK.asmNkKnitTile(it),C=HOOK.asmNkKnitTile({...it,pattern:'cable'}),S=HOOK.asmNkKnitTile({...it,pattern:'stripe',secondaryColor:'cream'});
-      const mean=T2=>{let a=[0,0,0];for(let k=0;k<T2.TW*T2.TH;k++)for(let q=0;q<3;q++)a[q]+=T2.t[3*k+q];return a.map(v=>v/(T2.TW*T2.TH))},lin=HOOK.asmNkLin(colOf(it)),mt=mean(T);
+      const mean=T2=>{let a=[0,0,0];for(let k=0;k<T2.TW*T2.TH;k++)for(let q=0;q<3;q++)a[q]+=T2.t[3*k+q];return a.map(v=>v/(T2.TW*T2.TH))},lin=HOOK.asmNkLin(HOOK.colOf(it)),mt=mean(T);
       return {one:ac(T,K.cw,0),half:ac(T,K.cw/2,0),row:ac(T,0,K.ch),mm:T.mm,mmL:HOOK.asmNkKnitTile({...it,material:'shetland wool'}).mm,mean:mt.map((v,q)=>v/lin[q]),cableDiff:C.t.some((v,k)=>Math.abs(v-T.t[k])>.02),stripe:S.t.some((v,k)=>Math.abs(v-T.t[k])>.05),
         fleece:HOOK.asmNkCloth({type:'hoodie',primaryColor:'grey',pattern:'solid'},'hoodie',{hex:'#888'}),tee:HOOK.asmNkCloth({type:'tee',primaryColor:'grey',pattern:'stripe',secondaryColor:'navy'},'tee',{hex:'#888'}).tile}});
     ok(kn.one>.5&&kn.row>.5&&kn.half<kn.one-.3,`the sweater knit repeats at one stitch across and one row down (correlation ${kn.one.toFixed(2)} / ${kn.row.toFixed(2)}, at half a stitch ${kn.half.toFixed(2)})`);
@@ -92,7 +97,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const out=[];await HOOK.asmCmMfGet(true);
       const paint=async(name,o)=>{const r={name};try{await HOOK.asmCmLook(o);const k=HOOK.asmKindOf(o);r.kind=k;if(!await HOOK.asmNkGet(o,k)){r.err='records not here';return r}
           const job=await HOOK.asmJob(o);if(!job){r.err='no job';return r}r.mk=job.mk;r.cm=job.cm;r.tile=!!(job.cloth.shirt&&job.cloth.shirt.tile||job.cloth.jacket&&job.cloth.jacket.tile);r.gl='asmGlWhy' in HOOK?HOOK.asmGlWhy(job,{}):'';
-          const b=await HOOK.asmRun(job,true);r.ok=!!(b&&(b.url||b.px));r.usedGl=!!(b&&b.gl);if(b&&b.gl&&b.url){const c=await HOOK.asmRun({...job,gl:false},true);if(c&&c.url&&!c.gl){const x=await px(b.url),y=await px(c.url);let s=0;for(let k=0;k<x.length;k+=4)s+=Math.abs(x[k]-y[k])+Math.abs(x[k+1]-y[k+1])+Math.abs(x[k+2]-y[k+2]);r.glDiff=s/(x.length/4*3)}}if(b&&b.url){const z=job.cm,mz=HOOK.ASM_NK[z]&&HOOK.ASM_NK[z].base==='suit-open'?'jacket':'shirt',m=await px(renders[HOOK.asmCmKey(z,'mask/'+mz)].img),d=await px(b.url);
+          const b=await HOOK.asmRun(job,true);r.ok=!!(b&&(b.url||b.px));r.usedGl=!!(b&&b.gl);if(b&&b.gl&&b.url){const c=await HOOK.asmRun({...job,gl:false},true);if(c&&c.url&&!c.gl){const x=await px(b.url),y=await px(c.url);let s=0;for(let k=0;k<x.length;k+=4)s+=Math.abs(x[k]-y[k])+Math.abs(x[k+1]-y[k+1])+Math.abs(x[k+2]-y[k+2]);r.glDiff=s/(x.length/4*3)}}if(b&&b.url){const z=job.cm,mz=HOOK.ASM_NK[z]&&HOOK.ASM_NK[z].base==='suit-open'?'jacket':'shirt',m=await px(HOOK.renders[HOOK.asmCmKey(z,'mask/'+mz)].img),d=await px(b.url);
             let s=[0,0,0],c=0;for(let k=0;k<512*512;k++)if(m[4*k]>250){for(let q=0;q<3;q++)s[q]+=d[4*k+q];c++}r.mean=s.map(v=>Math.round(v/Math.max(1,c)))}}
         catch(e){r.err=String(e&&e.message||e)}return r};
       for(const t of NEW){const it=I(t,t==='chore'?'rust':'red',t==='sweater'?{material:'lambswool'}:{});const jk=t==='cardigan'||t==='chore';out.push(await paint(t,jk?{top:it,shirt,watch}:{shirt:it,bot:chinos,belt,watch}))}

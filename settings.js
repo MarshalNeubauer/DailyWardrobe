@@ -221,7 +221,7 @@ Object.assign(globalThis,{SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSu
 Object.defineProperties(globalThis,{viewStale:{get:()=>viewStale,set:v=>{viewStale=v}},setSeen:{get:()=>setSeen,set:v=>{setSeen=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 serve('refresh-today',refreshToday);   // (the restructure S6p: the painter, asm-today.js and asm-cm-page.js, redraws Today when a picture is ready; it loads before this file)
-globalThis.HOOK={__proto__:globalThis.HOOK||null,SET_CATS,saveSettings,setCatOpen,setDarkShirts,setOpenTap,get setOther(){return setOther},setPictures,get todayStale(){return todayStale},backupSummary,toggleDay,settingsPart,settingsSummaries};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,SET_CATS,saveSettings,setCatOpen,setDarkShirts,setOpenTap,get setOther(){return setOther},setPictures,get todayStale(){return todayStale},backupSummary,toggleDay,settingsSummaries,closeSettings,openSettings,refreshToday,renderSettingsExtras,saveUserSettings,settingsOpen,showCost,toggleCat};
 export {SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayStale,todayDirty,viewStale,settingsOpen,refreshToday,closeSettings,saveSettings,setSeen,setOther,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,setPictures,picsSwitched,setVestMode,setDarkShirts,toggleDay,setWanted,setOpenTap,setSetSeen,setViewStale};
 /* the notice board (bus.js): what Settings does when the router announces it (nav.js no longer names this file; the restructure S3f) */
 on('page-showing',()=>closeSettings());   // another page is shown: Settings closes

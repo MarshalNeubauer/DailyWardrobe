@@ -69,7 +69,7 @@ async function startTwo(tag, { bOffsetMs = 0 } = {}) {
   const B = await P.openPhone({ profile: `verify5-${tag}-b`, fresh: true, time: new Date(A.now() - bOffsetMs).toISOString() }); phones.push(B);
   await B.page.goto(L.inviteLink); await B.ready(); await sleep(4000); await wu(B);
   const got = btn(B, /Got it/); if (await got.count()) await tapL(B, got);
-  const n = { A: await A.page.evaluate(() => items.length), B: await B.page.evaluate(() => items.length) };
+  const n = { A: await A.page.evaluate(() => HOOK.items.length), B: await B.page.evaluate(() => HOOK.items.length) };
   if (n.A !== 18 || n.B !== 18) throw new Error('setup failed ' + JSON.stringify(n));
   return { A, B, L };
 }
@@ -79,28 +79,28 @@ async function bgfg(ph) { await ph.background(); await sleep(2500); await ph.for
 async function sync(ph) { await ph.page.evaluate(() => HOOK.syncTap()); await ph.page.waitForFunction(() => !HOOK.syncing, null, { timeout: 20000 }); await sleep(600); return ph.page.evaluate(() => localStorage.sync_status || 'ok') }
 async function goTab(ph, t) { await tapL(ph, btn(ph, new RegExp('^' + t + '$'))); await sleep(600) }
 async function openItem(ph, name) {
-  if (await ph.page.evaluate(() => !!editing)) await closeItem(ph);
+  if (await ph.page.evaluate(() => !!HOOK.editing)) await closeItem(ph);
   if (!(await vis(ph, '#wardrobe'))) await goTab(ph, 'Wardrobe');
-  const id = await ph.page.evaluate(n => { const i = items.find(x => x.name === n); return i && i.id }, name); if (!id) throw new Error('no item ' + name);
-  await ph.page.evaluate(() => { if (typeof CK_OPEN !== 'undefined') CK_OPEN['*'] = true });   // #497: the sheet's fields are in folded sections; open them all (no-op before)
+  const id = await ph.page.evaluate(n => { const i = HOOK.items.find(x => x.name === n); return i && i.id }, name); if (!id) throw new Error('no item ' + name);
+  await ph.page.evaluate(() => { if ('CK_OPEN' in HOOK) HOOK.CK_OPEN['*'] = true });   // #497: the sheet's fields are in folded sections; open them all (no-op before)
   await tapL(ph, ph.page.locator(`#gi-${id} .giopen`)); await sleep(700); return id;
 }
 async function closeItem(ph) { if (await vis(ph, '#item-view .ivdone')) { await tapL(ph, ph.page.locator('#item-view .ivdone')); await sleep(600) } }
 async function rename(ph, text) { await tapL(ph, ph.page.locator('#item-view .wf-name')); await ph.page.keyboard.press('Control+A'); await ph.page.keyboard.type(text, { delay: 20 }); await sleep(900) }
 async function rot(ph) { await tapL(ph, ph.page.locator('#item-view .rotbtn')); await sleep(600) }
-const item = (ph, idOrName) => ph.page.evaluate(n => { const i = items.find(x => x.id === n || x.name === n); return i ? { n: i.name, p: i.primaryColor, paused: !!i.paused, u: i.updated } : null }, idOrName);
+const item = (ph, idOrName) => ph.page.evaluate(n => { const i = HOOK.items.find(x => x.id === n || x.name === n); return i ? { n: i.name, p: i.primaryColor, paused: !!i.paused, u: i.updated } : null }, idOrName);
 async function kvData() { const d = await mock('kv-dump'); const k = Object.keys(d).find(k => /:wardrobe:v1$/.test(k)); const e = d[k]; const t = e.b ? Buffer.from(e.v, 'base64').toString() : e.v; const j = JSON.parse(t); return j.data || j }
-async function openSettings(ph) { if (!(await ph.page.evaluate(() => settingsOpen()))) { await tapL(ph, ph.page.locator('header button[aria-label=Settings]')); await sleep(900) } }
+async function openSettings(ph) { if (!(await ph.page.evaluate(() => HOOK.settingsOpen()))) { await tapL(ph, ph.page.locator('header button[aria-label=Settings]')); await sleep(900) } }
 async function cat(ph, c) { const h = ph.page.locator(`#settings-modal .scat-head[data-cat="${c}"]`); if (await h.getAttribute('aria-expanded') !== 'true') { await tapL(ph, h); await sleep(400) } }
 async function choose(ph, sel, v) { const l = ph.page.locator(sel); await l.evaluate(e => e.scrollIntoView({ block: 'center' })); await l.selectOption(v); await sleep(400) }
 async function settingsDone(ph) { await tapL(ph, ph.page.locator('#settings-modal .sdone')); await sleep(500) }
 async function pickTo(ph, slot, name) {
   if (!(await ph.page.evaluate(() => { const b = document.querySelector('#ibox'); return b && b.classList.contains('open') }))) { await tapL(ph, ph.page.locator('#today button.month-link[data-act="listTap"]')); await sleep(1200) }
   await tapL(ph, ph.page.locator(`#today .swap[data-act="pickTap"][data-s="${slot}"]`)); await sleep(500);
-  const l = ph.page.locator('#pick-sheet .pick-it').filter({ hasText: name }); if (!(await l.count())) throw new Error('picker lacks ' + name + ': ' + (await ph.page.locator('#pick-sheet').innerText().catch(() => '?')).slice(0, 400).replace(/\n/g, '|') + ' picker=' + await ph.page.evaluate(() => JSON.stringify(picker)));
+  const l = ph.page.locator('#pick-sheet .pick-it').filter({ hasText: name }); if (!(await l.count())) throw new Error('picker lacks ' + name + ': ' + (await ph.page.locator('#pick-sheet').innerText().catch(() => '?')).slice(0, 400).replace(/\n/g, '|') + ' picker=' + await ph.page.evaluate(() => JSON.stringify(HOOK.picker)));
   await tapL(ph, l); await sleep(700);
 }
-const dayRec = (ph, d) => ph.page.evaluate(d => { const r = dayRecs[d]; if (!r) return null; const nm = id => { const i = items.find(x => x.id === id); return i ? i.name : id }; const o = { worn: r.worn, updated: r.updated }; for (const k of ['ids', 'force']) if (r[k]) o[k] = Object.fromEntries(Object.entries(r[k]).map(([a, b]) => [a, nm(b)])); return o }, d);
+const dayRec = (ph, d) => ph.page.evaluate(d => { const r = HOOK.dayRecs[d]; if (!r) return null; const nm = id => { const i = HOOK.items.find(x => x.id === id); return i ? i.name : id }; const o = { worn: r.worn, updated: r.updated }; for (const k of ['ids', 'force']) if (r[k]) o[k] = Object.fromEntries(Object.entries(r[k]).map(([a, b]) => [a, nm(b)])); return o }, d);
 async function offline(ph, off) { await ph.ctx.setOffline(off); if (!off) { await ph.page.evaluate(() => dispatchEvent(new Event('online'))); await sleep(2500) } }
 function verdict(ok, ev) { console.log(ok ? 'REPRODUCED' : 'NOT REPRODUCED'); console.log(JSON.stringify(ev, null, 1)) }
 async function run(fn) { let code = 0; try { await fn() } catch (e) { console.log('ERROR', e && e.stack || e); code = 2 } finally { await stopAll() } process.exit(code) }

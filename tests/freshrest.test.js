@@ -12,14 +12,14 @@ module.exports=async({ok,chromium,url})=>{
       const shirts=[I('shirt','white'),I('shirt','lightblue'),I('shirt','white'),I('shirt','pink')],ties=[I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','charcoal'),I('tie','gold')];
       const shoes=[I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'})],belts=[I('belt','black',{leather:'calf'}),I('belt','brown',{leather:'calf'})];
       HOOK.items=[...old,brownA,brownB,...shirts,...ties,...shoes,...belts,I('socks','navy'),I('socks','charcoal')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';settings.holidays=null;settings.daysOff=[];HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-16T08:00:00';
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[];HOOK.settings.vestMode='never';HOOK.settings.holidays=null;HOOK.settings.daysOff=[];HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-16T08:00:00';
       // the eight old suits in turn on every workday from July (before the simulation starts) to yesterday (worn, frozen)
-      HOOK.dayRecs={};let w=0;for(const d=new Date(2026,6,1);d<new Date(2026,10,16);d.setDate(d.getDate()+1)){if(!isWorkday(d))continue;
+      HOOK.dayRecs={};let w=0;for(const d=new Date(2026,6,1);d<new Date(2026,10,16);d.setDate(d.getDate()+1)){if(!HOOK.isWorkday(d))continue;
         const s=old[w%old.length],t=ties[w%ties.length],sh=shirts[w%shirts.length];w++;
-        dayRecs[key(d)]={date:key(d),worn:true,ids:{top:s.id,bot:s.id,shirt:sh.id,tie:t.id,shoes:shoes[0].id,belt:belts[0].id}}}
-      HOOK.cache={};const pl={...planMonth(2026,10),...planMonth(2026,11)};
-      const days=Object.keys(pl).filter(d=>keyDate(d)>=new Date(2026,10,16)&&keyDate(d)<=new Date(2026,11,10)&&pl[d].top).sort((a,b)=>keyDate(a)-keyDate(b));
-      const seq=days.map(d=>[d,pl[d].top.name||pl[d].top.primaryColor,jacketGroup(pl[d].top)]);
+        HOOK.dayRecs[HOOK.key(d)]={date:HOOK.key(d),worn:true,ids:{top:s.id,bot:s.id,shirt:sh.id,tie:t.id,shoes:shoes[0].id,belt:belts[0].id}}}
+      HOOK.cache={};const pl={...HOOK.planMonth(2026,10),...HOOK.planMonth(2026,11)};
+      const days=Object.keys(pl).filter(d=>HOOK.keyDate(d)>=new Date(2026,10,16)&&HOOK.keyDate(d)<=new Date(2026,11,10)&&pl[d].top).sort((a,b)=>HOOK.keyDate(a)-HOOK.keyDate(b));
+      const seq=days.map(d=>[d,pl[d].top.name||pl[d].top.primaryColor,HOOK.jacketGroup(pl[d].top)]);
       const runs=seq.filter((x,i)=>i&&x[2]===seq[i-1][2]).map(x=>x[0]);
       const firstA=seq.findIndex(x=>x[1]==='New brown'),firstB=seq.findIndex(x=>x[1]==='New deep taupe');
       return {seq,runs,firstA,firstB}});

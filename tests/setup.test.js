@@ -19,7 +19,7 @@ const setup=async({ok,chromium,url,settle})=>{
   const shown=p=>p.evaluate(()=>!!document.querySelector('#setup.on'));
   const step=p=>p.evaluate(()=>{const e=document.querySelector('#su-step');return e?e.dataset.step:null});
   const next=async(p,want)=>{await p.waitForTimeout(400);await p.click('#su-next');await p.waitForFunction(w=>{const e=document.querySelector('#su-step');return e&&e.dataset.step===w},want)};   // (the wait: past setupGoDouble's guard on the last tap)
-  const stored=(p,f,arg)=>p.waitForFunction(`(async()=>{const s=await metaGet('settings');return !!s&&(${f})(s)})()`,arg,{timeout:10000}).then(()=>true,()=>false);
+  const stored=(p,f,arg)=>p.waitForFunction(`(async()=>{const s=await HOOK.metaGet('settings');return !!s&&(${f})(s)})()`,arg,{timeout:10000}).then(()=>true,()=>false);
   const noSide=p=>p.evaluate(()=>{const d=document.documentElement,b=document.querySelector('#setup .su-body');
     const out=[...document.querySelectorAll('#setup.on button,#setup.on input,#setup.on select,#firstrun,#firstrun *,#wempty,#wempty *')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&(r.left<-0.5||r.right>innerWidth+0.5)});
     return d.scrollWidth<=innerWidth&&(!b||b.scrollWidth<=b.clientWidth)&&!out.length});
@@ -29,20 +29,20 @@ const setup=async({ok,chromium,url,settle})=>{
     const p=await open({geolocation:{latitude:1.234,longitude:5.678},permissions:['geolocation']});
     ok(await shown(p)&&await step(p)==='welcome','a fresh install opens the setup on its Welcome step');
     const w=await p.evaluate(()=>({inert:['header','main','nav'].every(s=>document.querySelector(s).inert),lead:document.querySelectorAll('#su-step .su-lead').length,
-      skip:!!document.querySelector('#su-skip'),back:!!document.querySelector('#su-back'),done:settings.setupDone,r:document.querySelector('#setup').getBoundingClientRect().toJSON(),vw:innerWidth,vh:innerHeight}));
+      skip:!!document.querySelector('#su-skip'),back:!!document.querySelector('#su-back'),done:HOOK.settings.setupDone,r:document.querySelector('#setup').getBoundingClientRect().toJSON(),vw:innerWidth,vh:innerHeight}));
     ok(w.inert&&w.r.width===w.vw&&w.r.height===w.vh,'it covers the whole phone screen and the page behind it is inert');
     ok(w.lead===2&&w.skip&&!w.back&&!w.done,'Welcome: two sentences on what the app does, Skip and no Back; nothing is marked done yet');
-    const before=await p.evaluate(()=>({wd:[...settings.workdays],bl:[...settings.blazerDays]}));
+    const before=await p.evaluate(()=>({wd:[...HOOK.settings.workdays],bl:[...HOOK.settings.blazerDays]}));
     await next(p,'week');
-    ok(await p.evaluate(b=>JSON.stringify(settings.workdays)===JSON.stringify(b.wd)&&document.querySelectorAll('#su-workdays .su-day.on').length===b.wd.length&&!!document.querySelector('#su-back'),before),'Your week: the stored workdays are shown as they are, and there is a Back');
+    ok(await p.evaluate(b=>JSON.stringify(HOOK.settings.workdays)===JSON.stringify(b.wd)&&document.querySelectorAll('#su-workdays .su-day.on').length===b.wd.length&&!!document.querySelector('#su-back'),before),'Your week: the stored workdays are shown as they are, and there is a Back');
     const free=[0,1,2,3,4,5,6].find(d=>!before.wd.includes(d));
     await p.click(`#su-workdays .su-day:nth-child(${free+1})`);
     ok(await stored(p,`s=>s.workdays.includes(${free})`),'tapping a day adds it to the stored workdays');
-    ok(await p.evaluate(d=>document.querySelector(`#su-workdays .su-day:nth-child(${d+1})`).classList.contains('on')&&document.querySelectorAll('#su-blazer .su-day').length===settings.workdays.length,free),'the step shows it on, and blazer days offer the workdays');
+    ok(await p.evaluate(d=>document.querySelector(`#su-workdays .su-day:nth-child(${d+1})`).classList.contains('on')&&document.querySelectorAll('#su-blazer .su-day').length===HOOK.settings.workdays.length,free),'the step shows it on, and blazer days offer the workdays');
     await p.click('#su-blazer .su-day:not(.on)');
     ok(await stored(p,`s=>s.blazerDays.length===${before.bl.length+1}`),'tapping a blazer day stores it');
     await next(p,'wear');
-    const wear0=await p.evaluate(()=>({j:document.querySelector('#su-sw-jacket').getAttribute('aria-checked'),t:document.querySelector('#su-sw-tie').getAttribute('aria-checked'),v:document.querySelector('#su-vest').value,dress:settings.dress}));
+    const wear0=await p.evaluate(()=>({j:document.querySelector('#su-sw-jacket').getAttribute('aria-checked'),t:document.querySelector('#su-sw-tie').getAttribute('aria-checked'),v:document.querySelector('#su-vest').value,dress:HOOK.settings.dress}));
     ok(wear0.j==='true'&&wear0.t==='true'&&wear0.dress===undefined,'What you wear: jackets and ties are on while nothing is stored (a missing key means yes)');
     ok(wear0.v==='never','the vest choice shows "No vest" for a new person');
     await p.click('#su-sw-jacket');
@@ -66,7 +66,7 @@ const setup=async({ok,chromium,url,settle})=>{
     ok(await stored(p,`s=>s.location&&s.location.lat===1.234&&s.location.lon===5.678`),'"Use my location" stores the device\'s position');
     await p.waitForFunction(()=>/your location \(1\.23° N, 5\.68° E\)/.test(document.querySelector('#su-loc').textContent));
     ok(true,'and the step is drawn again with it');
-    const other=await p.evaluate(()=>unit()==='F'?'C':'F');
+    const other=await p.evaluate(()=>HOOK.unit()==='F'?'C':'F');
     await p.click(`#su-units .su-day:has-text("°${other}")`);
     ok(await stored(p,`s=>s.units==='${other}'`),'the units are stored');
     await next(p,'connect');
@@ -85,7 +85,7 @@ const setup=async({ok,chromium,url,settle})=>{
     await next(p,'done');
     ok(await p.evaluate(()=>!document.querySelector('#su-skip')&&/Add my first item/.test(document.querySelector('#su-next').textContent)&&/a vest every suit day/.test(document.querySelector('.su-sum').textContent)&&/Blazer days/.test(document.querySelector('.su-sum').textContent)&&/connected/.test(document.querySelector('.su-sum').textContent)),'the last step sums up the answers and offers to add the first item');
     const sum=await p.evaluate(()=>{const d=HOOK.setupDress(),li=[...document.querySelectorAll('.su-sum li')].find(l=>/Workdays/.test(l.textContent));
-      return {days:li.querySelector('b').textContent,want:[...settings.workdays].sort((a,b)=>a-b).map(i=>DAY_NAMES[i].slice(0,3)).join(', '),jacket:d.jacket,help:document.querySelector('#su-step .su-help').textContent}});
+      return {days:li.querySelector('b').textContent,want:[...HOOK.settings.workdays].sort((a,b)=>a-b).map(i=>HOOK.DAY_NAMES[i].slice(0,3)).join(', '),jacket:d.jacket,help:document.querySelector('#su-step .su-help').textContent}});
     ok(sum.days===sum.want,'the summary lists the workdays in the Week step\'s order, Sunday first: '+sum.days);
     ok(sum.jacket?/a suit or blazer, .* and shoes, plus pants if you wear a blazer rather than a suit\.$/.test(sum.help):/pants/.test(sum.help)&&!/plus pants/.test(sum.help),'the last step asks for pants only as needed (not with a suit): '+sum.help);
     ok(await p.evaluate(()=>!!document.querySelector('#su-step #kit-tour-link')&&!!document.querySelector('#su-step #kit-sample-link')),'the last step offers the tour and a sample wardrobe (kit.js)');
@@ -113,19 +113,19 @@ const setup=async({ok,chromium,url,settle})=>{
     await s.reload();await s.waitForFunction(()=>window.appReady);
     ok(!await shown(s),'after Skip the setup does not come back');
     // the Add tab's note while not connected
-    await s.evaluate(()=>openAdd());
+    await s.evaluate(()=>HOOK.openAdd());
     const note=await s.textContent('#note');
     ok(/won.t be read automatically/.test(note)&&/invite link/.test(note)&&/Settings → Connection/.test(note)&&/by hand/.test(note)&&!/worker|cloudflare/i.test(note),'the Add tab says in plain words that photos are not read without a connection: '+note);
     // the Wardrobe tab, empty
-    await s.evaluate(()=>show('wardrobe'));
+    await s.evaluate(()=>HOOK.show('wardrobe'));
     ok(await s.evaluate(()=>!!document.querySelector('#wempty svg')&&/Add your first item/.test(document.querySelector('#wempty-add').textContent)&&!/Nothing here yet/.test(document.querySelector('#wardrobe').textContent)),'the empty Wardrobe is a card with a drawing and an "Add your first item" button');
     await s.click('#wempty-add');
     ok(await s.evaluate(()=>!document.querySelector('#add').hidden),'which opens the Add tab');
 
     /* ---- the checklist on Today ---- */
     const rows=()=>s.evaluate(()=>[...document.querySelectorAll('#firstrun .fr-it')].map(e=>e.dataset.need+(e.classList.contains('done')?'+':'-')).join(' '));
-    const add=(...its)=>s.evaluate(`(()=>{const I=${I};items.push(${its.map(a=>`I(${a.map(x=>JSON.stringify(x)).join(',')})`).join(',')});HOOK.cache={};show('today')})()`);
-    await s.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';settings.workdays=[1,2,3,4,5];settings.blazerDays=[];delete settings.dress;HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};show('today')});
+    const add=(...its)=>s.evaluate(`(()=>{const I=${I};HOOK.items.push(${its.map(a=>`I(${a.map(x=>JSON.stringify(x)).join(',')})`).join(',')});HOOK.cache={};HOOK.show('today')})()`);
+    await s.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[];delete HOOK.settings.dress;HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.show('today')});
     ok(await rows()==='jacket- shirt- tie- pants- shoes-'&&/Get your first outfit/.test(await s.textContent('#firstrun h3')),'suit-and-tie person, empty wardrobe: "Get your first outfit" lists a jacket, shirt, tie, pants and shoes');
     ok(await s.evaluate(()=>!document.querySelector('.fig')&&!/wardrobe is empty/i.test(document.querySelector('#today').textContent)),'in place of the gray sentence');
     await add(['sh1','shirt','white']);
@@ -137,20 +137,20 @@ const setup=async({ok,chromium,url,settle})=>{
     await add(['bs','shoes','black',{leather:'calf'}]);
     ok(await s.evaluate(()=>!document.querySelector('#firstrun')&&!!document.querySelector('.fig')),'with shoes a day can be planned: the checklist is gone and the outfit shows');
     // a blazer needs trousers
-    await s.evaluate(`(()=>{const I=${I};HOOK.items=[I('bz','blazer','navy'),I('sh1','shirt','white'),I('t1','tie','burgundy'),I('bs','shoes','black',{leather:'calf'})];HOOK.cache={};show('today')})()`);
+    await s.evaluate(`(()=>{const I=${I};HOOK.items=[I('bz','blazer','navy'),I('sh1','shirt','white'),I('t1','tie','burgundy'),I('bs','shoes','black',{leather:'calf'})];HOOK.cache={};HOOK.show('today')})()`);
     ok(await rows()==='jacket+ shirt+ tie+ pants- shoes+','a blazer and no suit: pants are still needed');
     // an item out of rotation doesn't count
-    await s.evaluate(`(()=>{const I=${I};HOOK.items=[I('su1','suit','navy'),I('sh1','shirt','white'),I('t1','tie','burgundy'),I('bs','shoes','black',{leather:'calf',paused:true})];HOOK.cache={};show('today')})()`);
+    await s.evaluate(`(()=>{const I=${I};HOOK.items=[I('su1','suit','navy'),I('sh1','shirt','white'),I('t1','tie','burgundy'),I('bs','shoes','black',{leather:'calf',paused:true})];HOOK.cache={};HOOK.show('today')})()`);
     ok(await rows()==='jacket+ shirt+ tie+ shoes-','shoes taken out of rotation don\'t tick the row');
     // no jackets, no ties
-    await s.evaluate(()=>{HOOK.items=[];settings.dress={jacket:false,tie:false};HOOK.cache={};show('today')});
+    await s.evaluate(()=>{HOOK.items=[];HOOK.settings.dress={jacket:false,tie:false};HOOK.cache={};HOOK.show('today')});
     ok(await rows()==='shirt- pants- shoes-','no-jacket, no-tie person: only a shirt, pants and shoes are asked for');
     await add(['sh1','shirt','white']);await add(['p1','pants','grey']);
     ok(await rows()==='shirt+ pants+ shoes-','ticking as they are added');
     await add(['bs','shoes','brown',{leather:'calf'}]);
     ok(await s.evaluate(()=>!document.querySelector('#firstrun')&&!!document.querySelector('.fig')),'and gone once that person has all three');
     // the button, and a day that is not a workday
-    await s.evaluate(()=>{HOOK.items=[];delete settings.dress;settings.workdays=[1,2,3,4];HOOK.cache={};HOOK.sel=new Date(2026,10,14);show('today')});
+    await s.evaluate(()=>{HOOK.items=[];delete HOOK.settings.dress;HOOK.settings.workdays=[1,2,3,4];HOOK.cache={};HOOK.sel=new Date(2026,10,14);HOOK.show('today')});
     ok(await s.evaluate(()=>!!document.querySelector('#stage #firstrun')&&/isn.t a workday/.test(document.querySelector('#today').textContent)),'on a day that is not a workday the checklist sits above the note');   // ui pass: the checklist comes first
     await s.click('#fr-add');
     ok(await s.evaluate(()=>!document.querySelector('#add').hidden),'its button opens the Add tab');
@@ -159,21 +159,21 @@ const setup=async({ok,chromium,url,settle})=>{
 
     /* ---- an install with items never sees it ---- */
     const h=await open();
-    await h.evaluate(`(async()=>{const I=${I};for(const i of [I('su1','suit','navy'),I('sh1','shirt','white')])await put(i)})()`);
+    await h.evaluate(`(async()=>{const I=${I};for(const i of [I('su1','suit','navy'),I('sh1','shirt','white')])await HOOK.put(i)})()`);
     await h.reload();await h.waitForFunction(()=>window.appReady);
-    ok(!await shown(h)&&await h.evaluate(()=>settings.setupDone>0),'an install with items starts without the setup and is marked as done');
+    ok(!await shown(h)&&await h.evaluate(()=>HOOK.settings.setupDone>0),'an install with items starts without the setup and is marked as done');
     // "Run setup again" in Settings
-    await h.evaluate(()=>openSettings('connection'));await h.click('#setup-again');
+    await h.evaluate(()=>HOOK.openSettings('connection'));await h.click('#setup-again');
     await h.waitForFunction(()=>!!document.querySelector('#setup.on'));
-    ok(await h.evaluate(()=>!settingsOpen())&&await step(h)==='welcome','Settings → "Run setup again" closes Settings and opens the setup');
-    await h.evaluate(()=>{show('today')});
+    ok(await h.evaluate(()=>!HOOK.settingsOpen())&&await step(h)==='welcome','Settings → "Run setup again" closes Settings and opens the setup');
+    await h.evaluate(()=>{HOOK.show('today')});
     ok(await shown(h),'a setup the person asked for stays while Today is redrawn');
     await next(h,'week');await next(h,'wear');
-    ok(await h.evaluate(()=>document.querySelector('#su-vest').value===(settings.vestMode||'auto')),'run again, the vest choice shows the stored one');
+    ok(await h.evaluate(()=>document.querySelector('#su-vest').value===(HOOK.settings.vestMode||'auto')),'run again, the vest choice shows the stored one');
     await next(h,'weather');await next(h,'connect');await next(h,'done');
     ok(/^Done$/.test((await h.textContent('#su-next')).trim()),'with items in the wardrobe the last button is Done');
     await h.waitForTimeout(400);await h.click('#su-next');await h.waitForFunction(()=>!document.querySelector('#setup.on'));
-    ok(await h.evaluate(()=>!document.querySelector('#today').hidden&&(settings.vestMode||'auto')==='auto'),'which goes to Today and leaves the vest setting alone');
+    ok(await h.evaluate(()=>!document.querySelector('#today').hidden&&(HOOK.settings.vestMode||'auto')==='auto'),'which goes to Today and leaves the vest setting alone');
     await h.context().close();
 
     /* ---- already connected (opened from an invite link); connectFromLink when the app has it ---- */
@@ -197,17 +197,17 @@ const setup=async({ok,chromium,url,settle})=>{
     /* ---- it steps aside when the app is driven past it ---- */
     const y=await open();
     ok(await shown(y),'fresh install: the setup');
-    await y.evaluate(`(()=>{const I=${I};HOOK.items=[I('su1','suit','navy')];HOOK.cache={};show('today')})()`);
-    ok(!await shown(y)&&await y.evaluate(()=>!settings.setupDone&&!document.querySelector('main').inert),'items arriving (a sync, a restore) close a setup that opened by itself, without marking it done');
+    await y.evaluate(`(()=>{const I=${I};HOOK.items=[I('su1','suit','navy')];HOOK.cache={};HOOK.show('today')})()`);
+    ok(!await shown(y)&&await y.evaluate(()=>!HOOK.settings.setupDone&&!document.querySelector('main').inert),'items arriving (a sync, a restore) close a setup that opened by itself, without marking it done');
     await y.context().close();
     const y2=await open();
-    await y2.evaluate(()=>openAdd());
-    ok(!await shown(y2)&&await y2.evaluate(()=>!settings.setupDone),'so does opening another tab');
+    await y2.evaluate(()=>HOOK.openAdd());
+    ok(!await shown(y2)&&await y2.evaluate(()=>!HOOK.settings.setupDone),'so does opening another tab');
     await y2.context().close();
 
     /* ---- a test that doesn't ask for it starts on the plain page ---- */
     const n=await browser.newContext({viewport:{width:390,height:844}}).then(c=>c.newPage());await n.goto(url);await n.waitForFunction(()=>window.appReady);
-    ok(await n.evaluate(()=>navigator.webdriver===true&&!document.querySelector('#setup.on')&&!settings.setupDone&&!!document.querySelector('#firstrun')),'a driven browser that doesn\'t ask for the setup starts on Today with the checklist, and nothing is marked done');
+    ok(await n.evaluate(()=>navigator.webdriver===true&&!document.querySelector('#setup.on')&&!HOOK.settings.setupDone&&!!document.querySelector('#firstrun')),'a driven browser that doesn\'t ask for the setup starts on Today with the checklist, and nothing is marked done');
     await n.click('#n-wardrobe');ok(await n.evaluate(()=>!!document.querySelector('#wempty')),'and the page takes clicks at once');
     await n.context().close();
 
@@ -226,8 +226,8 @@ const setup=async({ok,chromium,url,settle})=>{
       await v.waitForTimeout(400);await v.click('#su-next');await v.waitForFunction(()=>!!document.querySelector('#kitsheet.on'));   // the quick tour first (kit.js); the wait: past setupGoDouble's guard
       ok(await v.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&[...document.querySelectorAll('#kitsheet button')].every(b=>{const r=b.getBoundingClientRect();return r.left>=-0.5&&r.right<=innerWidth+0.5})),`${width}px ${scheme}: the tour fits`);
       await v.keyboard.press('Escape');await v.waitForFunction(()=>!document.querySelector('#setup.on')&&!document.querySelector('#add').hidden);
-      await v.evaluate(()=>show('today'));await settle(v,200);const t=await noSide(v)&&await v.evaluate(()=>!!document.querySelector('#firstrun'));
-      await v.evaluate(()=>show('wardrobe'));await settle(v,200);const wd=await noSide(v)&&await v.evaluate(()=>!!document.querySelector('#wempty'));
+      await v.evaluate(()=>HOOK.show('today'));await settle(v,200);const t=await noSide(v)&&await v.evaluate(()=>!!document.querySelector('#firstrun'));
+      await v.evaluate(()=>HOOK.show('wardrobe'));await settle(v,200);const wd=await noSide(v)&&await v.evaluate(()=>!!document.querySelector('#wempty'));
       ok(t&&wd,`${width}px ${scheme}: the checklist on Today and the empty Wardrobe card fit the width`);
       await v.context().close()}
   }finally{await browser.close()}
@@ -255,7 +255,7 @@ const setupfix=async({ok,chromium,url,settle})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);return p};
   const step=p=>p.evaluate(()=>{const e=document.querySelector('#su-step');return e?e.dataset.step:null});
   const next=async(p,want)=>{await p.waitForTimeout(400);await p.click('#su-next');await p.waitForFunction(w=>{const e=document.querySelector('#su-step');return e&&e.dataset.step===w},want)};   // (the wait: past setupGoDouble's guard on the last tap)
-  const stored=(p,f)=>p.waitForFunction(`(async()=>{const s=await metaGet('settings');return !!s&&(${f})(s)})()`,null,{timeout:10000}).then(()=>true,()=>false);
+  const stored=(p,f)=>p.waitForFunction(`(async()=>{const s=await HOOK.metaGet('settings');return !!s&&(${f})(s)})()`,null,{timeout:10000}).then(()=>true,()=>false);
   try{
     /* ---- iOS cuts the setup off: it comes back on the step it was on, with a vest already chosen kept ---- */
     const p=await open();
@@ -270,43 +270,43 @@ const setupfix=async({ok,chromium,url,settle})=>{
     ok(await p.evaluate(()=>!localStorage.getItem('setup_at')),'the kept step goes once the setup is finished');
     // a double tap on Skip: the second tap would land on Settings' gear
     await p.waitForTimeout(400);   // (past the guard of the Skip just tapped)
-    await p.evaluate(()=>{delete settings.setupDone;HOOK.setupOpen(false)});await p.waitForSelector('#su-skip');
+    await p.evaluate(()=>{delete HOOK.settings.setupDone;HOOK.setupOpen(false)});await p.waitForSelector('#su-skip');
     const b=await p.locator('#su-skip').boundingBox();await p.mouse.click(b.x+b.width/2,b.y+b.height/2);await p.waitForTimeout(80);await p.mouse.click(b.x+b.width/2,b.y+b.height/2);await p.waitForTimeout(300);
-    const dt=await p.evaluate(()=>({setup:!!document.querySelector('#setup.on'),set:settingsOpen()}));
+    const dt=await p.evaluate(()=>({setup:!!document.querySelector('#setup.on'),set:HOOK.settingsOpen()}));
     ok(!dt.setup&&!dt.set,'a double tap on Skip closes the setup and doesn\'t open Settings under it '+JSON.stringify(dt));
     await p.waitForTimeout(400);await p.mouse.click(b.x+b.width/2,b.y+b.height/2);
-    ok(await p.waitForFunction(()=>settingsOpen(),null,{timeout:3000}).then(()=>true,()=>false),'a tap there a moment later works as usual');
-    await p.evaluate(()=>closeSettings());
+    ok(await p.waitForFunction(()=>HOOK.settingsOpen(),null,{timeout:3000}).then(()=>true,()=>false),'a tap there a moment later works as usual');
+    await p.evaluate(()=>HOOK.closeSettings());
     // the last workday
-    await p.evaluate(()=>{settings.workdays=[2];openSettings('schedule')});
+    await p.evaluate(()=>{HOOK.settings.workdays=[2];HOOK.openSettings('schedule')});
     await p.click('#cfg-workdays .dtog:nth-child(3)');
-    ok(await p.evaluate(()=>JSON.stringify(settings.workdays)==='[2]'&&/At least one workday/.test(document.querySelector('#toast').textContent)),'the last workday can\'t be unticked, and it says why');
+    ok(await p.evaluate(()=>JSON.stringify(HOOK.settings.workdays)==='[2]'&&/At least one workday/.test(document.querySelector('#toast').textContent)),'the last workday can\'t be unticked, and it says why');
     // the Schedule summary with ties off still names the blazer days
-    await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.dress={jacket:true,tie:false};settingsSummaries()});
+    await p.evaluate(()=>{HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[4];HOOK.settings.dress={jacket:true,tie:false};HOOK.settingsSummaries()});
     const sum=await p.textContent('#sum-schedule');
     ok(/blazers Thu/.test(sum)&&/no ties/.test(sum)&&!/vest/.test(sum),`the Schedule summary keeps the blazer days with ties off (${sum})`);
-    await p.evaluate(()=>{settings.dress={jacket:true,tie:true};settings.vestMode='never';settingsSummaries()});
+    await p.evaluate(()=>{HOOK.settings.dress={jacket:true,tie:true};HOOK.settings.vestMode='never';HOOK.settingsSummaries()});
     ok(/blazers Thu · vest never/.test(await p.textContent('#sum-schedule')),'and the vest with ties on');
-    await p.evaluate(()=>closeSettings());
+    await p.evaluate(()=>HOOK.closeSettings());
     ok(!p.errs.length,'no page errors: '+p.errs.join(' | '));await p.context().close();
 
     /* ---- a vest that came with the account (another phone's choice) is kept by this phone's setup ---- */
     const v=await open();
-    await v.evaluate(async()=>{settings.vestMode='always';settings.ks={...(settings.ks||{}),vestMode:Date.now()-5000};settings.kh={...(settings.kh||{}),vestMode:setHash('always')};setupDraw()});
+    await v.evaluate(async()=>{HOOK.settings.vestMode='always';HOOK.settings.ks={...(HOOK.settings.ks||{}),vestMode:Date.now()-5000};HOOK.settings.kh={...(HOOK.settings.kh||{}),vestMode:setHash('always')};HOOK.setupDraw()});
     await next(v,'week');await next(v,'wear');
     ok(await v.evaluate(()=>document.querySelector('#su-vest').value==='always'),'What you wear shows the account\'s vest, not "No vest"');
     await v.click('#su-skip');ok(await stored(v,`s=>s.setupDone>0&&s.vestMode==='always'`),'and Skip keeps it');
     /* ---- the tour without ties or jackets; About's tour goes back to About ---- */
-    await v.evaluate(()=>{settings.dress={jacket:false,tie:false};tourOpen()});await v.waitForSelector('#kitsheet.on');
+    await v.evaluate(()=>{HOOK.settings.dress={jacket:false,tie:false};HOOK.tourOpen()});await v.waitForSelector('#kitsheet.on');
     const tour=await v.textContent('#kitsheet');
     ok(!/tie/i.test(tour)&&!/the suit/i.test(tour)&&/suit the pants/.test(tour),'the tour\'s first card speaks of shirts and pants to someone who wears no tie or jacket');
-    await v.evaluate(()=>kitClose());
-    await v.evaluate(()=>{openSettings('about')});await v.evaluate(()=>document.querySelector('#tour-again').scrollIntoView());await v.click('#tour-again');await v.waitForSelector('#kitsheet.on');
+    await v.evaluate(()=>HOOK.kitClose());
+    await v.evaluate(()=>{HOOK.openSettings('about')});await v.evaluate(()=>document.querySelector('#tour-again').scrollIntoView());await v.click('#tour-again');await v.waitForSelector('#kitsheet.on');
     await v.keyboard.press('Escape');
-    ok(await v.waitForFunction(()=>settingsOpen()&&document.querySelector('#sc-about').classList.contains('open'),null,{timeout:3000}).then(()=>true,()=>false),'Settings → About → Take the tour comes back to About when the tour closes');
-    await v.evaluate(()=>closeSettings());
+    ok(await v.waitForFunction(()=>HOOK.settingsOpen()&&document.querySelector('#sc-about').classList.contains('open'),null,{timeout:3000}).then(()=>true,()=>false),'Settings → About → Take the tour comes back to About when the tour closes');
+    await v.evaluate(()=>HOOK.closeSettings());
     /* ---- Run setup again: the jeans switch stays; Cancel undoes what was tapped ---- */
-    await v.evaluate(async()=>{settings.dress={jacket:true,tie:true,jeans:true};settings.workdays=[0,1,2,3,4];await saveUserSettings();HOOK.setupOpen(true)});
+    await v.evaluate(async()=>{HOOK.settings.dress={jacket:true,tie:true,jeans:true};HOOK.settings.workdays=[0,1,2,3,4];await HOOK.saveUserSettings();HOOK.setupOpen(true)});
     ok(await v.evaluate(()=>!!document.querySelector('#su-cancel')&&!document.querySelector('#su-skip')),'Run setup again has Cancel in place of Skip');
     await next(v,'week');await v.click('#su-workdays .su-day:nth-child(6)');await next(v,'wear');await v.click('#su-sw-tie');
     ok(await stored(v,`s=>s.dress.tie===false&&s.dress.jeans===true&&s.workdays.includes(5)`),'switching ties off in it keeps "Jeans with a blazer"');
@@ -339,12 +339,12 @@ const setupfix=async({ok,chromium,url,settle})=>{
     ok(steps.length===4&&/⋯/.test(steps[0])&&/Open as Web App/.test(steps[2]),'elsewhere it is the kit sheet, its steps one per line ('+steps.length+')');
     await h.evaluate(()=>{HOOK.items=[{id:'i1',type:'tie',primaryColor:'navy',pattern:'solid',added:1}];HOOK.kitDraw()});
     ok(/Your wardrobe stays here in Safari/.test(await h.textContent('#kitsheet'))&&/Download backup/.test(await h.textContent('#kitsheet')),'not connected with a wardrobe: it says the wardrobe stays in Safari and how to take it along');
-    await h.evaluate(()=>{HOOK.items=[];kitClose();delete settings.setupDone;HOOK.setupOpen(false)});await h.waitForSelector('#setup.on');
+    await h.evaluate(()=>{HOOK.items=[];HOOK.kitClose();delete HOOK.settings.setupDone;HOOK.setupOpen(false)});await h.waitForSelector('#setup.on');
     ok(!h.errs.length,'no page errors: '+h.errs.join(' | '));await h.context().close();
 
     /* ---- units follow the country ---- */
     const u=await open({timezoneId:'Asia/Kuwait',locale:'en-US'},null,false);
-    const un=await u.evaluate(()=>{const a=unit();settings.location={lat:40.7,lon:-74,name:'New York, New York, US',cc:'US'};const b=unit();settings.location={lat:29.4,lon:47.9,name:'Kuwait City, Al Asimah, KW'};const c=unit();settings.location=null;settings.units='F';const d=unit();delete settings.units;return [a,b,c,d].join()});
+    const un=await u.evaluate(()=>{const a=HOOK.unit();HOOK.settings.location={lat:40.7,lon:-74,name:'New York, New York, US',cc:'US'};const b=HOOK.unit();HOOK.settings.location={lat:29.4,lon:47.9,name:'Kuwait City, Al Asimah, KW'};const c=HOOK.unit();HOOK.settings.location=null;HOOK.settings.units='F';const d=HOOK.unit();delete HOOK.settings.units;return [a,b,c,d].join()});
     ok(un==='C,F,C,F',`°C on an English (US) phone in Kuwait's time zone, °F for a US location, the location's country from its name, and a chosen unit wins (${un})`);
     /* ---- holidays ---- */
     const hol=await u.evaluate(()=>{const gb=HOOK.nagerKeep([{date:'2027-01-01',name:"New Year's Day",localName:"New Year's Day",global:false,counties:['GB-ENG','GB-NIR','GB-SCT','GB-WLS'],types:['Public']},
@@ -357,36 +357,36 @@ const setupfix=async({ok,chromium,url,settle})=>{
     const kd=Object.fromEntries(hol.kw.map(x=>[x.d,x.n]));
     ok(kd['2026-02-25']==='National Day'&&kd['2026-03-20']==='Eid al-Fitr'&&kd['2026-05-26']==='Arafat Day'&&kd['2026-05-27']==='Eid al-Adha'&&kd['2026-06-16']==='Islamic New Year'&&kd['2027-03-09']==='Eid al-Fitr',`Kuwait's holidays are worked out on the phone, Islamic days from the Umm al-Qura calendar (${hol.kw.length} days)`);
     await u.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={}});
-    await u.evaluate(()=>setHolidayCountry('KW'));
-    ok(await u.evaluate(()=>settings.holidays.country==='KW'&&settings.holidays.list.some(h=>h.n==='Liberation Day')),'not connected, picking Kuwait gives its list (none came before)');
-    await u.evaluate(()=>setHolidayCountry('KP'));
-    const kp=await u.evaluate(()=>({cc:settings.holidays.country,n:settings.holidays.list.length,msg:HOOK.holidayMsg}));
+    await u.evaluate(()=>HOOK.setHolidayCountry('KW'));
+    ok(await u.evaluate(()=>HOOK.settings.holidays.country==='KW'&&HOOK.settings.holidays.list.some(h=>h.n==='Liberation Day')),'not connected, picking Kuwait gives its list (none came before)');
+    await u.evaluate(()=>HOOK.setHolidayCountry('KP'));
+    const kp=await u.evaluate(()=>({cc:HOOK.settings.holidays.country,n:HOOK.settings.holidays.list.length,msg:HOOK.holidayMsg}));
     ok(kp.cc==='KP'&&kp.n===0&&/North Korea/.test(kp.msg),`a country whose list can't be loaded is the one that counts, with no list, and the message names it (${kp.msg})`);
-    await u.evaluate(()=>{settings.holidays={country:'US',list:[{d:'2026-11-26',n:'Thanksgiving Day'},{d:'2027-11-25',n:'Thanksgiving Day'}],skip:[],fetched:Date.now()};openSettings('daysoff')});
+    await u.evaluate(()=>{HOOK.settings.holidays={country:'US',list:[{d:'2026-11-26',n:'Thanksgiving Day'},{d:'2027-11-25',n:'Thanksgiving Day'}],skip:[],fetched:Date.now()};HOOK.openSettings('daysoff')});
     const dates=await u.evaluate(()=>[...document.querySelectorAll('#holiday-list .hd')].map(e=>e.textContent));
     ok(!/2026/.test(dates[0])&&/2027/.test(dates[1]),`a holiday in another year shows its year (${dates.join(' | ')})`);
     await u.fill('#cfg-off-from','2026-11-01');await u.click('.offadd button');
-    ok(await u.evaluate(()=>!(settings.daysOff||[]).length&&/has passed/.test(document.querySelector('#holiday-msg').textContent)),'a past day off is refused with a reason, not "1 day off added."');
+    ok(await u.evaluate(()=>!(HOOK.settings.daysOff||[]).length&&/has passed/.test(document.querySelector('#holiday-msg').textContent)),'a past day off is refused with a reason, not "1 day off added."');
     await u.fill('#cfg-off-from','2026-11-13');await u.fill('#cfg-off-to','2026-11-17');await u.click('.offadd button');
-    ok(await u.evaluate(()=>(settings.daysOff||[]).map(x=>x.d).join()==='2026-11-15,2026-11-16,2026-11-17'),'a range that started in the past is added from today');
+    ok(await u.evaluate(()=>(HOOK.settings.daysOff||[]).map(x=>x.d).join()==='2026-11-15,2026-11-16,2026-11-17'),'a range that started in the past is added from today');
     /* ---- the city search ---- */
-    await u.evaluate(()=>{openSettings('weather')});await u.fill('#cfg-city','Dubai');await u.press('#cfg-city','Enter');
+    await u.evaluate(()=>{HOOK.openSettings('weather')});await u.fill('#cfg-city','Dubai');await u.press('#cfg-city','Enter');
     await u.waitForFunction(()=>document.querySelectorAll('#city-results button').length>0);
     const cities=await u.evaluate(()=>[...document.querySelectorAll('#city-results button')].map(b=>b.textContent));
     ok(cities.length===3&&new Set(cities).size===3&&cities.some(c=>/Kanpur/.test(c)),`Enter searches; lines that read the same get their district and true repeats go (${cities.join(' | ')})`);
     await u.fill('#cfg-city','الكويت');await u.press('#cfg-city','Enter');await u.waitForFunction(n=>document.querySelector('#city-results button')&&true,null);
     ok(/language=ar/.test(u.geo[u.geo.length-1]||''),'a name typed in Arabic is looked up in Arabic');
     await u.click('#city-results button:last-child');
-    ok(await u.evaluate(()=>settings.location.cc==='AE'),'the picked city keeps its country (for the units)');
+    ok(await u.evaluate(()=>HOOK.settings.location.cc==='AE'),'the picked city keeps its country (for the units)');
     ok(await u.evaluate(()=>HOOK.geoName(29.375,47.98)==='your location (29.38° N, 47.98° E)'),'"Use my location" names the spot, not "your current location" forever');
-    await u.evaluate(()=>closeSettings());
+    await u.evaluate(()=>HOOK.closeSettings());
     ok(!u.errs.length,'no page errors: '+u.errs.join(' | '));await u.context().close();
 
     /* ---- dates in English on an Arabic phone; the month starts on the work week's first day ---- */
     const a=await open({locale:'ar-KW',timezoneId:'Asia/Kuwait'},null,false);
-    const ad=await a.evaluate(()=>({d:shortDate(new Date(2026,10,15)),l:new Date(2026,10,15).toLocaleDateString(undefined,{month:'long',year:'numeric'})}));
+    const ad=await a.evaluate(()=>({d:HOOK.shortDate(new Date(2026,10,15)),l:new Date(2026,10,15).toLocaleDateString(undefined,{month:'long',year:'numeric'})}));
     ok(/^Sun/.test(ad.d)&&/15/.test(ad.d)&&/November 2026/.test(ad.l)&&!/[؀-ۿ٠-٩]/.test(ad.d+ad.l),`an Arabic-language phone gets dates in English with Latin digits (${ad.d}; ${ad.l})`);
-    const wk=await a.evaluate(()=>{settings.workdays=[1,2,3,4,5];HOOK.monthPanel={y:2026,m:10};const g1=HOOK.monthGridHtml();settings.workdays=[0,1,2,3,4];const g2=HOOK.monthGridHtml();
+    const wk=await a.evaluate(()=>{HOOK.settings.workdays=[1,2,3,4,5];HOOK.monthPanel={y:2026,m:10};const g1=HOOK.monthGridHtml();HOOK.settings.workdays=[0,1,2,3,4];const g2=HOOK.monthGridHtml();
       const head=g=>g.match(/mdow[^>]*>(.*?)<\/div>/)[1].replace(/<[^>]+>/g,''),blanks=g=>(g.match(/mc blank/g)||[]).length;return {h1:head(g1),b1:blanks(g1),h2:head(g2),b2:blanks(g2)}});
     ok(wk.h1==='MTWTFSS'&&wk.b1===6&&wk.h2==='SMTWTFS'&&wk.b2===0,`the month starts on Monday for a Mon–Fri week and on Sunday for Sun–Thu (${JSON.stringify(wk)})`);
     ok(!a.errs.length,'no page errors: '+a.errs.join(' | '));await a.context().close();
@@ -396,7 +396,7 @@ const setupfix=async({ok,chromium,url,settle})=>{
     for(const k of['week','wear','weather','connect','done'])await next(s,k);
     await s.click('#setup #kit-sample-link');
     ok(await stored(s,`s=>s.setupDone>0&&s.vestMode==='never'&&s.holidays&&s.holidays.country==='KW'`),'the setup is finished (no vest for a new person, the time zone\'s holidays) before the sample loads');
-    ok(await s.waitForFunction(()=>items.filter(i=>i.sample).length>0&&!document.querySelector('#setup.on'),null,{timeout:10000}).then(()=>true,()=>false),'and the sample wardrobe loads');
+    ok(await s.waitForFunction(()=>HOOK.items.filter(i=>i.sample).length>0&&!document.querySelector('#setup.on'),null,{timeout:10000}).then(()=>true,()=>false),'and the sample wardrobe loads');
     await settle(s,200);
     ok(!s.errs.length,'no page errors: '+s.errs.join(' | '));await s.context().close();
   }finally{await browser.close()}
@@ -430,17 +430,17 @@ const nufix8=async({ok,chromium,url,settle})=>{
     if(auto)await p.addInitScript(()=>{window.SETUP_AUTO=true});
     if(init)await p.addInitScript(init);
     await p.goto(url);await p.waitForFunction(()=>window.appReady);return p};
-  const stored=(p,f,t=6000)=>p.waitForFunction(`(async()=>{const s=await metaGet('settings');return !!s&&(${f})(s)})()`,null,{timeout:t}).then(()=>true,()=>false);
+  const stored=(p,f,t=6000)=>p.waitForFunction(`(async()=>{const s=await HOOK.metaGet('settings');return !!s&&(${f})(s)})()`,null,{timeout:t}).then(()=>true,()=>false);
   const step=p=>p.evaluate(()=>{const e=document.querySelector('#su-step');return e?e.dataset.step:null});
   try{
     /* ---- N6: holidays fetched on 31 December in Sydney and 15 January in London include the coming year ---- */
     const h=await open({timezoneId:'Australia/Sydney',locale:'en-AU'});
-    const au=await h.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2026-12-31T23:55:00';settings.workdays=[1,2,3,4,5];HOOK.cache={};await setHolidayCountry('AU');
-      const l=settings.holidays.list.map(x=>x.d);HOOK.TODAY_OVERRIDE='2027-01-01T08:00:00';HOOK.cache={};return {l,ny:isWorkday(new Date(2027,0,1)),home:isoKey(homeDay())}});
+    const au=await h.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2026-12-31T23:55:00';HOOK.settings.workdays=[1,2,3,4,5];HOOK.cache={};await HOOK.setHolidayCountry('AU');
+      const l=HOOK.settings.holidays.list.map(x=>x.d);HOOK.TODAY_OVERRIDE='2027-01-01T08:00:00';HOOK.cache={};return {l,ny:HOOK.isWorkday(new Date(2027,0,1)),home:HOOK.isoKey(HOOK.homeDay())}});
     ok(h.years.filter(y=>/AU/.test(y)).sort().join()==='2026AU,2027AU,2028AU','on 31 December every year of the window is asked: 2026, 2027 and 2028 ('+h.years.join()+')');
     ok(au.l.includes('2027-01-01')&&au.l.includes('2027-01-26')&&!au.ny&&au.home==='2027-01-04',`Sydney: New Year's Day and Australia Day 2027 are in the list, 1 January is no workday and Today opens on Monday 4 January (${au.l.join(' ')}; ${au.home})`);
     h.years.length=0;
-    const gb=await h.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2027-01-15T12:00:00';HOOK.cache={};await setHolidayCountry('GB');return settings.holidays.list.map(x=>x.d)});
+    const gb=await h.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2027-01-15T12:00:00';HOOK.cache={};await HOOK.setHolidayCountry('GB');return HOOK.settings.holidays.list.map(x=>x.d)});
     ok(gb.includes('2027-03-29')&&gb.includes('2027-12-25')&&gb.includes('2026-12-25')&&gb.includes('2028-01-01')&&!gb.includes('2028-03-29'),`London on 15 January: 2027's holidays are there, from a month back to 13 months ahead (${gb.join(' ')})`);
     ok(await h.evaluate(()=>JSON.stringify(HOOK.holYears('2026-11-30','2028-01-31'))==='[2026,2027,2028]'&&JSON.stringify(HOOK.holYears('2027-01-15','2028-02-15'))==='[2027,2028]'),'holYears lists every calendar year from one date to the other');
     ok(!h.errs.length,'no page errors: '+h.errs.join(' | '));await h.context().close();
@@ -448,18 +448,18 @@ const nufix8=async({ok,chromium,url,settle})=>{
     /* ---- a country picked in Settings is kept before its list arrives; schedule taps are stored before the locks are released ---- */
     let release;const fr=new Promise(r=>release=r);
     const s=await open({timezoneId:'Europe/Paris'},null,{hold:{FR:fr}});
-    await s.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-16T12:00:00';HOOK.cache={};openSettings('daysoff')});
+    await s.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-16T12:00:00';HOOK.cache={};HOOK.openSettings('daysoff')});
     await s.selectOption('#cfg-country','FR');
     ok(await stored(s,`s=>s.holidays&&s.holidays.country==='FR'&&s.holidays.fetched===0`),'the country picked is stored at once, its list to come (swiped away before it arrived, it was lost)');
     ok(await s.evaluate(()=>/Loading the public holidays of France/.test(document.querySelector('#holiday-msg').textContent)&&!document.querySelector('#holiday-list').textContent.trim()),'while loading it says so, with no "no list yet" line under it');
     release();
     ok(await stored(s,`s=>s.holidays.country==='FR'&&s.holidays.fetched>0&&s.holidays.list.length>0`),'and the list replaces it when it arrives');
-    await s.evaluate(()=>{window.__held=0;const realTx=IDBDatabase.prototype.transaction,T=todayDate();for(let g=1;g<=4;g++){const k=key(new Date(T.getFullYear(),T.getMonth(),T.getDate()+g));dayRecs[k]={date:k,lock:{tie:'held'},updated:1}}IDBDatabase.prototype.transaction=function(st,m){if(st==='days'&&m==='readwrite')return {objectStore:()=>({put(r){if(!r.lock)window.__held++;return {}}})};return realTx.apply(this,arguments)};settings.workdays=[1,2,3,4,5];openSettings('schedule')});   // the locks never finish releasing: the real clearLocks, each release's write held
+    await s.evaluate(()=>{window.__held=0;const realTx=IDBDatabase.prototype.transaction,T=HOOK.todayDate();for(let g=1;g<=4;g++){const k=HOOK.key(new Date(T.getFullYear(),T.getMonth(),T.getDate()+g));HOOK.dayRecs[k]={date:k,lock:{tie:'held'},updated:1}}IDBDatabase.prototype.transaction=function(st,m){if(st==='days'&&m==='readwrite')return {objectStore:()=>({put(r){if(!r.lock)window.__held++;return {}}})};return realTx.apply(this,arguments)};HOOK.settings.workdays=[1,2,3,4,5];HOOK.openSettings('schedule')});   // the locks never finish releasing: the real clearLocks, each release's write held
     await s.click('#cfg-workdays .dtog:nth-child(7)');
     ok(await stored(s,`s=>s.workdays.includes(6)`,3000),'a workday tapped is stored before the week\'s locks are released');
     await s.evaluate(()=>{HOOK.setDarkShirts('never')});
     ok(await stored(s,`s=>s.darkShirts==='never'`,3000),'so is Dark shirts');
-    await s.evaluate(()=>{closeSettings();HOOK.setupOpen(true);HOOK.setupGo(1);HOOK.setupGo(1)});await s.waitForSelector('#su-sw-tie');
+    await s.evaluate(()=>{HOOK.closeSettings();HOOK.setupOpen(true);HOOK.setupGo(1);HOOK.setupGo(1)});await s.waitForSelector('#su-sw-tie');
     await s.click('#su-sw-tie');
     ok(await stored(s,`s=>s.dress&&s.dress.tie===false`,3000),'and the setup\'s dress switch');
     ok(await s.waitForFunction(()=>window.__held>=3,null,{timeout:3000}).then(()=>true,()=>false),'(each of the three was saved while the real clearLocks was still releasing a lock)');
@@ -479,12 +479,12 @@ const nufix8=async({ok,chromium,url,settle})=>{
     ok(true,'a tap a moment later goes on as usual');
     await u.click('#su-skip');
     ok(await stored(u,`s=>s.setupDone>0&&s.holidays&&s.holidays.country==='FR'&&s.holidays.fetched===0`),'finishing stores the time zone\'s country with setupDone, before its list arrives (a swipe away at once kept no holidays)');
-    ok(await u.evaluate(()=>{const h=settings.holidays;return Date.now()-(h.fetched||0)>30*864e5}),'so the next start\'s monthly refetch fetches its list');
+    ok(await u.evaluate(()=>{const h=HOOK.settings.holidays;return Date.now()-(h.fetched||0)>30*864e5}),'so the next start\'s monthly refetch fetches its list');
     ok(!u.errs.length,'no page errors: '+u.errs.join(' | '));await u.context().close();
 
     /* ---- an interrupted "Run setup again" with items comes back with Cancel; one not taken up is dropped ---- */
     const r=await open({},null,{auto:true});
-    await r.evaluate(async()=>{const it={id:'own1',type:'tie',primaryColor:'navy',pattern:'solid',added:1};await put(it);items.push(it);settings.setupDone=Date.now();settings.workdays=[0,1,2,3,4];await saveUserSettings();
+    await r.evaluate(async()=>{const it={id:'own1',type:'tie',primaryColor:'navy',pattern:'solid',added:1};await HOOK.put(it);HOOK.items.push(it);HOOK.settings.setupDone=Date.now();HOOK.settings.workdays=[0,1,2,3,4];await HOOK.saveUserSettings();
       HOOK.setupOpen(true);HOOK.setupGo(1)});
     await r.click('#su-workdays .su-day:nth-child(6)');await r.evaluate(()=>HOOK.setupGo(1));
     ok(await stored(r,`s=>s.workdays.includes(5)`),'the re-run\'s tap is stored');
@@ -504,24 +504,24 @@ const nufix8=async({ok,chromium,url,settle})=>{
     const IOS='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
     const k=await open({userAgent:IOS});
     const link='#invite='+A+'&w='+encodeURIComponent(HOST);
-    await k.evaluate(l=>connectFromLink(l),link);
+    await k.evaluate(l=>HOOK.connectFromLink(l),link);
     ok(await k.waitForSelector('#kitsheet.on',{timeout:5000}).then(()=>true,()=>false),'the first link on an iPhone in Safari shows the Home Screen sheet');
-    await k.evaluate(()=>kitClose());
-    await k.evaluate(l=>connectFromLink(l),link);await k.waitForTimeout(1700);
+    await k.evaluate(()=>HOOK.kitClose());
+    await k.evaluate(l=>HOOK.connectFromLink(l),link);await k.waitForTimeout(1700);
     ok(await k.evaluate(()=>!document.querySelector('#kitsheet.on')),'the same link opened again doesn\'t show it again');
     await k.evaluate(()=>{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')});
-    await k.evaluate(l=>connectFromLink(l),link);await k.waitForTimeout(1700);
+    await k.evaluate(l=>HOOK.connectFromLink(l),link);await k.waitForTimeout(1700);
     ok(await k.evaluate(()=>!document.querySelector('#kitsheet.on')),'nor after connecting again on the same phone (About\'s button still has it)');
     ok(!k.errs.length,'no page errors: '+k.errs.join(' | '));await k.context().close();
 
     /* ---- the city search ---- */
     const c=await open();
-    await c.evaluate(()=>openSettings('weather'));await c.fill('#cfg-city','دبي');await c.press('#cfg-city','Enter');
+    await c.evaluate(()=>HOOK.openSettings('weather'));await c.fill('#cfg-city','دبي');await c.press('#cfg-city','Enter');
     await c.waitForFunction(()=>document.querySelectorAll('#city-results button').length>0);
     const city=await c.textContent('#city-results button');
     ok(/^Dubai, Dubai, AE/.test(city)&&/دبي/.test(city)&&c.geo.some(g=>/\/v1\/get\?language=en&id=292223/.test(g)),`a city found in Arabic is named in English, the name typed beside it (${city})`);
     await c.click('#city-results button');
-    ok(await c.evaluate(()=>settings.location.name==='Dubai, Dubai, AE'&&settings.location.cc==='AE'&&!('alt' in settings.location)),'and stored in English');
+    ok(await c.evaluate(()=>HOOK.settings.location.name==='Dubai, Dubai, AE'&&HOOK.settings.location.cc==='AE'&&!('alt' in HOOK.settings.location)),'and stored in English');
     await c.fill('#cfg-city','London');await c.press('#cfg-city','Enter');await c.waitForFunction(()=>document.querySelectorAll('#city-results button').length>0);
     await c.fill('#cfg-city','');await c.press('#cfg-city','Enter');
     ok(await c.waitForFunction(()=>!document.querySelector('#city-results').textContent.trim(),null,{timeout:3000}).then(()=>true,()=>false),'an empty search clears the last results');

@@ -167,6 +167,6 @@ function cropDiscardTap(){cropDiscard()}
 Object.assign(globalThis,{PH_MAX,phSm,makeSmall,smallPhotos,photoTools,paperCloth,paperSteps,paperHint,paperRetake,paperLine,replaceTexture,cropSource,cropEditor,cropKeep,setPhEdit});
 Object.defineProperties(globalThis,{phEdit:{get:()=>phEdit}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,applyCrop,layoutCrop,paperTip,phSigOf,setPhoto,setTexture,startCrop,undoPhoto};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,applyCrop,layoutCrop,paperTip,phSigOf,setPhoto,setTexture,startCrop,undoPhoto,PH_MAX,makeSmall,get phEdit(){return phEdit},replaceTexture,smallPhotos};
 export {phEdit,setPhEdit,PH_MAX,phSm,phSigOf,makeSmall,smallPhotos,photoTools,paperCloth,paperSteps,paperHint,paperTip,paperRetake,paperLine,setPhoto,setTexture,replaceTexture,undoPhoto,startCrop,cropSource,cropEditor,cropKeep,layoutCrop,applyCrop};
 acts({photoFile,photoRotate,photoCrop,photoCuRemove,photoCuFile,paperTipTap,cropDrag,cropZoom,cropApply,cropDiscardTap});

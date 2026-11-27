@@ -240,6 +240,6 @@ serve('care-tag',careTag);serve('care-badge',careBadge);serve('care-log',careLog
 on('settings-draw',()=>renderCareUI());
 on('settings-category',k=>{if(k==='laundry')renderCare()});   // Laundry & cleaning's lists, as it opens
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,CARE_DEF,careBack,careCleaned,careCounts,careDayState,careLists,careName,careSend,openCare,renderCare,careBackText,careBadge,careLog,careTag};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,CARE_DEF,careBack,careCleaned,careCounts,careDayState,careLists,careName,careSend,openCare,renderCare,careBadge,CARE_ABLE,careReminders,careState,careWashed};
 export {CARE_ABLE,CARE_DEF,careLimit,careWashed,careWord,careTimes,careName,careCounts,careState,careTag,careBadge,careBackText,careLog,careCard,careSend,careBack,careCleaned,careLists,renderCare,openCare,careNote,careDayState,careFrame,careBandSoon,careReminders,renderCareUI};
 acts({laundryPick,careSendTap,careDoneTap,careBackDate,careBackTap,careTypeDone,careLimitsTap,careLimitPick,careDueTap,careBandTap,careBandKey});

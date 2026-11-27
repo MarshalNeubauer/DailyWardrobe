@@ -218,7 +218,7 @@ async function wardUndelete(it,k,days,at){
 /* the rest of the bridge: the consts declared above (dress.js: sockLegacy; itemsheet.js: wardDuplicate, wardDelete; tests/wardrobe.test.js: WARD_UNDO_MS) */
 Object.assign(globalThis,{sockLegacy,wardDuplicate,wardDelete});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,WARD_UNDO_MS,itemFieldSoon,setWardSort,wardClear,wardDeleteNow,wardHay,wardMatch,wardNorm,wardOrder,get wardQ(){return wardQ},set wardQ(v){wardQ=v},wardSearch,wardSort,wardFresh,wardKeep};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,WARD_UNDO_MS,itemFieldSoon,setWardSort,wardClear,wardDeleteNow,wardHay,wardMatch,wardNorm,wardOrder,get wardQ(){return wardQ},set wardQ(v){wardQ=v},wardSearch,wardSort,wardFresh,wardKeep,matMigrate,setItemField,sockToeMigrate,wardPendingRestore};
 export {WATCH_DETAILS_MAX,wardQ,wardNorm,wardHay,wardMatch,wardSort,setWardSort,wardOrder,wardFlt,wardView,wardFresh,wardCount,wardBar,wardGrid,wardSearch,wardClear,wardKeep,wardBack,itemFieldSoon,wardPendingRestore,ivOn,matOnItem,wardFieldsTop,setItemField,matRenameTo,matMigrate,sockLegacy,sockToeMigrate,WARD_UNDO_MS,wardDuplicate,wardDelete,wardDeleteNow};
 /* what the controls do (act.js). The Wardrobe's top and grid: the search field (typing; Escape empties a field that holds something, and goes no
    further), its ×, the sort, a piece's box (data-id), and the two buttons under "Nothing matches" */

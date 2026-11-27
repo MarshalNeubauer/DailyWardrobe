@@ -30,7 +30,7 @@ module.exports=async({ok,chromium,url})=>{
       window.__o={shirt:I('tee','tan'),bot:I('pants','khaki',{pattern:'camouflage',camo:'ocp',trouserKind:'cargo'}),belt:I('belt','brown'),watch:I('watch','silver',{metal:'silver',dial:'white',band:'integrated'})}});
     const look=()=>p.evaluate(async ck=>{const o=window.__o,k=HOOK.asmKindOf(o),r={kind:k,sig:HOOK.asmOcpSig(o,k)};await HOOK.asmCmLook(o);r.records=!!await HOOK.asmNkGet(o,k);
       const j=await HOOK.asmJob(o),T=j&&j.cloth&&j.cloth.trousers&&j.cloth.trousers.suit;r.job=!j?'none':T&&T.mm===211?'his cloth':T&&T.TW===1024?'made-up cloth':'?';
-      await HOOK.asmCmEnsure(o,true);const f=HOOK.asmFor(o);r.kept=!!f;r.held=!!renders[ck];r.tried=HOOK.asmTried.has(ck);
+      await HOOK.asmCmEnsure(o,true);const f=HOOK.asmFor(o);r.kept=!!f;r.held=!!HOOK.renders[ck];r.tried=HOOK.asmTried.has(ck);
       // the kept picture against one painted now from this job: the same pixels, or the kept one is another cloth's
       if(f&&j){const now=await HOOK.asmPhoto(o,true),A=(await HOOK.asmData(f.img,512)).data,B=(await HOOK.asmData(now,512)).data;let m=0;for(let q=0;q<A.length;q++)m=Math.max(m,Math.abs(A[q]-B[q]));r.keptDiff=m}
       return r},clothKey);
@@ -42,7 +42,7 @@ module.exports=async({ok,chromium,url})=>{
     mode='ok';await p.evaluate(()=>HOOK.asmRetryAt.clear());const c=await look();   // (the 30 s retry wait passed, the connection is back)
     ok(c.job==='his cloth'&&c.kept&&c.held&&c.sig===a.sig&&c.keptDiff<=2,`once the download works the look is painted in his own cloth and kept under the same key (${JSON.stringify(c)}; asked ${asked} times)`);
     // a device that can't have it (a 404, a tester): the made-up OCP cloth, as before
-    mode='404';await p.evaluate(async ck=>{delete renders[ck];HOOK.asmTried.delete(ck);HOOK.asmRetryAt.clear();HOOK.asmOut={}},clothKey);const d=await look();
+    mode='404';await p.evaluate(async ck=>{delete HOOK.renders[ck];HOOK.asmTried.delete(ck);HOOK.asmRetryAt.clear();HOOK.asmOut={}},clothKey);const d=await look();
     ok(d.job==='made-up cloth'&&d.kept&&d.tried&&d.keptDiff<=2,`a 404 for his cloth: painted in the made-up OCP cloth, as before (${JSON.stringify(d)})`);
     ok(!errs.length,`no page errors (${errs.join(' | ')})`);
   }finally{await browser.close()}};

@@ -59,7 +59,7 @@ const asmNkStitchMm=i=>{const K=ASM_NK_KNIT,m=String(i&&i.material||'').toLowerC
    top, the V's point tucked into the stitch below */
 function asmNkLeg(u,v){let h=0;for(const dv of [-1,0,1])for(const s of [-1,1]){const cx=.5+s*.24,cy=.5,dx=u-cx,dy=v+dv-cy,a=s*.38,
     x=dx*Math.cos(a)-dy*Math.sin(a),y=dx*Math.sin(a)+dy*Math.cos(a),r=(x/.19)**2+(y/.7)**2;if(r<1)h=Math.max(h,Math.pow(1-r,.6))}return h}
-/* (below the bridge: it reads asm-color.js's and asm-gl.js's tables at load, and throws without them) */
+/* (at load: it reads asm-keys.js's, asm-color.js's and asm-gl.js's tables, which it imports) */
 /* the kinds into the painter's tables, invisibly to its fingerprint (runs on the page and in the worker) */
 (()=>{const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
   for(const [k,v] of Object.entries(ASM_NK)){const B=ASM_CM_KINDS[v.base];
