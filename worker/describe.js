@@ -179,6 +179,7 @@ makes a corduroy, seersucker, velvet or linen what it is goes in material.
 ${MATERIAL_RULES}`;
 
 /* the tables, built once from the constants (never a date, an item or a description: the cached prefix must not change) */
+/** @type {{ colour: string, pattern: string, both?: string, colourBoth?: string }} */
 let descTablesMemo = null;
 function descTables() {
   if (descTablesMemo) return descTablesMemo;
@@ -394,6 +395,7 @@ function cleanLook(l) {
   return { layout: 'none', tr };
 }
 /* the listed pattern a name and description say (the app's guessPatBase words) */
+/** @type {[RegExp, string][]} */
 const PAT_WORDS = [[/prince of wales|glen ?plaid/i, 'glen-check'], [/plaid|tartan/i, 'check'], [/serge|gabardine|cavalry/i, 'twill'], [/pin ?stripe/i, 'pinstripe'],
   [/chalk ?stripe/i, 'chalk-stripe'], [/dots?\b|spots?\b/i, 'polka-dot'], [/neat|micro.?print/i, 'foulard'], [/hopsack|basket/i, 'nailhead']];
 function guessBase(words, list) {

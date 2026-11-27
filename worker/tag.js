@@ -79,6 +79,7 @@ const OPT_WORDS = { tee: 'tee (T-shirt: short or long sleeves, no collar)', polo
   qzip: 'qzip (quarter-zip pullover: a zip at the neck)', cardigan: 'cardigan (button-front knit cardigan)',
   chore: 'chore (chore coat or field jacket: an unlined cotton work jacket with patch pockets, no lapel roll like a blazer)',
   blouse: 'blouse (military uniform coat, e.g. the OCP/Scorpion camouflage coat: name and service tapes over angled chest pockets, shoulder pockets with hook-and-loop, a zip front under a flap; not a chore jacket)' };
+/** @type {[string[], string][]} the types and their pattern line */
 const OPT_PAT_LINES = [
   [['tee','polo','henley','sweatshirt','hoodie'], 'solid, stripe (horizontal stripes, e.g. a Breton), heather (a mottled, marled mix of light and dark fibers of one color), other'],
   [['sweater','qzip','cardigan'], 'solid, heather (a mottled, marled mix of light and dark fibers of one color), cable (raised cable-knit ropes), stripe (horizontal stripes), other'],
@@ -94,7 +95,7 @@ const PQ_PATTERNS = `  pocketsquare:
     polka-dot, paisley, stripe, check, foulard (small repeating motif), woven (a textured solid, e.g. a linen slub or a woven grid), other
 `;
 const promptFor = known => { known = knownOf(known); const types = OPT_TYPES.filter(t => known.includes(t)), pq = known.includes('pocketsquare'), sock = knowsSock(known);
-  const pats = OPT_PAT_LINES.map(([ts, l]) => [ts.filter(t => known.includes(t)), l]).filter(([ts]) => ts.length).map(([ts, l]) => `  ${ts.join(', ')}:\n    ${l}\n`).join('');
+  const pats = OPT_PAT_LINES.map(([ts, l]) => /** @type {[string[], string]} */ ([ts.filter(t => known.includes(t)), l])).filter(([ts]) => ts.length).map(([ts, l]) => `  ${ts.join(', ')}:\n    ${l}\n`).join('');
   const acc = accOpts(known);
   let kinds = acc ? PROMPT_KINDS.replace(ACC_METAL[0], ACC_METAL[1]) : PROMPT_KINDS, head = pq ? PROMPT_HEAD.replace('tieclip, watch', 'tieclip, ' + PQ_TYPE + 'watch') : PROMPT_HEAD, ps = PROMPT_PATS;
   if (sock) { kinds = kinds.replace(SOCK_KINDS[0], SOCK_KINDS[1]); head = head.replace(SOCK_JSON[0], SOCK_JSON[1]); ps = ps.replace(SOCK_SECOND[0], SOCK_SECOND[1]).replace(SOCK_THIRD[0], SOCK_THIRD[1]); }
@@ -478,6 +479,7 @@ function tagSchema(custom, single, free, freePat, known = []) { known = knownOf(
   const cols = [...COLOR_LIST, ...(knowsCombat(known) ? CB_COLS : []), ...custom.colors.map(c => c.key)], pats = [...tagPatterns(known), ...custom.patterns.map(p => p.key)];
   // (not on the picker's calls, free / freePat: their schema is near what the API compiles)
   const acc = accOpts(known) && !free && !freePat ? Object.fromEntries(Object.entries(ACC_ENUMS).map(([k, v]) => [k, orNull([...TAG_SCHEMA.properties[k].anyOf[0].enum, ...v])])) : {};
+  /** @type {typeof TAG_SCHEMA.properties & Record<string, object>} the schema's fields: TAG_SCHEMA's and those added below */
   const props = { ...TAG_SCHEMA.properties, ...acc, type: { type: 'string', enum: tagTypes(known) }, trouserKind: orNull(tagKinds(known)), ...(knowsCombat(known) ? { shoeStyle: orNull([...TAG_SCHEMA.properties.shoeStyle.anyOf[0].enum, 'combat']) } : {}),
     primaryColor: { type: 'string', enum: cols }, secondaryColor: { type: 'string', enum: [...cols, 'none'] },
     tertiaryColor: { type: 'string', enum: [...cols, 'none'] }, pattern: { type: 'string', enum: pats } };
