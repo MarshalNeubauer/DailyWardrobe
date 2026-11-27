@@ -221,7 +221,7 @@ function colourVerdicts(q){const m=q.meas;if(!m||!m.lab||!q.type)return [];const
     const near=nearestCols(q.type,lab,m.ref,{kL,skip:q.id,accent}),best=near[0];if(!best)continue;
     const dTag=Math.round(dE00(lab,colRef(tag,q.type,q.id,accent),kL)*10)/10,gap=Math.round((dTag-best.d)*10)/10;
     let agree=null;if(m.photo&&!part){const pn=nearestCols(q.type,m.photo.lab,false,{kL:2,skip:q.id})[0];agree=!!pn&&(pn.c===best.c||dE00(m.photo.lab,m.lab,3)<5)}
-    const cal=(accent?0:!!calibLab(tag,q.type,q.id)+!!calibLab(best.c,q.type,q.id));
+    const cal=(accent?0:Number(!!calibLab(tag,q.type,q.id))+Number(!!calibLab(best.c,q.type,q.id)));
     const conf=best.c===tag?0:measConf({gap,best:best.d,spread:part?null:m.spread,sharp:m.sharp,ref:m.ref,src:m.src,agree,part:!!part,cal});
     const ai=aiFor(q,f,tag,best.c),mode=verdictMode({same:best.c===tag,inList:colsFor(q.type,accent).includes(best.c),trusted:m.src==='closeup'||!!m.ref,ref:!!m.ref,conf,canFlag:gap>=MEAS_FLAG_GAP&&best.d<=FAR_DE},ai);
     out.push({f,from:tag,to:best.c,d:best.d,dTag,gap,conf,mode,part:part?part.role:null,lab,cal,...(ai?{ai:ai.c}:{})})}

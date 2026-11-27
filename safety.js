@@ -79,7 +79,7 @@ async function storageDown(e){
 <p>That happens in a private window, or when storage for websites is switched off or full. Open the app in a normal window, or allow this site to store data, then try again. Nothing in your wardrobe has been changed.</p>
 ${x.message?`<p class="nostore-why">What the browser said: ${esc(String(x.message))}</p>`:''}
 <button type="button" class="nostore-btn" data-act="nostoreAgainTap">Try again</button></div>`;
-  document.body.appendChild(el);for(const s of ['header','main','nav']){const n=document.querySelector(s);if(n)n.inert=true}
+  document.body.appendChild(el);for(const s of ['header','main','nav']){const n=/** @type {HTMLElement} */(document.querySelector(s));if(n)n.inert=true}
   const t=document.getElementById('toast');if(t)t.classList.remove('on','act');
   el.querySelector('button').focus();return true}
 

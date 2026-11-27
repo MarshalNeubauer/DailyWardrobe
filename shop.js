@@ -177,7 +177,7 @@ function renderShop(){
 function shopKeyName(k){const [t,g,cl]=String(k).split('|');return `${groupLabel(t,g)} ${CLASS_NAMES[cl]&&cl!=='plain'&&cl!=='smooth'?CLASS_NAMES[cl]+' ':''}${(TYPE_WORD[t]||[t])[1]||t}`}
 function shopToggle(key){shopShown[key]=!shopShown[key];renderShop()}
 /* from the top picks to the idea in its section, opened */
-function shopGo(key){shopShown[key]=true;renderShop();const el=[...document.querySelectorAll('#shop-sheet .shop-rec')].find(e=>e.dataset.key===key),sh=$('#shop-sheet');
+function shopGo(key){shopShown[key]=true;renderShop();const el=[.../** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('#shop-sheet .shop-rec'))].find(e=>e.dataset.key===key),sh=$('#shop-sheet');
   if(el&&sh){const top=el.getBoundingClientRect().top-sh.getBoundingClientRect().top+sh.scrollTop-64;sh.scrollTo({top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1200)}}
 /* bought: into the wardrobe as on its way, then check again */
 async function shopBought(key){

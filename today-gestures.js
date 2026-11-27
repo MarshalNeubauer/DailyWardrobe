@@ -63,7 +63,7 @@ const todayFree=()=>{if(!todayBusy()&&served('sync-later-run'))setTimeout(()=>{i
   el.addEventListener('click',e=>{if(noClick&&e.target.closest('#mpanel-in')){e.stopPropagation();e.preventDefault()}},true);
   // not while a layer is over Today (Settings, the picker, a sheet, a question: main is inert): the arrows stepped the day underneath and
   // the redraw closed Settings without saving and closed the picker (CR-4-08)
-  document.addEventListener('keydown',e=>{if(el.hidden||e.target.closest('input,select,textarea')||todayCovered())return;if(e.key==='ArrowRight')stepDay(1);if(e.key==='ArrowLeft')stepDay(-1)});
+  document.addEventListener('keydown',e=>{if(el.hidden||/** @type {Element} */(e.target).closest('input,select,textarea')||todayCovered())return;if(e.key==='ArrowRight')stepDay(1);if(e.key==='ArrowLeft')stepDay(-1)});
 })();
 
 /* ---- moving an outfit to another day in the month: long-press a day (like an icon on an iPhone home screen), drag it over
@@ -86,7 +86,7 @@ function moveRecs(src,dst,plan){const o=(plan||planFor())[src];if(!o)return null
   return recs}
 /* put a plan into the grid: a cell whose outfit changed gets its new stack, sliding in from the cell that showed it before */
 function showPlan(p){const grid=document.querySelector('#mpanel-in .mgrid:not(.mdow)');if(!grid)return;
-  const cells=[...grid.querySelectorAll('.mc[data-k]')],was=new Map(),ease='cubic-bezier(.2,.8,.2,1)',still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cells=[.../** @type {NodeListOf<HTMLElement>} */(grid.querySelectorAll('.mc[data-k]'))],was=new Map(),ease='cubic-bezier(.2,.8,.2,1)',still=matchMedia('(prefers-reduced-motion: reduce)').matches;
   for(const c of cells){const st=c.querySelector('.stack');if(c.dataset.sig&&st&&!was.has(c.dataset.sig))was.set(c.dataset.sig,st.getBoundingClientRect())}
   for(const c of cells){const o=p[c.dataset.k];if(!o||!hasOutfit(o))continue;const sg=mvSig(o);if(sg===c.dataset.sig)continue;
     const old=c.querySelector('.stack');if(!old)continue;const box=document.createElement('span');box.innerHTML=stackSVG(o);const nw=box.firstElementChild;
@@ -96,7 +96,7 @@ function showPlan(p){const grid=document.querySelector('#mpanel-in .mgrid:not(.m
     if(from)nw.animate([{transform:`translate(${from.left-to.left}px,${from.top-to.top}px)`,zIndex:3},{transform:'none',zIndex:3}],{duration:340,easing:ease});
     else nw.animate([{opacity:0,transform:'scale(.82)'},{opacity:1,transform:'none'}],{duration:260,easing:ease})}}
 (()=>{const root=$('#today');let hold=null,mv=null,noClick=false;
-  const cellAt=(x,y)=>{const el=document.elementFromPoint(x,y);return el&&el.closest('#mpanel-in .mc[data-mv]')};
+  const cellAt=(x,y)=>{const el=document.elementFromPoint(x,y);return el&&/** @type {HTMLElement} */(el.closest('#mpanel-in .mc[data-mv]'))};
   const start=(cell,x,y)=>{clearTimeout(hold&&hold.t);hold={cell,x,y,t:setTimeout(()=>lift(cell,x,y),MOVE_HOLD)}};
   const cancelHold=()=>{if(hold){clearTimeout(hold.t);hold=null}};
   function lift(cell,x,y){hold=null;if(!monthPanel)return;const r=cell.getBoundingClientRect(),g=document.createElement('div');

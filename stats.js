@@ -101,7 +101,7 @@ function buildStats(){
     if(n&&o.shoes&&plan[n-1][1].shoes&&o.shoes.id===plan[n-1][1].shoes.id&&keyDate(k).getTime()-keyDate(plan[n-1][0]).getTime()<1.5*864e5)b2b++});
   const looks=new Set(plan.map(([,o])=>comboKey(o))).size;
   // the score of what was really worn, week by week for the last TREND_WEEKS weeks (oldest first; a week with nothing worn has n 0)
-  const T=todayDate(),wk=d=>Math.floor((di(T)-di(d))/7),trend=Array.from({length:TREND_WEEKS},(_,n)=>({from:new Date(T.getFullYear(),T.getMonth(),T.getDate()-7*(TREND_WEEKS-n)+1),n:0,sum:0,hard:0}));
+  const T=todayDate(),wk=d=>Math.floor((di(T)-di(d))/7),trend=Array.from({length:TREND_WEEKS},(_,n)=>/** @type {{from: Date, n: number, sum: number, hard: number, label?: Date}} */({from:new Date(T.getFullYear(),T.getMonth(),T.getDate()-7*(TREND_WEEKS-n)+1),n:0,sum:0,hard:0}));
   for(const w of worn){const a=wk(w.d);if(a<0||a>=TREND_WEEKS)continue;const o=planMonth(w.d.getFullYear(),w.d.getMonth())[w.date];if(!o||!hasOutfit(o))continue;
     const r=rateOutfit(o),t=trend[TREND_WEEKS-1-a];t.n++;t.sum+=r.score;if(r.hard.length)t.hard++}
   // weeks that ended before the wardrobe existed are left out (six empty "–" weeks read as missing data, audit 2026-11-14)
