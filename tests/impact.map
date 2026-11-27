@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	056ebd2e0114fab68853
-# tested	eecdfdefe03241d9d426
+# tested	6b976880a465f267b470
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -6266,7 +6265,6 @@ daysoff.test.js	worker/records.js	<loaded>	getRender
 deploy.test.js	.github/workflows/deploy-worker.yml	<any>
 deploy.test.js	tests/impact.js	<any>
 deploy.test.js	tests/run.js	<any>
-deploy.test.js	tests/webkit.js	<any>
 deploy.test.js	tests/workersrc.js	<any>
 deploy.test.js	tools/ci-browser-deps.sh	<any>
 deploy.test.js	worker.js	<any>	<loaded>
@@ -9560,7 +9558,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	handleSync
+keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
@@ -10419,7 +10417,6 @@ mergeshared.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	dayUnflat	dayWins	f
 mergeshared.test.js	tests/appsrc.js	<any>
 mergeshared.test.js	tests/modscope.js	<any>
 mergeshared.test.js	tests/scriptlist.js	<any>
-mergeshared.test.js	tests/webkit.js	<any>
 mergeshared.test.js	worker/backup.js	<any>	<loaded>	mergeLite	now	sampleOnly
 modload.test.js	about.js	<any>	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 modload.test.js	account.js	<any>	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
@@ -11547,6 +11544,7 @@ multi.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@doc
 multi.test.js	tag-request.js	<loaded>	aiFields	customForTag	describeEstimate	keepTagImg	readEstimate	tagFixes	visTok
 multi.test.js	tagging.js	<loaded>	confTxt	tagNotes
 multi.test.js	tests/fixedplan.js	<any>
+multi.test.js	tests/webkit.js	<any>
 multi.test.js	theme.js	<loaded>	applyTheme
 multi.test.js	toast.js	<loaded>	toast	undoHere
 multi.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
