@@ -61,6 +61,18 @@ module.exports=async({ok,engines,url,settle})=>{
       for(const a of e.absent){n++;if(!reg.includes(`'${a.hook}':`)||!new RegExp(`\\b${a.part}\\b`).test(reg))bad.push(`${f} does not register ${a.part} for ${a.hook}`)}}
     const was=ab.flatMap(([,e])=>e.absent.map(a=>a.was)),still=page.filter(f=>was.some(w=>new RegExp(`\\b(?:serve|ask|askFor|served|need|needFn)\\('${w}'`).test(fs.readFileSync(path.join(ROOT,f),'utf8'))));
     ok(n===15&&!bad.length&&!still.length,`D1: the ${n} parts that were \`need\` on main are their files' hooks (${ab.map(([f])=>f).join(', ')}), and none is a socket any more${bad.length?': '+bad.join('; '):''}${still.length?'; still a socket in '+still.join(', '):''}`)}
+  // N5 (2026-11-28, D1): the sockets a required or today-no-picture file asked of an optional one with `need` are asked with ask/served
+  // (the contract's `asked.files`: each listed asker asks it, and no file needs it), and the `need` calls kept toward an optional file
+  // (`asked.kept`) are still needs of the file named; a socket of either list that changed its server or askers fails here
+  {const A=C.asked||{files:{},kept:{}},src=f=>fs.readFileSync(path.join(ROOT,f),'utf8'),bad=[];
+    const uses=(f,s,ops)=>new RegExp(`\\b(?:${ops})\\('${s}'`).test(src(f));
+    for(const [g,l] of Object.entries(A.files)){if(!C.files[g]||C.files[g].class!=='optional')bad.push(g+' is not an optional page script');
+      for(const {socket:s,by} of l){if(!new RegExp(`\\bserve\\('${s}'`).test(src(g)))bad.push(`${g} does not serve ${s}`);
+        for(const b of by)if(!uses(b,s,'ask|askFor|served'))bad.push(`${b} does not ask ${s}`);
+        const needers=page.filter(f=>uses(f,s,'need|needFn'));if(needers.length)bad.push(`${s} is still needed by ${needers.join(', ')}`)}}
+    for(const [g,k] of Object.entries(A.kept))for(const s of k.sockets){if(!new RegExp(`\\bserve\\('${s}'`).test(src(g)))bad.push(`${g} does not serve ${s} (kept)`);if(!uses(k.by,s,'need|needFn'))bad.push(`${k.by} no longer needs ${s} (kept): move it to asked.files`)}
+    const nA=Object.values(A.files).flat().length,nK=Object.values(A.kept).reduce((n,k)=>n+k.sockets.length,0);
+    ok(nA>0&&!bad.length,`N5: ${nA} sockets of optional files (${Object.keys(A.files).join(', ')}) are asked, not needed, by the required and today-no-picture files; ${nK} needs toward optional files are kept (${Object.keys(A.kept).join(', ')})${bad.length?': '+bad.join('; '):''}`)}
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{await run(eng,browser,{ok,url,settle});await survey(eng,browser,{ok,url,C,page,imports})}finally{await browser.close()}}
@@ -198,6 +210,25 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
     const pl=named(await partsCase('',{f:'start.js',body:fs.readFileSync(path.join(ROOT,'start.js'),'utf8').replace('function startChecks(){',"function startChecks(){need('plan-rules-check');")}));
     const bad=ab.filter(f=>res[f].length);
     ok(!bad.length&&pl.length>0,T+`D1: without ${ab.join(', ')} (each alone), Today, Settings and Insights show no error naming one of their absent parts${bad.length?': '+bad.map(f=>f+' '+res[f].join(' | ')).join('; '):''}; planted need('plan-rules-check') ${pl.length?'caught ('+pl[0]+')':'not caught'}`)}
+  /* N5 (2026-11-28, D1): each optional file of the contract's `asked.files` can't be loaded, and with Today drawn, Settings opened and
+     closed, Insights shown, Today shown again and the next day stepped to, no warning or page error says one of its sockets "is not
+     served" (main threw there: start-up's arrivals check, Today's week locks, every sheet closed without add-sheet.js). Planted: ui.js
+     needing nps-id again, without add-sheet.js, is caught */
+  {const A=(C.asked||{}).files||{},sockOf=f=>(A[f]||[]).map(x=>x.socket);
+    const askCase=async(f,swap,names)=>{const ctx=await ctxFor(state,f,swap),said=[];
+      try{const p=await ctx.newPage();p.on('pageerror',e=>said.push(String(e.message)));p.on('console',m=>{if(m.type()==='warning'||m.type()==='error')said.push(m.text())});
+        await p.goto(url,{waitUntil:'load'});for(let i=0;i<80&&!(await p.evaluate(()=>!!window.appReady||!!document.querySelector('#start-fail')));i++)await wait(250);await wait(1500);
+        await p.evaluate(()=>{const g=document.querySelector('header .hbtns button[data-act="setOpenTap"]');if(g)g.click()});await wait(700);
+        await p.evaluate(()=>{try{HOOK.closeSettings()}catch(e){}const s=document.querySelector('#n-stats');if(s)s.click()});await wait(1000);
+        await p.evaluate(()=>{const t=document.querySelector('#n-today');if(t)t.click()});await wait(700);
+        await p.evaluate(()=>{const n=document.querySelector('#today .nav.day button[data-n="1"]');if(n)n.click()});await wait(1500);
+        return [...new Set(said.filter(t=>names.some(s=>t.includes(s+' is not served'))||/^\(the case failed/.test(t)).map(t=>t.split('\n')[0].slice(0,90)))]}
+      catch(e){return ['(the case failed: '+e.message.split('\n')[0]+')']}finally{await ctx.close().catch(()=>{})}};
+    const fl=Object.keys(A),res={},q=[...fl];await Promise.all([0,1,2].map(async()=>{for(let f;(f=q.shift())!==undefined;)res[f]=await askCase(f,null,sockOf(f))}));
+    const uiSrc=fs.readFileSync(path.join(ROOT,'ui.js'),'utf8'),uiPlant=uiSrc.replace("&&ask('nps-id'))","&&need('nps-id'))");
+    const pl=uiPlant!==uiSrc&&fl.includes('add-sheet.js')?await askCase('add-sheet.js',{f:'ui.js',body:uiPlant},sockOf('add-sheet.js')):[];
+    const bad=fl.filter(f=>res[f].length);
+    ok(fl.length>0&&!bad.length&&pl.length>0,T+`N5: without ${fl.join(', ')} (each alone), Today, Settings, Insights and the next day show no error naming one of the sockets now asked of it${bad.length?': '+bad.map(f=>f+' '+res[f].join(' | ')).join('; '):''}; planted need('nps-id') in ui.js ${pl.length?'caught ('+pl[0]+')':'not caught'}`)}
   ok(!off.length,T+`each of the ${page.length} page scripts, when it can't be loaded (404), shows what the contract says (${Object.entries(tally).map(([k,v])=>k+' '+v).join(', ')}; painted only: ${page.filter(f=>expected(C,f,E)==='painted').map(f=>f+' '+got[f]).join(', ')})${off.length?': '+off.map(f=>`${f} shows ${got[f]}, the contract says ${expected(C,f,E)}`).join('; '):''}`);
 }
 async function run(eng,browser,{ok,url,settle}){

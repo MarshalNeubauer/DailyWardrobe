@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	413cb7c77558a94d1049
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	settings-category	swVersionOf
 a11y.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -36,7 +35,7 @@ a11y.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@cons
 a11y.test.js	cost.js	<loaded>	add-card-sections	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed	item-sheet-parts	settings-draw
 a11y.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 a11y.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-a11y.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+a11y.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 a11y.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 a11y.test.js	dress.js	<loaded>	add-card-sections	dressOn	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 a11y.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favOff	favPillSeg	favStrip	favWhy	item-sheet-parts	today-parts
@@ -330,7 +329,7 @@ accounts.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 accounts.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	add-card-sections	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwQRow	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 accounts.test.js	days.js	<loaded>	idsOf
 accounts.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-accounts.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+accounts.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 accounts.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 accounts.test.js	dress.js	<loaded>	add-card-sections	dressOn	dressSummary	migrateVests	newSuitVest	renderDressUI	settings-draw	settings-summary	start-checks
 accounts.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
@@ -443,7 +442,7 @@ acts.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 acts.test.js	cost.js	<any>	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 acts.test.js	days.js	<any>	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 acts.test.js	daysoff.js	<any>	<loaded>	addFormalDay	countryName	daysOffListen	isoDate	occAddTap	occClear	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-acts.test.js	detect.js	<any>	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+acts.test.js	detect.js	<any>	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 acts.test.js	draw.js	<any>	<loaded>	drawBelt	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 acts.test.js	dress.js	<any>	<loaded>	dressOn	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 acts.test.js	fav.js	<any>	<loaded>	favLastIcon	favWhy	today-parts
@@ -547,7 +546,7 @@ actsindex.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripech
 actsindex.test.js	cost.js	<any>	<loaded>	add-card-sections	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSum	cpwSym	cpwWashLine	cpwWashed	insights-cards	item-sheet-parts	settings-draw
 actsindex.test.js	days.js	<any>	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 actsindex.test.js	daysoff.js	<any>	<loaded>	addDayOff	addFormalDay	builtinHolidays	countryName	countryPick	dayOffAdd	dayOffAddTap	daysOffListen	fetchHolidays	holPast	holYears	isoDate	occAddTap	offNameCut	refreshHolidays	renderDaysOffUI	renderFormalUI	setHolidayCountry	settings-draw	settings-summary	start-jobs
-actsindex.test.js	detect.js	<any>	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+actsindex.test.js	detect.js	<any>	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 actsindex.test.js	draw.js	<any>	<loaded>	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	rainFabric	rainMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 actsindex.test.js	dress.js	<any>	<loaded>	add-card-sections	dressOn	migrateVests	newSuitVest	renderDressUI	settings-draw	settings-summary	start-checks
 actsindex.test.js	fav.js	<any>	<loaded>	@servefavward	favAny	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy	insights-cards	item-sheet-parts	today-parts
@@ -647,7 +646,7 @@ addcards.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 addcards.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	add-card-sections	card-saved	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwQRow	cpwRegion	cpwSaveFields	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 addcards.test.js	days.js	<loaded>
 addcards.test.js	daysoff.js	<loaded>	addDayOff	countryName	dayOffAdd	daysOffListen	isoDate	offNameCut	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-addcards.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	analyzeSett	binMedians	boxBlurWH	camoLook	detectQueued	detrend	foldBins	labGrid	lineModel	linePeaks	lookOf	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
+addcards.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	camoLook	detectQueued	detrend	foldBins	labGrid	lineModel	linePeaks	lookOf	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 addcards.test.js	draw.js	<loaded>	drawSock	drawWatchTraced	fabricDef	figBg	figFabric	figKind	figureSvg	itemThumb	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 addcards.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	dressOn	migrateVests	newSuitVest	renderDressUI	settings-draw	settings-summary	start-checks
 addcards.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	today-parts
@@ -748,7 +747,7 @@ additemacts.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 additemacts.test.js	cost.js	<loaded>	add-card-sections	card-saved	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSum	cpwSym	item-sheet-parts
 additemacts.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 additemacts.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-additemacts.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	analyzeStripes	boxBlur	camoLook	detectPattern	detectQueued	lookOf	lumGrid	ownSett	settToTag	sobel	texPat	tieWeave	usableSett
+additemacts.test.js	detect.js	<loaded>	@	analyzeStripes	boxBlur	camoLook	detectPattern	detectQueued	lookOf	lumGrid	ownSett	settToTag	sobel	texPat	tieWeave	usableSett
 additemacts.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	drawWatchTraced	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figScale	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 additemacts.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	legacyVest	migrateVests	newSuitVest	start-checks
 additemacts.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLookFrom	favMark	favOff	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -846,7 +845,7 @@ addsheet.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 addsheet.test.js	cost.js	<loaded>	add-card-sections	card-saved	cpwCur	cpwCurOk	cpwFmt	cpwQRow	cpwRegion	cpwSaveFields	cpwSym
 addsheet.test.js	days.js	<loaded>	idsOf
 addsheet.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-addsheet.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+addsheet.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 addsheet.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 addsheet.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	legacyVest	migrateVests	newSuitVest	start-checks
 addsheet.test.js	fav.js	<loaded>	@servefavward	favChip	favLookFrom	favMark	favPillSeg	favWhy	today-parts
@@ -945,7 +944,7 @@ advicefresh.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripe
 advicefresh.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym	item-sheet-parts
 advicefresh.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 advicefresh.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-advicefresh.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+advicefresh.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 advicefresh.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 advicefresh.test.js	dress.js	<loaded>	migrateVests	start-checks
 advicefresh.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -1141,7 +1140,7 @@ asmahead.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 asmahead.test.js	cost.js	<loaded>
 asmahead.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 asmahead.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-asmahead.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+asmahead.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 asmahead.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figStripeLift	figWay	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
 asmahead.test.js	dress.js	<loaded>	migrateVests	start-checks
 asmahead.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -1252,7 +1251,7 @@ asmaheadonce.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalk
 asmaheadonce.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 asmaheadonce.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 asmaheadonce.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-asmaheadonce.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+asmaheadonce.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 asmaheadonce.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG
 asmaheadonce.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 asmaheadonce.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -1559,7 +1558,7 @@ asmcolor.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 asmcolor.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 asmcolor.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks
 asmcolor.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-asmcolor.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+asmcolor.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 asmcolor.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figureSvg
 asmcolor.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 asmcolor.test.js	fav.js	<loaded>	favWhy	today-parts
@@ -2233,7 +2232,7 @@ asmserverpic.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalk
 asmserverpic.test.js	cost.js	<loaded>
 asmserverpic.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 asmserverpic.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-asmserverpic.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+asmserverpic.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 asmserverpic.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 asmserverpic.test.js	dress.js	<loaded>	migrateVests	start-checks
 asmserverpic.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -2740,7 +2739,7 @@ assemble.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 assemble.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 assemble.test.js	days.js	<loaded>
 assemble.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-assemble.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+assemble.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 assemble.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figFabric	figureSvg	itemThumb	leatherLayers	swatchSVG
 assemble.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 assemble.test.js	fav.js	<loaded>	today-parts
@@ -2851,7 +2850,7 @@ back.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@cons
 back.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSum	cpwSym	cpwWashLine	cpwWashed	insights-cards	item-sheet-parts	settings-draw
 back.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 back.test.js	daysoff.js	<loaded>	builtinHolidays	countryName	daysOffListen	fetchHolidays	holYears	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	setHolidayCountry	settings-draw	settings-summary	start-jobs
-back.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+back.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 back.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 back.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 back.test.js	fav.js	<loaded>	@servefavward	favAny	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy	insights-cards	item-sheet-parts	today-parts
@@ -2950,7 +2949,7 @@ backgesture-item.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripec
 backgesture-item.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym	item-sheet-parts
 backgesture-item.test.js	days.js	<loaded>	idsOf
 backgesture-item.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-backgesture-item.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	camoTag	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
+backgesture-item.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
 backgesture-item.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	camoTileUrl	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figStripeLift	figWay	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 backgesture-item.test.js	dress.js	<loaded>	migrateVests	start-checks
 backgesture-item.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favMark	favWhy	item-sheet-parts	today-parts
@@ -3052,7 +3051,7 @@ backgesture-over.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripec
 backgesture-over.test.js	cost.js	<loaded>	add-card-sections	cpwCur	cpwCurOk	cpwFmt	cpwQRow	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 backgesture-over.test.js	days.js	<loaded>	idsOf
 backgesture-over.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-backgesture-over.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
+backgesture-over.test.js	detect.js	<loaded>	@	camoLook	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
 backgesture-over.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figStripeLift	figWay	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 backgesture-over.test.js	dress.js	<loaded>	add-card-sections	dressOn	migrateVests	newSuitVest	renderDressUI	settings-draw	settings-summary	start-checks
 backgesture-over.test.js	fav.js	<loaded>	@servefavward	favChip	favMark	favWhy	today-parts
@@ -3155,7 +3154,7 @@ backgesture.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 backgesture.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSum	cpwSym	cpwWashLine	cpwWashed	insights-cards	item-sheet-parts	settings-draw
 backgesture.test.js	days.js	<loaded>	idsOf	lockIds
 backgesture.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-backgesture.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	camoTag	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
+backgesture.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	lookSett	ownSett	settToTag	texPat	tieWeave	usableSett
 backgesture.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	camoTileUrl	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 backgesture.test.js	dress.js	<loaded>	dressOn	migrateVests	newSuitVest	renderDressUI	settings-draw	settings-summary	start-checks
 backgesture.test.js	fav.js	<loaded>	@servefavward	favAny	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy	insights-cards	item-sheet-parts	today-parts
@@ -3256,7 +3255,7 @@ backup-storage.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripecha
 backup-storage.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 backup-storage.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 backup-storage.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-backup-storage.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+backup-storage.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 backup-storage.test.js	draw.js	<loaded>	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figScale	figStripeLift	figWay	figY	figureSvg	swatchSVG
 backup-storage.test.js	dress.js	<loaded>	dressOn	dressSynced	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks	synced
 backup-storage.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	today-parts
@@ -3879,6 +3878,7 @@ bus.test.js	sync.js	<any>
 bus.test.js	tag-request.js	<any>
 bus.test.js	tagging.js	<any>
 bus.test.js	tests/appsrc.js	<any>
+bus.test.js	tests/webkit.js	<any>
 bus.test.js	theme.js	<any>
 bus.test.js	toast.js	<any>
 bus.test.js	today-gestures.js	<any>
@@ -4443,7 +4443,7 @@ care.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@cons
 care.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed	item-sheet-parts	settings-draw
 care.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 care.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-care.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+care.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 care.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 care.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks	synced
 care.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -4756,7 +4756,7 @@ clock.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 clock.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush
 clock.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 clock.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-clock.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+clock.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 clock.test.js	draw.js	<loaded>	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	swatchSVG
 clock.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests	start-checks	synced
 clock.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	today-parts
@@ -5383,7 +5383,7 @@ colors.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 colors.test.js	cost.js	<loaded>	add-card-sections	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSum	cpwSym	item-sheet-parts
 colors.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 colors.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-colors.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+colors.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 colors.test.js	draw.js	<loaded>	camoTileUrl	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 colors.test.js	dress.js	<loaded>	add-card-sections	migrateVests	newSuitVest	start-checks
 colors.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLastIcon	favMark	favWhy	item-sheet-parts	today-parts
@@ -5796,7 +5796,7 @@ combatboot.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripec
 combatboot.test.js	cost.js	<loaded>	add-card-sections	cpwCur	cpwCurOk	cpwFmt	cpwQRow	cpwRegion	cpwSym
 combatboot.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 combatboot.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-combatboot.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+combatboot.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 combatboot.test.js	draw.js	<loaded>	camoTileUrl	cargoPockets	cbNap	drawBelt	drawCombatPair	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
 combatboot.test.js	dress.js	<loaded>	add-card-sections	migrateVests	start-checks
 combatboot.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favMark	favPillSeg	favStrip	favWhy	today-parts
@@ -6091,7 +6091,7 @@ costwear.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripecha
 costwear.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	add-card-sections	card-saved	cpwBlock	cpwBoughtPick	cpwClean	cpwCleanCost	cpwCleanYear	cpwCleanable	cpwCleanings	cpwCostDone	cpwCur	cpwCurOk	cpwCurPick	cpwEvery	cpwFlush	cpwFmt	cpwHint	cpwHow	cpwMoney	cpwOf	cpwOpenItem	cpwOut	cpwParse	cpwPriceDone	cpwPriceSoon	cpwPriceType	cpwPriced	cpwQRow	cpwQSet	cpwRecorded	cpwRedraw	cpwRegion	cpwRowTap	cpwSaveFields	cpwSetBought	cpwSetCost	cpwSetCurrency	cpwSetPrice	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSum	cpwSym	cpwText	cpwTimes	cpwWashLine	cpwWashed	cpwWears	insights-cards	item-sheet-parts	settings-draw
 costwear.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 costwear.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-costwear.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+costwear.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 costwear.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 costwear.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	dressOn	dressSynced	legacyVest	migrateVests	newSuitVest	renderDressUI	settings-draw	settings-summary	start-checks	synced
 costwear.test.js	fav.js	<loaded>	@servefavward	favAny	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favWhy	insights-cards	item-sheet-parts	today-parts
@@ -6196,7 +6196,7 @@ daysoff.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 daysoff.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 daysoff.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 daysoff.test.js	daysoff.js	<loaded>	addDayOff	countryName	countryPick	dayOffAdd	dayOffAddTap	daysOffListen	fetchHolidays	holPast	holYears	isoDate	nagerKeep	offNameCut	refreshHolidays	removeDaysOff	renderDaysOffUI	renderFormalUI	setHolidayCountry	settings-draw	settings-summary	start-jobs	toggleHoliday
-daysoff.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+daysoff.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 daysoff.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 daysoff.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 daysoff.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -6434,7 +6434,7 @@ drawnonly.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 drawnonly.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 drawnonly.test.js	days.js	<loaded>	idsOf
 drawnonly.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-drawnonly.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+drawnonly.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 drawnonly.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 drawnonly.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks	synced
 drawnonly.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
@@ -6551,7 +6551,7 @@ dress.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 dress.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	add-card-sections	card-saved	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed	item-sheet-parts	settings-draw
 dress.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 dress.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-dress.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+dress.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 dress.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 dress.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	dressOn	dressSummary	dressSwTap	dressSynced	dressWhyUnused	get vestMigrating	legacyVest	migrateVests	newSuitVest	renderDressUI	setDress	settings-draw	settings-summary	start-checks	synced
 dress.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -7055,7 +7055,7 @@ favorites.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 favorites.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwStats	cpwStatsCard	cpwSum	cpwSym	insights-cards	item-sheet-parts
 favorites.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 favorites.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-favorites.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+favorites.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 favorites.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 favorites.test.js	dress.js	<loaded>	migrateVests	start-checks
 favorites.test.js	fav.js	<loaded>	@servefavundoms	@servefavward	favAny	favChip	favChipTap	favData	favItemRow	favItemTap	favLastIcon	favLastWorn	favLookFrom	favLookName	favLookTap	favMark	favPieces	favPillSeg	favSave	favStatsCard	favStrip	favToggleItem	favToggleLook	favWearTap	favWhy	insights-cards	item-sheet-parts	today-parts
@@ -7153,7 +7153,7 @@ favplan.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 favplan.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush
 favplan.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 favplan.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-favplan.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+favplan.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 favplan.test.js	draw.js	<loaded>	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	swatchSVG
 favplan.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests	start-checks	synced
 favplan.test.js	fav.js	<loaded>	favData	favSave	today-parts
@@ -7256,7 +7256,7 @@ fieldmerge.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripec
 fieldmerge.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym	item-sheet-parts
 fieldmerge.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 fieldmerge.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-fieldmerge.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+fieldmerge.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 fieldmerge.test.js	draw.js	<loaded>	drawBelt	fabricDef	figBg	figFabric	figKind	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	swatchSVG	tieFabric	tieMarks
 fieldmerge.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests	start-checks	synced
 fieldmerge.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLookFrom	favMark	favPillSeg	item-sheet-parts	today-parts
@@ -7362,7 +7362,7 @@ figure.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 figure.test.js	cost.js	<loaded>
 figure.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 figure.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-figure.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+figure.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 figure.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
 figure.test.js	dress.js	<loaded>	migrateVests	start-checks
 figure.test.js	fav.js	<loaded>	favLastIcon	favWhy	today-parts
@@ -7462,7 +7462,7 @@ folds.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@con
 folds.test.js	cost.js	<loaded>
 folds.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 folds.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-folds.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+folds.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 folds.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 folds.test.js	dress.js	<loaded>	migrateVests	start-checks
 folds.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favMark	favPillSeg	favStrip	favWhy	today-parts
@@ -8175,7 +8175,7 @@ handpick.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripecha
 handpick.test.js	cost.js	<loaded>
 handpick.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 handpick.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-handpick.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+handpick.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 handpick.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	cargoPockets	casMir	casualMarks	casualTile	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 handpick.test.js	dress.js	<loaded>	migrateVests	start-checks
 handpick.test.js	fav.js	<loaded>	@servefavward	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favStrip	favWhy	today-parts
@@ -8584,7 +8584,7 @@ history.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 history.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush
 history.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 history.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-history.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+history.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 history.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
 history.test.js	dress.js	<loaded>	migrateVests	start-checks
 history.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favMark	favPillSeg	favStrip	favWhy	today-parts
@@ -9089,7 +9089,7 @@ itempics.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 itempics.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed	item-sheet-parts	settings-draw
 itempics.test.js	days.js	<loaded>	clearLocks	idsOf	notAhead	releaseLocks	saveDay
 itempics.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-itempics.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+itempics.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 itempics.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG	tieFabric	tieMarks
 itempics.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 itempics.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -9294,7 +9294,7 @@ itemsheet.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 itemsheet.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym	item-sheet-parts
 itemsheet.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 itemsheet.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-itemsheet.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+itemsheet.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 itemsheet.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 itemsheet.test.js	dress.js	<loaded>	legacyVest	migrateVests	start-checks
 itemsheet.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -9490,7 +9490,7 @@ keptphotos.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 keptphotos.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 keptphotos.test.js	days.js	<loaded>	idsOf
 keptphotos.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-keptphotos.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+keptphotos.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 keptphotos.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 keptphotos.test.js	dress.js	<loaded>	dressOn	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 keptphotos.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -9596,7 +9596,7 @@ kit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@const
 kit.test.js	cost.js	<loaded>	add-card-sections	card-saved	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSum	cpwSym	item-sheet-parts
 kit.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 kit.test.js	daysoff.js	<loaded>	builtinHolidays	countryName	daysOffListen	fetchHolidays	holPast	refreshHolidays	renderDaysOffUI	setHolidayCountry	start-jobs
-kit.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+kit.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 kit.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 kit.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	legacyVest	migrateVests	newSuitVest	start-checks
 kit.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -9694,7 +9694,7 @@ kitsetup-taps.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechal
 kitsetup-taps.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed	item-sheet-parts	settings-draw
 kitsetup-taps.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 kitsetup-taps.test.js	daysoff.js	<loaded>	builtinHolidays	countryName	daysOffListen	fetchHolidays	holYears	isoDate	nagerKeep	refreshHolidays	renderDaysOffUI	renderFormalUI	setHolidayCountry	settings-draw	settings-summary	start-jobs
-kitsetup-taps.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+kitsetup-taps.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 kitsetup-taps.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 kitsetup-taps.test.js	dress.js	<loaded>	dressNewItem	dressOn	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 kitsetup-taps.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -10009,7 +10009,7 @@ mannequin.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripech
 mannequin.test.js	cost.js	<loaded>
 mannequin.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 mannequin.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-mannequin.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+mannequin.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 mannequin.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	set figBgMemo	sockPat	swatchSVG
 mannequin.test.js	dress.js	<loaded>	migrateVests	start-checks
 mannequin.test.js	fav.js	<loaded>	favLastIcon	favWhy	today-parts
@@ -10454,7 +10454,7 @@ modload.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechal
 modload.test.js	cost.js	<any>	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwPriced	cpwRegion	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSym	cpwWashLine	cpwWashed	insights-cards	settings-draw
 modload.test.js	days.js	<any>	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 modload.test.js	daysoff.js	<any>	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-modload.test.js	detect.js	<any>	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+modload.test.js	detect.js	<any>	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 modload.test.js	draw.js	<any>	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pocketDef	pocketEdge	sockPat	swatchSVG
 modload.test.js	dress.js	<any>	<loaded>	dressOn	dressSynced	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks	synced
 modload.test.js	fav.js	<any>	<loaded>	favAny	favLookFrom	favPillSeg	favStatsCard	favWhy	insights-cards	today-parts
@@ -11071,7 +11071,7 @@ month.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@con
 month.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 month.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 month.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-month.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+month.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 month.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 month.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 month.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -11175,7 +11175,7 @@ motif.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@con
 motif.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	add-card-sections	card-saved	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwQRow	cpwRegion	cpwSaveFields	cpwSym
 motif.test.js	days.js	<loaded>
 motif.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-motif.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+motif.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 motif.test.js	draw.js	<loaded>	fabricDef	figFabric	itemThumb	swatchSVG
 motif.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	migrateVests	start-checks
 motif.test.js	fav.js	<loaded>	@servefavward	favChip	favMark	today-parts
@@ -11294,7 +11294,7 @@ moveoutfit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 moveoutfit.test.js	cost.js	<loaded>
 moveoutfit.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 moveoutfit.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-moveoutfit.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+moveoutfit.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 moveoutfit.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 moveoutfit.test.js	dress.js	<loaded>	migrateVests	start-checks
 moveoutfit.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
@@ -11392,7 +11392,7 @@ mqcloth.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 mqcloth.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 mqcloth.test.js	days.js	<loaded>	idsOf	saveDay
 mqcloth.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-mqcloth.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+mqcloth.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 mqcloth.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figCuSpec	figFabric	figGam	figHbTile	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figNorm	figScale	figStripeLift	figTileUrl	figWay	figWrapBlur	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 mqcloth.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 mqcloth.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -11595,7 +11595,7 @@ navfit.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 navfit.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush
 navfit.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 navfit.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-navfit.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+navfit.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 navfit.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
 navfit.test.js	dress.js	<loaded>	migrateVests	start-checks
 navfit.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -11695,7 +11695,7 @@ newuser.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechal
 newuser.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 newuser.test.js	days.js	<loaded>	idsOf
 newuser.test.js	daysoff.js	<loaded>	builtinHolidays	countryName	daysOffListen	fetchHolidays	holPast	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	setHolidayCountry	settings-draw	settings-summary	start-jobs
-newuser.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+newuser.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 newuser.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 newuser.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 newuser.test.js	fav.js	<loaded>	favWhy	today-parts
@@ -11793,7 +11793,7 @@ occasions.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripech
 occasions.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 occasions.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	notAhead	releaseLocks	saveDay
 occasions.test.js	daysoff.js	<loaded>	addFormalDay	countryName	daysOffListen	isoDate	occAddTap	occClear	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-occasions.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+occasions.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 occasions.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
 occasions.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 occasions.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -11897,7 +11897,7 @@ ocpblouse.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripech
 ocpblouse.test.js	cost.js	<loaded>
 ocpblouse.test.js	days.js	<loaded>	idsOf	notAhead	saveDay
 ocpblouse.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-ocpblouse.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	camoTag	lookOf	ocpSett	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+ocpblouse.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ocpSett	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 ocpblouse.test.js	draw.js	<loaded>	blouseMarks	cargoPockets	casMir	casualMarks	casualTile	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	ocpTileUrl	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
 ocpblouse.test.js	dress.js	<loaded>	migrateVests	start-checks
 ocpblouse.test.js	fav.js	<loaded>	favLookFrom	favMark	favPillSeg	favStrip	favWhy	today-parts
@@ -12041,7 +12041,7 @@ ocpcloth.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 ocpcloth.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush
 ocpcloth.test.js	days.js	<loaded>
 ocpcloth.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-ocpcloth.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	camoTag	lookOf	ocpSett	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+ocpcloth.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ocpSett	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 ocpcloth.test.js	draw.js	<loaded>
 ocpcloth.test.js	dress.js	<loaded>	migrateVests	start-checks
 ocpcloth.test.js	fav.js	<loaded>	today-parts
@@ -12455,7 +12455,7 @@ ownnames.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 ownnames.test.js	cost.js	<loaded>	add-card-sections	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed	item-sheet-parts	settings-draw
 ownnames.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 ownnames.test.js	daysoff.js	<loaded>	addDayOff	countryName	dayOffAdd	daysOffListen	isoDate	offNameCut	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-ownnames.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+ownnames.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 ownnames.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawWatchTraced	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 ownnames.test.js	dress.js	<loaded>	add-card-sections	dressOn	migrateVests	newSuitVest	renderDressUI	settings-draw	settings-summary	start-checks
 ownnames.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -12556,7 +12556,7 @@ pack.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 pack.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 pack.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 pack.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-pack.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+pack.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 pack.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 pack.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 pack.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
@@ -12654,7 +12654,7 @@ packcare-taps.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstri
 packcare-taps.test.js	cost.js	<loaded>	add-card-sections	cpwBlock	cpwBoughtPick	cpwCardField	cpwCareTap	cpwClean	cpwCleanCost	cpwCleanYear	cpwCleanable	cpwCleanings	cpwCostDone	cpwCur	cpwCurOk	cpwCurPick	cpwEvery	cpwFlush	cpwFmt	cpwHint	cpwHow	cpwMoney	cpwOf	cpwOpenItem	cpwOut	cpwParse	cpwPriceDone	cpwPriceSoon	cpwPriceType	cpwPriced	cpwQRow	cpwQSet	cpwRecorded	cpwRedraw	cpwRegion	cpwRowTap	cpwSetBought	cpwSetCost	cpwSetCurrency	cpwSetPrice	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSum	cpwSym	cpwText	cpwTimes	cpwWashLine	cpwWashed	cpwWears	insights-cards	item-sheet-parts	settings-draw
 packcare-taps.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 packcare-taps.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-packcare-taps.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+packcare-taps.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 packcare-taps.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 packcare-taps.test.js	dress.js	<loaded>	add-card-sections	dressNewItem	dressOn	legacyVest	migrateVests	newSuitVest	renderDressUI	settings-draw	settings-summary	start-checks
 packcare-taps.test.js	fav.js	<loaded>	@servefavward	favAny	favChip	favItemRow	favLookFrom	favMark	favOff	favPillSeg	favStatsCard	favWhy	insights-cards	item-sheet-parts	today-parts
@@ -13247,7 +13247,7 @@ picker.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalk
 picker.test.js	cost.js	<loaded>
 picker.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 picker.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-picker.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+picker.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 picker.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
 picker.test.js	dress.js	<loaded>	migrateVests	start-checks
 picker.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favMark	favPillSeg	favStrip	favWhy	today-parts
@@ -13442,7 +13442,7 @@ pieces.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 pieces.test.js	cost.js	<loaded>
 pieces.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 pieces.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-pieces.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+pieces.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 pieces.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 pieces.test.js	dress.js	<loaded>	migrateVests	start-checks
 pieces.test.js	fav.js	<loaded>	@servefavward	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favStrip	favWhy	today-parts
@@ -13639,7 +13639,7 @@ planner-repeats.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinst
 planner-repeats.test.js	cost.js	<loaded>	@document.addEventListenervisibilitychange	card-saved	cpwSaveFields
 planner-repeats.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 planner-repeats.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-planner-repeats.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+planner-repeats.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 planner-repeats.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 planner-repeats.test.js	dress.js	<loaded>	card-saved	dressNewItem	legacyVest	migrateVests	start-checks
 planner-repeats.test.js	fav.js	<loaded>	@servefavward	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	today-parts
@@ -13737,7 +13737,7 @@ planner-rules.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstri
 planner-rules.test.js	cost.js	<loaded>	add-card-sections	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSym	cpwWashLine	cpwWashed	insights-cards	settings-draw
 planner-rules.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	notAhead	releaseLocks	saveDay
 planner-rules.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-planner-rules.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+planner-rules.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 planner-rules.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 planner-rules.test.js	dress.js	<loaded>	add-card-sections	dressOn	dressSwTap	migrateVests	newSuitVest	renderDressUI	setDress	settings-draw	settings-summary	start-checks
 planner-rules.test.js	fav.js	<loaded>	@servefavward	favAny	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy	insights-cards	today-parts
@@ -13835,7 +13835,7 @@ planreview.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripec
 planreview.test.js	cost.js	<loaded>
 planreview.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 planreview.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-planreview.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	usableSett
+planreview.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	usableSett
 planreview.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figStripeLift	figWay	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 planreview.test.js	dress.js	<loaded>	migrateVests	start-checks
 planreview.test.js	fav.js	<loaded>	favLookFrom	favMark	favPillSeg	favStrip	favWhy	today-parts
@@ -13933,7 +13933,7 @@ pocketsquare.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstrip
 pocketsquare.test.js	cost.js	<loaded>	add-card-sections	cpwCur	cpwCurOk	cpwFmt	cpwQRow	cpwRegion	cpwSym
 pocketsquare.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 pocketsquare.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-pocketsquare.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+pocketsquare.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 pocketsquare.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pocketDef	pocketEdge	pocketMarks	sockPat	suitFabric	suitMarks	swatchSVG
 pocketsquare.test.js	dress.js	<loaded>	add-card-sections	migrateVests	start-checks
 pocketsquare.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favMark	favPillSeg	favStrip	favWhy	today-parts
@@ -14030,7 +14030,7 @@ records.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 records.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym	item-sheet-parts
 records.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 records.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-records.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+records.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 records.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 records.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests	start-checks	synced
 records.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -14136,7 +14136,7 @@ remind.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 remind.test.js	cost.js	<loaded>	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 remind.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 remind.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-remind.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+remind.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 remind.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 remind.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 remind.test.js	fav.js	<loaded>	favLastIcon	favMark	favStrip	favWhy	today-parts
@@ -14242,7 +14242,7 @@ restacts.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 restacts.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	add-card-sections	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed	item-sheet-parts	settings-draw
 restacts.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 restacts.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-restacts.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+restacts.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 restacts.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figScale	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 restacts.test.js	dress.js	<loaded>	add-card-sections	dressOn	migrateVests	newSuitVest	renderDressUI	settings-draw	settings-summary	start-checks
 restacts.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favMark	favWhy	item-sheet-parts	today-parts
@@ -14341,7 +14341,7 @@ rollback.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripecha
 rollback.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 rollback.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 rollback.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	offNameCut	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-rollback.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+rollback.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 rollback.test.js	draw.js	<loaded>	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	swatchSVG
 rollback.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks	synced
 rollback.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	today-parts
@@ -14446,7 +14446,7 @@ rotation-pause.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripecha
 rotation-pause.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym	item-sheet-parts
 rotation-pause.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 rotation-pause.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-rotation-pause.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+rotation-pause.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 rotation-pause.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 rotation-pause.test.js	dress.js	<loaded>	migrateVests	start-checks
 rotation-pause.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -15135,7 +15135,7 @@ run.js: renders the outfit without errors	core.js	$	<any>	<loaded>	@PATS_BY{cons
 run.js: renders the outfit without errors	cost.js	<loaded>
 run.js: renders the outfit without errors	days.js	<loaded>	idsOf	releaseLocks	saveDay
 run.js: renders the outfit without errors	daysoff.js	<loaded>	refreshHolidays	start-jobs
-run.js: renders the outfit without errors	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	usableSett
+run.js: renders the outfit without errors	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	usableSett
 run.js: renders the outfit without errors	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figStripeLift	figWay	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 run.js: renders the outfit without errors	dress.js	<loaded>	migrateVests	start-checks
 run.js: renders the outfit without errors	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
@@ -15232,7 +15232,7 @@ run.js: swipe edge cases and month crossing	core.js	$	<loaded>	@PATS_BY{constsui
 run.js: swipe edge cases and month crossing	cost.js	<loaded>
 run.js: swipe edge cases and month crossing	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 run.js: swipe edge cases and month crossing	daysoff.js	<loaded>	refreshHolidays	start-jobs
-run.js: swipe edge cases and month crossing	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+run.js: swipe edge cases and month crossing	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 run.js: swipe edge cases and month crossing	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
 run.js: swipe edge cases and month crossing	dress.js	<loaded>	migrateVests	start-checks
 run.js: swipe edge cases and month crossing	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
@@ -15330,7 +15330,7 @@ run.js: swipe moves only the outfit, across viewports	core.js	$	<loaded>	@PATS_B
 run.js: swipe moves only the outfit, across viewports	cost.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 run.js: swipe moves only the outfit, across viewports	daysoff.js	<loaded>	refreshHolidays	start-jobs
-run.js: swipe moves only the outfit, across viewports	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+run.js: swipe moves only the outfit, across viewports	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 run.js: swipe moves only the outfit, across viewports	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 run.js: swipe moves only the outfit, across viewports	dress.js	<loaded>	migrateVests	start-checks
 run.js: swipe moves only the outfit, across viewports	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
@@ -15876,7 +15876,7 @@ safety.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@co
 safety.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	add-card-sections	card-saved	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwQRow	cpwRegion	cpwSaveFields	cpwSym
 safety.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 safety.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-safety.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+safety.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 safety.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	trouserMarks
 safety.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	legacyVest	migrateVests	newSuitVest	start-checks
 safety.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
@@ -16078,7 +16078,7 @@ sample.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalk
 sample.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym	item-sheet-parts
 sample.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 sample.test.js	daysoff.js	<loaded>	builtinHolidays	countryName	daysOffListen	fetchHolidays	holPast	refreshHolidays	renderDaysOffUI	setHolidayCountry	start-jobs
-sample.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+sample.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 sample.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 sample.test.js	dress.js	<loaded>	dressNewItem	dressSynced	legacyVest	migrateVests	start-checks	synced
 sample.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -16198,7 +16198,7 @@ scoreanim.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripech
 scoreanim.test.js	cost.js	<loaded>
 scoreanim.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 scoreanim.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-scoreanim.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+scoreanim.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 scoreanim.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 scoreanim.test.js	dress.js	<loaded>	migrateVests	start-checks
 scoreanim.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -16296,7 +16296,7 @@ scoredials.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripec
 scoredials.test.js	cost.js	<loaded>
 scoredials.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 scoredials.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-scoredials.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+scoredials.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 scoredials.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG
 scoredials.test.js	dress.js	<loaded>	migrateVests	start-checks
 scoredials.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -16395,7 +16395,7 @@ scorefix.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripecha
 scorefix.test.js	cost.js	<loaded>	cpwOf	cpwPriced	cpwStats	cpwStatsCard	insights-cards
 scorefix.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 scorefix.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-scorefix.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+scorefix.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 scorefix.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
 scorefix.test.js	dress.js	<loaded>	migrateVests	start-checks
 scorefix.test.js	fav.js	<loaded>	favAny	favStatsCard	favWhy	insights-cards	today-parts
@@ -16492,7 +16492,7 @@ server-limits.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechal
 server-limits.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 server-limits.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 server-limits.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-server-limits.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	usableSett
+server-limits.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	usableSett
 server-limits.test.js	draw.js	<loaded>
 server-limits.test.js	dress.js	<loaded>	dressOn	dressSynced	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks	synced
 server-limits.test.js	fav.js	<loaded>	today-parts
@@ -16621,7 +16621,7 @@ sett.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@cons
 sett.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	add-card-sections	card-saved	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSum	cpwSym	item-sheet-parts
 sett.test.js	days.js	<loaded>
 sett.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-sett.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	analyzeSett	binMedians	boxBlurWH	camoLook	corrAt	detrend	foldBins	labGrid	lineModel	linePeaks	lookOf	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
+sett.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	camoLook	corrAt	detrend	foldBins	labGrid	lineModel	linePeaks	lookOf	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settSig	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 sett.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
 sett.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	migrateVests	start-checks
 sett.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favMark	item-sheet-parts	today-parts
@@ -16824,7 +16824,7 @@ settingsin.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 settingsin.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwPriced	cpwRegion	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSym	cpwWashLine	cpwWashed	insights-cards	settings-draw
 settingsin.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 settingsin.test.js	daysoff.js	<loaded>	countryName	countryPick	daysOffListen	fetchHolidays	holPast	holYears	isoDate	nagerKeep	offNameCut	refreshHolidays	removeDaysOff	renderDaysOffUI	renderFormalUI	setHolidayCountry	settings-draw	settings-summary	start-jobs	toggleHoliday
-settingsin.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+settingsin.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 settingsin.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG
 settingsin.test.js	dress.js	<loaded>	dressOn	dressSynced	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks	synced
 settingsin.test.js	fav.js	<loaded>	favAny	favLookFrom	favPillSeg	favStatsCard	favWhy	insights-cards	today-parts
@@ -17027,7 +17027,7 @@ settingsui.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 settingsui.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 settingsui.test.js	days.js	<loaded>	idsOf	saveDay
 settingsui.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-settingsui.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+settingsui.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 settingsui.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 settingsui.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 settingsui.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
@@ -17125,7 +17125,7 @@ setup.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@con
 setup.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 setup.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 setup.test.js	daysoff.js	<loaded>	addDayOff	builtinHolidays	countryName	countryPick	dayOffAdd	dayOffAddTap	daysOffListen	fetchHolidays	get holidayMsg	holPast	holYears	isoDate	nagerKeep	offNameCut	refreshHolidays	renderDaysOffUI	renderFormalUI	setHolidayCountry	settings-draw	settings-summary	start-jobs
-setup.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+setup.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 setup.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG	trouserMarks
 setup.test.js	dress.js	<loaded>	dressNewItem	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks	synced
 setup.test.js	fav.js	<loaded>	@servefavward	favChip	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -17543,7 +17543,7 @@ sharedmasters.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechal
 sharedmasters.test.js	cost.js	<loaded>
 sharedmasters.test.js	days.js	<loaded>
 sharedmasters.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-sharedmasters.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+sharedmasters.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 sharedmasters.test.js	draw.js	<loaded>
 sharedmasters.test.js	dress.js	<loaded>	migrateVests	start-checks
 sharedmasters.test.js	fav.js	<loaded>	today-parts
@@ -17751,7 +17751,7 @@ shellfix.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 shellfix.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 shellfix.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 shellfix.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-shellfix.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+shellfix.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 shellfix.test.js	draw.js	<loaded>	drawShoePair	drawShoeSide	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 shellfix.test.js	dress.js	<loaded>	dressOn	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 shellfix.test.js	fav.js	<loaded>	@servefavward	favChip	favLookFrom	favMark	favPillSeg	favWhy	today-parts
@@ -17849,7 +17849,7 @@ shirtweave.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 shirtweave.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	add-card-sections	card-saved	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwQRow	cpwRegion	cpwSaveFields	cpwSym
 shirtweave.test.js	days.js	<loaded>
 shirtweave.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-shirtweave.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+shirtweave.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 shirtweave.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figureSvg	itemThumb	swatchSVG	texTileUrl	texTones
 shirtweave.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	migrateVests	start-checks
 shirtweave.test.js	fav.js	<loaded>	@servefavward	favChip	favLookFrom	favMark	favPillSeg	today-parts
@@ -17955,7 +17955,7 @@ shop.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 shop.test.js	cost.js	<loaded>	cpwOf	cpwPriced	cpwStats	cpwStatsCard	insights-cards
 shop.test.js	days.js	<loaded>	idsOf	saveDay
 shop.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-shop.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+shop.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 shop.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	rainFabric	rainMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 shop.test.js	dress.js	<loaded>	dressNewItem	legacyVest	migrateVests	start-checks
 shop.test.js	fav.js	<loaded>	@servefavward	favAny	favChip	favMark	favStatsCard	favWhy	insights-cards	today-parts
@@ -18053,7 +18053,7 @@ shopstay.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 shopstay.test.js	cost.js	<loaded>	cpwOf	cpwPriced	cpwStats	cpwStatsCard	insights-cards
 shopstay.test.js	days.js	<loaded>
 shopstay.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-shopstay.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	usableSett
+shopstay.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	usableSett
 shopstay.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
 shopstay.test.js	dress.js	<loaded>	migrateVests	start-checks
 shopstay.test.js	fav.js	<loaded>	favAny	favStatsCard	insights-cards	today-parts
@@ -18151,7 +18151,7 @@ shopswipe.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 shopswipe.test.js	cost.js	<loaded>	cpwOf	cpwPriced	cpwStats	cpwStatsCard	insights-cards
 shopswipe.test.js	days.js	<loaded>
 shopswipe.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-shopswipe.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	usableSett
+shopswipe.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	usableSett
 shopswipe.test.js	draw.js	<loaded>	fabricDef	itemThumb	swatchSVG
 shopswipe.test.js	dress.js	<loaded>	migrateVests	start-checks
 shopswipe.test.js	fav.js	<loaded>	favAny	favStatsCard	insights-cards	today-parts
@@ -18566,7 +18566,7 @@ speed.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 speed.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush
 speed.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 speed.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-speed.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+speed.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 speed.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 speed.test.js	dress.js	<loaded>	legacyVest	migrateVests	start-checks
 speed.test.js	fav.js	<loaded>	@servefavward	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	today-parts
@@ -18664,7 +18664,7 @@ staledevice.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 staledevice.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush
 staledevice.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 staledevice.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-staledevice.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+staledevice.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 staledevice.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 staledevice.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests	start-checks	synced
 staledevice.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
@@ -18769,7 +18769,7 @@ stats.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 stats.test.js	cost.js	<loaded>	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwPriced	cpwRegion	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSym	cpwWashLine	cpwWashed	insights-cards	settings-draw
 stats.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 stats.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-stats.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+stats.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 stats.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG
 stats.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 stats.test.js	fav.js	<loaded>	favAny	favLastIcon	favLookFrom	favPillSeg	favStatsCard	favWhy	insights-cards	today-parts
@@ -18870,7 +18870,7 @@ stylea11y.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripech
 stylea11y.test.js	cost.js	<any>	<loaded>	add-card-sections	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSum	cpwSym	cpwWashLine	cpwWashed	insights-cards	item-sheet-parts	settings-draw
 stylea11y.test.js	days.js	<any>	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 stylea11y.test.js	daysoff.js	<any>	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-stylea11y.test.js	detect.js	<any>	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+stylea11y.test.js	detect.js	<any>	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 stylea11y.test.js	draw.js	<any>	<loaded>	coatFabric	coatMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	rainFabric	rainMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 stylea11y.test.js	dress.js	<any>	<loaded>	add-card-sections	dressOn	migrateVests	newSuitVest	renderDressUI	settings-draw	settings-summary	start-checks
 stylea11y.test.js	fav.js	<any>	<loaded>	@servefavward	favAny	favChip	favItemRow	favLastIcon	favLookFrom	favMark	favPillSeg	favStatsCard	favWhy	insights-cards	item-sheet-parts	today-parts
@@ -19086,7 +19086,7 @@ swatchzoom.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 swatchzoom.test.js	cost.js	<loaded>
 swatchzoom.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 swatchzoom.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-swatchzoom.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+swatchzoom.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 swatchzoom.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	swatchSVG
 swatchzoom.test.js	dress.js	<loaded>	migrateVests	start-checks
 swatchzoom.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
@@ -19184,7 +19184,7 @@ sync.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@cons
 sync.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 sync.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 sync.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-sync.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+sync.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 sync.test.js	draw.js	<loaded>	drawBelt	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	trouserMarks
 sync.test.js	dress.js	<loaded>	dressOn	dressSummary	dressSynced	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks	synced
 sync.test.js	fav.js	<loaded>	@servefavward	favChip	favLookFrom	favMark	favPillSeg	today-parts
@@ -19392,7 +19392,7 @@ tabload.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 tabload.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush	cpwOf	cpwPriced	cpwStats	cpwStatsCard	insights-cards
 tabload.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 tabload.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-tabload.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	usableSett
+tabload.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	usableSett
 tabload.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figureSvg	itemThumb	shirtFabric	shirtMarks	swatchSVG	tieFabric	tieMarks
 tabload.test.js	dress.js	<loaded>	legacyVest	migrateVests	start-checks
 tabload.test.js	fav.js	<loaded>	@servefavward	favAny	favChip	favLookFrom	favMark	favPillSeg	favStatsCard	insights-cards	today-parts
@@ -20009,7 +20009,7 @@ takeoff.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechal
 takeoff.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush
 takeoff.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	notAhead	releaseLocks	saveDay
 takeoff.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-takeoff.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+takeoff.test.js	detect.js	<loaded>	@	camoLook	camoTag	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 takeoff.test.js	draw.js	<loaded>	camoTileUrl	cargoPockets	casualTile	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	sockPat	suitFabric	suitMarks	swatchSVG	trouserMarks
 takeoff.test.js	dress.js	<loaded>	legacyVest	migrateVests	start-checks
 takeoff.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favMark	favPillSeg	favStrip	favWhy	today-parts
@@ -20106,7 +20106,7 @@ texswatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 texswatch.test.js	cost.js	<loaded>	add-card-sections	card-saved	cpwCur	cpwCurOk	cpwFmt	cpwQRow	cpwRegion	cpwSaveFields	cpwSym
 texswatch.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 texswatch.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-texswatch.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+texswatch.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 texswatch.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figCuGet	figCuKey	figCuMake	figCuSpec	figFabric	figGam	figKind	figLiftK	figLin	figLum	figScale	figStripeLift	figTileUrl	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	swatchSVG	texTileUrl	texTones	tieFabric	tieMarks	trouserMarks
 texswatch.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	migrateVests	newSuitVest	start-checks
 texswatch.test.js	fav.js	<loaded>	@servefavward	favChip	favLookFrom	favMark	favPillSeg	favWhy	today-parts
@@ -20621,7 +20621,7 @@ today.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@con
 today.test.js	cost.js	<loaded>
 today.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 today.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-today.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+today.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 today.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
 today.test.js	dress.js	<loaded>	migrateVests	start-checks
 today.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -20817,7 +20817,7 @@ todayedges.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 todayedges.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 todayedges.test.js	days.js	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 todayedges.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-todayedges.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+todayedges.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 todayedges.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 todayedges.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 todayedges.test.js	fav.js	<loaded>	@servefavward	favChip	favLookFrom	favMark	favPillSeg	favStrip	favWhy	today-parts
@@ -20915,7 +20915,7 @@ todayswatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks
 todayswatch.test.js	cost.js	<loaded>
 todayswatch.test.js	days.js	<loaded>
 todayswatch.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-todayswatch.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+todayswatch.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 todayswatch.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	itemThumb	leatherLayers	sockPat	swatchSVG	texPlainBand	texTileSmooth	texTileUrl	texTones
 todayswatch.test.js	dress.js	<loaded>	migrateVests	start-checks
 todayswatch.test.js	fav.js	<loaded>	today-parts
@@ -21013,7 +21013,7 @@ todayzoom.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	
 todayzoom.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush
 todayzoom.test.js	days.js	<loaded>	idsOf
 todayzoom.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-todayzoom.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+todayzoom.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 todayzoom.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG	texTileUrl	texTones
 todayzoom.test.js	dress.js	<loaded>	migrateVests	start-checks
 todayzoom.test.js	fav.js	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
@@ -21213,7 +21213,7 @@ ui.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constM
 ui.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed	item-sheet-parts	settings-draw
 ui.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 ui.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-ui.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+ui.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 ui.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 ui.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 ui.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favWhy	item-sheet-parts	today-parts
@@ -21311,7 +21311,7 @@ uipages.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 uipages.test.js	cost.js	<loaded>	add-card-sections	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSum	cpwSym	cpwWashLine	cpwWashed	insights-cards	item-sheet-parts	settings-draw
 uipages.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 uipages.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-uipages.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+uipages.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 uipages.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 uipages.test.js	dress.js	<loaded>	add-card-sections	dressOn	dressSummary	migrateVests	newSuitVest	renderDressUI	settings-draw	settings-summary	start-checks
 uipages.test.js	fav.js	<loaded>	@servefavward	favAny	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favStatsCard	favWhy	insights-cards	item-sheet-parts	today-parts
@@ -21411,7 +21411,7 @@ vest.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 vest.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym	item-sheet-parts
 vest.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 vest.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-vest.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+vest.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 vest.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 vest.test.js	dress.js	<loaded>	migrateVests	start-checks
 vest.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLastIcon	favMark	favWhy	item-sheet-parts	today-parts
@@ -21509,7 +21509,7 @@ wardfab.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@c
 wardfab.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSum	cpwSym	cpwWashLine	cpwWashed	insights-cards	item-sheet-parts	settings-draw
 wardfab.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 wardfab.test.js	daysoff.js	<loaded>	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-wardfab.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+wardfab.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 wardfab.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 wardfab.test.js	dress.js	<loaded>	dressOn	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 wardfab.test.js	fav.js	<loaded>	@servefavward	favAny	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy	insights-cards	item-sheet-parts	today-parts
@@ -21608,7 +21608,7 @@ wardrobe.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@
 wardrobe.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	add-card-sections	card-saved	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSaveFields	cpwSum	cpwSym	item-sheet-parts
 wardrobe.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 wardrobe.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-wardrobe.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	detectQueued	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+wardrobe.test.js	detect.js	<loaded>	@	camoLook	detectQueued	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 wardrobe.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	coatFabric	coatMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks	trouserMarks
 wardrobe.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	dressSynced	legacyVest	migrateVests	newSuitVest	start-checks	synced
 wardrobe.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favLookFrom	favMark	favOff	favPillSeg	favStrip	favWhy	item-sheet-parts	today-parts
@@ -21909,7 +21909,7 @@ watchmatch.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}
 watchmatch.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSum	cpwSym	item-sheet-parts
 watchmatch.test.js	days.js	<loaded>
 watchmatch.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
-watchmatch.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+watchmatch.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 watchmatch.test.js	draw.js	<loaded>	drawWatchTraced	itemThumb
 watchmatch.test.js	dress.js	<loaded>	migrateVests	start-checks
 watchmatch.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favMark	item-sheet-parts	today-parts
@@ -22015,7 +22015,7 @@ weather.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechal
 weather.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 weather.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	releaseLocks	saveDay
 weather.test.js	daysoff.js	<loaded>	addFormalDay	countryName	daysOffListen	isoDate	occAddTap	occClear	refreshHolidays	renderDaysOffUI	renderFormalUI	settings-draw	settings-summary	start-jobs
-weather.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+weather.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 weather.test.js	draw.js	<loaded>	coatFabric	coatMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figEyes	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	rainFabric	rainMarks	sockPat	swatchSVG
 weather.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 weather.test.js	fav.js	<loaded>	favLastIcon	favLookFrom	favPillSeg	favWhy	today-parts
@@ -22113,7 +22113,7 @@ weeklock.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripecha
 weeklock.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwRegion	cpwSettingsUI	cpwSym	cpwWashLine	cpwWashed	settings-draw
 weeklock.test.js	days.js	<loaded>	clearLocks	idsOf	lockIds	notAhead	releaseLocks	saveDay
 weeklock.test.js	daysoff.js	<loaded>	builtinHolidays	countryName	daysOffListen	fetchHolidays	holPast	holYears	isoDate	nagerKeep	refreshHolidays	renderDaysOffUI	renderFormalUI	setHolidayCountry	settings-draw	settings-summary	start-jobs
-weeklock.test.js	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
+weeklock.test.js	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	texPat	tieWeave	usableSett
 weeklock.test.js	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figGam	figKind	figLiftHex	figLiftK	figLifted	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 weeklock.test.js	dress.js	<loaded>	dressOn	dressSummary	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks
 weeklock.test.js	fav.js	<loaded>	@servefavward	favChip	favLastIcon	favLookFrom	favMark	favPillSeg	favWhy	today-parts

@@ -1,5 +1,4 @@
 /* Daily Wardrobe: pattern detection from item photos (main thread: needs canvas) */
-import {serve} from './bus.js';
 import {CAMO_V,COLORS,CUSTOM_PAT,OCP_CAMO,OCP_V,accentOf,accentsOf,camoPat,colOf,dE00,hexRgb,isOcp,labHex,lum,patBase,primaryCol,rgbLab,thirdOf} from './core.js';   // (the restructure S6f: lab/gl-bench.html hands a blob's import of core.js the blob it already ran)
 /* Pattern detection from the item photo.
    - stripes:     1-D band sequence + angle            (stripe, pinstripe, chalk stripe)
@@ -459,4 +458,3 @@ function settFromCanvas(c,box,opt){if(box){const b={x:box.x/1000*c.width,y:box.y
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,camoTag,settToTag,settFromCanvas,tieWeave,detectPattern,texPat,STRIPE_PATS,settSig,usableSett};
 export {STRIPE_PATS,CHECK_PATS,DETECT_PATS,MOTIF_PATS,TEXTURE_PATS,texPat,tieWeave,usableSett,CAMO_TR,camoTag,settToTag,settSig,detectPattern,detectQueued,settFromCanvas};
-serve('sett-sig',settSig);serve('usable-sett',usableSett);serve('stripe-pats',()=>STRIPE_PATS);serve('check-pats',()=>CHECK_PATS);   // the restructure S6f: photo-keys.js's picture keys (a data file, below this one in the layers)

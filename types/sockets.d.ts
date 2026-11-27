@@ -17,14 +17,6 @@ export interface Sockets {
   'plan-sim': typeof import('../planner.js').planSim;
   /** the workdays Insights and What to buy measure (horizonKeys) (analysis.js) */
   'horizon-keys': typeof import('../analysis.js').horizonKeys;
-  /** a reading's key (settSig), in a shirt's or a piece's picture key (the restructure S6f) (detect.js) */
-  'sett-sig': typeof import('../detect.js').settSig;
-  /** a piece's reading if it can be drawn (usableSett), for a shirt's picture key (the restructure S6f) (detect.js) */
-  'usable-sett': typeof import('../detect.js').usableSett;
-  /** the striped patterns (STRIPE_PATS), for a shirt's picture key (the restructure S6f) (detect.js) */
-  'stripe-pats': () => typeof import('../detect.js').STRIPE_PATS;
-  /** the checked patterns (CHECK_PATS), for a shirt's picture key (the restructure S6f) (detect.js) */
-  'check-pats': () => typeof import('../detect.js').CHECK_PATS;
   /** the role this phone is connected as: owner, tester or null (acctRole) (who.js) */
   'acct-role': typeof import('../who.js').acctRole;
   /** the account the server answered (acct.me), whose lookups count is kept up to date (who.js) */
@@ -535,14 +527,9 @@ export interface Needs {
   'plan-build': Sockets['plan-build'];
   'plan-sim': Sockets['plan-sim'];
   'horizon-keys': Sockets['horizon-keys'];
-  'sett-sig': Sockets['sett-sig'];
-  'usable-sett': Sockets['usable-sett'];
-  'stripe-pats': Sockets['stripe-pats'];
-  'check-pats': Sockets['check-pats'];
   'pics-drawn': Sockets['pics-drawn'];
   'renders-load': Sockets['renders-load'];
   'renders': Sockets['renders'];
-  'tag-extras': Sockets['tag-extras'];
   'announce': Sockets['announce'];
   'conn-keep': Sockets['conn-keep'];
   'meta-get': Sockets['meta-get'];
@@ -564,8 +551,6 @@ export interface Needs {
   'plan-dirty': Sockets['plan-dirty'];
   'plan-snap': Sockets['plan-snap'];
   'plan-snap-use': Sockets['plan-snap-use'];
-  'unlock-clash': Sockets['unlock-clash'];
-  'lock-upcoming': Sockets['lock-upcoming'];
   'toast': Sockets['toast'];
   'tell': Sockets['tell'];
   'belt-stuck': Sockets['belt-stuck'];
@@ -592,7 +577,6 @@ export interface Needs {
   'pic-shut': Sockets['pic-shut'];
   'pic-snap': Sockets['pic-snap'];
   'pic-stop': Sockets['pic-stop'];
-  'ovl-piece': Sockets['ovl-piece'];
   'today-draw': Sockets['today-draw'];
   'today-home': Sockets['today-home'];
   'wx-preload': Sockets['wx-preload'];
@@ -605,20 +589,7 @@ export interface Needs {
   'show-cost': Sockets['show-cost'];
   'settings-save-user': Sockets['settings-save-user'];
   'today-dirty': Sockets['today-dirty'];
-  'err-note': Sockets['err-note'];
   'tag-fail-text': Sockets['tag-fail-text'];
-  'storage-down': Sockets['storage-down'];
-  'safety-start': Sockets['safety-start'];
-  'check-arrivals': Sockets['check-arrivals'];
-  'nps-id': Sockets['nps-id'];
-  'nps-inert': Sockets['nps-inert'];
-  'nps-asking': Sockets['nps-asking'];
-  'nps-cancel': Sockets['nps-cancel'];
-  'add-draw': Sockets['add-draw'];
-  'fav-pieces': Sockets['fav-pieces'];
-  'fav-undo-ms': Sockets['fav-undo-ms'];
-  'ph-edit': Sockets['ph-edit'];
-  'after-pull': Sockets['after-pull'];
 }
 
 /** the lifecycle moments: bus.js register(feature, {name: fn}) and runHooks(name, ...args) */

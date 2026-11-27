@@ -3,7 +3,7 @@
    on a swipe (foldAll), stepping a day (stepDay) and the month planned with other records (planWith)
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14, and on
    2026-11-17 (Round C) into today-plan.js, today.js, today-photofold.js, today-picture.js and today-gestures.js, in that order.) */
-import {on,emit,ask,need,serve,served,needFn,slotsOf,register} from './bus.js';
+import {on,emit,ask,need,serve,served,slotsOf,register} from './bus.js';
 import {cache,hasOutfit,outSig,planDirty,planFor,planMonth,planSnapSoon,planStartDay,planTrim} from './today-plan.js';
 import {$,COOL,DAY_NAMES,SLOTS,TYPES,dayRecs,desc,di,hasVest,inRotation,isHandPick,isWorkday,isoKey,itemTitle,items,key,nameHtml,needsJacket,needsTie,nm,offName,sentence,setClimate,setWardrobe,setWeather,settings,settingsOpen,shortDesc,titleCls,todayDate,esc} from './core.js';
 import {canPick,closePicker,dayActions,openPicker,pastEdit,picker,recordDays,resetCard,setPastEdit,setSwapMsg,setTodayPullWait,setVest,setWorn,slotLabel,todayPullWait,whenPulled} from './history.js';
@@ -29,7 +29,7 @@ let recordRun=Promise.resolve();
 function planSnapCheck(){const k=cache.snap;if(!k)return;const shown=cache[k];delete cache[k];cache.snap=null;const [y,m]=k.split('-').map(Number);
   const real=planMonth(y,m),same=Object.keys(real).length===Object.keys(shown).length&&Object.keys(real).every(d=>outSig(real[d])===outSig(shown[d]));
   if($('#today').hidden)return;if(!same||(served('pulled-yet')&&!ask('pulled-yet')))return need('refresh-today');   // (before the first sync is merged, renderToday waits for it to record)
-  if(items.length)recordRun=recordDays(real).then(needFn('lock-upcoming')).then(planSnapSoon)}
+  if(items.length)recordRun=recordDays(real).then(()=>ask('lock-upcoming')).then(planSnapSoon)}
 /* the forecast and the climate kept on the device, read before Today is first drawn: loadWeather and loadClimate then find them
    unchanged, so start-up plans once instead of three times (without them, again with the climate, again with the forecast) */
 function wxPreload(){const L=settings.location;if(!L)return;
@@ -116,7 +116,7 @@ const belowBox=(o,below)=>{const i=below.some(([s])=>s===belowOpen)&&o[belowOpen
 /* (no share button on the picture: the owner, 2026-11-14, "the user can just send a screenshot") */
 function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.tie]].filter(([,i])=>i);if(!ps.length||!served('ovl-piece'))return '';   // (without today-picture.js none: S6h)
   // each swatch is a button: it opens that piece up close (swTap)
-  return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" data-act="swatchTap" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${need('ovl-piece',i)}</button>`).join('')}</div>`}
+  return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" data-act="swatchTap" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${ask('ovl-piece',i)}</button>`).join('')}</div>`}
 /* (wardShort, the wardrobe can't dress a day yet, is month.js's since the restructure S3e, 2026-11-26: read here as a global) */
 function wornBar(o){if(wardShort())return '';const P=slotsOf('today-parts');
   const lw=lastWorn(o);
@@ -174,7 +174,7 @@ let dayShown=null;   // the calendar day the app last drew, and whether it was s
    and a weekend or day off shown as the calendar day never counted: opened on Friday, it still showed Friday on Sunday morning (audit
    2026-11-14, H8). A coming day the user stepped to stays. */
 function newDayCheck(){const T=todayDate(),tk=key(T);if(!dayShown){dayShown={k:tk,home:true};return}
-  if(dayShown.k===tk)return;const home=dayShown.home;dayShown={k:tk,home:true};planDirty();need('check-arrivals').then(n=>{if(n&&!$('#today').hidden)need('refresh-today')});
+  if(dayShown.k===tk)return;const home=dayShown.home;dayShown={k:tk,home:true};planDirty();Promise.resolve(ask('check-arrivals')).then(n=>{if(n&&!$('#today').hidden)need('refresh-today')});
   const h=homeDay();if(home||isoKey(sel)<=isoKey(h)){setSel(new Date(h));setView({y:h.getFullYear(),m:h.getMonth()});setMonthOpen(false)}
   if(!$('#today').hidden)need('refresh-today')}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;
@@ -227,7 +227,7 @@ function renderToday(){
   const p=planFor(),snapped=!!(cache.snap&&p===cache[cache.snap]);
   // the day records are written before the drawing (recordDays puts them in memory at once, then saves): the missed days it records count
   // in this drawing's "last worn" and cleaning frame (fix round 3, W2-14-12: they changed a moment after opening)
-  if(!snapped&&items.length&&(!served('pulled-yet')||ask('pulled-yet')))recordRun=recordDays(p).then(needFn('lock-upcoming')).then(()=>{planSnapSoon()});
+  if(!snapped&&items.length&&(!served('pulled-yet')||ask('pulled-yet')))recordRun=recordDays(p).then(()=>ask('lock-upcoming')).then(()=>{planSnapSoon()});
   const P=slotsOf('today-parts');   // Today's parts (bus.js slots): each placed where main drew it
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
   const nav=`<div class="nav day"><button data-act="dayStepTap" data-n="-1" aria-label="Previous day">‹</button><h2 aria-label="${esc(sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))}"><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc${settings.location?'':' wxlk'}">${!P.wxChip?'':settings.location?(P.wxChip(sel)||wxMissing(sel,wp)):`<a href="#" class="wxl" data-act="wxSetTap">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button data-act="dayStepTap" data-n="1" aria-label="Next day">›</button></div>`;
