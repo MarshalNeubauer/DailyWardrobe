@@ -38,7 +38,7 @@ const syncWaiting=st=>/^Not backed up:/.test(st||'');
    nowMs); a pause further off than a day and a bit was set by a clock that was ahead (the audit's W1-9-06: a year-long pause) and is let go */
 const nextUtcDay=()=>{const d=new Date(nowMs());return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)};
 /* uploads paused until the next UTC day, with the sentence that says why (CR-5-13: written four times) -> false, what syncOnce returns */
-function pauseTillTomorrow(m){localStorage.setItem('sync_pause',nextUtcDay());localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
+function pauseTillTomorrow(m){localStorage.setItem('sync_pause',String(nextUtcDay()));localStorage.setItem('sync_pause_msg',m);setSyncStatus(m);return false}
 function syncPaused(){const p=+localStorage.getItem('sync_pause')||0;if(!p)return false;const t=nowMs();
   if(p>t+26*3600e3){localStorage.removeItem('sync_pause');localStorage.removeItem('sync_pause_msg');return false}return p>t}
 /* why uploads pause until the next UTC day: a tester's own daily backups used up (the server's message), or the server's whole allowance of
@@ -98,7 +98,7 @@ async function applyMerged(local,incoming){const m=mergeState(local,incoming);
    and Dark shirts dropdowns kept the old value until Settings was closed and opened again, and a user could "fix" it back). Not while a
    field in it is being typed in: then once the field is left */
 function syncSettingsRedraw(){if(!settingsOpen())return;
-  const a=document.activeElement,m=$('#settings-modal');
+  const a=/** @type {HTMLInputElement} */(document.activeElement),m=$('#settings-modal');
   if(a&&m&&m.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!/^(button|checkbox|radio)$/.test(a.type||'')){a.addEventListener('blur',()=>setTimeout(syncSettingsRedraw,0),{once:true});return}
   try{renderSettingsExtras()}catch(e){console.warn('Settings not redrawn',e)}
   try{emit('backup-changed')}catch{}}

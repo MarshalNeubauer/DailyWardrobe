@@ -29,7 +29,7 @@ let wardMemo=null;   // the list on screen, kept until the next redraw (the shee
 /* (fix round 3, W2-16-07) every combining mark goes (Arabic hamza and short vowels too: ابيض finds أبيض, إ آ ؤ ئ their plain letters),
    ة finds ه and ى ي, tatweel goes, and Arabic-Indic and Persian digits are 0-9 (2 finds ٢) */
 const wardNorm=t=>String(t??'').toLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/ـ/g,'')
-  .replace(/[٠-٩]/g,d=>d.charCodeAt(0)-0x660).replace(/[۰-۹]/g,d=>d.charCodeAt(0)-0x6f0).replace(/\s+/g,' ').trim();
+  .replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-0x660)).replace(/[۰-۹]/g,d=>String(d.charCodeAt(0)-0x6f0)).replace(/\s+/g,' ').trim();
 /* everything a search looks through: name, brand, notes, material, the type, the colours' names and the pattern */
 /* (2026-11-15, American English) the British words still find what they used to: "grey" finds the gray pieces, "trousers" the pants */
 /* (2026-11-16) its accents too: a paisley tie with a red accent is found by "red" (core.js accentsOf) */
@@ -111,7 +111,7 @@ function wardRefresh(){
 function wardSearch(v){wardQ=String(v??'');wardRefresh()}
 function wardClear(){wardQ='';const el=$('#wsearch');if(el){el.value='';el.focus()}wardRefresh()}
 /* a full redraw of the Wardrobe (a sync arriving, an edit) while the field is in use: put the focus and the caret back */
-function wardKeep(){const el=document.activeElement;return el&&el.id==='wsearch'?{s:el.selectionStart,e:el.selectionEnd}:null}
+function wardKeep(){const el=/** @type {HTMLInputElement} */(document.activeElement);return el&&el.id==='wsearch'?{s:el.selectionStart,e:el.selectionEnd}:null}
 function wardBack(f){if(!f)return;const el=$('#wsearch');if(!el)return;el.focus({preventScroll:true});try{el.setSelectionRange(f.s,f.e)}catch{}}
 
 /* ---- name, brand, material, notes (their rows: fields.js matLabel, matRow, fldRow, notesRow) ---- */

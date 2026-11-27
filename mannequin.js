@@ -75,6 +75,7 @@ function pocketSvg(pocket, kind, P) {
     + poly([Q.b0, S(7, H), S(0, H - 7)], '#000', ' fill-opacity=".2"') + poly([Q.b1, S(Ww - 7, H), S(Ww, H - 7)], '#000', ' fill-opacity=".26"')   // the corners tucking in
     + `<line x1="${f2(Q.b0[0])}" y1="${f2(Q.b0[1])}" x2="${f2(Q.b1[0])}" y2="${f2(Q.b1[1])}" stroke="#000" stroke-opacity=".35" stroke-width=".5"/></g>`;
 }
+/** @param {Record<string, any>} [o] the outfit and the drawing's options (every one optional) */
 function outfitMannequinSvg({ kind = 'vest', suit, shirt, tie, bot = null, beltColor = null, vest = true, clip = null, shirtColor = '#EEEEEE', bg = '#F5F2EC', idPrefix = 'mq-',
   ariaLabel = "Torso wearing today's outfit", fab = { suit: 1, shirt: 1, tie: 1 }, office = true, pocket = null } = {}) {
   const G = mqData(kind); if (!G) return '';

@@ -166,9 +166,9 @@ $('#today').addEventListener('click',e=>{if(!swOpen)return;const c=e.target.clos
   el.addEventListener('touchmove',e=>{if(!zoomPan)return;const t=e.touches[0],dx=t.clientX-zoomPan.x0,dy=t.clientY-zoomPan.y0;if(Math.abs(dx)>8||Math.abs(dy)>8)zoomPan.moved=true;
     if(!zoom)return;e.preventDefault();zoom.x=zoomPan.zx+dx;zoom.y=zoomPan.zy+dy;clampZoom();applyZoom(false)},{passive:false});
   el.addEventListener('touchend',e=>{const p=zoomPan;zoomPan=null;if(!p||p.moved||Date.now()-p.t>300){lastTap=null;return}const t=e.changedTouches[0],now=Date.now();
-    if(lastTap&&now-lastTap.t<320&&Math.hypot(t.clientX-lastTap.x,t.clientY-lastTap.y)<40){lastTap=null;zoomTouchAt=now;e.preventDefault();toggleZoom(t.clientX,t.clientY)}
+    if(lastTap&&now-lastTap.t<320&&Math.hypot(t.clientX-lastTap.x,t.clientY-lastTap.y)<40){lastTap=null;zoomTouchAt=now;e.preventDefault();toggleZoom()}
     else lastTap={t:now,x:t.clientX,y:t.clientY}},{passive:false});
-  el.addEventListener('dblclick',e=>{if(!inPic(e)||Date.now()-zoomTouchAt<700)return;e.preventDefault();toggleZoom(e.clientX,e.clientY)});
+  el.addEventListener('dblclick',e=>{if(!inPic(e)||Date.now()-zoomTouchAt<700)return;e.preventDefault();toggleZoom()});
 })();
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('zoomed',()=>zoom);

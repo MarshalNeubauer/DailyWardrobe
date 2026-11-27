@@ -27,7 +27,7 @@ function useMyLocation(){if(!navigator.geolocation){tell('Location is not availa
 /* "Use my location" has no place name (Open-Meteo can't look one up): the spot itself, so it doesn't read "your current location" after a trip */
 const geoName=(la,lo)=>`your location (${Math.abs(la).toFixed(2)}° ${la<0?'S':'N'}, ${Math.abs(lo).toFixed(2)}° ${lo<0?'W':'E'})`;
 /* the language the city search asks in: a name typed in Arabic (or another script) is looked up in that language, English otherwise */
-function cityLang(q){const s=[[/[؀-ۿ]/,'ar'],[/[֐-׿]/,'he'],[/[Ѐ-ӿ]/,'ru'],[/[Ͱ-Ͽ]/,'el'],[/[฀-๿]/,'th'],[/[가-힯]/,'ko'],[/[぀-ヿ]/,'ja'],[/[一-鿿]/,/^ja/i.test(navigator.language||'')?'ja':'zh']].find(([r])=>r.test(q));return s?s[1]:'en'}
+function cityLang(q){const s=/** @type {[RegExp, string][]} */([[/[؀-ۿ]/,'ar'],[/[֐-׿]/,'he'],[/[Ѐ-ӿ]/,'ru'],[/[Ͱ-Ͽ]/,'el'],[/[฀-๿]/,'th'],[/[가-힯]/,'ko'],[/[぀-ヿ]/,'ja'],[/[一-鿿]/,/^ja/i.test(navigator.language||'')?'ja':'zh']]).find(([r])=>r.test(q));return s?s[1]:'en'}
 /* results that read the same ("Dubai, Uttar Pradesh, IN" three times) get their district, and true repeats are dropped */
 function cityList(results){const res=(results||[]).map(c=>({lat:c.latitude,lon:c.longitude,cc:c.country_code||'',name:[c.name,c.admin1,c.country_code].filter(Boolean).join(', '),a2:c.admin2||c.admin3||'',...(c.alt?{alt:c.alt}:{})}));
   const cnt={};for(const c of res)cnt[c.name]=(cnt[c.name]||0)+1;for(const c of res)if(cnt[c.name]>1&&c.a2)c.name=[c.name.split(', ')[0],c.a2,...c.name.split(', ').slice(1)].join(', ');

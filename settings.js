@@ -26,7 +26,7 @@ function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.cl
 // a category unfolds where it is: no scroll to show what opened (the owner, 2026-11-17: "I want it to unfold and not scroll automatically at all")
 // the summaries (what was changed inside) are written once the fold has finished moving, not in its first frames
 function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);
-  clearTimeout(toggleCat.t);toggleCat.t=setTimeout(()=>{try{settingsSummaries()}catch(e){console.warn(e)}},480)}
+  const tc=/** @type {typeof toggleCat & {t?: number}} */(toggleCat);clearTimeout(tc.t);tc.t=setTimeout(()=>{try{settingsSummaries()}catch(e){console.warn(e)}},480)}
 /* the Backup line in Settings says what really happened: the last backup's time, or that the last try failed (sync.js keeps
    sync_status while a try fails and last_sync when one works) */
 /* when backups start again (the next 00:00 UTC): "tomorrow" only when that is tomorrow here; west of UTC it is later today (W1-10-03: "Paused

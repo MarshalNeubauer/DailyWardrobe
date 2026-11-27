@@ -10,8 +10,8 @@ import {toastDrop} from './toast.js';
    fade on the cards' curve; a page opened from Settings (stats, packing, care) rises in instead. The tab bar's marker slides to the tab
    (styles.css nav::before, --ti). Only the page arriving moves: the one leaving goes at once, so nothing is laid out twice. */
 const PAGES=['today','wardrobe','add','stats','pack'],TABS=['today','wardrobe','stats'],PAGE_MS=320;
-function pageIn(t,from){const el=$('#'+t),nav=document.querySelector('body>nav'),ti=TABS.indexOf(t);
-  if(nav){nav.style.setProperty('--ti',Math.max(0,ti));nav.classList.toggle('tab-none',ti<0)}
+function pageIn(t,from){const el=$('#'+t),nav=/** @type {HTMLElement} */(document.querySelector('body>nav')),ti=TABS.indexOf(t);
+  if(nav){nav.style.setProperty('--ti',String(Math.max(0,ti)));nav.classList.toggle('tab-none',ti<0)}
   if(!el||!from||from===t||noMotion())return;
   if(el._ps){el._ps.cancel();el._ps=null}   // a scroll slide left from an unfold (pageScroll) on Today
   const a=TABS.indexOf(from),dx=a>=0&&ti>=0?(ti>a?28:-28):0;if(el._pg)el._pg.cancel();
