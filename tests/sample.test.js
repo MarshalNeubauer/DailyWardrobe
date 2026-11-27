@@ -112,12 +112,12 @@ const samplesync=async({ok,chromium,url,ROOT})=>{
     const it=(id,x)=>({id,type:'tie',primaryColor:'navy',pattern:'solid',added:1000,updated:2000,...x});
     // the old app's whole backup (PUT) with the sample in it
     const pu=await wf('sync',{method:'PUT',body:JSON.stringify({baseRev:0,day:'2026-11-08',data:{items:[it('own1'),it('mine1',{sample:true,sampleMine:1}),it('samp1',{sample:true}),it('samp2',{sample:true})],days:[],tombstones:{},settings:null}})});
-    const key=[...store.keys()].find(k=>/wardrobe:v1$/.test(k));
+    const wkey=[...store.keys()].find(k=>/wardrobe:v1$/.test(k));
     let r=await (await wf('sync?lite=1')).json();
-    ok(pu.ok&&/samp1/.test(String(store.get(key))),'(the backup from before the rule holds the sample)');
+    ok(pu.ok&&/samp1/.test(String(store.get(wkey))),'(the backup from before the rule holds the sample)');
     ok(r.items.map(i=>i.id).sort().join()==='mine1,own1'&&!('samp1' in r.idx.i),'the small sync never hands out a sample piece he hasn\'t made his (a phone joining gets his own pieces only): '+r.items.map(i=>i.id).join());
     await wf('sync',{method:'POST',body:JSON.stringify({baseRev:r.rev,baseSaved:r.saved,day:'2026-11-08',delta:{items:[it('own2',{updated:3000})],days:[],tombstones:{}},photos:{}})});
-    const txt=String(store.get(key)),ids=['own1','own2','mine1','samp1','samp2'].filter(x=>txt.includes('"'+x+'"')).join();
+    const txt=String(store.get(wkey)),ids=['own1','own2','mine1','samp1','samp2'].filter(x=>txt.includes('"'+x+'"')).join();
     ok(ids==='own1,own2,mine1','the next save drops them from the backup: '+ids);
   }finally{await browser.close()}
 };
