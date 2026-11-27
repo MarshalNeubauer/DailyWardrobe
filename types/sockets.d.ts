@@ -133,10 +133,6 @@ export interface Sockets {
   'suggest-clean': typeof import('../pickscore.js').suggestClean;
   /** a suit's own pants follow its jacket (suitPants) (pickscore.js) */
   'suit-pants': typeof import('../pickscore.js').suitPants;
-  /** the day's watch painted on the finished picture (asmWatchPaint) (asm-watch.js) */
-  'asm-watch-paint': typeof import('../asm-watch.js').asmWatchPaint;
-  /** the pocket square painted on the finished picture (asmPocketPaint) (asm-pocket.js) */
-  'asm-pocket-paint': typeof import('../asm-pocket.js').asmPocketPaint;
   /** where the pocket square sits, for the drawn mannequin (asmPocketQuad) (asm-pocket.js) */
   'asm-pocket-quad': typeof import('../asm-pocket.js').asmPocketQuad;
   /** one picture painted on the page, where no worker can (asmBuild; the restructure S6p, 2026-11-27: moved into asm-color.js, which assemble.js, today-no-picture, may not import) (asm-color.js) */
@@ -155,8 +151,6 @@ export interface Sockets {
   'asm-wt-v': () => typeof import('../asm-color.js').ASM_WT['v'];
   /** the herringbone shirt's lift and row (ASM_HB_COL_LIFT, ASM_HB_SHIRT_Y), in the swatch's key (asm-color.js) */
   'asm-hb-lift': () => [number, number];
-  /** a look painted on the graphics chip, or null (asmGlTry; asm-gl.js loads after asm-color.js and imports it) (asm-gl.js) */
-  'asm-gl-try': typeof import('../asm-gl.js').asmGlTry;
   /** the page's graphics state let go with the worker (asmGlFree) (asm-gl.js) */
   'asm-gl-free': typeof import('../asm-gl.js').asmGlFree;
   /** which painter painted a picture, for Settings' line (asmGlNote) (asm-gl.js) */
@@ -173,8 +167,6 @@ export interface Sockets {
   'swatch-svg': typeof import('../draw.js').swatchSVG;
   /** the uniform blouse's tapes and rank painted on the finished picture (asmOcpPaint) (asm-ocp.js) */
   'asm-ocp-paint': typeof import('../asm-ocp.js').asmOcpPaint;
-  /** the weave the painter reads from a jacket, for the drawn figure (asmSuitWeave) (asm-look.js) */
-  'asm-suit-weave': typeof import('../asm-look.js').asmSuitWeave;
   /** everything a look's painting needs, as plain data, or null (asmJob) (asm-cm-job.js) */
   'asm-job': typeof import('../asm-cm-job.js').asmJob;
   /** a look's master kind, the new garments' included (asmKindOf) (asm-cm-job.js) */

@@ -99,8 +99,9 @@ function asmPocketDo(px,S,J){const Q=asmPocketQuad(J.kind);if(!Q)return;const f=
       const c=cloth(bx-b0[0],v,vv);
       for(let q=0;q<3;q++){const base=c[q]*k*shade*weave,lit=base+(Math.min(1,k*1.05)-base)*sheen;out[q]=out[q]*(1-cov)+Math.min(1,lit)*cov}}
     for(let q=0;q<3;q++)px[i+q]=gam(out[q])}}
-/* sockets (bus.js; the restructure S6p, 2026-11-27): the pocket square painted on the finished picture (asm-color.js asmBuildAfter) and its quad for the drawn mannequin (mannequin.js): both live without this file */
-serve('asm-pocket-paint',asmPocketPaint);serve('asm-pocket-quad',asmPocketQuad);
+/* sockets (bus.js; the restructure S6p, 2026-11-27): the pocket square's quad for the drawn mannequin (mannequin.js, which lives without this
+   file; asm-color.js imports asmPocketPaint since N6, 2026-11-28) */
+serve('asm-pocket-quad',asmPocketQuad);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,asmPocketDo,asmPocketQuad};
 export {asmPocketQuad,asmPocketPaint,asmPocketDo,ASM_POCKETV};

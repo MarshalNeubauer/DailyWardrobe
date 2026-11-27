@@ -9,7 +9,7 @@ import {comboKey,comboSig,fnv64,keepRender,listAt,picsDrawn,renders,workerBase,w
 import {ASM_CMV,ASM_CM_KINDS} from './asm-keys.js';
 import {ASM_BARV,ASM_CLOSEUP_MM,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_FLECK,ASM_HB_FLOAT,ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_ON,ASM_PX_MM,ASM_RETRY_MS,ASM_SHIRT_MM,ASM_STRIPE,ASM_STRIPE_PX,ASM_SUITV,ASM_TEX_MIN_MM,ASM_TIEV,ASM_TIE_FIG_MAX,ASM_TIE_TEX_MAX,ASM_TR_CAP,ASM_TWEED,ASM_TWILL,ASM_VER,asmData,asmGetting,asmHbCw,asmImg,asmImgOf,asmLinen,asmMicroGrid,asmRetryAt,asmRun,asmStripeCount,asmSuitTexMemo,asmTieMemo,asmTried} from './assemble.js';
 import {TIE_DARK_L,TIE_DARK_X,TIE_TEX_K,fabricDef} from './draw.js';
-import {ask,serve,served} from './bus.js';
+import {ask,served} from './bus.js';
 // (pxmm: the shirt masters are framed wider; measured: the tie 116 px wide at 2048 against 174 on the suit master, the open collar's
 // shirt about 5% wider again)
 const asmCmKey=(kind,name)=>asmKey('cm'+ASM_CMV+'/'+kind+'/'+name);
@@ -175,8 +175,6 @@ async function asmGetOnce(key,force){if(renders[key])return true;const W=workerB
   return false}
 /* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
 function setAsmOut(v){asmOut=v}
-/* sockets (bus.js; the restructure S6p, 2026-11-27): the weave the painter reads, for the drawn figure (draw.js loads before this file) */
-serve('asm-suit-weave',asmSuitWeave);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,asmCmHeld,asmStale,asmWants,get asmOut(){return asmOut},set asmOut(v){asmOut=v},get asmPhoto(){return asmPhoto},set asmPhoto(v){asmPhoto=v},get asmList(){return asmList},set asmList(v){asmList=v},asmBarRgb,asmBarSig,asmCmKey,asmCmUse,asmGet,asmKey,asmListGet,asmLookId,asmMotif,asmOutKey,asmStamp,asmSuitBands,asmSuitSig,asmSuitTex,asmSuitTweed,asmSuitTwill,asmSuitWeave,asmTieFor,asmTieSig,asmTweedTex,asmTwillTex,asmWeave};
 export {asmCmKey,asmDrawn,asmBarRgb,asmBarSig,asmKey,asmCmHeld,asmCmUse,asmListGet,asmMotif,asmWeave,asmSuitWeave,asmSuitTwill,asmTwillTex,asmMicroKind,asmMicroTex,asmSuitTweed,asmTweedTex,asmSuitSig,asmSuitBands,asmClothOf,asmSuitTex,asmTieTile,asmTieFor,asmTieSig,asmOutKey,asmStamp,asmWants,asmFullWins,asmLookId,asmGet,asmListAt,asmList,asmOut,asmPhoto,setAsmOut,asmFresh,asmStale,asmPreSigOk,asmCmAny};

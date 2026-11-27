@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	aabbb99c77ab74974115
+# tested	880499a54e08b38a6a18
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	settings-category	swVersionOf
 a11y.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -3004,7 +3005,6 @@ backgesture-item.test.js	tests/backgesture-parts.js	<any>
 backgesture-item.test.js	tests/fixedplan.js	<any>
 backgesture-item.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-item.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-item.test.js	tests/webkit.js	<any>
 backgesture-item.test.js	theme.js	<loaded>	applyTheme
 backgesture-item.test.js	toast.js	<loaded>	toast	undoHere
 backgesture-item.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -3107,7 +3107,6 @@ backgesture-over.test.js	tests/backgesture-parts.js	<any>
 backgesture-over.test.js	tests/fixedplan.js	<any>
 backgesture-over.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-over.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-over.test.js	tests/webkit.js	<any>
 backgesture-over.test.js	theme.js	<loaded>	applyTheme
 backgesture-over.test.js	toast.js	<loaded>	toastDrop	undoOff
 backgesture-over.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -4640,7 +4639,7 @@ claudepattern.test.js	asm-watch.js	<loaded>
 claudepattern.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm
 claudepattern.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	histDrop	histPush	inviteInUrl
 claudepattern.test.js	backupfile.js	<loaded>
-claudepattern.test.js	bus.js	<loaded>	ask	emit	need	needFn	on	register	runHooks	serve	served	slotsOf
+claudepattern.test.js	bus.js	<loaded>	ask	emit	need	needFn	on	register	runHooks	runHooksSeq	serve	served	slotsOf
 claudepattern.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI	settings-summary	today-parts
 claudepattern.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careState	careWornLine	item-sheet-parts	laundryDays	renderCareUI	settings-draw	today-parts	wardrobe-tile
 claudepattern.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
@@ -4667,7 +4666,7 @@ claudepattern.test.js	look.js	<loaded>	add-card-sections	card-saved	lookSave	ren
 claudepattern.test.js	mannequin.js	<loaded>	@{}
 claudepattern.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	aiSignals	applyMeasured	applyWb	calibLab	clamp01	closeRead	colRef	colourVerdicts	makeSmall	measConf	measEdgeCut	measHint	measKL	measSplit	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	paperSteps	plainCloth	sharpness	urlCanvas	verdictMode	wbGains	wbRead	wbSolidOk	wbSolidStats
 claudepattern.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
-claudepattern.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
+claudepattern.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	remakeAfterPull	upgradeCloseups	upgradePhotos
 claudepattern.test.js	missed.js	<loaded>
 claudepattern.test.js	month.js	<loaded>	dayOnly	homeDay	nextWorkday
 claudepattern.test.js	mq/shirt-open.js	<loaded>
@@ -9770,7 +9769,6 @@ labbench.test.js	tests/fixtures/cm/suit/part-lapelL.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-lapelR.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<loaded>
-labbench.test.js	tests/webkit.js	<any>
 lookbeta.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	settings-category	swVersionOf
 lookbeta.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 lookbeta.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -17656,13 +17654,13 @@ sharpclose.test.js	days.js	<loaded>
 sharpclose.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
 sharpclose.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	camoLook	corrAt	detrend	foldBins	labGrid	lookOf	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 sharpclose.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	fabricDef	figEyes	itemThumb	swatchSVG
-sharpclose.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests	start-checks
+sharpclose.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests	start-checks	synced
 sharpclose.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favMark	item-sheet-parts	today-parts
 sharpclose.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab
 sharpclose.test.js	history.js	<loaded>	checkPlanRules	dropLearn	settings-rows	start-checks	whenPulled
 sharpclose.test.js	index.html	<loaded>
 sharpclose.test.js	item-photo.js	<loaded>	paperHint	paperLine	paperRetake	photoTools	ptIcon	replaceTexture	setPhEdit	setPic	setTexture	smallPhotos	undoPhoto
-sharpclose.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	itemShown	itemSynced	page-shown	renderItem	wardList
+sharpclose.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	itemShown	itemSynced	page-shown	renderItem	synced	wardList
 sharpclose.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	page-shown	patSummary	renderWardrobe
 sharpclose.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	item-sheet-parts	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSends	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	start-checks	start-safety	sync-send	today-parts	wardrobe-tile
 sharpclose.test.js	locale.js	<loaded>	appLocale
@@ -17713,7 +17711,7 @@ sharpclose.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	sw
 sharpclose.test.js	today-plan.js	<loaded>	@serveplansnap	hasOutfit	planDirty	planFor	planMonth	planSnapUse
 sharpclose.test.js	today.js	<loaded>	renderToday	todaySay	wornPill	wxFit	wxPreload
 sharpclose.test.js	ui.js	<loaded>	closeupBtn	cuTouch	layerInert	layerUp	netErr	noMotion	uiEsc
-sharpclose.test.js	wardrobe.js	<loaded>	@whenPulled	giNote	giTag	ivOn	matMigrate	matOnItem	matRenameTo	sockLegacy	sockToeMigrate	start-safety	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardPendingSoon	wardSort	wardView
+sharpclose.test.js	wardrobe.js	<loaded>	@whenPulled	giNote	giTag	ivOn	matMigrate	matOnItem	matRenameTo	sockLegacy	sockToeMigrate	start-safety	synced	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardPendingSoon	wardSort	wardSynced	wardView
 sharpclose.test.js	weather.js	<loaded>	loadWeather	today-parts
 sharpclose.test.js	who.js	<loaded>	acctRole	applyRole	isTester
 shellfix.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutDbDelete	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutResetAt	aboutSay	aboutShow	aboutStart	appVersion	askDelete	checkForUpdate	delAskTap	delDeviceTap	deleteMyData	loadFeedback	renderAbout	settings-category	swVersionOf	wipeDevice
@@ -21005,7 +21003,7 @@ todayzoom.test.js	asm-watch.js	<loaded>
 todayzoom.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm
 todayzoom.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 todayzoom.test.js	backupfile.js	<loaded>
-todayzoom.test.js	bus.js	<loaded>	ask	emit	need	needFn	on	register	runHooks	serve	served	slotsOf
+todayzoom.test.js	bus.js	<loaded>	ask	emit	need	needFn	on	register	runHooks	runHooksSeq	serve	served	slotsOf
 todayzoom.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calLink	today-parts
 todayzoom.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careNote	careNoun	careTop	today-parts
 todayzoom.test.js	checklist.js	<loaded>
@@ -21032,7 +21030,7 @@ todayzoom.test.js	look.js	<loaded>
 todayzoom.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 todayzoom.test.js	measure.js	<loaded>
 todayzoom.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
-todayzoom.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
+todayzoom.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	remakeAfterPull	upgradeCloseups	upgradePhotos
 todayzoom.test.js	missed.js	<loaded>	firstReal	missedCard	missedOpen
 todayzoom.test.js	month.js	<loaded>	dayMarks	dayOnly	dayWord	get monthOpen	homeDay	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	mvSig	nextWorkday	piecesLine	piecesParts	planOn	recentWork	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth	wardShort
 todayzoom.test.js	mq/shirt-open.js	<loaded>
@@ -21561,7 +21559,6 @@ wardfab.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedule
 wardfab.test.js	tag-request.js	<loaded>	insights-cards	tagStatsCard
 wardfab.test.js	tagging.js	<loaded>
 wardfab.test.js	tests/fixedplan.js	<any>
-wardfab.test.js	tests/webkit.js	<any>
 wardfab.test.js	theme.js	<loaded>	applyTheme
 wardfab.test.js	toast.js	<loaded>	toast	toastDrop	undoFab	undoHere	undoOff
 wardfab.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
