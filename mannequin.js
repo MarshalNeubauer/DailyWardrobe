@@ -11,6 +11,7 @@
    pose's soft wall shadow baked in, scaled up smoothly), in the light and dark themes alike, so the switch to the painted picture is
    seamless; nothing of the mannequin's own covers the wall (office:false draws the plain bg colour instead). WebKit-safe: no <use>
    inside <clipPath>. */
+import {ask, served} from './bus.js';
 import {linSrgb,srgbLin8} from './srgb.js';
 (function(){
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -39,7 +40,7 @@ function pattern(id, spec, rot, k = 1) {
    up to 12 levels darker than the painted buttons) */
 const btnCol = (c) => { const ok = /^#[0-9a-fA-F]{6}$/.test(String(c)), s = ok ? [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)) : [235, 235, 235];
   const hex = v => '#' + v.map(x => Math.round(x).toString(16).padStart(2, '0')).join('');
-  if (typeof asmCmBtnCol === 'function') return hex(asmCmBtnCol(s.map(srgbLin8)).map(v => 255 * linSrgb(v)));
+  if (served('asm-cm-btn-col')) return hex(ask('asm-cm-btn-col', s.map(srgbLin8)).map(v => 255 * linSrgb(v)));
   return hex([239, 236, 231].map((v, i) => v * .45 + s[i] * .55)); };
 const shirtButton = (x, y, r, c) => `<circle cx="${x + r * .25}" cy="${y + r * .35}" r="${r * 1.05}" fill="#000" fill-opacity=".18"/><circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/>`
   + `<circle cx="${x}" cy="${y}" r="${(r * .8).toFixed(2)}" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="${(r * .18).toFixed(2)}"/>`
@@ -53,7 +54,7 @@ const shirtButton = (x, y, r, c) => `<circle cx="${x + r * .25}" cy="${y + r * .
    fold's top very slightly uneven and rounded off at the corners, a lit crease along it with the roll's soft shadow under it, the two
    layers' edges at each end, two faint relaxed creases, and the cloth tucking into the opening at the bottom corners */
 function pocketSvg(pocket, kind, P) {
-  const Q = pocket && typeof asmPocketQuad === 'function' ? asmPocketQuad(kind) : null; if (!Q) return '';
+  const Q = pocket && served('asm-pocket-quad') ? ask('asm-pocket-quad', kind) : null; if (!Q) return '';
   const s = VB / 2048, f2 = v => (v * s).toFixed(2), Ww = Q.b1[0] - Q.b0[0], sl = (Q.b1[1] - Q.b0[1]) / Ww, H = Q.b0[1] - Q.t0[1];
   // a point of the strip in 2048 px: uu along it from its left end, vv down from its top line
   const S = (uu, vv) => [Q.t0[0] + uu, Q.t0[1] + uu * sl + vv], dv = uu => .38 * Math.sin(uu * .034 + .4) + .22 * Math.sin(uu * .093 + 2.1) + Math.exp(-uu / 3) + Math.exp(-(Ww - uu) / 3);

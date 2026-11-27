@@ -49,7 +49,8 @@ module.exports=async({ok,ROOT})=>{
   const {files,owner,seen,where}=measure(ROOT);
   // (over 1,000 before the painter's files became modules, C3: a module's names it keeps to itself are no other file's to write)
   // (a module owns the names it bridges: 655 since T2 phase 3 took the tests' own names off the bridge, 2026-11-25; 966 before)
-  ok(files.length>40&&Object.keys(owner).length>600,`index.html's ${files.length} scripts read, ${Object.keys(owner).length} mutable top-level names`);
+  // (567 since the painter's files bridge nothing, the restructure S6p, 2026-11-27)
+  ok(files.length>40&&Object.keys(owner).length>400,`index.html's ${files.length} scripts read, ${Object.keys(owner).length} mutable top-level names`);
   const fresh=[],over=[],under=[];
   for(const [name,by] of Object.entries(seen))for(const [f,n] of Object.entries(by)){
     const allowed=(ALLOW[name]||{})[f]||0,at=`${f}:${where[name+' '+f].join('/')}`;

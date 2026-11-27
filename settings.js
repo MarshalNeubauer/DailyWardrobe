@@ -8,7 +8,7 @@
    pilot, 2026-11-25). It imports only the board: an import of core.js or back.js broke the offline deep link (the service worker
    answers a file asked for under another folder with the root's copy, so an import resolved against the root ran the file a second
    time; bus.js keeps nothing on the page, so a second copy of it is harmless). Everything else it still reads as globals. */
-import {on,heard,emit} from './bus.js';
+import {on,heard,emit,ask,served,serve} from './bus.js';
 import {$,DAY_NAMES,MATERIALS_BY,applyCustom,dayRecs,isoKey,key,keyDate,keySettings,mergeSettings,nowMs,occOf,ownMats,setWardrobe,settings,stampSettings,todayDate,wearsJacket,wearsTie} from './core.js';
 import {inviteOver,layerClose,layerOpen,tell} from './ui.js';
 import {backDrop,backKind,backPush} from './back.js';
@@ -162,7 +162,7 @@ function settingsPart(fn){on('settings-parts',fn)}
    location and units), in their load order; then what this file draws, then the summaries, then the parts drawn last */
 function renderSettingsExtras(){
   renderItemPicUI();renderReplanUI();emit('settings-draw');
-  renderPicturesUI();if(typeof renderAsmUI==='function'){renderAsmUI();if(asmLive())asmSync()}
+  renderPicturesUI();if(served('asm-ui')){ask('asm-ui');if(asmLive())ask('asm-sync')}
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" data-act="dayTap" data-list="${id}" data-i="${i}" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
   if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';if($('#cfg-dark'))$('#cfg-dark').value=settings.darkShirts||'some';
@@ -181,12 +181,12 @@ function renderPicturesUI(){const pan=$('#sp-photos .mpanel-in');if(!pan)return;
 <label class="srow">Show <select id="cfg-pictures" data-act-change="picsPick" aria-label="Today’s outfit" aria-describedby="pics-help"><option value="painted">Painted pictures</option><option value="drawn">Drawing only</option></select></label>`;
   $('#cfg-pictures').value=v}
 async function setPictures(v){const d=v==='drawn';if(d===picsDrawn())return;settings.pictures=d?'drawn':'painted';await saveUserSettings();picsSwitched();
-  renderPicturesUI();if(typeof renderAsmUI==='function')renderAsmUI();settingsSummaries()}
+  renderPicturesUI();if(served('asm-ui'))ask('asm-ui');settingsSummaries()}
 /* the choice changed (here, or on another device: start.js onSyncedData): Today is drawn again (once Settings closes, refreshToday), and
    back on "Painted pictures" the day on screen is painted or downloaded at once, while Settings is still open, and building ahead resumes
    from asmEnsure; on "Drawing only" building ahead stops at its next look (asmAhead's stop) */
 function picsSwitched(){refreshToday();if(picsDrawn()||!asmLive())return;
-  asmSync();const o=planFor()[key(sel)];if(o&&hasOutfit(o))asmEnsure(o);schedulePrefetch()}
+  ask('asm-sync');const o=planFor()[key(sel)];if(o&&hasOutfit(o))ask('asm-ensure',o);schedulePrefetch()}
 /* (vest, workdays, blazer days and units are drawn on Today too: todayStale redraws it when Settings closes; it stayed stale until a restart, audit 2026-11-14) */
 function setVestMode(v){settings.vestMode=v;saveUserSettings();todayDirty();settingsSummaries()}
 /* how often dark shirts are planned (planner.js, darkMode): the coming week is planned again with the new choice */
@@ -220,6 +220,7 @@ function setViewStale(v){viewStale=v}
 Object.assign(globalThis,{SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayDirty,settingsOpen,refreshToday,closeSettings,saveSettings,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,picsSwitched,setVestMode,toggleDay,setWanted,setSetSeen,setViewStale});
 Object.defineProperties(globalThis,{viewStale:{get:()=>viewStale,set:v=>{viewStale=v}},setSeen:{get:()=>setSeen,set:v=>{setSeen=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+serve('refresh-today',refreshToday);   // (the restructure S6p: the painter, asm-today.js and asm-cm-page.js, redraws Today when a picture is ready; it loads before this file)
 globalThis.HOOK={__proto__:globalThis.HOOK||null,SET_CATS,saveSettings,setCatOpen,setDarkShirts,setOpenTap,get setOther(){return setOther},setPictures,get todayStale(){return todayStale},backupSummary,toggleDay,settingsSummaries,closeSettings,openSettings,refreshToday,renderSettingsExtras,saveUserSettings,settingsOpen,showCost,toggleCat};
 export {SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayStale,todayDirty,viewStale,settingsOpen,refreshToday,closeSettings,saveSettings,setSeen,setOther,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,setPictures,picsSwitched,setVestMode,setDarkShirts,toggleDay,setWanted,setOpenTap,setSetSeen,setViewStale};
 /* the notice board (bus.js): what Settings does when the router announces it (nav.js no longer names this file; the restructure S3f) */

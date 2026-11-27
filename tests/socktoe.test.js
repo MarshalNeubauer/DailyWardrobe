@@ -30,10 +30,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
     const a=await p.evaluate(async()=>{const s={id:'sk1',type:'socks',primaryColor:'black',secondaryColor:'lightgrey',pattern:'solid',added:1},plain={id:'sk2',type:'socks',primaryColor:'black',pattern:'solid',added:1};
-      const th=itemThumb(s,true),th0=itemThumb(plain,true);HOOK.items=[s,plain];
+      const th=HOOK.itemThumb(s,true),th0=HOOK.itemThumb(plain,true);HOOK.items=[s,plain];
       await HOOK.renderItemPic(s);
-      return {d:HOOK.itemDesc(s),d0:HOOK.itemDesc(plain),desc:desc(s),desc0:desc(plain),toe:/class="sock-toe"[^>]*fill="#[0-9a-f]{6}"/i.test(th)&&th.includes(COLORS.lightgrey),toe0:/sock-toe/.test(th0),traced:th.includes(HOOK.SOCK_D.back)&&th.includes(HOOK.SOCK_D.front)&&th.includes(HOOK.SOCK_D.cuff)&&/<clipPath id="[^"]+cb">/.test(th)&&/<clipPath id="[^"]+cf">/.test(th)&&/clip-path="url\(#[^)]+cf\)"/.test(th),
-        keys:itemKey(s)!==itemKey(plain),form:itemBody(s),form0:itemBody({id:'t1',type:'tie',primaryColor:'navy',pattern:'solid'})}});
+      return {d:HOOK.itemDesc(s),d0:HOOK.itemDesc(plain),desc:HOOK.desc(s),desc0:HOOK.desc(plain),toe:/class="sock-toe"[^>]*fill="#[0-9a-f]{6}"/i.test(th)&&th.includes(HOOK.COLORS.lightgrey),toe0:/sock-toe/.test(th0),traced:th.includes(HOOK.SOCK_D.back)&&th.includes(HOOK.SOCK_D.front)&&th.includes(HOOK.SOCK_D.cuff)&&/<clipPath id="[^"]+cb">/.test(th)&&/<clipPath id="[^"]+cf">/.test(th)&&/clip-path="url\(#[^)]+cf\)"/.test(th),
+        keys:HOOK.itemKey(s)!==HOOK.itemKey(plain),form:HOOK.itemBody(s),form0:HOOK.itemBody({id:'t1',type:'tie',primaryColor:'navy',pattern:'solid'})}});
     ok(/single black .*dress sock in side profile/.test(a.d)&&/light grey knitted toe cap/.test(a.d)&&/heel stays black/.test(a.d),`the picture description is one sock in profile with its toe cap (${a.d.slice(0,60)}…)`);
     ok(!/toe cap/.test(a.d0)&&/toe and heel the same colour/.test(a.d0)&&a.keys,'a plain sock has no toe cap, and gets its own picture');
     ok(a.desc==='black, light gray toe'&&a.desc0==='black',`the name says the toe color (${a.desc})`);
@@ -45,19 +45,19 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // a sock photo already kept on pure white is toned down to the warm grey of the other tiles, once; a grey one is left alone
     const g=await p.evaluate(async()=>{const mk=(bg)=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,64,64);x.fillStyle='#202020';x.fillRect(24,16,16,32);return c.toDataURL('image/jpeg',.95)};
       const px=async(u,X,Y)=>{const im=new Image();im.src=u;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);return [...x.getImageData(X,Y,1,1).data].slice(0,3)};
-      HOOK.renders={cw:{sig:'item',img:mk('#ffffff')},cg:{sig:'item',img:mk('rgb(220,215,210)')}};const g0=renders.cg.img;
-      const n=await fixItemBackdrops(),n2=await fixItemBackdrops();
-      return {n,n2,bg:await px(renders.cw.img,2,2),sock:await px(renders.cw.img,32,32),same:renders.cg.img===g0,flag:renders.cw.grey&&renders.cg.grey,stored:(await metaGet('render:cw')).grey}});
+      HOOK.renders={cw:{sig:'item',img:mk('#ffffff')},cg:{sig:'item',img:mk('rgb(220,215,210)')}};const g0=HOOK.renders.cg.img;
+      const n=await HOOK.fixItemBackdrops(),n2=await HOOK.fixItemBackdrops();
+      return {n,n2,bg:await px(HOOK.renders.cw.img,2,2),sock:await px(HOOK.renders.cw.img,32,32),same:HOOK.renders.cg.img===g0,flag:HOOK.renders.cw.grey&&HOOK.renders.cg.grey,stored:(await HOOK.metaGet('render:cw')).grey}});
     const near=(a,b)=>a.every((v,j)=>Math.abs(v-b[j])<=8);
     ok(g.n===1&&g.n2===0&&g.flag&&g.stored,`a kept white-backdrop picture is fixed once and saved (${g.n}, ${g.n2})`);
     ok(near(g.bg,[220,215,210]),`its white backdrop becomes the tiles' warm gray (${g.bg})`);
     ok(near(g.sock,[32,32,32]),`the sock itself keeps its color (${g.sock})`);
     ok(g.same,'a picture already on gray is left as it is');
     // the Add card says Toe cap too
-    const add=await p.evaluate(()=>{show('add');HOOK.queue=[{id:'q1',manual:true,type:'socks',primaryColor:'navy',secondaryColor:'grey',pattern:'solid'}];renderAdd();return $('#add').textContent});
+    const add=await p.evaluate(()=>{HOOK.show('add');HOOK.queue=[{id:'q1',manual:true,type:'socks',primaryColor:'navy',secondaryColor:'grey',pattern:'solid'}];HOOK.renderAdd();return HOOK.$('#add').textContent});
     ok(/Toe cap/.test(add)&&!/Third color/.test(add),'the Add card labels the sock\'s secondary color "Toe cap"');
     // the planner ignores the toe cap (it is hidden in the shoe)
-    const pl=await p.evaluate(()=>sockScore(null,null,{type:'socks',primaryColor:'navy',secondaryColor:'lightgrey',pattern:'solid'})===sockScore(null,null,{type:'socks',primaryColor:'navy',pattern:'solid'}));
+    const pl=await p.evaluate(()=>HOOK.sockScore(null,null,{type:'socks',primaryColor:'navy',secondaryColor:'lightgrey',pattern:'solid'})===HOOK.sockScore(null,null,{type:'socks',primaryColor:'navy',pattern:'solid'}));
     ok(pl,'the toe cap does not change how socks are chosen');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}

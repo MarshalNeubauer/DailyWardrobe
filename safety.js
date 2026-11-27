@@ -5,7 +5,7 @@
 
 /* ---- storage failures ---- */
 // is this error (or IndexedDB error event) a failure of the device's storage: marked by txs/atomic in app.js, a full disk, or a failed request
-import {ask,cardAt,db,dbGone,fill,metaPut,queue,storeErr,storeFailText,storeFailure} from './app.js';
+import {ask,cardAt,db,fill,metaPut,queue,storeErr,storeFailText,storeFailure} from './app.js';
 import {esc} from './photo-keys.js';
 import {$,applyCustom,askPersist,items,setWardrobe,settings,takeSettings} from './core.js';
 import {planDirty} from './today-plan.js';

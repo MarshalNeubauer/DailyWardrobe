@@ -6,7 +6,7 @@
    follows the forecast). The planner keeps a locked day's pieces (planner.js, outfit()), so swapping today's tie, marking a day not
    worn or adding an item re-plans only the days after the lock, not tomorrow's outfit. A change made by hand on a day (a swap, a pick,
    an occasion, Reset, a move) drops that day's lock: the day is planned again around the change and locked as it then shows. */
-import {clearLocks,idsOf,lockIds,releaseLocks,saveDay} from './days.js';
+import {clearLocks,lockIds,releaseLocks} from './days.js';
 import {SLOTS,dayFields,dayRecs,di,inRotation,isHandPick,isWorkday,items,key,keyDate,nextStamp,nowMs,todayDate,trueToday} from './core.js';
 import {planFor,planMonth} from './today-plan.js';
 import {txs} from './app.js';

@@ -17,7 +17,7 @@ module.exports=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const recs={};for(const kind of ['suit','shirt-tie','vest','suit-open','shirt-open']){const d=path.join(FIX,kind);for(const f of fs.readdirSync(d)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');
       recs[kind+'|'+n]={sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(d,f)).toString('base64'),model:'colormaster',t:1000}}}
-    const keys=await p.evaluate(rs=>{const o={};for(const k of Object.keys(rs)){const [kind,n]=k.split('|');o[k]=asmCmKey(kind,n)}return o},Object.fromEntries(Object.keys(recs).map(k=>[k,1])));
+    const keys=await p.evaluate(rs=>{const o={};for(const k of Object.keys(rs)){const [kind,n]=k.split('|');o[k]=HOOK.asmCmKey(kind,n)}return o},Object.fromEntries(Object.keys(recs).map(k=>[k,1])));
     for(const [k,r] of Object.entries(recs))served[keys[k]]=r;
     const res=await p.evaluate(async h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=512;HOOK.asmAheadSoon=()=>{};HOOK.asmAhead=async()=>{};
       let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
@@ -49,10 +49,10 @@ module.exports=async({ok,chromium,url})=>{
       watches.forEach(w=>{looks.push({name:'watch '+w.metal+' '+w.dial+' '+w.band+' (waistcoat)',o:{top:suits[0],vest:true,shirt:shirts[0],tie:ties[0],watch:w}});
         looks.push({name:'watch '+w.metal+' '+w.dial+' '+w.band+' (open collar)',o:{top:jackets[0],shirt:shirts[0],watch:w}});
         looks.push({name:'watch '+w.metal+' '+w.dial+' '+w.band+' (open shirt)',o:{shirt:shirts[0],bot:pants[0],belt,shoes,watch:w}})});
-      const out=[];await asmListGet(true);
-      for(const L of looks){const k=asmCmKind(L.o);let r={name:L.name,kind:k};
-        try{await HOOK.asmCmLook(L.o);if(!await asmCmGet(k)){r.err='master not here';out.push(r);continue}const job=await HOOK.asmJob(L.o);if(!job){r.err='no job';out.push(r);continue}
-          const t0=performance.now(),b=await asmRun(job,true);r.ok=!!(b&&(b.url||b.px));r.ms=Math.round(performance.now()-t0);r.watch=!!job.watch}catch(e){r.err=String(e&&e.message||e)}out.push(r)}
+      const out=[];await HOOK.asmListGet(true);
+      for(const L of looks){const k=HOOK.asmCmKind(L.o);let r={name:L.name,kind:k};
+        try{await HOOK.asmCmLook(L.o);if(!await HOOK.asmCmGet(k)){r.err='master not here';out.push(r);continue}const job=await HOOK.asmJob(L.o);if(!job){r.err='no job';out.push(r);continue}
+          const t0=performance.now(),b=await HOOK.asmRun(job,true);r.ok=!!(b&&(b.url||b.px));r.ms=Math.round(performance.now()-t0);r.watch=!!job.watch}catch(e){r.err=String(e&&e.message||e)}out.push(r)}
       return {offPage:HOOK.asmOffPage(),out}},HOST);
     const bad=res.out.filter(r=>!r.ok);
     ok(res.offPage,'the looks are built in the Web Worker');

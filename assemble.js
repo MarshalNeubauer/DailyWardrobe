@@ -5,14 +5,12 @@
 // the page, the pictures kept on the device, looks' pictures already on the worker, building ahead and Today's hook (asmFor / asmEnsure).
 // (2026-11-14, the owner's order after the audit: the earlier photo-per-item assembler, its master, calibration photos, pieces, zones
 // and the atlas-painting trial were deleted; a look with no colour-coded master shows its own photo or the drawing.)
+import {ask} from './bus.js';
 import {srgbLin8} from './srgb.js';
 const ASM_VER=3;   // in every key (asmKey): the colour-coded masters' keys too, so it never changes
 const ASM_SIZE=2048;   // a phone paints at 2048 (a larger ASM_CM_SIZE, as some tests set, paints larger and scales to this)
 /* ASM_ON: are assembled pictures in use? Off, Today shows each outfit's own photo or drawing and nothing is fetched or painted */
 let ASM_ON=!self.ASM_TEST_OFF;   // (tests switch assembled pictures off unless the test file says module.exports.assembled=true: tests/run.js)
-/* Settings → Outfit pictures → "Drawing only" (photos.js picsDrawn): nothing is painted or downloaded for Today (asmEnsure, asmAhead, asmSync,
-   renderAsmUI); the lower-level calls (asmCmLook, asmCmGet, asmJob) don't ask */
-const asmDrawn=()=>typeof picsDrawn==='function'&&picsDrawn();
 try{for(const k of ['asm_paint2','asm_none','asm_vest'])localStorage.removeItem(k)}catch{}   // the earlier assembler's settings on a phone (2026-11-14: deleted)
 const asmImg=u=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>no(new Error('could not read a photo'));im.src=u});
 /* a photo as pixels, W wide and high (its own width when not given: photos are square) */
@@ -40,8 +38,6 @@ const ASM_BARV=2,ASM_BAR_AT=.6,ASM_BAR_MM=5.5,ASM_BAR_LEN=.8;   // 2: clipped on
 /* its colour: a tie clip is its colour (no metal field). The metals have their own tones (a swatch colour is too flat for polished
    metal); any other colour is an enamel bar in that colour (colOf, so a custom colour works too), shaded the same way */
 const ASM_METAL={silver:[200,201,204],white:[226,227,229],lightgrey:[190,192,196],midgrey:[172,174,178],grey:[160,162,166],gold:[208,168,84],rosegold:[206,148,128],gunmetal:[96,99,106]};
-const asmBarRgb=i=>{const c=i&&i.primaryColor;if(ASM_METAL[c])return ASM_METAL[c];const h=String(colOf(i)).replace('#','');return [0,2,4].map(k=>parseInt(h.slice(k,k+2),16)||128)};
-const asmBarSig=i=>'b'+ASM_BARV+asmBarRgb(i).join('.');
 function asmBarDraw(o,tieM,W,rgb,lab){const N=W*W,s=W/ASM_SIZE,m=new Uint8Array(N);let first=-1;for(let i=0;i<N&&first<0;i++)if(tieM[i])first=i;if(first<0)return null;
   const a=asmAreas(tieM,W),k=a.lab[first],xl=new Float32Array(W).fill(-1),xr=new Float32Array(W).fill(-1);let y0=W,y1=-1;
   for(let y=0;y<W;y++)for(let x=0;x<W;x++){if(a.lab[y*W+x]!==k)continue;if(xl[y]<0)xl[y]=x;xr[y]=x;if(y<y0)y0=y;if(y>y1)y1=y}
@@ -77,40 +73,6 @@ function asmBarDraw(o,tieM,W,rgb,lab){const N=W*W,s=W/ASM_SIZE,m=new Uint8Array(
     for(let c=0;c<3;c++){const mc=Math.min(255,base[c]*f+glint)*(1-refl)+src[j+c]*1.4*refl;o[j+c]=cov*Math.min(255,mc)+(1-cov)*o[j+c]}
     if(cov>=.5){m[i]=1;if(lab)lab[i]=4}}
   return m}
-/* ---- keys ---- */
-const asmKey=t=>'c'+fnv64('asm/'+ASM_VER+'/'+t);
-/* the outfit is painted on a colour-coded master (asm-color.js) when its kind has one on this device or in the worker's list (a phone
-   then needn't download a master and its masks just to learn it exists; it downloads them only to paint a look with no picture on the worker,
-   asmCmEnsure); else null: the day shows its own photo or the drawing */
-/* (and the masters the last list showed are remembered, localStorage.asm_cm_listed: at start a phone holding no master would otherwise
-   wait for the list before showing a picture it already keeps) */
-let asmCmListed=null;
-const asmCmSeen=k=>{if(!asmCmListed){try{asmCmListed=new Set(JSON.parse(localStorage.getItem('asm_cm_listed')||'[]'))}catch{asmCmListed=new Set()}}return asmCmListed.has(k)};
-const asmCmHeld=k=>{const m=asmCmKey(k,'master');return !!(renders[m]||(asmList?asmList.has(m):asmCmSeen(m)))};
-/* (2026-11-16) a new garment's master (asm-kinds.js) is used only when it and its base master are there: until then the day shows the drawing */
-const asmCmUse=o=>{if(!ASM_ON||typeof asmCmKind!=='function')return null;const k=asmKindOf(o);return k&&asmCmHeld(k)&&asmCmHeld(asmNkBaseOf(k))?k:null};
-/* look for the outfit's colour-coded master on the worker, once a session: in the worker's list (one small request), else by downloading it */
-const asmCmLook=async o=>{if(!ASM_ON||typeof asmCmKind!=='function')return;const k=asmKindOf(o);if(!k)return;
-  await asmCmMfGet();   // the masters' manifest first: it may outdate a photo held here, and its dates are in the look's key
-  for(const m of new Set([asmNkBaseOf(k),k]))if(!renders[asmCmKey(m,'master')]){const L=await asmListGet();if(!(L&&L.has(asmCmKey(m,'master')))&&!asmTried.has(asmCmKey(m,'master')))await asmCmGet(m)}
-  // the background (asm-color.js), once a session: its date is in every look's key, so a phone needs it to find the worker's pictures
-  if(asmCmHeld(k))await asmCmBgGet()};
-const asmCmAny=()=>Object.keys(ASM_CM_KINDS).some(asmCmHeld);
-/* the worker's list of the photos it keeps (GET /render?list=1: keys only, a few KB): which looks have a picture there (uploaded
-   by the PC builder until it was removed, 2026-11-16) and which colour-coded masters are there. It is photos.js's one shared list (workerList: one request for the outfit photos
-   and for these, kept LIST_MS, not asked again until the next UTC day once refused); null when the worker can't list: then a look is
-   asked for by itself, as before */
-let asmList=null,asmListAt=0;
-function asmListGet(force){if(!workerBase())return Promise.resolve(null);
-  return workerList(force).then(L=>{if(L&&L!==asmList){asmList=L;asmListAt=listAt;
-      asmCmListed=new Set(Object.keys(ASM_CM_KINDS).map(k=>asmCmKey(k,'master')).filter(m=>asmList.has(m)));try{localStorage.setItem('asm_cm_listed',JSON.stringify([...asmCmListed]))}catch{}}
-    return asmList})}
-/* a figured shirt (a small figure on a grid, read from its close-up: the owner's grey chevron dobby, his lavender micro-print neat) is
-   painted too, in colour: one repeat of the app's own drawing of the reading (two cells each way), each pixel as its colour over the
-   reading's ground, so the ground becomes the tagged colour and the figures keep their contrast to it (a dim close-up read the white
-   chevron shirt's ground as #c9c9d4). The cell's size from the close-up (ASM_CLOSEUP_MM / cells seen in it), never finer than
-   ASM_TEX_MIN_MM: Claude's count across the shirt is the server's cap (80) for both. */
-const asmMotif=i=>{const s=usableSett(i);return !!(s&&s.motif&&s.motif.figs&&s.motif.figs.length&&s.cr>0)};
 /* Woven shirts are painted with their weave laid over the colour (the owner's choice, 2026-11-12, from renders of his own shirts on the
    2048 master). asmWeave(i) -> null (plain), {f:'fleck'}, {f:'col', mm, rot} (a figured shirt) or {f:'tile', mm, hb}:
    - herringbone: the size from Claude's count across the shirt (ASM_SHIRT_MM / sett.tr); a count at the server's cap (80) or none
@@ -125,11 +87,6 @@ const ASM_HB_TR=45;   // a herringbone without a real count: 12 mm
 const ASM_CLOSEUP_MM=80;   // the width of cloth a phone close-up shows
 const ASM_TEX_MIN_MM=2.9;   // a figured weave is never drawn finer (about 9 px at 2048)
 const ASM_PX_MM=3.2;   // the 2048 master: about 32 px a centimetre (shoulder seams ~1460 px apart, ~46 cm; the tie ~6.7 cm mid-chest)
-function asmWeave(i){if(i&&i.type==='shirt'&&asmMotif(i)){const s=usableSett(i);return {f:'col',mm:2*Math.max(ASM_TEX_MIN_MM,ASM_CLOSEUP_MM/s.cr),rot:(+s.a||0)*Math.PI/180}}   // mm: the drawing's tile, two cells
-  if(!i||!texPat('shirt',i.pattern))return null;const p=patBase(i.pattern),s=usableSett(i),t=s&&s.tex,k=t?t.kind:p;
-  if(k==='herringbone'||(!t&&p==='herringbone')){const tr=+(s&&s.tr)||0;return {f:'tile',hb:true,mm:ASM_SHIRT_MM/(tr>0&&tr<ASM_TR_CAP?tr:ASM_HB_TR)}}
-  if(!t||k==='end-on-end')return {f:'fleck'};
-  return {f:'tile',mm:0}}
 /* the weave's repeat across a close-up, in its pixels: the first correlation peak (shifted sideways) whose double comes back too (a
    true repeat does; grain and noise don't), after a 3x3 blur (noise) less a 49x49 one (light falloff, folds) -> px, or 0 */
 function asmRepeatPx(d){const w=d.width,h=d.height,p=d.data,L=new Float32Array(w*h);for(let k=0;k<w*h;k++)L[k]=.3*p[4*k]+.59*p[4*k+1]+.11*p[4*k+2];
@@ -158,17 +115,9 @@ const ASM_TWILL={amp:.06,mix:.22,fleck:.025};
    own patterns named twill but based on solid (black fine worsted twill, mid grey melange twill): the weave is read from the pattern's
    own name or Claude's description too (asmSuitWeave), and a herringbone gets the herringbone cloth, columns ASM_HB_MM wide */
 const ASM_HB_MM=5.4,ASM_HB_AMP=.28,ASM_HB_RIB=3.6,ASM_HB_FLECK=.16,ASM_HB_YARN=.5,ASM_HB_BREAK=0,ASM_HB_THIN=0,ASM_HB_MOTTLE=.13,ASM_HB_FLOAT=.7,ASM_HB_FLOATL=1.1,ASM_HB_SOFT=0,ASM_HB_GRAIN=.1,ASM_HB_SNAP=1,ASM_HB_PBRK=.25;   // a herringbone's ribs are stronger than a plain twill's (.06): at .06 the charcoal tonal herringbone read flat; its close-up shows columns about 5 mm wide
-const asmSuitWeave=i=>{if(!i)return '';const b=patBase(i.pattern);if(b==='herringbone')return 'herringbone';if(b==='twill')return 'twill';
-  if(b!=='solid'&&!/^own/.test(i.pattern||''))return '';
-  const t=(i.pattern||'')+' '+((i.patternSpec&&i.patternSpec.description)||i.patternText||'');
-  return /herringbone/i.test(t)?'herringbone':/twill|serge|gabardine/i.test(t)?'twill':''};
-const asmSuitTwill=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&!!asmSuitWeave(i)&&!asmSuitBands(i);
 /* a herringbone's ribs meet in clean V's at each column edge only when the column is a whole number of half rib-spacings wide
    (2026-11-13: at 4.4 mm columns and 1.7 mm ribs every rib met its partner 0.18 of a rib off, which the owner saw as jagged V's) */
 const asmHbCw=()=>Math.max(1,Math.round(ASM_HB_MM/(ASM_HB_RIB/2)))*ASM_HB_RIB/2;
-function asmTwillTex(i){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])},c2=COLORS[i.secondaryColor]?lin(COLORS[i.secondaryColor]):null;
-  const hb=asmSuitWeave(i)==='herringbone';
-  return {c:new Float32Array(lin(colOf(i))),TW:1,TH:1,mm:10,linen:asmLinen(i),cloth:{kind:hb?'herringbone':'twill',...(hb?{cw:asmHbCw()*ASM_PX_MM,off:0,pitch:ASM_HB_RIB*ASM_PX_MM,yarn:ASM_HB_YARN,brk:ASM_HB_BREAK,thin:ASM_HB_THIN,mottle:ASM_HB_MOTTLE,float:ASM_HB_FLOAT,floatL:ASM_HB_FLOATL,soft:ASM_HB_SOFT,grain:ASM_HB_GRAIN,pbrk:ASM_HB_PBRK}:{}),amp:hb?ASM_HB_AMP:ASM_TWILL.amp,c2,mix:c2?ASM_TWILL.mix:0,fleck:hb?ASM_HB_FLECK:ASM_TWILL.fleck,ss:true}}}
 /* small woven figures (2026-11-13, the painters the routing test listed as missing): each is its thread grid, worked out as the cloth is
    woven where that is how the figure comes about (a houndstooth and a sharkskin are a 2/2 twill with dark and light yarns: 4 and 4 for
    the houndstooth, 1 and 1 for the sharkskin), drawn for birdseye and nailhead (a dark eye in a light ring; a light pin dot). g is each
@@ -183,30 +132,6 @@ function asmMicroGrid(kind){const C=ASM_MICRO[kind],N=C.N,g=new Float32Array(N*N
     else v=x===1&&y===1?1:-.25;
     g[y*N+x]=v}
   return g}
-/* the weave a jacket or trousers is painted with when it is none of the band, twill or tweed painters': from its pattern, or an own
-   pattern's name (a "micro houndstooth" drawn like solid) */
-const asmMicroKind=i=>{if(!i)return '';const b=patBase(i.pattern);if(ASM_MICRO[b])return b;if(b!=='solid'&&!/^own/.test(i.pattern||''))return '';
-  const t=(i.pattern||'')+' '+((i.patternSpec&&i.patternSpec.description)||i.patternText||'');return ASM_MICRO_KINDS.find(k=>new RegExp(k.replace('eye','[ -]?eye').replace('head','[ -]?head').replace('tooth','[ -]?tooth').replace('skin','[ -]?skin'),'i').test(t))||''};
-function asmMicroTex(i,kind){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])},C=ASM_MICRO[kind],c=lin(colOf(i));
-  let c2=COLORS[i.secondaryColor]?lin(COLORS[i.secondaryColor]):null;
-  // a houndstooth with no second colour is tonal: its teeth a darker shade of the cloth (a dark cloth's lighter)
-  if(!c2&&kind==='houndstooth'){const y=.2126*c[0]+.7152*c[1]+.0722*c[2],k=y>.05?.35:2.6;c2=c.map(v=>Math.min(1,v*k))}
-  return {c:new Float32Array(c),TW:1,TH:1,mm:10,linen:false,cloth:null,wv:{kind,N:C.N,thr:C.thr,amp:c2&&kind!=='houndstooth'?C.amp*.5:C.amp,mix:c2?C.mix:0,c2:c2?new Float32Array(c2):null,g:asmMicroGrid(kind)}}}
-/* a tweed jacket with no band reading (tagged tweed, or the owner's own pattern drawn like tweed) is painted too (2026-11-13, his slate
-   blue-grey tweed blazer): its colour with the tweed texture in the shading (asmTweedTile, like the linen's), its flecks in the second
-   colour when it has one (a Donegal). A tweed read as a check (CHECK_PATS) stays with the band painter. */
-const asmSuitTweed=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&patBase(i.pattern)==='tweed'&&!asmSuitBands(i);
-function asmTweedTex(i){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])};
-  return {c:new Float32Array(lin(colOf(i))),TW:1,TH:1,mm:10,linen:false,tweed:true,cloth:null,c2:COLORS[i.secondaryColor]?lin(COLORS[i.secondaryColor]):null,fmix:.85}}
-const asmSuitSig=i=>fnv64(['s'+ASM_SUITV,colOf(i),asmSuitTwill(i)?'tw|'+ASM_TWILL.amp+'|'+ASM_TWILL.mix+'|'+ASM_TWILL.fleck+'|'+(COLORS[i.secondaryColor]||'')+'|'+asmLinen(i)+(asmSuitWeave(i)==='herringbone'?'|hb'+ASM_HB_MM+'|'+ASM_HB_AMP+'|'+ASM_HB_RIB+'|'+ASM_HB_FLECK+'|'+ASM_HB_YARN+'|'+ASM_HB_BREAK+'|s'+ASM_HB_THIN+'|m'+ASM_HB_MOTTLE+'|f'+ASM_HB_FLOAT+'/'+ASM_HB_FLOATL+'|o'+ASM_HB_SOFT+'|g'+ASM_HB_GRAIN+'|n'+ASM_HB_SNAP+'|p'+ASM_HB_PBRK:''):'',asmSuitTweed(i)?'td|'+JSON.stringify(ASM_TWEED)+'|'+(COLORS[i.secondaryColor]||''):'',asmSuitBands(i)?settSig(usableSett(i))+'|'+JSON.stringify(asmClothOf(i,usableSett(i),ASM_SHIRT_MM/(usableSett(i).tr||1)))+'|'+(i.patternSpec?JSON.stringify([i.patternSpec.across,i.patternSpec.along]):''):''].join('|')).slice(0,10);
-/* ---- patterned jackets (a windowpane, a check, a stripe read in bands: the owner's khaki windowpane blazer, 2026-11-12) are painted
-   too, from the reading: one repeat of the app's own drawing (fabricDef) in the reading's colours, sized by its repeats across the
-   jacket (ASM_SHIRT_MM / sett.tr at ASM_PX_MM), upright on the body and along the arm on each sleeve (the sleeve zone pictures, made
-   with SAM like the others), each pixel's colour times the suit's shading. Lines are painted bold: no line narrower than ASM_LINE_PX
-   at 2048 (widened into the ground beside it), and lines crossing the other way at full strength (fabricDef draws them at half, for a
-   swatch); a 2% line on a 5 cm pane was 3 px and read faint. A linen jacket (material, or Claude's description of the cloth) gets a
-   linen texture in its shading: threads two pixels wide, each a little lighter or darker, plain-woven, with slubs. */
-const asmSuitBands=i=>{const s=usableSett(i);return !!(s&&s.v===2&&s.bands&&s.bands.length>1&&s.tr>0&&(!!s.look||[...CHECK_PATS,...STRIPE_PATS].includes(patBase(i.pattern))))};   // (s.look: an own pattern's stripes or check, detect.js lookSett, whatever it plans as)   // stripes too, since they are drawn at their own width on a herringbone or twill (2026-11-13)
 const asmLinen=i=>!!i&&(/linen/i.test(i.material||'')||/linen/i.test((i.patternSpec&&i.patternSpec.description)||i.patternText||''));
 const ASM_LINE_PX=4;   // the narrowest painted line at 2048 (a windowpane's, a check's)
 const ASM_STRIPE_PX=3;   // a stripe's: a pinstripe is about a millimetre (3 px), and at 4 the owner's navy pinstripe read heavy and white
@@ -219,43 +144,8 @@ const ASM_STRIPE_PX=3;   // a stripe's: a pinstripe is about a millimetre (3 px)
    shading steeper (gain * shading^gam): a dark navy worsted's folds go nearly black and its lit parts are greyish, not royal blue;
    the master's grey suit's shading is flatter. Before: crisp, bright, high-contrast lines on a bright royal blue. */
 const ASM_STRIPE={mix:.18,soft:2,weave:.08,brk:.3,blen:8,chroma:.4,gam:1.4,gain:.9};
-/* the cloth's own weave laid in the shading, from its material or Claude's description: linen (asmLinenTile), herringbone or twill
-   (diagonal lines 4 px apart at 2048, 20% (twill 16%) of the visible brightness, with an 8% fleck along each thread; a herringbone's columns turn at each break, half a stripe repeat wide with its
-   breaks on the stripes for a stripe, as on the owner's pinstripe, else 8 mm) -> {kind, cw, off, amp} in px at 2048, or null */
-function asmClothOf(i,s,mm){const t=((i.patternSpec&&i.patternSpec.description)||i.patternText||'')+' '+(i.material||'')+' '+(i.pattern||'');
-  if(asmLinen(i))return {kind:'linen'};
-  const stripe=STRIPE_PATS.includes(patBase(i.pattern))&&s&&s.bands;
-  if(/herringbone/i.test(t)){let cw=8*ASM_PX_MM,off=0;
-    if(stripe){const rp=mm*ASM_PX_MM,g=s.bands.reduce((a,b)=>b[1]>a[1]?b:a)[0];let x=0,c=0;for(const b of s.bands){if(b[0]!==g){c=x+b[1]/2;break}x+=b[1]}cw=rp/2;off=c*rp}
-    return {kind:'herringbone',cw,off,amp:stripe?ASM_STRIPE.weave:.2}}
-  if(/twill|serge|gabardine/i.test(t))return {kind:'twill',amp:.16};
-  return null}
 /* (page side) the jacket's drawing, lines widened to ASM_LINE_PX at its painted size -> {c, TW, TH, mm (one repeat across), linen} */
 const asmSuitTexMemo=new Map();
-async function asmSuitTex(i){const k=asmSuitSig(i);if(asmSuitTexMemo.has(k))return asmSuitTexMemo.get(k);const s=usableSett(i),mm=ASM_SHIRT_MM/s.tr,px=mm*ASM_PX_MM;
-  const bold=bands=>{if(!bands)return bands;const g=bands.reduce((a,b)=>b[1]>a[1]?b:a)[0],min=(STRIPE_PATS.includes(patBase(i.pattern))?ASM_STRIPE_PX:ASM_LINE_PX)/px,out=bands.map(b=>[b[0],b[1]]);let need=0;
-      for(const b of out)if(b[0]&&b[0]!==g&&b[1]<min){need+=min-b[1];b[1]=min}
-      const gw=out.filter(b=>!b[0]||b[0]===g).reduce((a,b)=>a+b[1],0);if(gw>need)for(const b of out)if(!b[0]||b[0]===g)b[1]*=1-need/gw;return out};
-  // Claude's own colours, band by band, where the reading has them (the owner's choice, 2026-11-12): measured from the pixels, a thin
-  // line is blurred into the ground and reads weak (his windowpane's off-white #e6ddcf for Claude's #eeeadf, its blue #a1bbd3 for #8eb2d6)
-  const sp=i.patternSpec,cl=(bands,spec,cross)=>spec&&spec.bands&&spec.bands.length===bands.length?bands.map((b,k)=>[cross&&!b[0]?null:spec.bands[k].hex,b[1]]):bands;
-  const stp=STRIPE_PATS.includes(patBase(i.pattern)),sb=cl(s.bands,sp&&sp.across,false),sc=s.cross?cl(s.cross.bands,sp&&sp.along,true):null;
-  const it={...i,sett:{...s,bands:bold(sb),cross:s.cross?{...s.cross,bands:bold(sc)}:null}};
-  const def=fabricDef('asmsuit',it,'blazer').replace(/ patternTransform="[^"]*"/,'').replace(/ opacity="\.5"/g,''),num=a=>+((def.match(new RegExp(' '+a+'="([\\d.]+)"'))||[])[1]||0),w=num('width'),h=num('height');
-  if(!w||!h)return null;const S=Math.max(1,Math.ceil(256/w)),TW=Math.round(w*S),TH=Math.max(1,Math.round(h*S)),L=ASM_LIN;
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${3*TW}" height="${3*TH}" viewBox="0 0 ${3*w} ${3*h}"><defs>${def}</defs><rect width="${3*w}" height="${3*h}" fill="url(#asmsuit)"/></svg>`;
-  const im=await asmImg('data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)))),cv=document.createElement('canvas');cv.width=3*TW;cv.height=3*TH;
-  const x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,3*TW,3*TH);const d=x.getImageData(TW,TH,TW,TH).data,c=new Float32Array(3*TW*TH);
-  for(let q=0;q<TW*TH;q++)for(let j=0;j<3;j++)c[3*q+j]=L[d[4*q+j]];
-  const r={c,TW,TH,mm,linen:asmLinen(i),cloth:asmClothOf(i,s,mm)};
-  if(stp){const bb=it.sett.bands,gb=bb.reduce((a,b)=>b[1]>a[1]?b:a),hx=String(gb[0]||'#000').replace('#',''),g=[0,2,4].map(q=>L[parseInt(hx.slice(q,q+2),16)||0]);
-    let x0=0,lo=0;for(const b of bb){if(b!==gb&&b[0]){lo=(x0+b[1]/2)/bb.reduce((a,b)=>a+b[1],0);break}x0+=b[1]}
-    const Z=ASM_STRIPE,dark=.2126*g[0]+.7152*g[1]+.0722*g[2]<.06,ch=dark?Z.chroma:1,chr=v=>{const Y=.2126*v[0]+.7152*v[1]+.0722*v[2];for(let q=0;q<3;q++)v[q]=Math.max(0,Y+ch*(v[q]-Y))};   // the stripe's place in the repeat (lo), the ground's colour (g)
-    if(ch!==1){chr(g);const t=[0,0,0];for(let q=0;q<TW*TH;q++){for(let j=0;j<3;j++)t[j]=c[3*q+j];chr(t);for(let j=0;j<3;j++)c[3*q+j]=t[j]}}
-    if(Z.soft>0){const sg=Z.soft*TW/(mm*ASM_PX_MM),R=Math.ceil(3*sg),kw=[];for(let o=-R;o<=R;o++)kw.push(Math.exp(-o*o/(2*sg*sg)));const ks=kw.reduce((a,b)=>a+b),t=new Float32Array(c.length);
-      for(let y=0;y<TH;y++)for(let x=0;x<TW;x++)for(let j=0;j<3;j++){let a=0;for(let o=-R;o<=R;o++)a+=kw[o+R]*c[3*(y*TW+((x+o)%TW+TW)%TW)+j];t[3*(y*TW+x)+j]=a/ks}
-      c.set(t)}
-    Object.assign(r,{g,k:Z.mix,brk:Z.brk,blen:Z.blen,gam:dark?Z.gam:1,gain:dark?Z.gain:1,loff:lo})}if(asmSuitTexMemo.size>20)asmSuitTexMemo.clear();asmSuitTexMemo.set(k,r);return r}
 /* a linen texture, 256 px square, the same on every device: each light factor around 1 (threads two pixels wide, each a little
    lighter or darker, plain-woven warp over weft in turn, with slubs: a run of thicker, lighter thread every so often) */
 let asmLinenMemo=null;
@@ -448,13 +338,6 @@ function asmTubeAt(g,X,Y){const p=asmTubePartQ(g,X,Y),r=asmTubeRaw(p,X,Y),t=p.t;
    lavender), at the reading's angle on the blade and a quarter turn more in the knot (the silk wraps across it), sized by the repeats
    across the blade. A tie with no reading is its tagged colour. */
 const ASM_TIEV=1;   // how ties are painted: in the picture's key
-async function asmTieTile(i){const def=fabricDef('asmtie',i,'tie',(usableSett(i)||{}).tex?'asmtie':undefined).replace(/ patternTransform="[^"]*"/,'').replace(/<path [^>]*stroke="#fff"[^>]*\/>/g,''),
-    num=a=>+((def.match(new RegExp(' '+a+'="([\\d.]+)"'))||[])[1]||0),w=num('width'),h=num('height');if(!w||!h)return null;
-  const S=Math.max(1,Math.ceil(256/w)),TW=Math.round(w*S),TH=Math.max(1,Math.round(h*S)),L=ASM_LIN;
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${3*TW}" height="${3*TH}" viewBox="0 0 ${3*w} ${3*h}"><defs>${def}</defs><rect width="${3*w}" height="${3*h}" fill="url(#asmtie)"/></svg>`;
-  const im=await asmImg('data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)))),cv=document.createElement('canvas');cv.width=3*TW;cv.height=3*TH;
-  const x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,3*TW,3*TH);const d=x.getImageData(TW,TH,TW,TH).data,c=new Float32Array(3*TW*TH);
-  for(let k=0;k<TW*TH;k++)for(let q=0;q<3;q++)c[3*k+q]=L[d[4*k+q]];return {c,TW,TH}}
 /* a striped tie's close-up: the stripes' direction (the projection with the sharpest profile, 2° steps) and their spacing (the
    profile's first autocorrelation peak past the silk's rib) -> repeats across the close-up's width, or 0. The reading's count can be
    half the truth (the owner's navy & pink: 1.7 read, 3.6 seen) */
@@ -473,13 +356,6 @@ const ASM_TIE_TEX_MAX=50;
    and at 32 the owner's black tonal-check tie's diamond grid (about 6 px a repeat) averaged out to flat black (2026-11-13) */
 const ASM_TIE_FIG_MAX=22;
 const asmTieMemo=new Map();
-async function asmTieFor(i){const k=asmTieSig(i);if(asmTieMemo.has(k))return asmTieMemo.get(k);const s=usableSett(i),hex=colOf(i);let r={hex};
-  // a woven tie's weave (tex) too: its raised grid, a tile repeated tr times across
-  if(s&&(s.bands||s.motif||s.tex)){const t=await asmTieTile(i);if(t){let across=+s.tr||1.5;if(s.tex)across=Math.min(across,['twill','herringbone'].includes(s.tex.kind)?ASM_TIE_TEX_MAX:ASM_TIE_FIG_MAX);
-      if(s.bands&&!s.cross&&i.texture&&s.cr>0)try{const n=asmStripeCount(await asmData(i.texture));if(n&&(n/s.cr>1.35||n/s.cr<.74))across*=n/s.cr}catch{}   // the close-up shows another count
-      r={hex,c:t.c,TW:t.TW,TH:t.TH,motif:!!s.motif,across,ang:(+s.a||0)*Math.PI/180}}}
-  if(asmTieMemo.size>40)asmTieMemo.clear();asmTieMemo.set(k,r);return r}
-const asmTieSig=i=>{const s=usableSett(i),c=i.texture||'';return fnv64(['t'+ASM_TIEV+(s&&s.tex?'k'+TIE_TEX_K+'m'+ASM_TIE_TEX_MAX+'f'+ASM_TIE_FIG_MAX+'d'+TIE_DARK_L+'x'+TIE_DARK_X:''),colOf(i),settSig(s),c.length+c.slice(-40)].join('|')).slice(0,10)};
 /* which way a woven shirt's threads run, per painted pixel (P.idx order): the shirt's pieces (the front with its collar, each cuff)
    are its connected parts; the front's weave is upright, a cuff's runs along the arm, so the tile's width follows the visible band
    (its long axis, from its second moments). Soft edge pixels take the part beside them; a speck goes with the front */
@@ -495,25 +371,8 @@ function asmShirtAngles(A,idx,W,H){const N=W*H,lab=new Int32Array(N).fill(-1),pa
   const ang=parts.map((p,i)=>{if(i===front||p.n<big)return 0;let t=p.th;while(t>Math.PI/2)t-=Math.PI;while(t<-Math.PI/2)t+=Math.PI;return Math.round((t+Math.PI/2)/Math.PI*254)/254*Math.PI-Math.PI/2});
   for(let pass=0;pass<6;pass++)for(const k of idx)if(lab[k]<0){const x=k%W;const q=x>0&&lab[k-1]>=0?k-1:x<W-1&&lab[k+1]>=0?k+1:k>=W&&lab[k-W]>=0?k-W:k+W<N&&lab[k+W]>=0?k+W:-1;if(q>=0)lab[k]=lab[q]}
   const out=new Float32Array(idx.length);for(let q=0;q<idx.length;q++){const l=lab[idx[q]];out[q]=l>=0?ang[l]:0}return out}
-/* ---- putting the picture together off the page. The pixel work takes about a second on a computer and three or four on a phone,
-   in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
-   this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
-/* everything the painting needs, as plain data (photos as data URLs), or null: a look with no colour-coded master (asm-color.js asmCmJob) */
-async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const ob=typeof asmOcpBase==='function'?asmOcpBase(o,k):o;let j=/** @type {any} */(await asmCmJob(ob));   // (the blouse's master is built on the open-shirt master's items: asm-ocp.js)
-  if(j)j=await asmNkJob(j,ob,k);   // a new garment's master and cloth, the faded master for jeans (asm-kinds.js)
-  if(j&&typeof asmWatchJob==='function'){const w=asmWatchJob(o,asmNkBaseOf(k));if(w)j.watch=w}
-  if(j&&typeof asmPocketJob==='function'){const q=asmPocketJob(o,asmNkBaseOf(k));if(q)j.pocket=q}
-  if(j&&typeof asmOcpJob==='function')j=await asmOcpJob(j,o,k);   // the uniform blouse (no watch or pocket square, the rank), OCP pants (asm-ocp.js)
-  return j}   // (the day's watch painted after: asm-watch.js; a new kind's watch is its base master's)
-/* build one picture from a job (in either thread) -> {url (a JPEG data URL), gl, ms}; a warming job (setupOnly) only sets its master up */
-async function asmBuild(job){
-  if(job.cm&&job.setupOnly){const hit=await asmCmSetup(job);if(job.diskCache!==false&&typeof indexedDB!=='undefined'&&!await asmCmDiskGet(asmCmDiskKey(job))){const x=await asmCmPack(hit.P);if(x)await asmCmDiskPut(asmCmDiskKey(job),x,job.cm+'|')}return {setup:true}}   // (warming, asm-color.js asmCmWarm)
-  if(!job||!job.cm)return {};return asmBuildAfter(await asmCmBuild(job),job)}
-/* the day's watch and pocket square, painted on the finished picture (asm-watch.js, asm-pocket.js; also after the page's draw, asm-gl.js asmGlFinOff) */
-async function asmBuildAfter(r,job){if(job.watch&&typeof asmWatchPaint==='function')r=await asmWatchPaint(r,job.watch);
-  if(job.ocpDecal&&typeof asmOcpPaint==='function')r=await asmOcpPaint(r,job.ocpDecal);   // the uniform blouse's tapes and rank (asm-ocp.js)
-  return job.pocket&&typeof asmPocketPaint==='function'?asmPocketPaint(r,job.pocket):r}
 /* a picture as a JPEG data URL (the worker has its own, on an OffscreenCanvas) */
+const setAsmData=f=>{asmData=f},setAsmJpeg=f=>{asmJpeg=f};   // (asm-worker.js and lab/gl-bench-run.js swap in their own decoder and encoder)
 let asmJpeg=async function asmJpeg(img){const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').putImageData(img,0,0);return c.toDataURL('image/jpeg',.9)};
 /* the worker: one picture at a time; the day on screen goes to the front of the line (asmRun(job, true)) */
 let asmW=null;
@@ -530,7 +389,7 @@ function asmWorker(){if(asmW!==null)return asmW;asmW=false;
 /* the worker can't run (it failed to load, or the browser has no OffscreenCanvas): what is waiting is built on the page */
 function asmWorkerDown(){const st=asmW;asmW=false;if(st)clearTimeout(st.timer);if(st&&st.w)try{st.w.terminate()}catch{}
   // (a step of asmRunPage's is not a picture: it fails, and asmRunPage paints the look on the page as without a worker)
-  const left=[...(st&&st.busy?[st.busy]:[]),...asmQ.splice(0)];for(const t of left){if(t.step)t.no(new Error('the painting worker stopped'));else asmBuild(t.job).then(t.ok,t.no)}}
+  const left=[...(st&&st.busy?[st.busy]:[]),...asmQ.splice(0)];for(const t of left){if(t.step)t.no(new Error('the painting worker stopped'));else ask('asm-build',t.job).then(t.ok,t.no)}}
 let asmSeq=0;
 function asmPump(){const st=asmW;if(!st||!st.ok||st.busy||!asmQ.length)return;clearTimeout(asmIdleT);const t=asmQ.shift();st.busy=t;st.timer=setTimeout(()=>asmStuck(st,t),ASM_RUN_MS);
   st.w.postMessage({id:t.id,job:t.job,...t.step},t.tr||[]);t.tr=null}
@@ -544,10 +403,10 @@ function asmPost(job,front,step,tr){return new Promise((ok,no)=>{const t={id:++a
    repaint, all off the page). The page's own graphics state (asmRunPage's) goes with it (asm-gl.js asmGlFree). Hidden, it is tried
    again every second until it is idle */
 let ASM_IDLE_MS=150e3,asmIdleT=0,asmPageN=0;
-function asmIdle(){const st=asmW;return !!st&&!!st.w&&!st.busy&&!asmQ.length&&!st.saving&&!asmAheadOn&&!asmPageN&&!asmCmWarming}
+function asmIdle(){const st=asmW;return !!st&&!!st.w&&!st.busy&&!asmQ.length&&!st.saving&&!asmAheadOn&&!asmPageN&&!ask('asm-cm-warming')}
 function asmIdleArm(){clearTimeout(asmIdleT);const st=asmW;if(!st||!st.w)return;asmIdleT=setTimeout(asmIdleEnd,document.hidden?0:ASM_IDLE_MS)}
 function asmIdleEnd(){const st=asmW;if(!st||!st.w)return;if(!asmIdle()){if(document.hidden)asmIdleT=setTimeout(asmIdleEnd,1000);return}
-  clearTimeout(st.timer);try{st.w.terminate()}catch{}asmW=null;if(typeof asmGlFree==='function')asmGlFree()}
+  clearTimeout(st.timer);try{st.w.terminate()}catch{}asmW=null;ask('asm-gl-free')}
 if(typeof document!=='undefined')document.addEventListener('visibilitychange',()=>{if(document.hidden)asmIdleArm()});
 /* (2026-11-14 audit) a picture the worker hasn't answered in ASM_RUN_MS (a hung or crashed worker): it fails, the worker is replaced and
    the line goes on; before, nothing came back and every later picture waited behind it until the app was restarted */
@@ -556,11 +415,11 @@ function asmStuck(st,t){if(asmW!==st||st.busy!==t)return;console.warn('assembly 
   asmW=null;t.no(new Error('the picture took too long'));asmWorker()}
 /* is the picture work off the page (or still finding out)? the build-ahead runs only then */
 const asmOffPage=()=>{const st=asmWorker();return !!st&&st.ok!==false};
-function asmRun(job,front){const st=asmWorker();if(!st)return asmBuild(job);clearTimeout(asmIdleT);
+function asmRun(job,front){const st=asmWorker();if(!st)return ask('asm-build',job);clearTimeout(asmIdleT);
   // (2026-11-14) a worker without WebGL2 (an iPhone before iOS 17 has OffscreenCanvas but no WebGL in a worker): a look the graphics chip
   // covers is drawn on the page's own (asm-gl.js asmGlOnPage), with every CPU part in the worker (asmRunPage); everything else goes to the worker
-  const note=r=>{if(typeof asmGlNote==='function')asmGlNote(r);return r};
-  if(typeof asmGlOnPage==='function'&&asmGlOnPage(job,st))return asmRunPage(job,front).then(note);
+  const note=r=>{ask('asm-gl-note',r);return r};
+  if(ask('asm-gl-on-page',job,st))return asmRunPage(job,front).then(note);
   return asmPost(job,front).then(note)}
 /* (CR-8-02, 2026-11-17) a covered look where the worker has no WebGL2: the worker sets the master up and packs its textures, the page
    draws, the worker finishes the picture (asm-gl.js asmGlPrepOff, asmGlPage, asmGlFinOff); the page never works a setup out nor paints
@@ -569,113 +428,40 @@ function asmRun(job,front){const st=asmWorker();if(!st)return asmBuild(job);clea
    worker */
 let asmPageChain=Promise.resolve();
 function asmRunPage(job,front){const run=async()=>{asmPageN++;
-    try{for(let i=0;i<2;i++){const G=asmGlState,have=G&&!G.gl.isContextLost()&&i===0?{key:G.key,gk:G.gk}:{};
+    try{for(let i=0;i<2;i++){const G=ask('asm-gl-state'),have=G&&!G.gl.isContextLost()&&i===0?{key:G.key,gk:G.gk}:{};
         const prep=await asmPost(job,front,{glPrep:have});if(!prep||prep.why)break;
-        const fin=await asmGlPage(job,prep);if(!fin)break;if(fin.again)continue;
+        const fin=await ask('asm-gl-page',job,prep);if(!fin)break;if(fin.again)continue;
         return await asmPost(job,true,{glFin:fin},[fin.o.buffer])}
       return await asmPost({...job,gl:false},true)}   // (the worker has no WebGL2: its CPU)
-    catch(e){if(asmW===false)return asmBuild(job);throw e}
+    catch(e){if(asmW===false)return ask('asm-build',job);throw e}
     finally{asmPageN--;asmIdleArm()}};
   const p=asmPageChain.then(run,run);asmPageChain=p.catch(()=>{});return p}
-/* the outfit's picture as a JPEG data URL, or null when it can't be painted (yet): no colour-coded master for it */
-let asmPhoto=async function asmPhoto(o,front){const job=await asmJob(o);if(!job)return null;const r=await asmRun(job,front);return r&&r.url||null};
-/* ---- on Today: the assembled picture stands in for the outfit's photo ---- */
-/* assembled pictures are kept on the device (meta 'asm:out:<key>', the newest ASM_KEEP); a look's key carries everything it is painted
-   from (asm-color.js asmCmOutKey), so a changed garment, master or painter is a new key */
-let asmOut={};const ASM_KEEP=150,asmBusy=new Set(),asmTried=new Set();   // 150: the next 60 days' looks (about 43 workdays) and the days before
-const asmOutKey=o=>asmCmUse(o)?asmCmOutKey(o):'';
-const asmStamp=o=>asmCmUse(o)?asmCmStamp(o):0;
-const asmWants=o=>!!asmCmUse(o);
-/* a photo made for this very outfit after its master (Settings: Regenerate) wins (the owner's choice): it is shown, and nothing is
-   painted for the outfit */
-const asmFullWins=o=>{const k=asmCmUse(o),full=renders[comboKey(o)],m=k&&renders[asmCmKey(k,'master')];return !!(full&&m&&full.t>m.t)};
-function asmFor(o){if(!asmWants(o)||asmFullWins(o))return null;
-  const k=asmOutKey(o),a=asmOut[k];if(a&&!a.lid&&asmCmUse(o)){a.lid=asmLookId(o);metaPut('asm:out:'+k,a).catch(()=>{})}   // (a picture kept before it carried its outfit: marked as it is met, so it can stand in after the next change)
-  return a&&asmFresh(o,a)?{img:asmImgOf(k,a),model:'assembled',t:a.t,sig:comboSig(o)}:null}
-/* the same outfit's last picture while its current one isn't here yet (2026-11-14, the owner: "I'm seeing it swap every time I swipe"):
-   a change to the painter, a master or the lighting gives every look a new key, and until the phone has painted it again
-   Today showed the drawing and then swapped in the picture. A kept picture carries its outfit (lid: the master and the outfit's own
-   combination key, comboKey, which changes with any garment, colour or reading but not with the painter), so the newest picture of this
-   very outfit and master is shown meanwhile, and the new one replaces it quietly when it is ready. Only for showing: building ahead and
-   "is it painted" still ask asmFor */
-const asmLookId=o=>{const k=asmCmUse(o);return k?k+'|'+comboKey(o):''};
-function asmStale(o){if(!asmWants(o)||asmFullWins(o))return null;const id=asmLookId(o);if(!id)return null;let best=null,bk=null;
-  for(const [k,a] of Object.entries(asmOut))if(a&&a.lid===id&&(!best||(a.t||0)>(best.t||0))){best=a;bk=k}
-  return best?{img:asmImgOf(bk,best),model:'assembled',t:best.t,sig:comboSig(o),stale:true}:null}
-const asmShown=o=>asmFor(o)||asmStale(o);
+const ASM_KEEP=150,asmBusy=new Set(),asmTried=new Set();   // 150: the next 60 days' looks (about 43 workdays) and the days before
 /* ---- looks' pictures already on the worker ----
    Until 2026-11-16 a computer (the PC builder, since removed) painted the owner's coming looks with this very code and uploaded each
    picture to the worker as an ordinary photo record under its look key (render:<asmOutKey>), signed 'asm/out/cm<ASM_CMV>/<stamp>' (the
    colour-coded masters' version and the newest record date the look is painted from, asmCmStamp). Nothing uploads new ones now; a phone
    still asks for one before it downloads a master (asmGetPre, once a session per look; a look not there is a 404 and is painted here). */
 const ASM_PRE_RE=/^asm\/out\/(z|cm)(\d+)\/(\d+)$/;   // ('z': the earlier assembler's pictures, still on the worker, never taken)
-const asmPreSigOk=(o,m)=>!!m&&!!asmCmUse(o)&&m[1]==='cm'&&+m[2]===ASM_CMV;
-/* is a kept picture still right? A colour-coded look's key carries everything it is painted from (each garment's cloth, the painter's
-   code, the master's record dates from the manifest, the background's date), so a picture under it is right whoever made it: a fresh
-   phone downloading newer copies of the masters than the computer holds used to refuse every picture the computer built (2026-11-14 audit) */
-const asmFresh=(o,a)=>!!asmCmUse(o)&&!!a;
-function asmTrim(){const old=Object.keys(asmOut).sort((a,b)=>asmOut[b].t-asmOut[a].t).slice(ASM_KEEP);for(const x of old){delete asmOut[x];const u=asmUrls.get(x);if(u){URL.revokeObjectURL(u.url);asmUrls.delete(x)}txs('meta','readwrite',st=>st.delete('asm:out:'+x))}}
 /* (listed: the worker's list says it has the picture: asked for even if an earlier ask this session found none, since the computer built
    it since; one download at a time per look) */
 /* (2026-11-14 audit) a listed picture that was refused (another signature) is not downloaded again until the list is read again
    (asmPreNo: key -> the list's time): building ahead used to download every refused picture again on every pass. A failed download (no
    network, the worker busy) is not counted as tried: it is asked again after ASM_RETRY_MS */
 const asmPreGetting=new Map(),asmPreNo=new Map(),asmRetryAt=new Map(),ASM_RETRY_MS=30e3;
-function asmGetPre(o,listed){const k=asmOutKey(o);if(asmPreGetting.has(k))return asmPreGetting.get(k);const p=asmGetPre1(o,listed).finally(()=>asmPreGetting.delete(k));asmPreGetting.set(k,p);return p}
-async function asmGetPre1(o,listed){const k=asmOutKey(o),W=workerBase();if(!W||(!listed&&asmTried.has('pre:'+k))||(listed&&asmPreNo.get(k)===asmListAt)||asmRetryAt.get('pre:'+k)>Date.now())return false;
-  try{const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});
-    if(!r.ok&&r.status!==404){asmRetryAt.set('pre:'+k,Date.now()+ASM_RETRY_MS);return false}
-    asmTried.add('pre:'+k);const j=r.ok?await r.json().catch(()=>null):null;
-    const m=j&&typeof j.img==='string'&&REC_PHOTO.test(j.img)&&ASM_PRE_RE.exec(String(j.sig||''));/* (only a picture: core.js REC_PHOTO) */if(!asmPreSigOk(o,m)){if(listed)asmPreNo.set(k,asmListAt);return false}
-    const rec={img:j.img,stamp:+m[3],t:Date.now(),pre:true};if(!asmFresh(o,rec)){if(listed)asmPreNo.set(k,asmListAt);return false}
-    await asmKeepOut(k,j.img,{stamp:rec.stamp,t:rec.t,pre:true,lid:asmLookId(o)});return true}
-  catch(e){console.warn('no built picture',e);asmRetryAt.set('pre:'+k,Date.now()+ASM_RETRY_MS);return false}}
 /* (2026-11-14 audit) kept pictures are read by their key range only (start-up read the whole meta store here and again in loadRenders),
    and kept as Blobs (rec.blob): IndexedDB hands back a Blob as a handle, so only stamps and dates are in memory and a picture's bytes are
    read when it is shown (asmImgOf: an object URL). 150 pictures of 0.4-1.4 MB used to sit in memory as base64. A record kept as base64
    before (rec.img) still works and is turned into a Blob a few seconds after start (asmBlobUp) */
 const ASM_OUT_RANGE=()=>IDBKeyRange.bound('asm:out:','asm:out;',false,true);   // (';' follows ':')
-async function asmLoad(){try{const all=await txs('meta','readonly',st=>st.getAll(ASM_OUT_RANGE()));asmOut={};for(const x of all||[])asmOut[String(x.k).slice(8)]=x.v}catch(e){console.warn(e)}
-  setTimeout(asmBlobUp,5000)}
 const asmUrls=new Map();
 /* the picture's address for an <img> (and the share sheet's fetch): a Blob's object URL, made once per record; an old record's data URL */
 const asmImgOf=(k,a)=>{if(!a)return null;if(!a.blob)return a.img||null;const u=asmUrls.get(k);if(u&&u.b===a.blob)return u.url;if(u)URL.revokeObjectURL(u.url);
   const url=URL.createObjectURL(a.blob);asmUrls.set(k,{b:a.blob,url});return url};
-/* keep a picture (a JPEG data URL) on the device as a Blob; where a Blob can't be made or stored, as the data URL as before */
-async function asmKeepOut(k,img,extra){let rec;try{const blob=await (await fetch(img)).blob();rec={blob,...extra};await metaPut('asm:out:'+k,rec)}
-  catch(e){rec={img,...extra};await metaPut('asm:out:'+k,rec)}
-  asmOut[k]=rec;asmTrim();return rec}
-/* old base64 records -> Blobs, one at a time */
-async function asmBlobUp(){for(const [k,a] of Object.entries(asmOut)){if(!a||a.blob||!a.img||asmOut[k]!==a)continue;
-  try{const blob=await (await fetch(a.img)).blob(),rec={...a,blob};delete rec.img;await metaPut('asm:out:'+k,rec);if(asmOut[k]===a)asmOut[k]=rec}catch(e){return}
-  await new Promise(r=>setTimeout(r,50))}}
 /* one photo record from the worker onto the device (a master, a mask…: each asked for once a session). One download at a time per
    photo: a second ask while the first is on its way waits for it (it used to answer "missing" at once, because the key was already
    marked as tried: the PC builder, since removed, met Today's own download at start-up) */
 const asmGetting=new Map();
-function asmGet(key,force){if(renders[key])return Promise.resolve(true);if(asmGetting.has(key))return asmGetting.get(key);
-  const p=asmGetOnce(key,force).finally(()=>asmGetting.delete(key));asmGetting.set(key,p);return p}
-async function asmGetOnce(key,force){if(renders[key])return true;const W=workerBase();if(!W||asmTried.has(key)||(!force&&asmRetryAt.get(key)>Date.now()))return false;
-  // (2026-11-14 audit) marked as tried only on the worker's answer (it has it, or a 404): a network error or a busy worker used to count
-  // as "missing" until the app was restarted; now it is asked again after ASM_RETRY_MS
-  try{const r=await fetch(W.url+'?key='+key,{headers:{'x-app-token':W.tok},cache:'no-store'});
-    if(!r.ok&&r.status!==404){asmRetryAt.set(key,Date.now()+ASM_RETRY_MS);return false}
-    asmTried.add(key);const j=r.ok?await r.json().catch(()=>null):null;
-    if(j&&j.img){await keepRender(key,{sig:j.sig||'',img:j.img,model:j.model||'',t:j.t||Date.now()},false);return true}}
-  catch(e){console.warn('photo unavailable',e);asmRetryAt.set(key,Date.now()+ASM_RETRY_MS)}
-  return false}
-/* bring what this outfit needs onto the device, paint its picture, keep it and show it (asm-color.js asmCmEnsure: the worker's
-   picture first). Not for an outfit whose own photo wins (asmFullWins): asmFor gives null for it, and taking that as "not made yet"
-   painted it and redrew Today again and again after a Regenerate, which kept the phone busy and cut off every swipe and scroll */
-async function asmEnsure(o,ahead){if(asmDrawn())return;await asmCmLook(o);if(!asmCmUse(o))return;if(!ahead)asmAheadSoon();return asmCmEnsure(o,ahead)}
-/* the day on screen's picture is ready: Today is redrawn, but not under a finger (a redraw removes what the touch started on and the
-   swipe or scroll stops); then it waits for the finger to lift */
-let asmTouch=0,asmLate=false;
-function asmTouchWatch(){if(asmTouchWatch.on)return;asmTouchWatch.on=true;
-  addEventListener('touchstart',e=>{asmTouch=e.touches.length},{passive:true,capture:true});
-  const up=e=>{asmTouch=e.touches.length;if(!asmTouch&&asmLate){asmLate=false;setTimeout(()=>{if(!$('#today').hidden)refreshToday()},250)}};
-  addEventListener('touchend',up,{passive:true,capture:true});addEventListener('touchcancel',up,{passive:true,capture:true})}
-function asmShow(){asmTouchWatch();if(asmTouch){asmLate=true;return}refreshToday()}
 /* ---- building ahead: the outfits of the next ASM_AHEAD days are painted in the background, nearest the day on screen first, so
    swiping to a day shows its picture at once instead of the drawing for the seconds the picture takes. Only off the page (the
    worker), one at a time, and only from what the worker already keeps: nothing is ordered or paid for. It starts a moment after
@@ -683,51 +469,8 @@ function asmShow(){asmTouchWatch();if(asmTouch){asmLate=true;return}refreshToday
 const ASM_AHEAD=60;
 const ASM_AHEAD_WAIT=1200;
 const ASM_AHEAD_N=3;   // pictures already on the worker downloaded at once while building ahead (one at a time took about 80 s for 40 on 4G)
-let asmAheadT=0,asmAheadOn=false,asmAheadAgain=false;
-let asmAheadSoon=function asmAheadSoon(){clearTimeout(asmAheadT);asmAheadT=setTimeout(asmAhead,ASM_AHEAD_WAIT)};
-/* the workdays from today to ASM_AHEAD days on, with the day on screen and its neighbours first: [[date, outfit]] (planned a day at a
-   time with a pause between, so planning months ahead doesn't hold the page either) */
-async function asmAheadDays(){const T=todayDate(),c=+new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()),out=[];
-  for(let i=0;i<ASM_AHEAD;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(!isWorkday(d))continue;
-    if(i&&i%10===0)await new Promise(r=>setTimeout(r,0));if(asmAheadAgain)return [];
-    const o=planOn(d);if(o&&asmWants(o))out.push([Math.abs(+d-c),o])}
-  return out.sort((a,b)=>a[0]-b[0]).map(x=>x[1])}
-let asmAhead=async function asmAhead(){if(!ASM_ON||document.hidden||asmDrawn()||!asmCmAny()||!asmOffPage())return;if(asmAheadOn){asmAheadAgain=true;return}asmAheadOn=true;   // (hidden first: asmOffPage starts a worker, CR-8-01; a pass started while one runs only sends it round again)
-  try{do{asmAheadAgain=false;const seen=new Set(),todo=[];
-      for(const o of await asmAheadDays()){const k=asmOutKey(o);if(seen.has(k))continue;seen.add(k);if(!asmFullWins(o)&&!asmFor(o))todo.push(o)}
-      // (2026-11-13) the looks with a picture on the worker first, ASM_AHEAD_N at a time (only their pictures are downloaded); then the rest, one at
-      // a time and grouped by master, so a master's setup is read once for all its looks (asmCmBuild keeps one in memory on a phone)
-      const L=await asmListGet(),built=todo.filter(o=>asmCmUse(o)&&L&&L.has(asmOutKey(o))),rest=todo.filter(o=>!built.includes(o));
-      const stop=()=>asmAheadAgain||document.hidden||!asmOffPage()||asmDrawn();let i=0;
-      await Promise.all(Array.from({length:ASM_AHEAD_N},async()=>{while(i<built.length&&!stop())await asmEnsure(built[i++],true)}));
-      rest.sort((a,b)=>String(asmCmUse(a)||'').localeCompare(String(asmCmUse(b)||'')));   // (a stable sort: nearest first within a master)
-      for(const o of rest){if(stop())break;await asmEnsure(o,true)}
-      if(!stop())await asmCmWarm(rest)}   // (2026-11-14) then the masters of the coming looks nobody built, set up ahead
-    while(asmAheadAgain)}
-  catch(e){console.warn('building ahead stopped',e)}finally{asmAheadOn=false;asmIdleArm()}};
-/* asmState: what the last look at the worker found (cm: colour-coded masters are there) */
-let asmState={checked:false,cm:false},asmSyncing=null;
-/* look at the worker (start-up, Settings): the list of what it keeps and the masters' manifest. A forced look (Settings) waits for the
-   look under way and then asks afresh for what was missing or failed before */
-function asmSync(force){if(!ASM_ON||asmDrawn()||!workerBase())return Promise.resolve(asmState);if(asmSyncing)return force?asmSyncing.then(()=>asmSync(true)):asmSyncing;
-  asmSyncing=(async()=>{
-    try{if(force){asmTried.clear();asmRetryAt.clear();asmPreNo.clear();await asmListGet(true);await asmCmMfGet(true)}else await asmListGet();
-      asmState={checked:true,cm:asmCmAny()}}
-    catch(e){console.warn('assembled pictures: could not check the worker',e)}
-    asmSyncing=null;
-    renderAsmUI();
-    const cur=planFor()[key(sel)];if(cur&&asmWants(cur)&&!asmFor(cur)&&!$('#today').hidden)refreshToday();
-    return asmState})();
-  return asmSyncing}
-/* Settings → Outfit pictures → Advanced: the colour-coded masters' rows (asm-color.js asmCmUI) */
-/* (with "Drawing only" the group is hidden, and with it the whole Advanced fold (styles.css #adv-photos:has(#asm-group[hidden])): Pictures
-   ahead, Painted plain and the graphics-chip switch are about the painter; and asmCmStatus would read the worker's list) */
-function renderAsmUI(){const on=ASM_ON&&!asmDrawn(),grp=$('#asm-group');if(grp)grp.hidden=!on;if(on)asmCmUI()}
-/* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
-function setAsmOut(v){asmOut=v}
-/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
-Object.assign(globalThis,{ASM_SIZE,asmDrawn,asmImg,ASM_LIN,asmAreas,ASM_BAR_AT,ASM_BAR_MM,ASM_BAR_LEN,ASM_METAL,asmBarRgb,asmBarSig,asmBarDraw,asmKey,asmCmUse,asmListGet,asmMotif,ASM_SHIRT_MM,ASM_TR_CAP,ASM_HB_TR,ASM_CLOSEUP_MM,ASM_TEX_MIN_MM,ASM_PX_MM,asmWeave,asmRepeatPx,asmTexMm,ASM_SUITV,ASM_TWILL,ASM_HB_MM,ASM_HB_AMP,ASM_HB_RIB,ASM_HB_FLECK,ASM_HB_YARN,ASM_HB_BREAK,ASM_HB_THIN,ASM_HB_MOTTLE,ASM_HB_FLOAT,ASM_HB_FLOATL,ASM_HB_SOFT,ASM_HB_GRAIN,ASM_HB_SNAP,ASM_HB_PBRK,asmSuitWeave,asmSuitTwill,asmHbCw,asmTwillTex,ASM_MICRO,ASM_MICRO_KINDS,asmMicroGrid,asmMicroKind,asmMicroTex,asmSuitTweed,asmTweedTex,asmSuitSig,asmSuitBands,asmLinen,ASM_LINE_PX,ASM_STRIPE_PX,ASM_STRIPE,asmClothOf,asmSuitTex,asmLinenTile,ASM_TWEED,asmTweedTile,asmSleeveSegs,ASM_FLOW,asmBodyFlow,asmFlowAt,ASM_CREASE_DEG,ASM_TUBE_K,asmPolyAt,asmTubePart,asmTq,asmTqn,asmTqr,asmTubePartQ,asmTubeRaw,asmTubeTabs,ASM_SLEEVE_FLOW,ASM_FORE_K,asmSleeveFlow,asmTubeAt,ASM_TIEV,asmTieTile,asmStripeCount,ASM_TIE_TEX_MAX,ASM_TIE_FIG_MAX,asmTieFor,asmTieSig,asmBuild,asmBuildAfter,asmRun,asmBusy,asmTried,asmOutKey,asmStamp,asmFullWins,asmFor,asmLookId,asmShown,ASM_RETRY_MS,asmGetPre,asmLoad,asmKeepOut,asmGet,asmEnsure,asmShow,ASM_AHEAD,asmSync,renderAsmUI,setAsmOut});
-Object.defineProperties(globalThis,{asmListAt:{get:()=>asmListAt},ASM_ON:{get:()=>ASM_ON,set:v=>{ASM_ON=v}},asmList:{get:()=>asmList,set:v=>{asmList=v}},asmData:{get:()=>asmData,set:v=>{asmData=v}},asmJpeg:{get:()=>asmJpeg,set:v=>{asmJpeg=v}},asmPhoto:{get:()=>asmPhoto,set:v=>{asmPhoto=v}}});
+let asmAheadOn=false;
+const setAsmAheadOn=v=>{asmAheadOn=v};   // (asm-today.js asmAhead)
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,get ASM_IDLE_MS(){return ASM_IDLE_MS},set ASM_IDLE_MS(v){ASM_IDLE_MS=v},ASM_RUN_MS,ASM_VER,get asmAhead(){return asmAhead},set asmAhead(v){asmAhead=v},get asmAheadOn(){return asmAheadOn},get asmAheadSoon(){return asmAheadSoon},set asmAheadSoon(v){asmAheadSoon=v},asmBlobUp,asmCmHeld,asmCmLook,asmIdleEnd,asmImgOf,asmJob,asmLab,asmOffPage,asmPreGetting,asmPreNo,asmQ,asmRetryAt,asmShirtAngles,asmStuck,get asmSyncing(){return asmSyncing},get asmW(){return asmW},set asmW(v){asmW=v},asmWants,asmWorker,asmWorkerDown,get ASM_ON(){return ASM_ON},set ASM_ON(v){ASM_ON=v},get asmOut(){return asmOut},set asmOut(v){asmOut=v},get asmJpeg(){return asmJpeg},set asmJpeg(v){asmJpeg=v},get asmPhoto(){return asmPhoto},set asmPhoto(v){asmPhoto=v},get asmList(){return asmList},set asmList(v){asmList=v},ASM_AHEAD,ASM_LIN,ASM_METAL,ASM_PX_MM,ASM_SIZE,ASM_TIE_FIG_MAX,ASM_TIE_TEX_MAX,asmBarDraw,asmBarRgb,asmBarSig,asmBuild,asmBusy,asmCmUse,get asmData(){return asmData},asmEnsure,asmFor,asmGet,asmGetPre,asmKey,asmLinenTile,asmListGet,asmLoad,asmLookId,asmMicroGrid,asmMotif,asmOutKey,asmRun,asmShow,asmShown,asmSleeveSegs,asmStamp,asmStripeCount,asmSuitBands,asmSuitSig,asmSuitTex,asmSuitTweed,asmSuitTwill,asmSuitWeave,asmSync,asmTexMm,asmTieFor,asmTieSig,asmTried,asmTubeAt,asmTubePart,asmTubePartQ,asmTweedTex,asmTweedTile,asmTwillTex,asmWeave,renderAsmUI};
-export {ASM_VER,ASM_SIZE,asmDrawn,asmImg,ASM_LIN,asmLab,asmAreas,ASM_BAR_AT,ASM_BAR_MM,ASM_BAR_LEN,ASM_METAL,asmBarRgb,asmBarSig,asmBarDraw,asmKey,asmCmHeld,asmCmUse,asmCmLook,asmListGet,asmMotif,ASM_SHIRT_MM,ASM_TR_CAP,ASM_HB_TR,ASM_CLOSEUP_MM,ASM_TEX_MIN_MM,ASM_PX_MM,asmWeave,asmRepeatPx,asmTexMm,ASM_SUITV,ASM_TWILL,ASM_HB_MM,ASM_HB_AMP,ASM_HB_RIB,ASM_HB_FLECK,ASM_HB_YARN,ASM_HB_BREAK,ASM_HB_THIN,ASM_HB_MOTTLE,ASM_HB_FLOAT,ASM_HB_FLOATL,ASM_HB_SOFT,ASM_HB_GRAIN,ASM_HB_SNAP,ASM_HB_PBRK,asmSuitWeave,asmSuitTwill,asmHbCw,asmTwillTex,ASM_MICRO,ASM_MICRO_KINDS,asmMicroGrid,asmMicroKind,asmMicroTex,asmSuitTweed,asmTweedTex,asmSuitSig,asmSuitBands,asmLinen,ASM_LINE_PX,ASM_STRIPE_PX,ASM_STRIPE,asmClothOf,asmSuitTex,asmLinenTile,ASM_TWEED,asmTweedTile,asmSleeveSegs,ASM_FLOW,asmBodyFlow,asmFlowAt,ASM_CREASE_DEG,ASM_TUBE_K,asmPolyAt,asmTubePart,asmTq,asmTqn,asmTqr,asmTubePartQ,asmTubeRaw,asmTubeTabs,ASM_SLEEVE_FLOW,ASM_FORE_K,asmSleeveFlow,asmTubeAt,ASM_TIEV,asmTieTile,asmStripeCount,ASM_TIE_TEX_MAX,ASM_TIE_FIG_MAX,asmTieFor,asmTieSig,asmShirtAngles,asmJob,asmBuild,asmBuildAfter,asmQ,asmWorker,asmWorkerDown,asmIdleEnd,ASM_RUN_MS,asmStuck,asmOffPage,asmRun,asmBusy,asmTried,asmOutKey,asmStamp,asmWants,asmFullWins,asmFor,asmLookId,asmShown,asmPreGetting,asmPreNo,asmRetryAt,ASM_RETRY_MS,asmGetPre,asmLoad,asmImgOf,asmKeepOut,asmBlobUp,asmGet,asmEnsure,asmShow,ASM_AHEAD,asmSync,renderAsmUI,asmListAt,asmAheadOn,asmSyncing,ASM_ON,asmList,asmW,ASM_IDLE_MS,asmOut,asmData,asmJpeg,asmPhoto,asmAheadSoon,asmAhead,setAsmOut};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,get ASM_IDLE_MS(){return ASM_IDLE_MS},set ASM_IDLE_MS(v){ASM_IDLE_MS=v},ASM_RUN_MS,ASM_VER,get asmAheadOn(){return asmAheadOn},asmIdleEnd,asmImgOf,asmLab,asmOffPage,asmPreGetting,asmPreNo,asmQ,asmRetryAt,asmShirtAngles,asmStuck,get asmW(){return asmW},set asmW(v){asmW=v},asmWorker,asmWorkerDown,get ASM_ON(){return ASM_ON},set ASM_ON(v){ASM_ON=v},get asmJpeg(){return asmJpeg},set asmJpeg(v){asmJpeg=v},ASM_AHEAD,ASM_LIN,ASM_METAL,ASM_PX_MM,ASM_SIZE,ASM_TIE_FIG_MAX,ASM_TIE_TEX_MAX,asmBarDraw,asmBusy,get asmData(){return asmData},set asmData(v){asmData=v},asmLinenTile,asmMicroGrid,asmRun,asmSleeveSegs,asmStripeCount,asmTexMm,asmTried,asmTubeAt,asmTubePart,asmTubePartQ,asmTweedTile};
+export {setAsmAheadOn,setAsmData,setAsmJpeg,ASM_VER,ASM_SIZE,asmImg,ASM_LIN,asmLab,asmAreas,ASM_BAR_AT,ASM_BAR_MM,ASM_BAR_LEN,ASM_METAL,asmBarDraw,ASM_SHIRT_MM,ASM_TR_CAP,ASM_HB_TR,ASM_CLOSEUP_MM,ASM_TEX_MIN_MM,ASM_PX_MM,asmRepeatPx,asmTexMm,ASM_SUITV,ASM_TWILL,ASM_HB_MM,ASM_HB_AMP,ASM_HB_RIB,ASM_HB_FLECK,ASM_HB_YARN,ASM_HB_BREAK,ASM_HB_THIN,ASM_HB_MOTTLE,ASM_HB_FLOAT,ASM_HB_FLOATL,ASM_HB_SOFT,ASM_HB_GRAIN,ASM_HB_SNAP,ASM_HB_PBRK,asmHbCw,ASM_MICRO,ASM_MICRO_KINDS,asmMicroGrid,asmLinen,ASM_LINE_PX,ASM_STRIPE_PX,ASM_STRIPE,asmLinenTile,ASM_TWEED,asmTweedTile,asmSleeveSegs,ASM_FLOW,asmBodyFlow,asmFlowAt,ASM_CREASE_DEG,ASM_TUBE_K,asmPolyAt,asmTubePart,asmTq,asmTqn,asmTqr,asmTubePartQ,asmTubeRaw,asmTubeTabs,ASM_SLEEVE_FLOW,ASM_FORE_K,asmSleeveFlow,asmTubeAt,ASM_TIEV,asmStripeCount,ASM_TIE_TEX_MAX,ASM_TIE_FIG_MAX,asmShirtAngles,asmQ,asmWorker,asmWorkerDown,asmIdleEnd,ASM_RUN_MS,asmStuck,asmOffPage,asmRun,asmBusy,asmTried,asmPreGetting,asmPreNo,asmRetryAt,ASM_RETRY_MS,asmImgOf,ASM_AHEAD,asmAheadOn,ASM_ON,asmW,ASM_IDLE_MS,asmData,asmJpeg,ASM_BARV,asmSuitTexMemo,asmTieMemo,asmGetting,ASM_KEEP,asmUrls,ASM_PRE_RE,ASM_OUT_RANGE,ASM_AHEAD_WAIT,ASM_AHEAD_N,asmIdleArm};

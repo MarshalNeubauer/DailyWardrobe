@@ -63,12 +63,62 @@ const SOCKETS={
   'care-badge':{serve:'care.js',ask:['wardrobe.js'],what:'"Due for cleaning" on a Wardrobe tile (careBadge)'},
   'care-log':{serve:'care.js',ask:['add-more.js'],what:'a piece back from the cleaner noted in its record (careLog)'},
   'care-back-text':{serve:'care.js',ask:['add-more.js'],what:'the toast for pieces back from the cleaner (careBackText)'},
+  // the painter's (the restructure S6p, 2026-11-27): where a today-no-picture file (assemble, asm-look, asm-today, draw), a required one
+  // (settings, start), another optional group (today-picture, look, itemsheet, mannequin's typeof reads) or a lower layer (fav) calls into
+  // the painter's optional files, or the painter into a file that loads after it
+  'asm-build':{serve:'asm-color.js',ask:['assemble.js'],what:'one picture painted on the page, where no worker can (asmBuild; the restructure S6p, 2026-11-27: moved into asm-color.js, which assemble.js, today-no-picture, may not import)'},
+  'asm-cm-warming':{serve:'asm-color.js',ask:['assemble.js'],what:'whether the masters are being warmed, so the worker is not let go (asmCmWarming, for asmIdle)'},
+  'asm-cm-kind':{serve:'asm-color.js',ask:['draw.js','asm-look.js','asm-today.js'],what:'the color-coded master a look takes, or null (asmCmKind): the mannequin drawn, the picture asked for'},
+  'asm-nk-base-of':{serve:'asm-color.js',ask:['asm-look.js','asm-today.js'],what:'a new garment\'s base master (asmNkBaseOf)'},
+  'asm-cm-btn-col':{serve:'asm-color.js',ask:['mannequin.js'],what:'the painter\'s own button color, for the drawn mannequin (asmCmBtnCol)'},
+  'asm-cu-v':{serve:'asm-color.js',ask:['draw.js','today-picture.js'],what:'the close-up block\'s version (ASM_CU.v), in the mannequin\'s and the swatch\'s cloth keys'},
+  'asm-wt-v':{serve:'asm-color.js',ask:['draw.js'],what:'the worsted tile\'s version (ASM_WT.v), in the mannequin\'s cloth key'},
+  'asm-hb-lift':{serve:'asm-color.js',ask:['today-picture.js'],what:'the herringbone shirt\'s lift and row (ASM_HB_COL_LIFT, ASM_HB_SHIRT_Y), in the swatch\'s key'},
+  'asm-gl-try':{serve:'asm-gl.js',ask:['asm-color.js'],what:'a look painted on the graphics chip, or null (asmGlTry; asm-gl.js loads after asm-color.js and imports it)'},
+  'asm-gl-free':{serve:'asm-gl.js',ask:['assemble.js'],what:'the page\'s graphics state let go with the worker (asmGlFree)'},
+  'asm-gl-note':{serve:'asm-gl.js',ask:['assemble.js'],what:'which painter painted a picture, for Settings\' line (asmGlNote)'},
+  'asm-gl-on-page':{serve:'asm-gl.js',ask:['assemble.js'],what:'whether a covered look is drawn on the page\'s chip (asmGlOnPage)'},
+  'asm-gl-state':{serve:'asm-gl.js',ask:['assemble.js'],what:'the page\'s graphics state (asmGlState), for asmRunPage'},
+  'asm-gl-page':{serve:'asm-gl.js',ask:['assemble.js'],what:'the page\'s draw of a covered look (asmGlPage)'},
+  'asm-watch-paint':{serve:'asm-watch.js',ask:['asm-color.js'],what:'the day\'s watch painted on the finished picture (asmWatchPaint)'},
+  'asm-pocket-paint':{serve:'asm-pocket.js',ask:['asm-color.js'],what:'the pocket square painted on the finished picture (asmPocketPaint)'},
+  'asm-pocket-quad':{serve:'asm-pocket.js',ask:['mannequin.js'],what:'where the pocket square sits, for the drawn mannequin (asmPocketQuad)'},
+  'asm-ocp-paint':{serve:'asm-ocp.js',ask:['asm-color.js'],what:'the uniform blouse\'s tapes and rank painted on the finished picture (asmOcpPaint)'},
+  'asm-nk-base':{serve:'asm-kinds.js',ask:['asm-color.js'],what:'a new garment\'s base master (asmNkBase; asm-kinds.js loads after asm-color.js)'},
+  'asm-job':{serve:'asm-cm-job.js',ask:['asm-look.js'],what:'everything a look\'s painting needs, as plain data, or null (asmJob)'},
+  'asm-kind-of':{serve:'asm-cm-job.js',ask:['asm-look.js','asm-today.js'],what:'a look\'s master kind, the new garments\' included (asmKindOf)'},
+  'asm-cm-out-key':{serve:'asm-cm-job.js',ask:['asm-look.js'],what:'a look\'s picture key (asmCmOutKey)'},
+  'asm-cm-stamp':{serve:'asm-cm-job.js',ask:['asm-look.js'],what:'the newest record date a look is painted from (asmCmStamp)'},
+  'asm-cm-bg-get':{serve:'asm-cm-job.js',ask:['asm-today.js'],what:'the masters\' background brought onto the device (asmCmBgGet)'},
+  'asm-cm-route':{serve:'asm-cm-job.js',ask:['draw.js','today-picture.js'],what:'how the painter lays a piece\'s cloth (asmCmRoute)'},
+  'asm-cu-wants':{serve:'asm-cm-job.js',ask:['draw.js','today-picture.js'],what:'whether the painter takes the close-up block (asmCuWants)'},
+  'asm-wt-wants':{serve:'asm-cm-job.js',ask:['draw.js'],what:'whether the painter takes the worsted tile (asmWtWants)'},
+  'asm-cu-tile':{serve:'asm-cm-job.js',ask:['draw.js','today-picture.js'],what:'the close-up block (asmCuTile)'},
+  'asm-worsted-tile':{serve:'asm-cm-job.js',ask:['draw.js'],what:'the worsted tile (asmWorstedTile)'},
+  'asm-cm-tile':{serve:'asm-cm-job.js',ask:['today-picture.js'],what:'a shirt\'s painted cloth tile, for its swatch (asmCmTile)'},
+  'asm-hb-shirt':{serve:'asm-cm-job.js',ask:['today-picture.js'],what:'whether a shirt is painted as herringbone (asmHbShirt)'},
+  'asm-gap-note':{serve:'asm-cm-job.js',ask:['look.js','itemsheet.js'],what:'the item sheet\'s "Outfit pictures: …" line (asmGapNote)'},
+  'asm-cm-mf-get':{serve:'asm-cm-page.js',ask:['asm-today.js'],what:'the masters\' manifest (asmCmMfGet)'},
+  'asm-cm-get':{serve:'asm-cm-page.js',ask:['asm-today.js'],what:'a master\'s records brought onto the device (asmCmGet)'},
+  'asm-cm-ensure':{serve:'asm-cm-page.js',ask:['asm-today.js'],what:'a look\'s picture painted, kept and shown (asmCmEnsure)'},
+  'asm-cm-warm':{serve:'asm-cm-page.js',ask:['asm-today.js'],what:'the coming looks\' masters set up ahead (asmCmWarm)'},
+  'asm-cm-ui':{serve:'asm-cm-page.js',ask:['asm-today.js'],what:'Settings\' Pictures ahead and Painted plain rows (asmCmUI)'},
+  'asm-suit-weave':{serve:'asm-look.js',ask:['draw.js'],what:'the weave the painter reads from a jacket, for the drawn figure (asmSuitWeave)'},
+  'asm-load':{serve:'asm-today.js',ask:['start.js'],what:'the painted pictures kept on the device read at start-up (asmLoad)'},
+  'asm-sync':{serve:'asm-today.js',ask:['settings.js','start.js'],what:'the pictures on the server listed, the day\'s painted (asmSync)'},
+  'asm-ensure':{serve:'asm-today.js',ask:['settings.js'],what:'the day\'s picture painted when "Painted pictures" is chosen again (asmEnsure)'},
+  'asm-ui':{serve:'asm-today.js',ask:['settings.js','start.js'],what:'Settings\' Outfit pictures Advanced rows drawn (renderAsmUI)'},
+  'pattern-readable':{serve:'pattern-read.js',ask:['asm-cm-job.js'],what:'whether a piece\'s pattern can be read, for Painted plain (readable; the painter may not import the Add group)'},
+  'pattern-reread':{serve:'pattern-read.js',ask:['asm-cm-page.js'],what:'Read N patterns: a piece\'s pattern read again (rereadSett)'},
+  'refresh-today':{serve:'settings.js',ask:['asm-today.js','asm-cm-page.js'],what:'Today redrawn when its picture is ready (refreshToday; settings.js loads after the painter)'},
+  'plan-on':{serve:'month.js',ask:['asm-today.js','asm-cm-page.js'],what:'a day\'s planned outfit, for building ahead and Pictures ahead (planOn; month.js loads after the painter)'},
+  'swatch-svg':{serve:'draw.js',ask:['fav.js'],what:'a piece\'s swatch on the favorites (swatchSVG; fav.js, a logic file, may not import the painter)'},
 };
 
 module.exports=async({ok,ROOT})=>{
   /* bus.js itself, run as a script with its export blanked */
-  const ctx=vm.createContext({});vm.runInContext(appSrc(ROOT,'bus.js')+';this.B={on,emit,heard,serve,ask}',ctx);
-  const {on,emit,heard,serve,ask}=ctx.B,log=[];
+  const ctx=vm.createContext({});vm.runInContext(appSrc(ROOT,'bus.js')+';this.B={on,emit,heard,serve,ask,served}',ctx);
+  const {on,emit,heard,serve,ask,served}=ctx.B,log=[];
   /* the sockets */
   ok(ask('nobody',1,2)===undefined,'ask for a name nobody serves: nothing is called and the answer is undefined (the old typeof guard)');
   const seen=[];serve('sum',(a,b)=>{seen.push([a,b]);return a+b});
@@ -77,6 +127,7 @@ module.exports=async({ok,ROOT})=>{
   serve('nofn',undefined);ok(ask('nofn')===undefined,'serving something that is not a function serves nothing');
   const sboom=new Error('sboom');serve('throws',()=>{throw sboom});let sgot=null;try{ask('throws')}catch(e){sgot=e}
   ok(sgot===sboom,'an error the served fn throws reaches the one who asked, as a direct call\'s would');
+  ok(served('sum')&&!served('nobody')&&!served('nofn'),'served says whether a fn is served under a name (the old typeof guard before a call with other arguments)');
   on('pinned',()=>'heard');ok(emit('sum')===0&&!heard('sum')&&ask('pinned')===undefined&&emit('pinned')===1,'sockets and topics are apart: a served name is no topic, a pinned topic no socket');
   ok(emit('nobody')===0&&!heard('nobody'),'a topic nobody pinned: emit calls nothing and says 0, heard is false');
   const a=x=>log.push('a'+x),b=x=>log.push('b'+x);on('t',a);on('t',b);on('t',a);
@@ -92,12 +143,12 @@ module.exports=async({ok,ROOT})=>{
   const acorn=require('acorn');
   for(const f of page){if(f==='bus.js')continue;const src=fs.readFileSync(path.join(ROOT,f),'utf8');let ast;
     try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'module'})}catch(e){try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'script'})}catch(e2){continue}}
-    // local name -> bus.js's name (a file that also reads app.js's own ask() imports bus.js's second name for it, askFor)
+    // local name -> bus.js's name (a file that also reads app.js's own ask() imports bus.js's second name for it, askFor; served counts as asking)
     const imp=new Map(ast.body.filter(s=>s.type==='ImportDeclaration'&&s.source.value==='./bus.js').flatMap(s=>s.specifiers.map(x=>[x.local.name,x.imported?x.imported.name:x.local.name])));
     const add=(k,t)=>{const u=used[t]=used[t]||{emit:[],on:[],heard:[]};if(!u[k].includes(f))u[k].push(f)};
     const sock=(k,t)=>{const u=sockUsed[t]=sockUsed[t]||{serve:[],ask:[]};if(!u[k].includes(f))u[k].push(f)};
     const walk=n=>{if(!n||typeof n.type!=='string')return;
-      if(n.type==='CallExpression'&&n.callee.type==='Identifier'){const c0=imp.get(n.callee.name)||null,c=c0==='askFor'?'ask':c0,a=n.arguments[0],lit=a&&a.type==='Literal'&&typeof a.value==='string';
+      if(n.type==='CallExpression'&&n.callee.type==='Identifier'){const c0=imp.get(n.callee.name)||null,c=c0==='askFor'||c0==='served'?'ask':c0,a=n.arguments[0],lit=a&&a.type==='Literal'&&typeof a.value==='string';
         // (settingsPart(fn) is settings.js's own way to pin for 'settings-parts': counted as the caller's pin)
         if(n.callee.name==='settingsPart'&&f!=='settings.js')add('on','settings-parts');
         else if(c&&/^(?:emit|on|heard)$/.test(c)&&lit&&!(f==='settings.js'&&c==='on'&&a.value==='settings-parts'))add(c,a.value);

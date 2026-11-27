@@ -24,14 +24,14 @@ const render=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(ph=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       HOOK.items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white',photo:ph}),I('shirt','lightblue',{photo:ph}),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('watch','black',{metal:'silver'}),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('suit','charcoal')];
-      settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')},PHOTO);
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.show('today')},PHOTO);
     // (2026-11-14, the owner) the outfit photo made from the drawn figure is retired: no button anywhere, nothing sent from the app
-    ok(!(await p.$('.render-btn'))&&!(await p.$('#render-msg'))&&await p.evaluate(()=>{openSettings('photos');const r=!document.querySelector('#regen-btn')&&!/This day.s photo/.test(document.querySelector('#settings-modal').textContent);closeSettings();return r}),
+    ok(!(await p.$('.render-btn'))&&!(await p.$('#render-msg'))&&await p.evaluate(()=>{HOOK.openSettings('photos');const r=!document.querySelector('#regen-btn')&&!/This day.s photo/.test(document.querySelector('#settings-modal').textContent);HOOK.closeSettings();return r}),
       'no Generate button on Today and no "This day\'s photo" in Settings');
     ok(await p.evaluate(()=>['generateRender','renderCombo','queueCombo','figurePng','checkQueue','renderRegenUI'].every(f=>typeof window[f]==='undefined')&&typeof FIG_CROP==='undefined'),'the photo generator\'s code paths are gone from the app');
     ok(gens===0,'nothing was asked of the image generator');
     // a photo kept from before still shows on its days
-    await p.evaluate(async ph=>{const o=planFor()[key(sel)];await keepRender(comboKey(o),{sig:comboSig(o),img:ph,model:'gpt-image-2',t:Date.now()},false);renderToday()},PHOTO);
+    await p.evaluate(async ph=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)];await HOOK.keepRender(HOOK.comboKey(o),{sig:HOOK.comboSig(o),img:ph,model:'gpt-image-2',t:Date.now()},false);HOOK.renderToday()},PHOTO);
     const shown=await p.evaluate(()=>({img:!!document.querySelector('.fig.photo img'),by:(document.querySelector('.fig.photo .lastworn')||{}).textContent||'',btn:!!document.querySelector('.render-btn'),mode:!!document.querySelector('.figmode')}));
     ok(shown.img&&/^(This look last worn \w{3}, \w{3} \d+)?$/.test(shown.by)&&!shown.btn&&!shown.mode,`a kept photo replaces the drawing; the only caption is the last-worn date, when there is one ("${shown.by}")`);
     // stored on the device: survives a reload
@@ -39,13 +39,13 @@ const render=async({ok,chromium,url,ROOT})=>{
     const kept=await p.evaluate(ph=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       HOOK.items=[I('suit','navy',{pattern:'pinstripe',secondaryColor:'white',photo:ph}),I('shirt','lightblue',{photo:ph}),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('watch','black',{metal:'silver'}),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('suit','charcoal')];
-      settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today');return !!document.querySelector('.fig.photo img')},PHOTO);
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.show('today');return !!document.querySelector('.fig.photo img')},PHOTO);
     ok(kept,'the photo is kept for that day after a reload');
-    ok(await p.evaluate(ph=>{const o=planFor()[key(sel)];return renders[comboKey(o)]&&renders[comboKey(o)].img===ph},PHOTO),'the photo is kept byte for byte');
+    ok(await p.evaluate(ph=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)];return HOOK.renders[HOOK.comboKey(o)]&&HOOK.renders[HOOK.comboKey(o)].img===ph},PHOTO),'the photo is kept byte for byte');
     {const fs=require('fs'),src=['app.js','photos.js','today-plan.js','today.js','today-photofold.js','today-picture.js','today-gestures.js'].map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n');
       ok(!/shrinkUrl\([^)]*,\s*900\)/.test(src),'no outfit photo is shrunk to 900px any more (app.js, photos.js, today.js; assembled pictures keep theirs, in assemble.js)');}
-    ok(await p.evaluate(async()=>!(await localState()).renders&&!JSON.stringify(await localState()).includes('render:')),'photos stay on the device (not in backup/sync data)');
-    ok(await p.evaluate(()=>{const o=planFor()[key(sel)],before=!!renderFor(o),sw={...o,tie:{...o.tie,id:'other',primaryColor:'green'}};return before&&!renderFor(sw)}),'after a swap the stored photo no longer matches, so it is not shown');
+    ok(await p.evaluate(async()=>!(await HOOK.localState()).renders&&!JSON.stringify(await HOOK.localState()).includes('render:')),'photos stay on the device (not in backup/sync data)');
+    ok(await p.evaluate(()=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)],before=!!HOOK.renderFor(o),sw={...o,tie:{...o.tie,id:'other',primaryColor:'green'}};return before&&!HOOK.renderFor(sw)}),'after a swap the stored photo no longer matches, so it is not shown');
     // the worker's POST /render: item pictures only (the outfit photo was removed from it, 2026-11-14)
     const PNG1='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
     const post=(b,tok='t')=>worker.fetch(new Request(HOST+'render',{method:'POST',headers:{'content-type':'application/json',...(tok?{'x-app-token':tok}:{})},body:JSON.stringify(b)}),env);
@@ -78,7 +78,7 @@ const renderSync=async({ok,chromium,url,ROOT})=>{
   const browser=await chromium.launch();
   const setup=()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',updated:1,...x});
     HOOK.items=[I('suit','navy'),I('shirt','lightblue'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('suit','charcoal')];
-    settings.workdays=[0,1,2,3,4];settings.vestMode='auto';HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')};
+    HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.vestMode='auto';HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.show('today')};
   const device=async()=>{const ctx=await browser.newContext({viewport:{width:390,height:900}});
     await ctx.route(HOST+'**',async route=>{const q=route.request();if(new URL(q.url()).pathname==='/sync')return route.fulfill({status:404,body:'{}'});   // backup sync isn't under test: 2.5 s after a save it pulled the empty backup over the test's in-memory wardrobe
       const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.method()==='GET'?undefined:q.postData()}),env);
@@ -89,29 +89,29 @@ const renderSync=async({ok,chromium,url,ROOT})=>{
   const photoShown=p=>p.evaluate(()=>!!document.querySelector('.fig.photo img'));
   try{
     const A=await device();await A.p.evaluate(setup);
-    const ck=await A.p.evaluate(()=>comboKey(planFor()[key(sel)]));
+    const ck=await A.p.evaluate(()=>HOOK.comboKey(HOOK.planFor()[HOOK.key(HOOK.sel)]));
     ok(/^c[0-9a-f]{16}$/.test(ck),`each outfit combination has a key (${ck})`);
     // (the photo generator is retired, 2026-11-14: an outfit photo kept from before is shared as it was)
-    await A.p.evaluate(async j=>{const o=planFor()[key(sel)];await keepRender(comboKey(o),{sig:comboSig(o),img:'data:image/jpeg;base64,'+j,model:'gpt-image-2',t:Date.now()},true);renderToday()},JPG);
+    await A.p.evaluate(async j=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)];await HOOK.keepRender(HOOK.comboKey(o),{sig:HOOK.comboSig(o),img:'data:image/jpeg;base64,'+j,model:'gpt-image-2',t:Date.now()},true);HOOK.renderToday()},JPG);
     for(let w=0;w<30&&!store.has('render:'+ck);w++)await new Promise(r=>setTimeout(r,100));
     {const shown=await photoShown(A.p);ok(calls===0&&shown,`the desktop shows its kept photo (calls ${calls}, shown ${shown})`)}
     ok(store.has('render:'+ck)&&puts.some(([k,o])=>k==='render:'+ck&&!o),'the worker keeps it under the combination key (no expiry)');
-    ok(await A.p.evaluate(async k=>!!(await metaGet('render:'+k)),ck),'and so does the device');
+    ok(await A.p.evaluate(async k=>!!(await HOOK.metaGet('render:'+k)),ck),'and so does the device');
     // the same combination on another day: shown at once, nothing generated
-    const other=await A.p.evaluate(()=>{const o=planFor()[key(sel)],d='2026-11-18';
-      dayRecs[d]={date:d,force:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id,...(o.clip?{clip:o.clip.id}:{}),...(o.watch?{watch:o.watch.id}:{})},vest:o.vest};HOOK.cache={};
-      HOOK.sel=new Date(2026,10,18);renderToday();const o2=planFor()[key(sel)];return {same:comboKey(o2)===comboKey(o),btn:!!document.querySelector('.render-btn'),cap:(document.querySelector('.fig.photo .lastworn')||{}).textContent||''}});
+    const other=await A.p.evaluate(()=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)],d='2026-11-18';
+      HOOK.dayRecs[d]={date:d,force:{top:o.top.id,shirt:o.shirt.id,tie:o.tie.id,...(o.clip?{clip:o.clip.id}:{}),...(o.watch?{watch:o.watch.id}:{})},vest:o.vest};HOOK.cache={};
+      HOOK.sel=new Date(2026,10,18);HOOK.renderToday();const o2=HOOK.planFor()[HOOK.key(HOOK.sel)];return {same:HOOK.comboKey(o2)===HOOK.comboKey(o),btn:!!document.querySelector('.render-btn'),cap:(document.querySelector('.fig.photo .lastworn')||{}).textContent||''}});
     ok(other.same&&await photoShown(A.p)&&!other.btn&&calls===0,'another day with the same outfit reuses the photo (no new charge)');
     ok(/^(This look last worn |$)/.test(other.cap)&&!/gpt|Generated/.test(other.cap),`the caption shows when the look was last worn, not the model ("${other.cap}")`);
     // a different combination has no photo; changing how a piece looks (colour) makes it a different combination
-    ok(await A.p.evaluate(()=>{HOOK.sel=new Date(2026,10,17);renderToday();return !document.querySelector('.fig.photo')}),'a different outfit is drawn, not given the photo');
-    ok(await A.p.evaluate(()=>{const o=planFor()['2026-11-16'],a=comboKey(o),b=comboKey({...o,tie:{...o.tie,primaryColor:'green'}}),c=comboKey({...o,tie:{...o.tie,updated:99}}),d=comboKey({...o,vest:!o.vest});return a!==b&&a===c&&a!==d}),
+    ok(await A.p.evaluate(()=>{HOOK.sel=new Date(2026,10,17);HOOK.renderToday();return !document.querySelector('.fig.photo')}),'a different outfit is drawn, not given the photo');
+    ok(await A.p.evaluate(()=>{const o=HOOK.planFor()['2026-11-16'],a=HOOK.comboKey(o),b=HOOK.comboKey({...o,tie:{...o.tie,primaryColor:'green'}}),c=HOOK.comboKey({...o,tie:{...o.tie,updated:99}}),d=HOOK.comboKey({...o,vest:!o.vest});return a!==b&&a===c&&a!==d}),
       'the key changes with colour or vest, not with an unrelated edit');
     // the shirt counts only by colour: any white shirt shares the photo; jackets/ties by look, not by which item
-    const share=await A.p.evaluate(()=>{const o=planFor()['2026-11-16'],sh=o.shirt;
+    const share=await A.p.evaluate(()=>{const o=HOOK.planFor()['2026-11-16'],sh=o.shirt;
       const tex={...o,shirt:{...sh,id:'other-shirt',pattern:'dobby',cuff:'french',stripes:{b:[['p',1]]}}},col={...o,shirt:{...sh,primaryColor:'white'}},
         twin={...o,top:{...o.top,id:'twin-suit'}},pin={...o,top:{...o.top,pattern:'pinstripe'}};
-      return {tex:comboKey(tex)===comboKey(o),col:comboKey(col)!==comboKey(o),twin:comboKey(twin)===comboKey(o),pin:comboKey(pin)!==comboKey(o)}});
+      return {tex:HOOK.comboKey(tex)===HOOK.comboKey(o),col:HOOK.comboKey(col)!==HOOK.comboKey(o),twin:HOOK.comboKey(twin)===HOOK.comboKey(o),pin:HOOK.comboKey(pin)!==HOOK.comboKey(o)}});
     ok(share.tex,'another shirt of the same colour (different texture, cuffs, item) shares the photo');
     ok(share.col,'a shirt of a different colour does not');
     ok(share.twin&&share.pin,'an identical suit shares the photo; a different pattern does not');
@@ -148,7 +148,7 @@ const prefetch=async({ok,chromium,url,ROOT})=>{
   const setup=()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',updated:1,...x});
     HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','brown'),I('suit','lightgrey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('tie','burgundy'),I('tie','navy'),I('tie','green'),
       I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
-    settings.workdays=[1,2,3,4,5];settings.blazerDays=[];settings.vestMode='auto';HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')};
+    HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[];HOOK.settings.vestMode='auto';HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.show('today')};
   const reqs=[];
   const device=async()=>{const ctx=await browser.newContext({viewport:{width:390,height:900}});
     await ctx.route(HOST+'**',async route=>{const q=route.request();if(new URL(q.url()).pathname==='/sync')return route.fulfill({status:503,headers:{'access-control-allow-origin':'*'},body:'{}'});   // no /sync: the start-up sync merges away the items set in memory
@@ -164,15 +164,15 @@ const prefetch=async({ok,chromium,url,ROOT})=>{
   try{
     // the plan's combinations for November, worked out once; the worker has photos for all but two of them
     const A=await device();await A.p.evaluate(setup);
-    const plan=await A.p.evaluate(()=>{const out={};for(const [k,o] of Object.entries(planFor()))if(o.top&&keyDate(k).getMonth()===10)out[k]=comboKey(o);return out});
+    const plan=await A.p.evaluate(()=>{const out={};for(const [k,o] of Object.entries(HOOK.planFor()))if(o.top&&HOOK.keyDate(k).getMonth()===10)out[k]=HOOK.comboKey(o);return out});
     const keys=[...new Set(Object.values(plan))],missing=keys.slice(-2);
     for(const k of keys)if(!missing.includes(k))store.set('render:'+k,JSON.stringify({sig:'x',img:JPG,model:'m',t:5}));
     await A.ctx.close();
     // a fresh install: nothing stored on the device
     reqs.length=0;const B=await device();await B.p.evaluate(setup);
     const want=keys.filter(k=>!missing.includes(k));
-    await B.p.waitForFunction(w=>w.every(k=>renders[k]),want,{timeout:20000}).catch(()=>{});
-    const have=await B.p.evaluate(w=>w.filter(k=>renders[k]).length,want);
+    await B.p.waitForFunction(w=>w.every(k=>HOOK.renders[k]),want,{timeout:20000}).catch(()=>{});
+    const have=await B.p.evaluate(w=>w.filter(k=>HOOK.renders[k]).length,want);
     ok(have===want.length,`a new install downloads the month's photos in the background without visiting each day (${have} of ${want.length})`);
     const gets=reqs.filter(r=>/^GET render\?key=/.test(r)).map(r=>r.split('key=')[1]);
     ok(reqs.filter(r=>r==='GET render?list=1').length===1,'one request lists what the worker has');
@@ -185,10 +185,10 @@ const prefetch=async({ok,chromium,url,ROOT})=>{
     ok(firstDays.every(d=>d<=4),`downloads start with the days nearest the one on screen (${firstDays.join(', ')} days away)`);
     // swiping to another day shows its photo straight away
     const day=Object.keys(plan).find(d=>d!=='2026-11-16'&&!missing.includes(plan[d])&&new Date(d.replace(/-(\d)\b/g,'-0$1'))>new Date('2026-11-20'));
-    const shown=await B.p.evaluate(d=>{const [y,m,dd]=d.split('-').map(Number);HOOK.sel=new Date(y,m-1,dd);renderToday();return !!document.querySelector('.fig.photo img')},day);
+    const shown=await B.p.evaluate(d=>{const [y,m,dd]=d.split('-').map(Number);HOOK.sel=new Date(y,m-1,dd);HOOK.renderToday();return !!document.querySelector('.fig.photo img')},day);
     ok(shown,`swiping to ${day} shows the photo immediately`);
     // a day already here and on the worker is not downloaded again when shown
-    const before=reqs.length;await B.p.evaluate(()=>{HOOK.sel=new Date(2026,10,17);renderToday()});await B.p.waitForTimeout(600);
+    const before=reqs.length;await B.p.evaluate(()=>{HOOK.sel=new Date(2026,10,17);HOOK.renderToday()});await B.p.waitForTimeout(600);
     ok(!reqs.slice(before).some(r=>keys.some(k=>r==='GET render?key='+k)),'showing a day whose photo is already here does not download it again');
     ok(B.errs.length===0,'no page errors ('+B.errs.join('; ')+')');
   }finally{await browser.close()}

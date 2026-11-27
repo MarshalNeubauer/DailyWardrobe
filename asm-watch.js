@@ -11,8 +11,9 @@
    its colour (on a dark dial the printing turned light), and a leather strap (the scan's grain along the strap, a broad calf sheen,
    darker painted edges, a stitch line) or a metal bracelet in the case's metal. The open-collar masters share their buttoned masters'
    watch. Its own version (ASM_WATCHV) is in the look's key (asmWatchSig in asm-color.js asmCmSig). */
-import {ASM_LIN,asmData,asmJpeg} from './assemble.js';
+import {serve} from './bus.js';
 import {linSrgb8} from './srgb.js';
+import {ASM_LIN,asmData,asmJpeg} from './assemble.js';
 const ASM_WATCHV=1;
 const ASM_WATCH_GEO={suit:{x:1129,y:1049,n:255,cx:1274,cy:1177,ax:[.312,-.9501]},vest:{x:1123,y:1052,n:267,cx:1275,cy:1180,ax:[.319,-.9478]},
   'shirt-tie':{x:1164,y:630,n:193,cx:1276,cy:742,ax:[.3947,-.9188]},'shirt-open':{x:1171,y:682,n:189,cx:1279,cy:784,ax:[.4391,-.8984]}};
@@ -21,19 +22,11 @@ const ASM_WATCH_MASTER={'suit-open':'suit','vest-open':'vest'};
 /* a strap rather than a bracelet: leather, and since 2026-11-15 rubber and a fabric NATO strap (the owner's options), painted in the
    item's colour; the leather's key is as before, so its pictures keep their keys */
 const ASM_WATCH_STRAPS=['leather','rubber','nato'];
-const asmWatchPaints=w=>{if(!w||w.type!=='watch')return false;const o=watchOpts(w);return (w.metal||'silver')!=='silver'||o.dial!=='white'||ASM_WATCH_STRAPS.includes(o.band)};
-const asmWatchSig=w=>{const o=watchOpts(w);return ['w'+ASM_WATCHV,w.metal||'silver',o.dial,o.band,ASM_WATCH_STRAPS.includes(o.band)?colOf(w):''].join('/')};
 /* the case's tones per metal: [highlight, colour, shadow]. Gold is the approved mockup's; gunmetal ('other') METAL_TONES.other's, written
    out: the picture worker loads this file without core.js, so nothing of core.js may be read at load time (only inside asmWatchJob,
    asmWatchPaints and asmWatchSig, which run on the page) */
 const ASM_WATCH_TONES={gold:['#fff0b8','#c9a227','#5a4310'],rosegold:['#ffe1cf','#c98f78','#5e3426'],other:['#d2d4d7','#868a90','#45494e'],'two-tone':['#fbf3d8','#c8b27e','#5c5236']};   // two-tone: steel warmed toward gold (2026-11-15)
 const asmWatchMetal=w=>{const m=w.metal||'silver';return m==='gold'&&w.primaryColor==='rosegold'?'rosegold':m};
-/* the job's part (assemble.js asmJob): what to paint, or null */
-function asmWatchJob(o,kind){const w=o&&o.watch;if(!kind||!asmWatchPaints(w))return null;const k=ASM_WATCH_MASTER[kind]||kind,g=ASM_WATCH_GEO[k];if(!g)return null;
-  // (everything core.js knows is worked out here, on the page: the painting runs in asm-worker.js, which has no core.js. A COLORS read in
-  // asmWatchDo failed every gold-watch picture in the worker on the day this shipped: phones and the PC builder; tests/sharedmasters)
-  const op=watchOpts(w);return {k,g,metal:asmWatchMetal(w),white:op.dial==='white',dial:COLORS[op.dial]||COLORS.charcoal,dark:asmWatchDark(op.dial),band:op.band,strap:colOf(w),mask:'watch/'+k+'.png',leather:'watch/leather.jpg'}}
-const asmWatchDark=c=>{const h=COLORS[c]||'#000000',v=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);return .2126*v[0]+.7152*v[1]+.0722*v[2]<.45};
 const asmWatchMem=new Map();
 async function asmWatchImg(u){if(!asmWatchMem.has(u))asmWatchMem.set(u,asmData(u).then(d=>d,e=>{asmWatchMem.delete(u);throw e}));return asmWatchMem.get(u)}
 /* three box blurs ~ a Gaussian of sigma r, on a w x h float image */
@@ -89,8 +82,8 @@ function asmWatchDo(px,S,W,M,T){const L=ASM_LIN,f=S/2048,g=W.g,pad=Math.ceil(14*
       else{const k=Math.min(1.1,Math.max(.35,Y[q]/ref));for(let c=0;c<3;c++)put(q,c,DC[c]*k,a)}}}   // a light dial: its colour, the printing as dark as before
   const gam=linSrgb8;   // (srgb.js)
   for(let j=0;j<h;j++)for(let i=0;i<w;i++){const q=j*w+i;if(!chg[q])continue;const p=4*((Y0+j)*S+X0+i);for(let c=0;c<3;c++)px[p+c]=gam(out[3*q+c])}}   // only what was painted
-/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
-Object.assign(globalThis,{asmWatchPaints,asmWatchSig,asmWatchJob,asmWatchPaint});
+/* sockets (bus.js; the restructure S6p, 2026-11-27): the day's watch, painted on the finished picture (asm-color.js asmBuildAfter: the painter lives without this file) */
+serve('asm-watch-paint',asmWatchPaint);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,ASM_WATCH_GEO,asmWatchJob,asmWatchPaint,asmWatchPaints};
-export {ASM_WATCH_GEO,asmWatchPaints,asmWatchSig,asmWatchJob,asmWatchPaint};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,ASM_WATCH_GEO,asmWatchPaint};
+export {ASM_WATCH_GEO,asmWatchPaint,ASM_WATCH_STRAPS,ASM_WATCHV,ASM_WATCH_MASTER,asmWatchMetal};

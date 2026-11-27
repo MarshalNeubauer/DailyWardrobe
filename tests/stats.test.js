@@ -14,21 +14,21 @@ const stats=async({ok,chromium,url})=>{
         I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('tie','burgundy'),I('tie','navy'),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'gold'}),I('belt','tan',{leather:'suede',metal:'silver'}),
         I('socks','purple'),I('cufflinks','silver',{metal:'silver'}),I('watch','silver',{metal:'silver'})];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='never';settings.holidays=null;settings.daysOff=null;HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[4];HOOK.settings.vestMode='never';HOOK.settings.holidays=null;HOOK.settings.daysOff=null;HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};
       // history: three real days (one marked not worn), and a planner warm-up day from before the items existed
       const ids=(top,shirt,tie)=>({top,bot:top,shirt,tie,shoes:'shoes14',belt:'belt16',socks:'socks19',watch:'watch21'});
       HOOK.dayRecs={'2026-9-1':{date:'2026-9-1',ids:ids('suit0','shirt8','tie11'),suitDay:true,auto:true},
         '2026-11-4':{date:'2026-11-4',ids:ids('suit0','shirt8','tie11'),suitDay:true},'2026-11-5':{date:'2026-11-5',ids:ids('suit1','shirt9','tie12'),suitDay:true,worn:false},
         '2026-11-8':{date:'2026-11-8',ids:ids('suit0','shirt9','tie11'),suitDay:true,worn:true},'2026-11-9':{date:'2026-11-9',ids:ids('suit2','shirt8','tie13'),suitDay:true}};
-      HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today')});
-    await p.evaluate(()=>openSettings());
+      HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.show('today')});
+    await p.evaluate(()=>HOOK.openSettings());
     ok(!(await p.isVisible('#stats-btn'))&&await p.isVisible('#n-stats')&&(await p.textContent('#n-stats'))==='Insights','Insights is a tab (no longer a link in Settings)');
-    await p.evaluate(()=>closeSettings());await p.click('#n-stats');
+    await p.evaluate(()=>HOOK.closeSettings());await p.click('#n-stats');
     const wait=await p.evaluate(()=>!!document.querySelector('#stats .st-wait'));await p.waitForFunction(()=>!!document.querySelector('#stats .st-tiles'),null,{timeout:20000});
     ok(wait,'the tab shows at once, saying it is planning the next six months, and the stats follow (planned in idle slices, stats.js statsShow)');
-    ok(await p.evaluate(()=>!$('#stats').hidden&&$('#today').hidden&&$('#settings-modal').style.display==='none'&&/Insights/.test($('#stats h2').textContent)&&!$('#stats .pback')&&$('#n-stats').classList.contains('on')),'it opens Insights, a tab with no ‹');
+    ok(await p.evaluate(()=>!HOOK.$('#stats').hidden&&HOOK.$('#today').hidden&&HOOK.$('#settings-modal').style.display==='none'&&/Insights/.test(HOOK.$('#stats h2').textContent)&&!HOOK.$('#stats .pback')&&HOOK.$('#n-stats').classList.contains('on')),'it opens Insights, a tab with no ‹');
     const s=await p.evaluate(()=>{const S=HOOK.buildStats(),row=id=>S.rows.find(r=>r.i.id===id);
-      return {worn:S.worn.map(w=>w.date).join(),navy:row('suit0').worn,ch:row('suit1').worn,tie:row('tie11').worn,last:row('suit0').last&&key(row('suit0').last),plan:S.plan.length,planNavy:row('suit0').planned,next:!!row('suit0').next,
+      return {worn:S.worn.map(w=>w.date).join(),navy:row('suit0').worn,ch:row('suit1').worn,tie:row('tie11').worn,last:row('suit0').last&&HOOK.key(row('suit0').last),plan:S.plan.length,planNavy:row('suit0').planned,next:!!row('suit0').next,
         unused:S.unused.map(r=>r.i.id).sort().join(),avg:S.avg,miss:Object.keys(S.miss),looks:S.looks,minRest:S.minRest,tiles:[...document.querySelectorAll('.st-tile b')].map(b=>b.textContent).join(),
         firstPlan:S.plan[0][0],lastPlan:S.plan[S.plan.length-1][0],sumTop:S.rows.filter(r=>r.i.type==='suit'||r.i.type==='blazer').reduce((a,r)=>a+r.planned,0)}});
     ok(s.worn==='2026-11-4,2026-11-8,2026-11-9'&&s.navy===2&&s.ch===0&&s.tie===2&&s.last==='2026-11-8',`worn counts come from the days really worn: not the day marked "Not worn", not a planner warm-up day from before the items existed (${s.worn})`);
@@ -55,14 +55,14 @@ const stats=async({ok,chromium,url})=>{
     ok(rest.pairs>=3&&/A jacket rests at least \d+ workdays/.test(rest.restTxt)&&/shoes/i.test(rest.restTxt),`pairings and rest are shown (${rest.restTxt.trim()})`);
     ok(rest.learn&&!/learned/i.test(rest.learn),'Insights has no "What the planner has learned" section (the planner no longer learns from changes)');
     // votes an earlier version stored (settings.learn) are dropped once, the removal stamped so it wins over a copy that still has them
-    const dl=await p.evaluate(async()=>{const old=stampSettings({...JSON.parse(JSON.stringify(settings)),learn:{p:{'a|b':-2},i:{}}},Date.now()-5000);   // another device's older copy, votes and all
-      settings.learn={p:{'a|b':-2},i:{}};await saveUserSettings();await dropLearn();const st=await metaGet('settings'),m=mergeSettings(old,JSON.parse(JSON.stringify(settings)));
-      return {mem:'learn' in settings,stored:'learn' in st,mark:st.kh&&st.kh.learn,merged:'learn' in m,again:await dropLearn()===undefined}});
+    const dl=await p.evaluate(async()=>{const old=HOOK.stampSettings({...JSON.parse(JSON.stringify(HOOK.settings)),learn:{p:{'a|b':-2},i:{}}},Date.now()-5000);   // another device's older copy, votes and all
+      HOOK.settings.learn={p:{'a|b':-2},i:{}};await HOOK.saveUserSettings();await HOOK.dropLearn();const st=await HOOK.metaGet('settings'),m=HOOK.mergeSettings(old,JSON.parse(JSON.stringify(HOOK.settings)));
+      return {mem:'learn' in HOOK.settings,stored:'learn' in st,mark:st.kh&&st.kh.learn,merged:'learn' in m,again:await HOOK.dropLearn()===undefined}});
     ok(!dl.mem&&!dl.stored&&dl.mark==='-'&&!dl.merged&&dl.again,`stored learning votes are removed and saved, marked removed (${dl.mark}), and the removal wins a merge with an older copy that has them`);
     // lowest days link back to Today; back button; an empty wardrobe
     await p.click('#n-today');
-    ok(await p.evaluate(()=>!$('#today').hidden&&$('#stats').hidden),'the Today tab returns to Today');
-    ok(await p.evaluate(()=>{const keep=items;HOOK.items=[];HOOK.openStats();const t=$('#stats').textContent;HOOK.items=keep;HOOK.cache={};show('today');return /wardrobe is empty/i.test(t)}),'an empty wardrobe gets a plain message');
+    ok(await p.evaluate(()=>!HOOK.$('#today').hidden&&HOOK.$('#stats').hidden),'the Today tab returns to Today');
+    ok(await p.evaluate(()=>{const keep=HOOK.items;HOOK.items=[];HOOK.openStats();const t=HOOK.$('#stats').textContent;HOOK.items=keep;HOOK.cache={};HOOK.show('today');return /wardrobe is empty/i.test(t)}),'an empty wardrobe gets a plain message');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
 };
@@ -79,43 +79,43 @@ const nu2fix7=async({ok,chromium,url,settle})=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,timezoneId:'Asia/Kuwait'});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const quiet=()=>p.evaluate(()=>recordRun.catch(()=>{}));
+    const quiet=()=>p.evaluate(()=>HOOK.recordRun.catch(()=>{}));
     const full=()=>p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-16T09:00:00';const added=new Date(2026,10,10).getTime();let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added,...x});
       HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('blazer','grey'),I('pants','grey'),I('pants','tan'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('tie','burgundy'),I('tie','navy'),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];delete settings.dress;HOOK.dayRecs={};HOOK.weather={};HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')});
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[4];delete HOOK.settings.dress;HOOK.dayRecs={};HOOK.weather={};HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.show('today')});
     await full();await quiet();
     // ---- Insights and What to buy: the same days
-    const c=await p.evaluate(()=>{const ins=HOOK.plannedDays(),ev=HOOK.evalPlan(items,todayDate(),SHOP_WEEKS),ks=horizonKeys(todayDate(),SHOP_WEEKS);
-      return {ins:ins.length,shop:ev.days,first:ks[0],today:key(todayDate()),same:ins.every(([k],n)=>k===ks[n])}});
+    const c=await p.evaluate(()=>{const ins=HOOK.plannedDays(),ev=HOOK.evalPlan(HOOK.items,HOOK.todayDate(),HOOK.SHOP_WEEKS),ks=HOOK.horizonKeys(HOOK.todayDate(),HOOK.SHOP_WEEKS);
+      return {ins:ins.length,shop:ev.days,first:ks[0],today:HOOK.key(HOOK.todayDate()),same:ins.every(([k],n)=>k===ks[n])}});
     ok(c.ins===c.shop&&c.same&&c.ins>100,`Insights and What to buy count the same planned outfits (${c.ins} and ${c.shop})`);
     ok(c.first==='2026-11-17',`both start tomorrow, not today (${c.first}, today ${c.today})`);
     // ---- Jackets off: blazers and suits are left out by the dress code, not "never worn"
-    const j=await p.evaluate(()=>{settings.dress={jacket:false,tie:true};HOOK.cache={};renderStats();
-      const r={sum:[...document.querySelectorAll('#st-wear summary')].map(s=>s.textContent.replace(/\s+/g,' ').trim())};delete settings.dress;HOOK.cache={};return r});
+    const j=await p.evaluate(()=>{HOOK.settings.dress={jacket:false,tie:true};HOOK.cache={};HOOK.renderStats();
+      const r={sum:[...document.querySelectorAll('#st-wear summary')].map(s=>s.textContent.replace(/\s+/g,' ').trim())};delete HOOK.settings.dress;HOOK.cache={};return r});
     const bl=j.sum.find(s=>/^Blazers/.test(s))||'';
     ok(/left out by your dress code/.test(bl)&&!/never worn/.test(bl),`with Jackets off, Wear counts says the blazers are left out by the dress code (${bl})`);
     // ---- a wardrobe that can't dress a day: a suit and a shirt, with a worn day of that look on record
-    const h=await p.evaluate(()=>{HOOK.items=items.filter(i=>i.id==='suit0'||i.id==='shirt6');
-      HOOK.dayRecs={'2026-11-12':{date:'2026-11-12',ids:{top:'suit0',bot:'suit0',shirt:'shirt6'},suitDay:true}};HOOK.cache={};renderToday();
-      const r={first:!!$('#firstrun'),fig:!!$('#mannequin-container'),score:!!$('#sbox'),last:!!$('.lastworn'),month:($('#mbox .mltxt')||{}).textContent||''};
-      renderStats();r.tiles=$('#stats .st-tiles').textContent;r.short=($('#st-short')||{}).textContent||'';r.stats=$('#stats').textContent;return r});
+    const h=await p.evaluate(()=>{HOOK.items=HOOK.items.filter(i=>i.id==='suit0'||i.id==='shirt6');
+      HOOK.dayRecs={'2026-11-12':{date:'2026-11-12',ids:{top:'suit0',bot:'suit0',shirt:'shirt6'},suitDay:true}};HOOK.cache={};HOOK.renderToday();
+      const r={first:!!HOOK.$('#firstrun'),fig:!!HOOK.$('#mannequin-container'),score:!!HOOK.$('#sbox'),last:!!HOOK.$('.lastworn'),month:(HOOK.$('#mbox .mltxt')||{}).textContent||''};
+      HOOK.renderStats();r.tiles=HOOK.$('#stats .st-tiles').textContent;r.short=(HOOK.$('#st-short')||{}).textContent||'';r.stats=HOOK.$('#stats').textContent;return r});
     await quiet();
     ok(h.first&&h.fig&&!h.score&&!h.last,`a suit and a shirt: the checklist and the drawing, but no score and no "This look last worn" (score ${h.score}, last worn ${h.last})`);
     ok(/pieces still missing/.test(h.month)&&!/\d+ outfits?/.test(h.month),`the month card doesn't count half-outfits (${h.month.trim()})`);
     ok(/a tie and shoes/.test(h.short)&&!/outfits? planned|average outfit score/.test(h.tiles)&&!/averages|can.t get right|Small deductions/.test(h.stats),`Insights says what is missing and shows no plan numbers (${h.short.slice(0,80)})`);
     // one own piece left (Fixer 3's case after removing the sample): the checklist, no "69 Incomplete"
-    const one=await p.evaluate(()=>{HOOK.items=items.filter(i=>i.id==='suit0');HOOK.cache={};renderToday();return {first:!!$('#firstrun'),score:!!$('#sbox')}});
+    const one=await p.evaluate(()=>{HOOK.items=HOOK.items.filter(i=>i.id==='suit0');HOOK.cache={};HOOK.renderToday();return {first:!!HOOK.$('#firstrun'),score:!!HOOK.$('#sbox')}});
     await quiet();
     ok(one.first&&!one.score,`one piece left: the checklist and no score (score ${one.score})`);
     // ---- complete again: the score and the counts come back
     await full();await quiet();
-    ok(await p.evaluate(()=>!!$('#sbox')&&!$('#firstrun')&&/\d+ outfits/.test($('#mbox .mltxt').textContent)),'with a complete wardrobe the score and the month\'s count are back');
+    ok(await p.evaluate(()=>!!HOOK.$('#sbox')&&!HOOK.$('#firstrun')&&/\d+ outfits/.test(HOOK.$('#mbox .mltxt').textContent)),'with a complete wardrobe the score and the month\'s count are back');
     // ---- the date bar's "Set location" beside the pill: Larger Text and page zoom
     const bar=async(w,h,ts)=>{await p.setViewportSize({width:w,height:h});
-      await p.evaluate(ts=>{document.documentElement.style.setProperty('--tscale',String(ts));settings.location=null;HOOK.sel=new Date(2026,10,16);renderToday();scrollTo(0,0)},ts);await settle(p,200);
+      await p.evaluate(ts=>{document.documentElement.style.setProperty('--tscale',String(ts));HOOK.settings.location=null;HOOK.sel=new Date(2026,10,16);HOOK.renderToday();scrollTo(0,0)},ts);await settle(p,200);
       // (measured again for up to 2 s until the bar is in place: the resize and the scroll back to the top settle on their own time)
-      const m=()=>p.evaluate(()=>{scrollTo(0,0);const t=$('#toast');if(t)t.classList.remove('on','act');/* (a toast from the steps above lay over the bar on a short screen) */const a=$('.day h2 .wxl'),pl=$('#wpill');if(!a||!pl)return null;const r=a.getBoundingClientRect(),rp=pl.getBoundingClientRect(),x=r.left+r.width/2;
+      const m=()=>p.evaluate(()=>{scrollTo(0,0);const t=HOOK.$('#toast');if(t)t.classList.remove('on','act');/* (a toast from the steps above lay over the bar on a short screen) */const a=HOOK.$('.day h2 .wxl'),pl=HOOK.$('#wpill');if(!a||!pl)return null;const r=a.getBoundingClientRect(),rp=pl.getBoundingClientRect(),x=r.left+r.width/2;
         const at=document.elementFromPoint(x,r.top+r.height/2);
         return {top:Math.round(r.top),sy:scrollY,at:at&&(at.tagName+'.'+at.className+'#'+at.id),wrap:a.closest('.wx').classList.contains('wxwrap'),below:rp.top>=r.bottom-16,txt:a.textContent,w:r.width,h:r.height,cut:a.scrollWidth>a.clientWidth+1,hit:[r.top+3,r.top+r.height/2,r.bottom-3].filter(y=>document.elementFromPoint(x,y)===a).length,
           pill:pl.contains(document.elementFromPoint(rp.left+rp.width/2,rp.top+rp.height/2)),side:document.documentElement.scrollWidth<=innerWidth+1}});
@@ -145,47 +145,47 @@ const nufix7=async({ok,chromium,url,settle})=>{
     // ---- opened on a Saturday: Today shows Sunday's outfit (the next workday), not the empty Saturday
     {const ctx=await browser.newContext({viewport:{width:390,height:844},timezoneId:'Asia/Kuwait'});await ctx.clock.setFixedTime(new Date(2026,10,21,9));
       const p=await ctx.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);
-      ok(await p.evaluate(()=>key(sel)==='2026-11-22'&&view.m===10),'opened on a Saturday, Today starts on Sunday, the next workday');
+      ok(await p.evaluate(()=>HOOK.key(HOOK.sel)==='2026-11-22'&&HOOK.view.m===10),'opened on a Saturday, Today starts on Sunday, the next workday');
       await ctx.close()}
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const quiet=()=>p.evaluate(()=>recordRun.catch(()=>{}));   // the day records a drawing of Today writes in the background
+    const quiet=()=>p.evaluate(()=>HOOK.recordRun.catch(()=>{}));   // the day records a drawing of Today writes in the background
     await p.evaluate(()=>{const added=new Date(2026,10,10).getTime();let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added,...x});
       HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','grey'),I('shirt','white',{pattern:'stripe',secondaryColor:'blue'}),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];HOOK.dayRecs={};HOOK.weather={};HOOK.cache={}});
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[];HOOK.dayRecs={};HOOK.weather={};HOOK.cache={}});
     // ---- H8: shown on a Friday (a day off, as the calendar day), brought back on Sunday: Sunday's outfit
     const fire=()=>p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
-    const at=async(today,s,v)=>{await p.evaluate(([t,s,v])=>{HOOK.TODAY_OVERRIDE=t;HOOK.cache={};HOOK.dayRecs={};HOOK.sel=new Date(...s);HOOK.view={y:v[0],m:v[1]};HOOK.dayShown=null;show('today')},[today,s,v]);await quiet();
+    const at=async(today,s,v)=>{await p.evaluate(([t,s,v])=>{HOOK.TODAY_OVERRIDE=t;HOOK.cache={};HOOK.dayRecs={};HOOK.sel=new Date(...s);HOOK.view={y:v[0],m:v[1]};HOOK.dayShown=null;HOOK.show('today')},[today,s,v]);await quiet();
     };
     await at('2026-11-20T07:30:00',[2026,10,20],[2026,10]);await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-22T07:30:00'});await fire();await quiet();
-    const fri=await p.evaluate(()=>key(sel));
+    const fri=await p.evaluate(()=>HOOK.key(HOOK.sel));
     // left on a past day (stepped back from Thursday to Tuesday), brought back on Sunday: Sunday
     await at('2026-11-19T07:30:00',[2026,10,17],[2026,10]);await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-22T07:30:00'});await fire();await quiet();
-    const past=await p.evaluate(()=>key(sel));
+    const past=await p.evaluate(()=>HOOK.key(HOOK.sel));
     // a coming day the user stepped to stays
     await at('2026-11-19T07:30:00',[2026,11,1],[2026,11]);await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-22T07:30:00'});await fire();await quiet();
-    const future=await p.evaluate(()=>key(sel));
+    const future=await p.evaluate(()=>HOOK.key(HOOK.sel));
     ok(fri==='2026-11-22',`opened on Friday and brought back on Sunday, Today shows Sunday (${fri})`);
     ok(past==='2026-11-22',`left on a past day, Today moves on to the new day (${past})`);
     ok(future==='2026-12-1',`a coming day the user stepped to stays (${future})`);
     // ---- Settings: a workday taken away moves Today on, units redraw the location line and Today
     await at('2026-11-16T09:00:00',[2026,10,16],[2026,10]);
-    const st=await p.evaluate(()=>{settings.units='F';settings.location={lat:29.4,lon:48,name:'Kuwait City'};HOOK.climate=Array.from({length:12},(_,m)=>({tmax:20+m*2}));HOOK.weather={'2026-11-17':{code:0,tmax:25,tmin:15}};renderToday();
-      openSettings('schedule');toggleDay('#cfg-workdays',1);const stale=HOOK.todayStale;saveSettings();const r={stale,sel:key(sel),h2:$('#today .day h2 .dlong').textContent};
-      openSettings('weather');setUnits('C');r.loc=$('#wx-loc').textContent;saveSettings();r.wx=$('#today .wxc').textContent;settings.workdays=[0,1,2,3,4];settings.location=null;HOOK.climate=null;HOOK.weather={};delete settings.units;HOOK.cache={};return r});
+    const st=await p.evaluate(()=>{HOOK.settings.units='F';HOOK.settings.location={lat:29.4,lon:48,name:'Kuwait City'};HOOK.climate=Array.from({length:12},(_,m)=>({tmax:20+m*2}));HOOK.weather={'2026-11-17':{code:0,tmax:25,tmin:15}};HOOK.renderToday();
+      HOOK.openSettings('schedule');HOOK.toggleDay('#cfg-workdays',1);const stale=HOOK.todayStale;HOOK.saveSettings();const r={stale,sel:HOOK.key(HOOK.sel),h2:HOOK.$('#today .day h2 .dlong').textContent};
+      HOOK.openSettings('weather');HOOK.setUnits('C');r.loc=HOOK.$('#wx-loc').textContent;HOOK.saveSettings();r.wx=HOOK.$('#today .wxc').textContent;HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.location=null;HOOK.climate=null;HOOK.weather={};delete HOOK.settings.units;HOOK.cache={};return r});
     await quiet();
     ok(st.stale&&st.sel==='2026-11-17'&&/Tuesday/.test(st.h2),`a workday taken away in Settings moves Today on when Settings closes (${st.sel}, ${st.h2})`);
     ok(/highs of about 20° .* 42°/.test(st.loc),`the location line follows °C at once (${st.loc})`);
     ok(/25°\/15°/.test(st.wx),`and Today shows °C when Settings closes (${st.wx})`);
     // ---- days before the wardrobe existed; Trousers; Add one; a deleted piece on a past day
-    await p.evaluate(()=>{items[0].sample=true});   // (with the sample's banner above it too: it hid the note on the phone)
+    await p.evaluate(()=>{HOOK.items[0].sample=true});   // (with the sample's banner above it too: it hid the note on the phone)
     await at('2026-11-16T09:00:00',[2026,10,5],[2026,10]);
-    const d=await p.evaluate(()=>{const r={pre:($('#prewd')||{}).textContent||'',score:!!$('#sbox'),banner:!!$('#kit-sample')};delete items[0].sample;      settings.blazerDays=[1];HOOK.sel=new Date(2026,10,16);HOOK.dayRecs={};HOOK.cache={};renderToday();if(!HOOK.listOpen)HOOK.toggleList();
+    const d=await p.evaluate(()=>{const r={pre:(HOOK.$('#prewd')||{}).textContent||'',score:!!HOOK.$('#sbox'),banner:!!HOOK.$('#kit-sample')};delete HOOK.items[0].sample;      HOOK.settings.blazerDays=[1];HOOK.sel=new Date(2026,10,16);HOOK.dayRecs={};HOOK.cache={};HOOK.renderToday();if(!HOOK.listOpen)HOOK.toggleList();
       r.rows=[...document.querySelectorAll('#ibox .row > span.mut:first-child')].map(e=>e.textContent);r.add=[...document.querySelectorAll('#ibox .addone')].map(b=>b.textContent+'|'+b.dataset.act+'|'+b.dataset.type);
-      r.html=$('#today').innerHTML;settings.blazerDays=[];
-      HOOK.dayRecs={'2026-11-12':{date:'2026-11-12',ids:{top:'gone1',bot:'gone1',shirt:'shirt5',tie:'tie6',shoes:'shoes8',belt:'belt9',socks:'socks10'},suitDay:true}};HOOK.cache={};HOOK.sel=new Date(2026,10,12);renderToday();
-      r.gone=($('.gonenote')||{}).textContent||'';HOOK.cache={};HOOK.listOpen=false;return r});
+      r.html=HOOK.$('#today').innerHTML;HOOK.settings.blazerDays=[];
+      HOOK.dayRecs={'2026-11-12':{date:'2026-11-12',ids:{top:'gone1',bot:'gone1',shirt:'shirt5',tie:'tie6',shoes:'shoes8',belt:'belt9',socks:'socks10'},suitDay:true}};HOOK.cache={};HOOK.sel=new Date(2026,10,12);HOOK.renderToday();
+      r.gone=(HOOK.$('.gonenote')||{}).textContent||'';HOOK.cache={};HOOK.listOpen=false;return r});
     await quiet();
     ok(/No outfit: your wardrobe starts on Tuesday, November 10/.test(d.pre)&&!d.score&&d.banner,`a day before the wardrobe existed says so, with no score (${d.pre})`);
     ok(d.rows.includes('Pants')&&!d.rows.includes('Trousers'),`a blazer day's pants row says Pants (${d.rows.join(', ')})`);
@@ -194,42 +194,42 @@ const nufix7=async({ok,chromium,url,settle})=>{
     // ---- the month: a day marked not worn; a past workday with no outfit is not "worn"; a striped shirt's name
     await at('2026-11-19T09:00:00',[2026,10,19],[2026,10]);
     const m=await p.evaluate(()=>{HOOK.dayRecs={'2026-11-17':{date:'2026-11-17',ids:{top:'suit0',bot:'suit0',shirt:'shirt4',tie:'tie6',shoes:'shoes8',belt:'belt9',socks:'socks10'},suitDay:true,worn:false}};HOOK.cache={};
-      HOOK.monthOpen=false;renderToday();toggleMonth();const c=k=>document.querySelector(`#mbox .mc[data-k="${k}"]`);
+      HOOK.monthOpen=false;HOOK.renderToday();HOOK.toggleMonth();const c=k=>document.querySelector(`#mbox .mc[data-k="${k}"]`);
       const r={skip:c('2026-11-17').className,skipLabel:c('2026-11-17').getAttribute('aria-label'),pre:c('2026-11-3').className,worn:c('2026-11-16').className,
-        line:piecesLine({top:items[0],suitDay:true,shirt:items[4],tie:items[6]}),rest:shortRest({shirt:items[4]})};toggleMonth();HOOK.cache={};return r});
+        line:HOOK.piecesLine({top:HOOK.items[0],suitDay:true,shirt:HOOK.items[4],tie:HOOK.items[6]}),rest:HOOK.shortRest({shirt:HOOK.items[4]})};HOOK.toggleMonth();HOOK.cache={};return r});
     await quiet();
     ok(/\bskip\b/.test(m.skip)&&!/\bworn\b/.test(m.skip)&&/not worn/.test(m.skipLabel),`a day marked "Didn't" is not shown as worn in the month (${m.skip}; ${m.skipLabel})`);
     ok(!/\bworn\b/.test(m.pre)&&/\bworn\b/.test(m.worn),`a past workday before the wardrobe is not marked worn; a worn one is (${m.pre} / ${m.worn})`);
     // (its main colour and pattern since the title audit, 2026-11-17: it was "white & blue stripe shirt")
     ok(/white stripe shirt/i.test(m.line)&&/white stripe shirt/i.test(m.rest),`a striped shirt is named with its pattern (${m.line} | ${m.rest})`);
     // ---- the month's drag preview keeps the days before the wardrobe empty
-    ok(await p.evaluate(()=>{const pl=planWith({},2026,10);return !pl['2026-11-3']&&!!pl['2026-11-22']}),'the drag preview (planWith) has no outfits before the wardrobe existed');
+    ok(await p.evaluate(()=>{const pl=HOOK.planWith({},2026,10);return !pl['2026-11-3']&&!!pl['2026-11-22']}),'the drag preview (planWith) has no outfits before the wardrobe existed');
     // ---- Insights
-    const s=await p.evaluate(()=>{HOOK.cache={};items[1].name='My charcoal pinstripe';
-      const one=items.slice();HOOK.items=[items[1]];renderStats();const t1=$('#stats .st-tiles').textContent;HOOK.items=one;
-      HOOK.dayRecs={'2026-11-16':{date:'2026-11-16',ids:{top:'suit0',bot:'suit0',shirt:'shirt5',tie:'tie6',shoes:'shoes8',belt:'belt9',socks:'socks10'},suitDay:true}};HOOK.cache={};renderStats();
-      const r={t1,names:[...document.querySelectorAll('#stats .st-nm')].map(e=>e.textContent).join(' / '),weeks:document.querySelectorAll('#stats .st-wk').length};delete items[1].name;HOOK.dayRecs={};HOOK.cache={};return r});
+    const s=await p.evaluate(()=>{HOOK.cache={};HOOK.items[1].name='My charcoal pinstripe';
+      const one=HOOK.items.slice();HOOK.items=[HOOK.items[1]];HOOK.renderStats();const t1=HOOK.$('#stats .st-tiles').textContent;HOOK.items=one;
+      HOOK.dayRecs={'2026-11-16':{date:'2026-11-16',ids:{top:'suit0',bot:'suit0',shirt:'shirt5',tie:'tie6',shoes:'shoes8',belt:'belt9',socks:'socks10'},suitDay:true}};HOOK.cache={};HOOK.renderStats();
+      const r={t1,names:[...document.querySelectorAll('#stats .st-nm')].map(e=>e.textContent).join(' / '),weeks:document.querySelectorAll('#stats .st-wk').length};delete HOOK.items[1].name;HOOK.dayRecs={};HOOK.cache={};return r});
     ok(/1item/.test(s.t1)&&!/1items|1 items/.test(s.t1),`Insights says "1 item", not "1 items" (${s.t1})`);
     ok(/My charcoal pinstripe/.test(s.names),'Insights uses the name the user gave');
     ok(s.weeks===2,`"Your scores" leaves out the weeks before the wardrobe existed (${s.weeks} weeks shown)`);
     // ---- the empty pages have a way to start
-    const e=await p.evaluate(()=>{const keep=items;HOOK.items=[];renderStats();const a=$('#stats').innerHTML;HOOK.renderPack();const b=$('#pack').innerHTML;HOOK.items=keep;HOOK.cache={};return [a,b]});
+    const e=await p.evaluate(()=>{const keep=HOOK.items;HOOK.items=[];HOOK.renderStats();const a=HOOK.$('#stats').innerHTML;HOOK.renderPack();const b=HOOK.$('#pack').innerHTML;HOOK.items=keep;HOOK.cache={};return [a,b]});
     ok(e.every(h=>/<button[^>]*>Add your first item<\/button>/.test(h)&&/<button[^>]*>Try a sample wardrobe<\/button>/.test(h)),'empty Insights and Packing list offer Add your first item and the sample');
     // ---- packing: a kept trip outlasts a Settings change; a suit arriving after the trip starts isn't packed
     const pk=await p.evaluate(async()=>{HOOK.cache={};HOOK.dayRecs={};localStorage.removeItem('pack_trip');
-      HOOK.packT={a:'2026-11-29',b:'2026-12-3',j:0,s:0};show('pack');await HOOK.packLock();const before=HOOK.packLockState(HOOK.packNow.days);await clearLocks();HOOK.renderPack();const after=HOOK.packLockState(HOOK.packNow.days);
+      HOOK.packT={a:'2026-11-29',b:'2026-12-3',j:0,s:0};HOOK.show('pack');await HOOK.packLock();const before=HOOK.packLockState(HOOK.packNow.days);await HOOK.clearLocks();HOOK.renderPack();const after=HOOK.packLockState(HOOK.packNow.days);
       await HOOK.packRelease();
       // the navy suit bought, arriving Nov 30: not in the trip from Nov 29
-      Object.assign(items[0],{paused:true,order:true,arrives:'2026-11-30'});HOOK.cache={};HOOK.renderPack();
-      const used=HOOK.packNow.days.some(x=>x.o&&x.o.top&&x.o.top.id==='suit0'),note=($('#pk-late')||{}).textContent||'';
-      HOOK.packT={a:'2026-12-2',b:'2026-12-3',j:0,s:0};HOOK.cache={};HOOK.renderPack();const later=!$('#pk-late');
-      delete items[0].paused;delete items[0].order;delete items[0].arrives;HOOK.cache={};HOOK.packT=null;HOOK.dayRecs={};show('today');return {before,after,used,note,later}});
+      Object.assign(HOOK.items[0],{paused:true,order:true,arrives:'2026-11-30'});HOOK.cache={};HOOK.renderPack();
+      const used=HOOK.packNow.days.some(x=>x.o&&x.o.top&&x.o.top.id==='suit0'),note=(HOOK.$('#pk-late')||{}).textContent||'';
+      HOOK.packT={a:'2026-12-2',b:'2026-12-3',j:0,s:0};HOOK.cache={};HOOK.renderPack();const later=!HOOK.$('#pk-late');
+      delete HOOK.items[0].paused;delete HOOK.items[0].order;delete HOOK.items[0].arrives;HOOK.cache={};HOOK.packT=null;HOOK.dayRecs={};HOOK.show('today');return {before,after,used,note,later}});
     await quiet();
     ok(pk.before.n===pk.before.of&&pk.after.n===pk.after.of&&pk.after.of>0,`a kept trip stays locked through a Settings change (clearLocks): ${pk.after.n} of ${pk.after.of}`);
     ok(!pk.used&&/arrives .*after you leave/.test(pk.note),`a suit arriving after the trip starts is left out, and the page says why (${pk.note})`);
     ok(pk.later,'a trip after its arrival has no such note');
     // ---- Add's "Saved … Undo" toast goes with the page
-    const tst=await p.evaluate(()=>{openAdd();toast('Saved: Navy suit.',8000,{label:'Undo',fn:()=>{}});const a=$('#toast').classList.contains('on');show('today');return {a,b:$('#toast').classList.contains('on')}});
+    const tst=await p.evaluate(()=>{HOOK.openAdd();HOOK.toast('Saved: Navy suit.',8000,{label:'Undo',fn:()=>{}});const a=HOOK.$('#toast').classList.contains('on');HOOK.show('today');return {a,b:HOOK.$('#toast').classList.contains('on')}});
     ok(tst.a&&!tst.b,'leaving Add takes its Undo toast away (it lay over the month card)');
     await quiet();
     // ---- quick swipes in a row each move a day
@@ -238,7 +238,7 @@ const nufix7=async({ok,chromium,url,settle})=>{
     const c=await p.evaluate(()=>{const b=document.querySelector('#stage').getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+Math.min(b.height/2,250)}});
     for(let k=0;k<5;k++){await T('touchStart',c.x+90,c.y);for(let j=1;j<=4;j++)await T('touchMove',c.x+90-50*j,c.y+1);await T('touchEnd');await p.waitForTimeout(60)}
     await settle(p,900);
-    const sw=await p.evaluate(()=>key(sel));
+    const sw=await p.evaluate(()=>HOOK.key(HOOK.sel));
     ok(sw==='2026-11-23',`five quick swipes move five workdays (${sw})`);
     await p.evaluate(()=>{HOOK.TODAY_OVERRIDE=null;HOOK.cache={}});
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

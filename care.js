@@ -10,7 +10,7 @@
    - the Care page (#care, from Settings), a quiet tag in the Wardrobe grid and one line on Today when today's wear reaches the limit.
    The shirt rule (settings.laundryDays) is in planner.js outfit(). */
 import {on,emit,serve} from './bus.js';
-import {$,CARE_ABLE,CARE_MAX,HANDPICK_TYPES,TYPES,careLimit,careTimes,careWashed,careWord,dayRecs,fmtDay,isWorkday,isoKey,items,key,keyDate,nameHtml,sentence,settings,shortDesc,todayDate} from './core.js';
+import {$,CARE_ABLE,CARE_MAX,TYPES,careLimit,careTimes,careWashed,careWord,dayRecs,fmtDay,isWorkday,isoKey,items,key,keyDate,nameHtml,sentence,settings,shortDesc,todayDate} from './core.js';
 import {cache,planDirty,planFor,planMonth} from './today-plan.js';
 import {esc} from './photo-keys.js';
 import {openSettings,refreshToday,saveUserSettings,todayDirty} from './settings.js';

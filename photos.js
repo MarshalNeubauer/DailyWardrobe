@@ -7,6 +7,8 @@ import {comboKey,comboSig,fnv64,keepRender,listPaused,picsDrawn,renders,shareRen
 import {hasOutfit,planFor,planMonth} from './today-plan.js';
 import {editing,sel,view} from './app.js';
 import {acts} from './act.js';
+import {asmShown} from './asm-today.js';
+import {ASM_ON} from './assemble.js';
 const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=>nm(i)).join(', ');
 // assembled pictures (assemble.js) are in use: ASM_ON, which a test switches off unless it tests them; nothing of assemble.js is
 // called while they are off, so a change there selects only the tests that use them

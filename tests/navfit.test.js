@@ -11,16 +11,16 @@ const navfit=async({ok,chromium,url,settle})=>{
       await p.goto(url);await p.waitForFunction(()=>window.appReady);
       await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
         HOOK.items=[I('suit','grey'),I('shirt','lightblue'),I('tie','navy',{pattern:'stripe',secondaryColor:'grey'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
-        settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,8);HOOK.view={y:2026,m:10};
+        HOOK.settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,8);HOOK.view={y:2026,m:10};
         const c=document.createElement('canvas');c.width=c.height=1024;const x=c.getContext('2d');x.fillStyle='#9a958c';x.fillRect(0,0,1024,1024);
-        const o=planFor()[key(sel)];renders[comboKey(o)]={sig:comboSig(o),img:c.toDataURL('image/jpeg',.7),model:'m',t:1};show('today');scrollTo(0,0)});
+        const o=HOOK.planFor()[HOOK.key(HOOK.sel)];HOOK.renders[HOOK.comboKey(o)]={sig:HOOK.comboSig(o),img:c.toDataURL('image/jpeg',.7),model:'m',t:1};HOOK.show('today');scrollTo(0,0)});
       await p.waitForSelector('#mannequin-container img');await settle(p,600);await p.waitForTimeout(300);
       const m=await p.evaluate(()=>{const nav=document.querySelector('body>nav').getBoundingClientRect(),tiles=document.querySelector('.below').getBoundingClientRect(),btn=document.querySelector('nav button').getBoundingClientRect();
         return {gap:Math.round(nav.top-tiles.bottom),navx:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx')),btn:Math.round(btn.height)}});
       // a day without a photo (the drawing and its Generate button push the tiles lower), and a weekend, keep the size
       const keep=await p.evaluate(async()=>{const nx=()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx'));const before=nx();
-        HOOK.renders={};renderToday();await new Promise(r=>setTimeout(r,400));const drawing=nx(),btn=!!document.querySelector('.render-btn');
-        HOOK.sel=new Date(2026,10,13);renderToday();await new Promise(r=>setTimeout(r,400));const weekend=nx();return {before,drawing,weekend,btn}});
+        HOOK.renders={};HOOK.renderToday();await new Promise(r=>setTimeout(r,400));const drawing=nx(),btn=!!document.querySelector('.render-btn');
+        HOOK.sel=new Date(2026,10,13);HOOK.renderToday();await new Promise(r=>setTimeout(r,400));const weekend=nx();return {before,drawing,weekend,btn}});
       m.keep=keep;
       await ctx.close();return {...m,errs}};
     const a=await run(390,844);
@@ -36,8 +36,8 @@ const navfit=async({ok,chromium,url,settle})=>{
       const nx=()=>p.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx')));
       await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
         HOOK.items=[I('suit','grey'),I('shirt','lightblue'),I('tie','navy',{pattern:'stripe',secondaryColor:'grey'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
-        settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,8);HOOK.view={y:2026,m:10};
-        const o=planFor()[key(sel)];renders[comboKey(o)]={sig:comboSig(o),img:'https://slow.test/p.jpg',model:'m',t:1};show('today');HOOK.fitNav()});
+        HOOK.settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,8);HOOK.view={y:2026,m:10};
+        const o=HOOK.planFor()[HOOK.key(HOOK.sel)];HOOK.renders[HOOK.comboKey(o)]={sig:HOOK.comboSig(o),img:'https://slow.test/p.jpg',model:'m',t:1};HOOK.show('today');HOOK.fitNav()});
       await p.waitForTimeout(400);const early=await nx();
       await p.waitForFunction(()=>{const i=document.querySelector('#mannequin-container img');return i&&i.complete&&i.naturalHeight>0},null,{timeout:8000});await p.waitForTimeout(400);
       const late=await nx(),gap=await p.evaluate(()=>Math.round(document.querySelector('body>nav').getBoundingClientRect().top-document.querySelector('.below').getBoundingClientRect().bottom));
@@ -47,12 +47,12 @@ const navfit=async({ok,chromium,url,settle})=>{
     {const ctx=await browser.newContext({viewport:{width:466,height:710},isMobile:true,hasTouch:true});const p=await ctx.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);
       const nx=()=>p.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx')));
       const day=async(blazer)=>{await p.evaluate(b=>{localStorage.clear();let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
-        HOOK.items=b?[I('blazer','navy'),I('pants','grey')]:[I('suit','grey')];items.push(I('shirt','lightblue'),I('tie','navy',{pattern:'stripe',secondaryColor:'grey'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal'));
+        HOOK.items=b?[I('blazer','navy'),I('pants','grey')]:[I('suit','grey')];HOOK.items.push(I('shirt','lightblue'),I('tie','navy',{pattern:'stripe',secondaryColor:'grey'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal'));
         // product pictures, like the user's: a picture tile's picture follows its width, so four of them are shorter than three
-        const pc=document.createElement('canvas');pc.width=pc.height=200;pc.getContext('2d').fillRect(0,0,9,9);const pu=pc.toDataURL('image/jpeg',.6);for(const it of items)if(HOOK.ITEM_PIC_TYPES.includes(it.type))renders[itemKey(it)]={sig:'item',img:pu,model:'m',t:1,grey:1};
-        settings.workdays=[0,1,2,3,4];settings.blazerDays=b?[0]:[];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,8);HOOK.view={y:2026,m:10};
-        const c=document.createElement('canvas');c.width=c.height=1024;c.getContext('2d').fillRect(0,0,9,9);const o=planFor()[key(sel)];renders[comboKey(o)]={sig:comboSig(o),img:c.toDataURL('image/jpeg',.6),model:'m',t:1};
-        document.documentElement.style.setProperty('--navx','0px');show('today')},blazer);
+        const pc=document.createElement('canvas');pc.width=pc.height=200;pc.getContext('2d').fillRect(0,0,9,9);const pu=pc.toDataURL('image/jpeg',.6);for(const it of HOOK.items)if(HOOK.ITEM_PIC_TYPES.includes(it.type))HOOK.renders[HOOK.itemKey(it)]={sig:'item',img:pu,model:'m',t:1,grey:1};
+        HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=b?[0]:[];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,8);HOOK.view={y:2026,m:10};
+        const c=document.createElement('canvas');c.width=c.height=1024;c.getContext('2d').fillRect(0,0,9,9);const o=HOOK.planFor()[HOOK.key(HOOK.sel)];HOOK.renders[HOOK.comboKey(o)]={sig:HOOK.comboSig(o),img:c.toDataURL('image/jpeg',.6),model:'m',t:1};
+        document.documentElement.style.setProperty('--navx','0px');HOOK.show('today')},blazer);
         await p.waitForSelector('#mannequin-container img');await p.waitForTimeout(700);return {x:await nx(),n:await p.evaluate(()=>document.querySelectorAll('.below .tile').length),pics:await p.evaluate(()=>document.querySelectorAll('.below .tile.has-pic').length),h:await p.evaluate(()=>Math.round(document.querySelector('.below').getBoundingClientRect().height))}};
       const three=await day(false),four=await day(true);
       ok(three.n===3&&four.n===4&&four.pics===4&&four.h<three.h-10&&Math.abs(four.x-three.x)<=1,`a day with four picture tiles (a shorter row: ${four.h}px against ${three.h}px) gets the same bar as a day with three (${four.x}px and ${three.x}px)`);
@@ -72,7 +72,7 @@ const navbar=async({ok,chromium,url,devices,WARDROBES})=>{
   const browser=await chromium.launch();const ctx=await browser.newContext({...devices['iPhone 13']});const p=await ctx.newPage();
   const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
-  await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today')})()`);
+  await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.show('today')})()`);
   const r=await p.evaluate(()=>{const n=document.querySelector('body>nav'),b=n.querySelector('button'),cs=getComputedStyle(document.documentElement);
     scrollTo(0,document.documentElement.scrollHeight);const last=[...document.querySelectorAll('#today > *')].filter(e=>e.offsetHeight).pop();
     return {nav:n.getBoundingClientRect().height,btn:b.getBoundingClientRect().height,pad:cs.getPropertyValue('--navpad'),

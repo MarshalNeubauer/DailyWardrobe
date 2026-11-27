@@ -39,7 +39,7 @@ async function favToggleLook(){const o=planFor()[key(sel)],l=favLookFrom(o);if(!
 function favStrip(o){if(!o||o.frozen)return '';const n=di(sel),ok=i=>i&&inRotation(i,n);
   const L=favLooks().filter(l=>{const p=favPieces(l);return ok(p.sh)&&(!l.j||ok(p.j))&&(!l.tie||ok(p.tie))});if(!L.length)return '';
   const cur=favLookOf(o),last=favLastWorn(),card=l=>{const p=favPieces(l),k=favLookKey(l),on=!!cur&&favLookKey(cur)===k,lw=last[k];
-    return `<button type="button" class="favlook${on?' cur':''}" data-act="favWearTap" data-k="${esc(k)}" aria-label="Wear this favorite look${dayWord()==='today'?' today':''}: ${esc(favLookName(l))}${on?', wearing':''}"><span class="favsw" aria-hidden="true">${[p.j,p.sh,p.tie].filter(Boolean).map(i=>`<i>${swatchSVG(i,true)}</i>`).join('')}</span><span class="favnm">${esc(sentence(favLookName(l)))}<small>${on?'Wearing':lw?'Last worn '+statDate(lw):'Not worn yet'}</small></span></button>`};
+    return `<button type="button" class="favlook${on?' cur':''}" data-act="favWearTap" data-k="${esc(k)}" aria-label="Wear this favorite look${dayWord()==='today'?' today':''}: ${esc(favLookName(l))}${on?', wearing':''}"><span class="favsw" aria-hidden="true">${[p.j,p.sh,p.tie].filter(Boolean).map(i=>`<i>${ask('swatch-svg',i,true)||''}</i>`).join('')}</span><span class="favnm">${esc(sentence(favLookName(l)))}<small>${on?'Wearing':lw?'Last worn '+statDate(lw):'Not worn yet'}</small></span></button>`};
   return `<div class="favpick" role="group" aria-labelledby="favpick-h"><b id="favpick-h" class="favpick-h">${FAV_HEART}Favorite looks</b><div class="favstrip">${L.map(card).join('')}</div></div>`}
 /* when each favorite look was last worn (days not marked "Didn't", before today): {key: Date} */
 function favLastWorn(){const out={},T=todayDate(),K=new Set(favLooks().map(favLookKey));if(!K.size)return out;
@@ -69,7 +69,7 @@ function favStatsCard(S){if(!favAny())return '';const L=favLooks(),F=favItemSet(
   for(const [k,o] of S.plan){const f=favLookOf(o);if(f&&!next[favLookKey(f)])next[favLookKey(f)]=keyDate(k)}
   const pieces=F?items.filter(i=>F.has(i.id)):[];for(const r of S.rows)if(F&&F.has(r.i.id)){pw[r.i.id]=r.worn;pn[r.i.id]=r.next}
   const tile=(v,t)=>`<div class="st-tile"><b>${v}</b><small>${t}</small></div>`;
-  const lookRow=l=>{const p=favPieces(l),k=favLookKey(l),w=wornN[k]||0;return `<div class="st-row favrow"><span class="favsw" aria-hidden="true">${[p.j,p.sh,p.tie].filter(Boolean).map(i=>`<i>${swatchSVG(i,true)}</i>`).join('')}</span><div class="st-main"><span class="st-nm">${esc(sentence(favLookName(l)))}</span><small class="mut">${w?`Worn ${w}×`:'Not worn yet'} · ${next[k]?'next planned '+statDate(next[k]):'not planned in the next months'}</small></div></div>`};
+  const lookRow=l=>{const p=favPieces(l),k=favLookKey(l),w=wornN[k]||0;return `<div class="st-row favrow"><span class="favsw" aria-hidden="true">${[p.j,p.sh,p.tie].filter(Boolean).map(i=>`<i>${ask('swatch-svg',i,true)||''}</i>`).join('')}</span><div class="st-main"><span class="st-nm">${esc(sentence(favLookName(l)))}</span><small class="mut">${w?`Worn ${w}×`:'Not worn yet'} · ${next[k]?'next planned '+statDate(next[k]):'not planned in the next months'}</small></div></div>`};
   const pieceRow=i=>`<div class="st-row favrow">${statPic(i)}<div class="st-main"><span class="st-nm">${TYPES[i.type]||'Item'}: <span class="${titleCls(i)}">${esc(statName(i))}</span></span><small class="mut">Rests a fifth less · ${pw[i.id]?`worn ${pw[i.id]}×`:'not worn yet'}${pn[i.id]?' · next '+statDate(pn[i.id]):''}</small></div></div>`;
   return `<section class="card st-card st-fav" id="st-fav"><h3>${FAV_HEART}Your favorites</h3>
   <div class="st-tiles">${tile(L.length,L.length===1?'look':'looks')}${tile(pieces.length,pieces.length===1?'piece':'pieces')}${tile(month,'favorite looks worn this month')}</div>
@@ -86,7 +86,7 @@ function favChipTap(){favWard=true;emit('wardrobe-changed')}
    favToggleItem are read by the favorites tests. favWard is a `let` only this file writes (wardrobe.js reads it): a getter, no setter. */
 Object.assign(globalThis,{FAV_UNDO_MS,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favMark,favChip,favWhy,favStatsCard,favOff});
 /* the socket Insights asks for its favorites card (bus.js; stats.js no longer names this file) */
-import {serve,emit} from './bus.js';
+import {serve,emit,ask} from './bus.js';
 serve('fav-stats-card',favStatsCard);
 Object.defineProperties(globalThis,{favWard:{get:()=>favWard}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */

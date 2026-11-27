@@ -108,73 +108,73 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
       const p=await c.newPage();p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));await p.goto(url);
       await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
-      await p.evaluate(()=>{clearTimeout(syncTimer);const st=window.setTimeout;window.setTimeout=(f,...a)=>f===syncNow?0:st.call(window,f,...a)});return p};   // syncs only when the test says
-    const sync=p=>p.evaluate(()=>syncNow());
+      await p.evaluate(()=>{clearTimeout(HOOK.syncTimer);const st=window.setTimeout;window.setTimeout=(f,...a)=>f===HOOK.syncNow?0:st.call(window,f,...a)});return p};   // syncs only when the test says
+    const sync=p=>p.evaluate(()=>HOOK.syncNow());
     const data=()=>{const v=store.get('wardrobe:v1');return v?JSON.parse(typeof v==='string'?v:new TextDecoder().decode(v)).data:null};
     const A=await device();
-    await A.evaluate(async()=>{for(const [id,n,t] of [['b1','Brown belt','belt'],['t1','Green tie','tie'],['s1','Pink shirt','shirt']]){const it={id,type:t,primaryColor:t==='belt'?'brown':t==='tie'?'green':'pink',pattern:'solid',name:n,added:Date.now(),updated:Date.now()};await put(it);items.push(it)}});
+    await A.evaluate(async()=>{for(const [id,n,t] of [['b1','Brown belt','belt'],['t1','Green tie','tie'],['s1','Pink shirt','shirt']]){const it={id,type:t,primaryColor:t==='belt'?'brown':t==='tie'?'green':'pink',pattern:'solid',name:n,added:Date.now(),updated:Date.now()};await HOOK.put(it);HOOK.items.push(it)}});
     await sync(A);const B=await device();await sync(B);
-    ok(await B.evaluate(()=>items.length===3),'phone B takes the wardrobe');
+    ok(await B.evaluate(()=>HOOK.items.length===3),'phone B takes the wardrobe');
     // W1-5-01 through the worker (on the Wardrobe: a sync that brings changes to Today records the day, one more backup that isn't the merge's)
-    for(const d of [A,B])await d.evaluate(()=>show('wardrobe'));await sync(A);await sync(B);
-    await A.evaluate(async()=>{const it=items.find(i=>i.id==='s1');it.name='Pink oxford';await put(it)});
-    await B.evaluate(async()=>{const it=items.find(i=>i.id==='s1');it.paused=true;await put(it)});
+    for(const d of [A,B])await d.evaluate(()=>HOOK.show('wardrobe'));await sync(A);await sync(B);
+    await A.evaluate(async()=>{const it=HOOK.items.find(i=>i.id==='s1');it.name='Pink oxford';await HOOK.put(it)});
+    await B.evaluate(async()=>{const it=HOOK.items.find(i=>i.id==='s1');it.paused=true;await HOOK.put(it)});
     putKeys=[];await sync(A);await sync(B);await sync(A);const w1=putKeys.filter(k=>k==='wardrobe:v1').length;   // (the day's first save also keeps its daily copies)
-    const s1=x=>x.evaluate(()=>{const i=items.find(i=>i.id==='s1');return [i.name,!!i.paused]});
+    const s1=x=>x.evaluate(()=>{const i=HOOK.items.find(i=>i.id==='s1');return [i.name,!!i.paused]});
     const srv=data().items.find(i=>i.id==='s1');
     ok(JSON.stringify([await s1(A),await s1(B),[srv.name,!!srv.paused]])==='[["Pink oxford",true],["Pink oxford",true],["Pink oxford",true]]','a rename on one phone and "Take out of rotation" on the other: both on both phones and the server');
     ok(w1<=2,`and it took ${w1} backup writes (one per phone's backup, as before)`);
     // W1-5-04: the sheet open on A while B's change arrives
-    await A.evaluate(()=>{show('wardrobe');openItem('b1')});
-    await B.evaluate(async()=>{const it=items.find(i=>i.id==='b1');it.paused=true;await put(it)});await sync(B);await sync(A);
+    await A.evaluate(()=>{HOOK.show('wardrobe');HOOK.openItem('b1')});
+    await B.evaluate(async()=>{const it=HOOK.items.find(i=>i.id==='b1');it.paused=true;await HOOK.put(it)});await sync(B);await sync(A);
     const lab=await A.evaluate(()=>document.querySelector('#item-view .rotbtn').textContent);
     ok(/Put back/.test(lab),'the open item sheet is drawn again with the other phone\'s change: '+lab);
     await A.evaluate(()=>HOOK.togglePause('b1',true));
-    ok(await A.evaluate(()=>!!items.find(i=>i.id==='b1').paused),'a button drawn before the change does what it said ("Take out" never puts it back in)');
+    ok(await A.evaluate(()=>!!HOOK.items.find(i=>i.id==='b1').paused),'a button drawn before the change does what it said ("Take out" never puts it back in)');
     await A.evaluate(()=>HOOK.closeItem());
     // W1-6-02: the piece deleted on A while its sheet is open on B
-    await B.evaluate(()=>{show('wardrobe');openItem('t1')});
+    await B.evaluate(()=>{HOOK.show('wardrobe');HOOK.openItem('t1')});
     await A.evaluate(()=>HOOK.wardDeleteNow('t1'));await sync(A);await sync(B);
-    const gone=await B.evaluate(()=>({toast:document.querySelector('#toast').textContent,note:!!document.querySelector('#item-view .ivgone'),open:!!editing}));
+    const gone=await B.evaluate(()=>({toast:document.querySelector('#toast').textContent,note:!!document.querySelector('#item-view .ivgone'),open:!!HOOK.editing}));
     ok(/deleted on another phone/.test(gone.toast)&&gone.note&&gone.open,'the open sheet of a piece deleted on another phone says so '+JSON.stringify(gone));
-    await B.evaluate(()=>setItemField('t1','name','Green tie (fav)'));
+    await B.evaluate(()=>HOOK.setItemField('t1','name','Green tie (fav)'));
     ok(/wasn’t kept/.test(await B.evaluate(()=>document.querySelector('#toast').textContent)),'a change typed into it says it wasn\'t kept');
     await B.evaluate(()=>HOOK.closeItem());
     // W1-6-05: "Take them out" on A, not synced since B renamed an imported piece: A syncs first, and the renamed piece stays
-    await A.evaluate(async()=>{const at=Date.now()-60000;for(const id of ['x1','x2']){const it={id,type:'tie',primaryColor:'navy',pattern:'solid',name:'Imported '+id,added:at,updated:at+500};await putRaw(it);items.push(it)}
+    await A.evaluate(async()=>{const at=Date.now()-60000;for(const id of ['x1','x2']){const it={id,type:'tie',primaryColor:'navy',pattern:'solid',name:'Imported '+id,added:at,updated:at+500};await HOOK.putRaw(it);HOOK.items.push(it)}
       localStorage.setItem('kit_import_last',JSON.stringify({ids:['x1','x2'],at}))});
     await sync(A);await sync(B);
-    await B.evaluate(async()=>{const it=items.find(i=>i.id==='x2');it.name='Gift tie';await put(it)});await sync(B);
-    const un=A.evaluate(()=>HOOK.kitUnimport());await A.waitForFunction(()=>asking);
+    await B.evaluate(async()=>{const it=HOOK.items.find(i=>i.id==='x2');it.name='Gift tie';await HOOK.put(it)});await sync(B);
+    const un=A.evaluate(()=>HOOK.kitUnimport());await A.waitForFunction(()=>HOOK.asking);
     const uq=await A.evaluate(()=>document.querySelector('.ask-q').textContent+' '+[...document.querySelectorAll('.ask-more')].map(e=>e.textContent).join(' '));
-    await A.evaluate(()=>askAnswer(true));await un;
-    const ua=await A.evaluate(()=>items.filter(i=>/^x/.test(i.id)).map(i=>i.name));
+    await A.evaluate(()=>HOOK.askAnswer(true));await un;
+    const ua=await A.evaluate(()=>HOOK.items.filter(i=>/^x/.test(i.id)).map(i=>i.name));
     ok(/Take out the 1 item/.test(uq)&&/changed since/.test(uq)&&JSON.stringify(ua)==='["Gift tie"]','"Take them out" syncs first: the piece renamed on the other phone stays '+JSON.stringify([uq,ua]));
     // W1-5-06 through the worker: own colors made on both phones
-    await A.evaluate(async()=>{settings.custom={...(settings.custom||{}),colors:[...((settings.custom||{}).colors||[]),{key:'owndustyteal',name:'Dusty teal',hex:'#2f6f73',base:'teal',types:['tie']}]};await saveUserSettings()});
-    await B.evaluate(async()=>{settings.custom={...(settings.custom||{}),colors:[...((settings.custom||{}).colors||[]),{key:'ownmossyfern',name:'Mossy fern',hex:'#0f3d2a',base:'green',types:['tie']}]};await saveUserSettings()});
+    await A.evaluate(async()=>{HOOK.settings.custom={...(HOOK.settings.custom||{}),colors:[...((HOOK.settings.custom||{}).colors||[]),{key:'owndustyteal',name:'Dusty teal',hex:'#2f6f73',base:'teal',types:['tie']}]};await HOOK.saveUserSettings()});
+    await B.evaluate(async()=>{HOOK.settings.custom={...(HOOK.settings.custom||{}),colors:[...((HOOK.settings.custom||{}).colors||[]),{key:'ownmossyfern',name:'Mossy fern',hex:'#0f3d2a',base:'green',types:['tie']}]};await HOOK.saveUserSettings()});
     await sync(A);await sync(B);await sync(A);
-    const cols=x=>x.evaluate(()=>(settings.custom.colors||[]).map(c=>c.name).sort().join(','));
+    const cols=x=>x.evaluate(()=>(HOOK.settings.custom.colors||[]).map(c=>c.name).sort().join(','));
     const cs=[await cols(A),await cols(B),(data().settings.custom.colors||[]).map(c=>c.name).sort().join(',')];
     ok(cs.every(c=>c==='Dusty teal,Mossy fern'),'own colors made on two phones: both on both phones and the server '+JSON.stringify(cs));
     // W1-11-03: Restore file keeps the file's settings
-    const file=JSON.parse(await A.evaluate(async()=>JSON.stringify({app:'daily-wardrobe',version:1,...await localState()})));file.settings.vestMode='always';file.settings.units='F';   // (the file's stamps are older than the change below)
-    await A.evaluate(async f=>{await new Promise(r=>setTimeout(r,5));settings.vestMode='never';settings.units='C';await saveUserSettings();await HOOK.restoreBackup(new File([f],'b.json'))},JSON.stringify(file));
-    const after=await A.evaluate(()=>[settings.vestMode,settings.units]);
+    const file=JSON.parse(await A.evaluate(async()=>JSON.stringify({app:'daily-wardrobe',version:1,...await HOOK.localState()})));file.settings.vestMode='always';file.settings.units='F';   // (the file's stamps are older than the change below)
+    await A.evaluate(async f=>{await new Promise(r=>setTimeout(r,5));HOOK.settings.vestMode='never';HOOK.settings.units='C';await HOOK.saveUserSettings();await HOOK.restoreBackup(new File([f],'b.json'))},JSON.stringify(file));
+    const after=await A.evaluate(()=>[HOOK.settings.vestMode,HOOK.settings.units]);
     ok(JSON.stringify(after)==='["always","F"]','Restore file: the file\'s settings win over newer ones on the phone '+JSON.stringify(after));
     // W1-6-01: the owner's Delete everything on A, held on B
     await sync(A);await sync(B);await new Promise(r=>setTimeout(r,5));
     const del=await worker.fetch(new Request(HOST+'account',{method:'DELETE',headers:{'x-app-token':'secret','content-type':'application/json'},body:JSON.stringify({confirm:'delete'})}),env);
     ok(del.status===200&&!store.has('wardrobe:v1')&&store.has('wiped'),'Delete everything leaves only the note of when');
     await B.evaluate(()=>{localStorage.setItem('last_sync',Date.now()-60000)});   // (B last synced before the delete)
-    const held=await B.evaluate(()=>syncNow());await B.waitForSelector('#ask-ok');
+    const held=await B.evaluate(()=>HOOK.syncNow());await B.waitForSelector('#ask-ok');
     const q=await B.evaluate(()=>({q:document.querySelector('.ask-q').textContent,ok:document.querySelector('#ask-ok').textContent,st:localStorage.getItem('sync_status')}));
     ok(held===false&&!store.has('wardrobe:v1')&&/deleted from the server on another device/.test(q.q)&&q.ok==='Back it up again','the other owner phone puts nothing back and asks '+JSON.stringify(q));
-    await B.evaluate(()=>askAnswer(false));await B.evaluate(()=>syncNow());
-    ok(!store.has('wardrobe:v1')&&!(await B.evaluate(()=>!!asking)),'"Not now": nothing sent, not asked again at every sync');
-    await B.evaluate(()=>HOOK.syncTap());await B.waitForFunction(()=>asking);await B.evaluate(()=>askAnswer(true));
-    await B.waitForFunction(()=>!HOOK.syncing&&localStorage.getItem('wipe_seen'));await B.evaluate(()=>syncNow());
-    ok(store.has('wardrobe:v1')&&data().items.length===await B.evaluate(()=>items.length),'"Back it up again" (from Sync now) puts this phone\'s copy back');
+    await B.evaluate(()=>HOOK.askAnswer(false));await B.evaluate(()=>HOOK.syncNow());
+    ok(!store.has('wardrobe:v1')&&!(await B.evaluate(()=>!!HOOK.asking)),'"Not now": nothing sent, not asked again at every sync');
+    await B.evaluate(()=>HOOK.syncTap());await B.waitForFunction(()=>HOOK.asking);await B.evaluate(()=>HOOK.askAnswer(true));
+    await B.waitForFunction(()=>!HOOK.syncing&&localStorage.getItem('wipe_seen'));await B.evaluate(()=>HOOK.syncNow());
+    ok(store.has('wardrobe:v1')&&data().items.length===await B.evaluate(()=>HOOK.items.length),'"Back it up again" (from Sync now) puts this phone\'s copy back');
     ok(!A.errs.length&&!B.errs.length,'no page errors: '+[...A.errs,...B.errs].join(' | '));
   }finally{await browser.close()}
 };

@@ -2,7 +2,7 @@
 // wardrobe can be had back by "open that invitation's link again" (the owner has no link), clears and switches, and Settings →
 // Connection then offers no way back (the Advanced fold with the address and code is hidden, no field to paste a link).
 const L = require('./_verify7-lib.js');
-async function openConn(ph) { await ph.tap('svg.hgear'); await L.sleep(800); await ph.page.evaluate(() => { const c = document.querySelector('#sc-connection'); if (c && !c.classList.contains('open')) toggleCat('connection') }); await L.sleep(600) }
+async function openConn(ph) { await ph.tap('svg.hgear'); await L.sleep(800); await ph.page.evaluate(() => { const c = document.querySelector('#sc-connection'); if (c && !c.classList.contains('open')) HOOK.toggleCat('connection') }); await L.sleep(600) }
 const usable = (ph) => ph.page.evaluate(() => { const v = e => !!(e && (e.offsetParent || e.getClientRects().length)); const c = document.querySelector('#sc-connection');
   return { advanced: v(document.querySelector('#adv-connection')), fields: [...c.querySelectorAll('input,textarea')].filter(e => v(e) && !e.readOnly && e.type !== 'hidden').map(e => e.id || e.type), ownerBtn: [...c.querySelectorAll('button')].some(b => v(b) && /I run the server/.test(b.innerText)) } });
 L.main(async () => {

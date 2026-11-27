@@ -22,7 +22,7 @@ V.run(async () => {
     const offerText = await ph.page.evaluate(() => { const o = document.querySelector('.offer'); return o && o.textContent.trim() });
     if (!offer) throw new Error('no "Add as a new colour" offer; card: ' + offerText);
     await V.tapText(ph, /Add as a new colou?r/); await V.sleep(1000);
-    const sheet = await ph.page.evaluate(() => { const n = colPick && colPick.newc; const q = queue[0]; return { name: n && n.name, hex: n && n.hex, creamHex: COLORS.cream, cardColour: q && q.primaryColor, meas: q && q.meas ? q.meas.hex : null } });
+    const sheet = await ph.page.evaluate(() => { const n = HOOK.colPick && HOOK.colPick.newc; const q = HOOK.queue[0]; return { name: n && n.name, hex: n && n.hex, creamHex: HOOK.COLORS.cream, cardColour: q && q.primaryColor, meas: q && q.meas ? q.meas.hex : null } });
     const log = await V.mock('log'); await ph.shot('w2-17-05-sheet');
     V.verdict(/pink/i.test(sheet.name || '') && sheet.hex && sheet.hex.toLowerCase() === String(sheet.creamHex).toLowerCase(),
       { offerText, sheet, openai: log.openai, claude: log.claude, errors: ph.errors.slice(0, 3) });

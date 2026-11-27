@@ -10,8 +10,8 @@ async function tryAdd(name) {
   await pg.dispatchEvent('#cn-name', 'input'); await pg.dispatchEvent('#cn-name', 'change'); await V.sleep(400);
   if (!await pg.$eval('#cn-add', b => b.disabled)) { await V.ph.tap('#cn-add'); await V.sleep(1000) }
   const r = await pg.evaluate(n => ({ error: ((document.querySelector('#cn-error') || {}).innerText || '').trim() || null,
-    saved: (settings.custom?.colors || []).some(c => c.name === n) }), name);
-  await pg.evaluate(() => typeof closeColPick === 'function' && closeColPick()); await V.sleep(400);
+    saved: (HOOK.settings.custom?.colors || []).some(c => c.name === n) }), name);
+  await pg.evaluate(() => 'closeColPick' in HOOK && HOOK.closeColPick()); await V.sleep(400);
   return r;
 }
 V.run(async () => {

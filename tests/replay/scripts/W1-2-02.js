@@ -20,7 +20,7 @@ const ROWS = 'Type,Colour,Name\nSuit,Navy,Imp navy suit\nTie,Navy,Imp navy tie\n
   const prev = await v.txt(ph, '#kit-prev'); console.log('preview:', prev.slice(0, 700));
   await ph.shot('w1-2-02-preview', true);
   await v.tapSel(ph, '#kit-imp'); await v.sleep(2500);
-  const got = await ph.page.evaluate(() => Object.fromEntries(items.filter(i => /^Imp /.test(i.name || '')).map(i => [i.name, [i.primaryColor, colName(i.primaryColor), planCol(i)]])));
+  const got = await ph.page.evaluate(() => Object.fromEntries(HOOK.items.filter(i => /^Imp /.test(i.name || '')).map(i => [i.name, [i.primaryColor, HOOK.colName(i.primaryColor), HOOK.planCol(i)]])));
   console.log('saved', JSON.stringify(got));
   const bad = [];
   if (got['Imp grey suit'] && got['Imp grey suit'][0] !== 'grey') bad.push('Suit,Grey -> ' + got['Imp grey suit'][0]);

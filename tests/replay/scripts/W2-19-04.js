@@ -5,7 +5,7 @@ L.run(async () => {
   await L.startLab('w2-19-04');
   const ph = await L.phone('a'); const p = ph.page; const ev = {};
   await L.kbd(ph, '#n-wardrobe', 800);
-  await p.evaluate(() => { if (typeof CK_OPEN !== 'undefined') CK_OPEN['*'] = true });   // #497: the color buttons are in folded sections (hidden from the tree)
+  await p.evaluate(() => { if ('CK_OPEN' in HOOK) HOOK.CK_OPEN['*'] = true });   // #497: the color buttons are in folded sections (hidden from the tree)
   await p.locator('#wardrobe .giopen').nth(2).click(); await L.sleep(900);
   ev.buttons = await p.evaluate(() => [...document.querySelectorAll('#item-view .colbtn')].map(b => ({ text: b.textContent.trim(), insideLabel: !!b.closest('label'), ariaLabel: b.getAttribute('aria-label') })));
   ev.tree = (await p.locator('#item-view').ariaSnapshot()).split('\n').filter(l => /button "(Colou?r|Second colou?r|Third colou?r|Pattern)"/.test(l)).map(s => s.trim());

@@ -44,27 +44,27 @@ const rollback=async({ok,chromium,url,ROOT})=>{
         await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
       const p=await c.newPage();p.ctx=c;p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));await p.goto(url);
       await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);return p};
-    const sync=p=>p.evaluate(()=>syncNow());
+    const sync=p=>p.evaluate(()=>HOOK.syncNow());
     const backup=()=>JSON.parse(store.get('wardrobe:v1')).data.settings||{};
     const A=await device();
-    await A.evaluate(async()=>{settings.workdays=[0,1,2,3,4];await saveUserSettings()});await sync(A);   // the backup; today's daily copy is made before the next save
-    await A.evaluate(async()=>{settings.daysOff=[{d:'2026-12-01',n:'Trip'}];settings.holidays={country:'DE',list:[],skip:[]};settings.laundryDays=2;settings.vestMode='always';await saveUserSettings();
-      const it={id:'k1',type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now()};await put(it);items.push(it)});
+    await A.evaluate(async()=>{HOOK.settings.workdays=[0,1,2,3,4];await HOOK.saveUserSettings()});await sync(A);   // the backup; today's daily copy is made before the next save
+    await A.evaluate(async()=>{HOOK.settings.daysOff=[{d:'2026-12-01',n:'Trip'}];HOOK.settings.holidays={country:'DE',list:[],skip:[]};HOOK.settings.laundryDays=2;HOOK.settings.vestMode='always';await HOOK.saveUserSettings();
+      const it={id:'k1',type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now()};await HOOK.put(it);HOOK.items.push(it)});
     await sync(A);
     const B=await device();await sync(B);
-    ok(await B.evaluate(()=>!!settings.daysOff&&settings.daysOff.length===1&&settings.holidays.country==='DE'),'phone B has the day off and the holidays');
-    const day=await A.evaluate(()=>isoKey(new Date()));
-    const rb=async(p,id,hush)=>p.evaluate(async([id,hush])=>{openSettings('backup');delete $('#snap-list').dataset.loaded;await HOOK.loadSnapshots();$('#snap-list').value=id;const r=HOOK.rollBack();await new Promise(r=>setTimeout(r,50));$('#ask-ok').click();await r;
-      if(hush){clearTimeout(syncTimer);window.__rbMid={flag:localStorage.getItem('sync_restore'),n:items.length,st:localStorage.getItem('sync_status')}}return $('#snap-status').textContent},[id,!!hush]);
+    ok(await B.evaluate(()=>!!HOOK.settings.daysOff&&HOOK.settings.daysOff.length===1&&HOOK.settings.holidays.country==='DE'),'phone B has the day off and the holidays');
+    const day=await A.evaluate(()=>HOOK.isoKey(new Date()));
+    const rb=async(p,id,hush)=>p.evaluate(async([id,hush])=>{HOOK.openSettings('backup');delete HOOK.$('#snap-list').dataset.loaded;await HOOK.loadSnapshots();HOOK.$('#snap-list').value=id;const r=HOOK.rollBack();await new Promise(r=>setTimeout(r,50));HOOK.$('#ask-ok').click();await r;
+      if(hush){clearTimeout(HOOK.syncTimer);window.__rbMid={flag:localStorage.getItem('sync_restore'),n:HOOK.items.length,st:localStorage.getItem('sync_status')}}return HOOK.$('#snap-status').textContent},[id,!!hush]);
     const said=await rb(A,day);
-    const memA=()=>A.evaluate(()=>({off:settings.daysOff||null,hol:settings.holidays||null,lau:settings.laundryDays??null,vest:settings.vestMode,n:items.length,sum:document.querySelector('#sum-daysoff').textContent}));
+    const memA=()=>A.evaluate(()=>({off:HOOK.settings.daysOff||null,hol:HOOK.settings.holidays||null,lau:HOOK.settings.laundryDays??null,vest:HOOK.settings.vestMode,n:HOOK.items.length,sum:document.querySelector('#sum-daysoff').textContent}));
     const a1=await memA();
     ok(/^Rolled back\./.test(said)&&!a1.off&&!a1.hol&&a1.lau===null&&a1.vest==='auto'&&a1.n===0,`H3: after a roll-back this phone's settings in memory are the copy's: no day off, no holidays, laundry and vest as before (${said} ${JSON.stringify(a1)})`);
     ok(/^No holidays · 0 days off/.test(a1.sum),`and open Settings says so ("${a1.sum}")`);
     await sync(B);
-    const b1=await B.evaluate(()=>({off:settings.daysOff||null,hol:settings.holidays||null,lau:settings.laundryDays??null}));
+    const b1=await B.evaluate(()=>({off:HOOK.settings.daysOff||null,hol:HOOK.settings.holidays||null,lau:HOOK.settings.laundryDays??null}));
     ok(!b1.off&&!b1.hol&&b1.lau===null,`phone B too after its sync (${JSON.stringify(b1)})`);
-    await B.evaluate(async()=>{settings.units='C';await saveUserSettings()});await sync(B);await sync(A);
+    await B.evaluate(async()=>{HOOK.settings.units='C';await HOOK.saveUserSettings()});await sync(B);await sync(A);
     const s=backup(),a2=await memA();
     ok(!s.daysOff&&!s.holidays&&!('laundryDays' in s)&&s.units==='C',`an unrelated change on B afterwards doesn't bring them back on the server (${JSON.stringify([s.daysOff,s.holidays,s.laundryDays,s.units])})`);
     ok(!a2.off&&!a2.hol&&a2.lau===null,`nor in A's memory after it took B's change (${JSON.stringify(a2)})`);
@@ -72,7 +72,7 @@ const rollback=async({ok,chromium,url,ROOT})=>{
     const a3=await memA();ok(!a3.off&&!a3.hol&&a3.lau===null,`nor on A after a restart (${JSON.stringify(a3)})`);
 
     // ---- H2: the roll-back's upload never arrives (Safari killed): the next start uploads it as a restore, so the copy is kept
-    await A.evaluate(async()=>{const it={id:'k2',type:'tie',primaryColor:'green',pattern:'solid',added:Date.now()};await put(it);items.push(it)});await sync(A);
+    await A.evaluate(async()=>{const it={id:'k2',type:'tie',primaryColor:'green',pattern:'solid',added:Date.now()};await HOOK.put(it);HOOK.items.push(it)});await sync(A);
     store.delete('snap:before-restore');dropRestore=1;
     // (read as the roll-back ends, its scheduled backup called off: under load the backup the redraw scheduled, 2.5 s later, went through first)
     const said2=await rb(A,day,true);
@@ -85,17 +85,17 @@ const rollback=async({ok,chromium,url,ROOT})=>{
     ok(before&&before.items.some(i=>i.id==='k2')&&!server.items.some(i=>i.id==='k2'),`after the restart the upload goes as a restore: "Before the last roll-back" holds the 2 pieces (${before&&before.items.map(i=>i.id)})`);
 
     // ---- open Settings is redrawn when a sync brings another phone's change
-    await sync(B);await B.evaluate(()=>openSettings('schedule'));
-    await A.evaluate(async()=>{settings.vestMode='always';settings.darkShirts='never';await saveUserSettings()});await sync(A);
+    await sync(B);await B.evaluate(()=>HOOK.openSettings('schedule'));
+    await A.evaluate(async()=>{HOOK.settings.vestMode='always';HOOK.settings.darkShirts='never';await HOOK.saveUserSettings()});await sync(A);
     await sync(B);
-    const ui=await B.evaluate(()=>({v:$('#cfg-vest').value,d:$('#cfg-dark')&&$('#cfg-dark').value,s:settings.vestMode}));
+    const ui=await B.evaluate(()=>({v:HOOK.$('#cfg-vest').value,d:HOOK.$('#cfg-dark')&&HOOK.$('#cfg-dark').value,s:HOOK.settings.vestMode}));
     ok(ui.v==='always'&&ui.s==='always'&&(ui.d==null||ui.d==='never'),`Settings open on B shows A's Suit vest and Dark shirts after B's sync (${JSON.stringify(ui)})`);
-    await B.evaluate(()=>closeSettings());
+    await B.evaluate(()=>HOOK.closeSettings());
 
     // ---- offline: words, not the browser's; back online, it backs up by itself
-    await B.evaluate(async()=>{const it={id:'k3',type:'tie',primaryColor:'red',pattern:'solid',added:Date.now()};await put(it);items.push(it)});
+    await B.evaluate(async()=>{const it={id:'k3',type:'tie',primaryColor:'red',pattern:'solid',added:Date.now()};await HOOK.put(it);HOOK.items.push(it)});
     netDown=true;await B.ctx.setOffline(true);
-    const off=await B.evaluate(async()=>{await syncNow();settingsSummaries();return {st:localStorage.getItem('sync_status'),sum:$('#sum-backup').textContent,net:plainErr('Load failed')}});
+    const off=await B.evaluate(async()=>{await HOOK.syncNow();HOOK.settingsSummaries();return {st:localStorage.getItem('sync_status'),sum:HOOK.$('#sum-backup').textContent,net:HOOK.plainErr('Load failed')}});
     ok(/^Not backed up: you’re offline\./.test(off.st)&&/^Waiting for a connection/.test(off.sum)&&/^you’re offline/.test(off.net),`offline: "${off.st}" / "${off.sum}" / "${off.net}"`);
     netDown=false;await B.ctx.setOffline(false);
     await B.waitForFunction(()=>!localStorage.getItem('sync_status')&&!localStorage.getItem('sync_wait'),null,{timeout:10000}).catch(()=>{});
@@ -119,26 +119,26 @@ const rollback=async({ok,chromium,url,ROOT})=>{
       return j({ok:true})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(async([h,a])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',a);localStorage.setItem('last_sync',String(Date.now()-864e5));HOOK.rememberRole({role:'tester'});
-      const it={id:'mine1',type:'tie',primaryColor:'navy',pattern:'solid',added:1};await put(it);items.push(it)},[HOST,CA]);
-    const lost=await p.evaluate(async()=>{const r=await syncNow();settingsSummaries();return {r,st:localStorage.getItem('sync_status'),line:(openSettings('backup'),$('#sync-status').textContent),sum:$('#sum-backup').textContent,toast:$('#toast').textContent,flag:localStorage.getItem('invite_lost'),tok:localStorage.getItem('app_token')}});
+      const it={id:'mine1',type:'tie',primaryColor:'navy',pattern:'solid',added:1};await HOOK.put(it);HOOK.items.push(it)},[HOST,CA]);
+    const lost=await p.evaluate(async()=>{const r=await HOOK.syncNow();HOOK.settingsSummaries();return {r,st:localStorage.getItem('sync_status'),line:(HOOK.openSettings('backup'),HOOK.$('#sync-status').textContent),sum:HOOK.$('#sum-backup').textContent,toast:HOOK.$('#toast').textContent,flag:localStorage.getItem('invite_lost'),tok:localStorage.getItem('app_token')}});
     ok(!lost.r&&lost.st===ENDED_TXT&&lost.line===ENDED_TXT&&/invitation has ended/.test(lost.sum)&&/backup on the server was deleted/.test(lost.toast)&&lost.flag===lost.tok,`a code the server lost: the invitation-ended sentence everywhere, the one-time message saying the backup was deleted (W1-6-03), marked as lost so a new link can keep the wardrobe (${JSON.stringify(lost).slice(0,260)})`);
-    await p.evaluate(()=>closeSettings());
-    const res=p.evaluate(l=>connectFromLink(l),'#invite='+CB+'&w='+encodeURIComponent(HOST));
+    await p.evaluate(()=>HOOK.closeSettings());
+    const res=p.evaluate(l=>HOOK.connectFromLink(l),'#invite='+CB+'&w='+encodeURIComponent(HOST));
     await p.waitForSelector('#ask-ok',{state:'visible'});const ask=await p.textContent('#ask-sheet');await p.click('#ask-ok');const okc=await res;
     await p.waitForFunction(()=>!localStorage.getItem('sync_status')||/^Backed/.test(localStorage.getItem('sync_status')),null,{timeout:8000}).catch(()=>{});
-    const after=await p.evaluate(()=>({tok:localStorage.getItem('app_token'),n:items.length,flag:localStorage.getItem('invite_lost')}));
+    const after=await p.evaluate(()=>({tok:localStorage.getItem('app_token'),n:HOOK.items.length,flag:localStorage.getItem('invite_lost')}));
     ok(okc===true&&/old invitation has ended/.test(ask)&&after.tok===CB&&after.n===1&&!after.flag&&posts.some(b=>JSON.stringify(b).includes('mine1')),`a new invitation then keeps this phone's wardrobe and backs it up there (${JSON.stringify(after)}, ${posts.length} upload(s))`);
     // feedback refused for a daily limit: the server's sentence, not its code
-    const fb=await p.evaluate(async()=>{openSettings('about');$('#fb-text').value='hello';await HOOK.sendFeedback();return {s:$('#fb-status').textContent,t:$('#fb-text').value}});
+    const fb=await p.evaluate(async()=>{HOOK.openSettings('about');HOOK.$('#fb-text').value='hello';await HOOK.sendFeedback();return {s:HOOK.$('#fb-status').textContent,t:HOOK.$('#fb-text').value}});
     ok(/limit of 20 messages is used up/.test(fb.s)&&!/: limit\./.test(fb.s)&&fb.t==='hello',`feedback over the day's limit says so in words and keeps the text ("${fb.s}")`);
-    await p.evaluate(()=>closeSettings());
+    await p.evaluate(()=>HOOK.closeSettings());
     // a name typed in the item sheet, the page going before the save's timer: saved at once
-    const nm=await p.evaluate(async()=>{HOOK.itemFieldSoon('mine1','name','My lucky tie');dispatchEvent(new Event('pagehide'));await new Promise(r=>setTimeout(r,100));const st=await tx('readonly',s=>s.get('mine1'));return st&&st.name});
+    const nm=await p.evaluate(async()=>{HOOK.itemFieldSoon('mine1','name','My lucky tie');dispatchEvent(new Event('pagehide'));await new Promise(r=>setTimeout(r,100));const st=await HOOK.tx('readonly',s=>s.get('mine1'));return st&&st.name});
     ok(nm==='My lucky tie','a name typed just before the page goes is saved when it goes, not 0.6 s later');
     // a second phone's setup: the account's vest choice (stamped) is kept; a new install's default still becomes "No vest"
-    const vs=await p.evaluate(()=>{const was=JSON.stringify(settings),s0=setup;HOOK.setup={...setup,first:true,vestSet:false};
+    const vs=await p.evaluate(()=>{const was=JSON.stringify(HOOK.settings),s0=HOOK.setup;HOOK.setup={...HOOK.setup,first:true,vestSet:false};
       HOOK.settings=keySettings({workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',updated:0});const fresh=!HOOK.setupVestChosen();
-      settings.vestMode='always';stampSettings(settings);const chosen=!HOOK.setupVestChosen();HOOK.setup=s0;HOOK.settings=JSON.parse(was);return {fresh,chosen}});
+      HOOK.settings.vestMode='always';stampSettings(HOOK.settings);const chosen=!HOOK.setupVestChosen();HOOK.setup=s0;HOOK.settings=JSON.parse(was);return {fresh,chosen}});
     ok(vs.fresh===true&&vs.chosen===false,`the setup sets "No vest" only while the vest is still the app's default (${JSON.stringify(vs)})`);
     ok(!errs.length,'no page errors: '+errs.join(' | '))}
   finally{await b2.close()}
@@ -168,29 +168,29 @@ const rollbackwhere=async({ok,chromium,url,ROOT})=>{
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
     const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);
     await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>syncNow());
+    await p.evaluate(()=>HOOK.syncNow());
     // the setup done, a location, three pieces, backed up: today's daily copy is the one from before
-    await p.evaluate(async()=>{if(typeof setupShown==='function'&&setupShown())HOOK.setupClose();settings.setupDone=Date.now();settings.workdays=[0,1,2,3];settings.location={name:'Kuwait City',lat:29.37,lon:47.98};await saveUserSettings();
-      for(const [id,type,c] of [['r1','suit','navy'],['r2','shirt','white'],['r3','tie','burgundy']]){const it={id,type,primaryColor:c,pattern:'solid',added:Date.now()};await put(it);items.push(it)}});
-    await p.evaluate(()=>syncNow());
-    const day=await p.evaluate(()=>isoKey(new Date()));
+    await p.evaluate(async()=>{if('setupShown' in HOOK&&HOOK.setupShown())HOOK.setupClose();HOOK.settings.setupDone=Date.now();HOOK.settings.workdays=[0,1,2,3];HOOK.settings.location={name:'Kuwait City',lat:29.37,lon:47.98};await HOOK.saveUserSettings();
+      for(const [id,type,c] of [['r1','suit','navy'],['r2','shirt','white'],['r3','tie','burgundy']]){const it={id,type,primaryColor:c,pattern:'solid',added:Date.now()};await HOOK.put(it);HOOK.items.push(it)}});
+    await p.evaluate(()=>HOOK.syncNow());
+    const day=await p.evaluate(()=>HOOK.isoKey(new Date()));
     ok(store.has('snap:'+day)&&!JSON.parse(store.get('snap:'+day)).data.settings.setupDone,'the day\'s copy is from before the setup');
 
     // the list comes in as Backup opens, with no focus on the dropdown
-    lists=0;await p.evaluate(()=>openSettings('backup'));
+    lists=0;await p.evaluate(()=>HOOK.openSettings('backup'));
     await p.waitForFunction(()=>document.querySelectorAll('#snap-list option').length>1,null,{timeout:5000}).catch(()=>{});
     const opts=await p.evaluate(()=>({v:[...document.querySelectorAll('#snap-list option')].map(o=>o.value),focus:document.activeElement===document.querySelector('#snap-list')}));
     ok(opts.v.includes(day)&&!opts.focus&&lists===1,`opening Backup lists the daily backups without touching the dropdown (${JSON.stringify(opts)}, ${lists} list call)`);
-    await p.evaluate(()=>{toggleCat('backup');toggleCat('backup');document.querySelector('#snap-list').focus()});await p.waitForTimeout(300);
+    await p.evaluate(()=>{HOOK.toggleCat('backup');HOOK.toggleCat('backup');document.querySelector('#snap-list').focus()});await p.waitForTimeout(300);
     ok(lists===1,`opening it again or focusing the dropdown doesn't list again (${lists})`);
 
     // Roll back, and Settings goes (Back) while its question is up; the question is then answered
-    const run=p.evaluate(d=>{$('#snap-list').value=d;window.__rb=HOOK.rollBack();return true},day);await run;
+    const run=p.evaluate(d=>{HOOK.$('#snap-list').value=d;window.__rb=HOOK.rollBack();return true},day);await run;
     await p.waitForSelector('#ask-ok',{state:'visible'});
-    await p.evaluate(()=>closeSettings());
+    await p.evaluate(()=>HOOK.closeSettings());
     await p.click('#ask-ok');await p.evaluate(()=>window.__rb);
-    const after=await p.evaluate(()=>({n:items.length,toast:$('#toast').textContent,on:$('#toast').classList.contains('on'),undo:!!$('#toast button'),open:settingsOpen(),
-      done:!!settings.setupDone,wd:settings.workdays.join(),loc:settings.location&&settings.location.name,setup:typeof setupShown==='function'&&setupShown()}));
+    const after=await p.evaluate(()=>({n:HOOK.items.length,toast:HOOK.$('#toast').textContent,on:HOOK.$('#toast').classList.contains('on'),undo:!!HOOK.$('#toast button'),open:HOOK.settingsOpen(),
+      done:!!HOOK.settings.setupDone,wd:HOOK.settings.workdays.join(),loc:HOOK.settings.location&&HOOK.settings.location.name,setup:'setupShown' in HOOK&&HOOK.setupShown()}));
     ok(after.n===0&&after.on&&/^Rolled back\. The wardrobe has 0 items\./.test(after.toast)&&after.undo&&!after.open,`with Settings closed the result is a toast with Undo (${JSON.stringify(after)})`);
     ok(after.done&&after.wd==='0,1,2,3'&&after.loc==='Kuwait City'&&!after.setup&&/settings were kept/.test(after.toast),`a copy from before the setup keeps the settings: no setup again, workdays and location stay (${JSON.stringify(after)})`);
     const srv=JSON.parse(store.get('wardrobe:v1')).data;
@@ -199,26 +199,26 @@ const rollbackwhere=async({ok,chromium,url,ROOT})=>{
     // the toast's Undo asks, then brings the pieces back from "Before the last roll-back"
     await p.click('#toast button');await p.waitForSelector('#ask-ok',{state:'visible'});
     const ask=await p.textContent('#ask-sheet');await p.click('#ask-ok');
-    await p.waitForFunction(()=>items.length===3&&/^Rolled back/.test($('#toast').textContent),null,{timeout:8000}).catch(()=>{});
-    const undo=await p.evaluate(()=>({n:items.length,toast:$('#toast').textContent,undo:!!$('#toast button')}));
+    await p.waitForFunction(()=>HOOK.items.length===3&&/^Rolled back/.test(HOOK.$('#toast').textContent),null,{timeout:8000}).catch(()=>{});
+    const undo=await p.evaluate(()=>({n:HOOK.items.length,toast:HOOK.$('#toast').textContent,undo:!!HOOK.$('#toast button')}));
     ok(/Before the last roll-back/.test(ask)&&undo.n===3&&/^Rolled back\. The wardrobe has 3 items\./.test(undo.toast)&&!undo.undo,`Undo asks first, then the three pieces are back (${JSON.stringify(undo)})`);
 
     // with Settings open the line says it and no toast covers it
-    await p.evaluate(()=>{toastDrop&&toastDrop();$('#toast').classList.remove('on');openSettings('backup')});
+    await p.evaluate(()=>{HOOK.toastDrop&&HOOK.toastDrop();HOOK.$('#toast').classList.remove('on');HOOK.openSettings('backup')});
     await p.waitForFunction(()=>!document.querySelector('#snap-list').dataset.loaded||document.querySelectorAll('#snap-list option').length>1);
     await p.evaluate(()=>HOOK.loadSnapshots());
-    const inS=await p.evaluate(async()=>{$('#snap-list').value='';await HOOK.rollBack();return {st:$('#snap-status').textContent,on:$('#toast').classList.contains('on')}});
+    const inS=await p.evaluate(async()=>{HOOK.$('#snap-list').value='';await HOOK.rollBack();return {st:HOOK.$('#snap-status').textContent,on:HOOK.$('#toast').classList.contains('on')}});
     ok(inS.st==='Choose a day first.'&&!inS.on,`in open Settings the line answers and no toast (${JSON.stringify(inS)})`);
-    await p.evaluate(()=>closeSettings());
+    await p.evaluate(()=>HOOK.closeSettings());
 
     // the list cap in words about the daily backups
     capList=true;
-    const cap=await p.evaluate(async()=>{delete $('#snap-list').dataset.loaded;openSettings('backup');await HOOK.loadSnapshots();return $('#snap-status').textContent});
+    const cap=await p.evaluate(async()=>{delete HOOK.$('#snap-list').dataset.loaded;HOOK.openSettings('backup');await HOOK.loadSnapshots();return HOOK.$('#snap-status').textContent});
     ok(/daily backups can’t be listed again today/.test(cap)&&!/photo list/.test(cap),`the list cap says what it means here ("${cap}")`);
     // after a restart the setup still doesn't come back
-    await p.evaluate(()=>closeSettings());capList=false;
+    await p.evaluate(()=>HOOK.closeSettings());capList=false;
     await p.reload();await p.waitForFunction(()=>window.appReady);await p.waitForTimeout(500);
-    ok(await p.evaluate(()=>!(typeof setupShown==='function'&&setupShown())&&!!settings.setupDone),'after a restart the setup stays done');
+    ok(await p.evaluate(()=>!('setupShown' in HOOK&&HOOK.setupShown())&&!!HOOK.settings.setupDone),'after a restart the setup stays done');
     ok(!errs.length,'no page errors: '+errs.join(' | '));
   }finally{await browser.close()}
 };
@@ -313,42 +313,42 @@ const snapshots=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
     await p.reload();await p.waitForFunction(()=>window.appReady);return {p,errs}};
   const A=await device(),B=await device();
-  const sig=p=>p.evaluate(()=>items.map(i=>i.id+':'+i.primaryColor).sort().join(','));
+  const sig=p=>p.evaluate(()=>HOOK.items.map(i=>i.id+':'+i.primaryColor).sort().join(','));
   // a device's background syncs finished first (tests/sync.test.js's quiet/hush): a sync that brought changes redraws Today, which
   // records the day and locks the week and schedules another backup; one landing after the roll-back sent the damaged copy's settings
   // up again (the flaky "roll back restores …" and "the other device follows …")
   const quiet=p=>p.evaluate(async()=>{let last='',same=0;const end=Date.now()+6000;
-    while(Date.now()<end){await recordRun;const s=stateSig(await localState());same=!HOOK.syncing&&s===last?same+1:0;last=s;if(same>=3)return true;await new Promise(r=>setTimeout(r,120))}return false});
-  const hush=async(...ps)=>{for(const p of ps){await quiet(p);await p.evaluate(()=>clearTimeout(syncTimer))}};
-  const why=async()=>` [A ${await sig(A.p)}; good ${good}; A's workdays ${JSON.stringify(await A.p.evaluate(()=>settings.workdays))}; B ${await sig(B.p)}]`;
-  await A.p.evaluate(async()=>{for(const [id,c] of [['t1','navy'],['t2','burgundy'],['t3','green']]){const it={id,type:'tie',primaryColor:c,pattern:'solid',added:Date.now()};await put(it);items.push(it)}
-    const s={...settings,workdays:[1,2,3,4,5],updated:Date.now()};HOOK.settings=s;await metaPut('settings',s);await syncNow()});
-  await B.p.evaluate(()=>syncNow());
+    while(Date.now()<end){await HOOK.recordRun;const s=stateSig(await HOOK.localState());same=!HOOK.syncing&&s===last?same+1:0;last=s;if(same>=3)return true;await new Promise(r=>setTimeout(r,120))}return false});
+  const hush=async(...ps)=>{for(const p of ps){await quiet(p);await p.evaluate(()=>clearTimeout(HOOK.syncTimer))}};
+  const why=async()=>` [A ${await sig(A.p)}; good ${good}; A's workdays ${JSON.stringify(await A.p.evaluate(()=>HOOK.settings.workdays))}; B ${await sig(B.p)}]`;
+  await A.p.evaluate(async()=>{for(const [id,c] of [['t1','navy'],['t2','burgundy'],['t3','green']]){const it={id,type:'tie',primaryColor:c,pattern:'solid',added:Date.now()};await put(it);HOOK.items.push(it)}
+    const s={...HOOK.settings,workdays:[1,2,3,4,5],updated:Date.now()};HOOK.settings=s;await HOOK.metaPut('settings',s);await HOOK.syncNow()});
+  await B.p.evaluate(()=>HOOK.syncNow());
   const good=await sig(A.p);
   // pretend yesterday's copy was this good state, then a bad change: one tie deleted, one recoloured, junk added, settings broken
   store.set('snap:2026-11-09',store.get('wardrobe:v1'));meta.set('snap:2026-11-09',meta.get('wardrobe:v1'));
-  await A.p.evaluate(async()=>{const t=Date.now()+5;await del('t1');const tomb={...(await metaGet('tombstones')||{}),t1:t};await metaPut('tombstones',tomb);
-    const b={...items.find(i=>i.id==='t2'),primaryColor:'pink',updated:t};await put(b);const j={id:'junk',type:'tie',primaryColor:'red',pattern:'solid',added:t};await put(j);
-    HOOK.items=await tx('readonly',s=>s.getAll());const s={...settings,workdays:[],updated:t};HOOK.settings=s;await metaPut('settings',s);await syncNow()});
-  await B.p.evaluate(()=>syncNow());
+  await A.p.evaluate(async()=>{const t=Date.now()+5;await HOOK.del('t1');const tomb={...(await HOOK.metaGet('tombstones')||{}),t1:t};await HOOK.metaPut('tombstones',tomb);
+    const b={...HOOK.items.find(i=>i.id==='t2'),primaryColor:'pink',updated:t};await put(b);const j={id:'junk',type:'tie',primaryColor:'red',pattern:'solid',added:t};await put(j);
+    HOOK.items=await HOOK.tx('readonly',s=>s.getAll());const s={...HOOK.settings,workdays:[],updated:t};HOOK.settings=s;await HOOK.metaPut('settings',s);await HOOK.syncNow()});
+  await B.p.evaluate(()=>HOOK.syncNow());
   ok(await sig(B.p)!==good&&(await sig(B.p)).includes('junk'),'(the damage reached the backup and the other device)');
   // roll back from Settings
-  await A.p.evaluate(()=>openSettings&&openSettings());
+  await A.p.evaluate(()=>HOOK.openSettings&&HOOK.openSettings());
   await A.p.evaluate(()=>HOOK.loadSnapshots());
   const opts=await A.p.evaluate(()=>[...document.querySelectorAll('#snap-list option')].map(o=>o.value).filter(Boolean));
   ok(opts.includes('2026-11-09'),`Settings lists the daily backups (${opts.join(', ')})`);
   await hush(A.p,B.p);
-  await A.p.evaluate(async()=>{$('#snap-list').value='2026-11-09';const r=HOOK.rollBack();$('#ask-ok').click();await r});   // the app's own question: answered yes
-  const a=await A.p.evaluate(()=>({st:$('#snap-status').textContent,wd:settings.workdays.length}));
+  await A.p.evaluate(async()=>{HOOK.$('#snap-list').value='2026-11-09';const r=HOOK.rollBack();HOOK.$('#ask-ok').click();await r});   // the app's own question: answered yes
+  const a=await A.p.evaluate(()=>({st:HOOK.$('#snap-status').textContent,wd:HOOK.settings.workdays.length}));
   const back=await sig(A.p)===good&&a.wd===5;
   ok(back,`roll back restores the deleted tie, the old colour, drops the junk and the settings (${a.st})`+(back?'':await why()));
   await hush(A.p,B.p);
-  await B.p.evaluate(()=>syncNow());
-  const follows=await sig(B.p)===good&&await B.p.evaluate(()=>settings.workdays.length===5);
+  await B.p.evaluate(()=>HOOK.syncNow());
+  const follows=await sig(B.p)===good&&await B.p.evaluate(()=>HOOK.settings.workdays.length===5);
   ok(follows,'the other device follows the roll-back on its next sync'+(follows?'':await why()));
   ok(store.has('snap:before-restore')&&JSON.parse(store.get('snap:before-restore')).data.items.some(i=>i.id==='junk'),'the damaged state is kept as "before the last roll-back", so the roll-back can be undone');
   // and undo it
-  await A.p.evaluate(async()=>{delete $('#snap-list').dataset.loaded;await HOOK.loadSnapshots();$('#snap-list').value='before-restore';const r=HOOK.rollBack();$('#ask-ok').click();await r});
+  await A.p.evaluate(async()=>{delete HOOK.$('#snap-list').dataset.loaded;await HOOK.loadSnapshots();HOOK.$('#snap-list').value='before-restore';const r=HOOK.rollBack();HOOK.$('#ask-ok').click();await r});
   ok((await sig(A.p)).includes('junk'),'rolling back to "before the last roll-back" undoes it');
   ok(A.errs.length===0&&B.errs.length===0,'no page errors ('+[...A.errs,...B.errs].join('; ')+')');
   await browser.close();

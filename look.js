@@ -5,7 +5,7 @@
    (Photo tagging → Beta features) turns it on for this phone only (localStorage beta_look, not synced); off, the app is exactly as before.
    Both UIs read and write the same item fields; the beta's own fields (lookOk, lookHint, leatherOwn, metalOwn) are ignored by the old UI.
    Loaded after checklist.js (an ES module since 2026-11-23); nothing runs at load but Settings' registration. */
-import {emit,serve,ask} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {emit,serve,ask,served} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
 import {RD_LOOKUPS,SOCK_THIRD,SW_GRAB,closeColPick,cnHex,cnLeft,colHas,colNear,colPick,colPickSel,colTarget,lookShadeOk,openColNew,openColPick,openPatNew,patChoices,patVar,rdCost,rdOff,renderColPick,useColPick} from './colpick.js';
 import {addTexture,renderAdd} from './add.js';
 import {addOwnMaterial,groupOf,matOffer,newColHex,openColForm,openPatForm,removeOwnMaterial,renderOwnMatUI} from './own-lists.js';
@@ -357,7 +357,7 @@ function lookSection(src,it,i){const ch=lookChips(src,it),any=ch.col.length+ch.p
 /* the item sheet's pattern reading (Pattern layout, Read pattern from photo) and the outfit pictures' note stay under the Pattern row */
 function lookPatExtras(i){const id=i.id,fab=FABRIC.includes(i.type);
   const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${ask('pat-summary',i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" data-id="${esc(id)}" data-how="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?'reread':'detect'}" data-act="lkReread">Read pattern from photo</button>`}${i.stripes||i.sett?`<button data-id="${esc(id)}" data-act="lkClearStripes">Use generic</button>`:''}</div></div>`:'';
-  return layout+(typeof asmGapNote==='function'?asmGapNote(i):'')}
+  return layout+(served('asm-gap-note')?ask('asm-gap-note',i):'')}
 /* the item sheet's "Looks right": kept on the item (lookOk, synced); a later edit leaves it (the owner's question 4: it stays) */
 async function lookCheck(id){const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}if(it.lookOk)delete it.lookOk;else it.lookOk=1;await put(it);emit('wardrobe-changed')}
 /* the item sheet opens Look unfolded every time an item is opened (itemsheet.js itemBody, a new phEdit) */

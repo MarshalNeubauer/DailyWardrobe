@@ -1,7 +1,6 @@
 /* Daily Wardrobe: Add, a card found by its id, and what state it is in (the restructure S3c, 2026-11-26: moved here from add-save.js and
    add.js, so the files that draw and read a card, loaded before those two, find it in a file that ran before them). Nothing here draws. (cardOf, qAt, cardAt and cardIx are app.js's since the restructure S6a, beside the queue.) */
-import {queue} from './app.js';
-import {esc,jsq} from './photo-keys.js';
+import {jsq} from './photo-keys.js';
 const qh=q=>`qAt('${jsq(q.id)}')`;
 /* a card Claude is still reading (tagging again with the close-up, or its pattern) can't be saved yet: saved meanwhile it kept the
    weaker reading and the pattern call was paid for anyway (audit 2026-11-13); Confirm and Save all wait for it */

@@ -16,12 +16,12 @@ const wardrobetap=async({ok,chromium,url,settle})=>{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     const rect=id=>p.evaluate(id=>{const r=document.getElementById('gi-'+id).getBoundingClientRect();return {top:Math.round(r.top),left:Math.round(r.left),width:Math.round(r.width)}},id);
     const view=()=>p.evaluate(()=>{const v=document.querySelector('#item-view'),r=v.getBoundingClientRect(),bar=v.querySelector('.ivbar').getBoundingClientRect(),b=v.querySelector('#ivbody');
-      return {on:v.classList.contains('on'),shown:getComputedStyle(v).display!=='none',ed:editing,w:Math.round(r.width),h:Math.round(r.height),vt:Math.round(r.top),vb:Math.round(r.bottom),bd:getComputedStyle(document.querySelector('#item-backdrop')).display,title:v.querySelector('#iv-title').textContent,count:(v.querySelector('.pcount')||{}).textContent,
+      return {on:v.classList.contains('on'),shown:getComputedStyle(v).display!=='none',ed:HOOK.editing,w:Math.round(r.width),h:Math.round(r.height),vt:Math.round(r.top),vb:Math.round(r.bottom),bd:getComputedStyle(document.querySelector('#item-backdrop')).display,title:v.querySelector('#iv-title').textContent,count:(v.querySelector('.pcount')||{}).textContent,
         barBottom:Math.round(bar.bottom),top:b.scrollTop,sy:Math.round(scrollY),inert:document.querySelector('main').inert,prev:v.querySelector('#iv-prev').disabled,next:v.querySelector('#iv-next').disabled}});
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{HOOK.CK_OPEN['*']=true});
     // ten shirts in a two-column grid, newest first: s9 s8 / s7 s6 / s5 s4 / ...; then a tie without a photo
     await p.evaluate(ph=>{HOOK.items=[...Array(10)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:n%2?'white':'lightblue',pattern:'solid',photo:ph,added:n}));
-      items.push({id:'t',type:'tie',primaryColor:'navy',pattern:'solid',added:0});HOOK.flt='all';HOOK.editing=null;show('wardrobe')},PH);
+      HOOK.items.push({id:'t',type:'tie',primaryColor:'navy',pattern:'solid',added:0});HOOK.flt='all';HOOK.editing=null;HOOK.show('wardrobe')},PH);
     await p.waitForFunction(()=>!document.querySelector('#wardrobe').getAnimations().length);   // the page has eased in (pageIn)
     await p.evaluate(()=>window.scrollTo(0,document.getElementById('gi-s7').getBoundingClientRect().top+scrollY-120));
     const y0=await p.evaluate(()=>Math.round(scrollY)),b6=await rect('s6'),b7=await rect('s7');
@@ -55,7 +55,7 @@ const wardrobetap=async({ok,chromium,url,settle})=>{
     // machine that handles the moves late no longer turns a flick into a slow pull
     const cdp=await ctx.newCDPSession(p);let clock=0;const T=(type,x,y,ms=16)=>{clock=type==='touchStart'?Math.max(clock+ms,Date.now()):clock+ms;return cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}],timestamp:clock/1000})};
     const drag=async(x,y0,y1,n=8,probe)=>{let mid=null;await T('touchStart',x,y0);for(let k=1;k<=n;k++){await T('touchMove',x,y0+(y1-y0)*k/n);await p.waitForTimeout(16);if(probe&&k===n)mid=await probe()}await T('touchEnd');await settle(p,500);return mid};
-    const pos=()=>p.evaluate(()=>({top:Math.round(document.querySelector('#item-view').getBoundingClientRect().top),dim:+getComputedStyle(document.querySelector('#item-backdrop')).opacity,ed:editing}));
+    const pos=()=>p.evaluate(()=>({top:Math.round(document.querySelector('#item-view').getBoundingClientRect().top),dim:+getComputedStyle(document.querySelector('#item-backdrop')).opacity,ed:HOOK.editing}));
     await p.tap('#gi-s6 .giopen');await settle(p,500);
     let mid=await drag(200,400,640,8,pos);v=await view();
     ok(mid.top>36+200&&mid.dim<1&&mid.ed==='s6',`swiping down on the sheet's content drags the sheet with the finger and the Wardrobe brightens (top ${mid.top}px)`);
@@ -102,39 +102,39 @@ const wardrobetap=async({ok,chromium,url,settle})=>{
     const tt=await p.evaluate(()=>{const r=document.querySelector('#gi-t').getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight});
     ok(v.ed===null&&!v.shown,'Esc closes the sheet');ok(tt&&v.sy!==y0,'closing on another item than the one opened scrolls the Wardrobe to that item\'s box');
     // open → close → open at once: the history entry of the first doesn't close the second
-    await p.evaluate(()=>{openItem('s5');HOOK.closeItem();openItem('s4')});await settle(p,500);await p.waitForTimeout(100);
+    await p.evaluate(()=>{HOOK.openItem('s5');HOOK.closeItem();HOOK.openItem('s4')});await settle(p,500);await p.waitForTimeout(100);
     ok((await view()).ed==='s4','closing one item and opening another straight away keeps the second open');
     await p.goBack();await settle(p,500);ok((await view()).ed===null,'and Back still closes it');
     // editing keeps the page and its scroll position
     // (scrolled so the Color button is in view: since the Color & texture card it sits lower than 160 px; a click on it scrolled the page)
     await p.tap('#gi-s3 .giopen');await settle(p,500);const yS=await p.evaluate(()=>{const b=document.querySelector('#ivbody'),c=document.querySelector('#item-view .colbtn[data-k="primaryColor"]');b.scrollTo(0,Math.max(160,Math.round(c.getBoundingClientRect().top-b.getBoundingClientRect().top+b.scrollTop-200)));return b.scrollTop});
-    await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cptile[data-c="pink"] >> nth=-1');await p.click('#col-sheet .cpbar button');await p.waitForFunction(()=>items.find(i=>i.id==='s3').primaryColor==='pink'&&/pink/i.test(document.querySelector('#iv-title').textContent));v=await view();   // (the sheet is redrawn a moment after the item is saved)
+    await p.click('#item-view .colbtn[data-k="primaryColor"]');await p.click('#col-sheet .cptile[data-c="pink"] >> nth=-1');await p.click('#col-sheet .cpbar button');await p.waitForFunction(()=>HOOK.items.find(i=>i.id==='s3').primaryColor==='pink'&&/pink/i.test(document.querySelector('#iv-title').textContent));v=await view();   // (the sheet is redrawn a moment after the item is saved)
     ok(v.ed==='s3'&&v.on&&v.top===yS&&yS>=160&&/pink/i.test(v.title),`changing a tag redraws the sheet in place: still open, still scrolled, the header follows (${v.title}, ${v.top} of ${yS})`);
     ok(/pink/i.test(await p.textContent('#gi-s3')),'and the box in the grid behind is up to date');
     // while cropping, Esc leaves the crop first
     await p.evaluate(()=>HOOK.startCrop('s3'));await p.waitForSelector('#item-view #cropbox');
     ok(await p.evaluate(()=>!document.querySelector('#item-view .phtools')&&document.querySelector('#ivbody').scrollTop===0&&document.querySelector('#cropbox').getBoundingClientRect().top>0),'cropping scrolls the page to the picture; the photo tools step aside');
     await p.evaluate(()=>document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true})));
-    ok(await p.evaluate(()=>editing==='s3'&&!document.querySelector('#cropbox')),'Esc leaves the crop, not the sheet');
+    ok(await p.evaluate(()=>HOOK.editing==='s3'&&!document.querySelector('#cropbox')),'Esc leaves the crop, not the sheet');
     // another tab drops the page; deleting closes it
-    await p.evaluate(()=>show('add'));v=await view();ok(v.ed===null&&!v.shown&&!v.inert,'showing another tab closes the sheet');
-    await p.evaluate(()=>{show('wardrobe');openItem('s2');window.confirm=()=>true});await settle(p,500);await p.evaluate(()=>document.querySelector('#ivbody').scrollTo(0,9999));
-    await p.tap('#item-view .ivin > :last-child button');await p.waitForFunction(()=>!items.some(i=>i.id==='s2'));v=await view();
+    await p.evaluate(()=>HOOK.show('add'));v=await view();ok(v.ed===null&&!v.shown&&!v.inert,'showing another tab closes the sheet');
+    await p.evaluate(()=>{HOOK.show('wardrobe');HOOK.openItem('s2');window.confirm=()=>true});await settle(p,500);await p.evaluate(()=>document.querySelector('#ivbody').scrollTo(0,9999));
+    await p.tap('#item-view .ivin > :last-child button');await p.waitForFunction(()=>!HOOK.items.some(i=>i.id==='s2'));v=await view();
     ok(v.ed===null&&!v.shown&&!await p.$('#gi-s2'),'Delete removes the item and closes its sheet');
     // while cropping, the picture is dragged, not the sheet
     await p.tap('#gi-s1 .giopen');await settle(p,500);await p.evaluate(()=>HOOK.startCrop('s1'));await p.waitForSelector('#item-view #cropbox');
     await drag(200,500,740,8);ok((await view()).ed==='s1','while cropping, a swipe down does not close the sheet');
-    await p.evaluate(()=>{phEdit.crop=null;HOOK.closeItem()});await settle(p,500);
+    await p.evaluate(()=>{HOOK.phEdit.crop=null;HOOK.closeItem()});await settle(p,500);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
     // a wide screen: a centred panel over a backdrop, which closes it
-    const c2=await browser.newContext({viewport:{width:1000,height:800}});const q=await c2.newPage();await q.goto(url);await q.waitForFunction(()=>window.appReady);await q.evaluate(()=>{CK_OPEN['*']=true});
-    await q.evaluate(ph=>{HOOK.items=[...Array(6)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:'white',pattern:'solid',photo:ph,added:n}));HOOK.flt='all';HOOK.editing=null;show('wardrobe')},PH);
+    const c2=await browser.newContext({viewport:{width:1000,height:800}});const q=await c2.newPage();await q.goto(url);await q.waitForFunction(()=>window.appReady);await q.evaluate(()=>{HOOK.CK_OPEN['*']=true});
+    await q.evaluate(ph=>{HOOK.items=[...Array(6)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:'white',pattern:'solid',photo:ph,added:n}));HOOK.flt='all';HOOK.editing=null;HOOK.show('wardrobe')},PH);
     await q.click('#gi-s3 .giopen');await settle(q,500);
     const wide=await q.evaluate(()=>{const r=document.querySelector('#item-view').getBoundingClientRect();return {w:Math.round(r.width),mid:Math.round(r.left+r.width/2),h:Math.round(r.height),bd:getComputedStyle(document.querySelector('#item-backdrop')).display}});
     ok(wide.w===900&&wide.mid===500&&wide.h<800&&wide.bd==='block',`from 600px wide the item opens as a centred panel over a backdrop, 900px wide for its two columns since the checklist redesign (${wide.w}px wide)`);
     await q.mouse.click(40,400);await settle(q,500);
-    ok(await q.evaluate(()=>editing===null&&getComputedStyle(document.querySelector('#item-view')).display==='none'),'clicking the backdrop closes it');
+    ok(await q.evaluate(()=>HOOK.editing===null&&getComputedStyle(document.querySelector('#item-view')).display==='none'),'clicking the backdrop closes it');
     await c2.close();
   }finally{await browser.close()}
 };
@@ -159,13 +159,13 @@ const sheetswipe=async({ok,chromium,url,settle})=>{
       const tag=`${w}×${h}`;
       const ctx=await browser.newContext({viewport:{width:w,height:h},hasTouch:true,...(WK?{}:{isMobile:true})});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
       await p.goto(url);await p.waitForFunction(()=>window.appReady);
-      await p.evaluate(ph=>{HOOK.items=[...Array(6)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:'white',pattern:'solid',photo:ph,added:n}));HOOK.flt='all';HOOK.editing=null;show('wardrobe')},PH);
+      await p.evaluate(ph=>{HOOK.items=[...Array(6)].map((_,n)=>({id:'s'+n,type:'shirt',primaryColor:'white',pattern:'solid',photo:ph,added:n}));HOOK.flt='all';HOOK.editing=null;HOOK.show('wardrobe')},PH);
       await settle(p,600);
       const cdp=await ctx.newCDPSession(p);let clock=0;const T=(type,x,y,ms=16)=>{clock=type==='touchStart'?Math.max(clock+ms,Date.now()):clock+ms;return cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}],timestamp:clock/1000})};
-      const at=()=>p.evaluate(()=>({top:document.querySelector('#item-view').getBoundingClientRect().top,dim:+getComputedStyle(document.querySelector('#item-backdrop')).opacity,ed:editing}));
+      const at=()=>p.evaluate(()=>({top:document.querySelector('#item-view').getBoundingClientRect().top,dim:+getComputedStyle(document.querySelector('#item-backdrop')).opacity,ed:HOOK.editing}));
       const touch=async(x,y0,y1,n=8,ms=16)=>{let mid;await T('touchStart',x,y0);for(let k=1;k<=n;k++){await T('touchMove',x,y0+(y1-y0)*k/n,ms);await p.waitForTimeout(ms);if(k===n)mid=await at()}await T('touchEnd',x,y1);await settle(p,500);return mid};
       const mouse=async(x,y0,y1,n=10)=>{let mid;await p.mouse.move(x,y0);await p.mouse.down();for(let k=1;k<=n;k++){await p.mouse.move(x,y0+(y1-y0)*k/n);await p.waitForTimeout(30);if(k===n)mid=await at()}await p.mouse.up();await settle(p,500);return mid};
-      const open=async()=>{await p.evaluate(()=>{if(editing)HOOK.closeItem()});await settle(p,500);await p.evaluate(()=>openItem('s3'));await settle(p,600);
+      const open=async()=>{await p.evaluate(()=>{if(HOOK.editing)HOOK.closeItem()});await settle(p,500);await p.evaluate(()=>HOOK.openItem('s3'));await settle(p,600);
         return p.evaluate(()=>{const v=document.querySelector('#item-view').getBoundingClientRect(),hd=document.querySelector('#ivhead').getBoundingClientRect(),t=document.querySelector('#iv-title').getBoundingClientRect();
           return {top:v.top,left:v.left,w:v.width,h:v.height,hb:hd.bottom,tx:t.left+10,ty:t.top+t.height/2}})};
       // under a status bar: the sheet (panel or not) and so its grabber start below it
@@ -179,7 +179,7 @@ const sheetswipe=async({ok,chromium,url,settle})=>{
       // touch: from the grabber, the title, and the content at the top; the sheet follows the finger and the Wardrobe brightens
       for(const where of ['grabber','title','content']){
         g=await open();const x=where==='title'?g.tx:g.left+g.w/2,y=where==='grabber'?g.top+9:where==='title'?g.ty:g.hb+60;
-        const mid=await touch(x,y,y+g.h*.5);const ed=await p.evaluate(()=>editing);
+        const mid=await touch(x,y,y+g.h*.5);const ed=await p.evaluate(()=>HOOK.editing);
         ok(mid.ed==='s3'&&mid.top>g.top+g.h*.4&&mid.dim<1&&ed===null,`${tag}: a finger dragging the ${where} down moves the sheet with it (top ${Math.round(g.top)} → ${Math.round(mid.top)}) and closes it`);
       }
       g=await open();const m0=await touch(g.left+g.w/2,g.top+9,g.top+9+48,4,60);let s=await at();
@@ -187,7 +187,7 @@ const sheetswipe=async({ok,chromium,url,settle})=>{
       // a mouse / trackpad / Pencil: the header drags it the same way (Pointer Events); the content doesn't
       for(const where of ['grabber','title']){
         g=await open();const x=where==='title'?g.tx:g.left+g.w/2,y=where==='grabber'?g.top+9:g.ty;
-        const mid=await mouse(x,y,y+g.h*.5);const ed=await p.evaluate(()=>editing);
+        const mid=await mouse(x,y,y+g.h*.5);const ed=await p.evaluate(()=>HOOK.editing);
         ok(mid.ed==='s3'&&mid.top>g.top+g.h*.4&&mid.dim<1&&ed===null,`${tag}: a mouse dragging the ${where} down moves the sheet (top ${Math.round(g.top)} → ${Math.round(mid.top)}) and closes it`);
       }
       g=await open();await mouse(g.left+g.w/2,g.top+9,g.top+9+40,8);s=await at();
@@ -202,11 +202,11 @@ const sheetswipe=async({ok,chromium,url,settle})=>{
     for(const [w,h,scheme] of [[390,844,'light'],[390,844,'dark'],[690,960,'light'],[690,960,'dark']]){
       const tag=`${w}px ${scheme}`;
       const ctx=await browser.newContext({viewport:{width:w,height:h},colorScheme:scheme,hasTouch:true,...(WK?{}:{isMobile:true})});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
-      await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{queue.length=0;show('add')});await settle(p,500);
-      const cards=()=>p.evaluate(()=>({q:queue.length,n:document.querySelectorAll('#queue .card').length}));
+      await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{HOOK.queue.length=0;HOOK.show('add')});await settle(p,500);
+      const cards=()=>p.evaluate(()=>({q:HOOK.queue.length,n:document.querySelectorAll('#queue .card').length}));
       // a card of the list ("Add without a photo" has its own sheet now, with the × in the sheet's header: tests/addsheet.test.js):
       // a photo that couldn't be opened, filled in by hand
-      const listCard=()=>p.evaluate(()=>{queue.unshift({id:'c'+Date.now(),err:'open'});renderAdd();errToHand(queue[0].id)});
+      const listCard=()=>p.evaluate(()=>{HOOK.queue.unshift({id:'c'+Date.now(),err:'open'});HOOK.renderAdd();HOOK.errToHand(HOOK.queue[0].id)});
       await listCard();await settle(p,500);
       const x=await p.evaluate(()=>{const c=document.querySelector('#queue .card'),b=c&&c.querySelector(':scope>.qx');if(!b)return null;const r=b.getBoundingClientRect(),cr=c.getBoundingClientRect(),st=getComputedStyle(b);
         return {w:r.width,h:r.height,right:cr.right-r.right,top:r.top-cr.top,label:b.getAttribute('aria-label'),txt:b.textContent,color:st.color,bg:getComputedStyle(document.body).backgroundColor,hit:document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)===b}});

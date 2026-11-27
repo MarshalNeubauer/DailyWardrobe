@@ -24,12 +24,12 @@ async function run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX}){
   const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   const ev=(f,a)=>p.evaluate(f,a);
-  await ev(([ph,tx])=>{HOOK.rememberRole({role:'owner'});settings.setupDone=1;
+  await ev(([ph,tx])=>{HOOK.rememberRole({role:'owner'});HOOK.settings.setupDone=1;
     // the cloth measured as navy, the drawing two steps lighter; white paper found in the close-up (tagging.js PAPER, as paperOf keeps it)
-    HOOK.items=[{id:'a',type:'suit',primaryColor:'navy',secondaryColor:'white',pattern:'pinstripe',photo:ph,texture:tx,material:'wool',season:'cold',shade:2,meas:{lab:labOf('navy'),ref:true,src:'closeup'},added:3},
+    HOOK.items=[{id:'a',type:'suit',primaryColor:'navy',secondaryColor:'white',pattern:'pinstripe',photo:ph,texture:tx,material:'wool',season:'cold',shade:2,meas:{lab:HOOK.labOf('navy'),ref:true,src:'closeup'},added:3},
       {id:'b',type:'pants',primaryColor:'charcoal',pattern:'solid',photo:ph,added:2},{id:'c',type:'shoes',primaryColor:'brown',added:1}];
-    HOOK.PAPER[paperKey(items[0])]={ref:true,warm:false};
-    HOOK.cache={};queue.length=0;HOOK.flt='all';HOOK.editing=null;show('wardrobe')},[PH,TX]);
+    HOOK.PAPER[HOOK.paperKey(HOOK.items[0])]={ref:true,warm:false};
+    HOOK.cache={};HOOK.queue.length=0;HOOK.flt='all';HOOK.editing=null;HOOK.show('wardrobe')},[PH,TX]);
   await settle(p,400);
   const tap=async s=>{await p.click(s);await settle(p,450)};
   const rect=s=>ev(s=>{const e=document.querySelector(s);if(!e)return null;const r=e.getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,bottom:r.bottom,w:r.width,h:r.height}},s);
@@ -39,7 +39,7 @@ async function run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX}){
   let e;
 
   // ---- the item sheet: the summary, then the sections with their marks; Look & compare first and open
-  await ev(()=>openItem('a'));await settle(p,600);
+  await ev(()=>HOOK.openItem('a'));await settle(p,600);
   await p.waitForFunction(()=>!!document.querySelector('#ivbody .cmpbar'),null,{timeout:4000}).catch(()=>{});
   e=await ev(()=>{const secs=[...document.querySelectorAll('#ivbody .cks')];return {ks:secs.map(s=>s.dataset.ck).join(','),
     marks:secs.map(s=>s.dataset.ck+':'+(s.querySelector('.ckm').className.match(/ck-(\w+)/)||[])[1]).join(','),open:secs.filter(s=>s.classList.contains('open')).map(s=>s.dataset.ck).join(','),
@@ -86,28 +86,28 @@ async function run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX}){
   ok(!e.ov&&e.cu.r<=e.dw.l&&!e.slider&&e.pressed==='false',T+'a second tap (on either) slides them apart and hides the slider');
   ok(await ev(()=>!document.querySelector('#ivbody .lens,#ivbody .loupe,#ivbody .cmphint')),T+'no lens and no hint text');
   // the state lasts through a redraw (an edit)
-  await p.click('#ivct .cmp-cu');await settle(p,700);await ev(()=>renderWardrobe());await settle(p,300);
+  await p.click('#ivct .cmp-cu');await settle(p,700);await ev(()=>HOOK.renderWardrobe());await settle(p,300);
   ok((await sq()).ov,T+'an edit redraws the sheet with them still together');
   await p.click('#ivct .cmp-cu');await settle(p,600);
 
   // ---- Back and a swipe close one layer at a time
   await tap('#item-view [data-ck="color"] .ckh');await tap('#item-view .colbtn[data-k="primaryColor"]');
-  ok(await ev(()=>!!colPick&&editing==='a'),T+'the color sheet opens over the item sheet');
+  ok(await ev(()=>!!HOOK.colPick&&HOOK.editing==='a'),T+'the color sheet opens over the item sheet');
   await ev(()=>history.back());await p.waitForTimeout(150);await settle(p,450);
-  ok(await ev(()=>!colPick&&editing==='a'),T+'Back closes the color sheet only; the item sheet stays');
+  ok(await ev(()=>!HOOK.colPick&&HOOK.editing==='a'),T+'Back closes the color sheet only; the item sheet stays');
   const cu=await rect('#ivct .cmp-cu');
   await swipe(cu.left+cu.w/2,cu.top+10,cu.top+10+h*.4);
-  ok(await ev(()=>editing==='a'),T+'a swipe down that starts on the pictures does not close the sheet');
+  ok(await ev(()=>HOOK.editing==='a'),T+'a swipe down that starts on the pictures does not close the sheet');
   const hd=await rect('#ivhead');
   await swipe(hd.left+hd.w/2,hd.top+12,hd.top+12+h*.5);
-  ok(await ev(()=>!editing),T+'a swipe down on the header closes it');
-  await ev(()=>openItem('a'));await settle(p,500);await ev(()=>history.back());await p.waitForTimeout(150);await settle(p,450);
-  ok(await ev(()=>!editing),T+'Back closes the item sheet');
+  ok(await ev(()=>!HOOK.editing),T+'a swipe down on the header closes it');
+  await ev(()=>HOOK.openItem('a'));await settle(p,500);await ev(()=>history.back());await p.waitForTimeout(150);await settle(p,450);
+  ok(await ev(()=>!HOOK.editing),T+'Back closes the item sheet');
 
   // ---- the Add card: before a close-up
-  await ev(([ph])=>{openAdd();queue.length=0;
-    queue.unshift({id:'q1',ai:true,type:'suit',primaryColor:'navy',secondaryColor:'white',tertiaryColor:null,pattern:'pinstripe',photo:ph,conf:{type:'high',primaryColor:'high',pattern:'medium'},altPattern:'chalk-stripe',aiTag:{pattern:'pinstripe'},material:'flannel',matAI:{key:'flannel',conf:'medium',why:'brushed nap'}});
-    renderAdd()},[PH]);await settle(p,500);
+  await ev(([ph])=>{HOOK.openAdd();HOOK.queue.length=0;
+    HOOK.queue.unshift({id:'q1',ai:true,type:'suit',primaryColor:'navy',secondaryColor:'white',tertiaryColor:null,pattern:'pinstripe',photo:ph,conf:{type:'high',primaryColor:'high',pattern:'medium'},altPattern:'chalk-stripe',aiTag:{pattern:'pinstripe'},material:'flannel',matAI:{key:'flannel',conf:'medium',why:'brushed nap'}});
+    HOOK.renderAdd()},[PH]);await settle(p,500);
   const card=()=>ev(()=>{const c=document.querySelector('#queue .qcard[data-q="q1"]');if(!c)return null;const secs=[...c.querySelectorAll('.cks')];
     return {ks:secs.map(s=>s.dataset.ck).join(','),titles:secs.map(s=>s.querySelector('.ckt b').textContent).join('|'),open:secs.filter(s=>s.classList.contains('open')).map(s=>s.dataset.ck).join(','),
       marks:secs.map(s=>s.dataset.ck+':'+(s.querySelector('.ckm').className.match(/ck-(\w+)/)||[])[1]).join(','),prog:c.querySelector('.ckprog b').textContent,
@@ -132,7 +132,7 @@ async function run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX}){
   ok(/type/.test(e.open),T+`the next unchecked part (Type) is the one open (${e.open})`);
   await p.selectOption('#queue [data-ck="type"] select','blazer');await settle(p,400);e=await card();
   ok(e.prog==='2 of 4 checked'&&/type:good/.test(e.marks),T+`a field changed by hand checks its section (${e.prog})`);
-  await ev(()=>{const q=queue[0];q.type='suit';renderAdd()});await settle(p,200);
+  await ev(()=>{const q=HOOK.queue[0];q.type='suit';HOOK.renderAdd()});await settle(p,200);
 
   // ---- the sticky progress: a direct child of the card, pinned at the top while the card scrolls under it (past its first column too)
   await ev(()=>{for(const s of document.querySelectorAll('#queue .qcard[data-q="q1"] .cks:not(.open) .ckh'))s.click()});await settle(p,300);
@@ -148,7 +148,7 @@ async function run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX}){
   await ev(()=>scrollTo(0,0));
 
   // ---- with a close-up: Texture match counts (4 → 5), the comparison, Replace / Remove close-up under the paper line, Fine as is
-  await ev(tx=>{const q=queue[0];q.checked={};q.texture=tx;q.meas={lab:[24,1,-12],ref:true,src:'closeup'};renderAdd()},TX);await settle(p,500);
+  await ev(tx=>{const q=HOOK.queue[0];q.checked={};q.texture=tx;q.meas={lab:[24,1,-12],ref:true,src:'closeup'};HOOK.renderAdd()},TX);await settle(p,500);
   e=await card();
   ok(e.prog==='0 of 5 checked'&&!/closeup/.test(e.ks)&&/tex:(warn|todo)/.test(e.marks),T+`with a close-up Texture match is counted: "${e.prog}", still no separate Close-up item (${e.ks})`);
   e=await ev(()=>{const t=document.querySelector('#queue [data-ck="tex"]'),pos=s=>{const x=t.querySelector(s);return x?x.getBoundingClientRect().top:null};
@@ -160,9 +160,9 @@ async function run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX}){
   ok(/tex:good/.test(e.marks)&&e.prog==='1 of 5 checked'&&await ev(()=>!!document.querySelector('#queue [data-ck="tex"] .cmpundo')),T+'Match close-up checks Texture match and offers Undo');
 
   // ---- Confirm with parts unchecked saves the item
-  const n0=await ev(()=>items.length);await tap('#queue .qcard[data-q="q1"] .ckfoot .pri');
-  await p.waitForFunction(n=>items.length===n+1,n0,{timeout:5000}).catch(()=>{});
-  ok(await ev(n=>items.length===n+1&&items.some(i=>i.id==='q1')&&!queue.length,n0),T+'Confirm saves the item with parts still unchecked');
+  const n0=await ev(()=>HOOK.items.length);await tap('#queue .qcard[data-q="q1"] .ckfoot .pri');
+  await p.waitForFunction(n=>HOOK.items.length===n+1,n0,{timeout:5000}).catch(()=>{});
+  ok(await ev(n=>HOOK.items.length===n+1&&HOOK.items.some(i=>i.id==='q1')&&!HOOK.queue.length,n0),T+'Confirm saves the item with parts still unchecked');
 
   // ---- the no-photo sheet: its bar says what is left; the progress pinned in its scroll area; Back closes the sheet only
   await ev(()=>HOOK.addManual());await settle(p,500);
@@ -172,7 +172,7 @@ async function run(eng,browser,{ok,url,settle,w,h,scheme,PH,TX}){
   const nb=await rect('#nps-q'),np=await rect('#nps-q .ckprog');
   ok(Math.abs(np.top-nb.top)<=6,T+`in the sheet, "N of M checked" stays at the top of its scroll area (${Math.round(np.top)} vs ${Math.round(nb.top)})`);
   await ev(()=>history.back());await p.waitForTimeout(150);await settle(p,450);
-  ok(await ev(()=>!npsId&&!document.querySelector('#add').hidden),T+'Back closes the sheet and stays on Add');
+  ok(await ev(()=>!HOOK.npsId&&!document.querySelector('#add').hidden),T+'Back closes the sheet and stays on Add');
 
   ok(errs.length===0,T+'no page errors ('+errs.join('; ')+')');
   await ctx.close();
