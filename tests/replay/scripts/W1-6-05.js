@@ -18,7 +18,7 @@ L.main(async()=>{
   const q=await A.page.evaluate(()=>{const t=document.querySelector('#ask-title');return t?t.parentElement.innerText:''});
   await L.confirmDialog(A,/^Take them out$/);await L.sleep(1000);
   const aAfter=await L.names(A);
-  await A.page.evaluate(()=>typeof kitClose==='function'&&kitClose()).catch(()=>{});await L.backup(A);
+  await A.page.evaluate(()=>'kitClose' in HOOK&&HOOK.kitClose()).catch(()=>{});await L.backup(A);
   await L.later(B);await L.sleep(1500);
   const bAfter=await L.names(B);
   L.log('server had rename',srvRename,'A line',line,'question',q.replace(/\s+/g,' '),'A after',aAfter,'B after',bAfter);

@@ -16,23 +16,23 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       const f=h[name];if(f==='down')return r.abort();const a=f?f(q):{status:404,body:{error:'not found'}};
       return r.fulfill({status:a.status||200,headers:{...cors,'content-type':'application/json'},body:JSON.stringify(a.body||{})})});
     if(o.newer)await p.route(/\/sw\.js\?check=/,r=>r.fulfill({status:200,contentType:'text/javascript',body:`const CACHE='dw-v${o.newer}';`}));
-    await p.goto(url);await p.waitForFunction(()=>window.appReady&&appVersion()!=null);
+    await p.goto(url);await p.waitForFunction(()=>window.appReady&&HOOK.appVersion()!=null);
     if(o.connect!==false)await p.evaluate(s=>{localStorage.setItem('worker_url',s);localStorage.setItem('app_token','tok-1')},SRV);
     return {p,ctx,calls,errs}};
-  const about=async p=>{await p.evaluate(()=>{openSettings('about');HOOK.renderAbout()});await settle(p,600)};
+  const about=async p=>{await p.evaluate(()=>{HOOK.openSettings('about');HOOK.renderAbout()});await settle(p,600)};
   const text=(p,s)=>p.evaluate(s=>(document.querySelector(s)||{}).textContent||'',s);
   try{
     /* version */
     {const {p,ctx,errs}=await open({},{connect:false});
       swVer=await p.evaluate(async()=>+/CACHE='dw-v(\d+)'/.exec(await (await fetch('sw.js',{cache:'no-store'})).text())[1]);
-      ok(await p.evaluate(()=>appVersion())===swVer,`appVersion() is the number in sw.js (${swVer})`);
+      ok(await p.evaluate(()=>HOOK.appVersion())===swVer,`appVersion() is the number in sw.js (${swVer})`);
       await about(p);
       ok(await text(p,'#about-ver')==='Version '+swVer&&(await text(p,'#sum-about')).startsWith('Version '+swVer),'About shows "Version '+swVer+'", in its summary too');
-      ok(await p.evaluate(()=>SET_CATS[SET_CATS.length-1]==='about'&&$('#sc-about').classList.contains('open')&&$('#sc-connection').nextElementSibling.id==='sc-about'),'About is the last Settings category, after Connection');
-      await p.click('#about-check');await p.waitForFunction(()=>/latest/.test($('#about-status').textContent));
-      ok(await p.evaluate(()=>$('#about-update').hidden&&getComputedStyle($('#about-update')).display==='none'&&!/new version/.test($('#toast').textContent)),'Check for updates: "You have the latest version", no Update button, no prompt');
-      ok(await p.evaluate(()=>{const b=$('#about-check').getBoundingClientRect();return b.height>=44&&document.documentElement.scrollWidth<=innerWidth}),'44px controls, no sideways scroll');
-      ok(await p.evaluate(()=>{const d=$('#about-privacy');const shut=!d.open;d.querySelector('summary').click();return shut&&d.open&&/Anthropic/.test(d.textContent)&&/OpenAI/.test(d.textContent)&&/Nothing else leaves your phone/.test(d.textContent)&&/person who invited you/.test(d.textContent)&&/Open-Meteo/.test(d.textContent)&&/Nager\.Date/.test(d.textContent)&&/cloud hosting company/.test(d.textContent)&&!/Cloudflare/.test(d.textContent)}),'the privacy note is a fold naming everyone who gets something: the server’s owner, its hosting company (not named: W1-10-06), GitHub Pages, Anthropic, OpenAI, Open-Meteo, Nager.Date');
+      ok(await p.evaluate(()=>HOOK.SET_CATS[HOOK.SET_CATS.length-1]==='about'&&HOOK.$('#sc-about').classList.contains('open')&&HOOK.$('#sc-connection').nextElementSibling.id==='sc-about'),'About is the last Settings category, after Connection');
+      await p.click('#about-check');await p.waitForFunction(()=>/latest/.test(HOOK.$('#about-status').textContent));
+      ok(await p.evaluate(()=>HOOK.$('#about-update').hidden&&getComputedStyle(HOOK.$('#about-update')).display==='none'&&!/new version/.test(HOOK.$('#toast').textContent)),'Check for updates: "You have the latest version", no Update button, no prompt');
+      ok(await p.evaluate(()=>{const b=HOOK.$('#about-check').getBoundingClientRect();return b.height>=44&&document.documentElement.scrollWidth<=innerWidth}),'44px controls, no sideways scroll');
+      ok(await p.evaluate(()=>{const d=HOOK.$('#about-privacy');const shut=!d.open;d.querySelector('summary').click();return shut&&d.open&&/Anthropic/.test(d.textContent)&&/OpenAI/.test(d.textContent)&&/Nothing else leaves your phone/.test(d.textContent)&&/person who invited you/.test(d.textContent)&&/Open-Meteo/.test(d.textContent)&&/Nager\.Date/.test(d.textContent)&&/cloud hosting company/.test(d.textContent)&&!/Cloudflare/.test(d.textContent)}),'the privacy note is a fold naming everyone who gets something: the server’s owner, its hosting company (not named: W1-10-06), GitHub Pages, Anthropic, OpenAI, Open-Meteo, Nager.Date');
       ok(/^Sending feedback needs a connection/.test(await text(p,'#fb-conn'))&&!(await p.isVisible('#fb-send'))&&!(await p.isVisible('#fb-text')),'not connected: Feedback says it needs a connection, with no form to fill');
       await p.evaluate(()=>{document.querySelector('#fb-text').value='hello';return HOOK.sendFeedback()});
       ok(/needs a connection/.test(await text(p,'#fb-status'))&&await p.inputValue('#fb-text')==='hello','sending without a connection says so and keeps the text');
@@ -40,13 +40,13 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
 
     /* a newer version on the server */
     {const {p,ctx}=await open({},{newer:swVer+5,connect:false});
-      await p.waitForFunction(()=>$('#toast').classList.contains('on')&&/A new version is ready/.test($('#toast').textContent));
-      ok(await p.evaluate(()=>{const b=$('#toast button');return !!b&&b.textContent==='Update'}),'a newer sw.js raises the toast "A new version is ready" with Update');
-      const again=await p.evaluate(async()=>{window.__same=1;let n=0;const mo=new MutationObserver(l=>{for(const r of l)if(r.addedNodes.length)n++});mo.observe($('#toast'),{childList:true});   /* (a toast raised writes its words into #toast) */
+      await p.waitForFunction(()=>HOOK.$('#toast').classList.contains('on')&&/A new version is ready/.test(HOOK.$('#toast').textContent));
+      ok(await p.evaluate(()=>{const b=HOOK.$('#toast button');return !!b&&b.textContent==='Update'}),'a newer sw.js raises the toast "A new version is ready" with Update');
+      const again=await p.evaluate(async()=>{window.__same=1;let n=0;const mo=new MutationObserver(l=>{for(const r of l)if(r.addedNodes.length)n++});mo.observe(HOOK.$('#toast'),{childList:true});   /* (a toast raised writes its words into #toast) */
         await HOOK.checkForUpdate();await HOOK.checkForUpdate(true);document.dispatchEvent(new Event('visibilitychange'));await HOOK.checkForUpdate();await new Promise(r=>setTimeout(r,50));mo.disconnect();return n});
       ok(again===0,'the prompt is raised once for a version, however often it is checked');
       await about(p);
-      ok(await p.evaluate(()=>window.__same===1&&appVersion()<HOOK.aboutNew&&!$('#about-update').hidden)&&(await text(p,'#about-status')).includes(`Version ${swVer+5} is ready`),'nothing reloads by itself; About offers Update for the new version');
+      ok(await p.evaluate(()=>window.__same===1&&HOOK.appVersion()<HOOK.aboutNew&&!HOOK.$('#about-update').hidden)&&(await text(p,'#about-status')).includes(`Version ${swVer+5} is ready`),'nothing reloads by itself; About offers Update for the new version');
       // photos still being read on Add: asked first (cards that are only waiting come back after the restart: no question for them)
       await p.evaluate(()=>{HOOK.queue=[{busy:1},{busy:1},{manual:true}]});
       await p.click('#about-update');await p.waitForFunction(()=>document.querySelector('#ask-sheet.on'));const asked=await text(p,'#ask-sheet');   // the app's own question (ui.js), not a browser dialog
@@ -63,37 +63,37 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
         'GET /feedback':()=>({body:{items:[{t:1700000000000,name:'Tester A',text:'older <b>note</b>',version:140},{t:1800000000000,name:'Tester B',text:'newest note',version:142}]}})});
       await about(p);
       await p.fill('#fb-text','  The picker is great  ');await p.click('#fb-send');
-      await p.waitForFunction(()=>/Thank you/.test($('#fb-status').textContent));
+      await p.waitForFunction(()=>/Thank you/.test(HOOK.$('#fb-status').textContent));
       const c=calls.find(c=>c.name==='POST /feedback'),b=JSON.parse(c.body);
       ok(b.text==='The picker is great'&&b.version===swVer&&b.where==='settings'&&Object.keys(b).length===3,'Send posts {text, version, where:"settings"}');
       ok(c.tok==='tok-1'&&/application\/json/.test(c.type),'with the app’s usual headers');
-      ok(await p.inputValue('#fb-text')===''&&!await p.evaluate(()=>$('#fb-status').classList.contains('about-bad')),'success thanks the person and empties the box');
-      ok(await p.evaluate(()=>$('#fb-list').hidden),'a tester doesn’t see the feedback received');
+      ok(await p.inputValue('#fb-text')===''&&!await p.evaluate(()=>HOOK.$('#fb-status').classList.contains('about-bad')),'success thanks the person and empties the box');
+      ok(await p.evaluate(()=>HOOK.$('#fb-list').hidden),'a tester doesn’t see the feedback received');
       fb={status:404,body:{error:'not found'}};await p.fill('#fb-text','again');await p.click('#fb-send');
-      await p.waitForFunction(()=>/isn’t available yet/.test($('#fb-status').textContent));
+      await p.waitForFunction(()=>/isn’t available yet/.test(HOOK.$('#fb-status').textContent));
       ok(await p.inputValue('#fb-text')==='again','a 404 (older server): "feedback isn’t available yet", the text stays');
       fb={status:429,body:{error:'too many messages today'}};await p.click('#fb-send');
-      await p.waitForFunction(()=>/too many messages today/.test($('#fb-status').textContent));
-      ok(await p.evaluate(()=>$('#fb-status').classList.contains('about-bad')&&!$('#fb-send').disabled),'a failure shows the server’s reason');
-      me={role:'owner'};await p.evaluate(()=>HOOK.renderAbout());await p.waitForFunction(()=>!$('#fb-list').hidden);
-      const list=await p.evaluate(()=>({t:[...document.querySelectorAll('.fb-item p')].map(e=>e.textContent),h:[...document.querySelectorAll('.fb-item small')].map(e=>e.textContent),html:!!$('#fb-list').querySelector('b')}));
+      await p.waitForFunction(()=>/too many messages today/.test(HOOK.$('#fb-status').textContent));
+      ok(await p.evaluate(()=>HOOK.$('#fb-status').classList.contains('about-bad')&&!HOOK.$('#fb-send').disabled),'a failure shows the server’s reason');
+      me={role:'owner'};await p.evaluate(()=>HOOK.renderAbout());await p.waitForFunction(()=>!HOOK.$('#fb-list').hidden);
+      const list=await p.evaluate(()=>({t:[...document.querySelectorAll('.fb-item p')].map(e=>e.textContent),h:[...document.querySelectorAll('.fb-item small')].map(e=>e.textContent),html:!!HOOK.$('#fb-list').querySelector('b')}));
       ok(list.t.length===2&&list.t[0]==='newest note'&&list.t[1]==='older <b>note</b>'&&!list.html,'the owner sees the feedback received, newest first, as plain text');
       ok(/Tester B/.test(list.h[0])&&/version 142/.test(list.h[0]),'each with who, when and the version');
       ok(errs.length===0,'no page errors ('+errs.join('; ')+')');await ctx.close()}
     {const {p,ctx}=await open({'POST /feedback':'down'});await about(p);
-      await p.fill('#fb-text','x');await p.click('#fb-send');await p.waitForFunction(()=>/didn’t answer/.test($('#fb-status').textContent));
-      ok(await p.inputValue('#fb-text')==='x'&&await p.evaluate(()=>$('#fb-list').hidden),'a server that can’t be reached is reported, the text stays, and no /me means no list');await ctx.close()}
+      await p.fill('#fb-text','x');await p.click('#fb-send');await p.waitForFunction(()=>/didn’t answer/.test(HOOK.$('#fb-status').textContent));
+      ok(await p.inputValue('#fb-text')==='x'&&await p.evaluate(()=>HOOK.$('#fb-list').hidden),'a server that can’t be reached is reported, the text stays, and no /me means no list');await ctx.close()}
 
     /* delete my data */
     const seed=p=>p.evaluate(async()=>{
-      await put({id:'tie1',type:'tie',primaryColor:'navy',pattern:'solid'});await put({id:'shirt1',type:'shirt',primaryColor:'white',pattern:'solid'});
-      await txs('days','readwrite',s=>s.put({date:'2026-11-02',worn:true}));await metaPut('settings',{...settings,workdays:[1,2]});await metaPut('render:c0000000000000001',{img:'x'});
+      await HOOK.put({id:'tie1',type:'tie',primaryColor:'navy',pattern:'solid'});await HOOK.put({id:'shirt1',type:'shirt',primaryColor:'white',pattern:'solid'});
+      await HOOK.txs('days','readwrite',s=>s.put({date:'2026-11-02',worn:true}));await HOOK.metaPut('settings',{...HOOK.settings,workdays:[1,2]});await HOOK.metaPut('render:c0000000000000001',{img:'x'});
       const c=await caches.open('dw-keep-tagimg');await c.put(new Request('tagimg/tie1'),new Response('x'));
       for(const k of HOOK.ABOUT_KEYS)if(k!=='worker_url'&&k!=='app_token')localStorage.setItem(k,'SEED');
-      localStorage.setItem('nav_fit2:390x844','SEED');localStorage.setItem('someone_elses_key','keep');clearTimeout(syncTimer)});
-    const state=p=>p.evaluate(async()=>({items:items.length,db:[(await tx('readonly',s=>s.getAll())).length,(await txs('days','readonly',s=>s.getAll())).length,(await txs('meta','readonly',s=>s.getAll())).map(r=>r.k)],
+      localStorage.setItem('nav_fit2:390x844','SEED');localStorage.setItem('someone_elses_key','keep');clearTimeout(HOOK.syncTimer)});
+    const state=p=>p.evaluate(async()=>({items:HOOK.items.length,db:[(await HOOK.tx('readonly',s=>s.getAll())).length,(await HOOK.txs('days','readonly',s=>s.getAll())).length,(await HOOK.txs('meta','readonly',s=>s.getAll())).map(r=>r.k)],
       kept:(await caches.keys()).filter(k=>k.startsWith('dw-keep-')),seeded:Object.keys(localStorage).filter(k=>localStorage.getItem(k)==='SEED'),
-      conn:[localStorage.getItem('worker_url'),localStorage.getItem('app_token')],other:localStorage.getItem('someone_elses_key'),days:Object.keys(dayRecs).length,workdays:settings.workdays.length,toast:$('#toast').textContent}));
+      conn:[localStorage.getItem('worker_url'),localStorage.getItem('app_token')],other:localStorage.getItem('someone_elses_key'),days:Object.keys(HOOK.dayRecs).length,workdays:HOOK.settings.workdays.length,toast:HOOK.$('#toast').textContent}));
     const gone=s=>s.items===0&&s.db[0]===0&&s.db[1]===0&&!s.db[2].some(k=>/^render:/.test(k))&&s.kept.length===0&&s.seeded.length===0&&!s.conn[0]&&!s.conn[1]&&s.days===0&&s.workdays!==2;
     const wipe=async(p,btn)=>{await p.evaluate(()=>{window.__same=1});await p.click('#del-open');await p.waitForSelector(btn);
       await Promise.all([p.waitForFunction(()=>window.__same===undefined&&window.appReady,null,{timeout:20000}),p.click(btn)])};
@@ -101,15 +101,15 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       await p.click('#del-open');
       const box=await text(p,'#del-confirm');
       ok(/wardrobe, outfit history and settings on this device/.test(box)&&/photos kept on this device/.test(box)&&/backup.*on the server/.test(box)&&/can’t be undone/.test(box),'Delete my data first says what goes: the device’s wardrobe, history, settings and photos, and the server’s backup and photos');
-      ok(await p.evaluate(()=>$('#del-open').classList.contains('danger')&&$('#del-all').classList.contains('danger')&&!!$('#del-device')&&!!$('#del-cancel')),'red buttons: Delete everything, Delete from this device only, and Cancel');
+      ok(await p.evaluate(()=>HOOK.$('#del-open').classList.contains('danger')&&HOOK.$('#del-all').classList.contains('danger')&&!!HOOK.$('#del-device')&&!!HOOK.$('#del-cancel')),'red buttons: Delete everything, Delete from this device only, and Cancel');
       await p.click('#del-cancel');
-      ok(await p.evaluate(()=>$('#del-confirm').hidden)&&(await state(p)).db[0]===2,'Cancel deletes nothing');
+      ok(await p.evaluate(()=>HOOK.$('#del-confirm').hidden)&&(await state(p)).db[0]===2,'Cancel deletes nothing');
       await wipe(p,'#del-device');const s=await state(p);
       ok(gone(s),'"Delete from this device only" clears every store, the kept photos, the kept caches and the app’s localStorage keys ('+JSON.stringify(s)+')');
       ok(!calls.some(c=>/account/.test(c.name)),'and doesn’t call the server');
       ok(s.other==='keep','keys that are not the app’s stay');
       ok(/backup on the server was kept/.test(s.toast),'after the restart it says the server’s backup was kept');
-      ok(await p.evaluate(()=>!$('#today').hidden&&items.length===0)&&errs.length===0,'the app comes up empty, without errors ('+errs.join('; ')+')');await ctx.close()}
+      ok(await p.evaluate(()=>!HOOK.$('#today').hidden&&HOOK.items.length===0)&&errs.length===0,'the app comes up empty, without errors ('+errs.join('; ')+')');await ctx.close()}
     {const {p,ctx,calls}=await open({'DELETE /account':()=>({body:{ok:true}})});await seed(p);await about(p);
       await wipe(p,'#del-all');const s=await state(p),c=calls.find(c=>c.name==='DELETE /account');
       ok(!!c&&c.body==='{"confirm":"delete"}'&&c.tok==='tok-1'&&/application\/json/.test(c.type),'"Delete everything" sends DELETE /account with {confirm:"delete"}');
@@ -120,10 +120,10 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(gone(s)&&/This device was cleared/.test(s.toast)&&/couldn’t delete your backup/.test(s.toast),'a 404 from the server: the device is cleared and it says the server’s copy is still there');await ctx.close()}
     {const {p,ctx}=await open({'DELETE /account':()=>({status:500,body:{error:'storage is busy'}})});await seed(p);await about(p);
       await p.evaluate(()=>{window.__same=1});await p.click('#del-open');await p.click('#del-all');
-      await p.waitForFunction(()=>/storage is busy/.test($('#del-status').textContent));const s=await state(p);
-      ok(s.db[0]===2&&s.db[1]===1&&s.kept.length===1&&s.conn[0]&&s.conn[1]==='tok-1'&&await p.evaluate(()=>window.__same===1&&!$('#del-all').disabled),'a server error deletes nothing, keeps the connection and gives the reason');await ctx.close()}
+      await p.waitForFunction(()=>/storage is busy/.test(HOOK.$('#del-status').textContent));const s=await state(p);
+      ok(s.db[0]===2&&s.db[1]===1&&s.kept.length===1&&s.conn[0]&&s.conn[1]==='tok-1'&&await p.evaluate(()=>window.__same===1&&!HOOK.$('#del-all').disabled),'a server error deletes nothing, keeps the connection and gives the reason');await ctx.close()}
     {const {p,ctx}=await open({},{connect:false});await about(p);await p.click('#del-open');
-      ok(await p.evaluate(()=>!$('#del-all')&&!!$('#del-device'))&&!/on the server<\/li>/.test(await p.innerHTML('#del-confirm')),'not connected: only the device is offered');await ctx.close()}
+      ok(await p.evaluate(()=>!HOOK.$('#del-all')&&!!HOOK.$('#del-device'))&&!/on the server<\/li>/.test(await p.innerHTML('#del-confirm')),'not connected: only the device is offered');await ctx.close()}
 
     /* (every localStorage key the app uses is one Delete removes: read from the scripts as text in tests/sourcerules.test.js, CR-10-07) */
     ok(!fs.readdirSync(ROOT).some(f=>/^wa\d\.png$/.test(f)),'the stray screenshots are gone');

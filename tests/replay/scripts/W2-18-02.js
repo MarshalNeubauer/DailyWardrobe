@@ -35,8 +35,8 @@ async function measure(tag, text) {
   await V.sleep(1500);
   const bad = await ph.page.evaluate(() => HOOK.kitImp ? HOOK.kitImp.rows.filter(r => !r.ok).length : -1);
   await ph.tap('#kit-imp');
-  await ph.page.waitForFunction(n => items.length >= n - 2, n, { timeout: 120000, polling: 250 }); await V.sleep(3000);
-  const count = await ph.page.evaluate(() => { const c = {}; for (const i of items) c[i.type] = (c[i.type] || 0) + 1; return c });
+  await ph.page.waitForFunction(n => HOOK.items.length >= n - 2, n, { timeout: 120000, polling: 250 }); await V.sleep(3000);
+  const count = await ph.page.evaluate(() => { const c = {}; for (const i of HOOK.items) c[i.type] = (c[i.type] || 0) + 1; return c });
   await ph.kill(); await V.sleep(400); await ph.reopen(V.lab.appUrl); await ph.ready(); await V.sleep(4000);
   await ph.page.evaluate(FRAMES); let t = Date.now(); await ph.tap('#n-stats');
   await ph.page.waitForFunction(() => { const s = document.querySelector('#stats'); return s && !s.querySelector('.st-wait') && s.querySelector('details.st-type') }, null, { timeout: 300000, polling: 100 });
@@ -49,8 +49,8 @@ async function measure(tag, text) {
     await V.sleep(500); folds[ty] = { ms: Date.now() - t, worstFrame: await framesStop(ph) };
   }
   const prof = await ph.page.evaluate(() => { const T = f => { const t = performance.now(); f(); return Math.round(performance.now() - t) }; const P = {}; for (const [k, o] of HOOK.plannedDays()) for (const sl of ['shirt', 'tie']) if (o[sl]) P[o[sl].id] = 1;
-    return { buildStats: T(() => HOOK.buildStats()), renderStats: T(() => renderStats()), neverPlanned: { shirt: items.filter(i => i.type === 'shirt' && !P[i.id]).length, tie: items.filter(i => i.type === 'tie' && !P[i.id]).length } } });
-  return { n: await ph.page.evaluate(() => items.length), importBadRows: bad, count, open, folds, prof, errors: ph.errors.slice(0, 3) };
+    return { buildStats: T(() => HOOK.buildStats()), renderStats: T(() => HOOK.renderStats()), neverPlanned: { shirt: HOOK.items.filter(i => i.type === 'shirt' && !P[i.id]).length, tie: HOOK.items.filter(i => i.type === 'tie' && !P[i.id]).length } } });
+  return { n: await ph.page.evaluate(() => HOOK.items.length), importBadRows: bad, count, open, folds, prof, errors: ph.errors.slice(0, 3) };
 }
 V.run(async () => {
   await V.startLab('02');

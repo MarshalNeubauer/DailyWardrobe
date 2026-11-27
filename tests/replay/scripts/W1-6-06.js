@@ -4,7 +4,7 @@ const L=require('./_verify6-lib.js');
 let A,B;
 async function tick(ms){const t=Math.max(A.now(),B.now())+ms;await A.setTime(t);await B.setTime(t);await L.setServerTime(t)}
 async function rollBack(ph,date){
-  await ph.page.evaluate(()=>openSettings());await L.sleep(900);
+  await ph.page.evaluate(()=>HOOK.openSettings());await L.sleep(900);
   if(await ph.page.evaluate(()=>document.querySelector('#sc-backup .scat-head').getAttribute('aria-expanded'))!=='true'){await ph.page.evaluate(()=>document.querySelector('#sc-backup .scat-head').scrollIntoView({block:'center'}));await ph.tap('#sc-backup .scat-head');await L.sleep(2500)}
   const opts=await ph.page.evaluate(()=>[...document.querySelectorAll('#snap-list option')].map(o=>[o.value,o.textContent]));
   const v=(opts.find(o=>o[0]===date)||[])[0];if(!v)throw new Error('no copy '+date+' in '+JSON.stringify(opts));

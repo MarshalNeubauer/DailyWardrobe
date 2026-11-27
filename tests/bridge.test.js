@@ -606,7 +606,13 @@ function bareReads(r,allowed=READS_KEPT){const P=platformAll(),out={};
 const BARE_READS_CHECK=false;
 /* the files that read a bridged name on an older build (tests/replay R.old(sha), which has no HOOK), and the names: they stay bare
    there. The groups fill this in for the uses that really run on an old build; every other use is rewritten */
-const READS_KEPT={};
+const READS_KEPT={
+  'tests/garmentpaint.test.js':['ASM_CM_BTN','ASM_CM_KINDS','SLOTS','asmCmCodeSig','asmCmMf','asmCmSig','asmCmSrcSig','dayClimate','dayRecs','di',
+    'hasVest','inRotation','isWorkday','items','key','occOf','settings','todayDate'],   // S6t2: the page of #511's base (before HOOK) gets a HOOK of its own from its globals, for keysOf and the fixed plan
+  'tests/replay/scripts/W1-1-02.js':['appVersion'],   // S6t2: the first open after the update runs the old cached app (12 Nov, no HOOK)
+  'tests/replay/scripts/lib-verify1.js':['items'],   // S6t2: buildOld counts the pieces on the old build (26cd8b1, no HOOK)
+  'tools/fill-material.js':['itemFields'],   // S6t2: not the page's: the string handed to Function declares itemFields (core.js's text) and returns it
+};
 /* the names a test also uses on an older build, which has no HOOK (T2 phase 3): they stay globals there, so --to-hook leaves them */
 const OLD_BUILD=new Set(['syncing','kitEdited','asmCmMf','asmCmCodeSig','asmCmSig','asmCmSrcSig']);
 /* of those, the ones a test assigns there, and the file (S1f): garmentpaint.test.js gives origin/main's page a HOOK of its own whose

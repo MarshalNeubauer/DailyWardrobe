@@ -65,7 +65,7 @@ const WARDROBES=`(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++)
 const MONTHS=[[2026,10],[2026,11],[2027,0]];
 
 suite('renders the outfit without errors',async({page,errs})=>{
-  await page.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};show('today')})()`);
+  await page.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};HOOK.show('today')})()`);
   ok(await page.$('#mannequin-container.fig > svg')!==null,'outfit figure SVG is drawn');
   ok((await page.$$('.score .dial')).length===6,'score card is shown (six dials)');
   ok((await page.$$('#today .month-link .mli')).length===5,'Today links to the month plan with the next 5 outfits');
@@ -74,8 +74,8 @@ suite('renders the outfit without errors',async({page,errs})=>{
 
 suite('figure draws the tie, and the shirt when there is no jacket',async({page})=>{
   const r=await page.evaluate(`(()=>{const o={suitDay:true,top:{type:'suit',primaryColor:'grey',pattern:'solid'},bot:{type:'suit',primaryColor:'grey',pattern:'solid'},shirt:{type:'shirt',primaryColor:'white',pattern:'solid'},tie:{type:'tie',primaryColor:'navy',pattern:'solid'}};
-    const d=document.createElement('div');d.innerHTML=figureSvg(o,'t1-');const a=!!d.querySelector('use[href="#t1-bladeP"]')&&d.querySelector('#t1-suitB').innerHTML.includes(COLORS.grey);
-    o.top=null;d.innerHTML=figureSvg(o,'t2-');const b=d.querySelector('#t2-suitB').innerHTML.includes(COLORS.white);return [a,b]})()`);
+    const d=document.createElement('div');d.innerHTML=HOOK.figureSvg(o,'t1-');const a=!!d.querySelector('use[href="#t1-bladeP"]')&&d.querySelector('#t1-suitB').innerHTML.includes(HOOK.COLORS.grey);
+    o.top=null;d.innerHTML=HOOK.figureSvg(o,'t2-');const b=d.querySelector('#t2-suitB').innerHTML.includes(HOOK.COLORS.white);return [a,b]})()`);
   ok(r[0],'tie drawn over the suit');ok(r[1],'without a jacket the body is drawn in the shirt fabric');
 });
 
@@ -83,7 +83,7 @@ suite('swipe moves only the outfit, across viewports',async({browser,url})=>{
   const views={'iPhone 13':[390,844],'Duo folded':[466,678],'Duo unfolded':[626,890],'Duo landscape':[890,626]};
   for(const [name,[w,h]] of Object.entries(views)){
     const ctx=await browser.newContext({viewport:{width:w,height:h},isMobile:true,hasTouch:true});const p=await ctx.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};show('today')})()`);await p.waitForTimeout(150);
+    await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};HOOK.show('today')})()`);await p.waitForTimeout(150);
     const probe=()=>p.evaluate(()=>{const r=s=>{const b=document.querySelector(s).getBoundingClientRect();return Math.round(b.x)+','+Math.round(b.y)};return {date:document.querySelector('#today .day h2').textContent,nav:r('#today .day'),list:r('#today .score'),overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,slide:document.querySelector('#slide').style.transform}});
     const cdp=await ctx.newCDPSession(p);const T=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
     const st=await p.evaluate(()=>{const b=document.querySelector('#stage').getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+Math.min(b.height/2,300)}});
@@ -101,26 +101,26 @@ suite('swipe moves only the outfit, across viewports',async({browser,url})=>{
 });
 
 suite('swipe edge cases and month crossing',async({page,ctx})=>{
-  await page.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.cache={};HOOK.sel=new Date(2026,10,7);HOOK.view={y:2026,m:10};show('today')})()`);
+  await page.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.cache={};HOOK.sel=new Date(2026,10,7);HOOK.view={y:2026,m:10};HOOK.show('today')})()`);
   const cdp=await ctx.newCDPSession(page);const T=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
   const swipe=async(x0,x1)=>{await T('touchStart',x0,420);for(let k=1;k<=6;k++)await T('touchMove',x0+(x1-x0)*k/6,422);await T('touchEnd');await settle(page,400)};
   const day=()=>page.evaluate(()=>document.querySelector('#today .day h2').textContent);
   await swipe(300,120);ok((await day()).startsWith('Sunday'),'swipe works from a non-workday');
   const d=await day();await swipe(10,250);ok(await day()===d,'swipes starting at the screen edge are ignored');
-  const r=await page.evaluate(()=>{HOOK.sel=new Date(2026,11,31);HOOK.view={y:2026,m:11};renderToday();stepDay(1);return document.querySelector('#today .day h2').textContent});
+  const r=await page.evaluate(()=>{HOOK.sel=new Date(2026,11,31);HOOK.view={y:2026,m:11};HOOK.renderToday();HOOK.stepDay(1);return document.querySelector('#today .day h2').textContent});
   ok(r.includes('January 3'),'stepping past Dec 31 lands on the next workday in January');
 });
 
 suite('planner: independent outfit checklist',async({page})=>{
   const res=await page.evaluate(`(()=>{const W=${WARDROBES};
-   const F={darkgrey:'charcoal',lightgrey:'grey',oxblood:'burgundy'},f=c=>F[c]||c,L=c=>{const h=COLORS[c];return parseInt(h.slice(1,3),16)*.3+parseInt(h.slice(3,5),16)*.59+parseInt(h.slice(5,7),16)*.11};
+   const F={darkgrey:'charcoal',lightgrey:'grey',oxblood:'burgundy'},f=c=>F[c]||c,L=c=>{const h=HOOK.COLORS[c];return parseInt(h.slice(1,3),16)*.3+parseInt(h.slice(3,5),16)*.59+parseInt(h.slice(5,7),16)*.11};
    const T={stripe:'S',pinstripe:'S','chalk-stripe':'S',check:'C',gingham:'C',tattersall:'C',windowpane:'C','glen-check':'C',houndstooth:'C','polka-dot':'M',paisley:'M',foulard:'M'};
    const sc=(i,r)=>r==='tie'?({stripe:3,check:2,'polka-dot':2,paisley:2,foulard:1})[i.pattern]??2:r==='shirt'?(i.pattern==='pinstripe'?1:2):({pinstripe:1,windowpane:3})[i.pattern]??2;
    const BT={navy:['grey','charcoal','tan','cream','olive'],tan:['navy','brown','charcoal','olive'],brown:['grey','charcoal','tan','navy','cream'],grey:['charcoal','navy','black'],olive:['tan','brown','charcoal','cream']};
    const audit=o=>{const v=[];const top=o.top,bot=o.suitDay?null:o.bot,sh=o.shirt,t=o.tie;
     // option B: a dark shirt (brightness < 100) may go under a light jacket (>= 130); its tie must then read lighter than it,
     // judging a patterned tie by base 65% + its accent colours 35%
-    const dk=sh&&L(sh.primaryColor)<100,tl=x=>{const a=x.pattern&&!['solid','knit'].includes(x.pattern)?[x.secondaryColor,x.tertiaryColor].filter(c=>c&&COLORS[c]):[];return a.length?L(x.primaryColor)*.65+a.reduce((s,c)=>s+L(c),0)/a.length*.35:L(x.primaryColor)};
+    const dk=sh&&L(sh.primaryColor)<100,tl=x=>{const a=x.pattern&&!['solid','knit'].includes(x.pattern)?[x.secondaryColor,x.tertiaryColor].filter(c=>c&&HOOK.COLORS[c]):[];return a.length?L(x.primaryColor)*.65+a.reduce((s,c)=>s+L(c),0)/a.length*.35:L(x.primaryColor)};
     if(sh&&t&&dk&&tl(t)-L(sh.primaryColor)<25)v.push('tie not lighter than dark shirt');
     if(sh&&t&&!dk&&L(sh.primaryColor)-L(t.primaryColor)<25)v.push('tie not darker than shirt');
     if(sh&&t&&f(sh.primaryColor)===f(t.primaryColor))v.push('tie same colour as shirt');
@@ -133,8 +133,8 @@ suite('planner: independent outfit checklist',async({page})=>{
     if(top&&sh&&t&&new Set([top,sh,t].map(i=>f(i.primaryColor))).size===1)v.push('monochrome');
     return v};
    const out={};
-   for(const name of ['realistic','awkward']){HOOK.items=W[name];HOOK.cache={};const by=t=>items.filter(i=>i.type===t);let days=0,viol=0,avoidable=0;const shirts=new Set(),ties=new Set();
-    for(const [y,m] of ${JSON.stringify(MONTHS)}){const plan=buildPlan(y,m);
+   for(const name of ['realistic','awkward']){HOOK.items=W[name];HOOK.cache={};const by=t=>HOOK.items.filter(i=>i.type===t);let days=0,viol=0,avoidable=0;const shirts=new Set(),ties=new Set();
+    for(const [y,m] of ${JSON.stringify(MONTHS)}){const plan=HOOK.buildPlan(y,m);
      for(const [d,o] of Object.entries(plan)){const [yy,mm]=d.split('-').map(Number);if(yy!==y||mm!==m+1)continue;days++;
       if(m===10){o.shirt&&shirts.add(o.shirt.id);o.tie&&ties.add(o.tie.id)}
       const v=audit(o);if(!v.length)continue;viol++;
@@ -151,15 +151,15 @@ suite('planner: independent outfit checklist',async({page})=>{
 suite('planner: shoes, belts, leather and metals',async({page})=>{
   const res=await page.evaluate(`(()=>{const W=${WARDROBES};const out={};
    for(const name of ['leather','noBelt','patentOnly']){HOOK.items=W[name];HOOK.cache={};const st={days:0,patent:0,badBelt:0,noBelt:0,noBeltNoted:0,suedeWithSuit:0,badShoe:0,metal:0,strap:0,patentNoted:0};
-    for(const [y,m] of ${JSON.stringify(MONTHS)}){const plan=buildPlan(y,m);
+    for(const [y,m] of ${JSON.stringify(MONTHS)}){const plan=HOOK.buildPlan(y,m);
      for(const [d,o] of Object.entries(plan)){const [yy,mm]=d.split('-').map(Number);if(yy!==y||mm!==m+1)continue;st.days++;
       if(!o.shoes)continue;
-      if(finish(o.shoes.leather)==='patent'){st.patent++;if(o.notes.some(n=>n.includes('black tie')))st.patentNoted++}
-      if(o.suitDay&&finish(o.shoes.leather)==='suede')st.suedeWithSuit++;
-      if(shoeScore(o.top,o.bot,o.shoes)<=-50)st.badShoe++;
-      if(o.belt){if(beltFit(o.shoes,o.belt)===null)st.badBelt++}else if(items.some(i=>i.type==='belt')){st.noBelt++;if(o.notes.some(n=>n.includes('belts match')))st.noBeltNoted++}
-      if(o.watch&&o.belt&&metalOf(o.watch)!==metalOf(o.belt))st.metal++;
-      if(o.watch&&watchOpts(o.watch).band==='leather'&&leatherGroup(o.watch.primaryColor)!==leatherGroup(o.shoes.primaryColor))st.strap++}}
+      if(HOOK.finish(o.shoes.leather)==='patent'){st.patent++;if(o.notes.some(n=>n.includes('black tie')))st.patentNoted++}
+      if(o.suitDay&&HOOK.finish(o.shoes.leather)==='suede')st.suedeWithSuit++;
+      if(HOOK.shoeScore(o.top,o.bot,o.shoes)<=-50)st.badShoe++;
+      if(o.belt){if(HOOK.beltFit(o.shoes,o.belt)===null)st.badBelt++}else if(HOOK.items.some(i=>i.type==='belt')){st.noBelt++;if(o.notes.some(n=>n.includes('belts match')))st.noBeltNoted++}
+      if(o.watch&&o.belt&&HOOK.metalOf(o.watch)!==HOOK.metalOf(o.belt))st.metal++;
+      if(o.watch&&HOOK.watchOpts(o.watch).band==='leather'&&HOOK.leatherGroup(o.watch.primaryColor)!==HOOK.leatherGroup(o.shoes.primaryColor))st.strap++}}
     out[name]=st}
    return out})()`);
   const L=res.leather;
@@ -173,7 +173,7 @@ suite('planner: shoes, belts, leather and metals',async({page})=>{
 });
 
 suite('outfit score',async({page})=>{
-  const r=await page.evaluate(`(()=>{const W=${WARDROBES};const out={};for(const n of ['realistic','awkward']){HOOK.items=W[n];HOOK.cache={};const sc=Object.entries(buildPlan(2026,10)).filter(([d])=>d.startsWith('2026-11-')).map(([,o])=>rateOutfit(o));
+  const r=await page.evaluate(`(()=>{const W=${WARDROBES};const out={};for(const n of ['realistic','awkward']){HOOK.items=W[n];HOOK.cache={};const sc=Object.entries(HOOK.buildPlan(2026,10)).filter(([d])=>d.startsWith('2026-11-')).map(([,o])=>HOOK.rateOutfit(o));
     out[n]={avg:sc.reduce((a,b)=>a+b.score,0)/sc.length,explained:sc.every(r=>r.checks.every(c=>c.pts===c.max||c.why))}}return out})()`);
   ok(r.realistic.avg>=90,`realistic wardrobe averages ${r.realistic.avg.toFixed(0)}`);
   ok(r.awkward.avg<r.realistic.avg-8,`awkward wardrobe scores clearly lower (${r.awkward.avg.toFixed(0)})`);
@@ -184,13 +184,13 @@ suite('add an item without a photo; it persists',async({page})=>{
   // Add is a page of the Wardrobe since the tabs became Today, Wardrobe, Insights (#225): Wardrobe → + Add
   // "Add without a photo" opens its card in a sheet over Add (#nps-sheet), Confirm pinned at its bottom (#nps-bar)
   // (the card is a checklist since 2026-11-16: its sections open, checklist.js CK_OPEN['*'])
-  await page.evaluate(()=>{CK_OPEN['*']=true});await page.click('#n-wardrobe');await page.click('#ward-add');await page.click('#add-manual');
+  await page.evaluate(()=>{HOOK.CK_OPEN['*']=true});await page.click('#n-wardrobe');await page.click('#ward-add');await page.click('#add-manual');
   await page.selectOption('#nps-q .card >> nth=0 >> select[data-f="type"]','belt');
   await page.selectOption('#nps-q .card >> nth=0 >> select[data-f="leather"]','suede');
   await page.click('#nps-bar >> button:has-text("Confirm")');   // (the bar also says "… you can still confirm")
-  await page.waitForFunction(()=>items.some(i=>i.type==='belt'));await page.waitForTimeout(200);
+  await page.waitForFunction(()=>HOOK.items.some(i=>i.type==='belt'));await page.waitForTimeout(200);
   await page.reload();await page.waitForFunction(()=>window.appReady);
-  const it=await page.evaluate(()=>items.find(i=>i.type==='belt'));
+  const it=await page.evaluate(()=>HOOK.items.find(i=>i.type==='belt'));
   ok(it&&it.leather==='suede'&&!it.photo,'photo-less belt saved with its leather and survives a reload');
   await page.click('#n-wardrobe');ok(await page.$('.gi .thumb svg')!==null,'wardrobe shows a drawn thumbnail');
 });
@@ -202,9 +202,9 @@ suite('pattern detection on synthetic fabric photos',async({page})=>{
     const tie=synth(800,800,0,(g,W,H)=>{g.fillStyle='#1b2a4a';g.fillRect(0,0,W,H);g.rotate(-.65);bands(g,W*2,H*2,[[null,60],['#f0f0f0',6],['#9aa0a8',22],['#f0f0f0',6]],true)});
     const ging=synth(800,800,2,(g,W,H)=>{g.fillStyle='#fff';g.fillRect(0,0,W,H);bands(g,W,H,[['#3f6fb5',30],[null,30]],true,.5);bands(g,W,H,[['#3f6fb5',30],[null,30]],false,.5)});
     const pin=synth(800,800,1.5,(g,W,H)=>{g.fillStyle='#5f6268';g.fillRect(0,0,W,H);bands(g,W,H,[[null,52],['#d8d8d8',4]],true)});
-    const T=detectPattern({type:'tie',primaryColor:'navy',secondaryColor:'white',tertiaryColor:'grey',pattern:'stripe'},tie,200,200,400);
-    const G=detectPattern({type:'shirt',primaryColor:'white',secondaryColor:'blue',pattern:'gingham'},ging,200,200,400);
-    const P=detectPattern({type:'suit',primaryColor:'charcoal',pattern:'pinstripe'},pin,200,200,400);
+    const T=HOOK.detectPattern({type:'tie',primaryColor:'navy',secondaryColor:'white',tertiaryColor:'grey',pattern:'stripe'},tie,200,200,400);
+    const G=HOOK.detectPattern({type:'shirt',primaryColor:'white',secondaryColor:'blue',pattern:'gingham'},ging,200,200,400);
+    const P=HOOK.detectPattern({type:'suit',primaryColor:'charcoal',pattern:'pinstripe'},pin,200,200,400);
     return {T,G,P}});
   ok(r.T&&r.T.kind==='stripes'&&r.T.b.length===4&&r.T.b[0][0]==='p','diagonal tie stripes: 4 bands starting with the base colour');
   ok(r.G&&r.G.kind==='check'&&r.G.b.length===2,'gingham read as a two-band check');

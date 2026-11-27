@@ -21,7 +21,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(Math.abs(r.hu-15.5)<1e-3&&Math.abs(r.hv-48.75)<1e-3&&r.hr===1&&r.hr2===14,`another painting size: positions scale with the picture, pieces stay whole (${r.hu.toFixed(3)}, ${r.hv.toFixed(3)}, pieces ${r.hr} / ${r.hr2})`);
     ok(r.none===null,'no maps in the job: nothing (the painter as before)');
     // the manifest decides: without the maps listed a master's assets and its looks' keys are as before
-    const m=await p.evaluate(()=>{const before=HOOK.asmCmAssets('suit').length,rev0=HOOK.asmCmRev('suit'),u=asmCmKey('suit','geo/u'),v=asmCmKey('suit','geo/v'),M=asmCmMfNow();
+    const m=await p.evaluate(()=>{const before=HOOK.asmCmAssets('suit').length,rev0=HOOK.asmCmRev('suit'),u=HOOK.asmCmKey('suit','geo/u'),v=HOOK.asmCmKey('suit','geo/v'),M=HOOK.asmCmMfNow();
       const keep=JSON.stringify(M.keys);M.keys[u]=111;const half=HOOK.asmCmAssets('suit').length;M.keys[v]=222;const after=HOOK.asmCmAssets('suit'),rev1=HOOK.asmCmRev('suit');
       M.keys=JSON.parse(keep);return {before,half,after:after.length,has:after.includes(u)&&after.includes(v),rev0,rev1,shirt:HOOK.asmCmGeoKeys('shirt-tie').length}});
     ok(m.half===m.before&&m.after===m.before+2&&m.has,`the maps join a master only when the manifest lists both (${m.before} -> ${m.half} with one -> ${m.after} with both)`);

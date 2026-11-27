@@ -28,23 +28,23 @@ async function run(eng,browser,{ok,url,settle}){
     if(q.method()==='POST'&&u.pathname!=='/sync')S.other.push(u.pathname);
     return route.fulfill({status:503,headers:H,body:'{"error":"server"}'})});
   await ctx.addInitScript(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');localStorage.setItem('tour_seen','1')});
-  const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
+  const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{HOOK.CK_OPEN['*']=true});
   const F=await p.evaluate(async()=>{const load=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
     const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
     const cv=(im,k,f)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);if(f)f(c,x);return c};
     const paper=(c,x)=>{x.fillStyle='#f4f3ef';x.fillRect(0,c.height*.8,c.width,c.height*.2)};
     const J=c=>c.toDataURL('image/jpeg',.9),f={plain:J(cv(ci,3)),paper:J(cv(ci,3,paper)),photo:J(cv(pi,1))};
-    HOOK.rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
+    HOOK.rememberRole({role:'owner'});HOOK.settings.custom={colors:[],patterns:[]};HOOK.applyCustom(HOOK.settings.custom);
     HOOK.items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,texture:f.plain,added:1,name:'Mink suit'},
-      {id:'m2',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,added:2,name:'Bare suit'}];HOOK.flt='all';HOOK.editing=null;show('wardrobe');return f});
+      {id:'m2',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:f.photo,added:2,name:'Bare suit'}];HOOK.flt='all';HOOK.editing=null;HOOK.show('wardrobe');return f});
   const file=(name,u)=>({name,mimeType:'image/jpeg',buffer:Buffer.from(u.split(',')[1],'base64')});
-  const item=id=>p.evaluate(id=>{const it=items.find(x=>x.id===id);return {c:it.primaryColor,p:it.pattern,cols:(settings.custom.colors||[]).length,pats:(settings.custom.patterns||[]).length}},id);
+  const item=id=>p.evaluate(id=>{const it=HOOK.items.find(x=>x.id===id);return {c:it.primaryColor,p:it.pattern,cols:(HOOK.settings.custom.colors||[]).length,pats:(HOOK.settings.custom.patterns||[]).length}},id);
   const result=async()=>{await p.waitForSelector('#rd-sheet.on #rd-both');await settle(p,300)};
   const closed=async()=>{await p.waitForFunction(()=>!document.querySelector('#rd-sheet.on'));await settle(p,300)};
   const toast=()=>p.evaluate(()=>(document.querySelector('#toast')||{}).textContent||'');
   let e;
   // ---- the editor: the button in the Color & texture card (Edit photos option B), right under the 3 steps, a page button like Duplicate
-  await p.evaluate(()=>openItem('m1'));await settle(p,400);
+  await p.evaluate(()=>HOOK.openItem('m1'));await settle(p,400);
   e=await p.evaluate(()=>{const a=document.querySelector('#iv-dup'),b=document.querySelector('#iv-read'),st=document.querySelector('#ivct .wbsteps'),cd=document.querySelector('#ivct'),ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect(),rs=st.getBoundingClientRect(),rc=cd.getBoundingClientRect(),ca=getComputedStyle(a),cb=getComputedStyle(b);
     return {label:b.textContent,icon:!!b.querySelector('svg,img,i'),h:[Math.round(ra.height),Math.round(rb.height)],r:[ca.borderRadius,cb.borderRadius],bg:[ca.backgroundColor,cb.backgroundColor],
       border:[ca.borderTopColor,cb.borderTopColor],font:[ca.fontSize,cb.fontSize,ca.fontWeight,cb.fontWeight],gap:Math.round(rb.top-rs.bottom),full:Math.round(rc.width-rb.width),cost:(document.querySelector('.ivrd .rdcost')||{}).textContent}});
@@ -70,7 +70,7 @@ async function run(eng,browser,{ok,url,settle}){
   e=await p.evaluate(()=>{const d=document.querySelector('#item-view #rd-done');return d&&{t:d.textContent,h:Math.round(d.querySelector('#rd-undo').getBoundingClientRect().height),fig:!!d.querySelector('svg')}});
   ok(e&&/Mink brown and Steep fine twill set/.test(e.t)&&/Added to your colors and patterns/.test(e.t)&&e.h>=44&&e.fig,T+`a card under the button says what changed, with the new drawing and Undo (${e&&e.t})`);
   // (each step of the Undo is a save of its own; on WebKit each save takes a while: wait for all of them)
-  await p.click('#rd-undo');await p.waitForFunction(()=>{const it=items.find(x=>x.id==='m1');return it.primaryColor==='deeptaupe'&&it.pattern==='solid'&&!(settings.custom.colors||[]).length&&!(settings.custom.patterns||[]).length&&!document.querySelector('#rd-done')},null,{timeout:5000}).catch(()=>{});await settle(p,200);
+  await p.click('#rd-undo');await p.waitForFunction(()=>{const it=HOOK.items.find(x=>x.id==='m1');return it.primaryColor==='deeptaupe'&&it.pattern==='solid'&&!(HOOK.settings.custom.colors||[]).length&&!(HOOK.settings.custom.patterns||[]).length&&!document.querySelector('#rd-done')},null,{timeout:5000}).catch(()=>{});await settle(p,200);
   e=await item('m1');ok(e.c==='deeptaupe'&&e.p==='solid'&&!e.cols&&!e.pats&&!(await p.$('#rd-done')),T+'Undo puts the color and pattern back and takes out what the reading added '+JSON.stringify(e));
   // Use color only, Keep the pattern, Undo from the toast
   await p.click('#iv-read');await result();
@@ -80,7 +80,7 @@ async function run(eng,browser,{ok,url,settle}){
   await p.click('#rd-pkeep');await closed();
   e=await item('m1');const t2=await toast();
   ok(/^own/.test(e.c)&&e.p==='solid'&&e.cols===1&&!e.pats&&/Color updated\./.test(t2),T+`Keep leaves the pattern as it was; the toast says "Color updated." (${t2})`);
-  await p.click('#toast button');await p.waitForFunction(()=>items.find(x=>x.id==='m1').primaryColor==='deeptaupe');await settle(p,200);
+  await p.click('#toast button');await p.waitForFunction(()=>HOOK.items.find(x=>x.id==='m1').primaryColor==='deeptaupe');await settle(p,200);
   e=await item('m1');ok(e.c==='deeptaupe'&&!e.cols,T+'the toast\'s Undo puts the color back');
   // Keep both: nothing changes, no toast with Undo
   await p.click('#iv-read');await result();await p.click('#rd-ckeep');await p.click('#rd-pkeep');await closed();
@@ -92,9 +92,9 @@ async function run(eng,browser,{ok,url,settle}){
   ok(/That’s Twill/.test(e.pat)&&/Use Twill/.test(e.pat)&&!/Use adds/.test(e.pat),T+'the pattern Claude says you have: "That\'s Twill", Use Twill');
   await p.click('#rd-both');await closed();
   e=await item('m1');ok(e.c==='taupe'&&e.p==='twill'&&!e.cols&&!e.pats,T+`Use both sets your Taupe and Twill, adding nothing (${JSON.stringify(e)})`);
-  await p.click('#rd-undo');await p.waitForFunction(()=>items.find(x=>x.id==='m1').primaryColor==='deeptaupe');await settle(p,200);
+  await p.click('#rd-undo');await p.waitForFunction(()=>HOOK.items.find(x=>x.id==='m1').primaryColor==='deeptaupe');await settle(p,200);
   // ---- warm light, no paper: the note with Retake; the paper line
-  S.reply=NEW;await p.evaluate(()=>{HOOK.PAPER[paperKey(items.find(x=>x.id==='m1'))]={ref:false,warm:true}});
+  S.reply=NEW;await p.evaluate(()=>{HOOK.PAPER[HOOK.paperKey(HOOK.items.find(x=>x.id==='m1'))]={ref:false,warm:true}});
   S.sent=[];await p.click('#iv-read');await result();
   e=await p.evaluate(()=>{const w=document.querySelector('#rd-warm');return {w:w&&w.textContent,retake:!!(w&&w.querySelector('.wbretake')),paper:(document.querySelector('#rd-paper')||{}).textContent,pat:document.querySelector('#rd-pat').textContent}});
   ok(S.sent[0]&&S.sent[0].wb===false&&/Taken in warm light — the color may be yellower than the cloth/.test(e.w)&&e.retake&&/No white paper, warm light/.test(e.paper),T+`no paper in warm light: the color card's note with Retake close-up, and the paper line (${e.paper})`);
@@ -103,36 +103,36 @@ async function run(eng,browser,{ok,url,settle}){
   ok(await p.evaluate(()=>document.querySelector('#cu-title').textContent==='Retake close-up'),T+'Retake close-up opens the chooser over the sheet');
   await p.click('#cu-cancel');await p.waitForFunction(()=>!document.querySelector('#cu-sheet.on'));
   await p.keyboard.press('Escape');await closed();
-  ok(await p.evaluate(()=>editing==='m1'&&!!document.querySelector('#item-view.on')),T+'Escape closes only the reading sheet; the item stays open');
+  ok(await p.evaluate(()=>HOOK.editing==='m1'&&!!document.querySelector('#item-view.on')),T+'Escape closes only the reading sheet; the item stays open');
   // ---- one half failing: the other still shows
   S.reply=HALF;await p.click('#iv-read');await result();
   e=await p.evaluate(()=>({pat:document.querySelector('#rd-pat').textContent,col:!!document.querySelector('#rd-cuse'),both:document.querySelector('#rd-both').textContent}));
   ok(/Claude couldn’t read the weave this time/.test(e.pat)&&e.col&&e.both==='Use Mink brown',T+`the pattern half failed: its card says so, the color card stays usable (${e.both})`);
   await p.click('#rdx, #rd-sheet .rdx');await closed();
   // ---- an item with no close-up: the chooser first, then the reading
-  S.reply=NEW;await p.evaluate(()=>openItem('m2'));await settle(p,400);
+  S.reply=NEW;await p.evaluate(()=>HOOK.openItem('m2'));await settle(p,400);
   S.sent=[];await p.click('#iv-read');await p.waitForSelector('#cu-sheet.on');
   e=await p.evaluate(()=>({t:document.querySelector('#cu-title').textContent,s:document.querySelector('#cu-sub').textContent,rd:!!document.querySelector('#rd-sheet.on')}));
   ok(e.t==='Close-up for Claude'&&/reads the color and the weave/.test(e.s)&&!e.rd&&!S.sent.length,T+`no close-up: the close-up chooser comes first ("${e.t}"), nothing asked yet`);
   await (await p.$('#cu-lib')).setInputFiles(file('paper.jpg',F.paper));await result();
-  e=await p.evaluate(()=>({tex:!!items.find(x=>x.id==='m2').texture,paper:(document.querySelector('#rd-paper')||{}).textContent}));
+  e=await p.evaluate(()=>({tex:!!HOOK.items.find(x=>x.id==='m2').texture,paper:(document.querySelector('#rd-paper')||{}).textContent}));
   ok(e.tex&&S.sent.length===1&&S.sent[0].wb===true&&/White paper found/.test(e.paper),T+`the close-up is kept and read at once, white-balanced from its paper (wb true; ${e.paper})`);
   await p.click('#rd-sheet .rdx');await closed();
   // ---- a tester: 2 lookups, what is left; with 1 left the button can't start
-  await p.evaluate(()=>{acct.me={id:'tess',role:'tester',caps:{describe:40},used:{describe:2}};renderWardrobe()});await settle(p,200);
+  await p.evaluate(()=>{HOOK.acct.me={id:'tess',role:'tester',caps:{describe:40},used:{describe:2}};HOOK.renderWardrobe()});await settle(p,200);
   e=await p.evaluate(()=>document.querySelector('.ivrd .rdcost').textContent);
   ok(e==='2 lookups · 38 of 40 left today',T+`a tester sees "${e}" (no cents)`);
   await p.click('#iv-read');await result();await p.click('#rd-sheet .rdx');await closed();
-  e=await p.evaluate(()=>({used:acct.me.used.describe,cost:document.querySelector('.ivrd .rdcost').textContent}));
+  e=await p.evaluate(()=>({used:HOOK.acct.me.used.describe,cost:document.querySelector('.ivrd .rdcost').textContent}));
   ok(e.used===4&&e.cost==='2 lookups · 36 of 40 left today',T+`a reading counts 2 of the tester's lookups (${e.cost})`);
-  await p.evaluate(()=>{acct.me.used.describe=39;renderWardrobe()});await settle(p,200);S.sent=[];
+  await p.evaluate(()=>{HOOK.acct.me.used.describe=39;HOOK.renderWardrobe()});await settle(p,200);S.sent=[];
   e=await p.evaluate(()=>document.querySelector('#iv-read').getAttribute('aria-disabled'));
   await p.click('#iv-read',{force:true});await settle(p,200);const t3=await toast();   // (aria-disabled: still tappable, it says why)
   ok(e==='true'&&!S.sent.length&&/takes 2 lookups and you have 1 left today/.test(t3)&&!(await p.$('#rd-sheet.on')),T+`with 1 left the button is grayed and says why, nothing asked (${t3})`);
-  await p.evaluate(()=>{acct.me={id:'owner',role:'owner',caps:null,used:{}};HOOK.closeItem&&HOOK.closeItem()});await settle(p,300);
+  await p.evaluate(()=>{HOOK.acct.me={id:'owner',role:'owner',caps:null,used:{}};HOOK.closeItem&&HOOK.closeItem()});await settle(p,300);
   // ---- the Add card (the checklist redesign, 2026-11-16): in Texture match, "Add close-up and read color, texture & material" (primary,
   // its cost inside) over the outlined "Add close-up"; chooser -> reading, with no re-tag
-  await p.evaluate(F=>{openAdd();HOOK.addManual();const q=queue[0];q.type='suit';q.primaryColor='deeptaupe';q.pattern='solid';q.tagImg=F.photo;renderAdd()},F);await settle(p,300);
+  await p.evaluate(F=>{HOOK.openAdd();HOOK.addManual();const q=HOOK.queue[0];q.type='suit';q.primaryColor='deeptaupe';q.pattern='solid';q.tagImg=F.photo;HOOK.renderAdd()},F);await settle(p,300);
   for(const theme of ['light','dark']){await p.evaluate(t=>{document.documentElement.dataset.theme=t},theme);await settle(p,100);
     e=await p.evaluate(()=>{const s=document.querySelector('#nps-q [data-ck="tex"]'),a=s.querySelector('.ckadd.cubtn'),b=s.querySelector('.ckreadadd'),ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect(),ca=getComputedStyle(a),cb=getComputedStyle(b);
       return {a:a.textContent,b:b.querySelector('span').textContent,cost:b.querySelector('.rdcost').textContent,above:rb.bottom<=ra.top+1,h:[Math.round(ra.height),Math.round(rb.height)],r:[ca.borderRadius,cb.borderRadius],in:rb.right<=s.getBoundingClientRect().right+1,fit:document.documentElement.scrollWidth<=390,bg:[ca.backgroundColor,cb.backgroundColor],ink:cb.color}});
@@ -142,16 +142,16 @@ async function run(eng,browser,{ok,url,settle}){
   S.sent=[];S.other=[];await p.click('#nps-q [data-ck="tex"] .ckreadadd');await p.waitForSelector('#cu-sheet.on');
   ok(await p.evaluate(()=>document.querySelector('#cu-title').textContent==='Close-up for Claude'),T+'the Add card\'s read button opens the chooser first');
   await (await p.$('#cu-take')).setInputFiles(file('add.jpg',F.paper));await result();
-  e=await p.evaluate(()=>({tex:!!queue[0].texture,refining:!!queue[0].refining}));
+  e=await p.evaluate(()=>({tex:!!HOOK.queue[0].texture,refining:!!HOOK.queue[0].refining}));
   ok(e.tex&&!e.refining&&S.sent.length===1&&!S.other.length,T+`the close-up is added and read, with no automatic re-tag (other requests: ${S.other.join(',')||'none'})`);
   await p.click('#rd-both');await closed();
-  e=await p.evaluate(()=>({c:queue[0].primaryColor,p:queue[0].pattern,done:(document.querySelector('#nps-q #rd-done')||{}).textContent||'',read:(document.querySelector('#nps-q .cktexon .ckread .rdgo')||{}).textContent}));
+  e=await p.evaluate(()=>({c:HOOK.queue[0].primaryColor,p:HOOK.queue[0].pattern,done:(document.querySelector('#nps-q #rd-done')||{}).textContent||'',read:(document.querySelector('#nps-q .cktexon .ckread .rdgo')||{}).textContent}));
   ok(/^own/.test(e.c)&&/^own-/.test(e.p)&&/set/.test(e.done)&&e.read==='Read color and texture',T+`Use both on the Add card sets both; the card shows what changed, and offers "Read color and texture" under Replace close-up (${e.read})`);
-  await p.click('#nps-q #rd-undo');await p.waitForFunction(()=>queue[0].primaryColor==='deeptaupe');
-  ok(await p.evaluate(()=>queue[0].pattern==='solid'&&!(settings.custom.colors||[]).length),T+'Undo on the Add card puts both back');
+  await p.click('#nps-q #rd-undo');await p.waitForFunction(()=>HOOK.queue[0].primaryColor==='deeptaupe');
+  ok(await p.evaluate(()=>HOOK.queue[0].pattern==='solid'&&!(HOOK.settings.custom.colors||[]).length),T+'Undo on the Add card puts both back');
   // the plain Replace close-up still re-tags (the control: the skip is only for the read button)
   S.other=[];await p.click('#nps-q .cktexon .ckcu .cubtn');await p.waitForSelector('#cu-sheet.on');
-  await (await p.$('#cu-lib')).setInputFiles(file('rep.jpg',F.plain));await p.waitForFunction(()=>!queue[0].refining);await settle(p,300);
+  await (await p.$('#cu-lib')).setInputFiles(file('rep.jpg',F.plain));await p.waitForFunction(()=>!HOOK.queue[0].refining);await settle(p,300);
   ok(S.other.length>0,T+`Replace close-up (not the read button) still asks for the re-tag (${S.other.join(',')})`);
   ok(!errs.length,T+'no page errors ('+errs.join(' | ')+')');
   await ctx.close()}

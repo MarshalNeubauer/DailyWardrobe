@@ -16,9 +16,9 @@ async function run(eng,browser,{ok,url,settle}){
     HTMLElement.prototype.focus=function(...a){window.__foc.push(this.tagName+(this.getAttribute('type')?':'+this.getAttribute('type'):''));return f.apply(this,a)}});   // (the type written: WebKit's Linux build has no date field and says 'text')
   const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
-  await p.evaluate(()=>{CK_OPEN['*']=true;let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
+  await p.evaluate(()=>{HOOK.CK_OPEN['*']=true;let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
     HOOK.items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('tie','green',{paused:true,order:true,arrives:'2099-01-10'})];
-    settings.setupDone=1;HOOK.cache={};queue.length=0;show('wardrobe');openAdd()});
+    HOOK.settings.setupDone=1;HOOK.cache={};HOOK.queue.length=0;HOOK.show('wardrobe');HOOK.openAdd()});
   await settle(p,400);
   const T=eng+': ';
   const act=()=>p.evaluate(()=>{const a=document.activeElement;return !a||a===document.body?'BODY':a.tagName+(a.className?'.'+a.className:'')+' '+(a.getAttribute('aria-label')||a.textContent||'').trim().replace(/\s+/g,' ').slice(0,40)});
@@ -43,7 +43,7 @@ async function run(eng,browser,{ok,url,settle}){
   await check('Add without a photo, Type → T-shirt',ts,'tee','touch');
   await check('Add without a photo, Type → Polo',ts,'polo','key');
   await check('Add without a photo, Type → Suit',ts,'suit','touch');
-  ok(await p.evaluate(()=>queue[0]&&queue[0].type==='suit'),`${T}the card took the type picked`);
+  ok(await p.evaluate(()=>HOOK.queue[0]&&HOOK.queue[0].type==='suit'),`${T}the card took the type picked`);
   const ms='#nps-q select.wmat';
   const mat=await p.evaluate(s=>{const e=document.querySelector(s);return e?[...e.options].map(o=>o.value).filter(v=>v&&v!==e.value&&v!=='other'):[]},ms);
   ok(mat.length>=2,`${T}the card has a Material dropdown (${mat.join(', ')})`);
@@ -52,11 +52,11 @@ async function run(eng,browser,{ok,url,settle}){
   const ds='#nps-q .ordrow input[type="date"]';
   await check('Add without a photo, Arrives',ds,'2099-01-15','touch');
   await check('Add without a photo, Arrives by keyboard',ds,'2099-01-20','key');
-  ok(await p.evaluate(()=>queue[0].arrives==='2099-01-20'),`${T}the card took the Arrives date`);
-  await p.evaluate(()=>{HOOK.npsClose();queue.length=0;show('wardrobe')});await settle(p,400);
+  ok(await p.evaluate(()=>HOOK.queue[0].arrives==='2099-01-20'),`${T}the card took the Arrives date`);
+  await p.evaluate(()=>{HOOK.npsClose();HOOK.queue.length=0;HOOK.show('wardrobe')});await settle(p,400);
 
   // the item sheet: Type, Material, and the Arrives date of a piece on the way
-  await p.evaluate(()=>openItem('suit0'));await settle(p,500);
+  await p.evaluate(()=>HOOK.openItem('suit0'));await settle(p,500);
   const it='#ivbody select[data-act-change="itemPick"][data-id="suit0"][data-f="type"]';
   await check('the item sheet, Type → Blazer',it,'blazer','touch');
   await check('the item sheet, Type → Suit by keyboard',it,'suit','key');
@@ -64,16 +64,16 @@ async function run(eng,browser,{ok,url,settle}){
   const imat=await p.evaluate(s=>{const e=document.querySelector(s);return e?[...e.options].map(o=>o.value).filter(v=>v&&v!==e.value&&v!=='other'):[]},im);
   ok(imat.length>=2,`${T}the item sheet has a Material dropdown (${imat.join(', ')})`);
   if(imat.length>=2){await check('the item sheet, Material',im,imat[0],'touch');await check('the item sheet, Material by keyboard',im,imat[1],'key')}
-  await p.evaluate(()=>{HOOK.closeItem();openItem('tie4')});await settle(p,500);
+  await p.evaluate(()=>{HOOK.closeItem();HOOK.openItem('tie4')});await settle(p,500);
   const id='#ivbody .ordrow input[type="date"]';
   await check('the item sheet, Arrives',id,'2099-02-01','touch');
   await check('the item sheet, Arrives by keyboard',id,'2099-02-03','key');
-  ok(await p.evaluate(()=>items.find(i=>i.id==='tie4').arrives==='2099-02-03'),`${T}the piece took the Arrives date`);
+  ok(await p.evaluate(()=>HOOK.items.find(i=>i.id==='tie4').arrives==='2099-02-03'),`${T}the piece took the Arrives date`);
 
   // CR-1-07: the item sheet's Arrives refuses a day gone (it put the piece in rotation at once), as the Add card does
-  ok(await p.evaluate(()=>{const e=document.querySelector('#ivbody .ordrow input[type="date"]');return !!e&&e.min===isoKey(todayDate())}),`${T}the item sheet's Arrives field starts at today`);
+  ok(await p.evaluate(()=>{const e=document.querySelector('#ivbody .ordrow input[type="date"]');return !!e&&e.min===HOOK.isoKey(HOOK.todayDate())}),`${T}the item sheet's Arrives field starts at today`);
   {const h=await p.locator(id).elementHandle();await h.fill('2020-01-01');if(await h.evaluate(e=>e.isConnected))await h.evaluate(e=>e.dispatchEvent(new Event('change',{bubbles:true})));await settle(p,400)}
-  const past=await p.evaluate(()=>{const i=items.find(x=>x.id==='tie4');return {arrives:i.arrives,paused:!!i.paused,toast:document.querySelector('#toast').textContent}});
+  const past=await p.evaluate(()=>{const i=HOOK.items.find(x=>x.id==='tie4');return {arrives:i.arrives,paused:!!i.paused,toast:document.querySelector('#toast').textContent}});
   ok(past.arrives==='2099-02-03'&&past.paused&&/That day has passed/.test(past.toast),`${T}a past Arrives date is refused and the piece stays on the way (${JSON.stringify(past)})`);
   ok(!errs.length,`${T}no page errors (${errs.join(' | ')})`);
   await ctx.close();

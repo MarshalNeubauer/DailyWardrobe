@@ -5,13 +5,13 @@ module.exports=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();
   try{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{HOOK.CK_OPEN['*']=true});
     await p.evaluate(()=>{const I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',added:1,...x});
       HOOK.items=[I('navy','suit','navy'),I('char','suit','charcoal'),I('sh1','shirt','white'),I('sh2','shirt','lightblue'),I('t1','tie','burgundy'),I('t2','tie','navy'),
         I('bs','shoes','black',{leather:'calf'}),I('bb','belt','black',{leather:'calf',metal:'silver'}),I('so','socks','charcoal')];
-      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10}});
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10}});
     // the Add card
-    await p.evaluate(()=>{show('add');HOOK.addManual();setq(0,'type','suit');setq(0,'primaryColor','grey')});
+    await p.evaluate(()=>{HOOK.show('add');HOOK.addManual();HOOK.setq(0,'type','suit');HOOK.setq(0,'primaryColor','grey')});
     const c0=await p.evaluate(()=>({btn:document.querySelector('.ordrow .rotbtn').textContent,date:!!document.querySelector('.ordrow input[type=date]')}));
     ok(c0.btn==='Bought, on the way'&&!c0.date,'the Add card has a "Bought, on the way" button; the date only shows once it is on');
     await p.click('.ordrow .rotbtn');
@@ -19,33 +19,33 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(c1.pressed==='true'&&c1.date&&/until you put it back in rotation/.test(c1.hint),'turned on: an optional Arrives date, and without one it waits to be put back by hand');
     await p.fill('.ordrow input[type=date]','2026-11-20');await p.dispatchEvent('.ordrow input[type=date]','change');
     ok(/from the day after Nov 20/.test(await p.textContent('.ordhint')),'with a date: it joins the outfits from the day after');
-    await p.evaluate(async()=>{const q=queue[0];q.id='grey';await save(0)});
-    const it=await p.evaluate(()=>{const i=items.find(x=>x.id==='grey');return {paused:i.paused,order:i.order,arrives:i.arrives}});
+    await p.evaluate(async()=>{const q=HOOK.queue[0];q.id='grey';await HOOK.save(0)});
+    const it=await p.evaluate(()=>{const i=HOOK.items.find(x=>x.id==='grey');return {paused:i.paused,order:i.order,arrives:i.arrives}});
     ok(it.paused===true&&it.order===true&&it.arrives==='2026-11-20','it is saved to the wardrobe, out of rotation, with the arrival date');
     // the plan: not before the day after it arrives, then yes
-    const plan=await p.evaluate(()=>{const days={};for(const m of [10,11])for(const [k,o] of Object.entries(planMonth(2026,m)))if(o.top)days[k]=o.top.id;return days});
+    const plan=await p.evaluate(()=>{const days={};for(const m of [10,11])for(const [k,o] of Object.entries(HOOK.planMonth(2026,m)))if(o.top)days[k]=o.top.id;return days});
     const ks=Object.keys(plan).filter(k=>plan[k]==='grey').map(k=>+k.split('-')[2]+(k.split('-')[1]==='12'?30:0));
     ok(ks.length>0&&Math.min(...ks)>20,`the plan already includes it, but only after Nov 20 (first on day ${Math.min(...ks)})`);
     // picker on a day before / after
-    const pk=await p.evaluate(()=>{const ids=d=>{HOOK.sel=d;const o=planFor()[key(sel)];return slotPool('top',o).map(i=>i.id)};return {before:ids(new Date(2026,10,18)),after:ids(new Date(2026,10,23))}});
+    const pk=await p.evaluate(()=>{const ids=d=>{HOOK.sel=d;const o=HOOK.planFor()[HOOK.key(HOOK.sel)];return HOOK.slotPool('top',o).map(i=>i.id)};return {before:ids(new Date(2026,10,18)),after:ids(new Date(2026,10,23))}});
     ok(!pk.before.includes('grey')&&pk.after.includes('grey'),'the picker offers it only for days after it arrives');
     // the Wardrobe shows it
-    await p.evaluate(()=>{HOOK.flt='all';HOOK.editing=null;show('wardrobe')});
+    await p.evaluate(()=>{HOOK.flt='all';HOOK.editing=null;HOOK.show('wardrobe')});
     ok(/On the way · Nov 20/.test(await p.textContent('#gi-grey')),'its box says "On the way · Nov 20"');
-    await p.evaluate(()=>openItem('grey'));await settle(p,500);
+    await p.evaluate(()=>HOOK.openItem('grey'));await settle(p,500);
     const ed=await p.evaluate(()=>({btn:document.querySelector('#item-view .rotbtn').textContent,date:(document.querySelector('#item-view .rotnote input[type=date]')||{}).value}));
     ok(ed.btn==='It arrived: put in rotation'&&ed.date==='2026-11-20','the open item can change the date or mark it arrived');
     // the day after arrival: back in rotation for good, with a message
-    const ar=await p.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2026-11-20T12:00:00';const a=await checkArrivals();HOOK.TODAY_OVERRIDE='2026-11-21T09:00:00';const b=await checkArrivals();
-      const i=items.find(x=>x.id==='grey');return {a,b,paused:'paused' in i,order:'order' in i,arrives:'arrives' in i,toast:(document.querySelector('#toast')||{}).textContent||''}});
+    const ar=await p.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2026-11-20T12:00:00';const a=await HOOK.checkArrivals();HOOK.TODAY_OVERRIDE='2026-11-21T09:00:00';const b=await HOOK.checkArrivals();
+      const i=HOOK.items.find(x=>x.id==='grey');return {a,b,paused:'paused' in i,order:'order' in i,arrives:'arrives' in i,toast:(document.querySelector('#toast')||{}).textContent||''}});
     ok(ar.a===0&&ar.b===1&&!ar.paused&&!ar.order&&!ar.arrives&&/has arrived: it's in rotation now/.test(ar.toast),'on its arrival day it still waits; the day after, it is put in rotation and the app says so');
     // no date: stays out until put back by hand
-    await p.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={};show('add');HOOK.addManual();setq(0,'type','tie');HOOK.setOrder(0,true);queue[0].id='tnew';await save(0)});
-    const nd=await p.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2027-02-01T12:00:00';const n=await checkArrivals();HOOK.cache={};const used=Object.values(planMonth(2027,1)).some(o=>o.tie&&o.tie.id==='tnew');
-      return {n,used,why:HOOK.whyUnused(items.find(i=>i.id==='tnew'))}});
+    await p.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={};HOOK.show('add');HOOK.addManual();HOOK.setq(0,'type','tie');HOOK.setOrder(0,true);HOOK.queue[0].id='tnew';await HOOK.save(0)});
+    const nd=await p.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2027-02-01T12:00:00';const n=await HOOK.checkArrivals();HOOK.cache={};const used=Object.values(HOOK.planMonth(2027,1)).some(o=>o.tie&&o.tie.id==='tnew');
+      return {n,used,why:HOOK.whyUnused(HOOK.items.find(i=>i.id==='tnew'))}});
     ok(nd.n===0&&!nd.used&&/on the way: put it back in rotation once it arrives/.test(nd.why),'without a date it stays out of the plan until put back by hand (months later too), and the stats say why');
-    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.flt='all';show('wardrobe');openItem('tnew')});await settle(p,500);
-    await p.click('#item-view .rotbtn');await p.waitForFunction(()=>!('paused' in items.find(i=>i.id==='tnew'))&&!('order' in items.find(i=>i.id==='tnew')));
+    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.flt='all';HOOK.show('wardrobe');HOOK.openItem('tnew')});await settle(p,500);
+    await p.click('#item-view .rotbtn');await p.waitForFunction(()=>!('paused' in HOOK.items.find(i=>i.id==='tnew'))&&!('order' in HOOK.items.find(i=>i.id==='tnew')));
     ok(true,'"It arrived: put in rotation" puts it back and clears the order');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
